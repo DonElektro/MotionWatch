@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "1.9.6",
+   "file": "webcam_bewegung_1_9_6.py",
+   "url": "",
+   "sha256": "edca6d98172dd89a56af9a38f39c310d99d13039b60349275134786e8a6e5485",
+   "date": "2026-10-23",
+   "notes": "phone: direction buttons centred like the stick; German texts in Swiss spelling (ss instead of sharp s)"
+  },
+  {
    "version": "1.9.5",
    "file": "webcam_bewegung_1_9_5.py",
    "url": "",
