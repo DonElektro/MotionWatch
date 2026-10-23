@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.0.8",
+   "file": "webcam_bewegung_2_0_8.py",
+   "url": "",
+   "sha256": "39e2873fa250596a95d08c218a141bcbe52b5b40bcaf4361b5402c29e35eed54",
+   "date": "2026-10-23",
+   "notes": "updates from a private GitHub repository: new secret field \"GitHub key (token)\" (read-only token; only sent to GitHub addresses, never shown or logged); clear hint when the repository is private and no key is set"
+  },
+  {
    "version": "2.0.7",
    "file": "webcam_bewegung_2_0_7.py",
    "url": "",
