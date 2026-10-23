@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 00:37",
+ "generated": "2026-10-24 00:48",
  "versions": [
+  {
+   "version": "2.2.9",
+   "file": "webcam_bewegung_2_2_9.py",
+   "url": "",
+   "sha256": "c6d2a02d048a08e46281875aade1867c25aaf6b48c17a36745110640e5666dba",
+   "date": "2026-10-24 00:48",
+   "notes": "tablet / computer: \"Expand all / Collapse all\" are two small symbols right of the settings search (phone unchanged); window: small symbol buttons too."
+  },
   {
    "version": "2.2.8",
    "file": "webcam_bewegung_2_2_8.py",
