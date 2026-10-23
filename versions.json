@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.0.1",
+   "file": "webcam_bewegung_2_0_1.py",
+   "url": "",
+   "sha256": "61ee2347f01985307562de52b96cebc190029b1433df9b94d6b3dcacc2f492b5",
+   "date": "2026-10-23",
+   "notes": "web: search box above the settings - typing hides every group / section / field without the words (German or English), matches are framed and opened; ✕ / Esc shows everything again"
+  },
+  {
    "version": "2.0.0",
    "file": "webcam_bewegung_2_0_0.py",
    "url": "",
