@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 00:12",
+ "generated": "2026-10-24 00:22",
  "versions": [
+  {
+   "version": "2.2.6",
+   "file": "webcam_bewegung_2_2_6.py",
+   "url": "",
+   "sha256": "3e47f3f0759cf2a6fc7121e483901292d761fa288600cbb1f287a414eac4cca0",
+   "date": "2026-10-24 00:22",
+   "notes": "tablet/PC header: status badges in their own line below the tabs, title/tabs/buttons no longer jump."
+  },
   {
    "version": "2.2.5",
    "file": "webcam_bewegung_2_2_5.py",
