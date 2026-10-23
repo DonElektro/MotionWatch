@@ -3,6 +3,12 @@
 Kamera-Überwachung für den Raspberry Pi 5 (Schwenk-/Neigekopf, KI-Personenerkennung, Wärmebild, Geräusch-Alarm,
 Licht, Sirene, Push-Nachrichten, eigenes WLAN) – gebaut als mobile Wildtier-Warnung fürs Camping.
 
+**Alles läuft auf dem Gerät – keine Cloud, kein Abo, deine Bilder gehören dir.**
+
+Seit Version 2.0: Tier-Tagebuch (bestes Bild jedes Tier-Besuchs), Nachtbericht am Morgen per Push, Privatsphäre-Zonen
+(Bereiche schwarz abdecken), Gast-Zugang (Link nur zum Zuschauen), App-Symbol für den Handy-Startbildschirm,
+Akku-Laufzeit der Powerbank.
+
 ## Dateien
 
 | Datei | Inhalt |

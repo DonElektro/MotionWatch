@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.0.0",
+   "file": "webcam_bewegung_2_0_0.py",
+   "url": "",
+   "sha256": "31779eafbb08d7532ae545e13137414821395d687d3edf3cbfc20337b500f7e6",
+   "date": "2026-10-23",
+   "notes": "animal diary (tab \"Diary\": best picture of every animal visit, filter, favourites, share), night report (push in the morning with what happened at night + best picture), privacy zones (painted black right after the camera, also in recordings / for guests), guest access (view-only link /g/<key>, time limit, can be ended at once), app icon for the phone home screen (manifest, icons), powerbank runtime estimate (capacity, \"battery full\", header badge, warning at 15 %)"
+  },
+  {
    "version": "1.9.6",
    "file": "webcam_bewegung_1_9_6.py",
    "url": "",

@@ -1,6 +1,5 @@
 <!doctype html>
-<html lang="en"><head><script>try{localStorage.getItem("mw-lang")||localStorage.setItem("mw-lang","de")}catch(e){}
-(function(){var S={};try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}var P={},T=null,L=["mw-hdr", "mw-listen-vol", "mw-sound"];function send(){var b=P;P={};T=null;try{fetch('/api/ui',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({set:b}),keepalive:true}).catch(function(){});}catch(e){}}try{var o=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){o.call(this,k,v);try{if(this===window.localStorage&&/^mw-/.test(k)&&L.indexOf(k)<0&&S[k]!==String(v)){S[k]=String(v);P[k]=String(v);clearTimeout(T);T=setTimeout(send,700);}}catch(e){}};}catch(e){}addEventListener('pagehide',function(){if(T){clearTimeout(T);send();}});})();</script><meta charset="utf-8">
+<html lang="en"><head><script>try{localStorage.getItem("mw-lang")||localStorage.setItem("mw-lang","de")}catch(e){}</script><script>(function(){var S={};try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}var P={},T=null,L=["mw-hdr", "mw-listen-vol", "mw-sound"];function send(){var b=P;P={};T=null;try{fetch('/api/ui',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({set:b}),keepalive:true}).catch(function(){});}catch(e){}}try{var o=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){o.call(this,k,v);try{if(this===window.localStorage&&/^mw-/.test(k)&&L.indexOf(k)<0&&S[k]!==String(v)){S[k]=String(v);P[k]=String(v);clearTimeout(T);T=setTimeout(send,700);}}catch(e){}};}catch(e){}addEventListener('pagehide',function(){if(T){clearTimeout(T);send();}});})();</script><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="icon" type="image/png" href="/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Motion Watch"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="theme-color" content="#0b0f14"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Motion Watch - Manual</title>
 <style>
@@ -100,8 +99,8 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 @media(max-width:520px){.hsec td:first-child{white-space:normal}}
 </style></head><body>
 <header>
-  <h1>Motion Watch <span class="ver">1.9.0</span></h1>
-  <nav class="nav"><a href="/" data-i18n="Live">Live</a><a href="/cams" data-i18n="Cameras">Cameras</a><a href="/recordings" data-i18n="Recordings">Recordings</a><a href="/zones" data-i18n="Zones">Zones</a><a href="/help" class="on" data-i18n="Manual">Manual</a></nav>
+  <h1>Motion Watch <span class="ver">2.0.0</span></h1>
+  <nav class="nav"><a href="/" data-i18n="Live">Live</a><a href="/cams" data-i18n="Cameras">Cameras</a><a href="/recordings" data-i18n="Recordings">Recordings</a><a href="/zones" data-i18n="Zones">Zones</a><a href="/diary" data-i18n="Diary">Diary</a><a href="/help" class="on" data-i18n="Manual">Manual</a></nav>
   <span class="hdr-ctl">
     <button class="sec" onclick="window.print()" title="Print">🖨</button>
     <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
@@ -133,7 +132,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <tr><td>⛺ 🔋 ⏱ 💡 🌡 🔄 📡</td><td>Eingeschaltete Funktionen: Camping, Stromsparen, Zeitraffer, Licht, Wärmebild, Patrouille, eigenes WLAN.</td></tr>
 <tr><td>⚠ ⚡ 💾</td><td>Warnungen: kein Passwort, Unterspannung, Speicher fast voll.</td></tr>
 <tr><td>CPU · FPS</td><td>Auslastung und Temperatur des Pi, Bilder pro Sekunde.</td></tr></table>
-<p>Rechts: 🔔 Alarmton im Browser, ☰ Ansicht (Anzeigen ein-/ausblenden), ▶ Einstellungen ein/aus, ⛶ Vollbild, ☀ hell/dunkel, DE/EN, ▲ Kopfzeile ausblenden.</p>
+<p>Rechts: 🔔 Alarmton im Browser, ☰ Ansicht (Anzeigen ein-/ausblenden), ▶ Einstellungen ein/aus, ⛶ Vollbild (nur Video, mit ✕ oben rechts zurück – funktioniert auch auf dem iPhone), ☀ hell/dunkel, DE/EN, ▲ Kopfzeile ausblenden.</p>
 <h3>Bild und Steuerung</h3>
 <ul><li><b>Stick:</b> mit dem Finger ziehen – je weiter, desto schneller dreht die Kamera. Der kleine Ring zeigt, wo die Kamera gerade hinschaut. «Mitte» fährt in die Mitte.</li>
 <li><b>Tasten:</b> alternativ zum Stick (umschalten mit «Stick / Tasten»).</li>
@@ -151,6 +150,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>Netzwerk:</b> «Automatisch» sucht zuerst bekannte Netze (z. B. den Handy-Hotspot, dann gibt es Internet und Push-Nachrichten) und schaltet sonst das eigene WLAN ein.</li>
 <li><b>Autostart:</b> Motion Watch startet beim Einschalten von selbst, ohne Bildschirm.</li>
 <li><b>Stromsparen:</b> wenige Bilder pro Sekunde, solange alles ruhig ist – bei der ersten Bewegung, einem Geräusch oder wenn jemand zuschaut sofort volle Geschwindigkeit.</li>
+<li><b>🔋 Akku:</b> Kapazität der Powerbank eintragen (mAh, wie aufgedruckt), nach dem Laden «Akku ist jetzt voll» drücken. Oben steht dann z. B. «🔋 62 % · 14 h». Bei 15 % kommt eine Push-Nachricht. Es ist eine Schätzung aus dem Verbrauch des Pi (Powerbanks melden ihren Ladestand nicht).</li>
 <li><b>Uhrzeit vom Handy:</b> ohne Internet holt sich der Pi die Uhrzeit vom Handy, damit Aufnahmen die richtige Zeit haben.</li></ul>
 </section>
 
@@ -168,6 +168,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <ul><li><b>Empfindlichkeit</b> und <b>Min. Objektgrösse</b> sind die wichtigsten Regler gegen Fehlalarme.</li>
 <li><b>KI-Erkennung</b> erkennt Personen, Tiere und Fahrzeuge. «Bewegungs-Personen brauchen KI-Bestätigung» = weniger Fehlalarme, aber etwas langsamer.</li>
 <li><b>Zonen</b> (Reiter <i>Zonen</i>): «Ignorieren» für Bäume, Strasse, Zeltwand; «Nur hier» wenn nur ein Bereich zählen soll.</li>
+<li><b>Privatsphäre-Zone</b> (Reiter <i>Zonen</i>): der Bereich wird gleich nach der Kamera schwarz abgedeckt – im Live-Bild, in Aufnahmen, Fotos, Zeitraffer und für Gäste. Für Nachbarzelt, Weg, fremde Fenster. Wichtig für den Datenschutz: fremde Personen und öffentlichen Grund nicht dauernd filmen.</li>
 <li>Regen, Wind, Schatten und Schwachlicht werden automatisch erkannt und ausgeglichen (Feineinstellungen).</li>
 <li><b>Auto-Abstimmung</b> lernt die Szene selbst; «Neu kalibrieren», wenn sich die Umgebung stark geändert hat (Szene dabei leer lassen).</li></ul>
 </section>
@@ -208,8 +209,17 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>Zeitraffer:</b> alle N Minuten ein Foto von einer festen Position, daraus ein Video («Video erstellen»). Ein Alarm hat immer Vorrang.</li></ul>
 </section>
 
+<section id="diary" data-icon="🦊"><h2>Tagebuch, Nachtbericht &amp; Gäste</h2>
+<ul><li><b>Tier-Tagebuch</b> (Reiter <i>Tagebuch</i>): von jedem Tier-Besuch wird das beste Bild automatisch gespeichert, mit Tierart, Datum und Dauer. Filtern nach Tierart, ★ = behalten, ⤴ teilen (z. B. WhatsApp), ⤓ herunterladen. Ältere Einträge werden nach der eingestellten Zeit gelöscht (★ nie).</li>
+<li>Die KI kennt Vogel, Katze, Hund, Pferd, Schaf, Kuh, Bär (und ein paar exotische). Ein Fuchs erscheint meist als «Hund» oder «Katze», ein Wildschwein oft als «Schaf» oder «Bär».</li>
+<li><b>Nachtbericht:</b> jeden Morgen (einstellbar, Standard 7 Uhr) eine Push-Nachricht: was in der Nacht (ab 20 Uhr) los war – Personen, Tiere, Geräusche, Wärmebild – mit dem besten Bild. «Jetzt senden» zum Ausprobieren. Einstellungen unter <i>Benachrichtigungen → Nachtbericht</i>.</li>
+<li><b>Gast-Zugang</b> (<i>System &amp; Netz</i>): «Neuen Link erstellen», Gültigkeit wählen (2 h bis unbegrenzt), Link teilen. Gäste sehen nur das Live-Bild (mit Privatsphäre-Zonen), kein Passwort nötig, sie können nichts verstellen. «Gast-Zugang beenden» sperrt den Link sofort. Der Gast muss den Pi erreichen: im selben WLAN / Hotspot oder über Tailscale.</li>
+<li><b>App-Symbol:</b> iPhone: in Safari <i>Teilen → Zum Home-Bildschirm</i>. Android: Chrome-Menü <i>⋮ → Zum Startbildschirm hinzufügen</i>. Motion Watch öffnet sich dann wie eine App, ohne Browser-Leisten.</li></ul>
+</section>
+
 <section id="relay" data-icon="⚡"><h2>Relais &amp; Zeitplan</h2>
 <ul><li><b>Relais:</b> Aus / Ein / Auto. Auto schaltet ein, solange der Auslöser zutrifft (Person, Bewegung, Voralarm, Wärme, Geräusch, Tierart …), plus Haltezeit.</li>
+<li><b>Warnlampe bei Fernzugriff:</b> Relais auf Auto, Auslöser «Fernzugriff». Es ist an, solange jemand über Tailscale zuschaut – auch wenn das Gerät unscharf ist. Eine kleine LED (mit Vorwiderstand ca. 330 Ω) kann direkt an den GPIO, eine grössere Lampe über ein Relais-Modul.</li>
 <li><b>Zeitplan:</b> schaltet Funktionen zu bestimmten Zeiten ein oder aus, z. B. nachts scharf, tagsüber Stromsparen. Auch «bei Sonnenuntergang» und Ausnahmedaten.</li></ul>
 </section>
 
@@ -218,13 +228,14 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>⏻ Pi ausschalten / ↻ neu starten:</b> laufende Aufnahme wird vorher fertig gespeichert. Strom erst trennen, wenn die grüne LED dunkel bleibt.</li>
 <li><b>🔒 Web-Passwort</b>, <b>⬇ Einstellungen sichern / ⬆ laden</b> (die Datei enthält auch deine Zugangsdaten – privat aufbewahren).</li>
 <li><b>WLAN:</b> Netze suchen und verbinden, gespeicherte Netze.</li>
+<li><b>🌐 Fernzugriff (Tailscale):</b> unter System steht, ob Tailscale verbunden ist, die Adresse für unterwegs (http://100.…:5000/) und wer gerade von aussen zuschaut. Oben erscheint dann «🌐 Fern: Gerätename». Auf Wunsch kommt eine Push-Nachricht (Benachrichtigungen). Einrichten: <code>curl -fsSL https://tailscale.com/install.sh | sh</code>, dann <code>sudo tailscale up</code>, auf dem Handy die Tailscale-App mit demselben Konto.</li>
 <li><b>Web-Stream:</b> Bildqualität und Breite – kleiner = weniger Daten über den Handy-Hotspot.</li>
 <li><b>Einrichtung:</b> Standort (für Sonnenauf-/untergang), Anwesenheit, Warnungen (Temperatur, Speicher).</li>
 <li><b>Updates:</b> Quelle eintragen (Internet-Adresse einer versions.json oder ein Ordner/USB-Stick), «Nach Versionen suchen», Version wählen. Ältere Versionen bleiben für den Weg zurück.</li></ul>
 </section>
 
 <section id="window" data-icon="🖥"><h2>Desktop-Fenster auf dem Pi</h2>
-<table><tr><td>Doppelklick aufs Video</td><td>nur Video</td></tr><tr><td>F11 / Esc</td><td>Vollbild / zurück</td></tr>
+<table><tr><td>Doppelklick aufs Video</td><td>nur Video</td></tr><tr><td>⛶ / F11 / Esc</td><td>Video-Vollbild / ganze Seite als Vollbild / zurück</td></tr>
 <tr><td>Strg+B</td><td>Einstellungsbereich ein/aus</td></tr><tr><td>Strg+T / Strg+L</td><td>hell/dunkel, Sprache</td></tr>
 <tr><td>Pfeiltasten / Pos1</td><td>Kamera bewegen / Mitte</td></tr><tr><td>Rechtsklick aufs Video</td><td>Felder ein-/ausblenden</td></tr></table>
 <p>Die Einstellungen sind gleich gegliedert wie auf der Webseite. Der Knopf «Anleitung» öffnet diese Seite.</p>
@@ -232,6 +243,8 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 
 <section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>
 <ul>
+<li>📱 <b>Wie eine App:</b> Motion Watch auf den Home-Bildschirm legen (iPhone: Teilen → Zum Home-Bildschirm). Dann gibt es auch auf dem iPhone ein richtiges Vollbild.</li>
+<li>🦊 <b>Tierfotos sammeln:</b> KI-Erkennung eingeschaltet lassen, Kamera auf einen Futterplatz oder Wildwechsel richten – am Morgen im <i>Tagebuch</i> nachsehen.</li>
 <li>🌙 <b>Vor der ersten Nacht testen:</b> scharf schalten, einmal durchs Bild laufen und prüfen: Push kommt an, Aufnahme ist da, Sirene/Licht reagieren.</li>
 <li>🌳 <b>Fehlalarme durch Äste:</b> Bäume und Büsche als «Ignorieren»-Zone zeichnen und die Mindestgrösse etwas erhöhen. Bei Wind hilft die automatische Wind-Erkennung.</li>
 <li>🐗 <b>Tiere vertreiben:</b> Sirene «bei Alarm» plus weisses Licht «bei Alarm, nur nachts» – das schreckt die meisten Tiere zuverlässig ab. Für die eigene Nachtruhe die Sirene kurz (5–10 s) einstellen.</li>
@@ -292,7 +305,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <tr><td>⛺ 🔋 ⏱ 💡 🌡 🔄 📡</td><td>Features that are on: camping, power saving, timelapse, light, thermal, patrol, own Wi-Fi.</td></tr>
 <tr><td>⚠ ⚡ 💾</td><td>Warnings: no password, under-voltage, memory almost full.</td></tr>
 <tr><td>CPU · FPS</td><td>Load and temperature of the Pi, pictures per second.</td></tr></table>
-<p>Right: 🔔 alarm sound in the browser, ☰ view (show / hide badges), ▶ settings panel, ⛶ fullscreen, ☀ light/dark, DE/EN, ▲ hide the header.</p>
+<p>Right: 🔔 alarm sound in the browser, ☰ view (show / hide badges), ▶ settings panel, ⛶ full screen (video only, ✕ top right to go back – works on iPhone too), ☀ light/dark, DE/EN, ▲ hide the header.</p>
 <h3>Picture and controls</h3>
 <ul><li><b>Stick:</b> drag with the finger – the further, the faster. The small ring shows where the camera looks. «Centre» moves to the middle.</li>
 <li><b>Buttons:</b> instead of the stick («Stick / Buttons»).</li>
@@ -310,6 +323,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>Network:</b> «Automatic» tries known networks first (e.g. the phone hotspot: internet + push messages), otherwise it switches the own Wi-Fi on.</li>
 <li><b>Autostart:</b> Motion Watch starts by itself at power-on, without a screen.</li>
 <li><b>Power saving:</b> few pictures per second while all is quiet – full speed at once at the first movement, a noise or when somebody watches.</li>
+<li><b>🔋 Battery:</b> enter the capacity of the powerbank (mAh, as on the label), press «Battery is full now» after charging. The header then shows e.g. «🔋 62 % · 14 h». At 15 % a push message comes. It is an estimate from what the Pi uses (powerbanks do not report their charge).</li>
 <li><b>Clock from the phone:</b> without internet the Pi takes the time from the phone, so recordings have the right time.</li></ul>
 </section>
 
@@ -327,6 +341,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <ul><li><b>Sensitivity</b> and <b>min. object size</b> are the most important settings against false alarms.</li>
 <li><b>AI detection</b> recognises persons, animals and vehicles. «Motion persons need AI confirmation» = fewer false alarms, a little slower.</li>
 <li><b>Zones</b> (tab <i>Zones</i>): «Ignore» for trees, road, tent wall; «Only here» when only one area counts.</li>
+<li><b>Privacy zone</b> (tab <i>Zones</i>): the area is painted black right after the camera – in the live picture, recordings, photos, timelapse and for guests. For a neighbour's tent, a path, other people's windows. Important for data protection: do not film strangers and public ground all the time.</li>
 <li>Rain, wind, shadows and low light are detected and handled automatically (fine-tuning).</li>
 <li><b>Auto-tune</b> learns the scene; «Recalibrate» after big changes (scene empty).</li></ul>
 </section>
@@ -367,8 +382,17 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>Timelapse:</b> a photo every N minutes from a fixed position, then a video («Create video»). An alarm always has priority.</li></ul>
 </section>
 
+<section id="diary" data-icon="🦊"><h2>Diary, night report &amp; guests</h2>
+<ul><li><b>Animal diary</b> (tab <i>Diary</i>): the best picture of every animal visit is saved automatically, with species, date and duration. Filter by species, ★ = keep, ⤴ share (e.g. WhatsApp), ⤓ download. Older entries are deleted after the set time (★ never).</li>
+<li>The AI knows bird, cat, dog, horse, sheep, cow, bear (and a few exotic ones). A fox usually shows up as «dog» or «cat», a wild boar often as «sheep» or «bear».</li>
+<li><b>Night report:</b> every morning (adjustable, default 7 o'clock) a push message: what happened in the night (from 20 o'clock) – persons, animals, noises, thermal – with the best picture. «Send now» to try it. Settings under <i>Notifications → Night report</i>.</li>
+<li><b>Guest access</b> (<i>System &amp; network</i>): «Create new link», choose how long (2 h to no limit), share the link. Guests only see the live picture (with privacy zones), no password needed, they cannot change anything. «End guest access» blocks the link at once. The guest must reach the Pi: same Wi-Fi / hotspot or via Tailscale.</li>
+<li><b>App icon:</b> iPhone: in Safari <i>Share → Add to Home Screen</i>. Android: Chrome menu <i>⋮ → Add to Home screen</i>. Motion Watch then opens like an app, without browser bars.</li></ul>
+</section>
+
 <section id="relay" data-icon="⚡"><h2>Relays &amp; schedule</h2>
 <ul><li><b>Relays:</b> Off / On / Auto. Auto = on while the trigger applies (person, motion, pre-alarm, warm body, noise, animal …) plus the hold time.</li>
+<li><b>Warning lamp for remote access:</b> relay on Auto, trigger «remote access». It is on while somebody watches over Tailscale – also when disarmed. A small LED (with a ~330 Ω resistor) can go straight to the GPIO, a bigger lamp via a relay module.</li>
 <li><b>Schedule:</b> switches features on or off at certain times, e.g. armed at night, power saving by day. Also «at sunset» and exception dates.</li></ul>
 </section>
 
@@ -377,13 +401,14 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>⏻ Shut down / ↻ restart the Pi:</b> a running recording is finished first. Unplug only when the green LED stays dark.</li>
 <li><b>🔒 Web password</b>, <b>⬇ save / ⬆ load settings</b> (the file contains your access data – keep it private).</li>
 <li><b>Wi-Fi:</b> search and join networks, saved networks.</li>
+<li><b>🌐 Remote access (Tailscale):</b> System shows whether Tailscale is connected, the address for on the road (http://100.…:5000/) and who watches from outside right now. The header then shows «🌐 Remote: device name». Optional push message (Notifications). Setup: <code>curl -fsSL https://tailscale.com/install.sh | sh</code>, then <code>sudo tailscale up</code>, on the phone the Tailscale app with the same account.</li>
 <li><b>Web stream:</b> picture quality and width – smaller = less data over the phone hotspot.</li>
 <li><b>Setup:</b> location (sunrise / sunset), presence, warnings (temperature, memory).</li>
 <li><b>Updates:</b> enter the source (address of a versions.json or a folder / USB stick), «Search versions», pick a version. Older versions stay for going back.</li></ul>
 </section>
 
 <section id="window" data-icon="🖥"><h2>Desktop window on the Pi</h2>
-<table><tr><td>Double-click the video</td><td>video only</td></tr><tr><td>F11 / Esc</td><td>fullscreen / back</td></tr>
+<table><tr><td>Double-click the video</td><td>video only</td></tr><tr><td>⛶ / F11 / Esc</td><td>video full screen / whole page full screen / back</td></tr>
 <tr><td>Ctrl+B</td><td>settings panel on / off</td></tr><tr><td>Ctrl+T / Ctrl+L</td><td>light/dark, language</td></tr>
 <tr><td>Arrow keys / Home</td><td>move the camera / centre</td></tr><tr><td>Right-click the video</td><td>show / hide fields</td></tr></table>
 <p>The settings are grouped like on the web page. The button «Manual» opens this page.</p>
@@ -391,6 +416,8 @@ pip install opencv-python numpy pillow flask psutil</pre>
 
 <section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>
 <ul>
+<li>📱 <b>Like an app:</b> put Motion Watch on the home screen (iPhone: Share → Add to Home Screen). Then the iPhone also gets a real full screen.</li>
+<li>🦊 <b>Collect animal photos:</b> keep AI detection on, point the camera at a feeding place or a game trail – check the <i>Diary</i> in the morning.</li>
 <li>🌙 <b>Test before the first night:</b> arm, walk through the picture once and check: push arrives, recording is there, siren / light react.</li>
 <li>🌳 <b>False alarms from branches:</b> draw trees and bushes as «Ignore» zones and raise the minimum size a little. The automatic wind detection helps too.</li>
 <li>🐗 <b>Scare animals away:</b> siren «at an alarm» plus white light «at an alarm, only at night». For your own sleep keep the siren short (5–10 s).</li>
@@ -436,13 +463,34 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <script>
 
 const $ = s => document.querySelector(s);
+// Live picture that heals itself: phones (above all iPhone) drop the endless MJPEG stream after a network hiccup,
+// in the background or when the Pi restarts -> broken-image "?" icon. Reconnect automatically.
+function keepStream(img) {
+  if (!img || img.dataset.keep) return;
+  img.dataset.keep = "1";
+  const base = (img.dataset.src || img.getAttribute("src") || "").split("?")[0];
+  let tries = 0, timer = null;
+  const box = img.parentNode;
+  const lost = on => { img.style.visibility = on ? "hidden" : ""; if (box) box.classList.toggle("vlost", on); };
+  const restart = () => { clearTimeout(timer); timer = null; img.src = base + "?r=" + Date.now(); };
+  const later = () => { if (timer) return; lost(true); timer = setTimeout(restart, Math.min(10000, 1000 * (1 + tries++))); };
+  img.addEventListener("error", later);
+  img.addEventListener("load", () => { tries = 0; lost(false); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) restart(); });
+  addEventListener("pageshow", e => { if (e.persisted) restart(); });
+  setInterval(() => {
+    if (document.hidden) return;
+    if (img.naturalWidth) { if (!timer) { tries = 0; lost(false); } }
+    else if (img.complete) later();
+  }, 3000);
+}
 const post = (u, b) => fetch(u, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(b || {})})
     .then(r => r.json()).catch(() => ({ok: false, error: "connection"}));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
 let LANG = "", THEME = "";
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
-const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung"}};
+const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch"}};
 const t = s => (LANG === "de" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
@@ -457,13 +505,13 @@ function toast(msg) { let e = $("#toast"); if (!e) { e = el("div"); e.id = "toas
   clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove("on"), 2600); }
 async function initAppearance() {
   if (!LANG || !THEME) {
-    try { const a = await (await Promise.reject()).json(); LANG = LANG || a.lang; THEME = THEME || a.theme; }
+    try { const a = await (await fetch("/api/appearance")).json(); LANG = LANG || a.lang; THEME = THEME || a.theme; }
     catch (e) { LANG = LANG || "en"; THEME = THEME || "dark"; }
   }
   applyTheme(); applyI18n();
 }
 
-Object.assign(I18N.de, {"Search …": "Suchen …", "Manual": "Anleitung", "Expand all": "Alle öffnen", "No match": "Nichts gefunden",
+Object.assign(I18N.de, {"Search …": "Suchen …", "Manual": "Anleitung", "Diary": "Tagebuch", "Expand all": "Alle öffnen", "No match": "Nichts gefunden",
   "Motion Watch manual · version": "Anleitung zu Motion Watch · Version"});
 let SECS = [];
 function buildHelp() {
@@ -504,7 +552,7 @@ function search() {
 (async () => {
   await initAppearance(); buildHelp();
   let tm = null; $("#q").addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(search, 150); });
-  try { const v = {version:"1.9.0"}; $("#hfoot").textContent = t("Motion Watch manual · version") + " " + v.version; } catch (e) {}
+  try { const v = await (await fetch("/api/version")).json(); $("#hfoot").textContent = t("Motion Watch manual · version") + " " + v.version; } catch (e) {}
 })();
 
 // ---- hide / show the whole header (remembered per device) ----
