@@ -16,7 +16,7 @@ Licht, Sirene, Push-Nachrichten, eigenes WLAN) – gebaut als mobile Wildtier-Wa
 Auf der Webseite des Pi unter **System & Netz → Updates** als Quelle eintragen:
 
 ```
-https://raw.githubusercontent.com/<benutzer>/motionwatch/main/versions.json
+https://raw.githubusercontent.com/DonElektro/MotionWatch/main/versions.json
 ```
 
 Dann «Nach Versionen suchen» und die gewünschte Version wählen. Ältere Versionen bleiben auf dem Pi und können jederzeit
