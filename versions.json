@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-23 22:43",
+ "generated": "2026-10-23 22:57",
  "versions": [
+  {
+   "version": "2.2.0",
+   "file": "webcam_bewegung_2_2_0.py",
+   "url": "",
+   "sha256": "13b83b2a14ea1777e637d6edf0f7a5674d4f927d5614693682b633b0feb138f5",
+   "date": "2026-10-23 22:57",
+   "notes": "Waveshare UPS HAT (INA219 on I2C 0x42, 2 x 18650 in series): found by itself, battery % from the cell voltage, time left from the measured power, mains / battery / charging in the header, push + log at a power cut and when the power is back, warning at 20 %, clean shutdown at 8 % (adjustable); powerbank estimate stays for devices without UPS"
+  },
   {
    "version": "2.1.5",
    "file": "webcam_bewegung_2_1_5.py",

@@ -31,7 +31,7 @@ Jede neue Version bekommt einen neuen Dateinamen `webcam_bewegung_X_Y_Z.py`, die
 - 2 × MG90S an **PCA9685** (I2C **0x41**, Lötbrücke A0), Kanal 0 Pan, 1 Tilt; Grenzen in Grad (Pan ±90°, Tilt ±60°)
 - Licht weiss + Infrarot 850 nm (je 1-W-LED, ~0,5 W), PCA9685 Kanal 2 / 3 über MOSFET, an den Gabelarmen; nur ein/aus (kein PWM)
 - Audio: USB-Mikrofon, USB-Soundkarte + PAM8403 + 40-mm-Lautsprecher im Unterteil, oder Bluetooth-Lautsprecher
-- Strom: Powerbank; Relais / Warnlampe an freien GPIOs
+- Strom: Powerbank oder Waveshare UPS HAT (2 × 18650 in Serie, INA219 auf I2C 0x42; für den Pi 5 die Version mit 5 A nötig); Relais / Warnlampe an freien GPIOs
 
 ## 4. Funktionen (2.0.5)
 
