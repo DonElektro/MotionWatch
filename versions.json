@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.1.0",
+   "file": "webcam_bewegung_2_1_0.py",
+   "url": "",
+   "sha256": "d90d05b932b1a79da30383f14cddd7a2c49cbbd743ba94e985d0762e04cbe5ff",
+   "date": "2026-10-23",
+   "notes": "operator mode (System -> \"Operator mode (lock settings)\", window: Setup): settings locked with a PIN (4-8 digits, hash); the operator can still arm / disarm, use the camping profile, the main switches (detection, recording, notifications, power saving, patrol, timelapse ...), lights, camera, listen / talk, recordings; the web server refuses everything else (HTTP 423), the window shows only the operator panel; 5 wrong PINs = 5 minutes pause"
+  },
+  {
    "version": "2.0.10",
    "file": "webcam_bewegung_2_0_10.py",
    "url": "",
