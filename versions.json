@@ -1,12 +1,21 @@
 {
  "app": "Motion Watch",
+ "generated": "2026-10-23 22:36",
  "versions": [
+  {
+   "version": "2.1.4",
+   "file": "webcam_bewegung_2_1_4.py",
+   "url": "",
+   "sha256": "9078344beccdee1949f2758bccf73b91a76fda75adda29915e658f5c0d21a3cf",
+   "date": "2026-10-23 22:36",
+   "notes": "updates: always the newest version list (GitHub's file server kept an old copy for up to 5 minutes), the list shows when it was searched and from when the list is; versions with date and time"
+  },
   {
    "version": "2.1.3",
    "file": "webcam_bewegung_2_1_3.py",
    "url": "",
    "sha256": "49f5738535290d090b5b9ab6abb0c0e7e7496e63bcf3d510a0d25f87f627ebef",
-   "date": "2026-10-23",
+   "date": "2026-10-23 22:31",
    "notes": "the event log card shows only the important entries (alarms, persons, animals, recordings, arming, problems, remote access, restarts ...) with small icons; the log page has the filter \"Important only\"; everything stays in the file"
   },
   {
@@ -14,7 +23,7 @@
    "file": "webcam_bewegung_2_1_2.py",
    "url": "",
    "sha256": "1b241ed5c325e52264c32ee6e88b2f9e78117e964cc14de7e79ba114c3e0a399",
-   "date": "2026-10-23",
+   "date": "2026-10-23 22:26",
    "notes": "phone: the page could become wider than the screen (zoomed out, header only half as wide) when a list held a long entry - now every list / field / log line stays inside the screen width"
   },
   {
@@ -22,7 +31,7 @@
    "file": "webcam_bewegung_2_1_1.py",
    "url": "",
    "sha256": "680e210884a81499a3e1c62b0ee9d117ffa67b585f5bb18998ee50ca7a96d6eb",
-   "date": "2026-10-23",
+   "date": "2026-10-23 22:20",
    "notes": "event log: status line every 15 min (CPU, temperature, FPS, camera, Wi-Fi, internet, memory, voltage, battery), daily archive (logs/motionwatch_YYYY-MM-DD.log.gz, kept 60 days, also when a file grows over 20 MB), new page /log (\"Whole log & archive\": filter by kind, search, 300 / 1000 / 5000 lines, download every day); the card shows 40 entries"
   },
   {
@@ -30,7 +39,7 @@
    "file": "webcam_bewegung_2_1_0.py",
    "url": "",
    "sha256": "d90d05b932b1a79da30383f14cddd7a2c49cbbd743ba94e985d0762e04cbe5ff",
-   "date": "2026-10-23",
+   "date": "2026-10-23 22:07",
    "notes": "operator mode (System -> \"Operator mode (lock settings)\", window: Setup): settings locked with a PIN (4-8 digits, hash); the operator can still arm / disarm, use the camping profile, the main switches (detection, recording, notifications, power saving, patrol, timelapse ...), lights, camera, listen / talk, recordings; the web server refuses everything else (HTTP 423), the window shows only the operator panel; 5 wrong PINs = 5 minutes pause"
   },
   {
@@ -38,7 +47,7 @@
    "file": "webcam_bewegung_2_0_10.py",
    "url": "",
    "sha256": "2f001d1eb8a44c4bbf0f91d30de15d36cacc349540b1a351955cafb55162967c",
-   "date": "2026-10-23",
+   "date": "2026-10-23 21:41",
    "notes": "small 🎧 button next to the stick / buttons (row \"Control\") switches listening to the microphone on and off; green and pulsing while listening"
   },
   {
@@ -46,7 +55,7 @@
    "file": "webcam_bewegung_2_0_9.py",
    "url": "",
    "sha256": "a7e781f4040d4351a840cd454ae110d39684471b8bda6bee5cb83a642de0e66d",
-   "date": "2026-10-23",
+   "date": "2026-10-23 20:50",
    "notes": "in low light the visible picture is brightened too (gamma curve, adapts to the darkness; switch under Detection -> Low light) - before, a dark scene looked black while the detection still marked movements; autostart more robust after a power cut: restarts after any exit and never gives up (Restart=always, StartLimitIntervalSec=0), start without login (linger) is checked at every start and switched on or explained"
   },
   {
@@ -54,7 +63,7 @@
    "file": "webcam_bewegung_2_0_8.py",
    "url": "",
    "sha256": "39e2873fa250596a95d08c218a141bcbe52b5b40bcaf4361b5402c29e35eed54",
-   "date": "2026-10-23",
+   "date": "2026-10-23 20:15",
    "notes": "updates from a private GitHub repository: new secret field \"GitHub key (token)\" (read-only token; only sent to GitHub addresses, never shown or logged); clear hint when the repository is private and no key is set"
   },
   {
@@ -62,7 +71,7 @@
    "file": "webcam_bewegung_2_0_7.py",
    "url": "",
    "sha256": "cf2b334791357371ffa6e7a9fd1f8554d8c5a5ff29cbbe84fea45ffe3d841555",
-   "date": "2026-10-23",
+   "date": "2026-10-23 20:08",
    "notes": "recordings page: timelapse videos appear in the list (marked ⏱), new type filter \"Timelapse\" shows the videos and all single photos; play, download, star (starred photos are kept), delete, ZIP work as for recordings"
   },
   {
@@ -70,7 +79,7 @@
    "file": "webcam_bewegung_2_0_6.py",
    "url": "",
    "sha256": "cb11719091df95e1a7d533befd11caaec42a5bb446528d5aa6ea399d39e29fb3",
-   "date": "2026-10-23",
+   "date": "2026-10-23 19:37",
    "notes": "tablet / computer (wider than 960 px): settings column and picture column scroll separately - the live picture always stays in view"
   },
   {
@@ -78,7 +87,7 @@
    "file": "webcam_bewegung_2_0_5.py",
    "url": "",
    "sha256": "f0f9e2868885cc24082815d6b8a64b0abbf41deb1fa7fbc2f6ba36d4541a1ab9",
-   "date": "2026-10-23",
+   "date": "2026-10-23 18:22",
    "notes": "internet check also over normal web traffic (port 443, first the push server itself) - no more false \"no internet\" when a router blocks port 53 to outside servers"
   },
   {
@@ -86,7 +95,7 @@
    "file": "webcam_bewegung_2_0_4.py",
    "url": "",
    "sha256": "d5974ba3a13b93de6270aaf7ca286f5fcca47d86ef2c669a0eb3ff23d9979c3d",
-   "date": "2026-10-23",
+   "date": "2026-10-23 18:00",
    "notes": "home screen icon depends on the address: green \"MW Intern\" (home network / hotspot), red \"MW Extern\" (Tailscale 100.x / *.ts.net) - two shortcuts can be told apart"
   },
   {
@@ -94,7 +103,7 @@
    "file": "webcam_bewegung_2_0_3.py",
    "url": "",
    "sha256": "661da9ae99f4e09ade9cbc8c1bd3baea36ad144d698d301e1f923a0edf0f0ded",
-   "date": "2026-10-23",
+   "date": "2026-10-23 17:49",
    "notes": "app mode (home screen icon): reload button ⟳ in the header; every page shows \"New version running - Reload\" after an update"
   },
   {
@@ -102,7 +111,7 @@
    "file": "webcam_bewegung_2_0_2.py",
    "url": "",
    "sha256": "41f4623c3b09306cbdcd36285c9a1eb3dca9a30cc5d34da81cc9edc6315b014a",
-   "date": "2026-10-23",
+   "date": "2026-10-23 17:43",
    "notes": "pause the program (System & network -> System, window: Setup): switches off at once (recording finished, settings saved) and starts again by itself after 5 min ... 12 h; meanwhile a small page with countdown and \"Start now\" (same process: autostart and watchdog keep working)"
   },
   {
@@ -110,7 +119,7 @@
    "file": "webcam_bewegung_2_0_1.py",
    "url": "",
    "sha256": "61ee2347f01985307562de52b96cebc190029b1433df9b94d6b3dcacc2f492b5",
-   "date": "2026-10-23",
+   "date": "2026-10-23 17:19",
    "notes": "web: search box above the settings - typing hides every group / section / field without the words (German or English), matches are framed and opened; ✕ / Esc shows everything again"
   },
   {
@@ -118,7 +127,7 @@
    "file": "webcam_bewegung_2_0_0.py",
    "url": "",
    "sha256": "31779eafbb08d7532ae545e13137414821395d687d3edf3cbfc20337b500f7e6",
-   "date": "2026-10-23",
+   "date": "2026-10-23 15:50",
    "notes": "animal diary (tab \"Diary\": best picture of every animal visit, filter, favourites, share), night report (push in the morning with what happened at night + best picture), privacy zones (painted black right after the camera, also in recordings / for guests), guest access (view-only link /g/<key>, time limit, can be ended at once), app icon for the phone home screen (manifest, icons), powerbank runtime estimate (capacity, \"battery full\", header badge, warning at 15 %)"
   },
   {
@@ -126,7 +135,7 @@
    "file": "webcam_bewegung_1_9_6.py",
    "url": "",
    "sha256": "edca6d98172dd89a56af9a38f39c310d99d13039b60349275134786e8a6e5485",
-   "date": "2026-10-23",
+   "date": "2026-10-23 14:59",
    "notes": "phone: direction buttons centred like the stick; German texts in Swiss spelling (ss instead of sharp s)"
   },
   {
@@ -134,7 +143,7 @@
    "file": "webcam_bewegung_1_9_5.py",
    "url": "",
    "sha256": "89277a6831892ed8ad1f2c0fcf269800ed8072923f5cd0f25dfc395667de7b48",
-   "date": "2026-10-23",
+   "date": "2026-10-23 14:54",
    "notes": "live picture reconnects by itself when the phone loses the stream (no more \"?\" icon, spinning ↻ meanwhile), also when coming back to the browser; phone full screen upright: stick right under the picture"
   },
   {
@@ -142,7 +151,7 @@
    "file": "webcam_bewegung_1_9_4.py",
    "url": "",
    "sha256": "52b61cffa679ccdadc76ffa268c1d47512f3608d81094811930a4ffb647485b0",
-   "date": "2026-10-23",
+   "date": "2026-10-23 14:42",
    "notes": "web full screen: the buttons \"expand all / collapse all\" are hidden (phone held sideways)"
   },
   {
@@ -150,7 +159,7 @@
    "file": "webcam_bewegung_1_9_3.py",
    "url": "",
    "sha256": "178b51bf5100e0755f9b03edab11cc9d4ea9a65cbfbb188597f6c5e92e92dc7a",
-   "date": "2026-10-23",
+   "date": "2026-10-23 14:32",
    "notes": "remote access (Tailscale): header badge \"🌐 Remote: <device>\" while somebody watches from outside, Tailscale status + address under System, log entries, optional push message, new relay trigger \"remote access\" (also when disarmed) e.g. for a small warning lamp"
   },
   {
@@ -158,7 +167,7 @@
    "file": "webcam_bewegung_1_9_2.py",
    "url": "",
    "sha256": "5740d09d5895d5b60b051a63775fd961f12a54d2e087ab18866b1b08f80bad27",
-   "date": "2026-10-23",
+   "date": "2026-10-23 13:53",
    "notes": "web full screen button works on phones: the video fills the screen (real full screen on Android / PC, page layout on iPhone / iPad where browsers allow no full screen), round ✕ button top right to go back"
   },
   {
@@ -166,7 +175,7 @@
    "file": "webcam_bewegung_1_9_1.py",
    "url": "",
    "sha256": "e7da14f9082f3d68c1bf0d16d8bbcb8db73d07bd151a1754b5dae6b72ab360eb",
-   "date": "2026-10-23",
+   "date": "2026-10-23 13:15",
    "notes": "a failed camera switch (the old camera keeps running) shows a yellow \"switch failed\" note for one minute instead of a red badge that stayed until restart; red only when no camera works at all"
   },
   {
@@ -174,7 +183,7 @@
    "file": "webcam_bewegung_1_9_0.py",
    "url": "",
    "sha256": "325fe281ea90effd506c6b751a34fdc7d7e7cceeac599058e4930fe193342dbe",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:47",
    "notes": "first version on GitHub (updates from github.com/<user>/motionwatch); older program files are recognised by their real version number in the update list"
   },
   {
@@ -182,7 +191,7 @@
    "file": "webcam_bewegung_1_8_9.py",
    "url": "",
    "sha256": "6d1fc5ad40f1e119266c4a1c5dae03b2514f637cf36425160b4a83cdc09da2e7",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "MANUAL on the web page (tab \"Manual\", /help): quick start, all functions, tips & tricks, troubleshooting, setup; search, table of contents, printable, German / English; button \"Manual\" in the desktop window"
   },
   {
@@ -190,7 +199,7 @@
    "file": "webcam_bewegung_1_8_8.py",
    "url": "",
    "sha256": "858fd800aea76972e1369e1cc96874d12802495b5cc0455d73f4f3603246010f",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "header tidied up: status first (armed, persons, recording), then what is switched on (camping, power saving, timelapse, lights, thermal camera, patrol, own Wi-Fi, schedule, relays, microphone), then warnings, then CPU / FPS; things in their normal state (no rain, calm wind, light ok, source connected ...) are not shown any more"
   },
   {
@@ -198,7 +207,7 @@
    "file": "webcam_bewegung_1_8_7.py",
    "url": "",
    "sha256": "c2f246dd465e914f707819e7ca1e96a7b78d3e5b1f4949eb8d40692e7c75a11b",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "UPDATES: choose a version (newer or older) and switch with one tap; source = versions.json on the internet (e.g. GitHub) or a folder (USB stick); checked before it starts (checksum, Python, version); older versions stay for going back"
   },
   {
@@ -206,7 +215,7 @@
    "file": "webcam_bewegung_1_8_6.py",
    "url": "",
    "sha256": "1ab813719cd7a01283f482bd46017b687148fcbc4fb44f09f3319773306f30df",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "Bluetooth loudspeaker also on the \"Cameras\" page (search, connect, test sound); the version stands next to the name at the top left (all pages and the window)"
   },
   {
@@ -214,7 +223,7 @@
    "file": "webcam_bewegung_1_8_5.py",
    "url": "",
    "sha256": "8bb8dafbf1f2eb1d300aacf6c8fb3917357ab39bfbeb5ce0bf8d3be3296d46e4",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "started by hand while the autostart copy (maybe an older version) runs: the copy is stopped and this program takes over its web page (before, the page silently stayed the old one); the version is shown on the page; pages are never cached"
   },
   {
@@ -222,7 +231,7 @@
    "file": "webcam_bewegung_1_8_4.py",
    "url": "",
    "sha256": "324c6a9d8b2fb81e5331edebc60d6fd230c43b37c92daee6e85c3b8eebaea8d6",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "BLUETOOTH loudspeaker: search, pair + connect from the page / window, used for siren, test sound and talking; reconnects by itself when the speaker comes back"
   },
   {
@@ -230,7 +239,7 @@
    "file": "webcam_bewegung_1_8_3.py",
    "url": "",
    "sha256": "d96963ed097cac946367a5ca9978cbe58c0643befa1459a42b8bf8d8c40b81ee",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "settings tidied up: 9 groups (new: \"Light & sound\"), inside a group every topic opens / closes the same way (the first one is open), fine-tuning at the end under its own line, power saving has its own topic; web page and window alike"
   },
   {
@@ -238,7 +247,7 @@
    "file": "webcam_bewegung_1_8_2.py",
    "url": "",
    "sha256": "2d027e9595514ab25dbb9b28981e0553abe2b305d34faceef938a0cafa01a66c",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "under-voltage warning (power bank / cable, Pi 5 shows the input voltage); memory card: free space shown, push message and the oldest recordings are deleted when it gets full; watchdog (autostart restarts a hanging program, --allow-wifi switches the hardware watchdog on); settings export / import; web password can be set on the page / in the window (asked at the first visit, stored as a hash)"
   },
   {
@@ -246,7 +255,7 @@
    "file": "webcam_bewegung_1_8_1.py",
    "url": "",
    "sha256": "77df4b6aa30aad6baa5a197e16045a3fce03b3eca21835b2f2ccf53c8d0429fd",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "POWER SAVING mode: while all is quiet only a few pictures per second (camera itself slower), full speed at once at any movement, noise, alarm, recording, manual control or while somebody watches; part of the camping profile, schedulable"
   },
   {
@@ -254,7 +263,7 @@
    "file": "webcam_bewegung_1_8_0.py",
    "url": "",
    "sha256": "40d7fec75c09b32da8ee80422190491b88f26945931c5f03bfe2d7715ee0313c",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "hardware of the 3D-printed pan/tilt head: servos on a PCA9685 (I2C, address selectable, no jitter on the Pi 5), pan / tilt limits in degrees; LIGHTS white + infrared (PCA9685 channel or GPIO, Off / On / Auto: at an alarm or the whole night by sunset); grey picture at night (NoIR camera); Waveshare Thermal-90 (SPI, pysenxor) as thermal camera with zoom / shift to match the camera picture; the noise alarm ignores the servo motors; push message when the Pi gets too hot"
   },
   {
@@ -262,7 +271,7 @@
    "file": "webcam_bewegung_1_7_7.py",
    "url": "",
    "sha256": "b650e9cbdd9262e2c8836cbbe5621445c408d842376ee9bc5195c4186b0dbe8e",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "TALK from the phone through the loudspeaker of the Pi (hold the button); a second, secure page (https, port + 1) starts by itself, because phones only allow their microphone on https pages"
   },
   {
@@ -270,7 +279,7 @@
    "file": "webcam_bewegung_1_7_6.py",
    "url": "",
    "sha256": "5086a9c092c50d2e83183f9b9d9da25c5cb5c6d9d51c2d43f8b9c1cc5704b938",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "POWER: shut down / restart the Pi from the page and the window (recording is finished first, settings saved). AUDIO: choose microphone + loudspeaker; noise alarm (louder than the background, push + browser + relay trigger \"noise\" + recording), live listening in the browser, sound in the recordings, siren / own sounds on the Pi at an alarm"
   },
   {
@@ -278,7 +287,7 @@
    "file": "webcam_bewegung_1_7_5.py",
    "url": "",
    "sha256": "dbdc1e18fb96571f027d94117448703c18e4955fdfcd251095fe31f2f3089c16",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "own texts for the push messages (title + text for person, pre-alarm, thermal alarm, device name) with placeholders {name} {time} {date} {count} {camera} {link}; umlauts / emoji work with ntfy (RFC 2047)"
   },
   {
@@ -286,7 +295,7 @@
    "file": "webcam_bewegung_1_7_4.py",
    "url": "",
    "sha256": "3d640ce69878c11206d507ff2cf67ca947372bb3bfd2baf2049bcbe821e321d2",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "the desktop window uses the same 8 groups as the web page"
   },
   {
@@ -294,7 +303,7 @@
    "file": "webcam_bewegung_1_7_3.py",
    "url": "",
    "sha256": "983e92aab04c071efd3055f55807f6159dd6f171af3ce258f394fd39e4366e2d",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "web page: the 26 menus are now 8 groups (Alarm & camping, Notifications, Detection, Camera & servos, Recordings & timelapse, Thermal camera, Relays & schedule, System & network); fine tuning under \"Advanced\"; more compact"
   },
   {
@@ -302,7 +311,7 @@
    "file": "webcam_bewegung_1_7_2.py",
    "url": "",
    "sha256": "725d3f94a790f90e16cb77a40d3e907cf52580a8d1acf73a26abf8b3a06a1966",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "NETWORK AUTOMATIC: known networks first (phone hotspot = internet + push), otherwise the own Wi-Fi; when the phone hotspot disappears the own Wi-Fi comes on, and every 10 min (only if no device is connected) it looks again"
   },
   {
@@ -310,7 +319,7 @@
    "file": "webcam_bewegung_1_7_1.py",
    "url": "",
    "sha256": "cbf8640a847db7aa9b50f9bb2c6fcb0ddcf053761738e66f47b4dd32b31403c2",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "AUTOSTART switch: on = at boot Motion Watch starts by itself (systemd, no screen needed) and switches the own Wi-Fi on; off = nothing starts at boot and the Pi joins its known networks"
   },
   {
@@ -318,7 +327,7 @@
    "file": "webcam_bewegung_1_7_0.py",
    "url": "",
    "sha256": "1e1f94a381c9d763906ca733fc346474631c0cd062a75d02c7d482e12a0aaba0",
-   "date": "2026-10-23",
+   "date": "2026-10-23 08:46",
    "notes": "CAMPING - own Wi-Fi of the Pi (hotspot, works without mobile network) with one switch; ARMED / DISARMED with countdown (alarms, push, browser sound, relays, recordings only while armed); THERMAL ALARM (warm body moving in the zones: relay trigger, push, sound, recording); the clock of the Pi is taken from the phone when there is no internet time; CAMPING PROFILE: own Wi-Fi + camera stays still + alarms on + armed after the countdown (switching off restores)"
   }
  ]
