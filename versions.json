@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.1.2",
+   "file": "webcam_bewegung_2_1_2.py",
+   "url": "",
+   "sha256": "1b241ed5c325e52264c32ee6e88b2f9e78117e964cc14de7e79ba114c3e0a399",
+   "date": "2026-10-23",
+   "notes": "phone: the page could become wider than the screen (zoomed out, header only half as wide) when a list held a long entry - now every list / field / log line stays inside the screen width"
+  },
+  {
    "version": "2.1.1",
    "file": "webcam_bewegung_2_1_1.py",
    "url": "",
