@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.0.10",
+   "file": "webcam_bewegung_2_0_10.py",
+   "url": "",
+   "sha256": "2f001d1eb8a44c4bbf0f91d30de15d36cacc349540b1a351955cafb55162967c",
+   "date": "2026-10-23",
+   "notes": "small 🎧 button next to the stick / buttons (row \"Control\") switches listening to the microphone on and off; green and pulsing while listening"
+  },
+  {
    "version": "2.0.9",
    "file": "webcam_bewegung_2_0_9.py",
    "url": "",
