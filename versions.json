@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.1.3",
+   "file": "webcam_bewegung_2_1_3.py",
+   "url": "",
+   "sha256": "49f5738535290d090b5b9ab6abb0c0e7e7496e63bcf3d510a0d25f87f627ebef",
+   "date": "2026-10-23",
+   "notes": "the event log card shows only the important entries (alarms, persons, animals, recordings, arming, problems, remote access, restarts ...) with small icons; the log page has the filter \"Important only\"; everything stays in the file"
+  },
+  {
    "version": "2.1.2",
    "file": "webcam_bewegung_2_1_2.py",
    "url": "",
