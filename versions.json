@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 00:31",
+ "generated": "2026-10-24 00:37",
  "versions": [
+  {
+   "version": "2.2.8",
+   "file": "webcam_bewegung_2_2_8.py",
+   "url": "",
+   "sha256": "cd95c1f66a536682a0f49c11a7921c2d36de75258d0fb8ace2eebd36c5633c28",
+   "date": "2026-10-24 00:37",
+   "notes": "no more zooming in when a text field is tapped on iPad / iPhone (fields 16 px on touch screens); the two scrolling columns on the tablet can no longer be pushed sideways."
+  },
   {
    "version": "2.2.7",
    "file": "webcam_bewegung_2_2_7.py",
