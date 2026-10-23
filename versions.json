@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-23 23:12",
+ "generated": "2026-10-23 23:18",
  "versions": [
+  {
+   "version": "2.2.2",
+   "file": "webcam_bewegung_2_2_2.py",
+   "url": "",
+   "sha256": "ee72dda48be5af59988930f6249d9cd199f632d07db2565c423a4b269a35c2d8",
+   "date": "2026-10-23 23:18",
+   "notes": "statistics tiles under the picture (FPS, persons now, objects, detections) and the object list removed - web page and window (the values are still in the header and the event log)"
+  },
   {
    "version": "2.2.1",
    "file": "webcam_bewegung_2_2_1.py",
