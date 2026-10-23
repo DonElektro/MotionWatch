@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-23 22:36",
+ "generated": "2026-10-23 22:43",
  "versions": [
+  {
+   "version": "2.1.5",
+   "file": "webcam_bewegung_2_1_5.py",
+   "url": "",
+   "sha256": "d84d1ef9a07bf76aef65c9b3ec32b35617fac5b6d2cd3499fab1475fed4076ac",
+   "date": "2026-10-23 22:43",
+   "notes": "event log card: at least 10 lines (important ones, filled up pale with the newest others), also right after a restart (taken from the log file); log page: \"← Back to the live picture\"; automatic update check (2 min after the start, then every 3 hours): bar \"New version … – Update now\" on the page, badge in the window, one push message"
+  },
   {
    "version": "2.1.4",
    "file": "webcam_bewegung_2_1_4.py",
