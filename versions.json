@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.1.1",
+   "file": "webcam_bewegung_2_1_1.py",
+   "url": "",
+   "sha256": "680e210884a81499a3e1c62b0ee9d117ffa67b585f5bb18998ee50ca7a96d6eb",
+   "date": "2026-10-23",
+   "notes": "event log: status line every 15 min (CPU, temperature, FPS, camera, Wi-Fi, internet, memory, voltage, battery), daily archive (logs/motionwatch_YYYY-MM-DD.log.gz, kept 60 days, also when a file grows over 20 MB), new page /log (\"Whole log & archive\": filter by kind, search, 300 / 1000 / 5000 lines, download every day); the card shows 40 entries"
+  },
+  {
    "version": "2.1.0",
    "file": "webcam_bewegung_2_1_0.py",
    "url": "",
