@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en"><head><script>try{localStorage.getItem("mw-lang")||localStorage.setItem("mw-lang","de")}catch(e){}
+(function(){var S={};try{for(var k in S)localStorage.setItem(k,S[k]);}catch(e){}var P={},T=null,L=["mw-hdr", "mw-listen-vol", "mw-sound"];function send(){var b=P;P={};T=null;try{fetch('/api/ui',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({set:b}),keepalive:true}).catch(function(){});}catch(e){}}try{var o=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){o.call(this,k,v);try{if(this===window.localStorage&&/^mw-/.test(k)&&L.indexOf(k)<0&&S[k]!==String(v)){S[k]=String(v);P[k]=String(v);clearTimeout(T);T=setTimeout(send,700);}}catch(e){}};}catch(e){}addEventListener('pagehide',function(){if(T){clearTimeout(T);send();}});})();</script><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Motion Watch - Manual</title>
+<style>
+
+:root{--bg:#0a0e14;--panel:#111822;--panel2:#151e2b;--line:#1f2b3a;--txt:#e8eef5;--mut:#8a9bb0;--acc:#3b8cff;--acc2:#6aa9ff;--red:#ff4d4d;--grn:#3fcf6b;--yel:#e0a526;--blu:#5aa9ff;--org:#f59a4a;--pur:#b794f6;--field:#0c121a;--btn2:#1a2433;--hdr:rgba(10,14,20,.8);--glow:rgba(59,140,255,.13);--shadow:0 1px 2px rgba(0,0,0,.45),0 10px 28px rgba(0,0,0,.22);--r:14px}
+body.light{--bg:#eef2f7;--panel:#ffffff;--panel2:#f8fafc;--line:#d7dfea;--txt:#18212d;--mut:#5a6b80;--acc:#1f6feb;--acc2:#4d8ff5;--red:#d1242f;--grn:#1a8f3c;--yel:#9a6700;--blu:#0969da;--org:#bc4c00;--pur:#8250df;--field:#f2f5fa;--btn2:#e3e9f2;--hdr:rgba(238,242,247,.85);--glow:rgba(31,111,235,.10);--shadow:0 1px 2px rgba(20,30,50,.08),0 10px 28px rgba(20,30,50,.08)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+body{margin:0;color:var(--txt);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;
+  background:radial-gradient(1100px 480px at 75% -8%,var(--glow),transparent 70%),var(--bg);background-attachment:fixed}
+header{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 16px;
+  background:var(--hdr);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+header h1{font-size:17px;margin:0 8px 0 0;font-weight:700;letter-spacing:.2px;display:flex;align-items:center;gap:9px}
+header h1::before{content:"";width:11px;height:11px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px var(--glow),0 0 14px var(--acc)}
+.nav{display:flex;gap:2px;background:var(--field);border:1px solid var(--line);border-radius:11px;padding:3px;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{padding:5px 13px;border-radius:8px;color:var(--mut);text-decoration:none;font-weight:600;font-size:13px;white-space:nowrap}
+.nav a:hover{color:var(--txt)}.nav a.on{background:var(--acc);color:#fff;box-shadow:0 2px 10px var(--glow)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border:1px solid var(--line);border-radius:99px;font-size:12px;font-weight:600;color:var(--mut);background:var(--field);white-space:nowrap}
+.badge.red{color:var(--red);border-color:var(--red)}.badge.blu{color:var(--blu);border-color:var(--blu)}
+.badge.yel{color:var(--yel);border-color:var(--yel)}.badge.grn{color:var(--grn);border-color:var(--grn)}
+.badge.org{color:var(--org);border-color:var(--org)}
+.hdr-ctl{margin-left:auto;display:flex;gap:6px;align-items:center}
+.hdr-ctl button,.hdr-ctl .btn{padding:5px 11px;font-size:13px}
+button,.btn{background:var(--acc);color:#fff;border:0;border-radius:9px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;text-align:center;display:inline-block;transition:filter .12s,transform .06s,background .15s}
+button:hover,.btn:hover{filter:brightness(1.1)}
+button:active,.btn:active{transform:translateY(1px);filter:brightness(1.2)}
+button:focus-visible,.btn:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+button.sec,.btn.sec{background:var(--btn2);color:var(--txt);border:1px solid var(--line)}
+button.red{background:var(--red)}
+button:disabled{opacity:.5;cursor:default;filter:none;transform:none}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)}
+details.card>summary{margin:0;font-size:11px;letter-spacing:.09em;color:var(--mut);font-weight:700;text-transform:uppercase;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;user-select:none}
+details.card>summary::after{content:"▾";font-size:13px;transition:transform .15s}
+details.card:not([open])>summary::after{transform:rotate(-90deg)}
+details.card[open]>summary{margin-bottom:10px}
+details.card>summary::-webkit-details-marker{display:none}
+select,input[type=text],input[type=number],input[type=date],input[type=time],input[type=password]{background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font:inherit;color-scheme:dark;max-width:100%}
+body.light select,body.light input[type=date],body.light input[type=time]{color-scheme:light}
+select:focus,input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--glow)}
+input[type=range]{width:100%;accent-color:var(--acc);margin:4px 0 0}
+input[type=checkbox],input[type=radio]{accent-color:var(--acc)}
+input.sw{appearance:none;-webkit-appearance:none;width:42px;height:24px;border-radius:12px;background:#2a3542;position:relative;cursor:pointer;flex:none;outline:none;transition:background .15s;margin:0;border:0;padding:0}
+input.sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+input.sw:checked{background:var(--acc)}input.sw:checked::after{left:21px}
+body.light input.sw{background:#c4ccd8}body.light input.sw:checked{background:var(--acc)}
+.mut{color:var(--mut);font-size:12px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.err{color:var(--red);font-size:12px;min-height:16px}
+.vh{display:none!important}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.btns>*{flex:1 1 auto}
+h1 .ver{font-size:.62em;font-weight:600;color:var(--mut);margin-left:4px;letter-spacing:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border-radius:0;padding:5px 11px;font-size:12px;background:transparent;color:var(--mut)}
+.seg button.sel-off{background:var(--mut);color:#fff}.seg button.sel-on{background:var(--grn);color:#fff}.seg button.sel-auto{background:var(--acc);color:#fff}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:9px 16px;border-radius:10px;box-shadow:var(--shadow);z-index:90;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+#hdr-show{display:none;position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:70;padding:1px 22px 3px;opacity:.85;
+  border-radius:0 0 10px 10px;border-top:0;box-shadow:var(--shadow);font-size:12px;line-height:1.2}
+body.hdrhidden header{display:none}body.hdrhidden #hdr-show{display:block}body.videoonly #hdr-show{display:none!important}
+body.hdrhidden .sndpop{top:44px}
+.sndbtn{position:relative}.sndbtn.on{background:var(--acc);color:#fff;border-color:transparent}
+.sndbtn.warn::after{content:"";position:absolute;top:3px;right:3px;width:8px;height:8px;border-radius:50%;background:var(--yel)}
+.sndpop{position:fixed;top:58px;right:12px;z-index:80;width:300px;max-width:calc(100vw - 24px)}
+.sndpop .row{margin:7px 0}.sndpop .sndhead{font-size:11px;letter-spacing:.09em;color:var(--mut);font-weight:700;text-transform:uppercase;margin-bottom:6px}
+@keyframes alarmflash{0%,60%{box-shadow:inset 0 0 0 4px var(--red)}100%{box-shadow:inset 0 0 0 0 transparent}}
+body.alarmflash{animation:alarmflash 1.6s ease-out 2}
+@media(max-width:430px){.nav a{padding:5px 7px;font-size:12.5px}}
+@media(max-width:700px){header{padding:8px 10px;gap:5px 6px}.nav a{padding:5px 9px}
+  header h1{font-size:15px}.badge{font-size:11px;padding:2px 8px}.hdr-ctl button,.hdr-ctl .btn{padding:4px 9px;font-size:12px}}
+
+main{padding:16px;max-width:900px;margin:0 auto}
+.hsearch{display:flex;gap:8px;margin-bottom:12px}.hsearch input{flex:1;font-size:16px}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.toc a{background:var(--field);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;color:var(--txt);text-decoration:none;white-space:nowrap}
+.toc a:hover{border-color:var(--acc)}
+details.hsec{margin-bottom:10px}
+details.hsec>summary{font-size:15px;letter-spacing:.02em;text-transform:none}
+details.hsec>summary .ic{margin-right:8px}
+.hsec h2{display:none}
+.hsec h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:14px 0 4px}
+.hsec li{margin:5px 0;line-height:1.45}.hsec p{line-height:1.5}
+.hsec ol,.hsec ul{padding-left:20px;margin:6px 0}
+.hsec table{border-collapse:collapse;width:100%;margin:6px 0}.hsec td{border-top:1px solid var(--line);padding:6px 4px;vertical-align:top}
+.hsec td:first-child{white-space:nowrap;padding-right:12px;font-weight:600}
+.hsec dt{font-weight:700;margin-top:10px}.hsec dd{margin:3px 0 0 0;color:var(--mut);line-height:1.45}
+.hsec code,.hsec pre{background:var(--field);border:1px solid var(--line);border-radius:6px;padding:1px 5px;font-size:12.5px;overflow-wrap:anywhere}
+.hsec pre{padding:8px;white-space:pre-wrap;overflow-x:auto}
+.tip{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.45);border-radius:10px;padding:8px 11px;margin:10px 0;line-height:1.45}
+details.hsec.tips{border-color:var(--acc)}
+.hsec.tips ul{list-style:none;padding-left:0}.hsec.tips li{padding:6px 0;border-bottom:1px solid var(--line)}
+mark{background:#d2992299;color:inherit;border-radius:3px}
+.nohit{display:none}
+.lang-de [lang=en],.lang-en [lang=de]{display:none}
+@media(max-width:520px){.hsec td:first-child{white-space:normal}}
+</style></head><body>
+<header>
+  <h1>Motion Watch <span class="ver">1.9.0</span></h1>
+  <nav class="nav"><a href="/" data-i18n="Live">Live</a><a href="/cams" data-i18n="Cameras">Cameras</a><a href="/recordings" data-i18n="Recordings">Recordings</a><a href="/zones" data-i18n="Zones">Zones</a><a href="/help" class="on" data-i18n="Manual">Manual</a></nav>
+  <span class="hdr-ctl">
+    <button class="sec" onclick="window.print()" title="Print">🖨</button>
+    <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
+    <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
+  </span>
+</header>
+<main>
+  <div class="hsearch"><input type="search" id="q" placeholder="Search …" autocomplete="off"></div>
+  <div class="toc" id="toc"></div>
+  <div id="hbody">
+    <div lang="de"><section id="start" data-icon="🚀"><h2>Schnellstart: die ersten 10 Minuten</h2>
+<ol>
+<li><b>Strom anschliessen.</b> Nach etwa einer Minute ist Motion Watch bereit (mit Autostart startet es von selbst).</li>
+<li><b>Mit dem Handy verbinden.</b> Entweder ist der Pi im selben WLAN wie das Handy (z. B. Handy-Hotspot), oder du verbindest das Handy mit dem <b>eigenen WLAN des Pi</b> (Name «MotionWatch», das Passwort steht unter <i>Alarm &amp; Camping → Schalter</i>).</li>
+<li><b>Seite öffnen:</b> im eigenen WLAN <code>http://10.42.0.1:5000</code>, sonst <code>http://&lt;Adresse-des-Pi&gt;:5000</code>. Die Adresse kommt auch als Push-Nachricht, sobald der Pi ein Netz findet.</li>
+<li><b>Passwort festlegen.</b> Beim ersten Besuch fragt die Seite danach. Danach fragt der Browser einmal (Benutzername beliebig).</li>
+<li><b>Push-Nachrichten einrichten</b> (<i>Benachrichtigungen</i>) und mit «Test-Nachricht senden» prüfen.</li>
+<li><b>Zonen zeichnen</b> (Reiter <i>Zonen</i>): Bereiche, die ignoriert werden sollen (Strasse, Bäume im Wind).</li>
+<li><b>Scharf schalten:</b> 🛡 oben antippen oder <i>Alarm &amp; Camping → Schalter → Scharf schalten</i>. Der Countdown gibt dir Zeit, den Bereich zu verlassen.</li>
+</ol>
+<div class="tip">💡 <b>Tipp:</b> Lege die Seite als Lesezeichen oder als Symbol auf den Startbildschirm des Handys («Zum Home-Bildschirm»). Dann ist sie mit einem Tipp offen.</div>
+</section>
+
+<section id="live" data-icon="📺"><h2>Die Live-Seite</h2>
+<h3>Kopfzeile</h3>
+<p>Oben links stehen Name und <b>Version</b>. Daneben zeigen kleine Anzeigen nur, was gerade wichtig ist. Was im Normalzustand ist (kein Regen, Licht ok …), wird nicht angezeigt.</p>
+<table><tr><td>🛡 Scharf / Unscharf</td><td>Alarme an oder aus. Antippen schaltet um.</td></tr>
+<tr><td>Personen · ● Aufnahme</td><td>Was die Kamera jetzt sieht, ob gerade aufgenommen wird.</td></tr>
+<tr><td>⛺ 🔋 ⏱ 💡 🌡 🔄 📡</td><td>Eingeschaltete Funktionen: Camping, Stromsparen, Zeitraffer, Licht, Wärmebild, Patrouille, eigenes WLAN.</td></tr>
+<tr><td>⚠ ⚡ 💾</td><td>Warnungen: kein Passwort, Unterspannung, Speicher fast voll.</td></tr>
+<tr><td>CPU · FPS</td><td>Auslastung und Temperatur des Pi, Bilder pro Sekunde.</td></tr></table>
+<p>Rechts: 🔔 Alarmton im Browser, ☰ Ansicht (Anzeigen ein-/ausblenden), ▶ Einstellungen ein/aus, ⛶ Vollbild, ☀ hell/dunkel, DE/EN, ▲ Kopfzeile ausblenden.</p>
+<h3>Bild und Steuerung</h3>
+<ul><li><b>Stick:</b> mit dem Finger ziehen – je weiter, desto schneller dreht die Kamera. Der kleine Ring zeigt, wo die Kamera gerade hinschaut. «Mitte» fährt in die Mitte.</li>
+<li><b>Tasten:</b> alternativ zum Stick (umschalten mit «Stick / Tasten»).</li>
+<li>Von Hand steuern pausiert Verfolgung und Patrouille für ein paar Sekunden.</li>
+<li><b>Licht:</b> Weiss und Infrarot direkt Aus / Ein / Auto.</li>
+<li><b>Relais:</b> jedes Relais Aus / Ein / Auto mit Auslöser.</li>
+<li><b>🎧 Mithören</b> und <b>🎙 Gedrückt halten zum Sprechen</b> erscheinen, sobald Mikrofon bzw. Lautsprecher gewählt sind.</li>
+<li>Doppelklick aufs Bild: nur noch Video, nochmals doppelklicken: zurück.</li></ul>
+</section>
+
+<section id="alarm" data-icon="🛡"><h2>Alarm &amp; Camping</h2>
+<ul><li><b>Scharf / Unscharf:</b> nur scharf gibt es Alarme, Push-Nachrichten, Sirene und Aufnahmen. Der Countdown (einstellbar) gibt dir Zeit wegzugehen. «Sofort scharf» überspringt ihn.</li>
+<li><b>Camping-Profil:</b> ein Schalter für alles Nötige: eigenes WLAN an, Kamera bleibt stehen (keine Patrouille/Verfolgung/Zeitraffer), Alarme, Aufnahmen und Stromsparen an, nach dem Countdown scharf. Ausschalten stellt deine vorherigen Einstellungen wieder her.</li>
+<li><b>Eigenes WLAN (Hotspot):</b> der Pi macht sein eigenes WLAN – funktioniert ohne Handynetz. Name und Passwort unter <i>Schutz &amp; Netzwerk</i>.</li>
+<li><b>Netzwerk:</b> «Automatisch» sucht zuerst bekannte Netze (z. B. den Handy-Hotspot, dann gibt es Internet und Push-Nachrichten) und schaltet sonst das eigene WLAN ein.</li>
+<li><b>Autostart:</b> Motion Watch startet beim Einschalten von selbst, ohne Bildschirm.</li>
+<li><b>Stromsparen:</b> wenige Bilder pro Sekunde, solange alles ruhig ist – bei der ersten Bewegung, einem Geräusch oder wenn jemand zuschaut sofort volle Geschwindigkeit.</li>
+<li><b>Uhrzeit vom Handy:</b> ohne Internet holt sich der Pi die Uhrzeit vom Handy, damit Aufnahmen die richtige Zeit haben.</li></ul>
+</section>
+
+<section id="notify" data-icon="🔔"><h2>Benachrichtigungen</h2>
+<ul><li><b>ntfy</b> (empfohlen): App installieren, ein Thema abonnieren, die Adresse (z. B. <code>https://ntfy-me.com/&lt;dein-thema&gt;</code>) bei «Webhook / ntfy URL» eintragen, Typ «ntfy» wählen. Wichtig: in der App muss derselbe Server eingestellt sein wie in der Adresse.</li>
+<li><b>Telegram</b> oder <b>Webhook</b> (z. B. Home Assistant) gehen auch.</li>
+<li><b>Voralarm:</b> kurze Nachricht mit kleinem Bild schon bei der ersten Bewegung, bevor eine Person bestätigt ist.</li>
+<li><b>Nachrichtentexte:</b> eigene Titel und Texte, mit Platzhaltern {name} {time} {date} {count} {camera} {link} {db}. Leer = Standardtext.</li>
+<li><b>«Adresse dieser Seite für Links»:</b> dann öffnet ein Tipp auf die Nachricht direkt die Seite.</li>
+<li><b>🔔 Alarmton im Browser:</b> oben die Glocke antippen und «Ton an». Die Seite muss offen bleiben (auch im Hintergrund).</li></ul>
+<div class="tip">💡 <b>Tipp:</b> Nach jeder Änderung «Test-Nachricht senden». Kommt nichts, steht der Grund unter «Status» und im Ereignisprotokoll.</div>
+</section>
+
+<section id="detect" data-icon="🎯"><h2>Erkennung</h2>
+<ul><li><b>Empfindlichkeit</b> und <b>Min. Objektgrösse</b> sind die wichtigsten Regler gegen Fehlalarme.</li>
+<li><b>KI-Erkennung</b> erkennt Personen, Tiere und Fahrzeuge. «Bewegungs-Personen brauchen KI-Bestätigung» = weniger Fehlalarme, aber etwas langsamer.</li>
+<li><b>Zonen</b> (Reiter <i>Zonen</i>): «Ignorieren» für Bäume, Strasse, Zeltwand; «Nur hier» wenn nur ein Bereich zählen soll.</li>
+<li>Regen, Wind, Schatten und Schwachlicht werden automatisch erkannt und ausgeglichen (Feineinstellungen).</li>
+<li><b>Auto-Abstimmung</b> lernt die Szene selbst; «Neu kalibrieren», wenn sich die Umgebung stark geändert hat (Szene dabei leer lassen).</li></ul>
+</section>
+
+<section id="camera" data-icon="📷"><h2>Kamera &amp; Servos</h2>
+<ul><li><b>Grenzen:</b> wie weit die Kamera schwenken/neigen darf (Grad aus der Mitte) – schützt Kabel und Gehäuse.</li>
+<li><b>Person verfolgen:</b> die Kamera dreht einer erkannten Person nach.</li>
+<li><b>Patrouille:</b> die Kamera fährt zwischen Wegpunkten hin und her (Wegpunkt = aktuelle Position mit «+ Wegpunkt»).</li>
+<li><b>Videoquelle:</b> Pi-Kamera, USB- oder Netzwerkkamera. Weitere Kameras im Reiter <i>Kameras</i>.</li>
+<li><b>Servo-Treiber</b> (Feineinstellungen): PCA9685 und Adresse, Kanäle.</li></ul>
+</section>
+
+<section id="thermal" data-icon="🌡"><h2>Wärmebild</h2>
+<ul><li>Wärmebildkamera wählen (Thermal-90 oder USB), «Wärmebild überlagern» einschalten.</li>
+<li><b>Ausrichten:</b> mit «Zoom» und «Verschieben» so einstellen, dass eine warme Person im Wärmebild genau auf der Person im Kamerabild liegt.</li>
+<li><b>Wärme-Alarm:</b> warmer Körper in der Zone. «Nur bewegte» ignoriert warme Steine und Motoren.</li>
+<li>Der Status zeigt die höchste gemessene Temperatur.</li></ul>
+</section>
+
+<section id="lightsound" data-icon="💡"><h2>Licht &amp; Ton</h2>
+<h3>Licht</h3>
+<ul><li>Weiss und Infrarot: Aus / Ein / Auto. «Auto» = bei Alarm nur nachts, bei Alarm Tag und Nacht, oder die ganze Nacht (nach Sonnenuntergang, berechnet aus Breiten-/Längengrad unter <i>Einrichtung</i>).</li>
+<li><b>Bild:</b> «nachts grau» ist ideal mit der NoIR-Kamera.</li></ul>
+<h3>Mikrofon</h3>
+<ul><li>Gerät wählen, Pegel beobachten. <b>Geräusch-Alarm</b>: lauter als der Hintergrund um X dB, mindestens Y Sekunden.</li>
+<li><b>🎧 Mithören</b>: Ton live auf dem Handy, Lautstärke pro Gerät.</li>
+<li><b>Ton in den Aufnahmen</b>: Videos werden mit Ton gespeichert.</li></ul>
+<h3>Lautsprecher</h3>
+<ul><li>Eingebaut (USB) oder <b>Bluetooth</b>: «Bluetooth-Lautsprecher suchen» (Lautsprecher im Kopplungsmodus), dann «Verbinden». Auch im Reiter <i>Kameras</i>.</li>
+<li><b>Sirene bei Alarm</b> (nur wenn scharf), Ton, Lautstärke, Dauer. Eigene Töne (.wav/.mp3) in <code>~/.config/motionwatch/sounds</code>.</li>
+<li><b>🎙 Sprechen</b>: Knopf gedrückt halten. Braucht die sichere Seite <code>https://…:5001</code> (Handys erlauben das Mikrofon nur dort).</li></ul>
+</section>
+
+<section id="rec" data-icon="🎬"><h2>Aufnahmen &amp; Zeitraffer</h2>
+<ul><li>Bei Alarm werden Videos (mit Vorlauf und Ton) und Schnappschüsse gespeichert.</li>
+<li>Reiter <i>Aufzeichnungen</i>: ansehen, filtern, ⭐ Favoriten (werden nie automatisch gelöscht), mehrere als ZIP herunterladen, Statistik pro Tag.</li>
+<li>Die ältesten Aufnahmen werden gelöscht, wenn der Ordner zu gross oder die Speicherkarte fast voll ist.</li>
+<li><b>Zeitraffer:</b> alle N Minuten ein Foto von einer festen Position, daraus ein Video («Video erstellen»). Ein Alarm hat immer Vorrang.</li></ul>
+</section>
+
+<section id="relay" data-icon="⚡"><h2>Relais &amp; Zeitplan</h2>
+<ul><li><b>Relais:</b> Aus / Ein / Auto. Auto schaltet ein, solange der Auslöser zutrifft (Person, Bewegung, Voralarm, Wärme, Geräusch, Tierart …), plus Haltezeit.</li>
+<li><b>Zeitplan:</b> schaltet Funktionen zu bestimmten Zeiten ein oder aus, z. B. nachts scharf, tagsüber Stromsparen. Auch «bei Sonnenuntergang» und Ausnahmedaten.</li></ul>
+</section>
+
+<section id="system" data-icon="⚙"><h2>System &amp; Netz</h2>
+<ul><li><b>System:</b> CPU, Temperatur, Stromversorgung (Spannung, Unterspannung), freier Speicher, Version.</li>
+<li><b>⏻ Pi ausschalten / ↻ neu starten:</b> laufende Aufnahme wird vorher fertig gespeichert. Strom erst trennen, wenn die grüne LED dunkel bleibt.</li>
+<li><b>🔒 Web-Passwort</b>, <b>⬇ Einstellungen sichern / ⬆ laden</b> (die Datei enthält auch deine Zugangsdaten – privat aufbewahren).</li>
+<li><b>WLAN:</b> Netze suchen und verbinden, gespeicherte Netze.</li>
+<li><b>Web-Stream:</b> Bildqualität und Breite – kleiner = weniger Daten über den Handy-Hotspot.</li>
+<li><b>Einrichtung:</b> Standort (für Sonnenauf-/untergang), Anwesenheit, Warnungen (Temperatur, Speicher).</li>
+<li><b>Updates:</b> Quelle eintragen (Internet-Adresse einer versions.json oder ein Ordner/USB-Stick), «Nach Versionen suchen», Version wählen. Ältere Versionen bleiben für den Weg zurück.</li></ul>
+</section>
+
+<section id="window" data-icon="🖥"><h2>Desktop-Fenster auf dem Pi</h2>
+<table><tr><td>Doppelklick aufs Video</td><td>nur Video</td></tr><tr><td>F11 / Esc</td><td>Vollbild / zurück</td></tr>
+<tr><td>Strg+B</td><td>Einstellungsbereich ein/aus</td></tr><tr><td>Strg+T / Strg+L</td><td>hell/dunkel, Sprache</td></tr>
+<tr><td>Pfeiltasten / Pos1</td><td>Kamera bewegen / Mitte</td></tr><tr><td>Rechtsklick aufs Video</td><td>Felder ein-/ausblenden</td></tr></table>
+<p>Die Einstellungen sind gleich gegliedert wie auf der Webseite. Der Knopf «Anleitung» öffnet diese Seite.</p>
+</section>
+
+<section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>
+<ul>
+<li>🌙 <b>Vor der ersten Nacht testen:</b> scharf schalten, einmal durchs Bild laufen und prüfen: Push kommt an, Aufnahme ist da, Sirene/Licht reagieren.</li>
+<li>🌳 <b>Fehlalarme durch Äste:</b> Bäume und Büsche als «Ignorieren»-Zone zeichnen und die Mindestgrösse etwas erhöhen. Bei Wind hilft die automatische Wind-Erkennung.</li>
+<li>🐗 <b>Tiere vertreiben:</b> Sirene «bei Alarm» plus weisses Licht «bei Alarm, nur nachts» – das schreckt die meisten Tiere zuverlässig ab. Für die eigene Nachtruhe die Sirene kurz (5–10 s) einstellen.</li>
+<li>🔴 <b>Infrarot und Spiegelungen:</b> IR-Licht nicht durch eine Scheibe oder nahe an eine Zeltwand richten – das blendet die Kamera.</li>
+<li>🔇 <b>Stille Überwachung:</b> Sirene aus, nur Push-Nachrichten und Glocke im Browser – niemand am Platz wird geweckt.</li>
+<li>🔋 <b>Strom sparen:</b> Camping-Profil (enthält Stromsparen), Bildbreite im Web-Stream kleiner, Mithören nur kurz. Eine Powerbank mit 5 V / 3 A oder mehr verwenden; bei «Unterspannung» das Kabel oder die Powerbank wechseln.</li>
+<li>📶 <b>Wenig Datenvolumen:</b> Voralarm-Bild bleibt klein (640 px); Live-Bild nur öffnen, wenn nötig (der Pi sendet nur, wenn jemand zuschaut).</li>
+<li>🎤 <b>Mikrofon:</b> ein Stück Schaumstoff als Windschutz verhindert Fehlalarme bei Wind. Die Servos stören nicht – der Geräusch-Alarm pausiert, solange sie sich bewegen.</li>
+<li>🔊 <b>Bluetooth-Lautsprecher</b> schalten sich oft nach einiger Zeit selbst aus. Der Pi verbindet sie wieder, sobald sie an sind – für die Nacht einen Lautsprecher ohne Auto-Aus wählen.</li>
+<li>🧭 <b>Kamera ausrichten:</b> mit dem Stick die beste Position suchen und als Wegpunkt bzw. als Zeitraffer-Position übernehmen.</li>
+<li>🕒 <b>Falsche Uhrzeit</b> in den Aufnahmen: einmal die Seite mit dem Handy öffnen – der Pi übernimmt die Uhrzeit des Handys.</li>
+<li>💾 <b>Wichtige Aufnahmen</b> mit ⭐ markieren – sie werden nie automatisch gelöscht.</li>
+<li>🔁 <b>Neue Version ausprobieren</b> ohne Risiko: unter Updates jederzeit zur vorherigen Version zurückwechseln.</li>
+<li>📱 <b>Glocke im Browser</b> nur auf einem Gerät einschalten, das nachts offen bleibt – sonst klingelt es überall.</li>
+</ul></section>
+
+<section id="faq" data-icon="🛠"><h2>Probleme lösen</h2>
+<dl>
+<dt>Die Seite lässt sich nicht öffnen</dt><dd>Ist das Handy im richtigen WLAN (eigenes WLAN des Pi oder dasselbe Netz)? Adresse mit <code>:5000</code> am Ende? Im eigenen WLAN immer <code>http://10.42.0.1:5000</code>.</dd>
+<dt>Die Seite zeigt eine alte Version</dt><dd>Oben links steht die Version. Läuft noch eine alte Kopie (z. B. vom Autostart), das neue Programm einfach von Hand starten – es übernimmt. Danach Seite neu laden.</dd>
+<dt>Kein Bild</dt><dd>Unter <i>Kamera &amp; Servos → Videoquelle</i> «Nach Kameras suchen». Pi-Kamera: Flachbandkabel prüfen.</dd>
+<dt>Push-Nachrichten kommen nicht</dt><dd>«Test-Nachricht senden» und Status lesen. Bei ntfy: derselbe Server in App und Adresse. Ohne Internet (nur eigenes WLAN) können keine Push-Nachrichten verschickt werden – dann hilft die Glocke im Browser.</dd>
+<dt>Autostart startet nicht</dt><dd>Im Terminal: <code>systemctl --user status motionwatch</code>. Einmalig <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> ausführen (erlaubt den Start ohne Anmeldung).</dd>
+<dt>Viele Fehlalarme</dt><dd>Zonen zeichnen, Empfindlichkeit senken, Mindestgrösse erhöhen, «KI-Bestätigung» einschalten.</dd>
+<dt>Servos zittern oder fahren an den Anschlag</dt><dd>PCA9685 verwenden (Servo-Treiber), Grenzen in Grad verkleinern, eigene 5-V-Versorgung für die Servos.</dd>
+<dt>«Unterspannung»</dt><dd>Kürzeres/dickeres USB-C-Kabel oder stärkere Powerbank. Unterspannung kann Abstürze und kaputte Aufnahmen verursachen.</dd>
+<dt>Kein Ton über Bluetooth</dt><dd>Lautsprecher an und in Reichweite? «Verbinden» erneut tippen. Das Programm muss als normaler Benutzer laufen (nicht mit sudo).</dd>
+<dt>Sprechen geht nicht</dt><dd>Nur auf der sicheren Seite <code>https://…:5001</code>. Zertifikatswarnung einmal bestätigen und das Mikrofon erlauben.</dd>
+</dl></section>
+
+<section id="setup" data-icon="🧰"><h2>Einrichtung auf dem Raspberry Pi</h2>
+<pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils
+pip install opencv-python numpy pillow flask psutil</pre>
+<ul><li>I2C und SPI einschalten (<code>sudo raspi-config</code>), in <code>/boot/firmware/config.txt</code> unter <code>[all]</code>: <code>dtoverlay=spi0-0cs</code>.</li>
+<li>Einmalig: <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (WLAN, Uhrzeit, Autostart, Ausschalten, Watchdog).</li>
+<li>Starten: <code>python3 webcam_bewegung_X.py</code> (Fenster + Webseite) oder <code>--headless</code> (nur Webseite).</li>
+<li>Einstellungen, Protokoll, Töne: <code>~/.config/motionwatch/</code> – bleiben bei neuen Versionen erhalten.</li></ul>
+</section>
+</div>
+    <div lang="en"><section id="start" data-icon="🚀"><h2>Quick start: the first 10 minutes</h2>
+<ol>
+<li><b>Connect the power.</b> After about a minute Motion Watch is ready (with autostart it starts by itself).</li>
+<li><b>Connect the phone.</b> Either the Pi is in the same Wi-Fi as the phone (e.g. the phone hotspot), or you join the <b>own Wi-Fi of the Pi</b> (name «MotionWatch», the password is shown under <i>Alarm &amp; camping → Switches</i>).</li>
+<li><b>Open the page:</b> in the own Wi-Fi <code>http://10.42.0.1:5000</code>, otherwise <code>http://&lt;address-of-the-pi&gt;:5000</code>. The address also comes as a push message when the Pi joins a network.</li>
+<li><b>Set a password.</b> The page asks for it at the first visit; then the browser asks once (any user name).</li>
+<li><b>Set up push messages</b> (<i>Notifications</i>) and check them with «Test notification».</li>
+<li><b>Draw zones</b> (tab <i>Zones</i>): areas to ignore (road, trees in the wind).</li>
+<li><b>Arm:</b> tap 🛡 at the top or <i>Alarm &amp; camping → Switches → Arm</i>. The countdown gives you time to leave the area.</li>
+</ol>
+<div class="tip">💡 <b>Tip:</b> save the page as a bookmark or as an icon on the home screen of the phone («Add to Home Screen»).</div>
+</section>
+
+<section id="live" data-icon="📺"><h2>The live page</h2>
+<h3>Header</h3>
+<p>Top left: name and <b>version</b>. Small badges show only what matters right now; things in their normal state (no rain, light ok …) are not shown.</p>
+<table><tr><td>🛡 Armed / disarmed</td><td>Alarms on or off. Tap to switch.</td></tr>
+<tr><td>Persons · ● REC</td><td>What the camera sees now, whether it is recording.</td></tr>
+<tr><td>⛺ 🔋 ⏱ 💡 🌡 🔄 📡</td><td>Features that are on: camping, power saving, timelapse, light, thermal, patrol, own Wi-Fi.</td></tr>
+<tr><td>⚠ ⚡ 💾</td><td>Warnings: no password, under-voltage, memory almost full.</td></tr>
+<tr><td>CPU · FPS</td><td>Load and temperature of the Pi, pictures per second.</td></tr></table>
+<p>Right: 🔔 alarm sound in the browser, ☰ view (show / hide badges), ▶ settings panel, ⛶ fullscreen, ☀ light/dark, DE/EN, ▲ hide the header.</p>
+<h3>Picture and controls</h3>
+<ul><li><b>Stick:</b> drag with the finger – the further, the faster. The small ring shows where the camera looks. «Centre» moves to the middle.</li>
+<li><b>Buttons:</b> instead of the stick («Stick / Buttons»).</li>
+<li>Manual control pauses tracking and patrol for a few seconds.</li>
+<li><b>Lights:</b> white and infrared Off / On / Auto.</li>
+<li><b>Relays:</b> each relay Off / On / Auto with a trigger.</li>
+<li><b>🎧 Listen</b> and <b>🎙 Hold to talk</b> appear when a microphone / loudspeaker is chosen.</li>
+<li>Double-click the picture: video only; double-click again: back.</li></ul>
+</section>
+
+<section id="alarm" data-icon="🛡"><h2>Alarm &amp; camping</h2>
+<ul><li><b>Armed / disarmed:</b> only when armed there are alarms, push messages, siren and recordings. The countdown gives you time to leave; «Arm now» skips it.</li>
+<li><b>Camping profile:</b> one switch for everything: own Wi-Fi on, the camera stays where it is, alarms, recordings and power saving on, armed after the countdown. Switching it off restores your settings.</li>
+<li><b>Own Wi-Fi (hotspot):</b> the Pi makes its own Wi-Fi – works without a mobile network. Name and password under <i>Protection &amp; network</i>.</li>
+<li><b>Network:</b> «Automatic» tries known networks first (e.g. the phone hotspot: internet + push messages), otherwise it switches the own Wi-Fi on.</li>
+<li><b>Autostart:</b> Motion Watch starts by itself at power-on, without a screen.</li>
+<li><b>Power saving:</b> few pictures per second while all is quiet – full speed at once at the first movement, a noise or when somebody watches.</li>
+<li><b>Clock from the phone:</b> without internet the Pi takes the time from the phone, so recordings have the right time.</li></ul>
+</section>
+
+<section id="notify" data-icon="🔔"><h2>Notifications</h2>
+<ul><li><b>ntfy</b> (recommended): install the app, subscribe to a topic, enter the address (e.g. <code>https://ntfy-me.com/&lt;your-topic&gt;</code>) as «Webhook / ntfy URL», type «ntfy». The app must use the same server as the address.</li>
+<li><b>Telegram</b> or a <b>webhook</b> (e.g. Home Assistant) work too.</li>
+<li><b>Pre-alarm:</b> a short message with a small picture at the first movement, before a person is confirmed.</li>
+<li><b>Message texts:</b> own titles and texts with placeholders {name} {time} {date} {count} {camera} {link} {db}. Empty = standard text.</li>
+<li><b>«Address of this page for links»:</b> a tap on the message opens the page.</li>
+<li><b>🔔 Alarm sound in the browser:</b> tap the bell at the top and «Sound on». The page must stay open (also in the background).</li></ul>
+<div class="tip">💡 <b>Tip:</b> after every change: «Test notification». If nothing arrives, the reason is under «status» and in the event log.</div>
+</section>
+
+<section id="detect" data-icon="🎯"><h2>Detection</h2>
+<ul><li><b>Sensitivity</b> and <b>min. object size</b> are the most important settings against false alarms.</li>
+<li><b>AI detection</b> recognises persons, animals and vehicles. «Motion persons need AI confirmation» = fewer false alarms, a little slower.</li>
+<li><b>Zones</b> (tab <i>Zones</i>): «Ignore» for trees, road, tent wall; «Only here» when only one area counts.</li>
+<li>Rain, wind, shadows and low light are detected and handled automatically (fine-tuning).</li>
+<li><b>Auto-tune</b> learns the scene; «Recalibrate» after big changes (scene empty).</li></ul>
+</section>
+
+<section id="camera" data-icon="📷"><h2>Camera &amp; servos</h2>
+<ul><li><b>Limits:</b> how far the camera may pan / tilt (degrees from the middle) – protects cables and housing.</li>
+<li><b>Follow person:</b> the camera follows a detected person.</li>
+<li><b>Patrol:</b> the camera moves between waypoints (waypoint = current position, «+ Waypoint»).</li>
+<li><b>Video source:</b> Pi camera, USB or network camera; more cameras in the tab <i>Cameras</i>.</li>
+<li><b>Servo driver</b> (fine-tuning): PCA9685, address, channels.</li></ul>
+</section>
+
+<section id="thermal" data-icon="🌡"><h2>Thermal camera</h2>
+<ul><li>Choose the thermal camera (Thermal-90 or USB), switch on «Overlay the thermal picture».</li>
+<li><b>Align:</b> with «zoom» and «shift» so that a warm person in the thermal picture lies exactly on the person in the camera picture.</li>
+<li><b>Thermal alarm:</b> a warm body in the zone; «only warm bodies that move» ignores warm stones and engines.</li>
+<li>The status shows the highest temperature measured.</li></ul>
+</section>
+
+<section id="lightsound" data-icon="💡"><h2>Light &amp; sound</h2>
+<h3>Lights</h3>
+<ul><li>White and infrared: Off / On / Auto. «Auto» = at an alarm only at night, at an alarm day and night, or the whole night (from sunset, computed from latitude / longitude under <i>Setup</i>).</li>
+<li><b>Picture:</b> «grey at night» is ideal with the NoIR camera.</li></ul>
+<h3>Microphone</h3>
+<ul><li>Choose the device, watch the level. <b>Noise alarm</b>: louder than the background by X dB for at least Y seconds.</li>
+<li><b>🎧 Listen</b>: live sound on the phone, volume per device.</li>
+<li><b>Sound in the recordings</b>: videos are saved with sound.</li></ul>
+<h3>Loudspeaker</h3>
+<ul><li>Built-in (USB) or <b>Bluetooth</b>: «Search Bluetooth loudspeakers» (speaker in pairing mode), then «Connect». Also in the tab <i>Cameras</i>.</li>
+<li><b>Siren at an alarm</b> (only when armed), sound, volume, duration. Own sounds (.wav/.mp3) in <code>~/.config/motionwatch/sounds</code>.</li>
+<li><b>🎙 Talk</b>: hold the button. Needs the secure page <code>https://…:5001</code> (phones only allow the microphone there).</li></ul>
+</section>
+
+<section id="rec" data-icon="🎬"><h2>Recordings &amp; timelapse</h2>
+<ul><li>At an alarm, videos (with pre-roll and sound) and snapshots are saved.</li>
+<li>Tab <i>Recordings</i>: watch, filter, ⭐ favourites (never deleted automatically), download several as ZIP, statistics per day.</li>
+<li>The oldest recordings are deleted when the folder is too big or the memory card almost full.</li>
+<li><b>Timelapse:</b> a photo every N minutes from a fixed position, then a video («Create video»). An alarm always has priority.</li></ul>
+</section>
+
+<section id="relay" data-icon="⚡"><h2>Relays &amp; schedule</h2>
+<ul><li><b>Relays:</b> Off / On / Auto. Auto = on while the trigger applies (person, motion, pre-alarm, warm body, noise, animal …) plus the hold time.</li>
+<li><b>Schedule:</b> switches features on or off at certain times, e.g. armed at night, power saving by day. Also «at sunset» and exception dates.</li></ul>
+</section>
+
+<section id="system" data-icon="⚙"><h2>System &amp; network</h2>
+<ul><li><b>System:</b> CPU, temperature, power supply (voltage, under-voltage), free memory, version.</li>
+<li><b>⏻ Shut down / ↻ restart the Pi:</b> a running recording is finished first. Unplug only when the green LED stays dark.</li>
+<li><b>🔒 Web password</b>, <b>⬇ save / ⬆ load settings</b> (the file contains your access data – keep it private).</li>
+<li><b>Wi-Fi:</b> search and join networks, saved networks.</li>
+<li><b>Web stream:</b> picture quality and width – smaller = less data over the phone hotspot.</li>
+<li><b>Setup:</b> location (sunrise / sunset), presence, warnings (temperature, memory).</li>
+<li><b>Updates:</b> enter the source (address of a versions.json or a folder / USB stick), «Search versions», pick a version. Older versions stay for going back.</li></ul>
+</section>
+
+<section id="window" data-icon="🖥"><h2>Desktop window on the Pi</h2>
+<table><tr><td>Double-click the video</td><td>video only</td></tr><tr><td>F11 / Esc</td><td>fullscreen / back</td></tr>
+<tr><td>Ctrl+B</td><td>settings panel on / off</td></tr><tr><td>Ctrl+T / Ctrl+L</td><td>light/dark, language</td></tr>
+<tr><td>Arrow keys / Home</td><td>move the camera / centre</td></tr><tr><td>Right-click the video</td><td>show / hide fields</td></tr></table>
+<p>The settings are grouped like on the web page. The button «Manual» opens this page.</p>
+</section>
+
+<section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>
+<ul>
+<li>🌙 <b>Test before the first night:</b> arm, walk through the picture once and check: push arrives, recording is there, siren / light react.</li>
+<li>🌳 <b>False alarms from branches:</b> draw trees and bushes as «Ignore» zones and raise the minimum size a little. The automatic wind detection helps too.</li>
+<li>🐗 <b>Scare animals away:</b> siren «at an alarm» plus white light «at an alarm, only at night». For your own sleep keep the siren short (5–10 s).</li>
+<li>🔴 <b>Infrared and reflections:</b> do not point IR light through a window or close to a tent wall – it blinds the camera.</li>
+<li>🔇 <b>Silent watch:</b> siren off, only push messages and the bell in the browser – nobody at the campsite wakes up.</li>
+<li>🔋 <b>Save power:</b> camping profile (includes power saving), smaller stream width, listen only briefly. Use a power bank with 5 V / 3 A or more; at «under-voltage» change the cable or power bank.</li>
+<li>📶 <b>Little mobile data:</b> the pre-alarm picture stays small (640 px); open the live picture only when needed (the Pi only sends while somebody watches).</li>
+<li>🎤 <b>Microphone:</b> a piece of foam as wind shield prevents false alarms in the wind. The servos do not disturb – the noise alarm pauses while they move.</li>
+<li>🔊 <b>Bluetooth speakers</b> often switch themselves off after a while. The Pi reconnects them when they are back – for the night choose one without auto-off.</li>
+<li>🧭 <b>Aim the camera:</b> find the best position with the stick and use it as waypoint or timelapse position.</li>
+<li>🕒 <b>Wrong time</b> in the recordings: open the page once on the phone – the Pi takes the time of the phone.</li>
+<li>💾 <b>Important recordings:</b> mark them with ⭐ – they are never deleted automatically.</li>
+<li>🔁 <b>Try a new version</b> without risk: under Updates you can always switch back.</li>
+<li>📱 <b>Bell in the browser</b> only on one device that stays open at night – otherwise everything rings.</li>
+</ul></section>
+
+<section id="faq" data-icon="🛠"><h2>Troubleshooting</h2>
+<dl>
+<dt>The page does not open</dt><dd>Is the phone in the right Wi-Fi (own Wi-Fi of the Pi or the same network)? Address with <code>:5000</code>? In the own Wi-Fi always <code>http://10.42.0.1:5000</code>.</dd>
+<dt>The page shows an old version</dt><dd>The version stands top left. If an old copy still runs (e.g. from the autostart), start the new program by hand – it takes over. Then reload the page.</dd>
+<dt>No picture</dt><dd><i>Camera &amp; servos → Video source</i> → «Scan for cameras». Pi camera: check the ribbon cable.</dd>
+<dt>Push messages do not arrive</dt><dd>«Test notification» and read the status. ntfy: the same server in the app and the address. Without internet (own Wi-Fi only) no push messages can be sent – use the bell in the browser.</dd>
+<dt>Autostart does not start</dt><dd>Terminal: <code>systemctl --user status motionwatch</code>. Run once <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (start without login).</dd>
+<dt>Many false alarms</dt><dd>Draw zones, lower the sensitivity, raise the minimum size, switch on «AI confirmation».</dd>
+<dt>Servos jitter or hit the end</dt><dd>Use the PCA9685 (servo driver), reduce the limits in degrees, own 5 V supply for the servos.</dd>
+<dt>«Under-voltage»</dt><dd>Shorter / thicker USB-C cable or a stronger power bank. Under-voltage can cause crashes and broken recordings.</dd>
+<dt>No sound over Bluetooth</dt><dd>Speaker on and in range? Tap «Connect» again. The program must run as normal user (not with sudo).</dd>
+<dt>Talking does not work</dt><dd>Only on the secure page <code>https://…:5001</code>. Confirm the certificate warning once and allow the microphone.</dd>
+</dl></section>
+
+<section id="setup" data-icon="🧰"><h2>Setup on the Raspberry Pi</h2>
+<pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils
+pip install opencv-python numpy pillow flask psutil</pre>
+<ul><li>Switch on I2C and SPI (<code>sudo raspi-config</code>); in <code>/boot/firmware/config.txt</code> under <code>[all]</code>: <code>dtoverlay=spi0-0cs</code>.</li>
+<li>Once: <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (Wi-Fi, clock, autostart, shut down, watchdog).</li>
+<li>Start: <code>python3 webcam_bewegung_X.py</code> (window + web page) or <code>--headless</code> (web page only).</li>
+<li>Settings, log, sounds: <code>~/.config/motionwatch/</code> – kept for new versions.</li></ul>
+</section>
+</div>
+  </div>
+  <p class="mut" style="margin-top:18px" id="hfoot"></p>
+</main>
+<script>
+
+const $ = s => document.querySelector(s);
+const post = (u, b) => fetch(u, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(b || {})})
+    .then(r => r.json()).catch(() => ({ok: false, error: "connection"}));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+let LANG = "", THEME = "";
+try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
+const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung"}};
+const t = s => (LANG === "de" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
+function applyI18n() {
+  document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
+  const b = $("#btn-lang"); if (b) b.textContent = LANG === "de" ? "EN" : "DE";
+  document.documentElement.lang = LANG;
+}
+function applyTheme() { document.body.classList.toggle("light", THEME === "light"); const b = $("#btn-theme"); if (b) b.innerHTML = THEME === "light" ? "&#9790;" : "&#9728;"; }
+function toggleTheme() { THEME = THEME === "light" ? "dark" : "light"; try { localStorage.setItem("mw-theme", THEME); } catch (e) {} applyTheme(); }
+function toggleLang() { LANG = LANG === "de" ? "en" : "de"; try { localStorage.setItem("mw-lang", LANG); } catch (e) {} location.reload(); }
+let toastTimer = null;
+function toast(msg) { let e = $("#toast"); if (!e) { e = el("div"); e.id = "toast"; document.body.appendChild(e); } e.textContent = msg; e.classList.add("on");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove("on"), 2600); }
+async function initAppearance() {
+  if (!LANG || !THEME) {
+    try { const a = await (await Promise.reject()).json(); LANG = LANG || a.lang; THEME = THEME || a.theme; }
+    catch (e) { LANG = LANG || "en"; THEME = THEME || "dark"; }
+  }
+  applyTheme(); applyI18n();
+}
+
+Object.assign(I18N.de, {"Search …": "Suchen …", "Manual": "Anleitung", "Expand all": "Alle öffnen", "No match": "Nichts gefunden",
+  "Motion Watch manual · version": "Anleitung zu Motion Watch · Version"});
+let SECS = [];
+function buildHelp() {
+  document.body.classList.add(LANG === "de" ? "lang-de" : "lang-en");
+  const box = document.querySelector('#hbody > div[lang="' + (LANG === "de" ? "de" : "en") + '"]');
+  const toc = $("#toc"); toc.textContent = "";
+  SECS = [];
+  [...box.querySelectorAll(":scope > section")].forEach((s, i) => {
+    const title = s.querySelector("h2").textContent, icon = s.dataset.icon || "";
+    const d = el("details", "card hsec" + (s.classList.contains("tips") ? " tips" : "")); d.id = "h-" + s.id;
+    const sm = el("summary"); sm.append(el("span", "ic", icon), el("span", "", title)); d.appendChild(sm);
+    [...s.childNodes].forEach(n => d.appendChild(n));
+    s.replaceWith(d);
+    if (i === 0 || location.hash === "#" + s.id) d.open = true;
+    const a = el("a", "", icon + " " + title); a.href = "#" + s.id;
+    a.onclick = e => { e.preventDefault(); d.open = true; d.scrollIntoView({behavior: "smooth", block: "start"}); history.replaceState(null, "", "#" + s.id); };
+    toc.appendChild(a);
+    SECS.push({d: d, html: d.innerHTML});
+  });
+  const h = location.hash.slice(1); if (h) { const d = $("#h-" + h); if (d) { d.open = true; setTimeout(() => d.scrollIntoView(), 100); } }
+  $("#q").placeholder = t("Search …");
+}
+function search() {
+  const q = $("#q").value.trim().toLowerCase();
+  SECS.forEach(x => {
+    x.d.innerHTML = x.html;
+    if (!q) { x.d.classList.remove("nohit"); return; }
+    const hit = x.d.textContent.toLowerCase().includes(q);
+    x.d.classList.toggle("nohit", !hit);
+    if (hit) {
+      x.d.open = true;
+      const walk = n => { if (n.nodeType === 3) { const i = n.data.toLowerCase().indexOf(q); if (i >= 0) { const m = document.createElement("mark"); const r = n.splitText(i); r.splitText(q.length); m.textContent = r.data; r.replaceWith(m); } }
+        else if (n.nodeName !== "SUMMARY" && n.nodeName !== "MARK") [...n.childNodes].forEach(walk); };
+      [...x.d.childNodes].forEach(walk);
+    }
+  });
+}
+(async () => {
+  await initAppearance(); buildHelp();
+  let tm = null; $("#q").addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(search, 150); });
+  try { const v = {version:"1.9.0"}; $("#hfoot").textContent = t("Motion Watch manual · version") + " " + v.version; } catch (e) {}
+})();
+
+// ---- hide / show the whole header (remembered per device) ----
+(function () {
+  const H = document.querySelector("header"); if (!H) return;
+  const TX = {"Hide header": "Kopfzeile ausblenden", "Show header": "Kopfzeile einblenden"};
+  const tx = s => (LANG === "de" && TX[s]) || s;
+  const hb = el("button", "sec", "▴"); hb.type = "button"; hb.id = "btn-hdr";
+  const ctl = H.querySelector(".hdr-ctl"); (ctl || H).appendChild(hb);
+  const sh = el("button", "sec", "▾"); sh.type = "button"; sh.id = "hdr-show"; document.body.appendChild(sh);
+  function set(hidden, store) {
+    document.body.classList.toggle("hdrhidden", hidden);
+    hb.title = tx("Hide header"); sh.title = tx("Show header"); hb.setAttribute("aria-label", hb.title); sh.setAttribute("aria-label", sh.title);
+    if (store) { try { localStorage.setItem("mw-hdr", hidden ? "0" : "1"); } catch (e) {} }
+    window.dispatchEvent(new Event("resize"));
+  }
+  hb.onclick = () => set(true, true); sh.onclick = () => set(false, true);
+  let v = null; try { v = localStorage.getItem("mw-hdr"); } catch (e) {}
+  set(v === "0", false);
+  setTimeout(() => set(document.body.classList.contains("hdrhidden"), false), 1500);   // titles in the right language
+})();
+// ---- clock: the Pi has no battery clock; without internet it takes the time of the phone ----
+(function () {
+  let tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+  setTimeout(() => { try { fetch("/api/time", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({t: Date.now(), tz: tz})}).catch(() => {}); } catch (e) {} }, 800);
+})();
+
+// ---- alarm sound in the browser (every page): the server sends alarms over a live connection (/api/alerts) ----
+(function () {
+  const ALT = {"Alarm sound": "Alarmton", "Sound on": "Ton ein", "Pre-alarm (first movement)": "Voralarm (erste Bewegung)",
+    "Person detected": "Person erkannt", "Warm body (thermal camera)": "Wärme erkannt (Wärmebild)", "Armed - alarms are active": "Scharf - Alarme aktiv",
+    "Person / warm body / noise": "Person / Wärme / Geräusch", "Noise (microphone)": "Geräusch (Mikrofon)", "Volume": "Lautstärke", "Test": "Test", "Vibrate (phones)": "Vibrieren (Handy)",
+    "Pre-alarm: movement": "Voralarm: Bewegung", "Tap anywhere on the page to allow the sound": "Irgendwo auf die Seite tippen, um den Ton zu erlauben",
+    "Mute 30 min": "30 Min. stumm", "Muted until": "Stumm bis", "Unmute": "Ton wieder an", "Pre-alarm": "Voralarm", "Person": "Person",
+    "connection to the camera interrupted - reconnecting": "Verbindung zur Kamera unterbrochen - verbinde neu",
+    "The page must stay open (also in the background). With the screen off or the browser closed only the push message (ntfy / Telegram) arrives.":
+      "Die Seite muss offen bleiben (auch im Hintergrund geht es). Bei ausgeschaltetem Bildschirm oder geschlossenem Browser kommt nur die Push-Nachricht (ntfy / Telegram)."};
+  const at = s => (LANG === "de" && ALT[s]) || s;
+  const S = {on: false, pre: true, person: true, vol: 0.7, vib: true, mute: 0};
+  try { Object.assign(S, JSON.parse(localStorage.getItem("mw-sound") || "{}")); } catch (e) {}
+  const save = () => { try { localStorage.setItem("mw-sound", JSON.stringify(S)); } catch (e) {} };
+  let ctx = null, es = null, lastPre = 0, connOk = true, errTimer = null, titleTimer = null;
+  const baseTitle = document.title;
+
+  function audio() {
+    if (!ctx) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; try { ctx = new A(); } catch (e) { return null; } }
+    if (ctx.state === "suspended") ctx.resume().then(paint).catch(() => {});
+    return ctx;
+  }
+  function tone(c, f0, f1, t0, dur, type, vol) {
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t0);
+    if (f1 !== f0) o.frequency.linearRampToValueAtTime(f1, t0 + dur);
+    const v = Math.max(0.002, vol);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(v, t0 + 0.02);
+    g.gain.setValueAtTime(v, t0 + dur - 0.04); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0 + dur + 0.03);
+  }
+  function play(kind) {
+    const c = audio(); if (!c) return;
+    const v = S.vol * 0.45, t0 = c.currentTime + 0.05;
+    if (kind === "prealarm") {                       // two short, friendly beeps
+      tone(c, 880, 880, t0, 0.14, "sine", v); tone(c, 1175, 1175, t0 + 0.22, 0.2, "sine", v);
+    } else {                                         // person: siren, about 2 seconds
+      for (let i = 0; i < 4; i++) { tone(c, 620, 1180, t0 + i * 0.5, 0.25, "triangle", v); tone(c, 1180, 620, t0 + i * 0.5 + 0.25, 0.25, "triangle", v); }
+    }
+    if (S.vib && navigator.vibrate) { try { navigator.vibrate(kind === "prealarm" ? [120, 80, 120] : [300, 120, 300, 120, 300]); } catch (e) {} }
+  }
+  const muted = () => S.mute && Date.now() < S.mute;
+
+  // ---- header button ----
+  const btn = el("button", "sec sndbtn"); btn.type = "button"; btn.id = "btn-sound";
+  const ctl = document.querySelector(".hdr-ctl"); if (ctl) ctl.insertBefore(btn, ctl.firstChild); else document.body.appendChild(btn);
+  function paint() {
+    const needTap = S.on && (!ctx || ctx.state !== "running");
+    btn.textContent = (S.on && !muted()) ? "🔔" : "🔕";
+    btn.classList.toggle("on", S.on && !muted() && !needTap && connOk);
+    btn.classList.toggle("warn", S.on && (needTap || !connOk));
+    btn.title = at("Alarm sound") + (needTap ? " · " + at("Tap anywhere on the page to allow the sound") : "")
+      + (!connOk ? " · " + at("connection to the camera interrupted - reconnecting") : "")
+      + (muted() ? " · " + at("Muted until") + " " + new Date(S.mute).toLocaleTimeString().slice(0, 5) : "");
+  }
+  // browsers only allow sound after a click / tap on the page: unlock on the first one
+  ["pointerdown", "keydown", "touchstart"].forEach(ev => document.addEventListener(ev, () => { if (S.on) { audio(); setTimeout(paint, 200); } }, {passive: true}));
+
+  // ---- settings panel ----
+  let pop = null;
+  function closePop() { if (pop) { pop.remove(); pop = null; } }
+  function sw(label, key, after) {
+    const row = el("label", "row"); const cb = el("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!S[key];
+    cb.onchange = () => { S[key] = cb.checked; save(); if (after) after(); paint(); };
+    row.append(el("span", "", at(label)), cb); return row;
+  }
+  function openPop() {
+    closePop();
+    pop = el("div", "sndpop card");
+    pop.appendChild(el("div", "sndhead", at("Alarm sound")));
+    pop.append(sw("Sound on", "on", () => { if (S.on) { audio(); play("prealarm"); } connect(); }),
+               sw("Pre-alarm (first movement)", "pre"), sw("Person / warm body / noise", "person"), sw("Vibrate (phones)", "vib"));
+    const vr = el("div", "sl"); const top = el("div", "row"); const vv = el("span", "val", Math.round(S.vol * 100) + " %");
+    top.append(el("span", "", at("Volume")), vv);
+    const r = el("input"); r.type = "range"; r.min = 0.1; r.max = 1; r.step = 0.05; r.value = S.vol;
+    r.oninput = () => { S.vol = parseFloat(r.value); vv.textContent = Math.round(S.vol * 100) + " %"; save(); };
+    vr.append(top, r); pop.appendChild(vr);
+    const b = el("div", "btns");
+    const t1 = el("button", "sec", at("Test") + ": " + at("Pre-alarm")); t1.type = "button"; t1.onclick = () => play("prealarm");
+    const t2 = el("button", "sec", at("Test") + ": " + at("Person")); t2.type = "button"; t2.onclick = () => play("person");
+    const m = el("button", "sec", muted() ? at("Unmute") : at("Mute 30 min")); m.type = "button";
+    m.onclick = () => { S.mute = muted() ? 0 : Date.now() + 30 * 60000; save(); paint(); openPop(); };
+    b.append(t1, t2, m); pop.appendChild(b);
+    const hint = el("div", "mut", at("The page must stay open (also in the background). With the screen off or the browser closed only the push message (ntfy / Telegram) arrives."));
+    hint.style.marginTop = "8px"; pop.appendChild(hint);
+    pop.addEventListener("pointerdown", e => e.stopPropagation());
+    document.body.appendChild(pop);
+  }
+  btn.addEventListener("pointerdown", e => e.stopPropagation());
+  btn.onclick = () => { audio(); pop ? closePop() : openPop(); paint(); };
+  document.addEventListener("pointerdown", closePop);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closePop(); });
+
+  // ---- alarms from the server ----
+  function flash(label) {
+    document.body.classList.remove("alarmflash"); void document.body.offsetWidth; document.body.classList.add("alarmflash");
+    if (document.hidden) { document.title = "🔔 " + label; clearTimeout(titleTimer); titleTimer = setTimeout(() => { document.title = baseTitle; }, 15000); }
+  }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) document.title = baseTitle; });
+  function onAlert(a) {
+    if (!S.on) return;
+    if (a.kind === "armed") { try { toast("🛡 " + at("Armed - alarms are active")); } catch (e) {} return; }
+    const label = a.kind === "person" ? at("Person detected") + (a.count ? " (" + a.count + ")" : "")
+      : (a.kind === "warm" ? at("Warm body (thermal camera)") : (a.kind === "noise" ? at("Noise (microphone)") + (a.db != null ? " " + a.db + " dB" : "") : at("Pre-alarm: movement")));
+    flash(label);
+    try { toast("🔔 " + label + " · " + a.time); } catch (e) {}
+    if (muted()) return;
+    if (a.kind === "prealarm") { if (!S.pre || Date.now() - lastPre < 8000) return; lastPre = Date.now(); }
+    if ((a.kind === "person" || a.kind === "warm" || a.kind === "noise") && !S.person) return;
+    play(a.kind);
+  }
+  function connect() {
+    if (!S.on) { if (es) { es.close(); es = null; } connOk = true; paint(); return; }
+    if (es || !window.EventSource) return;
+    es = new EventSource("/api/alerts");
+    es.addEventListener("alert", e => { try { onAlert(JSON.parse(e.data)); } catch (x) {} });
+    es.onopen = () => { clearTimeout(errTimer); connOk = true; paint(); };
+    es.onerror = () => { clearTimeout(errTimer); errTimer = setTimeout(() => { connOk = false; paint(); }, 8000); };   // it reconnects by itself
+  }
+  window.mwPlayAlarm = play;               // for testing in the browser console
+  paint(); connect();
+  setInterval(paint, 30000);
+})();
+
+</script></body></html>

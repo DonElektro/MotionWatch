@@ -1,0 +1,157 @@
+{
+ "app": "Motion Watch",
+ "versions": [
+  {
+   "version": "1.9.0",
+   "file": "webcam_bewegung_1_9_0.py",
+   "url": "",
+   "sha256": "325fe281ea90effd506c6b751a34fdc7d7e7cceeac599058e4930fe193342dbe",
+   "date": "2026-10-23",
+   "notes": "first version on GitHub (updates from github.com/<user>/motionwatch); older program files are recognised by their real version number in the update list"
+  },
+  {
+   "version": "1.8.9",
+   "file": "webcam_bewegung_1_8_9.py",
+   "url": "",
+   "sha256": "6d1fc5ad40f1e119266c4a1c5dae03b2514f637cf36425160b4a83cdc09da2e7",
+   "date": "2026-10-23",
+   "notes": "MANUAL on the web page (tab \"Manual\", /help): quick start, all functions, tips & tricks, troubleshooting, setup; search, table of contents, printable, German / English; button \"Manual\" in the desktop window"
+  },
+  {
+   "version": "1.8.8",
+   "file": "webcam_bewegung_1_8_8.py",
+   "url": "",
+   "sha256": "858fd800aea76972e1369e1cc96874d12802495b5cc0455d73f4f3603246010f",
+   "date": "2026-10-23",
+   "notes": "header tidied up: status first (armed, persons, recording), then what is switched on (camping, power saving, timelapse, lights, thermal camera, patrol, own Wi-Fi, schedule, relays, microphone), then warnings, then CPU / FPS; things in their normal state (no rain, calm wind, light ok, source connected ...) are not shown any more"
+  },
+  {
+   "version": "1.8.7",
+   "file": "webcam_bewegung_1_8_7.py",
+   "url": "",
+   "sha256": "c2f246dd465e914f707819e7ca1e96a7b78d3e5b1f4949eb8d40692e7c75a11b",
+   "date": "2026-10-23",
+   "notes": "UPDATES: choose a version (newer or older) and switch with one tap; source = versions.json on the internet (e.g. GitHub) or a folder (USB stick); checked before it starts (checksum, Python, version); older versions stay for going back"
+  },
+  {
+   "version": "1.8.6",
+   "file": "webcam_bewegung_1_8_6.py",
+   "url": "",
+   "sha256": "1ab813719cd7a01283f482bd46017b687148fcbc4fb44f09f3319773306f30df",
+   "date": "2026-10-23",
+   "notes": "Bluetooth loudspeaker also on the \"Cameras\" page (search, connect, test sound); the version stands next to the name at the top left (all pages and the window)"
+  },
+  {
+   "version": "1.8.5",
+   "file": "webcam_bewegung_1_8_5.py",
+   "url": "",
+   "sha256": "8bb8dafbf1f2eb1d300aacf6c8fb3917357ab39bfbeb5ce0bf8d3be3296d46e4",
+   "date": "2026-10-23",
+   "notes": "started by hand while the autostart copy (maybe an older version) runs: the copy is stopped and this program takes over its web page (before, the page silently stayed the old one); the version is shown on the page; pages are never cached"
+  },
+  {
+   "version": "1.8.4",
+   "file": "webcam_bewegung_1_8_4.py",
+   "url": "",
+   "sha256": "324c6a9d8b2fb81e5331edebc60d6fd230c43b37c92daee6e85c3b8eebaea8d6",
+   "date": "2026-10-23",
+   "notes": "BLUETOOTH loudspeaker: search, pair + connect from the page / window, used for siren, test sound and talking; reconnects by itself when the speaker comes back"
+  },
+  {
+   "version": "1.8.3",
+   "file": "webcam_bewegung_1_8_3.py",
+   "url": "",
+   "sha256": "d96963ed097cac946367a5ca9978cbe58c0643befa1459a42b8bf8d8c40b81ee",
+   "date": "2026-10-23",
+   "notes": "settings tidied up: 9 groups (new: \"Light & sound\"), inside a group every topic opens / closes the same way (the first one is open), fine-tuning at the end under its own line, power saving has its own topic; web page and window alike"
+  },
+  {
+   "version": "1.8.2",
+   "file": "webcam_bewegung_1_8_2.py",
+   "url": "",
+   "sha256": "2d027e9595514ab25dbb9b28981e0553abe2b305d34faceef938a0cafa01a66c",
+   "date": "2026-10-23",
+   "notes": "under-voltage warning (power bank / cable, Pi 5 shows the input voltage); memory card: free space shown, push message and the oldest recordings are deleted when it gets full; watchdog (autostart restarts a hanging program, --allow-wifi switches the hardware watchdog on); settings export / import; web password can be set on the page / in the window (asked at the first visit, stored as a hash)"
+  },
+  {
+   "version": "1.8.1",
+   "file": "webcam_bewegung_1_8_1.py",
+   "url": "",
+   "sha256": "77df4b6aa30aad6baa5a197e16045a3fce03b3eca21835b2f2ccf53c8d0429fd",
+   "date": "2026-10-23",
+   "notes": "POWER SAVING mode: while all is quiet only a few pictures per second (camera itself slower), full speed at once at any movement, noise, alarm, recording, manual control or while somebody watches; part of the camping profile, schedulable"
+  },
+  {
+   "version": "1.8.0",
+   "file": "webcam_bewegung_1_8_0.py",
+   "url": "",
+   "sha256": "40d7fec75c09b32da8ee80422190491b88f26945931c5f03bfe2d7715ee0313c",
+   "date": "2026-10-23",
+   "notes": "hardware of the 3D-printed pan/tilt head: servos on a PCA9685 (I2C, address selectable, no jitter on the Pi 5), pan / tilt limits in degrees; LIGHTS white + infrared (PCA9685 channel or GPIO, Off / On / Auto: at an alarm or the whole night by sunset); grey picture at night (NoIR camera); Waveshare Thermal-90 (SPI, pysenxor) as thermal camera with zoom / shift to match the camera picture; the noise alarm ignores the servo motors; push message when the Pi gets too hot"
+  },
+  {
+   "version": "1.7.7",
+   "file": "webcam_bewegung_1_7_7.py",
+   "url": "",
+   "sha256": "b650e9cbdd9262e2c8836cbbe5621445c408d842376ee9bc5195c4186b0dbe8e",
+   "date": "2026-10-23",
+   "notes": "TALK from the phone through the loudspeaker of the Pi (hold the button); a second, secure page (https, port + 1) starts by itself, because phones only allow their microphone on https pages"
+  },
+  {
+   "version": "1.7.6",
+   "file": "webcam_bewegung_1_7_6.py",
+   "url": "",
+   "sha256": "5086a9c092c50d2e83183f9b9d9da25c5cb5c6d9d51c2d43f8b9c1cc5704b938",
+   "date": "2026-10-23",
+   "notes": "POWER: shut down / restart the Pi from the page and the window (recording is finished first, settings saved). AUDIO: choose microphone + loudspeaker; noise alarm (louder than the background, push + browser + relay trigger \"noise\" + recording), live listening in the browser, sound in the recordings, siren / own sounds on the Pi at an alarm"
+  },
+  {
+   "version": "1.7.5",
+   "file": "webcam_bewegung_1_7_5.py",
+   "url": "",
+   "sha256": "dbdc1e18fb96571f027d94117448703c18e4955fdfcd251095fe31f2f3089c16",
+   "date": "2026-10-23",
+   "notes": "own texts for the push messages (title + text for person, pre-alarm, thermal alarm, device name) with placeholders {name} {time} {date} {count} {camera} {link}; umlauts / emoji work with ntfy (RFC 2047)"
+  },
+  {
+   "version": "1.7.4",
+   "file": "webcam_bewegung_1_7_4.py",
+   "url": "",
+   "sha256": "3d640ce69878c11206d507ff2cf67ca947372bb3bfd2baf2049bcbe821e321d2",
+   "date": "2026-10-23",
+   "notes": "the desktop window uses the same 8 groups as the web page"
+  },
+  {
+   "version": "1.7.3",
+   "file": "webcam_bewegung_1_7_3.py",
+   "url": "",
+   "sha256": "983e92aab04c071efd3055f55807f6159dd6f171af3ce258f394fd39e4366e2d",
+   "date": "2026-10-23",
+   "notes": "web page: the 26 menus are now 8 groups (Alarm & camping, Notifications, Detection, Camera & servos, Recordings & timelapse, Thermal camera, Relays & schedule, System & network); fine tuning under \"Advanced\"; more compact"
+  },
+  {
+   "version": "1.7.2",
+   "file": "webcam_bewegung_1_7_2.py",
+   "url": "",
+   "sha256": "725d3f94a790f90e16cb77a40d3e907cf52580a8d1acf73a26abf8b3a06a1966",
+   "date": "2026-10-23",
+   "notes": "NETWORK AUTOMATIC: known networks first (phone hotspot = internet + push), otherwise the own Wi-Fi; when the phone hotspot disappears the own Wi-Fi comes on, and every 10 min (only if no device is connected) it looks again"
+  },
+  {
+   "version": "1.7.1",
+   "file": "webcam_bewegung_1_7_1.py",
+   "url": "",
+   "sha256": "cbf8640a847db7aa9b50f9bb2c6fcb0ddcf053761738e66f47b4dd32b31403c2",
+   "date": "2026-10-23",
+   "notes": "AUTOSTART switch: on = at boot Motion Watch starts by itself (systemd, no screen needed) and switches the own Wi-Fi on; off = nothing starts at boot and the Pi joins its known networks"
+  },
+  {
+   "version": "1.7.0",
+   "file": "webcam_bewegung_1_7_0.py",
+   "url": "",
+   "sha256": "1e1f94a381c9d763906ca733fc346474631c0cd062a75d02c7d482e12a0aaba0",
+   "date": "2026-10-23",
+   "notes": "CAMPING - own Wi-Fi of the Pi (hotspot, works without mobile network) with one switch; ARMED / DISARMED with countdown (alarms, push, browser sound, relays, recordings only while armed); THERMAL ALARM (warm body moving in the zones: relay trigger, push, sound, recording); the clock of the Pi is taken from the phone when there is no internet time; CAMPING PROFILE: own Wi-Fi + camera stays still + alarms on + armed after the countdown (switching off restores)"
+  }
+ ]
+}
