@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "1.9.3",
+   "file": "webcam_bewegung_1_9_3.py",
+   "url": "",
+   "sha256": "178b51bf5100e0755f9b03edab11cc9d4ea9a65cbfbb188597f6c5e92e92dc7a",
+   "date": "2026-10-23",
+   "notes": "remote access (Tailscale): header badge \"🌐 Remote: <device>\" while somebody watches from outside, Tailscale status + address under System, log entries, optional push message, new relay trigger \"remote access\" (also when disarmed) e.g. for a small warning lamp"
+  },
+  {
    "version": "1.9.2",
    "file": "webcam_bewegung_1_9_2.py",
    "url": "",
