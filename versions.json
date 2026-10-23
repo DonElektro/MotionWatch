@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "1.9.4",
+   "file": "webcam_bewegung_1_9_4.py",
+   "url": "",
+   "sha256": "52b61cffa679ccdadc76ffa268c1d47512f3608d81094811930a4ffb647485b0",
+   "date": "2026-10-23",
+   "notes": "web full screen: the buttons \"expand all / collapse all\" are hidden (phone held sideways)"
+  },
+  {
    "version": "1.9.3",
    "file": "webcam_bewegung_1_9_3.py",
    "url": "",
