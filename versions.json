@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 00:22",
+ "generated": "2026-10-24 00:31",
  "versions": [
+  {
+   "version": "2.2.7",
+   "file": "webcam_bewegung_2_2_7.py",
+   "url": "",
+   "sha256": "1d4dbaca734527f69484c02f650a88d97299e3299c5cef460e9c600794374286",
+   "date": "2026-10-24 00:31",
+   "notes": "header no longer flickers: badges are shortened in the same step as they are filled (before, the long texts showed for a moment and the line wrapped); on tablet/PC the badge line never wraps (scrolls sideways if ever too long)."
+  },
   {
    "version": "2.2.6",
    "file": "webcam_bewegung_2_2_6.py",
