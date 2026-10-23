@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "1.9.2",
+   "file": "webcam_bewegung_1_9_2.py",
+   "url": "",
+   "sha256": "5740d09d5895d5b60b051a63775fd961f12a54d2e087ab18866b1b08f80bad27",
+   "date": "2026-10-23",
+   "notes": "web full screen button works on phones: the video fills the screen (real full screen on Android / PC, page layout on iPhone / iPad where browsers allow no full screen), round ✕ button top right to go back"
+  },
+  {
    "version": "1.9.1",
    "file": "webcam_bewegung_1_9_1.py",
    "url": "",
