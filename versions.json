@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-23 22:57",
+ "generated": "2026-10-23 23:12",
  "versions": [
+  {
+   "version": "2.2.1",
+   "file": "webcam_bewegung_2_2_1.py",
+   "url": "",
+   "sha256": "31b024b9747161d178cd6a30cdc4acac32be2785c7b8f55c73366a860506055e",
+   "date": "2026-10-23 23:12",
+   "notes": "compact header: armed / disarmed big (red and pulsing at an alarm), values in their normal range (no person, CPU, FPS, Wi-Fi, microphone ...) behind one \"✓ all ok\" chip (tap = show them), short symbols (⏱ 4′, 🌙, 🍃 …), theme / language / settings panel / hide header moved into the ☰ menu, header shrinks to one line when scrolling down"
+  },
   {
    "version": "2.2.0",
    "file": "webcam_bewegung_2_2_0.py",
