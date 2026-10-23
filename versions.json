@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "1.9.5",
+   "file": "webcam_bewegung_1_9_5.py",
+   "url": "",
+   "sha256": "89277a6831892ed8ad1f2c0fcf269800ed8072923f5cd0f25dfc395667de7b48",
+   "date": "2026-10-23",
+   "notes": "live picture reconnects by itself when the phone loses the stream (no more \"?\" icon, spinning ↻ meanwhile), also when coming back to the browser; phone full screen upright: stick right under the picture"
+  },
+  {
    "version": "1.9.4",
    "file": "webcam_bewegung_1_9_4.py",
    "url": "",
