@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "1.9.1",
+   "file": "webcam_bewegung_1_9_1.py",
+   "url": "",
+   "sha256": "e7da14f9082f3d68c1bf0d16d8bbcb8db73d07bd151a1754b5dae6b72ab360eb",
+   "date": "2026-10-23",
+   "notes": "a failed camera switch (the old camera keeps running) shows a yellow \"switch failed\" note for one minute instead of a red badge that stayed until restart; red only when no camera works at all"
+  },
+  {
    "version": "1.9.0",
    "file": "webcam_bewegung_1_9_0.py",
    "url": "",
