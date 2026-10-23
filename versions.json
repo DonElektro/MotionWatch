@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.0.4",
+   "file": "webcam_bewegung_2_0_4.py",
+   "url": "",
+   "sha256": "d5974ba3a13b93de6270aaf7ca286f5fcca47d86ef2c669a0eb3ff23d9979c3d",
+   "date": "2026-10-23",
+   "notes": "home screen icon depends on the address: green \"MW Intern\" (home network / hotspot), red \"MW Extern\" (Tailscale 100.x / *.ts.net) - two shortcuts can be told apart"
+  },
+  {
    "version": "2.0.3",
    "file": "webcam_bewegung_2_0_3.py",
    "url": "",
