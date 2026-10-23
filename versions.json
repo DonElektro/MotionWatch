@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-23 23:18",
+ "generated": "2026-10-23 23:29",
  "versions": [
+  {
+   "version": "2.2.3",
+   "file": "webcam_bewegung_2_2_3.py",
+   "url": "",
+   "sha256": "89110d8e60af9d8d8d82d486c470da519a72ff1c35e9cfdfa6482aa196760b75",
+   "date": "2026-10-23 23:29",
+   "notes": "automatic update (Updates: \"Install new versions automatically\", hour, also when armed): installs the newest version in the chosen hour when nothing is going on, push before; start guard: a new version that does not start 3 times is replaced by the previous one again"
+  },
   {
    "version": "2.2.2",
    "file": "webcam_bewegung_2_2_2.py",
