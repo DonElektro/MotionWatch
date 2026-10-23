@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.0.7",
+   "file": "webcam_bewegung_2_0_7.py",
+   "url": "",
+   "sha256": "cf2b334791357371ffa6e7a9fd1f8554d8c5a5ff29cbbe84fea45ffe3d841555",
+   "date": "2026-10-23",
+   "notes": "recordings page: timelapse videos appear in the list (marked ⏱), new type filter \"Timelapse\" shows the videos and all single photos; play, download, star (starred photos are kept), delete, ZIP work as for recordings"
+  },
+  {
    "version": "2.0.6",
    "file": "webcam_bewegung_2_0_6.py",
    "url": "",
