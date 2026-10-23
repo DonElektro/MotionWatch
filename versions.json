@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-23 23:37",
+ "generated": "2026-10-24 00:12",
  "versions": [
+  {
+   "version": "2.2.5",
+   "file": "webcam_bewegung_2_2_5.py",
+   "url": "",
+   "sha256": "5bffff37c114c4f1b7838d9462de87644aff6e18c4eba5be82b15610dc8ae48a",
+   "date": "2026-10-24 00:12",
+   "notes": "tidier header on tablet/PC: status badges on the right next to the buttons (separated by a line), all header buttons the same size with drawn icons (bell, reload, menu, full screen) instead of characters, equal heights."
+  },
   {
    "version": "2.2.4",
    "file": "webcam_bewegung_2_2_4.py",
