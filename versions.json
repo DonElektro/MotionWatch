@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 00:48",
+ "generated": "2026-10-24 00:54",
  "versions": [
+  {
+   "version": "2.2.10",
+   "file": "webcam_bewegung_2_2_10.py",
+   "url": "",
+   "sha256": "50a78e440cd78457a359d71b140e44bf863520f71597d225318ed50a49e5ca62",
+   "date": "2026-10-24 00:54",
+   "notes": "the reload button (app mode) first looks for a new version, then reloads the page - a new version shows right away in the update bar."
+  },
   {
    "version": "2.2.9",
    "file": "webcam_bewegung_2_2_9.py",
