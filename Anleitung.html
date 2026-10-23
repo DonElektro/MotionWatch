@@ -99,7 +99,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 @media(max-width:520px){.hsec td:first-child{white-space:normal}}
 </style></head><body>
 <header>
-  <h1>Motion Watch <span class="ver">2.0.0</span></h1>
+  <h1>Motion Watch <span class="ver">2.0.5</span></h1>
   <nav class="nav"><a href="/" data-i18n="Live">Live</a><a href="/cams" data-i18n="Cameras">Cameras</a><a href="/recordings" data-i18n="Recordings">Recordings</a><a href="/zones" data-i18n="Zones">Zones</a><a href="/diary" data-i18n="Diary">Diary</a><a href="/help" class="on" data-i18n="Manual">Manual</a></nav>
   <span class="hdr-ctl">
     <button class="sec" onclick="window.print()" title="Print">🖨</button>
@@ -225,6 +225,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 
 <section id="system" data-icon="⚙"><h2>System &amp; Netz</h2>
 <ul><li><b>System:</b> CPU, Temperatur, Stromversorgung (Spannung, Unterspannung), freier Speicher, Version.</li>
+<li><b>⏸ Programm pausieren:</b> Dauer wählen (5 Minuten bis 12 Stunden) – Motion Watch schaltet sich sofort aus (Aufnahme wird fertig gespeichert) und startet danach von selbst wieder. In der Zwischenzeit zeigt die Seite einen Countdown und «Jetzt starten». Während der Pause gibt es keine Überwachung und keine Alarme.</li>
 <li><b>⏻ Pi ausschalten / ↻ neu starten:</b> laufende Aufnahme wird vorher fertig gespeichert. Strom erst trennen, wenn die grüne LED dunkel bleibt.</li>
 <li><b>🔒 Web-Passwort</b>, <b>⬇ Einstellungen sichern / ⬆ laden</b> (die Datei enthält auch deine Zugangsdaten – privat aufbewahren).</li>
 <li><b>WLAN:</b> Netze suchen und verbinden, gespeicherte Netze.</li>
@@ -243,7 +244,9 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 
 <section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>
 <ul>
-<li>📱 <b>Wie eine App:</b> Motion Watch auf den Home-Bildschirm legen (iPhone: Teilen → Zum Home-Bildschirm). Dann gibt es auch auf dem iPhone ein richtiges Vollbild.</li>
+<li>🔍 <b>Einstellung suchen:</b> im Einstellungsbereich oben ins Suchfeld tippen (z. B. «Passwort», «Sirene», «WLAN») – alles andere verschwindet, die Treffer sind blau umrandet. ✕ oder Esc zeigt wieder alles.</li>
+<li>🟢🔴 <b>Zwei Symbole unterscheiden:</b> wer die Seite über die Heim-/Hotspot-Adresse zum Home-Bildschirm hinzufügt, bekommt ein <b>grünes</b> Symbol («MW Intern»), über die Tailscale-Adresse (100.… oder …ts.net) ein <b>rotes</b> («MW Extern»). Bestehende Symbole dafür löschen und neu hinzufügen.</li>
+<li>📱 <b>Wie eine App:</b> Motion Watch auf den Home-Bildschirm legen (iPhone: Teilen → Zum Home-Bildschirm). Dann gibt es auch auf dem iPhone ein richtiges Vollbild. Oben rechts erscheint dort der Knopf <b>⟳</b> zum Neuladen; läuft nach einem Update eine neue Version, erscheint unten «Neu laden».</li>
 <li>🦊 <b>Tierfotos sammeln:</b> KI-Erkennung eingeschaltet lassen, Kamera auf einen Futterplatz oder Wildwechsel richten – am Morgen im <i>Tagebuch</i> nachsehen.</li>
 <li>🌙 <b>Vor der ersten Nacht testen:</b> scharf schalten, einmal durchs Bild laufen und prüfen: Push kommt an, Aufnahme ist da, Sirene/Licht reagieren.</li>
 <li>🌳 <b>Fehlalarme durch Äste:</b> Bäume und Büsche als «Ignorieren»-Zone zeichnen und die Mindestgrösse etwas erhöhen. Bei Wind hilft die automatische Wind-Erkennung.</li>
@@ -398,6 +401,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 
 <section id="system" data-icon="⚙"><h2>System &amp; network</h2>
 <ul><li><b>System:</b> CPU, temperature, power supply (voltage, under-voltage), free memory, version.</li>
+<li><b>⏸ Pause the program:</b> choose how long (5 minutes to 12 hours) – Motion Watch switches off at once (a recording is finished first) and starts again by itself. Meanwhile the page shows a countdown and «Start now». While paused there is no monitoring and there are no alarms.</li>
 <li><b>⏻ Shut down / ↻ restart the Pi:</b> a running recording is finished first. Unplug only when the green LED stays dark.</li>
 <li><b>🔒 Web password</b>, <b>⬇ save / ⬆ load settings</b> (the file contains your access data – keep it private).</li>
 <li><b>Wi-Fi:</b> search and join networks, saved networks.</li>
@@ -416,7 +420,9 @@ pip install opencv-python numpy pillow flask psutil</pre>
 
 <section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>
 <ul>
-<li>📱 <b>Like an app:</b> put Motion Watch on the home screen (iPhone: Share → Add to Home Screen). Then the iPhone also gets a real full screen.</li>
+<li>🔍 <b>Find a setting:</b> type into the search box at the top of the settings (e.g. «password», «siren», «Wi-Fi») – everything else disappears, matches get a blue frame. ✕ or Esc shows everything again.</li>
+<li>🟢🔴 <b>Tell two icons apart:</b> added to the home screen from the home / hotspot address the icon is <b>green</b> («MW Home»), from the Tailscale address (100.… or …ts.net) it is <b>red</b> («MW Remote»). Delete old icons and add them again.</li>
+<li>📱 <b>Like an app:</b> put Motion Watch on the home screen (iPhone: Share → Add to Home Screen). Then the iPhone also gets a real full screen. In this mode the button <b>⟳</b> (top right) reloads the page; after an update a «Reload» bar appears at the bottom.</li>
 <li>🦊 <b>Collect animal photos:</b> keep AI detection on, point the camera at a feeding place or a game trail – check the <i>Diary</i> in the morning.</li>
 <li>🌙 <b>Test before the first night:</b> arm, walk through the picture once and check: push arrives, recording is there, siren / light react.</li>
 <li>🌳 <b>False alarms from branches:</b> draw trees and bushes as «Ignore» zones and raise the minimum size a little. The automatic wind detection helps too.</li>
@@ -573,6 +579,40 @@ function search() {
   let v = null; try { v = localStorage.getItem("mw-hdr"); } catch (e) {}
   set(v === "0", false);
   setTimeout(() => set(document.body.classList.contains("hdrhidden"), false), 1500);   // titles in the right language
+})();
+// ---- app mode (opened from the home screen icon, no browser bars): reload button; every page: note when a new version runs ----
+(function () {
+  const H = document.querySelector("header"); if (!H) return;
+  const TX = {"Reload page": "Seite neu laden", "New version running": "Neue Version läuft", "Reload": "Neu laden", "later": "später"};
+  const tx = s => (LANG === "de" && TX[s]) || s;
+  const app = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  document.body.classList.toggle("appmode", app);
+  if (app) {
+    const b = el("button", "sec", "⟳"); b.type = "button"; b.id = "btn-reload";
+    b.onclick = () => { b.disabled = true; location.reload(); };
+    const ctl = H.querySelector(".hdr-ctl"); (ctl || H).insertBefore(b, ctl ? ctl.firstChild : null);
+    setTimeout(() => { b.title = tx("Reload page"); b.setAttribute("aria-label", b.title); }, 1200);
+  }
+  const PAGEVER = "2.0.5"; let shown = false;
+  async function check() {
+    if (document.hidden || shown) return;
+    try {
+      const r = await fetch("/api/version", {cache: "no-store"}); if (!r.ok) return;
+      const j = await r.json();
+      if (j.version && j.version !== PAGEVER) {
+        shown = true;
+        const bar = el("div"); bar.id = "newver";
+        bar.style.cssText = "position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));z-index:90;display:flex;gap:10px;align-items:center;"
+          + "background:var(--panel);border:1px solid var(--acc);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow)";
+        const tt = el("div", "", "✨ " + tx("New version running") + ": " + j.version); tt.style.flex = "1"; tt.style.fontWeight = "700";
+        const go = el("button", "", tx("Reload")); go.onclick = () => location.reload();
+        const no = el("button", "sec", tx("later")); no.onclick = () => bar.remove();
+        bar.append(tt, go, no); document.body.appendChild(bar);
+      }
+    } catch (e) {}
+  }
+  setInterval(check, 20000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(check, 1500); });
 })();
 // ---- clock: the Pi has no battery clock; without internet it takes the time of the phone ----
 (function () {
