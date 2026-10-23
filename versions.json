@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.0.2",
+   "file": "webcam_bewegung_2_0_2.py",
+   "url": "",
+   "sha256": "41f4623c3b09306cbdcd36285c9a1eb3dca9a30cc5d34da81cc9edc6315b014a",
+   "date": "2026-10-23",
+   "notes": "pause the program (System & network -> System, window: Setup): switches off at once (recording finished, settings saved) and starts again by itself after 5 min ... 12 h; meanwhile a small page with countdown and \"Start now\" (same process: autostart and watchdog keep working)"
+  },
+  {
    "version": "2.0.1",
    "file": "webcam_bewegung_2_0_1.py",
    "url": "",
