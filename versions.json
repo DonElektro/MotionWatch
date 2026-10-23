@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.0.5",
+   "file": "webcam_bewegung_2_0_5.py",
+   "url": "",
+   "sha256": "f0f9e2868885cc24082815d6b8a64b0abbf41deb1fa7fbc2f6ba36d4541a1ab9",
+   "date": "2026-10-23",
+   "notes": "internet check also over normal web traffic (port 443, first the push server itself) - no more false \"no internet\" when a router blocks port 53 to outside servers"
+  },
+  {
    "version": "2.0.4",
    "file": "webcam_bewegung_2_0_4.py",
    "url": "",
