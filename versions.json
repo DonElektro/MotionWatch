@@ -2,6 +2,14 @@
  "app": "Motion Watch",
  "versions": [
   {
+   "version": "2.0.9",
+   "file": "webcam_bewegung_2_0_9.py",
+   "url": "",
+   "sha256": "a7e781f4040d4351a840cd454ae110d39684471b8bda6bee5cb83a642de0e66d",
+   "date": "2026-10-23",
+   "notes": "in low light the visible picture is brightened too (gamma curve, adapts to the darkness; switch under Detection -> Low light) - before, a dark scene looked black while the detection still marked movements; autostart more robust after a power cut: restarts after any exit and never gives up (Restart=always, StartLimitIntervalSec=0), start without login (linger) is checked at every start and switched on or explained"
+  },
+  {
    "version": "2.0.8",
    "file": "webcam_bewegung_2_0_8.py",
    "url": "",
