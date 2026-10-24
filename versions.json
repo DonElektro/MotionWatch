@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 20:42",
+ "generated": "2026-10-24 20:51",
  "versions": [
+  {
+   "version": "2.26.0",
+   "file": "webcam_bewegung_2_26_0.py",
+   "url": "",
+   "sha256": "d9e1b8f5e94aa6c3592355044fa3434a652a49c07f22a78d9884202b7a18d481",
+   "date": "2026-10-24 20:51",
+   "notes": "⇆ next to the speed swaps the stick and the small buttons (left- / right-handed); on the phone in landscape the control column goes to the other side of the picture, in fullscreen the stick too (one choice per device; window: kept).",
+   "sig": "bdb262e162f33ec884131944df8d43aa6989577b08b46ebab067232e9fa9623f8c1843ccc2587a921bc8121341c672c452b08f7f39744b379d19cced57b6e10c"
+  },
   {
    "version": "2.25.1",
    "file": "webcam_bewegung_2_25_1.py",
