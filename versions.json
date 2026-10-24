@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 00:00",
+ "generated": "2026-10-25 00:14",
  "versions": [
+  {
+   "version": "2.42.3",
+   "file": "webcam_bewegung_2_42_3.py",
+   "url": "",
+   "sha256": "ce5fcde159423c4a7d30a5170a7d4a57c15b6e45beef8008cc381a5f63e00d63",
+   "date": "2026-10-25 00:14",
+   "notes": "the green arrows follow a switch at once (also in Simple), taken from the switches on the page itself.",
+   "sig": "d3b7071dd93d05cf3fb32e6dd24a3ef7a0218724a8d89b0fcd7eb76816135d03c5aeb33257f27b9c0855918b77a6c1a0978361fa958490549d7c7e4e498da107"
+  },
   {
    "version": "2.42.2",
    "file": "webcam_bewegung_2_42_2.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 20:51",
    "notes": "⇆ next to the speed swaps the stick and the small buttons (left- / right-handed); on the phone in landscape the control column goes to the other side of the picture, in fullscreen the stick too (one choice per device; window: kept).",
    "sig": "bdb262e162f33ec884131944df8d43aa6989577b08b46ebab067232e9fa9623f8c1843ccc2587a921bc8121341c672c452b08f7f39744b379d19cced57b6e10c"
-  },
-  {
-   "version": "2.25.1",
-   "file": "webcam_bewegung_2_25_1.py",
-   "url": "",
-   "sha256": "f08d6c400bf85371fec517006efd9901b9e8cacd4abb4a9c7b04afc7b64751a4",
-   "date": "2026-10-24 20:42",
-   "notes": "the app icon (orange camera head) top left instead of the blue dot - web page and window.",
-   "sig": "eb3aa548b4c3d089617926c50e730c0867a2ac03994c75d9043c7c179b9ce9f357c328096b329a2b84da404335df92131f943bea06a34df6a202f34bb4c6e900"
   }
  ]
 }
