@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 11:15",
+ "generated": "2026-10-24 11:21",
  "versions": [
+  {
+   "version": "2.17.2",
+   "file": "webcam_bewegung_2_17_2.py",
+   "url": "",
+   "sha256": "c1da999955bdcbb2140f18a443f2e581205a5dd17d2488db20a614e5383b711f",
+   "date": "2026-10-24 11:20",
+   "notes": "joystick: the point where the finger lands is the middle (no jump upwards when the finger is put on it), small dead zone while the finger rests.",
+   "sig": "46c9e4cc8f5f5f1cdbda4502b8500021ec529be63e16d16eeec1a3d6242d1814d02f5e6b684e3867061f0c11ed270d0ef00b09b72b244fb3aa98d4962c869c0a"
+  },
   {
    "version": "2.17.1",
    "file": "webcam_bewegung_2_17_1.py",
