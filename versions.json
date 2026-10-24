@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 22:15",
+ "generated": "2026-10-24 22:18",
  "versions": [
+  {
+   "version": "2.33.0",
+   "file": "webcam_bewegung_2_33_0.py",
+   "url": "",
+   "sha256": "ff28abd982e50b3945b91fc2879af1fa63b2236a84904bd50b4ecf404012f793",
+   "date": "2026-10-24 22:18",
+   "notes": "the marmot has a little secret on its belly.",
+   "sig": "eaac0620c6478d765deff2bfc6fa627c9640d2cc22a8cd1593c22d873d0e5aa1c8f30745760a98731b11765fff8707ccf884a636be7633f5d63ffa9b529ffd08"
+  },
   {
    "version": "2.32.0",
    "file": "webcam_bewegung_2_32_0.py",
