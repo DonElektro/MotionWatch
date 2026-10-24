@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 09:58",
+ "generated": "2026-10-24 10:05",
  "versions": [
+  {
+   "version": "2.5.0",
+   "file": "webcam_bewegung_2_5_0.py",
+   "url": "",
+   "sha256": "7b4844073536e63935cbea19c55fd0dd2ea118f46a3c185821ad6e939d240fd0",
+   "date": "2026-10-24 10:05",
+   "notes": "setup assistant at the first start (web page): language + device name, push messages (ntfy topic with QR code and test message), web password, QR codes of all addresses; System -> \"Setup assistant\" / \"Quick start (QR)\": printable card with QR codes (own Wi-Fi of the Pi to join, page addresses). Window: QR codes for the phone at the first start and under Setup. Own QR encoder (no extra package).",
+   "sig": "d6c4cb747a8f4677549004ca16bcfe8e2fe4534f3e4061a943a6ee2914c09033f6e6e46a2688fe50760f7cdae0a3cdf22e2f6df0ed1dd72f429ed5db9c50b40c"
+  },
   {
    "version": "2.4.0",
    "file": "webcam_bewegung_2_4_0.py",
