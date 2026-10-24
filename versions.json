@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 23:57",
+ "generated": "2026-10-24 23:58",
  "versions": [
+  {
+   "version": "2.42.1",
+   "file": "webcam_bewegung_2_42_1.py",
+   "url": "",
+   "sha256": "13e38adbb7d00a8de02d77cb9518964548face1ac91c07042d5bfc00656d3582",
+   "date": "2026-10-24 23:58",
+   "notes": "«download failed» message in all languages.",
+   "sig": "24d2ce8365e6e1f0eefb85dbfe78ea575dbe02a37ea62e4b773f55be8d5d576fee5de491eb0c83ad94663c0a4a78aef41668554dc307bb0c015fa8bf06f9f40a"
+  },
   {
    "version": "2.42.0",
    "file": "webcam_bewegung_2_42_0.py",
@@ -181,15 +190,6 @@
    "date": "2026-10-24 20:07",
    "notes": "controls: only the joystick - the arrow buttons and the «Stick / Buttons» switch were removed.",
    "sig": "d94b7a710c8ea7bae559fe93bec4460208de2c627b6dc27b9c29f60f91a858cfe0f317c0881dc1322aaca39edc2a9a201270c8f73fd10c8174dccb98726c4206"
-  },
-  {
-   "version": "2.23.2",
-   "file": "webcam_bewegung_2_23_2.py",
-   "url": "",
-   "sha256": "4c7eddcd3794ce59252af674d0a8d74e215ea5f0fa925dda9f53a614c290badb",
-   "date": "2026-10-24 20:01",
-   "notes": "relay quick switch can be switched back: it used the relay state from when the page was loaded and so always sent «on»; now on -> back to the mode before (mostly automatic), with a short message.",
-   "sig": "d2a555bd7a0e9997620cb65878ba98eced96e9e50aad3b7eecb4c75a7abb3da045eee8f1e54cc8c4c4db1b2dc863d85a8077bc41f9bb377d0178144b59de4000"
   }
  ]
 }
