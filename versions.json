@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 23:14",
+ "generated": "2026-10-24 23:26",
  "versions": [
+  {
+   "version": "2.37.0",
+   "file": "webcam_bewegung_2_37_0.py",
+   "url": "",
+   "sha256": "c923280f02b44360403535c47fdb3bbed158eaf95ccb6a9295b13b340ab672c8",
+   "date": "2026-10-24 23:26",
+   "notes": "privacy: shared pictures and videos no longer carry the location (switch «Send the location along when sharing», off by default). Downloads and the ZIP keep it - they are for yourself.",
+   "sig": "5c76c224125189c5565ea5a84d4e90231dba5b145abbcb31a9f001432021569e3fbd7c720e655e944733e84ecbb86b07e4c529a3f93668f31d1101aab6f1710f"
+  },
   {
    "version": "2.36.0",
    "file": "webcam_bewegung_2_36_0.py",
