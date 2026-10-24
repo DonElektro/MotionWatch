@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 19:23",
+ "generated": "2026-10-24 19:32",
  "versions": [
+  {
+   "version": "2.22.0",
+   "file": "webcam_bewegung_2_22_0.py",
+   "url": "",
+   "sha256": "64858c3097b7cb5ba0cefabfde9403a480d43d19d0d05acb3b678696a3442414",
+   "date": "2026-10-24 19:32",
+   "notes": "patrol route selectable: back and forth (1-2-3-2-1) or round trip (1-2-3-1); the patrol quick switch steps off -> back and forth -> round trip -> off and shows the mode; setting «Patrol route» in Patrol (web and window).",
+   "sig": "af7615a66ba15449ba9d5968e6408f6eee9cc92942a3b209b2b5e4b0a26261a760d06b04bd1aa4e6fe2b06a5a2c202888f43be0f7eb6e17fbfee2f077348370a"
+  },
   {
    "version": "2.21.0",
    "file": "webcam_bewegung_2_21_0.py",
