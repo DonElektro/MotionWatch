@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:10",
+ "generated": "2026-10-24 10:13",
  "versions": [
+  {
+   "version": "2.7.0",
+   "file": "webcam_bewegung_2_7_0.py",
+   "url": "",
+   "sha256": "2b66d397349d4b4bf851e3fd6e5358132ad5da5c555e60fc42e1cbcf4c12eed7",
+   "date": "2026-10-24 10:13",
+   "notes": "backup (Recordings -> Backup): finished alarm recordings are copied away from the device - WebDAV (Nextcloud, NAS, cloud), a folder (USB stick / NAS) or Telegram (video); one folder per day, waits for the sound, 3 tries, test button.",
+   "sig": "698138c156ba57d175b6085ec61c685328ac139f663d81606099deba452d4ec331a61cba40841121394b23fc1ddb5a5010ac2c27dfcc53a4bba809b12d883509"
+  },
   {
    "version": "2.6.0",
    "file": "webcam_bewegung_2_6_0.py",
