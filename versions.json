@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:50",
+ "generated": "2026-10-24 10:56",
  "versions": [
+  {
+   "version": "2.16.1",
+   "file": "webcam_bewegung_2_16_1.py",
+   "url": "",
+   "sha256": "e80ac74d8a8f7c1a68fb44a80004a4deaf5f3282735888876f865e95de54503a",
+   "date": "2026-10-24 10:56",
+   "notes": "\"Recalibrate / Reset counter / Reset settings\" and the settings line moved from Controls to System; the settings line in German (\"gespeichert 10:51\", not \"saved\").",
+   "sig": "71e857d85efa44bf99350531836682b0790ab253c4ebaa325f52b2fdf265fb954e9ebf92193bce069728ea5f361b8d6944e75982f3c693c1a1d7fd86a7364804"
+  },
   {
    "version": "2.16.0",
    "file": "webcam_bewegung_2_16_0.py",
