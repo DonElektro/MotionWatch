@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 19:38",
+ "generated": "2026-10-24 19:57",
  "versions": [
+  {
+   "version": "2.23.1",
+   "file": "webcam_bewegung_2_23_1.py",
+   "url": "",
+   "sha256": "afdda0ff4cf2d135c9382c6f6f243bb04d36c9c414ec44d9e88ffc10f5f018be",
+   "date": "2026-10-24 19:57",
+   "notes": "phone turned to landscape: the control column next to the picture is more compact (fits the screen height) and the picture is put in the middle of the screen reliably after turning (no scrolling up needed).",
+   "sig": "0c3e7292cddeeb9bd2abed6e00d5e862d088cf7f6ee649d578b0f21efa687d2fe495387359304cb2de2c84babad17ad81992d9b46057f1e7847c119125c63d07"
+  },
   {
    "version": "2.23.0",
    "file": "webcam_bewegung_2_23_0.py",
