@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 11:07",
+ "generated": "2026-10-24 11:15",
  "versions": [
+  {
+   "version": "2.17.1",
+   "file": "webcam_bewegung_2_17_1.py",
+   "url": "",
+   "sha256": "e7393ea42f92f49311c6a09383ad2d166dbd9defc3a4f9b9efed26d31a221667",
+   "date": "2026-10-24 11:15",
+   "notes": "phone held sideways: the full-screen stick sits higher (away from the swipe bar at the bottom edge), so it can be pushed down too.",
+   "sig": "2a52ec86303e8f4242243f3c45cb5d3b0199d0d759c35a2272a44a584888bd9aed2df5f1ac90fcc0f8927873df3edbf05c1d6b819eb5d9966cf02a724a0e2701"
+  },
   {
    "version": "2.17.0",
    "file": "webcam_bewegung_2_17_0.py",
