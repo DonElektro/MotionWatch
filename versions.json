@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 18:31",
+ "generated": "2026-10-24 19:01",
  "versions": [
+  {
+   "version": "2.20.1",
+   "file": "webcam_bewegung_2_20_1.py",
+   "url": "",
+   "sha256": "33cd964bc3671ef3c0e1a60d1d4562474f4836fce95374e375b9c96e88cf650e",
+   "date": "2026-10-24 19:01",
+   "notes": "controls bar: small things now next to the stick, quick switches on the right; groups spread over the full width in landscape.",
+   "sig": "fa68de1e998196c486eaa2b5f7f7f123c519801cba1e9d04a4aa174343ea219bb6a92c881b83911ad527402e4efa09b3d93175c26cc4031f2c5d60b4ade5a009"
+  },
   {
    "version": "2.20.0",
    "file": "webcam_bewegung_2_20_0.py",
