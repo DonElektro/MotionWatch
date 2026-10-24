@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:26",
+ "generated": "2026-10-24 10:29",
  "versions": [
+  {
+   "version": "2.12.0",
+   "file": "webcam_bewegung_2_12_0.py",
+   "url": "",
+   "sha256": "3fab29dfd0eb957eb4d9b35d4bd022ddda6b417bbe6576b957424ff94759d4c0",
+   "date": "2026-10-24 10:29",
+   "notes": "MQTT / Home Assistant (System & network): state, events and the alarm picture to an MQTT broker, commands back (arm / disarm, lights, snapshot); Home Assistant discovery (alarm panel, person / motion / animal / recording, battery, temperature, camera picture). Own small MQTT client (no extra package), optional TLS.",
+   "sig": "df19e287be91568d0d0ac06a582b6d25c9951d907d159bc8ee70d54caef41230316ab6e81bb8be99b486cee1b8cee175145f72318f639c3ae22819c9b7a04a0f"
+  },
   {
    "version": "2.11.0",
    "file": "webcam_bewegung_2_11_0.py",
