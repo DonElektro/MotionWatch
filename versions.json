@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:29",
+ "generated": "2026-10-24 10:34",
  "versions": [
+  {
+   "version": "2.13.0",
+   "file": "webcam_bewegung_2_13_0.py",
+   "url": "",
+   "sha256": "2ee331aeca65ecc6d957c3c9a829f5b8e8a97469e4cd8cdb15ba1596fe812129",
+   "date": "2026-10-24 10:34",
+   "notes": "demo mode (--demo): a drawn camping scene where a person, a dog or a bear walks by now and then - alarm, recording, diary, deterrence work as with a real camera; own settings folder, \"DEMO\" in the header, nothing that changes the computer (shutdown, Wi-Fi, updates, passwords ...). For trying it out or an online demo.",
+   "sig": "6990cdf88f68cf8c4788b84aba1d0496e3b61ac11d5dfb61e2e3f924c03c91f6fb1e5035a764f989a58ffff54a9f86217f65dc5b0bc4e265af407d0536fc5a0d"
+  },
   {
    "version": "2.12.0",
    "file": "webcam_bewegung_2_12_0.py",
