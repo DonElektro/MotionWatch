@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 22:05",
+ "generated": "2026-10-24 22:08",
  "versions": [
+  {
+   "version": "2.30.0",
+   "file": "webcam_bewegung_2_30_0.py",
+   "url": "",
+   "sha256": "4489b70b13d4b6d794c492280453f3da7472ba06472e9ac1aad9bf00925c1553",
+   "date": "2026-10-24 22:08",
+   "notes": "GPS: the phone sends its location (https page), otherwise the place from the settings; photos, snapshots, timelapse and diary pictures get EXIF GPS data, videos a location tag (shown on the map in photo apps); the phone location also keeps sunrise / sunset right.",
+   "sig": "75bf56c53694b7991840e4e5aeb6c2db34c9ae24f8b993fb48f7b764bc36dd9cf67d4cef3a69bf1ff16a0c323bdf56f1cfb7983077a9288295e3cddd16c3ff0c"
+  },
   {
    "version": "2.29.0",
    "file": "webcam_bewegung_2_29_0.py",
