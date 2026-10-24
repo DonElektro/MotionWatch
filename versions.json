@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 11:59",
+ "generated": "2026-10-24 18:02",
  "versions": [
+  {
+   "version": "2.18.0",
+   "file": "webcam_bewegung_2_18_0.py",
+   "url": "",
+   "sha256": "29349fd39a4512942b60e1229bceb65fcef5c97cb83b9a09df3323cacab7a263",
+   "date": "2026-10-24 18:02",
+   "notes": "quick switches below the joystick (green = on): thermal overlay, mark objects, white light, IR light, follow person, patrol, record now (max. 10 min, red while recording) and photo into the recordings; also in operator mode.",
+   "sig": "18ab02cb90a6df7e9bc89b4f859f65023c1bc9479d35a53d8f15b7bc132065497474f86327b2c8eb35d0bee892e834f766c24e51c5537c089105d58ddec9ff02"
+  },
   {
    "version": "2.17.5",
    "file": "webcam_bewegung_2_17_5.py",
