@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:13",
+ "generated": "2026-10-24 10:16",
  "versions": [
+  {
+   "version": "2.8.0",
+   "file": "webcam_bewegung_2_8_0.py",
+   "url": "",
+   "sha256": "cee4352a3608ea6d1acbae0afa0638c8cd2ed2cf8801544c9e5ea765148d2bbb",
+   "date": "2026-10-24 10:16",
+   "notes": "theft protection (Alarm & camping): sabotage alarm when the camera is covered or turned away (picture check, pauses while the head moves itself), optional motion sensor MPU-6050 (I2C 0x68: moved / knocked over), power cut while armed = alarm; when armed an urgent push with picture + siren.",
+   "sig": "2331dea8441e054db858c53431564aeff1a0eb80d8a848de7f4ce2fbcf451ccf055145b6899aeb6656e4f9a3ac99d6e96167ddf12c1a53e1b66c3d61a2e37d03"
+  },
   {
    "version": "2.7.0",
    "file": "webcam_bewegung_2_7_0.py",
