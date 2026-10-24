@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 09:14",
+ "generated": "2026-10-24 09:36",
  "versions": [
+  {
+   "version": "2.3.1",
+   "file": "webcam_bewegung_2_3_1.py",
+   "url": "",
+   "sha256": "63ff71785f482acfe371128f03bfe342aaa08de3b53fa7bff23d4d94258c6d6f",
+   "date": "2026-10-24 09:36",
+   "notes": "phone too: \"Expand all / Collapse all\" as two symbols right of the settings search (no more big buttons)."
+  },
   {
    "version": "2.3.0",
    "file": "webcam_bewegung_2_3_0.py",
