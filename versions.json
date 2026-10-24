@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 18:11",
+ "generated": "2026-10-24 18:31",
  "versions": [
+  {
+   "version": "2.20.0",
+   "file": "webcam_bewegung_2_20_0.py",
+   "url": "",
+   "sha256": "f63831b3fbc1338c0212debf5d9b85b6dd378ca33493d1a9390c0e4094d5e902",
+   "date": "2026-10-24 18:31",
+   "notes": "compact controls: stick | quick switches (now also listen and the relays) | small things (speed, centre, calibrate, waypoints, stick / buttons) in one bar; tablet / computer: the picture always fits completely above it; duplicates removed (listen twice, snapshot = photo, pan / tilt twice); light and relay Off / On / Auto moved into their settings topics.",
+   "sig": "854a4bc616f15d10ac9701d016aada0d3b1ea8b44c381b31525464f896cac79162470df16135189f1717a37c8ebe5642c7dea07a6ad7910de30fb97168b74809"
+  },
   {
    "version": "2.19.0",
    "file": "webcam_bewegung_2_19_0.py",
