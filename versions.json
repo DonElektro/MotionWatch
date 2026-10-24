@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:05",
+ "generated": "2026-10-24 10:10",
  "versions": [
+  {
+   "version": "2.6.0",
+   "file": "webcam_bewegung_2_6_0.py",
+   "url": "",
+   "sha256": "ef9e3825dfc29bc1c125034b0c33030e603909b0b1b7e9033928b5706e7a8939",
+   "date": "2026-10-24 10:10",
+   "notes": "web push: alarm messages straight into the browser / home screen app (no ntfy app needed): Notifications -> \"Switch on on this device\", test; needs https - button \"https over Tailscale\" (tailscale serve, real certificate); iPhone / iPad from the home screen app. Standard Web Push (VAPID + aes128gcm) with python3-cryptography.",
+   "sig": "0ac697c37397dc6b2cd70c0bbd29f8137d6c7e92bc376dbd1fc34bc62943a81d6dc3230d9651cebb7ad1a58fde62377aa7f3fb3c1cd821d2753896e6663b490f"
+  },
   {
    "version": "2.5.0",
    "file": "webcam_bewegung_2_5_0.py",
