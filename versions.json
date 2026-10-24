@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 22:49",
+ "generated": "2026-10-24 22:59",
  "versions": [
+  {
+   "version": "2.35.0",
+   "file": "webcam_bewegung_2_35_0.py",
+   "url": "",
+   "sha256": "2348e68c53306637f8ecf483b19d9412d9e21aa6c4fb11922b5f00c15eae7397",
+   "date": "2026-10-24 22:59",
+   "notes": "the marmot only appears over the live picture (never in recordings) and keeps its secret better.",
+   "sig": "29fe931933c1df7fa27109901f94bbaf5d91dd97da4d42c6f34c694786ef2cec8386a043536a7a80e8c0fe42ff25f8f19a51f9592c81db7e885536a8884eac06"
+  },
   {
    "version": "2.34.0",
    "file": "webcam_bewegung_2_34_0.py",
