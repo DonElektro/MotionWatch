@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 19:32",
+ "generated": "2026-10-24 19:38",
  "versions": [
+  {
+   "version": "2.23.0",
+   "file": "webcam_bewegung_2_23_0.py",
+   "url": "",
+   "sha256": "9b7dd22c8a5a238845cd9c7100b21706a12a93c5111f59c81727b9f55defacb9",
+   "date": "2026-10-24 19:38",
+   "notes": "waypoints drawn on the joystick background (numbered points, line in patrol order, dashed back to 1 for a round trip; brighter while the patrol runs).",
+   "sig": "b8f728abe8c2353e3ff1d5e69cf55ce7df7fc8ae6ae479388c818a0ce4535bcc6ce613ed45f58efd23ade0545383a71fbd04a01efb7688830ddb30ff0ab3dc05"
+  },
   {
    "version": "2.22.0",
    "file": "webcam_bewegung_2_22_0.py",
