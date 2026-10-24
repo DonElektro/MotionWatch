@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 21:49",
+ "generated": "2026-10-24 22:05",
  "versions": [
+  {
+   "version": "2.29.0",
+   "file": "webcam_bewegung_2_29_0.py",
+   "url": "",
+   "sha256": "c4120fb0886c5013580e5b2f58883ec90d30d161fc3a3c1bf1c049cb1666804c",
+   "date": "2026-10-24 22:05",
+   "notes": "night vision look: green image-intensifier picture with grain and dark corners, the thermal camera draws glowing outlines of warm bodies and (Thermal-90) their temperature; quick switch 🌙 and «automatically at night».",
+   "sig": "947a23d60134b3197c65d22c0de74d7642bd78815a856ea1d48b5ab778e56dfba57a4e72af762c71d587cb5ee04aacf5d70ce85682c24c8a1689d488c667a702"
+  },
   {
    "version": "2.28.0",
    "file": "webcam_bewegung_2_28_0.py",
