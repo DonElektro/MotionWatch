@@ -1,0 +1,26 @@
+# Checks every new version automatically: compiles, runs the built-in self-test
+# (update signatures in versions.json, QR codes, web push encryption, settings, JavaScript of all pages).
+name: Selbsttest
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  selbsttest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Pakete
+        run: pip install opencv-python-headless numpy flask pillow cryptography
+      - name: Neuste Version testen
+        run: |
+          f=$(ls webcam_bewegung_*.py | sort -V | tail -1)
+          echo "Teste $f"
+          python3 -m py_compile "$f"
+          python3 "$f" --self-test .

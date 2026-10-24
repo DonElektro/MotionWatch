@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:36",
+ "generated": "2026-10-24 10:38",
  "versions": [
+  {
+   "version": "2.15.0",
+   "file": "webcam_bewegung_2_15_0.py",
+   "url": "",
+   "sha256": "324358aeaf76c8d83d5e95e33d627633efcdad925098fb013e49f8bec0b91666",
+   "date": "2026-10-24 10:38",
+   "notes": "manual: new chapter \"Privacy & security\" (what is stored, what leaves the device and when, sound, privacy zones, legal hints CH / EU); --self-test (checks signatures, QR codes, web push encryption, the web pages) - also run automatically on GitHub for every new version.",
+   "sig": "8bf83508521f3e2551e06512678ceee9d082a1aec2dbc910650c0934d9186830c08a4495f754060b35f8f75514f6d3f48d064b35de86662808502c6f0fc14a0f"
+  },
   {
    "version": "2.14.0",
    "file": "webcam_bewegung_2_14_0.py",

@@ -34,6 +34,9 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 
 ## Testen (vor jeder Auslieferung)
 
+- `python3 webcam_bewegung_X_Y_Z.py --self-test .` (im Repository: prüft auch alle Signaturen in versions.json). Läuft zusätzlich
+  automatisch auf GitHub (Actions → «Selbsttest») bei jedem Push.
+
 - `python3 -m py_compile` und JavaScript-Prüfung (`node --check` der gerenderten Seiten).
 - Programm mit simulierter Kamera starten (`open_source` ersetzen) und mit Playwright prüfen:
   Handy hoch (390 × 844) und quer, PC; keine JS-Fehler; Bildschirmfotos ansehen.
