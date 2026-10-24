@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 22:18",
+ "generated": "2026-10-24 22:49",
  "versions": [
+  {
+   "version": "2.34.0",
+   "file": "webcam_bewegung_2_34_0.py",
+   "url": "",
+   "sha256": "0f7d72e95fb6cea130b5f501e7f13f2870a4ffeed6e5eb83463af2f857ef58ac",
+   "date": "2026-10-24 22:49",
+   "notes": "recordings: filter by place (pictures within 2 km = one place, names from OpenStreetMap, can be renamed) and a map with all places (tap = preview, «show only this place»). The Bluetooth loudspeaker is no longer on the page «Cameras» (still under Settings -> Loudspeaker). The marmot only peeks out briefly; the code on its belly is real.",
+   "sig": "8cfe37f580fc2626aa30981a1a48e4ac8d321082935e0a373b493f8473c6375d46bffe538a6a6a65889eb7e741eae065752bf1f38a46e3b3ade318a404455603"
+  },
   {
    "version": "2.33.0",
    "file": "webcam_bewegung_2_33_0.py",
