@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 20:07",
+ "generated": "2026-10-24 20:33",
  "versions": [
+  {
+   "version": "2.25.0",
+   "file": "webcam_bewegung_2_25_0.py",
+   "url": "",
+   "sha256": "c0420ba0a560db569aeace8cd18b22a8012062d737ab7fb2b5f4db4c5dcd3f55",
+   "date": "2026-10-24 20:33",
+   "notes": "the window on the Raspberry looks like the web page: header with dot, name, tabs (Live / Weather & system / Event log) and symbol buttons; the picture in a card; control bar with a round joystick (drag from where you press, orange ring = camera position, numbered waypoints), speed / centre / calibrate / waypoints and the same quick switches (thermal, marks, light, IR, follow, patrol 3-way, record, photo, one per relay); settings with search field, ⊞ / ⊟ and green arrows; adapts to small screens (800x480: compact header, controls folded first, picture never cut wider); relay rows moved to «Rela",
+   "sig": "f49ff235a8270ca997377c4a865591c8bd396227341443127ae8cc71f60e79e8e8f6e041b653246dad710823347b9b788895e367b283184a18daa471a124340c"
+  },
   {
    "version": "2.24.0",
    "file": "webcam_bewegung_2_24_0.py",
