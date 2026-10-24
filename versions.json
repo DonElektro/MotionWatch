@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 11:54",
+ "generated": "2026-10-24 11:59",
  "versions": [
+  {
+   "version": "2.17.5",
+   "file": "webcam_bewegung_2_17_5.py",
+   "url": "",
+   "sha256": "d2e71fbfb0d3416ade716de35010f30d44b104d306ca86d18825ab441f772746",
+   "date": "2026-10-24 11:59",
+   "notes": "full screen: stick and buttons are placed inside the picture box instead of \"fixed\" to the screen - on the iPhone they reacted about 1 cm below where they were drawn.",
+   "sig": "37877ad148cd3658782ae591583a64f304878abd7c53d75420c4e6eec124f155d2a6f793cedc8411b2a7f6b9a18bb4c6f635d30bc08f6919ae9a17bacdf8970b"
+  },
   {
    "version": "2.17.4",
    "file": "webcam_bewegung_2_17_4.py",
