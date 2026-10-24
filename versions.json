@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 23:39",
+ "generated": "2026-10-24 23:41",
  "versions": [
+  {
+   "version": "2.40.0",
+   "file": "webcam_bewegung_2_40_0.py",
+   "url": "",
+   "sha256": "ad3e7c6ad1129807d56eeca8a60e68aa8df5afa113997988307c2fa0671954b9",
+   "date": "2026-10-24 23:41",
+   "notes": "false alarms: mark a recording «was nothing» (animal, wind, light, rain, car, other); the recordings page then suggests matching settings (one tap to take them over) and can show only the false alarms.",
+   "sig": "9768c3413f9aaa426c194f314a0b29dc57e5fbe3413ec7189939a7c7595299327cf3527f23374fcce4e9f3f9d5a5831f7abc86dc8a2c9ca593337d3a49e77805"
+  },
   {
    "version": "2.39.0",
    "file": "webcam_bewegung_2_39_0.py",
