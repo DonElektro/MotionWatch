@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 23:41",
+ "generated": "2026-10-24 23:44",
  "versions": [
+  {
+   "version": "2.41.0",
+   "file": "webcam_bewegung_2_41_0.py",
+   "url": "",
+   "sha256": "2d7aa09a03eb6baf38a3f8a864a43683d2c2f4e969ad7c17fa35fb9ba1895e09",
+   "date": "2026-10-24 23:44",
+   "notes": "one-page quick guide for the campsite (5 languages, printable): set up, connect, evening, alarm, morning, when something does not work. The QR card is now called «QR codes for connecting».",
+   "sig": "55679e87bf90dfc84de62f2225dd7170aeaff4a9df518b08ec98dea4fbee028fefb380b3db759b19019824c6269884c4e77deba3dce79066c5579a14a7c2b007"
+  },
   {
    "version": "2.40.0",
    "file": "webcam_bewegung_2_40_0.py",
