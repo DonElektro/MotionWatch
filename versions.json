@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 22:59",
+ "generated": "2026-10-24 23:14",
  "versions": [
+  {
+   "version": "2.36.0",
+   "file": "webcam_bewegung_2_36_0.py",
+   "url": "",
+   "sha256": "bc4f5fb98344a84850d529e3586d5fbb75d9b70835cbd9fcde648dd6b3aa8930",
+   "date": "2026-10-24 23:14",
+   "notes": "settings: the location is either taken automatically from the phone or picked by tapping on a map (with place search and «my position»); replaces the two number fields.",
+   "sig": "d257d387f7cd08115e80a1d386062c66100505e2f6068101101a89a7cee3d7dd806bc9f4fe78e4294347cc4ce2d28dc06c18a6b8ed85dc5d0e8f8d8220b5c60d"
+  },
   {
    "version": "2.35.0",
    "file": "webcam_bewegung_2_35_0.py",
