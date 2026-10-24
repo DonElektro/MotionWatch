@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:56",
+ "generated": "2026-10-24 11:07",
  "versions": [
+  {
+   "version": "2.17.0",
+   "file": "webcam_bewegung_2_17_0.py",
+   "url": "",
+   "sha256": "e774cbdd344361e6f6ec5a44eeebb493a1fb42e61983845be09beaa4dd35bbf7",
+   "date": "2026-10-24 11:07",
+   "notes": "full screen on tablet, phone and computer: the picture fills the whole screen, the joystick floats see-through at the bottom right (pale after 3 s, ⇆ = other side) with \"centre\" and \"listen\"; the phone no longer puts the stick below / beside the picture.",
+   "sig": "844cd170d14f491d1134cedf947468a06ce417d70d4407655d3d62b48eb0538feafd5079f91860090e46f935d6b0f0f3bac5df4f7dd4dcee221280dd6c1d1c03"
+  },
   {
    "version": "2.16.1",
    "file": "webcam_bewegung_2_16_1.py",
