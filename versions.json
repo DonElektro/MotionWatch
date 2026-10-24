@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 19:57",
+ "generated": "2026-10-24 20:01",
  "versions": [
+  {
+   "version": "2.23.2",
+   "file": "webcam_bewegung_2_23_2.py",
+   "url": "",
+   "sha256": "4c7eddcd3794ce59252af674d0a8d74e215ea5f0fa925dda9f53a614c290badb",
+   "date": "2026-10-24 20:01",
+   "notes": "relay quick switch can be switched back: it used the relay state from when the page was loaded and so always sent «on»; now on -> back to the mode before (mostly automatic), with a short message.",
+   "sig": "d2a555bd7a0e9997620cb65878ba98eced96e9e50aad3b7eecb4c75a7abb3da045eee8f1e54cc8c4c4db1b2dc863d85a8077bc41f9bb377d0178144b59de4000"
+  },
   {
    "version": "2.23.1",
    "file": "webcam_bewegung_2_23_1.py",
