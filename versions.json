@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 23:45",
+ "generated": "2026-10-24 23:57",
  "versions": [
+  {
+   "version": "2.42.0",
+   "file": "webcam_bewegung_2_42_0.py",
+   "url": "",
+   "sha256": "4ce75fff34164c9fe1ad95bcfcee7bbddd0cacb9bcf6cc6d34811a64453c94fb",
+   "date": "2026-10-24 23:57",
+   "notes": "AI model with one tap: «Download AI model» (self-check, AI settings, Pi window) fetches the two model files (about 70 MB) into the data folder and switches the AI on - no commands needed any more.",
+   "sig": "2deebc4e6bdcc661fd9a61f15dc9d78d1e44f3ebf744e0bafec592da1ff14c13b6f2b36b3011ef37bb50ac3c40b9d36035d9703411545f5a32a38f2d3e49c10e"
+  },
   {
    "version": "2.41.0",
    "file": "webcam_bewegung_2_41_0.py",
