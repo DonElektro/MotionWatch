@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 00:34",
+ "generated": "2026-10-25 01:03",
  "versions": [
+  {
+   "version": "2.43.1",
+   "file": "webcam_bewegung_2_43_1.py",
+   "url": "",
+   "sha256": "4e0534230bd7d06c789ee4a48c47bd7fd79282e4d5f94c668083fa385736e483",
+   "date": "2026-10-25 01:03",
+   "notes": "only one Motion Watch at a time: started by hand while the autostart runs it in the background (without a window), the program asks and takes over with its window (the background service starts again when the window is closed). The web page notices when a switched-off Pi is back and reloads by itself.",
+   "sig": "242188a8b8078233f8c7a2de9dd50b22782f058eda1b29428d4fdca6b69aa0c6ac422cb548719e186702023ecc9a0d7a00dadf5e94b0a4edd8cf321c633ab106"
+  },
   {
    "version": "2.43.0",
    "file": "webcam_bewegung_2_43_0.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 21:49",
    "notes": "five languages: German, French, Italian, Romansh (Rumantsch Grischun) and English - web page, window, manual, setup assistant, push / SMS texts, quick start card, guest page; language menu instead of DE/EN (Ctrl+L in the window: next language); missing Romansh texts fall back to German. Two small surprises for Swiss users.",
    "sig": "7843e3450043d6e251bb462111ad6618cb3be3ced4015607db39cb7bab5b3da281bf5ca1df5c84956e5fb6d11dd6cd7c28e1019ec6f8b277573e00ef1799400d"
-  },
-  {
-   "version": "2.27.0",
-   "file": "webcam_bewegung_2_27_0.py",
-   "url": "",
-   "sha256": "44d16433874e3f748bc95be1935369d2126e535213299f3006f8bc0ea335d5c7",
-   "date": "2026-10-24 20:59",
-   "notes": "always a live picture: phone and tablet upright show a small live picture in a corner as soon as the big one is scrolled away (the same picture moves, no second stream); tap = back up, drag = other corner, ✕ = away; red frame while a person is seen. Tablet landscape / computer: the picture column stays anyway (only the settings scroll).",
-   "sig": "3e4eb1c139a208aead856b8beeafaf215af4d9a6119a7317a5b68886f42140a003cd8944d8dc242ce2daaba3fddc844d34c1de642273ff732789d2e6d9c5180a"
   }
  ]
 }

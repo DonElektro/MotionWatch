@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_27_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_43_1.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -294,6 +294,50 @@ Features
   * 2.27.0: always a live picture: phone and tablet upright show a small live picture in a corner as soon as the big one
     is scrolled away (the same picture moves, no second stream); tap = back up, drag = other corner, ✕ = away; red frame
     while a person is seen. Tablet landscape / computer: the picture column stays anyway (only the settings scroll).
+  * 2.28.0: five languages: German, French, Italian, Romansh (Rumantsch Grischun) and English - web page, window,
+    manual, setup assistant, push / SMS texts, quick start card, guest page; language menu instead of DE/EN (Ctrl+L
+    in the window: next language); missing Romansh texts fall back to German. Two small surprises for Swiss users.
+  * 2.29.0: night vision look: green image-intensifier picture with grain and dark corners, the thermal camera draws
+    glowing outlines of warm bodies and (Thermal-90) their temperature; quick switch 🌙 and «automatically at night».
+  * 2.30.0: GPS: the phone sends its location (https page), otherwise the place from the settings; photos, snapshots,
+    timelapse and diary pictures get EXIF GPS data, videos a location tag (shown on the map in photo apps); the phone
+    location also keeps sunrise / sunset right.
+  * 2.31.0: temperature sensor: BME280 / BMP280 (temperature, humidity, air pressure, I2C 0x76/0x77) or DS18B20 (1-Wire
+    GPIO 4) are found by themselves; shown in the header and under Setup; every 10 minutes a value is kept for the diary.
+  * 2.32.0: diary: day overview for every day - persons, animals (best pictures), warm bodies, noises, recordings; 24-hour
+    chart with temperature / humidity of the sensor, weather (Open-Meteo, off by default), rain and the events; sun, moon,
+    place and the night report. Browse the days with ‹ › or the date.
+  * 2.33.0: the marmot has a little secret on its belly.
+  * 2.34.0: recordings: filter by place (pictures within 2 km = one place, names from OpenStreetMap, can be renamed) and
+    a map with all places (tap = preview, «show only this place»). The Bluetooth loudspeaker is no longer on the page
+    «Cameras» (still under Settings -> Loudspeaker). The marmot only peeks out briefly; the code on its belly is real.
+  * 2.35.0: the marmot only appears over the live picture (never in recordings) and keeps its secret better.
+  * 2.36.0: settings: the location is either taken automatically from the phone or picked by tapping on a map
+    (with place search and «my position»); replaces the two number fields.
+  * 2.37.0: privacy: shared pictures and videos no longer carry the location (switch «Send the location along when
+    sharing», off by default). Downloads and the ZIP keep it - they are for yourself.
+  * 2.38.0: self-check: one traffic light per part (camera, AI, servos, thermal camera, microphone, loudspeaker,
+    temperature sensor, location, clock, internet, push, memory card, CPU temperature, power supply, battery,
+    password, https) with what to do; on the web (panel + header badge) and in the Pi window (Weather & system).
+  * 2.39.0: settings «Simple / Expert» (simple: only the important ones, on the web and in the Pi window); button
+    «Guard tonight»: switches on what a night needs, arms with the countdown and tells what is still missing.
+  * 2.40.0: false alarms: mark a recording «was nothing» (animal, wind, light, rain, car, other); the recordings page
+    then suggests matching settings (one tap to take them over) and can show only the false alarms.
+  * 2.41.0: one-page quick guide for the campsite (5 languages, printable): set up, connect, evening, alarm, morning,
+    when something does not work. The QR card is now called «QR codes for connecting».
+  * 2.42.0: AI model with one tap: «Download AI model» (self-check, AI settings, Pi window) fetches the two model files
+    (about 70 MB) into the data folder and switches the AI on - no commands needed any more.
+  * 2.42.1: «download failed» message in all languages.
+  * 2.42.2: AI model download from Google's storage address (the old address has no valid certificate); shorter error
+    messages.
+  * 2.42.3: the green arrows follow a switch at once (also in Simple), taken from the switches on the page itself.
+  * 2.43.0: protection against crashes of the whole Pi: the AI runs at most a few times per second and slower when the
+    Pi gets hot; every 10 s the program notes CPU temperature and power supply - after an unexpected end the self-check
+    shows what it was like; two short runs in a row -> «safe start» (AI, thermal camera, night vision, IR light,
+    patrol off) with a push message. The UPS shutdown needs plausible values and 3 minutes of running first.
+  * 2.43.1: only one Motion Watch at a time: started by hand while the autostart runs it in the background (without a
+    window), the program asks and takes over with its window (the background service starts again when the window
+    is closed). The web page notices when a switched-off Pi is back and reloads by itself.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -302,10 +346,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_27_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_43_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_27_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_27_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_43_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_43_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -322,7 +366,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.27.0"
+APP_VERSION = "2.43.1"
 
 
 def default_data_dir():
@@ -499,7 +543,11 @@ CFG = {
     "pre_roll": 2.0,             # seconds of video before the detection that are added to a recording
     "record_encoder": "auto",    # auto = ffmpeg (hardware H.264 when the Pi has it, else x264) | opencv
     "show_zones": True,
-    "latitude": 47.37, "longitude": 8.54,   # for sunrise / sunset schedules
+    "latitude": 47.37, "longitude": 8.54,   # for sunrise / sunset schedules (the phone keeps it up to date when gps_phone is on)
+    "gps_phone": True, "gps_tag": True,
+    "map_online": True,                      # recordings map: map tiles and place names from OpenStreetMap (the area is sent there)
+    "weather_on": False,                     # day overview: weather from the internet (Open-Meteo, the location is sent there)
+    "env_on": True, "env_offset": 0.0,       # temperature / humidity sensor (BME280 / BMP280 on I2C, DS18B20 on 1-Wire GPIO 4), correction      # location from the phone (https page) / GPS data in photos and videos
     "presence_hosts": [], "away_after": 10.0,
     "extra_cams": [],            # more cameras (motion recording only): list of source ids
     "relays_on": True,           # Auto relays may switch (On / Off relays are not affected)
@@ -511,6 +559,7 @@ CFG = {
     "timelapse_fps": 25.0,       # frame rate of the video that is made from the photos
     "timelapse_max_gb": 2.0,     # oldest photos are deleted above this size
     # thermal camera: a second camera (same view) that is laid over the normal picture
+    "nightvision": False, "nightvision_auto": False,     # night vision look: green picture, thermal outlines and °C written over it
     "thermal_on": False, "thermal_source": "", "thermal_alpha": 0.5, "thermal_map": "inferno",
     "thermal_hot": False, "thermal_hot_pct": 80.0,          # hot mode: only the warmest N percent are shown
     # pre-alarm push: a short message (small picture) to the phone at the first movement, before a person is confirmed
@@ -566,6 +615,8 @@ CFG = {
     "deter_warm_act": "off", "deter_warm_sound": "beeps",
     "deter_seconds": 6, "deter_pause": 60, "deter_always": False,
     "share_logo": True,
+    "ui_simple": True,                       # settings: only the important ones (Expert shows everything)
+    "share_gps": False,                      # shared pictures / videos keep their GPS position (off: removed before sharing)
     "fleet": [],
     "sms_on": False, "sms_numbers": "", "sms_mode": "auto", "sms_port": "/dev/ttyUSB2", "sms_hilink": "192.168.8.1",
     "sms_only_offline": True, "sms_pause": 5, "sms_day_max": 20,          # SMS over an LTE stick
@@ -635,7 +686,7 @@ def wp_add():
 START = time.time()
 LOCK = threading.Lock()
 GPIO_PAN, GPIO_TILT, GPIO_RELAY = 17, 27, 22
-GPIO_RESERVED = (GPIO_PAN, GPIO_TILT)          # servo pins can never be used as relays
+GPIO_RESERVED = (GPIO_PAN, GPIO_TILT) + ((4,) if os.path.isdir("/sys/bus/w1/devices/w1_bus_master1") else ())   # servo pins / 1-Wire never as relays
 MAX_RELAYS = 8
 FREE_GPIOS = (23, 24, 25, 5, 6, 12, 13, 16, 26, 4, 22, 18, 19, 20, 21)
 
@@ -663,6 +714,7 @@ def quick_photo(frame):
     os.makedirs(CFG["record_dir"], exist_ok=True)
     name = f"photo_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
     cv2.imwrite(os.path.join(CFG["record_dir"], name), frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+    gps_tag_jpg(os.path.join(CFG["record_dir"], name))
     log_event("rec", f"Photo saved: {name}")
     return name
 
@@ -1146,7 +1198,7 @@ def web_texts(lang=None):
         ph = ""
         m_ = re.fullmatch(r"msg_(person|prealarm|warm|noise)_(title|text)", key)
         if m_:
-            ph = MSG_DEFAULTS["de" if lang == "de" else "en"][m_.group(1)][0 if m_.group(2) == "title" else 1]
+            ph = msg_defaults(lang)[m_.group(1)][0 if m_.group(2) == "title" else 1]
         elif key == "device_name":
             ph = "Motion Watch"
         elif key == "backup_url":
@@ -1504,17 +1556,15 @@ def web_ui_update(changes, removes=()):
 def settings_status_text(lang=None):
     """The settings line (saved / loaded / defaults) in the language of the page / window."""
     st = str(STATE.get("settings_status", ""))
-    if (lang or CFG["lang"]) != "de":
-        return st
     m = re.match(r"^saved (\S+)$", st)
     if m:
-        return "gespeichert " + m.group(1)
+        return trf("saved {t}", lang, t=m.group(1))
     m = re.match(r"^loaded (\d+) settings, (\d+) waypoints, (\d+) relays, (\d+) schedules$", st)
     if m:
-        return f"geladen: {m.group(1)} Einstellungen, {m.group(2)} Wegpunkte, {m.group(3)} Relais, {m.group(4)} Zeitpläne"
+        return trf("loaded: {a} settings, {b} waypoints, {c} relays, {d} schedules", lang, a=m.group(1), b=m.group(2), c=m.group(3), d=m.group(4))
     if st.startswith("save failed: "):
-        return "Speichern fehlgeschlagen: " + st[13:]
-    return {"defaults": "Standardwerte", "defaults (no file yet)": "Standardwerte (noch keine Datei)"}.get(st, st)
+        return tr("save failed", lang) + ": " + st[13:]
+    return tr(st, lang)
 
 
 def load_settings():
@@ -1649,6 +1699,51 @@ def reset_settings():
 # Notifications: webhook / ntfy / Telegram when a person is detected (with cooldown)
 # ----------------------------------------------------------------------------
 TELEGRAM_API = "https://api.telegram.org"
+LANGS = ("de", "fr", "it", "rm", "en")            # the five languages (Swiss national languages + English)
+LANG_NAMES = {"de": "Deutsch", "fr": "Français", "it": "Italiano", "rm": "Rumantsch", "en": "English"}
+LOCALES = {"de": "de-CH", "fr": "fr-CH", "it": "it-CH", "rm": "de-CH", "en": "en-GB"}
+TRX = {"fr": {}, "it": {}, "rm": {}}     # English text -> French / Italian / Romansh (filled at the end of the file)
+HELP_X = {}                             # the manual in French / Italian / Romansh (filled at the end of the file)
+LANG_JS = r"""
+// ---- language: menu with the five languages (the choice is kept per device) ----
+var LANGN = {de: "Deutsch", fr: "Français", it: "Italiano", rm: "Rumantsch", en: "English"};
+var LOCALE = l => ({de: "de-CH", fr: "fr-CH", it: "it-CH", rm: "de-CH"})[l] || "en-GB";
+function langSet(k) {      // keep the language (also on the Pi, for the other pages / devices), then load the page in it
+  try { localStorage.setItem("mw-lang", k); } catch (e) {}
+  const go = () => location.reload();
+  try { fetch("/api/ui", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({set: {"mw-lang": k}})}).then(go, go); setTimeout(go, 1500); }
+  catch (e) { go(); }
+}
+function langMenu(anchor) {
+  let m = document.getElementById("langmenu"); if (m) { m.remove(); return; }
+  m = document.createElement("div"); m.id = "langmenu"; m.setAttribute("role", "menu");
+  Object.keys(LANGN).forEach(k => { const b = document.createElement("button"); b.type = "button"; b.textContent = LANGN[k];
+    if (k === (typeof LANG !== "undefined" ? LANG : "")) b.className = "on";
+    b.onclick = () => langSet(k); m.appendChild(b); });
+  document.body.appendChild(m);
+  let r = anchor ? anchor.getBoundingClientRect() : null;
+  if (!r || !r.width) r = {right: innerWidth - 10, bottom: 56};          // the button is hidden (compact header): top right
+  m.style.top = Math.round(r.bottom + 6) + "px"; m.style.right = Math.max(8, Math.round(innerWidth - r.right)) + "px";
+  setTimeout(() => { const off = e => { if (!m.contains(e.target)) { m.remove(); removeEventListener("pointerdown", off, true); } };
+    addEventListener("pointerdown", off, true); }, 0);
+}
+"""   # in the first script of every page (the language button and the setup assistant use it)
+
+
+def norm_lang(lang):
+    lang = str(lang or "").lower()[:2]
+    return lang if lang in LANGS else "en"
+
+
+def cur_lang(lang=None):
+    return norm_lang(lang or CFG.get("lang") or "en")
+
+
+def msg_defaults(lang=None):
+    L = cur_lang(lang)
+    return MSG_DEFAULTS.get(L) or MSG_DEFAULTS["de" if L == "rm" else "en"]
+
+
 MSG_DEFAULTS = {
     "de": {"person": ("{name}: Person erkannt", "{count} Person(en) erkannt um {time} - Kamera: {camera}"),
            "prealarm": ("{name}: Bewegung (Voralarm)", "Voralarm: Bewegung um {time} - Kamera: {camera}"),
@@ -1665,7 +1760,7 @@ MSG_PLACEHOLDERS = "{name} {time} {date} {count} {camera} {link} {db}"
 def msg_template(kind, part):
     """Own text if set, otherwise the standard text in the language of the program. part = 0 title, 1 text."""
     own = CFG.get(f"msg_{kind}_{'title' if part == 0 else 'text'}", "")
-    return own if own.strip() else MSG_DEFAULTS["de" if CFG["lang"] == "de" else "en"][kind][part]
+    return own if own.strip() else msg_defaults()[kind][part]
 
 
 def render_msg(tpl, p):
@@ -2008,7 +2103,7 @@ def backup_copy(path, meta=None, test=False):
                 return False, "Telegram bot token / chat id missing (Notifications)"
             base = f"{TELEGRAM_API}/bot{CFG['telegram_token']}"
             b = uuid.uuid4().hex
-            cap = f"{dev}: " + (("Test" if test else ("Aufnahme " if CFG["lang"] == "de" else "recording ") + name))
+            cap = f"{dev}: " + (("Test" if test else tr("recording") + " " + name))
             if test:
                 req = urllib.request.Request(base + "/sendMessage", data=json.dumps({"chat_id": CFG["telegram_chat"], "text": cap + " ✓"}).encode(),
                                              headers={"Content-Type": "application/json"})
@@ -2154,18 +2249,328 @@ class TamperGuard:
         txt = {"covered": ("Kamera abgedeckt", "camera covered"), "turned": ("Kamera verdreht / Bild verändert", "camera turned / picture changed"),
                "moved": ("Gerät bewegt", "device moved"), "knocked": ("Gerät umgeworfen", "device knocked over"),
                "power": ("Strom getrennt (scharf)", "power cut while armed")}[what]
-        STATE["tamper"]["last"] = datetime.now().strftime("%H:%M") + " " + (txt[0] if de else txt[1])
+        STATE["tamper"]["last"] = datetime.now().strftime("%H:%M") + " " + tr(txt[1])
         log_event("sys", f"SABOTAGE: {txt[1]}" + ("" if is_armed() else " (disarmed - no alarm)"))
         if not is_armed() or now - self.cool < 120:
             return
         self.cool = now
         w = WATCH_REF["w"]
         if w is not None:
-            w.notifier.tamper(txt[0] if de else txt[1], w.frame_out)
+            w.notifier.tamper(tr(txt[1]), w.frame_out)
         siren_alarm("tamper")
 
 
 TAMPER = None
+
+
+# ----------------------------------------------------------------------------
+# Climate: temperature / humidity / air pressure sensor (BME280 / BMP280 at I2C 0x76 / 0x77, or DS18B20 on 1-Wire GPIO 4).
+#   Read every 30 s; every 10 minutes one line goes into <data>/climate/YYYY-MM-DD.json (also CPU temperature and battery)
+#   - the day overview of the diary draws its curves from there. The sensor must sit outside the warm housing.
+# ----------------------------------------------------------------------------
+class EnvSensor:
+    def __init__(self):
+        self.fd = None; self.addr = None; self.cal = None; self.bmp = False; self.tried = 0.0; self.last_log = 0.0
+        STATE["env"] = None
+        threading.Thread(target=self.loop, daemon=True, name="climate").start()
+
+    # ---- BME280 / BMP280 ----
+    def _rd(self, reg, n):
+        os.write(self.fd, bytes([reg])); return os.read(self.fd, n)
+
+    def _open(self):
+        import fcntl, struct
+        try:
+            fd = os.open("/dev/i2c-1", os.O_RDWR)
+        except OSError:
+            return False
+        for addr in (0x76, 0x77):
+            try:
+                fcntl.ioctl(fd, I2C_SLAVE, addr)
+                os.write(fd, bytes([0xD0])); cid = os.read(fd, 1)[0]
+                if cid not in (0x60, 0x58):
+                    continue
+                self.fd, self.addr, self.bmp = fd, addr, cid == 0x58
+                c = self._rd(0x88, 24)
+                T1, T2, T3, P1, P2, P3, P4, P5, P6, P7, P8, P9 = struct.unpack("<HhhHhhhhhhhh", c)
+                H1 = H2 = H3 = H4 = H5 = H6 = 0
+                if not self.bmp:
+                    H1 = self._rd(0xA1, 1)[0]
+                    h = self._rd(0xE1, 7)
+                    H2 = struct.unpack("<h", h[0:2])[0]; H3 = h[2]
+                    H4 = (struct.unpack("b", h[3:4])[0] << 4) | (h[4] & 0x0F)
+                    H5 = (struct.unpack("b", h[5:6])[0] << 4) | (h[4] >> 4)
+                    H6 = struct.unpack("b", h[6:7])[0]
+                self.cal = (T1, T2, T3, P1, P2, P3, P4, P5, P6, P7, P8, P9, H1, H2, H3, H4, H5, H6)
+                log_event("sys", f"Climate sensor {'BMP280' if self.bmp else 'BME280'} found (I2C 0x{addr:02x})")
+                return True
+            except OSError:
+                continue
+        os.close(fd)
+        return False
+
+    def _bme(self):
+        T1, T2, T3, P1, P2, P3, P4, P5, P6, P7, P8, P9, H1, H2, H3, H4, H5, H6 = self.cal
+        if not self.bmp:
+            os.write(self.fd, bytes([0xF2, 0x01]))                       # humidity x1
+        os.write(self.fd, bytes([0xF4, 0x25]))                           # temperature x1, pressure x1, one measurement
+        time.sleep(0.05)
+        d = self._rd(0xF7, 8)
+        adc_p = (d[0] << 12) | (d[1] << 4) | (d[2] >> 4); adc_t = (d[3] << 12) | (d[4] << 4) | (d[5] >> 4); adc_h = (d[6] << 8) | d[7]
+        v1 = (adc_t / 16384.0 - T1 / 1024.0) * T2
+        v2 = ((adc_t / 131072.0 - T1 / 8192.0) ** 2) * T3
+        tf = v1 + v2; t = tf / 5120.0
+        v1 = tf / 2.0 - 64000.0; v2 = v1 * v1 * P6 / 32768.0 + v1 * P5 * 2.0; v2 = v2 / 4.0 + P4 * 65536.0
+        v1 = (P3 * v1 * v1 / 524288.0 + P2 * v1) / 524288.0; v1 = (1.0 + v1 / 32768.0) * P1
+        pr = None
+        if v1:
+            pp = 1048576.0 - adc_p; pp = (pp - v2 / 4096.0) * 6250.0 / v1
+            v1 = P9 * pp * pp / 2147483648.0; v2 = pp * P8 / 32768.0; pr = (pp + (v1 + v2 + P7) / 16.0) / 100.0
+        hum = None
+        if not self.bmp:
+            h = tf - 76800.0
+            h = (adc_h - (H4 * 64.0 + H5 / 16384.0 * h)) * (H2 / 65536.0 * (1.0 + H6 / 67108864.0 * h * (1.0 + H3 / 67108864.0 * h)))
+            hum = max(0.0, min(100.0, h * (1.0 - H1 * h / 524288.0)))
+        return t, hum, pr
+
+    # ---- DS18B20 ----
+    @staticmethod
+    def _ds18b20():
+        out = []
+        for path in sorted(glob.glob("/sys/bus/w1/devices/28-*")):
+            try:
+                with open(os.path.join(path, "w1_slave")) as f:
+                    txt = f.read()
+                if "YES" in txt and "t=" in txt:
+                    v = int(txt.rsplit("t=", 1)[1]) / 1000.0
+                    if -55 < v < 125 and v != 85.0:                   # 85.0 = the power-on value, not a measurement
+                        out.append(round(v, 2))
+            except (OSError, ValueError):
+                continue
+        return out
+
+    def read(self):
+        if self.fd is None and time.time() - self.tried > 120:
+            self.tried = time.time(); self._open()
+        t = hum = pr = None; src = ""
+        if self.fd is not None:
+            try:
+                t, hum, pr = self._bme(); src = "BMP280" if self.bmp else "BME280"
+            except (OSError, ZeroDivisionError):
+                try:
+                    os.close(self.fd)
+                except OSError:
+                    pass
+                self.fd = None
+        ds = self._ds18b20()
+        if t is None and ds:
+            t, src = ds[0], "DS18B20"
+        if t is None:
+            return None
+        off = float(CFG["env_offset"])
+        return {"t": round(t + off, 1), "h": round(hum) if hum is not None else None, "p": round(pr, 1) if pr else None,
+                "src": src, "ds": [round(x + off, 1) for x in ds], "time": time.time()}
+
+    def loop(self):
+        while True:
+            try:
+                STATE["env"] = self.read() if CFG["env_on"] else None
+                if time.time() - self.last_log >= 600:
+                    self.last_log = time.time(); climate_log(STATE["env"])
+            except Exception as e:
+                log_event("sys", f"Climate sensor: {e}"[:160])
+            time.sleep(30)
+
+
+def climate_dir():
+    return os.path.join(DATA_DIR, "climate")
+
+
+def climate_log(env):
+    """One line every 10 minutes: time, temperature, humidity, pressure, CPU temperature, battery (%)."""
+    bt = STATE.get("battery") or {}
+    row = [datetime.now().strftime("%H:%M"), env["t"] if env else None, env["h"] if env else None, env["p"] if env else None,
+           STATE.get("cpu_temp"), bt.get("pct") if bt.get("on") else None]
+    path = os.path.join(climate_dir(), datetime.now().strftime("%Y-%m-%d") + ".json")
+    try:
+        os.makedirs(climate_dir(), exist_ok=True)
+        try:
+            with open(path) as f:
+                rows = json.load(f)
+        except (OSError, ValueError):
+            rows = []
+        rows.append(row)
+        with open(path + ".tmp", "w") as f:
+            json.dump(rows, f, separators=(",", ":"))
+        os.replace(path + ".tmp", path)
+        keep = max(30, int(CFG["diary_keep_days"]))
+        cut = (datetime.now() - timedelta(days=keep)).strftime("%Y-%m-%d")
+        for p_ in glob.glob(os.path.join(climate_dir(), "*.json")):
+            if os.path.basename(p_)[:10] < cut:
+                os.remove(p_)
+    except OSError:
+        pass
+
+
+def climate_day(day):
+    try:
+        with open(os.path.join(climate_dir(), day + ".json")) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return []
+
+
+ENV = None
+
+
+# ---- weather from the internet (Open-Meteo, free, no account) for the day overview of the diary ----
+WMO = [((0,), "☀️", "clear"), ((1, 2), "🌤", "partly cloudy"), ((3,), "☁️", "cloudy"), ((45, 48), "🌫", "fog"), ((51, 53, 55, 56, 57), "🌦", "drizzle"),
+       ((61, 63, 65, 66, 67), "🌧", "rain"), ((71, 73, 75, 77, 85, 86), "🌨", "snow"), ((80, 81, 82), "🌦", "showers"), ((95, 96, 99), "⛈", "thunderstorm")]
+WEATHER = {"t": 0.0, "status": "off"}
+
+
+def wmo_text(code):
+    for codes, icon, key in WMO:
+        if code in codes:
+            return icon, key
+    return "·", ""
+
+
+def weather_dir():
+    return os.path.join(DATA_DIR, "weather")
+
+
+def weather_fetch():
+    """The last 7 days and today, hour by hour, one file per day (kept like the diary)."""
+    g = gps_now()
+    if not g:
+        WEATHER["status"] = "no location"; return False
+    url = ("https://api.open-meteo.com/v1/forecast?latitude=%.3f&longitude=%.3f&timezone=auto&past_days=7&forecast_days=1"
+           "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,wind_gusts_10m_max"
+           "&hourly=temperature_2m,precipitation,relative_humidity_2m,weather_code" % (g[0], g[1]))
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "MotionWatch/" + APP_VERSION})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            j = json.loads(r.read().decode())
+    except Exception as e:
+        WEATHER["status"] = f"failed: {e}"[:120]; return False
+    weather_store(j)
+    WEATHER["t"] = time.time(); WEATHER["status"] = "ok"
+    return True
+
+
+def weather_store(j):
+    dl, hl = j.get("daily") or {}, j.get("hourly") or {}
+    days = {}
+    for i, day in enumerate(dl.get("time") or []):
+        days[day] = {"daily": {k: (dl.get(k) or [None] * (i + 1))[i] for k in dl if k != "time"}, "hourly": {}}
+    for i, ts in enumerate(hl.get("time") or []):
+        day, hh = ts[:10], ts[11:13]
+        if day in days:
+            days[day]["hourly"][hh] = [(hl.get(k) or [None] * (i + 1))[i] for k in ("temperature_2m", "precipitation", "relative_humidity_2m", "weather_code")]
+    os.makedirs(weather_dir(), exist_ok=True)
+    for day, v in days.items():
+        with open(os.path.join(weather_dir(), day + ".json"), "w") as f:
+            json.dump(v, f, separators=(",", ":"))
+
+
+def weather_day(day):
+    try:
+        with open(os.path.join(weather_dir(), day + ".json")) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
+def weather_loop():
+    time.sleep(90)
+    while True:
+        if CFG["weather_on"]:
+            if time.time() - WEATHER["t"] > 3 * 3600:
+                weather_fetch()
+        else:
+            WEATHER["status"] = "off"
+        time.sleep(120)
+
+
+def moon_phase(d):
+    """(emoji, name) of the moon phase on a date (mean lunar month since a known new moon)."""
+    age = ((datetime(d.year, d.month, d.day, 12) - datetime(2000, 1, 6, 18, 14)).total_seconds() / 86400.0) % 29.530588853
+    names = ((1.84, "🌑", "new moon"), (5.53, "🌒", "waxing crescent"), (9.23, "🌓", "first quarter"), (12.92, "🌔", "waxing gibbous"),
+             (16.61, "🌕", "full moon"), (20.30, "🌖", "waning gibbous"), (23.99, "🌗", "last quarter"), (27.68, "🌘", "waning crescent"), (30, "🌑", "new moon"))
+    for lim, icon, name in names:
+        if age < lim:
+            return icon, name
+
+
+def day_summary(day, lang="en"):
+    """Everything about one day for the diary: visits, recordings, climate curve, weather, sun, moon, place, night report."""
+    try:
+        d = datetime.strptime(day, "%Y-%m-%d")
+    except ValueError:
+        return None
+    sight_load()
+    with SIGHT_LOCK:
+        ev = [dict(e) for e in SIGHT["list"] if e["start"][:10] == day]
+    ev.sort(key=lambda e: e["start"])
+    counts = {}
+    for e in ev:
+        counts[e["label"]] = counts.get(e["label"], 0) + 1
+    animals = sorted(((k, c) for k, c in counts.items() if k in ANIMALS), key=lambda x: -x[1])
+    best = sorted((e for e in ev if e.get("img") and e["kind"] == "animal"), key=lambda e: (e.get("fav", False), e.get("conf", 0)), reverse=True)[:4]
+    stamp = d.strftime("%Y%m%d"); recs = 0; mb = 0.0; photos = 0; alarm_recs = 0
+    try:
+        for n in os.listdir(rec_dir()):
+            if stamp in n:
+                if n.endswith(".mp4"):
+                    recs += 1
+                    try:
+                        mb += os.path.getsize(os.path.join(rec_dir(), n)) / 1048576.0
+                        with open(os.path.join(rec_dir(), n[:-4] + ".json")) as f:
+                            alarm_recs += 1 if json.load(f).get("persons") else 0
+                    except (OSError, ValueError):
+                        pass
+                elif n.endswith(".jpg"):
+                    photos += 1
+    except OSError:
+        pass
+    g = next((e["gps"] for e in ev if e.get("gps")), None)
+    if g is None:
+        gg = gps_now(); g = [gg[0], gg[1]] if gg else None
+    lat, lon = (g[0], g[1]) if g else (float(CFG["latitude"]), float(CFG["longitude"]))
+    st = sun_times(d.date(), lat, lon)
+    sun = {"rise": f"{int(st[0] // 60):02d}:{int(st[0] % 60):02d}", "set": f"{int(st[1] // 60):02d}:{int(st[1] % 60):02d}",
+           "len": f"{int((st[1] - st[0]) // 60)} h {int((st[1] - st[0]) % 60):02d}"} if isinstance(st, tuple) else {"polar": st}
+    mi, mn = moon_phase(d)
+    w = weather_day(day) if CFG["weather_on"] or weather_day(day) else None
+    if w:
+        dd = w.get("daily") or {}
+        icon, key = wmo_text(dd.get("weather_code"))
+        w = {"icon": icon, "text": tr(key, lang) if key else "", "tmax": dd.get("temperature_2m_max"), "tmin": dd.get("temperature_2m_min"),
+             "rain": dd.get("precipitation_sum"), "wind": dd.get("wind_speed_10m_max"), "gust": dd.get("wind_gusts_10m_max"), "hourly": w.get("hourly") or {}}
+    rep_txt = ""
+    if d.date() <= datetime.now().date():
+        hr, fr = int(CFG["report_hour"]) % 24, int(CFG["report_from"]) % 24
+        end = d.replace(hour=hr); start = end - timedelta(hours=((hr - fr) % 24) or 24)
+        if end > datetime.now():
+            end = datetime.now()
+        if start < end:
+            rep_txt = report_build(lang, start, end)["text"]
+    clim = climate_day(day)
+    temps = [r[1] for r in clim if r[1] is not None]
+    hums = [r[2] for r in clim if r[2] is not None]
+    press = [r[3] for r in clim if r[3] is not None]
+    return {"day": day, "weekday": d.weekday(),
+            "counts": {"persons": counts.get("person", 0), "animals": sum(c for _k, c in animals), "warm": counts.get("warm", 0),
+                       "noise": counts.get("noise", 0), "recordings": recs, "alarm_recordings": alarm_recs, "photos": photos, "mb": round(mb, 1)},
+            "animals": [{"key": k, "label": tr_trigger(k, lang), "count": c} for k, c in animals],
+            "best": [{"img": e["img"], "label": tr_trigger(e["label"], lang), "t": e["start"][11:16]} for e in best],
+            "events": [{"t": e["start"][11:16], "kind": e["kind"], "label": tr_trigger(e["label"], lang) if e["kind"] in ("animal", "person", "object") else tr(e["label"], lang)} for e in ev][:400],
+            "climate": clim,
+            "climate_sum": {"tmin": min(temps) if temps else None, "tmax": max(temps) if temps else None, "hmin": min(hums) if hums else None,
+                            "hmax": max(hums) if hums else None, "pmin": min(press) if press else None, "pmax": max(press) if press else None},
+            "weather": w, "weather_on": bool(CFG["weather_on"]), "weather_status": WEATHER["status"],
+            "sun": sun, "moon": {"icon": mi, "name": tr(mn, lang)}, "gps": g, "report": rep_txt}
 
 
 class Notifier:
@@ -2262,7 +2667,7 @@ class Notifier:
             ok, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 75]); jpg = buf.tobytes() if ok else None
         pub = CFG["public_url"].strip().rstrip("/")
         payload = {"event": "tamper", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"), "text": text,
-                   "info_title": "{name}: " + ("SABOTAGE" if CFG["lang"] == "de" else "TAMPER ALARM"),
+                   "info_title": "{name}: " + tr("TAMPER ALARM"),
                    "snapshot": None, "rain": False, "wind": "", "source": STATE["source_label"], "link": pub + "/" if pub else ""}
         threading.Thread(target=self._dispatch, args=(payload, jpg, "tamper.jpg"), daemon=True).start()
         return True
@@ -2286,7 +2691,7 @@ class Notifier:
         if ev == "tamper":
             return render_msg(p.get("info_title"), p)
         if ev == "info":
-            return render_msg(p.get("info_title") or ("{name}: " + ("Netzwerk" if CFG["lang"] == "de" else "network")), p)
+            return render_msg(p.get("info_title") or ("{name}: " + tr("network")), p)
         if ev == "test":                                  # the test shows your own person message
             return "[Test] " + render_msg(msg_template("person", 0), dict(p, persons=1))
         return render_msg(msg_template(ev, 0), p)
@@ -2912,8 +3317,7 @@ class RemoteMonitor:
             if w is not None:
                 who = ", ".join(sorted({names[ip] for ip in new}))
                 de = CFG["lang"] == "de"
-                w.notifier.info((f"Fernzugriff: {who} schaut gerade zu" if de else f"Remote access: {who} is watching"),
-                                title="{name}: " + ("Fernzugriff" if de else "remote access"))
+                w.notifier.info(trf("Remote access: {who} is watching", who=who), title="{name}: " + tr("remote access"))
         self._prev = active
 
 
@@ -3037,7 +3441,11 @@ class SightingTracker:
                 os.makedirs(diary_dir(), exist_ok=True)
                 with open(os.path.join(diary_dir(), name), "wb") as f:
                     f.write(v["jpg"])
+                gps_tag_jpg(os.path.join(diary_dir(), name))
                 e["img"] = name
+                g = gps_now()
+                if g:
+                    e["gps"] = [round(g[0], 5), round(g[1], 5)]
             except OSError as ex:
                 log_event("rec", f"Diary picture could not be saved: {ex}")
         with SIGHT_LOCK:
@@ -3124,16 +3532,16 @@ def report_window(now=None):
 
 def report_build(lang=None, start=None, end=None):
     """Text + best picture (path) of the night report."""
-    lang = lang or CFG["lang"]; de = lang == "de"
+    lang = cur_lang(lang)
     if start is None:
         start, end = report_window()
     a, b = start.isoformat(timespec="seconds"), end.isoformat(timespec="seconds")
     sight_load()
     with SIGHT_LOCK:
         ev = [dict(e) for e in SIGHT["list"] if a <= e["start"] < b]
-    span = f"{start.strftime('%H')}–{end.strftime('%H')} " + ("Uhr" if de else "h")
+    span = f"{start.strftime('%H')}–{end.strftime('%H')} " + tr("o'clock", lang)
     if not ev:
-        return {"text": (f"Ruhige Nacht – nichts erkannt ({span})." if de else f"Quiet night – nothing detected ({span})."),
+        return {"text": trf("Quiet night – nothing detected ({span}).", lang, span=span),
                 "img": "", "count": 0, "from": a, "to": b}
     groups = {}
     for e in sorted(ev, key=lambda e: e["start"]):
@@ -3142,16 +3550,16 @@ def report_build(lang=None, start=None, end=None):
     parts = []
     for k in order:
         times = [e["start"][11:16] for e in groups[k]]
-        nm = tr_trigger(k, lang) if k not in ("warm", "noise") else (("Wärmebild" if de else "thermal") if k == "warm" else ("Geräusch" if de else "noise"))
+        nm = tr_trigger(k, lang) if k not in ("warm", "noise") else (tr("thermal", lang) if k == "warm" else tr("noise", lang))
         nm = nm.split(" (")[0]
         parts.append(f"{nm} {len(times)}× ({', '.join(times[:4])}{' …' if len(times) > 4 else ''})")
     animals = sum(len(v) for k, v in groups.items() if k in ANIMALS)
     persons = len(groups.get("person", []))
     head = []
     if persons:
-        head.append((f"{persons} Person" + ("en" if persons > 1 else "")) if de else f"{persons} person" + ("s" if persons > 1 else ""))
+        head.append(trf("{n} persons" if persons > 1 else "{n} person", lang, n=persons))
     if animals:
-        head.append((f"{animals} Tier" + ("e" if animals > 1 else "")) if de else f"{animals} animal" + ("s" if animals > 1 else ""))
+        head.append(trf("{n} animals" if animals > 1 else "{n} animal", lang, n=animals))
     text = ((", ".join(head) + " – ") if head else "") + "; ".join(parts) + f" ({span})"
     best = [e for e in ev if e.get("img")]
     best.sort(key=lambda e: (e["label"] == "person", e.get("conf", 0)), reverse=True)
@@ -3173,14 +3581,14 @@ def report_send(w, manual=False):
                 if wd > 800:
                     img = cv2.resize(img, (800, int(h * 800 / wd)), interpolation=cv2.INTER_AREA)
                 if CFG["share_logo"]:
-                    img = brand_image(img, ("Nachtbericht " if CFG["lang"] == "de" else "Night report ") + datetime.now().strftime("%d.%m.%Y"))
+                    img = brand_image(img, tr("Night report") + " " + datetime.now().strftime("%d.%m.%Y"))
                 ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 75])
                 jpg = buf.tobytes() if ok else None
         except (OSError, cv2.error):
             jpg = None
     de = CFG["lang"] == "de"
     pub = CFG["public_url"].strip().rstrip("/")
-    ok = w.notifier.info(r["text"], pub + "/diary" if pub else "", title="{name}: " + ("Nachtbericht" if de else "night report"),
+    ok = w.notifier.info(r["text"], pub + "/diary" if pub else "", title="{name}: " + tr("night report"),
                          jpg=jpg, fname="nachtbericht.jpg")
     STATE["report_last"]["sent"] = bool(ok)
     log_event("web", ("Night report sent" if ok else "Night report not sent") + (" (by hand)" if manual else "") + f": {r['text'][:80]}")
@@ -3359,9 +3767,9 @@ class BatteryMonitor:
                             "watts": round(watts, 1), "volt": round(v, 2), "amps": round(a, 2), "on_battery": on_batt,
                             "charging": charging}
         w = WATCH_REF["w"]; de = CFG["lang"] == "de"
-        def push(text_de, text_en):
+        def push(text_en, **kw):
             if w is not None and CFG["ups_push"]:
-                w.notifier.info(text_de if de else text_en, title="{name}: " + ("Strom" if de else "power"))
+                w.notifier.info(trf(text_en, **kw), title="{name}: " + tr("power"))
         was = getattr(self, "_on_batt", None)
         if was is not None and on_batt != was:
             if on_batt:
@@ -3369,22 +3777,23 @@ class BatteryMonitor:
                 if CFG["tamper_power"] and is_armed() and TAMPER is not None:
                     TAMPER.alarm("power")                    # armed: a cut cable can mean theft
                 else:
-                    push(f"Stromausfall – läuft auf Akku ({pct} %)", f"Power cut – running on the battery ({pct} %)")
+                    push("Power cut – running on the battery ({pct} %)", pct=pct)
             else:
                 log_event("sys", f"Mains power back - battery {pct} %")
-                push(f"Strom wieder da – Akku {pct} %", f"Power back – battery {pct} %")
+                push("Power back – battery {pct} %", pct=pct)
                 CFG["batt_warned"] = False
         self._on_batt = on_batt
         if on_batt and pct <= 20 and not CFG["batt_warned"]:
             CFG["batt_warned"] = True; save_settings()
             log_event("sys", f"Battery almost empty (about {pct} %, {hours or 0:.1f} h left)")
-            push(f"Akku fast leer: noch ca. {pct} % ({hours or 0:.1f} h)", f"Battery almost empty: about {pct} % ({hours or 0:.1f} h)")
+            push("Battery almost empty: about {pct} % ({hours:.1f} h)", pct=pct, hours=hours or 0)
         lim = int(CFG["ups_shutdown_pct"])
-        self._low = (getattr(self, "_low", 0) + 1) if (on_batt and lim > 0 and pct <= lim) else 0
+        plausible = 5.5 <= v <= 8.9 and time.time() - RUNGUARD["t0"] > 180      # 2 cells; never in the first 3 minutes
+        self._low = (getattr(self, "_low", 0) + 1) if (on_batt and lim > 0 and pct <= lim and plausible) else 0
         if self._low >= 3 and not POWER.get("pending") and not getattr(self, "_shut", False):   # 30 s below the limit
             self._shut = True
             log_event("sys", f"Battery empty ({pct} %, {v:.2f} V) - shutting down the Pi to protect the memory card")
-            push("Akku leer – der Pi wird sauber ausgeschaltet", "Battery empty – the Pi shuts down cleanly")
+            push("Battery empty – the Pi shuts down cleanly")
             power_action("poweroff", source="battery")
         return True
 
@@ -3413,9 +3822,8 @@ class BatteryMonitor:
             w = WATCH_REF["w"]
             if w is not None:
                 de = CFG["lang"] == "de"
-                w.notifier.info((f"Akku fast leer: noch ca. {pct} % ({hours:.1f} h) – bitte laden oder wechseln" if de else
-                                 f"Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap"),
-                                title="{name}: " + ("Akku" if de else "battery"))
+                w.notifier.info(trf("Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap", pct=pct, hours=hours),
+                                title="{name}: " + tr("battery"))
 
 
 def battery_full():
@@ -3507,9 +3915,8 @@ class SysMonitor:
                 self.uv_warned = True
                 log_event("sys", "UNDER-VOLTAGE: the power bank / cable delivers too little" + (f" ({sup['volt']} V)" if sup["volt"] else ""))
                 if w is not None:
-                    w.notifier.info(("Unterspannung: Powerbank fast leer oder Kabel zu schwach" if de else
-                                     "Under-voltage: power bank almost empty or cable too weak") + (f" ({sup['volt']} V)" if sup["volt"] else ""),
-                                    title="{name}: " + ("Strom" if de else "power"))
+                    w.notifier.info(tr("Under-voltage: power bank almost empty or cable too weak") + (f" ({sup['volt']} V)" if sup["volt"] else ""),
+                                    title="{name}: " + tr("power"))
         elif getattr(self, "uv_warned", False) and now - getattr(self, "_uv_last", 0.0) > 600:
             self.uv_warned = False
         try:
@@ -3522,9 +3929,8 @@ class SysMonitor:
             self.disk_warned = True
             log_event("sys", f"Memory card almost full: {free} MB free")
             if w is not None:
-                w.notifier.info((f"Speicherkarte fast voll: noch {free} MB frei - die ältesten Aufnahmen werden gelöscht" if de else
-                                 f"Memory card almost full: {free} MB free - the oldest recordings are deleted"),
-                                title="{name}: " + ("Speicher" if de else "memory"))
+                w.notifier.info(trf("Memory card almost full: {free} MB free - the oldest recordings are deleted", free=free),
+                                title="{name}: " + tr("memory"))
         elif free > lim * 1.5:
             self.disk_warned = False
         if free < 300 and w is not None and now - getattr(self, "_clean_t", 0.0) > 60:
@@ -3550,9 +3956,8 @@ class SysMonitor:
                     w = WATCH_REF["w"]
                     if w is not None:
                         de = CFG["lang"] == "de"
-                        w.notifier.info((f"Pi zu heiss: {temp:.0f} °C (Grenze {lim:.0f} °C) - Kühlung / Lüftung prüfen" if de else
-                                         f"Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation"),
-                                        title="{name}: " + ("Temperatur" if de else "temperature"))
+                        w.notifier.info(trf("Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation", temp=temp, lim=lim),
+                                        title="{name}: " + tr("temperature"))
                 elif temp < lim - 5:
                     self.warned = False
 
@@ -3677,7 +4082,7 @@ class NetMonitor:
             return
         addr = page_address(self.ip)
         de = CFG["lang"] == "de"
-        txt = (f"Motion Watch ist online im WLAN {ssid or '?'}: {addr}" if de else f"Motion Watch is online in Wi-Fi {ssid or '?'}: {addr}")
+        txt = trf("Motion Watch is online in Wi-Fi {ssid}: {addr}", ssid=ssid or "?", addr=addr)
         if w.notifier.info(txt, addr):
             self.announced = key
             log_event("sys", f"Address sent as push message: {addr}")
@@ -4485,6 +4890,497 @@ def _set_clock(epoch):
     return code == 0, err
 
 
+# ---- location (GPS) from the phone: photos get EXIF GPS data, videos a location tag ----
+GPS = {"lat": None, "lon": None, "acc": None, "t": 0.0}
+GPS_DEFAULT = (47.37, 8.54)                      # the factory setting is not a real location
+
+
+def gps_set(lat, lon, acc=None):
+    """A position sent by the browser of a phone (only https pages may read the location)."""
+    try:
+        lat, lon = float(lat), float(lon); acc = float(acc) if acc is not None else None
+    except (TypeError, ValueError):
+        return False, "invalid value"
+    if not (-90 <= lat <= 90 and -180 <= lon <= 180) or not (math.isfinite(lat) and math.isfinite(lon)):
+        return False, "invalid value"
+    if not CFG["gps_phone"]:
+        return False, "off"
+    first = GPS["lat"] is None
+    GPS.update(lat=round(lat, 6), lon=round(lon, 6), acc=round(acc) if acc is not None else None, t=time.time())
+    if abs(lat - float(CFG["latitude"])) > 0.01 or abs(lon - float(CFG["longitude"])) > 0.01:     # ~1 km: new place
+        CFG["latitude"], CFG["longitude"] = round(lat, 4), round(lon, 4); save_settings()
+        log_event("sys", f"Location from the phone: {lat:.4f}, {lon:.4f}")
+    elif first:
+        log_event("sys", f"Location from the phone: {lat:.4f}, {lon:.4f}")
+    return True, ""
+
+
+def gps_now():
+    """(lat, lon, source) for the pictures: the phone (the last 6 hours), otherwise the place in the settings
+    (not the factory value), otherwise None."""
+    if CFG["gps_phone"] and GPS["lat"] is not None and time.time() - GPS["t"] < 6 * 3600:
+        return GPS["lat"], GPS["lon"], "phone"
+    lat, lon = float(CFG["latitude"]), float(CFG["longitude"])
+    if (round(lat, 2), round(lon, 2)) != GPS_DEFAULT:
+        return lat, lon, "fixed"
+    return None
+
+
+def gps_state():
+    g = gps_now()
+    return {"lat": g[0], "lon": g[1], "src": g[2], "age": int(time.time() - GPS["t"]) if g[2] == "phone" else None,
+            "acc": GPS["acc"] if g[2] == "phone" else None} if g else None
+
+
+def exif_gps(lat, lon):
+    """A small EXIF block (APP1) with the GPS position - photo apps then show the picture on the map."""
+    import struct
+
+    def rat(v):
+        v = abs(v); d = int(v); m = int((v - d) * 60); sec = round(((v - d) * 60 - m) * 60 * 1000)
+        return struct.pack("<6I", d, 1, m, 1, sec, 1000)
+
+    ifd0 = struct.pack("<H", 1) + struct.pack("<HHII", 0x8825, 4, 1, 26) + struct.pack("<I", 0)
+    gps = struct.pack("<H", 5)
+    gps += struct.pack("<HHI", 0x0000, 1, 4) + bytes((2, 3, 0, 0))
+    gps += struct.pack("<HHI", 0x0001, 2, 2) + (b"N" if lat >= 0 else b"S") + b"\0\0\0"
+    gps += struct.pack("<HHII", 0x0002, 5, 3, 92)
+    gps += struct.pack("<HHI", 0x0003, 2, 2) + (b"E" if lon >= 0 else b"W") + b"\0\0\0"
+    gps += struct.pack("<HHII", 0x0004, 5, 3, 116) + struct.pack("<I", 0)
+    tiff = b"II*\0" + struct.pack("<I", 8) + ifd0 + gps + rat(lat) + rat(lon)
+    body = b"Exif\0\0" + tiff
+    return b"\xff\xe1" + struct.pack(">H", len(body) + 2) + body
+
+
+def gps_tag_jpg(path):
+    """Add the GPS position to a saved JPEG (when wanted and known)."""
+    g = gps_now() if CFG["gps_tag"] else None
+    if not g:
+        return
+    try:
+        with open(path, "rb") as f:
+            data = f.read()
+        if data[:2] != b"\xff\xd8" or b"Exif\0\0" in data[:64]:
+            return
+        tmp = path + ".gps"
+        with open(tmp, "wb") as f:
+            f.write(data[:2] + exif_gps(g[0], g[1]) + data[2:])
+        os.replace(tmp, path)
+    except OSError:
+        pass
+
+
+def gps_iso6709(g):
+    return f"{g[0]:+08.4f}{g[1]:+09.4f}/"
+
+
+def gps_tag_video(path):
+    """Write the location into a finished MP4 (copied, not encoded again)."""
+    g = gps_now() if CFG["gps_tag"] else None
+    if not g or not shutil.which("ffmpeg") or not os.path.isfile(path):
+        return
+    name = os.path.basename(path); tmp = os.path.join(os.path.dirname(path), "gps_" + name)
+    LIVE_RECS.add(name)
+    try:
+        r = subprocess.run((["nice", "-n", "10"] if shutil.which("nice") else []) + ["ffmpeg", "-y", "-loglevel", "error", "-i", path, "-map", "0",
+                           "-c", "copy", "-metadata", "location=" + gps_iso6709(g), "-metadata", "location-eng=" + gps_iso6709(g),
+                           "-movflags", "+faststart", tmp], capture_output=True, timeout=600)
+        if r.returncode == 0 and os.path.isfile(tmp) and os.path.getsize(tmp) > 1000:
+            os.replace(tmp, path)
+    except (OSError, subprocess.SubprocessError):
+        pass
+    finally:
+        LIVE_RECS.discard(name)
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+
+
+HEALTH_ORDER = ("bad", "warn", "ok", "off")
+
+
+QUICK_GUIDE = {
+"de": ("Kurzanleitung", [
+  ("⚡", "Aufstellen", ["Kamera auf den Platz richten, Temperaturfühler ausserhalb des Gehäuses.", "Powerbank anschliessen (Pi 5: 5 V / 5 A). Nach etwa 1 Minute ist alles bereit."]),
+  ("📱", "Verbinden", ["Handy-Hotspot einschalten – der Pi verbindet sich selbst. Oder mit dem WLAN «MotionWatch» des Pi verbinden.", "Seite öffnen: im WLAN des Pi <b>http://10.42.0.1:5000</b>. Für Standort und Mikrofon die https-Seite nehmen.", "«🖨 QR-Codes zum Verbinden» (unter System) druckt die Codes zum Verbinden."]),
+  ("🌙", "Am Abend", ["<b>«🌙 Heute Nacht bewachen»</b> antippen.", "Was unter «Fehlt noch» steht, erledigen.", "Während des Countdowns den Bereich verlassen."]),
+  ("🚨", "Bei Alarm", ["Push-Nachricht antippen → Live-Bild ansehen.", "Sirene oder Licht über die Schnellschalter.", "War es nichts? In den Aufnahmen <b>👎 «War nichts»</b> antippen – das Programm schlägt dann bessere Einstellungen vor."]),
+  ("☀", "Am Morgen", ["Nachtbericht lesen (Push-Nachricht, Standard 7 Uhr).", "Unscharf schalten, Powerbank laden.", "Im Tagebuch die Tiere der Nacht ansehen."]),
+  ("🩺", "Wenn etwas nicht geht", ["Rote <b>🩺</b>-Anzeige oben antippen: jede Ampel sagt, was zu tun ist.", "Kein Bild → Kabel und Videoquelle prüfen. Keine Push-Nachricht → Internet / Hotspot prüfen.", "Alles Weitere: Reiter «Anleitung»."]),
+]),
+"en": ("Quick guide", [
+  ("⚡", "Set up", ["Point the camera at the pitch; temperature sensor outside the housing.", "Connect the powerbank (Pi 5: 5 V / 5 A). After about 1 minute everything is ready."]),
+  ("📱", "Connect", ["Switch on the phone hotspot – the Pi joins it by itself. Or join the Pi's Wi-Fi «MotionWatch».", "Open the page: in the Pi's Wi-Fi <b>http://10.42.0.1:5000</b>. For location and microphone use the https page.", "«🖨 QR codes for connecting» (under System) prints the codes."]),
+  ("🌙", "In the evening", ["Tap <b>«🌙 Guard tonight»</b>.", "Fix what is listed under «Still missing».", "Leave the area during the countdown."]),
+  ("🚨", "On an alarm", ["Tap the push message → watch the live picture.", "Siren or light with the quick switches.", "Was it nothing? In the recordings tap <b>👎 «Was nothing»</b> – the program then suggests better settings."]),
+  ("☀", "In the morning", ["Read the night report (push message, 7 o'clock by default).", "Disarm, charge the powerbank.", "Look at the animals of the night in the diary."]),
+  ("🩺", "If something does not work", ["Tap the red <b>🩺</b> badge at the top: every traffic light says what to do.", "No picture → check cable and video source. No push message → check internet / hotspot.", "Everything else: tab «Manual»."]),
+]),
+"fr": ("Guide rapide", [
+  ("⚡", "Installer", ["Orienter la caméra vers l'emplacement ; sonde de température hors du boîtier.", "Brancher la batterie (Pi 5 : 5 V / 5 A). Après environ 1 minute, tout est prêt."]),
+  ("📱", "Se connecter", ["Activer le point d'accès du portable – le Pi s'y connecte seul. Ou rejoindre le Wi-Fi «MotionWatch» du Pi.", "Ouvrir la page : dans le Wi-Fi du Pi <b>http://10.42.0.1:5000</b>. Pour la position et le micro, utiliser la page https.", "«🖨 Codes QR pour se connecter» (sous Système) imprime les codes."]),
+  ("🌙", "Le soir", ["Toucher <b>«🌙 Surveiller cette nuit»</b>.", "Régler ce qui figure sous «Il manque encore».", "Quitter la zone pendant le compte à rebours."]),
+  ("🚨", "En cas d'alarme", ["Toucher la notification → regarder l'image en direct.", "Sirène ou lumière avec les interrupteurs rapides.", "Ce n'était rien ? Dans les enregistrements, toucher <b>👎 «Ce n'était rien»</b> – le programme propose alors de meilleurs réglages."]),
+  ("☀", "Le matin", ["Lire le rapport de nuit (notification, 7 h par défaut).", "Désarmer, recharger la batterie.", "Voir les animaux de la nuit dans le journal."]),
+  ("🩺", "Si quelque chose ne marche pas", ["Toucher le badge rouge <b>🩺</b> en haut : chaque feu dit quoi faire.", "Pas d'image → vérifier câble et source vidéo. Pas de notification → vérifier Internet / point d'accès.", "Tout le reste : onglet «Mode d'emploi»."]),
+]),
+"it": ("Guida rapida", [
+  ("⚡", "Installare", ["Puntare la telecamera sulla piazzola; sensore di temperatura fuori dalla custodia.", "Collegare il powerbank (Pi 5: 5 V / 5 A). Dopo circa 1 minuto è tutto pronto."]),
+  ("📱", "Collegarsi", ["Accendere l'hotspot del cellulare – il Pi si collega da solo. Oppure collegarsi al Wi-Fi «MotionWatch» del Pi.", "Aprire la pagina: nel Wi-Fi del Pi <b>http://10.42.0.1:5000</b>. Per posizione e microfono usare la pagina https.", "«🖨 Codici QR per collegarsi» (in Sistema) stampa i codici."]),
+  ("🌙", "La sera", ["Toccare <b>«🌙 Sorvegliare stanotte»</b>.", "Sistemare ciò che appare sotto «Manca ancora».", "Lasciare la zona durante il conto alla rovescia."]),
+  ("🚨", "In caso di allarme", ["Toccare la notifica → guardare l'immagine dal vivo.", "Sirena o luce con gli interruttori rapidi.", "Non era niente? Nelle registrazioni toccare <b>👎 «Non era niente»</b> – il programma propone poi impostazioni migliori."]),
+  ("☀", "Al mattino", ["Leggere il rapporto notturno (notifica, di default alle 7).", "Disinserire, ricaricare il powerbank.", "Guardare gli animali della notte nel diario."]),
+  ("🩺", "Se qualcosa non funziona", ["Toccare il badge rosso <b>🩺</b> in alto: ogni semaforo dice cosa fare.", "Nessuna immagine → controllare cavo e sorgente video. Nessuna notifica → controllare Internet / hotspot.", "Tutto il resto: scheda «Istruzioni»."]),
+]),
+"rm": ("Introducziun curta", [
+  ("⚡", "Installar", ["Drizzar la camera sin la plazza; sensur da temperatura ordaifer la chascha.", "Colliar il powerbank (Pi 5: 5 V / 5 A). Suenter var 1 minuta è tut pront."]),
+  ("📱", "Colliar", ["Activar il hotspot dal telefonin – il Pi sa collia sez. U sa colliar cun il WLAN «MotionWatch» dal Pi.", "Avrir la pagina: en il WLAN dal Pi <b>http://10.42.0.1:5000</b>. Per la posiziun ed il microfon duvrar la pagina https.", "«🖨 Codes QR per colliar» (sut Sistem) stampa ils codes."]),
+  ("🌙", "La saira", ["Smatgar <b>«🌙 Survegliar questa notg»</b>.", "Reglar quai che stat sut «Manca anc».", "Bandunar la zona durant il countdown."]),
+  ("🚨", "Tar in alarm", ["Smatgar l'avis push → guardar il maletg live.", "Sirena u glisch cun ils cumutaturs svelts.", "Na era nagut? En las registraziuns smatgar <b>👎 «Na era nagut»</b> – il program propona lura meglras configuraziuns."]),
+  ("☀", "La damaun", ["Leger il rapport da notg (avis push, standard a las 7).", "Disarmar, chargiar il powerbank.", "Guardar en il diari ils animals da la notg."]),
+  ("🩺", "Sch'insatge na funcziuna betg", ["Smatgar l'indicaziun cotschna <b>🩺</b> survart: mintga semafor di tge far.", "Nagin maletg → controllar cabel e funtauna da video. Nagin avis → controllar internet / hotspot.", "Tut il rest: register «Instrucziuns»."]),
+]),
+}
+
+
+def quick_guide_html(lang=None):
+    L = norm_lang(lang) if lang else cur_lang()
+    title, blocks = QUICK_GUIDE.get(L) or QUICK_GUIDE["en"]
+    name = html_escape(CFG["device_name"] or "Motion Watch")
+    cards = "".join('<section class="qg"><h2><span>' + ic + '</span> ' + html_escape(h) + '</h2><ol>' + "".join("<li>" + x + "</li>" for x in items)
+                    + "</ol></section>" for ic, h, items in blocks)
+    return ('<!doctype html><html lang="' + L + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<title>Motion Watch – ' + html_escape(title) + '</title><style>'
+            'body{margin:0;background:#fff;color:#111;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}'
+            'main{max-width:960px;margin:0 auto;padding:18px}'
+            '.top{display:flex;align-items:center;gap:12px;border-bottom:3px solid #f08c2e;padding-bottom:8px;margin-bottom:12px}'
+            '.top h1{margin:0;font-size:24px}.top .sub{color:#666;font-size:13px}.top .sp{flex:1}'
+            '.top button,.top a{font:600 14px system-ui;padding:8px 12px;border-radius:8px;border:1px solid #ccc;background:#f5f5f5;color:#111;text-decoration:none;cursor:pointer}'
+            '.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}'
+            '.qg{border:1.5px solid #ddd;border-radius:12px;padding:10px 12px;break-inside:avoid}'
+            '.qg h2{margin:0 0 4px;font-size:17px}.qg h2 span{font-size:20px}.qg ol{margin:0;padding-left:20px}.qg li{margin:3px 0}'
+            '.foot{margin-top:10px;color:#777;font-size:12px;text-align:center}'
+            '@media(max-width:640px){.grid{grid-template-columns:1fr}}'
+            '@media print{@page{size:A4;margin:12mm}.noprint{display:none}main{padding:0}body{font-size:12.5px}.qg h2{font-size:15px}}'
+            '</style></head><body><main><div class="top"><h1>🎥 ' + name + '</h1><div><b>' + html_escape(title) + '</b><div class="sub">Motion Watch '
+            + APP_VERSION + '</div></div><span class="sp"></span><a class="noprint" href="/setup-card?lang=' + L + '">' + html_escape("🖨 QR codes for connecting" if L == "en" else tr("🖨 Quick start (QR)", L))
+            + '</a><button class="noprint" onclick="print()">🖨</button></div><div class="grid">' + cards + '</div>'
+            '<div class="foot">' + html_escape(tr("Manual", L)) + ': /help</div></main></body></html>')
+
+
+def health_check(lang=None):
+    """Traffic lights for the parts of the system - only from what is known anyway (no waiting, no hardware access)."""
+    L = norm_lang(lang) if lang else cur_lang()
+    T = lambda x: tr(x, L)
+    out = []
+
+    def add(key, icon, title, level, text="", tip=""):
+        out.append({"id": key, "icon": icon, "title": T(title), "level": level, "text": text, "tip": T(tip) if tip else ""})
+
+    fps = float(STATE.get("fps") or 0)
+    if fps >= 1:
+        add("cam", "📷", "Camera", "ok", f"{STATE.get('source_label') or ''} · {fps:.0f} fps")
+    else:
+        add("cam", "📷", "Camera", "bad", T("no picture") + (" · " + tl_status_text(STATE.get("source_status") or "") if STATE.get("source_status") else ""),
+            "Check the cable and the video source under Setup.")
+    ai = str(STATE.get("ai_status") or "")
+    if ai.startswith(("ready", "running")):
+        add("ai", "🧠", "AI (person detection)", "ok", T("ready") + (f" · {STATE.get('ai_ms')} ms" if STATE.get("ai_ms") else ""))
+    elif ai == "demo":
+        add("ai", "🧠", "AI (person detection)", "warn", T("demo"), "")
+    elif ai in ("off", ""):
+        add("ai", "🧠", "AI (person detection)", "off", T("off"))
+    elif AI_MODEL["busy"]:
+        add("ai", "🧠", "AI (person detection)", "warn", T("downloading the AI model …") + f" {AI_MODEL['pct']} %")
+    else:
+        add("ai", "🧠", "AI (person detection)", "bad", T(ai) + (" · " + T("download failed") + AI_MODEL["msg"][6:] if AI_MODEL["msg"].startswith("failed") else ""),
+            "Tap «Download AI model» (about 70 MB, needs internet).")
+        out[-1]["action"] = "ai_dl"
+    sb = str(STATE.get("servo_backend") or "")
+    if sb.startswith("simulation") or not sb:
+        add("servo", "🎯", "Servos (pan / tilt)", "warn", T("not found - the camera does not move"),
+            "Check wiring and power of the servos; for the PCA9685 switch on I2C (raspi-config).")
+    else:
+        add("servo", "🎯", "Servos (pan / tilt)", "ok", sb)
+    th = str(STATE.get("thermal") or "off")
+    if th == "connected":
+        add("thermal", "♨", "Thermal camera", "ok", T("connected") + (f" · {STATE['thermal_res']}" if STATE.get("thermal_res") else ""))
+    elif th.startswith(("off", "no thermal camera", "same camera")):
+        add("thermal", "♨", "Thermal camera", "off", tl_status_text(th))
+    else:
+        add("thermal", "♨", "Thermal camera", "warn", tl_status_text(th), "Check the USB cable of the thermal camera.")
+    au = (STATE.get("audio") or {}).get("status") or "off"
+    if au == "listening":
+        add("mic", "🎤", "Microphone", "ok", T("listening"))
+    elif au == "off":
+        add("mic", "🎤", "Microphone", "off", T("off"))
+    else:
+        add("mic", "🎤", "Microphone", "bad" if au.startswith("error") else "warn", tl_status_text(au), "Choose the microphone again under Microphone → Search devices.")
+    if out_selected():
+        dev = CFG["audio_out"]
+        add("spk", "🔊", "Loudspeaker", "ok", ("Bluetooth " + dev[3:]) if dev.startswith("bt:") else dev.replace("plughw:CARD=", "").split(",")[0])
+    else:
+        add("spk", "🔊", "Loudspeaker", "off", T("none chosen"), "For the siren and the marmot: Settings → Loudspeaker.")
+    e = STATE.get("env")
+    if not CFG["env_on"]:
+        add("env", "🌡", "Temperature sensor", "off", T("off"))
+    elif e:
+        add("env", "🌡", "Temperature sensor", "ok", f"{e['t']:.1f} °C" + (f" · {e['h']} %" if e.get("h") is not None else "") + f" ({e.get('src', '')})")
+    else:
+        add("env", "🌡", "Temperature sensor", "off", T("none connected"), "BME280 on I2C or DS18B20 on GPIO 4 - see the housing document.")
+    g = gps_state()
+    if g:
+        add("gps", "📍", "Location", "ok", f"{g['lat']:.4f}, {g['lon']:.4f} · " + (T("from the phone") if g["src"] == "phone" else T("fixed (settings)")))
+    else:
+        add("gps", "📍", "Location", "warn", T("unknown"), "Settings → Setup → Location: automatically (https page) or pick it on the map.")
+    ts = str(STATE.get("time_status") or "")
+    if ts.startswith("could not"):
+        add("clock", "🕑", "Clock", "bad", tl_status_text(ts), "Open the page on the phone once - the Pi takes the time from it.")
+    else:
+        add("clock", "🕑", "Clock", "ok", datetime.now().strftime("%H:%M") + (" · " + tl_status_text(ts) if ts else ""))
+    net = STATE.get("net") or {}
+    if net.get("online"):
+        add("net", "🌐", "Internet", "ok", f"{net.get('ms', '?')} ms")
+    elif net.get("online") is False:
+        add("net", "🌐", "Internet", "warn", T("offline - push messages wait"), "Phone hotspot on? Settings → Camping / protection → Network.")
+    else:
+        add("net", "🌐", "Internet", "off", T("not checked yet"))
+    ns = str(STATE.get("notify_status") or "")
+    if not Notifier.configured():
+        add("push", "📲", "Push messages", "bad", T("not set up"), "Notifications: set up ntfy, Telegram or web push and send a test message.")
+    elif ns.startswith("error"):
+        add("push", "📲", "Push messages", "bad", ns[:120], "Send a test message; check the address / token of the push service.")
+    else:
+        add("push", "📲", "Push messages", "ok", tl_status_text(ns) if ns else T("ready"))
+    dk = STATE.get("disk") or {}
+    fr = dk.get("free_mb")
+    if fr is None:
+        add("disk", "💾", "Memory card", "off", T("not checked yet"))
+    else:
+        add("disk", "💾", "Memory card", "bad" if fr < 500 else "warn" if fr < 2000 else "ok",
+            f"{fr / 1024:.1f} GB " + T("free"), "" if fr >= 2000 else "Delete old recordings or lower «max. size of the recordings».")
+    ct = STATE.get("cpu_temp")
+    if ct is None:
+        add("temp", "🔥", "CPU temperature", "off", T("unknown"))
+    else:
+        add("temp", "🔥", "CPU temperature", "bad" if ct >= 80 else "warn" if ct >= 70 else "ok", f"{ct:.0f} °C",
+            "" if ct < 70 else "Shade for the housing, a fan, or switch off night vision / thermal camera.")
+    sp = STATE.get("supply") or {}
+    if not sp.get("known"):
+        add("power", "⚡", "Power supply", "off", T("unknown"))
+    elif sp.get("uv_now"):
+        add("power", "⚡", "Power supply", "bad", T("under-voltage now"), "Use a stronger power supply / powerbank (Pi 5: 5 V 5 A) and a short thick cable.")
+    elif sp.get("uv_boot") or sp.get("throttled"):
+        add("power", "⚡", "Power supply", "warn", T("under-voltage since the start"), "Use a stronger power supply / powerbank (Pi 5: 5 V 5 A) and a short thick cable.")
+    else:
+        add("power", "⚡", "Power supply", "ok", (f"{sp['volt']:.2f} V" if sp.get("volt") else T("ok")))
+    b = STATE.get("battery") or {}
+    if not b.get("on"):
+        add("batt", "🔋", "Battery", "off", T("off"))
+    else:
+        pct = b.get("pct")
+        add("batt", "🔋", "Battery", "off" if pct is None else "bad" if pct < 20 else "warn" if pct < 40 else "ok",
+            "–" if pct is None else f"{pct} %", "" if pct is None or pct >= 40 else "Charge the powerbank soon.")
+    if web_pw_active():
+        add("pw", "🔑", "Password", "ok", T("set"))
+    else:
+        add("pw", "🔑", "Password", "bad", T("no password"), "Without a password everyone in the same network can watch and control everything.")
+    if STATE.get("https_port"):
+        add("https", "🔒", "https page", "ok", f"Port {STATE['https_port']}")
+    else:
+        add("https", "🔒", "https page", "warn", T("off"), "Phone location and talking through the Pi need the https page (start with --https).")
+    lr = RUNGUARD.get("last")
+    if lr:
+        det = [T("ended unexpectedly after") + f" {lr['ran_s'] // 60} min"]
+        if isinstance(lr.get("cpu_temp"), (int, float)):
+            det.append(f"CPU {lr['cpu_temp']:.0f} °C")
+        if lr.get("uv"):
+            det.append(T("under-voltage"))
+        if lr.get("ai"):
+            det.append(T("AI was running"))
+        tip = ("Safe start: AI, thermal camera, night vision, IR light and patrol were switched off. Use a 5 V / 5 A power supply and "
+               "cooling (heat sink / fan), then switch them on again one by one." if RUNGUARD["safe"] else
+               "Power cut, power supply too weak (Pi 5: 5 V / 5 A) or too hot. If it happens again, switch the AI off for a test.")
+        add("lastrun", "🔌", "Last run", "bad" if RUNGUARD["safe"] else "warn", " · ".join(det), tip)
+    if STATE.get("update_new"):
+        add("upd", "⬆", "Updates", "warn", T("new version available") + f": {STATE['update_new']}", "Settings → Updates.")
+    out.sort(key=lambda x: HEALTH_ORDER.index(x["level"]))
+    cnt = {k: sum(1 for x in out if x["level"] == k) for k in HEALTH_ORDER}
+    return {"items": out, "count": cnt}
+
+
+def exif_read_gps(path):
+    """(lat, lon) from the EXIF block of a JPEG (ours or a camera's), otherwise None."""
+    import struct
+    try:
+        with open(path, "rb") as f:
+            data = f.read(65536)
+    except OSError:
+        return None
+    i = data.find(b"Exif\0\0")
+    if data[:2] != b"\xff\xd8" or i < 0:
+        return None
+    t = data[i + 6:]
+    try:
+        e = "<" if t[:2] == b"II" else ">" if t[:2] == b"MM" else None
+        if not e:
+            return None
+        def ifd(off):
+            n = struct.unpack(e + "H", t[off:off + 2])[0]; out = {}
+            for k in range(n):
+                tag, typ, cnt, val = struct.unpack(e + "HHI4s", t[off + 2 + 12 * k: off + 14 + 12 * k]); out[tag] = (typ, cnt, val)
+            return out
+        d0 = ifd(struct.unpack(e + "I", t[4:8])[0])
+        if 0x8825 not in d0:
+            return None
+        g = ifd(struct.unpack(e + "I", d0[0x8825][2])[0])
+        def deg(tag):
+            o = struct.unpack(e + "I", g[tag][2])[0]
+            v = struct.unpack(e + "6I", t[o:o + 24])
+            return v[0] / (v[1] or 1) + v[2] / (v[3] or 1) / 60 + v[4] / (v[5] or 1) / 3600
+        lat, lon = deg(2), deg(4)
+        if g.get(1, (0, 0, b"N"))[2][:1] == b"S":
+            lat = -lat
+        if g.get(3, (0, 0, b"E"))[2][:1] == b"W":
+            lon = -lon
+        if not (-90 <= lat <= 90 and -180 <= lon <= 180) or (lat == 0 and lon == 0):
+            return None
+        return round(lat, 6), round(lon, 6)
+    except (struct.error, KeyError, IndexError, ZeroDivisionError):
+        return None
+
+
+_REC_GPS = {}
+
+
+def rec_gps(name, meta, folder, snap=None):
+    """Where a recording was taken: the info file of a video, otherwise the EXIF of the picture (or of its snapshot)."""
+    gp = meta.get("gps") if isinstance(meta, dict) else None
+    if isinstance(gp, dict) and gp.get("lat") is not None:
+        try:
+            return float(gp["lat"]), float(gp["lon"])
+        except (TypeError, ValueError):
+            pass
+    pic = name if name.lower().endswith(".jpg") else snap
+    if not pic:
+        return None
+    path = os.path.join(folder, pic)
+    try:
+        mt = os.path.getmtime(path)
+    except OSError:
+        return None
+    e = _REC_GPS.get(path)
+    if e is None or e[0] != mt:
+        e = _REC_GPS[path] = (mt, exif_read_gps(path))
+        if len(_REC_GPS) > 20000:
+            _REC_GPS.clear()
+    return e[1]
+
+
+def geo_km(a, b):
+    import math
+    la1, lo1, la2, lo2 = map(math.radians, (a[0], a[1], b[0], b[1]))
+    h = math.sin((la2 - la1) / 2) ** 2 + math.cos(la1) * math.cos(la2) * math.sin((lo2 - lo1) / 2) ** 2
+    return 12742 * math.asin(min(1.0, math.sqrt(h)))
+
+
+PLACE_KM = 2.0                          # pictures closer than this belong to the same place
+PLACES = {"names": None, "busy": set()}
+
+
+def places_file():
+    return os.path.join(DATA_DIR, "places.json")
+
+
+def places_names():
+    if PLACES["names"] is None:
+        try:
+            with open(places_file()) as f:
+                PLACES["names"] = json.load(f)
+        except (OSError, ValueError):
+            PLACES["names"] = {}
+    return PLACES["names"]
+
+
+def places_save():
+    try:
+        tmp = places_file() + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(PLACES["names"] or {}, f, ensure_ascii=False)
+        os.replace(tmp, places_file())
+    except OSError:
+        pass
+
+
+def place_rename(pid, name):
+    if not re.fullmatch(r"-?\d+\.\d{3},-?\d+\.\d{3}", str(pid or "")):
+        return False
+    nm = places_names(); e = nm.setdefault(pid, {})
+    name = str(name or "").strip()[:40]
+    if name:
+        e["own"] = name
+    else:
+        e.pop("own", None)
+    places_save()
+    return True
+
+
+def place_lookup(pid, lat, lon):
+    """Name of a place from OpenStreetMap (Nominatim), once per place, in the background."""
+    if not CFG["map_online"] or DEMO["on"] or pid in PLACES["busy"]:
+        return
+    PLACES["busy"].add(pid)
+    def run():
+        try:
+            url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&lat=%.4f&lon=%.4f&accept-language=%s" % (lat, lon, cur_lang())
+            req = urllib.request.Request(url, headers={"User-Agent": "MotionWatch/" + APP_VERSION + " (camping camera)"})
+            with urllib.request.urlopen(req, timeout=15) as r:
+                j = json.loads(r.read().decode())
+            a = j.get("address") or {}
+            nm = (a.get("village") or a.get("town") or a.get("city") or a.get("hamlet") or a.get("municipality")
+                  or a.get("county") or j.get("name") or "")
+            if a.get("country_code") and a.get("country_code") != "ch" and nm:
+                nm += " (" + a["country_code"].upper() + ")"
+            if nm:
+                places_names().setdefault(pid, {})["osm"] = nm[:40]; places_save()
+        except Exception:
+            PLACES["busy"].discard(pid)                      # try again later (offline)
+            return
+    threading.Thread(target=run, daemon=True).start()
+
+
+def place_name(pid, lat, lon):
+    e = places_names().get(pid) or {}
+    if e.get("own") or e.get("osm"):
+        return e.get("own") or e.get("osm")
+    place_lookup(pid, lat, lon)
+    return "%.3f° %s, %.3f° %s" % (abs(lat), "N" if lat >= 0 else "S", abs(lon), "E" if lon >= 0 else "W")
+
+
+def places_assign(items):
+    """Group the pictures with a location into places (2 km); sets it["place"]; returns the list of places."""
+    located = sorted((it for it in items if it.get("gps")), key=lambda it: it["dt"])
+    centers = []
+    for it in located:
+        best = None
+        for c in centers:
+            if geo_km(c["c"], it["gps"]) < PLACE_KM:
+                best = c; break
+        if best is None:
+            best = {"id": "%.3f,%.3f" % it["gps"], "c": it["gps"], "n": 0, "lat": 0.0, "lon": 0.0, "last": it["dt"]}
+            centers.append(best)
+        best["n"] += 1; best["lat"] += it["gps"][0]; best["lon"] += it["gps"][1]; best["last"] = max(best["last"], it["dt"])
+        it["place"] = best["id"]
+    out = []
+    for c in centers:
+        lat, lon = c["lat"] / c["n"], c["lon"] / c["n"]
+        out.append({"id": c["id"], "name": place_name(c["id"], lat, lon), "lat": round(lat, 5), "lon": round(lon, 5), "count": c["n"],
+                    "last": c["last"].strftime("%Y-%m-%d")})
+    out.sort(key=lambda p: p["last"], reverse=True)
+    return out
+
+
 def sync_time_from_client(ms, tz=""):
     if not CFG["time_from_browser"]:
         return "off"
@@ -4561,6 +5457,54 @@ CAMPING_SET = {"detection_on": True, "record": True, "snapshot_on_person": True,
                "lowlight_auto": True, "rain_auto": True, "wind_auto": True, "show_zones": True, "eco_on": True}
 
 
+# ---- simple settings: what most people need; Expert shows everything ----
+SIMPLE_SECTIONS = {"Camera / Servos", "Patrol", "AI detection", "Detection", "Recording", "Low light", "Setup", "Notifications",
+                   "Camping / protection", "Thermal camera", "Microphone", "Loudspeaker", "Lights", "Night report", "Battery",
+                   "Power saving", "Messages", "Updates"}
+SIMPLE_KEYS = {"track_person", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
+               "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
+               "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
+               "arm_delay", "net_mode", "hotspot_ssid", "hotspot_password", "thermal_on", "thermal_alarm", "noise_alarm", "audio_in",
+               "audio_out", "siren_on", "siren_volume", "siren_sound", "light_white_auto", "light_ir_auto", "report_on", "report_hour",
+               "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_auto"}
+
+
+def simple_hidden(key, sec=None):
+    """True when Simple is on and this setting (or section) belongs to Expert only."""
+    if not CFG.get("ui_simple"):
+        return False
+    return (sec is not None and sec not in SIMPLE_SECTIONS) or (key is not None and key not in SIMPLE_KEYS)
+
+
+NIGHT_SET = {"detection_on": True, "ai_enabled": True, "record": True, "snapshot_on_person": True, "notify_on": True,
+             "notify_prealarm": True, "lowlight_auto": True, "nightvision_auto": True, "report_on": True, "diary_on": True,
+             "eco_on": True, "timelapse_on": False}
+
+
+def night_guard(lang=None):
+    """«Guard tonight»: what a night needs on, armed after the countdown; returns what was done and what is missing."""
+    L = norm_lang(lang) if lang else cur_lang()
+    done = []
+    for k, v in NIGHT_SET.items():
+        if k in CFG and CFG[k] != v:
+            CFG[k] = v; sched_user_changed(k)
+    if (STATE.get("audio") or {}).get("status") == "listening" and not CFG["noise_alarm"]:
+        CFG["noise_alarm"] = True; done.append(tr("Noise alarm on", L))
+    if STATE.get("thermal") == "connected" and not CFG["thermal_alarm"]:
+        CFG["thermal_alarm"] = True; done.append(tr("Thermal alarm on", L))
+    save_settings()
+    done = [tr("Detection, AI and recordings on", L), tr("Push messages on", L), tr("Night vision and low light automatic", L),
+            tr("Night report in the morning", L) + f" ({int(CFG['report_hour']):02d}:00)", tr("Power saving on", L)] + done
+    arm()
+    d = int(float(CFG["arm_delay"]))
+    done.append(trf("Armed in {s} s - leave the area now", L, s=d) if d else tr("Armed", L))
+    h = health_check(L)
+    miss = [{"icon": x["icon"], "title": x["title"], "text": x["text"], "tip": x["tip"], "level": x["level"]}
+            for x in h["items"] if x["level"] == "bad" or (x["level"] == "warn" and x["id"] in ("servo", "net", "power", "temp", "disk", "batt"))]
+    log_event("sys", "Guard tonight: armed" + (f", {len(miss)} problem(s) open" if miss else ""))
+    return {"ok": True, "done": done, "missing": miss}
+
+
 def camping_set(on, hotspot_delay=2.0):
     netauto_pause()
     if on and not CFG["camping"]:
@@ -4623,6 +5567,82 @@ def _autostart_mode():
 
 def _systemctl(mode, *args, timeout=30):
     return _run(["systemctl"] + (["--user"] if mode == "user" else []) + list(args), timeout)
+
+
+INSTANCE = {"fd": None, "stopped": None}
+
+
+def instance_lock(port):
+    """Only one Motion Watch per web port (two would fight over camera, servos and port). True = we may run."""
+    try:
+        import fcntl
+    except ImportError:
+        return True
+    p = os.path.join(tempfile.gettempdir(), f"motionwatch-{int(port)}.lock")
+    try:
+        fd = os.open(p, os.O_RDWR | os.O_CREAT, 0o666)
+    except OSError:
+        try:
+            fd = os.open(p, os.O_RDONLY)
+        except OSError:
+            return True
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        os.close(fd); return False
+    INSTANCE["fd"] = fd
+    try:
+        os.chmod(p, 0o666)
+    except OSError:
+        pass
+    return True
+
+
+def instance_takeover(port, gui):
+    """Another Motion Watch holds the port. Started by hand with a window while the autostart service runs: ask and take
+    over (the service is stopped now and started again when this window closes). Returns True when we may run."""
+    url = f"http://127.0.0.1:{int(port)}/"
+    mode = _autostart_mode()
+    code, out, _e = _systemctl(mode, "is-active", SERVICE_NAME, timeout=10) if shutil.which("systemctl") else (1, "", "")
+    service = out.strip() == "active"
+    msg = (tr("Motion Watch is already running") + (" " + tr("in the background (autostart, without a window).") if service else ".")
+           + "\n\n" + tr("Web page") + ": " + url)
+    if not (gui and GUI_OK and service):
+        print(msg.replace("\n\n", " - ")); return False
+    try:
+        r = tk.Tk(); r.withdraw()
+        yes = messagebox.askyesno("Motion Watch", msg + "\n\n" + tr("Open the window here instead? The background service is stopped for "
+                                  "that and starts again when you close the window."), parent=r)
+        r.destroy()
+    except Exception:
+        yes = False
+    if not yes:
+        try:
+            import webbrowser
+            webbrowser.open(url)
+        except Exception:
+            pass
+        return False
+    c2, _o, e2 = _systemctl(mode, "stop", SERVICE_NAME, timeout=40)
+    if c2 != 0:
+        print(tr("The background service could not be stopped") + ": " + (e2 or "")[:160]); return False
+    for _ in range(60):
+        if instance_lock(port):
+            INSTANCE["stopped"] = mode
+            atexit.register(instance_restart_service)
+            return True
+        time.sleep(0.5)
+    return False
+
+
+def instance_restart_service():
+    """The window closes: the autostart service takes over again (not when the Pi is shutting down)."""
+    if INSTANCE.get("stopped") and not POWER.get("pending"):
+        try:
+            subprocess.Popen(["systemctl"] + (["--user"] if INSTANCE["stopped"] == "user" else []) + ["start", "--no-block", SERVICE_NAME],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        except OSError:
+            pass
 
 
 def autostart_args():
@@ -4934,6 +5954,112 @@ class Patrol:
 # ----------------------------------------------------------------------------
 # AI person detector (SSD MobileNet V2, COCO class 1 = person)
 # ----------------------------------------------------------------------------
+AI_MODEL = {"busy": False, "msg": "", "pct": 0}
+AI_TGZ_URLS = ("https://storage.googleapis.com/download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz",
+               "https://download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz")
+AI_PBTXT_URL = "https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
+
+
+def ai_model_dirs():
+    return [os.path.dirname(os.path.abspath(__file__)), os.path.join(DATA_DIR, "models")]
+
+
+def ai_model_paths():
+    """(pb, pbtxt) of the first folder that has both files - next to the program or in the data folder."""
+    for d in ai_model_dirs():
+        pb, pbtxt = os.path.join(d, AIDetector.PB), os.path.join(d, AIDetector.PBTXT)
+        if os.path.isfile(pb) and os.path.isfile(pbtxt):
+            return pb, pbtxt
+    return None, None
+
+
+def _short_net_err(e):
+    """A short, readable reason for a failed download."""
+    r = getattr(e, "reason", None) or e
+    t = str(r)
+    if "CERTIFICATE_VERIFY_FAILED" in t:
+        return "certificate not valid (check the clock of the Pi)" if "expired" in t or "not yet valid" in t else "certificate not valid"
+    if isinstance(r, TimeoutError) or "timed out" in t:
+        return "no answer (internet slow or missing)"
+    if "Name or service not known" in t or "getaddrinfo" in t or "Temporary failure in name resolution" in t:
+        return "no internet (name not found)"
+    if "Connection refused" in t or "Network is unreachable" in t:
+        return "no internet connection"
+    if getattr(e, "code", None):
+        return f"server answered {e.code}"
+    return t[:80]
+
+
+def ai_model_download():
+    """Fetch the AI model in the background (about 70 MB), check that OpenCV can read it, switch the AI on."""
+    if AI_MODEL["busy"]:
+        return False, "already running"
+    if DEMO["on"]:
+        return False, "not in the demo"
+    AI_MODEL.update(busy=True, msg="downloading", pct=0)
+
+    def run():
+        import tarfile
+        dst = os.path.join(DATA_DIR, "models"); os.makedirs(dst, exist_ok=True)
+        tgz = os.path.join(dst, "model.tar.gz.part"); pb_tmp = os.path.join(dst, AIDetector.PB + ".part"); tx_tmp = os.path.join(dst, AIDetector.PBTXT + ".part")
+        try:
+            errs = []
+            for url in AI_TGZ_URLS:                               # first address that works (certificates are always checked)
+                try:
+                    req = urllib.request.Request(url, headers={"User-Agent": "MotionWatch/" + APP_VERSION})
+                    with urllib.request.urlopen(req, timeout=60) as r, open(tgz, "wb") as f:
+                        total = int(r.headers.get("Content-Length") or 0); got = 0
+                        while True:
+                            b = r.read(256 * 1024)
+                            if not b:
+                                break
+                            f.write(b); got += len(b)
+                            AI_MODEL["pct"] = int(got * 90 / total) if total else min(89, got // (800 * 1024))
+                    errs = []; break
+                except Exception as e:
+                    errs.append(_short_net_err(e))
+            if errs:
+                raise RuntimeError(errs[0])
+            with tarfile.open(tgz, "r:gz") as t:                 # only the one file, written by us (no paths from the archive)
+                m = next((x for x in t.getmembers() if x.isfile() and x.name.endswith("/" + AIDetector.PB)), None)
+                if m is None:
+                    raise RuntimeError("model file missing in the archive")
+                src = t.extractfile(m)
+                with open(pb_tmp, "wb") as f:
+                    shutil.copyfileobj(src, f)
+            req = urllib.request.Request(AI_PBTXT_URL, headers={"User-Agent": "MotionWatch/" + APP_VERSION})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                txt = r.read(5 * 1024 * 1024)
+            if b"node" not in txt[:4096]:
+                raise RuntimeError("the description file is not valid")
+            with open(tx_tmp, "wb") as f:
+                f.write(txt)
+            AI_MODEL["pct"] = 95
+            try:
+                cv2.dnn.readNetFromTensorflow(pb_tmp, tx_tmp)    # raises if the files are damaged
+            except cv2.error:
+                raise RuntimeError("the model files are damaged - try again")
+            os.replace(pb_tmp, os.path.join(dst, AIDetector.PB)); os.replace(tx_tmp, os.path.join(dst, AIDetector.PBTXT))
+            CFG["ai_enabled"] = True; save_settings()
+            w = WATCH_REF["w"]
+            if w is not None:
+                w.ai = AIDetector()
+            AI_MODEL.update(msg="ready", pct=100)
+            log_event("ai", "AI model downloaded and switched on")
+        except Exception as e:
+            AI_MODEL.update(msg=f"failed: {tr(str(e))}"[:120], pct=0)
+            log_event("ai", f"AI model download failed: {e}"[:200])
+        finally:
+            AI_MODEL["busy"] = False
+            for p_ in (tgz, pb_tmp, tx_tmp):
+                try:
+                    os.remove(p_)
+                except OSError:
+                    pass
+    threading.Thread(target=run, daemon=True, name="ai-model").start()
+    return True, ""
+
+
 class AIDetector:
     PB, PBTXT = "frozen_inference_graph.pb", "ssd_mobilenet_v2_coco.pbtxt"
 
@@ -4942,9 +6068,8 @@ class AIDetector:
         self.boxes = []          # last persons, in processing-frame coordinates
         self.objects = []        # last non-person objects (x, y, w, h, conf, cls)
         self.frame_counter = 0
-        here = os.path.dirname(os.path.abspath(__file__))
-        pb, pbtxt = os.path.join(here, self.PB), os.path.join(here, self.PBTXT)
-        if os.path.exists(pb) and os.path.exists(pbtxt):
+        pb, pbtxt = ai_model_paths()
+        if pb:
             try:
                 self.net = cv2.dnn.readNetFromTensorflow(pb, pbtxt)
                 STATE["ai_status"] = "ready"
@@ -4955,7 +6080,7 @@ class AIDetector:
         else:
             CFG["ai_enabled"] = False
             STATE["ai_status"] = "no model files"
-            log_event("ai", "AI off: frozen_inference_graph.pb / ssd_mobilenet_v2_coco.pbtxt not found next to the script")
+            log_event("ai", "AI off: model files not found - «Download AI model» in the self-check or the AI settings")
 
     def detect(self, frame):
         """Run every N frames; returns list of (x, y, w, h, conf) persons."""
@@ -4969,6 +6094,13 @@ class AIDetector:
         self.frame_counter += 1
         if self.frame_counter % max(1, int(CFG["ai_every"])) != 0:
             return self.boxes
+        # at most a few times per second and slower when the Pi gets hot: the AI is the biggest load (power, heat)
+        gap = max(0.3, 2.0 * (STATE.get("ai_ms") or 0) / 1000.0)
+        ct = STATE.get("cpu_temp") or 0
+        gap *= 4.0 if ct >= 80 else 2.0 if ct >= 75 else 1.0
+        if time.time() - getattr(self, "_last_run", 0.0) < gap:
+            return self.boxes
+        self._last_run = time.time()
         t0 = time.time()
         h, w = frame.shape[:2]
         blob = cv2.dnn.blobFromImage(frame, size=(300, 300), swapRB=True, crop=False)
@@ -5588,7 +6720,7 @@ def source_label(spec):
 # ----------------------------------------------------------------------------
 DEMO = {"on": False, "objs": [], "size": (960, 540)}
 DEMO_BLOCK = ("/api/power", "/api/wifi", "/api/hotspot", "/api/password", "/api/settings/import", "/api/pause", "/api/autostart",
-              "/api/backup", "/api/fleet", "/api/time", "/api/bt", "/api/lock")
+              "/api/backup", "/api/fleet", "/api/time", "/api/gps", "/api/bt", "/api/lock", "/api/ai_model")
 
 
 class DemoSource:
@@ -5959,6 +7091,8 @@ class Timelapse:
             os.makedirs(tl_dir(), exist_ok=True)
             name = datetime.now().strftime("tl_%Y%m%d_%H%M%S.jpg")
             ok = cv2.imwrite(os.path.join(tl_dir(), name), frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+            if ok:
+                gps_tag_jpg(os.path.join(tl_dir(), name))
         except (OSError, cv2.error) as e:
             ok, name = False, ""
             log_event("servo", f"Photo could not be saved: {e}")
@@ -6034,7 +7168,7 @@ class ThermalCam:
         threading.Thread(target=self.loop, daemon=True).start()
 
     def wanted(self):
-        spec = CFG["thermal_source"] if (CFG["thermal_on"] or CFG["thermal_alarm"]) else ""
+        spec = CFG["thermal_source"] if (CFG["thermal_on"] or CFG["thermal_alarm"] or CFG["nightvision"] or CFG["nightvision_auto"]) else ""
         if spec and spec == STATE["source_id"]:
             return ""                                          # that camera is the main camera already
         return spec
@@ -6208,6 +7342,123 @@ class ThermalCam:
 
 
 THERMAL = None            # created together with the camera loop
+
+
+_BELLY = "25:fe87bfc14c106eb2ebb75df5dba6aaec172507faaafe006700ce29179083c51cf8728e897041b1972f895c703f641812f524ff98ff0049463f8eab9055117ba9afa5d29fbee9fec505c09efe89178"     # a little pattern for the marmot (easter egg)
+
+
+def belly_matrix():
+    n, hx = _BELLY.split(":"); n = int(n)
+    bits = bin(int(hx, 16))[2:].zfill(len(hx) * 4)
+    return [[bits[r * n + c] == "1" for c in range(n)] for r in range(n)]
+
+
+def _rdp(P, eps):
+    """Ramer-Douglas-Peucker: the corners of a drawn line."""
+    if len(P) < 3:
+        return list(P)
+    (ax, ay), (bx, by) = P[0], P[-1]; L = math.hypot(bx - ax, by - ay) or 1e-9
+    dmax, idx = -1.0, 0
+    for i in range(1, len(P) - 1):
+        d = abs((bx - ax) * (ay - P[i][1]) - (ax - P[i][0]) * (by - ay)) / L if L > 1e-6 else math.hypot(P[i][0] - ax, P[i][1] - ay)
+        if d > dmax:
+            dmax, idx = d, i
+    if dmax <= eps:
+        return [P[0], P[-1]]
+    return _rdp(P[:idx + 1], eps)[:-1] + _rdp(P[idx:], eps)
+
+
+def cw_triangle(P):
+    """True when the points (screen coordinates, y down) are a closed triangle drawn clockwise."""
+    if len(P) < 8:
+        return False
+    xs = [p[0] for p in P]; ys = [p[1] for p in P]
+    w, h = max(xs) - min(xs), max(ys) - min(ys); size = max(w, h)
+    if size < 40 or min(w, h) < size * 0.3 or math.hypot(P[0][0] - P[-1][0], P[0][1] - P[-1][1]) > size * 0.35:
+        return False
+    area = sum(P[i][0] * P[(i + 1) % len(P)][1] - P[(i + 1) % len(P)][0] * P[i][1] for i in range(len(P))) / 2
+    if area <= 0 or not (0.25 <= area / (w * h) <= 0.68):          # y down: positive = clockwise; a triangle fills about half
+        return False
+    V = _rdp(list(P) + [P[0]], size * 0.12)[:-1]
+    changed = True
+    while changed and len(V) > 3:                                      # drop corners that are nearly straight
+        changed = False
+        for i in range(len(V)):
+            a, b, c = V[i - 1], V[i], V[(i + 1) % len(V)]
+            u, v = (a[0] - b[0], a[1] - b[1]), (c[0] - b[0], c[1] - b[1])
+            nu, nv = math.hypot(*u), math.hypot(*v)
+            if nu < size * 0.12 or nv < size * 0.12 or (u[0] * v[0] + u[1] * v[1]) / (nu * nv) < -0.88:
+                del V[i]; changed = True; break
+    return len(V) == 3
+
+
+class NightVision:
+    """Night vision look: the picture brightened and tinted green like an image intensifier (a little grain, dark
+    corners); a thermal camera adds glowing outlines of warm bodies and - with the Thermal-90 - their temperature."""
+    def __init__(self):
+        self.vig = None; self.vig_size = None; self.clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+        self.rng = np.random.default_rng(3)
+
+    def active(self):
+        return bool(CFG["nightvision"] or (CFG["nightvision_auto"] and LIGHTS.get("dark")))
+
+    def apply(self, frame):
+        try:
+            H, W = frame.shape[:2]
+            g = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            g = self.clahe.apply(g)
+            m = float(g.mean())
+            if m < 110:                                        # lift dark scenes (gamma)
+                gm = max(0.35, math.log(120.0 / 255.0) / math.log(max(m, 2.0) / 255.0))
+                g = (255.0 * (g / 255.0) ** gm).astype(np.uint8)
+            if self.vig_size != (W, H):
+                yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+                r = np.sqrt(((xx - W / 2) / (W / 2)) ** 2 + ((yy - H / 2) / (H / 2)) ** 2)
+                self.vig = np.clip(1.15 - 0.55 * r ** 2, 0.25, 1.0).astype(np.float32); self.vig_size = (W, H)
+            noise = self.rng.normal(0, 9, (H // 2 + 1, W // 2 + 1)).astype(np.float32)
+            noise = cv2.resize(noise, (W, H), interpolation=cv2.INTER_NEAREST)
+            v = np.clip((g.astype(np.float32) + noise) * self.vig, 0, 255)
+            out = np.dstack([v * 0.22, v, v * 0.38]).astype(np.uint8)          # B, G, R: phosphor green
+            th = THERMAL
+            if th is not None and th.frame is not None and time.time() - th.t < 3.0:
+                self._thermal(out, th, W, H)
+            cv2.putText(out, "NV", (W - 42, 24), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (120, 255, 150), 2, cv2.LINE_AA)
+            return out
+        except (cv2.error, ValueError):
+            return frame
+
+    def _thermal(self, out, th, W, H):
+        fr = ThermalCam.crop(th.frame)
+        celsius = fr.ndim == 2 and fr.dtype.kind == "f"
+        f = fr.astype(np.float32) if celsius else ThermalCam.to_gray8(fr).astype(np.float32)
+        f = cv2.resize(f, (W, H), interpolation=cv2.INTER_LINEAR)
+        thr = float(np.percentile(f[::4, ::4], 96))
+        if celsius:
+            thr = max(thr, float(np.median(f[::4, ::4])) + 4.0)          # at least 4 °C warmer than the surroundings
+        mask = (f > thr).astype(np.uint8) * 255
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+        cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = sorted((c for c in cnts if cv2.contourArea(c) > W * H * 0.002), key=cv2.contourArea, reverse=True)[:4]
+        glow = np.zeros_like(out)
+        cv2.drawContours(glow, cnts, -1, (170, 255, 200), 3)
+        glow = cv2.GaussianBlur(glow, (0, 0), 3)
+        np.maximum(out, glow, out=out)
+        cv2.drawContours(out, cnts, -1, (210, 255, 225), 1, cv2.LINE_AA)
+        if celsius:
+            for c in cnts:
+                x, y, w, h = cv2.boundingRect(c)
+                t = float(f[y:y + h, x:x + w].max())
+                num, F, col = f"{t:.0f}", cv2.FONT_HERSHEY_SIMPLEX, (190, 255, 205)
+                (nw, th_), _ = cv2.getTextSize(num, F, 0.55, 2); (cw, _h), _ = cv2.getTextSize("C", F, 0.55, 2)
+                tw = nw + 7 + cw
+                tx, ty = int(min(max(2, x + w / 2 - tw / 2), W - tw - 4)), int(max(th_ + 4, y - 6))
+                cv2.rectangle(out, (tx - 4, ty - th_ - 4), (tx + tw + 4, ty + 4), (20, 60, 25), -1)
+                cv2.putText(out, num, (tx, ty), F, 0.55, col, 2, cv2.LINE_AA)
+                cv2.circle(out, (tx + nw + 3, ty - th_ + 2), 2, col, 1, cv2.LINE_AA)          # degree sign
+                cv2.putText(out, "C", (tx + nw + 7, ty), F, 0.55, col, 2, cv2.LINE_AA)
+
+
+NIGHTVISION = NightVision()
 
 
 # ----------------------------------------------------------------------------
@@ -6517,7 +7768,9 @@ def audio_mux(video, wav, frames, fps):
         scale = ratio if 0.25 <= ratio <= 4.0 else 1.0
         cmd = (["nice", "-n", "10"] if shutil.which("nice") else []) + [
             "ffmpeg", "-y", "-loglevel", "error", "-itsscale", f"{scale:.5f}", "-i", video, "-i", wav,
-            "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy", "-c:a", "aac", "-b:a", "64k", "-movflags", "+faststart", tmp]
+            "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy", "-c:a", "aac", "-b:a", "64k"] + (
+            ["-metadata", "location=" + gps_iso6709(gps_now()), "-metadata", "location-eng=" + gps_iso6709(gps_now())] if CFG["gps_tag"] and gps_now() else []) + [
+            "-movflags", "+faststart", tmp]
         r = subprocess.run(cmd, capture_output=True, timeout=900)
         if r.returncode != 0 or not os.path.isfile(tmp) or os.path.getsize(tmp) < 1000:
             log_event("rec", "Sound could not be added: " + (r.stderr.decode(errors="replace").strip()[-160:] or f"ffmpeg exit {r.returncode}"))
@@ -6755,6 +8008,18 @@ def _smooth(env, rate):
 def sound_samples(kind, seconds, rate=OUT_RATE):
     """Float samples -1..1 of a generated alarm sound or an own file (looped to the length)."""
     n = max(1, int(seconds * rate)); t = np.arange(n, dtype=np.float64) / rate
+    if kind == "marmot":                                 # easter egg: two short alpine marmot whistles
+        y = np.zeros(n, np.float32)
+        for st in (0.05, 0.55):
+            i0, L = int(st * rate), int(0.26 * rate)
+            if i0 + L > n:
+                break
+            tt = np.arange(L) / rate
+            f = 3000.0 - 900.0 * (tt / 0.26) ** 1.5
+            ph = 2 * np.pi * np.cumsum(f) / rate
+            env = np.minimum(1.0, tt / 0.015) * np.minimum(1.0, (0.26 - tt) / 0.06)
+            y[i0:i0 + L] = (np.sin(ph) + 0.25 * np.sin(2 * ph)) * env
+        return (y / max(1e-6, float(np.max(np.abs(y))))).astype(np.float32)
     if kind.startswith("file:"):
         name = kind[5:]
         path = os.path.join(sounds_dir(), name)
@@ -6809,7 +8074,7 @@ def sound_play(kind=None, seconds=None, volume=None, reason="test"):
     if not dev.startswith("bt:") and not shutil.which("aplay"):
         return False, "aplay is missing (sudo apt install alsa-utils)"
     kind = kind or CFG["siren_sound"]
-    if kind not in SOUND_KINDS and not (kind.startswith("file:") and kind[5:] in own_sounds()):
+    if kind not in SOUND_KINDS + ("marmot",) and not (kind.startswith("file:") and kind[5:] in own_sounds()):
         kind = "siren"
     seconds = max(0.5, min(120.0, float(seconds if seconds is not None else CFG["siren_seconds"])))
     vol = max(0.0, min(100.0, float(volume if volume is not None else CFG["siren_volume"]))) / 100.0
@@ -7576,12 +8841,84 @@ def brand_jpg(data, caption="", quality=88):
     return buf.tobytes() if ok else data
 
 
+def jpg_without_exif(data):
+    """The JPEG without its EXIF blocks (APP1) - that is where the GPS position is; the picture itself stays untouched."""
+    if data[:2] != b"\xff\xd8":
+        return data
+    out, i, n = [data[:2]], 2, len(data)
+    while i + 4 <= n and data[i] == 0xFF:
+        mk = data[i + 1]
+        if mk in (0xD9, 0xDA):                                # end / start of the picture data: the rest as it is
+            break
+        ln = int.from_bytes(data[i + 2:i + 4], "big")
+        if ln < 2 or i + 2 + ln > n:
+            return data
+        if not (mk == 0xE1 and data[i + 4:i + 10] in (b"Exif\0\0", b"Exif\0\xff")):
+            out.append(data[i:i + 2 + ln])
+        i += 2 + ln
+    out.append(data[i:])
+    return b"".join(out)
+
+
+def share_jpg(data, caption=""):
+    """A picture as it leaves the Pi when shared: logo (if on), location only when wanted."""
+    g = exif_gps_bytes(data) if CFG["share_gps"] else None
+    data = brand_jpg(data, caption) if CFG["share_logo"] else data
+    data = jpg_without_exif(data)
+    if g:
+        data = data[:2] + exif_gps(g[0], g[1]) + data[2:]
+    return data
+
+
+def exif_gps_bytes(data):
+    tmp = None
+    try:
+        fd, tmp = tempfile.mkstemp(suffix=".jpg")
+        with os.fdopen(fd, "wb") as f:
+            f.write(data[:65536])
+        return exif_read_gps(tmp)
+    except OSError:
+        return None
+    finally:
+        if tmp:
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+
+
+def share_video(src, caption=""):
+    """A video as it leaves the Pi when shared: logo (if on); the location removed unless wanted. (path, error)"""
+    if CFG["share_logo"]:
+        return brand_video(src, caption)
+    if CFG["share_gps"] or not shutil.which("ffmpeg"):
+        return src, ""                                        # without ffmpeg no location was written into it either
+    cache = os.path.join(rec_dir(), ".cache"); os.makedirs(cache, exist_ok=True)
+    dst = os.path.join(cache, os.path.splitext(os.path.basename(src))[0] + ".nogps.mp4")
+    try:
+        if os.path.isfile(dst) and os.path.getmtime(dst) >= os.path.getmtime(src):
+            return dst, ""
+        r = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-map", "0", "-c", "copy", "-map_metadata", "-1",
+                            "-movflags", "+faststart", dst + ".part.mp4"], capture_output=True, timeout=600)
+        if r.returncode != 0:
+            return None, (r.stderr.decode(errors="replace").strip().splitlines() or ["ffmpeg failed"])[-1][:200]
+        os.replace(dst + ".part.mp4", dst)
+        return dst, ""
+    except (OSError, subprocess.SubprocessError) as e:
+        return None, str(e)[:200]
+    finally:
+        try:
+            os.remove(dst + ".part.mp4")
+        except OSError:
+            pass
+
+
 def brand_video(src, caption=""):
     """Copy of a video with the logo strip (ffmpeg overlay), kept in the cache folder. Returns (path, error)."""
     if not shutil.which("ffmpeg"):
         return None, "ffmpeg is missing (sudo apt install ffmpeg)"
     cache = os.path.join(rec_dir(), ".cache"); os.makedirs(cache, exist_ok=True)
-    dst = os.path.join(cache, os.path.splitext(os.path.basename(src))[0] + ".share.mp4")
+    dst = os.path.join(cache, os.path.splitext(os.path.basename(src))[0] + (".share.gps.mp4" if CFG["share_gps"] else ".share.mp4"))
     try:
         if os.path.isfile(dst) and os.path.getmtime(dst) >= os.path.getmtime(src):
             return dst, ""
@@ -7590,11 +8927,17 @@ def brand_video(src, caption=""):
     cap = cv2.VideoCapture(src); w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) or 1280); cap.release()
     strip = brand_strip(w, caption)
     if strip is None:
-        return src, ""
+        CFG_logo = CFG["share_logo"]; CFG["share_logo"] = False
+        try:
+            return share_video(src, caption)
+        finally:
+            CFG["share_logo"] = CFG_logo
     png = dst + ".logo.png"; strip.save(png)
     m = max(6, w // 80)
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-i", png, "-filter_complex", f"overlay=W-w-{m}:H-h-{m}",
-           "-c:v", "libx264", "-preset", "veryfast", "-crf", "24", "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", dst + ".part.mp4"]
+           "-c:v", "libx264", "-preset", "veryfast", "-crf", "24", "-pix_fmt", "yuv420p", "-c:a", "copy"]
+    cmd += [] if CFG["share_gps"] else ["-map_metadata", "-1"]
+    cmd += ["-movflags", "+faststart", dst + ".part.mp4"]
     try:
         r = subprocess.run(cmd, capture_output=True, timeout=600)
         if r.returncode != 0:
@@ -7732,7 +9075,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_27_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_43_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -8073,7 +9416,7 @@ class LogKeeper:
 # any settings. Unlocking needs the PIN (4-8 digits, stored as PBKDF2 hash). Enforced by the web server and the window.
 # ----------------------------------------------------------------------------
 OPER_KEYS = {"detection_on", "record", "notify_on", "browser_alarm", "timelapse_on", "eco_on", "patrol", "track_person",
-             "relays_on", "noise_alarm", "thermal_on", "thermal_alarm", "report_on", "show_objects"}
+             "relays_on", "noise_alarm", "thermal_on", "thermal_alarm", "report_on", "show_objects", "nightvision"}
 LOCK_FAILS = []
 
 
@@ -8135,7 +9478,7 @@ def lock_allows(path, method, data):
     if method != "POST":
         return path != "/api/settings/export"            # the settings file contains passwords
     free = {"/api/move", "/api/stick", "/api/arm", "/api/camping", "/api/light", "/api/power", "/api/talk", "/api/talk/stop",
-            "/api/time", "/api/ui", "/api/rec/prepare", "/api/rec/fav", "/rec/zip", "/api/report/send", "/api/battery",
+            "/api/time", "/api/gps", "/api/ui", "/api/rec/prepare", "/api/rec/fav", "/rec/zip", "/api/report/send", "/api/battery",
             "/api/lock", "/api/notify_test", "/api/hotspot", "/api/quick", "/api/feedback"}
     if path in free:
         return True
@@ -8312,6 +9655,11 @@ PAUSING = {"on": False}
 def _close_fds_on_exec():
     """The web server sockets are inheritable: they must not survive os.execv (the new program needs the port)."""
     try:
+        if RUNGUARD.get("clean"):
+            RUNGUARD["clean"]()                         # a planned restart (update, pause) is a clean end
+    except Exception:
+        pass
+    try:
         for fd in os.listdir("/proc/self/fd"):
             if int(fd) > 2:
                 try:
@@ -8400,10 +9748,8 @@ def run_paused(until, argv_rest):
     the full program comes back (same process, same options)."""
     import http.server
     de = CFG["lang"] == "de"
-    T = {"title": "Programm pausiert" if de else "Program paused", "back": "Startet wieder um" if de else "Starts again at",
-         "note": ("Während der Pause gibt es keine Überwachung und keine Alarme." if de else
-                  "While paused there is no monitoring and there are no alarms."),
-         "now": "Jetzt starten" if de else "Start now"}
+    T = {"title": tr("Program paused"), "back": tr("Starts again at"), "note": tr("While paused there is no monitoring and there are no alarms."),
+         "now": tr("Start now")}
     state = {"go": False}
 
     def restart():
@@ -8450,7 +9796,7 @@ def run_paused(until, argv_rest):
                 if not ok:
                     self._send(401, "Login required", "text/plain", {"WWW-Authenticate": 'Basic realm="Motion Watch"'}); return
             state["go"] = True
-            self._send(200, "<meta http-equiv='refresh' content='15;url=/'>" + ("Startet …" if de else "Starting …"))
+            self._send(200, "<meta http-equiv='refresh' content='15;url=/'>" + tr("Starting …"))
 
     srv = None
     for _i in range(30):                                   # the old program has just released the port
@@ -8481,6 +9827,84 @@ def run_paused(until, argv_rest):
 
 def _guard_file():
     return os.path.join(DATA_DIR, "update_guard.json")
+
+
+RUNGUARD = {"t0": time.time(), "m0": time.monotonic(), "safe": False, "last": None, "streak": 0, "changed": []}
+SAFE_SET = {"ai_enabled": False, "thermal_on": False, "thermal_alarm": False, "nightvision": False, "nightvision_auto": False,
+            "patrol": False, "track_person": False, "timelapse_on": False, "light_white": "off", "light_ir": "off"}
+
+
+def _run_file():
+    return os.path.join(DATA_DIR, "run_state.json")
+
+
+def _run_write(d):
+    try:
+        tmp = _run_file() + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(d, f)
+        os.replace(tmp, _run_file())
+    except OSError:
+        pass
+
+
+def run_guard_start():
+    """At every start: did the last run end without a clean stop (the whole Pi went off)? Two short runs in a row ->
+    safe start with the heavy parts off. Then a heartbeat every 10 s keeps the conditions for next time."""
+    if DEMO["on"]:
+        return
+    try:
+        with open(_run_file()) as f:
+            prev = json.load(f)
+    except (OSError, ValueError):
+        prev = None
+    streak = 0
+    if isinstance(prev, dict) and not prev.get("clean"):
+        ran = int(prev.get("up", 0))
+        RUNGUARD["last"] = {"ran_s": ran, "cpu_temp": prev.get("cpu_temp"), "uv": prev.get("uv"), "throttled": prev.get("throttled"),
+                            "cpu": prev.get("cpu"), "ai": prev.get("ai"), "ver": prev.get("ver"), "when": prev.get("beat_txt", "")}
+        streak = int(prev.get("streak", 0)) + 1 if ran < 600 else 0
+        ct = prev.get("cpu_temp")
+        log_event("sys", f"The last run ended unexpectedly after {ran // 60} min {ran % 60} s"
+                         + (f" (CPU {ct:.0f} °C" if isinstance(ct, (int, float)) else " (") + (", under-voltage" if prev.get("uv") else "")
+                         + (", AI on" if prev.get("ai") else "") + ") - power supply, heat or a crash")
+    RUNGUARD["streak"] = streak
+    if streak >= 2:
+        RUNGUARD["safe"] = True
+        RUNGUARD["changed"] = [k for k, v in SAFE_SET.items() if k in CFG and CFG[k] != v]
+        for k in RUNGUARD["changed"]:
+            CFG[k] = SAFE_SET[k]
+        save_settings()
+        log_event("sys", "Safe start: the Pi went off twice shortly after starting - AI, thermal camera, night vision, IR light "
+                         "and patrol are off. Check power supply (5 V / 5 A) and cooling, then switch them on again one by one.")
+
+        def tell():
+            time.sleep(40)
+            w = WATCH_REF["w"]
+            if w is not None:
+                w.notifier.info(tr("Safe start: the Pi went off twice shortly after starting. AI, thermal camera, night vision, "
+                                   "IR light and patrol are off - check power supply and cooling."), title="{name}: " + tr("safe start"))
+        threading.Thread(target=tell, daemon=True).start()
+    state = {"start": time.time(), "up": 0, "clean": False, "streak": streak, "ver": APP_VERSION}
+    _run_write(state)
+
+    def clean():
+        state["clean"] = True; state["up"] = int(time.monotonic() - RUNGUARD["m0"]); _run_write(state)
+    atexit.register(clean); RUNGUARD["clean"] = clean
+
+    def beat():
+        while True:
+            time.sleep(10)
+            sup = STATE.get("supply") or {}
+            up = int(time.monotonic() - RUNGUARD["m0"])
+            state.update(up=up, cpu_temp=STATE.get("cpu_temp"), uv=bool(sup.get("uv_now") or sup.get("uv_boot")),
+                         throttled=bool(sup.get("throttled")), cpu=STATE.get("cpu"), ai=bool(CFG["ai_enabled"] and str(STATE.get("ai_status", "")).startswith("running")),
+                         beat_txt=datetime.now().strftime("%Y-%m-%d %H:%M"))
+            if up > 1800 and state.get("streak"):
+                state["streak"] = 0                              # ran long enough: the next short run starts counting again
+            if not state["clean"]:
+                _run_write(state)
+    threading.Thread(target=beat, daemon=True, name="runguard").start()
 
 
 def start_guard():
@@ -8602,8 +10026,7 @@ class UpdateWatcher:
         w = WATCH_REF["w"]
         if w is not None and CFG["update_push"]:
             de = CFG["lang"] == "de"
-            w.notifier.info((f"Automatisches Update auf Version {v} – das Programm startet neu (ca. 20 s)" if de else
-                             f"Automatic update to version {v} – the program restarts (about 20 s)"), title="{name}: Update")
+            w.notifier.info(trf("Automatic update to version {v} – the program restarts (about 20 s)", v=v), title="{name}: Update")
         ok, err = update_install(v)
         if not ok:
             log_event("sys", f"Automatic update failed: {err}")
@@ -8624,9 +10047,8 @@ class UpdateWatcher:
             if CFG["update_push"] and w is not None:
                 de = CFG["lang"] == "de"
                 pub = CFG["public_url"].strip().rstrip("/")
-                w.notifier.info((f"Neue Version {top['version']} verfügbar - auf der Seite antippen: «Jetzt aktualisieren»" if de else
-                                 f"New version {top['version']} available - tap «Update now» on the page"),
-                                pub + "/" if pub else "", title="{name}: " + ("Update" if de else "update"))
+                w.notifier.info(trf("New version {v} available - tap «Update now» on the page", v=top["version"]),
+                                pub + "/" if pub else "", title="{name}: Update")
 
 
 def self_test(folder=""):
@@ -8843,6 +10265,10 @@ class MotionWatch:
         global TAMPER
         if TAMPER is None:
             TAMPER = TamperGuard()
+            global ENV
+            if ENV is None:
+                ENV = EnvSensor()
+                threading.Thread(target=weather_loop, daemon=True, name="weather").start()
             threading.Thread(target=fleet_loop, daemon=True, name="fleet").start()
             threading.Thread(target=feedback_loop, daemon=True, name="feedback").start()
         global MQTT_BRIDGE
@@ -9077,7 +10503,7 @@ class MotionWatch:
             snap = None
             if CFG["snapshot_on_person"]:
                 snap = os.path.join(CFG["record_dir"], f"person_{stamp}.jpg")
-                cv2.imwrite(snap, frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+                cv2.imwrite(snap, frame, [cv2.IMWRITE_JPEG_QUALITY, 85]); gps_tag_jpg(snap)
             self.notifier.person(len(persons), snap, frame)
             push_alert("person", "person", count=len(persons), source=STATE["source_label"])
             siren_alarm("person")
@@ -9144,6 +10570,9 @@ class MotionWatch:
                 "frames": info["frames"], "fps": round(info["fps"], 1), "codec": info["codec"],
                 "persons": info["persons"], "source": info["source"], "source_id": info["source_id"],
                 "schedules": info["schedules"]}
+        g = gps_now() if CFG["gps_tag"] else None
+        if g:
+            meta["gps"] = {"lat": g[0], "lon": g[1], "src": g[2]}
         try:
             with open(os.path.join(CFG["record_dir"], os.path.splitext(name)[0] + ".json"), "w") as f:
                 json.dump(meta, f)
@@ -9151,6 +10580,8 @@ class MotionWatch:
             pass
         if info.get("audio") and AUDIO is not None:
             AUDIO.rec_stop(info["audio"], info["frames"], info["fps"])       # joins the sound with the video (background)
+        elif g:
+            threading.Thread(target=gps_tag_video, args=(os.path.join(CFG["record_dir"], name),), daemon=True).start()
         if BACKUP is not None and CFG["backup_type"] != "off" and (CFG["backup_all"] or info["persons"] or is_armed()):
             BACKUP.add(os.path.join(CFG["record_dir"], name), meta)
 
@@ -9235,7 +10666,9 @@ class MotionWatch:
             small = cv2.resize(frame, (pw, ph))
             if TAMPER is not None:
                 TAMPER.feed(small, t0)
-            if CFG["thermal_on"] and THERMAL is not None:
+            nv_on = NIGHTVISION.active()
+            STATE["nightvision"] = nv_on
+            if CFG["thermal_on"] and THERMAL is not None and not nv_on:
                 frame = THERMAL.overlay(frame)             # detection keeps using `small` (the normal picture)
             gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
             bright = float(gray.mean()); STATE["brightness"] = int(bright)
@@ -9256,6 +10689,8 @@ class MotionWatch:
                 STATE["view_gain"] = gm
             else:
                 STATE["view_gain"] = 1.0
+            if nv_on:
+                frame = NIGHTVISION.apply(frame)           # night vision look (the detection keeps using the normal picture)
 
             rain_score = self.weather.rain(gray) if CFG["rain_auto"] else 0.0
             rain_mode = (rain_score > CFG["rain_threshold"]) if CFG["rain_auto"] else CFG["rain_mode"]
@@ -9766,7 +11201,8 @@ def list_recordings(args, watch=None):
         dt = parse_stamp(n) or datetime.fromtimestamp(st.st_mtime)
         meta = rec_meta(n, st)
         items.append({"n": n, "st": st, "kind": kind, "dt": dt, "meta": meta, "snap": snap[0] if snap else None,
-                      "sched": [i for i, s in enumerate(plans) if schedule_window_contains(s, dt)]})
+                      "sched": [i for i, s in enumerate(plans) if schedule_window_contains(s, dt)],
+                      "gps": rec_gps(n, meta, d, snap[0] if snap else None)})
     # timelapse: the videos always, the single photos only with the filter "Timelapse"
     kind_req = args.get("kind", "")
     if kind_req in ("", "timelapse", "video"):
@@ -9786,12 +11222,14 @@ def list_recordings(args, watch=None):
             dt = parse_stamp(n) or datetime.fromtimestamp(st.st_mtime)
             meta = dict(rec_meta(name, st)); meta.setdefault("source", "Timelapse")
             items.append({"n": name, "st": st, "kind": "video" if is_v else "image", "dt": dt, "meta": meta, "snap": None,
-                          "sched": [], "tl": True})
+                          "sched": [], "tl": True, "gps": rec_gps(n, meta, tl_dir()) if not is_v else None})
 
     # filters that do not depend on the schedule
     kind_f, src_f, q = args.get("kind", ""), args.get("source", ""), (args.get("q", "") or "").strip().lower()
     d_from, d_to = _parse_day(args.get("from", "")), _parse_day(args.get("to", ""))
     sources = sorted({it["meta"].get("source") for it in items if it["meta"].get("source")})
+    places = places_assign(items)
+    no_place = sum(1 for it in items if not it.get("gps"))
     if kind_f in ("video", "image"):
         items = [it for it in items if it["kind"] == kind_f]
     elif kind_f == "timelapse":
@@ -9804,7 +11242,14 @@ def list_recordings(args, watch=None):
         items = [it for it in items if it["meta"].get("source") == src_f]
     if q:
         items = [it for it in items if q in it["n"].lower()]
+    pl_f = args.get("place", "")
+    if pl_f == "none":
+        items = [it for it in items if not it.get("gps")]
+    elif pl_f:
+        items = [it for it in items if it.get("place") == pl_f]
 
+    if args.get("fa") == "1":
+        items = [it for it in items if it["meta"].get("false")]
     if args.get("fav") == "1":
         items = [it for it in items if it["meta"].get("fav")]
     counts = {"all": len(items), "any": sum(1 for it in items if it["sched"]), "none": sum(1 for it in items if not it["sched"])}
@@ -9838,9 +11283,19 @@ def list_recordings(args, watch=None):
                      "size": it["st"].st_size, "duration": meta.get("duration"), "source": meta.get("source"),
                      "persons": meta.get("persons"), "schedules": [plans[i]["name"] for i in it["sched"]],
                      "playable": (codec in BROWSER_CODECS) if codec else None, "snap": it["snap"], "fav": bool(meta.get("fav")),
-                     "recording": it["n"] in live_set, "timelapse": bool(it.get("tl"))})
+                     "recording": it["n"] in live_set, "timelapse": bool(it.get("tl")), "gps": it.get("gps"), "place": it.get("place"),
+                     "false": it["meta"].get("false")})
     now = datetime.now()
+    points = None
+    if args.get("map") == "1":                      # every filtered recording with a location (for the map)
+        points = [{"name": it["n"], "kind": it["kind"], "time": it["dt"].strftime("%Y-%m-%d %H:%M:%S"), "size": it["st"].st_size,
+                   "lat": it["gps"][0], "lon": it["gps"][1], "place": it.get("place"), "source": it["meta"].get("source"),
+                   "duration": it["meta"].get("duration"), "fav": bool(it["meta"].get("fav")), "timelapse": bool(it.get("tl")),
+                   "schedules": [plans[i]["name"] for i in it["sched"]], "persons": it["meta"].get("persons"), "snap": it["snap"],
+                   "recording": it["n"] in live_set}
+                  for it in items if it.get("gps")][:3000]
     return {"total": len(items), "items": page, "counts": counts, "sources": sources, "recording": bool(live_set),
+            "places": places, "no_place": no_place, "points": points, "map_online": bool(CFG["map_online"]),
             "schedules": [{"index": i, "name": s["name"], "enabled": s["enabled"], "days": s["days"], "start": s["start"],
                            "end": s["end"], "active_now": schedule_active(s, now), "count": counts.get(str(i), 0)}
                           for i, s in enumerate(plans)],
@@ -9861,6 +11316,96 @@ def _write_sidecar(name, meta):
     for k in (stem + ".mp4", stem + ".jpg"):
         _REC_META.pop(k, None)
     return True
+
+
+FA_CAUSES = ("animal", "wind", "light", "rain", "car", "other")
+
+
+def rec_set_false(names, cause, watch=None):
+    """Mark recordings as false alarm (cause) or as real again (cause empty)."""
+    n = 0
+    for name in (names if isinstance(names, list) else [])[:500]:
+        if not rec_path(name) or name.lower().endswith(".json") or name.startswith("timelapse/") or _is_live(name, watch):
+            continue
+        meta = _read_sidecar(name)
+        if cause in FA_CAUSES:
+            meta["false"] = cause; meta["false_t"] = int(time.time())
+        else:
+            meta.pop("false", None); meta.pop("false_t", None)
+        if _write_sidecar(name, meta):
+            n += 1
+    if n:
+        log_event("rec", f"{n} recording(s) marked as " + (f"false alarm ({cause})" if cause in FA_CAUSES else "real"))
+    return n
+
+
+def fa_suggestions(lang=None, days=14):
+    """Look at the recordings marked «was nothing» and suggest settings that would have avoided them."""
+    L = norm_lang(lang) if lang else cur_lang()
+    since = datetime.now() - timedelta(days=days)
+    total, causes = 0, {}
+    d = rec_dir()
+    try:
+        names = os.listdir(d)
+    except OSError:
+        names = []
+    stems = {}
+    for n in names:
+        st_, ext = os.path.splitext(n)
+        if ext.lower() in (".mp4", ".jpg") and REC_NAME_RE.match(n):
+            stems.setdefault(st_, n if ext.lower() == ".mp4" else stems.get(st_, n))
+    for st_, n in stems.items():
+        dt = parse_stamp(n)
+        if dt is None or dt < since:
+            continue
+        total += 1
+        c = _read_sidecar(n).get("false")
+        if c in FA_CAUSES:
+            causes[c] = causes.get(c, 0) + 1
+    nf = sum(causes.values())
+    out = []
+
+    def sug(sid, text, changes, n):
+        ch = {k: v for k, v in changes.items() if k in CFG and CFG[k] != v}
+        if ch:
+            out.append({"id": sid, "text": tr(text, L), "n": n, "changes": ch})
+
+    if causes.get("animal", 0) >= 2:
+        sug("animal", "Alarm only when the AI confirms a person (animals no longer count)", {"ai_enabled": True, "ai_require": True}, causes["animal"])
+    if causes.get("wind", 0) >= 2:
+        if not CFG["wind_auto"]:
+            sug("wind", "Switch on the automatic wind detection", {"wind_auto": True}, causes["wind"])
+        else:
+            sug("wind", "Ignore small movements (branches, grass): bigger minimum size", {"min_area": round(min(8000, CFG["min_area"] * 1.3))}, causes["wind"])
+    if causes.get("light", 0) >= 2:
+        if not CFG["shadow_filter"] or not CFG["lowlight_auto"]:
+            sug("light", "Switch on the shadow filter and the low-light automatic", {"shadow_filter": True, "lowlight_auto": True}, causes["light"])
+        else:
+            sug("light", "Less sensitive to light changes", {"sensitivity": max(10, CFG["sensitivity"] - 10)}, causes["light"])
+    if causes.get("rain", 0) >= 2:
+        if not CFG["rain_auto"]:
+            sug("rain", "Switch on the automatic rain detection", {"rain_auto": True}, causes["rain"])
+        else:
+            sug("rain", "Detect rain earlier", {"rain_threshold": round(max(0.15, CFG["rain_threshold"] - 0.05), 2)}, causes["rain"])
+    if causes.get("car", 0) >= 2:
+        if not CFG["car_filter"]:
+            sug("car", "Switch on the vehicle filter", {"car_filter": True}, causes["car"])
+        else:
+            out.append({"id": "zones", "text": tr("Draw an ignore zone over the road (tab Zones)", L), "n": causes["car"], "changes": {}, "link": "/zones"})
+    if nf >= 5 and nf >= 0.4 * max(1, total) and not out:
+        sug("sens", "Somewhat less sensitive overall", {"sensitivity": max(10, CFG["sensitivity"] - 10)}, nf)
+    return {"days": days, "total": total, "false": nf, "causes": causes, "suggestions": out}
+
+
+def fa_apply(sid, lang=None):
+    for x in fa_suggestions(lang)["suggestions"]:
+        if x["id"] == sid and x["changes"]:
+            for k, v in x["changes"].items():
+                CFG[k] = v; sched_user_changed(k)
+            save_settings()
+            log_event("sys", "False alarms: settings taken over - " + ", ".join(f"{k}={v}" for k, v in x["changes"].items()))
+            return True
+    return False
 
 
 def rec_set_fav(names, value, watch=None):
@@ -10212,6 +11757,7 @@ class ExtraCam:
             WATCH_REF["w"].cleanup_recordings(); self.last_cleanup = time.time()
         if CFG["snapshot_on_person"]:
             cv2.imwrite(os.path.join(CFG["record_dir"], base + ".jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+            gps_tag_jpg(os.path.join(CFG["record_dir"], base + ".jpg"))
         self.writer = wr; self.rec_name = base + ".mp4"; LIVE_RECS.add(self.rec_name)
         fps = max(5.0, min(30.0, self.fps or 12.0))
         self.rec_info = {"start": time.time(), "fps": fps, "frames": 0, "codec": codec, "schedules": list(SCHED["active"])}
@@ -10378,6 +11924,24 @@ body{margin:0;color:var(--txt);font:14px/1.45 Inter,system-ui,-apple-system,"Seg
 header{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 16px;
   background:var(--hdr);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 header h1{font-size:17px;margin:0 8px 0 0;font-weight:700;letter-spacing:.2px;display:flex;align-items:center;gap:9px}
+/* easter egg: the marmot on guard (7 taps on the name) */
+.mw-marmot{position:absolute;left:50%;bottom:0;z-index:70;width:180px;margin-left:-90px;transform:translateY(105%);transition:transform .4s cubic-bezier(.2,1.4,.4,1);pointer-events:none}
+.mw-marmot.up{transform:translateY(1%)}
+.mw-marmot > svg{display:block;width:180px;height:180px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+.mw-marmot .bub{position:absolute;bottom:160px;left:50%;transform:translateX(-50%) scale(.6);opacity:0;transition:.25s .3s;white-space:nowrap;
+  background:#fff;color:#1b2430;font:700 14px system-ui,sans-serif;padding:8px 12px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.mw-marmot .bub::after{content:"";position:absolute;left:50%;bottom:-7px;margin-left:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
+.mw-marmot.up .bub{opacity:1;transform:translateX(-50%) scale(1)}
+/* 1 August (Swiss national day): a small Swiss cross and sparks next to the name */
+body.aug1 header h1{position:relative}
+body.aug1 header h1::after{content:"";flex:none;width:18px;height:18px;border-radius:3px;margin-left:2px;
+  background:linear-gradient(#fff,#fff) center/11px 3.6px no-repeat,linear-gradient(#fff,#fff) center/3.6px 11px no-repeat,#e8112d;box-shadow:0 0 10px rgba(232,17,45,.6)}
+.aug-spark{position:absolute;width:5px;height:5px;border-radius:50%;pointer-events:none;animation:augspark 1.6s ease-out infinite;opacity:0}
+@keyframes augspark{0%{opacity:0;transform:translate(0,0) scale(.4)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1)}}
+#langmenu{position:fixed;z-index:90;display:flex;flex-direction:column;min-width:160px;padding:6px;border-radius:12px;background:var(--panel);
+  border:1px solid var(--line);box-shadow:0 12px 32px rgba(0,0,0,.45)}
+#langmenu button{background:none;border:0;color:var(--txt);text-align:left;padding:9px 12px;border-radius:8px;font:inherit;font-size:14px;cursor:pointer}
+#langmenu button:hover{background:var(--field)}#langmenu button.on{background:var(--acc);color:#fff}
 header h1::before{content:"";flex:none;width:28px;height:28px;border-radius:8px;background:url(/icon-192.png) center/cover;
   box-shadow:0 2px 10px rgba(232,89,12,.35)}      /* the app icon (orange camera head) instead of a dot */
 .nav{display:flex;gap:2px;background:var(--field);border:1px solid var(--line);border-radius:11px;padding:3px;max-width:100%;overflow-x:auto;scrollbar-width:none}
@@ -10444,6 +12008,27 @@ body.light input.sw{background:#c4ccd8}body.light input.sw:checked{background:va
 h1 .ver{font-size:.62em;font-weight:600;color:var(--mut);margin-left:4px;letter-spacing:0}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .seg button{border-radius:0;padding:5px 11px;font-size:12px;background:transparent;color:var(--mut)}
+.night-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;margin:8px 0 4px;padding:12px 14px;font-size:16px;font-weight:700;text-align:left;
+  background:linear-gradient(135deg,#2b3a6b,#4a3a8a);color:#fff;border-radius:12px}
+.night-btn small{font-size:12px;font-weight:500;opacity:.85}
+#night-res{margin:6px 0 8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:13px}
+#night-res .nr-ok{color:var(--grn)}#night-res .nr-h{font-weight:700;margin-top:6px}#night-res .nr-miss{margin-top:4px}
+.simplebar{margin:0 0 12px}.simplebar .seg{display:flex}.simplebar .seg button{flex:1;padding:8px;font-size:13px}.simplebar .mut{font-size:12px;margin-top:4px}
+.hrow{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line)}.hrow:last-child{border-bottom:0}
+.hdot{flex:0 0 12px;height:12px;border-radius:50%;margin-top:4px;background:var(--mut)}
+.h-ok .hdot{background:var(--grn)}.h-warn .hdot{background:var(--yel)}.h-bad .hdot{background:var(--red);box-shadow:0 0 8px var(--red)}.h-off .hdot{background:transparent;border:2px solid var(--mut);box-sizing:border-box}
+.hbody{flex:1;min-width:0}.htop{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}.htop b{font-size:14px}.htop .mut{font-size:12px}
+.htip{font-size:12px;margin-top:2px;color:var(--txt);opacity:.85}
+.locbox .lseg{display:flex;margin:6px 0 4px}.locbox .lseg button{flex:1;padding:8px 6px;font-size:13px}
+.locbox .ltools{gap:6px;margin:6px 0 0}.locbox .ltools input{flex:1;min-width:0}.locbox .ltools button{flex:0 0 auto}
+.lmap{position:relative;height:240px;margin-top:8px;overflow:hidden;border-radius:10px;touch-action:none;cursor:grab;user-select:none;border:1px solid var(--line);
+  background:#22313b repeating-linear-gradient(0deg,transparent 0 63px,rgba(255,255,255,.07) 63px 64px),repeating-linear-gradient(90deg,transparent 0 63px,rgba(255,255,255,.07) 63px 64px)}
+.lmap.pick{cursor:crosshair}
+.lmap .mtiles{position:absolute;inset:0}.lmap .mtiles img{position:absolute;width:256px;height:256px;max-width:none;pointer-events:none}
+.lmap .lpin{position:absolute;transform:translate(-50%,-100%);font-size:30px;line-height:1;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6));z-index:2}
+.lmap .mzoom{position:absolute;right:6px;top:6px;display:flex;flex-direction:column;gap:5px;z-index:3}.lmap .mzoom button{width:34px;height:34px;padding:0;font-size:17px}
+.lmap .mattr{position:absolute;right:3px;bottom:2px;font-size:10px;background:rgba(255,255,255,.8);color:#333;padding:0 4px;border-radius:3px;z-index:3}.lmap .mattr a{color:#333}
+.locbox .lhint{font-size:12px;margin-top:4px}
 .seg button.sel-off{background:var(--mut);color:#fff}.seg button.sel-on{background:var(--grn);color:#fff}.seg button.sel-auto{background:var(--acc);color:#fff}
 ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:9px 16px;border-radius:10px;box-shadow:var(--shadow);z-index:90;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
@@ -10576,22 +12161,140 @@ self.addEventListener("notificationclick", e => {
 """
 
 
+def i18n_loader(help_=False):
+    """Runs first: for French, Italian and Romansh the page gets its translation file (cached by the browser per version)."""
+    return ("<script>" + LANG_JS.replace("</", "<\\/") + "\n(function(){var l='';try{l=localStorage.getItem('mw-lang')||'';}catch(e){}if(!l)l=" + json.dumps(CFG["lang"]) + ";"
+            "window.LX=function(s){var d=window.I18NX;return (d&&d[s])||'';};"
+            "if(['fr','it','rm'].indexOf(l)>=0)document.write('<script src=\"/i18n/'+l+'.js?v=" + APP_VERSION + ("&h=1" if help_ else "")
+            + "\"><\\/script>');})();</script>")
+
+
+def i18n_js(lang, help_=False):
+    """/i18n/<lang>.js: the translations of one language for the pages (Romansh: German where nothing is translated yet)."""
+    L = norm_lang(lang)
+    d = dict(TRX.get(L, {}))
+    out = "window.I18NX=" + json.dumps(d, ensure_ascii=False, separators=(",", ":")) + ";"
+    if help_:
+        out += "window.HELPX=" + json.dumps(HELP_X.get(L, ""), ensure_ascii=False) + ";"
+    out += "window.MSGX=" + json.dumps(MSG_DEFAULTS.get(L, {}), ensure_ascii=False) + ";"
+    return out.replace("</", "<\\/")
+
+
 def render_page(page, active):
     """Fill the shared pieces into a page template."""
-    page = page.replace("<head>", "<head>" + ui_seed_script() + PWA_HEAD.replace(
+    page = page.replace("<head>", "<head>" + ui_seed_script() + i18n_loader(active == "help") + PWA_HEAD.replace(
         'content="Motion Watch">', 'content="' + app_title(host_variant()) + '">'), 1)
     page = re.sub(r"(<h1[^>]*>)Motion Watch</h1>", r'\1Motion Watch <span class="ver">' + APP_VERSION + "</span>"
                   + ('<span class="badge yel" style="font-size:10px;padding:1px 7px;min-height:0">DEMO</span>' if DEMO["on"] else "") + "</h1>", page, count=1)
     return (page.replace("/*BASECSS*/", BASE_CSS).replace("/*COMMON*/", COMMON_JS).replace("<!--NAV-->", nav_html(active))
-            .replace("/*ALERTS*/", HEADER_JS.replace("__APPVER__", APP_VERSION) + ALERT_JS).replace("/*BTJS*/", BT_JS))
+            .replace("/*ALERTS*/", HEADER_JS.replace("__APPVER__", APP_VERSION).replace("__BELLY__", _BELLY) + ALERT_JS).replace("/*BTJS*/", BT_JS))
 
 
 HEADER_JS = r"""
+// ---- easter eggs: 7 quick taps on the name = the marmot on guard; 1 August = Swiss cross with sparks ----
+(function () {
+  const h1 = document.querySelector("header h1"); if (!h1) return;
+  const lang = () => { try { return (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || "en"; } catch (e) { return "en"; } };
+  const say = k => { const L = lang(); return sayL(k, L); };
+  const sayL = (k, L) => (window.LX && LX(k)) || ({"All quiet – I'm keeping watch!": "Alles ruhig – ich halte Wache!", "Happy Swiss National Day!": "Schöne Bundesfeier!"}[k] && (L === "de" || L === "rm")
+                    ? {"All quiet – I'm keeping watch!": "Alles ruhig – ich halte Wache!", "Happy Swiss National Day!": "Schöne Bundesfeier!"}[k] : k);
+  const SVG = '<svg viewBox="0 0 120 120" aria-hidden="true"><ellipse cx="60" cy="104" rx="40" ry="30" fill="#8a5a3b"/><ellipse cx="60" cy="108" rx="23" ry="20" fill="#c99d6e"/>'
+    + '<circle cx="35" cy="31" r="8" fill="#6e4529"/><circle cx="85" cy="31" r="8" fill="#6e4529"/><circle cx="35" cy="31" r="4" fill="#b98457"/><circle cx="85" cy="31" r="4" fill="#b98457"/>'
+    + '<circle cx="60" cy="54" r="30" fill="#8a5a3b"/><ellipse cx="60" cy="66" rx="17" ry="13" fill="#ecd3b2"/>'
+    + '<circle cx="48" cy="49" r="4.6" fill="#1b1410"/><circle cx="72" cy="49" r="4.6" fill="#1b1410"/><circle cx="49.5" cy="47.5" r="1.5" fill="#fff"/><circle cx="73.5" cy="47.5" r="1.5" fill="#fff"/>'
+    + '<ellipse cx="60" cy="60" rx="5.5" ry="3.8" fill="#2a1a12"/><path d="M54 66 Q60 70 66 66" stroke="#2a1a12" stroke-width="1.8" fill="none"/>'
+    + '<rect x="55.6" y="67.5" width="4" height="7" rx="1" fill="#fff"/><rect x="60.4" y="67.5" width="4" height="7" rx="1" fill="#fff"/>'
+    + '<ellipse cx="40" cy="88" rx="9" ry="6.5" fill="#6e4529"/><ellipse cx="80" cy="88" rx="9" ry="6.5" fill="#6e4529"/></svg>';
+  function whistle() {
+    try {
+      const A = window.AudioContext || window.webkitAudioContext; if (!A) return;
+      const ac = new A();
+      [0.0, 0.5].forEach(st => { const o = ac.createOscillator(), g = ac.createGain(), t0 = ac.currentTime + 0.05 + st;
+        o.type = "sine"; o.frequency.setValueAtTime(3000, t0); o.frequency.exponentialRampToValueAtTime(2100, t0 + 0.26);
+        g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.25, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.27);
+        o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + 0.3); });
+      setTimeout(() => ac.close(), 1600);
+    } catch (e) {}
+  }
+  function belly(size) {          // the little pattern on the belly (as SVG squares)
+    const [n, hx] = "__BELLY__".split(":"), N = +n; let bits = "";
+    for (const ch of hx) bits += parseInt(ch, 16).toString(2).padStart(4, "0");
+    let r = '<rect x="-2" y="-2" width="' + (N + 4) + '" height="' + (N + 4) + '" fill="#f3e2c8"/>';
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (bits[y * N + x] === "1") r += '<rect x="' + x + '" y="' + y + '" width="1.02" height="1.02" fill="#3a2516"/>';
+    return '<svg viewBox="-2 -2 ' + (N + 4) + ' ' + (N + 4) + '" width="' + size + '" height="' + size + '" shape-rendering="crispEdges">' + r + '</svg>';
+  }
+  let busy = false;
+  // only over the live picture (an HTML layer: it is never part of the stream or of a recording)
+  const liveOk = v => { const r = v.getBoundingClientRect(); return r.width > 160 && r.height > 120 && r.bottom > 80 && r.top < innerHeight - 80
+    && !document.querySelector("#pip:not([hidden])"); };
+  window.marmot = function () {
+    if (busy) return;
+    const v = document.querySelector("#vcard .vwrap"); if (!v) return;          // pages without a live picture: nothing
+    busy = true;
+    if (liveOk(v)) return show(v);
+    v.scrollIntoView({behavior: "smooth", block: "center"});
+    let n = 0; const w = setInterval(() => { if (liveOk(v)) { clearInterval(w); setTimeout(() => show(v), 250); } else if (++n > 30) { clearInterval(w); busy = false; } }, 100);
+  };
+  function cwTriangle(P) {                // a closed triangle, drawn clockwise (screen: y goes down)
+    if (P.length < 8) return false;
+    const xs = P.map(p => p[0]), ys = P.map(p => p[1]), w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys), size = Math.max(w, h);
+    if (size < 40 || Math.min(w, h) < size * 0.3 || Math.hypot(P[0][0] - P[P.length - 1][0], P[0][1] - P[P.length - 1][1]) > size * 0.35) return false;
+    let A = 0; for (let i = 0; i < P.length; i++) { const p = P[i], q = P[(i + 1) % P.length]; A += p[0] * q[1] - q[0] * p[1]; }
+    A /= 2; if (A <= 0 || A / (w * h) < 0.25 || A / (w * h) > 0.68) return false;
+    const rdp = (Q, eps) => { if (Q.length < 3) return Q.slice(); const a = Q[0], b = Q[Q.length - 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1e-9;
+      let dm = -1, ix = 0; for (let i = 1; i < Q.length - 1; i++) { const d = L > 1e-6 ? Math.abs((b[0] - a[0]) * (a[1] - Q[i][1]) - (a[0] - Q[i][0]) * (b[1] - a[1])) / L : Math.hypot(Q[i][0] - a[0], Q[i][1] - a[1]); if (d > dm) { dm = d; ix = i; } }
+      return dm <= eps ? [a, b] : rdp(Q.slice(0, ix + 1), eps).slice(0, -1).concat(rdp(Q.slice(ix), eps)); };
+    const V = rdp(P.concat([P[0]]), size * 0.12).slice(0, -1);
+    let ch = true;
+    while (ch && V.length > 3) { ch = false;
+      for (let i = 0; i < V.length; i++) { const a = V[(i - 1 + V.length) % V.length], b = V[i], c = V[(i + 1) % V.length];
+        const u = [a[0] - b[0], a[1] - b[1]], q = [c[0] - b[0], c[1] - b[1]], nu = Math.hypot(...u), nq = Math.hypot(...q);
+        if (nu < size * 0.12 || nq < size * 0.12 || (u[0] * q[0] + u[1] * q[1]) / (nu * nq) < -0.88) { V.splice(i, 1); ch = true; break; } } }
+    return V.length === 3;
+  }
+  window.mwTri = cwTriangle;
+  function show(v) {
+    const m = document.createElement("div"); m.className = "mw-marmot";
+    m.innerHTML = SVG; const b = document.createElement("div"); b.className = "bub"; b.textContent = say("All quiet – I'm keeping watch!"); m.appendChild(b);
+    // the belly: grab it and draw a triangle clockwise - only then the secret shows for a moment
+    const bl = document.createElement("div");
+    bl.style.cssText = "position:absolute;left:52px;top:104px;width:76px;height:74px;border-radius:50%;pointer-events:auto;touch-action:none;cursor:grab";
+    m.appendChild(bl); v.appendChild(m);
+    let held = false, qr = false, pts = [];
+    const leave = () => { if (held || qr) return; m.classList.remove("up"); setTimeout(() => { m.remove(); busy = false; }, 500); };
+    bl.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); held = true; pts = [[e.clientX, e.clientY]];
+      try { bl.setPointerCapture(e.pointerId); } catch (x) {} });
+    bl.addEventListener("pointermove", e => { if (held) { e.preventDefault(); pts.push([e.clientX, e.clientY]); } });
+    const end = e => { if (!held) return; held = false; e.stopPropagation();
+      if (cwTriangle(pts)) { qr = true; const q = document.createElement("div"); q.innerHTML = belly(58);
+        q.style.cssText = "position:absolute;left:61px;top:114px;width:58px;height:58px;border-radius:4px;overflow:hidden;opacity:0;transition:opacity .25s;box-shadow:0 1px 4px rgba(0,0,0,.35)";
+        m.appendChild(q); requestAnimationFrame(() => { q.style.opacity = "1"; });
+        setTimeout(() => { q.style.opacity = "0"; setTimeout(() => { q.remove(); qr = false; leave(); }, 300); }, 4000);
+      } else setTimeout(leave, 700); };
+    bl.addEventListener("pointerup", end); bl.addEventListener("pointercancel", end);
+    bl.addEventListener("click", e => e.stopPropagation());
+    requestAnimationFrame(() => requestAnimationFrame(() => m.classList.add("up")));
+    setTimeout(whistle, 250);
+    setTimeout(leave, 2300);
+  }
+  let taps = [];
+  h1.addEventListener("click", () => { const now = Date.now(); taps = taps.filter(x => now - x < 3000); taps.push(now);
+    if (taps.length >= 7) { taps = []; window.marmot(); } });
+  const d = new Date();
+  if ((d.getMonth() === 7 && d.getDate() === 1) || /[?&]aug1=1/.test(location.search)) {
+    document.body.classList.add("aug1"); h1.title = "🇨🇭 " + say("Happy Swiss National Day!");
+    const cols = ["#ffd166", "#ff6b6b", "#ffffff", "#e8112d", "#ffd166", "#ffffff"];
+    cols.forEach((c, i) => { const sp = document.createElement("span"); sp.className = "aug-spark";
+      const a = (i / cols.length) * Math.PI * 2; sp.style.cssText = "right:-12px;top:50%;background:" + c + ";--dx:" + Math.round(Math.cos(a) * 22) + "px;--dy:" + Math.round(Math.sin(a) * 18) + "px;animation-delay:" + (i * 0.27).toFixed(2) + "s";
+      h1.appendChild(sp); });
+  }
+})();
+
 // ---- hide / show the whole header (remembered per device) ----
 (function () {
   const H = document.querySelector("header"); if (!H) return;
   const TX = {"Hide header": "Kopfzeile ausblenden", "Show header": "Kopfzeile einblenden"};
-  const tx = s => (LANG === "de" && TX[s]) || s;
+  const tx = s => (LANG === "de" && TX[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && TX[s]) || s;
   const hb = el("button", "sec", "▴"); hb.type = "button"; hb.id = "btn-hdr";
   const ctl = H.querySelector(".hdr-ctl"); (ctl || H).appendChild(hb);
   const sh = el("button", "sec", "▾"); sh.type = "button"; sh.id = "hdr-show"; document.body.appendChild(sh);
@@ -10610,7 +12313,7 @@ HEADER_JS = r"""
 (function () {
   const H = document.querySelector("header"); if (!H) return;
   const TX = {"Reload page": "Seite neu laden", "New version running": "Neue Version läuft", "Reload": "Neu laden", "later": "später"};
-  const tx = s => (LANG === "de" && TX[s]) || s;
+  const tx = s => (LANG === "de" && TX[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && TX[s]) || s;
   const app = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
   document.body.classList.toggle("appmode", app);
   if (app) {
@@ -10662,6 +12365,18 @@ HEADER_JS = r"""
   setInterval(check, 20000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(check, 1500); });
 })();
+// ---- location of the phone for the GPS data of photos / videos (browsers give it only to https pages) ----
+(function () {
+  if (!window.isSecureContext || !navigator.geolocation) return;
+  let last = null, lastT = 0;
+  const send = p => { const c = p.coords, now = Date.now();
+    const moved = !last || Math.hypot((c.latitude - last[0]) * 111000, (c.longitude - last[1]) * 75000) > 30;
+    if (!moved && now - lastT < 600000) return;
+    last = [c.latitude, c.longitude]; lastT = now;
+    fetch("/api/gps", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({lat: c.latitude, lon: c.longitude, acc: c.accuracy})}).catch(() => {}); };
+  setTimeout(() => fetch("/api/gps").then(r => r.json()).then(j => { if (j && j.on)
+    navigator.geolocation.watchPosition(send, () => {}, {enableHighAccuracy: false, maximumAge: 120000, timeout: 30000}); }).catch(() => {}), 1500);
+})();
 // ---- clock: the Pi has no battery clock; without internet it takes the time of the phone ----
 (function () {
   let tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
@@ -10681,7 +12396,7 @@ ALERT_JS = r"""
     "connection to the camera interrupted - reconnecting": "Verbindung zur Kamera unterbrochen - verbinde neu",
     "The page must stay open (also in the background). With the screen off or the browser closed only the push message (ntfy / Telegram) arrives.":
       "Die Seite muss offen bleiben (auch im Hintergrund geht es). Bei ausgeschaltetem Bildschirm oder geschlossenem Browser kommt nur die Push-Nachricht (ntfy / Telegram)."};
-  const at = s => (LANG === "de" && ALT[s]) || s;
+  const at = s => (LANG === "de" && ALT[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && ALT[s]) || s;
   const S = {on: false, pre: true, person: true, vol: 0.7, vib: true, mute: 0};
   try { Object.assign(S, JSON.parse(localStorage.getItem("mw-sound") || "{}")); } catch (e) {}
   const save = () => { try { localStorage.setItem("mw-sound", JSON.stringify(S)); } catch (e) {} };
@@ -10827,15 +12542,15 @@ function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.
 let LANG = "", THEME = "";
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
 const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch"}};
-const t = s => (LANG === "de" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
+const t = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
-  const b = $("#btn-lang"); if (b) b.textContent = LANG === "de" ? "EN" : "DE";
+  const b = $("#btn-lang"); if (b) b.textContent = (LANG || "en").toUpperCase();
   document.documentElement.lang = LANG;
 }
 function applyTheme() { document.body.classList.toggle("light", THEME === "light"); const b = $("#btn-theme"); if (b) b.innerHTML = THEME === "light" ? "&#9790;" : "&#9728;"; }
 function toggleTheme() { THEME = THEME === "light" ? "dark" : "light"; try { localStorage.setItem("mw-theme", THEME); } catch (e) {} applyTheme(); }
-function toggleLang() { LANG = LANG === "de" ? "en" : "de"; try { localStorage.setItem("mw-lang", LANG); } catch (e) {} location.reload(); }
+function toggleLang() { langMenu(document.querySelector("#btn-lang")); }
 let toastTimer = null;
 function toast(msg) { let e = $("#toast"); if (!e) { e = el("div"); e.id = "toast"; document.body.appendChild(e); } e.textContent = msg; e.classList.add("on");
   clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove("on"), 2600); }
@@ -10921,12 +12636,6 @@ h3{margin:0 0 8px;font-size:11px;letter-spacing:.09em;color:var(--mut);text-tran
       <div id="fl-found"></div>
     </details>
     <div class="err" id="fl-err"></div>
-  </section>
-  <section class="card" style="margin-top:16px">
-    <h3 data-i18n="Bluetooth loudspeaker">Bluetooth loudspeaker</h3>
-    <div class="mut" id="bt-use"></div>
-    <div id="bt-host"></div>
-    <div class="btns"><button class="sec" type="button" onclick="post('/api/audio', {action: 'test', lang: LANG}).then(r => { if (!r.ok) toast('⚠ ' + (r.error || 'error')); })" data-i18n="🔊 Test sound">🔊 Test sound</button></div>
   </section>
 </main>
 <script>
@@ -11067,7 +12776,7 @@ document.addEventListener("visibilitychange", () => {      // no stream while th
   document.querySelectorAll(".tile img").forEach(i => { i.src = document.hidden ? "" : i.dataset.src; });
 });
 (async () => { await initAppearance(); poll(); setInterval(poll, 2500);
-  $("#bt-host").appendChild(btBox(true)); btUse(); setInterval(btUse, 4000); fleetPoll(); setInterval(fleetPoll, 3000); })();
+  fleetPoll(); setInterval(fleetPoll, 3000); })();
 /*ALERTS*/
 </script></body></html>
 """
@@ -11137,7 +12846,7 @@ Object.assign(I18N, {en: {"z-ign": "Persons and objects whose feet are inside ar
   "z-only": "If at least one such zone exists, only what happens inside it counts (entrance, driveway).",
   "z-how": "A zone affects detection, recording, alarms and relays. The point that counts is the bottom middle of the detected object (the feet).",
   "z-priv": "The area is covered in black – in the live picture, recordings, photos and timelapse. It is never stored or sent (neighbour's tent, a path, somebody's window). Important for data protection."}});
-const tt = s => (LANG === "de" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
+const tt = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 const cv = $("#cv"), g = cv.getContext("2d"), img = new Image();
 let zones = [], sel = -1, drawing = null, drawMode = "ignore", drag = null;
 const COL = {ignore: "245,154,74", only: "63,207,107", privacy: "169,139,255"};
@@ -11235,6 +12944,22 @@ main{padding:16px;max-width:1500px;margin:0 auto}
 #big .x{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:1px solid rgba(255,255,255,.4);font-size:22px}
 #rep{white-space:pre-wrap;line-height:1.5}
 .empty{padding:30px 10px;text-align:center}
+.dayhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.dayhead input{width:auto;padding:6px 8px}.dayhead button{padding:6px 12px;font-size:16px}
+.dayhead h3{margin:0 8px 0 0;font-size:17px}
+.dtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin:6px 0 10px}
+.dline a{color:var(--acc);text-decoration:none}
+.dtile{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.dtile b{display:block;font-size:22px;line-height:1.1}.dtile span{font-size:12px;color:var(--mut)}
+.dline{display:flex;flex-wrap:wrap;gap:6px 16px;margin:6px 0;font-size:14px}
+.dchart{width:100%;height:auto;display:block;margin:8px 0 2px;background:var(--field);border:1px solid var(--line);border-radius:12px}
+.dchart text{fill:var(--mut);font:11px system-ui,sans-serif}
+.dleg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mut);margin-bottom:8px}
+.dleg i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.dbest{display:flex;gap:8px;overflow-x:auto;margin:8px 0}.dbest figure{margin:0;flex:none;width:150px}
+.dbest img{width:150px;height:112px;object-fit:cover;border-radius:10px;display:block;cursor:zoom-in;background:#000}
+.dbest figcaption{font-size:12px;color:var(--mut);margin-top:3px}
+#d-rep{white-space:pre-wrap;line-height:1.5;margin-top:6px}
 </style></head><body>
 <header>
   <h1>Motion Watch</h1>
@@ -11245,6 +12970,12 @@ main{padding:16px;max-width:1500px;margin:0 auto}
   </span>
 </header>
 <main>
+  <div class="card" id="daycard">
+    <div class="dayhead"><h3 data-i18n="Day overview">Day overview</h3>
+      <button class="sec" type="button" id="d-prev" aria-label="previous day">‹</button><input type="date" id="d-date"><button class="sec" type="button" id="d-next" aria-label="next day">›</button>
+      <b id="d-title"></b></div>
+    <div id="d-body" class="mut">…</div>
+  </div>
   <details class="card" open id="repcard">
     <summary data-i18n="Night report">Night report</summary>
     <div id="rep" class="mut">…</div>
@@ -11261,7 +12992,8 @@ main{padding:16px;max-width:1500px;margin:0 auto}
 <div id="big"><button class="x" onclick="closeBig()">&#x2715;</button><img id="big-img" alt=""><div class="cap" id="big-cap"></div></div>
 <script>
 /*COMMON*/
-Object.assign(I18N.de, {"Diary": "Tagebuch", "Night report": "Nachtbericht", "Send now": "Jetzt senden", "Animal diary": "Tier-Tagebuch",
+Object.assign(I18N.de, {"Day overview": "Tagesübersicht", "Persons": "Personen", "Animals": "Tiere", "Warm bodies": "Warme Körper", "Noises": "Geräusche", "Photos": "Fotos", "Sensor": "Fühler", "Temperature (sensor)": "Temperatur (Fühler)", "Temperature (weather)": "Temperatur (Wetter)", "Rain / humidity": "Regen / Feuchte", "Person": "Person", "Animal": "Tier", "Warm body": "Warmer Körper", "Noise": "Geräusch", "No measurements for this day yet.": "Für diesen Tag gibt es noch keine Messwerte.", "Weather from the internet: switch on under Notifications → Night report.": "Wetter aus dem Internet: einschalten unter Benachrichtigungen → Nachtbericht.", "No weather for this day": "Kein Wetter für diesen Tag", "no location": "kein Standort", "Day overview: weather from the internet (Open-Meteo; the location is sent there)": "Tagesübersicht: Wetter aus dem Internet (Open-Meteo; dafür wird der Standort dorthin geschickt)", "clear": "klar", "partly cloudy": "leicht bewölkt", "cloudy": "bewölkt", "fog": "Nebel", "drizzle": "Nieselregen", "rain": "Regen", "snow": "Schnee", "showers": "Schauer", "thunderstorm": "Gewitter", "new moon": "Neumond", "waxing crescent": "zunehmende Sichel", "first quarter": "erstes Viertel", "waxing gibbous": "zunehmender Mond", "full moon": "Vollmond", "waning gibbous": "abnehmender Mond", "last quarter": "letztes Viertel", "waning crescent": "abnehmende Sichel"});
+Object.assign(I18N.de, {"recordings": "Aufnahmen", "Diary": "Tagebuch", "Night report": "Nachtbericht", "Send now": "Jetzt senden", "Animal diary": "Tier-Tagebuch",
   "All animals": "Alle Tiere", "Favourites": "Favoriten", "Delete this entry?": "Diesen Eintrag löschen?", "Share": "Teilen",
   "Download": "Herunterladen", "Favourite": "Favorit", "Delete": "Löschen", "sent": "gesendet", "not sent – notifications are not set up": "nicht gesendet – Benachrichtigungen sind nicht eingerichtet",
   "Last report": "Letzter Bericht", "So far tonight": "Bisher diese Nacht", "Last night": "Letzte Nacht",
@@ -11270,7 +13002,7 @@ Object.assign(I18N.de, {"Diary": "Tagebuch", "Night report": "Nachtbericht", "Se
   "The night report is off (Notifications → Night report).": "Der Nachtbericht ist aus (Benachrichtigungen → Nachtbericht)."});
 Object.assign(I18N, {en: {"d-note": "The best picture of every animal visit (AI detection) – collected automatically. Tap to enlarge, ★ = keep (never deleted automatically)."}});
 let filt = "", data = {items: [], labels: []}, cur = null;
-const fmt = iso => { const d = new Date(iso); return d.toLocaleDateString(LANG === "de" ? "de-CH" : "en-GB", {day: "2-digit", month: "2-digit", year: "numeric"}) + " " + iso.slice(11, 16); };
+const fmt = iso => { const d = new Date(iso); return d.toLocaleDateString(LOCALE(LANG), {day: "2-digit", month: "2-digit", year: "numeric"}) + " " + iso.slice(11, 16); };
 async function load() {
   const q = new URLSearchParams({lang: LANG}); if (filt && filt !== "*fav") q.set("label", filt); if (filt === "*fav") q.set("fav", "1");
   try { data = await (await fetch("/api/diary?" + q)).json(); } catch (e) { return; }
@@ -11318,12 +13050,88 @@ async function sendReport() {
   const r = await post("/api/report/send", {lang: LANG});
   toast(r.ok ? t("sent") : t("not sent – notifications are not set up")); loadReport();
 }
-(async () => { await initAppearance(); load(); loadReport(); })();
+// ---- day overview: what happened, climate curve, weather, sun, moon, place ----
+const dIso = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+let DAY = dIso(new Date());
+function dShift(n) { const d = new Date(DAY + "T12:00:00"); d.setDate(d.getDate() + n); if (dIso(d) > dIso(new Date())) return; DAY = dIso(d); loadDay(); }
+async function loadDay(refresh) {
+  $("#d-date").value = DAY; $("#d-date").max = dIso(new Date());
+  $("#d-next").disabled = DAY >= dIso(new Date());
+  let j; try { j = await (await fetch("/api/day?d=" + DAY + "&lang=" + LANG + (refresh ? "&refresh=1" : ""))).json(); } catch (e) { return; }
+  renderDay(j);
+}
+function dChart(j) {
+  const W = Math.max(330, Math.min(760, ($("#d-body").clientWidth || 640))), H = W < 480 ? 210 : 190, L = 34, R = 34, T = 12, B = 34, PW = W - L - R, PH = H - T - B;
+  const xm = m => L + PW * m / 1440, mins = hhmm => (+hhmm.slice(0, 2)) * 60 + (+hhmm.slice(3, 5));
+  const cl = (j.climate || []).filter(r => r[1] != null), wh = j.weather ? j.weather.hourly : {};
+  const wt = Object.keys(wh).sort().map(h => [(+h) * 60 + 30, wh[h][0], wh[h][1]]).filter(x => x[1] != null);
+  const temps = cl.map(r => r[1]).concat(wt.map(x => x[1]));
+  if (!temps.length && !(j.events || []).length) return null;
+  let tmin = temps.length ? Math.floor(Math.min(...temps) - 1) : 0, tmax = temps.length ? Math.ceil(Math.max(...temps) + 1) : 20;
+  if (tmax - tmin < 6) { tmin -= 3; tmax += 3; }
+  const yt = v => T + PH - PH * (v - tmin) / (tmax - tmin), yh = v => T + PH - PH * v / 100;
+  const NS = "http://www.w3.org/2000/svg", svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H); svg.setAttribute("class", "dchart");
+  const mk = (n, a, txt) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; svg.appendChild(e); return e; };
+  for (let h = 0; h <= 24; h += 6) { mk("line", {x1: xm(h * 60), x2: xm(h * 60), y1: T, y2: T + PH, stroke: "currentColor", "stroke-opacity": .12});
+    mk("text", {x: xm(h * 60), y: H - 18, "text-anchor": "middle"}, h + ":00"); }
+  [tmin, Math.round((tmin + tmax) / 2), tmax].forEach(v => { mk("line", {x1: L, x2: L + PW, y1: yt(v), y2: yt(v), stroke: "currentColor", "stroke-opacity": .08});
+    mk("text", {x: L - 4, y: yt(v) + 4, "text-anchor": "end"}, v + "°"); });
+  if (j.sun && j.sun.rise) { const a = mins(j.sun.rise), b = mins(j.sun.set);
+    mk("rect", {x: L, y: T, width: xm(a) - L, height: PH, fill: "#3a5ccc", "fill-opacity": .10}); mk("rect", {x: xm(b), y: T, width: L + PW - xm(b), height: PH, fill: "#3a5ccc", "fill-opacity": .10}); }
+  const rmax = Math.max(2, ...wt.map(x => x[2] || 0));
+  wt.forEach(x => { if (x[2] > 0) { const h = PH * 0.45 * x[2] / rmax; mk("rect", {x: xm(x[0] - 25), y: T + PH - h, width: Math.max(2, xm(50) - xm(0)), height: h, fill: "#58a6ff", "fill-opacity": .45}); } });
+  const path = (pts, y) => pts.map((p, i) => (i ? "L" : "M") + xm(p[0]).toFixed(1) + " " + y(p[1]).toFixed(1)).join(" ");
+  if (wt.length > 1) mk("path", {d: path(wt.map(x => [x[0], x[1]]), yt), fill: "none", stroke: "#8b9bb0", "stroke-width": 1.5, "stroke-dasharray": "4 3"});
+  const hum = (j.climate || []).filter(r => r[2] != null).map(r => [mins(r[0]), r[2]]);
+  if (hum.length > 1) { mk("path", {d: path(hum, yh), fill: "none", stroke: "#58a6ff", "stroke-width": 1.6});
+    [0, 50, 100].forEach(v => mk("text", {x: L + PW + 4, y: yh(v) + 4}, v + "%")); }
+  if (cl.length > 1) mk("path", {d: path(cl.map(r => [mins(r[0]), r[1]]), yt), fill: "none", stroke: "#f0883e", "stroke-width": 2.2});
+  const col = {person: "#ff3b3b", animal: "#f5c542", warm: "#ff7ab6", noise: "#bc8cff", object: "#8b9bb0"};
+  (j.events || []).forEach(e => { const c = mk("circle", {cx: xm(mins(e.t)), cy: H - 6, r: 3.5, fill: col[e.kind] || "#8b9bb0"}); const ti = document.createElementNS(NS, "title"); ti.textContent = e.t + " " + e.label; c.appendChild(ti); });
+  return svg;
+}
+function renderDay(j) {
+  const b = $("#d-body"); b.textContent = ""; b.className = "";
+  if (!j || j.error) { b.textContent = "–"; return; }
+  const d = new Date(j.day + "T12:00:00");
+  $("#d-title").textContent = d.toLocaleDateString(LOCALE(LANG), {weekday: "long", day: "numeric", month: "long", year: "numeric"});
+  const c = j.counts, tl = el("div", "dtiles");
+  [["👤", c.persons, "Persons"], ["🦊", c.animals, "Animals"], ["🔥", c.warm, "Warm bodies"], ["🔊", c.noise, "Noises"],
+   ["🎬", c.recordings + (c.alarm_recordings ? " (" + c.alarm_recordings + " 🚨)" : ""), "recordings"], ["📷", c.photos, "Photos"]].forEach(([i, n, k]) => {
+    const t_ = el("div", "dtile"), lb = t(k); t_.append(el("b", "", i + " " + n), el("span", "", lb.charAt(0).toUpperCase() + lb.slice(1))); tl.appendChild(t_); });
+  b.appendChild(tl);
+  const ln = el("div", "dline"), w = j.weather, cs = j.climate_sum || {};
+  if (cs.tmin != null) ln.append(el("span", "", "🌡 " + t("Sensor") + ": " + cs.tmin.toFixed(1) + " … " + cs.tmax.toFixed(1) + " °C" + (cs.hmin != null ? " · 💧 " + cs.hmin + "–" + cs.hmax + " %" : "") + (cs.pmin != null ? " · " + Math.round(cs.pmin) + "–" + Math.round(cs.pmax) + " hPa" : "")));
+  if (w) ln.append(el("span", "", w.icon + " " + w.text + (w.tmax != null ? " · " + Math.round(w.tmin) + "° / " + Math.round(w.tmax) + "°" : "") + (w.rain != null ? " · ☔ " + w.rain.toFixed(1) + " mm" : "") + (w.wind != null ? " · 💨 " + Math.round(w.wind) + " km/h" : "")));
+  if (j.sun) ln.append(el("span", "", j.sun.rise ? "🌅 " + j.sun.rise + " · 🌇 " + j.sun.set + " (" + j.sun.len + ")" : "☀ –"));
+  if (j.moon) ln.append(el("span", "", j.moon.icon + " " + j.moon.name));
+  if (j.gps) { const a = el("a", "", "📍 " + j.gps[0].toFixed(3) + ", " + j.gps[1].toFixed(3)); a.href = "https://www.openstreetmap.org/?mlat=" + j.gps[0] + "&mlon=" + j.gps[1] + "#map=13/" + j.gps[0] + "/" + j.gps[1]; a.target = "_blank"; a.rel = "noopener"; ln.append(a); }
+  b.appendChild(ln);
+  const ch = dChart(j);
+  if (ch) { b.appendChild(ch);
+    const lg = el("div", "dleg"); const li = (col, k) => { const s_ = el("span"); const i_ = el("i"); i_.style.background = col; s_.append(i_, t(k)); lg.appendChild(s_); };
+    if ((j.climate || []).some(r => r[1] != null)) li("#f0883e", "Temperature (sensor)"); if (w && Object.keys(w.hourly || {}).length) { li("#8b9bb0", "Temperature (weather)"); li("#58a6ff", "Rain / humidity"); }
+    li("#ff3b3b", "Person"); li("#f5c542", "Animal"); li("#ff7ab6", "Warm body"); li("#bc8cff", "Noise"); b.appendChild(lg);
+  } else b.appendChild(el("div", "mut", t("No measurements for this day yet.")));
+  if (!j.weather_on) b.appendChild(el("div", "mut", "☁ " + t("Weather from the internet: switch on under Notifications → Night report.")));
+  else if (!w) { const x = el("div", "mut", "☁ " + t("No weather for this day") + (j.weather_status && j.weather_status !== "ok" ? " (" + t(j.weather_status) + ")" : "") + " ");
+    const rb = el("button", "sec", "↻"); rb.type = "button"; rb.onclick = () => loadDay(true); x.appendChild(rb); b.appendChild(x); }
+  if ((j.animals || []).length) { const a = el("div", "dline"); j.animals.forEach(x => a.appendChild(el("span", "", x.label + " ×" + x.count))); b.appendChild(a); }
+  if ((j.best || []).length) { const bb = el("div", "dbest"); j.best.forEach(x => { const f = el("figure"), im = el("img"); im.src = "/diary/img/" + x.img + "?thumb=1"; im.alt = x.label; im.loading = "lazy";
+      im.onclick = () => { $("#big-img").src = "/diary/img/" + x.img; $("#big-cap").textContent = x.label + " · " + x.t; $("#big").classList.add("on"); };
+      f.append(im, el("figcaption", "", x.label + " · " + x.t)); bb.appendChild(f); }); b.appendChild(bb); }
+  if (j.report) { b.appendChild(el("div", "mut", "🌙 " + t("Night report"))); b.appendChild(el("div", "", j.report)).id = "d-rep"; }
+}
+$("#d-prev").onclick = () => dShift(-1); $("#d-next").onclick = () => dShift(1);
+$("#d-date").onchange = e => { if (e.target.value) { DAY = e.target.value; loadDay(); } };
+(async () => { await initAppearance(); loadDay(); load(); loadReport(); })();
 /*ALERTS*/
 </script></body></html>
 """
 
 
+GUEST_KEYS = ("Guest view · watch only · tap the picture = full screen", "access expired", "Armed", "Disarmed", "person in view", "quiet", "until")
 GUEST_PAGE = r"""<!doctype html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -11344,19 +13152,20 @@ html,body{margin:0;background:#000;color:#e6edf3;font:15px/1.4 system-ui,-apple-
 <div class="wrap vwrap"><img id="v" alt="" src="__BASE__/video"></div>
 <div class="foot" id="ft"></div>
 <script>
-const de = (navigator.language || "").toLowerCase().startsWith("de");
+const GL = (navigator.language || "").toLowerCase().slice(0, 2), GT = /*GT*/{};
+const de = GL === "de", g_ = (k, d, e) => (GT[GL] && GT[GL][k]) || (de ? d : e);
 const $ = s => document.querySelector(s);
 /*KEEP*/
 keepStream($("#v"));
 $("#v").addEventListener("click", () => document.body.classList.toggle("big"));
-$("#ft").textContent = de ? "Gast-Ansicht · nur zuschauen · Tippen aufs Bild = Vollbild" : "Guest view · watch only · tap the picture = full screen";
+$("#ft").textContent = g_("Guest view · watch only · tap the picture = full screen", "Gast-Ansicht · nur zuschauen · Tippen aufs Bild = Vollbild", "Guest view · watch only · tap the picture = full screen");
 async function st() {
   try {
     const r = await fetch("__BASE__/state", {cache: "no-store"});
-    if (r.status === 403 || r.status === 404) { $("#st").textContent = de ? "Zugang abgelaufen" : "access expired"; $("#v").remove(); return; }
+    if (r.status === 403 || r.status === 404) { $("#st").textContent = g_("access expired", "Zugang abgelaufen", "access expired"); $("#v").remove(); return; }
     const j = await r.json();
-    $("#st").textContent = (j.armed ? (de ? "Scharf" : "Armed") : (de ? "Unscharf" : "Disarmed")) + " · " + (j.persons ? (de ? "Person im Bild" : "person in view") : (de ? "ruhig" : "quiet"))
-      + (j.until ? " · " + (de ? "bis " : "until ") + new Date(j.until * 1000).toLocaleString(de ? "de-CH" : "en-GB", {weekday: "short", hour: "2-digit", minute: "2-digit"}) : "");
+    $("#st").textContent = (j.armed ? g_("Armed", "Scharf", "Armed") : g_("Disarmed", "Unscharf", "Disarmed")) + " · " + (j.persons ? g_("person in view", "Person im Bild", "person in view") : g_("quiet", "ruhig", "quiet"))
+      + (j.until ? " · " + g_("until", "bis", "until") + " " + new Date(j.until * 1000).toLocaleString(({de: "de-CH", fr: "fr-CH", it: "it-CH"})[GL] || "en-GB", {weekday: "short", hour: "2-digit", minute: "2-digit"}) : "");
   } catch (e) {}
   setTimeout(st, 3000);
 }
@@ -11587,6 +13396,7 @@ body.swapside.mobland #ctl-left{grid-template-columns:1fr;grid-template-areas:"s
 body.swapside.mobland #vcard{grid-template-columns:auto minmax(0,1fr)}
 body.swapside.mobland #vcard>.vwrap{grid-column:2}body.swapside.mobland #mctl{grid-column:1}
 .ctl-side .sr{display:flex;gap:6px}.ctl-side .sr button{flex:1;padding:7px 4px;font-size:12.5px;white-space:nowrap}
+.ctl-side .sr button{min-width:0;overflow:hidden;text-overflow:ellipsis}.ctl-side .sr button:last-child:not(:first-child){flex:0 1 auto}
 .ctl-side .seg{display:flex}.ctl-side .seg button{flex:1;padding:6px 4px}
 .ctl-side .row{gap:6px}.ctl-side .row select{width:auto;flex:1}
 #patrol-st{margin-top:6px;font-size:11.5px;text-align:center}
@@ -11791,6 +13601,8 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
   <span class="badge yel" id="b-lock" data-view="b-lock" data-vgroup="Header" data-vlabel="Operator mode" hidden>🔐</span>
   <span class="badge" id="b-tl" data-view="b-tl" data-vgroup="Header" data-vlabel="Timelapse" hidden>⏱</span>
   <span class="badge" id="b-lights" data-view="b-lights" data-vgroup="Header" data-vlabel="Lights" hidden>💡</span>
+  <span class="badge" id="b-env" data-view="b-env" data-vgroup="Header" data-vlabel="Outside temperature" hidden>🌡</span>
+  <span class="badge red" id="b-health" data-view="b-health" data-vgroup="Header" data-vlabel="Self-check" hidden style="cursor:pointer" onclick="healthOpen()">🩺</span>
   <span class="badge" id="b-therm" data-view="b-therm" data-vgroup="Header" data-vlabel="Thermal camera" hidden>🌡</span>
   <span class="badge" id="b-pat" data-view="b-pat" data-vgroup="Header" data-vlabel="Patrol / tracking" hidden>🔄</span>
   <span class="badge" id="b-hs" data-view="b-hs" data-vgroup="Header" data-vlabel="Own Wi-Fi (hotspot)" hidden>📡</span>
@@ -11881,6 +13693,8 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
     <details class="card" open data-view="protect" data-vgroup="Panels" data-vlabel="Camping / protection" id="pr-card">
       <summary data-i18n="Camping / protection">Camping / protection</summary>
       <div class="row"><b id="pr-state" style="font-size:18px">–</b><span class="mut" id="pr-left"></span></div>
+      <button type="button" class="night-btn" id="pr-night" onclick="nightGuard()"><span data-i18n="🌙 Guard tonight">🌙 Guard tonight</span><small data-i18n="night-desc">switches on what a night needs, arms with the countdown and tells what is missing</small></button>
+      <div id="night-res" hidden></div>
       <div class="btns">
         <button type="button" id="pr-arm" data-i18n="🛡 Arm (countdown)">🛡 Arm (countdown)</button>
         <button type="button" class="sec" id="pr-armnow" data-i18n="Arm now">Arm now</button>
@@ -11903,7 +13717,14 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       <label class="row pr-sw l-hide"><span><b>🔁 <span data-i18n="Autostart at boot">Autostart at boot</span></b><br><span class="mut" id="pr-as-info"></span></span>
         <input type="checkbox" class="sw" id="pr-as"></label>
       <div class="mut" id="pr-time" style="margin-top:6px"></div>
+      <div class="mut" id="pr-gps" style="margin-top:4px"></div>
+      <div class="mut" id="pr-env" style="margin-top:4px"></div>
       <div class="err" id="pr-err"></div>
+    </details>
+    <details class="card" id="hcard" data-view="health" data-vgroup="Panels" data-vlabel="Self-check">
+      <summary><span data-i18n="🩺 Self-check">🩺 Self-check</span> <span class="mut" id="h-sum" style="text-transform:none;letter-spacing:0;font-weight:500"></span></summary>
+      <div id="h-list"></div>
+      <div class="btns"><button type="button" class="sec" onclick="healthLoad()" data-i18n="Check again">Check again</button></div>
     </details>
     <details class="card" open data-view="system" data-vgroup="Panels" data-vlabel="System">
       <summary data-i18n="System">System</summary>
@@ -11934,6 +13755,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       </div>
       <div class="btns pwr">
         <button type="button" class="sec l-hide" onclick="setupWizard(true)" data-i18n="🧭 Setup assistant">🧭 Setup assistant</button>
+        <a class="btn sec" id="lnk-quick" href="/quick" target="_blank" data-i18n="📄 Quick guide (1 page)">📄 Quick guide (1 page)</a>
         <a class="btn sec" href="/setup-card" target="_blank" data-i18n="🖨 Quick start (QR)">🖨 Quick start (QR)</a>
       </div>
       <div class="btns pwr">
@@ -12048,7 +13870,7 @@ const post = (u, b) => fetch(u, {method: "POST", headers: {"Content-Type": "appl
     .then(r => r.json()).catch(() => ({ok: false, error: "connection"}));
 const ctrl = {};
 let editing = null;
-const I18N_EN = {"cp-desc": "Own Wi-Fi on, the camera stays where it is (no patrol / tracking / timelapse), alarms and recordings on, armed after the countdown. Switching it off restores your settings.", "lock-note": "Settings are locked – only the main switches can be used.", "g-note": "A link for family or fellow campers: they only see the live picture and cannot change anything. The guest must be able to reach the Pi – same Wi-Fi / hotspot or via Tailscale. A new link makes the old one invalid.",
+const I18N_EN = {"🖨 Quick start (QR)": "🖨 QR codes for connecting", "night-desc": "switches on what a night needs, arms with the countdown and tells what is missing", "cp-desc": "Own Wi-Fi on, the camera stays where it is (no patrol / tracking / timelapse), alarms and recordings on, armed after the countdown. Switching it off restores your settings.", "lock-note": "Settings are locked – only the main switches can be used.", "g-note": "A link for family or fellow campers: they only see the live picture and cannot change anything. The guest must be able to reach the Pi – same Wi-Fi / hotspot or via Tailscale. A new link makes the old one invalid.",
   "b-note": "UPS HAT (battery pack on the Pi): found by itself, real measurement. Otherwise powerbank estimate: capacity minus what was used since «Battery is full now»."};
 const I18N = {en: I18N_EN, de: {
   "Power saving": "Stromsparmodus", "active: few pictures, everything quiet": "aktiv: wenige Bilder, alles ruhig",
@@ -12082,7 +13904,7 @@ const I18N = {en: I18N_EN, de: {
   "No update source set yet (see above)": "Noch keine Update-Quelle eingetragen (siehe oben)", "Updates": "Updates",
   "Fine-tuning": "Feineinstellungen", "Light & sound": "Licht & Ton", "Protection & network": "Schutz & Netzwerk",
   "Push messages": "Push-Nachrichten", "Switches": "Schalter", "Relays": "Relais", "Schedule": "Zeitplan",
-  "Camping": "Camping", "Saving": "Sparen", "awake": "wach", "Timelapse": "Zeitraffer", "Light": "Licht", "Thermal": "Wärmebild",
+  "Camping": "Camping", "Saving": "Sparen", "awake": "wach", "Timelapse": "Zeitraffer", "Light": "Licht", "Lamp": "Licht", "Thermal": "Wärmebild",
   "Patrol": "Patrouille", "Own Wi-Fi": "Eigenes WLAN", "LOW LIGHT": "WENIG LICHT", "MANUAL": "HAND", "TRACKING": "VERFOLGT",
   "Camping profile": "Camping-Profil", "Patrol / tracking": "Patrouille / Verfolgung", "Power supply / memory": "Strom / Speicher",
   "Lights": "Licht", "White": "Weiss", "Infrared": "Infrarot", "no output chosen": "kein Ausgang gewählt",
@@ -12137,7 +13959,7 @@ const I18N = {en: I18N_EN, de: {
   "iPhone / iPad: first Share → «Add to Home Screen», then open Motion Watch from there and switch web push on.": "iPhone / iPad: zuerst Teilen → «Zum Home-Bildschirm», dann Motion Watch von dort öffnen und Web-Push einschalten.",
   "Switch off on this device": "Auf diesem Gerät ausschalten", "Switch on on this device": "Auf diesem Gerät einschalten",
   "Notifications are not allowed for this page (browser settings).": "Mitteilungen sind für diese Seite nicht erlaubt (Browser-Einstellungen).",
-  "Send test": "Test senden", "sent": "gesendet", "Web push is on for this device.": "Web-Push ist auf diesem Gerät eingeschaltet.", "🧭 Setup assistant": "🧭 Einrichtungs-Assistent", "🖨 Quick start (QR)": "🖨 Kurzanleitung (QR)", "signed": "signiert", "not signed": "nicht signiert", "+ Waypoint": "+ Wegpunkt", "Clear waypoints": "Wegpunkte löschen", "Snapshot": "Schnappschuss",
+  "Send test": "Test senden", "sent": "gesendet", "Web push is on for this device.": "Web-Push ist auf diesem Gerät eingeschaltet.", "🧭 Setup assistant": "🧭 Einrichtungs-Assistent", "🖨 Quick start (QR)": "🖨 QR-Codes zum Verbinden", "📄 Quick guide (1 page)": "📄 Kurzanleitung (1 Seite)", "signed": "signiert", "not signed": "nicht signiert", "+ Waypoint": "+ Wegpunkt", "Clear waypoints": "Wegpunkte löschen", "Snapshot": "Schnappschuss",
   "Recalibrate": "Neu kalibrieren", "Reset counter": "Zähler zurücksetzen", "Reset settings": "Einstellungen zurücksetzen",
   "CPU load, last 60 seconds": "CPU-Last, letzte 60 Sekunden", "Step per click": "Schritt pro Klick",
   "Pi connected": "Pi verbunden", "Pi not reachable": "Pi nicht erreichbar",
@@ -12286,7 +14108,7 @@ let LANG = "", THEME = "", videoOnly = false, TRIG = [], sigQ = "", sigE = "";
 let HIDDEN = new Set();
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || "";
       HIDDEN = new Set(JSON.parse(localStorage.getItem("mw-hidden") || "[]")); } catch (e) {}
-function t(s) { return (LANG === "de" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s; }
+function t(s) { return (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s; }
 let toastTimer = null;
 function toast(msg) { let e = $("#toast"); if (!e) { e = el("div"); e.id = "toast"; document.body.appendChild(e); } e.textContent = msg; e.classList.add("on");
   clearTimeout(toastTimer); toastTimer = setTimeout(() => e.classList.remove("on"), 2600); }
@@ -12299,7 +14121,7 @@ function el(tag, cls, text) {
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
   document.querySelectorAll(".stat small").forEach(e => { if (!e.dataset.en) e.dataset.en = e.textContent; e.textContent = t(e.dataset.en); });
-  $("#btn-lang").textContent = LANG === "de" ? "EN" : "DE";
+  $("#btn-lang").textContent = (LANG || "en").toUpperCase(); $("#btn-lang").title = "Deutsch · Français · Italiano · Rumantsch · English";
   [["#all-open", "Expand all"], ["#all-close", "Collapse all"], ["#stick-speed", "Speed"], ["#swap-side", "Swap stick and buttons (left- / right-handed)"]].forEach(([id, k]) => { const b = $(id); if (b) { b.title = t(k); b.setAttribute("aria-label", t(k)); } });
   $("#relay-note").textContent = t("Auto: the relay switches on while its trigger is in view and stays on for the hold time. Animal and object triggers (e.g. cat) need the AI model.")
     + " " + t("Remote access switches on while somebody watches over Tailscale - also when disarmed (e.g. a small warning lamp).");
@@ -12311,7 +14133,7 @@ function applyTheme() {
   $("#btn-theme").innerHTML = THEME === "light" ? "&#9790;" : "&#9728;";
 }
 function toggleTheme() { THEME = THEME === "light" ? "dark" : "light"; try { localStorage.setItem("mw-theme", THEME); } catch (e) {} applyTheme(); }
-function toggleLang() { LANG = LANG === "de" ? "en" : "de"; try { localStorage.setItem("mw-lang", LANG); } catch (e) {} location.reload(); }
+function toggleLang() { langMenu(document.querySelector("#btn-lang")); }
 // Full screen: the video fills the whole screen. Real browser full screen where the browser allows it
 // (PC, Android); on iPhone / iPad (also Chrome there) only the page layout changes, which works everywhere.
 const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement || null;
@@ -12509,7 +14331,7 @@ function paintExtras(s) {
     + (L.text ? t("Last report") + " " + L.t.slice(11, 16) + (L.sent ? " ✓" : "") + ":\n" + L.text : t("No report sent yet – the first one comes in the morning."));
   const g = s.guest || {}, gs = $("#g-st");
   if (gs) {
-    gs.textContent = g.active ? "🟢 " + t("Guest access is on") + (g.until ? " · " + t("until") + " " + new Date(g.until * 1000).toLocaleString(LANG === "de" ? "de-CH" : "en-GB", {weekday: "short", hour: "2-digit", minute: "2-digit"}) : " · " + t("no time limit"))
+    gs.textContent = g.active ? "🟢 " + t("Guest access is on") + (g.until ? " · " + t("until") + " " + new Date(g.until * 1000).toLocaleString(LOCALE(LANG), {weekday: "short", hour: "2-digit", minute: "2-digit"}) : " · " + t("no time limit"))
       + (g.watching ? " · 👁 " + g.watching : "") : "⚪ " + t("Guest access is off");
     $("#g-share").hidden = $("#g-end").hidden = $("#g-link").hidden = !g.active;
     if (g.active) $("#g-link").value = location.origin + g.path;
@@ -12552,7 +14374,7 @@ function buildViewMenu() {
   const q = el("div", "vmq");
   const qb = (txt, fn) => { const b = el("button", "sec", txt); b.type = "button"; b.onclick = e => { e.stopPropagation(); fn(); buildViewMenu(); }; q.appendChild(b); };
   qb((THEME === "light" ? "☾ " : "☀ ") + t(THEME === "light" ? "Dark theme" : "Light theme"), toggleTheme);
-  qb("🌐 " + (LANG === "de" ? "English" : "Deutsch"), toggleLang);
+  qb("🌐 " + (LANGN[LANG] || "English") + " …", () => setTimeout(() => langMenu($("#btn-lang")), 0));
   qb((HIDDEN.has("sidebar") ? "◀ " : "▶ ") + t("Settings panel"), () => toggleHidden("sidebar"));
   qb("▴ " + t("Hide header"), () => { const b = $("#btn-hdr"); if (b) b.click(); $("#viewmenu").hidden = true; });
   m.append(el("h3", "", t("Quick")), q);
@@ -12592,7 +14414,8 @@ function psText(x) {                     // patrol status in words: «moving to 
   m = /^dwelling at (.+)$/.exec(x || ""); if (m) return t("waiting at") + " " + m[1];
   return t(x || "");
 }
-Object.assign(I18N.de, {"Slow": "Langsam", "Medium": "Mittel", "Fast": "Schnell", "Swap stick and buttons (left- / right-handed)": "Stick und Knöpfe tauschen (Links- / Rechtshänder)",
+Object.assign(I18N.de, {"Temperature sensor (BME280 / BMP280 on I2C or DS18B20 on GPIO 4), if connected": "Temperaturfühler (BME280 / BMP280 an I2C oder DS18B20 an GPIO 4), falls angeschlossen", "Temperature sensor: correction (°C)": "Temperaturfühler: Korrektur (°C)", "Outside": "Aussen", "no temperature sensor": "kein Temperaturfühler", "Outside temperature": "Aussentemperatur", "Take the location from the phone (the page must be open over https)": "Standort vom Handy übernehmen (die Seite muss über https offen sein)", "GPS position in photos and videos": "GPS-Position in Fotos und Videos", "Location": "Standort", "from the phone": "vom Handy", "fixed (settings)": "fest (Einstellungen)", "unknown – the phone shares it only over the https page": "unbekannt – das Handy gibt ihn nur über die https-Seite weiter", "Night vision": "Nachtsicht", "Night vision: green picture, thermal outlines and temperatures": "Nachtsicht: grünes Bild, Wärme-Umrisse und Temperaturen",
+  "Slow": "Langsam", "Medium": "Mittel", "Fast": "Schnell", "Swap stick and buttons (left- / right-handed)": "Stick und Knöpfe tauschen (Links- / Rechtshänder)",
   "Stick on the other side": "Stick auf der anderen Seite", "Stick back on its usual side": "Stick wieder auf der gewohnten Seite",
   "moving to waypoint": "fährt zu Wegpunkt", "waiting at": "wartet bei", "paused (tracking person)": "Pause (verfolgt Person)",
   "paused (manual control)": "Pause (Handsteuerung)"});
@@ -12752,7 +14575,7 @@ function renderSources() {
 
 // ---- schedule ----
 let FEAT = [], sigC = "";
-const DAYS = () => LANG === "de" ? ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAYS = () => ({de: ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], fr: ["lu", "ma", "me", "je", "ve", "sa", "di"], it: ["lu", "ma", "me", "gi", "ve", "sa", "do"], rm: ["gli", "ma", "me", "gie", "ve", "so", "du"]})[LANG] || ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 function schedPost(body) {
   body.lang = LANG;
   return post("/api/schedule", body).then(r => {
@@ -12777,6 +14600,104 @@ function textField(x) {
   wrap.append(inp, err);
   if (x.kind === "secret") { const c = el("button", "sec", t("Clear")); c.style.marginTop = "2px"; c.onclick = () => send(" ").then(r => { if (r.ok) inp.placeholder = ""; }); wrap.appendChild(c); }
   return wrap;
+}
+// ---- location: automatically from the phone, or tapped on a map ----
+Object.assign(I18N.de, {"Location (sunrise / sunset, photos, weather)": "Standort (Sonnenauf-/untergang, Fotos, Wetter)", "Automatically (phone)": "Automatisch (Handy)", "Pick on the map": "Auf Karte wählen", "My position": "Meine Position", "Search a place …": "Ort suchen …", "The phone shares its position only over the https page.": "Das Handy gibt seine Position nur über die https-Seite heraus.", "From the phone": "Vom Handy", "updated": "aktualisiert vor", "Waiting for the position of the phone …": "Warte auf die Position des Handys …", "Until then": "Bis dahin", "No place chosen yet.": "Noch kein Ort gewählt.", "Fixed place": "Fester Ort", "Tap on the map to set the place. Move with one finger, zoom with + / −.": "Auf die Karte tippen, um den Ort zu setzen. Mit einem Finger verschieben, mit + / − zoomen.", "Place not found": "Ort nicht gefunden", "Search needs internet": "Suche braucht Internet", "Map background is switched off in the settings.": "Kartenhintergrund ist in den Einstellungen ausgeschaltet."});
+function miniMap(o) {
+  const M = {z: 13, cx: 0, cy: 0, mk: null, online: true, pick: null};
+  const m = el("div", "lmap"), T = el("div", "mtiles"), pin = el("div", "lpin", "📍"), zb = el("div", "mzoom"), at = el("div", "mattr");
+  at.innerHTML = '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+  const s = z => 256 * Math.pow(2, z);
+  const W = (lat, lon, z) => { const r = Math.max(-85, Math.min(85, lat)) * Math.PI / 180; return [(lon + 180) / 360 * s(z), (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * s(z)]; };
+  const inv = (x, y, z) => [Math.atan(Math.sinh(Math.PI * (1 - 2 * y / s(z)))) * 180 / Math.PI, x / s(z) * 360 - 180];
+  function draw() {
+    const w = m.clientWidth, h = m.clientHeight; if (!w) return;
+    const z = M.z, N = Math.pow(2, z), x0 = M.cx - w / 2, y0 = M.cy - h / 2, have = {};
+    T.querySelectorAll("img").forEach(i => { have[i.dataset.k] = i; });
+    if (M.online) for (let ty = Math.floor(y0 / 256); ty <= Math.floor((y0 + h) / 256); ty++) {
+      if (ty < 0 || ty >= N) continue;
+      for (let tx = Math.floor(x0 / 256); tx <= Math.floor((x0 + w) / 256); tx++) {
+        const k = z + "/" + (((tx % N) + N) % N) + "/" + ty, key = k + "@" + tx;
+        let im = have[key]; if (!im) { im = el("img"); im.alt = ""; im.dataset.k = key; im.onerror = () => { im.style.visibility = "hidden"; }; im.src = "https://tile.openstreetmap.org/" + k + ".png"; T.appendChild(im); }
+        im.style.left = Math.round(tx * 256 - x0) + "px"; im.style.top = Math.round(ty * 256 - y0) + "px"; im.dataset.keep = "1";
+      }
+    }
+    T.querySelectorAll("img").forEach(i => { if (i.dataset.keep) delete i.dataset.keep; else i.remove(); });
+    pin.hidden = !M.mk;
+    if (M.mk) { const [x, y] = W(M.mk[0], M.mk[1], z); pin.style.left = (x - x0) + "px"; pin.style.top = (y - y0) + "px"; }
+  }
+  function zoom(dz, px, py) { const w = m.clientWidth, h = m.clientHeight; if (px === undefined) { px = w / 2; py = h / 2; }
+    const z2 = Math.max(3, Math.min(18, M.z + dz)); if (z2 === M.z) return; const f = Math.pow(2, z2 - M.z), wx = M.cx - w / 2 + px, wy = M.cy - h / 2 + py;
+    M.cx = wx * f - px + w / 2; M.cy = wy * f - py + h / 2; M.z = z2; draw(); }
+  [["+", 1], ["−", -1]].forEach(([l, d]) => { const b = el("button", "sec", l); b.type = "button"; b.onpointerdown = e => e.stopPropagation(); b.onclick = e => { e.stopPropagation(); zoom(d); }; zb.appendChild(b); });
+  m.append(T, pin, zb, at);
+  const act = new Map(); let moved = 0, pinch = 0;
+  m.addEventListener("pointerdown", e => { m.setPointerCapture(e.pointerId); act.set(e.pointerId, [e.clientX, e.clientY]); if (act.size === 1) moved = 0;
+    if (act.size === 2) { const [a, b] = [...act.values()]; pinch = Math.hypot(a[0] - b[0], a[1] - b[1]); moved = 99; } });
+  m.addEventListener("pointermove", e => { if (!act.has(e.pointerId)) return; const o2 = act.get(e.pointerId); act.set(e.pointerId, [e.clientX, e.clientY]);
+    if (act.size === 1) { const dx = e.clientX - o2[0], dy = e.clientY - o2[1]; moved += Math.abs(dx) + Math.abs(dy); if (moved > 6) { M.cx -= dx; M.cy -= dy; draw(); } }
+    else if (act.size === 2 && pinch) { const [a, b] = [...act.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]), r = m.getBoundingClientRect();
+      if (d / pinch > 1.6 || d / pinch < 0.62) { zoom(d > pinch ? 1 : -1, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top); pinch = d; } } });
+  const up = e => { if (!act.has(e.pointerId)) return; act.delete(e.pointerId); if (act.size < 2) pinch = 0;
+    if (!act.size && moved <= 6 && M.pick) { const r = m.getBoundingClientRect(), [lat, lon] = inv(M.cx - m.clientWidth / 2 + e.clientX - r.left, M.cy - m.clientHeight / 2 + e.clientY - r.top, M.z);
+      M.mk = [lat, lon]; draw(); M.pick(lat, lon); } };
+  m.addEventListener("pointerup", up); m.addEventListener("pointercancel", e => { act.delete(e.pointerId); moved = 99; });
+  m.addEventListener("wheel", e => { e.preventDefault(); const r = m.getBoundingClientRect(); zoom(e.deltaY < 0 ? 1 : -1, e.clientX - r.left, e.clientY - r.top); }, {passive: false});
+  if (window.ResizeObserver) new ResizeObserver(draw).observe(m);
+  return {el: m, M: M, draw: draw,
+    show(lat, lon, z) { if (z) M.z = z; [M.cx, M.cy] = W(lat, lon, M.z); M.mk = [lat, lon]; draw(); },
+    mark(lat, lon) { M.mk = [lat, lon]; draw(); }};
+}
+function locBox() {
+  const box = el("div", "sl locbox"), top = el("div", "row"); top.appendChild(el("span", "", "📍 " + t("Location (sunrise / sunset, photos, weather)"))); box.appendChild(top);
+  const seg = el("div", "seg lseg"), bA = el("button", "", "📱 " + t("Automatically (phone)")), bM = el("button", "", "🗺 " + t("Pick on the map"));
+  bA.type = bM.type = "button"; seg.append(bA, bM);
+  const info = el("div", "mut linfo"), tools = el("div", "row ltools"), q = el("input"), go = el("button", "sec", "🔍"), me = el("button", "sec", "◎ " + t("My position"));
+  q.type = "text"; q.enterKeyHint = "search"; q.className = "lq"; q.placeholder = t("Search a place …"); go.type = me.type = "button"; tools.append(q, go, me);
+  const mp = miniMap(), hint = el("div", "mut lhint"), err = el("div", "err");
+  box.append(seg, info, tools, mp.el, hint, err);
+  let G = null, mode = "auto";
+  const save = async (lat, lon) => {
+    lat = Math.max(-66, Math.min(66, lat)); lon = ((lon + 540) % 360) - 180;
+    const a = await post("/api/text", {key: "latitude", value: lat.toFixed(4), lang: LANG}), b = await post("/api/text", {key: "longitude", value: lon.toFixed(4), lang: LANG});
+    err.textContent = a.ok && b.ok ? "" : "⚠ " + (a.error || b.error || "error"); if (a.ok && b.ok) { toast("📍 " + t("Saved")); refresh(false); } };
+  const geo = then => { if (!window.isSecureContext || !navigator.geolocation) { err.textContent = "⚠ " + t("The phone shares its position only over the https page."); return; }
+    navigator.geolocation.getCurrentPosition(p => then(p.coords), e => { err.textContent = "⚠ " + (e.message || "GPS"); }, {enableHighAccuracy: true, timeout: 20000, maximumAge: 60000}); };
+  function paint() {
+    bA.className = mode === "auto" ? "sel-auto" : ""; bM.className = mode === "map" ? "sel-auto" : "";
+    tools.hidden = mode !== "map"; me.hidden = !window.isSecureContext;
+    mp.M.pick = mode === "map" ? save : null; mp.el.classList.toggle("pick", mode === "map");
+    if (!G) return;
+    const g = G.gps;
+    if (mode === "auto") {
+      if (g && g.src === "phone") info.textContent = t("From the phone") + ": " + g.lat.toFixed(4) + ", " + g.lon.toFixed(4) + (g.age != null ? " · " + t("updated") + " " + Math.round(g.age / 60) + " min" : "");
+      else info.textContent = (window.isSecureContext ? t("Waiting for the position of the phone …") : t("The phone shares its position only over the https page."))
+        + (G.factory ? "" : " " + t("Until then") + ": " + G.lat.toFixed(4) + ", " + G.lon.toFixed(4));
+      hint.textContent = "";
+    } else { info.textContent = G.factory ? t("No place chosen yet.") : t("Fixed place") + ": " + G.lat.toFixed(4) + ", " + G.lon.toFixed(4);
+      hint.textContent = t("Tap on the map to set the place. Move with one finger, zoom with + / −."); }
+    mp.M.online = G.map_online;
+  }
+  async function refresh(center) {
+    try { G = await (await fetch("/api/gps", {cache: "no-store"})).json(); } catch (e) { return; }
+    mode = G.on ? "auto" : "map"; paint();
+    const g = G.gps, lat = g ? g.lat : G.lat, lon = g ? g.lon : G.lon;
+    if (center) mp.show(lat, lon, G.factory && !g ? 7 : 13); else mp.mark(lat, lon);
+  }
+  bA.onclick = async () => { await post("/api/set", {key: "gps_phone", value: true}); mode = "auto"; paint();
+    geo(c => post("/api/gps", {lat: c.latitude, lon: c.longitude, acc: c.accuracy}).then(() => refresh(true))); refresh(true); };
+  bM.onclick = async () => { await post("/api/set", {key: "gps_phone", value: false}); mode = "map"; paint(); refresh(false); };
+  me.onclick = () => geo(c => { mp.show(c.latitude, c.longitude, 15); save(c.latitude, c.longitude); });
+  const search = async () => { const s = q.value.trim(); if (!s) return; err.textContent = "";
+    if (G && !G.map_online) { err.textContent = "⚠ " + t("Map background is switched off in the settings."); return; }
+    try { const r = await (await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=" + LANG + "&q=" + encodeURIComponent(s))).json();
+      if (!r.length) { err.textContent = "⚠ " + t("Place not found"); return; }
+      mp.show(+r[0].lat, +r[0].lon, 14); save(+r[0].lat, +r[0].lon);
+    } catch (e) { err.textContent = "⚠ " + t("Search needs internet"); } };
+  go.onclick = search; q.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); search(); } };
+  setTimeout(() => refresh(true), 0);
+  setInterval(() => { if (box.offsetParent) refresh(false); }, 20000);
+  return box;
 }
 function schedBox(s, i) {
   const box = el("div", "rel-ed"); box.style.gridTemplateColumns = "1fr";
@@ -12946,8 +14867,10 @@ function fbDialog() {
 const QS = [
   {id: "therm", ic: "🌡", lb: "Thermal", tip: "Thermal picture over the live picture", on: (c, s) => c.thermal_on, ok: (c, s) => !!c.thermal_source,
    go: c => post("/api/set", {key: "thermal_on", value: !c.thermal_on})},
+  {id: "nv", ic: "🌙", lb: "Night vision", tip: "Night vision: green picture, thermal outlines and temperatures", on: (c, s) => !!s.nightvision,
+   go: c => post("/api/set", {key: "nightvision", value: !c.nightvision})},
   {id: "marks", ic: "🏷", lb: "Marks", tip: "Mark detected objects (animals, cars ...)", on: c => c.show_objects, go: c => post("/api/set", {key: "show_objects", value: !c.show_objects})},
-  {id: "white", ic: "💡", lb: "Light", tip: "White light on / off", on: (c, s) => !!(s.lights && s.lights.white), ok: (c, s) => !!(s.light_cfg && s.light_cfg.white_out),
+  {id: "white", ic: "💡", lb: "Lamp", tip: "White light on / off", on: (c, s) => !!(s.lights && s.lights.white), ok: (c, s) => !!(s.light_cfg && s.light_cfg.white_out),
    go: (c, s) => post("/api/light", {light: "white", mode: (s.lights && s.lights.white) ? "off" : "on"})},
   {id: "ir", ic: "🔴", lb: "IR light", tip: "Infrared light on / off", on: (c, s) => !!(s.lights && s.lights.ir), ok: (c, s) => !!(s.light_cfg && s.light_cfg.ir_out),
    go: (c, s) => post("/api/light", {light: "ir", mode: (s.lights && s.lights.ir) ? "off" : "on"})},
@@ -12999,7 +14922,7 @@ const MAINSW = {
   "sec:Power saving": c => c.eco_on, "batt": (c, s) => !!(s.battery && s.battery.on), "sec:Theft protection": c => c.tamper_on || c.tamper_motion || c.tamper_power,
   "sec:Notifications": c => c.notify_on, "report": c => c.report_on, "sec:SMS (LTE stick)": c => c.sms_on,
   "sec:Detection": c => c.detection_on, "sec:AI detection": c => c.ai_enabled, "sec:Vehicle filter": c => c.car_filter, "sec:Rain": c => c.rain_auto,
-  "sec:Wind": c => c.wind_auto, "sec:Low light": c => c.lowlight_auto, "sec:Auto-tune": c => c.auto_tune,
+  "sec:Wind": c => c.wind_auto, "sec:Low light": c => c.lowlight_auto || c.nightvision || c.nightvision_auto, "sec:Auto-tune": c => c.auto_tune,
   "sec:Camera / Servos": c => c.track_person, "sec:Patrol": c => c.patrol, "sec:Thermal camera": c => c.thermal_on,
   "sec:Lights": (c, s) => !!(s.light_cfg && (s.light_cfg.white !== "off" || s.light_cfg.ir !== "off")),
   "sec:Deterrence": (c, s) => {                // green only if a reaction is set AND its loudspeaker / light is there
@@ -13011,15 +14934,18 @@ const MAINSW = {
   "relayset": c => c.relays_on, "schedule": (c, s, j) => (j.schedules || []).some(x => x.enabled),
   "wifi": (c, s) => !!(s.hotspot && s.hotspot.on), "sec:Web stream": c => c.web_stream, "guest": (c, s) => !!(s.guest && s.guest.active),
   "sec:MQTT / Home Assistant": c => c.mqtt_on, "sec:Updates": c => c.update_auto};
+let MAINJ = null;
 function mainPaint(j) {
-  const c = j.cfg || {}, s = j.state || {};
+  if (j) MAINJ = j; else j = MAINJ || {};
+  const c = Object.assign({}, j.cfg || {}), s = j.state || {};
+  Object.entries(ctrl).forEach(([k, x]) => { if (x && x.type === "bool" && x.input) c[k] = x.input.checked; });   // what the page shows right now
   const val = v => { const f = MAINSW[v]; if (!f) return null; try { return !!f(c, s, j); } catch (e) { return null; } };
   document.querySelectorAll("#settings details.sub, #settings details.grp").forEach(d => {
     let on = null;
     if (d.classList.contains("sub")) on = val(d.dataset.view);
     else if (d.dataset.main) on = val(d.dataset.main);
     else { const subs = [...d.querySelectorAll(":scope > details.sub")].map(x => val(x.dataset.view)).filter(x => x !== null); on = subs.length ? subs.some(Boolean) : null; }
-    d.classList.toggle("mon", on === true); d.classList.toggle("moff", on === false);
+    try { d.classList.toggle("mon", on === true); d.classList.toggle("moff", on === false); } catch (e) {}
   });
 }
 
@@ -13028,6 +14954,8 @@ async function build() {
   try { FEAT = (await (await fetch("/api/schedule?lang=" + LANG)).json()).features || []; } catch (e) { FEAT = []; }
   const sch = await (await fetch("/api/schema?lang=" + LANG)).json();
   const box = $("#settings");
+  try { const u = await (await fetch("/api/ui_simple")).json(); const old = document.getElementById("simplebar"); if (old) old.remove();
+    const sbar = simpleBar(!!u.on); sbar.id = "simplebar"; box.parentElement.insertBefore(sbar, box); } catch (e) {}
   sch.forEach(sec => {
     const d = el("details", "card");
     d.appendChild(el("summary", "", sec.name));
@@ -13035,14 +14963,24 @@ async function build() {
     sec.toggles.forEach(tg => {
       const row = el("label", "row tg"); row.dataset.key = tg.key;
       const cb = el("input"); cb.type = "checkbox"; cb.className = "sw";
-      cb.onchange = () => post("/api/set", {key: tg.key, value: cb.checked});
+      cb.onchange = () => { post("/api/set", {key: tg.key, value: cb.checked}); try { mainPaint(); } catch (e) {} };
       row.append(el("span", "", tg.label), cb);
       d.appendChild(row); ctrl[tg.key] = {type: "bool", input: cb};
     });
-    (sec.texts || []).forEach(x => d.appendChild(textField(x)));
+    (sec.texts || []).forEach(x => { if (x.key === "longitude") return; d.appendChild(x.key === "latitude" ? locBox() : textField(x)); });
+    if ((sec.texts || []).some(x => x.key === "latitude")) d.querySelectorAll('.row.tg[data-key="gps_phone"]').forEach(r => { r.hidden = true; });
     if (sec.id === "Messages") {
       const hlp = el("div", "mut", t("Empty = standard text (grey). Placeholders:") + " {name} {time} {date} {count} {camera} {link} {db}");
       hlp.style.margin = "2px 0 6px"; d.insertBefore(hlp, d.children[1] || null);
+    }
+    if (sec.id === "AI detection") {
+      const ab = el("button", "sec", "⬇ " + t("Download AI model") + " (≈ 70 MB)"); ab.type = "button"; ab.style.marginTop = "8px"; const am = el("div", "mut", "");
+      fetch("/api/ai_model").then(r => r.json()).then(j => { if (j.present) { ab.hidden = true; } }).catch(() => {});
+      ab.onclick = async () => { ab.disabled = true; const r = await post("/api/ai_model", {}); if (!r.ok) { am.textContent = "⚠ " + (r.error || "error"); ab.disabled = false; return; }
+        const iv = setInterval(async () => { let j = {}; try { j = await (await fetch("/api/ai_model")).json(); } catch (e) {}
+          am.textContent = j.busy ? t("downloading the AI model …") + " " + j.pct + " %" : (j.msg === "ready" ? "✓ " + t("AI ready") : "⚠ " + (j.msg || ""));
+          if (!j.busy) { clearInterval(iv); ab.disabled = false; if (j.msg === "ready") ab.hidden = true; } }, 1500); };
+      d.append(ab, am);
     }
     if (sec.id === "Notifications") {
       const tb = el("button", "sec", t("Test notification")); tb.style.marginTop = "8px";
@@ -13398,7 +15336,7 @@ function tidyHeader(s, c) {
   hb("#b-eco", s.eco && s.eco !== "off", "🍃 " + t("Saving") + " · " + (s.eco === "saving" ? c.eco_fps + " FPS" : t("awake")), "blu");
   let tl = ""; const m = /^next photo in (\d+) min$/.exec(s.timelapse || ""); if (m) tl = " · " + m[1] + " min";
   hb("#b-tl", !!c.timelapse_on, "⏱ " + t("Timelapse") + tl, TL_HOLD_CLS(s));
-  hb("#b-lights", !!(L.white || L.ir), (L.white ? "💡 " + t("Light") : "") + (L.white && L.ir ? " · " : "") + (L.ir ? "🔴 IR" : ""), "yel");
+  hb("#b-lights", !!(L.white || L.ir), (L.white ? "💡 " + t("Lamp") : "") + (L.white && L.ir ? " · " : "") + (L.ir ? "🔴 IR" : ""), "yel");
   const thOn = !!(c.thermal_on || c.thermal_alarm), thOk = s.thermal === "connected";
   hb("#b-therm", thOn, "🌡 " + t("Thermal") + (thOk && s.thermal_max != null ? " · " + Math.round(s.thermal_max) + " °C" : (thOk ? "" : " ⚠")), thOk ? ((s.warm || 0) > 0 ? "red" : "") : "yel");
   hb("#b-pat", !!(s.tracking || c.patrol || s.manual), s.manual ? "✋ " + t("MANUAL") : (s.tracking ? "🎯 " + t("TRACKING") : "🔄 " + t("Patrol")), s.manual ? "yel" : "blu");
@@ -13676,14 +15614,16 @@ function powerOverlay(action) {
       }
     } catch (e) { ok = false; }
     if (ok) down = 0; else { down++; wasDown = true; }
+    if (action === "poweroff" && wasDown && ok) { location.reload(); return; }        // switched on again: back to the page
     if (action === "poweroff" && down >= 2) {
       ic.textContent = "✓"; msg.textContent = t("The Pi is off");
       sub.textContent = t("Wait until the green LED of the Pi stays dark (about 10 seconds), then you can unplug the power. To start it again: unplug the power and plug it in again.");
-      return;
+      if (!c.querySelector("button")) close();
+      setTimeout(tick, 5000); return;                                                    // keep looking: the page comes back by itself
     }
     if (action === "reboot" && wasDown && ok) { location.reload(); return; }
     if (action === "reboot" && wasDown) sub.textContent = t("Waiting for the Pi … the page reloads by itself (about 1 minute).");
-    if (Date.now() - t0 > (action === "reboot" ? 300000 : 120000)) { sub.textContent = t("No answer from the Pi."); close(); return; }
+    if (action === "reboot" && Date.now() - t0 > 300000) { sub.textContent = t("No answer from the Pi."); close(); return; }
     setTimeout(tick, 2000);
   };
   setTimeout(tick, 3500);
@@ -13955,7 +15895,60 @@ function updateProtect(s) {
   else info.textContent = t("off") + " · " + t("name") + " «" + (hc.ssid || "") + "» · " + t("password") + " " + (hc.password || "–");
   $("#pr-err").textContent = hs.msg ? "⚠ " + hs.msg : "";
   $("#pr-time").textContent = s.time_status ? t("Clock") + ": " + tlTxt(s.time_status) : "";
+  const pe = $("#pr-env");
+  if (pe) { const e = s.env; pe.textContent = e ? "🌡 " + t("Outside") + ": " + e.t.toFixed(1) + " °C" + (e.h != null ? " · " + e.h + " %" : "") + (e.p ? " · " + Math.round(e.p) + " hPa" : "") + " (" + e.src + ")" : "🌡 " + t("no temperature sensor"); }
+  hb("#b-env", !!s.env, s.env ? "🌡 " + s.env.t.toFixed(1) + " °C" + (s.env.h != null ? " · " + s.env.h + " %" : "") : "", "");
+  const hcn = s.health; if (hcn) { hb("#b-health", hcn.bad > 0, "🩺 " + hcn.bad, "red"); const hsum = $("#h-sum");
+    if (hsum) hsum.textContent = "· " + (hcn.bad ? hcn.bad + " " + t("problems") + " · " : "") + (hcn.warn ? hcn.warn + " " + t("notes") + " · " : "") + hcn.ok + " ok"; }
+  const pg = $("#pr-gps");
+  if (pg) { const g = s.gps; pg.textContent = "";
+    if (g) { const a = el("a", "", "📍 " + g.lat.toFixed(4) + ", " + g.lon.toFixed(4)); a.href = "https://www.openstreetmap.org/?mlat=" + g.lat + "&mlon=" + g.lon + "#map=15/" + g.lat + "/" + g.lon;
+      a.target = "_blank"; a.rel = "noopener"; pg.append(t("Location") + ": ", a, " · " + (g.src === "phone" ? t("from the phone") + (g.age != null ? " (" + Math.round(g.age / 60) + " min)" : "") : t("fixed (settings)")));
+    } else pg.textContent = t("Location") + ": " + t(window.isSecureContext ? "unknown" : "unknown – the phone shares it only over the https page"); }
 }
+// ---- «Guard tonight» ----
+Object.assign(I18N.de, {"🌙 Guard tonight": "🌙 Heute Nacht bewachen", "night-desc": "schaltet ein, was es für die Nacht braucht, wird nach dem Countdown scharf und sagt, was noch fehlt", "Still missing:": "Fehlt noch:", "Everything ready - good night!": "Alles bereit – gute Nacht!", "Guard tonight": "Heute Nacht bewachen", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all of them.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle."});
+async function nightGuard() {
+  const b = $("#pr-night"); b.disabled = true;
+  const r = await post("/api/night", {lang: LANG}); b.disabled = false;
+  const box = $("#night-res"); box.textContent = ""; box.hidden = false;
+  if (!r || !r.ok) { box.textContent = "⚠ " + ((r && r.error) || "error"); return; }
+  (r.done || []).forEach(x => box.appendChild(el("div", "nr-ok", "✓ " + x)));
+  if ((r.missing || []).length) { box.appendChild(el("div", "nr-h", t("Still missing:")));
+    r.missing.forEach(x => { const d = el("div", "nr-miss"); d.append(el("b", "", "⚠ " + x.icon + " " + x.title), el("span", "mut", " " + (x.text || "")));
+      if (x.tip) d.appendChild(el("div", "htip", "→ " + x.tip)); box.appendChild(d); }); }
+  else box.appendChild(el("div", "nr-h", t("Everything ready - good night!")));
+  toast("🌙 " + t("Guard tonight"));
+}
+// ---- Simple / Expert ----
+function simpleBar(on) {
+  const w = el("div", "simplebar"), seg = el("div", "seg lseg"), a = el("button", on ? "sel-auto" : "", t("Simple")), e = el("button", on ? "" : "sel-auto", t("Expert"));
+  a.type = e.type = "button"; seg.append(a, e);
+  const set = v => post("/api/ui_simple", {on: v}).then(() => location.reload());
+  a.onclick = () => { if (!on) set(true); }; e.onclick = () => { if (on) set(false); };
+  w.appendChild(seg); if (on) w.appendChild(el("div", "mut", t("Simple: only the important settings. «Expert» shows all of them.")));
+  return w;
+}
+// ---- self-check: one traffic light per part ----
+Object.assign(I18N.de, {"Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
+async function healthLoad() {
+  let j; try { j = await (await fetch("/api/health?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
+  const L = $("#h-list"); if (!L) return; L.textContent = "";
+  j.items.forEach(x => { const r = el("div", "hrow h-" + x.level), d = el("span", "hdot"), b = el("div", "hbody");
+    const top = el("div", "htop"); top.append(el("b", "", x.icon + " " + x.title), el("span", "mut", x.text || ""));
+    b.appendChild(top); if (x.tip && x.level !== "ok") b.appendChild(el("div", "htip", "→ " + x.tip));
+    if (x.action === "ai_dl") { const k = el("button", "", "⬇ " + t("Download AI model")); k.type = "button"; k.style.marginTop = "6px";
+      k.onclick = async () => { k.disabled = true; const r = await post("/api/ai_model", {}); if (!r.ok) { toast("⚠ " + (r.error || "error")); k.disabled = false; return; }
+        toast("⬇ " + t("Download AI model")); const iv = setInterval(async () => { await healthLoad(); let j = {}; try { j = await (await fetch("/api/ai_model")).json(); } catch (e) {}
+          if (!j.busy) { clearInterval(iv); toast(j.msg === "ready" ? "✓ " + t("AI ready") : "⚠ " + (j.msg || "")); healthLoad(); } }, 2000); };
+      b.appendChild(k); }
+    r.append(d, b); L.appendChild(r); });
+}
+function healthOpen() { const c = $("#hcard"); if (!c) return; let p = c; while (p) { if (p.tagName === "DETAILS") p.open = true; p = p.parentElement; }
+  healthLoad(); c.scrollIntoView({behavior: "smooth", block: "start"}); }
+(function () { const c = document.getElementById("hcard"); if (!c) return;
+  c.addEventListener("toggle", () => { if (c.open) healthLoad(); });
+  setInterval(() => { if (c.open && !document.hidden) healthLoad(); }, 15000); })();
 async function prAutostart(on) {
   PR.asUntil = Date.now() + 3000;
   const r = await post("/api/autostart", {on: on, lang: LANG});
@@ -14323,7 +16316,7 @@ const WZ = {"Welcome to Motion Watch": "Willkommen bei Motion Watch", "Set up in
   "Home network": "Heimnetz", "Own Wi-Fi of the device": "Eigenes WLAN des Geräts", "On the road (Tailscale)": "Unterwegs (Tailscale)",
   "🖨 Quick start card with QR codes": "🖨 Kurzanleitung mit QR-Codes", "Let's go": "Los geht's", "Later": "Später",
   "After this the page asks for the new password once (user name: anything).": "Danach fragt die Seite einmal nach dem neuen Passwort (Benutzername: beliebig)."};
-const wt = s => (LANG === "de" && WZ[s]) || s;
+const wt = s => (LANG === "de" && WZ[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && WZ[s]) || s;
 async function setupWizard(force) {
   let S; try { S = await (await fetch("/api/setup", {cache: "no-store"})).json(); } catch (e) { return; }
   if (S.locked || (S.done && !force)) return;
@@ -14352,8 +16345,10 @@ async function setupWizard(force) {
       card.append(el("h2", "", "👋 " + wt("Welcome to Motion Watch")), el("p", "mut", wt("Set up in three short steps - takes about 3 minutes.")));
       card.appendChild(el("label", "", wt("Language")));
       const lg = el("div", "seg lang");
-      [["de", "Deutsch"], ["en", "English"]].forEach(([k, l]) => { const b = el("button", LANG === k ? "on" : "", l); b.type = "button";
-        b.onclick = () => { LANG = k; try { localStorage.setItem("mw-lang", k); } catch (e) {} applyI18n(); render(); }; lg.appendChild(b); });
+      Object.keys(LANGN).forEach(k => { const b = el("button", LANG === k ? "on" : "", LANGN[k]); b.type = "button";
+        b.onclick = () => {
+          if (["fr", "it", "rm"].includes(k) || ["fr", "it", "rm"].includes(LANG)) { langSet(k); return; }   // needs its translation file
+          try { localStorage.setItem("mw-lang", k); } catch (e) {} LANG = k; applyI18n(); render(); }; lg.appendChild(b); });
       card.appendChild(lg);
       card.appendChild(el("label", "", wt("Name of this device (optional)")));
       const ni = el("input"); ni.type = "text"; ni.maxLength = 40; ni.value = name; ni.placeholder = wt("e.g. camper, garden"); ni.oninput = () => { name = ni.value; };
@@ -14478,7 +16473,7 @@ details.hsec.tips{border-color:var(--acc)}
 .hsec.tips ul{list-style:none;padding-left:0}.hsec.tips li{padding:6px 0;border-bottom:1px solid var(--line)}
 mark{background:#d2992299;color:inherit;border-radius:3px}
 .nohit{display:none}
-.lang-de [lang=en],.lang-en [lang=de]{display:none}
+#hbody>div[lang]{display:none}.lang-de #hbody>div[lang=de],.lang-en #hbody>div[lang=en],.lang-fr #hbody>div[lang=fr],.lang-it #hbody>div[lang=it],.lang-rm #hbody>div[lang=rm]{display:block}
 @media(max-width:520px){.hsec td:first-child{white-space:normal}}
 </style></head><body>
 <header>
@@ -14491,7 +16486,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
   </span>
 </header>
 <main>
-  <div class="hsearch"><input type="search" id="q" placeholder="Search …" autocomplete="off"></div>
+  <div class="hsearch"><input type="search" id="q" placeholder="Search …" autocomplete="off"><a class="btn sec" href="/quick" target="_blank" id="h-quick">📄</a></div>
   <div class="toc" id="toc"></div>
   <div id="hbody">
     <div lang="de"><section id="start" data-icon="🚀"><h2>Schnellstart: die ersten 10 Minuten</h2>
@@ -14581,7 +16576,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>🎧 Mithören</b>: Ton live auf dem Handy, Lautstärke pro Gerät.</li>
 <li><b>Ton in den Aufnahmen</b>: Videos werden mit Ton gespeichert.</li></ul>
 <h3>Lautsprecher</h3>
-<ul><li>Eingebaut (USB) oder <b>Bluetooth</b>: «Bluetooth-Lautsprecher suchen» (Lautsprecher im Kopplungsmodus), dann «Verbinden». Auch im Reiter <i>Kameras</i>.</li>
+<ul><li>Eingebaut (USB) oder <b>Bluetooth</b>: «Bluetooth-Lautsprecher suchen» (Lautsprecher im Kopplungsmodus), dann «Verbinden».</li>
 <li><b>Sirene bei Alarm</b> (nur wenn scharf), Ton, Lautstärke, Dauer. Eigene Töne (.wav/.mp3) in <code>~/.config/motionwatch/sounds</code>.</li>
 <li><b>🎙 Sprechen</b>: Knopf gedrückt halten. Braucht die sichere Seite <code>https://…:5001</code> (Handys erlauben das Mikrofon nur dort).</li></ul>
 </section>
@@ -14589,6 +16584,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <section id="rec" data-icon="🎬"><h2>Aufnahmen &amp; Zeitraffer</h2>
 <ul><li>Bei Alarm werden Videos (mit Vorlauf und Ton) und Schnappschüsse gespeichert.</li>
 <li>Reiter <i>Aufzeichnungen</i>: ansehen, filtern, ⭐ Favoriten (werden nie automatisch gelöscht), mehrere als ZIP herunterladen, Statistik pro Tag.</li>
+<li><b>Orte &amp; Karte:</b> Fotos und Videos mit GPS-Position (vom Handy oder fester Ort) bekommen einen Ort. Filter «Ort» zeigt nur einen Ort (oder «Ohne Ort»). 🗺 <i>Karte</i> zeigt alle Orte mit Anzahl; Punkt antippen → Vorschau, «Nur diesen Ort zeigen», ✎ umbenennen. Kartenhintergrund und Ortsnamen kommen von OpenStreetMap (abschaltbar unter <i>Einstellungen → Setup</i>).</li>
 <li>Die ältesten Aufnahmen werden gelöscht, wenn der Ordner zu gross oder die Speicherkarte fast voll ist.</li>
 <li><b>Zeitraffer:</b> alle N Minuten ein Foto von einer festen Position, daraus ein Video («Video erstellen»). Ein Alarm hat immer Vorrang. Die Zeitraffer-Videos erscheinen auch unter <i>Aufzeichnungen</i> (mit ⏱); der Typ «Zeitraffer» zeigt dort zusätzlich alle Einzelfotos.</li></ul>
 </section>
@@ -14790,7 +16786,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>🎧 Listen</b>: live sound on the phone, volume per device.</li>
 <li><b>Sound in the recordings</b>: videos are saved with sound.</li></ul>
 <h3>Loudspeaker</h3>
-<ul><li>Built-in (USB) or <b>Bluetooth</b>: «Search Bluetooth loudspeakers» (speaker in pairing mode), then «Connect». Also in the tab <i>Cameras</i>.</li>
+<ul><li>Built-in (USB) or <b>Bluetooth</b>: «Search Bluetooth loudspeakers» (speaker in pairing mode), then «Connect».</li>
 <li><b>Siren at an alarm</b> (only when armed), sound, volume, duration. Own sounds (.wav/.mp3) in <code>~/.config/motionwatch/sounds</code>.</li>
 <li><b>🎙 Talk</b>: hold the button. Needs the secure page <code>https://…:5001</code> (phones only allow the microphone there).</li></ul>
 </section>
@@ -14798,6 +16794,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <section id="rec" data-icon="🎬"><h2>Recordings &amp; timelapse</h2>
 <ul><li>At an alarm, videos (with pre-roll and sound) and snapshots are saved.</li>
 <li>Tab <i>Recordings</i>: watch, filter, ⭐ favourites (never deleted automatically), download several as ZIP, statistics per day.</li>
+<li><b>Places &amp; map:</b> photos and videos with a GPS position (phone or fixed place) get a place. The filter «Place» shows one place only (or «Without location»). 🗺 <i>Map</i> shows all places with their count; tap a point → preview, «Show only this place», ✎ rename. Map background and place names come from OpenStreetMap (can be switched off under <i>Settings → Setup</i>).</li>
 <li>The oldest recordings are deleted when the folder is too big or the memory card almost full.</li>
 <li><b>Timelapse:</b> a photo every N minutes from a fixed position, then a video («Create video»). An alarm always has priority. Timelapse videos also appear under <i>Recordings</i> (marked ⏱); the type «Timelapse» there also shows all single photos.</li></ul>
 </section>
@@ -14923,8 +16920,12 @@ Object.assign(I18N.de, {"Search …": "Suchen …", "Manual": "Anleitung", "Diar
   "Motion Watch manual · version": "Anleitung zu Motion Watch · Version"});
 let SECS = [];
 function buildHelp() {
-  document.body.classList.add(LANG === "de" ? "lang-de" : "lang-en");
-  const box = document.querySelector('#hbody > div[lang="' + (LANG === "de" ? "de" : "en") + '"]');
+  if (["fr", "it", "rm"].includes(LANG) && window.HELPX && !document.querySelector('#hbody > div[lang="' + LANG + '"]')) {
+    const x = document.createElement("div"); x.innerHTML = HELPX; const d = x.firstElementChild; if (d) $("#hbody").appendChild(d);
+  }
+  const hl = document.querySelector('#hbody > div[lang="' + LANG + '"]') ? LANG : (LANG === "rm" ? "de" : (LANG === "de" ? "de" : "en"));
+  document.body.classList.add("lang-" + hl);
+  const box = document.querySelector('#hbody > div[lang="' + hl + '"]');
   const toc = $("#toc"); toc.textContent = "";
   SECS = [];
   [...box.querySelectorAll(":scope > section")].forEach((s, i) => {
@@ -14986,6 +16987,32 @@ main{padding:16px;max-width:1600px;margin:0 auto}
 .bar .sp{flex:1}
 button.favf.on{background:var(--yel);color:#fff;border-color:var(--yel)}
 #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.mapcard{margin-bottom:14px;padding:10px}
+.fa-card{margin-bottom:14px;padding:10px 12px;border-color:var(--yel)}.fa-card .fah{font-weight:700;margin-bottom:6px}
+.fa-card .fas{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.fatag{position:absolute;left:6px;top:6px;background:rgba(0,0,0,.7);color:#fff;font-size:11px;padding:2px 7px;border-radius:9px;z-index:2}
+#m-farow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:6px 0}#m-farow button{padding:5px 10px;font-size:13px}
+#m-farow button.on,#m-fa.on{background:var(--yel);color:#000}
+.map{position:relative;height:min(55vh,460px);overflow:hidden;border-radius:12px;touch-action:none;cursor:grab;user-select:none;
+  background:#22313b repeating-linear-gradient(0deg,transparent 0 63px,rgba(255,255,255,.06) 63px 64px),repeating-linear-gradient(90deg,transparent 0 63px,rgba(255,255,255,.06) 63px 64px)}
+.map.drag{cursor:grabbing}
+.mtiles,.mpins{position:absolute;inset:0}
+.mtiles img{position:absolute;width:256px;height:256px;max-width:none;-webkit-user-drag:none;pointer-events:none}
+.mpin{position:absolute;transform:translate(-50%,-50%);min-width:30px;height:30px;padding:0 8px;box-sizing:border-box;border-radius:15px;background:var(--org);color:#fff;
+  font:700 13px system-ui,sans-serif;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);cursor:pointer;z-index:2}
+.mpin.sel{background:var(--red);z-index:3;transform:translate(-50%,-50%) scale(1.15)}
+.mdot{position:absolute;width:9px;height:9px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--yel);border:1.5px solid #222;pointer-events:none;z-index:1}
+.mzoom{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px;z-index:4}
+.mzoom button{width:38px;height:38px;padding:0;font-size:18px}
+.mattr{position:absolute;right:4px;bottom:2px;font-size:10px;background:rgba(255,255,255,.8);color:#333;padding:0 4px;border-radius:3px;z-index:4}
+.mattr a{color:#333}
+#map-note{margin-top:6px;font-size:12px}
+.mpop{margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.mpop .mh{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mpop .mh b{font-size:15px}
+.mpop .mth{display:flex;gap:8px;overflow-x:auto;padding:8px 0 2px}
+.mpop .mth div{flex:0 0 auto;width:120px;cursor:pointer;font-size:11px}
+.mpop .mth img{width:120px;height:72px;object-fit:cover;border-radius:8px;display:block;background:var(--field)}
 .rc{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;position:relative;box-shadow:var(--shadow);transition:transform .12s,border-color .12s}
 .rc:hover{border-color:var(--acc);transform:translateY(-2px)}
 .rc.sel{outline:2px solid var(--acc)}
@@ -15069,13 +17096,16 @@ body.selecting .chk{display:block}
     </div>
     <div id="w-sched"><label for="f-sched" data-i18n="Schedule">Schedule</label><select id="f-sched"></select></div>
     <div id="w-src"><label for="f-src" data-i18n="Video source">Video source</label><select id="f-src"></select></div>
+    <div id="w-place" hidden><label for="f-place" data-i18n="Place">Place</label><select id="f-place"></select></div>
     <div><label for="f-q" data-i18n="Search">Search</label><input type="text" id="f-q" placeholder="person_2026…"></div>
     <div><label for="f-sort" data-i18n="Sort">Sort</label>
       <select id="f-sort"><option value="new" data-i18n="Newest first">Newest first</option><option value="old" data-i18n="Oldest first">Oldest first</option><option value="size" data-i18n="Largest first">Largest first</option></select></div>
   </section>
   <div class="bar">
     <span class="mut" id="result-info"></span><span class="sp"></span>
+    <button class="sec favf" id="btn-map">🗺 <span data-i18n="Map">Map</span></button>
     <button class="sec favf" id="btn-fav">★ <span data-i18n="Favorites">Favorites</span></button>
+    <button class="sec favf" id="btn-fa">👎 <span data-i18n="False alarms">False alarms</span></button>
     <button class="sec" id="btn-reset" data-i18n="Reset filters">Reset filters</button>
     <button class="sec" id="btn-refresh" data-i18n="Refresh">Refresh</button>
     <button class="sec" id="btn-select" data-i18n="Select">Select</button>
@@ -15083,6 +17113,14 @@ body.selecting .chk{display:block}
     <button class="sec" id="btn-zipsel" hidden></button>
     <button class="red" id="btn-delsel" hidden></button>
   </div>
+  <section class="card fa-card" id="fa-card" hidden></section>
+  <section class="card mapcard" id="mapcard" hidden>
+    <div class="map" id="map"><div class="mtiles"></div><div class="mpins"></div>
+      <div class="mzoom"><button class="sec" type="button" data-z="1">+</button><button class="sec" type="button" data-z="-1">−</button><button class="sec" type="button" data-z="0" id="map-fit">⤢</button></div>
+      <div class="mattr" id="map-attr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></div></div>
+    <div class="mut" id="map-note"></div>
+    <div id="map-pop"></div>
+  </section>
   <div id="grid"></div>
   <div class="empty" id="empty" hidden data-i18n="No recordings match the filters">No recordings match the filters</div>
   <div style="text-align:center;margin:14px"><button class="sec" id="more" hidden data-i18n="Load more">Load more</button></div>
@@ -15093,11 +17131,13 @@ body.selecting .chk{display:block}
       <b id="m-title"></b><span class="mut" id="m-meta"></span><span class="sp"></span>
       <button class="sec" id="m-prev" title="←">&#8249;</button><button class="sec" id="m-next" title="→">&#8250;</button>
       <button class="sec" id="m-fav" title="★">☆</button>
+      <button class="sec" id="m-fa" title="👎">👎</button>
       <button class="sec" id="m-share" title="Share">⤴</button>
       <a class="btn sec" id="m-dl" download data-i18n="Download">Download</a>
       <button class="red" id="m-del" data-i18n="Delete">Delete</button>
       <button class="sec" id="m-close">&#10005;</button>
     </div>
+    <div id="m-farow" hidden></div>
     <div id="m-body"></div>
     <div class="mut" id="m-note"></div>
   </div>
@@ -15121,9 +17161,16 @@ Object.assign(I18N.de, {
   "Delete this recording?": "Diese Aufnahme löschen?", "recordings?": "Aufnahmen löschen?", "Image": "Bild", "Video": "Video",
   "Statistics": "Statistik", "Events per weekday and hour": "Ereignisse pro Wochentag und Stunde", "Last 14 days (click a day)": "Letzte 14 Tage (Tag anklicken)",
   "Favorites": "Favoriten", "Protect selected": "Auswahl schützen", "Download ZIP": "ZIP laden", "events": "Ereignisse", "Timeline": "Zeitleiste",
-  "Favorites are never deleted by the automatic cleanup": "Favoriten werden vom automatischen Aufräumen nie gelöscht", "Timelapse": "Zeitraffer"
+  "Favorites are never deleted by the automatic cleanup": "Favoriten werden vom automatischen Aufräumen nie gelöscht", "Timelapse": "Zeitraffer",
+  "Place": "Ort", "All places": "Alle Orte", "Without location": "Ohne Ort", "Map": "Karte", "Show only this place": "Nur diesen Ort zeigen",
+  "Rename place": "Ort umbenennen", "Name of this place (empty = automatic)": "Name dieses Orts (leer = automatisch)", "Fit": "Alles zeigen",
+  "recordings with location": "Aufnahmen mit Ort",
+  "No recordings with a location yet. Photos and videos get one when the GPS position is known (phone or fixed place in the settings).":
+    "Noch keine Aufnahmen mit Ort. Fotos und Videos bekommen einen, sobald die GPS-Position bekannt ist (Handy oder fester Ort in den Einstellungen).",
+  "Map background not reachable (offline?) – the points are still right.": "Kartenhintergrund nicht erreichbar (offline?) – die Punkte stimmen trotzdem.",
+  "Map background is switched off in the settings.": "Kartenhintergrund ist in den Einstellungen ausgeschaltet."
 });
-const DAYN = () => LANG === "de" ? ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAYN = () => ({de: ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], fr: ["lu", "ma", "me", "je", "ve", "sa", "di"], it: ["lu", "ma", "me", "gi", "ve", "sa", "do"], rm: ["gli", "ma", "me", "gie", "ve", "so", "du"]})[LANG] || ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const pad = n => String(n).padStart(2, "0");
 const ymd = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
 function fmtSize(b) { return b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(0) + " KB" : b < 1073741824 ? (b / 1048576).toFixed(1) + " MB" : (b / 1073741824).toFixed(2) + " GB"; }
@@ -15135,7 +17182,7 @@ function fmtDays(days) {
   return days.map(d => N[d]).join(", ") || "–";
 }
 
-const F = {from: "", to: "", kind: "", schedule: "", source: "", q: "", sort: "new", fav: ""};
+const F = {from: "", to: "", kind: "", schedule: "", source: "", q: "", sort: "new", fav: "", place: "", fa: ""};
 let items = [], DATA = null, reqId = 0, selecting = false, modalIdx = -1, modalToken = 0, openAfter = null, tlDay = "";
 const selected = new Set();
 
@@ -15156,7 +17203,8 @@ async function load(reset) {
   $("#result-info").textContent = items.length + " / " + j.total + " " + t("shown");
   $("#empty").hidden = items.length > 0; $("#more").hidden = items.length >= j.total;
   fillOptions(j);
-  if (openAfter && items.length) { const n = openAfter; openAfter = null; const i = items.findIndex(x => x.name === n); openAt(i >= 0 ? i : 0); }
+  if (reset && MAP.on) mapLoad();
+  if (openAfter && items.length) { const n = openAfter; openAfter = null; const i = items.findIndex(x => x.name === n); openAt(i >= 0 ? i : 0, items); }
 }
 
 function fillOptions(j) {
@@ -15175,6 +17223,12 @@ function fillOptions(j) {
   j.sources.forEach(n => { const o = el("option", "", n); o.value = n; sr.appendChild(o); });
   sr.value = cs; if (sr.value !== cs) { F.source = ""; sr.value = ""; }
   $("#w-src").hidden = !j.sources.length;
+  const pl = $("#f-place"), cp = F.place; pl.textContent = ""; PLACES = j.places || [];
+  const p0 = el("option", "", t("All places")); p0.value = ""; pl.appendChild(p0);
+  PLACES.forEach(p => { const o = el("option", "", p.name + " (" + p.count + ")"); o.value = p.id; pl.appendChild(o); });
+  if (j.no_place && PLACES.length) { const o = el("option", "", t("Without location") + " (" + j.no_place + ")"); o.value = "none"; pl.appendChild(o); }
+  pl.value = cp; if (pl.value !== cp) { F.place = ""; pl.value = ""; }
+  $("#w-place").hidden = !PLACES.length;
 }
 
 function card(it) {
@@ -15185,6 +17239,7 @@ function card(it) {
   img.onerror = () => { img.remove(); th.insertBefore(document.createTextNode(it.kind === "video" ? "▶" : "🖼"), th.firstChild); };
   th.appendChild(img);
   if (it.kind === "video") th.appendChild(el("div", "play", "▶"));
+  if (it.false) th.appendChild(el("span", "fatag", "👎 " + FA_TXT()[it.false]));
   th.appendChild(el("span", "tag" + (it.recording ? " live" : ""), it.recording ? "● REC" : (it.timelapse ? "⏱ " : "") + (it.kind === "video" ? "▶ " + fmtDur(it.duration) : t(it.timelapse ? "Timelapse" : "Image"))));
   const st = el("button", "star" + (it.fav ? " on" : ""), it.fav ? "★" : "☆"); st.title = t("Favorites are never deleted by the automatic cleanup");
   st.onclick = async e => { e.stopPropagation(); await setFav([it.name], !it.fav); it.fav = !it.fav; st.className = "star" + (it.fav ? " on" : ""); st.textContent = it.fav ? "★" : "☆"; };
@@ -15196,7 +17251,7 @@ function card(it) {
   body.appendChild(el("div", "mut", [fmtSize(it.size), it.persons ? it.persons + " " + t("persons") : "", it.timelapse ? "⏱ " + t("Timelapse") : (it.source || "")].filter(Boolean).join(" · ")));
   if (it.schedules.length) { const ch = el("div", "chips"); it.schedules.forEach(n => ch.appendChild(el("span", "chip", n))); body.appendChild(ch); }
   c.append(th, body);
-  c.onclick = () => { if (selecting) { cb.checked = !cb.checked; toggleSel(it.name, cb.checked, c); } else openAt(items.indexOf(it)); };
+  c.onclick = () => { if (selecting) { cb.checked = !cb.checked; toggleSel(it.name, cb.checked, c); } else openAt(items.indexOf(it), items); };
   return c;
 }
 async function setFav(names, value) { const r = await post("/api/rec/fav", {names: names, value: value}); return r; }
@@ -15238,15 +17293,18 @@ async function recShare(it) {
 }
 
 // ---- viewer ----
-function openAt(i) {
-  if (i < 0 || i >= items.length) return;
-  modalIdx = i; const it = items[i], token = ++modalToken;
+let ML = [];                                          // the list the viewer walks through (the grid or a place on the map)
+function openAt(i, list) {
+  if (list) ML = list;
+  if (i < 0 || i >= ML.length) return;
+  modalIdx = i; const it = ML[i], token = ++modalToken;
   $("#modal").hidden = false;
   $("#m-title").textContent = it.time; $("#m-meta").textContent = [fmtSize(it.size), it.source || "", it.schedules.join(", ")].filter(Boolean).join(" · ");
   $("#m-dl").href = "/rec/file/" + encodeURIComponent(it.name) + "?dl=1"; $("#m-dl").setAttribute("download", it.name);
   $("#m-share").onclick = () => recShare(it); $("#m-share").title = t("Share");
   $("#m-fav").textContent = it.fav ? "★" : "☆"; $("#m-fav").style.color = it.fav ? "var(--yel)" : "";
-  $("#m-prev").disabled = i === 0; $("#m-next").disabled = i === items.length - 1;
+  faRow(it);
+  $("#m-prev").disabled = i === 0; $("#m-next").disabled = i === ML.length - 1;
   const body = $("#m-body"), note = $("#m-note"); body.textContent = ""; note.textContent = "";
   if (it.kind === "image") { const im = el("img"); im.src = "/rec/file/" + encodeURIComponent(it.name); body.appendChild(im); }
   else showVideo(it, token);
@@ -15272,9 +17330,9 @@ function closeModal() { modalToken++; $("#modal").hidden = true; $("#m-body").te
 $("#m-close").onclick = closeModal;
 $("#m-prev").onclick = () => openAt(modalIdx - 1);
 $("#m-next").onclick = () => openAt(modalIdx + 1);
-$("#m-fav").onclick = async () => { const it = items[modalIdx]; if (!it) return; await setFav([it.name], !it.fav); it.fav = !it.fav; openAtKeep(); load(true); };
-function openAtKeep() { const it = items[modalIdx]; if (it) { $("#m-fav").textContent = it.fav ? "★" : "☆"; $("#m-fav").style.color = it.fav ? "var(--yel)" : ""; } }
-$("#m-del").onclick = async () => { const it = items[modalIdx]; if (it && await remove([it.name])) { closeModal(); load(true); loadStats(); } };
+$("#m-fav").onclick = async () => { const it = ML[modalIdx]; if (!it) return; await setFav([it.name], !it.fav); it.fav = !it.fav; openAtKeep(); load(true); };
+function openAtKeep() { const it = ML[modalIdx]; if (it) { $("#m-fav").textContent = it.fav ? "★" : "☆"; $("#m-fav").style.color = it.fav ? "var(--yel)" : ""; } }
+$("#m-del").onclick = async () => { const it = ML[modalIdx]; if (it && await remove([it.name])) { closeModal(); load(true); loadStats(); } };
 $("#modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
 addEventListener("keydown", e => {
   if ($("#modal").hidden) return;
@@ -15324,12 +17382,148 @@ document.querySelectorAll("#f-kind button").forEach(b => b.onclick = () => { F.k
 function markKind() { document.querySelectorAll("#f-kind button").forEach(b => b.classList.toggle("sel", b.dataset.kind === F.kind)); }
 $("#f-sched").onchange = () => { F.schedule = $("#f-sched").value; load(true); };
 $("#f-src").onchange = () => { F.source = $("#f-src").value; load(true); };
+$("#f-place").onchange = () => { F.place = $("#f-place").value; load(true); };
+
+// ---- false alarms: «was nothing» + suggestions ----
+Object.assign(I18N.de, {"False alarms": "Fehlalarme", "Animal": "Tier", "Wind / branches": "Wind / Äste", "Light / shadow": "Licht / Schatten", "Rain": "Regen", "Car": "Auto", "Other": "Anderes", "Was nothing (false alarm)": "War nichts (Fehlalarm)", "Was nothing - what was it?": "War nichts – was war es?", "Was real after all": "War doch echt", "false alarms marked in the last": "Fehlalarme markiert in den letzten", "days": "Tagen", "of": "von", "suggestions:": "Vorschläge:", "Open": "Öffnen", "Take over": "Übernehmen", "Switch on the automatic wind detection": "Automatische Wind-Erkennung einschalten", "Less sensitive to light changes": "Weniger empfindlich auf Lichtwechsel", "Switch on the automatic rain detection": "Automatische Regen-Erkennung einschalten", "Detect rain earlier": "Regen früher erkennen", "Switch on the vehicle filter": "Fahrzeug-Filter einschalten", "Somewhat less sensitive overall": "Insgesamt etwas weniger empfindlich"});
+const FA_TXT = () => ({animal: "🐾 " + t("Animal"), wind: "🌿 " + t("Wind / branches"), light: "💡 " + t("Light / shadow"), rain: "🌧 " + t("Rain"), car: "🚗 " + t("Car"), other: "❓ " + t("Other")});
+function faRow(it) {
+  const r = $("#m-farow"); r.textContent = ""; r.hidden = true;
+  $("#m-fa").hidden = !!it.timelapse; $("#m-fa").classList.toggle("on", !!it.false);
+  $("#m-fa").title = t("Was nothing (false alarm)");
+  $("#m-fa").onclick = () => { r.hidden = !r.hidden; };
+  r.appendChild(el("span", "mut", t("Was nothing - what was it?")));
+  Object.entries(FA_TXT()).forEach(([k, v]) => { const b = el("button", "sec" + (it.false === k ? " on" : ""), v); b.type = "button";
+    b.onclick = () => faSet(it, k); r.appendChild(b); });
+  if (it.false) { const b = el("button", "sec", "↩ " + t("Was real after all")); b.type = "button"; b.onclick = () => faSet(it, ""); r.appendChild(b); }
+}
+async function faSet(it, cause) {
+  await post("/api/rec/false", {names: [it.name], cause: cause}); it.false = cause || null; faRow(it);
+  const c = document.querySelector('.rc[data-name="' + CSS.escape(it.name) + '"]'); if (c) { const n = card(it); c.replaceWith(n); }
+  toast(cause ? "👎 " + FA_TXT()[cause] : "↩ " + t("Was real after all")); faLoad();
+}
+async function faLoad() {
+  let j; try { j = await (await fetch("/api/fa?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
+  const c = $("#fa-card"); c.textContent = ""; c.hidden = !(j.suggestions || []).length;
+  if (c.hidden) return;
+  c.appendChild(el("div", "fah", "💡 " + j.false + " " + t("false alarms marked in the last") + " " + j.days + " " + t("days") + " (" + t("of") + " " + j.total + ") – " + t("suggestions:")));
+  j.suggestions.forEach(x => { const r = el("div", "fas"); r.appendChild(el("span", "", x.text + " (" + x.n + "×)"));
+    if (x.link) { const a = el("a", "btn sec", t("Open")); a.href = x.link; r.appendChild(a); }
+    else { const b = el("button", "", t("Take over")); b.type = "button"; b.onclick = async () => { const q = await post("/api/fa", {id: x.id, lang: LANG}); toast(q.ok ? "✓ " + t("Saved") : "⚠"); faLoad(); }; r.appendChild(b); }
+    c.appendChild(r); });
+}
+$("#btn-fa").onclick = () => { F.fa = F.fa ? "" : "1"; $("#btn-fa").classList.toggle("on", !!F.fa); load(true); };
+setTimeout(faLoad, 300);
+
+// ---- map of the places (OpenStreetMap tiles, drawn without any library) ----
+let PLACES = [];
+const MAP = {on: false, z: 3, cx: 0, cy: 0, pts: [], places: [], sel: "", online: true, bad: 0, fitted: false};
+const mapW = (lat, lon, z) => { const s = 256 * Math.pow(2, z), r = Math.max(-85, Math.min(85, lat)) * Math.PI / 180;
+  return [(lon + 180) / 360 * s, (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * s]; };
+async function mapLoad() {
+  const p = new URLSearchParams(); Object.entries(F).forEach(([k, v]) => { if (v) p.set(k, v); }); p.set("map", "1"); p.set("limit", 1);
+  let j; try { j = await (await fetch("/api/recordings?" + p)).json(); } catch (e) { return; }
+  MAP.pts = j.points || []; MAP.online = j.map_online !== false;
+  const used = new Set(MAP.pts.map(x => x.place));
+  MAP.places = (j.places || []).filter(x => used.has(x.id)).map(x => Object.assign({}, x, {n: MAP.pts.filter(q => q.place === x.id).length}));
+  if (!MAP.places.some(x => x.id === MAP.sel)) { MAP.sel = ""; $("#map-pop").textContent = ""; }
+  $("#map-attr").hidden = !MAP.online;
+  mapNote(); if (!MAP.fitted) mapFit(); else mapDraw(); if (MAP.sel) mapPop(MAP.sel);
+}
+function mapNote() {
+  const n = $("#map-note");
+  n.textContent = !MAP.pts.length ? t("No recordings with a location yet. Photos and videos get one when the GPS position is known (phone or fixed place in the settings).")
+    : MAP.pts.length + " " + t("recordings with location") + (!MAP.online ? " · " + t("Map background is switched off in the settings.")
+    : MAP.bad > 3 ? " · " + t("Map background not reachable (offline?) – the points are still right.") : "");
+}
+function mapFit() {
+  const m = $("#map"), w = m.clientWidth || 600, h = m.clientHeight || 400, P = MAP.places.length ? MAP.places : [{lat: 46.8, lon: 8.2}];
+  let z = P.length === 1 ? 13 : 16;
+  for (; z > 2; z--) {
+    const xy = P.map(p => mapW(p.lat, p.lon, z)), xs = xy.map(a => a[0]), ys = xy.map(a => a[1]);
+    if (Math.max(...xs) - Math.min(...xs) < w - 90 && Math.max(...ys) - Math.min(...ys) < h - 90) break;
+  }
+  if (!MAP.places.length) z = 7;
+  const xy = P.map(p => mapW(p.lat, p.lon, z));
+  MAP.z = z; MAP.cx = (Math.min(...xy.map(a => a[0])) + Math.max(...xy.map(a => a[0]))) / 2; MAP.cy = (Math.min(...xy.map(a => a[1])) + Math.max(...xy.map(a => a[1]))) / 2;
+  MAP.fitted = MAP.places.length > 0; mapDraw();
+}
+function mapZoom(dz, px, py) {
+  const m = $("#map"), w = m.clientWidth, h = m.clientHeight; if (px === undefined) { px = w / 2; py = h / 2; }
+  const z2 = Math.max(2, Math.min(18, MAP.z + dz)); if (z2 === MAP.z) return;
+  const f = Math.pow(2, z2 - MAP.z), wx = MAP.cx - w / 2 + px, wy = MAP.cy - h / 2 + py;
+  MAP.cx = wx * f - px + w / 2; MAP.cy = wy * f - py + h / 2; MAP.z = z2; mapDraw();
+}
+function mapDraw() {
+  const m = $("#map"), w = m.clientWidth, h = m.clientHeight, z = MAP.z, N = Math.pow(2, z), x0 = MAP.cx - w / 2, y0 = MAP.cy - h / 2;
+  const T = m.querySelector(".mtiles"), have = {}; T.querySelectorAll("img").forEach(i => { have[i.dataset.k] = i; });
+  if (MAP.online) {
+    for (let ty = Math.floor(y0 / 256); ty <= Math.floor((y0 + h) / 256); ty++) {
+      if (ty < 0 || ty >= N) continue;
+      for (let tx = Math.floor(x0 / 256); tx <= Math.floor((x0 + w) / 256); tx++) {
+        const k = z + "/" + (((tx % N) + N) % N) + "/" + ty;
+        let im = have[k + "@" + tx];
+        if (!im) { im = el("img"); im.alt = ""; im.dataset.k = k + "@" + tx; im.onerror = () => { im.style.visibility = "hidden"; MAP.bad++; mapNote(); };
+          im.src = "https://tile.openstreetmap.org/" + k + ".png"; T.appendChild(im); }
+        im.style.left = Math.round(tx * 256 - x0) + "px"; im.style.top = Math.round(ty * 256 - y0) + "px"; im.dataset.keep = "1";
+      }
+    }
+  }
+  T.querySelectorAll("img").forEach(i => { if (i.dataset.keep) delete i.dataset.keep; else i.remove(); });
+  const Pn = m.querySelector(".mpins"); Pn.textContent = "";
+  if (z >= 13) MAP.pts.forEach(p => { const [x, y] = mapW(p.lat, p.lon, z); if (x < x0 - 20 || x > x0 + w + 20 || y < y0 - 20 || y > y0 + h + 20) return;
+    const d = el("div", "mdot"); d.style.left = (x - x0) + "px"; d.style.top = (y - y0) + "px"; Pn.appendChild(d); });
+  MAP.places.forEach(p => { const [x, y] = mapW(p.lat, p.lon, z);
+    const b = el("div", "mpin" + (p.id === MAP.sel ? " sel" : ""), String(p.n)); b.title = p.name;
+    b.style.left = (x - x0) + "px"; b.style.top = (y - y0) + "px";
+    b.onpointerdown = e => e.stopPropagation(); b.onclick = e => { e.stopPropagation(); mapPop(p.id); };
+    Pn.appendChild(b); });
+}
+function mapPop(id) {
+  MAP.sel = id; mapDraw();
+  const p = MAP.places.find(x => x.id === id), box = $("#map-pop"); box.textContent = ""; if (!p) return;
+  const list = MAP.pts.filter(x => x.place === id).sort((a, b) => a.time < b.time ? 1 : -1);
+  const pop = el("div", "mpop"), hd = el("div", "mh");
+  hd.append(el("b", "", "📍 " + p.name), el("span", "mut", list.length + " " + t("recordings") + " · " + list[list.length - 1].time.slice(0, 10) + (list.length > 1 ? " – " + list[0].time.slice(0, 10) : "")));
+  const rn = el("button", "sec", "✎"); rn.type = "button"; rn.title = t("Rename place");
+  rn.onclick = async () => { const v = prompt(t("Name of this place (empty = automatic)"), p.name); if (v === null) return; await post("/api/places", {id: id, name: v}); load(true); };
+  const only = el("button", "sec", t("Show only this place")); only.type = "button";
+  only.onclick = () => { F.place = id; $("#f-place").value = id; load(true); $("#grid").scrollIntoView({behavior: "smooth", block: "start"}); };
+  hd.append(rn, only); pop.appendChild(hd);
+  const th = el("div", "mth");
+  list.slice(0, 24).forEach((it, i) => { const c = el("div"); const im = el("img"); im.loading = "lazy"; im.alt = ""; im.src = "/rec/thumb/" + encodeURIComponent(it.name);
+    c.append(im, el("div", "mut", (it.kind === "video" ? "▶ " : "") + it.time.slice(5, 16))); c.onclick = () => openAt(i, list); th.appendChild(c); });
+  pop.appendChild(th); box.appendChild(pop);
+}
+(function () {
+  const m = $("#map"), act = new Map(); let last = null, pinch = 0, moved = 0;
+  m.addEventListener("pointerdown", e => { m.setPointerCapture(e.pointerId); act.set(e.pointerId, [e.clientX, e.clientY]); moved = 0; m.classList.add("drag");
+    if (act.size === 2) { const [a, b] = [...act.values()]; pinch = Math.hypot(a[0] - b[0], a[1] - b[1]); } });
+  m.addEventListener("pointermove", e => { if (!act.has(e.pointerId)) return; const o = act.get(e.pointerId); act.set(e.pointerId, [e.clientX, e.clientY]);
+    if (act.size === 1) { MAP.cx -= e.clientX - o[0]; MAP.cy -= e.clientY - o[1]; moved += Math.abs(e.clientX - o[0]) + Math.abs(e.clientY - o[1]); mapDraw(); }
+    else if (act.size === 2 && pinch) { const [a, b] = [...act.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]), r = m.getBoundingClientRect();
+      if (d / pinch > 1.6 || d / pinch < 0.62) { mapZoom(d > pinch ? 1 : -1, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top); pinch = d; } } });
+  const up = e => { act.delete(e.pointerId); if (!act.size) m.classList.remove("drag"); if (act.size < 2) pinch = 0; };
+  m.addEventListener("pointerup", up); m.addEventListener("pointercancel", up);
+  m.addEventListener("wheel", e => { e.preventDefault(); const r = m.getBoundingClientRect(); mapZoom(e.deltaY < 0 ? 1 : -1, e.clientX - r.left, e.clientY - r.top); }, {passive: false});
+  m.addEventListener("dblclick", e => { const r = m.getBoundingClientRect(); mapZoom(1, e.clientX - r.left, e.clientY - r.top); });
+  m.querySelectorAll(".mzoom button").forEach(b => { b.onpointerdown = e => e.stopPropagation();
+    b.onclick = e => { e.stopPropagation(); const d = +b.dataset.z; d ? mapZoom(d) : mapFit(); }; });
+  $("#map-fit").title = t("Fit");
+  addEventListener("resize", () => { if (MAP.on) mapDraw(); });
+  function show(on) { MAP.on = on; $("#mapcard").hidden = !on; $("#btn-map").classList.toggle("on", on);
+    try { localStorage.setItem("mw-map", on ? "1" : "0"); } catch (e) {}
+    if (on) { MAP.fitted = false; mapLoad(); } }
+  $("#btn-map").onclick = () => show(!MAP.on);
+  let v = null; try { v = localStorage.getItem("mw-map"); } catch (e) {}
+  if (v === "1") setTimeout(() => show(true), 0);
+})();
 $("#f-sort").onchange = () => { F.sort = $("#f-sort").value; load(true); };
 $("#btn-fav").onclick = () => { F.fav = F.fav ? "" : "1"; $("#btn-fav").classList.toggle("on", !!F.fav); load(true); };
 let qTimer = null;
 $("#f-q").oninput = () => { clearTimeout(qTimer); qTimer = setTimeout(() => { F.q = $("#f-q").value.trim(); load(true); }, 300); };
 $("#btn-reset").onclick = () => {
-  Object.assign(F, {from: "", to: "", kind: "", schedule: "", source: "", q: "", sort: "new", fav: ""});
+  Object.assign(F, {from: "", to: "", kind: "", schedule: "", source: "", q: "", sort: "new", fav: "", place: "", fa: ""}); $("#btn-fa").classList.remove("on");
   $("#f-from").value = $("#f-to").value = $("#f-q").value = ""; $("#f-sort").value = "new"; $("#btn-fav").classList.remove("on"); markKind(); load(true);
 };
 $("#btn-refresh").onclick = () => { load(true); loadStats(); };
@@ -15361,9 +17555,11 @@ def web_specs():
 def web_schema(lang=None):
     out = []
     for sec in SECTIONS:
-        toggles = [{"key": k, "label": tr(l, lang)} for s, k, l in TOGGLES if s == sec and k != "web_stream"]
-        sliders = [{"key": k, "label": tr(l, lang), "min": lo, "max": hi, "step": st} for s, k, l, lo, hi, st in SLIDERS if s == sec]
-        texts = [x for x in web_texts(lang) if x["section"] == sec]
+        if simple_hidden(None, sec):
+            continue
+        toggles = [{"key": k, "label": tr(l, lang)} for s, k, l in TOGGLES if s == sec and k != "web_stream" and not simple_hidden(k)]
+        sliders = [{"key": k, "label": tr(l, lang), "min": lo, "max": hi, "step": st} for s, k, l, lo, hi, st in SLIDERS if s == sec and not simple_hidden(k)]
+        texts = [x for x in web_texts(lang) if x["section"] == sec and not simple_hidden(x["key"])]
         if toggles or sliders or texts:
             out.append({"id": sec, "name": tr(sec, lang), "toggles": toggles, "sliders": sliders, "texts": texts})
     return out
@@ -15475,7 +17671,7 @@ class WebStream:
 
         fails = {}                                  # ip -> times of wrong passwords (lock-out after 8 in 5 minutes)
 
-        public = {"/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png",
+        public = {"/i18n/fr.js", "/i18n/it.js", "/i18n/rm.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png",
                   "/apple-touch-icon-precomposed.png", "/favicon.ico", "/sw.js"}
 
         @app.before_request
@@ -15511,8 +17707,8 @@ class WebStream:
                                                             or (request.path == "/api/update" and (body().get("action") == "install"))
                                                             or (request.path == "/api/setup" and body().get("password"))
                                                             or (request.path == "/api/webpush" and body().get("action") == "https")):
-                lang = "de" if body().get("lang") == "de" or CFG["lang"] == "de" else "en"
-                return reply({"ok": False, "error": "In der Demo nicht möglich" if lang == "de" else "not possible in the demo"}, 403)
+                lang = norm_lang(body().get("lang") or CFG["lang"])
+                return reply({"ok": False, "error": tr("not possible in the demo", lang)}, 403)
             return None
 
         @app.before_request
@@ -15526,7 +17722,7 @@ class WebStream:
             d = request.get_json(force=True, silent=True) if request.method == "POST" else None
             if lock_allows(request.path, request.method, d if isinstance(d, dict) else {}):
                 return None
-            lang = "de" if ((d or {}).get("lang") if isinstance(d, dict) else None) == "de" or CFG["lang"] == "de" else "en"
+            lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or CFG["lang"])
             return reply({"ok": False, "error": tr_err("locked - settings can only be changed after unlocking (PIN)", lang)}, 423)
 
         @app.route("/log")
@@ -15558,7 +17754,7 @@ class WebStream:
 
         @app.route("/api/lock", methods=["POST"])
         def api_lock():
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             ok, err = lock_set(d.get("action"), d.get("pin", ""), d.get("new_pin", ""), source="web " + (request.remote_addr or "?"))
             return reply(dict(lock_info(), ok=ok, error=tr_err(err, lang) if err else None), 200 if ok else 400)
 
@@ -15623,7 +17819,7 @@ class WebStream:
         @app.route("/api/schema")
         def api_schema():
             lang = request.args.get("lang") or CFG["lang"]
-            return reply(web_schema("de" if lang == "de" else "en"))
+            return reply(web_schema(norm_lang(lang)))
 
         @app.route("/api/appearance")
         def api_appearance():
@@ -15633,6 +17829,7 @@ class WebStream:
         def api_state():
             with LOCK:
                 st = {k: v for k, v in STATE.items() if k != "events"}
+                st["gps"] = gps_state()
                 imp = [dict(e) for e in STATE["events"] if e.get("imp")][:25]
                 if len(imp) < 10:                      # at least 10 lines: fill up with the newest other entries (shown pale)
                     ids = {id(e) for e in STATE["events"] if e.get("imp")}
@@ -15648,14 +17845,18 @@ class WebStream:
                 st["extra"] = cams_status()
                 st["camping"] = bool(CFG["camping"]); st["net_mode"] = CFG["net_mode"]; st["power_msg"] = POWER["msg"]
                 st["pw_set"] = web_pw_active(); st["pw_cli"] = bool(CFG["web_password"]); st["version"] = APP_VERSION
+                try:
+                    st["health"] = health_check()["count"]
+                except Exception:
+                    st["health"] = None
                 st["mqtt"] = {"status": MQTT["status"], "topic": (CFG["mqtt_prefix"].strip().strip("/") or "motionwatch") + "/" + device_uid() if CFG["mqtt_on"] else ""}
                 st["web_open"] = not st["pw_set"] and WEB_OPTS["bind"] not in ("127.0.0.1", "localhost", "::1")
                 st["guest"] = guest_info(); st["report_on"] = bool(CFG["report_on"]); st["lock"] = lock_info()
                 st["pending"] = RESTART["pending"]
                 st["quick_rec"] = time.time() < QUICK["rec_until"]
-                st["settings_status_txt"] = settings_status_text("de" if (request.args.get("lang") or CFG["lang"]) == "de" else "en")
-                st["autostart_msg"] = tr_err(AUTOSTART["msg"], "de" if (request.args.get("lang") or CFG["lang"]) == "de" else "en") if AUTOSTART["msg"] else ""
-                lang_ = "de" if (request.args.get("lang") or CFG["lang"]) == "de" else "en"
+                st["settings_status_txt"] = settings_status_text(norm_lang(request.args.get("lang") or CFG["lang"]))
+                st["autostart_msg"] = tr_err(AUTOSTART["msg"], norm_lang(request.args.get("lang") or CFG["lang"])) if AUTOSTART["msg"] else ""
+                lang_ = norm_lang(request.args.get("lang") or CFG["lang"])
                 st["light_cfg"] = {k: CFG["light_" + k] for k in ("white", "ir", "white_out", "ir_out")}
                 st["light_cfg"].update({n + "_auto_label": dict(text_choice_pairs("light_white_auto")).get(CFG[f"light_{n}_auto"], "")
                                         for n in ("white", "ir")})
@@ -15668,13 +17869,13 @@ class WebStream:
 
         @app.route("/api/triggers")
         def api_triggers():
-            lang = "de" if (request.args.get("lang") or CFG["lang"]) == "de" else "en"
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
             return reply([{"key": k, "label": tr_trigger(k, lang)} for k in TRIGGERS])
 
         @app.route("/api/relay", methods=["POST"])
         def api_relay():
             d = body(); a = d.get("action"); idx = d.get("index")
-            lang = "de" if d.get("lang") == "de" else "en"
+            lang = norm_lang(d.get("lang"))
             if a == "set":
                 ok, err = relay_update(idx, d.get("field"), d.get("value"))
             elif a == "add":
@@ -15687,7 +17888,7 @@ class WebStream:
 
         @app.route("/api/feedback", methods=["POST"])
         def api_feedback():
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             ok, err = feedback_send(d.get("kind"), d.get("text"), str(d.get("contact") or "").strip(), bool(d.get("diag")))
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
 
@@ -15742,7 +17943,7 @@ class WebStream:
 
         @app.route("/api/hotspot", methods=["POST"])
         def api_hotspot():
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             if wifi_backend() != "nm":
                 return reply({"ok": False, "error": tr("the own Wi-Fi needs NetworkManager (Raspberry Pi OS Bookworm or newer)", lang)}, 400)
             hotspot_password()
@@ -15762,13 +17963,13 @@ class WebStream:
         def api_autostart():
             if request.method == "GET":
                 return reply(autostart_refresh())
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             ok, err = autostart_set(bool(d.get("on")))
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "autostart": STATE["autostart"]}, 200 if ok else 400)
 
         @app.route("/api/password", methods=["POST"])
         def api_password():
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             ok, err = web_pw_set(d.get("password") if d.get("action") != "remove" else "")
             if ok:
                 STATE["web_open"] = not web_pw_active() and WEB_OPTS["bind"] not in ("127.0.0.1", "localhost", "::1")
@@ -15784,7 +17985,7 @@ class WebStream:
 
         @app.route("/api/settings/import", methods=["POST"])
         def api_settings_import():
-            lang = "de" if request.args.get("lang") == "de" else "en"
+            lang = norm_lang(request.args.get("lang"))
             if (request.content_length or 0) > 4 * 1024 * 1024:
                 return reply({"ok": False, "error": "too large"}, 413)
             try:
@@ -15796,7 +17997,7 @@ class WebStream:
 
         @app.route("/api/update", methods=["GET", "POST"])
         def api_update():
-            lang = "de" if (request.args.get("lang") or (body().get("lang") if request.method == "POST" else "")) == "de" else "en"
+            lang = norm_lang(request.args.get("lang") or (body().get("lang") if request.method == "POST" else ""))
             ok, err = True, UPD["msg"]
             if request.method == "POST":
                 d = body(); a = d.get("action")
@@ -15827,13 +18028,13 @@ class WebStream:
 
         @app.route("/api/power", methods=["POST"])
         def api_power():
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             ok, err = power_action(d.get("action"), source="web " + (request.remote_addr or "?"))
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
 
         @app.route("/api/pause", methods=["POST"])
         def api_pause():
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             ok, err = pause_program(d.get("minutes"), source="web " + (request.remote_addr or "?"))
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
 
@@ -15841,7 +18042,7 @@ class WebStream:
         def api_audio():
             if request.method == "GET":
                 return reply({"state": STATE["audio"], "devices": AUDIO_DEVS, "sounds": own_sounds(), "folder": sounds_dir()})
-            d = body(); a = d.get("action"); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
             if a == "scan":
                 ins, outs = audio_scan()
                 ok, err = True, AUDIO_DEVS["err"]
@@ -15858,7 +18059,7 @@ class WebStream:
 
         @app.route("/api/talk", methods=["POST"])
         def api_talk():
-            lang = "de" if request.args.get("lang") == "de" else "en"
+            lang = norm_lang(request.args.get("lang"))
             if (request.content_length or 0) > 96000:
                 return reply({"ok": False, "error": "too large"}, 413)
             ok, err = talk_chunk(request.get_data(cache=False), request.remote_addr or "")
@@ -15874,7 +18075,7 @@ class WebStream:
             if request.method == "GET":
                 return reply({"available": bt_available(), "scanning": BT["scanning"], "busy": BT["busy"], "msg": BT["msg"],
                               "devices": BT["devices"], "out": CFG["audio_out"]})
-            d = body(); a = d.get("action"); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
             if a == "scan":
                 ok, err = bt_scan()
             elif a == "connect":
@@ -15907,6 +18108,16 @@ class WebStream:
             return Response(gen(), mimetype="application/octet-stream",
                             headers={"Cache-Control": "no-store", "X-Audio-Rate": str(AUDIO_RATE), "X-Accel-Buffering": "no"})
 
+        @app.route("/api/gps", methods=["GET", "POST"])
+        def api_gps():
+            if request.method == "GET":
+                return reply({"on": bool(CFG["gps_phone"]), "gps": gps_state(), "map_online": bool(CFG["map_online"]),
+                              "lat": float(CFG["latitude"]), "lon": float(CFG["longitude"]),
+                              "factory": (round(float(CFG["latitude"]), 2), round(float(CFG["longitude"]), 2)) == GPS_DEFAULT})
+            d = body()
+            ok, err = gps_set(d.get("lat"), d.get("lon"), d.get("acc"))
+            return reply({"ok": ok, "error": err or None}, 200 if ok or err == "off" else 400)
+
         @app.route("/api/time", methods=["POST"])
         def api_time():
             d = body()
@@ -15916,7 +18127,7 @@ class WebStream:
         def api_wifi():
             if request.method == "GET":
                 return reply(wifi_status())
-            d = body(); a = d.get("action"); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
             if not web_pw_active() and (request.remote_addr or "") not in ("127.0.0.1", "::1"):
                 return reply({"ok": False, "error": tr("set a web password first (--web-password) - otherwise anybody in the network could change the Wi-Fi", lang)}, 403)
             if a == "scan":
@@ -15977,7 +18188,7 @@ class WebStream:
 
         @app.route("/api/timelapse", methods=["POST"])
         def api_timelapse_post():
-            d = body(); a = d.get("action"); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
             if a == "now":
                 watch.timelapse.request_now(); log_event("servo", "Timelapse photo requested (web)")
             elif a == "here":                                  # take the position the camera has right now
@@ -16040,7 +18251,7 @@ class WebStream:
         @app.route("/api/source", methods=["POST"])
         def api_source():
             d = body(); a = d.get("action")
-            lang = "de" if d.get("lang") == "de" else "en"
+            lang = norm_lang(d.get("lang"))
             if a == "select":
                 ok, err = source_select(watch, d.get("id"))
             elif a == "add":
@@ -16058,7 +18269,7 @@ class WebStream:
         # ---- schedule ----
         @app.route("/api/schedule")
         def api_schedule_get():
-            lang = "de" if (request.args.get("lang") or CFG["lang"]) == "de" else "en"
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
             with LOCK:
                 plans = [dict(x) for x in SCHEDULES]
             return reply({"features": [{"key": k, "label": tr(l, lang)} for k, l in SCHED_FEATURES], "schedules": plans})
@@ -16066,7 +18277,7 @@ class WebStream:
         @app.route("/api/schedule", methods=["POST"])
         def api_schedule_post():
             d = body(); a = d.get("action")
-            lang = "de" if d.get("lang") == "de" else "en"
+            lang = norm_lang(d.get("lang"))
             if a == "add":
                 ok, err = schedule_add()
             elif a == "save":
@@ -16089,6 +18300,33 @@ class WebStream:
         @app.route("/api/recordings")
         def api_recordings():
             return reply(list_recordings(request.args, watch))
+
+        @app.route("/api/ui_simple", methods=["GET", "POST"])
+        def api_ui_simple():
+            if request.method == "POST":
+                CFG["ui_simple"] = bool(body().get("on")); save_settings()      # the Pi window follows by itself
+            return reply({"on": bool(CFG["ui_simple"])})
+
+        @app.route("/api/night", methods=["POST"])
+        def api_night():
+            return reply(night_guard(body().get("lang")))
+
+        @app.route("/api/ai_model", methods=["GET", "POST"])
+        def api_ai_model():
+            if request.method == "POST":
+                ok, err = ai_model_download()
+                return reply({"ok": ok, "error": err or None, **AI_MODEL}, 200 if ok else 409)
+            return reply(dict(AI_MODEL, present=bool(ai_model_paths()[0])))
+
+        @app.route("/api/health")
+        def api_health():
+            return reply(health_check(request.args.get("lang")))
+
+        @app.route("/api/places", methods=["POST"])
+        def api_places():
+            d = body()
+            ok = place_rename(d.get("id"), d.get("name"))
+            return reply({"ok": ok}, 200 if ok else 400)
 
         @app.route("/rec/thumb/<path:name>")
         def rec_thumb_route(name):
@@ -16127,7 +18365,7 @@ class WebStream:
 
         @app.route("/api/cams", methods=["POST"])
         def api_cams_post():
-            d = body(); a = d.get("action"); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
             if a == "add":
                 ok, err = cams_add(d.get("id"))
             elif a == "remove":
@@ -16163,6 +18401,13 @@ class WebStream:
         def manifest():
             return Response(app_manifest(), mimetype="application/manifest+json")
 
+        @app.route("/i18n/<lang>.js")
+        def i18n_file(lang):
+            if lang not in ("fr", "it", "rm"):
+                return Response("", 404)
+            return Response(i18n_js(lang, request.args.get("h") == "1"), mimetype="application/javascript",
+                            headers={"Cache-Control": "public, max-age=604800"})
+
         @app.route("/icon-192.png")
         @app.route("/favicon.ico")
         def icon192():
@@ -16184,14 +18429,23 @@ class WebStream:
 
         @app.route("/api/diary")
         def api_diary():
-            lang = "de" if request.args.get("lang") == "de" else "en"
+            lang = norm_lang(request.args.get("lang"))
             return reply(diary_items(str(request.args.get("label") or "")[:30], lang, request.args.get("fav") == "1"))
 
         @app.route("/api/diary", methods=["POST"])
         def api_diary_post():
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             ok, err = diary_action(d.get("action"), str(d.get("id") or ""), d.get("value"))
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
+
+        @app.route("/api/day")
+        def api_day():
+            lang = norm_lang(request.args.get("lang"))
+            day = str(request.args.get("d") or datetime.now().strftime("%Y-%m-%d"))[:10]
+            if request.args.get("refresh") == "1" and CFG["weather_on"] and not DEMO["on"]:
+                weather_fetch()
+            r = day_summary(day, lang)
+            return reply(r if r else {"error": "invalid date"}, 200 if r else 400)
 
         @app.route("/diary/img/<name>")
         def diary_img(name):
@@ -16203,8 +18457,8 @@ class WebStream:
                     data = f.read()
             except OSError:
                 return Response("not found", 404)
-            if request.args.get("share") and CFG["share_logo"]:
-                data = brand_jpg(data, str(request.args.get("cap") or "")[:60])
+            if request.args.get("share"):
+                data = share_jpg(data, str(request.args.get("cap") or "")[:60])
                 return Response(data, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
             return Response(data, mimetype="image/jpeg", headers={"Cache-Control": "max-age=3600"})
 
@@ -16218,17 +18472,15 @@ class WebStream:
             if ext != ".mp4":
                 with open(p, "rb") as f:
                     data = f.read()
-                return Response(brand_jpg(data, cap) if CFG["share_logo"] else data, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
-            if not CFG["share_logo"]:
-                return send_file(p, mimetype="video/mp4", conditional=True)
-            out, err = brand_video(p, cap)
+                return Response(share_jpg(data, cap), mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+            out, err = share_video(p, cap)
             if not out:
                 return Response(err or "error", 500)
             return send_file(out, mimetype="video/mp4", conditional=True)
 
         @app.route("/api/report")
         def api_report():
-            lang = "de" if request.args.get("lang") == "de" else "en"
+            lang = norm_lang(request.args.get("lang"))
             start, end = report_window()
             return reply({"on": bool(CFG["report_on"]), "last": STATE.get("report_last") or {},
                           "preview": report_build(lang, start, end), "partial": (datetime.now() - end).total_seconds() < 5})
@@ -16245,7 +18497,7 @@ class WebStream:
 
         @app.route("/api/guest", methods=["POST"])
         def api_guest_post():
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             ok, err = guest_set(d.get("action"), d.get("hours", 24))
             return reply(dict(guest_info(), ok=ok, error=tr_err(err, lang) if err else None), 200 if ok else 400)
 
@@ -16254,7 +18506,9 @@ class WebStream:
             if not guest_ok(token):
                 return Response("This guest link is not valid (any more).", 404, mimetype="text/plain")
             keep = COMMON_JS[COMMON_JS.index("function keepStream"):COMMON_JS.index("\nconst post")]
-            return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep), mimetype="text/html")
+            gt = {L: {k: TRX[L][k] for k in GUEST_KEYS if TRX[L].get(k)} for L in ("fr", "it", "rm")}
+            return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep).replace("/*GT*/{}", json.dumps(gt, ensure_ascii=False)),
+                            mimetype="text/html")
 
         @app.route("/g/<token>/state")
         def guest_state(token):
@@ -16299,7 +18553,7 @@ class WebStream:
 
         @app.route("/api/zones", methods=["POST"])
         def api_zones_post():
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             ok, err = zones_set(d.get("zones"))
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
 
@@ -16321,7 +18575,7 @@ class WebStream:
         # ---- text settings, test notification ----
         @app.route("/api/text", methods=["POST"])
         def api_text():
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             ok, err = set_text(d.get("key"), d.get("value"))
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
 
@@ -16336,7 +18590,7 @@ class WebStream:
                 return reply({"supported": sup, "on": CFG["webpush_on"], "key": webpush_public() if sup else "", "count": len(webpush_subs()),
                               "devices": [{"label": x.get("label", ""), "added": x.get("added", "")} for x in webpush_subs()],
                               "https_url": tailscale_https_url(), "status": WEBPUSH["status"]})
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"; a = d.get("action")
+            d = body(); lang = norm_lang(d.get("lang")); a = d.get("action")
             ok, err = True, ""
             if a == "subscribe":
                 if not webpush_supported():
@@ -16347,7 +18601,7 @@ class WebStream:
                 webpush_remove(str((d.get("sub") or {}).get("endpoint") or d.get("endpoint") or ""))
             elif a == "test":
                 de = lang == "de"
-                n = webpush_all("Motion Watch: Test", "Web-Push funktioniert ✓" if de else "Web push works ✓", "/", tag="mw-test")
+                n = webpush_all("Motion Watch: Test", tr("Web push works ✓", lang), "/", tag="mw-test")
                 ok, err = n > 0, ("" if n else "no device reached")
             elif a == "https":
                 if not (request.remote_addr or "") in ("127.0.0.1", "::1") and not web_pw_active():
@@ -16360,7 +18614,7 @@ class WebStream:
 
         @app.route("/api/backup", methods=["POST"])
         def api_backup():
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             if d.get("action") != "test":
                 return reply({"ok": False, "error": "unknown action"}, 400)
             ok, err = backup_copy("", None, test=True)
@@ -16379,7 +18633,7 @@ class WebStream:
                     out = [{"id": d["id"], "name": d.get("name", ""), "url": d["url"], "has_pw": bool(d.get("pw")),
                             "st": FLEET["state"].get(d["id"], {})} for d in CFG["fleet"]]
                 return reply({"devices": out, "me": fleet_hello()})
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"; a = d.get("action")
+            d = body(); lang = norm_lang(d.get("lang")); a = d.get("action")
             if a == "add":
                 ok, err, id_ = fleet_add(d.get("url"), d.get("name"), d.get("password"))
                 return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "id": id_}, 200 if ok else 400)
@@ -16416,11 +18670,11 @@ class WebStream:
 
         @app.route("/api/sms", methods=["POST"])
         def api_sms():
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"
+            d = body(); lang = norm_lang(d.get("lang"))
             if d.get("action") != "test":
                 return reply({"ok": False, "error": "unknown action"}, 400)
             de = CFG["lang"] == "de"
-            ok, err = sms_send(f"{CFG['device_name'] or 'Motion Watch'}: " + ("Test-SMS – funktioniert ✓" if de else "test SMS - it works"), force=True)
+            ok, err = sms_send(f"{CFG['device_name'] or 'Motion Watch'}: " + tr("test SMS - it works"), force=True)
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
 
         @app.route("/api/qr")
@@ -16440,10 +18694,10 @@ class WebStream:
                               "pw_cmdline": bool(CFG["web_password"]), "notify_type": CFG["notify_type"], "notify_url": CFG["notify_url"],
                               "addresses": setup_addresses(), "hotspot": {"on": CFG["hotspot_on"], "ssid": CFG["hotspot_ssid"], "has_pw": bool(hs_pw)},
                               "locked": CFG["lock_on"]})
-            d = body(); lang = "de" if d.get("lang") == "de" else "en"; step = d.get("step")
+            d = body(); lang = norm_lang(d.get("lang")); step = d.get("step")
             ok, err = True, ""
             if step == "basics":
-                if d.get("ui_lang") in ("de", "en"):
+                if d.get("ui_lang") in LANGS:
                     CFG["lang"] = d["ui_lang"]
                 ok, err = set_text("device_name", str(d.get("device_name") or "")[:40])
             elif step == "push":
@@ -16470,10 +18724,14 @@ class WebStream:
                 save_settings()
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
 
+        @app.route("/quick")
+        def quick_page():
+            return Response(quick_guide_html(request.args.get("lang") or CFG["lang"]), mimetype="text/html")
+
         @app.route("/setup-card")
         def setup_card():
-            de = (request.args.get("lang") or CFG["lang"]) == "de"
-            T = (lambda d_, e_: d_ if de else e_)
+            L = norm_lang(request.args.get("lang") or CFG["lang"])
+            T = (lambda d_, e_: tr(e_, L))
             name = html_escape(CFG["device_name"] or "Motion Watch")
             cards = []
             if CFG["hotspot_on"] and CFG["hotspot_password"]:
@@ -16493,7 +18751,7 @@ class WebStream:
                       "<li>Teilen → «Zum Home-Bildschirm»: Motion Watch wie eine App starten.</li><li>Schutz scharf schalten: grosse Taste «Scharf» oben.</li>",
                       "<li>Scan the QR code with the phone camera.</li><li>Open the page; the first time the setup assistant guides you through password and push messages.</li>"
                       "<li>Share → «Add to Home Screen»: start Motion Watch like an app.</li><li>Arm the protection: big «Armed» button at the top.</li>")
-            page = (f'<!doctype html><html lang="{"de" if de else "en"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            page = (f'<!doctype html><html lang="{L}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
                     f'<title>{name} – {T("Kurzanleitung", "Quick start")}</title><style>body{{font:15px/1.45 system-ui,sans-serif;color:#111;background:#fff;margin:0;padding:24px;max-width:780px;margin:auto}}'
                     'h1{font-size:22px;margin:0 0 4px}.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin:18px 0}'
                     '.c{border:2px solid #e8590c;border-radius:14px;padding:12px;text-align:center}.c h3{margin:0 0 8px;font-size:15px}.c svg{width:170px;height:170px}'
@@ -16507,13 +18765,25 @@ class WebStream:
 
         @app.route("/api/notify_test", methods=["POST"])
         def api_notify_test():
-            lang = "de" if body().get("lang") == "de" else "en"
+            lang = norm_lang(body().get("lang"))
             if not Notifier.configured():
                 return reply({"ok": False, "error": tr_err("notification is not configured", lang)}, 400)
             watch.notifier.test(watch.frame_out)
             return reply({"ok": True})
 
         # ---- recordings: favourites, zip, statistics ----
+        @app.route("/api/rec/false", methods=["POST"])
+        def api_rec_false():
+            d = body()
+            return reply({"ok": True, "changed": rec_set_false(d.get("names"), d.get("cause") or "", watch)})
+
+        @app.route("/api/fa", methods=["GET", "POST"])
+        def api_fa():
+            if request.method == "POST":
+                d = body()
+                return reply({"ok": fa_apply(d.get("id"), d.get("lang")), "fa": fa_suggestions(d.get("lang"))})
+            return reply(fa_suggestions(request.args.get("lang")))
+
         @app.route("/api/rec/fav", methods=["POST"])
         def api_rec_fav():
             d = body()
@@ -16978,17 +19248,30 @@ def tl_status_text(text):
     """Status strings with numbers (timelapse) for the desktop window."""
     m = re.fullmatch(r"next photo in (\d+) min", text or "")
     if m:
-        return (tr("next photo in") + " " + m.group(1) + " min") if CFG["lang"] == "de" else text
+        return tr("next photo in") + " " + m.group(1) + " min"
     m = re.fullmatch(r"making video (\d+)/(\d+)", text or "")
     if m:
-        return (tr("making video") + " " + m.group(1) + "/" + m.group(2)) if CFG["lang"] == "de" else text
+        return tr("making video") + " " + m.group(1) + "/" + m.group(2)
     return tr(text)
 
 
 def tr_err(msg, lang=None):
-    """Translate a relay error message (some contain numbers)."""
-    if (lang or CFG.get("lang", "en")) != "de":
+    """Translate an error message (some contain numbers). Romansh: own text, otherwise German."""
+    L = cur_lang(lang)
+    if L == "en":
         return msg
+    if L in ("fr", "it", "rm"):
+        for pat, key in ((r"GPIO (\d+) is used by a servo", "GPIO {n} is used by a servo"), (r"GPIO (\d+) is already used by another relay", "GPIO {n} is already used by another relay"),
+                         (r"GPIO (\d+) is used by the thermal camera", "GPIO {n} is used by the thermal camera"), (r"GPIO (\d+) is used by a light", "GPIO {n} is used by a light"),
+                         (r"maximum (\d+) relays", "maximum {n} relays"), (r"maximum (\d+) schedules", "maximum {n} schedules"),
+                         (r"maximum (\d+) extra cameras", "maximum {n} extra cameras")):
+            m_ = re.fullmatch(pat, msg)
+            if m_ and TRX[L].get(key):
+                return TRX[L][key].format(n=m_.group(1))
+        if TRX[L].get(msg):
+            return TRX[L][msg]
+        if L != "rm":
+            return msg
     if msg.startswith("autostart is on, but it only starts after a login"):
         return "Autostart ist an, startet aber erst nach einer Anmeldung, bis du einmal ausführst: " + msg.split("run once: ", 1)[-1].replace("(or: ", "(oder: ")
     if msg.startswith("a system service exists"):
@@ -17023,10 +19306,21 @@ def tr_err(msg, lang=None):
 
 
 def tr(text, lang=None):
-    """Translate an English UI string into the current language (falls back to English)."""
-    if (lang or CFG.get("lang", "en")) == "de":
+    """Translate an English UI string into the current language. Missing: Romansh falls back to German, the others to English."""
+    L = cur_lang(lang)
+    if L == "en":
+        return text
+    if L == "de":
         return DE.get(text, text)
-    return text
+    return TRX[L].get(text) or (DE.get(text, text) if L == "rm" else text)
+
+
+def trf(text, lang=None, **kw):
+    """tr() for a text with {placeholders}."""
+    try:
+        return tr(text, lang).format(**kw)
+    except (KeyError, IndexError, ValueError):
+        return text.format(**kw)
 
 
 def tr_status(s):
@@ -17074,6 +19368,8 @@ def kind_colors():
             "auto": C["org"], "ai": C["pur"], "servo": C["acc"], "patrol": C["acc"], "web": C["mut"], "sys": C["mut"], "sched": C["pur"]}
 
 DAYS_SHORT_EN = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+DAYS_SHORT = {"de": ("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"), "fr": ("lu", "ma", "me", "je", "ve", "sa", "di"),
+              "it": ("lu", "ma", "me", "gi", "ve", "sa", "do"), "rm": ("gli", "ma", "me", "gie", "ve", "so", "du"), "en": DAYS_SHORT_EN}
 DAYS_SHORT_DE = ("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So")
 SLIDERS = [  # (section, key, label, min, max, step)
     ("SMS (LTE stick)", "sms_pause", "At most one SMS every (minutes)", 1, 60, 1),
@@ -17134,6 +19430,7 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Setup", "log_keep_days", "Event log: keep the archive (days)", 7, 365, 1),
     ("Night report", "report_hour", "Send the report at (o'clock)", 3, 12, 1),
     ("Night report", "diary_keep_days", "Keep diary entries (days, ★ always)", 7, 365, 1),
+    ("Setup", "env_offset", "Temperature sensor: correction (°C)", -5.0, 5.0, 0.1),
     ("Battery", "ups_mah", "UPS HAT: capacity of ONE 18650 cell (mAh)", 1000, 4000, 50),
     ("Battery", "ups_shutdown_pct", "UPS HAT: shut the Pi down at (%, 0 = never)", 0, 30, 1),
     ("Battery", "batt_mah", "Powerbank capacity (mAh, as on the label; 0 = off)", 0, 60000, 1000),
@@ -17183,6 +19480,12 @@ TOGGLES = [  # (section, key, label)
     ("Recording", "snapshot_on_person", "Save snapshot JPG per detection"),
     ("Low light", "lowlight_auto", "Auto low-light mode (contrast boost)"),
     ("Low light", "lowlight_view", "In the dark also brighten the picture you see (live, recordings)"),
+    ("Low light", "nightvision", "Night vision look: green picture, thermal outlines and temperatures"),
+    ("Setup", "gps_phone", "Take the location from the phone (the page must be open over https)"),
+    ("Setup", "gps_tag", "GPS position in photos and videos"),
+    ("Setup", "map_online", "Recordings map and place names from the internet (OpenStreetMap)"),
+    ("Setup", "env_on", "Temperature sensor (BME280 / BMP280 on I2C or DS18B20 on GPIO 4), if connected"),
+    ("Low light", "nightvision_auto", "Night vision automatically at night (sunset to sunrise)"),
     ("Relays", "relays_on", "Auto relays enabled"),
     ("Notifications", "notify_on", "Send notifications"),
     ("Notifications", "notify_prealarm", "Pre-alarm push: message at the first movement"),
@@ -17196,6 +19499,7 @@ TOGGLES = [  # (section, key, label)
     ("MQTT / Home Assistant", "mqtt_tls", "Encrypted (TLS, usually port 8883)"),
     ("MQTT / Home Assistant", "mqtt_discovery", "Home Assistant finds Motion Watch by itself (discovery)"),
     ("Recording", "share_logo", "Shared pictures and videos with a small Motion Watch logo"),
+    ("Recording", "share_gps", "Send the location along when sharing pictures and videos"),
     ("Deterrence", "deter_always", "Also when disarmed (e.g. keep animals out of the garden)"),
     ("Theft protection", "tamper_on", "Sabotage alarm: camera covered or turned away (when armed)"),
     ("Theft protection", "tamper_motion", "Motion sensor (MPU-6050, if fitted): alarm when the device is moved or knocked over"),
@@ -17211,6 +19515,7 @@ TOGGLES = [  # (section, key, label)
     ("Battery", "ups_invert", "UPS HAT: charging and discharging are shown the wrong way round"),
     ("Updates", "update_push", "Push message when a new version is there"),
     ("Night report", "report_on", "Night report: push message in the morning with what happened in the night"),
+    ("Night report", "weather_on", "Day overview: weather from the internet (Open-Meteo; the location is sent there)"),
     ("Night report", "diary_on", "Note animals, persons and noises (animal diary + night report)"),
     ("Power saving", "eco_on", "Power saving mode: fewer pictures while all is quiet"),
     ("Power saving", "eco_view_full", "Full speed while somebody watches the live picture"),
@@ -17237,9 +19542,146 @@ DE.update({    # window in the look of the web page (2.25.0)
     "Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off": "Patrouille: Klick = Aus → hin und zurück (1-2-3-2-1) → Runde (1-2-3-1) → Aus",
     "Record now (max. 10 min) / stop": "Jetzt aufnehmen (max. 10 min) / stoppen", "Photo into the recordings": "Foto zu den Aufnahmen",
     "Relay: on / automatic": "Relais: Ein / zurück auf Automatisch", "Search settings …": "Einstellung suchen …", "No match": "Kein Treffer",
-    "show / hide fields": "Felder ein-/ausblenden", "Swap stick and buttons (left- / right-handed)": "Stick und Knöpfe tauschen (Links- / Rechtshänder)", "moving to waypoint": "fährt zu Wegpunkt", "waiting at": "wartet bei",
+    "show / hide fields": "Felder ein-/ausblenden", "All quiet – I'm keeping watch!": "Alles ruhig – ich halte Wache!",
+    "Happy Swiss National Day!": "Schöne Bundesfeier!", "Swap stick and buttons (left- / right-handed)": "Stick und Knöpfe tauschen (Links- / Rechtshänder)", "moving to waypoint": "fährt zu Wegpunkt", "waiting at": "wartet bei",
     "need 2+ waypoints": "mindestens 2 Wegpunkte nötig", "paused (tracking person)": "Pause (verfolgt Person)",
     "paused (manual control)": "Pause (Handsteuerung)", "System": "System", "Log": "Protokoll", "Expand all": "Alle öffnen", "Collapse all": "Alle schliessen",
+})
+DE.update({    # texts that were written twice in the code (German / English) - now one English text + translations
+    "not possible in the demo": "In der Demo nicht möglich",
+    "recording": "Aufnahme",
+    "camera covered": "Kamera abgedeckt",
+    "camera turned / picture changed": "Kamera verdreht / Bild verändert",
+    "device moved": "Gerät bewegt",
+    "device knocked over": "Gerät umgeworfen",
+    "power cut while armed": "Strom getrennt (scharf)",
+    "TAMPER ALARM": "SABOTAGE",
+    "network": "Netzwerk",
+    "Remote access: {who} is watching": "Fernzugriff: {who} schaut gerade zu",
+    "remote access": "Fernzugriff",
+    "o'clock": "Uhr",
+    "Quiet night – nothing detected ({span}).": "Ruhige Nacht – nichts erkannt ({span}).",
+    "thermal": "Wärmebild",
+    "noise": "Geräusch",
+    "{n} persons": "{n} Personen",
+    "{n} person": "{n} Person",
+    "{n} animals": "{n} Tiere",
+    "{n} animal": "{n} Tier",
+    "night report": "Nachtbericht",
+    "power": "Strom",
+    "Power cut – running on the battery ({pct} %)": "Stromausfall – läuft auf Akku ({pct} %)",
+    "Power back – battery {pct} %": "Strom wieder da – Akku {pct} %",
+    "Battery almost empty: about {pct} % ({hours:.1f} h)": "Akku fast leer: noch ca. {pct} % ({hours:.1f} h)",
+    "Battery empty – the Pi shuts down cleanly": "Akku leer – der Pi wird sauber ausgeschaltet",
+    "Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap": "Akku fast leer: noch ca. {pct} % ({hours:.1f} h) – bitte laden oder wechseln",
+    "battery": "Akku",
+    "Under-voltage: power bank almost empty or cable too weak": "Unterspannung: Powerbank fast leer oder Kabel zu schwach",
+    "Memory card almost full: {free} MB free - the oldest recordings are deleted": "Speicherkarte fast voll: noch {free} MB frei - die ältesten Aufnahmen werden gelöscht",
+    "memory": "Speicher",
+    "Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation": "Pi zu heiss: {temp:.0f} °C (Grenze {lim:.0f} °C) - Kühlung / Lüftung prüfen",
+    "temperature": "Temperatur",
+    "Motion Watch is online in Wi-Fi {ssid}: {addr}": "Motion Watch ist online im WLAN {ssid}: {addr}",
+    "Program paused": "Programm pausiert",
+    "Starts again at": "Startet wieder um",
+    "While paused there is no monitoring and there are no alarms.": "Während der Pause gibt es keine Überwachung und keine Alarme.",
+    "Start now": "Jetzt starten",
+    "Starting …": "Startet …",
+    "Automatic update to version {v} – the program restarts (about 20 s)": "Automatisches Update auf Version {v} – das Programm startet neu (ca. 20 s)",
+    "New version {v} available - tap «Update now» on the page": "Neue Version {v} verfügbar - auf der Seite antippen: «Jetzt aktualisieren»",
+    "Web push works ✓": "Web-Push funktioniert ✓",
+    "test SMS - it works": "Test-SMS – funktioniert ✓",
+    "1 · Join the device's Wi-Fi": "1 · Mit dem WLAN des Geräts verbinden",
+    "Wi-Fi": "WLAN",
+    "2 · Open the page (own Wi-Fi)": "2 · Seite öffnen (eigenes WLAN)",
+    "Open the page (home network)": "Seite öffnen (Heimnetz)",
+    "On the road (Tailscale)": "Von unterwegs (Tailscale)",
+    "<li>Scan the QR code with the phone camera.</li><li>Open the page; the first time the setup assistant guides you through password and push messages.</li><li>Share → «Add to Home Screen»: start Motion Watch like an app.</li><li>Arm the protection: big «Armed» button at the top.</li>": "<li>QR-Code mit der Handy-Kamera scannen.</li><li>Seite öffnen, beim ersten Mal führt der Einrichtungs-Assistent durch Passwort und Push-Nachrichten.</li><li>Teilen → «Zum Home-Bildschirm»: Motion Watch wie eine App starten.</li><li>Schutz scharf schalten: grosse Taste «Scharf» oben.</li>",
+    "Quick start": "Kurzanleitung",
+    "Quick start – print it and keep it with the device": "Kurzanleitung – zum Ausdrucken und ins Gehäuse legen",
+    "No address found (network?)": "Keine Adresse gefunden (Netzwerk?)",
+    "Note: the Wi-Fi code contains the password – do not post the card in public.": "Achtung: der WLAN-Code enthält das Passwort – Karte nicht öffentlich aushängen.",
+    "Print": "Drucken",
+    "saved {t}": "gespeichert {t}",
+    "loaded: {a} settings, {b} waypoints, {c} relays, {d} schedules": "geladen: {a} Einstellungen, {b} Wegpunkte, {c} Relais, {d} Zeitpläne",
+    "save failed": "Speichern fehlgeschlagen",
+    "defaults": "Standardwerte",
+    "defaults (no file yet)": "Standardwerte (noch keine Datei)",
+    "GPIO {n} is used by a servo": "GPIO {n} wird von einem Servo benutzt",
+    "GPIO {n} is already used by another relay": "GPIO {n} wird schon von einem anderen Relais benutzt",
+    "GPIO {n} is used by the thermal camera": "GPIO {n} wird von der Wärmebildkamera benutzt",
+    "GPIO {n} is used by a light": "GPIO {n} wird von einem Licht benutzt",
+    "maximum {n} relays": "maximal {n} Relais",
+    "maximum {n} schedules": "maximal {n} Zeitpläne",
+    "maximum {n} extra cameras": "maximal {n} Zusatzkameras",
+    "Guest view · watch only · tap the picture = full screen": "Gast-Ansicht · nur zuschauen · Tippen aufs Bild = Vollbild",
+    "access expired": "Zugang abgelaufen",
+    "person in view": "Person im Bild",
+    "quiet": "ruhig",
+})
+DE.update({    # 2.29.0
+    "Night vision look: green picture, thermal outlines and temperatures": "Nachtsicht-Look: grünes Bild, Wärme-Umrisse und Temperaturen",
+    "Night vision automatically at night (sunset to sunrise)": "Nachtsicht automatisch in der Nacht (Sonnenuntergang bis -aufgang)",
+    "Night vision": "Nachtsicht",
+    "Night vision: green picture, thermal outlines and temperatures": "Nachtsicht: grünes Bild, Wärme-Umrisse und Temperaturen",
+})
+DE.update({    # 2.30.0
+    "Take the location from the phone (the page must be open over https)": "Standort vom Handy übernehmen (die Seite muss über https offen sein)",
+    "GPS position in photos and videos": "GPS-Position in Fotos und Videos",
+    "Location": "Standort",
+    "from the phone": "vom Handy",
+    "fixed (settings)": "fest (Einstellungen)",
+    "unknown – the phone shares it only over the https page": "unbekannt – das Handy gibt ihn nur über die https-Seite weiter",
+})
+DE.update({    # 2.31.0
+    "Temperature sensor (BME280 / BMP280 on I2C or DS18B20 on GPIO 4), if connected": "Temperaturfühler (BME280 / BMP280 an I2C oder DS18B20 an GPIO 4), falls angeschlossen",
+    "Temperature sensor: correction (°C)": "Temperaturfühler: Korrektur (°C)",
+    "Outside": "Aussen",
+    "no temperature sensor": "kein Temperaturfühler",
+    "Outside temperature": "Aussentemperatur",
+})
+DE.update({    # 2.32.0
+    "Day overview": "Tagesübersicht",
+    "Persons": "Personen",
+    "Animals": "Tiere",
+    "Warm bodies": "Warme Körper",
+    "Noises": "Geräusche",
+    "Photos": "Fotos",
+    "Sensor": "Fühler",
+    "Temperature (sensor)": "Temperatur (Fühler)",
+    "Temperature (weather)": "Temperatur (Wetter)",
+    "Rain / humidity": "Regen / Feuchte",
+    "Person": "Person",
+    "Animal": "Tier",
+    "Warm body": "Warmer Körper",
+    "Noise": "Geräusch",
+    "No measurements for this day yet.": "Für diesen Tag gibt es noch keine Messwerte.",
+    "Weather from the internet: switch on under Notifications → Night report.": "Wetter aus dem Internet: einschalten unter Benachrichtigungen → Nachtbericht.",
+    "No weather for this day": "Kein Wetter für diesen Tag",
+    "no location": "kein Standort",
+    "Day overview: weather from the internet (Open-Meteo; the location is sent there)": "Tagesübersicht: Wetter aus dem Internet (Open-Meteo; dafür wird der Standort dorthin geschickt)",
+    "clear": "klar",
+    "partly cloudy": "leicht bewölkt",
+    "cloudy": "bewölkt",
+    "fog": "Nebel",
+    "drizzle": "Nieselregen",
+    "rain": "Regen",
+    "snow": "Schnee",
+    "showers": "Schauer",
+    "thunderstorm": "Gewitter",
+    "new moon": "Neumond",
+    "waxing crescent": "zunehmende Sichel",
+    "first quarter": "erstes Viertel",
+    "waxing gibbous": "zunehmender Mond",
+    "full moon": "Vollmond",
+    "waning gibbous": "abnehmender Mond",
+    "last quarter": "letztes Viertel",
+    "waning crescent": "abnehmende Sichel",
+})
+DE.update({    # 2.37.0
+    "Send the location along when sharing pictures and videos": "Ort beim Teilen von Bildern und Videos mitschicken",
+})
+DE.update({    # 2.34.0
+    "Recordings map and place names from the internet (OpenStreetMap)": "Karte und Ortsnamen bei den Aufnahmen aus dem Internet (OpenStreetMap)",
 })
 TK_GROUP_ICONS = {"alarm": "⚠", "notify": "✉", "detect": "◎", "camera": "▣", "thermal": "♨", "lightsound": "☀", "rec": "●", "relay": "⚡", "sys": "⚙"}
 
@@ -17302,7 +19744,7 @@ VIEW_ITEMS = [  # (group, key, label)
     ("Header", "b_eco", "Power saving"), ("Header", "b_tl", "Timelapse"), ("Header", "b_lights", "Lights"),
     ("Header", "b_therm", "Thermal camera"), ("Header", "b_patrol", "Patrol"), ("Header", "b_hs", "Own Wi-Fi (hotspot)"), ("Header", "b_remote", "Remote access"), ("Header", "b_batt", "Battery"), ("Header", "b_update", "New version"),
     ("Header", "b_relays", "Relays"), ("Header", "b_rain", "Rain"), ("Header", "b_wind", "Wind"), ("Header", "b_light", "Light level"),
-    ("Header", "b_auto", "Auto-tune"), ("Header", "b_fps", "FPS"),
+    ("Header", "b_auto", "Auto-tune"), ("Header", "b_fps", "FPS"), ("Header", "b_env", "Outside temperature"),
     ("Panels", "controls", "Camera control"), ("Panels", "weather", "Weather"), ("Panels", "cpu", "System · CPU"),
     ("Panels", "log", "Event log"), ("Panels", "settings_line", "Settings status"),
 ] + [("Settings sections", "sec:" + s, s) for s in SECTIONS]
@@ -17453,7 +19895,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.27.0")
+        self.root.title("Motion Watch 2.43.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -17521,8 +19963,18 @@ class App:
     def toggle_theme(self):
         self._set("theme", "light" if CFG["theme"] == "dark" else "dark"); self._rebuild()
 
-    def toggle_lang(self):
-        self._set("lang", "de" if CFG["lang"] == "en" else "en"); self._rebuild()
+    def toggle_lang(self, x=None, y=None):
+        """Menu with the five languages (Ctrl+L: next language)."""
+        if x is None:
+            i = (LANGS.index(cur_lang()) + 1) % len(LANGS)
+            self._set("lang", LANGS[i]); self._rebuild(); return
+        m = tk.Menu(self.root, tearoff=0, bg=C["panel"], fg=C["txt"], activebackground=C["acc"], activeforeground="#ffffff", font=("DejaVu Sans", 10))
+        for k in LANGS:
+            m.add_command(label=("● " if k == cur_lang() else "   ") + LANG_NAMES[k], command=lambda k=k: (self._set("lang", k), self._rebuild()))
+        try:
+            m.tk_popup(x, y)
+        finally:
+            m.grab_release()
 
     def toggle_fullscreen(self):
         self.is_fullscreen = not self.is_fullscreen
@@ -17732,7 +20184,13 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.27.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.43.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            self._egg_taps = []
+            for w_ in tl.winfo_children():                # easter egg: 7 quick clicks on the name or the icon = the marmot on guard
+                w_.bind("<Button-1>", self._egg_tap, add="+")
+            d_ = datetime.now()
+            if (d_.month == 8 and d_.day == 1) or os.environ.get("MW_AUG1") == "1":
+                self._aug1(tl)
         tabs = tk.Frame(top, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=3, pady=3)
         tabs.pack(side="left", padx=(10 if self._lay[0] else 18, 0))
         self.tab_btns = {}
@@ -17745,7 +20203,8 @@ class App:
         self._paint_tabs()
         if show("hdr_buttons"):
             ctl = tk.Frame(top, bg=C["bg"]); ctl.pack(side="right")
-            lb = self._ibtn(ctl, "DE" if CFG["lang"] == "en" else "EN", self.toggle_lang, tr("Language") + " (Ctrl+L)")
+            lb = self._ibtn(ctl, cur_lang().upper(), lambda: None, tr("Language") + " (Ctrl+L)")
+            lb.bind("<Button-1>", lambda e: self.toggle_lang(lb.winfo_rootx(), lb.winfo_rooty() + lb.winfo_height()))
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
             self._ibtn(ctl, "◐", self.toggle_theme, tr("Light") if CFG["theme"] == "dark" else tr("Dark")).pack(side="right", padx=(0, 6))
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
@@ -17761,7 +20220,7 @@ class App:
             texts = {"b_person": tr("No person"), "b_count": f"{tr('Persons total')}: 0", "b_objects": f"0 {tr('objects')}",
                      "b_rain": tr("No rain"), "b_wind": f"{tr('Wind')}: calm", "b_rec": tr("Idle"), "b_relays": tr("Relays"),
                      "b_patrol": tr("Patrol off"), "b_light": tr("Light ok"), "b_auto": tr("Auto-tune"), "b_fps": "– FPS", "b_arm": "🛡",
-                     "b_camp": "⛺", "b_eco": "🍃", "b_tl": "⏱", "b_lights": "💡", "b_therm": "🌡", "b_hs": "📡", "b_remote": "🌐", "b_batt": "🔋", "b_update": "⬆"}
+                     "b_camp": "⛺", "b_eco": "🍃", "b_env": "🌡", "b_tl": "⏱", "b_lights": "💡", "b_therm": "🌡", "b_hs": "📡", "b_remote": "🌐", "b_batt": "🔋", "b_update": "⬆"}
             for k in keys:
                 self.badges[k] = self._badge(self.badge_f, texts[k])
             if "b_count" in self.badges:
@@ -17771,6 +20230,127 @@ class App:
             self.badge_f.bind("<Configure>", self._flow)
             self.root.after(50, self._flow)
         tk.Frame(self.root, bg=C["line"], height=1).pack(fill="x", pady=(10, 12))
+
+    def _egg_tap(self, _e=None):
+        now = time.time()
+        self._egg_taps = [x for x in self._egg_taps if now - x < 3.0] + [now]
+        if len(self._egg_taps) >= 7:
+            self._egg_taps = []; self._marmot()
+
+    def _marmot(self):
+        """Easter egg: an alpine marmot looks out of the live picture, whistles twice and says that all is quiet
+        (drawn only into the picture on the screen - never into the stream or a recording)."""
+        now = time.time()
+        if getattr(self, "_egg_t0", 0) and now < self._egg_leave + 0.45:
+            return
+        if self.video is None or not self.video.winfo_exists():
+            self._tab("live")                                          # only over the live picture
+            if self.video is None:
+                return
+        self._egg_t0 = now; self._egg_leave = now + 2.35; self._egg_held = False; self._egg_qr = 0.0; self._egg_pts = []
+        if getattr(self, "_egg_bound", None) is not self.video:
+            self._egg_bound = self.video
+            self.video.bind("<ButtonPress-1>", self._egg_press, add="+")
+            self.video.bind("<B1-Motion>", self._egg_move, add="+")
+            self.video.bind("<ButtonRelease-1>", self._egg_release, add="+")
+        if out_selected():
+            sound_play("marmot", 1.0, 45, reason="test")
+
+    def _egg_xy(self, e):
+        """Event position in the coordinates of the shown picture (the label centres it)."""
+        iw, ih = getattr(self, "_egg_img", (0, 0))
+        return e.x - (self.video.winfo_width() - iw) / 2, e.y - (self.video.winfo_height() - ih) / 2
+
+    def _egg_press(self, e):
+        b = getattr(self, "_egg_belly", None)
+        if not b or time.time() > self._egg_leave:
+            return
+        x, y = self._egg_xy(e); cx, cy, rx, ry = b
+        if ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1.0:          # grabbed at the belly
+            self._egg_held = True; self._egg_pts = [(x, y)]
+
+    def _egg_move(self, e):
+        if getattr(self, "_egg_held", False):
+            self._egg_pts.append(self._egg_xy(e)); self._egg_leave = max(self._egg_leave, time.time() + 0.5)
+
+    def _egg_release(self, e):
+        if not getattr(self, "_egg_held", False):
+            return
+        self._egg_held = False; now = time.time()
+        if cw_triangle(self._egg_pts):
+            self._egg_qr = now + 4.0; self._egg_leave = now + 4.2
+        else:
+            self._egg_leave = max(self._egg_leave, now + 0.7)
+        self._egg_pts = []
+
+    def _egg_draw(self, im):
+        """Draw the marmot (and its speech bubble) into the PIL picture while the easter egg runs."""
+        now = time.time(); t = now - getattr(self, "_egg_t0", 0)
+        if getattr(self, "_egg_held", False):
+            self._egg_leave = max(self._egg_leave, now + 0.5)
+        if t < 0 or now > self._egg_leave + 0.4:
+            self._egg_t0 = 0; self._egg_belly = None
+            return im
+        up = min(1.0, t / 0.35) if now < self._egg_leave else max(0.0, 1 - (now - self._egg_leave) / 0.4)
+        up = 1 - (1 - up) ** 3
+        from PIL import ImageDraw, ImageFont
+        W, H = im.size; k = max(0.6, min(1.6, H / 330.0))
+        bm = belly_matrix(); n = len(bm); mp = max(2, int(round(1.9 * k)))       # whole pixels per module: readable by a phone
+        S = (n + 4) * mp
+        x0 = W / 2 - 60 * k; y0 = H - (78 * k + S + 3) * up
+        d = ImageDraw.Draw(im)
+        def ov(cx, cy, rx, ry, col):
+            d.ellipse([x0 + (cx - rx) * k, y0 + (cy - ry) * k, x0 + (cx + rx) * k, y0 + (cy + ry) * k], fill=col)
+        ov(60, 104, 40, 30, "#8a5a3b"); ov(60, 108, 23, 20, "#c99d6e")
+        for ex in (35, 85):
+            ov(ex, 31, 8, 8, "#6e4529"); ov(ex, 31, 4, 4, "#b98457")
+        ov(60, 54, 30, 30, "#8a5a3b"); ov(60, 66, 17, 13, "#ecd3b2")
+        for ex in (48, 72):
+            ov(ex, 49, 4.6, 4.6, "#1b1410"); ov(ex + 1.5, 47.5, 1.5, 1.5, "#ffffff")
+        ov(60, 60, 5.5, 3.8, "#2a1a12")
+        for tx in (55.6, 60.4):
+            d.rectangle([x0 + tx * k, y0 + 67.5 * k, x0 + (tx + 4) * k, y0 + 74.5 * k], fill="#ffffff")
+        ov(40, 88, 9, 6.5, "#6e4529"); ov(80, 88, 9, 6.5, "#6e4529")
+        bx0 = int(W / 2 - S / 2); by0 = int(y0 + 77 * k)
+        self._egg_img = (W, H); self._egg_belly = (W / 2, y0 + 106 * k, max(30 * k, S * 0.6), max(26 * k, S * 0.55))
+        for r_, row in (enumerate(bm) if now < getattr(self, "_egg_qr", 0) else ()):
+            if r_ == 0:
+                d.rectangle([bx0, by0, bx0 + S - 1, by0 + S - 1], fill="#f3e2c8")
+            for c_, v in enumerate(row):
+                if v:
+                    d.rectangle([bx0 + (c_ + 2) * mp, by0 + (r_ + 2) * mp, bx0 + (c_ + 3) * mp - 1, by0 + (r_ + 3) * mp - 1], fill="#3a2516")
+        if up > 0.85:
+            try:
+                f = ImageFont.truetype("DejaVuSans-Bold.ttf", int(13 * k))
+            except OSError:
+                f = ImageFont.load_default()
+            txt = tr("All quiet – I'm keeping watch!")
+            bx = d.textbbox((0, 0), txt, font=f); tw, th = bx[2] - bx[0], bx[3] - bx[1]
+            cx, by = W / 2, y0 - 16 * k
+            d.rounded_rectangle([cx - tw / 2 - 12 * k, by - th - 14 * k, cx + tw / 2 + 12 * k, by], radius=int(10 * k), fill="#ffffff")
+            d.polygon([(cx - 7 * k, by), (cx + 7 * k, by), (cx, by + 8 * k)], fill="#ffffff")
+            d.text((cx - tw / 2, by - th - 7 * k - bx[1]), txt, font=f, fill="#1b2430")
+        return im
+
+    def _aug1(self, parent):
+        """1 August: a small Swiss cross with twinkling sparks next to the name."""
+        cv = tk.Canvas(parent, width=46, height=26, bg=C["bg"], highlightthickness=0, bd=0); cv.pack(side="left", padx=(8, 0))
+        cv.create_rectangle(4, 4, 22, 22, fill="#e8112d", outline="")
+        cv.create_rectangle(10.5, 7.5, 15.5, 18.5, fill="#ffffff", outline=""); cv.create_rectangle(7.5, 10.5, 18.5, 15.5, fill="#ffffff", outline="")
+        Tip(cv, "🇨🇭 " + tr("Happy Swiss National Day!"))
+        import random
+        def twinkle():
+            try:
+                if not cv.winfo_exists():
+                    return
+                cv.delete("sp")
+                for _ in range(3):
+                    x, y = random.uniform(26, 44), random.uniform(3, 23)
+                    cv.create_oval(x - 1.6, y - 1.6, x + 1.6, y + 1.6, fill=random.choice(("#ffd166", "#ffffff", "#ff6b6b")), outline="", tags="sp")
+                self.root.after(450, twinkle)
+            except tk.TclError:
+                pass
+        twinkle()
 
     def _paint_tabs(self):
         for tid, b in getattr(self, "tab_btns", {}).items():
@@ -17843,6 +20423,16 @@ class App:
                 self.l_cpu_info = ttk.Label(sysf, text="", style="Mut.TLabel"); self.l_cpu_info.pack(anchor="w", pady=(4, 0))
                 self.l_wifi = ttk.Label(sysf, text="", style="Mut.TLabel", wraplength=420, justify="left"); self.l_wifi.pack(anchor="w", pady=(6, 0))
                 self.wifi_canvas = tk.Canvas(sysf, height=60, bg=C["field"], bd=0, highlightthickness=0); self.wifi_canvas.pack(fill="x", pady=(2, 0))
+            hf = self._card(left, tr("SELF-CHECK")); hf.grid(row=1, column=0, sticky="nsew", pady=(10, 0)); left.rowconfigure(1, weight=1)
+            self.h_text = tk.Text(hf, bg=C["panel"], fg=C["txt"], bd=0, highlightthickness=0, height=12, font=("DejaVu Sans", 10),
+                                  state="disabled", wrap="word", takefocus=0, spacing1=2, spacing3=1, cursor="arrow")
+            hsb = ttk.Scrollbar(hf, orient="vertical", command=self.h_text.yview); self.h_text.configure(yscrollcommand=hsb.set)
+            hsb.pack(side="right", fill="y"); self.h_text.pack(side="left", fill="both", expand=True)
+            for lv, colr in (("ok", C["grn"]), ("warn", C["yel"]), ("bad", C["red"]), ("off", C["mut"])):
+                self.h_text.tag_configure(lv, foreground=colr, font=("DejaVu Sans", 12))
+            self.h_text.tag_configure("t", font=("DejaVu Sans", 10, "bold")); self.h_text.tag_configure("m", foreground=C["mut"])
+            self.h_text.tag_configure("tip", foreground=C["txt"], lmargin1=26, lmargin2=26, font=("DejaVu Sans", 9))
+            self._h_sig = None; self._update_health()
         else:
             logf = self._card(left, tr("EVENT LOG") + " · " + tr("important")); logf.grid(row=0, column=0, sticky="nsew")
             left.rowconfigure(0, weight=1)
@@ -17966,6 +20556,8 @@ class App:
         q = [
             dict(id="therm", ic="♨", lb=tr("Thermal"), tip=tr("Thermal picture over the live picture"), on=lambda: CFG["thermal_on"],
                  ok=lambda: bool(CFG["thermal_source"]), go=lambda: self._set("thermal_on", not CFG["thermal_on"])),
+            dict(id="nv", ic="☾", lb=tr("Night vision"), tip=tr("Night vision: green picture, thermal outlines and temperatures"),
+                 on=lambda: bool(STATE.get("nightvision")), go=lambda: self._set("nightvision", not CFG["nightvision"])),
             dict(id="marks", ic="▣", lb=tr("Marks"), tip=tr("Mark detected objects (animals, cars ...)"), on=lambda: CFG["show_objects"],
                  go=lambda: self._set("show_objects", not CFG["show_objects"])),
             dict(id="white", ic="☀", lb=tr("Lamp"), tip=tr("White light on / off"), on=lambda: bool((STATE.get("lights") or {}).get("white")),
@@ -18056,6 +20648,32 @@ class App:
         return cb
 
     # ---- settings sidebar (collapsible: ▶ strip button, header button or Ctrl+B) ----
+    def _ai_dl(self):
+        ok, err = ai_model_download()
+        if not ok:
+            self._status("AI model", "⚠ " + tr_err(err)); return
+        def poll():
+            if AI_MODEL["busy"]:
+                self._status("AI model", tr("downloading the AI model …") + f" {AI_MODEL['pct']} %"); self.root.after(1000, poll)
+            else:
+                self._status("AI model", ("✓ " + tr("AI ready")) if AI_MODEL["msg"] == "ready" else "⚠ " + AI_MODEL["msg"])
+                if AI_MODEL["msg"] == "ready":
+                    self.root.after(1500, self._rebuild)
+        poll()
+
+    def _set_simple(self, v):
+        if bool(CFG["ui_simple"]) != v:
+            CFG["ui_simple"] = v; save_settings(); self._simple_seen = v; self.root.after(30, self._rebuild)
+
+    def _night(self):
+        r = night_guard()
+        txt = "\n".join("✓ " + x for x in r["done"])
+        if r["missing"]:
+            txt += "\n\n" + tr("Still missing:") + "\n" + "\n".join("⚠ " + x["title"] + ": " + x["text"] + (("\n   → " + x["tip"]) if x["tip"] else "") for x in r["missing"])
+        else:
+            txt += "\n\n" + tr("Everything ready - good night!")
+        messagebox.showinfo(tr("Guard tonight"), txt, parent=self.root)
+
     def _build_sidebar(self, body):
         right = tk.Frame(body, bg=C["bg"], width=self._lay[1] or 380); right.grid(row=0, column=2, sticky="ns"); right.grid_propagate(False)
         self.right_f = right
@@ -18079,6 +20697,18 @@ class App:
         ph.place(in_=se, x=1, rely=0.5, anchor="w"); ph.bind("<Button-1>", lambda e: se.focus_set())
         self.search_ph = ph
         self.search_var.trace_add("write", lambda *a: self._search())
+        # Simple / Expert (like the web page)
+        mrow = tk.Frame(inner, bg=C["line"], padx=1, pady=1); mrow.pack(fill="x", pady=(0, 10))
+        self._simple_seen = bool(CFG["ui_simple"])
+        for i, (val, lab) in enumerate(((True, tr("Simple")), (False, tr("Expert")))):
+            on = bool(CFG["ui_simple"]) == val
+            l = tk.Label(mrow, text=lab, font=("DejaVu Sans", 9, "bold"), pady=4, cursor="hand2",
+                         bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"])
+            l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
+            l.bind("<Button-1>", lambda e, v=val: self._set_simple(v))
+        if CFG["ui_simple"]:
+            tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
+                     font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
         self.grp_meta = {}; self._open_before = None
         self.no_match = tk.Label(inner, text=tr("No match"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9))
         # 9 groups (same as the web page). Inside a group every topic opens / closes the same way (the first one is open);
@@ -18104,7 +20734,7 @@ class App:
         groups = [list(g) for g in TK_GROUPS]
         groups[-1][2] = groups[-1][2] + [x for x in SECTIONS if x not in listed]     # sections added later -> System
         for gid, name, items in groups:
-            items = [x for x in items if x is None or (x in SECTIONS and self.is_shown("sec:" + x))]
+            items = [x for x in items if x is None or (x in SECTIONS and self.is_shown("sec:" + x) and not simple_hidden(None, x))]
             real = [x for x in items if x]
             if not real:
                 continue
@@ -18184,7 +20814,7 @@ class App:
         """Status line, switches, sliders, text fields and buttons of one section. settings_parent: put the switches /
         sliders / text fields there instead (the buttons stay in sbody)."""
         sp = settings_parent if settings_parent is not None else sbody
-        if sec in ("Camera / Servos", "Video source", "Schedule", "Patrol", "AI detection", "Web stream", "Auto-tune", "Notifications", "Timelapse", "Thermal camera", "Wi-Fi / hotspot", "Camping / protection", "Microphone", "Loudspeaker", "Lights", "Servo driver"):
+        if sec in ("Setup", "Camera / Servos", "Video source", "Schedule", "Patrol", "AI detection", "Web stream", "Auto-tune", "Notifications", "Timelapse", "Thermal camera", "Wi-Fi / hotspot", "Camping / protection", "Microphone", "Loudspeaker", "Lights", "Servo driver"):
             self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels[sec].pack(anchor="w")
         if sec in ("Night report", "Battery", "Guest access"):
@@ -18239,11 +20869,11 @@ class App:
             self.status_labels["Bluetooth"].pack(anchor="w", pady=(2, 0))
             self._bt_sig = None
         for s, key, label in TOGGLES:
-            if s != sec: continue
+            if s != sec or simple_hidden(key): continue
             tg = Toggle(sp, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
             self.vars[key] = tg
         for s, key, label, lo, hi, step in SLIDERS:
-            if s != sec: continue
+            if s != sec or simple_hidden(key): continue
             row = ttk.Frame(sp); row.pack(fill="x", pady=(6, 0))
             ttk.Label(row, text=tr(label)).pack(side="left")
             vl = ttk.Label(row, text=str(CFG[key]), style="Mut.TLabel"); vl.pack(side="right"); self.value_labels[key] = vl
@@ -18265,7 +20895,7 @@ class App:
         self._build_texts(sp, sec)
         if sec == "SMS (LTE stick)":
             def sms_test():
-                ok, err = sms_send(f"{CFG['device_name'] or 'Motion Watch'}: " + ("Test-SMS – funktioniert" if CFG["lang"] == "de" else "test SMS - it works"), force=True)
+                ok, err = sms_send(f"{CFG['device_name'] or 'Motion Watch'}: " + tr("test SMS - it works"), force=True)
                 self._status("SMS (LTE stick)", ("✓ " + tr("SMS sent")) if ok else "⚠ " + tr_err(err))
             ttk.Button(sbody, text="📱 " + tr("Send test SMS"), command=lambda: threading.Thread(target=sms_test, daemon=True).start()).pack(fill="x", pady=(8, 0))
             self.status_labels["SMS (LTE stick)"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
@@ -18286,13 +20916,19 @@ class App:
             ttk.Button(sbody, text="🧪 " + tr("Test the backup"), command=lambda: threading.Thread(target=bk_test, daemon=True).start()).pack(fill="x", pady=(8, 0))
             self.status_labels["Backup"] = ttk.Label(sbody, text=STATE.get("backup_status", ""), style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Backup"].pack(anchor="w", pady=(4, 0))
+        if sec == "AI detection" and not ai_model_paths()[0]:
+            ttk.Button(sbody, text=tr("Download AI model") + " (≈ 70 MB)", command=self._ai_dl).pack(fill="x", pady=(8, 0))
+            self.status_labels["AI model"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels["AI model"].pack(anchor="w", pady=(2, 0))
         if sec == "Notifications":
             ttk.Button(sbody, text=tr("Test notification"),
                        command=lambda: self.watch.notifier.test(self.watch.frame_out)).pack(fill="x", pady=(8, 0))
         if sec == "Wi-Fi / hotspot":
             self._build_wifi_box(sbody)
         if sec == "Camping / protection":
-            bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(8, 0))
+            ttk.Button(sbody, text="☾ " + tr("Guard tonight"), command=self._night).pack(fill="x", pady=(8, 0))
+            ttk.Button(sbody, text=tr("Open quick guide (browser)"), command=lambda: self._open_page("/quick")).pack(fill="x", pady=(6, 0))
+            bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(6, 0))
             ttk.Button(bf, text=tr("Arm (countdown)"), command=arm).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Arm now"), command=lambda: arm(0)).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Disarm"), command=disarm).pack(side="left", expand=True, fill="x")
@@ -18415,7 +21051,7 @@ class App:
 
     # ---- text settings (notifications, location, presence) ----------------
     def _build_texts(self, parent, sec):
-        specs = [x for x in TEXTS if x[0] == sec]
+        specs = [x for x in TEXTS if x[0] == sec and not simple_hidden(x[1])]
         if not specs:
             return
         ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",
@@ -18423,7 +21059,7 @@ class App:
         err = ttk.Label(parent, text="", style="Mut.TLabel", foreground=C["red"], wraplength=330, justify="left")
         for _s, key, label, kind, extra in specs:
             m_ = re.fullmatch(r"msg_(person|prealarm|warm|noise)_(title|text)", key)
-            std = ("\n" + tr("standard") + ": " + MSG_DEFAULTS["de" if CFG["lang"] == "de" else "en"][m_.group(1)][0 if m_.group(2) == "title" else 1]) if m_ else ""
+            std = ("\n" + tr("standard") + ": " + msg_defaults()[m_.group(1)][0 if m_.group(2) == "title" else 1]) if m_ else ""
             ttk.Label(parent, text=tr(label) + std, style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(8, 0))
             if kind == "enum":
                 pairs = text_choice_pairs(key); lab = dict(pairs); back = {l: c for c, l in pairs}
@@ -18643,7 +21279,7 @@ class App:
     # ---- schedule ----------------------------------------------------------
     def _build_schedule_box(self, parent):
         ttk.Label(parent, text=tr(SCHED_NOTE), style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(0, 2))
-        names = DAYS_SHORT_DE if CFG["lang"] == "de" else DAYS_SHORT_EN
+        names = DAYS_SHORT[cur_lang()]
         with LOCK:
             plans = [dict(x) for x in SCHEDULES]
         if not plans:
@@ -18688,7 +21324,7 @@ class App:
         ttk.Label(f, text=tr("Days")).grid(row=2, column=0, sticky="w", pady=(8, 0))
         dv = []
         df = ttk.Frame(f); df.grid(row=3, column=0, columnspan=4, sticky="w")
-        for d, nm in enumerate(DAYS_SHORT_DE if CFG["lang"] == "de" else DAYS_SHORT_EN):
+        for d, nm in enumerate(DAYS_SHORT[cur_lang()]):
             v = tk.BooleanVar(value=d in sc["days"]); dv.append(v); ttk.Checkbutton(df, text=nm, variable=v).pack(side="left")
         ttk.Label(f, text=tr("From")).grid(row=4, column=0, sticky="w", pady=(8, 0))
         sv = tk.StringVar(value=sc["start"]); ttk.Entry(f, textvariable=sv, width=7).grid(row=4, column=1, sticky="w", pady=(8, 0))
@@ -18964,7 +21600,10 @@ class App:
                 w = max(160, self.video.winfo_width()); h = max(90, self.video.winfo_height())
                 fh, fw = frame.shape[:2]; scale = min(w / fw, h / fh)
                 img = cv2.cvtColor(cv2.resize(frame, (max(1, int(fw * scale)), max(1, int(fh * scale)))), cv2.COLOR_BGR2RGB)
-                self.photo = ImageTk.PhotoImage(Image.fromarray(img)); self.video.config(image=self.photo)
+                pim = Image.fromarray(img)
+                if getattr(self, "_egg_t0", 0):
+                    pim = self._egg_draw(pim)
+                self.photo = ImageTk.PhotoImage(pim); self.video.config(image=self.photo)
         finally:
             self.root.after(33, self._update_video)
 
@@ -19288,6 +21927,8 @@ class App:
         self._tk_extras(st)
         if bool(CFG["lock_on"]) != getattr(self, "_lock_seen", bool(CFG["lock_on"])):
             self._lock_seen = bool(CFG["lock_on"]); self.root.after(50, self._rebuild)
+        if bool(CFG["ui_simple"]) != getattr(self, "_simple_seen", bool(CFG["ui_simple"])):
+            self._simple_seen = bool(CFG["ui_simple"]); self.root.after(50, self._rebuild)
         rem = st.get("remote") or []
         self._sb("b_remote", "🌐 " + tr("Remote") + ": " + ", ".join(rem)[:30], C["org"], show=bool(rem))
         if self.badges and (getattr(self, "_flow_due", True) or True):
@@ -19312,6 +21953,13 @@ class App:
                                         + (" · " + tr("TRACKING") if st["tracking"] else "") + (" · " + tr("MANUAL") if manual else ""))
         self._status("Video source", f"{st['source_label'] or '–'}" + (f" · {st['source_res']}" if st["source_res"] else "") + f" · {tr_status(st['source_status'])}")
         self._status("Schedule", (tr("active now") + ": " + ", ".join(st["sched_active"])) if st["sched_active"] else "–")
+        e_ = STATE.get("env")
+        self._sb("b_env", ("🌡 " + f"{e_['t']:.1f} °C" + (f" · {e_['h']} %" if e_.get("h") is not None else "")) if e_ else "", None, show=bool(e_))
+        g_ = gps_state()
+        self._status("Setup", (("📍 " + tr("Location") + f": {g_['lat']:.4f}, {g_['lon']:.4f} · " + (tr("from the phone") if g_["src"] == "phone" else tr("fixed (settings)")))
+                     if g_ else ("📍 " + tr("Location") + ": " + tr("unknown"))) + "\n" + (
+                     ("🌡 " + tr("Outside") + f": {e_['t']:.1f} °C" + (f" · {e_['h']} %" if e_.get("h") is not None else "") + (f" · {e_['p']:.0f} hPa" if e_.get("p") else "") + f" ({e_['src']})")
+                     if e_ else "🌡 " + tr("no temperature sensor")))
         if getattr(self, "_scan_done", None) and getattr(self, "b_scan", None) is not None and self.b_scan.winfo_exists():
             self._scan_done = False; self.b_scan.config(state="normal", text=tr("Scan for cameras")); self._fill_sources()
         if st["source_id"] != getattr(self, "_src_seen", None):
@@ -19360,6 +22008,8 @@ class App:
                                         + (" · " + tr("LOW LIGHT") if st["lowlight"] else f" · {tr('brightness')} {st['brightness']}"))
         if self.l_cpu is not None:
             self._update_cpu()
+        if getattr(self, "h_text", None) is not None:
+            self._update_health()
         for key, v in self.vars.items():
             if key == self.dragging: continue
             cur = CFG[key]
@@ -19415,6 +22065,26 @@ class App:
         for i, d in enumerate(hist):
             if d is None:
                 c.create_rectangle(xs(i) - 1, h - 5, xs(i) + 1, h, fill=C["red"], outline="")
+
+    def _update_health(self):
+        try:
+            if not self.h_text.winfo_exists():
+                self.h_text = None; return
+            h = health_check()
+        except tk.TclError:
+            self.h_text = None; return
+        sig = json.dumps(h["items"], sort_keys=True)
+        if sig == self._h_sig:
+            return
+        self._h_sig = sig; y = self.h_text.yview()[0]
+        tx = self.h_text; tx.config(state="normal"); tx.delete("1.0", "end")
+        for x in h["items"]:
+            tx.insert("end", "●" if x["level"] != "off" else "○", x["level"])
+            tx.insert("end", "  " + x["title"], "t"); tx.insert("end", ("  " + x["text"]) if x["text"] else "", "m")
+            if x["tip"] and x["level"] != "ok":
+                tx.insert("end", "\n→ " + x["tip"], "tip")
+            tx.insert("end", "\n")
+        tx.config(state="disabled"); tx.yview_moveto(y)
 
     def _update_cpu(self):
         self._update_wifi()
@@ -19500,6 +22170,4254 @@ class App:
         self.root.mainloop()
 
 
+
+# ----------------------------------------------------------------------------
+# Translations: French, Italian, Romansh (Rumantsch Grischun). Key = the English text of the program.
+#   Missing texts: Romansh shows German, French / Italian show English. HELP_X = the manual (help page).
+# ----------------------------------------------------------------------------
+TRX['fr'].update({
+    '(or the address from the push message).': "(ou l'adresse de la notification push).",
+    '+ Add relay': '+ Ajouter un relais',
+    '+ Add schedule': '+ Ajouter un programme horaire',
+    '+ Ignore zone': '+ Zone ignorée',
+    '+ Only-here zone': '+ Zone «seulement ici»',
+    '+ Privacy zone': '+ Zone de confidentialité',
+    '+ Waypoint': '+ Point de passage',
+    "1 · Join the device's Wi-Fi": "1 · Se connecter au Wi-Fi de l'appareil",
+    '1. Install the free app «ntfy» (App Store / Play Store).': "1. Installer l'app gratuite «ntfy» (App Store / Play Store).",
+    '2 · Open the page (own Wi-Fi)': '2 · Ouvrir la page (Wi-Fi propre)',
+    '2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera.': "2. Dans l'app : + → saisir le sujet ci-dessous (et le serveur, s'il n'est pas celui par défaut) – ou ouvrir ce code avec l'appareil photo du portable.",
+    '6 to 64 characters. After saving, the browser asks for it once (any user name).': "6 à 64 caractères. Après l'enregistrement, le navigateur le demande une fois (nom d'utilisateur au choix).",
+    '<li>Scan the QR code with the phone camera.</li><li>Open the page; the first time the setup assistant guides you through password and push messages.</li><li>Share → «Add to Home Screen»: start Motion Watch like an app.</li><li>Arm the protection: big «Armed» button at the top.</li>': "<li>Scanner le code QR avec l'appareil photo du portable.</li><li>Ouvrir la page ; la première fois, l'assistant de configuration guide pour le mot de passe et les notifications push.</li><li>Partager → «Sur l'écran d'accueil» : démarrer Motion Watch comme une app.</li><li>Armer la protection : grand bouton «Armé» en haut.</li>",
+    'A USB LTE stick with a SIM card (with credit). Works also where there is only the mobile network. Costs per SMS - mind the limits.': "Une clé USB LTE avec carte SIM (avec crédit). Fonctionne aussi là où il n'y a que le réseau mobile. Chaque SMS coûte – respecter les limites.",
+    'A password is set already. Enter a new one only to change it.': 'Un mot de passe est déjà défini. En saisir un nouveau seulement pour le changer.',
+    'A running recording is finished first. To switch it on again: unplug the power and plug it in again.': "Un enregistrement en cours est d'abord terminé. Pour rallumer : débrancher l'alimentation et la rebrancher.",
+    'AI detection': 'Détection IA',
+    'AI person detection (SSD MobileNet V2)': 'Détection de personnes IA (SSD MobileNet V2)',
+    'AI persons': 'Personnes IA',
+    'ALARM': 'ALARME',
+    'AT commands (serial port)': 'Commandes AT (port série)',
+    'Active low': 'Actif bas',
+    'Add': 'Ajouter',
+    'Add a device': 'Ajouter un appareil',
+    'Add camera': 'Ajouter une caméra',
+    'Add current pan as waypoint': 'Position actuelle comme point de passage',
+    'Add network camera': 'Ajouter une caméra réseau',
+    'Add network camera (RTSP / HTTP stream, Wi-Fi cams)': 'Ajouter une caméra réseau (flux RTSP / HTTP, caméras Wi-Fi)',
+    'Add technical details (version, device, last important events - no pictures, no passwords)': 'Joindre les infos techniques (version, appareil, derniers événements importants – ni images, ni mots de passe)',
+    'Address of a Huawei HiLink stick': "Adresse d'une clé Huawei HiLink",
+    'Address of this page for links (e.g. https://pi.local:5000)': 'Adresse de cette page pour les liens (p. ex. https://pi.local:5000)',
+    'Advanced': 'Avancé',
+    'After this the page asks for the new password once (user name: anything).': "Ensuite, la page demande une fois le nouveau mot de passe (nom d'utilisateur : au choix).",
+    'Alarm & camping': 'Alarme et camping',
+    'Alarm also as SMS (person, sabotage, warm body, noise)': 'Alarme aussi par SMS (personne, sabotage, corps chaud, bruit)',
+    'Alarm messages straight into the browser / the home screen app of this device.': "Messages d'alarme directement dans le navigateur / l'app de l'écran d'accueil de cet appareil.",
+    'Alarm sound': "Son d'alarme",
+    'Alarm sound in open browsers (switch on with the bell at the top)': "Son d'alarme dans les navigateurs ouverts (activer avec la cloche en haut)",
+    'Alarm sound in the browser': "Son d'alarme dans le navigateur",
+    'Alarm when a warm body moves inside the zones': 'Alarme quand un corps chaud bouge dans les zones',
+    'All': 'Tous',
+    'All animals': 'Tous les animaux',
+    'All days': 'Tous les jours',
+    'All kinds': 'Tous les types',
+    'All sources': 'Toutes les sources',
+    'All time': 'Toute la période',
+    'Also accept unsigned versions (not recommended - only for own builds)': 'Accepter aussi les versions non signées (déconseillé – seulement pour ses propres versions)',
+    'Also when disarmed (e.g. keep animals out of the garden)': 'Aussi en mode désarmé (p. ex. éloigner les animaux du jardin)',
+    'Always': 'Toujours',
+    'Animal diary': 'Journal des animaux',
+    'Appearance': 'Apparence',
+    'Applies': "S'applique",
+    'Archive': 'Archive',
+    'Arm': 'Armer',
+    'Arm (countdown)': 'Armer (compte à rebours)',
+    'Arm now': 'Armer immédiatement',
+    'Armed': 'Armé',
+    'Armed (alarms)': 'Armé (alarmes)',
+    'Armed - alarms are active': 'Armé – les alarmes sont actives',
+    'Armed in': 'Armé dans',
+    'Arming countdown (s)': 'Compte à rebours avant armement (s)',
+    'Arrow keys move the camera': 'Les flèches du clavier déplacent la caméra',
+    'At most SMS per day': 'Au maximum SMS par jour',
+    'At most one SMS every (minutes)': 'Au maximum un SMS toutes les (minutes)',
+    'Audio': 'Audio',
+    'Auto': 'Auto',
+    'Auto low-light mode (contrast boost)': 'Mode faible luminosité auto (contraste)',
+    'Auto rain detection': 'Détection automatique de la pluie',
+    'Auto relays': 'Relais auto',
+    'Auto relays enabled': 'Relais auto actifs',
+    'Auto wind detection': 'Détection automatique du vent',
+    'Auto-tune': 'Réglage auto',
+    'Auto: the relay switches on while its trigger is in view and stays on for the hold time. Animal and object triggers (e.g. cat) need the AI model.': "Auto : le relais s'enclenche tant que son déclencheur est dans l'image et reste actif pendant le temps de maintien. Les déclencheurs animaux et objets (p. ex. chat) nécessitent le modèle IA.",
+    'Auto: the relay switches on while its trigger is in view and stays on for the hold time. Animal and object triggers (e.g. cat) need the AI model. Pre-alarm switches on at the first movement in the picture, long before a person is confirmed. Remote access switches on while somebody watches over Tailscale - also when disarmed (e.g. a small warning lamp).': "Auto : le relais s'enclenche tant que son déclencheur est dans l'image et reste actif pendant le temps de maintien. Les déclencheurs animaux et objets (p. ex. chat) nécessitent le modèle IA. La pré-alarme s'enclenche dès le premier mouvement dans l'image, bien avant qu'une personne soit confirmée. L'accès à distance s'enclenche tant que quelqu'un regarde via Tailscale – aussi en mode désarmé (p. ex. petite lampe témoin).",
+    'Automatic (first working USB camera)': 'Automatique (première caméra USB qui fonctionne)',
+    'Automatic tuning': 'Réglage automatique',
+    'Automatic update also while armed (otherwise only when disarmed)': 'Mise à jour automatique aussi en mode armé (sinon seulement désarmé)',
+    "Automatic update at (o'clock)": 'Mise à jour automatique à (heure)',
+    'Automatic update to version {v} – the program restarts (about 20 s)': 'Mise à jour automatique vers la version {v} – le programme redémarre (environ 20 s)',
+    'Automatic: known networks (e.g. phone hotspot), otherwise own Wi-Fi': "Automatique : réseaux connus (p. ex. point d'accès du portable), sinon Wi-Fi propre",
+    'Automatic: look for known networks every (min, 0 = never)': 'Automatique : chercher des réseaux connus toutes les (min, 0 = jamais)',
+    'Automatic: phone hotspot / known networks, otherwise own Wi-Fi': "Automatique : point d'accès du portable / réseaux connus, sinon Wi-Fi propre",
+    'Automatic: wait for a known network (s)': 'Automatique : attendre un réseau connu (s)',
+    'Autostart OFF': 'Démarrage auto DÉSACTIVÉ',
+    'Autostart ON': 'Démarrage auto ACTIVÉ',
+    'Autostart at boot': 'Démarrage auto au boot',
+    'Autostart off': 'Démarrage auto désactivé',
+    'Autostart on': 'Démarrage auto activé',
+    'Autostart with own Wi-Fi': 'Démarrage auto avec Wi-Fi propre',
+    'Away after N minutes without answer': 'Absent après N minutes sans réponse',
+    'Back': 'Retour',
+    'Backup': 'Sauvegarde',
+    'Bangs / claps (animals)': 'Détonations / claquements (animaux)',
+    'Battery': 'Batterie',
+    'Battery almost empty: about {pct} % ({hours:.1f} h)': 'Batterie presque vide : environ {pct} % ({hours:.1f} h)',
+    'Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap': 'Batterie presque vide : environ {pct} % ({hours:.1f} h) restant – merci de charger ou changer',
+    'Battery empty – the Pi shuts down cleanly': "Batterie vide – le Pi s'éteint proprement",
+    'Battery is full now': 'La batterie est pleine maintenant',
+    'Battery marked as full': 'Batterie marquée comme pleine',
+    'Big animal (bear, cow, horse, ...)': 'Grand animal (ours, vache, cheval, …)',
+    'Big animal: sound': 'Grand animal : son',
+    'Bluetooth': 'Bluetooth',
+    'Bluetooth is not available (sudo apt install bluez)': 'Bluetooth indisponible (sudo apt install bluez)',
+    'Bluetooth loudspeaker': 'Haut-parleur Bluetooth',
+    'Bluetooth sound needs the program as normal user (not with sudo / not as system service)': 'Le son Bluetooth ne fonctionne que si le programme tourne en utilisateur normal (pas avec sudo / pas comme service système)',
+    'Build': 'Version',
+    'Buttons': 'Boutons',
+    'CAMERA CONTROL': 'COMMANDE CAMÉRA',
+    'CPU': 'CPU',
+    'CPU load, last 60 seconds': 'Charge CPU, dernières 60 secondes',
+    'Calibrate': 'Calibrer',
+    'Camera & servos': 'Caméra et servos',
+    'Camera / Servos': 'Caméra / servos',
+    'Camera control': 'Commande caméra',
+    'Camera to the middle': 'Caméra au centre',
+    'Cameras': 'Caméras',
+    'Camping': 'Camping',
+    'Camping / protection': 'Camping / protection',
+    'Camping OFF': 'Camping DÉSACTIVÉ',
+    'Camping ON': 'Camping ACTIVÉ',
+    'Camping profile': 'Profil camping',
+    'Camping profile OFF': 'Profil camping DÉSACTIVÉ',
+    'Camping profile ON': 'Profil camping ACTIVÉ',
+    'Cancel': 'Annuler',
+    'Cancel selection': 'Terminer la sélection',
+    'Centre': 'Centre',
+    'Centre camera': 'Centrer la caméra',
+    'Change web password': 'Changer le mot de passe web',
+    'Choose a camera…': 'Choisir une caméra …',
+    'Clear': 'Effacer',
+    'Clear all waypoints?': 'Effacer tous les points de passage ?',
+    'Clear waypoints': 'Effacer les points de passage',
+    "Click the corners of the area in the picture. Click the first point or press 'Finish shape' to close it.": "Clique sur les coins de la zone dans l'image. Clique sur le premier point ou «Terminer la forme» pour la fermer.",
+    'Clock': 'Heure',
+    'Close': 'Fermer',
+    'Collapse all': 'Tout fermer',
+    'Colours': 'Couleurs',
+    'Confidence threshold': 'Seuil de confiance',
+    'Connect': 'Connecter',
+    'Connect now': 'Connecter maintenant',
+    'Connected with': 'Connecté à',
+    'Connection': 'Connexion',
+    'Contact for an answer (optional)': 'Contact pour une réponse (facultatif)',
+    'Continue without a password (not recommended)': 'Continuer sans mot de passe (déconseillé)',
+    'Control': 'Commande',
+    'Controls': 'Commande',
+    'Converting for the browser (one time)…': 'Conversion pour le navigateur (une seule fois) …',
+    'Cooldown between alarms (s)': 'Pause entre alarmes (s)',
+    'Copy all recordings (otherwise only alarm recordings: armed or with a person)': "Copier tous les enregistrements (sinon seulement ceux d'alarme : armé ou avec une personne)",
+    'Copy link': 'Copier le lien',
+    'Copy recordings to': 'Copier les enregistrements vers',
+    'Copy the link from the field': 'Copier le lien depuis le champ',
+    'Create link (24 h)': 'Créer un lien (24 h)',
+    'Create link (no limit)': 'Créer un lien (illimité)',
+    'Create new link': 'Créer un nouveau lien',
+    'Create video': 'Créer la vidéo',
+    'DETECTIONS': 'DÉTECTIONS',
+    'Dark': 'Sombre',
+    'Dark theme': 'Thème sombre',
+    'Date': 'Date',
+    'Days': 'Jours',
+    'Delete': 'Supprimer',
+    'Delete selected': 'Supprimer la sélection',
+    'Delete this entry?': 'Supprimer cette entrée ?',
+    'Delete this recording?': 'Supprimer cet enregistrement ?',
+    'Detection': 'Détection',
+    'Detection (master switch)': 'Détection (interrupteur principal)',
+    'Detections': 'Détections',
+    'Deterrence': 'Dissuasion',
+    'Device name (placeholder {name})': "Nom de l'appareil (paramètre {name})",
+    'Devices': 'Appareils',
+    'Diary': 'Journal',
+    'Disarm': 'Désarmer',
+    'Disarm all': 'Tout désarmer',
+    'Disarmed': 'Désarmé',
+    'Disconnect': 'Déconnecter',
+    'Done!': 'Terminé !',
+    'Double-click video: video only · F11: fullscreen · Esc: back': 'Double-clic sur la vidéo : vidéo seule · F11 : plein écran · Esc : retour',
+    'Double-click video: video only · F11: fullscreen · Esc: back · Ctrl+B: settings panel · right-click video: show / hide fields': 'Double-clic sur la vidéo : vidéo seule · F11 : plein écran · Esc : retour · Ctrl+B : panneau des réglages · clic droit sur la vidéo : afficher / masquer des champs',
+    'Download': 'Télécharger',
+    'Download ZIP': 'Télécharger le ZIP',
+    'Downloading and checking …': 'Téléchargement et vérification …',
+    'Drag a corner to move it. Select a zone in the list to edit it.': 'On peut déplacer un coin. Choisis une zone dans la liste pour la modifier.',
+    'Drive along the waypoints': 'Parcourir les points de passage',
+    'Duration of sound / flashing (s)': 'Durée du son / des flashs (s)',
+    'Duration of the siren (s)': 'Durée de la sirène (s)',
+    'Dwell at waypoint (s)': 'Pause au point de passage (s)',
+    'EVENT LOG': 'JOURNAL DES ÉVÉNEMENTS',
+    'Each day is saved as its own file and kept for': 'Chaque jour est enregistré dans son propre fichier et conservé :',
+    'Edit': 'Modifier',
+    'Edit schedule': 'Modifier le programme horaire',
+    'Empty = standard text (grey). Placeholders:': 'Vide = texte standard (gris). Paramètres :',
+    'Empty = standard text. Placeholders:': 'Vide = texte standard. Paramètres :',
+    'Enabled': 'Actif',
+    'Encrypted (TLS, usually port 8883)': 'Chiffré (TLS, en général port 8883)',
+    'End camping? The own Wi-Fi is switched off again - this page loses its connection and the Pi goes back to the known networks.': 'Terminer le camping ? Le Wi-Fi propre est désactivé – cette page perd la connexion et le Pi retourne aux réseaux connus.',
+    'End guest access': "Terminer l'accès invité",
+    'End guest access? The link stops working at once.': "Terminer l'accès invité ? Le lien ne fonctionne plus immédiatement.",
+    'Error': 'Erreur',
+    'Event log': 'Journal des événements',
+    'Event log (important)': 'Journal des événements (important)',
+    'Event log: keep the archive (days)': "Journal des événements : conserver l'archive (jours)",
+    'Event log: status line every N minutes (0 = off)': "Journal des événements : ligne d'état toutes les N minutes (0 = désactivé)",
+    'Events per weekday and hour': 'Événements par jour de la semaine et heure',
+    'Exit fullscreen (Esc)': 'Quitter le plein écran (Esc)',
+    'Expand all': 'Tout ouvrir',
+    'FPS': 'FPS',
+    'Fast': 'Rapide',
+    'Fast beeps': 'Bips rapides',
+    'Favorites': 'Favoris',
+    'Favorites are never deleted by the automatic cleanup': 'Les favoris ne sont jamais effacés par le nettoyage automatique',
+    'Favourite': 'Favori',
+    'Favourites': 'Favoris',
+    'Features': 'Fonctions',
+    'Feedback to the developer': 'Retour au développeur',
+    'Fine-tuning': 'Réglages fins',
+    'Finish shape': 'Terminer la forme',
+    'Finished alarm recordings are copied away from the device - if it is stolen or broken, the clips are safe.': "Les enregistrements d'alarme terminés sont copiés hors de l'appareil – s'il est volé ou cassé, les clips sont en sécurité.",
+    'Finishing the recording, saving the settings …': "Fin de l'enregistrement, sauvegarde des réglages …",
+    'Fixed times': 'Heures fixes',
+    'Folder (USB stick / NAS)': 'Dossier (clé USB / NAS)',
+    'Folder (USB stick / NAS, e.g. /media/pi/STICK/MotionWatch)': 'Dossier (clé USB / NAS, p. ex. /media/pi/STICK/MotionWatch)',
+    'Follow': 'Suivre',
+    'Follow a detected person': 'Suivre une personne détectée',
+    'Follow detected person (auto pan/tilt)': 'Suivre la personne détectée (pan/tilt auto)',
+    'Forget network': 'Oublier le réseau',
+    'Forget this network?': 'Oublier ce réseau ?',
+    'Frames of steady motion': 'Images de mouvement régulier',
+    'From': 'De',
+    'Full speed after an event for (s)': 'Pleine vitesse après un événement pendant (s)',
+    'Full speed while somebody watches the live picture': "Pleine vitesse tant que quelqu'un regarde l'image en direct",
+    'Fullscreen (F11)': 'Plein écran (F11)',
+    'GPIO': 'GPIO',
+    'GPIO must be a number': 'le GPIO doit être un nombre',
+    'GPIO must be between 2 and 27': 'le GPIO doit être entre 2 et 27',
+    'GPIO {n} is already used by another relay': 'GPIO {n} est déjà utilisé par un autre relais',
+    'GPIO {n} is used by a light': 'GPIO {n} est utilisé par une lumière',
+    'GPIO {n} is used by a servo': 'GPIO {n} est utilisé par un servo',
+    'GPIO {n} is used by the thermal camera': 'GPIO {n} est utilisé par la caméra thermique',
+    'GitHub key (token) - only for a private repository': 'Clé GitHub (token) – seulement pour un dépôt privé',
+    'GitHub refused the key - check that it is valid and may read this repository': "GitHub a refusé la clé – vérifier qu'elle est valable et peut lire ce dépôt",
+    'Guest access': 'Accès invité',
+    'Guest access is off': "L'accès invité est désactivé",
+    'Guest access is on': "L'accès invité est activé",
+    'Guest view · watch only · tap the picture = full screen': "Vue invité · regarder seulement · appuyer sur l'image = plein écran",
+    'Header': 'En-tête',
+    'Header buttons': 'Boutons en haut',
+    'HiLink stick not found (address?)': 'clé HiLink introuvable (adresse ?)',
+    'Hide header': "Masquer l'en-tête",
+    'High whistle (animals)': 'Sifflement aigu (animaux)',
+    'Highlight persons red': 'Mettre les personnes en rouge',
+    'Hold (s)': 'Maintien (s)',
+    'Hold after person (s)': 'Maintenir après personne (s)',
+    'Hold to talk': 'Maintenir pour parler',
+    'Home Assistant finds Motion Watch by itself (discovery)': 'Home Assistant trouve Motion Watch tout seul (discovery)',
+    'Home network': 'Réseau domestique',
+    'Horn': 'Klaxon',
+    'Hot areas only: warmest N percent': 'Zones chaudes seulement : les N pour cent les plus chauds',
+    'IR light': 'Lumière IR',
+    'Idea': 'Idée',
+    'Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one.': 'Idées, erreurs, compliments – tout aide. Le message part de façon anonyme : ni nom, ni adresse, sauf si tu les écris.',
+    'Idle': 'Prêt',
+    'Ignore cars / vehicles': 'Ignorer voitures / véhicules',
+    'Ignore zone': 'Zone ignorée',
+    'Image': 'Image',
+    'Images': 'Images',
+    'Important only': 'Important seulement',
+    'In the dark also brighten the picture you see (live, recordings)': "Dans l'obscurité, éclaircir aussi l'image visible (direct, enregistrements)",
+    'Infrared': 'Infrarouge',
+    'Infrared light': 'Lumière infrarouge',
+    'Infrared light on / off': 'Lumière infrarouge marche / arrêt',
+    'Infrared light: Auto means': 'Lumière infrarouge : «Auto» signifie',
+    'Infrared light: connected to': 'Lumière infrarouge : branchée sur',
+    'Inside any schedule': 'Dans un programme horaire',
+    'Install': 'Installer',
+    'Install new versions automatically': 'Installer automatiquement les nouvelles versions',
+    'Internet': 'Internet',
+    'Invert pan direction': 'Inverser le sens du panoramique',
+    'Invert tilt direction': "Inverser le sens d'inclinaison",
+    'JPEG quality': 'Qualité JPEG',
+    'Keep diary entries (days, ★ always)': 'Garder les entrées du journal (jours, ★ toujours)',
+    'Keep person flagged while tracked': 'Garder la personne marquée pendant le suivi',
+    'Keep recording after (s)': "Prolongation de l'enregistrement (s)",
+    'LOW LIGHT': 'FAIBLE LUMINOSITÉ',
+    'Lamp': 'Lampe',
+    'Language': 'Langue',
+    'Largest first': "Plus grands d'abord",
+    'Last': 'Dernier',
+    'Last 14 days (click a day)': '14 derniers jours (cliquer sur un jour)',
+    'Last 7 days': '7 derniers jours',
+    'Last night': 'La nuit dernière',
+    'Last report': 'Dernier rapport',
+    'Later': 'Plus tard',
+    'Latitude (sunrise / sunset)': 'Latitude (lever / coucher du soleil)',
+    'Learn the picture again (after moving the camera)': "Réapprendre l'image (après avoir déplacé la caméra)",
+    "Let's go": "C'est parti",
+    'Light': 'Clair',
+    'Light & sound': 'Lumière et son',
+    'Light level': 'Luminosité',
+    'Light ok': 'Lumière ok',
+    'Light stays on after an alarm (s)': 'La lumière reste allumée après une alarme (s)',
+    'Light theme': 'Thème clair',
+    'Lights': 'Lumière',
+    'Link copied': 'Lien copié',
+    'Listen': 'Écouter',
+    'Listen to the microphone': 'Écouter le microphone',
+    'Listening ended': 'Écoute terminée',
+    'Listening volume (this device)': "Volume d'écoute (cet appareil)",
+    'Live': 'Direct',
+    'Load more': 'Charger plus',
+    'Load settings …': 'Charger les réglages …',
+    'Load the settings from this file? The current settings are replaced (a copy is kept on the Pi).': 'Charger les réglages de ce fichier ? Les réglages actuels sont remplacés (une copie reste sur le Pi).',
+    'Lock the settings now? Only the main switches stay usable. Unlocking needs the PIN.': 'Verrouiller les réglages maintenant ? Seuls les interrupteurs principaux restent utilisables. Le déverrouillage nécessite le PIN.',
+    'Log': 'Journal',
+    'Longitude (sunrise / sunset)': 'Longitude (lever / coucher du soleil)',
+    'Look for new versions by itself (every 3 hours)': 'Chercher soi-même les nouvelles versions (toutes les 3 heures)',
+    'Loudspeaker': 'Haut-parleur',
+    'Loudspeaker in use': 'Haut-parleur utilisé',
+    'Loudspeakers': 'Haut-parleurs',
+    'Low light': 'Faible luminosité',
+    'Low-light threshold (brightness)': 'Seuil faible luminosité (luminosité)',
+    'MANUAL': 'MANUEL',
+    'MQTT broker (address, e.g. 192.168.1.10 or homeassistant.local)': 'Broker MQTT (adresse, p. ex. 192.168.1.10 ou homeassistant.local)',
+    'MQTT on (state, events, commands)': 'MQTT activé (état, événements, commandes)',
+    'MQTT password': 'Mot de passe MQTT',
+    'MQTT port': 'Port MQTT',
+    'MQTT user name': "Nom d'utilisateur MQTT",
+    'Main camera': 'Caméra principale',
+    'Manual': "Mode d'emploi",
+    'Manual control - tracking / patrol paused': 'Commande manuelle - suivi / patrouille en pause',
+    'Manual control pause (s)': 'Pause après commande manuelle (s)',
+    'Mark all detected objects (cars, animals, ...)': 'Marquer tous les objets détectés (voitures, animaux, ...)',
+    'Mark detected objects (animals, cars ...)': 'Marquer les objets détectés (animaux, voitures …)',
+    'Markings in recordings and alarm pictures': "Marquages dans les enregistrements et images d'alarme",
+    'Marks': 'Marquer',
+    'Max recordings folder (GB)': "Dossier d'enregistrements max. (Go)",
+    'Max speed (px/frame)': 'Vitesse max. (px/image)',
+    'Max timelapse folder (GB)': 'Dossier timelapse max. (Go)',
+    'Max trigger boost': 'Amplification max. du déclenchement',
+    'Medium': 'Moyen',
+    'Memory card almost full: {free} MB free - the oldest recordings are deleted': 'Carte mémoire presque pleine : {free} Mo libres – les enregistrements les plus anciens sont effacés',
+    'Messages': 'Textes des messages',
+    'Microphone': 'Microphone',
+    'Microphone gain (dB)': 'Gain du microphone (dB)',
+    'Microphones': 'Microphones',
+    'Min object size (px²)': "Taille min. d'objet (px²)",
+    'Min speed (px/frame)': 'Vitesse min. (px/image)',
+    'Motion Watch - desktop window opened': 'Motion Watch - fenêtre ouverte',
+    'Motion Watch is online in Wi-Fi {ssid}: {addr}': 'Motion Watch est en ligne sur le Wi-Fi {ssid} : {addr}',
+    'Motion Watch manual · version': "Mode d'emploi de Motion Watch · version",
+    'Motion persons need AI confirmation': 'Personnes en mouvement : confirmation IA requise',
+    'Motion sensor': 'Capteur de mouvement',
+    'Motion sensor (MPU-6050, if fitted): alarm when the device is moved or knocked over': "Capteur de mouvement (MPU-6050, si monté) : alarme si l'appareil est déplacé ou renversé",
+    'Motion sensor: alarm from a tilt of (degrees)': 'Capteur de mouvement : alarme dès une inclinaison de (degrés)',
+    'Mute 30 min': 'Muet 30 min',
+    'Muted until': "Muet jusqu'à",
+    'Name': 'Nom',
+    'Name of this device (optional)': 'Nom de cet appareil (facultatif)',
+    'Network': 'Réseau',
+    'Network camera': 'Caméra réseau',
+    'Network name (SSID)': 'Nom du réseau (SSID)',
+    'New PIN for unlocking (4-8 digits):': 'Nouveau PIN de déverrouillage (4-8 chiffres) :',
+    'New password': 'Nouveau mot de passe',
+    'New picture': 'Nouvelle image',
+    'New version': 'Nouvelle version',
+    'New version running': 'Nouvelle version en cours',
+    'New version {v} available - tap «Update now» on the page': 'Nouvelle version {v} disponible – appuyer sur «Mettre à jour» dans la page',
+    'Newest first': "Plus récents d'abord",
+    'Next': 'Suivant',
+    'Night report': 'Rapport de nuit',
+    'Night report is off.': 'Le rapport de nuit est désactivé.',
+    'Night report sent': 'Rapport de nuit envoyé',
+    'Night report: push message in the morning with what happened in the night': "Rapport de nuit : notification push le matin avec ce qui s'est passé la nuit",
+    'No address found (network?)': 'Aucune adresse trouvée (réseau ?)',
+    'No animals yet. As soon as the AI recognises an animal, its best picture appears here.': "Pas encore d'animaux. Dès que l'IA reconnaît un animal, sa meilleure image apparaît ici.",
+    'No answer from the Pi.': 'Pas de réponse du Pi.',
+    'No match': 'Aucun résultat',
+    'No person': 'Aucune personne',
+    'No rain': 'Pas de pluie',
+    'No recordings match the filters': 'Aucun enregistrement ne correspond aux filtres',
+    'No report sent yet - the first one comes in the morning.': 'Pas encore de rapport – le premier arrive le matin.',
+    'No report sent yet – the first one comes in the morning.': 'Pas encore de rapport – le premier arrive le matin.',
+    'No update source set yet (see above)': 'Pas encore de source de mises à jour (voir ci-dessus)',
+    'Nobody has set a password yet: anybody in this network can open this page, switch the alarm off or listen in. Set a password now (6 to 64 characters).': "Aucun mot de passe n'est encore défini : n'importe qui sur ce réseau peut ouvrir cette page, désactiver l'alarme ou écouter. Définis un mot de passe maintenant (6 à 64 caractères).",
+    'Noise (microphone)': 'Bruit (microphone)',
+    'Noise alarm': 'Alarme bruit',
+    'Noise alarm: alarm when it gets loud (cracking, rustling, voices)': 'Alarme bruit : alarme quand ça devient bruyant (craquements, bruissements, voix)',
+    'Noise alarm: at least (s)': 'Alarme bruit : au moins (s)',
+    'Noise alarm: loud ({db} dB) at {time} - camera: {camera}': 'Alarme bruit : fort ({db} dB) à {time} – caméra : {camera}',
+    'Noise alarm: louder than the background by (dB)': 'Alarme bruit : plus fort que le fond de (dB)',
+    'Noise alarm: push message': 'Alarme bruit : notification push',
+    'Noise alarm: text': 'Alarme bruit : texte',
+    'Noise alarm: title': 'Alarme bruit : titre',
+    'Not sent – push messages are not set up': 'Non envoyé – les notifications push ne sont pas configurées',
+    'Note animals, persons and noises (animal diary + night report)': 'Noter animaux, personnes et bruits (journal des animaux + rapport de nuit)',
+    'Note: the Wi-Fi code contains the password – do not post the card in public.': 'Attention : le code Wi-Fi contient le mot de passe – ne pas afficher la carte en public.',
+    'Nothing found – try another word (e.g. password, Wi-Fi, siren).': 'Rien trouvé – essaie un autre mot (p. ex. mot de passe, Wi-Fi, sirène).',
+    'Nothing found.': 'Rien trouvé.',
+    'Nothing important yet – everything else is in the whole log.': "Rien d'important pour l'instant – tout le reste est dans le journal complet.",
+    'Notification type': 'Type de notification',
+    'Notifications': 'Notifications',
+    'Notifications are not allowed for this page (browser settings).': 'Les notifications ne sont pas autorisées pour cette page (réglages du navigateur).',
+    'OBJECTS': 'OBJETS',
+    'OFF': 'INACTIF',
+    'ON': 'ACTIF',
+    'Object confidence': 'Confiance objets',
+    'Object list': 'Liste des objets',
+    'Objects': 'Objets',
+    'Off': 'Désactivé',
+    'Off - enter the capacity of the powerbank.': 'Désactivé – saisir la capacité de la batterie externe.',
+    'Off – enter the capacity of the powerbank below.': 'Désactivé – saisir ci-dessous la capacité de la batterie externe.',
+    'Oldest first': "Plus anciens d'abord",
+    'On': 'Activé',
+    'On the road (Tailscale)': 'En déplacement (Tailscale)',
+    'Only known networks': 'Seulement les réseaux connus',
+    'Only save (connects automatically)': 'Seulement enregistrer (se connecte automatiquement)',
+    'Only warm bodies that move (ignore warm stones, engines)': 'Seulement les corps chauds qui bougent (ignorer pierres chaudes, moteurs)',
+    'Only when nobody is home': "Seulement si personne n'est à la maison",
+    'Only when push messages cannot be sent (no internet)': "Seulement si aucune notification push n'est possible (pas d'internet)",
+    'Only when somebody is home': "Seulement si quelqu'un est à la maison",
+    'Only-here zone': 'Zone «seulement ici»',
+    'Open': 'Ouvrir',
+    'Open Motion Watch on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.': "Avec ces codes, tu ouvres Motion Watch sur d'autres appareils. Sur le portable : Partager → «Sur l'écran d'accueil» – il démarre alors comme une app.",
+    'Open animal diary': 'Ouvrir le journal des animaux',
+    'Open animal diary (browser)': 'Ouvrir le journal des animaux (navigateur)',
+    'Open camera grid (browser)': 'Ouvrir la vue des caméras (navigateur)',
+    'Open event log & archive (browser)': "Ouvrir le journal et l'archive (navigateur)",
+    'Open recordings preview (browser)': "Ouvrir l'aperçu des enregistrements (navigateur)",
+    'Open secure page': 'Ouvrir la page sécurisée',
+    'Open the page (home network)': 'Ouvrir la page (réseau domestique)',
+    'Open zone editor (browser)': "Ouvrir l'éditeur de zones (navigateur)",
+    'Operator mode': 'Mode opérateur',
+    'Operator mode (lock settings)': 'Mode opérateur (verrouiller les réglages)',
+    'Operator mode on': 'Mode opérateur activé',
+    'Other': 'Autre',
+    'Other / hidden network …': 'Autre réseau / réseau masqué …',
+    'Other Motion Watch devices': 'Autres appareils Motion Watch',
+    'Other devices': 'Autres appareils',
+    'Other devices (W): camera, USB, servos': 'Autres appareils (W) : caméra, USB, servos',
+    'Other side': 'Autre côté',
+    'Outside all schedules': 'En dehors de tous les programmes',
+    'Overlay strength': 'Intensité de la superposition',
+    'Overlay the thermal picture': "Superposer l'image thermique",
+    'Own Wi-Fi': 'Wi-Fi propre',
+    'Own Wi-Fi (hotspot)': "Wi-Fi propre (point d'accès)",
+    'Own Wi-Fi OFF': 'Wi-Fi propre DÉSACTIVÉ',
+    'Own Wi-Fi ON': 'Wi-Fi propre ACTIVÉ',
+    'Own Wi-Fi at boot': 'Wi-Fi propre au démarrage',
+    'Own Wi-Fi of the device': "Wi-Fi propre de l'appareil",
+    'Own Wi-Fi: name': 'Wi-Fi propre : nom',
+    'Own Wi-Fi: password (8-63 characters)': 'Wi-Fi propre : mot de passe (8-63 caractères)',
+    'Own sounds (.wav / .mp3): put the files into': 'Sons personnels (.wav / .mp3) : déposer les fichiers dans',
+    'PCA9685 address (I2C)': 'Adresse PCA9685 (I2C)',
+    'PCA9685 channel pan': 'Canal PCA9685 panoramique',
+    'PCA9685 channel tilt': 'Canal PCA9685 inclinaison',
+    'PERSON DETECTED': 'PERSONNE DÉTECTÉE',
+    'PERSONS DETECTED': 'PERSONNES DÉTECTÉES',
+    'PERSONS NOW': 'PERSONNES MAINTENANT',
+    'PIN:': 'PIN :',
+    'Page address': 'Adresse de cette page',
+    'Pan': 'Pan',
+    'Pan (%)': 'Panoramique (%)',
+    'Pan limit: max. degrees from the middle': 'Limite panoramique : degrés max. depuis le centre',
+    'Pan/Tilt surveillance with AI, patrol & relay': 'Surveillance pan/tilt avec IA, patrouille et relais',
+    'Panels': 'Zones',
+    'Password': 'Mot de passe',
+    'Password (6-64 characters)': 'Mot de passe (6-64 caractères)',
+    'Password (empty = keep the saved one)': 'Mot de passe (vide = garder celui enregistré)',
+    'Password for this page': 'Mot de passe pour cette page',
+    'Password removed': 'Mot de passe supprimé',
+    'Password saved. The page reloads - log in with any user name and the new password.': "Mot de passe enregistré. La page se recharge – connecte-toi avec n'importe quel nom d'utilisateur et le nouveau mot de passe.",
+    'Patrol': 'Patrouille',
+    'Patrol / tracking': 'Patrouille / suivi',
+    'Patrol active': 'Patrouille active',
+    'Patrol off': 'Patrouille désactivée',
+    'Patrol route': 'Itinéraire de patrouille',
+    'Patrol speed (%/s)': 'Vitesse de patrouille (%/s)',
+    'Patrol tilt (%)': 'Inclinaison de patrouille (%)',
+    'Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off': 'Patrouille : appui = arrêt → aller-retour (1-2-3-2-1) → circuit (1-2-3-1) → arrêt',
+    'Pause between two reactions (s)': 'Pause entre deux réactions (s)',
+    'Pause program': 'Pause du programme',
+    'Pause the program for': 'Mettre le programme en pause pour',
+    'Pendulum': 'Pendule',
+    'Person': 'Personne',
+    'Person / warm body / noise': 'Personne / chaleur / bruit',
+    'Person detected': 'Personne détectée',
+    'Person tracking': 'Suivi de personnes',
+    'Person: sound': 'Personne : son',
+    'Person: text': 'Personne : texte',
+    'Person: title': 'Personne : titre',
+    'Persons': 'Personnes',
+    'Persons now': 'Personnes maintenant',
+    'Persons total': 'Personnes au total',
+    'Phone numbers (e.g. +41791234567, several with commas)': 'Numéros de téléphone (p. ex. +41791234567, plusieurs avec des virgules)',
+    'Phones / devices for presence (IP or name, comma separated)': 'Portables / appareils pour la présence (IP ou nom, séparés par des virgules)',
+    'Phones only give the microphone to https pages. Open the secure page, confirm the certificate warning once («Advanced» → «Continue»), then hold the button again.': "Les portables ne donnent le microphone qu'aux pages https. Ouvre la page sécurisée, confirme une fois l'avertissement du certificat («Avancé» → «Continuer»), puis maintiens à nouveau le bouton.",
+    'Photo': 'Photo',
+    'Photo every N minutes': 'Photo toutes les N minutes',
+    'Photo into the recordings': 'Photo dans les enregistrements',
+    'Photo now': 'Photo maintenant',
+    'Photo requested': 'Photo demandée',
+    'Photo saved': 'Photo enregistrée',
+    'Pi connected': 'Pi connecté',
+    'Pi not reachable': 'Pi injoignable',
+    'Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation': "Pi trop chaud : {temp:.0f} °C (limite {lim:.0f} °C) – vérifier le refroidissement / l'aération",
+    'Picture': 'Image',
+    'Pictures per second while quiet': 'Images par seconde au calme',
+    'Position: pan (%)': 'Position : panoramique (%)',
+    'Position: tilt (%)': 'Position : inclinaison (%)',
+    'Power': 'Marche / arrêt',
+    'Power ON': 'Activé',
+    'Power back – battery {pct} %': 'Courant rétabli – batterie {pct} %',
+    'Power cut while armed = alarm (needs the UPS HAT)': 'Coupure de courant en mode armé = alarme (nécessite la batterie UPS)',
+    'Power cut – running on the battery ({pct} %)': 'Coupure de courant – fonctionne sur batterie ({pct} %)',
+    'Power saving': "Économie d'énergie",
+    'Power saving mode: fewer pictures while all is quiet': "Mode économie d'énergie : moins d'images tant que tout est calme",
+    'Power saving: full speed after an event for (s)': "Économie d'énergie : pleine vitesse après un événement pendant (s)",
+    'Power saving: full speed while somebody watches the live picture': "Économie d'énergie : pleine vitesse tant que quelqu'un regarde l'image en direct",
+    'Power saving: pictures per second while quiet': "Économie d'énergie : images par seconde au calme",
+    'Power supply / memory': 'Alimentation / mémoire',
+    'Powerbank capacity (mAh, as on the label; 0 = off)': "Capacité de la batterie externe (mAh, selon l'étiquette ; 0 = désactivé)",
+    'Praise': 'Compliment',
+    'Pre-alarm': 'Pré-alarme',
+    'Pre-alarm (first movement)': 'Pré-alarme (premier mouvement)',
+    'Pre-alarm push': 'Push pré-alarme',
+    'Pre-alarm push with a small picture': 'Push pré-alarme avec une petite image',
+    'Pre-alarm push: message at the first movement': 'Push pré-alarme : message au premier mouvement',
+    'Pre-alarm: min. time between messages (s)': 'Pré-alarme : intervalle min. entre les messages (s)',
+    'Pre-alarm: movement': 'Pré-alarme : mouvement',
+    'Pre-alarm: movement at {time} - camera: {camera}': 'Pré-alarme : mouvement à {time} – caméra : {camera}',
+    'Pre-alarm: text': 'Pré-alarme : texte',
+    'Pre-alarm: title': 'Pré-alarme : titre',
+    'Pre-roll: video before the detection (s)': 'Pré-enregistrement : vidéo avant la détection (s)',
+    'Preparing the video for sharing …': 'Préparation de la vidéo pour le partage …',
+    'Preparing video…': 'Préparation de la vidéo …',
+    'Presence': 'Présence',
+    "Press 'Battery is full now' after charging.": 'Après la charge, appuyer sur «La batterie est pleine maintenant».',
+    "Press 'Search networks'. Switch on the hotspot of the phone first.": "Appuyer sur «Chercher des réseaux». Activer d'abord le point d'accès du portable.",
+    'Press «Battery is full now» after charging.': 'Après la charge, appuyer sur «La batterie est pleine maintenant».',
+    'Print': 'Imprimer',
+    'Privacy zone': 'Zone de confidentialité',
+    'Program is pausing …': 'Le programme se met en pause …',
+    'Program paused': 'Programme en pause',
+    'Protect selected': 'Protéger la sélection',
+    'Protection & network': 'Protection et réseau',
+    'Push message when a new version is there': 'Notification push quand une nouvelle version est là',
+    'Push message when less free space than (MB)': "Notification push si moins d'espace libre que (Mo)",
+    'Push message when somebody watches from outside (Tailscale)': "Notification push quand quelqu'un regarde de l'extérieur (Tailscale)",
+    'Push message when the CPU is hotter than (°C)': 'Notification push quand le CPU est plus chaud que (°C)',
+    'Push message with the address when the Pi joins a network': "Notification push avec l'adresse quand le Pi rejoint un réseau",
+    'Push messages': 'Notifications push',
+    'Push messages to the phone': 'Notifications push sur le portable',
+    'QR code for the phone': 'Code QR pour le portable',
+    'Quick': 'Rapide',
+    'Quick start': 'Guide rapide',
+    'Quick start – print it and keep it with the device': "Guide rapide – à imprimer et à garder avec l'appareil",
+    'Quiet night – nothing detected ({span}).': 'Nuit calme – rien détecté ({span}).',
+    'RAIN MODE': 'MODE PLUIE',
+    'REC': 'ENR',
+    'RELAY ON': 'RELAIS ACTIVÉ',
+    'RELAYS': 'RELAIS',
+    'Rain': 'Pluie',
+    'Rain mode (manual, if auto off)': 'Mode pluie (manuel, si auto désactivé)',
+    'Rain score': 'Indice de pluie',
+    'Rain threshold': 'Seuil de pluie',
+    'Recalibrate': 'Recalibrer',
+    'Recalibrate (scene empty)': 'Recalibrer (scène vide)',
+    'Recalibrating - keep the picture empty for a few seconds': "Nouvelle calibration – garder l'image vide quelques secondes",
+    'Record': 'Filmer',
+    'Record now (max. 10 min) / stop': 'Enregistrer maintenant (max. 10 min) / arrêter',
+    'Record when person seen': 'Enregistrer si personne détectée',
+    'Recording': 'Enregistrement',
+    'Recordings': 'Enregistrements',
+    'Recordings & timelapse': 'Enregistrements et timelapse',
+    'Refresh': 'Actualiser',
+    'Relay / Alarm': 'Relais / alarme',
+    'Relay ON (manual)': 'Relais ACTIVÉ (manuel)',
+    'Relay off': 'Relais désactivé',
+    'Relay settings': 'Réglages des relais',
+    'Relay: on / automatic': 'Relais : activé / retour en automatique',
+    'Relays': 'Relais',
+    'Relays & schedule': 'Relais et programme horaire',
+    'Reload': 'Recharger',
+    'Reload page': 'Recharger la page',
+    'Remote': 'À distance',
+    'Remote access': 'Accès à distance',
+    'Remote access switches on while somebody watches over Tailscale - also when disarmed (e.g. a small warning lamp).': "L'accès à distance s'enclenche tant que quelqu'un regarde via Tailscale – aussi en mode désarmé (p. ex. petite lampe témoin).",
+    'Remote access: {who} is watching': 'Accès à distance : {who} regarde en ce moment',
+    'Remove': 'Supprimer',
+    'Remove network camera': 'Supprimer la caméra réseau',
+    'Remove password': 'Supprimer le mot de passe',
+    'Remove relay': 'Supprimer le relais',
+    'Remove the password? Then anybody in the network can open the page.': "Supprimer le mot de passe ? Alors n'importe qui sur le réseau peut ouvrir la page.",
+    'Remove this camera?': 'Supprimer cette caméra ?',
+    'Remove this device from the list?': 'Retirer cet appareil de la liste ?',
+    'Remove this network camera?': 'Supprimer cette caméra réseau ?',
+    'Remove this relay?': 'Supprimer ce relais ?',
+    'Remove this schedule?': 'Supprimer ce programme horaire ?',
+    'Remove this video?': 'Supprimer cette vidéo ?',
+    'Repeat': 'Répéter',
+    'Repeat password': 'Répéter le mot de passe',
+    'Repeat the PIN:': 'Répéter le PIN :',
+    'Reset all settings': 'Réinitialiser tous les réglages',
+    'Reset all settings to defaults?': 'Remettre tous les réglages par défaut ?',
+    'Reset counter': 'Remettre le compteur à zéro',
+    'Reset filters': 'Réinitialiser les filtres',
+    'Reset settings': 'Réinitialiser les réglages',
+    'Restart Pi': 'Redémarrer le Pi',
+    'Restart the Raspberry Pi now?': 'Redémarrer le Raspberry Pi maintenant ?',
+    'Return to the previous position afterwards': 'Revenir ensuite à la position précédente',
+    'Round': 'Circuit',
+    'Run every N frames': 'Exécuter toutes les N images',
+    'Running now': 'En cours',
+    'SHADOW % REMOVED': 'OMBRES % SUPPRIMÉES',
+    'SMS (LTE stick)': 'SMS (clé LTE)',
+    'SMS not sent (credit / network?)': 'SMS non envoyé (crédit / réseau ?)',
+    'SMS sent': 'SMS envoyé',
+    'SYSTEM · CPU': 'SYSTÈME · CPU',
+    'Sabotage alarm: camera covered or turned away (when armed)': 'Alarme sabotage : caméra couverte ou détournée (si armé)',
+    'Save': 'Enregistrer',
+    'Save settings …': 'Sauvegarder les réglages …',
+    'Save snapshot JPG per detection': 'Photo JPG à chaque détection',
+    'Save the current position as waypoint for the patrol': 'Enregistrer la position actuelle comme point de passage de la patrouille',
+    'Save zones': 'Enregistrer les zones',
+    'Saved': 'Enregistré',
+    'Saved networks': 'Réseaux enregistrés',
+    'Saving': 'Économie',
+    'Scan a code with the phone camera and open the page - the setup assistant continues there (password, push messages).': "Scanner un code avec l'appareil photo du portable et ouvrir la page – l'assistant de configuration continue là (mot de passe, notifications push).",
+    'Scan for cameras': 'Chercher des caméras',
+    'Scanning…': 'Recherche …',
+    'Schedule': 'Programme horaire',
+    'Search': 'Recherche',
+    'Search Bluetooth': 'Chercher Bluetooth',
+    'Search Bluetooth loudspeakers': 'Chercher des haut-parleurs Bluetooth',
+    'Search devices': 'Chercher des appareils',
+    'Search networks': 'Chercher des réseaux',
+    'Search settings …': 'Chercher un réglage …',
+    'Search settings … (e.g. password)': 'Chercher un réglage … (p. ex. mot de passe)',
+    'Search versions': 'Chercher des versions',
+    'Search …': 'Rechercher …',
+    'Searching …': 'Recherche …',
+    'Searching … put the loudspeaker into pairing mode (blue light blinking)': 'Recherche … mettre le haut-parleur en mode appairage (lumière bleue qui clignote)',
+    'Security warning': 'Avertissement de sécurité',
+    'Select': 'Sélectionner',
+    'Send': 'Envoyer',
+    'Send notifications': 'Envoyer des notifications',
+    'Send now': 'Envoyer maintenant',
+    'Send test': 'Envoyer un test',
+    'Send test SMS': 'Envoyer un SMS test',
+    'Send test message': 'Envoyer un message test',
+    "Send the report at (o'clock)": 'Envoyer le rapport à (heure)',
+    'Sensitivity': 'Sensibilité',
+    'Sent - did it arrive on the phone?': 'Envoyé – est-il arrivé sur le portable ?',
+    'Serial port (only for AT commands)': 'Port série (seulement pour les commandes AT)',
+    'Server': 'Serveur',
+    'Servo driver': 'Pilote des servos',
+    'Set a new PIN? (Cancel = keep the current PIN)': 'Définir un nouveau PIN ? (Annuler = garder le PIN actuel)',
+    'Set a new PIN? (No = keep the current PIN)': 'Définir un nouveau PIN ? (Non = garder le PIN actuel)',
+    'Set a web password': 'Définir un mot de passe web',
+    'Set password': 'Définir le mot de passe',
+    'Set up in three short steps - takes about 3 minutes.': 'Configuré en trois petites étapes – environ 3 minutes.',
+    'Settings': 'Réglages',
+    'Settings are locked - only the main switches can be used.': 'Les réglages sont verrouillés – seuls les interrupteurs principaux sont utilisables.',
+    'Settings loaded': 'Réglages chargés',
+    'Settings panel': 'Panneau des réglages',
+    'Settings sections': 'Sections des réglages',
+    'Settings status': 'État des réglages',
+    'Settings unlocked': 'Réglages déverrouillés',
+    'Setup': 'Installation',
+    'Several devices around the tent or camper: see them all here and arm / disarm them together.': 'Plusieurs appareils autour de la tente ou du camping-car : les voir tous ici et les armer / désarmer ensemble.',
+    'Shadow % removed': 'Ombres % supprimées',
+    'Shadow filter (ignore person shadows)': "Filtre d'ombres (ignorer les ombres)",
+    'Shadow: max brightness ratio': 'Ombre : rapport de luminosité max.',
+    'Shadow: min brightness ratio': 'Ombre : rapport de luminosité min.',
+    'Share': 'Partager',
+    'Share / copy link': 'Partager / copier le lien',
+    'Shared pictures and videos with a small Motion Watch logo': 'Images et vidéos partagées avec un petit logo Motion Watch',
+    'Shift (minutes)': 'Décalage (minutes)',
+    'Show HUD overlay': 'Afficher les infos (HUD)',
+    'Show all': 'Tout afficher',
+    'Show header': "Afficher l'en-tête",
+    'Show motion mask': 'Afficher le masque de mouvement',
+    'Show movement tracks': 'Afficher les traces de mouvement',
+    'Show only the hot areas (people, animals, engines)': "N'afficher que les zones chaudes (personnes, animaux, moteurs)",
+    'Show position': 'Afficher la position',
+    'Show zones in the picture': "Afficher les zones dans l'image",
+    'Shut down Pi': 'Éteindre le Pi',
+    'Shut down the Raspberry Pi now?': 'Éteindre le Raspberry Pi maintenant ?',
+    'Siren (rising and falling)': 'Sirène (montante et descendante)',
+    'Siren at an alarm (only when armed)': "Sirène en cas d'alarme (seulement si armé)",
+    'Siren now': 'Sirène maintenant',
+    'Siren: min. pause between two alarms (s)': 'Sirène : pause min. entre deux alarmes (s)',
+    'Skip': 'Passer',
+    'Skip dates': "Dates d'exception",
+    'Skip dates (YYYY-MM-DD, ranges with .., MM-DD every year)': "Dates d'exception (AAAA-MM-JJ, plages avec .., MM-JJ chaque année)",
+    'Slow': 'Lent',
+    'Small animal (cat, dog, bird)': 'Petit animal (chat, chien, oiseau)',
+    'Small animal: sound': 'Petit animal : son',
+    'Snapshot': 'Instantané',
+    'Snapshots': 'Instantanés',
+    'So far tonight': "Jusqu'ici cette nuit",
+    'Sort': 'Tri',
+    'Sound': 'Son',
+    'Sound in the recordings': 'Son dans les enregistrements',
+    'Sound on': 'Son activé',
+    'Source': 'Source',
+    'Speaking from the phone: volume boost (dB)': 'Parler depuis le portable : augmentation du volume (dB)',
+    'Speed': 'Vitesse',
+    'Speed consistency': 'Constance de vitesse',
+    'Speed: fast': 'Vitesse : rapide',
+    'Speed: medium': 'Vitesse : moyenne',
+    'Speed: slow': 'Vitesse : lente',
+    'Start now': 'Démarrer maintenant',
+    'Starting …': 'Démarrage …',
+    'Starts again at': 'Redémarre à',
+    'Statistics': 'Statistiques',
+    'Step': 'Pas',
+    'Step per click': 'Pas par clic',
+    'Stick': 'Stick',
+    'Stick / way': 'Stick / déplacement',
+    'Stick back on its usual side': 'Stick de nouveau à sa place habituelle',
+    'Stick on the other side': "Stick de l'autre côté",
+    'Still recording - available when it ends.': 'Enregistrement en cours – disponible à la fin.',
+    'Stop': 'Stop',
+    'Stop listening': "Arrêter l'écoute",
+    'Stream width (px)': 'Largeur du flux (px)',
+    'Sunrise → sunset': 'Lever → coucher du soleil',
+    'Sunset → sunrise': 'Coucher → lever du soleil',
+    'Supply': 'Alimentation',
+    'Swap stick and buttons (left- / right-handed)': 'Inverser stick et boutons (gauchers / droitiers)',
+    'Switch': 'Changer',
+    'Switch off on this device': 'Désactiver sur cet appareil',
+    'Switch on https over Tailscale': 'Activer https via Tailscale',
+    'Switch on on this device': 'Activer sur cet appareil',
+    'Switch relay when person detected': 'Commuter le relais si personne détectée',
+    'Switch the own Wi-Fi off? This page loses its connection; the Pi goes back to the known networks.': 'Désactiver le Wi-Fi propre ? Cette page perd la connexion ; le Pi retourne aux réseaux connus.',
+    'Switch the program off now and start it again in': 'Éteindre le programme maintenant et le redémarrer dans',
+    'Switch to this version': 'Passer à cette version',
+    'Switch to version': 'Passer à la version',
+    'Switches': 'Interrupteurs',
+    'Switching to version': 'Passage à la version',
+    'System': 'Système',
+    'System & network': 'Système et réseau',
+    'System default': 'Par défaut du système',
+    'System · CPU': 'Système · CPU',
+    'TAMPER ALARM': 'SABOTAGE',
+    'TRACKING': 'SUIVI',
+    'Tailscale is not installed': "Tailscale n'est pas installé",
+    'Take the clock from the phone (when the Pi has no internet time)': "Prendre l'heure du portable (si le Pi n'a pas l'heure d'internet)",
+    'Talking needs the secure page': 'Parler nécessite la page sécurisée',
+    'Talking … release to stop': 'Parle … relâcher pour arrêter',
+    'Tap anywhere on the page to allow the sound': "Appuyer n'importe où sur la page pour autoriser le son",
+    'Telegram (video, max. 50 MB)': 'Telegram (vidéo, max. 50 Mo)',
+    'Telegram bot token': 'Jeton du bot Telegram',
+    'Telegram bot token / chat id missing (Notifications)': 'Jeton du bot Telegram / ID de chat manquant (Notifications)',
+    'Telegram chat id': 'ID de chat Telegram',
+    'Test': 'Test',
+    'Test file copied - the settings work.': 'Fichier test copié – les réglages sont corrects.',
+    'Test notification': 'Envoyer un message test',
+    'Test sent': 'Test envoyé',
+    'Test sound': 'Son test',
+    'Test the backup': 'Tester la sauvegarde',
+    'Thank you! The message is on its way.': 'Merci ! Le message est en route.',
+    'The PINs are not the same': 'Les PIN ne sont pas identiques',
+    'The Pi is connected with it right now - the page may lose its connection.': 'Le Pi y est connecté en ce moment – la page peut perdre la connexion.',
+    'The Pi is connected with this network.': 'Le Pi est connecté à ce réseau.',
+    'The Pi is off': 'Le Pi est éteint',
+    'The Pi is restarting …': 'Le Pi redémarre …',
+    'The Pi is shutting down …': "Le Pi s'éteint …",
+    'The Pi now switches on its own Wi-Fi': 'Le Pi active maintenant son propre Wi-Fi',
+    'The Pi now switches to the network': 'Le Pi passe maintenant au réseau',
+    'The Pi was not shut down': "Le Pi n'a pas été éteint",
+    'The connection to this page was interrupted - normal while the Pi changes the network. Open the page in the new network:': 'La connexion à cette page a été interrompue – normal pendant que le Pi change de réseau. Ouvre la page dans le nouveau réseau :',
+    'The guest must be able to reach the Pi: same Wi-Fi / hotspot or Tailscale.': "L'invité doit pouvoir atteindre le Pi : même Wi-Fi / point d'accès ou Tailscale.",
+    'The main camera does the full detection (AI, tracking, relays). Extra cameras watch for movement and record clips; they follow the same switches and schedules. Every extra camera needs CPU - on a Raspberry Pi 2-3 cameras are realistic.': 'La caméra principale fait la détection complète (IA, suivi, relais). Les caméras supplémentaires détectent les mouvements et enregistrent des clips ; elles suivent les mêmes interrupteurs et programmes horaires. Chaque caméra supplémentaire demande du CPU – sur un Raspberry Pi, 2-3 caméras sont réalistes.',
+    'The night report is off (Notifications → Night report).': 'Le rapport de nuit est désactivé (Notifications → Rapport de nuit).',
+    "The night starts at (o'clock)": 'La nuit commence à (heure)',
+    'The page must stay open (also in the background). With the screen off or the browser closed only the push message (ntfy / Telegram) arrives.': 'La page doit rester ouverte (en arrière-plan aussi, ça marche). Écran éteint ou navigateur fermé : seule la notification push (ntfy / Telegram) arrive.',
+    'The page reloads by itself.': 'La page se recharge toute seule.',
+    'The password was given on the command line (--web-password).': 'Le mot de passe a été donné au démarrage (--web-password).',
+    'The passwords are not the same': 'Les mots de passe ne sont pas identiques',
+    'The program restarts (about 20 seconds). Settings, recordings and zones stay.': 'Le programme redémarre (environ 20 secondes). Réglages, enregistrements et zones sont conservés.',
+    'The secure page is not running (openssl missing).': 'La page sécurisée ne tourne pas (openssl manquant).',
+    'The thermal camera must look in the same direction as the main camera. Choose it in the list after a camera scan (Video source).': 'La caméra thermique doit regarder dans la même direction que la caméra principale. Choisis-la dans la liste après une recherche de caméras (Source vidéo).',
+    'Theft protection': 'Protection antivol',
+    'Theme': 'Thème',
+    'Thermal': 'Chaleur',
+    'Thermal alarm': 'Alarme thermique',
+    'Thermal alarm: minimum size (% of the picture)': "Alarme thermique : taille minimale (% de l'image)",
+    'Thermal alarm: text': 'Alarme thermique : texte',
+    'Thermal alarm: title': 'Alarme thermique : titre',
+    'Thermal alarm: warmer than the scene by (%)': 'Alarme thermique : plus chaud que la scène de (%)',
+    'Thermal camera': 'Caméra thermique',
+    'Thermal camera (run the camera scan first)': "Caméra thermique (lancer d'abord la recherche de caméras)",
+    'Thermal camera: warm body in the zone at {time} - camera: {camera}': 'Caméra thermique : corps chaud dans la zone à {time} – caméra : {camera}',
+    'Thermal overlay': 'Superposition thermique',
+    'Thermal picture over the live picture': "Image thermique sur l'image en direct",
+    'Thermal: shift left / right (%)': 'Thermique : décaler gauche / droite (%)',
+    'Thermal: shift up / down (%)': 'Thermique : décaler haut / bas (%)',
+    'Thermal: zoom - part the camera sees (%)': 'Thermique : zoom – partie vue par la caméra (%)',
+    'This device': 'Cet appareil',
+    'This page loses its connection. Connect the phone to': 'Cette page perd la connexion. Connecte le portable à',
+    'This page will probably lose its connection. Afterwards open it in that network at': 'Cette page va probablement perdre la connexion. Ouvre-la ensuite dans ce réseau à',
+    'This video uses a codec browsers cannot play. Install ffmpeg on the Pi (sudo apt install ffmpeg) or download the file.': 'Cette vidéo utilise un codec que les navigateurs ne lisent pas. Installe ffmpeg sur le Pi (sudo apt install ffmpeg) ou télécharge le fichier.',
+    'Tilt': 'Tilt',
+    'Tilt (%)': 'Inclinaison (%)',
+    'Tilt limit: max. degrees from the middle': "Limite d'inclinaison : degrés max. depuis le centre",
+    'Time must look like 07:30': "L'heure doit ressembler à 07:30",
+    'Time window': 'Plage horaire',
+    'Timelapse': 'Timelapse',
+    'Timelapse active': 'Timelapse actif',
+    'Timeline': 'Chronologie',
+    'Title': 'Titre',
+    'To': 'À',
+    'Today': "Aujourd'hui",
+    'Today (running)': "Aujourd'hui (en cours)",
+    'Topic (like a secret channel name)': 'Sujet (comme un nom de canal secret)',
+    'Topic prefix': 'Préfixe des sujets',
+    'Topics': 'Thèmes',
+    'Tracking dead zone': 'Zone morte du suivi',
+    'Tracking gain': 'Force de suivi',
+    'Tracking person': 'Personne suivie',
+    'Trigger multiplier (wind)': 'Facteur de déclenchement (vent)',
+    'Two-tone horn': 'Klaxon à deux tons',
+    'Type': 'Type',
+    'UPS HAT': 'Batterie onduleur (UPS HAT)',
+    'UPS HAT (battery pack on the Pi): use it when found': "Batterie UPS (module sur le Pi) : l'utiliser si présente",
+    'UPS HAT: address (I2C)': 'Batterie UPS : adresse (I2C)',
+    'UPS HAT: capacity of ONE 18650 cell (mAh)': "Batterie UPS : capacité d'UNE cellule 18650 (mAh)",
+    'UPS HAT: charging and discharging are shown the wrong way round': "Batterie UPS : charge et décharge affichées à l'envers",
+    'UPS HAT: push message at a power cut / when power is back': "Batterie UPS : notification push lors d'une coupure / du retour du courant",
+    'UPS HAT: shut the Pi down at (%, 0 = never)': 'Batterie UPS : éteindre le Pi à (%, 0 = jamais)',
+    'Under-voltage: power bank almost empty or cable too weak': 'Sous-tension : batterie externe presque vide ou câble trop faible',
+    'Unlock': 'Déverrouiller',
+    'Unmute': 'Réactiver le son',
+    'Update': 'Mettre à jour',
+    'Update now': 'Mettre à jour maintenant',
+    'Updates': 'Mises à jour',
+    'Use current position': 'Prendre la position actuelle',
+    'VEHICLES IGNORED': 'VÉHICULES IGNORÉS',
+    'Valid for': 'Valable pour',
+    'Vehicle aspect ratio': 'Format des véhicules',
+    'Vehicle filter': 'Filtre véhicules',
+    'Vehicle speed (px/frame)': 'Vitesse des véhicules (px/image)',
+    'Vehicles ignored': 'Véhicules ignorés',
+    'Vibrate (phones)': 'Vibrer (portables)',
+    'Video': 'Vidéo',
+    'Video source': 'Source vidéo',
+    'Video: frames per second': 'Vidéo : images par seconde',
+    'Videos': 'Vidéos',
+    'View': 'Affichage',
+    'Volume': 'Volume',
+    'Volume (%)': 'Volume (%)',
+    'WEATHER': 'MÉTÉO',
+    'Wait after moving (s)': 'Attente après le déplacement (s)',
+    'Wait until the green LED of the Pi stays dark (about 10 seconds), then you can unplug the power. To start it again: unplug the power and plug it in again.': "Attends que la LED verte du Pi reste éteinte (environ 10 secondes), puis tu peux débrancher l'alimentation. Pour redémarrer : débrancher l'alimentation et la rebrancher.",
+    'Waiting for the Pi … the page reloads by itself (about 1 minute).': 'Attente du Pi … la page se recharge toute seule (environ 1 minute).',
+    'Walking recognition': 'Détection de marche',
+    'Walking time needed (s)': 'Temps de marche requis (s)',
+    'Warm body (thermal camera)': 'Chaleur détectée (caméra thermique)',
+    'Warm body (thermal camera, e.g. fox, boar)': 'Corps chaud (caméra thermique, p. ex. renard, sanglier)',
+    'Warm body: sound': 'Corps chaud : son',
+    'Waypoint': 'Point de passage',
+    'Waypoint added': 'Point de passage ajouté',
+    'Weather': 'Météo',
+    'Weather & system': 'Météo et système',
+    'Web password': 'Mot de passe web',
+    'Web password: none': 'Mot de passe web : aucun',
+    'Web password: set': 'Mot de passe web : défini',
+    'Web push (no app needed)': 'Web push (sans app)',
+    'Web push is on for this device.': 'Le web push est activé sur cet appareil.',
+    'Web push needs https. Open the page over the https address (Tailscale):': "Le web push nécessite https. Ouvre la page via l'adresse https (Tailscale) :",
+    'Web push works ✓': 'Le web push fonctionne ✓',
+    'Web push: alarm messages also to browsers that switched it on (no app needed)': "Web push : messages d'alarme aussi aux navigateurs qui l'ont activé (sans app)",
+    'Web stream': 'Flux web',
+    'Web stream + remote control (port 5000)': 'Flux web + commande à distance (port 5000)',
+    'Web stream could not start (is flask installed?)': "Le flux web n'a pas pu démarrer (flask est-il installé ?)",
+    'WebDAV (Nextcloud, NAS, cloud)': 'WebDAV (Nextcloud, NAS, cloud)',
+    'WebDAV folder (address, e.g. Nextcloud)': 'Dossier WebDAV (adresse, p. ex. Nextcloud)',
+    'WebDAV password (Nextcloud: app password)': "Mot de passe WebDAV (Nextcloud : mot de passe d'application)",
+    'WebDAV user name': "Nom d'utilisateur WebDAV",
+    'Webhook / ntfy URL': 'URL webhook / ntfy',
+    'Webhook URL (POST JSON on person; e.g. https://ntfy.sh/my-topic)': 'URL webhook (POST JSON si personne ; p. ex. https://ntfy.sh/mon-sujet)',
+    'Welcome to Motion Watch': 'Bienvenue dans Motion Watch',
+    'What is seen decides the reaction. Animals need the AI detection, warm bodies the thermal camera. Light flashes: the white light.': 'Ce qui est détecté décide de la réaction. Les animaux ont besoin de la détection IA, les corps chauds de la caméra thermique. Flashs lumineux : la lumière blanche.',
+    'When armed: push message (urgent) and siren. The picture check pauses while the camera head moves itself.': "Si armé : notification push (urgente) et sirène. Le contrôle de l'image fait une pause pendant que la tête de caméra bouge elle-même.",
+    'Where new versions come from (address of versions.json, or a folder e.g. USB stick)': "D'où viennent les nouvelles versions (adresse de versions.json, ou un dossier p. ex. clé USB)",
+    'While a schedule is active, the listed features are forced ON or OFF. Afterwards they return to your own setting. Switching one by hand overrides the schedule until its next change.': "Tant qu'un programme horaire est actif, les fonctions choisies sont forcées en ACTIF ou INACTIF. Ensuite, ton propre réglage s'applique à nouveau. Qui commute à la main a priorité sur le programme jusqu'à son prochain changement.",
+    'While paused there is no monitoring and there are no alarms.': "Pendant la pause, il n'y a ni surveillance ni alarme.",
+    'White': 'Blanche',
+    'White light': 'Lumière blanche',
+    'White light on / off': 'Lumière blanche marche / arrêt',
+    'White light: Auto means': 'Lumière blanche : «Auto» signifie',
+    'White light: connected to': 'Lumière blanche : branchée sur',
+    'Wi-Fi': 'Wi-Fi',
+    'Wi-Fi / hotspot': "Wi-Fi / point d'accès",
+    'Wi-Fi management is not available on this system (NetworkManager or wpa_supplicant missing).': "La gestion Wi-Fi n'est pas disponible sur ce système (NetworkManager ou wpa_supplicant manquant).",
+    'Wi-Fi management not available (NetworkManager / wpa_supplicant not found)': 'Gestion Wi-Fi indisponible (NetworkManager / wpa_supplicant introuvable)',
+    'Wi-Fi signal, last': 'Signal Wi-Fi, dernières',
+    'Wind': 'Vent',
+    'Wind score': 'Indice de vent',
+    'Wind threshold': 'Seuil de vent',
+    'Without a password everybody in the same network (and with the link) can watch and switch everything.': 'Sans mot de passe, tout le monde sur le même réseau (et avec le lien) peut regarder et tout commander.',
+    'Yesterday': 'Hier',
+    'Your message …': 'Ton message …',
+    'Zones': 'Zones',
+    'a folder like /media/... expected': 'un dossier comme /media/... attendu',
+    'a port like /dev/ttyUSB2': 'un port comme /dev/ttyUSB2',
+    'a restart is already running': 'un redémarrage est déjà en cours',
+    'a video is already being made': 'une vidéo est déjà en cours de création',
+    'about': 'env.',
+    'access expired': 'accès expiré',
+    'active now': 'actif maintenant',
+    'active: few pictures, everything quiet': "actif : peu d'images, tout est calme",
+    'ai': 'IA',
+    'airplane': 'avion',
+    'alarms active': 'alarmes actives',
+    'alarms and recordings on': 'alarmes et enregistrements activés',
+    'all ok': 'tout va bien',
+    'always grey': 'toujours gris',
+    'an update is already running': 'une mise à jour est déjà en cours',
+    'and open': 'et ouvre',
+    'and press «Search devices»': 'et appuyer sur «Chercher des appareils»',
+    'animal (any)': 'animal (tous)',
+    'aplay is missing (sudo apt install alsa-utils)': 'aplay manquant (sudo apt install alsa-utils)',
+    'apple': 'pomme',
+    'arecord is missing (sudo apt install alsa-utils)': 'arecord manquant (sudo apt install alsa-utils)',
+    'armed': 'armé',
+    'armed after the countdown': 'armé après le compte à rebours',
+    'arming': 'armement',
+    'arrow keys work too': 'les flèches du clavier fonctionnent aussi',
+    'at an alarm, day and night': "en cas d'alarme, jour et nuit",
+    'at an alarm, only at night': "en cas d'alarme, seulement la nuit",
+    'at least 6 characters': 'au moins 6 caractères',
+    'at most 12 devices': 'au maximum 12 appareils',
+    'at most 5 messages per hour': 'au maximum 5 messages par heure',
+    'auto': 'Auto',
+    'automatic': 'automatique',
+    'automatic changes': 'changements automatiques',
+    'automatic paused (switched by hand) - choose «Automatic» again to resume': 'automatique en pause (commuté à la main) – choisir à nouveau «Automatique» pour reprendre',
+    'automatic: PCA9685 if found, otherwise GPIO 17 / 27': 'automatique : PCA9685 si trouvé, sinon GPIO 17 / 27',
+    'autostart needs systemd (Raspberry Pi OS)': 'le démarrage auto nécessite systemd (Raspberry Pi OS)',
+    'available': 'disponible',
+    'awake': 'éveillé',
+    'away': 'absent',
+    'b-note': 'Batterie UPS (module sur le Pi) : détectée toute seule, vraie mesure. Sinon estimation de la batterie externe : capacité moins la consommation depuis «La batterie est pleine maintenant».',
+    'back and forth (1-2-3-2-1)': 'aller-retour (1-2-3-2-1)',
+    'back on': 'de retour sur',
+    'backend': 'backend',
+    'background': 'fond',
+    'backpack': 'sac à dos',
+    'backup is off': 'la sauvegarde est désactivée',
+    'banana': 'banane',
+    'battery': 'batterie',
+    'bear': 'ours',
+    'bed': 'lit',
+    'bench': 'banc',
+    'bicycle': 'vélo',
+    'bird': 'oiseau',
+    'bluetoothctl is missing (sudo apt install bluez)': 'bluetoothctl manquant (sudo apt install bluez)',
+    'boat': 'bateau',
+    'book': 'livre',
+    'bottle': 'bouteille',
+    'bowl': 'bol',
+    'breezy': 'en rafales',
+    'brightness': 'luminosité',
+    'bus': 'bus',
+    'busy': 'occupé – merci de patienter un instant',
+    'calm': 'calme',
+    'camera covered': 'caméra couverte',
+    'camera turned / picture changed': 'caméra tournée / image modifiée',
+    'cameras': 'caméras',
+    'car': 'voiture',
+    'cat': 'chat',
+    'cell phone': 'portable',
+    'chair': 'chaise',
+    'channel': 'canal',
+    'charging': 'en charge',
+    'click to update': 'cliquer pour mettre à jour',
+    'clock': 'horloge',
+    'colour': 'couleur',
+    'connected': 'connecté',
+    'connected - used for the siren and for talking': 'connecté – utilisé pour la sirène et pour parler',
+    'connected to': 'connecté à',
+    'connected with': 'connecté à',
+    'connecting to': 'connexion à',
+    'connecting …': 'connexion …',
+    'connecting…': 'connexion …',
+    'connection lost - reconnecting': 'connexion perdue - reconnexion',
+    'connection to the camera interrupted - reconnecting': 'connexion à la caméra interrompue – reconnexion',
+    'cores': 'cœurs',
+    'correct': 'correcte',
+    'couch': 'canapé',
+    'could not connect (wrong password or too far away?)': 'connexion impossible (mauvais mot de passe ou trop loin ?)',
+    'could not connect - switch the loudspeaker on and bring it closer': 'connexion impossible – allumer le haut-parleur et le rapprocher',
+    'cow': 'vache',
+    'cp-desc': 'Wi-Fi propre activé, la caméra reste où elle est (pas de patrouille / suivi / timelapse), alarmes et enregistrements activés, armé après le compte à rebours. Le désactiver rétablit tes réglages.',
+    'cup': 'tasse',
+    'd-note': "La meilleure image de chaque visite d'animal (détection IA) – collectée automatiquement. Appuyer pour agrandir, ★ = garder (jamais effacé automatiquement).",
+    'daily limit reached': 'limite journalière atteinte',
+    'day': 'jour',
+    'days': 'jours',
+    'defaults': 'valeurs par défaut',
+    'defaults (no file yet)': 'valeurs par défaut (pas encore de fichier)',
+    'device': 'appareil',
+    'device knocked over': 'appareil renversé',
+    'device moved': 'appareil déplacé',
+    'devices': 'appareils',
+    'dining table': 'table à manger',
+    'directly on GPIO 17 / 27': 'directement sur GPIO 17 / 27',
+    'disarmed': 'désarmé',
+    'dog': 'chien',
+    'drop-out': 'coupure',
+    'drop-outs': 'coupures',
+    'e.g. camper, garden': 'p. ex. camping-car, jardin',
+    'elephant': 'éléphant',
+    'entries': 'entrées',
+    'estimated': 'estimé',
+    'events': 'événements',
+    'every alarm, also the pre-alarm (movement)': 'chaque alarme, aussi la pré-alarme (mouvement)',
+    'every day': 'chaque jour',
+    'failed': 'échec',
+    'fast': 'rapide',
+    'few pictures': "peu d'images",
+    'fewer pictures while all is quiet, full speed at the first movement or noise': "moins d'images tant que tout est calme – pleine vitesse au premier mouvement ou bruit",
+    'fire hydrant': "borne d'incendie",
+    'folder not found': 'dossier introuvable',
+    'folder not found (USB stick / NAS connected?)': 'dossier introuvable (clé USB / NAS branché ?)',
+    'found': 'trouvé',
+    'free': 'libre',
+    'frisbee': 'frisbee',
+    'full speed': 'pleine vitesse',
+    'full speed (something happened or somebody watches)': "pleine vitesse (il se passe quelque chose ou quelqu'un regarde)",
+    'g-note': "Un lien pour la famille ou les voisins de camping : ils voient seulement l'image en direct et ne peuvent rien modifier. L'invité doit pouvoir atteindre le Pi – même Wi-Fi / point d'accès ou via Tailscale. Un nouveau lien rend l'ancien invalide.",
+    'giraffe': 'girafe',
+    'grey': 'gris',
+    'grey at night (good with a NoIR camera)': 'gris la nuit (bien avec une caméra NoIR)',
+    'handbag': 'sac à main',
+    'hide': 'réduire',
+    'hold time must be a number': 'le temps de maintien doit être un nombre',
+    'home': 'à la maison',
+    'horse': 'cheval',
+    'hot': 'hot',
+    'https://... address or a folder (/media/...) expected': 'adresse https://... ou un dossier (/media/...) attendu',
+    'iPhone / iPad: first Share → «Add to Home Screen», then open Motion Watch from there and switch web push on.': "iPhone / iPad : d'abord Partager → «Sur l'écran d'accueil», puis ouvrir Motion Watch depuis là et activer le web push.",
+    'iPhone / iPad: open the https address, then Share → «Add to Home Screen» and switch it on in the app from there.': "iPhone / iPad : ouvrir l'adresse https, puis Partager → «Sur l'écran d'accueil» et l'activer dans l'app depuis là.",
+    'important': 'important',
+    'in use': 'utilisée',
+    'inferno': 'inferno',
+    'invalid Bluetooth address': 'adresse Bluetooth invalide',
+    'invalid GitHub key (it starts with github_pat_ or ghp_)': 'clé GitHub invalide (elle commence par github_pat_ ou ghp_)',
+    'invalid Telegram bot token': 'jeton du bot Telegram invalide',
+    'invalid Telegram chat id': 'ID de chat Telegram invalide',
+    'invalid URL (http:// or https:// expected)': 'URL invalide (http:// ou https:// attendu)',
+    'invalid URL (rtsp:// or http:// expected)': 'URL invalide (rtsp:// ou http:// attendu)',
+    'invalid address (e.g. http://192.168.1.20:5000)': 'adresse invalide (p. ex. http://192.168.1.20:5000)',
+    'invalid device name or address': "nom d'appareil ou adresse invalide",
+    'invalid network name': 'nom de réseau invalide',
+    'invalid schedule': 'programme horaire invalide',
+    'invalid sound data': 'données audio invalides',
+    'invalid subscription': 'abonnement invalide',
+    'invalid value': 'valeur invalide',
+    'invalid zones': 'zones invalides',
+    'jet': 'jet',
+    'joins the known networks': 'se connecte aux réseaux connus',
+    'kite': 'cerf-volant',
+    'knife': 'couteau',
+    'laptop': 'ordinateur portable',
+    'last 60 s': 'dernières 60 s',
+    'later': 'plus tard',
+    'learning the picture': "apprend l'image",
+    'leave the area now': 'quitter la zone maintenant',
+    'left': 'restant',
+    'light': 'lumière',
+    'light flashes': 'flashs lumineux',
+    'like the live picture (red boxes)': "comme l'image en direct (cadres rouges)",
+    'list from': 'liste du',
+    'loaded: {a} settings, {b} waypoints, {c} relays, {d} schedules': 'chargé : {a} réglages, {b} points de passage, {c} relais, {d} programmes horaires',
+    'lock-note': 'Les réglages sont verrouillés – seuls les interrupteurs principaux sont utilisables.',
+    'locked - settings can only be changed after unlocking (PIN)': 'verrouillé – réglages modifiables seulement après déverrouillage (PIN)',
+    'mains': 'secteur',
+    'mains power': 'sur secteur',
+    'making video': 'création de la vidéo',
+    'maximum {n} extra cameras': 'au maximum {n} caméras supplémentaires',
+    'maximum {n} relays': 'au maximum {n} relais',
+    'maximum {n} schedules': 'au maximum {n} programmes horaires',
+    'medium': 'moyenne',
+    'memory': 'mémoire',
+    'microphone on': 'microphone activé',
+    'min': 'min',
+    'mmcli missing (sudo apt install modemmanager)': 'mmcli manquant (sudo apt install modemmanager)',
+    'mode must be off / on / auto': 'le mode doit être désactivé / activé / auto',
+    'motion': 'mouvement',
+    'motion (anything)': 'mouvement (tout)',
+    'motorcycle': 'moto',
+    'moving to the photo position': 'déplacement vers la position photo',
+    'moving to waypoint': 'se dirige vers le point de passage',
+    'name': 'nom',
+    'need 2+ waypoints': 'au moins 2 points de passage nécessaires',
+    'need at least 2 photos': 'au moins 2 photos nécessaires',
+    'needs AI model': 'nécessite le modèle IA',
+    'needs NetworkManager': 'nécessite NetworkManager',
+    'needs NetworkManager (Raspberry Pi OS Bookworm or newer)': 'nécessite NetworkManager (Raspberry Pi OS Bookworm ou plus récent)',
+    'needs a password': 'nécessite un mot de passe',
+    'network': 'réseau',
+    'next photo in': 'prochaine photo dans',
+    'night': 'nuit',
+    'night report': 'rapport de nuit',
+    'no CPU data (pip install psutil)': 'pas de données CPU (pip install psutil)',
+    'no WebDAV folder set': 'aucun dossier WebDAV saisi',
+    'no Wi-Fi': 'pas de Wi-Fi',
+    'no alarms, no recordings': "pas d'alarmes, pas d'enregistrements",
+    'no auto connect': 'pas de connexion auto',
+    'no cameras found': 'aucune caméra trouvée',
+    'no device reached': 'aucun appareil atteint',
+    'no devices yet - press «Search»': "pas encore d'appareils – appuyer sur «Chercher»",
+    'no drop-outs': 'aucune coupure',
+    'no entries': 'aucune entrée',
+    'no folder set': 'aucun dossier saisi',
+    'no free GPIO left': 'plus aucun GPIO libre',
+    'no internet': "pas d'internet",
+    'no known network - own Wi-Fi in': 'aucun réseau connu – Wi-Fi propre dans',
+    'no loudspeaker selected': 'aucun haut-parleur choisi',
+    'no microphone': 'pas de microphone',
+    'no microphone selected': 'aucun microphone choisi',
+    'no modem found (stick plugged in? mmcli -L)': 'aucun modem trouvé (clé branchée ? mmcli -L)',
+    'no networks found': 'aucun réseau trouvé',
+    'no output chosen': 'aucune sortie choisie',
+    'no phone number set': 'aucun numéro de téléphone saisi',
+    'no picture - is the camera running?': "pas d'image – la caméra tourne-t-elle ?",
+    'no picture yet': "pas encore d'image",
+    'no relays': 'aucun relais',
+    'no schedules': 'aucun programme horaire',
+    'no thermal camera selected': 'aucune caméra thermique choisie',
+    'no time limit': 'sans limite de temps',
+    'no zones': 'aucune zone',
+    'nobody from outside': "personne de l'extérieur",
+    'noise': 'bruit',
+    'noise (microphone)': 'bruit (microphone)',
+    'noise alarm from': 'alarme bruit dès',
+    'none': 'aucun',
+    'none (clean picture)': 'aucun (image nette)',
+    'not a Motion Watch settings file': 'pas un fichier de réglages Motion Watch',
+    'not a number': 'pas un nombre',
+    'not connected': 'non connecté',
+    'not fitted': 'non monté',
+    'not found - is the repository private? Then enter the GitHub key (token)': 'introuvable – le dépôt est-il privé ? Alors saisir la clé GitHub (token)',
+    'not installed': 'non installé',
+    'not possible in the demo': 'Impossible dans la démo',
+    'not reachable': 'injoignable',
+    'not sent': 'non envoyé',
+    'not sent – notifications are not set up': 'non envoyé – les notifications ne sont pas configurées',
+    'not signed': 'non signée',
+    'nothing': 'rien',
+    'notification is not configured': "la notification n'est pas configurée",
+    'notify': 'alarme',
+    "o'clock": 'h',
+    'object': 'objet',
+    'objects': 'objets',
+    'off': 'désactivé',
+    'off: nothing starts at boot, the Pi joins its known networks': 'désactivé : rien ne démarre au boot, le Pi se connecte à ses réseaux connus',
+    'offline': 'hors ligne',
+    'ok (under-voltage earlier)': 'ok (sous-tension auparavant)',
+    'on': 'actif',
+    'on battery': 'sur batterie',
+    'on guard': 'veille',
+    'on the Pi': 'sur le Pi',
+    'on: when the Pi boots, Motion Watch starts by itself and': 'activé : au démarrage du Pi, Motion Watch démarre tout seul et',
+    'on: when the Pi boots, Motion Watch starts by itself and switches the own Wi-Fi on': 'activé : au démarrage du Pi, Motion Watch démarre tout seul et active le Wi-Fi propre',
+    'online': 'en ligne',
+    'only letters, digits, - _ /': 'seulement lettres, chiffres, - _ /',
+    'or': 'ou',
+    'or with the address from the push message. If it does not work, the Pi returns to the previous network after about a minute.': "ou avec l'adresse de la notification push. Si ça ne marche pas, le Pi revient au réseau précédent après environ une minute.",
+    'out of range': 'hors de la plage autorisée',
+    'overview on the web page: Cameras': "vue d'ensemble sur la page web : Caméras",
+    'own Wi-Fi': 'Wi-Fi propre',
+    'own Wi-Fi on': 'Wi-Fi propre activé',
+    'own Wi-Fi on - next search for known networks in': 'Wi-Fi propre actif – prochaine recherche de réseaux connus dans',
+    'own Wi-Fi on - search postponed (a device is connected)': 'Wi-Fi propre actif – recherche reportée (un appareil est connecté)',
+    'paired': 'appairé',
+    'pairing failed - is the loudspeaker in pairing mode (blue light blinking)?': 'appairage échoué – le haut-parleur est-il en mode appairage (lumière bleue qui clignote) ?',
+    'pan': 'panoramique',
+    'paplay is missing (sudo apt install pulseaudio-utils)': 'paplay manquant (sudo apt install pulseaudio-utils)',
+    'parking meter': 'parcomètre',
+    'password': 'mot de passe',
+    'password wrong': 'mot de passe incorrect',
+    'patrol': 'Patrouille',
+    'pause between two SMS': 'pause entre deux SMS',
+    'paused (manual control)': 'pause (commande manuelle)',
+    'paused (switched by hand)': 'en pause (commuté à la main)',
+    'paused (tracking person)': 'pause (suit une personne)',
+    'person': 'personne',
+    'person alarm': 'alarme personne',
+    'person in view': "personne dans l'image",
+    'person, thermal and noise alarm': 'alarme personne, thermique et bruit',
+    'persons': 'personnes',
+    'phone numbers like +41791234567': 'numéros comme +41791234567',
+    'photo saved': 'photo enregistrée',
+    'photos': 'photos',
+    'pizza': 'pizza',
+    'playing …': 'lecture …',
+    'please write a few words': "merci d'écrire quelques mots",
+    'port 1-65535': 'port 1-65535',
+    'potted plant': 'plante en pot',
+    'power': 'courant',
+    'power cut while armed': 'coupure de courant (armé)',
+    'power saving': "économie d'énergie",
+    'pre-alarm (any movement)': 'pré-alarme (tout mouvement)',
+    'prefer this network': 'préférer ce réseau',
+    'prefer this network (before other known networks)': 'préférer ce réseau (avant les autres réseaux connus)',
+    'preferred': 'préféré',
+    'python3-cryptography is missing (sudo apt install python3-cryptography)': 'python3-cryptography manquant (sudo apt install python3-cryptography)',
+    'quiet': 'calme',
+    'rain': 'Pluie',
+    'rec': 'Enregistrement',
+    'recording': 'enregistrement',
+    'recordings': 'enregistrements',
+    'recordings?': 'enregistrements à supprimer ?',
+    'relay': 'Relais',
+    'remote access': 'accès à distance',
+    'remote access (somebody watches from outside)': "accès à distance (quelqu'un regarde de l'extérieur)",
+    'round trip (1-2-3-1-2-3)': 'circuit (1-2-3-1-2-3)',
+    'running now': 'en cours',
+    'same camera as the main picture': "même caméra que l'image principale",
+    'save failed': "échec de l'enregistrement",
+    'saved': 'enregistré',
+    'saved {t}': 'enregistré {t}',
+    'sched': 'Programme horaire',
+    'scissors': 'ciseaux',
+    'searched at': 'cherché à',
+    'searching (about 10 s) …': 'recherche (environ 10 s) …',
+    'searching known networks …': 'recherche des réseaux connus …',
+    'searching …': 'recherche …',
+    'sent': 'envoyé',
+    'servo': 'Caméra',
+    'set': 'défini',
+    'set a PIN first': "définir d'abord un PIN",
+    'set a web password first': "définir d'abord un mot de passe web",
+    'set a web password first (--web-password) - otherwise anybody in the network could change the Wi-Fi': "définir d'abord un mot de passe web (--web-password) – sinon n'importe qui sur le réseau pourrait changer le Wi-Fi",
+    'set a web password first - otherwise anybody in the network could install a program': "définir d'abord un mot de passe web – sinon n'importe qui sur le réseau pourrait installer un programme",
+    'set by the internet (NTP)': 'réglée par internet (NTP)',
+    'sheep': 'mouton',
+    'show / hide fields': 'afficher / masquer des champs',
+    'show password': 'afficher le mot de passe',
+    'shown': 'affichés',
+    'signed': 'signée',
+    'skateboard': 'skateboard',
+    'skis': 'skis',
+    'slow': 'lente',
+    'snowboard': 'snowboard',
+    'somebody is talking': "quelqu'un parle",
+    'sound': 'son',
+    'sound + light flashes': 'son + flashs lumineux',
+    'sound file not found': 'fichier son introuvable',
+    'sports ball': 'ballon',
+    'standard': 'standard',
+    'starting': 'démarrage',
+    'starting …': 'démarrage …',
+    'status': 'état',
+    'still using': 'continue avec',
+    'stop sign': 'panneau stop',
+    'storm': 'tempête',
+    'strong': 'fort',
+    'suitcase': 'valise',
+    'surfboard': 'planche de surf',
+    'switch failed': 'changement échoué',
+    'switches the own Wi-Fi on': 'active le Wi-Fi propre',
+    'switching …': 'changement …',
+    'sys': 'Système',
+    'taken from the phone': 'prise du portable',
+    'tap: arm / disarm': 'appuyer : armer / désarmer',
+    'tap: show all values': 'appuyer : afficher toutes les valeurs',
+    'teddy bear': 'ours en peluche',
+    'temperature': 'température',
+    'test SMS - it works': 'SMS test – ça marche ✓',
+    'text too long or with control characters': 'texte trop long ou avec caractères de contrôle',
+    'the Bluetooth loudspeaker is being connected - try again in a few seconds': 'le haut-parleur Bluetooth est en cours de connexion – réessayer dans quelques secondes',
+    'the PIN must have 4 to 8 digits': 'le PIN doit avoir 4 à 8 chiffres',
+    'the Thermal-90 can only be used as thermal camera': 'la Thermal-90 ne peut servir que de caméra thermique',
+    'the camera stays where it is (no patrol, tracking or timelapse)': 'la caméra reste où elle est (pas de patrouille, suivi ou timelapse)',
+    'the file does not look like Motion Watch': 'le fichier ne ressemble pas à Motion Watch',
+    'the file is damaged (checksum does not match) - try again': 'le fichier est endommagé (la somme de contrôle ne correspond pas) – réessayer',
+    'the file is not a working Python program': "le fichier n'est pas un programme Python fonctionnel",
+    'the loudspeaker could not be opened': "le haut-parleur n'a pas pu être ouvert",
+    'the microphone of this device is not allowed': "le microphone de cet appareil n'est pas autorisé",
+    'the modem does not answer (wrong port?)': 'le modem ne répond pas (mauvais port ?)',
+    'the modem refuses the SMS': 'le modem refuse le SMS',
+    'the own Wi-Fi needs NetworkManager (Raspberry Pi OS Bookworm or newer)': 'le Wi-Fi propre nécessite NetworkManager (Raspberry Pi OS Bookworm ou plus récent)',
+    'the password must have 6 to 64 characters (letters, digits, signs, no umlauts)': 'le mot de passe doit avoir 6 à 64 caractères (lettres, chiffres, signes, sans accents)',
+    'the password must have 8 to 63 characters': 'le mot de passe doit avoir 8 à 63 caractères',
+    'the password was given on the command line (--web-password) - change it there': 'le mot de passe a été donné au démarrage (--web-password) – le changer là',
+    'the sound file could not be read': "le fichier son n'a pas pu être lu",
+    'the two passwords are not the same': 'les deux mots de passe ne sont pas identiques',
+    'the whole night (sunset to sunrise)': 'toute la nuit (coucher au lever du soleil)',
+    'thermal': 'thermique',
+    'thin corner marks (face stays free)': "fines marques d'angle (le visage reste libre)",
+    'this browser cannot play the live sound': 'ce navigateur ne peut pas lire le son en direct',
+    'this camera is already in use': 'cette caméra est déjà utilisée',
+    'this device is in the list already': 'cet appareil est déjà dans la liste',
+    'this is this device itself': "c'est cet appareil lui-même",
+    'this version is already running': 'cette version tourne déjà',
+    'this version is not signed by the developer - not installed (only with the setting «Also accept unsigned versions»)': "cette version n'est pas signée par le développeur – non installée (seulement avec le réglage «Accepter aussi les versions non signées»)",
+    'tie': 'cravate',
+    'tilt': 'inclinaison',
+    'time zone': 'fuseau horaire',
+    'too big for Telegram (max. 50 MB)': 'trop gros pour Telegram (max. 50 Mo)',
+    'too many network cameras': 'trop de caméras réseau',
+    'too many wrong PINs - try again in 5 minutes': 'trop de PIN erronés – réessayer dans 5 minutes',
+    'traffic light': 'feu de signalisation',
+    'train': 'train',
+    'tries the known networks (phone hotspot), otherwise switches the own Wi-Fi on': "essaie les réseaux connus (point d'accès du portable), sinon active le Wi-Fi propre",
+    'truck': 'camion',
+    'turbo': 'turbo',
+    'tv': 'téléviseur',
+    'umbrella': 'parapluie',
+    'unchanged': 'inchangé',
+    'under-voltage': 'sous-tension',
+    'under-voltage!': 'sous-tension !',
+    'unknown': 'inconnu',
+    'unknown action': 'action inconnue',
+    'unknown entry': 'entrée inconnue',
+    'unknown field': 'champ inconnu',
+    'unknown network': 'réseau inconnu',
+    'unknown network camera': 'caméra réseau inconnue',
+    'unknown relay': 'relais inconnu',
+    'unknown schedule': 'programme horaire inconnu',
+    'unknown source': 'source inconnue',
+    'unknown trigger': 'déclencheur inconnu',
+    'unknown version': 'version inconnue',
+    'until': "jusqu'à",
+    'vase': 'vase',
+    'video ready': 'vidéo prête',
+    'viewers': 'spectateurs',
+    'waiting': 'en attente',
+    'waiting at': 'attend à',
+    'waiting: alarm has priority': "en attente : l'alarme a priorité",
+    'waiting: manual control': 'en attente : commande manuelle',
+    'warm': 'corps chaud',
+    'warm body (thermal camera)': 'corps chaud (caméra thermique)',
+    'watching': 'regardent',
+    'watching now': 'regarde en ce moment',
+    'waypoints': 'points de passage',
+    'weakest': 'le plus faible',
+    'web': 'Web',
+    'wind': 'Vent',
+    'wrong PIN': 'PIN erroné',
+    'z-how': "Une zone agit sur la détection, l'enregistrement, les alarmes et les relais. Le point qui compte est le milieu en bas de l'objet détecté (les pieds).",
+    'z-ign': 'Les personnes et objets dont les pieds sont dedans sont ignorés (route, arbre, jardin du voisin).',
+    'z-only': "S'il existe au moins une telle zone, seul ce qui s'y passe compte (entrée, allée).",
+    'z-priv': "La zone est masquée en noir – dans l'image en direct, les enregistrements, les photos et le timelapse. Elle n'est jamais enregistrée ni transmise (tente voisine, chemin, fenêtre d'autrui). Important pour la protection des données.",
+    'zebra': 'zèbre',
+    '{count} person(s) detected at {time} - camera: {camera}': '{count} personne(s) détectée(s) à {time} – caméra : {camera}',
+    '{name}: movement (pre-alarm)': '{name} : mouvement (pré-alarme)',
+    '{name}: noise': '{name} : bruit',
+    '{name}: person detected': '{name} : personne détectée',
+    '{name}: warm body detected': '{name} : chaleur détectée',
+    '{n} animal': '{n} animal',
+    '{n} animals': '{n} animaux',
+    '{n} person': '{n} personne',
+    '{n} persons': '{n} personnes',
+    '← Back to the live picture': "← Retour à l'image en direct",
+    '↻ Calibrate': '↻ Calibrer',
+    '↻ Restart Pi': '↻ Redémarrer le Pi',
+    '↻ Round': '↻ Circuit',
+    '⇄ Pendulum': '⇄ Pendule',
+    '⏸ Pause program': '⏸ Mettre le programme en pause',
+    '⏻ Shut down Pi': '⏻ Éteindre le Pi',
+    '◎ Centre': '◎ Centre',
+    '⚠ no password': '⚠ pas de mot de passe',
+    '⬆ Load settings': '⬆ Charger les réglages',
+    '⬇ Download': '⬇ Télécharger',
+    '⬇ Save settings': '⬇ Sauvegarder les réglages',
+    '⭐ Praise': '⭐ Compliment',
+    '🐞 Error': '🐞 Erreur',
+    '💡 Idea': '💡 Idée',
+    '💬 Feedback to the developer': '💬 Retour au développeur',
+    '💬 Other': '💬 Autre',
+    '📍＋ Waypoint': '📍＋ Point de passage',
+    '📜 Whole log & archive': '📜 Journal complet et archive',
+    '🔊 Test sound': '🔊 Son test',
+    '🔍 Search in the network': '🔍 Chercher dans le réseau',
+    '🔐 Operator mode (lock settings)': '🔐 Mode opérateur (verrouiller les réglages)',
+    '🔒 Web password': '🔒 Mot de passe web',
+    '🖨 Quick start (QR)': '🖨 Codes QR pour se connecter',
+    '📄 Quick guide (1 page)': '📄 Guide rapide (1 page)',
+    '🖨 Quick start card with QR codes': '🖨 Guide rapide avec codes QR',
+    '🛡 Arm (countdown)': '🛡 Armer (compte à rebours)',
+    '🛡 Arm all': '🛡 Tout armer',
+    '🧭 Setup assistant': '🧭 Assistant de configuration',
+})
+TRX['it'].update({
+    '(or the address from the push message).': "(o l'indirizzo della notifica push).",
+    '+ Add relay': '+ Aggiungere un relè',
+    '+ Add schedule': '+ Aggiungere una pianificazione',
+    '+ Ignore zone': '+ Zona ignorata',
+    '+ Only-here zone': '+ Zona «solo qui»',
+    '+ Privacy zone': '+ Zona privacy',
+    '+ Waypoint': '+ Punto di passaggio',
+    "1 · Join the device's Wi-Fi": '1 · Connettersi al Wi-Fi del dispositivo',
+    '1. Install the free app «ntfy» (App Store / Play Store).': "1. Installare l'app gratuita «ntfy» (App Store / Play Store).",
+    '2 · Open the page (own Wi-Fi)': '2 · Aprire la pagina (Wi-Fi proprio)',
+    '2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera.': "2. Nell'app: + → inserire l'argomento qui sotto (e il server, se non è quello predefinito) – o aprire questo codice con la fotocamera del cellulare.",
+    '6 to 64 characters. After saving, the browser asks for it once (any user name).': 'Da 6 a 64 caratteri. Dopo il salvataggio il browser la chiede una volta (nome utente a piacere).',
+    '<li>Scan the QR code with the phone camera.</li><li>Open the page; the first time the setup assistant guides you through password and push messages.</li><li>Share → «Add to Home Screen»: start Motion Watch like an app.</li><li>Arm the protection: big «Armed» button at the top.</li>': "<li>Scansionare il codice QR con la fotocamera del cellulare.</li><li>Aprire la pagina; la prima volta l'assistente di configurazione guida attraverso password e notifiche push.</li><li>Condividi → «Aggiungi alla schermata Home»: avviare Motion Watch come un'app.</li><li>Inserire la protezione: grande pulsante «Inserito» in alto.</li>",
+    'A USB LTE stick with a SIM card (with credit). Works also where there is only the mobile network. Costs per SMS - mind the limits.': "Una chiavetta USB LTE con scheda SIM (con credito). Funziona anche dove c'è solo la rete mobile. Ogni SMS costa – rispettare i limiti.",
+    'A password is set already. Enter a new one only to change it.': 'Una password è già impostata. Inserirne una nuova solo per cambiarla.',
+    'A running recording is finished first. To switch it on again: unplug the power and plug it in again.': 'Una registrazione in corso viene prima terminata. Per riaccendere: staccare la corrente e ricollegarla.',
+    'AI detection': 'Rilevamento IA',
+    'AI person detection (SSD MobileNet V2)': 'Rilevamento persone IA (SSD MobileNet V2)',
+    'AI persons': 'Persone IA',
+    'ALARM': 'ALLARME',
+    'AT commands (serial port)': 'Comandi AT (porta seriale)',
+    'Active low': 'Attivo basso',
+    'Add': 'Aggiungi',
+    'Add a device': 'Aggiungere un dispositivo',
+    'Add camera': 'Aggiungere telecamera',
+    'Add current pan as waypoint': 'Posizione attuale come punto di passaggio',
+    'Add network camera': 'Aggiungere telecamera di rete',
+    'Add network camera (RTSP / HTTP stream, Wi-Fi cams)': 'Aggiungere una telecamera di rete (stream RTSP / HTTP, telecamere Wi-Fi)',
+    'Add technical details (version, device, last important events - no pictures, no passwords)': 'Allegare i dati tecnici (versione, dispositivo, ultimi eventi importanti – niente immagini, niente password)',
+    'Address of a Huawei HiLink stick': 'Indirizzo di una chiavetta Huawei HiLink',
+    'Address of this page for links (e.g. https://pi.local:5000)': 'Indirizzo di questa pagina per i link (p. es. https://pi.local:5000)',
+    'Advanced': 'Avanzate',
+    'After this the page asks for the new password once (user name: anything).': 'Poi la pagina chiede una volta la nuova password (nome utente: a piacere).',
+    'Alarm & camping': 'Allarme e campeggio',
+    'Alarm also as SMS (person, sabotage, warm body, noise)': 'Allarme anche via SMS (persona, sabotaggio, corpo caldo, rumore)',
+    'Alarm messages straight into the browser / the home screen app of this device.': "Messaggi d'allarme direttamente nel browser / nell'app della schermata Home di questo dispositivo.",
+    'Alarm sound': "Suono d'allarme",
+    'Alarm sound in open browsers (switch on with the bell at the top)': "Suono d'allarme nei browser aperti (attivare con la campanella in alto)",
+    'Alarm sound in the browser': "Suono d'allarme nel browser",
+    'Alarm when a warm body moves inside the zones': 'Allarme quando un corpo caldo si muove nelle zone',
+    'All': 'Tutti',
+    'All animals': 'Tutti gli animali',
+    'All days': 'Tutti i giorni',
+    'All kinds': 'Tutti i tipi',
+    'All sources': 'Tutte le sorgenti',
+    'All time': 'Tutto il periodo',
+    'Also accept unsigned versions (not recommended - only for own builds)': 'Accettare anche versioni non firmate (sconsigliato – solo per versioni proprie)',
+    'Also when disarmed (e.g. keep animals out of the garden)': 'Anche se disinserito (p. es. tenere lontani gli animali dal giardino)',
+    'Always': 'Sempre',
+    'Animal diary': 'Diario animali',
+    'Appearance': 'Aspetto',
+    'Applies': 'Vale',
+    'Archive': 'Archivio',
+    'Arm': 'Inserire',
+    'Arm (countdown)': 'Inserire (conto alla rovescia)',
+    'Arm now': 'Inserire subito',
+    'Armed': 'Inserito',
+    'Armed (alarms)': 'Inserito (allarmi)',
+    'Armed - alarms are active': 'Inserito – gli allarmi sono attivi',
+    'Armed in': 'Inserito tra',
+    'Arming countdown (s)': "Conto alla rovescia all'inserimento (s)",
+    'Arrow keys move the camera': 'Le frecce della tastiera muovono la telecamera',
+    'At most SMS per day': 'Al massimo SMS al giorno',
+    'At most one SMS every (minutes)': 'Al massimo un SMS ogni (minuti)',
+    'Audio': 'Audio',
+    'Auto': 'Auto',
+    'Auto low-light mode (contrast boost)': 'Modalità poca luce auto (contrasto)',
+    'Auto rain detection': 'Rilevamento automatico pioggia',
+    'Auto relays': 'Relè automatici',
+    'Auto relays enabled': 'Relè automatici attivi',
+    'Auto wind detection': 'Rilevamento automatico vento',
+    'Auto-tune': 'Regolazione automatica',
+    'Auto: the relay switches on while its trigger is in view and stays on for the hold time. Animal and object triggers (e.g. cat) need the AI model.': "Auto: il relè si accende finché il suo attivatore è nell'immagine e resta acceso per il tempo di mantenimento. Gli attivatori animali e oggetti (p. es. gatto) richiedono il modello IA.",
+    'Auto: the relay switches on while its trigger is in view and stays on for the hold time. Animal and object triggers (e.g. cat) need the AI model. Pre-alarm switches on at the first movement in the picture, long before a person is confirmed. Remote access switches on while somebody watches over Tailscale - also when disarmed (e.g. a small warning lamp).': "Auto: il relè si accende finché il suo attivatore è nell'immagine e resta acceso per il tempo di mantenimento. Gli attivatori animali e oggetti (p. es. gatto) richiedono il modello IA. Il preallarme si accende già al primo movimento nell'immagine, molto prima che una persona sia confermata. L'accesso remoto si accende finché qualcuno guarda tramite Tailscale – anche se disinserito (p. es. piccola spia).",
+    'Automatic (first working USB camera)': 'Automatico (prima telecamera USB funzionante)',
+    'Automatic tuning': 'Regolazione automatica',
+    'Automatic update also while armed (otherwise only when disarmed)': 'Aggiornamento automatico anche se inserito (altrimenti solo disinserito)',
+    "Automatic update at (o'clock)": 'Aggiornamento automatico alle (ora)',
+    'Automatic update to version {v} – the program restarts (about 20 s)': 'Aggiornamento automatico alla versione {v} – il programma si riavvia (circa 20 s)',
+    'Automatic: known networks (e.g. phone hotspot), otherwise own Wi-Fi': 'Automatico: reti conosciute (p. es. hotspot del cellulare), altrimenti Wi-Fi proprio',
+    'Automatic: look for known networks every (min, 0 = never)': 'Automatico: cercare reti conosciute ogni (min, 0 = mai)',
+    'Automatic: phone hotspot / known networks, otherwise own Wi-Fi': 'Automatico: hotspot del cellulare / reti conosciute, altrimenti Wi-Fi proprio',
+    'Automatic: wait for a known network (s)': 'Automatico: attendere una rete conosciuta (s)',
+    'Autostart OFF': 'Avvio automatico SPENTO',
+    'Autostart ON': 'Avvio automatico ACCESO',
+    'Autostart at boot': "Avvio automatico all'accensione",
+    'Autostart off': 'Avvio automatico spento',
+    'Autostart on': 'Avvio automatico acceso',
+    'Autostart with own Wi-Fi': 'Avvio automatico con Wi-Fi proprio',
+    'Away after N minutes without answer': 'Assente dopo N minuti senza risposta',
+    'Back': 'Indietro',
+    'Backup': 'Backup',
+    'Bangs / claps (animals)': 'Scoppi / battiti (animali)',
+    'Battery': 'Batteria',
+    'Battery almost empty: about {pct} % ({hours:.1f} h)': 'Batteria quasi scarica: circa {pct} % ({hours:.1f} h)',
+    'Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap': 'Batteria quasi scarica: circa {pct} % ({hours:.1f} h) rimanente – caricare o sostituire',
+    'Battery empty – the Pi shuts down cleanly': 'Batteria scarica – il Pi si spegne correttamente',
+    'Battery is full now': 'La batteria ora è carica',
+    'Battery marked as full': 'Batteria segnata come carica',
+    'Big animal (bear, cow, horse, ...)': 'Animale grande (orso, mucca, cavallo, …)',
+    'Big animal: sound': 'Animale grande: suono',
+    'Bluetooth': 'Bluetooth',
+    'Bluetooth is not available (sudo apt install bluez)': 'Bluetooth non disponibile (sudo apt install bluez)',
+    'Bluetooth loudspeaker': 'Altoparlante Bluetooth',
+    'Bluetooth sound needs the program as normal user (not with sudo / not as system service)': "L'audio Bluetooth funziona solo se il programma gira come utente normale (non con sudo / non come servizio di sistema)",
+    'Build': 'Versione',
+    'Buttons': 'Pulsanti',
+    'CAMERA CONTROL': 'COMANDO TELECAMERA',
+    'CPU': 'CPU',
+    'CPU load, last 60 seconds': 'Carico CPU, ultimi 60 secondi',
+    'Calibrate': 'Calibrare',
+    'Camera & servos': 'Telecamera e servo',
+    'Camera / Servos': 'Telecamera / servo',
+    'Camera control': 'Comando telecamera',
+    'Camera to the middle': 'Telecamera al centro',
+    'Cameras': 'Telecamere',
+    'Camping': 'Campeggio',
+    'Camping / protection': 'Campeggio / protezione',
+    'Camping OFF': 'Campeggio SPENTO',
+    'Camping ON': 'Campeggio ACCESO',
+    'Camping profile': 'Profilo campeggio',
+    'Camping profile OFF': 'Profilo campeggio SPENTO',
+    'Camping profile ON': 'Profilo campeggio ACCESO',
+    'Cancel': 'Annulla',
+    'Cancel selection': 'Termina selezione',
+    'Centre': 'Centro',
+    'Centre camera': 'Centrare la telecamera',
+    'Change web password': 'Cambiare la password web',
+    'Choose a camera…': 'Scegli una telecamera …',
+    'Clear': 'Cancella',
+    'Clear all waypoints?': 'Cancellare tutti i punti di passaggio?',
+    'Clear waypoints': 'Cancellare i punti di passaggio',
+    "Click the corners of the area in the picture. Click the first point or press 'Finish shape' to close it.": "Clicca sugli angoli dell'area nell'immagine. Clicca sul primo punto o su «Chiudere la forma» per chiuderla.",
+    'Clock': 'Ora',
+    'Close': 'Chiudi',
+    'Collapse all': 'Chiudi tutto',
+    'Colours': 'Colori',
+    'Confidence threshold': 'Soglia di confidenza',
+    'Connect': 'Connetti',
+    'Connect now': 'Connetti ora',
+    'Connected with': 'Connesso a',
+    'Connection': 'Connessione',
+    'Contact for an answer (optional)': 'Contatto per una risposta (facoltativo)',
+    'Continue without a password (not recommended)': 'Continuare senza password (sconsigliato)',
+    'Control': 'Comando',
+    'Controls': 'Comando',
+    'Converting for the browser (one time)…': 'Conversione per il browser (una volta) …',
+    'Cooldown between alarms (s)': 'Pausa tra allarmi (s)',
+    'Copy all recordings (otherwise only alarm recordings: armed or with a person)': "Copiare tutte le registrazioni (altrimenti solo quelle d'allarme: inserito o con una persona)",
+    'Copy link': 'Copiare il link',
+    'Copy recordings to': 'Copiare le registrazioni in',
+    'Copy the link from the field': 'Copiare il link dal campo',
+    'Create link (24 h)': 'Creare un link (24 h)',
+    'Create link (no limit)': 'Creare un link (illimitato)',
+    'Create new link': 'Creare un nuovo link',
+    'Create video': 'Creare il video',
+    'DETECTIONS': 'RILEVAMENTI',
+    'Dark': 'Scuro',
+    'Dark theme': 'Tema scuro',
+    'Date': 'Data',
+    'Days': 'Giorni',
+    'Delete': 'Elimina',
+    'Delete selected': 'Elimina selezione',
+    'Delete this entry?': 'Eliminare questa voce?',
+    'Delete this recording?': 'Eliminare questa registrazione?',
+    'Detection': 'Rilevamento',
+    'Detection (master switch)': 'Rilevamento (interruttore principale)',
+    'Detections': 'Rilevamenti',
+    'Deterrence': 'Dissuasione',
+    'Device name (placeholder {name})': 'Nome del dispositivo (segnaposto {name})',
+    'Devices': 'Dispositivi',
+    'Diary': 'Diario',
+    'Disarm': 'Disinserire',
+    'Disarm all': 'Disinserire tutti',
+    'Disarmed': 'Disinserito',
+    'Disconnect': 'Disconnetti',
+    'Done!': 'Fatto!',
+    'Double-click video: video only · F11: fullscreen · Esc: back': 'Doppio clic sul video: solo video · F11: schermo intero · Esc: indietro',
+    'Double-click video: video only · F11: fullscreen · Esc: back · Ctrl+B: settings panel · right-click video: show / hide fields': 'Doppio clic sul video: solo video · F11: schermo intero · Esc: indietro · Ctrl+B: pannello impostazioni · clic destro sul video: mostrare / nascondere campi',
+    'Download': 'Scarica',
+    'Download ZIP': 'Scarica ZIP',
+    'Downloading and checking …': 'Download e verifica …',
+    'Drag a corner to move it. Select a zone in the list to edit it.': 'Un angolo si può spostare. Scegli una zona nella lista per modificarla.',
+    'Drive along the waypoints': 'Percorrere i punti di passaggio',
+    'Duration of sound / flashing (s)': 'Durata del suono / dei lampi (s)',
+    'Duration of the siren (s)': 'Durata della sirena (s)',
+    'Dwell at waypoint (s)': 'Sosta al punto di passaggio (s)',
+    'EVENT LOG': 'REGISTRO EVENTI',
+    'Each day is saved as its own file and kept for': 'Ogni giorno viene salvato in un file proprio e conservato:',
+    'Edit': 'Modifica',
+    'Edit schedule': 'Modificare la pianificazione',
+    'Empty = standard text (grey). Placeholders:': 'Vuoto = testo standard (grigio). Segnaposto:',
+    'Empty = standard text. Placeholders:': 'Vuoto = testo standard. Segnaposto:',
+    'Enabled': 'Attivo',
+    'Encrypted (TLS, usually port 8883)': 'Crittografato (TLS, di solito porta 8883)',
+    'End camping? The own Wi-Fi is switched off again - this page loses its connection and the Pi goes back to the known networks.': 'Terminare il campeggio? Il Wi-Fi proprio viene spento – questa pagina perde la connessione e il Pi torna alle reti conosciute.',
+    'End guest access': "Terminare l'accesso ospite",
+    'End guest access? The link stops working at once.': "Terminare l'accesso ospite? Il link smette subito di funzionare.",
+    'Error': 'Errore',
+    'Event log': 'Registro eventi',
+    'Event log (important)': 'Registro eventi (importanti)',
+    'Event log: keep the archive (days)': "Registro eventi: conservare l'archivio (giorni)",
+    'Event log: status line every N minutes (0 = off)': 'Registro eventi: riga di stato ogni N minuti (0 = spento)',
+    'Events per weekday and hour': 'Eventi per giorno della settimana e ora',
+    'Exit fullscreen (Esc)': 'Esci da schermo intero (Esc)',
+    'Expand all': 'Apri tutto',
+    'FPS': 'FPS',
+    'Fast': 'Veloce',
+    'Fast beeps': 'Bip rapidi',
+    'Favorites': 'Preferiti',
+    'Favorites are never deleted by the automatic cleanup': 'I preferiti non vengono mai cancellati dalla pulizia automatica',
+    'Favourite': 'Preferito',
+    'Favourites': 'Preferiti',
+    'Features': 'Funzioni',
+    'Feedback to the developer': 'Feedback allo sviluppatore',
+    'Fine-tuning': 'Regolazioni fini',
+    'Finish shape': 'Chiudere la forma',
+    'Finished alarm recordings are copied away from the device - if it is stolen or broken, the clips are safe.': "Le registrazioni d'allarme finite vengono copiate fuori dal dispositivo – se viene rubato o rotto, i clip sono al sicuro.",
+    'Finishing the recording, saving the settings …': 'Chiusura della registrazione, salvataggio delle impostazioni …',
+    'Fixed times': 'Orari fissi',
+    'Folder (USB stick / NAS)': 'Cartella (chiavetta USB / NAS)',
+    'Folder (USB stick / NAS, e.g. /media/pi/STICK/MotionWatch)': 'Cartella (chiavetta USB / NAS, p. es. /media/pi/STICK/MotionWatch)',
+    'Follow': 'Seguire',
+    'Follow a detected person': 'Seguire una persona rilevata',
+    'Follow detected person (auto pan/tilt)': 'Seguire la persona rilevata (brandeggio auto)',
+    'Forget network': 'Dimenticare la rete',
+    'Forget this network?': 'Dimenticare questa rete?',
+    'Frames of steady motion': 'Immagini di movimento regolare',
+    'From': 'Da',
+    'Full speed after an event for (s)': 'Piena velocità dopo un evento per (s)',
+    'Full speed while somebody watches the live picture': "Piena velocità finché qualcuno guarda l'immagine live",
+    'Fullscreen (F11)': 'Schermo intero (F11)',
+    'GPIO': 'GPIO',
+    'GPIO must be a number': 'il GPIO deve essere un numero',
+    'GPIO must be between 2 and 27': 'il GPIO deve essere tra 2 e 27',
+    'GPIO {n} is already used by another relay': 'GPIO {n} è già usato da un altro relè',
+    'GPIO {n} is used by a light': 'GPIO {n} è usato da una luce',
+    'GPIO {n} is used by a servo': 'GPIO {n} è usato da un servo',
+    'GPIO {n} is used by the thermal camera': 'GPIO {n} è usato dalla termocamera',
+    'GitHub key (token) - only for a private repository': 'Chiave GitHub (token) – solo per un repository privato',
+    'GitHub refused the key - check that it is valid and may read this repository': 'GitHub ha rifiutato la chiave – verificare che sia valida e possa leggere questo repository',
+    'Guest access': 'Accesso ospite',
+    'Guest access is off': "L'accesso ospite è spento",
+    'Guest access is on': "L'accesso ospite è attivo",
+    'Guest view · watch only · tap the picture = full screen': "Vista ospite · solo guardare · toccare l'immagine = schermo intero",
+    'Header': 'Intestazione',
+    'Header buttons': 'Pulsanti in alto',
+    'HiLink stick not found (address?)': 'chiavetta HiLink non trovata (indirizzo?)',
+    'Hide header': "Nascondere l'intestazione",
+    'High whistle (animals)': 'Fischio acuto (animali)',
+    'Highlight persons red': 'Evidenziare le persone in rosso',
+    'Hold (s)': 'Mantenimento (s)',
+    'Hold after person (s)': 'Mantenere dopo persona (s)',
+    'Hold to talk': 'Tenere premuto per parlare',
+    'Home Assistant finds Motion Watch by itself (discovery)': 'Home Assistant trova Motion Watch da solo (discovery)',
+    'Home network': 'Rete di casa',
+    'Horn': 'Clacson',
+    'Hot areas only: warmest N percent': 'Solo zone calde: gli N percento più caldi',
+    'IR light': 'Luce IR',
+    'Idea': 'Idea',
+    'Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one.': 'Idee, errori, complimenti – tutto aiuta. Il messaggio parte in forma anonima: niente nome, niente indirizzo, a meno che non li scrivi tu.',
+    'Idle': 'Pronto',
+    'Ignore cars / vehicles': 'Ignorare auto / veicoli',
+    'Ignore zone': 'Zona ignorata',
+    'Image': 'Immagine',
+    'Images': 'Immagini',
+    'Important only': 'Solo importanti',
+    'In the dark also brighten the picture you see (live, recordings)': "Al buio schiarire anche l'immagine visibile (live, registrazioni)",
+    'Infrared': 'Infrarossa',
+    'Infrared light': 'Luce infrarossa',
+    'Infrared light on / off': 'Luce infrarossa accesa / spenta',
+    'Infrared light: Auto means': 'Luce infrarossa: «Auto» significa',
+    'Infrared light: connected to': 'Luce infrarossa: collegata a',
+    'Inside any schedule': 'In una pianificazione',
+    'Install': 'Installa',
+    'Install new versions automatically': 'Installare automaticamente le nuove versioni',
+    'Internet': 'Internet',
+    'Invert pan direction': 'Invertire direzione brandeggio',
+    'Invert tilt direction': 'Invertire direzione inclinazione',
+    'JPEG quality': 'Qualità JPEG',
+    'Keep diary entries (days, ★ always)': 'Conservare le voci del diario (giorni, ★ sempre)',
+    'Keep person flagged while tracked': "Mantenere la persona marcata durante l'inseguimento",
+    'Keep recording after (s)': 'Prolungamento registrazione (s)',
+    'LOW LIGHT': 'POCA LUCE',
+    'Lamp': 'Luce',
+    'Language': 'Lingua',
+    'Largest first': 'Prima i più grandi',
+    'Last': 'Ultimo',
+    'Last 14 days (click a day)': 'Ultimi 14 giorni (cliccare un giorno)',
+    'Last 7 days': 'Ultimi 7 giorni',
+    'Last night': 'La notte scorsa',
+    'Last report': 'Ultimo rapporto',
+    'Later': 'Più tardi',
+    'Latitude (sunrise / sunset)': 'Latitudine (alba / tramonto)',
+    'Learn the picture again (after moving the camera)': "Imparare di nuovo l'immagine (dopo aver spostato la telecamera)",
+    "Let's go": 'Si parte',
+    'Light': 'Chiaro',
+    'Light & sound': 'Luce e suono',
+    'Light level': 'Luminosità',
+    'Light ok': 'Luce ok',
+    'Light stays on after an alarm (s)': 'La luce resta accesa dopo un allarme (s)',
+    'Light theme': 'Tema chiaro',
+    'Lights': 'Luce',
+    'Link copied': 'Link copiato',
+    'Listen': 'Ascoltare',
+    'Listen to the microphone': 'Ascoltare il microfono',
+    'Listening ended': 'Ascolto terminato',
+    'Listening volume (this device)': 'Volume di ascolto (questo dispositivo)',
+    'Live': 'Live',
+    'Load more': 'Carica altro',
+    'Load settings …': 'Caricare le impostazioni …',
+    'Load the settings from this file? The current settings are replaced (a copy is kept on the Pi).': 'Caricare le impostazioni da questo file? Quelle attuali vengono sostituite (una copia resta sul Pi).',
+    'Lock the settings now? Only the main switches stay usable. Unlocking needs the PIN.': 'Bloccare ora le impostazioni? Restano utilizzabili solo gli interruttori principali. Per sbloccare serve il PIN.',
+    'Log': 'Registro',
+    'Longitude (sunrise / sunset)': 'Longitudine (alba / tramonto)',
+    'Look for new versions by itself (every 3 hours)': 'Cercare da solo nuove versioni (ogni 3 ore)',
+    'Loudspeaker': 'Altoparlante',
+    'Loudspeaker in use': 'Altoparlante in uso',
+    'Loudspeakers': 'Altoparlanti',
+    'Low light': 'Poca luce',
+    'Low-light threshold (brightness)': 'Soglia poca luce (luminosità)',
+    'MANUAL': 'MANUALE',
+    'MQTT broker (address, e.g. 192.168.1.10 or homeassistant.local)': 'Broker MQTT (indirizzo, p. es. 192.168.1.10 o homeassistant.local)',
+    'MQTT on (state, events, commands)': 'MQTT acceso (stato, eventi, comandi)',
+    'MQTT password': 'Password MQTT',
+    'MQTT port': 'Porta MQTT',
+    'MQTT user name': 'Nome utente MQTT',
+    'Main camera': 'Telecamera principale',
+    'Manual': 'Istruzioni',
+    'Manual control - tracking / patrol paused': 'Comando manuale - inseguimento / pattuglia in pausa',
+    'Manual control pause (s)': 'Pausa dopo comando manuale (s)',
+    'Mark all detected objects (cars, animals, ...)': 'Marcare tutti gli oggetti rilevati (auto, animali, ...)',
+    'Mark detected objects (animals, cars ...)': 'Marcare gli oggetti rilevati (animali, auto …)',
+    'Markings in recordings and alarm pictures': "Marcature nelle registrazioni e immagini d'allarme",
+    'Marks': 'Marcare',
+    'Max recordings folder (GB)': 'Cartella registrazioni max. (GB)',
+    'Max speed (px/frame)': 'Velocità max. (px/immagine)',
+    'Max timelapse folder (GB)': 'Cartella timelapse max. (GB)',
+    'Max trigger boost': "Amplificazione max. dell'attivazione",
+    'Medium': 'Medio',
+    'Memory card almost full: {free} MB free - the oldest recordings are deleted': 'Scheda di memoria quasi piena: {free} MB liberi – le registrazioni più vecchie vengono cancellate',
+    'Messages': 'Testi dei messaggi',
+    'Microphone': 'Microfono',
+    'Microphone gain (dB)': 'Guadagno microfono (dB)',
+    'Microphones': 'Microfoni',
+    'Min object size (px²)': 'Dimensione min. oggetto (px²)',
+    'Min speed (px/frame)': 'Velocità min. (px/immagine)',
+    'Motion Watch - desktop window opened': 'Motion Watch - finestra aperta',
+    'Motion Watch is online in Wi-Fi {ssid}: {addr}': 'Motion Watch è online nel Wi-Fi {ssid}: {addr}',
+    'Motion Watch manual · version': 'Istruzioni di Motion Watch · versione',
+    'Motion persons need AI confirmation': 'Persone in movimento: conferma IA necessaria',
+    'Motion sensor': 'Sensore di movimento',
+    'Motion sensor (MPU-6050, if fitted): alarm when the device is moved or knocked over': 'Sensore di movimento (MPU-6050, se montato): allarme se il dispositivo viene spostato o rovesciato',
+    'Motion sensor: alarm from a tilt of (degrees)': "Sensore di movimento: allarme da un'inclinazione di (gradi)",
+    'Mute 30 min': 'Muto 30 min',
+    'Muted until': 'Muto fino a',
+    'Name': 'Nome',
+    'Name of this device (optional)': 'Nome di questo dispositivo (facoltativo)',
+    'Network': 'Rete',
+    'Network camera': 'Telecamera di rete',
+    'Network name (SSID)': 'Nome della rete (SSID)',
+    'New PIN for unlocking (4-8 digits):': 'Nuovo PIN per sbloccare (4-8 cifre):',
+    'New password': 'Nuova password',
+    'New picture': 'Nuova immagine',
+    'New version': 'Nuova versione',
+    'New version running': 'Nuova versione in uso',
+    'New version {v} available - tap «Update now» on the page': 'Nuova versione {v} disponibile – toccare «Aggiorna ora» sulla pagina',
+    'Newest first': 'Prima i più recenti',
+    'Next': 'Avanti',
+    'Night report': 'Rapporto notturno',
+    'Night report is off.': 'Il rapporto notturno è spento.',
+    'Night report sent': 'Rapporto notturno inviato',
+    'Night report: push message in the morning with what happened in the night': 'Rapporto notturno: notifica push al mattino con ciò che è successo di notte',
+    'No address found (network?)': 'Nessun indirizzo trovato (rete?)',
+    'No animals yet. As soon as the AI recognises an animal, its best picture appears here.': "Ancora nessun animale. Appena l'IA riconosce un animale, qui appare la sua immagine migliore.",
+    'No answer from the Pi.': 'Nessuna risposta dal Pi.',
+    'No match': 'Nessun risultato',
+    'No person': 'Nessuna persona',
+    'No rain': 'Niente pioggia',
+    'No recordings match the filters': 'Nessuna registrazione corrisponde ai filtri',
+    'No report sent yet - the first one comes in the morning.': 'Ancora nessun rapporto – il primo arriva al mattino.',
+    'No report sent yet – the first one comes in the morning.': 'Ancora nessun rapporto – il primo arriva al mattino.',
+    'No update source set yet (see above)': 'Ancora nessuna sorgente di aggiornamenti (vedi sopra)',
+    'Nobody has set a password yet: anybody in this network can open this page, switch the alarm off or listen in. Set a password now (6 to 64 characters).': "Non è ancora impostata nessuna password: chiunque in questa rete può aprire questa pagina, spegnere l'allarme o ascoltare. Imposta ora una password (da 6 a 64 caratteri).",
+    'Noise (microphone)': 'Rumore (microfono)',
+    'Noise alarm': 'Allarme rumore',
+    'Noise alarm: alarm when it gets loud (cracking, rustling, voices)': 'Allarme rumore: allarme quando diventa rumoroso (scricchiolii, fruscii, voci)',
+    'Noise alarm: at least (s)': 'Allarme rumore: almeno (s)',
+    'Noise alarm: loud ({db} dB) at {time} - camera: {camera}': 'Allarme rumore: forte ({db} dB) alle {time} – telecamera: {camera}',
+    'Noise alarm: louder than the background by (dB)': 'Allarme rumore: più forte del sottofondo di (dB)',
+    'Noise alarm: push message': 'Allarme rumore: notifica push',
+    'Noise alarm: text': 'Allarme rumore: testo',
+    'Noise alarm: title': 'Allarme rumore: titolo',
+    'Not sent – push messages are not set up': 'Non inviato – le notifiche push non sono configurate',
+    'Note animals, persons and noises (animal diary + night report)': 'Annotare animali, persone e rumori (diario animali + rapporto notturno)',
+    'Note: the Wi-Fi code contains the password – do not post the card in public.': 'Attenzione: il codice Wi-Fi contiene la password – non esporre la scheda in pubblico.',
+    'Nothing found – try another word (e.g. password, Wi-Fi, siren).': "Nulla trovato – prova un'altra parola (p. es. password, Wi-Fi, sirena).",
+    'Nothing found.': 'Nulla trovato.',
+    'Nothing important yet – everything else is in the whole log.': 'Ancora niente di importante – tutto il resto è nel registro completo.',
+    'Notification type': 'Tipo di notifica',
+    'Notifications': 'Notifiche',
+    'Notifications are not allowed for this page (browser settings).': 'Le notifiche non sono consentite per questa pagina (impostazioni del browser).',
+    'OBJECTS': 'OGGETTI',
+    'OFF': 'SPENTO',
+    'ON': 'ACCESO',
+    'Object confidence': 'Confidenza oggetti',
+    'Object list': 'Lista oggetti',
+    'Objects': 'Oggetti',
+    'Off': 'Spento',
+    'Off - enter the capacity of the powerbank.': 'Spento – inserire la capacità del power bank.',
+    'Off – enter the capacity of the powerbank below.': 'Spento – inserire qui sotto la capacità del power bank.',
+    'Oldest first': 'Prima i più vecchi',
+    'On': 'Acceso',
+    'On the road (Tailscale)': 'In viaggio (Tailscale)',
+    'Only known networks': 'Solo reti conosciute',
+    'Only save (connects automatically)': 'Solo salvare (si connette automaticamente)',
+    'Only warm bodies that move (ignore warm stones, engines)': 'Solo corpi caldi in movimento (ignorare pietre calde, motori)',
+    'Only when nobody is home': 'Solo se nessuno è a casa',
+    'Only when push messages cannot be sent (no internet)': 'Solo se nessuna notifica push è possibile (niente internet)',
+    'Only when somebody is home': 'Solo se qualcuno è a casa',
+    'Only-here zone': 'Zona «solo qui»',
+    'Open': 'Apri',
+    'Open Motion Watch on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.': "Con questi codici apri Motion Watch su altri dispositivi. Sul cellulare: Condividi → «Aggiungi alla schermata Home» – poi parte come un'app.",
+    'Open animal diary': 'Aprire il diario animali',
+    'Open animal diary (browser)': 'Aprire il diario animali (browser)',
+    'Open camera grid (browser)': 'Aprire la panoramica telecamere (browser)',
+    'Open event log & archive (browser)': 'Aprire registro e archivio (browser)',
+    'Open recordings preview (browser)': "Aprire l'anteprima registrazioni (browser)",
+    'Open secure page': 'Aprire la pagina sicura',
+    'Open the page (home network)': 'Aprire la pagina (rete di casa)',
+    'Open zone editor (browser)': "Aprire l'editor delle zone (browser)",
+    'Operator mode': 'Modalità operatore',
+    'Operator mode (lock settings)': 'Modalità operatore (bloccare le impostazioni)',
+    'Operator mode on': 'Modalità operatore attiva',
+    'Other': 'Altro',
+    'Other / hidden network …': 'Altra rete / rete nascosta …',
+    'Other Motion Watch devices': 'Altri dispositivi Motion Watch',
+    'Other devices': 'Altri dispositivi',
+    'Other devices (W): camera, USB, servos': 'Altri dispositivi (W): telecamera, USB, servo',
+    'Other side': 'Altro lato',
+    'Outside all schedules': 'Fuori da tutte le pianificazioni',
+    'Overlay strength': 'Intensità della sovrapposizione',
+    'Overlay the thermal picture': "Sovrapporre l'immagine termica",
+    'Own Wi-Fi': 'Wi-Fi proprio',
+    'Own Wi-Fi (hotspot)': 'Wi-Fi proprio (hotspot)',
+    'Own Wi-Fi OFF': 'Wi-Fi proprio SPENTO',
+    'Own Wi-Fi ON': 'Wi-Fi proprio ACCESO',
+    'Own Wi-Fi at boot': "Wi-Fi proprio all'avvio",
+    'Own Wi-Fi of the device': 'Wi-Fi proprio del dispositivo',
+    'Own Wi-Fi: name': 'Wi-Fi proprio: nome',
+    'Own Wi-Fi: password (8-63 characters)': 'Wi-Fi proprio: password (8-63 caratteri)',
+    'Own sounds (.wav / .mp3): put the files into': 'Suoni propri (.wav / .mp3): mettere i file in',
+    'PCA9685 address (I2C)': 'Indirizzo PCA9685 (I2C)',
+    'PCA9685 channel pan': 'Canale PCA9685 brandeggio',
+    'PCA9685 channel tilt': 'Canale PCA9685 inclinazione',
+    'PERSON DETECTED': 'PERSONA RILEVATA',
+    'PERSONS DETECTED': 'PERSONE RILEVATE',
+    'PERSONS NOW': 'PERSONE ORA',
+    'PIN:': 'PIN:',
+    'Page address': 'Indirizzo di questa pagina',
+    'Pan': 'Brandeggio',
+    'Pan (%)': 'Brandeggio (%)',
+    'Pan limit: max. degrees from the middle': 'Limite brandeggio: gradi max. dal centro',
+    'Pan/Tilt surveillance with AI, patrol & relay': 'Sorveglianza brandeggio/inclinazione con IA, pattuglia e relè',
+    'Panels': 'Pannelli',
+    'Password': 'Password',
+    'Password (6-64 characters)': 'Password (6-64 caratteri)',
+    'Password (empty = keep the saved one)': 'Password (vuota = mantenere quella salvata)',
+    'Password for this page': 'Password per questa pagina',
+    'Password removed': 'Password rimossa',
+    'Password saved. The page reloads - log in with any user name and the new password.': 'Password salvata. La pagina si ricarica – accedi con un nome utente qualsiasi e la nuova password.',
+    'Patrol': 'Pattuglia',
+    'Patrol / tracking': 'Pattuglia / inseguimento',
+    'Patrol active': 'Pattuglia attiva',
+    'Patrol off': 'Pattuglia spenta',
+    'Patrol route': 'Percorso di pattuglia',
+    'Patrol speed (%/s)': 'Velocità di pattuglia (%/s)',
+    'Patrol tilt (%)': 'Inclinazione di pattuglia (%)',
+    'Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off': 'Pattuglia: tocco = spento → avanti e indietro (1-2-3-2-1) → giro (1-2-3-1) → spento',
+    'Pause between two reactions (s)': 'Pausa tra due reazioni (s)',
+    'Pause program': 'Pausa del programma',
+    'Pause the program for': 'Mettere in pausa il programma per',
+    'Pendulum': 'Pendolo',
+    'Person': 'Persona',
+    'Person / warm body / noise': 'Persona / calore / rumore',
+    'Person detected': 'Persona rilevata',
+    'Person tracking': 'Inseguimento persone',
+    'Person: sound': 'Persona: suono',
+    'Person: text': 'Persona: testo',
+    'Person: title': 'Persona: titolo',
+    'Persons': 'Persone',
+    'Persons now': 'Persone ora',
+    'Persons total': 'Persone in totale',
+    'Phone numbers (e.g. +41791234567, several with commas)': 'Numeri di telefono (p. es. +41791234567, più numeri separati da virgola)',
+    'Phones / devices for presence (IP or name, comma separated)': 'Cellulari / dispositivi per la presenza (IP o nome, separati da virgola)',
+    'Phones only give the microphone to https pages. Open the secure page, confirm the certificate warning once («Advanced» → «Continue»), then hold the button again.': "I cellulari concedono il microfono solo alle pagine https. Apri la pagina sicura, conferma una volta l'avviso del certificato («Avanzate» → «Continua»), poi tieni di nuovo premuto il pulsante.",
+    'Photo': 'Foto',
+    'Photo every N minutes': 'Foto ogni N minuti',
+    'Photo into the recordings': 'Foto nelle registrazioni',
+    'Photo now': 'Foto ora',
+    'Photo requested': 'Foto richiesta',
+    'Photo saved': 'Foto salvata',
+    'Pi connected': 'Pi connesso',
+    'Pi not reachable': 'Pi non raggiungibile',
+    'Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation': 'Pi troppo caldo: {temp:.0f} °C (limite {lim:.0f} °C) – controllare raffreddamento / ventilazione',
+    'Picture': 'Immagine',
+    'Pictures per second while quiet': 'Immagini al secondo quando è tranquillo',
+    'Position: pan (%)': 'Posizione: brandeggio (%)',
+    'Position: tilt (%)': 'Posizione: inclinazione (%)',
+    'Power': 'Acceso / spento',
+    'Power ON': 'Acceso',
+    'Power back – battery {pct} %': 'Corrente tornata – batteria {pct} %',
+    'Power cut while armed = alarm (needs the UPS HAT)': 'Corrente staccata con sistema inserito = allarme (serve la batteria UPS)',
+    'Power cut – running on the battery ({pct} %)': 'Blackout – funziona a batteria ({pct} %)',
+    'Power saving': 'Risparmio energetico',
+    'Power saving mode: fewer pictures while all is quiet': 'Modalità risparmio: meno immagini finché tutto è tranquillo',
+    'Power saving: full speed after an event for (s)': 'Risparmio energetico: piena velocità dopo un evento per (s)',
+    'Power saving: full speed while somebody watches the live picture': "Risparmio energetico: piena velocità finché qualcuno guarda l'immagine live",
+    'Power saving: pictures per second while quiet': 'Risparmio energetico: immagini al secondo quando è tranquillo',
+    'Power supply / memory': 'Alimentazione / memoria',
+    'Powerbank capacity (mAh, as on the label; 0 = off)': "Capacità del power bank (mAh, come sull'etichetta; 0 = spento)",
+    'Praise': 'Complimento',
+    'Pre-alarm': 'Preallarme',
+    'Pre-alarm (first movement)': 'Preallarme (primo movimento)',
+    'Pre-alarm push': 'Push preallarme',
+    'Pre-alarm push with a small picture': 'Push preallarme con una piccola immagine',
+    'Pre-alarm push: message at the first movement': 'Push preallarme: messaggio al primo movimento',
+    'Pre-alarm: min. time between messages (s)': 'Preallarme: intervallo min. tra i messaggi (s)',
+    'Pre-alarm: movement': 'Preallarme: movimento',
+    'Pre-alarm: movement at {time} - camera: {camera}': 'Preallarme: movimento alle {time} – telecamera: {camera}',
+    'Pre-alarm: text': 'Preallarme: testo',
+    'Pre-alarm: title': 'Preallarme: titolo',
+    'Pre-roll: video before the detection (s)': 'Pre-registrazione: video prima del rilevamento (s)',
+    'Preparing the video for sharing …': 'Preparazione del video per la condivisione …',
+    'Preparing video…': 'Preparazione del video …',
+    'Presence': 'Presenza',
+    "Press 'Battery is full now' after charging.": 'Dopo la carica premere «La batteria ora è carica».',
+    "Press 'Search networks'. Switch on the hotspot of the phone first.": "Premere «Cercare reti». Prima attivare l'hotspot del cellulare.",
+    'Press «Battery is full now» after charging.': 'Dopo la carica premere «La batteria ora è carica».',
+    'Print': 'Stampa',
+    'Privacy zone': 'Zona privacy',
+    'Program is pausing …': 'Il programma va in pausa …',
+    'Program paused': 'Programma in pausa',
+    'Protect selected': 'Proteggere la selezione',
+    'Protection & network': 'Protezione e rete',
+    'Push message when a new version is there': "Notifica push quando c'è una nuova versione",
+    'Push message when less free space than (MB)': 'Notifica push se lo spazio libero è inferiore a (MB)',
+    'Push message when somebody watches from outside (Tailscale)': "Notifica push quando qualcuno guarda dall'esterno (Tailscale)",
+    'Push message when the CPU is hotter than (°C)': 'Notifica push quando la CPU è più calda di (°C)',
+    'Push message with the address when the Pi joins a network': "Notifica push con l'indirizzo quando il Pi entra in una rete",
+    'Push messages': 'Notifiche push',
+    'Push messages to the phone': 'Notifiche push sul cellulare',
+    'QR code for the phone': 'Codice QR per il cellulare',
+    'Quick': 'Rapido',
+    'Quick start': 'Guida rapida',
+    'Quick start – print it and keep it with the device': 'Guida rapida – da stampare e tenere con il dispositivo',
+    'Quiet night – nothing detected ({span}).': 'Notte tranquilla – nulla rilevato ({span}).',
+    'RAIN MODE': 'MODALITÀ PIOGGIA',
+    'REC': 'REG',
+    'RELAY ON': 'RELÈ ACCESO',
+    'RELAYS': 'RELÈ',
+    'Rain': 'Pioggia',
+    'Rain mode (manual, if auto off)': 'Modalità pioggia (manuale, se auto spento)',
+    'Rain score': 'Indice pioggia',
+    'Rain threshold': 'Soglia pioggia',
+    'Recalibrate': 'Ricalibrare',
+    'Recalibrate (scene empty)': 'Ricalibrare (scena vuota)',
+    'Recalibrating - keep the picture empty for a few seconds': "Ricalibrazione – nessuno nell'immagine per qualche secondo",
+    'Record': 'Registra',
+    'Record now (max. 10 min) / stop': 'Registrare ora (max. 10 min) / fermare',
+    'Record when person seen': 'Registrare se persona rilevata',
+    'Recording': 'Registrazione',
+    'Recordings': 'Registrazioni',
+    'Recordings & timelapse': 'Registrazioni e timelapse',
+    'Refresh': 'Aggiorna',
+    'Relay / Alarm': 'Relè / allarme',
+    'Relay ON (manual)': 'Relè ACCESO (manuale)',
+    'Relay off': 'Relè spento',
+    'Relay settings': 'Impostazioni relè',
+    'Relay: on / automatic': 'Relè: acceso / di nuovo automatico',
+    'Relays': 'Relè',
+    'Relays & schedule': 'Relè e pianificazione',
+    'Reload': 'Ricarica',
+    'Reload page': 'Ricaricare la pagina',
+    'Remote': 'Remoto',
+    'Remote access': 'Accesso remoto',
+    'Remote access switches on while somebody watches over Tailscale - also when disarmed (e.g. a small warning lamp).': "L'accesso remoto si accende finché qualcuno guarda tramite Tailscale – anche se disinserito (p. es. piccola spia).",
+    'Remote access: {who} is watching': 'Accesso remoto: {who} sta guardando',
+    'Remove': 'Rimuovi',
+    'Remove network camera': 'Rimuovere la telecamera di rete',
+    'Remove password': 'Rimuovere la password',
+    'Remove relay': 'Rimuovere il relè',
+    'Remove the password? Then anybody in the network can open the page.': 'Rimuovere la password? Allora chiunque nella rete può aprire la pagina.',
+    'Remove this camera?': 'Rimuovere questa telecamera?',
+    'Remove this device from the list?': 'Rimuovere questo dispositivo dalla lista?',
+    'Remove this network camera?': 'Rimuovere questa telecamera di rete?',
+    'Remove this relay?': 'Rimuovere questo relè?',
+    'Remove this schedule?': 'Rimuovere questa pianificazione?',
+    'Remove this video?': 'Eliminare questo video?',
+    'Repeat': 'Ripetere',
+    'Repeat password': 'Ripetere la password',
+    'Repeat the PIN:': 'Ripetere il PIN:',
+    'Reset all settings': 'Ripristinare tutte le impostazioni',
+    'Reset all settings to defaults?': 'Ripristinare tutte le impostazioni predefinite?',
+    'Reset counter': 'Azzerare il contatore',
+    'Reset filters': 'Azzerare i filtri',
+    'Reset settings': 'Ripristinare le impostazioni',
+    'Restart Pi': 'Riavviare il Pi',
+    'Restart the Raspberry Pi now?': 'Riavviare ora il Raspberry Pi?',
+    'Return to the previous position afterwards': 'Tornare poi alla posizione precedente',
+    'Round': 'Giro',
+    'Run every N frames': 'Eseguire ogni N immagini',
+    'Running now': 'In uso',
+    'SHADOW % REMOVED': 'OMBRE % RIMOSSE',
+    'SMS (LTE stick)': 'SMS (chiavetta LTE)',
+    'SMS not sent (credit / network?)': 'SMS non inviato (credito / rete?)',
+    'SMS sent': 'SMS inviato',
+    'SYSTEM · CPU': 'SISTEMA · CPU',
+    'Sabotage alarm: camera covered or turned away (when armed)': 'Allarme sabotaggio: telecamera coperta o girata (se inserito)',
+    'Save': 'Salva',
+    'Save settings …': 'Salvare le impostazioni …',
+    'Save snapshot JPG per detection': 'Foto JPG per ogni rilevamento',
+    'Save the current position as waypoint for the patrol': 'Salvare la posizione attuale come punto di passaggio della pattuglia',
+    'Save zones': 'Salvare le zone',
+    'Saved': 'Salvato',
+    'Saved networks': 'Reti salvate',
+    'Saving': 'Risparmio',
+    'Scan a code with the phone camera and open the page - the setup assistant continues there (password, push messages).': "Scansionare un codice con la fotocamera del cellulare e aprire la pagina – l'assistente di configurazione continua lì (password, notifiche push).",
+    'Scan for cameras': 'Cercare telecamere',
+    'Scanning…': 'Ricerca …',
+    'Schedule': 'Pianificazione',
+    'Search': 'Cerca',
+    'Search Bluetooth': 'Cercare Bluetooth',
+    'Search Bluetooth loudspeakers': 'Cercare altoparlanti Bluetooth',
+    'Search devices': 'Cercare dispositivi',
+    'Search networks': 'Cercare reti',
+    'Search settings …': 'Cerca impostazione …',
+    'Search settings … (e.g. password)': 'Cerca impostazione … (p. es. password)',
+    'Search versions': 'Cercare versioni',
+    'Search …': 'Cerca …',
+    'Searching …': 'Ricerca …',
+    'Searching … put the loudspeaker into pairing mode (blue light blinking)': "Ricerca … mettere l'altoparlante in modalità associazione (luce blu lampeggiante)",
+    'Security warning': 'Avviso di sicurezza',
+    'Select': 'Seleziona',
+    'Send': 'Invia',
+    'Send notifications': 'Inviare notifiche',
+    'Send now': 'Invia ora',
+    'Send test': 'Invia test',
+    'Send test SMS': 'Inviare un SMS di prova',
+    'Send test message': 'Inviare un messaggio di prova',
+    "Send the report at (o'clock)": 'Inviare il rapporto alle (ora)',
+    'Sensitivity': 'Sensibilità',
+    'Sent - did it arrive on the phone?': 'Inviato – è arrivato sul cellulare?',
+    'Serial port (only for AT commands)': 'Porta seriale (solo per i comandi AT)',
+    'Server': 'Server',
+    'Servo driver': 'Driver servo',
+    'Set a new PIN? (Cancel = keep the current PIN)': 'Impostare un nuovo PIN? (Annulla = mantenere il PIN attuale)',
+    'Set a new PIN? (No = keep the current PIN)': 'Impostare un nuovo PIN? (No = mantenere il PIN attuale)',
+    'Set a web password': 'Impostare una password web',
+    'Set password': 'Impostare la password',
+    'Set up in three short steps - takes about 3 minutes.': 'Configurato in tre brevi passi – circa 3 minuti.',
+    'Settings': 'Impostazioni',
+    'Settings are locked - only the main switches can be used.': 'Le impostazioni sono bloccate – si possono usare solo gli interruttori principali.',
+    'Settings loaded': 'Impostazioni caricate',
+    'Settings panel': 'Pannello impostazioni',
+    'Settings sections': 'Sezioni impostazioni',
+    'Settings status': 'Stato impostazioni',
+    'Settings unlocked': 'Impostazioni sbloccate',
+    'Setup': 'Configurazione',
+    'Several devices around the tent or camper: see them all here and arm / disarm them together.': 'Più dispositivi intorno alla tenda o al camper: vederli tutti qui e inserirli / disinserirli insieme.',
+    'Shadow % removed': 'Ombre % rimosse',
+    'Shadow filter (ignore person shadows)': 'Filtro ombre (ignorare le ombre)',
+    'Shadow: max brightness ratio': 'Ombra: rapporto di luminosità max.',
+    'Shadow: min brightness ratio': 'Ombra: rapporto di luminosità min.',
+    'Share': 'Condividi',
+    'Share / copy link': 'Condividere / copiare il link',
+    'Shared pictures and videos with a small Motion Watch logo': 'Immagini e video condivisi con un piccolo logo Motion Watch',
+    'Shift (minutes)': 'Spostamento (minuti)',
+    'Show HUD overlay': 'Mostrare le info (HUD)',
+    'Show all': 'Mostra tutto',
+    'Show header': "Mostrare l'intestazione",
+    'Show motion mask': 'Mostrare la maschera di movimento',
+    'Show movement tracks': 'Mostrare le tracce di movimento',
+    'Show only the hot areas (people, animals, engines)': 'Mostrare solo le zone calde (persone, animali, motori)',
+    'Show position': 'Mostrare la posizione',
+    'Show zones in the picture': "Mostrare le zone nell'immagine",
+    'Shut down Pi': 'Spegnere il Pi',
+    'Shut down the Raspberry Pi now?': 'Spegnere ora il Raspberry Pi?',
+    'Siren (rising and falling)': 'Sirena (crescente e calante)',
+    'Siren at an alarm (only when armed)': 'Sirena in caso di allarme (solo se inserito)',
+    'Siren now': 'Sirena ora',
+    'Siren: min. pause between two alarms (s)': 'Sirena: pausa min. tra due allarmi (s)',
+    'Skip': 'Salta',
+    'Skip dates': 'Date di eccezione',
+    'Skip dates (YYYY-MM-DD, ranges with .., MM-DD every year)': 'Date di eccezione (AAAA-MM-GG, intervalli con .., MM-GG ogni anno)',
+    'Slow': 'Lento',
+    'Small animal (cat, dog, bird)': 'Animale piccolo (gatto, cane, uccello)',
+    'Small animal: sound': 'Animale piccolo: suono',
+    'Snapshot': 'Istantanea',
+    'Snapshots': 'Istantanee',
+    'So far tonight': 'Finora stanotte',
+    'Sort': 'Ordinamento',
+    'Sound': 'Suono',
+    'Sound in the recordings': 'Audio nelle registrazioni',
+    'Sound on': 'Suono acceso',
+    'Source': 'Sorgente',
+    'Speaking from the phone: volume boost (dB)': 'Parlare dal cellulare: aumento del volume (dB)',
+    'Speed': 'Velocità',
+    'Speed consistency': 'Costanza di velocità',
+    'Speed: fast': 'Velocità: alta',
+    'Speed: medium': 'Velocità: media',
+    'Speed: slow': 'Velocità: lenta',
+    'Start now': 'Avvia ora',
+    'Starting …': 'Avvio …',
+    'Starts again at': 'Riparte alle',
+    'Statistics': 'Statistiche',
+    'Step': 'Passo',
+    'Step per click': 'Passo per clic',
+    'Stick': 'Stick',
+    'Stick / way': 'Stick / spostamento',
+    'Stick back on its usual side': 'Stick di nuovo al solito posto',
+    'Stick on the other side': "Stick dall'altro lato",
+    'Still recording - available when it ends.': 'Registrazione in corso – disponibile alla fine.',
+    'Stop': 'Stop',
+    'Stop listening': 'Smettere di ascoltare',
+    'Stream width (px)': 'Larghezza streaming (px)',
+    'Sunrise → sunset': 'Alba → tramonto',
+    'Sunset → sunrise': 'Tramonto → alba',
+    'Supply': 'Alimentazione',
+    'Swap stick and buttons (left- / right-handed)': 'Scambiare stick e pulsanti (mancini / destrorsi)',
+    'Switch': 'Cambia',
+    'Switch off on this device': 'Disattivare su questo dispositivo',
+    'Switch on https over Tailscale': 'Attivare https tramite Tailscale',
+    'Switch on on this device': 'Attivare su questo dispositivo',
+    'Switch relay when person detected': 'Attivare il relè se persona rilevata',
+    'Switch the own Wi-Fi off? This page loses its connection; the Pi goes back to the known networks.': 'Spegnere il Wi-Fi proprio? Questa pagina perde la connessione; il Pi torna alle reti conosciute.',
+    'Switch the program off now and start it again in': 'Spegnere ora il programma e riavviarlo tra',
+    'Switch to this version': 'Passare a questa versione',
+    'Switch to version': 'Passare alla versione',
+    'Switches': 'Interruttori',
+    'Switching to version': 'Passaggio alla versione',
+    'System': 'Sistema',
+    'System & network': 'Sistema e rete',
+    'System default': 'Predefinito di sistema',
+    'System · CPU': 'Sistema · CPU',
+    'TAMPER ALARM': 'SABOTAGGIO',
+    'TRACKING': 'INSEGUIMENTO',
+    'Tailscale is not installed': 'Tailscale non è installato',
+    'Take the clock from the phone (when the Pi has no internet time)': "Prendere l'ora dal cellulare (se il Pi non ha l'ora da internet)",
+    'Talking needs the secure page': 'Per parlare serve la pagina sicura',
+    'Talking … release to stop': 'Parla … rilasciare per terminare',
+    'Tap anywhere on the page to allow the sound': "Toccare un punto qualsiasi della pagina per consentire l'audio",
+    'Telegram (video, max. 50 MB)': 'Telegram (video, max. 50 MB)',
+    'Telegram bot token': 'Token del bot Telegram',
+    'Telegram bot token / chat id missing (Notifications)': 'Token del bot Telegram / ID chat mancante (Notifiche)',
+    'Telegram chat id': 'ID chat Telegram',
+    'Test': 'Test',
+    'Test file copied - the settings work.': 'File di prova copiato – le impostazioni sono corrette.',
+    'Test notification': 'Inviare un messaggio di prova',
+    'Test sent': 'Test inviato',
+    'Test sound': 'Suono di prova',
+    'Test the backup': 'Testare il backup',
+    'Thank you! The message is on its way.': 'Grazie! Il messaggio è in viaggio.',
+    'The PINs are not the same': 'I PIN non sono uguali',
+    'The Pi is connected with it right now - the page may lose its connection.': 'Il Pi è connesso proprio ora – la pagina può perdere la connessione.',
+    'The Pi is connected with this network.': 'Il Pi è connesso a questa rete.',
+    'The Pi is off': 'Il Pi è spento',
+    'The Pi is restarting …': 'Il Pi si sta riavviando …',
+    'The Pi is shutting down …': 'Il Pi si sta spegnendo …',
+    'The Pi now switches on its own Wi-Fi': 'Il Pi accende ora il proprio Wi-Fi',
+    'The Pi now switches to the network': 'Il Pi passa ora alla rete',
+    'The Pi was not shut down': 'Il Pi non è stato spento',
+    'The connection to this page was interrupted - normal while the Pi changes the network. Open the page in the new network:': 'La connessione a questa pagina si è interrotta – normale mentre il Pi cambia rete. Apri la pagina nella nuova rete:',
+    'The guest must be able to reach the Pi: same Wi-Fi / hotspot or Tailscale.': "L'ospite deve poter raggiungere il Pi: stesso Wi-Fi / hotspot o Tailscale.",
+    'The main camera does the full detection (AI, tracking, relays). Extra cameras watch for movement and record clips; they follow the same switches and schedules. Every extra camera needs CPU - on a Raspberry Pi 2-3 cameras are realistic.': 'La telecamera principale fa il rilevamento completo (IA, inseguimento, relè). Le telecamere aggiuntive rilevano i movimenti e registrano clip; seguono gli stessi interruttori e pianificazioni. Ogni telecamera aggiuntiva richiede CPU – su un Raspberry Pi 2-3 telecamere sono realistiche.',
+    'The night report is off (Notifications → Night report).': 'Il rapporto notturno è spento (Notifiche → Rapporto notturno).',
+    "The night starts at (o'clock)": 'La notte inizia alle (ora)',
+    'The page must stay open (also in the background). With the screen off or the browser closed only the push message (ntfy / Telegram) arrives.': 'La pagina deve restare aperta (funziona anche in background). Con lo schermo spento o il browser chiuso arriva solo la notifica push (ntfy / Telegram).',
+    'The page reloads by itself.': 'La pagina si ricarica da sola.',
+    'The password was given on the command line (--web-password).': "La password è stata indicata all'avvio (--web-password).",
+    'The passwords are not the same': 'Le password non sono uguali',
+    'The program restarts (about 20 seconds). Settings, recordings and zones stay.': 'Il programma si riavvia (circa 20 secondi). Impostazioni, registrazioni e zone restano.',
+    'The secure page is not running (openssl missing).': 'La pagina sicura non è attiva (openssl mancante).',
+    'The thermal camera must look in the same direction as the main camera. Choose it in the list after a camera scan (Video source).': 'La termocamera deve guardare nella stessa direzione della telecamera principale. Sceglila nella lista dopo una ricerca telecamere (Sorgente video).',
+    'Theft protection': 'Protezione antifurto',
+    'Theme': 'Tema',
+    'Thermal': 'Termico',
+    'Thermal alarm': 'Allarme termico',
+    'Thermal alarm: minimum size (% of the picture)': "Allarme termico: dimensione minima (% dell'immagine)",
+    'Thermal alarm: text': 'Allarme termico: testo',
+    'Thermal alarm: title': 'Allarme termico: titolo',
+    'Thermal alarm: warmer than the scene by (%)': 'Allarme termico: più caldo della scena di (%)',
+    'Thermal camera': 'Termocamera',
+    'Thermal camera (run the camera scan first)': 'Termocamera (eseguire prima la ricerca telecamere)',
+    'Thermal camera: warm body in the zone at {time} - camera: {camera}': 'Termocamera: corpo caldo nella zona alle {time} – telecamera: {camera}',
+    'Thermal overlay': 'Sovrapposizione termica',
+    'Thermal picture over the live picture': "Immagine termica sopra l'immagine live",
+    'Thermal: shift left / right (%)': 'Termico: spostare sinistra / destra (%)',
+    'Thermal: shift up / down (%)': 'Termico: spostare su / giù (%)',
+    'Thermal: zoom - part the camera sees (%)': 'Termico: zoom – porzione vista dalla telecamera (%)',
+    'This device': 'Questo dispositivo',
+    'This page loses its connection. Connect the phone to': 'Questa pagina perde la connessione. Connetti il cellulare a',
+    'This page will probably lose its connection. Afterwards open it in that network at': "Questa pagina perderà probabilmente la connessione. Aprila poi in quella rete all'indirizzo",
+    'This video uses a codec browsers cannot play. Install ffmpeg on the Pi (sudo apt install ffmpeg) or download the file.': 'Questo video usa un codec che i browser non riproducono. Installa ffmpeg sul Pi (sudo apt install ffmpeg) o scarica il file.',
+    'Tilt': 'Inclinazione',
+    'Tilt (%)': 'Inclinazione (%)',
+    'Tilt limit: max. degrees from the middle': 'Limite inclinazione: gradi max. dal centro',
+    'Time must look like 07:30': "L'ora deve essere tipo 07:30",
+    'Time window': 'Fascia oraria',
+    'Timelapse': 'Timelapse',
+    'Timelapse active': 'Timelapse attivo',
+    'Timeline': 'Cronologia',
+    'Title': 'Titolo',
+    'To': 'A',
+    'Today': 'Oggi',
+    'Today (running)': 'Oggi (in corso)',
+    'Topic (like a secret channel name)': 'Argomento (come un nome di canale segreto)',
+    'Topic prefix': 'Prefisso degli argomenti',
+    'Topics': 'Temi',
+    'Tracking dead zone': 'Zona morta inseguimento',
+    'Tracking gain': 'Intensità di inseguimento',
+    'Tracking person': 'Persona inseguita',
+    'Trigger multiplier (wind)': 'Fattore di attivazione (vento)',
+    'Two-tone horn': 'Tromba bitonale',
+    'Type': 'Tipo',
+    'UPS HAT': 'Batteria UPS (UPS HAT)',
+    'UPS HAT (battery pack on the Pi): use it when found': 'Batteria UPS (modulo sul Pi): usarla se presente',
+    'UPS HAT: address (I2C)': 'Batteria UPS: indirizzo (I2C)',
+    'UPS HAT: capacity of ONE 18650 cell (mAh)': 'Batteria UPS: capacità di UNA cella 18650 (mAh)',
+    'UPS HAT: charging and discharging are shown the wrong way round': 'Batteria UPS: carica e scarica mostrate al contrario',
+    'UPS HAT: push message at a power cut / when power is back': 'Batteria UPS: notifica push in caso di blackout / al ritorno della corrente',
+    'UPS HAT: shut the Pi down at (%, 0 = never)': 'Batteria UPS: spegnere il Pi a (%, 0 = mai)',
+    'Under-voltage: power bank almost empty or cable too weak': 'Sottotensione: power bank quasi scarico o cavo troppo debole',
+    'Unlock': 'Sbloccare',
+    'Unmute': "Riattivare l'audio",
+    'Update': 'Aggiorna',
+    'Update now': 'Aggiorna ora',
+    'Updates': 'Aggiornamenti',
+    'Use current position': 'Usare la posizione attuale',
+    'VEHICLES IGNORED': 'VEICOLI IGNORATI',
+    'Valid for': 'Valido per',
+    'Vehicle aspect ratio': 'Proporzioni veicoli',
+    'Vehicle filter': 'Filtro veicoli',
+    'Vehicle speed (px/frame)': 'Velocità veicoli (px/immagine)',
+    'Vehicles ignored': 'Veicoli ignorati',
+    'Vibrate (phones)': 'Vibrare (cellulari)',
+    'Video': 'Video',
+    'Video source': 'Sorgente video',
+    'Video: frames per second': 'Video: immagini al secondo',
+    'Videos': 'Video',
+    'View': 'Vista',
+    'Volume': 'Volume',
+    'Volume (%)': 'Volume (%)',
+    'WEATHER': 'METEO',
+    'Wait after moving (s)': 'Attesa dopo lo spostamento (s)',
+    'Wait until the green LED of the Pi stays dark (about 10 seconds), then you can unplug the power. To start it again: unplug the power and plug it in again.': 'Aspetta che il LED verde del Pi resti spento (circa 10 secondi), poi puoi staccare la corrente. Per riavviare: staccare la corrente e ricollegarla.',
+    'Waiting for the Pi … the page reloads by itself (about 1 minute).': 'In attesa del Pi … la pagina si ricarica da sola (circa 1 minuto).',
+    'Walking recognition': 'Riconoscimento camminata',
+    'Walking time needed (s)': 'Tempo di camminata necessario (s)',
+    'Warm body (thermal camera)': 'Calore rilevato (termocamera)',
+    'Warm body (thermal camera, e.g. fox, boar)': 'Corpo caldo (termocamera, p. es. volpe, cinghiale)',
+    'Warm body: sound': 'Corpo caldo: suono',
+    'Waypoint': 'Punto di passaggio',
+    'Waypoint added': 'Punto di passaggio aggiunto',
+    'Weather': 'Meteo',
+    'Weather & system': 'Meteo e sistema',
+    'Web password': 'Password web',
+    'Web password: none': 'Password web: nessuna',
+    'Web password: set': 'Password web: impostata',
+    'Web push (no app needed)': 'Web push (senza app)',
+    'Web push is on for this device.': 'Il web push è attivo su questo dispositivo.',
+    'Web push needs https. Open the page over the https address (Tailscale):': "Il web push richiede https. Apri la pagina tramite l'indirizzo https (Tailscale):",
+    'Web push works ✓': 'Il web push funziona ✓',
+    'Web push: alarm messages also to browsers that switched it on (no app needed)': "Web push: messaggi d'allarme anche ai browser che l'hanno attivato (senza app)",
+    'Web stream': 'Streaming web',
+    'Web stream + remote control (port 5000)': 'Streaming web + comando a distanza (porta 5000)',
+    'Web stream could not start (is flask installed?)': 'Lo streaming web non è partito (flask è installato?)',
+    'WebDAV (Nextcloud, NAS, cloud)': 'WebDAV (Nextcloud, NAS, cloud)',
+    'WebDAV folder (address, e.g. Nextcloud)': 'Cartella WebDAV (indirizzo, p. es. Nextcloud)',
+    'WebDAV password (Nextcloud: app password)': 'Password WebDAV (Nextcloud: password per app)',
+    'WebDAV user name': 'Nome utente WebDAV',
+    'Webhook / ntfy URL': 'URL webhook / ntfy',
+    'Webhook URL (POST JSON on person; e.g. https://ntfy.sh/my-topic)': 'URL webhook (POST JSON con persona; p. es. https://ntfy.sh/mio-argomento)',
+    'Welcome to Motion Watch': 'Benvenuto in Motion Watch',
+    'What is seen decides the reaction. Animals need the AI detection, warm bodies the thermal camera. Light flashes: the white light.': 'Ciò che viene rilevato decide la reazione. Gli animali richiedono il rilevamento IA, i corpi caldi la termocamera. Lampi di luce: la luce bianca.',
+    'When armed: push message (urgent) and siren. The picture check pauses while the camera head moves itself.': "Se inserito: notifica push (urgente) e sirena. Il controllo dell'immagine si ferma mentre la testa della telecamera si muove da sola.",
+    'Where new versions come from (address of versions.json, or a folder e.g. USB stick)': 'Da dove arrivano le nuove versioni (indirizzo di versions.json o una cartella, p. es. chiavetta USB)',
+    'While a schedule is active, the listed features are forced ON or OFF. Afterwards they return to your own setting. Switching one by hand overrides the schedule until its next change.': 'Finché una pianificazione è attiva, le funzioni scelte vengono forzate su ACCESO o SPENTO. Dopo vale di nuovo la tua impostazione. Chi commuta a mano ha la precedenza sulla pianificazione fino al suo prossimo cambio.',
+    'While paused there is no monitoring and there are no alarms.': "Durante la pausa non c'è sorveglianza né allarme.",
+    'White': 'Bianca',
+    'White light': 'Luce bianca',
+    'White light on / off': 'Luce bianca accesa / spenta',
+    'White light: Auto means': 'Luce bianca: «Auto» significa',
+    'White light: connected to': 'Luce bianca: collegata a',
+    'Wi-Fi': 'Wi-Fi',
+    'Wi-Fi / hotspot': 'Wi-Fi / hotspot',
+    'Wi-Fi management is not available on this system (NetworkManager or wpa_supplicant missing).': 'La gestione Wi-Fi non è disponibile su questo sistema (manca NetworkManager o wpa_supplicant).',
+    'Wi-Fi management not available (NetworkManager / wpa_supplicant not found)': 'Gestione Wi-Fi non disponibile (NetworkManager / wpa_supplicant mancante)',
+    'Wi-Fi signal, last': 'Segnale Wi-Fi, ultimi',
+    'Wind': 'Vento',
+    'Wind score': 'Indice vento',
+    'Wind threshold': 'Soglia vento',
+    'Without a password everybody in the same network (and with the link) can watch and switch everything.': 'Senza password chiunque nella stessa rete (e con il link) può guardare e comandare tutto.',
+    'Yesterday': 'Ieri',
+    'Your message …': 'Il tuo messaggio …',
+    'Zones': 'Zone',
+    'a folder like /media/... expected': 'attesa una cartella come /media/...',
+    'a port like /dev/ttyUSB2': 'una porta come /dev/ttyUSB2',
+    'a restart is already running': 'un riavvio è già in corso',
+    'a video is already being made': 'un video è già in creazione',
+    'about': 'circa',
+    'access expired': 'accesso scaduto',
+    'active now': 'attivo ora',
+    'active: few pictures, everything quiet': 'attivo: poche immagini, tutto tranquillo',
+    'ai': 'IA',
+    'airplane': 'aereo',
+    'alarms active': 'allarmi attivi',
+    'alarms and recordings on': 'allarmi e registrazioni accesi',
+    'all ok': 'tutto ok',
+    'always grey': 'sempre grigio',
+    'an update is already running': 'un aggiornamento è già in corso',
+    'and open': 'e apri',
+    'and press «Search devices»': 'e premere «Cercare dispositivi»',
+    'animal (any)': 'animale (qualsiasi)',
+    'aplay is missing (sudo apt install alsa-utils)': 'aplay mancante (sudo apt install alsa-utils)',
+    'apple': 'mela',
+    'arecord is missing (sudo apt install alsa-utils)': 'arecord mancante (sudo apt install alsa-utils)',
+    'armed': 'inserito',
+    'armed after the countdown': 'inserito dopo il conto alla rovescia',
+    'arming': 'inserimento',
+    'arrow keys work too': 'funzionano anche le frecce della tastiera',
+    'at an alarm, day and night': 'in caso di allarme, giorno e notte',
+    'at an alarm, only at night': 'in caso di allarme, solo di notte',
+    'at least 6 characters': 'almeno 6 caratteri',
+    'at most 12 devices': 'al massimo 12 dispositivi',
+    'at most 5 messages per hour': "al massimo 5 messaggi all'ora",
+    'auto': 'Auto',
+    'automatic': 'automatico',
+    'automatic changes': 'modifiche automatiche',
+    'automatic paused (switched by hand) - choose «Automatic» again to resume': 'automatico in pausa (commutato a mano) – scegliere di nuovo «Automatico» per riprendere',
+    'automatic: PCA9685 if found, otherwise GPIO 17 / 27': 'automatico: PCA9685 se trovato, altrimenti GPIO 17 / 27',
+    'autostart needs systemd (Raspberry Pi OS)': "l'avvio automatico richiede systemd (Raspberry Pi OS)",
+    'available': 'disponibile',
+    'awake': 'sveglio',
+    'away': 'assente',
+    'b-note': 'Batteria UPS (modulo sul Pi): rilevata da sola, misura reale. Altrimenti stima del power bank: capacità meno il consumo da «La batteria ora è carica».',
+    'back and forth (1-2-3-2-1)': 'avanti e indietro (1-2-3-2-1)',
+    'back on': 'di nuovo su',
+    'backend': 'backend',
+    'background': 'sottofondo',
+    'backpack': 'zaino',
+    'backup is off': 'il backup è spento',
+    'banana': 'banana',
+    'battery': 'batteria',
+    'bear': 'orso',
+    'bed': 'letto',
+    'bench': 'panchina',
+    'bicycle': 'bicicletta',
+    'bird': 'uccello',
+    'bluetoothctl is missing (sudo apt install bluez)': 'bluetoothctl mancante (sudo apt install bluez)',
+    'boat': 'barca',
+    'book': 'libro',
+    'bottle': 'bottiglia',
+    'bowl': 'ciotola',
+    'breezy': 'a raffiche',
+    'brightness': 'luminosità',
+    'bus': 'bus',
+    'busy': 'occupato – attendere un attimo',
+    'calm': 'calmo',
+    'camera covered': 'telecamera coperta',
+    'camera turned / picture changed': 'telecamera girata / immagine cambiata',
+    'cameras': 'telecamere',
+    'car': 'auto',
+    'cat': 'gatto',
+    'cell phone': 'cellulare',
+    'chair': 'sedia',
+    'channel': 'canale',
+    'charging': 'in carica',
+    'click to update': 'clicca per aggiornare',
+    'clock': 'orologio',
+    'colour': 'a colori',
+    'connected': 'connesso',
+    'connected - used for the siren and for talking': 'connesso – usato per la sirena e per parlare',
+    'connected to': 'connesso a',
+    'connected with': 'connesso a',
+    'connecting to': 'connessione a',
+    'connecting …': 'connessione …',
+    'connecting…': 'connessione …',
+    'connection lost - reconnecting': 'connessione persa - riconnessione',
+    'connection to the camera interrupted - reconnecting': 'connessione alla telecamera interrotta – riconnessione',
+    'cores': 'core',
+    'correct': 'corretta',
+    'couch': 'divano',
+    'could not connect (wrong password or too far away?)': 'connessione impossibile (password errata o troppo lontano?)',
+    'could not connect - switch the loudspeaker on and bring it closer': "connessione impossibile – accendere l'altoparlante e avvicinarlo",
+    'cow': 'mucca',
+    'cp-desc': "Wi-Fi proprio acceso, la telecamera resta dov'è (niente pattuglia / inseguimento / timelapse), allarmi e registrazioni accesi, inserito dopo il conto alla rovescia. Spegnerlo ripristina le tue impostazioni.",
+    'cup': 'tazza',
+    'd-note': "L'immagine migliore di ogni visita di un animale (rilevamento IA) – raccolta automaticamente. Toccare per ingrandire, ★ = conservare (mai cancellata automaticamente).",
+    'daily limit reached': 'limite giornaliero raggiunto',
+    'day': 'giorno',
+    'days': 'giorni',
+    'defaults': 'valori predefiniti',
+    'defaults (no file yet)': 'valori predefiniti (ancora nessun file)',
+    'device': 'dispositivo',
+    'device knocked over': 'dispositivo rovesciato',
+    'device moved': 'dispositivo spostato',
+    'devices': 'dispositivi',
+    'dining table': 'tavolo da pranzo',
+    'directly on GPIO 17 / 27': 'direttamente su GPIO 17 / 27',
+    'disarmed': 'disinserito',
+    'dog': 'cane',
+    'drop-out': 'interruzione',
+    'drop-outs': 'interruzioni',
+    'e.g. camper, garden': 'p. es. camper, giardino',
+    'elephant': 'elefante',
+    'entries': 'voci',
+    'estimated': 'stimato',
+    'events': 'eventi',
+    'every alarm, also the pre-alarm (movement)': 'ogni allarme, anche il preallarme (movimento)',
+    'every day': 'ogni giorno',
+    'failed': 'non riuscito',
+    'fast': 'veloce',
+    'few pictures': 'poche immagini',
+    'fewer pictures while all is quiet, full speed at the first movement or noise': 'meno immagini finché tutto è tranquillo – piena velocità al primo movimento o rumore',
+    'fire hydrant': 'idrante',
+    'folder not found': 'cartella non trovata',
+    'folder not found (USB stick / NAS connected?)': 'cartella non trovata (chiavetta USB / NAS collegato?)',
+    'found': 'trovato',
+    'free': 'libero',
+    'frisbee': 'frisbee',
+    'full speed': 'piena velocità',
+    'full speed (something happened or somebody watches)': 'piena velocità (succede qualcosa o qualcuno guarda)',
+    'g-note': "Un link per la famiglia o i compagni di campeggio: vedono solo l'immagine live e non possono cambiare nulla. L'ospite deve poter raggiungere il Pi – stesso Wi-Fi / hotspot o tramite Tailscale. Un nuovo link rende invalido il vecchio.",
+    'giraffe': 'giraffa',
+    'grey': 'grigio',
+    'grey at night (good with a NoIR camera)': 'grigio di notte (adatto a una telecamera NoIR)',
+    'handbag': 'borsetta',
+    'hide': 'comprimi',
+    'hold time must be a number': 'il tempo di mantenimento deve essere un numero',
+    'home': 'a casa',
+    'horse': 'cavallo',
+    'hot': 'hot',
+    'https://... address or a folder (/media/...) expected': 'atteso un indirizzo https://... o una cartella (/media/...)',
+    'iPhone / iPad: first Share → «Add to Home Screen», then open Motion Watch from there and switch web push on.': 'iPhone / iPad: prima Condividi → «Aggiungi alla schermata Home», poi aprire Motion Watch da lì e attivare il web push.',
+    'iPhone / iPad: open the https address, then Share → «Add to Home Screen» and switch it on in the app from there.': "iPhone / iPad: aprire l'indirizzo https, poi Condividi → «Aggiungi alla schermata Home» e attivarlo nell'app da lì.",
+    'important': 'importante',
+    'in use': 'in uso',
+    'inferno': 'inferno',
+    'invalid Bluetooth address': 'indirizzo Bluetooth non valido',
+    'invalid GitHub key (it starts with github_pat_ or ghp_)': 'chiave GitHub non valida (inizia con github_pat_ o ghp_)',
+    'invalid Telegram bot token': 'token del bot Telegram non valido',
+    'invalid Telegram chat id': 'ID chat Telegram non valido',
+    'invalid URL (http:// or https:// expected)': 'URL non valido (atteso http:// o https://)',
+    'invalid URL (rtsp:// or http:// expected)': 'URL non valido (atteso rtsp:// o http://)',
+    'invalid address (e.g. http://192.168.1.20:5000)': 'indirizzo non valido (p. es. http://192.168.1.20:5000)',
+    'invalid device name or address': 'nome del dispositivo o indirizzo non valido',
+    'invalid network name': 'nome di rete non valido',
+    'invalid schedule': 'pianificazione non valida',
+    'invalid sound data': 'dati audio non validi',
+    'invalid subscription': 'iscrizione non valida',
+    'invalid value': 'valore non valido',
+    'invalid zones': 'zone non valide',
+    'jet': 'jet',
+    'joins the known networks': 'si connette alle reti conosciute',
+    'kite': 'aquilone',
+    'knife': 'coltello',
+    'laptop': 'portatile',
+    'last 60 s': 'ultimi 60 s',
+    'later': 'più tardi',
+    'learning the picture': "impara l'immagine",
+    'leave the area now': 'lasciare la zona ora',
+    'left': 'rimanente',
+    'light': 'luce',
+    'light flashes': 'lampi di luce',
+    'like the live picture (red boxes)': "come l'immagine live (riquadri rossi)",
+    'list from': 'elenco del',
+    'loaded: {a} settings, {b} waypoints, {c} relays, {d} schedules': 'caricato: {a} impostazioni, {b} punti di passaggio, {c} relè, {d} pianificazioni',
+    'lock-note': 'Le impostazioni sono bloccate – si possono usare solo gli interruttori principali.',
+    'locked - settings can only be changed after unlocking (PIN)': 'bloccato – impostazioni modificabili solo dopo lo sblocco (PIN)',
+    'mains': 'rete',
+    'mains power': 'alimentazione di rete',
+    'making video': 'creazione del video',
+    'maximum {n} extra cameras': 'al massimo {n} telecamere aggiuntive',
+    'maximum {n} relays': 'al massimo {n} relè',
+    'maximum {n} schedules': 'al massimo {n} pianificazioni',
+    'medium': 'media',
+    'memory': 'memoria',
+    'microphone on': 'microfono acceso',
+    'min': 'min',
+    'mmcli missing (sudo apt install modemmanager)': 'mmcli mancante (sudo apt install modemmanager)',
+    'mode must be off / on / auto': 'la modalità deve essere spento / acceso / auto',
+    'motion': 'movimento',
+    'motion (anything)': 'movimento (qualsiasi)',
+    'motorcycle': 'moto',
+    'moving to the photo position': 'spostamento alla posizione foto',
+    'moving to waypoint': 'va al punto di passaggio',
+    'name': 'nome',
+    'need 2+ waypoints': 'servono almeno 2 punti di passaggio',
+    'need at least 2 photos': 'servono almeno 2 foto',
+    'needs AI model': 'richiede il modello IA',
+    'needs NetworkManager': 'richiede NetworkManager',
+    'needs NetworkManager (Raspberry Pi OS Bookworm or newer)': 'richiede NetworkManager (Raspberry Pi OS Bookworm o più recente)',
+    'needs a password': 'richiede una password',
+    'network': 'rete',
+    'next photo in': 'prossima foto tra',
+    'night': 'notte',
+    'night report': 'rapporto notturno',
+    'no CPU data (pip install psutil)': 'nessun dato CPU (pip install psutil)',
+    'no WebDAV folder set': 'nessuna cartella WebDAV inserita',
+    'no Wi-Fi': 'niente Wi-Fi',
+    'no alarms, no recordings': 'nessun allarme, nessuna registrazione',
+    'no auto connect': 'nessuna connessione automatica',
+    'no cameras found': 'nessuna telecamera trovata',
+    'no device reached': 'nessun dispositivo raggiunto',
+    'no devices yet - press «Search»': 'ancora nessun dispositivo – premere «Cerca»',
+    'no drop-outs': 'nessuna interruzione',
+    'no entries': 'nessuna voce',
+    'no folder set': 'nessuna cartella inserita',
+    'no free GPIO left': 'nessun GPIO libero',
+    'no internet': 'niente internet',
+    'no known network - own Wi-Fi in': 'nessuna rete conosciuta – Wi-Fi proprio tra',
+    'no loudspeaker selected': 'nessun altoparlante scelto',
+    'no microphone': 'nessun microfono',
+    'no microphone selected': 'nessun microfono scelto',
+    'no modem found (stick plugged in? mmcli -L)': 'nessun modem trovato (chiavetta inserita? mmcli -L)',
+    'no networks found': 'nessuna rete trovata',
+    'no output chosen': 'nessuna uscita scelta',
+    'no phone number set': 'nessun numero di telefono inserito',
+    'no picture - is the camera running?': 'nessuna immagine – la telecamera è accesa?',
+    'no picture yet': 'ancora nessuna immagine',
+    'no relays': 'nessun relè',
+    'no schedules': 'nessuna pianificazione',
+    'no thermal camera selected': 'nessuna termocamera scelta',
+    'no time limit': 'senza limite di tempo',
+    'no zones': 'nessuna zona',
+    'nobody from outside': "nessuno dall'esterno",
+    'noise': 'rumore',
+    'noise (microphone)': 'rumore (microfono)',
+    'noise alarm from': 'allarme rumore da',
+    'none': 'nessuno',
+    'none (clean picture)': 'nessuno (immagine pulita)',
+    'not a Motion Watch settings file': 'non è un file di impostazioni Motion Watch',
+    'not a number': 'non è un numero',
+    'not connected': 'non collegato',
+    'not fitted': 'non montato',
+    'not found - is the repository private? Then enter the GitHub key (token)': 'non trovato – il repository è privato? Allora inserire la chiave GitHub (token)',
+    'not installed': 'non installato',
+    'not possible in the demo': 'Non possibile nella demo',
+    'not reachable': 'non raggiungibile',
+    'not sent': 'non inviato',
+    'not sent – notifications are not set up': 'non inviato – le notifiche non sono configurate',
+    'not signed': 'non firmata',
+    'nothing': 'niente',
+    'notification is not configured': 'la notifica non è configurata',
+    'notify': 'allarme',
+    "o'clock": 'h',
+    'object': 'oggetto',
+    'objects': 'oggetti',
+    'off': 'spento',
+    'off: nothing starts at boot, the Pi joins its known networks': "spento: all'avvio non parte nulla, il Pi si connette alle reti conosciute",
+    'offline': 'offline',
+    'ok (under-voltage earlier)': 'ok (sottotensione in precedenza)',
+    'on': 'acceso',
+    'on battery': 'a batteria',
+    'on guard': 'in guardia',
+    'on the Pi': 'sul Pi',
+    'on: when the Pi boots, Motion Watch starts by itself and': "acceso: all'avvio del Pi, Motion Watch parte da solo e",
+    'on: when the Pi boots, Motion Watch starts by itself and switches the own Wi-Fi on': "acceso: all'avvio del Pi, Motion Watch parte da solo e accende il Wi-Fi proprio",
+    'online': 'online',
+    'only letters, digits, - _ /': 'solo lettere, cifre, - _ /',
+    'or': 'o',
+    'or with the address from the push message. If it does not work, the Pi returns to the previous network after about a minute.': "o con l'indirizzo della notifica push. Se non funziona, il Pi torna alla rete precedente dopo circa un minuto.",
+    'out of range': "fuori dall'intervallo consentito",
+    'overview on the web page: Cameras': 'panoramica sulla pagina web: Telecamere',
+    'own Wi-Fi': 'Wi-Fi proprio',
+    'own Wi-Fi on': 'Wi-Fi proprio acceso',
+    'own Wi-Fi on - next search for known networks in': 'Wi-Fi proprio acceso – prossima ricerca di reti conosciute tra',
+    'own Wi-Fi on - search postponed (a device is connected)': 'Wi-Fi proprio acceso – ricerca rinviata (un dispositivo è connesso)',
+    'paired': 'associato',
+    'pairing failed - is the loudspeaker in pairing mode (blue light blinking)?': "associazione non riuscita – l'altoparlante è in modalità associazione (luce blu lampeggiante)?",
+    'pan': 'brandeggio',
+    'paplay is missing (sudo apt install pulseaudio-utils)': 'paplay mancante (sudo apt install pulseaudio-utils)',
+    'parking meter': 'parchimetro',
+    'password': 'password',
+    'password wrong': 'password errata',
+    'patrol': 'Pattuglia',
+    'pause between two SMS': 'pausa tra due SMS',
+    'paused (manual control)': 'pausa (comando manuale)',
+    'paused (switched by hand)': 'in pausa (commutato a mano)',
+    'paused (tracking person)': 'pausa (segue una persona)',
+    'person': 'persona',
+    'person alarm': 'allarme persona',
+    'person in view': "persona nell'immagine",
+    'person, thermal and noise alarm': 'allarme persona, termico e rumore',
+    'persons': 'persone',
+    'phone numbers like +41791234567': 'numeri come +41791234567',
+    'photo saved': 'foto salvata',
+    'photos': 'foto',
+    'pizza': 'pizza',
+    'playing …': 'riproduzione …',
+    'please write a few words': 'scrivi qualche parola',
+    'port 1-65535': 'porta 1-65535',
+    'potted plant': 'pianta in vaso',
+    'power': 'corrente',
+    'power cut while armed': 'corrente staccata (inserito)',
+    'power saving': 'risparmio energetico',
+    'pre-alarm (any movement)': 'preallarme (qualsiasi movimento)',
+    'prefer this network': 'preferire questa rete',
+    'prefer this network (before other known networks)': 'preferire questa rete (prima delle altre reti conosciute)',
+    'preferred': 'preferita',
+    'python3-cryptography is missing (sudo apt install python3-cryptography)': 'python3-cryptography mancante (sudo apt install python3-cryptography)',
+    'quiet': 'tranquillo',
+    'rain': 'Pioggia',
+    'rec': 'Registrazione',
+    'recording': 'registrazione',
+    'recordings': 'registrazioni',
+    'recordings?': 'registrazioni da eliminare?',
+    'relay': 'Relè',
+    'remote access': 'accesso remoto',
+    'remote access (somebody watches from outside)': "accesso remoto (qualcuno guarda dall'esterno)",
+    'round trip (1-2-3-1-2-3)': 'giro (1-2-3-1-2-3)',
+    'running now': 'in uso',
+    'same camera as the main picture': "stessa telecamera dell'immagine principale",
+    'save failed': 'salvataggio non riuscito',
+    'saved': 'salvata',
+    'saved {t}': 'salvato {t}',
+    'sched': 'Pianificazione',
+    'scissors': 'forbici',
+    'searched at': 'cercato alle',
+    'searching (about 10 s) …': 'ricerca (circa 10 s) …',
+    'searching known networks …': 'ricerca reti conosciute …',
+    'searching …': 'ricerca …',
+    'sent': 'inviato',
+    'servo': 'Telecamera',
+    'set': 'impostato',
+    'set a PIN first': 'impostare prima un PIN',
+    'set a web password first': 'impostare prima una password web',
+    'set a web password first (--web-password) - otherwise anybody in the network could change the Wi-Fi': 'impostare prima una password web (--web-password) – altrimenti chiunque nella rete potrebbe cambiare il Wi-Fi',
+    'set a web password first - otherwise anybody in the network could install a program': 'impostare prima una password web – altrimenti chiunque nella rete potrebbe installare un programma',
+    'set by the internet (NTP)': 'impostata tramite internet (NTP)',
+    'sheep': 'pecora',
+    'show / hide fields': 'mostrare / nascondere campi',
+    'show password': 'mostra password',
+    'shown': 'mostrati',
+    'signed': 'firmata',
+    'skateboard': 'skateboard',
+    'skis': 'sci',
+    'slow': 'lenta',
+    'snowboard': 'snowboard',
+    'somebody is talking': 'qualcuno sta parlando',
+    'sound': 'suono',
+    'sound + light flashes': 'suono + lampi di luce',
+    'sound file not found': 'file audio non trovato',
+    'sports ball': 'pallone',
+    'standard': 'standard',
+    'starting': 'avvio',
+    'starting …': 'avvio …',
+    'status': 'stato',
+    'still using': 'continua con',
+    'stop sign': 'cartello di stop',
+    'storm': 'tempesta',
+    'strong': 'forte',
+    'suitcase': 'valigia',
+    'surfboard': 'tavola da surf',
+    'switch failed': 'cambio non riuscito',
+    'switches the own Wi-Fi on': 'accende il Wi-Fi proprio',
+    'switching …': 'commutazione …',
+    'sys': 'Sistema',
+    'taken from the phone': 'presa dal cellulare',
+    'tap: arm / disarm': 'toccare: inserire / disinserire',
+    'tap: show all values': 'toccare: mostrare tutti i valori',
+    'teddy bear': 'orsacchiotto',
+    'temperature': 'temperatura',
+    'test SMS - it works': 'SMS di prova – funziona ✓',
+    'text too long or with control characters': 'testo troppo lungo o con caratteri di controllo',
+    'the Bluetooth loudspeaker is being connected - try again in a few seconds': "l'altoparlante Bluetooth si sta connettendo – riprovare tra qualche secondo",
+    'the PIN must have 4 to 8 digits': 'il PIN deve avere da 4 a 8 cifre',
+    'the Thermal-90 can only be used as thermal camera': 'la Thermal-90 si può usare solo come termocamera',
+    'the camera stays where it is (no patrol, tracking or timelapse)': "la telecamera resta dov'è (niente pattuglia, inseguimento o timelapse)",
+    'the file does not look like Motion Watch': 'il file non è Motion Watch',
+    'the file is damaged (checksum does not match) - try again': 'il file è danneggiato (il checksum non corrisponde) – riprovare',
+    'the file is not a working Python program': 'il file non è un programma Python funzionante',
+    'the loudspeaker could not be opened': "l'altoparlante non ha potuto essere aperto",
+    'the microphone of this device is not allowed': 'il microfono di questo dispositivo non è autorizzato',
+    'the modem does not answer (wrong port?)': 'il modem non risponde (porta sbagliata?)',
+    'the modem refuses the SMS': "il modem rifiuta l'SMS",
+    'the own Wi-Fi needs NetworkManager (Raspberry Pi OS Bookworm or newer)': 'il Wi-Fi proprio richiede NetworkManager (Raspberry Pi OS Bookworm o più recente)',
+    'the password must have 6 to 64 characters (letters, digits, signs, no umlauts)': 'la password deve avere da 6 a 64 caratteri (lettere, cifre, segni, senza accenti)',
+    'the password must have 8 to 63 characters': 'la password deve avere da 8 a 63 caratteri',
+    'the password was given on the command line (--web-password) - change it there': "la password è stata indicata all'avvio (--web-password) – cambiarla lì",
+    'the sound file could not be read': 'il file audio non è leggibile',
+    'the two passwords are not the same': 'le due password non sono uguali',
+    'the whole night (sunset to sunrise)': "tutta la notte (dal tramonto all'alba)",
+    'thermal': 'termico',
+    'thin corner marks (face stays free)': "sottili segni d'angolo (il viso resta libero)",
+    'this browser cannot play the live sound': "questo browser non può riprodurre l'audio live",
+    'this camera is already in use': 'questa telecamera è già in uso',
+    'this device is in the list already': 'questo dispositivo è già nella lista',
+    'this is this device itself': 'è questo dispositivo stesso',
+    'this version is already running': 'questa versione è già in uso',
+    'this version is not signed by the developer - not installed (only with the setting «Also accept unsigned versions»)': "questa versione non è firmata dallo sviluppatore – non installata (solo con l'impostazione «Accettare anche versioni non firmate»)",
+    'tie': 'cravatta',
+    'tilt': 'inclinazione',
+    'time zone': 'fuso orario',
+    'too big for Telegram (max. 50 MB)': 'troppo grande per Telegram (max. 50 MB)',
+    'too many network cameras': 'troppe telecamere di rete',
+    'too many wrong PINs - try again in 5 minutes': 'troppi PIN errati – riprovare tra 5 minuti',
+    'traffic light': 'semaforo',
+    'train': 'treno',
+    'tries the known networks (phone hotspot), otherwise switches the own Wi-Fi on': 'prova le reti conosciute (hotspot del cellulare), altrimenti accende il Wi-Fi proprio',
+    'truck': 'camion',
+    'turbo': 'turbo',
+    'tv': 'televisore',
+    'umbrella': 'ombrello',
+    'unchanged': 'invariato',
+    'under-voltage': 'sottotensione',
+    'under-voltage!': 'sottotensione!',
+    'unknown': 'sconosciuto',
+    'unknown action': 'azione sconosciuta',
+    'unknown entry': 'voce sconosciuta',
+    'unknown field': 'campo sconosciuto',
+    'unknown network': 'rete sconosciuta',
+    'unknown network camera': 'telecamera di rete sconosciuta',
+    'unknown relay': 'relè sconosciuto',
+    'unknown schedule': 'pianificazione sconosciuta',
+    'unknown source': 'sorgente sconosciuta',
+    'unknown trigger': 'attivatore sconosciuto',
+    'unknown version': 'versione sconosciuta',
+    'until': 'fino a',
+    'vase': 'vaso',
+    'video ready': 'video pronto',
+    'viewers': 'spettatori',
+    'waiting': 'in attesa',
+    'waiting at': 'in attesa a',
+    'waiting: alarm has priority': "in attesa: l'allarme ha la precedenza",
+    'waiting: manual control': 'in attesa: comando manuale',
+    'warm': 'corpo caldo',
+    'warm body (thermal camera)': 'corpo caldo (termocamera)',
+    'watching': 'stanno guardando',
+    'watching now': 'sta guardando',
+    'waypoints': 'punti di passaggio',
+    'weakest': 'il più debole',
+    'web': 'Web',
+    'wind': 'Vento',
+    'wrong PIN': 'PIN errato',
+    'z-how': "Una zona agisce su rilevamento, registrazione, allarmi e relè. Il punto che conta è il centro in basso dell'oggetto rilevato (i piedi).",
+    'z-ign': "Persone e oggetti con i piedi all'interno vengono ignorati (strada, albero, giardino del vicino).",
+    'z-only': 'Se esiste almeno una zona così, conta solo ciò che succede al suo interno (entrata, vialetto).',
+    'z-priv': "L'area viene coperta di nero – nell'immagine live, nelle registrazioni, nelle foto e nel timelapse. Non viene mai salvata né trasmessa (tenda vicina, sentiero, finestra altrui). Importante per la protezione dei dati.",
+    'zebra': 'zebra',
+    '{count} person(s) detected at {time} - camera: {camera}': '{count} persona/e rilevata/e alle {time} – telecamera: {camera}',
+    '{name}: movement (pre-alarm)': '{name}: movimento (preallarme)',
+    '{name}: noise': '{name}: rumore',
+    '{name}: person detected': '{name}: persona rilevata',
+    '{name}: warm body detected': '{name}: calore rilevato',
+    '{n} animal': '{n} animale',
+    '{n} animals': '{n} animali',
+    '{n} person': '{n} persona',
+    '{n} persons': '{n} persone',
+    '← Back to the live picture': "← Torna all'immagine live",
+    '↻ Calibrate': '↻ Calibrare',
+    '↻ Restart Pi': '↻ Riavviare il Pi',
+    '↻ Round': '↻ Giro',
+    '⇄ Pendulum': '⇄ Pendolo',
+    '⏸ Pause program': '⏸ Mettere in pausa il programma',
+    '⏻ Shut down Pi': '⏻ Spegnere il Pi',
+    '◎ Centre': '◎ Centro',
+    '⚠ no password': '⚠ nessuna password',
+    '⬆ Load settings': '⬆ Caricare le impostazioni',
+    '⬇ Download': '⬇ Scarica',
+    '⬇ Save settings': '⬇ Salvare le impostazioni',
+    '⭐ Praise': '⭐ Complimento',
+    '🐞 Error': '🐞 Errore',
+    '💡 Idea': '💡 Idea',
+    '💬 Feedback to the developer': '💬 Feedback allo sviluppatore',
+    '💬 Other': '💬 Altro',
+    '📍＋ Waypoint': '📍＋ Punto di passaggio',
+    '📜 Whole log & archive': '📜 Registro completo e archivio',
+    '🔊 Test sound': '🔊 Suono di prova',
+    '🔍 Search in the network': '🔍 Cercare nella rete',
+    '🔐 Operator mode (lock settings)': '🔐 Modalità operatore (bloccare le impostazioni)',
+    '🔒 Web password': '🔒 Password web',
+    '🖨 Quick start (QR)': '🖨 Codici QR per collegarsi',
+    '📄 Quick guide (1 page)': '📄 Guida rapida (1 pagina)',
+    '🖨 Quick start card with QR codes': '🖨 Guida rapida con codici QR',
+    '🛡 Arm (countdown)': '🛡 Inserire (conto alla rovescia)',
+    '🛡 Arm all': '🛡 Inserire tutti',
+    '🧭 Setup assistant': '🧭 Assistente di configurazione',
+})
+TRX['rm'].update({
+    '(or the address from the push message).': "(u l'adressa da l'avis push).",
+    '+ Add relay': '+ Agiuntar in relais',
+    '+ Add schedule': '+ Agiuntar in plan da temp',
+    '+ Ignore zone': '+ Zona ignorada',
+    '+ Only-here zone': '+ Zona «mo qua»',
+    '+ Privacy zone': '+ Zona da privadad',
+    '+ Waypoint': '+ Punct da passagi',
+    "1 · Join the device's Wi-Fi": "1 · Sa colliar cun il WLAN da l'apparat",
+    '1. Install the free app «ntfy» (App Store / Play Store).': "1. Installar l'app gratuita «ntfy» (App Store / Play Store).",
+    '2 · Open the page (own Wi-Fi)': '2 · Avrir la pagina (agen WLAN)',
+    '2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera.': "2. En l'app: + → endatar il tema sutvart (ed il server, sch'el n'è betg il standard) – u avrir quest code cun la camera dal telefonin.",
+    '6 to 64 characters. After saving, the browser asks for it once (any user name).': "6 fin 64 caracters. Suenter memorisar al dumonda il navigatur ina giada (num d'utilisader tenor giavisch).",
+    '<li>Scan the QR code with the phone camera.</li><li>Open the page; the first time the setup assistant guides you through password and push messages.</li><li>Share → «Add to Home Screen»: start Motion Watch like an app.</li><li>Arm the protection: big «Armed» button at the top.</li>': "<li>Scannar il code QR cun la camera dal telefonin.</li><li>Avrir la pagina; l'emprima giada maina l'assistent d'installaziun tras pled-clav ed avis push.</li><li>Parter → «Sin il visur da partenza»: aviar Motion Watch sco ina app.</li><li>Armar la protecziun: grond buttun «Armà» sisum.</li>",
+    'A USB LTE stick with a SIM card (with credit). Works also where there is only the mobile network. Costs per SMS - mind the limits.': "In stick USB LTE cun carta SIM (cun credit). Funcziuna er là nua ch'i dat mo la rait mobila. Mintga SMS custa – resguardar las limitas.",
+    'A password is set already. Enter a new one only to change it.': 'In pled-clav è gia definì. Endatar mo in nov per al midar.',
+    'A running recording is finished first. To switch it on again: unplug the power and plug it in again.': "Ina registraziun en lavur vegn l'emprim terminada. Per puspè enviar: trair ora il current e l'attatgar puspè.",
+    'AI detection': 'Identificaziun IA',
+    'AI person detection (SSD MobileNet V2)': 'Identificaziun da persunas IA (SSD MobileNet V2)',
+    'AI persons': 'Persunas IA',
+    'ALARM': 'ALARM',
+    'AT commands (serial port)': 'Cumonds AT (port serial)',
+    'Active low': 'Activ bass',
+    'Add': 'Agiuntar',
+    'Add a device': 'Agiuntar in apparat',
+    'Add camera': 'Agiuntar ina camera',
+    'Add current pan as waypoint': 'Posiziun actuala sco punct da passagi',
+    'Add network camera': 'Agiuntar ina camera da rait',
+    'Add network camera (RTSP / HTTP stream, Wi-Fi cams)': 'Agiuntar ina camera da rait (stream RTSP / HTTP, cameras WLAN)',
+    'Add technical details (version, device, last important events - no pictures, no passwords)': 'Agiuntar las indicaziuns tecnicas (versiun, apparat, ultims eveniments impurtants – nagins maletgs, nagins pleds-clav)',
+    'Address of a Huawei HiLink stick': "Adressa d'in stick Huawei HiLink",
+    'Address of this page for links (e.g. https://pi.local:5000)': 'Adressa da questa pagina per colliaziuns (p.ex. https://pi.local:5000)',
+    'Advanced': 'Avanzà',
+    'After this the page asks for the new password once (user name: anything).': "Suenter dumonda la pagina ina giada il nov pled-clav (num d'utilisader: tenor giavisch).",
+    'Alarm & camping': 'Alarm e camping',
+    'Alarm also as SMS (person, sabotage, warm body, noise)': 'Alarm era sco SMS (persuna, sabotascha, corp chaud, canera)',
+    'Alarm messages straight into the browser / the home screen app of this device.': "Messadis d'alarm directamain en il navigatur / en l'app dal visur da partenza da quest apparat.",
+    'Alarm sound': "Tun d'alarm",
+    'Alarm sound in open browsers (switch on with the bell at the top)': "Tun d'alarm en navigaturs averts (activar cun la sain sisum)",
+    'Alarm sound in the browser': "Tun d'alarm en il navigatur",
+    'Alarm when a warm body moves inside the zones': "Alarm cur ch'in corp chaud sa mova en las zonas",
+    'All': 'Tuts',
+    'All animals': 'Tut ils animals',
+    'All days': 'Tut ils dis',
+    'All kinds': 'Tut ils gens',
+    'All sources': 'Tut las funtaunas',
+    'All time': 'Entir temp',
+    'Also accept unsigned versions (not recommended - only for own builds)': 'Acceptar era versiuns betg signadas (betg recumandà – mo per atgnas versiuns)',
+    'Also when disarmed (e.g. keep animals out of the garden)': "Era sch'il sistem è disarmà (p.ex. tegnair davent animals da l'iert)",
+    'Always': 'Adina',
+    'Animal diary': "Diari d'animals",
+    'Appearance': 'Apparientscha',
+    'Applies': 'Vala',
+    'Archive': 'Archiv',
+    'Arm': 'Armar',
+    'Arm (countdown)': 'Armar (dumbrar enavos)',
+    'Arm now': 'Armar immediat',
+    'Armed': 'Armà',
+    'Armed (alarms)': 'Armà (alarms)',
+    'Armed - alarms are active': 'Armà – ils alarms èn activs',
+    'Armed in': 'Armà en',
+    'Arming countdown (s)': 'Dumbrar enavos fin armà (s)',
+    'Arrow keys move the camera': 'Las frizzas da la tastatura moventan la camera',
+    'At most SMS per day': 'Maximalmain SMS per di',
+    'At most one SMS every (minutes)': 'Maximalmain in SMS mintga (minutas)',
+    'Audio': 'Audio',
+    'Auto': 'Auto',
+    'Auto low-light mode (contrast boost)': 'Modus da pauca glisch auto (contrast)',
+    'Auto rain detection': 'Identificaziun automatica da plievgia',
+    'Auto relays': 'Relais automatics',
+    'Auto relays enabled': 'Relais automatics activs',
+    'Auto wind detection': 'Identificaziun automatica da vent',
+    'Auto-tune': 'Reglaziun automatica',
+    'Auto: the relay switches on while its trigger is in view and stays on for the hold time. Animal and object triggers (e.g. cat) need the AI model.': "Auto: il relais s'activescha uschè ditg che ses activader è en il maletg e resta activ durant il temp da tegnair. Activaders d'animals e d'objects (p.ex. giat) dovran il model IA.",
+    'Auto: the relay switches on while its trigger is in view and stays on for the hold time. Animal and object triggers (e.g. cat) need the AI model. Pre-alarm switches on at the first movement in the picture, long before a person is confirmed. Remote access switches on while somebody watches over Tailscale - also when disarmed (e.g. a small warning lamp).': "Auto: il relais s'activescha uschè ditg che ses activader è en il maletg e resta activ durant il temp da tegnair. Activaders d'animals e d'objects (p.ex. giat) dovran il model IA. Il prealarm s'activescha gia tar l'emprim moviment en il maletg, ditg avant ch'ina persuna è confermada. L'access a distanza s'activescha uschè ditg ch'insatgi guarda via Tailscale – era sch'il sistem è disarmà (p.ex. pitschna lampa d'avertiment).",
+    'Automatic (first working USB camera)': 'Automatic (emprima camera USB che funcziuna)',
+    'Automatic tuning': 'Reglaziun automatica',
+    'Automatic update also while armed (otherwise only when disarmed)': "Actualisaziun automatica era sch'armà (uschiglio mo disarmà)",
+    "Automatic update at (o'clock)": 'Actualisaziun automatica a las (ura)',
+    'Automatic update to version {v} – the program restarts (about 20 s)': 'Actualisaziun automatica a la versiun {v} – il program vegn avià da nov (var 20 s)',
+    'Automatic: known networks (e.g. phone hotspot), otherwise own Wi-Fi': 'Automatic: raits enconuschentas (p.ex. hotspot dal telefonin), uschiglio agen WLAN',
+    'Automatic: look for known networks every (min, 0 = never)': 'Automatic: tschertgar raits enconuschentas mintga (min, 0 = mai)',
+    'Automatic: phone hotspot / known networks, otherwise own Wi-Fi': 'Automatic: hotspot dal telefonin / raits enconuschentas, uschiglio agen WLAN',
+    'Automatic: wait for a known network (s)': 'Automatic: spetgar ina rait enconuschenta (s)',
+    'Autostart OFF': 'Start automatic DEACTIVÀ',
+    'Autostart ON': 'Start automatic ACTIV',
+    'Autostart at boot': "Start automatic tar l'aviar",
+    'Autostart off': 'Start automatic deactivà',
+    'Autostart on': 'Start automatic activ',
+    'Autostart with own Wi-Fi': 'Start automatic cun agen WLAN',
+    'Away after N minutes without answer': 'Absent suenter N minutas senza resposta',
+    'Back': 'Enavos',
+    'Backup': 'Copia da segirezza',
+    'Bangs / claps (animals)': 'Detunaziuns / sclops (animals)',
+    'Battery': 'Battaria',
+    'Battery almost empty: about {pct} % ({hours:.1f} h)': 'Battaria bunamain vida: var {pct} % ({hours:.1f} h)',
+    'Battery almost empty: about {pct} % ({hours:.1f} h) left – please charge or swap': 'Battaria bunamain vida: var {pct} % ({hours:.1f} h) restanta – per plaschair chargiar u midar',
+    'Battery empty – the Pi shuts down cleanly': 'Battaria vida – il Pi vegn stizzà endretg',
+    'Battery is full now': 'La battaria è ussa plaina',
+    'Battery marked as full': 'Battaria marcada sco plaina',
+    'Big animal (bear, cow, horse, ...)': 'Animal grond (urs, vatga, chaval, …)',
+    'Big animal: sound': 'Animal grond: tun',
+    'Bluetooth': 'Bluetooth',
+    'Bluetooth is not available (sudo apt install bluez)': "Bluetooth n'è betg disponibel (sudo apt install bluez)",
+    'Bluetooth loudspeaker': 'Autpledader Bluetooth',
+    'Bluetooth sound needs the program as normal user (not with sudo / not as system service)': "Il tun Bluetooth funcziuna mo sch'il program gira sco utilisader normal (betg cun sudo / betg sco servetsch dal sistem)",
+    'Build': 'Versiun',
+    'Buttons': 'Buttuns',
+    'CAMERA CONTROL': 'CUMOND DA LA CAMERA',
+    'CPU': 'CPU',
+    'CPU load, last 60 seconds': 'Chargia da la CPU, ultimas 60 secundas',
+    'Calibrate': 'Calibrar',
+    'Camera & servos': 'Camera e servos',
+    'Camera / Servos': 'Camera / servos',
+    'Camera control': 'Cumond da la camera',
+    'Camera to the middle': 'Camera en il center',
+    'Cameras': 'Cameras',
+    'Camping': 'Camping',
+    'Camping / protection': 'Camping / protecziun',
+    'Camping OFF': 'Camping DEACTIVÀ',
+    'Camping ON': 'Camping ACTIV',
+    'Camping profile': 'Profil camping',
+    'Camping profile OFF': 'Profil camping DEACTIVÀ',
+    'Camping profile ON': 'Profil camping ACTIV',
+    'Cancel': 'Interrumper',
+    'Cancel selection': 'Terminar la selecziun',
+    'Centre': 'Center',
+    'Centre camera': 'Centrar la camera',
+    'Change web password': 'Midar il pled-clav web',
+    'Choose a camera…': 'Tscherner ina camera …',
+    'Clear': 'Stizzar',
+    'Clear all waypoints?': 'Stizzar tut ils puncts da passagi?',
+    'Clear waypoints': 'Stizzar ils puncts da passagi',
+    "Click the corners of the area in the picture. Click the first point or press 'Finish shape' to close it.": "Clicca sin ils chantuns dal territori en il maletg. Clicca sin l'emprim punct u «Terminar la furma» per la serrar.",
+    'Clock': 'Ura',
+    'Close': 'Serrar',
+    'Collapse all': 'Serrar tut',
+    'Colours': 'Colurs',
+    'Confidence threshold': 'Limita da fidanza',
+    'Connect': 'Colliar',
+    'Connect now': 'Colliar ussa',
+    'Connected with': 'Collià cun',
+    'Connection': 'Colliaziun',
+    'Contact for an answer (optional)': 'Contact per ina resposta (facultativ)',
+    'Continue without a password (not recommended)': 'Cuntinuar senza pled-clav (betg recumandà)',
+    'Control': 'Cumond',
+    'Controls': 'Cumond',
+    'Converting for the browser (one time)…': 'Vegn convertì per il navigatur (ina giada) …',
+    'Cooldown between alarms (s)': 'Pausa tranter alarms (s)',
+    'Copy all recordings (otherwise only alarm recordings: armed or with a person)': "Copiar tut las registraziuns (uschiglio mo quellas d'alarm: armà u cun ina persuna)",
+    'Copy link': 'Copiar la colliaziun',
+    'Copy recordings to': 'Copiar las registraziuns en',
+    'Copy the link from the field': 'Copiar la colliaziun dal champ',
+    'Create link (24 h)': 'Crear ina colliaziun (24 h)',
+    'Create link (no limit)': 'Crear ina colliaziun (illimitada)',
+    'Create new link': 'Crear ina nova colliaziun',
+    'Create video': 'Crear il video',
+    'DETECTIONS': 'IDENTIFICAZIUNS',
+    'Dark': 'Stgir',
+    'Dark theme': 'Tema stgir',
+    'Date': 'Data',
+    'Days': 'Dis',
+    'Delete': 'Stizzar',
+    'Delete selected': 'Stizzar la selecziun',
+    'Delete this entry?': 'Stizzar questa inscripziun?',
+    'Delete this recording?': 'Stizzar questa registraziun?',
+    'Detection': 'Identificaziun',
+    'Detection (master switch)': 'Identificaziun (interruptur principal)',
+    'Detections': 'Identificaziuns',
+    'Deterrence': 'Dissuasiun',
+    'Device name (placeholder {name})': "Num da l'apparat (marcaplaz {name})",
+    'Devices': 'Apparats',
+    'Diary': 'Diari',
+    'Disarm': 'Disarmar',
+    'Disarm all': 'Disarmar tuts',
+    'Disarmed': 'Disarmà',
+    'Disconnect': 'Separar',
+    'Done!': 'Finì!',
+    'Double-click video: video only · F11: fullscreen · Esc: back': 'Dubel clic sin il video: mo video · F11: entir maletg · Esc: enavos',
+    'Double-click video: video only · F11: fullscreen · Esc: back · Ctrl+B: settings panel · right-click video: show / hide fields': 'Dubel clic sin il video: mo video · F11: entir maletg · Esc: enavos · Ctrl+B: panela da parameters · clic dretg sin il video: mussar / zuppentar champs',
+    'Download': 'Chargiar giu',
+    'Download ZIP': 'Chargiar giu ZIP',
+    'Downloading and checking …': 'Chargiar giu e controllar …',
+    'Drag a corner to move it. Select a zone in the list to edit it.': "In chantun po vegnir spustà. Tscherna ina zona en la glista per l'elavurar.",
+    'Drive along the waypoints': 'Ir tras ils puncts da passagi',
+    'Duration of sound / flashing (s)': 'Durada dal tun / dals chametgs (s)',
+    'Duration of the siren (s)': 'Durada da la sirena (s)',
+    'Dwell at waypoint (s)': 'Pausa al punct da passagi (s)',
+    'EVENT LOG': 'PROTOCOL DAD EVENIMENTS',
+    'Each day is saved as its own file and kept for': 'Mintga di vegn memorisà sco atgna datoteca e conservà:',
+    'Edit': 'Elavurar',
+    'Edit schedule': 'Elavurar il plan da temp',
+    'Empty = standard text (grey). Placeholders:': 'Vid = text standard (grisch). Marcaplazs:',
+    'Empty = standard text. Placeholders:': 'Vid = text standard. Marcaplazs:',
+    'Enabled': 'Activ',
+    'Encrypted (TLS, usually port 8883)': 'Criptà (TLS, per il solit port 8883)',
+    'End camping? The own Wi-Fi is switched off again - this page loses its connection and the Pi goes back to the known networks.': "Terminar il camping? L'agen WLAN vegn deactivà – questa pagina perda la colliaziun ed il Pi turna en las raits enconuschentas.",
+    'End guest access': "Terminar l'access per giasts",
+    'End guest access? The link stops working at once.': "Terminar l'access per giasts? La colliaziun na funcziuna immediat betg pli.",
+    'Error': 'Sbagl',
+    'Event log': 'Protocol dad eveniments',
+    'Event log (important)': 'Protocol dad eveniments (impurtant)',
+    'Event log: keep the archive (days)': "Protocol dad eveniments: conservar l'archiv (dis)",
+    'Event log: status line every N minutes (0 = off)': 'Protocol dad eveniments: lingia da status mintga N minutas (0 = deactivà)',
+    'Events per weekday and hour': "Eveniments per di da l'emna ed ura",
+    'Exit fullscreen (Esc)': "Bandunar l'entir maletg (Esc)",
+    'Expand all': 'Avrir tut',
+    'FPS': 'FPS',
+    'Fast': 'Spert',
+    'Fast beeps': 'Pips sperts',
+    'Favorites': 'Favurits',
+    'Favorites are never deleted by the automatic cleanup': 'Favurits na vegnan mai stizzads da la rumida automatica',
+    'Favourite': 'Favurit',
+    'Favourites': 'Favurits',
+    'Features': 'Funcziuns',
+    'Feedback to the developer': 'Resposta al sviluppader',
+    'Fine-tuning': 'Parameters fins',
+    'Finish shape': 'Terminar la furma',
+    'Finished alarm recordings are copied away from the device - if it is stolen or broken, the clips are safe.': "Registraziuns d'alarm finidas vegnan copiadas ordaifer l'apparat – sch'el vegn engulà u donnegià, èn ils clips en segirezza.",
+    'Finishing the recording, saving the settings …': 'La registraziun vegn terminada, ils parameters vegnan memorisads …',
+    'Fixed times': 'Uras fixas',
+    'Folder (USB stick / NAS)': 'Ordinatur (stick USB / NAS)',
+    'Folder (USB stick / NAS, e.g. /media/pi/STICK/MotionWatch)': 'Ordinatur (stick USB / NAS, p.ex. /media/pi/STICK/MotionWatch)',
+    'Follow': 'Suandar',
+    'Follow a detected person': 'Suandar ina persuna identifitgada',
+    'Follow detected person (auto pan/tilt)': 'Suandar la persuna identifitgada (pan/tilt auto)',
+    'Forget network': 'Emblidar la rait',
+    'Forget this network?': 'Emblidar questa rait?',
+    'Frames of steady motion': 'Maletgs da moviment regular',
+    'From': 'Da',
+    'Full speed after an event for (s)': 'Plaina sveltezza suenter in eveniment durant (s)',
+    'Full speed while somebody watches the live picture': "Plaina sveltezza uschè ditg ch'insatgi guarda il maletg live",
+    'Fullscreen (F11)': 'Entir maletg (F11)',
+    'GPIO': 'GPIO',
+    'GPIO must be a number': 'il GPIO sto esser in numer',
+    'GPIO must be between 2 and 27': 'il GPIO sto esser tranter 2 e 27',
+    'GPIO {n} is already used by another relay': "GPIO {n} vegn gia duvrà d'in auter relais",
+    'GPIO {n} is used by a light': "GPIO {n} vegn duvrà d'ina glisch",
+    'GPIO {n} is used by a servo': "GPIO {n} vegn duvrà d'in servo",
+    'GPIO {n} is used by the thermal camera': 'GPIO {n} vegn duvrà da la camera termica',
+    'GitHub key (token) - only for a private repository': 'Clav GitHub (token) – mo per in repository privat',
+    'GitHub refused the key - check that it is valid and may read this repository': "GitHub ha refusà la clav – controllar ch'ella è valaivla e po leger quest repository",
+    'Guest access': 'Access per giasts',
+    'Guest access is off': "L'access per giasts è deactivà",
+    'Guest access is on': "L'access per giasts è activ",
+    'Guest view · watch only · tap the picture = full screen': 'Vista per giasts · mo guardar · smatgar sin il maletg = entir maletg',
+    'Header': 'Chau-pagina',
+    'Header buttons': 'Buttuns sisum',
+    'HiLink stick not found (address?)': 'stick HiLink betg chattà (adressa?)',
+    'Hide header': 'Zuppentar il chau-pagina',
+    'High whistle (animals)': 'Tschivlim aut (animals)',
+    'Highlight persons red': 'Marcar las persunas cotschen',
+    'Hold (s)': 'Tegnair (s)',
+    'Hold after person (s)': 'Tegnair suenter persuna (s)',
+    'Hold to talk': 'Tegnair smatgà per discurrer',
+    'Home Assistant finds Motion Watch by itself (discovery)': 'Home Assistant chatta Motion Watch sez (discovery)',
+    'Home network': 'Rait da chasa',
+    'Horn': 'Tuba',
+    'Hot areas only: warmest N percent': 'Mo zonas chaudas: ils N pertschient ils pli chauds',
+    'IR light': 'Glisch IR',
+    'Idea': 'Idea',
+    'Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one.': 'Ideas, sbagls, laud – tut gida. Il messadi va davent anonim: nagin num, nagina adressa, auter che ti als scrivas.',
+    'Idle': 'Pront',
+    'Ignore cars / vehicles': 'Ignorar autos / vehichels',
+    'Ignore zone': 'Zona ignorada',
+    'Image': 'Maletg',
+    'Images': 'Maletgs',
+    'Important only': 'Mo impurtant',
+    'In the dark also brighten the picture you see (live, recordings)': 'En il stgir era sclerir il maletg visibel (live, registraziuns)',
+    'Infrared': 'Infracotschna',
+    'Infrared light': 'Glisch infracotschna',
+    'Infrared light on / off': 'Glisch infracotschna activa / deactivada',
+    'Infrared light: Auto means': 'Glisch infracotschna: «Auto» munta',
+    'Infrared light: connected to': 'Glisch infracotschna: colliada cun',
+    'Inside any schedule': 'En in plan da temp',
+    'Install': 'Installar',
+    'Install new versions automatically': 'Installar automaticamain novas versiuns',
+    'Internet': 'Internet',
+    'Invert pan direction': 'Invertir la direcziun da panorama',
+    'Invert tilt direction': "Invertir la direcziun d'inclinaziun",
+    'JPEG quality': 'Qualitad JPEG',
+    'Keep diary entries (days, ★ always)': 'Tegnair las inscripziuns dal diari (dis, ★ adina)',
+    'Keep person flagged while tracked': 'Laschar la persuna marcada durant il suandar',
+    'Keep recording after (s)': 'Prolungaziun da la registraziun (s)',
+    'LOW LIGHT': 'PAUCA GLISCH',
+    'Lamp': 'Glisch',
+    'Language': 'Lingua',
+    'Largest first': "Ils pli gronds l'emprim",
+    'Last': 'Ultim',
+    'Last 14 days (click a day)': 'Ultims 14 dis (cliccar sin in di)',
+    'Last 7 days': 'Ultims 7 dis',
+    'Last night': 'La notg passada',
+    'Last report': 'Ultim rapport',
+    'Later': 'Pli tard',
+    'Latitude (sunrise / sunset)': 'Latitudo (levada / rendida dal sulegl)',
+    'Learn the picture again (after moving the camera)': 'Emprender da nov il maletg (suenter avair spustà la camera)',
+    "Let's go": 'Sin via',
+    'Light': 'Cler',
+    'Light & sound': 'Glisch e tun',
+    'Light level': 'Cundiziuns da glisch',
+    'Light ok': 'Glisch ok',
+    'Light stays on after an alarm (s)': 'La glisch resta activa suenter in alarm (s)',
+    'Light theme': 'Tema cler',
+    'Lights': 'Glisch',
+    'Link copied': 'Colliaziun copiada',
+    'Listen': 'Tadlar',
+    'Listen to the microphone': 'Tadlar il microfon',
+    'Listening ended': 'Tadlar terminà',
+    'Listening volume (this device)': 'Volumen da tadlar (quest apparat)',
+    'Live': 'Live',
+    'Load more': 'Chargiar dapli',
+    'Load settings …': 'Chargiar ils parameters …',
+    'Load the settings from this file? The current settings are replaced (a copy is kept on the Pi).': 'Chargiar ils parameters da questa datoteca? Ils actuals vegnan remplazzads (ina copia resta sin il Pi).',
+    'Lock the settings now? Only the main switches stay usable. Unlocking needs the PIN.': 'Bloccar ussa ils parameters? Mo ils interrupturs principals restan utilisabels. Per debloccar dovri il PIN.',
+    'Log': 'Protocol',
+    'Longitude (sunrise / sunset)': 'Longitudo (levada / rendida dal sulegl)',
+    'Look for new versions by itself (every 3 hours)': 'Tschertgar sez novas versiuns (mintga 3 uras)',
+    'Loudspeaker': 'Autpledader',
+    'Loudspeaker in use': 'Autpledader en diever',
+    'Loudspeakers': 'Autpledaders',
+    'Low light': 'Pauca glisch',
+    'Low-light threshold (brightness)': 'Limita da pauca glisch (clerezza)',
+    'MANUAL': 'MANUAL',
+    'MQTT broker (address, e.g. 192.168.1.10 or homeassistant.local)': 'Broker MQTT (adressa, p.ex. 192.168.1.10 u homeassistant.local)',
+    'MQTT on (state, events, commands)': 'MQTT activ (status, eveniments, cumonds)',
+    'MQTT password': 'Pled-clav MQTT',
+    'MQTT port': 'Port MQTT',
+    'MQTT user name': "Num d'utilisader MQTT",
+    'Main camera': 'Camera principala',
+    'Manual': 'Instrucziuns',
+    'Manual control - tracking / patrol paused': 'Cumond manual - suandar / patrulla en pausa',
+    'Manual control pause (s)': 'Pausa suenter cumond manual (s)',
+    'Mark all detected objects (cars, animals, ...)': 'Marcar tut ils objects identifitgads (autos, animals, ...)',
+    'Mark detected objects (animals, cars ...)': 'Marcar ils objects identifitgads (animals, autos …)',
+    'Markings in recordings and alarm pictures': "Marcaziuns en registraziuns e maletgs d'alarm",
+    'Marks': 'Marcar',
+    'Max recordings folder (GB)': 'Ordinatur da registraziuns max. (GB)',
+    'Max speed (px/frame)': 'Sveltezza max. (px/maletg)',
+    'Max timelapse folder (GB)': 'Ordinatur timelapse max. (GB)',
+    'Max trigger boost': "Rinforzament max. da l'activaziun",
+    'Medium': 'Mesaun',
+    'Memory card almost full: {free} MB free - the oldest recordings are deleted': 'Carta da memoria bunamain plaina: {free} MB libers – las registraziuns las pli veglias vegnan stizzadas',
+    'Messages': 'Texts dals messadis',
+    'Microphone': 'Microfon',
+    'Microphone gain (dB)': 'Rinforzament dal microfon (dB)',
+    'Microphones': 'Microfons',
+    'Min object size (px²)': "Grondezza min. d'object (px²)",
+    'Min speed (px/frame)': 'Sveltezza min. (px/maletg)',
+    'Motion Watch - desktop window opened': 'Motion Watch - fanestra averta',
+    'Motion Watch is online in Wi-Fi {ssid}: {addr}': 'Motion Watch è online en il WLAN {ssid}: {addr}',
+    'Motion Watch manual · version': 'Instrucziuns per Motion Watch · versiun',
+    'Motion persons need AI confirmation': 'Persunas en moviment: conferma IA necessaria',
+    'Motion sensor': 'Sensur da moviment',
+    'Motion sensor (MPU-6050, if fitted): alarm when the device is moved or knocked over': "Sensur da moviment (MPU-6050, sch'el è montà): alarm sch'il apparat vegn spustà u bittà enturn",
+    'Motion sensor: alarm from a tilt of (degrees)': "Sensur da moviment: alarm a partir d'ina inclinaziun da (grads)",
+    'Mute 30 min': 'Senza tun 30 min',
+    'Muted until': 'Senza tun fin',
+    'Name': 'Num',
+    'Name of this device (optional)': 'Num da quest apparat (facultativ)',
+    'Network': 'Rait',
+    'Network camera': 'Camera da rait',
+    'Network name (SSID)': 'Num da la rait (SSID)',
+    'New PIN for unlocking (4-8 digits):': 'Nov PIN per debloccar (4-8 cifras):',
+    'New password': 'Nov pled-clav',
+    'New picture': 'Nov maletg',
+    'New version': 'Nova versiun',
+    'New version running': 'Nova versiun gira',
+    'New version {v} available - tap «Update now» on the page': 'Nova versiun {v} disponibla – smatgar «Actualisar ussa» sin la pagina',
+    'Newest first': "Ils pli novs l'emprim",
+    'Next': 'Vinavant',
+    'Night report': 'Rapport da notg',
+    'Night report is off.': 'Il rapport da notg è deactivà.',
+    'Night report sent': 'Rapport da notg tramess',
+    'Night report: push message in the morning with what happened in the night': "Rapport da notg: avis push la damaun cun quai ch'è capità la notg",
+    'No address found (network?)': 'Nagina adressa chattada (rait?)',
+    'No animals yet. As soon as the AI recognises an animal, its best picture appears here.': "Anc nagins animals. Uschespert che l'IA identifitgescha in animal, cumpara qua ses meglier maletg.",
+    'No answer from the Pi.': 'Nagina resposta dal Pi.',
+    'No match': 'Nagin resultat',
+    'No person': 'Nagina persuna',
+    'No rain': 'Nagina plievgia',
+    'No recordings match the filters': 'Naginas registraziuns correspundan als filters',
+    'No report sent yet - the first one comes in the morning.': "Anc nagin rapport – l'emprim vegn la damaun.",
+    'No report sent yet – the first one comes in the morning.': "Anc nagin rapport – l'emprim vegn la damaun.",
+    'No update source set yet (see above)': "Anc nagina funtauna d'actualisaziuns (guarda survart)",
+    'Nobody has set a password yet: anybody in this network can open this page, switch the alarm off or listen in. Set a password now (6 to 64 characters).': "Anc nagin pled-clav è definì: mintgin en questa rait po avrir questa pagina, deactivar l'alarm u tadlar. Defineschas ussa in pled-clav (6 fin 64 caracters).",
+    'Noise (microphone)': 'Canera (microfon)',
+    'Noise alarm': 'Alarm da canera',
+    'Noise alarm: alarm when it gets loud (cracking, rustling, voices)': "Alarm da canera: alarm cur ch'i daventa canerus (scruschir, sfruschar, vuschs)",
+    'Noise alarm: at least (s)': 'Alarm da canera: almain (s)',
+    'Noise alarm: loud ({db} dB) at {time} - camera: {camera}': 'Alarm da canera: ferm ({db} dB) a las {time} – camera: {camera}',
+    'Noise alarm: louder than the background by (dB)': "Alarm da canera: pli ferm ch'il fund per (dB)",
+    'Noise alarm: push message': 'Alarm da canera: avis push',
+    'Noise alarm: text': 'Alarm da canera: text',
+    'Noise alarm: title': 'Alarm da canera: titel',
+    'Not sent – push messages are not set up': "Betg tramess – ils avis push n'èn betg installads",
+    'Note animals, persons and noises (animal diary + night report)': "Notar animals, persunas e caneras (diari d'animals + rapport da notg)",
+    'Note: the Wi-Fi code contains the password – do not post the card in public.': 'Attenziun: il code WLAN cuntegna il pled-clav – betg pender si la carta en public.',
+    'Nothing found – try another word (e.g. password, Wi-Fi, siren).': 'Nagut chattà – emprova in auter pled (p.ex. pled-clav, WLAN, sirena).',
+    'Nothing found.': 'Nagut chattà.',
+    'Nothing important yet – everything else is in the whole log.': "Anc nagut impurtant – tut il rest stat en l'entir protocol.",
+    'Notification type': "Tip d'avis",
+    'Notifications': 'Avis',
+    'Notifications are not allowed for this page (browser settings).': "Avis n'èn betg permess per questa pagina (parameters dal navigatur).",
+    'OBJECTS': 'OBJECTS',
+    'OFF': 'DEACTIVÀ',
+    'ON': 'ACTIV',
+    'Object confidence': 'Fidanza objects',
+    'Object list': 'Glista dals objects',
+    'Objects': 'Objects',
+    'Off': 'Deactivà',
+    'Off - enter the capacity of the powerbank.': 'Deactivà – endatar la capacitad da la powerbank.',
+    'Off – enter the capacity of the powerbank below.': 'Deactivà – endatar sutvart la capacitad da la powerbank.',
+    'Oldest first': "Ils pli vegls l'emprim",
+    'On': 'Activ',
+    'On the road (Tailscale)': 'En viadi (Tailscale)',
+    'Only known networks': 'Mo raits enconuschentas',
+    'Only save (connects automatically)': 'Mo memorisar (sa collia automaticamain)',
+    'Only warm bodies that move (ignore warm stones, engines)': 'Mo corps chauds che sa movan (ignorar crappa chauda, motors)',
+    'Only when nobody is home': 'Mo sche nagin è a chasa',
+    'Only when push messages cannot be sent (no internet)': "Mo sch'i n'è betg pussaivel da trametter in avis push (nagin internet)",
+    'Only when somebody is home': "Mo sch'insatgi è a chasa",
+    'Only-here zone': 'Zona «mo qua»',
+    'Open': 'Avrir',
+    'Open Motion Watch on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.': 'Cun quests codes avras ti Motion Watch sin ulteriurs apparats. Sin il telefonin: Parter → «Sin il visur da partenza» – lura cumenza el sco ina app.',
+    'Open animal diary': "Avrir il diari d'animals",
+    'Open animal diary (browser)': "Avrir il diari d'animals (navigatur)",
+    'Open camera grid (browser)': 'Avrir la survista da las cameras (navigatur)',
+    'Open event log & archive (browser)': "Avrir il protocol e l'archiv (navigatur)",
+    'Open recordings preview (browser)': 'Avrir la prevista da las registraziuns (navigatur)',
+    'Open secure page': 'Avrir la pagina segira',
+    'Open the page (home network)': 'Avrir la pagina (rait da chasa)',
+    'Open zone editor (browser)': "Avrir l'editur da zonas (navigatur)",
+    'Operator mode': "Modus d'operatur",
+    'Operator mode (lock settings)': "Modus d'operatur (bloccar ils parameters)",
+    'Operator mode on': "Modus d'operatur activ",
+    'Other': 'Auter',
+    'Other / hidden network …': 'Autra rait / rait zuppada …',
+    'Other Motion Watch devices': 'Ulteriurs apparats Motion Watch',
+    'Other devices': 'Ulteriurs apparats',
+    'Other devices (W): camera, USB, servos': 'Ulteriurs apparats (W): camera, USB, servos',
+    'Other side': 'Autra vart',
+    'Outside all schedules': 'Ordaifer tut ils plans da temp',
+    'Overlay strength': 'Intensitad da la surpositziun',
+    'Overlay the thermal picture': 'Surponer il maletg termic',
+    'Own Wi-Fi': 'Agen WLAN',
+    'Own Wi-Fi (hotspot)': 'Agen WLAN (hotspot)',
+    'Own Wi-Fi OFF': 'Agen WLAN DEACTIVÀ',
+    'Own Wi-Fi ON': 'Agen WLAN ACTIV',
+    'Own Wi-Fi at boot': "Agen WLAN tar l'aviar",
+    'Own Wi-Fi of the device': "Agen WLAN da l'apparat",
+    'Own Wi-Fi: name': 'Agen WLAN: num',
+    'Own Wi-Fi: password (8-63 characters)': 'Agen WLAN: pled-clav (8-63 caracters)',
+    'Own sounds (.wav / .mp3): put the files into': 'Agens tuns (.wav / .mp3): metter las datotecas en',
+    'PCA9685 address (I2C)': 'Adressa PCA9685 (I2C)',
+    'PCA9685 channel pan': 'Chanal PCA9685 panorama',
+    'PCA9685 channel tilt': 'Chanal PCA9685 inclinaziun',
+    'PERSON DETECTED': 'PERSUNA IDENTIFITGADA',
+    'PERSONS DETECTED': 'PERSUNAS IDENTIFITGADAS',
+    'PERSONS NOW': 'PERSUNAS USSA',
+    'PIN:': 'PIN:',
+    'Page address': 'Adressa da questa pagina',
+    'Pan': 'Pan',
+    'Pan (%)': 'Panorama (%)',
+    'Pan limit: max. degrees from the middle': 'Limita da panorama: grads max. dal center',
+    'Pan/Tilt surveillance with AI, patrol & relay': 'Survegliaziun pan/tilt cun IA, patrulla e relais',
+    'Panels': 'Secziuns',
+    'Password': 'Pled-clav',
+    'Password (6-64 characters)': 'Pled-clav (6-64 caracters)',
+    'Password (empty = keep the saved one)': 'Pled-clav (vid = tegnair quel memorisà)',
+    'Password for this page': 'Pled-clav per questa pagina',
+    'Password removed': 'Pled-clav allontanà',
+    'Password saved. The page reloads - log in with any user name and the new password.': "Pled-clav memorisà. La pagina vegn chargiada da nov – t'annunzia cun in num d'utilisader tenor giavisch ed il nov pled-clav.",
+    'Patrol': 'Patrulla',
+    'Patrol / tracking': 'Patrulla / suandar',
+    'Patrol active': 'Patrulla activa',
+    'Patrol off': 'Patrulla deactivada',
+    'Patrol route': 'Ruta da patrulla',
+    'Patrol speed (%/s)': 'Sveltezza da patrulla (%/s)',
+    'Patrol tilt (%)': 'Inclinaziun da patrulla (%)',
+    'Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off': 'Patrulla: smatgar = deactivà → tschent e enavos (1-2-3-2-1) → runda (1-2-3-1) → deactivà',
+    'Pause between two reactions (s)': 'Pausa tranter duas reacziuns (s)',
+    'Pause program': 'Pausa dal program',
+    'Pause the program for': 'Far pausa cun il program per',
+    'Pendulum': 'Pendul',
+    'Person': 'Persuna',
+    'Person / warm body / noise': 'Persuna / chalur / canera',
+    'Person detected': 'Persuna identifitgada',
+    'Person tracking': 'Suandar persunas',
+    'Person: sound': 'Persuna: tun',
+    'Person: text': 'Persuna: text',
+    'Person: title': 'Persuna: titel',
+    'Persons': 'Persunas',
+    'Persons now': 'Persunas ussa',
+    'Persons total': 'Persunas en total',
+    'Phone numbers (e.g. +41791234567, several with commas)': 'Numers da telefon (p.ex. +41791234567, plirs cun commas)',
+    'Phones / devices for presence (IP or name, comma separated)': 'Telefonins / apparats per la preschientscha (IP u num, separads cun commas)',
+    'Phones only give the microphone to https pages. Open the secure page, confirm the certificate warning once («Advanced» → «Continue»), then hold the button again.': "Telefonins dattan liber il microfon mo per paginas https. Avra la pagina segira, conferma ina giada l'avertiment dal certificat («Avanzà» → «Vinavant»), lura tegna puspè smatgà il buttun.",
+    'Photo': 'Foto',
+    'Photo every N minutes': 'Foto mintga N minutas',
+    'Photo into the recordings': 'Foto tar las registraziuns',
+    'Photo now': 'Foto ussa',
+    'Photo requested': 'Foto dumandada',
+    'Photo saved': 'Foto memorisada',
+    'Pi connected': 'Pi collià',
+    'Pi not reachable': 'Pi betg cuntanschibel',
+    'Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation': 'Pi memia chaud: {temp:.0f} °C (limita {lim:.0f} °C) – controllar il sfradentament / la ventilaziun',
+    'Picture': 'Maletg',
+    'Pictures per second while quiet': "Maletgs per secunda cur ch'i è quiet",
+    'Position: pan (%)': 'Posiziun: panorama (%)',
+    'Position: tilt (%)': 'Posiziun: inclinaziun (%)',
+    'Power': 'Activ / deactivà',
+    'Power ON': 'Activ',
+    'Power back – battery {pct} %': 'Il current è puspè qua – battaria {pct} %',
+    'Power cut while armed = alarm (needs the UPS HAT)': "Current interrut durant ch'il sistem è armà = alarm (dovra la battaria UPS)",
+    'Power cut – running on the battery ({pct} %)': 'Interrupziun da current – funcziuna cun battaria ({pct} %)',
+    'Power saving': 'Spargnar energia',
+    'Power saving mode: fewer pictures while all is quiet': 'Modus da spargnar energia: main maletgs uschè ditg che tut è quiet',
+    'Power saving: full speed after an event for (s)': 'Spargnar energia: plaina sveltezza suenter in eveniment durant (s)',
+    'Power saving: full speed while somebody watches the live picture': "Spargnar energia: plaina sveltezza uschè ditg ch'insatgi guarda il maletg live",
+    'Power saving: pictures per second while quiet': "Spargnar energia: maletgs per secunda cur ch'i è quiet",
+    'Power supply / memory': 'Current / memoria',
+    'Powerbank capacity (mAh, as on the label; 0 = off)': 'Capacitad da la powerbank (mAh, sco stampà; 0 = deactivà)',
+    'Praise': 'Laud',
+    'Pre-alarm': 'Prealarm',
+    'Pre-alarm (first movement)': 'Prealarm (emprim moviment)',
+    'Pre-alarm push': 'Push prealarm',
+    'Pre-alarm push with a small picture': 'Push prealarm cun in pitschen maletg',
+    'Pre-alarm push: message at the first movement': "Push prealarm: messadi tar l'emprim moviment",
+    'Pre-alarm: min. time between messages (s)': 'Prealarm: interval min. tranter ils messadis (s)',
+    'Pre-alarm: movement': 'Prealarm: moviment',
+    'Pre-alarm: movement at {time} - camera: {camera}': 'Prealarm: moviment a las {time} – camera: {camera}',
+    'Pre-alarm: text': 'Prealarm: text',
+    'Pre-alarm: title': 'Prealarm: titel',
+    'Pre-roll: video before the detection (s)': "Preregistraziun: video avant l'identificaziun (s)",
+    'Preparing the video for sharing …': 'Il video vegn preparà per parter …',
+    'Preparing video…': 'Il video vegn preparà …',
+    'Presence': 'Preschientscha',
+    "Press 'Battery is full now' after charging.": 'Suenter chargiar smatgar «La battaria è ussa plaina».',
+    "Press 'Search networks'. Switch on the hotspot of the phone first.": 'Smatgar «Tschertgar raits». Avant activar il hotspot dal telefonin.',
+    'Press «Battery is full now» after charging.': 'Suenter chargiar smatgar «La battaria è ussa plaina».',
+    'Print': 'Stampar',
+    'Privacy zone': 'Zona da privadad',
+    'Program is pausing …': 'Il program fa pausa …',
+    'Program paused': 'Program en pausa',
+    'Protect selected': 'Proteger la selecziun',
+    'Protection & network': 'Protecziun e rait',
+    'Push message when a new version is there': "Avis push cur ch'ina nova versiun è qua",
+    'Push message when less free space than (MB)': "Avis push sch'i ha main plaz liber che (MB)",
+    'Push message when somebody watches from outside (Tailscale)': "Avis push cur ch'insatgi guarda da dador (Tailscale)",
+    'Push message when the CPU is hotter than (°C)': 'Avis push cur che la CPU è pli chauda che (°C)',
+    'Push message with the address when the Pi joins a network': "Avis push cun l'adressa cur ch'il Pi sa collia cun ina rait",
+    'Push messages': 'Avis push',
+    'Push messages to the phone': 'Avis push sin il telefonin',
+    'QR code for the phone': 'Code QR per il telefonin',
+    'Quick': 'Svelt',
+    'Quick start': 'Introducziun curta',
+    'Quick start – print it and keep it with the device': "Introducziun curta – da stampar e tegnair tar l'apparat",
+    'Quiet night – nothing detected ({span}).': 'Notg quieta – nagut identifitgà ({span}).',
+    'RAIN MODE': 'MODUS DA PLIEVGIA',
+    'REC': 'REG',
+    'RELAY ON': 'RELAIS ACTIV',
+    'RELAYS': 'RELAIS',
+    'Rain': 'Plievgia',
+    'Rain mode (manual, if auto off)': "Modus da plievgia (manual, sch'auto è deactivà)",
+    'Rain score': 'Indicatur da plievgia',
+    'Rain threshold': 'Limita da plievgia',
+    'Recalibrate': 'Calibrar da nov',
+    'Recalibrate (scene empty)': 'Calibrar da nov (scena vida)',
+    'Recalibrating - keep the picture empty for a few seconds': 'Calibrar da nov – nagin en il maletg per in pèr secundas',
+    'Record': 'Filmar',
+    'Record now (max. 10 min) / stop': 'Registrar ussa (max. 10 min) / fermar',
+    'Record when person seen': 'Registrar cun ina persuna',
+    'Recording': 'Registraziun',
+    'Recordings': 'Registraziuns',
+    'Recordings & timelapse': 'Registraziuns e timelapse',
+    'Refresh': 'Actualisar',
+    'Relay / Alarm': 'Relais / alarm',
+    'Relay ON (manual)': 'Relais ACTIV (manual)',
+    'Relay off': 'Relais deactivà',
+    'Relay settings': 'Parameters dals relais',
+    'Relay: on / automatic': 'Relais: activ / enavos sin automatic',
+    'Relays': 'Relais',
+    'Relays & schedule': 'Relais e plan da temp',
+    'Reload': 'Chargiar da nov',
+    'Reload page': 'Chargiar da nov la pagina',
+    'Remote': 'A distanza',
+    'Remote access': 'Access a distanza',
+    'Remote access switches on while somebody watches over Tailscale - also when disarmed (e.g. a small warning lamp).': "L'access a distanza s'activescha uschè ditg ch'insatgi guarda via Tailscale – era sch'il sistem è disarmà (p.ex. pitschna lampa d'avertiment).",
+    'Remote access: {who} is watching': 'Access a distanza: {who} guarda gist',
+    'Remove': 'Allontanar',
+    'Remove network camera': 'Allontanar la camera da rait',
+    'Remove password': 'Allontanar il pled-clav',
+    'Remove relay': 'Allontanar il relais',
+    'Remove the password? Then anybody in the network can open the page.': 'Allontanar il pled-clav? Lura po mintgin en la rait avrir la pagina.',
+    'Remove this camera?': 'Allontanar questa camera?',
+    'Remove this device from the list?': 'Allontanar quest apparat da la glista?',
+    'Remove this network camera?': 'Allontanar questa camera da rait?',
+    'Remove this relay?': 'Allontanar quest relais?',
+    'Remove this schedule?': 'Allontanar quest plan da temp?',
+    'Remove this video?': 'Stizzar quest video?',
+    'Repeat': 'Repeter',
+    'Repeat password': 'Repeter il pled-clav',
+    'Repeat the PIN:': 'Repeter il PIN:',
+    'Reset all settings': 'Reinizialisar tut ils parameters',
+    'Reset all settings to defaults?': 'Reinizialisar tut ils parameters sin standard?',
+    'Reset counter': 'Reinizialisar il dumbrader',
+    'Reset filters': 'Reinizialisar ils filters',
+    'Reset settings': 'Reinizialisar ils parameters',
+    'Restart Pi': 'Aviar da nov il Pi',
+    'Restart the Raspberry Pi now?': 'Aviar da nov ussa il Raspberry Pi?',
+    'Return to the previous position afterwards': 'Turnar suenter a la posiziun precedenta',
+    'Round': 'Runda',
+    'Run every N frames': 'Exequir mintga N maletgs',
+    'Running now': 'Gira ussa',
+    'SHADOW % REMOVED': 'SUMBRIVAS % ALLONTANADAS',
+    'SMS (LTE stick)': 'SMS (stick LTE)',
+    'SMS not sent (credit / network?)': 'SMS betg tramess (credit / rait?)',
+    'SMS sent': 'SMS tramess',
+    'SYSTEM · CPU': 'SISTEM · CPU',
+    'Sabotage alarm: camera covered or turned away (when armed)': "Alarm da sabotascha: camera cuverta u girada (sch'armà)",
+    'Save': 'Memorisar',
+    'Save settings …': 'Segirar ils parameters …',
+    'Save snapshot JPG per detection': 'Foto JPG per mintga identificaziun',
+    'Save the current position as waypoint for the patrol': 'Memorisar la posiziun actuala sco punct da passagi per la patrulla',
+    'Save zones': 'Memorisar las zonas',
+    'Saved': 'Memorisà',
+    'Saved networks': 'Raits memorisadas',
+    'Saving': 'Spargnar',
+    'Scan a code with the phone camera and open the page - the setup assistant continues there (password, push messages).': "Scannar in code cun la camera dal telefonin ed avrir la pagina – l'assistent d'installaziun cuntinuescha là (pled-clav, avis push).",
+    'Scan for cameras': 'Tschertgar cameras',
+    'Scanning…': 'Tschertgar …',
+    'Schedule': 'Plan da temp',
+    'Search': 'Tschertga',
+    'Search Bluetooth': 'Tschertgar Bluetooth',
+    'Search Bluetooth loudspeakers': 'Tschertgar autpledaders Bluetooth',
+    'Search devices': 'Tschertgar apparats',
+    'Search networks': 'Tschertgar raits',
+    'Search settings …': 'Tschertgar in parameter …',
+    'Search settings … (e.g. password)': 'Tschertgar in parameter … (p.ex. pled-clav)',
+    'Search versions': 'Tschertgar versiuns',
+    'Search …': 'Tschertgar …',
+    'Searching …': 'Tschertgar …',
+    'Searching … put the loudspeaker into pairing mode (blue light blinking)': "Tschertgar … metter l'autpledader en il modus d'accuppiar (glisch blaua che chametga)",
+    'Security warning': 'Avertiment da segirezza',
+    'Select': 'Selecziunar',
+    'Send': 'Trametter',
+    'Send notifications': 'Trametter avis',
+    'Send now': 'Trametter ussa',
+    'Send test': 'Trametter in test',
+    'Send test SMS': 'Trametter in SMS da test',
+    'Send test message': 'Trametter in messadi da test',
+    "Send the report at (o'clock)": 'Trametter il rapport a las (ura)',
+    'Sensitivity': 'Sensibilitad',
+    'Sent - did it arrive on the phone?': 'Tramess – è el arrivà sin il telefonin?',
+    'Serial port (only for AT commands)': 'Port serial (mo per cumonds AT)',
+    'Server': 'Server',
+    'Servo driver': 'Driver dals servos',
+    'Set a new PIN? (Cancel = keep the current PIN)': 'Definir in nov PIN? (Interrumper = tegnair il PIN actual)',
+    'Set a new PIN? (No = keep the current PIN)': 'Definir in nov PIN? (Na = tegnair il PIN actual)',
+    'Set a web password': 'Definir in pled-clav web',
+    'Set password': 'Definir il pled-clav',
+    'Set up in three short steps - takes about 3 minutes.': 'Installà en trais pass curts – dura var 3 minutas.',
+    'Settings': 'Parameters',
+    'Settings are locked - only the main switches can be used.': 'Ils parameters èn bloccads – mo ils interrupturs principals èn utilisabels.',
+    'Settings loaded': 'Parameters chargiads',
+    'Settings panel': 'Panela da parameters',
+    'Settings sections': 'Secziuns dals parameters',
+    'Settings status': 'Status dals parameters',
+    'Settings unlocked': 'Parameters debloccads',
+    'Setup': 'Installaziun',
+    'Several devices around the tent or camper: see them all here and arm / disarm them together.': 'Plirs apparats enturn la tenda u il camper: als vesair tuts qua ed als armar / disarmar ensemen.',
+    'Shadow % removed': 'Sumbrivas % allontanadas',
+    'Shadow filter (ignore person shadows)': 'Filter da sumbrivas (ignorar sumbrivas)',
+    'Shadow: max brightness ratio': 'Sumbriva: relaziun da clerezza max.',
+    'Shadow: min brightness ratio': 'Sumbriva: relaziun da clerezza min.',
+    'Share': 'Parter',
+    'Share / copy link': 'Parter / copiar la colliaziun',
+    'Shared pictures and videos with a small Motion Watch logo': 'Maletgs e videos partids cun in pitschen logo Motion Watch',
+    'Shift (minutes)': 'Spustament (minutas)',
+    'Show HUD overlay': 'Mussar las infurmaziuns (HUD)',
+    'Show all': 'Mussar tut',
+    'Show header': 'Mussar il chau-pagina',
+    'Show motion mask': 'Mussar la mascra da moviment',
+    'Show movement tracks': 'Mussar las fastizs da moviment',
+    'Show only the hot areas (people, animals, engines)': 'Mussar mo las zonas chaudas (persunas, animals, motors)',
+    'Show position': 'Mussar la posiziun',
+    'Show zones in the picture': 'Mussar las zonas en il maletg',
+    'Shut down Pi': 'Stizzar il Pi',
+    'Shut down the Raspberry Pi now?': 'Stizzar ussa il Raspberry Pi?',
+    'Siren (rising and falling)': "Sirena (s'augmentond e sa sbassond)",
+    'Siren at an alarm (only when armed)': "Sirena tar in alarm (mo sch'armà)",
+    'Siren now': 'Sirena ussa',
+    'Siren: min. pause between two alarms (s)': 'Sirena: pausa min. tranter dus alarms (s)',
+    'Skip': 'Siglir',
+    'Skip dates': "Datas d'excepziun",
+    'Skip dates (YYYY-MM-DD, ranges with .., MM-DD every year)': "Datas d'excepziun (AAAA-MM-DD, intervals cun .., MM-DD mintga onn)",
+    'Slow': 'Plaun',
+    'Small animal (cat, dog, bird)': 'Animal pitschen (giat, chaun, utschè)',
+    'Small animal: sound': 'Animal pitschen: tun',
+    'Snapshot': 'Fotografia',
+    'Snapshots': 'Fotografias',
+    'So far tonight': 'Fin ussa questa notg',
+    'Sort': 'Zavrar',
+    'Sound': 'Tun',
+    'Sound in the recordings': 'Tun en las registraziuns',
+    'Sound on': 'Tun activ',
+    'Source': 'Funtauna',
+    'Speaking from the phone: volume boost (dB)': 'Discurrer dal telefonin: augment dal volumen (dB)',
+    'Speed': 'Sveltezza',
+    'Speed consistency': 'Constanza da sveltezza',
+    'Speed: fast': 'Sveltezza: sperta',
+    'Speed: medium': 'Sveltezza: mesauna',
+    'Speed: slow': 'Sveltezza: plauna',
+    'Start now': 'Cumenzar ussa',
+    'Starting …': 'Cumenza …',
+    'Starts again at': 'Cumenza puspè a las',
+    'Statistics': 'Statisticas',
+    'Step': 'Pass',
+    'Step per click': 'Pass per clic',
+    'Stick': 'Stick',
+    'Stick / way': 'Stick / via',
+    'Stick back on its usual side': 'Stick puspè sin la vart usitada',
+    'Stick on the other side': "Stick da l'autra vart",
+    'Still recording - available when it ends.': 'La registraziun cuntinuescha – disponibla suenter.',
+    'Stop': 'Stop',
+    'Stop listening': 'Terminar da tadlar',
+    'Stream width (px)': 'Ladezza dal stream (px)',
+    'Sunrise → sunset': 'Levada dal sulegl → rendida dal sulegl',
+    'Sunset → sunrise': 'Rendida dal sulegl → levada dal sulegl',
+    'Supply': 'Current',
+    'Swap stick and buttons (left- / right-handed)': 'Midar stick e buttuns (sanesters / dretgers)',
+    'Switch': 'Midar',
+    'Switch off on this device': 'Deactivar sin quest apparat',
+    'Switch on https over Tailscale': 'Activar https via Tailscale',
+    'Switch on on this device': 'Activar sin quest apparat',
+    'Switch relay when person detected': 'Activar il relais cun ina persuna',
+    'Switch the own Wi-Fi off? This page loses its connection; the Pi goes back to the known networks.': "Deactivar l'agen WLAN? Questa pagina perda la colliaziun; il Pi turna en las raits enconuschentas.",
+    'Switch the program off now and start it again in': "Stizzar ussa il program e l'aviar puspè en",
+    'Switch to this version': 'Midar a questa versiun',
+    'Switch to version': 'Midar a la versiun',
+    'Switches': 'Interrupturs',
+    'Switching to version': 'Mida a la versiun',
+    'System': 'Sistem',
+    'System & network': 'Sistem e rait',
+    'System default': 'Standard dal sistem',
+    'System · CPU': 'Sistem · CPU',
+    'TAMPER ALARM': 'SABOTASCHA',
+    'TRACKING': 'SUANDAR',
+    'Tailscale is not installed': "Tailscale n'è betg installà",
+    'Take the clock from the phone (when the Pi has no internet time)': "Prender l'ura dal telefonin (sch'il Pi n'ha nagin'ura d'internet)",
+    'Talking needs the secure page': 'Per discurrer dovri la pagina segira',
+    'Talking … release to stop': 'Discurra … laschar liber per terminar',
+    'Tap anywhere on the page to allow the sound': 'Smatgar insanua sin la pagina per permetter il tun',
+    'Telegram (video, max. 50 MB)': 'Telegram (video, max. 50 MB)',
+    'Telegram bot token': 'Token dal bot Telegram',
+    'Telegram bot token / chat id missing (Notifications)': 'Token dal bot Telegram / ID dal chat manca (Avis)',
+    'Telegram chat id': 'ID dal chat Telegram',
+    'Test': 'Test',
+    'Test file copied - the settings work.': 'Datoteca da test copiada – ils parameters èn corrects.',
+    'Test notification': 'Trametter in messadi da test',
+    'Test sent': 'Test tramess',
+    'Test sound': 'Tun da test',
+    'Test the backup': 'Testar la copia da segirezza',
+    'Thank you! The message is on its way.': 'Grazia! Il messadi è en viadi.',
+    'The PINs are not the same': "Ils PINs n'èn betg medems",
+    'The Pi is connected with it right now - the page may lose its connection.': 'Il Pi è gist collià cun quella – la pagina po perder la colliaziun.',
+    'The Pi is connected with this network.': 'Il Pi è collià cun questa rait.',
+    'The Pi is off': 'Il Pi è stizzà',
+    'The Pi is restarting …': 'Il Pi vegn avià da nov …',
+    'The Pi is shutting down …': 'Il Pi vegn stizzà …',
+    'The Pi now switches on its own Wi-Fi': 'Il Pi activescha ussa ses agen WLAN',
+    'The Pi now switches to the network': 'Il Pi mida ussa en la rait',
+    'The Pi was not shut down': "Il Pi n'è betg vegnì stizzà",
+    'The connection to this page was interrupted - normal while the Pi changes the network. Open the page in the new network:': "La colliaziun cun questa pagina è interrutta – normal durant ch'il Pi mida la rait. Avra la pagina en la nova rait:",
+    'The guest must be able to reach the Pi: same Wi-Fi / hotspot or Tailscale.': 'Il giast sto pudair cuntanscher il Pi: medem WLAN / hotspot u Tailscale.',
+    'The main camera does the full detection (AI, tracking, relays). Extra cameras watch for movement and record clips; they follow the same switches and schedules. Every extra camera needs CPU - on a Raspberry Pi 2-3 cameras are realistic.': "La camera principala fa l'entira identificaziun (IA, suandar, relais). Cameras supplementaras identifitgeschan moviments e registreschan clips; ellas suondan ils medems interrupturs e plans da temp. Mintga camera supplementara dovra CPU – sin in Raspberry Pi èn 2-3 cameras realisticas.",
+    'The night report is off (Notifications → Night report).': 'Il rapport da notg è deactivà (Avis → Rapport da notg).',
+    "The night starts at (o'clock)": 'La notg cumenza a las (ura)',
+    'The page must stay open (also in the background). With the screen off or the browser closed only the push message (ntfy / Telegram) arrives.': "La pagina sto restar averta (era en il fund funcziuni). Cun il visur stizzà u il navigatur serrà arriva mo l'avis push (ntfy / Telegram).",
+    'The page reloads by itself.': 'La pagina vegn chargiada da nov sezza.',
+    'The password was given on the command line (--web-password).': "Il pled-clav è vegnì inditgà tar l'aviar (--web-password).",
+    'The passwords are not the same': "Ils pleds-clav n'èn betg medems",
+    'The program restarts (about 20 seconds). Settings, recordings and zones stay.': 'Il program vegn avià da nov (var 20 secundas). Parameters, registraziuns e zonas restan.',
+    'The secure page is not running (openssl missing).': 'La pagina segira na gira betg (openssl manca).',
+    'The thermal camera must look in the same direction as the main camera. Choose it in the list after a camera scan (Video source).': 'La camera termica sto guardar en la medema direcziun sco la camera principala. Tscherna ella en la glista suenter avair tschertgà cameras (Funtauna da video).',
+    'Theft protection': 'Protecziun cunter il ladernezi',
+    'Theme': 'Tema',
+    'Thermal': 'Termic',
+    'Thermal alarm': 'Alarm termic',
+    'Thermal alarm: minimum size (% of the picture)': 'Alarm termic: grondezza minimala (% dal maletg)',
+    'Thermal alarm: text': 'Alarm termic: text',
+    'Thermal alarm: title': 'Alarm termic: titel',
+    'Thermal alarm: warmer than the scene by (%)': 'Alarm termic: pli chaud che la scena per (%)',
+    'Thermal camera': 'Camera termica',
+    'Thermal camera (run the camera scan first)': "Camera termica (l'emprim tschertgar cameras)",
+    'Thermal camera: warm body in the zone at {time} - camera: {camera}': 'Camera termica: corp chaud en la zona a las {time} – camera: {camera}',
+    'Thermal overlay': 'Surpositziun termica',
+    'Thermal picture over the live picture': 'Maletg termic sur il maletg live',
+    'Thermal: shift left / right (%)': 'Termic: spustar sanester / dretg (%)',
+    'Thermal: shift up / down (%)': 'Termic: spustar si / giu (%)',
+    'Thermal: zoom - part the camera sees (%)': 'Termic: zoom – part che la camera vesa (%)',
+    'This device': 'Quest apparat',
+    'This page loses its connection. Connect the phone to': 'Questa pagina perda la colliaziun. Collia il telefonin cun',
+    'This page will probably lose its connection. Afterwards open it in that network at': "Questa pagina perda probablamain la colliaziun. L'avra suenter en questa rait sut",
+    'This video uses a codec browsers cannot play. Install ffmpeg on the Pi (sudo apt install ffmpeg) or download the file.': 'Quest video dovra in codec che navigaturs na sunan betg. Installescha ffmpeg sin il Pi (sudo apt install ffmpeg) u chargia giu la datoteca.',
+    'Tilt': 'Tilt',
+    'Tilt (%)': 'Inclinaziun (%)',
+    'Tilt limit: max. degrees from the middle': "Limita d'inclinaziun: grads max. dal center",
+    'Time must look like 07:30': "L'ura sto esser sco 07:30",
+    'Time window': 'Fanestra da temp',
+    'Timelapse': 'Timelapse',
+    'Timelapse active': 'Timelapse activ',
+    'Timeline': 'Cronologia',
+    'Title': 'Titel',
+    'To': 'Fin',
+    'Today': 'Oz',
+    'Today (running)': 'Oz (en lavur)',
+    'Topic (like a secret channel name)': 'Tema (sco in num da chanal secret)',
+    'Topic prefix': 'Prefix dals temas',
+    'Topics': 'Temas',
+    'Tracking dead zone': 'Zona morta dal suandar',
+    'Tracking gain': 'Forza da suandar',
+    'Tracking person': 'Persuna vegn suandada',
+    'Trigger multiplier (wind)': "Factur d'activaziun (vent)",
+    'Two-tone horn': 'Tuba a dus tuns',
+    'Type': 'Tip',
+    'UPS HAT': 'Battaria UPS (UPS HAT)',
+    'UPS HAT (battery pack on the Pi): use it when found': "Battaria UPS (modul sin il Pi): la duvrar sch'ella è avant maun",
+    'UPS HAT: address (I2C)': 'Battaria UPS: adressa (I2C)',
+    'UPS HAT: capacity of ONE 18650 cell (mAh)': "Battaria UPS: capacitad d'INA cella 18650 (mAh)",
+    'UPS HAT: charging and discharging are shown the wrong way round': 'Battaria UPS: chargiar e dischargiar vegnan mussads il fallì maun',
+    'UPS HAT: push message at a power cut / when power is back': "Battaria UPS: avis push tar ina interrupziun da current / cur ch'il current è puspè qua",
+    'UPS HAT: shut the Pi down at (%, 0 = never)': 'Battaria UPS: stizzar il Pi tar (%, 0 = mai)',
+    'Under-voltage: power bank almost empty or cable too weak': 'Sutatensiun: powerbank bunamain vida u cabel memia flaivel',
+    'Unlock': 'Debloccar',
+    'Unmute': 'Tun puspè activ',
+    'Update': 'Actualisar',
+    'Update now': 'Actualisar ussa',
+    'Updates': 'Actualisaziuns',
+    'Use current position': 'Surpigliar la posiziun actuala',
+    'VEHICLES IGNORED': 'VEHICHELS IGNORADS',
+    'Valid for': 'Valaivel per',
+    'Vehicle aspect ratio': 'Proporziun da vehichels',
+    'Vehicle filter': 'Filter da vehichels',
+    'Vehicle speed (px/frame)': 'Sveltezza da vehichels (px/maletg)',
+    'Vehicles ignored': 'Vehichels ignorads',
+    'Vibrate (phones)': 'Vibrar (telefonins)',
+    'Video': 'Video',
+    'Video source': 'Funtauna da video',
+    'Video: frames per second': 'Video: maletgs per secunda',
+    'Videos': 'Videos',
+    'View': 'Vista',
+    'Volume': 'Volumen',
+    'Volume (%)': 'Volumen (%)',
+    'WEATHER': 'ORA',
+    'Wait after moving (s)': 'Temp da spetgar suenter il moviment (s)',
+    'Wait until the green LED of the Pi stays dark (about 10 seconds), then you can unplug the power. To start it again: unplug the power and plug it in again.': "Spetga fin che la LED verda dal Pi resta stgira (var 10 secundas), lura pos ti separar il current. Per aviar puspè: trair ora il current e l'attatgar puspè.",
+    'Waiting for the Pi … the page reloads by itself (about 1 minute).': 'Spetgar il Pi … la pagina vegn chargiada da nov sezza (var 1 minuta).',
+    'Walking recognition': 'Identificaziun da chaminar',
+    'Walking time needed (s)': 'Temp da chaminar necessari (s)',
+    'Warm body (thermal camera)': 'Chalur identifitgada (camera termica)',
+    'Warm body (thermal camera, e.g. fox, boar)': 'Corp chaud (camera termica, p.ex. vulp, portg selvadi)',
+    'Warm body: sound': 'Corp chaud: tun',
+    'Waypoint': 'Punct da passagi',
+    'Waypoint added': 'Punct da passagi agiuntà',
+    'Weather': 'Ora',
+    'Weather & system': 'Ora e sistem',
+    'Web password': 'Pled-clav web',
+    'Web password: none': 'Pled-clav web: nagin',
+    'Web password: set': 'Pled-clav web: definì',
+    'Web push (no app needed)': 'Web push (senza app)',
+    'Web push is on for this device.': 'Il web push è activ sin quest apparat.',
+    'Web push needs https. Open the page over the https address (Tailscale):': "Il web push dovra https. Avra la pagina via l'adressa https (Tailscale):",
+    'Web push works ✓': 'Il web push funcziuna ✓',
+    'Web push: alarm messages also to browsers that switched it on (no app needed)': "Web push: messadis d'alarm era als navigaturs che l'han activà (senza app)",
+    'Web stream': 'Stream web',
+    'Web stream + remote control (port 5000)': 'Stream web + cumond a distanza (port 5000)',
+    'Web stream could not start (is flask installed?)': "Il stream web n'ha betg pudì cumenzar (è flask installà?)",
+    'WebDAV (Nextcloud, NAS, cloud)': 'WebDAV (Nextcloud, NAS, cloud)',
+    'WebDAV folder (address, e.g. Nextcloud)': 'Ordinatur WebDAV (adressa, p.ex. Nextcloud)',
+    'WebDAV password (Nextcloud: app password)': "Pled-clav WebDAV (Nextcloud: pled-clav d'app)",
+    'WebDAV user name': "Num d'utilisader WebDAV",
+    'Webhook / ntfy URL': 'URL webhook / ntfy',
+    'Webhook URL (POST JSON on person; e.g. https://ntfy.sh/my-topic)': 'URL webhook (POST JSON cun persuna; p.ex. https://ntfy.sh/mes-tema)',
+    'Welcome to Motion Watch': 'Bainvegni en Motion Watch',
+    'What is seen decides the reaction. Animals need the AI detection, warm bodies the thermal camera. Light flashes: the white light.': "Quai che vegn identifitgà decida la reacziun. Animals dovran l'identificaziun IA, corps chauds la camera termica. Chametgs da glisch: la glisch alva.",
+    'When armed: push message (urgent) and siren. The picture check pauses while the camera head moves itself.': "Sch'armà: avis push (urgent) e sirena. La controlla dal maletg fa pausa uschè ditg ch'il chau da la camera sa mova sez.",
+    'Where new versions come from (address of versions.json, or a folder e.g. USB stick)': 'Danunder che novas versiuns vegnan (adressa da versions.json u in ordinatur, p.ex. stick USB)',
+    'While a schedule is active, the listed features are forced ON or OFF. Afterwards they return to your own setting. Switching one by hand overrides the schedule until its next change.': "Uschè ditg ch'in plan da temp è activ, vegnan las funcziuns tschernidas mess fix sin ACTIV u DEACTIVÀ. Suenter vala puspè tes agen parameter. Tgi che stizza a maun ha la precedenza sin il plan fin a sia proxima midada.",
+    'While paused there is no monitoring and there are no alarms.': 'Durant la pausa na datti nagina survegliaziun e nagins alarms.',
+    'White': 'Alva',
+    'White light': 'Glisch alva',
+    'White light on / off': 'Glisch alva activa / deactivada',
+    'White light: Auto means': 'Glisch alva: «Auto» munta',
+    'White light: connected to': 'Glisch alva: colliada cun',
+    'Wi-Fi': 'WLAN',
+    'Wi-Fi / hotspot': 'WLAN / hotspot',
+    'Wi-Fi management is not available on this system (NetworkManager or wpa_supplicant missing).': "L'administraziun WLAN n'è betg disponibla sin quest sistem (NetworkManager u wpa_supplicant manca).",
+    'Wi-Fi management not available (NetworkManager / wpa_supplicant not found)': 'Administraziun WLAN betg disponibla (NetworkManager / wpa_supplicant manca)',
+    'Wi-Fi signal, last': 'Signal WLAN, ultimas',
+    'Wind': 'Vent',
+    'Wind score': 'Indicatur da vent',
+    'Wind threshold': 'Limita da vent',
+    'Without a password everybody in the same network (and with the link) can watch and switch everything.': 'Senza pled-clav po mintgin en la medema rait (e cun la colliaziun) guardar e cumandar tut.',
+    'Yesterday': 'Ier',
+    'Your message …': 'Tes messadi …',
+    'Zones': 'Zonas',
+    'a folder like /media/... expected': 'spetgà in ordinatur sco /media/...',
+    'a port like /dev/ttyUSB2': 'in port sco /dev/ttyUSB2',
+    'a restart is already running': 'in nov start è gia en lavur',
+    'a video is already being made': 'in video vegn gia creà',
+    'about': 'var',
+    'access expired': 'access scrudà',
+    'active now': 'activ ussa',
+    'active: few pictures, everything quiet': 'activ: paucs maletgs, tut quiet',
+    'ai': 'IA',
+    'airplane': 'aviun',
+    'alarms active': 'alarms activs',
+    'alarms and recordings on': 'alarms e registraziuns activs',
+    'all ok': 'tut ok',
+    'always grey': 'adina grisch',
+    'an update is already running': 'ina actualisaziun è gia en lavur',
+    'and open': 'ed avra',
+    'and press «Search devices»': 'e smatgar «Tschertgar apparats»',
+    'animal (any)': 'animal (tuts)',
+    'aplay is missing (sudo apt install alsa-utils)': 'aplay manca (sudo apt install alsa-utils)',
+    'apple': 'mail',
+    'arecord is missing (sudo apt install alsa-utils)': 'arecord manca (sudo apt install alsa-utils)',
+    'armed': 'armà',
+    'armed after the countdown': 'armà suenter il dumbrar enavos',
+    'arming': 'vegn armà',
+    'arrow keys work too': 'las frizzas da la tastatura funcziunan era',
+    'at an alarm, day and night': 'tar in alarm, di e notg',
+    'at an alarm, only at night': 'tar in alarm, mo la notg',
+    'at least 6 characters': 'almain 6 caracters',
+    'at most 12 devices': 'maximalmain 12 apparats',
+    'at most 5 messages per hour': 'maximalmain 5 messadis per ura',
+    'auto': 'Auto',
+    'automatic': 'automatic',
+    'automatic changes': 'midadas automaticas',
+    'automatic paused (switched by hand) - choose «Automatic» again to resume': 'automatic en pausa (stizzà a maun) – tscherner puspè «Automatic» per cuntinuar',
+    'automatic: PCA9685 if found, otherwise GPIO 17 / 27': "automatic: PCA9685 sch'el vegn chattà, uschiglio GPIO 17 / 27",
+    'autostart needs systemd (Raspberry Pi OS)': 'il start automatic dovra systemd (Raspberry Pi OS)',
+    'available': 'disponibel',
+    'awake': 'sveglià',
+    'away': 'absent',
+    'b-note': 'Battaria UPS (modul sin il Pi): vegn identifitgada sezza, mesiraziun vaira. Uschiglio stimaziun per la powerbank: capacitad main il consum dapi «La battaria è ussa plaina».',
+    'back and forth (1-2-3-2-1)': 'tschent e enavos (1-2-3-2-1)',
+    'back on': 'enavos en la rait',
+    'backend': 'backend',
+    'background': 'fund',
+    'backpack': 'satg da dies',
+    'backup is off': 'la copia da segirezza è deactivada',
+    'banana': 'banana',
+    'battery': 'battaria',
+    'bear': 'urs',
+    'bed': 'letg',
+    'bench': 'banc',
+    'bicycle': 'velo',
+    'bird': 'utschè',
+    'bluetoothctl is missing (sudo apt install bluez)': 'bluetoothctl manca (sudo apt install bluez)',
+    'boat': 'bartga',
+    'book': 'cudesch',
+    'bottle': 'buttiglia',
+    'bowl': 'scadiola',
+    'breezy': 'cun buffs',
+    'brightness': 'clerezza',
+    'bus': 'bus',
+    'busy': 'occupà – spetga per plaschair in mument',
+    'calm': 'quiet',
+    'camera covered': 'camera cuverta',
+    'camera turned / picture changed': 'camera girada / maletg midà',
+    'cameras': 'cameras',
+    'car': 'auto',
+    'cat': 'giat',
+    'cell phone': 'telefonin',
+    'chair': 'sutga',
+    'channel': 'chanal',
+    'charging': 'chargia',
+    'click to update': 'cliccar per actualisar',
+    'clock': 'ura',
+    'colour': 'colurà',
+    'connected': 'collià',
+    'connected - used for the siren and for talking': 'collià – vegn duvrà per la sirena e per discurrer',
+    'connected to': 'collià cun',
+    'connected with': 'collià cun',
+    'connecting to': 'collia cun',
+    'connecting …': 'collia …',
+    'connecting…': 'collia …',
+    'connection lost - reconnecting': 'colliaziun persa - collia da nov',
+    'connection to the camera interrupted - reconnecting': 'colliaziun cun la camera interrutta – collia da nov',
+    'cores': 'nuclis',
+    'correct': 'correcta',
+    'couch': 'sofa',
+    'could not connect (wrong password or too far away?)': 'colliaziun betg pussaivla (fallì pled-clav u memia lunsch davent?)',
+    'could not connect - switch the loudspeaker on and bring it closer': "nagina colliaziun – enviar l'autpledader e al purtar pli datiers",
+    'cow': 'vatga',
+    'cp-desc': "Agen WLAN activ, la camera resta nua ch'ella è (nagina patrulla / suandar / timelapse), alarms e registraziuns activs, armà suenter il dumbrar enavos. Deactivar restituescha tes parameters.",
+    'cup': 'tazza',
+    'd-note': "Il meglier maletg da mintga visita d'in animal (identificaziun IA) – rimnà automaticamain. Smatgar per engrondir, ★ = tegnair (mai stizzà automaticamain).",
+    'daily limit reached': 'limita dal di cuntanschida',
+    'day': 'di',
+    'days': 'dis',
+    'defaults': 'valurs da standard',
+    'defaults (no file yet)': 'valurs da standard (anc nagina datoteca)',
+    'device': 'apparat',
+    'device knocked over': 'apparat bittà enturn',
+    'device moved': 'apparat spustà',
+    'devices': 'apparats',
+    'dining table': 'maisa da mangiar',
+    'directly on GPIO 17 / 27': 'directamain sin GPIO 17 / 27',
+    'disarmed': 'disarmà',
+    'dog': 'chaun',
+    'drop-out': 'interrupziun',
+    'drop-outs': 'interrupziuns',
+    'e.g. camper, garden': 'p.ex. camper, iert',
+    'elephant': 'elefant',
+    'entries': 'inscripziuns',
+    'estimated': 'stimà',
+    'events': 'eveniments',
+    'every alarm, also the pre-alarm (movement)': 'mintga alarm, era il prealarm (moviment)',
+    'every day': 'mintga di',
+    'failed': 'betg reussì',
+    'fast': 'spert',
+    'few pictures': 'paucs maletgs',
+    'fewer pictures while all is quiet, full speed at the first movement or noise': "main maletgs uschè ditg che tut è quiet – plaina sveltezza tar l'emprim moviment u canera",
+    'fire hydrant': 'idrant',
+    'folder not found': 'ordinatur betg chattà',
+    'folder not found (USB stick / NAS connected?)': 'ordinatur betg chattà (stick USB / NAS collià?)',
+    'found': 'chattà',
+    'free': 'liber',
+    'frisbee': 'frisbee',
+    'full speed': 'plaina sveltezza',
+    'full speed (something happened or somebody watches)': 'plaina sveltezza (insatge capita u insatgi guarda)',
+    'g-note': 'Ina colliaziun per la famiglia u cumpogns da camping: els vesan mo il maletg live e na pon midar nagut. Il giast sto pudair cuntanscher il Pi – medem WLAN / hotspot u via Tailscale. Ina nova colliaziun renda nunvalaivla la veglia.',
+    'giraffe': 'giraffa',
+    'grey': 'grisch',
+    'grey at night (good with a NoIR camera)': 'grisch la notg (bun cun ina camera NoIR)',
+    'handbag': 'tastga',
+    'hide': 'reducir',
+    'hold time must be a number': 'il temp da tegnair sto esser in numer',
+    'home': 'a chasa',
+    'horse': 'chaval',
+    'hot': 'hot',
+    'https://... address or a folder (/media/...) expected': 'spetgà ina adressa https://... u in ordinatur (/media/...)',
+    'iPhone / iPad: first Share → «Add to Home Screen», then open Motion Watch from there and switch web push on.': "iPhone / iPad: l'emprim Parter → «Sin il visur da partenza», lura avrir Motion Watch da là ed activar il web push.",
+    'iPhone / iPad: open the https address, then Share → «Add to Home Screen» and switch it on in the app from there.': "iPhone / iPad: avrir l'adressa https, lura Parter → «Sin il visur da partenza» e l'activar en l'app da là.",
+    'important': 'impurtant',
+    'in use': 'en diever',
+    'inferno': 'inferno',
+    'invalid Bluetooth address': 'adressa Bluetooth nunvalaivla',
+    'invalid GitHub key (it starts with github_pat_ or ghp_)': 'clav GitHub nunvalaivla (ella cumenza cun github_pat_ u ghp_)',
+    'invalid Telegram bot token': 'token dal bot Telegram nunvalaivel',
+    'invalid Telegram chat id': 'ID dal chat Telegram nunvalaivla',
+    'invalid URL (http:// or https:// expected)': 'URL nunvalaivla (spetgà http:// u https://)',
+    'invalid URL (rtsp:// or http:// expected)': 'URL nunvalaivla (spetgà rtsp:// u http://)',
+    'invalid address (e.g. http://192.168.1.20:5000)': 'adressa nunvalaivla (p.ex. http://192.168.1.20:5000)',
+    'invalid device name or address': "num da l'apparat u adressa nunvalaivla",
+    'invalid network name': 'num da rait nunvalaivel',
+    'invalid schedule': 'plan da temp nunvalaivel',
+    'invalid sound data': 'datas da tun nunvalaivlas',
+    'invalid subscription': 'annunzia nunvalaivla',
+    'invalid value': 'valur nunvalaivla',
+    'invalid zones': 'zonas nunvalaivlas',
+    'jet': 'jet',
+    'joins the known networks': 'sa collia cun las raits enconuschentas',
+    'kite': 'tschiver',
+    'knife': 'cuntè',
+    'laptop': 'laptop',
+    'last 60 s': 'ultimas 60 s',
+    'later': 'pli tard',
+    'learning the picture': 'emprenda il maletg',
+    'leave the area now': 'bandunar ussa il territori',
+    'left': 'restanta',
+    'light': 'glisch',
+    'light flashes': 'chametgs da glisch',
+    'like the live picture (red boxes)': 'sco il maletg live (rams cotschens)',
+    'list from': 'glista dals',
+    'loaded: {a} settings, {b} waypoints, {c} relays, {d} schedules': 'chargià: {a} parameters, {b} puncts da passagi, {c} relais, {d} plans da temp',
+    'lock-note': 'Ils parameters èn bloccads – mo ils interrupturs principals èn utilisabels.',
+    'locked - settings can only be changed after unlocking (PIN)': 'bloccà – ils parameters pon vegnir midads pir suenter il debloccar (PIN)',
+    'mains': 'rait',
+    'mains power': 'cun current da la rait',
+    'making video': 'il video vegn creà',
+    'maximum {n} extra cameras': 'maximalmain {n} cameras supplementaras',
+    'maximum {n} relays': 'maximalmain {n} relais',
+    'maximum {n} schedules': 'maximalmain {n} plans da temp',
+    'medium': 'mesaun',
+    'memory': 'memoria',
+    'microphone on': 'microfon activ',
+    'min': 'min',
+    'mmcli missing (sudo apt install modemmanager)': 'mmcli manca (sudo apt install modemmanager)',
+    'mode must be off / on / auto': 'il modus sto esser deactivà / activ / auto',
+    'motion': 'moviment',
+    'motion (anything)': 'moviment (tut)',
+    'motorcycle': 'moto',
+    'moving to the photo position': 'sa mova a la posiziun da foto',
+    'moving to waypoint': 'va al punct da passagi',
+    'name': 'num',
+    'need 2+ waypoints': 'almain 2 puncts da passagi necessaris',
+    'need at least 2 photos': 'almain 2 fotos necessarias',
+    'needs AI model': 'dovra il model IA',
+    'needs NetworkManager': 'dovra NetworkManager',
+    'needs NetworkManager (Raspberry Pi OS Bookworm or newer)': 'dovra NetworkManager (Raspberry Pi OS Bookworm u pli nov)',
+    'needs a password': 'dovra in pled-clav',
+    'network': 'rait',
+    'next photo in': 'proxima foto en',
+    'night': 'notg',
+    'night report': 'rapport da notg',
+    'no CPU data (pip install psutil)': 'naginas datas CPU (pip install psutil)',
+    'no WebDAV folder set': 'nagin ordinatur WebDAV endatà',
+    'no Wi-Fi': 'nagin WLAN',
+    'no alarms, no recordings': 'nagins alarms, naginas registraziuns',
+    'no auto connect': 'betg automatic',
+    'no cameras found': 'naginas cameras chattadas',
+    'no device reached': 'nagin apparat cuntanschì',
+    'no devices yet - press «Search»': 'anc nagins apparats – smatgar «Tschertgar»',
+    'no drop-outs': 'naginas interrupziuns',
+    'no entries': 'naginas inscripziuns',
+    'no folder set': 'nagin ordinatur endatà',
+    'no free GPIO left': 'nagin GPIO liber pli',
+    'no internet': 'nagin internet',
+    'no known network - own Wi-Fi in': 'nagina rait enconuschenta – agen WLAN en',
+    'no loudspeaker selected': 'nagin autpledader tschernì',
+    'no microphone': 'nagin microfon',
+    'no microphone selected': 'nagin microfon tschernì',
+    'no modem found (stick plugged in? mmcli -L)': 'nagin modem chattà (stick attatgà? mmcli -L)',
+    'no networks found': 'naginas raits chattadas',
+    'no output chosen': 'nagina sortida tschernida',
+    'no phone number set': 'nagin numer da telefon endatà',
+    'no picture - is the camera running?': 'nagin maletg – gira la camera?',
+    'no picture yet': 'anc nagin maletg',
+    'no relays': 'nagins relais',
+    'no schedules': 'nagins plans da temp',
+    'no thermal camera selected': 'nagina camera termica tschernida',
+    'no time limit': 'senza limita da temp',
+    'no zones': 'naginas zonas',
+    'nobody from outside': 'nagin da dador',
+    'noise': 'canera',
+    'noise (microphone)': 'canera (microfon)',
+    'noise alarm from': 'alarm da canera a partir da',
+    'none': 'nagin',
+    'none (clean picture)': 'nagins (maletg net)',
+    'not a Motion Watch settings file': 'nagina datoteca da parameters da Motion Watch',
+    'not a number': 'nagin numer',
+    'not connected': 'betg collià',
+    'not fitted': 'betg montà',
+    'not found - is the repository private? Then enter the GitHub key (token)': 'betg chattà – è il repository privat? Lura endatar la clav GitHub (token)',
+    'not installed': 'betg installà',
+    'not possible in the demo': 'Betg pussaivel en la demo',
+    'not reachable': 'betg cuntanschibel',
+    'not sent': 'betg tramess',
+    'not sent – notifications are not set up': "betg tramess – ils avis n'èn betg installads",
+    'not signed': 'betg signada',
+    'nothing': 'nagut',
+    'notification is not configured': "l'avis n'è betg installà",
+    'notify': 'alarm',
+    "o'clock": 'uras',
+    'object': 'object',
+    'objects': 'objects',
+    'off': 'deactivà',
+    'off: nothing starts at boot, the Pi joins its known networks': "deactivà: tar l'aviar na cumenza nagut, il Pi sa collia cun las raits enconuschentas",
+    'offline': 'offline',
+    'ok (under-voltage earlier)': 'ok (pli baud sutatensiun)',
+    'on': 'activ',
+    'on battery': 'cun battaria',
+    'on guard': 'vegliar',
+    'on the Pi': 'sin il Pi',
+    'on: when the Pi boots, Motion Watch starts by itself and': "activ: tar l'aviar dal Pi cumenza Motion Watch sez e",
+    'on: when the Pi boots, Motion Watch starts by itself and switches the own Wi-Fi on': "activ: tar l'aviar dal Pi cumenza Motion Watch sez ed activescha l'agen WLAN",
+    'online': 'online',
+    'only letters, digits, - _ /': 'mo bustabs, cifras, - _ /',
+    'or': 'u',
+    'or with the address from the push message. If it does not work, the Pi returns to the previous network after about a minute.': "u cun l'adressa da l'avis push. Sch'i na funcziuna betg, turna il Pi suenter var ina minuta en la rait precedenta.",
+    'out of range': 'ordaifer la zona permessa',
+    'overview on the web page: Cameras': 'survista sin la pagina web: Cameras',
+    'own Wi-Fi': 'agen WLAN',
+    'own Wi-Fi on': 'agen WLAN activ',
+    'own Wi-Fi on - next search for known networks in': 'agen WLAN activ – proxima tschertga da raits enconuschentas en',
+    'own Wi-Fi on - search postponed (a device is connected)': 'agen WLAN activ – tschertga spustada (in apparat è collià)',
+    'paired': 'accuppià',
+    'pairing failed - is the loudspeaker in pairing mode (blue light blinking)?': "l'accuppiar n'è betg reussì – è l'autpledader en il modus d'accuppiar (glisch blaua che chametga)?",
+    'pan': 'panorama',
+    'paplay is missing (sudo apt install pulseaudio-utils)': 'paplay manca (sudo apt install pulseaudio-utils)',
+    'parking meter': 'parcometer',
+    'password': 'pled-clav',
+    'password wrong': 'pled-clav fallà',
+    'patrol': 'Patrulla',
+    'pause between two SMS': 'pausa tranter dus SMS',
+    'paused (manual control)': 'pausa (cumond manual)',
+    'paused (switched by hand)': 'en pausa (stizzà a maun)',
+    'paused (tracking person)': 'pausa (suonda ina persuna)',
+    'person': 'persuna',
+    'person alarm': 'alarm da persuna',
+    'person in view': 'persuna en il maletg',
+    'person, thermal and noise alarm': 'alarm da persuna, termic e canera',
+    'persons': 'persunas',
+    'phone numbers like +41791234567': 'numers sco +41791234567',
+    'photo saved': 'foto memorisada',
+    'photos': 'fotos',
+    'pizza': 'pizza',
+    'playing …': 'suna …',
+    'please write a few words': 'scriva per plaschair in pèr pleds',
+    'port 1-65535': 'port 1-65535',
+    'potted plant': 'planta en vasch',
+    'power': 'current',
+    'power cut while armed': 'current interrut (armà)',
+    'power saving': 'spargnar energia',
+    'pre-alarm (any movement)': 'prealarm (mintga moviment)',
+    'prefer this network': 'preferir questa rait',
+    'prefer this network (before other known networks)': 'preferir questa rait (avant autras raits enconuschentas)',
+    'preferred': 'preferì',
+    'python3-cryptography is missing (sudo apt install python3-cryptography)': 'python3-cryptography manca (sudo apt install python3-cryptography)',
+    'quiet': 'quiet',
+    'rain': 'Plievgia',
+    'rec': 'Registraziun',
+    'recording': 'registraziun',
+    'recordings': 'registraziuns',
+    'recordings?': 'registraziuns stizzar?',
+    'relay': 'Relais',
+    'remote access': 'access a distanza',
+    'remote access (somebody watches from outside)': 'access a distanza (insatgi guarda da dador)',
+    'round trip (1-2-3-1-2-3)': 'runda (1-2-3-1-2-3)',
+    'running now': 'gira ussa',
+    'same camera as the main picture': 'medema camera sco il maletg principal',
+    'save failed': 'memorisar betg reussì',
+    'saved': 'memorisà',
+    'saved {t}': 'memorisà {t}',
+    'sched': 'Plan da temp',
+    'scissors': 'forsch',
+    'searched at': 'tschertgà a las',
+    'searching (about 10 s) …': 'tschertga (var 10 s) …',
+    'searching known networks …': 'tschertga raits enconuschentas …',
+    'searching …': 'tschertgar …',
+    'sent': 'tramess',
+    'servo': 'Camera',
+    'set': 'definì',
+    'set a PIN first': "definir l'emprim in PIN",
+    'set a web password first': "definir l'emprim in pled-clav web",
+    'set a web password first (--web-password) - otherwise anybody in the network could change the Wi-Fi': "definir l'emprim in pled-clav web (--web-password) – uschiglio pudess mintgin en la rait midar il WLAN",
+    'set a web password first - otherwise anybody in the network could install a program': "definir l'emprim in pled-clav web – uschiglio pudess mintgin en la rait installar in program",
+    'set by the internet (NTP)': 'definida via internet (NTP)',
+    'sheep': 'nursa',
+    'show / hide fields': 'mussar / zuppentar champs',
+    'show password': 'mussar il pled-clav',
+    'shown': 'mussads',
+    'signed': 'signada',
+    'skateboard': 'skateboard',
+    'skis': 'skis',
+    'slow': 'plaun',
+    'snowboard': 'snowboard',
+    'somebody is talking': 'insatgi discurra',
+    'sound': 'tun',
+    'sound + light flashes': 'tun + chametgs da glisch',
+    'sound file not found': 'datoteca da tun betg chattada',
+    'sports ball': 'balla',
+    'standard': 'standard',
+    'starting': 'cumenza',
+    'starting …': 'cumenza …',
+    'status': 'status',
+    'still using': 'cuntinuescha cun',
+    'stop sign': 'signal da stop',
+    'storm': 'stemprà',
+    'strong': 'ferm',
+    'suitcase': 'valisch',
+    'surfboard': 'aissa da surf',
+    'switch failed': 'midada betg reussida',
+    'switches the own Wi-Fi on': "activescha l'agen WLAN",
+    'switching …': 'mida …',
+    'sys': 'Sistem',
+    'taken from the phone': 'surpiglià dal telefonin',
+    'tap: arm / disarm': 'smatgar: armar / disarmar',
+    'tap: show all values': 'smatgar: mussar tut las valurs',
+    'teddy bear': 'urset da peluche',
+    'temperature': 'temperatura',
+    'test SMS - it works': 'SMS da test – funcziuna ✓',
+    'text too long or with control characters': 'text memia lung u cun caracters da controlla',
+    'the Bluetooth loudspeaker is being connected - try again in a few seconds': "l'autpledader Bluetooth vegn collià – empruvar puspè en in pèr secundas",
+    'the PIN must have 4 to 8 digits': 'il PIN sto avair 4 fin 8 cifras',
+    'the Thermal-90 can only be used as thermal camera': 'la Thermal-90 funcziuna mo sco camera termica',
+    'the camera stays where it is (no patrol, tracking or timelapse)': "la camera resta nua ch'ella è (nagina patrulla, suandar u timelapse)",
+    'the file does not look like Motion Watch': "la datoteca n'è betg Motion Watch",
+    'the file is damaged (checksum does not match) - try again': 'la datoteca è donnegiada (la summa da controlla na correspunda betg) – empruvar anc ina giada',
+    'the file is not a working Python program': "la datoteca n'è betg in program Python che funcziuna",
+    'the loudspeaker could not be opened': "l'autpledader n'ha betg pudì vegnir avert",
+    'the microphone of this device is not allowed': "il microfon da quest apparat n'è betg permess",
+    'the modem does not answer (wrong port?)': 'il modem na respunda betg (fallì port?)',
+    'the modem refuses the SMS': 'il modem refusa il SMS',
+    'the own Wi-Fi needs NetworkManager (Raspberry Pi OS Bookworm or newer)': "l'agen WLAN dovra NetworkManager (Raspberry Pi OS Bookworm u pli nov)",
+    'the password must have 6 to 64 characters (letters, digits, signs, no umlauts)': 'il pled-clav dovra 6 fin 64 caracters (bustabs, cifras, segns, nagins umlauts)',
+    'the password must have 8 to 63 characters': 'il pled-clav sto avair 8 fin 63 caracters',
+    'the password was given on the command line (--web-password) - change it there': "il pled-clav è vegnì inditgà tar l'aviar (--web-password) – al midar là",
+    'the sound file could not be read': "la datoteca da tun n'ha betg pudì vegnir legida",
+    'the two passwords are not the same': "ils dus pleds-clav n'èn betg medems",
+    'the whole night (sunset to sunrise)': "l'entira notg (da la rendida a la levada dal sulegl)",
+    'thermal': 'termic',
+    'thin corner marks (face stays free)': 'fins segns da chantun (la fatscha resta libra)',
+    'this browser cannot play the live sound': 'quest navigatur na po betg sunar il tun live',
+    'this camera is already in use': 'questa camera vegn gia duvrada',
+    'this device is in the list already': 'quest apparat è gia en la glista',
+    'this is this device itself': 'quai è quest apparat sez',
+    'this version is already running': 'questa versiun gira gia',
+    'this version is not signed by the developer - not installed (only with the setting «Also accept unsigned versions»)': "questa versiun n'è betg signada dal sviluppader – betg installada (mo cun il parameter «Acceptar era versiuns betg signadas»)",
+    'tie': 'cravatta',
+    'tilt': 'inclinaziun',
+    'time zone': "zona d'ura",
+    'too big for Telegram (max. 50 MB)': 'memia grond per Telegram (max. 50 MB)',
+    'too many network cameras': 'memia bleras cameras da rait',
+    'too many wrong PINs - try again in 5 minutes': 'memia blers PINs fallads – empruvar puspè en 5 minutas',
+    'traffic light': 'semafor',
+    'train': 'tren',
+    'tries the known networks (phone hotspot), otherwise switches the own Wi-Fi on': "emprova las raits enconuschentas (hotspot dal telefonin), uschiglio activescha el l'agen WLAN",
+    'truck': 'camiun',
+    'turbo': 'turbo',
+    'tv': 'televisiun',
+    'umbrella': 'parasol',
+    'unchanged': 'betg midà',
+    'under-voltage': 'sutatensiun',
+    'under-voltage!': 'sutatensiun!',
+    'unknown': 'nunenconuschent',
+    'unknown action': 'acziun nunenconuschenta',
+    'unknown entry': 'inscripziun nunenconuschenta',
+    'unknown field': 'champ nunenconuschent',
+    'unknown network': 'rait nunenconuschenta',
+    'unknown network camera': 'camera da rait nunenconuschenta',
+    'unknown relay': 'relais nunenconuschent',
+    'unknown schedule': 'plan da temp nunenconuschent',
+    'unknown source': 'funtauna nunenconuschenta',
+    'unknown trigger': 'activader nunenconuschent',
+    'unknown version': 'versiun nunenconuschenta',
+    'until': 'fin',
+    'vase': 'vasa',
+    'video ready': 'video pront',
+    'viewers': 'aspectaturs',
+    'waiting': 'spetga',
+    'waiting at': 'spetga tar',
+    'waiting: alarm has priority': "spetga: l'alarm ha la precedenza",
+    'waiting: manual control': 'spetga: cumond manual',
+    'warm': 'corp chaud',
+    'warm body (thermal camera)': 'corp chaud (camera termica)',
+    'watching': 'guardan',
+    'watching now': 'guarda gist',
+    'waypoints': 'puncts da passagi',
+    'weakest': 'il pli flaivel',
+    'web': 'Web',
+    'wind': 'Vent',
+    'wrong PIN': 'PIN fallà',
+    'z-how': "Ina zona ha effect sin l'identificaziun, la registraziun, ils alarms ed ils relais. Il punct che quinta è il mez sutvart da l'object identifitgà (ils pes).",
+    'z-ign': 'Persunas ed objects cun ils pes en quest territori vegnan ignorads (via, planta, iert dals vischins).',
+    'z-only': "Sch'i dat almain ina tala zona, quinta mo quai che capita en quella (entrada, via d'access).",
+    'z-priv': "Il territori vegn cuvert nair – en il maletg live, en registraziuns, fotos e timelapse. El na vegn mai memorisà u transmess (tenda dals vischins, senda, fanestra d'auters). Impurtant per la protecziun da datas.",
+    'zebra': 'zebra',
+    '{count} person(s) detected at {time} - camera: {camera}': '{count} persuna(s) identifitgada(s) a las {time} – camera: {camera}',
+    '{name}: movement (pre-alarm)': '{name}: moviment (prealarm)',
+    '{name}: noise': '{name}: canera',
+    '{name}: person detected': '{name}: persuna identifitgada',
+    '{name}: warm body detected': '{name}: chalur identifitgada',
+    '{n} animal': '{n} animal',
+    '{n} animals': '{n} animals',
+    '{n} person': '{n} persuna',
+    '{n} persons': '{n} persunas',
+    '← Back to the live picture': '← Enavos al maletg live',
+    '↻ Calibrate': '↻ Calibrar',
+    '↻ Restart Pi': '↻ Aviar da nov il Pi',
+    '↻ Round': '↻ Runda',
+    '⇄ Pendulum': '⇄ Pendul',
+    '⏸ Pause program': '⏸ Far pausa cun il program',
+    '⏻ Shut down Pi': '⏻ Stizzar il Pi',
+    '◎ Centre': '◎ Center',
+    '⚠ no password': '⚠ nagin pled-clav',
+    '⬆ Load settings': '⬆ Chargiar ils parameters',
+    '⬇ Download': '⬇ Chargiar giu',
+    '⬇ Save settings': '⬇ Segirar ils parameters',
+    '⭐ Praise': '⭐ Laud',
+    '🐞 Error': '🐞 Sbagl',
+    '💡 Idea': '💡 Idea',
+    '💬 Feedback to the developer': '💬 Resposta al sviluppader',
+    '💬 Other': '💬 Auter',
+    '📍＋ Waypoint': '📍＋ Punct da passagi',
+    '📜 Whole log & archive': '📜 Entir protocol ed archiv',
+    '🔊 Test sound': '🔊 Tun da test',
+    '🔍 Search in the network': '🔍 Tschertgar en la rait',
+    '🔐 Operator mode (lock settings)': "🔐 Modus d'operatur (bloccar ils parameters)",
+    '🔒 Web password': '🔒 Pled-clav web',
+    '🖨 Quick start (QR)': '🖨 Codes QR per colliar',
+    '📄 Quick guide (1 page)': '📄 Introducziun curta (1 pagina)',
+    '🖨 Quick start card with QR codes': '🖨 Introducziun curta cun codes QR',
+    '🛡 Arm (countdown)': '🛡 Armar (dumbrar enavos)',
+    '🛡 Arm all': '🛡 Armar tuts',
+    '🧭 Setup assistant': "🧭 Assistent d'installaziun",
+})
+HELP_X['fr'] = '<div lang="fr"><section id="start" data-icon="🚀"><h2>Démarrage rapide : les 10 premières minutes</h2>\n<ol>\n<li><b>Brancher l\'alimentation.</b> Après environ une minute, Motion Watch est prêt (avec le démarrage auto, il démarre tout seul).</li>\n<li><b>Connecter le portable.</b> Soit le Pi est dans le même Wi-Fi que le portable (p. ex. le point d\'accès du portable), soit tu rejoins le <b>Wi-Fi propre du Pi</b> (nom «MotionWatch», le mot de passe est affiché sous <i>Alarme et camping → Interrupteurs</i>).</li>\n<li><b>Ouvrir la page :</b> dans le Wi-Fi propre <code>http://10.42.0.1:5000</code>, sinon <code>http://&lt;adresse-du-pi&gt;:5000</code>. L\'adresse arrive aussi par notification push quand le Pi rejoint un réseau.</li>\n<li><b>Définir un mot de passe.</b> La page le demande à la première visite ; ensuite le navigateur le demande une fois (nom d\'utilisateur au choix).</li>\n<li><b>Configurer les notifications push</b> (<i>Notifications</i>) et les vérifier avec «Envoyer un message test».</li>\n<li><b>Dessiner des zones</b> (onglet <i>Zones</i>) : zones à ignorer (route, arbres dans le vent).</li>\n<li><b>Armer :</b> appuyer sur 🛡 en haut ou <i>Alarme et camping → Interrupteurs → Armer</i>. Le compte à rebours te laisse le temps de quitter la zone.</li>\n</ol>\n<div class="tip">💡 <b>Astuce :</b> enregistre la page comme favori ou comme icône sur l\'écran d\'accueil du portable («Sur l\'écran d\'accueil»).</div>\n</section>\n\n<section id="live" data-icon="📺"><h2>La page en direct</h2>\n<h3>En-tête</h3>\n<p>En haut à gauche : l\'icône de l\'app, le nom et la <b>version</b>. De petits badges montrent seulement ce qui compte maintenant ; ce qui est dans son état normal (pas de pluie, lumière ok …) n\'est pas affiché.</p>\n<table><tr><td>🛡 Armé / désarmé</td><td>Alarmes activées ou non. Appuyer pour changer.</td></tr>\n<tr><td>Personnes · ● ENR</td><td>Ce que la caméra voit maintenant, si elle enregistre.</td></tr>\n<tr><td>⛺ 🔋 ⏱ 💡 🌡 🔄 📡</td><td>Fonctions actives : camping, économie d\'énergie, timelapse, lumière, thermique, patrouille, Wi-Fi propre.</td></tr>\n<tr><td>⚠ ⚡ 💾</td><td>Avertissements : pas de mot de passe, sous-tension, mémoire presque pleine.</td></tr>\n<tr><td>CPU · FPS</td><td>Charge et température du Pi, images par seconde.</td></tr></table>\n<p>À droite : 🔔 son d\'alarme dans le navigateur, ☰ affichage (montrer / masquer les badges), ▶ panneau des réglages, ⛶ plein écran (vidéo seule, ✕ en haut à droite pour revenir – fonctionne aussi sur iPhone), ☀ clair/sombre, bouton de langue (Deutsch, Français, Italiano, Rumantsch, English), ▲ masquer l\'en-tête.</p>\n<h3>Image et commande</h3>\n<ul><li><b>Stick :</b> glisser avec le doigt – plus loin, plus vite. Le petit anneau montre où regarde la caméra. «Centre» ramène au milieu. ⇆ inverse stick et boutons (gauchers / droitiers).</li>\n<li>La commande manuelle met le suivi et la patrouille en pause quelques secondes.</li>\n<li><b>Lumières :</b> blanche et infrarouge Désactivé / Activé / Auto.</li>\n<li><b>Relais :</b> chaque relais Désactivé / Activé / Auto avec un déclencheur.</li>\n<li><b>🎧 Écouter</b> et <b>🎙 Maintenir pour parler</b> apparaissent quand un microphone / haut-parleur est choisi.</li>\n<li>Double-clic sur l\'image : vidéo seule ; double-clic à nouveau : retour.</li>\n<li>En faisant défiler vers le bas sur le portable, une <b>petite image en direct</b> reste dans un coin ; appuyer dessus ramène en haut.</li></ul>\n</section>\n\n<section id="alarm" data-icon="🛡"><h2>Alarme et camping</h2>\n<ul><li><b>Armé / désarmé :</b> seulement en mode armé, il y a alarmes, notifications push, sirène et enregistrements. Le compte à rebours te laisse le temps de partir ; «Armer immédiatement» le saute.</li>\n<li><b>Profil camping :</b> un seul interrupteur pour tout : Wi-Fi propre activé, la caméra reste où elle est, alarmes, enregistrements et économie d\'énergie activés, armé après le compte à rebours. Le désactiver rétablit tes réglages.</li>\n<li><b>Wi-Fi propre (point d\'accès) :</b> le Pi crée son propre Wi-Fi – fonctionne sans réseau mobile. Nom et mot de passe sous <i>Protection et réseau</i>.</li>\n<li><b>Réseau :</b> «Automatique» essaie d\'abord les réseaux connus (p. ex. le point d\'accès du portable : internet + notifications push), sinon il active le Wi-Fi propre.</li>\n<li><b>Démarrage auto :</b> Motion Watch démarre tout seul à la mise sous tension, sans écran.</li>\n<li><b>Économie d\'énergie :</b> peu d\'images par seconde tant que tout est calme – pleine vitesse immédiatement au premier mouvement, à un bruit ou quand quelqu\'un regarde.</li>\n<li><b>🔋 Batterie UPS (Waveshare, 2 × 18650) :</b> détectée toute seule (I2C 0x42). L\'en-tête montre 🔌 sur secteur ou 🔋 % et le temps restant sur batterie. Une notification push lors d\'une coupure et au retour du courant, un avertissement à 20 %, un arrêt propre à 8 % (réglable). Sous Batterie, saisir la capacité d\'une cellule (p. ex. 3450 mAh).</li>\n<li><b>🔋 Batterie :</b> saisir la capacité de la batterie externe (mAh, selon l\'étiquette), appuyer sur «La batterie est pleine maintenant» après la charge. L\'en-tête montre alors p. ex. «🔋 62 % · 14 h». À 15 %, une notification push arrive. C\'est une estimation d\'après la consommation du Pi (les batteries externes n\'indiquent pas leur charge).</li>\n<li><b>Heure du portable :</b> sans internet, le Pi prend l\'heure du portable, ainsi les enregistrements ont la bonne heure.</li></ul>\n</section>\n\n<section id="notify" data-icon="🔔"><h2>Notifications</h2>\n<ul><li><b>📲 Web push (sans app) :</b> Notifications → «Activer sur cet appareil». Nécessite https : sous Notifications «Activer https via Tailscale» (autoriser une fois «HTTPS Certificates» dans la page d\'administration Tailscale), puis ouvrir la page via <code>https://NOM.….ts.net/</code>. iPhone / iPad : ajouter cette page https à l\'écran d\'accueil et l\'activer depuis là. Fonctionne en plus de ntfy / Telegram.</li>\n<li><b>ntfy</b> (recommandé) : installer l\'app, s\'abonner à un sujet, saisir l\'adresse (p. ex. <code>https://ntfy-me.com/&lt;ton-sujet&gt;</code>) comme «URL webhook / ntfy», type «ntfy». L\'app doit utiliser le même serveur que l\'adresse.</li>\n<li><b>Telegram</b> ou un <b>webhook</b> (p. ex. Home Assistant) fonctionnent aussi.</li>\n<li><b>Pré-alarme :</b> un court message avec une petite image au premier mouvement, avant qu\'une personne soit confirmée.</li>\n<li><b>Textes des messages :</b> titres et textes personnels avec les paramètres {name} {time} {date} {count} {camera} {link} {db}. Vide = texte standard.</li>\n<li><b>«Adresse de cette page pour les liens» :</b> un appui sur le message ouvre la page.</li>\n<li><b>🔔 Son d\'alarme dans le navigateur :</b> appuyer sur la cloche en haut et «Son activé». La page doit rester ouverte (en arrière-plan aussi).</li></ul>\n<div class="tip">💡 <b>Astuce :</b> après chaque changement : «Envoyer un message test». Si rien n\'arrive, la raison figure sous «état» et dans le journal des événements.</div>\n</section>\n\n<section id="detect" data-icon="🎯"><h2>Détection</h2>\n<ul><li>La <b>sensibilité</b> et la <b>taille min. d\'objet</b> sont les réglages les plus importants contre les fausses alarmes.</li>\n<li>La <b>détection IA</b> reconnaît personnes, animaux et véhicules. «Personnes en mouvement : confirmation IA requise» = moins de fausses alarmes, un peu plus lent.</li>\n<li><b>Zones</b> (onglet <i>Zones</i>) : «Ignorer» pour arbres, route, paroi de tente ; «Seulement ici» quand une seule zone compte.</li>\n<li><b>Zone de confidentialité</b> (onglet <i>Zones</i>) : la zone est peinte en noir juste après la caméra – dans l\'image en direct, les enregistrements, les photos, le timelapse et pour les invités. Pour la tente du voisin, un chemin, les fenêtres d\'autrui. Important pour la protection des données : ne pas filmer en permanence des inconnus et le domaine public.</li>\n<li>Pluie, vent, ombres et faible luminosité sont détectés et gérés automatiquement (réglages fins).</li>\n<li>Le <b>réglage auto</b> apprend la scène ; «Recalibrer» après de gros changements (scène vide).</li></ul>\n</section>\n\n<section id="camera" data-icon="📷"><h2>Caméra et servos</h2>\n<ul><li><b>Limites :</b> jusqu\'où la caméra peut pivoter / s\'incliner (degrés depuis le centre) – protège câbles et boîtier.</li>\n<li><b>Suivre la personne :</b> la caméra suit une personne détectée.</li>\n<li><b>Patrouille :</b> la caméra se déplace entre des points de passage (point = position actuelle, panoramique et inclinaison, «+ Point de passage» ; affiché p. ex. 24/60 = 24 % gauche–droite, 60 % bas–haut). Le bouton 🔄 avance à chaque appui : arrêt → aller-retour (1-2-3-2-1) → circuit (1-2-3-1) → arrêt. Les points apparaissent numérotés sur le fond du stick.</li>\n<li><b>Source vidéo :</b> caméra Pi, USB ou réseau ; d\'autres caméras dans l\'onglet <i>Caméras</i>.</li>\n<li><b>Pilote des servos</b> (réglages fins) : PCA9685, adresse, canaux.</li></ul>\n</section>\n\n<section id="thermal" data-icon="🌡"><h2>Caméra thermique</h2>\n<ul><li>Choisir la caméra thermique (Thermal-90 ou USB), activer «Superposer l\'image thermique».</li>\n<li><b>Aligner :</b> avec «zoom» et «décaler» pour qu\'une personne chaude dans l\'image thermique tombe exactement sur la personne de l\'image caméra.</li>\n<li><b>Alarme thermique :</b> un corps chaud dans la zone ; «seulement les corps chauds qui bougent» ignore pierres chaudes et moteurs.</li>\n<li>L\'état indique la température la plus élevée mesurée.</li></ul>\n</section>\n\n<section id="lightsound" data-icon="💡"><h2>Lumière et son</h2>\n<h3>Lumières</h3>\n<ul><li>Blanche et infrarouge : Désactivé / Activé / Auto. «Auto» = en cas d\'alarme seulement la nuit, en cas d\'alarme jour et nuit, ou toute la nuit (dès le coucher du soleil, calculé d\'après la latitude / longitude sous <i>Installation</i>).</li>\n<li><b>Image :</b> «gris la nuit» est idéal avec la caméra NoIR.</li></ul>\n<h3>Microphone</h3>\n<ul><li>Choisir l\'appareil, observer le niveau. <b>Alarme bruit</b> : plus fort que le fond de X dB pendant au moins Y secondes.</li>\n<li><b>🎧 Écouter</b> : son en direct sur le portable, volume par appareil.</li>\n<li><b>Son dans les enregistrements</b> : les vidéos sont enregistrées avec le son.</li></ul>\n<h3>Haut-parleur</h3>\n<ul><li>Intégré (USB) ou <b>Bluetooth</b> : «Chercher des haut-parleurs Bluetooth» (haut-parleur en mode appairage), puis «Connecter».</li>\n<li><b>Sirène en cas d\'alarme</b> (seulement si armé), son, volume, durée. Sons personnels (.wav/.mp3) dans <code>~/.config/motionwatch/sounds</code>.</li>\n<li><b>🎙 Parler</b> : maintenir le bouton. Nécessite la page sécurisée <code>https://…:5001</code> (les portables n\'autorisent le microphone que là).</li></ul>\n</section>\n\n<section id="rec" data-icon="🎬"><h2>Enregistrements et timelapse</h2>\n<ul><li>En cas d\'alarme, des vidéos (avec pré-enregistrement et son) et des instantanés sont enregistrés.</li>\n<li>Onglet <i>Enregistrements</i> : regarder, filtrer, ⭐ favoris (jamais effacés automatiquement), en télécharger plusieurs en ZIP, statistiques par jour.</li>\n<li><b>Lieux et carte :</b> les photos et vidéos avec position GPS (portable ou lieu fixe) reçoivent un lieu. Le filtre «Lieu» montre un seul lieu (ou «Sans lieu»). 🗺 <i>Carte</i> montre tous les lieux avec leur nombre ; toucher un point → aperçu, «Afficher seulement ce lieu», ✎ renommer. Le fond de carte et les noms viennent d\'OpenStreetMap (désactivable sous <i>Réglages → Setup</i>).</li>\n<li>Les enregistrements les plus anciens sont effacés quand le dossier est trop grand ou la carte mémoire presque pleine.</li>\n<li><b>Timelapse :</b> une photo toutes les N minutes depuis une position fixe, puis une vidéo («Créer la vidéo»). Une alarme a toujours la priorité. Les vidéos timelapse apparaissent aussi sous <i>Enregistrements</i> (marquées ⏱) ; le type «Timelapse» y montre aussi toutes les photos.</li></ul>\n</section>\n\n<section id="diary" data-icon="🦊"><h2>Journal, rapport de nuit et invités</h2>\n<ul><li><b>Journal des animaux</b> (onglet <i>Journal</i>) : la meilleure image de chaque visite d\'animal est enregistrée automatiquement, avec l\'espèce, la date et la durée. Filtrer par espèce, ★ = garder, ⤴ partager (p. ex. WhatsApp), ⤓ télécharger. Les entrées plus anciennes sont effacées après le délai choisi (★ jamais).</li>\n<li>L\'IA connaît oiseau, chat, chien, cheval, mouton, vache, ours (et quelques exotiques). Un renard apparaît le plus souvent comme «chien» ou «chat», un sanglier souvent comme «mouton» ou «ours».</li>\n<li><b>Rapport de nuit :</b> chaque matin (réglable, par défaut 7 h) une notification push : ce qui s\'est passé la nuit (dès 20 h) – personnes, animaux, bruits, thermique – avec la meilleure image. «Envoyer maintenant» pour essayer. Réglages sous <i>Notifications → Rapport de nuit</i>.</li>\n<li><b>Accès invité</b> (<i>Système et réseau</i>) : «Créer un nouveau lien», choisir la durée (2 h à illimité), partager le lien. Les invités voient seulement l\'image en direct (avec les zones de confidentialité), sans mot de passe, et ne peuvent rien modifier. «Terminer l\'accès invité» bloque le lien immédiatement. L\'invité doit atteindre le Pi : même Wi-Fi / point d\'accès ou via Tailscale.</li>\n<li><b>Icône d\'app :</b> iPhone : dans Safari <i>Partager → Sur l\'écran d\'accueil</i>. Android : menu Chrome <i>⋮ → Ajouter à l\'écran d\'accueil</i>. Motion Watch s\'ouvre alors comme une app, sans barres du navigateur.</li></ul>\n</section>\n\n<section id="relay" data-icon="⚡"><h2>Relais et programme horaire</h2>\n<ul><li><b>Relais :</b> Désactivé / Activé / Auto. Auto = actif tant que le déclencheur s\'applique (personne, mouvement, pré-alarme, corps chaud, bruit, animal …) plus le temps de maintien.</li>\n<li><b>Lampe témoin pour l\'accès à distance :</b> relais sur Auto, déclencheur «accès à distance». Elle est allumée tant que quelqu\'un regarde via Tailscale – aussi en mode désarmé. Une petite LED (avec une résistance d\'env. 330 Ω) peut aller directement sur le GPIO, une lampe plus grande via un module relais.</li>\n<li><b>Programme horaire :</b> active ou désactive des fonctions à certaines heures, p. ex. armé la nuit, économie d\'énergie le jour. Aussi «au coucher du soleil» et dates d\'exception.</li></ul>\n</section>\n\n<section id="system" data-icon="⚙"><h2>Système et réseau</h2>\n<ul><li><b>Système :</b> CPU, température, alimentation (tension, sous-tension), mémoire libre, version.</li>\n<li><b>📜 Journal des événements :</b> tout est écrit immédiatement sur la carte mémoire (aussi une ligne d\'état toutes les 15 minutes avec CPU, température, Wi-Fi, mémoire, batterie). «Journal complet et archive» montre aujourd\'hui et chaque jour précédent dans son propre fichier (compressé, conservé 60 jours, réglable sous Installation) – filtrer, chercher, télécharger.</li>\n<li><b>🔐 Mode opérateur :</b> «Mode opérateur (verrouiller les réglages)» sous Système – définir un PIN (4–8 chiffres), ensuite tous les réglages sont verrouillés. Restent utilisables : armer/désarmer, profil camping, les interrupteurs principaux (détection, enregistrement, notifications, économie d\'énergie, patrouille, timelapse …), lumières, caméra, écouter/parler, regarder les enregistrements. «Déverrouiller» avec le PIN ; après 5 PIN erronés, 5 minutes de pause.</li>\n<li><b>⏸ Mettre le programme en pause :</b> choisir la durée (5 minutes à 12 heures) – Motion Watch s\'arrête immédiatement (un enregistrement est d\'abord terminé) et redémarre tout seul. Pendant ce temps, la page montre un compte à rebours et «Démarrer maintenant». Pendant la pause, il n\'y a ni surveillance ni alarme.</li>\n<li><b>⏻ Éteindre / ↻ redémarrer le Pi :</b> un enregistrement en cours est d\'abord terminé. Débrancher seulement quand la LED verte reste éteinte.</li>\n<li><b>🔒 Mot de passe web</b>, <b>⬇ sauvegarder / ⬆ charger les réglages</b> (le fichier contient tes données d\'accès – le garder privé).</li>\n<li><b>Wi-Fi :</b> chercher et rejoindre des réseaux, réseaux enregistrés.</li>\n<li><b>🌐 Accès à distance (Tailscale) :</b> Système indique si Tailscale est connecté, l\'adresse pour les déplacements (http://100.…:5000/) et qui regarde de l\'extérieur en ce moment. L\'en-tête affiche alors «🌐 À distance : nom de l\'appareil». Notification push facultative (Notifications). Installation : <code>curl -fsSL https://tailscale.com/install.sh | sh</code>, puis <code>sudo tailscale up</code>, sur le portable l\'app Tailscale avec le même compte.</li>\n<li><b>Flux web :</b> qualité et largeur de l\'image – plus petit = moins de données via le point d\'accès du portable.</li>\n<li><b>Installation :</b> emplacement (lever / coucher du soleil), présence, avertissements (température, mémoire).</li>\n<li><b>Mise à jour automatique :</b> activer «Installer automatiquement les nouvelles versions» et choisir l\'heure (par défaut 12 h). Elle s\'installe seulement quand il ne se passe rien (désarmé, pas d\'enregistrement, pas de personne – «aussi en mode armé» le permet en mode armé). Si la nouvelle version ne démarre pas trois fois, Motion Watch revient tout seul à la précédente.</li>\n<li><b>🔏 Mises à jour signées :</b> chaque version est signée avec la clé secrète du développeur. Motion Watch n\'installe que les versions avec une signature valable – même quelqu\'un qui pénètre dans le compte GitHub ne peut pas pousser un programme étranger sur les appareils. La liste indique «🔏 signée» ou «⚠ non signée». Ses propres versions non signées seulement avec «Accepter aussi les versions non signées».</li>\n<li><b>Dépôt GitHub privé :</b> saisir aussi la <b>clé GitHub (token)</b> sous Mises à jour – la créer sur github.com sous Settings → Developer settings → Fine-grained tokens, seulement pour ce dépôt, permission «Contents: Read-only». La clé n\'est envoyée qu\'à GitHub et jamais affichée.</li>\n<li><b>Mises à jour :</b> saisir la source (adresse d\'un versions.json ou un dossier / une clé USB), «Chercher des versions», choisir une version. Les anciennes versions restent pour revenir en arrière.</li></ul>\n</section>\n\n<section id="window" data-icon="🖥"><h2>Fenêtre sur le Pi</h2>\n<p>La fenêtre sur le Pi ressemble à la page web : onglets Direct / Météo et système / Journal, joystick rond, boutons rapides, recherche dans les réglages.</p>\n<table><tr><td>Double-clic sur la vidéo</td><td>vidéo seule</td></tr><tr><td>⇱ / F11 / Esc</td><td>plein écran / retour</td></tr>\n<tr><td>Ctrl+B</td><td>panneau des réglages activé / désactivé</td></tr><tr><td>Ctrl+T / Ctrl+L</td><td>clair/sombre, langue suivante</td></tr>\n<tr><td>Flèches / Home</td><td>déplacer la caméra / centrer</td></tr><tr><td>Clic droit sur la vidéo</td><td>afficher / masquer des champs</td></tr></table>\n<p>Les réglages sont regroupés comme sur la page web. Le bouton «?» ouvre cette page.</p>\n</section>\n\n<section id="tips" data-icon="🧭" class="tips"><h2>Astuces</h2>\n<ul>\n<li>🔍 <b>Trouver un réglage :</b> taper dans le champ de recherche en haut des réglages (p. ex. «mot de passe», «sirène», «Wi-Fi») – tout le reste disparaît, les résultats reçoivent un cadre bleu. ✕ ou Esc affiche à nouveau tout.</li>\n<li>💬 <b>Retour au développeur :</b> Système → «Retour au développeur» (fenêtre : Installation). Idées, erreurs, compliments – anonyme, sans expéditeur. Sans internet, le message attend et part plus tard.</li>\n<li>🎞 <b>Marquages dans les enregistrements :</b> Enregistrement → «Marquages dans les enregistrements et images d\'alarme» : fines marques d\'angle (par défaut, le visage reste libre), aucun, ou cadres rouges comme l\'image en direct.</li>\n<li>⚡ <b>Boutons rapides à côté du stick</b> (vert = actif) : 🌡 image thermique sur l\'image en direct, 🏷 marquer les objets, 💡 lumière blanche, 🔴 lumière IR, 🎧 écouter, ⚡ par relais (activé / automatique), 🎯 suivre une personne, 🔄 patrouille, ⏺ enregistrer maintenant (max. 10 min, rouge pendant l\'enregistrement, appuyer à nouveau = arrêt), 📷 photo dans les enregistrements. Gris = non connecté.</li>\n<li>🕹 <b>Joystick en plein écran</b> (portable, tablette, PC) : l\'image remplit tout l\'écran, le stick flotte en transparence en bas à droite. Après 3 s sans contact, il devient pâle, au toucher bien visible à nouveau. À côté : ◎ centre, 🎧 écouter ; ⇆ en haut à côté de ✕ met le stick de l\'autre côté.</li>\n<li>🟢 <b>Vue d\'ensemble dans les réglages :</b> la flèche d\'un thème est verte tant que sa fonction principale est active (p. ex. rapport de nuit, timelapse, sauvegarde), sinon grise. La flèche d\'un groupe est verte quand au moins un thème y est actif. Dans la fenêtre sur le Pi : flèche verte.</li>\n<li>📱 <b>SMS via une clé LTE</b> (Notifications → SMS) : avec une clé USB LTE et une carte SIM, l\'alarme (personne, sabotage, corps chaud, bruit) arrive par SMS – par défaut seulement quand il n\'y a pas d\'internet. Fonctionne avec ModemManager (<code>sudo apt install modemmanager</code>), les commandes AT ou les clés Huawei HiLink (192.168.8.1). Pause et limite journalière protègent contre les coûts ; «Envoyer un SMS test» vérifie tout.</li>\n<li>🎬 <b>Mode démo :</b> <code>python3 webcam_bewegung_X.py --demo</code> (pour une démo en ligne, ajouter <code>--headless --port 8080</code>) montre une scène de camping dessinée où de temps en temps une personne, un chien ou un ours passe – alarme, enregistrement, journal et dissuasion réagissent comme en vrai. Réglages séparés (dans le dossier temporaire), «DEMO» dans l\'en-tête, rien n\'est modifié sur l\'ordinateur.</li>\n<li>🏠 <b>MQTT / Home Assistant</b> (Système et réseau) : saisir l\'adresse du broker (p. ex. le module Mosquitto de Home Assistant), utilisateur et mot de passe, «MQTT activé». Home Assistant affiche alors Motion Watch tout seul comme appareil : panneau d\'alarme (armer/désarmer), personne, mouvement, animal, enregistrement, batterie, température et la dernière image d\'alarme. Commandes aussi via <code>motionwatch/&lt;id&gt;/cmd/arm</code> (ARM_AWAY / DISARM), <code>…/cmd/light_white</code> (on/off/auto).</li>\n<li>🛰 <b>Plusieurs appareils :</b> onglet Caméras → «Autres appareils Motion Watch» : image, armé/alarme, batterie et dernier événement de chaque appareil, armer/désarmer un appareil ou tous ensemble. «Chercher dans le réseau» trouve les appareils du même réseau et via Tailscale ; les appareils avec mot de passe le demandent une fois.</li>\n<li>⤴ <b>Partager avec logo :</b> images du journal, instantanés, enregistrements et timelapse (bouton ⤴ dans le lecteur) et l\'image du rapport de nuit reçoivent une discrète bande «Motion Watch» avec la date en bas à droite. Désactivable sous Enregistrement.</li>\n<li>🦊 <b>Dissuasion ciblée</b> (Lumière et son → Dissuasion) : une réaction propre pour personne, grand animal (ours, vache, cheval …), petit animal (chat, chien, oiseau) et corps chaud (caméra thermique) – son (sifflement aigu, détonations/claquements ou sons personnels) et/ou la lumière blanche qui clignote. Durée et pause réglables ; «aussi en mode désarmé» p. ex. pour le jardin. Les animaux nécessitent la détection IA.</li>\n<li>🚨 <b>Protection antivol</b> (Alarme et camping) : en mode armé, une notification push urgente avec image et la sirène dès que la caméra est <b>couverte ou détournée</b>, que l\'appareil est <b>déplacé ou renversé</b> (capteur de mouvement MPU-6050 sur I2C 0x68, environ 3 $, facultatif) ou que le <b>courant est coupé</b> (avec la batterie UPS). Pendant que la tête de caméra bouge elle-même (patrouille, suivi, joystick), le contrôle de l\'image réapprend.</li>\n<li>☁️ <b>Sauvegarde des enregistrements d\'alarme :</b> Enregistrements et timelapse → Sauvegarde. Les enregistrements d\'alarme terminés (armé ou avec une personne) vont automatiquement dans un dossier WebDAV (Nextcloud : <code>https://…/remote.php/dav/files/UTILISATEUR/MotionWatch/</code> avec un mot de passe d\'application, NAS Synology/QNAP, beaucoup de clouds), dans un dossier (clé USB, NAS monté) ou comme vidéo sur Telegram. Un sous-dossier par jour. «Tester la sauvegarde» vérifie les réglages.</li>\n<li>🧭 <b>Assistant de configuration :</b> apparaît à la première ouverture de la page – langue et nom de l\'appareil, notifications push (sujet ntfy avec code QR et message test), mot de passe web, codes QR pour d\'autres appareils. À tout moment sous Système → «Assistant de configuration». «Guide rapide (QR)» donne une carte à imprimer avec codes QR pour le Wi-Fi propre du Pi et la page. Dans la fenêtre sur le Pi : Installation → «Code QR pour le portable».</li>\n<li>🔗 <b>Une seule icône à la maison et en déplacement :</b> ajouter la page à l\'écran d\'accueil depuis l\'adresse Tailscale (p. ex. <code>http://NOM-DU-PI:5000</code> ou l\'adresse 100.… affichée dans l\'app Tailscale). À la maison, Tailscale se connecte directement via le Wi-Fi, en déplacement via internet – l\'app Tailscale doit être activée. Seulement sur le Wi-Fi propre du Pi sans internet, utiliser l\'adresse locale (p. ex. <code>http://10.42.0.1:5000</code>). «🌐 À distance» en haut indique quand tu es connecté via Tailscale.</li>\n<li>📱 <b>Comme une app :</b> mettre Motion Watch sur l\'écran d\'accueil (iPhone : Partager → Sur l\'écran d\'accueil). L\'iPhone a alors aussi un vrai plein écran. Dans ce mode, le bouton <b>⟳</b> (en haut à droite) recharge la page ; après une mise à jour, une barre «Recharger» apparaît en bas.</li>\n<li>🦊 <b>Collectionner des photos d\'animaux :</b> laisser la détection IA active, diriger la caméra vers une mangeoire ou un passage de gibier – regarder le <i>Journal</i> le matin.</li>\n<li>🌙 <b>Tester avant la première nuit :</b> armer, traverser l\'image une fois et vérifier : la notification arrive, l\'enregistrement est là, sirène / lumière réagissent.</li>\n<li>🌳 <b>Fausses alarmes dues aux branches :</b> dessiner arbres et buissons comme zones «Ignorer» et augmenter un peu la taille minimale. La détection automatique du vent aide aussi.</li>\n<li>🐗 <b>Effrayer les animaux :</b> sirène «en cas d\'alarme» plus lumière blanche «en cas d\'alarme, seulement la nuit». Pour ton propre sommeil, garder la sirène courte (5–10 s).</li>\n<li>🔴 <b>Infrarouge et reflets :</b> ne pas diriger la lumière IR à travers une fenêtre ou près d\'une paroi de tente – elle éblouit la caméra.</li>\n<li>🔇 <b>Surveillance silencieuse :</b> sirène désactivée, seulement notifications push et la cloche dans le navigateur – personne ne se réveille au camping.</li>\n<li>🔋 <b>Économiser l\'énergie :</b> profil camping (inclut l\'économie d\'énergie), largeur de flux plus petite, écouter seulement brièvement. Utiliser une batterie externe de 5 V / 3 A ou plus ; en cas de «sous-tension», changer le câble ou la batterie.</li>\n<li>📶 <b>Peu de données mobiles :</b> l\'image de pré-alarme reste petite (640 px) ; n\'ouvrir l\'image en direct que si nécessaire (le Pi n\'envoie que pendant que quelqu\'un regarde).</li>\n<li>🎤 <b>Microphone :</b> un morceau de mousse comme pare-vent évite les fausses alarmes dans le vent. Les servos ne dérangent pas – l\'alarme bruit fait une pause pendant qu\'ils bougent.</li>\n<li>🔊 <b>Les haut-parleurs Bluetooth</b> s\'éteignent souvent tout seuls après un moment. Le Pi les reconnecte quand ils reviennent – pour la nuit, en choisir un sans arrêt automatique.</li>\n<li>🧭 <b>Orienter la caméra :</b> trouver la meilleure position avec le stick et l\'utiliser comme point de passage ou position de timelapse.</li>\n<li>🕒 <b>Mauvaise heure</b> dans les enregistrements : ouvrir une fois la page sur le portable – le Pi prend l\'heure du portable.</li>\n<li>💾 <b>Enregistrements importants :</b> les marquer avec ⭐ – ils ne sont jamais effacés automatiquement.</li>\n<li>🔁 <b>Essayer une nouvelle version</b> sans risque : sous Mises à jour, tu peux toujours revenir en arrière.</li>\n<li>📱 <b>Cloche dans le navigateur</b> seulement sur un appareil qui reste ouvert la nuit – sinon tout sonne.</li>\n</ul></section>\n\n<section id="privacy" data-icon="🔏"><h2>Confidentialité et sécurité</h2>\n<p><b>Principe :</b> Motion Watch travaille sur l\'appareil lui-même. Images, enregistrements, son et réglages restent sur la carte mémoire – il n\'y a ni cloud du fabricant ni compte.</p>\n<ul>\n<li><b>Ce qui est stocké sur l\'appareil :</b> enregistrements et instantanés (dossier «recordings», les anciens sont effacés quand la carte est pleine – jamais les favoris), journal des animaux (images), journal des événements (60 jours, réglable), réglages. Le mot de passe web n\'est stocké que sous forme de hachage sécurisé.</li>\n<li><b>Ce qui quitte l\'appareil seulement si tu l\'actives :</b> notifications push (ntfy / Telegram / webhook – avec image, via leurs serveurs), web push (via Apple / Google / Mozilla, chiffré), sauvegarde des clips (ton WebDAV / NAS / Telegram), MQTT (ton broker), SMS (réseau mobile), mises à jour (GitHub ; seules les versions signées sont installées), accès à distance (Tailscale, chiffré).</li>\n<li><b>Son :</b> microphone, écoute et son dans les enregistrements sont désactivés par défaut. Enregistrer des conversations n\'est permis dans beaucoup de pays qu\'avec accord.</li>\n<li><b>Zones de confidentialité</b> (onglet Zones) : des zones comme le jardin du voisin, un chemin ou des fenêtres sont peintes en noir – dans l\'image en direct, les enregistrements et les images.</li>\n<li><b>Les liens invités</b> montrent seulement l\'image en direct, expirent et peuvent être invalidés à tout moment.</li>\n<li><b>Protection contre les inconnus :</b> mot de passe web (à l\'installation), blocage après 8 essais erronés, mode opérateur avec PIN, mises à jour signées, accès à distance seulement via Tailscale.</li>\n</ul>\n<p><b>Juridique (Suisse : LPD, UE : RGPD – pas un conseil juridique) :</b> ne filmer que son propre emplacement. Le domaine public, les chemins et la propriété d\'autrui n\'ont rien à faire dans l\'image (sinon utiliser des zones de confidentialité). Poser un panneau («vidéosurveillance») et informer les compagnons de voyage et les invités. Sur les campings, le règlement du site s\'applique aussi. Ne conserver les enregistrements qu\'aussi longtemps que nécessaire.</p>\n</section>\n<section id="faq" data-icon="🛠"><h2>Dépannage</h2>\n<dl>\n<dt>La page ne s\'ouvre pas</dt><dd>Le portable est-il dans le bon Wi-Fi (Wi-Fi propre du Pi ou le même réseau) ? Adresse avec <code>:5000</code> ? Dans le Wi-Fi propre toujours <code>http://10.42.0.1:5000</code>.</dd>\n<dt>La page montre une ancienne version</dt><dd>La version figure en haut à gauche. Si une ancienne copie tourne encore (p. ex. du démarrage auto), démarrer le nouveau programme à la main – il prend le relais. Puis recharger la page.</dd>\n<dt>Pas d\'image</dt><dd><i>Caméra et servos → Source vidéo</i> → «Chercher des caméras». Caméra Pi : vérifier le câble plat.</dd>\n<dt>Les notifications push n\'arrivent pas</dt><dd>«Envoyer un message test» et lire l\'état. ntfy : le même serveur dans l\'app et dans l\'adresse. Sans internet (seulement Wi-Fi propre), aucune notification push ne peut partir – utiliser la cloche dans le navigateur.</dd>\n<dt>Le démarrage auto ne démarre pas</dt><dd>Terminal : <code>systemctl --user status motionwatch</code>. Lancer une fois <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (démarrage sans connexion).</dd>\n<dt>Image noire la nuit, mais des mouvements sont marqués</dt><dd>La scène est trop sombre pour la caméra normale. «Dans l\'obscurité, éclaircir aussi l\'image visible» (Détection → Faible luminosité) l\'éclaircit autant que possible – dans le noir total, seule la lumière aide : lampe infrarouge + caméra NoIR (invisible) ou la lampe blanche.</dd>\n<dt>Motion Watch ne démarre pas après une coupure de courant</dt><dd>Désactiver puis réactiver le démarrage auto (Alarme et camping). Si un indice avec «enable-linger» apparaît, lancer une fois cette commande dans le terminal.</dd>\n<dt>Beaucoup de fausses alarmes</dt><dd>Dessiner des zones, baisser la sensibilité, augmenter la taille minimale, activer la «confirmation IA».</dd>\n<dt>Les servos tremblent ou butent</dt><dd>Utiliser le PCA9685 (pilote des servos), réduire les limites en degrés, alimentation 5 V séparée pour les servos.</dd>\n<dt>«Sous-tension»</dt><dd>Câble USB-C plus court / plus épais ou batterie externe plus puissante. La sous-tension peut causer des plantages et des enregistrements cassés.</dd>\n<dt>Pas de son en Bluetooth</dt><dd>Haut-parleur allumé et à portée ? Appuyer à nouveau sur «Connecter». Le programme doit tourner en utilisateur normal (pas avec sudo).</dd>\n<dt>Parler ne fonctionne pas</dt><dd>Seulement sur la page sécurisée <code>https://…:5001</code>. Confirmer une fois l\'avertissement du certificat et autoriser le microphone.</dd>\n</dl></section>\n\n<section id="setup" data-icon="🧰"><h2>Installation sur le Raspberry Pi</h2>\n<pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils\npip install opencv-python numpy pillow flask psutil</pre>\n<ul><li>Activer I2C et SPI (<code>sudo raspi-config</code>) ; dans <code>/boot/firmware/config.txt</code> sous <code>[all]</code> : <code>dtoverlay=spi0-0cs</code>.</li>\n<li>Une fois : <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (Wi-Fi, heure, démarrage auto, arrêt, watchdog).</li>\n<li>Démarrer : <code>python3 webcam_bewegung_X.py</code> (fenêtre + page web) ou <code>--headless</code> (page web seule).</li>\n<li>Réglages, journal, sons : <code>~/.config/motionwatch/</code> – conservés pour les nouvelles versions.</li></ul>\n</section>\n</div>'
+HELP_X['it'] = '<div lang="it"><section id="start" data-icon="🚀"><h2>Avvio rapido: i primi 10 minuti</h2>\n<ol>\n<li><b>Collegare la corrente.</b> Dopo circa un minuto Motion Watch è pronto (con l\'avvio automatico parte da solo).</li>\n<li><b>Collegare il cellulare.</b> O il Pi è nello stesso Wi-Fi del cellulare (p. es. l\'hotspot del cellulare), oppure ti colleghi al <b>Wi-Fi proprio del Pi</b> (nome «MotionWatch», la password è indicata sotto <i>Allarme e campeggio → Interruttori</i>).</li>\n<li><b>Aprire la pagina:</b> nel Wi-Fi proprio <code>http://10.42.0.1:5000</code>, altrimenti <code>http://&lt;indirizzo-del-pi&gt;:5000</code>. L\'indirizzo arriva anche come notifica push quando il Pi entra in una rete.</li>\n<li><b>Impostare una password.</b> La pagina la chiede alla prima visita; poi il browser la chiede una volta (nome utente a piacere).</li>\n<li><b>Configurare le notifiche push</b> (<i>Notifiche</i>) e verificarle con «Inviare un messaggio di prova».</li>\n<li><b>Disegnare le zone</b> (scheda <i>Zone</i>): aree da ignorare (strada, alberi al vento).</li>\n<li><b>Inserire:</b> toccare 🛡 in alto o <i>Allarme e campeggio → Interruttori → Inserire</i>. Il conto alla rovescia ti dà il tempo di lasciare la zona.</li>\n</ol>\n<div class="tip">💡 <b>Consiglio:</b> salva la pagina come segnalibro o come icona sulla schermata Home del cellulare («Aggiungi alla schermata Home»).</div>\n</section>\n\n<section id="live" data-icon="📺"><h2>La pagina live</h2>\n<h3>Intestazione</h3>\n<p>In alto a sinistra: l\'icona dell\'app, il nome e la <b>versione</b>. Piccoli badge mostrano solo ciò che conta ora; ciò che è nel suo stato normale (niente pioggia, luce ok …) non viene mostrato.</p>\n<table><tr><td>🛡 Inserito / disinserito</td><td>Allarmi attivi o no. Toccare per cambiare.</td></tr>\n<tr><td>Persone · ● REG</td><td>Cosa vede ora la telecamera, se sta registrando.</td></tr>\n<tr><td>⛺ 🔋 ⏱ 💡 🌡 🔄 📡</td><td>Funzioni attive: campeggio, risparmio energetico, timelapse, luce, termico, pattuglia, Wi-Fi proprio.</td></tr>\n<tr><td>⚠ ⚡ 💾</td><td>Avvisi: nessuna password, sottotensione, memoria quasi piena.</td></tr>\n<tr><td>CPU · FPS</td><td>Carico e temperatura del Pi, immagini al secondo.</td></tr></table>\n<p>A destra: 🔔 suono d\'allarme nel browser, ☰ vista (mostrare / nascondere i badge), ▶ pannello impostazioni, ⛶ schermo intero (solo video, ✕ in alto a destra per tornare – funziona anche su iPhone), ☀ chiaro/scuro, pulsante della lingua (Deutsch, Français, Italiano, Rumantsch, English), ▲ nascondere l\'intestazione.</p>\n<h3>Immagine e comando</h3>\n<ul><li><b>Stick:</b> trascinare con il dito – più lontano, più veloce. Il piccolo anello mostra dove guarda la telecamera. «Centro» riporta al centro. ⇆ scambia stick e pulsanti (mancini / destrorsi).</li>\n<li>Il comando manuale mette in pausa inseguimento e pattuglia per qualche secondo.</li>\n<li><b>Luci:</b> bianca e infrarossa Spento / Acceso / Auto.</li>\n<li><b>Relè:</b> ogni relè Spento / Acceso / Auto con un attivatore.</li>\n<li><b>🎧 Ascoltare</b> e <b>🎙 Tenere premuto per parlare</b> appaiono quando è scelto un microfono / altoparlante.</li>\n<li>Doppio clic sull\'immagine: solo video; di nuovo doppio clic: indietro.</li>\n<li>Scorrendo verso il basso sul cellulare, una <b>piccola immagine live</b> resta in un angolo; toccandola si torna su.</li></ul>\n</section>\n\n<section id="alarm" data-icon="🛡"><h2>Allarme e campeggio</h2>\n<ul><li><b>Inserito / disinserito:</b> solo con il sistema inserito ci sono allarmi, notifiche push, sirena e registrazioni. Il conto alla rovescia ti dà il tempo di andartene; «Inserire subito» lo salta.</li>\n<li><b>Profilo campeggio:</b> un solo interruttore per tutto: Wi-Fi proprio acceso, la telecamera resta dov\'è, allarmi, registrazioni e risparmio energetico accesi, inserito dopo il conto alla rovescia. Spegnerlo ripristina le tue impostazioni.</li>\n<li><b>Wi-Fi proprio (hotspot):</b> il Pi crea il proprio Wi-Fi – funziona senza rete mobile. Nome e password sotto <i>Protezione e rete</i>.</li>\n<li><b>Rete:</b> «Automatico» prova prima le reti conosciute (p. es. l\'hotspot del cellulare: internet + notifiche push), altrimenti accende il Wi-Fi proprio.</li>\n<li><b>Avvio automatico:</b> Motion Watch parte da solo all\'accensione, senza schermo.</li>\n<li><b>Risparmio energetico:</b> poche immagini al secondo finché tutto è tranquillo – piena velocità subito al primo movimento, a un rumore o quando qualcuno guarda.</li>\n<li><b>🔋 Batteria UPS (Waveshare, 2 × 18650):</b> rilevata da sola (I2C 0x42). L\'intestazione mostra 🔌 con alimentazione di rete o 🔋 % e tempo rimanente a batteria. Una notifica push in caso di blackout e al ritorno della corrente, un avviso al 20 %, uno spegnimento corretto all\'8 % (regolabile). Sotto Batteria inserire la capacità di una cella (p. es. 3450 mAh).</li>\n<li><b>🔋 Batteria:</b> inserire la capacità del power bank (mAh, come sull\'etichetta), premere «La batteria ora è carica» dopo la carica. L\'intestazione mostra poi p. es. «🔋 62 % · 14 h». Al 15 % arriva una notifica push. È una stima in base al consumo del Pi (i power bank non comunicano la loro carica).</li>\n<li><b>Ora dal cellulare:</b> senza internet il Pi prende l\'ora dal cellulare, così le registrazioni hanno l\'ora giusta.</li></ul>\n</section>\n\n<section id="notify" data-icon="🔔"><h2>Notifiche</h2>\n<ul><li><b>📲 Web push (senza app):</b> Notifiche → «Attivare su questo dispositivo». Richiede https: sotto Notifiche «Attivare https tramite Tailscale» (consentire una volta «HTTPS Certificates» nella pagina di amministrazione Tailscale), poi aprire la pagina tramite <code>https://NOME.….ts.net/</code>. iPhone / iPad: aggiungere questa pagina https alla schermata Home e attivarlo da lì. Funziona in aggiunta a ntfy / Telegram.</li>\n<li><b>ntfy</b> (consigliato): installare l\'app, iscriversi a un argomento, inserire l\'indirizzo (p. es. <code>https://ntfy-me.com/&lt;tuo-argomento&gt;</code>) come «URL webhook / ntfy», tipo «ntfy». L\'app deve usare lo stesso server dell\'indirizzo.</li>\n<li>Funzionano anche <b>Telegram</b> o un <b>webhook</b> (p. es. Home Assistant).</li>\n<li><b>Preallarme:</b> un breve messaggio con una piccola immagine al primo movimento, prima che una persona sia confermata.</li>\n<li><b>Testi dei messaggi:</b> titoli e testi propri con i segnaposto {name} {time} {date} {count} {camera} {link} {db}. Vuoto = testo standard.</li>\n<li><b>«Indirizzo di questa pagina per i link»:</b> toccando il messaggio si apre la pagina.</li>\n<li><b>🔔 Suono d\'allarme nel browser:</b> toccare la campanella in alto e «Suono acceso». La pagina deve restare aperta (anche in background).</li></ul>\n<div class="tip">💡 <b>Consiglio:</b> dopo ogni modifica: «Inviare un messaggio di prova». Se non arriva nulla, il motivo è indicato sotto «stato» e nel registro eventi.</div>\n</section>\n\n<section id="detect" data-icon="🎯"><h2>Rilevamento</h2>\n<ul><li>La <b>sensibilità</b> e la <b>dimensione min. oggetto</b> sono le impostazioni più importanti contro i falsi allarmi.</li>\n<li>Il <b>rilevamento IA</b> riconosce persone, animali e veicoli. «Persone in movimento: conferma IA necessaria» = meno falsi allarmi, un po\' più lento.</li>\n<li><b>Zone</b> (scheda <i>Zone</i>): «Ignorare» per alberi, strada, parete della tenda; «Solo qui» quando conta una sola area.</li>\n<li><b>Zona privacy</b> (scheda <i>Zone</i>): l\'area viene dipinta di nero subito dopo la telecamera – nell\'immagine live, nelle registrazioni, nelle foto, nel timelapse e per gli ospiti. Per la tenda del vicino, un sentiero, le finestre altrui. Importante per la protezione dei dati: non filmare continuamente estranei e suolo pubblico.</li>\n<li>Pioggia, vento, ombre e poca luce vengono rilevati e gestiti automaticamente (regolazioni fini).</li>\n<li>La <b>regolazione automatica</b> impara la scena; «Ricalibrare» dopo grandi cambiamenti (scena vuota).</li></ul>\n</section>\n\n<section id="camera" data-icon="📷"><h2>Telecamera e servo</h2>\n<ul><li><b>Limiti:</b> quanto può ruotare / inclinarsi la telecamera (gradi dal centro) – protegge cavi e custodia.</li>\n<li><b>Seguire la persona:</b> la telecamera segue una persona rilevata.</li>\n<li><b>Pattuglia:</b> la telecamera si sposta tra punti di passaggio (punto = posizione attuale, brandeggio e inclinazione, «+ Punto di passaggio»; mostrato p. es. come 24/60 = 24 % sinistra–destra, 60 % giù–su). Il pulsante 🔄 avanza a ogni tocco: spento → avanti e indietro (1-2-3-2-1) → giro (1-2-3-1) → spento. I punti appaiono numerati sullo sfondo dello stick.</li>\n<li><b>Sorgente video:</b> telecamera Pi, USB o di rete; altre telecamere nella scheda <i>Telecamere</i>.</li>\n<li><b>Driver servo</b> (regolazioni fini): PCA9685, indirizzo, canali.</li></ul>\n</section>\n\n<section id="thermal" data-icon="🌡"><h2>Termocamera</h2>\n<ul><li>Scegliere la termocamera (Thermal-90 o USB), attivare «Sovrapporre l\'immagine termica».</li>\n<li><b>Allineare:</b> con «zoom» e «spostare» in modo che una persona calda nell\'immagine termica cada esattamente sulla persona nell\'immagine della telecamera.</li>\n<li><b>Allarme termico:</b> un corpo caldo nella zona; «solo corpi caldi in movimento» ignora pietre calde e motori.</li>\n<li>Lo stato mostra la temperatura più alta misurata.</li></ul>\n</section>\n\n<section id="lightsound" data-icon="💡"><h2>Luce e suono</h2>\n<h3>Luci</h3>\n<ul><li>Bianca e infrarossa: Spento / Acceso / Auto. «Auto» = in caso di allarme solo di notte, in caso di allarme giorno e notte, o tutta la notte (dal tramonto, calcolato da latitudine / longitudine sotto <i>Configurazione</i>).</li>\n<li><b>Immagine:</b> «grigio di notte» è ideale con la telecamera NoIR.</li></ul>\n<h3>Microfono</h3>\n<ul><li>Scegliere il dispositivo, osservare il livello. <b>Allarme rumore</b>: più forte del sottofondo di X dB per almeno Y secondi.</li>\n<li><b>🎧 Ascoltare</b>: audio live sul cellulare, volume per dispositivo.</li>\n<li><b>Audio nelle registrazioni</b>: i video vengono salvati con l\'audio.</li></ul>\n<h3>Altoparlante</h3>\n<ul><li>Integrato (USB) o <b>Bluetooth</b>: «Cercare altoparlanti Bluetooth» (altoparlante in modalità associazione), poi «Connetti».</li>\n<li><b>Sirena in caso di allarme</b> (solo se inserito), suono, volume, durata. Suoni propri (.wav/.mp3) in <code>~/.config/motionwatch/sounds</code>.</li>\n<li><b>🎙 Parlare</b>: tenere premuto il pulsante. Richiede la pagina sicura <code>https://…:5001</code> (i cellulari consentono il microfono solo lì).</li></ul>\n</section>\n\n<section id="rec" data-icon="🎬"><h2>Registrazioni e timelapse</h2>\n<ul><li>In caso di allarme vengono salvati video (con pre-registrazione e audio) e istantanee.</li>\n<li>Scheda <i>Registrazioni</i>: guardare, filtrare, ⭐ preferiti (mai cancellati automaticamente), scaricarne diversi come ZIP, statistiche per giorno.</li>\n<li><b>Luoghi e mappa:</b> foto e video con posizione GPS (cellulare o luogo fisso) ricevono un luogo. Il filtro «Luogo» mostra un solo luogo (o «Senza luogo»). 🗺 <i>Mappa</i> mostra tutti i luoghi con il numero; toccare un punto → anteprima, «Mostra solo questo luogo», ✎ rinominare. Lo sfondo e i nomi vengono da OpenStreetMap (disattivabile in <i>Impostazioni → Setup</i>).</li>\n<li>Le registrazioni più vecchie vengono cancellate quando la cartella è troppo grande o la scheda di memoria quasi piena.</li>\n<li><b>Timelapse:</b> una foto ogni N minuti da una posizione fissa, poi un video («Creare il video»). Un allarme ha sempre la precedenza. I video timelapse appaiono anche sotto <i>Registrazioni</i> (marcati ⏱); il tipo «Timelapse» lì mostra anche tutte le singole foto.</li></ul>\n</section>\n\n<section id="diary" data-icon="🦊"><h2>Diario, rapporto notturno e ospiti</h2>\n<ul><li><b>Diario animali</b> (scheda <i>Diario</i>): l\'immagine migliore di ogni visita di un animale viene salvata automaticamente, con specie, data e durata. Filtrare per specie, ★ = conservare, ⤴ condividere (p. es. WhatsApp), ⤓ scaricare. Le voci più vecchie vengono cancellate dopo il tempo scelto (★ mai).</li>\n<li>L\'IA conosce uccello, gatto, cane, cavallo, pecora, mucca, orso (e alcuni esotici). Una volpe appare per lo più come «cane» o «gatto», un cinghiale spesso come «pecora» o «orso».</li>\n<li><b>Rapporto notturno:</b> ogni mattina (regolabile, predefinito ore 7) una notifica push: cosa è successo di notte (dalle 20) – persone, animali, rumori, termico – con l\'immagine migliore. «Invia ora» per provare. Impostazioni sotto <i>Notifiche → Rapporto notturno</i>.</li>\n<li><b>Accesso ospite</b> (<i>Sistema e rete</i>): «Creare un nuovo link», scegliere la durata (da 2 h a illimitato), condividere il link. Gli ospiti vedono solo l\'immagine live (con le zone privacy), senza password, e non possono cambiare nulla. «Terminare l\'accesso ospite» blocca subito il link. L\'ospite deve raggiungere il Pi: stesso Wi-Fi / hotspot o tramite Tailscale.</li>\n<li><b>Icona dell\'app:</b> iPhone: in Safari <i>Condividi → Aggiungi alla schermata Home</i>. Android: menu di Chrome <i>⋮ → Aggiungi a schermata Home</i>. Motion Watch si apre poi come un\'app, senza barre del browser.</li></ul>\n</section>\n\n<section id="relay" data-icon="⚡"><h2>Relè e pianificazione</h2>\n<ul><li><b>Relè:</b> Spento / Acceso / Auto. Auto = acceso finché vale l\'attivatore (persona, movimento, preallarme, corpo caldo, rumore, animale …) più il tempo di mantenimento.</li>\n<li><b>Spia per l\'accesso remoto:</b> relè su Auto, attivatore «accesso remoto». È accesa finché qualcuno guarda tramite Tailscale – anche se disinserito. Un piccolo LED (con una resistenza di ~330 Ω) può andare direttamente sul GPIO, una lampada più grande tramite un modulo relè.</li>\n<li><b>Pianificazione:</b> accende o spegne funzioni a certi orari, p. es. inserito di notte, risparmio energetico di giorno. Anche «al tramonto» e date di eccezione.</li></ul>\n</section>\n\n<section id="system" data-icon="⚙"><h2>Sistema e rete</h2>\n<ul><li><b>Sistema:</b> CPU, temperatura, alimentazione (tensione, sottotensione), memoria libera, versione.</li>\n<li><b>📜 Registro eventi:</b> tutto viene scritto subito sulla scheda di memoria (anche una riga di stato ogni 15 minuti con CPU, temperatura, Wi-Fi, memoria, batteria). «Registro completo e archivio» mostra oggi e ogni giorno precedente in un file proprio (compresso, conservato 60 giorni, regolabile sotto Configurazione) – filtrare, cercare, scaricare.</li>\n<li><b>🔐 Modalità operatore:</b> «Modalità operatore (bloccare le impostazioni)» sotto Sistema – impostare un PIN (4–8 cifre), poi tutte le impostazioni sono bloccate. Restano utilizzabili: inserire/disinserire, profilo campeggio, gli interruttori principali (rilevamento, registrazione, notifiche, risparmio energetico, pattuglia, timelapse …), luci, telecamera, ascoltare/parlare, guardare le registrazioni. «Sbloccare» con il PIN; dopo 5 PIN errati una pausa di 5 minuti.</li>\n<li><b>⏸ Mettere in pausa il programma:</b> scegliere la durata (da 5 minuti a 12 ore) – Motion Watch si spegne subito (una registrazione viene prima terminata) e riparte da solo. Nel frattempo la pagina mostra un conto alla rovescia e «Avvia ora». Durante la pausa non c\'è sorveglianza né allarme.</li>\n<li><b>⏻ Spegnere / ↻ riavviare il Pi:</b> una registrazione in corso viene prima terminata. Staccare solo quando il LED verde resta spento.</li>\n<li><b>🔒 Password web</b>, <b>⬇ salvare / ⬆ caricare le impostazioni</b> (il file contiene i tuoi dati di accesso – tenerlo privato).</li>\n<li><b>Wi-Fi:</b> cercare e collegarsi a reti, reti salvate.</li>\n<li><b>🌐 Accesso remoto (Tailscale):</b> Sistema mostra se Tailscale è connesso, l\'indirizzo per quando sei in viaggio (http://100.…:5000/) e chi sta guardando dall\'esterno. L\'intestazione mostra poi «🌐 Remoto: nome del dispositivo». Notifica push facoltativa (Notifiche). Installazione: <code>curl -fsSL https://tailscale.com/install.sh | sh</code>, poi <code>sudo tailscale up</code>, sul cellulare l\'app Tailscale con lo stesso account.</li>\n<li><b>Streaming web:</b> qualità e larghezza dell\'immagine – più piccolo = meno dati tramite l\'hotspot del cellulare.</li>\n<li><b>Configurazione:</b> posizione (alba / tramonto), presenza, avvisi (temperatura, memoria).</li>\n<li><b>Aggiornamento automatico:</b> attivare «Installare automaticamente le nuove versioni» e scegliere l\'ora (predefinito ore 12). Si installa solo quando non succede nulla (disinserito, nessuna registrazione, nessuna persona – «anche se inserito» lo consente con il sistema inserito). Se la nuova versione non parte tre volte, Motion Watch torna da solo a quella precedente.</li>\n<li><b>🔏 Aggiornamenti firmati:</b> ogni versione è firmata con la chiave segreta dello sviluppatore. Motion Watch installa solo versioni con una firma valida – anche chi entra nell\'account GitHub non può mandare un programma estraneo sui dispositivi. La lista mostra «🔏 firmata» o «⚠ non firmata». Versioni proprie non firmate solo con «Accettare anche versioni non firmate».</li>\n<li><b>Repository GitHub privato:</b> inserire anche la <b>chiave GitHub (token)</b> sotto Aggiornamenti – crearla su github.com sotto Settings → Developer settings → Fine-grained tokens, solo per questo repository, permesso «Contents: Read-only». La chiave viene inviata solo a GitHub e mai mostrata.</li>\n<li><b>Aggiornamenti:</b> inserire la sorgente (indirizzo di un versions.json o una cartella / chiavetta USB), «Cercare versioni», scegliere una versione. Le versioni più vecchie restano per tornare indietro.</li></ul>\n</section>\n\n<section id="window" data-icon="🖥"><h2>Finestra sul Pi</h2>\n<p>La finestra sul Pi assomiglia alla pagina web: schede Live / Meteo e sistema / Registro, joystick rotondo, interruttori rapidi, ricerca nelle impostazioni.</p>\n<table><tr><td>Doppio clic sul video</td><td>solo video</td></tr><tr><td>⇱ / F11 / Esc</td><td>schermo intero / indietro</td></tr>\n<tr><td>Ctrl+B</td><td>pannello impostazioni sì / no</td></tr><tr><td>Ctrl+T / Ctrl+L</td><td>chiaro/scuro, lingua successiva</td></tr>\n<tr><td>Frecce / Home</td><td>muovere la telecamera / centrare</td></tr><tr><td>Clic destro sul video</td><td>mostrare / nascondere campi</td></tr></table>\n<p>Le impostazioni sono raggruppate come sulla pagina web. Il pulsante «?» apre questa pagina.</p>\n</section>\n\n<section id="tips" data-icon="🧭" class="tips"><h2>Consigli e trucchi</h2>\n<ul>\n<li>🔍 <b>Trovare un\'impostazione:</b> scrivere nel campo di ricerca in alto nelle impostazioni (p. es. «password», «sirena», «Wi-Fi») – tutto il resto scompare, i risultati ricevono una cornice blu. ✕ o Esc mostra di nuovo tutto.</li>\n<li>💬 <b>Feedback allo sviluppatore:</b> Sistema → «Feedback allo sviluppatore» (finestra: Configurazione). Idee, errori, complimenti – anonimo, senza mittente. Senza internet il messaggio aspetta e parte più tardi.</li>\n<li>🎞 <b>Marcature nelle registrazioni:</b> Registrazione → «Marcature nelle registrazioni e immagini d\'allarme»: sottili segni d\'angolo (predefinito, il viso resta libero), nessuno, o riquadri rossi come l\'immagine live.</li>\n<li>⚡ <b>Interruttori rapidi accanto allo stick</b> (verde = acceso): 🌡 immagine termica sopra l\'immagine live, 🏷 marcare oggetti, 💡 luce bianca, 🔴 luce IR, 🎧 ascoltare, ⚡ per ogni relè (acceso / automatico), 🎯 seguire persona, 🔄 pattuglia, ⏺ registrare ora (max. 10 min, rosso durante la registrazione, toccare di nuovo = stop), 📷 foto nelle registrazioni. Grigio = non collegato.</li>\n<li>🕹 <b>Joystick a schermo intero</b> (cellulare, tablet, PC): l\'immagine riempie tutto lo schermo, lo stick fluttua trasparente in basso a destra. Dopo 3 s senza tocco diventa pallido, al tocco di nuovo ben visibile. Accanto: ◎ centro, 🎧 ascoltare; ⇆ in alto accanto a ✕ mette lo stick dall\'altro lato.</li>\n<li>🟢 <b>Panoramica nelle impostazioni:</b> la freccia di un tema è verde finché la sua funzione principale è accesa (p. es. rapporto notturno, timelapse, backup), altrimenti grigia. La freccia di un gruppo è verde quando almeno un tema al suo interno è acceso. Nella finestra sul Pi: freccia verde.</li>\n<li>📱 <b>SMS tramite chiavetta LTE</b> (Notifiche → SMS): con una chiavetta USB LTE e una scheda SIM l\'allarme (persona, sabotaggio, corpo caldo, rumore) arriva via SMS – di default solo quando non c\'è internet. Funziona con ModemManager (<code>sudo apt install modemmanager</code>), comandi AT o chiavette Huawei HiLink (192.168.8.1). Pausa e limite giornaliero proteggono dai costi; «Inviare un SMS di prova» verifica tutto.</li>\n<li>🎬 <b>Modalità demo:</b> <code>python3 webcam_bewegung_X.py --demo</code> (per una demo online aggiungere <code>--headless --port 8080</code>) mostra una scena di campeggio disegnata dove ogni tanto passa una persona, un cane o un orso – allarme, registrazione, diario e dissuasione reagiscono come nella realtà. Impostazioni proprie (nella cartella temporanea), «DEMO» nell\'intestazione, sul computer non viene cambiato nulla.</li>\n<li>🏠 <b>MQTT / Home Assistant</b> (Sistema e rete): inserire l\'indirizzo del broker (p. es. il componente aggiuntivo Mosquitto di Home Assistant), utente e password, «MQTT acceso». Home Assistant mostra poi da solo Motion Watch come dispositivo: pannello d\'allarme (inserire/disinserire), persona, movimento, animale, registrazione, batteria, temperatura e l\'ultima immagine d\'allarme. Comandi anche tramite <code>motionwatch/&lt;id&gt;/cmd/arm</code> (ARM_AWAY / DISARM), <code>…/cmd/light_white</code> (on/off/auto).</li>\n<li>🛰 <b>Più dispositivi:</b> scheda Telecamere → «Altri dispositivi Motion Watch»: immagine, inserito/allarme, batteria e ultimo evento di ogni dispositivo, inserire/disinserire uno o tutti insieme. «Cercare nella rete» trova i dispositivi nella stessa rete e tramite Tailscale; i dispositivi con password la chiedono una volta.</li>\n<li>⤴ <b>Condividere con logo:</b> immagini del diario, istantanee, registrazioni e timelapse (pulsante ⤴ nel lettore) e l\'immagine del rapporto notturno ricevono una discreta striscia «Motion Watch» con la data in basso a destra. Disattivabile sotto Registrazione.</li>\n<li>🦊 <b>Dissuasione mirata</b> (Luce e suono → Dissuasione): una reazione propria per persona, animale grande (orso, mucca, cavallo …), animale piccolo (gatto, cane, uccello) e corpo caldo (termocamera) – suono (fischio acuto, scoppi/battiti o suoni propri) e/o la luce bianca lampeggiante. Durata e pausa regolabili; «anche se disinserito» p. es. per il giardino. Gli animali richiedono il rilevamento IA.</li>\n<li>🚨 <b>Protezione antifurto</b> (Allarme e campeggio): con il sistema inserito una notifica push urgente con immagine e la sirena non appena la telecamera viene <b>coperta o girata</b>, il dispositivo viene <b>spostato o rovesciato</b> (sensore di movimento MPU-6050 su I2C 0x68, circa 3 $, facoltativo) o la <b>corrente viene staccata</b> (con la batteria UPS). Mentre la testa della telecamera si muove da sola (pattuglia, inseguimento, joystick) il controllo dell\'immagine impara di nuovo.</li>\n<li>☁️ <b>Backup delle registrazioni d\'allarme:</b> Registrazioni e timelapse → Backup. Le registrazioni d\'allarme finite (inserito o con una persona) vanno automaticamente in una cartella WebDAV (Nextcloud: <code>https://…/remote.php/dav/files/UTENTE/MotionWatch/</code> con una password per app, NAS Synology/QNAP, molti cloud), in una cartella (chiavetta USB, NAS montato) o come video su Telegram. Una sottocartella al giorno. «Testare il backup» verifica le impostazioni.</li>\n<li>🧭 <b>Assistente di configurazione:</b> appare la prima volta che si apre la pagina – lingua e nome del dispositivo, notifiche push (argomento ntfy con codice QR e messaggio di prova), password web, codici QR per altri dispositivi. In ogni momento sotto Sistema → «Assistente di configurazione». «Guida rapida (QR)» dà una scheda da stampare con codici QR per il Wi-Fi proprio del Pi e la pagina. Nella finestra sul Pi: Configurazione → «Codice QR per il cellulare».</li>\n<li>🔗 <b>Una sola icona a casa e in viaggio:</b> aggiungere la pagina alla schermata Home dall\'indirizzo Tailscale (p. es. <code>http://NOME-DEL-PI:5000</code> o l\'indirizzo 100.… mostrato nell\'app Tailscale). A casa Tailscale si collega direttamente tramite il Wi-Fi, in viaggio tramite internet – l\'app Tailscale deve essere attiva. Solo sul Wi-Fi proprio del Pi senza internet usare l\'indirizzo locale (p. es. <code>http://10.42.0.1:5000</code>). «🌐 Remoto» in alto indica quando sei connesso tramite Tailscale.</li>\n<li>📱 <b>Come un\'app:</b> mettere Motion Watch sulla schermata Home (iPhone: Condividi → Aggiungi alla schermata Home). Allora anche l\'iPhone ha un vero schermo intero. In questa modalità il pulsante <b>⟳</b> (in alto a destra) ricarica la pagina; dopo un aggiornamento appare in basso una barra «Ricarica».</li>\n<li>🦊 <b>Raccogliere foto di animali:</b> lasciare acceso il rilevamento IA, puntare la telecamera su una mangiatoia o un passaggio di selvaggina – al mattino guardare il <i>Diario</i>.</li>\n<li>🌙 <b>Provare prima della prima notte:</b> inserire, attraversare l\'immagine una volta e verificare: la notifica arriva, la registrazione c\'è, sirena / luce reagiscono.</li>\n<li>🌳 <b>Falsi allarmi dai rami:</b> disegnare alberi e cespugli come zone «Ignorare» e aumentare un po\' la dimensione minima. Aiuta anche il rilevamento automatico del vento.</li>\n<li>🐗 <b>Spaventare gli animali:</b> sirena «in caso di allarme» più luce bianca «in caso di allarme, solo di notte». Per il tuo sonno tenere la sirena breve (5–10 s).</li>\n<li>🔴 <b>Infrarosso e riflessi:</b> non puntare la luce IR attraverso una finestra o vicino a una parete della tenda – abbaglia la telecamera.</li>\n<li>🔇 <b>Sorveglianza silenziosa:</b> sirena spenta, solo notifiche push e la campanella nel browser – al campeggio non si sveglia nessuno.</li>\n<li>🔋 <b>Risparmiare energia:</b> profilo campeggio (include il risparmio energetico), larghezza di streaming più piccola, ascoltare solo brevemente. Usare un power bank da 5 V / 3 A o più; in caso di «sottotensione» cambiare cavo o power bank.</li>\n<li>📶 <b>Pochi dati mobili:</b> l\'immagine del preallarme resta piccola (640 px); aprire l\'immagine live solo quando serve (il Pi invia solo mentre qualcuno guarda).</li>\n<li>🎤 <b>Microfono:</b> un pezzo di gommapiuma come protezione dal vento evita falsi allarmi. I servo non disturbano – l\'allarme rumore si ferma mentre si muovono.</li>\n<li>🔊 <b>Gli altoparlanti Bluetooth</b> spesso si spengono da soli dopo un po\'. Il Pi li ricollega quando tornano – per la notte sceglierne uno senza spegnimento automatico.</li>\n<li>🧭 <b>Puntare la telecamera:</b> trovare la posizione migliore con lo stick e usarla come punto di passaggio o posizione del timelapse.</li>\n<li>🕒 <b>Ora sbagliata</b> nelle registrazioni: aprire una volta la pagina sul cellulare – il Pi prende l\'ora dal cellulare.</li>\n<li>💾 <b>Registrazioni importanti:</b> marcarle con ⭐ – non vengono mai cancellate automaticamente.</li>\n<li>🔁 <b>Provare una nuova versione</b> senza rischi: sotto Aggiornamenti puoi sempre tornare indietro.</li>\n<li>📱 <b>Campanella nel browser</b> solo su un dispositivo che resta aperto di notte – altrimenti suona tutto.</li>\n</ul></section>\n\n<section id="privacy" data-icon="🔏"><h2>Privacy e sicurezza</h2>\n<p><b>Principio:</b> Motion Watch lavora sul dispositivo stesso. Immagini, registrazioni, audio e impostazioni restano sulla scheda di memoria – non c\'è un cloud del produttore e nessun account.</p>\n<ul>\n<li><b>Cosa viene salvato sul dispositivo:</b> registrazioni e istantanee (cartella «recordings», le vecchie vengono cancellate quando la scheda è piena – i preferiti mai), diario animali (immagini), registro eventi (60 giorni, regolabile), impostazioni. La password web viene salvata solo come hash sicuro.</li>\n<li><b>Cosa esce dal dispositivo solo se lo attivi:</b> notifiche push (ntfy / Telegram / webhook – con immagine, tramite i loro server), web push (tramite Apple / Google / Mozilla, crittografato), backup dei clip (il tuo WebDAV / NAS / Telegram), MQTT (il tuo broker), SMS (rete mobile), aggiornamenti (GitHub; vengono installate solo versioni firmate), accesso remoto (Tailscale, crittografato).</li>\n<li><b>Audio:</b> microfono, ascolto e audio nelle registrazioni sono spenti di default. Registrare conversazioni in molti paesi è permesso solo con il consenso.</li>\n<li><b>Zone privacy</b> (scheda Zone): aree come il giardino del vicino, un sentiero o finestre vengono dipinte di nero – nell\'immagine live, nelle registrazioni e nelle immagini.</li>\n<li><b>I link ospite</b> mostrano solo l\'immagine live, scadono e possono essere invalidati in qualsiasi momento.</li>\n<li><b>Protezione dagli estranei:</b> password web (alla configurazione), blocco dopo 8 tentativi errati, modalità operatore con PIN, aggiornamenti firmati, accesso remoto solo tramite Tailscale.</li>\n</ul>\n<p><b>Aspetti legali (Svizzera: LPD, UE: GDPR – nessuna consulenza legale):</b> filmare solo la propria piazzola. Suolo pubblico, sentieri e proprietà altrui non devono stare nell\'immagine (altrimenti usare zone privacy). Esporre un cartello («videosorveglianza») e informare compagni di viaggio e ospiti. Nei campeggi vale anche il regolamento del campeggio. Conservare le registrazioni solo per il tempo necessario.</p>\n</section>\n<section id="faq" data-icon="🛠"><h2>Risoluzione dei problemi</h2>\n<dl>\n<dt>La pagina non si apre</dt><dd>Il cellulare è nel Wi-Fi giusto (Wi-Fi proprio del Pi o la stessa rete)? Indirizzo con <code>:5000</code>? Nel Wi-Fi proprio sempre <code>http://10.42.0.1:5000</code>.</dd>\n<dt>La pagina mostra una versione vecchia</dt><dd>La versione è indicata in alto a sinistra. Se gira ancora una copia vecchia (p. es. dall\'avvio automatico), avviare a mano il nuovo programma – prende il controllo. Poi ricaricare la pagina.</dd>\n<dt>Nessuna immagine</dt><dd><i>Telecamera e servo → Sorgente video</i> → «Cercare telecamere». Telecamera Pi: controllare il cavo piatto.</dd>\n<dt>Le notifiche push non arrivano</dt><dd>«Inviare un messaggio di prova» e leggere lo stato. ntfy: lo stesso server nell\'app e nell\'indirizzo. Senza internet (solo Wi-Fi proprio) non si possono inviare notifiche push – usare la campanella nel browser.</dd>\n<dt>L\'avvio automatico non parte</dt><dd>Terminale: <code>systemctl --user status motionwatch</code>. Eseguire una volta <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (avvio senza login).</dd>\n<dt>Immagine nera di notte, ma i movimenti vengono marcati</dt><dd>La scena è troppo buia per la telecamera normale. «Al buio schiarire anche l\'immagine visibile» (Rilevamento → Poca luce) la schiarisce il più possibile – al buio totale aiuta solo la luce: lampada infrarossa + telecamera NoIR (invisibile) o la lampada bianca.</dd>\n<dt>Motion Watch non parte dopo un blackout</dt><dd>Spegnere e riaccendere l\'avvio automatico (Allarme e campeggio). Se appare un\'indicazione con «enable-linger», eseguire una volta quel comando nel terminale.</dd>\n<dt>Molti falsi allarmi</dt><dd>Disegnare zone, abbassare la sensibilità, aumentare la dimensione minima, attivare la «conferma IA».</dd>\n<dt>I servo tremano o vanno a fine corsa</dt><dd>Usare il PCA9685 (driver servo), ridurre i limiti in gradi, alimentazione 5 V separata per i servo.</dd>\n<dt>«Sottotensione»</dt><dd>Cavo USB-C più corto / più spesso o un power bank più potente. La sottotensione può causare blocchi e registrazioni rovinate.</dd>\n<dt>Nessun audio via Bluetooth</dt><dd>Altoparlante acceso e a portata? Toccare di nuovo «Connetti». Il programma deve girare come utente normale (non con sudo).</dd>\n<dt>Parlare non funziona</dt><dd>Solo sulla pagina sicura <code>https://…:5001</code>. Confermare una volta l\'avviso del certificato e consentire il microfono.</dd>\n</dl></section>\n\n<section id="setup" data-icon="🧰"><h2>Installazione sul Raspberry Pi</h2>\n<pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils\npip install opencv-python numpy pillow flask psutil</pre>\n<ul><li>Attivare I2C e SPI (<code>sudo raspi-config</code>); in <code>/boot/firmware/config.txt</code> sotto <code>[all]</code>: <code>dtoverlay=spi0-0cs</code>.</li>\n<li>Una volta: <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (Wi-Fi, ora, avvio automatico, spegnimento, watchdog).</li>\n<li>Avvio: <code>python3 webcam_bewegung_X.py</code> (finestra + pagina web) o <code>--headless</code> (solo pagina web).</li>\n<li>Impostazioni, registro, suoni: <code>~/.config/motionwatch/</code> – restano per le nuove versioni.</li></ul>\n</section>\n</div>'
+HELP_X['rm'] = '<div lang="rm"><section id="start" data-icon="🚀"><h2>Start svelt: las emprimas 10 minutas</h2>\n<ol>\n<li><b>Attatgar il current.</b> Suenter var ina minuta è Motion Watch pront (cun il start automatic cumenza el sez).</li>\n<li><b>Colliar il telefonin.</b> U ch\'il Pi è en il medem WLAN sco il telefonin (p.ex. il hotspot dal telefonin), u che ti ta collias cun l\'<b>agen WLAN dal Pi</b> (num «MotionWatch», il pled-clav stat sut <i>Alarm e camping → Interrupturs</i>).</li>\n<li><b>Avrir la pagina:</b> en l\'agen WLAN <code>http://10.42.0.1:5000</code>, uschiglio <code>http://&lt;adressa-dal-pi&gt;:5000</code>. L\'adressa vegn era sco avis push cur ch\'il Pi sa collia cun ina rait.</li>\n<li><b>Definir in pled-clav.</b> La pagina al dumonda tar l\'emprima visita; lura al dumonda il navigatur ina giada (num d\'utilisader tenor giavisch).</li>\n<li><b>Installar ils avis push</b> (<i>Avis</i>) ed als controllar cun «Trametter in messadi da test».</li>\n<li><b>Dissegnar zonas</b> (register <i>Zonas</i>): territoris ch\'èn d\'ignorar (via, plantas en il vent).</li>\n<li><b>Armar:</b> smatgar 🛡 sisum u <i>Alarm e camping → Interrupturs → Armar</i>. Il dumbrar enavos ta dat temp da bandunar il territori.</li>\n</ol>\n<div class="tip">💡 <b>Cussegl:</b> memorisescha la pagina sco segnapagina u sco icona sin il visur da partenza dal telefonin («Sin il visur da partenza»).</div>\n</section>\n\n<section id="live" data-icon="📺"><h2>La pagina live</h2>\n<h3>Chau-pagina</h3>\n<p>Sisum a sanestra: l\'icona da l\'app, il num e la <b>versiun</b>. Pitschens badges mussan mo quai ch\'è impurtant ussa; quai ch\'è en ses stadi normal (nagina plievgia, glisch ok …) na vegn betg mussà.</p>\n<table><tr><td>🛡 Armà / disarmà</td><td>Alarms activs u betg. Smatgar per midar.</td></tr>\n<tr><td>Persunas · ● REG</td><td>Quai che la camera vesa ussa, sch\'ella registrescha.</td></tr>\n<tr><td>⛺ 🔋 ⏱ 💡 🌡 🔄 📡</td><td>Funcziuns activas: camping, spargnar energia, timelapse, glisch, termic, patrulla, agen WLAN.</td></tr>\n<tr><td>⚠ ⚡ 💾</td><td>Avertiments: nagin pled-clav, sutatensiun, memoria bunamain plaina.</td></tr>\n<tr><td>CPU · FPS</td><td>Chargia e temperatura dal Pi, maletgs per secunda.</td></tr></table>\n<p>A dretga: 🔔 tun d\'alarm en il navigatur, ☰ vista (mussar / zuppentar badges), ▶ panela da parameters, ⛶ entir maletg (mo video, ✕ sisum a dretga per turnar – funcziuna era sin iPhone), ☀ cler/stgir, buttun da lingua (Deutsch, Français, Italiano, Rumantsch, English), ▲ zuppentar il chau-pagina.</p>\n<h3>Maletg e cumond</h3>\n<ul><li><b>Stick:</b> trair cun il det – pli lunsch, pli spert. Il pitschen anè mussa nua che la camera guarda. «Center» va en il mez. ⇆ mida stick e buttuns (sanesters / dretgers).</li>\n<li>Il cumond manual fa pausa cun il suandar e la patrulla per in pèr secundas.</li>\n<li><b>Glischs:</b> alva ed infracotschna Deactivà / Activ / Auto.</li>\n<li><b>Relais:</b> mintga relais Deactivà / Activ / Auto cun in activader.</li>\n<li><b>🎧 Tadlar</b> e <b>🎙 Tegnair smatgà per discurrer</b> cumparan cur ch\'in microfon / autpledader è tschernì.</li>\n<li>Dubel clic sin il maletg: mo video; anc in dubel clic: enavos.</li>\n<li>Cur che ti scrollas engiu sin il telefonin, resta in <b>pitschen maletg live</b> en in chantun; smatgar sin el maina puspè ensi.</li></ul>\n</section>\n\n<section id="alarm" data-icon="🛡"><h2>Alarm e camping</h2>\n<ul><li><b>Armà / disarmà:</b> mo sch\'il sistem è armà datti alarms, avis push, sirena e registraziuns. Il dumbrar enavos ta dat temp da partir; «Armar immediat» al sigla.</li>\n<li><b>Profil camping:</b> in sulet interruptur per tut: agen WLAN activ, la camera resta nua ch\'ella è, alarms, registraziuns e spargnar energia activs, armà suenter il dumbrar enavos. Deactivar restituescha tes parameters.</li>\n<li><b>Agen WLAN (hotspot):</b> il Pi fa ses agen WLAN – funcziuna senza rait mobila. Num e pled-clav sut <i>Protecziun e rait</i>.</li>\n<li><b>Rait:</b> «Automatic» emprova l\'emprim raits enconuschentas (p.ex. il hotspot dal telefonin: internet + avis push), uschiglio activescha el l\'agen WLAN.</li>\n<li><b>Start automatic:</b> Motion Watch cumenza sez tar l\'enviar, senza visur.</li>\n<li><b>Spargnar energia:</b> paucs maletgs per secunda uschè ditg che tut è quiet – plaina sveltezza immediat tar l\'emprim moviment, ina canera u cur ch\'insatgi guarda.</li>\n<li><b>🔋 Battaria UPS (Waveshare, 2 × 18650):</b> vegn identifitgada sezza (I2C 0x42). Il chau-pagina mussa 🔌 cun current da la rait u 🔋 % ed il temp restant cun battaria. In avis push tar ina interrupziun da current e cur ch\'il current è puspè qua, in avertiment tar 20 %, in stizzar endretg tar 8 % (reglabel). Sut Battaria endatar la capacitad d\'ina cella (p.ex. 3450 mAh).</li>\n<li><b>🔋 Battaria:</b> endatar la capacitad da la powerbank (mAh, sco stampà), smatgar «La battaria è ussa plaina» suenter chargiar. Il chau-pagina mussa lura p.ex. «🔋 62 % · 14 h». Tar 15 % vegn in avis push. I sa tracta d\'ina stimaziun tenor il consum dal Pi (powerbanks na communitgeschan betg lur chargia).</li>\n<li><b>Ura dal telefonin:</b> senza internet prenda il Pi l\'ura dal telefonin, uschia han las registraziuns l\'ura correcta.</li></ul>\n</section>\n\n<section id="notify" data-icon="🔔"><h2>Avis</h2>\n<ul><li><b>📲 Web push (senza app):</b> Avis → «Activar sin quest apparat». Dovra https: sut Avis «Activar https via Tailscale» (permetter ina giada «HTTPS Certificates» en la pagina d\'administraziun da Tailscale), lura avrir la pagina via <code>https://NUM.….ts.net/</code>. iPhone / iPad: agiuntar questa pagina https al visur da partenza ed al activar da là. Funcziuna ultra da ntfy / Telegram.</li>\n<li><b>ntfy</b> (recumandà): installar l\'app, abunar in tema, endatar l\'adressa (p.ex. <code>https://ntfy-me.com/&lt;tes-tema&gt;</code>) sco «URL webhook / ntfy», tip «ntfy». L\'app sto duvrar il medem server sco l\'adressa.</li>\n<li><b>Telegram</b> u in <b>webhook</b> (p.ex. Home Assistant) funcziunan era.</li>\n<li><b>Prealarm:</b> in curt messadi cun in pitschen maletg tar l\'emprim moviment, avant ch\'ina persuna è confermada.</li>\n<li><b>Texts dals messadis:</b> agens titels e texts cun ils marcaplazs {name} {time} {date} {count} {camera} {link} {db}. Vid = text standard.</li>\n<li><b>«Adressa da questa pagina per colliaziuns»:</b> smatgar sin il messadi avra la pagina.</li>\n<li><b>🔔 Tun d\'alarm en il navigatur:</b> smatgar la sain sisum e «Tun activ». La pagina sto restar averta (era en il fund).</li></ul>\n<div class="tip">💡 <b>Cussegl:</b> suenter mintga midada: «Trametter in messadi da test». Sch\'i na arriva nagut, stat il motiv sut «status» ed en il protocol dad eveniments.</div>\n</section>\n\n<section id="detect" data-icon="🎯"><h2>Identificaziun</h2>\n<ul><li>La <b>sensibilitad</b> e la <b>grondezza min. d\'object</b> èn ils parameters ils pli impurtants cunter fals alarms.</li>\n<li>L\'<b>identificaziun IA</b> renconuscha persunas, animals e vehichels. «Persunas en moviment: conferma IA necessaria» = main fals alarms, in zic pli plaun.</li>\n<li><b>Zonas</b> (register <i>Zonas</i>): «Ignorar» per plantas, via, paraid da la tenda; «Mo qua» cur ch\'in sulet territori quinta.</li>\n<li><b>Zona da privadad</b> (register <i>Zonas</i>): il territori vegn picturà nair directamain suenter la camera – en il maletg live, en registraziuns, fotos, timelapse e per giasts. Per la tenda dals vischins, ina senda, fanestras d\'auters. Impurtant per la protecziun da datas: betg filmar permanentamain persunas estras e terren public.</li>\n<li>Plievgia, vent, sumbrivas e pauca glisch vegnan identifitgads e tractads automaticamain (parameters fins).</li>\n<li>La <b>reglaziun automatica</b> emprenda la scena; «Calibrar da nov» suenter grondas midadas (scena vida).</li></ul>\n</section>\n\n<section id="camera" data-icon="📷"><h2>Camera e servos</h2>\n<ul><li><b>Limitas:</b> quant lunsch che la camera dastga sa vulvér / s\'inclinar (grads dal center) – protegia cabels e chaschetta.</li>\n<li><b>Suandar la persuna:</b> la camera suonda ina persuna identifitgada.</li>\n<li><b>Patrulla:</b> la camera sa mova tranter puncts da passagi (punct = posiziun actuala, panorama ed inclinaziun, «+ Punct da passagi»; mussà p.ex. sco 24/60 = 24 % sanester–dretg, 60 % giu–si). Il buttun 🔄 va vinavant cun mintga smatg: deactivà → tschent e enavos (1-2-3-2-1) → runda (1-2-3-1) → deactivà. Ils puncts cumparan numerads sin il fund dal stick.</li>\n<li><b>Funtauna da video:</b> camera Pi, USB u camera da rait; ulteriuras cameras en il register <i>Cameras</i>.</li>\n<li><b>Driver dals servos</b> (parameters fins): PCA9685, adressa, chanals.</li></ul>\n</section>\n\n<section id="thermal" data-icon="🌡"><h2>Camera termica</h2>\n<ul><li>Tscherner la camera termica (Thermal-90 u USB), activar «Surponer il maletg termic».</li>\n<li><b>Drizzar:</b> cun «zoom» e «spustar» uschia ch\'ina persuna chauda en il maletg termic è exact sin la persuna en il maletg da la camera.</li>\n<li><b>Alarm termic:</b> in corp chaud en la zona; «mo corps chauds che sa movan» ignorescha crappa chauda e motors.</li>\n<li>Il status mussa la temperatura la pli auta mesirada.</li></ul>\n</section>\n\n<section id="lightsound" data-icon="💡"><h2>Glisch e tun</h2>\n<h3>Glischs</h3>\n<ul><li>Alva ed infracotschna: Deactivà / Activ / Auto. «Auto» = tar in alarm mo la notg, tar in alarm di e notg, u l\'entira notg (a partir da la rendida dal sulegl, calculà tenor latitudo / longitudo sut <i>Installaziun</i>).</li>\n<li><b>Maletg:</b> «grisch la notg» è ideal cun la camera NoIR.</li></ul>\n<h3>Microfon</h3>\n<ul><li>Tscherner l\'apparat, observar il nivel. <b>Alarm da canera</b>: pli ferm ch\'il fund per X dB durant almain Y secundas.</li>\n<li><b>🎧 Tadlar</b>: tun live sin il telefonin, volumen per apparat.</li>\n<li><b>Tun en las registraziuns</b>: ils videos vegnan memorisads cun tun.</li></ul>\n<h3>Autpledader</h3>\n<ul><li>Integrà (USB) u <b>Bluetooth</b>: «Tschertgar autpledaders Bluetooth» (autpledader en il modus d\'accuppiar), lura «Colliar».</li>\n<li><b>Sirena tar in alarm</b> (mo sch\'armà), tun, volumen, durada. Agens tuns (.wav/.mp3) en <code>~/.config/motionwatch/sounds</code>.</li>\n<li><b>🎙 Discurrer</b>: tegnair smatgà il buttun. Dovra la pagina segira <code>https://…:5001</code> (telefonins permettan il microfon mo là).</li></ul>\n</section>\n\n<section id="rec" data-icon="🎬"><h2>Registraziuns e timelapse</h2>\n<ul><li>Tar in alarm vegnan memorisads videos (cun preregistraziun e tun) e fotografias.</li>\n<li>Register <i>Registraziuns</i>: guardar, filtrar, ⭐ favurits (mai stizzads automaticamain), chargiar giu plirs sco ZIP, statisticas per di.</li>\n<li><b>Lieus e charta:</b> fotos e videos cun posiziun GPS (telefonin u lieu fix) survegnan in lieu. Il filter «Lieu» mussa mo in lieu (u «Senza lieu»). 🗺 <i>Charta</i> mussa tut ils lieus cun il dumber; smatgar in punct → prevista, «Mussar mo quest lieu», ✎ renumnar. Il fund da la charta ed ils nums vegnan dad OpenStreetMap (deactivabel sut <i>Configuraziuns → Setup</i>).</li>\n<li>Las registraziuns las pli veglias vegnan stizzadas cur che l\'ordinatur è memia grond u la carta da memoria bunamain plaina.</li>\n<li><b>Timelapse:</b> ina foto mintga N minutas d\'ina posiziun fixa, lura in video («Crear il video»). In alarm ha adina la precedenza. Ils videos da timelapse cumparan era sut <i>Registraziuns</i> (marcads cun ⏱); il tip «Timelapse» mussa là era tut las singulas fotos.</li></ul>\n</section>\n\n<section id="diary" data-icon="🦊"><h2>Diari, rapport da notg e giasts</h2>\n<ul><li><b>Diari d\'animals</b> (register <i>Diari</i>): il meglier maletg da mintga visita d\'in animal vegn memorisà automaticamain, cun spezia, data e durada. Filtrar tenor spezia, ★ = tegnair, ⤴ parter (p.ex. WhatsApp), ⤓ chargiar giu. Inscripziuns pli veglias vegnan stizzadas suenter il temp tschernì (★ mai).</li>\n<li>L\'IA enconuscha utschè, giat, chaun, chaval, nursa, vatga, urs (ed in pèr exotics). Ina vulp cumpara per il solit sco «chaun» u «giat», in portg selvadi savens sco «nursa» u «urs».</li>\n<li><b>Rapport da notg:</b> mintga damaun (reglabel, standard a las 7) in avis push: quai ch\'è capità la notg (a partir da las 20) – persunas, animals, caneras, termic – cun il meglier maletg. «Trametter ussa» per empruvar. Parameters sut <i>Avis → Rapport da notg</i>.</li>\n<li><b>Access per giasts</b> (<i>Sistem e rait</i>): «Crear ina nova colliaziun», tscherner quant ditg (2 h fin illimità), parter la colliaziun. Giasts vesan mo il maletg live (cun las zonas da privadad), senza pled-clav, e na pon midar nagut. «Terminar l\'access per giasts» blochescha immediat la colliaziun. Il giast sto cuntanscher il Pi: medem WLAN / hotspot u via Tailscale.</li>\n<li><b>Icona da l\'app:</b> iPhone: en Safari <i>Parter → Sin il visur da partenza</i>. Android: menu da Chrome <i>⋮ → Agiuntar al visur da partenza</i>. Motion Watch s\'avra lura sco ina app, senza trav dal navigatur.</li></ul>\n</section>\n\n<section id="relay" data-icon="⚡"><h2>Relais e plan da temp</h2>\n<ul><li><b>Relais:</b> Deactivà / Activ / Auto. Auto = activ uschè ditg che l\'activader vala (persuna, moviment, prealarm, corp chaud, canera, animal …) plus il temp da tegnair.</li>\n<li><b>Lampa d\'avertiment per l\'access a distanza:</b> relais sin Auto, activader «access a distanza». Ella è activa uschè ditg ch\'insatgi guarda via Tailscale – era sch\'il sistem è disarmà. Ina pitschna LED (cun ina resistenza da var 330 Ω) po ir directamain sin il GPIO, ina lampa pli gronda via in modul da relais.</li>\n<li><b>Plan da temp:</b> activescha u deactivescha funcziuns a tschertas uras, p.ex. armà la notg, spargnar energia il di. Era «tar la rendida dal sulegl» e datas d\'excepziun.</li></ul>\n</section>\n\n<section id="system" data-icon="⚙"><h2>Sistem e rait</h2>\n<ul><li><b>Sistem:</b> CPU, temperatura, alimentaziun (tensiun, sutatensiun), memoria libra, versiun.</li>\n<li><b>📜 Protocol dad eveniments:</b> tut vegn scrit immediat sin la carta da memoria (era ina lingia da status mintga 15 minutas cun CPU, temperatura, WLAN, memoria, battaria). «Entir protocol ed archiv» mussa oz e mintga di precedent sco atgna datoteca (cumprimida, conservada 60 dis, reglabel sut Installaziun) – filtrar, tschertgar, chargiar giu.</li>\n<li><b>🔐 Modus d\'operatur:</b> «Modus d\'operatur (bloccar ils parameters)» sut Sistem – definir in PIN (4–8 cifras), lura èn tut ils parameters bloccads. Restan utilisabels: armar/disarmar, profil camping, ils interrupturs principals (identificaziun, registraziun, avis, spargnar energia, patrulla, timelapse …), glischs, camera, tadlar/discurrer, guardar registraziuns. «Debloccar» cun il PIN; suenter 5 PINs fallads ina pausa da 5 minutas.</li>\n<li><b>⏸ Far pausa cun il program:</b> tscherner quant ditg (5 minutas fin 12 uras) – Motion Watch vegn stizzà immediat (ina registraziun vegn l\'emprim terminada) e cumenza puspè sez. Intant mussa la pagina in dumbrar enavos e «Cumenzar ussa». Durant la pausa na datti nagina survegliaziun e nagins alarms.</li>\n<li><b>⏻ Stizzar / ↻ aviar da nov il Pi:</b> ina registraziun en lavur vegn l\'emprim terminada. Separar il current pir cur che la LED verda resta stgira.</li>\n<li><b>🔒 Pled-clav web</b>, <b>⬇ segirar / ⬆ chargiar ils parameters</b> (la datoteca cuntegna tias datas d\'access – la tegnair privata).</li>\n<li><b>WLAN:</b> tschertgar raits e sa colliar, raits memorisadas.</li>\n<li><b>🌐 Access a distanza (Tailscale):</b> Sistem mussa sche Tailscale è collià, l\'adressa per en viadi (http://100.…:5000/) e tgi che guarda gist da dador. Il chau-pagina mussa lura «🌐 A distanza: num da l\'apparat». Avis push facultativ (Avis). Installaziun: <code>curl -fsSL https://tailscale.com/install.sh | sh</code>, lura <code>sudo tailscale up</code>, sin il telefonin l\'app Tailscale cun il medem conto.</li>\n<li><b>Stream web:</b> qualitad e ladezza dal maletg – pli pitschen = main datas via il hotspot dal telefonin.</li>\n<li><b>Installaziun:</b> lieu (levada / rendida dal sulegl), preschientscha, avertiments (temperatura, memoria).</li>\n<li><b>Actualisaziun automatica:</b> activar «Installar automaticamain novas versiuns» e tscherner l\'ura (standard a las 12). Ella vegn installada mo cur ch\'i na capita nagut (disarmà, nagina registraziun, nagina persuna – «era sch\'armà» la permetta sch\'il sistem è armà). Sche la nova versiun na cumenza betg trais giadas, turna Motion Watch sez a la versiun precedenta.</li>\n<li><b>🔏 Actualisaziuns signadas:</b> mintga versiun è signada cun la clav secreta dal sviluppader. Motion Watch installescha mo versiuns cun ina signatura valaivla – gnanc insatgi che rumpa en il conto GitHub po metter in program ester sin ils apparats. La glista mussa «🔏 signada» u «⚠ betg signada». Atgnas versiuns betg signadas mo cun «Acceptar era versiuns betg signadas».</li>\n<li><b>Repository GitHub privat:</b> endatar era la <b>clav GitHub (token)</b> sut Actualisaziuns – la crear sin github.com sut Settings → Developer settings → Fine-grained tokens, mo per quest repository, permissiun «Contents: Read-only». La clav vegn tramessa mo a GitHub e mai mussada.</li>\n<li><b>Actualisaziuns:</b> endatar la funtauna (adressa d\'in versions.json u in ordinatur / stick USB), «Tschertgar versiuns», tscherner ina versiun. Versiuns pli veglias restan per turnar enavos.</li></ul>\n</section>\n\n<section id="window" data-icon="🖥"><h2>Fanestra sin il Pi</h2>\n<p>La fanestra sin il Pi sumeglia la pagina web: registers Live / Ora e sistem / Protocol, joystick radund, interrupturs svelts, tschertga en ils parameters.</p>\n<table><tr><td>Dubel clic sin il video</td><td>mo video</td></tr><tr><td>⇱ / F11 / Esc</td><td>entir maletg / enavos</td></tr>\n<tr><td>Ctrl+B</td><td>panela da parameters activa / deactivada</td></tr><tr><td>Ctrl+T / Ctrl+L</td><td>cler/stgir, proxima lingua</td></tr>\n<tr><td>Frizzas / Home</td><td>mover la camera / centrar</td></tr><tr><td>Clic dretg sin il video</td><td>mussar / zuppentar champs</td></tr></table>\n<p>Ils parameters èn gruppads sco sin la pagina web. Il buttun «?» avra questa pagina.</p>\n</section>\n\n<section id="tips" data-icon="🧭" class="tips"><h2>Cussegls e tricks</h2>\n<ul>\n<li>🔍 <b>Chattar in parameter:</b> scriver en il champ da tschertga sisum ils parameters (p.ex. «pled-clav», «sirena», «WLAN») – tut il rest svanescha, ils resultats survegnan in ram blau. ✕ u Esc mussa puspè tut.</li>\n<li>💬 <b>Resposta al sviluppader:</b> Sistem → «Resposta al sviluppader» (fanestra: Installaziun). Ideas, sbagls, laud – anonim, senza speditur. Senza internet spetga il messadi e vegn tramess pli tard.</li>\n<li>🎞 <b>Marcaziuns en las registraziuns:</b> Registraziun → «Marcaziuns en registraziuns e maletgs d\'alarm»: fins segns da chantun (standard, la fatscha resta libra), nagins, u rams cotschens sco en il maletg live.</li>\n<li>⚡ <b>Interrupturs svelts sper il stick</b> (verd = activ): 🌡 maletg termic sur il maletg live, 🏷 marcar objects, 💡 glisch alva, 🔴 glisch IR, 🎧 tadlar, ⚡ per mintga relais (activ / automatic), 🎯 suandar persuna, 🔄 patrulla, ⏺ registrar ussa (max. 10 min, cotschen durant la registraziun, smatgar anc ina giada = stop), 📷 foto tar las registraziuns. Grisch = betg collià.</li>\n<li>🕹 <b>Joystick en l\'entir maletg</b> (telefonin, tablet, PC): il maletg emplenescha l\'entir visur, il stick flotta transparent giusut a dretga. Suenter 3 s senza tutgar daventa el pallid, cun tutgar puspè bain visibel. Sperasvi: ◎ center, 🎧 tadlar; ⇆ sisum sper ✕ metta il stick sin l\'autra vart.</li>\n<li>🟢 <b>Survista en ils parameters:</b> la frizza d\'in tema è verda uschè ditg che sia funcziun principala è activa (p.ex. rapport da notg, timelapse, copia da segirezza), uschiglio grischa. La frizza d\'ina gruppa è verda sch\'almain in tema en ella è activ. En la fanestra sin il Pi: frizza verda.</li>\n<li>📱 <b>SMS via in stick LTE</b> (Avis → SMS): cun in stick USB LTE ed ina carta SIM vegn l\'alarm (persuna, sabotascha, corp chaud, canera) sco SMS – sco standard mo cur ch\'i na dat nagin internet. Funcziuna cun ModemManager (<code>sudo apt install modemmanager</code>), cumonds AT u sticks Huawei HiLink (192.168.8.1). Pausa e limita dal di protegian cunter custs; «Trametter in SMS da test» controllescha tut.</li>\n<li>🎬 <b>Modus da demo:</b> <code>python3 webcam_bewegung_X.py --demo</code> (per ina demo online agiuntar <code>--headless --port 8080</code>) mussa ina scena da camping dissegnada, nua che da temp en temp passa ina persuna, in chaun u in urs – alarm, registraziun, diari e dissuasiun reageschan sco en realitad. Agens parameters (en l\'ordinatur temporar), «DEMO» en il chau-pagina, sin il computer na vegn midà nagut.</li>\n<li>🏠 <b>MQTT / Home Assistant</b> (Sistem e rait): endatar l\'adressa dal broker (p.ex. il supplement Mosquitto da Home Assistant), utilisader e pled-clav, «MQTT activ». Home Assistant mussa lura sez Motion Watch sco apparat: panela d\'alarm (armar/disarmar), persuna, moviment, animal, registraziun, battaria, temperatura e l\'ultim maletg d\'alarm. Cumonds era via <code>motionwatch/&lt;id&gt;/cmd/arm</code> (ARM_AWAY / DISARM), <code>…/cmd/light_white</code> (on/off/auto).</li>\n<li>🛰 <b>Plirs apparats:</b> register Cameras → «Ulteriurs apparats Motion Watch»: maletg, armà/alarm, battaria ed ultim eveniment da mintga apparat, armar/disarmar in u tuts ensemen. «Tschertgar en la rait» chatta apparats en la medema rait e via Tailscale; apparats cun pled-clav al dumondan ina giada.</li>\n<li>⤴ <b>Parter cun logo:</b> maletgs dal diari, fotografias, registraziuns e timelapse (buttun ⤴ en il lectur) ed il maletg dal rapport da notg survegnan ina discreta strivla «Motion Watch» cun la data giusut a dretga. Po vegnir deactivà sut Registraziun.</li>\n<li>🦊 <b>Dissuasiun mirada</b> (Glisch e tun → Dissuasiun): in\'atgna reacziun per persuna, animal grond (urs, vatga, chaval …), animal pitschen (giat, chaun, utschè) e corp chaud (camera termica) – tun (tschivlim aut, detunaziuns/sclops u agens tuns) e/u la glisch alva che chametga. Durada e pausa reglablas; «era sch\'il sistem è disarmà» p.ex. per l\'iert. Animals dovran l\'identificaziun IA.</li>\n<li>🚨 <b>Protecziun cunter il ladernezi</b> (Alarm e camping): sch\'armà in avis push urgent cun maletg e la sirena uschespert che la camera vegn <b>cuverta u girada</b>, l\'apparat vegn <b>spustà u bittà enturn</b> (sensur da moviment MPU-6050 sin I2C 0x68, var 3 $, facultativ) u il <b>current vegn interrut</b> (cun la battaria UPS). Durant ch\'il chau da la camera sa mova sez (patrulla, suandar, joystick) emprenda la controlla dal maletg da nov.</li>\n<li>☁️ <b>Copia da segirezza da las registraziuns d\'alarm:</b> Registraziuns e timelapse → Copia da segirezza. Registraziuns d\'alarm finidas (armà u cun ina persuna) van automaticamain en in ordinatur WebDAV (Nextcloud: <code>https://…/remote.php/dav/files/UTILISADER/MotionWatch/</code> cun in pled-clav d\'app, NAS Synology/QNAP, bleras clouds), en in ordinatur (stick USB, NAS montà) u sco video sin Telegram. In sutordinatur per di. «Testar la copia da segirezza» controllescha ils parameters.</li>\n<li>🧭 <b>Assistent d\'installaziun:</b> cumpara l\'emprima giada che la pagina vegn averta – lingua e num da l\'apparat, avis push (tema ntfy cun code QR e messadi da test), pled-clav web, codes QR per ulteriurs apparats. Adina puspè sut Sistem → «Assistent d\'installaziun». «Introducziun curta (QR)» dat ina carta da stampar cun codes QR per l\'agen WLAN dal Pi e la pagina. En la fanestra sin il Pi: Installaziun → «Code QR per il telefonin».</li>\n<li>🔗 <b>Ina sula icona a chasa ed en viadi:</b> agiuntar la pagina al visur da partenza da l\'adressa Tailscale (p.ex. <code>http://NUM-DAL-PI:5000</code> u l\'adressa 100.… mussada en l\'app Tailscale). A chasa sa collia Tailscale directamain via il WLAN, en viadi via internet – l\'app Tailscale sto esser activa. Mo sin l\'agen WLAN dal Pi senza internet duvrar l\'adressa locala (p.ex. <code>http://10.42.0.1:5000</code>). «🌐 A distanza» sisum mussa cur che ti es collià via Tailscale.</li>\n<li>📱 <b>Sco ina app:</b> metter Motion Watch sin il visur da partenza (iPhone: Parter → Sin il visur da partenza). Lura ha er l\'iPhone in vair entir maletg. En quest modus chargia il buttun <b>⟳</b> (sisum a dretga) da nov la pagina; suenter in\'actualisaziun cumpara giusut ina trav «Chargiar da nov».</li>\n<li>🦊 <b>Rimnar fotos d\'animals:</b> laschar activa l\'identificaziun IA, drizzar la camera sin in lieu da pavlar u in pass da selvaschina – la damaun guardar il <i>Diari</i>.</li>\n<li>🌙 <b>Testar avant l\'emprima notg:</b> armar, ir ina giada tras il maletg e controllar: l\'avis arriva, la registraziun è qua, sirena / glisch reageschan.</li>\n<li>🌳 <b>Fals alarms pervia da roma:</b> dissegnar plantas e chaglias sco zonas «Ignorar» ed augmentar in zic la grondezza minimala. L\'identificaziun automatica da vent gida era.</li>\n<li>🐗 <b>Stgatschar animals:</b> sirena «tar in alarm» plus glisch alva «tar in alarm, mo la notg». Per tes agen sien tegnair curta la sirena (5–10 s).</li>\n<li>🔴 <b>Infracotschen e reflexs:</b> betg drizzar la glisch IR tras ina fanestra u datiers d\'ina paraid da tenda – ella sbrinzla la camera.</li>\n<li>🔇 <b>Survegliaziun quieta:</b> sirena deactivada, mo avis push e la sain en il navigatur – al camping na sa dasda nagin.</li>\n<li>🔋 <b>Spargnar energia:</b> profil camping (cuntegna spargnar energia), ladezza dal stream pli pitschna, tadlar mo curt. Duvrar ina powerbank cun 5 V / 3 A u dapli; tar «sutatensiun» midar il cabel u la powerbank.</li>\n<li>📶 <b>Paucas datas mobilas:</b> il maletg dal prealarm resta pitschen (640 px); avrir il maletg live mo sche necessari (il Pi trametta mo uschè ditg ch\'insatgi guarda).</li>\n<li>🎤 <b>Microfon:</b> in toc material da spima sco protecziun cunter il vent evitescha fals alarms. Ils servos na disturban betg – l\'alarm da canera fa pausa durant ch\'els sa movan.</li>\n<li>🔊 <b>Autpledaders Bluetooth</b> sa stizzan savens sez suenter in temp. Il Pi als collia da nov cur ch\'els èn puspè qua – per la notg tscherner in senza stizzar automatic.</li>\n<li>🧭 <b>Drizzar la camera:</b> chattar la meglra posiziun cun il stick e la duvrar sco punct da passagi u posiziun da timelapse.</li>\n<li>🕒 <b>Ura fallada</b> en las registraziuns: avrir ina giada la pagina sin il telefonin – il Pi prenda l\'ura dal telefonin.</li>\n<li>💾 <b>Registraziuns impurtantas:</b> las marcar cun ⭐ – ellas na vegnan mai stizzadas automaticamain.</li>\n<li>🔁 <b>Empruvar ina nova versiun</b> senza ristg: sut Actualisaziuns pos ti adina turnar enavos.</li>\n<li>📱 <b>Sain en il navigatur</b> mo sin in apparat che resta avert la notg – uschiglio suna tut.</li>\n</ul></section>\n\n<section id="privacy" data-icon="🔏"><h2>Privadad e segirezza</h2>\n<p><b>Princip:</b> Motion Watch lavura sin l\'apparat sez. Maletgs, registraziuns, tun e parameters restan sin la carta da memoria – i na dat nagina cloud dal producent e nagin conto.</p>\n<ul>\n<li><b>Tge che vegn memorisà sin l\'apparat:</b> registraziuns e fotografias (ordinatur «recordings», las veglias vegnan stizzadas cur che la carta è plaina – favurits mai), diari d\'animals (maletgs), protocol dad eveniments (60 dis, reglabel), parameters. Il pled-clav web vegn memorisà mo sco hash segir.</li>\n<li><b>Tge che banduna l\'apparat mo sche ti l\'activeschas:</b> avis push (ntfy / Telegram / webhook – cun maletg, via lur servers), web push (via Apple / Google / Mozilla, criptà), copia da segirezza dals clips (tes WebDAV / NAS / Telegram), MQTT (tes broker), SMS (rait mobila), actualisaziuns (GitHub; mo versiuns signadas vegnan installadas), access a distanza (Tailscale, criptà).</li>\n<li><b>Tun:</b> microfon, tadlar e tun en las registraziuns èn deactivads sco standard. Registrar conversaziuns è en blers pajais mo permess cun consentiment.</li>\n<li><b>Zonas da privadad</b> (register Zonas): territoris sco l\'iert dals vischins, ina senda u fanestras vegnan picturads nair – en il maletg live, en registraziuns ed en maletgs.</li>\n<li><b>Colliaziuns per giasts</b> mussan mo il maletg live, scadan e pon vegnir declaradas nunvalaivlas da tut temp.</li>\n<li><b>Protecziun cunter persunas estras:</b> pled-clav web (tar l\'installaziun), bloccaziun suenter 8 emprovas falladas, modus d\'operatur cun PIN, actualisaziuns signadas, access a distanza mo via Tailscale.</li>\n</ul>\n<p><b>Giuridic (Svizra: LPD, UE: GDPR – nagin cussegl giuridic):</b> filmar mo l\'agen plazzal. Terren public, sendas e proprietad d\'auters na tutgan betg en il maletg (uschiglio duvrar zonas da privadad). Metter si in placat («survegliaziun video») ed infurmar cumpogns da viadi e giasts. Sin plazzas da camping vala era il reglament dal plaz. Conservar las registraziuns mo uschè ditg sco necessari.</p>\n</section>\n<section id="faq" data-icon="🛠"><h2>Schliar problems</h2>\n<dl>\n<dt>La pagina na s\'avra betg</dt><dd>È il telefonin en il dretg WLAN (agen WLAN dal Pi u la medema rait)? Adressa cun <code>:5000</code>? En l\'agen WLAN adina <code>http://10.42.0.1:5000</code>.</dd>\n<dt>La pagina mussa ina versiun veglia</dt><dd>La versiun stat sisum a sanestra. Sch\'ina copia veglia gira anc (p.ex. dal start automatic), cumenzar a maun il nov program – el surpiglia. Lura chargiar da nov la pagina.</dd>\n<dt>Nagin maletg</dt><dd><i>Camera e servos → Funtauna da video</i> → «Tschertgar cameras». Camera Pi: controllar il cabel plat.</dd>\n<dt>Ils avis push n\'arrivan betg</dt><dd>«Trametter in messadi da test» e leger il status. ntfy: il medem server en l\'app ed en l\'adressa. Senza internet (mo agen WLAN) na pon nagins avis push vegnir tramess – duvrar la sain en il navigatur.</dd>\n<dt>Il start automatic na cumenza betg</dt><dd>Terminal: <code>systemctl --user status motionwatch</code>. Exequir ina giada <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (start senza s\'annunziar).</dd>\n<dt>Maletg nair la notg, ma moviments vegnan marcads</dt><dd>La scena è memia stgira per la camera normala. «En il stgir era sclerir il maletg visibel» (Identificaziun → Pauca glisch) al sclerescha uschè bain sco pussaivel – en la stgiradetgna totala gida mo glisch: lampa infracotschna + camera NoIR (nunvesaivel) u la lampa alva.</dd>\n<dt>Motion Watch na cumenza betg suenter ina interrupziun da current</dt><dd>Deactivar ed activar puspè il start automatic (Alarm e camping). Sch\'i cumpara in\'indicaziun cun «enable-linger», exequir ina giada quest cumond en il terminal.</dd>\n<dt>Blers fals alarms</dt><dd>Dissegnar zonas, reducir la sensibilitad, augmentar la grondezza minimala, activar la «conferma IA».</dd>\n<dt>Ils servos tremblan u battan a la fin</dt><dd>Duvrar il PCA9685 (driver dals servos), reducir las limitas en grads, atgna alimentaziun da 5 V per ils servos.</dd>\n<dt>«Sutatensiun»</dt><dd>Cabel USB-C pli curt / pli gross u ina powerbank pli ferma. Sutatensiun po chaschunar collaps e registraziuns donnegiadas.</dd>\n<dt>Nagin tun via Bluetooth</dt><dd>Autpledader activ e cuntanschibel? Smatgar anc ina giada «Colliar». Il program sto girar sco utilisader normal (betg cun sudo).</dd>\n<dt>Discurrer na funcziuna betg</dt><dd>Mo sin la pagina segira <code>https://…:5001</code>. Confermar ina giada l\'avertiment dal certificat e permetter il microfon.</dd>\n</dl></section>\n\n<section id="setup" data-icon="🧰"><h2>Installaziun sin il Raspberry Pi</h2>\n<pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils\npip install opencv-python numpy pillow flask psutil</pre>\n<ul><li>Activar I2C e SPI (<code>sudo raspi-config</code>); en <code>/boot/firmware/config.txt</code> sut <code>[all]</code>: <code>dtoverlay=spi0-0cs</code>.</li>\n<li>Ina giada: <code>sudo python3 webcam_bewegung_X.py --allow-wifi</code> (WLAN, ura, start automatic, stizzar, watchdog).</li>\n<li>Cumenzar: <code>python3 webcam_bewegung_X.py</code> (fanestra + pagina web) u <code>--headless</code> (mo pagina web).</li>\n<li>Parameters, protocol, tuns: <code>~/.config/motionwatch/</code> – restan per novas versiuns.</li></ul>\n</section>\n</div>'
+TRX["fr"].update({"All quiet – I'm keeping watch!": "Tout est calme – je monte la garde !", "Happy Swiss National Day!": "Bonne fête nationale !"})
+TRX["it"].update({"All quiet – I'm keeping watch!": "Tutto tranquillo – faccio la guardia!", "Happy Swiss National Day!": "Buona festa nazionale!"})
+TRX["rm"].update({"All quiet – I'm keeping watch!": "Tut quiet – jau fatsch la guardia!", "Happy Swiss National Day!": "Bella festa naziunala!"})
+TRX['fr'].update({'Night vision look: green picture, thermal outlines and temperatures': 'Vision nocturne : image verte, contours thermiques et températures', 'Night vision automatically at night (sunset to sunrise)': 'Vision nocturne automatique la nuit (du coucher au lever du soleil)', 'Night vision': 'Vision nocturne', 'Night vision: green picture, thermal outlines and temperatures': 'Vision nocturne : image verte, contours thermiques et températures'})
+TRX['it'].update({'Night vision look: green picture, thermal outlines and temperatures': 'Visione notturna: immagine verde, contorni termici e temperature', 'Night vision automatically at night (sunset to sunrise)': "Visione notturna automatica di notte (dal tramonto all'alba)", 'Night vision': 'Visione notturna', 'Night vision: green picture, thermal outlines and temperatures': 'Visione notturna: immagine verde, contorni termici e temperature'})
+TRX['rm'].update({'Night vision look: green picture, thermal outlines and temperatures': 'Vista da notg: maletg verd, conturas termicas e temperaturas', 'Night vision automatically at night (sunset to sunrise)': 'Vista da notg automaticamain la notg (da la rendida a la levada dal sulegl)', 'Night vision': 'Vista da notg', 'Night vision: green picture, thermal outlines and temperatures': 'Vista da notg: maletg verd, conturas termicas e temperaturas'})
+TRX['fr'].update({'Take the location from the phone (the page must be open over https)': 'Prendre la position du portable (la page doit être ouverte en https)', 'GPS position in photos and videos': 'Position GPS dans les photos et vidéos', 'Location': 'Position', 'from the phone': 'du portable', 'fixed (settings)': 'fixe (réglages)', 'unknown – the phone shares it only over the https page': 'inconnue – le portable ne la donne que via la page https'})
+TRX['it'].update({'Take the location from the phone (the page must be open over https)': 'Prendere la posizione dal cellulare (la pagina deve essere aperta via https)', 'GPS position in photos and videos': 'Posizione GPS in foto e video', 'Location': 'Posizione', 'from the phone': 'dal cellulare', 'fixed (settings)': 'fissa (impostazioni)', 'unknown – the phone shares it only over the https page': 'sconosciuta – il cellulare la fornisce solo tramite la pagina https'})
+TRX['rm'].update({'Take the location from the phone (the page must be open over https)': 'Prender la posiziun dal telefonin (la pagina sto esser averta via https)', 'GPS position in photos and videos': 'Posiziun GPS en fotos e videos', 'Location': 'Posiziun', 'from the phone': 'dal telefonin', 'fixed (settings)': 'fixa (parameters)', 'unknown – the phone shares it only over the https page': 'nunenconuschenta – il telefonin la dat mo via la pagina https'})
+TRX['fr'].update({'Temperature sensor (BME280 / BMP280 on I2C or DS18B20 on GPIO 4), if connected': 'Sonde de température (BME280 / BMP280 sur I2C ou DS18B20 sur GPIO 4), si branchée', 'Temperature sensor: correction (°C)': 'Sonde de température : correction (°C)', 'Outside': 'Extérieur', 'no temperature sensor': 'pas de sonde de température', 'Outside temperature': 'Température extérieure'})
+TRX['it'].update({'Temperature sensor (BME280 / BMP280 on I2C or DS18B20 on GPIO 4), if connected': 'Sensore di temperatura (BME280 / BMP280 su I2C o DS18B20 su GPIO 4), se collegato', 'Temperature sensor: correction (°C)': 'Sensore di temperatura: correzione (°C)', 'Outside': 'Esterno', 'no temperature sensor': 'nessun sensore di temperatura', 'Outside temperature': 'Temperatura esterna'})
+TRX['rm'].update({'Temperature sensor (BME280 / BMP280 on I2C or DS18B20 on GPIO 4), if connected': "Sensur da temperatura (BME280 / BMP280 sin I2C u DS18B20 sin GPIO 4), sch'el è collià", 'Temperature sensor: correction (°C)': 'Sensur da temperatura: correctura (°C)', 'Outside': 'Ordaifer', 'no temperature sensor': 'nagin sensur da temperatura', 'Outside temperature': 'Temperatura ordaifer'})
+TRX['fr'].update({'Day overview': 'Résumé du jour', 'Persons': 'Personnes', 'Animals': 'Animaux', 'Warm bodies': 'Corps chauds', 'Noises': 'Bruits', 'Recordings': 'Enregistrements', 'Photos': 'Photos', 'Sensor': 'Sonde', 'Temperature (sensor)': 'Température (sonde)', 'Temperature (weather)': 'Température (météo)', 'Rain / humidity': 'Pluie / humidité', 'Person': 'Personne', 'Animal': 'Animal', 'Warm body': 'Corps chaud', 'Noise': 'Bruit', 'No measurements for this day yet.': 'Pas encore de mesures pour ce jour.', 'Weather from the internet: switch on under Notifications → Night report.': "Météo d'internet : à activer sous Notifications → Rapport de nuit.", 'No weather for this day': 'Pas de météo pour ce jour', 'no location': 'pas de position', 'Day overview: weather from the internet (Open-Meteo; the location is sent there)': "Résumé du jour : météo d'internet (Open-Meteo ; la position y est envoyée)", 'clear': 'dégagé', 'partly cloudy': 'partiellement nuageux', 'cloudy': 'nuageux', 'fog': 'brouillard', 'drizzle': 'bruine', 'rain': 'pluie', 'snow': 'neige', 'showers': 'averses', 'thunderstorm': 'orage', 'new moon': 'nouvelle lune', 'waxing crescent': 'premier croissant', 'first quarter': 'premier quartier', 'waxing gibbous': 'gibbeuse croissante', 'full moon': 'pleine lune', 'waning gibbous': 'gibbeuse décroissante', 'last quarter': 'dernier quartier', 'waning crescent': 'dernier croissant'})
+TRX['it'].update({'Day overview': 'Riepilogo del giorno', 'Persons': 'Persone', 'Animals': 'Animali', 'Warm bodies': 'Corpi caldi', 'Noises': 'Rumori', 'Recordings': 'Registrazioni', 'Photos': 'Foto', 'Sensor': 'Sensore', 'Temperature (sensor)': 'Temperatura (sensore)', 'Temperature (weather)': 'Temperatura (meteo)', 'Rain / humidity': 'Pioggia / umidità', 'Person': 'Persona', 'Animal': 'Animale', 'Warm body': 'Corpo caldo', 'Noise': 'Rumore', 'No measurements for this day yet.': 'Ancora nessuna misura per questo giorno.', 'Weather from the internet: switch on under Notifications → Night report.': 'Meteo da internet: attivare sotto Notifiche → Rapporto notturno.', 'No weather for this day': 'Nessun meteo per questo giorno', 'no location': 'nessuna posizione', 'Day overview: weather from the internet (Open-Meteo; the location is sent there)': 'Riepilogo del giorno: meteo da internet (Open-Meteo; la posizione viene inviata lì)', 'clear': 'sereno', 'partly cloudy': 'parzialmente nuvoloso', 'cloudy': 'nuvoloso', 'fog': 'nebbia', 'drizzle': 'pioggerella', 'rain': 'pioggia', 'snow': 'neve', 'showers': 'rovesci', 'thunderstorm': 'temporale', 'new moon': 'luna nuova', 'waxing crescent': 'luna crescente', 'first quarter': 'primo quarto', 'waxing gibbous': 'gibbosa crescente', 'full moon': 'luna piena', 'waning gibbous': 'gibbosa calante', 'last quarter': 'ultimo quarto', 'waning crescent': 'luna calante'})
+TRX['rm'].update({'Day overview': 'Survista dal di', 'Persons': 'Persunas', 'Animals': 'Animals', 'Warm bodies': 'Corps chauds', 'Noises': 'Caneras', 'Recordings': 'Registraziuns', 'Photos': 'Fotos', 'Sensor': 'Sensur', 'Temperature (sensor)': 'Temperatura (sensur)', 'Temperature (weather)': 'Temperatura (ora)', 'Rain / humidity': 'Plievgia / umiditad', 'Person': 'Persuna', 'Animal': 'Animal', 'Warm body': 'Corp chaud', 'Noise': 'Canera', 'No measurements for this day yet.': 'Anc naginas mesiraziuns per quest di.', 'Weather from the internet: switch on under Notifications → Night report.': "Ora d'internet: activar sut Avis → Rapport da notg.", 'No weather for this day': 'Nagina ora per quest di', 'no location': 'nagina posiziun', 'Day overview: weather from the internet (Open-Meteo; the location is sent there)': "Survista dal di: ora d'internet (Open-Meteo; la posiziun vegn tramessa là)", 'clear': 'sereno', 'partly cloudy': 'parzialmain nivlus', 'cloudy': 'nivlus', 'fog': 'tschajera', 'drizzle': 'plievgia fina', 'rain': 'plievgia', 'snow': 'naiv', 'showers': 'stravaglias', 'thunderstorm': 'urizi', 'new moon': 'glina nova', 'waxing crescent': 'fauc creschenta', 'first quarter': 'emprim quart', 'waxing gibbous': 'glina creschenta', 'full moon': 'glina plaina', 'waning gibbous': 'glina sminuenta', 'last quarter': 'ultim quart', 'waning crescent': 'fauc sminuenta'})
+TRX['fr'].update({'Recordings map and place names from the internet (OpenStreetMap)': 'Carte et noms de lieux des enregistrements depuis Internet (OpenStreetMap)', 'Place': 'Lieu', 'All places': 'Tous les lieux', 'Without location': 'Sans lieu', 'Map': 'Carte', 'Show only this place': 'Afficher seulement ce lieu', 'Rename place': 'Renommer le lieu', 'Name of this place (empty = automatic)': 'Nom de ce lieu (vide = automatique)', 'Fit': 'Tout afficher', 'recordings with location': 'enregistrements avec lieu', 'No recordings with a location yet. Photos and videos get one when the GPS position is known (phone or fixed place in the settings).': "Pas encore d'enregistrements avec un lieu. Les photos et vidéos en reçoivent un dès que la position GPS est connue (portable ou lieu fixe dans les réglages).", 'Map background not reachable (offline?) – the points are still right.': 'Fond de carte injoignable (hors ligne ?) – les points restent justes.', 'Map background is switched off in the settings.': 'Le fond de carte est désactivé dans les réglages.'})
+TRX['it'].update({'Recordings map and place names from the internet (OpenStreetMap)': 'Mappa e nomi dei luoghi delle registrazioni da Internet (OpenStreetMap)', 'Place': 'Luogo', 'All places': 'Tutti i luoghi', 'Without location': 'Senza luogo', 'Map': 'Mappa', 'Show only this place': 'Mostra solo questo luogo', 'Rename place': 'Rinomina luogo', 'Name of this place (empty = automatic)': 'Nome di questo luogo (vuoto = automatico)', 'Fit': 'Mostra tutto', 'recordings with location': 'registrazioni con luogo', 'No recordings with a location yet. Photos and videos get one when the GPS position is known (phone or fixed place in the settings).': 'Ancora nessuna registrazione con luogo. Foto e video ne ricevono uno appena la posizione GPS è nota (cellulare o luogo fisso nelle impostazioni).', 'Map background not reachable (offline?) – the points are still right.': 'Sfondo della mappa non raggiungibile (offline?) – i punti sono comunque giusti.', 'Map background is switched off in the settings.': 'Lo sfondo della mappa è disattivato nelle impostazioni.'})
+TRX['rm'].update({'Recordings map and place names from the internet (OpenStreetMap)': "Charta e nums da lieus da las registraziuns da l'internet (OpenStreetMap)", 'Place': 'Lieu', 'All places': 'Tut ils lieus', 'Without location': 'Senza lieu', 'Map': 'Charta', 'Show only this place': 'Mussar mo quest lieu', 'Rename place': 'Renumnar il lieu', 'Name of this place (empty = automatic)': 'Num da quest lieu (vid = automatic)', 'Fit': 'Mussar tut', 'recordings with location': 'registraziuns cun lieu', 'No recordings with a location yet. Photos and videos get one when the GPS position is known (phone or fixed place in the settings).': 'Anc naginas registraziuns cun lieu. Fotos e videos survegnan in, uschespert che la posiziun GPS è enconuschenta (telefonin u lieu fix en las configuraziuns).', 'Map background not reachable (offline?) – the points are still right.': 'Fund da la charta betg cuntanschibel (offline?) – ils puncts èn tuttina corrects.', 'Map background is switched off in the settings.': 'Il fund da la charta è deactivà en las configuraziuns.'})
+TRX['fr'].update({'Location (sunrise / sunset, photos, weather)': 'Lieu (lever / coucher du soleil, photos, météo)', 'Automatically (phone)': 'Automatique (portable)', 'Pick on the map': 'Choisir sur la carte', 'My position': 'Ma position', 'Search a place …': 'Chercher un lieu …', 'The phone shares its position only over the https page.': 'Le portable ne donne sa position que via la page https.', 'From the phone': 'Du portable', 'updated': 'mis à jour il y a', 'Waiting for the position of the phone …': 'En attente de la position du portable …', 'Until then': 'En attendant', 'No place chosen yet.': 'Aucun lieu choisi.', 'Fixed place': 'Lieu fixe', 'Tap on the map to set the place. Move with one finger, zoom with + / −.': 'Toucher la carte pour placer le lieu. Déplacer avec un doigt, zoomer avec + / −.', 'Place not found': 'Lieu introuvable', 'Search needs internet': 'La recherche nécessite Internet', 'Map background is switched off in the settings.': 'Le fond de carte est désactivé dans les réglages.'})
+TRX['it'].update({'Location (sunrise / sunset, photos, weather)': 'Luogo (alba / tramonto, foto, meteo)', 'Automatically (phone)': 'Automatico (cellulare)', 'Pick on the map': 'Scegli sulla mappa', 'My position': 'La mia posizione', 'Search a place …': 'Cerca un luogo …', 'The phone shares its position only over the https page.': 'Il cellulare fornisce la posizione solo tramite la pagina https.', 'From the phone': 'Dal cellulare', 'updated': 'aggiornato', 'Waiting for the position of the phone …': 'In attesa della posizione del cellulare …', 'Until then': 'Nel frattempo', 'No place chosen yet.': 'Nessun luogo scelto.', 'Fixed place': 'Luogo fisso', 'Tap on the map to set the place. Move with one finger, zoom with + / −.': 'Tocca la mappa per impostare il luogo. Sposta con un dito, zoom con + / −.', 'Place not found': 'Luogo non trovato', 'Search needs internet': 'La ricerca richiede Internet', 'Map background is switched off in the settings.': 'Lo sfondo della mappa è disattivato nelle impostazioni.'})
+TRX['rm'].update({'Location (sunrise / sunset, photos, weather)': 'Lieu (levada / rendida dal sulegl, fotos, aura)', 'Automatically (phone)': 'Automatic (telefonin)', 'Pick on the map': 'Tscherner sin la charta', 'My position': 'Mia posiziun', 'Search a place …': 'Tschertgar in lieu …', 'The phone shares its position only over the https page.': 'Il telefonin dat sia posiziun mo via la pagina https.', 'From the phone': 'Dal telefonin', 'updated': 'actualisà avant', 'Waiting for the position of the phone …': 'Spetga la posiziun dal telefonin …', 'Until then': 'Fin lura', 'No place chosen yet.': 'Anc nagin lieu tschernì.', 'Fixed place': 'Lieu fix', 'Tap on the map to set the place. Move with one finger, zoom with + / −.': 'Smatgar sin la charta per fixar il lieu. Spustar cun in det, zoom cun + / −.', 'Place not found': 'Lieu betg chattà', 'Search needs internet': 'La tschertga dovra internet', 'Map background is switched off in the settings.': 'Il fund da la charta è deactivà en las configuraziuns.'})
+TRX["fr"].update({"Send the location along when sharing pictures and videos": "Envoyer le lieu en partageant photos et vidéos"})
+TRX["it"].update({"Send the location along when sharing pictures and videos": "Inviare il luogo quando si condividono foto e video"})
+TRX["rm"].update({"Send the location along when sharing pictures and videos": "Trametter il lieu cun parter fotos e videos"})
+_HX = {'Camera': ('Kamera', 'Caméra', 'Telecamera', 'Camera'), 'AI (person detection)': ('KI (Personenerkennung)', 'IA (détection de personnes)', 'IA (rilevamento persone)', 'IA (identificaziun da persunas)'), 'Servos (pan / tilt)': ('Servos (schwenken / neigen)', 'Servos (pivoter / incliner)', 'Servo (brandeggio / inclinazione)', 'Servos (sviar / inclinar)'), 'Thermal camera': ('Wärmebildkamera', 'Caméra thermique', 'Termocamera', 'Camera termica'), 'Microphone': ('Mikrofon', 'Microphone', 'Microfono', 'Microfon'), 'Loudspeaker': ('Lautsprecher', 'Haut-parleur', 'Altoparlante', 'Autpledader'), 'Temperature sensor': ('Temperaturfühler', 'Sonde de température', 'Sensore di temperatura', 'Sensur da temperatura'), 'Location': ('Standort', 'Lieu', 'Posizione', 'Lieu'), 'Clock': ('Uhrzeit', 'Heure', 'Ora', 'Ura'), 'Internet': ('Internet', 'Internet', 'Internet', 'Internet'), 'Push messages': ('Push-Nachrichten', 'Notifications push', 'Notifiche push', 'Avis push'), 'Memory card': ('Speicherkarte', 'Carte mémoire', 'Scheda di memoria', 'Carta da memoria'), 'CPU temperature': ('CPU-Temperatur', 'Température CPU', 'Temperatura CPU', 'Temperatura CPU'), 'Power supply': ('Stromversorgung', 'Alimentation', 'Alimentazione', 'Alimentaziun'), 'Battery': ('Akku', 'Batterie', 'Batteria', 'Accu'), 'Password': ('Passwort', 'Mot de passe', 'Password', 'Pled-clav'), 'https page': ('https-Seite', 'Page https', 'Pagina https', 'Pagina https'), 'Updates': ('Updates', 'Mises à jour', 'Aggiornamenti', 'Actualisaziuns'), '🩺 Self-check': ('🩺 Selbstdiagnose', '🩺 Autodiagnostic', '🩺 Autodiagnosi', '🩺 Autodiagnosa'), 'Self-check': ('Selbstdiagnose', 'Autodiagnostic', 'Autodiagnosi', 'Autodiagnosa'), 'SELF-CHECK': ('SELBSTDIAGNOSE', 'AUTODIAGNOSTIC', 'AUTODIAGNOSI', 'AUTODIAGNOSA'), 'Check again': ('Nochmals prüfen', 'Vérifier à nouveau', 'Controlla di nuovo', 'Controllar danovamain'), 'problems': ('Probleme', 'problèmes', 'problemi', 'problems'), 'notes': ('Hinweise', 'remarques', 'avvisi', 'avis'), 'demo': ('Demo', 'démo', 'demo', 'demo'), 'ready': ('bereit', 'prêt', 'pronto', 'pront'), 'listening': ('hört zu', "à l'écoute", 'in ascolto', 'tadlaina'), 'connected': ('verbunden', 'connecté', 'connesso', 'collià'), 'new version available': ('neue Version verfügbar', 'nouvelle version disponible', 'nuova versione disponibile', 'nova versiun disponibla'), 'no password': ('kein Passwort', 'pas de mot de passe', 'nessuna password', 'nagin pled-clav'), 'no picture': ('kein Bild', "pas d'image", 'nessuna immagine', 'nagin maletg'), 'none chosen': ('keiner gewählt', 'aucun choisi', 'nessuno scelto', 'nagin tschernì'), 'none connected': ('keiner angeschlossen', 'aucune branchée', 'nessuno collegato', 'nagin collià'), 'not checked yet': ('noch nicht geprüft', 'pas encore vérifié', 'non ancora controllato', 'anc betg controllà'), 'not found - the camera does not move': ('nicht gefunden – die Kamera bewegt sich nicht', 'introuvables – la caméra ne bouge pas', 'non trovati – la telecamera non si muove', 'betg chattads – la camera na sa mova betg'), 'not set up': ('nicht eingerichtet', 'non configurées', 'non configurate', 'betg installà'), 'offline - push messages wait': ('offline – Push-Nachrichten warten', 'hors ligne – les notifications attendent', 'offline – le notifiche aspettano', 'offline – ils avis spetgan'), 'under-voltage now': ('jetzt Unterspannung', 'sous-tension maintenant', 'sottotensione adesso', 'sutatensiun ussa'), 'under-voltage since the start': ('Unterspannung seit dem Start', 'sous-tension depuis le démarrage', "sottotensione dall'avvio", 'sutatensiun dapi il start'), 'unknown': ('unbekannt', 'inconnu', 'sconosciuto', 'nunenconuschent'), 'free': ('frei', 'libre', 'libero', 'liber'), 'set': ('gesetzt', 'défini', 'impostata', 'definì'), 'from the phone': ('vom Handy', 'du portable', 'dal cellulare', 'dal telefonin'), 'fixed (settings)': ('fest (Einstellungen)', 'fixe (réglages)', 'fisso (impostazioni)', 'fix (configuraziuns)'), 'Check the cable and the video source under Setup.': ('Kabel prüfen und unter Einrichtung die Videoquelle wählen.', 'Vérifier le câble et la source vidéo dans Configuration.', 'Controllare il cavo e la sorgente video in Configurazione.', 'Controllar il cabel e la funtauna da video sut Installaziun.'), 'The AI model files are missing or damaged - see the manual, chapter Setup.': ('Die KI-Modelldateien fehlen oder sind beschädigt – siehe Anleitung, Kapitel Einrichtung.', "Les fichiers du modèle IA manquent ou sont abîmés – voir le mode d'emploi, chapitre Configuration.", 'I file del modello IA mancano o sono danneggiati – vedi il manuale, capitolo Configurazione.', 'Las datotecas dal model IA mancan u èn donnegiadas – vesair il manual, chapitel Installaziun.'), 'Check wiring and power of the servos; for the PCA9685 switch on I2C (raspi-config).': ('Verkabelung und Strom der Servos prüfen; für den PCA9685 I2C einschalten (raspi-config).', "Vérifier le câblage et l'alimentation des servos ; pour le PCA9685 activer I2C (raspi-config).", 'Controllare cablaggio e alimentazione dei servo; per il PCA9685 attivare I2C (raspi-config).', 'Controllar ils cabels ed il current dals servos; per il PCA9685 activar I2C (raspi-config).'), 'Check the USB cable of the thermal camera.': ('USB-Kabel der Wärmebildkamera prüfen.', 'Vérifier le câble USB de la caméra thermique.', 'Controllare il cavo USB della termocamera.', 'Controllar il cabel USB da la camera termica.'), 'Choose the microphone again under Microphone → Search devices.': ('Mikrofon neu wählen unter Mikrofon → Geräte suchen.', 'Choisir à nouveau le micro sous Microphone → Chercher des appareils.', 'Scegliere di nuovo il microfono in Microfono → Cerca dispositivi.', 'Tscherner danovamain il microfon sut Microfon → Tschertgar apparats.'), 'For the siren and the marmot: Settings → Loudspeaker.': ('Für Sirene und Murmeli: Einstellungen → Lautsprecher.', 'Pour la sirène et la marmotte : Réglages → Haut-parleur.', 'Per la sirena e la marmotta: Impostazioni → Altoparlante.', 'Per la sirena e la muntanella: Configuraziuns → Autpledader.'), 'BME280 on I2C or DS18B20 on GPIO 4 - see the housing document.': ('BME280 an I2C oder DS18B20 an GPIO 4 – siehe Gehäuse-Dokument.', 'BME280 sur I2C ou DS18B20 sur GPIO 4 – voir le document du boîtier.', 'BME280 su I2C o DS18B20 su GPIO 4 – vedi il documento della custodia.', 'BME280 sin I2C u DS18B20 sin GPIO 4 – vesair il document da la chascha.'), 'Settings → Setup → Location: automatically (https page) or pick it on the map.': ('Einstellungen → Einrichtung → Standort: automatisch (https-Seite) oder auf der Karte wählen.', 'Réglages → Configuration → Lieu : automatique (page https) ou sur la carte.', 'Impostazioni → Configurazione → Posizione: automatica (pagina https) o sulla mappa.', 'Configuraziuns → Installaziun → Lieu: automatic (pagina https) u sin la charta.'), 'Open the page on the phone once - the Pi takes the time from it.': ('Seite einmal auf dem Handy öffnen – der Pi übernimmt die Uhrzeit davon.', "Ouvrir une fois la page sur le portable – le Pi en reprend l'heure.", "Aprire una volta la pagina sul cellulare – il Pi ne prende l'ora.", "Avrir ina giada la pagina sin il telefonin – il Pi prenda l'ura da quel."), 'Phone hotspot on? Settings → Camping / protection → Network.': ('Handy-Hotspot an? Einstellungen → Camping / Schutz → Netzwerk.', "Point d'accès du portable allumé ? Réglages → Camping / protection → Réseau.", 'Hotspot del cellulare acceso? Impostazioni → Campeggio / protezione → Rete.', 'Hotspot dal telefonin activ? Configuraziuns → Camping / protecziun → Rait.'), 'Notifications: set up ntfy, Telegram or web push and send a test message.': ('Benachrichtigungen: ntfy, Telegram oder Web-Push einrichten und Testnachricht senden.', 'Notifications : configurer ntfy, Telegram ou web push et envoyer un message test.', 'Notifiche: configurare ntfy, Telegram o web push e inviare un messaggio di prova.', 'Avis: installar ntfy, Telegram u web push e trametter in messadi da test.'), 'Send a test message; check the address / token of the push service.': ('Testnachricht senden; Adresse / Schlüssel des Push-Dienstes prüfen.', "Envoyer un message test ; vérifier l'adresse / le jeton du service push.", 'Inviare un messaggio di prova; controllare indirizzo / token del servizio push.', 'Trametter in messadi da test; controllar adressa / token dal servetsch push.'), 'Delete old recordings or lower «max. size of the recordings».': ('Alte Aufnahmen löschen oder «max. Grösse der Aufnahmen» verkleinern.', "Effacer d'anciens enregistrements ou réduire «taille max. des enregistrements».", 'Eliminare vecchie registrazioni o ridurre «dimensione max. delle registrazioni».', 'Stizzar registraziuns veglias u reducir «grondezza max. da las registraziuns».'), 'Shade for the housing, a fan, or switch off night vision / thermal camera.': ('Schatten für das Gehäuse, ein Lüfter, oder Nachtsicht / Wärmebild ausschalten.', "De l'ombre pour le boîtier, un ventilateur, ou couper vision nocturne / caméra thermique.", 'Ombra per la custodia, una ventola, o spegnere visione notturna / termocamera.', 'Sumbriva per la chascha, in ventilatur, u deactivar vista da notg / camera termica.'), 'Use a stronger power supply / powerbank (Pi 5: 5 V 5 A) and a short thick cable.': ('Stärkeres Netzteil / Powerbank verwenden (Pi 5: 5 V 5 A) und ein kurzes, dickes Kabel.', 'Utiliser une alimentation / batterie plus forte (Pi 5 : 5 V 5 A) et un câble court et épais.', 'Usare un alimentatore / powerbank più potente (Pi 5: 5 V 5 A) e un cavo corto e spesso.', 'Duvrar in alimentader / powerbank pli ferm (Pi 5: 5 V 5 A) ed in cabel curt e gross.'), 'Charge the powerbank soon.': ('Powerbank bald laden.', 'Recharger bientôt la batterie.', 'Ricaricare presto il powerbank.', 'Chargiar prest il powerbank.'), 'Without a password everyone in the same network can watch and control everything.': ('Ohne Passwort kann jeder im gleichen Netz alles sehen und steuern.', 'Sans mot de passe, tout le monde sur le même réseau peut tout voir et commander.', 'Senza password chiunque nella stessa rete può vedere e comandare tutto.', 'Senza pled-clav po mintgin en la medema rait vesair e cumandar tut.'), 'Phone location and talking through the Pi need the https page (start with --https).': ('Handy-Standort und Sprechen über den Pi brauchen die https-Seite (Start mit --https).', 'La position du portable et parler via le Pi nécessitent la page https (démarrer avec --https).', 'La posizione del cellulare e parlare tramite il Pi richiedono la pagina https (avvio con --https).', 'La posiziun dal telefonin e discurrer via il Pi dovran la pagina https (start cun --https).'), 'Settings → Updates.': ('Einstellungen → Updates.', 'Réglages → Mises à jour.', 'Impostazioni → Aggiornamenti.', 'Configuraziuns → Actualisaziuns.')}
+_HX.update({"no model files": ("keine Modelldateien", "pas de fichiers de modèle", "nessun file del modello", "naginas datotecas dal model"),
+            "load error": ("Ladefehler", "erreur de chargement", "errore di caricamento", "errur da chargiar")})
+for _k, _v in _HX.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX2 = {'Noise alarm on': ('Geräusch-Alarm an', 'Alarme bruit activée', 'Allarme rumore attivo', 'Alarm da canera activ'), 'Thermal alarm on': ('Wärmebild-Alarm an', 'Alarme thermique activée', 'Allarme termico attivo', 'Alarm termic activ'), 'Detection, AI and recordings on': ('Erkennung, KI und Aufnahmen an', 'Détection, IA et enregistrements activés', 'Rilevamento, IA e registrazioni attivi', 'Identificaziun, IA e registraziuns activas'), 'Push messages on': ('Push-Nachrichten an', 'Notifications push activées', 'Notifiche push attive', 'Avis push activs'), 'Night vision and low light automatic': ('Nachtsicht und Schwachlicht automatisch', 'Vision nocturne et faible lumière automatiques', 'Visione notturna e luce scarsa automatiche', 'Vista da notg e glisch flaivla automaticas'), 'Night report in the morning': ('Nachtbericht am Morgen', 'Rapport de nuit le matin', 'Rapporto notturno al mattino', 'Rapport da notg la damaun'), 'Power saving on': ('Stromsparen an', "Économie d'énergie activée", 'Risparmio energetico attivo', 'Spargnar energia activ'), 'Armed in {s} s - leave the area now': ('Scharf in {s} s – jetzt den Bereich verlassen', 'Armé dans {s} s – quitter la zone maintenant', 'Inserito tra {s} s – lasciare ora la zona', 'Armà en {s} s – bandunar ussa la zona'), 'Simple': ('Einfach', 'Simple', 'Semplice', 'Simpel'), 'Expert': ('Experte', 'Expert', 'Esperto', 'Expert'), 'Simple: only the important settings. «Expert» shows all of them.': ('Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.', 'Simple : seulement les réglages importants. «Expert» les montre tous.', 'Semplice: solo le impostazioni importanti. «Esperto» le mostra tutte.', 'Simpel: mo las configuraziuns impurtantas. «Expert» mussa tuttas.'), 'Still missing:': ('Fehlt noch:', 'Il manque encore :', 'Manca ancora:', 'Manca anc:'), 'Everything ready - good night!': ('Alles bereit – gute Nacht!', 'Tout est prêt – bonne nuit !', 'Tutto pronto – buona notte!', 'Tut pront – buna notg!'), 'Guard tonight': ('Heute Nacht bewachen', 'Surveiller cette nuit', 'Sorvegliare stanotte', 'Survegliar questa notg'), '🌙 Guard tonight': ('🌙 Heute Nacht bewachen', '🌙 Surveiller cette nuit', '🌙 Sorvegliare stanotte', '🌙 Survegliar questa notg'), 'night-desc': ('schaltet ein, was es für die Nacht braucht, wird nach dem Countdown scharf und sagt, was noch fehlt', "active ce qu'il faut pour la nuit, s'arme après le compte à rebours et dit ce qui manque", 'attiva ciò che serve per la notte, si inserisce dopo il conto alla rovescia e dice cosa manca', 'activescha tut quai che la notg dovra, vegn armà suenter il countdown e di tge che manca anc')}
+for _k, _v in _HX2.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+DE.setdefault("🖨 Quick start (QR)", "🖨 QR-Codes zum Verbinden")
+_HX4 = {"Open quick guide (browser)": ("Kurzanleitung öffnen (Browser)", "Ouvrir le guide rapide (navigateur)", "Aprire la guida rapida (browser)", "Avrir l'introducziun curta (navigatur)"),
+         "📄 Quick guide (1 page)": ("📄 Kurzanleitung (1 Seite)", "📄 Guide rapide (1 page)", "📄 Guida rapida (1 pagina)", "📄 Introducziun curta (1 pagina)")}
+for _k, _v in _HX4.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX3 = {'False alarms': ('Fehlalarme', 'Fausses alarmes', 'Falsi allarmi', 'Alarms fallids'), 'Animal': ('Tier', 'Animal', 'Animale', 'Animal'), 'Wind / branches': ('Wind / Äste', 'Vent / branches', 'Vento / rami', 'Vent / roms'), 'Light / shadow': ('Licht / Schatten', 'Lumière / ombre', 'Luce / ombra', 'Glisch / sumbriva'), 'Rain': ('Regen', 'Pluie', 'Pioggia', 'Plievgia'), 'Car': ('Auto', 'Voiture', 'Auto', 'Auto'), 'Other': ('Anderes', 'Autre', 'Altro', 'Auter'), 'Was nothing (false alarm)': ('War nichts (Fehlalarm)', "Ce n'était rien (fausse alarme)", 'Non era niente (falso allarme)', 'Na era nagut (alarm fallid)'), 'Was nothing - what was it?': ('War nichts – was war es?', "Ce n'était rien – qu'est-ce que c'était ?", "Non era niente – cos'era?", 'Na era nagut – tge era quai?'), 'Was real after all': ('War doch echt', "C'était vrai finalement", 'Era vero dopotutto', 'Era tuttina vair'), 'false alarms marked in the last': ('Fehlalarme markiert in den letzten', 'fausses alarmes marquées ces', 'falsi allarmi segnati negli ultimi', 'alarms fallids marcads en ils ultims'), 'days': ('Tagen', 'derniers jours', 'giorni', 'dis'), 'of': ('von', 'sur', 'su', 'da'), 'suggestions:': ('Vorschläge:', 'suggestions :', 'suggerimenti:', 'propostas:'), 'Open': ('Öffnen', 'Ouvrir', 'Apri', 'Avrir'), 'Take over': ('Übernehmen', 'Appliquer', 'Applica', 'Applitgar'), 'Alarm only when the AI confirms a person (animals no longer count)': ('Alarm nur, wenn die KI eine Person bestätigt (Tiere zählen nicht mehr)', "Alarme seulement si l'IA confirme une personne (les animaux ne comptent plus)", "Allarme solo se l'IA conferma una persona (gli animali non contano più)", "Alarm mo sche l'IA conferma ina persuna (animals na dumbran betg pli)"), 'Switch on the automatic wind detection': ('Automatische Wind-Erkennung einschalten', 'Activer la détection automatique du vent', 'Attivare il rilevamento automatico del vento', "Activar l'identificaziun automatica dal vent"), 'Ignore small movements (branches, grass): bigger minimum size': ('Kleine Bewegungen (Äste, Gras) ignorieren: grössere Mindestgrösse', 'Ignorer les petits mouvements (branches, herbe) : taille minimale plus grande', 'Ignorare piccoli movimenti (rami, erba): dimensione minima maggiore', 'Ignorar pitschens moviments (roms, erva): grondezza minimala pli gronda'), 'Switch on the shadow filter and the low-light automatic': ('Schattenfilter und Schwachlicht-Automatik einschalten', "Activer le filtre d'ombres et l'automatique faible lumière", "Attivare il filtro ombre e l'automatico luce scarsa", "Activar il filter da sumbrivas e l'automatica da glisch flaivla"), 'Less sensitive to light changes': ('Weniger empfindlich auf Lichtwechsel', 'Moins sensible aux changements de lumière', 'Meno sensibile ai cambi di luce', 'Main sensibel per midadas da glisch'), 'Switch on the automatic rain detection': ('Automatische Regen-Erkennung einschalten', 'Activer la détection automatique de la pluie', 'Attivare il rilevamento automatico della pioggia', "Activar l'identificaziun automatica da plievgia"), 'Detect rain earlier': ('Regen früher erkennen', 'Détecter la pluie plus tôt', 'Rilevare la pioggia prima', 'Identifitgar la plievgia pli baud'), 'Switch on the vehicle filter': ('Fahrzeug-Filter einschalten', 'Activer le filtre de véhicules', 'Attivare il filtro veicoli', 'Activar il filter da vehichels'), 'Draw an ignore zone over the road (tab Zones)': ('Eine Ignorier-Zone über die Strasse zeichnen (Reiter Zonen)', 'Dessiner une zone à ignorer sur la route (onglet Zones)', 'Disegnare una zona da ignorare sulla strada (scheda Zone)', "Dissegnar ina zona d'ignorar sur la via (register Zonas)"), 'Somewhat less sensitive overall': ('Insgesamt etwas weniger empfindlich', 'Globalement un peu moins sensible', "Nel complesso un po' meno sensibile", 'En tut in pau main sensibel')}
+for _k, _v in _HX3.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX5 = {'the model files are damaged - try again': ('die Modelldateien sind beschädigt – nochmals versuchen', 'les fichiers du modèle sont abîmés – réessayer', 'i file del modello sono danneggiati – riprovare', 'las datotecas dal model èn donnegiadas – empruvar anc ina giada'), 'certificate not valid': ('Zertifikat ungültig', 'certificat non valable', 'certificato non valido', 'certificat betg valid'), 'certificate not valid (check the clock of the Pi)': ('Zertifikat ungültig (Uhrzeit des Pi prüfen)', 'certificat non valable (vérifier l\'heure du Pi)', 'certificato non valido (controllare l\'ora del Pi)', 'certificat betg valid (controllar l\'ura dal Pi)'), 'no answer (internet slow or missing)': ('keine Antwort (Internet langsam oder weg)', 'pas de réponse (Internet lent ou absent)', 'nessuna risposta (Internet lento o assente)', 'nagina resposta (internet plaun u absent)'), 'no internet (name not found)': ('kein Internet (Name nicht gefunden)', 'pas d\'Internet (nom introuvable)', 'niente Internet (nome non trovato)', 'nagin internet (num betg chattà)'), 'no internet connection': ('keine Internetverbindung', 'pas de connexion Internet', 'nessuna connessione Internet', 'nagina colliaziun cun l\'internet'), 'download failed': ('Herunterladen fehlgeschlagen', 'échec du téléchargement', 'download non riuscito', 'chargiar giu betg reussì'), 'Download AI model': ('KI-Modell herunterladen', 'Télécharger le modèle IA', 'Scarica il modello IA', 'Chargiar giu il model IA'), 'AI ready': ('KI bereit', 'IA prête', 'IA pronta', 'IA pronta'), 'downloading the AI model …': ('KI-Modell wird geladen …', 'téléchargement du modèle IA …', 'download del modello IA …', 'il model IA vegn chargià giu …'), 'Tap «Download AI model» (about 70 MB, needs internet).': ('«KI-Modell herunterladen» antippen (ca. 70 MB, braucht Internet).', 'Toucher «Télécharger le modèle IA» (env. 70 Mo, nécessite Internet).', 'Toccare «Scarica il modello IA» (circa 70 MB, serve Internet).', 'Smatgar «Chargiar giu il model IA» (var 70 MB, dovra internet).'), 'already running': ('läuft schon', 'déjà en cours', 'già in corso', 'gia en lavur'), 'not in the demo': ('nicht in der Demo', 'pas dans la démo', 'non nella demo', 'betg en la demo')}
+for _k, _v in _HX5.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX6 = {'Last run': ('Letzter Lauf', 'Dernière exécution', 'Ultima esecuzione', 'Ultima execuziun'), 'ended unexpectedly after': ('unerwartet beendet nach', 'arrêtée de façon inattendue après', 'terminata inaspettatamente dopo', 'terminada nunspetgadamain suenter'), 'under-voltage': ('Unterspannung', 'sous-tension', 'sottotensione', 'sutatensiun'), 'AI was running': ('KI lief', "l'IA tournait", "l'IA era attiva", "l'IA era activa"), 'safe start': ('sicherer Start', 'démarrage sûr', 'avvio sicuro', 'start segir'), 'Safe start: AI, thermal camera, night vision, IR light and patrol were switched off. Use a 5 V / 5 A power supply and cooling (heat sink / fan), then switch them on again one by one.': ('Sicherer Start: KI, Wärmebild, Nachtsicht, IR-Licht und Patrouille wurden ausgeschaltet. Netzteil mit 5 V / 5 A und Kühlung (Kühlkörper / Lüfter) verwenden, dann einzeln wieder einschalten.', 'Démarrage sûr : IA, caméra thermique, vision nocturne, lumière IR et patrouille ont été coupées. Utiliser une alimentation 5 V / 5 A et un refroidissement (dissipateur / ventilateur), puis les réactiver une par une.', 'Avvio sicuro: IA, termocamera, visione notturna, luce IR e pattuglia sono state spente. Usare un alimentatore 5 V / 5 A e un raffreddamento (dissipatore / ventola), poi riattivarle una alla volta.', "Start segir: IA, camera termica, vista da notg, glisch IR e patrulla èn vegnidas deactivadas. Duvrar in alimentader 5 V / 5 A e refridaziun (dissipatur / ventilatur), lura activar danovamain ina suenter l'autra."), 'Power cut, power supply too weak (Pi 5: 5 V / 5 A) or too hot. If it happens again, switch the AI off for a test.': ('Stromunterbruch, Netzteil zu schwach (Pi 5: 5 V / 5 A) oder zu heiss. Passiert es wieder, die KI zum Testen ausschalten.', "Coupure de courant, alimentation trop faible (Pi 5 : 5 V / 5 A) ou trop chaud. Si cela se répète, couper l'IA pour tester.", "Interruzione di corrente, alimentatore troppo debole (Pi 5: 5 V / 5 A) o troppo caldo. Se succede di nuovo, spegnere l'IA per provare.", "Interrupziun da current, alimentader memia flaivel (Pi 5: 5 V / 5 A) u memia chaud. Sche quai capita puspè, deactivar l'IA per testar."), 'Safe start: the Pi went off twice shortly after starting. AI, thermal camera, night vision, IR light and patrol are off - check power supply and cooling.': ('Sicherer Start: Der Pi ist zweimal kurz nach dem Start ausgefallen. KI, Wärmebild, Nachtsicht, IR-Licht und Patrouille sind aus – Netzteil und Kühlung prüfen.', "Démarrage sûr : le Pi s'est éteint deux fois peu après le démarrage. IA, caméra thermique, vision nocturne, lumière IR et patrouille sont coupées – vérifier alimentation et refroidissement.", "Avvio sicuro: il Pi si è spento due volte poco dopo l'avvio. IA, termocamera, visione notturna, luce IR e pattuglia sono spente – controllare alimentazione e raffreddamento.", 'Start segir: il Pi è crudà ora duas giadas curt suenter il start. IA, camera termica, vista da notg, glisch IR e patrulla èn deactivadas – controllar alimentaziun e refridaziun.')}
+for _k, _v in _HX6.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX7 = {'Motion Watch is already running': ('Motion Watch läuft bereits', 'Motion Watch tourne déjà', 'Motion Watch è già in esecuzione', 'Motion Watch gira gia'), 'in the background (autostart, without a window).': ('im Hintergrund (Autostart, ohne Fenster).', 'en arrière-plan (démarrage auto, sans fenêtre).', 'in background (avvio automatico, senza finestra).', 'en il fund (autostart, senza fanestra).'), 'Web page': ('Webseite', 'Page web', 'Pagina web', 'Pagina web'), 'Open the window here instead? The background service is stopped for that and starts again when you close the window.': ('Stattdessen hier das Fenster öffnen? Der Hintergrund-Dienst wird dafür angehalten und startet wieder, sobald du das Fenster schliesst.', 'Ouvrir plutôt la fenêtre ici ? Le service en arrière-plan est arrêté et redémarre quand tu fermes la fenêtre.', 'Aprire invece qui la finestra? Il servizio in background viene fermato e riparte quando chiudi la finestra.', 'Avrir empè la fanestra qua? Il servetsch en il fund vegn fermà e cumenza danovamain cur che ti serras la fanestra.'), 'The background service could not be stopped': ('Der Hintergrund-Dienst liess sich nicht anhalten', "Impossible d'arrêter le service en arrière-plan", 'Impossibile fermare il servizio in background', "Il servetsch en il fund n'ha betg pudì vegnir fermà")}
+for _k, _v in _HX7.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+for _L in ("fr", "it", "rm"):          # push message texts (person, pre-alarm, warm body, noise) in the three languages
+    MSG_DEFAULTS[_L] = {k: tuple(TRX[_L].get(v[n]) or (MSG_DEFAULTS["de"][k][n] if _L == "rm" else v[n]) for n in (0, 1))
+                        for k, v in MSG_DEFAULTS["en"].items()}
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cam", type=int, default=None, help="USB camera number (same as --source usb:N)")
@@ -19560,7 +26478,11 @@ if __name__ == "__main__":
                    device_name=CFG["device_name"] or "Demo")
         a.source = None; a.cam = None
         print("DEMO MODE - settings in " + DATA_DIR)
+    if not DEMO["on"] and not instance_lock(CFG["web_port"]):          # only one Motion Watch at a time
+        if a.boot or not instance_takeover(CFG["web_port"], not a.headless):
+            sys.exit(0)
     start_guard()                                     # after an update: go back if the new version keeps crashing
+    run_guard_start()                                 # did the whole Pi go off last time? two short runs -> safe start
     if a.paused_until and a.paused_until > time.time():
         run_paused(a.paused_until, _base_args())          # comes back by itself (execv), never returns
     if not a.headless and not GUI_OK:
@@ -19608,7 +26530,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.27.0 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.43.1 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:
