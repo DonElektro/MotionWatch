@@ -14,7 +14,7 @@ Akku-Laufzeit der Powerbank.
 | Datei | Inhalt |
 |---|---|
 | `webcam_bewegung_X_Y_Z.py` | das Programm, eine Datei pro Version (die neuste ist oben in `versions.json`) |
-| `versions.json` | Liste aller Versionen für die Update-Funktion (Prüfsumme, Datum, Änderungen) |
+| `versions.json` | Liste der Versionen für die Update-Funktion (die letzten etwa 20; Prüfsumme, Datum, Änderungen) |
 | `Anleitung.html` | Bedienungsanleitung (auch im Programm unter «Anleitung») |
 
 ## Updates auf dem Pi

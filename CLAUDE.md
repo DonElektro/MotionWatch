@@ -26,6 +26,8 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   (`MotionWatch_Signierschluessel.txt`, 64 Hex-Zeichen) hat nur Daniel – bei Bedarf danach fragen; **nie ins Repository** legen.
   Ohne Schlüssel: Version trotzdem hochladen, Daniel signiert später (oder vorübergehend «Auch nicht signierte Versionen annehmen»).
   Der Pi holt Updates von `https://raw.githubusercontent.com/DonElektro/MotionWatch/main/versions.json`.
+- **Nur etwa die letzten 20 Versionen** im Repository behalten (ältere Dateien löschen, dann Manifest neu signieren). Ältere
+  Versionen bleiben in der Git-Geschichte.
 - **Webseite und Desktop-Fenster immer beide anpassen**, zweisprachig DE/EN:
   - Web (Flask, Handy zuerst): Seiten-Vorlagen `WEB_PAGE`, `CAMS_PAGE`, `ZONES_PAGE`, `REC_PAGE`, `DIARY_PAGE`, `HELP_PAGE`, `GUEST_PAGE`;
     gemeinsame Teile `/*BASECSS*/`, `/*COMMON*/` (COMMON_JS), `<!--NAV-->`, `/*ALERTS*/` (HEADER_JS + ALERT_JS) über `render_page()`.
