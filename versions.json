@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 19:01",
+ "generated": "2026-10-24 19:23",
  "versions": [
+  {
+   "version": "2.21.0",
+   "file": "webcam_bewegung_2_21_0.py",
+   "url": "",
+   "sha256": "1d167045b801155fdae152dcdc978eb0cf2d106679f7fc73e6d9d4945f396bdc",
+   "date": "2026-10-24 19:23",
+   "notes": "waypoints store pan and tilt; patrol moves both servos together in a straight line (shown as 24/60); old pan-only waypoints are taken over with the former patrol tilt.",
+   "sig": "81fb41b46b20d16be3053e9b8dd786bbae3f0ca75f4c87d39f751e332a11b6bb24b41cbf9c29474e58a75cb65e58a2231dc7bd2c88a8274e8c2d14a145668f05"
+  },
   {
    "version": "2.20.1",
    "file": "webcam_bewegung_2_20_1.py",
