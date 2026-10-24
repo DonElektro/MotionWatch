@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 11:21",
+ "generated": "2026-10-24 11:49",
  "versions": [
+  {
+   "version": "2.17.3",
+   "file": "webcam_bewegung_2_17_3.py",
+   "url": "",
+   "sha256": "16735224794e1bcaa5a5d052b9887572556a64f648a2d018995b26b20b3821a3",
+   "date": "2026-10-24 11:49",
+   "notes": "full screen: \"other side\" (⇆) moved to the top next to ✕ - on the phone held sideways \"centre\" no longer switched the side by mistake; more space between the round buttons.",
+   "sig": "c9ca181134a37367d47c354c03b6cba8a08d00ae6074fec1af28b9e9b3bd5851a3797e6d6eb3dc89b01f6e25091b28a1777b8d9714a8e7e0990a62ec18a7f10a"
+  },
   {
    "version": "2.17.2",
    "file": "webcam_bewegung_2_17_2.py",
