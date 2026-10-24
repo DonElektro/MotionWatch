@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 23:33",
+ "generated": "2026-10-24 23:39",
  "versions": [
+  {
+   "version": "2.39.0",
+   "file": "webcam_bewegung_2_39_0.py",
+   "url": "",
+   "sha256": "7b1078405ffce79e2fa153c91cb8774225651a741a8165e9b6c3ee197baae670",
+   "date": "2026-10-24 23:39",
+   "notes": "settings «Simple / Expert» (simple: only the important ones, on the web and in the Pi window); button «Guard tonight»: switches on what a night needs, arms with the countdown and tells what is still missing.",
+   "sig": "d54a209b83a431e2e9287516212576ff7b37e40338d9112d837912342ffcda2f6d795df97abc9b98ba323a4af217265c3e3760b55022392cc7ad9e24c075120e"
+  },
   {
    "version": "2.38.0",
    "file": "webcam_bewegung_2_38_0.py",
