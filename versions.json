@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:16",
+ "generated": "2026-10-24 10:19",
  "versions": [
+  {
+   "version": "2.9.0",
+   "file": "webcam_bewegung_2_9_0.py",
+   "url": "",
+   "sha256": "a3432f2f58d75683d7080686a29423e23095fec062e1cbd1861afcd7fab4cb71",
+   "date": "2026-10-24 10:19",
+   "notes": "targeted deterrence (Light & sound -> Deterrence): own reaction for person, big animal, small animal, warm body - sound (new: high whistle, bangs / claps, or own sound files) and / or the white light flashing; duration, pause, also when disarmed (garden).",
+   "sig": "8b92640b63f9743af7a0062156d3310d5c1ff67120e683c1f015d23dc92daebec329ce3bdad0d3d70c2929578ab94b3c0574f199db5f5b6893867d95a7628b05"
+  },
   {
    "version": "2.8.0",
    "file": "webcam_bewegung_2_8_0.py",
