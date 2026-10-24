@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 11:49",
+ "generated": "2026-10-24 11:54",
  "versions": [
+  {
+   "version": "2.17.4",
+   "file": "webcam_bewegung_2_17_4.py",
+   "url": "",
+   "sha256": "2279286054ae43c59156af26d7c348d19729d992bcfd4627aefcd855ba5d5ab3",
+   "date": "2026-10-24 11:54",
+   "notes": "full screen: the round buttons next to the stick react reliably (the nearest button wins, the touch area is bigger) - on the phone they reacted only when touched below them; short flash as feedback.",
+   "sig": "edc9d0ef95b0864bf1e29991586c8c38f55a8c13cd5b43a57b396e3ea7b0a5d84291439279c3df1fc1c94d09b2441a8316ddc014caf0dcc6c3a3c0a4d2799007"
+  },
   {
    "version": "2.17.3",
    "file": "webcam_bewegung_2_17_3.py",
