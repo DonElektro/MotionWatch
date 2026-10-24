@@ -17,7 +17,10 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   (alte Dateien bleiben im Repository, die Update-Funktion bietet sie zur Auswahl an).
 - Versionsnummer an vier Stellen ändern: `APP_VERSION = "X"`, `Motion Watch X` (Fenstertitel / Startmeldung),
   `{tr('Build')} X ·`, `webcam_bewegung_X.py` (Hilfe) – und eine Zeile `  * X: …` in der Änderungsliste oben in der Datei.
-- Danach im Repository: `python3 webcam_bewegung_X_Y_Z.py --make-manifest .` (schreibt `versions.json`), committen, pushen.
+- Danach im Repository: `python3 webcam_bewegung_X_Y_Z.py --make-manifest . --sign-key SCHLUESSELDATEI` (schreibt und **signiert**
+  `versions.json`), committen, pushen. Ab 2.4.0 installieren die Geräte nur signierte Versionen. Den geheimen Schlüssel
+  (`MotionWatch_Signierschluessel.txt`, 64 Hex-Zeichen) hat nur Daniel – bei Bedarf danach fragen; **nie ins Repository** legen.
+  Ohne Schlüssel: Version trotzdem hochladen, Daniel signiert später (oder vorübergehend «Auch nicht signierte Versionen annehmen»).
   Der Pi holt Updates von `https://raw.githubusercontent.com/DonElektro/MotionWatch/main/versions.json`.
 - **Webseite und Desktop-Fenster immer beide anpassen**, zweisprachig DE/EN:
   - Web (Flask, Handy zuerst): Seiten-Vorlagen `WEB_PAGE`, `CAMS_PAGE`, `ZONES_PAGE`, `REC_PAGE`, `DIARY_PAGE`, `HELP_PAGE`, `GUEST_PAGE`;
