@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 20:01",
+ "generated": "2026-10-24 20:07",
  "versions": [
+  {
+   "version": "2.24.0",
+   "file": "webcam_bewegung_2_24_0.py",
+   "url": "",
+   "sha256": "870496d315d28b3f55aff5001d97d28a41949f24833d45cdd04464fa89c57f55",
+   "date": "2026-10-24 20:07",
+   "notes": "controls: only the joystick - the arrow buttons and the «Stick / Buttons» switch were removed.",
+   "sig": "d94b7a710c8ea7bae559fe93bec4460208de2c627b6dc27b9c29f60f91a858cfe0f317c0881dc1322aaca39edc2a9a201270c8f73fd10c8174dccb98726c4206"
+  },
   {
    "version": "2.23.2",
    "file": "webcam_bewegung_2_23_2.py",
