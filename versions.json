@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 18:03",
+ "generated": "2026-10-24 18:11",
  "versions": [
+  {
+   "version": "2.19.0",
+   "file": "webcam_bewegung_2_19_0.py",
+   "url": "",
+   "sha256": "af951fbc659c5c467d76a69201c5654e5f52fea954ee7098f3d9cc3dcab50dd8",
+   "date": "2026-10-24 18:11",
+   "notes": "recordings and alarm pictures without the big red boxes: thin corner marks only (face stays visible), or none, or like before (Recording -> \"Markings in recordings\"); \"Feedback to the developer\" (anonymous, sent by the Pi, waits without internet); app mode: \"Save settings\" and other downloads go to the share sheet (no page without \"back\"); \"Recalibrate\" also under Controls; the deterrence arrow is only green when a loudspeaker / light can react.",
+   "sig": "d94a457ffb8f924d8e612069e83db019dcadecfb74b14c30f90f5cf41f953e1924359ca15a10afd869ba2f64fbf7d007458325c35d63783d116f9fc215567003"
+  },
   {
    "version": "2.18.0",
    "file": "webcam_bewegung_2_18_0.py",
