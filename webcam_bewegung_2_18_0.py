@@ -11819,7 +11819,7 @@ const I18N = {en: I18N_EN, de: {
   "the microphone of this device is not allowed": "das Mikrofon dieses Geräts ist nicht erlaubt", "somebody is talking": "jemand spricht",
   "Own sounds (.wav / .mp3): put the files into": "Eigene Töne (.wav / .mp3): Dateien ablegen in", "and press «Search devices»": "und «Geräte suchen» drücken",
   "Controls": "Steuerung", "System": "System", "Event log": "Ereignisprotokoll", "Expand all": "Alle öffnen",
-  "Collapse all": "Alle schliessen", "Topics": "Themen", "Thermal": "Wärme", "Marks": "Markieren", "Light": "Licht", "IR light": "IR-Licht",
+  "Collapse all": "Alle schliessen", "Topics": "Themen", "need 2+ waypoints": "mindestens 2 Wegpunkte nötig (+ Wegpunkt)", "Thermal": "Wärme", "Marks": "Markieren", "Light": "Licht", "IR light": "IR-Licht",
   "Follow": "Folgen", "Patrol": "Patrouille", "Record": "Aufnahme", "Photo": "Foto", "Photo saved": "Foto gespeichert",
   "Thermal picture over the live picture": "Wärmebild über das Live-Bild legen", "Mark detected objects (animals, cars ...)": "Erkannte Objekte markieren (Tiere, Autos …)",
   "White light on / off": "Weisses Licht ein / aus", "Infrared light on / off": "Infrarot-Licht ein / aus", "Follow a detected person": "Erkannter Person folgen",
@@ -13731,7 +13731,7 @@ async function refresh() {
   $("#v-pan").textContent = Math.round(c.pan); $("#v-tilt").textContent = Math.round(c.tilt);
   showPos(c.pan, c.tilt);
   $("#patrol-st").textContent = (s.manual ? t("Manual control - tracking / patrol paused") : s.tracking ? t("Tracking person")
-      : (c.patrol ? t("Patrol") + ": " + s.patrol_status : "")) + (j.waypoints.length ? " · " + t("waypoints") + ": " + j.waypoints.map(Math.round).join(", ") : "");
+      : (c.patrol ? t("Patrol") + ": " + t(s.patrol_status) : "")) + (j.waypoints.length ? " · " + t("waypoints") + ": " + j.waypoints.map(Math.round).join(", ") : "");
   renderRelays(rel, rs, c.ai_enabled && !/no model|error/.test(s.ai_status));
   const ssrc = s.source_status || "";
   badge("#b-src", t("Source") + ": " + (s.source_label || "–").slice(0, 26), ssrc === "connected" ? "grn" : (ssrc.startsWith("failed") ? "red" : "yel"));
@@ -14207,6 +14207,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>
 <ul>
 <li>🔍 <b>Einstellung suchen:</b> im Einstellungsbereich oben ins Suchfeld tippen (z. B. «Passwort», «Sirene», «WLAN») – alles andere verschwindet, die Treffer sind blau umrandet. ✕ oder Esc zeigt wieder alles.</li>
+<li>⚡ <b>Schnellschalter unter dem Stick</b> (grün = an): 🌡 Wärmebild über das Live-Bild, 🏷 Objekte markieren, 💡 weisses Licht, 🔴 IR-Licht, 🎯 Person folgen, 🔄 Patrouille, ⏺ jetzt aufnehmen (max. 10 min, rot während der Aufnahme, nochmals tippen = stopp), 📷 Foto in die Aufnahmen. Grau = nicht angeschlossen.</li>
 <li>🕹 <b>Steuer-Stick im Vollbild</b> (Handy, Tablet, PC): das Bild füllt den ganzen Bildschirm, der Stick liegt durchsichtig unten rechts darüber. Nach 3 s ohne Berührung wird er blass, beim Berühren wieder deutlich. Daneben: ◎ Mitte, 🎧 Mithören; ⇆ oben neben ✕ legt den Stick auf die andere Seite.</li>
 <li>🟢 <b>Übersicht in den Einstellungen:</b> der Pfeil eines Themas ist grün, wenn seine Hauptfunktion eingeschaltet ist (z. B. Nachtbericht, Zeitraffer, Sicherung), sonst grau. Der Pfeil einer Gruppe ist grün, wenn mindestens ein Thema darin läuft. Im Fenster auf dem Pi: grüner Titel.</li>
 <li>📱 <b>SMS über LTE-Stick</b> (Benachrichtigungen → SMS): mit einem USB-LTE-Stick und SIM-Karte kommt der Alarm (Person, Sabotage, warmer Körper, Geräusch) als SMS – ab Werk nur, wenn kein Internet da ist. Funktioniert mit ModemManager (<code>sudo apt install modemmanager</code>), AT-Befehlen oder Huawei-HiLink-Sticks (192.168.8.1). Pause und Tageslimit schützen vor Kosten; «Test-SMS senden» prüft alles.</li>
@@ -14414,6 +14415,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>
 <ul>
 <li>🔍 <b>Find a setting:</b> type into the search box at the top of the settings (e.g. «password», «siren», «Wi-Fi») – everything else disappears, matches get a blue frame. ✕ or Esc shows everything again.</li>
+<li>⚡ <b>Quick switches below the stick</b> (green = on): 🌡 thermal picture over the live picture, 🏷 mark objects, 💡 white light, 🔴 IR light, 🎯 follow person, 🔄 patrol, ⏺ record now (max. 10 min, red while recording, tap again = stop), 📷 photo into the recordings. Grey = not connected.</li>
 <li>🕹 <b>Joystick in full screen</b> (phone, tablet, PC): the picture fills the whole screen, the stick floats see-through at the bottom right. After 3 s untouched it becomes pale, on touch clearly visible again. Next to it: ◎ centre, 🎧 listen; ⇆ at the top next to ✕ puts the stick on the other side.</li>
 <li>🟢 <b>Overview in the settings:</b> the arrow of a topic is green while its main function is on (e.g. night report, timelapse, backup), otherwise grey. The arrow of a group is green when at least one topic in it is on. In the window on the Pi: green title.</li>
 <li>📱 <b>SMS over an LTE stick</b> (Notifications → SMS): with a USB LTE stick and a SIM card the alarm (person, sabotage, warm body, noise) comes as SMS – by default only when there is no internet. Works with ModemManager (<code>sudo apt install modemmanager</code>), AT commands or Huawei HiLink sticks (192.168.8.1). Pause and daily limit protect against costs; «Send test SMS» checks everything.</li>
@@ -16217,7 +16219,7 @@ DE = {
     "UPS HAT: address (I2C)": "USV-Akku: Adresse (I2C)",
     "New version": "Neue Version", "click to update": "zum Aktualisieren klicken",
     "Install new versions automatically": "Neue Versionen automatisch installieren",
-    "QR code for the phone": "QR-Code fürs Handy", "Person": "Person", "SMS (LTE stick)": "SMS (LTE-Stick)", "Send test SMS": "Test-SMS senden", "SMS sent": "SMS gesendet",
+    "QR code for the phone": "QR-Code fürs Handy", "need 2+ waypoints": "mindestens 2 Wegpunkte nötig", "Person": "Person", "SMS (LTE stick)": "SMS (LTE-Stick)", "Send test SMS": "Test-SMS senden", "SMS sent": "SMS gesendet",
     "Phone numbers (e.g. +41791234567, several with commas)": "Telefonnummern (z. B. +41791234567, mehrere mit Komma)", "Stick / way": "Stick / Weg",
     "Serial port (only for AT commands)": "Serieller Anschluss (nur für AT-Befehle)", "Address of a Huawei HiLink stick": "Adresse eines Huawei-HiLink-Sticks",
     "Alarm also as SMS (person, sabotage, warm body, noise)": "Alarm auch als SMS (Person, Sabotage, warmer Körper, Geräusch)",
@@ -18346,7 +18348,7 @@ class App:
         on = sum(1 for s in st["relay_states"] if s)
         self._sb("b_relays", f"{tr('Relays')}: {on}/{len(RELAYS)} {tr('on')}", C["grn"] if on else None)
         self._sb("b_patrol", tr("MANUAL") if manual else (tr("TRACKING") if st["tracking"] else
-                 (f"{tr('Patrol')}: {st['patrol_status']}" if CFG["patrol"] else tr("Patrol off"))),
+                 (f"{tr('Patrol')}: {tr(st['patrol_status'])}" if CFG["patrol"] else tr("Patrol off"))),
                  C["yel"] if manual else (C["acc"] if (st["tracking"] or CFG["patrol"]) else None))
         self._sb("b_auto", f"{tr('Auto')}: {st['auto_status']}", C["org"])
         self._sb("b_light", tr("LOW LIGHT") if st["lowlight"] else tr("Light ok"), C["yel"] if st["lowlight"] else None)
@@ -18364,7 +18366,7 @@ class App:
         self._sb("b_relays", f"{tr('Relays')}: {on}/{len(RELAYS)} {tr('on')}", C["grn"], show=on > 0)
         self._sb("b_light", "🌙 " + tr("LOW LIGHT"), C["yel"], show=st["lowlight"])
         self._sb("b_auto", f"{tr('Auto')}: {st['auto_status']}", C["org"], show=str(st["auto_status"]).startswith("calibrat"))
-        self._sb("b_patrol", tr("MANUAL") if manual else (tr("TRACKING") if st["tracking"] else f"{tr('Patrol')}: {st['patrol_status']}"),
+        self._sb("b_patrol", tr("MANUAL") if manual else (tr("TRACKING") if st["tracking"] else f"{tr('Patrol')}: {tr(st['patrol_status'])}"),
                  C["yel"] if manual else C["acc"], show=bool(manual or st["tracking"] or CFG["patrol"]))
         self._sb("b_camp", "⛺ " + tr("Camping profile"), C["grn"], show=bool(CFG["camping"]))
         self._sb("b_eco", "🍃 " + tr("power saving") + " · " + (f"{CFG['eco_fps']} FPS" if st["eco"] == "saving" else tr("awake")), C["blu"], show=st["eco"] != "off")
@@ -18400,7 +18402,7 @@ class App:
             elif st["tracking"]:
                 txt = tr("Tracking person")
             else:
-                txt = f"{tr('Patrol')}: {st['patrol_status']}" if CFG["patrol"] else ""
+                txt = f"{tr('Patrol')}: {tr(st['patrol_status'])}" if CFG["patrol"] else ""
             self.l_ctl_status.config(text=txt)
         self._status("Camera / Servos", f"{tr('backend')}: {st['servo_backend']} · {tr('pan')} {CFG['pan']:.0f}% · {tr('tilt')} {CFG['tilt']:.0f}%"
                                         + (" · " + tr("TRACKING") if st["tracking"] else "") + (" · " + tr("MANUAL") if manual else ""))
@@ -18414,7 +18416,7 @@ class App:
         if sig != getattr(self, "_sched_sig", sig) and not any(isinstance(w, tk.Toplevel) for w in self.root.winfo_children()):
             self._sched_sig = sig; self._schedule_rebuild()
         self._sched_sig = sig
-        self._status("Patrol", f"{st['patrol_status']} · {tr('waypoints')}: {[round(w) for w in WAYPOINTS] or tr('none')}")
+        self._status("Patrol", f"{tr(st['patrol_status'])} · {tr('waypoints')}: {[round(w) for w in WAYPOINTS] or tr('none')}")
         self._status("AI detection", f"{st['ai_status']} · {st['ai_persons']} {tr('AI persons')}"
                                      + (f" · {tr('objects')}: {st['object_summary']}" if st["object_summary"] else ""))
         ts_, rem = st.get("remote_ts") or {}, st.get("remote") or []
