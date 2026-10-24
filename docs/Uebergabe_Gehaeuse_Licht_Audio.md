@@ -44,6 +44,7 @@
 - Lüftung regenfest: Schlitze **seitlich mit Abdeckung nach unten** statt oben im Deckel.
 - Platz für den **offiziellen Pi-5-Active-Cooler**.
 - Clip oder Kanal an der Gabel für eine **Schlaufe des Kamera-Flachbandkabels** und die Lampenkabel.
+- **Wetterhäuschen für den Temperaturfühler** (ab Software 2.31.0), siehe Abschnitt 7.
 
 ## 6. Pinbelegung / Adressen (für die Software)
 
@@ -52,4 +53,27 @@
 | PCA9685 | I2C, Adresse **0x41**, Kanal 0 Pan, 1 Tilt, 2 Licht weiss, 3 Licht IR |
 | Thermal-90 | SPI (+ I2C 0x40) |
 | Lautsprecher, Mikrofon | USB |
-| Relais | weiterhin frei wählbare GPIOs |
+| Relais | weiterhin frei wählbare GPIOs (ausser GPIO 4, falls 1-Wire aktiv) |
+| BME280 / BMP280 | I2C, Adresse **0x76** (oder 0x77) – Temperatur, Feuchte, Luftdruck |
+| DS18B20 (Alternative) | 1-Wire an **GPIO 4** (Pin 7), 4,7 kΩ von Daten nach 3,3 V; `dtoverlay=w1-gpio` in `config.txt` |
+
+## 7. Temperaturfühler (Wetterhäuschen)
+
+Die Software erkennt beide Fühler selbst. Empfohlen ist der **BME280** (Temperatur, Luftfeuchtigkeit, Luftdruck), z. B. als kleines
+Breakout-Board 13 × 10 mm mit 4 Pins (VIN 3,3 V, GND, SCL, SDA). Er hängt am gleichen I2C-Bus wie PCA9685 und UPS-HAT.
+
+**Wichtig: ausserhalb des warmen Gehäuses messen.** Der Pi 5 heizt das Innere um 10–20 °C auf; ein Fühler innen misst Unsinn.
+
+Vorschlag fürs Modell:
+- **Wetterhäuschen** (Strahlungsschutz) seitlich am **Unterteil**, auf der Seite **ohne** Lüftungsschlitze des Pi (die warme Abluft darf
+  nicht hineinziehen), möglichst im Schatten des Gehäuses.
+- Aufbau: 3–4 übereinanderliegende, nach aussen und unten geneigte **Lamellen-Ringe** (Aussen-Ø ca. 34 mm, Innenraum ca. 18 × 14 mm,
+  Lamellenabstand 4–5 mm), oben ein geschlossener Deckel – Luft kommt von der Seite herein, Regen und Sonne nicht.
+- Hellgrau oder weiss drucken (heizt in der Sonne weniger auf); kein Schwarz.
+- Halter für das Board: Schlitz oder zwei Stifte, Board hochkant, Sensor-Chip zur Luft.
+- **Kabeldurchführung** ins Gehäuse mit kleiner Tülle oder Schräge nach unten (kein Wasser ins Gehäuse); 4 Adern, 10–20 cm.
+- Abstand vom Gehäuse ca. **15–20 mm** (kleiner Steg), damit die Gehäusewand das Häuschen nicht wärmt.
+- **DS18B20** (wasserdichte Edelstahl-Sonde am Kabel) als Alternative: nur eine Durchführung (Ø 6 mm) unten am Gehäuse, die Sonde hängt
+  frei 5–10 cm unter dem Gehäuse im Schatten. Misst nur die Temperatur.
+
+Abweichungen gleicht die Einstellung «Temperaturfühler: Korrektur (°C)» aus (mit einem Thermometer vergleichen).

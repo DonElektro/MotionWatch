@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 22:08",
+ "generated": "2026-10-24 22:11",
  "versions": [
+  {
+   "version": "2.31.0",
+   "file": "webcam_bewegung_2_31_0.py",
+   "url": "",
+   "sha256": "a7ff04d167e5ef031cb1c16320d0cb1ae011217d2f0f68be2044370abf3f4628",
+   "date": "2026-10-24 22:11",
+   "notes": "temperature sensor: BME280 / BMP280 (temperature, humidity, air pressure, I2C 0x76/0x77) or DS18B20 (1-Wire GPIO 4) are found by themselves; shown in the header and under Setup; every 10 minutes a value is kept for the diary.",
+   "sig": "b4483c8ae81b61be2b39c344321d76b5a756c8b6e8aa42a6bb88f01c878887105bd290483c48ee0d2e0cf32bcf61c6d66990394a5136bf580e9145b8274e0f06"
+  },
   {
    "version": "2.30.0",
    "file": "webcam_bewegung_2_30_0.py",
