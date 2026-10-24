@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 20:33",
+ "generated": "2026-10-24 20:42",
  "versions": [
+  {
+   "version": "2.25.1",
+   "file": "webcam_bewegung_2_25_1.py",
+   "url": "",
+   "sha256": "f08d6c400bf85371fec517006efd9901b9e8cacd4abb4a9c7b04afc7b64751a4",
+   "date": "2026-10-24 20:42",
+   "notes": "the app icon (orange camera head) top left instead of the blue dot - web page and window.",
+   "sig": "eb3aa548b4c3d089617926c50e730c0867a2ac03994c75d9043c7c179b9ce9f357c328096b329a2b84da404335df92131f943bea06a34df6a202f34bb4c6e900"
+  },
   {
    "version": "2.25.0",
    "file": "webcam_bewegung_2_25_0.py",
