@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:19",
+ "generated": "2026-10-24 10:21",
  "versions": [
+  {
+   "version": "2.10.0",
+   "file": "webcam_bewegung_2_10_0.py",
+   "url": "",
+   "sha256": "c675b68d6642b65502849c7b2e700b5235b9b3cf9a6891060b2ff16f21d92c5b",
+   "date": "2026-10-24 10:21",
+   "notes": "sharing with a small logo: animal diary pictures, snapshots, recordings and timelapse videos (new share button in the recordings viewer) and the night report picture get a discreet strip \"Motion Watch\" + what / when (switch: Recording -> \"Shared pictures and videos with a small Motion Watch logo\").",
+   "sig": "c85a768f0c86d5c76310384aebbd7387f00cb4464e92f6032c9932731d1d02f87861ae15249237001e108a807a6cd52b015b6a9038fc8569e51329ee1b7ab107"
+  },
   {
    "version": "2.9.0",
    "file": "webcam_bewegung_2_9_0.py",
