@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 00:54",
+ "generated": "2026-10-24 09:14",
  "versions": [
+  {
+   "version": "2.3.0",
+   "file": "webcam_bewegung_2_3_0.py",
+   "url": "",
+   "sha256": "03e368ac4e529598e5675b1e1927322157edf0fe8a29db6685b267bc5d85d954",
+   "date": "2026-10-24 09:14",
+   "notes": "new app icon: orange tile with the white camera head (pan / tilt fork); one icon and one name «Motion Watch» for every address (no more green / red, «MW Intern / Extern») - one Tailscale link works at home and away."
+  },
   {
    "version": "2.2.10",
    "file": "webcam_bewegung_2_2_10.py",
