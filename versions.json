@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 22:11",
+ "generated": "2026-10-24 22:15",
  "versions": [
+  {
+   "version": "2.32.0",
+   "file": "webcam_bewegung_2_32_0.py",
+   "url": "",
+   "sha256": "54dd458296fb6f62402cf9d740eb67dabf58d81a6941a543f00818ba6973014e",
+   "date": "2026-10-24 22:15",
+   "notes": "diary: day overview for every day - persons, animals (best pictures), warm bodies, noises, recordings; 24-hour chart with temperature / humidity of the sensor, weather (Open-Meteo, off by default), rain and the events; sun, moon, place and the night report. Browse the days with ‹ › or the date.",
+   "sig": "226db353c82ae43310197af2a3ee9fd7a015cc9247942d52bf7095edf26cedea042d23d860ee5f14a4b5ac2eddc6453e4c259fe8a8608e8347769e442dc79d06"
+  },
   {
    "version": "2.31.0",
    "file": "webcam_bewegung_2_31_0.py",
