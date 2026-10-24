@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:21",
+ "generated": "2026-10-24 10:26",
  "versions": [
+  {
+   "version": "2.11.0",
+   "file": "webcam_bewegung_2_11_0.py",
+   "url": "",
+   "sha256": "56f129801511a06883f47db1a54f77376b7620e484cac668963084baa7ac513f",
+   "date": "2026-10-24 10:26",
+   "notes": "several devices: Cameras page -> \"Other Motion Watch devices\": picture, armed / alarm, battery, last event of every device (home network or Tailscale), arm / disarm one or all, search in the network, own password per device.",
+   "sig": "eb493e3eafb245d36063224051b165afd3304dc1dc1697cfe36a4eef4b48e8a2826535d439b597c9a67967894e1a81edbef9ab218dffe8be56c4590702309404"
+  },
   {
    "version": "2.10.0",
    "file": "webcam_bewegung_2_10_0.py",
