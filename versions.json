@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:38",
+ "generated": "2026-10-24 10:50",
  "versions": [
+  {
+   "version": "2.16.0",
+   "file": "webcam_bewegung_2_16_0.py",
+   "url": "",
+   "sha256": "732732c8d39a66e12a5d8fe62947268a49db9ea00d31343bf68fb33e28592191",
+   "date": "2026-10-24 10:50",
+   "notes": "overview in the settings: the arrow of a topic turns green while its main function is on (e.g. night report, timelapse, backup, MQTT); a group's arrow is green when at least one of its topics is on. Window: green dot at the title.",
+   "sig": "4bef080d3739eb43aeae61358ca2c3416c82c284b5d776abf43bbffb93841e4d483900d81d49709dc4695e2b2c289cb5e3eb567763bf3a7b42d1650513bc3c06"
+  },
   {
    "version": "2.15.0",
    "file": "webcam_bewegung_2_15_0.py",
