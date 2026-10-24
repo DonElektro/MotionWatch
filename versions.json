@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 23:26",
+ "generated": "2026-10-24 23:33",
  "versions": [
+  {
+   "version": "2.38.0",
+   "file": "webcam_bewegung_2_38_0.py",
+   "url": "",
+   "sha256": "ccdaf143918d6b60de50ba10275f2165268954ffc49099a4a397628bb4c60f87",
+   "date": "2026-10-24 23:33",
+   "notes": "self-check: one traffic light per part (camera, AI, servos, thermal camera, microphone, loudspeaker, temperature sensor, location, clock, internet, push, memory card, CPU temperature, power supply, battery, password, https) with what to do; on the web (panel + header badge) and in the Pi window (Weather & system).",
+   "sig": "3edb899e5162264240d754c168c0c13a26558bd9cfc9805b433736297c2850ecb42ce0fd02919b05987a3e853379cf7eaa9e8037f9d84abac09420da7e3dce0e"
+  },
   {
    "version": "2.37.0",
    "file": "webcam_bewegung_2_37_0.py",
