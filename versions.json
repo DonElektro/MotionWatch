@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 20:59",
+ "generated": "2026-10-24 21:49",
  "versions": [
+  {
+   "version": "2.28.0",
+   "file": "webcam_bewegung_2_28_0.py",
+   "url": "",
+   "sha256": "dc14ea7722b154d1795064c70801927a9d0057109dd9f3a97897eb904f4551f9",
+   "date": "2026-10-24 21:49",
+   "notes": "five languages: German, French, Italian, Romansh (Rumantsch Grischun) and English - web page, window, manual, setup assistant, push / SMS texts, quick start card, guest page; language menu instead of DE/EN (Ctrl+L in the window: next language); missing Romansh texts fall back to German. Two small surprises for Swiss users.",
+   "sig": "7843e3450043d6e251bb462111ad6618cb3be3ced4015607db39cb7bab5b3da281bf5ca1df5c84956e5fb6d11dd6cd7c28e1019ec6f8b277573e00ef1799400d"
+  },
   {
    "version": "2.27.0",
    "file": "webcam_bewegung_2_27_0.py",

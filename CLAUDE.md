@@ -17,6 +17,10 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   (alte Dateien bleiben im Repository, die Update-Funktion bietet sie zur Auswahl an).
 - Versionsnummer an vier Stellen ändern: `APP_VERSION = "X"`, `Motion Watch X` (Fenstertitel / Startmeldung),
   `{tr('Build')} X ·`, `webcam_bewegung_X.py` (Hilfe) – und eine Zeile `  * X: …` in der Änderungsliste oben in der Datei.
+- **Sprachen** (ab 2.28.0): Deutsch, Französisch, Italienisch, Rätoromanisch (Rumantsch Grischun), Englisch. Schlüssel ist immer der
+  englische Text. Deutsch: `DE` (Python) bzw. `I18N.de` / `TX` / `ALT` / `WZ` (Web). Französisch / Italienisch / Romanisch: Tabellen
+  `TRX["fr"|"it"|"rm"]` und die Anleitung `HELP_X` am Dateiende (das Web lädt sie über `/i18n/<sprache>.js`). Neue Texte in
+  allen Sprachen ergänzen; fehlt ein romanischer Text, erscheint Deutsch, bei Französisch / Italienisch Englisch.
 - Danach im Repository: `python3 webcam_bewegung_X_Y_Z.py --make-manifest . --sign-key SCHLUESSELDATEI` (schreibt und **signiert**
   `versions.json`), committen, pushen. Ab 2.4.0 installieren die Geräte nur signierte Versionen. Den geheimen Schlüssel
   (`MotionWatch_Signierschluessel.txt`, 64 Hex-Zeichen) hat nur Daniel – bei Bedarf danach fragen; **nie ins Repository** legen.
