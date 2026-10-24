@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-24 10:34",
+ "generated": "2026-10-24 10:36",
  "versions": [
+  {
+   "version": "2.14.0",
+   "file": "webcam_bewegung_2_14_0.py",
+   "url": "",
+   "sha256": "bfb020b8d2bb69f5d4210cf08115555d551093942feef7fc70e626f86bcd5250",
+   "date": "2026-10-24 10:36",
+   "notes": "SMS over an LTE stick (Notifications -> SMS): alarm (person, sabotage, warm body, noise) as a text message - by default only when there is no internet; ModemManager, AT commands or Huawei HiLink; pause + daily limit; test SMS.",
+   "sig": "09202a8fc2f09d151565fbebbf225348f0c22559396c533d5724a4c4c6908b93c7c5db484e728e3fe3b7204b753c941365ccb06fea19ba7775e1b08406442a05"
+  },
   {
    "version": "2.13.0",
    "file": "webcam_bewegung_2_13_0.py",
