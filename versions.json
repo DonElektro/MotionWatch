@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 13:07",
+ "generated": "2026-10-25 13:10",
  "versions": [
+  {
+   "version": "2.60.0",
+   "file": "webcam_bewegung_2_60_0.py",
+   "url": "",
+   "sha256": "8208d7fe739ac704ae6bb4aa56342fbb37e164273cebbdf82fb1ae0d7cfc6866",
+   "date": "2026-10-25 13:10",
+   "notes": "event report as PDF (recordings: 📄): pictures, time, place with map link, device, the log around the event and a checksum of the video - for the police or the insurance. No extra program needed.",
+   "sig": "847b976cdcecec97ac5029460187ffd03cb3f487e08de4e03a5fd1a1f5c7e70c11a9f09ba36ae815cde319f91c9f378b2f2687b241c82f9278a066ea598dc00c"
+  },
   {
    "version": "2.59.0",
    "file": "webcam_bewegung_2_59_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 10:06",
    "notes": "the settings search with its three buttons stays at the top while scrolling.",
    "sig": "b1930d8d6c4ab9a5c575f67f97769d55ba5e7a853d8a3ab8546a9897070aade065c0d4526ef17172941b8ca426f9a3e0dad81c8664d640ee8408b8331f6d1f05"
-  },
-  {
-   "version": "2.50.0",
-   "file": "webcam_bewegung_2_50_0.py",
-   "url": "",
-   "sha256": "d046617b4600a8fa9011594cae95d111571110802b8a8a630300f58a29ae98e8",
-   "date": "2026-10-25 09:23",
-   "notes": "picture for other programs (Home Assistant, Frigate, Blue Iris, VLC, NAS recorders): a secret address for the video (MJPEG) and a still picture, no login needed; optionally RTSP (H.264) if mediamtx is installed.",
-   "sig": "84cba5c734353e21f6efcc838bf1ce6a31c063744868727c47eea9788d9c4b02856cf2511d1914b5b8cd816a7339a51436366d28fef97e17f14c0d78f676d104"
   }
  ]
 }
