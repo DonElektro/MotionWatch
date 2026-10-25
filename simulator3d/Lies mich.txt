@@ -11,6 +11,10 @@ STARTEN
 3. Bleibt das Fenster schwarz oder stürzt es ab: "Start mit einfacher Grafik (OpenGL).bat" benutzen.
 
 MIT MOTION WATCH VERBINDEN
+- Ab Motion Watch 2.81.0 geht es von selbst: Der Simulator meldet sich alle 2 Sekunden im Netz (UDP-Port 8764),
+  Motion Watch findet ihn und übernimmt seine Adresse. Dann nur noch in Motion Watch die Taste "Simulation" drücken.
+  Gefundene Simulatoren stehen auch unter System & Netz -> Simulator ("Simulatoren im Netz", Knopf "Verwenden").
+  Geht es nicht (z. B. Firewall oder Gäste-WLAN), die Adresse wie unten von Hand eintragen:
 - Die Adresse des PCs herausfinden: Windows-Taste, "cmd" eingeben, Enter, dann "ipconfig" eingeben.
   Bei "IPv4-Adresse" steht z. B. 192.168.1.50
 - In Motion Watch unter System & Netz -> Simulator die Adresse eintragen: http://192.168.1.50:8765

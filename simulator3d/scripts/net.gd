@@ -13,16 +13,33 @@ var listening := false
 var error_text := ""
 
 
+var beacon := PacketPeerUDP.new()
+var beacon_t := 0.0
+
+
 func start(p: int) -> void:
 	port = p
+	beacon.set_broadcast_enabled(true)
 	var err := server.listen(port, "*")
 	listening = err == OK
 	error_text = "" if listening else "Port %d is busy (another simulator running?)" % port
 
 
+func _send_beacon() -> void:
+	"""every 2 s into the network: "here is a simulator" - Motion Watch finds it by itself (UDP port 8764)"""
+	var msg := JSON.stringify({"mwsim": 1, "name": "Motion Watch 3D-Simulator %s" % main.VERSION, "port": port, "version": main.VERSION}).to_utf8_buffer()
+	for dest in ["255.255.255.255", "127.0.0.1"]:
+		beacon.set_dest_address(dest, 8764)
+		beacon.put_packet(msg)
+
+
 func _process(_dt: float) -> void:
 	if not listening:
 		return
+	var tnow := Time.get_ticks_msec() / 1000.0
+	if tnow - beacon_t > 2.0:
+		beacon_t = tnow
+		_send_beacon()
 	while server.is_connection_available():
 		var peer: StreamPeerTCP = server.take_connection()
 		peer.set_no_delay(true)

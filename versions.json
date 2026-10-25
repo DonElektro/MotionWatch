@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 23:11",
+ "generated": "2026-10-25 23:49",
  "versions": [
+  {
+   "version": "2.81.0",
+   "file": "webcam_bewegung_2_81_0.py",
+   "url": "",
+   "sha256": "6a532736d416248f3e32fce4a975a6e2fadd8ac9e7c12ba6976ecf46c784719a",
+   "date": "2026-10-25 23:49",
+   "notes": "simulators are found by themselves: every simulator announces itself every 2 s (UDP 8764), Motion Watch lists them («Use») and - with «find by itself» on and no working connection - takes over the address (a PC before the Pi); simulator requests never go through a proxy.",
+   "sig": "2eddb3875e29494d6d5b3f44472580282b1467b87dae9eaa608a9441a56bb9fa0530f5523e0c8c84531dcee50c214b4a7e26ce49049b67568fdc68e1e6127d0f"
+  },
   {
    "version": "2.80.0",
    "file": "webcam_bewegung_2_80_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 19:34",
    "notes": "switching the simulation off no longer starts a recording: the alarms of the simulation are forgotten and the real camera first learns its picture for 30 seconds (no recording, no alarm during that time).",
    "sig": "480bfaaf238d2d46112945fc34cf8d0d7fbd29c4c18bc05f7575f0e30f3c80ab6ec6d0b1bbb465861f51957a06cbb711356f640c21d9209c88345676894ac50c"
-  },
-  {
-   "version": "2.71.0",
-   "file": "webcam_bewegung_2_71_0.py",
-   "url": "",
-   "sha256": "760a01d82fb5536c6cd5fed88e2af520dca81b5959d2ec630f79c7a89bc22ae2",
-   "date": "2026-10-25 19:17",
-   "notes": "simulator 2: real 3D view into a 360° world (own 360° photo possible), clock with fast time, moon and stars, rain / fog / snow, wind in the trees, cars with headlights, insects in the IR light, dew and spider web on the lens, covered camera, auto exposure and night noise, own cut-out photos as visitors, a ready-made night test.",
-   "sig": "176cf313b81ae3a9584b20b03ed0dfa0ca41378681210579d5fa879a258f9a6597b72fb33dae96f9589d5f0267d5f5912103a2a68684b795d8f963fadeae3e0c"
   }
  ]
 }

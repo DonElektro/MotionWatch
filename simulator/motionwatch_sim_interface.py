@@ -43,6 +43,7 @@ from urllib import request as _rq
 PROTOCOL = 1
 DEFAULT_PORT = 8765
 BOUNDARY = "mwsimframe"
+BEACON_PORT = 8764                    # UDP: "here is a simulator" (Motion Watch finds it by itself)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -280,8 +281,23 @@ class SimServer:
             self.events.append(ev); del self.events[:-500]
         return ev
 
+    def _beacon(self):
+        """Every 2 s a small UDP message into the network: Motion Watch finds the simulator by itself (port 8764)."""
+        import socket
+        so = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        so.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        while True:
+            msg = json.dumps({"mwsim": 1, "name": self.info.name, "port": self.port, "version": str(PROTOCOL)}).encode()
+            for dest in ("255.255.255.255", "127.0.0.1"):
+                try:
+                    so.sendto(msg, (dest, BEACON_PORT))
+                except OSError:
+                    pass
+            time.sleep(2.0)
+
     def serve_forever(self):
         srv = self
+        threading.Thread(target=self._beacon, daemon=True, name="beacon").start()
 
         class H(BaseHTTPRequestHandler):
             protocol_version = "HTTP/1.1"

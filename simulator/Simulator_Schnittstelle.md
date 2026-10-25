@@ -244,3 +244,12 @@ Die Seite `/preview` von Motion Watch zeigt die aktuelle Webseite so, wie sie au
   - auf der Webseite unter *System & Netz → Simulator → «📱 Handy- / Tablet-Ansicht»*,
   - oder direkt mit `http://<Adresse von Motion Watch>:5000/preview`.
 - Die Ansicht ist echt: Man kann darin alles bedienen. Sie zählt als ein Zuschauer.
+
+## Automatisch finden (ab Motion Watch 2.81.0)
+
+- Jeder Simulator, ob der Python-Simulator auf Pi oder PC oder der 3D-Simulator, schickt **alle 2 Sekunden** eine kleine Nachricht ins Netz, an UDP-Port **8764**: `{"mwsim": 1, "name": "...", "port": 8765, "version": "..."}`.
+- Motion Watch hört darauf.
+  - Unter *System & Netz → Simulator* stehen alle gefundenen Simulatoren. Mit **«Verwenden»** übernimmst du einen.
+  - Ist **«Simulator im Netz selbst finden»** eingeschaltet (Standard) und hat Motion Watch gerade keine funktionierende Verbindung, übernimmt es die Adresse eines gefundenen Simulators von selbst. Ein Simulator auf einem PC hat dabei Vorrang vor einem auf dem Pi.
+- Ein eigener Simulator muss dafür nur diese Nachricht senden. In Python macht das `SimServer` schon von selbst.
+- Funktioniert nur im gleichen Netz (gleiches WLAN / LAN). Gäste-WLANs blockieren solche Nachrichten oft. Dann die Adresse von Hand eintragen.

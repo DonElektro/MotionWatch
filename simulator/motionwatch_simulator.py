@@ -43,7 +43,7 @@ import numpy as np
 
 from motionwatch_sim_interface import SimServer, SimInfo, CamInfo, SimReply, DEFAULT_PORT
 
-SIM_VERSION = "3.5"
+SIM_VERSION = "3.6"
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
