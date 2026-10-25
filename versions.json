@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 09:53",
+ "generated": "2026-10-25 09:58",
  "versions": [
+  {
+   "version": "2.51.2",
+   "file": "webcam_bewegung_2_51_2.py",
+   "url": "",
+   "sha256": "58b1980f4c0746d7ff0320619618d481ad48e74444c88052b0cbd815007c4afb",
+   "date": "2026-10-25 09:58",
+   "notes": "message texts: every message (person, pre-alarm, thermal, noise) folds open and closed.",
+   "sig": "b9613d0dbdfb6358de598bfa3dad6b69e7f2cc3e7e5e93955dbaead5519893dd581ab7936d1506d536e9b796cc492b1186f8b2b2feab81a9cbb00db2a995ef03"
+  },
   {
    "version": "2.51.1",
    "file": "webcam_bewegung_2_51_1.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 23:41",
    "notes": "false alarms: mark a recording «was nothing» (animal, wind, light, rain, car, other); the recordings page then suggests matching settings (one tap to take them over) and can show only the false alarms.",
    "sig": "9768c3413f9aaa426c194f314a0b29dc57e5fbe3413ec7189939a7c7595299327cf3527f23374fcce4e9f3f9d5a5831f7abc86dc8a2c9ca593337d3a49e77805"
-  },
-  {
-   "version": "2.39.0",
-   "file": "webcam_bewegung_2_39_0.py",
-   "url": "",
-   "sha256": "7b1078405ffce79e2fa153c91cb8774225651a741a8165e9b6c3ee197baae670",
-   "date": "2026-10-24 23:39",
-   "notes": "settings «Simple / Expert» (simple: only the important ones, on the web and in the Pi window); button «Guard tonight»: switches on what a night needs, arms with the countdown and tells what is still missing.",
-   "sig": "d54a209b83a431e2e9287516212576ff7b37e40338d9112d837912342ffcda2f6d795df97abc9b98ba323a4af217265c3e3760b55022392cc7ad9e24c075120e"
   }
  ]
 }
