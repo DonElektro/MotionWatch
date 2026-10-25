@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 22:13",
+ "generated": "2026-10-25 22:34",
  "versions": [
+  {
+   "version": "2.78.0",
+   "file": "webcam_bewegung_2_78_0.py",
+   "url": "",
+   "sha256": "8729e9947aa5d8b20ed22a05f1483fe8f934e327d5a2629c25dc5052cb1b56ec",
+   "date": "2026-10-25 22:34",
+   "notes": "header shows how many watch right now: every browser with the page or a guest link open, plus the window on the Pi screen (when it is not minimised); the tooltip splits web / Pi screen.",
+   "sig": "ee9a418f5032d3f22909dda727b4439522a7bec67cd435cf287f3433916cce4b2da7ad8988274e6fa70a99ecfe07f53d06de5d49707bce0edb6dadfc64804007"
+  },
   {
    "version": "2.77.0",
    "file": "webcam_bewegung_2_77_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 18:52",
    "notes": "simulator connection: one button (quick switch «Simulation», F9 in the window) switches to a separate simulation program (motionwatch_simulator.py): its two cameras and thermal camera become the sources, Motion Watch sends servos, lights, relays and sound, and takes day / night, temperature, pressure, wind and sensor events from it. Switching off brings the real cameras back.",
    "sig": "96ddbe49846c403bce3f74ededf4ce6f57e362713b130fc3f30c842dc7ee3c89df70127223623364f84680bd1c264d6a5fc5058e48f363e635f3c5420bd4560a"
-  },
-  {
-   "version": "2.68.1",
-   "file": "webcam_bewegung_2_68_1.py",
-   "url": "",
-   "sha256": "440f1682aea6b8819409a2ca4d25d365e50d44be35acc12c39e2f8b8e72a2d20",
-   "date": "2026-10-25 18:36",
-   "notes": "UPS HAT (E): the state register read as in the Waveshare register manual (bit 7 charging, bit 6 fast charging, bit 5 power at the input); the chip is recognised by its ID (0x0A).",
-   "sig": "915d6da31c277a5dc7215074f47c3c0cd2251eaefe256ab51c007c04d329568981bfd30c5f00eb81ed55ad6cbfde3ab14faaceeb75f5dbabf70aa9756eac210c"
   }
  ]
 }
