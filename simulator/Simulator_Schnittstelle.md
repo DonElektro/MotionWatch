@@ -129,3 +129,4 @@ Das Bedienfenster hat vier Reiter:
 - Motion Watch holt in der Simulation nur so viele Bilder, wie unter *Simulator → Bilder pro Sekunde* eingestellt sind (Standard 6). Die feste Kamera und das Wärmebild bekommen halb so viele. Das schaltest du mit «CPU schonen während der Simulation» ein und aus.
 - Die Kamerabilder sind normal 960 × 540 (Kamera 1: 640 × 360). Wer grössere Bilder will, startet den Simulator mit `--hd`. Das braucht aber deutlich mehr CPU.
 - Im Fenster steht, wie viele Bilder pro Sekunde gerade abgeholt werden.
+- Ab 2.74.1 läuft die KI-Erkennung in der Simulation mit «CPU schonen» nur halb so oft.

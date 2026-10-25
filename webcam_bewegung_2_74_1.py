@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_74_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_74_1.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -421,6 +421,7 @@ Features
   * 2.74.0: much less CPU during the simulation: Motion Watch fetches only 6 pictures per second (adjustable, fixed camera and
     thermal picture half of it), the simulator draws every picture once for all viewers (its window shows the fetched ones),
     smaller simulator pictures (960x540, --hd for the big ones), pre-made picture noise.
+  * 2.74.1: simulation with CPU saving: the AI runs only half as often (smoother CPU load when somebody is in the picture).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -429,10 +430,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_74_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_74_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_74_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_74_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_74_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_74_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -449,7 +450,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.74.0"
+APP_VERSION = "2.74.1"
 
 
 def default_data_dir():
@@ -6876,6 +6877,8 @@ class AIDetector:
         gap = max(0.3, 2.0 * (STATE.get("ai_ms") or 0) / 1000.0)
         ct = STATE.get("cpu_temp") or 0
         gap *= 4.0 if ct >= 80 else 2.0 if ct >= 75 else 1.0
+        if CFG.get("sim_on") and CFG.get("sim_eco"):
+            gap *= 2.0                                     # simulation with CPU saving: the AI only half as often
         if time.time() - getattr(self, "_last_run", 0.0) < gap:
             return self.boxes
         self._last_run = time.time()
@@ -10809,61 +10812,62 @@ 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
-oFpXN23GVaTzOPAnhJPmJX9zaR5pEzsovY1MRsGScM7OD02eb2P/YLhfPfr/AVBLAwQUAAAACAAAACFcZdldhgASAAAUKAAAGgAAAFNpbXVsYXRvcl9TY2hu
-aXR0c3RlbGxlLm1knVpNbxtZdt3zVzzYQEARZEmyLfc0MT2B5E+1LVuw1FbQQWAWVY+sGla9IqpemSPBi1kEQdaTxSyzMRIgs5mVN+2V+U/6F+Qn5Jx7X/FD
-1qQ7EWCYrHof992Pc8+9j3fNSemz0pmL2F+m5uc//ps5u0xd5n3tbZ5bM1l+rozNnHXmLCuaPPZlZbqnVenLWZnnZn+n03lsq42XWe05wfR6NptaZ2tzeuXT
+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
-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
+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
-A9anaZ1tKCH+zAq9ES1ixQUFIBvQ0BM3w7KNl1tFOSPCO9S7aUy5dfXDZqq3kEfMNFJ5iZRIEKWCBAScN5OJnjsKQbOOULaspenBn97oNWvBCpgsXlERtD+0
-M1Z+xukT0SxvzLOJmGjTTQMhVL3WUmUoyXh0+oNen9/eav7mgfAKtf0tPx1iLgvN9V6PvzTBdkWc93p97RVI8b+5pnrcUVUuEPqrntF2Da6nZiGdEZdC4aDA
-3SZC/WmVVJfC+tROW9LH47RkwaJ8MPyWCMoLwouVtiZw+C1NDx4LIfE+s/l6N6q37Qpu3cUHErrxUxMpK8hYkJO8esP6pzsPd7T64YXqiqHf0kob22DzNM7H
-K3FUJ1RQ7u36uujLXzbNCl8mJiY3zoXKw4af9sht0WCjWhsHJk1ZHeug3Hz7UC7BDx7smW7bERiahw/kKeohnINMY6o/Z6hWbPxXEI40GelB2l8txWP5LUyI
-toKghgMJD71BhdQQm6bZ+pGPckch4mJcpR9R538AUEsBAhQDFAAAAAgAAAAhXE5V5oZhIAAA32IAABwAAAAAAAAAAAAAAKQBAAAAAG1vdGlvbndhdGNoX3Np
-bV9pbnRlcmZhY2UucHlQSwECFAMUAAAACAAAACFchO26dXVOAACs/gAAGAAAAAAAAAAAAAAApAGbIAAAbW90aW9ud2F0Y2hfc2ltdWxhdG9yLnB5UEsBAhQD
-FAAAAAgAAAAhXGXZXYYAEgAAFCgAABoAAAAAAAAAAAAAAKQBRm8AAFNpbXVsYXRvcl9TY2huaXR0c3RlbGxlLm1kUEsFBgAAAAADAAMA2AAAAH6BAAAAAA==
+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
+bGxlLm1kUEsFBgAAAAADAAMA2AAAAJyBAAAAAA==
 """
 SIMPROC = {"p": None}
 
@@ -11519,7 +11523,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_74_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_74_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -23767,7 +23771,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.74.0")
+        self.root.title("Motion Watch 2.74.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -24057,7 +24061,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.74.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.74.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -30903,7 +30907,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.74.0 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.74.1 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:
