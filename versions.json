@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 00:04",
+ "generated": "2026-10-26 00:23",
  "versions": [
+  {
+   "version": "2.84.0",
+   "file": "webcam_bewegung_2_84_0.py",
+   "url": "",
+   "sha256": "2d56574e6d46944410d2fc6993e3f30e7e1e7b340e0b2dd7a63cb5533d912b6f",
+   "date": "2026-10-26 00:23",
+   "notes": "New page \"Tools\": network scanner (makers, names, warning about new devices, \"am I at home\" with automatic arming), Wi-Fi surroundings with the best channel, internet test, security check, Bluetooth scanner with tracker warning, focus assistant, servo test, loudspeaker / microphone test, memory card test, diagnosis package without secrets, power calculator.",
+   "sig": "3a30b044747a6d7d425230cd332ce2b8927dc67c80393396b3ff5a3a30ab2dbbe685d9b57d8ec6c69be2fae6edc513f320f8b0109ad3fa05069585546294b60e"
+  },
   {
    "version": "2.83.0",
    "file": "webcam_bewegung_2_83_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 20:57",
    "notes": "simulator video scenarios: a 360° video (or a normal video) instead of the drawn world - real pictures, the cameras look around in it with the servos, big videos are made smaller once, rough thermal picture (what moves is warm), optional sensor events per video second (.json next to the video).",
    "sig": "054d6336800dfa1e8963d512dd3aa8901e1158e5c38975e42ca37b4ddc47259c2ab2a2c1932d6cc8c3d6d79313922e52cd3578b6502bb2880cd134434841c602"
-  },
-  {
-   "version": "2.74.1",
-   "file": "webcam_bewegung_2_74_1.py",
-   "url": "",
-   "sha256": "b1a29544ff4c5b3d02adda5c543ef8d1d2220ca0a66a3ecbf1c1c702030e65da",
-   "date": "2026-10-25 20:14",
-   "notes": "simulation with CPU saving: the AI runs only half as often (smoother CPU load when somebody is in the picture).",
-   "sig": "b1355b9547b777a1bab5515a70ca26df03d6fe7adacae33c666df21e0e25a60998e29fe012fcd20f38d5958d314d85f7534e81421506130a65021a7d7c1e4707"
   }
  ]
 }
