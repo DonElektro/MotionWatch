@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 11:09",
+ "generated": "2026-10-25 11:11",
  "versions": [
+  {
+   "version": "2.56.0",
+   "file": "webcam_bewegung_2_56_0.py",
+   "url": "",
+   "sha256": "9a918070f7a095b9e944f3f528090d721803a0099a1526d476adfcc249aecbc4",
+   "date": "2026-10-25 11:11",
+   "notes": "own GPS module (USB / serial, or gpsd): location without the phone; theft tracking - when the armed device is carried away, an alarm and then its position (map link) every 5 minutes.",
+   "sig": "676a3f845369d06655540a9e259ef819d88519f3524b6f48ca9e07092bcbfcc2db4e369de00c52f9ff95e52dae7dd6ea01372b73a1618d36b9eae7ff10865100"
+  },
   {
    "version": "2.55.0",
    "file": "webcam_bewegung_2_55_0.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-25 00:34",
    "notes": "protection against crashes of the whole Pi: the AI runs at most a few times per second and slower when the Pi gets hot; every 10 s the program notes CPU temperature and power supply - after an unexpected end the self-check shows what it was like; two short runs in a row -> «safe start» (AI, thermal camera, night vision, IR light, patrol off) with a push message. The UPS shutdown needs plausible values and 3 minutes of running first.",
    "sig": "89fb2a2408062c6e411dd212038be4ffc500cfb08b443cd57632604c60f43ba61f463f9ee08f74e8eead4d3d9a588084ca88b4afa3ceaba97f22b317b068180f"
-  },
-  {
-   "version": "2.42.3",
-   "file": "webcam_bewegung_2_42_3.py",
-   "url": "",
-   "sha256": "ce5fcde159423c4a7d30a5170a7d4a57c15b6e45beef8008cc381a5f63e00d63",
-   "date": "2026-10-25 00:14",
-   "notes": "the green arrows follow a switch at once (also in Simple), taken from the switches on the page itself.",
-   "sig": "d3b7071dd93d05cf3fb32e6dd24a3ef7a0218724a8d89b0fcd7eb76816135d03c5aeb33257f27b9c0855918b77a6c1a0978361fa958490549d7c7e4e498da107"
   }
  ]
 }
