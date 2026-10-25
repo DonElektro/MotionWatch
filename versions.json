@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 09:14",
+ "generated": "2026-10-25 09:20",
  "versions": [
+  {
+   "version": "2.49.0",
+   "file": "webcam_bewegung_2_49_0.py",
+   "url": "",
+   "sha256": "6507f491b18ce943a0f5aceff0d7240e5be9feed925bdb26a250c1b2d90d1349",
+   "date": "2026-10-25 09:20",
+   "notes": "continuous recording (off by default): all the time with few pictures per second in 10-minute pieces, kept for N hours; the recordings page shows a 24-hour timeline with the alarms marked - tap to watch.",
+   "sig": "324065cbcb67d13641a1c5897437cfd8518cb5f34394185d8cce3cfc9076d8a2471009e9f7bb47e9c2ae8e4d1883de4966de0da8b89f1651475097390a271c07"
+  },
   {
    "version": "2.48.0",
    "file": "webcam_bewegung_2_48_0.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 23:14",
    "notes": "settings: the location is either taken automatically from the phone or picked by tapping on a map (with place search and «my position»); replaces the two number fields.",
    "sig": "d257d387f7cd08115e80a1d386062c66100505e2f6068101101a89a7cee3d7dd806bc9f4fe78e4294347cc4ce2d28dc06c18a6b8ed85dc5d0e8f8d8220b5c60d"
-  },
-  {
-   "version": "2.35.0",
-   "file": "webcam_bewegung_2_35_0.py",
-   "url": "",
-   "sha256": "2348e68c53306637f8ecf483b19d9412d9e21aa6c4fb11922b5f00c15eae7397",
-   "date": "2026-10-24 22:59",
-   "notes": "the marmot only appears over the live picture (never in recordings) and keeps its secret better.",
-   "sig": "29fe931933c1df7fa27109901f94bbaf5d91dd97da4d42c6f34c694786ef2cec8386a043536a7a80e8c0fe42ff25f8f19a51f9592c81db7e885536a8884eac06"
   }
  ]
 }
