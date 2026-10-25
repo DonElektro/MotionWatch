@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 09:48",
+ "generated": "2026-10-25 09:53",
  "versions": [
+  {
+   "version": "2.51.1",
+   "file": "webcam_bewegung_2_51_1.py",
+   "url": "",
+   "sha256": "8855c661d01ad358744425b420a6c2ebbedaece93267601bb689342b1901b203",
+   "date": "2026-10-25 09:53",
+   "notes": "settings: a third button «open the groups only» (all groups open, their topics closed = overview).",
+   "sig": "67c9e4f724970106a8682a07c1b45bce8544e601cc16698054441e0bb008f3464da1353b38c8406d2b66792b0f7096d04dd40240e2acb3e0846db7b11be89304"
+  },
   {
    "version": "2.51.0",
    "file": "webcam_bewegung_2_51_0.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 23:39",
    "notes": "settings «Simple / Expert» (simple: only the important ones, on the web and in the Pi window); button «Guard tonight»: switches on what a night needs, arms with the countdown and tells what is still missing.",
    "sig": "d54a209b83a431e2e9287516212576ff7b37e40338d9112d837912342ffcda2f6d795df97abc9b98ba323a4af217265c3e3760b55022392cc7ad9e24c075120e"
-  },
-  {
-   "version": "2.38.0",
-   "file": "webcam_bewegung_2_38_0.py",
-   "url": "",
-   "sha256": "ccdaf143918d6b60de50ba10275f2165268954ffc49099a4a397628bb4c60f87",
-   "date": "2026-10-24 23:33",
-   "notes": "self-check: one traffic light per part (camera, AI, servos, thermal camera, microphone, loudspeaker, temperature sensor, location, clock, internet, push, memory card, CPU temperature, power supply, battery, password, https) with what to do; on the web (panel + header badge) and in the Pi window (Weather & system).",
-   "sig": "3edb899e5162264240d754c168c0c13a26558bd9cfc9805b433736297c2850ecb42ce0fd02919b05987a3e853379cf7eaa9e8037f9d84abac09420da7e3dce0e"
   }
  ]
 }
