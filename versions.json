@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 13:50",
+ "generated": "2026-10-25 14:00",
  "versions": [
+  {
+   "version": "2.67.0",
+   "file": "webcam_bewegung_2_67_0.py",
+   "url": "",
+   "sha256": "5744c482c18ca79ef0ddc78f84615f0e48ffcec3e348bc3599c2dab5d57d7d5e",
+   "date": "2026-10-25 14:00",
+   "notes": "when Motion Watch starts in the background (autostart), a small message appears on the Pi's desktop with the address of the page (waits for the desktop after booting; can be switched off under Setup).",
+   "sig": "752cd2b1e5c3281719670c82871ba51eb8ae35296651d2f057958c853707b080bd3705cb467a11ac5aae83b853c68cecca5285f3a6b7d961398690a928a73002"
+  },
   {
    "version": "2.66.0",
    "file": "webcam_bewegung_2_66_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 12:49",
    "notes": "self-check: the loudspeaker hint is shorter.",
    "sig": "f31e34c46d1d5233a8ef33881c542f939b3dfc8533bff826cfcc88b1e3ee96f1c1f60a907493a8afeedf349c666860ff44e576adee515d0eaa329ea476397d01"
-  },
-  {
-   "version": "2.57.0",
-   "file": "webcam_bewegung_2_57_0.py",
-   "url": "",
-   "sha256": "654a644db763522b0fbf1b5fc838c911bef14e1c6463d1bcf1a666d606d74c97",
-   "date": "2026-10-25 11:38",
-   "notes": "«Talk» as a quick switch in the camera control - safe against an accidental press: tap once to unlock (6 s; a long press does not unlock), then hold to talk. It replaces the unprotected big button next to the joystick.",
-   "sig": "b35d6489e68e9ecbc2f2912bd84b2ba1d16f2a0e39c9c851ef4429f36f95727c28e35f6c85bcb085b71df75bf26f99f2326dcc214cc8b07cd9a2ac56b502870e"
   }
  ]
 }
