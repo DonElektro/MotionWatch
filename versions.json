@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 11:38",
+ "generated": "2026-10-25 11:50",
  "versions": [
+  {
+   "version": "2.58.0",
+   "file": "webcam_bewegung_2_58_0.py",
+   "url": "",
+   "sha256": "b73c0e36f04c10711df38ffa185846a4ea8b7f39b55c9567d5d0d646b236b5a4",
+   "date": "2026-10-25 11:50",
+   "notes": "«Mask» as a quick switch in the camera control (web and window): shows the motion mask over the picture.",
+   "sig": "5e67bcf8d635182d64081ce2425aaf1d806ce6b7dbefc95891f5869e66fef92abb9a7c8cd18c9ec535cd71d5c422b2f1ea4541e4ae941e2a475e2238205a8709"
+  },
   {
    "version": "2.57.0",
    "file": "webcam_bewegung_2_57_0.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-25 08:39",
    "notes": "operator mode keeps a copy of all settings when it is switched on; unlocking with the PIN puts back everything that was changed in the meantime (not: armed / disarmed, camera position, location, own Wi-Fi).",
    "sig": "7ff70d4d6c9ec3242e0fb6decfe21f07e5b16951b2d33f8d1bde52d6dc30092dfcb9315703b10eea7d426c8d4fa469fe5cd045a16c237749de771cf3fe6d6f0d"
-  },
-  {
-   "version": "2.43.1",
-   "file": "webcam_bewegung_2_43_1.py",
-   "url": "",
-   "sha256": "4e0534230bd7d06c789ee4a48c47bd7fd79282e4d5f94c668083fa385736e483",
-   "date": "2026-10-25 01:03",
-   "notes": "only one Motion Watch at a time: started by hand while the autostart runs it in the background (without a window), the program asks and takes over with its window (the background service starts again when the window is closed). The web page notices when a switched-off Pi is back and reloads by itself.",
-   "sig": "242188a8b8078233f8c7a2de9dd50b22782f058eda1b29428d4fdca6b69aa0c6ac422cb548719e186702023ecc9a0d7a00dadf5e94b0a4edd8cf321c633ab106"
   }
  ]
 }
