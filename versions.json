@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 22:34",
+ "generated": "2026-10-25 23:03",
  "versions": [
+  {
+   "version": "2.79.0",
+   "file": "webcam_bewegung_2_79_0.py",
+   "url": "",
+   "sha256": "3f7cf0361c3543fc51f4b92529f6d00ede9706ed28ba635f05fe9b6e89b97c33",
+   "date": "2026-10-25 23:03",
+   "notes": "the quick switches below the joystick can be chosen and arranged («Arrange» tile: tick, ▲ ▼, reset) - web page and window; the viewer count moved to the right in the header.",
+   "sig": "55857ec4cbc924924ce3c4014b18a7c64a88f2cfa084ea19d5a80fde7b3ad1e3052ace23557d1e04db1ee23bfa5808618d311dba7cca1e4c18c8fe7ed654d701"
+  },
   {
    "version": "2.78.0",
    "file": "webcam_bewegung_2_78_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 19:02",
    "notes": "the simulator is inside Motion Watch (signed with it): «Install simulator» puts it on the Pi with a menu entry and a desktop icon, «Start» / «Stop» runs it on the Pi; «Download (ZIP)» for a PC.",
    "sig": "32f8dd384024478bd04e2ac9165fa0328cde310ae1b31f82f8ae135e7a1517e16880a87a3c9ed23f3608053a14a1bbe0f0b06b6551c7e9fef3a11724443f0e00"
-  },
-  {
-   "version": "2.69.0",
-   "file": "webcam_bewegung_2_69_0.py",
-   "url": "",
-   "sha256": "9218bb1446e00acd1a95e034f61ce559bae31e83bcdf750ddade76848f62e060",
-   "date": "2026-10-25 18:52",
-   "notes": "simulator connection: one button (quick switch «Simulation», F9 in the window) switches to a separate simulation program (motionwatch_simulator.py): its two cameras and thermal camera become the sources, Motion Watch sends servos, lights, relays and sound, and takes day / night, temperature, pressure, wind and sensor events from it. Switching off brings the real cameras back.",
-   "sig": "96ddbe49846c403bce3f74ededf4ce6f57e362713b130fc3f30c842dc7ee3c89df70127223623364f84680bd1c264d6a5fc5058e48f363e635f3c5420bd4560a"
   }
  ]
 }
