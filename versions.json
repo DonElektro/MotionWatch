@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 09:09",
+ "generated": "2026-10-25 09:12",
  "versions": [
+  {
+   "version": "2.47.0",
+   "file": "webcam_bewegung_2_47_0.py",
+   "url": "",
+   "sha256": "5b284812416c562a4afb7b8db767ba046c48b5d5eb81745a7ed9b8951654e6b3",
+   "date": "2026-10-25 09:12",
+   "notes": "zones: «line» (a person crosses it - in both directions or only in the arrow direction) and «dwell area» (a person stays longer than N seconds); message in the log and - when armed - a push message with picture.",
+   "sig": "de29ca239ff7ac30ee23f5a9160fe0d0c62172563cf8897c1bc7ec1e4163ed07335aa63a989de079048865d8b8a41a161a3ce8c49d7474af6cf34540fdff1c07"
+  },
   {
    "version": "2.46.0",
    "file": "webcam_bewegung_2_46_0.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 22:49",
    "notes": "recordings: filter by place (pictures within 2 km = one place, names from OpenStreetMap, can be renamed) and a map with all places (tap = preview, «show only this place»). The Bluetooth loudspeaker is no longer on the page «Cameras» (still under Settings -> Loudspeaker). The marmot only peeks out briefly; the code on its belly is real.",
    "sig": "8cfe37f580fc2626aa30981a1a48e4ac8d321082935e0a373b493f8473c6375d46bffe538a6a6a65889eb7e741eae065752bf1f38a46e3b3ade318a404455603"
-  },
-  {
-   "version": "2.33.0",
-   "file": "webcam_bewegung_2_33_0.py",
-   "url": "",
-   "sha256": "ff28abd982e50b3945b91fc2879af1fa63b2236a84904bd50b4ecf404012f793",
-   "date": "2026-10-24 22:18",
-   "notes": "the marmot has a little secret on its belly.",
-   "sig": "eaac0620c6478d765deff2bfc6fa627c9640d2cc22a8cd1593c22d873d0e5aa1c8f30745760a98731b11765fff8707ccf884a636be7633f5d63ffa9b529ffd08"
   }
  ]
 }
