@@ -1,0 +1,40 @@
+Motion Watch – 3D-Simulator (Etappe 1: Camping)
+================================================
+
+STARTEN
+1. Den ganzen Ordner entpacken (nicht direkt aus der ZIP-Datei starten).
+2. MotionWatch3D.exe doppelklicken.
+   - Windows zeigt vielleicht "Der Computer wurde durch Windows geschützt":
+     auf "Weitere Informationen" und dann "Trotzdem ausführen" klicken (das Programm ist nicht signiert).
+   - Die Windows-Firewall fragt nach dem Netzwerkzugriff: "Private Netzwerke" erlauben,
+     sonst kann Motion Watch den Simulator nicht erreichen.
+3. Bleibt das Fenster schwarz oder stürzt es ab: "Start mit einfacher Grafik (OpenGL).bat" benutzen.
+
+MIT MOTION WATCH VERBINDEN
+- Die Adresse des PCs herausfinden: Windows-Taste, "cmd" eingeben, Enter, dann "ipconfig" eingeben.
+  Bei "IPv4-Adresse" steht z. B. 192.168.1.50
+- In Motion Watch unter System & Netz -> Simulator die Adresse eintragen: http://192.168.1.50:8765
+- Die Taste "Simulation" drücken. Oben im Simulator steht dann "verbunden mit ...".
+- Die Steuerung des Simulators erscheint auch auf der Motion-Watch-Webseite unter
+  System & Netz -> Simulator -> Simulator-Steuerung.
+
+BEDIENUNG IM FENSTER
+- Rechte Maustaste gedrückt halten: umschauen.  W A S D: fliegen,  Q / E: tiefer / höher,  Shift: schneller,
+  Mausrad: Fluggeschwindigkeit.
+- Linksklick auf den Boden: setzt das Tier oder die Person hin, das oben in der Liste gewählt ist.
+- Taste 1: durch die Kopfkamera schauen,  2: durch die feste Kamera,  0: frei fliegen,  H: Bedienfeld aus / ein.
+- Rechts: Vorschau der Kopfkamera, der festen Kamera und des Wärmebilds, darunter alle Einstellungen
+  (Uhrzeit, Wetter, Besuch, Sensoren, Grafik "einfach / schön").
+
+WAS ES KANN (Etappe 1)
+- Camping-Platz in 3D: Wohnwagen (Tür, Fenster leuchtet nachts), Zelt, Velo, Tisch, Bäume, Strasse, Hügel.
+- Kamera 0 auf dem Schwenkkopf (folgt den Servos von Motion Watch), Kamera 1 fest, Wärmebildkamera.
+- Weisses Licht und Infrarot als echte Scheinwerfer (Infrarot sieht nur die Kopfkamera, nachts grau).
+- Tag und Nacht mit eigener Uhr, Mond, Wetter (klar, bewölkt, Regen, Nebel, Schnee), Wind bewegt die Bäume.
+- Besuch: Person, Fuchs, Wildschwein, Reh, Katze, Dachs, Hund, Auto mit Scheinwerfern, ein Dieb (Velo, Wohnwagen).
+  Tiere flüchten vor der Sirene und nachts vor dem weissen Licht, der Dieb rennt bei der Sirene weg.
+- Sensoren: Wohnwagentür, PIR beim Zelt, Gas, Velo; Nacht-Test (2 Minuten).
+- Wärmebild: kalter Himmel, Boden warm am Tag und kühl in der Nacht, Menschen mit warmem Gesicht, Tiere, heisser Motor.
+
+PORT / START-OPTIONEN
+MotionWatch3D.exe -- --port 8766 --hour 22.5 --quality simple
