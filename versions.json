@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 09:58",
+ "generated": "2026-10-25 10:06",
  "versions": [
+  {
+   "version": "2.51.3",
+   "file": "webcam_bewegung_2_51_3.py",
+   "url": "",
+   "sha256": "87a7b0c8dfc098394391b5f221d47d915507d2564aaa89913438aa4430989426",
+   "date": "2026-10-25 10:06",
+   "notes": "the settings search with its three buttons stays at the top while scrolling.",
+   "sig": "b1930d8d6c4ab9a5c575f67f97769d55ba5e7a853d8a3ab8546a9897070aade065c0d4526ef17172941b8ca426f9a3e0dad81c8664d640ee8408b8331f6d1f05"
+  },
   {
    "version": "2.51.2",
    "file": "webcam_bewegung_2_51_2.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 23:44",
    "notes": "one-page quick guide for the campsite (5 languages, printable): set up, connect, evening, alarm, morning, when something does not work. The QR card is now called «QR codes for connecting».",
    "sig": "55679e87bf90dfc84de62f2225dd7170aeaff4a9df518b08ec98dea4fbee028fefb380b3db759b19019824c6269884c4e77deba3dce79066c5579a14a7c2b007"
-  },
-  {
-   "version": "2.40.0",
-   "file": "webcam_bewegung_2_40_0.py",
-   "url": "",
-   "sha256": "ad3e7c6ad1129807d56eeca8a60e68aa8df5afa113997988307c2fa0671954b9",
-   "date": "2026-10-24 23:41",
-   "notes": "false alarms: mark a recording «was nothing» (animal, wind, light, rain, car, other); the recordings page then suggests matching settings (one tap to take them over) and can show only the false alarms.",
-   "sig": "9768c3413f9aaa426c194f314a0b29dc57e5fbe3413ec7189939a7c7595299327cf3527f23374fcce4e9f3f9d5a5831f7abc86dc8a2c9ca593337d3a49e77805"
   }
  ]
 }
