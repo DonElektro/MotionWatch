@@ -99,3 +99,26 @@ Das Bedienfenster hat vier Reiter:
 - **Ausgeschnittene Fotos (PNG mit durchsichtigem Hintergrund):** in die Ordner `sim_assets/person/`, `sim_assets/fox/`, `sim_assets/boar/`, `sim_assets/deer/` und `sim_assets/cat/`. Dann laufen echte Bilder statt gezeichneter Figuren durchs Bild. Gut geeignet zum Testen der KI.
 
 **Kameraeffekte:** automatische Belichtung, Rauschen bei Nacht, abgedunkelte Ecken und Bewegungsunschärfe beim Schwenken.
+
+## Simulator 3: noch echter (ab Motion Watch 2.73.0)
+
+**Automatisch aktuell:** Motion Watch bringt immer die passende Simulator-Version mit.
+- Ist der Simulator auf dem Pi installiert, ersetzt Motion Watch ihn beim Start von selbst durch die neue Version. Läuft er gerade, wird er neu gestartet.
+- Läuft der Simulator auf einem PC, merkt er beim Verbinden, dass Motion Watch eine neuere Version hat. Er lädt sie dann selbst von Motion Watch (`/sim/simulator.zip`), prüft jede Datei mit einer Prüfsumme und startet neu. Im Fenster steht kurz «Aktualisiert – startet neu …».
+- Wer das nicht will, startet den Simulator mit `--no-update`.
+
+**Was neu echter aussieht:**
+- Jeder Bildpunkt kennt seine Entfernung. Dadurch werden Licht und Dunst richtig berechnet.
+- Das Licht der Lampen nimmt mit der Entfernung ab: Nahes ist hell, Fernes bleibt dunkel. Das gilt für das weisse Licht, das IR-Licht, das Licht aus der offenen Wohnwagentür und die Scheinwerfer.
+- Wiese mit Muster in der Perspektive, Berge mit Schneegipfeln, Wolken, die Sonne mit Blendung, Sterne und Mond in der Nacht.
+- Dunst und Nebel nehmen mit der Entfernung zu. Bei Nebel sieht man etwa 45 m weit, bei Schnee etwa 250 m, bei Regen etwa 500 m. Neues Wetter: «bewölkt».
+- Bessere Figuren: Menschen mit schwingenden Armen und verschiedenen Jacken, Fuchs mit Ohren und buschigem Schwanz, Wildschwein mit Rüssel, Reh mit Hals.
+- Kamera: leichte Verzerrung wie bei einem Weitwinkel, farbiges Rauschen in der Nacht, Belichtung wird am unteren Bildteil gemessen.
+
+**Wärmebild mit Physik:**
+- Ein klarer Himmel ist sehr kalt (bis etwa 35 °C kälter als die Luft), ein bewölkter fast so warm wie die Luft.
+- Der Boden wird an der Sonne warm und kühlt in klaren Nächten ab. Steine sind am Tag heiss und geben die Wärme am Abend ab.
+- Wohnwagen-Wände sind am Abend warm. Aus der offenen Tür kommt warme Luft.
+- Menschen: das Gesicht ist am wärmsten, die Jacke deutlich kühler. Tiere haben warme Augen.
+- Beim Auto sind Motor und Auspuff heiss. Regen und Nebel machen alles gleichmässiger.
+- Dazu kommen Rauschen und feine Streifen wie bei einem echten Wärmesensor.

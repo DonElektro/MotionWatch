@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 19:34",
+ "generated": "2026-10-25 19:54",
  "versions": [
+  {
+   "version": "2.73.0",
+   "file": "webcam_bewegung_2_73_0.py",
+   "url": "",
+   "sha256": "15450547289b50a2f06e89bfcc026c8551666350b3750310b4670d5cb59b0824",
+   "date": "2026-10-25 19:54",
+   "notes": "Simulator 3 - updates itself (on the Pi when Motion Watch starts, on a PC when it connects: it fetches the new version from Motion Watch, checks the checksums and restarts); much more real: a distance for every pixel, light that falls off with the distance, haze and fog, ground pattern, clouds, sun, stars, better figures, lens distortion, glare; thermal picture with physics (cold clear sky, ground warmed by the sun and cooling at night, warm walls, clothes, engine).",
+   "sig": "89c8ce0a77f95b36eb2e3bc9ca12264f89a4dffb84d70a8eafff1e4d6aa56d4f38c678aece768d424e9bdbccf22be31d0c980ea02a7c527c30a22a98420d6604"
+  },
   {
    "version": "2.72.1",
    "file": "webcam_bewegung_2_72_1.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 13:42",
    "notes": "hardware check step by step (System → Help and setup): camera, movement, AI, thermal camera, servos, microphone, loudspeaker, lights, push message and every extra sensor - each step checks itself where it can.",
    "sig": "54c3fcfc102781d8f64fa17c764fd4fe2bc0404fa934574b5f13e66ceee1738c57cb48467bb05d2cec568dcf060a68e8882b51ae26154513433670b215e11a04"
-  },
-  {
-   "version": "2.63.0",
-   "file": "webcam_bewegung_2_63_0.py",
-   "url": "",
-   "sha256": "4bf6feb0e728fddaa9f21ebd6e3bae71f65b62662fa9b0f4f1c3a421ad53247c",
-   "date": "2026-10-25 13:39",
-   "notes": "several users (System → Users): own login per person with a role - «Operate» (arm / disarm, lights, camera, talk; no settings) or «View only». The web password stays the administrator. The log shows who did what.",
-   "sig": "193582ff380501cb04f2d87b2de0107c2c68aa4367846d9da4bd118a692ffd5a285a6dbb1edc21dc6883b0f41bd4416af95149187a1647067760f76f7b192702"
   }
  ]
 }

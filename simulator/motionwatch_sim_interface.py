@@ -85,6 +85,11 @@ class MWState:
     armed: bool = False
     picture_mode: str = "color"       # color | night_grey | grey  (what Motion Watch makes of the picture)
     device: str = "Motion Watch"
+    # for the automatic update of the simulator: sha256 of the newest simulator files that Motion Watch carries, and where
+    # to fetch them (GET <scheme>://<address of Motion Watch>:<port>/sim/simulator.zip - no password needed for this file)
+    sim_files: dict = field(default_factory=dict)
+    mw_scheme: str = "http"
+    mw_port: int = 5000
 
     @staticmethod
     def from_dict(d: dict) -> "MWState":
@@ -160,6 +165,7 @@ class SimServer:
         self.state_t = 0.0                # when Motion Watch last sent its state
         self.reply = SimReply()
         self.events: List[SimEvent] = []
+        self.mw_addr = ""
         self.lock = threading.Lock()
         self._httpd = None
 
@@ -217,6 +223,7 @@ class SimServer:
                     return self._json({"ok": False, "error": f"bad state: {e}"}, 400)
                 with srv.lock:
                     srv.state, srv.state_t = st, time.time()
+                    srv.mw_addr = self.client_address[0]          # where Motion Watch runs (for the automatic update)
                 srv.on_state(st)
                 self._json(asdict(srv.world(time.time())))
 

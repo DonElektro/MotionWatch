@@ -1,74 +1,96 @@
 #!/usr/bin/env python3
 """
-Motion Watch – camping simulator 2  (separate program, protocol: motionwatch_sim_interface.py in the same folder)
+Motion Watch – camping simulator 3  (separate program, protocol: motionwatch_sim_interface.py in the same folder)
 
-Tests Motion Watch without hardware - as real as a small Python program can be:
-  * real 3D view: the cameras look into a 360° world (a drawn camping place, or YOUR OWN 360° photo / phone panorama),
-    camera 0 turns with the servos of Motion Watch, camera 1 is fixed on the caravan, thermal camera next to camera 0,
-  * time of day with its own clock (set the hour, let time run faster), sun, dusk, stars, moon,
-  * weather: clear, rain, fog, snow; wind moves the trees; temperature, humidity, air pressure ("storm comes"),
-  * visitors walk on the ground in real distances: person, fox, wild boar, deer, cat - or your own cut-out photos (PNG),
+Tests Motion Watch without hardware:
+  * real 3D: the cameras look into a 360° world with a depth for every pixel (a drawn camping place or YOUR OWN 360° photo);
+    camera 0 turns with the servos of Motion Watch, camera 1 is fixed on the caravan, the thermal camera sits next to camera 0,
+  * ground with perspective texture, clouds, sun and its glare, haze and fog that grow with the distance,
+  * light that falls off with the distance: floodlight cone, infrared light (NoIR camera), headlights, the open caravan door,
+  * time of day with its own clock, dusk, moon, stars; weather: clear, cloudy, rain, fog, snow; wind moves the trees,
+  * visitors on the ground in real distances: people, fox, wild boar, deer, cat - or your own cut-out photos (PNG);
     animals flee from the siren or the white light at night,
-  * false-alarm makers: car headlights, insects in the infrared light, branches in the wind,
-  * camera effects: auto exposure, noise at night, vignetting, motion blur while the head turns, dew / spider web on the
-    lens (lens check), covered camera (sabotage alarm),
-  * sensors: caravan door, PIR at the tent, gas, bike tag; a ready-made night test that runs by itself.
+  * false-alarm makers: car headlights, insects in the IR light, branches in the wind,
+  * camera: auto exposure, noise and colour noise at night, vignetting, a little lens distortion, glare (bloom),
+    motion blur while the head turns; dew / spider web / a hand on the lens,
+  * thermal camera with physics: cold sky (clear sky much colder than a cloudy one), ground warm in the sun and cooling
+    at night, warm walls in the evening, people with clothes (face warmer than the jacket), animals with fur, a hot engine,
+  * sensors: caravan door, PIR at the tent, gas, bike tag; a ready-made night test,
+  * keeps itself up to date: Motion Watch tells which version it carries, the simulator fetches it and restarts.
 
 Start:   python3 motionwatch_simulator.py                 (window with the controls)
          python3 motionwatch_simulator.py --pano my_360_photo.jpg
-         python3 motionwatch_simulator.py --no-window --port 8765
-Own pictures: put a 360° photo (equirectangular, 2:1, e.g. from a 360 camera or the phone panorama) and / or cut-out
-PNG pictures with transparency into the folder "sim_assets" next to this file: sim_assets/pano.jpg, sim_assets/person/*.png,
-sim_assets/fox/*.png, sim_assets/boar/*.png, sim_assets/deer/*.png, sim_assets/cat/*.png.
+         python3 motionwatch_simulator.py --no-window --port 8765        (--no-update: never update itself)
+Own pictures in the folder "sim_assets" next to this file: pano.jpg (360° photo, 2:1), person/*.png, fox/*.png, boar/*.png,
+deer/*.png, cat/*.png (cut-out photos with a transparent background).
 Needs: python3-numpy, python3-opencv; for the window python3-tk and python3-pil.imagetk.
 """
 import argparse
 import glob
+import hashlib
+import io
 import math
 import os
 import random
+import sys
 import threading
 import time
+import urllib.request
+import zipfile
 
 import cv2
 import numpy as np
 
 from motionwatch_sim_interface import SimServer, SimInfo, CamInfo, SimReply, DEFAULT_PORT
 
+SIM_VERSION = "3.0"
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(HERE, "sim_assets")
 CAM_H = 1.6                                   # height of the cameras above the ground (m)
-EQ_W, EQ_H = 4096, 2048                       # the drawn 360° world (equirectangular)
-# kind: height (m), length (m), speed (m/s), body temperature, colour (BGR)
-KINDS = {"person": (1.75, 0.45, 1.3, 34.0, (70, 70, 150)), "fox": (0.42, 0.75, 2.2, 37.5, (40, 105, 215)),
-         "boar": (0.85, 1.3, 1.6, 38.0, (45, 50, 62)), "deer": (1.2, 1.3, 2.0, 38.5, (55, 100, 150)),
-         "cat": (0.28, 0.5, 1.5, 38.0, (90, 90, 95))}
+EQ_W, EQ_H = 3072, 1536                       # the drawn 360° world (equirectangular)
+FAR = 5000.0                                  # "distance" of the sky
+# kind: height (m), length (m), speed (m/s), skin / fur temperature, colours
+KINDS = {"person": (1.75, 0.45, 1.3, 33.0), "fox": (0.42, 0.75, 2.2, 30.0), "boar": (0.85, 1.3, 1.6, 29.0),
+         "deer": (1.2, 1.3, 2.0, 30.0), "cat": (0.28, 0.5, 1.5, 31.0)}
+JACKETS = [(60, 60, 150), (130, 80, 40), (40, 110, 60), (150, 150, 150), (40, 40, 40), (30, 90, 180)]
 OBJECTS = {"caravan": (-28.0, 9.0), "tent": (14.0, 7.0), "bike": (32.0, 6.0), "road": (0.0, 28.0)}   # azimuth (deg), distance (m)
+VISIBILITY = {"clear": 6000.0, "cloudy": 4000.0, "rain": 500.0, "fog": 45.0, "snow": 250.0}
+
+
+def fbm(shape, scales, seed):
+    """Smooth random pattern (sum of blurred noise at several sizes), roughly -1..1."""
+    rng = np.random.default_rng(seed); out = np.zeros(shape, np.float32); amp = 1.0; tot = 0.0
+    for sc in scales:
+        small = rng.normal(0, 1, (max(2, shape[0] // sc), max(2, shape[1] // sc))).astype(np.float32)
+        out += cv2.resize(small, (shape[1], shape[0]), interpolation=cv2.INTER_CUBIC) * amp
+        tot += amp; amp *= 0.55
+    return out / tot
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # geometry: a camera looks along (yaw, pitch); world directions are (azimuth, elevation) in degrees
 # ----------------------------------------------------------------------------------------------------------------------
 class View:
+    K1 = -0.06                                 # a little barrel distortion like a real wide lens
+
     def __init__(self, W, H, fov_h, yaw, pitch):
         self.W, self.H = W, H
         self.f = (W / 2.0) / math.tan(math.radians(fov_h) / 2.0)
-        self.yaw, self.pitch = math.radians(yaw), math.radians(pitch)
-        cy, sy, cp, sp = math.cos(self.yaw), math.sin(self.yaw), math.cos(self.pitch), math.sin(self.pitch)
-        # camera -> world rotation (first pitch around x, then yaw around y)
+        cy, sy = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
+        cp, sp = math.cos(math.radians(pitch)), math.sin(math.radians(pitch))
         self.R = np.array([[cy, sy * sp, sy * cp], [0, cp, -sp], [-sy, cy * sp, cy * cp]], np.float64)
 
     def project(self, az, el):
-        """World direction -> pixel (x, y) or None (behind the camera)."""
         a, e = math.radians(az), math.radians(el)
-        d = np.array([math.cos(e) * math.sin(a), math.sin(e), math.cos(e) * math.cos(a)])
-        c = self.R.T @ d
+        c = self.R.T @ np.array([math.cos(e) * math.sin(a), math.sin(e), math.cos(e) * math.cos(a)])
         if c[2] <= 0.05:
             return None
-        return self.W / 2.0 + self.f * c[0] / c[2], self.H / 2.0 - self.f * c[1] / c[2]
+        x, y = c[0] / c[2], c[1] / c[2]
+        r2 = min(3.0, (x * x + y * y) * (self.f / (self.W / 2)) ** 2)     # far outside the picture: no fold-back
+        k = 1 + self.K1 * r2
+        return self.W / 2.0 + self.f * x * k, self.H / 2.0 - self.f * y * k
 
     def ground(self, az, dist, height=0.0):
-        """A point on the ground (or `height` m above it) at azimuth / distance -> pixel."""
         return self.project(az, math.degrees(math.atan2(height - CAM_H, dist)))
 
 
@@ -76,19 +98,24 @@ _MAPS = {}
 
 
 def eq_maps(W, H, fov_h, yaw, pitch, pw, ph):
-    """Lookup tables for cv2.remap: the part of a 360° picture this camera sees (cached per position)."""
+    """Lookup tables for cv2.remap (with the lens distortion), cached per camera position."""
     key = (W, H, round(fov_h, 1), round(yaw, 1), round(pitch, 1), pw, ph)
     m = _MAPS.get(key)
     if m is None:
         v = View(W, H, fov_h, yaw, pitch)
         u, w_ = np.meshgrid(np.arange(W, dtype=np.float64), np.arange(H, dtype=np.float64))
-        rays = np.stack([(u - W / 2) / v.f, -(w_ - H / 2) / v.f, np.ones_like(u)], axis=-1)
+        xd, yd = (u - W / 2) / v.f, -(w_ - H / 2) / v.f
+        r2 = (xd * xd + yd * yd) * (v.f / (W / 2)) ** 2
+        xu, yu = xd / (1 + View.K1 * r2), yd / (1 + View.K1 * r2)           # undo the distortion (good enough)
+        rays = np.stack([xu, yu, np.ones_like(u)], axis=-1)
         rays /= np.linalg.norm(rays, axis=-1, keepdims=True)
         d = rays @ v.R.T
         lon = np.arctan2(d[..., 0], d[..., 2]); lat = np.arcsin(np.clip(d[..., 1], -1, 1))
         mx = ((lon + math.pi) / (2 * math.pi) * pw).astype(np.float32) % pw
         my = ((math.pi / 2 - lat) / math.pi * ph).astype(np.float32)
-        m = (mx, my)
+        # axis angle of every pixel (for the light cone)
+        ang = np.degrees(np.arccos(np.clip(1.0 / np.sqrt(xu * xu + yu * yu + 1.0), -1, 1))).astype(np.float32)
+        m = (mx, my, ang)
         if len(_MAPS) > 60:
             _MAPS.clear()
         _MAPS[key] = m
@@ -103,9 +130,10 @@ class Walker:
         self.kind = kind
         self.z = random.uniform(5.0, 22.0) if path is None else path[0]          # distance of the walking line (m)
         self.dir = random.choice((-1, 1)) if path is None else path[1]
-        self.x = -self.dir * (self.z * 1.6 + 6)                                   # starts outside the view
+        self.x = -self.dir * (self.z * 1.6 + 6)
         self.speed = KINDS[kind][2] * random.uniform(0.8, 1.2)
         self.fled = False; self.done = False; self.pir = False; self.phase = random.random() * 6
+        self.jacket = random.choice(JACKETS); self.trousers = random.choice(((50, 45, 40), (90, 60, 40), (40, 40, 60)))
         self.sprite = None
         files = glob.glob(os.path.join(ASSETS, kind, "*.png"))
         if files:
@@ -115,8 +143,8 @@ class Walker:
 
     def step(self, dt, scare):
         if scare and not self.fled and self.kind != "person":
-            self.dir = -self.dir; self.speed *= 2.5; self.fled = True             # deterrence works: it runs away
-        self.x += self.dir * self.speed * dt; self.phase += dt * self.speed * 3
+            self.dir = -self.dir; self.speed *= 2.5; self.fled = True
+        self.x += self.dir * self.speed * dt; self.phase += dt * self.speed * 3.2
         if abs(self.x) > self.z * 2.0 + 12:
             self.done = True
 
@@ -128,31 +156,78 @@ class Walker:
 # the simulator
 # ----------------------------------------------------------------------------------------------------------------------
 class CampingSim(SimServer):
-    def __init__(self, port=DEFAULT_PORT, pano=None):
-        info = SimInfo(name="Motion Watch camping simulator 2",
+    def __init__(self, port=DEFAULT_PORT, pano=None, autoupdate=True):
+        info = SimInfo(name=f"Motion Watch camping simulator {SIM_VERSION}",
                        cameras=[CamInfo(0, "Head camera (NoIR)", 1280, 720, 12.0, 66.0, 41.0, True, True),
                                 CamInfo(1, "Caravan camera", 960, 540, 8.0, 100.0, 62.0, False, False)],
                        thermal={"w": 80, "h": 62, "fps": 8.0, "fov_h": 45.0, "fov_v": 35.0, "unit": "C", "on_head": True},
                        sensors=[{"name": "Wohnwagen-Tür", "kind": "door"}, {"name": "PIR Zelt", "kind": "pir"},
                                 {"name": "Gas Wohnwagen", "kind": "gas"}, {"name": "Velo", "kind": "tag"}])
         super().__init__(info, port=port)
-        # world settings (the window changes them)
-        self.clock0 = time.time(); self.hour0 = time.localtime().tm_hour + time.localtime().tm_min / 60.0; self.speed = 1.0
+        self.clock0 = time.time(); lt = time.localtime(); self.hour0 = lt.tm_hour + lt.tm_min / 60.0; self.speed = 1.0
         self.moon = 0.5; self.weather = "clear"; self.wind = 8.0; self.ambient = 14.0; self.humidity = 70.0; self.pressure = 1013.0
         self.storm_t = 0.0
         self.auto_walkers = True; self.insects = 0.6; self.dew = 0.0; self.web = False; self.covered = False
         self.noise = 1.0; self.osd = True; self.cam1_yaw = -12.0
         self.walkers = []; self.cars = []; self.door_open = False
         self.wlock = threading.Lock(); self.last = time.time(); self.next_auto = time.time() + 20
-        self.exposure = {0: 1.0, 1: 1.0}; self._vig = {}; self._webimg = {}; self._bugs = []
+        self.exposure = {0: 1.0, 1: 1.0}; self._cache = {}; self._bugs = []
         self.pano_file = pano or (os.path.join(ASSETS, "pano.jpg") if os.path.isfile(os.path.join(ASSETS, "pano.jpg")) else None)
-        self._photo = None; self._drawn = None
-        self.trees = [(random.uniform(-150, 150), random.uniform(16, 45), random.uniform(0.8, 1.3)) for _ in range(28)]
-        self.trees.sort(key=lambda t: -t[1])
-        self.stones = [(random.uniform(-60, 60), random.uniform(4, 15)) for _ in range(6)]      # warm in the sun (thermal test)
+        self._photo = None; self._world = None; self._world_key = None
+        rng = random.Random(7)
+        self.trees = [(rng.uniform(-170, 170), rng.uniform(16, 50), rng.uniform(0.8, 1.35)) for _ in range(34)]
+        self.stones = [(rng.uniform(-60, 60), rng.uniform(4, 15)) for _ in range(6)]
+        self.update_msg = ""; self.autoupdate = autoupdate
         threading.Thread(target=self._life, daemon=True).start()
+        if autoupdate:
+            threading.Thread(target=self._updater, daemon=True).start()
 
-    # ---- time and light ---------------------------------------------------------------------------------------------
+    # ---- automatic update -------------------------------------------------------------------------------------------
+    @staticmethod
+    def _sha(path):
+        try:
+            with open(path, "rb") as f:
+                return hashlib.sha256(f.read()).hexdigest()
+        except OSError:
+            return ""
+
+    def _updater(self):
+        """Motion Watch sends the checksums of the simulator files it carries. Different = fetch them, check them, restart."""
+        time.sleep(15)
+        while True:
+            try:
+                want = dict(self.state.sim_files or {})
+                if want and self.mw_addr:
+                    old = [n for n, h in want.items() if self._sha(os.path.join(HERE, n)) != h]
+                    if old:
+                        self.update_msg = "Neue Version von Motion Watch wird geladen …"
+                        url = f"{self.state.mw_scheme}://{self.mw_addr}:{self.state.mw_port}/sim/simulator.zip"
+                        import ssl
+                        ctx = ssl._create_unverified_context() if self.state.mw_scheme == "https" else None   # its own certificate
+                        with urllib.request.urlopen(url, timeout=20, context=ctx) as r:
+                            data = r.read()
+                        z = zipfile.ZipFile(io.BytesIO(data)); files = {}
+                        for n in want:
+                            b = z.read(n)
+                            if hashlib.sha256(b).hexdigest() != want[n]:
+                                raise ValueError(f"checksum of {n} does not match - not installed")
+                            files[n] = b
+                        for n in z.namelist():
+                            if n.endswith(".md"):
+                                files[n] = z.read(n)
+                        for n, b in files.items():
+                            with open(os.path.join(HERE, n + ".new"), "wb") as f:
+                                f.write(b)
+                            os.replace(os.path.join(HERE, n + ".new"), os.path.join(HERE, n))
+                        self.update_msg = "Aktualisiert - startet neu …"
+                        print("Simulator updated from Motion Watch - restarting")
+                        time.sleep(1.0)
+                        os.execv(sys.executable, [sys.executable] + sys.argv)
+            except Exception as e:
+                self.update_msg = f"Aktualisierung nicht möglich: {e}"[:120]
+            time.sleep(60)
+
+    # ---- time, light, weather ----------------------------------------------------------------------------------------
     def hour(self, t=None):
         t = time.time() if t is None else t
         return (self.hour0 + (t - self.clock0) * self.speed / 3600.0) % 24.0
@@ -160,17 +235,27 @@ class CampingSim(SimServer):
     def set_hour(self, h):
         self.hour0 = float(h) % 24.0; self.clock0 = time.time()
 
+    def sun_el(self, t=None):
+        """Height of the sun in degrees (simple: highest 50° at 13:00, sunrise ~6:30, sunset ~19:30)."""
+        return 50.0 * math.sin((self.hour(t) - 6.5) / 13.0 * math.pi) if 6.5 <= self.hour(t) <= 19.5 else -20.0 * math.sin((self.hour(t) - 19.5) / 11.0 * math.pi) if self.hour(t) > 19.5 else -20.0 * math.sin((self.hour(t) + 4.5) / 11.0 * math.pi)
+
     def sun(self, t=None):
-        """Brightness of the daylight 0..1 (sunrise ~6:30, sunset ~19:30)."""
-        h = self.hour(t)
-        s = math.sin((h - 6.5) / 13.0 * math.pi)
-        return float(np.clip(s * 1.8, 0.0, 1.0))
+        return float(np.clip((self.sun_el(t) + 6.0) / 18.0, 0.0, 1.0))           # 0 below -6° (night) .. 1 above 12°
+
+    def clouds(self):
+        return {"clear": 0.15, "cloudy": 0.75, "rain": 0.95, "fog": 0.6, "snow": 0.9}.get(self.weather, 0.2)
+
+    def sky_k(self, t=None):
+        return max(0.04, min(1.0, 0.1 + self.sun(t) * 0.95 + 0.04 * self.moon))
+
+    def ambient_k(self, t=None):
+        """How much daylight falls on things (1 = full day)."""
+        lv = self.light_level(t)
+        return min(1.0, 0.1 + lv) if lv > 0.1 else lv * 2.0
 
     def light_level(self, t=None):
-        lv = 0.04 + 0.03 * self.moon + 0.93 * self.sun(t)
-        if self.weather in ("rain", "fog", "snow"):
-            lv *= 0.7 if self.weather != "snow" else 0.85
-        return lv
+        lv = 0.015 + 0.04 * self.moon * (1 - self.clouds()) + 0.95 * self.sun(t) * (1 - 0.45 * self.clouds())
+        return float(lv)
 
     def sim_epoch(self, t):
         lt = time.localtime(t); base = time.mktime((lt.tm_year, lt.tm_mon, lt.tm_mday, 0, 0, 0, 0, 0, -1))
@@ -178,26 +263,26 @@ class CampingSim(SimServer):
 
     def world(self, t):
         press = self.pressure
-        if self.storm_t:                                            # "storm comes": 6 hPa less within 3 minutes
+        if self.storm_t:
             press -= min(6.0, (t - self.storm_t) / 180.0 * 6.0)
-        return SimReply(sim_time=self.sim_epoch(t), dark=self.light_level(t) < 0.3, ambient_c=round(self.ambient, 1),
+        return SimReply(sim_time=self.sim_epoch(t), dark=self.light_level(t) < 0.12, ambient_c=round(self.ambient, 1),
                         pressure_hpa=round(press, 1), wind_kmh=round(self.wind, 1), weather=self.weather, humidity=round(self.humidity),
                         last_event=self.events[-1].id if self.events else 0)
 
-    # ---- life ---------------------------------------------------------------------------------------------------------
+    # ---- life -------------------------------------------------------------------------------------------------------
     def spawn(self, kind, path=None):
         with self.wlock:
             self.walkers.append(Walker(kind, path))
 
     def car(self):
         with self.wlock:
-            self.cars.append({"x": -60.0, "dir": 1, "speed": random.uniform(8, 14)})
+            self.cars.append({"x": -70.0, "dir": 1, "speed": random.uniform(8, 14)})
 
     def _life(self):
         while True:
             now = time.time(); dt = min(0.2, now - self.last); self.last = now
             st = self.state
-            scare = bool(st.sound) or (st.lights.white and self.light_level(now) < 0.3)
+            scare = bool(st.sound) or (st.lights.white and self.light_level(now) < 0.12)
             with self.wlock:
                 for w in self.walkers:
                     w.step(dt, scare)
@@ -214,7 +299,6 @@ class CampingSim(SimServer):
             time.sleep(0.05)
 
     def night_test(self):
-        """A ready-made night: 22:30, fox, wild boar, a car, a person at the tent, the caravan door, gas - one after the other."""
         def run():
             self.set_hour(22.5); self.auto_walkers = False; self.weather = "clear"
             steps = [(5, lambda: self.spawn("fox", (8.0, 1))), (25, lambda: self.spawn("boar", (12.0, -1))), (45, self.car),
@@ -231,105 +315,222 @@ class CampingSim(SimServer):
     def gas(self, on):
         self.add_event("Gas Wohnwagen", "gas", bool(on))
 
-    # ---- the drawn 360° world -------------------------------------------------------------------------------------
-    def _drawn_world(self):
-        if self._drawn is not None:
-            return self._drawn
+    def load_pano(self, path):
+        self.pano_file = path; self._photo = None; _MAPS.clear()
+
+    # ---- the 360° world: colour, distance and temperature for every direction ---------------------------------------
+    def _static(self):
+        """What does not change: ground distance, ground pattern, mountains (computed once)."""
+        if "static" in self._cache:
+            return self._cache["static"]
         W, H = EQ_W, EQ_H; hz = H // 2
-        p = np.zeros((H, W, 3), np.uint8)
-        y = np.arange(hz, dtype=np.float32)[:, None] / hz
-        p[:hz] = np.stack([235 - 70 * (1 - y), 205 - 60 * (1 - y), 160 - 60 * (1 - y)], -1).astype(np.uint8).repeat(W, 1)
-        rng = np.random.default_rng(5)
-        xs = np.arange(W)
-        ridge = hz - (90 + 60 * np.sin(xs / W * 2 * math.pi * 3 + 1) + 40 * np.sin(xs / W * 2 * math.pi * 7) + rng.normal(0, 3, W).cumsum() * 0.3)
-        ridge = np.clip(ridge, hz - 260, hz - 10).astype(int)
+        lat = (math.pi / 2 - (np.arange(H, dtype=np.float32) + 0.5) / H * math.pi)[:, None]
+        lon = ((np.arange(W, dtype=np.float32) + 0.5) / W * 2 * math.pi - math.pi)[None, :]
+        dist = np.full((H, W), FAR, np.float32)
+        below = (lat < -0.0005)[:, 0]
+        dist[below] = np.broadcast_to(CAM_H / np.tan(-lat[below]), (int(below.sum()), W))
+        dist = np.minimum(dist, FAR)
+        # the ground pattern in ground coordinates (perspective comes by itself): grass blades, patches, worn paths
+        gx = np.clip(dist * np.sin(lon), -400, 400); gz = np.clip(dist * np.cos(lon), -400, 400)
+        big = fbm((512, 512), (64, 16), 1); small = fbm((512, 512), (4, 2), 2)
+        mir = lambda q: 511 - np.abs(np.floor(q).astype(np.int64) % 1022 - 511)       # mirrored tiles: no visible seams
+        ix, iz = mir(gx * 9.0), mir(gz * 9.0); jx, jz = mir(gx * 1.2 + 77), mir(gz * 1.2 + 31)              # 1 texel ~ 11 cm
+        pat = small[iz, ix] * 0.6 + big[jz, jx] * 1.0
+        # mountains: a ridge around the whole world
+        rng = np.random.default_rng(5); xs = np.arange(W)
+        ridge = (0.07 + 0.045 * np.sin(xs / W * 2 * math.pi * 3 + 1) + 0.03 * np.sin(xs / W * 2 * math.pi * 7 + 2)
+                 + 0.02 * fbm((1, W), (40, 8), 6)[0])
+        ridge_y = (hz - ridge * H).astype(int)
+        mount = np.zeros((H, W), bool)
         for x in range(W):
-            p[ridge[x]:hz, x] = (118, 116, 112)
-            p[ridge[x]:ridge[x] + 12, x] = (235, 235, 240) if ridge[x] < hz - 190 else (118, 116, 112)       # snow on the peaks
-        g = rng.normal(0, 1, (H - hz, W)).astype(np.float32)
-        g = cv2.GaussianBlur(g, (0, 0), 3) * 18
-        base = np.array([62, 128, 72], np.float32)
-        p[hz:] = np.clip(base + g[..., None] * np.array([0.6, 1.0, 0.6]), 0, 255).astype(np.uint8)
-        self._drawn = p
-        return p
+            mount[ridge_y[x]:hz, x] = True
+        rock = fbm((H, W), (64, 12, 3), 8)
+        dist[mount] = 3000.0
+        self._cache["static"] = (dist, pat, mount, ridge_y, rock, lat, lon)
+        return self._cache["static"]
+
+    def _world_colour(self, t):
+        """The coloured 360° world for the present sun, clouds and weather (recomputed when they change)."""
+        key = (round(self.sun_el(t), 0), self.weather, round(self.moon, 1))
+        if self._world is not None and self._world_key == key:
+            return self._world
+        dist, pat, mount, ridge_y, rock, lat, lon = self._static()
+        H, W = dist.shape; hz = H // 2
+        sun_el = self.sun_el(t); day = self.sun(t); cl = self.clouds()
+        # sky: deep blue at the top, pale at the horizon, orange at dusk, grey with clouds
+        el = np.clip(lat[:hz] / (math.pi / 2), 0, 1)
+        top = np.array([170, 110, 50], np.float32); hor = np.array([235, 215, 190], np.float32)
+        dusk = max(0.0, 1.0 - abs(sun_el - 2.0) / 10.0) if sun_el > -8 else 0.0
+        hor = hor * (1 - dusk) + np.array([120, 160, 245], np.float32) * dusk
+        sky = hor[None, None] * (1 - el[..., None] ** 0.6) + top[None, None] * el[..., None] ** 0.6
+        grey = np.array([175, 175, 172], np.float32)
+        sky = sky * (1 - cl * 0.8) + grey * cl * 0.8
+        cloud = np.clip(fbm((hz, W), (96, 32, 8), 11) * 1.4 + (cl - 0.45) * 2.0, 0, 1)
+        sky = sky * (1 - cloud[..., None] * 0.8) + np.array([235, 235, 235], np.float32) * cloud[..., None] * 0.8
+        sky = np.broadcast_to(sky, (hz, W, 3)).copy()
+        if sun_el > -2 and cl < 0.9:                                   # the sun and its glare (south-west, follows the time)
+            sx = int((math.radians(-60 + (self.hour(t) - 13) * 15) + math.pi) / (2 * math.pi) * W) % W
+            sy = int(hz - math.radians(max(sun_el, 0.5)) / math.pi * H)
+            g = np.zeros((hz, W), np.float32); cv2.circle(g, (sx, sy), 6, 1.0, -1)
+            g = cv2.GaussianBlur(g, (0, 0), 25) * 6 * (1 - cl)
+            sky += g[..., None] * np.array([200, 235, 255], np.float32)
+        img = np.zeros((H, W, 3), np.float32); img[:hz] = sky
+        # ground: grass with patches; snow covers it
+        grass = np.array([58, 122, 70], np.float32); dry = np.array([70, 128, 140], np.float32)
+        gmix = np.clip(pat * 0.9 + 0.35, 0, 1)[..., None]
+        ground = grass * (1 - gmix * 0.6) + dry * gmix * 0.6 + pat[..., None] * 14
+        if self.weather == "snow":
+            ground = ground * 0.25 + np.array([235, 235, 238], np.float32) * 0.75 + pat[..., None] * 6
+        img[hz:] = ground[hz:]
+        # mountains: rock, snow on the peaks, bluish with the distance
+        mcol = np.array([112, 112, 108], np.float32)[None, None] + rock[..., None] * 18
+        snowline = np.zeros((H, W), bool)
+        for x in range(0, W):
+            if ridge_y[x] < hz - 0.09 * H:
+                snowline[ridge_y[x]:ridge_y[x] + int(0.02 * H), x] = True
+        mcol = np.where(snowline[..., None], np.array([235, 235, 240], np.float32), mcol)
+        img = np.where(mount[..., None], mcol * 0.7 + np.array([200, 175, 150], np.float32) * 0.3, img)
+        # the sky shines by itself; ground and mountains keep their daylight colour (the light comes in render_camera)
+        sky_k = self.sky_k(t)
+        skym = ~mount; skym[hz:] = False
+        img[skym] *= sky_k
+        if day < 0.15:                                                  # stars on a clear night
+            rng = np.random.default_rng(3); n = int(900 * (1 - cl))
+            ys, xs = rng.integers(0, int(hz * 0.9), n), rng.integers(0, W, n)
+            img[ys, xs] = 190 * (1 - day * 6)
+            mx, my = int(0.62 * W), int(hz * 0.45)
+            if self.moon > 0.1 and cl < 0.8:
+                cv2.circle(img, (mx, my), 7, (210 * self.moon + 30,) * 3, -1, cv2.LINE_AA)
+        self._world = np.clip(img, 0, 255).astype(np.uint8); self._world_key = key
+        return self._world
+
+    def _world_temp(self, t):
+        """Temperature of every direction (°C): sky, ground (sun-warmed by day, cooled at night), mountains."""
+        key = (round(self.sun_el(t), 0), self.weather, round(self.ambient, 0))
+        if self._cache.get("tkey") == key:
+            return self._cache["temp"]
+        dist, pat, mount, ridge_y, rock, lat, lon = self._static()
+        H, W = dist.shape; hz = H // 2; amb = self.ambient; cl = self.clouds()
+        sky_drop = 35.0 * (1 - cl) + 4.0 * cl                          # a clear sky is very cold, clouds are almost air-warm
+        el = np.clip(lat[:hz] / (math.pi / 2), 0, 1)
+        T = np.zeros((H, W), np.float32)
+        T[:hz] = amb - sky_drop * (0.35 + 0.65 * el ** 0.5)
+        sun = max(0.0, self.sun_el(t)) / 50.0
+        night = 1.0 if self.sun_el(t) < 0 else 0.0
+        ground = amb + 10.0 * sun * (1 - cl) - 3.5 * night * (1 - cl) + pat * 1.2
+        if self.weather == "rain":
+            ground = amb - 1.0 + pat * 0.4
+        if self.weather == "snow":
+            ground = np.minimum(ground, 0.0) + pat * 0.3
+        # far ground looks colder (the air between, and the flat angle)
+        haze = 1 - np.exp(-dist / 800.0)
+        T[hz:] = (ground * (1 - haze) + (amb - 4) * haze)[hz:]
+        T = np.where(mount, amb - 6 + rock * 1.5, T)
+        self._cache["temp"] = T.astype(np.float32); self._cache["tkey"] = key
+        return self._cache["temp"]
 
     def _photo_world(self):
         if self._photo is None and self.pano_file and os.path.isfile(self.pano_file):
             img = cv2.imread(self.pano_file)
             if img is not None:
-                if img.shape[1] != img.shape[0] * 2:                        # a phone panorama: put it into a 360° frame
-                    w = img.shape[1]; h2 = w // 2; can = np.zeros((h2, w, 3), np.uint8); can[:] = (150, 150, 150)
+                if abs(img.shape[1] - img.shape[0] * 2) > img.shape[0] * 0.05:      # a phone panorama: put it into a 360° frame
+                    w = img.shape[1]; h2 = w // 2; can = np.full((h2, w, 3), 150, np.uint8)
                     y0 = max(0, h2 // 2 - img.shape[0] // 2); can[y0:y0 + min(img.shape[0], h2)] = img[:h2]
                     img = can
                 self._photo = cv2.resize(img, (min(6000, img.shape[1]), min(3000, img.shape[1] // 2)))
         return self._photo
 
-    def load_pano(self, path):
-        self.pano_file = path; self._photo = None; _MAPS.clear()
-
-    # ---- drawing helpers --------------------------------------------------------------------------------------------
+    # ---- drawing with a depth buffer --------------------------------------------------------------------------------
     @staticmethod
-    def _poly(img, v, pts, col):
-        q = [v.ground(az, d, h) for az, d, h in pts]
+    def _poly(img, dep, v, pts, col, d):
+        q = [v.ground(az, dd, h) for az, dd, h in pts]
         if all(x is not None for x in q):
-            cv2.fillPoly(img, [np.array(q, np.int32)], col, cv2.LINE_AA)
-            return True
-        return False
+            p = np.array(q, np.int32)
+            cv2.fillPoly(img, [p], col, cv2.LINE_AA); cv2.fillPoly(dep, [p], float(d))
+
+    @staticmethod
+    def _shade(col, k):
+        return tuple(int(max(0, min(255, c * k))) for c in col)
 
     def _drawables(self, v, t):
-        """Everything standing on the ground as (distance, draw function) - drawn from far to near (correct overlap)."""
-        out = [(OBJECTS["road"][1] + 2, lambda img: self._road(img, v))]
+        out = [(OBJECTS["road"][1] + 2, lambda im, dp: self._road(im, dp, v))]
         for tr_ in self.trees:
-            out.append((tr_[1], lambda img, tr_=tr_: self._tree(img, v, t, tr_)))
+            out.append((tr_[1], lambda im, dp, tr_=tr_: self._tree(im, dp, v, t, tr_)))
         for name in ("tent", "caravan", "bike"):
-            out.append((OBJECTS[name][1], lambda img, n=name: getattr(self, "_" + n)(img, v)))
+            out.append((OBJECTS[name][1], lambda im, dp, n=name: getattr(self, "_" + n)(im, dp, v)))
         for st_ in self.stones:
-            out.append((st_[1], lambda img, st_=st_: self._stone(img, v, st_)))
+            out.append((st_[1], lambda im, dp, st_=st_: self._stone(im, dp, v, st_)))
         return out
 
-    def _road(self, img, v):
-        az, d = OBJECTS["road"]
-        self._poly(img, v, [(-80, d, 0), (80, d, 0), (80, d + 3, 0), (-80, d + 3, 0)], (95, 130, 150))
+    def _road(self, img, dep, v):
+        d = OBJECTS["road"][1]
+        for a0 in range(-80, 80, 8):                                    # in pieces, so it is drawn when only a part is in view
+            self._poly(img, dep, v, [(a0, d, 0), (a0 + 8.5, d, 0), (a0 + 8.5, d + 3, 0), (a0, d + 3, 0)], (110, 130, 140), d + 1.5)
 
-    def _stone(self, img, v, st_):
-        az, d = st_; c = v.ground(az, d, 0.1)
+    def _stone(self, img, dep, v, st_):
+        az, d = st_; c = v.ground(az, d, 0.12)
         if c:
-            r = max(2, int(v.f * 0.25 / d)); cv2.ellipse(img, (int(c[0]), int(c[1])), (r, int(r * 0.6)), 0, 0, 360, (125, 125, 120), -1)
+            r = max(2, int(v.f * 0.25 / d)); ctr = (int(c[0]), int(c[1]))
+            cv2.ellipse(img, ctr, (r, int(r * 0.6)), 0, 0, 360, (118, 120, 118), -1, cv2.LINE_AA)
+            cv2.ellipse(img, (ctr[0] - r // 4, ctr[1] - r // 5), (r // 2, int(r * 0.25)), 0, 0, 360, (150, 152, 150), -1, cv2.LINE_AA)
+            cv2.ellipse(dep, ctr, (r, int(r * 0.6)), 0, 0, 360, d, -1)
 
-    def _tree(self, img, v, t, tr_):
-        sway = self.wind / 60.0
-        for az, d, s in (tr_,):                                            # a tree (moves with the wind)
-            base = v.ground(az, d); top = v.ground(az, d, 5.5 * s)
-            if base is None or top is None or not (-300 < base[0] < v.W + 300):
-                continue
-            hpx = base[1] - top[1]; r = max(2, int(hpx * 0.32))
-            dx = int(sway * r * 0.5 * math.sin(t * (1.5 + s) + az))
-            cv2.line(img, (int(base[0]), int(base[1])), (int(base[0]), int(base[1] - hpx * 0.45)), (40, 60, 90), max(1, r // 4))
-            cv2.circle(img, (int(top[0]) + dx, int(top[1] + r * 0.9)), r, (38, 98, 44), -1, cv2.LINE_AA)
-            cv2.circle(img, (int(top[0]) + dx - r // 3, int(top[1] + r * 0.6)), int(r * 0.6), (48, 118, 54), -1, cv2.LINE_AA)
+    def _tree(self, img, dep, v, t, tr_):
+        az, d, s = tr_
+        base = v.ground(az, d); top = v.ground(az, d, 6.0 * s)
+        if base is None or top is None or not (-400 < base[0] < v.W + 400):
+            return
+        hpx = base[1] - top[1]; r = max(2, int(hpx * 0.3)); bx, by = int(base[0]), int(base[1])
+        sway = self.wind / 60.0; dx = int(sway * r * 0.45 * math.sin(t * (1.3 + s) + az))
+        cv2.line(img, (bx, by), (bx + dx // 3, int(by - hpx * 0.5)), (35, 55, 80), max(1, r // 4), cv2.LINE_AA)
+        cv2.line(dep, (bx, by), (bx + dx // 3, int(by - hpx * 0.5)), d, max(1, r // 4))
+        rng = random.Random(int(az * 100))
+        cx, cy = int(top[0]) + dx, int(top[1] + r * 1.0)
+        for k in range(9):                                              # a crown out of shaded blobs
+            ox, oy = rng.uniform(-0.7, 0.7) * r, rng.uniform(-0.6, 0.7) * r
+            rr = int(r * rng.uniform(0.45, 0.7)); light = 0.7 + 0.5 * (-oy / r) * 0.5 + rng.uniform(-0.1, 0.1)
+            col = self._shade((40, 104, 48), light)
+            cv2.circle(img, (int(cx + ox + dx * (oy < 0) * 0.3), int(cy + oy)), rr, col, -1, cv2.LINE_AA)
+            cv2.circle(dep, (int(cx + ox), int(cy + oy)), rr, d, -1)
 
-    def _tent(self, img, v):
+    def _tent(self, img, dep, v):
         az, d = OBJECTS["tent"]
-        self._poly(img, v, [(az - 9, d, 0), (az, d, 1.6), (az + 9, d, 0)], (40, 130, 230))
-        self._poly(img, v, [(az - 2, d - 0.1, 0), (az, d - 0.1, 1.1), (az + 2, d - 0.1, 0)], (25, 80, 150))
+        self._poly(img, dep, v, [(az - 9, d, 0), (az, d, 1.6), (az + 9, d, 0)], (40, 125, 225), d)
+        self._poly(img, dep, v, [(az, d, 1.6), (az + 9, d, 0), (az + 11, d + 1.5, 0)], (30, 95, 175), d + 0.5)
+        self._poly(img, dep, v, [(az - 2, d - 0.1, 0), (az, d - 0.1, 1.1), (az + 2, d - 0.1, 0)], (25, 70, 130), d - 0.1)
 
-    def _caravan(self, img, v):
+    def _caravan(self, img, dep, v):
         az, d = OBJECTS["caravan"]
-        self._poly(img, v, [(az - 14, d, 0.3), (az + 14, d, 0.3), (az + 14, d, 2.6), (az - 14, d, 2.6)], (215, 218, 222))
-        self._poly(img, v, [(az - 11, d - 0.05, 1.3), (az - 4, d - 0.05, 1.3), (az - 4, d - 0.05, 2.0), (az - 11, d - 0.05, 2.0)], (110, 85, 60))
+        self._poly(img, dep, v, [(az - 14, d, 0.3), (az + 14, d, 0.3), (az + 14, d, 2.6), (az - 14, d, 2.6)], (212, 215, 220), d)
+        self._poly(img, dep, v, [(az - 14, d, 2.4), (az + 14, d, 2.4), (az + 14, d, 2.6), (az - 14, d, 2.6)], (170, 172, 176), d)
+        self._poly(img, dep, v, [(az - 14, d, 0.3), (az + 14, d, 0.3), (az + 14, d, 0.5), (az - 14, d, 0.5)], (90, 92, 96), d)
+        lit = self.light_level() < 0.12
+        self._poly(img, dep, v, [(az - 11, d - 0.05, 1.3), (az - 4, d - 0.05, 1.3), (az - 4, d - 0.05, 2.0), (az - 11, d - 0.05, 2.0)],
+                   (40, 120, 200) if lit else (120, 90, 60), -(d - 0.05) if lit else d - 0.05)            # window (lit at night)
         door = [(az + 6, d - 0.05, 0.4), (az + 11, d - 0.05, 0.4), (az + 11, d - 0.05, 2.3), (az + 6, d - 0.05, 2.3)]
-        self._poly(img, v, door, (25, 25, 25) if self.door_open else (80, 80, 92))
+        self._poly(img, dep, v, door, (90, 180, 240) if self.door_open and lit else (25, 25, 25) if self.door_open else (80, 80, 92),
+                   -(d - 0.05) if self.door_open and lit else d - 0.05)
         if self.door_open:
-            self._poly(img, v, [(az + 11, d - 0.05, 0.4), (az + 13.5, d - 1.0, 0.4), (az + 13.5, d - 1.0, 2.3), (az + 11, d - 0.05, 2.3)], (80, 80, 92))
-
-    def _bike(self, img, v):
-        az, d = OBJECTS["bike"]
-        for k in (-1.2, 1.2):
-            c = v.ground(az + k, d, 0.35)
+            self._poly(img, dep, v, [(az + 11, d - 0.05, 0.4), (az + 13.5, d - 1.0, 0.4), (az + 13.5, d - 1.0, 2.3), (az + 11, d - 0.05, 2.3)], (80, 80, 92), d - 0.5)
+        for k in (-9, 9):
+            c = v.ground(az + k, d - 0.3, 0.3)
             if c:
-                r = max(2, int(v.f * 0.35 / d)); cv2.circle(img, (int(c[0]), int(c[1])), r, (30, 30, 30), max(1, r // 6), cv2.LINE_AA)
+                r = max(2, int(v.f * 0.3 / d)); cv2.circle(img, (int(c[0]), int(c[1])), r, (25, 25, 25), -1, cv2.LINE_AA)
 
-    def _walker(self, img, v, w, t):
+    def _bike(self, img, dep, v):
+        az, d = OBJECTS["bike"]
+        pts = [v.ground(az + k, d, 0.35) for k in (-1.3, 1.3)]
+        if all(pts):
+            r = max(2, int(v.f * 0.35 / d)); w = max(1, r // 7)
+            for p in pts:
+                cv2.circle(img, (int(p[0]), int(p[1])), r, (30, 30, 30), w, cv2.LINE_AA)
+            top = v.ground(az, d, 0.9)
+            if top:
+                for p in pts:
+                    cv2.line(img, (int(p[0]), int(p[1])), (int(top[0]), int(top[1])), (40, 40, 160), w, cv2.LINE_AA)
+            cv2.rectangle(dep, (int(pts[0][0]) - r, int(pts[0][1]) - r * 2), (int(pts[1][0]) + r, int(pts[1][1]) + r), d, -1)
+
+    def _walker(self, img, dep, v, w):
         az, d = w.az_dist()
         foot = v.ground(az, d); top = v.ground(az, d, KINDS[w.kind][0])
         if foot is None or top is None:
@@ -337,8 +538,8 @@ class CampingSim(SimServer):
         hpx = max(2.0, foot[1] - top[1]); x, y = int(foot[0]), int(foot[1])
         if not (-hpx * 3 < x < v.W + hpx * 3):
             return
-        cv2.ellipse(img, (x, y), (int(hpx * 0.35), max(1, int(hpx * 0.06))), 0, 0, 360, (30, 50, 30), -1, cv2.LINE_AA)   # shadow
-        if w.sprite is not None:                                           # your own cut-out photo
+        cv2.ellipse(img, (x, y), (int(hpx * 0.35), max(1, int(hpx * 0.05))), 0, 0, 360, (25, 45, 28), -1, cv2.LINE_AA)
+        if w.sprite is not None:
             s = w.sprite if w.dir > 0 else cv2.flip(w.sprite, 1)
             k = hpx / s.shape[0]; sw, sh = max(1, int(s.shape[1] * k)), max(1, int(hpx))
             s = cv2.resize(s, (sw, sh), interpolation=cv2.INTER_AREA)
@@ -348,211 +549,316 @@ class CampingSim(SimServer):
                 al = s[b0:b1, a0:a1, 3:4].astype(np.float32) / 255.0
                 roi = img[y0 + b0:y0 + b1, x0 + a0:x0 + a1]
                 roi[:] = (roi * (1 - al) + s[b0:b1, a0:a1, :3] * al).astype(np.uint8)
+                dr = dep[y0 + b0:y0 + b1, x0 + a0:x0 + a1]; dr[al[..., 0] > 0.5] = d
             return
-        col = KINDS[w.kind][4]; L = KINDS[w.kind][1] / KINDS[w.kind][0] * hpx
-        leg = math.sin(w.phase) * 0.15
+        L = KINDS[w.kind][1] / KINDS[w.kind][0] * hpx; sw_ = math.sin(w.phase)
+        lw = lambda f: max(1, int(hpx * f))
+        layers = []
         if w.kind == "person":
-            th = max(2, int(hpx * 0.12))
-            for k in (-1, 1):
-                cv2.line(img, (x - k * th // 2, int(y - hpx * 0.48)), (int(x + k * leg * hpx), y), (45, 45, 60), max(2, th), cv2.LINE_AA)
-            cv2.rectangle(img, (x - th, int(y - hpx * 0.82)), (x + th, int(y - hpx * 0.45)), col, -1)
-            cv2.line(img, (x, int(y - hpx * 0.78)), (int(x - leg * hpx * 0.8), int(y - hpx * 0.5)), col, max(2, th // 2), cv2.LINE_AA)
-            cv2.circle(img, (x, int(y - hpx * 0.9)), max(2, int(hpx * 0.07)), (140, 170, 210), -1, cv2.LINE_AA)
+            hip = (x, int(y - hpx * 0.48)); sh_ = (x, int(y - hpx * 0.80)); head = (x, int(y - hpx * 0.91))
+            for k, c in ((1, self._shade(w.trousers, 0.75)), (-1, w.trousers)):            # legs (far one darker)
+                knee = (int(x + k * sw_ * hpx * 0.07), int(y - hpx * 0.25)); foot_ = (int(x + k * sw_ * hpx * 0.14), y)
+                layers += [("l", hip, knee, c, lw(0.085)), ("l", knee, foot_, c, lw(0.075)), ("l", foot_, (foot_[0] + w.dir * lw(0.06), y), (30, 30, 30), lw(0.04))]
+            layers += [("l", hip, sh_, w.jacket, lw(0.2)), ("l", (x, int(y - hpx * 0.5)), sh_, self._shade(w.jacket, 1.15), lw(0.12))]
+            for k, c in ((1, self._shade(w.jacket, 0.75)), (-1, w.jacket)):                  # arms swing against the legs
+                el_ = (int(x - k * sw_ * hpx * 0.07), int(y - hpx * 0.62))
+                layers += [("l", sh_, el_, c, lw(0.06)), ("l", el_, (int(el_[0] - k * sw_ * hpx * 0.04 + w.dir * hpx * 0.02), int(y - hpx * 0.47)), (140, 165, 205), lw(0.045))]
+            layers += [("c", (head[0], head[1] + lw(0.02)), lw(0.035), (140, 165, 205)), ("c", head, lw(0.065), (140, 165, 205)),
+                       ("c", (head[0] - w.dir * lw(0.01), head[1] - lw(0.03)), lw(0.06), (40, 45, 55))]
         else:
-            bh = hpx * (0.45 if w.kind != "deer" else 0.35); by = int(y - hpx * (0.5 if w.kind != "deer" else 0.62))
-            cv2.ellipse(img, (x, by), (max(2, int(L / 2)), max(1, int(bh / 2))), 0, 0, 360, col, -1, cv2.LINE_AA)
-            hx = int(x + w.dir * L * 0.55); hr = max(2, int(bh * (0.42 if w.kind != "boar" else 0.55)))
-            cv2.circle(img, (hx, int(by - bh * (0.25 if w.kind != "deer" else 1.1))), hr, col, -1, cv2.LINE_AA)
+            col = {"fox": (45, 100, 205), "boar": (48, 52, 62), "deer": (60, 105, 150), "cat": (85, 88, 95)}[w.kind]
+            dark = self._shade(col, 0.7); belly = (220, 225, 230) if w.kind in ("fox", "deer") else self._shade(col, 1.1)
+            bh = hpx * (0.45 if w.kind not in ("deer",) else 0.36); by = int(y - hpx * (0.55 if w.kind != "deer" else 0.66))
+            for k, c in ((0.33, dark), (-0.33, dark), (0.28, col), (-0.38, col)):              # four legs, walking
+                hipx = int(x + k * L); ph_ = sw_ if k > 0 else -sw_
+                layers.append(("l", (hipx, by), (int(hipx + ph_ * hpx * 0.12 * w.dir), y), c, lw(0.07 if w.kind == "boar" else 0.05)))
+            layers.append(("e", (x, by), (max(2, int(L / 2)), max(1, int(bh / 2))), col))
+            layers.append(("e", (x, int(by + bh * 0.22)), (max(2, int(L * 0.38)), max(1, int(bh * 0.18))), belly))
+            hx = int(x + w.dir * L * 0.55)
             if w.kind == "deer":
-                cv2.line(img, (int(x + w.dir * L * 0.4), by), (hx, int(by - bh * 1.1)), col, max(2, hr), cv2.LINE_AA)
-            for k in (-0.35, 0.35):
-                cv2.line(img, (int(x + k * L), by), (int(x + k * L + leg * hpx * w.dir), y), col, max(1, int(hpx * 0.06)), cv2.LINE_AA)
-            if w.kind in ("fox", "cat"):
-                cv2.line(img, (int(x - w.dir * L / 2), by), (int(x - w.dir * L * 0.95), int(by + bh * 0.3)), col, max(2, int(bh * 0.35)), cv2.LINE_AA)
+                nx, ny = int(x + w.dir * L * 0.42), int(by - bh * 1.25)
+                layers += [("l", (int(x + w.dir * L * 0.35), by), (nx, ny), col, lw(0.12)), ("e", (int(nx + w.dir * hpx * 0.08), ny), (max(2, lw(0.1)), max(1, lw(0.055))), col),
+                           ("l", (nx, ny - lw(0.04)), (nx - w.dir * lw(0.03), ny - lw(0.14)), dark, lw(0.025))]
+            elif w.kind == "boar":
+                layers += [("e", (hx, int(by + bh * 0.05)), (max(2, int(bh * 0.55)), max(1, int(bh * 0.42))), col),
+                           ("c", (int(hx + w.dir * bh * 0.55), int(by + bh * 0.15)), max(1, int(bh * 0.14)), (90, 90, 110))]
+            else:
+                hy = int(by - bh * 0.35)
+                layers += [("c", (hx, hy), max(2, int(bh * 0.42)), col),
+                           ("p", [(hx - lw(0.06), hy - lw(0.09)), (hx - lw(0.02), hy - lw(0.3)), (hx + lw(0.02), hy - lw(0.08))], dark),
+                           ("p", [(int(hx + w.dir * bh * 0.3), hy - lw(0.02)), (int(hx + w.dir * bh * 0.85), hy + lw(0.06)), (int(hx + w.dir * bh * 0.3), hy + lw(0.12))], col)]
+                tail_end = (int(x - w.dir * L * 1.0), int(by + bh * (0.5 if w.kind == "fox" else -0.4)))
+                layers += [("l", (int(x - w.dir * L / 2), by), tail_end, col, max(2, int(bh * (0.38 if w.kind == "fox" else 0.15))))]
+                if w.kind == "fox":
+                    layers.append(("c", tail_end, max(1, int(bh * 0.17)), (225, 228, 232)))
+        for L_ in layers:
+            if L_[0] == "l":
+                cv2.line(img, L_[1], L_[2], L_[3], L_[4], cv2.LINE_AA); cv2.line(dep, L_[1], L_[2], d, L_[4])
+            elif L_[0] == "c":
+                cv2.circle(img, L_[1], L_[2], L_[3], -1, cv2.LINE_AA); cv2.circle(dep, L_[1], L_[2], d, -1)
+            elif L_[0] == "e":
+                cv2.ellipse(img, L_[1], L_[2], 0, 0, 360, L_[3], -1, cv2.LINE_AA); cv2.ellipse(dep, L_[1], L_[2], 0, 0, 360, d, -1)
+            elif L_[0] == "p":
+                p = np.array(L_[1], np.int32); cv2.fillPoly(img, [p], L_[2], cv2.LINE_AA); cv2.fillPoly(dep, [p], d)
 
-    @staticmethod
-    def _car_pos(v, c):
+    def _car(self, img, dep, v, c):
         d = OBJECTS["road"][1] + 1.5; az = math.degrees(math.atan2(c["x"], d))
-        p = v.ground(az, d, 0.7)
-        if p is None:
-            return None
-        return int(p[0]), int(p[1]), max(2, int(v.f * 0.6 / d))
-
-    def _car(self, img, v, c):
-        q = self._car_pos(v, c)
-        if q:
-            x, y, r = q
-            cv2.rectangle(img, (x - r * 2, y - r // 2), (x + r * 2, y + r // 2), (60, 60, 140), -1)
-            cv2.rectangle(img, (x - r, y - r), (x + r, y - r // 2), (50, 50, 110), -1)
-
-    def _headlights(self, img, v, c):
-        """At night the headlights shine bright - a classic false alarm."""
-        q = self._car_pos(v, c)
-        if not q:
+        p0 = v.ground(az - math.degrees(2.2 / d), d, 0.0); p1 = v.ground(az + math.degrees(2.2 / d), d, 1.45)
+        if not p0 or not p1:
             return
-        x, y, r = q; hx = x + int(c["dir"] * r * 2)
-        glow = np.zeros_like(img); cv2.circle(glow, (hx, y), r * 3, (200, 225, 235), -1)
-        img[:] = cv2.addWeighted(img, 1.0, cv2.GaussianBlur(glow, (0, 0), r + 1), 0.55, 0)
-        cv2.circle(img, (hx, y), max(2, r // 3), (235, 250, 255), -1, cv2.LINE_AA)
+        x0, x1 = sorted((int(p0[0]), int(p1[0]))); y1, y0 = int(p0[1]), int(p1[1]); hgt = y1 - y0
+        cv2.rectangle(img, (x0, y0 + hgt // 3), (x1, y1 - hgt // 6), (60, 60, 140), -1)
+        cv2.rectangle(img, (x0 + (x1 - x0) // 5, y0), (x1 - (x1 - x0) // 4, y0 + hgt // 3), (55, 55, 120), -1)
+        cv2.rectangle(img, (x0 + (x1 - x0) // 4, y0 + hgt // 12), (x1 - (x1 - x0) // 3, y0 + hgt // 3), (90, 80, 70), -1)
+        for k in (0.2, 0.8):
+            cv2.circle(img, (int(x0 + (x1 - x0) * k), y1 - hgt // 6), max(1, hgt // 5), (20, 20, 20), -1)
+        cv2.rectangle(dep, (x0, y0), (x1, y1), d, -1)
+        c["_scr"] = ((x1 if c["dir"] > 0 else x0), y1 - hgt // 3, max(2, hgt // 6), d)
 
-    def _sky(self, img, v, t, lv):
-        if lv < 0.25:                                                       # stars and the moon
-            rng = np.random.default_rng(int(v.yaw * 100) & 0xffff)
-            hz = v.ground(0, 1e6)
-            hy = int(hz[1]) if hz else v.H // 2
-            for _ in range(80):
-                x, y = int(rng.integers(0, v.W)), int(rng.integers(0, max(1, hy)))
-                if 0 <= y < v.H:
-                    img[y, x] = (200, 200, 210)
-            m = v.project(40, 30)
-            if m and self.moon > 0.1:
-                cv2.circle(img, (int(m[0]), int(m[1])), 9, (215, 225, 230), -1, cv2.LINE_AA)
-
-    def _weather(self, img, t, dark):
-        H, W = img.shape[:2]; rng = np.random.default_rng()
-        if self.weather == "rain":
-            ov = np.zeros_like(img)
-            for _ in range(int(W * H / 2500)):
-                x, y = int(rng.integers(0, W)), int(rng.integers(0, H)); L = int(rng.integers(8, 22))
-                cv2.line(ov, (x, y), (x + L // 5, y + L), (200, 200, 200), 1)
-            img[:] = cv2.addWeighted((img * 0.85).astype(np.uint8), 1.0, ov, 0.35 if not dark else 0.15, 0)
-        elif self.weather == "fog":
-            grey = np.full_like(img, 150 if not dark else 35)
-            img[:] = cv2.addWeighted(img, 0.45, grey, 0.55, 0)
-        elif self.weather == "snow":
-            for _ in range(int(W * H / 3000)):
-                x, y = int(rng.integers(0, W)), int(rng.integers(0, H)); cv2.circle(img, (x, y), int(rng.integers(1, 3)), (235, 235, 235), -1)
-
-    def _lens(self, img, cam, dark, ir):
-        H, W = img.shape[:2]
-        if ir and dark and self.insects > 0 and cam == 0:                   # insects fly into the infrared light
-            if len(self._bugs) < int(12 * self.insects):
-                self._bugs.append([random.uniform(0, W), random.uniform(0, H), random.uniform(-30, 30), random.uniform(-30, 30)])
-            for b in self._bugs:
-                b[0] += b[2] + random.uniform(-8, 8); b[1] += b[3] + random.uniform(-8, 8)
-                cv2.circle(img, (int(b[0]), int(b[1])), random.randint(3, 9), (230, 230, 230), -1, cv2.LINE_AA)
-            self._bugs = [b for b in self._bugs if -50 < b[0] < W + 50 and -50 < b[1] < H + 50]
-        if self.web and cam == 0:
-            if (W, H) not in self._webimg:
-                m = np.zeros((H, W), np.uint8); cx, cy = int(W * 0.18), int(H * 0.2)
-                for a in range(0, 360, 30):
-                    cv2.line(m, (cx, cy), (int(cx + 420 * math.cos(math.radians(a))), int(cy + 420 * math.sin(math.radians(a)))), 255, 1, cv2.LINE_AA)
-                for r in range(30, 420, 38):
-                    cv2.circle(m, (cx, cy), r, 255, 1, cv2.LINE_AA)
-                self._webimg[(W, H)] = cv2.GaussianBlur(m, (0, 0), 1.2)
-            m = self._webimg[(W, H)][..., None].astype(np.float32) / 255.0
-            img[:] = np.clip(img * (1 - 0.5 * m) + 230 * 0.5 * m, 0, 255).astype(np.uint8)
-            img[:] = cv2.addWeighted(img, 0.7, cv2.GaussianBlur(img, (0, 0), 6), 0.3, 0)
-        if self.dew > 0 and cam == 0:                                      # dew: milky and blurred (lens check test)
-            b = cv2.GaussianBlur(img, (0, 0), 2 + 14 * self.dew)
-            img[:] = cv2.addWeighted(b, 1 - 0.35 * self.dew, np.full_like(img, 170 if not dark else 60), 0.35 * self.dew, 0)
-
-    def _camera(self, img, cam, lv, moving):
-        """Auto exposure, noise (more at night), vignetting, motion blur."""
-        H, W = img.shape[:2]
-        f = img.astype(np.float32)
-        target = 110.0; mean = max(1.0, float(f[::16, ::16].mean()))
-        want = float(np.clip(target / mean, 0.7, 6.0))
-        self.exposure[cam] += (want - self.exposure[cam]) * 0.15
-        g = self.exposure[cam]
-        f *= g
-        if (W, H) not in self._vig:
-            yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
-            r = np.hypot((xx - W / 2) / (W / 2), (yy - H / 2) / (H / 2))
-            self._vig[(W, H)] = (1.0 - 0.28 * r ** 2.2)[..., None]
-        f *= self._vig[(W, H)]
-        f += np.random.default_rng().normal(0, self.noise * (1.5 + 3.5 * g), f.shape).astype(np.float32)
-        out = np.clip(f, 0, 255).astype(np.uint8)
-        if moving and cam == 0:
-            out = cv2.blur(out, (15, 1))
-        return out
-
-    # ---- the interface ---------------------------------------------------------------------------------------------
+    # ---- the cameras --------------------------------------------------------------------------------------------------
     def render_camera(self, cam, st, t):
         info = self.info.cameras[cam]; W, H = info.w, info.h
-        if self.covered and cam == 0:                                      # sabotage test: hand over the lens
+        if self.covered and cam == 0:
             return np.clip(np.random.default_rng().normal(8, 3, (H, W, 3)), 0, 255).astype(np.uint8)
-        if info.on_head:
-            yaw, pitch = st.servo.pan_deg, st.servo.tilt_deg - 6.0
-        else:
-            yaw, pitch = self.cam1_yaw, -10.0
+        yaw, pitch = (st.servo.pan_deg, st.servo.tilt_deg - 6.0) if info.on_head else (self.cam1_yaw, -10.0)
         v = View(W, H, info.fov_h, yaw, pitch)
         photo = self._photo_world()
-        src = photo if photo is not None else self._drawn_world()
-        mx, my = eq_maps(W, H, info.fov_h, yaw, pitch, src.shape[1], src.shape[0])
+        dist = self._static()[0]
+        src = photo if photo is not None else self._world_colour(t)
+        mx, my, ang = eq_maps(W, H, info.fov_h, yaw, pitch, src.shape[1], src.shape[0])
         img = cv2.remap(src, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_WRAP)
-        lv = self.light_level(t); dark = lv < 0.3
+        dmx, dmy = (mx * (dist.shape[1] / src.shape[1]), my * (dist.shape[0] / src.shape[0])) if src.shape != dist.shape[:2] + (3,) else (mx, my)
+        dep = cv2.remap(dist, dmx, dmy, cv2.INTER_NEAREST, borderMode=cv2.BORDER_WRAP)
+        lv = self.light_level(t); dark = lv < 0.12
         with self.wlock:
             ws = list(self.walkers); cars = list(self.cars)
-        items = [(w.az_dist()[1], lambda im, w=w: self._walker(im, v, w, t)) for w in ws]
-        items += [(OBJECTS["road"][1] + 1.5, lambda im, c=c: self._car(im, v, c)) for c in cars]
+        items = [(w.az_dist()[1], lambda im, dp, w=w: self._walker(im, dp, v, w)) for w in ws]
+        items += [(OBJECTS["road"][1] + 1.5, lambda im, dp, c=c: self._car(im, dp, v, c)) for c in cars]
         if photo is None:
-            self._sky(img, v, t, lv)
             items += self._drawables(v, t)
         for _d, fn in sorted(items, key=lambda x: -x[0]):
-            fn(img)
-        light = np.full((H, W), lv, np.float32)
-        if dark:
+            fn(img, dep)
+        emit = dep < 0; dep = np.abs(dep)                                # things that shine by themselves (a lit window)
+        sky = dep >= FAR * 0.9
+        alb = img.astype(np.float32)                                     # colours as in daylight
+        k = np.where(sky, self.sky_k(t) if photo is not None else 1.0, self.ambient_k(t)).astype(np.float32)
+        k[emit] = 1.0
+        f = alb * k[..., None]
+        # artificial light: falls off with the distance (depth buffer), only where the lamp shines
+        if dark or lv < 0.4:
+            add = np.zeros((H, W), np.float32); warm = None
+            dd = np.maximum(dep, 1.5)
             if st.lights.white and info.on_head:
-                if (W, H, "cone") not in self._vig:
-                    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
-                    self._vig[(W, H, "cone")] = np.exp(-(((xx - W / 2) / (W * 0.33)) ** 2 + ((yy - H * 0.62) / (H * 0.5)) ** 2))
-                light += 0.75 * self._vig[(W, H, "cone")] * float(st.lights.white_level)
+                cone = np.clip(1.0 - ang / 38.0, 0, 1) ** 1.5
+                add += 2.2 * cone * np.minimum(1.0, (5.0 / dd) ** 2) * float(st.lights.white_level)
             if st.lights.ir and info.noir:
-                light += 0.45 * float(st.lights.ir_level)
-            if not info.on_head and self.door_open:
-                light += 0.25
-        img = (img.astype(np.float32) * np.minimum(light, 1.2)[..., None]).astype(np.uint8)
-        for c in cars if dark else []:
-            self._headlights(img, v, c)
+                cone = np.clip(1.0 - ang / 55.0, 0, 1)
+                add += 1.6 * cone * np.minimum(1.0, (4.0 / dd) ** 2) * float(st.lights.ir_level)
+            if self.door_open and lv < 0.12:                          # light from the open caravan door
+                az, d = OBJECTS["caravan"]; p = v.ground(az + 8.5, d - 1, 0.0)
+                if p:
+                    g = np.zeros((H, W), np.float32); cv2.circle(g, (int(p[0]), int(p[1])), int(v.f * 2.5 / d), 1.0, -1)
+                    add += cv2.GaussianBlur(g, (0, 0), v.f * 1.2 / d + 1) * 0.6 * (dep < 60)
+            f = f + alb * 0.55 * add[..., None] * (~sky & ~emit)[..., None]           # the sky gets no lamp light
+        # haze and fog grow with the distance
+        vis = VISIBILITY.get(self.weather, 6000.0)
+        haze = np.where(dep >= FAR * 0.9, 1.0 - math.exp(-300.0 / vis), 1.0 - np.exp(-dep / vis)).astype(np.float32)
+        hcol = np.array([182, 180, 176], np.float32) * max(0.04, min(1.0, lv * 1.2))
+        f = f * (1 - haze[..., None]) + hcol * haze[..., None]
+        img = np.clip(f, 0, 255).astype(np.uint8)
+        for c in cars if dark else []:                               # headlights: bright points with glare
+            if c.get("_scr"):
+                x, y, r, d = c["_scr"]
+                g = np.zeros_like(img); cv2.circle(g, (x, y), r * 4, (210, 230, 240), -1)
+                img = cv2.addWeighted(img, 1.0, cv2.GaussianBlur(g, (0, 0), r + 1), 0.7, 0)
+                cv2.circle(img, (x, y), max(2, r // 2), (245, 252, 255), -1, cv2.LINE_AA)
         if info.noir and st.lights.ir and dark and not st.lights.white:
-            g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY); img = cv2.cvtColor(g, cv2.COLOR_GRAY2BGR)
-        self._weather(img, t, dark)
-        self._lens(img, cam, dark, st.lights.ir)
-        out = self._camera(img, cam, lv, st.servo.moving)
+            g_ = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY); img = cv2.cvtColor(g_, cv2.COLOR_GRAY2BGR)
+        img = self._weather(img, dep, dark)
+        img = self._lens(img, cam, dark, st.lights.ir)
+        out = self._camera(img, cam, st.servo.moving and info.on_head, dark)
         if self.osd:
-            txt = time.strftime("%d.%m.%Y ", time.localtime(t)) + "%02d:%02d" % (int(self.hour(t)), int(self.hour(t) % 1 * 60))
-            txt += f"  SIM {cam}" + (f"  pan {st.servo.pan:.0f}% tilt {st.servo.tilt:.0f}%" if info.on_head else "") + (f"  [{st.sound}]" if st.sound else "")
+            hh = self.hour(t)
+            txt = time.strftime("%d.%m.%Y ", time.localtime(t)) + "%02d:%02d:%02d" % (int(hh), int(hh % 1 * 60), int(hh * 3600 % 60))
+            txt += f"  CAM {cam}" + (f"  P{st.servo.pan:.0f} T{st.servo.tilt:.0f}" if info.on_head else "")
             cv2.putText(out, txt, (11, H - 11), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2, cv2.LINE_AA)
             cv2.putText(out, txt, (10, H - 12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (240, 240, 240), 1, cv2.LINE_AA)
         return out
 
+    def _weather(self, img, dep, dark):
+        H, W = img.shape[:2]; rng = np.random.default_rng()
+        if self.weather == "rain":
+            ov = np.zeros((H, W), np.uint8)
+            for _ in range(int(W * H / 1800)):
+                x, y = int(rng.integers(0, W)), int(rng.integers(0, H)); L = int(rng.integers(6, 28))
+                cv2.line(ov, (x, y), (x + L // 6 + int(self.wind / 15), y + L), 255, 1 if L < 20 else 2, cv2.LINE_AA)
+            ov = cv2.GaussianBlur(ov, (0, 0), 0.8).astype(np.float32)[..., None] / 255.0
+            img = np.clip(img.astype(np.float32) * 0.82 + ov * (90 if not dark else 35), 0, 255).astype(np.uint8)
+        elif self.weather == "snow":
+            ov = np.zeros((H, W), np.uint8)
+            for _ in range(int(W * H / 1500)):
+                x, y = int(rng.integers(0, W)), int(rng.integers(0, H)); cv2.circle(ov, (x, y), int(rng.integers(1, 4)), 255, -1, cv2.LINE_AA)
+            ov = cv2.GaussianBlur(ov, (0, 0), 0.7).astype(np.float32)[..., None] / 255.0
+            img = np.clip(img.astype(np.float32) * (1 - ov * 0.9) + 235 * ov * 0.9 * (1 if not dark else 0.35), 0, 255).astype(np.uint8)
+        return img
+
+    def _lens(self, img, cam, dark, ir):
+        H, W = img.shape[:2]
+        if ir and dark and self.insects > 0 and cam == 0:
+            if len(self._bugs) < int(14 * self.insects):
+                self._bugs.append([random.uniform(0, W), random.uniform(0, H), random.uniform(-30, 30), random.uniform(-30, 30), random.uniform(2, 12)])
+            ov = np.zeros((H, W), np.uint8)
+            for b in self._bugs:
+                b[0] += b[2] + random.uniform(-10, 10); b[1] += b[3] + random.uniform(-10, 10)
+                cv2.circle(ov, (int(b[0]), int(b[1])), int(b[4]), 255, -1, cv2.LINE_AA)
+            self._bugs = [b for b in self._bugs if -50 < b[0] < W + 50 and -50 < b[1] < H + 50]
+            ov = cv2.GaussianBlur(ov, (0, 0), 4).astype(np.float32)[..., None] / 255.0       # out of focus: soft bright blobs
+            img = np.clip(img.astype(np.float32) + ov * 220, 0, 255).astype(np.uint8)
+        if self.web and cam == 0:
+            k = ("web", W, H)
+            if k not in self._cache:
+                m = np.zeros((H, W), np.uint8); cx, cy = int(W * 0.18), int(H * 0.2)
+                for a in range(0, 360, 28):
+                    cv2.line(m, (cx, cy), (int(cx + 450 * math.cos(math.radians(a))), int(cy + 450 * math.sin(math.radians(a)))), 255, 1, cv2.LINE_AA)
+                for r in range(25, 450, 34):
+                    pts = [(int(cx + r * (1 + 0.08 * math.sin(a * 3)) * math.cos(math.radians(a))), int(cy + r * math.sin(math.radians(a)))) for a in range(0, 361, 10)]
+                    cv2.polylines(m, [np.array(pts, np.int32)], False, 255, 1, cv2.LINE_AA)
+                self._cache[k] = cv2.GaussianBlur(m, (0, 0), 2.0)
+            m = self._cache[k][..., None].astype(np.float32) / 255.0
+            img = np.clip(img * (1 - 0.5 * m) + 230 * 0.5 * m * (0.5 if dark else 1), 0, 255).astype(np.uint8)
+        if self.dew > 0 and cam == 0:
+            b = cv2.GaussianBlur(img, (0, 0), 2 + 16 * self.dew)
+            img = cv2.addWeighted(b, 1 - 0.4 * self.dew, np.full_like(img, 170 if not dark else 55), 0.4 * self.dew, 0)
+        return img
+
+    def _camera(self, img, cam, moving, dark):
+        """Auto exposure (with a little delay), glare, noise (stronger and coloured at night), vignetting, motion blur."""
+        H, W = img.shape[:2]
+        f = img.astype(np.float32)
+        mean = max(1.0, float(f[H // 3::12, ::12].mean()))               # metering on the lower part (where things happen)
+        want = float(np.clip(100.0 / mean, 0.6, 6.0))
+        self.exposure[cam] += (want - self.exposure[cam]) * 0.12
+        g = self.exposure[cam]
+        f *= g
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        if cv2.minMaxLoc(gray)[1] > 200:                                # glare around really bright light (computed small)
+            sm = cv2.resize(gray, (W // 4, H // 4), interpolation=cv2.INTER_AREA).astype(np.float32)
+            bright = np.clip(sm * g - 235, 0, None) * (sm > 200)
+            f += cv2.resize(cv2.GaussianBlur(bright, (0, 0), 2.3), (W, H))[..., None] * 1.2
+        k = ("vig", W, H)
+        if k not in self._cache:
+            yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+            r = np.hypot((xx - W / 2) / (W / 2), (yy - H / 2) / (H / 2))
+            self._cache[k] = (1.0 - 0.3 * r ** 2.2)[..., None]
+        f *= self._cache[k]
+        rng = np.random.default_rng()
+        sig = self.noise * (1.2 + 3.0 * g)
+        f += rng.normal(0, sig, (H, W, 1)).astype(np.float32)                                  # brightness noise
+        if g > 2.0:
+            small = rng.normal(0, sig * 0.6, (H // 2, W // 2, 3)).astype(np.float32)          # colour noise (blotchy)
+            f += cv2.resize(small, (W, H), interpolation=cv2.INTER_LINEAR)
+        out = np.clip(f, 0, 255).astype(np.uint8)
+        if moving:
+            out = cv2.blur(out, (17, 1))
+        return out
+
+    # ---- the thermal camera -----------------------------------------------------------------------------------------
     def render_thermal(self, st, t):
         th = self.info.thermal; w, h = th["w"], th["h"]
-        v = View(w, h, th["fov_h"], st.servo.pan_deg, st.servo.tilt_deg - 6.0)
-        amb = self.ambient - (2.0 if self.weather == "rain" else 0.0)
-        a = np.full((h, w), amb, np.float32)
-        hz = v.ground(0, 1e6)
-        if hz:
-            a[: max(0, min(h, int(hz[1])))] = amb - 12.0                    # the sky is cold
-        sun = self.sun(t)
-        for az, d in self.stones:                                          # stones warmed by the sun (they do not move)
-            c = v.ground(az, d, 0.1)
-            if c and sun > 0.2:
-                cv2.circle(a, (int(c[0]), int(c[1])), max(1, int(v.f * 0.25 / d)), amb + 12 * sun, -1)
+        S = 4; W, H = w * S, h * S                                      # drawn 4x finer, then the optics blur it down
+        yaw, pitch = st.servo.pan_deg, st.servo.tilt_deg - 6.0
+        v = View(W, H, th["fov_h"], yaw, pitch)
+        T = self._world_temp(t)
+        mx, my, _a = eq_maps(W, H, th["fov_h"], yaw, pitch, T.shape[1], T.shape[0])
+        a = cv2.remap(T, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_WRAP)
+        amb = self.ambient; sun = max(0.0, self.sun_el(t)) / 50.0; hour = self.hour(t)
+        evening = 1.0 if 17 <= hour or hour < 1 else 0.0
+        wet = 2.0 if self.weather == "rain" else 0.0
+        dep = np.full((H, W), FAR, np.float32)
+        items = []
+        for tr_ in self.trees:                                          # trees: cooler than the ground by day, warmer than the sky
+            def tree(az=tr_[0], d=tr_[1], s=tr_[2]):
+                base = v.ground(az, d); top = v.ground(az, d, 6.0 * s)
+                if base and top:
+                    r = max(1, int((base[1] - top[1]) * 0.33)); c = (int(top[0]), int(top[1] + r))
+                    cv2.circle(a, c, r, amb - 2 + 2 * (1 - sun) - wet, -1); cv2.line(a, (int(base[0]), int(base[1])), c, amb - 1, max(1, r // 4))
+            items.append((tr_[1], tree))
+        az, d = OBJECTS["caravan"]
+        def caravan():
+            q = [v.ground(az + k, d, hh) for k, hh in ((-14, 0.3), (14, 0.3), (14, 2.6), (-14, 2.6))]
+            if all(q):
+                tw = amb + 6 * sun + 3.0 * evening - wet                 # walls: warm from the sun, inside heated in the evening
+                cv2.fillPoly(a, [np.array(q, np.int32)], tw)
+                win = [v.ground(az + k, d - 0.05, hh) for k, hh in ((-11, 1.3), (-4, 1.3), (-4, 2.0), (-11, 2.0))]
+                if all(win):
+                    cv2.fillPoly(a, [np.array(win, np.int32)], tw + 3)
+                if self.door_open:
+                    dr = [v.ground(az + k, d - 0.05, hh) for k, hh in ((6, 0.4), (11, 0.4), (11, 2.3), (6, 2.3))]
+                    if all(dr):
+                        cv2.fillPoly(a, [np.array(dr, np.int32)], 21.0)   # warm air from inside
+        items.append((d, caravan))
+        az2, d2 = OBJECTS["tent"]
+        def tent():
+            q = [v.ground(az2 + k, d2, hh) for k, hh in ((-9, 0), (0, 1.6), (9, 0))]
+            if all(q):
+                cv2.fillPoly(a, [np.array(q, np.int32)], amb + 4 * sun + 1.5 - wet)
+        items.append((d2, tent))
+        for az3, d3 in self.stones:                                     # stones: hot in the sun, they give it back in the evening
+            def stone(az3=az3, d3=d3):
+                c = v.ground(az3, d3, 0.1)
+                if c:
+                    cv2.circle(a, (int(c[0]), int(c[1])), max(1, int(v.f * 0.25 / d3)), amb + 14 * sun + 4 * evening * (1 - sun) - wet, -1)
+            items.append((d3, stone))
         with self.wlock:
             ws = list(self.walkers); cars = list(self.cars)
         for wk in ws:
-            az, d = wk.az_dist(); foot = v.ground(az, d); top = v.ground(az, d, KINDS[wk.kind][0])
-            if not foot or not top:
-                continue
-            hp = max(1.0, foot[1] - top[1]); temp = KINDS[wk.kind][3] - 3.0 - (2.0 if self.weather == "rain" else 0.0)
-            if wk.kind == "person":
-                cv2.ellipse(a, (int(foot[0]), int(foot[1] - hp * 0.5)), (max(1, int(hp * 0.12)), max(1, int(hp * 0.45))), 0, 0, 360, temp, -1)
-                cv2.circle(a, (int(foot[0]), int(foot[1] - hp * 0.9)), max(1, int(hp * 0.08)), temp + 1.5, -1)
-            else:
-                L = KINDS[wk.kind][1] / KINDS[wk.kind][0] * hp
-                cv2.ellipse(a, (int(foot[0]), int(foot[1] - hp * 0.5)), (max(1, int(L * 0.5)), max(1, int(hp * 0.25))), 0, 0, 360, temp, -1)
+            def body(wk=wk):
+                az4, d4 = wk.az_dist(); foot = v.ground(az4, d4); top = v.ground(az4, d4, KINDS[wk.kind][0])
+                if not foot or not top:
+                    return
+                hp = max(1.0, foot[1] - top[1]); x, y = int(foot[0]), int(foot[1]); skin = KINDS[wk.kind][3] - wet
+                if wk.kind == "person":
+                    cloth = skin - 7.0 - (amb < 10) * 3.0              # a jacket is much cooler than the face
+                    cv2.line(a, (x, int(y - hp * 0.48)), (x, y), cloth - 1.5, max(1, int(hp * 0.16)))
+                    cv2.line(a, (x, int(y - hp * 0.48)), (x, int(y - hp * 0.8)), cloth, max(1, int(hp * 0.22)))
+                    cv2.circle(a, (x, int(y - hp * 0.91)), max(1, int(hp * 0.07)), skin + 1.0, -1)
+                    for k in (-1, 1):
+                        cv2.circle(a, (x + k * int(hp * 0.1), int(y - hp * 0.48)), max(1, int(hp * 0.03)), skin - 2, -1)   # hands
+                else:
+                    L = KINDS[wk.kind][1] / KINDS[wk.kind][0] * hp; by = int(y - hp * 0.55)
+                    cv2.ellipse(a, (x, by), (max(1, int(L * 0.5)), max(1, int(hp * 0.22))), 0, 0, 360, skin - 3, -1)
+                    for k in (-0.33, 0.33):
+                        cv2.line(a, (int(x + k * L), by), (int(x + k * L), y), skin - 6, max(1, int(hp * 0.06)))
+                    hx = int(x + wk.dir * L * 0.55); cv2.circle(a, (hx, int(by - hp * 0.12)), max(1, int(hp * 0.16)), skin, -1)
+                    cv2.circle(a, (hx + wk.dir * max(1, int(hp * 0.06)), int(by - hp * 0.16)), max(1, int(hp * 0.04)), 36.5, -1)     # eye
+            items.append((wk.az_dist()[1], body))
         for c in cars:
-            d = OBJECTS["road"][1] + 1.5; p = v.ground(math.degrees(math.atan2(c["x"], d)), d, 0.5)
-            if p:
-                cv2.circle(a, (int(p[0] + c["dir"] * 2), int(p[1])), 2, amb + 60, -1)          # hot engine
+            def car(c=c):
+                d5 = OBJECTS["road"][1] + 1.5; az5 = math.degrees(math.atan2(c["x"], d5))
+                p0 = v.ground(az5 - math.degrees(2.2 / d5), d5, 0.0); p1 = v.ground(az5 + math.degrees(2.2 / d5), d5, 1.45)
+                if p0 and p1:
+                    x0, x1 = sorted((int(p0[0]), int(p1[0]))); y1, y0 = int(p0[1]), int(p1[1])
+                    cv2.rectangle(a, (x0, y0), (x1, y1), amb + 4, -1)
+                    eng = (x1 - (x1 - x0) // 5, (y0 + y1) // 2) if c["dir"] > 0 else (x0 + (x1 - x0) // 5, (y0 + y1) // 2)
+                    cv2.circle(a, eng, max(1, (y1 - y0) // 3), amb + 45, -1)                       # hot engine
+                    cv2.circle(a, ((x0 if c["dir"] > 0 else x1), y1 - 2), max(1, (y1 - y0) // 6), amb + 60, -1)   # exhaust
+            items.append((OBJECTS["road"][1] + 1.5, car))
+        for _d, fn in sorted(items, key=lambda x: -x[0]):
+            fn()
         if st.lights.white:
-            cv2.circle(a, (w // 2, 2), 2, amb + 30, -1)
-        if self.weather == "fog":
-            a = amb + (a - amb) * 0.6
-        a = cv2.GaussianBlur(a, (0, 0), 0.7)
-        return a + np.random.default_rng().normal(0, 0.12, a.shape).astype(np.float32)
+            cv2.circle(a, (W // 2, 6), 8, amb + 35, -1)                 # the floodlight housing gets warm
+        vis = VISIBILITY.get(self.weather, 6000.0)
+        if vis < 1000:                                                  # fog / rain: everything closer to the air temperature
+            a = amb + (a - amb) * (0.35 if vis < 100 else 0.7)
+        a = cv2.GaussianBlur(a, (0, 0), S * 0.7)                        # optics
+        a = cv2.resize(a, (w, h), interpolation=cv2.INTER_AREA)
+        rng = np.random.default_rng(); a += rng.normal(0, 0.08, a.shape).astype(np.float32)        # sensor noise (NETD)
+        if "fpn" not in self._cache:
+            self._cache["fpn"] = (np.random.default_rng(9).normal(0, 0.04, (1, w)) + np.random.default_rng(10).normal(0, 0.02, (h, 1))).astype(np.float32)
+        a += self._cache["fpn"]                                        # stripes of the sensor (fixed pattern)
+        yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+        a -= 0.6 * (((xx - w / 2) / (w / 2)) ** 2 + ((yy - h / 2) / (h / 2)) ** 2)            # slightly cooler edges
+        return a.astype(np.float32)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -566,14 +872,15 @@ def window(sim):
     except ImportError:
         Image = ImageTk = None
     BG, FG, MUT = "#161b22", "#c9d1d9", "#8b949e"
-    root = tk.Tk(); root.title("Motion Watch – Simulator 2"); root.configure(bg=BG)
+    root = tk.Tk(); root.title(f"Motion Watch – Simulator {SIM_VERSION}"); root.configure(bg=BG)
     sty = ttk.Style(); sty.theme_use("clam")
     left = tk.Frame(root, bg=BG); left.pack(side="left", fill="both", expand=True, padx=8, pady=8)
     right = tk.Frame(root, bg=BG); right.pack(side="right", fill="y", padx=8, pady=8)
-    prev = [tk.Label(left, bg="#000") for _ in range(3)]
+    prev = [tk.Label(left, bg="#000"), None, None]
     prev[0].pack(fill="x"); row = tk.Frame(left, bg=BG); row.pack(fill="x", pady=(6, 0))
     prev[1] = tk.Label(row, bg="#000"); prev[1].pack(side="left"); prev[2] = tk.Label(row, bg="#000"); prev[2].pack(side="left", padx=(6, 0))
     status = tk.Label(left, text="", bg=BG, fg=FG, justify="left", anchor="w", font=("DejaVu Sans Mono", 9)); status.pack(fill="x", pady=(6, 0))
+    upd = tk.Label(left, text="", bg=BG, fg="#d29922", anchor="w"); upd.pack(fill="x")
     nb = ttk.Notebook(right); nb.pack(fill="both", expand=True)
 
     def tab(name):
@@ -592,12 +899,11 @@ def window(sim):
     def check(p, text, get, put):
         v = tk.BooleanVar(value=get()); ttk.Checkbutton(p, text=text, variable=v, command=lambda: put(v.get())).pack(anchor="w"); return v
 
-    # -- scene
     t1 = tab("Szene")
     lab(t1, "UHRZEIT")
     hs = slider(t1, "Stunde", 0, 23.75, lambda: round(sim.hour(), 2), sim.set_hour, 0.25)
     bf = tk.Frame(t1, bg=BG); bf.pack(fill="x")
-    for txt, h in (("Mittag", 12.5), ("Abend", 19.6), ("Nacht", 23.0), ("Morgen", 6.4)):
+    for txt, h in (("Mittag", 12.5), ("Abend", 19.4), ("Nacht", 23.0), ("Morgen", 6.4)):
         ttk.Button(bf, text=txt, command=lambda h=h: (sim.set_hour(h), hs.set(h))).pack(side="left", expand=True, fill="x")
     slider(t1, "Zeit läuft x-fach", 1, 120, lambda: sim.speed, lambda v: (sim.set_hour(sim.hour()), setattr(sim, "speed", v)), 1)
     slider(t1, "Mond", 0, 1, lambda: sim.moon, lambda v: setattr(sim, "moon", v), 0.1)
@@ -605,7 +911,7 @@ def window(sim):
     g = tk.Frame(t1, bg=BG); g.pack(fill="x")
     for i, (k, l) in enumerate((("person", "Person"), ("fox", "Fuchs"), ("boar", "Wildschwein"), ("deer", "Reh"), ("cat", "Katze"))):
         ttk.Button(g, text=l, command=lambda k=k: sim.spawn(k)).grid(row=i // 3, column=i % 3, sticky="ew", padx=1, pady=1)
-    ttk.Button(g, text="Auto (Scheinwerfer)", command=sim.car).grid(row=1, column=2, sticky="ew", padx=1, pady=1)
+    ttk.Button(g, text="Auto", command=sim.car).grid(row=1, column=2, sticky="ew", padx=1, pady=1)
     for c in range(3):
         g.columnconfigure(c, weight=1)
     check(t1, "ab und zu Besuch von selbst", lambda: sim.auto_walkers, lambda v: setattr(sim, "auto_walkers", v))
@@ -619,11 +925,10 @@ def window(sim):
     ttk.Button(pf, text="Foto laden …", command=pick).pack(side="left", expand=True, fill="x")
     ttk.Button(pf, text="gezeichnete Welt", command=lambda: sim.load_pano(None)).pack(side="left", expand=True, fill="x")
     slider(t1, "Kamera 1: Richtung", -90, 90, lambda: sim.cam1_yaw, lambda v: setattr(sim, "cam1_yaw", v), 1)
-    # -- weather
     t2 = tab("Wetter")
     lab(t2, "WETTER")
     wv = tk.StringVar(value=sim.weather)
-    for v_, l in (("clear", "klar"), ("rain", "Regen"), ("fog", "Nebel"), ("snow", "Schnee")):
+    for v_, l in (("clear", "klar"), ("cloudy", "bewölkt"), ("rain", "Regen"), ("fog", "Nebel"), ("snow", "Schnee")):
         ttk.Radiobutton(t2, text=l, value=v_, variable=wv, command=lambda: setattr(sim, "weather", wv.get())).pack(anchor="w")
     slider(t2, "Wind km/h", 0, 120, lambda: sim.wind, lambda v: setattr(sim, "wind", v), 1)
     slider(t2, "Temperatur °C", -15, 40, lambda: sim.ambient, lambda v: setattr(sim, "ambient", v))
@@ -631,9 +936,8 @@ def window(sim):
     slider(t2, "Luftdruck hPa", 960, 1040, lambda: sim.pressure, lambda v: setattr(sim, "pressure", v))
     ttk.Button(t2, text="Sturm zieht auf (Luftdruck fällt)", command=lambda: setattr(sim, "storm_t", time.time())).pack(fill="x", pady=(6, 0))
     ttk.Button(t2, text="Sturm vorbei", command=lambda: setattr(sim, "storm_t", 0.0)).pack(fill="x")
-    # -- camera / lens
     t3 = tab("Kamera")
-    lab(t3, "LINSE (test für Linsen-Prüfung und Sabotage)")
+    lab(t3, "LINSE (Linsen-Prüfung, Sabotage)")
     slider(t3, "Tau / beschlagen", 0, 1, lambda: sim.dew, lambda v: setattr(sim, "dew", v), 0.05)
     check(t3, "Spinnennetz vor der Linse", lambda: sim.web, lambda v: setattr(sim, "web", v))
     check(t3, "Kamera abgedeckt (Hand davor)", lambda: sim.covered, lambda v: setattr(sim, "covered", v))
@@ -642,7 +946,6 @@ def window(sim):
     lab(t3, "BILD")
     slider(t3, "Bildrauschen", 0, 3, lambda: sim.noise, lambda v: setattr(sim, "noise", v), 0.1)
     check(t3, "Datum / Zeit im Bild", lambda: sim.osd, lambda v: setattr(sim, "osd", v))
-    # -- sensors / test
     t4 = tab("Sensoren")
     dv = tk.BooleanVar(value=False)
     ttk.Checkbutton(t4, text="Wohnwagentür offen", variable=dv, command=lambda: sim.door(dv.get())).pack(anchor="w")
@@ -662,32 +965,34 @@ def window(sim):
                 im = cv2.cvtColor(sim.render_camera(i, st, t), cv2.COLOR_BGR2RGB)
                 im = cv2.resize(im, (w_, int(im.shape[0] * w_ / im.shape[1])))
                 ph = ImageTk.PhotoImage(Image.fromarray(im)); prev[i].configure(image=ph); prev[i].image = ph
-            th = sim.render_thermal(st, t); lo, hi = float(th.min()), float(th.max())
+            th = sim.render_thermal(st, t); lo, hi = np.percentile(th, (1, 99.5))
             g8 = np.clip((th - lo) / max(0.5, hi - lo) * 255, 0, 255).astype(np.uint8)
-            im = cv2.cvtColor(cv2.applyColorMap(cv2.resize(g8, (232, 180), interpolation=cv2.INTER_NEAREST), cv2.COLORMAP_INFERNO), cv2.COLOR_BGR2RGB)
+            im = cv2.cvtColor(cv2.applyColorMap(cv2.resize(g8, (232, 180), interpolation=cv2.INTER_LINEAR), cv2.COLORMAP_INFERNO), cv2.COLOR_BGR2RGB)
             ph = ImageTk.PhotoImage(Image.fromarray(im)); prev[2].configure(image=ph); prev[2].image = ph
         rl = ", ".join(f"{r.name}={'AN' if r.on else 'aus'}" for r in st.relays) or "-"
         wr = sim.world(t)
-        status.configure(text=(f"Motion Watch: {'verbunden (' + st.device + ')' if age is not None and age < 3 else 'NICHT verbunden'}   Port {sim.port}\n"
+        status.configure(text=(f"Motion Watch: {'verbunden (' + st.device + ')' if age is not None and age < 3 else 'NICHT verbunden'}   Port {sim.port}   Simulator {SIM_VERSION}\n"
                                f"Servos: Schwenk {st.servo.pan:.1f} % ({st.servo.pan_deg:+.0f}°)  Neigung {st.servo.tilt:.1f} % ({st.servo.tilt_deg:+.0f}°)\n"
                                f"Licht: weiss {'AN' if st.lights.white else 'aus'} · IR {'AN' if st.lights.ir else 'aus'}   Relais: {rl}\n"
                                f"Ton: {st.sound or '-'}   Scharf: {'ja' if st.armed else 'nein'}\n"
                                f"Welt: {int(sim.hour()):02d}:{int(sim.hour() % 1 * 60):02d} {'Nacht' if wr.dark else 'Tag'} · {sim.weather} · "
                                f"{wr.ambient_c} °C · {wr.pressure_hpa} hPa · Wind {wr.wind_kmh} km/h · Besucher {len(sim.walkers)}"))
+        upd.configure(text=sim.update_msg)
         root.after(500, tick)
     tick()
     root.mainloop()
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(description="Motion Watch camping simulator 2")
+    ap = argparse.ArgumentParser(description=f"Motion Watch camping simulator {SIM_VERSION}")
     ap.add_argument("--port", type=int, default=DEFAULT_PORT)
     ap.add_argument("--no-window", action="store_true", help="without the control window")
+    ap.add_argument("--no-update", action="store_true", help="never update itself from Motion Watch")
     ap.add_argument("--pano", help="own 360° photo (equirectangular 2:1) or a panorama")
     ap.add_argument("--hour", type=float, help="start at this hour (e.g. 22.5)")
     ap.add_argument("--night", action="store_true"); ap.add_argument("--day", action="store_true")
     a = ap.parse_args()
-    sim = CampingSim(a.port, a.pano)
+    sim = CampingSim(a.port, a.pano, autoupdate=not a.no_update)
     if a.hour is not None:
         sim.set_hour(a.hour)
     elif a.night:
