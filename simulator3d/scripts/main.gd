@@ -1045,7 +1045,7 @@ func control(d: Dictionary) -> Dictionary:
 func status_text() -> String:
 	var h := hour()
 	var mwc := "verbunden mit %s" % str(mw.get("device", "Motion Watch")) if now() - mw_t < 3.0 else "Motion Watch nicht verbunden"
-	return "%02d:%02d · %s · %s · %.1f °C · Besucher %d · %s" % [int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", weather, ambient, visitors.get_child_count(), mwc]
+	return "%02d:%02d · %s · %s · %.1f °C · Besucher %d · %s" % [int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), mwc]
 
 
 # ---- the window on the PC ------------------------------------------------------------------------------------------------
