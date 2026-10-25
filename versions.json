@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 19:02",
+ "generated": "2026-10-25 19:17",
  "versions": [
+  {
+   "version": "2.71.0",
+   "file": "webcam_bewegung_2_71_0.py",
+   "url": "",
+   "sha256": "760a01d82fb5536c6cd5fed88e2af520dca81b5959d2ec630f79c7a89bc22ae2",
+   "date": "2026-10-25 19:17",
+   "notes": "simulator 2: real 3D view into a 360° world (own 360° photo possible), clock with fast time, moon and stars, rain / fog / snow, wind in the trees, cars with headlights, insects in the IR light, dew and spider web on the lens, covered camera, auto exposure and night noise, own cut-out photos as visitors, a ready-made night test.",
+   "sig": "176cf313b81ae3a9584b20b03ed0dfa0ca41378681210579d5fa879a258f9a6597b72fb33dae96f9589d5f0267d5f5912103a2a68684b795d8f963fadeae3e0c"
+  },
   {
    "version": "2.70.0",
    "file": "webcam_bewegung_2_70_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 13:36",
    "notes": "solar panel (Sensors): an INA219 current meter shows watts, volts and today's yield; night forecast - does the battery last until sunrise? (self-check, and a push message in the evening when it will not).",
    "sig": "ba520d908132012d77e5eedabc660fa30caea441d6d9e355aa722189ca50b02e7a2f5e4e094a40ee84f744085b512cb587fa5dc821732fa67a5d2ed665e6f006"
-  },
-  {
-   "version": "2.61.0",
-   "file": "webcam_bewegung_2_61_0.py",
-   "url": "",
-   "sha256": "192e8e5f83997629807a1ff471c9003ce80da7af5c2c940e77eafe40448b062f",
-   "date": "2026-10-25 13:32",
-   "notes": "announcement from text (Loudspeaker): the Pi speaks a typed text, offline (pico2wave or espeak-ng); it can be saved as an own sound and then used for the siren / deterrence.",
-   "sig": "885af9b0fb4592736797770695122b0939e658ed6a0cdcf1527076ad493eeb2e187e5775c14f80668589c371b1739fb23647d190211cd803aee3a1016b3f990a"
   }
  ]
 }

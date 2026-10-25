@@ -80,3 +80,22 @@ python3 motionwatch_sim_interface.py --night
 5. Nochmals drücken: Motion Watch nimmt wieder die echten Kameras. Die Simulator-Sensoren werden entfernt.
 
 Lampen funktionieren in der Simulation auch ohne angeschlossene Lampe. Tiere laufen davon, wenn die Sirene ertönt oder nachts das weisse Licht angeht. So lässt sich die Abschreckung testen.
+
+## Simulator 2: was er kann (ab Motion Watch 2.71.0)
+
+Das Bedienfenster hat vier Reiter:
+
+| Reiter | Inhalt |
+|---|---|
+| **Szene** | Uhrzeit einstellen (Mittag / Abend / Nacht / Morgen), Zeit schneller laufen lassen (bis 120×), Mond. Besuch: Person, Fuchs, Wildschwein, Reh, Katze, Auto mit Scheinwerfern. Eigenes 360°-Foto laden. Richtung von Kamera 1. |
+| **Wetter** | klar, Regen, Nebel, Schnee. Wind (die Bäume bewegen sich), Temperatur, Feuchte, Luftdruck. «Sturm zieht auf» senkt den Luftdruck. |
+| **Kamera** | Tau auf der Linse und Spinnennetz (zum Testen der Linsen-Prüfung), Kamera abgedeckt (Sabotage-Alarm), Insekten im IR-Licht (typischer Fehlalarm), Bildrauschen, Datum/Zeit im Bild |
+| **Sensoren** | Wohnwagentür, Gas, Velo, PIR. Dazu **«Nacht-Test starten»**: ein fertiger Ablauf von etwa 2 Minuten mit Fuchs, Wildschwein, Auto, Person beim Zelt, Tür, Velo und Gas. |
+
+**Echter 3D-Blick:** Die Kameras schauen in eine 360°-Welt. Die Besucher laufen in echten Abständen (Meter) und werden richtig verdeckt.
+
+**Realistischer mit eigenen Bildern:**
+- **360°-Foto:** ein Foto im Format 2:1, z. B. von einer 360°-Kamera oder einer Handy-Panorama-App. Du lädst es im Reiter «Szene» oder legst es als `sim_assets/pano.jpg` neben den Simulator. Dann siehst du deinen echten Platz, und die Kamera schwenkt darin.
+- **Ausgeschnittene Fotos (PNG mit durchsichtigem Hintergrund):** in die Ordner `sim_assets/person/`, `sim_assets/fox/`, `sim_assets/boar/`, `sim_assets/deer/` und `sim_assets/cat/`. Dann laufen echte Bilder statt gezeichneter Figuren durchs Bild. Gut geeignet zum Testen der KI.
+
+**Kameraeffekte:** automatische Belichtung, Rauschen bei Nacht, abgedunkelte Ecken und Bewegungsunschärfe beim Schwenken.

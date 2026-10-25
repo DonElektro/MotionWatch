@@ -122,6 +122,8 @@ class SimReply:
     pressure_hpa: float = 1013.0      # for the storm warning
     wind_kmh: float = 0.0
     last_event: int = 0               # id of the newest sensor event -> GET /events?since=…
+    weather: str = "clear"            # clear | rain | fog | snow  (information; Motion Watch may ignore it)
+    humidity: float = 70.0            # % relative humidity
 
 
 @dataclass
