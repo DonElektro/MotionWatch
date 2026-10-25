@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 09:12",
+ "generated": "2026-10-25 09:14",
  "versions": [
+  {
+   "version": "2.48.0",
+   "file": "webcam_bewegung_2_48_0.py",
+   "url": "",
+   "sha256": "d8521bf2297a5392531fcbf1b9cf9e425190b54f7616d29038d5238903610190",
+   "date": "2026-10-25 09:14",
+   "notes": "storage: the self-check shows where the program and the recordings are (SD card / SSD / USB); the recordings can be put on an SSD or USB drive (Settings -> Recording, existing ones are moved over); if the drive is missing at a start, the memory card is used and the self-check says so.",
+   "sig": "d8164d8ec6dc34ddfa4712cc859a53074535c651e55c61ddba6eeb5e6526b28dc17757d9e7de5fef2f79289edcd21d6fb924628f708bac57ca999ac43236730d"
+  },
   {
    "version": "2.47.0",
    "file": "webcam_bewegung_2_47_0.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 22:59",
    "notes": "the marmot only appears over the live picture (never in recordings) and keeps its secret better.",
    "sig": "29fe931933c1df7fa27109901f94bbaf5d91dd97da4d42c6f34c694786ef2cec8386a043536a7a80e8c0fe42ff25f8f19a51f9592c81db7e885536a8884eac06"
-  },
-  {
-   "version": "2.34.0",
-   "file": "webcam_bewegung_2_34_0.py",
-   "url": "",
-   "sha256": "0f7d72e95fb6cea130b5f501e7f13f2870a4ffeed6e5eb83463af2f857ef58ac",
-   "date": "2026-10-24 22:49",
-   "notes": "recordings: filter by place (pictures within 2 km = one place, names from OpenStreetMap, can be renamed) and a map with all places (tap = preview, «show only this place»). The Bluetooth loudspeaker is no longer on the page «Cameras» (still under Settings -> Loudspeaker). The marmot only peeks out briefly; the code on its belly is real.",
-   "sig": "8cfe37f580fc2626aa30981a1a48e4ac8d321082935e0a373b493f8473c6375d46bffe538a6a6a65889eb7e741eae065752bf1f38a46e3b3ade318a404455603"
   }
  ]
 }
