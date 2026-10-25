@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 18:36",
+ "generated": "2026-10-25 18:52",
  "versions": [
+  {
+   "version": "2.69.0",
+   "file": "webcam_bewegung_2_69_0.py",
+   "url": "",
+   "sha256": "9218bb1446e00acd1a95e034f61ce559bae31e83bcdf750ddade76848f62e060",
+   "date": "2026-10-25 18:52",
+   "notes": "simulator connection: one button (quick switch «Simulation», F9 in the window) switches to a separate simulation program (motionwatch_simulator.py): its two cameras and thermal camera become the sources, Motion Watch sends servos, lights, relays and sound, and takes day / night, temperature, pressure, wind and sensor events from it. Switching off brings the real cameras back.",
+   "sig": "96ddbe49846c403bce3f74ededf4ce6f57e362713b130fc3f30c842dc7ee3c89df70127223623364f84680bd1c264d6a5fc5058e48f363e635f3c5420bd4560a"
+  },
   {
    "version": "2.68.1",
    "file": "webcam_bewegung_2_68_1.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 13:10",
    "notes": "event report as PDF (recordings: 📄): pictures, time, place with map link, device, the log around the event and a checksum of the video - for the police or the insurance. No extra program needed.",
    "sig": "847b976cdcecec97ac5029460187ffd03cb3f487e08de4e03a5fd1a1f5c7e70c11a9f09ba36ae815cde319f91c9f378b2f2687b241c82f9278a066ea598dc00c"
-  },
-  {
-   "version": "2.59.0",
-   "file": "webcam_bewegung_2_59_0.py",
-   "url": "",
-   "sha256": "a5d36af8a4963041050ca9f80009406e82150bd9990b788438876a0855d82c79",
-   "date": "2026-10-25 13:07",
-   "notes": "lens check - push message when the picture stays blurred and flat for 15 minutes (dew, dirt, spider web); temperature alarm (e.g. a pet in the caravan): push when it gets too hot or too cold, and when it is fine again.",
-   "sig": "7cfc2c22d5d6f17e8f212a5e996e6c67bacd7871aaede082146fd1a868b36d144751aa838f4125ee09446b8863815da7c523dcbba7de4cb20d533835715ca40c"
   }
  ]
 }
