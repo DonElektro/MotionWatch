@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 11:11",
+ "generated": "2026-10-25 11:38",
  "versions": [
+  {
+   "version": "2.57.0",
+   "file": "webcam_bewegung_2_57_0.py",
+   "url": "",
+   "sha256": "654a644db763522b0fbf1b5fc838c911bef14e1c6463d1bcf1a666d606d74c97",
+   "date": "2026-10-25 11:38",
+   "notes": "«Talk» as a quick switch in the camera control - safe against an accidental press: tap once to unlock (6 s; a long press does not unlock), then hold to talk. It replaces the unprotected big button next to the joystick.",
+   "sig": "b35d6489e68e9ecbc2f2912bd84b2ba1d16f2a0e39c9c851ef4429f36f95727c28e35f6c85bcb085b71df75bf26f99f2326dcc214cc8b07cd9a2ac56b502870e"
+  },
   {
    "version": "2.56.0",
    "file": "webcam_bewegung_2_56_0.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-25 01:03",
    "notes": "only one Motion Watch at a time: started by hand while the autostart runs it in the background (without a window), the program asks and takes over with its window (the background service starts again when the window is closed). The web page notices when a switched-off Pi is back and reloads by itself.",
    "sig": "242188a8b8078233f8c7a2de9dd50b22782f058eda1b29428d4fdca6b69aa0c6ac422cb548719e186702023ecc9a0d7a00dadf5e94b0a4edd8cf321c633ab106"
-  },
-  {
-   "version": "2.43.0",
-   "file": "webcam_bewegung_2_43_0.py",
-   "url": "",
-   "sha256": "6859bc5f632d87ca09a64ce7bcbedae20e454f61594206f8d2d07db694f24e48",
-   "date": "2026-10-25 00:34",
-   "notes": "protection against crashes of the whole Pi: the AI runs at most a few times per second and slower when the Pi gets hot; every 10 s the program notes CPU temperature and power supply - after an unexpected end the self-check shows what it was like; two short runs in a row -> «safe start» (AI, thermal camera, night vision, IR light, patrol off) with a push message. The UPS shutdown needs plausible values and 3 minutes of running first.",
-   "sig": "89fb2a2408062c6e411dd212038be4ffc500cfb08b443cd57632604c60f43ba61f463f9ee08f74e8eead4d3d9a588084ca88b4afa3ceaba97f22b317b068180f"
   }
  ]
 }
