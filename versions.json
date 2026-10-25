@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 01:03",
+ "generated": "2026-10-25 08:39",
  "versions": [
+  {
+   "version": "2.44.0",
+   "file": "webcam_bewegung_2_44_0.py",
+   "url": "",
+   "sha256": "e0dbe7a6de3a865c86d5c3377e5812e92505785ccd436dfffe9611a4caebed06",
+   "date": "2026-10-25 08:39",
+   "notes": "operator mode keeps a copy of all settings when it is switched on; unlocking with the PIN puts back everything that was changed in the meantime (not: armed / disarmed, camera position, location, own Wi-Fi).",
+   "sig": "7ff70d4d6c9ec3242e0fb6decfe21f07e5b16951b2d33f8d1bde52d6dc30092dfcb9315703b10eea7d426c8d4fa469fe5cd045a16c237749de771cf3fe6d6f0d"
+  },
   {
    "version": "2.43.1",
    "file": "webcam_bewegung_2_43_1.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 22:05",
    "notes": "night vision look: green image-intensifier picture with grain and dark corners, the thermal camera draws glowing outlines of warm bodies and (Thermal-90) their temperature; quick switch 🌙 and «automatically at night».",
    "sig": "947a23d60134b3197c65d22c0de74d7642bd78815a856ea1d48b5ab778e56dfba57a4e72af762c71d587cb5ee04aacf5d70ce85682c24c8a1689d488c667a702"
-  },
-  {
-   "version": "2.28.0",
-   "file": "webcam_bewegung_2_28_0.py",
-   "url": "",
-   "sha256": "dc14ea7722b154d1795064c70801927a9d0057109dd9f3a97897eb904f4551f9",
-   "date": "2026-10-24 21:49",
-   "notes": "five languages: German, French, Italian, Romansh (Rumantsch Grischun) and English - web page, window, manual, setup assistant, push / SMS texts, quick start card, guest page; language menu instead of DE/EN (Ctrl+L in the window: next language); missing Romansh texts fall back to German. Two small surprises for Swiss users.",
-   "sig": "7843e3450043d6e251bb462111ad6618cb3be3ced4015607db39cb7bab5b3da281bf5ca1df5c84956e5fb6d11dd6cd7c28e1019ec6f8b277573e00ef1799400d"
   }
  ]
 }
