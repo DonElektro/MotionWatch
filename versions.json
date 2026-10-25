@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 19:17",
+ "generated": "2026-10-25 19:26",
  "versions": [
+  {
+   "version": "2.72.0",
+   "file": "webcam_bewegung_2_72_0.py",
+   "url": "",
+   "sha256": "b225e639e76c4fef924610eec216a38882b0245fd084652210866ea377d6f0ba",
+   "date": "2026-10-25 19:26",
+   "notes": "during the simulation nothing is saved: no alarm videos or pictures, no continuous recording, no timelapse, no photos, no diary entries, no backup. Push messages still come (to test them), marked «[SIM]».",
+   "sig": "3aaf617d1845ffa6d179ab1b2d1606b762d4f65c448c15b6b8d2a521ce451c9474b96a381c3ac69b829e3a4ca32680782897b236c7d797792ddb0f3a7be5e309"
+  },
   {
    "version": "2.71.0",
    "file": "webcam_bewegung_2_71_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 13:39",
    "notes": "several users (System → Users): own login per person with a role - «Operate» (arm / disarm, lights, camera, talk; no settings) or «View only». The web password stays the administrator. The log shows who did what.",
    "sig": "193582ff380501cb04f2d87b2de0107c2c68aa4367846d9da4bd118a692ffd5a285a6dbb1edc21dc6883b0f41bd4416af95149187a1647067760f76f7b192702"
-  },
-  {
-   "version": "2.62.0",
-   "file": "webcam_bewegung_2_62_0.py",
-   "url": "",
-   "sha256": "72cbd94cb59a6d964664c8296dbe74695b2a871dda66cd87e4d22188153b0997",
-   "date": "2026-10-25 13:36",
-   "notes": "solar panel (Sensors): an INA219 current meter shows watts, volts and today's yield; night forecast - does the battery last until sunrise? (self-check, and a push message in the evening when it will not).",
-   "sig": "ba520d908132012d77e5eedabc660fa30caea441d6d9e355aa722189ca50b02e7a2f5e4e094a40ee84f744085b512cb587fa5dc821732fa67a5d2ed665e6f006"
   }
  ]
 }
