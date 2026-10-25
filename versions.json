@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 21:45",
+ "generated": "2026-10-25 22:13",
  "versions": [
+  {
+   "version": "2.77.0",
+   "file": "webcam_bewegung_2_77_0.py",
+   "url": "",
+   "sha256": "6cadf6dff75341b7db93e5b3394aef221c8aa28f38d97f4657b0e9ad977c457e",
+   "date": "2026-10-25 22:13",
+   "notes": "simulator control on the web page for every simulator (CONTROL protocol 1: the simulator describes its scenarios, sliders, choices, switches and buttons itself - ready for a later 3D simulator on a PC); three example 360° video scenes (forest at night, car park at night with a thief, misty camping morning) made by the simulator itself; a running simulator now also restarts when Motion Watch has already put the new files in place.",
+   "sig": "88d92c1714cdc4faa3864d29df418564faac22c417d1968c29ad892ffe8695b67f8181e21caa23878239101408f4c38a879324175434d3a0b5f8b9b454282809"
+  },
   {
    "version": "2.76.0",
    "file": "webcam_bewegung_2_76_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 18:36",
    "notes": "UPS HAT (E): the state register read as in the Waveshare register manual (bit 7 charging, bit 6 fast charging, bit 5 power at the input); the chip is recognised by its ID (0x0A).",
    "sig": "915d6da31c277a5dc7215074f47c3c0cd2251eaefe256ab51c007c04d329568981bfd30c5f00eb81ed55ad6cbfde3ab14faaceeb75f5dbabf70aa9756eac210c"
-  },
-  {
-   "version": "2.67.0",
-   "file": "webcam_bewegung_2_67_0.py",
-   "url": "",
-   "sha256": "5744c482c18ca79ef0ddc78f84615f0e48ffcec3e348bc3599c2dab5d57d7d5e",
-   "date": "2026-10-25 14:00",
-   "notes": "when Motion Watch starts in the background (autostart), a small message appears on the Pi's desktop with the address of the page (waits for the desktop after booting; can be switched off under Setup).",
-   "sig": "752cd2b1e5c3281719670c82871ba51eb8ae35296651d2f057958c853707b080bd3705cb467a11ac5aae83b853c68cecca5285f3a6b7d961398690a928a73002"
   }
  ]
 }

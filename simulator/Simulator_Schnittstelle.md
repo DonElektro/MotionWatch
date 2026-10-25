@@ -176,3 +176,61 @@ Statt der gezeichneten Welt kann der Simulator ein **Video** abspielen. Die Kame
 - Mit dem Häkchen laufen zusätzlich gezeichnete Besucher durchs Video.
 - Mit **«Datei auswählen»** lädst du ein Video direkt vom Handy oder PC in den Video-Ordner des Simulators. Das geht auch, wenn der Simulator auf einem anderen PC läuft. Motion Watch reicht die Datei nur weiter und behält sie nicht.
 - Der Bereich erscheint, sobald der Simulator verbunden ist oder auf dem Pi läuft.
+
+## Fernsteuerung von der Webseite: das CONTROL-Protokoll (ab Motion Watch 2.77.0)
+
+Damit lässt sich jeder Simulator von der Webseite von Motion Watch aus bedienen, auch ein späterer 3D-Simulator auf einem PC. Der Simulator **beschreibt sich selbst**: welche Szenarien er hat und welche Regler, Schalter und Knöpfe. Motion Watch zeichnet diese unter *System & Netz → 🧪 Simulator → 🎮 Simulator-Steuerung*, ohne sie vorher zu kennen. Für einen neuen Simulator muss man in Motion Watch also nichts ändern.
+
+**Auf dem PC:** In Motion Watch als Adresse die des PCs eintragen, zum Beispiel `http://192.168.1.50:8765`. Auf dem PC muss die Windows-Firewall den Port 8765 erlauben.
+
+### GET /control – was der Simulator anbietet
+
+```json
+{"ok": true, "v": 1, "name": "Mein 3D-Simulator 1.0",
+ "scenarios": [{"id": "wald", "name": "Wald", "kind": "world", "deletable": false},
+               {"id": "video:parkplatz.mp4", "name": "Parkplatz", "kind": "video", "deletable": true}],
+ "scenario": "wald",
+ "status": "23:10 · Nacht · 2 Rehe im Bild",
+ "controls": [
+   {"type": "slider", "id": "hour", "label": "Uhrzeit", "group": "Szene", "min": 0, "max": 24, "step": 0.25, "unit": "h", "value": 23.1},
+   {"type": "select", "id": "weather", "label": "Wetter", "group": "Wetter", "options": [["clear", "klar"], ["rain", "Regen"]], "value": "clear"},
+   {"type": "toggle", "id": "auto", "label": "Tiere von selbst", "group": "Besuch", "value": true},
+   {"type": "button", "id": "spawn_fox", "label": "Fuchs", "group": "Besuch"},
+   {"type": "text", "id": "say", "label": "Notiz", "group": "Szene", "value": ""}],
+ "upload": {"accept": [".mp4", ".mov"], "max_mb": 4096, "label": "Video hochladen"}}
+```
+
+### POST /control – etwas schalten (die Antwort ist wieder dasselbe wie GET /control)
+
+| Senden | Bedeutung |
+|---|---|
+| `{"action": "scenario", "id": "wald"}` | Szenario laden |
+| `{"action": "delete", "id": "video:parkplatz.mp4"}` | Szenario löschen (nur wenn `deletable`) |
+| `{"action": "set", "id": "hour", "value": 22.5}` | Regler, Auswahl, Schalter oder Text setzen |
+| `{"action": "press", "id": "spawn_fox"}` | Knopf drücken |
+| `{"action": "get"}` | nur abfragen |
+
+Bei einem Fehler: `{"ok": false, "error": "warum"}`. Die Webseite fragt etwa alle 4 Sekunden neu ab, solange der Bereich offen ist.
+
+### POST /upload?name=datei.mp4 – eine Datei in den Simulator
+
+Der Inhalt der Datei kommt als Körper der Anfrage (`Content-Length` gesetzt). Motion Watch reicht hochgeladene Dateien von der Webseite direkt weiter und behält nichts. Die Antwort ist wie bei `GET /control`, zusätzlich mit `"saved": "dateiname"`.
+
+**In Python** ist das alles in `motionwatch_sim_interface.py` schon fertig. Man ruft `self.add_control("slider", "hour", "Uhrzeit", get, set, "Szene", min=0, max=24, step=0.25, unit="h")` auf und schreibt `scenarios()`, `scenario()`, `load_scenario(id)`, `status_text()` und `upload_info()` / `upload(...)`. Ein Simulator in einer anderen Sprache (zum Beispiel Godot) muss nur diese drei Adressen mit dem gleichen JSON beantworten.
+
+## Beispiel-Videoszenen (ab Motion Watch 2.77.0)
+
+Drei fertige 360°-Szenen zum Ausprobieren. Sie werden **auf dem eigenen Gerät erzeugt**, aus dem Internet wird nichts geladen:
+
+| Szene | Was passiert |
+|---|---|
+| **Wald in der Nacht (Infrarot)** | dunkler Wald im IR-Licht. Ein Fuchs läuft vorbei, dann zwei Rehe, dann ein Wildschwein. Die Augen leuchten. |
+| **Parkplatz in der Nacht** | Strassenlampen, zwei Reihen Autos. Zuerst geht jemand normal vorbei. Dann kommt jemand, kauert sich an ein Auto, leuchtet mit einer Taschenlampe, geht zum nächsten Auto und rennt weg. Dazu meldet ein Sensor «Auto: Erschütterung». |
+| **Camping am nebligen Morgen** | Zelt, Wohnwagen, Bäume im Nebel. Ein Reh grast, eine Person geht mit Hund vorbei, eine Katze kommt nahe an die Kamera. |
+
+**Erzeugen:**
+- im Simulator-Fenster mit **«Beispiel-Videoszenen erzeugen»**,
+- oder auf der Webseite unter *Simulator-Steuerung → Szenarien*,
+- oder von Hand: `python3 motionwatch_demo_scenes.py`
+
+Auf einem PC dauert das etwa eine halbe Minute, auf dem Pi einige Minuten. Danach stehen die Szenen in der Liste. Es sind einfache, gezeichnete Szenen zum Testen der Funktionen, keine echten Filmaufnahmen.

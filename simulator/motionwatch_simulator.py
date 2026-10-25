@@ -43,8 +43,19 @@ import numpy as np
 
 from motionwatch_sim_interface import SimServer, SimInfo, CamInfo, SimReply, DEFAULT_PORT
 
-SIM_VERSION = "3.3"
+SIM_VERSION = "3.4"
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+
+def _file_sha(n):
+    try:
+        with open(os.path.join(HERE, n), "rb") as f:
+            return hashlib.sha256(f.read()).hexdigest()
+    except OSError:
+        return ""
+
+
+RUN_SHA = {n: _file_sha(n) for n in ("motionwatch_simulator.py", "motionwatch_sim_interface.py", "motionwatch_demo_scenes.py")}   # what is running now
 ASSETS = os.path.join(HERE, "sim_assets")
 CAM_H = 1.6                                   # height of the cameras above the ground (m)
 EQ_W, EQ_H = 3072, 1536                       # the drawn 360° world (equirectangular)
@@ -342,7 +353,8 @@ class CampingSim(SimServer):
         rng = random.Random(7)
         self.trees = [(rng.uniform(-170, 170), rng.uniform(16, 50), rng.uniform(0.8, 1.35)) for _ in range(34)]
         self.stones = [(rng.uniform(-60, 60), rng.uniform(4, 15)) for _ in range(6)]
-        self.update_msg = ""; self.autoupdate = autoupdate
+        self.update_msg = ""; self.autoupdate = autoupdate; self.gas_on = False; self.demo_msg = ""
+        self._register_controls()
         threading.Thread(target=self._life, daemon=True).start()
         if autoupdate:
             threading.Thread(target=self._updater, daemon=True).start()
@@ -363,7 +375,11 @@ class CampingSim(SimServer):
             try:
                 want = dict(self.state.sim_files or {})
                 if want and self.mw_addr:
-                    old = [n for n, h in want.items() if self._sha(os.path.join(HERE, n)) != h]
+                    old = [n for n, h in want.items() if RUN_SHA.get(n) != h]          # the version that RUNS (not the one on disk)
+                    if old and all(self._sha(os.path.join(HERE, n)) == h for n, h in want.items()):
+                        self.update_msg = "Neue Version ist schon da (von Motion Watch installiert) - startet neu …"
+                        print("Simulator files were updated - restarting"); time.sleep(1.0)
+                        os.execv(sys.executable, [sys.executable] + sys.argv)
                     if old:
                         self.update_msg = "Neue Version von Motion Watch wird geladen …"
                         url = f"{self.state.mw_scheme}://{self.mw_addr}:{self.state.mw_port}/sim/simulator.zip"
@@ -424,40 +440,96 @@ class CampingSim(SimServer):
             self.video.stop()
         self.video = VideoScene(path, self) if path else None
 
-    # ---- switched from the web page of Motion Watch ------------------------------------------------------------------
-    def control_info(self):
-        v = self.video
-        return {"ok": True, "videos": [{"name": n, "file": os.path.basename(p)} for n, p in video_list()],
-                "playing": os.path.basename(v.path) if v is not None else "", "name": v.name if v is not None else "",
-                "msg": v.msg if v is not None else "", "figures": bool(self.video_figures), "version": SIM_VERSION}
+    # ---- switched from the web page of Motion Watch (CONTROL protocol, see motionwatch_sim_interface.py) ----------------
+    def _register_controls(self):
+        A = self.add_control
+        A("slider", "hour", "Uhrzeit", lambda: round(self.hour(), 2), self.set_hour, "Szene", min=0, max=23.75, step=0.25, unit="h")
+        A("slider", "speed", "Zeit läuft x-fach", lambda: self.speed, lambda v: (self.set_hour(self.hour()), setattr(self, "speed", v)),
+          "Szene", min=1, max=120, step=1, unit="×")
+        A("slider", "moon", "Mond", lambda: self.moon, lambda v: setattr(self, "moon", v), "Szene", min=0, max=1, step=0.1)
+        A("slider", "cam1_yaw", "Kamera 1: Richtung", lambda: self.cam1_yaw, lambda v: setattr(self, "cam1_yaw", v), "Szene", min=-90, max=90, step=1, unit="°")
+        A("select", "weather", "Wetter", lambda: self.weather, lambda v: setattr(self, "weather", v), "Wetter",
+          options=[["clear", "klar"], ["cloudy", "bewölkt"], ["rain", "Regen"], ["fog", "Nebel"], ["snow", "Schnee"]])
+        A("slider", "wind", "Wind", lambda: self.wind, lambda v: setattr(self, "wind", v), "Wetter", min=0, max=120, step=1, unit="km/h")
+        A("slider", "ambient", "Temperatur", lambda: self.ambient, lambda v: setattr(self, "ambient", v), "Wetter", min=-15, max=40, step=0.5, unit="°C")
+        A("slider", "pressure", "Luftdruck", lambda: self.pressure, lambda v: setattr(self, "pressure", v), "Wetter", min=960, max=1040, step=0.5, unit="hPa")
+        A("button", "storm", "Sturm zieht auf", None, lambda: setattr(self, "storm_t", time.time()), "Wetter")
+        for k, l in (("person", "Person"), ("fox", "Fuchs"), ("boar", "Wildschwein"), ("deer", "Reh"), ("cat", "Katze")):
+            A("button", "spawn_" + k, l, None, lambda k=k: self.spawn(k), "Besuch")
+        A("button", "car", "Auto", None, self.car, "Besuch")
+        A("toggle", "auto", "ab und zu Besuch von selbst", lambda: self.auto_walkers, lambda v: setattr(self, "auto_walkers", v), "Besuch")
+        A("toggle", "figures", "gezeichnete Besucher auch im Video", lambda: self.video_figures, lambda v: setattr(self, "video_figures", v), "Besuch")
+        A("toggle", "door", "Wohnwagentür offen", lambda: self.door_open, self.door, "Sensoren")
+        A("toggle", "gas", "Gas / Rauch", lambda: self.gas_on, self.gas, "Sensoren")
+        A("button", "pir", "PIR Zelt auslösen", None, lambda: self.add_event("PIR Zelt", "pir", None), "Sensoren")
+        A("button", "bike", "Velo bewegen", None, lambda: self.add_event("Velo", "tag", None), "Sensoren")
+        A("button", "nighttest", "Nacht-Test starten (2 Min.)", None, self.night_test, "Sensoren")
+        A("slider", "dew", "Tau auf der Linse", lambda: self.dew, lambda v: setattr(self, "dew", v), "Kamera", min=0, max=1, step=0.05)
+        A("toggle", "web", "Spinnennetz vor der Linse", lambda: self.web, lambda v: setattr(self, "web", v), "Kamera")
+        A("toggle", "covered", "Kamera abgedeckt", lambda: self.covered, lambda v: setattr(self, "covered", v), "Kamera")
+        A("slider", "insects", "Insekten im IR-Licht", lambda: self.insects, lambda v: setattr(self, "insects", v), "Kamera", min=0, max=1, step=0.1)
+        A("slider", "noise", "Bildrauschen", lambda: self.noise, lambda v: setattr(self, "noise", v), "Kamera", min=0, max=3, step=0.1)
+        A("button", "make_demos", "Beispiel-Videoszenen erzeugen (dauert einige Minuten)", None, self.make_demos, "Szenarien")
 
-    def control(self, d):
-        a = d.get("action")
-        if a == "play":
-            f = os.path.basename(str(d.get("file") or ""))
-            p = os.path.join(VIDEO_DIR, f)
-            if not f or not os.path.isfile(p):
-                return {"ok": False, "error": "video not found"}
-            self.load_video(p)
-        elif a == "stop":
+    def scenarios(self):
+        out = [{"id": "drawn", "name": "Gezeichnete Camping-Welt (3D)", "kind": "world", "deletable": False}]
+        out += [{"id": "video:" + os.path.basename(p), "name": "🎬 " + n, "kind": "video", "deletable": True} for n, p in video_list()]
+        return out
+
+    def scenario(self):
+        return ("video:" + os.path.basename(self.video.path)) if self.video is not None else "drawn"
+
+    def load_scenario(self, id_):
+        if id_ == "drawn":
+            self.load_video(None); return True, ""
+        if id_.startswith("video:"):
+            f = os.path.basename(id_[6:]); p = os.path.join(VIDEO_DIR, f)
+            if not os.path.isfile(p):
+                return False, "video not found"
+            self.load_video(p); return True, ""
+        return False, "unknown scenario"
+
+    def delete_scenario(self, id_):
+        if not id_.startswith("video:"):
+            return False, "cannot be deleted"
+        f = os.path.basename(id_[6:]); p = os.path.join(VIDEO_DIR, f)
+        if not f.lower().endswith(VIDEO_EXT) or not os.path.isfile(p):
+            return False, "video not found"
+        if self.video is not None and os.path.basename(self.video.path) == f:
             self.load_video(None)
-        elif a == "figures":
-            self.video_figures = bool(d.get("on"))
-        elif a == "delete":
-            f = os.path.basename(str(d.get("file") or ""))
-            p = os.path.join(VIDEO_DIR, f)
-            if not f.lower().endswith(VIDEO_EXT) or not os.path.isfile(p):
-                return {"ok": False, "error": "video not found"}
-            if self.video is not None and os.path.basename(self.video.path) == f:
-                self.load_video(None)
-            for x in (p, os.path.splitext(p)[0] + ".json", os.path.join(VIDEO_DIR, ".klein", os.path.splitext(f)[0] + ".mp4")):
-                try:
-                    os.remove(x)
-                except OSError:
-                    pass
-        elif a != "list":
-            return {"ok": False, "error": "unknown action"}
-        return self.control_info()
+        for x in (p, os.path.splitext(p)[0] + ".json", os.path.join(VIDEO_DIR, ".klein", os.path.splitext(f)[0] + ".mp4")):
+            try:
+                os.remove(x)
+            except OSError:
+                pass
+        return True, ""
+
+    def status_text(self):
+        h = self.hour(); wr = self.world(time.time())
+        t = f"{int(h):02d}:{int(h % 1 * 60):02d} · {'Nacht' if wr.dark else 'Tag'} · {self.weather} · {wr.ambient_c} °C · Besucher {len(self.walkers)}"
+        if self.video is not None:
+            t = f"🎬 {self.video.name}: {self.video.msg}\n" + t
+        if self.demo_msg:
+            t += "\n" + self.demo_msg
+        return t
+
+    def upload_info(self):
+        return {"accept": list(VIDEO_EXT) + [".json"], "max_mb": 4096, "label": "Video (360° oder normal) in den Video-Ordner"}
+
+    def make_demos(self):
+        """Render the example 360° video scenes into sim_assets/videos (in the background)."""
+        if getattr(self, "_demo_busy", False):
+            return
+        self._demo_busy = True
+
+        def run():
+            try:
+                import motionwatch_demo_scenes as D
+                D.make_all(VIDEO_DIR, lambda m: setattr(self, "demo_msg", m))
+            except Exception as e:
+                self.demo_msg = f"Beispiel-Szenen: Fehler {e}"[:160]
+            self._demo_busy = False
+        threading.Thread(target=run, daemon=True).start()
 
     def upload(self, name, rfile, length):
         import re as _re
@@ -547,7 +619,7 @@ class CampingSim(SimServer):
         self.door_open = bool(open_); self.add_event("Wohnwagen-Tür", "door", self.door_open)
 
     def gas(self, on):
-        self.add_event("Gas Wohnwagen", "gas", bool(on))
+        self.gas_on = bool(on); self.add_event("Gas Wohnwagen", "gas", bool(on))
 
     def load_pano(self, path):
         self.pano_file = path; self._photo = None; _MAPS.clear()
@@ -1220,6 +1292,7 @@ def window(sim):
         except Exception:
             pass
     ttk.Button(t1, text="Video-Ordner öffnen", command=open_folder).pack(fill="x")
+    ttk.Button(t1, text="Beispiel-Videoszenen erzeugen (Wald, Parkplatz, Camping)", command=sim.make_demos).pack(fill="x")
     check(t1, "gezeichnete Besucher zusätzlich ins Video", lambda: sim.video_figures, lambda v: setattr(sim, "video_figures", v))
     vmsg = tk.Label(t1, text="", bg=BG, fg=MUT, anchor="w", justify="left", wraplength=330); vmsg.pack(fill="x")
     t2 = tab("Wetter")
@@ -1279,7 +1352,10 @@ def window(sim):
         upd.configure(text=sim.update_msg)
         if sim.video is not None and vcb.get() != sim.video.name and sim.video.name in vids:
             vcb.set(sim.video.name)
-        vmsg.configure(text=(f"{sim.video.name}: {sim.video.msg}" if sim.video is not None else "aus – gezeichnete Welt oder 360°-Foto"))
+        vmsg.configure(text=(f"{sim.video.name}: {sim.video.msg}" if sim.video is not None else "aus – gezeichnete Welt oder 360°-Foto")
+                       + (f"\n{sim.demo_msg}" if sim.demo_msg else ""))
+        if sim.demo_msg.startswith("Beispiel-Videoszenen fertig") and not getattr(sim, "_demo_shown", False):
+            sim._demo_shown = True; refresh_videos()
         root.after(500, tick)
     tick()
     root.mainloop()

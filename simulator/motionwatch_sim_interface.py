@@ -169,6 +169,7 @@ class SimServer:
         self.lock = threading.Lock()
         # every picture is drawn only once and shared (Motion Watch, a second viewer and the window): saves much CPU
         self._frames = {}; self._flocks = {}; self._served = {}
+        self._controls = []                # remote controls, see add_control()
         self._httpd = None
 
     # ---- to be written by the simulation ------------------------------------------------------------------------
@@ -180,13 +181,85 @@ class SimServer:
         """Return the thermal picture as numpy array h x w, float32, degrees Celsius (or None = no thermal camera)."""
         return None
 
+    # ---- remote control from the web page of Motion Watch (CONTROL protocol 1, see Simulator_Schnittstelle.md) -----
+    # The simulator describes itself: its scenarios and its controls (slider, select, toggle, button, text). Motion Watch
+    # draws them on its web page without knowing them - a new simulator (e.g. a 3D one on a PC) only has to answer
+    # GET /control and POST /control in this form. With this class: add_control(...) and scenarios() / load_scenario().
+    def add_control(self, type_: str, id_: str, label: str, get=None, set_=None, group: str = "", **extra):
+        """type_: "slider" (min, max, step, unit), "select" (options=[[value, text], ...]), "toggle", "button", "text".
+        get(): the current value, set_(value) (for a button: set_() is called when pressed)."""
+        self._controls.append(dict(type=type_, id=id_, label=label, group=group, get=get, set=set_, extra=extra))
+
+    def scenarios(self) -> list:
+        """[{"id": "...", "name": "...", "kind": "world" | "video" | "photo" | ..., "deletable": bool}, ...]"""
+        return []
+
+    def scenario(self) -> str:
+        """id of the scenario that runs now."""
+        return ""
+
+    def load_scenario(self, id_: str):
+        """Switch to this scenario. Return (True, "") or (False, "why not")."""
+        return False, "no scenarios"
+
+    def delete_scenario(self, id_: str):
+        return False, "cannot be deleted"
+
+    def status_text(self) -> str:
+        """One or two lines that Motion Watch shows (e.g. what the scenario does right now)."""
+        return ""
+
+    def upload_info(self):
+        """None, or what may be uploaded: {"accept": [".mp4", ...], "max_mb": 4096, "label": "..."}"""
+        return None
+
     def control_info(self) -> dict:
-        """GET /control: what the simulation offers to be switched from Motion Watch (e.g. its video scenarios)."""
-        return {"ok": False, "error": "not supported"}
+        """GET /control: the description of the scenarios and controls with their current values."""
+        out = []
+        for c in self._controls:
+            d = {"type": c["type"], "id": c["id"], "label": c["label"], "group": c["group"]}
+            d.update(c["extra"])
+            if c["get"] is not None:
+                try:
+                    v = c["get"]()
+                    d["value"] = round(v, 3) if isinstance(v, float) else v
+                except Exception:
+                    d["value"] = None
+            out.append(d)
+        return {"ok": True, "v": 1, "name": self.info.name, "scenarios": self.scenarios(), "scenario": self.scenario(),
+                "controls": out, "status": self.status_text(), "upload": self.upload_info()}
 
     def control(self, d: dict) -> dict:
-        """POST /control: switch something in the simulation (e.g. {"action": "play", "file": "wald.mp4"})."""
-        return {"ok": False, "error": "not supported"}
+        """POST /control: {"action": "scenario"|"delete", "id": ...} · {"action": "set", "id": ..., "value": ...}
+        · {"action": "press", "id": ...} · {"action": "get"}. The answer is control_info() (or ok False + error)."""
+        a = d.get("action"); cid = str(d.get("id") or "")
+        if a in ("scenario", "delete"):
+            ok, msg = (self.load_scenario if a == "scenario" else self.delete_scenario)(cid)
+            if not ok:
+                return {"ok": False, "error": msg or "not possible"}
+        elif a in ("set", "press"):
+            c = next((c for c in self._controls if c["id"] == cid), None)
+            if c is None or c["set"] is None:
+                return {"ok": False, "error": "unknown control"}
+            if a == "press":
+                c["set"]()
+            else:
+                v = d.get("value")
+                if c["type"] == "slider":
+                    v = float(v); e = c["extra"]
+                    v = max(float(e.get("min", v)), min(float(e.get("max", v)), v))
+                elif c["type"] == "toggle":
+                    v = bool(v)
+                elif c["type"] == "select":
+                    if str(v) not in [str(o[0]) for o in c["extra"].get("options", [])]:
+                        return {"ok": False, "error": "unknown choice"}
+                    v = str(v)
+                else:
+                    v = str(v)[:200]
+                c["set"](v)
+        elif a not in ("get", None):
+            return {"ok": False, "error": "unknown action"}
+        return self.control_info()
 
     def upload(self, name: str, rfile, length: int) -> dict:
         """POST /upload?name=<file>: a file (e.g. a video scenario) sent by Motion Watch."""
