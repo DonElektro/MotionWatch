@@ -62,6 +62,14 @@ Die Anleitung steht auf zigbee2mqtt.io. Danach:
 
 Hinweis: Ein Bluetooth-Lautsprecher und die Suche nach Anhängern teilen sich den Bluetooth-Chip. Das funktioniert meist, kann aber zu kurzen Aussetzern im Ton führen.
 
+## 7. Sturmwarnung (ab Version 2.55.0)
+
+Unter *Sensoren → ⛈ Sturmwarnung*. Du bekommst eine Push-Nachricht, höchstens alle 3 Stunden pro Grund:
+
+- **Luftdruck:** Der Temperaturfühler **BME280** (I2C) misst auch den Luftdruck. Fällt er schnell (Standard: 3 hPa in 3 Stunden), kommt oft starker Wind oder ein Gewitter. Die Tendenz ist erst nach 1 Stunde Messung verfügbar.
+- **Windmesser:** Ein Schalen-Anemometer (z. B. aus einem Wetterstations-Ersatzteilset, ca. 20–30 Fr.) hat einen Reed-Kontakt. Die zwei Drähte kommen an einen freien GPIO und an GND. Bei den üblichen Modellen ergibt 1 Impuls pro Sekunde 2,4 km/h. Das ist voreingestellt und lässt sich anpassen.
+- **Prognose (freiwillig):** Böen in den nächsten 12 Stunden von Open-Meteo. Dafür wird der Standort an Open-Meteo geschickt.
+
 ## Was beim Alarm passiert
 
 - Eine Push-Nachricht (dringend) mit dem aktuellen Kamerabild, z. B. «Wohnwagen: geöffnet».

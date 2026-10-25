@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 11:05",
+ "generated": "2026-10-25 11:09",
  "versions": [
+  {
+   "version": "2.55.0",
+   "file": "webcam_bewegung_2_55_0.py",
+   "url": "",
+   "sha256": "b7f57d77349968da44645fb236e1c346de55bc9347c5b4af3dc312193214ed33",
+   "date": "2026-10-25 11:09",
+   "notes": "storm warning (Sensors): push message when the air pressure falls fast (BME280), when a wind meter (anemometer on a GPIO) measures strong wind, or (optional) when the forecast expects gusts.",
+   "sig": "0d3b184e4dbf6822477b409482086f9c66a78d063c0f49e100b2b8d9d2b4b7a97b46e2aea2f2cfd88d7a20e840429d07a2f237a3cca61ef166206280c7ae670c"
+  },
   {
    "version": "2.54.0",
    "file": "webcam_bewegung_2_54_0.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-25 00:14",
    "notes": "the green arrows follow a switch at once (also in Simple), taken from the switches on the page itself.",
    "sig": "d3b7071dd93d05cf3fb32e6dd24a3ef7a0218724a8d89b0fcd7eb76816135d03c5aeb33257f27b9c0855918b77a6c1a0978361fa958490549d7c7e4e498da107"
-  },
-  {
-   "version": "2.42.2",
-   "file": "webcam_bewegung_2_42_2.py",
-   "url": "",
-   "sha256": "8c81cd3ba0edd02c3b4076673a4964a1659366acbc828e7ec76b479f151fa0e6",
-   "date": "2026-10-25 00:00",
-   "notes": "AI model download from Google's storage address (the old address has no valid certificate); shorter error messages.",
-   "sig": "d65eea7db621d72dfd15841ab6bac2308424727ccaf6d49c73b05ca2fce8ec1b7b8ad61c8e9765483b33bc405578be58de73e205338a0c8dfdd0180ddecdf00e"
   }
  ]
 }
