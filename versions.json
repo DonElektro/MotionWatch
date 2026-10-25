@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 08:39",
+ "generated": "2026-10-25 08:45",
  "versions": [
+  {
+   "version": "2.45.0",
+   "file": "webcam_bewegung_2_45_0.py",
+   "url": "",
+   "sha256": "48d33b69d05c6beddbe8ed83241569a5457dddbb9a71d3638e401a9b74f8b136",
+   "date": "2026-10-25 08:45",
+   "notes": "operator mode may change everything (also zones, schedules, waypoints, relays) - except what could lock you out: Wi-Fi / own Wi-Fi / network, web password, autostart, loading settings, «reset settings», update source. Unlocking with the PIN puts everything back.",
+   "sig": "76f20f76ba4c72ac8a15809b3ecef253d01126875400a89f531130f82bba33159ecb9b82df88ef38b19dd6edb4b9b543bc3a5dc5c1ebd0fa283153ecce602302"
+  },
   {
    "version": "2.44.0",
    "file": "webcam_bewegung_2_44_0.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 22:08",
    "notes": "GPS: the phone sends its location (https page), otherwise the place from the settings; photos, snapshots, timelapse and diary pictures get EXIF GPS data, videos a location tag (shown on the map in photo apps); the phone location also keeps sunrise / sunset right.",
    "sig": "75bf56c53694b7991840e4e5aeb6c2db34c9ae24f8b993fb48f7b764bc36dd9cf67d4cef3a69bf1ff16a0c323bdf56f1cfb7983077a9288295e3cddd16c3ff0c"
-  },
-  {
-   "version": "2.29.0",
-   "file": "webcam_bewegung_2_29_0.py",
-   "url": "",
-   "sha256": "c4120fb0886c5013580e5b2f58883ec90d30d161fc3a3c1bf1c049cb1666804c",
-   "date": "2026-10-24 22:05",
-   "notes": "night vision look: green image-intensifier picture with grain and dark corners, the thermal camera draws glowing outlines of warm bodies and (Thermal-90) their temperature; quick switch 🌙 and «automatically at night».",
-   "sig": "947a23d60134b3197c65d22c0de74d7642bd78815a856ea1d48b5ab778e56dfba57a4e72af762c71d587cb5ee04aacf5d70ce85682c24c8a1689d488c667a702"
   }
  ]
 }
