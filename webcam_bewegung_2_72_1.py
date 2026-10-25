@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_72_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_72_1.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -412,6 +412,8 @@ Features
     covered camera, auto exposure and night noise, own cut-out photos as visitors, a ready-made night test.
   * 2.72.0: during the simulation nothing is saved: no alarm videos or pictures, no continuous recording, no timelapse,
     no photos, no diary entries, no backup. Push messages still come (to test them), marked «[SIM]».
+  * 2.72.1: switching the simulation off no longer starts a recording: the alarms of the simulation are forgotten and
+    the real camera first learns its picture for 30 seconds (no recording, no alarm during that time).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -420,10 +422,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_72_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_72_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_72_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_72_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_72_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_72_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -440,7 +442,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.72.0"
+APP_VERSION = "2.72.1"
 
 
 def default_data_dir():
@@ -9563,7 +9565,8 @@ def sens_fire(x, what):
         w.notifier.alert(title, f"{x['name']}: {sens_text(x, what)}", w.frame_out)
     if test:
         return
-    QUICK["rec_until"] = max(QUICK["rec_until"], now + 60)        # one minute of video of what happens now
+    if not CFG.get("sim_on"):
+        QUICK["rec_until"] = max(QUICK["rec_until"], now + 60)    # one minute of video of what happens now
     if x["kind"] == "gas" and not is_armed():
         if out_selected() and not SOUND["playing"] and TALK["proc"] is None:
             sound_play(None, None, None, reason="gas alarm")
@@ -10342,7 +10345,12 @@ def sim_set(on, who="web"):
         CFG["source"] = CFG["sim_prev_source"] or "auto"; CFG["thermal_source"] = CFG["sim_prev_thermal"] or ""
         CFG["extra_cams"] = [x for x in CFG["extra_cams"] if not x.startswith("sim:")]
         CFG["sensors"] = [x for x in CFG["sensors"] if not x["src"].startswith("sim:")]
-        SIM.update(ok=False, msg="off")
+        SIM.update(ok=False, msg="off", off_t=time.time())
+        QUICK["rec_until"] = 0.0                            # forget what happened in the simulation
+        if w is not None:
+            w.last_person_time = 0; w.last_warm = 0.0; w.preroll.clear()
+        if AUDIO is not None:
+            AUDIO.last_noise = 0.0
         log_event("sys", f"SIMULATION OFF ({who}) - back to the real hardware")
     save_settings()
     try:
@@ -11338,7 +11346,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_72_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_72_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -12822,6 +12830,9 @@ class MotionWatch:
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S")          # video and snapshot of one event share the same name
         if not is_armed():
             persons = []                                  # disarmed: no snapshots, no notifications, no new recordings
+        settle = now - SIM.get("off_t", 0.0) < 30.0       # just back from the simulation: the camera learns its picture
+        if settle:
+            persons = []; self.last_person_time = 0
         new_person = bool(persons) and (now - self.last_person_time) > CFG["record_tail"]
         if persons:
             self.last_person_time = now
@@ -12839,7 +12850,7 @@ class MotionWatch:
         want = man_rec or CFG["record"] and ((self.last_person_time > 0 and (now - self.last_person_time) < CFG["record_tail"])
                                   or (CFG["thermal_alarm"] and is_armed() and now - self.last_warm < CFG["record_tail"])
                                   or (CFG["noise_alarm"] and AUDIO is not None and now - AUDIO.last_noise < CFG["record_tail"]))
-        if POWER["pending"] or CFG["sim_on"]:
+        if POWER["pending"] or CFG["sim_on"] or settle:
             want = False                                  # the Pi shuts down / simulation: no (or finish the) recording
         h, w = frame.shape[:2]
         if self.writer is not None and (self.rec_size != (w, h) or getattr(self.writer, "failed", False)):
@@ -23579,7 +23590,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.72.0")
+        self.root.title("Motion Watch 2.72.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -23869,7 +23880,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.72.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.72.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -30709,7 +30720,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.72.0 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.72.1 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:
