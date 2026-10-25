@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_58_2.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_68_0.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -377,6 +377,28 @@ Features
   * 2.58.0: «Mask» as a quick switch in the camera control (web and window): shows the motion mask over the picture.
   * 2.58.1: the motion mask keeps the picture as bright as it is and only tints the moving parts in a soft red.
   * 2.58.2: self-check: the loudspeaker hint is shorter.
+  * 2.59.0: lens check - push message when the picture stays blurred and flat for 15 minutes (dew, dirt, spider web);
+    temperature alarm (e.g. a pet in the caravan): push when it gets too hot or too cold, and when it is fine again.
+  * 2.60.0: event report as PDF (recordings: 📄): pictures, time, place with map link, device, the log around the
+    event and a checksum of the video - for the police or the insurance. No extra program needed.
+  * 2.61.0: announcement from text (Loudspeaker): the Pi speaks a typed text, offline (pico2wave or espeak-ng);
+    it can be saved as an own sound and then used for the siren / deterrence.
+  * 2.62.0: solar panel (Sensors): an INA219 current meter shows watts, volts and today's yield; night forecast -
+    does the battery last until sunrise? (self-check, and a push message in the evening when it will not).
+  * 2.63.0: several users (System → Users): own login per person with a role - «Operate» (arm / disarm, lights,
+    camera, talk; no settings) or «View only». The web password stays the administrator. The log shows who did what.
+  * 2.64.0: hardware check step by step (System → Help and setup): camera, movement, AI, thermal camera, servos,
+    microphone, loudspeaker, lights, push message and every extra sensor - each step checks itself where it can.
+  * 2.65.0: animal species (AI detection): a second AI model (ONNX, e.g. for fox, badger, wild boar, marten, deer)
+    looks at every animal the first AI finds; the species appears on the picture, in the log and in the diary.
+    The model is not included - it is installed from an address (URL) or copied into the models folder.
+  * 2.66.0: the guide (all five languages) describes the new parts: sensors, storm warning, GPS, solar, turning the
+    picture, mask and talk tiles, lens check, announcements, animal species, PDF report, users, hardware check.
+  * 2.67.0: when Motion Watch starts in the background (autostart), a small message appears on the Pi's desktop
+    with the address of the page (waits for the desktop after booting; can be switched off under Setup).
+  * 2.68.0: Waveshare UPS HAT (E) (4 x 21700, for the Pi 5): found by itself at I2C 0x2D - charge level, time left
+    and charging from its battery chip, the 4 cell voltages, USB-C input; power cut / back and safe shutdown as before.
+    The «Listen» quick switch lights up green while listening (it never did).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -385,10 +407,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_58_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_68_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_58_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_58_2.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_68_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_68_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -405,7 +427,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.58.2"
+APP_VERSION = "2.68.0"
 
 
 def default_data_dir():
@@ -615,6 +637,7 @@ CFG = {
     "diary_on": True, "diary_keep_days": 90,      # note animals / persons / noises (animal diary + night report)
     "guest_token": "", "guest_until": 0.0,        # guest access: link /g/<token>, 0 = no time limit
     "ups_on": True, "ups_addr": "0x42", "ups_mah": 3450,   # Waveshare UPS HAT (INA219, 2 x 18650 in series): mAh of ONE cell
+    "ups_model": "auto",         # auto | e (UPS HAT (E), I2C 0x2D) | ina (UPS HAT A/B/C with INA219)
     "ups_shutdown_pct": 8, "ups_push": True, "ups_invert": False,
     "batt_mah": 0, "batt_extra_w": 1.5, "batt_used_wh": 0.0, "batt_full_t": 0.0, "batt_warned": False,   # powerbank estimate
     "notify_network": True,      # push message with the page address when the Pi joins a network (e.g. the phone hotspot)
@@ -648,6 +671,7 @@ CFG = {
     "thermal_zoom": 100, "thermal_dx": 0, "thermal_dy": 0,   # which part of the thermal picture the camera sees
     # power saving: few pictures per second while all is quiet; any movement / noise / alarm = full speed for eco_wake s
     "eco_on": False, "eco_fps": 3, "eco_wake": 30, "eco_view_full": True,
+    "users": [],                 # extra logins: [{"name", "hash", "role": "operate" | "view"}] (the web password = administrator)
     "web_pw_hash": "",           # web password set on the page / in the window (only a salted hash is stored)
     "disk_warn_mb": 500,         # push message when less space is free on the memory card
     "setup_done": False,
@@ -667,6 +691,10 @@ CFG = {
     "mqtt_prefix": "motionwatch", "mqtt_discovery": True,   # MQTT / Home Assistant                 # other Motion Watch devices in the overview: [{id, url, name, pw}]          # shared pictures / videos get a small Motion Watch logo strip
     "gpsmod_on": False, "gpsmod_port": "auto", "gps_theft": True, "gps_theft_m": 150,
     "storm_on": True, "storm_drop": 3.0, "storm_wind": 50, "storm_forecast": False, "wind_gpio": "", "wind_factor": 2.4,
+    "solar_on": False, "solar_addr": "0x41", "solar_shunt": 0.1, "night_warn": True,
+    "species_on": False, "species_model": "", "species_norm": "imagenet", "species_size": 224, "species_conf": 0.5,
+    "desktop_notice": True,
+    "lens_check": True, "temp_alarm_on": False, "temp_hot": 30, "temp_cold": 3,
     "sens_on": False, "sensors": [], "rf433_on": False, "zigbee_on": False, "ble_on": False, "tag_missing": 5, "eco_pir": True,
     "tamper_on": True,           # sabotage: camera covered or turned away (picture check)
     "tamper_motion": True,       # motion sensor MPU-6050 (I2C 0x68), if fitted: device moved / knocked over
@@ -1181,12 +1209,16 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Lights", "light_ir_out", "Infrared light: connected to", "enum", "light_ir_out"),
     ("Lights", "light_ir_auto", "Infrared light: Auto means", "enum", "light_auto"),
     ("Lights", "picture_mode", "Picture", "enum", "picture_mode"),
+    ("AI detection", "species_model", "Animal species: model", "enum", "species_model"),
+    ("AI detection", "species_norm", "Animal species: picture preparation of the model", "enum", "species_norm"),
+    ("Solar panel", "solar_addr", "Current meter: address (I2C)", "enum", "pca_address"),
     ("GPS module", "gpsmod_port", "Connection", "enum", "gpsmod_port"),
     ("Storm warning", "wind_gpio", "Wind meter (anemometer) connected to", "enum", "wind_gpio"),
     ("Camera / Servos", "cam_rotate", "Turn picture (camera mounted sideways or upside down)", "enum", "cam_rotate"),
     ("Servo driver", "servo_driver", "Servo driver", "enum", "servo_driver"),
     ("Servo driver", "pca_address", "PCA9685 address (I2C)", "enum", "pca_address"),
-    ("Battery", "ups_addr", "UPS HAT: address (I2C)", "enum", "pca_address"),
+    ("Battery", "ups_model", "UPS HAT: model", "enum", "ups_model"),
+    ("Battery", "ups_addr", "UPS HAT (A/B/C): address (I2C)", "enum", "pca_address"),
     ("Camping / protection", "net_mode", "Network", "enum", "net_modes"),
     ("Camping / protection", "hotspot_ssid", "Own Wi-Fi: name", "str", None),
     ("Camping / protection", "hotspot_password", "Own Wi-Fi: password (8-63 characters)", "str", None),
@@ -1221,6 +1253,14 @@ def text_choice_pairs(key):
     if extra == "light_auto":
         return [("alarm_dark", tr("at an alarm, only at night")), ("alarm", tr("at an alarm, day and night")),
                 ("dark", tr("the whole night (sunset to sunrise)"))]
+    if extra == "ups_model":
+        return [("auto", tr("automatic")), ("e", "UPS HAT (E) – 4 × 21700, I2C 0x2D"), ("ina", "UPS HAT (A / B / C) – INA219")]
+    if extra == "species_model":
+        cur = str(CFG.get("species_model") or "")
+        ms = species_models() + ([cur] if cur and cur not in species_models() else [])
+        return [("", "– " + tr("none") + " –")] + [(m, m) for m in ms]
+    if extra == "species_norm":
+        return [("imagenet", "ImageNet (mean / std)"), ("01", "0 … 1"), ("-11", "-1 … 1")]
     if extra == "gpsmod_port":
         ports = sorted(set(glob.glob("/dev/ttyACM*") + glob.glob("/dev/ttyUSB*") + [p for p in ("/dev/serial0", "/dev/ttyAMA0") if os.path.exists(p)]))
         cur = str(CFG.get("gpsmod_port") or "auto")
@@ -1646,9 +1686,9 @@ def pw_hash(pw):
     return f"pbkdf2${200000}${salt.hex()}${h.hex()}"
 
 
-def pw_check(pw):
+def pw_check(pw, stored=None):
     import hashlib
-    stored = CFG.get("web_pw_hash") or ""
+    stored = (CFG.get("web_pw_hash") or "") if stored is None else stored
     key = hmac.new(_PW_KEY, (stored + "|" + str(pw)).encode(), "sha256").digest()
     if key in _PW_OK:
         return True
@@ -1662,6 +1702,96 @@ def pw_check(pw):
             _PW_OK.clear()
         _PW_OK.add(key)
     return ok
+
+
+USER_ROLES = ("operate", "view")
+_USER_RE = re.compile(r"^[A-Za-z0-9ÄÖÜäöüéèàç][A-Za-z0-9ÄÖÜäöüéèàç ._\-]{0,23}$")
+# what an "operate" user may change (everything else is read-only); "view" may only look
+OPERATE_POST = {"/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/light", "/api/move", "/api/stick", "/api/talk",
+                "/api/talk/stop", "/api/tts", "/api/rec/fav", "/api/rec/false", "/api/action"}
+VIEW_POST = {"/api/webpush", "/api/ui", "/api/time", "/api/gps", "/api/rec/prepare", "/rec/zip"}
+OPERATE_SET_KEYS = {"thermal_on", "nightvision", "show_objects", "show_mask", "track_person"}
+ADMIN_GET = ("/api/settings/export", "/api/ext", "/api/wifi", "/api/qr", "/setup-card", "/api/update", "/api/guest", "/api/fleet",
+             "/api/users", "/api/setup", "/api/log/file/")
+
+
+def users_clean(lst):
+    out, seen = [], set()
+    for u in (lst if isinstance(lst, list) else [])[:20]:
+        if not isinstance(u, dict):
+            continue
+        n = str(u.get("name", "")).strip()
+        if not _USER_RE.match(n) or n.lower() in seen or not str(u.get("hash", "")).startswith("pbkdf2$"):
+            continue
+        seen.add(n.lower())
+        out.append({"name": n, "hash": u["hash"], "role": u.get("role") if u.get("role") in USER_ROLES else "view"})
+    return out
+
+
+def user_login(name, pw):
+    """(name, role) for a web login, or None. The web password = administrator (any user name)."""
+    if CFG["web_password"]:
+        if hmac.compare_digest(str(pw).encode(), str(CFG["web_password"]).encode()):
+            return (name or "admin", "admin")
+    elif CFG["web_pw_hash"] and pw_check(pw):
+        return (name or "admin", "admin")
+    for u in CFG["users"]:
+        if u["name"].lower() == str(name or "").strip().lower() and pw_check(pw, u["hash"]):
+            return (u["name"], u["role"])
+    return None
+
+
+def users_action(d, who="admin"):
+    a = d.get("action")
+    if a == "add":
+        if not web_pw_active():
+            return False, "set the web password first (it is the administrator)"
+        n = str(d.get("name", "")).strip(); pw = str(d.get("password", ""))
+        if not _USER_RE.match(n):
+            return False, "name: 1 to 24 letters / digits"
+        if any(u["name"].lower() == n.lower() for u in CFG["users"]):
+            return False, "this name exists already"
+        if not (6 <= len(pw) <= 64 and all(32 <= ord(c) < 127 for c in pw)):
+            return False, "the password must have 6 to 64 characters (letters, digits, signs, no umlauts)"
+        if len(CFG["users"]) >= 20:
+            return False, "at most 20 users"
+        CFG["users"] = users_clean(CFG["users"] + [{"name": n, "hash": pw_hash(pw), "role": d.get("role") if d.get("role") in USER_ROLES else "view"}])
+        log_event("web", f"{who}: user «{n}» added ({CFG['users'][-1]['role']})")
+    else:
+        u = next((x for x in CFG["users"] if x["name"] == d.get("name")), None)
+        if u is None:
+            return False, "unknown user"
+        if a == "remove":
+            CFG["users"] = [x for x in CFG["users"] if x is not u]; log_event("web", f"{who}: user «{u['name']}» removed")
+        elif a == "role" and d.get("role") in USER_ROLES:
+            u["role"] = d["role"]; log_event("web", f"{who}: user «{u['name']}» now {u['role']}")
+        elif a == "password":
+            pw = str(d.get("password", ""))
+            if not (6 <= len(pw) <= 64 and all(32 <= ord(c) < 127 for c in pw)):
+                return False, "the password must have 6 to 64 characters (letters, digits, signs, no umlauts)"
+            u["hash"] = pw_hash(pw); log_event("web", f"{who}: new password for «{u['name']}»")
+        else:
+            return False, "unknown action"
+    _PW_OK.clear(); save_settings_now()
+    return True, ""
+
+
+def role_allows(role, path, method, d):
+    if role == "admin":
+        return True
+    if method in ("GET", "HEAD"):
+        return not path.startswith(ADMIN_GET)
+    if path in VIEW_POST:
+        return True
+    if role != "operate":
+        return False
+    if path == "/api/set":
+        return d.get("key") in OPERATE_SET_KEYS
+    if path == "/api/audio":
+        return d.get("action") in ("test", "siren", "stop")
+    if path == "/api/action":
+        return d.get("action") in ("center", "patrol")
+    return path in OPERATE_POST
 
 
 def web_pw_active():
@@ -1804,6 +1934,7 @@ def apply_settings(data):
         CFG["notify_type"] = "webhook"
     CFG["ip_sources"] = _clean_ip_sources(CFG["ip_sources"])
     CFG["sensors"] = sens_clean(CFG["sensors"])
+    CFG["users"] = users_clean(CFG["users"])
     if not SRC_RE.match(str(CFG["source"])):
         CFG["source"] = "auto"
     STATE["settings_status"] = f"loaded {n} settings, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules"
@@ -2447,6 +2578,91 @@ TAMPER = None
 
 
 # ----------------------------------------------------------------------------
+# Lens check: dew at night, dust or a spider web make the picture blurred and flat. Every 15 s the sharpness (variance of the
+#   Laplacian) and the contrast of a small grey picture; compared with what is normal for day or night (the best 20 % of the
+#   last 24 hours). Clearly worse for 15 minutes = push message (at most every 6 hours).
+# ----------------------------------------------------------------------------
+class LensCheck:
+    def __init__(self):
+        self.t_last = 0.0; self.base = {True: deque(maxlen=6000), False: deque(maxlen=6000)}; self.recent = deque(maxlen=60)
+        self.bad_since = 0.0; self.warned = 0.0; self.state = "learning"
+        STATE["lens"] = {"state": "learning", "pct": None}
+
+    def feed(self, small, t0):
+        if not CFG["lens_check"]:
+            STATE["lens"] = {"state": "off", "pct": None}; return
+        if t0 - self.t_last < 15:
+            return
+        self.t_last = t0
+        if manual_active() or STATE.get("tracking") or STATE.get("patrol_moving") or STATE.get("persons"):
+            return
+        g = cv2.resize(cv2.cvtColor(small, cv2.COLOR_BGR2GRAY) if small.ndim == 3 else small, (160, 120), interpolation=cv2.INTER_AREA)
+        if float(g.mean()) < 12:
+            return                                        # black: covered (theft protection) or no light at all
+        sharp = float(cv2.Laplacian(g, cv2.CV_32F).var()); con = float(g.std())
+        self.add(t0, sharp, con, bool(is_dark()))
+
+    def add(self, t0, sharp, con, dark):
+        b = self.base[dark]; b.append((t0, sharp, con))
+        while b and t0 - b[0][0] > 86400:
+            b.popleft()
+        self.recent.append((t0, sharp, con, dark))
+        rec = [x for x in self.recent if t0 - x[0] <= 600 and x[3] == dark]
+        if len(b) < 240 or len(rec) < 20:                 # one hour of pictures before it judges
+            STATE["lens"] = {"state": "learning", "pct": None}; return
+        ss = sorted(x[1] for x in b); cs = sorted(x[2] for x in b)
+        ref_s, ref_c = ss[int(len(ss) * 0.8)], cs[int(len(cs) * 0.8)]
+        cur_s = sorted(x[1] for x in rec)[len(rec) // 2]; cur_c = sorted(x[2] for x in rec)[len(rec) // 2]
+        pct = int(round(100.0 * cur_s / max(ref_s, 1e-3)))
+        bad = cur_s < 0.35 * ref_s and cur_c < 0.8 * ref_c
+        if bad:
+            self.bad_since = self.bad_since or t0
+            if t0 - self.bad_since >= 900 and self.state != "fogged":
+                self.state = "fogged"
+                log_event("sys", f"Lens fogged or dirty? Sharpness {pct} % of normal for 15 minutes")
+                if t0 - self.warned > 6 * 3600:
+                    self.warned = t0
+                    w = WATCH_REF["w"]
+                    if w is not None:
+                        w.notifier.info(trf("The picture has been blurred for 15 minutes (sharpness {p} % of normal). Wipe the lens and look for dew or a spider web.", p=pct),
+                                        title="{name}: " + tr("Lens fogged or dirty"))
+        else:
+            self.bad_since = 0.0
+            if self.state == "fogged" and cur_s > 0.6 * ref_s:
+                log_event("sys", "Lens: the picture is clear again")
+            if self.state != "fogged" or cur_s > 0.6 * ref_s:
+                self.state = "clear"
+        STATE["lens"] = {"state": self.state, "pct": pct}
+
+
+LENS = None
+
+
+# ---- temperature alarm (the temperature sensor; e.g. a pet in the caravan) ----
+TEMPA = {"state": "ok", "t": 0.0}
+
+
+def temp_check(env):
+    if not CFG["temp_alarm_on"] or not env or env.get("t") is None:
+        TEMPA["state"] = "ok"; return
+    t, hot, cold = float(env["t"]), float(CFG["temp_hot"]), float(CFG["temp_cold"])
+    prev = TEMPA["state"]
+    st = "hot" if t >= hot else "cold" if t <= cold else ("ok" if cold + 1.0 < t < hot - 1.0 else prev)   # 1 °C hysteresis
+    now = time.time(); w = WATCH_REF["w"]
+    if st in ("hot", "cold") and (st != prev or now - TEMPA["t"] >= 2 * 3600):
+        TEMPA["t"] = now
+        txt = trf("Too hot: {t:.1f} °C (limit {l:.0f} °C)", t=t, l=hot) if st == "hot" else trf("Too cold: {t:.1f} °C (limit {l:.0f} °C)", t=t, l=cold)
+        log_event("sys", f"TEMPERATURE ALARM: {t:.1f} °C ({st})")
+        if w is not None:
+            w.notifier.alert("{name}: " + tr("TEMPERATURE ALARM"), txt, None)
+    elif st == "ok" and prev in ("hot", "cold"):
+        log_event("sys", f"Temperature fine again: {t:.1f} °C")
+        if w is not None:
+            w.notifier.info(trf("Temperature fine again: {t:.1f} °C", t=t), title="{name}: " + tr("Temperature"))
+    TEMPA["state"] = st
+
+
+# ----------------------------------------------------------------------------
 # Climate: temperature / humidity / air pressure sensor (BME280 / BMP280 at I2C 0x76 / 0x77, or DS18B20 on 1-Wire GPIO 4).
 #   Read every 30 s; every 10 minutes one line goes into <data>/climate/YYYY-MM-DD.json (also CPU temperature and battery)
 #   - the day overview of the diary draws its curves from there. The sensor must sit outside the warm housing.
@@ -2558,6 +2774,7 @@ class EnvSensor:
         while True:
             try:
                 STATE["env"] = self.read() if CFG["env_on"] else None
+                temp_check(STATE["env"])
                 if time.time() - self.last_log >= 600:
                     self.last_log = time.time(); climate_log(STATE["env"])
             except Exception as e:
@@ -3536,7 +3753,7 @@ def _sight_file():
 
 
 def sight_kind(label):
-    return "animal" if label in ANIMALS else (label if label in ("person", "warm", "noise") else "object")
+    return "animal" if label in ANIMALS or label in SPECIES["labels"] else (label if label in ("person", "warm", "noise") else "object")
 
 
 def sight_load():
@@ -3908,6 +4125,35 @@ def ups_read(addr, bus=1):
         os.close(fd)
 
 
+def ups_read_e(addr=0x2D, bus=1):
+    """Waveshare UPS HAT (E): a battery chip at I2C 0x2D (16-bit values, low byte first). None = not there / implausible.
+    0x02 state (0x80 fast charging, 0x40 charging, 0x20 discharging), 0x10 USB-C input mV / mA, 0x20 battery mV, mA (signed),
+    %, remaining mAh, minutes left (discharging), minutes to full (charging), 0x30 the four cell voltages (mV)."""
+    import fcntl
+    try:
+        fd = os.open(f"/dev/i2c-{bus}", os.O_RDWR)
+    except OSError:
+        return None
+    try:
+        fcntl.ioctl(fd, I2C_SLAVE, addr)
+        def blk(reg, n):
+            os.write(fd, bytes([reg])); return os.read(fd, n)
+        u = lambda b, i: b[i] | (b[i + 1] << 8)
+        st = blk(0x02, 1)[0]; vb = blk(0x10, 6); bt = blk(0x20, 12); cl = blk(0x30, 8)
+        cur = u(bt, 2)
+        if cur > 0x7FFF:
+            cur -= 0x10000
+        r = {"state": st, "vbus": u(vb, 0) / 1000.0, "vbus_a": u(vb, 2) / 1000.0, "v": u(bt, 0) / 1000.0, "a": cur / 1000.0,
+             "pct": u(bt, 4), "mah": u(bt, 6), "min_left": u(bt, 8), "min_full": u(bt, 10), "cells": [u(cl, i) / 1000.0 for i in (0, 2, 4, 6)]}
+        if not (6.0 <= r["v"] <= 17.6) or r["pct"] > 100:
+            return None                                       # another chip at this address
+        return r
+    except (OSError, IndexError):
+        return None
+    finally:
+        os.close(fd)
+
+
 class BatteryMonitor:
     """Estimates what is left in the powerbank: capacity (mAh on the label) x 3.7 V x 85 % usable, minus what the Pi used
     since 'Battery full' was pressed. Power = Pi power chip (or an estimate from the CPU load) + extra devices + lights."""
@@ -3940,11 +4186,19 @@ class BatteryMonitor:
     def ups_tick(self):
         """UPS HAT found: charge from the battery voltage, time left from the measured power. Power cut / back,
         warning at 20 %, shutdown at <ups_shutdown_pct> % so the memory card is not damaged."""
-        try:
-            addr = int(str(CFG["ups_addr"]), 16)
-        except ValueError:
-            addr = 0x42
-        r = ups_read(addr)
+        model = CFG["ups_model"]
+        if model in ("auto", "e"):
+            e = ups_read_e()
+            if e is not None:
+                return self.ups_e(e)
+            if model == "e":
+                r = None
+        if model != "e":
+            try:
+                addr = int(str(CFG["ups_addr"]), 16)
+            except ValueError:
+                addr = 0x42
+            r = ups_read(addr)
         if r is None:
             self._ups_miss = getattr(self, "_ups_miss", 0) + 1
             return self._ups_miss < 3 and getattr(self, "_ups_seen", False)      # keep the last values for a short hiccup
@@ -3959,9 +4213,38 @@ class BatteryMonitor:
         watts = v * abs(a)
         cap_wh = float(CFG["ups_mah"]) / 1000.0 * 7.4 * 0.9
         hours = (pct / 100.0 * cap_wh / max(0.8, watts)) if on_batt else None
-        STATE["battery"] = {"on": True, "src": "ups", "pct": pct, "hours": None if hours is None else round(hours, 1),
-                            "watts": round(watts, 1), "volt": round(v, 2), "amps": round(a, 2), "on_battery": on_batt,
+        STATE["battery"] = {"on": True, "src": "ups", "model": "ina", "pct": pct, "hours": None if hours is None else round(hours, 1),
+                            "cap_wh": round(cap_wh, 1), "use_w": round(watts if on_batt else self.watts()[0], 1), "watts": round(watts, 1), "volt": round(v, 2), "amps": round(a, 2), "on_battery": on_batt,
                             "charging": charging}
+        return self.ups_events(v, pct, hours, on_batt, 5.5 <= v <= 8.9)
+
+    def ups_e(self, r):
+        """UPS HAT (E): its battery chip knows the charge, the time left and whether it charges."""
+        if not getattr(self, "_ups_seen", False):
+            self._ups_seen = True
+            log_event("sys", f"UPS HAT (E) found (I2C 0x2D): battery {r['v']:.2f} V, {r['pct']} %, cells " + " / ".join(f"{c:.2f}" for c in r["cells"]) + " V")
+        self._ups_miss = 0
+        st = r["state"]
+        charging = bool(st & 0xC0)
+        on_batt = bool(st & 0x20) or (r["vbus"] < 4.0 and r["a"] < -0.05)
+        v, a, pct = r["v"], r["a"], int(r["pct"])
+        watts = v * abs(a)
+        cap_wh = (r["mah"] / max(1.0, pct) * 100.0 / 1000.0 * v * 0.9) if r["mah"] and pct else 0.0
+        hours = round(r["min_left"] / 60.0, 1) if on_batt and r["min_left"] and r["min_left"] < 0xFFFF else (
+            round(pct / 100.0 * cap_wh / max(0.8, watts), 1) if on_batt and cap_wh else None)
+        STATE["battery"] = {"on": True, "src": "ups", "model": "e", "pct": pct, "hours": hours, "cap_wh": round(cap_wh, 1),
+                            "use_w": round(watts if on_batt else self.watts()[0], 1), "watts": round(watts, 1), "volt": round(v, 2),
+                            "amps": round(a, 2), "on_battery": on_batt, "charging": charging, "fast": bool(st & 0x80),
+                            "cells": [round(c, 2) for c in r["cells"]], "vbus": round(r["vbus"], 2), "mah": r["mah"],
+                            "full_min": r["min_full"] if charging and r["min_full"] < 0xFFFF else None}
+        cl = [c for c in r["cells"] if c > 0.5]
+        if cl and max(cl) - min(cl) > 0.3 and not getattr(self, "_cell_warn", False):
+            self._cell_warn = True
+            log_event("sys", "UPS HAT (E): the cells are uneven (" + " / ".join(f"{c:.2f}" for c in r["cells"]) + " V) - check the batteries")
+        return self.ups_events(v, pct, hours, on_batt, 9.0 <= v <= 17.6)
+
+    def ups_events(self, v, pct, hours, on_batt, volt_ok):
+        """Power cut / back, almost empty, clean shutdown - the same for every UPS HAT."""
         w = WATCH_REF["w"]; de = CFG["lang"] == "de"
         def push(text_en, **kw):
             if w is not None and CFG["ups_push"]:
@@ -3984,7 +4267,7 @@ class BatteryMonitor:
             log_event("sys", f"Battery almost empty (about {pct} %, {hours or 0:.1f} h left)")
             push("Battery almost empty: about {pct} % ({hours:.1f} h)", pct=pct, hours=hours or 0)
         lim = int(CFG["ups_shutdown_pct"])
-        plausible = 5.5 <= v <= 8.9 and time.time() - RUNGUARD["t0"] > 180      # 2 cells; never in the first 3 minutes
+        plausible = volt_ok and time.time() - RUNGUARD["t0"] > 180            # a real battery value; never in the first 3 minutes
         self._low = (getattr(self, "_low", 0) + 1) if (on_batt and lim > 0 and pct <= lim and plausible) else 0
         if self._low >= 3 and not POWER.get("pending") and not getattr(self, "_shut", False):   # 30 s below the limit
             self._shut = True
@@ -4004,11 +4287,14 @@ class BatteryMonitor:
         p, src = self.watts(); self.hist.append(p)
         if CFG["batt_full_t"]:
             CFG["batt_used_wh"] = float(CFG["batt_used_wh"]) + p * dt / 3600.0
+            sw = (STATE.get("solar") or {}).get("w") if CFG["solar_on"] else None
+            if sw:                                        # the panel charges the powerbank (about 85 % arrives)
+                CFG["batt_used_wh"] = max(0.0, float(CFG["batt_used_wh"]) - sw * 0.85 * dt / 3600.0)
         avg = sum(self.hist) / len(self.hist)
         left = max(0.0, cap_wh - float(CFG["batt_used_wh"])) if CFG["batt_full_t"] else None
         pct = None if left is None else int(round(100.0 * left / cap_wh))
         hours = None if left is None else left / max(0.5, avg)
-        STATE["battery"] = {"on": True, "watts": round(avg, 1), "src": src, "pct": pct,
+        STATE["battery"] = {"on": True, "watts": round(avg, 1), "use_w": round(avg, 1), "src": src, "pct": pct,
                             "hours": None if hours is None else round(hours, 1), "since": CFG["batt_full_t"], "cap_wh": round(cap_wh, 1)}
         if now - self._save_t > 300:
             self._save_t = now; save_settings()
@@ -5329,11 +5615,22 @@ def health_check(lang=None):
         add("spk", "🔊", "Loudspeaker", "ok", ("Bluetooth " + dev[3:]) if dev.startswith("bt:") else dev.replace("plughw:CARD=", "").split(",")[0])
     else:
         add("spk", "🔊", "Loudspeaker", "off", T("none chosen"), "For the siren: Settings → Loudspeaker.")
+    ln = STATE.get("lens") or {}
+    if CFG["lens_check"] and fps >= 1:
+        if ln.get("state") == "fogged":
+            add("lens", "🔍", "Lens", "bad", T("blurred") + (f" · {ln['pct']} %" if ln.get("pct") is not None else ""), "Wipe the lens and look for dew or a spider web.")
+        elif ln.get("state") == "clear":
+            add("lens", "🔍", "Lens", "ok", T("clear") + (f" · {ln['pct']} %" if ln.get("pct") is not None else ""))
+        else:
+            add("lens", "🔍", "Lens", "ok", T("learning (1 hour)"))
     e = STATE.get("env")
     if not CFG["env_on"]:
         add("env", "🌡", "Temperature sensor", "off", T("off"))
     elif e:
-        add("env", "🌡", "Temperature sensor", "ok", f"{e['t']:.1f} °C" + (f" · {e['h']} %" if e.get("h") is not None else "") + f" ({e.get('src', '')})")
+        ta = TEMPA["state"] if CFG["temp_alarm_on"] else ""
+        add("env", "🌡", "Temperature sensor", "bad" if ta in ("hot", "cold") else "ok",
+            f"{e['t']:.1f} °C" + (f" · {e['h']} %" if e.get("h") is not None else "") + f" ({e.get('src', '')})"
+            + (" · " + T({"hot": "too hot", "cold": "too cold"}[ta]) if ta in ("hot", "cold") else (" · " + T("alarm") + f" < {CFG['temp_cold']:.0f} / > {CFG['temp_hot']:.0f} °C" if ta else "")))
     else:
         add("env", "🌡", "Temperature sensor", "off", T("none connected"), "BME280 on I2C or DS18B20 on GPIO 4 - see the housing document.")
     g = gps_state()
@@ -5387,8 +5684,14 @@ def health_check(lang=None):
         add("batt", "🔋", "Battery", "off", T("off"))
     else:
         pct = b.get("pct")
-        add("batt", "🔋", "Battery", "off" if pct is None else "bad" if pct < 20 else "warn" if pct < 40 else "ok",
-            "–" if pct is None else f"{pct} %", "" if pct is None or pct >= 40 else "Charge the powerbank soon.")
+        nf = STATE.get("night")
+        lvl = "off" if pct is None else "bad" if pct < 20 else "warn" if pct < 40 else "ok"
+        if nf and not nf["enough"] and nf.get("night") and lvl == "ok":
+            lvl = "warn"
+        add("batt", "🔋", "Battery", lvl,
+            ("–" if pct is None else f"{pct} %") + (" · " + trf("lasts until sunrise ({sr})", L, sr=nf["sunrise"]) if nf and nf["enough"]
+                                                    else " · " + trf("too little until sunrise ({sr})", L, sr=nf["sunrise"]) if nf else ""),
+            "" if (pct is None or pct >= 40) and not (nf and not nf["enough"]) else "Charge the powerbank soon.")
     if web_pw_active():
         add("pw", "🔑", "Password", "ok", T("set"))
     else:
@@ -5686,14 +5989,14 @@ CAMPING_SET = {"detection_on": True, "record": True, "snapshot_on_person": True,
 # ---- simple settings: what most people need; Expert shows everything ----
 SIMPLE_SECTIONS = {"Camera / Servos", "Patrol", "AI detection", "Detection", "Recording", "Low light", "Setup", "Notifications",
                    "Camping / protection", "Thermal camera", "Microphone", "Loudspeaker", "Lights", "Night report", "Battery",
-                   "Power saving", "Messages", "Updates", "Extra sensors", "Storm warning", "GPS module"}
+                   "Power saving", "Messages", "Updates", "Extra sensors", "Storm warning", "GPS module", "Solar panel"}
 SIMPLE_KEYS = {"track_person", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
                "arm_delay", "net_mode", "hotspot_ssid", "hotspot_password", "thermal_on", "thermal_alarm", "noise_alarm", "audio_in",
                "audio_out", "siren_on", "siren_volume", "siren_sound", "light_white_auto", "light_ir_auto", "report_on", "report_hour",
                "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_auto", "loop_on", "loop_hours",
-               "cam_rotate", "cam_mirror", "sens_on", "rf433_on", "zigbee_on", "ble_on", "tag_missing", "eco_pir", "storm_on", "storm_drop", "storm_wind", "gpsmod_on", "gps_theft"}
+               "cam_rotate", "cam_mirror", "sens_on", "rf433_on", "zigbee_on", "ble_on", "tag_missing", "eco_pir", "storm_on", "storm_drop", "storm_wind", "gpsmod_on", "gps_theft", "lens_check", "temp_alarm_on", "temp_hot", "temp_cold", "solar_on", "night_warn"}
 
 
 def simple_hidden(key, sec=None):
@@ -5921,6 +6224,65 @@ def autostart_unit(mode):
     return (head + "[Service]\nType=simple\n" + f"WorkingDirectory={HERE}\nExecStart={exe}\n"
             + f"Environment=PYTHONUNBUFFERED=1\nEnvironment=MOTIONWATCH_HOME={DATA_DIR}\n"
             + "Restart=always\nRestartSec=5\nWatchdogSec=120\nNotifyAccess=main\n\n[Install]\n" + install + "\n")
+
+
+def desktop_notice(title, text, wait=300):
+    """A small message on the desktop of the Pi (notification bubble), also from the background service (often root, before
+    anybody is logged in): waits up to `wait` seconds for the desktop session, then sends it as that user. Background thread."""
+    def users():
+        out = []
+        for d in sorted(glob.glob("/run/user/*")):
+            try:
+                uid = int(os.path.basename(d))
+            except ValueError:
+                continue
+            if (uid >= 1000 or uid == os.getuid()) and os.path.exists(os.path.join(d, "bus")):
+                out.append(uid)
+        if os.getuid() != 0:
+            out = [u for u in out if u == os.getuid()]
+        return out
+
+    def send(uid):
+        import pwd
+        env = dict(os.environ, DBUS_SESSION_BUS_ADDRESS=f"unix:path=/run/user/{uid}/bus", XDG_RUNTIME_DIR=f"/run/user/{uid}")
+        kw = {}
+        if os.getuid() == 0 and uid != 0:
+            try:
+                pw_ = pwd.getpwuid(uid); kw = {"user": uid, "group": pw_.pw_gid}; env["HOME"] = pw_.pw_dir; env["USER"] = pw_.pw_name
+            except KeyError:
+                return False
+        gq = lambda x: "'" + str(x).replace("\\", "\\\\").replace("'", "\\'") + "'"     # GVariant text for gdbus
+        icon = os.path.join(tempfile.gettempdir(), "motionwatch_icon.png")
+        try:
+            if not os.path.exists(icon):
+                with open(icon, "wb") as f:
+                    f.write(app_icon_png(96))
+                os.chmod(icon, 0o644)
+        except Exception:
+            icon = "camera-web"
+        if shutil.which("notify-send"):
+            cmd = ["notify-send", "-a", "Motion Watch", "-i", icon, "-t", "12000", title, text]
+        elif shutil.which("gdbus"):
+            cmd = ["gdbus", "call", "--session", "--dest", "org.freedesktop.Notifications", "--object-path", "/org/freedesktop/Notifications",
+                   "--method", "org.freedesktop.Notifications.Notify", gq("Motion Watch"), "0", gq(icon), gq(title), gq(text), "[]", "{}", "12000"]
+        else:
+            return None                                      # nothing on this system can show a message
+        try:
+            return subprocess.run(cmd, env=env, capture_output=True, timeout=15, **kw).returncode == 0
+        except (OSError, subprocess.SubprocessError, ValueError):
+            return False
+
+    def run():
+        end = time.time() + wait
+        while time.time() < end:
+            for uid in users():
+                r = send(uid)
+                if r:
+                    log_event("sys", "Desktop message shown: " + text[:80]); return
+                if r is None:
+                    return
+            time.sleep(10)
+    threading.Thread(target=run, daemon=True, name="desktop-notice").start()
 
 
 def autostart_refresh():
@@ -6287,6 +6649,153 @@ def ai_model_download():
     return True, ""
 
 
+# ----------------------------------------------------------------------------
+# Animal species: a second AI model (image classifier, ONNX) looks at the animals the first AI finds (COCO only knows
+#   "dog", "cat", "bear" ... - a fox is often a "dog"). Files: <data>/models/species/<name>.onnx and <name>.txt with one
+#   label per line in the order of the model's outputs, optionally "english;Deutsch" (e.g. "red fox;Fuchs").
+# ----------------------------------------------------------------------------
+SPECIES = {"net": None, "model": "", "labels": set(), "names": [], "msg": "off", "cache": [], "busy": False, "t": 0.0, "last": None}
+
+
+def species_dir():
+    return os.path.join(DATA_DIR, "models", "species")
+
+
+def species_models():
+    try:
+        return sorted(f for f in os.listdir(species_dir()) if f.lower().endswith(".onnx") and REC_NAME_RE.match(f))[:20]
+    except OSError:
+        return []
+
+
+def species_load():
+    m = str(CFG["species_model"] or "")
+    if SPECIES["model"] == m and (SPECIES["net"] is not None or not m):
+        return SPECIES["net"]
+    SPECIES.update(net=None, model=m, names=[], cache=[])
+    if not m:
+        SPECIES["msg"] = "no model chosen"; return None
+    path = os.path.join(species_dir(), m)
+    try:
+        net = cv2.dnn.readNetFromONNX(path)
+        with open(os.path.splitext(path)[0] + ".txt", encoding="utf-8") as f:
+            rows = [ln.strip() for ln in f if ln.strip()]
+    except (cv2.error, OSError) as e:
+        SPECIES["msg"] = f"load error: {e}"[:120]; log_event("ai", f"Animal species model: {SPECIES['msg']}"); return None
+    names = []
+    for r in rows:
+        en, _, de = r.partition(";")
+        en = en.strip()[:40]; names.append(en)
+        if de.strip():
+            DE.setdefault(en, de.strip()[:40])
+    SPECIES.update(net=net, names=names, labels=set(names), msg=f"ready · {len(names)} species")
+    log_event("ai", f"Animal species model {m} loaded ({len(names)} species)")
+    return net
+
+
+def species_classify(crop):
+    """(label, certainty) for one picture of an animal, or None."""
+    net = species_load()
+    if net is None or crop is None or crop.size == 0:
+        return None
+    n = int(CFG["species_size"]); img = cv2.cvtColor(cv2.resize(crop, (n, n), interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+    mode = CFG["species_norm"]
+    if mode == "imagenet":
+        img = (img - np.array([0.485, 0.456, 0.406], np.float32)) / np.array([0.229, 0.224, 0.225], np.float32)
+    elif mode == "-11":
+        img = img * 2.0 - 1.0
+    net.setInput(img.transpose(2, 0, 1)[None])
+    out = net.forward().reshape(-1).astype(np.float64)
+    if out.size != len(SPECIES["names"]):
+        SPECIES["msg"] = f"the label file has {len(SPECIES['names'])} lines, the model {out.size} outputs"; return None
+    if out.min() < 0 or abs(out.sum() - 1.0) > 0.01:          # raw scores -> probabilities
+        e = np.exp(out - out.max()); out = e / e.sum()
+    i = int(out.argmax())
+    return SPECIES["names"][i], float(out[i])
+
+
+def species_update(objs, frame, pw, ph, t0):
+    """Called by the camera loop: the biggest animal is classified in the background (at most every 2 s)."""
+    SPECIES["cache"] = [c for c in SPECIES["cache"] if t0 - c[3] < 6]
+    if not CFG["species_on"] or not CFG["species_model"] or SPECIES["busy"] or t0 - SPECIES["t"] < 2.0:
+        return
+    an = [o for o in objs if COCO_LABELS.get(o[5]) in ANIMALS]
+    if not an:
+        return
+    o = max(an, key=lambda b: b[2] * b[3]); H, W = frame.shape[:2]; sx, sy = W / float(pw), H / float(ph)
+    x, y, w, h = o[0] * sx, o[1] * sy, o[2] * sx, o[3] * sy
+    m = 0.15
+    crop = frame[max(0, int(y - h * m)):min(H, int(y + h * (1 + m))), max(0, int(x - w * m)):min(W, int(x + w * (1 + m)))].copy()
+    SPECIES["busy"] = True; SPECIES["t"] = t0
+
+    def run():
+        try:
+            r = species_classify(crop)
+            if r and r[1] >= float(CFG["species_conf"]):
+                SPECIES["cache"].append((o[:4], r[0], r[1], time.time()))
+                if not SPECIES["last"] or SPECIES["last"][0] != r[0] or time.time() - SPECIES["last"][2] > 60:
+                    log_event("ai", f"Animal species: {r[0]} {int(r[1] * 100)} % (first AI: {COCO_LABELS.get(o[5])})")
+                SPECIES["last"] = (r[0], r[1], time.time())
+        except Exception as e:
+            SPECIES["msg"] = f"error: {e}"[:120]
+        finally:
+            SPECIES["busy"] = False
+    threading.Thread(target=run, daemon=True, name="species").start()
+
+
+def species_for(box):
+    """The species found for a box of the first AI (overlap), or None."""
+    best = None
+    for b, lab, conf, _t in SPECIES["cache"]:
+        if iou(box, b) > 0.3 and (best is None or conf > best[1]):
+            best = (lab, conf)
+    return best
+
+
+def species_install(url):
+    """Download a model (.onnx, its labels .txt next to it - or a .zip with both) into the species folder."""
+    if not (isinstance(url, str) and re.match(r"^https://[^\s]{4,400}$", url)):
+        return False, "address must start with https://"
+    os.makedirs(species_dir(), exist_ok=True)
+    name = re.sub(r"[^A-Za-z0-9_.\-]", "_", url.rsplit("/", 1)[-1].split("?")[0])[:80] or "model.onnx"
+
+    def get(u, dst, limit=400 * 1024 * 1024):
+        req = urllib.request.Request(u, headers={"User-Agent": "MotionWatch/" + APP_VERSION})
+        with urllib.request.urlopen(req, timeout=60) as r, open(dst + ".part", "wb") as f:
+            n = 0
+            for chunk in iter(lambda: r.read(1 << 20), b""):
+                n += len(chunk)
+                if n > limit:
+                    raise ValueError("file too big")
+                f.write(chunk)
+        os.replace(dst + ".part", dst)
+    try:
+        if name.lower().endswith(".zip"):
+            tmp = os.path.join(species_dir(), name); get(url, tmp)
+            with zipfile.ZipFile(tmp) as z:
+                for zi in z.infolist():
+                    bn = os.path.basename(zi.filename)
+                    if bn.lower().endswith((".onnx", ".txt")) and REC_NAME_RE.match(bn):
+                        with z.open(zi) as src, open(os.path.join(species_dir(), bn), "wb") as dst:
+                            shutil.copyfileobj(src, dst)
+            os.remove(tmp)
+        elif name.lower().endswith(".onnx"):
+            get(url, os.path.join(species_dir(), name))
+            try:
+                get(url[:url.lower().rfind(".onnx")] + ".txt", os.path.join(species_dir(), name[:-5] + ".txt"), 2 * 1024 * 1024)
+            except Exception:
+                pass
+        else:
+            return False, "the address must end with .onnx or .zip"
+    except Exception as e:
+        return False, _short_net_err(e) if "_short_net_err" in globals() else str(e)[:120]
+    ms = species_models()
+    if ms and not CFG["species_model"]:
+        CFG["species_model"] = ms[0]; save_settings()
+    log_event("ai", f"Animal species model installed from {url[:80]}")
+    return True, ""
+
+
 class AIDetector:
     PB, PBTXT = "frozen_inference_graph.pb", "ssd_mobilenet_v2_coco.pbtxt"
 
@@ -6544,7 +7053,8 @@ def draw_object(frame, obj, sx, sy):
     X, Y, BW, BH = int(x * sx), int(y * sy), int(w * sx), int(h * sy)
     col = class_color(cls)
     cv2.rectangle(frame, (X, Y), (X + BW, Y + BH), col, 2)
-    label = f"{COCO_LABELS.get(cls, 'object')} {int(conf * 100)}%"
+    sp = species_for((x, y, w, h)) if CFG["species_on"] and SPECIES["cache"] else None
+    label = f"{sp[0]} {int(sp[1] * 100)}%" if sp else f"{COCO_LABELS.get(cls, 'object')} {int(conf * 100)}%"
     (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
     top = max(0, Y - th - 8)
     cv2.rectangle(frame, (X, top), (X + tw + 6, top + th + 8), col, -1)
@@ -8260,10 +8770,10 @@ def sound_samples(kind, seconds, rate=OUT_RATE):
             env = np.minimum(1.0, tt / 0.015) * np.minimum(1.0, (0.26 - tt) / 0.06)
             y[i0:i0 + L] = (np.sin(ph) + 0.25 * np.sin(2 * ph)) * env
         return (y / max(1e-6, float(np.max(np.abs(y))))).astype(np.float32)
-    if kind.startswith("file:"):
+    if kind.startswith("file:") or kind == "tts":
         name = kind[5:]
-        path = os.path.join(sounds_dir(), name)
-        if not (SOUND_NAME_RE.match(name) and os.path.isfile(path)):
+        path = TTS["file"] if kind == "tts" else os.path.join(sounds_dir(), name)
+        if not ((kind == "tts" or SOUND_NAME_RE.match(name)) and os.path.isfile(path)):
             raise ValueError("sound file not found")
         r = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", path, "-t", "300", "-f", "s16le", "-ac", "1", "-ar", str(rate), "-"],
                            capture_output=True, timeout=60)
@@ -8314,7 +8824,7 @@ def sound_play(kind=None, seconds=None, volume=None, reason="test"):
     if not dev.startswith("bt:") and not shutil.which("aplay"):
         return False, "aplay is missing (sudo apt install alsa-utils)"
     kind = kind or CFG["siren_sound"]
-    if kind not in SOUND_KINDS + ("marmot",) and not (kind.startswith("file:") and kind[5:] in own_sounds()):
+    if kind not in SOUND_KINDS + ("marmot", "tts") and not (kind.startswith("file:") and kind[5:] in own_sounds()):
         kind = "siren"
     seconds = max(0.5, min(120.0, float(seconds if seconds is not None else CFG["siren_seconds"])))
     vol = max(0.0, min(100.0, float(volume if volume is not None else CFG["siren_volume"]))) / 100.0
@@ -8360,6 +8870,68 @@ def sound_play(kind=None, seconds=None, volume=None, reason="test"):
     if reason != "test":
         log_event("sys", f"Loudspeaker: {kind} for {seconds:.0f} s ({reason})")
     return True, ""
+
+
+# ---- spoken announcement from text (offline): pico2wave (nicer voice) or espeak-ng ----
+TTS = {"file": os.path.join(tempfile.gettempdir(), "motionwatch_tts.wav")}
+_TTS_VOICES = {"de": ("de-DE", "de"), "fr": ("fr-FR", "fr"), "it": ("it-IT", "it"), "rm": ("de-DE", "de"), "en": ("en-GB", "en")}
+
+
+def tts_engine():
+    for e in ("pico2wave", "espeak-ng", "espeak"):
+        if shutil.which(e):
+            return e
+    return None
+
+
+def tts_make(text, lang, path):
+    eng = tts_engine()
+    if eng is None:
+        return False, "no speech program (sudo apt install espeak-ng - or libttspico-utils for a nicer voice)"
+    pico, esp = _TTS_VOICES.get(norm_lang(lang), ("de-DE", "de"))
+    cmd = (["pico2wave", "-l", pico, "-w", path, text] if eng == "pico2wave"
+           else [eng, "-v", esp, "-s", "145", "-a", "200", "-w", path, text])
+    try:
+        r = subprocess.run(cmd, capture_output=True, timeout=30)
+    except (OSError, subprocess.SubprocessError) as e:
+        return False, str(e)[:120]
+    if r.returncode != 0 or not os.path.isfile(path) or os.path.getsize(path) < 100:
+        return False, (r.stderr or b"").decode(errors="replace").strip()[:120] or "speech failed"
+    return True, ""
+
+
+def tts_say(text, lang=None, save=False):
+    """Speak a text on the loudspeaker; save=True also keeps it as an own sound («Announcement ….wav»)."""
+    text = re.sub(r"[\x00-\x1f]", " ", str(text or "")).strip()[:200]
+    if not text:
+        return False, "empty text"
+    lang = norm_lang(lang or CFG["lang"])
+    if save:
+        import unicodedata
+        tx = text
+        for x, y in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("Ä", "Ae"), ("Ö", "Oe"), ("Ü", "Ue"), ("ß", "ss")):
+            tx = tx.replace(x, y)
+        tx = unicodedata.normalize("NFKD", tx).encode("ascii", "ignore").decode()
+        nm = re.sub(r"[^A-Za-z0-9 _\-]", "", tx)[:40].strip() or "text"
+        path = os.path.join(sounds_dir(), f"{tr('Announcement', lang)} {nm}.wav")
+        path = path.encode("ascii", "ignore").decode()
+        os.makedirs(sounds_dir(), exist_ok=True)
+        ok, err = tts_make(text, lang, path)
+        if not ok:
+            return False, err
+        log_event("sys", f"Announcement saved as sound: {os.path.basename(path)}")
+        return True, os.path.basename(path)
+    ok, err = tts_make(text, lang, TTS["file"])
+    if not ok:
+        return False, err
+    try:
+        import wave
+        with wave.open(TTS["file"]) as w_:
+            dur = w_.getnframes() / float(w_.getframerate() or 1)
+    except Exception:
+        dur = 5.0
+    log_event("sys", f"Announcement: «{text[:60]}»")
+    return sound_play("tts", dur + 0.3, None, reason="test")
 
 
 def sound_stop():
@@ -9532,6 +10104,114 @@ class GpsModule:
 GPSMODULE = None
 
 
+# ----------------------------------------------------------------------------
+# Solar panel: an INA219 module (the cheap blue board, shunt 0.1 Ohm, up to 26 V / 3.2 A) between the panel and the charger.
+#   Watts, volts and the yield of the day. Night forecast: does the battery last until sunrise at the present consumption?
+# ----------------------------------------------------------------------------
+SOLAR = {"day": "", "wh": 0.0, "max": 0.0, "t": 0.0, "warned": ""}
+
+
+def ina219_read(addr, shunt, bus=1):
+    """(volts on the panel side, amps) or None."""
+    import fcntl
+    try:
+        fd = os.open(f"/dev/i2c-{bus}", os.O_RDWR)
+    except OSError:
+        return None
+    try:
+        fcntl.ioctl(fd, I2C_SLAVE, addr)
+        def reg(r):
+            os.write(fd, bytes([r])); b = os.read(fd, 2)
+            return (b[0] << 8) | b[1]
+        bus_raw, sh = reg(0x02), reg(0x01)
+        if sh & 0x8000:
+            sh -= 0x10000
+        return (bus_raw >> 3) * 0.004, sh * 0.00001 / max(0.001, float(shunt))
+    except OSError:
+        return None
+    finally:
+        os.close(fd)
+
+
+def next_sunrise(now=None):
+    now = now or datetime.now()
+    for k in (0, 1):
+        d = (now + timedelta(days=k)).date()
+        st = sun_times(d, float(CFG["latitude"]), float(CFG["longitude"]))
+        if isinstance(st, str):
+            return None
+        t = datetime(d.year, d.month, d.day) + timedelta(minutes=st[0])
+        if t > now:
+            return t
+    return None
+
+
+def night_forecast():
+    """Does the battery last until the next sunrise? {sunrise, need_h, have_h, enough} or None (no battery / unknown)."""
+    b = STATE.get("battery") or {}
+    if not b.get("on") or b.get("pct") is None or not b.get("cap_wh") or not b.get("use_w"):
+        return None
+    sr = next_sunrise()
+    if sr is None:
+        return None
+    now = datetime.now(); dark = is_dark()
+    if dark:
+        need = (sr - now).total_seconds() / 3600.0
+    else:                                                  # daytime: the coming night (sunset .. sunrise), the sun still charges until then
+        st = sun_times(now.date(), float(CFG["latitude"]), float(CFG["longitude"]))
+        ss = datetime(now.year, now.month, now.day) + timedelta(minutes=st[1]) if not isinstance(st, str) else now
+        need = max(0.0, (sr - max(ss, now)).total_seconds() / 3600.0)
+    have = b["pct"] / 100.0 * float(b["cap_wh"]) / max(0.5, float(b["use_w"]))
+    return {"sunrise": sr.strftime("%H:%M"), "need_h": round(need, 1), "have_h": round(have, 1), "enough": have >= need * 1.1, "night": dark}
+
+
+class SolarMonitor:
+    def __init__(self):
+        threading.Thread(target=self.loop, daemon=True, name="solar").start()
+
+    def loop(self):
+        while True:
+            try:
+                self.tick()
+            except Exception as e:
+                log_event("sys", f"Solar: {e}"[:160])
+            time.sleep(10)
+
+    def tick(self):
+        now = time.time(); day = datetime.now().strftime("%Y-%m-%d")
+        if SOLAR["day"] != day:
+            SOLAR.update(day=day, wh=0.0, max=0.0)
+        if CFG["solar_on"]:
+            try:
+                addr = int(str(CFG["solar_addr"]), 16)
+            except ValueError:
+                addr = 0x41
+            r = ina219_read(addr, CFG["solar_shunt"])
+            if r is None:
+                STATE["solar"] = {"on": True, "ok": False}
+            else:
+                v, a = r; w = max(0.0, v * abs(a))
+                dt = min(60.0, now - SOLAR["t"]) if SOLAR["t"] else 0.0; SOLAR["t"] = now
+                SOLAR["wh"] += w * dt / 3600.0; SOLAR["max"] = max(SOLAR["max"], w)
+                STATE["solar"] = {"on": True, "ok": True, "v": round(v, 2), "a": round(abs(a), 2), "w": round(w, 1),
+                                  "wh": round(SOLAR["wh"], 1), "max": round(SOLAR["max"], 1)}
+        else:
+            STATE["solar"] = {"on": False}
+        nf = night_forecast(); STATE["night"] = nf
+        if nf and CFG["night_warn"] and not nf["enough"] and is_dark() and SOLAR["warned"] != day:
+            hh = datetime.now().hour
+            if hh >= 15:                                       # once in the evening (not again after midnight)
+                SOLAR["warned"] = day
+                log_event("sys", f"Battery will probably not last until sunrise ({nf['have_h']} h left, {nf['need_h']} h needed)")
+                w_ = WATCH_REF["w"]
+                if w_ is not None:
+                    w_.notifier.info(trf("The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.",
+                                         sr=nf["sunrise"], have=nf["have_h"], need=nf["need_h"]), title="{name}: " + tr("Battery"))
+
+
+SOLARMON = None
+
+
 def sens_has_pir():
     return CFG["sens_on"] and any(x["kind"] == "pir" and x["src"] for x in CFG["sensors"])
 
@@ -10069,7 +10749,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_58_2.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_68_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -11302,7 +11982,9 @@ class MotionWatch:
         self.timelapse = Timelapse(); THERMAL = ThermalCam()
         if BACKUP is None:
             BACKUP = Backup()
-        global TAMPER
+        global TAMPER, LENS
+        if LENS is None:
+            LENS = LensCheck()
         if TAMPER is None:
             TAMPER = TamperGuard()
             global ENV
@@ -11321,6 +12003,9 @@ class MotionWatch:
             STORMWATCH = StormWatch()
         if GPSMODULE is None:
             GPSMODULE = GpsModule()
+        global SOLARMON
+        if SOLARMON is None:
+            SOLARMON = SolarMonitor()
         if AUDIO is None:
             AUDIO = AudioMonitor()
             if bt_available():
@@ -11728,6 +12413,8 @@ class MotionWatch:
             small = cv2.resize(frame, (pw, ph))
             if TAMPER is not None:
                 TAMPER.feed(small, t0)
+            if LENS is not None:
+                LENS.feed(small, t0)
             nv_on = NIGHTVISION.active()
             STATE["nightvision"] = nv_on
             if CFG["thermal_on"] and THERMAL is not None and not nv_on:
@@ -11800,11 +12487,13 @@ class MotionWatch:
                 present.update(COCO_LABELS.get(o[5], "object") for o in ai_objs)
                 if present & ANIMALS:
                     present.add("animal")
+                species_update(ai_objs, frame, pw, ph, t0)
                 if CFG["diary_on"]:                      # animal diary + night report: best picture of every visit
                     for o in ai_objs:
                         lab = COCO_LABELS.get(o[5], "object")
                         if lab in ANIMALS:
-                            self.sights.see(lab, t0, frame, o, o[4], pw, ph)
+                            sp = species_for(o[:4]) if CFG["species_on"] else None
+                            self.sights.see(sp[0] if sp else lab, t0, frame, o, sp[1] if sp else o[4], pw, ph)
                     if "person" in present:
                         pb = person_boxes or [b[:4] for b in ai_boxes]
                         if pb:
@@ -12561,6 +13250,187 @@ def mem_info():
 
 def rec_dir():
     return os.path.abspath(CFG["record_dir"])
+
+
+# ----------------------------------------------------------------------------
+# Event report (PDF) - a small PDF writer of its own (no extra package): A4 pages, text in Helvetica (WinAnsi, so umlauts
+#   work), JPEG pictures embedded as they are.
+# ----------------------------------------------------------------------------
+class MiniPDF:
+    W, H = 595.0, 842.0
+
+    def __init__(self):
+        self.pages = []; self.images = []; self.cur = None; self.y = 0.0; self.new_page()
+
+    def new_page(self):
+        self.cur = []; self.pages.append(self.cur); self.y = self.H - 50
+
+    @staticmethod
+    def _esc(t):
+        b = str(t).encode("cp1252", "replace")
+        return b.replace(b"\\", b"\\\\").replace(b"(", b"\\(").replace(b")", b"\\)")
+
+    def text(self, t, size=10, bold=False, x=50, gap=1.35, color=(0, 0, 0)):
+        width = int((self.W - x - 50) / (size * 0.5))           # rough line length for Helvetica
+        lines = []
+        for para in str(t).split("\n"):
+            while len(para) > width:
+                cut = para.rfind(" ", 0, width)
+                cut = cut if cut > width // 2 else width
+                lines.append(para[:cut]); para = para[cut:].lstrip()
+            lines.append(para)
+        for ln in lines:
+            if self.y < 60:
+                self.new_page()
+            self.cur.append(b"BT %.3f %.3f %.3f rg /%s %d Tf %.1f %.1f Td (" % (color[0], color[1], color[2], b"F2" if bold else b"F1", size, x, self.y)
+                            + self._esc(ln) + b") Tj ET")
+            self.y -= size * gap
+
+    def space(self, h=8):
+        self.y -= h
+
+    def line(self):
+        self.cur.append(b"0.75 0.75 0.75 RG 0.6 w 50 %.1f m %.1f %.1f l S" % (self.y + 4, self.W - 50, self.y + 4)); self.y -= 8
+
+    def image(self, jpg, w, h, max_w=495.0, max_h=250.0, caption=""):
+        k = min(max_w / w, max_h / h, 1.0 if w > max_w else max_w / w)
+        dw, dh = w * k, h * k
+        if self.y - dh - (14 if caption else 0) < 50:
+            self.new_page()
+        if caption:
+            self.text(caption, 9, color=(0.35, 0.35, 0.35))
+        self.images.append((jpg, w, h)); n = len(self.images)
+        self.cur.append(b"q %.1f 0 0 %.1f 50 %.1f cm /Im%d Do Q" % (dw, dh, self.y - dh, n))
+        self.y -= dh + 10
+
+    def output(self):
+        objs = []                                              # (number, bytes)
+        def add(b):
+            objs.append(b); return len(objs)
+        cat = add(b""); pages_n = add(b"")
+        f1 = add(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>")
+        f2 = add(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>")
+        imgs = []
+        for jpg, w, h in self.images:
+            imgs.append(add(b"<< /Type /XObject /Subtype /Image /Width %d /Height %d /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length %d >>\nstream\n" % (w, h, len(jpg))
+                            + jpg + b"\nendstream"))
+        xo = b" ".join(b"/Im%d %d 0 R" % (i + 1, o) for i, o in enumerate(imgs))
+        res = b"<< /Font << /F1 %d 0 R /F2 %d 0 R >> /XObject << %s >> >>" % (f1, f2, xo)
+        kids = []
+        for i, pg in enumerate(self.pages):
+            foot = b"BT 0.5 0.5 0.5 rg /F1 8 Tf 50 30 Td (Motion Watch - %d / %d) Tj ET" % (i + 1, len(self.pages))
+            body = b"\n".join(pg + [foot])
+            c = add(b"<< /Length %d >>\nstream\n" % len(body) + body + b"\nendstream")
+            kids.append(add(b"<< /Type /Page /Parent %d 0 R /MediaBox [0 0 595 842] /Resources %s /Contents %d 0 R >>" % (pages_n, res, c)))
+        objs[cat - 1] = b"<< /Type /Catalog /Pages %d 0 R >>" % pages_n
+        objs[pages_n - 1] = b"<< /Type /Pages /Kids [%s] /Count %d >>" % (b" ".join(b"%d 0 R" % k for k in kids), len(kids))
+        out = bytearray(b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n"); offs = []
+        for i, o in enumerate(objs):
+            offs.append(len(out)); out += b"%d 0 obj\n" % (i + 1) + o + b"\nendobj\n"
+        xref = len(out)
+        out += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objs) + 1) + b"".join(b"%010d 00000 n \n" % x for x in offs)
+        out += b"trailer\n<< /Size %d /Root %d 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (len(objs) + 1, cat, xref)
+        return bytes(out)
+
+
+def _report_jpg(img, width=900):
+    h, w = img.shape[:2]
+    if w > width:
+        img = cv2.resize(img, (width, int(h * width / w)), interpolation=cv2.INTER_AREA)
+    ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 82])
+    return (buf.tobytes(), img.shape[1], img.shape[0]) if ok else None
+
+
+def _report_log(dt, minutes=10):
+    """Log lines from minutes before to minutes after the event (today's log and the packed day logs)."""
+    import gzip
+    a, b = dt - timedelta(minutes=minutes), dt + timedelta(minutes=minutes)
+    day = dt.strftime("%Y-%m-%d"); out = []
+    files = [LOG_FILE] + sorted(glob.glob(os.path.join(log_dir(), f"motionwatch_{day}*.log.gz")))
+    for p in files:
+        try:
+            op = gzip.open if p.endswith(".gz") else open
+            with op(p, "rt", errors="replace") as f:
+                for ln in f:
+                    try:
+                        t = datetime.strptime(ln[:19], "%Y-%m-%d %H:%M:%S")
+                    except ValueError:
+                        continue
+                    if a <= t <= b:
+                        out.append(ln.rstrip())
+        except OSError:
+            continue
+    return sorted(set(out))[:120]
+
+
+def rec_report_pdf(name, lang=None):
+    """PDF with what is known about one recording: for the police / the insurance."""
+    T = lambda x: tr(x, lang)
+    p = rec_path(name)
+    if not p:
+        return None
+    st = os.stat(p); is_video = name.lower().endswith(".mp4")
+    meta = rec_meta(name, st, probe=True) if not name.startswith("timelapse/") else {}
+    dt = parse_stamp(os.path.basename(name)) or datetime.fromtimestamp(st.st_mtime)
+    snap = os.path.splitext(name)[0] + ".jpg" if is_video else None
+    if snap and not rec_path(snap):
+        snap = None
+    gps = rec_gps(os.path.basename(name), meta, os.path.dirname(p), os.path.basename(snap) if snap else None)
+    pdf = MiniPDF()
+    pdf.text(T("Event report"), 18, bold=True); pdf.space(2)
+    pdf.text(((CFG["device_name"] + " · ") if CFG["device_name"] else "") + "Motion Watch " + APP_VERSION, 10, color=(0.35, 0.35, 0.35))
+    pdf.line()
+    rows = [(T("Date / time"), dt.strftime("%d.%m.%Y %H:%M:%S")), (T("File"), name),
+            (T("Kind"), T("Video") if is_video else T("Picture")), (T("Size"), f"{st.st_size / 1e6:.1f} MB")]
+    if meta.get("duration") is not None:
+        rows.append((T("Duration"), f"{meta['duration']:.0f} s"))
+    if meta.get("persons"):
+        rows.append((T("Persons seen"), str(meta["persons"])))
+    if meta.get("source"):
+        rows.append((T("Camera"), str(meta["source"])))
+    if meta.get("false"):
+        rows.append((T("Marked as"), T("false alarm")))
+    if gps:
+        rows.append((T("Place"), f"{gps[0]:.5f}, {gps[1]:.5f}"))
+        rows.append(("", osm_link(gps[0], gps[1])))
+    else:
+        rows.append((T("Place"), T("unknown")))
+    for k, v in rows:
+        pdf.text((k + ": " if k else "    ") + v, 10)
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    pdf.space(4); pdf.text(T("Checksum of the original file (SHA-256) - shows that it was not changed:"), 8, color=(0.35, 0.35, 0.35))
+    pdf.text(h.hexdigest(), 8, color=(0.35, 0.35, 0.35))
+    pdf.line(); pdf.text(T("Pictures"), 13, bold=True); pdf.space(2)
+    pics = []
+    if snap or not is_video:
+        img = cv2.imread(rec_path(snap) if snap else p)
+        if img is not None:
+            pics.append((T("Alarm picture"), img))
+    if is_video:
+        cap = cv2.VideoCapture(p)
+        try:
+            n = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0); fps = cap.get(cv2.CAP_PROP_FPS) or 0
+            for frac in ((0.1, 0.5, 0.9) if n > 10 else ()):
+                cap.set(cv2.CAP_PROP_POS_FRAMES, int(n * frac)); ok, fr = cap.read()
+                if ok and fr is not None:
+                    pics.append((T("From the video") + (f" ({int(n * frac / fps)} s)" if fps else ""), fr))
+        finally:
+            cap.release()
+    for cap_, img in pics[:4]:
+        j = _report_jpg(img)
+        if j:
+            pdf.image(*j, caption=cap_)
+    if not pics:
+        pdf.text(T("no picture"), 10)
+    pdf.line(); pdf.text(T("Log around the event (10 minutes before and after)"), 13, bold=True); pdf.space(2)
+    lines = _report_log(dt)
+    for ln in lines or [T("no entries")]:
+        pdf.text(ln, 7.5, gap=1.25)
+    pdf.space(6); pdf.text(T("Created") + ": " + datetime.now().strftime("%d.%m.%Y %H:%M") + " · " + T("The original video file is on the device (recordings)."), 8, color=(0.35, 0.35, 0.35))
+    return pdf.output()
 
 
 def rec_path(name):
@@ -14809,6 +15679,8 @@ details.sub{border-top:1px solid var(--line);margin-top:12px;padding-top:9px}
 details.sub>summary{font-size:10.5px;letter-spacing:.09em;color:var(--mut);font-weight:700;text-transform:uppercase;cursor:pointer;list-style:none;
   display:flex;justify-content:space-between;align-items:center;user-select:none}
 details.sub>summary::-webkit-details-marker,details.adv>summary::-webkit-details-marker{display:none}
+body.role-operate aside[data-view="sidebar"],body.role-view aside[data-view="sidebar"],body.role-operate #side-open,body.role-view #side-open,
+body.role-view details[data-view="controls"],body.role-view #b-arm{display:none!important}
 .sens-card{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:8px 0}.sens-card .row{gap:6px}.sens-card .row input{flex:1;min-width:0}
 .sens-card .dot{font-size:14px}.sens-row{display:grid;grid-template-columns:1fr;gap:6px;margin-top:6px}.sens-row label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
 .sens-row select{width:100%}#sens-add,#sens-seen{flex-wrap:wrap}#sens-seen button{margin:4px 4px 0 0;font-size:13px}
@@ -15120,6 +15992,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
   <h1 data-view="title" data-vgroup="Header" data-vlabel="Title">Motion Watch</h1>
   <!--NAV-->
   <span class="chips">
+  <span class="badge" id="b-me" hidden></span>
   <span class="badge" id="b-arm" data-view="b-arm" data-vgroup="Header" data-vlabel="Armed / disarmed" style="cursor:pointer">🛡</span>
   <span class="badge grn" id="b-ok" hidden style="cursor:pointer">✓ ok</span>
   <span class="badge" id="b-person" data-view="b-person" data-vgroup="Header" data-vlabel="Persons">No person</span>
@@ -15295,6 +16168,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       <details class="adv sblk" data-view="sysblk:help"><summary data-i18n="🧭 Help and setup">🧭 Help and setup</summary>
       <div class="btns pwr">
         <button type="button" class="sec l-hide" onclick="setupWizard(true)" data-i18n="🧭 Setup assistant">🧭 Setup assistant</button>
+        <button type="button" class="sec l-hide" onclick="hwCheck()" data-i18n="🧪 Hardware check (step by step)">🧪 Hardware check (step by step)</button>
         <a class="btn sec" id="lnk-quick" href="/quick" target="_blank" data-i18n="📄 Quick guide (1 page)">📄 Quick guide (1 page)</a>
         <a class="btn sec" href="/setup-card" target="_blank" data-i18n="🖨 Quick start (QR)">🖨 Quick start (QR)</a>
       </div>
@@ -15311,6 +16185,9 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       <div class="btns pwr">
         <button class="sec l-hide" onclick="if(confirm(t('Reset all settings to defaults?')))act('reset_settings')" data-i18n="Reset settings">Reset settings</button>
       </div>
+      </details>
+      <details class="adv sblk l-hide" data-view="sysblk:users"><summary data-i18n="👥 Users">👥 Users</summary>
+      <div id="users-box"></div>
       </details>
       <details class="adv sblk" data-view="sysblk:info"><summary data-i18n="ℹ Version and status">ℹ Version and status</summary>
       <div class="mut" id="sys-info" style="margin-top:6px"></div>
@@ -15797,6 +16674,89 @@ const OPER = new Set(["detection_on", "record", "notify_on", "browser_alarm", "t
 const LOCK_KEEP = new Set(["protect", "batt", "report"]);
 let lockShown = null;
 const LOCK_DENY = new Set(["net_mode", "hotspot_ssid", "hotspot_password", "hotspot_on", "update_url", "update_token", "update_unsigned", "autostart"]);
+Object.assign(I18N.de, {"👥 Users": "👥 Benutzer", "Operate (arm, lights, camera, talk - no settings)": "Bedienen (scharf schalten, Licht, Kamera, Sprechen – keine Einstellungen)", "View only (live picture and recordings)": "Nur ansehen (Live-Bild und Aufnahmen)", "Each person gets an own login (user name + password). The web password stays the administrator. The log shows who armed or switched something.": "Jede Person bekommt ein eigenes Login (Benutzername + Passwort). Das Web-Passwort bleibt der Administrator. Im Protokoll steht, wer scharf geschaltet oder etwas umgeschaltet hat.", "set the web password first (it is the administrator)": "zuerst das Web-Passwort setzen (es ist der Administrator)", "New password": "Neues Passwort", "New password for": "Neues Passwort für", "Remove this user?": "Diesen Benutzer entfernen?", "Add user": "Benutzer hinzufügen", "Name": "Name", "Password (6–64)": "Passwort (6–64)", "view only": "nur ansehen", "operate": "bedienen", "not allowed for your user": "für deinen Benutzer nicht erlaubt", "name: 1 to 24 letters / digits": "Name: 1 bis 24 Buchstaben / Ziffern", "this name exists already": "diesen Namen gibt es schon", "at most 20 users": "höchstens 20 Benutzer", "unknown user": "unbekannter Benutzer"});
+Object.assign(I18N.de, {"AI (person detection)": "KI (Personenerkennung)", "🧪 Hardware check (step by step)": "🧪 Hardware prüfen (Schritt für Schritt)", "Hardware check": "Hardware-Prüfung", "result": "Ergebnis", "step": "Schritt", "The live picture must be visible.": "Das Live-Bild muss sichtbar sein.", "Movement": "Bewegung", "Walk once through the picture (2–3 m in front of the camera).": "Geh einmal durchs Bild (2–3 m vor der Kamera).", "Stand still in the picture for a moment - the AI should see a person.": "Bleib kurz im Bild stehen – die KI soll eine Person erkennen.", "Thermal camera": "Wärmebildkamera", "Hold your hand in front of the thermal camera.": "Halte die Hand vor die Wärmebildkamera.", "Servos": "Servos", "Tap the buttons: the camera head must turn. Then answer.": "Tippe auf die Knöpfe: der Kamerakopf muss sich drehen. Dann antworten.", "Microphone": "Mikrofon", "Clap your hands loudly once.": "Klatsche einmal laut in die Hände.", "Loudspeaker": "Lautsprecher", "Tap «Test sound» - do you hear it?": "Tippe auf «Testton» – hörst du ihn?", "Lights": "Licht", "Tap the buttons - does the light switch on and off?": "Tippe auf die Knöpfe – geht das Licht an und aus?", "Push message": "Push-Nachricht", "Tap «Send» - does the message arrive on the phone?": "Tippe auf «Senden» – kommt die Nachricht auf dem Handy an?", "Send": "Senden", "Trigger this sensor now (open the door, walk past, move the tag …).": "Löse diesen Sensor jetzt aus (Tür öffnen, vorbeigehen, Anhänger bewegen …).", "Check the parts marked ❌ (cable, settings) and run the check again.": "Prüfe die mit ❌ markierten Teile (Kabel, Einstellungen) und mach die Prüfung nochmals.", "Everything that was tested works.": "Alles, was geprüft wurde, funktioniert.", "Again": "Nochmals", "Close": "Schliessen", "Yes, works": "Ja, funktioniert", "No": "Nein", "Does not work": "Funktioniert nicht", "waiting …": "warte …", "Skip": "Überspringen", "detected": "erkannt"});
+// ---- hardware check step by step: every part in turn, checked automatically where the page can see it ----
+async function hwCheck() {
+  let ov = $("#hw-ov"); if (ov) ov.remove();
+  ov = el("div"); ov.id = "hw-ov"; ov.style.cssText = "position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:14px";
+  const c = el("div", "card"); c.style.cssText = "max-width:480px;width:100%;max-height:92vh;overflow:auto"; ov.appendChild(c); document.body.appendChild(ov);
+  let J = null; const st = async () => { try { J = await (await fetch("/api/state?lang=" + LANG)).json(); } catch (e) {} return J; };
+  await st(); if (!J) { ov.remove(); return; }
+  const S = () => J.state || {}, CF = () => J.cfg || {};
+  const steps = [
+    {id: "cam", ic: "📷", title: "Camera", text: "The live picture must be visible.", auto: s => (s.fps || 0) >= 1},
+    {id: "motion", ic: "🚶", title: "Movement", text: "Walk once through the picture (2–3 m in front of the camera).", auto: s => (s.present || []).some(x => x === "motion" || x === "person" || x === "prealarm") || (s.persons || 0) > 0},
+    {id: "ai", ic: "🧠", title: "AI (person detection)", text: "Stand still in the picture for a moment - the AI should see a person.", skip: (c, s) => !c.ai_enabled, auto: s => (s.persons || 0) > 0},
+    {id: "thermal", ic: "♨️", title: "Thermal camera", text: "Hold your hand in front of the thermal camera.", skip: c => !c.thermal_source, auto: s => (s.present || []).includes("warm")},
+    {id: "servo", ic: "🕹", title: "Servos", text: "Tap the buttons: the camera head must turn. Then answer.", btns: [["◀", () => post("/api/move", {dir: "left", step: 8})], ["▶", () => post("/api/move", {dir: "right", step: 8})], ["▲", () => post("/api/move", {dir: "up", step: 8})], ["▼", () => post("/api/move", {dir: "down", step: 8})]], ask: true},
+    {id: "mic", ic: "🎤", title: "Microphone", text: "Clap your hands loudly once.", skip: c => !c.audio_in, auto: (s, b) => { const a = s.audio || {}; return a.peak != null && b.audio && b.audio.bg != null && a.peak > b.audio.bg + 15; }},
+    {id: "spk", ic: "🔊", title: "Loudspeaker", text: "Tap «Test sound» - do you hear it?", skip: (c, s) => !(s.audio && s.audio.spk), btns: [["🔊 " + t("Test sound"), () => post("/api/audio", {action: "test"})]], ask: true},
+    {id: "light", ic: "💡", title: "Lights", text: "Tap the buttons - does the light switch on and off?", skip: (c, s) => !(s.light_cfg && (s.light_cfg.white_out || s.light_cfg.ir_out)),
+     btns: [["💡 " + t("On"), () => post("/api/light", {light: "white", mode: "on"})], ["🔴 IR " + t("On"), () => post("/api/light", {light: "ir", mode: "on"})], [t("Off"), () => Promise.all([post("/api/light", {light: "white", mode: "auto"}), post("/api/light", {light: "ir", mode: "auto"})])]], ask: true},
+    {id: "push", ic: "📲", title: "Push message", text: "Tap «Send» - does the message arrive on the phone?", skip: c => !c.notify_on, btns: [["📲 " + t("Send"), () => post("/api/notify_test", {lang: LANG})]], ask: true}];
+  (CF().sensors || []).forEach(x => steps.push({id: "s_" + x.id, ic: SENS_IC[x.kind] || "📡", title: x.name, raw: true, text: "Trigger this sensor now (open the door, walk past, move the tag …).",
+    skip: c => !c.sens_on || !x.src, auto: (s, b) => { const q = ((s.sens || {}).st || {})[x.id] || {}, q0 = ((b.sens || {}).st || {})[x.id] || {};
+      return q.state === "active" || q.state === "pulse" || (q.last && q.last !== q0.last); }}));
+  const res = {}; let i = 0, timer = null;
+  const done = () => { clearInterval(timer); c.textContent = "";
+    c.appendChild(el("h3", "", "🧪 " + t("Hardware check") + " – " + t("result")));
+    steps.forEach(x => { const r = res[x.id] || "skip"; c.appendChild(el("div", "", (r === "ok" ? "✅ " : r === "bad" ? "❌ " : "➖ ") + x.ic + " " + (x.raw ? x.title : t(x.title)))); });
+    const bad = steps.filter(x => res[x.id] === "bad");
+    c.appendChild(el("div", "mut", bad.length ? t("Check the parts marked ❌ (cable, settings) and run the check again.") : t("Everything that was tested works.")));
+    post("/api/hwcheck", {results: res});
+    const b = el("div", "btns"), ag = el("button", "sec", "↻ " + t("Again")), cl = el("button", "", t("Close")); ag.type = cl.type = "button";
+    ag.onclick = hwCheck; cl.onclick = () => ov.remove(); b.append(ag, cl); c.appendChild(b); };
+  const show = async () => {
+    clearInterval(timer);
+    while (i < steps.length && steps[i].skip && steps[i].skip(CF(), S())) { res[steps[i].id] = "skip"; i++; }
+    if (i >= steps.length) { done(); return; }
+    const x = steps[i], base = JSON.parse(JSON.stringify(S())); c.textContent = "";
+    c.appendChild(el("div", "mut", t("Hardware check") + " · " + t("step") + " " + (i + 1) + " / " + steps.length));
+    c.appendChild(el("h3", "", x.ic + " " + (x.raw ? x.title : t(x.title))));
+    c.appendChild(el("div", "", t(x.text)));
+    const live = el("div", "mut", ""); live.style.margin = "8px 0"; c.appendChild(live);
+    if (x.btns) { const bb = el("div", "btns"); x.btns.forEach(([l, f]) => { const b = el("button", "sec", l); b.type = "button"; b.onclick = () => f(); bb.appendChild(b); }); c.appendChild(bb); }
+    const nav = el("div", "btns"); const next = (r) => { res[x.id] = r; i++; show(); };
+    if (x.ask) { const y = el("button", "", "✅ " + t("Yes, works")), n = el("button", "red", "❌ " + t("No")); y.type = n.type = "button"; y.onclick = () => next("ok"); n.onclick = () => next("bad"); nav.append(y, n); }
+    else { const n = el("button", "red", "❌ " + t("Does not work")); n.type = "button"; n.onclick = () => next("bad"); nav.appendChild(n); live.textContent = "⏳ " + t("waiting …"); }
+    const sk = el("button", "sec", t("Skip")), cl = el("button", "sec", "✕"); sk.type = cl.type = "button"; sk.onclick = () => next("skip"); cl.onclick = () => { clearInterval(timer); ov.remove(); };
+    nav.append(sk, cl); c.appendChild(nav);
+    if (x.auto) timer = setInterval(async () => { if (!document.body.contains(ov)) { clearInterval(timer); return; } await st();
+      if (x.auto(S(), base)) { clearInterval(timer); live.textContent = "✅ " + t("detected"); setTimeout(() => next("ok"), 900); } }, 1000);
+  };
+  show();
+}
+// ---- several users: the web password = administrator; others log in with their own name and password ----
+const ROLE_TXT = () => ({operate: t("Operate (arm, lights, camera, talk - no settings)"), view: t("View only (live picture and recordings)")});
+async function usersLoad() {
+  const box = $("#users-box"); if (!box) return;
+  let j = {users: [], pw: false}; try { j = await (await fetch("/api/users")).json(); } catch (e) { return; }
+  box.textContent = "";
+  box.appendChild(el("div", "mut", t("Each person gets an own login (user name + password). The web password stays the administrator. The log shows who armed or switched something.")));
+  if (!j.pw) { box.appendChild(el("div", "err", "⚠ " + t("set the web password first (it is the administrator)"))); return; }
+  const err = el("div", "err");
+  const roleSel = v => { const s = el("select"); Object.entries(ROLE_TXT()).forEach(([k, l]) => { const o = el("option", "", l); o.value = k; s.appendChild(o); }); s.value = v; return s; };
+  const go = async b => { b.lang = LANG; const r = await post("/api/users", b); err.textContent = r.ok ? "" : "⚠ " + (r.error || "error"); if (r.ok) usersLoad(); return r; };
+  j.users.forEach(u => {
+    const row = el("div", "sens-card"), r1 = el("div", "row"), del = el("button", "sec", "✕"), pwb = el("button", "sec", "🔑"); del.type = pwb.type = "button";
+    pwb.title = t("New password"); del.title = t("Remove");
+    del.onclick = () => { if (confirm(t("Remove this user?") + "\n" + u.name)) go({action: "remove", name: u.name}); };
+    pwb.onclick = () => { const p = prompt(t("New password for") + " " + u.name + " (6–64)"); if (p) go({action: "password", name: u.name, password: p}).then(r => { if (r.ok) toast("✓ " + t("Saved")); }); };
+    const rs = roleSel(u.role); rs.onchange = () => go({action: "role", name: u.name, role: rs.value});
+    r1.append(el("b", "", "👤 " + u.name), pwb, del); row.append(r1, rs); box.appendChild(row);
+  });
+  const add = el("div", "sens-card"), nm = el("input"), pw = el("input"), rs = roleSel("operate"), ab = el("button", "", "+ " + t("Add user"));
+  nm.type = "text"; nm.maxLength = 24; nm.placeholder = t("Name"); pw.type = "password"; pw.maxLength = 64; pw.placeholder = t("Password (6–64)"); pw.autocomplete = "new-password";
+  [nm, pw, rs].forEach(x => { x.style.cssText = "width:100%;margin-top:6px"; }); ab.type = "button"; ab.style.marginTop = "8px";
+  ab.onclick = () => go({action: "add", name: nm.value, password: pw.value, role: rs.value});
+  add.append(nm, pw, rs, ab); box.append(add, err);
+}
+function applyRole(me) {
+  const role = (me && me.role) || "admin";
+  document.body.classList.toggle("role-operate", role === "operate"); document.body.classList.toggle("role-view", role === "view");
+  const b = $("#b-me"); if (b) { b.hidden = !(me && me.users) || !me.name; b.textContent = "👤 " + (me && me.name || "") + (role !== "admin" ? " · " + t(role === "view" ? "view only" : "operate") : ""); }
+}
 function applyLock(on) {
   document.body.classList.toggle("locked", on);
   $("#lock-bar").hidden = !on;
@@ -15872,9 +16832,10 @@ function paintExtras(s) {
   }
   const b = s.battery || {}, bl = $("#batt-line"), bfb = $("#batt-full-btn");
   if (bfb) bfb.hidden = b.src === "ups";
-  if (bl && b.src === "ups") bl.textContent = "🔋 " + t("UPS HAT") + ": " + b.pct + " % · " + b.volt + " V · "
+  if (bl && b.src === "ups") bl.textContent = "🔋 " + t("UPS HAT") + (b.model === "e" ? " (E)" : "") + ": " + b.pct + " % · " + b.volt + " V · "
     + (b.on_battery ? "⚡ " + t("on battery") + " · " + t("about") + " " + fmtH(b.hours) + " " + t("left") + " · " + b.watts + " W"
-       : (b.charging ? "🔌 " + t("charging") : "🔌 " + t("mains power")));
+       : (b.charging ? "🔌 " + t(b.fast ? "fast charging" : "charging") + (b.full_min ? " · " + t("full in") + " " + fmtH(b.full_min / 60) : "") : "🔌 " + t("mains power")))
+    + (b.cells ? "\n" + t("Cells") + ": " + b.cells.map(c => c.toFixed(2)).join(" / ") + " V" + (b.vbus ? " · USB-C " + b.vbus + " V" : "") : "");
   else if (bl) bl.textContent = !b.on ? t("Off – enter the capacity of the powerbank below.")
     : (b.pct == null ? t("Press «Battery is full now» after charging.") + " · " + b.watts + " W"
        : "🔋 " + b.pct + " % · " + t("about") + " " + fmtH(b.hours) + " " + t("left") + " · " + b.watts + " W" + (b.src === "estimate" ? " (" + t("estimated") + ")" : ""));
@@ -16354,7 +17315,7 @@ const GROUPS = [
   {id: "camera", icon: "📷", name: "Camera & servos", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {card: "source", sec: "Video source", ic: "🎥"},
    {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
   {id: "thermal", icon: "🌡", name: "Thermal camera", items: [{sec: "Thermal camera"}]},
-  {id: "sensors", icon: "📡", name: "Sensors", items: [{sec: "Extra sensors", ic: "📡"}, {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}]},
+  {id: "sensors", icon: "📡", name: "Sensors", items: [{sec: "Extra sensors", ic: "📡"}, {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}, {sec: "Solar panel", ic: "☀️"}]},
   {id: "lightsound", icon: "💡", name: "Light & sound", items: [{sec: "Lights", ic: "💡"}, {sec: "Deterrence", title: "Deterrence", ic: "📢"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"}]},
   {id: "rec", icon: "🎬", name: "Recordings & timelapse", items: [{sec: "Recording", ic: "⏺"}, {sec: "Timelapse", ic: "⏱️"}, {sec: "Backup", title: "Backup", ic: "☁️"}]},
   {id: "relay", icon: "⚡", name: "Relays & schedule", items: [{card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"}]},
@@ -16454,7 +17415,7 @@ const QS = [
    go: (c, s) => post("/api/light", {light: "white", mode: (s.lights && s.lights.white) ? "off" : "on"})},
   {id: "ir", ic: "🔴", lb: "IR light", tip: "Infrared light on / off", on: (c, s) => !!(s.lights && s.lights.ir), ok: (c, s) => !!(s.light_cfg && s.light_cfg.ir_out),
    go: (c, s) => post("/api/light", {light: "ir", mode: (s.lights && s.lights.ir) ? "off" : "on"})},
-  {id: "listen", ic: "🎧", lb: "Listen", tip: "Listen to the microphone", on: () => !!(window.AU && AU.on), ok: () => !!window.LISTEN_CAN || !!(window.AU && AU.on),
+  {id: "listen", ic: "🎧", lb: "Listen", tip: "Listen to the microphone", on: () => typeof AU !== "undefined" && AU.on, ok: () => !!window.LISTEN_CAN || (typeof AU !== "undefined" && AU.on),
    go: () => { listenToggle(); return Promise.resolve({ok: true}); }},
   {id: "talk", ic: "🎙", lb: "Talk", tip: "Talk through the loudspeaker: tap once to unlock, then hold the button while you talk",
    on: () => false, ok: (c, s) => !!(s.audio && s.audio.spk) || TK.on, talk: true},
@@ -16527,7 +17488,7 @@ function qsPaint(j) {
 // ---- overview: green arrow = main function of this topic is on ----
 const MAINSW = {
   "protect": (c, s) => s.arm_state === "armed" || s.arm_state === "arming", "sec:Camping / protection": (c, s) => !!s.camping,
-  "sec:Power saving": c => c.eco_on, "sec:Extra sensors": c => c.sens_on && (c.sensors || []).length > 0, "sec:Storm warning": c => c.storm_on, "sec:GPS module": c => c.gpsmod_on, "batt": (c, s) => !!(s.battery && s.battery.on), "sec:Theft protection": c => c.tamper_on || c.tamper_motion || c.tamper_power,
+  "sec:Power saving": c => c.eco_on, "sec:Extra sensors": c => c.sens_on && (c.sensors || []).length > 0, "sec:Storm warning": c => c.storm_on, "sec:GPS module": c => c.gpsmod_on, "sec:Solar panel": c => c.solar_on, "batt": (c, s) => !!(s.battery && s.battery.on), "sec:Theft protection": c => c.tamper_on || c.tamper_motion || c.tamper_power,
   "sec:Notifications": c => c.notify_on, "report": c => c.report_on, "sec:SMS (LTE stick)": c => c.sms_on,
   "sec:Detection": c => c.detection_on, "sec:AI detection": c => c.ai_enabled, "sec:Vehicle filter": c => c.car_filter, "sec:Rain": c => c.rain_auto,
   "sec:Wind": c => c.wind_auto, "sec:Low light": c => c.lowlight_auto || c.nightvision || c.nightvision_auto, "sec:Auto-tune": c => c.auto_tune,
@@ -16619,7 +17580,7 @@ async function build() {
         const iv = setInterval(async () => { let j = {}; try { j = await (await fetch("/api/ai_model")).json(); } catch (e) {}
           am.textContent = j.busy ? t("downloading the AI model …") + " " + j.pct + " %" : (j.msg === "ready" ? "✓ " + t("AI ready") : "⚠ " + (j.msg || ""));
           if (!j.busy) { clearInterval(iv); ab.disabled = false; if (j.msg === "ready") ab.hidden = true; } }, 1500); };
-      d.append(ab, am);
+      d.append(ab, am); spExtras(d);
     }
     if (sec.id === "Notifications") {
       const tb = el("button", "sec", t("Test notification")); tb.style.marginTop = "8px";
@@ -16649,6 +17610,7 @@ async function build() {
     if (sec.id === "Extra sensors") sensExtras(d);
     if (sec.id === "Storm warning") stormExtras(d);
     if (sec.id === "GPS module") gpsExtras(d);
+    if (sec.id === "Solar panel") solarExtras(d);
     if (sec.id === "Deterrence") dtExtras(d);
     if (sec.id === "MQTT / Home Assistant") mqExtras(d);
     if (sec.id === "SMS (LTE stick)") smsExtras(d);
@@ -16695,9 +17657,28 @@ function spkExtras(d) {
   const er = el("div", "err"); er.id = "au-err2";
   const hint = el("div", "mut", ""); hint.style.fontSize = "11px"; hint.style.marginTop = "4px";
   fetch("/api/audio").then(r => r.json()).then(j => { hint.textContent = t("Own sounds (.wav / .mp3): put the files into") + " " + j.folder + " " + t("and press «Search devices»"); }).catch(() => {});
-  box.insertBefore(b, tb); box.append(st, er, hint, btBox());
+  box.insertBefore(b, tb); box.append(st, er, ttsBox(), hint, btBox());
   d.insertBefore(box, d.children[1] || null);
   moveSelects(d, box, ["audio_out", "siren_on", "siren_sound"]);
+}
+Object.assign(I18N.de, {"Announcement": "Ansage", "Announcement: the Pi speaks this text": "Ansage: der Pi spricht diesen Text", "e.g. Please keep your distance - you are being filmed.": "z. B. Bitte Abstand halten – Sie werden gefilmt.", "Please keep your distance - you are being filmed.": "Bitte Abstand halten – Sie werden gefilmt.", "Hello, this place is under video surveillance.": "Hallo, dieser Platz wird videoüberwacht.", "Attention: the owner has been informed.": "Achtung: Der Besitzer wurde informiert.", "Voice": "Stimme", "Speak now": "Jetzt sprechen", "Save as own sound": "Als eigenen Klang speichern", "Saved - now selectable as sound for the siren / deterrence": "Gespeichert – jetzt als Klang für Sirene / Abschreckung wählbar", "no speech program (sudo apt install espeak-ng - or libttspico-utils for a nicer voice)": "kein Sprachprogramm (sudo apt install espeak-ng – oder libttspico-utils für eine schönere Stimme)", "empty text": "leerer Text"});
+function ttsBox() {                                 // the Pi speaks a typed text (offline)
+  const w = el("div"); w.style.marginTop = "10px";
+  w.appendChild(el("div", "mut", "🗣 " + t("Announcement: the Pi speaks this text")));
+  const tx = el("textarea"); tx.rows = 2; tx.maxLength = 200; tx.placeholder = t("e.g. Please keep your distance - you are being filmed.");
+  tx.style.cssText = "width:100%;box-sizing:border-box;margin-top:6px;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit";
+  const chips = el("div", "btns"); chips.style.flexWrap = "wrap";
+  ["Please keep your distance - you are being filmed.", "Hello, this place is under video surveillance.", "Attention: the owner has been informed."].forEach(p => {
+    const c = el("button", "sec", t(p)); c.type = "button"; c.style.fontSize = "12px"; c.onclick = () => { tx.value = t(p); }; chips.appendChild(c); });
+  const lang = el("select"); [["de", "Deutsch"], ["fr", "Français"], ["it", "Italiano"], ["en", "English"]].forEach(([v, l]) => { const o = el("option", "", l); o.value = v; lang.appendChild(o); });
+  lang.value = LANG === "rm" ? "de" : LANG; lang.title = t("Voice");
+  const bt = el("div", "btns"), say = el("button", "", "🗣 " + t("Speak now")), sv = el("button", "sec", "💾 " + t("Save as own sound"));
+  say.type = sv.type = "button"; const msg = el("div", "mut", "");
+  const go = async save => { if (!tx.value.trim()) { tx.focus(); return; } say.disabled = sv.disabled = true; msg.textContent = "…";
+    const r = await post("/api/tts", {text: tx.value, voice: lang.value, save: save, lang: LANG}); say.disabled = sv.disabled = false;
+    msg.textContent = r.ok ? (save ? "✓ " + t("Saved - now selectable as sound for the siren / deterrence") + ": " + r.file : "✓") : "⚠ " + (r.error || "error"); };
+  say.onclick = () => go(false); sv.onclick = () => go(true);
+  bt.append(lang, say, sv); w.append(tx, chips, bt, msg); return w;
 }
 function moveSelects(d, after, keys) {              // the device choice comes first, then the switches and sliders
   let ref = after;
@@ -16768,6 +17749,7 @@ function paintListen() {
   const sl = $("#stick-listen");
   if (sl) { sl.classList.toggle("lon", AU.on); sl.title = AU.on ? t("Stop listening") : t("Listen"); sl.setAttribute("aria-label", sl.title); }
   const vl = $("#vo-listen"); if (vl) vl.classList.toggle("lon", AU.on);
+  const ql = $("#qs-listen"); if (ql) { ql.classList.toggle("on", AU.on); if (AU.on) ql.disabled = false; }    // the quick switch lights up at once
 }
 function listenToggle() { AU.on ? listenStop() : listenStart(); }
 function listenStop() { AU.on = false; try { if (AU.reader) AU.reader.cancel(); } catch (e) {} AU.reader = null; paintListen(); }
@@ -17132,6 +18114,7 @@ function tpExtras(d) {
   d.appendChild(box);
 }
 Object.assign(I18N.de, {"open": "offen", "closed": "zu", "last": "zuletzt", "Extra sensors": "Zusatz-Sensoren", "Sensors": "Sensoren", "Extra sensors on": "Zusatz-Sensoren ein", "433 MHz radio sensors (RTL-SDR stick + program rtl_433)": "433-MHz-Funksensoren (RTL-SDR-Stick + Programm rtl_433)", "Zigbee sensors (Zigbee2MQTT - needs MQTT)": "Zigbee-Sensoren (Zigbee2MQTT – braucht MQTT)", "Bluetooth tags (RuuviTag - needs python3-bleak)": "Bluetooth-Anhänger (RuuviTag – braucht python3-bleak)", "With a motion detector (PIR): only 1 picture per second while all is quiet": "Mit Bewegungsmelder (PIR): nur 1 Bild pro Sekunde, solange alles ruhig ist", "Bluetooth tag: alarm when not seen for (min)": "Bluetooth-Anhänger: Alarm, wenn nicht gesehen seit (Min.)", "Motion detector": "Bewegungsmelder", "Door": "Tür", "Gas / smoke": "Gas / Rauch", "Tag": "Anhänger", "Sensor": "Sensor", "at most 16 sensors": "höchstens 16 Sensoren", "unknown sensor": "unbekannter Sensor", "this GPIO is already in use": "dieser GPIO ist schon belegt", "test - it works": "Test – es funktioniert", "out of range (not seen any more)": "ausser Reichweite (nicht mehr gesehen)", "motion detected": "Bewegung erkannt", "opened": "geöffnet", "gas / smoke detected!": "Gas / Rauch erkannt!", "moved": "bewegt", "triggered": "ausgelöst", "GAS ALARM": "GAS-ALARM", "SENSOR ALARM": "SENSOR-ALARM", "rtl_433 missing (sudo apt install rtl-433)": "rtl_433 fehlt (sudo apt install rtl-433)", "listening": "hört zu", "no RTL-SDR stick found": "kein RTL-SDR-Stick gefunden", "python3-bleak missing (sudo apt install python3-bleak)": "python3-bleak fehlt (sudo apt install python3-bleak)", "needs MQTT": "braucht MQTT", "Motion detector (PIR)": "Bewegungsmelder (PIR)", "Door / lid contact": "Tür- / Deckelkontakt", "Bluetooth tag": "Bluetooth-Anhänger", "Other sensor": "Anderer Sensor", "only when armed": "nur wenn scharf", "always (also when disarmed)": "immer (auch unscharf)", "no alarm, only note it": "kein Alarm, nur notieren", "Kind": "Art", "Connected to": "Angeschlossen an", "Reversed (reports at LOW)": "Umgekehrt (meldet bei LOW)", "Found radio devices - tap one to add it:": "Gefundene Funkgeräte – antippen zum Hinzufügen:", "Door contact": "Türkontakt", "Radio sensor": "Funksensor", "Remove this sensor?": "Diesen Sensor entfernen?", "gas / smoke!": "Gas / Rauch!", "motion": "Bewegung", "moved / triggered": "bewegt / ausgelöst", "out of range": "ausser Reichweite", "quiet": "ruhig", "GPIO error": "GPIO-Fehler", "waiting for data": "wartet auf Daten", "choose where it is connected": "wähle, wo er angeschlossen ist", "Extra sensors are switched off": "Zusatz-Sensoren sind ausgeschaltet", "Motion detector, door contact or gas / smoke module on a GPIO - or radio sensors (433 MHz, Zigbee) and Bluetooth tags. «Test» sends a push message.": "Bewegungsmelder, Türkontakt oder Gas-/Rauchmodul an einem GPIO – oder Funksensoren (433 MHz, Zigbee) und Bluetooth-Anhänger. «Test» schickt eine Push-Nachricht."});
+Object.assign(I18N.de, {"fast charging": "lädt schnell", "full in": "voll in", "Cells": "Zellen"});
 // ---- extra sensors (PIR, door contact, gas, 433 MHz, Zigbee, Bluetooth tags) ----
 const SENS_IC = {pir: "🚶", door: "🚪", gas: "🔥", tag: "🏷️", other: "📡"};
 const SENS_KN = [["pir", "Motion detector (PIR)"], ["door", "Door / lid contact"], ["gas", "Gas / smoke"], ["tag", "Bluetooth tag"], ["other", "Other sensor"]];
@@ -17232,6 +18215,35 @@ function stormText(c, S) {
   return L.join("\n");
 }
 Object.assign(I18N.de, {"GPS module": "GPS-Modul", "Own GPS module (USB or serial; gpsd is used if installed)": "Eigenes GPS-Modul (USB oder seriell; gpsd wird genutzt, falls installiert)", "Theft tracking: alarm when the armed device is carried away, then its position every 5 minutes": "Diebstahl-Ortung: Alarm, wenn das scharfe Gerät weggetragen wird, danach alle 5 Minuten seine Position", "Theft tracking: alarm from a distance of (m)": "Diebstahl-Ortung: Alarm ab einer Entfernung von (m)", "Connection": "Anschluss", "automatic": "automatisch", "the device was carried away": "das Gerät wurde weggetragen", "Position": "Position", "position": "Position", "Position now": "Position jetzt", "THEFT ALARM": "DIEBSTAHL-ALARM", "gpsd not running": "gpsd läuft nicht", "no GPS module found": "kein GPS-Modul gefunden", "searching satellites": "sucht Satelliten", "fix": "Position gefunden", "A USB GPS receiver (e.g. u-blox, VK-162) is found by itself. It needs a view of the sky. With an LTE stick the position arrives also when the device is stolen.": "Ein USB-GPS-Empfänger (z. B. u-blox, VK-162) wird von selbst gefunden. Er braucht freie Sicht zum Himmel. Mit LTE-Stick kommt die Position auch an, wenn das Gerät gestohlen wird.", "satellites": "Satelliten", "Theft tracking on guard": "Diebstahl-Ortung wacht", "Theft tracking starts when armed": "Diebstahl-Ortung startet, wenn scharf", "From the GPS module": "Vom GPS-Modul", "from the GPS module": "vom GPS-Modul"});
+Object.assign(I18N.de, {"Solar panel": "Solarpanel", "Solar panel with current meter (INA219 on I2C)": "Solarpanel mit Strommesser (INA219 an I2C)", "Push message in the evening when the battery will probably not last until sunrise": "Push-Nachricht am Abend, wenn der Akku voraussichtlich nicht bis Sonnenaufgang reicht", "Current meter: shunt resistor (Ohm, usually 0.1)": "Strommesser: Shunt-Widerstand (Ohm, meist 0,1)", "Current meter: address (I2C)": "Strommesser: Adresse (I2C)", "The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.": "Der Akku reicht voraussichtlich nicht bis Sonnenaufgang ({sr}): noch etwa {have} h, nötig {need} h. Aufladen oder Stromsparen einschalten.", "Battery": "Akku", "lasts until sunrise ({sr})": "reicht bis Sonnenaufgang ({sr})", "too little until sunrise ({sr})": "zu knapp bis Sonnenaufgang ({sr})", "INA219 current meter between the panel and the charger (address 0x41 or 0x44 - 0x40 is often taken by the servo board).": "INA219-Strommesser zwischen Panel und Laderegler (Adresse 0x41 oder 0x44 – 0x40 ist oft vom Servo-Board belegt).", "no current meter found at this address": "kein Strommesser an dieser Adresse gefunden", "today": "heute", "max.": "max.", "Battery lasts until sunrise": "Akku reicht bis Sonnenaufgang", "Battery probably too low until sunrise": "Akku reicht voraussichtlich nicht bis Sonnenaufgang", "Night forecast: needs a battery value (Settings → Battery)": "Nacht-Prognose: braucht einen Akku-Wert (Einstellungen → Akku)"});
+Object.assign(I18N.de, {"Recognise the animal species (second AI model - see the guide)": "Tierart erkennen (zweites KI-Modell – siehe Anleitung)", "Animal species: minimum certainty": "Tierart: Mindest-Sicherheit", "Animal species: model": "Tierart: Modell", "Animal species: picture preparation of the model": "Tierart: Bildaufbereitung des Modells", "Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.": "Tierart: ein zweites KI-Modell (ONNX) erkennt Fuchs, Dachs, Wildschwein … Es ist nicht dabei – von einer Adresse installieren oder in den Ordner kopieren.", "or .zip": "oder .zip", "Install model": "Modell installieren", "Folder": "Ordner", "Models": "Modelle", "Last": "Zuletzt", "downloading …": "lädt herunter …", "no model chosen": "kein Modell gewählt", "address must start with https://": "die Adresse muss mit https:// beginnen", "the address must end with .onnx or .zip": "die Adresse muss auf .onnx oder .zip enden", "file too big": "Datei zu gross"});
+function spExtras(d) {                              // animal species: second model, install from an address
+  const box = el("div", "auxbox"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
+  box.appendChild(el("div", "mut", "🦊 " + t("Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.")));
+  const url = el("input"); url.type = "url"; url.placeholder = "https://…/model.onnx  (" + t("or .zip") + ")"; url.style.cssText = "width:100%;box-sizing:border-box;margin-top:6px;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px";
+  const b = el("button", "sec", "⬇ " + t("Install model")); b.type = "button"; b.style.marginTop = "6px";
+  const load = () => fetch("/api/species?lang=" + LANG).then(r => r.json()).then(j => {
+    st.textContent = t("Folder") + ": " + j.folder + "\n" + t("Models") + ": " + (j.models.length ? j.models.join(", ") : t("none")) + " · " + t(j.msg || "")
+      + (j.last ? "\n" + t("Last") + ": " + j.last.label + " " + Math.round(j.last.conf * 100) + " %" : ""); }).catch(() => {});
+  b.onclick = async () => { b.disabled = true; st.textContent = t("downloading …"); const r = await post("/api/species", {url: url.value.trim(), lang: LANG}); b.disabled = false;
+    toast(r.ok ? "✓ " + t("Saved") : "⚠ " + (r.error || "error")); load(); };
+  box.append(url, b, st); d.appendChild(box); load(); setInterval(() => { if (document.body.contains(st)) load(); }, 15000);
+}
+function solarExtras(d) {
+  const box = el("div", "auxbox"); const st = el("div", "mut"); st.id = "solar-st"; st.style.whiteSpace = "pre-wrap";
+  box.append(el("div", "mut", t("INA219 current meter between the panel and the charger (address 0x41 or 0x44 - 0x40 is often taken by the servo board).")), st);
+  d.appendChild(box);
+}
+function solarText(c, s) {
+  const L = [], S = s.solar || {}, n = s.night;
+  if (!c.solar_on) L.push("☀️ " + t("off"));
+  else if (!S.ok) L.push("☀️ " + t("no current meter found at this address"));
+  else L.push("☀️ " + S.w + " W (" + S.v + " V · " + S.a + " A) · " + t("today") + " " + S.wh + " Wh · " + t("max.") + " " + S.max + " W");
+  if (n) L.push((n.enough ? "🌙 " + t("Battery lasts until sunrise") : "⚠ " + t("Battery probably too low until sunrise")) + " (" + n.sunrise + "): " + n.have_h + " h / " + n.need_h + " h");
+  else L.push("🌙 " + t("Night forecast: needs a battery value (Settings → Battery)"));
+  return L.join("\n");
+}
+function solarPaint(c, s) { const st = $("#solar-st"); if (st) st.textContent = solarText(c, s); }
 function gpsExtras(d) {
   const box = el("div", "auxbox"); const st = el("div", "mut"); st.id = "gpsm-st"; st.style.whiteSpace = "pre-wrap";
   box.append(el("div", "mut", t("A USB GPS receiver (e.g. u-blox, VK-162) is found by itself. It needs a view of the sky. With an LTE stick the position arrives also when the device is stolen.")), st);
@@ -17862,6 +18874,8 @@ async function refresh() {
   catch (e) { badge("#b-conn", t("Pi not reachable"), "red"); return; }
   badge("#b-conn", t("Pi connected"), "grn");
   const s = j.state, c = j.cfg, rel = j.relays || [], rs = s.relay_states || [];
+  applyRole(s.me);
+  if (s.me && s.me.role === "admin" && !window.USERS_DONE && $("#users-box")) { window.USERS_DONE = true; usersLoad(); }
   try { mainPaint(j); } catch (e) {}
   try { qsPaint(j); } catch (e) {}
   badge("#b-person", s.persons ? s.persons + " " + (s.persons > 1 ? t("PERSONS DETECTED") : t("PERSON DETECTED")) : t("No person"), s.persons ? "red" : "");
@@ -17889,7 +18903,7 @@ async function refresh() {
   renderSchedules(j.schedules || [], s);
   $("#v-rec").hidden = !s.recording; $("#v-src").hidden = !s.source_label; $("#v-src").textContent = s.source_label || "";
   $("#b-sec").hidden = !s.web_open;
-  updateExtras(s); updateProtect(s); tpPaint(s); sensPaint(c, s); stormPaint(c, s); gpsPaint(c, s); dtPaint(s); mqPaint(s); updateAutostart(s); updateAudio(s.audio); renderLights(s.light_cfg, s); updateSecurity(s); tidyHeader(s, c);
+  updateExtras(s); updateProtect(s); tpPaint(s); sensPaint(c, s); stormPaint(c, s); gpsPaint(c, s); solarPaint(c, s); dtPaint(s); mqPaint(s); updateAutostart(s); updateAudio(s.audio); renderLights(s.light_cfg, s); updateSecurity(s); tidyHeader(s, c);
   badge("#b-pres", t("Presence") + ": " + t(s.presence || "unknown"), s.presence === "home" ? "grn" : (s.presence === "away" ? "org" : ""));
   $("#b-pres").hidden = !(s.presence === "home" || s.presence === "away") || HIDDEN.has("b-pres");
 
@@ -18935,6 +19949,7 @@ body.selecting .chk{display:block}
       <button class="sec" id="m-fav" title="★">☆</button>
       <button class="sec" id="m-fa" title="👎">👎</button>
       <button class="sec" id="m-share" title="Share">⤴</button>
+      <a class="btn sec" id="m-pdf" target="_blank" rel="noopener" title="Report (PDF)">📄</a>
       <a class="btn sec" id="m-dl" download data-i18n="Download">Download</a>
       <button class="red" id="m-del" data-i18n="Delete">Delete</button>
       <button class="sec" id="m-close">&#10005;</button>
@@ -19104,6 +20119,7 @@ function openAt(i, list) {
   $("#m-title").textContent = it.time; $("#m-meta").textContent = [fmtSize(it.size), it.source || "", it.schedules.join(", ")].filter(Boolean).join(" · ");
   $("#m-dl").href = "/rec/file/" + encodeURIComponent(it.name) + "?dl=1"; $("#m-dl").setAttribute("download", it.name);
   $("#m-share").onclick = () => recShare(it); $("#m-share").title = t("Share");
+  $("#m-pdf").href = "/rec/report/" + encodeURIComponent(it.name) + "?lang=" + LANG; $("#m-pdf").title = t("Event report (PDF) for the police / insurance");
   $("#m-fav").textContent = it.fav ? "★" : "☆"; $("#m-fav").style.color = it.fav ? "var(--yel)" : "";
   faRow(it);
   $("#m-prev").disabled = i === 0; $("#m-next").disabled = i === ML.length - 1;
@@ -19188,6 +20204,7 @@ $("#f-place").onchange = () => { F.place = $("#f-place").value; load(true); };
 
 // ---- false alarms: «was nothing» + suggestions ----
 Object.assign(I18N.de, {"Continuous recording (all the time, few pictures per second) with a timeline": "Daueraufnahme (immer, wenige Bilder pro Sekunde) mit Zeitleiste", "Continuous recording: keep (hours)": "Daueraufnahme: behalten (Stunden)", "Continuous recording: pictures per second": "Daueraufnahme: Bilder pro Sekunde", "🎞 Continuous recording": "🎞 Daueraufnahme", "Continuous recording": "Daueraufnahme", "recording now": "wird gerade aufgenommen", "alarms": "Alarme", "Tap a blue piece to watch it. Red lines: alarms.": "Ein blaues Stück antippen zum Ansehen. Rote Striche: Alarme.", "Continuous recording is off (Settings → Recording).": "Daueraufnahme ist aus (Einstellungen → Aufnahme)."});
+Object.assign(I18N.de, {"Event report (PDF) for the police / insurance": "Ereignisbericht (PDF) für Polizei / Versicherung"});
 Object.assign(I18N.de, {"False alarms": "Fehlalarme", "Animal": "Tier", "Wind / branches": "Wind / Äste", "Light / shadow": "Licht / Schatten", "Rain": "Regen", "Car": "Auto", "Other": "Anderes", "Was nothing (false alarm)": "War nichts (Fehlalarm)", "Was nothing - what was it?": "War nichts – was war es?", "Was real after all": "War doch echt", "false alarms marked in the last": "Fehlalarme markiert in den letzten", "days": "Tagen", "of": "von", "suggestions:": "Vorschläge:", "Open": "Öffnen", "Take over": "Übernehmen", "Switch on the automatic wind detection": "Automatische Wind-Erkennung einschalten", "Less sensitive to light changes": "Weniger empfindlich auf Lichtwechsel", "Switch on the automatic rain detection": "Automatische Regen-Erkennung einschalten", "Detect rain earlier": "Regen früher erkennen", "Switch on the vehicle filter": "Fahrzeug-Filter einschalten", "Somewhat less sensitive overall": "Insgesamt etwas weniger empfindlich"});
 const FA_TXT = () => ({animal: "🐾 " + t("Animal"), wind: "🌿 " + t("Wind / branches"), light: "💡 " + t("Light / shadow"), rain: "🌧 " + t("Rain"), car: "🚗 " + t("Car"), other: "❓ " + t("Other")});
 function faRow(it) {
@@ -19481,7 +20498,7 @@ class WebStream:
         if self.started:
             return
         try:
-            from flask import Flask, Response, request, send_file
+            from flask import Flask, Response, request, send_file, g
         except ImportError:
             STATE["web_status"] = "flask not installed"
             log_event("web", "Web stream: pip install flask"); return
@@ -19505,6 +20522,7 @@ class WebStream:
             if request.path.startswith(("/g/", "/x/")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
+            g.user, g.role = "", "admin"
             if not pw and not CFG["web_pw_hash"]:
                 return None
             ip = request.remote_addr or "?"
@@ -19514,8 +20532,10 @@ class WebStream:
                 fails[ip] = recent
                 return Response("Too many failed logins - try again in a few minutes", 429, {"Retry-After": "300"})
             a = request.authorization
-            if a and (hmac.compare_digest(str(a.password or "").encode(), str(pw).encode()) if pw else pw_check(a.password or "")):
+            who = user_login(a.username or "", a.password or "") if a else None
+            if who:
                 fails.pop(ip, None)
+                g.user, g.role = who
                 return None
             if a:
                 recent.append(now)
@@ -19526,6 +20546,57 @@ class WebStream:
                 for k in [k for k, v in fails.items() if not v or now - v[-1] > 300]:
                     fails.pop(k, None)
             return Response("Login required", 401, {"WWW-Authenticate": 'Basic realm="Motion Watch"'})
+
+        @app.before_request
+        def role_guard():                           # users with a role: what they may do
+            role = getattr(g, "role", "admin")
+            if role == "admin":
+                return None
+            d = request.get_json(force=True, silent=True) if request.method == "POST" else None
+            if role_allows(role, request.path, request.method, d if isinstance(d, dict) else {}):
+                return None
+            lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or request.args.get("lang") or CFG["lang"])
+            return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
+
+        @app.after_request
+        def who_did_it(resp):                       # with several users the log tells who switched what
+            if request.method == "POST" and CFG["users"] and resp.status_code < 400 and request.path in (
+                    "/api/arm", "/api/night", "/api/camping", "/api/light", "/api/quick", "/api/lock", "/api/password", "/api/pause", "/api/power"):
+                d = request.get_json(force=True, silent=True) or {}
+                act_ = d.get("action") or d.get("mode") or d.get("on") or ""
+                log_event("web", f"{getattr(g, 'user', '') or 'admin'}: {request.path[5:]} {str(act_)[:20]}".strip())
+            return resp
+
+        @app.route("/api/species", methods=["GET", "POST"])
+        def api_species():
+            if request.method == "POST":
+                d = body(); lang = norm_lang(d.get("lang"))
+                ok, err = species_install(d.get("url"))
+                return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "models": species_models()}, 200 if ok else 400)
+            if CFG["species_on"]:
+                species_load()
+            last = SPECIES["last"]; lg = norm_lang(request.args.get("lang"))
+            msg = (tr("ready", lg) + f" · {len(SPECIES['names'])} " + tr("species", lg)) if SPECIES["net"] is not None else tr_err(SPECIES["msg"], lg)
+            return reply({"models": species_models(), "folder": species_dir(), "msg": msg if CFG["species_on"] else tr("off", lg),
+                          "last": {"label": tr(last[0], norm_lang(request.args.get("lang"))), "conf": round(last[1], 2),
+                                   "ago": int(time.time() - last[2])} if last else None})
+
+        @app.route("/api/hwcheck", methods=["POST"])
+        def api_hwcheck():
+            d = body(); res = d.get("results") if isinstance(d.get("results"), dict) else {}
+            parts = [f"{str(k)[:16]}={str(v)[:5]}" for k, v in list(res.items())[:30]]
+            n_ok = sum(1 for v in res.values() if v == "ok"); n_bad = sum(1 for v in res.values() if v == "bad")
+            log_event("sys", f"Hardware check: {n_ok} ok, {n_bad} failed - " + ", ".join(parts))
+            return reply({"ok": True})
+
+        @app.route("/api/users", methods=["GET", "POST"])
+        def api_users():
+            if request.method == "GET":
+                return reply({"users": [{"name": u["name"], "role": u["role"]} for u in CFG["users"]], "pw": web_pw_active()})
+            d = body(); lang = norm_lang(d.get("lang"))
+            ok, err = users_action(d, getattr(g, "user", "") or "admin")
+            return reply({"ok": ok, "error": tr_err(err, lang) if err else None,
+                          "users": [{"name": u["name"], "role": u["role"]} for u in CFG["users"]]}, 200 if ok else 400)
 
         @app.before_request
         def demo_guard():                           # demo: nothing that changes the computer or reaches outside
@@ -19722,6 +20793,7 @@ class WebStream:
                 st["mqtt"] = {"status": MQTT["status"], "topic": (CFG["mqtt_prefix"].strip().strip("/") or "motionwatch") + "/" + device_uid() if CFG["mqtt_on"] else ""}
                 st["web_open"] = not st["pw_set"] and WEB_OPTS["bind"] not in ("127.0.0.1", "localhost", "::1")
                 st["guest"] = guest_info(); st["report_on"] = bool(CFG["report_on"]); st["lock"] = lock_info()
+                st["me"] = {"name": getattr(g, "user", ""), "role": getattr(g, "role", "admin"), "users": len(CFG["users"])}
                 st["pending"] = RESTART["pending"]
                 st["quick_rec"] = time.time() < QUICK["rec_until"]
                 st["settings_status_txt"] = settings_status_text(norm_lang(request.args.get("lang") or CFG["lang"]))
@@ -19730,7 +20802,10 @@ class WebStream:
                 st["light_cfg"] = {k: CFG["light_" + k] for k in ("white", "ir", "white_out", "ir_out")}
                 st["light_cfg"].update({n + "_auto_label": dict(text_choice_pairs("light_white_auto")).get(CFG[f"light_{n}_auto"], "")
                                         for n in ("white", "ir")})
-                st["hotspot_cfg"] = {"ssid": CFG["hotspot_ssid"], "password": CFG["hotspot_password"], "address": page_address("10.42.0.1")}
+                st["hotspot_cfg"] = {"ssid": CFG["hotspot_ssid"], "password": CFG["hotspot_password"] if getattr(g, "role", "admin") == "admin" else "",
+                                     "address": page_address("10.42.0.1")}
+                if getattr(g, "role", "admin") != "admin":
+                    st["guest"] = {}
             cfg = {k: CFG[k] for k in web_specs()}
             cfg.update({k: CFG[k] for k in ("thermal_source", "deter_person_act", "deter_big_act", "deter_small_act", "deter_warm_act", "backup_type", "audio_in", "patrol_mode",
                                             "siren_on", "web_stream", "sensors")})        # for the green arrows (overview)
@@ -19761,6 +20836,12 @@ class WebStream:
             d = body(); lang = norm_lang(d.get("lang"))
             storm_warn("test", tr("test - it works", lang), test=True)
             return reply({"ok": True})
+
+        @app.route("/api/tts", methods=["POST"])
+        def api_tts():
+            d = body(); lang = norm_lang(d.get("lang"))
+            ok, msg = tts_say(d.get("text"), d.get("voice") or lang, bool(d.get("save")))
+            return reply({"ok": ok, "error": tr_err(msg, lang) if not ok else None, "file": msg if ok and d.get("save") else ""}, 200 if ok else 400)
 
         @app.route("/api/sensors", methods=["POST"])
         def api_sensors():
@@ -20237,6 +21318,19 @@ class WebStream:
                 return Response("not found", 404)
             return send_file(p, mimetype="video/mp4" if ext == ".mp4" else "image/jpeg", conditional=True,
                              as_attachment=request.args.get("dl") == "1", download_name=name)
+
+        @app.route("/rec/report/<path:name>")
+        def rec_report(name):
+            lang = norm_lang(request.args.get("lang"))
+            if rec_path(name) is None or os.path.splitext(name)[1].lower() not in REC_EXTS:
+                return Response("not found", 404)
+            try:
+                pdf = rec_report_pdf(name, lang)
+            except Exception as e:
+                log_event("web", f"Report failed: {e}"[:160]); return Response("report failed", 500)
+            fn = "MotionWatch_" + os.path.splitext(os.path.basename(name))[0] + ".pdf"
+            log_event("web", f"Event report (PDF) created: {name}")
+            return Response(pdf, mimetype="application/pdf", headers={"Content-Disposition": f'inline; filename="{fn}"'})
 
         @app.route("/rec/play/<path:name>")
         def rec_play(name):
@@ -21266,6 +22360,8 @@ DAYS_SHORT = {"de": ("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"), "fr": ("lu", "ma
               "it": ("lu", "ma", "me", "gi", "ve", "sa", "do"), "rm": ("gli", "ma", "me", "gie", "ve", "so", "du"), "en": DAYS_SHORT_EN}
 DAYS_SHORT_DE = ("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So")
 SLIDERS = [  # (section, key, label, min, max, step)
+    ("AI detection", "species_conf", "Animal species: minimum certainty", 0.2, 0.95, 0.05),
+    ("Solar panel", "solar_shunt", "Current meter: shunt resistor (Ohm, usually 0.1)", 0.01, 0.1, 0.005),
     ("GPS module", "gps_theft_m", "Theft tracking: alarm from a distance of (m)", 50, 1000, 50),
     ("Storm warning", "storm_drop", "Warn when the air pressure falls by (hPa in 3 hours)", 1.0, 8.0, 0.5),
     ("Storm warning", "storm_wind", "Warn from wind / gusts of (km/h)", 20, 120, 5),
@@ -21331,6 +22427,8 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Setup", "log_keep_days", "Event log: keep the archive (days)", 7, 365, 1),
     ("Night report", "report_hour", "Send the report at (o'clock)", 3, 12, 1),
     ("Night report", "diary_keep_days", "Keep diary entries (days, ★ always)", 7, 365, 1),
+    ("Setup", "temp_hot", "Temperature alarm: too hot from (°C)", 20, 45, 1),
+    ("Setup", "temp_cold", "Temperature alarm: too cold below (°C)", -20, 10, 1),
     ("Setup", "env_offset", "Temperature sensor: correction (°C)", -5.0, 5.0, 0.1),
     ("Battery", "ups_mah", "UPS HAT: capacity of ONE 18650 cell (mAh)", 1000, 4000, 50),
     ("Battery", "ups_shutdown_pct", "UPS HAT: shut the Pi down at (%, 0 = never)", 0, 30, 1),
@@ -21356,6 +22454,10 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Loudspeaker", "talk_gain", "Speaking from the phone: volume boost (dB)", 0, 20, 1),
 ]
 TOGGLES = [  # (section, key, label)
+    ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
+    ("Setup", "desktop_notice", "Small message on the Pi's desktop when Motion Watch starts in the background"),
+    ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
+    ("Battery", "night_warn", "Push message in the evening when the battery will probably not last until sunrise"),
     ("GPS module", "gpsmod_on", "Own GPS module (USB or serial; gpsd is used if installed)"),
     ("GPS module", "gps_theft", "Theft tracking: alarm when the armed device is carried away, then its position every 5 minutes"),
     ("Storm warning", "storm_on", "Storm warning (push message)"),
@@ -21368,6 +22470,8 @@ TOGGLES = [  # (section, key, label)
     ("Camera / Servos", "track_person", "Follow detected person (auto pan/tilt)"),
     ("Camera / Servos", "invert_pan", "Invert pan direction"),
     ("Camera / Servos", "invert_tilt", "Invert tilt direction"),
+    ("Camera / Servos", "lens_check", "Warn when the lens is fogged or dirty (picture blurred for 15 minutes)"),
+    ("Setup", "temp_alarm_on", "Temperature alarm (e.g. a pet in the caravan): push when too hot or too cold"),
     ("Camera / Servos", "cam_mirror", "Mirror picture (left ↔ right)"),
     ("Patrol", "patrol", "Patrol active"),
     ("AI detection", "ai_enabled", "AI person detection (SSD MobileNet V2)"),
@@ -21605,7 +22709,7 @@ TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery":
                 "Camera / Servos": "✥", "Patrol": "↻", "Video source": "▣", "Servo driver": "⚒", "Lights": "☀", "Deterrence": "⚠",
                 "Microphone": "♪", "Loudspeaker": "♫", "Recording": "●", "Timelapse": "◷", "Backup": "☁", "Relays": "⚡",
                 "Schedule": "▦", "Setup": "⊕", "Wi-Fi / hotspot": "⌁", "Web stream": "⇅", "Guest access": "⚇",
-                "MQTT / Home Assistant": "⇆", "Updates": "⬆", "Extra sensors": "◉", "Storm warning": "≈", "GPS module": "✈"}
+                "MQTT / Home Assistant": "⇆", "Updates": "⬆", "Extra sensors": "◉", "Storm warning": "≈", "GPS module": "✈", "Solar panel": "☼"}
 
 TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - the same 9 groups as the web page
     ("alarm", "Alarm & camping", ["Camping / protection", "Power saving", "Battery", "Theft protection"]),
@@ -21613,13 +22717,13 @@ TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - the same 9 grou
     ("detect", "Detection", ["Detection", "AI detection", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
     ("camera", "Camera & servos", ["Camera / Servos", "Patrol", "Video source", None, "Servo driver"]),
     ("thermal", "Thermal camera", ["Thermal camera"]),
-    ("sensors", "Sensors", ["Extra sensors", "Storm warning", "GPS module"]),
+    ("sensors", "Sensors", ["Extra sensors", "Storm warning", "GPS module", "Solar panel"]),
     ("lightsound", "Light & sound", ["Lights", "Deterrence", "Microphone", "Loudspeaker"]),
     ("rec", "Recordings & timelapse", ["Recording", "Timelapse", "Backup"]),
     ("relay", "Relays & schedule", ["Relays", "Schedule"]),
     ("sys", "System & network", ["Setup", "Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant", "Updates"]),
 ]
-SECTIONS = ["Extra sensors", "Storm warning", "GPS module", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
+SECTIONS = ["Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
 
 
@@ -21818,7 +22922,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.58.2")
+        self.root.title("Motion Watch 2.68.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -22107,7 +23211,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.58.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.68.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -22771,6 +23875,20 @@ class App:
             ttk.Button(bf, text=tr("Test sound"), command=lambda: self._sound("test")).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Siren now"), command=lambda: self._sound("siren")).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Stop"), command=lambda: self._sound("stop")).pack(side="left", expand=True, fill="x")
+            ttk.Label(sbody, text=tr("Announcement: the Pi speaks this text"), style="Mut.TLabel").pack(anchor="w", pady=(8, 0))
+            self.tts_var = tk.StringVar(value=tr("Please keep your distance - you are being filmed."))
+            tk.Entry(sbody, textvariable=self.tts_var, bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",
+                     highlightthickness=1, highlightbackground=C["line"], highlightcolor=C["acc"]).pack(fill="x", pady=(2, 0))
+            tf = ttk.Frame(sbody); tf.pack(fill="x", pady=(4, 0))
+            def tts_do(save):
+                def run():
+                    ok, m = tts_say(self.tts_var.get(), None, save)
+                    self._status("Announcement", ("✓ " + (tr("Saved - now selectable as sound for the siren / deterrence") + ": " + m if save else "")) if ok else "⚠ " + tr_err(m))
+                threading.Thread(target=run, daemon=True).start()
+            ttk.Button(tf, text=tr("Speak now"), command=lambda: tts_do(False)).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            ttk.Button(tf, text=tr("Save as own sound"), command=lambda: tts_do(True)).pack(side="left", expand=True, fill="x")
+            self.status_labels["Announcement"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels["Announcement"].pack(anchor="w", pady=(2, 0))
             ttk.Label(sbody, text=tr("Own sounds (.wav / .mp3): put the files into") + " " + sounds_dir(), style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w", pady=(4, 0))
             tk.Label(sbody, text=tr("Bluetooth").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x", pady=(8, 0))
@@ -22823,6 +23941,9 @@ class App:
                       style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(6, 0))
         if sec == "Extra sensors":
             self._build_sensor_editor(sbody)
+        if sec == "Solar panel":
+            self.status_labels["Solar panel"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels["Solar panel"].pack(anchor="w", pady=(4, 0))
         if sec == "GPS module":
             self.status_labels["GPS module"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["GPS module"].pack(anchor="w", pady=(4, 0))
@@ -23250,7 +24371,7 @@ class App:
                 "Timelapse": lambda: CFG["timelapse_on"], "Backup": lambda: CFG["backup_type"] != "off", "Relays": lambda: CFG["relays_on"],
                 "Schedule": lambda: any(x.get("enabled") for x in SCHEDULES), "Wi-Fi / hotspot": lambda: CFG["hotspot_on"],
                 "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG["update_auto"],
-                "Extra sensors": lambda: CFG["sens_on"] and bool(CFG["sensors"]), "Storm warning": lambda: CFG["storm_on"], "GPS module": lambda: CFG["gpsmod_on"]}
+                "Extra sensors": lambda: CFG["sens_on"] and bool(CFG["sensors"]), "Storm warning": lambda: CFG["storm_on"], "GPS module": lambda: CFG["gpsmod_on"], "Solar panel": lambda: CFG["solar_on"]}
         for key, (arr, secs, _c, _w) in list(getattr(self, "grp_meta", {}).items()):
             try:
                 if arr.winfo_exists():
@@ -23275,6 +24396,12 @@ class App:
                 parts.append(f"{d.get('name') or d['url']}: " + ((("🚨 " if x.get("persons") else "") + tr(x.get("arm", "?"))) if x.get("ok") else "⚠ " + tr(x.get("err") or "not reachable")))
             self._status("Other devices", "🛰 " + tr("Other devices") + ": " + " · ".join(parts) + "  (" + tr("overview on the web page: Cameras") + ")")
         self._sens_paint(st)
+        so_ = st.get("solar") or {}; nf_ = st.get("night")
+        l_ = [(tr("off") if not CFG["solar_on"] else tr("no current meter found at this address") if not so_.get("ok")
+               else f"{so_['w']} W ({so_['v']} V · {so_['a']} A) · {tr('today')} {so_['wh']} Wh · {tr('max.')} {so_['max']} W")]
+        l_.append((tr("Battery lasts until sunrise") if nf_["enough"] else tr("Battery probably too low until sunrise")) + f" ({nf_['sunrise']}): {nf_['have_h']} h / {nf_['need_h']} h"
+                  if nf_ else tr("Night forecast: needs a battery value (Settings → Battery)"))
+        self._status("Solar panel", "\n".join(l_))
         if CFG["gpsmod_on"]:
             g_ = GPSMOD
             if g_["lat"] is not None and time.time() - g_["t"] < 300:
@@ -23310,9 +24437,10 @@ class App:
         b = st.get("battery") or {}
         press = tr("Press 'Battery is full now' after charging.")
         if b.get("src") == "ups":
-            self._status("Battery", f"🔋 {tr('UPS HAT')}: {b['pct']} % · {b['volt']} V · " + (
+            self._status("Battery", f"🔋 {tr('UPS HAT')}{' (E)' if b.get('model') == 'e' else ''}: {b['pct']} % · {b['volt']} V · " + (
                 f"⚡ {tr('on battery')} · {b['hours'] or 0:.1f} h {tr('left')} · {b['watts']} W" if b.get("on_battery")
-                else ("🔌 " + (tr("charging") if b.get("charging") else tr("mains power")))))
+                else ("🔌 " + (tr("fast charging" if b.get("fast") else "charging") if b.get("charging") else tr("mains power"))))
+                + (("\n" + tr("Cells") + ": " + " / ".join(f"{c:.2f}" for c in b["cells"]) + " V") if b.get("cells") else ""))
         else:
           self._status("Battery", tr("Off - enter the capacity of the powerbank.") if not b.get("on") else
                      (f"{press} · {b['watts']} W" if b.get("pct") is None else
@@ -28623,6 +29751,157 @@ for _k, _v in _HX26.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX27 = {'alarm': ('Alarm', 'alarme', 'allarme', 'alarm'), 'Warn when the lens is fogged or dirty (picture blurred for 15 minutes)': ('Warnen, wenn die Linse beschlagen oder verschmutzt ist (Bild 15 Minuten unscharf)', "Avertir si l'objectif est embué ou sale (image floue pendant 15 minutes)", "Avvisa se l'obiettivo è appannato o sporco (immagine sfocata per 15 minuti)", 'Avertir, sche la lentilla è stgiraida u maldischa (maletg 15 minutas betg net)'), 'Temperature alarm (e.g. a pet in the caravan): push when too hot or too cold': ('Temperatur-Alarm (z. B. Haustier im Wohnwagen): Push bei zu heiss oder zu kalt', 'Alarme de température (p. ex. animal dans la caravane) : push si trop chaud ou trop froid', 'Allarme temperatura (p. es. animale nella roulotte): push se fa troppo caldo o troppo freddo', "Alarm da temperatura (p.ex. animal en la rulotta): push sch'i fa memia chaud u memia fraid"), 'Temperature alarm: too hot from (°C)': ('Temperatur-Alarm: zu heiss ab (°C)', 'Alarme de température : trop chaud dès (°C)', 'Allarme temperatura: troppo caldo da (°C)', 'Alarm da temperatura: memia chaud a partir da (°C)'), 'Temperature alarm: too cold below (°C)': ('Temperatur-Alarm: zu kalt unter (°C)', 'Alarme de température : trop froid sous (°C)', 'Allarme temperatura: troppo freddo sotto (°C)', 'Alarm da temperatura: memia fraid sut (°C)'), 'The picture has been blurred for 15 minutes (sharpness {p} % of normal). Wipe the lens and look for dew or a spider web.': ('Das Bild ist seit 15 Minuten unscharf (Schärfe {p} % vom Normalwert). Linse abwischen und auf Tau oder Spinnweben prüfen.', "L'image est floue depuis 15 minutes (netteté {p} % de la normale). Essuyez l'objectif et cherchez de la rosée ou une toile d'araignée.", "L'immagine è sfocata da 15 minuti (nitidezza {p} % del normale). Pulisci l'obiettivo e cerca rugiada o una ragnatela.", "Il maletg è dapi 15 minutas betg net ({p} % da la valur normala). Nettegiar la lentilla e guardar suenter rusada u taila d'arogn."), 'Lens fogged or dirty': ('Linse beschlagen oder verschmutzt', 'Objectif embué ou sale', 'Obiettivo appannato o sporco', 'Lentilla stgiraida u maldischa'), 'Too hot: {t:.1f} °C (limit {l:.0f} °C)': ('Zu heiss: {t:.1f} °C (Grenze {l:.0f} °C)', 'Trop chaud : {t:.1f} °C (limite {l:.0f} °C)', 'Troppo caldo: {t:.1f} °C (limite {l:.0f} °C)', 'Memia chaud: {t:.1f} °C (limita {l:.0f} °C)'), 'Too cold: {t:.1f} °C (limit {l:.0f} °C)': ('Zu kalt: {t:.1f} °C (Grenze {l:.0f} °C)', 'Trop froid : {t:.1f} °C (limite {l:.0f} °C)', 'Troppo freddo: {t:.1f} °C (limite {l:.0f} °C)', 'Memia fraid: {t:.1f} °C (limita {l:.0f} °C)'), 'TEMPERATURE ALARM': ('TEMPERATUR-ALARM', 'ALARME TEMPÉRATURE', 'ALLARME TEMPERATURA', 'ALARM DA TEMPERATURA'), 'Temperature fine again: {t:.1f} °C': ('Temperatur wieder in Ordnung: {t:.1f} °C', 'Température de nouveau correcte : {t:.1f} °C', 'Temperatura di nuovo a posto: {t:.1f} °C', 'Temperatura puspè en urden: {t:.1f} °C'), 'Temperature': ('Temperatur', 'Température', 'Temperatura', 'Temperatura'), 'too hot': ('zu heiss', 'trop chaud', 'troppo caldo', 'memia chaud'), 'too cold': ('zu kalt', 'trop froid', 'troppo freddo', 'memia fraid'), 'Lens': ('Linse', 'Objectif', 'Obiettivo', 'Lentilla'), 'blurred': ('unscharf', 'flou', 'sfocato', 'betg net'), 'clear': ('klar', 'nette', 'nitido', 'cler'), 'learning (1 hour)': ('lernt (1 Stunde)', 'apprend (1 heure)', 'impara (1 ora)', 'emprenda (1 ura)'), 'Wipe the lens and look for dew or a spider web.': ('Linse abwischen und auf Tau oder Spinnweben prüfen.', "Essuyez l'objectif et cherchez de la rosée ou une toile d'araignée.", "Pulisci l'obiettivo e cerca rugiada o una ragnatela.", "Nettegiar la lentilla e guardar suenter rusada u taila d'arogn.")}
+for _k, _v in _HX27.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX28 = {'Event report': ('Ereignisbericht', "Rapport d'événement", 'Rapporto evento', "Rapport d'eveniment"), 'Date / time': ('Datum / Zeit', 'Date / heure', 'Data / ora', 'Data / ura'), 'File': ('Datei', 'Fichier', 'File', 'Datoteca'), 'Kind': ('Art', 'Type', 'Tipo', 'Gener'), 'Video': ('Video', 'Vidéo', 'Video', 'Video'), 'Picture': ('Bild', 'Image', 'Immagine', 'Maletg'), 'Size': ('Grösse', 'Taille', 'Dimensione', 'Grondezza'), 'Duration': ('Dauer', 'Durée', 'Durata', 'Durada'), 'Persons seen': ('Gesehene Personen', 'Personnes vues', 'Persone viste', 'Persunas vesidas'), 'Camera': ('Kamera', 'Caméra', 'Telecamera', 'Camera'), 'Marked as': ('Markiert als', 'Marqué comme', 'Segnato come', 'Marcà sco'), 'false alarm': ('Fehlalarm', 'fausse alarme', 'falso allarme', 'fauss alarm'), 'Place': ('Ort', 'Lieu', 'Luogo', 'Lieu'), 'unknown': ('unbekannt', 'inconnu', 'sconosciuto', 'nunenconuschent'), 'Checksum of the original file (SHA-256) - shows that it was not changed:': ('Prüfsumme der Originaldatei (SHA-256) – zeigt, dass sie nicht verändert wurde:', "Somme de contrôle du fichier original (SHA-256) – montre qu'il n'a pas été modifié :", 'Checksum del file originale (SHA-256) – mostra che non è stato modificato:', "Summa da controlla da la datoteca originala (SHA-256) – mussa ch'ella n'è betg vegnida midada:"), 'Pictures': ('Bilder', 'Images', 'Immagini', 'Maletgs'), 'Alarm picture': ('Alarmbild', "Image d'alarme", "Immagine d'allarme", "Maletg d'alarm"), 'From the video': ('Aus dem Video', 'Extrait de la vidéo', 'Dal video', 'Ord il video'), 'no picture': ('kein Bild', "pas d'image", 'nessuna immagine', 'nagin maletg'), 'Log around the event (10 minutes before and after)': ('Protokoll rund um das Ereignis (10 Minuten davor und danach)', "Journal autour de l'événement (10 minutes avant et après)", "Registro attorno all'evento (10 minuti prima e dopo)", "Protocol enturn l'eveniment (10 minutas avant e suenter)"), 'no entries': ('keine Einträge', 'aucune entrée', 'nessuna voce', 'naginas inscripziuns'), 'Created': ('Erstellt', 'Créé', 'Creato', 'Creà'), 'The original video file is on the device (recordings).': ('Die Original-Videodatei ist auf dem Gerät (Aufzeichnungen).', "Le fichier vidéo original se trouve sur l'appareil (enregistrements).", 'Il file video originale è sul dispositivo (registrazioni).', "La datoteca da video originala è sin l'apparat (registraziuns)."), 'Event report (PDF) for the police / insurance': ('Ereignisbericht (PDF) für Polizei / Versicherung', "Rapport d'événement (PDF) pour la police / l'assurance", 'Rapporto evento (PDF) per polizia / assicurazione', "Rapport d'eveniment (PDF) per la polizia / l'assicuranza")}
+for _k, _v in _HX28.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX29 = {'Announcement': ('Ansage', 'Annonce', 'Annuncio', 'Annunzia'), 'Announcement: the Pi speaks this text': ('Ansage: der Pi spricht diesen Text', 'Annonce : le Pi prononce ce texte', 'Annuncio: il Pi pronuncia questo testo', 'Annunzia: il Pi di quest text'), 'e.g. Please keep your distance - you are being filmed.': ('z. B. Bitte Abstand halten – Sie werden gefilmt.', 'p. ex. Veuillez garder vos distances – vous êtes filmé.', 'p. es. Si prega di mantenere la distanza – siete ripresi.', 'p.ex. Tegnai distanza – Vus vegnis filmads.'), 'Please keep your distance - you are being filmed.': ('Bitte Abstand halten – Sie werden gefilmt.', 'Veuillez garder vos distances – vous êtes filmé.', 'Si prega di mantenere la distanza – siete ripresi.', 'Tegnai distanza – Vus vegnis filmads.'), 'Hello, this place is under video surveillance.': ('Hallo, dieser Platz wird videoüberwacht.', 'Bonjour, cet emplacement est sous vidéosurveillance.', 'Salve, questo posto è videosorvegliato.', 'Allegra, quest lieu vegn survegnì cun video.'), 'Attention: the owner has been informed.': ('Achtung: Der Besitzer wurde informiert.', 'Attention : le propriétaire a été averti.', 'Attenzione: il proprietario è stato avvisato.', 'Attenziun: il possessur è vegnì infurmà.'), 'Voice': ('Stimme', 'Voix', 'Voce', 'Vusch'), 'Speak now': ('Jetzt sprechen', 'Parler maintenant', 'Parla ora', 'Discurrer ussa'), 'Save as own sound': ('Als eigenen Klang speichern', 'Enregistrer comme son propre', 'Salva come suono proprio', 'Memorisar sco agen tun'), 'Saved - now selectable as sound for the siren / deterrence': ('Gespeichert – jetzt als Klang für Sirene / Abschreckung wählbar', 'Enregistré – sélectionnable comme son pour la sirène / la dissuasion', 'Salvato – ora selezionabile come suono per sirena / deterrenza', 'Memorisà – ussa tschernibel sco tun per la sirena / deterrenza'), 'no speech program (sudo apt install espeak-ng - or libttspico-utils for a nicer voice)': ('kein Sprachprogramm (sudo apt install espeak-ng – oder libttspico-utils für eine schönere Stimme)', 'aucun programme vocal (sudo apt install espeak-ng – ou libttspico-utils pour une plus belle voix)', 'nessun programma vocale (sudo apt install espeak-ng – o libttspico-utils per una voce più bella)', 'nagin program da vusch (sudo apt install espeak-ng – u libttspico-utils per ina vusch pli bella)'), 'empty text': ('leerer Text', 'texte vide', 'testo vuoto', 'text vid')}
+for _k, _v in _HX29.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX30 = {'Solar panel': ('Solarpanel', 'Panneau solaire', 'Pannello solare', 'Panel solar'), 'Solar panel with current meter (INA219 on I2C)': ('Solarpanel mit Strommesser (INA219 an I2C)', 'Panneau solaire avec mesureur de courant (INA219 sur I2C)', 'Pannello solare con misuratore di corrente (INA219 su I2C)', 'Panel solar cun mesirader da current (INA219 sin I2C)'), 'Push message in the evening when the battery will probably not last until sunrise': ('Push-Nachricht am Abend, wenn der Akku voraussichtlich nicht bis Sonnenaufgang reicht', "Message push le soir si la batterie ne tiendra probablement pas jusqu'au lever du soleil", "Messaggio push la sera se la batteria probabilmente non durerà fino all'alba", "Messadi push la saira, sch'il accu na tanscha probablamain betg fin l'alva"), 'Current meter: shunt resistor (Ohm, usually 0.1)': ('Strommesser: Shunt-Widerstand (Ohm, meist 0,1)', 'Mesureur : résistance shunt (ohm, souvent 0,1)', 'Misuratore: resistenza shunt (ohm, di solito 0,1)', 'Mesirader: resistenza shunt (ohm, savens 0,1)'), 'Current meter: address (I2C)': ('Strommesser: Adresse (I2C)', 'Mesureur : adresse (I2C)', 'Misuratore: indirizzo (I2C)', 'Mesirader: adressa (I2C)'), 'The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.': ('Der Akku reicht voraussichtlich nicht bis Sonnenaufgang ({sr}): noch etwa {have} h, nötig {need} h. Aufladen oder Stromsparen einschalten.', "La batterie ne tiendra probablement pas jusqu'au lever du soleil ({sr}) : environ {have} h restantes, {need} h nécessaires. Rechargez-la ou activez l'économie d'énergie.", "La batteria probabilmente non durerà fino all'alba ({sr}): circa {have} h rimanenti, {need} h necessarie. Ricaricala o attiva il risparmio energetico.", "L'accu na tanscha probablamain betg fin l'alva ({sr}): anc var {have} h, basegn {need} h. Chargiar u activar il spargnar current."), 'Battery': ('Akku', 'Batterie', 'Batteria', 'Accu'), 'lasts until sunrise ({sr})': ('reicht bis Sonnenaufgang ({sr})', "tient jusqu'au lever du soleil ({sr})", "dura fino all'alba ({sr})", "tanscha fin l'alva ({sr})"), 'too little until sunrise ({sr})': ('zu knapp bis Sonnenaufgang ({sr})', "trop juste jusqu'au lever du soleil ({sr})", "troppo poco fino all'alba ({sr})", "memia stretg fin l'alva ({sr})"), 'INA219 current meter between the panel and the charger (address 0x41 or 0x44 - 0x40 is often taken by the servo board).': ('INA219-Strommesser zwischen Panel und Laderegler (Adresse 0x41 oder 0x44 – 0x40 ist oft vom Servo-Board belegt).', 'Mesureur INA219 entre le panneau et le chargeur (adresse 0x41 ou 0x44 – 0x40 est souvent prise par la carte servo).', 'Misuratore INA219 tra il pannello e il caricatore (indirizzo 0x41 o 0x44 – 0x40 è spesso occupato dalla scheda servo).', 'Mesirader INA219 tranter il panel ed il chargiader (adressa 0x41 u 0x44 – 0x40 è savens occupada da la plattina dals servos).'), 'no current meter found at this address': ('kein Strommesser an dieser Adresse gefunden', 'aucun mesureur trouvé à cette adresse', 'nessun misuratore trovato a questo indirizzo', 'nagin mesirader chattà sin questa adressa'), 'today': ('heute', "aujourd'hui", 'oggi', 'oz'), 'max.': ('max.', 'max.', 'max.', 'max.'), 'Battery lasts until sunrise': ('Akku reicht bis Sonnenaufgang', "La batterie tient jusqu'au lever du soleil", "La batteria dura fino all'alba", "L'accu tanscha fin l'alva"), 'Battery probably too low until sunrise': ('Akku reicht voraussichtlich nicht bis Sonnenaufgang', "Batterie probablement insuffisante jusqu'au lever du soleil", "Batteria probabilmente insufficiente fino all'alba", "L'accu na tanscha probablamain betg fin l'alva"), 'Night forecast: needs a battery value (Settings → Battery)': ('Nacht-Prognose: braucht einen Akku-Wert (Einstellungen → Akku)', 'Prévision de nuit : nécessite une valeur de batterie (Réglages → Batterie)', 'Previsione notturna: serve un valore della batteria (Impostazioni → Batteria)', "Prognosa da notg: basegna ina valur da l'accu (Configuraziuns → Accu)")}
+for _k, _v in _HX30.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX31 = {'👥 Users': ('👥 Benutzer', '👥 Utilisateurs', '👥 Utenti', '👥 Utilisaders'), 'Operate (arm, lights, camera, talk - no settings)': ('Bedienen (scharf schalten, Licht, Kamera, Sprechen – keine Einstellungen)', 'Utiliser (armer, lumière, caméra, parler – pas de réglages)', 'Usare (armare, luce, telecamera, parlare – nessuna impostazione)', 'Manar (activar, glisch, camera, discurrer – naginas configuraziuns)'), 'View only (live picture and recordings)': ('Nur ansehen (Live-Bild und Aufnahmen)', 'Voir seulement (image en direct et enregistrements)', 'Solo guardare (immagine dal vivo e registrazioni)', 'Mo guardar (maletg live e registraziuns)'), 'Each person gets an own login (user name + password). The web password stays the administrator. The log shows who armed or switched something.': ('Jede Person bekommt ein eigenes Login (Benutzername + Passwort). Das Web-Passwort bleibt der Administrator. Im Protokoll steht, wer scharf geschaltet oder etwas umgeschaltet hat.', "Chaque personne reçoit son propre accès (nom + mot de passe). Le mot de passe web reste l'administrateur. Le journal indique qui a armé ou commuté quelque chose.", "Ogni persona riceve un accesso proprio (nome utente + password). La password web resta l'amministratore. Il registro mostra chi ha armato o commutato qualcosa.", "Mintga persuna survegn in agen login (num + pled-clav). Il pled-clav web resta l'administratur. Il protocol mussa tgi ch'ha activà u midà insatge."), 'set the web password first (it is the administrator)': ('zuerst das Web-Passwort setzen (es ist der Administrator)', "définissez d'abord le mot de passe web (c'est l'administrateur)", "imposta prima la password web (è l'amministratore)", "fixar l'emprim il pled-clav web (el è l'administratur)"), 'New password': ('Neues Passwort', 'Nouveau mot de passe', 'Nuova password', 'Nov pled-clav'), 'New password for': ('Neues Passwort für', 'Nouveau mot de passe pour', 'Nuova password per', 'Nov pled-clav per'), 'Remove this user?': ('Diesen Benutzer entfernen?', 'Supprimer cet utilisateur ?', 'Rimuovere questo utente?', 'Allontanar quest utilisader?'), 'Add user': ('Benutzer hinzufügen', 'Ajouter un utilisateur', 'Aggiungi utente', 'Agiuntar utilisader'), 'Name': ('Name', 'Nom', 'Nome', 'Num'), 'Password (6–64)': ('Passwort (6–64)', 'Mot de passe (6–64)', 'Password (6–64)', 'Pled-clav (6–64)'), 'view only': ('nur ansehen', 'voir seulement', 'solo guardare', 'mo guardar'), 'operate': ('bedienen', 'utiliser', 'usare', 'manar'), 'not allowed for your user': ('für deinen Benutzer nicht erlaubt', 'pas autorisé pour votre utilisateur', 'non consentito per il tuo utente', 'betg lubì per tes utilisader'), 'name: 1 to 24 letters / digits': ('Name: 1 bis 24 Buchstaben / Ziffern', 'nom : 1 à 24 lettres / chiffres', 'nome: da 1 a 24 lettere / cifre', 'num: 1 fin 24 bustabs / cifras'), 'this name exists already': ('diesen Namen gibt es schon', 'ce nom existe déjà', 'questo nome esiste già', 'quest num exista gia'), 'at most 20 users': ('höchstens 20 Benutzer', '20 utilisateurs au maximum', 'al massimo 20 utenti', 'maximalmain 20 utilisaders'), 'unknown user': ('unbekannter Benutzer', 'utilisateur inconnu', 'utente sconosciuto', 'utilisader nunenconuschent')}
+for _k, _v in _HX31.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX32 = {'🧪 Hardware check (step by step)': ('🧪 Hardware prüfen (Schritt für Schritt)', '🧪 Vérifier le matériel (pas à pas)', '🧪 Verifica hardware (passo per passo)', '🧪 Controllar la hardware (pass per pass)'), 'Hardware check': ('Hardware-Prüfung', 'Vérification du matériel', 'Verifica hardware', 'Controlla da la hardware'), 'result': ('Ergebnis', 'résultat', 'risultato', 'resultat'), 'step': ('Schritt', 'étape', 'passo', 'pass'), 'The live picture must be visible.': ('Das Live-Bild muss sichtbar sein.', "L'image en direct doit être visible.", "L'immagine dal vivo deve essere visibile.", 'Il maletg live sto esser visibel.'), 'Movement': ('Bewegung', 'Mouvement', 'Movimento', 'Moviment'), 'Walk once through the picture (2–3 m in front of the camera).': ('Geh einmal durchs Bild (2–3 m vor der Kamera).', "Traversez une fois l'image (2–3 m devant la caméra).", "Attraversa una volta l'immagine (2–3 m davanti alla telecamera).", 'Va ina giada tras il maletg (2–3 m davant la camera).'), 'Stand still in the picture for a moment - the AI should see a person.': ('Bleib kurz im Bild stehen – die KI soll eine Person erkennen.', "Restez un instant immobile dans l'image – l'IA doit voir une personne.", "Resta fermo un attimo nell'immagine – l'IA deve vedere una persona.", "Resta curt airi en il maletg – l'IA duai vesair ina persuna."), 'Thermal camera': ('Wärmebildkamera', 'Caméra thermique', 'Termocamera', 'Camera termica'), 'Hold your hand in front of the thermal camera.': ('Halte die Hand vor die Wärmebildkamera.', 'Tenez la main devant la caméra thermique.', 'Tieni la mano davanti alla termocamera.', 'Tegna il maun davant la camera termica.'), 'Servos': ('Servos', 'Servos', 'Servo', 'Servos'), 'Tap the buttons: the camera head must turn. Then answer.': ('Tippe auf die Knöpfe: der Kamerakopf muss sich drehen. Dann antworten.', 'Touchez les boutons : la tête de caméra doit tourner. Puis répondez.', 'Tocca i pulsanti: la testa della telecamera deve girare. Poi rispondi.', 'Smatga ils buttuns: il chau da la camera sto sa volver. Lura respunder.'), 'Microphone': ('Mikrofon', 'Microphone', 'Microfono', 'Microfon'), 'Clap your hands loudly once.': ('Klatsche einmal laut in die Hände.', 'Frappez une fois fort dans vos mains.', 'Batti forte le mani una volta.', 'Batta ina giada ferm cun ils mauns.'), 'Loudspeaker': ('Lautsprecher', 'Haut-parleur', 'Altoparlante', 'Autpledader'), 'Tap «Test sound» - do you hear it?': ('Tippe auf «Testton» – hörst du ihn?', "Touchez «Son de test» – l'entendez-vous ?", 'Tocca «Suono di prova» – lo senti?', 'Smatga «Tun da test» – al auds ti?'), 'Lights': ('Licht', 'Lumières', 'Luci', 'Glischs'), 'Tap the buttons - does the light switch on and off?': ('Tippe auf die Knöpfe – geht das Licht an und aus?', "Touchez les boutons – la lumière s'allume-t-elle et s'éteint-elle ?", 'Tocca i pulsanti – la luce si accende e si spegne?', 'Smatga ils buttuns – va la glisch en e giu?'), 'Push message': ('Push-Nachricht', 'Message push', 'Messaggio push', 'Messadi push'), 'Tap «Send» - does the message arrive on the phone?': ('Tippe auf «Senden» – kommt die Nachricht auf dem Handy an?', 'Touchez «Envoyer» – le message arrive-t-il sur le téléphone ?', 'Tocca «Invia» – il messaggio arriva sul telefono?', 'Smatga «Trametter» – arriva il messadi sin il telefonin?'), 'Send': ('Senden', 'Envoyer', 'Invia', 'Trametter'), 'Trigger this sensor now (open the door, walk past, move the tag …).': ('Löse diesen Sensor jetzt aus (Tür öffnen, vorbeigehen, Anhänger bewegen …).', 'Déclenchez ce capteur maintenant (ouvrir la porte, passer devant, bouger la balise …).', 'Attiva ora questo sensore (apri la porta, passa davanti, muovi il tag …).', 'Deliberescha ussa quest sensor (avrir la porta, passar speravia, mover la pendaglia …).'), 'Check the parts marked ❌ (cable, settings) and run the check again.': ('Prüfe die mit ❌ markierten Teile (Kabel, Einstellungen) und mach die Prüfung nochmals.', 'Vérifiez les éléments marqués ❌ (câble, réglages) et refaites le contrôle.', 'Controlla le parti segnate con ❌ (cavo, impostazioni) e ripeti la verifica.', 'Controllescha las parts marcadas cun ❌ (cabel, configuraziuns) e fa anc ina giada la controlla.'), 'Everything that was tested works.': ('Alles, was geprüft wurde, funktioniert.', 'Tout ce qui a été testé fonctionne.', 'Tutto ciò che è stato verificato funziona.', "Tut quai ch'è vegnì controllà funcziuna."), 'Again': ('Nochmals', 'Encore', 'Di nuovo', 'Anc ina giada'), 'Close': ('Schliessen', 'Fermer', 'Chiudi', 'Serrar'), 'Yes, works': ('Ja, funktioniert', 'Oui, fonctionne', 'Sì, funziona', 'Gea, funcziuna'), 'No': ('Nein', 'Non', 'No', 'Na'), 'Does not work': ('Funktioniert nicht', 'Ne fonctionne pas', 'Non funziona', 'Na funcziuna betg'), 'waiting …': ('warte …', 'attente …', 'in attesa …', 'spetga …'), 'Skip': ('Überspringen', 'Passer', 'Salta', 'Sursiglir'), 'detected': ('erkannt', 'détecté', 'rilevato', 'percurschì')}
+for _k, _v in _HX32.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX33 = {'species': ('Arten', 'espèces', 'specie', 'spezias'), 'Recognise the animal species (second AI model - see the guide)': ('Tierart erkennen (zweites KI-Modell – siehe Anleitung)', "Reconnaître l'espèce animale (second modèle IA – voir le guide)", 'Riconoscere la specie animale (secondo modello IA – vedi la guida)', "Renconuscher la spezia d'animal (segund model IA – guarda l'instrucziun)"), 'Animal species: minimum certainty': ('Tierart: Mindest-Sicherheit', 'Espèce : certitude minimale', 'Specie: certezza minima', 'Spezia: segirezza minimala'), 'Animal species: model': ('Tierart: Modell', 'Espèce : modèle', 'Specie: modello', 'Spezia: model'), 'Animal species: picture preparation of the model': ('Tierart: Bildaufbereitung des Modells', "Espèce : préparation de l'image du modèle", "Specie: preparazione dell'immagine del modello", 'Spezia: preparaziun dal maletg dal model'), 'Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.': ('Tierart: ein zweites KI-Modell (ONNX) erkennt Fuchs, Dachs, Wildschwein … Es ist nicht dabei – von einer Adresse installieren oder in den Ordner kopieren.', "Espèce : un second modèle IA (ONNX) reconnaît renard, blaireau, sanglier … Il n'est pas inclus – installez-le depuis une adresse ou copiez-le dans le dossier.", 'Specie: un secondo modello IA (ONNX) riconosce volpe, tasso, cinghiale … Non è incluso – installalo da un indirizzo o copialo nella cartella.', "Spezia: in segund model IA (ONNX) renconuscha vulp, tais, portg selvadi … El n'è betg cuntegnì – installar d'ina adressa u copiar en l'ordinatur."), 'or .zip': ('oder .zip', 'ou .zip', 'o .zip', 'u .zip'), 'Install model': ('Modell installieren', 'Installer le modèle', 'Installa modello', 'Installar il model'), 'Folder': ('Ordner', 'Dossier', 'Cartella', 'Ordinatur'), 'Models': ('Modelle', 'Modèles', 'Modelli', 'Models'), 'Last': ('Zuletzt', 'Dernier', 'Ultimo', "L'ultim"), 'downloading …': ('lädt herunter …', 'téléchargement …', 'download …', 'chargia giu …'), 'no model chosen': ('kein Modell gewählt', 'aucun modèle choisi', 'nessun modello scelto', 'nagin model tschernì'), 'address must start with https://': ('die Adresse muss mit https:// beginnen', "l'adresse doit commencer par https://", "l'indirizzo deve iniziare con https://", "l'adressa sto cumenzar cun https://"), 'the address must end with .onnx or .zip': ('die Adresse muss auf .onnx oder .zip enden', "l'adresse doit se terminer par .onnx ou .zip", "l'indirizzo deve finire con .onnx o .zip", "l'adressa sto finir cun .onnx u .zip"), 'file too big': ('Datei zu gross', 'fichier trop gros', 'file troppo grande', 'datoteca memia gronda')}
+for _k, _v in _HX33.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX34 = {"Small message on the Pi's desktop when Motion Watch starts in the background": ('Kleine Meldung auf dem Bildschirm des Pi, wenn Motion Watch im Hintergrund startet', "Petit message sur l'écran du Pi quand Motion Watch démarre en arrière-plan", 'Piccolo messaggio sullo schermo del Pi quando Motion Watch parte in background', 'Pitschen messadi sin il visur dal Pi, cura che Motion Watch cumenza en il fund'), 'Motion Watch is running': ('Motion Watch läuft', 'Motion Watch fonctionne', 'Motion Watch è in funzione', 'Motion Watch funcziuna'), 'Started in the background.': ('Im Hintergrund gestartet.', 'Démarré en arrière-plan.', 'Avviato in background.', 'Cumenzà en il fund.'), 'Page': ('Seite', 'Page', 'Pagina', 'Pagina')}
+for _k, _v in _HX34.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX35 = {'UPS HAT: model': ('UPS HAT: Modell', 'UPS HAT : modèle', 'UPS HAT: modello', 'UPS HAT: model'), 'UPS HAT (A/B/C): address (I2C)': ('UPS HAT (A/B/C): Adresse (I2C)', 'UPS HAT (A/B/C) : adresse (I2C)', 'UPS HAT (A/B/C): indirizzo (I2C)', 'UPS HAT (A/B/C): adressa (I2C)'), 'fast charging': ('lädt schnell', 'charge rapide', 'ricarica rapida', 'chargia svelt'), 'full in': ('voll in', 'plein dans', 'pieno tra', 'plain en'), 'Cells': ('Zellen', 'Cellules', 'Celle', 'Cellas')}
+for _k, _v in _HX35.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+# ---- guide: the parts added in 2.53 - 2.65 (inserted into the existing chapters of every language) ----
+_HELP_NEW = {
+ "de": {
+  "camera": '<li><b>Bild drehen / spiegeln</b> (Kamera / Servos): für eine seitlich oder kopfüber montierte Kamera (90° / 180° / 270°). Danach Zonen und Linien prüfen.</li>'
+            '<li><b>Linse beschlagen / verschmutzt:</b> bleibt das Bild 15 Minuten unscharf und flau (Tau, Staub, Spinnweben), kommt eine Push-Nachricht. Sie lernt zuerst eine Stunde lang, was normal ist.</li>'
+            '<li><b>Kacheln in der Steuerung:</b> <b>▒ Maske</b> färbt alles, was die Erkennung als Bewegung sieht, dezent rot. <b>🎙 Sprechen</b> ist gegen versehentliches Drücken geschützt: einmal kurz antippen (wird orange «Jetzt halten»), dann innerhalb von 6 Sekunden gedrückt halten und sprechen.</li>',
+  "lightsound": '<li><b>🗣 Ansage:</b> unter Lautsprecher einen Text eintippen (oder einen Vorschlag antippen), Stimme wählen, «Jetzt sprechen». «Als eigenen Klang speichern» legt die Ansage als Klang ab – dann ist sie für Sirene und Abschreckung wählbar. Braucht auf dem Pi einmal <code>sudo apt install espeak-ng</code> (schönere Stimme: <code>libttspico-utils</code>).</li>',
+  "detect": '<li><b>🦊 Tierart:</b> ein zweites KI-Modell (ONNX) schaut sich jedes Tier an, das die erste KI findet, und erkennt z. B. Fuchs, Dachs, Wildschwein, Marder. Die Art erscheint im Bild, im Protokoll und im Tagebuch. Das Modell ist nicht dabei: unter KI-Erkennung eine Adresse (.onnx oder .zip) eintragen und «Modell installieren» – oder die Datei mit der Namensliste (.txt, eine Art pro Zeile, z. B. <code>red fox;Fuchs</code>) in den angezeigten Ordner kopieren.</li>',
+  "rec": '<li><b>📄 Ereignisbericht (PDF):</b> in der Ansicht einer Aufnahme. Enthält Datum, Ort mit Kartenlink, Bilder aus dem Video, das Protokoll 10 Minuten davor und danach und eine Prüfsumme der Originaldatei – für Polizei oder Versicherung.</li>',
+  "system": '<li><b>👥 Benutzer:</b> eigene Logins für Familie und Mitcamper. Rolle «Bedienen» (scharf/unscharf, Licht, Kamera, Sprechen – keine Einstellungen) oder «Nur ansehen». Das Web-Passwort bleibt der Administrator. Im Protokoll steht, wer scharf geschaltet hat.</li>'
+            '<li><b>🧪 Hardware prüfen</b> (Hilfe und Einrichtung): geht Schritt für Schritt Kamera, Bewegung, KI, Wärmebild, Servos, Mikrofon, Lautsprecher, Licht, Push und jeden Zusatz-Sensor durch. Was die Seite selbst sieht, wird automatisch abgehakt; am Schluss eine Übersicht.</li>'
+            '<li><b>🌡 Temperatur-Alarm</b> (Einrichtung): Push bei zu heiss oder zu kalt, z. B. für ein Haustier im Wohnwagen – der Fühler misst dort, wo er montiert ist.</li>',
+  "new": '<section id="sensors" data-icon="📡"><h2>Sensoren</h2>\n<ul><li><b>Zusatz-Sensoren:</b> Bewegungsmelder (PIR), Tür-/Deckelkontakt und Gas-/Rauchmodul an einem GPIO; 433-MHz-Funksensoren (RTL-SDR-Stick + rtl_433), Zigbee (Zigbee2MQTT über MQTT) und Bluetooth-Anhänger (RuuviTag). Mit «+» hinzufügen, «Angeschlossen an» wählen. Funkgeräte einmal auslösen – sie erscheinen unter «Gefundene Funkgeräte».</li>'
+         '<li>Pro Sensor: <b>Alarm nur wenn scharf</b>, <b>immer</b> (für Gas) oder <b>nur notieren</b>. Beim Alarm: dringende Push-Nachricht mit Bild, 1 Minute Aufnahme, Sirene. «🧪 Test» schickt eine Probe.</li>'
+         '<li><b>Bewegungsmelder und Stromsparen:</b> ist ein PIR eingetragen, macht die Kamera bei Ruhe nur 1 Bild pro Sekunde; meldet der PIR etwas, läuft sofort alles mit voller Geschwindigkeit.</li>'
+         '<li><b>⛈ Sturmwarnung:</b> Push, wenn der Luftdruck (BME280) schnell fällt, ein Windmesser an einem GPIO starken Wind misst oder – freiwillig – die Prognose Böen erwartet. Höchstens alle 3 Stunden pro Grund.</li>'
+         '<li><b>🛰 GPS-Modul:</b> USB-GPS-Empfänger, wird selbst gefunden. Liefert den Standort ohne Handy. <b>Diebstahl-Ortung:</b> wird das scharfe Gerät weiter als die eingestellte Distanz weggetragen, kommt ein Alarm und danach alle 5 Minuten die Position mit Kartenlink (unterwegs mit LTE-Stick).</li>'
+         '<li><b>☀ Solarpanel:</b> ein INA219-Strommesser zeigt Watt, Volt und den Ertrag des Tages. <b>Nacht-Prognose:</b> reicht der Akku bis Sonnenaufgang? Steht in der Selbstdiagnose; am Abend kommt eine Push-Nachricht, wenn es knapp wird.</li>'
+         '<li>Wie die Sensoren angeschlossen werden: Dokument <code>docs/Sensoren.md</code> auf GitHub. ⚠ Die GPIO-Pins vertragen nur 3,3 V.</li></ul>\n</section>\n\n'},
+ "en": {
+  "camera": '<li><b>Turn / mirror the picture</b> (Camera / Servos): for a camera mounted sideways or upside down (90° / 180° / 270°). Check the zones and lines afterwards.</li>'
+            '<li><b>Lens fogged / dirty:</b> when the picture stays blurred and flat for 15 minutes (dew, dust, a spider web) a push message comes. It first learns for an hour what is normal.</li>'
+            '<li><b>Tiles in the control:</b> <b>▒ Mask</b> tints everything the detection sees as movement in a soft red. <b>🎙 Talk</b> is safe against an accidental press: tap once (it turns orange, «Hold now»), then hold it within 6 seconds and talk.</li>',
+  "lightsound": '<li><b>🗣 Announcement:</b> under Loudspeaker type a text (or tap a suggestion), choose the voice, «Speak now». «Save as own sound» keeps it as a sound – then it can be chosen for the siren and deterrence. Needs once on the Pi <code>sudo apt install espeak-ng</code> (nicer voice: <code>libttspico-utils</code>).</li>',
+  "detect": '<li><b>🦊 Animal species:</b> a second AI model (ONNX) looks at every animal the first AI finds and recognises e.g. fox, badger, wild boar, marten. The species appears on the picture, in the log and in the diary. The model is not included: under AI detection enter an address (.onnx or .zip) and «Install model» – or copy the file with its list of names (.txt, one species per line, e.g. <code>red fox;Fuchs</code>) into the folder shown.</li>',
+  "rec": '<li><b>📄 Event report (PDF):</b> in the view of a recording. Date, place with a map link, pictures from the video, the log 10 minutes before and after and a checksum of the original file – for the police or the insurance.</li>',
+  "system": '<li><b>👥 Users:</b> own logins for family and fellow campers. Role «Operate» (arm / disarm, lights, camera, talk – no settings) or «View only». The web password stays the administrator. The log shows who armed.</li>'
+            '<li><b>🧪 Hardware check</b> (Help and setup): goes step by step through camera, movement, AI, thermal camera, servos, microphone, loudspeaker, lights, push and every extra sensor. What the page can see itself is ticked automatically; a summary at the end.</li>'
+            '<li><b>🌡 Temperature alarm</b> (Setup): push when too hot or too cold, e.g. for a pet in the caravan – the sensor measures where it is mounted.</li>',
+  "new": '<section id="sensors" data-icon="📡"><h2>Sensors</h2>\n<ul><li><b>Extra sensors:</b> motion detector (PIR), door / lid contact and gas / smoke module on a GPIO; 433 MHz radio sensors (RTL-SDR stick + rtl_433), Zigbee (Zigbee2MQTT over MQTT) and Bluetooth tags (RuuviTag). Add with «+», choose «Connected to». Trigger radio devices once – they appear under «Found radio devices».</li>'
+         '<li>Per sensor: <b>alarm only when armed</b>, <b>always</b> (for gas) or <b>only note it</b>. At an alarm: urgent push with the picture, 1 minute of video, siren. «🧪 Test» sends a test.</li>'
+         '<li><b>Motion detector and power saving:</b> with a PIR the camera takes only 1 picture per second while all is quiet; when the PIR reports something, everything runs at full speed at once.</li>'
+         '<li><b>⛈ Storm warning:</b> push when the air pressure (BME280) falls fast, a wind meter on a GPIO measures strong wind or – optional – the forecast expects gusts. At most every 3 hours per reason.</li>'
+         '<li><b>🛰 GPS module:</b> USB GPS receiver, found by itself. Gives the location without the phone. <b>Theft tracking:</b> when the armed device is carried further than the set distance, an alarm comes and then the position with a map link every 5 minutes (on the road with an LTE stick).</li>'
+         '<li><b>☀ Solar panel:</b> an INA219 current meter shows watts, volts and the yield of the day. <b>Night forecast:</b> does the battery last until sunrise? Shown in the self-check; a push in the evening when it gets tight.</li>'
+         '<li>How to connect the sensors: document <code>docs/Sensoren.md</code> on GitHub. ⚠ The GPIO pins only take 3.3 V.</li></ul>\n</section>\n\n'},
+ "fr": {
+  "camera": '<li><b>Tourner / miroir de l\'image</b> (Caméra / servos) : pour une caméra montée de côté ou à l\'envers (90° / 180° / 270°). Vérifiez ensuite les zones et les lignes.</li>'
+            '<li><b>Objectif embué / sale :</b> si l\'image reste floue et terne pendant 15 minutes (rosée, poussière, toile d\'araignée), un message push arrive. Elle apprend d\'abord pendant une heure ce qui est normal.</li>'
+            '<li><b>Tuiles de la commande :</b> <b>▒ Masque</b> colore en rouge discret tout ce que la détection voit bouger. <b>🎙 Parler</b> est protégé contre un appui involontaire : toucher une fois (devient orange «Maintenir»), puis maintenir dans les 6 secondes et parler.</li>',
+  "lightsound": '<li><b>🗣 Annonce :</b> sous Haut-parleur, tapez un texte (ou touchez une proposition), choisissez la voix, «Parler maintenant». «Enregistrer comme son propre» le garde comme son – utilisable pour la sirène et la dissuasion. Nécessite une fois sur le Pi <code>sudo apt install espeak-ng</code>.</li>',
+  "detect": '<li><b>🦊 Espèce animale :</b> un second modèle IA (ONNX) examine chaque animal trouvé par la première IA et reconnaît p. ex. renard, blaireau, sanglier, martre. Le modèle n\'est pas inclus : sous Détection IA, entrez une adresse (.onnx ou .zip) et «Installer le modèle», ou copiez le fichier avec sa liste de noms (.txt) dans le dossier affiché.</li>',
+  "rec": '<li><b>📄 Rapport d\'événement (PDF) :</b> dans la vue d\'un enregistrement. Date, lieu avec lien de carte, images de la vidéo, journal 10 minutes avant et après et somme de contrôle du fichier original – pour la police ou l\'assurance.</li>',
+  "system": '<li><b>👥 Utilisateurs :</b> accès propres pour la famille et les voisins de camping. Rôle «Utiliser» (armer, lumière, caméra, parler – pas de réglages) ou «Voir seulement». Le mot de passe web reste l\'administrateur.</li>'
+            '<li><b>🧪 Vérifier le matériel</b> (Aide et configuration) : passe pas à pas par caméra, mouvement, IA, caméra thermique, servos, micro, haut-parleur, lumière, push et chaque capteur.</li>'
+            '<li><b>🌡 Alarme de température</b> (Configuration) : push si trop chaud ou trop froid, p. ex. pour un animal dans la caravane.</li>',
+  "new": '<section id="sensors" data-icon="📡"><h2>Capteurs</h2>\n<ul><li><b>Capteurs supplémentaires :</b> détecteur de mouvement (PIR), contact de porte et module gaz/fumée sur un GPIO ; capteurs radio 433 MHz (clé RTL-SDR + rtl_433), Zigbee (Zigbee2MQTT via MQTT) et balises Bluetooth (RuuviTag). Ajouter avec «+». Déclenchez une fois les appareils radio – ils apparaissent sous «Appareils radio trouvés».</li>'
+         '<li>Par capteur : alarme <b>seulement si armé</b>, <b>toujours</b> (gaz) ou <b>seulement noter</b>. Alarme : push urgent avec image, 1 minute de vidéo, sirène.</li>'
+         '<li><b>⛈ Alerte tempête :</b> push si la pression baisse vite (BME280), si un anémomètre mesure un vent fort ou si la prévision annonce des rafales.</li>'
+         '<li><b>🛰 Module GPS :</b> position sans téléphone ; <b>localisation antivol</b> : si l\'appareil armé est emporté, alarme puis position toutes les 5 minutes.</li>'
+         '<li><b>☀ Panneau solaire :</b> mesureur INA219 (watts, volts, rendement du jour) et <b>prévision de nuit</b> : la batterie tiendra-t-elle jusqu\'au lever du soleil ?</li>'
+         '<li>Branchements : document <code>docs/Sensoren.md</code> sur GitHub. ⚠ Les GPIO ne supportent que 3,3 V.</li></ul>\n</section>\n\n'},
+ "it": {
+  "camera": '<li><b>Ruotare / specchiare l\'immagine</b> (Telecamera / servo): per una telecamera montata di lato o capovolta (90° / 180° / 270°). Poi controllare zone e linee.</li>'
+            '<li><b>Obiettivo appannato / sporco:</b> se l\'immagine resta sfocata e piatta per 15 minuti (rugiada, polvere, ragnatela) arriva un messaggio push. Prima impara per un\'ora cosa è normale.</li>'
+            '<li><b>Riquadri nel comando:</b> <b>▒ Maschera</b> colora di un rosso discreto tutto ciò che il rilevamento vede muoversi. <b>🎙 Parlare</b> è protetto contro una pressione involontaria: toccare una volta (diventa arancione «Tieni premuto»), poi tenere premuto entro 6 secondi e parlare.</li>',
+  "lightsound": '<li><b>🗣 Annuncio:</b> sotto Altoparlante scrivi un testo (o tocca un suggerimento), scegli la voce, «Parla ora». «Salva come suono proprio» lo conserva come suono – selezionabile per sirena e deterrenza. Serve una volta sul Pi <code>sudo apt install espeak-ng</code>.</li>',
+  "detect": '<li><b>🦊 Specie animale:</b> un secondo modello IA (ONNX) guarda ogni animale trovato dalla prima IA e riconosce p. es. volpe, tasso, cinghiale, martora. Il modello non è incluso: sotto Rilevamento IA inserire un indirizzo (.onnx o .zip) e «Installa modello», oppure copiare il file con l\'elenco dei nomi (.txt) nella cartella indicata.</li>',
+  "rec": '<li><b>📄 Rapporto evento (PDF):</b> nella vista di una registrazione. Data, luogo con link alla mappa, immagini dal video, registro 10 minuti prima e dopo e checksum del file originale – per polizia o assicurazione.</li>',
+  "system": '<li><b>👥 Utenti:</b> accessi propri per famiglia e vicini di campeggio. Ruolo «Usare» (armare, luce, telecamera, parlare – nessuna impostazione) o «Solo guardare». La password web resta l\'amministratore.</li>'
+            '<li><b>🧪 Verifica hardware</b> (Aiuto e configurazione): passo per passo telecamera, movimento, IA, termocamera, servo, microfono, altoparlante, luce, push e ogni sensore.</li>'
+            '<li><b>🌡 Allarme temperatura</b> (Configurazione): push se fa troppo caldo o troppo freddo, p. es. per un animale nella roulotte.</li>',
+  "new": '<section id="sensors" data-icon="📡"><h2>Sensori</h2>\n<ul><li><b>Sensori aggiuntivi:</b> rilevatore di movimento (PIR), contatto porta e modulo gas/fumo su un GPIO; sensori radio 433 MHz (chiavetta RTL-SDR + rtl_433), Zigbee (Zigbee2MQTT via MQTT) e tag Bluetooth (RuuviTag). Aggiungere con «+». Attivare una volta i dispositivi radio – appaiono sotto «Dispositivi radio trovati».</li>'
+         '<li>Per sensore: allarme <b>solo se armato</b>, <b>sempre</b> (gas) o <b>solo annotare</b>. Allarme: push urgente con immagine, 1 minuto di video, sirena.</li>'
+         '<li><b>⛈ Allerta tempesta:</b> push se la pressione scende rapidamente (BME280), se un anemometro misura vento forte o se la previsione annuncia raffiche.</li>'
+         '<li><b>🛰 Modulo GPS:</b> posizione senza telefono; <b>localizzazione antifurto</b>: se il dispositivo armato viene portato via, allarme e poi posizione ogni 5 minuti.</li>'
+         '<li><b>☀ Pannello solare:</b> misuratore INA219 (watt, volt, resa del giorno) e <b>previsione notturna</b>: la batteria durerà fino all\'alba?</li>'
+         '<li>Collegamenti: documento <code>docs/Sensoren.md</code> su GitHub. ⚠ I GPIO sopportano solo 3,3 V.</li></ul>\n</section>\n\n'},
+ "rm": {
+  "camera": '<li><b>Volver / spievlar il maletg</b> (Camera / servos): per ina camera montada da la vart u cun il chau engiu (90° / 180° / 270°). Suenter controllar las zonas e lingias.</li>'
+            '<li><b>Lentilla stgiraida / maldischa:</b> sch\'il maletg resta 15 minutas betg net (rusada, pulvra, taila d\'arogn), vegn in messadi push. Ella emprenda l\'emprim ina ura tge ch\'è normal.</li>'
+            '<li><b>Plattinas en la manipulaziun:</b> <b>▒ Mascra</b> colurescha cotschen tut quai che la detecziun vesa sco moviment. <b>🎙 Discurrer</b> è protegì cunter smatgar per sbagl: smatgar ina giada (daventa oransch «Tegnair ussa»), lura tegnair smatgà entaifer 6 secundas e discurrer.</li>',
+  "lightsound": '<li><b>🗣 Annunzia:</b> sut Autpledader scriver in text, tscherner la vusch, «Discurrer ussa». «Memorisar sco agen tun» al tegna sco tun per la sirena e la deterrenza. Basegna ina giada sin il Pi <code>sudo apt install espeak-ng</code>.</li>',
+  "detect": '<li><b>🦊 Spezia d\'animal:</b> in segund model IA (ONNX) guarda mintga animal che l\'emprima IA chatta e renconuscha p.ex. vulp, tais, portg selvadi, mardel. Il model n\'è betg cuntegnì: sut Detecziun IA endatar ina adressa (.onnx u .zip) e «Installar il model», u copiar la datoteca cun la glista da nums (.txt) en l\'ordinatur mussà.</li>',
+  "rec": '<li><b>📄 Rapport d\'eveniment (PDF):</b> en la vista d\'ina registraziun. Data, lieu cun link da charta, maletgs dal video, protocol 10 minutas avant e suenter e summa da controlla da la datoteca originala – per la polizia u l\'assicuranza.</li>',
+  "system": '<li><b>👥 Utilisaders:</b> agens logins per la famiglia e vischins da campadi. Rolla «Manar» (activar, glisch, camera, discurrer – naginas configuraziuns) u «Mo guardar». Il pled-clav web resta l\'administratur.</li>'
+            '<li><b>🧪 Controllar la hardware</b> (Agid ed endrizzaziun): pass per pass camera, moviment, IA, camera termica, servos, microfon, autpledader, glisch, push e mintga sensor.</li>'
+            '<li><b>🌡 Alarm da temperatura</b> (Endrizzaziun): push sch\'i fa memia chaud u memia fraid, p.ex. per in animal en la rulotta.</li>',
+  "new": '<section id="sensors" data-icon="📡"><h2>Sensors</h2>\n<ul><li><b>Sensors supplementars:</b> detectur da moviment (PIR), contact da porta e modul da gas/fim sin in GPIO; sensors radio 433 MHz (stick RTL-SDR + rtl_433), Zigbee (Zigbee2MQTT via MQTT) e pendaglias Bluetooth (RuuviTag). Agiuntar cun «+». Deliberar ina giada ils apparats radio – els cumparan sut «Apparats radio chattads».</li>'
+         '<li>Per sensor: alarm <b>mo sch\'activà</b>, <b>adina</b> (gas) u <b>mo notar</b>. Alarm: push urgent cun maletg, 1 minuta video, sirena.</li>'
+         '<li><b>⛈ Avertiment da tempesta:</b> push sch\'il squitsch d\'aria croda svelt (BME280), sch\'in mesirader dal vent mesira vent ferm u sche la prognosa annunzia buffads.</li>'
+         '<li><b>🛰 Modul GPS:</b> lieu senza telefonin; <b>localisaziun cunter il ladernezi</b>: sche l\'apparat activà vegn purtà davent, alarm e lura la posiziun mintga 5 minutas.</li>'
+         '<li><b>☀ Panel solar:</b> mesirader INA219 (watt, volt, producziun dal di) e <b>prognosa da notg</b>: tanscha l\'accu fin l\'alva?</li>'
+         '<li>Colliaziuns: document <code>docs/Sensoren.md</code> sin GitHub. ⚠ Ils GPIO supportan mo 3,3 V.</li></ul>\n</section>\n\n'}}
+
+
+def _help_insert(doc, lang):
+    n = _HELP_NEW[lang]
+    for sec in ("camera", "lightsound", "detect", "rec", "system"):
+        i = doc.find('<section id="' + sec + '"')
+        j = doc.find("</ul>", i) if i >= 0 else -1
+        if j > 0:
+            doc = doc[:j] + n[sec] + doc[j:]
+    i = doc.find('<section id="window"')
+    if i >= 0 and '<section id="sensors"' not in doc:
+        doc = doc[:i] + n["new"] + doc[i:]
+    return doc
+
+
+_hp_en = HELP_PAGE.find('<div lang="en">')
+if _hp_en > 0:
+    HELP_PAGE = _help_insert(HELP_PAGE[:_hp_en], "de") + _help_insert(HELP_PAGE[_hp_en:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_insert(HELP_X[_L], _L)
+
 for _L in ("fr", "it", "rm"):          # push message texts (person, pre-alarm, warm body, noise) in the three languages
     MSG_DEFAULTS[_L] = {k: tuple(TRX[_L].get(v[n]) or (MSG_DEFAULTS["de"][k][n] if _L == "rm" else v[n]) for n in (0, 1))
                         for k, v in MSG_DEFAULTS["en"].items()}
@@ -28743,10 +30022,14 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.58.2 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.68.0 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:
+        if CFG["desktop_notice"] and not DEMO["on"]:      # started in the background: tell the person at the Pi
+            desktop_notice(tr("Motion Watch is running"),
+                           tr("Started in the background.") + (" " + tr("Page") + ": " + page_address(ip) if ip and CFG["web_stream"] else ""),
+                           wait=300 if a.boot else 30)
         try:
             while True:
                 time.sleep(1.0)

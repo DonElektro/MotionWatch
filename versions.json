@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 14:00",
+ "generated": "2026-10-25 18:34",
  "versions": [
+  {
+   "version": "2.68.0",
+   "file": "webcam_bewegung_2_68_0.py",
+   "url": "",
+   "sha256": "e49a53c6c583941e9f6da8afcf83c627e7f98f6af3c6133a3f8702e2118f4534",
+   "date": "2026-10-25 18:34",
+   "notes": "Waveshare UPS HAT (E) (4 x 21700, for the Pi 5): found by itself at I2C 0x2D - charge level, time left and charging from its battery chip, the 4 cell voltages, USB-C input; power cut / back and safe shutdown as before. The «Listen» quick switch lights up green while listening (it never did).",
+   "sig": "5879dc0ec048591262be224e8ccbe15413a2757af7acc1fefe83264db9d3c3893c42ceb013e0770ae42d453907bfbc9da119b59104a23d040de30997f945b60c"
+  },
   {
    "version": "2.67.0",
    "file": "webcam_bewegung_2_67_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 13:07",
    "notes": "lens check - push message when the picture stays blurred and flat for 15 minutes (dew, dirt, spider web); temperature alarm (e.g. a pet in the caravan): push when it gets too hot or too cold, and when it is fine again.",
    "sig": "7cfc2c22d5d6f17e8f212a5e996e6c67bacd7871aaede082146fd1a868b36d144751aa838f4125ee09446b8863815da7c523dcbba7de4cb20d533835715ca40c"
-  },
-  {
-   "version": "2.58.2",
-   "file": "webcam_bewegung_2_58_2.py",
-   "url": "",
-   "sha256": "9d1302cc14f3c755b72bfd5e65b7d3cdf77680d689438bd69da3cfd24172d723",
-   "date": "2026-10-25 12:49",
-   "notes": "self-check: the loudspeaker hint is shorter.",
-   "sig": "f31e34c46d1d5233a8ef33881c542f939b3dfc8533bff826cfcc88b1e3ee96f1c1f60a907493a8afeedf349c666860ff44e576adee515d0eaa329ea476397d01"
   }
  ]
 }
