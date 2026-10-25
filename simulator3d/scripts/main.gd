@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-1.1"
+const VERSION := "3D-1.2"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -15,6 +15,8 @@ const HEAD_H := 1.6
 
 var Actor = preload("res://scripts/actor.gd")
 var Net = preload("res://scripts/net.gd")
+var Phone = preload("res://scripts/phone.gd")
+var phone
 
 # ---- the simulated world --------------------------------------------------------------------------------------
 var hour0 := 21.0
@@ -134,6 +136,11 @@ func _ready() -> void:
 	_apply_quality()
 	_calibrate_thermal()
 	next_auto = now() + 20.0
+	for i in range(args.size()):
+		if args[i] == "--phone":                  # start with the phone open (optionally: --phone http://address:5000)
+			if i + 1 < args.size() and args[i + 1].begins_with("http"):
+				phone.addr.text = args[i + 1]
+			get_tree().create_timer(2.0).timeout.connect(func(): phone.open())
 	DisplayServer.window_set_title("Motion Watch – 3D-Simulator %s (Port %d)" % [VERSION, port])
 
 
@@ -1059,6 +1066,10 @@ var info_label: Label
 func _build_ui() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
+	phone = Phone.new()
+	phone.main = self
+	phone.position = Vector2(0, 0)
+	layer.add_child(phone)
 	var panel := PanelContainer.new()
 	panel.anchor_left = 1.0
 	panel.anchor_right = 1.0
@@ -1118,8 +1129,8 @@ func _build_ui() -> void:
 	place_menu.select(2)
 	box_.add_child(place_menu)
 	var pv := Button.new()
-	pv.text = "Handy- / Tablet-Ansicht (Browser)"
-	pv.pressed.connect(_open_preview)
+	pv.text = "Handy- / Tablet-Simulator (P)"
+	pv.pressed.connect(_toggle_phone)
 	box_.add_child(pv)
 	var groups := {}
 	for c in controls:
@@ -1141,9 +1152,16 @@ func _build_ui() -> void:
 	info_label = Label.new()
 	info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	info_label.add_theme_color_override("font_color", Color(0.55, 0.6, 0.65))
-	info_label.text = "Maus rechts gedrückt halten: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienung aus/ein"
+	info_label.text = "Maus rechts gedrückt halten: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienung aus/ein · P: Handy / Tablet"
 	box_.add_child(info_label)
 	_sync_ui()
+
+
+func _toggle_phone() -> void:
+	if phone.visible:
+		phone.visible = false
+	else:
+		phone.open()
 
 
 func _open_preview() -> void:
@@ -1270,6 +1288,8 @@ func _unhandled_input(ev: InputEvent) -> void:
 				view_mode = 0
 			KEY_H:
 				ui_root.visible = not ui_root.visible
+			KEY_P:
+				_toggle_phone()
 
 
 func _fly(dt: float) -> void:
@@ -1282,6 +1302,8 @@ func _fly(dt: float) -> void:
 		view_cam.fov = 62
 		return
 	view_cam.fov = 70
+	if phone != null and phone.visible and phone.screen.has_focus():
+		return                                   # keys go to the phone
 	var mv := Vector3.ZERO
 	if Input.is_key_pressed(KEY_W):
 		mv.z -= 1

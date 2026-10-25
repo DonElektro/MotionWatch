@@ -22,8 +22,11 @@ BEDIENUNG IM FENSTER
 - Rechte Maustaste gedrückt halten: umschauen.  W A S D: fliegen,  Q / E: tiefer / höher,  Shift: schneller,
   Mausrad: Fluggeschwindigkeit.
 - Linksklick auf den Boden: setzt das Tier oder die Person hin, das oben in der Liste gewählt ist.
-- Knopf «Handy- / Tablet-Ansicht (Browser)»: zeigt die Webseite von Motion Watch so, wie sie auf einem Handy
-  oder Tablet aussieht – Hoch- oder Querformat, mit oder ohne Vollbild, umschaltbar (öffnet den Browser).
+- Knopf «Handy- / Tablet-Simulator (P)» oder Taste P: links erscheint ein Handy oder Tablet mit der ECHTEN, aktuellen
+  Webseite deines Motion Watch. Bedienen wie auf dem Handy: klicken = antippen, klicken und ziehen = Finger (Joystick),
+  Mausrad = scrollen, tippen auf der Tastatur, wenn das Handy-Bild angeklickt ist.
+  Oben umschalten: Handy / Tablet, Hoch / Quer, Vollbild, Neu laden. Braucht Microsoft Edge oder Chrome (ist bei Windows dabei);
+  der Browser läuft dabei unsichtbar im Hintergrund. Ist Motion Watch mit Passwort geschützt, einmal im Handy anmelden.
 - Taste 1: durch die Kopfkamera schauen,  2: durch die feste Kamera,  0: frei fliegen,  H: Bedienfeld aus / ein.
 - Rechts: Vorschau der Kopfkamera, der festen Kamera und des Wärmebilds, darunter alle Einstellungen
   (Uhrzeit, Wetter, Besuch, Sensoren, Grafik "einfach / schön").
