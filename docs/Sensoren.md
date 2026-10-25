@@ -80,6 +80,15 @@ Unter *Sensoren → ⛈ Sturmwarnung*. Du bekommst eine Push-Nachricht, höchste
 **Diebstahl-Ortung:** Ist Motion Watch scharf, merkt es sich die Position. Wird das Gerät weiter als die eingestellte Distanz weggetragen (Standard 150 m), gibt es einen Diebstahl-Alarm. Danach kommt **alle 5 Minuten die Position mit Kartenlink**, bis du unscharf schaltest.
 Damit das unterwegs funktioniert, braucht der Pi eine Internetverbindung, also den **LTE-Stick**, und Strom, also Powerbank oder UPS. Mit eingerichtetem SMS-Versand kommt der Alarm auch als SMS.
 
+## 9. Solarpanel und Nacht-Prognose (ab Version 2.62.0)
+
+- Ein **INA219-Strommesser** (das kleine blaue Modul, ca. 5 Fr.) kommt in die Plus-Leitung zwischen Panel und Laderegler: Panel-Plus an **VIN+**, **VIN−** zum Laderegler. Dazu VCC an 3,3 V, GND, SDA und SCL an den I2C-Pins des Pi.
+- Die Adresse stellst du mit den Lötbrücken A0/A1 auf **0x41** oder **0x44** ein. 0x40 ist oft schon vom Servo-Board belegt, 0x42 vom UPS-HAT.
+- Das Modul misst bis etwa 26 V und 3,2 A. Für grössere Panels braucht es einen anderen Shunt-Widerstand; den Wert kannst du einstellen.
+- Angezeigt werden Watt, Volt, Ampere, der Ertrag von heute und die Spitze des Tages.
+
+**Nacht-Prognose:** Mit einem Akku-Wert (UPS-HAT oder Powerbank-Kapazität unter *Akku*) rechnet Motion Watch aus, ob der Akku beim aktuellen Verbrauch bis Sonnenaufgang reicht. Am Abend kommt eine Push-Nachricht, wenn es knapp wird.
+
 ## Was beim Alarm passiert
 
 - Eine Push-Nachricht (dringend) mit dem aktuellen Kamerabild, z. B. «Wohnwagen: geöffnet».

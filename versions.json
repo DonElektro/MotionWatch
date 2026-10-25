@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 13:32",
+ "generated": "2026-10-25 13:36",
  "versions": [
+  {
+   "version": "2.62.0",
+   "file": "webcam_bewegung_2_62_0.py",
+   "url": "",
+   "sha256": "72cbd94cb59a6d964664c8296dbe74695b2a871dda66cd87e4d22188153b0997",
+   "date": "2026-10-25 13:36",
+   "notes": "solar panel (Sensors): an INA219 current meter shows watts, volts and today's yield; night forecast - does the battery last until sunrise? (self-check, and a push message in the evening when it will not).",
+   "sig": "ba520d908132012d77e5eedabc660fa30caea441d6d9e355aa722189ca50b02e7a2f5e4e094a40ee84f744085b512cb587fa5dc821732fa67a5d2ed665e6f006"
+  },
   {
    "version": "2.61.0",
    "file": "webcam_bewegung_2_61_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 10:31",
    "notes": "every settings topic has its own symbol (web and window); the camera picture can be turned (90° / 180° / 270°) and mirrored - for a camera mounted sideways or upside down.",
    "sig": "c8d71d92d5a8108a769fe890b613beebe7052ad9433216bb5989e807b1d953bd373e11df54e54a8e44ee29cb8e1373a69dad8e968da934fb294ce8463a054102"
-  },
-  {
-   "version": "2.52.0",
-   "file": "webcam_bewegung_2_52_0.py",
-   "url": "",
-   "sha256": "c158c5701de9f905a93a82f7f44da89062b1913b0d56d5ac9523a88d68ad23a5",
-   "date": "2026-10-25 10:13",
-   "notes": "thermal camera settings in three parts (alarm / picture / camera & alignment); a button left of the settings search hides the whole settings column (a tab at the right edge brings it back).",
-   "sig": "4b4e04a5df3beb4a559afe9e50913199accd9e4c6db0e4171532b748771b98917debe25e4ef655d9702dd6429a734b98108d7299c44e9cf41fab1586c980d609"
   }
  ]
 }
