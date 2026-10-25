@@ -234,3 +234,13 @@ Drei fertige 360°-Szenen zum Ausprobieren. Sie werden **auf dem eigenen Gerät 
 - oder von Hand: `python3 motionwatch_demo_scenes.py`
 
 Auf einem PC dauert das etwa eine halbe Minute, auf dem Pi einige Minuten. Danach stehen die Szenen in der Liste. Es sind einfache, gezeichnete Szenen zum Testen der Funktionen, keine echten Filmaufnahmen.
+
+## Handy- und Tablet-Ansicht (ab Motion Watch 2.80.0)
+
+Die Seite `/preview` von Motion Watch zeigt die aktuelle Webseite so, wie sie auf einem **Handy** (390 × 844) oder einem **Tablet** (820 × 1180) aussieht.
+- Umschaltbar: Hoch- oder Querformat, mit oder ohne **Vollbild** (das Kamerabild füllt den Bildschirm, mit dem Joystick darüber).
+- Öffnen kannst du sie:
+  - im Simulator mit **«Handy- / Tablet-Ansicht öffnen (Browser)»** (Python-Simulator, Reiter «Szene») bzw. **«Handy- / Tablet-Ansicht (Browser)»** (3D-Simulator),
+  - auf der Webseite unter *System & Netz → Simulator → «📱 Handy- / Tablet-Ansicht»*,
+  - oder direkt mit `http://<Adresse von Motion Watch>:5000/preview`.
+- Die Ansicht ist echt: Man kann darin alles bedienen. Sie zählt als ein Zuschauer.

@@ -43,7 +43,7 @@ import numpy as np
 
 from motionwatch_sim_interface import SimServer, SimInfo, CamInfo, SimReply, DEFAULT_PORT
 
-SIM_VERSION = "3.4"
+SIM_VERSION = "3.5"
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -1256,6 +1256,16 @@ def window(sim):
     ttk.Button(pf, text="Foto laden …", command=pick).pack(side="left", expand=True, fill="x")
     ttk.Button(pf, text="gezeichnete Welt", command=lambda: sim.load_pano(None)).pack(side="left", expand=True, fill="x")
     slider(t1, "Kamera 1: Richtung", -90, 90, lambda: sim.cam1_yaw, lambda v: setattr(sim, "cam1_yaw", v), 1)
+    lab(t1, "MOTION WATCH AUF HANDY / TABLET")
+
+    def preview():
+        if not sim.mw_addr:
+            sim.update_msg = "Motion Watch ist noch nicht verbunden - zuerst in Motion Watch die Simulation einschalten."
+            return
+        import webbrowser
+        st_ = sim.state
+        webbrowser.open(f"{st_.mw_scheme}://{sim.mw_addr}:{st_.mw_port}/preview")
+    ttk.Button(t1, text="Handy- / Tablet-Ansicht öffnen (Browser)", command=preview).pack(fill="x")
     lab(t1, "VIDEO-SZENARIO (360° ODER NORMAL)")
     vids = {}
     vcb = ttk.Combobox(t1, state="readonly", width=34)

@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 23:03",
+ "generated": "2026-10-25 23:11",
  "versions": [
+  {
+   "version": "2.80.0",
+   "file": "webcam_bewegung_2_80_0.py",
+   "url": "",
+   "sha256": "b091249f43a53e8f368cc4eed2f9e805e1977e294fa0f86b610aff5a5c1c4cb3",
+   "date": "2026-10-25 23:11",
+   "notes": "page /preview: the web page as on a phone or a tablet, upright or across, with or without full screen (button in the simulators and in the simulator section); the page may be shown in a frame of its own origin only (SAMEORIGIN).",
+   "sig": "b310bd41e9b4dcebcd8792b6812172cf9e3477a598e566d49b0a0f78c8c2e6b6a89276925d6e3dfc9c56d807174fd063dae8144e1fac14df3f371f1f26f47002"
+  },
   {
    "version": "2.79.0",
    "file": "webcam_bewegung_2_79_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 19:17",
    "notes": "simulator 2: real 3D view into a 360° world (own 360° photo possible), clock with fast time, moon and stars, rain / fog / snow, wind in the trees, cars with headlights, insects in the IR light, dew and spider web on the lens, covered camera, auto exposure and night noise, own cut-out photos as visitors, a ready-made night test.",
    "sig": "176cf313b81ae3a9584b20b03ed0dfa0ca41378681210579d5fa879a258f9a6597b72fb33dae96f9589d5f0267d5f5912103a2a68684b795d8f963fadeae3e0c"
-  },
-  {
-   "version": "2.70.0",
-   "file": "webcam_bewegung_2_70_0.py",
-   "url": "",
-   "sha256": "3a341d79a202292bf256604e89755a95f303bf08025b3a69decc0812f2e54e06",
-   "date": "2026-10-25 19:02",
-   "notes": "the simulator is inside Motion Watch (signed with it): «Install simulator» puts it on the Pi with a menu entry and a desktop icon, «Start» / «Stop» runs it on the Pi; «Download (ZIP)» for a PC.",
-   "sig": "32f8dd384024478bd04e2ac9165fa0328cde310ae1b31f82f8ae135e7a1517e16880a87a3c9ed23f3608053a14a1bbe0f0b06b6551c7e9fef3a11724443f0e00"
   }
  ]
 }

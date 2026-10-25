@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-1.0"
+const VERSION := "3D-1.1"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1117,6 +1117,10 @@ func _build_ui() -> void:
 		place_menu.set_item_metadata(place_menu.item_count - 1, k[0])
 	place_menu.select(2)
 	box_.add_child(place_menu)
+	var pv := Button.new()
+	pv.text = "Handy- / Tablet-Ansicht (Browser)"
+	pv.pressed.connect(_open_preview)
+	box_.add_child(pv)
 	var groups := {}
 	for c in controls:
 		if not groups.has(c.group):
@@ -1140,6 +1144,14 @@ func _build_ui() -> void:
 	info_label.text = "Maus rechts gedrückt halten: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienung aus/ein"
 	box_.add_child(info_label)
 	_sync_ui()
+
+
+func _open_preview() -> void:
+	"""the web page of Motion Watch as it looks on a phone / tablet, upright and across (page /preview of Motion Watch)"""
+	if mw_addr == "" or now() - mw_t > 10.0:
+		status_label.text = "Motion Watch ist nicht verbunden – zuerst in Motion Watch die Simulation einschalten."
+		return
+	OS.shell_open("%s://%s:%d/preview" % [str(mw.get("mw_scheme", "http")), mw_addr, int(mw.get("mw_port", 5000))])
 
 
 func _ui_control(parent: Control, c: Dictionary) -> void:

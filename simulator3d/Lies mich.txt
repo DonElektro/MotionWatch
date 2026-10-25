@@ -22,6 +22,8 @@ BEDIENUNG IM FENSTER
 - Rechte Maustaste gedrückt halten: umschauen.  W A S D: fliegen,  Q / E: tiefer / höher,  Shift: schneller,
   Mausrad: Fluggeschwindigkeit.
 - Linksklick auf den Boden: setzt das Tier oder die Person hin, das oben in der Liste gewählt ist.
+- Knopf «Handy- / Tablet-Ansicht (Browser)»: zeigt die Webseite von Motion Watch so, wie sie auf einem Handy
+  oder Tablet aussieht – Hoch- oder Querformat, mit oder ohne Vollbild, umschaltbar (öffnet den Browser).
 - Taste 1: durch die Kopfkamera schauen,  2: durch die feste Kamera,  0: frei fliegen,  H: Bedienfeld aus / ein.
 - Rechts: Vorschau der Kopfkamera, der festen Kamera und des Wärmebilds, darunter alle Einstellungen
   (Uhrzeit, Wetter, Besuch, Sensoren, Grafik "einfach / schön").
