@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 23:49",
+ "generated": "2026-10-26 00:01",
  "versions": [
+  {
+   "version": "2.82.0",
+   "file": "webcam_bewegung_2_82_0.py",
+   "url": "",
+   "sha256": "74311f29e67db0b891bc714f27123669a1beaa6dd86b13cf0d70986a697891a2",
+   "date": "2026-10-26 00:01",
+   "notes": "simulator section tidied up: status with statistics (connected for, response time, camera / thermal pictures per second, messages, sensor events, errors), «Simulators in the network» with «Search now» (asks every address of the own network, progress and result), per simulator: seen since, last message, number of messages, response time; settings and tools folded away.",
+   "sig": "803a000587ea2229ce15379982844802a05ba73c68d8bb151e12388edfffaee79842fe58c6bec2673fb75e325c54e588822c74e4783380b7160d7a0e7d3cbf06"
+  },
   {
    "version": "2.81.0",
    "file": "webcam_bewegung_2_81_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 19:54",
    "notes": "Simulator 3 - updates itself (on the Pi when Motion Watch starts, on a PC when it connects: it fetches the new version from Motion Watch, checks the checksums and restarts); much more real: a distance for every pixel, light that falls off with the distance, haze and fog, ground pattern, clouds, sun, stars, better figures, lens distortion, glare; thermal picture with physics (cold clear sky, ground warmed by the sun and cooling at night, warm walls, clothes, engine).",
    "sig": "89c8ce0a77f95b36eb2e3bc9ca12264f89a4dffb84d70a8eafff1e4d6aa56d4f38c678aece768d424e9bdbccf22be31d0c980ea02a7c527c30a22a98420d6604"
-  },
-  {
-   "version": "2.72.1",
-   "file": "webcam_bewegung_2_72_1.py",
-   "url": "",
-   "sha256": "e7bdbfba2555c7c7726bfe58b765d5846773abd467e92ee3899480e47cd533d7",
-   "date": "2026-10-25 19:34",
-   "notes": "switching the simulation off no longer starts a recording: the alarms of the simulation are forgotten and the real camera first learns its picture for 30 seconds (no recording, no alarm during that time).",
-   "sig": "480bfaaf238d2d46112945fc34cf8d0d7fbd29c4c18bc05f7575f0e30f3c80ab6ec6d0b1bbb465861f51957a06cbb711356f640c21d9209c88345676894ac50c"
   }
  ]
 }

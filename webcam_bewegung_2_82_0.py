@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_72_1.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_82_0.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -414,6 +414,38 @@ Features
     no photos, no diary entries, no backup. Push messages still come (to test them), marked «[SIM]».
   * 2.72.1: switching the simulation off no longer starts a recording: the alarms of the simulation are forgotten and
     the real camera first learns its picture for 30 seconds (no recording, no alarm during that time).
+  * 2.73.0: Simulator 3 - updates itself (on the Pi when Motion Watch starts, on a PC when it connects: it fetches the new
+    version from Motion Watch, checks the checksums and restarts); much more real: a distance for every pixel, light that
+    falls off with the distance, haze and fog, ground pattern, clouds, sun, stars, better figures, lens distortion, glare;
+    thermal picture with physics (cold clear sky, ground warmed by the sun and cooling at night, warm walls, clothes, engine).
+  * 2.74.0: much less CPU during the simulation: Motion Watch fetches only 6 pictures per second (adjustable, fixed camera and
+    thermal picture half of it), the simulator draws every picture once for all viewers (its window shows the fetched ones),
+    smaller simulator pictures (960x540, --hd for the big ones), pre-made picture noise.
+  * 2.74.1: simulation with CPU saving: the AI runs only half as often (smoother CPU load when somebody is in the picture).
+  * 2.75.0: simulator video scenarios: a 360° video (or a normal video) instead of the drawn world - real pictures, the cameras
+    look around in it with the servos, big videos are made smaller once, rough thermal picture (what moves is warm),
+    optional sensor events per video second (.json next to the video).
+  * 2.76.0: the camera can also follow animals and other movement when no person is in the picture (also animals the AI does
+    not know): it must go in one direction for 2 s, swinging branches are let go, off in strong wind; once chosen the animal is
+    followed by its look while the camera turns. Video scenarios of the simulator chosen, played, deleted and uploaded from the
+    web page. Simulator: the camera tilt was upside down (fixed).
+  * 2.77.0: simulator control on the web page for every simulator (CONTROL protocol 1: the simulator describes its scenarios,
+    sliders, choices, switches and buttons itself - ready for a later 3D simulator on a PC); three example 360° video scenes
+    (forest at night, car park at night with a thief, misty camping morning) made by the simulator itself; a running simulator
+    now also restarts when Motion Watch has already put the new files in place.
+  * 2.78.0: header shows how many watch right now: every browser with the page or a guest link open, plus the window on the
+    Pi screen (when it is not minimised); the tooltip splits web / Pi screen.
+  * 2.79.0: the quick switches below the joystick can be chosen and arranged («Arrange» tile: tick, ▲ ▼, reset) - web page
+    and window; the viewer count moved to the right in the header.
+  * 2.80.0: page /preview: the web page as on a phone or a tablet, upright or across, with or without full screen (button in
+    the simulators and in the simulator section); the page may be shown in a frame of its own origin only (SAMEORIGIN).
+  * 2.81.0: simulators are found by themselves: every simulator announces itself every 2 s (UDP 8764), Motion Watch lists
+    them («Use») and - with «find by itself» on and no working connection - takes over the address (a PC before the Pi);
+    simulator requests never go through a proxy.
+  * 2.82.0: simulator section tidied up: status with statistics (connected for, response time, camera / thermal pictures
+    per second, messages, sensor events, errors), «Simulators in the network» with «Search now» (asks every address of the
+    own network, progress and result), per simulator: seen since, last message, number of messages, response time;
+    settings and tools folded away.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -422,10 +454,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_72_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_82_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_72_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_72_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_82_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_82_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -442,7 +474,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.72.1"
+APP_VERSION = "2.82.0"
 
 
 def default_data_dir():
@@ -601,6 +633,10 @@ CFG = {
     "invert_pan": False, "invert_tilt": False,
     "cam_rotate": "0", "cam_mirror": False,       # picture turned (0/90/180/270 clockwise) and mirrored, right after the camera
     "track_person": True,        # keep the detected person centred
+    "qs_layout": {"order": [], "hidden": []},   # quick switches below the joystick: own order, hidden ones (empty = all)
+    "track_motion": False,       # also follow animals and other movement when no person is in the picture
+    "track_motion_min": 0.08,    # ... at least this big (% of the picture)
+    "track_motion_hold": 2.0,    # ... and moving for at least this many seconds (swaying branches stay in place)
     "track_gain": 0.6,           # how aggressively the camera follows
     "track_deadzone": 0.08,      # fraction of the frame treated as "centred"
     # patrol
@@ -709,7 +745,7 @@ CFG = {
     "solar_on": False, "solar_addr": "0x41", "solar_shunt": 0.1, "night_warn": True,
     "species_on": False, "species_model": "", "species_norm": "imagenet", "species_size": 224, "species_conf": 0.5,
     "desktop_notice": True,
-    "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_prev_source": "", "sim_prev_thermal": "",
+    "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_auto": True, "sim_prev_source": "", "sim_prev_thermal": "",
     "lens_check": True, "temp_alarm_on": False, "temp_hot": 30, "temp_cold": 3,
     "sens_on": False, "sensors": [], "rf433_on": False, "zigbee_on": False, "ble_on": False, "tag_missing": 5, "eco_pir": True,
     "tamper_on": True,           # sabotage: camera covered or turned away (picture check)
@@ -742,7 +778,7 @@ STATE = {
     "ignored_vehicles": 0, "detections_total": 0,
     "auto_status": "idle", "auto_changes": 0,
     "ai_status": "off", "ai_persons": 0, "ai_ms": 0, "shadow_pct": 0,
-    "servo_backend": "–", "relay": False, "patrol_status": "off", "tracking": False,
+    "servo_backend": "–", "relay": False, "patrol_status": "off", "tracking": False, "track_what": "",
     "web_status": "off",
     "objects": 0, "object_summary": "",
     "cpu": 0.0, "cpu_temp": None, "cpu_hist": [], "cpu_count": 1,
@@ -1919,6 +1955,8 @@ def apply_settings(data):
     WAYPOINTS[:] = wps[:50]
     CFG["ui_hidden"] = [k for k in CFG["ui_hidden"] if isinstance(k, str)][:200]
     CFG["ui_open"] = [k for k in CFG["ui_open"] if isinstance(k, str)][:100]
+    _ql = CFG["qs_layout"] if isinstance(CFG["qs_layout"], dict) else {}
+    CFG["qs_layout"] = {"order": [k for k in (_ql.get("order") or []) if isinstance(k, str)][:60], "hidden": [k for k in (_ql.get("hidden") or []) if isinstance(k, str)][:60]}
     CFG["web_ui"] = clean_web_ui(CFG["web_ui"])
     rl = data.get("relays")
     if isinstance(rl, list):
@@ -6025,7 +6063,7 @@ CAMPING_SET = {"detection_on": True, "record": True, "snapshot_on_person": True,
 SIMPLE_SECTIONS = {"Camera / Servos", "Patrol", "AI detection", "Detection", "Recording", "Low light", "Setup", "Notifications",
                    "Camping / protection", "Thermal camera", "Microphone", "Loudspeaker", "Lights", "Night report", "Battery",
                    "Power saving", "Messages", "Updates", "Extra sensors", "Storm warning", "GPS module", "Solar panel"}
-SIMPLE_KEYS = {"track_person", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
+SIMPLE_KEYS = {"track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
                "arm_delay", "net_mode", "hotspot_ssid", "hotspot_password", "thermal_on", "thermal_alarm", "noise_alarm", "audio_in",
@@ -6869,6 +6907,8 @@ class AIDetector:
         gap = max(0.3, 2.0 * (STATE.get("ai_ms") or 0) / 1000.0)
         ct = STATE.get("cpu_temp") or 0
         gap *= 4.0 if ct >= 80 else 2.0 if ct >= 75 else 1.0
+        if CFG.get("sim_on") and CFG.get("sim_eco"):
+            gap *= 2.0                                     # simulation with CPU saving: the AI only half as often
         if time.time() - getattr(self, "_last_run", 0.0) < gap:
             return self.boxes
         self._last_run = time.time()
@@ -7283,7 +7323,7 @@ class Track:
         self.box = box
         self.hist = deque(maxlen=40); self.speeds = deque(maxlen=40)
         self.hist.append(self.center())
-        self.lost = 0; self.age = 0
+        self.lost = 0; self.age = 0; self.born = time.time(); self.start = self.center()
         self.is_person = self.is_vehicle = self.ai_confirmed = False
 
     def center(self):
@@ -7607,7 +7647,7 @@ def open_source(spec, thermal=False):
             if arg == "thermal":
                 src = SimThermalSource()
                 return (src, spec, label, "") if src.ok() else (None, spec, label, "simulator not reachable")
-            src = _open_url(sim_base() + f"/cam/{arg}/video.mjpg")
+            src = _open_url(sim_base() + f"/cam/{arg}/video.mjpg" + (f"?fps={sim_cam_fps(arg)}" if CFG.get("sim_eco") else ""))
             return (src, spec, label, "") if src else (None, spec, label, "simulator not reachable - is it running?")
         if spec == "auto":
             for idx in range(4):
@@ -10266,7 +10306,7 @@ SOLARMON = None
 #   sends what it does (servos, lights, relays, sound, armed) about 10 x per second and takes the world from the answer.
 # ----------------------------------------------------------------------------
 SIM = {"t": 0.0, "ok": False, "msg": "off", "dark": False, "ambient": 15.0, "pressure": 1013.0, "wind": 0.0, "last_event": 0,
-       "seen_event": 0, "info": None, "sent": 0}
+       "seen_event": 0, "info": None, "sent": 0, "since": 0.0, "errs": 0, "rtt": 0.0, "events_n": 0, "th_times": deque(maxlen=30)}
 
 
 def sim_base():
@@ -10274,8 +10314,11 @@ def sim_base():
     return u if re.match(r"^https?://[A-Za-z0-9.\-\[\]:]{1,120}$", u) else "http://127.0.0.1:8765"
 
 
+_SIM_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))   # the simulator is in the own network: never via a proxy
+
+
 def _sim_get(path, timeout=2.0):
-    with urllib.request.urlopen(urllib.request.Request(sim_base() + path, headers={"User-Agent": "MotionWatch"}), timeout=timeout) as r:
+    with _SIM_OPENER.open(urllib.request.Request(sim_base() + path, headers={"User-Agent": "MotionWatch"}), timeout=timeout) as r:
         return r.read(), r.headers
 
 
@@ -10289,14 +10332,14 @@ class SimThermalSource:
         return r[0]
 
     def read(self):
-        wait = 0.12 - (time.time() - self.t)
+        wait = (1.0 / sim_cam_fps(1) if CFG.get("sim_eco") else 0.12) - (time.time() - self.t)
         if wait > 0:
             time.sleep(wait)
         self.t = time.time()
         try:
             data, hd = _sim_get("/thermal.bin", 2.0)
             a = np.frombuffer(data, dtype="<f4").reshape(int(hd["X-Height"]), int(hd["X-Width"])).copy()
-            self.size = (a.shape[1], a.shape[0])
+            self.size = (a.shape[1], a.shape[0]); SIM["th_times"].append(time.time())
             return True, a
         except Exception:
             return False, None
@@ -10318,11 +10361,336 @@ def sim_state():
                       "moving": time.time() - SERVO_MOVE["t"] < 0.5},
             "lights": {"white": bool(L.get("white")), "ir": bool(L.get("ir")), "white_level": 1.0, "ir_level": 1.0},
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
-            "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else "")}
+            "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
+            # automatic update: the simulator compares these checksums with its own files and fetches /sim/simulator.zip
+            "sim_files": sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"])}
+
+
+_SIMFILES = {}
+
+
+VIEWERS = {}                       # web page / guest page -> time of its last poll; the Pi screen counts as one more
+
+
+def viewers_now():
+    """How many watch right now: every browser (main page or guest link) that asked in the last 8 s, plus the open
+    window on the Pi screen."""
+    now = time.time()
+    for k in [k for k, t in VIEWERS.items() if now - t > 30]:
+        VIEWERS.pop(k, None)
+    web = sum(1 for t in VIEWERS.values() if now - t <= 8)
+    local = 1 if now - STATE.get("local_view_t", 0.0) <= 5 else 0
+    return {"n": web + local, "web": web, "local": local}
+
+
+PREVIEW_PAGE = r'''<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Motion Watch – Handy / Tablet</title><style>
+:root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--txt:#c9d1d9;--mut:#8b949e;--acc:#388bfd}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:14px system-ui,-apple-system,"Segoe UI",sans-serif}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
+.bar b{margin-right:8px}.bar button{background:#21262d;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:7px 12px;font:inherit;cursor:pointer}
+.bar button.on{background:var(--acc);border-color:var(--acc);color:#fff}.bar .sp{flex:1}.bar .mut{color:var(--mut)}
+#stage{position:absolute;top:58px;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#dev{position:relative;background:#000;border:12px solid #2b2f36;border-radius:42px;box-shadow:0 0 0 2px #444,0 20px 60px rgba(0,0,0,.6);transform-origin:center center}
+#dev.tab{border-radius:28px;border-width:18px}
+#dev iframe{display:block;border:0;width:100%;height:100%;border-radius:30px;background:#0d1117}
+#dev.tab iframe{border-radius:10px}
+#notch{position:absolute;background:#000;border-radius:0 0 14px 14px;z-index:2}
+</style></head><body>
+<div class="bar"><b>📱 Motion Watch auf Handy / Tablet</b>
+ <button id="b-ph" class="on">📱 Handy</button><button id="b-tb">📲 Tablet</button>
+ <button id="b-po" class="on">▯ Hochformat</button><button id="b-la">▭ Querformat</button>
+ <button id="b-fs" class="on">⛶ Vollbild</button><button id="b-rl">↻ Neu laden</button>
+ <span class="sp"></span><span class="mut" id="info"></span></div>
+<div id="stage"><div id="dev"><div id="notch"></div><iframe id="fr" title="Motion Watch"></iframe></div></div>
+<script>
+const S = {dev: "phone", land: false, fs: true};
+try { Object.assign(S, JSON.parse(localStorage.getItem("mwprev") || "{}")); } catch (e) {}
+const SIZE = {phone: [390, 844], tablet: [820, 1180]};            // CSS pixels of a usual phone / tablet
+const $ = id => document.getElementById(id);
+function url() { return "/?preview=1" + (S.fs ? "&vo=1" : ""); }
+function fit() {
+  let [w, h] = SIZE[S.dev]; if (S.land) [w, h] = [h, w];
+  const d = $("dev"), st = $("stage"), b = S.dev === "phone" ? 12 : 18;
+  d.style.width = w + "px"; d.style.height = h + "px"; d.classList.toggle("tab", S.dev === "tablet");
+  const k = Math.min((st.clientWidth - 40) / (w + 2 * b), (st.clientHeight - 40) / (h + 2 * b), 1.5);
+  d.style.transform = "scale(" + k.toFixed(3) + ")";
+  const n = $("notch"); n.hidden = S.dev !== "phone";
+  if (S.land) { n.style.cssText = "left:0;top:50%;width:26px;height:150px;transform:translateY(-50%);border-radius:0 14px 14px 0"; }
+  else { n.style.cssText = "top:0;left:50%;width:150px;height:26px;transform:translateX(-50%)"; }
+  $("info").textContent = w + " × " + h + " px · " + Math.round(k * 100) + " %";
+  ["b-ph", "b-tb", "b-po", "b-la", "b-fs"].forEach(id => $(id).classList.toggle("on",
+    {"b-ph": S.dev === "phone", "b-tb": S.dev === "tablet", "b-po": !S.land, "b-la": S.land, "b-fs": S.fs}[id]));
+  try { localStorage.setItem("mwprev", JSON.stringify(S)); } catch (e) {}
+}
+function load() { $("fr").src = url(); fit(); }
+$("b-ph").onclick = () => { S.dev = "phone"; fit(); };
+$("b-tb").onclick = () => { S.dev = "tablet"; fit(); };
+$("b-po").onclick = () => { S.land = false; fit(); };
+$("b-la").onclick = () => { S.land = true; fit(); };
+$("b-fs").onclick = () => { S.fs = !S.fs; load(); };
+$("b-rl").onclick = load;
+addEventListener("resize", fit); load();
+</script></body></html>'''
+
+
+def qs_arrange(items, key=lambda q: q["id"]):
+    """the quick switches in the order the user chose, without the hidden ones (new switches come at the end)"""
+    lay = CFG.get("qs_layout") or {}
+    order = [str(x) for x in (lay.get("order") or [])]; hidden = set(str(x) for x in (lay.get("hidden") or []))
+    pos = {k: i for i, k in enumerate(order)}
+    out = sorted(enumerate(items), key=lambda p: (pos.get(key(p[1]), len(order) + p[0])))
+    return [q for _i, q in out if key(q) not in hidden]
+
+
+def qs_layout_set(order, hidden):
+    ok = lambda x: isinstance(x, str) and re.fullmatch(r"[a-z0-9_]{1,20}", x)
+    order = [x for x in (order or []) if ok(x)][:60]; hidden = [x for x in (hidden or []) if ok(x)][:60]
+    CFG["qs_layout"] = {"order": order, "hidden": hidden}; save_settings()
+    log_event("web", f"Quick switches arranged: {len(order) - len([h for h in hidden if h in order])} shown, {len(hidden)} hidden")
+    return True
+
+
+def sim_control(d=None):
+    """The video scenarios (and other switches) of the simulator: GET (d=None) or POST /control."""
+    if d is None:
+        data, _h = _sim_get("/control", 4.0)
+        return json.loads(data)
+    req = urllib.request.Request(sim_base() + "/control", data=json.dumps(d).encode(),
+                                 headers={"Content-Type": "application/json", "User-Agent": "MotionWatch"})
+    with _SIM_OPENER.open(req, timeout=8.0) as r:
+        return json.loads(r.read())
+
+
+def sim_upload(name, stream, length):
+    """Pass a video from the web page straight on to the simulator (piece by piece, nothing is kept here)."""
+    import http.client
+    from urllib.parse import urlsplit, quote
+    u = urlsplit(sim_base())
+    C = http.client.HTTPSConnection if u.scheme == "https" else http.client.HTTPConnection
+    con = C(u.hostname, u.port or (443 if u.scheme == "https" else 80), timeout=60)
+    try:
+        con.putrequest("POST", "/upload?name=" + quote(name))
+        con.putheader("Content-Type", "application/octet-stream"); con.putheader("Content-Length", str(length))
+        con.putheader("User-Agent", "MotionWatch"); con.endheaders()
+        left = length
+        while left > 0:
+            b = stream.read(min(1 << 20, left))
+            if not b:
+                break
+            con.send(b); left -= len(b)
+        r = con.getresponse()
+        return json.loads(r.read() or b"{}")
+    finally:
+        con.close()
+
+
+def sim_cam_fps(cam):
+    """Pictures per second asked from the simulator: the head camera sim_fps, the fixed camera half of it."""
+    f = max(2, min(15, int(CFG.get("sim_fps") or 6)))
+    return f if str(cam) == "0" else max(2, f // 2)
+
+
+def sim_files():
+    """sha256 of the simulator program files this Motion Watch carries (name -> checksum)."""
+    if not _SIMFILES:
+        import base64, hashlib, io
+        try:
+            with zipfile.ZipFile(io.BytesIO(base64.b64decode("".join(SIM_ZIP_B64.split())))) as z:
+                for n in z.namelist():
+                    if n.endswith(".py"):
+                        _SIMFILES[n] = hashlib.sha256(z.read(n)).hexdigest()
+        except Exception:
+            pass
+    return dict(_SIMFILES)
+
+
+def sim_autoupdate():
+    """The simulator on this Pi is older than the one inside Motion Watch -> install the new one (and restart it if it runs)."""
+    import hashlib
+    d = sim_dir()
+    if not os.path.isfile(os.path.join(d, "motionwatch_simulator.py")):
+        return False
+    old = []
+    for n, h in sim_files().items():
+        try:
+            with open(os.path.join(d, n), "rb") as f:
+                if hashlib.sha256(f.read()).hexdigest() == h:
+                    continue
+        except OSError:
+            pass
+        old.append(n)
+    if not old:
+        return False
+    was = sim_running()
+    if was:
+        sim_stop()
+    try:
+        sim_install()
+    except Exception as e:
+        log_event("sys", f"Simulator update failed: {e}"[:200]); return False
+    log_event("sys", "Simulator updated automatically to the version inside Motion Watch " + APP_VERSION)
+    if was:
+        sim_start()
+    return True
+
+
+SIM_BEACON_PORT = 8764
+SIMFOUND = {}                        # "ip:port" -> {"ip", "port", "name", "version", "t"}: simulators that announce themselves
+
+
+class SimDiscovery:
+    """The simulators (Python on the Pi or a PC, 3D on a PC) send a small UDP message every 2 s into the network
+    ("I am a Motion Watch simulator on port 8765"). Here they are collected; when the simulation has no working connection
+    (and «find automatically» is on), the address of a found simulator is taken over."""
+    def __init__(self):
+        threading.Thread(target=self.listen, daemon=True, name="simfind").start()
+        threading.Thread(target=self.adopt_loop, daemon=True, name="simadopt").start()
+
+    def listen(self):
+        import socket
+        try:
+            s_ = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s_.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s_.bind(("0.0.0.0", SIM_BEACON_PORT))
+        except OSError as e:
+            log_event("sys", f"Simulator search: port {SIM_BEACON_PORT}/udp not usable ({e})"[:160]); return
+        while True:
+            try:
+                data, (ip, _p) = s_.recvfrom(2048)
+                d = json.loads(data.decode("utf-8", "replace"))
+                if not isinstance(d, dict) or d.get("mwsim") != 1:
+                    continue
+                port = int(d.get("port") or 8765)
+                if not (1 <= port <= 65535) or not re.fullmatch(r"[0-9.]{7,15}", ip):
+                    continue
+                if ip.startswith("127."):
+                    ip = "127.0.0.1"
+                k = f"{ip}:{port}"
+                new = k not in SIMFOUND
+                old = SIMFOUND.get(k) or {}
+                SIMFOUND[k] = {"ip": ip, "port": port, "name": str(d.get("name") or "Simulator")[:60],
+                               "version": str(d.get("version") or "")[:20], "t": time.time(), "first": old.get("first") or time.time(),
+                               "count": int(old.get("count") or 0) + 1, "via": "beacon", "ms": old.get("ms")}
+                if new:
+                    log_event("sys", f"Simulator found in the network: {SIMFOUND[k]['name']} on {k}")
+            except (ValueError, OSError):
+                continue
+
+    def adopt_loop(self):
+        while True:
+            time.sleep(5)
+            try:
+                sim_auto_adopt()
+            except Exception:
+                pass
+
+
+SIMSCAN = {"running": False, "t": 0.0, "hosts": 0, "found": 0, "secs": 0.0, "net": "", "done": 0}
+
+
+def _local_ipv4():
+    import socket
+    s_ = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s_.connect(("10.255.255.255", 1))                  # nothing is sent: only finds the own address in the network
+        return s_.getsockname()[0]
+    except OSError:
+        return "127.0.0.1"
+    finally:
+        s_.close()
+
+
+def sim_scan():
+    """Active search: ask every address of the own network (x.x.x.1 - 254) on the simulator ports for /info.
+    Finds simulators also where the little UDP messages do not get through (some routers / Wi-Fi)."""
+    if SIMSCAN["running"]:
+        return False
+    from concurrent.futures import ThreadPoolExecutor
+    ip = _local_ipv4(); base = ".".join(ip.split(".")[:3])
+    hosts = ["127.0.0.1"] + ([f"{base}.{i}" for i in range(1, 255)] if not ip.startswith("127.") else [])
+    ports = sorted({8765, 8766, int(urllib.parse.urlsplit(sim_base()).port or 8765)})
+    SIMSCAN.update(running=True, t=time.time(), hosts=len(hosts) * len(ports), found=0, secs=0.0, net=f"{base}.0/24", done=0)
+
+    def probe(hp):
+        h, p = hp
+        t0 = time.time()
+        try:
+            with _SIM_OPENER.open(urllib.request.Request(f"http://{h}:{p}/info", headers={"User-Agent": "MotionWatch"}), timeout=0.8) as r:
+                d = json.loads(r.read(65536))
+            if not isinstance(d, dict) or "cameras" not in d:
+                return
+            ms = round((time.time() - t0) * 1000.0, 1)
+            k = f"{'127.0.0.1' if h.startswith('127.') else h}:{p}"
+            old = SIMFOUND.get(k) or {}
+            SIMFOUND[k] = dict(old, ip=k.split(":")[0], port=p, name=str(d.get("name") or "Simulator")[:60], t=time.time(),
+                               first=old.get("first") or time.time(), count=int(old.get("count") or 0), via=old.get("via") or "scan", ms=ms,
+                               version=old.get("version") or "")
+            SIMSCAN["found"] += 1
+        except Exception:
+            pass
+        finally:
+            SIMSCAN["done"] += 1
+
+    def run():
+        t0 = time.time()
+        try:
+            with ThreadPoolExecutor(max_workers=64) as ex:
+                list(ex.map(probe, [(h, p) for h in hosts for p in ports]))
+        finally:
+            SIMSCAN.update(running=False, secs=round(time.time() - t0, 1), t=time.time())
+            log_event("sys", f"Simulator search in {SIMSCAN['net']}: {SIMSCAN['found']} found ({SIMSCAN['hosts']} addresses in {SIMSCAN['secs']} s)")
+    threading.Thread(target=run, daemon=True, name="simscan").start()
+    return True
+
+
+def sim_stats():
+    now = time.time(); w = WATCH_REF.get("w"); cam = None
+    try:
+        if w is not None and CFG["sim_on"] and len(w.frame_gaps) > 3:
+            g = [x for x in list(w.frame_gaps)[-20:] if x > 0]
+            cam = round(1.0 / (sum(g) / len(g)), 1) if g else None
+    except Exception:
+        cam = None
+    tt = list(SIM["th_times"]); th = None
+    if len(tt) > 3 and now - tt[-1] < 3:
+        th = round((len(tt) - 1) / max(0.01, tt[-1] - tt[0]), 1)
+    ok = SIM["ok"] and now - SIM["t"] < 5
+    return {"since": int(now - SIM["since"]) if ok and SIM["since"] else None, "rtt": round(SIM["rtt"], 1) if ok else None,
+            "sent": SIM["sent"], "errs": SIM["errs"], "events": SIM["events_n"], "cam_fps": cam if ok else None, "th_fps": th if ok else None,
+            "name": (SIM.get("info") or {}).get("name") if ok else None}
+
+
+def sim_found():
+    now = time.time()
+    live = [dict(v, age=int(now - v["t"])) for v in SIMFOUND.values() if now - v["t"] < (15 if v.get("via") == "beacon" else 180)]
+    local = {(v["port"], v["name"]) for v in live if v["ip"] == "127.0.0.1"}
+    live = [v for v in live if v["ip"] == "127.0.0.1" or (v["port"], v["name"]) not in local]   # this device seen twice: once
+    return sorted(live, key=lambda v: (v["ip"] == "127.0.0.1", v["ip"], v["port"]))
+
+
+def sim_auto_adopt():
+    """no working simulator connection, but one announces itself -> take its address (the PC one before the Pi's own)"""
+    if not CFG.get("sim_auto") or (SIM["ok"] and time.time() - SIM["t"] < 5):
+        return
+    f = sim_found()
+    if not f:
+        return
+    cur = sim_base()
+    if any(cur == f"http://{x['ip']}:{x['port']}" for x in f):
+        return                                     # the address is already one that announces itself
+    best = sorted(f, key=lambda v: v["ip"] == "127.0.0.1")[0]
+    CFG["sim_url"] = f"http://{best['ip']}:{best['port']}"; save_settings()
+    log_event("sys", f"Simulator found automatically: {best['name']} - address {CFG['sim_url']} taken over")
+    if CFG["sim_on"]:                               # the cameras come from the new address
+        w = WATCH_REF.get("w")
+        if w is not None and str(CFG["source"]).startswith("sim:"):
+            w._open_gen += 1; w._start_opener(CFG["source"])
 
 
 def sim_status():
-    return {"installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "msg": SIM["msg"], "url": sim_base(),
+    return {"found": sim_found(), "auto": bool(CFG.get("sim_auto")), "stats": sim_stats(),
+            "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "msg": SIM["msg"], "url": sim_base(),
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
 
@@ -10367,28 +10735,41 @@ class SimLink:
         threading.Thread(target=self.loop, daemon=True, name="simulator").start()
 
     def loop(self):
+        eco = None
         while True:
             if not CFG["sim_on"]:
-                time.sleep(0.5); continue
+                eco = None; time.sleep(0.5); continue
+            now_eco = (bool(CFG.get("sim_eco")), sim_cam_fps(0))
+            if eco is not None and now_eco != eco:                 # CPU saving changed: fetch the head camera again with the new rate
+                w = WATCH_REF.get("w")
+                if w is not None and str(CFG["source"]).startswith("sim:"):
+                    w._open_gen += 1; w._start_opener(CFG["source"])
+                    log_event("sys", f"Simulation: {now_eco[1]} pictures per second" if now_eco[0] else "Simulation: CPU saving off")
+            eco = now_eco
             t0 = time.time()
             try:
                 self.tick()
             except Exception as e:
-                SIM.update(ok=False, msg=("not reachable: " + _short_net_err(e)) if "_short_net_err" in globals() else str(e)[:100])
+                SIM.update(ok=False, msg=("not reachable: " + _short_net_err(e)) if "_short_net_err" in globals() else str(e)[:100],
+                           errs=SIM["errs"] + 1, since=0.0)
                 time.sleep(2.0); continue
-            time.sleep(max(0.02, 0.1 - (time.time() - t0)))
+            time.sleep(max(0.02, (0.2 if CFG.get("sim_eco") else 0.1) - (time.time() - t0)))
 
     def tick(self):
         body = json.dumps(sim_state()).encode()
         req = urllib.request.Request(sim_base() + "/state", data=body, headers={"Content-Type": "application/json", "User-Agent": "MotionWatch"})
-        with urllib.request.urlopen(req, timeout=2.0) as r:
+        t_ = time.time()
+        with _SIM_OPENER.open(req, timeout=2.0) as r:
             rep_ = json.loads(r.read())
+        ms_ = (time.time() - t_) * 1000.0
+        SIM["rtt"] = ms_ if not SIM["rtt"] else SIM["rtt"] * 0.9 + ms_ * 0.1
         if not CFG["sim_on"]:
             return                                          # switched off while this request was running
         first = not SIM["ok"]
         SIM.update(t=time.time(), ok=True, msg="connected", dark=bool(rep_.get("dark")), ambient=float(rep_.get("ambient_c", 15.0)),
                    pressure=float(rep_.get("pressure_hpa", 1013.0)), wind=float(rep_.get("wind_kmh", 0.0)), sent=SIM["sent"] + 1)
         if first:
+            SIM["since"] = time.time()
             self.hello()
         le = int(rep_.get("last_event") or 0)
         if le > SIM["seen_event"]:
@@ -10397,7 +10778,7 @@ class SimLink:
                 SIM["seen_event"] = max(SIM["seen_event"], int(e.get("id", 0)))
                 src = "sim:" + re.sub(r"[^\w .:+\-]", "_", str(e.get("sensor", "")))[:60]
                 sens_seen(src, "Sim: " + str(e.get("sensor", "")), {"kind": e.get("kind")})
-                sens_event(src, e.get("active"))
+                sens_event(src, e.get("active")); SIM["events_n"] += 1
 
     def hello(self):
         """First contact: the sensors of the simulation become extra sensors (removed again when the simulation is off)."""
@@ -10423,276 +10804,596 @@ SIMLINK = None
 # The simulation program itself (motionwatch_simulator.py + motionwatch_sim_interface.py + guide), packed (ZIP, base64):
 #   it is signed together with Motion Watch and can be installed without internet.
 SIM_ZIP_B64 = """
-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
-AAAAAwADANgAAAC1XQAAAAA=
+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
 """
 SIMPROC = {"p": None}
 
@@ -10775,6 +11476,8 @@ def sim_start():
     exe = os.path.join(sim_dir(), "motionwatch_simulator.py")
     if not os.path.isfile(exe):
         ok, _ = sim_install()
+    else:
+        sim_autoupdate()
     uid, gid, home, name = _desktop_user()
     env = dict(os.environ)
     run = f"/run/user/{uid}"
@@ -11346,7 +12049,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_72_1.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_82_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -12562,6 +13265,7 @@ class MotionWatch:
         self.rec_name = ""; self.rec_info = None; self.rec_size = None; self._rec_retry = 0.0
         self.preroll = deque()
         self.frame_times = deque(maxlen=30)
+        self.mt = {"id": None, "t": 0.0, "moved": 0.0, "tpl": None, "box": None}  # follow movement: target, its look, last own move
         self.frame_gaps = deque(maxlen=60); self._last_t0 = 0.0     # time between camera frames -> real frame rate of a recording
         self.eco_wake_t = 0.0; self.eco_slow = False; self._eco_src = None
         self.read_failures = 0; self.web_viewers = 0
@@ -12605,6 +13309,8 @@ class MotionWatch:
             SOLARMON = SolarMonitor()
         if SIMLINK is None:
             SIMLINK = SimLink()
+            SimDiscovery()
+            threading.Thread(target=sim_autoupdate, daemon=True, name="simupdate").start()
         if AUDIO is None:
             AUDIO = AudioMonitor()
             if bt_available():
@@ -12777,7 +13483,13 @@ class MotionWatch:
     def foreground(self, gray, small, rain_mode, wind_boost):
         sens = CFG["sensitivity"] / 100.0
         self.bg.setVarThreshold(16 + (1 - sens) * 40 + (12 if rain_mode else 0))
-        fg = self.bg.apply(gray, learningRate=0.004 if rain_mode else 0.002)
+        lr = 0.004 if rain_mode else 0.002
+        mv = self.mt["moved"]
+        if mv > self.mt.get("bg_reset", 0.0) and time.time() - mv > 0.3:
+            lr = 1.0; self.mt["bg_reset"] = time.time()          # the camera turned to follow movement and stands again: new background at once
+        elif time.time() - self.mt.get("bg_reset", 0.0) < 1.5:
+            lr = 0.08                                            # ... and the "ghost" of the animal in it fades quickly
+        fg = self.bg.apply(gray, learningRate=lr)
         _, fg = cv2.threshold(fg, 200, 255, cv2.THRESH_BINARY)
         fg = self.remove_shadows(fg, small)                      # colour based shadow removal
         k = 5 if rain_mode or wind_boost > 1.5 else 3
@@ -12813,12 +13525,109 @@ class MotionWatch:
         t.is_person = walking
 
     # ---- servo tracking --------------------------------------------------
-    def track(self, target_box, pw, ph):
+    def motion_target(self, candidates, animals, pw, ph, gray):
+        """Something that is not a person but really goes somewhere (an animal, also one the AI does not know):
+        big enough, moving for some time and away from where it started (branches in the wind swing back and forth).
+        Once chosen it is followed by its look (template), so the turning camera does not lose it."""
+        now = time.time(); area = float(pw * ph); mt = self.mt
+        if STATE.get("wind_boost", 1.0) > 1.6 or STATE.get("wind_level") in ("strong", "storm"):
+            mt.update(id=None, tpl=None); return None    # strong wind: everything moves, do not chase it
+
+        def keep(b):                                      # remember where it was; something that only swings to and fro is let go
+            tr = mt.setdefault("trail", deque(maxlen=60)); tr.append((now, b[0] + b[2] / 2.0, b[1] + b[3] / 2.0))
+            pts = [p for p in tr if now - p[0] <= 4.0]
+            if len(pts) >= 8 and now - pts[0][0] >= 3.0 and now - mt.get("since", now) > 4.0:
+                path = sum(math.hypot(pts[i][1] - pts[i - 1][1], pts[i][2] - pts[i - 1][2]) for i in range(1, len(pts)))
+                net = math.hypot(pts[-1][1] - pts[0][1], pts[-1][2] - pts[0][2])
+                if path > 0.08 * pw and net < 0.25 * path and now - mt["moved"] > 1.0:
+                    log_event("servo", "Followed movement only swings to and fro (branch in the wind?) - released")
+                    mt.update(id=None, tpl=None); mt["trail"].clear(); return None
+            mt["box"] = b; mt["t"] = now
+            return b
+        def tight(b):                                     # the movement boxes are made bigger (dilate 7 x 13): back to the animal
+            x, y, w, h = [int(v) for v in b[:4]]
+            if w > 14 and h > 20:
+                x, y, w, h = x + 3, y + 6, w - 6, h - 12
+            w = max(8, w); h = max(8, h)
+            return max(0, min(pw - w, x)), max(0, min(ph - h, y)), w, h
+        if mt.get("tpl") is not None and now - mt["moved"] > 1.0:   # camera stands still: the movement itself is the best guide
+            x, y, w, h = mt["box"]; cx, cy = x + w / 2.0, y + h / 2.0
+            near = [t for t in candidates if not t.lost and math.hypot(t.center()[0] - cx, t.center()[1] - cy) < max(max(w, h) * 2.5 + 20, 0.2 * pw)
+                    and t.box[2] * t.box[3] < 0.2 * area]
+            if near:
+                t = min(near, key=lambda t: math.hypot(t.center()[0] - cx, t.center()[1] - cy))
+                b = tight(t.box); tpl = gray[b[1]:b[1] + b[3], b[0]:b[0] + b[2]].copy()
+                if tpl.shape[0] >= 8 and tpl.shape[1] >= 8:
+                    mt.update(tpl=tpl, move_t=now)
+                    return keep(b)
+        if mt.get("tpl") is not None:                     # camera turns / nothing moves: find it again by its look
+            x, y, w, h = mt["box"]; th_, tw_ = mt["tpl"].shape
+            r = int(max(w, h) * 2.5) + (int(0.35 * pw) if now - mt["moved"] < 1.5 else 0)
+            x0, y0 = max(0, x - r), max(0, y - r); x1, y1 = min(pw, x + w + r), min(ph, y + h + r)
+            best = None
+            if x1 - x0 > tw_ and y1 - y0 > th_:
+                res = cv2.matchTemplate(gray[y0:y1, x0:x1], mt["tpl"], cv2.TM_CCOEFF_NORMED)
+                _mn, sc, _l, loc = cv2.minMaxLoc(res)
+                if sc >= 0.5:
+                    best = (x0 + loc[0], y0 + loc[1], tw_, th_)
+                    if sc > 0.65:                             # it changes its look while walking: learn slowly
+                        cur = gray[best[1]:best[1] + th_, best[0]:best[0] + tw_]
+                        if cur.shape == mt["tpl"].shape:
+                            mt["tpl"] = cv2.addWeighted(mt["tpl"], 0.8, cur, 0.2, 0)
+            if best is not None:
+                if any(iou(t.box, best) > 0.05 for t in candidates if not t.lost):
+                    mt["move_t"] = now
+                if now - mt["moved"] > 1.5 and now - mt.get("move_t", now) > 3.0:
+                    log_event("servo", "Followed movement: nothing moves there any more - released")   # stands still or gone
+                    mt.update(id=None, tpl=None); return None
+                return keep(best)
+            if now - mt["t"] > 2.0:
+                bx = mt["box"]; cx = (bx[0] + bx[2] / 2.0) / pw
+                if (cx < 0.2 or cx > 0.8) and now - mt["moved"] > 0.4:     # it left the picture at the side: one look after it
+                    p0 = CFG["pan"]; self.track((int((0.1 if cx < 0.5 else 0.9) * pw), int(ph / 2), 1, 1), pw, ph, 1.5)
+                    if CFG["pan"] != p0:
+                        mt["moved"] = now
+                    log_event("servo", "Followed movement left the picture - looking after it")
+                mt.update(id=None, tpl=None)
+            return None
+        amin = max(0.0002, float(CFG["track_motion_min"]) / 100.0) * area
+        ok = []
+        for t in candidates:
+            a = t.box[2] * t.box[3]
+            if t.lost or (t.is_vehicle and a > 0.02 * area):   # a small animal walking sideways looks "vehicle-like" - a car is big
+                continue
+            if a < amin or a > 0.35 * area:
+                continue
+            ok.append(t)
+        box = None
+        if animals:                                       # an animal the AI knows: at once
+            b = max(animals, key=lambda o: o[2] * o[3]); box = tuple(int(v) for v in b[:4]); what = "animal (AI)"
+        else:
+            hold = float(CFG["track_motion_hold"])
+            def goes(t):                                  # really goes somewhere: far enough and mostly in one direction
+                net = math.hypot(t.center()[0] - t.start[0], t.center()[1] - t.start[1])
+                h_ = list(t.hist); path = sum(math.hypot(h_[i][0] - h_[i - 1][0], h_[i][1] - h_[i - 1][1]) for i in range(1, len(h_)))
+                net_h = math.hypot(h_[-1][0] - h_[0][0], h_[-1][1] - h_[0][1]) if len(h_) > 1 else 0.0
+                return net >= 0.06 * pw and net_h >= 0.6 * max(path, 1e-6)
+            good = [t for t in ok if now - t.born >= hold and goes(t)]
+            if good:
+                t = max(good, key=lambda t: t.box[2] * t.box[3]); box = tuple(int(v) for v in t.box); what = f"#{t.id}"
+        if box is None:
+            return None
+        x, y, w, h = tight(box)
+        tpl = gray[y:y + h, x:x + w].copy()
+        if tpl.shape[0] < 8 or tpl.shape[1] < 8:
+            return None
+        log_event("servo", f"Following movement {what} ({w}x{h} px, not a person)")
+        mt.update(id=what, tpl=tpl, box=(x, y, w, h), t=now, move_t=now, since=now); mt.setdefault("trail", deque(maxlen=60)).clear()
+        return (x, y, w, h)
+
+    def track(self, target_box, pw, ph, gain=1.0):
         x, y, w, h = target_box[:4]
         ex = (x + w / 2.0) / pw - 0.5          # -0.5 .. 0.5  (right = positive)
         ey = (y + h / 2.0) / ph - 0.5          # down  = positive
         dz = CFG["track_deadzone"]
-        g = CFG["track_gain"] * 10.0
+        g = CFG["track_gain"] * 10.0 * gain
         if abs(ex) > dz:
             CFG["pan"] = max(0.0, min(100.0, CFG["pan"] + ex * g))
         if abs(ey) > dz:
@@ -13069,8 +13878,10 @@ class MotionWatch:
                 STATE["object_summary"] = ", ".join(f"{n} x{c}" for n, c in counts.items())
                 min_area = CFG["min_area"] * (1.0 - CFG["sensitivity"] / 200.0) * wind_boost
                 cnts, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                boxes = [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= min_area) if zone_box_ok(b, pw, ph)]
-                if boxes:
+                # following movement also sees smaller things (a cat, a fox far away) - they never count as a person / alarm
+                small_area = min(min_area, float(CFG["track_motion_min"]) / 100.0 * pw * ph) if CFG["track_motion"] else min_area
+                boxes = [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= small_area) if zone_box_ok(b, pw, ph)]
+                if any(b[2] * b[3] >= min_area for b in boxes):
                     present.add("prealarm")              # pre-alarm: anything at all moves in the picture (before it is judged to be a person)
                 boxes = merge_boxes(boxes + [b[:4] for b in ai_boxes])   # AI persons become tracks too
                 tracks = self.tracker.update(boxes)
@@ -13078,6 +13889,8 @@ class MotionWatch:
                     if t.lost:
                         continue
                     self.classify(t, pw * ph, wind_boost, ai_boxes)
+                    if t.is_person and not t.ai_confirmed and t.box[2] * t.box[3] < min_area * 0.8:
+                        t.is_person = False                     # too small for a person (only seen for following movement)
                     if t.is_person:
                         persons.append(t); person_boxes.append(t.box)
                     else:
@@ -13126,9 +13939,26 @@ class MotionWatch:
                     if not STATE["tracking"]:
                         log_event("servo", "Tracking person - patrol paused")
                     STATE["tracking"] = True
-                elif STATE["tracking"] and (manual or time.time() - self.last_person_time > 2.0):
-                    STATE["tracking"] = False
-                    log_event("servo", "Manual control - tracking paused" if manual else "Person lost - patrol may resume")
+                elif CFG["track_motion"] and not manual and (mt_box := self.motion_target(candidates + persons, rec_animals, pw, ph, gray)) is not None:
+                    if t0 - self.mt["moved"] > 0.4:                # move, let the picture settle a moment, look again
+                        p0, q0 = CFG["pan"], CFG["tilt"]
+                        self.track(mt_box, pw, ph, 1.0)
+                        if (CFG["pan"], CFG["tilt"]) != (p0, q0):
+                            self.mt["moved"] = t0
+                    if not STATE["tracking"]:
+                        log_event("servo", "Following movement (animal or something unknown) - patrol paused")
+                    STATE["tracking"] = True; STATE["track_what"] = "motion"
+                    mx_, my_, mw_, mh_ = [int(v) for v in (mt_box[0] * sx, mt_box[1] * sy, mt_box[2] * sx, mt_box[3] * sy)]
+                    cv2.rectangle(frame, (mx_, my_), (mx_ + mw_, my_ + mh_), (0, 220, 255), 2)
+                    cv2.putText(frame, "FOLLOW", (mx_, max(14, my_ - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 220, 255), 1, cv2.LINE_AA)
+                    cv2.drawMarker(frame, (W // 2, H // 2), (0, 220, 255), cv2.MARKER_CROSS, 24, 1)
+                elif STATE["tracking"] and (manual or (time.time() - self.last_person_time > 2.0 and time.time() - self.mt["t"] > 3.0)):
+                    was = STATE.get("track_what"); STATE["tracking"] = False; STATE["track_what"] = ""
+                    log_event("servo", "Manual control - tracking paused" if manual else
+                              ("Movement lost - patrol may resume" if was == "motion" else "Person lost - patrol may resume"))
+                    self.mt["id"] = None
+                if person_boxes:
+                    STATE["track_what"] = "person" if STATE["tracking"] else ""
 
                 # drawing
                 if CFG["show_mask"]:                      # the picture stays as it is, movement gets a soft red tint
@@ -16631,6 +17461,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
   <span class="badge" id="b-src" data-view="b-src" data-vgroup="Header" data-vlabel="Video source" hidden>Source –</span>
   <span class="badge" id="b-conn" data-view="b-conn" data-vgroup="Header" data-vlabel="Connection" hidden>connecting…</span>
   <span class="badge" id="b-wifi" data-view="b-wifi" data-vgroup="Header" data-vlabel="Wi-Fi" hidden>Wi-Fi</span>
+  <span class="badge" id="b-view" data-view="b-view" data-vgroup="Header" data-vlabel="Viewers" hidden>👁</span>
   <span class="badge" id="b-cpu" data-view="b-cpu" data-vgroup="Header" data-vlabel="CPU">CPU –</span>
   <span class="badge" id="b-fps" data-view="b-fps" data-vgroup="Header" data-vlabel="FPS">FPS –</span>
   </span>
@@ -17223,6 +18054,7 @@ function voStick(on) {
   setTimeout(() => { $("#vo-center").title = t("Centre"); $("#vo-listen").title = t("Listen"); $("#vo-side").title = t("Other side"); }, 1500);
 })();
 function toggleFullscreen() { setVideoOnly(!videoOnly); }
+if (new URLSearchParams(location.search).get("vo") === "1") setTimeout(() => { try { setVideoOnly(true); } catch (e) {} }, 1500);   // preview: full-screen version
 
 // ---- header height for the two scrolling columns (tablet / computer) ----
 (function () {
@@ -18050,12 +18882,51 @@ function qsList(j) {                     // the fixed switches + one per relay (
   return QS.concat(rel.map((r, i) => ({id: "rel" + i, ic: "⚡", lb: r.name || ("Relay " + (i + 1)), raw: true, tip: "Relay: on / automatic",
     on: (c, s) => !!((s.relay_states || [])[i]), go: () => relQuick(i)})));
 }
+function qsArrange(L, c, keepHidden) {        // the order and selection the user chose (new switches come at the end)
+  const lay = (c && c.qs_layout) || {}, order = lay.order || [], hid = new Set(lay.hidden || []);
+  const pos = {}; order.forEach((k, i) => pos[k] = i);
+  return L.map((q, i) => [q, pos[q.id] !== undefined ? pos[q.id] : order.length + i]).sort((a, b) => a[1] - b[1]).map(x => x[0])
+    .filter(q => keepHidden || !hid.has(q.id));
+}
+function qsEdit() {
+  const j = QSJ; if (!j) return;
+  let ov = $("#qse-ov"); if (ov) ov.remove();
+  ov = el("div"); ov.id = "qse-ov"; ov.style.cssText = "position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:14px";
+  const c = el("div", "card"); c.style.cssText = "max-width:420px;width:100%;max-height:92vh;overflow:auto"; ov.appendChild(c); document.body.appendChild(ov);
+  c.append(el("h3", "", "✏️ " + t("Arrange the switches")), el("div", "mut", t("Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.")));
+  const hid = new Set(((j.cfg.qs_layout || {}).hidden) || []);
+  let items = qsArrange(qsList(j), j.cfg, true).map(q => ({q: q, show: !hid.has(q.id)}));
+  const list = el("div"); list.style.cssText = "margin:10px 0;display:flex;flex-direction:column;gap:6px";
+  const draw = () => {
+    list.textContent = "";
+    items.forEach((it, i) => {
+      const row = el("div"); row.style.cssText = "display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:10px" + (it.show ? "" : ";opacity:.55");
+      const cb = el("input"); cb.type = "checkbox"; cb.checked = it.show; cb.onchange = () => { it.show = cb.checked; draw(); };
+      const lb = el("label", "", (it.q.ic || "") + "  " + (it.q.raw ? it.q.lb : t(it.q.lb))); lb.style.flex = "1"; lb.onclick = () => { cb.checked = !cb.checked; cb.onchange(); };
+      const up = el("button", "sec", "▲"), dn = el("button", "sec", "▼"); up.type = dn.type = "button"; up.style.padding = dn.style.padding = "4px 10px";
+      up.disabled = i === 0; dn.disabled = i === items.length - 1;
+      up.onclick = () => { [items[i - 1], items[i]] = [items[i], items[i - 1]]; draw(); };
+      dn.onclick = () => { [items[i + 1], items[i]] = [items[i], items[i + 1]]; draw(); };
+      row.append(cb, lb, up, dn); list.appendChild(row);
+    });
+  };
+  draw();
+  const bt = el("div", "btns"), save = el("button", "", t("Save")), cancel = el("button", "sec", t("Cancel")), reset = el("button", "sec", t("Reset"));
+  save.type = cancel.type = reset.type = "button";
+  cancel.onclick = () => ov.remove();
+  reset.onclick = async () => { await post("/api/qs", {reset: true}); ov.remove(); QSSIG = ""; refresh(); };
+  save.onclick = async () => { const r = await post("/api/qs", {order: items.map(x => x.q.id), hidden: items.filter(x => !x.show).map(x => x.q.id)});
+    if (!r.ok) { toast("⚠ " + (r.error || "error")); return; } ov.remove(); QSSIG = ""; toast("✓ " + t("Saved")); refresh(); };
+  bt.append(reset, cancel, save); c.append(list, bt);
+}
 function qsBuild(j) {
   const box = $("#qsw"); if (!box) return;
-  const L = qsList(j), sig = JSON.stringify(L.map(q => q.id + q.lb)) + LANG;
+  const L = qsArrange(qsList(j), j && j.cfg).concat([{id: "edit", ic: "✏️", lb: "Arrange", tip: "Choose and arrange the switches", edit: true}]);
+  const sig = JSON.stringify(L.map(q => q.id + q.lb)) + LANG;
   if (sig === QSSIG) return; QSSIG = sig; box.textContent = "";
   L.forEach(q => { const b = el("button", "sec"); b.type = "button"; b.id = "qs-" + q.id; b.append(el("span", "", q.ic), el("small", "", q.raw ? q.lb : t(q.lb))); b.title = t(q.tip);
     if (q.talk) { talkTile(b); box.appendChild(b); return; }
+    if (q.edit) { b.classList.add("qs-edit"); b.onclick = () => qsEdit(); box.appendChild(b); return; }
     b.onclick = async () => { if (!QSJ) return; b.disabled = true; const r = await q.go(QSJ.cfg, QSJ.state); b.disabled = false;
       if (r && r.ok === false) toast("⚠ " + (r.error || "error"));
       else if (q.flash) { b.classList.add("flash"); setTimeout(() => b.classList.remove("flash"), 400); toast("📷 " + t("Photo saved")); }
@@ -18570,6 +19441,8 @@ function tidyHeader(s, c) {
   const srcOk = (s.source_status || "") === "connected"; hb("#b-src", !srcOk);
   const cn = $("#b-conn"); if (cn) cn.hidden = cn.classList.contains("grn");
   hb("#b-camp", !!s.camping, "⛺ " + t("Camping"), "grn");
+  const VW = s.viewers || {}; hb("#b-view", VW.n > 0, "👁 " + VW.n + " " + t(VW.n === 1 ? "viewer" : "viewers"), "");
+  if ($("#b-view")) $("#b-view").title = t("viewers") + ": " + t("web") + " " + (VW.web || 0) + " · " + t("screen of the Pi") + " " + (VW.local || 0);
   hb("#b-eco", s.eco && s.eco !== "off", "🍃 " + t("Saving") + " · " + (s.eco === "saving" ? c.eco_fps + " FPS" : t("awake")), "blu");
   let tl = ""; const m = /^next photo in (\d+) min$/.exec(s.timelapse || ""); if (m) tl = " · " + m[1] + " min";
   hb("#b-tl", !!c.timelapse_on, "⏱ " + t("Timelapse") + tl, TL_HOLD_CLS(s));
@@ -18597,7 +19470,7 @@ function compactHeader(s, c) {
   // short symbols instead of long words (the full text stays as tooltip)
   const m = /^next photo in (\d+) min$/.exec(s.timelapse || "");
   sh("#b-tl", "⏱" + (m ? " " + m[1] + "′" : ""));
-  sh("#b-light", "🌙"); sh("#b-camp", "⛺"); sh("#b-eco", "🍃" + (s.eco === "saving" ? " " + c.eco_fps + " FPS" : ""));
+  sh("#b-light", "🌙"); sh("#b-camp", "⛺"); sh("#b-view", "👁 " + ((s.viewers || {}).n || 0), $("#b-view") && $("#b-view").title); sh("#b-eco", "🍃" + (s.eco === "saving" ? " " + c.eco_fps + " FPS" : ""));
   const L = s.lights || {}; sh("#b-lights", (L.white ? "💡" : "") + (L.ir ? " IR" : ""));
   sh("#b-pat", s.manual ? "✋" : (s.tracking ? "🎯" : "🔄"));
   const hs = s.hotspot || {}; sh("#b-hs", "📡" + (hs.clients ? " " + hs.clients : ""));
@@ -18856,29 +19729,167 @@ function solarText(c, s) {
   return L.join("\n");
 }
 function solarPaint(c, s) { const st = $("#solar-st"); if (st) st.textContent = solarText(c, s); }
-Object.assign(I18N.de, {"Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera"});
+Object.assign(I18N.de, {"Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera"});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
 function simExtras(d) {
-  const box = el("div", "auxbox"); const st = el("div", "mut"); st.id = "sim-st"; st.style.whiteSpace = "pre-wrap";
-  box.appendChild(el("div", "mut", t("A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.")));
-  const b = el("button", "", ""); b.type = "button"; b.id = "sim-btn"; b.style.marginTop = "8px";
+  // the settings of the section (switches, address, slider) go into a fold-out «Settings»
+  const rows = [...d.children].filter(x => x.tagName !== "SUMMARY");
+  const box = el("div", "auxbox"); box.id = "sim-main";
+  const head = el("div", ""); head.id = "sim-head"; head.style.cssText = "font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap";
+  const st = el("div", "mut"); st.id = "sim-st"; st.style.cssText = "white-space:pre-wrap;margin-top:2px";
+  const b = el("button", "", ""); b.type = "button"; b.id = "sim-btn"; b.style.cssText = "margin-top:10px;width:100%";
   b.onclick = async () => { const on = !(QSJ && QSJ.state.sim && QSJ.state.sim.on); b.disabled = true; await post("/api/sim", {on: on, lang: LANG}); b.disabled = false; refresh(); };
-  const tools = el("div", "btns"); tools.style.flexWrap = "wrap"; tools.id = "sim-tools";
+  const stats = el("div", ""); stats.id = "sim-stats"; stats.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px;margin-top:10px";
+  box.append(head, st, stats, b);
+  // ---- search in the network ----
+  const nb = el("div", "auxbox"); nb.style.marginTop = "10px";
+  const nh = el("div", "", "🔎 " + t("Simulators in the network")); nh.style.fontWeight = "600";
+  const srch = el("button", "sec", "🔎 " + t("Search now")); srch.type = "button"; srch.id = "sim-search"; srch.style.cssText = "margin-top:8px;width:100%";
+  srch.onclick = async () => { srch.disabled = true; await post("/api/sim", {action: "search", lang: LANG}); refresh(); setTimeout(() => { srch.disabled = false; }, 2500); };
+  const sl = el("div", "mut"); sl.id = "sim-scan"; sl.style.cssText = "margin-top:6px;white-space:pre-wrap";
+  const fnd = el("div", ""); fnd.id = "sim-found"; fnd.style.marginTop = "6px";
+  nb.append(nh, sl, fnd, srch);
+  // ---- settings (moved here) ----
+  const set = el("details", "sub"); set.style.marginTop = "10px"; set.appendChild(el("summary", "", "⚙️ " + t("Settings")));
+  const sbody = el("div", ""); sbody.style.padding = "4px 0";
+  rows.forEach(x => sbody.appendChild(x));
+  sbody.appendChild(el("div", "mut", t("A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.")));
+  set.appendChild(sbody);
+  // ---- tools ----
+  const tl = el("details", "sub"); tl.style.marginTop = "6px"; tl.appendChild(el("summary", "", "🧰 " + t("Tools")));
+  const tools = el("div", ""); tools.id = "sim-tools"; tools.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 0";
   const mk = (id, txt, act) => { const x = el("button", "sec", txt); x.type = "button"; x.id = id;
     x.onclick = async () => { x.disabled = true; const r = await post("/api/sim", {action: act, lang: LANG}); x.disabled = false;
       toast(r.ok ? "✓ " + t({install: "Simulator installed", start: "Simulator started", stop: "Simulator stopped"}[act]) : "⚠ " + (r.error || "error")); refresh(); };
     return x; };
   const dl = el("a", "btn sec", "⬇ " + t("Download for a PC (ZIP)")); dl.href = "/sim/simulator.zip";
+  const pv = el("a", "btn sec", "📱 " + t("Phone / tablet view")); pv.href = "/preview"; pv.target = "_blank";
   tools.append(mk("sim-inst", "📦 " + t("Install simulator on the Pi"), "install"), mk("sim-start", "▶ " + t("Start simulator here"), "start"),
-               mk("sim-stop", "⏹ " + t("Stop simulator"), "stop"), dl);
-  box.append(b, tools, st); d.appendChild(box);
+               mk("sim-stop", "⏹ " + t("Stop simulator"), "stop"), dl, pv);
+  tools.querySelectorAll("button,a").forEach(x => { x.style.fontSize = "13px"; x.style.padding = "8px"; });
+  tl.appendChild(tools);
+  box.append(nb, set, tl);
+  // ---- remote control of the simulator: it describes its scenarios and controls itself (CONTROL protocol 1) ----
+  const vb = el("div", "auxbox"); vb.id = "sim-vbox"; vb.style.marginTop = "10px"; vb.hidden = true;
+  const hd = el("div", "", "🎮 " + t("Simulator control")); hd.id = "sim-chd"; hd.style.fontWeight = "600";
+  const vst = el("div", "mut"); vst.id = "sim-vst"; vst.style.whiteSpace = "pre-wrap"; vst.style.marginTop = "4px";
+  const srow = el("div", "btns"); srow.style.flexWrap = "wrap"; srow.style.marginTop = "6px"; srow.style.alignItems = "center";
+  const sel = document.createElement("select"); sel.id = "sim-vsel"; sel.style.flex = "1 1 100%"; sel.style.minWidth = "0";
+  const vk = (txt, fn, cls) => { const x = el("button", cls === undefined ? "sec" : cls, txt); x.type = "button";
+    x.onclick = async () => { x.disabled = true; try { await fn(); } finally { x.disabled = false; } }; return x; };
+  const ctl = async (d) => { const r = await post("/api/sim", Object.assign({action: "ctl", lang: LANG}, d)); show(r); return r; };
+  const bLoad = vk("▶ " + t("Load"), () => sel.value && ctl({ctl: "scenario", id: sel.value}), "");
+  const bDel = vk("🗑 " + t("Delete"), async () => { if (sel.value && confirm(t("Delete this scenario in the simulator?") + "\n" + sel.options[sel.selectedIndex].textContent)) await ctl({ctl: "delete", id: sel.value}); });
+  srow.append(sel, bLoad, vk("↻", () => ctl({ctl: "get"})), bDel);
+  sel.onchange = () => { const o = sel.options[sel.selectedIndex]; bDel.hidden = !(o && o.dataset.del === "1"); };
+  const groups = el("div", ""); groups.id = "sim-cgroups"; groups.style.marginTop = "8px";
+  const upw = el("div", ""); upw.hidden = true; upw.style.marginTop = "8px";
+  const upl = el("div", "mut", ""); const up = document.createElement("input"); up.type = "file"; up.id = "sim-vup"; up.style.maxWidth = "100%";
+  const prog = el("div", "mut"); prog.id = "sim-vprog"; upw.append(upl, up, prog);
+  up.onchange = () => {
+    const f = up.files && up.files[0]; if (!f) return;
+    const x = new XMLHttpRequest(); x.open("POST", "/api/sim/upload?lang=" + LANG + "&name=" + encodeURIComponent(f.name));
+    x.upload.onprogress = (e) => { if (e.lengthComputable) prog.textContent = "⬆ " + f.name + " · " + Math.round(e.loaded / e.total * 100) + " %"; };
+    x.onload = () => { let r = null; try { r = JSON.parse(x.responseText); } catch (e) {}
+      prog.textContent = r && r.ok ? "✓ " + t("uploaded") + ": " + (r.saved || f.name) : "⚠ " + ((r && r.error) || x.status); up.value = ""; if (r && r.ok) show(r); };
+    x.onerror = () => { prog.textContent = "⚠ " + t("upload interrupted"); };
+    x.send(f);
+  };
+  let SIG = "";
+  const fmt = (c, v) => (v == null ? "–" : (Math.abs(v) >= 100 || c.step >= 1 ? Math.round(v) : (+v).toFixed(c.step < 0.1 ? 2 : 1))) + (c.unit ? " " + c.unit : "");
+  const build = (r) => {
+    groups.innerHTML = ""; const byG = {};
+    (r.controls || []).forEach(c => { const g = c.group || ""; (byG[g] = byG[g] || []).push(c); });
+    Object.keys(byG).forEach((g, gi) => {
+      const det = document.createElement("details"); det.className = "simgrp"; det.dataset.g = g; det.style.marginTop = "4px";
+      const sm = document.createElement("summary"); sm.textContent = g || t("Controls"); sm.style.cursor = "pointer"; sm.style.padding = "4px 0"; det.appendChild(sm);
+      const body = el("div", ""); body.style.display = "flex"; body.style.flexWrap = "wrap"; body.style.gap = "6px"; body.style.padding = "4px 0 8px";
+      byG[g].forEach(c => {
+        if (c.type === "button") { const x = vk(c.label, () => ctl({ctl: "press", id: c.id})); x.style.flex = "1 1 30%"; body.appendChild(x); return; }
+        const row = el("div", ""); row.style.flex = "1 1 100%"; row.dataset.cid = c.id;
+        if (c.type === "toggle") {
+          const lb = el("label", "", ""); lb.style.display = "flex"; lb.style.gap = "8px"; lb.style.alignItems = "center";
+          const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "simv"; cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked});
+          lb.append(cb, document.createTextNode(c.label)); row.appendChild(lb);
+        } else if (c.type === "slider") {
+          const top = el("div", "", ""); top.style.display = "flex"; top.style.justifyContent = "space-between";
+          const vv = el("span", "mut simvv", ""); top.append(el("span", "", c.label), vv);
+          const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1; rg.style.width = "100%";
+          rg.oninput = () => { vv.textContent = fmt(c, +rg.value); }; rg.onchange = () => ctl({ctl: "set", id: c.id, value: +rg.value});
+          row.append(top, rg);
+        } else if (c.type === "select") {
+          const top = el("div", "", c.label); const se = document.createElement("select"); se.className = "simv"; se.style.width = "100%";
+          (c.options || []).forEach(o => { const op = document.createElement("option"); op.value = o[0]; op.textContent = o[1] || o[0]; se.appendChild(op); });
+          se.onchange = () => ctl({ctl: "set", id: c.id, value: se.value}); row.append(top, se);
+        } else {
+          const top = el("div", "", c.label); const ti = document.createElement("input"); ti.className = "simv"; ti.style.width = "100%";
+          ti.onkeydown = (e) => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(top, ti);
+        }
+        row._c = c; body.appendChild(row);
+      });
+      det.appendChild(body); if (gi === 0) det.open = true; groups.appendChild(det);
+    });
+  };
+  const show = (r) => {
+    if (!r || !r.ok) { vst.textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
+    hd.textContent = "🎮 " + t("Simulator control") + (r.name ? " · " + r.name : "");
+    const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options]), r.upload ? r.upload.accept : null]);
+    if (sig !== SIG) { SIG = sig; build(r); }
+    groups.querySelectorAll("[data-cid]").forEach(row => {
+      const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
+      if (c.type === "toggle") inp.checked = !!c.value; else if (c.value != null) inp.value = c.value;
+      const vv = row.querySelector(".simvv"); if (vv) vv.textContent = fmt(c, c.value);
+    });
+    const cur = sel.value; sel.innerHTML = "";
+    (r.scenarios || []).forEach(o => { const op = document.createElement("option"); op.value = o.id; op.dataset.del = o.deletable ? "1" : "";
+      op.textContent = o.name + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
+    srow.hidden = !(r.scenarios || []).length;
+    sel.value = [...sel.options].some(o => o.value === cur) ? cur : (r.scenario || (sel.options[0] && sel.options[0].value) || "");
+    sel.onchange();
+    vst.textContent = r.status || "";
+    upw.hidden = !r.upload;
+    if (r.upload) { upl.textContent = "⬆ " + (r.upload.label || t("Upload a file to the simulator")) + (r.upload.max_mb ? " (max. " + r.upload.max_mb + " MB)" : ""); up.accept = (r.upload.accept || []).join(","); }
+  };
+  window.simCtl = () => ctl({ctl: "get"});
+  vb.append(hd, vst, srow, groups, upw);
+  box.appendChild(vb); d.appendChild(box);
+  setInterval(() => { const v = $("#sim-vbox"); if (v && !v.hidden && v.offsetParent !== null && !document.hidden) window.simCtl(); }, 4000);
 }
 function simPaint(s) {
   const S = s.sim || {}, st = $("#sim-st"), b = $("#sim-btn"); document.body.classList.toggle("sim-on", !!S.on);
   if ($("#sim-inst")) { $("#sim-inst").textContent = "📦 " + t(S.installed ? "Install simulator again" : "Install simulator on the Pi");
     $("#sim-start").hidden = !!S.running; $("#sim-stop").hidden = !S.running; }
   if (b) b.textContent = S.on ? "⏹ " + t("Switch the simulation off") : "🧪 " + t("Switch the simulation on");
-  if (st) st.textContent = (S.running ? "▶ " + t("the simulator runs on this Pi") + "\n" : "") + (!S.on ? t("off - the real cameras and sensors are used") : (S.ok ? "🟢 " + t("connected") + " · " + S.url + " · " + (S.dark ? t("night") : t("day")) + " · " + S.ambient + " °C" : "🔴 " + t(S.msg || "not reachable") + " · " + S.url));
+  const vb = $("#sim-vbox"); if (vb) { const vis = !!S.ok; if (vis && (vb.hidden || !vb.dataset.loaded)) { vb.dataset.loaded = "1"; window.simCtl && window.simCtl(); } vb.hidden = !vis; }
+  const hd = $("#sim-head"), T = S.stats || {};
+  if (hd) hd.textContent = !S.on ? "⚪ " + t("Simulation off") : (S.ok ? "🟢 " + (T.name || t("connected")) : "🔴 " + t("Simulator not reachable"));
+  const sg = $("#sim-stats");
+  if (sg) { const tile = (k, v) => '<div style="border:1px solid var(--line);border-radius:10px;padding:6px 8px"><div class="mut" style="font-size:11px">' + k + '</div><div style="font-weight:600">' + v + '</div></div>';
+    const dur = n => n == null ? "–" : n < 60 ? n + " s" : n < 3600 ? Math.floor(n / 60) + " min" : Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min";
+    sg.hidden = !S.on;
+    sg.innerHTML = tile(t("Connected for"), dur(T.since)) + tile(t("Response time"), T.rtt == null ? "–" : T.rtt + " ms") + tile(t("Camera pictures/s"), T.cam_fps == null ? "–" : T.cam_fps)
+      + tile(t("Thermal pictures/s"), T.th_fps == null ? "–" : T.th_fps) + tile(t("Messages sent"), T.sent || 0) + tile(t("Sensor events"), T.events || 0) + tile(t("Errors"), T.errs || 0); }
+  const sc = $("#sim-scan"), SC = S.scan || {};
+  if (sc) { const ago = SC.t ? Math.round(Date.now() / 1000 - SC.t) : null;
+    sc.textContent = SC.running ? "⏳ " + t("Searching") + " " + SC.net + " … " + Math.round(100 * (SC.done || 0) / Math.max(1, SC.hosts || 1)) + " % · " + (SC.found || 0) + " " + t("found")
+      : (SC.t ? t("Last search") + ": " + (ago < 60 ? ago + " s" : Math.round(ago / 60) + " min") + " · " + SC.hosts + " " + t("addresses in") + " " + SC.secs + " s · " + SC.found + " " + t("found") + " (" + SC.net + ")"
+        : t("Simulators announce themselves every 2 s. «Search now» also asks every address of the network.")); }
+  const fb = $("#sim-found");
+  if (fb) { const F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.count, x.ms, x.age > 5])) + S.url;
+    if (fb.dataset.sig !== sig) { fb.dataset.sig = sig; fb.textContent = "";
+      if (!F.length) fb.appendChild(el("div", "mut", t("No simulator announces itself in the network right now.")));
+      F.forEach(x => { const r = el("div"); r.style.cssText = "display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:10px;margin-top:6px";
+        const cur = S.url === "http://" + x.ip + ":" + x.port;
+        const info = el("div"); info.style.flex = "1";
+        info.append(el("div", "", (cur ? "✅ " : "🖥 ") + x.name), el("div", "mut", x.ip + ":" + x.port + (x.ip === "127.0.0.1" ? " · " + t("this device") : "") + (x.version ? " · v" + x.version : "")));
+        const f = new Date((x.first || x.t) * 1000);
+        info.appendChild(el("div", "mut", t("seen since") + " " + (("0" + f.getHours()).slice(-2) + ":" + ("0" + f.getMinutes()).slice(-2)) + " · " + t("last") + " " + x.age + " s · "
+          + (x.count ? x.count + " " + t("messages") : t("found by the search")) + (x.ms != null ? " · " + x.ms + " ms" : "")));
+        info.lastChild.style.fontSize = "12px"; r.appendChild(info);
+        if (!cur) { const u = el("button", "sec", t("Use")); u.type = "button"; u.onclick = async () => { await post("/api/sim", {action: "use", ip: x.ip, port: x.port, lang: LANG}); refresh(); }; r.appendChild(u); }
+        fb.appendChild(r); }); } }
+  if (st) st.textContent = (!S.on ? t("off - the real cameras and sensors are used") + " · " + S.url : (S.ok ? S.url + " · " + (S.dark ? t("night") : t("day")) + " · " + S.ambient + " °C" : t(S.msg || "not reachable") + " · " + S.url))
+    + (S.running ? "\n▶ " + t("the simulator runs on this Pi") : "");
   const bs = $("#b-sim"); if (bs) { bs.hidden = !S.on; bs.textContent = "🧪 " + t("SIMULATION") + (S.on && !S.ok ? " ⚠" : ""); }
 }
 function gpsExtras(d) {
@@ -21152,7 +22163,8 @@ class WebStream:
         fails = {}                                  # ip -> times of wrong passwords (lock-out after 8 in 5 minutes)
 
         public = {"/i18n/fr.js", "/i18n/it.js", "/i18n/rm.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png",
-                  "/apple-touch-icon-precomposed.png", "/favicon.ico", "/sw.js"}
+                  "/apple-touch-icon-precomposed.png", "/favicon.ico", "/sw.js",
+                  "/sim/simulator.zip"}                # the simulator fetches its updates here (public program, no secrets)
 
         @app.before_request
         def auth():
@@ -21189,11 +22201,22 @@ class WebStream:
             role = getattr(g, "role", "admin")
             if role == "admin":
                 return None
+            if request.path == "/api/sim/upload":                # only the administrator (and the body is a big video)
+                return reply({"ok": False, "error": tr("not allowed for your user", norm_lang(request.args.get("lang") or CFG["lang"]))}, 403)
             d = request.get_json(force=True, silent=True) if request.method == "POST" else None
             if role_allows(role, request.path, request.method, d if isinstance(d, dict) else {}):
                 return None
             lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or request.args.get("lang") or CFG["lang"])
             return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
+
+        @app.after_request
+        def count_viewer(resp):                     # who has a page open: counted for the header (other Motion Watch devices not)
+            p = request.path
+            if resp.status_code < 400 and (p == "/api/state" or (p.startswith("/g/") and p.endswith(("/state", "/state.json")))):
+                ua = request.headers.get("User-Agent", "")
+                if "MotionWatch" not in ua:
+                    VIEWERS[(request.remote_addr or "?") + "|" + ua[:120] + "|" + (request.headers.get("X-View-Id") or "")] = time.time()
+            return resp
 
         @app.after_request
         def who_did_it(resp):                       # with several users the log tells who switched what
@@ -21229,6 +22252,36 @@ class WebStream:
                 if "on" in d:
                     sim_set(d.get("on"), "web " + (request.remote_addr or "?"))
                 act_ = d.get("action")
+                if act_ == "ctl":                           # remote control of the simulator: passed on as it is (CONTROL protocol 1)
+                    c_ = str(d.get("ctl") or "get")
+                    if c_ not in ("get", "scenario", "delete", "set", "press"):
+                        return reply({"ok": False, "error": "unknown action"}, 400)
+                    q_ = {"action": c_}
+                    if c_ != "get":
+                        q_["id"] = str(d.get("id") or "")[:200]
+                    if c_ == "set":
+                        v_ = d.get("value")
+                        q_["value"] = v_ if isinstance(v_, (bool, int, float)) else str(v_)[:200]
+                    try:
+                        r = sim_control(None if c_ == "get" else q_)
+                    except Exception as e:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang) + f" ({_short_net_err(e) if '_short_net_err' in globals() else str(e)[:60]})"}, 400)
+                    if not r.get("ok"):
+                        return reply({"ok": False, "error": tr_err(str(r.get("error") or "not supported - update the simulator"), lang)}, 400)
+                    if c_ in ("scenario", "delete"):
+                        log_event("sys", f"Simulator: {c_} {q_.get('id', '')[:80]}")
+                    return reply(dict(r, ok=True))
+                if act_ == "search":
+                    sim_scan()
+                    return reply(dict(sim_status(), ok=True))
+                if act_ == "use":                            # take over a simulator that was found in the network
+                    ip_, port_ = str(d.get("ip") or ""), int(d.get("port") or 8765)
+                    if not re.fullmatch(r"[0-9.]{7,15}", ip_) or not (1 <= port_ <= 65535):
+                        return reply({"ok": False, "error": "bad address"}, 400)
+                    CFG["sim_url"] = f"http://{ip_}:{port_}"; save_settings()
+                    log_event("sys", f"Simulator address set to {CFG['sim_url']} (web)")
+                    if CFG["sim_on"] and WATCH_REF.get("w") is not None and str(CFG["source"]).startswith("sim:"):
+                        w_ = WATCH_REF["w"]; w_._open_gen += 1; w_._start_opener(CFG["source"])
                 if act_ in ("install", "start", "stop"):
                     try:
                         ok, msg = {"install": sim_install, "start": sim_start, "stop": sim_stop}[act_]()
@@ -21237,6 +22290,31 @@ class WebStream:
                     if not ok:
                         return reply({"ok": False, "error": tr_err(msg, lang)}, 400)
             return reply(dict(sim_status(), ok=True, connected=sim_status()["ok"]))
+
+        @app.route("/api/qs", methods=["POST"])
+        def api_qs():
+            d = body()
+            if d.get("reset"):
+                qs_layout_set([], [])
+            else:
+                qs_layout_set(d.get("order"), d.get("hidden"))
+            return reply({"ok": True, "qs_layout": CFG["qs_layout"]})
+
+        @app.route("/api/sim/upload", methods=["POST"])
+        def api_sim_upload():
+            lang = norm_lang(request.args.get("lang"))
+            name = os.path.basename(str(request.args.get("name") or ""))[:120]
+            n = int(request.content_length or 0)
+            if not name or n <= 0:
+                return reply({"ok": False, "error": tr_err("no file", lang)}, 400)
+            try:
+                r = sim_upload(name, request.stream, n)
+            except Exception as e:
+                return reply({"ok": False, "error": tr_err("simulator not reachable", lang) + f" ({str(e)[:60]})"}, 400)
+            if not r.get("ok"):
+                return reply({"ok": False, "error": tr_err(str(r.get("error") or "not supported - update the simulator"), lang)}, 400)
+            log_event("sys", f"Video for the simulator uploaded: {r.get('saved', name)} ({n / 1024 ** 2:.0f} MB)")
+            return reply(dict(r, ok=True))
 
         @app.route("/sim/simulator.zip")
         def sim_zip():
@@ -21327,9 +22405,13 @@ class WebStream:
             if resp.mimetype == "text/html":
                 resp.headers["Cache-Control"] = "no-store"          # always the page of the program that runs now
             resp.headers.setdefault("X-Content-Type-Options", "nosniff")
-            resp.headers.setdefault("X-Frame-Options", "DENY")
+            resp.headers.setdefault("X-Frame-Options", "SAMEORIGIN")    # only our own preview page (/preview) may show it in a frame
             resp.headers.setdefault("Referrer-Policy", "no-referrer")
             return resp
+
+        @app.route("/preview")
+        def preview_page():                         # the page as it looks on a phone / tablet, upright and across (for the simulator)
+            return Response(PREVIEW_PAGE, mimetype="text/html")
 
         @app.route("/")
         def index():
@@ -21430,6 +22512,7 @@ class WebStream:
         def api_state():
             with LOCK:
                 st = {k: v for k, v in STATE.items() if k != "events"}
+                st["viewers"] = viewers_now()
                 st["gps"] = gps_state()
                 st["gpsmod"] = {"status": GPSMOD["status"], "via": GPSMOD["via"], "sats": GPSMOD["sats"], "lat": GPSMOD["lat"], "lon": GPSMOD["lon"],
                                 "age": int(time.time() - GPSMOD["t"]) if GPSMOD["t"] else None, "anchor": bool(GPSMOD["anchor"]), "dist": GPSMOD.get("dist"),
@@ -21474,7 +22557,7 @@ class WebStream:
                     st["guest"] = {}
             cfg = {k: CFG[k] for k in web_specs()}
             cfg.update({k: CFG[k] for k in ("thermal_source", "deter_person_act", "deter_big_act", "deter_small_act", "deter_warm_act", "backup_type", "audio_in", "patrol_mode",
-                                            "siren_on", "web_stream", "sensors")})        # for the green arrows (overview)
+                                            "siren_on", "web_stream", "sensors", "qs_layout")})        # for the green arrows (overview)
             return reply({"state": st, "cfg": cfg, "waypoints": list(WAYPOINTS), "events": events, "relays": relays,
                           "schedules": schedules})
 
@@ -23043,6 +24126,8 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Camera / Servos", "pan", "Pan (%)", 0, 100, 1),
     ("Camera / Servos", "tilt", "Tilt (%)", 0, 100, 1),
     ("Camera / Servos", "track_gain", "Tracking gain", 0.1, 2.0, 0.1),
+    ("Camera / Servos", "track_motion_min", "Follow movement: smallest size (% of the picture)", 0.02, 3.0, 0.02),
+    ("Camera / Servos", "track_motion_hold", "Follow movement: must move for (seconds)", 0.3, 5.0, 0.1),
     ("Camera / Servos", "track_deadzone", "Tracking dead zone", 0.02, 0.3, 0.01),
     ("Camera / Servos", "manual_hold", "Manual control pause (s)", 0, 60, 1),
     ("Patrol", "patrol_dwell", "Dwell at waypoint (s)", 0, 15, 0.5),
@@ -23088,6 +24173,7 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Camping / protection", "arm_delay", "Arming countdown (s)", 0, 300, 5),
     ("Camping / protection", "auto_wait", "Automatic: wait for a known network (s)", 20, 300, 10),
     ("Power saving", "eco_fps", "Pictures per second while quiet", 1, 10, 1),
+    ("Simulator", "sim_fps", "Pictures per second in the simulation (CPU saving)", 2, 15, 1),
     ("Power saving", "eco_wake", "Full speed after an event for (s)", 5, 300, 5),
     ("Night report", "report_from", "The night starts at (o'clock)", 12, 23, 1),
     ("Updates", "update_hour", "Automatic update at (o'clock)", 0, 23, 1),
@@ -23122,6 +24208,8 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Loudspeaker", "talk_gain", "Speaking from the phone: volume boost (dB)", 0, 20, 1),
 ]
 TOGGLES = [  # (section, key, label)
+    ("Simulator", "sim_eco", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)"),
+    ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when Motion Watch starts in the background"),
     ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
@@ -23136,6 +24224,7 @@ TOGGLES = [  # (section, key, label)
     ("Extra sensors", "ble_on", "Bluetooth tags (RuuviTag - needs python3-bleak)"),
     ("Power saving", "eco_pir", "With a motion detector (PIR): only 1 picture per second while all is quiet"),
     ("Camera / Servos", "track_person", "Follow detected person (auto pan/tilt)"),
+    ("Camera / Servos", "track_motion", "Also follow animals and other movement (when no person is in the picture)"),
     ("Camera / Servos", "invert_pan", "Invert pan direction"),
     ("Camera / Servos", "invert_tilt", "Invert tilt direction"),
     ("Camera / Servos", "lens_check", "Warn when the lens is fogged or dirty (picture blurred for 15 minutes)"),
@@ -23439,7 +24528,7 @@ VIEW_ITEMS = [  # (group, key, label)
     ("Header", "b_eco", "Power saving"), ("Header", "b_tl", "Timelapse"), ("Header", "b_lights", "Lights"),
     ("Header", "b_therm", "Thermal camera"), ("Header", "b_patrol", "Patrol"), ("Header", "b_hs", "Own Wi-Fi (hotspot)"), ("Header", "b_remote", "Remote access"), ("Header", "b_batt", "Battery"), ("Header", "b_update", "New version"),
     ("Header", "b_relays", "Relays"), ("Header", "b_rain", "Rain"), ("Header", "b_wind", "Wind"), ("Header", "b_light", "Light level"),
-    ("Header", "b_auto", "Auto-tune"), ("Header", "b_fps", "FPS"), ("Header", "b_env", "Outside temperature"),
+    ("Header", "b_auto", "Auto-tune"), ("Header", "b_fps", "FPS"), ("Header", "b_env", "Outside temperature"), ("Header", "b_view", "Viewers"),
     ("Panels", "controls", "Camera control"), ("Panels", "weather", "Weather"), ("Panels", "cpu", "System · CPU"),
     ("Panels", "log", "Event log"), ("Panels", "settings_line", "Settings status"),
 ] + [("Settings sections", "sec:" + s, s) for s in SECTIONS]
@@ -23590,7 +24679,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.72.1")
+        self.root.title("Motion Watch 2.82.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -23880,7 +24969,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.72.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.82.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -23916,7 +25005,7 @@ class App:
             texts = {"b_person": tr("No person"), "b_count": f"{tr('Persons total')}: 0", "b_objects": f"0 {tr('objects')}",
                      "b_rain": tr("No rain"), "b_wind": f"{tr('Wind')}: calm", "b_rec": tr("Idle"), "b_relays": tr("Relays"),
                      "b_patrol": tr("Patrol off"), "b_light": tr("Light ok"), "b_auto": tr("Auto-tune"), "b_fps": "– FPS", "b_arm": "🛡",
-                     "b_camp": "⛺", "b_eco": "🍃", "b_env": "🌡", "b_tl": "⏱", "b_lights": "💡", "b_therm": "🌡", "b_hs": "📡", "b_remote": "🌐", "b_batt": "🔋", "b_update": "⬆"}
+                     "b_camp": "⛺", "b_eco": "🍃", "b_env": "🌡", "b_tl": "⏱", "b_lights": "💡", "b_therm": "🌡", "b_hs": "📡", "b_remote": "🌐", "b_batt": "🔋", "b_update": "⬆", "b_view": "👁"}
             for k in keys:
                 self.badges[k] = self._badge(self.badge_f, texts[k])
             if "b_count" in self.badges:
@@ -24212,7 +25301,9 @@ class App:
             grid.columnconfigure(k, weight=1, uniform="qs")
         self.qs_tiles = {}
         th = 58 if wide else 50
-        for n, q in enumerate(self._qs_list()):
+        qs = qs_arrange(self._qs_list()) + [dict(id="edit", ic="✎", lb=tr("Arrange"), tip=tr("Choose and arrange the switches"),
+                                                 on=lambda: False, go=self._qs_edit)]
+        for n, q in enumerate(qs):
             t = tk.Frame(grid, bg=self._btn2(), highlightthickness=1, highlightbackground=C["line"], width=50, height=th, cursor="hand2")
             t.grid(row=n // cols, column=n % cols, padx=(0, 6), pady=(0, 6), sticky="ew"); t.pack_propagate(False)
             ic = tk.Label(t, text=q["ic"], bg=t["bg"], fg=C["txt"], font=("DejaVu Sans", 15 if wide else 13)); ic.pack(pady=(6 if wide else 3, 0))
@@ -24291,6 +25382,42 @@ class App:
                 w.config(bg=C["acc"])
             self.root.after(350, self._qs_paint)
         self._qs_paint()
+
+    def _qs_edit(self):
+        """Window to choose and arrange the quick switches (the same setting as on the web page)."""
+        top = tk.Toplevel(self.root); top.title(tr("Arrange the switches")); top.configure(bg=C["panel"]); top.transient(self.root)
+        tk.Label(top, text=tr("Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device."), bg=C["panel"], fg=C["mut"],
+                 wraplength=360, justify="left").pack(anchor="w", padx=12, pady=(10, 6))
+        hid = set((CFG.get("qs_layout") or {}).get("hidden") or [])
+        items = [[q, tk.BooleanVar(value=q["id"] not in hid)] for q in qs_arrange(self._qs_list(), ) + [q for q in self._qs_list() if q["id"] in hid]]
+        seen = set(); items = [it for it in items if not (it[0]["id"] in seen or seen.add(it[0]["id"]))]
+        box = tk.Frame(top, bg=C["panel"]); box.pack(fill="both", padx=12)
+
+        def draw():
+            for w in box.winfo_children():
+                w.destroy()
+            for i, (q, v) in enumerate(items):
+                row = tk.Frame(box, bg=C["panel"]); row.pack(fill="x", pady=1)
+                tk.Checkbutton(row, text=f"{q['ic']}  {q['lb']}", variable=v, bg=C["panel"], fg=C["txt"], selectcolor=C["field"], activebackground=C["panel"],
+                               anchor="w").pack(side="left", fill="x", expand=True)
+                for txt, d in (("▲", -1), ("▼", 1)):
+                    b = tk.Button(row, text=txt, width=2, command=lambda i=i, d=d: move(i, d), state="normal" if 0 <= i + d < len(items) else "disabled")
+                    b.pack(side="left", padx=1)
+
+        def move(i, d):
+            items[i], items[i + d] = items[i + d], items[i]; draw()
+
+        def save(reset=False):
+            if reset:
+                qs_layout_set([], [])
+            else:
+                qs_layout_set([q["id"] for q, v in items], [q["id"] for q, v in items if not v.get()])
+            top.destroy(); tid, self.tab = self.tab, None; self._tab(tid)
+        draw()
+        bf = tk.Frame(top, bg=C["panel"]); bf.pack(fill="x", padx=12, pady=10)
+        ttk.Button(bf, text=tr("Reset"), command=lambda: save(True)).pack(side="left")
+        ttk.Button(bf, text=tr("Save"), command=save).pack(side="right")
+        ttk.Button(bf, text=tr("Cancel"), command=top.destroy).pack(side="right", padx=6)
 
     def _relay_quick(self, i):
         """On <-> back to the mode from before (mostly automatic) - like the web page."""
@@ -25083,7 +26210,8 @@ class App:
         si_ = sim_status()
         self._status("Simulator", (tr("off - the real cameras and sensors are used") if not si_["on"] else
                                    (tr("connected") + f" · {si_['url']} · " + (tr("night") if si_["dark"] else tr("day")) + f" · {si_['ambient']} °C"
-                                    if si_["ok"] else tr_err(si_["msg"]) + " · " + si_["url"])))
+                                    if si_["ok"] else tr_err(si_["msg"]) + " · " + si_["url"]))
+                     + ("\n🔎 " + tr("Simulators in the network:") + " " + ", ".join(f"{x['name']} ({x['ip']}:{x['port']})" for x in si_["found"]) if si_["found"] else ""))
         so_ = st.get("solar") or {}; nf_ = st.get("night")
         l_ = [(tr("off") if not CFG["solar_on"] else tr("no current meter found at this address") if not so_.get("ok")
                else f"{so_['w']} W ({so_['v']} V · {so_['a']} A) · {tr('today')} {so_['wh']} Wh · {tr('max.')} {so_['max']} W")]
@@ -25830,6 +26958,13 @@ class App:
         self._sb("b_patrol", tr("MANUAL") if manual else (tr("TRACKING") if st["tracking"] else f"{tr('Patrol')}: {tr(st['patrol_status'])}"),
                  C["yel"] if manual else C["acc"], show=bool(manual or st["tracking"] or CFG["patrol"]))
         self._sb("b_camp", "⛺ " + tr("Camping profile"), C["grn"], show=bool(CFG["camping"]))
+        try:                                       # this window counts as a viewer while it is on the screen (not minimised)
+            if self.root.state() != "iconic" and self.root.winfo_viewable():
+                STATE["local_view_t"] = time.time()
+        except Exception:
+            pass
+        vw = viewers_now()
+        self._sb("b_view", f"👁 {vw['n']} {tr('viewer' if vw['n'] == 1 else 'viewers')}", None, show=vw["n"] > 0)
         self._sb("b_eco", "🍃 " + tr("power saving") + " · " + (f"{CFG['eco_fps']} FPS" if st["eco"] == "saving" else tr("awake")), C["blu"], show=st["eco"] != "off")
         m_ = re.fullmatch(r"next photo in (\d+) min", st["timelapse"] or "")
         self._sb("b_tl", "⏱ " + tr("Timelapse") + (f" · {m_.group(1)} min" if m_ else ""), C["acc"], show=bool(CFG["timelapse_on"]))
@@ -30494,10 +31629,58 @@ for _k, _v in _HX37.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX46 = {'Simulators in the network': ('Simulatoren im Netz', 'Simulateurs dans le réseau', 'Simulatori nella rete', 'Simulaturs en la rait'), 'Search now': ('Jetzt suchen', 'Chercher maintenant', 'Cerca ora', 'Tschertgar ussa'), 'Tools': ('Werkzeuge', 'Outils', 'Strumenti', 'Utensils'), 'Simulation off': ('Simulation aus', 'Simulation désactivée', 'Simulazione spenta', 'Simulaziun deactivada'), 'Simulator not reachable': ('Simulator nicht erreichbar', 'Simulateur injoignable', 'Simulatore non raggiungibile', 'Simulatur betg cuntanschibel'), 'Connected for': ('Verbunden seit', 'Connecté depuis', 'Connesso da', 'Collià dapi'), 'Response time': ('Antwortzeit', 'Temps de réponse', 'Tempo di risposta', 'Temp da resposta'), 'Camera pictures/s': ('Kamera Bilder/s', 'Images caméra/s', 'Immagini camera/s', 'Maletgs camera/s'), 'Thermal pictures/s': ('Wärmebilder/s', 'Images thermiques/s', 'Immagini termiche/s', 'Maletgs termics/s'), 'Messages sent': ('Meldungen gesendet', 'Messages envoyés', 'Messaggi inviati', 'Messadis tramess'), 'Sensor events': ('Sensor-Ereignisse', 'Événements capteurs', 'Eventi sensori', 'Eveniments da sensurs'), 'Errors': ('Fehler', 'Erreurs', 'Errori', 'Errurs'), 'Searching': ('Suche', 'Recherche', 'Ricerca', 'Tschertga'), 'found': ('gefunden', 'trouvé(s)', 'trovati', 'chattà'), 'Last search': ('Letzte Suche', 'Dernière recherche', 'Ultima ricerca', 'Ultima tschertga'), 'addresses in': ('Adressen in', 'adresses en', 'indirizzi in', 'adressas en'), 'Simulators announce themselves every 2 s. «Search now» also asks every address of the network.': ('Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.', "Les simulateurs s'annoncent toutes les 2 s. « Chercher maintenant » interroge aussi chaque adresse du réseau.", 'I simulatori si annunciano ogni 2 s. «Cerca ora» interroga anche ogni indirizzo della rete.', "Ils simulaturs s'annunzian mintga 2 s. «Tschertgar ussa» dumonda era mintga adressa da la rait."), 'seen since': ('gesehen seit', 'vu depuis', 'visto da', 'vis dapi'), 'last': ('zuletzt vor', 'dernier il y a', 'ultimo', "l'ultima giada avant"), 'messages': ('Meldungen', 'messages', 'messaggi', 'messadis'), 'found by the search': ('durch die Suche gefunden', 'trouvé par la recherche', 'trovato dalla ricerca', 'chattà tras la tschertga')}
+for _k, _v in _HX46.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX45 = {'Find the simulator in the network by itself (and take over its address)': ('Simulator im Netz selbst finden (und seine Adresse übernehmen)', 'Trouver le simulateur dans le réseau tout seul (et reprendre son adresse)', 'Trova da solo il simulatore nella rete (e usa il suo indirizzo)', 'Chattar il simulatur en la rait sez (e surpigliar sia adressa)'), 'Simulators in the network:': ('Simulatoren im Netz:', 'Simulateurs dans le réseau :', 'Simulatori nella rete:', 'Simulaturs en la rait:'), 'No simulator announces itself in the network right now.': ('Im Moment meldet sich kein Simulator im Netz.', "Aucun simulateur ne s'annonce dans le réseau pour le moment.", 'Al momento nessun simulatore si annuncia nella rete.', "Per il mument n'annunzia nagin simulatur en la rait."), 'this device': ('dieses Gerät', 'cet appareil', 'questo dispositivo', 'quest apparat'), 'Use': ('Verwenden', 'Utiliser', 'Usa', 'Duvrar'), 'bad address': ('ungültige Adresse', 'adresse invalide', 'indirizzo non valido', 'adressa nunvalida')}
+for _k, _v in _HX45.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX44 = {'Phone / tablet view': ('Handy- / Tablet-Ansicht', 'Vue téléphone / tablette', 'Vista telefono / tablet', 'Vista telefonin / tablet')}
+for _k, _v in _HX44.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX43 = {'Arrange': ('Anpassen', 'Organiser', 'Disponi', 'Adattar'), 'Arrange the switches': ('Schalter anpassen', 'Organiser les boutons', 'Disponi i pulsanti', 'Adattar ils buttuns'), 'Choose and arrange the switches': ('Schalter auswählen und anordnen', 'Choisir et organiser les boutons', 'Scegli e disponi i pulsanti', 'Tscherner ed ordinar ils buttuns'), 'Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.': ('Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.', 'Cochez ce que vous voulez voir, déplacez avec ▲ ▼. Enregistré pour tous sur cet appareil.', 'Spunta ciò che vuoi vedere, sposta con ▲ ▼. Salvato per tutti su questo dispositivo.', 'Marcar quai che ti vuls vesair, spustar cun ▲ ▼. Vala per tuts sin quest apparat.'), 'Reset': ('Zurücksetzen', 'Réinitialiser', 'Ripristina', 'Reinizialisar'), 'Saved': ('Gespeichert', 'Enregistré', 'Salvato', 'Memorisà')}
+for _k, _v in _HX43.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX42 = {'viewer': ('Zuschauer', 'spectateur', 'spettatore', 'spectatur'), 'viewers': ('Zuschauer', 'spectateurs', 'spettatori', 'spectaturs'), 'Viewers': ('Zuschauer', 'Spectateurs', 'Spettatori', 'Spectaturs'), 'web': ('Web', 'web', 'web', 'web'), 'screen of the Pi': ('Pi-Bildschirm', 'écran du Pi', 'schermo del Pi', 'visur dal Pi')}
+for _k, _v in _HX42.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX41 = {'Simulator control': ('Simulator-Steuerung', 'Commande du simulateur', 'Comando del simulatore', 'Commonda dal simulatur'), 'Load': ('Laden', 'Charger', 'Carica', 'Chargiar'), 'Controls': ('Bedienung', 'Commandes', 'Comandi', 'Commonds'), 'running': ('läuft', 'en cours', 'in corso', 'en funcziun'), 'Upload a file to the simulator': ('Eine Datei in den Simulator hochladen', 'Téléverser un fichier dans le simulateur', 'Carica un file nel simulatore', 'Chargiar si ina datoteca en il simulatur'), 'unknown control': ('unbekannter Regler', 'commande inconnue', 'comando sconosciuto', 'commond nunenconuschent'), 'unknown scenario': ('unbekanntes Szenario', 'scénario inconnu', 'scenario sconosciuto', 'scenari nunenconuschent'), 'unknown choice': ('unbekannte Auswahl', 'choix inconnu', 'scelta sconosciuta', 'tscherna nunenconuschenta'), 'cannot be deleted': ('kann nicht gelöscht werden', 'ne peut pas être supprimé', 'non può essere eliminato', 'na po betg vegnir stizzà'), 'Delete this scenario in the simulator?': ('Dieses Szenario im Simulator löschen?', 'Supprimer ce scénario dans le simulateur ?', 'Eliminare questo scenario nel simulatore?', 'Stizzar quest scenari en il simulatur?')}
+for _k, _v in _HX41.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX40 = {'Video scenarios': ('Video-Szenarien', 'Scénarios vidéo', 'Scenari video', 'Scenaris da video'), 'A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.': ('Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.', 'Une vidéo 360° (ou une vidéo normale) à la place du monde dessiné : de vraies images, la caméra regarde autour. Simulateur 3.3 ou plus récent.', 'Un video a 360° (o un video normale) al posto del mondo disegnato: immagini reali, la telecamera si guarda intorno. Simulatore 3.3 o più recente.', 'In video da 360° (u in video normal) empè dal mund dissegnà: maletgs vairs, la camera guarda enturn. Simulatur 3.3 u pli nov.'), 'also drawn visitors in the video': ('zusätzlich gezeichnete Besucher im Video', 'aussi des visiteurs dessinés dans la vidéo', 'anche visitatori disegnati nel video', 'era visitaders dissegnads en il video'), '(no videos yet - upload one below)': ('(noch keine Videos – unten eines hochladen)', '(pas encore de vidéos – en téléverser une ci-dessous)', '(ancora nessun video – caricane uno qui sotto)', '(anc nagins videos – chargiar si in sutvart)'), 'off - drawn world': ('aus – gezeichnete Welt', 'désactivé – monde dessiné', 'spento – mondo disegnato', 'deactivà – mund dissegnà'), 'Play': ('Abspielen', 'Lire', 'Riproduci', 'Reproducir'), 'Stop': ('Stopp', 'Arrêter', 'Ferma', 'Stop'), 'Delete': ('Löschen', 'Supprimer', 'Elimina', 'Stizzar'), 'Delete this video in the simulator?': ('Dieses Video im Simulator löschen?', 'Supprimer cette vidéo dans le simulateur ?', 'Eliminare questo video nel simulatore?', 'Stizzar quest video en il simulatur?'), 'uploaded': ('hochgeladen', 'téléversé', 'caricato', 'chargià si'), 'upload interrupted': ('Hochladen abgebrochen', 'téléversement interrompu', 'caricamento interrotto', 'chargiar si interrut'), 'Upload a video into the video folder of the simulator (big 4K videos are made smaller once):': ('Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):', 'Téléverser une vidéo dans le dossier vidéo du simulateur (les grandes vidéos 4K sont réduites une fois) :', 'Carica un video nella cartella video del simulatore (i grandi video 4K vengono ridotti una volta):', "Chargiar si in video en l'ordinatur da videos dal simulatur (gronds videos 4K vegnan reducids ina giada):"), 'video not found': ('Video nicht gefunden', 'vidéo introuvable', 'video non trovato', 'video betg chattà'), 'not supported - update the simulator': ('geht nicht – Simulator aktualisieren', 'non pris en charge – mettre à jour le simulateur', 'non supportato – aggiorna il simulatore', 'na va betg – actualisar il simulatur'), 'only videos (mp4, mov, mkv, webm, avi) or .json': ('nur Videos (mp4, mov, mkv, webm, avi) oder .json', 'seulement des vidéos (mp4, mov, mkv, webm, avi) ou .json', 'solo video (mp4, mov, mkv, webm, avi) o .json', 'mo videos (mp4, mov, mkv, webm, avi) u .json'), 'file empty or bigger than 4 GB': ('Datei leer oder grösser als 4 GB', 'fichier vide ou plus grand que 4 Go', 'file vuoto o più grande di 4 GB', 'datoteca vida u pli gronda che 4 GB'), 'no file': ('keine Datei', 'aucun fichier', 'nessun file', 'nagina datoteca')}
+for _k, _v in _HX40.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX39 = {"Also follow animals and other movement (when no person is in the picture)": ("Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Suivre aussi les animaux et autres mouvements (s'il n'y a personne dans l'image)", "Segui anche animali e altri movimenti (se nessuna persona è nell'immagine)", "Suandar era animals ed autras moviments (sch'i n'ha nagina persuna en il maletg)"),
+          "Follow movement: smallest size (% of the picture)": ("Bewegung folgen: kleinste Grösse (% des Bildes)", "Suivre le mouvement : taille minimale (% de l'image)", "Segui il movimento: dimensione minima (% dell'immagine)", "Suandar il moviment: grondezza minimala (% dal maletg)"),
+          "Follow movement: must move for (seconds)": ("Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Suivre le mouvement : doit bouger pendant (secondes)", "Segui il movimento: deve muoversi per (secondi)", "Suandar il moviment: sto sa mover uschè ditg (secundas)")}
+for _k, _v in _HX39.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX38 = {"Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": ("CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Ménager le processeur pendant la simulation (moins d'images, le simulateur ne dessine que ce qui est demandé)", "Risparmia CPU durante la simulazione (meno immagini, il simulatore disegna solo ciò che viene richiesto)", "Spargnar CPU durant la simulaziun (pli paucs maletgs, il simulatur dissegna mo quai che vegn pretendì)"),
+          "Pictures per second in the simulation (CPU saving)": ("Bilder pro Sekunde in der Simulation (CPU schonen)", "Images par seconde dans la simulation (ménager le processeur)", "Immagini al secondo nella simulazione (risparmio CPU)", "Maletgs per secunda en la simulaziun (spargnar CPU)")}
+for _k, _v in _HX38.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 # ---- guide: the parts added in 2.53 - 2.65 (inserted into the existing chapters of every language) ----
 _HELP_NEW = {
  "de": {
-  "camera": '<li><b>Bild drehen / spiegeln</b> (Kamera / Servos): für eine seitlich oder kopfüber montierte Kamera (90° / 180° / 270°). Danach Zonen und Linien prüfen.</li>'
+  "camera": '<li><b>Auch Tieren und anderen Bewegungen folgen</b> (Kamera / Servos): ist keine Person im Bild, folgt die Kamera auch einem Tier – auch wenn die KI es nicht erkennt. Es muss sich etwa 2 Sekunden lang in eine Richtung bewegen; Äste, die im Wind hin und her schwingen, werden losgelassen, bei starkem Wind ist es aus. Einstellbar: kleinste Grösse und Dauer.</li><li><b>Bild drehen / spiegeln</b> (Kamera / Servos): für eine seitlich oder kopfüber montierte Kamera (90° / 180° / 270°). Danach Zonen und Linien prüfen.</li>'
             '<li><b>Linse beschlagen / verschmutzt:</b> bleibt das Bild 15 Minuten unscharf und flau (Tau, Staub, Spinnweben), kommt eine Push-Nachricht. Sie lernt zuerst eine Stunde lang, was normal ist.</li>'
             '<li><b>Kacheln in der Steuerung:</b> <b>▒ Maske</b> färbt alles, was die Erkennung als Bewegung sieht, dezent rot. <b>🎙 Sprechen</b> ist gegen versehentliches Drücken geschützt: einmal kurz antippen (wird orange «Jetzt halten»), dann innerhalb von 6 Sekunden gedrückt halten und sprechen.</li>',
   "lightsound": '<li><b>🗣 Ansage:</b> unter Lautsprecher einen Text eintippen (oder einen Vorschlag antippen), Stimme wählen, «Jetzt sprechen». «Als eigenen Klang speichern» legt die Ansage als Klang ab – dann ist sie für Sirene und Abschreckung wählbar. Braucht auf dem Pi einmal <code>sudo apt install espeak-ng</code> (schönere Stimme: <code>libttspico-utils</code>).</li>',
@@ -30514,7 +31697,7 @@ _HELP_NEW = {
          '<li><b>☀ Solarpanel:</b> ein INA219-Strommesser zeigt Watt, Volt und den Ertrag des Tages. <b>Nacht-Prognose:</b> reicht der Akku bis Sonnenaufgang? Steht in der Selbstdiagnose; am Abend kommt eine Push-Nachricht, wenn es knapp wird.</li>'
          '<li>Wie die Sensoren angeschlossen werden: Dokument <code>docs/Sensoren.md</code> auf GitHub. ⚠ Die GPIO-Pins vertragen nur 3,3 V.</li></ul>\n</section>\n\n'},
  "en": {
-  "camera": '<li><b>Turn / mirror the picture</b> (Camera / Servos): for a camera mounted sideways or upside down (90° / 180° / 270°). Check the zones and lines afterwards.</li>'
+  "camera": '<li><b>Also follow animals and other movement</b> (Camera / Servos): with no person in the picture the camera also follows an animal – even one the AI does not know. It must move in one direction for about 2 seconds; branches swinging in the wind are let go, in strong wind it is off. Adjustable: smallest size and time.</li><li><b>Turn / mirror the picture</b> (Camera / Servos): for a camera mounted sideways or upside down (90° / 180° / 270°). Check the zones and lines afterwards.</li>'
             '<li><b>Lens fogged / dirty:</b> when the picture stays blurred and flat for 15 minutes (dew, dust, a spider web) a push message comes. It first learns for an hour what is normal.</li>'
             '<li><b>Tiles in the control:</b> <b>▒ Mask</b> tints everything the detection sees as movement in a soft red. <b>🎙 Talk</b> is safe against an accidental press: tap once (it turns orange, «Hold now»), then hold it within 6 seconds and talk.</li>',
   "lightsound": '<li><b>🗣 Announcement:</b> under Loudspeaker type a text (or tap a suggestion), choose the voice, «Speak now». «Save as own sound» keeps it as a sound – then it can be chosen for the siren and deterrence. Needs once on the Pi <code>sudo apt install espeak-ng</code> (nicer voice: <code>libttspico-utils</code>).</li>',
@@ -30531,7 +31714,7 @@ _HELP_NEW = {
          '<li><b>☀ Solar panel:</b> an INA219 current meter shows watts, volts and the yield of the day. <b>Night forecast:</b> does the battery last until sunrise? Shown in the self-check; a push in the evening when it gets tight.</li>'
          '<li>How to connect the sensors: document <code>docs/Sensoren.md</code> on GitHub. ⚠ The GPIO pins only take 3.3 V.</li></ul>\n</section>\n\n'},
  "fr": {
-  "camera": '<li><b>Tourner / miroir de l\'image</b> (Caméra / servos) : pour une caméra montée de côté ou à l\'envers (90° / 180° / 270°). Vérifiez ensuite les zones et les lignes.</li>'
+  "camera": '<li><b>Suivre aussi les animaux et autres mouvements</b> (Caméra / servos) : sans personne dans l\'image, la caméra suit aussi un animal – même inconnu de l\'IA. Il doit aller dans une direction pendant environ 2 secondes ; les branches qui oscillent au vent sont lâchées, par vent fort c\'est désactivé.</li><li><b>Tourner / miroir de l\'image</b> (Caméra / servos) : pour une caméra montée de côté ou à l\'envers (90° / 180° / 270°). Vérifiez ensuite les zones et les lignes.</li>'
             '<li><b>Objectif embué / sale :</b> si l\'image reste floue et terne pendant 15 minutes (rosée, poussière, toile d\'araignée), un message push arrive. Elle apprend d\'abord pendant une heure ce qui est normal.</li>'
             '<li><b>Tuiles de la commande :</b> <b>▒ Masque</b> colore en rouge discret tout ce que la détection voit bouger. <b>🎙 Parler</b> est protégé contre un appui involontaire : toucher une fois (devient orange «Maintenir»), puis maintenir dans les 6 secondes et parler.</li>',
   "lightsound": '<li><b>🗣 Annonce :</b> sous Haut-parleur, tapez un texte (ou touchez une proposition), choisissez la voix, «Parler maintenant». «Enregistrer comme son propre» le garde comme son – utilisable pour la sirène et la dissuasion. Nécessite une fois sur le Pi <code>sudo apt install espeak-ng</code>.</li>',
@@ -30547,7 +31730,7 @@ _HELP_NEW = {
          '<li><b>☀ Panneau solaire :</b> mesureur INA219 (watts, volts, rendement du jour) et <b>prévision de nuit</b> : la batterie tiendra-t-elle jusqu\'au lever du soleil ?</li>'
          '<li>Branchements : document <code>docs/Sensoren.md</code> sur GitHub. ⚠ Les GPIO ne supportent que 3,3 V.</li></ul>\n</section>\n\n'},
  "it": {
-  "camera": '<li><b>Ruotare / specchiare l\'immagine</b> (Telecamera / servo): per una telecamera montata di lato o capovolta (90° / 180° / 270°). Poi controllare zone e linee.</li>'
+  "camera": '<li><b>Segui anche animali e altri movimenti</b> (Telecamera / servo): senza persone nell\'immagine la telecamera segue anche un animale – anche se l\'IA non lo riconosce. Deve muoversi in una direzione per circa 2 secondi; i rami che oscillano al vento vengono lasciati, con vento forte è spento.</li><li><b>Ruotare / specchiare l\'immagine</b> (Telecamera / servo): per una telecamera montata di lato o capovolta (90° / 180° / 270°). Poi controllare zone e linee.</li>'
             '<li><b>Obiettivo appannato / sporco:</b> se l\'immagine resta sfocata e piatta per 15 minuti (rugiada, polvere, ragnatela) arriva un messaggio push. Prima impara per un\'ora cosa è normale.</li>'
             '<li><b>Riquadri nel comando:</b> <b>▒ Maschera</b> colora di un rosso discreto tutto ciò che il rilevamento vede muoversi. <b>🎙 Parlare</b> è protetto contro una pressione involontaria: toccare una volta (diventa arancione «Tieni premuto»), poi tenere premuto entro 6 secondi e parlare.</li>',
   "lightsound": '<li><b>🗣 Annuncio:</b> sotto Altoparlante scrivi un testo (o tocca un suggerimento), scegli la voce, «Parla ora». «Salva come suono proprio» lo conserva come suono – selezionabile per sirena e deterrenza. Serve una volta sul Pi <code>sudo apt install espeak-ng</code>.</li>',
@@ -30563,7 +31746,7 @@ _HELP_NEW = {
          '<li><b>☀ Pannello solare:</b> misuratore INA219 (watt, volt, resa del giorno) e <b>previsione notturna</b>: la batteria durerà fino all\'alba?</li>'
          '<li>Collegamenti: documento <code>docs/Sensoren.md</code> su GitHub. ⚠ I GPIO sopportano solo 3,3 V.</li></ul>\n</section>\n\n'},
  "rm": {
-  "camera": '<li><b>Volver / spievlar il maletg</b> (Camera / servos): per ina camera montada da la vart u cun il chau engiu (90° / 180° / 270°). Suenter controllar las zonas e lingias.</li>'
+  "camera": '<li><b>Suandar era animals ed autras moviments</b> (Camera / servos): sch\'i n\'ha nagina persuna en il maletg, suonda la camera era in animal – era sch\'la IA na l\'enconuscha betg. El sto sa mover var 2 secundas en ina direcziun; roms che sgulatschan en il vent vegnan laschads, cun vent ferm è quai deactivà.</li><li><b>Volver / spievlar il maletg</b> (Camera / servos): per ina camera montada da la vart u cun il chau engiu (90° / 180° / 270°). Suenter controllar las zonas e lingias.</li>'
             '<li><b>Lentilla stgiraida / maldischa:</b> sch\'il maletg resta 15 minutas betg net (rusada, pulvra, taila d\'arogn), vegn in messadi push. Ella emprenda l\'emprim ina ura tge ch\'è normal.</li>'
             '<li><b>Plattinas en la manipulaziun:</b> <b>▒ Mascra</b> colurescha cotschen tut quai che la detecziun vesa sco moviment. <b>🎙 Discurrer</b> è protegì cunter smatgar per sbagl: smatgar ina giada (daventa oransch «Tegnair ussa»), lura tegnair smatgà entaifer 6 secundas e discurrer.</li>',
   "lightsound": '<li><b>🗣 Annunzia:</b> sut Autpledader scriver in text, tscherner la vusch, «Discurrer ussa». «Memorisar sco agen tun» al tegna sco tun per la sirena e la deterrenza. Basegna ina giada sin il Pi <code>sudo apt install espeak-ng</code>.</li>',
@@ -30720,7 +31903,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.72.1 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.82.0 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:
