@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 13:10",
+ "generated": "2026-10-25 13:32",
  "versions": [
+  {
+   "version": "2.61.0",
+   "file": "webcam_bewegung_2_61_0.py",
+   "url": "",
+   "sha256": "192e8e5f83997629807a1ff471c9003ce80da7af5c2c940e77eafe40448b062f",
+   "date": "2026-10-25 13:32",
+   "notes": "announcement from text (Loudspeaker): the Pi speaks a typed text, offline (pico2wave or espeak-ng); it can be saved as an own sound and then used for the siren / deterrence.",
+   "sig": "885af9b0fb4592736797770695122b0939e658ed6a0cdcf1527076ad493eeb2e187e5775c14f80668589c371b1739fb23647d190211cd803aee3a1016b3f990a"
+  },
   {
    "version": "2.60.0",
    "file": "webcam_bewegung_2_60_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 10:13",
    "notes": "thermal camera settings in three parts (alarm / picture / camera & alignment); a button left of the settings search hides the whole settings column (a tab at the right edge brings it back).",
    "sig": "4b4e04a5df3beb4a559afe9e50913199accd9e4c6db0e4171532b748771b98917debe25e4ef655d9702dd6429a734b98108d7299c44e9cf41fab1586c980d609"
-  },
-  {
-   "version": "2.51.3",
-   "file": "webcam_bewegung_2_51_3.py",
-   "url": "",
-   "sha256": "87a7b0c8dfc098394391b5f221d47d915507d2564aaa89913438aa4430989426",
-   "date": "2026-10-25 10:06",
-   "notes": "the settings search with its three buttons stays at the top while scrolling.",
-   "sig": "b1930d8d6c4ab9a5c575f67f97769d55ba5e7a853d8a3ab8546a9897070aade065c0d4526ef17172941b8ca426f9a3e0dad81c8664d640ee8408b8331f6d1f05"
   }
  ]
 }
