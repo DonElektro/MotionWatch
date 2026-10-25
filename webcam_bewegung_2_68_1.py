@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_68_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_68_1.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -399,6 +399,8 @@ Features
   * 2.68.0: Waveshare UPS HAT (E) (4 x 21700, for the Pi 5): found by itself at I2C 0x2D - charge level, time left
     and charging from its battery chip, the 4 cell voltages, USB-C input; power cut / back and safe shutdown as before.
     The «Listen» quick switch lights up green while listening (it never did).
+  * 2.68.1: UPS HAT (E): the state register read as in the Waveshare register manual (bit 7 charging, bit 6 fast
+    charging, bit 5 power at the input); the chip is recognised by its ID (0x0A).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -407,10 +409,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_68_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_68_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_68_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_68_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_68_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_68_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -427,7 +429,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.68.0"
+APP_VERSION = "2.68.1"
 
 
 def default_data_dir():
@@ -4127,7 +4129,8 @@ def ups_read(addr, bus=1):
 
 def ups_read_e(addr=0x2D, bus=1):
     """Waveshare UPS HAT (E): a battery chip at I2C 0x2D (16-bit values, low byte first). None = not there / implausible.
-    0x02 state (0x80 fast charging, 0x40 charging, 0x20 discharging), 0x10 USB-C input mV / mA, 0x20 battery mV, mA (signed),
+    0x00 ID (0x0A), 0x02 state (0x80 charging, 0x40 fast charging, 0x20 power at the input, bits 0-2: 5 = full),
+    0x10 USB-C input mV / mA, 0x20 battery mV, mA (signed, + = charging, - = discharging),
     %, remaining mAh, minutes left (discharging), minutes to full (charging), 0x30 the four cell voltages (mV)."""
     import fcntl
     try:
@@ -4139,6 +4142,8 @@ def ups_read_e(addr=0x2D, bus=1):
         def blk(reg, n):
             os.write(fd, bytes([reg])); return os.read(fd, n)
         u = lambda b, i: b[i] | (b[i + 1] << 8)
+        if blk(0x00, 1)[0] != 0x0A:
+            return None                                       # not the UPS HAT (E)
         st = blk(0x02, 1)[0]; vb = blk(0x10, 6); bt = blk(0x20, 12); cl = blk(0x30, 8)
         cur = u(bt, 2)
         if cur > 0x7FFF:
@@ -4225,8 +4230,8 @@ class BatteryMonitor:
             log_event("sys", f"UPS HAT (E) found (I2C 0x2D): battery {r['v']:.2f} V, {r['pct']} %, cells " + " / ".join(f"{c:.2f}" for c in r["cells"]) + " V")
         self._ups_miss = 0
         st = r["state"]
-        charging = bool(st & 0xC0)
-        on_batt = bool(st & 0x20) or (r["vbus"] < 4.0 and r["a"] < -0.05)
+        charging = bool(st & 0x80) and (st & 0x07) != 5
+        on_batt = not (st & 0x20) and r["a"] <= 0.05             # no power at the input: the Pi runs on the cells
         v, a, pct = r["v"], r["a"], int(r["pct"])
         watts = v * abs(a)
         cap_wh = (r["mah"] / max(1.0, pct) * 100.0 / 1000.0 * v * 0.9) if r["mah"] and pct else 0.0
@@ -4234,7 +4239,7 @@ class BatteryMonitor:
             round(pct / 100.0 * cap_wh / max(0.8, watts), 1) if on_batt and cap_wh else None)
         STATE["battery"] = {"on": True, "src": "ups", "model": "e", "pct": pct, "hours": hours, "cap_wh": round(cap_wh, 1),
                             "use_w": round(watts if on_batt else self.watts()[0], 1), "watts": round(watts, 1), "volt": round(v, 2),
-                            "amps": round(a, 2), "on_battery": on_batt, "charging": charging, "fast": bool(st & 0x80),
+                            "amps": round(a, 2), "on_battery": on_batt, "charging": charging, "fast": bool(st & 0x40), "full": (st & 0x07) == 5,
                             "cells": [round(c, 2) for c in r["cells"]], "vbus": round(r["vbus"], 2), "mah": r["mah"],
                             "full_min": r["min_full"] if charging and r["min_full"] < 0xFFFF else None}
         cl = [c for c in r["cells"] if c > 0.5]
@@ -10749,7 +10754,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_68_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_68_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -22922,7 +22927,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.68.0")
+        self.root.title("Motion Watch 2.68.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -23211,7 +23216,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.68.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.68.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -30022,7 +30027,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.68.0 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.68.1 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:

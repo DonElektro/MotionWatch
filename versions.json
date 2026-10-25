@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 18:34",
+ "generated": "2026-10-25 18:36",
  "versions": [
   {
-   "version": "2.68.0",
-   "file": "webcam_bewegung_2_68_0.py",
+   "version": "2.68.1",
+   "file": "webcam_bewegung_2_68_1.py",
    "url": "",
-   "sha256": "e49a53c6c583941e9f6da8afcf83c627e7f98f6af3c6133a3f8702e2118f4534",
-   "date": "2026-10-25 18:34",
-   "notes": "Waveshare UPS HAT (E) (4 x 21700, for the Pi 5): found by itself at I2C 0x2D - charge level, time left and charging from its battery chip, the 4 cell voltages, USB-C input; power cut / back and safe shutdown as before. The «Listen» quick switch lights up green while listening (it never did).",
-   "sig": "5879dc0ec048591262be224e8ccbe15413a2757af7acc1fefe83264db9d3c3893c42ceb013e0770ae42d453907bfbc9da119b59104a23d040de30997f945b60c"
+   "sha256": "440f1682aea6b8819409a2ca4d25d365e50d44be35acc12c39e2f8b8e72a2d20",
+   "date": "2026-10-25 18:36",
+   "notes": "UPS HAT (E): the state register read as in the Waveshare register manual (bit 7 charging, bit 6 fast charging, bit 5 power at the input); the chip is recognised by its ID (0x0A).",
+   "sig": "915d6da31c277a5dc7215074f47c3c0cd2251eaefe256ab51c007c04d329568981bfd30c5f00eb81ed55ad6cbfde3ab14faaceeb75f5dbabf70aa9756eac210c"
   },
   {
    "version": "2.67.0",
