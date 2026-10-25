@@ -247,7 +247,7 @@ class CampingSim(SimServer):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# The control window
+# The control window (no colour emoji: they can crash Tk on the Raspberry Pi)
 # ----------------------------------------------------------------------------------------------------------------------
 def window(sim):
     import tkinter as tk
@@ -273,17 +273,17 @@ def window(sim):
     for v, l in (("auto", "Uhrzeit"), ("day", "Tag"), ("dusk", "Dämmerung"), ("night", "Nacht")):
         ttk.Radiobutton(right, text=l, value=v, variable=mv, command=lambda: setattr(sim, "mode", mv.get())).pack(anchor="w")
     lab("BESUCH")
-    for k, l in (("person", "🚶 Person"), ("fox", "🦊 Fuchs"), ("boar", "🐗 Wildschwein"), ("deer", "🦌 Reh")):
+    for k, l in (("person", "Person"), ("fox", "Fuchs"), ("boar", "Wildschwein"), ("deer", "Reh")):
         ttk.Button(right, text=l, command=lambda k=k: sim.spawn(k)).pack(fill="x", pady=1)
     av = tk.BooleanVar(value=sim.auto_walkers)
     ttk.Checkbutton(right, text="ab und zu von selbst", variable=av, command=lambda: setattr(sim, "auto_walkers", av.get())).pack(anchor="w")
     lab("SENSOREN")
     dv = tk.BooleanVar(value=False)
-    ttk.Checkbutton(right, text="🚪 Wohnwagentür offen", variable=dv, command=lambda: sim.door(dv.get())).pack(anchor="w")
+    ttk.Checkbutton(right, text="Wohnwagentür offen", variable=dv, command=lambda: sim.door(dv.get())).pack(anchor="w")
     gv = tk.BooleanVar(value=False)
-    ttk.Checkbutton(right, text="🔥 Gas / Rauch", variable=gv, command=lambda: sim.gas(gv.get())).pack(anchor="w")
-    ttk.Button(right, text="🏷 Velo bewegen", command=lambda: sim.add_event("Velo", "tag", None)).pack(fill="x", pady=1)
-    ttk.Button(right, text="🚶 PIR Zelt auslösen", command=lambda: sim.add_event("PIR Zelt", "pir", None)).pack(fill="x", pady=1)
+    ttk.Checkbutton(right, text="Gas / Rauch", variable=gv, command=lambda: sim.gas(gv.get())).pack(anchor="w")
+    ttk.Button(right, text="Velo bewegen", command=lambda: sim.add_event("Velo", "tag", None)).pack(fill="x", pady=1)
+    ttk.Button(right, text="PIR Zelt auslösen", command=lambda: sim.add_event("PIR Zelt", "pir", None)).pack(fill="x", pady=1)
     lab("WETTER")
 
     def slider(text, lo, hi, attr, res=0.5):
