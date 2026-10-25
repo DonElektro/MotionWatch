@@ -1,6 +1,6 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 12:49",
+ "generated": "2026-10-25 13:01",
  "versions": [
   {
    "version": "2.58.2",
@@ -10,24 +10,6 @@
    "date": "2026-10-25 12:49",
    "notes": "self-check: the loudspeaker hint is shorter.",
    "sig": "f31e34c46d1d5233a8ef33881c542f939b3dfc8533bff826cfcc88b1e3ee96f1c1f60a907493a8afeedf349c666860ff44e576adee515d0eaa329ea476397d01"
-  },
-  {
-   "version": "2.58.1",
-   "file": "webcam_bewegung_2_58_1.py",
-   "url": "",
-   "sha256": "3f741eb5410b6059a53c92e8e66a9f8154dae592be172a24bac6515ae3602e8b",
-   "date": "2026-10-25 11:58",
-   "notes": "the motion mask keeps the picture as bright as it is and only tints the moving parts in a soft red.",
-   "sig": "1aee556118c485917cebfae0554c8a2aa30c8b5536d1455229ced2e770038456ef02c8602b4a2e93ae200b6100fbc7eee84ee19cc710a6d9c95e533d5430050b"
-  },
-  {
-   "version": "2.58.0",
-   "file": "webcam_bewegung_2_58_0.py",
-   "url": "",
-   "sha256": "b73c0e36f04c10711df38ffa185846a4ea8b7f39b55c9567d5d0d646b236b5a4",
-   "date": "2026-10-25 11:50",
-   "notes": "«Mask» as a quick switch in the camera control (web and window): shows the motion mask over the picture.",
-   "sig": "5e67bcf8d635182d64081ce2425aaf1d806ce6b7dbefc95891f5869e66fef92abb9a7c8cd18c9ec535cd71d5c422b2f1ea4541e4ae941e2a475e2238205a8709"
   },
   {
    "version": "2.57.0",
@@ -93,33 +75,6 @@
    "sig": "b1930d8d6c4ab9a5c575f67f97769d55ba5e7a853d8a3ab8546a9897070aade065c0d4526ef17172941b8ca426f9a3e0dad81c8664d640ee8408b8331f6d1f05"
   },
   {
-   "version": "2.51.2",
-   "file": "webcam_bewegung_2_51_2.py",
-   "url": "",
-   "sha256": "58b1980f4c0746d7ff0320619618d481ad48e74444c88052b0cbd815007c4afb",
-   "date": "2026-10-25 09:58",
-   "notes": "message texts: every message (person, pre-alarm, thermal, noise) folds open and closed.",
-   "sig": "b9613d0dbdfb6358de598bfa3dad6b69e7f2cc3e7e5e93955dbaead5519893dd581ab7936d1506d536e9b796cc492b1186f8b2b2feab81a9cbb00db2a995ef03"
-  },
-  {
-   "version": "2.51.1",
-   "file": "webcam_bewegung_2_51_1.py",
-   "url": "",
-   "sha256": "8855c661d01ad358744425b420a6c2ebbedaece93267601bb689342b1901b203",
-   "date": "2026-10-25 09:53",
-   "notes": "settings: a third button «open the groups only» (all groups open, their topics closed = overview).",
-   "sig": "67c9e4f724970106a8682a07c1b45bce8544e601cc16698054441e0bb008f3464da1353b38c8406d2b66792b0f7096d04dd40240e2acb3e0846db7b11be89304"
-  },
-  {
-   "version": "2.51.0",
-   "file": "webcam_bewegung_2_51_0.py",
-   "url": "",
-   "sha256": "da6f7c2e9d8089c473eab2734dd8e919484e0e6ed8e93e1dc6cfacc74ecf30f2",
-   "date": "2026-10-25 09:48",
-   "notes": "System: bars for memory (RAM) and storage; the buttons are in small fold-out groups. Message texts: one card per message with bigger fields, tap to insert a placeholder, «standard text» and a preview.",
-   "sig": "07208e4bda944b9a2ac2ebf97bffff7109728396adc35418241fa4ee03f02a3cee92b5073d960a8ac57f4e63c9668b5cc5c1369b3d46dbfdc077bf5071b6340d"
-  },
-  {
    "version": "2.50.0",
    "file": "webcam_bewegung_2_50_0.py",
    "url": "",
@@ -136,51 +91,6 @@
    "date": "2026-10-25 09:20",
    "notes": "continuous recording (off by default): all the time with few pictures per second in 10-minute pieces, kept for N hours; the recordings page shows a 24-hour timeline with the alarms marked - tap to watch.",
    "sig": "324065cbcb67d13641a1c5897437cfd8518cb5f34394185d8cce3cfc9076d8a2471009e9f7bb47e9c2ae8e4d1883de4966de0da8b89f1651475097390a271c07"
-  },
-  {
-   "version": "2.48.0",
-   "file": "webcam_bewegung_2_48_0.py",
-   "url": "",
-   "sha256": "d8521bf2297a5392531fcbf1b9cf9e425190b54f7616d29038d5238903610190",
-   "date": "2026-10-25 09:14",
-   "notes": "storage: the self-check shows where the program and the recordings are (SD card / SSD / USB); the recordings can be put on an SSD or USB drive (Settings -> Recording, existing ones are moved over); if the drive is missing at a start, the memory card is used and the self-check says so.",
-   "sig": "d8164d8ec6dc34ddfa4712cc859a53074535c651e55c61ddba6eeb5e6526b28dc17757d9e7de5fef2f79289edcd21d6fb924628f708bac57ca999ac43236730d"
-  },
-  {
-   "version": "2.47.0",
-   "file": "webcam_bewegung_2_47_0.py",
-   "url": "",
-   "sha256": "5b284812416c562a4afb7b8db767ba046c48b5d5eb81745a7ed9b8951654e6b3",
-   "date": "2026-10-25 09:12",
-   "notes": "zones: «line» (a person crosses it - in both directions or only in the arrow direction) and «dwell area» (a person stays longer than N seconds); message in the log and - when armed - a push message with picture.",
-   "sig": "de29ca239ff7ac30ee23f5a9160fe0d0c62172563cf8897c1bc7ec1e4163ed07335aa63a989de079048865d8b8a41a161a3ce8c49d7474af6cf34540fdff1c07"
-  },
-  {
-   "version": "2.46.0",
-   "file": "webcam_bewegung_2_46_0.py",
-   "url": "",
-   "sha256": "f0121c7b7a6481786f2f88471a72393b4cc90d6aaa8c10edb9daad7fd1184b5a",
-   "date": "2026-10-25 09:09",
-   "notes": "backup: the first picture of an alarm goes off the device at once (not only the clip at the end); clips too big for Telegram are made smaller instead of skipped; the self-check shows the backup.",
-   "sig": "842d962cee3a93d582ef6577649049643b3b9ab795b00908bbc82be3f156cbd22a61df314a5cd5f13f3100bab4e635e4a2a28901936878d128c7e3024bc43003"
-  },
-  {
-   "version": "2.45.2",
-   "file": "webcam_bewegung_2_45_2.py",
-   "url": "",
-   "sha256": "4604b6e48a0f50f2a8ac9303270dd0201f2e018977d9d31becf880c393bfbc94",
-   "date": "2026-10-25 08:57",
-   "notes": "operator mode button shows when it is on (since when) and ends it with the PIN; the header badge too.",
-   "sig": "2933181a0738d2389c0583a370bab0e9a9938b9cd1d7bbc8f42ec8881a17a8606b7c535021f24de328e7103608058f9b6382a8854999cf4f23390ee1c0305d0a"
-  },
-  {
-   "version": "2.45.1",
-   "file": "webcam_bewegung_2_45_1.py",
-   "url": "",
-   "sha256": "0a00b4e81bb1327044a7ba49c25f7dd6678165bf5250ab1df227f70dbf14a56d",
-   "date": "2026-10-25 08:50",
-   "notes": "«Recalibrate» and «Reset counter» removed from System («↻ Calibrate» stays next to the stick).",
-   "sig": "bfcb1e81ef89cb193c7110ead4113b3a21f51652591a50be2f238baf45f6132fdfd6fa46ac7af5257004a2607b47fd03046df27cae85a39e903a2875a1e45a07"
   }
  ]
 }
