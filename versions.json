@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 08:57",
+ "generated": "2026-10-25 09:09",
  "versions": [
+  {
+   "version": "2.46.0",
+   "file": "webcam_bewegung_2_46_0.py",
+   "url": "",
+   "sha256": "f0121c7b7a6481786f2f88471a72393b4cc90d6aaa8c10edb9daad7fd1184b5a",
+   "date": "2026-10-25 09:09",
+   "notes": "backup: the first picture of an alarm goes off the device at once (not only the clip at the end); clips too big for Telegram are made smaller instead of skipped; the self-check shows the backup.",
+   "sig": "842d962cee3a93d582ef6577649049643b3b9ab795b00908bbc82be3f156cbd22a61df314a5cd5f13f3100bab4e635e4a2a28901936878d128c7e3024bc43003"
+  },
   {
    "version": "2.45.2",
    "file": "webcam_bewegung_2_45_2.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 22:18",
    "notes": "the marmot has a little secret on its belly.",
    "sig": "eaac0620c6478d765deff2bfc6fa627c9640d2cc22a8cd1593c22d873d0e5aa1c8f30745760a98731b11765fff8707ccf884a636be7633f5d63ffa9b529ffd08"
-  },
-  {
-   "version": "2.32.0",
-   "file": "webcam_bewegung_2_32_0.py",
-   "url": "",
-   "sha256": "54dd458296fb6f62402cf9d740eb67dabf58d81a6941a543f00818ba6973014e",
-   "date": "2026-10-24 22:15",
-   "notes": "diary: day overview for every day - persons, animals (best pictures), warm bodies, noises, recordings; 24-hour chart with temperature / humidity of the sensor, weather (Open-Meteo, off by default), rain and the events; sun, moon, place and the night report. Browse the days with ‹ › or the date.",
-   "sig": "226db353c82ae43310197af2a3ee9fd7a015cc9247942d52bf7095edf26cedea042d23d860ee5f14a4b5ac2eddc6453e4c259fe8a8608e8347769e442dc79d06"
   }
  ]
 }
