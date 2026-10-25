@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 10:13",
+ "generated": "2026-10-25 10:31",
  "versions": [
+  {
+   "version": "2.53.0",
+   "file": "webcam_bewegung_2_53_0.py",
+   "url": "",
+   "sha256": "9f16bbe4c0d9fc9a8a4607cb99e564a5ef6d4ff89ca777e057090f5a36f13695",
+   "date": "2026-10-25 10:31",
+   "notes": "every settings topic has its own symbol (web and window); the camera picture can be turned (90° / 180° / 270°) and mirrored - for a camera mounted sideways or upside down.",
+   "sig": "c8d71d92d5a8108a769fe890b613beebe7052ad9433216bb5989e807b1d953bd373e11df54e54a8e44ee29cb8e1373a69dad8e968da934fb294ce8463a054102"
+  },
   {
    "version": "2.52.0",
    "file": "webcam_bewegung_2_52_0.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 23:58",
    "notes": "«download failed» message in all languages.",
    "sig": "24d2ce8365e6e1f0eefb85dbfe78ea575dbe02a37ea62e4b773f55be8d5d576fee5de491eb0c83ad94663c0a4a78aef41668554dc307bb0c015fa8bf06f9f40a"
-  },
-  {
-   "version": "2.42.0",
-   "file": "webcam_bewegung_2_42_0.py",
-   "url": "",
-   "sha256": "4ce75fff34164c9fe1ad95bcfcee7bbddd0cacb9bcf6cc6d34811a64453c94fb",
-   "date": "2026-10-24 23:57",
-   "notes": "AI model with one tap: «Download AI model» (self-check, AI settings, Pi window) fetches the two model files (about 70 MB) into the data folder and switches the AI on - no commands needed any more.",
-   "sig": "2deebc4e6bdcc661fd9a61f15dc9d78d1e44f3ebf744e0bafec592da1ff14c13b6f2b36b3011ef37bb50ac3c40b9d36035d9703411545f5a32a38f2d3e49c10e"
   }
  ]
 }
