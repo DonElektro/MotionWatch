@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 10:31",
+ "generated": "2026-10-25 11:05",
  "versions": [
+  {
+   "version": "2.54.0",
+   "file": "webcam_bewegung_2_54_0.py",
+   "url": "",
+   "sha256": "4d02ab89c3d5d7e2d6e11ab59f8996249b71d818bcbec475032cbc0520e811e0",
+   "date": "2026-10-25 11:05",
+   "notes": "extra sensors (new group «Sensors»): motion detector (PIR), door / lid contact and gas / smoke module on a GPIO, 433 MHz radio sensors (RTL-SDR stick + rtl_433), Zigbee sensors (Zigbee2MQTT over MQTT) and Bluetooth tags (RuuviTag: moved / out of range). Alarm when armed or always (gas); a PIR wakes the power saving mode.",
+   "sig": "74beb9d4d663864f380be2cc56f87ca0b740dcf271edcf2ea1ca9f37338c3ac129a31a6073f25be0a6bafa7ffe23fa6e971082471b061610335bafdf23b09305"
+  },
   {
    "version": "2.53.0",
    "file": "webcam_bewegung_2_53_0.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-25 00:00",
    "notes": "AI model download from Google's storage address (the old address has no valid certificate); shorter error messages.",
    "sig": "d65eea7db621d72dfd15841ab6bac2308424727ccaf6d49c73b05ca2fce8ec1b7b8ad61c8e9765483b33bc405578be58de73e205338a0c8dfdd0180ddecdf00e"
-  },
-  {
-   "version": "2.42.1",
-   "file": "webcam_bewegung_2_42_1.py",
-   "url": "",
-   "sha256": "13e38adbb7d00a8de02d77cb9518964548face1ac91c07042d5bfc00656d3582",
-   "date": "2026-10-24 23:58",
-   "notes": "«download failed» message in all languages.",
-   "sig": "24d2ce8365e6e1f0eefb85dbfe78ea575dbe02a37ea62e4b773f55be8d5d576fee5de491eb0c83ad94663c0a4a78aef41668554dc307bb0c015fa8bf06f9f40a"
   }
  ]
 }

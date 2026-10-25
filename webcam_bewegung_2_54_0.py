@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_42_1.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_54_0.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -328,6 +328,46 @@ Features
   * 2.42.0: AI model with one tap: «Download AI model» (self-check, AI settings, Pi window) fetches the two model files
     (about 70 MB) into the data folder and switches the AI on - no commands needed any more.
   * 2.42.1: «download failed» message in all languages.
+  * 2.42.2: AI model download from Google's storage address (the old address has no valid certificate); shorter error
+    messages.
+  * 2.42.3: the green arrows follow a switch at once (also in Simple), taken from the switches on the page itself.
+  * 2.43.0: protection against crashes of the whole Pi: the AI runs at most a few times per second and slower when the
+    Pi gets hot; every 10 s the program notes CPU temperature and power supply - after an unexpected end the self-check
+    shows what it was like; two short runs in a row -> «safe start» (AI, thermal camera, night vision, IR light,
+    patrol off) with a push message. The UPS shutdown needs plausible values and 3 minutes of running first.
+  * 2.43.1: only one Motion Watch at a time: started by hand while the autostart runs it in the background (without a
+    window), the program asks and takes over with its window (the background service starts again when the window
+    is closed). The web page notices when a switched-off Pi is back and reloads by itself.
+  * 2.44.0: operator mode keeps a copy of all settings when it is switched on; unlocking with the PIN puts back
+    everything that was changed in the meantime (not: armed / disarmed, camera position, location, own Wi-Fi).
+  * 2.45.0: operator mode may change everything (also zones, schedules, waypoints, relays) - except what could lock
+    you out: Wi-Fi / own Wi-Fi / network, web password, autostart, loading settings, «reset settings», update source.
+    Unlocking with the PIN puts everything back.
+  * 2.45.1: «Recalibrate» and «Reset counter» removed from System («↻ Calibrate» stays next to the stick).
+  * 2.45.2: operator mode button shows when it is on (since when) and ends it with the PIN; the header badge too.
+  * 2.46.0: backup: the first picture of an alarm goes off the device at once (not only the clip at the end); clips
+    too big for Telegram are made smaller instead of skipped; the self-check shows the backup.
+  * 2.47.0: zones: «line» (a person crosses it - in both directions or only in the arrow direction) and «dwell area»
+    (a person stays longer than N seconds); message in the log and - when armed - a push message with picture.
+  * 2.48.0: storage: the self-check shows where the program and the recordings are (SD card / SSD / USB); the
+    recordings can be put on an SSD or USB drive (Settings -> Recording, existing ones are moved over); if the drive
+    is missing at a start, the memory card is used and the self-check says so.
+  * 2.49.0: continuous recording (off by default): all the time with few pictures per second in 10-minute pieces,
+    kept for N hours; the recordings page shows a 24-hour timeline with the alarms marked - tap to watch.
+  * 2.50.0: picture for other programs (Home Assistant, Frigate, Blue Iris, VLC, NAS recorders): a secret address
+    for the video (MJPEG) and a still picture, no login needed; optionally RTSP (H.264) if mediamtx is installed.
+  * 2.51.0: System: bars for memory (RAM) and storage; the buttons are in small fold-out groups. Message texts:
+    one card per message with bigger fields, tap to insert a placeholder, «standard text» and a preview.
+  * 2.51.1: settings: a third button «open the groups only» (all groups open, their topics closed = overview).
+  * 2.51.2: message texts: every message (person, pre-alarm, thermal, noise) folds open and closed.
+  * 2.51.3: the settings search with its three buttons stays at the top while scrolling.
+  * 2.52.0: thermal camera settings in three parts (alarm / picture / camera & alignment); a button left of the
+    settings search hides the whole settings column (a tab at the right edge brings it back).
+  * 2.53.0: every settings topic has its own symbol (web and window); the camera picture can be turned
+    (90° / 180° / 270°) and mirrored - for a camera mounted sideways or upside down.
+  * 2.54.0: extra sensors (new group «Sensors»): motion detector (PIR), door / lid contact and gas / smoke module on a GPIO,
+    433 MHz radio sensors (RTL-SDR stick + rtl_433), Zigbee sensors (Zigbee2MQTT over MQTT) and Bluetooth tags
+    (RuuviTag: moved / out of range). Alarm when armed or always (gas); a PIR wakes the power saving mode.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -336,10 +376,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_42_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_54_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_42_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_42_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_54_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_54_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -356,7 +396,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.42.1"
+APP_VERSION = "2.54.0"
 
 
 def default_data_dir():
@@ -493,6 +533,9 @@ CFG = {
     "show_objects": True,        # mark ALL objects the network finds (not just persons)
     "object_conf": 0.5,          # confidence threshold for non-person objects
     # recording
+    "loop_on": False, "loop_hours": 24, "loop_fps": 4,    # continuous recording: on, keep N hours, pictures per second
+    "ext_on": False, "ext_token": "", "rtsp_on": False, "rtsp_port": 8554,   # picture for other programs
+    "storage_path": "",                      # recordings on this drive (mount point); empty = next to the program
     "record": True, "record_dir": "recordings", "record_tail": 3.0,
     "record_max_gb": 2.0,        # oldest recordings are deleted above this size
     "snapshot_on_person": True,  # save a JPG the moment a person is detected
@@ -510,6 +553,7 @@ CFG = {
     "pan": 50.0, "tilt": 50.0,
     "servo_min_us": 500, "servo_max_us": 2500,
     "invert_pan": False, "invert_tilt": False,
+    "cam_rotate": "0", "cam_mirror": False,       # picture turned (0/90/180/270 clockwise) and mirrored, right after the camera
     "track_person": True,        # keep the detected person centred
     "track_gain": 0.6,           # how aggressively the camera follows
     "track_deadzone": 0.08,      # fraction of the frame treated as "centred"
@@ -612,6 +656,7 @@ CFG = {
     "sms_only_offline": True, "sms_pause": 5, "sms_day_max": 20,          # SMS over an LTE stick
     "mqtt_on": False, "mqtt_host": "", "mqtt_port": "1883", "mqtt_user": "", "mqtt_password": "", "mqtt_tls": False,
     "mqtt_prefix": "motionwatch", "mqtt_discovery": True,   # MQTT / Home Assistant                 # other Motion Watch devices in the overview: [{id, url, name, pw}]          # shared pictures / videos get a small Motion Watch logo strip
+    "sens_on": False, "sensors": [], "rf433_on": False, "zigbee_on": False, "ble_on": False, "tag_missing": 5, "eco_pir": True,
     "tamper_on": True,           # sabotage: camera covered or turned away (picture check)
     "tamper_motion": True,       # motion sensor MPU-6050 (I2C 0x68), if fitted: device moved / knocked over
     "tamper_power": True,        # power cut while armed = alarm (needs the UPS HAT)
@@ -630,7 +675,7 @@ CFG = {
     "update_token": "",          # GitHub key (read-only token) for a private repository - only ever sent to GitHub
     "log_status_min": 15,        # a status line in the log every N minutes (0 = off)
     "log_keep_days": 60,         # how long the daily log files are kept in the archive
-    "lock_on": False, "lock_pin": "",   # operator mode: settings locked, unlock with the PIN (stored as a hash)
+    "lock_on": False, "lock_pin": "", "lock_snap": {},   # operator mode: settings locked, unlock with the PIN (stored as a hash)
     "msg_noise_title": "", "msg_noise_text": "",
 }
 
@@ -866,12 +911,101 @@ def _clean_zone(z, i):
     for p in (z.get("points") or [])[:40] if isinstance(z.get("points"), list) else []:
         if isinstance(p, (list, tuple)) and len(p) == 2 and _num(p[0]) and _num(p[1]):
             pts.append([round(min(1.0, max(0.0, float(p[0]))), 4), round(min(1.0, max(0.0, float(p[1]))), 4)])
-    if len(pts) < 3:
+    mode = z.get("mode") if z.get("mode") in ("only", "privacy", "line", "loiter") else "ignore"
+    if mode == "line":
+        if len(pts) < 2:
+            return None
+        pts = pts[:2]
+    elif len(pts) < 3:
         return None
     zid = str(z.get("id") or "")
-    return {"id": zid if re.fullmatch(r"[0-9a-f]{8}", zid) else uuid.uuid4().hex[:8],
-            "name": str(z.get("name") or "").strip()[:40] or f"Zone {i + 1}",
-            "mode": z.get("mode") if z.get("mode") in ("only", "privacy") else "ignore", "points": pts}
+    out = {"id": zid if re.fullmatch(r"[0-9a-f]{8}", zid) else uuid.uuid4().hex[:8],
+           "name": str(z.get("name") or "").strip()[:40] or f"Zone {i + 1}", "mode": mode, "points": pts}
+    if mode == "line":
+        out["dir"] = z.get("dir") if z.get("dir") in ("ab", "ba") else "both"
+    if mode == "loiter":
+        try:
+            out["secs"] = int(max(3, min(600, float(z.get("secs") or 20))))
+        except (TypeError, ValueError):
+            out["secs"] = 20
+    return out
+
+
+def _side(a, b, p):
+    """> 0: p is on the right-hand side of the line a -> b (screen coordinates, y down)."""
+    return (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])
+
+
+def _segments_cross(p1, p2, a, b):
+    d1, d2, d3, d4 = _side(a, b, p1), _side(a, b, p2), _side(p1, p2, a), _side(p1, p2, b)
+    return (d1 > 0) != (d2 > 0) and d1 != 0 and d2 != 0 and (d3 > 0) != (d4 > 0)
+
+
+class ZoneWatch:
+    """Lines (crossed, optionally only in one direction) and dwell areas (a person stays longer than N s). Works on the
+    person tracks; the point that counts is the feet (bottom middle of the box), like the other zones."""
+    def __init__(self):
+        self.st = {}
+
+    def update(self, persons, pw, ph, frame, now):
+        zs = [z for z in ZONES if z["mode"] in ("line", "loiter")]
+        if not zs:
+            self.st.clear(); return []
+        if STATE.get("tracking") or manual_active() or str(STATE.get("patrol_status", "")).startswith("moving"):
+            self.st.clear(); return []                        # the camera moves: positions are not comparable
+        events, seen = [], set()
+        for t in persons:
+            x, y, w, h = t.box[:4]
+            p = ((x + w / 2.0) / pw, (y + h * 0.95) / ph)
+            seen.add(t.id)
+            s_ = self.st.setdefault(t.id, {"p": p, "t": now, "in": {}, "done": set(), "last": {}})
+            for z in zs:
+                if z["mode"] == "line" and z["id"] not in s_["done"]:
+                    a, b = z["points"]
+                    sd = _side(a, b, p)
+                    if abs(sd) < 1e-9:
+                        continue                                  # exactly on the line: decide with the next point
+                    old = s_["last"].get(z["id"])
+                    s_["last"][z["id"]] = (p, sd)
+                    if old is None or (old[1] > 0) == (sd > 0):
+                        continue
+                    q = old[0]                                    # the side changed: did the way pass through the line itself?
+                    if _side(q, p, a) * _side(q, p, b) <= 0:
+                        if z.get("dir", "both") == "both" or (z["dir"] == "ab") == (sd > 0):
+                            s_["done"].add(z["id"]); events.append(("line", z))
+                elif z["mode"] == "loiter" and z["id"] not in s_["done"]:
+                    if point_in_poly(p[0], p[1], z["points"]):
+                        t_in = s_["in"].setdefault(z["id"], now)
+                        if now - t_in >= z.get("secs", 20):
+                            s_["done"].add(z["id"]); events.append(("loiter", z))
+                    else:
+                        s_["in"].pop(z["id"], None)
+            s_["p"] = p; s_["t"] = now
+        for k in [k for k, v in self.st.items() if k not in seen and now - v["t"] > 10]:
+            self.st.pop(k, None)
+        for kind, z in events:
+            zone_event(kind, z, frame)
+        return events
+
+
+def zone_event(kind, z, frame):
+    if kind == "line":
+        txt = trf("Person crossed the line «{zone}»", zone=z["name"])
+        log_event("person", f"Person crossed the line «{z['name']}»")
+    else:
+        txt = trf("Person stays in «{zone}» for more than {secs} s", zone=z["name"], secs=z.get("secs", 20))
+        log_event("person", f"Person stays in «{z['name']}» for more than {z.get('secs', 20)} s")
+    STATE["zone_last"] = {"t": time.time(), "text": txt}
+    push_alert("person", txt, zone=z["name"])
+    w = WATCH_REF.get("w")
+    if w is not None and is_armed():
+        jpg = None
+        try:
+            ok, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            jpg = buf.tobytes() if ok else None
+        except cv2.error:
+            pass
+        w.notifier.info(txt, "", title="{name}: " + tr("line" if kind == "line" else "dwell area"), jpg=jpg, fname="zone.jpg")
 
 
 def apply_privacy(frame):
@@ -1036,6 +1170,7 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Lights", "light_ir_out", "Infrared light: connected to", "enum", "light_ir_out"),
     ("Lights", "light_ir_auto", "Infrared light: Auto means", "enum", "light_auto"),
     ("Lights", "picture_mode", "Picture", "enum", "picture_mode"),
+    ("Camera / Servos", "cam_rotate", "Turn picture (camera mounted sideways or upside down)", "enum", "cam_rotate"),
     ("Servo driver", "servo_driver", "Servo driver", "enum", "servo_driver"),
     ("Servo driver", "pca_address", "PCA9685 address (I2C)", "enum", "pca_address"),
     ("Battery", "ups_addr", "UPS HAT: address (I2C)", "enum", "pca_address"),
@@ -1073,6 +1208,8 @@ def text_choice_pairs(key):
     if extra == "light_auto":
         return [("alarm_dark", tr("at an alarm, only at night")), ("alarm", tr("at an alarm, day and night")),
                 ("dark", tr("the whole night (sunset to sunrise)"))]
+    if extra == "cam_rotate":
+        return [("0", tr("not turned")), ("90", tr("90° to the right")), ("180", tr("upside down (180°)")), ("270", tr("90° to the left"))]
     if extra == "picture_mode":
         return [("color", tr("colour")), ("night_grey", tr("grey at night (good with a NoIR camera)")), ("grey", tr("always grey"))]
     if extra == "servo_driver":
@@ -1643,6 +1780,7 @@ def apply_settings(data):
     if CFG["notify_type"] not in NOTIFY_TYPES:
         CFG["notify_type"] = "webhook"
     CFG["ip_sources"] = _clean_ip_sources(CFG["ip_sources"])
+    CFG["sensors"] = sens_clean(CFG["sensors"])
     if not SRC_RE.match(str(CFG["source"])):
         CFG["source"] = "auto"
     STATE["settings_status"] = f"loaded {n} settings, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules"
@@ -2048,6 +2186,25 @@ def _dav_request(url, method, data=None, length=None):
         return e.code
 
 
+def _shrink_video(path):
+    """A smaller copy (640 px wide, lower quality) for services with a size limit. Returns the path or None."""
+    if not shutil.which("ffmpeg"):
+        return None
+    dst = os.path.join(tempfile.gettempdir(), "mw_small_" + os.path.basename(path))
+    try:
+        r = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", path, "-vf", "scale=640:-2", "-c:v", "libx264", "-preset", "veryfast",
+                            "-crf", "32", "-c:a", "aac", "-b:a", "48k", "-movflags", "+faststart", dst], capture_output=True, timeout=900)
+        if r.returncode == 0 and os.path.isfile(dst) and 0 < os.path.getsize(dst) < 49 * 1024 * 1024:
+            return dst
+    except (OSError, subprocess.SubprocessError):
+        pass
+    try:
+        os.remove(dst)
+    except OSError:
+        pass
+    return None
+
+
 def backup_copy(path, meta=None, test=False):
     """Copy one file to the chosen place. test=True: a small text file to check the settings."""
     kind = CFG["backup_type"]
@@ -2098,16 +2255,29 @@ def backup_copy(path, meta=None, test=False):
                 req = urllib.request.Request(base + "/sendMessage", data=json.dumps({"chat_id": CFG["telegram_chat"], "text": cap + " ✓"}).encode(),
                                              headers={"Content-Type": "application/json"})
             else:
-                if os.path.getsize(path) > 49 * 1024 * 1024:
-                    return False, "too big for Telegram (max. 50 MB)"
-                with open(path, "rb") as f:
-                    vid = f.read()
+                is_pic = name.lower().endswith(".jpg")
+                src, small = path, None
+                if not is_pic and os.path.getsize(path) > 45 * 1024 * 1024:     # too big for Telegram: a smaller copy
+                    small = _shrink_video(path)
+                    if not small:
+                        return False, "too big for Telegram (max. 50 MB) and could not be made smaller (ffmpeg?)"
+                    src = small
+                try:
+                    with open(src, "rb") as f:
+                        vid = f.read()
+                finally:
+                    if small:
+                        try:
+                            os.remove(small)
+                        except OSError:
+                            pass
+                field, ctype, ep = ("photo", "image/jpeg", "/sendPhoto") if is_pic else ("video", "video/mp4", "/sendVideo")
                 parts = [f'--{b}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode()
                          for k, v in (("chat_id", CFG["telegram_chat"]), ("caption", cap), ("supports_streaming", "true"))]
-                parts.append((f'--{b}\r\nContent-Disposition: form-data; name="video"; filename="{name}"\r\nContent-Type: video/mp4\r\n\r\n').encode()
+                parts.append((f'--{b}\r\nContent-Disposition: form-data; name="{field}"; filename="{name}"\r\nContent-Type: {ctype}\r\n\r\n').encode()
                              + vid + b"\r\n")
                 parts.append(f"--{b}--\r\n".encode())
-                req = urllib.request.Request(base + "/sendVideo", data=b"".join(parts), headers={"Content-Type": "multipart/form-data; boundary=" + b})
+                req = urllib.request.Request(base + ep, data=b"".join(parts), headers={"Content-Type": "multipart/form-data; boundary=" + b})
             try:
                 with urllib.request.urlopen(req, timeout=180) as r:
                     return (True, "") if r.status == 200 else (False, f"Telegram HTTP {r.status}")
@@ -2660,6 +2830,19 @@ class Notifier:
                    "info_title": "{name}: " + tr("TAMPER ALARM"),
                    "snapshot": None, "rain": False, "wind": "", "source": STATE["source_label"], "link": pub + "/" if pub else ""}
         threading.Thread(target=self._dispatch, args=(payload, jpg, "tamper.jpg"), daemon=True).start()
+        return True
+
+    def alert(self, title, text, frame=None):
+        """Urgent alarm with a custom title (extra sensors): like the sabotage alarm."""
+        if not (self.configured() and CFG["notify_on"]):
+            return False
+        jpg = None
+        if frame is not None:
+            ok, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 75]); jpg = buf.tobytes() if ok else None
+        pub = CFG["public_url"].strip().rstrip("/")
+        payload = {"event": "tamper", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"), "text": text, "info_title": title,
+                   "snapshot": None, "rain": False, "wind": "", "source": STATE["source_label"], "link": pub + "/" if pub else ""}
+        threading.Thread(target=self._dispatch, args=(payload, jpg, "alarm.jpg"), daemon=True).start()
         return True
 
     def info(self, text, link="", title="", jpg=None, fname="info.jpg"):
@@ -3778,7 +3961,8 @@ class BatteryMonitor:
             log_event("sys", f"Battery almost empty (about {pct} %, {hours or 0:.1f} h left)")
             push("Battery almost empty: about {pct} % ({hours:.1f} h)", pct=pct, hours=hours or 0)
         lim = int(CFG["ups_shutdown_pct"])
-        self._low = (getattr(self, "_low", 0) + 1) if (on_batt and lim > 0 and pct <= lim) else 0
+        plausible = 5.5 <= v <= 8.9 and time.time() - RUNGUARD["t0"] > 180      # 2 cells; never in the first 3 minutes
+        self._low = (getattr(self, "_low", 0) + 1) if (on_batt and lim > 0 and pct <= lim and plausible) else 0
         if self._low >= 3 and not POWER.get("pending") and not getattr(self, "_shut", False):   # 30 s below the limit
             self._shut = True
             log_event("sys", f"Battery empty ({pct} %, {v:.2f} V) - shutting down the Pi to protect the memory card")
@@ -3911,6 +4095,11 @@ class SysMonitor:
         try:
             du = shutil.disk_usage(rec_dir() if os.path.isdir(rec_dir()) else DATA_DIR)
             free = int(du.free / 1024 ** 2); STATE["disk"] = {"free_mb": free, "total_mb": int(du.total / 1024 ** 2)}
+            try:
+                dk = _dev_kind(_mount_of(rec_dir() if os.path.isdir(rec_dir()) else DATA_DIR)[0])
+            except Exception:
+                dk = "other"
+            STATE["disk"]["kind"] = dk
         except OSError:
             return
         lim = float(CFG["disk_warn_mb"])
@@ -3933,6 +4122,7 @@ class SysMonitor:
             temp = self._temp()
             if cpu is not None:
                 self.hist.append(round(cpu, 1))
+            STATE["mem"] = mem_info()
             STATE.update(cpu=None if cpu is None else round(cpu, 1),
                          cpu_temp=None if temp is None else round(temp, 1),
                          cpu_hist=list(self.hist))
@@ -5179,6 +5369,38 @@ def health_check(lang=None):
         add("https", "🔒", "https page", "ok", f"Port {STATE['https_port']}")
     else:
         add("https", "🔒", "https page", "warn", T("off"), "Phone location and talking through the Pi need the https page (start with --https).")
+    try:
+        si = storage_info()
+        KIND = {"sd": T("memory card"), "ssd": "SSD (NVMe)", "usb": T("USB drive"), "other": T("drive")}
+        if si["fallback"]:
+            add("store", "🗄", "Storage", "bad", T("chosen drive missing - recordings on the memory card"), "Connect the SSD / USB drive and restart, or choose another place under Settings → Recording.")
+        else:
+            txt = T("program") + ": " + KIND[si["system"]] + " · " + T("recordings") + ": " + KIND[si["rec"]]
+            add("store", "🗄", "Storage", "warn" if si["rec"] == "sd" and si["candidates"] else "ok", txt,
+                "An SSD / USB drive is connected: put the recordings there (Settings → Recording) - it lasts longer than a memory card."
+                if si["rec"] == "sd" and si["candidates"] else "")
+    except Exception:
+        pass
+    bt = CFG["backup_type"]
+    if bt == "off":
+        add("backup", "☁", "Backup", "warn", T("off"), "If the Pi is stolen, the recordings are gone: Settings → Backup (Telegram, WebDAV / NAS or USB stick).")
+    else:
+        bs = str(STATE.get("backup_status") or "")
+        add("backup", "☁", "Backup", "bad" if bs.startswith("⚠") else "ok", bt + (" · " + bs[:80] if bs else ""),
+            "Check the backup settings and send a test." if bs.startswith("⚠") else "")
+    lr = RUNGUARD.get("last")
+    if lr:
+        det = [T("ended unexpectedly after") + f" {lr['ran_s'] // 60} min"]
+        if isinstance(lr.get("cpu_temp"), (int, float)):
+            det.append(f"CPU {lr['cpu_temp']:.0f} °C")
+        if lr.get("uv"):
+            det.append(T("under-voltage"))
+        if lr.get("ai"):
+            det.append(T("AI was running"))
+        tip = ("Safe start: AI, thermal camera, night vision, IR light and patrol were switched off. Use a 5 V / 5 A power supply and "
+               "cooling (heat sink / fan), then switch them on again one by one." if RUNGUARD["safe"] else
+               "Power cut, power supply too weak (Pi 5: 5 V / 5 A) or too hot. If it happens again, switch the AI off for a test.")
+        add("lastrun", "🔌", "Last run", "bad" if RUNGUARD["safe"] else "warn", " · ".join(det), tip)
     if STATE.get("update_new"):
         add("upd", "⬆", "Updates", "warn", T("new version available") + f": {STATE['update_new']}", "Settings → Updates.")
     out.sort(key=lambda x: HEALTH_ORDER.index(x["level"]))
@@ -5436,13 +5658,14 @@ CAMPING_SET = {"detection_on": True, "record": True, "snapshot_on_person": True,
 # ---- simple settings: what most people need; Expert shows everything ----
 SIMPLE_SECTIONS = {"Camera / Servos", "Patrol", "AI detection", "Detection", "Recording", "Low light", "Setup", "Notifications",
                    "Camping / protection", "Thermal camera", "Microphone", "Loudspeaker", "Lights", "Night report", "Battery",
-                   "Power saving", "Messages", "Updates"}
+                   "Power saving", "Messages", "Updates", "Extra sensors"}
 SIMPLE_KEYS = {"track_person", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
                "arm_delay", "net_mode", "hotspot_ssid", "hotspot_password", "thermal_on", "thermal_alarm", "noise_alarm", "audio_in",
                "audio_out", "siren_on", "siren_volume", "siren_sound", "light_white_auto", "light_ir_auto", "report_on", "report_hour",
-               "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_auto"}
+               "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_auto", "loop_on", "loop_hours",
+               "cam_rotate", "cam_mirror", "sens_on", "rf433_on", "zigbee_on", "ble_on", "tag_missing", "eco_pir"}
 
 
 def simple_hidden(key, sec=None):
@@ -5543,6 +5766,82 @@ def _autostart_mode():
 
 def _systemctl(mode, *args, timeout=30):
     return _run(["systemctl"] + (["--user"] if mode == "user" else []) + list(args), timeout)
+
+
+INSTANCE = {"fd": None, "stopped": None}
+
+
+def instance_lock(port):
+    """Only one Motion Watch per web port (two would fight over camera, servos and port). True = we may run."""
+    try:
+        import fcntl
+    except ImportError:
+        return True
+    p = os.path.join(tempfile.gettempdir(), f"motionwatch-{int(port)}.lock")
+    try:
+        fd = os.open(p, os.O_RDWR | os.O_CREAT, 0o666)
+    except OSError:
+        try:
+            fd = os.open(p, os.O_RDONLY)
+        except OSError:
+            return True
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        os.close(fd); return False
+    INSTANCE["fd"] = fd
+    try:
+        os.chmod(p, 0o666)
+    except OSError:
+        pass
+    return True
+
+
+def instance_takeover(port, gui):
+    """Another Motion Watch holds the port. Started by hand with a window while the autostart service runs: ask and take
+    over (the service is stopped now and started again when this window closes). Returns True when we may run."""
+    url = f"http://127.0.0.1:{int(port)}/"
+    mode = _autostart_mode()
+    code, out, _e = _systemctl(mode, "is-active", SERVICE_NAME, timeout=10) if shutil.which("systemctl") else (1, "", "")
+    service = out.strip() == "active"
+    msg = (tr("Motion Watch is already running") + (" " + tr("in the background (autostart, without a window).") if service else ".")
+           + "\n\n" + tr("Web page") + ": " + url)
+    if not (gui and GUI_OK and service):
+        print(msg.replace("\n\n", " - ")); return False
+    try:
+        r = tk.Tk(); r.withdraw()
+        yes = messagebox.askyesno("Motion Watch", msg + "\n\n" + tr("Open the window here instead? The background service is stopped for "
+                                  "that and starts again when you close the window."), parent=r)
+        r.destroy()
+    except Exception:
+        yes = False
+    if not yes:
+        try:
+            import webbrowser
+            webbrowser.open(url)
+        except Exception:
+            pass
+        return False
+    c2, _o, e2 = _systemctl(mode, "stop", SERVICE_NAME, timeout=40)
+    if c2 != 0:
+        print(tr("The background service could not be stopped") + ": " + (e2 or "")[:160]); return False
+    for _ in range(60):
+        if instance_lock(port):
+            INSTANCE["stopped"] = mode
+            atexit.register(instance_restart_service)
+            return True
+        time.sleep(0.5)
+    return False
+
+
+def instance_restart_service():
+    """The window closes: the autostart service takes over again (not when the Pi is shutting down)."""
+    if INSTANCE.get("stopped") and not POWER.get("pending"):
+        try:
+            subprocess.Popen(["systemctl"] + (["--user"] if INSTANCE["stopped"] == "user" else []) + ["start", "--no-block", SERVICE_NAME],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        except OSError:
+            pass
 
 
 def autostart_args():
@@ -5855,7 +6154,8 @@ class Patrol:
 # AI person detector (SSD MobileNet V2, COCO class 1 = person)
 # ----------------------------------------------------------------------------
 AI_MODEL = {"busy": False, "msg": "", "pct": 0}
-AI_TGZ_URL = "https://download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz"
+AI_TGZ_URLS = ("https://storage.googleapis.com/download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz",
+               "https://download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz")
 AI_PBTXT_URL = "https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt"
 
 
@@ -5872,6 +6172,23 @@ def ai_model_paths():
     return None, None
 
 
+def _short_net_err(e):
+    """A short, readable reason for a failed download."""
+    r = getattr(e, "reason", None) or e
+    t = str(r)
+    if "CERTIFICATE_VERIFY_FAILED" in t:
+        return "certificate not valid (check the clock of the Pi)" if "expired" in t or "not yet valid" in t else "certificate not valid"
+    if isinstance(r, TimeoutError) or "timed out" in t:
+        return "no answer (internet slow or missing)"
+    if "Name or service not known" in t or "getaddrinfo" in t or "Temporary failure in name resolution" in t:
+        return "no internet (name not found)"
+    if "Connection refused" in t or "Network is unreachable" in t:
+        return "no internet connection"
+    if getattr(e, "code", None):
+        return f"server answered {e.code}"
+    return t[:80]
+
+
 def ai_model_download():
     """Fetch the AI model in the background (about 70 MB), check that OpenCV can read it, switch the AI on."""
     if AI_MODEL["busy"]:
@@ -5885,15 +6202,23 @@ def ai_model_download():
         dst = os.path.join(DATA_DIR, "models"); os.makedirs(dst, exist_ok=True)
         tgz = os.path.join(dst, "model.tar.gz.part"); pb_tmp = os.path.join(dst, AIDetector.PB + ".part"); tx_tmp = os.path.join(dst, AIDetector.PBTXT + ".part")
         try:
-            req = urllib.request.Request(AI_TGZ_URL, headers={"User-Agent": "MotionWatch/" + APP_VERSION})
-            with urllib.request.urlopen(req, timeout=60) as r, open(tgz, "wb") as f:
-                total = int(r.headers.get("Content-Length") or 0); got = 0
-                while True:
-                    b = r.read(256 * 1024)
-                    if not b:
-                        break
-                    f.write(b); got += len(b)
-                    AI_MODEL["pct"] = int(got * 90 / total) if total else min(89, got // (800 * 1024))
+            errs = []
+            for url in AI_TGZ_URLS:                               # first address that works (certificates are always checked)
+                try:
+                    req = urllib.request.Request(url, headers={"User-Agent": "MotionWatch/" + APP_VERSION})
+                    with urllib.request.urlopen(req, timeout=60) as r, open(tgz, "wb") as f:
+                        total = int(r.headers.get("Content-Length") or 0); got = 0
+                        while True:
+                            b = r.read(256 * 1024)
+                            if not b:
+                                break
+                            f.write(b); got += len(b)
+                            AI_MODEL["pct"] = int(got * 90 / total) if total else min(89, got // (800 * 1024))
+                    errs = []; break
+                except Exception as e:
+                    errs.append(_short_net_err(e))
+            if errs:
+                raise RuntimeError(errs[0])
             with tarfile.open(tgz, "r:gz") as t:                 # only the one file, written by us (no paths from the archive)
                 m = next((x for x in t.getmembers() if x.isfile() and x.name.endswith("/" + AIDetector.PB)), None)
                 if m is None:
@@ -5921,7 +6246,7 @@ def ai_model_download():
             AI_MODEL.update(msg="ready", pct=100)
             log_event("ai", "AI model downloaded and switched on")
         except Exception as e:
-            AI_MODEL.update(msg=f"failed: {e}"[:160], pct=0)
+            AI_MODEL.update(msg=f"failed: {tr(str(e))}"[:120], pct=0)
             log_event("ai", f"AI model download failed: {e}"[:200])
         finally:
             AI_MODEL["busy"] = False
@@ -5968,6 +6293,13 @@ class AIDetector:
         self.frame_counter += 1
         if self.frame_counter % max(1, int(CFG["ai_every"])) != 0:
             return self.boxes
+        # at most a few times per second and slower when the Pi gets hot: the AI is the biggest load (power, heat)
+        gap = max(0.3, 2.0 * (STATE.get("ai_ms") or 0) / 1000.0)
+        ct = STATE.get("cpu_temp") or 0
+        gap *= 4.0 if ct >= 80 else 2.0 if ct >= 75 else 1.0
+        if time.time() - getattr(self, "_last_run", 0.0) < gap:
+            return self.boxes
+        self._last_run = time.time()
         t0 = time.time()
         h, w = frame.shape[:2]
         blob = cv2.dnn.blobFromImage(frame, size=(300, 300), swapRB=True, crop=False)
@@ -6476,6 +6808,19 @@ def find_ip_source(sid):
     return None
 
 
+_ROT = {"90": cv2.ROTATE_90_CLOCKWISE, "180": cv2.ROTATE_180, "270": cv2.ROTATE_90_COUNTERCLOCKWISE}
+
+
+def cam_orient(frame):
+    """Turn / mirror the camera picture as set (camera mounted sideways or upside down). Everything after sees it upright."""
+    r = _ROT.get(str(CFG.get("cam_rotate", "0")))
+    if r is not None:
+        frame = cv2.rotate(frame, r)
+    if CFG.get("cam_mirror"):
+        frame = cv2.flip(frame, 1)
+    return frame
+
+
 class CvSource:
     """A camera read through OpenCV (USB webcam or network stream)."""
     def __init__(self, cap, size=None):
@@ -6587,7 +6932,7 @@ def source_label(spec):
 # ----------------------------------------------------------------------------
 DEMO = {"on": False, "objs": [], "size": (960, 540)}
 DEMO_BLOCK = ("/api/power", "/api/wifi", "/api/hotspot", "/api/password", "/api/settings/import", "/api/pause", "/api/autostart",
-              "/api/backup", "/api/fleet", "/api/time", "/api/gps", "/api/bt", "/api/lock", "/api/ai_model")
+              "/api/backup", "/api/fleet", "/api/time", "/api/gps", "/api/bt", "/api/lock", "/api/ai_model", "/api/ext")
 
 
 class DemoSource:
@@ -8014,7 +8359,7 @@ def siren_alarm(kind):
         return
     SOUND["last_alarm"] = now
     sound_play(None, None, None, reason={"person": "person alarm", "warm": "thermal alarm", "noise": "noise alarm",
-                                         "prealarm": "pre-alarm", "tamper": "sabotage alarm"}.get(kind, kind))
+                                         "prealarm": "pre-alarm", "tamper": "sabotage alarm", "sensor": "sensor alarm"}.get(kind, kind))
 
 
 # ----------------------------------------------------------------------------
@@ -8310,13 +8655,17 @@ class MqttBridge:
                 c.on_message = self.command
                 c.publish(b + "/availability", "online", retain=True)
                 c.subscribe(b + "/cmd/#")
+                zb = CFG["sens_on"] and CFG["zigbee_on"]
+                if zb:
+                    c.subscribe("zigbee2mqtt/+")                   # Zigbee sensors (Zigbee2MQTT) for the extra sensors
                 MQTT["client"] = c; MQTT["status"] = "connected"; backoff = 5
                 log_event("web", f"MQTT connected to {CFG['mqtt_host']}:{CFG['mqtt_port']}")
                 if CFG["mqtt_discovery"]:
                     self.discovery(c)
                 self.last = None
-                key = (CFG["mqtt_host"], CFG["mqtt_port"], CFG["mqtt_user"], CFG["mqtt_password"], CFG["mqtt_tls"], CFG["mqtt_prefix"], CFG["mqtt_on"])
-                while (CFG["mqtt_host"], CFG["mqtt_port"], CFG["mqtt_user"], CFG["mqtt_password"], CFG["mqtt_tls"], CFG["mqtt_prefix"], CFG["mqtt_on"]) == key:
+                key = (CFG["mqtt_host"], CFG["mqtt_port"], CFG["mqtt_user"], CFG["mqtt_password"], CFG["mqtt_tls"], CFG["mqtt_prefix"], CFG["mqtt_on"], zb)
+                while (CFG["mqtt_host"], CFG["mqtt_port"], CFG["mqtt_user"], CFG["mqtt_password"], CFG["mqtt_tls"], CFG["mqtt_prefix"], CFG["mqtt_on"],
+                       CFG["sens_on"] and CFG["zigbee_on"]) == key:
                     c.poll()
                     self.push_state(c)
                 c.publish(b + "/availability", "offline", retain=True)
@@ -8365,6 +8714,8 @@ class MqttBridge:
             c.publish(self.base() + "/snapshot", buf.tobytes(), retain=True)
 
     def command(self, topic, payload):
+        if topic.startswith("zigbee2mqtt/"):
+            zb_message(topic[12:], payload); return
         cmd = topic.rsplit("/cmd/", 1)[-1]; val = payload.decode(errors="replace").strip()
         log_event("web", f"MQTT command: {cmd} = {val[:40]}")
         if cmd in ("arm", "alarm"):
@@ -8412,6 +8763,430 @@ MQTT_BRIDGE = None
 SMS_MODES = ("auto", "mmcli", "at", "hilink")
 SMS = {"status": "", "sent": [], "last": 0.0}
 _PHONE_RE = re.compile(r"^\+?[0-9]{6,16}$")
+
+
+# ----------------------------------------------------------------------------
+# Extra sensors: motion detector (PIR), door / lid contact (reed switch to GND) and gas / smoke module (digital output) on a
+#   GPIO; 433 MHz radio sensors (RTL-SDR USB stick + rtl_433), Zigbee sensors (Zigbee2MQTT -> MQTT broker) and Bluetooth tags
+#   (RuuviTag: its movement counter, or "out of range"). An alarm when armed (or always: gas); a PIR also wakes power saving.
+# ----------------------------------------------------------------------------
+SENS_KINDS = ("pir", "door", "gas", "tag", "other")
+SENS_ALARMS = ("armed", "always", "off")
+SENS_NAMES = {"pir": "Motion detector", "door": "Door", "gas": "Gas / smoke", "tag": "Tag", "other": "Sensor"}
+MAX_SENSORS = 16
+SENS = {"st": {}, "seen": {}, "pir_t": 0.0, "rf": "off", "ble": "off", "zb": "off", "ruuvi": {}, "lock": threading.Lock()}
+_SENS_SRC = re.compile(r"^(gpio:\d{1,2}|rf:[\w .:+\-]{1,60}|zb:[\w .:+\-/]{1,60}|ble:[0-9A-F]{2}(:[0-9A-F]{2}){5})$")
+
+
+def sens_used_gpios(skip=None):
+    """GPIOs taken by servos, 1-Wire, I2C, relays, lights, the thermal camera and the other sensors."""
+    used = set(GPIO_RESERVED) | {r["gpio"] for r in RELAYS} | set(thermal_gpios()) | {2, 3}
+    for k in ("light_white_out", "light_ir_out"):
+        v = str(CFG.get(k, ""))
+        if v.startswith("gpio:") and v[5:].isdigit():
+            used.add(int(v[5:]))
+    for x in CFG.get("sensors", []):
+        if x.get("id") != skip and str(x.get("src", "")).startswith("gpio:"):
+            used.add(int(x["src"][5:]))
+    return used
+
+
+def sens_free_gpios(skip=None):
+    """Free GPIOs, the usual free pins first (GPIO 4 = 1-Wire temperature sensor comes last)."""
+    used = sens_used_gpios(skip)
+    order = [g for g in FREE_GPIOS if g != 4] + [g for g in range(5, 28) if g not in FREE_GPIOS] + [4]
+    return [g for g in order if g not in used]
+
+
+def sens_clean(lst):
+    out, ids, gp = [], set(), set()
+    for x in (lst if isinstance(lst, list) else [])[:MAX_SENSORS]:
+        if not isinstance(x, dict):
+            continue
+        kind = x.get("kind") if x.get("kind") in SENS_KINDS else "other"
+        src = str(x.get("src", "")).strip()
+        if src[:4].lower() == "ble:":
+            src = "ble:" + src[4:].upper()
+        if src and not _SENS_SRC.match(src):
+            src = ""
+        if src.startswith("gpio:"):
+            g = int(src[5:])
+            if not 2 <= g <= 27 or g in gp:
+                src = ""
+            else:
+                gp.add(g)
+        sid = str(x.get("id", ""))
+        if not re.fullmatch(r"[a-f0-9]{8}", sid) or sid in ids:
+            sid = secrets.token_hex(4)
+        ids.add(sid)
+        name = re.sub(r"[\x00-\x1f]", "", str(x.get("name", ""))).strip()[:24] or SENS_NAMES[kind]
+        alarm = x.get("alarm") if x.get("alarm") in SENS_ALARMS else ("always" if kind == "gas" else "armed")
+        out.append({"id": sid, "name": name, "kind": kind, "src": src, "alarm": alarm, "inv": bool(x.get("inv", kind == "gas"))})
+    return out
+
+
+def sens_find(sid):
+    return next((x for x in CFG["sensors"] if x["id"] == sid), None)
+
+
+def sens_action(d, lang=None):
+    """Web page / window: add, change, remove or test a sensor."""
+    a = d.get("action")
+    if a == "add":
+        if len(CFG["sensors"]) >= MAX_SENSORS:
+            return False, "at most 16 sensors"
+        kind = d.get("kind") if d.get("kind") in SENS_KINDS else "other"
+        src = str(d.get("src") or "")
+        if not src and kind in ("pir", "door", "gas"):
+            free = sens_free_gpios()
+            src = f"gpio:{free[0]}" if free else ""
+        n = sum(1 for x in CFG["sensors"] if x["kind"] == kind) + 1
+        name = str(d.get("name") or "")[:24] or (tr(SENS_NAMES[kind], lang) + (f" {n}" if n > 1 else ""))
+        CFG["sensors"] = sens_clean(CFG["sensors"] + [{"name": name, "kind": kind, "src": src}])
+        CFG["sens_on"] = True
+        if src.startswith("rf:"):
+            CFG["rf433_on"] = True
+        elif src.startswith("zb:"):
+            CFG["zigbee_on"] = True
+        elif src.startswith("ble:") or kind == "tag":
+            CFG["ble_on"] = True
+        save_settings(); return True, ""
+    x = sens_find(str(d.get("id", "")))
+    if x is None:
+        return False, "unknown sensor"
+    if a == "remove":
+        CFG["sensors"] = [y for y in CFG["sensors"] if y["id"] != x["id"]]
+        SENS["st"].pop(x["id"], None); save_settings(); return True, ""
+    if a == "test":
+        sens_fire(x, "test"); return True, ""
+    if a != "set":
+        return False, "unknown action"
+    f, v = d.get("field"), d.get("value")
+    if f == "name":
+        v = re.sub(r"[\x00-\x1f]", "", str(v or "")).strip()[:24]
+        if not v:
+            return False, "invalid value"
+    elif f == "kind":
+        if v not in SENS_KINDS:
+            return False, "invalid value"
+    elif f == "alarm":
+        if v not in SENS_ALARMS:
+            return False, "invalid value"
+    elif f == "inv":
+        v = bool(v)
+    elif f == "src":
+        v = str(v or "").strip()
+        if v[:4].lower() == "ble:":
+            v = "ble:" + v[4:].upper()
+        if v and not _SENS_SRC.match(v):
+            return False, "invalid value"
+        if v.startswith("gpio:") and int(v[5:]) not in sens_free_gpios(x["id"]):
+            return False, "this GPIO is already in use"
+    else:
+        return False, "unknown setting"
+    x[f] = v
+    if f == "src":
+        SENS["st"].pop(x["id"], None)
+    CFG["sensors"] = sens_clean(CFG["sensors"]); save_settings()
+    return True, ""
+
+
+def sens_text(x, what, lang=None):
+    if what == "test":
+        return tr("test - it works", lang)
+    if what == "missing":
+        return tr("out of range (not seen any more)", lang)
+    return tr({"pir": "motion detected", "door": "opened", "gas": "gas / smoke detected!", "tag": "moved"}.get(x["kind"], "triggered"), lang)
+
+
+def sens_fire(x, what):
+    """A sensor reported something: diary line, and (armed or 'always') push with the current picture, siren, recording."""
+    now = time.time()
+    st = SENS["st"].setdefault(x["id"], {"state": "ok", "last": 0.0, "cool": 0.0})
+    st["last"] = now; st["what"] = what
+    if x["kind"] == "pir" and what != "missing":
+        SENS["pir_t"] = now                               # wakes power saving at once
+    test = what == "test"
+    alarm = test or x["alarm"] == "always" or (x["alarm"] == "armed" and is_armed())
+    log_event("sys", f"Sensor «{x['name']}»: {sens_text(x, what, 'en')}" + ("" if alarm else " (no alarm)"))
+    if not alarm or (not test and now - st.get("cool", 0.0) < 60):
+        return
+    st["cool"] = now
+    w = WATCH_REF["w"]
+    title = "{name}: " + (tr("GAS ALARM") if x["kind"] == "gas" else tr("SENSOR ALARM"))
+    if test:
+        title = "[Test] " + title
+    if w is not None:
+        w.notifier.alert(title, f"{x['name']}: {sens_text(x, what)}", w.frame_out)
+    if test:
+        return
+    QUICK["rec_until"] = max(QUICK["rec_until"], now + 60)        # one minute of video of what happens now
+    if x["kind"] == "gas" and not is_armed():
+        if out_selected() and not SOUND["playing"] and TALK["proc"] is None:
+            sound_play(None, None, None, reason="gas alarm")
+    else:
+        siren_alarm("sensor")
+
+
+def sens_event(src, active, info=""):
+    """A radio sensor (433 MHz, Zigbee, Bluetooth) sent something. active: True / False (contact closed again) / None = a pulse."""
+    for x in CFG["sensors"] if CFG["sens_on"] else []:
+        if x["src"] != src:
+            continue
+        st = SENS["st"].setdefault(x["id"], {"state": "unknown", "last": 0.0, "cool": 0.0})
+        st["seen"] = time.time()
+        if active is False:
+            st["state"] = "ok"; continue
+        if st.get("state") == "missing":
+            log_event("sys", f"Sensor «{x['name']}»: back in range")
+        if active is None:
+            st["state"] = "pulse"; sens_fire(x, info or "active")
+        elif st.get("state") != "active":                 # radio sensors report changes: every "open" counts
+            st["state"] = "active"; sens_fire(x, "active")
+
+
+def sens_seen(src, label, data=None):
+    with SENS["lock"]:
+        SENS["seen"][src] = {"label": str(label)[:80], "t": time.time(), "data": data or {}}
+        if len(SENS["seen"]) > 60:
+            for k in sorted(SENS["seen"], key=lambda k: SENS["seen"][k]["t"])[:len(SENS["seen"]) - 60]:
+                SENS["seen"].pop(k, None)
+
+
+def rf_message(d):
+    """One line of rtl_433 (JSON). Contact sensors: closed / state / contact_open; motion detectors: motion / event."""
+    model = re.sub(r"[^\w.+\-]", "_", str(d.get("model", "?")))[:30]
+    dev = re.sub(r"[^\w.+\-]", "_", str(d.get("id", d.get("channel", d.get("code", "")))))[:20]
+    src = f"rf:{model}:{dev}" if dev else f"rf:{model}"
+    vals = {k: d[k] for k in ("closed", "state", "contact_open", "motion", "alarm", "tamper", "event", "temperature_C", "battery_ok") if k in d}
+    sens_seen(src, f"{model} {dev}".strip(), vals)
+    act = None
+    if "contact_open" in d:
+        act = bool(d["contact_open"])
+    elif "closed" in d:
+        act = not bool(d["closed"])
+    elif str(d.get("state", "")).lower() in ("open", "opened", "closed", "close"):
+        act = str(d["state"]).lower().startswith("open")
+    elif "motion" in d:
+        act = None if d["motion"] else False
+    elif "temperature_C" in d and "alarm" not in d and "event" not in d:
+        return                                            # a thermometer: only listed, no trigger
+    sens_event(src, act)
+
+
+def zb_message(name, payload):
+    """A Zigbee2MQTT message (topic zigbee2mqtt/<name>). contact false = open, occupancy, smoke, gas, water_leak, vibration ..."""
+    if name.startswith("bridge") or "/" in name:
+        return
+    try:
+        d = json.loads(payload.decode(errors="replace"))
+    except ValueError:
+        return
+    if not isinstance(d, dict):
+        return
+    src = "zb:" + name[:60]
+    if not _SENS_SRC.match(src):
+        return
+    keys = ("contact", "occupancy", "smoke", "carbon_monoxide", "gas", "water_leak", "vibration", "tamper", "action")
+    sens_seen(src, name, {k: d[k] for k in keys + ("battery", "temperature") if k in d})
+    if "contact" in d:
+        sens_event(src, not bool(d["contact"]))
+    elif any(d.get(k) for k in ("smoke", "carbon_monoxide", "gas", "water_leak", "occupancy")):
+        sens_event(src, True)
+    elif any(k in d for k in ("smoke", "carbon_monoxide", "gas", "water_leak", "occupancy")):
+        sens_event(src, False)
+    elif d.get("vibration") or d.get("action"):
+        sens_event(src, None)
+
+
+def ruuvi_parse(b):
+    """RuuviTag data format 5 (RAWv2): temperature, humidity, pressure, acceleration, battery, movement counter."""
+    import struct
+    if not b or len(b) < 18 or b[0] != 5:
+        return None
+    t, h, p, ax, ay, az, pw, mv, seq = struct.unpack(">hHHhhhHBH", bytes(b[1:18]))
+    return {"t": round(t * 0.005, 1), "h": round(h * 0.0025), "p": round((p + 50000) / 100.0, 1), "acc": (ax, ay, az),
+            "bat": round(((pw >> 5) + 1600) / 1000.0, 2), "moves": mv, "seq": seq}
+
+
+def ble_message(mac, name, ruuvi_raw, rssi=None):
+    src = "ble:" + str(mac).upper()
+    if not _SENS_SRC.match(src):
+        return
+    r = ruuvi_parse(ruuvi_raw) if ruuvi_raw else None
+    known = any(x["src"] == src for x in CFG["sensors"])
+    if r is None and not name and not known:
+        return                                            # anonymous phones etc. (changing addresses): not listed
+    sens_seen(src, ("RuuviTag " + src[-5:].replace(":", "")) if r else (name or src[4:]), dict(r or {}, rssi=rssi))
+    if r is not None:
+        old = SENS["ruuvi"].get(src); SENS["ruuvi"][src] = r["moves"]
+        if old is not None and r["moves"] != old:
+            sens_event(src, None); return
+    sens_event(src, False)                                # seen = in range (and not moved)
+
+
+class SensorHub:
+    def __init__(self):
+        self.gp = {}                  # gpio -> [device or None, pull_up, time of the last try]
+        self.rf_proc = None
+        threading.Thread(target=self.loop, daemon=True, name="sensors").start()
+        threading.Thread(target=self.rf_loop, daemon=True, name="rtl433").start()
+        threading.Thread(target=self.ble_loop, daemon=True, name="ble").start()
+
+    def _gpio_sync(self, want):
+        for g in list(self.gp):
+            if g not in want or self.gp[g][1] != want[g]:
+                try:
+                    if self.gp[g][0] is not None:
+                        self.gp[g][0].close()
+                except Exception:
+                    pass
+                del self.gp[g]
+        for g, pu in want.items():
+            ent = self.gp.get(g)
+            if ent and (ent[0] is not None or time.time() - ent[2] < 30):
+                continue
+            try:
+                from gpiozero import DigitalInputDevice
+                self.gp[g] = [DigitalInputDevice(g, pull_up=pu), pu, time.time()]
+            except Exception as e:
+                if not ent:
+                    log_event("sys", f"Sensor GPIO {g}: {e}"[:160])
+                self.gp[g] = [None, pu, time.time()]
+
+    def loop(self):
+        n = 0
+        while True:
+            try:
+                self.tick(); n += 1
+                if n % 10 == 0:
+                    self.publish()
+            except Exception as e:
+                log_event("sys", f"Sensors: {e}"[:160]); time.sleep(5)
+            time.sleep(0.1)
+
+    def tick(self):
+        now = time.time()
+        lst = CFG["sensors"] if CFG["sens_on"] else []
+        self._gpio_sync({int(x["src"][5:]): x["kind"] == "door" for x in lst if x["src"].startswith("gpio:")})
+        for x in lst:
+            st = SENS["st"].setdefault(x["id"], {"state": "unknown", "last": 0.0, "cool": 0.0})
+            if x["src"].startswith("gpio:"):
+                ent = self.gp.get(int(x["src"][5:]))
+                if not ent or ent[0] is None:
+                    st["state"] = "error"; continue
+                raw = int(ent[0].value) ^ int(ent[1])          # gpiozero inverts with a pull-up: back to the pin level
+                act = bool(raw) ^ bool(x["inv"])
+                if act and st["state"] != "active":
+                    first = st["state"] in ("unknown", "error")
+                    st["state"] = "active"
+                    if not (first and x["kind"] == "door"):
+                        sens_fire(x, "active")
+                elif not act and st["state"] != "ok":
+                    st["state"] = "ok"
+            elif x["src"].startswith("ble:"):
+                seen = SENS["seen"].get(x["src"])
+                lim = float(CFG["tag_missing"]) * 60.0
+                if not CFG["ble_on"]:
+                    continue
+                if seen and now - seen["t"] > lim and st["state"] not in ("missing", "unknown"):
+                    st["state"] = "missing"; sens_fire(x, "missing")
+                elif st["state"] == "pulse" and now - st["last"] > 10:
+                    st["state"] = "ok"
+            elif st.get("state") == "pulse" and now - st["last"] > 10:
+                st["state"] = "ok"
+
+    def publish(self):
+        lang = None
+        sts = {}
+        for x in CFG["sensors"]:
+            st = SENS["st"].get(x["id"]) or {}
+            sts[x["id"]] = {"state": st.get("state", "unknown") if CFG["sens_on"] else "off",
+                            "last": datetime.fromtimestamp(st["last"]).strftime("%d.%m. %H:%M") if st.get("last") else "",
+                            "what": st.get("what", "")}
+        with SENS["lock"]:
+            seen = sorted(({"src": k, "label": v["label"], "ago": int(time.time() - v["t"]), "data": v["data"]} for k, v in SENS["seen"].items()),
+                          key=lambda e: e["ago"])[:40]
+        zb = "off"
+        if CFG["sens_on"] and CFG["zigbee_on"]:
+            zb = "needs MQTT" if not (CFG["mqtt_on"] and CFG["mqtt_host"].strip()) else ("listening" if MQTT["status"] == "connected" else MQTT["status"])
+        STATE["sens"] = {"st": sts, "seen": seen, "rf": SENS["rf"] if CFG["sens_on"] else "off", "ble": SENS["ble"] if CFG["sens_on"] else "off",
+                         "zb": zb, "free": sens_free_gpios(), "pir": time.time() - SENS["pir_t"] < 10}
+
+    def rf_loop(self):
+        while True:
+            if not (CFG["sens_on"] and CFG["rf433_on"]):
+                SENS["rf"] = "off"; time.sleep(3); continue
+            exe = shutil.which("rtl_433")
+            if not exe:
+                SENS["rf"] = "rtl_433 missing (sudo apt install rtl-433)"; time.sleep(30); continue
+            t0 = time.time()
+            try:
+                p = subprocess.Popen([exe, "-F", "json", "-M", "level"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1)
+                self.rf_proc = p; SENS["rf"] = "listening"
+                for line in p.stdout:
+                    if not (CFG["sens_on"] and CFG["rf433_on"]):
+                        break
+                    try:
+                        d = json.loads(line)
+                    except ValueError:
+                        continue
+                    if isinstance(d, dict):
+                        rf_message(d)
+                try:
+                    p.terminate(); p.wait(5)
+                except Exception:
+                    pass
+            except Exception as e:
+                SENS["rf"] = f"error: {e}"[:100]
+            self.rf_proc = None
+            if CFG["sens_on"] and CFG["rf433_on"]:
+                if time.time() - t0 < 10:
+                    SENS["rf"] = "no RTL-SDR stick found"
+                time.sleep(20)
+
+    def ble_loop(self):
+        while True:
+            if not (CFG["sens_on"] and CFG["ble_on"]):
+                SENS["ble"] = "off"; time.sleep(3); continue
+            try:
+                import asyncio
+                from bleak import BleakScanner
+            except ImportError:
+                SENS["ble"] = "python3-bleak missing (sudo apt install python3-bleak)"; time.sleep(30); continue
+            try:
+                asyncio.run(self._ble(BleakScanner))
+            except Exception as e:
+                SENS["ble"] = f"error: {e}"[:100]; time.sleep(20)
+
+    async def _ble(self, BleakScanner):
+        import asyncio
+
+        def cb(dev, adv):
+            try:
+                md = adv.manufacturer_data or {}
+                ble_message(dev.address, adv.local_name or getattr(dev, "name", "") or "", md.get(0x0499), getattr(adv, "rssi", None))
+            except Exception:
+                pass
+        sc = BleakScanner(detection_callback=cb)
+        await sc.start(); SENS["ble"] = "listening"
+        try:
+            while CFG["sens_on"] and CFG["ble_on"]:
+                await asyncio.sleep(1)
+        finally:
+            await sc.stop()
+
+
+SENSHUB = None
+
+
+def sens_has_pir():
+    return CFG["sens_on"] and any(x["kind"] == "pir" and x["src"] for x in CFG["sensors"])
+
+
+def eco_fps_now():
+    f = max(1.0, float(CFG["eco_fps"]))
+    return 1.0 if CFG["eco_pir"] and sens_has_pir() else f
 
 
 def sms_numbers():
@@ -8942,7 +9717,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_42_1.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_54_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -9300,8 +10075,55 @@ def lock_pin_ok(pin):
     return hmac.compare_digest(_pin_hash(pin, h.split("$", 1)[0]), h)
 
 
+# not put back when unlocking: what the operator does (arm, move the camera), what the Pi measures itself, how a
+# device shows the page
+LOCK_KEEP = {"armed", "pan", "tilt", "hotspot_on", "lock_on", "lock_pin", "lock_snap", "web_ui", "ui_open", "ui_tab", "theme", "lang",
+             "fullscreen", "latitude", "longitude", "batt_full_t", "batt_warned", "setup_done", "autostart", "ui_simple"}
+LOCK_LAST = {"restored": []}
+
+
+def lock_snapshot():
+    d = json.loads(json.dumps(settings_data()))
+    d["cfg"] = {k: v for k, v in d["cfg"].items() if k not in LOCK_KEEP}
+    d["v"] = 2
+    return d
+
+
+def lock_restore():
+    """Unlocking: everything changed since the lock goes back to the copy (settings, zones, schedules, waypoints, relays)."""
+    snap = CFG.get("lock_snap") if isinstance(CFG.get("lock_snap"), dict) else {}
+    CFG["lock_snap"] = {}
+    if not snap:
+        return []
+    if snap.get("v") != 2:                                           # copy made by 2.44.0: settings only
+        snap = {"cfg": {k: v for k, v in snap.items() if not k.startswith("_")}}
+    now = json.loads(json.dumps(settings_data()))
+    back = [k for k, v in snap.get("cfg", {}).items() if k in CFG and k not in LOCK_KEEP and k not in VOLATILE and now["cfg"].get(k) != v]
+    for part in ("waypoints", "relays", "schedules", "zones"):
+        if part in snap and snap[part] != now.get(part):
+            back.append(part)
+    if not back:
+        return []
+    data = {"cfg": {k: v for k, v in snap.get("cfg", {}).items() if k not in LOCK_KEEP and k not in VOLATILE}}
+    for part in ("waypoints", "relays", "schedules", "zones"):
+        data[part] = snap.get(part, now.get(part))
+    keep = {k: CFG[k] for k in LOCK_KEEP if k in CFG}
+    apply_settings(data)
+    CFG.update(keep)
+    for k in back:
+        if k in CFG:
+            try:
+                sched_user_changed(k)
+            except Exception:
+                pass
+    HW_REINIT["want"] = True; SETTINGS_GEN["n"] += 1                 # servos / lights / window follow the old values
+    return back
+
+
 def lock_info():
-    return {"on": bool(CFG["lock_on"]), "pin_set": bool(CFG["lock_pin"])}
+    snap = CFG.get("lock_snap") if isinstance(CFG.get("lock_snap"), dict) else {}
+    since = str(snap.get("saved") or "")[11:16] if CFG["lock_on"] else ""
+    return {"on": bool(CFG["lock_on"]), "pin_set": bool(CFG["lock_pin"]), "restored": len(LOCK_LAST["restored"]), "since": since}
 
 
 def lock_set(action, pin="", new_pin="", source="web"):
@@ -9319,8 +10141,8 @@ def lock_set(action, pin="", new_pin="", source="web"):
             return True, ""
         if not CFG["lock_pin"]:
             return False, "set a PIN first"
-        CFG["lock_on"] = True; save_settings()
-        log_event("sys", f"Operator mode ON - settings locked ({source})")
+        CFG["lock_snap"] = lock_snapshot(); CFG["lock_on"] = True; save_settings()
+        log_event("sys", f"Operator mode ON - settings locked, a copy of all {len(CFG['lock_snap'])} settings kept ({source})")
         return True, ""
     if action == "unlock":
         now = time.time()
@@ -9332,35 +10154,34 @@ def lock_set(action, pin="", new_pin="", source="web"):
             log_event("sys", f"Operator mode: wrong PIN ({source})")
             return False, "wrong PIN"
         LOCK_FAILS.clear()
+        back = lock_restore(); LOCK_LAST["restored"] = back
         CFG["lock_on"] = False; save_settings()
-        log_event("sys", f"Operator mode OFF - settings unlocked ({source})")
+        log_event("sys", f"Operator mode OFF - settings unlocked ({source})"
+                         + (f", {len(back)} change(s) put back: " + ", ".join(back[:12]) + (" …" if len(back) > 12 else "") if back else ", nothing was changed"))
         return True, ""
     return False, "unknown action"
 
 
+# operator mode: everything may be changed and is put back at unlocking - except what could lock the owner out
+LOCK_DENY_PATHS = {"/api/wifi", "/api/hotspot", "/api/password", "/api/settings/import", "/api/autostart", "/api/setup", "/api/ext"}
+LOCK_DENY_KEYS = {"net_mode", "hotspot_ssid", "hotspot_password", "hotspot_on", "update_url", "update_token", "update_unsigned",
+                  "lock_on", "lock_pin", "autostart", "web_port"}
+
+
 def lock_allows(path, method, data):
-    """Web requests that stay allowed in operator mode."""
+    """Web requests in operator mode: all but the ones that could lock the owner out."""
     if not CFG["lock_on"]:
         return True
     if method != "POST":
         return path != "/api/settings/export"            # the settings file contains passwords
-    free = {"/api/move", "/api/stick", "/api/arm", "/api/camping", "/api/light", "/api/power", "/api/talk", "/api/talk/stop",
-            "/api/time", "/api/gps", "/api/ui", "/api/rec/prepare", "/api/rec/fav", "/rec/zip", "/api/report/send", "/api/battery",
-            "/api/lock", "/api/notify_test", "/api/hotspot", "/api/quick", "/api/feedback"}
-    if path in free:
-        return True
-    a = (data or {}).get("action")
-    if path == "/api/set":
-        return (data or {}).get("key") in OPER_KEYS
-    if path == "/api/action":
-        return a == "reset_counter"
-    if path == "/api/timelapse":
-        return a == "now"
-    if path == "/api/audio":
-        return a in ("test", "siren", "stop")
-    if path == "/api/diary":
-        return a == "fav"
-    return False
+    if path in LOCK_DENY_PATHS:
+        return False
+    d = data or {}
+    if path in ("/api/set", "/api/text") and d.get("key") in LOCK_DENY_KEYS:
+        return False
+    if path == "/api/action" and d.get("action") == "reset_settings":
+        return False
+    return True
 
 
 _GH_HOSTS = ("raw.githubusercontent.com", "api.github.com", "github.com", "objects.githubusercontent.com")
@@ -9521,6 +10342,11 @@ PAUSING = {"on": False}
 
 def _close_fds_on_exec():
     """The web server sockets are inheritable: they must not survive os.execv (the new program needs the port)."""
+    try:
+        if RUNGUARD.get("clean"):
+            RUNGUARD["clean"]()                         # a planned restart (update, pause) is a clean end
+    except Exception:
+        pass
     try:
         for fd in os.listdir("/proc/self/fd"):
             if int(fd) > 2:
@@ -9689,6 +10515,84 @@ def run_paused(until, argv_rest):
 
 def _guard_file():
     return os.path.join(DATA_DIR, "update_guard.json")
+
+
+RUNGUARD = {"t0": time.time(), "m0": time.monotonic(), "safe": False, "last": None, "streak": 0, "changed": []}
+SAFE_SET = {"ai_enabled": False, "thermal_on": False, "thermal_alarm": False, "nightvision": False, "nightvision_auto": False,
+            "patrol": False, "track_person": False, "timelapse_on": False, "light_white": "off", "light_ir": "off"}
+
+
+def _run_file():
+    return os.path.join(DATA_DIR, "run_state.json")
+
+
+def _run_write(d):
+    try:
+        tmp = _run_file() + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(d, f)
+        os.replace(tmp, _run_file())
+    except OSError:
+        pass
+
+
+def run_guard_start():
+    """At every start: did the last run end without a clean stop (the whole Pi went off)? Two short runs in a row ->
+    safe start with the heavy parts off. Then a heartbeat every 10 s keeps the conditions for next time."""
+    if DEMO["on"]:
+        return
+    try:
+        with open(_run_file()) as f:
+            prev = json.load(f)
+    except (OSError, ValueError):
+        prev = None
+    streak = 0
+    if isinstance(prev, dict) and not prev.get("clean"):
+        ran = int(prev.get("up", 0))
+        RUNGUARD["last"] = {"ran_s": ran, "cpu_temp": prev.get("cpu_temp"), "uv": prev.get("uv"), "throttled": prev.get("throttled"),
+                            "cpu": prev.get("cpu"), "ai": prev.get("ai"), "ver": prev.get("ver"), "when": prev.get("beat_txt", "")}
+        streak = int(prev.get("streak", 0)) + 1 if ran < 600 else 0
+        ct = prev.get("cpu_temp")
+        log_event("sys", f"The last run ended unexpectedly after {ran // 60} min {ran % 60} s"
+                         + (f" (CPU {ct:.0f} °C" if isinstance(ct, (int, float)) else " (") + (", under-voltage" if prev.get("uv") else "")
+                         + (", AI on" if prev.get("ai") else "") + ") - power supply, heat or a crash")
+    RUNGUARD["streak"] = streak
+    if streak >= 2:
+        RUNGUARD["safe"] = True
+        RUNGUARD["changed"] = [k for k, v in SAFE_SET.items() if k in CFG and CFG[k] != v]
+        for k in RUNGUARD["changed"]:
+            CFG[k] = SAFE_SET[k]
+        save_settings()
+        log_event("sys", "Safe start: the Pi went off twice shortly after starting - AI, thermal camera, night vision, IR light "
+                         "and patrol are off. Check power supply (5 V / 5 A) and cooling, then switch them on again one by one.")
+
+        def tell():
+            time.sleep(40)
+            w = WATCH_REF["w"]
+            if w is not None:
+                w.notifier.info(tr("Safe start: the Pi went off twice shortly after starting. AI, thermal camera, night vision, "
+                                   "IR light and patrol are off - check power supply and cooling."), title="{name}: " + tr("safe start"))
+        threading.Thread(target=tell, daemon=True).start()
+    state = {"start": time.time(), "up": 0, "clean": False, "streak": streak, "ver": APP_VERSION}
+    _run_write(state)
+
+    def clean():
+        state["clean"] = True; state["up"] = int(time.monotonic() - RUNGUARD["m0"]); _run_write(state)
+    atexit.register(clean); RUNGUARD["clean"] = clean
+
+    def beat():
+        while True:
+            time.sleep(10)
+            sup = STATE.get("supply") or {}
+            up = int(time.monotonic() - RUNGUARD["m0"])
+            state.update(up=up, cpu_temp=STATE.get("cpu_temp"), uv=bool(sup.get("uv_now") or sup.get("uv_boot")),
+                         throttled=bool(sup.get("throttled")), cpu=STATE.get("cpu"), ai=bool(CFG["ai_enabled"] and str(STATE.get("ai_status", "")).startswith("running")),
+                         beat_txt=datetime.now().strftime("%Y-%m-%d %H:%M"))
+            if up > 1800 and state.get("streak"):
+                state["streak"] = 0                              # ran long enough: the next short run starts counting again
+            if not state["clean"]:
+                _run_write(state)
+    threading.Thread(target=beat, daemon=True, name="runguard").start()
 
 
 def start_guard():
@@ -10016,7 +10920,7 @@ class MotionWatch:
     def __init__(self):
         self.cap = None                    # the video source (CvSource / PiCamSource), opened in a background thread
         self.bg = cv2.createBackgroundSubtractorMOG2(history=400, varThreshold=28, detectShadows=False)
-        self.weather = WeatherAnalyzer(); self.tracker = Tracker(); self.tuner = AutoTuner()
+        self.weather = WeatherAnalyzer(); self.tracker = Tracker(); self.tuner = AutoTuner(); self.zwatch = ZoneWatch()
         self.ai = AIDetector(); self.hw = Hardware(); self.patrol = Patrol(); self.relays = RelayManager()
         self.frame_out = None; self.jpeg = None; self.jpeg_seq = 0
         self.frame_raw = None; self.raw_until = 0.0
@@ -10055,9 +10959,11 @@ class MotionWatch:
                 threading.Thread(target=weather_loop, daemon=True, name="weather").start()
             threading.Thread(target=fleet_loop, daemon=True, name="fleet").start()
             threading.Thread(target=feedback_loop, daemon=True, name="feedback").start()
-        global MQTT_BRIDGE
+        global MQTT_BRIDGE, SENSHUB
         if MQTT_BRIDGE is None:
             MQTT_BRIDGE = MqttBridge()
+        if SENSHUB is None:
+            SENSHUB = SensorHub()
         if AUDIO is None:
             AUDIO = AudioMonitor()
             if bt_available():
@@ -10289,6 +11195,8 @@ class MotionWatch:
                 snap = os.path.join(CFG["record_dir"], f"person_{stamp}.jpg")
                 cv2.imwrite(snap, frame, [cv2.IMWRITE_JPEG_QUALITY, 85]); gps_tag_jpg(snap)
             self.notifier.person(len(persons), snap, frame)
+            if snap and BACKUP is not None and CFG["backup_type"] != "off":
+                BACKUP.add(snap, {"first": True})                 # off the device at once - a thief may take the Pi
             push_alert("person", "person", count=len(persons), source=STATE["source_label"])
             siren_alarm("person")
         man_rec = now < QUICK["rec_until"]
@@ -10338,6 +11246,9 @@ class MotionWatch:
             self._finish_recording()
             log_event("rec", "Recording stopped")
         if self.writer is not None:
+            rs = tuple(getattr(self, "rec_size", ()) or ())
+            if len(rs) == 2 and (frame.shape[1], frame.shape[0]) != rs:
+                frame = cv2.resize(frame, rs)             # picture turned during a recording: keep the size of the file
             self.writer.write(frame)
             self.rec_info["frames"] += 1; self.rec_info["persons"] = max(self.rec_info["persons"], len(persons))
         STATE["recording"] = self.writer is not None
@@ -10379,7 +11290,7 @@ class MotionWatch:
             STATE["eco"] = "off"; return
         busy = (bool(present & {"prealarm", "motion", "person", "warm", "noise"}) or self.writer is not None or STATE["tracking"] or manual_active() or TL_HOLD["on"]
                 or (CFG["eco_view_full"] and self.web_viewers > 0) or (AUDIO is not None and AUDIO.noisy())
-                or TALK["proc"] is not None or POWER["pending"])
+                or TALK["proc"] is not None or POWER["pending"] or time.time() - SENS["pir_t"] < 3)
         if busy:
             self.eco_wake_t = t0
         slow = t0 - self.eco_wake_t > float(CFG["eco_wake"])
@@ -10387,10 +11298,10 @@ class MotionWatch:
             self._eco_set(slow)
         STATE["eco"] = "saving" if slow else "awake"
         if slow:
-            wait = 1.0 / max(1.0, float(CFG["eco_fps"])) - (time.time() - t0)
+            wait = 1.0 / eco_fps_now() - (time.time() - t0)
             end = time.time() + max(0.0, wait)
             while time.time() < end and self.eco_slow and CFG["eco_on"]:
-                if (CFG["eco_view_full"] and self.web_viewers > 0) or manual_active() or (AUDIO is not None and AUDIO.noisy()):
+                if (CFG["eco_view_full"] and self.web_viewers > 0) or manual_active() or (AUDIO is not None and AUDIO.noisy()) or time.time() - SENS["pir_t"] < 1:
                     self.eco_wake_t = time.time(); break               # wake up at once
                 time.sleep(0.05)
 
@@ -10399,7 +11310,7 @@ class MotionWatch:
             log_event("sys", "Power saving: few pictures (all quiet)" if slow else "Power saving: full speed")
         self.eco_slow = slow; self._eco_src = self.cap
         if self.cap is not None and hasattr(self.cap, "set_fps"):
-            self.cap.set_fps(max(1.0, float(CFG["eco_fps"])) if slow else None)
+            self.cap.set_fps(eco_fps_now() if slow else None)
         self._last_t0 = 0.0
 
     # ---- main loop -------------------------------------------------------
@@ -10429,6 +11340,14 @@ class MotionWatch:
                     self.cap = None; self.read_failures = 0; self._retry_at = time.time() + 2.0
                 time.sleep(0.05); continue
             self.read_failures = 0
+            ok_ = (str(CFG.get("cam_rotate", "0")), bool(CFG.get("cam_mirror")))
+            if ok_ != getattr(self, "_orient", ok_):        # turned / mirrored now: a new scene for the detection
+                self.reset_scene()
+                if TAMPER is not None:
+                    TAMPER.ref = None; TAMPER.settle = time.time() + 10   # no "camera turned" alarm because of this
+                log_event("sys", f"Camera picture: turned {ok_[0]}°" + (", mirrored" if ok_[1] else ""))
+            self._orient = ok_
+            frame = cam_orient(frame)                     # turned / mirrored as set, before zones and detection
             frame = apply_privacy(frame)                  # privacy zones: black before anything else sees the picture
             rec_clean = frame.copy() if (CFG["record"] or QUICK["rec_until"] > 0 or self.writer is not None) and CFG["rec_marks"] != "full" else None
             rec_animals = []
@@ -10443,6 +11362,8 @@ class MotionWatch:
             alarm = (self.writer is not None or STATE["persons"] > 0 or STATE["tracking"]
                      or (self.last_person_time > 0 and t0 - self.last_person_time < CFG["record_tail"] + 1.0))
             self.timelapse.update(frame, alarm)
+            if LOOPREC is not None:
+                LOOPREC.feed(frame, t0)                         # continuous recording: a copy now and then
             if t0 < self.raw_until:
                 self.frame_raw = frame.copy()
             H, W = frame.shape[:2]
@@ -10513,6 +11434,10 @@ class MotionWatch:
                         candidates.append(t)            # anything else that moves -> white
                 if person_boxes or ai_boxes:
                     present.add("person")
+                try:
+                    self.zwatch.update(persons, pw, ph, frame, t0)
+                except Exception as e:                     # never break the camera loop
+                    log_event("sys", f"Zones: {e}"[:160])
                 if persons or candidates:
                     present.add("motion")
                 present.update(COCO_LABELS.get(o[5], "object") for o in ai_objs)
@@ -10592,8 +11517,13 @@ class MotionWatch:
                     if z["mode"] == "privacy":
                         continue
                     pts = np.array([(int(px * W), int(py * H)) for px, py in z["points"]], np.int32)
-                    col = (0, 160, 255) if z["mode"] == "ignore" else (80, 200, 80)
-                    cv2.polylines(frame, [pts], True, col, 1, cv2.LINE_AA)
+                    col = {"ignore": (0, 160, 255), "line": (255, 210, 60), "loiter": (60, 220, 255)}.get(z["mode"], (80, 200, 80))
+                    cv2.polylines(frame, [pts], z["mode"] != "line", col, 2 if z["mode"] == "line" else 1, cv2.LINE_AA)
+                    if z["mode"] == "line" and z.get("dir", "both") != "both":
+                        (ax, ay), (bx, by) = pts[0], pts[1]
+                        mx, my = (ax + bx) / 2.0, (ay + by) / 2.0; nx, ny = -(by - ay), (bx - ax)
+                        ln = math.hypot(nx, ny) or 1.0; sgn = 1 if z["dir"] == "ab" else -1
+                        cv2.arrowedLine(frame, (int(mx), int(my)), (int(mx + sgn * nx / ln * 28), int(my + sgn * ny / ln * 28)), col, 2, cv2.LINE_AA, tipLength=0.4)
                     cv2.putText(frame, z["name"][:24].encode("ascii", "replace").decode(), (int(pts[0][0]) + 4, int(pts[0][1]) + 14),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.42, col, 1, cv2.LINE_AA)
             warm_boxes = []
@@ -10881,6 +11811,395 @@ def open_writer(path, fps, size):
     return None, ""
 
 
+# ---- storage: SD card / SSD / USB drive -------------------------------------------------------------------------------
+STORE = {"fallback": False, "moving": False, "msg": ""}
+_FS_OK = {"ext4", "ext3", "ext2", "btrfs", "xfs", "f2fs", "vfat", "exfat", "ntfs", "ntfs3", "fuseblk"}
+
+
+def _mounts():
+    out = []
+    try:
+        with open("/proc/mounts") as f:
+            for line in f:
+                p = line.split()
+                if len(p) >= 3:
+                    out.append((p[0], p[1].replace("\\040", " "), p[2]))
+    except OSError:
+        pass
+    return out
+
+
+def _dev_kind(dev):
+    d = os.path.basename(dev or "")
+    if d.startswith("mmcblk"):
+        return "sd"
+    if d.startswith("nvme"):
+        return "ssd"
+    if d.startswith("sd"):
+        return "usb"
+    return "other"
+
+
+def _mount_of(path):
+    """(device, mount point, fs type) that holds this path."""
+    path = os.path.realpath(path); best = ("", "/", "")
+    for dev, mp, fs in _mounts():
+        if (path == mp or path.startswith(mp.rstrip("/") + "/")) and len(mp) >= len(best[1]):
+            best = (dev, mp, fs)
+    return best
+
+
+def storage_candidates():
+    """Drives the recordings can be put on: SSD / USB mounted somewhere else than the system."""
+    root_dev = _mount_of("/")[0]
+    out = []
+    for dev, mp, fs in _mounts():
+        if fs not in _FS_OK or not dev.startswith("/dev/") or mp in ("/", "/boot", "/boot/firmware") or dev == root_dev:
+            continue
+        if not (mp.startswith(("/media/", "/mnt/", "/srv/")) or _dev_kind(dev) in ("ssd", "usb")):
+            continue
+        try:
+            du = shutil.disk_usage(mp)
+        except OSError:
+            continue
+        out.append({"path": mp, "kind": _dev_kind(dev), "fs": fs, "free_gb": round(du.free / 1024 ** 3, 1),
+                    "total_gb": round(du.total / 1024 ** 3, 1), "writable": os.access(mp, os.W_OK), "fat": fs == "vfat"})
+    return out
+
+
+def storage_info():
+    sysdev, _mp, _fs = _mount_of("/")
+    rdev, rmp, rfs = _mount_of(rec_dir() if os.path.isdir(rec_dir()) else os.path.dirname(rec_dir()) or "/")
+    return {"system": _dev_kind(sysdev), "rec": _dev_kind(rdev), "rec_mount": rmp, "rec_fs": rfs, "rec_dir": rec_dir(),
+            "want": CFG["storage_path"], "fallback": STORE["fallback"], "moving": STORE["moving"], "msg": STORE["msg"],
+            "candidates": storage_candidates()}
+
+
+def storage_apply(start=False):
+    """Set the recordings folder from the chosen drive. Missing drive: the memory card next to the program."""
+    want = CFG["storage_path"].strip()
+    if not want:
+        CFG["record_dir"] = "recordings"; STORE["fallback"] = False; return True
+    target = os.path.join(want, "MotionWatch", "recordings")
+    ok = os.path.ismount(want) or os.path.isdir(want)
+    if ok:
+        try:
+            os.makedirs(target, exist_ok=True)
+            probe = os.path.join(target, ".mw_probe")
+            with open(probe, "w") as f:
+                f.write("ok")
+            os.remove(probe)
+        except OSError:
+            ok = False
+    if ok:
+        CFG["record_dir"] = target; STORE["fallback"] = False
+        return True
+    CFG["record_dir"] = "recordings"; STORE["fallback"] = True
+    log_event("sys", f"Storage: drive {want} not found or not writable - recordings go to the memory card for now")
+    return False
+
+
+def storage_set(path, move=True):
+    """Choose where the recordings go ('' = memory card). Moves the existing recordings in the background."""
+    path = str(path or "").strip()
+    if path and not any(c["path"] == path for c in storage_candidates()):
+        return False, "drive not found"
+    if STORE["moving"]:
+        return False, "already moving recordings - wait a moment"
+    old = rec_dir()
+    CFG["storage_path"] = path
+    if not storage_apply():
+        CFG["storage_path"] = ""; storage_apply()
+        return False, "the drive cannot be written to"
+    save_settings()
+    new = rec_dir()
+    log_event("sys", f"Storage: recordings now in {new}")
+    if move and os.path.isdir(old) and os.path.realpath(old) != os.path.realpath(new):
+        def run():
+            STORE.update(moving=True, msg="moving recordings …"); n = 0
+            try:
+                for nm in os.listdir(old):
+                    src, dst = os.path.join(old, nm), os.path.join(new, nm)
+                    if nm.startswith(".") or os.path.exists(dst) or nm in LIVE_RECS or (nm == "loop" and LOOPREC is not None and LOOPREC.cur):
+                        continue
+                    try:
+                        shutil.move(src, dst); n += 1
+                    except (OSError, shutil.Error):
+                        pass
+                STORE["msg"] = f"{n} files moved"
+                log_event("sys", f"Storage: {n} files moved to {new}")
+            finally:
+                STORE["moving"] = False
+        threading.Thread(target=run, daemon=True, name="storage-move").start()
+    return True, ""
+
+
+LOOP_RE = re.compile(r"^loop/(\d{4}-\d{2}-\d{2})/(\d{2})-(\d{2})\.mp4$")
+
+
+def loop_dir():
+    return os.path.join(rec_dir(), "loop")
+
+
+class LoopRecorder:
+    """Continuous recording: every picture-per-second interval one picture into 10-minute files loop/<day>/<HH-MM>.mp4,
+    kept for loop_hours. Runs in its own thread (the camera loop only hands over a copy now and then)."""
+    SEG = 600
+
+    def __init__(self):
+        self.q = queue.Queue(maxsize=8); self.next_t = 0.0; self.wr = None; self.cur = ""; self.seg_end = 0.0
+        self.size = None; self.last_clean = 0.0
+        threading.Thread(target=self.loop, daemon=True, name="looprec").start()
+
+    def feed(self, frame, t0):
+        if not CFG["loop_on"] or frame is None or t0 < self.next_t:
+            return
+        self.next_t = t0 + 1.0 / max(1, int(CFG["loop_fps"]))
+        try:
+            self.q.put_nowait((frame.copy(), time.time()))
+        except queue.Full:
+            pass
+
+    def _close(self):
+        if self.wr is not None:
+            try:
+                self.wr.release()
+            except Exception:
+                pass
+            LIVE_RECS.discard(self.cur)
+        self.wr = None; self.cur = ""
+
+    def loop(self):
+        while True:
+            try:
+                frame, t = self.q.get(timeout=5)
+            except queue.Empty:
+                if not CFG["loop_on"]:
+                    self._close()
+                self._clean()
+                continue
+            if not CFG["loop_on"]:
+                self._close(); continue
+            h, w = frame.shape[:2]
+            if w > 1280:
+                frame = cv2.resize(frame, (1280, int(h * 1280 / w))); h, w = frame.shape[:2]
+            if self.wr is None or t >= self.seg_end or self.size != (w, h):
+                self._close()
+                dt = datetime.fromtimestamp(t)
+                start = dt.replace(minute=dt.minute - dt.minute % 10, second=0, microsecond=0)
+                self.seg_end = start.timestamp() + self.SEG
+                name = f"loop/{start:%Y-%m-%d}/{start:%H-%M}.mp4"
+                path = os.path.join(rec_dir(), name)
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                if os.path.exists(path):                          # restarted within the same 10 minutes: a new piece
+                    name = f"loop/{start:%Y-%m-%d}/{dt:%H-%M}.mp4"; path = os.path.join(rec_dir(), name)
+                wr, _codec = open_writer(path, max(1, int(CFG["loop_fps"])), (w, h))
+                if wr is None:
+                    time.sleep(10); continue
+                self.wr, self.cur, self.size = wr, name, (w, h); LIVE_RECS.add(name)
+            try:
+                self.wr.write(frame)
+            except Exception:
+                self._close()
+            self._clean()
+
+    def _clean(self):
+        now = time.time()
+        if now - self.last_clean < 60:
+            return
+        self.last_clean = now
+        keep = float(CFG["loop_hours"]) * 3600
+        base = loop_dir()
+        try:
+            days = sorted(os.listdir(base))
+        except OSError:
+            return
+        for d in days:
+            dp = os.path.join(base, d)
+            try:
+                for n in os.listdir(dp):
+                    p = os.path.join(dp, n)
+                    if f"loop/{d}/{n}" != self.cur and now - os.path.getmtime(p) > keep:
+                        os.remove(p)
+                if not os.listdir(dp) and not self.cur.startswith(f"loop/{d}/"):
+                    os.rmdir(dp)
+            except OSError:
+                pass
+        try:                                                      # memory almost full: the oldest pieces go first
+            while shutil.disk_usage(base).free < 1024 ** 3:
+                files = sorted(glob.glob(os.path.join(base, "*", "*.mp4")))
+                files = [f for f in files if not f.endswith(self.cur.split("/", 1)[-1])]
+                if not files:
+                    break
+                os.remove(files[0])
+        except OSError:
+            pass
+
+
+LOOPREC = None
+
+
+def loop_day(day):
+    """Pieces of one day and the alarm recordings of that day (for the timeline)."""
+    out = {"day": day, "segments": [], "events": [], "days": []}
+    try:
+        out["days"] = sorted(os.listdir(loop_dir()), reverse=True)[:60]
+    except OSError:
+        pass
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", day or ""):
+        return out
+    dp = os.path.join(loop_dir(), day)
+    try:
+        names = sorted(os.listdir(dp))
+    except OSError:
+        names = []
+    for n in names:
+        m = re.fullmatch(r"(\d{2})-(\d{2})\.mp4", n)
+        if not m:
+            continue
+        try:
+            st = os.stat(os.path.join(dp, n))
+        except OSError:
+            continue
+        name = f"loop/{day}/{n}"
+        out["segments"].append({"name": name, "start": f"{m.group(1)}:{m.group(2)}", "size": st.st_size, "live": name in LIVE_RECS,
+                                "min": int(m.group(1)) * 60 + int(m.group(2))})
+    stamp = day.replace("-", "")
+    try:
+        for n in os.listdir(rec_dir()):
+            if stamp in n and n.endswith((".mp4", ".jpg")):
+                dt = parse_stamp(n)
+                if dt is not None and dt.strftime("%Y-%m-%d") == day:
+                    out["events"].append(dt.hour * 60 + dt.minute)
+    except OSError:
+        pass
+    out["events"] = sorted(set(out["events"]))
+    return out
+
+
+# ---- picture for other programs: MJPEG + still picture under a secret address, optional RTSP (mediamtx + ffmpeg) ----
+EXT = {"proc": None, "ff": None, "msg": "", "port": None}
+
+
+def ext_token():
+    if not re.fullmatch(r"[A-Za-z0-9_-]{20,64}", CFG["ext_token"] or ""):
+        CFG["ext_token"] = secrets.token_urlsafe(18); save_settings()
+    return CFG["ext_token"]
+
+
+def ext_new_token():
+    CFG["ext_token"] = secrets.token_urlsafe(18); save_settings(); rtsp_restart()
+    log_event("web", "Address for other programs renewed - the old one no longer works")
+
+
+def ext_links(host=None):
+    if not CFG["ext_on"]:
+        return {"on": False}
+    base = page_address(host).rstrip("/") if host or page_address() else f"http://<pi-ip>:{CFG['web_port']}"
+    tok = ext_token()
+    out = {"on": True, "mjpeg": f"{base}/x/{tok}/video.mjpg", "jpg": f"{base}/x/{tok}/snapshot.jpg", "rtsp": "", "rtsp_msg": EXT["msg"]}
+    if CFG["rtsp_on"]:
+        h = base.split("://", 1)[-1].split("/", 1)[0].rsplit(":", 1)[0]
+        out["rtsp"] = f"rtsp://motionwatch:{tok}@{h}:{int(CFG['rtsp_port'])}/motionwatch"
+    return out
+
+
+def _mediamtx_bin():
+    for p in (shutil.which("mediamtx"), os.path.join(DATA_DIR, "mediamtx", "mediamtx"), os.path.expanduser("~/mediamtx/mediamtx"), "/usr/local/bin/mediamtx"):
+        if p and os.path.isfile(p) and os.access(p, os.X_OK):
+            return p
+    return None
+
+
+def rtsp_stop():
+    for k in ("ff", "proc"):
+        p = EXT.get(k)
+        if p is not None:
+            try:
+                p.terminate(); p.wait(timeout=5)
+            except Exception:
+                try:
+                    p.kill()
+                except Exception:
+                    pass
+        EXT[k] = None
+
+
+def rtsp_restart():
+    rtsp_stop()
+    if CFG["rtsp_on"] and CFG["ext_on"]:
+        threading.Thread(target=rtsp_start, daemon=True, name="rtsp").start()
+
+
+def rtsp_start():
+    """mediamtx serves RTSP (reading needs the secret, publishing only from this Pi); ffmpeg turns the MJPEG into H.264."""
+    mtx = _mediamtx_bin()
+    if not mtx:
+        EXT["msg"] = "mediamtx is not installed (see the manual: RTSP)"; return
+    if not shutil.which("ffmpeg"):
+        EXT["msg"] = "ffmpeg is missing (sudo apt install ffmpeg)"; return
+    tok = ext_token(); port = int(CFG["rtsp_port"])
+    cfg_dir = os.path.join(DATA_DIR, "mediamtx"); os.makedirs(cfg_dir, exist_ok=True)
+    yml = os.path.join(cfg_dir, "motionwatch.yml")
+    with open(yml, "w") as f:
+        f.write("logLevel: warn\nrtspAddress: :%d\nrtmp: no\nhls: no\nwebrtc: no\nsrt: no\napi: no\nmetrics: no\npprof: no\nplayback: no\n"
+                "authInternalUsers:\n- user: any\n  pass:\n  ips: ['127.0.0.1/32', '::1/128']\n  permissions:\n  - action: publish\n"
+                "- user: motionwatch\n  pass: %s\n  ips: []\n  permissions:\n  - action: read\n    path: motionwatch\n"
+                "paths:\n  motionwatch:\n" % (port, tok))
+    os.chmod(yml, 0o600)
+    try:
+        EXT["proc"] = subprocess.Popen([mtx, yml], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, cwd=cfg_dir)
+    except OSError as e:
+        EXT["msg"] = f"mediamtx: {e}"[:120]; return
+    time.sleep(2)
+    if EXT["proc"].poll() is not None:
+        err = (EXT["proc"].stderr.read() or b"").decode(errors="replace").strip().splitlines()
+        EXT["msg"] = ("mediamtx: " + (err[-1] if err else "stopped"))[:160]; EXT["proc"] = None; return
+    src = f"http://127.0.0.1:{CFG['web_port']}/x/{tok}/video.mjpg"
+    if WEB_OPTS.get("https"):
+        src = src.replace("http://", "https://")
+    cmd = ["ffmpeg", "-loglevel", "error", "-tls_verify", "0", "-f", "mjpeg", "-i", src, "-an", "-c:v", "libx264", "-preset", "ultrafast",
+           "-tune", "zerolatency", "-g", "30", "-pix_fmt", "yuv420p", "-f", "rtsp", "-rtsp_transport", "tcp", f"rtsp://127.0.0.1:{port}/motionwatch"]
+    if not WEB_OPTS.get("https"):
+        cmd.remove("-tls_verify"); cmd.remove("0")
+    try:
+        EXT["ff"] = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        EXT["msg"] = "running"
+        log_event("web", f"RTSP video on port {port} (for recorders)")
+    except OSError as e:
+        EXT["msg"] = f"ffmpeg: {e}"[:120]
+
+
+def rtsp_watch():
+    """Keeps RTSP running while it is switched on (restarts ffmpeg / mediamtx when they stop)."""
+    while True:
+        time.sleep(15)
+        want = CFG["rtsp_on"] and CFG["ext_on"]
+        alive = EXT["proc"] is not None and EXT["proc"].poll() is None and EXT["ff"] is not None and EXT["ff"].poll() is None
+        if want and not alive:
+            rtsp_restart()
+        elif not want and (EXT["proc"] or EXT["ff"]):
+            rtsp_stop(); EXT["msg"] = ""
+
+
+atexit.register(rtsp_stop)
+
+
+def mem_info():
+    """RAM of the Pi from /proc/meminfo (MB): total, used (without cache), percent; swap used."""
+    m = {}
+    try:
+        with open("/proc/meminfo") as f:
+            for line in f:
+                k, v = line.split(":", 1); m[k] = int(v.split()[0]) // 1024
+    except (OSError, ValueError):
+        return None
+    tot = m.get("MemTotal") or 0; avail = m.get("MemAvailable", m.get("MemFree", 0))
+    if not tot:
+        return None
+    return {"total": tot, "used": tot - avail, "pct": round((tot - avail) * 100.0 / tot, 1), "swap": (m.get("SwapTotal", 0) - m.get("SwapFree", 0))}
+
+
 def rec_dir():
     return os.path.abspath(CFG["record_dir"])
 
@@ -10890,6 +12209,9 @@ def rec_path(name):
     "timelapse/<file>" = a timelapse photo or video (shown in the recordings list too)."""
     if isinstance(name, str) and name.startswith("timelapse/"):
         return tl_path(name[10:])
+    if isinstance(name, str) and LOOP_RE.match(name):
+        p = os.path.join(rec_dir(), name)
+        return p if os.path.isfile(p) else None
     if not isinstance(name, str) or not REC_NAME_RE.match(name) or ".." in name:
         return None
     p = os.path.join(rec_dir(), name)
@@ -10974,7 +12296,7 @@ def list_recordings(args, watch=None):
     with LOCK:
         plans = [dict(s) for s in SCHEDULES]
     live = watch.rec_name if watch is not None else ""
-    live_set = set(LIVE_RECS) | ({live} if live else set())
+    live_set = {n for n in LIVE_RECS if not n.startswith("loop/")} | ({live} if live else set())
 
     items = []
     for stem, kinds in files.items():
@@ -11792,6 +13114,7 @@ body.light input.sw{background:#c4ccd8}body.light input.sw:checked{background:va
 h1 .ver{font-size:.62em;font-weight:600;color:var(--mut);margin-left:4px;letter-spacing:0}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .seg button{border-radius:0;padding:5px 11px;font-size:12px;background:transparent;color:var(--mut)}
+#lock-btn.lock-on{background:var(--yel);color:#000;border-color:var(--yel);font-weight:700}
 .night-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;margin:8px 0 4px;padding:12px 14px;font-size:16px;font-weight:700;text-align:left;
   background:linear-gradient(135deg,#2b3a6b,#4a3a8a);color:#fff;border-radius:12px}
 .night-btn small{font-size:12px;font-weight:500;opacity:.85}
@@ -11803,6 +13126,19 @@ h1 .ver{font-size:.62em;font-weight:600;color:var(--mut);margin-left:4px;letter-
 .h-ok .hdot{background:var(--grn)}.h-warn .hdot{background:var(--yel)}.h-bad .hdot{background:var(--red);box-shadow:0 0 8px var(--red)}.h-off .hdot{background:transparent;border:2px solid var(--mut);box-sizing:border-box}
 .hbody{flex:1;min-width:0}.htop{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}.htop b{font-size:14px}.htop .mut{font-size:12px}
 .htip{font-size:12px;margin-top:2px;color:var(--txt);opacity:.85}
+.msghint{font-size:12px;margin:8px 0 2px}
+.msgcard{border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px;background:var(--field)}
+details.msgcard{border-top:1px solid var(--line);padding-top:10px}details.msgcard>summary{font-size:14px}
+details.msgcard>summary .msgsum{flex:1;text-align:right;margin-right:10px;font-size:12px;font-weight:500}
+.msghead{font-weight:700;margin-bottom:6px}
+.msgrow{display:grid;grid-template-columns:44px 1fr auto;gap:6px;align-items:start;margin-top:6px}.msgrow>.mut{font-size:12px;padding-top:9px}
+.msginp{width:100%;box-sizing:border-box;font:inherit;font-size:14px}
+textarea.msginp{background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px 10px;line-height:1.35}
+textarea.msginp:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--glow)}textarea.msginp::placeholder{color:var(--mut)}textarea.msginp{resize:vertical;min-height:52px}
+.msgstd{padding:6px 10px}
+.msgchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.msgchips button{padding:3px 9px;font-size:12px;border-radius:999px}
+.msgprev{margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--panel);border:1px dashed var(--line);font-size:13px}
+.msgprev b{display:block;margin-top:2px}
 .locbox .lseg{display:flex;margin:6px 0 4px}.locbox .lseg button{flex:1;padding:8px 6px;font-size:13px}
 .locbox .ltools{gap:6px;margin:6px 0 0}.locbox .ltools input{flex:1;min-width:0}.locbox .ltools button{flex:0 0 auto}
 .lmap{position:relative;height:240px;margin-top:8px;overflow:hidden;border-radius:10px;touch-action:none;cursor:grab;user-select:none;border:1px solid var(--line);
@@ -12599,6 +13935,8 @@ ol{padding-left:18px;margin:6px 0}
         <button onclick="startZone('ignore')" data-i18n="+ Ignore zone">+ Ignore zone</button>
         <button onclick="startZone('only')" data-i18n="+ Only-here zone">+ Only-here zone</button>
         <button onclick="startZone('privacy')" data-i18n="+ Privacy zone">+ Privacy zone</button>
+        <button onclick="startZone('line')" data-i18n="+ Line">+ Line</button>
+        <button onclick="startZone('loiter')" data-i18n="+ Dwell area">+ Dwell area</button>
       </div>
       <div class="btns"><button class="sec" id="b-fin" onclick="finish()" data-i18n="Finish shape" hidden>Finish shape</button>
         <button class="sec" onclick="loadFrame()" data-i18n="New picture">New picture</button></div>
@@ -12609,7 +13947,9 @@ ol{padding-left:18px;margin:6px 0}
     <div class="card" style="margin:0">
       <div class="legend mut"><div><i style="background:#f59a4a"></i><span data-i18n="Ignore zone">Ignore zone</span>: <span data-i18n="z-ign">z-ign</span></div>
       <div style="margin-top:4px"><i style="background:#3fcf6b"></i><span data-i18n="Only-here zone">Only-here zone</span>: <span data-i18n="z-only">z-only</span></div>
-      <div style="margin-top:4px"><i style="background:#a98bff"></i><span data-i18n="Privacy zone">Privacy zone</span>: <span data-i18n="z-priv">z-priv</span></div></div>
+      <div style="margin-top:4px"><i style="background:#a98bff"></i><span data-i18n="Privacy zone">Privacy zone</span>: <span data-i18n="z-priv">z-priv</span></div>
+      <div style="margin-top:4px"><i style="background:#3cd2ff"></i><span data-i18n="Line">Line</span>: <span data-i18n="z-line">z-line</span></div>
+      <div style="margin-top:4px"><i style="background:#ffdc3c"></i><span data-i18n="Dwell area">Dwell area</span>: <span data-i18n="z-loit">z-loit</span></div></div>
       <div class="mut" style="margin-top:8px" data-i18n="z-how">z-how</div>
     </div>
   </aside>
@@ -12622,18 +13962,33 @@ Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": 
   "Save zones": "Zonen speichern", "Ignore zone": "Ignorier-Zone", "Only-here zone": "Nur-hier-Zone", "Delete": "Löschen", "Saved": "Gespeichert",
   "Click the corners of the area in the picture. Click the first point or press 'Finish shape' to close it.": "Klicke die Ecken des Bereichs im Bild an. Klicke den ersten Punkt oder 'Form abschliessen', um die Form zu schliessen.",
   "Drag a corner to move it. Select a zone in the list to edit it.": "Eine Ecke lässt sich verschieben. Wähle eine Zone in der Liste zum Bearbeiten.",
-  "no zones": "keine Zonen", "no picture - is the camera running?": "kein Bild - läuft die Kamera?", "Name": "Name",
+  "no zones": "keine Zonen", "+ Line": "+ Linie", "+ Dwell area": "+ Verweil-Bereich", "Line": "Linie", "Dwell area": "Verweil-Bereich",
+  "both directions": "beide Richtungen", "only in the arrow direction": "nur in Pfeilrichtung", "only against the arrow": "nur gegen den Pfeil",
+  "Alarm after (seconds)": "Alarm nach (Sekunden)", "Click the start and the end of the line in the picture.": "Klicke Anfang und Ende der Linie im Bild an.",
+  "z-line": "Meldet, wenn eine Person die Linie überquert – in beide Richtungen oder nur in Pfeilrichtung (z. B. «kommt zum Zelt»).",
+  "z-loit": "Meldet, wenn sich eine Person länger als die eingestellte Zeit darin aufhält (z. B. beim Auto).", "no picture - is the camera running?": "kein Bild - läuft die Kamera?", "Name": "Name",
   "z-ign": "Personen und Objekte, deren Füsse darin stehen, werden ignoriert (Strasse, Baum, Nachbars Garten).",
   "z-only": "Wenn mindestens eine solche Zone existiert, zählt nur, was darin passiert (Eingang, Einfahrt).",
   "z-how": "Eine Zone wirkt auf die Erkennung, die Aufnahme, die Alarme und die Relais. Gezählt wird der Punkt unten in der Mitte des erkannten Objekts (die Füsse)."});
-Object.assign(I18N, {en: {"z-ign": "Persons and objects whose feet are inside are ignored (street, tree, neighbour's garden).",
+Object.assign(I18N, {en: {"z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
+  "z-loit": "Reports when a person stays inside longer than the time set (e.g. at the car).", "z-ign": "Persons and objects whose feet are inside are ignored (street, tree, neighbour's garden).",
   "z-only": "If at least one such zone exists, only what happens inside it counts (entrance, driveway).",
   "z-how": "A zone affects detection, recording, alarms and relays. The point that counts is the bottom middle of the detected object (the feet).",
   "z-priv": "The area is covered in black – in the live picture, recordings, photos and timelapse. It is never stored or sent (neighbour's tent, a path, somebody's window). Important for data protection."}});
 const tt = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 const cv = $("#cv"), g = cv.getContext("2d"), img = new Image();
 let zones = [], sel = -1, drawing = null, drawMode = "ignore", drag = null;
-const COL = {ignore: "245,154,74", only: "63,207,107", privacy: "169,139,255"};
+const COL = {ignore: "245,154,74", only: "63,207,107", privacy: "169,139,255", line: "60,210,255", loiter: "255,220,60"};
+const ZNAME = {only: "Only-here zone", privacy: "Privacy zone", ignore: "Ignore zone", line: "Line", loiter: "Dwell area"};
+function arrow(z, on) {                 // line: the arrow shows in which direction crossing it counts
+  const [a, b] = z.points.map(px), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+  let nx = -(b[1] - a[1]), ny = b[0] - a[0]; const l = Math.hypot(nx, ny) || 1; nx /= l; ny /= l;
+  const dirs = z.dir === "ab" ? [1] : z.dir === "ba" ? [-1] : [1, -1];
+  g.strokeStyle = g.fillStyle = "rgb(" + COL.line + ")"; g.lineWidth = on ? 5 : 3;
+  dirs.forEach(sg => { const ex = mx + sg * nx * 46, ey = my + sg * ny * 46;
+    g.beginPath(); g.moveTo(mx, my); g.lineTo(ex, ey); g.stroke();
+    g.beginPath(); g.moveTo(ex, ey); g.lineTo(ex - sg * nx * 16 + ny * 10 * sg, ey - sg * ny * 16 - nx * 10 * sg); g.lineTo(ex - sg * nx * 16 - ny * 10 * sg, ey - sg * ny * 16 + nx * 10 * sg); g.closePath(); g.fill(); });
+}
 function norm(e) { const r = cv.getBoundingClientRect(); return [Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))]; }
 function px(p) { return [p[0] * cv.width, p[1] * cv.height]; }
 function draw() {
@@ -12646,7 +14001,8 @@ function draw() {
     g.strokeStyle = "rgb(" + COL[mode] + ")"; g.lineWidth = on ? 4 : 2.5; g.stroke();
     pts.forEach(p => { const [x, y] = px(p); g.beginPath(); g.arc(x, y, on || !close ? 8 : 5, 0, 7); g.fillStyle = "#fff"; g.fill(); g.strokeStyle = "rgb(" + COL[mode] + ")"; g.lineWidth = 2; g.stroke(); });
   };
-  zones.forEach((z, i) => { poly(z.points, z.mode, i === sel, true); const [x, y] = px(z.points[0]); g.fillStyle = "#fff"; g.font = "bold 24px sans-serif"; g.fillText(z.name, x + 12, y - 10); });
+  zones.forEach((z, i) => { poly(z.points, z.mode, i === sel, z.mode !== "line"); if (z.mode === "line") arrow(z, i === sel);
+    const [x, y] = px(z.points[0]); g.fillStyle = "#fff"; g.font = "bold 24px sans-serif"; g.fillText(z.name, x + 12, y - 10); });
   if (drawing) poly(drawing, drawMode, true, false);
 }
 function hit(n) {
@@ -12660,23 +14016,25 @@ function inside(n, pts) { let c = false; for (let i = 0, j = pts.length - 1; i <
 cv.addEventListener("pointerdown", e => {
   const n = norm(e);
   if (drawing) {
+    if (drawMode === "line") { drawing.push(n); if (drawing.length >= 2) finish(); else draw(); return; }
     const r = cv.getBoundingClientRect();
     if (drawing.length >= 3 && Math.hypot(n[0] - drawing[0][0], (n[1] - drawing[0][1]) * r.height / r.width) < 14 / r.width) { finish(); return; }
     drawing.push(n); draw(); return;
   }
   const h = hit(n);
   if (h) { sel = h[0]; drag = h; cv.setPointerCapture(e.pointerId); renderList(); draw(); return; }
-  const idx = zones.findIndex(z => inside(n, z.points)); sel = idx; renderList(); draw();
+  const idx = zones.findIndex(z => z.mode !== "line" && inside(n, z.points)); sel = idx; renderList(); draw();
 });
 cv.addEventListener("pointermove", e => { if (drag) { zones[drag[0]].points[drag[1]] = norm(e); draw(); } });
 cv.addEventListener("pointerup", () => { drag = null; });
 cv.addEventListener("dblclick", () => { if (drawing && drawing.length >= 3) finish(); });
 function startZone(mode) { drawMode = mode; drawing = []; sel = -1; $("#b-fin").hidden = false; setHint(); draw(); }
 function finish() {
-  if (drawing && drawing.length >= 3) { zones.push({name: t(({only: "Only-here zone", privacy: "Privacy zone", ignore: "Ignore zone"})[drawMode]) + " " + (zones.length + 1), mode: drawMode, points: drawing}); sel = zones.length - 1; }
+  if (drawing && drawing.length >= (drawMode === "line" ? 2 : 3)) { const z = {name: t(ZNAME[drawMode]) + " " + (zones.length + 1), mode: drawMode, points: drawing};
+    if (drawMode === "line") z.dir = "both"; if (drawMode === "loiter") z.secs = 20; zones.push(z); sel = zones.length - 1; }
   drawing = null; $("#b-fin").hidden = true; setHint(); renderList(); draw();
 }
-function setHint() { $("#hint").textContent = drawing ? tt("Click the corners of the area in the picture. Click the first point or press 'Finish shape' to close it.") : tt("Drag a corner to move it. Select a zone in the list to edit it."); }
+function setHint() { $("#hint").textContent = drawing ? (drawMode === "line" ? tt("Click the start and the end of the line in the picture.") : tt("Click the corners of the area in the picture. Click the first point or press 'Finish shape' to close it.")) : tt("Drag a corner to move it. Select a zone in the list to edit it."); }
 function renderList() {
   const L = $("#list"); L.textContent = "";
   if (!zones.length) L.appendChild(el("div", "mut", t("no zones"))).style.marginTop = "8px";
@@ -12684,9 +14042,17 @@ function renderList() {
     const r = el("div", "zrow" + (i === sel ? " sel" : "")); r.onclick = () => { sel = i; renderList(); draw(); };
     const nm = el("input"); nm.type = "text"; nm.value = z.name; nm.maxLength = 40; nm.oninput = () => { z.name = nm.value; draw(); }; nm.onclick = e => e.stopPropagation();
     const del = el("button", "sec", "✕"); del.title = t("Delete"); del.onclick = e => { e.stopPropagation(); zones.splice(i, 1); sel = -1; renderList(); draw(); };
-    const md = el("select"); [["ignore", t("Ignore zone")], ["only", t("Only-here zone")], ["privacy", t("Privacy zone")]].forEach(([v, l]) => { const o = el("option", "", l); o.value = v; md.appendChild(o); });
-    md.value = z.mode; md.onchange = () => { z.mode = md.value; draw(); }; md.onclick = e => e.stopPropagation();
-    r.append(nm, del, md); L.appendChild(r);
+    const md = el("select");
+    (z.mode === "line" ? [["line", t("Line")]] : [["ignore", t("Ignore zone")], ["only", t("Only-here zone")], ["privacy", t("Privacy zone")], ["loiter", t("Dwell area")]])
+      .forEach(([v, l]) => { const o = el("option", "", l); o.value = v; md.appendChild(o); });
+    md.value = z.mode; md.onchange = () => { z.mode = md.value; if (z.mode === "loiter" && !z.secs) z.secs = 20; renderList(); draw(); }; md.onclick = e => e.stopPropagation();
+    r.append(nm, del, md);
+    if (z.mode === "line") { const d = el("select"); [["both", t("both directions")], ["ab", "→ " + t("only in the arrow direction")], ["ba", "← " + t("only against the arrow")]]
+        .forEach(([v, l]) => { const o = el("option", "", l); o.value = v; d.appendChild(o); });
+      d.value = z.dir || "both"; d.onchange = () => { z.dir = d.value; draw(); }; d.onclick = e => e.stopPropagation(); d.style.gridColumn = "1 / -1"; r.appendChild(d); }
+    if (z.mode === "loiter") { const w = el("label", "mut", t("Alarm after (seconds)") + " "); const n = el("input"); n.type = "number"; n.min = 3; n.max = 600; n.value = z.secs || 20; n.style.width = "80px";
+      n.onchange = () => { z.secs = Math.max(3, Math.min(600, +n.value || 20)); }; n.onclick = e => e.stopPropagation(); w.appendChild(n); w.style.gridColumn = "1 / -1"; r.appendChild(w); }
+    L.appendChild(r);
   });
 }
 async function save() {
@@ -13084,6 +14450,9 @@ details.sub{border-top:1px solid var(--line);margin-top:12px;padding-top:9px}
 details.sub>summary{font-size:10.5px;letter-spacing:.09em;color:var(--mut);font-weight:700;text-transform:uppercase;cursor:pointer;list-style:none;
   display:flex;justify-content:space-between;align-items:center;user-select:none}
 details.sub>summary::-webkit-details-marker,details.adv>summary::-webkit-details-marker{display:none}
+.sens-card{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:8px 0}.sens-card .row{gap:6px}.sens-card .row input{flex:1;min-width:0}
+.sens-card .dot{font-size:14px}.sens-row{display:grid;grid-template-columns:1fr;gap:6px;margin-top:6px}.sens-row label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
+.sens-row select{width:100%}#sens-add,#sens-seen{flex-wrap:wrap}#sens-seen button{margin:4px 4px 0 0;font-size:13px}
 details.sub>summary::after{content:"▾";font-size:12px;transition:transform .15s}details.sub:not([open])>summary::after{transform:rotate(-90deg)}
 /* overview: the arrow of a topic / group is green while its main function is switched on */
 details.sub.mon>summary::after,details.grp.mon>summary::after{color:var(--grn);font-size:15px;text-shadow:0 0 8px rgba(63,207,107,.55)}
@@ -13093,6 +14462,17 @@ details.sub.inline{border-top:0;margin-top:0;padding-top:0}details.sub.inline>su
 details.grp>summary+details.sub,details.grp>summary+.blk{border-top:0;margin-top:0;padding-top:0}
 .blk{border-top:1px solid var(--line);margin-top:12px;padding-top:7px}
 #srch{position:relative;margin:0 0 12px}
+/* the search and the three open / close buttons stay at the top while scrolling the settings */
+#srch{position:sticky;top:var(--hdr-h,64px);z-index:25;background:var(--bg);padding:8px 0;margin:-8px 0 4px;box-shadow:0 -14px 0 var(--bg),0 6px 8px -6px rgba(0,0,0,.45)}
+@media(min-width:961px){#srch{top:0}}
+body.mobland #srch{top:0}
+#srch.withall #allbtns{top:8px!important}
+#srch{padding-left:54px!important}#srch .ic{left:66px!important}
+#side-close{position:absolute;left:0;top:8px;width:46px;height:46px;padding:0;font-size:22px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center}
+#side-open{display:none;position:fixed;right:0;top:calc(var(--hdr-h,64px) + 14px);z-index:40;border-radius:12px 0 0 12px;padding:10px 8px;
+  flex-direction:column;align-items:center;gap:6px;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-right:0;box-shadow:var(--shadow)}
+#side-open span{font-size:20px}#side-open b{writing-mode:vertical-rl;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+body.noside #side-open{display:flex}body.videoonly #side-open,body.locked #side-close{display:none!important}
 #lock-bar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:0 0 12px;padding:12px 14px;border-radius:12px;
   border:1px solid var(--yel);background:var(--panel)}
 #lock-bar[hidden]{display:none}
@@ -13119,9 +14499,9 @@ body.locked .l-hide,body.locked .l-off,body.locked #srch:not(.withall),body.lock
 #srch-none{margin-top:8px}
 #allbtns button svg{display:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 /* tablet / computer: "expand all" and "collapse all" as two small symbols right of the settings search */
-#srch.withall{padding-right:100px}
+#srch.withall{padding-right:152px}
 #srch.withall #srch-in{height:46px}
-#srch.withall .x{right:106px}
+#srch.withall .x{right:158px}
 #srch.withall #allbtns{position:absolute;right:0;top:0;display:flex;gap:6px;margin:0!important;flex-wrap:nowrap}
 #srch.withall #allbtns button{width:46px;height:46px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;flex:none}
 #srch.withall #allbtns button svg{display:block}#srch.withall #allbtns button span{display:none}
@@ -13137,6 +14517,10 @@ details.adv{margin-top:12px;border-top:1px dashed var(--line);padding-top:8px}
 details.adv>summary{cursor:pointer;color:var(--acc2);font-size:12.5px;font-weight:600;list-style:none;user-select:none}
 details.adv>summary::before{content:"▸";display:inline-block;width:1.1em}details.adv[open]>summary::before{content:"▾"}
 details.adv>.blk:first-of-type{border-top:0}
+details.sblk{margin-top:10px;border-top:1px solid var(--line);padding-top:9px}
+details.sblk>summary{display:flex;justify-content:space-between;align-items:center;color:var(--txt);font-size:13.5px;font-weight:700;padding:3px 0}
+details.sblk>summary::before,details.sblk[open]>summary::before{content:none!important;display:none}details.sblk>summary::after{content:"▸";color:var(--mut);transition:transform .15s}details.sblk[open]>summary::after{transform:rotate(90deg)}
+.mbar{margin-top:12px}.mbar .row{margin-bottom:3px}.mbar b{font-size:14px}
 #settings .tg{padding:4px 0}#settings .sl{margin-top:7px}
 @media(max-width:760px){.card{padding:12px}details.card>summary{font-size:11.5px}}
 .pr-sw{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);align-items:flex-start;cursor:pointer}
@@ -13382,7 +14766,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
   <span class="badge" id="b-camp" data-view="b-camp" data-vgroup="Header" data-vlabel="Camping profile" hidden>⛺</span>
   <span class="badge" id="b-eco" data-view="b-eco" data-vgroup="Header" data-vlabel="Power saving" hidden>🍃</span>
   <span class="badge" id="b-batt" data-view="b-batt" data-vgroup="Header" data-vlabel="Battery" hidden>🔋</span>
-  <span class="badge yel" id="b-lock" data-view="b-lock" data-vgroup="Header" data-vlabel="Operator mode" hidden>🔐</span>
+  <span class="badge yel" id="b-lock" data-view="b-lock" data-vgroup="Header" data-vlabel="Operator mode" hidden style="cursor:pointer" onclick="unlockAct()">🔐</span>
   <span class="badge" id="b-tl" data-view="b-tl" data-vgroup="Header" data-vlabel="Timelapse" hidden>⏱</span>
   <span class="badge" id="b-lights" data-view="b-lights" data-vgroup="Header" data-vlabel="Lights" hidden>💡</span>
   <span class="badge" id="b-env" data-view="b-env" data-vgroup="Header" data-vlabel="Outside temperature" hidden>🌡</span>
@@ -13453,9 +14837,9 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
             <div class="row padbox"><span class="mut" data-i18n="Step">Step</span>
               <select id="step"><option>1</option><option selected>3</option><option>5</option><option>10</option><option>20</option></select></div>
             <div class="sr"><button class="sec" type="button" data-dir="center" id="stick-center" data-i18n="◎ Centre">◎ Centre</button>
-              <button class="sec l-hide" type="button" id="btn-recal" onclick="act('recalibrate'); toast('↻ ' + t('Recalibrating - keep the picture empty for a few seconds'))" data-i18n="↻ Calibrate">↻ Calibrate</button></div>
-            <div class="sr"><button class="sec l-hide" type="button" onclick="act('wp_add'); toast('📍 ' + t('Waypoint added'))" data-i18n="📍＋ Waypoint">📍＋ Waypoint</button>
-              <button class="sec l-hide" type="button" onclick="if(confirm(t('Clear all waypoints?')))act('wp_clear')" title="Clear waypoints">📍🗑</button></div>
+              <button class="sec" type="button" id="btn-recal" onclick="act('recalibrate'); toast('↻ ' + t('Recalibrating - keep the picture empty for a few seconds'))" data-i18n="↻ Calibrate">↻ Calibrate</button></div>
+            <div class="sr"><button class="sec" type="button" onclick="act('wp_add'); toast('📍 ' + t('Waypoint added'))" data-i18n="📍＋ Waypoint">📍＋ Waypoint</button>
+              <button class="sec" type="button" onclick="if(confirm(t('Clear all waypoints?')))act('wp_clear')" title="Clear waypoints">📍🗑</button></div>
             <span id="talk-slot" hidden></span>
           </div>
           <div id="mbtns"></div>
@@ -13464,13 +14848,15 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
           <span id="v-pan"></span><span id="v-tilt"></span>
           <button type="button" id="btn-listen" hidden></button><button type="button" id="stick-listen" hidden></button>
           <div id="lights-box"><div class="rq" id="light-quick"></div></div>
-          <div id="relays-box" class="l-hide"><div class="rq" id="relay-quick"></div><div class="err" id="relay-err"></div></div>
+          <div id="relays-box"><div class="rq" id="relay-quick"></div><div class="err" id="relay-err"></div></div>
         </div>
       </div>
     </details>
   </section>
+  <button type="button" id="side-open" onclick="toggleHidden('sidebar')" title="Settings"><span>⟨</span><b data-i18n="Settings">Settings</b></button>
   <aside data-view="sidebar" data-vgroup="Panels" data-vlabel="Settings panel">
     <div class="btns" id="allbtns" style="margin:0 0 12px">
+      <button class="sec" id="all-groups" onclick="allGroups()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v5H4zM4 14h16v5H4z"/></svg><span data-i18n="Groups only">Groups only</span></button>
       <button class="sec" id="all-open" onclick="allSections(true)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg><span data-i18n="Expand all">Expand all</span></button>
       <button class="sec" id="all-close" onclick="allSections(false)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l5 5 5-5M7 20l5-5 5 5"/></svg><span data-i18n="Collapse all">Collapse all</span></button>
     </div>
@@ -13489,7 +14875,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
         <input type="checkbox" class="sw" id="pr-camp"></label>
       <label class="row pr-sw"><span><b>🔋 <span data-i18n="Power saving">Power saving</span></b><br><span class="mut" id="pr-eco-info"></span></span>
         <input type="checkbox" class="sw" id="pr-eco"></label>
-      <label class="row pr-sw"><span><b>📡 <span data-i18n="Own Wi-Fi (hotspot)">Own Wi-Fi (hotspot)</span></b><br><span class="mut" id="pr-hs-info"></span></span>
+      <label class="row pr-sw l-hide"><span><b>📡 <span data-i18n="Own Wi-Fi (hotspot)">Own Wi-Fi (hotspot)</span></b><br><span class="mut" id="pr-hs-info"></span></span>
         <input type="checkbox" class="sw" id="pr-hs"></label>
       <div class="pr-sw l-hide" style="cursor:default"><b>🌐 <span data-i18n="Network">Network</span></b>
         <select id="pr-net" style="width:100%;margin-top:6px">
@@ -13516,6 +14902,8 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       <div class="bar"><i id="cpu-bar"></i></div>
       <canvas id="cpu-spark" width="360" height="56"></canvas>
       <div class="mut" style="margin-top:4px" data-i18n="CPU load, last 60 seconds">CPU load, last 60 seconds</div>
+      <div class="mbar"><div class="row"><b>🧠 <span data-i18n="Memory (RAM)">Memory (RAM)</span></b><span class="mut" id="ram-info">–</span></div><div class="bar"><i id="ram-bar"></i></div></div>
+      <div class="mbar"><div class="row"><b>💾 <span id="dsk-name" data-i18n="Storage">Storage</span></b><span class="mut" id="dsk-info">–</span></div><div class="bar"><i id="dsk-bar"></i></div></div>
       <div id="wifi-box" hidden style="margin-top:12px">
         <div class="row"><b id="wifi-big" style="font-size:18px">–</b><span class="mut" id="wifi-name"></span></div>
         <div class="bar"><i id="wifi-bar"></i></div>
@@ -13525,6 +14913,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       </div>
       <div class="mut" id="sys-supply" style="margin-top:8px"></div>
       <div class="mut" id="sys-remote" style="margin-top:4px"></div>
+      <details class="adv sblk" data-view="sysblk:power"><summary data-i18n="⏻ Switch off, restart, pause">⏻ Switch off, restart, pause</summary>
       <div class="btns pwr">
         <button type="button" class="red" id="pw-off" onclick="powerAct('poweroff')" data-i18n="⏻ Shut down Pi">⏻ Shut down Pi</button>
         <button type="button" class="sec" id="pw-reboot" onclick="powerAct('reboot')" data-i18n="↻ Restart Pi">↻ Restart Pi</button>
@@ -13534,33 +14923,41 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
           <option value="60">1 h</option><option value="120">2 h</option><option value="240">4 h</option><option value="480">8 h</option><option value="720">12 h</option></select></div>
       <div class="btns pwr"><button type="button" class="sec" onclick="pauseAct()" data-i18n="⏸ Pause program">⏸ Pause program</button></div>
       <div class="err" id="pw-err"></div>
+      </details>
+      <details class="adv sblk" data-view="sysblk:lock" open><summary data-i18n="🔐 Operator mode">🔐 Operator mode</summary>
       <div class="btns pwr">
-        <button type="button" class="sec" onclick="lockAct()" data-i18n="🔐 Operator mode (lock settings)">🔐 Operator mode (lock settings)</button>
+        <button type="button" class="sec" id="lock-btn" onclick="lockBtn()" data-i18n="🔐 Operator mode (lock settings)">🔐 Operator mode (lock settings)</button>
       </div>
+      <div class="mut" id="lock-info" hidden style="margin:-2px 0 6px;text-align:center"></div>
+      </details>
+      <details class="adv sblk" data-view="sysblk:help"><summary data-i18n="🧭 Help and setup">🧭 Help and setup</summary>
       <div class="btns pwr">
         <button type="button" class="sec l-hide" onclick="setupWizard(true)" data-i18n="🧭 Setup assistant">🧭 Setup assistant</button>
         <a class="btn sec" id="lnk-quick" href="/quick" target="_blank" data-i18n="📄 Quick guide (1 page)">📄 Quick guide (1 page)</a>
         <a class="btn sec" href="/setup-card" target="_blank" data-i18n="🖨 Quick start (QR)">🖨 Quick start (QR)</a>
       </div>
+      <div class="btns pwr"><button type="button" class="sec" onclick="fbDialog()" data-i18n="💬 Feedback to the developer">💬 Feedback to the developer</button></div>
+      </details>
+      <details class="adv sblk l-hide" data-view="sysblk:pw"><summary data-i18n="🔒 Password and settings file">🔒 Password and settings file</summary>
       <div class="btns pwr">
-        <button type="button" class="sec" onclick="pwDialog(false)" data-i18n="🔒 Web password">🔒 Web password</button>
-        <a class="btn sec" href="/api/settings/export" download="motionwatch_einstellungen.json" data-i18n="⬇ Save settings">⬇ Save settings</a>
-        <button type="button" class="sec" onclick="document.getElementById('imp-file').click()" data-i18n="⬆ Load settings">⬆ Load settings</button>
+        <button type="button" class="sec l-hide" onclick="pwDialog(false)" data-i18n="🔒 Web password">🔒 Web password</button>
+        <a class="btn sec l-hide" href="/api/settings/export" download="motionwatch_einstellungen.json" data-i18n="⬇ Save settings">⬇ Save settings</a>
+        <button type="button" class="sec l-hide" onclick="document.getElementById('imp-file').click()" data-i18n="⬆ Load settings">⬆ Load settings</button>
         <input type="file" id="imp-file" accept=".json,application/json" hidden onchange="importSettings(this.files[0]); this.value=''">
       </div>
       <div class="mut" id="pw-info"></div>
-      <div class="btns pwr"><button type="button" class="sec" onclick="fbDialog()" data-i18n="💬 Feedback to the developer">💬 Feedback to the developer</button></div>
       <div class="btns pwr">
-        <button class="sec l-hide" onclick="act('recalibrate')" data-i18n="Recalibrate">Recalibrate</button>
-        <button class="sec" onclick="act('reset_counter')" data-i18n="Reset counter">Reset counter</button>
         <button class="sec l-hide" onclick="if(confirm(t('Reset all settings to defaults?')))act('reset_settings')" data-i18n="Reset settings">Reset settings</button>
       </div>
+      </details>
+      <details class="adv sblk" data-view="sysblk:info"><summary data-i18n="ℹ Version and status">ℹ Version and status</summary>
       <div class="mut" id="sys-info" style="margin-top:6px"></div>
       <div class="mut" id="app-ver" style="margin-top:4px"></div>
+      </details>
     </details>
     <details class="card" open data-view="log" data-vgroup="Panels" data-vlabel="Event log"><summary data-i18n="Event log (important)">Event log (important)</summary><div id="log"></div>
       <div class="btns"><button type="button" class="sec" onclick="location.href='/log'" data-i18n="📜 Whole log &amp; archive">📜 Whole log &amp; archive</button></div></details>
-    <details class="card" data-view="wifi" data-vgroup="Panels" data-vlabel="Wi-Fi / hotspot" id="wf-card">
+    <details class="card l-hide" data-view="wifi" data-vgroup="Panels" data-vlabel="Wi-Fi / hotspot" id="wf-card">
       <summary data-i18n="Wi-Fi / hotspot">Wi-Fi / hotspot</summary>
       <div class="mut" id="wf-status">…</div>
       <div class="btns"><button type="button" id="wf-scan" data-i18n="Search networks">Search networks</button></div>
@@ -13622,7 +15019,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
     </details>
     <div id="lock-bar" hidden><div><b>🔐 <span data-i18n="Operator mode">Operator mode</span></b><br><span class="mut" data-i18n="lock-note">lock-note</span></div>
       <button type="button" onclick="unlockAct()" data-i18n="Unlock">Unlock</button></div>
-    <div id="srch"><span class="ic">🔍</span><input type="text" id="srch-in" autocomplete="off" enterkeyhint="search"
+    <div id="srch"><button type="button" class="sec" id="side-close" onclick="toggleHidden('sidebar')" title="Hide settings">⟩</button><span class="ic">🔍</span><input type="text" id="srch-in" autocomplete="off" enterkeyhint="search"
       data-i18n-ph="Search settings … (e.g. password)" placeholder="Search settings … (e.g. password)"><button type="button" class="x" id="srch-x" hidden>✕</button>
       <div class="mut" id="srch-none" hidden></div></div>
     <div id="settings"></div>
@@ -13654,7 +15051,7 @@ const post = (u, b) => fetch(u, {method: "POST", headers: {"Content-Type": "appl
     .then(r => r.json()).catch(() => ({ok: false, error: "connection"}));
 const ctrl = {};
 let editing = null;
-const I18N_EN = {"🖨 Quick start (QR)": "🖨 QR codes for connecting", "night-desc": "switches on what a night needs, arms with the countdown and tells what is missing", "cp-desc": "Own Wi-Fi on, the camera stays where it is (no patrol / tracking / timelapse), alarms and recordings on, armed after the countdown. Switching it off restores your settings.", "lock-note": "Settings are locked – only the main switches can be used.", "g-note": "A link for family or fellow campers: they only see the live picture and cannot change anything. The guest must be able to reach the Pi – same Wi-Fi / hotspot or via Tailscale. A new link makes the old one invalid.",
+const I18N_EN = {"🖨 Quick start (QR)": "🖨 QR codes for connecting", "night-desc": "switches on what a night needs, arms with the countdown and tells what is missing", "cp-desc": "Own Wi-Fi on, the camera stays where it is (no patrol / tracking / timelapse), alarms and recordings on, armed after the countdown. Switching it off restores your settings.", "lock-note": "Everything may be changed (except Wi-Fi, password, autostart). Unlocking with the PIN puts everything back.", "g-note": "A link for family or fellow campers: they only see the live picture and cannot change anything. The guest must be able to reach the Pi – same Wi-Fi / hotspot or via Tailscale. A new link makes the old one invalid.",
   "b-note": "UPS HAT (battery pack on the Pi): found by itself, real measurement. Otherwise powerbank estimate: capacity minus what was used since «Battery is full now»."};
 const I18N = {en: I18N_EN, de: {
   "Power saving": "Stromsparmodus", "active: few pictures, everything quiet": "aktiv: wenige Bilder, alles ruhig",
@@ -13843,7 +15240,7 @@ Object.assign(I18N.de, {
   "Nothing important yet – everything else is in the whole log.": "Noch nichts Wichtiges – alles andere steht im ganzen Protokoll.",
   "Event log (important)": "Ereignisprotokoll (Wichtiges)",
   "🔐 Operator mode (lock settings)": "🔐 Bedienmodus (Einstellungen sperren)", "Operator mode": "Bedienmodus", "Unlock": "Entsperren",
-  "lock-note": "Einstellungen sind gesperrt – nur die wichtigsten Schalter sind bedienbar.",
+  "lock-note": "Alles darf verstellt werden (ausser WLAN, Passwort, Autostart). Beim Entsperren mit der PIN wird alles zurückgesetzt.",
   "Set a new PIN? (Cancel = keep the current PIN)": "Neue PIN festlegen? (Abbrechen = bisherige PIN behalten)",
   "New PIN for unlocking (4-8 digits):": "Neue PIN zum Entsperren (4–8 Ziffern):", "Repeat the PIN:": "PIN wiederholen:",
   "The PINs are not the same": "Die PINs sind nicht gleich",
@@ -14012,15 +15409,13 @@ function toggleFullscreen() { setVideoOnly(!videoOnly); }
     document.querySelectorAll("#settings > details.grp").forEach(G => {
       let gHits = 0;
       const gTitle = hit(words(G.querySelector(":scope > summary")));
-      const subs = [...G.querySelectorAll(":scope > details.sub")];
-      const direct = rowsOf(G).filter(r => !(r.tagName === "DETAILS" && r.classList.contains("sub")) && !r.classList.contains("fine"));
-      const check = (rows, all) => { let n = 0; rows.forEach(r => { const m = all || hit(words(r)); r.classList.toggle("s-hide", !m); if (m && !all) r.classList.add("s-hit"); if (m) n++; }); return n; };
-      gHits += check(direct, gTitle);
-      subs.forEach(S => {
-        const sTitle = gTitle || hit(words(S.querySelector(":scope > summary")));
-        const n = check(rowsOf(S), sTitle);
-        S.classList.toggle("s-hide", !n); if (n) S.open = true; gHits += n;
-      });
+      const isSub = r => r.tagName === "DETAILS" && r.classList.contains("sub");
+      const check = (rows, all) => { let n = 0; rows.forEach(r => {
+        if (isSub(r)) { n += doSub(r, all); return; }                  // a topic inside a topic (e.g. thermal camera parts)
+        const m = all || hit(words(r)); r.classList.toggle("s-hide", !m); if (m && !all) r.classList.add("s-hit"); if (m) n++; }); return n; };
+      const doSub = (S, all) => { const sTitle = all || hit(words(S.querySelector(":scope > summary")));
+        const n = check(rowsOf(S), sTitle); S.classList.toggle("s-hide", !n); if (n) S.open = true; return n; };
+      gHits += check(rowsOf(G).filter(r => !r.classList.contains("fine")), gTitle);
       G.querySelectorAll(":scope > .fine").forEach(f => f.classList.add("s-hide"));
       G.classList.toggle("s-hide", !gHits); if (gHits) G.open = true; total += gHits;
     });
@@ -14039,29 +15434,15 @@ const OPER = new Set(["detection_on", "record", "notify_on", "browser_alarm", "t
   "relays_on", "noise_alarm", "thermal_on", "thermal_alarm", "report_on"]);
 const LOCK_KEEP = new Set(["protect", "batt", "report"]);
 let lockShown = null;
+const LOCK_DENY = new Set(["net_mode", "hotspot_ssid", "hotspot_password", "hotspot_on", "update_url", "update_token", "update_unsigned", "autostart"]);
 function applyLock(on) {
   document.body.classList.toggle("locked", on);
   $("#lock-bar").hidden = !on;
   document.querySelectorAll("#settings .l-off").forEach(e => e.classList.remove("l-off"));
   if (!on) return;
-  const rows = c => [...c.children].filter(k => k.tagName !== "SUMMARY").flatMap(k => k.classList.contains("blk") ? [...k.children] : [k]);
-  const ok = (r, keep) => {
-    if (r.matches("label.row.tg")) return OPER.has(r.dataset.key);
-    if (!keep || r.classList.contains("sl") || r.classList.contains("l-hide")) return false;
-    return !r.querySelector("input[type=text],input[type=password],input[type=range],select");
-  };
-  document.querySelectorAll("#settings > details.grp").forEach(G => {
-    let n = 0;
-    rows(G).forEach(r => {
-      if (r.tagName === "DETAILS" && r.classList.contains("sub")) {
-        const keep = LOCK_KEEP.has(r.dataset.view); let m = 0;
-        rows(r).forEach(x => { const y = ok(x, keep); x.classList.toggle("l-off", !y); if (y) m++; });
-        r.classList.toggle("l-off", !m); n += m;
-      } else if (!r.classList.contains("fine")) { const y = ok(r, LOCK_KEEP.has(G.dataset.view)); r.classList.toggle("l-off", !y); if (y) n++; }
-      else r.classList.add("l-off");
-    });
-    G.classList.toggle("l-off", !n);
-  });
+  // everything stays usable (and is put back at unlocking) - only what could lock the owner out is hidden
+  document.querySelectorAll("#settings [data-key]").forEach(r => { if (LOCK_DENY.has(r.dataset.key)) r.classList.add("l-off"); });
+  document.querySelectorAll('[data-view="wifi"]').forEach(r => r.classList.add("l-off"));
 }
 async function lockAct() {
   const L = (window.LASTSTATE || {}).lock || {};
@@ -14070,14 +15451,21 @@ async function lockAct() {
     np = prompt(t("New PIN for unlocking (4-8 digits):")) || ""; if (!np) return;
     if ((prompt(t("Repeat the PIN:")) || "") !== np) { toast("⚠ " + t("The PINs are not the same")); return; }
   }
-  if (!confirm(t("Lock the settings now? Only the main switches stay usable. Unlocking needs the PIN."))) return;
+  if (!confirm(t("Switch on operator mode? Everything may be changed except Wi-Fi, password and autostart; unlocking with the PIN puts everything back."))) return;
   const r = await post("/api/lock", {action: "lock", new_pin: np, lang: LANG});
   toast(r.ok ? "🔐 " + t("Operator mode on") : "⚠ " + (r.error || "error")); refresh();
+}
+function lockBtn() { const L = (window.LASTSTATE || {}).lock || {}; if (L.on) unlockAct(); else lockAct(); }
+function lockPaint(s) {
+  const L = s.lock || {}, b = $("#lock-btn"), i = $("#lock-info"); if (!b) return;
+  b.textContent = L.on ? "🔓 " + t("End operator mode (PIN)") : t("🔐 Operator mode (lock settings)");
+  b.classList.toggle("lock-on", !!L.on);
+  i.hidden = !L.on; i.textContent = L.on ? "🟡 " + t("Operator mode is on") + (L.since ? " " + t("since") + " " + L.since : "") + " · " + t("unlocking puts everything back") : "";
 }
 async function unlockAct() {
   const pin = prompt(t("PIN:")); if (!pin) return;
   const r = await post("/api/lock", {action: "unlock", pin: pin, lang: LANG});
-  toast(r.ok ? "🔓 " + t("Settings unlocked") : "⚠ " + (r.error || "error")); refresh();
+  toast(r.ok ? "🔓 " + t("Settings unlocked") + (r.restored ? " · " + r.restored + " " + t("changes put back") : "") : "⚠ " + (r.error || "error")); refresh();
 }
 let updBarFor = "";
 function updBar(s) {
@@ -14108,7 +15496,7 @@ function paintExtras(s) {
   window.LASTSTATE = s; updBar(s);
   const lk = !!(s.lock && s.lock.on);
   if (lk !== lockShown) { lockShown = lk; applyLock(lk); }
-  hb("#b-lock", lk, "🔐 " + t("Operator mode"), "yel");
+  hb("#b-lock", lk, "🔐 " + t("Operator mode"), "yel"); lockPaint(s);
   const pe = $("#pr-err"); if (pe && s.autostart_msg && !pe.textContent) pe.textContent = "⚠ " + s.autostart_msg;
   const L = s.report_last || {}, rl = $("#rep-line");
   if (rl) rl.textContent = (s.report_on ? "" : t("Night report is off.") + "\n")
@@ -14151,6 +15539,7 @@ function applyHidden() {
   document.querySelectorAll("[data-view]").forEach(e => e.classList.toggle("vh", HIDDEN.has(e.dataset.view)));
   document.body.classList.toggle("noside", HIDDEN.has("sidebar"));
   $("#btn-side").innerHTML = HIDDEN.has("sidebar") ? "&#9664;" : "&#9654;";
+  const sc = $("#side-close"); if (sc) sc.title = t("Hide settings"); const so = $("#side-open"); if (so) so.title = t("Show settings");
 }
 function toggleHidden(k) { HIDDEN.has(k) ? HIDDEN.delete(k) : HIDDEN.add(k); saveHidden(); applyHidden(); }
 function buildViewMenu() {
@@ -14381,9 +15770,50 @@ function textField(x) {
   const send = v => post("/api/text", {key: x.key, value: v, lang: LANG}).then(r => { err.textContent = r.ok ? "" : "⚠ " + (r.error || "error"); if (r.ok) toast(t("Saved")); return r; });
   inp.onchange = () => { if (x.kind === "secret" && inp.value === "") return;
     send(inp.value).then(r => { if (r.ok && x.kind === "secret") { inp.value = ""; inp.placeholder = "•••••• (" + t("set") + ")"; } }); };
+  wrap.dataset.key = x.key;
   wrap.append(inp, err);
   if (x.kind === "secret") { const c = el("button", "sec", t("Clear")); c.style.marginTop = "2px"; c.onclick = () => send(" ").then(r => { if (r.ok) inp.placeholder = ""; }); wrap.appendChild(c); }
   return wrap;
+}
+// ---- message texts: one card per message, tap a chip to insert a placeholder, preview with example values ----
+function msgBoxes(d, texts) {
+  const by = {}; texts.forEach(x => { by[x.key] = x; });
+  const PH = [["name", "Device name"], ["time", "Time"], ["date", "Date"], ["count", "Number of persons"], ["camera", "Camera"], ["db", "Volume (dB)"], ["link", "Link"]];
+  const EX = {name: () => (by.device_name && (by.device_name.value || by.device_name.placeholder)) || "Motion Watch", time: () => new Date().toTimeString().slice(0, 5),
+    date: () => new Date().toLocaleDateString(LOCALE(LANG)), count: () => "2", camera: () => "USB", db: () => "72", link: () => location.origin + "/"};
+  const fill = s => String(s || "").replace(/\{(\w+)\}/g, (m, k) => EX[k] ? EX[k]() : m);
+  if (by.device_name) d.appendChild(textField(by.device_name));
+  d.appendChild(el("div", "mut msghint", t("Leave a field empty for the standard text. Tap a grey button to insert a placeholder at the cursor.")));
+  [["person", "👤", "Person"], ["prealarm", "👀", "Pre-alarm"], ["warm", "🌡", "Thermal alarm"], ["noise", "🔊", "Noise alarm"]].forEach(([k, ic, nm]) => {
+    const tx = by["msg_" + k + "_title"], bx = by["msg_" + k + "_text"]; if (!tx || !bx) return;
+    const card = el("details", "adv sblk msgcard"); card.dataset.view = "msg:" + k;
+    const sm = el("summary", ""), sl = el("span", "", ic + " " + t(nm)), sp = el("span", "mut msgsum"); sm.append(sl, sp); card.appendChild(sm);
+    const prev = el("div", "msgprev"), pt = el("b"), pb = el("div"); prev.append(el("span", "mut", t("Preview") + ":"), pt, pb);
+    let last = null; const fields = [];
+    [[tx, "Title", false], [bx, "Text", true]].forEach(([x, lab, big]) => {
+      const inp = el(big ? "textarea" : "input"); if (!big) inp.type = "text"; else inp.rows = 2;
+      inp.value = x.value || ""; inp.placeholder = x.placeholder || ""; inp.className = "msginp"; if (big) inp.rows = 3;
+      inp.onfocus = () => { last = inp; if (!inp.value && inp.placeholder) { inp.value = inp.placeholder; inp.dataset.std = "1"; } };   // edit the standard text
+      inp.onblur = () => { if (inp.dataset.std && inp.value === inp.placeholder) inp.value = ""; delete inp.dataset.std; };
+      const err = el("div", "err");
+      const save = () => post("/api/text", {key: x.key, value: inp.value === inp.placeholder ? "" : inp.value, lang: LANG}).then(r => { err.textContent = r.ok ? "" : "⚠ " + (r.error || "error"); if (r.ok) toast(t("Saved")); });
+      inp.onchange = save; inp.oninput = paint;
+      const std = el("button", "sec msgstd", "↺"); std.type = "button"; std.title = t("Standard text");
+      std.onclick = () => { inp.value = ""; save(); paint(); };
+      const row = el("div", "msgrow"); row.append(el("span", "mut", t(lab)), inp, std);
+      card.append(row, err); fields.push(inp);
+    });
+    const chips = el("div", "msgchips");
+    PH.forEach(([p, lab]) => { const c = el("button", "sec", t(lab)); c.type = "button"; c.title = "{" + p + "}";
+      c.onmousedown = e => e.preventDefault();
+      c.onclick = () => { const f = last || fields[1]; const a = f.selectionStart ?? f.value.length, b = f.selectionEnd ?? a;
+        f.value = f.value.slice(0, a) + "{" + p + "}" + f.value.slice(b); f.focus(); f.selectionStart = f.selectionEnd = a + p.length + 2;
+        f.dispatchEvent(new Event("change")); paint(); };
+      chips.appendChild(c); });
+    function paint() { pt.textContent = fill(fields[0].value || fields[0].placeholder); pb.textContent = fill(fields[1].value || fields[1].placeholder);
+      sp.textContent = fields[0].value || fields[1].value ? t("own text") : t("standard text"); }
+    card.append(chips, prev); d.appendChild(card); paint();
+  });
 }
 // ---- location: automatically from the phone, or tapped on a map ----
 Object.assign(I18N.de, {"Location (sunrise / sunset, photos, weather)": "Standort (Sonnenauf-/untergang, Fotos, Wetter)", "Automatically (phone)": "Automatisch (Handy)", "Pick on the map": "Auf Karte wählen", "My position": "Meine Position", "Search a place …": "Ort suchen …", "The phone shares its position only over the https page.": "Das Handy gibt seine Position nur über die https-Seite heraus.", "From the phone": "Vom Handy", "updated": "aktualisiert vor", "Waiting for the position of the phone …": "Warte auf die Position des Handys …", "Until then": "Bis dahin", "No place chosen yet.": "Noch kein Ort gewählt.", "Fixed place": "Fester Ort", "Tap on the map to set the place. Move with one finger, zoom with + / −.": "Auf die Karte tippen, um den Ort zu setzen. Mit einem Finger verschieben, mit + / − zoomen.", "Place not found": "Ort nicht gefunden", "Search needs internet": "Suche braucht Internet", "Map background is switched off in the settings.": "Kartenhintergrund ist in den Einstellungen ausgeschaltet."});
@@ -14552,20 +15982,21 @@ function renderSchedules(list, st) {
 //      (the first one is open). Fine-tuning comes last, under a small "Fine-tuning" line. A group with one topic shows it directly.
 const GROUPS = [
   {id: "alarm", icon: "🛡", name: "Alarm & camping", open: true,
-   items: [{card: "protect", title: "Switches"}, {sec: "Camping / protection", title: "Protection & network"}, {sec: "Power saving"},
-           {card: "batt", sec: "Battery", title: "Battery"}, {sec: "Theft protection", title: "Theft protection"}]},
-  {id: "notify", icon: "🔔", name: "Notifications", items: [{sec: "Notifications", title: "Push messages"},
-   {card: "report", sec: "Night report", title: "Night report"}, {sec: "Messages"}, {sec: "SMS (LTE stick)", title: "SMS (LTE stick)"}]},
-  {id: "detect", icon: "🎯", name: "Detection", items: [{sec: "Detection"}, {sec: "AI detection"}, {fine: true},
-   {sec: "Walking recognition"}, {sec: "Vehicle filter"}, {sec: "Rain"}, {sec: "Wind"}, {sec: "Low light"}, {sec: "Auto-tune"}]},
-  {id: "camera", icon: "📷", name: "Camera & servos", items: [{sec: "Camera / Servos"}, {sec: "Patrol"}, {card: "source", sec: "Video source"},
-   {fine: true}, {sec: "Servo driver"}]},
+   items: [{card: "protect", title: "Switches", ic: "🔘"}, {sec: "Camping / protection", title: "Protection & network", ic: "🏕️"}, {sec: "Power saving", ic: "🍃"},
+           {card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Theft protection", title: "Theft protection", ic: "🔒"}]},
+  {id: "notify", icon: "🔔", name: "Notifications", items: [{sec: "Notifications", title: "Push messages", ic: "📲"},
+   {card: "report", sec: "Night report", title: "Night report", ic: "🌙"}, {sec: "Messages", ic: "💬"}, {sec: "SMS (LTE stick)", title: "SMS (LTE stick)", ic: "📱"}]},
+  {id: "detect", icon: "🎯", name: "Detection", items: [{sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {fine: true},
+   {sec: "Walking recognition", ic: "🚶"}, {sec: "Vehicle filter", ic: "🚗"}, {sec: "Rain", ic: "🌧️"}, {sec: "Wind", ic: "🌬️"}, {sec: "Low light", ic: "🌘"}, {sec: "Auto-tune", ic: "🎚️"}]},
+  {id: "camera", icon: "📷", name: "Camera & servos", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {card: "source", sec: "Video source", ic: "🎥"},
+   {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
   {id: "thermal", icon: "🌡", name: "Thermal camera", items: [{sec: "Thermal camera"}]},
-  {id: "lightsound", icon: "💡", name: "Light & sound", items: [{sec: "Lights"}, {sec: "Deterrence", title: "Deterrence"}, {sec: "Microphone"}, {sec: "Loudspeaker"}]},
-  {id: "rec", icon: "🎬", name: "Recordings & timelapse", items: [{sec: "Recording"}, {sec: "Timelapse"}, {sec: "Backup", title: "Backup"}]},
-  {id: "relay", icon: "⚡", name: "Relays & schedule", items: [{card: "relayset", sec: "Relays", title: "Relays"}, {card: "schedule", sec: "Schedule", title: "Schedule"}]},
-  {id: "sys", icon: "⚙", name: "System & network", items: [{card: "system"}, {card: "wifi", sec: "Wi-Fi / hotspot"}, {sec: "Web stream"}, {card: "guest", title: "Guest access"},
-   {sec: "Setup"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant"}, {sec: "Updates"}, {card: "log"}]},
+  {id: "sensors", icon: "📡", name: "Sensors", items: [{sec: "Extra sensors", ic: "📡"}]},
+  {id: "lightsound", icon: "💡", name: "Light & sound", items: [{sec: "Lights", ic: "💡"}, {sec: "Deterrence", title: "Deterrence", ic: "📢"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"}]},
+  {id: "rec", icon: "🎬", name: "Recordings & timelapse", items: [{sec: "Recording", ic: "⏺"}, {sec: "Timelapse", ic: "⏱️"}, {sec: "Backup", title: "Backup", ic: "☁️"}]},
+  {id: "relay", icon: "⚡", name: "Relays & schedule", items: [{card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"}]},
+  {id: "sys", icon: "⚙", name: "System & network", items: [{card: "system", ic: "🖥️"}, {card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"}, {card: "guest", title: "Guest access", ic: "👥"},
+   {sec: "Setup", ic: "📍"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}, {sec: "Updates", ic: "⬆️"}, {card: "log", ic: "📜"}]},
 ];
 function toBlock(d) {                                        // a settings section -> its controls (without its own title)
   const b = el("div", "blk");
@@ -14585,7 +16016,7 @@ function regroup() {
     const S = el("details", "sub"); S.dataset.view = card ? card.dataset.view : "sec:" + it.sec;
     S.dataset.vgroup = "Panels"; S.dataset.vlabel = title;
     if (card && card.id) { S.id = card.id; card.removeAttribute("id"); }
-    S.appendChild(el("summary", "", title));
+    S.appendChild(el("summary", "", (it.ic ? it.ic + " " : "") + title));
     if (card) { [...card.children].filter(c => c.tagName !== "SUMMARY").forEach(k => S.appendChild(k)); card.remove(); }
     if (sd) { const b = toBlock(sd); if (b) S.appendChild(b); }
     return S.children.length > 1 ? S : null;
@@ -14703,11 +16134,11 @@ function qsPaint(j) {
 // ---- overview: green arrow = main function of this topic is on ----
 const MAINSW = {
   "protect": (c, s) => s.arm_state === "armed" || s.arm_state === "arming", "sec:Camping / protection": (c, s) => !!s.camping,
-  "sec:Power saving": c => c.eco_on, "batt": (c, s) => !!(s.battery && s.battery.on), "sec:Theft protection": c => c.tamper_on || c.tamper_motion || c.tamper_power,
+  "sec:Power saving": c => c.eco_on, "sec:Extra sensors": c => c.sens_on && (c.sensors || []).length > 0, "batt": (c, s) => !!(s.battery && s.battery.on), "sec:Theft protection": c => c.tamper_on || c.tamper_motion || c.tamper_power,
   "sec:Notifications": c => c.notify_on, "report": c => c.report_on, "sec:SMS (LTE stick)": c => c.sms_on,
   "sec:Detection": c => c.detection_on, "sec:AI detection": c => c.ai_enabled, "sec:Vehicle filter": c => c.car_filter, "sec:Rain": c => c.rain_auto,
   "sec:Wind": c => c.wind_auto, "sec:Low light": c => c.lowlight_auto || c.nightvision || c.nightvision_auto, "sec:Auto-tune": c => c.auto_tune,
-  "sec:Camera / Servos": c => c.track_person, "sec:Patrol": c => c.patrol, "sec:Thermal camera": c => c.thermal_on,
+  "sec:Camera / Servos": c => c.track_person, "sec:Patrol": c => c.patrol, "sec:Thermal camera": c => c.thermal_on || c.thermal_alarm, "th:alarm": c => c.thermal_alarm, "th:view": c => c.thermal_on,
   "sec:Lights": (c, s) => !!(s.light_cfg && (s.light_cfg.white !== "off" || s.light_cfg.ir !== "off")),
   "sec:Deterrence": (c, s) => {                // green only if a reaction is set AND its loudspeaker / light is there
     const spk = !!(s.audio && s.audio.spk), lamp = !!(s.light_cfg && s.light_cfg.white_out);
@@ -14718,15 +16149,18 @@ const MAINSW = {
   "relayset": c => c.relays_on, "schedule": (c, s, j) => (j.schedules || []).some(x => x.enabled),
   "wifi": (c, s) => !!(s.hotspot && s.hotspot.on), "sec:Web stream": c => c.web_stream, "guest": (c, s) => !!(s.guest && s.guest.active),
   "sec:MQTT / Home Assistant": c => c.mqtt_on, "sec:Updates": c => c.update_auto};
+let MAINJ = null;
 function mainPaint(j) {
-  const c = j.cfg || {}, s = j.state || {};
+  if (j) MAINJ = j; else j = MAINJ || {};
+  const c = Object.assign({}, j.cfg || {}), s = j.state || {};
+  Object.entries(ctrl).forEach(([k, x]) => { if (x && x.type === "bool" && x.input) c[k] = x.input.checked; });   // what the page shows right now
   const val = v => { const f = MAINSW[v]; if (!f) return null; try { return !!f(c, s, j); } catch (e) { return null; } };
   document.querySelectorAll("#settings details.sub, #settings details.grp").forEach(d => {
     let on = null;
     if (d.classList.contains("sub")) on = val(d.dataset.view);
     else if (d.dataset.main) on = val(d.dataset.main);
     else { const subs = [...d.querySelectorAll(":scope > details.sub")].map(x => val(x.dataset.view)).filter(x => x !== null); on = subs.length ? subs.some(Boolean) : null; }
-    d.classList.toggle("mon", on === true); d.classList.toggle("moff", on === false);
+    try { d.classList.toggle("mon", on === true); d.classList.toggle("moff", on === false); } catch (e) {}
   });
 }
 
@@ -14744,15 +16178,46 @@ async function build() {
     sec.toggles.forEach(tg => {
       const row = el("label", "row tg"); row.dataset.key = tg.key;
       const cb = el("input"); cb.type = "checkbox"; cb.className = "sw";
-      cb.onchange = () => post("/api/set", {key: tg.key, value: cb.checked});
+      cb.onchange = () => { post("/api/set", {key: tg.key, value: cb.checked}); try { mainPaint(); } catch (e) {} };
       row.append(el("span", "", tg.label), cb);
       d.appendChild(row); ctrl[tg.key] = {type: "bool", input: cb};
     });
-    (sec.texts || []).forEach(x => { if (x.key === "longitude") return; d.appendChild(x.key === "latitude" ? locBox() : textField(x)); });
+    if (sec.id === "Messages") msgBoxes(d, sec.texts || []);
+    else (sec.texts || []).forEach(x => { if (x.key === "longitude") return; d.appendChild(x.key === "latitude" ? locBox() : textField(x)); });
     if ((sec.texts || []).some(x => x.key === "latitude")) d.querySelectorAll('.row.tg[data-key="gps_phone"]').forEach(r => { r.hidden = true; });
-    if (sec.id === "Messages") {
-      const hlp = el("div", "mut", t("Empty = standard text (grey). Placeholders:") + " {name} {time} {date} {count} {camera} {link} {db}");
-      hlp.style.margin = "2px 0 6px"; d.insertBefore(hlp, d.children[1] || null);
+
+    if (sec.id === "Web stream") {
+      const box = el("div", "sl"); const out = el("div", "mut"); out.style.fontSize = "12px"; out.style.wordBreak = "break-all";
+      const rn = el("button", "sec", "🔄 " + t("New secret address")); rn.type = "button"; rn.style.marginTop = "6px";
+      box.append(out, rn); d.appendChild(box);
+      const show = j => { out.textContent = ""; rn.hidden = !j.on;
+        if (!j.on) { out.textContent = t("Off – switch on «Picture for other programs» above."); return; }
+        [["🎥 MJPEG", j.mjpeg], ["🖼 " + t("Still picture"), j.jpg], ["📼 RTSP", j.rtsp]].forEach(([l, u]) => { if (!u) return;
+          const r = el("div", ""); r.style.margin = "4px 0"; const b = el("b", "", l + ": "); const c = el("code", "", u); c.style.userSelect = "all";
+          const cp = el("button", "sec", "⧉"); cp.type = "button"; cp.style.padding = "2px 8px"; cp.title = t("Copy");
+          cp.onclick = () => { try { navigator.clipboard.writeText(u); toast("⧉ " + t("Copied")); } catch (e) {} };
+          r.append(b, c, " ", cp); out.appendChild(r); });
+        if (j.rtsp_msg && j.rtsp_msg !== "running") out.appendChild(el("div", "err", "RTSP: " + t(j.rtsp_msg)));
+        out.appendChild(el("div", "", t("Keep these addresses secret: whoever has them sees the picture without a password."))); };
+      const load = () => fetch("/api/ext").then(r => r.json()).then(show).catch(() => {});
+      rn.onclick = async () => { if (!confirm(t("Make a new secret address? The old one stops working (other programs need the new one)."))) return; show(await post("/api/ext", {action: "renew"})); };
+      load(); setInterval(() => { if (box.offsetParent) load(); }, 10000);
+    }
+    if (sec.id === "Recording") {
+      const box = el("div", "sl"); box.appendChild(el("div", "row", "")).appendChild(el("span", "", "🗄 " + t("Recordings stored on")));
+      const sel = el("select"); sel.style.width = "100%"; sel.style.marginTop = "4px"; const info = el("div", "mut", ""); info.style.fontSize = "12px";
+      box.append(sel, info); d.appendChild(box);
+      const KIND = {sd: t("memory card"), ssd: "SSD (NVMe)", usb: t("USB drive"), other: t("drive")};
+      const fill = j => { sel.textContent = ""; const o0 = el("option", "", "💾 " + t("memory card (next to the program)")); o0.value = ""; sel.appendChild(o0);
+        (j.candidates || []).forEach(c => { const o = el("option", "", (c.kind === "ssd" ? "⚡ " : "🔌 ") + KIND[c.kind] + " · " + c.path + " · " + c.free_gb + " / " + c.total_gb + " GB " + t("free")
+          + (c.fat ? " · ⚠ FAT" : "") + (c.writable ? "" : " · ⚠ " + t("read only"))); o.value = c.path; sel.appendChild(o); });
+        sel.value = j.want || ""; if (sel.value !== (j.want || "")) { const o = el("option", "", "⚠ " + j.want + " (" + t("missing") + ")"); o.value = j.want; sel.appendChild(o); sel.value = j.want; }
+        info.textContent = (j.fallback ? "⚠ " + t("chosen drive missing - recordings on the memory card") + " · " : "") + t("now") + ": " + j.rec_dir + (j.moving || j.msg ? " · " + t(j.msg) : "")
+          + (!(j.candidates || []).length ? " · " + t("no SSD / USB drive found") : ""); };
+      const load = () => fetch("/api/storage").then(r => r.json()).then(fill).catch(() => {});
+      sel.onchange = async () => { if (!confirm(t("Store the recordings there from now on? The existing ones are moved over (this can take a while)."))) { load(); return; }
+        const r = await post("/api/storage", {path: sel.value, move: true, lang: LANG}); toast(r.ok ? "✓ " + t("Saved") : "⚠ " + (r.error || "error")); if (r.candidates) fill(r); setTimeout(load, 3000); };
+      load();
     }
     if (sec.id === "AI detection") {
       const ab = el("button", "sec", "⬇ " + t("Download AI model") + " (≈ 70 MB)"); ab.type = "button"; ab.style.marginTop = "8px"; const am = el("div", "mut", "");
@@ -14779,7 +16244,7 @@ async function build() {
         if (!timer) timer = setTimeout(() => { timer = null; send(); }, 100);   // throttle while dragging
       };
       r.onchange = () => { clearTimeout(timer); timer = null; send(); editing = null; };
-      wrap.append(top, r); d.appendChild(wrap);
+      wrap.dataset.key = s.key; wrap.append(top, r); d.appendChild(wrap);
       ctrl[s.key] = {type: "num", input: r, val: val};
     });
     if (sec.id === "Timelapse") tlExtras(d);
@@ -14788,6 +16253,7 @@ async function build() {
     if (sec.id === "Notifications") wpExtras(d);
     if (sec.id === "Backup") bkExtras(d);
     if (sec.id === "Theft protection") tpExtras(d);
+    if (sec.id === "Extra sensors") sensExtras(d);
     if (sec.id === "Deterrence") dtExtras(d);
     if (sec.id === "MQTT / Home Assistant") mqExtras(d);
     if (sec.id === "SMS (LTE stick)") smsExtras(d);
@@ -15269,6 +16735,89 @@ function tpExtras(d) {
   box.append(el("div", "mut", t("When armed: push message (urgent) and siren. The picture check pauses while the camera head moves itself.")), st);
   d.appendChild(box);
 }
+Object.assign(I18N.de, {"open": "offen", "closed": "zu", "last": "zuletzt", "Extra sensors": "Zusatz-Sensoren", "Sensors": "Sensoren", "Extra sensors on": "Zusatz-Sensoren ein", "433 MHz radio sensors (RTL-SDR stick + program rtl_433)": "433-MHz-Funksensoren (RTL-SDR-Stick + Programm rtl_433)", "Zigbee sensors (Zigbee2MQTT - needs MQTT)": "Zigbee-Sensoren (Zigbee2MQTT – braucht MQTT)", "Bluetooth tags (RuuviTag - needs python3-bleak)": "Bluetooth-Anhänger (RuuviTag – braucht python3-bleak)", "With a motion detector (PIR): only 1 picture per second while all is quiet": "Mit Bewegungsmelder (PIR): nur 1 Bild pro Sekunde, solange alles ruhig ist", "Bluetooth tag: alarm when not seen for (min)": "Bluetooth-Anhänger: Alarm, wenn nicht gesehen seit (Min.)", "Motion detector": "Bewegungsmelder", "Door": "Tür", "Gas / smoke": "Gas / Rauch", "Tag": "Anhänger", "Sensor": "Sensor", "at most 16 sensors": "höchstens 16 Sensoren", "unknown sensor": "unbekannter Sensor", "this GPIO is already in use": "dieser GPIO ist schon belegt", "test - it works": "Test – es funktioniert", "out of range (not seen any more)": "ausser Reichweite (nicht mehr gesehen)", "motion detected": "Bewegung erkannt", "opened": "geöffnet", "gas / smoke detected!": "Gas / Rauch erkannt!", "moved": "bewegt", "triggered": "ausgelöst", "GAS ALARM": "GAS-ALARM", "SENSOR ALARM": "SENSOR-ALARM", "rtl_433 missing (sudo apt install rtl-433)": "rtl_433 fehlt (sudo apt install rtl-433)", "listening": "hört zu", "no RTL-SDR stick found": "kein RTL-SDR-Stick gefunden", "python3-bleak missing (sudo apt install python3-bleak)": "python3-bleak fehlt (sudo apt install python3-bleak)", "needs MQTT": "braucht MQTT", "Motion detector (PIR)": "Bewegungsmelder (PIR)", "Door / lid contact": "Tür- / Deckelkontakt", "Bluetooth tag": "Bluetooth-Anhänger", "Other sensor": "Anderer Sensor", "only when armed": "nur wenn scharf", "always (also when disarmed)": "immer (auch unscharf)", "no alarm, only note it": "kein Alarm, nur notieren", "Kind": "Art", "Connected to": "Angeschlossen an", "Reversed (reports at LOW)": "Umgekehrt (meldet bei LOW)", "Found radio devices - tap one to add it:": "Gefundene Funkgeräte – antippen zum Hinzufügen:", "Door contact": "Türkontakt", "Radio sensor": "Funksensor", "Remove this sensor?": "Diesen Sensor entfernen?", "gas / smoke!": "Gas / Rauch!", "motion": "Bewegung", "moved / triggered": "bewegt / ausgelöst", "out of range": "ausser Reichweite", "quiet": "ruhig", "GPIO error": "GPIO-Fehler", "waiting for data": "wartet auf Daten", "choose where it is connected": "wähle, wo er angeschlossen ist", "Extra sensors are switched off": "Zusatz-Sensoren sind ausgeschaltet", "Motion detector, door contact or gas / smoke module on a GPIO - or radio sensors (433 MHz, Zigbee) and Bluetooth tags. «Test» sends a push message.": "Bewegungsmelder, Türkontakt oder Gas-/Rauchmodul an einem GPIO – oder Funksensoren (433 MHz, Zigbee) und Bluetooth-Anhänger. «Test» schickt eine Push-Nachricht."});
+// ---- extra sensors (PIR, door contact, gas, 433 MHz, Zigbee, Bluetooth tags) ----
+const SENS_IC = {pir: "🚶", door: "🚪", gas: "🔥", tag: "🏷️", other: "📡"};
+const SENS_KN = [["pir", "Motion detector (PIR)"], ["door", "Door / lid contact"], ["gas", "Gas / smoke"], ["tag", "Bluetooth tag"], ["other", "Other sensor"]];
+var SENSSIG = "";
+function sensExtras(d) {
+  const box = el("div", "auxbox"); box.id = "sens-box";
+  box.appendChild(el("div", "mut", t("Motion detector, door contact or gas / smoke module on a GPIO - or radio sensors (433 MHz, Zigbee) and Bluetooth tags. «Test» sends a push message.")));
+  const list = el("div"); list.id = "sens-list"; const err = el("div", "err"); err.id = "sens-err";
+  const add = el("div", "btns"); add.id = "sens-add";
+  [["pir", "Motion detector"], ["door", "Door contact"], ["gas", "Gas / smoke"], ["tag", "Bluetooth tag"], ["other", "Radio sensor"]].forEach(([k, l]) => {
+    const b = el("button", "sec", "+ " + SENS_IC[k] + " " + t(l)); b.type = "button"; b.onclick = () => sensPost({action: "add", kind: k}); add.appendChild(b); });
+  const st = el("div", "mut"); st.id = "sens-st"; st.style.marginTop = "8px";
+  const sh = el("div", "mut"); sh.id = "sens-seenh"; sh.style.marginTop = "8px"; const seen = el("div", "btns"); seen.id = "sens-seen";
+  box.append(list, err, add, st, sh, seen); d.appendChild(box);
+}
+function sensPost(b) {
+  b.lang = LANG;
+  return post("/api/sensors", b).then(r => { const e = $("#sens-err"); if (e) e.textContent = r.ok ? "" : "⚠ " + (r.error || "error"); SENSSIG = ""; refresh(); return r; });
+}
+function sensSrcLabel(v, seen) {
+  if (!v) return "– " + t("not connected") + " –";
+  if (v.startsWith("gpio:")) return "GPIO " + v.slice(5);
+  const f = (seen || []).find(x => x.src === v), nm = f ? f.label : v.replace(/^[a-z]+:/, "");
+  return (v.startsWith("rf:") ? "📻 433 MHz: " : v.startsWith("zb:") ? "🐝 Zigbee: " : "🔵 Bluetooth: ") + nm;
+}
+function sensGuess(e) {
+  const d = e.data || {};
+  if (e.src.startsWith("ble:")) return "tag";
+  if ("contact" in d || "closed" in d || "contact_open" in d || "state" in d) return "door";
+  if ("smoke" in d || "gas" in d || "carbon_monoxide" in d) return "gas";
+  if ("occupancy" in d || "motion" in d) return "pir";
+  return "other";
+}
+function sensAgo(sec) { return sec < 60 ? sec + " s" : sec < 3600 ? Math.round(sec / 60) + " min" : Math.round(sec / 3600) + " h"; }
+function sensPaint(c, s) {
+  const list = $("#sens-list"); if (!list || !c) return;
+  const S = s.sens || {st: {}, seen: [], free: []}, L = c.sensors || [], seenL = S.seen || [];
+  const sig = JSON.stringify([L, S.free, seenL.map(x => x.src + x.label), LANG]);
+  const busy = document.activeElement && list.contains(document.activeElement) && /INPUT|SELECT/.test(document.activeElement.tagName);
+  if (sig !== SENSSIG && !busy) {
+    SENSSIG = sig; list.textContent = "";
+    L.forEach(x => {
+      const card = el("div", "sens-card"); card.dataset.id = x.id;
+      const r1 = el("div", "row"); const dot = el("span", "dot", "●"); dot.id = "sd-" + x.id;
+      const nm = el("input"); nm.type = "text"; nm.value = x.name; nm.maxLength = 24; nm.onchange = () => sensPost({action: "set", id: x.id, field: "name", value: nm.value});
+      const del = el("button", "sec", "✕"); del.type = "button"; del.title = t("Remove");
+      del.onclick = () => { if (confirm(t("Remove this sensor?") + "\n" + x.name)) sensPost({action: "remove", id: x.id}); };
+      r1.append(el("span", "", SENS_IC[x.kind] || "📡"), dot, nm, del);
+      const mk = (label, pairs, val, field) => { const lb = el("label", "", t(label)), sel = el("select");
+        pairs.forEach(([v, l]) => { const o = el("option", "", l); o.value = v; sel.appendChild(o); }); sel.value = val;
+        sel.onchange = () => sensPost({action: "set", id: x.id, field: field, value: sel.value}); lb.appendChild(sel); return lb; };
+      const opts = [""].concat((S.free || []).map(g => "gpio:" + g), seenL.map(e => e.src));
+      if (x.src && !opts.includes(x.src)) opts.splice(1, 0, x.src);
+      const r2 = el("div", "sens-row");
+      r2.append(mk("Kind", SENS_KN.map(([v, l]) => [v, t(l)]), x.kind, "kind"),
+                mk("Connected to", [...new Set(opts)].map(v => [v, sensSrcLabel(v, seenL)]), x.src, "src"),
+                mk("Alarm", [["armed", t("only when armed")], ["always", t("always (also when disarmed)")], ["off", t("no alarm, only note it")]], x.alarm, "alarm"));
+      card.append(r1, r2);
+      if (x.src.startsWith("gpio:")) { const lb = el("label"), cb = el("input"); cb.type = "checkbox"; cb.checked = !!x.inv; cb.style.cssText = "flex:none;width:auto;margin:0";
+        cb.onchange = () => sensPost({action: "set", id: x.id, field: "inv", value: cb.checked}); lb.style.cssText = "display:flex;align-items:center;gap:8px;margin-top:8px;cursor:pointer";
+        lb.append(cb, el("span", "mut", t("Reversed (reports at LOW)"))); card.appendChild(lb); }
+      const foot = el("div", "row"); foot.style.marginTop = "6px"; const stl = el("span", "mut", ""); stl.id = "ss-" + x.id;
+      const tb = el("button", "sec", "🧪 " + t("Test")); tb.type = "button";
+      tb.onclick = () => sensPost({action: "test", id: x.id}).then(r => { if (r.ok) toast("✓ " + t("Test sent")); });
+      foot.append(stl, tb); card.appendChild(foot); list.appendChild(card);
+    });
+    const sw = $("#sens-seen"), sh = $("#sens-seenh"); sw.textContent = "";
+    const fresh = seenL.filter(e => !L.some(x => x.src === e.src)).slice(0, 12);
+    sh.textContent = fresh.length ? t("Found radio devices - tap one to add it:") : "";
+    fresh.forEach(e => { const g = sensGuess(e), b = el("button", "sec", SENS_IC[g] + " " + sensSrcLabel(e.src, seenL) + " · " + sensAgo(e.ago)); b.type = "button";
+      b.onclick = () => sensPost({action: "add", kind: g, src: e.src, name: e.label.slice(0, 24)}); sw.appendChild(b); });
+  }
+  const col = {active: "var(--red)", pulse: "var(--yel)", missing: "var(--org)", ok: "var(--grn)", error: "var(--red)"};
+  const word = {active: x => ({door: "open", gas: "gas / smoke!", pir: "motion"}[x.kind] || "triggered"), pulse: () => "moved / triggered", missing: () => "out of range",
+                ok: x => x.kind === "door" ? "closed" : "quiet", error: () => "GPIO error", unknown: () => "waiting for data", off: () => "off"};
+  L.forEach(x => { const q = (S.st || {})[x.id] || {}, d = $("#sd-" + x.id), sl = $("#ss-" + x.id); if (!d || !sl) return;
+    d.style.color = col[q.state] || "var(--mut)";
+    sl.textContent = (x.src ? t((word[q.state] || word.unknown)(x)) : t("choose where it is connected")) + (q.last ? " · " + t("last") + ": " + q.last : ""); });
+  const st = $("#sens-st");
+  if (st) { const p = []; if (c.rf433_on) p.push("📻 433 MHz: " + t(S.rf || "off")); if (c.zigbee_on) p.push("🐝 Zigbee: " + t(S.zb || "off")); if (c.ble_on) p.push("🔵 Bluetooth: " + t(S.ble || "off"));
+    if (!c.sens_on) p.unshift("⚠ " + t("Extra sensors are switched off")); st.textContent = p.join(" · "); }
+}
 function tpPaint(s) {
   const st = $("#tp-st"); if (!st || !s.tamper) return;
   st.textContent = "🧭 " + t("Motion sensor") + ": " + (s.tamper.sensor ? t("found") : t("not fitted")) + " · 📷 " +
@@ -15395,14 +16944,16 @@ function powerOverlay(action) {
       }
     } catch (e) { ok = false; }
     if (ok) down = 0; else { down++; wasDown = true; }
+    if (action === "poweroff" && wasDown && ok) { location.reload(); return; }        // switched on again: back to the page
     if (action === "poweroff" && down >= 2) {
       ic.textContent = "✓"; msg.textContent = t("The Pi is off");
       sub.textContent = t("Wait until the green LED of the Pi stays dark (about 10 seconds), then you can unplug the power. To start it again: unplug the power and plug it in again.");
-      return;
+      if (!c.querySelector("button")) close();
+      setTimeout(tick, 5000); return;                                                    // keep looking: the page comes back by itself
     }
     if (action === "reboot" && wasDown && ok) { location.reload(); return; }
     if (action === "reboot" && wasDown) sub.textContent = t("Waiting for the Pi … the page reloads by itself (about 1 minute).");
-    if (Date.now() - t0 > (action === "reboot" ? 300000 : 120000)) { sub.textContent = t("No answer from the Pi."); close(); return; }
+    if (action === "reboot" && Date.now() - t0 > 300000) { sub.textContent = t("No answer from the Pi."); close(); return; }
     setTimeout(tick, 2000);
   };
   setTimeout(tick, 3500);
@@ -15471,7 +17022,17 @@ function tlExtras(d) {
 function thExtras(d) {
   const st = el("div", "mut", ""); st.id = "th-status"; st.style.margin = "6px 0";
   const hint = el("div", "mut", t("The thermal camera must look in the same direction as the main camera. Choose it in the list after a camera scan (Video source).")); hint.style.marginTop = "4px";
-  d.append(st, hint);
+  // three parts: alarm / picture / camera & alignment
+  const parts = [["th:alarm", "🚨 " + t("Alarm"), ["thermal_alarm", "thermal_need_motion", "thermal_delta", "thermal_min_area"]],
+                 ["th:view", "🎨 " + t("Picture"), ["thermal_on", "thermal_hot", "thermal_map", "thermal_alpha", "thermal_hot_pct"]],
+                 ["th:cam", "📷 " + t("Camera and alignment"), ["thermal_source", "thermal_zoom", "thermal_dx", "thermal_dy"]]];
+  const rowOf = k => d.querySelector(':scope > [data-key="' + k + '"]');
+  parts.forEach(([view, title, keys]) => {
+    const S = el("details", "sub thsub"); S.dataset.view = view; S.appendChild(el("summary", "", title));
+    keys.forEach(k => { const r = rowOf(k); if (r) S.appendChild(r); });
+    if (view === "th:cam") S.append(st, hint);
+    if (S.children.length > 1) d.appendChild(S);
+  });
 }
 // ---- Wi-Fi / hotspot card: search, connect, save, forget ----
 let WF = null, wfOpenSsid = null, wfPoll = null, wfLost = false;
@@ -15686,6 +17247,12 @@ function updateProtect(s) {
     } else pg.textContent = t("Location") + ": " + t(window.isSecureContext ? "unknown" : "unknown – the phone shares it only over the https page"); }
 }
 // ---- «Guard tonight» ----
+Object.assign(I18N.de, {"Picture": "Bild", "Camera and alignment": "Kamera und Ausrichtung", "Hide settings": "Einstellungen ausblenden", "Show settings": "Einstellungen einblenden", "Alarm": "Alarm", "own text": "eigener Text", "standard text": "Standardtext", "Groups only": "Nur Gruppen öffnen", "Storage": "Speicher", "Memory (RAM)": "Arbeitsspeicher (RAM)", "⏻ Switch off, restart, pause": "⏻ Ausschalten, Neustart, Pause", "🔐 Operator mode": "🔐 Bedienmodus", "🧭 Help and setup": "🧭 Hilfe und Einrichtung", "🔒 Password and settings file": "🔒 Passwort und Einstellungsdatei", "ℹ Version and status": "ℹ Version und Status", "Device name": "Gerätename", "Time": "Uhrzeit", "Date": "Datum", "Number of persons": "Anzahl Personen", "Camera": "Kamera", "Volume (dB)": "Lautstärke (dB)", "Link": "Link", "Leave a field empty for the standard text. Tap a grey button to insert a placeholder at the cursor.": "Ein Feld leer lassen = Standardtext. Graue Knöpfe antippen, um einen Platzhalter an der Cursorstelle einzufügen.", "Person": "Person", "Pre-alarm": "Voralarm", "Thermal alarm": "Wärmebild-Alarm", "Noise alarm": "Geräusch-Alarm", "Preview": "Vorschau", "Title": "Titel", "Text": "Text", "Standard text": "Standardtext"});
+Object.assign(I18N.de, {"Picture for other programs (Home Assistant, recorder, VLC) with a secret address": "Bild für andere Programme (Home Assistant, Rekorder, VLC) mit geheimer Adresse", "RTSP video for recorders (needs mediamtx; uses CPU)": "RTSP-Video für Rekorder (braucht mediamtx; braucht Rechenleistung)", "New secret address": "Neue geheime Adresse", "Off – switch on «Picture for other programs» above.": "Aus – oben «Bild für andere Programme» einschalten.", "Still picture": "Standbild", "Copy": "Kopieren", "Copied": "Kopiert", "Keep these addresses secret: whoever has them sees the picture without a password.": "Diese Adressen geheim halten: Wer sie hat, sieht das Bild ohne Passwort.", "Make a new secret address? The old one stops working (other programs need the new one).": "Neue geheime Adresse erstellen? Die alte funktioniert dann nicht mehr (andere Programme brauchen die neue).", "mediamtx is not installed (see the manual: RTSP)": "mediamtx ist nicht installiert (siehe Anleitung: RTSP)"});
+Object.assign(I18N.de, {"memory card": "Speicherkarte", "USB drive": "USB-Laufwerk", "drive": "Laufwerk", "chosen drive missing - recordings on the memory card": "gewähltes Laufwerk fehlt – Aufnahmen auf der Speicherkarte", "Connect the SSD / USB drive and restart, or choose another place under Settings → Recording.": "SSD / USB-Laufwerk anschliessen und neu starten, oder unter Einstellungen → Aufnahme einen anderen Ort wählen.", "An SSD / USB drive is connected: put the recordings there (Settings → Recording) - it lasts longer than a memory card.": "Ein SSD- / USB-Laufwerk ist angeschlossen: Aufnahmen dorthin legen (Einstellungen → Aufnahme) – das hält länger als eine Speicherkarte.", "Recordings stored on": "Aufnahmen speichern auf", "memory card (next to the program)": "Speicherkarte (beim Programm)", "read only": "nur lesen", "missing": "fehlt", "now": "jetzt", "no SSD / USB drive found": "kein SSD- / USB-Laufwerk gefunden", "Store the recordings there from now on? The existing ones are moved over (this can take a while).": "Aufnahmen ab jetzt dort speichern? Die bisherigen werden hinüber verschoben (das kann etwas dauern).", "moving recordings …": "Aufnahmen werden verschoben …", "drive not found": "Laufwerk nicht gefunden", "the drive cannot be written to": "auf das Laufwerk kann nicht geschrieben werden"});
+Object.assign(I18N.de, {"End operator mode (PIN)": "Bedienmodus beenden (PIN)", "Operator mode is on": "Bedienmodus ist aktiv", "since": "seit", "unlocking puts everything back": "Entsperren setzt alles zurück"});
+Object.assign(I18N.de, {"Switch on operator mode? Everything may be changed except Wi-Fi, password and autostart; unlocking with the PIN puts everything back.": "Bedienmodus einschalten? Alles darf verstellt werden ausser WLAN, Passwort und Autostart; beim Entsperren mit der PIN wird alles zurückgesetzt."});
+Object.assign(I18N.de, {"Lock the settings now? Only the main switches stay usable. Everything changed until then is put back when unlocking with the PIN.": "Einstellungen jetzt sperren? Nur die wichtigsten Schalter bleiben bedienbar. Alles, was bis dahin verstellt wird, wird beim Entsperren mit der PIN zurückgesetzt.", "changes put back": "Änderungen zurückgesetzt"});
 Object.assign(I18N.de, {"🌙 Guard tonight": "🌙 Heute Nacht bewachen", "night-desc": "schaltet ein, was es für die Nacht braucht, wird nach dem Countdown scharf und sagt, was noch fehlt", "Still missing:": "Fehlt noch:", "Everything ready - good night!": "Alles bereit – gute Nacht!", "Guard tonight": "Heute Nacht bewachen", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all of them.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle."});
 async function nightGuard() {
   const b = $("#pr-night"); b.disabled = true;
@@ -15893,7 +17460,7 @@ async function refresh() {
   renderSchedules(j.schedules || [], s);
   $("#v-rec").hidden = !s.recording; $("#v-src").hidden = !s.source_label; $("#v-src").textContent = s.source_label || "";
   $("#b-sec").hidden = !s.web_open;
-  updateExtras(s); updateProtect(s); tpPaint(s); dtPaint(s); mqPaint(s); updateAutostart(s); updateAudio(s.audio); renderLights(s.light_cfg, s); updateSecurity(s); tidyHeader(s, c);
+  updateExtras(s); updateProtect(s); tpPaint(s); sensPaint(c, s); dtPaint(s); mqPaint(s); updateAutostart(s); updateAudio(s.audio); renderLights(s.light_cfg, s); updateSecurity(s); tidyHeader(s, c);
   badge("#b-pres", t("Presence") + ": " + t(s.presence || "unknown"), s.presence === "home" ? "grn" : (s.presence === "away" ? "org" : ""));
   $("#b-pres").hidden = !(s.presence === "home" || s.presence === "away") || HIDDEN.has("b-pres");
 
@@ -15912,6 +17479,15 @@ async function refresh() {
     $("#cpu-info").textContent = (s.cpu_temp != null ? s.cpu_temp.toFixed(1) + " °C · " : "") + s.cpu_count + " " + t("cores");
   }
   drawSpark(s.cpu_hist);
+  const mm = s.mem, rb = $("#ram-bar");
+  if (rb) { if (mm) { rb.style.width = mm.pct + "%"; rb.style.background = mm.pct < 70 ? "#3fb950" : (mm.pct < 90 ? "#d29922" : "#ff3b3b");
+      $("#ram-info").textContent = (mm.used / 1024).toFixed(1) + " / " + (mm.total / 1024).toFixed(1) + " GB · " + Math.round(mm.pct) + " %" + (mm.swap > 50 ? " · swap " + mm.swap + " MB" : ""); }
+    else $("#ram-info").textContent = "n/a"; }
+  const dk = s.disk || {}, db = $("#dsk-bar");
+  if (db && dk.total_mb) { const used = (dk.total_mb - dk.free_mb) / dk.total_mb * 100; db.style.width = used + "%";
+    db.style.background = dk.free_mb > 4096 ? "#3fb950" : (dk.free_mb > 1024 ? "#d29922" : "#ff3b3b");
+    $("#dsk-name").textContent = ({sd: t("memory card"), ssd: "SSD", usb: t("USB drive")})[dk.kind] || t("Storage");
+    $("#dsk-info").textContent = (dk.free_mb / 1024).toFixed(1) + " GB " + t("free") + " / " + (dk.total_mb / 1024).toFixed(0) + " GB" + (s.rec_dir_mb != null ? " · " + t("recordings") + " " + (s.rec_dir_mb >= 1024 ? (s.rec_dir_mb / 1024).toFixed(1) + " GB" : s.rec_dir_mb + " MB") : ""); }
 
   for (const k in ctrl) {
     if (k === editing || !(k in c)) continue;
@@ -16197,6 +17773,10 @@ async function setupWizard(force) {
   }
   render();
 }
+function allGroups() {                     // overview: every group open, the topics inside closed
+  document.querySelectorAll("#settings details.grp").forEach(d => { if (!d.open) d.open = true; });
+  document.querySelectorAll("#settings details.sub:not(.inline), #settings details.adv").forEach(d => { if (d.open) d.open = false; });
+}
 function allSections(open) { document.querySelectorAll("details.card, details.sub:not(.inline)").forEach(d => { if (d.open !== open) d.open = open; }); }
 
 $("#video").addEventListener("dblclick", () => setVideoOnly(!videoOnly));
@@ -16363,6 +17943,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <section id="rec" data-icon="🎬"><h2>Aufnahmen &amp; Zeitraffer</h2>
 <ul><li>Bei Alarm werden Videos (mit Vorlauf und Ton) und Schnappschüsse gespeichert.</li>
 <li>Reiter <i>Aufzeichnungen</i>: ansehen, filtern, ⭐ Favoriten (werden nie automatisch gelöscht), mehrere als ZIP herunterladen, Statistik pro Tag.</li>
+<li><b>Bild für andere Programme:</b> unter <i>Einstellungen → Web-Stream</i> «Bild für andere Programme» einschalten. Dann gibt es eine geheime Adresse für das Video (MJPEG) und ein Standbild, z. B. für Home Assistant, Frigate, Blue Iris oder VLC. <b>RTSP</b> zusätzlich: mediamtx installieren (<code>https://github.com/bluenviron/mediamtx/releases</code>, Datei «linux_arm64» entpacken nach <code>~/mediamtx/</code>), dann «RTSP-Video» einschalten. RTSP braucht Rechenleistung.</li>
 <li><b>Orte &amp; Karte:</b> Fotos und Videos mit GPS-Position (vom Handy oder fester Ort) bekommen einen Ort. Filter «Ort» zeigt nur einen Ort (oder «Ohne Ort»). 🗺 <i>Karte</i> zeigt alle Orte mit Anzahl; Punkt antippen → Vorschau, «Nur diesen Ort zeigen», ✎ umbenennen. Kartenhintergrund und Ortsnamen kommen von OpenStreetMap (abschaltbar unter <i>Einstellungen → Setup</i>).</li>
 <li>Die ältesten Aufnahmen werden gelöscht, wenn der Ordner zu gross oder die Speicherkarte fast voll ist.</li>
 <li><b>Zeitraffer:</b> alle N Minuten ein Foto von einer festen Position, daraus ein Video («Video erstellen»). Ein Alarm hat immer Vorrang. Die Zeitraffer-Videos erscheinen auch unter <i>Aufzeichnungen</i> (mit ⏱); der Typ «Zeitraffer» zeigt dort zusätzlich alle Einzelfotos.</li></ul>
@@ -16573,6 +18154,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <section id="rec" data-icon="🎬"><h2>Recordings &amp; timelapse</h2>
 <ul><li>At an alarm, videos (with pre-roll and sound) and snapshots are saved.</li>
 <li>Tab <i>Recordings</i>: watch, filter, ⭐ favourites (never deleted automatically), download several as ZIP, statistics per day.</li>
+<li><b>Picture for other programs:</b> under <i>Settings → Web stream</i> switch on «Picture for other programs». You get a secret address for the video (MJPEG) and a still picture, e.g. for Home Assistant, Frigate, Blue Iris or VLC. <b>RTSP</b> too: install mediamtx (<code>https://github.com/bluenviron/mediamtx/releases</code>, unpack the «linux_arm64» file to <code>~/mediamtx/</code>), then switch on «RTSP video». RTSP needs CPU power.</li>
 <li><b>Places &amp; map:</b> photos and videos with a GPS position (phone or fixed place) get a place. The filter «Place» shows one place only (or «Without location»). 🗺 <i>Map</i> shows all places with their count; tap a point → preview, «Show only this place», ✎ rename. Map background and place names come from OpenStreetMap (can be switched off under <i>Settings → Setup</i>).</li>
 <li>The oldest recordings are deleted when the folder is too big or the memory card almost full.</li>
 <li><b>Timelapse:</b> a photo every N minutes from a fixed position, then a video («Create video»). An alarm always has priority. Timelapse videos also appear under <i>Recordings</i> (marked ⏱); the type «Timelapse» there also shows all single photos.</li></ul>
@@ -16767,6 +18349,11 @@ main{padding:16px;max-width:1600px;margin:0 auto}
 button.favf.on{background:var(--yel);color:#fff;border-color:var(--yel)}
 #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
 .mapcard{margin-bottom:14px;padding:10px}
+.loopcard{margin-bottom:14px}.lhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}.lhead input{width:auto;padding:6px 8px}
+.ltl{position:relative;display:grid;grid-template-columns:repeat(144,1fr);height:44px;border-radius:8px;overflow:hidden;background:var(--field);border:1px solid var(--line)}
+.ltl i{display:block;border-right:1px solid rgba(0,0,0,.08)}.ltl i.on{background:var(--acc);cursor:pointer}.ltl i.on:hover{background:var(--grn)}.ltl i.live{background:var(--yel)}
+.ltl b{position:absolute;top:0;bottom:0;width:3px;background:var(--red);pointer-events:none;margin-left:-1px}
+.lhours{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:2px}
 .fa-card{margin-bottom:14px;padding:10px 12px;border-color:var(--yel)}.fa-card .fah{font-weight:700;margin-bottom:6px}
 .fa-card .fas{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);flex-wrap:wrap}
 .fatag{position:absolute;left:6px;top:6px;background:rgba(0,0,0,.7);color:#fff;font-size:11px;padding:2px 7px;border-radius:9px;z-index:2}
@@ -16893,6 +18480,13 @@ body.selecting .chk{display:block}
     <button class="red" id="btn-delsel" hidden></button>
   </div>
   <section class="card fa-card" id="fa-card" hidden></section>
+  <details class="card loopcard" id="loopcard" hidden>
+    <summary><span data-i18n="🎞 Continuous recording">🎞 Continuous recording</span></summary>
+    <div class="lhead"><button class="sec" type="button" id="lp-prev">‹</button><input type="date" id="lp-day"><button class="sec" type="button" id="lp-next">›</button><span class="mut" id="lp-info"></span></div>
+    <div class="ltl" id="lp-tl"></div>
+    <div class="lhours"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div>
+    <div class="mut" id="lp-note" style="font-size:12px;margin-top:4px"></div>
+  </details>
   <section class="card mapcard" id="mapcard" hidden>
     <div class="map" id="map"><div class="mtiles"></div><div class="mpins"></div>
       <div class="mzoom"><button class="sec" type="button" data-z="1">+</button><button class="sec" type="button" data-z="-1">−</button><button class="sec" type="button" data-z="0" id="map-fit">⤢</button></div>
@@ -17164,6 +18758,7 @@ $("#f-src").onchange = () => { F.source = $("#f-src").value; load(true); };
 $("#f-place").onchange = () => { F.place = $("#f-place").value; load(true); };
 
 // ---- false alarms: «was nothing» + suggestions ----
+Object.assign(I18N.de, {"Continuous recording (all the time, few pictures per second) with a timeline": "Daueraufnahme (immer, wenige Bilder pro Sekunde) mit Zeitleiste", "Continuous recording: keep (hours)": "Daueraufnahme: behalten (Stunden)", "Continuous recording: pictures per second": "Daueraufnahme: Bilder pro Sekunde", "🎞 Continuous recording": "🎞 Daueraufnahme", "Continuous recording": "Daueraufnahme", "recording now": "wird gerade aufgenommen", "alarms": "Alarme", "Tap a blue piece to watch it. Red lines: alarms.": "Ein blaues Stück antippen zum Ansehen. Rote Striche: Alarme.", "Continuous recording is off (Settings → Recording).": "Daueraufnahme ist aus (Einstellungen → Aufnahme)."});
 Object.assign(I18N.de, {"False alarms": "Fehlalarme", "Animal": "Tier", "Wind / branches": "Wind / Äste", "Light / shadow": "Licht / Schatten", "Rain": "Regen", "Car": "Auto", "Other": "Anderes", "Was nothing (false alarm)": "War nichts (Fehlalarm)", "Was nothing - what was it?": "War nichts – was war es?", "Was real after all": "War doch echt", "false alarms marked in the last": "Fehlalarme markiert in den letzten", "days": "Tagen", "of": "von", "suggestions:": "Vorschläge:", "Open": "Öffnen", "Take over": "Übernehmen", "Switch on the automatic wind detection": "Automatische Wind-Erkennung einschalten", "Less sensitive to light changes": "Weniger empfindlich auf Lichtwechsel", "Switch on the automatic rain detection": "Automatische Regen-Erkennung einschalten", "Detect rain earlier": "Regen früher erkennen", "Switch on the vehicle filter": "Fahrzeug-Filter einschalten", "Somewhat less sensitive overall": "Insgesamt etwas weniger empfindlich"});
 const FA_TXT = () => ({animal: "🐾 " + t("Animal"), wind: "🌿 " + t("Wind / branches"), light: "💡 " + t("Light / shadow"), rain: "🌧 " + t("Rain"), car: "🚗 " + t("Car"), other: "❓ " + t("Other")});
 function faRow(it) {
@@ -17191,6 +18786,29 @@ async function faLoad() {
     else { const b = el("button", "", t("Take over")); b.type = "button"; b.onclick = async () => { const q = await post("/api/fa", {id: x.id, lang: LANG}); toast(q.ok ? "✓ " + t("Saved") : "⚠"); faLoad(); }; r.appendChild(b); }
     c.appendChild(r); });
 }
+// ---- continuous recording: 24 h timeline, one cell = 10 minutes, red marks = alarms ----
+const LP = {day: ""};
+async function loopLoad() {
+  if (!LP.day) LP.day = ymd(new Date());
+  let j; try { j = await (await fetch("/api/loop?day=" + LP.day, {cache: "no-store"})).json(); } catch (e) { return; }
+  const card = $("#loopcard"); card.hidden = !j.on && !(j.days || []).length; if (card.hidden) return;
+  $("#lp-day").value = LP.day;
+  const tl = $("#lp-tl"); tl.textContent = "";
+  const segs = {}; (j.segments || []).forEach(s => { const k = Math.floor(s.min / 10); if (!segs[k] || segs[k].live) segs[k] = s; });   // a finished piece wins
+  const list = (j.segments || []).filter(s => !s.live).map(s => ({name: s.name, kind: "video", time: LP.day + " " + s.start, size: s.size, schedules: [], source: t("Continuous recording")}));
+  for (let i = 0; i < 144; i++) { const s = segs[i], c = el("i", s ? (s.live ? "live" : "on") : ""); const hh = String(Math.floor(i / 6)).padStart(2, "0"), mm = String(i % 6 * 10).padStart(2, "0");
+    c.title = hh + ":" + mm + (s ? (s.live ? " · " + t("recording now") : "") : " · –");
+    if (s && !s.live) c.onclick = () => openAt(list.findIndex(x => x.name === s.name), list);
+    tl.appendChild(c); }
+  (j.events || []).forEach(m => { const b = el("b"); b.style.left = (m / 1440 * 100) + "%"; tl.appendChild(b); });
+  $("#lp-info").textContent = (j.segments || []).length + " × 10 min" + ((j.events || []).length ? " · " + j.events.length + " " + t("alarms") : "");
+  $("#lp-note").textContent = j.on ? t("Tap a blue piece to watch it. Red lines: alarms.") : t("Continuous recording is off (Settings → Recording).");
+}
+$("#lp-day").onchange = () => { LP.day = $("#lp-day").value; loopLoad(); };
+$("#lp-prev").onclick = () => { const d = new Date(LP.day + "T12:00"); d.setDate(d.getDate() - 1); LP.day = ymd(d); loopLoad(); };
+$("#lp-next").onclick = () => { const d = new Date(LP.day + "T12:00"); d.setDate(d.getDate() + 1); LP.day = ymd(d); loopLoad(); };
+$("#loopcard").addEventListener("toggle", () => { if ($("#loopcard").open) loopLoad(); });
+setTimeout(loopLoad, 400); setInterval(() => { if ($("#loopcard").open && !document.hidden) loopLoad(); }, 60000);
 $("#btn-fa").onclick = () => { F.fa = F.fa ? "" : "1"; $("#btn-fa").classList.toggle("on", !!F.fa); load(true); };
 setTimeout(faLoad, 300);
 
@@ -17455,7 +19073,7 @@ class WebStream:
 
         @app.before_request
         def auth():
-            if request.path.startswith("/g/") or request.path in public:
+            if request.path.startswith(("/g/", "/x/")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
             if not pw and not CFG["web_pw_hash"]:
@@ -17583,6 +19201,47 @@ class WebStream:
                     remote_stream(rip, -1)
             return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
+        def _ext_ok(tok):
+            return bool(CFG["ext_on"]) and isinstance(tok, str) and len(tok) >= 20 and hmac.compare_digest(tok, ext_token())
+
+        @app.route("/x/<tok>/video.mjpg")
+        def ext_video(tok):
+            if not _ext_ok(tok):
+                return Response("not found", 404)
+            def gen():
+                last = -1
+                watch.web_viewers += 1; STATE["web_viewers"] = watch.web_viewers      # the camera loop makes JPEGs while somebody watches
+                try:
+                    while True:
+                        jpg, seq = watch.jpeg, watch.jpeg_seq
+                        if jpg and seq != last:
+                            last = seq
+                            yield b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: " + str(len(jpg)).encode() + b"\r\n\r\n" + jpg + b"\r\n"
+                        else:
+                            time.sleep(0.03)
+                finally:
+                    watch.web_viewers = max(0, watch.web_viewers - 1); STATE["web_viewers"] = watch.web_viewers
+            return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame", headers={"Cache-Control": "no-store"})
+
+        @app.route("/x/<tok>/snapshot.jpg")
+        def ext_snapshot(tok):
+            if not _ext_ok(tok):
+                return Response("not found", 404)
+            f = watch.frame_out
+            if f is None:
+                return Response("no picture yet", 503)
+            ok, buf = cv2.imencode(".jpg", f, [cv2.IMWRITE_JPEG_QUALITY, 85])
+            if not ok:
+                return Response("encode error", 500)
+            return Response(buf.tobytes(), mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+
+        @app.route("/api/ext", methods=["GET", "POST"])
+        def api_ext():
+            if request.method == "POST" and body().get("action") == "renew":
+                ext_new_token()
+            host = (request.host or "").rsplit(":", 1)[0] or None
+            return reply(ext_links(host if host not in ("localhost", "127.0.0.1") else None))
+
         @app.route("/snapshot.jpg")
         def snapshot():
             if watch.frame_out is None:
@@ -17642,7 +19301,7 @@ class WebStream:
                 st["hotspot_cfg"] = {"ssid": CFG["hotspot_ssid"], "password": CFG["hotspot_password"], "address": page_address("10.42.0.1")}
             cfg = {k: CFG[k] for k in web_specs()}
             cfg.update({k: CFG[k] for k in ("thermal_source", "deter_person_act", "deter_big_act", "deter_small_act", "deter_warm_act", "backup_type", "audio_in", "patrol_mode",
-                                            "siren_on", "web_stream")})        # for the green arrows (overview)
+                                            "siren_on", "web_stream", "sensors")})        # for the green arrows (overview)
             return reply({"state": st, "cfg": cfg, "waypoints": list(WAYPOINTS), "events": events, "relays": relays,
                           "schedules": schedules})
 
@@ -17664,6 +19323,12 @@ class WebStream:
             else:
                 ok, err = False, "unknown action"
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
+
+        @app.route("/api/sensors", methods=["POST"])
+        def api_sensors():
+            d = body(); lang = norm_lang(d.get("lang"))
+            ok, err = sens_action(d, lang)
+            return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "sensors": CFG["sensors"]}, 200 if ok else 400)
 
         @app.route("/api/feedback", methods=["POST"])
         def api_feedback():
@@ -18096,6 +19761,18 @@ class WebStream:
                 ok, err = ai_model_download()
                 return reply({"ok": ok, "error": err or None, **AI_MODEL}, 200 if ok else 409)
             return reply(dict(AI_MODEL, present=bool(ai_model_paths()[0])))
+
+        @app.route("/api/storage", methods=["GET", "POST"])
+        def api_storage():
+            if request.method == "POST":
+                d = body()
+                ok, err = storage_set(d.get("path", ""), bool(d.get("move", True)))
+                return reply({"ok": ok, "error": tr_err(err, norm_lang(d.get("lang"))) if err else None, **storage_info()}, 200 if ok else 400)
+            return reply(storage_info())
+
+        @app.route("/api/loop")
+        def api_loop():
+            return reply(dict(loop_day(request.args.get("day") or datetime.now().strftime("%Y-%m-%d")), on=bool(CFG["loop_on"])))
 
         @app.route("/api/health")
         def api_health():
@@ -19151,6 +20828,7 @@ DAYS_SHORT = {"de": ("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"), "fr": ("lu", "ma
               "it": ("lu", "ma", "me", "gi", "ve", "sa", "do"), "rm": ("gli", "ma", "me", "gie", "ve", "so", "du"), "en": DAYS_SHORT_EN}
 DAYS_SHORT_DE = ("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So")
 SLIDERS = [  # (section, key, label, min, max, step)
+    ("Extra sensors", "tag_missing", "Bluetooth tag: alarm when not seen for (min)", 1, 30, 1),
     ("SMS (LTE stick)", "sms_pause", "At most one SMS every (minutes)", 1, 60, 1),
     ("SMS (LTE stick)", "sms_day_max", "At most SMS per day", 1, 100, 1),
     ("Deterrence", "deter_seconds", "Duration of sound / flashing (s)", 2, 30, 1),
@@ -19186,6 +20864,8 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Recording", "pre_roll", "Pre-roll: video before the detection (s)", 0, 10, 0.5),
     ("Setup", "away_after", "Away after N minutes without answer", 2, 60, 1),
     ("Recording", "record_max_gb", "Max recordings folder (GB)", 0.5, 64, 0.5),
+    ("Recording", "loop_hours", "Continuous recording: keep (hours)", 1, 168, 1),
+    ("Recording", "loop_fps", "Continuous recording: pictures per second", 1, 15, 1),
     ("Low light", "lowlight_threshold", "Low-light threshold (brightness)", 10, 150, 5),
     ("Notifications", "notify_cooldown", "Cooldown between alarms (s)", 5, 600, 5),
     ("Notifications", "prealarm_cooldown", "Pre-alarm: min. time between messages (s)", 30, 1800, 30),
@@ -19234,14 +20914,22 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Loudspeaker", "talk_gain", "Speaking from the phone: volume boost (dB)", 0, 20, 1),
 ]
 TOGGLES = [  # (section, key, label)
+    ("Extra sensors", "sens_on", "Extra sensors on"),
+    ("Extra sensors", "rf433_on", "433 MHz radio sensors (RTL-SDR stick + program rtl_433)"),
+    ("Extra sensors", "zigbee_on", "Zigbee sensors (Zigbee2MQTT - needs MQTT)"),
+    ("Extra sensors", "ble_on", "Bluetooth tags (RuuviTag - needs python3-bleak)"),
+    ("Power saving", "eco_pir", "With a motion detector (PIR): only 1 picture per second while all is quiet"),
     ("Camera / Servos", "track_person", "Follow detected person (auto pan/tilt)"),
     ("Camera / Servos", "invert_pan", "Invert pan direction"),
     ("Camera / Servos", "invert_tilt", "Invert tilt direction"),
+    ("Camera / Servos", "cam_mirror", "Mirror picture (left ↔ right)"),
     ("Patrol", "patrol", "Patrol active"),
     ("AI detection", "ai_enabled", "AI person detection (SSD MobileNet V2)"),
     ("AI detection", "show_objects", "Mark all detected objects (cars, animals, ...)"),
     ("AI detection", "ai_require", "Motion persons need AI confirmation"),
     ("Web stream", "web_stream", "Web stream + remote control (port 5000)"),
+    ("Web stream", "ext_on", "Picture for other programs (Home Assistant, recorder, VLC) with a secret address"),
+    ("Web stream", "rtsp_on", "RTSP video for recorders (needs mediamtx; uses CPU)"),
     ("Auto-tune", "auto_tune", "Automatic tuning"),
     ("Detection", "detection_on", "Detection (master switch)"),
     ("Detection", "highlight_red", "Highlight persons red"),
@@ -19279,6 +20967,7 @@ TOGGLES = [  # (section, key, label)
     ("MQTT / Home Assistant", "mqtt_discovery", "Home Assistant finds Motion Watch by itself (discovery)"),
     ("Recording", "share_logo", "Shared pictures and videos with a small Motion Watch logo"),
     ("Recording", "share_gps", "Send the location along when sharing pictures and videos"),
+    ("Recording", "loop_on", "Continuous recording (all the time, few pictures per second) with a timeline"),
     ("Deterrence", "deter_always", "Also when disarmed (e.g. keep animals out of the garden)"),
     ("Theft protection", "tamper_on", "Sabotage alarm: camera covered or turned away (when armed)"),
     ("Theft protection", "tamper_motion", "Motion sensor (MPU-6050, if fitted): alarm when the device is moved or knocked over"),
@@ -19462,7 +21151,15 @@ DE.update({    # 2.37.0
 DE.update({    # 2.34.0
     "Recordings map and place names from the internet (OpenStreetMap)": "Karte und Ortsnamen bei den Aufnahmen aus dem Internet (OpenStreetMap)",
 })
-TK_GROUP_ICONS = {"alarm": "⚠", "notify": "✉", "detect": "◎", "camera": "▣", "thermal": "♨", "lightsound": "☀", "rec": "●", "relay": "⚡", "sys": "⚙"}
+TK_GROUP_ICONS = {"alarm": "⚠", "notify": "✉", "detect": "◎", "camera": "▣", "thermal": "♨", "lightsound": "☀", "rec": "●", "relay": "⚡", "sys": "⚙", "sensors": "◉"}
+
+TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery": "▮", "Theft protection": "⚷", "Notifications": "✉",
+                "Night report": "☾", "Messages": "✎", "SMS (LTE stick)": "☏", "Detection": "◎", "AI detection": "⌬",
+                "Walking recognition": "➜", "Vehicle filter": "⛀", "Rain": "☂", "Wind": "≋", "Low light": "◐", "Auto-tune": "✱",
+                "Camera / Servos": "✥", "Patrol": "↻", "Video source": "▣", "Servo driver": "⚒", "Lights": "☀", "Deterrence": "⚠",
+                "Microphone": "♪", "Loudspeaker": "♫", "Recording": "●", "Timelapse": "◷", "Backup": "☁", "Relays": "⚡",
+                "Schedule": "▦", "Setup": "⊕", "Wi-Fi / hotspot": "⌁", "Web stream": "⇅", "Guest access": "⚇",
+                "MQTT / Home Assistant": "⇆", "Updates": "⬆", "Extra sensors": "◉"}
 
 TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - the same 9 groups as the web page
     ("alarm", "Alarm & camping", ["Camping / protection", "Power saving", "Battery", "Theft protection"]),
@@ -19470,12 +21167,13 @@ TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - the same 9 grou
     ("detect", "Detection", ["Detection", "AI detection", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
     ("camera", "Camera & servos", ["Camera / Servos", "Patrol", "Video source", None, "Servo driver"]),
     ("thermal", "Thermal camera", ["Thermal camera"]),
+    ("sensors", "Sensors", ["Extra sensors"]),
     ("lightsound", "Light & sound", ["Lights", "Deterrence", "Microphone", "Loudspeaker"]),
     ("rec", "Recordings & timelapse", ["Recording", "Timelapse", "Backup"]),
     ("relay", "Relays & schedule", ["Relays", "Schedule"]),
     ("sys", "System & network", ["Setup", "Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant", "Updates"]),
 ]
-SECTIONS = ["Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
+SECTIONS = ["Extra sensors", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
 
 
@@ -19674,7 +21372,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.42.1")
+        self.root.title("Motion Watch 2.54.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -19963,7 +21661,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.42.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.54.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # easter egg: 7 quick clicks on the name or the icon = the marmot on guard
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -20361,8 +22059,6 @@ class App:
     def _qs_click(self, q):
         if q.get("ok") and not q["ok"]():
             return
-        if CFG["lock_on"] and q["id"] in ("therm", "marks"):
-            return                                                    # settings are locked (operator mode)
         try:
             q["go"]()
         except Exception as e:                                        # a switch must never break the window
@@ -20462,10 +22158,11 @@ class App:
         inner = ttk.Frame(canvas, style="Bg.TFrame"); win = canvas.create_window((0, 0), window=inner, anchor="nw")
         inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=e.width))
-        bar = tk.Frame(inner, bg=C["bg"]); bar.pack(fill="x", pady=(0, 10))
+        bar = tk.Frame(right, bg=C["bg"]); bar.pack(side="top", fill="x", pady=(0, 10), before=sb)   # stays at the top while scrolling
         # like the web page: search field, then two symbols - ⊞ expand all, ⊟ collapse all
         self._ibtn(bar, "⊟", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right")
         self._ibtn(bar, "⊞", lambda: self._all_sections(True), tr("Expand all")).pack(side="right", padx=(0, 6))
+        self._ibtn(bar, "☰", self._groups_only, tr("Groups only")).pack(side="right", padx=(0, 6))
         sf = tk.Frame(bar, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"]); sf.pack(side="left", fill="x", expand=True, padx=(0, 8))
         tk.Label(sf, text="⚲", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 11)).pack(side="left", padx=(8, 0))
         self.search_var = tk.StringVar()
@@ -20494,21 +22191,12 @@ class App:
         # fine-tuning comes last under a small line. A group with one topic shows it directly.
         self.group_titles = {}; self.subs = {}
         self._lock_seen = bool(CFG["lock_on"])
-        if CFG["lock_on"]:                               # operator mode: only the main switches + unlock
+        if CFG["lock_on"]:                               # operator mode: all may be changed, unlocking puts it back
             card = self._panel(inner); card.pack(fill="x", pady=(0, 8))
             tk.Label(card, text="🔐 " + tr("Operator mode"), bg=C["panel"], fg=C["yel"], font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x")
-            ttk.Label(card, text=tr("Settings are locked - only the main switches can be used."), style="Mut.TLabel",
-                      wraplength=330, justify="left").pack(anchor="w", pady=(2, 6))
+            ttk.Label(card, text=tr("Everything may be changed (except Wi-Fi, password, autostart). Unlocking with the PIN puts everything back."),
+                      style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(2, 6))
             ttk.Button(card, text=tr("Unlock") + " …", command=self._unlock).pack(fill="x")
-            card2 = self._panel(inner); card2.pack(fill="x", pady=(0, 8))
-            bf = ttk.Frame(card2); bf.pack(fill="x", pady=(0, 6))
-            ttk.Button(bf, text="🛡 " + tr("Arm"), command=lambda: arm()).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf, text=tr("Disarm"), command=lambda: disarm()).pack(side="left", expand=True, fill="x")
-            for s_, key, label in TOGGLES:
-                if key in OPER_KEYS:
-                    tg = Toggle(card2, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
-                    self.vars[key] = tg
-            return
         listed = {x for g in TK_GROUPS for x in g[2] if x}
         groups = [list(g) for g in TK_GROUPS]
         groups[-1][2] = groups[-1][2] + [x for x in SECTIONS if x not in listed]     # sections added later -> System
@@ -20555,7 +22243,8 @@ class App:
         h.pack(fill="x")
         body = tk.Frame(parent, bg=C["panel"])
         k = "sub:" + sec
-        self.subs[k] = (h, body, tr(title).upper())
+        ic = TK_SUB_ICONS.get(sec, "")
+        self.subs[k] = (h, body, (ic + "  " if ic else "") + tr(title).upper())
         h.bind("<Button-1>", lambda e, kk=k: self._set_sub(kk, not self._sub_open(kk)))
         self._build_section(sec, body)
         if k not in self.open_secs and ("subx:" + sec) not in self.open_secs and default_open:
@@ -20648,7 +22337,7 @@ class App:
             self.status_labels["Bluetooth"].pack(anchor="w", pady=(2, 0))
             self._bt_sig = None
         for s, key, label in TOGGLES:
-            if s != sec or simple_hidden(key): continue
+            if s != sec or simple_hidden(key) or (CFG["lock_on"] and key in LOCK_DENY_KEYS): continue
             tg = Toggle(sp, tr(label), CFG[key], lambda val, k=key: self._set(k, val)); tg.pack(fill="x", pady=3)
             self.vars[key] = tg
         for s, key, label, lo, hi, step in SLIDERS:
@@ -20685,6 +22374,8 @@ class App:
         if sec == "Deterrence":
             ttk.Label(sbody, text=tr("What is seen decides the reaction. Animals need the AI detection, warm bodies the thermal camera. Light flashes: the white light."),
                       style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(6, 0))
+        if sec == "Extra sensors":
+            self._build_sensor_editor(sbody)
         if sec == "Theft protection":
             self.status_labels["Theft protection"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Theft protection"].pack(anchor="w", pady=(4, 0))
@@ -20695,6 +22386,31 @@ class App:
             ttk.Button(sbody, text="🧪 " + tr("Test the backup"), command=lambda: threading.Thread(target=bk_test, daemon=True).start()).pack(fill="x", pady=(8, 0))
             self.status_labels["Backup"] = ttk.Label(sbody, text=STATE.get("backup_status", ""), style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Backup"].pack(anchor="w", pady=(4, 0))
+        if sec == "Web stream":
+            lk = ext_links()
+            txt = (tr("Off – switch on «Picture for other programs» above.") if not lk.get("on") else
+                   "MJPEG: " + lk["mjpeg"] + "\n" + tr("Still picture") + ": " + lk["jpg"] + (("\nRTSP: " + lk["rtsp"]) if lk.get("rtsp") else ""))
+            e_ = tk.Text(sbody, height=4 if lk.get("on") else 2, bg=C["field"], fg=C["txt"], relief="flat", wrap="char", font=("DejaVu Sans Mono", 8))
+            e_.insert("1.0", txt); e_.config(state="disabled"); e_.pack(fill="x", pady=(6, 0))
+        if sec == "Recording":
+            tk.Label(sbody, text=tr("Recordings stored on").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x", pady=(8, 0))
+            cands = storage_candidates()
+            self._store_opts = [("", tr("memory card (next to the program)"))] + [(c["path"], f"{c['path']} · {c['free_gb']} GB {tr('free')}") for c in cands]
+            if CFG["storage_path"] and CFG["storage_path"] not in [p for p, _l in self._store_opts]:
+                self._store_opts.append((CFG["storage_path"], CFG["storage_path"] + " (" + tr("missing") + ")"))
+            self.store_cb = ttk.Combobox(sbody, state="readonly", values=[l for _p, l in self._store_opts]); self.store_cb.pack(fill="x", pady=(2, 0))
+            self.store_cb.current([p for p, _l in self._store_opts].index(CFG["storage_path"]) if CFG["storage_path"] in [p for p, _l in self._store_opts] else 0)
+            def pick(_e=None):
+                p = self._store_opts[self.store_cb.current()][0]
+                if p == CFG["storage_path"]:
+                    return
+                if not messagebox.askyesno("Motion Watch", tr("Store the recordings there from now on? The existing ones are moved over (this can take a while)."), parent=self.root):
+                    return
+                ok, err = storage_set(p)
+                self._status("Storage", ("✓ " + rec_dir()) if ok else "⚠ " + tr_err(err))
+            self.store_cb.bind("<<ComboboxSelected>>", pick)
+            self.status_labels["Storage"] = ttk.Label(sbody, text=tr("now") + ": " + rec_dir(), style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels["Storage"].pack(anchor="w", pady=(2, 0))
         if sec == "AI detection" and not ai_model_paths()[0]:
             ttk.Button(sbody, text=tr("Download AI model") + " (≈ 70 MB)", command=self._ai_dl).pack(fill="x", pady=(8, 0))
             self.status_labels["AI model"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
@@ -20702,7 +22418,7 @@ class App:
         if sec == "Notifications":
             ttk.Button(sbody, text=tr("Test notification"),
                        command=lambda: self.watch.notifier.test(self.watch.frame_out)).pack(fill="x", pady=(8, 0))
-        if sec == "Wi-Fi / hotspot":
+        if sec == "Wi-Fi / hotspot" and not CFG["lock_on"]:
             self._build_wifi_box(sbody)
         if sec == "Camping / protection":
             ttk.Button(sbody, text="☾ " + tr("Guard tonight"), command=self._night).pack(fill="x", pady=(8, 0))
@@ -20714,10 +22430,14 @@ class App:
             bf2 = ttk.Frame(sbody); bf2.pack(fill="x", pady=(6, 0))
             ttk.Button(bf2, text=tr("Camping ON"), command=lambda: camping_set(True)).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf2, text=tr("Camping OFF"), command=lambda: camping_set(False)).pack(side="left", expand=True, fill="x")
-            bf3 = ttk.Frame(sbody); bf3.pack(fill="x", pady=(6, 0))
+            bf3 = ttk.Frame(sbody)
+            if not CFG["lock_on"]:
+                bf3.pack(fill="x", pady=(6, 0))
             ttk.Button(bf3, text=tr("Own Wi-Fi ON"), command=lambda: (netauto_pause(), hotspot_switch_later(True, 0.2))).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf3, text=tr("Own Wi-Fi OFF"), command=lambda: (netauto_pause(), hotspot_switch_later(False, 0.2))).pack(side="left", expand=True, fill="x")
-            bf4 = ttk.Frame(sbody); bf4.pack(fill="x", pady=(6, 0))
+            bf4 = ttk.Frame(sbody)
+            if not CFG["lock_on"]:
+                bf4.pack(fill="x", pady=(6, 0))
             ttk.Button(bf4, text=tr("Autostart ON"), command=lambda: self._autostart(True)).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf4, text=tr("Autostart OFF"), command=lambda: self._autostart(False)).pack(side="left", expand=True, fill="x")
         if sec == "Timelapse":
@@ -20744,6 +22464,15 @@ class App:
             ttk.Button(sbody, text="⏸ " + tr("Pause program"), command=self._pause).pack(fill="x", pady=(4, 0))
             self.status_labels["Power"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Power"].pack(anchor="w", pady=(4, 0))
+            if CFG["lock_on"]:
+                info = lock_info()
+                ttk.Label(sbody, text="🔐 " + tr("Operator mode is on") + (f" {tr('since')} {info['since']}" if info["since"] else ""),
+                          style="Mut.TLabel").pack(anchor="w", pady=(10, 2))
+                ttk.Button(sbody, text=tr("End operator mode (PIN)") + " …", command=self._unlock).pack(fill="x")
+            pwf = tk.Frame(sbody, bg=C["panel"])
+            if not CFG["lock_on"]:                       # operator mode: password, operator mode, settings files are off limits
+                pwf.pack(fill="x")
+            sbody_ = sbody; sbody = pwf
             tk.Frame(sbody, bg=C["line"], height=1).pack(fill="x", pady=(10, 6))
             tk.Label(sbody, text=tr("Web password").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x")
             ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",
@@ -20753,7 +22482,7 @@ class App:
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(4, 0))
             ttk.Button(bf, text=tr("Set password"), command=lambda: self._pw(True)).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Remove password"), command=lambda: self._pw(False)).pack(side="left", expand=True, fill="x")
-            ttk.Button(sbody, text="🔐 " + tr("Operator mode (lock settings)") + " …", command=self._lock).pack(fill="x", pady=(6, 0))
+            ttk.Button(sbody, text="🔐 " + tr("Operator mode (lock settings)") + " …", command=self._lock).pack(fill="x", pady=(6, 0))  # (hidden while locked)
             ttk.Button(sbody, text="📱 " + tr("QR code for the phone") + " …", command=lambda: self._qr_window(False)).pack(fill="x", pady=(6, 0))
             ttk.Button(sbody, text="💬 " + tr("Feedback to the developer") + " …", command=self._feedback).pack(fill="x", pady=(6, 0))
             self.status_labels["Web password"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
@@ -20761,6 +22490,7 @@ class App:
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(8, 0))
             ttk.Button(bf, text=tr("Save settings …"), command=self._export).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Load settings …"), command=self._import).pack(side="left", expand=True, fill="x")
+            sbody = sbody_
         if sec == "Updates":
             self.upd_cb = ttk.Combobox(sbody, state="readonly", height=3); self.upd_cb.pack(fill="x", pady=(6, 0))
             self.upd_cb.bind("<<ComboboxSelected>>", lambda e: self.root.focus_set())
@@ -20828,9 +22558,119 @@ class App:
         el.pack(anchor="w", pady=(4, 0)); self.relay_err_labels.append(el)
         ttk.Button(parent, text=tr("+ Add relay"), command=self._relay_add).pack(fill="x", pady=(4, 0))
 
+    # ---- extra sensors ----------------------------------------------------
+    def _build_sensor_editor(self, parent):
+        self.sens_rows = {}
+        ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",
+                      highlightthickness=1, highlightbackground=C["line"], highlightcolor=C["acc"])
+        S = STATE.get("sens") or {}
+        seen = S.get("seen") or []
+        kinds = [(k, tr(l)) for k, l in (("pir", "Motion detector (PIR)"), ("door", "Door / lid contact"), ("gas", "Gas / smoke"),
+                                           ("tag", "Bluetooth tag"), ("other", "Other sensor"))]
+        alarms = [("armed", tr("only when armed")), ("always", tr("always (also when disarmed)")), ("off", tr("no alarm, only note it"))]
+
+        def src_label(v):
+            if not v:
+                return "– " + tr("not connected") + " –"
+            if v.startswith("gpio:"):
+                return "GPIO " + v[5:]
+            f = next((e for e in seen if e["src"] == v), None)
+            return {"rf": "433 MHz: ", "zb": "Zigbee: ", "bl": "Bluetooth: "}[v[:2]] + (f["label"] if f else v.split(":", 1)[1])
+
+        def combo(row, pairs, val, cb):
+            lab = dict(pairs); back = {l: c for c, l in pairs}
+            c = ttk.Combobox(row, values=[l for _c, l in pairs], state="readonly"); c.set(lab.get(val, val)); c.pack(fill="x", pady=(2, 0))
+            c.bind("<<ComboboxSelected>>", lambda e: (self.root.focus_set(), cb(back.get(c.get(), c.get()))))
+            return c
+        for x in CFG["sensors"]:
+            card = tk.Frame(parent, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=8, pady=6)
+            card.pack(fill="x", pady=(6, 0))
+            r1 = tk.Frame(card, bg=C["panel"]); r1.pack(fill="x")
+            dot = tk.Label(r1, text="●", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 11)); dot.pack(side="left")
+            nv = tk.StringVar(value=x["name"])
+            ent = tk.Entry(r1, textvariable=nv, width=16, **ent_kw); ent.pack(side="left", padx=(4, 8), fill="x", expand=True)
+            for ev in ("<Return>", "<FocusOut>"):
+                ent.bind(ev, lambda e, i=x["id"], v=nv: self._sens_do({"action": "set", "id": i, "field": "name", "value": v.get()}, rebuild=False))
+            xl = tk.Label(r1, text="✕", bg=C["panel"], fg=C["red"], font=("DejaVu Sans", 11, "bold"), cursor="hand2")
+            xl.pack(side="right"); xl.bind("<Button-1>", lambda e, s_=x: self._sens_remove(s_))
+            opts = [""] + [f"gpio:{g}" for g in S.get("free", sens_free_gpios())] + [e["src"] for e in seen]
+            if x["src"] and x["src"] not in opts:
+                opts.insert(1, x["src"])
+            opts = list(dict.fromkeys(opts))
+            for lbl, pairs, val, f in ((tr("Kind"), kinds, x["kind"], "kind"), (tr("Connected to"), [(v, src_label(v)) for v in opts], x["src"], "src"),
+                                       (tr("Alarm"), alarms, x["alarm"], "alarm")):
+                ttk.Label(card, text=lbl, style="Mut.TLabel").pack(anchor="w", pady=(4, 0))
+                combo(card, pairs, val, lambda v, i=x["id"], f=f: self._sens_do({"action": "set", "id": i, "field": f, "value": v}))
+            if x["src"].startswith("gpio:"):
+                Toggle(card, tr("Reversed (reports at LOW)"), x["inv"],
+                       lambda v, i=x["id"]: self._sens_do({"action": "set", "id": i, "field": "inv", "value": v}, rebuild=False)).pack(fill="x", pady=(4, 0))
+            r3 = tk.Frame(card, bg=C["panel"]); r3.pack(fill="x", pady=(4, 0))
+            stl = ttk.Label(r3, text="", style="Mut.TLabel", wraplength=230, justify="left"); stl.pack(side="left", fill="x", expand=True)
+            ttk.Button(r3, text=tr("Test"), command=lambda i=x["id"]: self._sens_do({"action": "test", "id": i}, rebuild=False)).pack(side="right")
+            self.sens_rows[x["id"]] = (dot, stl)
+        self.sens_err = ttk.Label(parent, text="", style="Mut.TLabel", foreground=C["red"], wraplength=330); self.sens_err.pack(anchor="w", pady=(4, 0))
+        bf = tk.Frame(parent, bg=C["panel"]); bf.pack(fill="x", pady=(4, 0))
+        for i, (k, l) in enumerate((("pir", "Motion detector"), ("door", "Door contact"), ("gas", "Gas / smoke"), ("tag", "Bluetooth tag"), ("other", "Radio sensor"))):
+            ttk.Button(bf, text="+ " + tr(l), command=lambda k=k: self._sens_do({"action": "add", "kind": k})).grid(row=i // 2, column=i % 2, sticky="ew", padx=2, pady=2)
+        bf.columnconfigure(0, weight=1); bf.columnconfigure(1, weight=1)
+        fresh = [e for e in seen if not any(x["src"] == e["src"] for x in CFG["sensors"])][:8]
+        if fresh:
+            ttk.Label(parent, text=tr("Found radio devices - tap one to add it:"), style="Mut.TLabel").pack(anchor="w", pady=(8, 0))
+            for e in fresh:
+                d = e.get("data") or {}
+                g = ("tag" if e["src"].startswith("ble:") else "door" if any(k in d for k in ("contact", "closed", "contact_open", "state"))
+                     else "gas" if any(k in d for k in ("smoke", "gas", "carbon_monoxide")) else "pir" if any(k in d for k in ("occupancy", "motion")) else "other")
+                ttk.Button(parent, text=src_label(e["src"]), command=lambda e=e, g=g: self._sens_do(
+                    {"action": "add", "kind": g, "src": e["src"], "name": e["label"][:24]})).pack(fill="x", pady=(2, 0))
+        self.status_labels["Extra sensors"] = ttk.Label(parent, text="", style="Mut.TLabel", wraplength=330, justify="left")
+        self.status_labels["Extra sensors"].pack(anchor="w", pady=(6, 0))
+
+    def _sens_do(self, d, rebuild=True):
+        ok, err = sens_action(d)
+        try:
+            self.sens_err.config(text="" if ok else "⚠ " + tr_err(err))
+        except Exception:
+            pass
+        if ok and d.get("action") == "test":
+            self._toast("✓ " + tr("Test sent")) if hasattr(self, "_toast") else None
+        if ok and rebuild:
+            self.open_secs.add("grp:sensors"); self._schedule_rebuild()
+
+    def _sens_remove(self, x):
+        if messagebox.askyesno(tr("Remove"), tr("Remove this sensor?") + "\n\n" + x["name"], parent=self.root):
+            self._sens_do({"action": "remove", "id": x["id"]})
+
+    def _sens_paint(self, st):
+        S = st.get("sens") or {}
+        col = {"active": C["red"], "pulse": C["yel"], "missing": C["org"] if "org" in C else C["yel"], "ok": C["grn"], "error": C["red"]}
+        word = {"active": lambda x: {"door": "open", "gas": "gas / smoke!", "pir": "motion"}.get(x["kind"], "triggered"),
+                "pulse": lambda x: "moved / triggered", "missing": lambda x: "out of range", "ok": lambda x: "closed" if x["kind"] == "door" else "quiet",
+                "error": lambda x: "GPIO error", "unknown": lambda x: "waiting for data", "off": lambda x: "off"}
+        for x in CFG["sensors"]:
+            w_ = getattr(self, "sens_rows", {}).get(x["id"])
+            if not w_:
+                continue
+            q = (S.get("st") or {}).get(x["id"]) or {}
+            try:
+                w_[0].config(fg=col.get(q.get("state"), C["mut"]))
+                w_[1].config(text=(tr(word.get(q.get("state"), word["unknown"])(x)) if x["src"] else tr("choose where it is connected"))
+                             + ((" · " + tr("last") + ": " + q["last"]) if q.get("last") else ""))
+            except tk.TclError:
+                pass
+        p = []
+        if CFG["rf433_on"]:
+            p.append("433 MHz: " + tr_err(S.get("rf", "off")))
+        if CFG["zigbee_on"]:
+            p.append("Zigbee: " + tr_err(S.get("zb", "off")))
+        if CFG["ble_on"]:
+            p.append("Bluetooth: " + tr_err(S.get("ble", "off")))
+        if not CFG["sens_on"]:
+            p.insert(0, tr("Extra sensors are switched off"))
+        self._status("Extra sensors", " · ".join(p))
+
     # ---- text settings (notifications, location, presence) ----------------
     def _build_texts(self, parent, sec):
-        specs = [x for x in TEXTS if x[0] == sec and not simple_hidden(x[1])]
+        specs = [x for x in TEXTS if x[0] == sec and not simple_hidden(x[1]) and not (CFG["lock_on"] and x[1] in LOCK_DENY_KEYS)]
         if not specs:
             return
         ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",
@@ -20894,7 +22734,7 @@ class App:
                 return
             if (simpledialog.askstring("Motion Watch", tr("Repeat the PIN:"), show="•", parent=self.root) or "") != np_:
                 messagebox.showerror("Motion Watch", tr("The PINs are not the same"), parent=self.root); return
-        if not messagebox.askyesno("Motion Watch", tr("Lock the settings now? Only the main switches stay usable. Unlocking needs the PIN."), parent=self.root):
+        if not messagebox.askyesno("Motion Watch", tr("Lock the settings now? Only the main switches stay usable. Everything changed until then is put back when unlocking with the PIN."), parent=self.root):
             return
         ok, err = lock_set("lock", new_pin=np_, source="window")
         if not ok:
@@ -20909,6 +22749,9 @@ class App:
         ok, err = lock_set("unlock", pin=pin, source="window")
         if not ok:
             messagebox.showerror("Motion Watch", tr_err(err), parent=self.root); return
+        n = len(LOCK_LAST["restored"])
+        if n:
+            messagebox.showinfo("Motion Watch", tr("Settings unlocked") + " · " + str(n) + " " + tr("changes put back"), parent=self.root)
         self._rebuild()
 
     def _pause(self):
@@ -20952,7 +22795,8 @@ class App:
                 "Microphone": lambda: bool(CFG["audio_in"]), "Loudspeaker": lambda: CFG["siren_on"] != "off", "Recording": lambda: CFG["record"],
                 "Timelapse": lambda: CFG["timelapse_on"], "Backup": lambda: CFG["backup_type"] != "off", "Relays": lambda: CFG["relays_on"],
                 "Schedule": lambda: any(x.get("enabled") for x in SCHEDULES), "Wi-Fi / hotspot": lambda: CFG["hotspot_on"],
-                "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG["update_auto"]}
+                "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG["update_auto"],
+                "Extra sensors": lambda: CFG["sens_on"] and bool(CFG["sensors"])}
         for key, (arr, secs, _c, _w) in list(getattr(self, "grp_meta", {}).items()):
             try:
                 if arr.winfo_exists():
@@ -20976,6 +22820,7 @@ class App:
                 x = FLEET["state"].get(d["id"], {})
                 parts.append(f"{d.get('name') or d['url']}: " + ((("🚨 " if x.get("persons") else "") + tr(x.get("arm", "?"))) if x.get("ok") else "⚠ " + tr(x.get("err") or "not reachable")))
             self._status("Other devices", "🛰 " + tr("Other devices") + ": " + " · ".join(parts) + "  (" + tr("overview on the web page: Cameras") + ")")
+        self._sens_paint(st)
         tp = st.get("tamper") or {}
         if tp:
             self._status("Theft protection", "🧭 " + tr("Motion sensor") + ": " + (tr("found") if tp.get("sensor") else tr("not fitted"))
@@ -21325,6 +23170,12 @@ class App:
     def _toggle_section(self, sec):
         self._set_section(sec, sec not in self.open_secs)
 
+    def _groups_only(self):
+        for sec in self.sections:
+            self._set_section(sec, True)
+        for k in getattr(self, "subs", {}):
+            self._set_sub(k, False)
+
     def _all_sections(self, open_):
         for sec in self.sections:
             self._set_section(sec, open_)
@@ -21333,7 +23184,7 @@ class App:
 
     # ---- callbacks -------------------------------------------------------
     def _set(self, key, value):
-        if CFG["lock_on"] and key not in OPER_KEYS and key not in ("pan", "tilt", "fullscreen"):
+        if CFG["lock_on"] and key in LOCK_DENY_KEYS:
             return
         with LOCK:
             CFG[key] = type(CFG[key])(value) if not isinstance(CFG[key], bool) else bool(value)
@@ -21875,7 +23726,10 @@ class App:
         self.p_cpu.configure(style="CpuG.Horizontal.TProgressbar" if cpu < 60 else
                              ("CpuY.Horizontal.TProgressbar" if cpu < 85 else "CpuR.Horizontal.TProgressbar"))
         t = STATE["cpu_temp"]
-        self.l_cpu_info.config(text=(f"{t:.1f} °C · " if t is not None else "") + f"{STATE['cpu_count']} {tr('cores')} · {tr('last 60 s')}")
+        mm, dk = STATE.get("mem"), STATE.get("disk") or {}
+        extra = (f"\nRAM {mm['used'] / 1024:.1f} / {mm['total'] / 1024:.1f} GB ({mm['pct']:.0f} %)" if mm else "") + (
+            f" · {tr('Storage')}: {dk['free_mb'] / 1024:.1f} GB {tr('free')} / {dk['total_mb'] / 1024:.0f} GB" if dk.get("total_mb") else "")
+        self.l_cpu_info.config(text=(f"{t:.1f} °C · " if t is not None else "") + f"{STATE['cpu_count']} {tr('cores')} · {tr('last 60 s')}" + extra)
         c = self.cpu_canvas; c.delete("all")
         w = max(10, c.winfo_width()); h = max(10, c.winfo_height()); hist = STATE["cpu_hist"]
         for g in (25, 50, 75):
@@ -23033,7 +24887,7 @@ TRX['fr'].update({
     'like the live picture (red boxes)': "comme l'image en direct (cadres rouges)",
     'list from': 'liste du',
     'loaded: {a} settings, {b} waypoints, {c} relays, {d} schedules': 'chargé : {a} réglages, {b} points de passage, {c} relais, {d} programmes horaires',
-    'lock-note': 'Les réglages sont verrouillés – seuls les interrupteurs principaux sont utilisables.',
+    'lock-note': 'Tout peut être modifié (sauf Wi-Fi, mot de passe, démarrage auto). Au déverrouillage avec le PIN, tout est remis comme avant.',
     'locked - settings can only be changed after unlocking (PIN)': 'verrouillé – réglages modifiables seulement après déverrouillage (PIN)',
     'mains': 'secteur',
     'mains power': 'sur secteur',
@@ -24424,7 +26278,7 @@ TRX['it'].update({
     'like the live picture (red boxes)': "come l'immagine live (riquadri rossi)",
     'list from': 'elenco del',
     'loaded: {a} settings, {b} waypoints, {c} relays, {d} schedules': 'caricato: {a} impostazioni, {b} punti di passaggio, {c} relè, {d} pianificazioni',
-    'lock-note': 'Le impostazioni sono bloccate – si possono usare solo gli interruttori principali.',
+    'lock-note': 'Si può cambiare tutto (tranne Wi-Fi, password, avvio automatico). Allo sblocco con il PIN tutto torna come prima.',
     'locked - settings can only be changed after unlocking (PIN)': 'bloccato – impostazioni modificabili solo dopo lo sblocco (PIN)',
     'mains': 'rete',
     'mains power': 'alimentazione di rete',
@@ -25815,7 +27669,7 @@ TRX['rm'].update({
     'like the live picture (red boxes)': 'sco il maletg live (rams cotschens)',
     'list from': 'glista dals',
     'loaded: {a} settings, {b} waypoints, {c} relays, {d} schedules': 'chargià: {a} parameters, {b} puncts da passagi, {c} relais, {d} plans da temp',
-    'lock-note': 'Ils parameters èn bloccads – mo ils interrupturs principals èn utilisabels.',
+    'lock-note': 'Tut po vegnir midà (danor WLAN, pled-clav, autostart). Cun deblocar cun il PIN vegn tut restabilì.',
     'locked - settings can only be changed after unlocking (PIN)': 'bloccà – ils parameters pon vegnir midads pir suenter il debloccar (PIN)',
     'mains': 'rait',
     'mains power': 'cun current da la rait',
@@ -26178,8 +28032,96 @@ for _k, _v in _HX3.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_HX5 = {'download failed': ('Herunterladen fehlgeschlagen', 'échec du téléchargement', 'download non riuscito', 'chargiar giu betg reussì'), 'Download AI model': ('KI-Modell herunterladen', 'Télécharger le modèle IA', 'Scarica il modello IA', 'Chargiar giu il model IA'), 'AI ready': ('KI bereit', 'IA prête', 'IA pronta', 'IA pronta'), 'downloading the AI model …': ('KI-Modell wird geladen …', 'téléchargement du modèle IA …', 'download del modello IA …', 'il model IA vegn chargià giu …'), 'Tap «Download AI model» (about 70 MB, needs internet).': ('«KI-Modell herunterladen» antippen (ca. 70 MB, braucht Internet).', 'Toucher «Télécharger le modèle IA» (env. 70 Mo, nécessite Internet).', 'Toccare «Scarica il modello IA» (circa 70 MB, serve Internet).', 'Smatgar «Chargiar giu il model IA» (var 70 MB, dovra internet).'), 'already running': ('läuft schon', 'déjà en cours', 'già in corso', 'gia en lavur'), 'not in the demo': ('nicht in der Demo', 'pas dans la démo', 'non nella demo', 'betg en la demo')}
+_HX5 = {'the model files are damaged - try again': ('die Modelldateien sind beschädigt – nochmals versuchen', 'les fichiers du modèle sont abîmés – réessayer', 'i file del modello sono danneggiati – riprovare', 'las datotecas dal model èn donnegiadas – empruvar anc ina giada'), 'certificate not valid': ('Zertifikat ungültig', 'certificat non valable', 'certificato non valido', 'certificat betg valid'), 'certificate not valid (check the clock of the Pi)': ('Zertifikat ungültig (Uhrzeit des Pi prüfen)', 'certificat non valable (vérifier l\'heure du Pi)', 'certificato non valido (controllare l\'ora del Pi)', 'certificat betg valid (controllar l\'ura dal Pi)'), 'no answer (internet slow or missing)': ('keine Antwort (Internet langsam oder weg)', 'pas de réponse (Internet lent ou absent)', 'nessuna risposta (Internet lento o assente)', 'nagina resposta (internet plaun u absent)'), 'no internet (name not found)': ('kein Internet (Name nicht gefunden)', 'pas d\'Internet (nom introuvable)', 'niente Internet (nome non trovato)', 'nagin internet (num betg chattà)'), 'no internet connection': ('keine Internetverbindung', 'pas de connexion Internet', 'nessuna connessione Internet', 'nagina colliaziun cun l\'internet'), 'download failed': ('Herunterladen fehlgeschlagen', 'échec du téléchargement', 'download non riuscito', 'chargiar giu betg reussì'), 'Download AI model': ('KI-Modell herunterladen', 'Télécharger le modèle IA', 'Scarica il modello IA', 'Chargiar giu il model IA'), 'AI ready': ('KI bereit', 'IA prête', 'IA pronta', 'IA pronta'), 'downloading the AI model …': ('KI-Modell wird geladen …', 'téléchargement du modèle IA …', 'download del modello IA …', 'il model IA vegn chargià giu …'), 'Tap «Download AI model» (about 70 MB, needs internet).': ('«KI-Modell herunterladen» antippen (ca. 70 MB, braucht Internet).', 'Toucher «Télécharger le modèle IA» (env. 70 Mo, nécessite Internet).', 'Toccare «Scarica il modello IA» (circa 70 MB, serve Internet).', 'Smatgar «Chargiar giu il model IA» (var 70 MB, dovra internet).'), 'already running': ('läuft schon', 'déjà en cours', 'già in corso', 'gia en lavur'), 'not in the demo': ('nicht in der Demo', 'pas dans la démo', 'non nella demo', 'betg en la demo')}
 for _k, _v in _HX5.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX6 = {'Last run': ('Letzter Lauf', 'Dernière exécution', 'Ultima esecuzione', 'Ultima execuziun'), 'ended unexpectedly after': ('unerwartet beendet nach', 'arrêtée de façon inattendue après', 'terminata inaspettatamente dopo', 'terminada nunspetgadamain suenter'), 'under-voltage': ('Unterspannung', 'sous-tension', 'sottotensione', 'sutatensiun'), 'AI was running': ('KI lief', "l'IA tournait", "l'IA era attiva", "l'IA era activa"), 'safe start': ('sicherer Start', 'démarrage sûr', 'avvio sicuro', 'start segir'), 'Safe start: AI, thermal camera, night vision, IR light and patrol were switched off. Use a 5 V / 5 A power supply and cooling (heat sink / fan), then switch them on again one by one.': ('Sicherer Start: KI, Wärmebild, Nachtsicht, IR-Licht und Patrouille wurden ausgeschaltet. Netzteil mit 5 V / 5 A und Kühlung (Kühlkörper / Lüfter) verwenden, dann einzeln wieder einschalten.', 'Démarrage sûr : IA, caméra thermique, vision nocturne, lumière IR et patrouille ont été coupées. Utiliser une alimentation 5 V / 5 A et un refroidissement (dissipateur / ventilateur), puis les réactiver une par une.', 'Avvio sicuro: IA, termocamera, visione notturna, luce IR e pattuglia sono state spente. Usare un alimentatore 5 V / 5 A e un raffreddamento (dissipatore / ventola), poi riattivarle una alla volta.', "Start segir: IA, camera termica, vista da notg, glisch IR e patrulla èn vegnidas deactivadas. Duvrar in alimentader 5 V / 5 A e refridaziun (dissipatur / ventilatur), lura activar danovamain ina suenter l'autra."), 'Power cut, power supply too weak (Pi 5: 5 V / 5 A) or too hot. If it happens again, switch the AI off for a test.': ('Stromunterbruch, Netzteil zu schwach (Pi 5: 5 V / 5 A) oder zu heiss. Passiert es wieder, die KI zum Testen ausschalten.', "Coupure de courant, alimentation trop faible (Pi 5 : 5 V / 5 A) ou trop chaud. Si cela se répète, couper l'IA pour tester.", "Interruzione di corrente, alimentatore troppo debole (Pi 5: 5 V / 5 A) o troppo caldo. Se succede di nuovo, spegnere l'IA per provare.", "Interrupziun da current, alimentader memia flaivel (Pi 5: 5 V / 5 A) u memia chaud. Sche quai capita puspè, deactivar l'IA per testar."), 'Safe start: the Pi went off twice shortly after starting. AI, thermal camera, night vision, IR light and patrol are off - check power supply and cooling.': ('Sicherer Start: Der Pi ist zweimal kurz nach dem Start ausgefallen. KI, Wärmebild, Nachtsicht, IR-Licht und Patrouille sind aus – Netzteil und Kühlung prüfen.', "Démarrage sûr : le Pi s'est éteint deux fois peu après le démarrage. IA, caméra thermique, vision nocturne, lumière IR et patrouille sont coupées – vérifier alimentation et refroidissement.", "Avvio sicuro: il Pi si è spento due volte poco dopo l'avvio. IA, termocamera, visione notturna, luce IR e pattuglia sono spente – controllare alimentazione e raffreddamento.", 'Start segir: il Pi è crudà ora duas giadas curt suenter il start. IA, camera termica, vista da notg, glisch IR e patrulla èn deactivadas – controllar alimentaziun e refridaziun.')}
+for _k, _v in _HX6.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX7 = {'Motion Watch is already running': ('Motion Watch läuft bereits', 'Motion Watch tourne déjà', 'Motion Watch è già in esecuzione', 'Motion Watch gira gia'), 'in the background (autostart, without a window).': ('im Hintergrund (Autostart, ohne Fenster).', 'en arrière-plan (démarrage auto, sans fenêtre).', 'in background (avvio automatico, senza finestra).', 'en il fund (autostart, senza fanestra).'), 'Web page': ('Webseite', 'Page web', 'Pagina web', 'Pagina web'), 'Open the window here instead? The background service is stopped for that and starts again when you close the window.': ('Stattdessen hier das Fenster öffnen? Der Hintergrund-Dienst wird dafür angehalten und startet wieder, sobald du das Fenster schliesst.', 'Ouvrir plutôt la fenêtre ici ? Le service en arrière-plan est arrêté et redémarre quand tu fermes la fenêtre.', 'Aprire invece qui la finestra? Il servizio in background viene fermato e riparte quando chiudi la finestra.', 'Avrir empè la fanestra qua? Il servetsch en il fund vegn fermà e cumenza danovamain cur che ti serras la fanestra.'), 'The background service could not be stopped': ('Der Hintergrund-Dienst liess sich nicht anhalten', "Impossible d'arrêter le service en arrière-plan", 'Impossibile fermare il servizio in background', "Il servetsch en il fund n'ha betg pudì vegnir fermà")}
+for _k, _v in _HX7.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX8 = {'Lock the settings now? Only the main switches stay usable. Everything changed until then is put back when unlocking with the PIN.': ('Einstellungen jetzt sperren? Nur die wichtigsten Schalter bleiben bedienbar. Alles, was bis dahin verstellt wird, wird beim Entsperren mit der PIN zurückgesetzt.', "Verrouiller les réglages maintenant ? Seuls les interrupteurs principaux restent utilisables. Tout ce qui est modifié d'ici là est remis comme avant au déverrouillage avec le PIN.", 'Bloccare ora le impostazioni? Restano utilizzabili solo gli interruttori principali. Tutto ciò che viene cambiato fino ad allora torna come prima allo sblocco con il PIN.', 'Bloccar ussa las configuraziuns? Mo ils interrupturs principals restan utilisabels. Tut quai che vegn midà fin lura vegn restabilì cun deblocar cun il PIN.'), 'changes put back': ('Änderungen zurückgesetzt', 'modifications annulées', 'modifiche annullate', 'midadas restabilidas'), 'Settings unlocked': ('Einstellungen entsperrt', 'Réglages déverrouillés', 'Impostazioni sbloccate', 'Configuraziuns deblocadas')}
+for _k, _v in _HX8.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX9 = {'Switch on operator mode? Everything may be changed except Wi-Fi, password and autostart; unlocking with the PIN puts everything back.': ('Bedienmodus einschalten? Alles darf verstellt werden ausser WLAN, Passwort und Autostart; beim Entsperren mit der PIN wird alles zurückgesetzt.', 'Activer le mode opérateur ? Tout peut être modifié sauf Wi-Fi, mot de passe et démarrage auto ; au déverrouillage avec le PIN, tout est remis comme avant.', 'Attivare la modalità operatore? Si può cambiare tutto tranne Wi-Fi, password e avvio automatico; allo sblocco con il PIN tutto torna come prima.', "Activar il modus d'operatur? Tut po vegnir midà danor WLAN, pled-clav ed autostart; cun deblocar cun il PIN vegn tut restabilì."), 'Everything may be changed (except Wi-Fi, password, autostart). Unlocking with the PIN puts everything back.': ('Alles darf verstellt werden (ausser WLAN, Passwort, Autostart). Beim Entsperren mit der PIN wird alles zurückgesetzt.', 'Tout peut être modifié (sauf Wi-Fi, mot de passe, démarrage auto). Au déverrouillage avec le PIN, tout est remis comme avant.', 'Si può cambiare tutto (tranne Wi-Fi, password, avvio automatico). Allo sblocco con il PIN tutto torna come prima.', 'Tut po vegnir midà (danor WLAN, pled-clav, autostart). Cun deblocar cun il PIN vegn tut restabilì.')}
+for _k, _v in _HX9.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX10 = {'End operator mode (PIN)': ('Bedienmodus beenden (PIN)', 'Quitter le mode opérateur (PIN)', 'Terminare la modalità operatore (PIN)', "Terminar il modus d'operatur (PIN)"), 'Operator mode is on': ('Bedienmodus ist aktiv', 'Le mode opérateur est actif', 'La modalità operatore è attiva', "Il modus d'operatur è activ"), 'since': ('seit', 'depuis', 'dalle', 'dapi'), 'unlocking puts everything back': ('Entsperren setzt alles zurück', 'le déverrouillage remet tout comme avant', 'lo sblocco ripristina tutto', 'deblocar restabilescha tut')}
+for _k, _v in _HX10.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX11 = {'Backup': ('Sicherung', 'Sauvegarde', 'Backup', 'Segirezza'), 'If the Pi is stolen, the recordings are gone: Settings → Backup (Telegram, WebDAV / NAS or USB stick).': ('Wird der Pi gestohlen, sind die Aufnahmen weg: Einstellungen → Sicherung (Telegram, WebDAV / NAS oder USB-Stick).', 'Si le Pi est volé, les enregistrements sont perdus : Réglages → Sauvegarde (Telegram, WebDAV / NAS ou clé USB).', 'Se il Pi viene rubato, le registrazioni sono perse: Impostazioni → Backup (Telegram, WebDAV / NAS o chiavetta USB).', "Sch'il Pi vegn engulà, èn las registraziuns davent: Configuraziuns → Segirezza (Telegram, WebDAV / NAS u stick USB)."), 'Check the backup settings and send a test.': ('Sicherungs-Einstellungen prüfen und einen Test senden.', 'Vérifier les réglages de sauvegarde et envoyer un test.', 'Controllare le impostazioni del backup e inviare un test.', 'Controllar las configuraziuns da segirezza e trametter in test.')}
+for _k, _v in _HX11.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX12 = {'Person crossed the line «{zone}»': ('Person hat die Linie «{zone}» überquert', 'Une personne a franchi la ligne «{zone}»', 'Una persona ha attraversato la linea «{zone}»', 'Ina persuna ha traversà la lingia «{zone}»'), 'Person stays in «{zone}» for more than {secs} s': ('Person hält sich länger als {secs} s in «{zone}» auf', 'Une personne reste plus de {secs} s dans «{zone}»', 'Una persona resta più di {secs} s in «{zone}»', 'Ina persuna resta dapli che {secs} s en «{zone}»'), 'line': ('Linie', 'ligne', 'linea', 'lingia'), 'dwell area': ('Verweil-Bereich', 'zone de séjour', 'area di sosta', 'zona da dimora')}
+for _k, _v in _HX12.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX13 = {'+ Line': ('+ Ligne', '+ Linea', '+ Lingia'), '+ Dwell area': ('+ Zone de séjour', '+ Area di sosta', '+ Zona da dimora'), 'Line': ('Ligne', 'Linea', 'Lingia'), 'Dwell area': ('Zone de séjour', 'Area di sosta', 'Zona da dimora'), 'both directions': ('les deux sens', 'entrambe le direzioni', 'omaduas direcziuns'), 'only in the arrow direction': ('seulement dans le sens de la flèche', 'solo nella direzione della freccia', 'mo en direcziun da la flizza'), 'only against the arrow': ('seulement contre la flèche', 'solo contro la freccia', 'mo cunter la flizza'), 'Alarm after (seconds)': ('Alarme après (secondes)', 'Allarme dopo (secondi)', 'Alarm suenter (secundas)'), 'Click the start and the end of the line in the picture.': ("Clique le début et la fin de la ligne dans l'image.", "Clicca l'inizio e la fine della linea nell'immagine.", 'Clicca il cumenzament e la fin da la lingia en il maletg.'), 'z-line': ('Signale quand une personne franchit la ligne – dans les deux sens ou seulement dans le sens de la flèche (p. ex. «vient vers la tente»).', 'Segnala quando una persona attraversa la linea – in entrambe le direzioni o solo nella direzione della freccia (p. es. «viene verso la tenda»).', "Annunzia cur ch'ina persuna traversa la lingia – en omaduas direcziuns u mo en direcziun da la flizza (p.ex. «vegn tar la tenda»)."), 'z-loit': ('Signale quand une personne y reste plus longtemps que le temps réglé (p. ex. près de la voiture).', "Segnala quando una persona vi resta più a lungo del tempo impostato (p. es. vicino all'auto).", "Annunzia cur ch'ina persuna resta là pli ditg ch'il temp fixà (p.ex. tar l'auto).")}
+for _k, _v in _HX13.items():
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i])
+_HX14 = {'Storage': ('Speicher', 'Stockage', 'Memoria', 'Memoria'), 'memory card': ('Speicherkarte', 'carte mémoire', 'scheda di memoria', 'carta da memoria'), 'USB drive': ('USB-Laufwerk', 'disque USB', 'unità USB', 'unitad USB'), 'drive': ('Laufwerk', 'disque', 'unità', 'unitad'), 'program': ('Programm', 'programme', 'programma', 'program'), 'recordings': ('Aufnahmen', 'enregistrements', 'registrazioni', 'registraziuns'), 'chosen drive missing - recordings on the memory card': ('gewähltes Laufwerk fehlt – Aufnahmen auf der Speicherkarte', 'disque choisi absent – enregistrements sur la carte mémoire', 'unità scelta mancante – registrazioni sulla scheda di memoria', 'unitad tschernida manca – registraziuns sin la carta da memoria'), 'Connect the SSD / USB drive and restart, or choose another place under Settings → Recording.': ('SSD / USB-Laufwerk anschliessen und neu starten, oder unter Einstellungen → Aufnahme einen anderen Ort wählen.', 'Brancher le SSD / disque USB et redémarrer, ou choisir un autre endroit sous Réglages → Enregistrement.', "Collegare l'SSD / unità USB e riavviare, oppure scegliere un altro posto in Impostazioni → Registrazione.", "Colliar il SSD / l'unitad USB e reaviar, u tscherner in auter lieu sut Configuraziuns → Registraziun."), 'An SSD / USB drive is connected: put the recordings there (Settings → Recording) - it lasts longer than a memory card.': ('Ein SSD- / USB-Laufwerk ist angeschlossen: Aufnahmen dorthin legen (Einstellungen → Aufnahme) – das hält länger als eine Speicherkarte.', "Un SSD / disque USB est branché : y mettre les enregistrements (Réglages → Enregistrement) – cela dure plus longtemps qu'une carte mémoire.", 'È collegato un SSD / unità USB: mettere lì le registrazioni (Impostazioni → Registrazione) – dura più di una scheda di memoria.', "In SSD / ina unitad USB è collià: metter là las registraziuns (Configuraziuns → Registraziun) – quai tegna pli ditg ch'ina carta da memoria."), 'Recordings stored on': ('Aufnahmen speichern auf', 'Enregistrements stockés sur', 'Registrazioni salvate su', 'Registraziuns memorisadas sin'), 'memory card (next to the program)': ('Speicherkarte (beim Programm)', 'carte mémoire (avec le programme)', 'scheda di memoria (con il programma)', 'carta da memoria (tar il program)'), 'read only': ('nur lesen', 'lecture seule', 'sola lettura', 'mo leger'), 'missing': ('fehlt', 'absent', 'mancante', 'manca'), 'now': ('jetzt', 'maintenant', 'ora', 'ussa'), 'no SSD / USB drive found': ('kein SSD- / USB-Laufwerk gefunden', 'aucun SSD / disque USB trouvé', 'nessun SSD / unità USB trovata', 'nagin SSD / nagina unitad USB chattada'), 'Store the recordings there from now on? The existing ones are moved over (this can take a while).': ('Aufnahmen ab jetzt dort speichern? Die bisherigen werden hinüber verschoben (das kann etwas dauern).', 'Stocker désormais les enregistrements là ? Les existants sont déplacés (cela peut prendre un moment).', "Salvare d'ora in poi lì le registrazioni? Quelle esistenti vengono spostate (può richiedere un po').", "Memorisar a partir d'ussa las registraziuns là? Las existentas vegnan spustadas (quai po durar in mument)."), 'moving recordings …': ('Aufnahmen werden verschoben …', 'déplacement des enregistrements …', 'spostamento delle registrazioni …', 'registraziuns vegnan spustadas …'), 'drive not found': ('Laufwerk nicht gefunden', 'disque introuvable', 'unità non trovata', 'unitad betg chattada'), 'the drive cannot be written to': ('auf das Laufwerk kann nicht geschrieben werden', "impossible d'écrire sur le disque", "impossibile scrivere sull'unità", "i na po betg vegnir scrit sin l'unitad")}
+for _k, _v in _HX14.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX15 = {'Continuous recording (all the time, few pictures per second) with a timeline': ('Daueraufnahme (immer, wenige Bilder pro Sekunde) mit Zeitleiste', "Enregistrement continu (tout le temps, peu d'images par seconde) avec ligne du temps", 'Registrazione continua (sempre, poche immagini al secondo) con linea del tempo', 'Registraziun cuntinuanta (adina, paucs maletgs per secunda) cun lingia dal temp'), 'Continuous recording: keep (hours)': ('Daueraufnahme: behalten (Stunden)', 'Enregistrement continu : garder (heures)', 'Registrazione continua: conservare (ore)', 'Registraziun cuntinuanta: tegnair (uras)'), 'Continuous recording: pictures per second': ('Daueraufnahme: Bilder pro Sekunde', 'Enregistrement continu : images par seconde', 'Registrazione continua: immagini al secondo', 'Registraziun cuntinuanta: maletgs per secunda'), '🎞 Continuous recording': ('🎞 Daueraufnahme', '🎞 Enregistrement continu', '🎞 Registrazione continua', '🎞 Registraziun cuntinuanta'), 'Continuous recording': ('Daueraufnahme', 'Enregistrement continu', 'Registrazione continua', 'Registraziun cuntinuanta'), 'recording now': ('wird gerade aufgenommen', "en cours d'enregistrement", 'in registrazione', 'vegn registrà ussa'), 'alarms': ('Alarme', 'alarmes', 'allarmi', 'alarms'), 'Tap a blue piece to watch it. Red lines: alarms.': ('Ein blaues Stück antippen zum Ansehen. Rote Striche: Alarme.', 'Toucher un morceau bleu pour le regarder. Traits rouges : alarmes.', 'Tocca un pezzo blu per guardarlo. Linee rosse: allarmi.', 'Smatgar in toc blau per al guardar. Strivlas cotschnas: alarms.'), 'Continuous recording is off (Settings → Recording).': ('Daueraufnahme ist aus (Einstellungen → Aufnahme).', "L'enregistrement continu est désactivé (Réglages → Enregistrement).", 'La registrazione continua è spenta (Impostazioni → Registrazione).', 'La registraziun cuntinuanta è deactivada (Configuraziuns → Registraziun).')}
+for _k, _v in _HX15.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX16 = {'Picture for other programs (Home Assistant, recorder, VLC) with a secret address': ('Bild für andere Programme (Home Assistant, Rekorder, VLC) mit geheimer Adresse', "Image pour d'autres programmes (Home Assistant, enregistreur, VLC) avec une adresse secrète", 'Immagine per altri programmi (Home Assistant, registratore, VLC) con un indirizzo segreto', 'Maletg per auters programs (Home Assistant, registratur, VLC) cun ina adressa secreta'), 'RTSP video for recorders (needs mediamtx; uses CPU)': ('RTSP-Video für Rekorder (braucht mediamtx; braucht Rechenleistung)', 'Vidéo RTSP pour enregistreurs (nécessite mediamtx ; utilise le processeur)', 'Video RTSP per registratori (serve mediamtx; usa la CPU)', 'Video RTSP per registraturs (dovra mediamtx; dovra forza da calcul)'), 'New secret address': ('Neue geheime Adresse', 'Nouvelle adresse secrète', 'Nuovo indirizzo segreto', 'Nova adressa secreta'), 'Off – switch on «Picture for other programs» above.': ('Aus – oben «Bild für andere Programme» einschalten.', "Désactivé – activer «Image pour d'autres programmes» ci-dessus.", 'Spento – attivare sopra «Immagine per altri programmi».', 'Deactivà – activar survart «Maletg per auters programs».'), 'Still picture': ('Standbild', 'Image fixe', 'Immagine fissa', 'Maletg fix'), 'Copy': ('Kopieren', 'Copier', 'Copia', 'Copiar'), 'Copied': ('Kopiert', 'Copié', 'Copiato', 'Copià'), 'Keep these addresses secret: whoever has them sees the picture without a password.': ('Diese Adressen geheim halten: Wer sie hat, sieht das Bild ohne Passwort.', "Garder ces adresses secrètes : qui les a voit l'image sans mot de passe.", "Tenere segreti questi indirizzi: chi li ha vede l'immagine senza password.", 'Tegnair secretas questas adressas: tgi che las ha vesa il maletg senza pled-clav.'), 'Make a new secret address? The old one stops working (other programs need the new one).': ('Neue geheime Adresse erstellen? Die alte funktioniert dann nicht mehr (andere Programme brauchen die neue).', "Créer une nouvelle adresse secrète ? L'ancienne ne fonctionne plus (les autres programmes ont besoin de la nouvelle).", 'Creare un nuovo indirizzo segreto? Il vecchio non funziona più (gli altri programmi hanno bisogno del nuovo).', 'Crear ina nova adressa secreta? La veglia na funcziuna lura betg pli (auters programs dovran la nova).'), 'mediamtx is not installed (see the manual: RTSP)': ('mediamtx ist nicht installiert (siehe Anleitung: RTSP)', "mediamtx n'est pas installé (voir le mode d'emploi : RTSP)", 'mediamtx non è installato (vedi il manuale: RTSP)', "mediamtx n'è betg installà (vesair l'instrucziun: RTSP)")}
+for _k, _v in _HX16.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX17 = {'Memory (RAM)': ('Arbeitsspeicher (RAM)', 'Mémoire vive (RAM)', 'Memoria (RAM)', 'Memoria da lavur (RAM)'), '⏻ Switch off, restart, pause': ('⏻ Ausschalten, Neustart, Pause', '⏻ Éteindre, redémarrer, pause', '⏻ Spegnere, riavviare, pausa', '⏻ Deactivar, reaviar, pausa'), '🔐 Operator mode': ('🔐 Bedienmodus', '🔐 Mode opérateur', '🔐 Modalità operatore', "🔐 Modus d'operatur"), '🧭 Help and setup': ('🧭 Hilfe und Einrichtung', '🧭 Aide et configuration', '🧭 Aiuto e configurazione', '🧭 Agid ed installaziun'), '🔒 Password and settings file': ('🔒 Passwort und Einstellungsdatei', '🔒 Mot de passe et fichier de réglages', '🔒 Password e file delle impostazioni', '🔒 Pled-clav e datoteca da configuraziun'), 'ℹ Version and status': ('ℹ Version und Status', 'ℹ Version et état', 'ℹ Versione e stato', 'ℹ Versiun e status'), 'Device name': ('Gerätename', "Nom de l'appareil", 'Nome del dispositivo', "Num da l'apparat"), 'Time': ('Uhrzeit', 'Heure', 'Ora', 'Ura'), 'Date': ('Datum', 'Date', 'Data', 'Data'), 'Number of persons': ('Anzahl Personen', 'Nombre de personnes', 'Numero di persone', 'Dumber da persunas'), 'Camera': ('Kamera', 'Caméra', 'Telecamera', 'Camera'), 'Volume (dB)': ('Lautstärke (dB)', 'Volume (dB)', 'Volume (dB)', 'Volumen (dB)'), 'Link': ('Link', 'Lien', 'Link', 'Link'), 'Leave a field empty for the standard text. Tap a grey button to insert a placeholder at the cursor.': ('Ein Feld leer lassen = Standardtext. Graue Knöpfe antippen, um einen Platzhalter an der Cursorstelle einzufügen.', 'Laisser un champ vide = texte standard. Toucher un bouton gris pour insérer une variable au curseur.', 'Lasciare un campo vuoto = testo standard. Tocca un pulsante grigio per inserire un segnaposto al cursore.', 'Laschar in champ vid = text standard. Smatgar in buttun grisch per inserir in placeholder tar il cursur.'), 'Person': ('Person', 'Personne', 'Persona', 'Persuna'), 'Pre-alarm': ('Voralarm', 'Pré-alarme', 'Preallarme', 'Prealarm'), 'Thermal alarm': ('Wärmebild-Alarm', 'Alarme thermique', 'Allarme termico', 'Alarm termic'), 'Noise alarm': ('Geräusch-Alarm', 'Alarme bruit', 'Allarme rumore', 'Alarm da canera'), 'Preview': ('Vorschau', 'Aperçu', 'Anteprima', 'Prevista'), 'Title': ('Titel', 'Titre', 'Titolo', 'Titel'), 'Text': ('Text', 'Texte', 'Testo', 'Text'), 'Standard text': ('Standardtext', 'Texte standard', 'Testo standard', 'Text standard')}
+for _k, _v in _HX17.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX18 = {'Groups only': ('Nur Gruppen öffnen', 'Ouvrir seulement les groupes', 'Aprire solo i gruppi', 'Avrir mo las gruppas')}
+for _k, _v in _HX18.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX19 = {'own text': ('eigener Text', 'texte personnel', 'testo proprio', 'agen text'), 'standard text': ('Standardtext', 'texte standard', 'testo standard', 'text standard')}
+for _k, _v in _HX19.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX20 = {'Picture': ('Bild', 'Image', 'Immagine', 'Maletg'), 'Camera and alignment': ('Kamera und Ausrichtung', 'Caméra et alignement', 'Telecamera e allineamento', 'Camera ed orientaziun'), 'Hide settings': ('Einstellungen ausblenden', 'Masquer les réglages', 'Nascondi impostazioni', 'Zuppentar las configuraziuns'), 'Show settings': ('Einstellungen einblenden', 'Afficher les réglages', 'Mostra impostazioni', 'Mussar las configuraziuns'), 'Alarm': ('Alarm', 'Alarme', 'Allarme', 'Alarm')}
+for _k, _v in _HX20.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX21 = {'Turn picture (camera mounted sideways or upside down)': ('Bild drehen (Kamera seitlich oder kopfüber montiert)', "Tourner l'image (caméra montée de côté ou à l'envers)", 'Ruota immagine (telecamera montata di lato o capovolta)', 'Volver il maletg (camera montada da la vart u cun il chau engiu)'),
+          'not turned': ('nicht gedreht', 'pas tournée', 'non ruotata', 'betg vieut'), '90° to the right': ('90° nach rechts', '90° à droite', '90° a destra', '90° a dretga'),
+          'upside down (180°)': ('auf den Kopf (180°)', "à l'envers (180°)", 'capovolta (180°)', 'cun il chau engiu (180°)'),
+          '90° to the left': ('90° nach links', '90° à gauche', '90° a sinistra', '90° a sanestra'),
+          'Mirror picture (left ↔ right)': ('Bild spiegeln (links ↔ rechts)', "Miroir de l'image (gauche ↔ droite)", 'Specchia immagine (sinistra ↔ destra)', 'Spievlar il maletg (sanester ↔ dretg)')}
+for _k, _v in _HX21.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX22 = {'open': ('offen', 'ouverte', 'aperta', 'avert'), 'closed': ('zu', 'fermée', 'chiusa', 'serrà'), 'last': ('zuletzt', 'dernier', 'ultimo', 'ultima giada'), 'Extra sensors': ('Zusatz-Sensoren', 'Capteurs supplémentaires', 'Sensori aggiuntivi', 'Sensors supplementars'), 'Sensors': ('Sensoren', 'Capteurs', 'Sensori', 'Sensors'), 'Extra sensors on': ('Zusatz-Sensoren ein', 'Capteurs supplémentaires activés', 'Sensori aggiuntivi attivi', 'Sensors supplementars activs'), '433 MHz radio sensors (RTL-SDR stick + program rtl_433)': ('433-MHz-Funksensoren (RTL-SDR-Stick + Programm rtl_433)', 'Capteurs radio 433 MHz (clé RTL-SDR + programme rtl_433)', 'Sensori radio 433 MHz (chiavetta RTL-SDR + programma rtl_433)', 'Sensors radio 433 MHz (stick RTL-SDR + program rtl_433)'), 'Zigbee sensors (Zigbee2MQTT - needs MQTT)': ('Zigbee-Sensoren (Zigbee2MQTT – braucht MQTT)', 'Capteurs Zigbee (Zigbee2MQTT – nécessite MQTT)', 'Sensori Zigbee (Zigbee2MQTT – richiede MQTT)', 'Sensors Zigbee (Zigbee2MQTT – basegna MQTT)'), 'Bluetooth tags (RuuviTag - needs python3-bleak)': ('Bluetooth-Anhänger (RuuviTag – braucht python3-bleak)', 'Balises Bluetooth (RuuviTag – nécessite python3-bleak)', 'Tag Bluetooth (RuuviTag – richiede python3-bleak)', 'Pendaglias Bluetooth (RuuviTag – basegna python3-bleak)'), 'With a motion detector (PIR): only 1 picture per second while all is quiet': ('Mit Bewegungsmelder (PIR): nur 1 Bild pro Sekunde, solange alles ruhig ist', 'Avec détecteur de mouvement (PIR) : 1 image par seconde tant que tout est calme', 'Con rilevatore di movimento (PIR): solo 1 immagine al secondo finché è tutto tranquillo', 'Cun detectur da moviment (PIR): mo 1 maletg per secunda, uscheditg che tut è quiet'), 'Bluetooth tag: alarm when not seen for (min)': ('Bluetooth-Anhänger: Alarm, wenn nicht gesehen seit (Min.)', 'Balise Bluetooth : alarme si absente depuis (min)', 'Tag Bluetooth: allarme se non visto da (min)', 'Pendaglia Bluetooth: alarm, sche betg vesida dapi (min)'), 'Motion detector': ('Bewegungsmelder', 'Détecteur de mouvement', 'Rilevatore di movimento', 'Detectur da moviment'), 'Door': ('Tür', 'Porte', 'Porta', 'Porta'), 'Gas / smoke': ('Gas / Rauch', 'Gaz / fumée', 'Gas / fumo', 'Gas / fim'), 'Tag': ('Anhänger', 'Balise', 'Tag', 'Pendaglia'), 'Sensor': ('Sensor', 'Capteur', 'Sensore', 'Sensor'), 'at most 16 sensors': ('höchstens 16 Sensoren', '16 capteurs au maximum', 'al massimo 16 sensori', 'maximalmain 16 sensors'), 'unknown sensor': ('unbekannter Sensor', 'capteur inconnu', 'sensore sconosciuto', 'sensor nunenconuschent'), 'this GPIO is already in use': ('dieser GPIO ist schon belegt', 'ce GPIO est déjà utilisé', 'questo GPIO è già in uso', 'quest GPIO è gia occupà'), 'test - it works': ('Test – es funktioniert', 'test – ça fonctionne', 'test – funziona', 'test – i funcziuna'), 'out of range (not seen any more)': ('ausser Reichweite (nicht mehr gesehen)', 'hors de portée (plus vue)', 'fuori portata (non più visto)', 'ordaifer la tschertgira (betg pli vesì)'), 'motion detected': ('Bewegung erkannt', 'mouvement détecté', 'movimento rilevato', 'moviment percurschì'), 'opened': ('geöffnet', 'ouverte', 'aperta', 'avert'), 'gas / smoke detected!': ('Gas / Rauch erkannt!', 'gaz / fumée détecté !', 'gas / fumo rilevato!', 'gas / fim percurschì!'), 'moved': ('bewegt', 'déplacée', 'spostato', 'movì'), 'triggered': ('ausgelöst', 'déclenché', 'attivato', 'deliberà'), 'GAS ALARM': ('GAS-ALARM', 'ALARME GAZ', 'ALLARME GAS', 'ALARM DA GAS'), 'SENSOR ALARM': ('SENSOR-ALARM', 'ALARME CAPTEUR', 'ALLARME SENSORE', 'ALARM DA SENSOR'), 'rtl_433 missing (sudo apt install rtl-433)': ('rtl_433 fehlt (sudo apt install rtl-433)', 'rtl_433 manque (sudo apt install rtl-433)', 'manca rtl_433 (sudo apt install rtl-433)', 'rtl_433 manca (sudo apt install rtl-433)'), 'listening': ('hört zu', "à l'écoute", 'in ascolto', 'taidla'), 'no RTL-SDR stick found': ('kein RTL-SDR-Stick gefunden', 'aucune clé RTL-SDR trouvée', 'nessuna chiavetta RTL-SDR trovata', 'nagin stick RTL-SDR chattà'), 'python3-bleak missing (sudo apt install python3-bleak)': ('python3-bleak fehlt (sudo apt install python3-bleak)', 'python3-bleak manque (sudo apt install python3-bleak)', 'manca python3-bleak (sudo apt install python3-bleak)', 'python3-bleak manca (sudo apt install python3-bleak)'), 'needs MQTT': ('braucht MQTT', 'nécessite MQTT', 'richiede MQTT', 'basegna MQTT'), 'Motion detector (PIR)': ('Bewegungsmelder (PIR)', 'Détecteur de mouvement (PIR)', 'Rilevatore di movimento (PIR)', 'Detectur da moviment (PIR)'), 'Door / lid contact': ('Tür- / Deckelkontakt', 'Contact de porte / couvercle', 'Contatto porta / coperchio', 'Contact da porta / viertgel'), 'Bluetooth tag': ('Bluetooth-Anhänger', 'Balise Bluetooth', 'Tag Bluetooth', 'Pendaglia Bluetooth'), 'Other sensor': ('Anderer Sensor', 'Autre capteur', 'Altro sensore', 'Auter sensor'), 'only when armed': ('nur wenn scharf', 'seulement si armé', 'solo se armato', "mo sch'activà"), 'always (also when disarmed)': ('immer (auch unscharf)', 'toujours (même désarmé)', 'sempre (anche disarmato)', 'adina (er deactivà)'), 'no alarm, only note it': ('kein Alarm, nur notieren', "pas d'alarme, seulement noter", 'nessun allarme, solo annotare', 'nagin alarm, mo notar'), 'Kind': ('Art', 'Type', 'Tipo', 'Gener'), 'Connected to': ('Angeschlossen an', 'Branché sur', 'Collegato a', 'Collià cun'), 'Reversed (reports at LOW)': ('Umgekehrt (meldet bei LOW)', 'Inversé (signale à LOW)', 'Invertito (segnala a LOW)', 'Invers (annunzia tar LOW)'), 'Found radio devices - tap one to add it:': ('Gefundene Funkgeräte – antippen zum Hinzufügen:', 'Appareils radio trouvés – touchez pour ajouter :', 'Dispositivi radio trovati – tocca per aggiungere:', 'Apparats radio chattads – smatgar per agiuntar:'), 'Door contact': ('Türkontakt', 'Contact de porte', 'Contatto porta', 'Contact da porta'), 'Radio sensor': ('Funksensor', 'Capteur radio', 'Sensore radio', 'Sensor radio'), 'Remove this sensor?': ('Diesen Sensor entfernen?', 'Supprimer ce capteur ?', 'Rimuovere questo sensore?', 'Allontanar quest sensor?'), 'gas / smoke!': ('Gas / Rauch!', 'gaz / fumée !', 'gas / fumo!', 'gas / fim!'), 'motion': ('Bewegung', 'mouvement', 'movimento', 'moviment'), 'moved / triggered': ('bewegt / ausgelöst', 'déplacé / déclenché', 'spostato / attivato', 'movì / deliberà'), 'out of range': ('ausser Reichweite', 'hors de portée', 'fuori portata', 'ordaifer la tschertgira'), 'quiet': ('ruhig', 'calme', 'tranquillo', 'quiet'), 'GPIO error': ('GPIO-Fehler', 'erreur GPIO', 'errore GPIO', 'errur GPIO'), 'waiting for data': ('wartet auf Daten', 'attend des données', 'in attesa di dati', 'spetga datas'), 'choose where it is connected': ('wähle, wo er angeschlossen ist', 'choisis où il est branché', 'scegli dove è collegato', "tscherna nua ch'el è collià"), 'Extra sensors are switched off': ('Zusatz-Sensoren sind ausgeschaltet', 'Les capteurs supplémentaires sont désactivés', 'I sensori aggiuntivi sono spenti', 'Ils sensors supplementars èn deactivads'), 'Motion detector, door contact or gas / smoke module on a GPIO - or radio sensors (433 MHz, Zigbee) and Bluetooth tags. «Test» sends a push message.': ('Bewegungsmelder, Türkontakt oder Gas-/Rauchmodul an einem GPIO – oder Funksensoren (433 MHz, Zigbee) und Bluetooth-Anhänger. «Test» schickt eine Push-Nachricht.', 'Détecteur de mouvement, contact de porte ou module gaz/fumée sur un GPIO – ou capteurs radio (433 MHz, Zigbee) et balises Bluetooth. «Test» envoie un message push.', 'Rilevatore di movimento, contatto porta o modulo gas/fumo su un GPIO – oppure sensori radio (433 MHz, Zigbee) e tag Bluetooth. «Test» invia un messaggio push.', 'Detectur da moviment, contact da porta u modul da gas/fim sin in GPIO – u sensors radio (433 MHz, Zigbee) e pendaglias Bluetooth. «Test» trametta in messadi push.')}
+for _k, _v in _HX22.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
@@ -26247,7 +28189,11 @@ if __name__ == "__main__":
                    device_name=CFG["device_name"] or "Demo")
         a.source = None; a.cam = None
         print("DEMO MODE - settings in " + DATA_DIR)
+    if not DEMO["on"] and not instance_lock(CFG["web_port"]):          # only one Motion Watch at a time
+        if a.boot or not instance_takeover(CFG["web_port"], not a.headless):
+            sys.exit(0)
     start_guard()                                     # after an update: go back if the new version keeps crashing
+    run_guard_start()                                 # did the whole Pi go off last time? two short runs -> safe start
     if a.paused_until and a.paused_until > time.time():
         run_paused(a.paused_until, _base_args())          # comes back by itself (execv), never returns
     if not a.headless and not GUI_OK:
@@ -26268,6 +28214,10 @@ if __name__ == "__main__":
             ap.error("--source must be auto, usb:N, pi:N or an rtsp:// / http:// URL")
     elif a.cam is not None:
         CFG["source"] = f"usb:{a.cam}"
+    if not DEMO["on"]:
+        storage_apply(start=True)                                   # recordings on the chosen SSD / USB drive (if there)
+    LOOPREC = LoopRecorder()
+    threading.Thread(target=rtsp_watch, daemon=True, name="rtsp-watch").start()
     WATCH = MotionWatch()
     if DEMO["on"]:
         CFG["ai_enabled"] = True
@@ -26295,7 +28245,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.42.1 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.54.0 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:
