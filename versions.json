@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 10:06",
+ "generated": "2026-10-25 10:13",
  "versions": [
+  {
+   "version": "2.52.0",
+   "file": "webcam_bewegung_2_52_0.py",
+   "url": "",
+   "sha256": "c158c5701de9f905a93a82f7f44da89062b1913b0d56d5ac9523a88d68ad23a5",
+   "date": "2026-10-25 10:13",
+   "notes": "thermal camera settings in three parts (alarm / picture / camera & alignment); a button left of the settings search hides the whole settings column (a tab at the right edge brings it back).",
+   "sig": "4b4e04a5df3beb4a559afe9e50913199accd9e4c6db0e4171532b748771b98917debe25e4ef655d9702dd6429a734b98108d7299c44e9cf41fab1586c980d609"
+  },
   {
    "version": "2.51.3",
    "file": "webcam_bewegung_2_51_3.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 23:57",
    "notes": "AI model with one tap: «Download AI model» (self-check, AI settings, Pi window) fetches the two model files (about 70 MB) into the data folder and switches the AI on - no commands needed any more.",
    "sig": "2deebc4e6bdcc661fd9a61f15dc9d78d1e44f3ebf744e0bafec592da1ff14c13b6f2b36b3011ef37bb50ac3c40b9d36035d9703411545f5a32a38f2d3e49c10e"
-  },
-  {
-   "version": "2.41.0",
-   "file": "webcam_bewegung_2_41_0.py",
-   "url": "",
-   "sha256": "2d7aa09a03eb6baf38a3f8a864a43683d2c2f4e969ad7c17fa35fb9ba1895e09",
-   "date": "2026-10-24 23:44",
-   "notes": "one-page quick guide for the campsite (5 languages, printable): set up, connect, evening, alarm, morning, when something does not work. The QR card is now called «QR codes for connecting».",
-   "sig": "55679e87bf90dfc84de62f2225dd7170aeaff4a9df518b08ec98dea4fbee028fefb380b3db759b19019824c6269884c4e77deba3dce79066c5579a14a7c2b007"
   }
  ]
 }
