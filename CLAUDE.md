@@ -56,3 +56,8 @@ Pi 5, Camera Module 3 NoIR, Waveshare Thermal-90 (SPI, I2C 0x40, GPIO 7/23/24, T
 2 × MG90S an PCA9685 (0x41; Kanal 0 Pan, 1 Tilt), Licht weiss + IR an PCA9685 Kanal 2/3 (nur ein/aus), USB-Mikrofon,
 USB-Soundkarte + PAM8403 + Lautsprecher oder Bluetooth, Powerbank oder Waveshare UPS HAT (INA219 0x42, 2 × 18650). Gehäuse: parametrisches Python-Modell (`Gehaeuse/`).
 Push über ntfy (App «NTFY me», Server ntfy-me.com). Fernzugriff über Tailscale.
+
+## Simulator
+
+- Der Ordner `simulator/` ist ein eigenes Programm (motionwatch_simulator.py + motionwatch_sim_interface.py + Anleitung).
+- Ab 2.70.0 steckt er auch gepackt in der Motion-Watch-Datei (`SIM_ZIP_B64`, ZIP als base64). **Wer die Simulator-Dateien ändert, muss `SIM_ZIP_B64` neu erzeugen**, sonst installiert Motion Watch die alte Fassung.

@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 18:52",
+ "generated": "2026-10-25 19:02",
  "versions": [
+  {
+   "version": "2.70.0",
+   "file": "webcam_bewegung_2_70_0.py",
+   "url": "",
+   "sha256": "3a341d79a202292bf256604e89755a95f303bf08025b3a69decc0812f2e54e06",
+   "date": "2026-10-25 19:02",
+   "notes": "the simulator is inside Motion Watch (signed with it): «Install simulator» puts it on the Pi with a menu entry and a desktop icon, «Start» / «Stop» runs it on the Pi; «Download (ZIP)» for a PC.",
+   "sig": "32f8dd384024478bd04e2ac9165fa0328cde310ae1b31f82f8ae135e7a1517e16880a87a3c9ed23f3608053a14a1bbe0f0b06b6551c7e9fef3a11724443f0e00"
+  },
   {
    "version": "2.69.0",
    "file": "webcam_bewegung_2_69_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 13:32",
    "notes": "announcement from text (Loudspeaker): the Pi speaks a typed text, offline (pico2wave or espeak-ng); it can be saved as an own sound and then used for the siren / deterrence.",
    "sig": "885af9b0fb4592736797770695122b0939e658ed6a0cdcf1527076ad493eeb2e187e5775c14f80668589c371b1739fb23647d190211cd803aee3a1016b3f990a"
-  },
-  {
-   "version": "2.60.0",
-   "file": "webcam_bewegung_2_60_0.py",
-   "url": "",
-   "sha256": "8208d7fe739ac704ae6bb4aa56342fbb37e164273cebbdf82fb1ae0d7cfc6866",
-   "date": "2026-10-25 13:10",
-   "notes": "event report as PDF (recordings: 📄): pictures, time, place with map link, device, the log around the event and a checksum of the video - for the police or the insurance. No extra program needed.",
-   "sig": "847b976cdcecec97ac5029460187ffd03cb3f487e08de4e03a5fd1a1f5c7e70c11a9f09ba36ae815cde319f91c9f378b2f2687b241c82f9278a066ea598dc00c"
   }
  ]
 }

@@ -61,7 +61,8 @@ python3 motionwatch_sim_interface.py --night
 
 ## Simulation starten (ab Motion Watch 2.69.0)
 
-1. Beide Dateien in einen Ordner legen: `motionwatch_sim_interface.py` und `motionwatch_simulator.py`.
+0. **Am einfachsten** (ab Motion Watch 2.70.0): in Motion Watch unter *System & Netz → 🧪 Simulator* auf **«Simulator auf dem Pi installieren»** drücken. Danach mit **«Simulator hier starten»** starten. Es gibt dann auch ein Symbol auf dem Desktop und einen Eintrag im Menü. **«Für einen PC herunterladen (ZIP)»** lädt beide Dateien für einen PC herunter.
+1. Von Hand: beide Dateien in einen Ordner legen: `motionwatch_sim_interface.py` und `motionwatch_simulator.py`.
 2. Simulator starten: `python3 motionwatch_simulator.py`. Es öffnet sich ein Bedienfenster mit:
    - der Vorschau beider Kameras,
    - Tag / Dämmerung / Nacht,
