@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 13:36",
+ "generated": "2026-10-25 13:39",
  "versions": [
+  {
+   "version": "2.63.0",
+   "file": "webcam_bewegung_2_63_0.py",
+   "url": "",
+   "sha256": "4bf6feb0e728fddaa9f21ebd6e3bae71f65b62662fa9b0f4f1c3a421ad53247c",
+   "date": "2026-10-25 13:39",
+   "notes": "several users (System → Users): own login per person with a role - «Operate» (arm / disarm, lights, camera, talk; no settings) or «View only». The web password stays the administrator. The log shows who did what.",
+   "sig": "193582ff380501cb04f2d87b2de0107c2c68aa4367846d9da4bd118a692ffd5a285a6dbb1edc21dc6883b0f41bd4416af95149187a1647067760f76f7b192702"
+  },
   {
    "version": "2.62.0",
    "file": "webcam_bewegung_2_62_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 11:05",
    "notes": "extra sensors (new group «Sensors»): motion detector (PIR), door / lid contact and gas / smoke module on a GPIO, 433 MHz radio sensors (RTL-SDR stick + rtl_433), Zigbee sensors (Zigbee2MQTT over MQTT) and Bluetooth tags (RuuviTag: moved / out of range). Alarm when armed or always (gas); a PIR wakes the power saving mode.",
    "sig": "74beb9d4d663864f380be2cc56f87ca0b740dcf271edcf2ea1ca9f37338c3ac129a31a6073f25be0a6bafa7ffe23fa6e971082471b061610335bafdf23b09305"
-  },
-  {
-   "version": "2.53.0",
-   "file": "webcam_bewegung_2_53_0.py",
-   "url": "",
-   "sha256": "9f16bbe4c0d9fc9a8a4607cb99e564a5ef6d4ff89ca777e057090f5a36f13695",
-   "date": "2026-10-25 10:31",
-   "notes": "every settings topic has its own symbol (web and window); the camera picture can be turned (90° / 180° / 270°) and mirrored - for a camera mounted sideways or upside down.",
-   "sig": "c8d71d92d5a8108a769fe890b613beebe7052ad9433216bb5989e807b1d953bd373e11df54e54a8e44ee29cb8e1373a69dad8e968da934fb294ce8463a054102"
   }
  ]
 }
