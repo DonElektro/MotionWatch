@@ -43,7 +43,6 @@ Plane etwa 2 Stunden ein und mach den Test, wenn es dunkel ist. Hake ab, was kla
 | ☐ | Fehlalarme in der ersten Stunde gezählt: ____ – jeden mit **👎 «War nichts»** markieren | |
 | ☐ | CPU-Temperatur nach 1 Stunde: ____ °C (ab 70 °C gelb, ab 80 °C rot) | |
 | ☐ | Unterspannung? (🩺 Stromversorgung) | |
-| ☐ | Murmeli: 7× auf den Titel tippen, Dreieck auf dem Bauch → Code erscheint | |
 
 ## 4. Am Morgen
 

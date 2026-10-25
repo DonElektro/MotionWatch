@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 11:58",
+ "generated": "2026-10-25 12:49",
  "versions": [
+  {
+   "version": "2.58.2",
+   "file": "webcam_bewegung_2_58_2.py",
+   "url": "",
+   "sha256": "9d1302cc14f3c755b72bfd5e65b7d3cdf77680d689438bd69da3cfd24172d723",
+   "date": "2026-10-25 12:49",
+   "notes": "self-check: the loudspeaker hint is shorter.",
+   "sig": "f31e34c46d1d5233a8ef33881c542f939b3dfc8533bff826cfcc88b1e3ee96f1c1f60a907493a8afeedf349c666860ff44e576adee515d0eaa329ea476397d01"
+  },
   {
    "version": "2.58.1",
    "file": "webcam_bewegung_2_58_1.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-25 08:50",
    "notes": "«Recalibrate» and «Reset counter» removed from System («↻ Calibrate» stays next to the stick).",
    "sig": "bfcb1e81ef89cb193c7110ead4113b3a21f51652591a50be2f238baf45f6132fdfd6fa46ac7af5257004a2607b47fd03046df27cae85a39e903a2875a1e45a07"
-  },
-  {
-   "version": "2.45.0",
-   "file": "webcam_bewegung_2_45_0.py",
-   "url": "",
-   "sha256": "48d33b69d05c6beddbe8ed83241569a5457dddbb9a71d3638e401a9b74f8b136",
-   "date": "2026-10-25 08:45",
-   "notes": "operator mode may change everything (also zones, schedules, waypoints, relays) - except what could lock you out: Wi-Fi / own Wi-Fi / network, web password, autostart, loading settings, «reset settings», update source. Unlocking with the PIN puts everything back.",
-   "sig": "76f20f76ba4c72ac8a15809b3ecef253d01126875400a89f531130f82bba33159ecb9b82df88ef38b19dd6edb4b9b543bc3a5dc5c1ebd0fa283153ecce602302"
   }
  ]
 }
