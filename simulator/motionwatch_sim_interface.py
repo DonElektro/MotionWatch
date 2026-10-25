@@ -180,6 +180,18 @@ class SimServer:
         """Return the thermal picture as numpy array h x w, float32, degrees Celsius (or None = no thermal camera)."""
         return None
 
+    def control_info(self) -> dict:
+        """GET /control: what the simulation offers to be switched from Motion Watch (e.g. its video scenarios)."""
+        return {"ok": False, "error": "not supported"}
+
+    def control(self, d: dict) -> dict:
+        """POST /control: switch something in the simulation (e.g. {"action": "play", "file": "wald.mp4"})."""
+        return {"ok": False, "error": "not supported"}
+
+    def upload(self, name: str, rfile, length: int) -> dict:
+        """POST /upload?name=<file>: a file (e.g. a video scenario) sent by Motion Watch."""
+        return {"ok": False, "error": "not supported"}
+
     def on_state(self, state: MWState):
         """Called for every POST /state (e.g. to log or to move a 3D model). The default does nothing."""
 
@@ -216,7 +228,25 @@ class SimServer:
                 self._send(code, json.dumps(obj).encode())
 
             def do_POST(self):
-                if self.path.split("?")[0] != "/state":
+                path_, _, q_ = self.path.partition("?")
+                if path_ == "/control":
+                    n = int(self.headers.get("Content-Length") or 0)
+                    try:
+                        d = json.loads(self.rfile.read(n) or b"{}")
+                    except ValueError:
+                        d = {}
+                    try:
+                        return self._json(srv.control(d if isinstance(d, dict) else {}))
+                    except Exception as e:
+                        return self._json({"ok": False, "error": str(e)[:200]}, 500)
+                if path_ == "/upload":
+                    from urllib.parse import unquote
+                    args_ = dict(x.split("=", 1) for x in q_.split("&") if "=" in x)
+                    try:
+                        return self._json(srv.upload(unquote(args_.get("name", "")), self.rfile, int(self.headers.get("Content-Length") or 0)))
+                    except Exception as e:
+                        return self._json({"ok": False, "error": str(e)[:200]}, 500)
+                if path_ != "/state":
                     return self._json({"ok": False, "error": "unknown path"}, 404)
                 n = int(self.headers.get("Content-Length") or 0)
                 try:
@@ -234,6 +264,8 @@ class SimServer:
                 args = dict(x.split("=", 1) for x in q.split("&") if "=" in x)
                 if path == "/info":
                     return self._json(asdict(srv.info))
+                if path == "/control":
+                    return self._json(srv.control_info())
                 if path == "/events":
                     since = int(args.get("since", 0) or 0)
                     with srv.lock:

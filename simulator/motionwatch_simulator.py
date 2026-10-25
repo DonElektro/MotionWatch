@@ -43,7 +43,7 @@ import numpy as np
 
 from motionwatch_sim_interface import SimServer, SimInfo, CamInfo, SimReply, DEFAULT_PORT
 
-SIM_VERSION = "3.2"
+SIM_VERSION = "3.3"
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(HERE, "sim_assets")
 CAM_H = 1.6                                   # height of the cameras above the ground (m)
@@ -77,7 +77,7 @@ class View:
         self.W, self.H = W, H
         self.f = (W / 2.0) / math.tan(math.radians(fov_h) / 2.0)
         cy, sy = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
-        cp, sp = math.cos(math.radians(pitch)), math.sin(math.radians(pitch))
+        cp, sp = math.cos(math.radians(-pitch)), math.sin(math.radians(-pitch))     # pitch > 0 = looking up
         self.R = np.array([[cy, sy * sp, sy * cp], [0, cp, -sp], [-sy, cy * sp, cy * cp]], np.float64)
 
     def project(self, az, el):
@@ -423,6 +423,63 @@ class CampingSim(SimServer):
         if self.video is not None:
             self.video.stop()
         self.video = VideoScene(path, self) if path else None
+
+    # ---- switched from the web page of Motion Watch ------------------------------------------------------------------
+    def control_info(self):
+        v = self.video
+        return {"ok": True, "videos": [{"name": n, "file": os.path.basename(p)} for n, p in video_list()],
+                "playing": os.path.basename(v.path) if v is not None else "", "name": v.name if v is not None else "",
+                "msg": v.msg if v is not None else "", "figures": bool(self.video_figures), "version": SIM_VERSION}
+
+    def control(self, d):
+        a = d.get("action")
+        if a == "play":
+            f = os.path.basename(str(d.get("file") or ""))
+            p = os.path.join(VIDEO_DIR, f)
+            if not f or not os.path.isfile(p):
+                return {"ok": False, "error": "video not found"}
+            self.load_video(p)
+        elif a == "stop":
+            self.load_video(None)
+        elif a == "figures":
+            self.video_figures = bool(d.get("on"))
+        elif a == "delete":
+            f = os.path.basename(str(d.get("file") or ""))
+            p = os.path.join(VIDEO_DIR, f)
+            if not f.lower().endswith(VIDEO_EXT) or not os.path.isfile(p):
+                return {"ok": False, "error": "video not found"}
+            if self.video is not None and os.path.basename(self.video.path) == f:
+                self.load_video(None)
+            for x in (p, os.path.splitext(p)[0] + ".json", os.path.join(VIDEO_DIR, ".klein", os.path.splitext(f)[0] + ".mp4")):
+                try:
+                    os.remove(x)
+                except OSError:
+                    pass
+        elif a != "list":
+            return {"ok": False, "error": "unknown action"}
+        return self.control_info()
+
+    def upload(self, name, rfile, length):
+        import re as _re
+        name = os.path.basename(name or "")
+        base, ext = os.path.splitext(name)
+        base = _re.sub(r"[^\w\-]+", "_", base)[:60].strip("_") or "video"
+        if ext.lower() not in VIDEO_EXT + (".json",):
+            return {"ok": False, "error": "only videos (mp4, mov, mkv, webm, avi) or .json"}
+        if length <= 0 or length > 4 * 1024 ** 3:
+            return {"ok": False, "error": "file empty or bigger than 4 GB"}
+        os.makedirs(VIDEO_DIR, exist_ok=True)
+        dst = os.path.join(VIDEO_DIR, base + ext.lower()); tmp = dst + ".part"; left = length
+        with open(tmp, "wb") as f:
+            while left > 0:
+                b = rfile.read(min(1 << 20, left))
+                if not b:
+                    break
+                f.write(b); left -= len(b)
+        if left:
+            os.remove(tmp); return {"ok": False, "error": "upload interrupted"}
+        os.replace(tmp, dst)
+        return dict(self.control_info(), saved=os.path.basename(dst))
 
     def _vid(self):
         v = self.video

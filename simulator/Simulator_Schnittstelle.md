@@ -170,3 +170,9 @@ Statt der gezeichneten Welt kann der Simulator ein **Video** abspielen. Die Kame
 - Tiere im Video flüchten **nicht** vor der Sirene. Das Video läuft einfach weiter.
 - Mit «gezeichnete Besucher zusätzlich ins Video» laufen die gezeichneten Figuren und Autos zusätzlich durchs Video.
 - Start ohne Fenster mit Video: `python3 motionwatch_simulator.py --no-window --video wald.mp4`
+
+**Von der Webseite aus (ab Motion Watch 2.76.0, Simulator 3.3):** Unter *System & Netz → 🧪 Simulator → 🎬 Video-Szenarien* stehen die Videos des Simulators zur Auswahl.
+- Mit **Abspielen**, **Stopp** und **Löschen** steuerst du sie.
+- Mit dem Häkchen laufen zusätzlich gezeichnete Besucher durchs Video.
+- Mit **«Datei auswählen»** lädst du ein Video direkt vom Handy oder PC in den Video-Ordner des Simulators. Das geht auch, wenn der Simulator auf einem anderen PC läuft. Motion Watch reicht die Datei nur weiter und behält sie nicht.
+- Der Bereich erscheint, sobald der Simulator verbunden ist oder auf dem Pi läuft.
