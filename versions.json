@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 13:01",
+ "generated": "2026-10-25 13:07",
  "versions": [
+  {
+   "version": "2.59.0",
+   "file": "webcam_bewegung_2_59_0.py",
+   "url": "",
+   "sha256": "a5d36af8a4963041050ca9f80009406e82150bd9990b788438876a0855d82c79",
+   "date": "2026-10-25 13:07",
+   "notes": "lens check - push message when the picture stays blurred and flat for 15 minutes (dew, dirt, spider web); temperature alarm (e.g. a pet in the caravan): push when it gets too hot or too cold, and when it is fine again.",
+   "sig": "7cfc2c22d5d6f17e8f212a5e996e6c67bacd7871aaede082146fd1a868b36d144751aa838f4125ee09446b8863815da7c523dcbba7de4cb20d533835715ca40c"
+  },
   {
    "version": "2.58.2",
    "file": "webcam_bewegung_2_58_2.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 09:23",
    "notes": "picture for other programs (Home Assistant, Frigate, Blue Iris, VLC, NAS recorders): a secret address for the video (MJPEG) and a still picture, no login needed; optionally RTSP (H.264) if mediamtx is installed.",
    "sig": "84cba5c734353e21f6efcc838bf1ce6a31c063744868727c47eea9788d9c4b02856cf2511d1914b5b8cd816a7339a51436366d28fef97e17f14c0d78f676d104"
-  },
-  {
-   "version": "2.49.0",
-   "file": "webcam_bewegung_2_49_0.py",
-   "url": "",
-   "sha256": "6507f491b18ce943a0f5aceff0d7240e5be9feed925bdb26a250c1b2d90d1349",
-   "date": "2026-10-25 09:20",
-   "notes": "continuous recording (off by default): all the time with few pictures per second in 10-minute pieces, kept for N hours; the recordings page shows a 24-hour timeline with the alarms marked - tap to watch.",
-   "sig": "324065cbcb67d13641a1c5897437cfd8518cb5f34394185d8cce3cfc9076d8a2471009e9f7bb47e9c2ae8e4d1883de4966de0da8b89f1651475097390a271c07"
   }
  ]
 }
