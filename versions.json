@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 20:14",
+ "generated": "2026-10-25 20:57",
  "versions": [
+  {
+   "version": "2.75.0",
+   "file": "webcam_bewegung_2_75_0.py",
+   "url": "",
+   "sha256": "dfdc2acadca400381e4c29764281f0692930b333be29e6eb1fcc0b5f9b01edf8",
+   "date": "2026-10-25 20:57",
+   "notes": "simulator video scenarios: a 360° video (or a normal video) instead of the drawn world - real pictures, the cameras look around in it with the servos, big videos are made smaller once, rough thermal picture (what moves is warm), optional sensor events per video second (.json next to the video).",
+   "sig": "054d6336800dfa1e8963d512dd3aa8901e1158e5c38975e42ca37b4ddc47259c2ab2a2c1932d6cc8c3d6d79313922e52cd3578b6502bb2880cd134434841c602"
+  },
   {
    "version": "2.74.1",
    "file": "webcam_bewegung_2_74_1.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 13:50",
    "notes": "the guide (all five languages) describes the new parts: sensors, storm warning, GPS, solar, turning the picture, mask and talk tiles, lens check, announcements, animal species, PDF report, users, hardware check.",
    "sig": "ae98c6b0a5f32bcc9b1b61d7274ac07d9cfc0573eafb7b3c11b363ee9d118253e32edc238ab7532265f4f6368ebce31d22be9b1664a0d0eab6c8050c91f45709"
-  },
-  {
-   "version": "2.65.0",
-   "file": "webcam_bewegung_2_65_0.py",
-   "url": "",
-   "sha256": "57507cc41724bf64f3980948b794a93711b954f08d8ef743016c77a175b77eca",
-   "date": "2026-10-25 13:45",
-   "notes": "animal species (AI detection): a second AI model (ONNX, e.g. for fox, badger, wild boar, marten, deer) looks at every animal the first AI finds; the species appears on the picture, in the log and in the diary. The model is not included - it is installed from an address (URL) or copied into the models folder.",
-   "sig": "1b547b59d0863d19af1120dd683972bf8ba6568a0410b5360e6ed8b1bbcee37e180892c7bd2eb8e09cd202d44cf527b5972e872312b70789363b7f69c86e3206"
   }
  ]
 }

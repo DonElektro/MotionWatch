@@ -130,3 +130,43 @@ Das Bedienfenster hat vier Reiter:
 - Die Kamerabilder sind normal 960 × 540 (Kamera 1: 640 × 360). Wer grössere Bilder will, startet den Simulator mit `--hd`. Das braucht aber deutlich mehr CPU.
 - Im Fenster steht, wie viele Bilder pro Sekunde gerade abgeholt werden.
 - Ab 2.74.1 läuft die KI-Erkennung in der Simulation mit «CPU schonen» nur halb so oft.
+
+## Video-Szenarien: echte Bilder statt gezeichneter Welt (ab Motion Watch 2.75.0)
+
+Statt der gezeichneten Welt kann der Simulator ein **Video** abspielen. Die Kameras schauen darin herum, wie die Servos stehen. Das braucht wenig Rechenleistung und liefert echte Bilder. Das ist ideal, um die KI zu testen.
+
+**So geht es:**
+1. Im Simulator-Fenster, Reiter «Szene», auf **«Video-Ordner öffnen»** drücken. Dort die Videos hineinkopieren (mp4, mov, mkv, webm, avi). Auf dem Pi ist das der Ordner `simulator/sim_assets/videos` im Datenordner von Motion Watch.
+2. Mit **↻** die Liste neu laden, das Video auswählen und **«Abspielen»** drücken. Mit **«Stopp»** geht es zurück zur gezeichneten Welt.
+3. Das Video läuft in einer Schlaufe.
+
+**Welche Videos:**
+- **360°-Videos** (Format 2:1, z. B. von einer 360°-Kamera wie Insta360 oder Ricoh Theta): Die Kamera kann rundherum schwenken. Das ist am echtesten.
+- **Normale Videos** (Handy, Überwachungskamera): Sie liegen geradeaus, standardmässig 90° breit. Schwenkt die Kamera weiter, sieht sie einen dunklen, unscharfen Rand.
+- Kostenlose 360°-Videos gibt es im Internet, zum Beispiel auf Pixabay (Suchwort «360»). Am besten eignen sich Nachtaufnahmen, Waldwege und Parkplätze.
+- Grosse Videos (4K) werden beim ersten Abspielen **einmal verkleinert**: 2048 Pixel breit, 15 Bilder pro Sekunde. Das dauert auf dem Pi einige Minuten, danach läuft es flüssig. Dafür braucht es `ffmpeg`, auf dem Pi ist es meist schon da.
+
+**Einstellungen pro Video (freiwillig):** Eine Textdatei mit dem gleichen Namen und der Endung `.json` neben das Video legen, zum Beispiel `wald_nacht.json`:
+
+```json
+{"name": "Wald in der Nacht", "night": true, "hour": 23, "ambient": 9, "fov": 90, "yaw": 0,
+ "events": [{"t": 12.5, "sensor": "PIR Zelt", "kind": "pir"},
+            {"t": 40, "sensor": "Wohnwagen-Tür", "kind": "door", "active": true}]}
+```
+
+| Eintrag | Bedeutung |
+|---|---|
+| `name` | Name in der Liste |
+| `night` | `true` = Nacht, `false` = Tag. Ohne Angabe wird es an der Helligkeit erkannt. |
+| `hour`, `ambient` | Uhrzeit und Lufttemperatur der Szene |
+| `fov` | nur bei normalen Videos: wie breit das Bild ist (Grad) |
+| `yaw` | welche Richtung im 360°-Video «geradeaus» ist (Grad) |
+| `events` | Sensor-Meldungen bei dieser Sekunde des Videos, bei jeder Schlaufe |
+
+**Was echt ist und was nicht:**
+- Echt: die Bilder, die Bewegungen, das Licht, wie es gefilmt wurde.
+- Das weisse Licht und das IR-Licht hellen in der Nacht den nahen Boden auf. Das ist eine Schätzung, weil das Video keine Entfernungen kennt.
+- Das Wärmebild ist **grob geschätzt**: Der Himmel ist kalt, der Boden etwa so warm wie die Luft, und was sich bewegt, wird warm (Menschen, Tiere).
+- Tiere im Video flüchten **nicht** vor der Sirene. Das Video läuft einfach weiter.
+- Mit «gezeichnete Besucher zusätzlich ins Video» laufen die gezeichneten Figuren und Autos zusätzlich durchs Video.
+- Start ohne Fenster mit Video: `python3 motionwatch_simulator.py --no-window --video wald.mp4`

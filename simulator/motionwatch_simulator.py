@@ -43,7 +43,7 @@ import numpy as np
 
 from motionwatch_sim_interface import SimServer, SimInfo, CamInfo, SimReply, DEFAULT_PORT
 
-SIM_VERSION = "3.1"
+SIM_VERSION = "3.2"
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(HERE, "sim_assets")
 CAM_H = 1.6                                   # height of the cameras above the ground (m)
@@ -152,6 +152,168 @@ class Walker:
         return math.degrees(math.atan2(self.x, self.z)), math.hypot(self.x, self.z)
 
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+# 360° video scenarios: a real filmed scene instead of the drawn world (cheap for the CPU, real pictures for the AI)
+# ----------------------------------------------------------------------------------------------------------------------
+VIDEO_DIR = os.path.join(ASSETS, "videos")
+VIDEO_EXT = (".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v")
+EQ_VW = 2048                                   # width of the 360° picture made from a video (2048 x 1024)
+
+
+def video_list():
+    """All videos in sim_assets/videos: [(name shown, path)]."""
+    out = []
+    for p in sorted(glob.glob(os.path.join(VIDEO_DIR, "*"))):
+        if p.lower().endswith(VIDEO_EXT) and os.path.isfile(p):
+            out.append((VideoScene.read_meta(p).get("name") or os.path.splitext(os.path.basename(p))[0], p))
+    return out
+
+
+class VideoScene:
+    """Plays a video in a loop as the world of the simulation.
+    360° video (equirectangular, 2:1): the cameras look around in it. A normal video: it fills "fov" degrees straight ahead.
+    Optional settings next to the video, same name with .json, e.g. wald_nacht.json:
+      {"name": "Wald in der Nacht", "night": true, "hour": 23, "ambient": 9, "fov": 90, "yaw": 0,
+       "events": [{"t": 12.5, "sensor": "PIR Zelt", "kind": "pir"}, {"t": 40, "sensor": "Wohnwagen-Tür", "kind": "door", "active": true}]}
+    night: true/false (otherwise guessed from the brightness), yaw: which direction of the video is straight ahead (degrees),
+    events: sensor messages at these seconds of the video (every loop)."""
+
+    def __init__(self, path, sim):
+        self.path = path; self.sim = sim; self.meta = self.read_meta(path)
+        self.name = self.meta.get("name") or os.path.splitext(os.path.basename(path))[0]
+        self.frame = None; self.moving = None; self.lum = 128.0; self.t = 0.0; self.length = 0.0
+        self.equi = None; self.stop_ = False; self.msg = "wird geöffnet …"; self.small = False
+        self.bg = cv2.createBackgroundSubtractorMOG2(history=150, varThreshold=24, detectShadows=False)
+        threading.Thread(target=self._run, daemon=True).start()
+
+    @staticmethod
+    def read_meta(path):
+        try:
+            import json
+            with open(os.path.splitext(path)[0] + ".json", encoding="utf-8") as f:
+                m = json.load(f)
+            return m if isinstance(m, dict) else {}
+        except (OSError, ValueError):
+            return {}
+
+    def ok(self):
+        return self.frame is not None and not self.stop_
+
+    def stop(self):
+        self.stop_ = True
+
+    def night(self):
+        n = self.meta.get("night")
+        return bool(n) if n is not None else self.lum < 50
+
+    def light(self):
+        return 0.03 if self.night() else float(np.clip((self.lum - 20) / 110.0, 0.13, 1.0))
+
+    def _prepared(self, cap):
+        """Big videos (4K) cost much CPU to decode: once made smaller with ffmpeg (2048 wide, 15 pictures/s) and kept."""
+        import shutil, subprocess
+        w = cap.get(cv2.CAP_PROP_FRAME_WIDTH) or 0; fps = cap.get(cv2.CAP_PROP_FPS) or 25
+        if (w <= EQ_VW and fps <= 16) or not shutil.which("ffmpeg"):
+            return None
+        d = os.path.join(os.path.dirname(self.path), ".klein"); os.makedirs(d, exist_ok=True)
+        out = os.path.join(d, os.path.splitext(os.path.basename(self.path))[0] + ".mp4")
+        if os.path.isfile(out) and os.path.getmtime(out) >= os.path.getmtime(self.path):
+            return out
+        self.msg = "wird für den Pi verkleinert (einmalig, kann einige Minuten dauern) …"
+        tmp = out + ".tmp.mp4"
+        r = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", self.path, "-vf", f"scale='min({EQ_VW},iw)':-2,fps=15",
+                            "-c:v", "libx264", "-preset", "veryfast", "-crf", "24", "-an", tmp], capture_output=True)
+        if r.returncode == 0 and os.path.isfile(tmp):
+            os.replace(tmp, out); return out
+        return None
+
+    def _canvas(self, fr):
+        """A video picture -> 360° picture (2048 x 1024)."""
+        h, w = fr.shape[:2]
+        if self.equi is None:
+            e = self.meta.get("equirect")
+            self.equi = bool(e) if e is not None else abs(w - 2 * h) <= h * 0.04
+        if self.equi:
+            c = cv2.resize(fr, (EQ_VW, EQ_VW // 2), interpolation=cv2.INTER_AREA) if w != EQ_VW else fr
+        else:                                       # a normal video straight ahead (flat, as filmed), around it a dim blurred rest
+            if getattr(self, "_gm", None) is None or self._gm[0] != (w, h):
+                fov = math.radians(min(150.0, max(20.0, float(self.meta.get("fov", 90)))))
+                fl = (w / 2.0) / math.tan(fov / 2.0); PW, PH = EQ_VW, EQ_VW // 2
+                lon = ((np.arange(PW, dtype=np.float32) + 0.5) / PW * 2 * math.pi - math.pi)[None, :]
+                lat = (math.pi / 2 - (np.arange(PH, dtype=np.float32) + 0.5) / PH * math.pi)[:, None]
+                dx, dy, dz = np.cos(lat) * np.sin(lon), np.sin(lat) * np.ones_like(lon), np.cos(lat) * np.cos(lon)
+                front = dz > 0.05; dz = np.where(front, dz, 1.0)
+                mx = np.where(front, w / 2.0 + fl * dx / dz, -10).astype(np.float32)
+                my = np.where(front, h / 2.0 - fl * dy / dz, -10).astype(np.float32)
+                inside = ((mx >= 0) & (mx < w - 1) & (my >= 0) & (my < h - 1)).astype(np.float32)
+                self._gm = ((w, h), mx, my, cv2.GaussianBlur(inside, (0, 0), 2.0)[..., None])
+            _k, mx, my, alpha = self._gm
+            pic = cv2.remap(fr, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE).astype(np.float32)
+            rest = cv2.resize(cv2.resize(fr, (32, 16), interpolation=cv2.INTER_AREA), (EQ_VW, EQ_VW // 2)).astype(np.float32) * 0.5
+            c = (pic * alpha + rest * (1 - alpha)).astype(np.uint8)
+        yaw = float(self.meta.get("yaw", 0) or 0)
+        if yaw:
+            c = np.roll(c, -int(yaw / 360.0 * EQ_VW), axis=1)
+        return c
+
+    def _run(self):
+        cap = cv2.VideoCapture(self.path)
+        if not cap.isOpened():
+            self.msg = "Video lässt sich nicht öffnen"; return
+        p = self._prepared(cap)
+        if p:
+            cap.release(); cap = cv2.VideoCapture(p); self.small = True
+        fps = min(25.0, cap.get(cv2.CAP_PROP_FPS) or 25.0); n = cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0
+        self.length = n / fps if n > 0 else 0.0
+        if self.meta.get("hour") is not None:
+            self.sim.set_hour(float(self.meta["hour"]))
+        if self.meta.get("ambient") is not None:
+            self.sim.ambient = float(self.meta["ambient"])
+        evs = [e for e in (self.meta.get("events") or []) if isinstance(e, dict) and "t" in e]
+        idx = 0; t0 = time.time(); last_t = -1.0
+        while not self.stop_:
+            ok, fr = cap.read()
+            if not ok:                                               # end: from the start again
+                cap.set(cv2.CAP_PROP_POS_FRAMES, 0); idx = 0; t0 = time.time(); last_t = -1.0
+                ok, fr = cap.read()
+                if not ok:
+                    self.msg = "Video lässt sich nicht lesen"; return
+            vt = idx / fps; idx += 1
+            for e in evs:                                            # sensor messages of the scenario
+                if last_t < float(e["t"]) <= vt:
+                    self.sim.add_event(str(e.get("sensor", "Sensor")), str(e.get("kind", "other")), e.get("active"))
+            last_t = vt
+            c = self._canvas(fr)
+            sm = cv2.resize(c, (256, 128), interpolation=cv2.INTER_AREA)
+            m = self.bg.apply(cv2.cvtColor(sm, cv2.COLOR_BGR2GRAY))  # what moves = warm (people, animals) for the thermal picture
+            m = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((2, 2), np.uint8))
+            self.moving = cv2.GaussianBlur(m.astype(np.float32) / 255.0, (0, 0), 1.2)
+            fs = cv2.resize(fr, (128, 64), interpolation=cv2.INTER_AREA)                     # brightness of the filmed picture
+            self.lum = float(cv2.cvtColor(fs[32:] if self.equi else fs, cv2.COLOR_BGR2GRAY).mean())
+            self.frame = c; self.t = vt
+            self.msg = (f"läuft {int(vt // 60):02d}:{int(vt % 60):02d}" + (f" / {int(self.length // 60):02d}:{int(self.length % 60):02d}" if self.length else "")
+                        + (" · 360°" if self.equi else f" · normales Video ({int(float(self.meta.get('fov', 90)))}°)")
+                        + (" · verkleinert" if self.small else "") + (" · Nacht" if self.night() else " · Tag"))
+            time.sleep(max(0.0, t0 + idx / fps - time.time()))
+        cap.release()
+
+    def temp_map(self, amb, cl, sun):
+        """Rough temperature picture (256 x 128, °C) made from the video: sky cold, ground about the air, moving things warm."""
+        c = self.frame; mv = self.moving
+        if c is None:
+            return None
+        sm = cv2.resize(c, (256, 128), interpolation=cv2.INTER_AREA).astype(np.float32)
+        b, g, r = sm[..., 0], sm[..., 1], sm[..., 2]; lum = (b + g + r) / 3.0
+        T = np.full((128, 256), amb, np.float32)
+        T += (lum - lum.mean()) / 255.0 * (6.0 * sun)                         # by day dark things in the sun are warmer
+        upper = np.zeros((128, 256), bool); upper[:64] = True
+        skym = upper & (((b > r + 8) & (lum > 90)) | (lum > 170) | (self.night() & (lum < 40)))
+        T[skym] = amb - (35.0 * (1 - cl) + 4.0 * cl) * 0.8
+        if mv is not None:
+            T = T * (1 - mv) + 30.0 * mv
+        return cv2.GaussianBlur(T, (0, 0), 0.8)
+
 # ----------------------------------------------------------------------------------------------------------------------
 # the simulator
 # ----------------------------------------------------------------------------------------------------------------------
@@ -176,6 +338,7 @@ class CampingSim(SimServer):
         self.exposure = {0: 1.0, 1: 1.0}; self._cache = {}; self._bugs = []
         self.pano_file = pano or (os.path.join(ASSETS, "pano.jpg") if os.path.isfile(os.path.join(ASSETS, "pano.jpg")) else None)
         self._photo = None; self._world = None; self._world_key = None
+        self.video = None; self.video_figures = False                  # 360° video scenario; also draw visitors on it
         rng = random.Random(7)
         self.trees = [(rng.uniform(-170, 170), rng.uniform(16, 50), rng.uniform(0.8, 1.35)) for _ in range(34)]
         self.stones = [(rng.uniform(-60, 60), rng.uniform(4, 15)) for _ in range(6)]
@@ -255,7 +418,19 @@ class CampingSim(SimServer):
         lv = self.light_level(t)
         return min(1.0, 0.1 + lv) if lv > 0.1 else lv * 2.0
 
+    def load_video(self, path):
+        """Play a video scenario (path) - None: back to the drawn world / the photo."""
+        if self.video is not None:
+            self.video.stop()
+        self.video = VideoScene(path, self) if path else None
+
+    def _vid(self):
+        v = self.video
+        return v if v is not None and v.ok() else None
+
     def light_level(self, t=None):
+        if self._vid() is not None:
+            return self.video.light()
         lv = 0.015 + 0.04 * self.moon * (1 - self.clouds()) + 0.95 * self.sun(t) * (1 - 0.45 * self.clouds())
         return float(lv)
 
@@ -624,7 +799,8 @@ class CampingSim(SimServer):
             return np.clip(np.random.default_rng().normal(8, 3, (H, W, 3)), 0, 255).astype(np.uint8)
         yaw, pitch = (st.servo.pan_deg, st.servo.tilt_deg - 6.0) if info.on_head else (self.cam1_yaw, -10.0)
         v = View(W, H, info.fov_h, yaw, pitch)
-        photo = self._photo_world()
+        vid = self._vid()
+        photo = vid.frame if vid is not None else self._photo_world()
         dist = self._static()[0]
         src = photo if photo is not None else self._world_colour(t)
         mx, my, ang = eq_maps(W, H, info.fov_h, yaw, pitch, src.shape[1], src.shape[0])
@@ -634,6 +810,8 @@ class CampingSim(SimServer):
         lv = self.light_level(t); dark = lv < 0.12
         with self.wlock:
             ws = list(self.walkers); cars = list(self.cars)
+        if vid is not None and not self.video_figures:
+            ws, cars = [], []                                            # the video brings its own visitors
         items = [(w.az_dist()[1], lambda im, dp, w=w: self._walker(im, dp, v, w)) for w in ws]
         items += [(OBJECTS["road"][1] + 1.5, lambda im, dp, c=c: self._car(im, dp, v, c)) for c in cars]
         if photo is None:
@@ -643,7 +821,10 @@ class CampingSim(SimServer):
         emit = dep < 0; dep = np.abs(dep)                                # things that shine by themselves (a lit window)
         sky = dep >= FAR * 0.9
         alb = img.astype(np.float32)                                     # colours as in daylight
-        k = np.where(sky, self.sky_k(t) if photo is not None else 1.0, self.ambient_k(t)).astype(np.float32)
+        if vid is not None:
+            k = np.ones((H, W), np.float32)                              # a video is already as bright as it was filmed
+        else:
+            k = np.where(sky, self.sky_k(t) if photo is not None else 1.0, self.ambient_k(t)).astype(np.float32)
         k[emit] = 1.0
         f = alb * k[..., None]
         # artificial light: falls off with the distance (depth buffer), only where the lamp shines
@@ -661,12 +842,16 @@ class CampingSim(SimServer):
                 if p:
                     g = np.zeros((H, W), np.float32); cv2.circle(g, (int(p[0]), int(p[1])), int(v.f * 2.5 / d), 1.0, -1)
                     add += cv2.GaussianBlur(g, (0, 0), v.f * 1.2 / d + 1) * 0.6 * (dep < 60)
-            f = f + alb * 0.55 * add[..., None] * (~sky & ~emit)[..., None]           # the sky gets no lamp light
+            if vid is not None:                                          # dark video: the lamp brings out what is near
+                f = f + (alb * 2.5 + 22.0) * 0.55 * add[..., None] * (~sky & ~emit)[..., None]
+            else:
+                f = f + alb * 0.55 * add[..., None] * (~sky & ~emit)[..., None]       # the sky gets no lamp light
         # haze and fog grow with the distance
         vis = VISIBILITY.get(self.weather, 6000.0)
         haze = np.where(dep >= FAR * 0.9, 1.0 - math.exp(-300.0 / vis), 1.0 - np.exp(-dep / vis)).astype(np.float32)
         hcol = np.array([182, 180, 176], np.float32) * max(0.04, min(1.0, lv * 1.2))
-        f = f * (1 - haze[..., None]) + hcol * haze[..., None]
+        if vid is None or self.weather not in ("clear", "cloudy"):        # a video already has its own haze
+            f = f * (1 - haze[..., None]) + hcol * haze[..., None]
         img = np.clip(f, 0, 255).astype(np.uint8)
         for c in cars if dark else []:                               # headlights: bright points with glare
             if c.get("_scr"):
@@ -778,7 +963,10 @@ class CampingSim(SimServer):
         S = 4; W, H = w * S, h * S                                      # drawn 4x finer, then the optics blur it down
         yaw, pitch = st.servo.pan_deg, st.servo.tilt_deg - 6.0
         v = View(W, H, th["fov_h"], yaw, pitch)
-        T = self._world_temp(t)
+        vid = self._vid()
+        T = vid.temp_map(self.ambient, self.clouds(), 0.0 if vid.night() else 0.8) if vid is not None else None
+        if T is None:
+            T = self._world_temp(t); vid = None
         mx, my, _a = eq_maps(W, H, th["fov_h"], yaw, pitch, T.shape[1], T.shape[0])
         a = cv2.remap(T, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_WRAP)
         amb = self.ambient; sun = max(0.0, self.sun_el(t)) / 50.0; hour = self.hour(t)
@@ -821,6 +1009,10 @@ class CampingSim(SimServer):
             items.append((d3, stone))
         with self.wlock:
             ws = list(self.walkers); cars = list(self.cars)
+        if vid is not None:                                             # the video: no drawn caravan, tent, trees
+            items = []
+            if not self.video_figures:
+                ws, cars = [], []
         for wk in ws:
             def body(wk=wk):
                 az4, d4 = wk.az_dist(); foot = v.ground(az4, d4); top = v.ground(az4, d4, KINDS[wk.kind][0])
@@ -935,6 +1127,44 @@ def window(sim):
     ttk.Button(pf, text="Foto laden …", command=pick).pack(side="left", expand=True, fill="x")
     ttk.Button(pf, text="gezeichnete Welt", command=lambda: sim.load_pano(None)).pack(side="left", expand=True, fill="x")
     slider(t1, "Kamera 1: Richtung", -90, 90, lambda: sim.cam1_yaw, lambda v: setattr(sim, "cam1_yaw", v), 1)
+    lab(t1, "VIDEO-SZENARIO (360° ODER NORMAL)")
+    vids = {}
+    vcb = ttk.Combobox(t1, state="readonly", width=34)
+
+    def refresh_videos():
+        vids.clear(); vids.update({n: p for n, p in video_list()})
+        vcb["values"] = list(vids) or ["(keine Videos im Ordner sim_assets/videos)"]
+        if vids and not vcb.get() in vids:
+            vcb.set(next(iter(vids)))
+    refresh_videos(); vcb.pack(fill="x")
+
+    def play():
+        if vcb.get() in vids:
+            sim.load_video(vids[vcb.get()])
+
+    def pick_video():
+        p = filedialog.askopenfilename(title="Video-Szenario", filetypes=[("Videos", " ".join("*" + e for e in VIDEO_EXT))])
+        if p:
+            sim.load_video(p)
+    vf = tk.Frame(t1, bg=BG); vf.pack(fill="x")
+    ttk.Button(vf, text="Abspielen", command=play).pack(side="left", expand=True, fill="x")
+    ttk.Button(vf, text="Anderes …", command=pick_video).pack(side="left", expand=True, fill="x")
+    ttk.Button(vf, text="Stopp", command=lambda: sim.load_video(None)).pack(side="left", expand=True, fill="x")
+    ttk.Button(vf, text="↻", width=3, command=refresh_videos).pack(side="left")
+
+    def open_folder():
+        import subprocess
+        os.makedirs(VIDEO_DIR, exist_ok=True)
+        try:
+            if sys.platform.startswith("win"):
+                os.startfile(VIDEO_DIR)
+            else:
+                subprocess.Popen(["open" if sys.platform == "darwin" else "xdg-open", VIDEO_DIR])
+        except Exception:
+            pass
+    ttk.Button(t1, text="Video-Ordner öffnen", command=open_folder).pack(fill="x")
+    check(t1, "gezeichnete Besucher zusätzlich ins Video", lambda: sim.video_figures, lambda v: setattr(sim, "video_figures", v))
+    vmsg = tk.Label(t1, text="", bg=BG, fg=MUT, anchor="w", justify="left", wraplength=330); vmsg.pack(fill="x")
     t2 = tab("Wetter")
     lab(t2, "WETTER")
     wv = tk.StringVar(value=sim.weather)
@@ -990,6 +1220,9 @@ def window(sim):
                                f"Welt: {int(sim.hour()):02d}:{int(sim.hour() % 1 * 60):02d} {'Nacht' if wr.dark else 'Tag'} · {sim.weather} · "
                                f"{wr.ambient_c} °C · {wr.pressure_hpa} hPa · Wind {wr.wind_kmh} km/h · Besucher {len(sim.walkers)}"))
         upd.configure(text=sim.update_msg)
+        if sim.video is not None and vcb.get() != sim.video.name and sim.video.name in vids:
+            vcb.set(sim.video.name)
+        vmsg.configure(text=(f"{sim.video.name}: {sim.video.msg}" if sim.video is not None else "aus – gezeichnete Welt oder 360°-Foto"))
         root.after(500, tick)
     tick()
     root.mainloop()
@@ -1002,10 +1235,17 @@ if __name__ == "__main__":
     ap.add_argument("--no-update", action="store_true", help="never update itself from Motion Watch")
     ap.add_argument("--hd", action="store_true", help="bigger camera pictures (needs much more CPU)")
     ap.add_argument("--pano", help="own 360° photo (equirectangular 2:1) or a panorama")
+    ap.add_argument("--video", help="play this video scenario (360° video or a normal video)")
     ap.add_argument("--hour", type=float, help="start at this hour (e.g. 22.5)")
     ap.add_argument("--night", action="store_true"); ap.add_argument("--day", action="store_true")
     a = ap.parse_args()
+    try:
+        os.makedirs(VIDEO_DIR, exist_ok=True)                          # here go the video scenarios
+    except OSError:
+        pass
     sim = CampingSim(a.port, a.pano, autoupdate=not a.no_update, hd=a.hd)
+    if a.video:
+        sim.load_video(a.video)
     if a.hour is not None:
         sim.set_hour(a.hour)
     elif a.night:
