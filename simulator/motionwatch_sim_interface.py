@@ -167,6 +167,8 @@ class SimServer:
         self.events: List[SimEvent] = []
         self.mw_addr = ""
         self.lock = threading.Lock()
+        # every picture is drawn only once and shared (Motion Watch, a second viewer and the window): saves much CPU
+        self._frames = {}; self._flocks = {}; self._served = {}
         self._httpd = None
 
     # ---- to be written by the simulation ------------------------------------------------------------------------
@@ -238,7 +240,7 @@ class SimServer:
                         evs = [asdict(e) for e in srv.events if e.id > since]
                     return self._json({"v": PROTOCOL, "events": evs})
                 if path in ("/thermal.bin", "/thermal.json"):
-                    a = srv.render_thermal(srv.state, time.time())
+                    a = srv.thermal_frame(0.1, count=True)
                     if a is None:
                         return self._json({"ok": False, "error": "no thermal camera"}, 404)
                     import numpy as np
@@ -252,9 +254,13 @@ class SimServer:
                     if cam >= len(srv.info.cameras):
                         return self._json({"ok": False, "error": "no such camera"}, 404)
                     if parts[2] == "snapshot.jpg":
-                        return self._send(200, srv._jpg(cam), "image/jpeg")
-                    if parts[2] == "video.mjpg":
-                        return srv._mjpeg(self, cam)
+                        return self._send(200, srv._jpg(cam, 0.2), "image/jpeg")
+                    if parts[2] == "video.mjpg":                     # ?fps=6: Motion Watch asks for fewer pictures (less CPU)
+                        try:
+                            fps = float(args.get("fps", 0) or 0)
+                        except ValueError:
+                            fps = 0.0
+                        return srv._mjpeg(self, cam, fps)
                 return self._json({"ok": False, "error": "unknown path"}, 404)
 
         self._httpd = ThreadingHTTPServer((self.host, self.port), H)
@@ -263,22 +269,59 @@ class SimServer:
               + ", ".join(f"/cam/{c.id}/video.mjpg" for c in self.info.cameras))
         self._httpd.serve_forever()
 
-    def _jpg(self, cam):
+    def _cached(self, key, max_age, make):
+        """The newest picture of `key` if it is younger than max_age seconds, otherwise a new one (drawn only once)."""
+        lk = self._flocks.setdefault(key, threading.Lock())
+        with lk:
+            c = self._frames.get(key)
+            if c is not None and time.time() - c[0] < max_age:
+                return c
+            c = (time.time(),) + make()
+            self._frames[key] = c
+            return c
+
+    def _count(self, key):
+        q = self._served.setdefault(key, []); now = time.time(); q.append(now)
+        while q and now - q[0] > 3.0:
+            q.pop(0)
+
+    def fps_out(self, key):
+        """Pictures per second that were handed out in the last 3 seconds."""
+        q = [x for x in self._served.get(key, []) if time.time() - x <= 3.0]
+        return len(q) / 3.0
+
+    def _render(self, cam):
         import cv2
         with self.lock:
             st = self.state
         img = self.render_camera(cam, st, time.time())
         ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 80])
-        return buf.tobytes() if ok else b""
+        return img, (buf.tobytes() if ok else b"")
 
-    def _mjpeg(self, h, cam):
+    def _jpg(self, cam, max_age=0.05):
+        self._count(cam)
+        return self._cached(cam, max_age, lambda: self._render(cam))[2]
+
+    def frame(self, cam, max_age=1.0):
+        """The newest camera picture (BGR) - e.g. for a preview window; drawn new only when nobody fetched one lately."""
+        return self._cached(cam, max_age, lambda: self._render(cam))[1]
+
+    def thermal_frame(self, max_age=1.0, count=False):
+        if count:
+            self._count("th")
+        with self.lock:
+            st = self.state
+        return self._cached("th", max_age, lambda: (self.render_thermal(st, time.time()),))[1]
+
+    def _mjpeg(self, h, cam, fps=0.0):
         h.send_response(200)
         h.send_header("Content-Type", f"multipart/x-mixed-replace; boundary={BOUNDARY}")
         h.send_header("Cache-Control", "no-store"); h.send_header("Connection", "close"); h.end_headers()
-        gap = 1.0 / max(1.0, float(self.info.cameras[cam].fps))
+        top = max(1.0, float(self.info.cameras[cam].fps))
+        gap = 1.0 / (min(top, max(1.0, fps)) if fps > 0 else top)
         try:
             while True:
-                t0 = time.time(); jpg = self._jpg(cam)
+                t0 = time.time(); jpg = self._jpg(cam, gap * 0.8)
                 h.wfile.write(f"--{BOUNDARY}\r\nContent-Type: image/jpeg\r\nContent-Length: {len(jpg)}\r\n\r\n".encode() + jpg + b"\r\n")
                 h.wfile.flush()
                 time.sleep(max(0.0, gap - (time.time() - t0)))

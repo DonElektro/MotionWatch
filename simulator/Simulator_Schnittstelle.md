@@ -122,3 +122,10 @@ Das Bedienfenster hat vier Reiter:
 - Menschen: das Gesicht ist am wärmsten, die Jacke deutlich kühler. Tiere haben warme Augen.
 - Beim Auto sind Motor und Auspuff heiss. Regen und Nebel machen alles gleichmässiger.
 - Dazu kommen Rauschen und feine Streifen wie bei einem echten Wärmesensor.
+
+## CPU schonen (ab Motion Watch 2.74.0)
+
+- Der Simulator zeichnet jedes Bild **nur einmal**, auch wenn Motion Watch, ein Browser und das Bedienfenster gleichzeitig zuschauen. Das Fenster zeigt die Bilder, die Motion Watch abholt, statt eigene zu zeichnen.
+- Motion Watch holt in der Simulation nur so viele Bilder, wie unter *Simulator → Bilder pro Sekunde* eingestellt sind (Standard 6). Die feste Kamera und das Wärmebild bekommen halb so viele. Das schaltest du mit «CPU schonen während der Simulation» ein und aus.
+- Die Kamerabilder sind normal 960 × 540 (Kamera 1: 640 × 360). Wer grössere Bilder will, startet den Simulator mit `--hd`. Das braucht aber deutlich mehr CPU.
+- Im Fenster steht, wie viele Bilder pro Sekunde gerade abgeholt werden.

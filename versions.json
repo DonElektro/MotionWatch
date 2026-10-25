@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 19:54",
+ "generated": "2026-10-25 20:06",
  "versions": [
+  {
+   "version": "2.74.0",
+   "file": "webcam_bewegung_2_74_0.py",
+   "url": "",
+   "sha256": "c6a4e808ea6bf8f25bd3acb5c7e5cf981d5b10f9736e5b8a4099759481f49326",
+   "date": "2026-10-25 20:06",
+   "notes": "much less CPU during the simulation: Motion Watch fetches only 6 pictures per second (adjustable, fixed camera and thermal picture half of it), the simulator draws every picture once for all viewers (its window shows the fetched ones), smaller simulator pictures (960x540, --hd for the big ones), pre-made picture noise.",
+   "sig": "334fd2b03007d96a16bcc61733a8c6ffac887e8bfe155a08bf715b889b8ed4b42b506127e124068ae9b738bba695ef545519ba7b8466a0f2966109c841a07e05"
+  },
   {
    "version": "2.73.0",
    "file": "webcam_bewegung_2_73_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 13:45",
    "notes": "animal species (AI detection): a second AI model (ONNX, e.g. for fox, badger, wild boar, marten, deer) looks at every animal the first AI finds; the species appears on the picture, in the log and in the diary. The model is not included - it is installed from an address (URL) or copied into the models folder.",
    "sig": "1b547b59d0863d19af1120dd683972bf8ba6568a0410b5360e6ed8b1bbcee37e180892c7bd2eb8e09cd202d44cf527b5972e872312b70789363b7f69c86e3206"
-  },
-  {
-   "version": "2.64.0",
-   "file": "webcam_bewegung_2_64_0.py",
-   "url": "",
-   "sha256": "721a739b1486732044fdb316c0fac69280c3064cbf34e5784067b9c231dd11db",
-   "date": "2026-10-25 13:42",
-   "notes": "hardware check step by step (System → Help and setup): camera, movement, AI, thermal camera, servos, microphone, loudspeaker, lights, push message and every extra sensor - each step checks itself where it can.",
-   "sig": "54c3fcfc102781d8f64fa17c764fd4fe2bc0404fa934574b5f13e66ceee1738c57cb48467bb05d2cec568dcf060a68e8882b51ae26154513433670b215e11a04"
   }
  ]
 }

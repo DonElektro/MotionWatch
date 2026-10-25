@@ -43,7 +43,7 @@ import numpy as np
 
 from motionwatch_sim_interface import SimServer, SimInfo, CamInfo, SimReply, DEFAULT_PORT
 
-SIM_VERSION = "3.0"
+SIM_VERSION = "3.1"
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(HERE, "sim_assets")
 CAM_H = 1.6                                   # height of the cameras above the ground (m)
@@ -156,10 +156,12 @@ class Walker:
 # the simulator
 # ----------------------------------------------------------------------------------------------------------------------
 class CampingSim(SimServer):
-    def __init__(self, port=DEFAULT_PORT, pano=None, autoupdate=True):
+    def __init__(self, port=DEFAULT_PORT, pano=None, autoupdate=True, hd=False):
+        # normal: a size that is plenty for motion detection and the AI and keeps the CPU of a Pi cool; --hd: bigger pictures
+        w0, h0, w1, h1 = (1280, 720, 960, 540) if hd else (960, 540, 640, 360)
         info = SimInfo(name=f"Motion Watch camping simulator {SIM_VERSION}",
-                       cameras=[CamInfo(0, "Head camera (NoIR)", 1280, 720, 12.0, 66.0, 41.0, True, True),
-                                CamInfo(1, "Caravan camera", 960, 540, 8.0, 100.0, 62.0, False, False)],
+                       cameras=[CamInfo(0, "Head camera (NoIR)", w0, h0, 12.0, 66.0, 41.0, True, True),
+                                CamInfo(1, "Caravan camera", w1, h1, 8.0, 100.0, 62.0, False, False)],
                        thermal={"w": 80, "h": 62, "fps": 8.0, "fov_h": 45.0, "fov_v": 35.0, "unit": "C", "on_head": True},
                        sensors=[{"name": "Wohnwagen-Tür", "kind": "door"}, {"name": "PIR Zelt", "kind": "pir"},
                                 {"name": "Gas Wohnwagen", "kind": "gas"}, {"name": "Velo", "kind": "tag"}])
@@ -731,6 +733,14 @@ class CampingSim(SimServer):
             img = cv2.addWeighted(b, 1 - 0.4 * self.dew, np.full_like(img, 170 if not dark else 55), 0.4 * self.dew, 0)
         return img
 
+    def _noise_bank(self, W, H):
+        k = ("noise", W, H)
+        if k not in self._cache:
+            rng = np.random.default_rng(1)
+            self._cache[k] = ([rng.normal(0, 1, (H, W)).astype(np.float32) for _ in range(3)],
+                              [cv2.resize(rng.normal(0, 1, (H // 2, W // 2, 3)).astype(np.float32), (W, H)) for _ in range(4)])
+        return self._cache[k]
+
     def _camera(self, img, cam, moving, dark):
         """Auto exposure (with a little delay), glare, noise (stronger and coloured at night), vignetting, motion blur."""
         H, W = img.shape[:2]
@@ -751,12 +761,12 @@ class CampingSim(SimServer):
             r = np.hypot((xx - W / 2) / (W / 2), (yy - H / 2) / (H / 2))
             self._cache[k] = (1.0 - 0.3 * r ** 2.2)[..., None]
         f *= self._cache[k]
-        rng = np.random.default_rng()
         sig = self.noise * (1.2 + 3.0 * g)
-        f += rng.normal(0, sig, (H, W, 1)).astype(np.float32)                                  # brightness noise
+        nb = self._noise_bank(W, H)                                    # pre-made noise (making new noise costs much CPU)
+        n1 = nb[0][random.randrange(len(nb[0]))]
+        f += (np.roll(n1, (random.randrange(H), random.randrange(W)), (0, 1)) * sig)[..., None]   # brightness noise
         if g > 2.0:
-            small = rng.normal(0, sig * 0.6, (H // 2, W // 2, 3)).astype(np.float32)          # colour noise (blotchy)
-            f += cv2.resize(small, (W, H), interpolation=cv2.INTER_LINEAR)
+            f += nb[1][random.randrange(len(nb[1]))] * (sig * 0.6)                           # colour noise (blotchy)
         out = np.clip(f, 0, 255).astype(np.uint8)
         if moving:
             out = cv2.blur(out, (17, 1))
@@ -962,16 +972,18 @@ def window(sim):
         st = sim.state; age = time.time() - sim.state_t if sim.state_t else None; t = time.time()
         if Image is not None:
             for i, w_ in ((0, 640), (1, 316)):
-                im = cv2.cvtColor(sim.render_camera(i, st, t), cv2.COLOR_BGR2RGB)
+                im = cv2.cvtColor(sim.frame(i), cv2.COLOR_BGR2RGB)
                 im = cv2.resize(im, (w_, int(im.shape[0] * w_ / im.shape[1])))
                 ph = ImageTk.PhotoImage(Image.fromarray(im)); prev[i].configure(image=ph); prev[i].image = ph
-            th = sim.render_thermal(st, t); lo, hi = np.percentile(th, (1, 99.5))
+            th = sim.thermal_frame(); lo, hi = np.percentile(th, (1, 99.5))
             g8 = np.clip((th - lo) / max(0.5, hi - lo) * 255, 0, 255).astype(np.uint8)
             im = cv2.cvtColor(cv2.applyColorMap(cv2.resize(g8, (232, 180), interpolation=cv2.INTER_LINEAR), cv2.COLORMAP_INFERNO), cv2.COLOR_BGR2RGB)
             ph = ImageTk.PhotoImage(Image.fromarray(im)); prev[2].configure(image=ph); prev[2].image = ph
         rl = ", ".join(f"{r.name}={'AN' if r.on else 'aus'}" for r in st.relays) or "-"
         wr = sim.world(t)
+        fr = " · ".join(f"K{c}: {sim.fps_out(c):.0f}/s" for c in (0, 1)) + f" · Wärme: {sim.fps_out('th'):.0f}/s"
         status.configure(text=(f"Motion Watch: {'verbunden (' + st.device + ')' if age is not None and age < 3 else 'NICHT verbunden'}   Port {sim.port}   Simulator {SIM_VERSION}\n"
+                               f"Abgeholte Bilder: {fr}\n"
                                f"Servos: Schwenk {st.servo.pan:.1f} % ({st.servo.pan_deg:+.0f}°)  Neigung {st.servo.tilt:.1f} % ({st.servo.tilt_deg:+.0f}°)\n"
                                f"Licht: weiss {'AN' if st.lights.white else 'aus'} · IR {'AN' if st.lights.ir else 'aus'}   Relais: {rl}\n"
                                f"Ton: {st.sound or '-'}   Scharf: {'ja' if st.armed else 'nein'}\n"
@@ -988,11 +1000,12 @@ if __name__ == "__main__":
     ap.add_argument("--port", type=int, default=DEFAULT_PORT)
     ap.add_argument("--no-window", action="store_true", help="without the control window")
     ap.add_argument("--no-update", action="store_true", help="never update itself from Motion Watch")
+    ap.add_argument("--hd", action="store_true", help="bigger camera pictures (needs much more CPU)")
     ap.add_argument("--pano", help="own 360° photo (equirectangular 2:1) or a panorama")
     ap.add_argument("--hour", type=float, help="start at this hour (e.g. 22.5)")
     ap.add_argument("--night", action="store_true"); ap.add_argument("--day", action="store_true")
     a = ap.parse_args()
-    sim = CampingSim(a.port, a.pano, autoupdate=not a.no_update)
+    sim = CampingSim(a.port, a.pano, autoupdate=not a.no_update, hd=a.hd)
     if a.hour is not None:
         sim.set_hour(a.hour)
     elif a.night:
