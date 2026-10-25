@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 13:45",
+ "generated": "2026-10-25 13:50",
  "versions": [
+  {
+   "version": "2.66.0",
+   "file": "webcam_bewegung_2_66_0.py",
+   "url": "",
+   "sha256": "00ef5e59eef77a5a176b457dd19f0310e71a5f3a211dbe845243777136b92476",
+   "date": "2026-10-25 13:50",
+   "notes": "the guide (all five languages) describes the new parts: sensors, storm warning, GPS, solar, turning the picture, mask and talk tiles, lens check, announcements, animal species, PDF report, users, hardware check.",
+   "sig": "ae98c6b0a5f32bcc9b1b61d7274ac07d9cfc0573eafb7b3c11b363ee9d118253e32edc238ab7532265f4f6368ebce31d22be9b1664a0d0eab6c8050c91f45709"
+  },
   {
    "version": "2.65.0",
    "file": "webcam_bewegung_2_65_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 11:38",
    "notes": "«Talk» as a quick switch in the camera control - safe against an accidental press: tap once to unlock (6 s; a long press does not unlock), then hold to talk. It replaces the unprotected big button next to the joystick.",
    "sig": "b35d6489e68e9ecbc2f2912bd84b2ba1d16f2a0e39c9c851ef4429f36f95727c28e35f6c85bcb085b71df75bf26f99f2326dcc214cc8b07cd9a2ac56b502870e"
-  },
-  {
-   "version": "2.56.0",
-   "file": "webcam_bewegung_2_56_0.py",
-   "url": "",
-   "sha256": "9a918070f7a095b9e944f3f528090d721803a0099a1526d476adfcc249aecbc4",
-   "date": "2026-10-25 11:11",
-   "notes": "own GPS module (USB / serial, or gpsd): location without the phone; theft tracking - when the armed device is carried away, an alarm and then its position (map link) every 5 minutes.",
-   "sig": "676a3f845369d06655540a9e259ef819d88519f3524b6f48ca9e07092bcbfcc2db4e369de00c52f9ff95e52dae7dd6ea01372b73a1618d36b9eae7ff10865100"
   }
  ]
 }
