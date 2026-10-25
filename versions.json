@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-25 08:50",
+ "generated": "2026-10-25 08:57",
  "versions": [
+  {
+   "version": "2.45.2",
+   "file": "webcam_bewegung_2_45_2.py",
+   "url": "",
+   "sha256": "4604b6e48a0f50f2a8ac9303270dd0201f2e018977d9d31becf880c393bfbc94",
+   "date": "2026-10-25 08:57",
+   "notes": "operator mode button shows when it is on (since when) and ends it with the PIN; the header badge too.",
+   "sig": "2933181a0738d2389c0583a370bab0e9a9938b9cd1d7bbc8f42ec8881a17a8606b7c535021f24de328e7103608058f9b6382a8854999cf4f23390ee1c0305d0a"
+  },
   {
    "version": "2.45.1",
    "file": "webcam_bewegung_2_45_1.py",
@@ -172,15 +181,6 @@
    "date": "2026-10-24 22:15",
    "notes": "diary: day overview for every day - persons, animals (best pictures), warm bodies, noises, recordings; 24-hour chart with temperature / humidity of the sensor, weather (Open-Meteo, off by default), rain and the events; sun, moon, place and the night report. Browse the days with ‹ › or the date.",
    "sig": "226db353c82ae43310197af2a3ee9fd7a015cc9247942d52bf7095edf26cedea042d23d860ee5f14a4b5ac2eddc6453e4c259fe8a8608e8347769e442dc79d06"
-  },
-  {
-   "version": "2.31.0",
-   "file": "webcam_bewegung_2_31_0.py",
-   "url": "",
-   "sha256": "a7ff04d167e5ef031cb1c16320d0cb1ae011217d2f0f68be2044370abf3f4628",
-   "date": "2026-10-24 22:11",
-   "notes": "temperature sensor: BME280 / BMP280 (temperature, humidity, air pressure, I2C 0x76/0x77) or DS18B20 (1-Wire GPIO 4) are found by themselves; shown in the header and under Setup; every 10 minutes a value is kept for the diary.",
-   "sig": "b4483c8ae81b61be2b39c344321d76b5a756c8b6e8aa42a6bb88f01c878887105bd290483c48ee0d2e0cf32bcf61c6d66990394a5136bf580e9145b8274e0f06"
   }
  ]
 }
