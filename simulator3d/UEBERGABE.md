@@ -129,6 +129,33 @@ Gebaut in 3D-1.5 (schnelle erste Fassung, vereinbart war «zuerst schnell, dann 
 Mögliche Ausbauten: Gelände mit Hügeln in der Nähe, schönere Tiere und Menschen (Modelle statt Grundformen), eigene Sensoren pro
 Szene (bräuchte eine Anpassung in Motion Watch), Wasser im Wald, mehr Witz im Lustigen Platz, Punkteliste für die Wildbeobachtung.
 
+## Fahrplan: Online-Dienst für Hersteller (Idee von Daniel, 26.10.2026)
+
+Ziel: Später online gehen, damit Hersteller von Überwachungssystemen ihre Systeme an dieser Simulation testen können.
+Noch nichts davon ist gebaut. Reihenfolge nach Wichtigkeit:
+
+1. **Standard-Schnittstellen** statt nur Motion-Watch-Protokoll: **RTSP** für die Kamerabilder, **ONVIF** (Erkennung,
+   Profil S, PTZ für den Schwenkkopf), **MQTT** / Webhooks für die Sensoren. Erst dann lässt sich ein fremdes System einfach
+   «an eine Kamera» anschliessen. Das bestehende Protokoll bleibt für Motion Watch.
+2. **Realistischere Bilder**: lizenzierte 3D-Modelle von Menschen und Tieren mit Animation statt Grundformen (KI-Erkenner
+   erkennen die heutigen Figuren kaum), Kamerafehler (Rauschen, Unschärfe, Kompression, Infrarot-Look, Blendung).
+3. **Wiederholbare Tests mit Ground Truth**: Der Simulator schreibt auf, wer wann wo im Bild war; Szenarien mit festem Zufall
+   (Seed) und Zeitplan, exakt wiederholbar; Bericht am Ende («18 von 20 Personen erkannt, 2 Fehlalarme, Reaktionszeit»).
+   Das ist der eigentliche Kern des Angebots.
+4. **Betrieb im Internet**: Server mit Grafikkarte, eine Instanz pro Kunde, Steuerung über eine Webseite statt Windows-Fenster
+   (das CONTROL-Protokoll ist ein guter Anfang), Kosten pro Stunde, Bildstrom mit wenig Verzögerung.
+5. **Sicherheit**: heute offene Ports ohne Passwort und ein unsigniertes Selbst-Update – für einen Dienst braucht es Konten,
+   HTTPS, Trennung der Kunden, signierte Updates. Das Repository ist öffentlich: für ein Produkt privat machen und eine Lizenz
+   wählen. **Den Signierschlüssel erneuern** (er stand am 26.10.2026 im Chat); danach brauchen alle Pis einmal eine Version
+   mit dem neuen öffentlichen Schlüssel (`UPDATE_PUBKEY`).
+6. **Rechtliches und Geschäftliches** (fachlich prüfen lassen): AGB, Haftung, Datenschutz (nDSG, bei EU-Kunden DSGVO),
+   Lizenzen aller Teile (Godot MIT; gekaufte 3D-Modelle oft eingeschränkt), Preismodell. Die Gewehr-Szene für ein
+   Profi-Produkt eher weglassen.
+
+**Vorgeschlagener erster Schritt:** zwei, drei mögliche Kunden fragen, was sie wirklich testen wollen. Technisch zuerst lokal:
+der Simulator erscheint auf dem PC als **RTSP- / ONVIF-Kamera** (z. B. Bilder per ffmpeg an MediaMTX, ein kleiner
+ONVIF-Dienst für Erkennung und PTZ) – ohne Server, mit einer gängigen Videoüberwachungs-Software testbar.
+
 ## Was in dieser Umgebung nicht getestet werden konnte
 
 - Die Windows-.exe auf echter Hardware (hier nur Linux mit llvmpipe über Xvfb).
