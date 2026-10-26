@@ -1,22 +1,23 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 18:26",
+ "generated": "2026-10-26 18:31",
  "versions": [
   {
    "version": "2.91.0",
    "file": "webcam_bewegung_2_91_0.py",
    "url": "",
    "sha256": "bc89f8535dd53f497ecd6b0db4692fd68228ca807e3e2db0b2cb906c6dc659d5",
-   "date": "2026-10-26 18:26",
-   "notes": "3D simulator 3D-2.0 (big update): toolbar, search and \u00abEinfach | Experte\u00bb like Motion Watch; visitors as small pictures to drag into the world; people and animals walk around objects; smoother movement, finer objects, grass and flowers; new visitors (child, jogger, hare, hedgehog, dog walk, deer herd, birds); new visitor settings (also here in the simulator control)."
+   "date": "2026-10-26 18:25",
+   "notes": "3D simulator 3D-2.0 (big update): toolbar, search and «Einfach | Experte» like Motion Watch; visitors as small pictures to drag into the world; people and animals walk around objects; smoother movement, finer objects, grass and flowers; new visitors (child, jogger, hare, hedgehog, dog walk, deer herd, birds); new visitor settings (also here in the simulator control).",
+   "sig": "aaf681e4ea061b4253bb45d62c3b4663c19fcd3d14664f9d32a585167f35095fd816c0c81e71028e6a072be41bfda184671b8e55112a01f855dc4ff0c4a26103"
   },
   {
    "version": "2.90.9",
    "file": "webcam_bewegung_2_90_9.py",
    "url": "",
    "sha256": "ca0098cc8a98b2293d691d7a820dd1fb3caa58b2aa71bda683007ea6f99cbc7e",
-   "date": "2026-10-26 17:26",
-   "notes": "The download of the 3D simulator for Windows (ZIP) is now a button right under \u00abSearch now\u00bb in the simulator section (before hidden under Tools); the desktop window shows its address for the PC browser in the simulator line.",
+   "date": "2026-10-26 18:26",
+   "notes": "The download of the 3D simulator for Windows (ZIP) is now a button right under «Search now» in the simulator section (before hidden under Tools); the desktop window shows its address for the PC browser in the simulator line.",
    "sig": "6ec9afbf1255355f142377a9fdff4c7feae0730afe568207a656ded68bc36e3392f125e266cb5bb94014279f5e4f58a1af9b6b57975ecb6f05a9839aa6349007"
   },
   {
@@ -25,7 +26,7 @@
    "url": "",
    "sha256": "47b3d89528bc35b03463b9139a1dbde2672085c1a0c8da5d4b6e8918f3229cd4",
    "date": "2026-10-26 08:49",
-   "notes": "Tools: \u00abFull power for the tools\u00bb - Motion Watch rests for 10 to 120 minutes (camera, detection, AI, extra cameras; a recording is finished first), the web page and the tools keep running; it comes back by itself or with \u00abResume now\u00bb.",
+   "notes": "Tools: «Full power for the tools» - Motion Watch rests for 10 to 120 minutes (camera, detection, AI, extra cameras; a recording is finished first), the web page and the tools keep running; it comes back by itself or with «Resume now».",
    "sig": "85db0606fc0a8c02329d6165176d8d453de8e1b3eafec2e560efb87e820bb5c8a9467bbe20e4d724f893b0760253c327e9260b370ee9d368887322bb502f220a"
   },
   {
@@ -34,7 +35,7 @@
    "url": "",
    "sha256": "96186b25d76326941becc62d434370db457976f84721ed374917d4b3c434909f",
    "date": "2026-10-26 08:49",
-   "notes": "Download of the 3D simulator 3D-1.4: it starts without sending; the switch \u00abAn Motion Watch senden\u00bb in its window turns sending on.",
+   "notes": "Download of the 3D simulator 3D-1.4: it starts without sending; the switch «An Motion Watch senden» in its window turns sending on.",
    "sig": "8132b3cc4f9f323cc2640decb72fc9fcfe0cfc399a6c6d5df7ead6ef9c2a6137fe01e7b50212b03d67e0000ea6d0b692b62e3ab758d64f5ab8198cdeb960790e"
   },
   {
@@ -52,7 +53,7 @@
    "url": "",
    "sha256": "daaa28be417f6587f04d5b6bd575f5100d8af3f459ee4bc19c00a5105c433ea3",
    "date": "2026-10-26 08:49",
-   "notes": "The 3D simulator for Windows can be downloaded from the Pi: /sim/simulator3d.zip (button under Simulator \u2192 Tools).",
+   "notes": "The 3D simulator for Windows can be downloaded from the Pi: /sim/simulator3d.zip (button under Simulator → Tools).",
    "sig": "8fd4dcfa8a75604a92ec995cc1649135bc36cfcb26fac9a34b8e52e8ab4ab9a5f2c76e469d14ba1d722125b2051d22bd2cfe0c972d793a12c211173d6811f009"
   },
   {
@@ -88,7 +89,7 @@
    "url": "",
    "sha256": "74311f29e67db0b891bc714f27123669a1beaa6dd86b13cf0d70986a697891a2",
    "date": "2026-10-26 08:49",
-   "notes": "simulator section tidied up: status with statistics (connected for, response time, camera / thermal pictures per second, messages, sensor events, errors), \u00abSimulators in the network\u00bb with \u00abSearch now\u00bb (asks every address of the own network, progress and result), per simulator: seen since, last message, number of messages, response time; settings and tools folded away.",
+   "notes": "simulator section tidied up: status with statistics (connected for, response time, camera / thermal pictures per second, messages, sensor events, errors), «Simulators in the network» with «Search now» (asks every address of the own network, progress and result), per simulator: seen since, last message, number of messages, response time; settings and tools folded away.",
    "sig": "803a000587ea2229ce15379982844802a05ba73c68d8bb151e12388edfffaee79842fe58c6bec2673fb75e325c54e588822c74e4783380b7160d7a0e7d3cbf06"
   }
  ]
