@@ -1,6 +1,6 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 10:41",
+ "generated": "2026-10-26 10:49",
  "versions": [
   {
    "version": "2.90.2",
@@ -8,14 +8,15 @@
    "url": "",
    "sha256": "3c98ac49b10a66005e3053df9cfb645b99d7d2890a3bf0565d59b419d0654303",
    "date": "2026-10-26 10:41",
-   "notes": "3D simulator 3D-1.7: it looks for a newer version on GitHub before it starts and offers «Jetzt aktualisieren» (download, check, replace itself, start again) or «Ohne Update starten»."
+   "notes": "3D simulator 3D-1.7: it looks for a newer version on GitHub before it starts and offers «Jetzt aktualisieren» (download, check, replace itself, start again) or «Ohne Update starten».",
+   "sig": "1ecbfb4b9e78f75e4894d474aba0fd9005f5d53a3392af5d2231f3727fab1a4dc263c03772a195603f568dc525899cf522611ca44b9fe7b7b56678e4e8448d07"
   },
   {
    "version": "2.89.0",
    "file": "webcam_bewegung_2_89_0.py",
    "url": "",
    "sha256": "47b3d89528bc35b03463b9139a1dbde2672085c1a0c8da5d4b6e8918f3229cd4",
-   "date": "2026-10-26 07:54",
+   "date": "2026-10-26 08:49",
    "notes": "Tools: «Full power for the tools» - Motion Watch rests for 10 to 120 minutes (camera, detection, AI, extra cameras; a recording is finished first), the web page and the tools keep running; it comes back by itself or with «Resume now».",
    "sig": "85db0606fc0a8c02329d6165176d8d453de8e1b3eafec2e560efb87e820bb5c8a9467bbe20e4d724f893b0760253c327e9260b370ee9d368887322bb502f220a"
   },
@@ -24,7 +25,7 @@
    "file": "webcam_bewegung_2_88_0.py",
    "url": "",
    "sha256": "96186b25d76326941becc62d434370db457976f84721ed374917d4b3c434909f",
-   "date": "2026-10-26 06:52",
+   "date": "2026-10-26 08:49",
    "notes": "Download of the 3D simulator 3D-1.4: it starts without sending; the switch «An Motion Watch senden» in its window turns sending on.",
    "sig": "8132b3cc4f9f323cc2640decb72fc9fcfe0cfc399a6c6d5df7ead6ef9c2a6137fe01e7b50212b03d67e0000ea6d0b692b62e3ab758d64f5ab8198cdeb960790e"
   },
@@ -33,7 +34,7 @@
    "file": "webcam_bewegung_2_87_0.py",
    "url": "",
    "sha256": "63a19a6f983c5d4999a67635970e06166e88e6052931c44627840bbe2bb88e4f",
-   "date": "2026-10-26 01:38",
+   "date": "2026-10-26 08:49",
    "notes": "Tools page redesigned, calmer: list of the tools on the left (with status), one tool at a time on the right; on a phone first the list, then the tool with a back button. Plain line icons, switches instead of check boxes, no empty boxes.",
    "sig": "f281ea48a698dafacfe7bd366a94c3a9d7788ad478c93dc9d2c1f8e2e02d0e1ebb6f74c1a226892d60f66e97fd6878c2649290afcd3417f513106ccc3c0b1507"
   },
@@ -42,7 +43,7 @@
    "file": "webcam_bewegung_2_86_0.py",
    "url": "",
    "sha256": "daaa28be417f6587f04d5b6bd575f5100d8af3f459ee4bc19c00a5105c433ea3",
-   "date": "2026-10-26 01:30",
+   "date": "2026-10-26 08:49",
    "notes": "The 3D simulator for Windows can be downloaded from the Pi: /sim/simulator3d.zip (button under Simulator → Tools).",
    "sig": "8fd4dcfa8a75604a92ec995cc1649135bc36cfcb26fac9a34b8e52e8ab4ab9a5f2c76e469d14ba1d722125b2051d22bd2cfe0c972d793a12c211173d6811f009"
   },
@@ -51,7 +52,7 @@
    "file": "webcam_bewegung_2_85_0.py",
    "url": "",
    "sha256": "7e1241fef0f0de2c2683612181ac592da4da9aa2a5948581efe0492639504f14",
-   "date": "2026-10-26 01:22",
+   "date": "2026-10-26 08:49",
    "notes": "Second Wi-Fi adapter (USB stick): repeater (own Wi-Fi + internet from another network at the same time), change to another known network when the internet is gone, push message when it is back, devices in the own Wi-Fi without internet, Wi-Fi guard (alarm on jamming / deauthentication, needs a stick that can listen), adapter list with chip and abilities. Tools page tidied up: groups, every tool folds up and shows its last result. Fix: the Wi-Fi search of the settings works again.",
    "sig": "2b4d0bc77cab9780c53ae0e2f7a53234f58dc1139146b45b0744b7d5efa181d85d9c986ad097fd4d78f39e6acfbc71052683e9e2f1535ff63ffe8c5a0472b809"
   },
@@ -60,7 +61,7 @@
    "file": "webcam_bewegung_2_84_0.py",
    "url": "",
    "sha256": "2d56574e6d46944410d2fc6993e3f30e7e1e7b340e0b2dd7a63cb5533d912b6f",
-   "date": "2026-10-26 00:23",
+   "date": "2026-10-26 08:49",
    "notes": "New page \"Tools\": network scanner (makers, names, warning about new devices, \"am I at home\" with automatic arming), Wi-Fi surroundings with the best channel, internet test, security check, Bluetooth scanner with tracker warning, focus assistant, servo test, loudspeaker / microphone test, memory card test, diagnosis package without secrets, power calculator.",
    "sig": "3a30b044747a6d7d425230cd332ce2b8927dc67c80393396b3ff5a3a30ab2dbbe685d9b57d8ec6c69be2fae6edc513f320f8b0109ad3fa05069585546294b60e"
   },
@@ -69,7 +70,7 @@
    "file": "webcam_bewegung_2_83_0.py",
    "url": "",
    "sha256": "de61f44de320f93e583611ae93fc14c9aae5dc8096290644739cc57456a6f238",
-   "date": "2026-10-26 00:04",
+   "date": "2026-10-26 08:49",
    "notes": "System: size of the project (program file, lines, data, settings, recordings, simulator), running time, memory, Python version, Pi model and operating system.",
    "sig": "35df87ae07df8a03cc3c4506657fa37c5f4264cbd1727b89d61f0cfc7c2cea39197829bede2227014cc05b2b59faa9b680f00b1c0893065ff33d84d317368602"
   },
@@ -78,7 +79,7 @@
    "file": "webcam_bewegung_2_82_0.py",
    "url": "",
    "sha256": "74311f29e67db0b891bc714f27123669a1beaa6dd86b13cf0d70986a697891a2",
-   "date": "2026-10-26 00:01",
+   "date": "2026-10-26 08:49",
    "notes": "simulator section tidied up: status with statistics (connected for, response time, camera / thermal pictures per second, messages, sensor events, errors), «Simulators in the network» with «Search now» (asks every address of the own network, progress and result), per simulator: seen since, last message, number of messages, response time; settings and tools folded away.",
    "sig": "803a000587ea2229ce15379982844802a05ba73c68d8bb151e12388edfffaee79842fe58c6bec2673fb75e325c54e588822c74e4783380b7160d7a0e7d3cbf06"
   },
@@ -87,7 +88,7 @@
    "file": "webcam_bewegung_2_81_0.py",
    "url": "",
    "sha256": "6a532736d416248f3e32fce4a975a6e2fadd8ac9e7c12ba6976ecf46c784719a",
-   "date": "2026-10-25 23:49",
+   "date": "2026-10-26 08:49",
    "notes": "simulators are found by themselves: every simulator announces itself every 2 s (UDP 8764), Motion Watch lists them («Use») and - with «find by itself» on and no working connection - takes over the address (a PC before the Pi); simulator requests never go through a proxy.",
    "sig": "2eddb3875e29494d6d5b3f44472580282b1467b87dae9eaa608a9441a56bb9fa0530f5523e0c8c84531dcee50c214b4a7e26ce49049b67568fdc68e1e6127d0f"
   }
