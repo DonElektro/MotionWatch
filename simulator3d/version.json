@@ -1,7 +1,7 @@
 {
- "version": "3D-1.12",
+ "version": "3D-1.13",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30226699,
- "sha256": "e26146594b1dceb6a3a0c193ad80e8c58393d76bd13f4162ce211aba70957435",
- "notes": "Neu: Knopf «Nach Updates suchen» im Bedienfeld. Updates laden schneller."
+ "size": 30238405,
+ "sha256": "1183b1d029bb564efb03349e0a954452d8b8528f345741b8cd54a6776e7d0c73",
+ "notes": "Neu: Updates aus der Ferne (Schalter «Neue Versionen automatisch installieren», auch über die Motion-Watch-Webseite); Bedienfeld im Motion-Watch-Stil; im Handy gehen Schalter und Joystick; leichter in virtuellen Maschinen; Gewehr geht beim Verlassen der Wildbeobachtung aus."
 }

@@ -19,6 +19,11 @@ var b_skip: Button
 var http: HTTPRequest
 var downloading := false
 var manual := false           # started with the button «Nach Updates suchen» (not at the start of the simulator)
+var quiet := false            # check in the background: show nothing unless there is a new version
+var auto := false             # install without asking (setting «Neue Versionen automatisch installieren» or from far away):
+							  # 15 seconds to cancel, then it installs by itself
+var result := ""              # what came out (for the window and the web page of Motion Watch)
+var choice := -1              # -1 not decided, 0 later / OK, 1 update
 
 
 static func vnum(v: String) -> Array:
@@ -46,9 +51,10 @@ func check(current: String, url := "") -> void:
 	if url != "":
 		base = url if url.ends_with("/") else url + "/"
 	_remove_old()
-	_build_ui()
-	title.text = "Motion Watch – 3D-Simulator %s" % current
-	text.text = "Suche nach einer neuen Version …"
+	if not quiet:
+		_build_ui()
+		title.text = "Motion Watch – 3D-Simulator %s" % current
+		text.text = "Suche nach einer neuen Version …"
 	http = HTTPRequest.new()
 	http.timeout = 6.0
 	add_child(http)
@@ -58,6 +64,7 @@ func check(current: String, url := "") -> void:
 	var r: Array = await http.request_completed
 	if r[0] != HTTPRequest.RESULT_SUCCESS or r[1] != 200:
 		print("update check: no answer (%s / %s)" % [r[0], r[1]])
+		result = "GitHub antwortet nicht"
 		await _note("GitHub antwortet nicht (Internet da?). Versuch es später noch einmal.")
 		return
 	var d = JSON.parse_string((r[3] as PackedByteArray).get_string_from_utf8())
@@ -67,8 +74,13 @@ func check(current: String, url := "") -> void:
 	info = d
 	if not newer(str(d["version"]), current):
 		print("update check: %s is the newest" % current)
+		result = "schon die neuste Version (%s)" % current
 		await _note("Du hast schon die neuste Version (%s)." % current)
 		return
+	result = "neue Version %s gefunden" % d["version"]
+	if quiet:
+		_build_ui()
+		title.text = "Motion Watch – 3D-Simulator %s" % current
 	text.text = "Eine neue Version ist da: %s (du hast %s).\n\n%s" % [d["version"], current, str(d.get("notes", ""))]
 	if not OS.has_feature("template"):
 		text.text += "\n\n(Im Godot-Editor wird nicht aktualisiert.)"
@@ -79,8 +91,22 @@ func check(current: String, url := "") -> void:
 	b_upd.visible = true
 	b_skip.visible = true
 	b_upd.grab_focus()
-	var up: bool = await chosen
+	var up := false
+	if auto and OS.has_feature("template"):
+		b_upd.text = "Jetzt installieren"
+		b_skip.text = "Abbrechen"
+		var base_text := text.text
+		choice = -1
+		for i in range(15, 0, -1):
+			text.text = base_text + "\n\nWird in %d s automatisch installiert, danach startet der Simulator neu." % i
+			await get_tree().create_timer(1.0).timeout
+			if choice != -1:
+				break
+		up = choice != 0
+	else:
+		up = await chosen
 	if not up:
+		result = "Update auf %s abgebrochen" % d["version"]
 		return
 	await _update()
 
@@ -135,13 +161,17 @@ func _build_ui() -> void:
 	b_upd.text = "Jetzt aktualisieren"
 	b_upd.add_theme_font_size_override("font_size", 17)
 	b_upd.visible = false
-	b_upd.pressed.connect(func(): chosen.emit(true))
+	b_upd.pressed.connect(func():
+		choice = 1
+		chosen.emit(true))
 	hb.add_child(b_upd)
 	b_skip = Button.new()
 	b_skip.text = "Ohne Update starten"
 	b_skip.add_theme_font_size_override("font_size", 17)
 	b_skip.visible = false
-	b_skip.pressed.connect(func(): chosen.emit(false))
+	b_skip.pressed.connect(func():
+		choice = 0
+		chosen.emit(false))
 	hb.add_child(b_skip)
 
 
@@ -162,6 +192,14 @@ func _fail(msg: String) -> void:
 	b_skip.visible = true
 	b_skip.disabled = false
 	b_skip.text = "Weiter"
+	result = "Update hat nicht geklappt: " + msg
+	if auto:                                        # maybe nobody is at the PC: go on by itself after 20 s
+		choice = -1
+		for i in range(20):
+			await get_tree().create_timer(1.0).timeout
+			if choice != -1:
+				break
+		return
 	await chosen
 
 
@@ -216,7 +254,7 @@ func _update() -> void:
 	text.text = "Fertig. Der Simulator startet neu …"
 	await get_tree().create_timer(0.8).timeout
 	var args := OS.get_cmdline_args()
-	var user := OS.get_cmdline_user_args()
+	var user: PackedStringArray = get_parent().restart_args() if get_parent().has_method("restart_args") else OS.get_cmdline_user_args()
 	var ai := user.find("--angle-tried")         # graphics options are not passed on: let main.gd find the virtual machine again
 	if ai >= 0:
 		user.remove_at(ai)

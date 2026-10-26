@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-1.12** · passende Motion-Watch-Version **2.90.7**
+Stand: 26.10.2026 · Simulator-Version **3D-1.13** · passende Motion-Watch-Version **2.90.8**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -37,6 +37,20 @@ SHA-256 und tar gehen). Die Webseiten-Prüfung fragt mit HEAD (die Startseite is
 Nur `sim_on` reicht nicht: Motion Watch suchte dann weiter eine USB-Kamera («NO CAMERA FOUND», schwarzes Handy-Bild). `_settings()`
 setzt darum wie der Schalter «Simulation» auch `source = sim:0`, `thermal_source = sim:thermal` und `sim:1` in `extra_cams`.
 Das Handy startet ab 3D-1.11 mit der normalen Startseite (Knopf «Vollbild» = nur Live-Bild).
+**Handy-Eingaben (3D-1.13):** `Input.dispatchTouchEvent` erzeugte keinen Klick (Schalter wie «Marks» reagierten nicht, der
+Joystick bewegte sich nicht). Jetzt `Input.dispatchMouseEvent` (mousePressed / mouseMoved mit `buttons: 1` / mouseReleased) –
+die Seite bekommt Pointer-Ereignisse und Klicks. **Wichtig:** In der Sitzung mit `setDeviceMetricsOverride` teilt Chrome die
+Eingabe-Koordinaten durch den deviceScaleFactor, darum CSS-Punkte × `DSF`. `DSF` ist jetzt 1 (ein Viertel der Bildpunkte, das
+Handy wird ohnehin kleiner als 390 px gezeichnet), Screenshot JPEG 65 mit `optimizeForSpeed`, alle 150 ms.
+Läuft noch ein Browser eines früheren Laufs auf Port 9333 (Profil gesperrt), wird er weiter benutzt (`_browser_running`).
+Getestet mit dem Chromium von Playwright (`/opt/pw-browsers/...`, Option `--browser`) und Klicks per XTest: Marks ein/aus,
+Joystick Pan 35 % → 99 %. Das PID von Motion Watch auf dem PC steht in `motionwatch_pc/mw.pid` (zum Stoppen nach Wiederverwenden).
+
+**Bedienfeld (3D-1.13)** im Stil der Motion-Watch-Webseite: `scripts/ui_style.gd` (Farben `--bg #0a0e14`, Karten `#151e2b`,
+Rand `#1f2b3a`, Akzent `#3b8cff`, gesperrte Grossbuchstaben als Überschrift, ▸/▾ grün). Karten: Verbindung, Kameras,
+Werkzeuge, dann je Gruppe der Regler (Knöpfe nebeneinander), Tasten. **Virtuelle Maschine** (`main._in_vm()`, auch llvmpipe):
+Grafik «einfach» und weniger Vorschaubilder. Motion Watch auf dem PC: `sim_fps` 4 (wenn noch 6), `sim_eco` an.
+Gewehr geht beim Verlassen der Wildbeobachtung von selbst aus.
 Unter Linux getestet bis «verbunden mit Motion Watch» und Webseite auf 127.0.0.1:5000; **unter Windows nicht getestet**
 (Python-Download, tar, pip, Motion Watch selbst unter Windows).
 
@@ -57,6 +71,11 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+Ab 3D-1.13 **Updates aus der Ferne**: Schalter `auto_update` (gespeichert in `user://simulator_settings.json`, auch als
+CONTROL-Regler auf der Motion-Watch-Webseite) prüft alle 10 Minuten still (`Updater.quiet`) und installiert nach 15 s Countdown
+(`Updater.auto`, «Abbrechen» möglich; bei Fehlern geht es nach 20 s von selbst weiter). Knopf `update_now` (CONTROL) löst das
+sofort aus. Neustart-Optionen aus `main.restart_args()`: bisherige Optionen plus `--stream`, `--scene <aktuell>`, `--mwpc`
+(startet «Motion Watch auf diesem PC» wieder). Der Status zeigt «Update: …».
 Schutz nur über die Prüfsumme aus derselben Quelle (GitHub), **nicht signiert** wie Motion Watch.
 
 Seit 3D-1.6 startet der Simulator mit dem **Kompatibilitäts-Renderer (OpenGL)**: Auf Daniels PC schloss sich die .exe mit

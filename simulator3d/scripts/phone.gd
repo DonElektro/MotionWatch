@@ -5,6 +5,8 @@ extends PanelContainer
 ## over the DevTools connection (screencast) and the mouse / keys go back as touches (Chrome DevTools Protocol).
 
 const PORT := 9333
+const DSF := 1               # deviceScaleFactor of the emulated screen: 1 is enough (the phone is drawn smaller than 390 px
+							 # wide) and gives a quarter of the pixels of 2 - much lighter for slow PCs / virtual machines
 const DEVICES := {"phone": Vector2i(390, 844), "tablet": Vector2i(820, 1180)}
 const UA_PHONE := "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36"
 const UA_TABLET := "Mozilla/5.0 (Linux; Android 14; Tab) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
@@ -149,7 +151,27 @@ func _find_browser() -> String:
 	return ""
 
 
+func _browser_running() -> bool:
+	"""is a browser of an earlier run still there (e.g. after the simulator was stopped hard)? Its profile is locked, a new one
+	would not start - so we use the old one."""
+	var tcp := StreamPeerTCP.new()
+	if tcp.connect_to_host("127.0.0.1", PORT) != OK:
+		return false
+	var t0 := Time.get_ticks_msec()
+	while tcp.get_status() == StreamPeerTCP.STATUS_CONNECTING and Time.get_ticks_msec() - t0 < 800:
+		await get_tree().process_frame
+		tcp.poll()
+	var ok := tcp.get_status() == StreamPeerTCP.STATUS_CONNECTED
+	tcp.disconnect_from_host()
+	return ok
+
+
 func _start_browser() -> void:
+	if await _browser_running():
+		started = true
+		msg.text = "Browser läuft schon – verbinde …"
+		_ask_targets()
+		return
 	var exe := _find_browser()
 	if exe == "":
 		msg.text = "Kein Edge / Chrome gefunden. Mit --browser <Pfad> angeben (z. B. zu msedge.exe)."
@@ -241,10 +263,10 @@ func _shoot() -> void:
 	"""a picture of the emulated screen (exactly the device size) - several per second while the panel is open"""
 	if not connected or not visible or shot_id >= 0 and Time.get_ticks_msec() - shot_t < 3000:
 		return
-	if Time.get_ticks_msec() - shot_t < 110:
+	if Time.get_ticks_msec() - shot_t < 150:
 		return
 	shot_t = Time.get_ticks_msec()
-	shot_id = _send("Page.captureScreenshot", {"format": "jpeg", "quality": 72, "captureBeyondViewport": false})
+	shot_id = _send("Page.captureScreenshot", {"format": "jpeg", "quality": 65, "captureBeyondViewport": false, "optimizeForSpeed": true})
 
 
 func _process(_dt: float) -> void:
@@ -300,7 +322,7 @@ func _apply_device() -> void:
 	var s := _size()
 	page_w = s.x
 	page_h = s.y
-	_send("Emulation.setDeviceMetricsOverride", {"width": s.x, "height": s.y, "deviceScaleFactor": 2, "mobile": true,
+	_send("Emulation.setDeviceMetricsOverride", {"width": s.x, "height": s.y, "deviceScaleFactor": DSF, "mobile": true,
 			"screenOrientation": {"type": "landscapePrimary" if landscape else "portraitPrimary", "angle": 90 if landscape else 0}})
 	_send("Emulation.setTouchEmulationEnabled", {"enabled": true, "maxTouchPoints": 5})
 	_send("Emulation.setUserAgentOverride", {"userAgent": UA_PHONE if device == "phone" else UA_TABLET})
@@ -389,19 +411,22 @@ func _on_screen_input(ev: InputEvent) -> void:
 	if ev is InputEventMouseButton:
 		var q := _to_page(ev.position)
 		if ev.button_index == MOUSE_BUTTON_LEFT:
+			# the mouse goes to the page as a mouse (pointer events + click). Input.dispatchTouchEvent gave no click (switches
+			# did not react, the joystick did not move). In this session the screen is emulated with deviceScaleFactor DSF, and
+			# Chrome divides the input positions by it - so CSS pixels × DSF (measured: without it every tap landed at half).
 			touching = ev.pressed
-			_send("Input.dispatchTouchEvent", {"type": "touchStart" if ev.pressed else "touchEnd",
-					"touchPoints": [{"x": q.x, "y": q.y}] if ev.pressed else []})
+			_send("Input.dispatchMouseEvent", {"type": "mousePressed" if ev.pressed else "mouseReleased",
+					"x": q.x * DSF, "y": q.y * DSF, "button": "left", "buttons": 1 if ev.pressed else 0, "clickCount": 1})
 			screen.grab_focus()
 		elif ev.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN] and ev.pressed:
-			_send("Input.dispatchMouseEvent", {"type": "mouseWheel", "x": q.x, "y": q.y, "deltaX": 0,
+			_send("Input.dispatchMouseEvent", {"type": "mouseWheel", "x": q.x * DSF, "y": q.y * DSF, "deltaX": 0,
 					"deltaY": -120 if ev.button_index == MOUSE_BUTTON_WHEEL_UP else 120})
 		screen.accept_event()
 	elif ev is InputEventMouseMotion and touching:
 		if Time.get_ticks_msec() - last_move > 25:
 			last_move = Time.get_ticks_msec()
 			var q2 := _to_page(ev.position)
-			_send("Input.dispatchTouchEvent", {"type": "touchMove", "touchPoints": [{"x": q2.x, "y": q2.y}]})
+			_send("Input.dispatchMouseEvent", {"type": "mouseMoved", "x": q2.x * DSF, "y": q2.y * DSF, "button": "left", "buttons": 1})
 		screen.accept_event()
 	elif ev is InputEventKey and ev.pressed:
 		var keys := {KEY_BACKSPACE: ["Backspace", 8], KEY_ENTER: ["Enter", 13], KEY_TAB: ["Tab", 9], KEY_ESCAPE: ["Escape", 27],

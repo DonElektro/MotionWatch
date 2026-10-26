@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 15:45",
+ "generated": "2026-10-26 16:35",
  "versions": [
   {
-   "version": "2.90.7",
-   "file": "webcam_bewegung_2_90_7.py",
+   "version": "2.90.8",
+   "file": "webcam_bewegung_2_90_8.py",
    "url": "",
-   "sha256": "1ae546690a5b3916dd2d49b6f8919182cdae993e81b6313d220610cd08d8c283",
-   "date": "2026-10-26 15:45",
-   "notes": "3D simulator 3D-1.12: button «Nach Updates suchen» in its window (check and install at any time); faster updates.",
-   "sig": "726bbaff27fd171d1a19c148a1e63571182cd06b49c2750d7d8e9ab41105c8bc0f88583ee8c2369adf47c0365c98ee79eb02e6f356f081633ac94f3fd40c8c01"
+   "sha256": "8c626b940591170cfc3385f1cf75c35a9b34d4e6c8ef9cd6057eae9ba4311bd9",
+   "date": "2026-10-26 16:35",
+   "notes": "3D simulator 3D-1.13: updates from far away (switch «Neue Versionen automatisch installieren» and a button, also in the simulator control on this web page); its window in the look of Motion Watch; switches and the joystick work in its phone simulator; lighter in virtual machines; the rifle goes off when leaving the wildlife watching.",
+   "sig": "aa7da3cad39dd6b3618c201c2601105570c0ee761eaeb40bf04679025e064226ed599cd3e2cbcbbce89b09b59d5acfbdc0ef861d99fd1d2e7e941f697b8fef0f"
   },
   {
    "version": "2.89.0",

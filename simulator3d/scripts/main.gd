@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-1.12"
+const VERSION := "3D-1.13"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -19,11 +19,19 @@ var Phone = preload("res://scripts/phone.gd")
 var Scenes = preload("res://scripts/scenes.gd")
 var Updater = preload("res://scripts/update.gd")
 var Mwpc = preload("res://scripts/mwpc.gd")
+var UI = preload("res://scripts/ui_style.gd")
 var mwpc                              # Motion Watch on this PC (mwpc.gd)
 var mwpc_btn: Button
 var mwpc_label: Label
+var in_vm := false                    # virtual machine / no graphics card: lighter graphics, fewer preview pictures
 var update_url := ""                  # --update-url (tests); empty = GitHub
 var update_btn: Button
+var auto_update := false              # «Neue Versionen automatisch installieren» (saved; also from the web page of Motion Watch)
+var update_busy := false
+var update_info := ""                 # result of the last check
+var next_update_check := 0.0
+const UPDATE_EVERY := 600.0           # with auto_update: look on GitHub every 10 minutes
+const SETTINGS_FILE := "user://simulator_settings.json"
 var scenes
 var scene := "camping"
 var scene_parent: Node3D
@@ -142,12 +150,17 @@ func _ready() -> void:
 	set_process_unhandled_input(false)
 	if _vm_needs_angle(args):
 		return
+	in_vm = _in_vm()
+	if in_vm and not "--quality" in args:
+		quality = "simple"                      # virtual machine: no real graphics card - the light graphics by default
 	DisplayServer.window_set_title("Motion Watch – 3D-Simulator %s" % VERSION)
 	var k := args.find("--update-url")
 	if k >= 0 and k + 1 < args.size():
 		update_url = args[k + 1]
+	_load_settings()
 	if not ("--no-update" in args or "--updated" in args):      # first: is there a newer version? (update.gd)
 		var up = Updater.new()
+		up.auto = auto_update
 		add_child(up)
 		await up.check(VERSION, update_url)
 		up.queue_free()
@@ -175,6 +188,9 @@ func _ready() -> void:
 	_build_ui()
 	mwpc.changed.connect(_on_mwpc)
 	_on_mwpc()
+	next_update_check = now() + UPDATE_EVERY
+	if "--mwpc" in args:                          # after an update: Motion Watch on this PC was running - start it again
+		mwpc.start.call_deferred()
 	net = Net.new()
 	net.main = self
 	add_child(net)
@@ -191,6 +207,14 @@ func _ready() -> void:
 	DisplayServer.window_set_title("Motion Watch – 3D-Simulator %s (Port %d)" % [VERSION, port])
 	set_process(true)
 	set_process_unhandled_input(true)
+
+
+func _in_vm() -> bool:
+	var vn := (RenderingServer.get_video_adapter_vendor() + " " + RenderingServer.get_video_adapter_name()).to_lower()
+	for k in ["vmware", "svga3d", "virtualbox", "vboxsvga", "parallels", "qxl", "virgl", "llvmpipe", "microsoft basic render"]:
+		if vn.contains(k):
+			return true
+	return false
 
 
 func _vm_needs_angle(args: Array) -> bool:
@@ -447,6 +471,8 @@ func set_scene(id: String) -> bool:
 			ok = true
 	if not ok:
 		return false
+	if scene == "wild" and id != "wild":
+		rifle_on = false                         # leaving the wildlife watching: the rifle goes off by itself
 	scene = id
 	for v in visitors.get_children():
 		v.queue_free()
@@ -717,6 +743,9 @@ func _process(dt: float) -> void:
 		_update_temps()
 		_life()
 		_update_status()
+		if auto_update and not update_busy and now() > next_update_check:
+			next_update_check = now() + UPDATE_EVERY
+			run_update(true, false)
 	var t := now() - clock0
 	for a in anims:
 		a.call(dt, t)
@@ -738,7 +767,7 @@ func _wanted_fps(i: int) -> float:
 	if i == 2 and now() - _th_asked < 3.0:
 		f = max(f, 8.0)
 	if preview_on:
-		f = max(f, 4.0 if i < 2 else 3.0)
+		f = max(f, (2.0 if in_vm else 4.0) if i < 2 else (1.5 if in_vm else 3.0))
 	return f
 
 
@@ -1054,6 +1083,8 @@ func _register_controls() -> void:
 	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
 	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")
 	add_control("button", "score0", "Punkte auf 0", null, func(): reset_score(), "Wildbeobachtung")
+	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates")
+	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates")
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
 			{"options": [["simple", "einfach (schnell)"], ["nice", "schön (Schatten, Leuchten)"]]})
 
@@ -1129,7 +1160,7 @@ func status_text() -> String:
 	var h := hour()
 	var mwc := "verbunden mit %s" % str(mw.get("device", "Motion Watch")) if now() - mw_t < 3.0 else ("Motion Watch nicht verbunden" if stream_on else "Senden aus")
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
-	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc]
+	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "")
 
 
 func scenarios() -> Array:
@@ -1148,23 +1179,28 @@ var info_label: Label
 
 
 func _build_ui() -> void:
+	"""the window: phone on the left, on the right the panel in the look of the web page of Motion Watch (ui_style.gd)"""
 	var layer := CanvasLayer.new()
 	add_child(layer)
+	var th: Theme = UI.theme()
 	phone = Phone.new()
 	phone.main = self
 	phone.position = Vector2(0, 0)
+	phone.theme = th
 	layer.add_child(phone)
 	_build_crosshair(layer)
 	var panel := PanelContainer.new()
+	panel.theme = th
 	panel.anchor_left = 1.0
 	panel.anchor_right = 1.0
 	panel.anchor_bottom = 1.0
-	panel.offset_left = -390
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.09, 0.11, 0.14, 0.94)
+	panel.offset_left = -392
+	var sb := UI.box(Color(UI.BG, 0.97), UI.LINE, 0, 8, 0)
+	sb.border_width_left = 1
 	sb.content_margin_left = 10
-	sb.content_margin_right = 10
-	sb.content_margin_top = 8
+	sb.content_margin_right = 6
+	sb.content_margin_top = 10
+	sb.content_margin_bottom = 6
 	panel.add_theme_stylebox_override("panel", sb)
 	layer.add_child(panel)
 	ui_root = panel
@@ -1173,93 +1209,108 @@ func _build_ui() -> void:
 	panel.add_child(scroll)
 	var box_ := VBoxContainer.new()
 	box_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	box_.add_theme_constant_override("separation", 6)
+	box_.add_theme_constant_override("separation", 10)
 	scroll.add_child(box_)
+	# header: logo, name, version (like the top bar of the page)
+	var hdr := HBoxContainer.new()
+	hdr.add_theme_constant_override("separation", 8)
+	box_.add_child(hdr)
+	var logo := PanelContainer.new()
+	logo.add_theme_stylebox_override("panel", UI.box(UI.ORG, UI.ORG, 7, 2, 0))
+	logo.custom_minimum_size = Vector2(26, 26)
+	var ll := Label.new()
+	ll.text = "3D"
+	ll.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ll.add_theme_font_override("font", UI.heading_font())
+	ll.add_theme_font_size_override("font_size", 11)
+	ll.add_theme_color_override("font_color", Color.WHITE)
+	logo.add_child(ll)
+	hdr.add_child(logo)
 	var title := Label.new()
-	title.text = "Motion Watch – 3D-Simulator"
-	title.add_theme_font_size_override("font_size", 18)
-	box_.add_child(title)
+	title.text = "Motion Watch"
+	title.add_theme_font_override("font", UI.heading_font())
+	title.add_theme_font_size_override("font_size", 17)
+	hdr.add_child(title)
+	var ver := UI.small("3D-Simulator %s" % VERSION)
+	ver.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
+	hdr.add_child(ver)
+	# connection to Motion Watch
+	var cn := UI.card(box_)
+	cn.add_child(UI.heading("Verbindung"))
 	stream_cb = CheckButton.new()
 	stream_cb.text = "An Motion Watch senden (Port %d)" % stream_port
-	stream_cb.add_theme_font_size_override("font_size", 16)
+	stream_cb.add_theme_font_size_override("font_size", 15)
 	stream_cb.button_pressed = stream_on
 	stream_cb.toggled.connect(func(on): set_stream(on))
-	box_.add_child(stream_cb)
-	stream_note = Label.new()
-	stream_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	stream_note.add_theme_font_size_override("font_size", 12)
-	box_.add_child(stream_note)
-	status_label = Label.new()
-	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	status_label.add_theme_color_override("font_color", Color(0.7, 0.75, 0.8))
-	box_.add_child(status_label)
+	cn.add_child(stream_cb)
+	stream_note = UI.small("")
+	cn.add_child(stream_note)
+	status_label = UI.small("", UI.TXT)
+	status_label.add_theme_font_size_override("font_size", 13)
+	cn.add_child(status_label)
+	# camera pictures
+	var cm := UI.fold_card(box_, "Kameras", true)
 	prev0 = TextureRect.new()
 	prev0.texture = vps[0].get_texture()
 	prev0.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	prev0.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-	prev0.custom_minimum_size = Vector2(360, 203)
-	box_.add_child(prev0)
+	prev0.custom_minimum_size = Vector2(340, 191)
+	cm.add_child(prev0)
 	var row := HBoxContainer.new()
-	box_.add_child(row)
+	cm.add_child(row)
 	prev1 = TextureRect.new()
 	prev1.texture = vps[1].get_texture()
 	prev1.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	prev1.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
-	prev1.custom_minimum_size = Vector2(176, 99)
+	prev1.custom_minimum_size = Vector2(166, 94)
 	row.add_child(prev1)
 	prevt = TextureRect.new()
 	prevt.texture = th_preview
 	prevt.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	prevt.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
 	prevt.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	prevt.custom_minimum_size = Vector2(176, 136)
+	prevt.custom_minimum_size = Vector2(166, 128)
 	row.add_child(prevt)
+	# tools: phone, Motion Watch on this PC, updates, what a click puts down
+	var tl := UI.card(box_)
+	tl.add_child(UI.heading("Werkzeuge"))
+	mwpc_btn = Button.new()
+	mwpc_btn.pressed.connect(func(): mwpc.toggle())
+	UI.primary(mwpc_btn)
+	tl.add_child(mwpc_btn)
+	mwpc_label = UI.small("")
+	tl.add_child(mwpc_label)
+	var pv := Button.new()
+	pv.text = "Handy- / Tablet-Simulator (P)"
+	pv.pressed.connect(_toggle_phone)
+	tl.add_child(pv)
+	update_btn = Button.new()
+	update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
+	update_btn.pressed.connect(check_updates)
+	tl.add_child(update_btn)
+	var pr := HBoxContainer.new()
+	tl.add_child(pr)
 	var lbl := Label.new()
-	lbl.text = "Linksklick in die Welt setzt hin:"
-	box_.add_child(lbl)
+	lbl.text = "Linksklick setzt hin:"
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pr.add_child(lbl)
 	place_menu = OptionButton.new()
 	for k in [["", "nichts"], ["person", "Person"], ["fox", "Fuchs"], ["boar", "Wildschwein"], ["deer", "Reh"], ["cat", "Katze"], ["badger", "Dachs"], ["dog", "Hund"]]:
 		place_menu.add_item(k[1])
 		place_menu.set_item_metadata(place_menu.item_count - 1, k[0])
 	place_menu.select(2)
-	box_.add_child(place_menu)
-	var pv := Button.new()
-	pv.text = "Handy- / Tablet-Simulator (P)"
-	pv.pressed.connect(_toggle_phone)
-	box_.add_child(pv)
-	mwpc_btn = Button.new()
-	mwpc_btn.pressed.connect(func(): mwpc.toggle())
-	box_.add_child(mwpc_btn)
-	mwpc_label = Label.new()
-	mwpc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	mwpc_label.add_theme_font_size_override("font_size", 12)
-	box_.add_child(mwpc_label)
-	update_btn = Button.new()
-	update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
-	update_btn.pressed.connect(check_updates)
-	box_.add_child(update_btn)
+	place_menu.custom_minimum_size = Vector2(150, 0)
+	pr.add_child(place_menu)
+	# the settings of the simulator, one card per group (the same list the web page of Motion Watch shows)
 	var groups := {}
 	for c in controls:
 		if not groups.has(c.group):
-			var head_btn := Button.new()
-			head_btn.text = "▸ " + c.group
-			head_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-			head_btn.flat = true
-			box_.add_child(head_btn)
-			var gb := VBoxContainer.new()
-			gb.visible = c.group in ["Szene", "Besuch"]
-			head_btn.text = ("▾ " if gb.visible else "▸ ") + c.group
-			box_.add_child(gb)
-			head_btn.pressed.connect(func():
-				gb.visible = not gb.visible
-				head_btn.text = ("▾ " if gb.visible else "▸ ") + c.group)
-			groups[c.group] = gb
+			groups[c.group] = UI.fold_card(box_, c.group, c.group in ["Szene", "Besuch"])
 		_ui_control(groups[c.group], c)
-	info_label = Label.new()
-	info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	info_label.add_theme_color_override("font_color", Color(0.55, 0.6, 0.65))
-	info_label.text = "Maus rechts gedrückt halten: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienung aus/ein · P: Handy / Tablet · G: Gewehr ein/aus (Linksklick = Schuss)"
-	box_.add_child(info_label)
+	var keys := UI.fold_card(box_, "Tasten", false)
+	info_label = UI.small("Maus rechts gedrückt: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienfeld aus / ein · P: Handy / Tablet · G: Gewehr ein / aus (Linksklick = Schuss)")
+	keys.add_child(info_label)
 	_sync_ui()
 
 
@@ -1269,19 +1320,84 @@ func _on_mwpc() -> void:
 	mwpc_btn.text = "Motion Watch auf diesem PC stoppen" if st == "running" else ("Motion Watch auf diesem PC wird vorbereitet …" if st == "busy" else "Motion Watch auf diesem PC starten (ohne Pi)")
 	mwpc_btn.disabled = st == "busy"
 	mwpc_label.text = mwpc.text if st != "off" else "Für das Handy ohne Pi: Motion Watch läuft dann unsichtbar auf diesem PC. Beim ersten Mal werden Python und Motion Watch geladen (rund 100 MB, einige Minuten)."
-	mwpc_label.add_theme_color_override("font_color", Color(0.35, 0.8, 0.45) if st == "running" else (Color(0.95, 0.6, 0.3) if st == "error" else Color(0.6, 0.65, 0.7)))
+	mwpc_label.add_theme_color_override("font_color", UI.GRN if st == "running" else (UI.ORG if st == "error" else UI.MUT))
 	phone.on_mwpc(st, mwpc.url(), mwpc.text)
 
 
 func check_updates() -> void:
-	"""button «Nach Updates suchen»: the same check as at the start, but it also says when there is nothing new"""
+	"""button «Nach Updates suchen» in the window: asks before installing and also says when there is nothing new"""
+	run_update(false, true)
+
+
+func run_update(automatic: bool, by_hand: bool) -> void:
+	"""check GitHub for a newer simulator. automatic: install by itself after 15 s (can be cancelled) - for the setting
+	«Neue Versionen automatisch installieren» and for the button on the web page of Motion Watch (from far away)."""
+	if update_busy:
+		return
+	update_busy = true
 	update_btn.disabled = true
+	update_info = "suche …"
 	var up = Updater.new()
-	up.manual = true
+	up.manual = by_hand
+	up.quiet = not by_hand
+	up.auto = automatic
 	add_child(up)
 	await up.check(VERSION, update_url)
+	update_info = up.result
 	up.queue_free()
+	update_busy = false
 	update_btn.disabled = false
+	_sync_update_ui()
+
+
+func restart_args() -> PackedStringArray:
+	"""options for the start after an update: as before, plus what is on now (sending, scene, Motion Watch on this PC)"""
+	var a := OS.get_cmdline_user_args()
+	var out := PackedStringArray()
+	var skip := false
+	for x in a:
+		if skip:
+			skip = false
+			continue
+		if x in ["--stream", "--updated", "--mwpc"]:
+			continue
+		if x == "--scene":
+			skip = true
+			continue
+		out.append(x)
+	if stream_on:
+		out.append("--stream")
+	out.append("--scene")
+	out.append(scene)
+	if mwpc != null and mwpc.state == "running":
+		out.append("--mwpc")
+	return out
+
+
+func _load_settings() -> void:
+	if not FileAccess.file_exists(SETTINGS_FILE):
+		return
+	var d = JSON.parse_string(FileAccess.get_file_as_string(SETTINGS_FILE))
+	if typeof(d) == TYPE_DICTIONARY:
+		auto_update = bool(d.get("auto_update", false))
+
+
+func _save_settings() -> void:
+	var f := FileAccess.open(SETTINGS_FILE, FileAccess.WRITE)
+	if f != null:
+		f.store_string(JSON.stringify({"auto_update": auto_update}))
+
+
+func set_auto_update(on: bool) -> void:
+	auto_update = on
+	_save_settings()
+	next_update_check = now() + 5.0 if on else now() + UPDATE_EVERY   # switched on: look soon
+	_sync_update_ui()
+
+
+func _sync_update_ui() -> void:
+	if update_btn != null:
+		update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
 
 
 func _toggle_phone() -> void:
@@ -1305,7 +1421,17 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			var b := Button.new()
 			b.text = c.label
 			b.pressed.connect(func(): c["set"].call())
-			parent.add_child(b)
+			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			var flow: HFlowContainer = null                # buttons side by side, wrapping (like the tiles on the page)
+			if parent.get_child_count() > 0 and parent.get_child(parent.get_child_count() - 1) is HFlowContainer:
+				flow = parent.get_child(parent.get_child_count() - 1)
+			else:
+				flow = HFlowContainer.new()
+				flow.add_theme_constant_override("h_separation", 6)
+				flow.add_theme_constant_override("v_separation", 6)
+				parent.add_child(flow)
+			b.custom_minimum_size = Vector2(160 if c.label.length() < 22 else 330, 0)
+			flow.add_child(b)
 		"toggle":
 			var cb := CheckBox.new()
 			cb.text = c.label
@@ -1377,13 +1503,13 @@ func _update_status() -> void:
 	if stream_note != null:
 		if stream_on:
 			stream_note.text = "Sendet: Motion Watch findet den Simulator im Netz und bekommt die Bilder."
-			stream_note.add_theme_color_override("font_color", Color(0.35, 0.8, 0.45))
+			stream_note.add_theme_color_override("font_color", UI.GRN)
 		elif net != null and net.error_text != "":
 			stream_note.text = "⚠ " + net.error_text
-			stream_note.add_theme_color_override("font_color", Color(0.95, 0.6, 0.3))
+			stream_note.add_theme_color_override("font_color", UI.ORG)
 		else:
 			stream_note.text = "Senden aus – zum Ausprobieren. Motion Watch sieht den Simulator erst, wenn der Schalter eingeschaltet ist."
-			stream_note.add_theme_color_override("font_color", Color(0.6, 0.65, 0.7))
+			stream_note.add_theme_color_override("font_color", UI.MUT)
 	if Engine.get_process_frames() % 4 == 0:
 		_sync_ui()
 
