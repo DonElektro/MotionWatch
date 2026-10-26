@@ -1,7 +1,7 @@
 {
- "version": "3D-1.13",
+ "version": "3D-2.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30238405,
- "sha256": "1183b1d029bb564efb03349e0a954452d8b8528f345741b8cd54a6776e7d0c73",
- "notes": "Neu: Updates aus der Ferne (Schalter «Neue Versionen automatisch installieren», auch über die Motion-Watch-Webseite); Bedienfeld im Motion-Watch-Stil; im Handy gehen Schalter und Joystick; leichter in virtuellen Maschinen; Gewehr geht beim Verlassen der Wildbeobachtung aus."
+ "size": 30279512,
+ "sha256": "8b54cc008f92f19698445ca5e38fd925cec00f07202a0aff0fe38786166369bb",
+ "notes": "Grosses Update: Werkzeugleiste und Suche wie Motion Watch, Einfach/Experte, Besucher als Bildchen zum Hineinziehen; Menschen und Tiere gehen um Objekte herum, flüssigere Bewegungen, feinere Objekte, Gras und Blumen, neue Besucher (Kind, Jogger, Hase, Igel, Spaziergang mit Hund, Rehrudel, Vögel), viele neue Einstellungen."
 }

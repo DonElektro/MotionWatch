@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-1.13** · passende Motion-Watch-Version **2.90.8**
+Stand: 26.10.2026 · Simulator-Version **3D-2.0** · passende Motion-Watch-Version **2.91.0**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,31 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-2.0 (grosses Update):**
+- **Hindernisse** (`main.gd`, Abschnitt «obstacles»): Kreise (`add_obstacle`) und gedrehte Rechtecke (`add_obstacle_box`,
+  `add_obstacle_node` im Rahmen eines Szenen-Knotens) in einem 4-m-Raster (`ob_grid`). `people_only` = Zäune/Hecke im Garten
+  (Tiere schlüpfen durch). Jede Szene meldet ihre Objekte an (Bäume über `scenes.tree()`). `avoid()` biegt die Richtung um
+  Hindernisse und gibt die gewählte Seite zurück (der Besucher hält sie 2,5 s, sonst pendelt er an Ecken), `keep_out()`
+  schiebt nach jedem Schritt aus allen Objekten heraus. Getestet: Besucher quer durch Wohnwagen und Zelt geschickt –
+  tiefste Annäherung 0,0 m, alle kamen ans Ziel.
+- **Besucher** (`actor.gd` neu): Trägheit (`cur_speed`, `heading`, `_turn()`), Grasen/Umschauen (`idle_until`), Kopf- und
+  Schwanz-Gelenke, Kniegelenke bei Menschen, festhängen → Umweg (`detour_until`). Neue Arten: child, jogger (Varianten von
+  person), hare, hedgehog; Spaziergang mit Hund (`leader`), Rudel (`visit("herd")`), Garten-Besuch durchs Tor
+  (`scenes.garden_route`). Vorschau-Modus `preview` für die Bildchen.
+- **Szenen**: feinere Objekte (Wohnwagen mit Markise/Deichsel/Gasflasche, Zelt mit Aussenzelt, Velo mit Speichen, Hütte mit
+  Brettern/Kamin/Holzstapel, Haus mit Fensterrahmen/Kamin, Autos mit Scheiben, Teich mit Schilf, Farne, Heu), Gras und Blumen
+  als MultiMesh (`scenes.meadow()`, abschaltbar), **6 gemeinsame Laub-Materialien** statt eines pro Baum (schneller).
+- **Bedienfeld**: Werkzeugleiste wie Motion Watch (`UI.icon_button` mit gezeichneten Symbolen, `UI.search_field`),
+  Suche (`_search`), «nur Gruppen / alle auf / alle zu» (`_fold_all`), «Einfach | Experte» (`UI.segment`, `ui_simple`;
+  Regler mit `"expert": true` im extra), Karte «Besucher hinsetzen» mit gerenderten Bildchen (`_make_thumbs` in eigener
+  kleiner Welt) – anklicken oder ziehen (`set_drag_forwarding`, abgelegt über `NOTIFICATION_DRAG_END`). Schalter als
+  CheckButton. Einstellungen in `KEEP` werden gespeichert (`simulator_settings.json`).
+- **Neue Regler** (Gruppe Besuch): Wer kommt (`mix`), Wie oft (`visit_rate`), Höchstens (`max_visitors`), Tempo
+  (`visitor_speed`), Flucht vor Licht/Sirene, Ausweichen; «Alle Besucher weg»; Grafik: Gras und Blumen.
+- **Servos** drehen mit `SERVO_DEG_S` (200 °/s) statt zu springen; ab und zu ein Vogelschwarm (`_birds`).
+- **Test-Abfragen** im CONTROL-Protokoll (nur für Tests, von der Webseite nicht benutzt): `{"action":"visitors"}` (Ort und
+  Abstand zum nächsten Objekt jedes Besuchers), `{"action":"spawn_at","kind","from":[x,z],"to":[x,z],"wait":s}`.
+
 Ab 3D-1.13 **Updates aus der Ferne**: Schalter `auto_update` (gespeichert in `user://simulator_settings.json`, auch als
 CONTROL-Regler auf der Motion-Watch-Webseite) prüft alle 10 Minuten still (`Updater.quiet`) und installiert nach 15 s Countdown
 (`Updater.auto`, «Abbrechen» möglich; bei Fehlern geht es nach 20 s von selbst weiter). Knopf `update_now` (CONTROL) löst das
@@ -188,7 +213,8 @@ ONVIF-Dienst für Erkennung und PTZ) – ohne Server, mit einer gängigen Video�
 - Nebel im Forward+-Renderer (Forward+ ist ab 3D-1.6 nur noch über die Vulkan-.bat erreichbar).
 - Die echte Netzsuche zwischen PC und Pi.
 - Ton (Schuss «Plopp», Treffer «Boing») – hier ohne Lautsprecher.
-- Die Bildrate der neuen Szenen auf dem alten i5 (Wald hat rund 300 Bäume).
+- Die Bildrate der neuen Szenen auf dem alten i5 (Wald hat rund 300 Bäume; ab 3D-2.0 mit gemeinsamen Materialien).
+- Ziehen der Besucher-Bildchen mit der echten Maus unter Windows (hier mit XTest getestet).
 - Das Selbst-Update unter Windows (Umbenennen der laufenden .exe, HTTPS zu GitHub) – hier nur unter Linux mit lokalem Server.
 - Das Zielen mit der echten Maus (hier nur mit dem Knopf «Schuss aus der Kopfkamera» getestet).
 

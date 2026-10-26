@@ -7,12 +7,12 @@ const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Pa
 		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"]]
 
 # visitors that come by themselves, and how often (seconds from .. to)
-const AUTO := {"camping": [["person", "fox", "fox", "boar", "deer", "cat", "badger"], 40.0, 120.0],
-		"wald": [["deer", "deer", "fox", "boar", "badger", "person"], 30.0, 90.0],
-		"parkplatz": [["person", "person", "car_park", "car_park", "cat", "fox"], 30.0, 80.0],
-		"garten": [["cat", "cat", "fox", "badger", "dog", "person"], 40.0, 110.0],
-		"lustig": [["bench", "bench", "fox", "deer", "cat", "dog"], 25.0, 60.0],
-		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "deer"], 15.0, 40.0]}
+const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog"], 35.0, 110.0],
+		"wald": [["deer", "herd", "fox", "boar", "badger", "hare", "hedgehog", "person", "jogger", "dogwalk"], 25.0, 80.0],
+		"parkplatz": [["person", "person", "child", "car_park", "car_park", "cat", "fox", "dogwalk"], 30.0, 80.0],
+		"garten": [["cat", "cat", "fox", "badger", "hedgehog", "hare", "garden_person", "garden_person", "dog"], 35.0, 100.0],
+		"lustig": [["bench", "bench", "child", "dogwalk", "fox", "deer", "cat", "hare"], 25.0, 60.0],
+		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer"], 15.0, 40.0]}
 
 var m                     # main.gd
 var root: Node3D
@@ -102,24 +102,47 @@ func label(parent: Node3D, text: String, p: Vector3, size := 48, col := Color(0.
 	return l
 
 
+var fol_mats: Array = []
+
+
+func foliage(k: int) -> ShaderMaterial:
+	"""one of six shared foliage materials (from 3D-2.0: before, every tree had its own - slow in the forest)"""
+	if fol_mats.is_empty():
+		var cols := [Color(0.16, 0.36, 0.14), Color(0.2, 0.4, 0.12), Color(0.13, 0.3, 0.12), Color(0.24, 0.42, 0.16), Color(0.1, 0.26, 0.13), Color(0.3, 0.42, 0.14)]
+		for c in cols:
+			var fm := ShaderMaterial.new()
+			fm.shader = load("res://shaders/foliage.gdshader")
+			fm.set_shader_parameter("noise_tex", m.noise_tex)
+			fm.set_shader_parameter("color", c)
+			m.foliage_mats.append(fm)
+			fol_mats.append(fm)
+	return fol_mats[k % fol_mats.size()]
+
+
 func tree(parent: Node3D, p: Vector3, sc: float, conifer := -1) -> void:
-	var trunk := cyl(0.12, 0.2, 4.0, 8)
-	var tr := node(parent, p)
+	var tr := node(parent, p, rng.randf() * TAU)
 	tr.scale = Vector3.ONE * sc
-	put(tr, trunk, Vector3(0, 2.0, 0), Color(0.3, 0.22, 0.15), "tree")
-	var fm := ShaderMaterial.new()
-	fm.shader = load("res://shaders/foliage.gdshader")
-	fm.set_shader_parameter("noise_tex", m.noise_tex)
-	fm.set_shader_parameter("color", Color(0.16, 0.36, 0.14).lerp(Color(0.2, 0.4, 0.12), rng.randf()))
-	m.foliage_mats.append(fm)
+	var bark := Color(0.3, 0.22, 0.15).lerp(Color(0.38, 0.3, 0.22), rng.randf())
 	var con := rng.randf() < 0.5 if conifer < 0 else conifer == 1
-	if con:
-		for k in range(3):
-			put(tr, cyl(0.0, 1.6 - k * 0.4, 2.4, 10), Vector3(0, 2.6 + k * 1.3, 0), fm, "tree")
-	else:
-		for k in range(4):
-			var r := rng.randf_range(1.0, 1.6)
-			put(tr, sph(r, r * 1.8), Vector3(rng.randf_range(-0.7, 0.7), 4.2 + rng.randf_range(-0.4, 0.8), rng.randf_range(-0.7, 0.7)), fm, "tree")
+	if con:                                                      # spruce: layers that get smaller, a little darker inside
+		put(tr, cyl(0.08, 0.22, 5.2, 8), Vector3(0, 2.6, 0), bark, "tree")
+		var fm := foliage(rng.randi_range(0, 2) * 2 + 0)
+		var layers := rng.randi_range(4, 5)
+		for k in range(layers):
+			var f := float(k) / layers
+			put(tr, cyl(0.0, 1.7 * (1.0 - f * 0.75), 2.0, 10), Vector3(rng.randf_range(-0.05, 0.05), 1.9 + k * 1.05, 0), fm, "tree",
+					Vector3(0, rng.randf() * TAU, rng.randf_range(-0.04, 0.04)))
+	else:                                                        # broadleaf: trunk with two branches and a round crown
+		put(tr, cyl(0.12, 0.22, 3.6, 8), Vector3(0, 1.8, 0), bark, "tree")
+		for b in range(2):
+			var a := rng.randf() * TAU
+			put(tr, cyl(0.04, 0.08, 1.6, 6), Vector3(cos(a) * 0.35, 3.3, sin(a) * 0.35), bark, "tree", Vector3(sin(a) * 0.7, 0, -cos(a) * 0.7))
+		var fm2 := foliage(rng.randi_range(0, 5))
+		for k in range(rng.randi_range(4, 6)):
+			var r := rng.randf_range(0.9, 1.5)
+			put(tr, sph(r, r * 1.7), Vector3(rng.randf_range(-0.9, 0.9), 4.1 + rng.randf_range(-0.4, 0.9), rng.randf_range(-0.9, 0.9)), fm2, "tree")
+	if parent == root or parent.get_parent() == root:
+		m.add_obstacle(p, 0.32 * sc)
 
 
 func trees(n: int, dmin: float, dmax: float, keep_clear: Callable) -> void:
@@ -140,6 +163,57 @@ func road(z: float, width := 5.0) -> void:
 	put(root, m.box(400, 0.04, width), Vector3(0, 0.02, z), Color(0.42, 0.4, 0.37), "road")
 
 
+func meadow(n: int, dmin: float, dmax: float, keep_clear := Callable()) -> void:
+	"""grass tufts and flowers scattered on the meadow - one MultiMesh each (cheap even for thousands)"""
+	var blade := PrismMesh.new()
+	blade.size = Vector3(0.12, 0.28, 0.02)
+	var gm := StandardMaterial3D.new()
+	gm.albedo_color = Color(0.3, 0.5, 0.18)
+	gm.cull_mode = BaseMaterial3D.CULL_DISABLED
+	gm.roughness = 0.9
+	blade.material = gm
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_colors = false
+	mm.mesh = blade
+	mm.instance_count = n * 3
+	var fl := SphereMesh.new()
+	fl.radius = 0.035
+	fl.height = 0.05
+	fl.radial_segments = 6
+	fl.rings = 3
+	var fmat := StandardMaterial3D.new()
+	fmat.vertex_color_use_as_albedo = true
+	fl.material = fmat
+	var mf := MultiMesh.new()
+	mf.transform_format = MultiMesh.TRANSFORM_3D
+	mf.use_colors = true
+	mf.mesh = fl
+	mf.instance_count = n / 3
+	var fc := [Color(0.95, 0.95, 0.95), Color(0.95, 0.85, 0.2), Color(0.85, 0.3, 0.6), Color(0.55, 0.45, 0.9), Color(0.95, 0.5, 0.15)]
+	var k := 0
+	for i in range(n):
+		var p: Vector3 = m.pos_of(rng.randf_range(-180, 180), rng.randf_range(dmin, dmax))
+		if keep_clear.is_valid() and keep_clear.call(p):
+			p = Vector3(0, -50, 0)                               # hidden below the ground
+		for b in range(3):
+			var t := Transform3D(Basis(Vector3.UP, rng.randf() * TAU).rotated(Vector3.RIGHT, rng.randf_range(-0.25, 0.25)).scaled(Vector3.ONE * rng.randf_range(0.7, 1.4)),
+					p + Vector3(rng.randf_range(-0.12, 0.12), 0.12, rng.randf_range(-0.12, 0.12)))
+			mm.set_instance_transform(i * 3 + b, t)
+		if i % 3 == 0 and k < mf.instance_count:
+			mf.set_instance_transform(k, Transform3D(Basis(), p + Vector3(rng.randf_range(-0.2, 0.2), 0.26, rng.randf_range(-0.2, 0.2))))
+			mf.set_instance_color(k, fc[rng.randi() % fc.size()])
+			k += 1
+	for x in [mm, mf]:
+		var mi := MultiMeshInstance3D.new()
+		mi.multimesh = x
+		mi.layers = 1
+		mi.add_to_group("meadow")
+		mi.visible = m.meadow_on
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		root.add_child(mi)
+
+
 func stones(n: int, dmin: float, dmax: float) -> void:
 	for i in range(n):
 		var r := rng.randf_range(0.15, 0.35)
@@ -153,6 +227,11 @@ func door_light_at(parent: Node3D, p: Vector3) -> void:
 	m.door_light.omni_range = 6.0
 	m.door_light.light_energy = 0.0
 	parent.add_child(m.door_light)
+
+
+func window_mat_shared() -> StandardMaterial3D:
+	"""the window material of the door sensor's building (all its windows light up together)"""
+	return m.window_mat if m.window_mat != null else window_mat()
 
 
 func window_mat() -> StandardMaterial3D:
@@ -177,7 +256,22 @@ func caravan(p: Vector3, rot_y: float) -> void:
 	door_light_at(cv, Vector3(1.95, 1.5, 0.6))
 	for x in [-1.8, 1.8]:
 		put(cv, cyl(0.33, 0.33, 0.2), Vector3(x * 0.5, 0.33, 1.1), Color(0.05, 0.05, 0.05), "caravan", Vector3(PI / 2, 0, 0))
+		put(cv, cyl(0.18, 0.18, 0.21), Vector3(x * 0.5, 0.33, 1.1), Color(0.6, 0.6, 0.62), "caravan", Vector3(PI / 2, 0, 0))
+	put(cv, m.box(1.75, 0.82, 0.04), Vector3(-1.5, 1.75, 1.165), Color(0.2, 0.2, 0.22), "caravan")           # window frame
+	put(cv, m.box(1.0, 0.6, 0.05), Vector3(-1.5, 1.75, -1.16), window_mat_shared(), "window")              # back window
+	put(cv, m.box(0.05, 0.55, 0.9), Vector3(-2.81, 1.7, 0), window_mat_shared(), "window")                  # front window
+	put(cv, m.box(5.6, 0.06, 0.04), Vector3(0, 1.0, 1.16), Color(0.2, 0.45, 0.75), "caravan")              # stripe
+	put(cv, m.box(5.6, 0.06, 0.04), Vector3(0, 1.0, -1.16), Color(0.2, 0.45, 0.75), "caravan")
+	put(cv, m.box(2.6, 0.04, 1.4), Vector3(1.0, 2.35, 1.85), Color(0.85, 0.45, 0.15), "tent", Vector3(-0.12, 0, 0))   # awning
+	for x2 in [-0.25, 2.25]:
+		put(cv, cyl(0.02, 0.02, 2.2, 6), Vector3(x2, 1.12, 2.5), Color(0.6, 0.6, 0.62), "stone")
+	put(cv, m.box(0.7, 0.08, 0.4), Vector3(1.97, 0.22, 1.4), Color(0.4, 0.4, 0.42), "caravan")               # step
+	for s2 in [-1, 1]:                                                                                       # drawbar
+		put(cv, m.box(1.6, 0.08, 0.08), Vector3(-3.4, 0.45, 0.35 * s2), Color(0.25, 0.25, 0.27), "stone", Vector3(0, 0.25 * s2, 0))
+	put(cv, cyl(0.15, 0.15, 0.45, 10), Vector3(-3.3, 0.72, 0), Color(0.7, 0.2, 0.15), "stone")                 # gas bottle
+	put(cv, m.box(0.5, 0.14, 0.5), Vector3(0.6, 2.68, 0), Color(0.85, 0.85, 0.85), "caravan")                 # roof vent
 	m.obj["door"] = cv.transform * Vector3(2.0, 0, 2.3)
+	m.add_obstacle_node(cv, Vector3(-0.4, 0, 0), 6.6, 2.5)
 
 
 func hut(p: Vector3, rot_y: float, col := Color(0.45, 0.3, 0.18)) -> Node3D:
@@ -188,6 +282,13 @@ func hut(p: Vector3, rot_y: float, col := Color(0.45, 0.3, 0.18)) -> Node3D:
 	roof.size = Vector3(4.6, 1.3, 3.6)
 	put(h, roof, Vector3(0, 3.05, 0), col.darkened(0.35), "caravan")
 	put(h, m.box(0.9, 0.6, 0.05), Vector3(-1.1, 1.5, 1.61), window_mat(), "window")
+	put(h, m.box(1.04, 0.74, 0.04), Vector3(-1.1, 1.5, 1.605), col.darkened(0.5), "caravan")               # window frame
+	for y in [0.4, 0.8, 1.2, 1.6, 2.0]:                                                                    # planks
+		put(h, m.box(4.02, 0.03, 3.22), Vector3(0, y, 0), col.darkened(0.25), "caravan")
+	put(h, m.box(0.4, 1.0, 0.4), Vector3(1.2, 3.4, -0.6), Color(0.45, 0.42, 0.4), "stone")                # chimney
+	for i in range(6):                                                                                     # wood pile
+		put(h, cyl(0.11, 0.11, 0.9, 8), Vector3(-2.35, 0.12 + (i / 3) * 0.2, -0.8 + (i % 3) * 0.24), Color(0.55, 0.4, 0.25), "tree", Vector3(PI / 2, 0, 0))
+	m.add_obstacle_node(h, Vector3(-0.2, 0, 0), 4.9, 3.5)
 	m.door_node = node(h, Vector3(0.5, 0, 1.62))
 	put(m.door_node, m.box(0.8, 1.9, 0.05), Vector3(0.4, 0.95, 0), col.darkened(0.2), "caravan")
 	door_light_at(h, Vector3(0.9, 1.8, 2.2))
@@ -197,14 +298,23 @@ func hut(p: Vector3, rot_y: float, col := Color(0.45, 0.3, 0.18)) -> Node3D:
 
 func bike(p: Vector3, rot_y: float) -> void:
 	var bk := node(root, p, rot_y)
+	var frame: Color = [Color(0.7, 0.1, 0.1), Color(0.1, 0.35, 0.7), Color(0.15, 0.15, 0.15), Color(0.2, 0.55, 0.3)][rng.randi() % 4]
 	for z in [-0.55, 0.55]:
 		var tor := TorusMesh.new()
 		tor.inner_radius = 0.3
 		tor.outer_radius = 0.34
 		put(bk, tor, Vector3(0, 0.34, z), Color(0.05, 0.05, 0.05), "stone", Vector3(0, 0, PI / 2))
-	put(bk, m.box(0.04, 0.04, 1.0), Vector3(0, 0.62, 0), Color(0.7, 0.1, 0.1), "stone", Vector3(0.3, 0, 0))
-	put(bk, m.box(0.04, 0.5, 0.04), Vector3(0, 0.6, -0.4), Color(0.7, 0.1, 0.1), "stone", Vector3(0.25, 0, 0))
+		for k in range(4):                                                                                 # spokes
+			put(bk, m.box(0.008, 0.6, 0.008), Vector3(0, 0.34, z), Color(0.75, 0.75, 0.78), "stone", Vector3(k * PI / 4, 0, 0))
+	put(bk, m.box(0.04, 0.04, 0.7), Vector3(0, 0.62, -0.05), frame, "stone")                                 # top tube
+	put(bk, m.box(0.04, 0.04, 0.72), Vector3(0, 0.48, -0.1), frame, "stone", Vector3(0.62, 0, 0))            # down tube
+	put(bk, m.box(0.04, 0.5, 0.04), Vector3(0, 0.55, 0.25), frame, "stone", Vector3(-0.3, 0, 0))             # seat tube
+	put(bk, m.box(0.04, 0.45, 0.04), Vector3(0, 0.55, -0.5), frame, "stone", Vector3(0.3, 0, 0))             # fork
+	put(bk, m.box(0.5, 0.03, 0.03), Vector3(0, 0.88, -0.45), Color(0.2, 0.2, 0.2), "stone")                 # handlebar
+	put(bk, m.box(0.12, 0.05, 0.24), Vector3(0, 0.84, 0.32), Color(0.1, 0.1, 0.1), "stone")                 # saddle
+	put(bk, cyl(0.09, 0.09, 0.02, 12), Vector3(0.03, 0.3, 0.0), Color(0.6, 0.6, 0.62), "stone", Vector3(0, 0, PI / 2))   # chain ring
 	m.obj["bike"] = p
+	m.add_obstacle(p, 0.5)
 
 
 func bench(p: Vector3, rot_y: float) -> void:
@@ -217,6 +327,8 @@ func bench(p: Vector3, rot_y: float) -> void:
 
 func lamp_post(p: Vector3, h := 4.5) -> void:
 	put(root, cyl(0.06, 0.08, h, 8), p + Vector3(0, h / 2, 0), Color(0.25, 0.27, 0.3), "stone")
+	put(root, cyl(0.14, 0.16, 0.3, 10), p + Vector3(0, 0.15, 0), Color(0.22, 0.24, 0.27), "stone")
+	m.add_obstacle(p, 0.2)
 	put(root, m.box(0.5, 0.12, 0.3), p + Vector3(0, h, 0), glow_mat(Color(1.0, 0.85, 0.6)), 45.0)
 	var l := OmniLight3D.new()
 	l.position = p + Vector3(0, h - 0.2, 0)
@@ -229,11 +341,20 @@ func lamp_post(p: Vector3, h := 4.5) -> void:
 
 func static_car(p: Vector3, rot_y: float, col: Color) -> void:
 	var c := node(root, p, rot_y)
-	put(c, m.box(1.75, 0.7, 4.2), Vector3(0, 0.6, 0), col, "caravan")
-	put(c, m.box(1.6, 0.55, 2.2), Vector3(0, 1.22, 0.25), col.darkened(0.3), "caravan")
+	var glass := Color(0.15, 0.2, 0.25)
+	put(c, m.box(1.75, 0.6, 4.2), Vector3(0, 0.6, 0), col, "caravan")
+	put(c, m.box(1.6, 0.5, 2.1), Vector3(0, 1.15, 0.25), col.darkened(0.15), "caravan")
+	put(c, m.box(1.5, 0.42, 0.05), Vector3(0, 1.15, -0.82), glass, "caravan", Vector3(-0.5, 0, 0))
+	put(c, m.box(1.5, 0.4, 0.05), Vector3(0, 1.15, 1.32), glass, "caravan", Vector3(0.4, 0, 0))
+	for s2 in [-1, 1]:
+		put(c, m.box(0.05, 0.36, 1.9), Vector3(0.81 * s2, 1.15, 0.25), glass, "caravan")
+	put(c, m.box(1.8, 0.18, 0.12), Vector3(0, 0.42, -2.12), Color(0.15, 0.15, 0.15), "caravan")
+	put(c, m.box(1.8, 0.18, 0.12), Vector3(0, 0.42, 2.12), Color(0.15, 0.15, 0.15), "caravan")
 	for x in [-0.85, 0.85]:
 		for z in [-1.35, 1.35]:
 			put(c, cyl(0.33, 0.33, 0.22), Vector3(x, 0.33, z), Color(0.05, 0.05, 0.05), "caravan", Vector3(0, 0, PI / 2))
+			put(c, cyl(0.18, 0.18, 0.23), Vector3(x, 0.33, z), Color(0.6, 0.6, 0.62), "caravan", Vector3(0, 0, PI / 2))
+	m.add_obstacle_box(p, 1.95, 4.4, rot_y)
 
 
 func mushroom(p: Vector3, s := 1.0) -> void:
@@ -245,15 +366,32 @@ func mushroom(p: Vector3, s := 1.0) -> void:
 func _camping() -> void:
 	road(-29.0)
 	caravan(m.pos_of(-28.0, 9.0), deg_to_rad(28.0))
+	var tn := node(root, m.pos_of(14.0, 7.0), deg_to_rad(-14.0))
 	var tent := PrismMesh.new()
 	tent.size = Vector3(2.6, 1.5, 2.4)
-	put(root, tent, m.pos_of(14.0, 7.0, 0.75), Color(0.9, 0.5, 0.15), "tent", Vector3(0, deg_to_rad(-14.0), 0))
+	put(tn, tent, Vector3(0, 0.75, 0), Color(0.9, 0.5, 0.15), "tent")
+	var fly := PrismMesh.new()                                                       # flysheet a bit bigger, darker
+	fly.size = Vector3(2.9, 1.58, 2.0)
+	put(tn, fly, Vector3(0, 0.78, 0), Color(0.75, 0.38, 0.1), "tent")
+	var door := PrismMesh.new()
+	door.size = Vector3(0.9, 0.9, 0.02)
+	put(tn, door, Vector3(0, 0.45, 1.21), Color(0.15, 0.1, 0.08), "tent")              # opening
+	for s2 in [-1, 1]:                                                               # poles and guy lines
+		put(tn, cyl(0.015, 0.015, 1.65, 5), Vector3(0, 0.82, 1.15 * s2), Color(0.6, 0.6, 0.62), "stone")
+		put(tn, m.box(0.01, 0.01, 1.4), Vector3(0, 0.8, 1.75 * s2), Color(0.85, 0.85, 0.8), "stone", Vector3(0.62 * s2, 0, 0))
 	m.obj["pir"] = m.pos_of(14.0, 7.0)
+	m.add_obstacle_node(tn, Vector3.ZERO, 3.0, 2.8)
 	bike(m.pos_of(32.0, 6.0), deg_to_rad(-32.0) + PI / 2)
 	put(root, m.box(1.2, 0.05, 0.8), m.pos_of(-62, 5.5, 0.72), Color(0.8, 0.8, 0.78), "stone")
 	for s in [-1, 1]:
 		put(root, m.box(0.45, 0.45, 0.45), m.pos_of(-62 + 9 * s, 5.6, 0.23), Color(0.15, 0.3, 0.6), "tent")
+		m.add_obstacle(m.pos_of(-62 + 9 * s, 5.6), 0.35)
+	for x in [-0.5, 0.5]:
+		for z in [-0.3, 0.3]:
+			put(root, cyl(0.015, 0.015, 0.7, 5), m.pos_of(-62, 5.5) + Vector3(x, 0.36, z), Color(0.6, 0.6, 0.62), "stone")
+	m.add_obstacle(m.pos_of(-62, 5.5), 0.7)
 	stones(8, 4.0, 15.0)
+	meadow(700, 3.0, 40.0)
 	for i in range(140):
 		var d := rng.randf_range(16, 60) if i < 40 else rng.randf_range(60, 120)
 		tree(root, m.pos_of(rng.randf_range(-180, 180), d), rng.randf_range(0.8, 1.5))
@@ -284,16 +422,29 @@ func _wald() -> void:
 			fl.light_energy = 1.6 + 0.6 * sin(t * 13.0) * sin(t * 7.3)
 		glow.scale = Vector3.ONE * (1.0 + 0.15 * sin(t * 9.0)))
 	m.obj["pir"] = fire
+	m.add_obstacle(fire, 0.9)
 	bike(m.pos_of(-38.0, 13.0), deg_to_rad(20.0))
 	put(root, cyl(0.25, 0.3, 6.0, 10), Vector3(-7, 0.3, -18), Color(0.35, 0.25, 0.16), "tree", Vector3(0, 0.4, PI / 2))
+	m.add_obstacle_box(Vector3(-7, 0, -18), 6.0, 0.6, 0.4 + PI / 2)
 	put(root, cyl(0.2, 0.25, 4.0, 10), Vector3(9, 0.25, -6), Color(0.35, 0.25, 0.16), "tree", Vector3(0, -0.8, PI / 2))
+	m.add_obstacle_box(Vector3(9, 0, -6), 4.0, 0.5, -0.8 + PI / 2)
 	for i in range(6):
-		put(root, cyl(0.3, 0.35, 0.4, 10), m.pos_of(rng.randf_range(-70, 70), rng.randf_range(5, 20), 0.2), Color(0.42, 0.32, 0.2), "tree")
+		var sp: Vector3 = m.pos_of(rng.randf_range(-70, 70), rng.randf_range(5, 20))
+		put(root, cyl(0.3, 0.35, 0.4, 10), sp + Vector3(0, 0.2, 0), Color(0.42, 0.32, 0.2), "tree")
+		put(root, cyl(0.26, 0.26, 0.02, 10), sp + Vector3(0, 0.41, 0), Color(0.7, 0.58, 0.4), "tree")       # cut surface
+		m.add_obstacle(sp, 0.35)
+	for i in range(18):                                                                                   # ferns
+		var fp: Vector3 = m.pos_of(rng.randf_range(-180, 180), rng.randf_range(4, 40))
+		if abs(fp.z + 12.0) < 2.0:
+			continue
+		for k in range(5):
+			put(root, m.box(0.18, 0.02, 0.7), fp + Vector3(0, 0.25, 0), foliage(1), "tree", Vector3(0.5, k * TAU / 5.0, 0))
 	for i in range(14):
 		mushroom(m.pos_of(rng.randf_range(-60, 60), rng.randf_range(3, 12)), rng.randf_range(0.8, 1.5))
 	stones(10, 3.0, 20.0)
 	var hutp: Vector3 = m.pos_of(-48.0, 15.0)
-	trees(300, 4.5, 120.0, func(p: Vector3): return abs(p.z + 12.0) < 2.4 or p.distance_to(hutp) < 4.5 or p.distance_to(fire) < 3.0 or p.length() < 4.5)
+	trees(300, 4.5, 120.0, func(p: Vector3): return abs(p.z + 12.0) < 2.4 or p.distance_to(hutp) < 4.5 or p.distance_to(fire) < 3.0 or p.length() < 4.5 or p.distance_to(Vector3(-3, 0, 3)) < 5.0)
+	meadow(500, 3.0, 35.0, func(p: Vector3): return abs(p.z + 12.0) < 1.6)
 
 
 # ---- car park --------------------------------------------------------------------------------------------------------
@@ -324,6 +475,7 @@ func _parkplatz() -> void:
 	lamp_post(Vector3(22, 0, -15))
 	# ticket machine (the PIR sensor is here)
 	put(root, m.box(0.7, 1.6, 0.5), Vector3(5, 0.8, -3.5), Color(0.9, 0.7, 0.1), "caravan")
+	m.add_obstacle_box(Vector3(5, 0, -3.5), 0.8, 0.6, 0.0)
 	put(root, m.box(0.5, 0.3, 0.05), Vector3(5, 1.25, -3.24), glow_mat(Color(0.5, 0.8, 1.0)), 30.0)
 	label(root, "P", Vector3(5, 1.85, -3.24), 96, Color(0.1, 0.2, 0.6))
 	m.obj["pir"] = Vector3(5, 0, -3.0)
@@ -334,9 +486,12 @@ func _parkplatz() -> void:
 		tor.outer_radius = 0.38
 		put(root, tor, Vector3(-9 + i * 0.7, 0.2, -3.5), Color(0.6, 0.6, 0.62), "stone", Vector3(0, PI / 2, PI / 2))
 	bike(Vector3(-8.65, 0, -3.5), 0.0)
+	m.add_obstacle_box(Vector3(-7.95, 0, -3.5), 2.6, 0.4, 0.0)
 	# barrier at the entrance
 	put(root, m.box(0.3, 1.0, 0.3), Vector3(26, 0.5, -29), Color(0.85, 0.85, 0.85), "stone")
 	put(root, m.box(0.08, 0.08, 4.0), Vector3(26, 1.0, -27), Color(0.85, 0.1, 0.1), "stone")
+	m.add_obstacle(Vector3(26, 0, -29), 0.3)
+	meadow(300, 34.0, 60.0, func(p: Vector3): return p.z < -28.0 and p.z > -36.0)
 	for i in range(40):
 		tree(root, m.pos_of(rng.randf_range(-180, 180), rng.randf_range(40, 120)), rng.randf_range(0.8, 1.5))
 	for x in [-30.0, 30.0]:
@@ -369,6 +524,12 @@ func _garten() -> void:
 	put(m.door_node, m.box(1.0, 2.1, 0.06), Vector3(0.5, 1.05, 0), Color(0.35, 0.2, 0.12), "caravan")
 	door_light_at(h, Vector3(0.0, 2.5, 4.2))
 	m.obj["door"] = h.transform * Vector3(0.0, 0, 4.4)
+	m.add_obstacle_node(h, Vector3.ZERO, 9.2, 7.2)
+	for p2 in [Vector3(-2.8, 1.6, 3.53), Vector3(2.6, 1.6, 3.53), Vector3(-2.8, 4.1, 3.53), Vector3(0.2, 4.1, 3.53), Vector3(2.6, 4.1, 3.53)]:
+		put(h, m.box(1.45, 1.25, 0.03), p2, Color(0.95, 0.95, 0.95), "caravan")        # window frames
+		put(h, m.box(1.5, 0.08, 0.2), p2 + Vector3(0, -0.62, 0.08), Color(0.5, 0.45, 0.4), "caravan")   # sills
+	put(h, m.box(0.5, 1.6, 0.5), Vector3(2.8, 7.4, -1.0), Color(0.5, 0.25, 0.2), "caravan")           # chimney
+	put(h, m.box(1.6, 0.12, 1.0), Vector3(0.0, 2.75, 4.0), Color(0.4, 0.4, 0.42), "caravan")          # canopy over the door
 	# terrace with table, chairs, a parasol (the PIR sensor is here)
 	var terr: Vector3 = h.transform * Vector3(2.5, 0, 6.0)
 	put(root, m.box(7.0, 0.1, 3.5), terr + Vector3(0, 0.05, 0), Color(0.6, 0.58, 0.55), "stone", Vector3(0, deg_to_rad(10), 0))
@@ -378,11 +539,13 @@ func _garten() -> void:
 	put(root, cyl(0.03, 0.03, 2.3, 6), terr + Vector3(0, 1.15, 0), Color(0.8, 0.8, 0.8), "stone")
 	put(root, cyl(0.0, 1.4, 0.5, 12), terr + Vector3(0, 2.35, 0), Color(0.85, 0.2, 0.2), "tent")
 	m.obj["pir"] = terr
+	m.add_obstacle(terr, 1.2)
 	# garden shed with the bike
 	var sh := node(root, Vector3(10.0, 0, -15.0), deg_to_rad(-20.0))
 	put(sh, m.box(2.6, 2.2, 2.0), Vector3(0, 1.1, 0), Color(0.3, 0.42, 0.3), "caravan")
 	put(sh, m.box(3.0, 0.12, 2.4), Vector3(0, 2.25, 0), Color(0.2, 0.2, 0.2), "caravan")
 	bike(sh.transform * Vector3(1.9, 0, 0.6), deg_to_rad(-20.0))
+	m.add_obstacle_node(sh, Vector3.ZERO, 2.8, 2.2)
 	# fence with hedge, a garden gate
 	for x in range(-20, 21, 2):
 		if x == 0:
@@ -402,7 +565,15 @@ func _garten() -> void:
 	hm.set_shader_parameter("noise_tex", m.noise_tex)
 	hm.set_shader_parameter("color", Color(0.12, 0.3, 0.1))
 	m.foliage_mats.append(hm)
-	put(root, m.box(40.0, 1.8, 1.0), Vector3(0, 0.9, -27.2), hm, "tree")
+	for x in [-10.5, 10.5]:                                       # hedge with a gap at the gate
+		put(root, m.box(19.0, 1.8, 1.0), Vector3(x, 0.9, -27.2), hm, "tree")
+		m.add_obstacle_box(Vector3(x, 0, -26.6), 19.0, 2.0, 0.0, true)   # fence + hedge: people use the gate (animals slip through)
+	for x in [-20.0, 20.0]:
+		m.add_obstacle_box(Vector3(x, 0, -12.0), 0.3, 28.0, 0.0, true)
+	for x in [-1.0, 1.0]:                                          # gate posts
+		put(root, m.box(0.14, 1.3, 0.14), Vector3(x, 0.65, -26), Color(0.45, 0.32, 0.2), "tree")
+	put(root, m.box(1.2, 0.02, 6.0), Vector3(0, 0.015, -23.0), Color(0.62, 0.58, 0.52), "road")   # path from the gate
+	data["gate"] = Vector3(0, 0, -26.0)
 	# flower beds, a trampoline, an apple tree
 	var fc := [Color(0.9, 0.2, 0.3), Color(0.95, 0.85, 0.2), Color(0.6, 0.3, 0.8), Color(1, 1, 1), Color(0.95, 0.5, 0.1)]
 	for row in range(2):
@@ -410,6 +581,9 @@ func _garten() -> void:
 		for i in range(14):
 			put(root, sph(0.12), Vector3(4.4 + i * 0.55, 0.3 + rng.randf() * 0.15, -5.5 - row * 2.0 + rng.randf_range(-0.3, 0.3)), fc[rng.randi() % fc.size()], "tree")
 	put(root, cyl(1.6, 1.6, 0.08, 24), Vector3(-6.0, 0.8, -6.0), Color(0.1, 0.1, 0.12), "stone")
+	m.add_obstacle(Vector3(-6.0, 0, -6.0), 1.7)
+	for row2 in range(2):
+		m.add_obstacle_box(Vector3(8.0, 0, -5.5 - row2 * 2.0), 8.0, 1.0, 0.0, true)
 	put(root, TorusMesh.new(), Vector3(-6.0, 0.8, -6.0), Color(0.2, 0.4, 0.8), "stone", Vector3.ZERO, Vector3(1.6, 0.6, 1.6))
 	for i in range(4):
 		var a := i * TAU / 4.0 + 0.4
@@ -419,6 +593,7 @@ func _garten() -> void:
 		put(root, sph(0.08), Vector3(4.0 + rng.randf_range(-1.2, 1.2), 3.6 + rng.randf_range(0, 1.5), -12.0 + rng.randf_range(-1.2, 1.2)), Color(0.8, 0.1, 0.1), "tree")
 	lamp_post(Vector3(-12, 0, -34))
 	lamp_post(Vector3(14, 0, -34))
+	meadow(600, 3.0, 25.0, func(p: Vector3): return p.z < -25.0 or abs(p.x) > 19.5)
 	for i in range(60):
 		tree(root, m.pos_of(rng.randf_range(-180, 180), rng.randf_range(40, 120)), rng.randf_range(0.8, 1.5))
 
@@ -433,6 +608,7 @@ func _lustig() -> void:
 	label(root, "Bitte lächeln!\nSie werden beobachtet :-)", Vector3(3.2, 2.3, -17.5), 64)
 	put(root, m.box(2.6, 1.0, 0.06), Vector3(3.2, 2.3, -17.56), Color(1.0, 0.95, 0.7), "tree")
 	put(root, m.box(0.08, 1.8, 0.08), Vector3(3.2, 0.9, -17.6), Color(0.5, 0.35, 0.2), "tree")
+	m.add_obstacle(Vector3(3.2, 0, -17.6), 0.25)
 	m.obj["pir"] = Vector3(0, 0, -16.0)
 	hut(Vector3(-14.0, 0, -20.0), deg_to_rad(30.0), Color(0.75, 0.45, 0.6))
 	bike(Vector3(-11.0, 0, -17.0), 0.4)
@@ -444,10 +620,12 @@ func _lustig() -> void:
 	lamp_post(Vector3(1.6, 0, -18.2), 3.2)
 	for i in range(70):
 		tree(root, m.pos_of(rng.randf_range(-180, 180), rng.randf_range(24, 110)), rng.randf_range(0.8, 1.4))
+	meadow(600, 3.0, 30.0, func(p: Vector3): return abs(p.x) < 1.6 and p.z < 3.0 and p.z > -27.0)
 
 
 func _carousel(c: Vector3) -> void:
 	var k := node(root, c)
+	m.add_obstacle(c, 2.6)
 	put(k, cyl(2.4, 2.4, 0.25, 24), Vector3(0, 0.12, 0), Color(0.85, 0.85, 0.8), "stone")
 	put(k, cyl(0.1, 0.1, 3.0, 8), Vector3(0, 1.5, 0), Color(0.9, 0.75, 0.2), "stone")
 	var rotor := node(k, Vector3.ZERO)
@@ -491,6 +669,12 @@ func _ducks(c: Vector3) -> void:
 	wm.roughness = 0.1
 	wm.metallic = 0.3
 	put(root, cyl(2.4, 2.4, 0.04, 32), c + Vector3(0, 0.03, 0), wm, "pond")
+	put(root, TorusMesh.new(), c + Vector3(0, 0.03, 0), Color(0.45, 0.42, 0.38), "stone", Vector3.ZERO, Vector3(2.45, 0.15, 2.45))   # stone rim
+	for i in range(5):                                                                             # reeds
+		var a := rng.randf() * TAU
+		for k in range(4):
+			put(root, cyl(0.01, 0.015, 0.9, 4), c + Vector3(cos(a) * 2.2 + k * 0.06, 0.45, sin(a) * 2.2), Color(0.35, 0.45, 0.2), "tree", Vector3(rng.randf_range(-0.15, 0.15), 0, rng.randf_range(-0.15, 0.15)))
+	m.add_obstacle(c, 2.5)
 	var ducks := []
 	for i in range(6):
 		var s := 1.0 if i == 0 else 0.6
@@ -509,6 +693,7 @@ func _ducks(c: Vector3) -> void:
 
 func _scarecrow(p: Vector3) -> void:
 	var s := node(root, p, 0.3)
+	m.add_obstacle(p, 0.4)
 	put(s, m.box(0.08, 1.8, 0.08), Vector3(0, 0.9, 0), Color(0.45, 0.32, 0.2), "tree")
 	put(s, m.box(0.5, 0.6, 0.25), Vector3(0, 1.45, 0), Color(0.35, 0.5, 0.75), "tent")
 	put(s, sph(0.2), Vector3(0, 1.95, 0), Color(0.95, 0.85, 0.55), "tent")
@@ -524,6 +709,7 @@ func _scarecrow(p: Vector3) -> void:
 func _gnome(p: Vector3) -> void:
 	"""a garden gnome hides behind a stone and peeks out every few seconds"""
 	put(root, sph(0.55, 0.7), p + Vector3(0, 0.2, 0), Color(0.48, 0.48, 0.46), "stone")
+	m.add_obstacle(p, 0.6)
 	var g := node(root, p + Vector3(0.2, 0, -0.5))
 	put(g, cyl(0.15, 0.2, 0.35, 10), Vector3(0, 0.2, 0), Color(0.2, 0.35, 0.7), 31.0)
 	put(g, sph(0.13), Vector3(0, 0.48, 0), Color(0.95, 0.75, 0.6), 34.0)
@@ -538,10 +724,20 @@ func _gnome(p: Vector3) -> void:
 func _light_chain(a: Vector3, b: Vector3, n: int) -> void:
 	for x in [a, b]:
 		put(root, m.box(0.08, x.y, 0.08), Vector3(x.x, x.y / 2.0, x.z), Color(0.4, 0.3, 0.2), "tree")
+		m.add_obstacle(Vector3(x.x, 0, x.z), 0.2)
 	for i in range(n):
 		var f := (i + 0.5) / n
 		var p := a.lerp(b, f) + Vector3(0, -0.6 * sin(f * PI), 0)
 		put(root, sph(0.09), p, glow_mat(Color.from_hsv(fmod(i * 0.17, 1.0), 0.75, 1.0)), 35.0)
+
+
+func garden_route(v) -> void:
+	"""somebody comes from the street through the garden gate, to the terrace, rings at the door and goes back out"""
+	var side := 1.0 if v.position.x > 0 else -1.0
+	var gate: Vector3 = data.get("gate", Vector3(0, 0, -26))
+	v.target = Vector3(0, 0, -30.0)
+	v.route = [gate + Vector3(0, 0, -1.2), gate + Vector3(0, 0, 1.5), m.obj["pir"] + Vector3(0, 0, 2.2), [m.obj["door"], rng.randf_range(4.0, 10.0), 0.0],
+			gate + Vector3(0, 0, 1.5), gate + Vector3(0, 0, -1.2), Vector3(-side * 40.0, 0, -30.5)]
 
 
 func bench_route(v, which := "bench") -> void:
@@ -556,7 +752,7 @@ func bench_route(v, which := "bench") -> void:
 # ---- wildlife watching: a high seat, a feeder, the forest edge ----------------------------------------------------------
 func _wild() -> void:
 	# high seat next to the camera
-	var hs := node(root, Vector3(-5.0, 0, 3.0), deg_to_rad(15.0))
+	var hs := node(root, Vector3(-8.0, 0, 6.0), deg_to_rad(15.0))          # behind the fixed camera 1, out of its picture
 	for x in [-0.8, 0.8]:
 		for z in [-0.8, 0.8]:
 			put(hs, m.box(0.12, 3.2, 0.12), Vector3(x, 1.6, z), Color(0.4, 0.28, 0.16), "tree")
@@ -567,6 +763,7 @@ func _wild() -> void:
 		put(hs, m.box(0.08, 1.6, 0.08), Vector3(x, 4.0, -0.9), Color(0.4, 0.28, 0.16), "tree")
 	for i in range(8):
 		put(hs, m.box(0.6, 0.05, 0.06), Vector3(0, 0.3 + i * 0.4, 1.3), Color(0.4, 0.28, 0.16), "tree")
+	m.add_obstacle_node(hs, Vector3(0, 0, 0.2), 2.0, 2.4)
 	# hunting hut at the side (door sensor) with the bike
 	hut(m.pos_of(-70.0, 14.0), deg_to_rad(70.0), Color(0.4, 0.3, 0.2))
 	bike(m.pos_of(-60.0, 12.0), 0.2)
@@ -580,14 +777,21 @@ func _wild() -> void:
 	var roof := PrismMesh.new()
 	roof.size = Vector3(2.4, 0.5, 1.2)
 	put(fd, roof, Vector3(0, 1.85, 0), Color(0.3, 0.22, 0.14), "tree")
+	m.add_obstacle_box(f, 2.2, 0.7, 0.0)
+	for i in range(8):                                                     # hay on the ground
+		put(root, m.box(0.5, 0.06, 0.25), f + Vector3(rng.randf_range(-1.3, 1.3), 0.03, rng.randf_range(0.5, 1.6)), Color(0.85, 0.75, 0.35), "tree", Vector3(0, rng.randf() * PI, 0))
 	data["feeder"] = f
 	m.obj["pir"] = f
 	put(root, m.box(0.15, 1.1, 0.15), Vector3(7.0, 0.55, -21.0), Color(0.4, 0.28, 0.16), "tree")
 	put(root, m.box(0.3, 0.25, 0.3), Vector3(7.0, 1.2, -21.0), Color(0.9, 0.9, 0.9), "stone")
+	m.add_obstacle(Vector3(7.0, 0, -21.0), 0.2)
 	data["salt"] = Vector3(7.0, 0, -21.0)
 	stones(6, 5.0, 20.0)
 	for i in range(10):
-		put(root, sph(0.4, 0.5), m.pos_of(rng.randf_range(-70, 70), rng.randf_range(8, 30), 0.1), Color(0.2, 0.32, 0.14), "tree")
+		var bp: Vector3 = m.pos_of(rng.randf_range(-70, 70), rng.randf_range(8, 30))
+		put(root, sph(0.4, 0.5), bp + Vector3(0, 0.1, 0), Color(0.2, 0.32, 0.14), "tree")
+		m.add_obstacle(bp, 0.35)
+	meadow(900, 3.0, 40.0)
 	# forest edge behind the meadow and on both sides
 	trees(260, 20.0, 120.0, func(p: Vector3): return p.z > -32.0 and abs(p.x) < 28.0)
 
@@ -595,7 +799,7 @@ func _wild() -> void:
 func feed_route(v) -> void:
 	"""an animal comes out of the forest to the feeder (or the salt lick), eats for a while and goes back"""
 	var at: Vector3 = data.get("feeder", Vector3(0, 0, -16)) if rng.randf() < 0.7 else data.get("salt", Vector3(7, 0, -21))
-	var p := at + Vector3(rng.randf_range(-1.2, 1.2), 0, rng.randf_range(0.6, 1.4))
+	var p := at + Vector3(rng.randf_range(-1.2, 1.2), 0, rng.randf_range(0.9, 1.5))
 	var back := Vector3(rng.randf_range(-25, 25), 0, -45.0)
 	v.target = p
 	v.route = [[p, rng.randf_range(12.0, 30.0), 0.0, at], back]

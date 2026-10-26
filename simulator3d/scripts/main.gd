@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-1.13"
+const VERSION := "3D-2.0"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -124,10 +124,17 @@ var stream_on := false                     # sending to Motion Watch: off at the
 var stream_port := 8765
 var stream_cb: CheckButton
 var stream_note: Label
-var place_kind := "fox"
-var place_menu: OptionButton
 
 var obj := {"door": Vector3.ZERO, "pir": Vector3.ZERO, "bike": Vector3.ZERO}   # set by the scene
+const SERVO_DEG_S := 200.0            # how fast the pan / tilt servos turn (MG90S: about 0.1 s per 60°, with load slower)
+var next_birds := 0.0
+# ---- settings for the visitors (from 3D-2.0; saved, also on the web page of Motion Watch) ----
+var visit_rate := 1.0                 # how often visitors come by themselves (× the scene's normal rate)
+var max_visitors := 12
+var visitor_speed := 1.0
+var mix := "mixed"                    # mixed | more_animals | more_people | animals | people
+var flee_light := true                # animals flee from the white light at night
+var flee_sound := true                # ... and from the siren
 
 
 func _ready() -> void:
@@ -455,6 +462,7 @@ func _build_scene() -> void:
 	if Scenes.name_of(scene) == scene:
 		scene = "camping"                        # unknown name
 	foliage_mats.clear()
+	clear_obstacles()
 	lamps.clear()
 	lamp_mats.clear()
 	anims.clear()
@@ -727,8 +735,12 @@ var _slow_t := 0.0
 
 func _process(dt: float) -> void:
 	var s: Dictionary = mw.get("servo", {})
-	head.rotation.y = -deg_to_rad(float(s.get("pan_deg", 0.0)))
-	head_pitch.rotation.x = deg_to_rad(float(s.get("tilt_deg", 0.0)) - 6.0)
+	# the servos turn like real ones: towards the new angle with a limited speed (no jumps)
+	var want_pan := -deg_to_rad(float(s.get("pan_deg", 0.0)))
+	var want_tilt := deg_to_rad(float(s.get("tilt_deg", 0.0)) - 6.0)
+	var step := deg_to_rad(SERVO_DEG_S) * dt
+	head.rotation.y = move_toward(head.rotation.y, want_pan, step)
+	head_pitch.rotation.x = move_toward(head_pitch.rotation.x, want_tilt, step)
 	cams[0].global_transform = head_pitch.global_transform.translated_local(Vector3(0, 0.0, -0.13))
 	cams[2].global_transform = head_pitch.global_transform.translated_local(Vector3(0.12, 0.0, -0.12))
 	var c1 := Transform3D(Basis.from_euler(Vector3(deg_to_rad(-10.0), -deg_to_rad(cam1_yaw), 0)), Vector3(-3.0, 2.4, 3.0))
@@ -743,12 +755,15 @@ func _process(dt: float) -> void:
 		_update_temps()
 		_life()
 		_update_status()
+		if _settings_dirty:
+			_save_settings()
 		if auto_update and not update_busy and now() > next_update_check:
 			next_update_check = now() + UPDATE_EVERY
 			run_update(true, false)
 	var t := now() - clock0
-	for a in anims:
-		a.call(dt, t)
+	for i in range(anims.size() - 1, -1, -1):
+		if anims[i].call(dt, t) == true:      # true = finished (e.g. the birds are gone)
+			anims.remove_at(i)
 	_fly(dt)
 	if crosshair != null:
 		crosshair.visible = rifle_on
@@ -893,7 +908,8 @@ func on_state(d: Dictionary, host: String) -> void:
 	mw_t = now()
 	mw_addr = host
 	if str(d.get("sound", "")) != "" and old_sound == "":
-		_scare_all(true)
+		if flee_sound:
+			_scare_all(true)
 
 
 func world_reply() -> Dictionary:
@@ -932,7 +948,7 @@ func events_since(n: int) -> Array:
 
 # ---- visitors ----------------------------------------------------------------------------------------------------------
 func time_scale_visitors() -> float:
-	return 1.0
+	return visitor_speed
 
 
 func spawn(kind: String, from = null, to = null) -> Node3D:
@@ -940,7 +956,8 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 	var side := 1.0 if randf() < 0.5 else -1.0
 	var a: Vector3 = from if from != null else Vector3(-side * (depth * 1.6 + 6.0), 0, -depth)
 	var b: Vector3 = to if to != null else Vector3(side * (depth * 1.6 + 6.0), 0, -depth)
-	var spd: float = {"person": 1.3, "fox": 2.0, "boar": 1.5, "deer": 1.6, "cat": 1.1, "dog": 1.8, "badger": 0.9, "car": 11.0}.get(kind, 1.3)
+	var spd: float = {"person": 1.3, "child": 1.0, "jogger": 2.8, "fox": 2.0, "boar": 1.5, "deer": 1.6, "cat": 1.1, "dog": 1.8, "badger": 0.9,
+			"hare": 1.9, "hedgehog": 0.3, "car": 11.0}.get(kind, 1.3)
 	var v = Actor.new()
 	visitors.add_child(v)
 	v.setup(self, kind, a, b, spd * randf_range(0.85, 1.15))
@@ -968,6 +985,24 @@ func visit(k: String) -> void:
 	elif k.begins_with("feed_"):
 		var a = spawn(k.substr(5), Vector3(randf_range(-25, 25), 0, -45.0), Vector3(0, 0, -16))
 		scenes.feed_route(a)
+	elif k == "dogwalk":                                       # somebody walks the dog
+		var w = spawn("person")
+		var dg = spawn("dog", w.position + Vector3(1.0, 0, 1.0), w.target)
+		dg.leader = w
+		dg.speed = w.speed * 1.6
+		dg.follow_off = Vector3(randf_range(-1.2, 1.2), 0, randf_range(0.8, 2.0))
+	elif k == "herd":                                          # a few deer together
+		var lead = spawn("deer")
+		for i in range(randi_range(1, 3)):
+			var o := Vector3(randf_range(-2.5, 2.5), 0, randf_range(1.0, 3.5))
+			var d2 = spawn("deer", lead.position + o, lead.target + o)
+			d2.speed = lead.speed
+			if randf() < 0.5:
+				d2.body_root.scale *= 0.7                        # a young one
+	elif k == "garden_person":
+		var side := 1.0 if randf() < 0.5 else -1.0
+		var g = spawn("person", Vector3(side * 35.0, 0, -30.5), Vector3(0, 0, -30.0))
+		scenes.garden_route(g)
 	else:
 		spawn(k)
 
@@ -986,11 +1021,16 @@ func _life() -> void:
 	var t := now()
 	if auto_visitors and t > next_auto:
 		var au: Array = Scenes.AUTO.get(scene, Scenes.AUTO["camping"])
-		var k: String = au[0][randi() % au[0].size()]
-		visit(k)
-		next_auto = t + randf_range(au[1], au[2])
+		var kinds := _mixed(au[0])
+		if visitors.get_child_count() < max_visitors and not kinds.is_empty():
+			visit(kinds[randi() % kinds.size()])
+		next_auto = t + randf_range(au[1], au[2]) / max(0.1, visit_rate)
+	if t > next_birds:
+		next_birds = t + randf_range(50.0, 140.0)
+		if not is_dark() and weather != "rain":
+			_birds()
 	var L: Dictionary = mw.get("lights", {})
-	if L.get("white", false) and is_dark():
+	if flee_light and L.get("white", false) and is_dark():
 		_scare_all(false)
 	var tent: Vector3 = obj["pir"]
 	for v in visitors.get_children():
@@ -1003,6 +1043,25 @@ func _life() -> void:
 			v.speed = 4.0
 			v.crouch = 0.0
 			v.wait_until = 0.0
+
+
+const PEOPLE_KINDS := ["person", "child", "jogger", "dogwalk", "bench", "garden_person", "car_park", "car"]
+
+
+func _mixed(kinds: Array) -> Array:
+	"""the visitors of the scene, filtered by the setting «Wer kommt» (more animals / more people / only ...)"""
+	var animals := kinds.filter(func(k): return not k in PEOPLE_KINDS)
+	var people := kinds.filter(func(k): return k in PEOPLE_KINDS)
+	match mix:
+		"animals":
+			return animals if not animals.is_empty() else kinds
+		"people":
+			return people if not people.is_empty() else kinds
+		"more_animals":
+			return kinds + animals + animals
+		"more_people":
+			return kinds + people + people
+	return kinds
 
 
 func _scare_all(sound: bool) -> void:
@@ -1049,32 +1108,54 @@ func set_gas(o: bool) -> void:
 
 # ---- controls (window and web page) ----------------------------------------------------------------------------------
 func add_control(type: String, id: String, label: String, getter, setter, group: String, extra := {}) -> void:
-	controls.append({"type": type, "id": id, "label": label, "group": group, "get": getter, "set": setter, "extra": extra})
+	var st = setter
+	if setter != null and type != "button":
+		st = func(v):                                 # a changed setting is saved (a few seconds later)
+			setter.call(v)
+			_settings_dirty = true
+	controls.append({"type": type, "id": id, "label": label, "group": group, "get": getter, "set": st, "extra": extra})
 
 
 func _register_controls() -> void:
+	"""every setting of the simulator - for the window and for the web page of Motion Watch (CONTROL protocol).
+	extra "expert": true = only shown with «Experte» in the window (the web page always shows everything)."""
 	var sc := []
 	for s in Scenes.LIST:
 		sc.append([s[0], s[1]])
+	var ex := {"expert": true}
 	add_control("select", "scene", "Szene", func(): return scene, func(v): set_scene(v), "Szene", {"options": sc})
 	add_control("slider", "hour", "Uhrzeit", func(): return snappedf(hour(), 0.01), func(v): set_hour(v), "Szene", {"min": 0, "max": 23.75, "step": 0.25, "unit": "h"})
-	add_control("slider", "speed", "Zeit läuft x-fach", func(): return speed, func(v): _set_speed(v), "Szene", {"min": 1, "max": 120, "step": 1, "unit": "×"})
-	add_control("slider", "moon", "Mond", func(): return moon, func(v): moon = v, "Szene", {"min": 0, "max": 1, "step": 0.1})
-	add_control("slider", "cam1_yaw", "Kamera 1: Richtung", func(): return cam1_yaw, func(v): cam1_yaw = v, "Szene", {"min": -90, "max": 90, "step": 1, "unit": "°"})
+	add_control("slider", "speed", "Zeit läuft x-fach", func(): return speed, func(v): _set_speed(v), "Szene", {"min": 1, "max": 120, "step": 1, "unit": "×", "expert": true})
+	add_control("slider", "moon", "Mond", func(): return moon, func(v): moon = v, "Szene", {"min": 0, "max": 1, "step": 0.1, "expert": true})
+	add_control("slider", "cam1_yaw", "Kamera 1: Richtung", func(): return cam1_yaw, func(v): cam1_yaw = v, "Szene", {"min": -90, "max": 90, "step": 1, "unit": "°", "expert": true})
 	add_control("select", "weather", "Wetter", func(): return weather, func(v): weather = v, "Wetter",
 			{"options": [["clear", "klar"], ["cloudy", "bewölkt"], ["rain", "Regen"], ["fog", "Nebel"], ["snow", "Schnee"]]})
 	add_control("slider", "wind", "Wind", func(): return wind, func(v): wind = v, "Wetter", {"min": 0, "max": 120, "step": 1, "unit": "km/h"})
 	add_control("slider", "ambient", "Temperatur", func(): return ambient, func(v): ambient = v, "Wetter", {"min": -15, "max": 40, "step": 0.5, "unit": "°C"})
-	add_control("slider", "pressure", "Luftdruck", func(): return pressure, func(v): pressure = v, "Wetter", {"min": 960, "max": 1040, "step": 0.5, "unit": "hPa"})
-	add_control("button", "storm", "Sturm zieht auf", null, func(): storm_t = now(), "Wetter")
-	for k in [["person", "Person"], ["fox", "Fuchs"], ["boar", "Wildschwein"], ["deer", "Reh"], ["cat", "Katze"], ["badger", "Dachs"], ["dog", "Hund"]]:
-		add_control("button", "spawn_" + k[0], k[1], null, func(): spawn(k[0]), "Besuch")
+	add_control("slider", "humidity", "Luftfeuchtigkeit", func(): return humidity, func(v): humidity = v, "Wetter", {"min": 10, "max": 100, "step": 1, "unit": "%", "expert": true})
+	add_control("slider", "pressure", "Luftdruck", func(): return pressure, func(v): pressure = v, "Wetter", {"min": 960, "max": 1040, "step": 0.5, "unit": "hPa", "expert": true})
+	add_control("button", "storm", "Sturm zieht auf", null, func(): storm_t = now(), "Wetter", ex)
+	# visitors: one button each (the window has the pictures to drag, the web page these buttons)
+	for k in VISITOR_LIST:
+		add_control("button", "spawn_" + k[0], k[1], null, func(): visit(k[0]), "Besuch")
 	add_control("button", "car", "Auto", null, func(): car(), "Besuch")
 	add_control("button", "thief", "Dieb (Velo, Tür)", null, func(): thief(), "Besuch")
-	add_control("button", "car_park", "Auto parkiert (Parkplatz)", null, func(): visit("car_park"), "Besuch")
-	add_control("button", "bench", "Besuch setzt sich auf die Bank (Lustiger Platz)", null, func(): visit("bench"), "Besuch")
-	add_control("button", "feed", "Reh kommt zur Futterstelle (Wildbeobachtung)", null, func(): visit("feed_deer"), "Besuch")
+	add_control("button", "dogwalk", "Spaziergang mit Hund", null, func(): visit("dogwalk"), "Besuch")
+	add_control("button", "herd", "Rehrudel", null, func(): visit("herd"), "Besuch")
+	add_control("button", "car_park", "Auto parkiert (Parkplatz)", null, func(): visit("car_park"), "Besuch", ex)
+	add_control("button", "bench", "Besuch setzt sich auf die Bank (Lustiger Platz)", null, func(): visit("bench"), "Besuch", ex)
+	add_control("button", "feed", "Reh kommt zur Futterstelle (Wildbeobachtung)", null, func(): visit("feed_deer"), "Besuch", ex)
+	add_control("button", "garden_person", "Besuch kommt durchs Gartentor (Garten)", null, func(): visit("garden_person"), "Besuch", ex)
+	add_control("button", "clear", "Alle Besucher weg", null, func(): clear_visitors(), "Besuch")
 	add_control("toggle", "auto", "ab und zu Besuch von selbst", func(): return auto_visitors, func(v): auto_visitors = v, "Besuch")
+	add_control("select", "mix", "Wer kommt", func(): return mix, func(v): mix = v, "Besuch",
+			{"options": [["mixed", "Tiere und Menschen"], ["more_animals", "mehr Tiere"], ["more_people", "mehr Menschen"], ["animals", "nur Tiere"], ["people", "nur Menschen"]]})
+	add_control("slider", "visit_rate", "Wie oft Besuch kommt", func(): return visit_rate, func(v): visit_rate = v, "Besuch", {"min": 0.25, "max": 4.0, "step": 0.25, "unit": "×"})
+	add_control("slider", "max_visitors", "Höchstens gleichzeitig", func(): return max_visitors, func(v): max_visitors = int(v), "Besuch", {"min": 1, "max": 30, "step": 1, "expert": true})
+	add_control("slider", "visitor_speed", "Tempo der Besucher", func(): return visitor_speed, func(v): visitor_speed = v, "Besuch", {"min": 0.25, "max": 2.5, "step": 0.05, "unit": "×", "expert": true})
+	add_control("toggle", "flee_light", "Tiere flüchten nachts vor dem weissen Licht", func(): return flee_light, func(v): flee_light = v, "Besuch", ex)
+	add_control("toggle", "flee_sound", "Tiere flüchten vor der Sirene", func(): return flee_sound, func(v): flee_sound = v, "Besuch", ex)
+	add_control("toggle", "avoid_on", "Um Bäume, Häuser und Fahrzeuge herumgehen", func(): return avoid_on, func(v): avoid_on = v, "Besuch", ex)
 	add_control("toggle", "door", "Wohnwagentür offen", func(): return door_open, func(v): set_door(v), "Sensoren")
 	add_control("toggle", "gas", "Gas / Rauch", func(): return gas_on, func(v): set_gas(v), "Sensoren")
 	add_control("button", "pir", "PIR Zelt auslösen", null, func(): add_event("PIR Zelt", "pir"), "Sensoren")
@@ -1087,6 +1168,23 @@ func _register_controls() -> void:
 	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates")
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
 			{"options": [["simple", "einfach (schnell)"], ["nice", "schön (Schatten, Leuchten)"]]})
+	add_control("toggle", "meadow", "Gras und Blumen auf der Wiese", func(): return meadow_on, func(v): set_meadow(v), "Grafik", ex)
+
+
+const VISITOR_LIST := [["person", "Person"], ["child", "Kind"], ["jogger", "Jogger"], ["fox", "Fuchs"], ["deer", "Reh"], ["boar", "Wildschwein"],
+		["cat", "Katze"], ["dog", "Hund"], ["badger", "Dachs"], ["hare", "Hase"], ["hedgehog", "Igel"]]
+var meadow_on := true
+
+
+func set_meadow(on: bool) -> void:
+	meadow_on = on
+	for n in get_tree().get_nodes_in_group("meadow"):
+		n.visible = on
+
+
+func clear_visitors() -> void:
+	for v in visitors.get_children():
+		v.queue_free()
 
 
 func _set_speed(v: float) -> void:
@@ -1131,6 +1229,25 @@ func control(d: Dictionary) -> Dictionary:
 			return {"ok": false, "error": "unknown scenario"}
 	elif a == "delete":
 		return {"ok": false, "error": "cannot be deleted"}
+	elif a == "visitors":                              # for tests: where every visitor is, and whether it is inside an object
+		var out := []
+		for v in visitors.get_children():
+			var p2 := Vector2(v.position.x, v.position.z)
+			var deepest := 99.0
+			for o in _ob_near(p2):
+				if o["po"] and v.kind != "person":
+					continue
+				deepest = min(deepest, float(_ob_closest(o, p2)[1]))
+			out.append({"kind": v.kind, "x": snappedf(v.position.x, 0.01), "z": snappedf(v.position.z, 0.01), "gap": snappedf(deepest, 0.01), "r": v.radius})
+		return {"ok": true, "visitors": out}
+	elif a == "spawn_at":                              # for tests: a visitor from one point to another
+		var f: Array = d.get("from", [0, 0])
+		var t: Array = d.get("to", [10, 0])
+		var sv = spawn(str(d.get("kind", "person")), Vector3(float(f[0]), 0, float(f[1])), Vector3(float(t[0]), 0, float(t[1])))
+		if d.has("wait"):                              # stand there for a while, looking at the head camera
+			sv.route = [[Vector3(float(t[0]), 0, float(t[1])), float(d["wait"]), 0.0, Vector3(0, 0, 0)], Vector3(float(t[0]) + 40.0, 0, float(t[1]))]
+			sv.next_idle = now() + 999.0
+		return {"ok": true}
 	elif a == "set" or a == "press":
 		var c = null
 		for x in controls:
@@ -1179,7 +1296,8 @@ var info_label: Label
 
 
 func _build_ui() -> void:
-	"""the window: phone on the left, on the right the panel in the look of the web page of Motion Watch (ui_style.gd)"""
+	"""the window: phone on the left, on the right the panel in the look of the web page of Motion Watch (ui_style.gd):
+	toolbar (hide, search, groups only, expand all, collapse all), cards, at the bottom «Einfach | Experte»"""
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	var th: Theme = UI.theme()
@@ -1204,6 +1322,17 @@ func _build_ui() -> void:
 	panel.add_theme_stylebox_override("panel", sb)
 	layer.add_child(panel)
 	ui_root = panel
+	show_btn = UI.icon_button("show", "Bedienfeld zeigen (H)")
+	show_btn.theme = th
+	show_btn.anchor_left = 1.0
+	show_btn.anchor_right = 1.0
+	show_btn.offset_left = -48
+	show_btn.offset_top = 10
+	show_btn.offset_right = -10
+	show_btn.offset_bottom = 48
+	show_btn.visible = false
+	show_btn.pressed.connect(func(): show_panel(true))
+	layer.add_child(show_btn)
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	panel.add_child(scroll)
@@ -1235,8 +1364,31 @@ func _build_ui() -> void:
 	ver.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
 	hdr.add_child(ver)
+	# toolbar like above the settings of Motion Watch
+	var tb := HBoxContainer.new()
+	tb.add_theme_constant_override("separation", 6)
+	box_.add_child(tb)
+	var hide_b := UI.icon_button("hide", "Bedienfeld ausblenden (H)")
+	hide_b.pressed.connect(func(): show_panel(false))
+	tb.add_child(hide_b)
+	search_in = UI.search_field("Einstellung suchen …")
+	search_in.text_changed.connect(_search)
+	tb.add_child(search_in)
+	var gb := UI.icon_button("groups", "Nur Gruppen")
+	gb.pressed.connect(func(): _fold_all("groups"))
+	tb.add_child(gb)
+	var ob := UI.icon_button("open", "Alle aufklappen")
+	ob.pressed.connect(func(): _fold_all("open"))
+	tb.add_child(ob)
+	var cb := UI.icon_button("close", "Alle zuklappen")
+	cb.pressed.connect(func(): _fold_all("close"))
+	tb.add_child(cb)
+	search_none = UI.small("Kein Treffer")
+	search_none.visible = false
+	box_.add_child(search_none)
 	# connection to Motion Watch
 	var cn := UI.card(box_)
+	top_cards.append(cn.get_parent())
 	cn.add_child(UI.heading("Verbindung"))
 	stream_cb = CheckButton.new()
 	stream_cb.text = "An Motion Watch senden (Port %d)" % stream_port
@@ -1251,6 +1403,8 @@ func _build_ui() -> void:
 	cn.add_child(status_label)
 	# camera pictures
 	var cm := UI.fold_card(box_, "Kameras", true)
+	fold_bodies.append(cm)
+	top_cards.append(cm.get_meta("card"))
 	prev0 = TextureRect.new()
 	prev0.texture = vps[0].get_texture()
 	prev0.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -1272,8 +1426,21 @@ func _build_ui() -> void:
 	prevt.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	prevt.custom_minimum_size = Vector2(166, 128)
 	row.add_child(prevt)
-	# tools: phone, Motion Watch on this PC, updates, what a click puts down
+	# visitors to put down: small pictures - click = choose (then click into the world), or drag them into the world
+	var vs := UI.fold_card(box_, "Besucher hinsetzen", true)
+	fold_bodies.append(vs)
+	top_cards.append(vs.get_meta("card"))
+	vs.add_child(UI.small("Bild in die Welt ziehen – oder anklicken und dann in die Welt klicken."))
+	var grid := GridContainer.new()
+	grid.columns = 4
+	grid.add_theme_constant_override("h_separation", 6)
+	grid.add_theme_constant_override("v_separation", 6)
+	vs.add_child(grid)
+	for k in VISITOR_LIST:
+		grid.add_child(_palette_item(k[0], k[1]))
+	# tools: Motion Watch on this PC, phone, updates
 	var tl := UI.card(box_)
+	top_cards.append(tl.get_parent())
 	tl.add_child(UI.heading("Werkzeuge"))
 	mwpc_btn = Button.new()
 	mwpc_btn.pressed.connect(func(): mwpc.toggle())
@@ -1289,29 +1456,209 @@ func _build_ui() -> void:
 	update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
 	update_btn.pressed.connect(check_updates)
 	tl.add_child(update_btn)
-	var pr := HBoxContainer.new()
-	tl.add_child(pr)
-	var lbl := Label.new()
-	lbl.text = "Linksklick setzt hin:"
-	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	pr.add_child(lbl)
-	place_menu = OptionButton.new()
-	for k in [["", "nichts"], ["person", "Person"], ["fox", "Fuchs"], ["boar", "Wildschwein"], ["deer", "Reh"], ["cat", "Katze"], ["badger", "Dachs"], ["dog", "Hund"]]:
-		place_menu.add_item(k[1])
-		place_menu.set_item_metadata(place_menu.item_count - 1, k[0])
-	place_menu.select(2)
-	place_menu.custom_minimum_size = Vector2(150, 0)
-	pr.add_child(place_menu)
 	# the settings of the simulator, one card per group (the same list the web page of Motion Watch shows)
 	var groups := {}
 	for c in controls:
 		if not groups.has(c.group):
 			groups[c.group] = UI.fold_card(box_, c.group, c.group in ["Szene", "Besuch"])
+			fold_bodies.append(groups[c.group])
+			setting_bodies.append(groups[c.group])
 		_ui_control(groups[c.group], c)
 	var keys := UI.fold_card(box_, "Tasten", false)
+	fold_bodies.append(keys)
 	info_label = UI.small("Maus rechts gedrückt: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienfeld aus / ein · P: Handy / Tablet · G: Gewehr ein / aus (Linksklick = Schuss)")
 	keys.add_child(info_label)
+	expert_cards.append(keys.get_meta("card"))
+	top_cards.append(keys.get_meta("card"))
+	# Simple | Expert at the very bottom (like on the page of Motion Watch)
+	var se := UI.segment("Einfach", "Experte", not ui_simple, func(expert): set_simple(not expert))
+	box_.add_child(se)
+	simple_note = UI.small("Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.")
+	box_.add_child(simple_note)
+	_apply_simple()
 	_sync_ui()
+	_make_thumbs()
+
+
+# ---- toolbar, search, Simple / Expert --------------------------------------------------------------------------------
+var show_btn: Button
+var search_in: LineEdit
+var search_none: Label
+var simple_note: Label
+var ui_simple := true                 # «Einfach»: only the important settings (saved)
+var fold_bodies: Array = []           # every card that opens / closes
+var setting_bodies: Array = []        # the cards of the settings groups
+var top_cards: Array = []             # connection, cameras, visitors, tools (hidden while searching)
+var expert_cards: Array = []
+var ui_items: Array = []              # [widget, label, expert, body] of every setting
+
+
+func show_panel(on: bool) -> void:
+	ui_root.visible = on
+	show_btn.visible = not on
+
+
+func _fold_all(how: String) -> void:
+	for b in fold_bodies:
+		var open: bool = how == "open" or (how == "groups" and not b in setting_bodies and b.get_meta("title") == "Kameras")
+		UI.set_open(b, open)
+
+
+func _search(q: String) -> void:
+	"""type into the search field: only the matching settings stay, their cards open; empty = everything as before"""
+	q = q.strip_edges().to_lower()
+	var any := false
+	for c in top_cards:
+		c.visible = q == "" and not (c in expert_cards and ui_simple)
+	var hit_bodies := {}
+	for it in ui_items:
+		var show_it: bool = (q == "" or str(it[1]).to_lower().contains(q)) and not (ui_simple and it[2] and q == "")
+		it[0].visible = show_it
+		if q != "" and show_it:
+			hit_bodies[it[3]] = true
+			any = true
+	for b in setting_bodies:
+		b.get_meta("card").visible = q == "" or hit_bodies.has(b)
+		if q != "":
+			UI.set_open(b, hit_bodies.has(b))
+	search_none.visible = q != "" and not any
+	if q == "":
+		_apply_simple()
+
+
+func set_simple(on: bool) -> void:
+	ui_simple = on
+	_settings_dirty = true
+	_apply_simple()
+
+
+func _apply_simple() -> void:
+	"""Simple: settings marked "expert" are hidden (and cards that would be empty)"""
+	var counts := {}
+	for it in ui_items:
+		var vis: bool = not (ui_simple and it[2])
+		it[0].visible = vis
+		if vis:
+			counts[it[3]] = true
+	for b in setting_bodies:
+		b.get_meta("card").visible = counts.has(b)
+	for c in expert_cards:
+		c.visible = not ui_simple
+	if simple_note != null:
+		simple_note.visible = ui_simple
+
+
+# ---- the pictures of the visitors: click to choose, drag into the world ------------------------------------------------
+var thumbs := {}                      # kind -> ImageTexture
+var thumb_rects := {}
+var palette_items := {}
+var drag_kind := ""
+
+
+func _palette_item(kind: String, name_: String) -> Control:
+	var pc := PanelContainer.new()
+	pc.custom_minimum_size = Vector2(80, 88)
+	pc.tooltip_text = name_ + ": in die Welt ziehen, oder anklicken und in die Welt klicken"
+	pc.mouse_default_cursor_shape = Control.CURSOR_DRAG
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 2)
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pc.add_child(v)
+	var tr := TextureRect.new()
+	tr.custom_minimum_size = Vector2(64, 58)
+	tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(tr)
+	var l := Label.new()
+	l.text = name_
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.add_theme_font_size_override("font_size", 11)
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(l)
+	thumb_rects[kind] = tr
+	palette_items[kind] = pc
+	pc.gui_input.connect(func(ev):
+		if ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT and not ev.pressed and drag_kind == "":
+			place_kind = "" if place_kind == kind else kind
+			_paint_palette())
+	var drag_fn := func(_pos):
+		drag_kind = kind
+		var pv := TextureRect.new()
+		pv.texture = thumbs.get(kind)
+		pv.custom_minimum_size = Vector2(72, 66)
+		pv.size = Vector2(72, 66)
+		pv.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		pv.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		pv.modulate = Color(1, 1, 1, 0.85)
+		pc.set_drag_preview(pv)
+		return {"visitor": kind}
+	pc.set_drag_forwarding(drag_fn, func(_p, _d): return false, func(_p, _d): pass)
+	_paint_palette.call_deferred()
+	return pc
+
+
+func _paint_palette() -> void:
+	for k in palette_items:
+		var on: bool = k == place_kind
+		palette_items[k].add_theme_stylebox_override("panel", UI.box(UI.PANEL if not on else UI.ACC.darkened(0.55), UI.ACC if on else UI.LINE, 10, 4, 2 if on else 1))
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_DRAG_END and drag_kind != "":
+		var k := drag_kind
+		drag_kind = ""
+		var mp := get_viewport().get_mouse_position()
+		var over_ui: bool = (ui_root != null and ui_root.visible and ui_root.get_global_rect().has_point(mp)) or (phone != null and phone.visible and phone.get_global_rect().has_point(mp))
+		if not over_ui:
+			_place_at(k, mp)
+
+
+func _make_thumbs() -> void:
+	"""a little picture of every visitor: drawn once at the start in a small world of its own"""
+	var vp := SubViewport.new()
+	vp.size = Vector2i(128, 116)
+	vp.transparent_bg = true
+	vp.own_world_3d = true
+	vp.msaa_3d = Viewport.MSAA_2X
+	vp.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	add_child(vp)
+	var cam := Camera3D.new()
+	cam.cull_mask = 1
+	cam.fov = 30
+	var e := Environment.new()
+	e.background_mode = Environment.BG_CLEAR_COLOR
+	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	e.ambient_light_color = Color(0.75, 0.78, 0.85)
+	e.ambient_light_energy = 0.7
+	cam.environment = e
+	vp.add_child(cam)
+	var sun_ := DirectionalLight3D.new()
+	sun_.rotation = Vector3(deg_to_rad(-45), deg_to_rad(-35), 0)
+	sun_.light_energy = 1.3
+	vp.add_child(sun_)
+	var sizes := {"person": 1.9, "child": 1.3, "jogger": 1.9, "deer": 1.7, "boar": 1.1, "fox": 0.8, "dog": 0.9, "cat": 0.6, "badger": 0.6, "hare": 0.65, "hedgehog": 0.32}
+	for k in VISITOR_LIST:
+		var a = Actor.new()
+		a.preview = true
+		vp.add_child(a)
+		a.setup(self, k[0], Vector3.ZERO, Vector3(-0.8, 0, 1.0), 0.0)
+		var h: float = sizes.get(k[0], 1.0)
+		var wide: bool = k[0] in ["fox", "deer", "boar", "dog", "cat", "badger", "hare", "hedgehog"]
+		cam.position = Vector3(h * 1.1, h * 0.62, h * 1.75) * (1.15 if wide else 0.78)
+		cam.look_at(Vector3(0, h * 0.48, 0), Vector3.UP)
+		vp.render_target_update_mode = SubViewport.UPDATE_ONCE
+		await RenderingServer.frame_post_draw
+		await RenderingServer.frame_post_draw
+		var img := vp.get_texture().get_image()
+		if img != null and not img.is_empty():
+			var t := ImageTexture.create_from_image(img)
+			thumbs[k[0]] = t
+			if thumb_rects.has(k[0]):
+				thumb_rects[k[0]].texture = t
+		a.queue_free()
+		await get_tree().process_frame
+	vp.queue_free()
 
 
 func _on_mwpc() -> void:
@@ -1374,18 +1721,41 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
+const KEEP := ["auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+		"avoid_on", "quality", "meadow_on", "weather", "wind", "ambient", "moon", "cam1_yaw"]
+var _settings_dirty := false
+
+
 func _load_settings() -> void:
+	"""the settings of the last time (simulator_settings.json in the user folder)"""
 	if not FileAccess.file_exists(SETTINGS_FILE):
 		return
 	var d = JSON.parse_string(FileAccess.get_file_as_string(SETTINGS_FILE))
-	if typeof(d) == TYPE_DICTIONARY:
-		auto_update = bool(d.get("auto_update", false))
+	if typeof(d) != TYPE_DICTIONARY:
+		return
+	for k in KEEP:
+		if d.has(k):
+			var v = d[k]
+			var old = get(k)
+			if typeof(old) == TYPE_INT:
+				v = int(v)
+			elif typeof(old) == TYPE_BOOL:
+				v = bool(v)
+			elif typeof(old) == TYPE_FLOAT:
+				v = float(v)
+			else:
+				v = str(v)
+			set(k, v)
 
 
 func _save_settings() -> void:
+	var d := {}
+	for k in KEEP:
+		d[k] = get(k)
 	var f := FileAccess.open(SETTINGS_FILE, FileAccess.WRITE)
 	if f != null:
-		f.store_string(JSON.stringify({"auto_update": auto_update}))
+		f.store_string(JSON.stringify(d, " "))
+	_settings_dirty = false
 
 
 func set_auto_update(on: bool) -> void:
@@ -1432,12 +1802,14 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 				parent.add_child(flow)
 			b.custom_minimum_size = Vector2(160 if c.label.length() < 22 else 330, 0)
 			flow.add_child(b)
+			ui_items.append([b, c.label, c.extra.get("expert", false), parent])
 		"toggle":
-			var cb := CheckBox.new()
+			var cb := CheckButton.new()                      # a switch, like on the page of Motion Watch
 			cb.text = c.label
 			cb.toggled.connect(func(on): c["set"].call(on))
 			parent.add_child(cb)
 			ui_rows[c.id] = cb
+			ui_items.append([cb, c.label, c.extra.get("expert", false), parent])
 		"select":
 			var hb := HBoxContainer.new()
 			var l := Label.new()
@@ -1453,6 +1825,7 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			hb.add_child(ob)
 			parent.add_child(hb)
 			ui_rows[c.id] = ob
+			ui_items.append([hb, c.label, c.extra.get("expert", false), parent])
 		"slider":
 			var vb := VBoxContainer.new()
 			var hb2 := HBoxContainer.new()
@@ -1474,6 +1847,7 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			vb.add_child(hs)
 			parent.add_child(vb)
 			ui_rows[c.id] = hs
+			ui_items.append([vb, c.label, c.extra.get("expert", false), parent])
 
 
 var _syncing := false
@@ -1486,7 +1860,7 @@ func _sync_ui() -> void:
 			continue
 		var w = ui_rows[c.id]
 		var v = c["get"].call()
-		if w is CheckBox:
+		if w is CheckBox or w is CheckButton:
 			w.set_pressed_no_signal(bool(v))
 		elif w is OptionButton:
 			for i in range(w.item_count):
@@ -1554,7 +1928,7 @@ func _unhandled_input(ev: InputEvent) -> void:
 			KEY_0:
 				view_mode = 0
 			KEY_H:
-				ui_root.visible = not ui_root.visible
+				show_panel(not ui_root.visible)
 			KEY_P:
 				_toggle_phone()
 			KEY_G:
@@ -1593,16 +1967,22 @@ func _fly(dt: float) -> void:
 		view_cam.position.y = max(0.3, view_cam.position.y)
 
 
+var place_kind := ""                  # chosen in the pictures of the visitors: a click into the world puts it there
+
+
 func _place(p: Vector2) -> void:
-	var k: String = str(place_menu.get_item_metadata(place_menu.selected))
-	if k == "":
-		return
+	if place_kind != "":
+		_place_at(place_kind, p)
+
+
+func _place_at(k: String, p: Vector2) -> void:
+	"""a visitor where the mouse points (on the ground, never inside an object); it then walks off in some direction"""
 	var from := view_cam.project_ray_origin(p)
 	var d := view_cam.project_ray_normal(p)
 	var hit = Plane(Vector3.UP, 0).intersects_ray(from, d)
-	if hit == null:
+	if hit == null or from.distance_to(hit) > 400.0:
 		return
-	var a: Vector3 = hit
+	var a: Vector3 = free_spot(hit, 0.5, k in ["person", "child", "jogger"])
 	var ang := randf() * TAU
 	var b := a + Vector3(cos(ang), 0, sin(ang)) * 40.0
 	spawn(k, a, b)
@@ -1766,3 +2146,199 @@ func _puff(p: Vector3) -> void:
 	tw.tween_property(mi, "scale", Vector3.ONE * 5.0, 0.8)
 	tw.tween_property(mm, "albedo_color:a", 0.0, 0.8)
 	tw.chain().tween_callback(mi.queue_free)
+
+
+# ---- obstacles: visitors go round them and never through (from 3D-2.0) --------------------------------------------------
+# circles (trees, posts) and turned boxes (houses, caravans, cars, fences), kept in a grid of 4 m cells so that even the forest
+# with 300 trees stays quick. people_only: fences and hedges stop people, cats and foxes slip through.
+var avoid_on := true
+var obstacles: Array = []
+var ob_grid := {}
+const OB_CELL := 4.0
+
+
+func clear_obstacles() -> void:
+	obstacles.clear()
+	ob_grid.clear()
+
+
+func add_obstacle(p: Vector3, r: float, people_only := false) -> void:
+	var o := {"c": Vector2(p.x, p.z), "r": r, "po": people_only, "id": obstacles.size()}
+	obstacles.append(o)
+	_ob_insert(o, Vector2(p.x - r, p.z - r), Vector2(p.x + r, p.z + r))
+
+
+func add_obstacle_box(p: Vector3, sx: float, sz: float, rot_y: float, people_only := false) -> void:
+	"""a box of sx × sz metres around p, turned like a node with rotation.y = rot_y"""
+	var b := Basis(Vector3.UP, rot_y)
+	var o := {"c": Vector2(p.x, p.z), "h": Vector2(sx / 2.0, sz / 2.0), "b": b, "bi": b.inverse(), "po": people_only, "id": obstacles.size()}
+	obstacles.append(o)
+	var ext := Vector2(sx, sz).length() / 2.0
+	_ob_insert(o, Vector2(p.x - ext, p.z - ext), Vector2(p.x + ext, p.z + ext))
+
+
+func add_obstacle_node(n: Node3D, local_center: Vector3, sx: float, sz: float, people_only := false) -> void:
+	"""a box in the frame of a scene node (house, caravan, hut ...)"""
+	add_obstacle_box(n.transform * local_center, sx, sz, n.rotation.y, people_only)
+
+
+func _ob_insert(o: Dictionary, lo: Vector2, hi: Vector2) -> void:
+	for x in range(int(floor(lo.x / OB_CELL)), int(floor(hi.x / OB_CELL)) + 1):
+		for z in range(int(floor(lo.y / OB_CELL)), int(floor(hi.y / OB_CELL)) + 1):
+			var k := Vector2i(x, z)
+			if not ob_grid.has(k):
+				ob_grid[k] = []
+			ob_grid[k].append(o)
+
+
+func _ob_near(p: Vector2) -> Array:
+	var out := []
+	var seen := {}
+	var cx := int(floor(p.x / OB_CELL))
+	var cz := int(floor(p.y / OB_CELL))
+	for x in range(cx - 1, cx + 2):
+		for z in range(cz - 1, cz + 2):
+			for o in ob_grid.get(Vector2i(x, z), []):
+				if not seen.has(o["id"]):
+					seen[o["id"]] = true
+					out.append(o)
+	return out
+
+
+func _ob_closest(o: Dictionary, p: Vector2) -> Array:
+	"""[nearest point on the obstacle, distance to it (negative inside), outward direction]"""
+	var c: Vector2 = o["c"]
+	if o.has("r"):
+		var v := p - c
+		var l := v.length()
+		var n := v / l if l > 0.0001 else Vector2(1, 0)
+		return [c + n * float(o["r"]), l - float(o["r"]), n]
+	var bi: Basis = o["bi"]
+	var b: Basis = o["b"]
+	var h: Vector2 = o["h"]
+	var l3: Vector3 = bi * Vector3(p.x - c.x, 0, p.y - c.y)
+	var lo := Vector2(l3.x, l3.z)
+	if abs(lo.x) <= h.x and abs(lo.y) <= h.y:                 # inside: out through the nearest side
+		var px: float = h.x - abs(lo.x)
+		var pz: float = h.y - abs(lo.y)
+		var ql := lo
+		var nl := Vector2.ZERO
+		if px < pz:
+			ql.x = h.x * sign(lo.x if lo.x != 0.0 else 1.0)
+			nl = Vector2(sign(lo.x if lo.x != 0.0 else 1.0), 0)
+		else:
+			ql.y = h.y * sign(lo.y if lo.y != 0.0 else 1.0)
+			nl = Vector2(0, sign(lo.y if lo.y != 0.0 else 1.0))
+		var qw: Vector3 = b * Vector3(ql.x, 0, ql.y)
+		var nw: Vector3 = b * Vector3(nl.x, 0, nl.y)
+		return [c + Vector2(qw.x, qw.z), -min(px, pz), Vector2(nw.x, nw.z)]
+	var qc := Vector2(clamp(lo.x, -h.x, h.x), clamp(lo.y, -h.y, h.y))
+	var q3: Vector3 = b * Vector3(qc.x, 0, qc.y)
+	var q := c + Vector2(q3.x, q3.z)
+	var v2 := p - q
+	var d2 := v2.length()
+	return [q, d2, v2 / d2 if d2 > 0.0001 else Vector2(1, 0)]
+
+
+func avoid(p: Vector2, d: Vector2, rad: float, person := true, side := 0.0) -> Vector3:
+	"""the way to walk: d, bent round the obstacles just ahead. side: go round on this side (+1 / -1, 0 = choose);
+	returns (x, z, side used) - the visitor keeps its side for a while, else it swings to and fro at a corner"""
+	var steer := Vector2.ZERO
+	var used := side
+	var strongest := 0.0
+	for o in _ob_near(p):
+		if o["po"] and not person:
+			continue
+		var r: Array = _ob_closest(o, p)
+		var gap: float = float(r[1]) - rad
+		if gap > 1.6:
+			continue
+		var n: Vector2 = r[2]
+		if n.dot(d) > 0.3 and gap > 0.25:
+			continue                                     # it is behind or beside: going away from it anyway
+		var w: float = clamp((1.6 - gap) / 1.6, 0.0, 1.0)
+		w *= w
+		var t := Vector2(-n.y, n.x)
+		var sd := used if used != 0.0 else (1.0 if t.dot(d) >= 0.0 else -1.0)
+		t *= sd
+		if w > strongest:
+			strongest = w
+			used = sd
+		steer += (t * 1.3 + n * 0.5) * w
+	var out := d + steer
+	out = out.normalized() if out.length() > 0.001 else d
+	return Vector3(out.x, out.y, used if strongest > 0.0 else 0.0)
+
+
+func keep_out(p: Vector2, rad: float, person := true) -> Vector2:
+	"""pushes a point that came too close out of every obstacle"""
+	for o in _ob_near(p):
+		if o["po"] and not person:
+			continue
+		var r: Array = _ob_closest(o, p)
+		if float(r[1]) < rad:
+			var n: Vector2 = r[2]
+			var q: Vector2 = r[0]
+			p = q + n * rad
+	return p
+
+
+func free_spot(p: Vector3, rad := 0.4, person := true) -> Vector3:
+	"""a point near p that is not inside an obstacle (for placing visitors)"""
+	var q := keep_out(Vector2(p.x, p.z), rad, person)
+	q = keep_out(q, rad, person)
+	return Vector3(q.x, p.y, q.y)
+
+
+# ---- a flock of birds flying over now and then (more life in the pictures) -------------------------------------------
+func _birds() -> void:
+	var flock := Node3D.new()
+	scene_parent.add_child(flock)
+	var side := 1.0 if randf() < 0.5 else -1.0
+	var z := randf_range(-60.0, -15.0)
+	var y := randf_range(12.0, 25.0)
+	var from := Vector3(-side * 120.0, y, z)
+	var to := Vector3(side * 120.0, y + randf_range(-4, 4), z + randf_range(-30, 30))
+	flock.position = from
+	flock.look_at_from_position(from, to, Vector3.UP)
+	var wings := []
+	var dark := mat(Color(0.12, 0.12, 0.13))
+	for i in range(randi_range(4, 9)):
+		var b := Node3D.new()
+		b.position = Vector3(randf_range(-4, 4), randf_range(-1.5, 1.5), randf_range(-1, 6) + i * 0.8)
+		flock.add_child(b)
+		var body := MeshInstance3D.new()
+		var cap := CapsuleMesh.new()
+		cap.radius = 0.06
+		cap.height = 0.3
+		body.mesh = cap
+		body.rotation.x = PI / 2
+		body.material_override = dark
+		b.add_child(body)
+		for s in [-1, 1]:
+			var w := Node3D.new()
+			b.add_child(w)
+			var wm := MeshInstance3D.new()
+			wm.mesh = box(0.32, 0.015, 0.12)
+			wm.position = Vector3(0.16 * s, 0, 0)
+			wm.material_override = dark
+			w.add_child(wm)
+			wings.append([w, s, randf() * TAU])
+	var t0 := now()
+	var dur := from.distance_to(to) / randf_range(9.0, 13.0)
+	var hold := {"flock": flock}           # in a dictionary, so the lambda does not keep a freed object
+	var flap := func(_dt, t):
+		var fl = hold["flock"]
+		if fl == null or not is_instance_valid(fl):
+			return true
+		var f: float = (now() - t0) / dur
+		fl.position = from.lerp(to, f)
+		for w in wings:
+			w[0].rotation.z = w[1] * (0.6 * sin(t * 11.0 + w[2]))
+		if f >= 1.0:
+			hold["flock"] = null
+			wings.clear()
+			fl.queue_free()
+			return true
+		return false
+	anims.append(flap)

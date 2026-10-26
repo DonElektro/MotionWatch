@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-1.13 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-2.0 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -72,7 +72,9 @@ MOTION WATCH AUF DIESEM PC (ab 3D-1.9) - ganz ohne Raspberry Pi
 BEDIENUNG IM FENSTER
 - Rechte Maustaste gedrückt halten: umschauen.  W A S D: fliegen,  Q / E: tiefer / höher,  Shift: schneller,
   Mausrad: Fluggeschwindigkeit.
-- Linksklick auf den Boden: setzt das Tier oder die Person hin, das oben in der Liste gewählt ist.
+- Besucher hinsetzen (Karte "Besucher hinsetzen"): kleine Bilder aller Menschen und Tiere. Ein Bild mit der Maus
+  in die Welt ziehen und loslassen = der Besucher steht dort. Oder ein Bild anklicken (blau umrandet) und dann in die
+  Welt klicken, so oft man will; nochmals anklicken = nichts mehr hinsetzen.
 - Knopf «Handy- / Tablet-Simulator (P)» oder Taste P: links erscheint ein Handy oder Tablet mit der ECHTEN, aktuellen
   Webseite deines Motion Watch. Bedienen wie auf dem Handy: klicken = antippen, klicken und ziehen = Finger (Joystick),
   Mausrad = scrollen, tippen auf der Tastatur, wenn das Handy-Bild angeklickt ist.
@@ -80,8 +82,15 @@ BEDIENUNG IM FENSTER
   der Browser läuft dabei unsichtbar im Hintergrund. Ist Motion Watch mit Passwort geschützt, einmal im Handy anmelden.
 - Taste 1: durch die Kopfkamera schauen,  2: durch die feste Kamera,  0: frei fliegen,  H: Bedienfeld aus / ein.
 - Taste G: Gewehr ein / aus (siehe WILDBEOBACHTUNG).
-- Rechts: Vorschau der Kopfkamera, der festen Kamera und des Wärmebilds, darunter alle Einstellungen
-  (Uhrzeit, Wetter, Besuch, Sensoren, Grafik "einfach / schön").
+- Rechts das Bedienfeld im Stil von Motion Watch. Oben die Leiste wie bei Motion Watch:
+  ⟩ = Bedienfeld ausblenden (oben rechts bleibt ⟨ zum Zurückholen, oder Taste H),
+  Suchfeld = Einstellung suchen (z. B. "Mond", "Regen"): nur die Treffer bleiben stehen,
+  ▤ = nur Gruppen,  ⌃⌄ = alle aufklappen,  ⌄⌃ = alle zuklappen.
+  Darunter: Verbindung, Kameras, Besucher hinsetzen, Werkzeuge, dann die Einstellungen (Szene, Wetter, Besuch,
+  Sensoren, Wildbeobachtung, Updates, Grafik).
+- Ganz unten "Einfach | Experte": Einfach zeigt nur die wichtigen Einstellungen, Experte alle. Die Motion-Watch-
+  Webseite zeigt immer alle.
+- Die Einstellungen bleiben beim nächsten Start erhalten (Wetter, Besuch, Grafik, Einfach/Experte, Updates ...).
 
 SZENEN (ab 3D-1.5, schnelle erste Fassung)
 - Umschalten im Fenster rechts unter "Szene", oder auf der Motion-Watch-Webseite unter
@@ -116,8 +125,17 @@ WAS ES SONST KANN
 - Kamera 0 auf dem Schwenkkopf (folgt den Servos von Motion Watch), Kamera 1 fest, Wärmebildkamera.
 - Weisses Licht und Infrarot als echte Scheinwerfer (Infrarot sieht nur die Kopfkamera, nachts grau).
 - Tag und Nacht mit eigener Uhr, Mond, Wetter (klar, bewölkt, Regen, Nebel, Schnee), Wind bewegt die Bäume.
-- Besuch: Person, Fuchs, Wildschwein, Reh, Katze, Dachs, Hund, Auto mit Scheinwerfern, ein Dieb (Velo, Wohnwagen).
-  Tiere flüchten vor der Sirene und nachts vor dem weissen Licht, der Dieb rennt bei der Sirene weg.
+- Besuch: Person, Kind, Jogger, Spaziergang mit Hund, Fuchs, Reh (auch als Rudel, manche Böcke mit Geweih), Wildschwein,
+  Katze, Hund, Dachs, Hase, Igel, Auto mit Scheinwerfern, ein Dieb (Velo, Tür). Jede Person sieht etwas anders aus
+  (Jacke, Haare, Mütze oder Hut, manchmal ein Rucksack).
+- Ab 3D-2.0 gehen alle um Bäume, Häuser, Wohnwagen, Zelt, Autos und Zäune herum, statt hindurch. Sie drehen weich,
+  werden schneller und langsamer, Tiere bleiben zum Grasen stehen, Menschen schauen sich um. Im Garten kommen Besucher
+  durchs Gartentor (Katzen und Füchse schlüpfen durch die Hecke). Tagsüber fliegen ab und zu Vögel vorbei.
+- Einstellbar in der Gruppe "Besuch": wer kommt (Tiere und Menschen, mehr Tiere, nur Menschen ...), wie oft,
+  höchstens wie viele gleichzeitig, Tempo, ob Tiere vor Licht oder Sirene flüchten, ob sie um Hindernisse gehen.
+  "Alle Besucher weg" räumt auf.
+- Tiere flüchten vor der Sirene und nachts vor dem weissen Licht (abschaltbar), der Dieb rennt bei der Sirene weg.
+- Der Schwenkkopf dreht wie echte Servos mit begrenzter Geschwindigkeit (kein Springen).
 - Sensoren: Wohnwagentür, PIR beim Zelt, Gas, Velo; Nacht-Test (2 Minuten).
 - Wärmebild: kalter Himmel, Boden warm am Tag und kühl in der Nacht, Menschen mit warmem Gesicht, Tiere, heisser Motor.
 
