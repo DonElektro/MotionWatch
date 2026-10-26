@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 01:38",
+ "generated": "2026-10-26 06:53",
  "versions": [
+  {
+   "version": "2.88.0",
+   "file": "webcam_bewegung_2_88_0.py",
+   "url": "",
+   "sha256": "96186b25d76326941becc62d434370db457976f84721ed374917d4b3c434909f",
+   "date": "2026-10-26 06:52",
+   "notes": "Download of the 3D simulator 3D-1.4: it starts without sending; the switch «An Motion Watch senden» in its window turns sending on.",
+   "sig": "8132b3cc4f9f323cc2640decb72fc9fcfe0cfc399a6c6d5df7ead6ef9c2a6137fe01e7b50212b03d67e0000ea6d0b692b62e3ab758d64f5ab8198cdeb960790e"
+  },
   {
    "version": "2.87.0",
    "file": "webcam_bewegung_2_87_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 23:03",
    "notes": "the quick switches below the joystick can be chosen and arranged («Arrange» tile: tick, ▲ ▼, reset) - web page and window; the viewer count moved to the right in the header.",
    "sig": "55857ec4cbc924924ce3c4014b18a7c64a88f2cfa084ea19d5a80fde7b3ad1e3052ace23557d1e04db1ee23bfa5808618d311dba7cca1e4c18c8fe7ed654d701"
-  },
-  {
-   "version": "2.78.0",
-   "file": "webcam_bewegung_2_78_0.py",
-   "url": "",
-   "sha256": "8729e9947aa5d8b20ed22a05f1483fe8f934e327d5a2629c25dc5052cb1b56ec",
-   "date": "2026-10-25 22:34",
-   "notes": "header shows how many watch right now: every browser with the page or a guest link open, plus the window on the Pi screen (when it is not minimised); the tooltip splits web / Pi screen.",
-   "sig": "ee9a418f5032d3f22909dda727b4439522a7bec67cd435cf287f3433916cce4b2da7ad8988274e6fa70a99ecfe07f53d06de5d49707bce0edb6dadfc64804007"
   }
  ]
 }
