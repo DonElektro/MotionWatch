@@ -223,3 +223,13 @@ ONVIF-Dienst für Erkennung und PTZ) – ohne Server, mit einer gängigen Video�
 - Godot 4.3 von GitHub (Releases 4.3-stable, Linux-Programm + Export-Templates nach `~/.local/share/godot/export_templates/4.3.stable`).
 - Projekt direkt im geklonten Repository (`simulator3d/`); `.godot/` ist in .gitignore.
 - Start auf virtuellem Bildschirm und HTTP-Abfragen über kleine Hilfsskripte.
+## Achtung: Zwei Chats ändern Motion Watch (Stand 26.10.2026, 19:30)
+
+Neben dem Simulator-Chat ändert auch der Haupt-Chat `webcam_bewegung_*.py`. Am 26.10. haben beide eine eigene «2.91.0» gebaut,
+und Änderungen gingen verloren (Push-Fehler wurden nicht bemerkt). Der Haupt-Chat hat das in **2.92.0** zusammengeführt:
+Stand 2.91.0 dieses Chats + WLAN-Stick-Korrektur + Reiter «Simulator» (Seite `/sim`, `SIM_PAGE`).
+
+Darum vor **jeder** Änderung an Motion Watch:
+1. `git pull` und von der neuesten `webcam_bewegung_*.py` auf GitHub ausgehen.
+2. Eine Versionsnummer wählen, die höher ist als die neueste auf GitHub.
+3. Nach `git push` prüfen, dass er geklappt hat (`git status -sb` darf kein «ahead» zeigen). Bei Fehler: zuerst holen und zusammenführen, nie überschreiben.
