@@ -1,7 +1,7 @@
 {
- "version": "3D-1.9",
+ "version": "3D-1.10",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30222357,
- "sha256": "9fa5f3f9bb715bb96adcb94621f16556d673e7de496aa5cad6d772534a6df22f",
- "notes": "Neu: «Motion Watch auf diesem PC» - das Handy funktioniert jetzt ganz ohne Pi. Beim ersten Mal werden Python und Motion Watch geladen (rund 100 MB)."
+ "size": 30224547,
+ "sha256": "764408c164dda55eccde91640bed1b0723afdbf2991a99e750d735f815621991",
+ "notes": "Behebt den Python-Download von «Motion Watch auf diesem PC» (lädt jetzt mit dem curl von Windows); genauere Fehlermeldungen."
 }

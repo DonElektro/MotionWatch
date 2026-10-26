@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 12:46",
+ "generated": "2026-10-26 13:03",
  "versions": [
   {
-   "version": "2.90.4",
-   "file": "webcam_bewegung_2_90_4.py",
+   "version": "2.90.5",
+   "file": "webcam_bewegung_2_90_5.py",
    "url": "",
-   "sha256": "e3a075cc4e761b25b5cb06a29a6190aba6b6bf00cc53da601845946bca1f7af1",
-   "date": "2026-10-26 12:45",
-   "notes": "3D simulator 3D-1.9: «Motion Watch auf diesem PC» - the simulator runs Motion Watch itself on the Windows PC (Python and Motion Watch are fetched once), so the phone / tablet simulator works without a Raspberry Pi.",
-   "sig": "5b892fb34e56a1415a5e0541c1eb9f54a989d963d0426bba3ad19d4f40e67ed65338f8fb23e2fb65a7cea2709b25ce4ac96ed50fb913c859c2559ccc70dd9800"
+   "sha256": "ab5901cdd4de8ac17ff26dc7dcc0a0c5d00e6d955db35d04dd39a70fc006ec97",
+   "date": "2026-10-26 13:03",
+   "notes": "3D simulator 3D-1.10: the Python download for «Motion Watch auf diesem PC» uses the curl of Windows (it failed with the own download of the simulator); clearer error messages.",
+   "sig": "1f6f863059fca2d3c7f24a8c3883a886cb1b8b0af0256487644fc5d2a6860cde4d02eaf27e95acb140e2567a251fdb4f4911dcea198a33a63785f6c9a4cf2e08"
   },
   {
    "version": "2.89.0",

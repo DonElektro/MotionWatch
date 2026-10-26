@@ -27,6 +27,7 @@ var py_cmd := ""              # Linux: python of the system
 var http: HTTPRequest
 var dl_total := 0
 var dl_what := ""
+var test_python := false      # test computer: fetch and unpack the Windows Python anyway (--mw-test-python), then stop
 
 
 func _ready() -> void:
@@ -39,6 +40,7 @@ func _ready() -> void:
 			base = args[i + 1] if args[i + 1].ends_with("/") else args[i + 1] + "/"
 		elif args[i] == "--mw-python":
 			py_cmd = args[i + 1]
+	test_python = "--mw-test-python" in args
 	if OS.get_name() != "Windows" and py_cmd == "":
 		py_cmd = "python3"
 
@@ -101,6 +103,9 @@ func start() -> void:
 	var py := await _python()
 	if py == "":
 		return
+	if test_python:
+		_say("Python-Test ok: " + py, "off")
+		return
 	if not await _packages(py):
 		return
 	var mw := await _motion_watch()
@@ -116,7 +121,7 @@ func start() -> void:
 		_say("Motion Watch liess sich nicht starten.", "error")
 		return
 	var t0 := Time.get_ticks_msec()
-	while Time.get_ticks_msec() - t0 < 120000:
+	while Time.get_ticks_msec() - t0 < 300000:
 		await get_tree().create_timer(1.5).timeout
 		if pid <= 0 or not OS.is_process_running(pid):
 			pid = -1
@@ -131,10 +136,10 @@ func start() -> void:
 
 func _web_up() -> bool:
 	var h := HTTPRequest.new()
-	h.timeout = 3.0
+	h.timeout = 6.0
 	add_child(h)
 	var ok := false
-	if h.request(url() + "/") == OK:
+	if h.request(url() + "/", [], HTTPClient.METHOD_HEAD) == OK:        # only ask (the page itself is big)
 		var r: Array = await h.request_completed
 		ok = r[0] == HTTPRequest.RESULT_SUCCESS and int(r[1]) > 0 and int(r[1]) < 500
 	h.queue_free()
@@ -153,7 +158,56 @@ func _fetch(u: String, to_file := "", size := 0, what := "") -> Array:
 		return [false, 0, PackedByteArray()]
 	var r: Array = await http.request_completed
 	dl_total = 0
-	return [r[0] == HTTPRequest.RESULT_SUCCESS and int(r[1]) == 200, int(r[1]), r[3]]
+	return [r[0] == HTTPRequest.RESULT_SUCCESS and int(r[1]) == 200, int(r[1]), r[3], int(r[0])]
+
+
+const RESULTS := ["ok", "Grösse stimmt nicht", "keine Verbindung", "Name nicht gefunden (DNS)", "Verbindung abgebrochen",
+		"TLS / Zertifikat", "keine Antwort", "Datei zu gross", "Entpacken", "Anfrage ging nicht", "Datei lässt sich nicht anlegen",
+		"Datei lässt sich nicht schreiben", "zu viele Weiterleitungen", "Zeitüberschreitung"]
+
+
+func _why(r: Array) -> String:
+	"""an understandable reason for a failed _fetch"""
+	if int(r[1]) > 0:
+		return "HTTP %d" % int(r[1])
+	var k: int = int(r[3]) if r.size() > 3 else -1
+	return RESULTS[k] if k >= 0 and k < RESULTS.size() else "Fehler %d" % k
+
+
+func _download(u: String, to: String, size: int, what: String) -> String:
+	"""a big download into a file: on Windows with curl.exe (part of Windows 10 / 11: Windows certificates and proxy, follows
+	redirects), otherwise / as a second try with Godot. Returns "" or why it did not work."""
+	var why := ""
+	if OS.get_name() == "Windows" or test_python:
+		var th := Thread.new()
+		th.start(func():
+			var out := []
+			var code := OS.execute("curl.exe" if OS.get_name() == "Windows" else "curl", ["-L", "--fail", "-s", "-S", "--retry", "2", "-o", to, u], out, true, false)
+			return [code, "\n".join(out)])
+		var t0 := Time.get_ticks_msec()
+		while th.is_alive():
+			await get_tree().create_timer(0.5).timeout
+			var got := 0
+			var f := FileAccess.open(to, FileAccess.READ)
+			if f != null:
+				got = f.get_length()
+				f.close()
+			if got > 0 and size > 0:
+				text = "%s … %.1f von %.1f MB" % [what, got / 1048576.0, size / 1048576.0]
+			elif got > 0:
+				text = "%s … %.1f MB" % [what, got / 1048576.0]
+			else:
+				text = "%s … %d s" % [what, int((Time.get_ticks_msec() - t0) / 1000)]
+			changed.emit()
+		var c: Array = th.wait_to_finish()
+		if int(c[0]) == 0 and FileAccess.file_exists(to):
+			return ""
+		why = "curl: " + (str(c[1]).strip_edges().left(160) if str(c[1]).strip_edges() != "" else "Fehler %d" % int(c[0]))
+		print("motion watch on this PC: " + why)
+	var r: Array = await _fetch(u, to, size, what)
+	if r[0]:
+		return ""
+	return (why + " · " if why != "" else "") + "Godot: " + _why(r)
 
 
 func _sha256_file(p: String) -> String:
@@ -185,15 +239,16 @@ func _run(cmd: String, args: Array) -> Array:
 
 func _python() -> String:
 	"""1. Python: on Windows our own copy (fetched once), on Linux the one of the system"""
-	if py_cmd != "":
+	if py_cmd != "" and not test_python:
 		return py_cmd
 	var exe := dir.path_join("python/python.exe")
 	if FileAccess.file_exists(exe):
 		return exe
 	var tgz := dir.path_join("python.tar.gz")
-	var r: Array = await _fetch(PY_URL, tgz, PY_SIZE, "Lade Python (nur beim ersten Mal)")
-	if not r[0]:
-		_say("Python liess sich nicht herunterladen (Fehler %d). Internet da?" % r[1], "error")
+	var why := await _download(PY_URL, tgz, PY_SIZE, "Lade Python (nur beim ersten Mal)")
+	if why != "":
+		DirAccess.remove_absolute(tgz)
+		_say("Python liess sich nicht herunterladen (%s). Internet da?" % why, "error")
 		return ""
 	_say("Prüfe Python …")
 	if _sha256_file(tgz) != PY_SHA:
@@ -247,7 +302,7 @@ func _motion_watch() -> String:
 	if typeof(d) != TYPE_DICTIONARY or (d.get("versions", []) as Array).is_empty():
 		if have != "":
 			return have
-		_say("Motion Watch liess sich nicht finden (GitHub nicht erreichbar?).", "error")
+		_say("Motion Watch liess sich nicht finden (GitHub nicht erreichbar: %s)." % _why(r), "error")
 		return ""
 	var e: Dictionary = d["versions"][0]
 	var file := str(e.get("file", ""))
@@ -257,12 +312,12 @@ func _motion_watch() -> String:
 	var target := dir.path_join("mw").path_join(file)
 	if FileAccess.file_exists(target) and _sha256_file(target) == str(e.get("sha256", "")):
 		return target
-	var r2: Array = await _fetch(base + file, target + ".part", 0, "Lade Motion Watch %s" % str(e.get("version", "")))
-	if not r2[0]:
+	var why := await _download(base + file, target + ".part", 0, "Lade Motion Watch %s" % str(e.get("version", "")))
+	if why != "":
 		DirAccess.remove_absolute(target + ".part")
 		if have != "":
 			return have
-		_say("Motion Watch liess sich nicht herunterladen (Fehler %d)." % r2[1], "error")
+		_say("Motion Watch liess sich nicht herunterladen (%s)." % why, "error")
 		return ""
 	if _sha256_file(target + ".part") != str(e.get("sha256", "")):
 		DirAccess.remove_absolute(target + ".part")

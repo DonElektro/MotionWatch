@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-1.9** · passende Motion-Watch-Version **2.90.4**
+Stand: 26.10.2026 · Simulator-Version **3D-1.10** · passende Motion-Watch-Version **2.90.5**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -29,6 +29,11 @@ Motion Watch unsichtbar neben dem Simulator. Beim ersten Mal: Python 3.12.7 für
 --port 5000 --bind 127.0.0.1`; die Einstellungen `sim_on`, `sim_url`, `sim_auto=False` schreibt Python selbst (Godots JSON
 macht aus ganzen Zahlen Kommazahlen). Alles unter `user://motionwatch_pc`. Unter Linux nimmt es das System-Python
 (`--mw-python`), `--mw-base http://…/` ersetzt GitHub (Test: `python3 -m http.server` im Repository).
+Grosse Downloads unter Windows mit **curl.exe** (Teil von Windows 10/11: Windows-Zertifikate und -Proxy, folgt der Weiterleitung von
+github.com zu release-assets.githubusercontent.com); Godots HTTPRequest ist nur Ersatz – in 3D-1.9 scheiterte damit der
+Python-Download bei Daniel («Fehler 0» = keine Verbindung). Fehlertexte nennen jetzt den Grund (`RESULTS`).
+`--mw-test-python` lädt und entpackt das Windows-Python auch unter Linux (mit curl über den Proxy getestet: Download,
+SHA-256 und tar gehen). Die Webseiten-Prüfung fragt mit HEAD (die Startseite ist ~400 KB), Wartezeit bis 5 Minuten.
 Unter Linux getestet bis «verbunden mit Motion Watch» und Webseite auf 127.0.0.1:5000; **unter Windows nicht getestet**
 (Python-Download, tar, pip, Motion Watch selbst unter Windows).
 
