@@ -191,6 +191,9 @@ func _update() -> void:
 	await get_tree().create_timer(0.8).timeout
 	var args := OS.get_cmdline_args()
 	var user := OS.get_cmdline_user_args()
+	var ai := user.find("--angle-tried")         # graphics options are not passed on: let main.gd find the virtual machine again
+	if ai >= 0:
+		user.remove_at(ai)
 	args.append("--")
 	args.append_array(user)
 	args.append("--updated")

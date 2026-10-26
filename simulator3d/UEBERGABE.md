@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-1.7** · passende Motion-Watch-Version **2.90.2**
+Stand: 26.10.2026 · Simulator-Version **3D-1.8** · passende Motion-Watch-Version **2.90.3**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -21,6 +21,13 @@ Ein 3D-Simulator (Godot 4.3) auf einem Windows-PC. Er spielt für Motion Watch (
 - weisses Licht und Infrarot, Tag/Nacht, Wetter, Wind, Sensoren;
 - Besucher: Menschen, Tiere, Auto, Dieb;
 - ein Handy-/Tablet-Simulator (Taste P), der die echte Motion-Watch-Webseite über ein unsichtbares Edge/Chrome anzeigt.
+
+**Daniel testet in einer VMware-Maschine** (Log: «VMware, Inc. – SVGA3D», Mesa 24.1). Deren OpenGL lehnt die Godot-Shader ab
+(«declarations for uniform `world_transform` have mismatching invariant qualifiers»), sichtbar ist nur der Himmel; Vulkan geht
+dort gar nicht. Ab 3D-1.8 erkennt `main._vm_needs_angle()` die virtuelle Grafik am Namen und startet einmal neu mit
+`--rendering-driver opengl3_angle` (Kennzeichen `--angle-tried`, abschalten mit `--no-angle`). Godot 4.3 gibt Grafik-Optionen
+beim Neustart nicht weiter (`OS.get_cmdline_args()` ist dann leer) und kennt `get_current_rendering_driver_name()` noch nicht.
+Unter ANGLE **nicht getestet** – falls es auch so nicht geht: in VMware die 3D-Beschleunigung prüfen, sonst echte Hardware.
 
 Seit 3D-1.7 **aktualisiert sich der Simulator selbst** (`scripts/update.gd`): Vor dem Bau der Welt lädt er
 `simulator3d/version.json` von GitHub (`{"version", "file", "size", "sha256", "notes"}`). Ist die Version neuer, zeigt er

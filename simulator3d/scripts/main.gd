@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-1.7"
+const VERSION := "3D-1.8"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -134,6 +134,8 @@ func _ready() -> void:
 			scene = args[i + 1]
 	set_process(false)
 	set_process_unhandled_input(false)
+	if _vm_needs_angle(args):
+		return
 	DisplayServer.window_set_title("Motion Watch – 3D-Simulator %s" % VERSION)
 	if not ("--no-update" in args or "--updated" in args):      # first: is there a newer version? (update.gd)
 		var url := ""
@@ -179,6 +181,31 @@ func _ready() -> void:
 	DisplayServer.window_set_title("Motion Watch – 3D-Simulator %s (Port %d)" % [VERSION, port])
 	set_process(true)
 	set_process_unhandled_input(true)
+
+
+func _vm_needs_angle(args: Array) -> bool:
+	"""In a virtual machine (VMware, VirtualBox ...) the OpenGL driver of Windows refuses the shaders of Godot (only the sky is
+	seen). ANGLE (OpenGL over Direct3D 11) works around it: start once more with it. --no-angle switches this off."""
+	if OS.get_name() != "Windows" or "--angle-tried" in args or "--no-angle" in args:
+		return false
+	var vn := (RenderingServer.get_video_adapter_vendor() + " " + RenderingServer.get_video_adapter_name()).to_lower()
+	if vn.contains("angle"):
+		return false
+	var vm := false
+	for k in ["vmware", "svga3d", "virtualbox", "vboxsvga", "parallels", "qxl", "virgl"]:
+		if vn.contains(k):
+			vm = true
+	if not vm:
+		return false
+	print("virtual machine (%s): starting again with ANGLE" % vn)
+	var a := OS.get_cmdline_args()
+	for x in ["--rendering-driver", "opengl3_angle", "--"]:
+		a.append(x)
+	a.append_array(OS.get_cmdline_user_args())
+	a.append("--angle-tried")
+	OS.create_process(OS.get_executable_path(), a)
+	get_tree().quit()
+	return true
 
 
 func set_stream(on: bool) -> void:

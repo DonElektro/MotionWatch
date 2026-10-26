@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-1.7 (6 Szenen, Wildbeobachtung)
+Motion Watch – 3D-Simulator 3D-1.8 (6 Szenen, Wildbeobachtung)
 =============================================================
 
 STARTEN
@@ -11,6 +11,10 @@ STARTEN
 3. Ab 3D-1.6 läuft der Simulator mit der einfachen Grafik (OpenGL), die auf fast jedem PC geht.
    Wer es schöner möchte: "Start mit Vulkan-Grafik (schoener).bat" probieren. Bleibt das Fenster dann schwarz
    oder schliesst es sich gleich wieder, kann der PC diese Grafik nicht: einfach wieder die .exe direkt starten.
+4. In einer virtuellen Maschine (VMware, VirtualBox) zeigte die einfache Grafik nur den Himmel. Ab 3D-1.8 merkt der
+   Simulator das und startet sich selbst einmal neu mit ANGLE (Grafik über Direct3D 11). Das Fenster geht dabei kurz zu
+   und wieder auf. Geht das nicht von selbst: "Start in virtueller Maschine (ANGLE).bat" benutzen.
+   In der virtuellen Maschine muss die 3D-Beschleunigung eingeschaltet sein (VMware: Einstellungen -> Anzeige).
 
 UPDATES (ab 3D-1.7)
 - Beim Start schaut der Simulator auf GitHub nach, ob es eine neuere Version gibt. Wenn ja, erscheint zuerst ein Hinweis:
@@ -96,4 +100,5 @@ PORT / START-OPTIONEN
 MotionWatch3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene wald
   --scene: mit dieser Szene starten (camping, wald, parkplatz, garten, lustig, wild)
   --no-update: beim Start nicht nach einer neuen Version suchen
+  --no-angle: in einer virtuellen Maschine nicht von selbst auf ANGLE umschalten
   --stream: gleich beim Start an Motion Watch senden

@@ -1,7 +1,7 @@
 {
- "version": "3D-1.7",
+ "version": "3D-1.8",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30208801,
- "sha256": "fefb23b405ef3a079d56e2d502b5681a96374438f64436f21a15d7270f3b9929",
- "notes": "Neu: Der Simulator sucht beim Start selbst nach Updates. Sechs Szenen, unblutige Wildbeobachtung, startet mit OpenGL."
+ "size": 30210802,
+ "sha256": "e900204e0ff2f487bbfb02e88167e4745107241b1d13088c8e3d5981a9a35001",
+ "notes": "Neu: In einer virtuellen Maschine (VMware, VirtualBox) schaltet der Simulator selbst auf ANGLE-Grafik um, damit die Welt sichtbar wird."
 }

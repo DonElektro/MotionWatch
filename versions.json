@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 10:49",
+ "generated": "2026-10-26 11:24",
  "versions": [
   {
-   "version": "2.90.2",
-   "file": "webcam_bewegung_2_90_2.py",
+   "version": "2.90.3",
+   "file": "webcam_bewegung_2_90_3.py",
    "url": "",
-   "sha256": "3c98ac49b10a66005e3053df9cfb645b99d7d2890a3bf0565d59b419d0654303",
-   "date": "2026-10-26 10:41",
-   "notes": "3D simulator 3D-1.7: it looks for a newer version on GitHub before it starts and offers «Jetzt aktualisieren» (download, check, replace itself, start again) or «Ohne Update starten».",
-   "sig": "1ecbfb4b9e78f75e4894d474aba0fd9005f5d53a3392af5d2231f3727fab1a4dc263c03772a195603f568dc525899cf522611ca44b9fe7b7b56678e4e8448d07"
+   "sha256": "2ff85ffe0b971b60c2b7163819aa7f9363cbe53ede383753fb2d2461fb405ba0",
+   "date": "2026-10-26 11:24",
+   "notes": "3D simulator 3D-1.8: in a virtual machine (VMware, VirtualBox) it starts again with the ANGLE graphics by itself - the OpenGL driver there showed only the sky.",
+   "sig": "236ef80c773ccc8b5e9ab0faac30af0336525f2906bf823a8e585dbcaa4c7493a479ad4c1c680c924fee1e2ec60e76c203cf7e16758259a4f54263cec50e2308"
   },
   {
    "version": "2.89.0",
