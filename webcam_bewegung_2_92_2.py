@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_92_1.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_92_2.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -494,6 +494,8 @@ Features
     simulator, computing power, programs and downloads, short guide).
   * 2.92.1: Download of the 3D simulator 3D-2.1: minimizing makes it a small box in the corner (it keeps drawing pictures -
     before, Motion Watch only showed «CONNECTING…»); while it sends, the PC does not go to sleep.
+  * 2.92.2: Tab «Simulator»: the live picture is at the very top and moves (like on the live page); scrolled down, it shrinks
+    into a corner (tap: back up, drag: other corner, ✕: away).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -502,10 +504,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_92_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_92_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_92_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_92_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_92_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_92_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -522,7 +524,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.92.1"
+APP_VERSION = "2.92.2"
 
 
 def default_data_dir():
@@ -13400,7 +13402,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_92_1.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_92_2.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -17797,6 +17799,7 @@ SIM_PAGE = r"""<!doctype html>
 <title>Motion Watch - Simulator</title>
 <style>
 /*BASECSS*/
+#c-prev{scroll-margin-top:calc(var(--hdr-h,64px) + 10px)}
 main.simp{max-width:1100px;margin:0 auto;padding:20px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
 .sc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
 .sc.wide{grid-column:1/-1}
@@ -17822,7 +17825,17 @@ main.simp{max-width:1100px;margin:0 auto;padding:20px 16px 40px;display:grid;gri
 .dl a,.dl button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px;font-size:14px}
 .dl a small,.dl button small{font-weight:400;font-size:12px;opacity:.75}
 .dl .main{grid-column:1/-1}
-#s-prev{width:100%;aspect-ratio:16/9;object-fit:contain;background:#000;border-radius:10px;display:block}
+#c-prev{padding:12px}#c-prev>*+*{margin-top:8px}
+.pvw{position:relative;background:#000;border-radius:10px;overflow:hidden}
+#s-prev{width:100%;aspect-ratio:16/9;object-fit:contain;background:#000;display:block;max-height:62vh}
+.pvlive{position:absolute;left:10px;bottom:10px;font:700 11px/1 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px}
+#pip{position:fixed;z-index:45;width:min(44vw,300px);border-radius:12px;overflow:hidden;background:#000;cursor:pointer;touch-action:none;box-shadow:0 8px 26px rgba(0,0,0,.55);border:1px solid var(--line)}
+#pip[hidden]{display:none}
+#pip[data-c="br"]{right:12px;bottom:calc(env(safe-area-inset-bottom) + 12px)}#pip[data-c="bl"]{left:12px;bottom:calc(env(safe-area-inset-bottom) + 12px)}
+#pip[data-c="tr"]{right:12px;top:calc(var(--hdr-h,64px) + 10px)}#pip[data-c="tl"]{left:12px;top:calc(var(--hdr-h,64px) + 10px)}
+#pip .pip-in img{width:100%;height:auto;max-height:none;aspect-ratio:auto;display:block;pointer-events:none}
+#pip .pip-live{position:absolute;left:6px;bottom:6px;font:700 10px/1 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:3px 6px;border-radius:6px}
+#pip-x{position:absolute;top:5px;right:5px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:28px;padding:0;min-height:0}
 .cg{border-top:1px solid var(--line);padding-top:6px}
 .cg>summary{cursor:pointer;padding:6px 0;font-weight:500;font-size:14px;list-style:none}
 .cg>summary::-webkit-details-marker{display:none}.cg>summary::before{content:"▸ ";color:var(--mut)}.cg[open]>summary::before{content:"▾ "}
@@ -17844,6 +17857,10 @@ main.simp{max-width:1100px;margin:0 auto;padding:20px 16px 40px;display:grid;gri
   </span>
 </header>
 <main class="simp">
+  <section class="sc wide" id="c-prev">
+    <div class="pvw" id="s-pvw"><img id="s-prev" alt=""><span class="pvlive" id="s-pvlive" hidden>● LIVE</span></div>
+    <div class="mut" id="s-prevnote"></div>
+  </section>
   <section class="sc wide" id="c-status">
     <div class="sthead"><i class="sdot" id="s-dot"></i><div class="sttl" id="s-ttl">–</div><button type="button" id="s-btn" onclick="simOnOff()">–</button></div>
     <div class="mut" id="s-msg"></div>
@@ -17860,11 +17877,6 @@ main.simp{max-width:1100px;margin:0 auto;padding:20px 16px 40px;display:grid;gri
     <button type="button" class="sec" id="s-search" onclick="search()" style="width:100%" data-i18n="Search now">Search now</button>
   </section>
 
-  <section class="sc" id="c-prev">
-    <h2><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg><span data-i18n="Picture">Picture</span></h2>
-    <img id="s-prev" alt="">
-    <div class="mut" id="s-prevnote"></div>
-  </section>
 
   <section class="sc wide" id="c-ctl">
     <h2><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span data-i18n="Simulator control">Simulator control</span><span class="mut" id="s-cname" style="font-weight:400"></span></h2>
@@ -17902,6 +17914,7 @@ main.simp{max-width:1100px;margin:0 auto;padding:20px 16px 40px;display:grid;gri
     </ol>
   </section>
 </main>
+<div id="pip" hidden data-c="br"><div class="pip-in"></div><span class="pip-live">● LIVE</span><button type="button" id="pip-x" aria-label="close">✕</button></div>
 <script>
 /*COMMON*/
 Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
@@ -17968,8 +17981,8 @@ function paint() {
       else { const b = el("button", "sec", t("Use")); b.type = "button"; b.onclick = async () => { const q = await post("/api/sim", {action: "use", ip: x.ip, port: x.port, lang: LANG}); if (q.ok === false) toast(q.error || t("not possible")); load(); }; r.appendChild(b); }
       fb.appendChild(r); }); }
   // preview
-  const pv = $("#s-prev"); $("#s-prevnote").textContent = S.on ? "" : t("The picture appears when the simulation is on.");
-  pv.hidden = !S.on;
+  $("#s-prevnote").textContent = S.on ? "" : t("The picture appears when the simulation is on.");
+  liveOn(!!S.on);
   // control
   if (S.ok && !CS) ctl({ctl: "get"});
   if (!S.ok) { CS = ""; $("#s-groups").textContent = ""; $("#s-scn").hidden = true; $("#s-up").hidden = true; $("#s-cname").textContent = ""; $("#s-cst").textContent = t("ctl-note"); }
@@ -18051,7 +18064,46 @@ $("#s-file").onchange = () => {
   x.send(f);
 };
 setInterval(() => { if (!document.hidden && S && S.ok) ctl({ctl: "get"}); }, 4000);
-setInterval(() => { if (!document.hidden && S && S.on) $("#s-prev").src = "/snapshot.jpg?t=" + Date.now(); }, 2000);
+// ---- live picture: the same moving picture as on the live page; it shrinks into a corner while it is scrolled away ----
+let LIVE = false, liveRetry = null;
+function liveOn(on) {
+  const img = $("#s-prev");
+  if (on === LIVE) return;
+  LIVE = on; $("#s-pvw").hidden = !on; $("#s-pvlive").hidden = !on;
+  if (on) img.src = "/video_feed?r=" + Date.now();
+  else { clearTimeout(liveRetry); img.removeAttribute("src"); pipShow(false); }
+}
+$("#s-prev").addEventListener("error", () => { if (!LIVE) return; clearTimeout(liveRetry); liveRetry = setTimeout(() => { if (LIVE) $("#s-prev").src = "/video_feed?r=" + Date.now(); }, 2000); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden && LIVE) $("#s-prev").src = "/video_feed?r=" + Date.now(); });
+let pipShow = () => {};
+(function () {
+  const pip = $("#pip"), slot = pip.querySelector(".pip-in"), img = $("#s-prev"), wrap = $("#s-pvw");
+  if (!("IntersectionObserver" in window)) return;
+  let closed = false, seen = true;
+  try { pip.dataset.c = localStorage.getItem("mw-simpip-corner") || "br"; } catch (e) {}
+  img.draggable = false;
+  pipShow = on => {
+    on = !!on && LIVE && !closed;
+    if (on === !pip.hidden) return;
+    if (on) { wrap.style.minHeight = wrap.offsetHeight + "px"; slot.appendChild(img); pip.hidden = false; }
+    else { pip.hidden = true; wrap.insertBefore(img, wrap.firstChild); wrap.style.minHeight = ""; }
+  };
+  new IntersectionObserver(es => es.forEach(e => { seen = e.isIntersecting && e.intersectionRatio > 0.2; if (seen) closed = false; pipShow(!seen); }),
+    {threshold: [0, 0.2, 0.5, 1]}).observe(wrap);
+  $("#pip-x").addEventListener("pointerdown", e => e.stopPropagation());
+  $("#pip-x").addEventListener("click", e => { e.stopPropagation(); closed = true; pipShow(false); });
+  let st = null;
+  pip.addEventListener("pointerdown", e => { if (e.target.id === "pip-x") return; st = {x: e.clientX, y: e.clientY, moved: false};
+    try { pip.setPointerCapture(e.pointerId); } catch (x) {} });
+  pip.addEventListener("pointermove", e => { if (!st) return; const dx = e.clientX - st.x, dy = e.clientY - st.y;
+    if (Math.hypot(dx, dy) > 10) st.moved = true; if (st.moved) pip.style.transform = "translate(" + dx + "px," + dy + "px)"; });
+  pip.addEventListener("pointerup", e => {
+    if (!st) return; const moved = st.moved; st = null; pip.style.transform = "";
+    if (!moved) { $("#c-prev").scrollIntoView({behavior: "smooth", block: "start"}); return; }
+    const c = (e.clientY < innerHeight / 2 ? "t" : "b") + (e.clientX < innerWidth / 2 ? "l" : "r"); pip.dataset.c = c;
+    try { localStorage.setItem("mw-simpip-corner", c); } catch (x) {}
+  });
+})();
 $("#d-3d").href = "/sim/simulator3d.zip?lang=" + (LANG || "");
 function paint3d() { const D = S && S.sim3d; if (D) $("#d-3dn").textContent = D.version + " · " + D.size_mb + " MB" + (D.ready ? "" : " · " + t("prepared on the first download")); }
 $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin + "/sim/simulator3d.zip";
@@ -27001,7 +27053,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.92.1")
+        self.root.title("Motion Watch 2.92.2")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -27291,7 +27343,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.92.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.92.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -34264,7 +34316,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.92.1 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.92.2 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:

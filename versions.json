@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 20:02",
+ "generated": "2026-10-26 20:08",
  "versions": [
   {
-   "version": "2.92.1",
-   "file": "webcam_bewegung_2_92_1.py",
+   "version": "2.92.2",
+   "file": "webcam_bewegung_2_92_2.py",
    "url": "",
-   "sha256": "2c0ea1a5b0279d2c5c4b4b2015374a89da3f48a78c45b242f9e21fa67db4b61f",
-   "date": "2026-10-26 20:02",
-   "notes": "Download of the 3D simulator 3D-2.1: minimizing makes it a small box in the corner (it keeps drawing pictures - before, Motion Watch only showed «CONNECTING…»); while it sends, the PC does not go to sleep.",
-   "sig": "39710fb6a02ce5cbd0a9c2d18fc780b0d2215129bf507b5f52c378038e699ef328ca9c4ee8c67a3bd359eef5f8e4ddcbb786da595b98600175b84b5634cd3104"
+   "sha256": "61a17618b5f57dd0a55af5ece7b5c0439722a5df15a203e147f85496d77d5261",
+   "date": "2026-10-26 20:08",
+   "notes": "Tab «Simulator»: the live picture is at the very top and moves (like on the live page); scrolled down, it shrinks into a corner (tap: back up, drag: other corner, ✕: away).",
+   "sig": "903c01b44c8d9029626214cb8640375eac711ea771543ca5a77277534bbde2a18eac668215b65862c3b3a567e80a30d9d083b6e51288c20a17f9664b2242040c"
   },
   {
    "version": "2.91.0",
