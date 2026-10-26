@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 01:22",
+ "generated": "2026-10-26 01:30",
  "versions": [
+  {
+   "version": "2.86.0",
+   "file": "webcam_bewegung_2_86_0.py",
+   "url": "",
+   "sha256": "daaa28be417f6587f04d5b6bd575f5100d8af3f459ee4bc19c00a5105c433ea3",
+   "date": "2026-10-26 01:30",
+   "notes": "The 3D simulator for Windows can be downloaded from the Pi: /sim/simulator3d.zip (button under Simulator → Tools).",
+   "sig": "8fd4dcfa8a75604a92ec995cc1649135bc36cfcb26fac9a34b8e52e8ab4ab9a5f2c76e469d14ba1d722125b2051d22bd2cfe0c972d793a12c211173d6811f009"
+  },
   {
    "version": "2.85.0",
    "file": "webcam_bewegung_2_85_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 22:13",
    "notes": "simulator control on the web page for every simulator (CONTROL protocol 1: the simulator describes its scenarios, sliders, choices, switches and buttons itself - ready for a later 3D simulator on a PC); three example 360° video scenes (forest at night, car park at night with a thief, misty camping morning) made by the simulator itself; a running simulator now also restarts when Motion Watch has already put the new files in place.",
    "sig": "88d92c1714cdc4faa3864d29df418564faac22c417d1968c29ad892ffe8695b67f8181e21caa23878239101408f4c38a879324175434d3a0b5f8b9b454282809"
-  },
-  {
-   "version": "2.76.0",
-   "file": "webcam_bewegung_2_76_0.py",
-   "url": "",
-   "sha256": "b9eb590e3928f3c0d282b3fa6c50a2117dc467a1414fbc166ddb647463f0822c",
-   "date": "2026-10-25 21:45",
-   "notes": "the camera can also follow animals and other movement when no person is in the picture (also animals the AI does not know): it must go in one direction for 2 s, swinging branches are let go, off in strong wind; once chosen the animal is followed by its look while the camera turns. Video scenarios of the simulator chosen, played, deleted and uploaded from the web page. Simulator: the camera tilt was upside down (fixed).",
-   "sig": "d4390f7778d0a3943dbb5961afdc29c18b61f7ad5c2e2c011100ac56491bbd44508525f532de94e100259d406bc3eb91a389d14ebe397da0cebe88deafed2a01"
   }
  ]
 }
