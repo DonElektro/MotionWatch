@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-2.2** · passende Motion-Watch-Version **2.92.3**
+Stand: 26.10.2026 · Simulator-Version **3D-2.3** · passende Motion-Watch-Version **2.92.4**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,16 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-2.3 – Strom sparen:** `main._check_active()` (alle 0,5 s): `win_open` = nicht Kästchen (`mini.gd`) und nicht minimiert;
+`connected()` = senden an und Motion Watch hat in den letzten 10 s `/state` geschickt oder Bilder/Wärmebild geholt. Weder noch
+(und `eco_idle` an) → `sim_active = false`: `_process` endet nach dem langsamen Teil (Status, Speichern, Updates), Besucher
+`PROCESS_MODE_DISABLED`, keine Aufnahmen, `Engine.max_fps = 5` (net.gd antwortet weiter und weckt ihn so). Kästchen mit Motion
+Watch: `get_viewport().disable_3d = true` (grosse Ansicht aus), `max_fps = 30`, Vorschaubilder nur bei offenem Fenster.
+**CPU im Kästchen:** Motion Watch misst mit psutil (`SysMonitor._shares`: eigener Prozess und – wenn der Simulator auf demselben
+Rechner läuft – dessen Prozess über `pid` aus der `/state`-Antwort, Name muss «motionwatch3d» enthalten), Werte in % des ganzen
+Rechners, und schickt sie in `sim_state()["cpu"] = {"total", "mw", "sim"}`. `sim` = None → Motion Watch läuft woanders (Pi).
+Gemessen unter Linux/llvmpipe: Fenster 170 %, Kästchen mit MW 135 %, Pause 7 % eines Kerns.
+
 **3D-2.2 – Start mit dem PC** (Simulator-Chat; baut auf 3D-2.1 des Haupt-Chats mit `mini.gd` auf) (`scripts/autostart.gd`): Windows-Wert `MotionWatch3D` unter
 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` (über `reg.exe`, kein Admin), Linux `~/.config/autostart/motionwatch3d.desktop`.
 Startet mit `--autostart`: senden an, Szene vom letzten Mal (`last_scene`), kein Update-Dialog (ausser `auto_update`),

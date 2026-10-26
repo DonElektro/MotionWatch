@@ -3,6 +3,7 @@ extends CanvasLayer
 ## (on top of the other windows). A minimized window draws no pictures any more - then Motion Watch would only see
 ## «CONNECTING…». The box shows whether the simulator sends, how many pictures per second, and the connection.
 ## Click on the box: big again. Drag: move it. While it sends, the PC and the screen do not go to sleep.
+## From 3D-2.3 also the CPU (measured by Motion Watch: the whole computer, Motion Watch, the simulator) and «Pause».
 
 var main                                   # the main script
 var mini := false
@@ -12,6 +13,7 @@ var dot: Label
 var line1: Label
 var line2: Label
 var line3: Label
+var line_cpu: Label
 var t_upd := 0.0
 var last_frames := 0
 var last_t := 0.0
@@ -22,7 +24,7 @@ var drag_win := Vector2i.ZERO
 var dragging := false
 var moved := false
 
-const MINI_SIZE := Vector2i(330, 112)
+const MINI_SIZE := Vector2i(360, 136)
 
 
 func _ready() -> void:
@@ -62,6 +64,12 @@ func _ready() -> void:
 	line2.add_theme_color_override("font_color", Color(0.75, 0.8, 0.86))
 	line2.clip_text = true
 	v.add_child(line2)
+	line_cpu = Label.new()
+	line_cpu.add_theme_font_size_override("font_size", 13)
+	line_cpu.add_theme_color_override("font_color", Color(0.75, 0.8, 0.86))
+	line_cpu.clip_text = true
+	line_cpu.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(line_cpu)
 	var h2 := HBoxContainer.new()
 	h2.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(h2)
@@ -120,6 +128,22 @@ func _paint() -> void:
 		line2.text = "wartet auf Motion Watch …"
 	else:
 		line2.text = "Motion Watch sieht den Simulator nicht"
+	if not main.sim_active:
+		line2.text += "  ·  Pause (spart Strom)"
+	line_cpu.text = cpu_text(main.cpu_info if connected else {})
+
+
+static func cpu_text(c: Dictionary) -> String:
+	"""CPU as Motion Watch measures it. Same computer (the simulator is found there): whole PC, Motion Watch, simulator.
+	Motion Watch on the Pi: the Pi and Motion Watch on it (the CPU of this PC cannot be measured then)."""
+	var pc = c.get("total", null)
+	if pc == null:
+		return "CPU: – (misst Motion Watch, sobald verbunden)"
+	var mw = c.get("mw", null)
+	var sim = c.get("sim", null)
+	if sim != null:
+		return "CPU PC %d %%  ·  Motion Watch %s  ·  Simulator %d %%" % [roundi(float(pc)), "–" if mw == null else "%d %%" % roundi(float(mw)), roundi(float(sim))]
+	return "CPU Motion-Watch-Gerät %d %%  ·  davon Motion Watch %s" % [roundi(float(pc)), "–" if mw == null else "%d %%" % roundi(float(mw))]
 
 
 func enter() -> void:

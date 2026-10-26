@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-2.2 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-2.3 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -31,6 +31,18 @@ UPDATES (ab 3D-1.7)
   nach und installiert eine neue Version selbst: 15 Sekunden lang kann man noch "Abbrechen" drücken, dann startet er neu
   (Senden, Szene und "Motion Watch auf diesem PC" laufen danach weiter). Der Knopf "Jetzt nach Updates suchen und
   installieren" in derselben Gruppe löst das sofort aus - auch vom Handy aus über Motion Watch.
+
+STROM SPAREN (ab 3D-2.3)
+- Der Simulator rechnet nur, wenn jemand hinschaut: wenn das Fenster offen ist oder Motion Watch verbunden ist.
+  Klein (Kästchen) und ohne Motion Watch macht er Pause: nichts bewegt sich, er wartet nur auf Motion Watch
+  ("Pause (spart Strom)" im Kästchen). Sobald sich Motion Watch meldet, läuft die Welt weiter.
+- Klein mit Motion Watch zeichnet er nur noch die Kamerabilder für Motion Watch, nicht mehr die grosse 3D-Ansicht.
+- Das Kästchen zeigt die CPU: "CPU PC" = der ganze Computer, dazu der Anteil von Motion Watch und vom Simulator.
+  Läuft Motion Watch auf dem Pi, zeigt es die CPU des Pi und den Anteil von Motion Watch dort.
+  Gemessen wird von Motion Watch (ab Version 2.92.4), darum erst, wenn es verbunden ist.
+- Abschalten (immer rechnen): Experte, Gruppe "Grafik", Schalter "Strom sparen: nur rechnen, wenn ...".
+- Gemessen hier (Linux ohne Grafikkarte): Fenster offen 170 % eines Kerns, Kästchen mit Motion Watch 135 %,
+  Kästchen ohne Motion Watch 7 %.
 
 MIT DEM PC STARTEN (ab 3D-2.2)
 - Gruppe "Start mit dem PC" im Bedienfeld (oder auf der Motion-Watch-Webseite unter Simulator-Steuerung):

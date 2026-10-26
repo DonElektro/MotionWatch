@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_92_3.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_92_4.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -498,6 +498,8 @@ Features
     into a corner (tap: back up, drag: other corner, ✕: away).
   * 2.92.3: 3D simulator 3D-2.2: starts with the PC (also small in the corner and without signing in, see its group «Start mit
     dem PC»). Simulator control: when the simulator brings new settings, they appear at once and the open groups stay open.
+  * 2.92.4: 3D simulator 3D-2.3: it only calculates while its window is open or Motion Watch is connected (saves power); its
+    small box shows the CPU of the whole computer, of Motion Watch and of the simulator (Motion Watch measures and sends it).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -506,10 +508,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_92_3.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_92_4.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_92_3.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_92_3.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_92_4.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_92_4.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -526,7 +528,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.92.3"
+APP_VERSION = "2.92.4"
 
 
 def default_data_dir():
@@ -4471,6 +4473,41 @@ class SysMonitor:
             return 0.0
         return max(0.0, min(100.0, 100.0 * (1.0 - (idle - prev[0]) / (total - prev[1]))))
 
+    def _shares(self):
+        """CPU of Motion Watch itself and of the 3D simulator (when it runs on the same computer), in % of the whole
+        computer like «cpu» - shown in the small box of the simulator (sim_state «cpu»)."""
+        if not self.ps:
+            STATE["cpu_mw"] = STATE["cpu_sim"] = None
+            return
+        n = max(1, STATE.get("cpu_count") or 1)
+        try:
+            if getattr(self, "me", None) is None:
+                self.me = self.ps.Process()
+                self.me.cpu_percent(None)
+            STATE["cpu_mw"] = round(self.me.cpu_percent(None) / n, 1)
+        except Exception:
+            STATE["cpu_mw"] = None
+        pid = int(SIM.get("pid") or 0) if CFG.get("sim_on") else 0
+        if pid <= 0:
+            self.sim_p = None
+            STATE["cpu_sim"] = None
+            return
+        try:
+            p = getattr(self, "sim_p", None)
+            if p is None or p.pid != pid:
+                p = self.ps.Process(pid)
+                if "motionwatch3d" not in p.name().lower():      # same number on another computer: not our simulator
+                    raise ValueError("other process")
+                self.sim_p = p
+                p.cpu_percent(None)
+                STATE["cpu_sim"] = None
+                return
+            STATE["cpu_sim"] = round(p.cpu_percent(None) / n, 1)
+        except Exception:
+            self.sim_p = None
+            STATE["cpu_sim"] = None
+            SIM["pid"] = 0                     # the simulator runs elsewhere (or ended): do not try again
+
     def _temp(self):
         try:                                   # Raspberry Pi / most Linux boards
             with open("/sys/class/thermal/thermal_zone0/temp") as f:
@@ -4562,6 +4599,7 @@ class SysMonitor:
             STATE.update(cpu=None if cpu is None else round(cpu, 1),
                          cpu_temp=None if temp is None else round(temp, 1),
                          cpu_hist=list(self.hist))
+            self._shares()
             self._supply_disk()
             if temp is not None:
                 lim = float(CFG["temp_warn"])
@@ -10929,7 +10967,9 @@ def sim_state():
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
             # automatic update: the simulator compares these checksums with its own files and fetches /sim/simulator.zip
-            "sim_files": sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"])}
+            "sim_files": sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
+            # CPU in % of the whole computer: total, Motion Watch, simulator (None = not on this computer / unknown)
+            "cpu": {"total": STATE.get("cpu"), "mw": STATE.get("cpu_mw"), "sim": STATE.get("cpu_sim")}}
 
 
 _SIMFILES = {}
@@ -11819,8 +11859,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-2.2", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30291694,
-         "sha256": "c192704dfa311b50b1e9fbb5f462a3aa77c46ebc5a2529e3bd9508bcae854a79"}
+SIM3D = {"version": "3D-2.3", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30294150,
+         "sha256": "711ba55dae7b1da1e12c2121dd14dcf977040048bb66d55b1513bd5477e5dc85"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
@@ -12121,6 +12161,8 @@ class SimLink:
         if not CFG["sim_on"]:
             return                                          # switched off while this request was running
         first = not SIM["ok"]
+        if first or int(rep_.get("pid") or 0) != SIM.get("pid_seen"):
+            SIM["pid"] = SIM["pid_seen"] = int(rep_.get("pid") or 0)  # its process number: CPU share if it runs on this computer
         SIM.update(t=time.time(), ok=True, msg="connected", dark=bool(rep_.get("dark")), ambient=float(rep_.get("ambient_c", 15.0)),
                    pressure=float(rep_.get("pressure_hpa", 1013.0)), wind=float(rep_.get("wind_kmh", 0.0)), sent=SIM["sent"] + 1)
         if first:
@@ -13404,7 +13446,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_92_3.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_92_4.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -27056,7 +27098,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.92.3")
+        self.root.title("Motion Watch 2.92.4")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -27346,7 +27388,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.92.3 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.92.4 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -34319,7 +34361,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.92.3 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.92.4 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:

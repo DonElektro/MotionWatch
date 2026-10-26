@@ -1,7 +1,7 @@
 {
- "version": "3D-2.2",
+ "version": "3D-2.3",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30291694,
- "sha256": "c192704dfa311b50b1e9fbb5f462a3aa77c46ebc5a2529e3bd9508bcae854a79",
- "notes": "Neu: Start mit dem PC (Gruppe «Start mit dem PC»): sendet gleich, auf Wunsch klein in der Ecke, mit Motion Watch auf dem PC und ohne Anmelden (automatische Anmeldung von Windows, danach gesperrt)."
+ "size": 30294150,
+ "sha256": "711ba55dae7b1da1e12c2121dd14dcf977040048bb66d55b1513bd5477e5dc85",
+ "notes": "Strom sparen: rechnet nur, wenn das Fenster offen ist oder Motion Watch verbunden ist (sonst Pause); das Kästchen zeigt die CPU des Computers, von Motion Watch und vom Simulator."
 }

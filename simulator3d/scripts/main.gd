@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-2.2"
+const VERSION := "3D-2.3"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -29,6 +29,13 @@ var autostart_lock := false           # at the autostart: lock the screen afterw
 var last_scene := ""                  # the scene of the last time (the autostart comes back to it)
 var start_info := ""                  # message of the autostart for the status line
 var _bg_t := 0.0
+# ---- saving power (from 3D-2.3): the world only moves while the window is open or Motion Watch is connected ----
+var eco_idle := true                  # setting «Nur rechnen, wenn ...» (saved)
+var sim_active := true                # false = pause: nobody looks (window small / minimized, no Motion Watch)
+var win_open := true                  # the big window is visible (not the small box, not minimized)
+var mini_box                          # mini.gd
+var cpu_info := {}                    # measured by Motion Watch: {"total", "mw", "sim"} in % of the whole computer
+var _fps0 := 0
 var mwpc                              # Motion Watch on this PC (mwpc.gd)
 var mwpc_btn: Button
 var mwpc_label: Label
@@ -234,7 +241,8 @@ func _ready() -> void:
 				phone.addr.text = args[i + 1]
 			get_tree().create_timer(2.0).timeout.connect(func(): phone.open())
 	DisplayServer.window_set_title("Motion Watch – 3D-Simulator %s (Port %d)" % [VERSION, port])
-	var mini_box = preload("res://scripts/mini.gd").new()      # minimize = small box, the simulator keeps drawing
+	_fps0 = Engine.max_fps
+	mini_box = preload("res://scripts/mini.gd").new()      # minimize = small box, the simulator keeps drawing
 	mini_box.main = self
 	add_child(mini_box)
 	set_process(true)
@@ -763,11 +771,27 @@ var _slow_t := 0.0
 func _process(dt: float) -> void:
 	# minimized: Godot stops drawing then - but the cameras must go on for Motion Watch. mini.gd turns the window into a
 	# small box at once; this is only the safety net (e.g. when the box cannot be shown)
-	if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_MINIMIZED:
+	if sim_active and DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_MINIMIZED:
 		_bg_t -= dt
 		if _bg_t <= 0.0:
 			_bg_t = 1.0 / 15.0
 			RenderingServer.force_draw(false)
+	_slow_t -= dt
+	if _slow_t <= 0.0:
+		_slow_t = 0.5
+		_check_active()
+		if sim_active:
+			_update_sky()
+			_update_temps()
+			_life()
+		_update_status()
+		if _settings_dirty:
+			_save_settings()
+		if auto_update and not update_busy and now() > next_update_check:
+			next_update_check = now() + UPDATE_EVERY
+			run_update(true, false)
+	if not sim_active:
+		return                                   # pause: nothing moves, nothing is drawn (net.gd still answers)
 	var s: Dictionary = mw.get("servo", {})
 	# the servos turn like real ones: towards the new angle with a limited speed (no jumps)
 	var want_pan := -deg_to_rad(float(s.get("pan_deg", 0.0)))
@@ -782,18 +806,6 @@ func _process(dt: float) -> void:
 	var L: Dictionary = mw.get("lights", {})
 	white_light.light_energy = 9.0 if L.get("white", false) else 0.0
 	rain.position = Vector3(0, 12, -8)
-	_slow_t -= dt
-	if _slow_t <= 0.0:
-		_slow_t = 0.5
-		_update_sky()
-		_update_temps()
-		_life()
-		_update_status()
-		if _settings_dirty:
-			_save_settings()
-		if auto_update and not update_busy and now() > next_update_check:
-			next_update_check = now() + UPDATE_EVERY
-			run_update(true, false)
 	var t := now() - clock0
 	for i in range(anims.size() - 1, -1, -1):
 		if anims[i].call(dt, t) == true:      # true = finished (e.g. the birds are gone)
@@ -807,6 +819,32 @@ func _process(dt: float) -> void:
 		_capture_next()
 
 
+# ---- saving power ---------------------------------------------------------------------------------------------------
+func connected() -> bool:
+	"""Motion Watch is connected: it sent its state lately or fetches pictures / thermal values"""
+	if not stream_on:
+		return false
+	var t := now()
+	return t - mw_t < 10.0 or not net.stream_demand().is_empty() or t - snap_want[0] < 10.0 or t - snap_want[1] < 10.0 or t - _th_asked < 10.0
+
+
+func _check_active() -> void:
+	"""every 0.5 s: is somebody looking? Window open -> everything; only Motion Watch -> the world moves, but the big
+	3D view is not drawn and at most 30 pictures per second; nobody -> pause with 5 frames per second (only answering)"""
+	var small: bool = mini_box != null and mini_box.mini
+	win_open = not small and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MINIMIZED
+	var conn := connected()
+	var act := win_open or conn or not eco_idle
+	if act != sim_active:
+		sim_active = act
+		visitors.process_mode = Node.PROCESS_MODE_INHERIT if act else Node.PROCESS_MODE_DISABLED
+		if act:
+			next_auto = max(next_auto, now() + 5.0)
+		print("simulation " + ("runs" if act else "pauses (nobody looks)"))
+	get_viewport().disable_3d = not win_open      # the big 3D view only when it can be seen
+	Engine.max_fps = _fps0 if win_open else (30 if sim_active else 5)
+
+
 # ---- pictures for Motion Watch -------------------------------------------------------------------------------------
 func _wanted_fps(i: int) -> float:
 	var d: Dictionary = net.stream_demand() if net != null else {}
@@ -815,7 +853,7 @@ func _wanted_fps(i: int) -> float:
 		f = max(f, 2.0)
 	if i == 2 and now() - _th_asked < 3.0:
 		f = max(f, 8.0)
-	if preview_on:
+	if preview_on and win_open:
 		f = max(f, (2.0 if in_vm else 4.0) if i < 2 else (1.5 if in_vm else 3.0))
 	return f
 
@@ -940,6 +978,8 @@ func on_state(d: Dictionary, host: String) -> void:
 	var old_sound: String = str(mw.get("sound", ""))
 	mw = d
 	mw_t = now()
+	var cp = d.get("cpu", null)
+	cpu_info = cp if typeof(cp) == TYPE_DICTIONARY else {}
 	mw_addr = host
 	if str(d.get("sound", "")) != "" and old_sound == "":
 		if flee_sound:
@@ -954,6 +994,7 @@ func world_reply() -> Dictionary:
 	var midnight: float = now() - (t.hour * 3600 + t.minute * 60 + t.second)
 	return {"v": 1, "ok": true, "sim_time": midnight + hour() * 3600.0, "dark": is_dark(), "ambient_c": snappedf(ambient, 0.1),
 			"pressure_hpa": snappedf(press, 0.1), "wind_kmh": snappedf(wind, 0.1), "last_event": next_event_id - 1,
+			"pid": OS.get_process_id(), "active": sim_active,
 			"weather": weather, "humidity": humidity}
 
 
@@ -1208,6 +1249,7 @@ func _register_controls() -> void:
 		add_control("button", "autologon", "Ohne Anmelden: automatische Anmeldung von Windows einrichten …", null, func(): setup_autologon(), "Start mit dem PC", {"expert": true})
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
 			{"options": [["simple", "einfach (schnell)"], ["nice", "schön (Schatten, Leuchten)"]]})
+	add_control("toggle", "eco_idle", "Strom sparen: nur rechnen, wenn das Fenster offen ist oder Motion Watch verbunden ist", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
 	add_control("toggle", "meadow", "Gras und Blumen auf der Wiese", func(): return meadow_on, func(v): set_meadow(v), "Grafik", ex)
 
 
@@ -1763,7 +1805,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 

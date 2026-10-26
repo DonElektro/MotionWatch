@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 20:37",
+ "generated": "2026-10-26 21:06",
  "versions": [
   {
-   "version": "2.92.3",
-   "file": "webcam_bewegung_2_92_3.py",
+   "version": "2.92.4",
+   "file": "webcam_bewegung_2_92_4.py",
    "url": "",
-   "sha256": "ed55486502aee0128ef801996f67c28227c514fed9f9eeddf5a4277a5767cf9d",
-   "date": "2026-10-26 20:37",
-   "notes": "3D simulator 3D-2.2: starts with the PC (also small in the corner and without signing in, see its group «Start mit dem PC»). Simulator control: when the simulator brings new settings, they appear at once and the open groups stay open.",
-   "sig": "ef71643423fdd996d36f32e8dbb7964f61db6eb5bb125d2acf2c5eda86f9295fdf13589fd3f77918d3c4d1ac41b8c07b5c76250688fe7d38e901636123d50807"
+   "sha256": "77e30e51081d7c12e8270f68b79b805d08687d8f1cee811beab2a029628d70dc",
+   "date": "2026-10-26 21:06",
+   "notes": "3D simulator 3D-2.3: it only calculates while its window is open or Motion Watch is connected (saves power); its small box shows the CPU of the whole computer, of Motion Watch and of the simulator (Motion Watch measures and sends it).",
+   "sig": "1866818a15a7fbdbbcca8637b7e89a699907fe766448f7ec5807374de5c4db0413dc27a4b2f14ed211ceb6063b6371c79b1a1cacd97605d390a51960e60e0c03"
   },
   {
    "version": "2.91.0",
