@@ -1,9 +1,9 @@
 extends Node3D
-## Motion Watch 3D simulator - stage 1: camping place
+## Motion Watch 3D simulator - scenes: camping place, forest, car park, garden, funny place, wildlife watching (scenes.gd)
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-1.4"
+const VERSION := "3D-1.5"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -16,6 +16,20 @@ const HEAD_H := 1.6
 var Actor = preload("res://scripts/actor.gd")
 var Net = preload("res://scripts/net.gd")
 var Phone = preload("res://scripts/phone.gd")
+var Scenes = preload("res://scripts/scenes.gd")
+var scenes
+var scene := "camping"
+var scene_parent: Node3D
+var lamps: Array = []                 # lights of the scene that are on at night
+var lamp_mats: Array = []             # lamps that glow at night
+var anims: Array = []                 # things of the scene that move: func(dt, t)
+var rifle_on := false                 # wildlife watching: the rifle (bloodless, only animals)
+var shots := 0
+var hits := 0
+var points := 0
+var crosshair: Control
+var shot_sound: AudioStreamPlayer
+var hit_sound: AudioStreamPlayer
 var phone
 
 # ---- the simulated world --------------------------------------------------------------------------------------
@@ -98,7 +112,7 @@ var stream_note: Label
 var place_kind := "fox"
 var place_menu: OptionButton
 
-const OBJ := {"caravan": [-28.0, 9.0], "tent": [14.0, 7.0], "bike": [32.0, 6.0]}
+var obj := {"door": Vector3.ZERO, "pir": Vector3.ZERO, "bike": Vector3.ZERO}   # set by the scene
 
 
 func _ready() -> void:
@@ -115,6 +129,8 @@ func _ready() -> void:
 			hour0 = float(args[i + 1])
 		elif args[i] == "--quality" and i + 1 < args.size():
 			quality = args[i + 1]
+		elif args[i] == "--scene" and i + 1 < args.size():
+			scene = args[i + 1]
 	_make_lut(true)
 	noise_tex = NoiseTexture2D.new()
 	var fn := FastNoiseLite.new()
@@ -331,100 +347,6 @@ func _build_world() -> void:
 	gt.material_override = gm
 	gt.layers = 2
 	world.add_child(gt)
-	# gravel road behind the meadow
-	add_mesh(world, box(400, 0.04, 5), Vector3(0, 0.02, -29), mat(Color(0.42, 0.4, 0.37)), "road")
-	# caravan
-	var cv := Node3D.new()
-	cv.position = pos_of(OBJ.caravan[0], OBJ.caravan[1])
-	cv.rotation.y = deg_to_rad(-OBJ.caravan[0])
-	world.add_child(cv)
-	add_mesh(cv, box(5.6, 2.2, 2.3), Vector3(0, 1.4, 0), mat(Color(0.88, 0.89, 0.9)), "caravan")
-	add_mesh(cv, box(5.6, 0.25, 2.3), Vector3(0, 0.4, 0), mat(Color(0.35, 0.36, 0.38)), "caravan")
-	add_mesh(cv, box(5.4, 0.12, 2.1), Vector3(0, 2.56, 0), mat(Color(0.7, 0.71, 0.73)), "caravan")
-	window_mat = StandardMaterial3D.new()
-	window_mat.albedo_color = Color(0.25, 0.3, 0.38)
-	window_mat.emission_enabled = true
-	window_mat.emission = Color(1.0, 0.8, 0.5)
-	window_mat.emission_energy_multiplier = 0.0
-	add_mesh(cv, box(1.6, 0.7, 0.05), Vector3(-1.5, 1.75, 1.16), window_mat, "window")
-	door_node = Node3D.new()
-	door_node.position = Vector3(1.6, 0.45, 1.17)
-	cv.add_child(door_node)
-	add_mesh(door_node, box(0.75, 1.9, 0.05), Vector3(0.375, 0.95, 0), mat(Color(0.55, 0.56, 0.6)), "caravan")
-	door_light = OmniLight3D.new()
-	door_light.position = Vector3(1.95, 1.5, 0.6)
-	door_light.light_color = Color(1.0, 0.82, 0.55)
-	door_light.omni_range = 6.0
-	door_light.light_energy = 0.0
-	cv.add_child(door_light)
-	for x in [-1.8, 1.8]:
-		var w := CylinderMesh.new()
-		w.top_radius = 0.33
-		w.bottom_radius = 0.33
-		w.height = 0.2
-		add_mesh(cv, w, Vector3(x * 0.5, 0.33, 1.1), mat(Color(0.05, 0.05, 0.05)), "caravan", Vector3(PI / 2, 0, 0))
-	# tent
-	var tent := PrismMesh.new()
-	tent.size = Vector3(2.6, 1.5, 2.4)
-	add_mesh(world, tent, pos_of(OBJ.tent[0], OBJ.tent[1], 0.75), mat(Color(0.9, 0.5, 0.15)), "tent", Vector3(0, deg_to_rad(-OBJ.tent[0]), 0))
-	# bike
-	var bk := Node3D.new()
-	bk.position = pos_of(OBJ.bike[0], OBJ.bike[1])
-	bk.rotation.y = deg_to_rad(-OBJ.bike[0]) + PI / 2
-	world.add_child(bk)
-	for z in [-0.55, 0.55]:
-		var tor := TorusMesh.new()
-		tor.inner_radius = 0.3
-		tor.outer_radius = 0.34
-		add_mesh(bk, tor, Vector3(0, 0.34, z), mat(Color(0.05, 0.05, 0.05)), "stone", Vector3(0, 0, PI / 2))
-	add_mesh(bk, box(0.04, 0.04, 1.0), Vector3(0, 0.62, 0), mat(Color(0.7, 0.1, 0.1)), "stone", Vector3(0.3, 0, 0))
-	add_mesh(bk, box(0.04, 0.5, 0.04), Vector3(0, 0.6, -0.4), mat(Color(0.7, 0.1, 0.1)), "stone", Vector3(0.25, 0, 0))
-	# camping table and chairs
-	add_mesh(world, box(1.2, 0.05, 0.8), pos_of(-62, 5.5, 0.72), mat(Color(0.8, 0.8, 0.78)), "stone")
-	for s in [-1, 1]:
-		add_mesh(world, box(0.45, 0.45, 0.45), pos_of(-62 + 9 * s, 5.6, 0.23), mat(Color(0.15, 0.3, 0.6)), "tent")
-	# stones
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 7
-	for i in range(8):
-		var sm := SphereMesh.new()
-		sm.radius = rng.randf_range(0.15, 0.35)
-		sm.height = sm.radius * 1.2
-		add_mesh(world, sm, pos_of(rng.randf_range(-60, 60), rng.randf_range(4, 15), 0.05), mat(Color(0.48, 0.48, 0.46)), "stone")
-	# trees: a few on the place, a forest belt around it
-	var trunk := CylinderMesh.new()
-	trunk.top_radius = 0.12
-	trunk.bottom_radius = 0.2
-	trunk.height = 4.0
-	for i in range(140):
-		var az := rng.randf_range(-180, 180)
-		var d := rng.randf_range(16, 60) if i < 40 else rng.randf_range(60, 120)
-		var sc := rng.randf_range(0.8, 1.5)
-		var tp := pos_of(az, d)
-		var tr := Node3D.new()
-		tr.position = tp
-		tr.scale = Vector3.ONE * sc
-		world.add_child(tr)
-		add_mesh(tr, trunk, Vector3(0, 2.0, 0), mat(Color(0.3, 0.22, 0.15)), "tree")
-		var fm := ShaderMaterial.new()
-		fm.shader = load("res://shaders/foliage.gdshader")
-		fm.set_shader_parameter("noise_tex", noise_tex)
-		fm.set_shader_parameter("color", Color(0.16, 0.36, 0.14).lerp(Color(0.2, 0.4, 0.12), rng.randf()))
-		foliage_mats.append(fm)
-		var conifer := rng.randf() < 0.5
-		if conifer:
-			for k in range(3):
-				var cone := CylinderMesh.new()
-				cone.top_radius = 0.0
-				cone.bottom_radius = 1.6 - k * 0.4
-				cone.height = 2.4
-				add_mesh(tr, cone, Vector3(0, 2.6 + k * 1.3, 0), fm, "tree")
-		else:
-			for k in range(4):
-				var cr := SphereMesh.new()
-				cr.radius = rng.randf_range(1.0, 1.6)
-				cr.height = cr.radius * 1.8
-				add_mesh(tr, cr, Vector3(rng.randf_range(-0.7, 0.7), 4.2 + rng.randf_range(-0.4, 0.8), rng.randf_range(-0.7, 0.7)), fm, "tree")
 	# the sky for the thermal camera: a big dome around everything (cold when clear, near air temperature when cloudy)
 	var dome := SphereMesh.new()
 	dome.radius = 1500.0
@@ -437,12 +359,53 @@ func _build_world() -> void:
 	world.add_child(dm)
 	tmat("sky").set_shader_parameter("spread", 0.0)
 	# hills far away (fade in the haze)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 11
 	for i in range(14):
 		var hill := SphereMesh.new()
 		hill.radius = rng.randf_range(90, 180)
 		hill.height = hill.radius * 0.8
 		add_mesh(world, hill, pos_of(i * 360.0 / 14 + rng.randf_range(-8, 8), rng.randf_range(420, 520), -hill.radius * 0.15),
 				mat(Color(0.25, 0.33, 0.25)), "hill")
+	scene_parent = Node3D.new()
+	add_child(scene_parent)
+	scenes = Scenes.new()
+	scenes.m = self
+	_build_scene()
+
+
+func _build_scene() -> void:
+	"""everything of the chosen scene (scenes.gd)"""
+	if Scenes.name_of(scene) == scene:
+		scene = "camping"                        # unknown name
+	foliage_mats.clear()
+	lamps.clear()
+	lamp_mats.clear()
+	anims.clear()
+	door_open = false
+	scenes.build(scene, scene_parent)
+	if scene == "wild":
+		rifle_on = true                          # wildlife watching: the rifle is on by itself
+
+
+func set_scene(id: String) -> bool:
+	var ok := false
+	for s in Scenes.LIST:
+		if s[0] == id:
+			ok = true
+	if not ok:
+		return false
+	scene = id
+	for v in visitors.get_children():
+		v.queue_free()
+	for c in scene_parent.get_children():
+		c.queue_free()
+	_build_scene()
+	next_auto = now() + 8.0
+	_update_sky()
+	_update_temps()
+	_sync_ui()
+	return true
 
 
 func _build_head() -> void:
@@ -630,6 +593,10 @@ func _update_sky() -> void:
 	window_mat.emission_energy_multiplier = 2.5 if dark else 0.0
 	door_node.rotation.y = -1.3 if door_open else 0.0
 	door_light.light_energy = 2.5 if door_open and dark else 0.0
+	for l in lamps:
+		l.light_energy = 2.2 if dark else 0.0
+	for lm in lamp_mats:
+		lm.emission_energy_multiplier = 3.0 if dark else 0.0
 	for v in visitors.get_children():
 		if v.has_method("set_night"):
 			v.set_night(dark)
@@ -671,6 +638,7 @@ func _update_temps() -> void:
 	tmat("tent").set_shader_parameter("temp", ambient + 4.0 * sunk + 1.5 - wet)
 	tmat("stone").set_shader_parameter("temp", ambient + 14.0 * sunk + 4.0 * evening * (1.0 - sunk) - wet)
 	tmat("hill").set_shader_parameter("temp", ambient - 5.0)
+	tmat("pond").set_shader_parameter("temp", ambient - 2.0)
 	var sky_t := ambient - (35.0 * (1.0 - cl) + 4.0 * cl)
 	tmat("sky").set_shader_parameter("temp", sky_t)       # the sky is a big dome only the thermal camera sees
 
@@ -697,7 +665,14 @@ func _process(dt: float) -> void:
 		_update_temps()
 		_life()
 		_update_status()
+	var t := now() - clock0
+	for a in anims:
+		a.call(dt, t)
 	_fly(dt)
+	if crosshair != null:
+		crosshair.visible = rifle_on
+		if rifle_on:
+			crosshair.queue_redraw()
 	if not capturing:
 		_capture_next()
 
@@ -894,13 +869,32 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 
 func car() -> void:
 	var side := 1.0 if randf() < 0.5 else -1.0
-	spawn("car", Vector3(-side * 90.0, 0, -28.0 - side * 1.2), Vector3(side * 90.0, 0, -28.0 - side * 1.2))
+	var z: float = scenes.data.get("road_z", -28.0)
+	spawn("car", Vector3(-side * 90.0, 0, z - side * 1.2), Vector3(side * 90.0, 0, z - side * 1.2))
+
+
+func visit(k: String) -> void:
+	"""a visitor that fits the scene: also the special ones (a car parks, somebody sits on the bench, an animal comes to the feeder)"""
+	if k == "car":
+		car()
+	elif k == "car_park":
+		var c = spawn("car", Vector3(90, 0, -31.0), Vector3(26, 0, -31.0))
+		scenes.park_route(c)
+	elif k == "bench":
+		var side := 1.0 if randf() < 0.5 else -1.0
+		var p = spawn("person", Vector3(30.0 * side, 0, -18.0), Vector3(0, 0, -16.8))
+		scenes.bench_route(p, "bench" if randf() < 0.6 else "bench2")
+	elif k.begins_with("feed_"):
+		var a = spawn(k.substr(5), Vector3(randf_range(-25, 25), 0, -45.0), Vector3(0, 0, -16))
+		scenes.feed_route(a)
+	else:
+		spawn(k)
 
 
 func thief() -> void:
 	"""somebody sneaks to the bike, kneels at it with a torch, then goes to the caravan door - and runs away"""
-	var bike := pos_of(OBJ.bike[0], OBJ.bike[1])
-	var door := pos_of(OBJ.caravan[0] + 6.0, OBJ.caravan[1] - 1.2)
+	var bike: Vector3 = obj["bike"]
+	var door: Vector3 = obj["door"]
 	var v = spawn("person", Vector3(25, 0, -14), bike + Vector3(0.6, 0, 0.4))
 	v.speed = 0.9
 	v.add_torch()
@@ -910,18 +904,19 @@ func thief() -> void:
 func _life() -> void:
 	var t := now()
 	if auto_visitors and t > next_auto:
-		var k: String = ["person", "fox", "fox", "boar", "deer", "cat", "badger"][randi() % 7]
-		spawn(k)
-		next_auto = t + randf_range(40.0, 120.0)
+		var au: Array = Scenes.AUTO.get(scene, Scenes.AUTO["camping"])
+		var k: String = au[0][randi() % au[0].size()]
+		visit(k)
+		next_auto = t + randf_range(au[1], au[2])
 	var L: Dictionary = mw.get("lights", {})
 	if L.get("white", false) and is_dark():
 		_scare_all(false)
-	var tent := pos_of(OBJ.tent[0], OBJ.tent[1])
+	var tent: Vector3 = obj["pir"]
 	for v in visitors.get_children():
 		if v.kind == "person" and not v.pir_done and v.position.distance_to(tent) < 3.0:
 			v.pir_done = true
 			add_event("PIR Zelt", "pir")
-		if v.kind == "person" and v.route.size() > 0 and str(mw.get("sound", "")) != "":
+		if v.kind == "person" and v.torch != null and v.route.size() > 0 and str(mw.get("sound", "")) != "":
 			v.route = [Vector3(v.position.x + 40.0, 0, v.position.z + 10.0)]      # the siren: the thief runs away
 			v.target = v.route.pop_front()
 			v.speed = 4.0
@@ -977,6 +972,10 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 
 
 func _register_controls() -> void:
+	var sc := []
+	for s in Scenes.LIST:
+		sc.append([s[0], s[1]])
+	add_control("select", "scene", "Szene", func(): return scene, func(v): set_scene(v), "Szene", {"options": sc})
 	add_control("slider", "hour", "Uhrzeit", func(): return snappedf(hour(), 0.01), func(v): set_hour(v), "Szene", {"min": 0, "max": 23.75, "step": 0.25, "unit": "h"})
 	add_control("slider", "speed", "Zeit läuft x-fach", func(): return speed, func(v): _set_speed(v), "Szene", {"min": 1, "max": 120, "step": 1, "unit": "×"})
 	add_control("slider", "moon", "Mond", func(): return moon, func(v): moon = v, "Szene", {"min": 0, "max": 1, "step": 0.1})
@@ -990,13 +989,19 @@ func _register_controls() -> void:
 	for k in [["person", "Person"], ["fox", "Fuchs"], ["boar", "Wildschwein"], ["deer", "Reh"], ["cat", "Katze"], ["badger", "Dachs"], ["dog", "Hund"]]:
 		add_control("button", "spawn_" + k[0], k[1], null, func(): spawn(k[0]), "Besuch")
 	add_control("button", "car", "Auto", null, func(): car(), "Besuch")
-	add_control("button", "thief", "Dieb (Velo, Wohnwagen)", null, func(): thief(), "Besuch")
+	add_control("button", "thief", "Dieb (Velo, Tür)", null, func(): thief(), "Besuch")
+	add_control("button", "car_park", "Auto parkiert (Parkplatz)", null, func(): visit("car_park"), "Besuch")
+	add_control("button", "bench", "Besuch setzt sich auf die Bank (Lustiger Platz)", null, func(): visit("bench"), "Besuch")
+	add_control("button", "feed", "Reh kommt zur Futterstelle (Wildbeobachtung)", null, func(): visit("feed_deer"), "Besuch")
 	add_control("toggle", "auto", "ab und zu Besuch von selbst", func(): return auto_visitors, func(v): auto_visitors = v, "Besuch")
 	add_control("toggle", "door", "Wohnwagentür offen", func(): return door_open, func(v): set_door(v), "Sensoren")
 	add_control("toggle", "gas", "Gas / Rauch", func(): return gas_on, func(v): set_gas(v), "Sensoren")
 	add_control("button", "pir", "PIR Zelt auslösen", null, func(): add_event("PIR Zelt", "pir"), "Sensoren")
 	add_control("button", "bike", "Velo bewegen", null, func(): add_event("Velo", "tag"), "Sensoren")
 	add_control("button", "nighttest", "Nacht-Test starten (2 Min.)", null, func(): night_test(), "Sensoren")
+	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
+	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")
+	add_control("button", "score0", "Punkte auf 0", null, func(): reset_score(), "Wildbeobachtung")
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
 			{"options": [["simple", "einfach (schnell)"], ["nice", "schön (Schatten, Leuchten)"]]})
 
@@ -1031,7 +1036,7 @@ func control_info() -> Dictionary:
 			d["value"] = snappedf(v, 0.001) if typeof(v) == TYPE_FLOAT else v
 		out.append(d)
 	return {"ok": true, "v": 1, "name": "Motion Watch 3D-Simulator %s" % VERSION,
-			"scenarios": [{"id": "camping", "name": "Camping (3D)", "kind": "world", "deletable": false}], "scenario": "camping",
+				"scenarios": scenarios(), "scenario": scene,
 			"controls": out, "status": status_text(), "upload": null}
 
 
@@ -1039,7 +1044,7 @@ func control(d: Dictionary) -> Dictionary:
 	var a := str(d.get("action", "get"))
 	var cid := str(d.get("id", ""))
 	if a == "scenario":
-		if cid != "camping":
+		if not set_scene(cid):
 			return {"ok": false, "error": "unknown scenario"}
 	elif a == "delete":
 		return {"ok": false, "error": "cannot be deleted"}
@@ -1071,7 +1076,15 @@ func control(d: Dictionary) -> Dictionary:
 func status_text() -> String:
 	var h := hour()
 	var mwc := "verbunden mit %s" % str(mw.get("device", "Motion Watch")) if now() - mw_t < 3.0 else ("Motion Watch nicht verbunden" if stream_on else "Senden aus")
-	return "%02d:%02d · %s · %s · %.1f °C · Besucher %d · %s" % [int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), mwc]
+	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
+	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc]
+
+
+func scenarios() -> Array:
+	var out := []
+	for s in Scenes.LIST:
+		out.append({"id": s[0], "name": s[1] + " (3D)", "kind": "world", "deletable": false})
+	return out
 
 
 # ---- the window on the PC ------------------------------------------------------------------------------------------------
@@ -1089,6 +1102,7 @@ func _build_ui() -> void:
 	phone.main = self
 	phone.position = Vector2(0, 0)
 	layer.add_child(phone)
+	_build_crosshair(layer)
 	var panel := PanelContainer.new()
 	panel.anchor_left = 1.0
 	panel.anchor_right = 1.0
@@ -1181,7 +1195,7 @@ func _build_ui() -> void:
 	info_label = Label.new()
 	info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	info_label.add_theme_color_override("font_color", Color(0.55, 0.6, 0.65))
-	info_label.text = "Maus rechts gedrückt halten: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienung aus/ein · P: Handy / Tablet"
+	info_label.text = "Maus rechts gedrückt halten: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienung aus/ein · P: Handy / Tablet · G: Gewehr ein/aus (Linksklick = Schuss)"
 	box_.add_child(info_label)
 	_sync_ui()
 
@@ -1307,7 +1321,11 @@ func _unhandled_input(ev: InputEvent) -> void:
 				yaw = view_cam.rotation.y
 				pitch = view_cam.rotation.x
 		elif ev.button_index == MOUSE_BUTTON_LEFT and ev.pressed:
-			_place(ev.position)
+			if rifle_on:
+				var sp: Vector2 = get_viewport().get_visible_rect().size / 2.0 if look else ev.position
+				shoot(view_cam.project_ray_origin(sp), view_cam.project_ray_normal(sp))
+			else:
+				_place(ev.position)
 		elif ev.button_index == MOUSE_BUTTON_WHEEL_UP:
 			fly_speed = min(80.0, fly_speed * 1.2)
 		elif ev.button_index == MOUSE_BUTTON_WHEEL_DOWN:
@@ -1329,6 +1347,9 @@ func _unhandled_input(ev: InputEvent) -> void:
 				ui_root.visible = not ui_root.visible
 			KEY_P:
 				_toggle_phone()
+			KEY_G:
+				rifle_on = not rifle_on
+				_sync_ui()
 
 
 func _fly(dt: float) -> void:
@@ -1375,3 +1396,163 @@ func _place(p: Vector2) -> void:
 	var ang := randf() * TAU
 	var b := a + Vector3(cos(ang), 0, sin(ang)) * 40.0
 	spawn(k, a, b)
+
+
+# ---- wildlife watching: the rifle (bloodless - a hit animal hops, sees stars and runs away; people cannot be hit) ----------
+var shot_msg := ""
+var shot_msg_t := 0.0
+const POINTS := {"fox": 10, "deer": 15, "boar": 20, "badger": 25, "cat": 5, "dog": 5}
+
+
+func _build_crosshair(layer: CanvasLayer) -> void:
+	crosshair = Control.new()
+	crosshair.set_anchors_preset(Control.PRESET_FULL_RECT)
+	crosshair.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	crosshair.visible = false
+	crosshair.draw.connect(func():
+		var p: Vector2 = crosshair.size / 2.0 if look else crosshair.get_local_mouse_position()
+		var c := Color(1.0, 0.25, 0.2, 0.95)
+		crosshair.draw_arc(p, 18.0, 0.0, TAU, 40, c, 2.0)
+		for d in [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]:
+			crosshair.draw_line(p + d * 8.0, p + d * 30.0, c, 2.0)
+		crosshair.draw_circle(p, 1.5, c)
+		var f := ThemeDB.fallback_font
+		var txt := "Gewehr (unblutig): Treffer %d von %d Schüssen · %d Punkte · G: Gewehr aus" % [hits, shots, points]
+		crosshair.draw_string(f, Vector2(18, 34), txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color(1, 1, 1))
+		if now() - shot_msg_t < 2.5:
+			crosshair.draw_string(f, Vector2(18, 64), shot_msg, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(1.0, 0.85, 0.3)))
+	layer.add_child(crosshair)
+	shot_sound = AudioStreamPlayer.new()
+	shot_sound.stream = _make_sound("shot")
+	add_child(shot_sound)
+	hit_sound = AudioStreamPlayer.new()
+	hit_sound.stream = _make_sound("boing")
+	add_child(hit_sound)
+
+
+func _make_sound(kind: String) -> AudioStreamWAV:
+	"""a short sound made from numbers: a soft 'plopp' for the shot, a 'boing' for a hit"""
+	var rate := 22050
+	var dur := 0.35 if kind == "shot" else 0.6
+	var n := int(rate * dur)
+	var data := PackedByteArray()
+	data.resize(n * 2)
+	var ph := 0.0
+	for i in range(n):
+		var t := float(i) / rate
+		var v := 0.0
+		if kind == "shot":
+			v = randf_range(-1.0, 1.0) * exp(-t * 30.0) * 0.6 + sin(TAU * 70.0 * t) * exp(-t * 12.0) * 0.6
+		else:
+			ph += TAU * (220.0 + 180.0 * sin(t * 40.0) * exp(-t * 3.0)) / rate
+			v = sin(ph) * exp(-t * 4.0) * 0.5
+		data.encode_s16(i * 2, int(clamp(v, -1.0, 1.0) * 30000.0))
+	var w := AudioStreamWAV.new()
+	w.format = AudioStreamWAV.FORMAT_16_BITS
+	w.mix_rate = rate
+	w.stereo = false
+	w.data = data
+	return w
+
+
+func reset_score() -> void:
+	shots = 0
+	hits = 0
+	points = 0
+
+
+func shoot_head() -> void:
+	"""a shot straight out of the head camera: aim with the pan / tilt head of Motion Watch"""
+	var tr: Transform3D = cams[0].global_transform
+	shoot(tr.origin, -tr.basis.z)
+
+
+func shoot(from: Vector3, d: Vector3) -> void:
+	shots += 1
+	d = d.normalized()
+	shot_sound.play()
+	var best = null
+	var best_t := 1e9
+	var person_t := 1e9
+	for v in visitors.get_children():
+		if v.done:
+			continue
+		for sp in v.hit_spheres():
+			var c: Vector3 = v.global_position + Vector3(0, sp[0], 0)
+			var t := (c - from).dot(d)
+			if t < 0.3 or t > 300.0 or (from + d * t).distance_to(c) > float(sp[1]):
+				continue
+			if v.kind == "person" or v.kind == "car":
+				person_t = min(person_t, t)
+			elif t < best_t:
+				best_t = t
+				best = v
+	if best != null and best_t < person_t:
+		var pts: int = best.hit()
+		var above: Vector3 = best.global_position + Vector3(0, best.body_h + 0.9, 0)
+		if pts > 0:
+			hits += 1
+			points += pts
+			hit_sound.play()
+			_say("Treffer! %s +%d" % [_animal_name(best.kind), pts], above, Color(1.0, 0.85, 0.2))
+		else:
+			_say("Der sieht schon Sterne", above, Color(0.9, 0.9, 0.9))
+	elif person_t < 1e9:
+		_say("Nicht auf Menschen! Nur Tiere.", from + d * min(person_t, 40.0), Color(1.0, 0.4, 0.3))
+	else:
+		var hit = Plane(Vector3.UP, 0).intersects_ray(from, d)
+		if hit != null and from.distance_to(hit) < 300.0:
+			_puff(hit)
+			_say("Daneben", hit + Vector3(0, 1.0, 0), Color(0.85, 0.85, 0.85))
+		else:
+			_say("Daneben", from + d * 20.0, Color(0.85, 0.85, 0.85))
+	_update_status()
+
+
+func _animal_name(k: String) -> String:
+	return {"fox": "Fuchs", "deer": "Reh", "boar": "Wildschwein", "badger": "Dachs", "cat": "Katze", "dog": "Hund"}.get(k, k)
+
+
+func _say(text: String, p: Vector3, col: Color) -> void:
+	"""a word that floats up in the world (and on the screen at the top left)"""
+	shot_msg = text
+	shot_msg_t = now()
+	var l := Label3D.new()
+	l.text = text
+	l.font_size = 96
+	l.pixel_size = 0.004 * clamp(p.distance_to(view_cam.global_position) / 6.0, 1.5, 6.0)
+	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	l.no_depth_test = true
+	l.modulate = col
+	l.outline_size = 12
+	l.outline_modulate = Color(0, 0, 0, 0.8)
+	l.layers = 1
+	l.position = p
+	add_child(l)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(l, "position", p + Vector3(0, 1.4, 0), 1.8)
+	tw.tween_property(l, "modulate:a", 0.0, 1.8).set_delay(0.6)
+	tw.chain().tween_callback(l.queue_free)
+
+
+func _puff(p: Vector3) -> void:
+	"""a little cloud of dust where a shot hits the ground"""
+	var mi := MeshInstance3D.new()
+	var s := SphereMesh.new()
+	s.radius = 0.12
+	s.height = 0.24
+	mi.mesh = s
+	var mm := StandardMaterial3D.new()
+	mm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mm.albedo_color = Color(0.75, 0.7, 0.6, 0.8)
+	mi.material_override = mm
+	mi.layers = 1
+	mi.position = p + Vector3(0, 0.1, 0)
+	add_child(mi)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(mi, "scale", Vector3.ONE * 5.0, 0.8)
+	tw.tween_property(mm, "albedo_color:a", 0.0, 0.8)
+	tw.chain().tween_callback(mi.queue_free)

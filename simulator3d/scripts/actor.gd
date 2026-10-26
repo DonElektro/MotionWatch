@@ -20,6 +20,11 @@ var behaviour := "walk"       # walk | thief
 var crouch := 0.0
 var torch: SpotLight3D = null
 var body_root: Node3D
+var body_h := 0.9             # height of the body (for the rifle and the words above it)
+var body_r := 0.5
+var dizzy_until := 0.0        # hit by the (bloodless) rifle: hops, sees stars, then runs away
+var hop_t := -10.0
+var stars: Node3D = null
 
 const COLORS := {
 	"jacket": [Color(0.24, 0.24, 0.6), Color(0.5, 0.31, 0.16), Color(0.16, 0.43, 0.24), Color(0.6, 0.6, 0.6), Color(0.16, 0.16, 0.16), Color(0.7, 0.36, 0.12)],
@@ -137,6 +142,8 @@ func _build_animal() -> void:
 	var t: float = s[3]
 	var lw: float = s[4]
 	var bodyr := hb * (0.32 if kind != "boar" else 0.45)
+	body_h = hb
+	body_r = max(L * 0.6, hb * 0.55)
 	_part(body_root, _caps(bodyr, L), Vector3(0, hb, 0), col, t, Vector3(PI / 2, 0, 0))
 	if kind == "fox" or kind == "deer":                  # light belly
 		_part(body_root, _caps(bodyr * 0.7, L * 0.7), Vector3(0, hb - bodyr * 0.45, 0), col.lightened(0.5), t - 1.0, Vector3(PI / 2, 0, 0))
@@ -240,6 +247,8 @@ func _process(dt: float) -> void:
 	if done:
 		return
 	var now := Time.get_ticks_msec() / 1000.0
+	if stars != null:
+		_dizzy(dt, now)
 	if now < wait_until:
 		_animate(dt, 0.0)
 		return
@@ -250,14 +259,15 @@ func _process(dt: float) -> void:
 		position = Vector3(target.x, position.y, target.z)
 		if route.size() > 0:
 			var nxt = route.pop_front()
-			if typeof(nxt) == TYPE_ARRAY:                 # [point, wait seconds, crouch]
+			if typeof(nxt) == TYPE_ARRAY:                 # [point, wait seconds, crouch, look at]
 				target = nxt[0]
 				wait_until = now + float(nxt[1])
 				crouch = float(nxt[2]) if nxt.size() > 2 else 0.0
+				_face(nxt[3] if nxt.size() > 3 else target)
 			else:
 				target = nxt
 				crouch = 0.0
-			_face(target)
+				_face(target)
 		else:
 			done = true
 			queue_free()
@@ -293,3 +303,62 @@ func add_torch() -> void:
 	torch.light_energy = 0.0
 	torch.light_color = Color(1, 0.97, 0.9)
 	body_root.add_child(torch)
+
+
+# ---- the bloodless rifle of the wildlife watching ------------------------------------------------------------------
+func hit_spheres() -> Array:
+	"""where the rifle can hit: [height, radius] (people and cars too - so a shot at them is noticed and stopped)"""
+	if kind == "person":
+		return [[0.45, 0.3], [1.05, 0.33], [1.6, 0.25]]
+	if kind == "car":
+		return [[0.8, 2.2]]
+	return [[body_h, body_r]]
+
+
+func hit() -> int:
+	"""hit by the bloodless rifle: a hop with a turn, stars round the head - then away. Points (0 = already dizzy)."""
+	if kind == "person" or kind == "car":
+		return 0
+	var t := now_s()
+	if t < dizzy_until:
+		return 0
+	dizzy_until = t + 2.6
+	hop_t = t
+	wait_until = max(wait_until, dizzy_until)
+	stars = Node3D.new()
+	stars.position = Vector3(0, body_h + (0.75 if kind == "deer" else 0.35), 0)
+	add_child(stars)
+	var sm := StandardMaterial3D.new()
+	sm.albedo_color = Color(1.0, 0.9, 0.2)
+	sm.emission_enabled = true
+	sm.emission = Color(1.0, 0.85, 0.2)
+	sm.emission_energy_multiplier = 1.5
+	for i in range(5):
+		var st := MeshInstance3D.new()
+		var pm := PrismMesh.new()
+		pm.size = Vector3(0.12, 0.12, 0.03)
+		st.mesh = pm
+		st.material_override = sm
+		st.layers = 1
+		var a := i * TAU / 5.0
+		st.position = Vector3(cos(a) * 0.3, 0, sin(a) * 0.3)
+		stars.add_child(st)
+	return int(main.POINTS.get(kind, 10))
+
+
+func _dizzy(dt: float, t: float) -> void:
+	stars.rotation.y += dt * 7.0
+	var h := t - hop_t
+	if h < 0.7:
+		body_root.position.y = sin(h / 0.7 * PI) * 0.7
+		body_root.rotation.y = h / 0.7 * TAU
+	else:
+		body_root.position.y = 0.0
+		body_root.rotation.y = 0.0
+		body_root.rotation.z = 0.12 * sin(t * 9.0)          # wobbly
+	if t >= dizzy_until:
+		stars.queue_free()
+		stars = null
+		body_root.rotation = Vector3.ZERO
+		fled = false
+		scare()

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_80_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_90_0.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -439,6 +439,32 @@ Features
     and window; the viewer count moved to the right in the header.
   * 2.80.0: page /preview: the web page as on a phone or a tablet, upright or across, with or without full screen (button in
     the simulators and in the simulator section); the page may be shown in a frame of its own origin only (SAMEORIGIN).
+  * 2.81.0: simulators are found by themselves: every simulator announces itself every 2 s (UDP 8764), Motion Watch lists
+    them («Use») and - with «find by itself» on and no working connection - takes over the address (a PC before the Pi);
+    simulator requests never go through a proxy.
+  * 2.82.0: simulator section tidied up: status with statistics (connected for, response time, camera / thermal pictures
+    per second, messages, sensor events, errors), «Simulators in the network» with «Search now» (asks every address of the
+    own network, progress and result), per simulator: seen since, last message, number of messages, response time;
+    settings and tools folded away.
+  * 2.83.0: System: size of the project (program file, lines, data, settings, recordings, simulator), running time, memory,
+    Python version, Pi model and operating system.
+  * 2.84.0: New page "Tools": network scanner (makers, names, warning about new devices, "am I at home" with automatic
+    arming), Wi-Fi surroundings with the best channel, internet test, security check, Bluetooth scanner with tracker warning,
+    focus assistant, servo test, loudspeaker / microphone test, memory card test, diagnosis package without secrets, power calculator.
+  * 2.85.0: Second Wi-Fi adapter (USB stick): repeater (own Wi-Fi + internet from another network at the same time), change to
+    another known network when the internet is gone, push message when it is back, devices in the own Wi-Fi without internet,
+    Wi-Fi guard (alarm on jamming / deauthentication, needs a stick that can listen), adapter list with chip and abilities.
+    Tools page tidied up: groups, every tool folds up and shows its last result. Fix: the Wi-Fi search of the settings works again.
+  * 2.86.0: The 3D simulator for Windows can be downloaded from the Pi: /sim/simulator3d.zip (button under Simulator → Tools).
+  * 2.87.0: Tools page redesigned, calmer: list of the tools on the left (with status), one tool at a time on the right; on a phone
+    first the list, then the tool with a back button. Plain line icons, switches instead of check boxes, no empty boxes.
+  * 2.88.0: Download of the 3D simulator 3D-1.4: it starts without sending; the switch «An Motion Watch senden» in its window
+    turns sending on.
+  * 2.89.0: Tools: «Full power for the tools» - Motion Watch rests for 10 to 120 minutes (camera, detection, AI, extra cameras;
+    a recording is finished first), the web page and the tools keep running; it comes back by itself or with «Resume now».
+  * 2.90.0: 3D simulator 3D-1.5 for download: six scenes to switch (camping place, forest, car park, garden with house, a funny
+    place with a bench, carousel and ducks, wildlife watching with a high seat and a feeder) and a bloodless rifle for the
+    wildlife watching (only animals: a hit animal hops, sees stars and runs away; aim also with the head camera).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -447,10 +473,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_80_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_90_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_80_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_80_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_90_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_90_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -467,7 +493,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.80.0"
+APP_VERSION = "2.90.0"
 
 
 def default_data_dir():
@@ -738,7 +764,9 @@ CFG = {
     "solar_on": False, "solar_addr": "0x41", "solar_shunt": 0.1, "night_warn": True,
     "species_on": False, "species_model": "", "species_norm": "imagenet", "species_size": 224, "species_conf": 0.5,
     "desktop_notice": True,
-    "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_prev_source": "", "sim_prev_thermal": "",
+    "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_auto": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_dual": True, "wifi_swap": False, "wifi_guard": False,
+    "wifi_guard_thr": 20, "wifi_count": False, "wifi_presence": False, "net_noinet": [], "net_inet_notify": True, "sim_prev_source": "", "sim_prev_thermal": "",
     "lens_check": True, "temp_alarm_on": False, "temp_hot": 30, "temp_cold": 3,
     "sens_on": False, "sensors": [], "rf433_on": False, "zigbee_on": False, "ble_on": False, "tag_missing": 5, "eco_pir": True,
     "tamper_on": True,           # sabotage: camera covered or turned away (picture check)
@@ -1762,7 +1790,7 @@ OPERATE_POST = {"/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/li
 VIEW_POST = {"/api/webpush", "/api/ui", "/api/time", "/api/gps", "/api/rec/prepare", "/rec/zip"}
 OPERATE_SET_KEYS = {"thermal_on", "nightvision", "show_objects", "show_mask", "track_person"}
 ADMIN_GET = ("/api/settings/export", "/api/ext", "/api/wifi", "/api/qr", "/setup-card", "/api/update", "/api/guest", "/api/fleet",
-             "/api/users", "/api/setup", "/api/log/file/")
+             "/api/users", "/api/setup", "/api/log/file/", "/api/tools", "/tools/diag.zip")
 
 
 def users_clean(lst):
@@ -4580,7 +4608,7 @@ class NetMonitor:
                 hotspot_refresh()
             except Exception:
                 pass
-        if STATE["hotspot"].get("on"):                   # the Pi is the access point itself: no signal to measure
+        if STATE["hotspot"].get("on") and not DUAL["on"]:   # the Pi is the access point itself: no signal to measure
             STATE["wifi"] = {"iface": WIFI["iface"], "ssid": STATE["hotspot"]["ssid"], "dbm": None, "pct": 0, "rate": "", "connected": False,
                              "ip": STATE["hotspot"]["ip"], "ap": True}
             self.was = None; WIFI["refresh"] = False
@@ -4590,6 +4618,8 @@ class NetMonitor:
             STATE["wifi"] = None; return
         proc = _proc_wireless()
         iface = next((i for i in ifaces if i in proc and proc[i][1] < 0), ifaces[0])
+        if DUAL["on"] and DUAL["up"] in ifaces:
+            iface = DUAL["up"]
         refresh = WIFI.get("refresh") or WIFI.get("busy")
         if refresh:
             WIFI["refresh"] = False
@@ -5346,8 +5376,9 @@ def _hotspot_clients(iface):
 def hotspot_refresh():
     b = wifi_backend()
     on = b == "nm" and HOTSPOT_CON in _nm_active_names()
-    STATE["hotspot"] = {"on": on, "ssid": CFG["hotspot_ssid"] if on else "", "clients": _hotspot_clients(WIFI["iface"]) if on else 0,
-                        "ip": wifi_ip() if on else "", "busy": WIFI.get("hs_busy", False), "available": b == "nm", "msg": WIFI.get("hs_msg", "")}
+    ap_if = WIFI.get("ap_iface") or WIFI["iface"]
+    STATE["hotspot"] = {"on": on, "ssid": CFG["hotspot_ssid"] if on else "", "clients": _hotspot_clients(ap_if) if on else 0,
+                        "ip": wifi_ip(ap_if) if on else "", "repeater": bool(on and DUAL["on"]), "busy": WIFI.get("hs_busy", False), "available": b == "nm", "msg": WIFI.get("hs_msg", "")}
     return STATE["hotspot"]
 
 
@@ -5356,7 +5387,7 @@ def hotspot_set(on, persist=True):
     b = wifi_backend()
     if b != "nm":
         return False, "the own Wi-Fi needs NetworkManager (Raspberry Pi OS Bookworm or newer)"
-    iface, ssid = WIFI["iface"], CFG["hotspot_ssid"] or "MotionWatch"
+    iface, ssid = (WIFI.get("ap_iface") if DUAL["on"] else "") or WIFI["iface"], CFG["hotspot_ssid"] or "MotionWatch"
     with _WIFI_LOCK:
         if on:
             pw = hotspot_password()
@@ -5364,7 +5395,8 @@ def hotspot_set(on, persist=True):
             exists = HOTSPOT_CON in [_nm_split(l)[0] for l in out.splitlines()]
             sec = ["wifi-sec.key-mgmt", "wpa-psk", "wifi-sec.psk", pw, "wifi-sec.proto", "rsn", "wifi-sec.pairwise", "ccmp", "wifi-sec.group", "ccmp"]
             if exists:
-                code, out, err = _run(["nmcli", "connection", "modify", "id", HOTSPOT_CON, "802-11-wireless.ssid", ssid] + sec, 20)
+                code, out, err = _run(["nmcli", "connection", "modify", "id", HOTSPOT_CON, "802-11-wireless.ssid", ssid,
+                                       "connection.interface-name", iface] + sec, 20)
             else:
                 code, out, err = _run(["nmcli", "connection", "add", "type", "wifi", "ifname", iface, "con-name", HOTSPOT_CON, "autoconnect", "no",
                                        "ssid", ssid, "802-11-wireless.mode", "ap", "802-11-wireless.band", "bg", "ipv4.method", "shared"] + sec, 20)
@@ -6456,6 +6488,444 @@ def boot_hotspot():
 
 
 # ----------------------------------------------------------------------------
+# Second Wi-Fi adapter (USB stick): one adapter makes the own Wi-Fi, the other one joins a known network (campsite, phone)
+# -> repeater: the devices in the own Wi-Fi have internet (NetworkManager "shared" does the routing). Also: automatic change
+# to another known network when the internet is gone, devices in the own Wi-Fi without internet (cameras), and a guard
+# that listens for Wi-Fi jamming (deauthentication attacks) when the stick can listen ("monitor mode").
+# ----------------------------------------------------------------------------
+DUAL = {"on": False, "ap": "", "up": "", "adapters": [], "t": 0.0, "msg": "", "log": [], "sig": [], "drops": [], "unstable": False,
+        "switch_t": 0.0, "offline_since": None, "iso": "", "iso_msg": ""}
+WGUARD = {"state": "off", "iface": "", "phy": "", "msg": "", "deauth_min": [], "deauth_now": 0, "all_now": 0, "frames": 0,
+          "last_alarm": 0.0, "alarms": [], "count_on": False, "count_now": None, "count_hist": [], "chan": None}
+WIFI_CHIPS = {"brcmfmac": ("Broadcom (built in)", ""),
+              "mt76x2u": ("MediaTek MT7612U", "very good: own Wi-Fi, 5 GHz and listening (monitor) work"),
+              "mt7921u": ("MediaTek MT7921AU (Wi-Fi 6)", "very good: own Wi-Fi, 5 GHz and listening (monitor) work"),
+              "mt76x0u": ("MediaTek MT7610U", "good: 5 GHz and listening (monitor) work"),
+              "mt7601u": ("MediaTek MT7601U", "simple stick: only 2.4 GHz"),
+              "rt2800usb": ("Ralink RT5370 / RT3070", "only 2.4 GHz, listening (monitor) works"),
+              "ath9k_htc": ("Atheros AR9271", "only 2.4 GHz, listening (monitor) works"),
+              "rtl8xxxu": ("Realtek (rtl8xxxu)", "simple driver: no own Wi-Fi, no listening"),
+              "r8188eu": ("Realtek RTL8188EU", "simple driver: no listening"),
+              "rtw88_8821cu": ("Realtek RTL8811CU / RTL8821CU", "listening (monitor) mostly not possible"),
+              "rtw88_8822bu": ("Realtek RTL8812BU / RTL8822BU", "listening (monitor) mostly not possible"),
+              "rtw88_8723du": ("Realtek RTL8723DU", "only 2.4 GHz"),
+              "rtl88xxau": ("Realtek RTL8812AU / RTL8821AU (extra driver)", "extra driver needed"),
+              "8812au": ("Realtek RTL8812AU (extra driver)", "extra driver needed"),
+              "88XXau": ("Realtek RTL8812AU / RTL8821AU (extra driver)", "extra driver needed")}
+
+
+def _rd(p):
+    try:
+        with open(p) as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
+def _iw_phy(phy):
+    """What the radio can do: kinds of use (AP = own Wi-Fi, monitor = listening), 5 GHz."""
+    if not phy or shutil.which("iw") is None:
+        return [], False, ""
+    code, out, _e = _run(["iw", "phy", phy, "info"], 6)
+    if code != 0:
+        return [], False, ""
+    modes, in_modes = [], False
+    for ln in out.splitlines():
+        s = ln.strip()
+        if s.startswith("Supported interface modes"):
+            in_modes = True; continue
+        if in_modes:
+            if s.startswith("* "):
+                modes.append(s[2:].strip())
+            else:
+                in_modes = False
+    five = bool(re.search(r"\b5[1-8]\d\d(\.\d+)? MHz \[\d+\](?![^\n]*disabled)", out))
+    comb = ""
+    m = re.search(r"valid interface combinations:(.*?)(?:\n\t[A-Z]|\Z)", out, re.S)
+    if m:
+        comb = " ".join(m.group(1).split())[:200]
+    return modes, five, comb
+
+
+def wifi_adapters():
+    out = []
+    for i in _wifi_ifaces():
+        if i.startswith("mwmon"):
+            continue
+        base = f"/sys/class/net/{i}"
+        dev = os.path.realpath(base + "/device") if os.path.exists(base + "/device") else ""
+        usb = "/usb" in dev
+        drv = os.path.basename(os.path.realpath(base + "/device/driver")) if os.path.exists(base + "/device/driver") else ""
+        phy = _rd(base + "/phy80211/name")
+        prod, vid = "", ""
+        if usb:
+            p = os.path.dirname(dev)
+            vid = (_rd(p + "/idVendor") + ":" + _rd(p + "/idProduct")).strip(":")
+            prod = (_rd(p + "/manufacturer") + " " + _rd(p + "/product")).strip()
+        modes, five, comb = _iw_phy(phy)
+        chip, note = WIFI_CHIPS.get(drv, (prod or drv or "?", ""))
+        out.append({"iface": i, "usb": usb, "driver": drv, "chip": chip, "product": prod[:60], "usb_id": vid, "phy": phy,
+                    "mac": _rd(base + "/address"), "ap": ("AP" in modes) if modes else None, "monitor": ("monitor" in modes) if modes else None,
+                    "five": five, "note": note, "comb": comb, "up": _rd(base + "/operstate") == "up"})
+    return out
+
+
+def _nm_dev_autoconnect(iface, on):
+    if iface and shutil.which("nmcli"):
+        _run(["nmcli", "device", "set", iface, "autoconnect", "yes" if on else "no"], 10)
+
+
+def dual_roles():
+    """Which adapter does what. Default: the built-in one makes the own Wi-Fi (devices are near), the USB stick joins the
+    campsite / phone network (it often has a better antenna and may hang higher on a cable)."""
+    ads = wifi_adapters()
+    DUAL["adapters"] = ads; DUAL["t"] = time.time()
+    was = (DUAL["on"], DUAL["ap"], DUAL["up"])
+    if len(ads) < 2 or not CFG.get("wifi_dual", True) or wifi_backend() != "nm":
+        DUAL.update(on=False, ap="", up="",
+                    msg="" if len(ads) >= 2 or not ads else "only one Wi-Fi adapter")
+        if len(ads) >= 2 and wifi_backend() != "nm":
+            DUAL["msg"] = "needs NetworkManager"
+        if was[0]:
+            WIFI["iface"] = ads[0]["iface"] if ads else "wlan0"; WIFI.pop("ap_iface", None)
+            for a in ads:
+                _nm_dev_autoconnect(a["iface"], True)
+            dual_log(tr("Second Wi-Fi adapter: off - back to one adapter"))
+        return DUAL
+    intern = next((a for a in ads if not a["usb"]), ads[0])
+    stick = next((a for a in ads if a is not intern), ads[1])
+    ap, up = (stick, intern) if CFG.get("wifi_swap") else (intern, stick)
+    if ap["ap"] is False and up["ap"]:
+        ap, up = up, ap                                      # this adapter cannot make an own Wi-Fi
+    DUAL.update(on=True, ap=ap["iface"], up=up["iface"], msg="")
+    WIFI["iface"] = up["iface"]; WIFI["ap_iface"] = ap["iface"]
+    if was != (True, ap["iface"], up["iface"]):
+        _nm_dev_autoconnect(ap["iface"], False)              # the own Wi-Fi adapter does not join networks by itself
+        _nm_dev_autoconnect(up["iface"], True)
+        dual_log(trf("Second Wi-Fi adapter: own Wi-Fi on {ap} ({a}), internet over {up} ({b})", ap=ap["iface"], a=ap["chip"], up=up["iface"], b=up["chip"]))
+        if STATE["hotspot"].get("on") and was[1] and was[1] != ap["iface"]:
+            hotspot_switch_later(True, 0.5)                  # the own Wi-Fi moves to the other adapter
+        WIFI["refresh"] = True
+    return DUAL
+
+
+def dual_log(text, push=False):
+    DUAL["log"] = ([{"t": time.time(), "text": text}] + DUAL["log"])[:30]
+    log_event("sys", text)
+    if push and CFG.get("net_inet_notify", True):
+        w = WATCH_REF.get("w")
+        if w is not None:
+            threading.Thread(target=w.notifier.info, args=(text,), kwargs={"title": "{name}: " + tr("Network")}, daemon=True).start()
+
+
+def _visible_saved(iface):
+    """Known networks that can be seen now with this adapter, strongest first."""
+    code, out, _e = _run(["nmcli", "-t", "-f", "SSID,SIGNAL", "device", "wifi", "list", "ifname", iface, "--rescan", "auto"], 30)
+    if code != 0:
+        return []
+    sig = {}
+    for ln in out.splitlines():
+        f = _nm_split(ln)
+        if len(f) >= 2 and f[0]:
+            try:
+                sig[f[0]] = max(sig.get(f[0], 0), int(f[1]))
+            except ValueError:
+                pass
+    saved = [s for s in _nm_saved() if s["ssid"] in sig]
+    for s in saved:
+        s["signal"] = sig[s["ssid"]]
+    return sorted(saved, key=lambda s: (-s["prio"], -s["signal"]))
+
+
+class UplinkWatch:
+    """Every 10 s: internet there? Connection drops? -> after 3 min without internet try another known network (only with two
+    adapters - with one adapter the network automatic does it). Push message when the internet is back (with how long it was gone)."""
+    def __init__(self):
+        self.was_conn = None; self.n = 0; self.warned_unstable = 0.0
+        threading.Thread(target=self.loop, daemon=True, name="uplink").start()
+
+    def step(self):
+        now = time.time(); self.n += 1
+        if self.n % 6 == 1:
+            try:
+                dual_roles()
+            except Exception as e:
+                DUAL["msg"] = str(e)[:100]
+            noinet_apply()
+        net = STATE.get("net") or {}; w = STATE.get("wifi") or {}
+        online = net.get("online")
+        if online is False and DUAL["offline_since"] is None:
+            DUAL["offline_since"] = now
+        elif online and DUAL["offline_since"] is not None:
+            gone = now - DUAL["offline_since"]; DUAL["offline_since"] = None
+            if gone > 120:
+                dual_log(trf("Internet was gone for {min} min - it is back ({ssid})", min=int(gone / 60 + 0.5), ssid=w.get("ssid") or "?"), push=True)
+        conn = bool(w.get("connected")) and not w.get("ap")
+        if self.was_conn and not conn:
+            DUAL["drops"] = [t_ for t_ in DUAL["drops"] if now - t_ < 600] + [now]
+            good = [v for v in list(STATE.get("wifi_hist") or [])[-10:] if v is not None]
+            if len(DUAL["drops"]) >= 3 and good and max(good) > -70:
+                DUAL["unstable"] = True
+                if now - self.warned_unstable > 3600:
+                    self.warned_unstable = now
+                    dual_log(tr("Wi-Fi connection dropped 3 times in 10 minutes although the signal is good - interference or jamming?"),
+                             push=bool(CFG.get("wifi_guard")))
+        elif DUAL["drops"] and now - DUAL["drops"][-1] > 1800:
+            DUAL["unstable"] = False
+        self.was_conn = conn
+        if self.n % 6 == 0 and conn and w.get("dbm") is not None:
+            DUAL["sig"] = (DUAL["sig"] + [[int(now), w["dbm"]]])[-240:]          # one value per minute, 4 hours
+        if (DUAL["on"] and DUAL["offline_since"] and now - DUAL["offline_since"] > 180 and now - DUAL["switch_t"] > 300
+                and not WIFI.get("busy")):
+            DUAL["switch_t"] = now
+            cur = w.get("ssid") if conn else ""
+            cand = [s for s in _visible_saved(DUAL["up"]) if s["ssid"] != cur]
+            if cand:
+                c = cand[0]
+                code, _o, err = _run(["nmcli", "--wait", "40", "connection", "up", "uuid", c["id"], "ifname", DUAL["up"]], 50)
+                dual_log(trf("No internet over «{a}» - changed to «{b}»", a=cur or "?", b=c["ssid"]) if code == 0
+                         else trf("No internet - «{b}» did not work either", b=c["ssid"]))
+                WIFI["refresh"] = True
+
+    def loop(self):
+        time.sleep(15)
+        while True:
+            try:
+                self.step()
+            except Exception as e:
+                DUAL["msg"] = ("error: " + str(e))[:120]
+            time.sleep(10)
+
+
+# ---- devices in the own Wi-Fi without internet (e.g. cheap Wi-Fi cameras that "call home") ----
+def noinet_apply(force=False):
+    macs = sorted(m for m in (CFG.get("net_noinet") or []) if re.fullmatch(r"[0-9a-f]{2}(:[0-9a-f]{2}){5}", m))
+    key = ",".join(macs)
+    if key == DUAL["iso"] and not force:
+        return True
+    nft, ipt = shutil.which("nft"), shutil.which("iptables")
+    ok, err = False, ""
+    if nft:
+        _run([nft, "add", "table", "inet", "mw_iso"], 8); _run([nft, "delete", "table", "inet", "mw_iso"], 8)
+        if macs:
+            rules = ("table inet mw_iso {\n chain mwfwd {\n  type filter hook forward priority -10; policy accept;\n"
+                     f"  ether saddr {{ {', '.join(macs)} }} drop\n }}\n}}\n")
+            code, _o, e = _run([nft, "-f", "-"], 10, inp=rules)
+            ok, err = code == 0, e
+        else:
+            ok = True
+    elif ipt:
+        _run([ipt, "-D", "FORWARD", "-j", "MW_ISO"], 8); _run([ipt, "-F", "MW_ISO"], 8); _run([ipt, "-X", "MW_ISO"], 8)
+        ok = True
+        if macs:
+            code, _o, err = _run([ipt, "-N", "MW_ISO"], 8)
+            for m in macs:
+                c2, _o, e2 = _run([ipt, "-A", "MW_ISO", "-m", "mac", "--mac-source", m, "-j", "DROP"], 8)
+                if c2:
+                    err = e2
+            c3, _o, e3 = _run([ipt, "-I", "FORWARD", "1", "-j", "MW_ISO"], 8)
+            ok = code == 0 and c3 == 0 and not err
+            err = err or e3
+    else:
+        err = "nft / iptables missing"
+    if ok:
+        DUAL["iso"] = key; DUAL["iso_msg"] = ""
+        if macs or force:
+            log_event("sys", f"Without internet: {len(macs)} device(s)")
+    else:
+        DUAL["iso_msg"] = _perm_hint((err or "error").strip())[:160]
+    return ok
+
+
+# ---- Wi-Fi guard: listens with the stick ("monitor mode") for deauthentication frames = the usual Wi-Fi jamming attack ----
+_PRESENCE_SALT = {"day": "", "salt": b""}
+
+
+def presence_eval():
+    P = TOOLS["presence"]
+    if not (CFG.get("presence_macs") or CFG.get("presence_bt")):
+        return
+    now = time.time()
+    is_here = now - P.get("last", 0) < float(CFG.get("presence_gone_min", 10)) * 60
+    if is_here != P["here"]:
+        was = P["here"]; P.update(here=is_here, since=now)
+        if was is not None:
+            log_event("sys", "Presence: " + ("your device is back" if is_here else "your device is gone"))
+            if CFG.get("presence_auto"):
+                if is_here and CFG["armed"]:
+                    disarm(); log_event("sys", "Disarmed automatically (your device is here)")
+                elif not is_here and not CFG["armed"]:
+                    arm(); log_event("sys", "Armed automatically (your device is gone)")
+
+
+class WifiGuard:
+    def __init__(self):
+        self.sock = None; self.mon = ""
+        threading.Thread(target=self.loop, daemon=True, name="wifiguard").start()
+
+    def want(self):
+        return bool(CFG.get("wifi_guard") or CFG.get("wifi_count") or (CFG.get("presence_macs") and CFG.get("wifi_presence")))
+
+    def pick(self):
+        ads = DUAL["adapters"] or wifi_adapters()
+        cand = [a for a in ads if a["monitor"] and a["driver"] != "brcmfmac" and a["phy"]]
+        cand.sort(key=lambda a: (a["iface"] != DUAL.get("up"), not a["usb"]))
+        return cand[0] if cand else None
+
+    def open(self):
+        import socket
+        a = self.pick()
+        if a is None:
+            WGUARD.update(state="no adapter", msg="no Wi-Fi adapter here can listen (monitor mode) - e.g. a stick with MediaTek MT7612U / MT7921AU")
+            return False
+        name = "mwmon0"
+        if not os.path.exists(f"/sys/class/net/{name}"):
+            code, _o, err = _run(["iw", "phy", a["phy"], "interface", "add", name, "type", "monitor"], 8)
+            if code != 0:
+                WGUARD.update(state="not possible", msg=_perm_hint(err.strip() or "monitor mode not possible")[:160]); return False
+        _run(["ip", "link", "set", name, "up"], 8)
+        if not a["up"] or (a["iface"] not in (DUAL.get("up"), DUAL.get("ap"), WIFI.get("iface"))):
+            ch = None                                         # the stick is free: listen on the channel of the own Wi-Fi
+            code, out, _e = _run(["iw", "dev", DUAL.get("ap") or WIFI.get("iface") or "wlan0", "info"], 5)
+            m = re.search(r"channel (\d+)", out or "")
+            if m:
+                ch = m.group(1); _run(["iw", "dev", name, "set", "channel", ch], 5)
+        try:
+            s_ = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(3))
+            s_.bind((name, 0)); s_.settimeout(1.0)
+        except (OSError, AttributeError) as e:
+            WGUARD.update(state="not possible", msg=str(e)[:160]); return False
+        self.sock, self.mon = s_, name
+        WGUARD.update(state="listening", iface=a["iface"], phy=a["phy"], msg="")
+        log_event("sys", f"Wi-Fi guard: listening with {a['iface']} ({a['chip']})")
+        return True
+
+    def close(self):
+        if self.sock is not None:
+            try:
+                self.sock.close()
+            except OSError:
+                pass
+        self.sock = None
+        if self.mon:
+            _run(["iw", "dev", self.mon, "del"], 8); self.mon = ""
+        WGUARD["state"] = "off"
+
+    def own_bssids(self):
+        own = set()
+        for i in (DUAL.get("ap"), DUAL.get("up"), WIFI.get("iface")):
+            if i:
+                m = _rd(f"/sys/class/net/{i}/address")
+                if m:
+                    own.add(m.lower())
+                code, out, _e = _run(["iw", "dev", i, "link"], 4)
+                mm = re.search(r"Connected to ([0-9a-f:]{17})", out or "")
+                if mm:
+                    own.add(mm.group(1).lower())
+        return own
+
+    def loop(self):
+        time.sleep(20)
+        minute_t = time.time(); dea = dall = 0; seen = {}; own = set(); own_t = 0.0; mine = set()
+        while True:
+            if not self.want():
+                if self.sock is not None:
+                    self.close()
+                time.sleep(5); continue
+            if self.sock is None:
+                if not self.open():
+                    time.sleep(120); continue
+            now = time.time()
+            if now - own_t > 60:
+                own = self.own_bssids(); own_t = now; mine = set(CFG.get("presence_macs") or [])
+                d_ = datetime.now().strftime("%Y%m%d")
+                if _PRESENCE_SALT["day"] != d_:
+                    _PRESENCE_SALT.update(day=d_, salt=os.urandom(16)); seen.clear()
+            try:
+                pkt = self.sock.recv(4096)
+            except OSError as e:
+                if "timed out" not in str(e):
+                    WGUARD.update(state="error", msg=str(e)[:120]); self.close(); time.sleep(30); continue
+                pkt = b""
+            if len(pkt) > 8:
+                rl = pkt[2] | (pkt[3] << 8)
+                f = pkt[rl:]
+                if len(f) >= 16:
+                    fc = f[0]; typ = (fc >> 2) & 3; sub = (fc >> 4) & 15
+                    WGUARD["frames"] += 1
+                    a2 = f[10:16].hex(":")
+                    if typ == 0 and sub in (10, 12) and len(f) >= 22:          # disassociation / deauthentication
+                        dall += 1
+                        if f[16:22].hex(":") in own or a2 in own or f[4:10].hex(":") in own:
+                            dea += 1
+                    elif typ == 0 and sub == 4 and CFG.get("wifi_count"):    # probe request: only counted, never stored
+                        import hashlib
+                        seen[hashlib.sha256(_PRESENCE_SALT["salt"] + f[10:16]).hexdigest()[:12]] = now
+                    if mine and a2 in mine:
+                        TOOLS["presence"]["last"] = now
+            if now - minute_t >= 60:
+                minute_t = now
+                WGUARD["deauth_min"] = (WGUARD["deauth_min"] + [[int(now), dea, dall]])[-120:]
+                WGUARD["deauth_now"], WGUARD["all_now"] = dea, dall
+                if CFG.get("wifi_count"):
+                    for k in [k for k, t_ in seen.items() if now - t_ > 300]:
+                        seen.pop(k, None)
+                    WGUARD["count_now"] = len(seen)
+                    WGUARD["count_hist"] = (WGUARD["count_hist"] + [[int(now), len(seen)]])[-288:]
+                else:
+                    seen.clear(); WGUARD["count_now"] = None
+                if CFG.get("wifi_guard") and (dea >= int(CFG.get("wifi_guard_thr", 20)) or dall >= 300) and (not WGUARD["last_alarm"] or now - WGUARD["last_alarm"] > 1800):
+                    WGUARD["last_alarm"] = now
+                    txt = trf("Wi-Fi jamming: {n} disconnect frames in one minute ({all} in total on the channel)", n=dea, all=dall)
+                    WGUARD["alarms"] = ([{"t": now, "n": dea, "all": dall}] + WGUARD["alarms"])[:20]
+                    log_event("tamper", txt)
+                    w = WATCH_REF.get("w")
+                    if w is not None:
+                        w.notifier.alert("{name}: " + tr("Wi-Fi jamming attack"), txt, getattr(w, "frame_out", None))
+                dea = dall = 0
+                presence_eval()
+
+
+def dual_state():
+    hs = STATE.get("hotspot") or {}; w = STATE.get("wifi") or {}
+    return {"on": DUAL["on"], "ap": DUAL["ap"], "up": DUAL["up"], "adapters": DUAL["adapters"], "msg": DUAL["msg"], "log": DUAL["log"][:12],
+            "sig": DUAL["sig"][-120:], "unstable": DUAL["unstable"], "offline_since": DUAL["offline_since"], "iso_msg": DUAL["iso_msg"],
+            "repeater": bool(DUAL["on"] and hs.get("on") and w.get("connected")), "hotspot": {"on": hs.get("on"), "ssid": hs.get("ssid"), "clients": hs.get("clients")},
+            "uplink": {"ssid": w.get("ssid"), "dbm": w.get("dbm"), "pct": w.get("pct"), "connected": w.get("connected")},
+            "online": (STATE.get("net") or {}).get("online"),
+            "cfg": {k: CFG.get(k) for k in ("wifi_dual", "wifi_swap", "wifi_guard", "wifi_guard_thr", "wifi_count", "wifi_presence", "net_inet_notify", "net_noinet")},
+            "guard": {k: WGUARD[k] for k in ("state", "iface", "msg", "deauth_min", "deauth_now", "all_now", "frames", "alarms", "count_now", "count_hist")}}
+
+
+def dual_set(key, value):
+    if key in ("wifi_dual", "wifi_swap"):
+        CFG[key] = bool(value); save_settings(); dual_roles()
+        if STATE["hotspot"].get("on"):
+            hotspot_switch_later(True, 0.5)
+        return True, ""
+    if key in ("wifi_guard", "wifi_count", "wifi_presence", "net_inet_notify"):
+        CFG[key] = bool(value); save_settings(); return True, ""
+    if key == "wifi_guard_thr":
+        try:
+            CFG[key] = int(min(500, max(5, int(value)))); save_settings(); return True, ""
+        except (TypeError, ValueError):
+            return False, "bad value"
+    return False, "unknown setting"
+
+
+def noinet_set(mac, on):
+    mac = str(mac or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{2}(:[0-9a-f]{2}){5}", mac):
+        return False, "bad address"
+    L = [m for m in (CFG.get("net_noinet") or []) if m != mac]
+    if on:
+        L.append(mac)
+    CFG["net_noinet"] = L[-30:]; save_settings()
+    ok = noinet_apply(force=True)
+    return ok, "" if ok else DUAL["iso_msg"]
+
+
+# ----------------------------------------------------------------------------
 # Network automatic: known networks first (e.g. the phone hotspot = internet + push messages), otherwise the own Wi-Fi.
 #   start / connection lost: wait auto_wait seconds for a known network, then switch the own Wi-Fi on
 #   own Wi-Fi on: every auto_retry minutes look for known networks again - only when no device is connected to the Pi
@@ -6502,6 +6972,14 @@ class NetAuto:
             return
         now = time.monotonic()
         hs, w = STATE["hotspot"] or {}, STATE["wifi"] or {}
+        if DUAL["on"]:
+            self.lost_since = None; self.next_retry = None
+            if not hs.get("on"):
+                ok, err = hotspot_set(True, persist=False); hotspot_refresh()
+                self._set("own Wi-Fi on" if ok else "own Wi-Fi failed: " + err[:100]); return
+            self._set(f"own Wi-Fi on + internet from «{w.get('ssid') or '?'}»" if w.get("connected")
+                      else "own Wi-Fi on - the second adapter looks for known networks")
+            return
         retry = max(0.0, float(CFG["auto_retry"])) * 60.0
         if hs.get("on"):
             self.lost_since = None
@@ -10299,7 +10777,7 @@ SOLARMON = None
 #   sends what it does (servos, lights, relays, sound, armed) about 10 x per second and takes the world from the answer.
 # ----------------------------------------------------------------------------
 SIM = {"t": 0.0, "ok": False, "msg": "off", "dark": False, "ambient": 15.0, "pressure": 1013.0, "wind": 0.0, "last_event": 0,
-       "seen_event": 0, "info": None, "sent": 0}
+       "seen_event": 0, "info": None, "sent": 0, "since": 0.0, "errs": 0, "rtt": 0.0, "events_n": 0, "th_times": deque(maxlen=30)}
 
 
 def sim_base():
@@ -10307,8 +10785,11 @@ def sim_base():
     return u if re.match(r"^https?://[A-Za-z0-9.\-\[\]:]{1,120}$", u) else "http://127.0.0.1:8765"
 
 
+_SIM_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))   # the simulator is in the own network: never via a proxy
+
+
 def _sim_get(path, timeout=2.0):
-    with urllib.request.urlopen(urllib.request.Request(sim_base() + path, headers={"User-Agent": "MotionWatch"}), timeout=timeout) as r:
+    with _SIM_OPENER.open(urllib.request.Request(sim_base() + path, headers={"User-Agent": "MotionWatch"}), timeout=timeout) as r:
         return r.read(), r.headers
 
 
@@ -10329,7 +10810,7 @@ class SimThermalSource:
         try:
             data, hd = _sim_get("/thermal.bin", 2.0)
             a = np.frombuffer(data, dtype="<f4").reshape(int(hd["X-Height"]), int(hd["X-Width"])).copy()
-            self.size = (a.shape[1], a.shape[0])
+            self.size = (a.shape[1], a.shape[0]); SIM["th_times"].append(time.time())
             return True, a
         except Exception:
             return False, None
@@ -10441,6 +10922,71 @@ def qs_layout_set(order, hidden):
     return True
 
 
+_PROJ = {"t": 0.0, "d": {}, "busy": False}
+_START_T = time.time()
+
+
+def _dir_mb(path, skip=()):
+    tot = 0; n = 0
+    for root_, dirs, files in os.walk(path):
+        dirs[:] = [x for x in dirs if os.path.join(root_, x) not in skip]
+        for f in files:
+            try:
+                tot += os.path.getsize(os.path.join(root_, f)); n += 1
+            except OSError:
+                pass
+    return round(tot / 1024 ** 2, 1), n
+
+
+def project_info():
+    """Size of the program and its data, and what it runs on (refreshed once a minute)."""
+    if time.time() - _PROJ["t"] > 60 and not _PROJ.get("busy"):
+        _PROJ["busy"] = True; _PROJ["t"] = time.time()
+        threading.Thread(target=_project_scan, daemon=True, name="projinfo").start()     # walking folders: not in the request
+    d = dict(_PROJ["d"])
+    try:
+        with open("/proc/self/status") as f:
+            d["ram_mb"] = round(int(next(l for l in f if l.startswith("VmRSS:")).split()[1]) / 1024)
+    except (OSError, StopIteration, ValueError):
+        d["ram_mb"] = None
+    d["run_s"] = int(time.time() - _START_T)
+    d["version"] = APP_VERSION
+    return d
+
+
+def _project_scan():
+    d = {}
+    try:
+        try:
+            me = os.path.abspath(__file__)
+            d["file"] = os.path.basename(me); d["file_kb"] = round(os.path.getsize(me) / 1024)
+            with open(me, "rb") as f:
+                d["lines"] = f.read().count(b"\n")
+        except OSError:
+            pass
+        rec = os.path.abspath(CFG["record_dir"])
+        d["rec_mb"], d["rec_n"] = _dir_mb(rec) if os.path.isdir(rec) else (0, 0)
+        d["data_mb"], d["data_n"] = _dir_mb(DATA_DIR, skip=(rec,))
+        d["sim_mb"] = _dir_mb(sim_dir())[0] if os.path.isdir(sim_dir()) else 0
+        try:
+            d["settings_kb"] = round(os.path.getsize(SETTINGS_FILE) / 1024, 1)
+        except OSError:
+            pass
+        d["python"] = sys.version.split()[0]
+        try:
+            with open("/proc/device-tree/model", "rb") as f:
+                d["model"] = f.read().decode("utf-8", "replace").strip("\x00 \n")[:60]
+        except OSError:
+            d["model"] = ""
+        try:
+            with open("/etc/os-release") as f:
+                d["os"] = next((l.split("=", 1)[1].strip().strip('"') for l in f if l.startswith("PRETTY_NAME=")), "")[:60]
+        except OSError:
+            d["os"] = ""
+    finally:
+        _PROJ.update(t=time.time(), d=d, busy=False)
+
+
 def sim_control(d=None):
     """The video scenarios (and other switches) of the simulator: GET (d=None) or POST /control."""
     if d is None:
@@ -10448,7 +10994,7 @@ def sim_control(d=None):
         return json.loads(data)
     req = urllib.request.Request(sim_base() + "/control", data=json.dumps(d).encode(),
                                  headers={"Content-Type": "application/json", "User-Agent": "MotionWatch"})
-    with urllib.request.urlopen(req, timeout=8.0) as r:
+    with _SIM_OPENER.open(req, timeout=8.0) as r:
         return json.loads(r.read())
 
 
@@ -10525,8 +11071,885 @@ def sim_autoupdate():
     return True
 
 
+# ----------------------------------------------------------------------------
+# Tools (page /tools): network scanner, Wi-Fi surroundings, internet test, security check, Bluetooth scanner with
+# tracker warning and presence, focus assistant, servo test, speaker / microphone test, memory card test,
+# diagnosis package, power calculator.
+# ----------------------------------------------------------------------------
+TOOLS = {"net": {"running": False, "t": 0.0, "devices": [], "net": "", "secs": 0.0, "msg": ""},
+         "wifi": {"running": False, "t": 0.0, "nets": [], "channels": {}, "best": None, "own": None, "msg": ""},
+         "speed": {"running": False, "msg": "", "hist": []},
+         "sec": {"running": False, "t": 0.0, "items": []},
+         "bt": {"running": False, "t": 0.0, "devices": [], "msg": "", "trackers": {}},
+         "focus": {"t": 0.0, "val": None, "best": 0.0, "hist": []},
+         "servo": {"running": False, "steps": [], "msg": ""},
+         "sd": {"running": False, "t": 0.0, "res": {}, "msg": ""},
+         "presence": {"here": None, "since": 0.0, "who": ""}}
+OUI_BUILTIN = {"B827EB": "Raspberry Pi", "DCA632": "Raspberry Pi", "E45F01": "Raspberry Pi", "28CDC1": "Raspberry Pi", "2CCF67": "Raspberry Pi",
+               "D83ADD": "Raspberry Pi", "240AC4": "Espressif (ESP32)", "30AEA4": "Espressif (ESP32)", "84CCA8": "Espressif (ESP32)",
+               "A4CF12": "Espressif (ESP32)", "246F28": "Espressif (ESP32)", "3C71BF": "Espressif (ESP32)", "001132": "Synology"}
+_OUI = {"loaded": False, "map": {}}
+
+
+def oui_vendor(mac):
+    """Maker of a network device from the first half of its address (MAC). A random address = a phone with privacy mode."""
+    m = re.sub(r"[^0-9A-Fa-f]", "", mac or "").upper()
+    if len(m) < 6:
+        return ""
+    if int(m[1], 16) & 2:
+        return "private address (phone / tablet)"
+    if not _OUI["loaded"]:
+        _OUI["loaded"] = True
+        for p in ("/usr/share/ieee-data/oui.txt", "/usr/share/arp-scan/ieee-oui.txt", "/usr/share/nmap/nmap-mac-prefixes"):
+            try:
+                with open(p, encoding="utf-8", errors="replace") as f:
+                    for line in f:
+                        mm = re.match(r"^([0-9A-F]{2})[-:]?([0-9A-F]{2})[-:]?([0-9A-F]{2})\s+(?:\(hex\)\s+)?(.+)$", line.strip(), re.I)
+                        if mm:
+                            _OUI["map"][(mm.group(1) + mm.group(2) + mm.group(3)).upper()] = mm.group(4).strip()[:40]
+                if _OUI["map"]:
+                    break
+            except OSError:
+                continue
+    return _OUI["map"].get(m[:6]) or OUI_BUILTIN.get(m[:6], "")
+
+
+def _arp_table():
+    out = {}
+    try:
+        with open("/proc/net/arp") as f:
+            next(f)
+            for line in f:
+                p = line.split()
+                if len(p) >= 6 and p[2] != "0x0" and p[3] != "00:00:00:00:00:00":
+                    out[p[0]] = p[3].lower()
+    except (OSError, StopIteration):
+        pass
+    return out
+
+
+def net_scan(alert=False):
+    """All devices in the own network: wake every address (ping), read the address table, names and makers."""
+    T = TOOLS["net"]
+    if T["running"]:
+        return False
+    from concurrent.futures import ThreadPoolExecutor
+    import socket
+    T.update(running=True, msg="")
+    t0 = time.time()
+    try:
+        ip = _local_ipv4(); base = ".".join(ip.split(".")[:3])
+        mine_ips = {ip}; bases = [] if ip.startswith("127.") else [base]
+        code_, out_, _e = _run(["ip", "-4", "-o", "addr", "show"], 5)
+        hs_if = DUAL.get("ap") or (WIFI.get("iface") if STATE["hotspot"].get("on") else "")
+        hs_base = ""
+        for ln in (out_ or "").splitlines():
+            m_ = re.search(r"^\d+:\s+(\S+)\s+inet (\d+\.\d+\.\d+\.\d+)/(\d+)", ln)
+            if not m_ or m_.group(1) == "lo" or m_.group(1).startswith(("docker", "tailscale", "veth", "br-")):
+                continue
+            a_ = m_.group(2)
+            if not ipaddress.ip_address(a_).is_private or a_.startswith("127."):
+                continue
+            mine_ips.add(a_); b_ = ".".join(a_.split(".")[:3])
+            if m_.group(1) == hs_if:
+                hs_base = b_
+            if b_ not in bases and len(bases) < 3:
+                bases.append(b_)
+        if not bases:
+            T.update(msg="no network"); return False
+        base = bases[0]
+        hosts = [f"{b_}.{i}" for b_ in bases for i in range(1, 255)]
+        ping = shutil.which("ping")
+        alive = set()
+
+        def poke(h):
+            if ping:
+                try:
+                    if subprocess.run([ping, "-c", "1", "-W", "1", h], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=3).returncode == 0:
+                        alive.add(h)
+                except (OSError, subprocess.SubprocessError):
+                    pass
+            else:
+                try:
+                    s_ = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s_.sendto(b"", (h, 9)); s_.close()
+                except OSError:
+                    pass
+        with ThreadPoolExecutor(max_workers=64) as ex:
+            list(ex.map(poke, hosts))
+        time.sleep(0.5)
+        arp = _arp_table()
+        addrs = sorted(set(arp) | alive | {ip}, key=lambda a: [int(x) for x in a.split(".")])
+        addrs = [a for a in addrs if ".".join(a.split(".")[:3]) in bases]
+
+        def name_of(a):
+            try:
+                socket.setdefaulttimeout(1.0)
+                return socket.gethostbyaddr(a)[0][:50]
+            except (OSError, UnicodeError):
+                return ""
+            finally:
+                socket.setdefaulttimeout(None)
+        with ThreadPoolExecutor(max_workers=32) as ex:
+            names = dict(zip(addrs, ex.map(name_of, addrs)))
+        known = CFG.get("net_known") or {}
+        gw = ""
+        try:
+            with open("/proc/net/route") as f:
+                for line in list(f)[1:]:
+                    p = line.split()
+                    if p[1] == "00000000":
+                        gw = socket.inet_ntoa(bytes.fromhex(p[2])[::-1]); break
+        except (OSError, ValueError, IndexError):
+            pass
+        devs = []
+        noinet = set(CFG.get("net_noinet") or [])
+        for a in addrs:
+            mac = arp.get(a, "")
+            kn = known.get(mac) if mac else None
+            role = "this device" if a in mine_ips else ("router" if a == gw else "")
+            hs_ = bool(hs_base) and a.startswith(hs_base + ".")
+            devs.append({"ip": a, "mac": mac, "name": names.get(a, ""), "vendor": oui_vendor(mac), "known": kn, "role": role,
+                         "hs": hs_, "noinet": mac in noinet,
+                         "new": bool(mac) and kn is None and a not in mine_ips and bool(T.get("first_done")) and mac not in (T.get("seen") or {})})
+        seen = T.setdefault("seen", {})
+        for d_ in devs:
+            if d_["mac"]:
+                seen[d_["mac"]] = time.time()
+        newbies = [d_ for d_ in devs if d_["new"] and d_["mac"] not in (CFG.get("net_known") or {})]
+        T.update(devices=devs, net=" + ".join(f"{b_}.0/24" for b_ in bases), t=time.time(), secs=round(time.time() - t0, 1))
+        presence_update(devs)
+        if alert and CFG.get("net_watch") and newbies and T.get("first_done"):
+            txt = ", ".join(f"{d_['ip']} ({d_['vendor'] or d_['name'] or d_['mac']})" for d_ in newbies[:5])
+            log_event("sys", f"New device in the network: {txt}")
+            w = WATCH_REF.get("w")
+            if w is not None:
+                w.notifier.alert("{name}: " + tr("new device in the network"), txt, None)
+        T["first_done"] = True
+        return True
+    finally:
+        T["running"] = False
+
+
+def net_known_set(mac, name):
+    mac = (mac or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{2}(:[0-9a-f]{2}){5}", mac):
+        return False
+    k = dict(CFG.get("net_known") or {})
+    if name is None:
+        k.pop(mac, None)
+    else:
+        k[mac] = str(name)[:40] or "?"
+    CFG["net_known"] = k; save_settings()
+    for d_ in TOOLS["net"]["devices"]:
+        if d_["mac"] == mac:
+            d_["known"] = k.get(mac); d_["new"] = False
+    return True
+
+
+def presence_update(devs):
+    """«My phone is here»: one of the marked devices is in the network. Optional: disarm when it comes, arm when it is gone."""
+    mine = set(CFG.get("presence_macs") or [])
+    if not mine:
+        return
+    P = TOOLS["presence"]
+    here = [d_ for d_ in devs if d_["mac"] in mine]
+    if here:
+        P["last"] = time.time(); P["who"] = ", ".join((d_.get("known") or d_["ip"]) for d_ in here)
+    presence_eval()
+
+
+def wifi_survey():
+    """Wi-Fi networks around (name, channel, signal) and the best channel for the own hotspot. With two adapters the one that
+    is not the own Wi-Fi searches - the own Wi-Fi is not interrupted."""
+    T = TOOLS["wifi"]
+    if T["running"]:
+        return False
+    T.update(running=True, msg="")
+    try:
+        nets = []
+        nm = shutil.which("nmcli")
+        if nm:
+            r = subprocess.run([nm, "-t", "-f", "IN-USE,SSID,BSSID,CHAN,FREQ,SIGNAL,SECURITY", "dev", "wifi", "list", "--rescan", "yes"]
+                               + (["ifname", DUAL["up"]] if DUAL["on"] else []),
+                               capture_output=True, text=True, timeout=30)
+            for line in r.stdout.splitlines():
+                p = re.split(r"(?<!\\):", line)
+                if len(p) < 7:
+                    continue
+                p = [x.replace("\\:", ":") for x in p]
+                try:
+                    nets.append({"own": p[0] == "*", "ssid": p[1][:32] or "(" + tr("hidden") + ")", "bssid": p[2], "ch": int(p[3] or 0),
+                                 "mhz": int(re.sub(r"\D", "", p[4]) or 0), "signal": int(p[5] or 0), "sec": p[6][:20]})
+                except ValueError:
+                    continue
+        if not nets:
+            T["msg"] = "no Wi-Fi scan possible (NetworkManager / nmcli missing or no Wi-Fi)"
+        ch = {}
+        for n in nets:
+            if 1 <= n["ch"] <= 14:
+                ch[n["ch"]] = ch.get(n["ch"], 0) + max(1, n["signal"])
+        load = {c: sum(v * max(0, 1 - abs(c - k) / 5.0) for k, v in ch.items()) for c in (1, 6, 11)}     # channels overlap
+        best = min(load, key=load.get) if nets else None
+        nets.sort(key=lambda n: -n["signal"])
+        T.update(nets=nets[:60], channels={str(k): v for k, v in sorted(ch.items())}, best=best, load={str(k): round(v) for k, v in load.items()},
+                 own=next((n for n in nets if n["own"]), None), t=time.time())
+        return True
+    except (OSError, subprocess.SubprocessError) as e:
+        T["msg"] = str(e)[:120]; return False
+    finally:
+        T["running"] = False
+
+
+def speed_test():
+    """Internet: ping, name lookup and a small download / upload (about 6 MB in total - mind the volume of a mobile contract)."""
+    T = TOOLS["speed"]
+    if T["running"]:
+        return False
+    import socket
+    T.update(running=True, msg="testing")
+    res = {"t": time.time()}
+    try:
+        ping = shutil.which("ping")
+        if ping:
+            r = subprocess.run([ping, "-c", "4", "-W", "2", "1.1.1.1"], capture_output=True, text=True, timeout=15)
+            m = re.search(r"= [\d.]+/([\d.]+)/", r.stdout)
+            res["ping_ms"] = round(float(m.group(1)), 1) if m else None
+            m2 = re.search(r"(\d+)% packet loss", r.stdout)
+            res["loss"] = int(m2.group(1)) if m2 else None
+        t0 = time.time()
+        try:
+            socket.getaddrinfo("speed.cloudflare.com", 443); res["dns_ms"] = round((time.time() - t0) * 1000, 1)
+        except OSError:
+            res["dns_ms"] = None
+        t0 = time.time()
+        with urllib.request.urlopen("https://speed.cloudflare.com/__down?bytes=5000000", timeout=30) as r:
+            n = len(r.read())
+        res["down_mbit"] = round(n * 8 / 1e6 / max(0.01, time.time() - t0), 1)
+        data = os.urandom(1000000); t0 = time.time()
+        req = urllib.request.Request("https://speed.cloudflare.com/__up", data=data, headers={"Content-Type": "application/octet-stream"})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            r.read()
+        res["up_mbit"] = round(len(data) * 8 / 1e6 / max(0.01, time.time() - t0), 1)
+        T["msg"] = ""
+    except Exception as e:
+        res["error"] = str(e)[:100]; T["msg"] = res["error"]
+    finally:
+        T["hist"] = (T["hist"] + [res])[-20:]
+        T["running"] = False
+        log_event("sys", "Internet test: " + (f"{res.get('down_mbit')} / {res.get('up_mbit')} Mbit/s, ping {res.get('ping_ms')} ms" if "error" not in res else res["error"]))
+    return True
+
+
+def security_check():
+    """What is open and what could be risky: password, https, open ports, router (UPnP), IPv6, SSH."""
+    T = TOOLS["sec"]
+    items = []
+
+    def add(level, text, tip="", arg=""):
+        items.append({"level": level, "text": text, "tip": tip, "arg": arg})
+    add("ok" if CFG["web_password"] else "bad", "Web password " + ("set" if CFG["web_password"] else "missing"),
+        "" if CFG["web_password"] else "Everybody in the network can operate Motion Watch")
+    add("ok" if WEB_OPTS.get("https") else "warn", "Secure page (https) " + ("on" if WEB_OPTS.get("https") else "off"),
+        "" if WEB_OPTS.get("https") else "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)")
+    ports = set()
+    try:
+        for fn in ("/proc/net/tcp", "/proc/net/tcp6"):
+            with open(fn) as f:
+                for line in list(f)[1:]:
+                    p = line.split()
+                    if p[3] == "0A":                                  # listening
+                        la, lp = p[1].split(":")
+                        if la not in ("0100007F", "00000000000000000000000001000000"):
+                            ports.add(int(lp, 16))
+    except (OSError, ValueError, IndexError):
+        pass
+    names = {22: "SSH", 80: "web", 443: "https", 5000: "Motion Watch", 5001: "Motion Watch https", 8554: "RTSP (camera stream)", 1883: "MQTT",
+             8765: "simulator", 5900: "VNC", 3389: "remote desktop", 139: "Windows share", 445: "Windows share", 53: "DNS"}
+    for p in sorted(ports)[:30]:
+        lvl = "warn" if p in (5900, 3389, 139, 445, 1883) else "info"
+        add(lvl, "Open in the network: port", "", f"{p}" + (f" ({names[p]})" if p in names else ""))
+    try:
+        sshd = open("/etc/ssh/sshd_config").read()
+        if 22 in ports:
+            pw = re.search(r"^\s*PasswordAuthentication\s+no", sshd, re.M) is None
+            add("warn" if pw else "ok", "SSH: login with password " + ("allowed" if pw else "off (keys only)"),
+                "Use a strong password or keys" if pw else "")
+    except OSError:
+        pass
+    v6 = []
+    try:
+        with open("/proc/net/if_inet6") as f:
+            for line in f:
+                a = line.split()[0]
+                if a.startswith(("2", "3")):
+                    v6.append(a)
+    except OSError:
+        pass
+    if v6:
+        add("warn", "Public IPv6 address present", "Depending on the router the Pi can be reached directly from the internet - keep the web password on")
+    up = shutil.which("upnpc")
+    if up:
+        try:
+            r = subprocess.run([up, "-l"], capture_output=True, text=True, timeout=15)
+            maps = [l for l in r.stdout.splitlines() if re.match(r"\s*\d+\s+(TCP|UDP)", l)]
+            mine = [l for l in maps if _local_ipv4() in l]
+            add("bad" if mine else "ok", "Router forwards ports to this device:" if mine else "No port forwarding of the router to this device (UPnP)", "", str(len(mine)) if mine else "")
+        except (OSError, subprocess.SubprocessError):
+            pass
+    try:
+        with urllib.request.urlopen("https://1.1.1.1/cdn-cgi/trace", timeout=8) as r:
+            tr_ = r.read().decode(errors="replace")
+        pub = re.search(r"^ip=(.+)$", tr_, re.M)
+        if pub:
+            ip_ = pub.group(1).strip()
+            cg = ip_.startswith("100.") and 64 <= int(ip_.split(".")[1]) <= 127
+            add("info", "Address in the internet:", "shared address of the mobile network - not reachable from outside" if cg else "", ip_)
+    except Exception:
+        add("info", "Internet not reachable")
+    if (STATE.get("remote_ts") or {}).get("state") == "Running":
+        add("ok", "Tailscale: access from outside only for your own devices")
+    T.update(items=items, t=time.time())
+    return True
+
+
+def bt_scan(secs=10):
+    """Bluetooth devices around. Trackers (Apple Find My, Samsung SmartTag, Tile) that stay near for a long time = warning."""
+    T = TOOLS["bt"]
+    if T["running"]:
+        return False
+    T.update(running=True, msg="")
+
+    async def go():
+        from bleak import BleakScanner
+        found = await BleakScanner.discover(timeout=secs, return_adv=True)
+        out = []
+        for addr, (dev, adv) in found.items():
+            md = adv.manufacturer_data or {}; uu = [u.lower() for u in (adv.service_uuids or [])]
+            kind = ""
+            if 0x004C in md and len(md[0x004C]) > 1 and md[0x004C][0] == 0x12:
+                kind = "Apple Find My (AirTag or a lost Apple device)"
+            elif any(u.startswith("0000fd5a") for u in uu):
+                kind = "Samsung SmartTag"
+            elif any(u.startswith("0000feed") for u in uu):
+                kind = "Tile"
+            elif 0x004C in md:
+                kind = "Apple device"
+            elif 0x0075 in md:
+                kind = "Samsung device"
+            elif 0x0006 in md:
+                kind = "Microsoft device"
+            elif 0x0499 in md:
+                kind = "RuuviTag"
+            out.append({"addr": addr, "name": (adv.local_name or dev.name or "")[:40], "rssi": adv.rssi, "kind": kind,
+                        "tracker": kind.startswith(("Apple Find", "Samsung SmartTag", "Tile"))})
+        return out
+    try:
+        import asyncio
+        devs = asyncio.run(go())
+        devs.sort(key=lambda d_: -(d_["rssi"] or -200))
+        now = time.time(); tk = T["trackers"]
+        for d_ in devs:
+            if d_["tracker"]:
+                x = tk.setdefault(d_["addr"], {"first": now, "kind": d_["kind"]}); x["last"] = now
+        for a in [a for a, x in tk.items() if now - x["last"] > 1800]:
+            tk.pop(a, None)
+        for a, x in tk.items():
+            stay = (x["last"] - x["first"]) / 60.0
+            if stay >= float(CFG.get("bt_tracker_min", 30)) and not x.get("warned") and CFG.get("bt_tracker_warn"):
+                x["warned"] = True
+                log_event("sys", f"Unknown tracker near for {stay:.0f} min: {x['kind']} ({a})")
+                w = WATCH_REF.get("w")
+                if w is not None:
+                    w.notifier.alert("{name}: " + tr("unknown tracker nearby"), f"{x['kind']} · {stay:.0f} min", None)
+        mine = set(CFG.get("presence_bt") or [])
+        if mine and any(d_["addr"].lower() in mine for d_ in devs):
+            TOOLS["presence"]["last"] = now
+        T.update(devices=devs[:80], t=now)
+        return True
+    except ImportError:
+        T["msg"] = "Bluetooth scanner needs: sudo apt install python3-bleak"; return False
+    except Exception as e:
+        T["msg"] = str(e)[:120]; return False
+    finally:
+        T["running"] = False
+
+
+def focus_value():
+    """Sharpness of the middle of the picture (variance of the Laplace filter): higher = sharper."""
+    w = WATCH_REF.get("w")
+    if w is None:
+        return None
+    w.raw_until = time.time() + 3                    # the picture without boxes and text (they would count as "sharp")
+    f = w.frame_raw if w.frame_raw is not None else w.frame_out
+    if f is None:
+        return None
+    h, w_ = f.shape[:2]
+    c = cv2.cvtColor(f[h // 4: 3 * h // 4, w_ // 4: 3 * w_ // 4], cv2.COLOR_BGR2GRAY)
+    v = float(cv2.Laplacian(c, cv2.CV_64F).var())
+    F = TOOLS["focus"]; F["val"] = round(v, 1); F["best"] = max(F["best"], v) if time.time() - F["t"] < 120 else v; F["t"] = time.time()
+    F["hist"] = (F["hist"] + [round(v, 1)])[-60:]
+    return F
+
+
+def servo_test():
+    """Drive pan and tilt slowly over the whole range; after every step: did the picture change? (moved or blocked)"""
+    S = TOOLS["servo"]
+    if S["running"]:
+        return False
+    w = WATCH_REF.get("w")
+    if w is None:
+        return False
+    S.update(running=True, steps=[], msg="", bad=0)
+
+    def grab():
+        f = getattr(w, "frame_out", None)
+        return None if f is None else cv2.resize(cv2.cvtColor(f, cv2.COLOR_BGR2GRAY), (160, 90)).astype(np.float32)
+
+    def run():
+        p0, t0 = CFG["pan"], CFG["tilt"]
+        MANUAL["until"] = time.time() + 3600
+        try:
+            plan = [("pan", v) for v in (50, 30, 10, 0, 25, 50, 75, 90, 100, 50)] + [("tilt", v) for v in (50, 30, 15, 0, 50, 70, 85, 100, 50)]
+            prev = grab()
+            for axis, v in plan:
+                CFG[axis] = float(v)
+                time.sleep(1.2)
+                cur = grab()
+                diff = None if prev is None or cur is None else round(float(np.mean(np.abs(cur - prev))), 1)
+                S["steps"].append({"axis": axis, "to": v, "real": round(CFG[axis], 1), "diff": diff})
+                prev = cur
+            still = []
+            for i, s_ in enumerate(S["steps"]):
+                prev_to = S["steps"][i - 1]["to"] if i and S["steps"][i - 1]["axis"] == s_["axis"] else 50
+                s_["ok"] = s_["diff"] is None or abs(s_["to"] - prev_to) < 5 or s_["diff"] >= 1.0
+                if not s_["ok"]:
+                    still.append(s_)
+            S["msg"] = "ok" if not still else "steps without a change of the picture - blocked, at the end or camera not on the head?"
+            S["bad"] = len(still)
+            log_event("servo", "Servo test: " + ("ok" if not still else f"{len(still)} {S['msg']}"))
+        finally:
+            CFG["pan"], CFG["tilt"] = p0, t0
+            MANUAL["until"] = 0.0
+            S["running"] = False
+    threading.Thread(target=run, daemon=True, name="servotest").start()
+    return True
+
+
+def sd_test():
+    """Memory card: write / read speed (64 MB), kind of card, data written since the start, errors in the system log."""
+    S = TOOLS["sd"]
+    if S["running"]:
+        return False
+    S.update(running=True, msg="")
+    res = {}
+    try:
+        p = os.path.join(DATA_DIR, ".speedtest.bin"); blk = os.urandom(1 << 20); n = 64
+        t0 = time.time()
+        with open(p, "wb") as f:
+            for _ in range(n):
+                f.write(blk)
+            f.flush(); os.fsync(f.fileno())
+        res["write_mb_s"] = round(n / max(0.01, time.time() - t0), 1)
+        try:
+            with open("/proc/sys/vm/drop_caches", "w") as f:
+                f.write("1")
+        except OSError:
+            pass
+        t0 = time.time()
+        with open(p, "rb") as f:
+            while f.read(1 << 22):
+                pass
+        res["read_mb_s"] = round(n / max(0.01, time.time() - t0), 1)
+        os.remove(p)
+        dev = None
+        for d_ in ("mmcblk0", "nvme0n1", "sda"):
+            if os.path.isdir(f"/sys/block/{d_}"):
+                dev = d_; break
+        if dev:
+            res["device"] = dev
+            for k in ("name", "manfid", "oemid", "date", "type"):
+                try:
+                    res[k] = open(f"/sys/block/{dev}/device/{k}").read().strip()[:30]
+                except OSError:
+                    pass
+            try:
+                st_ = open(f"/sys/block/{dev}/stat").read().split()
+                res["written_gb"] = round(int(st_[6]) * 512 / 1024 ** 3, 2)
+            except (OSError, IndexError, ValueError):
+                pass
+            try:
+                res["size_gb"] = round(int(open(f"/sys/block/{dev}/size").read()) * 512 / 1e9, 1)
+            except (OSError, ValueError):
+                pass
+        errs = 0
+        for cmd in (["dmesg"], ["journalctl", "-k", "-n", "3000", "--no-pager"]):
+            if shutil.which(cmd[0]):
+                try:
+                    r = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+                    if r.returncode == 0 and r.stdout:
+                        errs = sum(1 for l in r.stdout.splitlines() if re.search(r"(mmc\d|mmcblk|EXT4-fs error|I/O error)", l) and re.search(r"error|timeout|fail", l, re.I))
+                        break
+                except (OSError, subprocess.SubprocessError):
+                    pass
+        res["errors"] = errs
+        res["verdict"] = "bad" if errs or res["write_mb_s"] < 3 else ("warn" if res["write_mb_s"] < 8 else "ok")
+        S["msg"] = ""
+        log_event("sys", f"Memory card test: write {res['write_mb_s']} MB/s, read {res['read_mb_s']} MB/s, errors {errs}")
+    except Exception as e:
+        S["msg"] = str(e)[:120]
+    finally:
+        S.update(res=res, t=time.time(), running=False)
+    return True
+
+
+_SECRET_RE = re.compile(r"pass|token|secret|key|pin|topic|ntfy|webhook|sms_|phone|mail|user|telegram|chat|url|mqtt_|wifi|psk|feedback|mac|known|ssid|lat|lon|gps", re.I)
+
+
+def diag_zip():
+    """Everything for finding a fault in one ZIP: log, settings WITHOUT passwords / addresses, system values. No pictures."""
+    import io as _io
+    buf = _io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        cfg = {k: ("***" if _SECRET_RE.search(k) and v not in ("", None, [], {}) else v) for k, v in CFG.items() if k not in VOLATILE}
+        z.writestr("settings_without_secrets.json", json.dumps(cfg, indent=1, ensure_ascii=False, default=str))
+        z.writestr("events.txt", "\n".join(f"{e.get('t', '')} [{e.get('kind', '')}] {e.get('text', '')}" for e in reversed(STATE["events"])))
+        info = {"version": APP_VERSION, "project": project_info(), "health": None, "sim": {k: v for k, v in sim_status().items() if k != "found"},
+                "state": {k: STATE.get(k) for k in ("fps", "cpu", "cpu_temp", "source_label", "source_status", "web_status", "ai_status", "eco",
+                                                    "disk", "supply", "battery", "audio", "thermal_res")}}
+        try:
+            info["health"] = health_check() if "health_check" in globals() else None
+        except Exception:
+            pass
+        z.writestr("system.json", json.dumps(info, indent=1, ensure_ascii=False, default=str))
+        for name, cmd in (("journal.txt", ["journalctl", "-u", SERVICE_NAME, "-n", "800", "--no-pager"]), ("kernel.txt", ["dmesg"]),
+                          ("uname.txt", ["uname", "-a"]), ("disk.txt", ["df", "-h"]), ("usb.txt", ["lsusb"])):
+            if shutil.which(cmd[0]):
+                try:
+                    r = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+                    z.writestr(name, (r.stdout or r.stderr)[-400000:])
+                except (OSError, subprocess.SubprocessError):
+                    pass
+    return buf.getvalue()
+
+
+def power_calc():
+    """Present consumption and what the main consumers cost - for the calculator on the tools page."""
+    w = WATCH_REF.get("w"); bm = getattr(w, "battmon", None) if w is not None else None
+    try:
+        p, src = bm.watts() if bm is not None else (4.0, "estimate")
+    except Exception:
+        p, src = 4.0, "estimate"
+    parts = [("AI detection", 1.2 if CFG.get("ai_enabled") else 0.0, "ai_enabled"),
+             ("Thermal camera", 0.4 if CFG.get("thermal_on") else 0.0, "thermal_on"),
+             ("Power saving (when quiet)", -0.9 if CFG.get("eco_on") else 0.0, "eco_on"),
+             ("Infrared light", 0.6 if (STATE.get("lights") or {}).get("ir") else 0.0, None),
+             ("White light", 0.6 if (STATE.get("lights") or {}).get("white") else 0.0, None),
+             ("Own Wi-Fi (hotspot)", 0.3 if (STATE.get("hotspot") or {}).get("on") else 0.0, None),
+             ("Patrol (servos)", 0.5 if CFG.get("patrol") else 0.0, "patrol")]
+    b = STATE.get("battery") or {}
+    cap = None
+    if b.get("on") and b.get("pct") is not None and b.get("cap_wh"):
+        cap = float(b["cap_wh"]) * float(b["pct"]) / 100.0
+    elif float(CFG.get("batt_mah") or 0) > 0:
+        cap = float(CFG["batt_mah"]) * 3.7 / 1000.0 * 0.85
+    return {"watts": round(p, 2), "src": src, "parts": [{"name": n, "w": w_, "key": k} for n, w_, k in parts],
+            "cap_wh": round(cap, 1) if cap else None, "battery": b}
+
+
+def tools_state():
+    T = TOOLS
+    return {"net": {k: v for k, v in T["net"].items() if k not in ("seen",)}, "wifi": T["wifi"], "speed": T["speed"], "sec": T["sec"],
+            "bt": {"running": T["bt"]["running"], "t": T["bt"]["t"], "devices": T["bt"]["devices"], "msg": T["bt"]["msg"],
+                   "trackers": [{"addr": a, "kind": x["kind"], "min": round((x["last"] - x["first"]) / 60.0)} for a, x in T["bt"]["trackers"].items()]},
+            "servo": T["servo"], "sd": T["sd"], "presence": {"here": T["presence"]["here"], "since": T["presence"]["since"], "who": T["presence"]["who"]},
+            "cfg": {k: CFG.get(k) for k in ("net_watch", "net_known", "presence_macs", "presence_auto", "presence_gone_min", "bt_tracker_warn",
+                                            "bt_tracker_min", "presence_bt")},
+            "dual": dual_state(), "toolmode": toolmode_state(), "power": power_calc(), "has": {"nmcli": bool(shutil.which("nmcli")), "ping": bool(shutil.which("ping")), "bleak": _has_bleak()}}
+
+
+def _has_bleak():
+    try:
+        import importlib.util
+        return importlib.util.find_spec("bleak") is not None
+    except Exception:
+        return False
+
+
+class ToolsWatch:
+    """In the background: every 10 minutes look for new devices in the network (when wanted), and for trackers."""
+    def __init__(self):
+        threading.Thread(target=self.loop, daemon=True, name="toolswatch").start()
+
+    def loop(self):
+        time.sleep(60)
+        n = 0
+        while True:
+            try:
+                if CFG.get("net_watch") or CFG.get("presence_macs"):
+                    net_scan(alert=True)
+                if CFG.get("bt_tracker_warn") and n % 2 == 0 and _has_bleak():
+                    bt_scan(8)
+            except Exception as e:
+                log_event("sys", f"Tools: {e}"[:160])
+            n += 1
+            time.sleep(300 if CFG.get("presence_macs") else 600)
+
+
+
+def tools_cfg(key, value, mac=None):
+    try:
+        if key in ("net_watch", "presence_auto", "bt_tracker_warn"):
+            CFG[key] = bool(value)
+        elif key == "presence_gone_min":
+            CFG[key] = float(min(120.0, max(2.0, float(value))))
+        elif key == "bt_tracker_min":
+            CFG[key] = float(min(180.0, max(10.0, float(value))))
+        elif key in ("presence_macs", "presence_bt"):
+            mac = str(mac or "").lower()
+            if not re.fullmatch(r"[0-9a-f]{2}(:[0-9a-f]{2}){5}", mac):
+                return False, "bad address"
+            L = [m for m in (CFG.get(key) or []) if m != mac]
+            if value:
+                L.append(mac)
+            CFG[key] = L[-10:]
+            if key == "presence_macs":
+                TOOLS["presence"]["here"] = None if not L else TOOLS["presence"]["here"]
+        else:
+            return False, "unknown setting"
+    except (TypeError, ValueError):
+        return False, "bad value"
+    save_settings()
+    return True, ""
+
+# ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
+# Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
+# signed, so the checksum can be trusted). ----
+SIM3D = {"version": "3D-1.5", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30199861,
+         "sha256": "cb45d8ff18fbe4075bedc511b3761a110ea8cee6efa4919fa177b1cfbb1e1345"}
+SIM3D_DL = {"running": False, "got": 0, "msg": ""}
+SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
+
+
+def sim3d_path():
+    return os.path.join(DATA_DIR, "sim3d", "MotionWatch3D_Simulator_" + SIM3D["version"] + ".zip")
+
+
+def sim3d_ready():
+    p = sim3d_path()
+    return os.path.isfile(p) and os.path.getsize(p) == SIM3D["size"]
+
+
+def sim3d_fetch():
+    if SIM3D_DL["running"] or sim3d_ready():
+        return
+    SIM3D_DL.update(running=True, got=0, msg="")
+
+    def work():
+        import hashlib
+        p = sim3d_path(); tmp = p + ".part"
+        try:
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            src = CFG["update_url"].strip()
+            base = src.rsplit("/", 1)[0] + "/" if src.startswith("https://") else SIM3D_BASE
+            h = hashlib.sha256()
+            with urllib.request.urlopen(_upd_request(base + SIM3D["file"]), timeout=30) as r, open(tmp, "wb") as f:
+                while True:
+                    b = r.read(1 << 16)
+                    if not b:
+                        break
+                    f.write(b); h.update(b); SIM3D_DL["got"] += len(b)
+                    if SIM3D_DL["got"] > SIM3D["size"] + 1024:
+                        raise ValueError("file too large")
+            if h.hexdigest() != SIM3D["sha256"]:
+                raise ValueError("checksum wrong - the file was changed or is damaged")
+            os.replace(tmp, p)
+            for old in glob.glob(os.path.join(os.path.dirname(p), "MotionWatch3D_Simulator_*.zip")):
+                if old != p:
+                    os.remove(old)
+            log_event("sys", f"3D simulator {SIM3D['version']} ready for download")
+        except Exception as e:
+            SIM3D_DL["msg"] = _upd_error(e)[:160]
+            log_event("sys", "3D simulator could not be fetched: " + SIM3D_DL["msg"])
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+        finally:
+            SIM3D_DL["running"] = False
+    threading.Thread(target=work, daemon=True, name="sim3d").start()
+
+
+def sim3d_wait_page(lang):
+    pct = int(100 * SIM3D_DL["got"] / SIM3D["size"])
+    err = SIM3D_DL["msg"]
+    title = tr("3D simulator for Windows", lang)
+    body = (f"<p>⚠ {html_escape(tr('could not be prepared', lang))}: {html_escape(tr(err, lang))}</p><p><a href='/sim/simulator3d.zip?retry=1'>"
+            f"{html_escape(tr('Try again', lang))}</a></p>") if err else (
+        f"<p>{html_escape(tr('The Pi prepares the download once (about 30 MB) …', lang))}</p>"
+        f"<div style='height:14px;border-radius:7px;background:#1f2a38;overflow:hidden'><div style='height:100%;width:{pct}%;background:#2f81f7'></div></div>"
+        f"<p>{pct} %</p><p style='color:#8b9bb0'>{html_escape(tr('The download starts by itself.', lang))}</p>")
+    refresh = "" if err else '<meta http-equiv="refresh" content="2">'
+    return (f"<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>{refresh}"
+            f"<title>{html_escape(title)}</title></head><body style='font-family:system-ui,sans-serif;background:#0b0f14;color:#e6edf3;max-width:520px;"
+            f"margin:40px auto;padding:0 16px'><h2>🎮 {html_escape(title)} {SIM3D['version']}</h2>{body}</body></html>")
+
+
+SIM_BEACON_PORT = 8764
+SIMFOUND = {}                        # "ip:port" -> {"ip", "port", "name", "version", "t"}: simulators that announce themselves
+
+
+class SimDiscovery:
+    """The simulators (Python on the Pi or a PC, 3D on a PC) send a small UDP message every 2 s into the network
+    ("I am a Motion Watch simulator on port 8765"). Here they are collected; when the simulation has no working connection
+    (and «find automatically» is on), the address of a found simulator is taken over."""
+    def __init__(self):
+        threading.Thread(target=self.listen, daemon=True, name="simfind").start()
+        threading.Thread(target=self.adopt_loop, daemon=True, name="simadopt").start()
+
+    def listen(self):
+        import socket
+        try:
+            s_ = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s_.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s_.bind(("0.0.0.0", SIM_BEACON_PORT))
+        except OSError as e:
+            log_event("sys", f"Simulator search: port {SIM_BEACON_PORT}/udp not usable ({e})"[:160]); return
+        while True:
+            try:
+                data, (ip, _p) = s_.recvfrom(2048)
+                d = json.loads(data.decode("utf-8", "replace"))
+                if not isinstance(d, dict) or d.get("mwsim") != 1:
+                    continue
+                port = int(d.get("port") or 8765)
+                if not (1 <= port <= 65535) or not re.fullmatch(r"[0-9.]{7,15}", ip):
+                    continue
+                if ip.startswith("127."):
+                    ip = "127.0.0.1"
+                k = f"{ip}:{port}"
+                new = k not in SIMFOUND
+                old = SIMFOUND.get(k) or {}
+                SIMFOUND[k] = {"ip": ip, "port": port, "name": str(d.get("name") or "Simulator")[:60],
+                               "version": str(d.get("version") or "")[:20], "t": time.time(), "first": old.get("first") or time.time(),
+                               "count": int(old.get("count") or 0) + 1, "via": "beacon", "ms": old.get("ms")}
+                if new:
+                    log_event("sys", f"Simulator found in the network: {SIMFOUND[k]['name']} on {k}")
+            except (ValueError, OSError):
+                continue
+
+    def adopt_loop(self):
+        while True:
+            time.sleep(5)
+            try:
+                sim_auto_adopt()
+            except Exception:
+                pass
+
+
+SIMSCAN = {"running": False, "t": 0.0, "hosts": 0, "found": 0, "secs": 0.0, "net": "", "done": 0}
+
+
+def _local_ipv4():
+    import socket
+    s_ = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s_.connect(("10.255.255.255", 1))                  # nothing is sent: only finds the own address in the network
+        return s_.getsockname()[0]
+    except OSError:
+        return "127.0.0.1"
+    finally:
+        s_.close()
+
+
+def sim_scan():
+    """Active search: ask every address of the own network (x.x.x.1 - 254) on the simulator ports for /info.
+    Finds simulators also where the little UDP messages do not get through (some routers / Wi-Fi)."""
+    if SIMSCAN["running"]:
+        return False
+    from concurrent.futures import ThreadPoolExecutor
+    ip = _local_ipv4(); base = ".".join(ip.split(".")[:3])
+    hosts = ["127.0.0.1"] + ([f"{base}.{i}" for i in range(1, 255)] if not ip.startswith("127.") else [])
+    ports = sorted({8765, 8766, int(urllib.parse.urlsplit(sim_base()).port or 8765)})
+    SIMSCAN.update(running=True, t=time.time(), hosts=len(hosts) * len(ports), found=0, secs=0.0, net=f"{base}.0/24", done=0)
+
+    def probe(hp):
+        h, p = hp
+        t0 = time.time()
+        try:
+            with _SIM_OPENER.open(urllib.request.Request(f"http://{h}:{p}/info", headers={"User-Agent": "MotionWatch"}), timeout=0.8) as r:
+                d = json.loads(r.read(65536))
+            if not isinstance(d, dict) or "cameras" not in d:
+                return
+            ms = round((time.time() - t0) * 1000.0, 1)
+            k = f"{'127.0.0.1' if h.startswith('127.') else h}:{p}"
+            old = SIMFOUND.get(k) or {}
+            SIMFOUND[k] = dict(old, ip=k.split(":")[0], port=p, name=str(d.get("name") or "Simulator")[:60], t=time.time(),
+                               first=old.get("first") or time.time(), count=int(old.get("count") or 0), via=old.get("via") or "scan", ms=ms,
+                               version=old.get("version") or "")
+            SIMSCAN["found"] += 1
+        except Exception:
+            pass
+        finally:
+            SIMSCAN["done"] += 1
+
+    def run():
+        t0 = time.time()
+        try:
+            with ThreadPoolExecutor(max_workers=64) as ex:
+                list(ex.map(probe, [(h, p) for h in hosts for p in ports]))
+        finally:
+            SIMSCAN.update(running=False, secs=round(time.time() - t0, 1), t=time.time())
+            log_event("sys", f"Simulator search in {SIMSCAN['net']}: {SIMSCAN['found']} found ({SIMSCAN['hosts']} addresses in {SIMSCAN['secs']} s)")
+    threading.Thread(target=run, daemon=True, name="simscan").start()
+    return True
+
+
+def sim_stats():
+    now = time.time(); w = WATCH_REF.get("w"); cam = None
+    try:
+        if w is not None and CFG["sim_on"] and len(w.frame_gaps) > 3:
+            g = [x for x in list(w.frame_gaps)[-20:] if x > 0]
+            cam = round(1.0 / (sum(g) / len(g)), 1) if g else None
+    except Exception:
+        cam = None
+    tt = list(SIM["th_times"]); th = None
+    if len(tt) > 3 and now - tt[-1] < 3:
+        th = round((len(tt) - 1) / max(0.01, tt[-1] - tt[0]), 1)
+    ok = SIM["ok"] and now - SIM["t"] < 5
+    return {"since": int(now - SIM["since"]) if ok and SIM["since"] else None, "rtt": round(SIM["rtt"], 1) if ok else None,
+            "sent": SIM["sent"], "errs": SIM["errs"], "events": SIM["events_n"], "cam_fps": cam if ok else None, "th_fps": th if ok else None,
+            "name": (SIM.get("info") or {}).get("name") if ok else None}
+
+
+def sim_found():
+    now = time.time()
+    live = [dict(v, age=int(now - v["t"])) for v in SIMFOUND.values() if now - v["t"] < (15 if v.get("via") == "beacon" else 180)]
+    local = {(v["port"], v["name"]) for v in live if v["ip"] == "127.0.0.1"}
+    live = [v for v in live if v["ip"] == "127.0.0.1" or (v["port"], v["name"]) not in local]   # this device seen twice: once
+    return sorted(live, key=lambda v: (v["ip"] == "127.0.0.1", v["ip"], v["port"]))
+
+
+def sim_auto_adopt():
+    """no working simulator connection, but one announces itself -> take its address (the PC one before the Pi's own)"""
+    if not CFG.get("sim_auto") or (SIM["ok"] and time.time() - SIM["t"] < 5):
+        return
+    f = sim_found()
+    if not f:
+        return
+    cur = sim_base()
+    if any(cur == f"http://{x['ip']}:{x['port']}" for x in f):
+        return                                     # the address is already one that announces itself
+    best = sorted(f, key=lambda v: v["ip"] == "127.0.0.1")[0]
+    CFG["sim_url"] = f"http://{best['ip']}:{best['port']}"; save_settings()
+    log_event("sys", f"Simulator found automatically: {best['name']} - address {CFG['sim_url']} taken over")
+    if CFG["sim_on"]:                               # the cameras come from the new address
+        w = WATCH_REF.get("w")
+        if w is not None and str(CFG["source"]).startswith("sim:"):
+            w._open_gen += 1; w._start_opener(CFG["source"])
+
+
 def sim_status():
-    return {"installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "msg": SIM["msg"], "url": sim_base(),
+    return {"found": sim_found(), "auto": bool(CFG.get("sim_auto")), "stats": sim_stats(),
+            "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "msg": SIM["msg"], "url": sim_base(),
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
 
@@ -10586,21 +12009,26 @@ class SimLink:
             try:
                 self.tick()
             except Exception as e:
-                SIM.update(ok=False, msg=("not reachable: " + _short_net_err(e)) if "_short_net_err" in globals() else str(e)[:100])
+                SIM.update(ok=False, msg=("not reachable: " + _short_net_err(e)) if "_short_net_err" in globals() else str(e)[:100],
+                           errs=SIM["errs"] + 1, since=0.0)
                 time.sleep(2.0); continue
             time.sleep(max(0.02, (0.2 if CFG.get("sim_eco") else 0.1) - (time.time() - t0)))
 
     def tick(self):
         body = json.dumps(sim_state()).encode()
         req = urllib.request.Request(sim_base() + "/state", data=body, headers={"Content-Type": "application/json", "User-Agent": "MotionWatch"})
-        with urllib.request.urlopen(req, timeout=2.0) as r:
+        t_ = time.time()
+        with _SIM_OPENER.open(req, timeout=2.0) as r:
             rep_ = json.loads(r.read())
+        ms_ = (time.time() - t_) * 1000.0
+        SIM["rtt"] = ms_ if not SIM["rtt"] else SIM["rtt"] * 0.9 + ms_ * 0.1
         if not CFG["sim_on"]:
             return                                          # switched off while this request was running
         first = not SIM["ok"]
         SIM.update(t=time.time(), ok=True, msg="connected", dark=bool(rep_.get("dark")), ambient=float(rep_.get("ambient_c", 15.0)),
                    pressure=float(rep_.get("pressure_hpa", 1013.0)), wind=float(rep_.get("wind_kmh", 0.0)), sent=SIM["sent"] + 1)
         if first:
+            SIM["since"] = time.time()
             self.hello()
         le = int(rep_.get("last_event") or 0)
         if le > SIM["seen_event"]:
@@ -10609,7 +12037,7 @@ class SimLink:
                 SIM["seen_event"] = max(SIM["seen_event"], int(e.get("id", 0)))
                 src = "sim:" + re.sub(r"[^\w .:+\-]", "_", str(e.get("sensor", "")))[:60]
                 sens_seen(src, "Sim: " + str(e.get("sensor", "")), {"kind": e.get("kind")})
-                sens_event(src, e.get("active"))
+                sens_event(src, e.get("active")); SIM["events_n"] += 1
 
     def hello(self):
         """First contact: the sensors of the simulation become extra sensors (removed again when the simulation is off)."""
@@ -10635,590 +12063,596 @@ SIMLINK = None
 # The simulation program itself (motionwatch_simulator.py + motionwatch_sim_interface.py + guide), packed (ZIP, base64):
 #   it is signed together with Motion Watch and can be installed without internet.
 SIM_ZIP_B64 = """
-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
-AMfLAAAAAA==
+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
 """
 SIMPROC = {"p": None}
 
@@ -11874,7 +13308,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_80_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_90_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -12530,6 +13964,37 @@ def _base_args():
 
 
 PAUSE_CHOICES = (5, 15, 30, 60, 120, 240, 480, 720)
+TOOLMODE = {"until": 0.0, "by": "", "since": 0.0}         # tool mode: camera, detection and AI rest - the tools get the computer
+
+
+def toolmode_on():
+    return time.time() < TOOLMODE["until"]
+
+
+def toolmode_set(minutes, source="web"):
+    """minutes > 0: Motion Watch rests (no camera, no detection, no alarms) and comes back by itself after the time.
+    0: back now. The web page and the tools keep running."""
+    try:
+        minutes = int(minutes)
+    except (TypeError, ValueError):
+        return False, "not a number"
+    if minutes <= 0:
+        if toolmode_on():
+            TOOLMODE["until"] = 0.0
+            log_event("sys", f"Tool mode ended by {source} - monitoring runs again")
+        return True, ""
+    if minutes > 240:
+        return False, "not a number"
+    was = toolmode_on()
+    TOOLMODE.update(until=time.time() + minutes * 60, by=source, since=TOOLMODE["since"] if was else time.time())
+    log_event("sys", f"Tool mode for {minutes} min by {source}: monitoring paused until {datetime.fromtimestamp(TOOLMODE['until']).strftime('%H:%M')}")
+    return True, ""
+
+
+def toolmode_state():
+    on = toolmode_on()
+    return {"on": on, "until": TOOLMODE["until"] if on else 0, "since": TOOLMODE["since"] if on else 0, "cpu": STATE.get("cpu"),
+            "temp": STATE.get("cpu_temp"), "armed": bool(CFG["armed"])}
 
 
 def pause_program(minutes, source="web"):
@@ -13134,6 +14599,8 @@ class MotionWatch:
             SOLARMON = SolarMonitor()
         if SIMLINK is None:
             SIMLINK = SimLink()
+            SimDiscovery()
+            ToolsWatch(); UplinkWatch(); WifiGuard()
             threading.Thread(target=sim_autoupdate, daemon=True, name="simupdate").start()
         if AUDIO is None:
             AUDIO = AudioMonitor()
@@ -13594,9 +15061,43 @@ class MotionWatch:
         self._last_t0 = 0.0
 
     # ---- main loop -------------------------------------------------------
+    def toolmode_frame(self):
+        img = np.zeros((360, 640, 3), np.uint8)
+        cv2.putText(img, "|| TOOL MODE", (150, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (0, 200, 255), 3)
+        cv2.putText(img, "monitoring paused until " + datetime.fromtimestamp(TOOLMODE["until"]).strftime("%H:%M"), (150, 195),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (230, 230, 230), 2)
+        cv2.putText(img, "all computing power for the tools", (150, 230), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1)
+        return img
+
     def run(self):
+        tm_was = False
         while True:
             HEART["t"] = time.time()
+            if toolmode_on():                             # tool mode: the camera is closed, nothing is detected
+                if not tm_was:
+                    tm_was = True
+                    if self.cap is not None:
+                        try:
+                            self.cap.release()
+                        except Exception:
+                            pass
+                        self.cap = None
+                    try:
+                        self.reset_scene()                # a running recording is finished, the scene is learnt again later
+                    except Exception:
+                        pass
+                    self.relays.update(set()); STATE["present"] = []; STATE["persons"] = 0; STATE["tracking"] = False
+                    STATE["source_status"] = "tool mode"
+                    self.frame_out = self.toolmode_frame()
+                    ok_, buf_ = cv2.imencode(".jpg", self.frame_out, [cv2.IMWRITE_JPEG_QUALITY, 70])
+                    self._tm_jpeg = buf_.tobytes() if ok_ else None
+                if getattr(self, "_tm_jpeg", None):              # the live picture shows the pause picture (once a second)
+                    self.jpeg = self._tm_jpeg; self.jpeg_seq += 1
+                time.sleep(1.0); continue
+            if tm_was:
+                tm_was = False; self._retry_at = 0.0
+                STATE["source_status"] = "connecting"
+                log_event("sys", "Tool mode over - camera and detection run again")
             opened = self._take_opened()
             if opened is not None:
                 self._apply_opened(opened)
@@ -15276,6 +16777,8 @@ class ExtraCam:
 
     def loop(self):
         while not self.stop:
+            if toolmode_on():                                    # tool mode: this camera rests too
+                self.status = "tool mode"; self.motion = False; self._sleep(1.0); continue
             src, sid, label, err = open_source(self.spec)
             if src is None:
                 self.status = f"failed: {err}"; self._sleep(6.0); continue
@@ -15285,6 +16788,8 @@ class ExtraCam:
             fails, self.n = 0, 0
             try:
                 while not self.stop:
+                    if toolmode_on():
+                        break
                     ok, frame = src.read()
                     if not ok:
                         fails += 1
@@ -15297,7 +16802,7 @@ class ExtraCam:
                 log_event("sys", f"Camera {self.label}: {e}")
             finally:
                 src.release(); self._stop_rec()
-            if not self.stop:
+            if not self.stop and not toolmode_on():
                 self.status = "connection lost - reconnecting"; self.motion = False; self._sleep(2.0)
 
     def _process(self, frame, bg):
@@ -15443,6 +16948,9 @@ atexit.register(cams_close_all)
 # Shared look of all web pages (header, navigation, buttons, cards, forms)
 # ----------------------------------------------------------------------------
 BT_JS = r"""
+Object.assign(I18N.de, {"3D simulator for Windows (ZIP)": "3D-Simulator für Windows (ZIP)", "Link for the PC browser": "Link für den Browser am PC"});
+Object.assign(I18N.de, {"own Wi-Fi on + internet from": "Eigenes WLAN ein + Internet von", "repeater": "Repeater",
+  "own Wi-Fi on - the second adapter looks for known networks": "Eigenes WLAN ein – der zweite Adapter sucht bekannte Netze"});
 Object.assign(I18N.de, {"Bluetooth loudspeaker": "Bluetooth-Lautsprecher", "Search Bluetooth loudspeakers": "Bluetooth-Lautsprecher suchen",
   "Bluetooth is not available (sudo apt install bluez)": "Bluetooth ist nicht verfügbar (sudo apt install bluez)",
   "Searching … put the loudspeaker into pairing mode (blue light blinking)": "Suche läuft … Lautsprecher in den Kopplungsmodus versetzen (blaues Licht blinkt)",
@@ -15661,8 +17169,530 @@ body.alarmflash{animation:alarmflash 1.6s ease-out 2}
   .hdr-ctl button.ic{width:34px;height:30px}.hdr-ctl button.ic svg{width:17px;height:17px}}
 """
 
+TOOLS_PAGE = r"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Motion Watch - Tools</title>
+<style>
+/*BASECSS*/
+main.tools{display:grid;grid-template-columns:270px minmax(0,1fr);gap:20px;max-width:1240px;margin:0 auto;padding:20px 16px 40px;align-items:start}
+.tlist{position:sticky;top:76px;display:flex;flex-direction:column;gap:1px;max-height:calc(100vh - 96px);overflow:auto;padding-right:2px}
+.tm{border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 14px;background:var(--panel)}
+.tm.on{border-color:var(--yel)}
+.tm-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.tm-h .mut{white-space:nowrap;margin:0}.tm-h b{font-weight:600;font-size:14px}
+.tm .mut{font-size:12px;margin-top:4px;line-height:1.45}
+.tm-a{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.tm-a select{flex:none;width:auto}.tm-a button{flex:1;padding:7px 10px;font-size:13px}
+#tm-until{font-size:13px;color:var(--yel);flex-basis:100%}
+.tlg{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;margin:16px 10px 6px}
+.tlg:first-child{margin-top:0}
+.tli{display:flex;align-items:center;gap:11px;width:100%;background:none;border:0;border-radius:9px;padding:8px 10px;color:var(--txt);text-align:left;font-weight:400;cursor:pointer}
+.tli:hover{background:var(--field);filter:none}
+.tli.on{background:var(--btn2)}
+.tli .tln{display:flex;flex-direction:column;min-width:0;flex:1}
+.tli .tln b{font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tsum{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:0}
+.tsum:empty{display:none}
+.tdot{flex:none;width:7px;height:7px;border-radius:50%;background:transparent}
+.tdot.ok{background:var(--grn)}.tdot.warn{background:var(--yel)}.tdot.bad{background:var(--red)}
+svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--mut)}
+.tli.on svg.tico{color:var(--txt)}
+.tpane{min-width:0}
+.tool{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px 22px}
+.thd{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.tht{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.tht svg.tico{width:22px;height:22px;color:var(--txt)}
+.tht h2{margin:0;font-size:18px;font-weight:600}
+.thd .back{display:none}
+.tact{display:flex;gap:8px;flex-wrap:wrap}
+.tact button,.tact .btn{padding:7px 16px;font-size:13px}
+.tbd>*+*{margin-top:12px}
+.tbd .mut{font-size:13px;line-height:1.5}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:14px;cursor:pointer}
+.opt+.opt{margin-top:0}
+.tbd .opt + :not(.opt){margin-top:12px}
+.trow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}
+.trow input[type=number]{width:84px;flex:none}
+.tl{width:100%;border-collapse:collapse;font-size:13px}
+.tl th{color:var(--mut);font-weight:500;font-size:12px;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.tl td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tl tr:last-child td{border-bottom:0}
+.tl input[type=text]{padding:4px 8px;font-size:13px;width:120px}
+.tscroll{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.tscroll:has(table:empty){display:none}
+.newdev{color:var(--yel);font-weight:500}
+.lv{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.lv:last-of-type{border-bottom:0}
+.lv i.lvl{flex:none;width:8px;height:8px;border-radius:50%;margin-top:6px;background:var(--mut)}
+.lv i.ok{background:var(--grn)}.lv i.warn{background:var(--yel)}.lv i.bad{background:var(--red)}
+.big{font-size:24px;font-weight:600;line-height:1.2}
+.bar{height:6px;border-radius:3px;background:var(--field);overflow:hidden}
+.bar>div{height:100%;background:var(--acc);width:0;transition:width .3s}
+.spark{width:100%;height:56px;display:block;color:var(--acc)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px}
+.kv span:nth-child(odd){color:var(--mut)}
+.kv:empty{display:none}
+.pw label{display:flex;gap:10px;align-items:center;padding:7px 0;font-size:14px;border-bottom:1px solid var(--line)}
+.pw label{cursor:pointer;padding:9px 0}.pw label b{margin-left:auto;font-weight:500;color:var(--mut);font-size:13px}
+.chans{display:flex;gap:4px;align-items:flex-end;height:56px}
+.chans div{flex:1;background:var(--line);border-radius:3px 3px 0 0;min-height:2px}
+.chans div.best{background:var(--acc)}
+.chans:empty,.chl:empty{display:none}
+.chl{display:flex;gap:4px;font-size:10px;color:var(--mut);margin-top:4px!important}.chl span{flex:1;text-align:center}
+.warnbox{border-left:3px solid var(--yel);padding:4px 12px;font-size:13px;color:var(--mut)}
+.adp{padding:10px 0;border-top:1px solid var(--line);font-size:14px}.adp:first-child{border-top:0}
+.adp-h{display:flex;justify-content:space-between;gap:10px}.adp-h b{font-weight:600}
+@media(max-width:760px){
+  main.tools{display:block;padding:12px 12px 32px}
+  .tlist{position:static;max-height:none;overflow:visible;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px}
+  .tli{padding:12px 10px}
+  .tlg{margin:14px 10px 4px}
+  body.picked .tlist{display:none}
+  body:not(.picked) .tpane{display:none}
+  .tool{padding:14px}
+  .thd .back{display:block;flex:0 0 100%;text-align:left;background:none;border:0;color:var(--acc2);padding:0 0 6px;font-size:14px;font-weight:500}
+  .tht h2{font-size:17px}
+}
+</style></head><body>
+<header>
+  <h1>Motion Watch</h1>
+  <!--NAV-->
+  <span class="hdr-ctl">
+    <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
+    <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
+  </span>
+</header>
+<main class="tools">
+<nav class="tlist" aria-label="Tools">
+  <div class="tm" id="tm">
+    <div class="tm-h"><b data-i18n="Full power for the tools">Full power for the tools</b><span class="mut" id="tm-cpu"></span></div>
+    <div class="mut" id="tm-note" data-i18n="tm-note">tm-note</div>
+    <div class="tm-a" id="tm-off"><select id="tm-min"><option value="10">10 min</option><option value="30" selected>30 min</option><option value="60">60 min</option><option value="120">120 min</option></select>
+      <button type="button" class="sec" onclick="toolmode(+$('#tm-min').value)" data-i18n="Pause Motion Watch">Pause Motion Watch</button></div>
+    <div class="tm-a" id="tm-on" hidden><span id="tm-until"></span><button type="button" onclick="toolmode(0)" data-i18n="Resume now">Resume now</button></div>
+  </div>
+  <div class="tlg" data-i18n="Network and internet">Network and internet</div>
+  <button type="button" class="tli" data-k="net" onclick="pick('net')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-4h12v4"/></svg><span class="tln"><b data-i18n="Network scanner">Network scanner</b><span class="tsum" id="s-net"></span></span><i class="tdot" id="d-net"></i></button>
+  <button type="button" class="tli" data-k="pres" onclick="pick('pres')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span class="tln"><b data-i18n="Am I at home?">Am I at home?</b><span class="tsum" id="s-pres"></span></span><i class="tdot" id="d-pres"></i></button>
+  <button type="button" class="tli" data-k="speed" onclick="pick('speed')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg><span class="tln"><b data-i18n="Internet test">Internet test</b><span class="tsum" id="s-speed"></span></span><i class="tdot" id="d-speed"></i></button>
+  <button type="button" class="tli" data-k="sec" onclick="pick('sec')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="tln"><b data-i18n="Security check">Security check</b><span class="tsum" id="s-sec"></span></span><i class="tdot" id="d-sec"></i></button>
+  <div class="tlg" data-i18n="Wi-Fi">Wi-Fi</div>
+  <button type="button" class="tli" data-k="dual" onclick="pick('dual')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><span class="tln"><b data-i18n="Wi-Fi adapters and repeater">Wi-Fi adapters and repeater</b><span class="tsum" id="s-dual"></span></span><i class="tdot" id="d-dual"></i></button>
+  <button type="button" class="tli" data-k="guard" onclick="pick('guard')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="tln"><b data-i18n="Wi-Fi guard">Wi-Fi guard</b><span class="tsum" id="s-guard"></span></span><i class="tdot" id="d-guard"></i></button>
+  <button type="button" class="tli" data-k="wifi" onclick="pick('wifi')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-4M9 20v-8M14 20V8M19 20V4"/></svg><span class="tln"><b data-i18n="Wi-Fi around">Wi-Fi around</b><span class="tsum" id="s-wifi"></span></span><i class="tdot" id="d-wifi"></i></button>
+  <div class="tlg" data-i18n="Device tests">Device tests</div>
+  <button type="button" class="tli" data-k="focus" onclick="pick('focus')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span class="tln"><b data-i18n="Focus assistant">Focus assistant</b><span class="tsum" id="s-focus"></span></span><i class="tdot" id="d-focus"></i></button>
+  <button type="button" class="tli" data-k="servo" onclick="pick('servo')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><span class="tln"><b data-i18n="Servo test">Servo test</b><span class="tsum" id="s-servo"></span></span><i class="tdot" id="d-servo"></i></button>
+  <button type="button" class="tli" data-k="audio" onclick="pick('audio')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span class="tln"><b data-i18n="Speaker and microphone">Speaker and microphone</b><span class="tsum" id="s-audio"></span></span><i class="tdot" id="d-audio"></i></button>
+  <button type="button" class="tli" data-k="sd" onclick="pick('sd')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><span class="tln"><b data-i18n="Memory card test">Memory card test</b><span class="tsum" id="s-sd"></span></span><i class="tdot" id="d-sd"></i></button>
+  <button type="button" class="tli" data-k="bt" onclick="pick('bt')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span class="tln"><b data-i18n="Bluetooth scanner">Bluetooth scanner</b><span class="tsum" id="s-bt"></span></span><i class="tdot" id="d-bt"></i></button>
+  <div class="tlg" data-i18n="Power and help">Power and help</div>
+  <button type="button" class="tli" data-k="pow" onclick="pick('pow')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2M7 10v4M11 10v4"/></svg><span class="tln"><b data-i18n="Power calculator">Power calculator</b><span class="tsum" id="s-pow"></span></span><i class="tdot" id="d-pow"></i></button>
+  <button type="button" class="tli" data-k="diag" onclick="pick('diag')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><span class="tln"><b data-i18n="Diagnosis package">Diagnosis package</b><span class="tsum" id="s-diag"></span></span><i class="tdot" id="d-diag"></i></button>
+</nav>
+<div class="tpane">
+  <section class="tool" id="c-net" data-k="net" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-4h12v4"/></svg><h2 data-i18n="Network scanner">Network scanner</h2></div><div class="tact"><button id="b-net" onclick="run('net')" data-i18n="Scan">Scan</button></div></div>
+    <div class="tbd">
+    <div class="mut" id="net-info" data-i18n="All devices in your own network (only there).">All devices in your own network (only there).</div>
+    <label class="opt"><span data-i18n="Warn me about new devices (push, check every 10 min)">Warn me about new devices (push, check every 10 min)</span><input type="checkbox" class="sw" id="cf-net_watch" onchange="cfg('net_watch',this.checked)"></label>
+    <div class="tscroll"><table class="tl" id="net-tab"></table></div>
+    </div>
+  </section>
+  <section class="tool" id="c-pres" data-k="pres" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><h2 data-i18n="Am I at home?">Am I at home?</h2></div></div>
+    <div class="tbd">
+    <div class="big" id="pres-st">–</div>
+    <div class="mut" id="pres-note" data-i18n="pres-note">pres-note</div>
+    <label class="opt"><span data-i18n="Disarm when my device comes, arm when it is gone">Disarm when my device comes, arm when it is gone</span><input type="checkbox" class="sw" id="cf-presence_auto" onchange="cfg('presence_auto',this.checked)"></label>
+    <div class="trow"><span data-i18n="Gone after">Gone after</span> <input type="number" id="cf-presence_gone_min" min="2" max="120" onchange="cfg('presence_gone_min',+this.value)"> <span data-i18n="minutes">minutes</span></div>
+    </div>
+  </section>
+  <section class="tool" id="c-speed" data-k="speed" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg><h2 data-i18n="Internet test">Internet test</h2></div><div class="tact"><button id="b-speed" onclick="run('speed')" data-i18n="Start">Start</button></div></div>
+    <div class="tbd">
+    <div class="warnbox" data-i18n="speed-warn">speed-warn</div>
+    <div class="kv" id="speed-now"></div>
+    <div class="tscroll"><table class="tl" id="speed-tab"></table></div>
+    </div>
+  </section>
+  <section class="tool" id="c-sec" data-k="sec" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><h2 data-i18n="Security check">Security check</h2></div><div class="tact"><button id="b-sec" onclick="run('sec')" data-i18n="Check">Check</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="What can be reached from the network or the internet, and what is risky.">What can be reached from the network or the internet, and what is risky.</div>
+    <div id="sec-list"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-dual" data-k="dual" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><h2 data-i18n="Wi-Fi adapters and repeater">Wi-Fi adapters and repeater</h2></div><div class="tact"><button class="sec" onclick="dualAct('adapters')" data-i18n="Search again">Search again</button></div></div>
+    <div class="tbd">
+    <div id="du-st" class="big" style="font-size:20px">–</div>
+    <div class="mut" id="du-note"></div>
+    <div id="du-ads"></div>
+    <label class="opt"><span data-i18n="Use a second adapter (repeater)">Use a second adapter (repeater)</span><input type="checkbox" class="sw" id="du-wifi_dual" onchange="dualSet('wifi_dual',this.checked)"></label>
+    <label class="opt"><span data-i18n="Swap: the USB stick makes the own Wi-Fi">Swap: the USB stick makes the own Wi-Fi</span><input type="checkbox" class="sw" id="du-wifi_swap" onchange="dualSet('wifi_swap',this.checked)"></label>
+    <label class="opt"><span data-i18n="Push message when the internet was gone">Push message when the internet was gone</span><input type="checkbox" class="sw" id="du-net_inet_notify" onchange="dualSet('net_inet_notify',this.checked)"></label>
+    <svg class="spark" id="du-spark" viewBox="0 0 300 50" preserveAspectRatio="none"><polyline id="du-line" fill="none" stroke="currentColor" stroke-width="2" points=""/></svg>
+    <div class="mut" id="du-sig"></div>
+    <div id="du-log"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-guard" data-k="guard" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><h2 data-i18n="Wi-Fi guard">Wi-Fi guard</h2></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="guard-note">guard-note</div>
+    <div id="gu-st" class="big" style="font-size:20px">–</div>
+    <div class="mut" id="gu-msg"></div>
+    <label class="opt"><span data-i18n="Alarm on Wi-Fi jamming (deauthentication attack)">Alarm on Wi-Fi jamming (deauthentication attack)</span><input type="checkbox" class="sw" id="du-wifi_guard" onchange="dualSet('wifi_guard',this.checked)"></label>
+    <div class="trow"><span data-i18n="Alarm from">Alarm from</span> <input type="number" id="du-wifi_guard_thr" min="5" max="500" onchange="dualSet('wifi_guard_thr',+this.value)"> <span data-i18n="disconnect frames per minute">disconnect frames per minute</span></div>
+    <label class="opt"><span data-i18n="Recognise my marked devices by listening (Am I at home?)">Recognise my marked devices by listening (Am I at home?)</span><input type="checkbox" class="sw" id="du-wifi_presence" onchange="dualSet('wifi_presence',this.checked)"></label>
+    <label class="opt"><span data-i18n="Count devices nearby (anonymous, nothing is stored)">Count devices nearby (anonymous, nothing is stored)</span><input type="checkbox" class="sw" id="du-wifi_count" onchange="dualSet('wifi_count',this.checked)"></label>
+    <svg class="spark" id="gu-spark" viewBox="0 0 300 50" preserveAspectRatio="none"><polyline id="gu-line" fill="none" stroke="var(--red)" stroke-width="2" points=""/><polyline id="gu-line2" fill="none" stroke="currentColor" stroke-width="1" opacity=".5" points=""/></svg>
+    <div class="mut" id="gu-info"></div>
+    <div id="gu-alarms"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-wifi" data-k="wifi" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-4M9 20v-8M14 20V8M19 20V4"/></svg><h2 data-i18n="Wi-Fi around">Wi-Fi around</h2></div><div class="tact"><button id="b-wifi" onclick="run('wifi')" data-i18n="Scan">Scan</button></div></div>
+    <div class="tbd">
+    <div id="wifi-best" class="mut" data-i18n="Shows the Wi-Fi networks nearby and the best channel for the own Wi-Fi (hotspot).">Shows the Wi-Fi networks nearby and the best channel for the own Wi-Fi (hotspot).</div>
+    <div class="chans" id="wifi-ch"></div><div class="chl" id="wifi-chl"></div>
+    <div class="tscroll"><table class="tl" id="wifi-tab"></table></div>
+    </div>
+  </section>
+  <section class="tool" id="c-focus" data-k="focus" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><h2 data-i18n="Focus assistant">Focus assistant</h2></div><div class="tact"><button id="b-focus" onclick="focusToggle()" data-i18n="Start">Start</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="focus-note">focus-note</div>
+    <div class="trow"><span class="big" id="f-val">–</span><span class="mut" id="f-best"></span></div>
+    <div class="bar"><div id="f-bar"></div></div>
+    <svg class="spark" id="f-spark" style="display:none" viewBox="0 0 300 50" preserveAspectRatio="none"><polyline id="f-line" fill="none" stroke="currentColor" stroke-width="2" points=""/></svg>
+    <div class="mut" id="f-trend"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-servo" data-k="servo" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><h2 data-i18n="Servo test">Servo test</h2></div><div class="tact"><button id="b-servo" onclick="run('servo')" data-i18n="Start">Start</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="servo-note">servo-note</div>
+    <div id="servo-res"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-audio" data-k="audio" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><h2 data-i18n="Speaker and microphone">Speaker and microphone</h2></div><div class="tact"><button onclick="soundTest()" data-i18n="Test sound">Test sound</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="Clap or speak: the bar shows what the microphone hears.">Clap or speak: the bar shows what the microphone hears.</div>
+    <div class="bar"><div id="a-bar"></div></div>
+    <div class="mut" id="a-info"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-sd" data-k="sd" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><h2 data-i18n="Memory card test">Memory card test</h2></div><div class="tact"><button id="b-sd" onclick="run('sd')" data-i18n="Start">Start</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="Writes and reads 64 MB once, then deletes them again.">Writes and reads 64 MB once, then deletes them again.</div>
+    <div class="kv" id="sd-res"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-bt" data-k="bt" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><h2 data-i18n="Bluetooth scanner">Bluetooth scanner</h2></div><div class="tact"><button id="b-bt" onclick="run('bt')" data-i18n="Scan (10 s)">Scan (10 s)</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="bt-note">bt-note</div>
+    <label class="opt"><span data-i18n="Warn me about unknown trackers that stay near">Warn me about unknown trackers that stay near</span><input type="checkbox" class="sw" id="cf-bt_tracker_warn" onchange="cfg('bt_tracker_warn',this.checked)"></label>
+      <div class="trow"><span data-i18n="after">after</span> <input type="number" id="cf-bt_tracker_min" min="10" max="180" onchange="cfg('bt_tracker_min',+this.value)"> <span data-i18n="minutes">minutes</span></div>
+    <div id="bt-trk"></div>
+    <div class="tscroll"><table class="tl" id="bt-tab"></table></div>
+    </div>
+  </section>
+  <section class="tool" id="c-pow" data-k="pow" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2M7 10v4M11 10v4"/></svg><h2 data-i18n="Power calculator">Power calculator</h2></div></div>
+    <div class="tbd">
+    <div class="trow"><span data-i18n="Now">Now</span> <span class="big" id="p-now">–</span><span class="mut" id="p-src"></span></div>
+    <div class="mut" data-i18n="Tick what should be on - the calculator shows the consumption and the running time.">Tick what should be on - the calculator shows the consumption and the running time.</div>
+    <div class="pw" id="p-parts"></div>
+    <div class="trow"><span data-i18n="Battery">Battery</span> <input type="number" id="p-wh" min="1" max="5000" step="1"> Wh <span class="mut" id="p-whn"></span></div>
+    <div class="kv" id="p-res"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-diag" data-k="diag" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><h2 data-i18n="Diagnosis package">Diagnosis package</h2></div><div class="tact"><button id="b-diag" onclick="location.href='/tools/diag.zip'" data-i18n="Download">Download</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="diag-note">diag-note</div>
+    </div>
+  </section>
+</div>
+</main>
+<script>
+/*COMMON*/
+Object.assign(I18N.de, {"Tools": "Werkzeuge", "Network scanner": "Netzwerkscanner", "Scan": "Suchen", "All devices in your own network (only there).": "Alle Geräte im eigenen Netz (nur dort).",
+ "Warn me about new devices (push, check every 10 min)": "Bei neuen Geräten warnen (Push, Prüfung alle 10 Min.)", "Am I at home?": "Bin ich zu Hause?",
+ "pres-note": "Markiere unten im Netzwerkscanner dein Handy mit «🏠 meins». Handys melden sich im WLAN zuverlässiger als über Bluetooth.",
+ "Disarm when my device comes, arm when it is gone": "Entschärfen, wenn mein Gerät kommt – scharf schalten, wenn es weg ist", "Gone after": "Weg nach", "minutes": "Minuten",
+ "Wi-Fi around": "WLAN-Umgebung", "Shows the Wi-Fi networks nearby and the best channel for the own Wi-Fi (hotspot).": "Zeigt die WLANs in der Nähe und den besten Kanal für das eigene WLAN (Hotspot).",
+ "Internet test": "Internet-Test", "Start": "Start", "Stop": "Stopp", "speed-warn": "Braucht etwa 6 MB Daten – bei einem Handy-Abo mit wenig Volumen nur selten starten.",
+ "Security check": "Sicherheits-Check", "Check": "Prüfen", "What can be reached from the network or the internet, and what is risky.": "Was aus dem Netz oder dem Internet erreichbar ist und was riskant ist.",
+ "Bluetooth scanner": "Bluetooth-Scanner", "Scan (10 s)": "Suchen (10 s)", "bt-note": "Geräte in der Nähe. Fremde Geräte werden nicht gespeichert – nur die, die du als «meins» markierst.",
+ "Warn me about unknown trackers that stay near": "Warnen bei fremden Trackern, die lange in der Nähe bleiben", "after": "nach",
+ "Focus assistant": "Fokus-Assistent", "focus-note": "Dreh am Objektiv: je höher die Zahl, desto schärfer. Gemessen wird die Bildmitte.",
+ "Servo test": "Servo-Test", "servo-note": "Fährt Schwenken und Neigen langsam über den ganzen Bereich und prüft, ob sich das Bild jedes Mal bewegt. Danach zurück an die alte Stelle.",
+ "Speaker and microphone": "Lautsprecher und Mikrofon", "Test sound": "Testton", "Clap or speak: the bar shows what the microphone hears.": "Klatsche oder sprich: der Balken zeigt, was das Mikrofon hört.",
+ "Memory card test": "Speicherkarten-Test", "Writes and reads 64 MB once, then deletes them again.": "Schreibt und liest einmal 64 MB und löscht sie danach wieder.",
+ "Diagnosis package": "Diagnose-Paket", "Download": "Herunterladen", "diag-note": "Ein ZIP für die Fehlersuche: Protokoll, Systemwerte und Einstellungen – ohne Passwörter, Adressen, Themen und Bilder.",
+ "Power calculator": "Strom-Rechner", "Now": "Jetzt", "Tick what should be on - the calculator shows the consumption and the running time.": "Hake an, was laufen soll – der Rechner zeigt Verbrauch und Laufzeit.",
+ "Battery": "Akku", "Consumption": "Verbrauch", "Running time": "Laufzeit", "per day": "pro Tag", "measured": "gemessen", "estimate": "geschätzt",
+ "IP": "IP", "Name": "Name", "Maker": "Hersteller", "Known as": "Bekannt als", "mine": "meins", "this device": "dieses Gerät", "router": "Router", "new": "neu",
+ "private address (phone / tablet)": "private Adresse (Handy / Tablet)", "devices": "Geräte", "seconds": "Sekunden", "running…": "läuft …", "Network": "Netz",
+ "Channel": "Kanal", "Signal": "Signal", "Best channel for the own Wi-Fi": "Bester Kanal fürs eigene WLAN", "connected": "verbunden",
+ "Upload": "Hochladen", "Ping": "Ping", "Name lookup": "Namensauflösung", "Loss": "Verlust", "Time": "Zeit",
+ "Kind": "Art", "Tracker": "Tracker", "Trackers nearby": "Tracker in der Nähe", "best": "bestes", "sharper": "schärfer", "less sharp": "unschärfer", "about the same": "etwa gleich",
+ "Axis": "Achse", "To": "Nach", "Picture change": "Bildänderung", "Result": "Ergebnis", "moved": "bewegt", "no change": "keine Änderung", "pan": "schwenken", "tilt": "neigen",
+ "Write": "Schreiben", "Read": "Lesen", "Card": "Karte", "Size": "Grösse", "Written since start": "Geschrieben seit Start", "Errors in the system log": "Fehler im Systemprotokoll",
+ "Verdict": "Urteil", "good": "gut", "slow": "langsam", "replace soon": "bald ersetzen", "Microphone": "Mikrofon", "no microphone": "kein Mikrofon", "Level": "Pegel",
+ "Here": "Da", "Away": "Weg", "No device marked": "Kein Gerät markiert", "since": "seit", "hours": "Std.", "not possible": "nicht möglich", "Name for this device": "Name für dieses Gerät",
+ "Saved": "Gespeichert", "Only for the administrator": "Nur für den Administrator", "hidden": "versteckt", "ok": "ok",
+ "AI detection": "KI-Erkennung", "Thermal camera": "Wärmebild", "Power saving (when quiet)": "Stromsparen (wenn ruhig)", "Infrared light": "Infrarot-Licht", "White light": "Weisslicht",
+ "Own Wi-Fi (hotspot)": "Eigenes WLAN (Hotspot)", "Patrol (servos)": "Patrouille (Servos)", "Basic consumption": "Grundverbrauch"});
+Object.assign(I18N.de, {"Web password set": "Web-Passwort gesetzt", "Web password missing": "Web-Passwort fehlt", "Everybody in the network can operate Motion Watch": "Jeder im Netz kann Motion Watch bedienen", "Secure page (https) on": "Sichere Seite (https) ein", "Secure page (https) off": "Sichere Seite (https) aus", "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)": "Passwörter gehen unverschlüsselt durchs Netz – wichtig in fremden WLANs (Camping)", "Open in the network: port": "Offen im Netz: Port", "SSH: login with password allowed": "SSH: Anmelden mit Passwort erlaubt", "SSH: login with password off (keys only)": "SSH: Anmelden mit Passwort aus (nur Schlüssel)", "Use a strong password or keys": "Starkes Passwort oder Schlüssel verwenden", "Public IPv6 address present": "Öffentliche IPv6-Adresse vorhanden", "Depending on the router the Pi can be reached directly from the internet - keep the web password on": "Je nach Router ist der Pi direkt aus dem Internet erreichbar – Web-Passwort eingeschaltet lassen", "Router forwards ports to this device:": "Router leitet Ports an dieses Gerät weiter:", "No port forwarding of the router to this device (UPnP)": "Keine Port-Weiterleitung des Routers an dieses Gerät (UPnP)", "Address in the internet:": "Adresse im Internet:", "shared address of the mobile network - not reachable from outside": "geteilte Adresse des Handynetzes – von aussen nicht erreichbar", "Internet not reachable": "Internet nicht erreichbar", "Tailscale: access from outside only for your own devices": "Tailscale: Zugriff von aussen nur für die eigenen Geräte", "no network": "kein Netz", "no Wi-Fi scan possible (NetworkManager / nmcli missing or no Wi-Fi)": "keine WLAN-Suche möglich (NetworkManager / nmcli fehlt oder kein WLAN)", "Bluetooth scanner needs: sudo apt install python3-bleak": "Der Bluetooth-Scanner braucht: sudo apt install python3-bleak", "steps without a change of the picture - blocked, at the end or camera not on the head?": "Schritte ohne Bildänderung – blockiert, am Anschlag oder Kamera nicht auf dem Kopf?", "Apple Find My (AirTag or a lost Apple device)": "Apple «Wo ist?» (AirTag oder verlorenes Apple-Gerät)", "Apple device": "Apple-Gerät", "Samsung device": "Samsung-Gerät", "Microsoft device": "Microsoft-Gerät"});
+Object.assign(I18N.de, {"Wi-Fi adapters and repeater": "WLAN-Adapter und Repeater", "Search again": "Neu suchen", "Use a second adapter (repeater)": "Zweiten Adapter verwenden (Repeater)", "Swap: the USB stick makes the own Wi-Fi": "Tauschen: der USB-Stick macht das eigene WLAN", "Push message when the internet was gone": "Push-Meldung, wenn das Internet weg war", "Wi-Fi guard": "WLAN-Wächter", "guard-note": "Hört mit einem passenden USB-Stick mit, ob jemand das WLAN stört (Trennungs-Angriff, wie ihn Einbrecher gegen WLAN-Kameras benutzen).", "Alarm on Wi-Fi jamming (deauthentication attack)": "Alarm bei WLAN-Störung (Trennungs-Angriff)", "Alarm from": "Alarm ab", "disconnect frames per minute": "Trennungs-Meldungen pro Minute", "Recognise my marked devices by listening (Am I at home?)": "Meine markierten Geräte durch Mithören erkennen (Bin ich zu Hause?)", "Count devices nearby (anonymous, nothing is stored)": "Geräte in der Nähe zählen (anonym, nichts wird gespeichert)", "Repeater on": "Repeater aktiv", "Two adapters in use": "Zwei Adapter in Betrieb", "Second adapter not in use": "Zweiter Adapter nicht in Gebrauch", "Only one Wi-Fi adapter": "Nur ein WLAN-Adapter", "Own Wi-Fi": "Eigenes WLAN", "own Wi-Fi": "eigenes WLAN", "Internet": "Internet", "internet": "Internet", "off": "aus", "not connected": "nicht verbunden", "Plug in a USB Wi-Fi stick: then the Pi makes its own Wi-Fi and gets the internet from another network at the same time.": "Steck einen USB-WLAN-Stick ein: dann macht der Pi sein eigenes WLAN und holt gleichzeitig das Internet aus einem anderen Netz.", "no internet": "kein Internet", "connection unstable": "Verbindung unstabil", "No internet for devices": "Kein Internet für Geräte", "Adapter": "Adapter", "Chip": "Chip", "Listening": "Mithören", "Signal of the internet adapter (4 hours)": "Signal des Internet-Adapters (4 Stunden)", "weak: put the stick higher or nearer, use a USB extension cable": "schwach: Stick höher oder näher hinstellen, USB-Verlängerung benutzen", "listening": "hört mit", "error": "Fehler", "with": "mit", "Disconnect frames last minute": "Trennungs-Meldungen letzte Minute", "against your networks": "gegen deine Netze", "in total": "insgesamt", "devices nearby": "Geräte in der Nähe", "no internet for this device": "kein Internet für dieses Gerät", "only one Wi-Fi adapter": "nur ein WLAN-Adapter", "needs NetworkManager": "braucht NetworkManager", "very good: own Wi-Fi, 5 GHz and listening (monitor) work": "sehr gut: eigenes WLAN, 5 GHz und Mithören gehen", "good: 5 GHz and listening (monitor) work": "gut: 5 GHz und Mithören gehen", "simple stick: only 2.4 GHz": "einfacher Stick: nur 2,4 GHz", "only 2.4 GHz, listening (monitor) works": "nur 2,4 GHz, Mithören geht", "simple driver: no own Wi-Fi, no listening": "einfacher Treiber: kein eigenes WLAN, kein Mithören", "simple driver: no listening": "einfacher Treiber: kein Mithören", "listening (monitor) mostly not possible": "Mithören meist nicht möglich", "only 2.4 GHz": "nur 2,4 GHz", "extra driver needed": "braucht Zusatz-Treiber", "no Wi-Fi adapter here can listen (monitor mode) - e.g. a stick with MediaTek MT7612U / MT7921AU": "kein Adapter hier kann mithören (Monitor-Modus) – z. B. ein Stick mit MediaTek MT7612U / MT7921AU", "Built in": "Eingebaut"});
+Object.assign(I18N.de, {"Full power for the tools": "Volle Leistung für die Werkzeuge", "tm-note": "Pausiert Kamera, Erkennung und KI, damit rechenintensive Werkzeuge die ganze Leistung bekommen. Danach läuft alles von selbst wieder.", "Pause Motion Watch": "Motion Watch pausieren", "Resume now": "Jetzt fortsetzen", "paused until": "Pausiert bis", "Camera, detection and alarms are paused - they come back by themselves.": "Kamera, Erkennung und Alarme ruhen – sie kommen von selbst zurück.", "tm-confirm": "Motion Watch ist scharf. Während der Pause gibt es keine Überwachung und keine Alarme. Trotzdem pausieren?"});
+Object.assign(I18N.de, {"All tools": "Alle Werkzeuge", "problem": "Problem", "problems": "Probleme", "warning": "Warnung", "warnings": "Warnungen", "all ok": "alles in Ordnung"});
+Object.assign(I18N.de, {"tools-intro": "Tippe auf ein Werkzeug, um es aufzuklappen. Die Zeile rechts zeigt das letzte Ergebnis.", "Open all": "Alle aufklappen", "Close all": "Alle zuklappen", "Network and internet": "Netz und Internet", "Wi-Fi": "WLAN", "Device tests": "Geräte-Tests", "Power and help": "Strom und Hilfe", "Wi-Fi jamming!": "WLAN-Störung!", "Best channel": "Bester Kanal", "networks": "Netze"});
+let S = null, FOC = null;
+const fmtT = ts => ts ? new Date(ts * 1000).toLocaleString(LOCALE || undefined, {hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit"}) : "–";
+function tr_(cells, head) { const r = el("tr"); cells.forEach(c => { const d = el(head ? "th" : "td"); if (c instanceof Node) d.appendChild(c); else d.textContent = c == null ? "–" : c; r.appendChild(d); }); return r; }
+async function load() {
+  const r = await fetch("/api/tools").then(x => x.ok ? x.json() : null).catch(() => null);
+  if (!r) { $("#net-info").textContent = t("Only for the administrator"); return; }
+  S = r; draw();
+  const busy = ["net", "wifi", "speed", "bt", "servo", "sd"].some(k => S[k] && S[k].running);
+  clearTimeout(load.t); load.t = setTimeout(load, busy ? 1500 : 10000);
+}
+async function run(what) {
+  const b = $("#b-" + what); if (b) { b.disabled = true; b.textContent = t("running…"); }
+  const r = await post("/api/tools", {action: what});
+  if (!r.ok) toast(r.error || t("not possible"));
+  setTimeout(load, 600);
+}
+async function cfg(key, value, extra) { const r = await post("/api/tools", Object.assign({action: "cfg", key, value}, extra || {})); if (!r.ok) toast(r.error || t("not possible")); else load(); }
+function btn(id, label, running) { const b = $("#b-" + id); if (!b) return; b.disabled = !!running; b.textContent = running ? t("running…") : t(label); }
+function draw() {
+  const C = S.cfg || {};
+  ["net_watch", "presence_auto", "bt_tracker_warn"].forEach(k => { const e = $("#cf-" + k); if (e) e.checked = !!C[k]; });
+  ["presence_gone_min", "bt_tracker_min"].forEach(k => { const e = $("#cf-" + k); if (e && document.activeElement !== e) e.value = C[k] != null ? C[k] : ""; });
+  // network
+  const N = S.net; btn("net", "Scan", N.running);
+  if (N.t) $("#net-info").textContent = N.net + " · " + N.devices.length + " " + t("devices") + " · " + fmtT(N.t) + " · " + N.secs + " " + t("seconds") + (N.msg ? " · " + t(N.msg) : "");
+  const tb = $("#net-tab"); tb.innerHTML = ""; const anyHs = N.devices.some(d => d.hs); if (N.devices.length) tb.appendChild(tr_([t("IP"), t("Name"), t("Maker"), t("Known as"), "🏠"].concat(anyHs ? ["🚫🌐"] : []), true));
+  const mine = new Set(C.presence_macs || []);
+  N.devices.forEach(d => {
+    const ip = el("span", d.new ? "newdev" : "", d.ip + (d.role ? " (" + t(d.role) + ")" : "") + (d.new ? " ★ " + t("new") : ""));
+    let kn = "", own = "";
+    if (d.mac && d.role !== "this device") {
+      kn = el("input"); kn.type = "text"; kn.value = d.known || ""; kn.placeholder = t("Name for this device");
+      kn.onchange = () => post("/api/tools", {action: "known", mac: d.mac, name: kn.value.trim() || null}).then(r => { toast(r.ok ? t("Saved") : (r.error || t("not possible"))); load(); });
+      own = el("input"); own.type = "checkbox"; own.checked = mine.has(d.mac); own.title = t("mine");
+      own.onchange = () => cfg("presence_macs", own.checked, {mac: d.mac});
+    }
+    let ni = "";
+    if (d.hs && d.mac && d.role !== "this device") { ni = el("input"); ni.type = "checkbox"; ni.checked = !!d.noinet; ni.title = t("no internet for this device");
+      ni.onchange = () => post("/api/tools", {action: "noinet", mac: d.mac, value: ni.checked}).then(r => { toast(r.ok ? t("Saved") : (r.error || t("not possible"))); load(); }); }
+    tb.appendChild(tr_([ip, d.name || "", t(d.vendor) || (d.mac || ""), kn, own].concat(anyHs ? [ni] : [])));
+  });
+  // presence
+  const P = S.presence;
+  $("#pres-st").textContent = !mine.size ? t("No device marked") : P.here == null ? "…" : (P.here ? "✅ " + t("Here") : "🚶 " + t("Away")) + (P.since ? " · " + t("since") + " " + fmtT(P.since) : "");
+  // wifi
+  const W = S.wifi; btn("wifi", "Scan", W.running);
+  if (W.t) $("#wifi-best").textContent = W.best ? t("Best channel for the own Wi-Fi") + ": " + W.best + (W.own ? " · " + t("connected") + ": " + W.own.ssid + " (" + t("Channel") + " " + W.own.ch + ")" : "") : t(W.msg || "not possible");
+  const ch = $("#wifi-ch"), chl = $("#wifi-chl"); ch.innerHTML = ""; chl.innerHTML = "";
+  if (W.t && W.nets.length) { const mx = Math.max(1, ...Object.values(W.channels || {}));
+    for (let c = 1; c <= 13; c++) { const b = el("div", c === W.best ? "best" : ""); b.style.height = Math.round(100 * ((W.channels || {})[c] || 0) / mx) + "%"; b.title = c; ch.appendChild(b); chl.appendChild(el("span", "", c)); } }
+  const wt = $("#wifi-tab"); wt.innerHTML = ""; if (W.nets.length) wt.appendChild(tr_([t("Name"), t("Channel"), t("Signal"), ""], true));
+  W.nets.forEach(n => wt.appendChild(tr_([(n.own ? "✓ " : "") + n.ssid, n.ch + (n.mhz > 5000 ? " (5 GHz)" : ""), n.signal + " %", n.sec || "🔓"])));
+  // speed
+  const Q = S.speed; btn("speed", "Start", Q.running);
+  const last = Q.hist[Q.hist.length - 1]; const kv = $("#speed-now"); kv.innerHTML = "";
+  if (last) { if (last.error) kv.append(el("span", "", "⚠"), el("span", "", last.error));
+    else [["Download", (last.down_mbit ?? "–") + " Mbit/s"], ["Upload", (last.up_mbit ?? "–") + " Mbit/s"], ["Ping", (last.ping_ms ?? "–") + " ms"], ["Name lookup", (last.dns_ms ?? "–") + " ms"], ["Loss", (last.loss ?? "–") + " %"]]
+      .forEach(([a, b]) => kv.append(el("span", "", t(a)), el("span", "", b))); }
+  const st = $("#speed-tab"); st.innerHTML = ""; if (Q.hist.length > 1) { st.appendChild(tr_([t("Time"), "↓", "↑", t("Ping")], true));
+    Q.hist.slice().reverse().forEach(h => st.appendChild(tr_([fmtT(h.t), h.error ? "⚠" : h.down_mbit, h.error ? "" : h.up_mbit, h.error ? "" : h.ping_ms]))); }
+  // security
+  const sl = $("#sec-list"); sl.innerHTML = ""; btn("sec", "Check", S.sec.running);
+  (S.sec.items || []).forEach(it => { const r = el("div", "lv"); r.append(el("i", "lvl " + it.level));
+    const tx = el("div", "", t(it.text) + (it.arg ? " " + it.arg : "")); if (it.tip) { tx.appendChild(el("br")); tx.appendChild(el("span", "mut", t(it.tip))); } r.appendChild(tx); sl.appendChild(r); });
+  if (S.sec.t) sl.appendChild(el("div", "mut", fmtT(S.sec.t)));
+  // bluetooth
+  const B = S.bt; btn("bt", "Scan (10 s)", B.running);
+  const mbt = new Set(C.presence_bt || []);
+  const tk = $("#bt-trk"); tk.innerHTML = "";
+  if ((B.trackers || []).length) { tk.appendChild(el("b", "", t("Trackers nearby") + ":")); B.trackers.forEach(x => tk.appendChild(el("div", x.min >= (C.bt_tracker_min || 30) ? "newdev" : "mut", "📍 " + t(x.kind) + " · " + x.min + " " + t("minutes")))); }
+  const bt = $("#bt-tab"); bt.innerHTML = ""; if (B.msg) bt.appendChild(tr_([t(B.msg)]));
+  if (B.devices.length) bt.appendChild(tr_([t("Name"), t("Kind"), t("Signal"), "🏠"], true));
+  B.devices.forEach(d => { const own = el("input"); own.type = "checkbox"; own.checked = mbt.has((d.addr || "").toLowerCase()); own.onchange = () => cfg("presence_bt", own.checked, {mac: d.addr});
+    bt.appendChild(tr_([el("span", d.tracker ? "newdev" : "", d.name || d.addr), t(d.kind) || "", d.rssi != null ? d.rssi + " dBm" : "", own])); });
+  // servo
+  const V = S.servo; btn("servo", "Start", V.running); const sr = $("#servo-res"); sr.innerHTML = "";
+  if (V.steps.length) { const tb2 = el("table", "tl"); tb2.appendChild(tr_([t("Axis"), t("To"), t("Picture change"), t("Result")], true));
+    V.steps.forEach(s => tb2.appendChild(tr_([t(s.axis), s.to + " %", s.diff, s.ok === false ? "⚠ " + t("no change") : (s.ok ? "✅" : "…")]))); sr.appendChild(tb2); }
+  if (V.msg) sr.appendChild(el("div", V.msg === "ok" ? "" : "newdev", V.msg === "ok" ? "✅ " + t("ok") : "⚠ " + (V.bad || "") + " " + t(V.msg)));
+  // sd
+  const D = S.sd; btn("sd", "Start", D.running); const sd = $("#sd-res"); sd.innerHTML = ""; const R = D.res || {};
+  if (D.msg) sd.append(el("span", "", "⚠"), el("span", "", D.msg));
+  if (R.write_mb_s != null) [["Write", R.write_mb_s + " MB/s"], ["Read", R.read_mb_s + " MB/s"], ["Card", [R.name, R.type, R.date].filter(Boolean).join(" · ") || R.device],
+      ["Size", R.size_gb != null ? R.size_gb + " GB" : null], ["Written since start", R.written_gb != null ? R.written_gb + " GB" : null], ["Errors in the system log", R.errors],
+      ["Verdict", {ok: "✅ " + t("good"), warn: "⚠ " + t("slow"), bad: "⛔ " + t("replace soon")}[R.verdict]]]
+    .forEach(([a, b]) => { if (b != null && b !== "") sd.append(el("span", "", t(a)), el("span", "", b)); });
+  drawPower(); drawDual(); drawSums(); drawTm();
+  ["#pres-st", "#du-st", "#gu-st"].forEach(id => { const e = $(id); if (e) e.textContent = PLAIN(e.textContent); });
+}
+// one tool at a time: list on the left (phone: list first, then the tool)
+const PLAIN = x => String(x == null ? "" : x).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{2705}\u{FE0F}\u{200D}]/gu, "").replace(/^\s+/, "");
+let SEL = "";
+function pick(k, push) {
+  if (!document.getElementById("c-" + k)) k = "net";
+  if (SEL === "focus" && k !== "focus" && FON) focusToggle();
+  SEL = k;
+  document.querySelectorAll("section.tool").forEach(x => x.hidden = x.dataset.k !== k);
+  document.querySelectorAll(".tli").forEach(x => x.classList.toggle("on", x.dataset.k === k));
+  document.body.classList.add("picked");
+  try { localStorage.setItem("mw-tool-sel", k); } catch (e) {}
+  if (push !== false && location.hash !== "#" + k) history.pushState(null, "", "#" + k);
+  if (matchMedia("(max-width:760px)").matches) scrollTo(0, 0);
+}
+function showList() { document.body.classList.remove("picked"); if (location.hash) history.pushState(null, "", location.pathname); }
+addEventListener("popstate", () => { const h = location.hash.slice(1); if (h) pick(h, false); else document.body.classList.remove("picked"); });
+(function () { let k = location.hash.slice(1); if (!k) { try { k = localStorage.getItem("mw-tool-sel") || ""; } catch (e) {} }
+  if (location.hash || !matchMedia("(max-width:760px)").matches) pick(k || "net", false);
+  else { SEL = k || "net"; document.querySelectorAll("section.tool").forEach(x => x.hidden = x.dataset.k !== SEL); } })();
+function sum(k, text, cls) { const e = $("#s-" + k); if (!e) return; e.textContent = PLAIN(text); const d = $("#d-" + k); if (d) d.className = "tdot" + (cls ? " " + cls : ""); }
+function drawSums() {
+  const N = S.net, C = S.cfg || {};
+  const nnew = N.devices.filter(d => d.new).length;
+  sum("net", N.running ? t("running…") : N.t ? N.devices.length + " " + t("devices") + (nnew ? " · ★ " + nnew + " " + t("new") : "") : "", nnew ? "warn" : "");
+  const P = S.presence; sum("pres", !(C.presence_macs || []).length ? t("No device marked") : P.here == null ? "…" : P.here ? "✅ " + t("Here") : "🚶 " + t("Away"), P.here ? "ok" : "");
+  const Q = S.speed, L = Q.hist[Q.hist.length - 1];
+  sum("speed", Q.running ? t("running…") : L ? (L.error ? "⚠ " + t("error") : "↓ " + L.down_mbit + " · ↑ " + L.up_mbit + " Mbit/s") : "", L && L.error ? "warn" : "");
+  const it = S.sec.items || [], nb = it.filter(x => x.level === "bad").length, nw = it.filter(x => x.level === "warn").length;
+  sum("sec", S.sec.running ? t("running…") : it.length ? [nb ? nb + " " + t(nb === 1 ? "problem" : "problems") : "", nw ? nw + " " + t(nw === 1 ? "warning" : "warnings") : ""].filter(Boolean).join(" · ") || t("all ok") : "",
+      !it.length ? "" : nb ? "bad" : nw ? "warn" : "ok");
+  const D = S.dual || {}, G = D.guard || {};
+  sum("dual", D.repeater ? "✅ " + t("Repeater on") : D.on ? t("Two adapters in use") : (D.adapters || []).length >= 2 ? t("Second adapter not in use") : t("Only one Wi-Fi adapter"), D.repeater ? "ok" : D.unstable || D.online === false ? "warn" : "");
+  const recent = (G.alarms || []).some(a => Date.now() / 1000 - a.t < 3600);
+  sum("guard", recent ? "⚠ " + t("Wi-Fi jamming!") : G.state === "listening" ? "👂 " + t("listening") : G.state === "off" ? t("off") : t(G.state || ""), recent ? "bad" : G.state === "listening" ? "ok" : "");
+  const W = S.wifi; sum("wifi", W.running ? t("running…") : W.best ? t("Best channel") + " " + W.best + " · " + W.nets.length + " " + t("networks") : "");
+  const B = S.bt, tk = (B.trackers || []).length; sum("bt", B.running ? t("running…") : B.t ? B.devices.length + " " + t("devices") + (tk ? " · 📍 " + tk : "") : "", tk ? "warn" : "");
+  const V = S.servo; sum("servo", V.running ? t("running…") : V.msg ? (V.msg === "ok" ? "✅ " + t("ok") : "⚠ " + (V.bad || "")) : "", V.msg && V.msg !== "ok" ? "warn" : V.msg ? "ok" : "");
+  const R = (S.sd || {}).res || {}; sum("sd", S.sd.running ? t("running…") : R.write_mb_s != null ? "✍ " + R.write_mb_s + " · 📖 " + R.read_mb_s + " MB/s" : "", {ok: "ok", warn: "warn", bad: "bad"}[R.verdict] || "");
+  if (S.power) sum("pow", S.power.watts.toFixed(1) + " W");
+}
+// tool mode: Motion Watch rests, the tools get the whole computer
+async function toolmode(min) {
+  if (min > 0 && S && S.toolmode && S.toolmode.armed && !confirm(t("tm-confirm"))) return;
+  const r = await post("/api/tools", {action: "toolmode", minutes: min}); if (!r.ok) toast(r.error || t("not possible")); else { S.toolmode = r.toolmode; drawTm(); }
+}
+function drawTm() {
+  const M = S.toolmode || {}; $("#tm").classList.toggle("on", !!M.on); $("#tm-off").hidden = !!M.on; $("#tm-on").hidden = !M.on;
+  $("#tm-cpu").textContent = M.cpu != null ? "CPU " + Math.round(M.cpu) + " %" + (M.temp != null ? " · " + Math.round(M.temp) + " °C" : "") : "";
+  $("#tm-note").textContent = M.on ? t("Camera, detection and alarms are paused - they come back by themselves.") : t("tm-note");
+  if (M.on) $("#tm-until").textContent = t("paused until") + " " + new Date(M.until * 1000).toLocaleTimeString(LOCALE || undefined, {hour: "2-digit", minute: "2-digit"});
+}
+// second Wi-Fi adapter + guard
+async function dualSet(key, value) { const r = await post("/api/tools", {action: "dual", key, value}); if (!r.ok) toast(r.error || t("not possible")); setTimeout(load, 800); }
+async function dualAct(a) { await post("/api/tools", {action: a}); setTimeout(load, 1500); }
+function spark(id, vals, lo, hi) { const n = vals.length; const sv = $(id).closest("svg"); if (sv) sv.style.display = n < 2 ? "none" : ""; $(id).setAttribute("points", n < 2 ? "" : vals.map((v, i) => (i * 300 / (n - 1)).toFixed(1) + "," + (48 - 46 * (Math.max(lo, Math.min(hi, v)) - lo) / Math.max(1, hi - lo)).toFixed(1)).join(" ")); }
+function drawDual() {
+  const D = S.dual; if (!D) return; const C = D.cfg || {};
+  ["wifi_dual", "wifi_swap", "net_inet_notify", "wifi_guard", "wifi_count", "wifi_presence"].forEach(k => { const e = $("#du-" + k); if (e) e.checked = !!C[k]; });
+  const th = $("#du-wifi_guard_thr"); if (document.activeElement !== th) th.value = C.wifi_guard_thr || 20;
+  const n = (D.adapters || []).length;
+  $("#du-st").textContent = D.repeater ? "✅ " + t("Repeater on") : D.on ? "📡 " + t("Two adapters in use") : n >= 2 ? "⏸ " + t("Second adapter not in use") : "1️⃣ " + t("Only one Wi-Fi adapter");
+  let note = "";
+  if (D.on) note = t("Own Wi-Fi") + ": " + D.ap + (D.hotspot.on ? " «" + (D.hotspot.ssid || "") + "» · " + (D.hotspot.clients || 0) + " " + t("devices") : " (" + t("off") + ")")
+      + " · " + t("Internet") + ": " + D.up + (D.uplink.connected ? " «" + D.uplink.ssid + "» " + D.uplink.dbm + " dBm" : " (" + t("not connected") + ")");
+  else if (D.msg) note = t(D.msg);
+  if (n < 2) note += (note ? " · " : "") + t("Plug in a USB Wi-Fi stick: then the Pi makes its own Wi-Fi and gets the internet from another network at the same time.");
+  if (D.online === false) note += " · ⚠ " + t("no internet") + (D.offline_since ? " " + t("since") + " " + fmtT(D.offline_since) : "");
+  if (D.unstable) note += " · ⚠ " + t("connection unstable");
+  if (D.iso_msg) note += " · ⚠ " + t("No internet for devices") + ": " + D.iso_msg;
+  $("#du-note").textContent = note;
+  const ab = $("#du-ads"); ab.innerHTML = "";
+  if (n) { const yn = (v, l) => t(l) + " " + (v == null ? "?" : v ? "✓" : "–");
+    D.adapters.forEach(a => { const role = a.iface === D.ap ? t("own Wi-Fi") : a.iface === D.up ? t("internet") : "";
+      const r = el("div", "adp"), h = el("div", "adp-h");
+      h.append(el("b", "", (a.usb ? "USB · " : t("Built in") + " · ") + a.iface), el("span", "mut", role));
+      const c = el("div", "", a.chip + (a.note ? " – " + t(a.note) : "")); if (a.usb_id) c.title = a.usb_id + " " + a.product + " (" + a.driver + ")";
+      r.append(h, c, el("div", "mut", [yn(a.five, "5 GHz"), yn(a.ap, "Own Wi-Fi"), yn(a.monitor, "Listening")].join(" · "))); ab.appendChild(r); }); }
+  const sg = (D.sig || []).map(x => x[1]); spark("#du-line", sg, -95, -30);
+  $("#du-sig").textContent = sg.length ? t("Signal of the internet adapter (4 hours)") + ": " + sg[sg.length - 1] + " dBm" + (sg[sg.length - 1] < -75 ? " – " + t("weak: put the stick higher or nearer, use a USB extension cable") : "") : "";
+  const lg = $("#du-log"); lg.innerHTML = ""; (D.log || []).slice(0, 6).forEach(x => lg.appendChild(el("div", "mut", fmtT(x.t) + " · " + t(x.text))));
+  const G = D.guard || {};
+  $("#gu-st").textContent = {listening: "👂 " + t("listening"), off: "⏸ " + t("off"), "no adapter": "–", "not possible": "⚠ " + t("not possible"), error: "⚠ " + t("error")}[G.state] || G.state;
+  $("#gu-msg").textContent = G.msg ? t(G.msg) : (G.iface ? t("with") + " " + G.iface : "");
+  const dm = G.deauth_min || []; spark("#gu-line", dm.map(x => x[1]), 0, Math.max(10, ...dm.map(x => x[2]))); spark("#gu-line2", dm.map(x => x[2]), 0, Math.max(10, ...dm.map(x => x[2])));
+  $("#gu-info").textContent = G.state === "listening" ? t("Disconnect frames last minute") + ": " + (G.deauth_now || 0) + " " + t("against your networks") + ", " + (G.all_now || 0) + " " + t("in total")
+      + (G.count_now != null ? " · " + t("devices nearby") + ": " + G.count_now : "") : "";
+  const ga = $("#gu-alarms"); ga.innerHTML = ""; (G.alarms || []).slice(0, 5).forEach(a => ga.appendChild(el("div", "newdev", "⚠ " + fmtT(a.t) + " · " + a.n + " / " + a.all)));
+}
+// power calculator
+let PWON = null;
+function drawPower() {
+  const P = S.power; if (!P) return;
+  $("#p-now").textContent = P.watts.toFixed(1) + " W"; $("#p-src").textContent = "(" + t(P.src === "estimate" ? "estimate" : "measured") + ")";
+  const box = $("#p-parts");
+  if (PWON === null) { PWON = {}; P.parts.forEach(p => PWON[p.name] = p.w !== 0); }
+  if (!box.dataset.n) { box.dataset.n = 1;
+    P.parts.forEach(p => { const l = el("label"), c = el("input"); c.type = "checkbox"; c.className = "sw"; c.checked = PWON[p.name]; c.onchange = () => { PWON[p.name] = c.checked; calc(); };
+      l.append(el("span", "", t(p.name)), el("b", "", ""), c); l.dataset.k = p.name; box.appendChild(l); }); }
+  const wh = $("#p-wh"); if (!wh.value && P.cap_wh) wh.value = Math.round(P.cap_wh);
+  $("#p-whn").textContent = P.cap_wh ? "" : "(" + t("Battery") + "?)"; wh.oninput = calc; calc();
+}
+const DEF_W = {"AI detection": 1.2, "Thermal camera": 0.4, "Power saving (when quiet)": -0.9, "Infrared light": 0.6, "White light": 0.6, "Own Wi-Fi (hotspot)": 0.3, "Patrol (servos)": 0.5};
+function calc() {
+  const P = S.power; let base = P.watts; P.parts.forEach(p => base -= p.w);
+  let w = base; document.querySelectorAll("#p-parts label").forEach(l => { const k = l.dataset.k, v = DEF_W[k] || 0; l.querySelector("b").textContent = (v > 0 ? "+" : "") + v.toFixed(1) + " W"; if (PWON[k]) w += v; });
+  w = Math.max(0.5, w); const wh = +$("#p-wh").value || 0; const r = $("#p-res"); r.innerHTML = "";
+  [["Basic consumption", base.toFixed(1) + " W"], ["Consumption", w.toFixed(1) + " W · " + (w * 24).toFixed(0) + " Wh " + t("per day")], ["Running time", wh ? (wh / w).toFixed(1) + " " + t("hours") : "–"]]
+    .forEach(([a, b]) => r.append(el("span", "", t(a)), el("span", "", b)));
+}
+// focus + microphone (live, twice a second while the page is open)
+let FON = false, FH = [];
+function focusToggle() { FON = !FON; $("#b-focus").textContent = t(FON ? "Stop" : "Start"); if (FON) FH = []; }
+async function live() {
+  if (!document.hidden) {
+    const r = await fetch("/api/tools/live" + (FON ? "?focus=1" : "")).then(x => x.ok ? x.json() : null).catch(() => null);
+    if (r) {
+      const a = r.audio || {}, lv = a.level == null ? null : +a.level; sum("audio", a.dev ? "🎤 " + (lv == null ? "–" : lv.toFixed(0) + " dB") : t("no microphone")); $("#a-bar").style.width = lv == null ? "0" : Math.max(0, Math.min(100, Math.round((lv + 70) / 70 * 100))) + "%";
+      $("#a-info").textContent = a.dev ? t("Microphone") + ": " + a.dev + " · " + t("Level") + " " + (lv == null ? "–" : lv.toFixed(0) + " dB") : t("no microphone");
+      if (FON && r.focus && r.focus.val != null) { const f = r.focus; $("#f-spark").style.display = ""; FH.push(f.val); FH = FH.slice(-60);
+        $("#f-val").textContent = Math.round(f.val); sum("focus", Math.round(f.val) + " / " + Math.round(f.best), "ok"); $("#f-best").textContent = t("best") + ": " + Math.round(f.best);
+        $("#f-bar").style.width = Math.round(100 * f.val / Math.max(1, f.best)) + "%";
+        const mx = Math.max(...FH, 1), mn = Math.min(...FH); $("#f-line").setAttribute("points", FH.map((v, i) => (i * 300 / 59).toFixed(1) + "," + (48 - 46 * (v - mn) / Math.max(1, mx - mn)).toFixed(1)).join(" "));
+        if (FH.length > 6) { const a1 = FH.slice(-3).reduce((x, y) => x + y) / 3, a0 = FH.slice(-7, -4).reduce((x, y) => x + y) / 3; $("#f-trend").textContent = a1 > a0 * 1.05 ? "↑ " + t("sharper") : a1 < a0 * 0.95 ? "↓ " + t("less sharp") : "→ " + t("about the same"); } }
+    }
+  }
+  setTimeout(live, 500);
+}
+async function soundTest() { const r = await post("/api/audio", {action: "test"}); if (r && r.ok === false) toast(r.error || t("not possible")); }
+(async () => { await initAppearance(); load(); live(); })();
+/*ALERTS*/
+</script></body></html>
+"""
+
+
 NAV_ITEMS = [("live", "/", "Live"), ("cams", "/cams", "Cameras"), ("rec", "/recordings", "Recordings"), ("zones", "/zones", "Zones"),
-             ("diary", "/diary", "Diary"), ("help", "/help", "Manual")]
+             ("diary", "/diary", "Diary"), ("tools", "/tools", "Tools"), ("help", "/help", "Manual")]
 
 
 def nav_html(active):
@@ -16152,7 +18182,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
 let LANG = "", THEME = "";
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
-const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch"}};
+const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Tools": "Werkzeuge"}};
 const t = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
@@ -17412,6 +19442,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       </div>
       <div class="mut" id="sys-supply" style="margin-top:8px"></div>
       <div class="mut" id="sys-remote" style="margin-top:4px"></div>
+      <div class="mut" id="sys-proj" style="margin-top:4px;white-space:pre-wrap"></div>
       <details class="adv sblk" data-view="sysblk:power"><summary data-i18n="⏻ Switch off, restart, pause">⏻ Switch off, restart, pause</summary>
       <div class="btns pwr">
         <button type="button" class="red" id="pw-off" onclick="powerAct('poweroff')" data-i18n="⏻ Shut down Pi">⏻ Shut down Pi</button>
@@ -19229,6 +21260,16 @@ function updateSecurity(s) {
       + " · " + (rem.length ? t("watching now") + ": " + rem.join(", ") : t("nobody from outside"));
     rl.style.color = rem.length ? "var(--org)" : "";
   }
+  const pj = $("#sys-proj"), P = s.project;
+  if (pj && P) {
+    const mb = v => v >= 1024 ? (v / 1024).toFixed(1) + " GB" : v + " MB";
+    const dur = n => n < 3600 ? Math.round(n / 60) + " min" : n < 86400 ? Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min" : Math.floor(n / 86400) + " " + t("days") + " " + Math.floor(n % 86400 / 3600) + " h";
+    pj.textContent = "📦 " + t("Program") + ": Motion Watch " + P.version + " · " + (P.file_kb >= 1024 ? (P.file_kb / 1024).toFixed(2) + " MB" : P.file_kb + " KB") + " · " + (P.lines || 0).toLocaleString("de-CH") + " " + t("lines")
+      + "\n🗂 " + t("Data") + ": " + mb(P.data_mb) + " (" + P.data_n + " " + t("files") + ")" + (P.settings_kb != null ? " · " + t("settings") + " " + P.settings_kb + " KB" : "")
+      + " · " + t("recordings") + " " + mb(P.rec_mb) + " (" + P.rec_n + ")" + (P.sim_mb ? " · " + t("simulator") + " " + mb(P.sim_mb) : "")
+      + "\n⏱ " + t("running for") + " " + dur(P.run_s) + (P.ram_mb != null ? " · " + t("memory") + " " + P.ram_mb + " MB" : "") + " · Python " + P.python
+      + (P.model || P.os ? "\n🖥 " + [P.model, P.os].filter(Boolean).join(" · ") : "");
+  }
   const bp = $("#b-pwr");
   if (bp) {
     const low = dk.free_mb != null && dk.free_mb < 500;
@@ -19553,23 +21594,49 @@ function solarText(c, s) {
   return L.join("\n");
 }
 function solarPaint(c, s) { const st = $("#solar-st"); if (st) st.textContent = solarText(c, s); }
-Object.assign(I18N.de, {"Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera"});
+Object.assign(I18N.de, {"Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera"});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
 function simExtras(d) {
-  const box = el("div", "auxbox"); const st = el("div", "mut"); st.id = "sim-st"; st.style.whiteSpace = "pre-wrap";
-  box.appendChild(el("div", "mut", t("A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.")));
-  const b = el("button", "", ""); b.type = "button"; b.id = "sim-btn"; b.style.marginTop = "8px";
+  // the settings of the section (switches, address, slider) go into a fold-out «Settings»
+  const rows = [...d.children].filter(x => x.tagName !== "SUMMARY");
+  const box = el("div", "auxbox"); box.id = "sim-main";
+  const head = el("div", ""); head.id = "sim-head"; head.style.cssText = "font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap";
+  const st = el("div", "mut"); st.id = "sim-st"; st.style.cssText = "white-space:pre-wrap;margin-top:2px";
+  const b = el("button", "", ""); b.type = "button"; b.id = "sim-btn"; b.style.cssText = "margin-top:10px;width:100%";
   b.onclick = async () => { const on = !(QSJ && QSJ.state.sim && QSJ.state.sim.on); b.disabled = true; await post("/api/sim", {on: on, lang: LANG}); b.disabled = false; refresh(); };
-  const tools = el("div", "btns"); tools.style.flexWrap = "wrap"; tools.id = "sim-tools";
+  const stats = el("div", ""); stats.id = "sim-stats"; stats.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px;margin-top:10px";
+  box.append(head, st, stats, b);
+  // ---- search in the network ----
+  const nb = el("div", "auxbox"); nb.style.marginTop = "10px";
+  const nh = el("div", "", "🔎 " + t("Simulators in the network")); nh.style.fontWeight = "600";
+  const srch = el("button", "sec", "🔎 " + t("Search now")); srch.type = "button"; srch.id = "sim-search"; srch.style.cssText = "margin-top:8px;width:100%";
+  srch.onclick = async () => { srch.disabled = true; await post("/api/sim", {action: "search", lang: LANG}); refresh(); setTimeout(() => { srch.disabled = false; }, 2500); };
+  const sl = el("div", "mut"); sl.id = "sim-scan"; sl.style.cssText = "margin-top:6px;white-space:pre-wrap";
+  const fnd = el("div", ""); fnd.id = "sim-found"; fnd.style.marginTop = "6px";
+  nb.append(nh, sl, fnd, srch);
+  // ---- settings (moved here) ----
+  const set = el("details", "sub"); set.style.marginTop = "10px"; set.appendChild(el("summary", "", "⚙️ " + t("Settings")));
+  const sbody = el("div", ""); sbody.style.padding = "4px 0";
+  rows.forEach(x => sbody.appendChild(x));
+  sbody.appendChild(el("div", "mut", t("A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.")));
+  set.appendChild(sbody);
+  // ---- tools ----
+  const tl = el("details", "sub"); tl.style.marginTop = "6px"; tl.appendChild(el("summary", "", "🧰 " + t("Tools")));
+  const tools = el("div", ""); tools.id = "sim-tools"; tools.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 0";
   const mk = (id, txt, act) => { const x = el("button", "sec", txt); x.type = "button"; x.id = id;
     x.onclick = async () => { x.disabled = true; const r = await post("/api/sim", {action: act, lang: LANG}); x.disabled = false;
       toast(r.ok ? "✓ " + t({install: "Simulator installed", start: "Simulator started", stop: "Simulator stopped"}[act]) : "⚠ " + (r.error || "error")); refresh(); };
     return x; };
   const dl = el("a", "btn sec", "⬇ " + t("Download for a PC (ZIP)")); dl.href = "/sim/simulator.zip";
   const pv = el("a", "btn sec", "📱 " + t("Phone / tablet view")); pv.href = "/preview"; pv.target = "_blank";
+  const d3 = el("a", "btn", "🎮 " + t("3D simulator for Windows (ZIP)")); d3.href = "/sim/simulator3d.zip?lang=" + (LANG || "");
+  const d3n = el("div", "mut", t("Link for the PC browser") + ": " + location.origin + "/sim/simulator3d.zip"); d3n.style.cssText = "grid-column:1/-1;font-size:12px;word-break:break-all";
+  d3.style.gridColumn = "1/-1";
   tools.append(mk("sim-inst", "📦 " + t("Install simulator on the Pi"), "install"), mk("sim-start", "▶ " + t("Start simulator here"), "start"),
-               mk("sim-stop", "⏹ " + t("Stop simulator"), "stop"), dl, pv);
-  box.append(b, tools, st);
+               mk("sim-stop", "⏹ " + t("Stop simulator"), "stop"), dl, pv, d3, d3n);
+  tools.querySelectorAll("button,a").forEach(x => { x.style.fontSize = "13px"; x.style.padding = "8px"; });
+  tl.appendChild(tools);
+  box.append(nb, set, tl);
   // ---- remote control of the simulator: it describes its scenarios and controls itself (CONTROL protocol 1) ----
   const vb = el("div", "auxbox"); vb.id = "sim-vbox"; vb.style.marginTop = "10px"; vb.hidden = true;
   const hd = el("div", "", "🎮 " + t("Simulator control")); hd.id = "sim-chd"; hd.style.fontWeight = "600";
@@ -19662,7 +21729,35 @@ function simPaint(s) {
     $("#sim-start").hidden = !!S.running; $("#sim-stop").hidden = !S.running; }
   if (b) b.textContent = S.on ? "⏹ " + t("Switch the simulation off") : "🧪 " + t("Switch the simulation on");
   const vb = $("#sim-vbox"); if (vb) { const vis = !!S.ok; if (vis && (vb.hidden || !vb.dataset.loaded)) { vb.dataset.loaded = "1"; window.simCtl && window.simCtl(); } vb.hidden = !vis; }
-  if (st) st.textContent = (S.running ? "▶ " + t("the simulator runs on this Pi") + "\n" : "") + (!S.on ? t("off - the real cameras and sensors are used") : (S.ok ? "🟢 " + t("connected") + " · " + S.url + " · " + (S.dark ? t("night") : t("day")) + " · " + S.ambient + " °C" : "🔴 " + t(S.msg || "not reachable") + " · " + S.url));
+  const hd = $("#sim-head"), T = S.stats || {};
+  if (hd) hd.textContent = !S.on ? "⚪ " + t("Simulation off") : (S.ok ? "🟢 " + (T.name || t("connected")) : "🔴 " + t("Simulator not reachable"));
+  const sg = $("#sim-stats");
+  if (sg) { const tile = (k, v) => '<div style="border:1px solid var(--line);border-radius:10px;padding:6px 8px"><div class="mut" style="font-size:11px">' + k + '</div><div style="font-weight:600">' + v + '</div></div>';
+    const dur = n => n == null ? "–" : n < 60 ? n + " s" : n < 3600 ? Math.floor(n / 60) + " min" : Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min";
+    sg.hidden = !S.on;
+    sg.innerHTML = tile(t("Connected for"), dur(T.since)) + tile(t("Response time"), T.rtt == null ? "–" : T.rtt + " ms") + tile(t("Camera pictures/s"), T.cam_fps == null ? "–" : T.cam_fps)
+      + tile(t("Thermal pictures/s"), T.th_fps == null ? "–" : T.th_fps) + tile(t("Messages sent"), T.sent || 0) + tile(t("Sensor events"), T.events || 0) + tile(t("Errors"), T.errs || 0); }
+  const sc = $("#sim-scan"), SC = S.scan || {};
+  if (sc) { const ago = SC.t ? Math.round(Date.now() / 1000 - SC.t) : null;
+    sc.textContent = SC.running ? "⏳ " + t("Searching") + " " + SC.net + " … " + Math.round(100 * (SC.done || 0) / Math.max(1, SC.hosts || 1)) + " % · " + (SC.found || 0) + " " + t("found")
+      : (SC.t ? t("Last search") + ": " + (ago < 60 ? ago + " s" : Math.round(ago / 60) + " min") + " · " + SC.hosts + " " + t("addresses in") + " " + SC.secs + " s · " + SC.found + " " + t("found") + " (" + SC.net + ")"
+        : t("Simulators announce themselves every 2 s. «Search now» also asks every address of the network.")); }
+  const fb = $("#sim-found");
+  if (fb) { const F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.count, x.ms, x.age > 5])) + S.url;
+    if (fb.dataset.sig !== sig) { fb.dataset.sig = sig; fb.textContent = "";
+      if (!F.length) fb.appendChild(el("div", "mut", t("No simulator announces itself in the network right now.")));
+      F.forEach(x => { const r = el("div"); r.style.cssText = "display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:10px;margin-top:6px";
+        const cur = S.url === "http://" + x.ip + ":" + x.port;
+        const info = el("div"); info.style.flex = "1";
+        info.append(el("div", "", (cur ? "✅ " : "🖥 ") + x.name), el("div", "mut", x.ip + ":" + x.port + (x.ip === "127.0.0.1" ? " · " + t("this device") : "") + (x.version ? " · v" + x.version : "")));
+        const f = new Date((x.first || x.t) * 1000);
+        info.appendChild(el("div", "mut", t("seen since") + " " + (("0" + f.getHours()).slice(-2) + ":" + ("0" + f.getMinutes()).slice(-2)) + " · " + t("last") + " " + x.age + " s · "
+          + (x.count ? x.count + " " + t("messages") : t("found by the search")) + (x.ms != null ? " · " + x.ms + " ms" : "")));
+        info.lastChild.style.fontSize = "12px"; r.appendChild(info);
+        if (!cur) { const u = el("button", "sec", t("Use")); u.type = "button"; u.onclick = async () => { await post("/api/sim", {action: "use", ip: x.ip, port: x.port, lang: LANG}); refresh(); }; r.appendChild(u); }
+        fb.appendChild(r); }); } }
+  if (st) st.textContent = (!S.on ? t("off - the real cameras and sensors are used") + " · " + S.url : (S.ok ? S.url + " · " + (S.dark ? t("night") : t("day")) + " · " + S.ambient + " °C" : t(S.msg || "not reachable") + " · " + S.url))
+    + (S.running ? "\n▶ " + t("the simulator runs on this Pi") : "");
   const bs = $("#b-sim"); if (bs) { bs.hidden = !S.on; bs.textContent = "🧪 " + t("SIMULATION") + (S.on && !S.ok ? " ⚠" : ""); }
 }
 function gpsExtras(d) {
@@ -20172,6 +22267,8 @@ function netTxt(x) {
   if (!x) return "";
   let m = /^connected with «(.*)»$/.exec(x); if (m) return "✓ " + t("connected with") + " «" + m[1] + "»";
   m = /^no known network - own Wi-Fi in (\d+) s$/.exec(x); if (m) return t("no known network - own Wi-Fi in") + " " + m[1] + " s";
+  m = /^own Wi-Fi on \+ internet from «(.*)»$/.exec(x); if (m) return "✓ " + t("own Wi-Fi on + internet from") + " «" + m[1] + "» (" + t("repeater") + ")";
+  if (x === "own Wi-Fi on - the second adapter looks for known networks") return t(x);
   m = /^own Wi-Fi on - next search in (\d+) min$/.exec(x); if (m) return t("own Wi-Fi on - next search for known networks in") + " " + m[1] + " min";
   return NETTXT()[x] !== undefined ? NETTXT()[x] : x;
 }
@@ -22044,6 +24141,17 @@ class WebStream:
                     if c_ in ("scenario", "delete"):
                         log_event("sys", f"Simulator: {c_} {q_.get('id', '')[:80]}")
                     return reply(dict(r, ok=True))
+                if act_ == "search":
+                    sim_scan()
+                    return reply(dict(sim_status(), ok=True))
+                if act_ == "use":                            # take over a simulator that was found in the network
+                    ip_, port_ = str(d.get("ip") or ""), int(d.get("port") or 8765)
+                    if not re.fullmatch(r"[0-9.]{7,15}", ip_) or not (1 <= port_ <= 65535):
+                        return reply({"ok": False, "error": "bad address"}, 400)
+                    CFG["sim_url"] = f"http://{ip_}:{port_}"; save_settings()
+                    log_event("sys", f"Simulator address set to {CFG['sim_url']} (web)")
+                    if CFG["sim_on"] and WATCH_REF.get("w") is not None and str(CFG["source"]).startswith("sim:"):
+                        w_ = WATCH_REF["w"]; w_._open_gen += 1; w_._start_opener(CFG["source"])
                 if act_ in ("install", "start", "stop"):
                     try:
                         ok, msg = {"install": sim_install, "start": sim_start, "stop": sim_stop}[act_]()
@@ -22077,6 +24185,18 @@ class WebStream:
                 return reply({"ok": False, "error": tr_err(str(r.get("error") or "not supported - update the simulator"), lang)}, 400)
             log_event("sys", f"Video for the simulator uploaded: {r.get('saved', name)} ({n / 1024 ** 2:.0f} MB)")
             return reply(dict(r, ok=True))
+
+        @app.route("/sim/simulator3d.zip")
+        def sim3d_zip():
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
+            if sim3d_ready():
+                return send_file(sim3d_path(), mimetype="application/zip", as_attachment=True,
+                                 download_name=f"MotionWatch3D_Simulator_{SIM3D['version']}.zip", conditional=True)
+            if request.args.get("retry"):
+                SIM3D_DL["msg"] = ""
+            if not SIM3D_DL["msg"]:
+                sim3d_fetch()
+            return Response(sim3d_wait_page(lang), mimetype="text/html", headers={"Cache-Control": "no-store"})
 
         @app.route("/sim/simulator.zip")
         def sim_zip():
@@ -22275,6 +24395,7 @@ class WebStream:
             with LOCK:
                 st = {k: v for k, v in STATE.items() if k != "events"}
                 st["viewers"] = viewers_now()
+                st["project"] = project_info()
                 st["gps"] = gps_state()
                 st["gpsmod"] = {"status": GPSMOD["status"], "via": GPSMOD["via"], "sats": GPSMOD["sats"], "lat": GPSMOD["lat"], "lon": GPSMOD["lon"],
                                 "age": int(time.time() - GPSMOD["t"]) if GPSMOD["t"] else None, "anchor": bool(GPSMOD["anchor"]), "dist": GPSMOD.get("dist"),
@@ -22922,6 +25043,69 @@ class WebStream:
         @app.route("/apple-touch-icon-precomposed.png")
         def icon180():
             return Response(app_icon_png(180, host_variant()), mimetype="image/png", headers={"Cache-Control": "no-cache"})
+
+        # ---- tools page ----
+        @app.route("/tools")
+        def tools_page():
+            return Response(render_page(TOOLS_PAGE, "tools"), mimetype="text/html")
+
+        @app.route("/api/tools", methods=["GET", "POST"])
+        def api_tools():
+            if request.method == "GET":
+                return reply(tools_state())
+            d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
+            jobs = {"net": net_scan, "wifi": wifi_survey, "speed": speed_test, "sec": security_check, "bt": bt_scan, "sd": sd_test}
+            if a in jobs:
+                if TOOLS[a].get("running"):
+                    return reply({"ok": False, "error": tr_err("already running", lang)}, 409)
+                if a == "sec":
+                    TOOLS["sec"]["running"] = True
+                    def _sec():
+                        try:
+                            security_check()
+                        finally:
+                            TOOLS["sec"]["running"] = False
+                    threading.Thread(target=_sec, daemon=True, name="tool-sec").start()
+                else:
+                    threading.Thread(target=jobs[a], daemon=True, name="tool-" + a).start()
+                log_event("web", f"Tool started: {a} ({request.remote_addr or '?'})")
+                return reply({"ok": True})
+            if a == "servo":
+                ok = servo_test()
+                return reply({"ok": ok, "error": None if ok else tr_err("not possible now", lang)}, 200 if ok else 409)
+            if a == "known":
+                ok = net_known_set(d.get("mac"), d.get("name"))
+                return reply({"ok": ok, "error": None if ok else tr_err("bad address", lang)}, 200 if ok else 400)
+            if a == "dual":
+                ok, err = dual_set(d.get("key"), d.get("value"))
+                return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
+            if a == "noinet":
+                ok, err = noinet_set(d.get("mac"), bool(d.get("value")))
+                for d_ in TOOLS["net"]["devices"]:
+                    d_["noinet"] = d_["mac"] in (CFG.get("net_noinet") or [])
+                return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
+            if a == "adapters":
+                dual_roles()
+                return reply({"ok": True})
+            if a == "toolmode":
+                ok, err = toolmode_set(d.get("minutes"), "web " + (request.remote_addr or "?"))
+                return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "toolmode": toolmode_state()}, 200 if ok else 400)
+            if a == "cfg":
+                ok, err = tools_cfg(d.get("key"), d.get("value"), d.get("mac"))
+                return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
+            return reply({"ok": False, "error": tr_err("unknown action", lang)}, 400)
+
+        @app.route("/api/tools/live")
+        def api_tools_live():
+            f = focus_value() if request.args.get("focus") == "1" else None
+            a_ = STATE.get("audio") or {}
+            return reply({"focus": f, "audio": {"level": a_.get("level"), "dev": a_.get("dev"), "status": a_.get("status")}})
+
+        @app.route("/tools/diag.zip")
+        def tools_diag():
+            log_event("web", f"Diagnosis package downloaded ({request.remote_addr or '?'})")
+            return Response(diag_zip(), mimetype="application/zip",
+                            headers={"Content-Disposition": f'attachment; filename="motionwatch_diagnose_{datetime.now():%Y%m%d_%H%M}.zip"'})
 
         # ---- animal diary + night report ----
         @app.route("/diary")
@@ -23971,6 +26155,7 @@ SLIDERS = [  # (section, key, label, min, max, step)
 ]
 TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_eco", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)"),
+    ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when Motion Watch starts in the background"),
     ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
@@ -24440,7 +26625,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.80.0")
+        self.root.title("Motion Watch 2.90.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -24730,7 +26915,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.80.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.90.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -25395,6 +27580,8 @@ class App:
         if sec in ("Setup", "Camera / Servos", "Video source", "Schedule", "Patrol", "AI detection", "Web stream", "Auto-tune", "Notifications", "Timelapse", "Thermal camera", "Wi-Fi / hotspot", "Camping / protection", "Microphone", "Loudspeaker", "Lights", "Servo driver"):
             self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels[sec].pack(anchor="w")
+        if sec == "Web stream":
+            ttk.Button(sbody, text=tr("Tools: network, Wi-Fi, tests (browser)"), command=lambda: self._open_page("/tools")).pack(fill="x", pady=(4, 0))
         if sec in ("Night report", "Battery", "Guest access"):
             self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels[sec].pack(anchor="w")
@@ -25971,7 +28158,8 @@ class App:
         si_ = sim_status()
         self._status("Simulator", (tr("off - the real cameras and sensors are used") if not si_["on"] else
                                    (tr("connected") + f" · {si_['url']} · " + (tr("night") if si_["dark"] else tr("day")) + f" · {si_['ambient']} °C"
-                                    if si_["ok"] else tr_err(si_["msg"]) + " · " + si_["url"])))
+                                    if si_["ok"] else tr_err(si_["msg"]) + " · " + si_["url"]))
+                     + ("\n🔎 " + tr("Simulators in the network:") + " " + ", ".join(f"{x['name']} ({x['ip']}:{x['port']})" for x in si_["found"]) if si_["found"] else ""))
         so_ = st.get("solar") or {}; nf_ = st.get("night")
         l_ = [(tr("off") if not CFG["solar_on"] else tr("no current meter found at this address") if not so_.get("ok")
                else f"{so_['w']} W ({so_['v']} V · {so_['a']} A) · {tr('today')} {so_['wh']} Wh · {tr('max.')} {so_['max']} W")]
@@ -26793,8 +28981,12 @@ class App:
         ts_, rem = st.get("remote_ts") or {}, st.get("remote") or []
         ts_txt = (tr("not installed") if not ts_.get("state") else
                   (tr("connected") + (f" · http://{ts_['ip']}:{CFG['web_port']}/" if ts_.get("ip") else "") if ts_["state"] == "Running" else ts_["state"]))
+        pj_ = project_info()
         self._status("Web stream", f"{st['web_status']}  (http://<pi-ip>:{CFG['web_port']}/)\n🌐 Tailscale: {ts_txt} · "
-                     + (f"{tr('watching now')}: {', '.join(rem)}" if rem else tr("nobody from outside")))
+                     + (f"{tr('watching now')}: {', '.join(rem)}" if rem else tr("nobody from outside"))
+                     + f"\n📦 {tr('Program')}: {pj_.get('version')} · {pj_.get('file_kb', 0) / 1024:.2f} MB · {pj_.get('lines', 0)} {tr('lines')}"
+                     + f" · {tr('Data')}: {pj_.get('data_mb')} MB · {tr('recordings')} {pj_.get('rec_mb')} MB ({pj_.get('rec_n')})"
+                     + (f" · {tr('memory')} {pj_['ram_mb']} MB" if pj_.get("ram_mb") else ""))
         self._status("Auto-tune", f"{st['auto_status']} · {st['auto_changes']} {tr('automatic changes')}")
         self._status("Notifications", f"{tr('status')}: {st['notify_status']}")
         hs = st["hotspot"] or {}
@@ -31389,6 +33581,43 @@ for _k, _v in _HX37.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX51 = {'tool mode': ('Werkzeug-Modus', 'mode outils', 'modalità strumenti', "modus d'utensils"), 'Full power for the tools': ('Volle Leistung für die Werkzeuge', 'Toute la puissance pour les outils', 'Tutta la potenza per gli strumenti', 'Tut la forza per ils utensils'), 'Pause Motion Watch': ('Motion Watch pausieren', 'Mettre Motion Watch en pause', 'Mettere in pausa Motion Watch', 'Pausar Motion Watch'), 'Resume now': ('Jetzt fortsetzen', 'Reprendre maintenant', 'Riprendi ora', 'Cuntinuar ussa'), 'paused until': ('pausiert bis', "en pause jusqu'à", 'in pausa fino alle', 'pausà fin'), 'not a number': ('keine gültige Zahl', 'pas un nombre valide', 'numero non valido', 'betg in numer valid')}
+for _k, _v in _HX51.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX50 = {'3D simulator for Windows': ('3D-Simulator für Windows', 'Simulateur 3D pour Windows', 'Simulatore 3D per Windows', 'Simulatur 3D per Windows'), '3D simulator for Windows (ZIP)': ('3D-Simulator für Windows (ZIP)', 'Simulateur 3D pour Windows (ZIP)', 'Simulatore 3D per Windows (ZIP)', 'Simulatur 3D per Windows (ZIP)'), 'Link for the PC browser': ('Link für den Browser am PC', 'Lien pour le navigateur du PC', 'Link per il browser del PC', 'Link per il navigatur dal PC'), 'could not be prepared': ('konnte nicht vorbereitet werden', "n'a pas pu être préparé", 'non è stato possibile prepararlo', "n'ha betg pudì vegnir preparà"), 'Try again': ('Nochmals versuchen', 'Réessayer', 'Riprova', 'Empruvar anc ina giada'), 'The Pi prepares the download once (about 30 MB) …': ('Der Pi bereitet den Download einmalig vor (etwa 30 MB) …', 'Le Pi prépare le téléchargement une seule fois (environ 30 Mo) …', 'Il Pi prepara il download una sola volta (circa 30 MB) …', 'Il Pi prepara la telechargiada ina giada (circa 30 MB) …'), 'The download starts by itself.': ('Der Download startet danach von selbst.', 'Le téléchargement démarre ensuite tout seul.', 'Il download parte poi da solo.', 'La telechargiada cumenza lura da sasezza.'), 'checksum wrong - the file was changed or is damaged': ('Prüfsumme falsch – die Datei wurde verändert oder ist beschädigt', 'somme de contrôle fausse - fichier modifié ou endommagé', 'checksum errato - file modificato o danneggiato', 'summa da controlla sbagliada - la datoteca è vegnida midada u è donnegiada')}
+for _k, _v in _HX50.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX49 = {'Internet was gone for {min} min - it is back ({ssid})': ('Internet war {min} Min. weg – es ist wieder da ({ssid})', 'Internet était coupé {min} min - il est revenu ({ssid})', 'Internet assente per {min} min - è tornato ({ssid})', 'Internet era davent {min} min - el è puspè qua ({ssid})'), 'No internet over «{a}» - changed to «{b}»': ('Kein Internet über «{a}» – gewechselt zu «{b}»', "Pas d'internet via «{a}» - passage à «{b}»", 'Nessun internet tramite «{a}» - passato a «{b}»', 'Nagin internet sur «{a}» - midà a «{b}»'), 'No internet - «{b}» did not work either': ('Kein Internet – «{b}» ging auch nicht', "Pas d'internet - «{b}» ne fonctionne pas non plus", 'Nessun internet - anche «{b}» non funziona', "Nagin internet - «{b}» n'ha era betg funcziunà"), 'Wi-Fi connection dropped 3 times in 10 minutes although the signal is good - interference or jamming?': ('WLAN-Verbindung 3-mal in 10 Minuten abgebrochen, obwohl das Signal gut ist – Störung oder Störsender?', 'Connexion Wi-Fi coupée 3 fois en 10 minutes malgré un bon signal - interférence ou brouillage ?', 'Connessione Wi-Fi interrotta 3 volte in 10 minuti nonostante il buon segnale - interferenza o disturbo?', 'Colliaziun WLAN interrutta 3 giadas en 10 minutas, schebain il signal è bun - disturbi?'), 'Wi-Fi jamming: {n} disconnect frames in one minute ({all} in total on the channel)': ('WLAN-Störung: {n} Trennungs-Meldungen in einer Minute ({all} insgesamt auf dem Kanal)', 'Brouillage Wi-Fi : {n} trames de déconnexion en une minute ({all} au total sur le canal)', 'Disturbo Wi-Fi: {n} frame di disconnessione in un minuto ({all} in totale sul canale)', 'Disturbi WLAN: {n} messadis da separaziun en ina minuta ({all} en total sin il chanal)'), 'Wi-Fi jamming attack': ('WLAN-Störangriff', 'Attaque de brouillage Wi-Fi', 'Attacco di disturbo Wi-Fi', 'Attatga da disturbi WLAN'), 'Network': ('Netz', 'Réseau', 'Rete', 'Rait'),
+ 'Second Wi-Fi adapter: off - back to one adapter': ('Zweiter WLAN-Adapter: aus – zurück zu einem Adapter', 'Second adaptateur Wi-Fi : désactivé - retour à un adaptateur', 'Secondo adattatore Wi-Fi: spento - di nuovo un adattatore', 'Segund adapter WLAN: deactivà - enavos ad in adapter'),
+ 'Second Wi-Fi adapter: own Wi-Fi on {ap} ({a}), internet over {up} ({b})': ('Zweiter WLAN-Adapter: eigenes WLAN auf {ap} ({a}), Internet über {up} ({b})', 'Second adaptateur Wi-Fi : Wi-Fi propre sur {ap} ({a}), internet via {up} ({b})', 'Secondo adattatore Wi-Fi: Wi-Fi proprio su {ap} ({a}), internet tramite {up} ({b})', 'Segund adapter WLAN: agen WLAN sin {ap} ({a}), internet sur {up} ({b})'), 'own Wi-Fi on + internet from': ('Eigenes WLAN ein + Internet von', 'Wi-Fi propre actif + internet de', 'Wi-Fi proprio attivo + internet da', 'Agen WLAN activ + internet da'), 'repeater': ('Repeater', 'répéteur', 'ripetitore', 'repetitur'), 'own Wi-Fi on - the second adapter looks for known networks': ('Eigenes WLAN ein – der zweite Adapter sucht bekannte Netze', 'Wi-Fi propre actif - le second adaptateur cherche des réseaux connus', 'Wi-Fi proprio attivo - il secondo adattatore cerca reti note', 'Agen WLAN activ - il segund adapter tschertga raits enconuschentas'), 'Wi-Fi adapters and repeater': ('WLAN-Adapter und Repeater', 'Adaptateurs Wi-Fi et répéteur', 'Adattatori Wi-Fi e ripetitore', 'Adapters WLAN e repetitur'), 'Wi-Fi guard': ('WLAN-Wächter', 'Gardien Wi-Fi', 'Guardiano Wi-Fi', 'Guardian WLAN')}
+for _k, _v in _HX49.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX48 = {'Tools: network, Wi-Fi, tests (browser)': ('Werkzeuge: Netz, WLAN, Tests (Browser)', 'Outils : réseau, Wi-Fi, tests (navigateur)', 'Strumenti: rete, Wi-Fi, test (browser)', 'Utensils: rait, WLAN, tests (navigatur)'), 'new device in the network': ('neues Gerät im Netz', 'nouvel appareil dans le réseau', 'nuovo dispositivo nella rete', 'nov apparat en la rait'), 'unknown tracker nearby': ('fremder Tracker in der Nähe', 'traceur inconnu à proximité', 'tracker sconosciuto nelle vicinanze', 'tracker nunenconuschent en la vischinanza'), 'already running': ('läuft bereits', 'déjà en cours', 'già in corso', 'gia en funcziun'), 'not possible now': ('jetzt nicht möglich', 'impossible maintenant', 'non possibile ora', 'ussa betg pussaivel'), 'bad address': ('ungültige Adresse', 'adresse invalide', 'indirizzo non valido', 'adressa nunvalida'), 'bad value': ('ungültiger Wert', 'valeur invalide', 'valore non valido', 'valur nunvalida'), 'unknown setting': ('unbekannte Einstellung', 'réglage inconnu', 'impostazione sconosciuta', 'parameter nunenconuschent'), 'Network scanner': ('Netzwerkscanner', 'Scanner réseau', 'Scanner di rete', 'Scanner da rait'), 'Am I at home?': ('Bin ich zu Hause?', 'Suis-je à la maison ?', 'Sono a casa?', 'Sun jau a chasa?'), 'Wi-Fi around': ('WLAN-Umgebung', 'Wi-Fi alentour', 'Wi-Fi nei dintorni', 'WLAN enturn'), 'Internet test': ('Internet-Test', 'Test Internet', 'Test Internet', "Test d'internet"), 'Security check': ('Sicherheits-Check', 'Contrôle de sécurité', 'Controllo di sicurezza', 'Controlla da segirezza'), 'Bluetooth scanner': ('Bluetooth-Scanner', 'Scanner Bluetooth', 'Scanner Bluetooth', 'Scanner Bluetooth'), 'Focus assistant': ('Fokus-Assistent', 'Assistant de mise au point', 'Assistente di messa a fuoco', 'Assistent da focus'), 'Servo test': ('Servo-Test', 'Test des servos', 'Test dei servo', 'Test dals servos'), 'Speaker and microphone': ('Lautsprecher und Mikrofon', 'Haut-parleur et micro', 'Altoparlante e microfono', 'Autpledader e microfon'), 'Memory card test': ('Speicherkarten-Test', 'Test de la carte mémoire', 'Test della scheda di memoria', 'Test da la carta da memoria'), 'Diagnosis package': ('Diagnose-Paket', 'Paquet de diagnostic', 'Pacchetto diagnostico', 'Pachet da diagnosa'), 'Power calculator': ('Strom-Rechner', 'Calculateur de consommation', 'Calcolatore di consumo', 'Calculatur da current'), 'Scan': ('Suchen', 'Chercher', 'Cerca', 'Tschertgar')}
+for _k, _v in _HX48.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX47 = {'Program': ('Programm', 'Programme', 'Programma', 'Program'), 'lines': ('Zeilen', 'lignes', 'righe', 'lingias'), 'Data': ('Daten', 'Données', 'Dati', 'Datas'), 'files': ('Dateien', 'fichiers', 'file', 'datotecas'), 'settings': ('Einstellungen', 'réglages', 'impostazioni', 'parameters'), 'simulator': ('Simulator', 'simulateur', 'simulatore', 'simulatur'), 'running for': ('läuft seit', 'fonctionne depuis', 'in funzione da', 'en funcziun dapi'), 'memory': ('Arbeitsspeicher', 'mémoire', 'memoria', 'memoria'), 'days': ('Tagen', 'jours', 'giorni', 'dis')}
+for _k, _v in _HX47.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX46 = {'Simulators in the network': ('Simulatoren im Netz', 'Simulateurs dans le réseau', 'Simulatori nella rete', 'Simulaturs en la rait'), 'Search now': ('Jetzt suchen', 'Chercher maintenant', 'Cerca ora', 'Tschertgar ussa'), 'Tools': ('Werkzeuge', 'Outils', 'Strumenti', 'Utensils'), 'Simulation off': ('Simulation aus', 'Simulation désactivée', 'Simulazione spenta', 'Simulaziun deactivada'), 'Simulator not reachable': ('Simulator nicht erreichbar', 'Simulateur injoignable', 'Simulatore non raggiungibile', 'Simulatur betg cuntanschibel'), 'Connected for': ('Verbunden seit', 'Connecté depuis', 'Connesso da', 'Collià dapi'), 'Response time': ('Antwortzeit', 'Temps de réponse', 'Tempo di risposta', 'Temp da resposta'), 'Camera pictures/s': ('Kamera Bilder/s', 'Images caméra/s', 'Immagini camera/s', 'Maletgs camera/s'), 'Thermal pictures/s': ('Wärmebilder/s', 'Images thermiques/s', 'Immagini termiche/s', 'Maletgs termics/s'), 'Messages sent': ('Meldungen gesendet', 'Messages envoyés', 'Messaggi inviati', 'Messadis tramess'), 'Sensor events': ('Sensor-Ereignisse', 'Événements capteurs', 'Eventi sensori', 'Eveniments da sensurs'), 'Errors': ('Fehler', 'Erreurs', 'Errori', 'Errurs'), 'Searching': ('Suche', 'Recherche', 'Ricerca', 'Tschertga'), 'found': ('gefunden', 'trouvé(s)', 'trovati', 'chattà'), 'Last search': ('Letzte Suche', 'Dernière recherche', 'Ultima ricerca', 'Ultima tschertga'), 'addresses in': ('Adressen in', 'adresses en', 'indirizzi in', 'adressas en'), 'Simulators announce themselves every 2 s. «Search now» also asks every address of the network.': ('Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.', "Les simulateurs s'annoncent toutes les 2 s. « Chercher maintenant » interroge aussi chaque adresse du réseau.", 'I simulatori si annunciano ogni 2 s. «Cerca ora» interroga anche ogni indirizzo della rete.', "Ils simulaturs s'annunzian mintga 2 s. «Tschertgar ussa» dumonda era mintga adressa da la rait."), 'seen since': ('gesehen seit', 'vu depuis', 'visto da', 'vis dapi'), 'last': ('zuletzt vor', 'dernier il y a', 'ultimo', "l'ultima giada avant"), 'messages': ('Meldungen', 'messages', 'messaggi', 'messadis'), 'found by the search': ('durch die Suche gefunden', 'trouvé par la recherche', 'trovato dalla ricerca', 'chattà tras la tschertga')}
+for _k, _v in _HX46.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX45 = {'Find the simulator in the network by itself (and take over its address)': ('Simulator im Netz selbst finden (und seine Adresse übernehmen)', 'Trouver le simulateur dans le réseau tout seul (et reprendre son adresse)', 'Trova da solo il simulatore nella rete (e usa il suo indirizzo)', 'Chattar il simulatur en la rait sez (e surpigliar sia adressa)'), 'Simulators in the network:': ('Simulatoren im Netz:', 'Simulateurs dans le réseau :', 'Simulatori nella rete:', 'Simulaturs en la rait:'), 'No simulator announces itself in the network right now.': ('Im Moment meldet sich kein Simulator im Netz.', "Aucun simulateur ne s'annonce dans le réseau pour le moment.", 'Al momento nessun simulatore si annuncia nella rete.', "Per il mument n'annunzia nagin simulatur en la rait."), 'this device': ('dieses Gerät', 'cet appareil', 'questo dispositivo', 'quest apparat'), 'Use': ('Verwenden', 'Utiliser', 'Usa', 'Duvrar'), 'bad address': ('ungültige Adresse', 'adresse invalide', 'indirizzo non valido', 'adressa nunvalida')}
+for _k, _v in _HX45.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 _HX44 = {'Phone / tablet view': ('Handy- / Tablet-Ansicht', 'Vue téléphone / tablette', 'Vista telefono / tablet', 'Vista telefonin / tablet')}
 for _k, _v in _HX44.items():
     DE.setdefault(_k, _v[0])
@@ -31653,7 +33882,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.80.0 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.90.0 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:

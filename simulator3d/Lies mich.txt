@@ -1,5 +1,5 @@
-Motion Watch – 3D-Simulator 3D-1.4 (Etappe 1: Camping)
-================================================
+Motion Watch – 3D-Simulator 3D-1.5 (6 Szenen, Wildbeobachtung)
+=============================================================
 
 STARTEN
 1. Den ganzen Ordner entpacken (nicht direkt aus der ZIP-Datei starten).
@@ -39,11 +39,40 @@ BEDIENUNG IM FENSTER
   Oben umschalten: Handy / Tablet, Hoch / Quer, Vollbild, Neu laden. Braucht Microsoft Edge oder Chrome (ist bei Windows dabei);
   der Browser läuft dabei unsichtbar im Hintergrund. Ist Motion Watch mit Passwort geschützt, einmal im Handy anmelden.
 - Taste 1: durch die Kopfkamera schauen,  2: durch die feste Kamera,  0: frei fliegen,  H: Bedienfeld aus / ein.
+- Taste G: Gewehr ein / aus (siehe WILDBEOBACHTUNG).
 - Rechts: Vorschau der Kopfkamera, der festen Kamera und des Wärmebilds, darunter alle Einstellungen
   (Uhrzeit, Wetter, Besuch, Sensoren, Grafik "einfach / schön").
 
-WAS ES KANN (Etappe 1)
-- Camping-Platz in 3D: Wohnwagen (Tür, Fenster leuchtet nachts), Zelt, Velo, Tisch, Bäume, Strasse, Hügel.
+SZENEN (ab 3D-1.5, schnelle erste Fassung)
+- Umschalten im Fenster rechts unter "Szene", oder auf der Motion-Watch-Webseite unter
+  System & Netz -> Simulator -> Simulator-Steuerung (Auswahl oben, "Laden").
+- Camping-Platz: Wohnwagen (Tür, Fenster leuchtet nachts), Zelt, Velo, Tisch, Bäume, Strasse, Hügel.
+- Wald: viele Bäume, ein Waldweg, eine Hütte, eine Feuerstelle (leuchtet nachts), Pilze, umgefallene Stämme.
+  Rehe, Füchse, Wildschweine und Dachse kommen öfter vorbei.
+- Parkplatz: Asphalt mit Parkfeldern, parkierte Autos, Laternen, Billettautomat, Veloständer, ein Wohnmobil.
+  Autos fahren herein, parkieren eine Weile mit Licht und fahren wieder weg.
+- Garten / Haus: Haus mit Tür und beleuchteten Fenstern, Terrasse mit Sonnenschirm, Gartenhaus mit Velo,
+  Zaun mit Hecke, Blumenbeete, Trampolin, Apfelbaum. Katzen, Füchse und Dachse schleichen herum.
+- Lustiger Platz: zwei Bänke laden zum Verweilen ein. Besucher setzen sich hin und schauen zu:
+  ein Karussell mit Pferdchen (nachts Disco-Licht), eine Entenfamilie, die um den Teich watschelt,
+  eine winkende Vogelscheuche, ein Gartenzwerg, der hinter einem Stein hervorschaut, eine Lichterkette.
+- Wildbeobachtung: Hochsitz, Futterstelle und Salzlecke vor dem Waldrand. Die Tiere kommen aus dem Wald,
+  fressen eine Weile und gehen wieder.
+- Die Sensoren heissen in allen Szenen gleich (Motion Watch kennt sie so): "Wohnwagen-Tür" ist die Tür der Szene
+  (Wohnwagen, Hütte, Haus, Wohnmobil), "PIR Zelt" der Bewegungsmelder (Zelt, Feuerstelle, Billettautomat,
+  Terrasse, Bank, Futterstelle), "Velo" das Velo.
+
+WILDBEOBACHTUNG MIT DEM GEWEHR (unblutig)
+- Taste G oder Schalter "Gewehr (unblutig, nur Tiere)" in der Gruppe "Wildbeobachtung". In der Szene
+  Wildbeobachtung ist es von selbst an.
+- Linksklick = Schuss dorthin, wo das rote Fadenkreuz ist (beim Umschauen mit der rechten Maustaste: Bildmitte).
+- Ein getroffenes Tier macht einen Luftsprung mit Drehung, sieht Sterne und rennt dann davon. Kein Blut, nichts
+  Schlimmes. Punkte: Katze / Hund 5, Fuchs 10, Reh 15, Wildschwein 20, Dachs 25.
+- Menschen und Autos kann man nicht treffen: es erscheint "Nicht auf Menschen! Nur Tiere."
+- Knopf "Schuss aus der Kopfkamera": zielt genau dorthin, wohin die Kopfkamera von Motion Watch schaut.
+  So kann man auf dem Handy mit dem Joystick von Motion Watch zielen und auf der Simulator-Steuerung abdrücken.
+
+WAS ES SONST KANN
 - Kamera 0 auf dem Schwenkkopf (folgt den Servos von Motion Watch), Kamera 1 fest, Wärmebildkamera.
 - Weisses Licht und Infrarot als echte Scheinwerfer (Infrarot sieht nur die Kopfkamera, nachts grau).
 - Tag und Nacht mit eigener Uhr, Mond, Wetter (klar, bewölkt, Regen, Nebel, Schnee), Wind bewegt die Bäume.
@@ -53,5 +82,6 @@ WAS ES KANN (Etappe 1)
 - Wärmebild: kalter Himmel, Boden warm am Tag und kühl in der Nacht, Menschen mit warmem Gesicht, Tiere, heisser Motor.
 
 PORT / START-OPTIONEN
-MotionWatch3D.exe -- --port 8766 --hour 22.5 --quality simple --stream
+MotionWatch3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene wald
+  --scene: mit dieser Szene starten (camping, wald, parkplatz, garten, lustig, wild)
   --stream: gleich beim Start an Motion Watch senden

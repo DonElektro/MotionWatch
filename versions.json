@@ -1,7 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 07:54",
+ "generated": "2026-10-26 09:08",
  "versions": [
+  {
+   "version": "2.90.0",
+   "file": "webcam_bewegung_2_90_0.py",
+   "url": "",
+   "sha256": "df0b9725c7fc4aa05e57156c5202a9fbf0fa5b1fe0cda68792f6c0e35869bf0a",
+   "date": "2026-10-26 09:08",
+   "notes": "3D simulator 3D-1.5 for download: six scenes to switch (camping place, forest, car park, garden with house, a funny place with a bench, carousel and ducks, wildlife watching with a high seat and a feeder) and a bloodless rifle for the wildlife watching (only animals: a hit animal hops, sees stars and runs away; aim also with the head camera)."
+  },
   {
    "version": "2.89.0",
    "file": "webcam_bewegung_2_89_0.py",
@@ -82,15 +90,6 @@
    "date": "2026-10-25 23:49",
    "notes": "simulators are found by themselves: every simulator announces itself every 2 s (UDP 8764), Motion Watch lists them («Use») and - with «find by itself» on and no working connection - takes over the address (a PC before the Pi); simulator requests never go through a proxy.",
    "sig": "2eddb3875e29494d6d5b3f44472580282b1467b87dae9eaa608a9441a56bb9fa0530f5523e0c8c84531dcee50c214b4a7e26ce49049b67568fdc68e1e6127d0f"
-  },
-  {
-   "version": "2.80.0",
-   "file": "webcam_bewegung_2_80_0.py",
-   "url": "",
-   "sha256": "b091249f43a53e8f368cc4eed2f9e805e1977e294fa0f86b610aff5a5c1c4cb3",
-   "date": "2026-10-25 23:11",
-   "notes": "page /preview: the web page as on a phone or a tablet, upright or across, with or without full screen (button in the simulators and in the simulator section); the page may be shown in a frame of its own origin only (SAMEORIGIN).",
-   "sig": "b310bd41e9b4dcebcd8792b6812172cf9e3477a598e566d49b0a0f78c8c2e6b6a89276925d6e3dfc9c56d807174fd063dae8144e1fac14df3f371f1f26f47002"
   }
  ]
 }

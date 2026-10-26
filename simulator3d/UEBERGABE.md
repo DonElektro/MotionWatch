@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-1.4** · passende Motion-Watch-Version **2.89.0**
+Stand: 26.10.2026 · Simulator-Version **3D-1.5** · passende Motion-Watch-Version **2.90.0**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -22,13 +22,17 @@ Ein 3D-Simulator (Godot 4.3) auf einem Windows-PC. Er spielt für Motion Watch (
 - Besucher: Menschen, Tiere, Auto, Dieb;
 - ein Handy-/Tablet-Simulator (Taste P), der die echte Motion-Watch-Webseite über ein unsichtbares Edge/Chrome anzeigt.
 
+Seit 3D-1.5 gibt es **sechs Szenen** (Camping-Platz, Wald, Parkplatz, Garten/Haus, Lustiger Platz, Wildbeobachtung) und ein
+**unblutiges Gewehr** für die Wildbeobachtung (Taste G). Beides ist eine schnelle erste Fassung.
+
 Seit 3D-1.4 sendet der Simulator nach dem Start **nichts**. Erst der Schalter «An Motion Watch senden» oben rechts (oder die Option `--stream`) öffnet den Port und schickt die Meldungen ins Netz.
 
 ## Wo liegt was (Repository DonElektro/MotionWatch)
 
 - `simulator3d/`: Godot-Projekt
   - `project.godot`, `main.tscn`, `export_presets.cfg`
-  - `scripts/main.gd`: Welt, Kameras, Wärmebild, Steuerung, PC-Fenster
+  - `scripts/main.gd`: Welt (Boden, Himmel, Hügel), Kameras, Wärmebild, Steuerung, PC-Fenster, Gewehr
+  - `scripts/scenes.gd`: die sechs Szenen (`LIST`), welche Besucher von selbst kommen (`AUTO`), Bausteine (Baum, Hütte, Wohnwagen, Laterne …)
   - `scripts/net.gd`: HTTP-Server mit dem Simulator-Protokoll und UDP-Meldung
   - `scripts/actor.gd`: Besucher
   - `scripts/phone.gd`: Handy-/Tablet-Simulator
@@ -46,6 +50,20 @@ Seit 3D-1.4 sendet der Simulator nach dem Start **nichts**. Erst der Schalter «
 - `GET/POST /control`: CONTROL-Protokoll 1. Das Steuerfeld der Motion-Watch-Webseite wird daraus automatisch gebaut. Neue Regler meldet man in `main.gd` mit `add_control(...)` an; sie erscheinen dann im PC-Fenster und auf der Webseite.
 - UDP-Meldung alle 2 s an Port 8764: `{"mwsim":1,"name","port","version"}`.
 
+## Szenen und Gewehr (ab 3D-1.5)
+
+- Eine Szene baut alles unter einem eigenen Knoten; Umschalten löscht ihn und baut die nächste (`set_scene`). Die Szenen stehen
+  als CONTROL-Szenarien in `/control` – die Motion-Watch-Webseite zeigt sie ohne Änderung an Motion Watch zur Auswahl.
+- Jede Szene muss liefern: `door_node`, `door_light`, `window_mat` (Türsensor) und `obj["door"]`, `obj["pir"]`, `obj["bike"]`
+  (Dieb, PIR). Die Sensornamen bleiben in allen Szenen gleich («Wohnwagen-Tür», «PIR Zelt», «Velo»), weil Motion Watch sie so kennt.
+- Bewegte Dinge (Karussell, Enten, Vogelscheuche, Zwerg, Feuer) sind Funktionen in `anims`, Nachtlichter in `lamps` / `lamp_mats`.
+- Besondere Besucher: `visit("car_park")` (Auto parkiert), `visit("bench")` (setzt sich auf die Bank), `visit("feed_deer")` usw.
+  (Tier frisst an der Futterstelle). Ein Routenpunkt `[Punkt, Sekunden warten, kauern, schaut zu Punkt]`.
+- Gewehr: Strahl von der Ansichtskamera (Maus) oder aus Kamera 0 (Knopf «Schuss aus der Kopfkamera», also mit dem Joystick von
+  Motion Watch zielbar). Treffer-Kugeln pro Besucher in `actor.hit_spheres()`. Menschen und Autos blocken den Schuss
+  («Nicht auf Menschen!»). Ein Tier hüpft, dreht sich, sieht Sterne und flieht (`actor.hit()` / `_dizzy()`). Töne werden aus
+  Zahlen erzeugt (`_make_sound`).
+
 ## Wichtige technische Kniffe
 
 - Jedes sichtbare Teil hat einen Wärmebild-Zwilling auf Ebene 2 (`thermal.gdshader`, Temperatur kodiert als (T+40)/120).
@@ -57,19 +75,23 @@ Seit 3D-1.4 sendet der Simulator nach dem Start **nichts**. Erst der Schalter «
 ## Bauen
 
 - Godot 4.3 stable plus Export-Templates 4.3.
-- Windows-Version: `godot --headless --path . --export-release "Windows Desktop" ../mwsim3d_build/MotionWatch3D.exe`
+- Windows-Version: `godot --headless --path . --export-release "Windows Desktop" /tmp/…/MotionWatch3D.exe`
+  (Zielordner **ausserhalb** des Repositorys wählen; `../mwsim3d_build` liegt sonst im Repository).
+- ZIP: das alte ZIP entpacken, `MotionWatch3D.exe` und `Lies mich.txt` ersetzen (die .bat-Dateien bleiben), mit `zip -9 -r` packen.
 - Linux-Version zum Testen: Preset «Linux». Starten mit `--rendering-driver opengl3` auf einem virtuellen Bildschirm (Xvfb), damit es auch ohne echte Grafikkarte läuft.
 - Nach jedem neuen Bau: die Datei `simulator3d/MotionWatch3D_Simulator.zip` im Repository ersetzen, dann in Motion Watch (`work.py`) in `SIM3D` die neue `version`, `size` und `sha256` eintragen und eine neue Motion-Watch-Version veröffentlichen. Sonst liefert der Pi-Download die alte Fassung.
 
-## Geplante nächste Etappen (noch nicht gebaut)
+## Etappen
 
-Daniel möchte den Simulator weiter ausbauen. Besprochen sind:
+Gebaut in 3D-1.5 (schnelle erste Fassung, vereinbart war «zuerst schnell, dann Ausbau»):
 
-- **Weitere Szenen** neben dem Camping-Platz: Wald, Parkplatz, Garten/Haus. Umschaltbar.
-- **Eine lustige Szene**, in der der Besucher zum Verweilen eingeladen ist und witzige Dinge beobachten kann.
-- **Wildbeobachtung** mit einem Gewehr, mit dem man ein Tier «treffen» kann – ausdrücklich **unblutig**, nur die Tiere, keine Gewalt gegen Menschen.
+- **Weitere Szenen**: Wald, Parkplatz, Garten/Haus, umschaltbar im Fenster und auf der Webseite.
+- **Lustige Szene**: zwei Bänke, Besucher setzen sich und schauen zu: Karussell (nachts Disco), Entenfamilie um den Teich,
+  winkende Vogelscheuche, Gartenzwerg hinter dem Stein, Lichterkette, Schild «Bitte lächeln!».
+- **Wildbeobachtung** mit Hochsitz, Futterstelle, Salzlecke und einem **unblutigen** Gewehr: nur Tiere, Menschen nie.
 
-Als Reihenfolge wurde «zuerst eine schnelle Version» vereinbart, dann Ausbau.
+Mögliche Ausbauten: Gelände mit Hügeln in der Nähe, schönere Tiere und Menschen (Modelle statt Grundformen), eigene Sensoren pro
+Szene (bräuchte eine Anpassung in Motion Watch), Wasser im Wald, mehr Witz im Lustigen Platz, Punkteliste für die Wildbeobachtung.
 
 ## Was in dieser Umgebung nicht getestet werden konnte
 
@@ -77,8 +99,12 @@ Als Reihenfolge wurde «zuerst eine schnelle Version» vereinbart, dann Ausbau.
 - Die Erkennung des Edge-Pfads unter Windows.
 - Nebel im Forward+-Renderer.
 - Die echte Netzsuche zwischen PC und Pi.
+- Ton (Schuss «Plopp», Treffer «Boing») – hier ohne Lautsprecher.
+- Die Bildrate der neuen Szenen auf dem alten i5 (Wald hat rund 300 Bäume).
+- Das Zielen mit der echten Maus (hier nur mit dem Knopf «Schuss aus der Kopfkamera» getestet).
 
 ## Testwerkzeuge in dieser Umgebung (nur als Hinweis, liegen nicht im Repo)
 
-- Godot 4.3 unter `/tmp/.../godot/`, Projekt unter `/home/claude/mwsim3d`.
+- Godot 4.3 von GitHub (Releases 4.3-stable, Linux-Programm + Export-Templates nach `~/.local/share/godot/export_templates/4.3.stable`).
+- Projekt direkt im geklonten Repository (`simulator3d/`); `.godot/` ist in .gitignore.
 - Start auf virtuellem Bildschirm und HTTP-Abfragen über kleine Hilfsskripte.
