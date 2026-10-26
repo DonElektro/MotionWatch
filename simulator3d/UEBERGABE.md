@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-1.11** · passende Motion-Watch-Version **2.90.6**
+Stand: 26.10.2026 · Simulator-Version **3D-1.12** · passende Motion-Watch-Version **2.90.7**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -54,6 +54,9 @@ Dateien neben die .exe legen, die laufende .exe in `.old` umbenennen, neue hinle
 neu starten (die `.old` wird beim nächsten Start gelöscht). Ohne Antwort nach 6 s startet er normal. `--no-update` schaltet es ab,
 `--update-url http://…/` nimmt eine andere Quelle (zum Testen mit einem lokalen `python3 -m http.server`).
 Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danach auf die `.old`).
+Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
+«schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
+nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
 Schutz nur über die Prüfsumme aus derselben Quelle (GitHub), **nicht signiert** wie Motion Watch.
 
 Seit 3D-1.6 startet der Simulator mit dem **Kompatibilitäts-Renderer (OpenGL)**: Auf Daniels PC schloss sich die .exe mit

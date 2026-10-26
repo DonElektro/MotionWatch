@@ -18,6 +18,7 @@ var b_upd: Button
 var b_skip: Button
 var http: HTTPRequest
 var downloading := false
+var manual := false           # started with the button «Nach Updates suchen» (not at the start of the simulator)
 
 
 static func vnum(v: String) -> Array:
@@ -52,22 +53,29 @@ func check(current: String, url := "") -> void:
 	http.timeout = 6.0
 	add_child(http)
 	if http.request(base + INFO_FILE) != OK:
+		await _note("Die Suche liess sich nicht starten.")
 		return
 	var r: Array = await http.request_completed
 	if r[0] != HTTPRequest.RESULT_SUCCESS or r[1] != 200:
 		print("update check: no answer (%s / %s)" % [r[0], r[1]])
+		await _note("GitHub antwortet nicht (Internet da?). Versuch es später noch einmal.")
 		return
 	var d = JSON.parse_string((r[3] as PackedByteArray).get_string_from_utf8())
 	if typeof(d) != TYPE_DICTIONARY or not d.has("version") or not d.has("sha256") or not d.has("size"):
+		await _note("Die Versions-Angabe auf GitHub ist nicht lesbar.")
 		return
 	info = d
 	if not newer(str(d["version"]), current):
 		print("update check: %s is the newest" % current)
+		await _note("Du hast schon die neuste Version (%s)." % current)
 		return
 	text.text = "Eine neue Version ist da: %s (du hast %s).\n\n%s" % [d["version"], current, str(d.get("notes", ""))]
 	if not OS.has_feature("template"):
 		text.text += "\n\n(Im Godot-Editor wird nicht aktualisiert.)"
 		b_upd.disabled = true
+	if manual:
+		b_skip.text = "Später"
+		text.text += "\n\nDer Simulator startet nach dem Update neu. Läuft Motion Watch auf diesem PC, danach bitte wieder starten."
 	b_upd.visible = true
 	b_skip.visible = true
 	b_upd.grab_focus()
@@ -75,6 +83,17 @@ func check(current: String, url := "") -> void:
 	if not up:
 		return
 	await _update()
+
+
+func _note(msg: String) -> void:
+	"""only when the button «Nach Updates suchen» was pressed: say the result and wait for «OK» (at the start: say nothing)"""
+	if not manual:
+		return
+	text.text = msg
+	b_skip.text = "OK"
+	b_skip.visible = true
+	b_skip.grab_focus()
+	await chosen
 
 
 func _build_ui() -> void:
@@ -152,19 +171,26 @@ func _update() -> void:
 	b_skip.visible = false
 	bar.visible = true
 	var zip_path := ProjectSettings.globalize_path("user://update.zip")
-	http.timeout = 0.0
-	http.download_file = zip_path
-	http.body_size_limit = int(info["size"]) + 4096
 	var file := str(info.get("file", "simulator3d/MotionWatch3D_Simulator.zip"))
-	if http.request(base + file) != OK:
-		await _fail("Download liess sich nicht starten.")
-		return
-	downloading = true
-	var r: Array = await http.request_completed
-	downloading = false
-	if r[0] != HTTPRequest.RESULT_SUCCESS or r[1] != 200:
-		await _fail("Download abgebrochen (Fehler %s / %s)." % [r[0], r[1]])
-		return
+	if FileAccess.file_exists(zip_path):
+		DirAccess.remove_absolute(zip_path)
+	var got_it := false
+	if OS.get_name() == "Windows":                  # curl.exe of Windows: fast, Windows certificates and proxy
+		got_it = await _curl(base + file, zip_path)
+	if not got_it:
+		http.timeout = 0.0
+		http.download_file = zip_path
+		http.download_chunk_size = 1 << 20          # bigger pieces: much faster while the simulation runs
+		http.body_size_limit = int(info["size"]) + 4096
+		if http.request(base + file) != OK:
+			await _fail("Download liess sich nicht starten.")
+			return
+		downloading = true
+		var r: Array = await http.request_completed
+		downloading = false
+		if r[0] != HTTPRequest.RESULT_SUCCESS or r[1] != 200:
+			await _fail("Download abgebrochen (Fehler %s / %s)." % [r[0], r[1]])
+			return
 	text.text = "Prüfe die Datei …"
 	await get_tree().process_frame
 	var f := FileAccess.open(zip_path, FileAccess.READ)
@@ -200,6 +226,27 @@ func _update() -> void:
 	OS.create_process(exe, args)
 	get_tree().quit()
 	await get_tree().create_timer(60.0).timeout       # never come back
+
+
+func _curl(u: String, to: String) -> bool:
+	"""download with curl.exe in a thread; the bar shows the size of the file so far"""
+	var th := Thread.new()
+	th.start(func():
+		var out := []
+		return OS.execute("curl.exe", ["-L", "--fail", "-s", "-S", "--retry", "2", "-o", to, u], out, true, false))
+	var size := float(info.get("size", 1))
+	while th.is_alive():
+		await get_tree().create_timer(0.3).timeout
+		var got := 0
+		var f := FileAccess.open(to, FileAccess.READ)
+		if f != null:
+			got = f.get_length()
+			f.close()
+		bar.value = 100.0 * got / max(1.0, size)
+		text.text = "Lade %s … %.1f von %.1f MB" % [info["version"], got / 1048576.0, size / 1048576.0]
+	var code: int = th.wait_to_finish()
+	print("update: curl exit %d" % code)
+	return code == 0 and FileAccess.file_exists(to)
 
 
 func _install(zip_path: String, exe: String) -> String:

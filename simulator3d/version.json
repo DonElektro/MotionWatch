@@ -1,7 +1,7 @@
 {
- "version": "3D-1.11",
+ "version": "3D-1.12",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30224679,
- "sha256": "eb3dae052a1ec3cbfa7dd6d044c6d209015335821d64f523edf1b857e99d447d",
- "notes": "Motion Watch auf diesem PC zeigt jetzt das Kamerabild des Simulators (vorher schwarz). Das Handy startet mit der normalen Startseite."
+ "size": 30226699,
+ "sha256": "e26146594b1dceb6a3a0c193ad80e8c58393d76bd13f4162ce211aba70957435",
+ "notes": "Neu: Knopf «Nach Updates suchen» im Bedienfeld. Updates laden schneller."
 }

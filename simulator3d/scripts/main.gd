@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-1.11"
+const VERSION := "3D-1.12"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -22,6 +22,8 @@ var Mwpc = preload("res://scripts/mwpc.gd")
 var mwpc                              # Motion Watch on this PC (mwpc.gd)
 var mwpc_btn: Button
 var mwpc_label: Label
+var update_url := ""                  # --update-url (tests); empty = GitHub
+var update_btn: Button
 var scenes
 var scene := "camping"
 var scene_parent: Node3D
@@ -141,14 +143,13 @@ func _ready() -> void:
 	if _vm_needs_angle(args):
 		return
 	DisplayServer.window_set_title("Motion Watch – 3D-Simulator %s" % VERSION)
+	var k := args.find("--update-url")
+	if k >= 0 and k + 1 < args.size():
+		update_url = args[k + 1]
 	if not ("--no-update" in args or "--updated" in args):      # first: is there a newer version? (update.gd)
-		var url := ""
-		var k := args.find("--update-url")
-		if k >= 0 and k + 1 < args.size():
-			url = args[k + 1]
 		var up = Updater.new()
 		add_child(up)
-		await up.check(VERSION, url)
+		await up.check(VERSION, update_url)
 		up.queue_free()
 	_make_lut(true)
 	noise_tex = NoiseTexture2D.new()
@@ -1233,6 +1234,10 @@ func _build_ui() -> void:
 	mwpc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	mwpc_label.add_theme_font_size_override("font_size", 12)
 	box_.add_child(mwpc_label)
+	update_btn = Button.new()
+	update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
+	update_btn.pressed.connect(check_updates)
+	box_.add_child(update_btn)
 	var groups := {}
 	for c in controls:
 		if not groups.has(c.group):
@@ -1266,6 +1271,17 @@ func _on_mwpc() -> void:
 	mwpc_label.text = mwpc.text if st != "off" else "Für das Handy ohne Pi: Motion Watch läuft dann unsichtbar auf diesem PC. Beim ersten Mal werden Python und Motion Watch geladen (rund 100 MB, einige Minuten)."
 	mwpc_label.add_theme_color_override("font_color", Color(0.35, 0.8, 0.45) if st == "running" else (Color(0.95, 0.6, 0.3) if st == "error" else Color(0.6, 0.65, 0.7)))
 	phone.on_mwpc(st, mwpc.url(), mwpc.text)
+
+
+func check_updates() -> void:
+	"""button «Nach Updates suchen»: the same check as at the start, but it also says when there is nothing new"""
+	update_btn.disabled = true
+	var up = Updater.new()
+	up.manual = true
+	add_child(up)
+	await up.check(VERSION, update_url)
+	up.queue_free()
+	update_btn.disabled = false
 
 
 func _toggle_phone() -> void:

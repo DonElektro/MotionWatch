@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 15:27",
+ "generated": "2026-10-26 15:45",
  "versions": [
   {
-   "version": "2.90.6",
-   "file": "webcam_bewegung_2_90_6.py",
+   "version": "2.90.7",
+   "file": "webcam_bewegung_2_90_7.py",
    "url": "",
-   "sha256": "559631a1ac314fdfb210130e23d777e893dc0b00653a77b46e161fb002cf2d21",
-   "date": "2026-10-26 15:27",
-   "notes": "3D simulator 3D-1.11: «Motion Watch auf diesem PC» takes the cameras from the simulator (the picture was black); the phone simulator starts with the normal start page.",
-   "sig": "2e61e6fa7aa515bd8f695a25e1f1e5ca15420df03d5f3d43c02858d62c137f3bd7325d5406175ea9e715f0fd65a2cf68709516d1bb01b45c2349c5bcd8fd9700"
+   "sha256": "1ae546690a5b3916dd2d49b6f8919182cdae993e81b6313d220610cd08d8c283",
+   "date": "2026-10-26 15:45",
+   "notes": "3D simulator 3D-1.12: button «Nach Updates suchen» in its window (check and install at any time); faster updates.",
+   "sig": "726bbaff27fd171d1a19c148a1e63571182cd06b49c2750d7d8e9ab41105c8bc0f88583ee8c2369adf47c0365c98ee79eb02e6f356f081633ac94f3fd40c8c01"
   },
   {
    "version": "2.89.0",

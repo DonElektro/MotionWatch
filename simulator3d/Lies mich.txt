@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-1.11 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-1.12 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -23,7 +23,9 @@ UPDATES (ab 3D-1.7)
 - Ohne Internet startet der Simulator nach wenigen Sekunden ganz normal.
 - Liegt der Ordner an einem Ort, wo Windows das Schreiben verbietet (z. B. "C:\Programme"), klappt das Update nicht:
   dann den Ordner z. B. in "Dokumente" oder auf den Desktop legen.
-- Nie nachschauen: Option --no-update.
+- Jederzeit von Hand: Knopf "Nach Updates suchen" rechts im Bedienfeld. Er sagt auch, wenn es nichts Neues gibt,
+  und installiert nur, wenn du "Jetzt aktualisieren" drückst ("Später" = weiter wie bisher).
+- Nie nachschauen beim Start: Option --no-update.
 
 SENDEN EIN / AUS
 - Nach dem Start sendet der Simulator NICHTS: er meldet sich nicht im Netz und liefert keine Bilder.
