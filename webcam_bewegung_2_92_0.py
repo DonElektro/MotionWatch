@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_82_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_92_0.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -446,6 +446,52 @@ Features
     per second, messages, sensor events, errors), «Simulators in the network» with «Search now» (asks every address of the
     own network, progress and result), per simulator: seen since, last message, number of messages, response time;
     settings and tools folded away.
+  * 2.83.0: System: size of the project (program file, lines, data, settings, recordings, simulator), running time, memory,
+    Python version, Pi model and operating system.
+  * 2.84.0: New page "Tools": network scanner (makers, names, warning about new devices, "am I at home" with automatic
+    arming), Wi-Fi surroundings with the best channel, internet test, security check, Bluetooth scanner with tracker warning,
+    focus assistant, servo test, loudspeaker / microphone test, memory card test, diagnosis package without secrets, power calculator.
+  * 2.85.0: Second Wi-Fi adapter (USB stick): repeater (own Wi-Fi + internet from another network at the same time), change to
+    another known network when the internet is gone, push message when it is back, devices in the own Wi-Fi without internet,
+    Wi-Fi guard (alarm on jamming / deauthentication, needs a stick that can listen), adapter list with chip and abilities.
+    Tools page tidied up: groups, every tool folds up and shows its last result. Fix: the Wi-Fi search of the settings works again.
+  * 2.86.0: The 3D simulator for Windows can be downloaded from the Pi: /sim/simulator3d.zip (button under Simulator → Tools).
+  * 2.87.0: Tools page redesigned, calmer: list of the tools on the left (with status), one tool at a time on the right; on a phone
+    first the list, then the tool with a back button. Plain line icons, switches instead of check boxes, no empty boxes.
+  * 2.88.0: Download of the 3D simulator 3D-1.4: it starts without sending; the switch «An Motion Watch senden» in its window
+    turns sending on.
+  * 2.89.0: Tools: «Full power for the tools» - Motion Watch rests for 10 to 120 minutes (camera, detection, AI, extra cameras;
+    a recording is finished first), the web page and the tools keep running; it comes back by itself or with «Resume now».
+  * 2.90.0: 3D simulator 3D-1.5 for download: six scenes to switch (camping place, forest, car park, garden with house, a funny
+    place with a bench, carousel and ducks, wildlife watching with a high seat and a feeder) and a bloodless rifle for the
+    wildlife watching (only animals: a hit animal hops, sees stars and runs away; aim also with the head camera).
+  * 2.90.1: 3D simulator 3D-1.6: starts with the simple graphics (OpenGL), so a double click on the .exe works on PCs where the
+    Vulkan graphics closed the window at once; the nicer Vulkan graphics with «Start mit Vulkan-Grafik (schoener).bat».
+  * 2.90.2: 3D simulator 3D-1.7: it looks for a newer version on GitHub before it starts and offers «Jetzt aktualisieren»
+    (download, check, replace itself, start again) or «Ohne Update starten».
+  * 2.90.3: 3D simulator 3D-1.8: in a virtual machine (VMware, VirtualBox) it starts again with the ANGLE graphics by itself -
+    the OpenGL driver there showed only the sky.
+  * 2.90.4: 3D simulator 3D-1.9: «Motion Watch auf diesem PC» - the simulator runs Motion Watch itself on the Windows PC
+    (Python and Motion Watch are fetched once), so the phone / tablet simulator works without a Raspberry Pi.
+  * 2.90.5: 3D simulator 3D-1.10: the Python download for «Motion Watch auf diesem PC» uses the curl of Windows (it failed with
+    the own download of the simulator); clearer error messages.
+  * 2.90.6: 3D simulator 3D-1.11: «Motion Watch auf diesem PC» takes the cameras from the simulator (the picture was black);
+    the phone simulator starts with the normal start page.
+  * 2.90.7: 3D simulator 3D-1.12: button «Nach Updates suchen» in its window (check and install at any time); faster updates.
+  * 2.90.8: 3D simulator 3D-1.13: updates from far away (switch «Neue Versionen automatisch installieren» and a button, also in
+    the simulator control on this web page); its window in the look of Motion Watch; switches and the joystick work in its
+    phone simulator; lighter in virtual machines; the rifle goes off when leaving the wildlife watching.
+  * 2.90.9: The download of the 3D simulator for Windows (ZIP) is now a button right under «Search now» in the simulator section
+    (before hidden under Tools); the desktop window shows its address for the PC browser in the simulator line.
+  * 2.91.0: 3D simulator 3D-2.0 (big update): toolbar, search and «Einfach | Experte» like Motion Watch; visitors as small
+    pictures to drag into the world; people and animals walk around objects; smoother movement, finer objects, grass and
+    flowers; new visitors (child, jogger, hare, hedgehog, dog walk, deer herd, birds); new visitor settings (also here in the
+    simulator control).
+  * 2.92.0: Fix: plugging in a second Wi-Fi adapter made the Pi unreachable (the repeater switched itself on and took the
+    built-in adapter away from the home Wi-Fi). Now the repeater only runs when switched on by hand, the connected adapter keeps
+    its connection, and it switches itself off again when the Pi has no connection for 2.5 minutes. New tab «Simulator» in the
+    header: everything about the simulator on one page (switch, statistics, connection and search, picture, the control of the
+    simulator, computing power, programs and downloads, short guide).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -454,10 +500,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_82_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_92_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_82_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_82_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_92_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_92_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -474,7 +520,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.82.0"
+APP_VERSION = "2.92.0"
 
 
 def default_data_dir():
@@ -745,7 +791,9 @@ CFG = {
     "solar_on": False, "solar_addr": "0x41", "solar_shunt": 0.1, "night_warn": True,
     "species_on": False, "species_model": "", "species_norm": "imagenet", "species_size": 224, "species_conf": 0.5,
     "desktop_notice": True,
-    "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_auto": True, "sim_prev_source": "", "sim_prev_thermal": "",
+    "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_auto": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_dual": True, "wifi_repeater": False, "wifi_swap": False, "wifi_guard": False,
+    "wifi_guard_thr": 20, "wifi_count": False, "wifi_presence": False, "net_noinet": [], "net_inet_notify": True, "sim_prev_source": "", "sim_prev_thermal": "",
     "lens_check": True, "temp_alarm_on": False, "temp_hot": 30, "temp_cold": 3,
     "sens_on": False, "sensors": [], "rf433_on": False, "zigbee_on": False, "ble_on": False, "tag_missing": 5, "eco_pir": True,
     "tamper_on": True,           # sabotage: camera covered or turned away (picture check)
@@ -1769,7 +1817,7 @@ OPERATE_POST = {"/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/li
 VIEW_POST = {"/api/webpush", "/api/ui", "/api/time", "/api/gps", "/api/rec/prepare", "/rec/zip"}
 OPERATE_SET_KEYS = {"thermal_on", "nightvision", "show_objects", "show_mask", "track_person"}
 ADMIN_GET = ("/api/settings/export", "/api/ext", "/api/wifi", "/api/qr", "/setup-card", "/api/update", "/api/guest", "/api/fleet",
-             "/api/users", "/api/setup", "/api/log/file/")
+             "/api/users", "/api/setup", "/api/log/file/", "/api/tools", "/tools/diag.zip")
 
 
 def users_clean(lst):
@@ -4587,7 +4635,7 @@ class NetMonitor:
                 hotspot_refresh()
             except Exception:
                 pass
-        if STATE["hotspot"].get("on"):                   # the Pi is the access point itself: no signal to measure
+        if STATE["hotspot"].get("on") and not DUAL["on"]:   # the Pi is the access point itself: no signal to measure
             STATE["wifi"] = {"iface": WIFI["iface"], "ssid": STATE["hotspot"]["ssid"], "dbm": None, "pct": 0, "rate": "", "connected": False,
                              "ip": STATE["hotspot"]["ip"], "ap": True}
             self.was = None; WIFI["refresh"] = False
@@ -4597,6 +4645,8 @@ class NetMonitor:
             STATE["wifi"] = None; return
         proc = _proc_wireless()
         iface = next((i for i in ifaces if i in proc and proc[i][1] < 0), ifaces[0])
+        if DUAL["on"] and DUAL["up"] in ifaces:
+            iface = DUAL["up"]
         refresh = WIFI.get("refresh") or WIFI.get("busy")
         if refresh:
             WIFI["refresh"] = False
@@ -5353,8 +5403,9 @@ def _hotspot_clients(iface):
 def hotspot_refresh():
     b = wifi_backend()
     on = b == "nm" and HOTSPOT_CON in _nm_active_names()
-    STATE["hotspot"] = {"on": on, "ssid": CFG["hotspot_ssid"] if on else "", "clients": _hotspot_clients(WIFI["iface"]) if on else 0,
-                        "ip": wifi_ip() if on else "", "busy": WIFI.get("hs_busy", False), "available": b == "nm", "msg": WIFI.get("hs_msg", "")}
+    ap_if = WIFI.get("ap_iface") or WIFI["iface"]
+    STATE["hotspot"] = {"on": on, "ssid": CFG["hotspot_ssid"] if on else "", "clients": _hotspot_clients(ap_if) if on else 0,
+                        "ip": wifi_ip(ap_if) if on else "", "repeater": bool(on and DUAL["on"]), "busy": WIFI.get("hs_busy", False), "available": b == "nm", "msg": WIFI.get("hs_msg", "")}
     return STATE["hotspot"]
 
 
@@ -5363,7 +5414,7 @@ def hotspot_set(on, persist=True):
     b = wifi_backend()
     if b != "nm":
         return False, "the own Wi-Fi needs NetworkManager (Raspberry Pi OS Bookworm or newer)"
-    iface, ssid = WIFI["iface"], CFG["hotspot_ssid"] or "MotionWatch"
+    iface, ssid = (WIFI.get("ap_iface") if DUAL["on"] else "") or WIFI["iface"], CFG["hotspot_ssid"] or "MotionWatch"
     with _WIFI_LOCK:
         if on:
             pw = hotspot_password()
@@ -5371,7 +5422,8 @@ def hotspot_set(on, persist=True):
             exists = HOTSPOT_CON in [_nm_split(l)[0] for l in out.splitlines()]
             sec = ["wifi-sec.key-mgmt", "wpa-psk", "wifi-sec.psk", pw, "wifi-sec.proto", "rsn", "wifi-sec.pairwise", "ccmp", "wifi-sec.group", "ccmp"]
             if exists:
-                code, out, err = _run(["nmcli", "connection", "modify", "id", HOTSPOT_CON, "802-11-wireless.ssid", ssid] + sec, 20)
+                code, out, err = _run(["nmcli", "connection", "modify", "id", HOTSPOT_CON, "802-11-wireless.ssid", ssid,
+                                       "connection.interface-name", iface] + sec, 20)
             else:
                 code, out, err = _run(["nmcli", "connection", "add", "type", "wifi", "ifname", iface, "con-name", HOTSPOT_CON, "autoconnect", "no",
                                        "ssid", ssid, "802-11-wireless.mode", "ap", "802-11-wireless.band", "bg", "ipv4.method", "shared"] + sec, 20)
@@ -6463,6 +6515,506 @@ def boot_hotspot():
 
 
 # ----------------------------------------------------------------------------
+# Second Wi-Fi adapter (USB stick): one adapter makes the own Wi-Fi, the other one joins a known network (campsite, phone)
+# -> repeater: the devices in the own Wi-Fi have internet (NetworkManager "shared" does the routing). Also: automatic change
+# to another known network when the internet is gone, devices in the own Wi-Fi without internet (cameras), and a guard
+# that listens for Wi-Fi jamming (deauthentication attacks) when the stick can listen ("monitor mode").
+# ----------------------------------------------------------------------------
+DUAL = {"on": False, "ap": "", "up": "", "adapters": [], "t": 0.0, "msg": "", "log": [], "sig": [], "drops": [], "unstable": False,
+        "switch_t": 0.0, "offline_since": None, "iso": "", "iso_msg": ""}
+WGUARD = {"state": "off", "iface": "", "phy": "", "msg": "", "deauth_min": [], "deauth_now": 0, "all_now": 0, "frames": 0,
+          "last_alarm": 0.0, "alarms": [], "count_on": False, "count_now": None, "count_hist": [], "chan": None}
+WIFI_CHIPS = {"brcmfmac": ("Broadcom (built in)", ""),
+              "mt76x2u": ("MediaTek MT7612U", "very good: own Wi-Fi, 5 GHz and listening (monitor) work"),
+              "mt7921u": ("MediaTek MT7921AU (Wi-Fi 6)", "very good: own Wi-Fi, 5 GHz and listening (monitor) work"),
+              "mt76x0u": ("MediaTek MT7610U", "good: 5 GHz and listening (monitor) work"),
+              "mt7601u": ("MediaTek MT7601U", "simple stick: only 2.4 GHz"),
+              "rt2800usb": ("Ralink RT5370 / RT3070", "only 2.4 GHz, listening (monitor) works"),
+              "ath9k_htc": ("Atheros AR9271", "only 2.4 GHz, listening (monitor) works"),
+              "rtl8xxxu": ("Realtek (rtl8xxxu)", "simple driver: no own Wi-Fi, no listening"),
+              "r8188eu": ("Realtek RTL8188EU", "simple driver: no listening"),
+              "rtw88_8821cu": ("Realtek RTL8811CU / RTL8821CU", "listening (monitor) mostly not possible"),
+              "rtw88_8822bu": ("Realtek RTL8812BU / RTL8822BU", "listening (monitor) mostly not possible"),
+              "rtw88_8723du": ("Realtek RTL8723DU", "only 2.4 GHz"),
+              "rtl88xxau": ("Realtek RTL8812AU / RTL8821AU (extra driver)", "extra driver needed"),
+              "8812au": ("Realtek RTL8812AU (extra driver)", "extra driver needed"),
+              "88XXau": ("Realtek RTL8812AU / RTL8821AU (extra driver)", "extra driver needed")}
+
+
+def _rd(p):
+    try:
+        with open(p) as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
+def _iw_phy(phy):
+    """What the radio can do: kinds of use (AP = own Wi-Fi, monitor = listening), 5 GHz."""
+    if not phy or shutil.which("iw") is None:
+        return [], False, ""
+    code, out, _e = _run(["iw", "phy", phy, "info"], 6)
+    if code != 0:
+        return [], False, ""
+    modes, in_modes = [], False
+    for ln in out.splitlines():
+        s = ln.strip()
+        if s.startswith("Supported interface modes"):
+            in_modes = True; continue
+        if in_modes:
+            if s.startswith("* "):
+                modes.append(s[2:].strip())
+            else:
+                in_modes = False
+    five = bool(re.search(r"\b5[1-8]\d\d(\.\d+)? MHz \[\d+\](?![^\n]*disabled)", out))
+    comb = ""
+    m = re.search(r"valid interface combinations:(.*?)(?:\n\t[A-Z]|\Z)", out, re.S)
+    if m:
+        comb = " ".join(m.group(1).split())[:200]
+    return modes, five, comb
+
+
+def wifi_adapters():
+    out = []
+    for i in _wifi_ifaces():
+        if i.startswith("mwmon"):
+            continue
+        base = f"/sys/class/net/{i}"
+        dev = os.path.realpath(base + "/device") if os.path.exists(base + "/device") else ""
+        usb = "/usb" in dev
+        drv = os.path.basename(os.path.realpath(base + "/device/driver")) if os.path.exists(base + "/device/driver") else ""
+        phy = _rd(base + "/phy80211/name")
+        prod, vid = "", ""
+        if usb:
+            p = os.path.dirname(dev)
+            vid = (_rd(p + "/idVendor") + ":" + _rd(p + "/idProduct")).strip(":")
+            prod = (_rd(p + "/manufacturer") + " " + _rd(p + "/product")).strip()
+        modes, five, comb = _iw_phy(phy)
+        chip, note = WIFI_CHIPS.get(drv, (prod or drv or "?", ""))
+        out.append({"iface": i, "usb": usb, "driver": drv, "chip": chip, "product": prod[:60], "usb_id": vid, "phy": phy,
+                    "mac": _rd(base + "/address"), "ap": ("AP" in modes) if modes else None, "monitor": ("monitor" in modes) if modes else None,
+                    "five": five, "note": note, "comb": comb, "up": _rd(base + "/operstate") == "up"})
+    return out
+
+
+def _nm_dev_autoconnect(iface, on):
+    if iface and shutil.which("nmcli"):
+        _run(["nmcli", "device", "set", iface, "autoconnect", "yes" if on else "no"], 10)
+
+
+def dual_roles():
+    """Which adapter does what. Default: the built-in one makes the own Wi-Fi (devices are near), the USB stick joins the
+    campsite / phone network (it often has a better antenna and may hang higher on a cable)."""
+    ads = wifi_adapters()
+    DUAL["adapters"] = ads; DUAL["t"] = time.time()
+    was = (DUAL["on"], DUAL["ap"], DUAL["up"])
+    if len(ads) < 2 or not CFG.get("wifi_repeater") or wifi_backend() != "nm":
+        DUAL.update(on=False, ap="", up="",
+                    msg="" if len(ads) >= 2 or not ads else "only one Wi-Fi adapter")
+        if len(ads) >= 2 and wifi_backend() != "nm":
+            DUAL["msg"] = "needs NetworkManager"
+        if was[0]:
+            WIFI["iface"] = ads[0]["iface"] if ads else "wlan0"; WIFI.pop("ap_iface", None)
+            for a in ads:
+                _nm_dev_autoconnect(a["iface"], True)
+            dual_log(tr("Second Wi-Fi adapter: off - back to one adapter"))
+        DUAL["choice"] = None
+        return DUAL
+    names = [a["iface"] for a in ads]
+    ch = DUAL.get("choice")
+    if ch and ch[0] in names and ch[1] in names and ch[2] == bool(CFG.get("wifi_swap")):
+        ap = next(a for a in ads if a["iface"] == ch[0]); up = next(a for a in ads if a["iface"] == ch[1])   # keep the roles once chosen
+    else:
+        # the adapter that is connected to a network now keeps that connection (the Pi must stay reachable);
+        # only when none is connected the USB stick is used for the internet (often the better antenna)
+        conn = [a for a in ads if (_iw_link(a["iface"]) or {}).get("connected")]
+        intern = next((a for a in ads if not a["usb"]), ads[0])
+        stick = next((a for a in ads if a is not intern), ads[1])
+        if CFG.get("wifi_swap"):                         # «internet over the USB stick (better antenna)»
+            up = stick
+        else:
+            up = conn[0] if conn else stick
+        ap = next(a for a in ads if a is not up)
+        if ap["ap"] is False and up["ap"]:
+            ap, up = up, ap                                  # this adapter cannot make an own Wi-Fi
+        DUAL["choice"] = (ap["iface"], up["iface"], bool(CFG.get("wifi_swap")))
+    DUAL.update(on=True, ap=ap["iface"], up=up["iface"], msg="")
+    WIFI["iface"] = up["iface"]; WIFI["ap_iface"] = ap["iface"]
+    if was != (True, ap["iface"], up["iface"]):
+        _nm_unbind(ap["iface"])                              # known networks bound to the own-Wi-Fi adapter may use the other one
+        _nm_dev_autoconnect(ap["iface"], False)              # the own Wi-Fi adapter does not join networks by itself
+        _nm_dev_autoconnect(up["iface"], True)
+        DUAL["since"] = time.time(); DUAL["had_conn"] = bool((STATE.get("wifi") or {}).get("connected"))
+        dual_log(trf("Second Wi-Fi adapter: own Wi-Fi on {ap} ({a}), internet over {up} ({b})", ap=ap["iface"], a=ap["chip"], up=up["iface"], b=up["chip"]))
+        if STATE["hotspot"].get("on") and was[1] and was[1] != ap["iface"]:
+            hotspot_switch_later(True, 0.5)                  # the own Wi-Fi moves to the other adapter
+        WIFI["refresh"] = True
+    return DUAL
+
+
+def _nm_unbind(iface):
+    """Saved networks that only work on one adapter (connection.interface-name, e.g. made by the Raspberry Pi Imager) may
+    then be used by the other adapter too - otherwise the stick cannot join the home Wi-Fi."""
+    if not iface or not shutil.which("nmcli"):
+        return
+    code, out, _e = _run(["nmcli", "-t", "-f", "UUID,TYPE", "connection", "show"], 10)
+    if code != 0:
+        return
+    for ln in out.splitlines():
+        f = _nm_split(ln)
+        if len(f) < 2 or f[1] not in ("802-11-wireless", "wifi"):
+            continue
+        c2, o2, _e = _run(["nmcli", "-t", "-g", "connection.interface-name,802-11-wireless.mode,connection.id", "connection", "show", "uuid", f[0]], 10)
+        g = o2.splitlines() if c2 == 0 else []
+        if len(g) >= 2 and g[0].strip() == iface and g[1].strip() != "ap":
+            if _run(["nmcli", "connection", "modify", "uuid", f[0], "connection.interface-name", ""], 10)[0] == 0:
+                log_event("sys", f"Wi-Fi «{g[2] if len(g) > 2 else f[0]}» may now be used by every adapter")
+
+
+def dual_safety():
+    """Safety net: the repeater was switched on, but the Pi has had no connection to a network for 2.5 minutes since then
+    -> switch it off again by itself, so the Pi becomes reachable again the old way."""
+    if not DUAL["on"] or not DUAL.get("had_conn"):
+        return
+    since = DUAL.get("since") or 0
+    if time.time() - since < 150 or time.time() - since > 600:
+        return
+    w = STATE.get("wifi") or {}
+    if w.get("connected") or (STATE.get("net") or {}).get("online"):
+        DUAL["had_conn"] = False                             # it works - the safety net is no longer needed
+        return
+    CFG["wifi_repeater"] = False; save_settings()
+    DUAL["choice"] = None
+    dual_roles()
+    if not CFG.get("hotspot_on"):
+        hotspot_set(False, persist=False)
+    DUAL["msg"] = "repeater switched off again: no connection to a network"
+    dual_log(tr("Repeater switched off again by itself: the Pi had no connection to a network any more"), push=True)
+
+
+def dual_log(text, push=False):
+    DUAL["log"] = ([{"t": time.time(), "text": text}] + DUAL["log"])[:30]
+    log_event("sys", text)
+    if push and CFG.get("net_inet_notify", True):
+        w = WATCH_REF.get("w")
+        if w is not None:
+            threading.Thread(target=w.notifier.info, args=(text,), kwargs={"title": "{name}: " + tr("Network")}, daemon=True).start()
+
+
+def _visible_saved(iface):
+    """Known networks that can be seen now with this adapter, strongest first."""
+    code, out, _e = _run(["nmcli", "-t", "-f", "SSID,SIGNAL", "device", "wifi", "list", "ifname", iface, "--rescan", "auto"], 30)
+    if code != 0:
+        return []
+    sig = {}
+    for ln in out.splitlines():
+        f = _nm_split(ln)
+        if len(f) >= 2 and f[0]:
+            try:
+                sig[f[0]] = max(sig.get(f[0], 0), int(f[1]))
+            except ValueError:
+                pass
+    saved = [s for s in _nm_saved() if s["ssid"] in sig]
+    for s in saved:
+        s["signal"] = sig[s["ssid"]]
+    return sorted(saved, key=lambda s: (-s["prio"], -s["signal"]))
+
+
+class UplinkWatch:
+    """Every 10 s: internet there? Connection drops? -> after 3 min without internet try another known network (only with two
+    adapters - with one adapter the network automatic does it). Push message when the internet is back (with how long it was gone)."""
+    def __init__(self):
+        self.was_conn = None; self.n = 0; self.warned_unstable = 0.0
+        threading.Thread(target=self.loop, daemon=True, name="uplink").start()
+
+    def step(self):
+        now = time.time(); self.n += 1
+        if self.n % 6 == 1:
+            try:
+                dual_roles()
+            except Exception as e:
+                DUAL["msg"] = str(e)[:100]
+        try:
+            dual_safety()
+        except Exception as e:
+            DUAL["msg"] = str(e)[:100]
+            noinet_apply()
+        net = STATE.get("net") or {}; w = STATE.get("wifi") or {}
+        online = net.get("online")
+        if online is False and DUAL["offline_since"] is None:
+            DUAL["offline_since"] = now
+        elif online and DUAL["offline_since"] is not None:
+            gone = now - DUAL["offline_since"]; DUAL["offline_since"] = None
+            if gone > 120:
+                dual_log(trf("Internet was gone for {min} min - it is back ({ssid})", min=int(gone / 60 + 0.5), ssid=w.get("ssid") or "?"), push=True)
+        conn = bool(w.get("connected")) and not w.get("ap")
+        if self.was_conn and not conn:
+            DUAL["drops"] = [t_ for t_ in DUAL["drops"] if now - t_ < 600] + [now]
+            good = [v for v in list(STATE.get("wifi_hist") or [])[-10:] if v is not None]
+            if len(DUAL["drops"]) >= 3 and good and max(good) > -70:
+                DUAL["unstable"] = True
+                if now - self.warned_unstable > 3600:
+                    self.warned_unstable = now
+                    dual_log(tr("Wi-Fi connection dropped 3 times in 10 minutes although the signal is good - interference or jamming?"),
+                             push=bool(CFG.get("wifi_guard")))
+        elif DUAL["drops"] and now - DUAL["drops"][-1] > 1800:
+            DUAL["unstable"] = False
+        self.was_conn = conn
+        if self.n % 6 == 0 and conn and w.get("dbm") is not None:
+            DUAL["sig"] = (DUAL["sig"] + [[int(now), w["dbm"]]])[-240:]          # one value per minute, 4 hours
+        if (DUAL["on"] and DUAL["offline_since"] and now - DUAL["offline_since"] > 180 and now - DUAL["switch_t"] > 300
+                and not WIFI.get("busy")):
+            DUAL["switch_t"] = now
+            cur = w.get("ssid") if conn else ""
+            cand = [s for s in _visible_saved(DUAL["up"]) if s["ssid"] != cur]
+            if cand:
+                c = cand[0]
+                code, _o, err = _run(["nmcli", "--wait", "40", "connection", "up", "uuid", c["id"], "ifname", DUAL["up"]], 50)
+                dual_log(trf("No internet over «{a}» - changed to «{b}»", a=cur or "?", b=c["ssid"]) if code == 0
+                         else trf("No internet - «{b}» did not work either", b=c["ssid"]))
+                WIFI["refresh"] = True
+
+    def loop(self):
+        time.sleep(15)
+        while True:
+            try:
+                self.step()
+            except Exception as e:
+                DUAL["msg"] = ("error: " + str(e))[:120]
+            time.sleep(10)
+
+
+# ---- devices in the own Wi-Fi without internet (e.g. cheap Wi-Fi cameras that "call home") ----
+def noinet_apply(force=False):
+    macs = sorted(m for m in (CFG.get("net_noinet") or []) if re.fullmatch(r"[0-9a-f]{2}(:[0-9a-f]{2}){5}", m))
+    key = ",".join(macs)
+    if key == DUAL["iso"] and not force:
+        return True
+    nft, ipt = shutil.which("nft"), shutil.which("iptables")
+    ok, err = False, ""
+    if nft:
+        _run([nft, "add", "table", "inet", "mw_iso"], 8); _run([nft, "delete", "table", "inet", "mw_iso"], 8)
+        if macs:
+            rules = ("table inet mw_iso {\n chain mwfwd {\n  type filter hook forward priority -10; policy accept;\n"
+                     f"  ether saddr {{ {', '.join(macs)} }} drop\n }}\n}}\n")
+            code, _o, e = _run([nft, "-f", "-"], 10, inp=rules)
+            ok, err = code == 0, e
+        else:
+            ok = True
+    elif ipt:
+        _run([ipt, "-D", "FORWARD", "-j", "MW_ISO"], 8); _run([ipt, "-F", "MW_ISO"], 8); _run([ipt, "-X", "MW_ISO"], 8)
+        ok = True
+        if macs:
+            code, _o, err = _run([ipt, "-N", "MW_ISO"], 8)
+            for m in macs:
+                c2, _o, e2 = _run([ipt, "-A", "MW_ISO", "-m", "mac", "--mac-source", m, "-j", "DROP"], 8)
+                if c2:
+                    err = e2
+            c3, _o, e3 = _run([ipt, "-I", "FORWARD", "1", "-j", "MW_ISO"], 8)
+            ok = code == 0 and c3 == 0 and not err
+            err = err or e3
+    else:
+        err = "nft / iptables missing"
+    if ok:
+        DUAL["iso"] = key; DUAL["iso_msg"] = ""
+        if macs or force:
+            log_event("sys", f"Without internet: {len(macs)} device(s)")
+    else:
+        DUAL["iso_msg"] = _perm_hint((err or "error").strip())[:160]
+    return ok
+
+
+# ---- Wi-Fi guard: listens with the stick ("monitor mode") for deauthentication frames = the usual Wi-Fi jamming attack ----
+_PRESENCE_SALT = {"day": "", "salt": b""}
+
+
+def presence_eval():
+    P = TOOLS["presence"]
+    if not (CFG.get("presence_macs") or CFG.get("presence_bt")):
+        return
+    now = time.time()
+    is_here = now - P.get("last", 0) < float(CFG.get("presence_gone_min", 10)) * 60
+    if is_here != P["here"]:
+        was = P["here"]; P.update(here=is_here, since=now)
+        if was is not None:
+            log_event("sys", "Presence: " + ("your device is back" if is_here else "your device is gone"))
+            if CFG.get("presence_auto"):
+                if is_here and CFG["armed"]:
+                    disarm(); log_event("sys", "Disarmed automatically (your device is here)")
+                elif not is_here and not CFG["armed"]:
+                    arm(); log_event("sys", "Armed automatically (your device is gone)")
+
+
+class WifiGuard:
+    def __init__(self):
+        self.sock = None; self.mon = ""
+        threading.Thread(target=self.loop, daemon=True, name="wifiguard").start()
+
+    def want(self):
+        return bool(CFG.get("wifi_guard") or CFG.get("wifi_count") or (CFG.get("presence_macs") and CFG.get("wifi_presence")))
+
+    def pick(self):
+        ads = DUAL["adapters"] or wifi_adapters()
+        cand = [a for a in ads if a["monitor"] and a["driver"] != "brcmfmac" and a["phy"]]
+        cand.sort(key=lambda a: (a["iface"] != DUAL.get("up"), not a["usb"]))
+        return cand[0] if cand else None
+
+    def open(self):
+        import socket
+        a = self.pick()
+        if a is None:
+            WGUARD.update(state="no adapter", msg="no Wi-Fi adapter here can listen (monitor mode) - e.g. a stick with MediaTek MT7612U / MT7921AU")
+            return False
+        name = "mwmon0"
+        if not os.path.exists(f"/sys/class/net/{name}"):
+            code, _o, err = _run(["iw", "phy", a["phy"], "interface", "add", name, "type", "monitor"], 8)
+            if code != 0:
+                WGUARD.update(state="not possible", msg=_perm_hint(err.strip() or "monitor mode not possible")[:160]); return False
+        _run(["ip", "link", "set", name, "up"], 8)
+        if not a["up"] or (a["iface"] not in (DUAL.get("up"), DUAL.get("ap"), WIFI.get("iface"))):
+            ch = None                                         # the stick is free: listen on the channel of the own Wi-Fi
+            code, out, _e = _run(["iw", "dev", DUAL.get("ap") or WIFI.get("iface") or "wlan0", "info"], 5)
+            m = re.search(r"channel (\d+)", out or "")
+            if m:
+                ch = m.group(1); _run(["iw", "dev", name, "set", "channel", ch], 5)
+        try:
+            s_ = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(3))
+            s_.bind((name, 0)); s_.settimeout(1.0)
+        except (OSError, AttributeError) as e:
+            WGUARD.update(state="not possible", msg=str(e)[:160]); return False
+        self.sock, self.mon = s_, name
+        WGUARD.update(state="listening", iface=a["iface"], phy=a["phy"], msg="")
+        log_event("sys", f"Wi-Fi guard: listening with {a['iface']} ({a['chip']})")
+        return True
+
+    def close(self):
+        if self.sock is not None:
+            try:
+                self.sock.close()
+            except OSError:
+                pass
+        self.sock = None
+        if self.mon:
+            _run(["iw", "dev", self.mon, "del"], 8); self.mon = ""
+        WGUARD["state"] = "off"
+
+    def own_bssids(self):
+        own = set()
+        for i in (DUAL.get("ap"), DUAL.get("up"), WIFI.get("iface")):
+            if i:
+                m = _rd(f"/sys/class/net/{i}/address")
+                if m:
+                    own.add(m.lower())
+                code, out, _e = _run(["iw", "dev", i, "link"], 4)
+                mm = re.search(r"Connected to ([0-9a-f:]{17})", out or "")
+                if mm:
+                    own.add(mm.group(1).lower())
+        return own
+
+    def loop(self):
+        time.sleep(20)
+        minute_t = time.time(); dea = dall = 0; seen = {}; own = set(); own_t = 0.0; mine = set()
+        while True:
+            if not self.want():
+                if self.sock is not None:
+                    self.close()
+                time.sleep(5); continue
+            if self.sock is None:
+                if not self.open():
+                    time.sleep(120); continue
+            now = time.time()
+            if now - own_t > 60:
+                own = self.own_bssids(); own_t = now; mine = set(CFG.get("presence_macs") or [])
+                d_ = datetime.now().strftime("%Y%m%d")
+                if _PRESENCE_SALT["day"] != d_:
+                    _PRESENCE_SALT.update(day=d_, salt=os.urandom(16)); seen.clear()
+            try:
+                pkt = self.sock.recv(4096)
+            except OSError as e:
+                if "timed out" not in str(e):
+                    WGUARD.update(state="error", msg=str(e)[:120]); self.close(); time.sleep(30); continue
+                pkt = b""
+            if len(pkt) > 8:
+                rl = pkt[2] | (pkt[3] << 8)
+                f = pkt[rl:]
+                if len(f) >= 16:
+                    fc = f[0]; typ = (fc >> 2) & 3; sub = (fc >> 4) & 15
+                    WGUARD["frames"] += 1
+                    a2 = f[10:16].hex(":")
+                    if typ == 0 and sub in (10, 12) and len(f) >= 22:          # disassociation / deauthentication
+                        dall += 1
+                        if f[16:22].hex(":") in own or a2 in own or f[4:10].hex(":") in own:
+                            dea += 1
+                    elif typ == 0 and sub == 4 and CFG.get("wifi_count"):    # probe request: only counted, never stored
+                        import hashlib
+                        seen[hashlib.sha256(_PRESENCE_SALT["salt"] + f[10:16]).hexdigest()[:12]] = now
+                    if mine and a2 in mine:
+                        TOOLS["presence"]["last"] = now
+            if now - minute_t >= 60:
+                minute_t = now
+                WGUARD["deauth_min"] = (WGUARD["deauth_min"] + [[int(now), dea, dall]])[-120:]
+                WGUARD["deauth_now"], WGUARD["all_now"] = dea, dall
+                if CFG.get("wifi_count"):
+                    for k in [k for k, t_ in seen.items() if now - t_ > 300]:
+                        seen.pop(k, None)
+                    WGUARD["count_now"] = len(seen)
+                    WGUARD["count_hist"] = (WGUARD["count_hist"] + [[int(now), len(seen)]])[-288:]
+                else:
+                    seen.clear(); WGUARD["count_now"] = None
+                if CFG.get("wifi_guard") and (dea >= int(CFG.get("wifi_guard_thr", 20)) or dall >= 300) and (not WGUARD["last_alarm"] or now - WGUARD["last_alarm"] > 1800):
+                    WGUARD["last_alarm"] = now
+                    txt = trf("Wi-Fi jamming: {n} disconnect frames in one minute ({all} in total on the channel)", n=dea, all=dall)
+                    WGUARD["alarms"] = ([{"t": now, "n": dea, "all": dall}] + WGUARD["alarms"])[:20]
+                    log_event("tamper", txt)
+                    w = WATCH_REF.get("w")
+                    if w is not None:
+                        w.notifier.alert("{name}: " + tr("Wi-Fi jamming attack"), txt, getattr(w, "frame_out", None))
+                dea = dall = 0
+                presence_eval()
+
+
+def dual_state():
+    hs = STATE.get("hotspot") or {}; w = STATE.get("wifi") or {}
+    return {"on": DUAL["on"], "ap": DUAL["ap"], "up": DUAL["up"], "adapters": DUAL["adapters"], "msg": DUAL["msg"], "log": DUAL["log"][:12],
+            "sig": DUAL["sig"][-120:], "unstable": DUAL["unstable"], "offline_since": DUAL["offline_since"], "iso_msg": DUAL["iso_msg"],
+            "repeater": bool(DUAL["on"] and hs.get("on") and w.get("connected")), "hotspot": {"on": hs.get("on"), "ssid": hs.get("ssid"), "clients": hs.get("clients")},
+            "uplink": {"ssid": w.get("ssid"), "dbm": w.get("dbm"), "pct": w.get("pct"), "connected": w.get("connected")},
+            "online": (STATE.get("net") or {}).get("online"),
+            "cfg": {k: CFG.get(k) for k in ("wifi_repeater", "wifi_swap", "wifi_guard", "wifi_guard_thr", "wifi_count", "wifi_presence", "net_inet_notify", "net_noinet")},
+            "guard": {k: WGUARD[k] for k in ("state", "iface", "msg", "deauth_min", "deauth_now", "all_now", "frames", "alarms", "count_now", "count_hist")}}
+
+
+def dual_set(key, value):
+    if key in ("wifi_repeater", "wifi_swap"):
+        CFG[key] = bool(value); save_settings(); DUAL["choice"] = None; dual_roles()
+        if key == "wifi_repeater" and value:
+            log_event("sys", "Repeater switched on by hand")
+        if STATE["hotspot"].get("on"):
+            hotspot_switch_later(True, 0.5)
+        return True, ""
+    if key in ("wifi_guard", "wifi_count", "wifi_presence", "net_inet_notify"):
+        CFG[key] = bool(value); save_settings(); return True, ""
+    if key == "wifi_guard_thr":
+        try:
+            CFG[key] = int(min(500, max(5, int(value)))); save_settings(); return True, ""
+        except (TypeError, ValueError):
+            return False, "bad value"
+    return False, "unknown setting"
+
+
+def noinet_set(mac, on):
+    mac = str(mac or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{2}(:[0-9a-f]{2}){5}", mac):
+        return False, "bad address"
+    L = [m for m in (CFG.get("net_noinet") or []) if m != mac]
+    if on:
+        L.append(mac)
+    CFG["net_noinet"] = L[-30:]; save_settings()
+    ok = noinet_apply(force=True)
+    return ok, "" if ok else DUAL["iso_msg"]
+
+
+# ----------------------------------------------------------------------------
 # Network automatic: known networks first (e.g. the phone hotspot = internet + push messages), otherwise the own Wi-Fi.
 #   start / connection lost: wait auto_wait seconds for a known network, then switch the own Wi-Fi on
 #   own Wi-Fi on: every auto_retry minutes look for known networks again - only when no device is connected to the Pi
@@ -6509,6 +7061,14 @@ class NetAuto:
             return
         now = time.monotonic()
         hs, w = STATE["hotspot"] or {}, STATE["wifi"] or {}
+        if DUAL["on"]:
+            self.lost_since = None; self.next_retry = None
+            if not hs.get("on"):
+                ok, err = hotspot_set(True, persist=False); hotspot_refresh()
+                self._set("own Wi-Fi on" if ok else "own Wi-Fi failed: " + err[:100]); return
+            self._set(f"own Wi-Fi on + internet from «{w.get('ssid') or '?'}»" if w.get("connected")
+                      else "own Wi-Fi on - the second adapter looks for known networks")
+            return
         retry = max(0.0, float(CFG["auto_retry"])) * 60.0
         if hs.get("on"):
             self.lost_since = None
@@ -10451,6 +11011,71 @@ def qs_layout_set(order, hidden):
     return True
 
 
+_PROJ = {"t": 0.0, "d": {}, "busy": False}
+_START_T = time.time()
+
+
+def _dir_mb(path, skip=()):
+    tot = 0; n = 0
+    for root_, dirs, files in os.walk(path):
+        dirs[:] = [x for x in dirs if os.path.join(root_, x) not in skip]
+        for f in files:
+            try:
+                tot += os.path.getsize(os.path.join(root_, f)); n += 1
+            except OSError:
+                pass
+    return round(tot / 1024 ** 2, 1), n
+
+
+def project_info():
+    """Size of the program and its data, and what it runs on (refreshed once a minute)."""
+    if time.time() - _PROJ["t"] > 60 and not _PROJ.get("busy"):
+        _PROJ["busy"] = True; _PROJ["t"] = time.time()
+        threading.Thread(target=_project_scan, daemon=True, name="projinfo").start()     # walking folders: not in the request
+    d = dict(_PROJ["d"])
+    try:
+        with open("/proc/self/status") as f:
+            d["ram_mb"] = round(int(next(l for l in f if l.startswith("VmRSS:")).split()[1]) / 1024)
+    except (OSError, StopIteration, ValueError):
+        d["ram_mb"] = None
+    d["run_s"] = int(time.time() - _START_T)
+    d["version"] = APP_VERSION
+    return d
+
+
+def _project_scan():
+    d = {}
+    try:
+        try:
+            me = os.path.abspath(__file__)
+            d["file"] = os.path.basename(me); d["file_kb"] = round(os.path.getsize(me) / 1024)
+            with open(me, "rb") as f:
+                d["lines"] = f.read().count(b"\n")
+        except OSError:
+            pass
+        rec = os.path.abspath(CFG["record_dir"])
+        d["rec_mb"], d["rec_n"] = _dir_mb(rec) if os.path.isdir(rec) else (0, 0)
+        d["data_mb"], d["data_n"] = _dir_mb(DATA_DIR, skip=(rec,))
+        d["sim_mb"] = _dir_mb(sim_dir())[0] if os.path.isdir(sim_dir()) else 0
+        try:
+            d["settings_kb"] = round(os.path.getsize(SETTINGS_FILE) / 1024, 1)
+        except OSError:
+            pass
+        d["python"] = sys.version.split()[0]
+        try:
+            with open("/proc/device-tree/model", "rb") as f:
+                d["model"] = f.read().decode("utf-8", "replace").strip("\x00 \n")[:60]
+        except OSError:
+            d["model"] = ""
+        try:
+            with open("/etc/os-release") as f:
+                d["os"] = next((l.split("=", 1)[1].strip().strip('"') for l in f if l.startswith("PRETTY_NAME=")), "")[:60]
+        except OSError:
+            d["os"] = ""
+    finally:
+        _PROJ.update(t=time.time(), d=d, busy=False)
+
+
 def sim_control(d=None):
     """The video scenarios (and other switches) of the simulator: GET (d=None) or POST /control."""
     if d is None:
@@ -10533,6 +11158,729 @@ def sim_autoupdate():
     if was:
         sim_start()
     return True
+
+
+# ----------------------------------------------------------------------------
+# Tools (page /tools): network scanner, Wi-Fi surroundings, internet test, security check, Bluetooth scanner with
+# tracker warning and presence, focus assistant, servo test, speaker / microphone test, memory card test,
+# diagnosis package, power calculator.
+# ----------------------------------------------------------------------------
+TOOLS = {"net": {"running": False, "t": 0.0, "devices": [], "net": "", "secs": 0.0, "msg": ""},
+         "wifi": {"running": False, "t": 0.0, "nets": [], "channels": {}, "best": None, "own": None, "msg": ""},
+         "speed": {"running": False, "msg": "", "hist": []},
+         "sec": {"running": False, "t": 0.0, "items": []},
+         "bt": {"running": False, "t": 0.0, "devices": [], "msg": "", "trackers": {}},
+         "focus": {"t": 0.0, "val": None, "best": 0.0, "hist": []},
+         "servo": {"running": False, "steps": [], "msg": ""},
+         "sd": {"running": False, "t": 0.0, "res": {}, "msg": ""},
+         "presence": {"here": None, "since": 0.0, "who": ""}}
+OUI_BUILTIN = {"B827EB": "Raspberry Pi", "DCA632": "Raspberry Pi", "E45F01": "Raspberry Pi", "28CDC1": "Raspberry Pi", "2CCF67": "Raspberry Pi",
+               "D83ADD": "Raspberry Pi", "240AC4": "Espressif (ESP32)", "30AEA4": "Espressif (ESP32)", "84CCA8": "Espressif (ESP32)",
+               "A4CF12": "Espressif (ESP32)", "246F28": "Espressif (ESP32)", "3C71BF": "Espressif (ESP32)", "001132": "Synology"}
+_OUI = {"loaded": False, "map": {}}
+
+
+def oui_vendor(mac):
+    """Maker of a network device from the first half of its address (MAC). A random address = a phone with privacy mode."""
+    m = re.sub(r"[^0-9A-Fa-f]", "", mac or "").upper()
+    if len(m) < 6:
+        return ""
+    if int(m[1], 16) & 2:
+        return "private address (phone / tablet)"
+    if not _OUI["loaded"]:
+        _OUI["loaded"] = True
+        for p in ("/usr/share/ieee-data/oui.txt", "/usr/share/arp-scan/ieee-oui.txt", "/usr/share/nmap/nmap-mac-prefixes"):
+            try:
+                with open(p, encoding="utf-8", errors="replace") as f:
+                    for line in f:
+                        mm = re.match(r"^([0-9A-F]{2})[-:]?([0-9A-F]{2})[-:]?([0-9A-F]{2})\s+(?:\(hex\)\s+)?(.+)$", line.strip(), re.I)
+                        if mm:
+                            _OUI["map"][(mm.group(1) + mm.group(2) + mm.group(3)).upper()] = mm.group(4).strip()[:40]
+                if _OUI["map"]:
+                    break
+            except OSError:
+                continue
+    return _OUI["map"].get(m[:6]) or OUI_BUILTIN.get(m[:6], "")
+
+
+def _arp_table():
+    out = {}
+    try:
+        with open("/proc/net/arp") as f:
+            next(f)
+            for line in f:
+                p = line.split()
+                if len(p) >= 6 and p[2] != "0x0" and p[3] != "00:00:00:00:00:00":
+                    out[p[0]] = p[3].lower()
+    except (OSError, StopIteration):
+        pass
+    return out
+
+
+def net_scan(alert=False):
+    """All devices in the own network: wake every address (ping), read the address table, names and makers."""
+    T = TOOLS["net"]
+    if T["running"]:
+        return False
+    from concurrent.futures import ThreadPoolExecutor
+    import socket
+    T.update(running=True, msg="")
+    t0 = time.time()
+    try:
+        ip = _local_ipv4(); base = ".".join(ip.split(".")[:3])
+        mine_ips = {ip}; bases = [] if ip.startswith("127.") else [base]
+        code_, out_, _e = _run(["ip", "-4", "-o", "addr", "show"], 5)
+        hs_if = DUAL.get("ap") or (WIFI.get("iface") if STATE["hotspot"].get("on") else "")
+        hs_base = ""
+        for ln in (out_ or "").splitlines():
+            m_ = re.search(r"^\d+:\s+(\S+)\s+inet (\d+\.\d+\.\d+\.\d+)/(\d+)", ln)
+            if not m_ or m_.group(1) == "lo" or m_.group(1).startswith(("docker", "tailscale", "veth", "br-")):
+                continue
+            a_ = m_.group(2)
+            if not ipaddress.ip_address(a_).is_private or a_.startswith("127."):
+                continue
+            mine_ips.add(a_); b_ = ".".join(a_.split(".")[:3])
+            if m_.group(1) == hs_if:
+                hs_base = b_
+            if b_ not in bases and len(bases) < 3:
+                bases.append(b_)
+        if not bases:
+            T.update(msg="no network"); return False
+        base = bases[0]
+        hosts = [f"{b_}.{i}" for b_ in bases for i in range(1, 255)]
+        ping = shutil.which("ping")
+        alive = set()
+
+        def poke(h):
+            if ping:
+                try:
+                    if subprocess.run([ping, "-c", "1", "-W", "1", h], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=3).returncode == 0:
+                        alive.add(h)
+                except (OSError, subprocess.SubprocessError):
+                    pass
+            else:
+                try:
+                    s_ = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s_.sendto(b"", (h, 9)); s_.close()
+                except OSError:
+                    pass
+        with ThreadPoolExecutor(max_workers=64) as ex:
+            list(ex.map(poke, hosts))
+        time.sleep(0.5)
+        arp = _arp_table()
+        addrs = sorted(set(arp) | alive | {ip}, key=lambda a: [int(x) for x in a.split(".")])
+        addrs = [a for a in addrs if ".".join(a.split(".")[:3]) in bases]
+
+        def name_of(a):
+            try:
+                socket.setdefaulttimeout(1.0)
+                return socket.gethostbyaddr(a)[0][:50]
+            except (OSError, UnicodeError):
+                return ""
+            finally:
+                socket.setdefaulttimeout(None)
+        with ThreadPoolExecutor(max_workers=32) as ex:
+            names = dict(zip(addrs, ex.map(name_of, addrs)))
+        known = CFG.get("net_known") or {}
+        gw = ""
+        try:
+            with open("/proc/net/route") as f:
+                for line in list(f)[1:]:
+                    p = line.split()
+                    if p[1] == "00000000":
+                        gw = socket.inet_ntoa(bytes.fromhex(p[2])[::-1]); break
+        except (OSError, ValueError, IndexError):
+            pass
+        devs = []
+        noinet = set(CFG.get("net_noinet") or [])
+        for a in addrs:
+            mac = arp.get(a, "")
+            kn = known.get(mac) if mac else None
+            role = "this device" if a in mine_ips else ("router" if a == gw else "")
+            hs_ = bool(hs_base) and a.startswith(hs_base + ".")
+            devs.append({"ip": a, "mac": mac, "name": names.get(a, ""), "vendor": oui_vendor(mac), "known": kn, "role": role,
+                         "hs": hs_, "noinet": mac in noinet,
+                         "new": bool(mac) and kn is None and a not in mine_ips and bool(T.get("first_done")) and mac not in (T.get("seen") or {})})
+        seen = T.setdefault("seen", {})
+        for d_ in devs:
+            if d_["mac"]:
+                seen[d_["mac"]] = time.time()
+        newbies = [d_ for d_ in devs if d_["new"] and d_["mac"] not in (CFG.get("net_known") or {})]
+        T.update(devices=devs, net=" + ".join(f"{b_}.0/24" for b_ in bases), t=time.time(), secs=round(time.time() - t0, 1))
+        presence_update(devs)
+        if alert and CFG.get("net_watch") and newbies and T.get("first_done"):
+            txt = ", ".join(f"{d_['ip']} ({d_['vendor'] or d_['name'] or d_['mac']})" for d_ in newbies[:5])
+            log_event("sys", f"New device in the network: {txt}")
+            w = WATCH_REF.get("w")
+            if w is not None:
+                w.notifier.alert("{name}: " + tr("new device in the network"), txt, None)
+        T["first_done"] = True
+        return True
+    finally:
+        T["running"] = False
+
+
+def net_known_set(mac, name):
+    mac = (mac or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{2}(:[0-9a-f]{2}){5}", mac):
+        return False
+    k = dict(CFG.get("net_known") or {})
+    if name is None:
+        k.pop(mac, None)
+    else:
+        k[mac] = str(name)[:40] or "?"
+    CFG["net_known"] = k; save_settings()
+    for d_ in TOOLS["net"]["devices"]:
+        if d_["mac"] == mac:
+            d_["known"] = k.get(mac); d_["new"] = False
+    return True
+
+
+def presence_update(devs):
+    """«My phone is here»: one of the marked devices is in the network. Optional: disarm when it comes, arm when it is gone."""
+    mine = set(CFG.get("presence_macs") or [])
+    if not mine:
+        return
+    P = TOOLS["presence"]
+    here = [d_ for d_ in devs if d_["mac"] in mine]
+    if here:
+        P["last"] = time.time(); P["who"] = ", ".join((d_.get("known") or d_["ip"]) for d_ in here)
+    presence_eval()
+
+
+def wifi_survey():
+    """Wi-Fi networks around (name, channel, signal) and the best channel for the own hotspot. With two adapters the one that
+    is not the own Wi-Fi searches - the own Wi-Fi is not interrupted."""
+    T = TOOLS["wifi"]
+    if T["running"]:
+        return False
+    T.update(running=True, msg="")
+    try:
+        nets = []
+        nm = shutil.which("nmcli")
+        if nm:
+            r = subprocess.run([nm, "-t", "-f", "IN-USE,SSID,BSSID,CHAN,FREQ,SIGNAL,SECURITY", "dev", "wifi", "list", "--rescan", "yes"]
+                               + (["ifname", DUAL["up"]] if DUAL["on"] else []),
+                               capture_output=True, text=True, timeout=30)
+            for line in r.stdout.splitlines():
+                p = re.split(r"(?<!\\):", line)
+                if len(p) < 7:
+                    continue
+                p = [x.replace("\\:", ":") for x in p]
+                try:
+                    nets.append({"own": p[0] == "*", "ssid": p[1][:32] or "(" + tr("hidden") + ")", "bssid": p[2], "ch": int(p[3] or 0),
+                                 "mhz": int(re.sub(r"\D", "", p[4]) or 0), "signal": int(p[5] or 0), "sec": p[6][:20]})
+                except ValueError:
+                    continue
+        if not nets:
+            T["msg"] = "no Wi-Fi scan possible (NetworkManager / nmcli missing or no Wi-Fi)"
+        ch = {}
+        for n in nets:
+            if 1 <= n["ch"] <= 14:
+                ch[n["ch"]] = ch.get(n["ch"], 0) + max(1, n["signal"])
+        load = {c: sum(v * max(0, 1 - abs(c - k) / 5.0) for k, v in ch.items()) for c in (1, 6, 11)}     # channels overlap
+        best = min(load, key=load.get) if nets else None
+        nets.sort(key=lambda n: -n["signal"])
+        T.update(nets=nets[:60], channels={str(k): v for k, v in sorted(ch.items())}, best=best, load={str(k): round(v) for k, v in load.items()},
+                 own=next((n for n in nets if n["own"]), None), t=time.time())
+        return True
+    except (OSError, subprocess.SubprocessError) as e:
+        T["msg"] = str(e)[:120]; return False
+    finally:
+        T["running"] = False
+
+
+def speed_test():
+    """Internet: ping, name lookup and a small download / upload (about 6 MB in total - mind the volume of a mobile contract)."""
+    T = TOOLS["speed"]
+    if T["running"]:
+        return False
+    import socket
+    T.update(running=True, msg="testing")
+    res = {"t": time.time()}
+    try:
+        ping = shutil.which("ping")
+        if ping:
+            r = subprocess.run([ping, "-c", "4", "-W", "2", "1.1.1.1"], capture_output=True, text=True, timeout=15)
+            m = re.search(r"= [\d.]+/([\d.]+)/", r.stdout)
+            res["ping_ms"] = round(float(m.group(1)), 1) if m else None
+            m2 = re.search(r"(\d+)% packet loss", r.stdout)
+            res["loss"] = int(m2.group(1)) if m2 else None
+        t0 = time.time()
+        try:
+            socket.getaddrinfo("speed.cloudflare.com", 443); res["dns_ms"] = round((time.time() - t0) * 1000, 1)
+        except OSError:
+            res["dns_ms"] = None
+        t0 = time.time()
+        with urllib.request.urlopen("https://speed.cloudflare.com/__down?bytes=5000000", timeout=30) as r:
+            n = len(r.read())
+        res["down_mbit"] = round(n * 8 / 1e6 / max(0.01, time.time() - t0), 1)
+        data = os.urandom(1000000); t0 = time.time()
+        req = urllib.request.Request("https://speed.cloudflare.com/__up", data=data, headers={"Content-Type": "application/octet-stream"})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            r.read()
+        res["up_mbit"] = round(len(data) * 8 / 1e6 / max(0.01, time.time() - t0), 1)
+        T["msg"] = ""
+    except Exception as e:
+        res["error"] = str(e)[:100]; T["msg"] = res["error"]
+    finally:
+        T["hist"] = (T["hist"] + [res])[-20:]
+        T["running"] = False
+        log_event("sys", "Internet test: " + (f"{res.get('down_mbit')} / {res.get('up_mbit')} Mbit/s, ping {res.get('ping_ms')} ms" if "error" not in res else res["error"]))
+    return True
+
+
+def security_check():
+    """What is open and what could be risky: password, https, open ports, router (UPnP), IPv6, SSH."""
+    T = TOOLS["sec"]
+    items = []
+
+    def add(level, text, tip="", arg=""):
+        items.append({"level": level, "text": text, "tip": tip, "arg": arg})
+    add("ok" if CFG["web_password"] else "bad", "Web password " + ("set" if CFG["web_password"] else "missing"),
+        "" if CFG["web_password"] else "Everybody in the network can operate Motion Watch")
+    add("ok" if WEB_OPTS.get("https") else "warn", "Secure page (https) " + ("on" if WEB_OPTS.get("https") else "off"),
+        "" if WEB_OPTS.get("https") else "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)")
+    ports = set()
+    try:
+        for fn in ("/proc/net/tcp", "/proc/net/tcp6"):
+            with open(fn) as f:
+                for line in list(f)[1:]:
+                    p = line.split()
+                    if p[3] == "0A":                                  # listening
+                        la, lp = p[1].split(":")
+                        if la not in ("0100007F", "00000000000000000000000001000000"):
+                            ports.add(int(lp, 16))
+    except (OSError, ValueError, IndexError):
+        pass
+    names = {22: "SSH", 80: "web", 443: "https", 5000: "Motion Watch", 5001: "Motion Watch https", 8554: "RTSP (camera stream)", 1883: "MQTT",
+             8765: "simulator", 5900: "VNC", 3389: "remote desktop", 139: "Windows share", 445: "Windows share", 53: "DNS"}
+    for p in sorted(ports)[:30]:
+        lvl = "warn" if p in (5900, 3389, 139, 445, 1883) else "info"
+        add(lvl, "Open in the network: port", "", f"{p}" + (f" ({names[p]})" if p in names else ""))
+    try:
+        sshd = open("/etc/ssh/sshd_config").read()
+        if 22 in ports:
+            pw = re.search(r"^\s*PasswordAuthentication\s+no", sshd, re.M) is None
+            add("warn" if pw else "ok", "SSH: login with password " + ("allowed" if pw else "off (keys only)"),
+                "Use a strong password or keys" if pw else "")
+    except OSError:
+        pass
+    v6 = []
+    try:
+        with open("/proc/net/if_inet6") as f:
+            for line in f:
+                a = line.split()[0]
+                if a.startswith(("2", "3")):
+                    v6.append(a)
+    except OSError:
+        pass
+    if v6:
+        add("warn", "Public IPv6 address present", "Depending on the router the Pi can be reached directly from the internet - keep the web password on")
+    up = shutil.which("upnpc")
+    if up:
+        try:
+            r = subprocess.run([up, "-l"], capture_output=True, text=True, timeout=15)
+            maps = [l for l in r.stdout.splitlines() if re.match(r"\s*\d+\s+(TCP|UDP)", l)]
+            mine = [l for l in maps if _local_ipv4() in l]
+            add("bad" if mine else "ok", "Router forwards ports to this device:" if mine else "No port forwarding of the router to this device (UPnP)", "", str(len(mine)) if mine else "")
+        except (OSError, subprocess.SubprocessError):
+            pass
+    try:
+        with urllib.request.urlopen("https://1.1.1.1/cdn-cgi/trace", timeout=8) as r:
+            tr_ = r.read().decode(errors="replace")
+        pub = re.search(r"^ip=(.+)$", tr_, re.M)
+        if pub:
+            ip_ = pub.group(1).strip()
+            cg = ip_.startswith("100.") and 64 <= int(ip_.split(".")[1]) <= 127
+            add("info", "Address in the internet:", "shared address of the mobile network - not reachable from outside" if cg else "", ip_)
+    except Exception:
+        add("info", "Internet not reachable")
+    if (STATE.get("remote_ts") or {}).get("state") == "Running":
+        add("ok", "Tailscale: access from outside only for your own devices")
+    T.update(items=items, t=time.time())
+    return True
+
+
+def bt_scan(secs=10):
+    """Bluetooth devices around. Trackers (Apple Find My, Samsung SmartTag, Tile) that stay near for a long time = warning."""
+    T = TOOLS["bt"]
+    if T["running"]:
+        return False
+    T.update(running=True, msg="")
+
+    async def go():
+        from bleak import BleakScanner
+        found = await BleakScanner.discover(timeout=secs, return_adv=True)
+        out = []
+        for addr, (dev, adv) in found.items():
+            md = adv.manufacturer_data or {}; uu = [u.lower() for u in (adv.service_uuids or [])]
+            kind = ""
+            if 0x004C in md and len(md[0x004C]) > 1 and md[0x004C][0] == 0x12:
+                kind = "Apple Find My (AirTag or a lost Apple device)"
+            elif any(u.startswith("0000fd5a") for u in uu):
+                kind = "Samsung SmartTag"
+            elif any(u.startswith("0000feed") for u in uu):
+                kind = "Tile"
+            elif 0x004C in md:
+                kind = "Apple device"
+            elif 0x0075 in md:
+                kind = "Samsung device"
+            elif 0x0006 in md:
+                kind = "Microsoft device"
+            elif 0x0499 in md:
+                kind = "RuuviTag"
+            out.append({"addr": addr, "name": (adv.local_name or dev.name or "")[:40], "rssi": adv.rssi, "kind": kind,
+                        "tracker": kind.startswith(("Apple Find", "Samsung SmartTag", "Tile"))})
+        return out
+    try:
+        import asyncio
+        devs = asyncio.run(go())
+        devs.sort(key=lambda d_: -(d_["rssi"] or -200))
+        now = time.time(); tk = T["trackers"]
+        for d_ in devs:
+            if d_["tracker"]:
+                x = tk.setdefault(d_["addr"], {"first": now, "kind": d_["kind"]}); x["last"] = now
+        for a in [a for a, x in tk.items() if now - x["last"] > 1800]:
+            tk.pop(a, None)
+        for a, x in tk.items():
+            stay = (x["last"] - x["first"]) / 60.0
+            if stay >= float(CFG.get("bt_tracker_min", 30)) and not x.get("warned") and CFG.get("bt_tracker_warn"):
+                x["warned"] = True
+                log_event("sys", f"Unknown tracker near for {stay:.0f} min: {x['kind']} ({a})")
+                w = WATCH_REF.get("w")
+                if w is not None:
+                    w.notifier.alert("{name}: " + tr("unknown tracker nearby"), f"{x['kind']} · {stay:.0f} min", None)
+        mine = set(CFG.get("presence_bt") or [])
+        if mine and any(d_["addr"].lower() in mine for d_ in devs):
+            TOOLS["presence"]["last"] = now
+        T.update(devices=devs[:80], t=now)
+        return True
+    except ImportError:
+        T["msg"] = "Bluetooth scanner needs: sudo apt install python3-bleak"; return False
+    except Exception as e:
+        T["msg"] = str(e)[:120]; return False
+    finally:
+        T["running"] = False
+
+
+def focus_value():
+    """Sharpness of the middle of the picture (variance of the Laplace filter): higher = sharper."""
+    w = WATCH_REF.get("w")
+    if w is None:
+        return None
+    w.raw_until = time.time() + 3                    # the picture without boxes and text (they would count as "sharp")
+    f = w.frame_raw if w.frame_raw is not None else w.frame_out
+    if f is None:
+        return None
+    h, w_ = f.shape[:2]
+    c = cv2.cvtColor(f[h // 4: 3 * h // 4, w_ // 4: 3 * w_ // 4], cv2.COLOR_BGR2GRAY)
+    v = float(cv2.Laplacian(c, cv2.CV_64F).var())
+    F = TOOLS["focus"]; F["val"] = round(v, 1); F["best"] = max(F["best"], v) if time.time() - F["t"] < 120 else v; F["t"] = time.time()
+    F["hist"] = (F["hist"] + [round(v, 1)])[-60:]
+    return F
+
+
+def servo_test():
+    """Drive pan and tilt slowly over the whole range; after every step: did the picture change? (moved or blocked)"""
+    S = TOOLS["servo"]
+    if S["running"]:
+        return False
+    w = WATCH_REF.get("w")
+    if w is None:
+        return False
+    S.update(running=True, steps=[], msg="", bad=0)
+
+    def grab():
+        f = getattr(w, "frame_out", None)
+        return None if f is None else cv2.resize(cv2.cvtColor(f, cv2.COLOR_BGR2GRAY), (160, 90)).astype(np.float32)
+
+    def run():
+        p0, t0 = CFG["pan"], CFG["tilt"]
+        MANUAL["until"] = time.time() + 3600
+        try:
+            plan = [("pan", v) for v in (50, 30, 10, 0, 25, 50, 75, 90, 100, 50)] + [("tilt", v) for v in (50, 30, 15, 0, 50, 70, 85, 100, 50)]
+            prev = grab()
+            for axis, v in plan:
+                CFG[axis] = float(v)
+                time.sleep(1.2)
+                cur = grab()
+                diff = None if prev is None or cur is None else round(float(np.mean(np.abs(cur - prev))), 1)
+                S["steps"].append({"axis": axis, "to": v, "real": round(CFG[axis], 1), "diff": diff})
+                prev = cur
+            still = []
+            for i, s_ in enumerate(S["steps"]):
+                prev_to = S["steps"][i - 1]["to"] if i and S["steps"][i - 1]["axis"] == s_["axis"] else 50
+                s_["ok"] = s_["diff"] is None or abs(s_["to"] - prev_to) < 5 or s_["diff"] >= 1.0
+                if not s_["ok"]:
+                    still.append(s_)
+            S["msg"] = "ok" if not still else "steps without a change of the picture - blocked, at the end or camera not on the head?"
+            S["bad"] = len(still)
+            log_event("servo", "Servo test: " + ("ok" if not still else f"{len(still)} {S['msg']}"))
+        finally:
+            CFG["pan"], CFG["tilt"] = p0, t0
+            MANUAL["until"] = 0.0
+            S["running"] = False
+    threading.Thread(target=run, daemon=True, name="servotest").start()
+    return True
+
+
+def sd_test():
+    """Memory card: write / read speed (64 MB), kind of card, data written since the start, errors in the system log."""
+    S = TOOLS["sd"]
+    if S["running"]:
+        return False
+    S.update(running=True, msg="")
+    res = {}
+    try:
+        p = os.path.join(DATA_DIR, ".speedtest.bin"); blk = os.urandom(1 << 20); n = 64
+        t0 = time.time()
+        with open(p, "wb") as f:
+            for _ in range(n):
+                f.write(blk)
+            f.flush(); os.fsync(f.fileno())
+        res["write_mb_s"] = round(n / max(0.01, time.time() - t0), 1)
+        try:
+            with open("/proc/sys/vm/drop_caches", "w") as f:
+                f.write("1")
+        except OSError:
+            pass
+        t0 = time.time()
+        with open(p, "rb") as f:
+            while f.read(1 << 22):
+                pass
+        res["read_mb_s"] = round(n / max(0.01, time.time() - t0), 1)
+        os.remove(p)
+        dev = None
+        for d_ in ("mmcblk0", "nvme0n1", "sda"):
+            if os.path.isdir(f"/sys/block/{d_}"):
+                dev = d_; break
+        if dev:
+            res["device"] = dev
+            for k in ("name", "manfid", "oemid", "date", "type"):
+                try:
+                    res[k] = open(f"/sys/block/{dev}/device/{k}").read().strip()[:30]
+                except OSError:
+                    pass
+            try:
+                st_ = open(f"/sys/block/{dev}/stat").read().split()
+                res["written_gb"] = round(int(st_[6]) * 512 / 1024 ** 3, 2)
+            except (OSError, IndexError, ValueError):
+                pass
+            try:
+                res["size_gb"] = round(int(open(f"/sys/block/{dev}/size").read()) * 512 / 1e9, 1)
+            except (OSError, ValueError):
+                pass
+        errs = 0
+        for cmd in (["dmesg"], ["journalctl", "-k", "-n", "3000", "--no-pager"]):
+            if shutil.which(cmd[0]):
+                try:
+                    r = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+                    if r.returncode == 0 and r.stdout:
+                        errs = sum(1 for l in r.stdout.splitlines() if re.search(r"(mmc\d|mmcblk|EXT4-fs error|I/O error)", l) and re.search(r"error|timeout|fail", l, re.I))
+                        break
+                except (OSError, subprocess.SubprocessError):
+                    pass
+        res["errors"] = errs
+        res["verdict"] = "bad" if errs or res["write_mb_s"] < 3 else ("warn" if res["write_mb_s"] < 8 else "ok")
+        S["msg"] = ""
+        log_event("sys", f"Memory card test: write {res['write_mb_s']} MB/s, read {res['read_mb_s']} MB/s, errors {errs}")
+    except Exception as e:
+        S["msg"] = str(e)[:120]
+    finally:
+        S.update(res=res, t=time.time(), running=False)
+    return True
+
+
+_SECRET_RE = re.compile(r"pass|token|secret|key|pin|topic|ntfy|webhook|sms_|phone|mail|user|telegram|chat|url|mqtt_|wifi|psk|feedback|mac|known|ssid|lat|lon|gps", re.I)
+
+
+def diag_zip():
+    """Everything for finding a fault in one ZIP: log, settings WITHOUT passwords / addresses, system values. No pictures."""
+    import io as _io
+    buf = _io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        cfg = {k: ("***" if _SECRET_RE.search(k) and v not in ("", None, [], {}) else v) for k, v in CFG.items() if k not in VOLATILE}
+        z.writestr("settings_without_secrets.json", json.dumps(cfg, indent=1, ensure_ascii=False, default=str))
+        z.writestr("events.txt", "\n".join(f"{e.get('t', '')} [{e.get('kind', '')}] {e.get('text', '')}" for e in reversed(STATE["events"])))
+        info = {"version": APP_VERSION, "project": project_info(), "health": None, "sim": {k: v for k, v in sim_status().items() if k != "found"},
+                "state": {k: STATE.get(k) for k in ("fps", "cpu", "cpu_temp", "source_label", "source_status", "web_status", "ai_status", "eco",
+                                                    "disk", "supply", "battery", "audio", "thermal_res")}}
+        try:
+            info["health"] = health_check() if "health_check" in globals() else None
+        except Exception:
+            pass
+        z.writestr("system.json", json.dumps(info, indent=1, ensure_ascii=False, default=str))
+        for name, cmd in (("journal.txt", ["journalctl", "-u", SERVICE_NAME, "-n", "800", "--no-pager"]), ("kernel.txt", ["dmesg"]),
+                          ("uname.txt", ["uname", "-a"]), ("disk.txt", ["df", "-h"]), ("usb.txt", ["lsusb"])):
+            if shutil.which(cmd[0]):
+                try:
+                    r = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+                    z.writestr(name, (r.stdout or r.stderr)[-400000:])
+                except (OSError, subprocess.SubprocessError):
+                    pass
+    return buf.getvalue()
+
+
+def power_calc():
+    """Present consumption and what the main consumers cost - for the calculator on the tools page."""
+    w = WATCH_REF.get("w"); bm = getattr(w, "battmon", None) if w is not None else None
+    try:
+        p, src = bm.watts() if bm is not None else (4.0, "estimate")
+    except Exception:
+        p, src = 4.0, "estimate"
+    parts = [("AI detection", 1.2 if CFG.get("ai_enabled") else 0.0, "ai_enabled"),
+             ("Thermal camera", 0.4 if CFG.get("thermal_on") else 0.0, "thermal_on"),
+             ("Power saving (when quiet)", -0.9 if CFG.get("eco_on") else 0.0, "eco_on"),
+             ("Infrared light", 0.6 if (STATE.get("lights") or {}).get("ir") else 0.0, None),
+             ("White light", 0.6 if (STATE.get("lights") or {}).get("white") else 0.0, None),
+             ("Own Wi-Fi (hotspot)", 0.3 if (STATE.get("hotspot") or {}).get("on") else 0.0, None),
+             ("Patrol (servos)", 0.5 if CFG.get("patrol") else 0.0, "patrol")]
+    b = STATE.get("battery") or {}
+    cap = None
+    if b.get("on") and b.get("pct") is not None and b.get("cap_wh"):
+        cap = float(b["cap_wh"]) * float(b["pct"]) / 100.0
+    elif float(CFG.get("batt_mah") or 0) > 0:
+        cap = float(CFG["batt_mah"]) * 3.7 / 1000.0 * 0.85
+    return {"watts": round(p, 2), "src": src, "parts": [{"name": n, "w": w_, "key": k} for n, w_, k in parts],
+            "cap_wh": round(cap, 1) if cap else None, "battery": b}
+
+
+def tools_state():
+    T = TOOLS
+    return {"net": {k: v for k, v in T["net"].items() if k not in ("seen",)}, "wifi": T["wifi"], "speed": T["speed"], "sec": T["sec"],
+            "bt": {"running": T["bt"]["running"], "t": T["bt"]["t"], "devices": T["bt"]["devices"], "msg": T["bt"]["msg"],
+                   "trackers": [{"addr": a, "kind": x["kind"], "min": round((x["last"] - x["first"]) / 60.0)} for a, x in T["bt"]["trackers"].items()]},
+            "servo": T["servo"], "sd": T["sd"], "presence": {"here": T["presence"]["here"], "since": T["presence"]["since"], "who": T["presence"]["who"]},
+            "cfg": {k: CFG.get(k) for k in ("net_watch", "net_known", "presence_macs", "presence_auto", "presence_gone_min", "bt_tracker_warn",
+                                            "bt_tracker_min", "presence_bt")},
+            "dual": dual_state(), "toolmode": toolmode_state(), "power": power_calc(), "has": {"nmcli": bool(shutil.which("nmcli")), "ping": bool(shutil.which("ping")), "bleak": _has_bleak()}}
+
+
+def _has_bleak():
+    try:
+        import importlib.util
+        return importlib.util.find_spec("bleak") is not None
+    except Exception:
+        return False
+
+
+class ToolsWatch:
+    """In the background: every 10 minutes look for new devices in the network (when wanted), and for trackers."""
+    def __init__(self):
+        threading.Thread(target=self.loop, daemon=True, name="toolswatch").start()
+
+    def loop(self):
+        time.sleep(60)
+        n = 0
+        while True:
+            try:
+                if CFG.get("net_watch") or CFG.get("presence_macs"):
+                    net_scan(alert=True)
+                if CFG.get("bt_tracker_warn") and n % 2 == 0 and _has_bleak():
+                    bt_scan(8)
+            except Exception as e:
+                log_event("sys", f"Tools: {e}"[:160])
+            n += 1
+            time.sleep(300 if CFG.get("presence_macs") else 600)
+
+
+
+def tools_cfg(key, value, mac=None):
+    try:
+        if key in ("net_watch", "presence_auto", "bt_tracker_warn"):
+            CFG[key] = bool(value)
+        elif key == "presence_gone_min":
+            CFG[key] = float(min(120.0, max(2.0, float(value))))
+        elif key == "bt_tracker_min":
+            CFG[key] = float(min(180.0, max(10.0, float(value))))
+        elif key in ("presence_macs", "presence_bt"):
+            mac = str(mac or "").lower()
+            if not re.fullmatch(r"[0-9a-f]{2}(:[0-9a-f]{2}){5}", mac):
+                return False, "bad address"
+            L = [m for m in (CFG.get(key) or []) if m != mac]
+            if value:
+                L.append(mac)
+            CFG[key] = L[-10:]
+            if key == "presence_macs":
+                TOOLS["presence"]["here"] = None if not L else TOOLS["presence"]["here"]
+        else:
+            return False, "unknown setting"
+    except (TypeError, ValueError):
+        return False, "bad value"
+    save_settings()
+    return True, ""
+
+# ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
+# Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
+# signed, so the checksum can be trusted). ----
+SIM3D = {"version": "3D-2.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30279512,
+         "sha256": "8b54cc008f92f19698445ca5e38fd925cec00f07202a0aff0fe38786166369bb"}
+SIM3D_DL = {"running": False, "got": 0, "msg": ""}
+SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
+
+
+def sim3d_path():
+    return os.path.join(DATA_DIR, "sim3d", "MotionWatch3D_Simulator_" + SIM3D["version"] + ".zip")
+
+
+def sim3d_ready():
+    p = sim3d_path()
+    return os.path.isfile(p) and os.path.getsize(p) == SIM3D["size"]
+
+
+def sim3d_fetch():
+    if SIM3D_DL["running"] or sim3d_ready():
+        return
+    SIM3D_DL.update(running=True, got=0, msg="")
+
+    def work():
+        import hashlib
+        p = sim3d_path(); tmp = p + ".part"
+        try:
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            src = CFG["update_url"].strip()
+            base = src.rsplit("/", 1)[0] + "/" if src.startswith("https://") else SIM3D_BASE
+            h = hashlib.sha256()
+            with urllib.request.urlopen(_upd_request(base + SIM3D["file"]), timeout=30) as r, open(tmp, "wb") as f:
+                while True:
+                    b = r.read(1 << 16)
+                    if not b:
+                        break
+                    f.write(b); h.update(b); SIM3D_DL["got"] += len(b)
+                    if SIM3D_DL["got"] > SIM3D["size"] + 1024:
+                        raise ValueError("file too large")
+            if h.hexdigest() != SIM3D["sha256"]:
+                raise ValueError("checksum wrong - the file was changed or is damaged")
+            os.replace(tmp, p)
+            for old in glob.glob(os.path.join(os.path.dirname(p), "MotionWatch3D_Simulator_*.zip")):
+                if old != p:
+                    os.remove(old)
+            log_event("sys", f"3D simulator {SIM3D['version']} ready for download")
+        except Exception as e:
+            SIM3D_DL["msg"] = _upd_error(e)[:160]
+            log_event("sys", "3D simulator could not be fetched: " + SIM3D_DL["msg"])
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+        finally:
+            SIM3D_DL["running"] = False
+    threading.Thread(target=work, daemon=True, name="sim3d").start()
+
+
+def sim3d_wait_page(lang):
+    pct = int(100 * SIM3D_DL["got"] / SIM3D["size"])
+    err = SIM3D_DL["msg"]
+    title = tr("3D simulator for Windows", lang)
+    body = (f"<p>⚠ {html_escape(tr('could not be prepared', lang))}: {html_escape(tr(err, lang))}</p><p><a href='/sim/simulator3d.zip?retry=1'>"
+            f"{html_escape(tr('Try again', lang))}</a></p>") if err else (
+        f"<p>{html_escape(tr('The Pi prepares the download once (about 30 MB) …', lang))}</p>"
+        f"<div style='height:14px;border-radius:7px;background:#1f2a38;overflow:hidden'><div style='height:100%;width:{pct}%;background:#2f81f7'></div></div>"
+        f"<p>{pct} %</p><p style='color:#8b9bb0'>{html_escape(tr('The download starts by itself.', lang))}</p>")
+    refresh = "" if err else '<meta http-equiv="refresh" content="2">'
+    return (f"<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>{refresh}"
+            f"<title>{html_escape(title)}</title></head><body style='font-family:system-ui,sans-serif;background:#0b0f14;color:#e6edf3;max-width:520px;"
+            f"margin:40px auto;padding:0 16px'><h2>🎮 {html_escape(title)} {SIM3D['version']}</h2>{body}</body></html>")
 
 
 SIM_BEACON_PORT = 8764
@@ -10689,7 +12037,8 @@ def sim_auto_adopt():
 
 
 def sim_status():
-    return {"found": sim_found(), "auto": bool(CFG.get("sim_auto")), "stats": sim_stats(),
+    return {"found": sim_found(), "auto": bool(CFG.get("sim_auto")), "stats": sim_stats(), "eco": bool(CFG.get("sim_eco")), "fps": int(CFG.get("sim_fps") or 6),
+            "sim3d": {"version": SIM3D["version"], "size_mb": round(SIM3D["size"] / 1e6), "ready": sim3d_ready()},
             "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "msg": SIM["msg"], "url": sim_base(),
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
@@ -12049,7 +13398,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_82_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_92_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -12705,6 +14054,37 @@ def _base_args():
 
 
 PAUSE_CHOICES = (5, 15, 30, 60, 120, 240, 480, 720)
+TOOLMODE = {"until": 0.0, "by": "", "since": 0.0}         # tool mode: camera, detection and AI rest - the tools get the computer
+
+
+def toolmode_on():
+    return time.time() < TOOLMODE["until"]
+
+
+def toolmode_set(minutes, source="web"):
+    """minutes > 0: Motion Watch rests (no camera, no detection, no alarms) and comes back by itself after the time.
+    0: back now. The web page and the tools keep running."""
+    try:
+        minutes = int(minutes)
+    except (TypeError, ValueError):
+        return False, "not a number"
+    if minutes <= 0:
+        if toolmode_on():
+            TOOLMODE["until"] = 0.0
+            log_event("sys", f"Tool mode ended by {source} - monitoring runs again")
+        return True, ""
+    if minutes > 240:
+        return False, "not a number"
+    was = toolmode_on()
+    TOOLMODE.update(until=time.time() + minutes * 60, by=source, since=TOOLMODE["since"] if was else time.time())
+    log_event("sys", f"Tool mode for {minutes} min by {source}: monitoring paused until {datetime.fromtimestamp(TOOLMODE['until']).strftime('%H:%M')}")
+    return True, ""
+
+
+def toolmode_state():
+    on = toolmode_on()
+    return {"on": on, "until": TOOLMODE["until"] if on else 0, "since": TOOLMODE["since"] if on else 0, "cpu": STATE.get("cpu"),
+            "temp": STATE.get("cpu_temp"), "armed": bool(CFG["armed"])}
 
 
 def pause_program(minutes, source="web"):
@@ -13310,6 +14690,7 @@ class MotionWatch:
         if SIMLINK is None:
             SIMLINK = SimLink()
             SimDiscovery()
+            ToolsWatch(); UplinkWatch(); WifiGuard()
             threading.Thread(target=sim_autoupdate, daemon=True, name="simupdate").start()
         if AUDIO is None:
             AUDIO = AudioMonitor()
@@ -13770,9 +15151,43 @@ class MotionWatch:
         self._last_t0 = 0.0
 
     # ---- main loop -------------------------------------------------------
+    def toolmode_frame(self):
+        img = np.zeros((360, 640, 3), np.uint8)
+        cv2.putText(img, "|| TOOL MODE", (150, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (0, 200, 255), 3)
+        cv2.putText(img, "monitoring paused until " + datetime.fromtimestamp(TOOLMODE["until"]).strftime("%H:%M"), (150, 195),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (230, 230, 230), 2)
+        cv2.putText(img, "all computing power for the tools", (150, 230), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1)
+        return img
+
     def run(self):
+        tm_was = False
         while True:
             HEART["t"] = time.time()
+            if toolmode_on():                             # tool mode: the camera is closed, nothing is detected
+                if not tm_was:
+                    tm_was = True
+                    if self.cap is not None:
+                        try:
+                            self.cap.release()
+                        except Exception:
+                            pass
+                        self.cap = None
+                    try:
+                        self.reset_scene()                # a running recording is finished, the scene is learnt again later
+                    except Exception:
+                        pass
+                    self.relays.update(set()); STATE["present"] = []; STATE["persons"] = 0; STATE["tracking"] = False
+                    STATE["source_status"] = "tool mode"
+                    self.frame_out = self.toolmode_frame()
+                    ok_, buf_ = cv2.imencode(".jpg", self.frame_out, [cv2.IMWRITE_JPEG_QUALITY, 70])
+                    self._tm_jpeg = buf_.tobytes() if ok_ else None
+                if getattr(self, "_tm_jpeg", None):              # the live picture shows the pause picture (once a second)
+                    self.jpeg = self._tm_jpeg; self.jpeg_seq += 1
+                time.sleep(1.0); continue
+            if tm_was:
+                tm_was = False; self._retry_at = 0.0
+                STATE["source_status"] = "connecting"
+                log_event("sys", "Tool mode over - camera and detection run again")
             opened = self._take_opened()
             if opened is not None:
                 self._apply_opened(opened)
@@ -15452,6 +16867,8 @@ class ExtraCam:
 
     def loop(self):
         while not self.stop:
+            if toolmode_on():                                    # tool mode: this camera rests too
+                self.status = "tool mode"; self.motion = False; self._sleep(1.0); continue
             src, sid, label, err = open_source(self.spec)
             if src is None:
                 self.status = f"failed: {err}"; self._sleep(6.0); continue
@@ -15461,6 +16878,8 @@ class ExtraCam:
             fails, self.n = 0, 0
             try:
                 while not self.stop:
+                    if toolmode_on():
+                        break
                     ok, frame = src.read()
                     if not ok:
                         fails += 1
@@ -15473,7 +16892,7 @@ class ExtraCam:
                 log_event("sys", f"Camera {self.label}: {e}")
             finally:
                 src.release(); self._stop_rec()
-            if not self.stop:
+            if not self.stop and not toolmode_on():
                 self.status = "connection lost - reconnecting"; self.motion = False; self._sleep(2.0)
 
     def _process(self, frame, bg):
@@ -15619,6 +17038,10 @@ atexit.register(cams_close_all)
 # Shared look of all web pages (header, navigation, buttons, cards, forms)
 # ----------------------------------------------------------------------------
 BT_JS = r"""
+Object.assign(I18N.de, {"Everything about the simulator (tab Simulator)": "Alles zum Simulator (Reiter Simulator)"});
+Object.assign(I18N.de, {"3D simulator for Windows (ZIP)": "3D-Simulator für Windows (ZIP)", "Link for the PC browser": "Link für den Browser am PC"});
+Object.assign(I18N.de, {"own Wi-Fi on + internet from": "Eigenes WLAN ein + Internet von", "repeater": "Repeater",
+  "own Wi-Fi on - the second adapter looks for known networks": "Eigenes WLAN ein – der zweite Adapter sucht bekannte Netze"});
 Object.assign(I18N.de, {"Bluetooth loudspeaker": "Bluetooth-Lautsprecher", "Search Bluetooth loudspeakers": "Bluetooth-Lautsprecher suchen",
   "Bluetooth is not available (sudo apt install bluez)": "Bluetooth ist nicht verfügbar (sudo apt install bluez)",
   "Searching … put the loudspeaker into pairing mode (blue light blinking)": "Suche läuft … Lautsprecher in den Kopplungsmodus versetzen (blaues Licht blinkt)",
@@ -15837,8 +17260,807 @@ body.alarmflash{animation:alarmflash 1.6s ease-out 2}
   .hdr-ctl button.ic{width:34px;height:30px}.hdr-ctl button.ic svg{width:17px;height:17px}}
 """
 
+TOOLS_PAGE = r"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Motion Watch - Tools</title>
+<style>
+/*BASECSS*/
+main.tools{display:grid;grid-template-columns:270px minmax(0,1fr);gap:20px;max-width:1240px;margin:0 auto;padding:20px 16px 40px;align-items:start}
+.tlist{position:sticky;top:76px;display:flex;flex-direction:column;gap:1px;max-height:calc(100vh - 96px);overflow:auto;padding-right:2px}
+.tm{border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 14px;background:var(--panel)}
+.tm.on{border-color:var(--yel)}
+.tm-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.tm-h .mut{white-space:nowrap;margin:0}.tm-h b{font-weight:600;font-size:14px}
+.tm .mut{font-size:12px;margin-top:4px;line-height:1.45}
+.tm-a{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.tm-a select{flex:none;width:auto}.tm-a button{flex:1;padding:7px 10px;font-size:13px}
+#tm-until{font-size:13px;color:var(--yel);flex-basis:100%}
+.tlg{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;margin:16px 10px 6px}
+.tlg:first-child{margin-top:0}
+.tli{display:flex;align-items:center;gap:11px;width:100%;background:none;border:0;border-radius:9px;padding:8px 10px;color:var(--txt);text-align:left;font-weight:400;cursor:pointer}
+.tli:hover{background:var(--field);filter:none}
+.tli.on{background:var(--btn2)}
+.tli .tln{display:flex;flex-direction:column;min-width:0;flex:1}
+.tli .tln b{font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tsum{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:0}
+.tsum:empty{display:none}
+.tdot{flex:none;width:7px;height:7px;border-radius:50%;background:transparent}
+.tdot.ok{background:var(--grn)}.tdot.warn{background:var(--yel)}.tdot.bad{background:var(--red)}
+svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--mut)}
+.tli.on svg.tico{color:var(--txt)}
+.tpane{min-width:0}
+.tool{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px 22px}
+.thd{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.tht{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.tht svg.tico{width:22px;height:22px;color:var(--txt)}
+.tht h2{margin:0;font-size:18px;font-weight:600}
+.thd .back{display:none}
+.tact{display:flex;gap:8px;flex-wrap:wrap}
+.tact button,.tact .btn{padding:7px 16px;font-size:13px}
+.tbd>*+*{margin-top:12px}
+.tbd .mut{font-size:13px;line-height:1.5}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:14px;cursor:pointer}
+.opt+.opt{margin-top:0}
+.tbd .opt + :not(.opt){margin-top:12px}
+.trow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}
+.trow input[type=number]{width:84px;flex:none}
+.tl{width:100%;border-collapse:collapse;font-size:13px}
+.tl th{color:var(--mut);font-weight:500;font-size:12px;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.tl td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tl tr:last-child td{border-bottom:0}
+.tl input[type=text]{padding:4px 8px;font-size:13px;width:120px}
+.tscroll{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.tscroll:has(table:empty){display:none}
+.newdev{color:var(--yel);font-weight:500}
+.lv{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.lv:last-of-type{border-bottom:0}
+.lv i.lvl{flex:none;width:8px;height:8px;border-radius:50%;margin-top:6px;background:var(--mut)}
+.lv i.ok{background:var(--grn)}.lv i.warn{background:var(--yel)}.lv i.bad{background:var(--red)}
+.big{font-size:24px;font-weight:600;line-height:1.2}
+.bar{height:6px;border-radius:3px;background:var(--field);overflow:hidden}
+.bar>div{height:100%;background:var(--acc);width:0;transition:width .3s}
+.spark{width:100%;height:56px;display:block;color:var(--acc)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px}
+.kv span:nth-child(odd){color:var(--mut)}
+.kv:empty{display:none}
+.pw label{display:flex;gap:10px;align-items:center;padding:7px 0;font-size:14px;border-bottom:1px solid var(--line)}
+.pw label{cursor:pointer;padding:9px 0}.pw label b{margin-left:auto;font-weight:500;color:var(--mut);font-size:13px}
+.chans{display:flex;gap:4px;align-items:flex-end;height:56px}
+.chans div{flex:1;background:var(--line);border-radius:3px 3px 0 0;min-height:2px}
+.chans div.best{background:var(--acc)}
+.chans:empty,.chl:empty{display:none}
+.chl{display:flex;gap:4px;font-size:10px;color:var(--mut);margin-top:4px!important}.chl span{flex:1;text-align:center}
+.warnbox{border-left:3px solid var(--yel);padding:4px 12px;font-size:13px;color:var(--mut)}
+.adp{padding:10px 0;border-top:1px solid var(--line);font-size:14px}.adp:first-child{border-top:0}
+.adp-h{display:flex;justify-content:space-between;gap:10px}.adp-h b{font-weight:600}
+@media(max-width:760px){
+  main.tools{display:block;padding:12px 12px 32px}
+  .tlist{position:static;max-height:none;overflow:visible;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px}
+  .tli{padding:12px 10px}
+  .tlg{margin:14px 10px 4px}
+  body.picked .tlist{display:none}
+  body:not(.picked) .tpane{display:none}
+  .tool{padding:14px}
+  .thd .back{display:block;flex:0 0 100%;text-align:left;background:none;border:0;color:var(--acc2);padding:0 0 6px;font-size:14px;font-weight:500}
+  .tht h2{font-size:17px}
+}
+</style></head><body>
+<header>
+  <h1>Motion Watch</h1>
+  <!--NAV-->
+  <span class="hdr-ctl">
+    <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
+    <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
+  </span>
+</header>
+<main class="tools">
+<nav class="tlist" aria-label="Tools">
+  <div class="tm" id="tm">
+    <div class="tm-h"><b data-i18n="Full power for the tools">Full power for the tools</b><span class="mut" id="tm-cpu"></span></div>
+    <div class="mut" id="tm-note" data-i18n="tm-note">tm-note</div>
+    <div class="tm-a" id="tm-off"><select id="tm-min"><option value="10">10 min</option><option value="30" selected>30 min</option><option value="60">60 min</option><option value="120">120 min</option></select>
+      <button type="button" class="sec" onclick="toolmode(+$('#tm-min').value)" data-i18n="Pause Motion Watch">Pause Motion Watch</button></div>
+    <div class="tm-a" id="tm-on" hidden><span id="tm-until"></span><button type="button" onclick="toolmode(0)" data-i18n="Resume now">Resume now</button></div>
+  </div>
+  <div class="tlg" data-i18n="Network and internet">Network and internet</div>
+  <button type="button" class="tli" data-k="net" onclick="pick('net')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-4h12v4"/></svg><span class="tln"><b data-i18n="Network scanner">Network scanner</b><span class="tsum" id="s-net"></span></span><i class="tdot" id="d-net"></i></button>
+  <button type="button" class="tli" data-k="pres" onclick="pick('pres')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span class="tln"><b data-i18n="Am I at home?">Am I at home?</b><span class="tsum" id="s-pres"></span></span><i class="tdot" id="d-pres"></i></button>
+  <button type="button" class="tli" data-k="speed" onclick="pick('speed')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg><span class="tln"><b data-i18n="Internet test">Internet test</b><span class="tsum" id="s-speed"></span></span><i class="tdot" id="d-speed"></i></button>
+  <button type="button" class="tli" data-k="sec" onclick="pick('sec')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="tln"><b data-i18n="Security check">Security check</b><span class="tsum" id="s-sec"></span></span><i class="tdot" id="d-sec"></i></button>
+  <div class="tlg" data-i18n="Wi-Fi">Wi-Fi</div>
+  <button type="button" class="tli" data-k="dual" onclick="pick('dual')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><span class="tln"><b data-i18n="Wi-Fi adapters and repeater">Wi-Fi adapters and repeater</b><span class="tsum" id="s-dual"></span></span><i class="tdot" id="d-dual"></i></button>
+  <button type="button" class="tli" data-k="guard" onclick="pick('guard')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="tln"><b data-i18n="Wi-Fi guard">Wi-Fi guard</b><span class="tsum" id="s-guard"></span></span><i class="tdot" id="d-guard"></i></button>
+  <button type="button" class="tli" data-k="wifi" onclick="pick('wifi')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-4M9 20v-8M14 20V8M19 20V4"/></svg><span class="tln"><b data-i18n="Wi-Fi around">Wi-Fi around</b><span class="tsum" id="s-wifi"></span></span><i class="tdot" id="d-wifi"></i></button>
+  <div class="tlg" data-i18n="Device tests">Device tests</div>
+  <button type="button" class="tli" data-k="focus" onclick="pick('focus')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span class="tln"><b data-i18n="Focus assistant">Focus assistant</b><span class="tsum" id="s-focus"></span></span><i class="tdot" id="d-focus"></i></button>
+  <button type="button" class="tli" data-k="servo" onclick="pick('servo')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><span class="tln"><b data-i18n="Servo test">Servo test</b><span class="tsum" id="s-servo"></span></span><i class="tdot" id="d-servo"></i></button>
+  <button type="button" class="tli" data-k="audio" onclick="pick('audio')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span class="tln"><b data-i18n="Speaker and microphone">Speaker and microphone</b><span class="tsum" id="s-audio"></span></span><i class="tdot" id="d-audio"></i></button>
+  <button type="button" class="tli" data-k="sd" onclick="pick('sd')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><span class="tln"><b data-i18n="Memory card test">Memory card test</b><span class="tsum" id="s-sd"></span></span><i class="tdot" id="d-sd"></i></button>
+  <button type="button" class="tli" data-k="bt" onclick="pick('bt')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span class="tln"><b data-i18n="Bluetooth scanner">Bluetooth scanner</b><span class="tsum" id="s-bt"></span></span><i class="tdot" id="d-bt"></i></button>
+  <div class="tlg" data-i18n="Power and help">Power and help</div>
+  <button type="button" class="tli" data-k="pow" onclick="pick('pow')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2M7 10v4M11 10v4"/></svg><span class="tln"><b data-i18n="Power calculator">Power calculator</b><span class="tsum" id="s-pow"></span></span><i class="tdot" id="d-pow"></i></button>
+  <button type="button" class="tli" data-k="diag" onclick="pick('diag')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><span class="tln"><b data-i18n="Diagnosis package">Diagnosis package</b><span class="tsum" id="s-diag"></span></span><i class="tdot" id="d-diag"></i></button>
+</nav>
+<div class="tpane">
+  <section class="tool" id="c-net" data-k="net" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-4h12v4"/></svg><h2 data-i18n="Network scanner">Network scanner</h2></div><div class="tact"><button id="b-net" onclick="run('net')" data-i18n="Scan">Scan</button></div></div>
+    <div class="tbd">
+    <div class="mut" id="net-info" data-i18n="All devices in your own network (only there).">All devices in your own network (only there).</div>
+    <label class="opt"><span data-i18n="Warn me about new devices (push, check every 10 min)">Warn me about new devices (push, check every 10 min)</span><input type="checkbox" class="sw" id="cf-net_watch" onchange="cfg('net_watch',this.checked)"></label>
+    <div class="tscroll"><table class="tl" id="net-tab"></table></div>
+    </div>
+  </section>
+  <section class="tool" id="c-pres" data-k="pres" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><h2 data-i18n="Am I at home?">Am I at home?</h2></div></div>
+    <div class="tbd">
+    <div class="big" id="pres-st">–</div>
+    <div class="mut" id="pres-note" data-i18n="pres-note">pres-note</div>
+    <label class="opt"><span data-i18n="Disarm when my device comes, arm when it is gone">Disarm when my device comes, arm when it is gone</span><input type="checkbox" class="sw" id="cf-presence_auto" onchange="cfg('presence_auto',this.checked)"></label>
+    <div class="trow"><span data-i18n="Gone after">Gone after</span> <input type="number" id="cf-presence_gone_min" min="2" max="120" onchange="cfg('presence_gone_min',+this.value)"> <span data-i18n="minutes">minutes</span></div>
+    </div>
+  </section>
+  <section class="tool" id="c-speed" data-k="speed" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg><h2 data-i18n="Internet test">Internet test</h2></div><div class="tact"><button id="b-speed" onclick="run('speed')" data-i18n="Start">Start</button></div></div>
+    <div class="tbd">
+    <div class="warnbox" data-i18n="speed-warn">speed-warn</div>
+    <div class="kv" id="speed-now"></div>
+    <div class="tscroll"><table class="tl" id="speed-tab"></table></div>
+    </div>
+  </section>
+  <section class="tool" id="c-sec" data-k="sec" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><h2 data-i18n="Security check">Security check</h2></div><div class="tact"><button id="b-sec" onclick="run('sec')" data-i18n="Check">Check</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="What can be reached from the network or the internet, and what is risky.">What can be reached from the network or the internet, and what is risky.</div>
+    <div id="sec-list"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-dual" data-k="dual" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><h2 data-i18n="Wi-Fi adapters and repeater">Wi-Fi adapters and repeater</h2></div><div class="tact"><button class="sec" onclick="dualAct('adapters')" data-i18n="Search again">Search again</button></div></div>
+    <div class="tbd">
+    <div id="du-st" class="big" style="font-size:20px">–</div>
+    <div class="mut" id="du-note"></div>
+    <div id="du-ads"></div>
+    <label class="opt"><span data-i18n="Use a second adapter (repeater)">Use a second adapter (repeater)</span><input type="checkbox" class="sw" id="du-wifi_repeater" onchange="dualRep(this)"></label>
+    <label class="opt"><span data-i18n="Internet over the USB stick (better antenna)">Internet over the USB stick (better antenna)</span><input type="checkbox" class="sw" id="du-wifi_swap" onchange="dualSet('wifi_swap',this.checked)"></label>
+    <label class="opt"><span data-i18n="Push message when the internet was gone">Push message when the internet was gone</span><input type="checkbox" class="sw" id="du-net_inet_notify" onchange="dualSet('net_inet_notify',this.checked)"></label>
+    <svg class="spark" id="du-spark" viewBox="0 0 300 50" preserveAspectRatio="none"><polyline id="du-line" fill="none" stroke="currentColor" stroke-width="2" points=""/></svg>
+    <div class="mut" id="du-sig"></div>
+    <div id="du-log"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-guard" data-k="guard" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><h2 data-i18n="Wi-Fi guard">Wi-Fi guard</h2></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="guard-note">guard-note</div>
+    <div id="gu-st" class="big" style="font-size:20px">–</div>
+    <div class="mut" id="gu-msg"></div>
+    <label class="opt"><span data-i18n="Alarm on Wi-Fi jamming (deauthentication attack)">Alarm on Wi-Fi jamming (deauthentication attack)</span><input type="checkbox" class="sw" id="du-wifi_guard" onchange="dualSet('wifi_guard',this.checked)"></label>
+    <div class="trow"><span data-i18n="Alarm from">Alarm from</span> <input type="number" id="du-wifi_guard_thr" min="5" max="500" onchange="dualSet('wifi_guard_thr',+this.value)"> <span data-i18n="disconnect frames per minute">disconnect frames per minute</span></div>
+    <label class="opt"><span data-i18n="Recognise my marked devices by listening (Am I at home?)">Recognise my marked devices by listening (Am I at home?)</span><input type="checkbox" class="sw" id="du-wifi_presence" onchange="dualSet('wifi_presence',this.checked)"></label>
+    <label class="opt"><span data-i18n="Count devices nearby (anonymous, nothing is stored)">Count devices nearby (anonymous, nothing is stored)</span><input type="checkbox" class="sw" id="du-wifi_count" onchange="dualSet('wifi_count',this.checked)"></label>
+    <svg class="spark" id="gu-spark" viewBox="0 0 300 50" preserveAspectRatio="none"><polyline id="gu-line" fill="none" stroke="var(--red)" stroke-width="2" points=""/><polyline id="gu-line2" fill="none" stroke="currentColor" stroke-width="1" opacity=".5" points=""/></svg>
+    <div class="mut" id="gu-info"></div>
+    <div id="gu-alarms"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-wifi" data-k="wifi" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-4M9 20v-8M14 20V8M19 20V4"/></svg><h2 data-i18n="Wi-Fi around">Wi-Fi around</h2></div><div class="tact"><button id="b-wifi" onclick="run('wifi')" data-i18n="Scan">Scan</button></div></div>
+    <div class="tbd">
+    <div id="wifi-best" class="mut" data-i18n="Shows the Wi-Fi networks nearby and the best channel for the own Wi-Fi (hotspot).">Shows the Wi-Fi networks nearby and the best channel for the own Wi-Fi (hotspot).</div>
+    <div class="chans" id="wifi-ch"></div><div class="chl" id="wifi-chl"></div>
+    <div class="tscroll"><table class="tl" id="wifi-tab"></table></div>
+    </div>
+  </section>
+  <section class="tool" id="c-focus" data-k="focus" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><h2 data-i18n="Focus assistant">Focus assistant</h2></div><div class="tact"><button id="b-focus" onclick="focusToggle()" data-i18n="Start">Start</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="focus-note">focus-note</div>
+    <div class="trow"><span class="big" id="f-val">–</span><span class="mut" id="f-best"></span></div>
+    <div class="bar"><div id="f-bar"></div></div>
+    <svg class="spark" id="f-spark" style="display:none" viewBox="0 0 300 50" preserveAspectRatio="none"><polyline id="f-line" fill="none" stroke="currentColor" stroke-width="2" points=""/></svg>
+    <div class="mut" id="f-trend"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-servo" data-k="servo" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><h2 data-i18n="Servo test">Servo test</h2></div><div class="tact"><button id="b-servo" onclick="run('servo')" data-i18n="Start">Start</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="servo-note">servo-note</div>
+    <div id="servo-res"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-audio" data-k="audio" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><h2 data-i18n="Speaker and microphone">Speaker and microphone</h2></div><div class="tact"><button onclick="soundTest()" data-i18n="Test sound">Test sound</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="Clap or speak: the bar shows what the microphone hears.">Clap or speak: the bar shows what the microphone hears.</div>
+    <div class="bar"><div id="a-bar"></div></div>
+    <div class="mut" id="a-info"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-sd" data-k="sd" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><h2 data-i18n="Memory card test">Memory card test</h2></div><div class="tact"><button id="b-sd" onclick="run('sd')" data-i18n="Start">Start</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="Writes and reads 64 MB once, then deletes them again.">Writes and reads 64 MB once, then deletes them again.</div>
+    <div class="kv" id="sd-res"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-bt" data-k="bt" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><h2 data-i18n="Bluetooth scanner">Bluetooth scanner</h2></div><div class="tact"><button id="b-bt" onclick="run('bt')" data-i18n="Scan (10 s)">Scan (10 s)</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="bt-note">bt-note</div>
+    <label class="opt"><span data-i18n="Warn me about unknown trackers that stay near">Warn me about unknown trackers that stay near</span><input type="checkbox" class="sw" id="cf-bt_tracker_warn" onchange="cfg('bt_tracker_warn',this.checked)"></label>
+      <div class="trow"><span data-i18n="after">after</span> <input type="number" id="cf-bt_tracker_min" min="10" max="180" onchange="cfg('bt_tracker_min',+this.value)"> <span data-i18n="minutes">minutes</span></div>
+    <div id="bt-trk"></div>
+    <div class="tscroll"><table class="tl" id="bt-tab"></table></div>
+    </div>
+  </section>
+  <section class="tool" id="c-pow" data-k="pow" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2M7 10v4M11 10v4"/></svg><h2 data-i18n="Power calculator">Power calculator</h2></div></div>
+    <div class="tbd">
+    <div class="trow"><span data-i18n="Now">Now</span> <span class="big" id="p-now">–</span><span class="mut" id="p-src"></span></div>
+    <div class="mut" data-i18n="Tick what should be on - the calculator shows the consumption and the running time.">Tick what should be on - the calculator shows the consumption and the running time.</div>
+    <div class="pw" id="p-parts"></div>
+    <div class="trow"><span data-i18n="Battery">Battery</span> <input type="number" id="p-wh" min="1" max="5000" step="1"> Wh <span class="mut" id="p-whn"></span></div>
+    <div class="kv" id="p-res"></div>
+    </div>
+  </section>
+  <section class="tool" id="c-diag" data-k="diag" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><h2 data-i18n="Diagnosis package">Diagnosis package</h2></div><div class="tact"><button id="b-diag" onclick="location.href='/tools/diag.zip'" data-i18n="Download">Download</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="diag-note">diag-note</div>
+    </div>
+  </section>
+</div>
+</main>
+<script>
+/*COMMON*/
+Object.assign(I18N.de, {"Tools": "Werkzeuge", "Network scanner": "Netzwerkscanner", "Scan": "Suchen", "All devices in your own network (only there).": "Alle Geräte im eigenen Netz (nur dort).",
+ "Warn me about new devices (push, check every 10 min)": "Bei neuen Geräten warnen (Push, Prüfung alle 10 Min.)", "Am I at home?": "Bin ich zu Hause?",
+ "pres-note": "Markiere unten im Netzwerkscanner dein Handy mit «🏠 meins». Handys melden sich im WLAN zuverlässiger als über Bluetooth.",
+ "Disarm when my device comes, arm when it is gone": "Entschärfen, wenn mein Gerät kommt – scharf schalten, wenn es weg ist", "Gone after": "Weg nach", "minutes": "Minuten",
+ "Wi-Fi around": "WLAN-Umgebung", "Shows the Wi-Fi networks nearby and the best channel for the own Wi-Fi (hotspot).": "Zeigt die WLANs in der Nähe und den besten Kanal für das eigene WLAN (Hotspot).",
+ "Internet test": "Internet-Test", "Start": "Start", "Stop": "Stopp", "speed-warn": "Braucht etwa 6 MB Daten – bei einem Handy-Abo mit wenig Volumen nur selten starten.",
+ "Security check": "Sicherheits-Check", "Check": "Prüfen", "What can be reached from the network or the internet, and what is risky.": "Was aus dem Netz oder dem Internet erreichbar ist und was riskant ist.",
+ "Bluetooth scanner": "Bluetooth-Scanner", "Scan (10 s)": "Suchen (10 s)", "bt-note": "Geräte in der Nähe. Fremde Geräte werden nicht gespeichert – nur die, die du als «meins» markierst.",
+ "Warn me about unknown trackers that stay near": "Warnen bei fremden Trackern, die lange in der Nähe bleiben", "after": "nach",
+ "Focus assistant": "Fokus-Assistent", "focus-note": "Dreh am Objektiv: je höher die Zahl, desto schärfer. Gemessen wird die Bildmitte.",
+ "Servo test": "Servo-Test", "servo-note": "Fährt Schwenken und Neigen langsam über den ganzen Bereich und prüft, ob sich das Bild jedes Mal bewegt. Danach zurück an die alte Stelle.",
+ "Speaker and microphone": "Lautsprecher und Mikrofon", "Test sound": "Testton", "Clap or speak: the bar shows what the microphone hears.": "Klatsche oder sprich: der Balken zeigt, was das Mikrofon hört.",
+ "Memory card test": "Speicherkarten-Test", "Writes and reads 64 MB once, then deletes them again.": "Schreibt und liest einmal 64 MB und löscht sie danach wieder.",
+ "Diagnosis package": "Diagnose-Paket", "Download": "Herunterladen", "diag-note": "Ein ZIP für die Fehlersuche: Protokoll, Systemwerte und Einstellungen – ohne Passwörter, Adressen, Themen und Bilder.",
+ "Power calculator": "Strom-Rechner", "Now": "Jetzt", "Tick what should be on - the calculator shows the consumption and the running time.": "Hake an, was laufen soll – der Rechner zeigt Verbrauch und Laufzeit.",
+ "Battery": "Akku", "Consumption": "Verbrauch", "Running time": "Laufzeit", "per day": "pro Tag", "measured": "gemessen", "estimate": "geschätzt",
+ "IP": "IP", "Name": "Name", "Maker": "Hersteller", "Known as": "Bekannt als", "mine": "meins", "this device": "dieses Gerät", "router": "Router", "new": "neu",
+ "private address (phone / tablet)": "private Adresse (Handy / Tablet)", "devices": "Geräte", "seconds": "Sekunden", "running…": "läuft …", "Network": "Netz",
+ "Channel": "Kanal", "Signal": "Signal", "Best channel for the own Wi-Fi": "Bester Kanal fürs eigene WLAN", "connected": "verbunden",
+ "Upload": "Hochladen", "Ping": "Ping", "Name lookup": "Namensauflösung", "Loss": "Verlust", "Time": "Zeit",
+ "Kind": "Art", "Tracker": "Tracker", "Trackers nearby": "Tracker in der Nähe", "best": "bestes", "sharper": "schärfer", "less sharp": "unschärfer", "about the same": "etwa gleich",
+ "Axis": "Achse", "To": "Nach", "Picture change": "Bildänderung", "Result": "Ergebnis", "moved": "bewegt", "no change": "keine Änderung", "pan": "schwenken", "tilt": "neigen",
+ "Write": "Schreiben", "Read": "Lesen", "Card": "Karte", "Size": "Grösse", "Written since start": "Geschrieben seit Start", "Errors in the system log": "Fehler im Systemprotokoll",
+ "Verdict": "Urteil", "good": "gut", "slow": "langsam", "replace soon": "bald ersetzen", "Microphone": "Mikrofon", "no microphone": "kein Mikrofon", "Level": "Pegel",
+ "Here": "Da", "Away": "Weg", "No device marked": "Kein Gerät markiert", "since": "seit", "hours": "Std.", "not possible": "nicht möglich", "Name for this device": "Name für dieses Gerät",
+ "Saved": "Gespeichert", "Only for the administrator": "Nur für den Administrator", "hidden": "versteckt", "ok": "ok",
+ "AI detection": "KI-Erkennung", "Thermal camera": "Wärmebild", "Power saving (when quiet)": "Stromsparen (wenn ruhig)", "Infrared light": "Infrarot-Licht", "White light": "Weisslicht",
+ "Own Wi-Fi (hotspot)": "Eigenes WLAN (Hotspot)", "Patrol (servos)": "Patrouille (Servos)", "Basic consumption": "Grundverbrauch"});
+Object.assign(I18N.de, {"Web password set": "Web-Passwort gesetzt", "Web password missing": "Web-Passwort fehlt", "Everybody in the network can operate Motion Watch": "Jeder im Netz kann Motion Watch bedienen", "Secure page (https) on": "Sichere Seite (https) ein", "Secure page (https) off": "Sichere Seite (https) aus", "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)": "Passwörter gehen unverschlüsselt durchs Netz – wichtig in fremden WLANs (Camping)", "Open in the network: port": "Offen im Netz: Port", "SSH: login with password allowed": "SSH: Anmelden mit Passwort erlaubt", "SSH: login with password off (keys only)": "SSH: Anmelden mit Passwort aus (nur Schlüssel)", "Use a strong password or keys": "Starkes Passwort oder Schlüssel verwenden", "Public IPv6 address present": "Öffentliche IPv6-Adresse vorhanden", "Depending on the router the Pi can be reached directly from the internet - keep the web password on": "Je nach Router ist der Pi direkt aus dem Internet erreichbar – Web-Passwort eingeschaltet lassen", "Router forwards ports to this device:": "Router leitet Ports an dieses Gerät weiter:", "No port forwarding of the router to this device (UPnP)": "Keine Port-Weiterleitung des Routers an dieses Gerät (UPnP)", "Address in the internet:": "Adresse im Internet:", "shared address of the mobile network - not reachable from outside": "geteilte Adresse des Handynetzes – von aussen nicht erreichbar", "Internet not reachable": "Internet nicht erreichbar", "Tailscale: access from outside only for your own devices": "Tailscale: Zugriff von aussen nur für die eigenen Geräte", "no network": "kein Netz", "no Wi-Fi scan possible (NetworkManager / nmcli missing or no Wi-Fi)": "keine WLAN-Suche möglich (NetworkManager / nmcli fehlt oder kein WLAN)", "Bluetooth scanner needs: sudo apt install python3-bleak": "Der Bluetooth-Scanner braucht: sudo apt install python3-bleak", "steps without a change of the picture - blocked, at the end or camera not on the head?": "Schritte ohne Bildänderung – blockiert, am Anschlag oder Kamera nicht auf dem Kopf?", "Apple Find My (AirTag or a lost Apple device)": "Apple «Wo ist?» (AirTag oder verlorenes Apple-Gerät)", "Apple device": "Apple-Gerät", "Samsung device": "Samsung-Gerät", "Microsoft device": "Microsoft-Gerät"});
+Object.assign(I18N.de, {"Wi-Fi adapters and repeater": "WLAN-Adapter und Repeater", "Search again": "Neu suchen", "Use a second adapter (repeater)": "Zweiten Adapter verwenden (Repeater)", "Swap: the USB stick makes the own Wi-Fi": "Tauschen: der USB-Stick macht das eigene WLAN", "Push message when the internet was gone": "Push-Meldung, wenn das Internet weg war", "Wi-Fi guard": "WLAN-Wächter", "guard-note": "Hört mit einem passenden USB-Stick mit, ob jemand das WLAN stört (Trennungs-Angriff, wie ihn Einbrecher gegen WLAN-Kameras benutzen).", "Alarm on Wi-Fi jamming (deauthentication attack)": "Alarm bei WLAN-Störung (Trennungs-Angriff)", "Alarm from": "Alarm ab", "disconnect frames per minute": "Trennungs-Meldungen pro Minute", "Recognise my marked devices by listening (Am I at home?)": "Meine markierten Geräte durch Mithören erkennen (Bin ich zu Hause?)", "Count devices nearby (anonymous, nothing is stored)": "Geräte in der Nähe zählen (anonym, nichts wird gespeichert)", "Repeater on": "Repeater aktiv", "Two adapters in use": "Zwei Adapter in Betrieb", "Second adapter not in use": "Zweiter Adapter nicht in Gebrauch", "Only one Wi-Fi adapter": "Nur ein WLAN-Adapter", "Own Wi-Fi": "Eigenes WLAN", "own Wi-Fi": "eigenes WLAN", "Internet": "Internet", "internet": "Internet", "off": "aus", "not connected": "nicht verbunden", "Plug in a USB Wi-Fi stick: then the Pi makes its own Wi-Fi and gets the internet from another network at the same time.": "Steck einen USB-WLAN-Stick ein: dann macht der Pi sein eigenes WLAN und holt gleichzeitig das Internet aus einem anderen Netz.", "no internet": "kein Internet", "connection unstable": "Verbindung unstabil", "No internet for devices": "Kein Internet für Geräte", "Adapter": "Adapter", "Chip": "Chip", "Listening": "Mithören", "Signal of the internet adapter (4 hours)": "Signal des Internet-Adapters (4 Stunden)", "weak: put the stick higher or nearer, use a USB extension cable": "schwach: Stick höher oder näher hinstellen, USB-Verlängerung benutzen", "listening": "hört mit", "error": "Fehler", "with": "mit", "Disconnect frames last minute": "Trennungs-Meldungen letzte Minute", "against your networks": "gegen deine Netze", "in total": "insgesamt", "devices nearby": "Geräte in der Nähe", "no internet for this device": "kein Internet für dieses Gerät", "only one Wi-Fi adapter": "nur ein WLAN-Adapter", "needs NetworkManager": "braucht NetworkManager", "very good: own Wi-Fi, 5 GHz and listening (monitor) work": "sehr gut: eigenes WLAN, 5 GHz und Mithören gehen", "good: 5 GHz and listening (monitor) work": "gut: 5 GHz und Mithören gehen", "simple stick: only 2.4 GHz": "einfacher Stick: nur 2,4 GHz", "only 2.4 GHz, listening (monitor) works": "nur 2,4 GHz, Mithören geht", "simple driver: no own Wi-Fi, no listening": "einfacher Treiber: kein eigenes WLAN, kein Mithören", "simple driver: no listening": "einfacher Treiber: kein Mithören", "listening (monitor) mostly not possible": "Mithören meist nicht möglich", "only 2.4 GHz": "nur 2,4 GHz", "extra driver needed": "braucht Zusatz-Treiber", "no Wi-Fi adapter here can listen (monitor mode) - e.g. a stick with MediaTek MT7612U / MT7921AU": "kein Adapter hier kann mithören (Monitor-Modus) – z. B. ein Stick mit MediaTek MT7612U / MT7921AU", "Built in": "Eingebaut"});
+Object.assign(I18N.de, {"Full power for the tools": "Volle Leistung für die Werkzeuge", "tm-note": "Pausiert Kamera, Erkennung und KI, damit rechenintensive Werkzeuge die ganze Leistung bekommen. Danach läuft alles von selbst wieder.", "Pause Motion Watch": "Motion Watch pausieren", "Resume now": "Jetzt fortsetzen", "paused until": "Pausiert bis", "Camera, detection and alarms are paused - they come back by themselves.": "Kamera, Erkennung und Alarme ruhen – sie kommen von selbst zurück.", "tm-confirm": "Motion Watch ist scharf. Während der Pause gibt es keine Überwachung und keine Alarme. Trotzdem pausieren?"});
+Object.assign(I18N.de, {"Internet over the USB stick (better antenna)": "Internet über den USB-Stick (bessere Antenne)"});
+Object.assign(I18N.de, {"rep-confirm": "Repeater einschalten? Ein Adapter wird dann zum eigenen WLAN «MotionWatch». Der Pi bekommt im Heimnetz eventuell eine neue Adresse. Hat er nach 2½ Minuten keine Verbindung mehr, schaltet er den Repeater selbst wieder aus.",
+  "repeater switched off again: no connection to a network": "Repeater wieder ausgeschaltet: keine Verbindung zu einem Netz"});
+Object.assign(I18N.de, {"All tools": "Alle Werkzeuge", "problem": "Problem", "problems": "Probleme", "warning": "Warnung", "warnings": "Warnungen", "all ok": "alles in Ordnung"});
+Object.assign(I18N.de, {"tools-intro": "Tippe auf ein Werkzeug, um es aufzuklappen. Die Zeile rechts zeigt das letzte Ergebnis.", "Open all": "Alle aufklappen", "Close all": "Alle zuklappen", "Network and internet": "Netz und Internet", "Wi-Fi": "WLAN", "Device tests": "Geräte-Tests", "Power and help": "Strom und Hilfe", "Wi-Fi jamming!": "WLAN-Störung!", "Best channel": "Bester Kanal", "networks": "Netze"});
+let S = null, FOC = null;
+const fmtT = ts => ts ? new Date(ts * 1000).toLocaleString(LOCALE || undefined, {hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit"}) : "–";
+function tr_(cells, head) { const r = el("tr"); cells.forEach(c => { const d = el(head ? "th" : "td"); if (c instanceof Node) d.appendChild(c); else d.textContent = c == null ? "–" : c; r.appendChild(d); }); return r; }
+async function load() {
+  const r = await fetch("/api/tools").then(x => x.ok ? x.json() : null).catch(() => null);
+  if (!r) { $("#net-info").textContent = t("Only for the administrator"); return; }
+  S = r; draw();
+  const busy = ["net", "wifi", "speed", "bt", "servo", "sd"].some(k => S[k] && S[k].running);
+  clearTimeout(load.t); load.t = setTimeout(load, busy ? 1500 : 10000);
+}
+async function run(what) {
+  const b = $("#b-" + what); if (b) { b.disabled = true; b.textContent = t("running…"); }
+  const r = await post("/api/tools", {action: what});
+  if (!r.ok) toast(r.error || t("not possible"));
+  setTimeout(load, 600);
+}
+async function cfg(key, value, extra) { const r = await post("/api/tools", Object.assign({action: "cfg", key, value}, extra || {})); if (!r.ok) toast(r.error || t("not possible")); else load(); }
+function btn(id, label, running) { const b = $("#b-" + id); if (!b) return; b.disabled = !!running; b.textContent = running ? t("running…") : t(label); }
+function draw() {
+  const C = S.cfg || {};
+  ["net_watch", "presence_auto", "bt_tracker_warn"].forEach(k => { const e = $("#cf-" + k); if (e) e.checked = !!C[k]; });
+  ["presence_gone_min", "bt_tracker_min"].forEach(k => { const e = $("#cf-" + k); if (e && document.activeElement !== e) e.value = C[k] != null ? C[k] : ""; });
+  // network
+  const N = S.net; btn("net", "Scan", N.running);
+  if (N.t) $("#net-info").textContent = N.net + " · " + N.devices.length + " " + t("devices") + " · " + fmtT(N.t) + " · " + N.secs + " " + t("seconds") + (N.msg ? " · " + t(N.msg) : "");
+  const tb = $("#net-tab"); tb.innerHTML = ""; const anyHs = N.devices.some(d => d.hs); if (N.devices.length) tb.appendChild(tr_([t("IP"), t("Name"), t("Maker"), t("Known as"), "🏠"].concat(anyHs ? ["🚫🌐"] : []), true));
+  const mine = new Set(C.presence_macs || []);
+  N.devices.forEach(d => {
+    const ip = el("span", d.new ? "newdev" : "", d.ip + (d.role ? " (" + t(d.role) + ")" : "") + (d.new ? " ★ " + t("new") : ""));
+    let kn = "", own = "";
+    if (d.mac && d.role !== "this device") {
+      kn = el("input"); kn.type = "text"; kn.value = d.known || ""; kn.placeholder = t("Name for this device");
+      kn.onchange = () => post("/api/tools", {action: "known", mac: d.mac, name: kn.value.trim() || null}).then(r => { toast(r.ok ? t("Saved") : (r.error || t("not possible"))); load(); });
+      own = el("input"); own.type = "checkbox"; own.checked = mine.has(d.mac); own.title = t("mine");
+      own.onchange = () => cfg("presence_macs", own.checked, {mac: d.mac});
+    }
+    let ni = "";
+    if (d.hs && d.mac && d.role !== "this device") { ni = el("input"); ni.type = "checkbox"; ni.checked = !!d.noinet; ni.title = t("no internet for this device");
+      ni.onchange = () => post("/api/tools", {action: "noinet", mac: d.mac, value: ni.checked}).then(r => { toast(r.ok ? t("Saved") : (r.error || t("not possible"))); load(); }); }
+    tb.appendChild(tr_([ip, d.name || "", t(d.vendor) || (d.mac || ""), kn, own].concat(anyHs ? [ni] : [])));
+  });
+  // presence
+  const P = S.presence;
+  $("#pres-st").textContent = !mine.size ? t("No device marked") : P.here == null ? "…" : (P.here ? "✅ " + t("Here") : "🚶 " + t("Away")) + (P.since ? " · " + t("since") + " " + fmtT(P.since) : "");
+  // wifi
+  const W = S.wifi; btn("wifi", "Scan", W.running);
+  if (W.t) $("#wifi-best").textContent = W.best ? t("Best channel for the own Wi-Fi") + ": " + W.best + (W.own ? " · " + t("connected") + ": " + W.own.ssid + " (" + t("Channel") + " " + W.own.ch + ")" : "") : t(W.msg || "not possible");
+  const ch = $("#wifi-ch"), chl = $("#wifi-chl"); ch.innerHTML = ""; chl.innerHTML = "";
+  if (W.t && W.nets.length) { const mx = Math.max(1, ...Object.values(W.channels || {}));
+    for (let c = 1; c <= 13; c++) { const b = el("div", c === W.best ? "best" : ""); b.style.height = Math.round(100 * ((W.channels || {})[c] || 0) / mx) + "%"; b.title = c; ch.appendChild(b); chl.appendChild(el("span", "", c)); } }
+  const wt = $("#wifi-tab"); wt.innerHTML = ""; if (W.nets.length) wt.appendChild(tr_([t("Name"), t("Channel"), t("Signal"), ""], true));
+  W.nets.forEach(n => wt.appendChild(tr_([(n.own ? "✓ " : "") + n.ssid, n.ch + (n.mhz > 5000 ? " (5 GHz)" : ""), n.signal + " %", n.sec || "🔓"])));
+  // speed
+  const Q = S.speed; btn("speed", "Start", Q.running);
+  const last = Q.hist[Q.hist.length - 1]; const kv = $("#speed-now"); kv.innerHTML = "";
+  if (last) { if (last.error) kv.append(el("span", "", "⚠"), el("span", "", last.error));
+    else [["Download", (last.down_mbit ?? "–") + " Mbit/s"], ["Upload", (last.up_mbit ?? "–") + " Mbit/s"], ["Ping", (last.ping_ms ?? "–") + " ms"], ["Name lookup", (last.dns_ms ?? "–") + " ms"], ["Loss", (last.loss ?? "–") + " %"]]
+      .forEach(([a, b]) => kv.append(el("span", "", t(a)), el("span", "", b))); }
+  const st = $("#speed-tab"); st.innerHTML = ""; if (Q.hist.length > 1) { st.appendChild(tr_([t("Time"), "↓", "↑", t("Ping")], true));
+    Q.hist.slice().reverse().forEach(h => st.appendChild(tr_([fmtT(h.t), h.error ? "⚠" : h.down_mbit, h.error ? "" : h.up_mbit, h.error ? "" : h.ping_ms]))); }
+  // security
+  const sl = $("#sec-list"); sl.innerHTML = ""; btn("sec", "Check", S.sec.running);
+  (S.sec.items || []).forEach(it => { const r = el("div", "lv"); r.append(el("i", "lvl " + it.level));
+    const tx = el("div", "", t(it.text) + (it.arg ? " " + it.arg : "")); if (it.tip) { tx.appendChild(el("br")); tx.appendChild(el("span", "mut", t(it.tip))); } r.appendChild(tx); sl.appendChild(r); });
+  if (S.sec.t) sl.appendChild(el("div", "mut", fmtT(S.sec.t)));
+  // bluetooth
+  const B = S.bt; btn("bt", "Scan (10 s)", B.running);
+  const mbt = new Set(C.presence_bt || []);
+  const tk = $("#bt-trk"); tk.innerHTML = "";
+  if ((B.trackers || []).length) { tk.appendChild(el("b", "", t("Trackers nearby") + ":")); B.trackers.forEach(x => tk.appendChild(el("div", x.min >= (C.bt_tracker_min || 30) ? "newdev" : "mut", "📍 " + t(x.kind) + " · " + x.min + " " + t("minutes")))); }
+  const bt = $("#bt-tab"); bt.innerHTML = ""; if (B.msg) bt.appendChild(tr_([t(B.msg)]));
+  if (B.devices.length) bt.appendChild(tr_([t("Name"), t("Kind"), t("Signal"), "🏠"], true));
+  B.devices.forEach(d => { const own = el("input"); own.type = "checkbox"; own.checked = mbt.has((d.addr || "").toLowerCase()); own.onchange = () => cfg("presence_bt", own.checked, {mac: d.addr});
+    bt.appendChild(tr_([el("span", d.tracker ? "newdev" : "", d.name || d.addr), t(d.kind) || "", d.rssi != null ? d.rssi + " dBm" : "", own])); });
+  // servo
+  const V = S.servo; btn("servo", "Start", V.running); const sr = $("#servo-res"); sr.innerHTML = "";
+  if (V.steps.length) { const tb2 = el("table", "tl"); tb2.appendChild(tr_([t("Axis"), t("To"), t("Picture change"), t("Result")], true));
+    V.steps.forEach(s => tb2.appendChild(tr_([t(s.axis), s.to + " %", s.diff, s.ok === false ? "⚠ " + t("no change") : (s.ok ? "✅" : "…")]))); sr.appendChild(tb2); }
+  if (V.msg) sr.appendChild(el("div", V.msg === "ok" ? "" : "newdev", V.msg === "ok" ? "✅ " + t("ok") : "⚠ " + (V.bad || "") + " " + t(V.msg)));
+  // sd
+  const D = S.sd; btn("sd", "Start", D.running); const sd = $("#sd-res"); sd.innerHTML = ""; const R = D.res || {};
+  if (D.msg) sd.append(el("span", "", "⚠"), el("span", "", D.msg));
+  if (R.write_mb_s != null) [["Write", R.write_mb_s + " MB/s"], ["Read", R.read_mb_s + " MB/s"], ["Card", [R.name, R.type, R.date].filter(Boolean).join(" · ") || R.device],
+      ["Size", R.size_gb != null ? R.size_gb + " GB" : null], ["Written since start", R.written_gb != null ? R.written_gb + " GB" : null], ["Errors in the system log", R.errors],
+      ["Verdict", {ok: "✅ " + t("good"), warn: "⚠ " + t("slow"), bad: "⛔ " + t("replace soon")}[R.verdict]]]
+    .forEach(([a, b]) => { if (b != null && b !== "") sd.append(el("span", "", t(a)), el("span", "", b)); });
+  drawPower(); drawDual(); drawSums(); drawTm();
+  ["#pres-st", "#du-st", "#gu-st"].forEach(id => { const e = $(id); if (e) e.textContent = PLAIN(e.textContent); });
+}
+// one tool at a time: list on the left (phone: list first, then the tool)
+const PLAIN = x => String(x == null ? "" : x).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{2705}\u{FE0F}\u{200D}]/gu, "").replace(/^\s+/, "");
+let SEL = "";
+function pick(k, push) {
+  if (!document.getElementById("c-" + k)) k = "net";
+  if (SEL === "focus" && k !== "focus" && FON) focusToggle();
+  SEL = k;
+  document.querySelectorAll("section.tool").forEach(x => x.hidden = x.dataset.k !== k);
+  document.querySelectorAll(".tli").forEach(x => x.classList.toggle("on", x.dataset.k === k));
+  document.body.classList.add("picked");
+  try { localStorage.setItem("mw-tool-sel", k); } catch (e) {}
+  if (push !== false && location.hash !== "#" + k) history.pushState(null, "", "#" + k);
+  if (matchMedia("(max-width:760px)").matches) scrollTo(0, 0);
+}
+function showList() { document.body.classList.remove("picked"); if (location.hash) history.pushState(null, "", location.pathname); }
+addEventListener("popstate", () => { const h = location.hash.slice(1); if (h) pick(h, false); else document.body.classList.remove("picked"); });
+(function () { let k = location.hash.slice(1); if (!k) { try { k = localStorage.getItem("mw-tool-sel") || ""; } catch (e) {} }
+  if (location.hash || !matchMedia("(max-width:760px)").matches) pick(k || "net", false);
+  else { SEL = k || "net"; document.querySelectorAll("section.tool").forEach(x => x.hidden = x.dataset.k !== SEL); } })();
+function sum(k, text, cls) { const e = $("#s-" + k); if (!e) return; e.textContent = PLAIN(text); const d = $("#d-" + k); if (d) d.className = "tdot" + (cls ? " " + cls : ""); }
+function drawSums() {
+  const N = S.net, C = S.cfg || {};
+  const nnew = N.devices.filter(d => d.new).length;
+  sum("net", N.running ? t("running…") : N.t ? N.devices.length + " " + t("devices") + (nnew ? " · ★ " + nnew + " " + t("new") : "") : "", nnew ? "warn" : "");
+  const P = S.presence; sum("pres", !(C.presence_macs || []).length ? t("No device marked") : P.here == null ? "…" : P.here ? "✅ " + t("Here") : "🚶 " + t("Away"), P.here ? "ok" : "");
+  const Q = S.speed, L = Q.hist[Q.hist.length - 1];
+  sum("speed", Q.running ? t("running…") : L ? (L.error ? "⚠ " + t("error") : "↓ " + L.down_mbit + " · ↑ " + L.up_mbit + " Mbit/s") : "", L && L.error ? "warn" : "");
+  const it = S.sec.items || [], nb = it.filter(x => x.level === "bad").length, nw = it.filter(x => x.level === "warn").length;
+  sum("sec", S.sec.running ? t("running…") : it.length ? [nb ? nb + " " + t(nb === 1 ? "problem" : "problems") : "", nw ? nw + " " + t(nw === 1 ? "warning" : "warnings") : ""].filter(Boolean).join(" · ") || t("all ok") : "",
+      !it.length ? "" : nb ? "bad" : nw ? "warn" : "ok");
+  const D = S.dual || {}, G = D.guard || {};
+  sum("dual", D.repeater ? "✅ " + t("Repeater on") : D.on ? t("Two adapters in use") : (D.adapters || []).length >= 2 ? t("Second adapter not in use") : t("Only one Wi-Fi adapter"), D.repeater ? "ok" : D.unstable || D.online === false ? "warn" : "");
+  const recent = (G.alarms || []).some(a => Date.now() / 1000 - a.t < 3600);
+  sum("guard", recent ? "⚠ " + t("Wi-Fi jamming!") : G.state === "listening" ? "👂 " + t("listening") : G.state === "off" ? t("off") : t(G.state || ""), recent ? "bad" : G.state === "listening" ? "ok" : "");
+  const W = S.wifi; sum("wifi", W.running ? t("running…") : W.best ? t("Best channel") + " " + W.best + " · " + W.nets.length + " " + t("networks") : "");
+  const B = S.bt, tk = (B.trackers || []).length; sum("bt", B.running ? t("running…") : B.t ? B.devices.length + " " + t("devices") + (tk ? " · 📍 " + tk : "") : "", tk ? "warn" : "");
+  const V = S.servo; sum("servo", V.running ? t("running…") : V.msg ? (V.msg === "ok" ? "✅ " + t("ok") : "⚠ " + (V.bad || "")) : "", V.msg && V.msg !== "ok" ? "warn" : V.msg ? "ok" : "");
+  const R = (S.sd || {}).res || {}; sum("sd", S.sd.running ? t("running…") : R.write_mb_s != null ? "✍ " + R.write_mb_s + " · 📖 " + R.read_mb_s + " MB/s" : "", {ok: "ok", warn: "warn", bad: "bad"}[R.verdict] || "");
+  if (S.power) sum("pow", S.power.watts.toFixed(1) + " W");
+}
+// tool mode: Motion Watch rests, the tools get the whole computer
+async function toolmode(min) {
+  if (min > 0 && S && S.toolmode && S.toolmode.armed && !confirm(t("tm-confirm"))) return;
+  const r = await post("/api/tools", {action: "toolmode", minutes: min}); if (!r.ok) toast(r.error || t("not possible")); else { S.toolmode = r.toolmode; drawTm(); }
+}
+function drawTm() {
+  const M = S.toolmode || {}; $("#tm").classList.toggle("on", !!M.on); $("#tm-off").hidden = !!M.on; $("#tm-on").hidden = !M.on;
+  $("#tm-cpu").textContent = M.cpu != null ? "CPU " + Math.round(M.cpu) + " %" + (M.temp != null ? " · " + Math.round(M.temp) + " °C" : "") : "";
+  $("#tm-note").textContent = M.on ? t("Camera, detection and alarms are paused - they come back by themselves.") : t("tm-note");
+  if (M.on) $("#tm-until").textContent = t("paused until") + " " + new Date(M.until * 1000).toLocaleTimeString(LOCALE || undefined, {hour: "2-digit", minute: "2-digit"});
+}
+// second Wi-Fi adapter + guard
+async function dualSet(key, value) { const r = await post("/api/tools", {action: "dual", key, value}); if (!r.ok) toast(r.error || t("not possible")); setTimeout(load, 800); }
+function dualRep(cb) {
+  if (cb.checked && !confirm(t("rep-confirm"))) { cb.checked = false; return; }
+  dualSet("wifi_repeater", cb.checked);
+}
+async function dualAct(a) { await post("/api/tools", {action: a}); setTimeout(load, 1500); }
+function spark(id, vals, lo, hi) { const n = vals.length; const sv = $(id).closest("svg"); if (sv) sv.style.display = n < 2 ? "none" : ""; $(id).setAttribute("points", n < 2 ? "" : vals.map((v, i) => (i * 300 / (n - 1)).toFixed(1) + "," + (48 - 46 * (Math.max(lo, Math.min(hi, v)) - lo) / Math.max(1, hi - lo)).toFixed(1)).join(" ")); }
+function drawDual() {
+  const D = S.dual; if (!D) return; const C = D.cfg || {};
+  ["wifi_repeater", "wifi_swap", "net_inet_notify", "wifi_guard", "wifi_count", "wifi_presence"].forEach(k => { const e = $("#du-" + k); if (e) e.checked = !!C[k]; });
+  const th = $("#du-wifi_guard_thr"); if (document.activeElement !== th) th.value = C.wifi_guard_thr || 20;
+  const n = (D.adapters || []).length;
+  $("#du-st").textContent = D.repeater ? "✅ " + t("Repeater on") : D.on ? "📡 " + t("Two adapters in use") : n >= 2 ? "⏸ " + t("Second adapter not in use") : "1️⃣ " + t("Only one Wi-Fi adapter");
+  let note = "";
+  if (D.on) note = t("Own Wi-Fi") + ": " + D.ap + (D.hotspot.on ? " «" + (D.hotspot.ssid || "") + "» · " + (D.hotspot.clients || 0) + " " + t("devices") : " (" + t("off") + ")")
+      + " · " + t("Internet") + ": " + D.up + (D.uplink.connected ? " «" + D.uplink.ssid + "» " + D.uplink.dbm + " dBm" : " (" + t("not connected") + ")");
+  else if (D.msg) note = t(D.msg);
+  if (n < 2) note += (note ? " · " : "") + t("Plug in a USB Wi-Fi stick: then the Pi makes its own Wi-Fi and gets the internet from another network at the same time.");
+  if (D.online === false) note += " · ⚠ " + t("no internet") + (D.offline_since ? " " + t("since") + " " + fmtT(D.offline_since) : "");
+  if (D.unstable) note += " · ⚠ " + t("connection unstable");
+  if (D.iso_msg) note += " · ⚠ " + t("No internet for devices") + ": " + D.iso_msg;
+  $("#du-note").textContent = note;
+  const ab = $("#du-ads"); ab.innerHTML = "";
+  if (n) { const yn = (v, l) => t(l) + " " + (v == null ? "?" : v ? "✓" : "–");
+    D.adapters.forEach(a => { const role = a.iface === D.ap ? t("own Wi-Fi") : a.iface === D.up ? t("internet") : "";
+      const r = el("div", "adp"), h = el("div", "adp-h");
+      h.append(el("b", "", (a.usb ? "USB · " : t("Built in") + " · ") + a.iface), el("span", "mut", role));
+      const c = el("div", "", a.chip + (a.note ? " – " + t(a.note) : "")); if (a.usb_id) c.title = a.usb_id + " " + a.product + " (" + a.driver + ")";
+      r.append(h, c, el("div", "mut", [yn(a.five, "5 GHz"), yn(a.ap, "Own Wi-Fi"), yn(a.monitor, "Listening")].join(" · "))); ab.appendChild(r); }); }
+  const sg = (D.sig || []).map(x => x[1]); spark("#du-line", sg, -95, -30);
+  $("#du-sig").textContent = sg.length ? t("Signal of the internet adapter (4 hours)") + ": " + sg[sg.length - 1] + " dBm" + (sg[sg.length - 1] < -75 ? " – " + t("weak: put the stick higher or nearer, use a USB extension cable") : "") : "";
+  const lg = $("#du-log"); lg.innerHTML = ""; (D.log || []).slice(0, 6).forEach(x => lg.appendChild(el("div", "mut", fmtT(x.t) + " · " + t(x.text))));
+  const G = D.guard || {};
+  $("#gu-st").textContent = {listening: "👂 " + t("listening"), off: "⏸ " + t("off"), "no adapter": "–", "not possible": "⚠ " + t("not possible"), error: "⚠ " + t("error")}[G.state] || G.state;
+  $("#gu-msg").textContent = G.msg ? t(G.msg) : (G.iface ? t("with") + " " + G.iface : "");
+  const dm = G.deauth_min || []; spark("#gu-line", dm.map(x => x[1]), 0, Math.max(10, ...dm.map(x => x[2]))); spark("#gu-line2", dm.map(x => x[2]), 0, Math.max(10, ...dm.map(x => x[2])));
+  $("#gu-info").textContent = G.state === "listening" ? t("Disconnect frames last minute") + ": " + (G.deauth_now || 0) + " " + t("against your networks") + ", " + (G.all_now || 0) + " " + t("in total")
+      + (G.count_now != null ? " · " + t("devices nearby") + ": " + G.count_now : "") : "";
+  const ga = $("#gu-alarms"); ga.innerHTML = ""; (G.alarms || []).slice(0, 5).forEach(a => ga.appendChild(el("div", "newdev", "⚠ " + fmtT(a.t) + " · " + a.n + " / " + a.all)));
+}
+// power calculator
+let PWON = null;
+function drawPower() {
+  const P = S.power; if (!P) return;
+  $("#p-now").textContent = P.watts.toFixed(1) + " W"; $("#p-src").textContent = "(" + t(P.src === "estimate" ? "estimate" : "measured") + ")";
+  const box = $("#p-parts");
+  if (PWON === null) { PWON = {}; P.parts.forEach(p => PWON[p.name] = p.w !== 0); }
+  if (!box.dataset.n) { box.dataset.n = 1;
+    P.parts.forEach(p => { const l = el("label"), c = el("input"); c.type = "checkbox"; c.className = "sw"; c.checked = PWON[p.name]; c.onchange = () => { PWON[p.name] = c.checked; calc(); };
+      l.append(el("span", "", t(p.name)), el("b", "", ""), c); l.dataset.k = p.name; box.appendChild(l); }); }
+  const wh = $("#p-wh"); if (!wh.value && P.cap_wh) wh.value = Math.round(P.cap_wh);
+  $("#p-whn").textContent = P.cap_wh ? "" : "(" + t("Battery") + "?)"; wh.oninput = calc; calc();
+}
+const DEF_W = {"AI detection": 1.2, "Thermal camera": 0.4, "Power saving (when quiet)": -0.9, "Infrared light": 0.6, "White light": 0.6, "Own Wi-Fi (hotspot)": 0.3, "Patrol (servos)": 0.5};
+function calc() {
+  const P = S.power; let base = P.watts; P.parts.forEach(p => base -= p.w);
+  let w = base; document.querySelectorAll("#p-parts label").forEach(l => { const k = l.dataset.k, v = DEF_W[k] || 0; l.querySelector("b").textContent = (v > 0 ? "+" : "") + v.toFixed(1) + " W"; if (PWON[k]) w += v; });
+  w = Math.max(0.5, w); const wh = +$("#p-wh").value || 0; const r = $("#p-res"); r.innerHTML = "";
+  [["Basic consumption", base.toFixed(1) + " W"], ["Consumption", w.toFixed(1) + " W · " + (w * 24).toFixed(0) + " Wh " + t("per day")], ["Running time", wh ? (wh / w).toFixed(1) + " " + t("hours") : "–"]]
+    .forEach(([a, b]) => r.append(el("span", "", t(a)), el("span", "", b)));
+}
+// focus + microphone (live, twice a second while the page is open)
+let FON = false, FH = [];
+function focusToggle() { FON = !FON; $("#b-focus").textContent = t(FON ? "Stop" : "Start"); if (FON) FH = []; }
+async function live() {
+  if (!document.hidden) {
+    const r = await fetch("/api/tools/live" + (FON ? "?focus=1" : "")).then(x => x.ok ? x.json() : null).catch(() => null);
+    if (r) {
+      const a = r.audio || {}, lv = a.level == null ? null : +a.level; sum("audio", a.dev ? "🎤 " + (lv == null ? "–" : lv.toFixed(0) + " dB") : t("no microphone")); $("#a-bar").style.width = lv == null ? "0" : Math.max(0, Math.min(100, Math.round((lv + 70) / 70 * 100))) + "%";
+      $("#a-info").textContent = a.dev ? t("Microphone") + ": " + a.dev + " · " + t("Level") + " " + (lv == null ? "–" : lv.toFixed(0) + " dB") : t("no microphone");
+      if (FON && r.focus && r.focus.val != null) { const f = r.focus; $("#f-spark").style.display = ""; FH.push(f.val); FH = FH.slice(-60);
+        $("#f-val").textContent = Math.round(f.val); sum("focus", Math.round(f.val) + " / " + Math.round(f.best), "ok"); $("#f-best").textContent = t("best") + ": " + Math.round(f.best);
+        $("#f-bar").style.width = Math.round(100 * f.val / Math.max(1, f.best)) + "%";
+        const mx = Math.max(...FH, 1), mn = Math.min(...FH); $("#f-line").setAttribute("points", FH.map((v, i) => (i * 300 / 59).toFixed(1) + "," + (48 - 46 * (v - mn) / Math.max(1, mx - mn)).toFixed(1)).join(" "));
+        if (FH.length > 6) { const a1 = FH.slice(-3).reduce((x, y) => x + y) / 3, a0 = FH.slice(-7, -4).reduce((x, y) => x + y) / 3; $("#f-trend").textContent = a1 > a0 * 1.05 ? "↑ " + t("sharper") : a1 < a0 * 0.95 ? "↓ " + t("less sharp") : "→ " + t("about the same"); } }
+    }
+  }
+  setTimeout(live, 500);
+}
+async function soundTest() { const r = await post("/api/audio", {action: "test"}); if (r && r.ok === false) toast(r.error || t("not possible")); }
+(async () => { await initAppearance(); load(); live(); })();
+/*ALERTS*/
+</script></body></html>
+"""
+
+
+SIM_PAGE = r"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Motion Watch - Simulator</title>
+<style>
+/*BASECSS*/
+main.simp{max-width:1100px;margin:0 auto;padding:20px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.sc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.sc.wide{grid-column:1/-1}
+.sc h2{margin:0 0 4px;font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px}
+.sc h2 svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--mut);flex:none}
+.sc>.mut:first-of-type{margin-bottom:10px}
+.sc .mut{font-size:13px;line-height:1.5}
+.sc>*+*{margin-top:12px}
+.sthead{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.sdot{width:12px;height:12px;border-radius:50%;background:var(--mut);flex:none}
+.sdot.ok{background:var(--grn);box-shadow:0 0 8px var(--grn)}.sdot.bad{background:var(--red)}
+.sttl{font-size:20px;font-weight:600;flex:1;min-width:0}
+#s-btn{padding:10px 18px;font-size:14px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.tile{border:1px solid var(--line);border-radius:10px;padding:8px 10px}.tile .mut{font-size:11px}.tile b{font-weight:600;font-size:15px}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:14px;cursor:pointer}
+.row2{display:flex;gap:8px;align-items:center}.row2 input[type=text]{flex:1;min-width:0}
+.fnd{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:10px}
+.fnd+.fnd{margin-top:6px}.fnd .n{flex:1;min-width:0}.fnd .n b{font-weight:500}.fnd .n .mut{font-size:12px}
+.fnd.cur{border-color:var(--grn)}
+.rng{display:flex;justify-content:space-between;font-size:14px}
+.dl{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dl a,.dl button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px;font-size:14px}
+.dl a small,.dl button small{font-weight:400;font-size:12px;opacity:.75}
+.dl .main{grid-column:1/-1}
+#s-prev{width:100%;aspect-ratio:16/9;object-fit:contain;background:#000;border-radius:10px;display:block}
+.cg{border-top:1px solid var(--line);padding-top:6px}
+.cg>summary{cursor:pointer;padding:6px 0;font-weight:500;font-size:14px;list-style:none}
+.cg>summary::-webkit-details-marker{display:none}.cg>summary::before{content:"▸ ";color:var(--mut)}.cg[open]>summary::before{content:"▾ "}
+.cgb{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 10px}
+.cgb .cr{flex:1 1 100%}.cgb>button{flex:1 1 30%;padding:8px 10px;font-size:13px}
+.cgb .cr .top{display:flex;justify-content:space-between;font-size:14px;margin-bottom:2px}
+.cgb label.cr{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
+#s-scn{display:flex;gap:8px;flex-wrap:wrap}#s-scn select{flex:1 1 220px;min-width:0}
+.howto{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
+@media(max-width:820px){main.simp{grid-template-columns:1fr;padding:12px 12px 32px}.sc{padding:14px}.dl{grid-template-columns:1fr}
+  .sttl{font-size:17px}#s-btn{flex:1 1 100%}.tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
+</style></head><body>
+<header>
+  <h1>Motion Watch</h1>
+  <!--NAV-->
+  <span class="hdr-ctl">
+    <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
+    <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
+  </span>
+</header>
+<main class="simp">
+  <section class="sc wide" id="c-status">
+    <div class="sthead"><i class="sdot" id="s-dot"></i><div class="sttl" id="s-ttl">–</div><button type="button" id="s-btn" onclick="simOnOff()">–</button></div>
+    <div class="mut" id="s-msg"></div>
+    <div class="tiles" id="s-tiles"></div>
+  </section>
+
+  <section class="sc" id="c-conn">
+    <h2><svg viewBox="0 0 24 24"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><span data-i18n="Connection">Connection</span></h2>
+    <div class="mut" data-i18n="conn-note">conn-note</div>
+    <div class="row2"><input type="text" id="s-url" placeholder="http://192.168.1.50:8765" autocomplete="off"><button type="button" class="sec" onclick="saveUrl()" data-i18n="Save">Save</button></div>
+    <label class="opt"><span data-i18n="Find the simulator in the network by itself">Find the simulator in the network by itself</span><input type="checkbox" class="sw" id="k-sim_auto" onchange="setKey('sim_auto', this.checked)"></label>
+    <div><b style="font-weight:600;font-size:14px" data-i18n="Simulators in the network">Simulators in the network</b><div class="mut" id="s-scan"></div></div>
+    <div id="s-found"></div>
+    <button type="button" class="sec" id="s-search" onclick="search()" style="width:100%" data-i18n="Search now">Search now</button>
+  </section>
+
+  <section class="sc" id="c-prev">
+    <h2><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg><span data-i18n="Picture">Picture</span></h2>
+    <img id="s-prev" alt="">
+    <div class="mut" id="s-prevnote"></div>
+  </section>
+
+  <section class="sc wide" id="c-ctl">
+    <h2><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span data-i18n="Simulator control">Simulator control</span><span class="mut" id="s-cname" style="font-weight:400"></span></h2>
+    <div class="mut" id="s-cst" data-i18n="ctl-note">ctl-note</div>
+    <div id="s-scn" hidden><select id="s-sel"></select><button type="button" onclick="scnLoad()" data-i18n="Load">Load</button><button type="button" class="sec" onclick="ctl({ctl:'get'})">↻</button><button type="button" class="sec" id="s-del" onclick="scnDel()" data-i18n="Delete">Delete</button></div>
+    <div id="s-groups"></div>
+    <div id="s-up" hidden><div class="mut" id="s-upl"></div><input type="file" id="s-file"><div class="mut" id="s-prog"></div></div>
+  </section>
+
+  <section class="sc" id="c-perf">
+    <h2><svg viewBox="0 0 24 24"><path d="M13 3L4 14h7l-1 7 9-11h-7z"/></svg><span data-i18n="Computing power">Computing power</span></h2>
+    <div class="mut" data-i18n="perf-note">perf-note</div>
+    <label class="opt"><span data-i18n="Save CPU during the simulation">Save CPU during the simulation</span><input type="checkbox" class="sw" id="k-sim_eco" onchange="setKey('sim_eco', this.checked)"></label>
+    <div><div class="rng"><span data-i18n="Pictures per second">Pictures per second</span><b id="v-sim_fps">–</b></div>
+      <input type="range" id="k-sim_fps" min="2" max="15" step="1" oninput="$('#v-sim_fps').textContent=this.value" onchange="setKey('sim_fps', +this.value)"></div>
+  </section>
+
+  <section class="sc" id="c-dl">
+    <h2><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg><span data-i18n="Programs and downloads">Programs and downloads</span></h2>
+    <div class="dl">
+      <a class="btn main" id="d-3d" href="/sim/simulator3d.zip"><span>⬇ <span data-i18n="3D simulator for Windows (ZIP)">3D simulator for Windows (ZIP)</span></span><small id="d-3dn"></small></a>
+      <a class="btn sec" href="/sim/simulator.zip"><span>⬇ <span data-i18n="Simple simulator (ZIP)">Simple simulator (ZIP)</span></span><small data-i18n="Python, for a PC or the Pi">Python, for a PC or the Pi</small></a>
+      <a class="btn sec" href="/preview" target="_blank"><span>📱 <span data-i18n="Phone / tablet view">Phone / tablet view</span></span><small data-i18n="this page as on a phone">this page as on a phone</small></a>
+      <button type="button" class="sec" id="p-inst" onclick="piAct('install')"><span id="p-instt">📦</span><small data-i18n="simple simulator directly on the Pi">simple simulator directly on the Pi</small></button>
+      <button type="button" class="sec" id="p-start" onclick="piAct('start')"><span>▶ <span data-i18n="Start simulator here">Start simulator here</span></span><small data-i18n="on the Pi (uses its CPU)">on the Pi (uses its CPU)</small></button>
+      <button type="button" class="sec" id="p-stop" onclick="piAct('stop')" hidden><span>⏹ <span data-i18n="Stop simulator">Stop simulator</span></span><small data-i18n="on the Pi">on the Pi</small></button>
+    </div>
+    <div class="mut" id="d-link"></div>
+  </section>
+
+  <section class="sc wide" id="c-help">
+    <h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/></svg><span data-i18n="How it works">How it works</span></h2>
+    <ol class="howto">
+      <li data-i18n="how-1">how-1</li><li data-i18n="how-2">how-2</li><li data-i18n="how-3">how-3</li><li data-i18n="how-4">how-4</li>
+    </ol>
+  </section>
+</main>
+<script>
+/*COMMON*/
+Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
+ "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
+ "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
+ "Load": "Laden", "Delete": "Löschen", "Computing power": "Rechenleistung", "perf-note": "Weniger Bilder pro Sekunde entlasten den Pi und den PC.",
+ "Save CPU during the simulation": "Während der Simulation Rechenleistung sparen", "Pictures per second": "Bilder pro Sekunde",
+ "Programs and downloads": "Programme und Downloads", "3D simulator for Windows (ZIP)": "3D-Simulator für Windows (ZIP)", "Simple simulator (ZIP)": "Einfacher Simulator (ZIP)",
+ "Python, for a PC or the Pi": "Python, für PC oder Pi", "Phone / tablet view": "Handy- / Tablet-Ansicht", "this page as on a phone": "die Webseite wie auf dem Handy",
+ "simple simulator directly on the Pi": "einfacher Simulator direkt auf dem Pi", "Start simulator here": "Simulator hier starten", "on the Pi (uses its CPU)": "auf dem Pi (braucht seine Rechenleistung)",
+ "Stop simulator": "Simulator stoppen", "on the Pi": "auf dem Pi", "Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren",
+ "How it works": "So funktioniert es",
+ "how-1": "3D-Simulator für Windows herunterladen, auf dem PC entpacken und MotionWatch3D.exe starten.",
+ "how-2": "Im Simulator-Fenster oben rechts den Schalter «An Motion Watch senden» einschalten.",
+ "how-3": "Der Simulator erscheint hier unter «Simulatoren im Netz» – bei Bedarf «Verwenden» antippen.",
+ "how-4": "«Simulation einschalten»: Motion Watch arbeitet jetzt mit den Bildern und Sensoren des Simulators statt mit der echten Hardware. Ausschalten = zurück zur echten Hardware.",
+ "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "connected": "verbunden",
+ "Switch the simulation on": "Simulation einschalten", "Switch the simulation off": "Simulation ausschalten",
+ "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet",
+ "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in",
+ "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.",
+ "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "Use": "Verwenden", "in use": "in Gebrauch",
+ "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
+ "The picture appears when the simulation is on.": "Das Bild erscheint, wenn die Simulation eingeschaltet ist.",
+ "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "running": "läuft", "Controls": "Bedienung",
+ "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a file to the simulator": "Datei zum Simulator hochladen",
+ "Link for the PC browser": "Link für den Browser am PC", "Saved": "Gespeichert", "not possible": "nicht möglich", "Simulator installed": "Simulator installiert",
+ "prepared on the first download": "wird beim ersten Download vorbereitet", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator gestoppt", "simulator not reachable": "Simulator nicht erreichbar"});
+let S = null, CS = "", URLEDIT = false;
+const dur = n => n == null ? "–" : n < 60 ? n + " s" : n < 3600 ? Math.floor(n / 60) + " min" : Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min";
+async function load() {
+  const r = await fetch("/api/sim").then(x => x.ok ? x.json() : null).catch(() => null);
+  if (r) { S = r; paint(); }
+  clearTimeout(load.t); load.t = setTimeout(load, S && S.scan && S.scan.running ? 1000 : 3000);
+}
+function paint() {
+  const T = S.stats || {};
+  $("#s-dot").className = "sdot" + (S.on ? (S.ok ? " ok" : " bad") : "");
+  $("#s-ttl").textContent = !S.on ? t("Simulation off") : S.ok ? (T.name || t("connected")) : t("Simulator not reachable");
+  $("#s-btn").textContent = S.on ? t("Switch the simulation off") : t("Switch the simulation on");
+  $("#s-btn").className = S.on ? "sec" : "";
+  $("#s-msg").textContent = (S.msg ? t(S.msg) + " · " : "") + (S.url || "");
+  const tile = (k, v) => '<div class="tile"><div class="mut">' + k + '</div><b>' + v + '</b></div>';
+  $("#s-tiles").hidden = !S.on;
+  $("#s-tiles").innerHTML = tile(t("Connected for"), dur(T.since)) + tile(t("Response time"), T.rtt == null ? "–" : T.rtt + " ms") + tile(t("Camera pictures/s"), T.cam_fps == null ? "–" : T.cam_fps)
+    + tile(t("Thermal pictures/s"), T.th_fps == null ? "–" : T.th_fps) + tile(t("Messages sent"), T.sent || 0) + tile(t("Sensor events"), T.events || 0) + tile(t("Errors"), T.errs || 0);
+  const u = $("#s-url"); if (!URLEDIT && document.activeElement !== u) u.value = S.url || "";
+  $("#k-sim_auto").checked = !!S.auto; $("#k-sim_eco").checked = !!S.eco;
+  const fr = $("#k-sim_fps"); if (document.activeElement !== fr && S.fps != null) { fr.value = S.fps; $("#v-sim_fps").textContent = S.fps; }
+  paint3d();
+  const SC = S.scan || {}, ago = SC.t ? Math.round(Date.now() / 1000 - SC.t) : null;
+  $("#s-scan").textContent = SC.running ? t("Searching") + " " + SC.net + " … " + Math.round(100 * (SC.done || 0) / Math.max(1, SC.hosts || 1)) + " % · " + (SC.found || 0) + " " + t("found")
+    : SC.t ? t("Last search") + ": " + (ago < 60 ? ago + " s" : Math.round(ago / 60) + " min") + " · " + SC.hosts + " " + t("addresses in") + " " + SC.secs + " s · " + SC.found + " " + t("found")
+    : t("Simulators announce themselves every 2 s. «Search now» also asks every address of the network.");
+  $("#s-search").disabled = !!SC.running;
+  const fb = $("#s-found"), F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.count, x.age > 5])) + S.url;
+  if (fb.dataset.sig !== sig) { fb.dataset.sig = sig; fb.textContent = "";
+    if (!F.length) fb.appendChild(el("div", "mut", t("No simulator announces itself in the network right now.")));
+    F.forEach(x => { const cur = S.url === "http://" + x.ip + ":" + x.port; const r = el("div", "fnd" + (cur ? " cur" : ""));
+      const n = el("div", "n"); n.append(el("b", "", x.name || "Simulator"), el("div", "mut", x.ip + ":" + x.port + (x.version ? " · " + x.version : "")
+        + (x.via === "scan" ? " · " + t("found by the search") : " · " + t("last") + " " + Math.round(x.age || 0) + " s")));
+      r.appendChild(n);
+      if (cur) r.appendChild(el("span", "mut", "✓ " + t("in use")));
+      else { const b = el("button", "sec", t("Use")); b.type = "button"; b.onclick = async () => { const q = await post("/api/sim", {action: "use", ip: x.ip, port: x.port, lang: LANG}); if (q.ok === false) toast(q.error || t("not possible")); load(); }; r.appendChild(b); }
+      fb.appendChild(r); }); }
+  // preview
+  const pv = $("#s-prev"); $("#s-prevnote").textContent = S.on ? "" : t("The picture appears when the simulation is on.");
+  pv.hidden = !S.on;
+  // control
+  if (S.ok && !CS) ctl({ctl: "get"});
+  if (!S.ok) { CS = ""; $("#s-groups").textContent = ""; $("#s-scn").hidden = true; $("#s-up").hidden = true; $("#s-cname").textContent = ""; $("#s-cst").textContent = t("ctl-note"); }
+  // pi programs
+  $("#p-instt").textContent = "📦 " + t(S.installed ? "Install simulator again" : "Install simulator on the Pi");
+  $("#p-start").hidden = !!S.running; $("#p-stop").hidden = !S.running;
+}
+async function simOnOff() { const b = $("#s-btn"); b.disabled = true; await post("/api/sim", {on: !(S && S.on), lang: LANG}); b.disabled = false; CS = ""; load(); }
+async function saveUrl() { URLEDIT = false; const r = await post("/api/sim", {url: $("#s-url").value.trim(), lang: LANG}); toast(r.ok === false ? (r.error || t("not possible")) : t("Saved")); load(); }
+$("#s-url").addEventListener("input", () => URLEDIT = true);
+async function setKey(k, v) { const r = await post("/api/set", {key: k, value: v}); if (!r.ok) toast(r.error || t("not possible")); load(); }
+async function search() { $("#s-search").disabled = true; await post("/api/sim", {action: "search", lang: LANG}); load(); }
+async function piAct(a) { const r = await post("/api/sim", {action: a, lang: LANG}); toast(r.ok === false ? (r.error || t("not possible")) : t({install: "Simulator installed", start: "Simulator started", stop: "Simulator stopped"}[a])); load(); }
+// ---- simulator control (CONTROL protocol 1): the simulator describes its own controls ----
+const fmt = (c, v) => (v == null ? "–" : (Math.abs(v) >= 100 || c.step >= 1 ? Math.round(v) : (+v).toFixed(c.step < 0.1 ? 2 : 1))) + (c.unit ? " " + c.unit : "");
+async function ctl(d) { const r = await post("/api/sim", Object.assign({action: "ctl", lang: LANG}, d)); showCtl(r); return r; }
+function scnLoad() { const v = $("#s-sel").value; if (v) ctl({ctl: "scenario", id: v}); }
+function scnDel() { const s = $("#s-sel"); if (s.value && confirm(t("Delete this scenario in the simulator?") + "\n" + s.options[s.selectedIndex].textContent)) ctl({ctl: "delete", id: s.value}); }
+function buildCtl(r) {
+  const G = $("#s-groups"); G.textContent = ""; const byG = {};
+  (r.controls || []).forEach(c => { const g = c.group || ""; (byG[g] = byG[g] || []).push(c); });
+  let open = []; try { open = JSON.parse(localStorage.getItem("mw-sim-open") || "[]"); } catch (e) {}
+  Object.keys(byG).forEach((g, gi) => {
+    const det = document.createElement("details"); det.className = "cg"; det.dataset.g = g; det.open = open.length ? open.includes(g) : gi === 0;
+    det.addEventListener("toggle", () => { try { localStorage.setItem("mw-sim-open", JSON.stringify([...document.querySelectorAll(".cg[open]")].map(x => x.dataset.g))); } catch (e) {} });
+    det.appendChild(el("summary", "", g || t("Controls")));
+    const body = el("div", "cgb");
+    byG[g].forEach(c => {
+      if (c.type === "button") { const x = el("button", "sec", c.label); x.type = "button"; x.onclick = () => ctl({ctl: "press", id: c.id}); body.appendChild(x); return; }
+      let row;
+      if (c.type === "toggle") {
+        row = el("label", "cr"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw simv"; cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked});
+        row.append(el("span", "", c.label), cb);
+      } else if (c.type === "slider") {
+        row = el("div", "cr"); const top = el("div", "top"); const vv = el("span", "mut simvv"); top.append(el("span", "", c.label), vv);
+        const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1;
+        rg.oninput = () => { vv.textContent = fmt(c, +rg.value); }; rg.onchange = () => ctl({ctl: "set", id: c.id, value: +rg.value}); row.append(top, rg);
+      } else if (c.type === "select") {
+        row = el("div", "cr"); const se = document.createElement("select"); se.className = "simv"; se.style.width = "100%";
+        (c.options || []).forEach(o => { const op = document.createElement("option"); op.value = o[0]; op.textContent = o[1] || o[0]; se.appendChild(op); });
+        se.onchange = () => ctl({ctl: "set", id: c.id, value: se.value}); row.append(el("div", "top", c.label), se);
+      } else {
+        row = el("div", "cr"); const ti = document.createElement("input"); ti.type = "text"; ti.className = "simv"; ti.style.width = "100%";
+        ti.onkeydown = e => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(el("div", "top", c.label), ti);
+      }
+      row.dataset.cid = c.id; body.appendChild(row);
+    });
+    det.appendChild(body); G.appendChild(det);
+  });
+}
+function showCtl(r) {
+  if (!r || !r.ok) { $("#s-cst").textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
+  $("#s-cname").textContent = r.name ? "· " + r.name : "";
+  const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options])]);
+  if (sig !== CS) { CS = sig; buildCtl(r); }
+  document.querySelectorAll("#s-groups [data-cid]").forEach(row => {
+    const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
+    if (c.type === "toggle") inp.checked = !!c.value; else if (c.value != null) inp.value = c.value;
+    const vv = row.querySelector(".simvv"); if (vv) vv.textContent = fmt(c, c.value);
+  });
+  const sel = $("#s-sel"), cur = sel.value; sel.textContent = "";
+  (r.scenarios || []).forEach(o => { const op = document.createElement("option"); op.value = o.id; op.dataset.del = o.deletable ? "1" : "";
+    op.textContent = o.name + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
+  $("#s-scn").hidden = !(r.scenarios || []).length;
+  sel.value = [...sel.options].some(o => o.value === cur) ? cur : (r.scenario || (sel.options[0] && sel.options[0].value) || "");
+  const o = sel.options[sel.selectedIndex]; $("#s-del").hidden = !(o && o.dataset.del === "1");
+  $("#s-cst").textContent = r.status || "";
+  $("#s-up").hidden = !r.upload;
+  if (r.upload) { $("#s-upl").textContent = "⬆ " + (r.upload.label || t("Upload a file to the simulator")) + (r.upload.max_mb ? " (max. " + r.upload.max_mb + " MB)" : ""); $("#s-file").accept = (r.upload.accept || []).join(","); }
+}
+$("#s-sel").onchange = () => { const o = $("#s-sel").options[$("#s-sel").selectedIndex]; $("#s-del").hidden = !(o && o.dataset.del === "1"); };
+$("#s-file").onchange = () => {
+  const f = $("#s-file").files[0]; if (!f) return; const prog = $("#s-prog");
+  const x = new XMLHttpRequest(); x.open("POST", "/api/sim/upload?lang=" + LANG + "&name=" + encodeURIComponent(f.name));
+  x.upload.onprogress = e => { if (e.lengthComputable) prog.textContent = "⬆ " + f.name + " · " + Math.round(e.loaded / e.total * 100) + " %"; };
+  x.onload = () => { let r = null; try { r = JSON.parse(x.responseText); } catch (e) {}
+    prog.textContent = r && r.ok ? "✓ " + t("uploaded") + ": " + (r.saved || f.name) : "⚠ " + ((r && r.error) || x.status); $("#s-file").value = ""; if (r && r.ok) showCtl(r); };
+  x.onerror = () => { prog.textContent = "⚠ " + t("upload interrupted"); };
+  x.send(f);
+};
+setInterval(() => { if (!document.hidden && S && S.ok) ctl({ctl: "get"}); }, 4000);
+setInterval(() => { if (!document.hidden && S && S.on) $("#s-prev").src = "/snapshot.jpg?t=" + Date.now(); }, 2000);
+$("#d-3d").href = "/sim/simulator3d.zip?lang=" + (LANG || "");
+function paint3d() { const D = S && S.sim3d; if (D) $("#d-3dn").textContent = D.version + " · " + D.size_mb + " MB" + (D.ready ? "" : " · " + t("prepared on the first download")); }
+$("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin + "/sim/simulator3d.zip";
+(async () => { await initAppearance(); load(); })();
+/*ALERTS*/
+</script></body></html>
+"""
+
+
 NAV_ITEMS = [("live", "/", "Live"), ("cams", "/cams", "Cameras"), ("rec", "/recordings", "Recordings"), ("zones", "/zones", "Zones"),
-             ("diary", "/diary", "Diary"), ("help", "/help", "Manual")]
+             ("diary", "/diary", "Diary"), ("tools", "/tools", "Tools"), ("sim", "/sim", "Simulator"), ("help", "/help", "Manual")]
 
 
 def nav_html(active):
@@ -16328,7 +18550,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
 let LANG = "", THEME = "";
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
-const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch"}};
+const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Tools": "Werkzeuge", "Simulator": "Simulator"}};
 const t = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
@@ -17588,6 +19810,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       </div>
       <div class="mut" id="sys-supply" style="margin-top:8px"></div>
       <div class="mut" id="sys-remote" style="margin-top:4px"></div>
+      <div class="mut" id="sys-proj" style="margin-top:4px;white-space:pre-wrap"></div>
       <details class="adv sblk" data-view="sysblk:power"><summary data-i18n="⏻ Switch off, restart, pause">⏻ Switch off, restart, pause</summary>
       <div class="btns pwr">
         <button type="button" class="red" id="pw-off" onclick="powerAct('poweroff')" data-i18n="⏻ Shut down Pi">⏻ Shut down Pi</button>
@@ -19405,6 +21628,16 @@ function updateSecurity(s) {
       + " · " + (rem.length ? t("watching now") + ": " + rem.join(", ") : t("nobody from outside"));
     rl.style.color = rem.length ? "var(--org)" : "";
   }
+  const pj = $("#sys-proj"), P = s.project;
+  if (pj && P) {
+    const mb = v => v >= 1024 ? (v / 1024).toFixed(1) + " GB" : v + " MB";
+    const dur = n => n < 3600 ? Math.round(n / 60) + " min" : n < 86400 ? Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min" : Math.floor(n / 86400) + " " + t("days") + " " + Math.floor(n % 86400 / 3600) + " h";
+    pj.textContent = "📦 " + t("Program") + ": Motion Watch " + P.version + " · " + (P.file_kb >= 1024 ? (P.file_kb / 1024).toFixed(2) + " MB" : P.file_kb + " KB") + " · " + (P.lines || 0).toLocaleString("de-CH") + " " + t("lines")
+      + "\n🗂 " + t("Data") + ": " + mb(P.data_mb) + " (" + P.data_n + " " + t("files") + ")" + (P.settings_kb != null ? " · " + t("settings") + " " + P.settings_kb + " KB" : "")
+      + " · " + t("recordings") + " " + mb(P.rec_mb) + " (" + P.rec_n + ")" + (P.sim_mb ? " · " + t("simulator") + " " + mb(P.sim_mb) : "")
+      + "\n⏱ " + t("running for") + " " + dur(P.run_s) + (P.ram_mb != null ? " · " + t("memory") + " " + P.ram_mb + " MB" : "") + " · Python " + P.python
+      + (P.model || P.os ? "\n🖥 " + [P.model, P.os].filter(Boolean).join(" · ") : "");
+  }
   const bp = $("#b-pwr");
   if (bp) {
     const low = dk.free_mb != null && dk.free_mb < 500;
@@ -19729,7 +21962,7 @@ function solarText(c, s) {
   return L.join("\n");
 }
 function solarPaint(c, s) { const st = $("#solar-st"); if (st) st.textContent = solarText(c, s); }
-Object.assign(I18N.de, {"Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera"});
+Object.assign(I18N.de, {"Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera"});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
 function simExtras(d) {
   // the settings of the section (switches, address, slider) go into a fold-out «Settings»
@@ -19748,7 +21981,12 @@ function simExtras(d) {
   srch.onclick = async () => { srch.disabled = true; await post("/api/sim", {action: "search", lang: LANG}); refresh(); setTimeout(() => { srch.disabled = false; }, 2500); };
   const sl = el("div", "mut"); sl.id = "sim-scan"; sl.style.cssText = "margin-top:6px;white-space:pre-wrap";
   const fnd = el("div", ""); fnd.id = "sim-found"; fnd.style.marginTop = "6px";
-  nb.append(nh, sl, fnd, srch);
+  // the 3D simulator for Windows to download - right here, not hidden under Tools
+  const d3 = el("a", "btn", "🎮 " + t("3D simulator for Windows (ZIP)")); d3.href = "/sim/simulator3d.zip?lang=" + (LANG || "");
+  d3.style.cssText = "display:block;margin-top:8px;width:100%;text-align:center;box-sizing:border-box";
+  const d3n = el("div", "mut", t("Link for the PC browser") + ": " + location.origin + "/sim/simulator3d.zip"); d3n.style.cssText = "margin-top:6px;font-size:12px;word-break:break-all";
+  const all = el("a", "btn sec", "⚙ " + t("Everything about the simulator (tab Simulator)")); all.href = "/sim"; all.style.cssText = "display:block;margin-top:8px;width:100%";
+  nb.append(nh, sl, fnd, srch, d3, d3n, all);
   // ---- settings (moved here) ----
   const set = el("details", "sub"); set.style.marginTop = "10px"; set.appendChild(el("summary", "", "⚙️ " + t("Settings")));
   const sbody = el("div", ""); sbody.style.padding = "4px 0";
@@ -20399,6 +22637,8 @@ function netTxt(x) {
   if (!x) return "";
   let m = /^connected with «(.*)»$/.exec(x); if (m) return "✓ " + t("connected with") + " «" + m[1] + "»";
   m = /^no known network - own Wi-Fi in (\d+) s$/.exec(x); if (m) return t("no known network - own Wi-Fi in") + " " + m[1] + " s";
+  m = /^own Wi-Fi on \+ internet from «(.*)»$/.exec(x); if (m) return "✓ " + t("own Wi-Fi on + internet from") + " «" + m[1] + "» (" + t("repeater") + ")";
+  if (x === "own Wi-Fi on - the second adapter looks for known networks") return t(x);
   m = /^own Wi-Fi on - next search in (\d+) min$/.exec(x); if (m) return t("own Wi-Fi on - next search for known networks in") + " " + m[1] + " min";
   return NETTXT()[x] !== undefined ? NETTXT()[x] : x;
 }
@@ -22316,6 +24556,18 @@ class WebStream:
             log_event("sys", f"Video for the simulator uploaded: {r.get('saved', name)} ({n / 1024 ** 2:.0f} MB)")
             return reply(dict(r, ok=True))
 
+        @app.route("/sim/simulator3d.zip")
+        def sim3d_zip():
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
+            if sim3d_ready():
+                return send_file(sim3d_path(), mimetype="application/zip", as_attachment=True,
+                                 download_name=f"MotionWatch3D_Simulator_{SIM3D['version']}.zip", conditional=True)
+            if request.args.get("retry"):
+                SIM3D_DL["msg"] = ""
+            if not SIM3D_DL["msg"]:
+                sim3d_fetch()
+            return Response(sim3d_wait_page(lang), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
         @app.route("/sim/simulator.zip")
         def sim_zip():
             import base64
@@ -22513,6 +24765,7 @@ class WebStream:
             with LOCK:
                 st = {k: v for k, v in STATE.items() if k != "events"}
                 st["viewers"] = viewers_now()
+                st["project"] = project_info()
                 st["gps"] = gps_state()
                 st["gpsmod"] = {"status": GPSMOD["status"], "via": GPSMOD["via"], "sats": GPSMOD["sats"], "lat": GPSMOD["lat"], "lon": GPSMOD["lon"],
                                 "age": int(time.time() - GPSMOD["t"]) if GPSMOD["t"] else None, "anchor": bool(GPSMOD["anchor"]), "dist": GPSMOD.get("dist"),
@@ -23160,6 +25413,73 @@ class WebStream:
         @app.route("/apple-touch-icon-precomposed.png")
         def icon180():
             return Response(app_icon_png(180, host_variant()), mimetype="image/png", headers={"Cache-Control": "no-cache"})
+
+        @app.route("/sim")
+        def sim_page():
+            return Response(render_page(SIM_PAGE, "sim"), mimetype="text/html")
+
+        # ---- tools page ----
+        @app.route("/tools")
+        def tools_page():
+            return Response(render_page(TOOLS_PAGE, "tools"), mimetype="text/html")
+
+        @app.route("/api/tools", methods=["GET", "POST"])
+        def api_tools():
+            if request.method == "GET":
+                return reply(tools_state())
+            d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
+            jobs = {"net": net_scan, "wifi": wifi_survey, "speed": speed_test, "sec": security_check, "bt": bt_scan, "sd": sd_test}
+            if a in jobs:
+                if TOOLS[a].get("running"):
+                    return reply({"ok": False, "error": tr_err("already running", lang)}, 409)
+                if a == "sec":
+                    TOOLS["sec"]["running"] = True
+                    def _sec():
+                        try:
+                            security_check()
+                        finally:
+                            TOOLS["sec"]["running"] = False
+                    threading.Thread(target=_sec, daemon=True, name="tool-sec").start()
+                else:
+                    threading.Thread(target=jobs[a], daemon=True, name="tool-" + a).start()
+                log_event("web", f"Tool started: {a} ({request.remote_addr or '?'})")
+                return reply({"ok": True})
+            if a == "servo":
+                ok = servo_test()
+                return reply({"ok": ok, "error": None if ok else tr_err("not possible now", lang)}, 200 if ok else 409)
+            if a == "known":
+                ok = net_known_set(d.get("mac"), d.get("name"))
+                return reply({"ok": ok, "error": None if ok else tr_err("bad address", lang)}, 200 if ok else 400)
+            if a == "dual":
+                ok, err = dual_set(d.get("key"), d.get("value"))
+                return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
+            if a == "noinet":
+                ok, err = noinet_set(d.get("mac"), bool(d.get("value")))
+                for d_ in TOOLS["net"]["devices"]:
+                    d_["noinet"] = d_["mac"] in (CFG.get("net_noinet") or [])
+                return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
+            if a == "adapters":
+                dual_roles()
+                return reply({"ok": True})
+            if a == "toolmode":
+                ok, err = toolmode_set(d.get("minutes"), "web " + (request.remote_addr or "?"))
+                return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "toolmode": toolmode_state()}, 200 if ok else 400)
+            if a == "cfg":
+                ok, err = tools_cfg(d.get("key"), d.get("value"), d.get("mac"))
+                return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
+            return reply({"ok": False, "error": tr_err("unknown action", lang)}, 400)
+
+        @app.route("/api/tools/live")
+        def api_tools_live():
+            f = focus_value() if request.args.get("focus") == "1" else None
+            a_ = STATE.get("audio") or {}
+            return reply({"focus": f, "audio": {"level": a_.get("level"), "dev": a_.get("dev"), "status": a_.get("status")}})
+
+        @app.route("/tools/diag.zip")
+        def tools_diag():
+            log_event("web", f"Diagnosis package downloaded ({request.remote_addr or '?'})")
+            return Response(diag_zip(), mimetype="application/zip",
+                            headers={"Content-Disposition": f'attachment; filename="motionwatch_diagnose_{datetime.now():%Y%m%d_%H%M}.zip"'})
 
         # ---- animal diary + night report ----
         @app.route("/diary")
@@ -24679,7 +26999,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.82.0")
+        self.root.title("Motion Watch 2.92.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -24969,7 +27289,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.82.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.92.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -25634,6 +27954,8 @@ class App:
         if sec in ("Setup", "Camera / Servos", "Video source", "Schedule", "Patrol", "AI detection", "Web stream", "Auto-tune", "Notifications", "Timelapse", "Thermal camera", "Wi-Fi / hotspot", "Camping / protection", "Microphone", "Loudspeaker", "Lights", "Servo driver"):
             self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels[sec].pack(anchor="w")
+        if sec == "Web stream":
+            ttk.Button(sbody, text=tr("Tools: network, Wi-Fi, tests (browser)"), command=lambda: self._open_page("/tools")).pack(fill="x", pady=(4, 0))
         if sec in ("Night report", "Battery", "Guest access"):
             self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels[sec].pack(anchor="w")
@@ -26211,7 +28533,8 @@ class App:
         self._status("Simulator", (tr("off - the real cameras and sensors are used") if not si_["on"] else
                                    (tr("connected") + f" · {si_['url']} · " + (tr("night") if si_["dark"] else tr("day")) + f" · {si_['ambient']} °C"
                                     if si_["ok"] else tr_err(si_["msg"]) + " · " + si_["url"]))
-                     + ("\n🔎 " + tr("Simulators in the network:") + " " + ", ".join(f"{x['name']} ({x['ip']}:{x['port']})" for x in si_["found"]) if si_["found"] else ""))
+                     + ("\n🔎 " + tr("Simulators in the network:") + " " + ", ".join(f"{x['name']} ({x['ip']}:{x['port']})" for x in si_["found"]) if si_["found"] else "")
+                     + ("\n🎮 " + tr("3D simulator for Windows (ZIP)") + ": " + page_address(ip3_) + "sim/simulator3d.zip" if (ip3_ := local_ip()) else ""))
         so_ = st.get("solar") or {}; nf_ = st.get("night")
         l_ = [(tr("off") if not CFG["solar_on"] else tr("no current meter found at this address") if not so_.get("ok")
                else f"{so_['w']} W ({so_['v']} V · {so_['a']} A) · {tr('today')} {so_['wh']} Wh · {tr('max.')} {so_['max']} W")]
@@ -27033,8 +29356,12 @@ class App:
         ts_, rem = st.get("remote_ts") or {}, st.get("remote") or []
         ts_txt = (tr("not installed") if not ts_.get("state") else
                   (tr("connected") + (f" · http://{ts_['ip']}:{CFG['web_port']}/" if ts_.get("ip") else "") if ts_["state"] == "Running" else ts_["state"]))
+        pj_ = project_info()
         self._status("Web stream", f"{st['web_status']}  (http://<pi-ip>:{CFG['web_port']}/)\n🌐 Tailscale: {ts_txt} · "
-                     + (f"{tr('watching now')}: {', '.join(rem)}" if rem else tr("nobody from outside")))
+                     + (f"{tr('watching now')}: {', '.join(rem)}" if rem else tr("nobody from outside"))
+                     + f"\n📦 {tr('Program')}: {pj_.get('version')} · {pj_.get('file_kb', 0) / 1024:.2f} MB · {pj_.get('lines', 0)} {tr('lines')}"
+                     + f" · {tr('Data')}: {pj_.get('data_mb')} MB · {tr('recordings')} {pj_.get('rec_mb')} MB ({pj_.get('rec_n')})"
+                     + (f" · {tr('memory')} {pj_['ram_mb']} MB" if pj_.get("ram_mb") else ""))
         self._status("Auto-tune", f"{st['auto_status']} · {st['auto_changes']} {tr('automatic changes')}")
         self._status("Notifications", f"{tr('status')}: {st['notify_status']}")
         hs = st["hotspot"] or {}
@@ -31629,6 +33956,38 @@ for _k, _v in _HX37.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX52 = {'Repeater switched off again by itself: the Pi had no connection to a network any more': ('Repeater wieder von selbst ausgeschaltet: der Pi hatte keine Verbindung zu einem Netz mehr', "Répéteur désactivé automatiquement : le Pi n'avait plus de connexion réseau", 'Ripetitore spento da solo: il Pi non aveva più connessione a una rete', "Repetitur deactivà da sasez: il Pi n'aveva nagina colliaziun cun ina rait pli")}
+for _k, _v in _HX52.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX51 = {'tool mode': ('Werkzeug-Modus', 'mode outils', 'modalità strumenti', "modus d'utensils"), 'Full power for the tools': ('Volle Leistung für die Werkzeuge', 'Toute la puissance pour les outils', 'Tutta la potenza per gli strumenti', 'Tut la forza per ils utensils'), 'Pause Motion Watch': ('Motion Watch pausieren', 'Mettre Motion Watch en pause', 'Mettere in pausa Motion Watch', 'Pausar Motion Watch'), 'Resume now': ('Jetzt fortsetzen', 'Reprendre maintenant', 'Riprendi ora', 'Cuntinuar ussa'), 'paused until': ('pausiert bis', "en pause jusqu'à", 'in pausa fino alle', 'pausà fin'), 'not a number': ('keine gültige Zahl', 'pas un nombre valide', 'numero non valido', 'betg in numer valid')}
+for _k, _v in _HX51.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX50 = {'3D simulator for Windows': ('3D-Simulator für Windows', 'Simulateur 3D pour Windows', 'Simulatore 3D per Windows', 'Simulatur 3D per Windows'), '3D simulator for Windows (ZIP)': ('3D-Simulator für Windows (ZIP)', 'Simulateur 3D pour Windows (ZIP)', 'Simulatore 3D per Windows (ZIP)', 'Simulatur 3D per Windows (ZIP)'), 'Link for the PC browser': ('Link für den Browser am PC', 'Lien pour le navigateur du PC', 'Link per il browser del PC', 'Link per il navigatur dal PC'), 'could not be prepared': ('konnte nicht vorbereitet werden', "n'a pas pu être préparé", 'non è stato possibile prepararlo', "n'ha betg pudì vegnir preparà"), 'Try again': ('Nochmals versuchen', 'Réessayer', 'Riprova', 'Empruvar anc ina giada'), 'The Pi prepares the download once (about 30 MB) …': ('Der Pi bereitet den Download einmalig vor (etwa 30 MB) …', 'Le Pi prépare le téléchargement une seule fois (environ 30 Mo) …', 'Il Pi prepara il download una sola volta (circa 30 MB) …', 'Il Pi prepara la telechargiada ina giada (circa 30 MB) …'), 'The download starts by itself.': ('Der Download startet danach von selbst.', 'Le téléchargement démarre ensuite tout seul.', 'Il download parte poi da solo.', 'La telechargiada cumenza lura da sasezza.'), 'checksum wrong - the file was changed or is damaged': ('Prüfsumme falsch – die Datei wurde verändert oder ist beschädigt', 'somme de contrôle fausse - fichier modifié ou endommagé', 'checksum errato - file modificato o danneggiato', 'summa da controlla sbagliada - la datoteca è vegnida midada u è donnegiada')}
+for _k, _v in _HX50.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX49 = {'Internet was gone for {min} min - it is back ({ssid})': ('Internet war {min} Min. weg – es ist wieder da ({ssid})', 'Internet était coupé {min} min - il est revenu ({ssid})', 'Internet assente per {min} min - è tornato ({ssid})', 'Internet era davent {min} min - el è puspè qua ({ssid})'), 'No internet over «{a}» - changed to «{b}»': ('Kein Internet über «{a}» – gewechselt zu «{b}»', "Pas d'internet via «{a}» - passage à «{b}»", 'Nessun internet tramite «{a}» - passato a «{b}»', 'Nagin internet sur «{a}» - midà a «{b}»'), 'No internet - «{b}» did not work either': ('Kein Internet – «{b}» ging auch nicht', "Pas d'internet - «{b}» ne fonctionne pas non plus", 'Nessun internet - anche «{b}» non funziona', "Nagin internet - «{b}» n'ha era betg funcziunà"), 'Wi-Fi connection dropped 3 times in 10 minutes although the signal is good - interference or jamming?': ('WLAN-Verbindung 3-mal in 10 Minuten abgebrochen, obwohl das Signal gut ist – Störung oder Störsender?', 'Connexion Wi-Fi coupée 3 fois en 10 minutes malgré un bon signal - interférence ou brouillage ?', 'Connessione Wi-Fi interrotta 3 volte in 10 minuti nonostante il buon segnale - interferenza o disturbo?', 'Colliaziun WLAN interrutta 3 giadas en 10 minutas, schebain il signal è bun - disturbi?'), 'Wi-Fi jamming: {n} disconnect frames in one minute ({all} in total on the channel)': ('WLAN-Störung: {n} Trennungs-Meldungen in einer Minute ({all} insgesamt auf dem Kanal)', 'Brouillage Wi-Fi : {n} trames de déconnexion en une minute ({all} au total sur le canal)', 'Disturbo Wi-Fi: {n} frame di disconnessione in un minuto ({all} in totale sul canale)', 'Disturbi WLAN: {n} messadis da separaziun en ina minuta ({all} en total sin il chanal)'), 'Wi-Fi jamming attack': ('WLAN-Störangriff', 'Attaque de brouillage Wi-Fi', 'Attacco di disturbo Wi-Fi', 'Attatga da disturbi WLAN'), 'Network': ('Netz', 'Réseau', 'Rete', 'Rait'),
+ 'Second Wi-Fi adapter: off - back to one adapter': ('Zweiter WLAN-Adapter: aus – zurück zu einem Adapter', 'Second adaptateur Wi-Fi : désactivé - retour à un adaptateur', 'Secondo adattatore Wi-Fi: spento - di nuovo un adattatore', 'Segund adapter WLAN: deactivà - enavos ad in adapter'),
+ 'Second Wi-Fi adapter: own Wi-Fi on {ap} ({a}), internet over {up} ({b})': ('Zweiter WLAN-Adapter: eigenes WLAN auf {ap} ({a}), Internet über {up} ({b})', 'Second adaptateur Wi-Fi : Wi-Fi propre sur {ap} ({a}), internet via {up} ({b})', 'Secondo adattatore Wi-Fi: Wi-Fi proprio su {ap} ({a}), internet tramite {up} ({b})', 'Segund adapter WLAN: agen WLAN sin {ap} ({a}), internet sur {up} ({b})'), 'own Wi-Fi on + internet from': ('Eigenes WLAN ein + Internet von', 'Wi-Fi propre actif + internet de', 'Wi-Fi proprio attivo + internet da', 'Agen WLAN activ + internet da'), 'repeater': ('Repeater', 'répéteur', 'ripetitore', 'repetitur'), 'own Wi-Fi on - the second adapter looks for known networks': ('Eigenes WLAN ein – der zweite Adapter sucht bekannte Netze', 'Wi-Fi propre actif - le second adaptateur cherche des réseaux connus', 'Wi-Fi proprio attivo - il secondo adattatore cerca reti note', 'Agen WLAN activ - il segund adapter tschertga raits enconuschentas'), 'Wi-Fi adapters and repeater': ('WLAN-Adapter und Repeater', 'Adaptateurs Wi-Fi et répéteur', 'Adattatori Wi-Fi e ripetitore', 'Adapters WLAN e repetitur'), 'Wi-Fi guard': ('WLAN-Wächter', 'Gardien Wi-Fi', 'Guardiano Wi-Fi', 'Guardian WLAN')}
+for _k, _v in _HX49.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX48 = {'Tools: network, Wi-Fi, tests (browser)': ('Werkzeuge: Netz, WLAN, Tests (Browser)', 'Outils : réseau, Wi-Fi, tests (navigateur)', 'Strumenti: rete, Wi-Fi, test (browser)', 'Utensils: rait, WLAN, tests (navigatur)'), 'new device in the network': ('neues Gerät im Netz', 'nouvel appareil dans le réseau', 'nuovo dispositivo nella rete', 'nov apparat en la rait'), 'unknown tracker nearby': ('fremder Tracker in der Nähe', 'traceur inconnu à proximité', 'tracker sconosciuto nelle vicinanze', 'tracker nunenconuschent en la vischinanza'), 'already running': ('läuft bereits', 'déjà en cours', 'già in corso', 'gia en funcziun'), 'not possible now': ('jetzt nicht möglich', 'impossible maintenant', 'non possibile ora', 'ussa betg pussaivel'), 'bad address': ('ungültige Adresse', 'adresse invalide', 'indirizzo non valido', 'adressa nunvalida'), 'bad value': ('ungültiger Wert', 'valeur invalide', 'valore non valido', 'valur nunvalida'), 'unknown setting': ('unbekannte Einstellung', 'réglage inconnu', 'impostazione sconosciuta', 'parameter nunenconuschent'), 'Network scanner': ('Netzwerkscanner', 'Scanner réseau', 'Scanner di rete', 'Scanner da rait'), 'Am I at home?': ('Bin ich zu Hause?', 'Suis-je à la maison ?', 'Sono a casa?', 'Sun jau a chasa?'), 'Wi-Fi around': ('WLAN-Umgebung', 'Wi-Fi alentour', 'Wi-Fi nei dintorni', 'WLAN enturn'), 'Internet test': ('Internet-Test', 'Test Internet', 'Test Internet', "Test d'internet"), 'Security check': ('Sicherheits-Check', 'Contrôle de sécurité', 'Controllo di sicurezza', 'Controlla da segirezza'), 'Bluetooth scanner': ('Bluetooth-Scanner', 'Scanner Bluetooth', 'Scanner Bluetooth', 'Scanner Bluetooth'), 'Focus assistant': ('Fokus-Assistent', 'Assistant de mise au point', 'Assistente di messa a fuoco', 'Assistent da focus'), 'Servo test': ('Servo-Test', 'Test des servos', 'Test dei servo', 'Test dals servos'), 'Speaker and microphone': ('Lautsprecher und Mikrofon', 'Haut-parleur et micro', 'Altoparlante e microfono', 'Autpledader e microfon'), 'Memory card test': ('Speicherkarten-Test', 'Test de la carte mémoire', 'Test della scheda di memoria', 'Test da la carta da memoria'), 'Diagnosis package': ('Diagnose-Paket', 'Paquet de diagnostic', 'Pacchetto diagnostico', 'Pachet da diagnosa'), 'Power calculator': ('Strom-Rechner', 'Calculateur de consommation', 'Calcolatore di consumo', 'Calculatur da current'), 'Scan': ('Suchen', 'Chercher', 'Cerca', 'Tschertgar')}
+for _k, _v in _HX48.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX47 = {'Program': ('Programm', 'Programme', 'Programma', 'Program'), 'lines': ('Zeilen', 'lignes', 'righe', 'lingias'), 'Data': ('Daten', 'Données', 'Dati', 'Datas'), 'files': ('Dateien', 'fichiers', 'file', 'datotecas'), 'settings': ('Einstellungen', 'réglages', 'impostazioni', 'parameters'), 'simulator': ('Simulator', 'simulateur', 'simulatore', 'simulatur'), 'running for': ('läuft seit', 'fonctionne depuis', 'in funzione da', 'en funcziun dapi'), 'memory': ('Arbeitsspeicher', 'mémoire', 'memoria', 'memoria'), 'days': ('Tagen', 'jours', 'giorni', 'dis')}
+for _k, _v in _HX47.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(("fr", "it", "rm")):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 _HX46 = {'Simulators in the network': ('Simulatoren im Netz', 'Simulateurs dans le réseau', 'Simulatori nella rete', 'Simulaturs en la rait'), 'Search now': ('Jetzt suchen', 'Chercher maintenant', 'Cerca ora', 'Tschertgar ussa'), 'Tools': ('Werkzeuge', 'Outils', 'Strumenti', 'Utensils'), 'Simulation off': ('Simulation aus', 'Simulation désactivée', 'Simulazione spenta', 'Simulaziun deactivada'), 'Simulator not reachable': ('Simulator nicht erreichbar', 'Simulateur injoignable', 'Simulatore non raggiungibile', 'Simulatur betg cuntanschibel'), 'Connected for': ('Verbunden seit', 'Connecté depuis', 'Connesso da', 'Collià dapi'), 'Response time': ('Antwortzeit', 'Temps de réponse', 'Tempo di risposta', 'Temp da resposta'), 'Camera pictures/s': ('Kamera Bilder/s', 'Images caméra/s', 'Immagini camera/s', 'Maletgs camera/s'), 'Thermal pictures/s': ('Wärmebilder/s', 'Images thermiques/s', 'Immagini termiche/s', 'Maletgs termics/s'), 'Messages sent': ('Meldungen gesendet', 'Messages envoyés', 'Messaggi inviati', 'Messadis tramess'), 'Sensor events': ('Sensor-Ereignisse', 'Événements capteurs', 'Eventi sensori', 'Eveniments da sensurs'), 'Errors': ('Fehler', 'Erreurs', 'Errori', 'Errurs'), 'Searching': ('Suche', 'Recherche', 'Ricerca', 'Tschertga'), 'found': ('gefunden', 'trouvé(s)', 'trovati', 'chattà'), 'Last search': ('Letzte Suche', 'Dernière recherche', 'Ultima ricerca', 'Ultima tschertga'), 'addresses in': ('Adressen in', 'adresses en', 'indirizzi in', 'adressas en'), 'Simulators announce themselves every 2 s. «Search now» also asks every address of the network.': ('Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.', "Les simulateurs s'annoncent toutes les 2 s. « Chercher maintenant » interroge aussi chaque adresse du réseau.", 'I simulatori si annunciano ogni 2 s. «Cerca ora» interroga anche ogni indirizzo della rete.', "Ils simulaturs s'annunzian mintga 2 s. «Tschertgar ussa» dumonda era mintga adressa da la rait."), 'seen since': ('gesehen seit', 'vu depuis', 'visto da', 'vis dapi'), 'last': ('zuletzt vor', 'dernier il y a', 'ultimo', "l'ultima giada avant"), 'messages': ('Meldungen', 'messages', 'messaggi', 'messadis'), 'found by the search': ('durch die Suche gefunden', 'trouvé par la recherche', 'trovato dalla ricerca', 'chattà tras la tschertga')}
 for _k, _v in _HX46.items():
     DE.setdefault(_k, _v[0])
@@ -31903,7 +34262,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.82.0 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.92.0 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:
