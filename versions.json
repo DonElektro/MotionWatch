@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 16:35",
+ "generated": "2026-10-26 17:30",
  "versions": [
   {
-   "version": "2.90.8",
-   "file": "webcam_bewegung_2_90_8.py",
+   "version": "2.90.9",
+   "file": "webcam_bewegung_2_90_9.py",
    "url": "",
-   "sha256": "8c626b940591170cfc3385f1cf75c35a9b34d4e6c8ef9cd6057eae9ba4311bd9",
-   "date": "2026-10-26 16:35",
-   "notes": "3D simulator 3D-1.13: updates from far away (switch «Neue Versionen automatisch installieren» and a button, also in the simulator control on this web page); its window in the look of Motion Watch; switches and the joystick work in its phone simulator; lighter in virtual machines; the rifle goes off when leaving the wildlife watching.",
-   "sig": "aa7da3cad39dd6b3618c201c2601105570c0ee761eaeb40bf04679025e064226ed599cd3e2cbcbbce89b09b59d5acfbdc0ef861d99fd1d2e7e941f697b8fef0f"
+   "sha256": "ca0098cc8a98b2293d691d7a820dd1fb3caa58b2aa71bda683007ea6f99cbc7e",
+   "date": "2026-10-26 17:26",
+   "notes": "The download of the 3D simulator for Windows (ZIP) is now a button right under «Search now» in the simulator section (before hidden under Tools); the desktop window shows its address for the PC browser in the simulator line.",
+   "sig": "6ec9afbf1255355f142377a9fdff4c7feae0730afe568207a656ded68bc36e3392f125e266cb5bb94014279f5e4f58a1af9b6b57975ecb6f05a9839aa6349007"
   },
   {
    "version": "2.89.0",
