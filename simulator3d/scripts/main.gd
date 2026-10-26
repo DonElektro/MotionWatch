@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-2.0"
+const VERSION := "3D-2.1"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -212,6 +212,9 @@ func _ready() -> void:
 				phone.addr.text = args[i + 1]
 			get_tree().create_timer(2.0).timeout.connect(func(): phone.open())
 	DisplayServer.window_set_title("Motion Watch – 3D-Simulator %s (Port %d)" % [VERSION, port])
+	var mini_box = preload("res://scripts/mini.gd").new()      # minimize = small box, the simulator keeps drawing
+	mini_box.main = self
+	add_child(mini_box)
 	set_process(true)
 	set_process_unhandled_input(true)
 

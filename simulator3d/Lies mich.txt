@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-2.0 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-2.1 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -38,6 +38,14 @@ SENDEN EIN / AUS
 - Erst wenn du oben rechts den Schalter "An Motion Watch senden" einschaltest, findet Motion Watch den Simulator
   und bekommt die Bilder. Ausschalten = sofort wieder still.
 - Soll er gleich beim Start senden: "Start und gleich senden.bat" benutzen (oder die Option --stream).
+
+MINIMIEREN (ab 3D-2.1)
+- Ein ganz minimiertes Fenster zeichnet keine Bilder mehr - Motion Watch zeigte dann nur "CONNECTING...".
+  Darum wird der Simulator beim Minimieren zu einem kleinen Kästchen unten rechts (immer im Vordergrund).
+  Es zeigt: sendet / Senden aus, Bilder pro Sekunde und ob Motion Watch verbunden ist.
+- Knopf "Gross" im Kästchen: wieder normales Fenster. Kästchen am Hintergrund ziehen: verschieben.
+- Solange der Simulator sendet, gehen PC und Bildschirm nicht in den Ruhezustand.
+  (Sperrt man den PC mit Windows+L, läuft der Simulator weiter.)
 
 MIT MOTION WATCH VERBINDEN (Schalter "An Motion Watch senden" muss eingeschaltet sein)
 - Ab Motion Watch 2.81.0 geht es von selbst: Der Simulator meldet sich alle 2 Sekunden im Netz (UDP-Port 8764),

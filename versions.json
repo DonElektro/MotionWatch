@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 19:23",
+ "generated": "2026-10-26 20:02",
  "versions": [
   {
-   "version": "2.92.0",
-   "file": "webcam_bewegung_2_92_0.py",
+   "version": "2.92.1",
+   "file": "webcam_bewegung_2_92_1.py",
    "url": "",
-   "sha256": "c9fe7080337e81d9ca14d528a62486cec50e2e7b33ba39e310aa50aa218f3108",
-   "date": "2026-10-26 19:23",
-   "notes": "Fix: plugging in a second Wi-Fi adapter made the Pi unreachable (the repeater switched itself on and took the built-in adapter away from the home Wi-Fi). Now the repeater only runs when switched on by hand, the connected adapter keeps its connection, and it switches itself off again when the Pi has no connection for 2.5 minutes. New tab «Simulator» in the header: everything about the simulator on one page (switch, statistics, connection and search, picture, the control of the simulator, computing power, programs and downloads, short guide).",
-   "sig": "7d65b1a00cafa2ea6ebddf5620d1b29d5ba8c3cf5826a14eabc05dd6a293c935319661b1c82ebb8fafb455fa963d3a00a2f583cec607af56e185a9657587b20b"
+   "sha256": "2c0ea1a5b0279d2c5c4b4b2015374a89da3f48a78c45b242f9e21fa67db4b61f",
+   "date": "2026-10-26 20:02",
+   "notes": "Download of the 3D simulator 3D-2.1: minimizing makes it a small box in the corner (it keeps drawing pictures - before, Motion Watch only showed «CONNECTING…»); while it sends, the PC does not go to sleep.",
+   "sig": "39710fb6a02ce5cbd0a9c2d18fc780b0d2215129bf507b5f52c378038e699ef328ca9c4ee8c67a3bd359eef5f8e4ddcbb786da595b98600175b84b5634cd3104"
   },
   {
    "version": "2.91.0",
