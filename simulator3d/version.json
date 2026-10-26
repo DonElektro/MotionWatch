@@ -1,7 +1,7 @@
 {
- "version": "3D-2.1",
+ "version": "3D-2.2",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30417401,
- "sha256": "e0b235643f85c7f12f5c647e69d096d2b2f5d7f7e1699c0159755c73ea8d7dd0",
- "notes": "Minimieren macht ein kleines Kästchen in der Ecke (der Simulator zeichnet weiter Bilder, Motion Watch zeigt nicht mehr «CONNECTING…»); solange er sendet, geht der PC nicht in den Ruhezustand."
+ "size": 30291694,
+ "sha256": "c192704dfa311b50b1e9fbb5f462a3aa77c46ebc5a2529e3bd9508bcae854a79",
+ "notes": "Neu: Start mit dem PC (Gruppe «Start mit dem PC»): sendet gleich, auf Wunsch klein in der Ecke, mit Motion Watch auf dem PC und ohne Anmelden (automatische Anmeldung von Windows, danach gesperrt)."
 }

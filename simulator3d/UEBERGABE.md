@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-2.0** · passende Motion-Watch-Version **2.91.0**
+Stand: 26.10.2026 · Simulator-Version **3D-2.2** · passende Motion-Watch-Version **2.92.3**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,22 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-2.2 – Start mit dem PC** (Simulator-Chat; baut auf 3D-2.1 des Haupt-Chats mit `mini.gd` auf) (`scripts/autostart.gd`): Windows-Wert `MotionWatch3D` unter
+`HKCU\Software\Microsoft\Windows\CurrentVersion\Run` (über `reg.exe`, kein Admin), Linux `~/.config/autostart/motionwatch3d.desktop`.
+Startet mit `--autostart`: senden an, Szene vom letzten Mal (`last_scene`), kein Update-Dialog (ausser `auto_update`),
+optional minimiert (`autostart_min` → `mini.gd` macht daraus das Kästchen), Motion Watch auf dem PC (`autostart_mwpc`), Bildschirm sperren (`autostart_lock`,
+`rundll32 user32.dll,LockWorkStation`). **Minimiert zeichnet Godot nichts mehr** (`can_any_window_draw`) – die Kamerabilder
+blieben stehen (getestet). Darum ruft `_process` dann 15× pro Sekunde `RenderingServer.force_draw(false)` (getestet mit einem
+kleinen Fenstermanager unter Xvfb: Bilder laufen weiter) – Sicherheitsnetz neben dem Kästchen von `mini.gd`. «Ohne Anmelden»: echter Start vor der Anmeldung geht mit 3D nicht
+(Sitzung 0 ohne Desktop/GPU), darum Sysinternals **Autologon** (Download mit curl.exe, `OS.shell_open` → UAC; Passwort
+nur dort, LSA-verschlüsselt) + Sperren nach dem Start. Test-Abfrage `{"action":"window"}` (Fenstermodus, Autostart).
+
+**Neue Einstellungen kommen von selbst in Motion Watch:** Jede Einstellung, die mit `add_control()` in `_register_controls()`
+angemeldet wird, liefert der Simulator über `GET /control` mit. Die Webseite von Motion Watch fragt alle 4 s nach und baut die
+Steuerung neu auf, sobald sich die Liste ändert (ab 2.92.3 bleiben offene Gruppen dabei offen). **In Motion Watch muss für neue
+Simulator-Einstellungen nichts geändert werden** – nur die Typen `toggle`, `slider`, `select`, `button` (sonst Textfeld) benutzen.
+`"expert": true` blendet nur im Simulator-Fenster aus. Das Desktop-Fenster von Motion Watch hat keine Simulator-Steuerung.
+
 **3D-2.0 (grosses Update):**
 - **Hindernisse** (`main.gd`, Abschnitt «obstacles»): Kreise (`add_obstacle`) und gedrehte Rechtecke (`add_obstacle_box`,
   `add_obstacle_node` im Rahmen eines Szenen-Knotens) in einem 4-m-Raster (`ob_grid`). `people_only` = Zäune/Hecke im Garten
@@ -215,6 +231,8 @@ ONVIF-Dienst für Erkennung und PTZ) – ohne Server, mit einer gängigen Video�
 - Ton (Schuss «Plopp», Treffer «Boing») – hier ohne Lautsprecher.
 - Die Bildrate der neuen Szenen auf dem alten i5 (Wald hat rund 300 Bäume; ab 3D-2.0 mit gemeinsamen Materialien).
 - Ziehen der Besucher-Bildchen mit der echten Maus unter Windows (hier mit XTest getestet).
+- Autostart unter Windows (Registry-Eintrag, minimiert weiterzeichnen mit Direct3D/ANGLE, Sperren, Autologon) – nur unter Linux
+  getestet (Autostart-Datei, minimiert weiterzeichnen).
 - Das Selbst-Update unter Windows (Umbenennen der laufenden .exe, HTTPS zu GitHub) – hier nur unter Linux mit lokalem Server.
 - Das Zielen mit der echten Maus (hier nur mit dem Knopf «Schuss aus der Kopfkamera» getestet).
 

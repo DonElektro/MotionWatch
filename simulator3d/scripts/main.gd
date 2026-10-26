@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-2.1"
+const VERSION := "3D-2.2"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -20,6 +20,15 @@ var Scenes = preload("res://scripts/scenes.gd")
 var Updater = preload("res://scripts/update.gd")
 var Mwpc = preload("res://scripts/mwpc.gd")
 var UI = preload("res://scripts/ui_style.gd")
+var Autostart = preload("res://scripts/autostart.gd")
+# ---- start with the PC (from 3D-2.1; autostart.gd) ----
+var autostart_on := false             # read from Windows (Run key) / Linux (autostart folder), not from the settings
+var autostart_min := true             # at the autostart: minimized = the small box of mini.gd
+var autostart_mwpc := false           # at the autostart: also start Motion Watch on this PC
+var autostart_lock := false           # at the autostart: lock the screen afterwards (with the automatic sign-in of Windows)
+var last_scene := ""                  # the scene of the last time (the autostart comes back to it)
+var start_info := ""                  # message of the autostart for the status line
+var _bg_t := 0.0
 var mwpc                              # Motion Watch on this PC (mwpc.gd)
 var mwpc_btn: Button
 var mwpc_label: Label
@@ -165,7 +174,10 @@ func _ready() -> void:
 	if k >= 0 and k + 1 < args.size():
 		update_url = args[k + 1]
 	_load_settings()
-	if not ("--no-update" in args or "--updated" in args):      # first: is there a newer version? (update.gd)
+	var at_boot := "--autostart" in args             # started with the PC
+	if at_boot and not "--scene" in args and last_scene != "":
+		scene = last_scene
+	if not ("--no-update" in args or "--updated" in args or (at_boot and not auto_update)):   # at the autostart nobody is there to answer      # first: is there a newer version? (update.gd)
 		var up = Updater.new()
 		up.auto = auto_update
 		add_child(up)
@@ -201,8 +213,18 @@ func _ready() -> void:
 	net = Net.new()
 	net.main = self
 	add_child(net)
-	if "--stream" in args:                    # start sending at once (old behaviour)
+	if "--stream" in args or at_boot:          # start sending at once (old behaviour; always at the autostart)
 		set_stream(true)
+	autostart_on = Autostart.is_on()
+	if autostart_on:
+		Autostart.repair()                         # the folder of the program was moved: the autostart follows it
+	if at_boot:
+		if autostart_mwpc and not "--mwpc" in args:
+			mwpc.start.call_deferred()
+		if autostart_min:
+			get_tree().create_timer(1.5).timeout.connect(func(): DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED))
+		if autostart_lock and not "--updated" in args:
+			get_tree().create_timer(6.0).timeout.connect(func(): Autostart.lock_screen())
 	_apply_quality()
 	_calibrate_thermal()
 	next_auto = now() + 20.0
@@ -485,6 +507,8 @@ func set_scene(id: String) -> bool:
 	if scene == "wild" and id != "wild":
 		rifle_on = false                         # leaving the wildlife watching: the rifle goes off by itself
 	scene = id
+	last_scene = id
+	_settings_dirty = true
 	for v in visitors.get_children():
 		v.queue_free()
 	for c in scene_parent.get_children():
@@ -737,6 +761,13 @@ var _slow_t := 0.0
 
 
 func _process(dt: float) -> void:
+	# minimized: Godot stops drawing then - but the cameras must go on for Motion Watch. mini.gd turns the window into a
+	# small box at once; this is only the safety net (e.g. when the box cannot be shown)
+	if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_MINIMIZED:
+		_bg_t -= dt
+		if _bg_t <= 0.0:
+			_bg_t = 1.0 / 15.0
+			RenderingServer.force_draw(false)
 	var s: Dictionary = mw.get("servo", {})
 	# the servos turn like real ones: towards the new angle with a limited speed (no jumps)
 	var want_pan := -deg_to_rad(float(s.get("pan_deg", 0.0)))
@@ -1169,6 +1200,12 @@ func _register_controls() -> void:
 	add_control("button", "score0", "Punkte auf 0", null, func(): reset_score(), "Wildbeobachtung")
 	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates")
 	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates")
+	add_control("toggle", "autostart", "Mit dem PC starten (sendet gleich an Motion Watch)", func(): return autostart_on, func(v): set_autostart(v), "Start mit dem PC")
+	add_control("toggle", "autostart_min", "Dabei klein (nur das Kästchen in der Ecke)", func(): return autostart_min, func(v): autostart_min = v, "Start mit dem PC")
+	add_control("toggle", "autostart_mwpc", "Dabei auch Motion Watch auf diesem PC starten (ohne Pi)", func(): return autostart_mwpc, func(v): autostart_mwpc = v, "Start mit dem PC")
+	if OS.get_name() == "Windows":
+		add_control("toggle", "autostart_lock", "Danach den Bildschirm sperren", func(): return autostart_lock, func(v): autostart_lock = v, "Start mit dem PC")
+		add_control("button", "autologon", "Ohne Anmelden: automatische Anmeldung von Windows einrichten …", null, func(): setup_autologon(), "Start mit dem PC", {"expert": true})
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
 			{"options": [["simple", "einfach (schnell)"], ["nice", "schön (Schatten, Leuchten)"]]})
 	add_control("toggle", "meadow", "Gras und Blumen auf der Wiese", func(): return meadow_on, func(v): set_meadow(v), "Grafik", ex)
@@ -1232,6 +1269,8 @@ func control(d: Dictionary) -> Dictionary:
 			return {"ok": false, "error": "unknown scenario"}
 	elif a == "delete":
 		return {"ok": false, "error": "cannot be deleted"}
+	elif a == "window":                                # for tests: minimized? (2 = minimized) and how many frames were drawn
+		return {"ok": true, "mode": DisplayServer.window_get_mode(), "frames": Engine.get_frames_drawn(), "autostart": autostart_on}
 	elif a == "visitors":                              # for tests: where every visitor is, and whether it is inside an object
 		var out := []
 		for v in visitors.get_children():
@@ -1280,7 +1319,7 @@ func status_text() -> String:
 	var h := hour()
 	var mwc := "verbunden mit %s" % str(mw.get("device", "Motion Watch")) if now() - mw_t < 3.0 else ("Motion Watch nicht verbunden" if stream_on else "Senden aus")
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
-	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "")
+	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "")
 
 
 func scenarios() -> Array:
@@ -1724,7 +1763,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
@@ -1759,6 +1798,30 @@ func _save_settings() -> void:
 	if f != null:
 		f.store_string(JSON.stringify(d, " "))
 	_settings_dirty = false
+
+
+func set_autostart(on: bool) -> void:
+	var err: String = Autostart.set_on(on)
+	autostart_on = Autostart.is_on()
+	start_info = "Autostart: " + err if err != "" else ("Startet mit dem PC" if autostart_on else "")
+	_sync_ui()
+
+
+func setup_autologon() -> void:
+	"""without signing in: Windows signs in by itself (Autologon of Microsoft), the simulator starts and locks the screen"""
+	start_info = "Autologon wird geladen …"
+	_update_status()
+	await get_tree().process_frame
+	var err: String = Autostart.get_autologon()
+	if err != "":
+		start_info = "Autologon: " + err
+		return
+	if not autostart_on:
+		set_autostart(true)
+	autostart_lock = true
+	_settings_dirty = true
+	start_info = "Im Fenster «Autologon» das Windows-Passwort eingeben und «Enable» drücken"
+	_sync_ui()
 
 
 func set_auto_update(on: bool) -> void:

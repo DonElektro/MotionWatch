@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-2.1 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-2.2 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -31,6 +31,29 @@ UPDATES (ab 3D-1.7)
   nach und installiert eine neue Version selbst: 15 Sekunden lang kann man noch "Abbrechen" drücken, dann startet er neu
   (Senden, Szene und "Motion Watch auf diesem PC" laufen danach weiter). Der Knopf "Jetzt nach Updates suchen und
   installieren" in derselben Gruppe löst das sofort aus - auch vom Handy aus über Motion Watch.
+
+MIT DEM PC STARTEN (ab 3D-2.2)
+- Gruppe "Start mit dem PC" im Bedienfeld (oder auf der Motion-Watch-Webseite unter Simulator-Steuerung):
+  "Mit dem PC starten" = der Simulator startet von selbst, sobald du dich bei Windows anmeldest, sendet gleich an
+  Motion Watch und kommt mit der Szene vom letzten Mal. Kein Administrator nötig.
+  "Dabei klein" = er startet als kleines Kästchen unten rechts (siehe MINIMIEREN), die Kameras laufen weiter.
+  "Dabei auch Motion Watch auf diesem PC starten" = für den Betrieb ohne Pi.
+  Bei diesem Start fragt er nicht nach Updates (es ist ja niemand da) - ausser "Neue Versionen automatisch installieren"
+  ist an.
+- Willst du ihn vom PC aus wieder loswerden: Schalter aus (oder Windows: Task-Manager -> Autostart).
+- Den Ordner danach nicht mehr verschieben - oder den Simulator einmal von Hand starten, dann zieht der Autostart mit.
+
+OHNE ANMELDEN - NUR DEN PC EINSCHALTEN
+- Ganz ohne Anmeldung geht es nicht: Windows gibt Programmen mit 3D-Grafik erst nach einer Anmeldung einen Bildschirm
+  und die Grafikkarte. Darum meldet sich Windows selbst an, der Simulator startet, und gleich danach wird der
+  Bildschirm gesperrt. Für dich heisst das: PC einschalten, fertig.
+- Einrichten (Experte, Gruppe "Start mit dem PC"): Knopf "Ohne Anmelden: automatische Anmeldung von Windows
+  einrichten ...". Er lädt "Autologon" von Microsoft (Sysinternals), Windows fragt nach Administrator-Rechten.
+  Im Fenster "Autologon" dein Windows-Passwort eingeben und "Enable" drücken. Windows speichert es verschlüsselt,
+  der Simulator sieht es nie. Zugleich werden "Mit dem PC starten" und "Danach den Bildschirm sperren" eingeschaltet.
+- Ausschalten: Autologon nochmals öffnen (der Knopf) und "Disable" drücken.
+- Hinweis: Mit automatischer Anmeldung ist der PC nach dem Einschalten wenige Sekunden lang offen, bis gesperrt ist.
+  Für einen PC zu Hause meist in Ordnung, für ein Notebook unterwegs eher nicht.
 
 SENDEN EIN / AUS
 - Nach dem Start sendet der Simulator NICHTS: er meldet sich nicht im Netz und liefert keine Bilder.
