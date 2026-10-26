@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-1.6 (6 Szenen, Wildbeobachtung)
+Motion Watch – 3D-Simulator 3D-1.7 (6 Szenen, Wildbeobachtung)
 =============================================================
 
 STARTEN
@@ -11,6 +11,15 @@ STARTEN
 3. Ab 3D-1.6 läuft der Simulator mit der einfachen Grafik (OpenGL), die auf fast jedem PC geht.
    Wer es schöner möchte: "Start mit Vulkan-Grafik (schoener).bat" probieren. Bleibt das Fenster dann schwarz
    oder schliesst es sich gleich wieder, kann der PC diese Grafik nicht: einfach wieder die .exe direkt starten.
+
+UPDATES (ab 3D-1.7)
+- Beim Start schaut der Simulator auf GitHub nach, ob es eine neuere Version gibt. Wenn ja, erscheint zuerst ein Hinweis:
+  "Jetzt aktualisieren" lädt die neue Version, prüft sie (Grösse und Prüfsumme), ersetzt das Programm und startet neu.
+  "Ohne Update starten" startet die bisherige Version.
+- Ohne Internet startet der Simulator nach wenigen Sekunden ganz normal.
+- Liegt der Ordner an einem Ort, wo Windows das Schreiben verbietet (z. B. "C:\Programme"), klappt das Update nicht:
+  dann den Ordner z. B. in "Dokumente" oder auf den Desktop legen.
+- Nie nachschauen: Option --no-update.
 
 SENDEN EIN / AUS
 - Nach dem Start sendet der Simulator NICHTS: er meldet sich nicht im Netz und liefert keine Bilder.
@@ -86,4 +95,5 @@ WAS ES SONST KANN
 PORT / START-OPTIONEN
 MotionWatch3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene wald
   --scene: mit dieser Szene starten (camping, wald, parkplatz, garten, lustig, wild)
+  --no-update: beim Start nicht nach einer neuen Version suchen
   --stream: gleich beim Start an Motion Watch senden

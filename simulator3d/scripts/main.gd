@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-1.6"
+const VERSION := "3D-1.7"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -17,6 +17,7 @@ var Actor = preload("res://scripts/actor.gd")
 var Net = preload("res://scripts/net.gd")
 var Phone = preload("res://scripts/phone.gd")
 var Scenes = preload("res://scripts/scenes.gd")
+var Updater = preload("res://scripts/update.gd")
 var scenes
 var scene := "camping"
 var scene_parent: Node3D
@@ -131,6 +132,18 @@ func _ready() -> void:
 			quality = args[i + 1]
 		elif args[i] == "--scene" and i + 1 < args.size():
 			scene = args[i + 1]
+	set_process(false)
+	set_process_unhandled_input(false)
+	DisplayServer.window_set_title("Motion Watch – 3D-Simulator %s" % VERSION)
+	if not ("--no-update" in args or "--updated" in args):      # first: is there a newer version? (update.gd)
+		var url := ""
+		var k := args.find("--update-url")
+		if k >= 0 and k + 1 < args.size():
+			url = args[k + 1]
+		var up = Updater.new()
+		add_child(up)
+		await up.check(VERSION, url)
+		up.queue_free()
 	_make_lut(true)
 	noise_tex = NoiseTexture2D.new()
 	var fn := FastNoiseLite.new()
@@ -164,6 +177,8 @@ func _ready() -> void:
 				phone.addr.text = args[i + 1]
 			get_tree().create_timer(2.0).timeout.connect(func(): phone.open())
 	DisplayServer.window_set_title("Motion Watch – 3D-Simulator %s (Port %d)" % [VERSION, port])
+	set_process(true)
+	set_process_unhandled_input(true)
 
 
 func set_stream(on: bool) -> void:

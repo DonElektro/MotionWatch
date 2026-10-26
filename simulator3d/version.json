@@ -1,0 +1,7 @@
+{
+ "version": "3D-1.7",
+ "file": "simulator3d/MotionWatch3D_Simulator.zip",
+ "size": 30208801,
+ "sha256": "fefb23b405ef3a079d56e2d502b5681a96374438f64436f21a15d7270f3b9929",
+ "notes": "Neu: Der Simulator sucht beim Start selbst nach Updates. Sechs Szenen, unblutige Wildbeobachtung, startet mit OpenGL."
+}

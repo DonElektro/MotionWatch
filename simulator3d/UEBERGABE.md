@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-1.6** · passende Motion-Watch-Version **2.90.1**
+Stand: 26.10.2026 · Simulator-Version **3D-1.7** · passende Motion-Watch-Version **2.90.2**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -21,6 +21,15 @@ Ein 3D-Simulator (Godot 4.3) auf einem Windows-PC. Er spielt für Motion Watch (
 - weisses Licht und Infrarot, Tag/Nacht, Wetter, Wind, Sensoren;
 - Besucher: Menschen, Tiere, Auto, Dieb;
 - ein Handy-/Tablet-Simulator (Taste P), der die echte Motion-Watch-Webseite über ein unsichtbares Edge/Chrome anzeigt.
+
+Seit 3D-1.7 **aktualisiert sich der Simulator selbst** (`scripts/update.gd`): Vor dem Bau der Welt lädt er
+`simulator3d/version.json` von GitHub (`{"version", "file", "size", "sha256", "notes"}`). Ist die Version neuer, zeigt er
+«Jetzt aktualisieren» / «Ohne Update starten». Beim Aktualisieren: ZIP nach `user://update.zip`, Grösse + SHA-256 prüfen,
+Dateien neben die .exe legen, die laufende .exe in `.old` umbenennen, neue hinlegen, mit denselben Optionen plus `--updated`
+neu starten (die `.old` wird beim nächsten Start gelöscht). Ohne Antwort nach 6 s startet er normal. `--no-update` schaltet es ab,
+`--update-url http://…/` nimmt eine andere Quelle (zum Testen mit einem lokalen `python3 -m http.server`).
+Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danach auf die `.old`).
+Schutz nur über die Prüfsumme aus derselben Quelle (GitHub), **nicht signiert** wie Motion Watch.
 
 Seit 3D-1.6 startet der Simulator mit dem **Kompatibilitäts-Renderer (OpenGL)**: Auf Daniels PC schloss sich die .exe mit
 Forward+ (Vulkan) sofort wieder, mit OpenGL lief sie. Forward+ gibt es nur noch über «Start mit Vulkan-Grafik (schoener).bat».
@@ -81,6 +90,8 @@ Seit 3D-1.4 sendet der Simulator nach dem Start **nichts**. Erst der Schalter «
 - Windows-Version: `godot --headless --path . --export-release "Windows Desktop" /tmp/…/MotionWatch3D.exe`
   (Zielordner **ausserhalb** des Repositorys wählen; `../mwsim3d_build` liegt sonst im Repository).
 - ZIP: das alte ZIP entpacken, `MotionWatch3D.exe` und `Lies mich.txt` ersetzen (die .bat-Dateien bleiben), mit `zip -9 -r` packen.
+- **Danach `simulator3d/version.json` mit neuer Version, Grösse und sha256 des ZIP schreiben** – sonst erfahren die Simulatoren
+  nichts vom Update. (`VERSION` in main.gd, version.json und `SIM3D` in Motion Watch müssen zusammenpassen.)
 - Linux-Version zum Testen: Preset «Linux». Starten mit `--rendering-driver opengl3` auf einem virtuellen Bildschirm (Xvfb), damit es auch ohne echte Grafikkarte läuft.
 - Nach jedem neuen Bau: die Datei `simulator3d/MotionWatch3D_Simulator.zip` im Repository ersetzen, dann in Motion Watch (`work.py`) in `SIM3D` die neue `version`, `size` und `sha256` eintragen und eine neue Motion-Watch-Version veröffentlichen. Sonst liefert der Pi-Download die alte Fassung.
 
@@ -104,6 +115,7 @@ Szene (bräuchte eine Anpassung in Motion Watch), Wasser im Wald, mehr Witz im L
 - Die echte Netzsuche zwischen PC und Pi.
 - Ton (Schuss «Plopp», Treffer «Boing») – hier ohne Lautsprecher.
 - Die Bildrate der neuen Szenen auf dem alten i5 (Wald hat rund 300 Bäume).
+- Das Selbst-Update unter Windows (Umbenennen der laufenden .exe, HTTPS zu GitHub) – hier nur unter Linux mit lokalem Server.
 - Das Zielen mit der echten Maus (hier nur mit dem Knopf «Schuss aus der Kopfkamera» getestet).
 
 ## Testwerkzeuge in dieser Umgebung (nur als Hinweis, liegen nicht im Repo)

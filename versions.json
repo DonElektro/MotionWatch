@@ -1,14 +1,14 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 10:29",
+ "generated": "2026-10-26 10:41",
  "versions": [
   {
-   "version": "2.90.1",
-   "file": "webcam_bewegung_2_90_1.py",
+   "version": "2.90.2",
+   "file": "webcam_bewegung_2_90_2.py",
    "url": "",
-   "sha256": "3ee3a3f497221383e5611a664bc41d514bf7863e9831b63e1dffa65e55d05d3a",
-   "date": "2026-10-26 10:29",
-   "notes": "3D simulator 3D-1.6: starts with the simple graphics (OpenGL), so a double click on the .exe works on PCs where the Vulkan graphics closed the window at once; the nicer Vulkan graphics with «Start mit Vulkan-Grafik (schoener).bat»."
+   "sha256": "3c98ac49b10a66005e3053df9cfb645b99d7d2890a3bf0565d59b419d0654303",
+   "date": "2026-10-26 10:41",
+   "notes": "3D simulator 3D-1.7: it looks for a newer version on GitHub before it starts and offers «Jetzt aktualisieren» (download, check, replace itself, start again) or «Ohne Update starten»."
   },
   {
    "version": "2.89.0",
