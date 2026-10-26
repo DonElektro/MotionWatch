@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-2.3"
+const VERSION := "3D-2.4"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -21,6 +21,12 @@ var Updater = preload("res://scripts/update.gd")
 var Mwpc = preload("res://scripts/mwpc.gd")
 var UI = preload("res://scripts/ui_style.gd")
 var Autostart = preload("res://scripts/autostart.gd")
+var Game = preload("res://scripts/game.gd")
+var game                              # game.gd: «Unentdeckt ans Ziel» with up to 4 phones (from 3D-2.4)
+var game_minutes := 5.0
+var game_level := "normal"            # easy | normal | hard
+var game_quality := "mid"             # picture on the phone: small | mid | big
+var game_guard := true                # without Motion Watch the head guards by itself
 # ---- start with the PC (from 3D-2.1; autostart.gd) ----
 var autostart_on := false             # read from Windows (Run key) / Linux (autostart folder), not from the settings
 var autostart_min := true             # at the autostart: minimized = the small box of mini.gd
@@ -207,6 +213,9 @@ func _ready() -> void:
 	add_child(visitors)
 	_build_view_camera()
 	stream_port = port
+	game = Game.new()
+	game.main = self
+	add_child(game)
 	_register_controls()
 	mwpc = Mwpc.new()
 	mwpc.main = self
@@ -522,6 +531,8 @@ func set_scene(id: String) -> bool:
 	for c in scene_parent.get_children():
 		c.queue_free()
 	_build_scene()
+	if game != null:
+		game.on_scene()                            # the game: new goal, players back to the start
 	next_auto = now() + 8.0
 	_update_sky()
 	_update_temps()
@@ -780,6 +791,8 @@ func _process(dt: float) -> void:
 	if _slow_t <= 0.0:
 		_slow_t = 0.5
 		_check_active()
+		if game != null and game.open:
+			game.paint()
 		if sim_active:
 			_update_sky()
 			_update_temps()
@@ -796,6 +809,9 @@ func _process(dt: float) -> void:
 	# the servos turn like real ones: towards the new angle with a limited speed (no jumps)
 	var want_pan := -deg_to_rad(float(s.get("pan_deg", 0.0)))
 	var want_tilt := deg_to_rad(float(s.get("tilt_deg", 0.0)) - 6.0)
+	if game != null and game.guard_auto:                 # the game without Motion Watch: the head guards by itself
+		want_pan = game.guard_yaw
+		want_tilt = deg_to_rad(-9.0)
 	var step := deg_to_rad(SERVO_DEG_S) * dt
 	head.rotation.y = move_toward(head.rotation.y, want_pan, step)
 	head_pitch.rotation.x = move_toward(head_pitch.rotation.x, want_tilt, step)
@@ -804,7 +820,7 @@ func _process(dt: float) -> void:
 	var c1 := Transform3D(Basis.from_euler(Vector3(deg_to_rad(-10.0), -deg_to_rad(cam1_yaw), 0)), Vector3(-3.0, 2.4, 3.0))
 	cams[1].global_transform = c1
 	var L: Dictionary = mw.get("lights", {})
-	white_light.light_energy = 9.0 if L.get("white", false) else 0.0
+	white_light.light_energy = 9.0 if L.get("white", false) or (game != null and game.now() < game.flash_until) else 0.0
 	rain.position = Vector3(0, 12, -8)
 	var t := now() - clock0
 	for i in range(anims.size() - 1, -1, -1):
@@ -834,7 +850,8 @@ func _check_active() -> void:
 	var small: bool = mini_box != null and mini_box.mini
 	win_open = not small and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MINIMIZED
 	var conn := connected()
-	var act := win_open or conn or not eco_idle
+	var playing: bool = game != null and game.busy()
+	var act := win_open or conn or playing or not eco_idle
 	if act != sim_active:
 		sim_active = act
 		visitors.process_mode = Node.PROCESS_MODE_INHERIT if act else Node.PROCESS_MODE_DISABLED
@@ -842,7 +859,7 @@ func _check_active() -> void:
 			next_auto = max(next_auto, now() + 5.0)
 		print("simulation " + ("runs" if act else "pauses (nobody looks)"))
 	get_viewport().disable_3d = not win_open      # the big 3D view only when it can be seen
-	Engine.max_fps = _fps0 if win_open else (30 if sim_active else 5)
+	Engine.max_fps = _fps0 if win_open else (60 if playing else (30 if sim_active else 5))
 
 
 # ---- pictures for Motion Watch -------------------------------------------------------------------------------------
@@ -1241,6 +1258,15 @@ func _register_controls() -> void:
 	add_control("button", "score0", "Punkte auf 0", null, func(): reset_score(), "Wildbeobachtung")
 	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates")
 	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates")
+	add_control("toggle", "game_open", "Spiel öffnen (Handys können mitspielen)", func(): return game.open, func(v): game.set_open(v), "Spiel")
+	add_control("button", "game_start", "Runde starten", null, func(): game.start_round(), "Spiel")
+	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
+	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
+	add_control("select", "game_level", "Wächter", func(): return game_level, func(v): game_level = v, "Spiel",
+			{"options": [["easy", "leicht"], ["normal", "normal"], ["hard", "schwer"]]})
+	add_control("select", "game_quality", "Bild auf dem Handy", func(): return game_quality, func(v): game_quality = v, "Spiel",
+			{"options": [["small", "klein (schnell)"], ["mid", "mittel"], ["big", "gross (braucht mehr Leistung)"]], "expert": true})
+	add_control("toggle", "game_guard", "Ohne Motion Watch bewacht der Kopf selbst", func(): return game_guard, func(v): game_guard = v, "Spiel", ex)
 	add_control("toggle", "autostart", "Mit dem PC starten (sendet gleich an Motion Watch)", func(): return autostart_on, func(v): set_autostart(v), "Start mit dem PC")
 	add_control("toggle", "autostart_min", "Dabei klein (nur das Kästchen in der Ecke)", func(): return autostart_min, func(v): autostart_min = v, "Start mit dem PC")
 	add_control("toggle", "autostart_mwpc", "Dabei auch Motion Watch auf diesem PC starten (ohne Pi)", func(): return autostart_mwpc, func(v): autostart_mwpc = v, "Start mit dem PC")
@@ -1311,6 +1337,21 @@ func control(d: Dictionary) -> Dictionary:
 			return {"ok": false, "error": "unknown scenario"}
 	elif a == "delete":
 		return {"ok": false, "error": "cannot be deleted"}
+	elif a == "game":                                  # for tests: the game (players, meter, round)
+		var ps := []
+		for p in game.players:
+			if p != null:
+				ps.append({"slot": p["slot"], "name": p["name"], "x": snappedf(p["actor"].position.x, 0.01), "z": snappedf(p["actor"].position.z, 0.01),
+						"susp": snappedf(p["susp"], 0.1), "seen": p["seen"], "state": p["state"], "caught": p["caught"], "posture": p["actor"].ctl_posture,
+						"online": p["sock"] != null, "vis": snappedf(game.visibility(p), 0.01), "cams": game.vis_debug(p)})
+		return {"ok": true, "open": game.open, "round": game.round_state, "players": ps, "guard": game.guard_auto, "guard_yaw": snappedf(game.guard_yaw, 0.01),
+				"goal": [snappedf(game.goal.x, 0.01), snappedf(game.goal.z, 0.01)], "address": game.address()}
+	elif a == "game_put":                              # for tests: put a player somewhere
+		var p2 = game.players[clampi(int(d.get("slot", 0)), 0, 3)]
+		if p2 == null:
+			return {"ok": false, "error": "no such player"}
+		p2["actor"].position = free_spot(Vector3(float(d.get("x", 0.0)), 0, float(d.get("z", 0.0))), 0.4, true)
+		return {"ok": true}
 	elif a == "window":                                # for tests: minimized? (2 = minimized) and how many frames were drawn
 		return {"ok": true, "mode": DisplayServer.window_get_mode(), "frames": Engine.get_frames_drawn(), "autostart": autostart_on}
 	elif a == "visitors":                              # for tests: where every visitor is, and whether it is inside an object
@@ -1361,7 +1402,7 @@ func status_text() -> String:
 	var h := hour()
 	var mwc := "verbunden mit %s" % str(mw.get("device", "Motion Watch")) if now() - mw_t < 3.0 else ("Motion Watch nicht verbunden" if stream_on else "Senden aus")
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
-	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "")
+	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "")
 
 
 func scenarios() -> Array:
@@ -1548,6 +1589,8 @@ func _build_ui() -> void:
 			fold_bodies.append(groups[c.group])
 			setting_bodies.append(groups[c.group])
 		_ui_control(groups[c.group], c)
+	if groups.has("Spiel"):
+		game.add_info(groups["Spiel"], UI)            # address, QR code and players of the game
 	var keys := UI.fold_card(box_, "Tasten", false)
 	fold_bodies.append(keys)
 	info_label = UI.small("Maus rechts gedrückt: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienfeld aus / ein · P: Handy / Tablet · G: Gewehr ein / aus (Linksklick = Schuss)")
@@ -1805,7 +1848,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
@@ -2389,6 +2432,81 @@ func keep_out(p: Vector2, rad: float, person := true) -> Vector2:
 			var q: Vector2 = r[0]
 			p = q + n * rad
 	return p
+
+
+func line_free(a: Vector3, b: Vector3) -> bool:
+	return line_blocker(a, b).is_empty()
+
+
+func line_blocker(a: Vector3, b: Vector3) -> Dictionary:
+	"""what hides the point b (e.g. the top of the head of a player) from a camera at a - or {} if nothing.
+	Every object has a height ("ht", set_obstacle_height; fences and hedges 1.2 m, else 3 m): the line of sight can
+	pass above it. Thin things (trunks, poles, chairs) hide nobody; an object round the camera itself does not count."""
+	var a2 := Vector2(a.x, a.z)
+	var b2 := Vector2(b.x, b.z)
+	var seg := b2 - a2
+	var n := int(ceil(seg.length() / 2.0))
+	var seen := {}
+	for i in range(n + 1):
+		var p: Vector2 = a2 + seg * (float(i) / float(max(1, n)))
+		for o in _ob_near(p):
+			if seen.has(o["id"]):
+				continue
+			seen[o["id"]] = true
+			if o.has("r") and float(o["r"]) < 0.45:
+				continue
+			if float(_ob_closest(o, a2)[1]) < 0.3:
+				continue                                  # the camera stands at / in it
+			var t := _seg_hits(o, a2, b2)
+			if t < 0.0:
+				continue
+			var ht: float = o.get("ht", 1.2 if o["po"] else 3.0)
+			if lerp(a.y, b.y, t) > ht:
+				continue                                  # the line of sight goes above it
+			return o
+	return {}
+
+
+func set_obstacle_height(ht: float) -> void:
+	"""the height of the object added last (for the line of sight of the game)"""
+	if not obstacles.is_empty():
+		obstacles[-1]["ht"] = ht
+
+
+func _seg_hits(o: Dictionary, a: Vector2, b: Vector2) -> float:
+	"""where the segment a-b enters the obstacle (0..1), -1 = not at all"""
+	var c: Vector2 = o["c"]
+	if o.has("r"):
+		var ab := b - a
+		var t: float = clamp((c - a).dot(ab) / max(0.0001, ab.length_squared()), 0.0, 1.0)
+		return t if (a + ab * t).distance_to(c) < float(o["r"]) else -1.0
+	var bi: Basis = o["bi"]
+	var h: Vector2 = o["h"]
+	var la3: Vector3 = bi * Vector3(a.x - c.x, 0, a.y - c.y)
+	var lb3: Vector3 = bi * Vector3(b.x - c.x, 0, b.y - c.y)
+	var p0 := Vector2(la3.x, la3.z)
+	var d := Vector2(lb3.x, lb3.z) - p0
+	var t0 := 0.0
+	var t1 := 1.0
+	for ax in range(2):                                    # slab test in the frame of the box
+		var pa: float = p0[ax]
+		var da: float = d[ax]
+		var ha: float = h[ax]
+		if abs(da) < 0.000001:
+			if abs(pa) > ha:
+				return -1.0
+		else:
+			var u0 := (-ha - pa) / da
+			var u1 := (ha - pa) / da
+			if u0 > u1:
+				var tmp := u0
+				u0 = u1
+				u1 = tmp
+			t0 = max(t0, u0)
+			t1 = min(t1, u1)
+			if t0 > t1:
+				return -1.0
+	return t0
 
 
 func free_spot(p: Vector3, rad := 0.4, person := true) -> Vector3:

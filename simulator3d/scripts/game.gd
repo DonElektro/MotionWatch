@@ -1,0 +1,803 @@
+extends Node
+## Game «Unentdeckt ans Ziel» (from 3D-2.4): up to 4 players play with their phones (only a browser, same Wi-Fi).
+## Every player has an own view (a camera behind the own figure, sent as JPEG over a WebSocket), steers with a
+## joystick, can run, crouch and crawl. The referee (here, without Motion Watch) watches through the cameras of the
+## simulator (head camera, fixed camera, thermal camera): what a camera sees raises the «discovered» meter of that
+## player - more when standing, moving, near, by day or in the light; less when crouching, crawling, far, at night,
+## in fog; objects hide (fences and hedges only who is low). 100 = caught: back to the start.
+## Without Motion Watch the head of the camera guards by itself (swings to and fro, turns towards suspects).
+## Page for the phone: http://<PC>:<port+5>/  ·  WebSocket: <port+6>.
+
+var main
+var Actor = preload("res://scripts/actor.gd")
+var Qr = preload("res://scripts/qr.gd")
+
+const MAX_P := 4
+const COLORS := [Color(0.85, 0.12, 0.12), Color(0.12, 0.38, 0.92), Color(0.12, 0.68, 0.22), Color(0.95, 0.78, 0.08)]
+const CNAMES := ["Rot", "Blau", "Grün", "Gelb"]
+const QUAL := {"small": [320, 180, 10.0, 0.55], "mid": [480, 270, 12.0, 0.6], "big": [640, 360, 15.0, 0.65]}
+const POST := [1.0, 0.55, 0.25]         # how well a camera sees: standing, crouching, crawling
+const HEIGHT := [1.7, 1.1, 0.45]
+const RANGE := [32.0, 22.0, 28.0]       # head camera, fixed camera, thermal camera (m)
+const LEVEL := {"easy": 0.6, "normal": 1.0, "hard": 1.6}
+
+var open := false
+var http_port := 8770
+var ws_port := 8771
+var http: TCPServer
+var wss: TCPServer
+var http_conns: Array = []              # [StreamPeerTCP, request so far, start time]
+var socks: Array = []                   # {"ws": WebSocketPeer, "slot": -1, "t": time}
+var players: Array = []                 # per slot: null or Dictionary (see _new_player)
+var root: Node3D                        # figures and markers
+var round_state := "lobby"              # lobby | countdown | play | end
+var t_start := 0.0
+var t_end := 0.0
+var goal := Vector3.ZERO
+var goal_name := "Ziel"
+var goal_node: Node3D
+var results: Array = []
+var guard_auto := false                 # the head guards by itself (no Motion Watch)
+var guard_yaw := 0.0
+var flash_until := 0.0
+var _ref_t := 0.0
+var _st_t := 0.0
+var capturing := false
+var info_label: Label
+var addr_label: Label
+var qr_rect: TextureRect
+var _qr_for := ""
+
+
+func _ready() -> void:
+	root = Node3D.new()
+	root.name = "game"
+	main.add_child(root)
+	players.resize(MAX_P)
+	http_port = main.stream_port + 5
+	ws_port = main.stream_port + 6
+	on_scene()
+
+
+func now() -> float:
+	return Time.get_ticks_msec() / 1000.0
+
+
+# ---- open / close, address -------------------------------------------------------------------------------------------
+func set_open(on: bool) -> void:
+	if on == open:
+		return
+	if on:
+		http = TCPServer.new()
+		wss = TCPServer.new()
+		var e1 := http.listen(http_port)
+		var e2 := wss.listen(ws_port)
+		if e1 != OK or e2 != OK:
+			http.stop()
+			wss.stop()
+			main.start_info = "Spiel: Port %d / %d belegt" % [http_port, ws_port]
+			return
+		open = true
+	else:
+		end_round()
+		for s in socks:
+			s["ws"].close()
+		socks.clear()
+		for i in range(MAX_P):
+			_remove(i)
+		http.stop()
+		wss.stop()
+		http_conns.clear()
+		open = false
+	paint()
+
+
+func address() -> String:
+	var best := ""
+	for a in IP.get_local_addresses():
+		if a.contains(":") or a.begins_with("127.") or a.begins_with("169.254."):
+			continue
+		if a.begins_with("192.168.") or best == "":
+			best = a
+	return "http://%s:%d/" % [best if best != "" else "127.0.0.1", http_port]
+
+
+func count() -> int:
+	var n := 0
+	for p in players:
+		if p != null:
+			n += 1
+	return n
+
+
+func busy() -> bool:
+	"""somebody plays: the simulation must run (main._check_active)"""
+	return open and count() > 0
+
+
+# ---- the scene: goal and starts ---------------------------------------------------------------------------------------
+func on_scene() -> void:
+	var o: Dictionary = main.obj
+	var key := "bike" if main.scene in ["camping", "parkplatz"] else "door"
+	goal = o.get(key, Vector3.ZERO)
+	if goal == Vector3.ZERO:
+		goal = o.get("door", Vector3(0, 0, -4))
+	goal_name = "das Velo" if key == "bike" else "die Tür"
+	goal.y = 0.0
+	if goal_node != null:
+		goal_node.queue_free()
+	goal_node = Node3D.new()
+	root.add_child(goal_node)
+	goal_node.position = goal
+	var beam := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.5
+	cm.bottom_radius = 0.7
+	cm.height = 7.0
+	beam.mesh = cm
+	beam.position.y = 3.5
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_color = Color(0.2, 1.0, 0.4, 0.28)
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	beam.material_override = mat
+	beam.layers = 16                                       # only the players see it (not Motion Watch)
+	goal_node.add_child(beam)
+	for i in range(MAX_P):
+		if players[i] != null:
+			_to_start(players[i])
+
+
+func start_point(i: int) -> Vector3:
+	var p := Vector3(-9.0 + 6.0 * i, 0, -38.0)
+	return main.free_spot(p, 0.6, true)
+
+
+# ---- network ---------------------------------------------------------------------------------------------------------
+func _process(dt: float) -> void:
+	if not open:
+		guard_auto = false
+		return
+	_net()
+	var t := now()
+	for p in players:
+		if p != null:
+			_steer(p, dt)
+	if round_state == "countdown" and t >= t_start:
+		round_state = "play"
+		for p in players:
+			if p != null:
+				p["actor"].frozen = false
+	if round_state == "play":
+		_ref_t -= dt
+		if _ref_t <= 0.0:
+			_ref_t = 0.2
+			_referee(0.2)
+		if t >= t_end or _all_done():
+			end_round()
+	_guard(dt)
+	_st_t -= dt
+	if _st_t <= 0.0:
+		_st_t = 0.2
+		for i in range(MAX_P):
+			if players[i] != null:
+				_send_state(i)
+	if not capturing:
+		_capture_next()
+
+
+func _net() -> void:
+	while http.is_connection_available():
+		var c := http.take_connection()
+		c.set_no_delay(true)
+		http_conns.append([c, PackedByteArray(), now()])
+	for h in http_conns.duplicate():
+		var c: StreamPeerTCP = h[0]
+		c.poll()
+		if c.get_status() != StreamPeerTCP.STATUS_CONNECTED or now() - float(h[2]) > 5.0:
+			http_conns.erase(h)
+			continue
+		var n := c.get_available_bytes()
+		if n > 0:
+			var r: Array = c.get_partial_data(n)
+			h[1].append_array(r[1])
+		var txt: String = (h[1] as PackedByteArray).get_string_from_utf8()
+		if txt.contains("\r\n\r\n"):
+			var path := txt.get_slice(" ", 1)
+			var body := PAGE.replace("%WSPORT%", str(ws_port)).to_utf8_buffer() if path == "/" or path.begins_with("/?") else "nicht gefunden".to_utf8_buffer()
+			var head := "HTTP/1.1 %s\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: %d\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n" % [
+					"200 OK" if body.size() > 20 else "404 Not Found", body.size()]
+			c.put_data(head.to_utf8_buffer() + body)
+			c.disconnect_from_host()
+			http_conns.erase(h)
+	while wss.is_connection_available():
+		var tcp := wss.take_connection()
+		var w := WebSocketPeer.new()
+		w.outbound_buffer_size = 4 << 20
+		w.inbound_buffer_size = 1 << 16
+		w.max_queued_packets = 64
+		if w.accept_stream(tcp) == OK:
+			socks.append({"ws": w, "slot": -1, "t": now()})
+	for s in socks.duplicate():
+		var w: WebSocketPeer = s["ws"]
+		w.poll()
+		var st := w.get_ready_state()
+		if st == WebSocketPeer.STATE_CLOSED or (st == WebSocketPeer.STATE_CONNECTING and now() - float(s["t"]) > 5.0):
+			socks.erase(s)
+			if int(s["slot"]) >= 0 and players[s["slot"]] != null and players[s["slot"]]["sock"] == s:
+				players[s["slot"]]["sock"] = null
+				players[s["slot"]]["gone_t"] = now()
+			continue
+		while w.get_available_packet_count() > 0:
+			var pkt := w.get_packet()
+			if not w.was_string_packet():
+				continue
+			var m = JSON.parse_string(pkt.get_string_from_utf8())
+			if typeof(m) == TYPE_DICTIONARY:
+				_message(s, m)
+	for i in range(MAX_P):                                 # gone for 30 s: the place is free again
+		var p = players[i]
+		if p != null and p["sock"] == null and now() - float(p["gone_t"]) > 30.0:
+			_remove(i)
+			paint()
+
+
+func _message(s: Dictionary, m: Dictionary) -> void:
+	var t := str(m.get("t", ""))
+	if t == "join":
+		var token := str(m.get("token", "")).left(40)
+		var name := str(m.get("name", "")).strip_edges().left(16)
+		var slot := -1
+		for i in range(MAX_P):                             # back again (page reloaded, phone was asleep)
+			if players[i] != null and players[i]["token"] == token and token != "":
+				slot = i
+		if slot < 0:
+			for i in range(MAX_P):
+				if players[i] == null:
+					slot = i
+					break
+		if slot < 0:
+			s["ws"].send_text(JSON.stringify({"t": "full"}))
+			return
+		if players[slot] == null:
+			players[slot] = _new_player(slot, token, name)
+		var p: Dictionary = players[slot]
+		if name != "":
+			p["name"] = name
+		p["sock"] = s
+		p["want"] = false
+		s["slot"] = slot
+		var q: Array = QUAL.get(main.game_quality, QUAL["mid"])
+		s["ws"].send_text(JSON.stringify({"t": "hello", "slot": slot, "color": "#" + COLORS[slot].to_html(false), "cname": CNAMES[slot],
+				"name": p["name"], "w": q[0], "h": q[1], "goal": goal_name}))
+		paint()
+		return
+	var slot2 := int(s["slot"])
+	if slot2 < 0 or players[slot2] == null:
+		return
+	var p2: Dictionary = players[slot2]
+	match t:
+		"in":
+			p2["mx"] = clamp(float(m.get("mx", 0.0)), -1.0, 1.0)
+			p2["my"] = clamp(float(m.get("my", 0.0)), -1.0, 1.0)
+			p2["yaw"] = wrapf(float(p2["yaw"]) - deg_to_rad(clamp(float(m.get("look", 0.0)), -90.0, 90.0)), -PI, PI)
+			p2["pitch"] = clamp(float(p2["pitch"]) - deg_to_rad(clamp(float(m.get("pitch", 0.0)), -45.0, 45.0)), deg_to_rad(-40.0), deg_to_rad(15.0))
+			p2["actor"].ctl_run = bool(m.get("run", false))
+			p2["actor"].ctl_posture = clampi(int(m.get("pos", 0)), 0, 2)
+		"frame":
+			p2["want"] = true
+		"start":
+			start_round()
+
+
+func _new_player(slot: int, token: String, name: String) -> Dictionary:
+	var a = Actor.new()
+	a.controlled = true
+	a.player_color = COLORS[slot]
+	root.add_child(a)
+	a.setup(main, "person", start_point(slot), goal, 1.5)
+	a.frozen = round_state == "countdown"
+	# a small coloured cone above the head: the others see who is who (only the players, not Motion Watch)
+	var cone := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.0
+	cm.bottom_radius = 0.14
+	cm.height = 0.25
+	cone.mesh = cm
+	cone.rotation.x = PI
+	cone.position.y = 2.15
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.albedo_color = COLORS[slot]
+	cone.material_override = mat
+	cone.layers = 16
+	a.add_child(cone)
+	var q: Array = QUAL.get(main.game_quality, QUAL["mid"])
+	var vp := SubViewport.new()
+	vp.size = Vector2i(q[0], q[1])
+	vp.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	vp.msaa_3d = Viewport.MSAA_DISABLED
+	add_child(vp)
+	var cam := Camera3D.new()
+	cam.fov = 70.0
+	cam.cull_mask = 1 | 16
+	cam.near = 0.1
+	cam.far = 400.0
+	var ca := CameraAttributesPractical.new()
+	cam.attributes = ca
+	vp.add_child(cam)
+	var to_goal: Vector3 = goal - a.position
+	var p := {"slot": slot, "token": token, "name": name if name != "" else CNAMES[slot], "sock": null, "gone_t": now(),
+			"actor": a, "vp": vp, "cam": cam, "attr": ca, "gain": 1.0, "yaw": atan2(-to_goal.x, -to_goal.z), "pitch": deg_to_rad(-12.0),
+			"mx": 0.0, "my": 0.0, "want": false, "last_cap": 0.0, "susp": 0.0, "seen": false, "caught": 0,
+			"state": "lobby", "t_goal": 0.0, "safe_until": 0.0, "msg": "", "msg_until": 0.0}
+	return p
+
+
+func _remove(i: int) -> void:
+	var p = players[i]
+	if p == null:
+		return
+	if p["sock"] != null:
+		p["sock"]["slot"] = -1
+	p["actor"].queue_free()
+	p["vp"].queue_free()
+	players[i] = null
+
+
+# ---- moving and the own view -------------------------------------------------------------------------------------------
+func _steer(p: Dictionary, dt: float) -> void:
+	var a = p["actor"]
+	var yaw: float = p["yaw"]
+	var fwd := Vector2(-sin(yaw), -cos(yaw))
+	var right := Vector2(cos(yaw), -sin(yaw))
+	var mv: Vector2 = right * float(p["mx"]) + fwd * (-float(p["my"]))
+	a.ctl_move = mv if p["state"] in ["lobby", "play"] or round_state != "play" else Vector2.ZERO
+	# the camera: behind and above the figure, lower when crouching / crawling
+	var post: int = a.ctl_posture
+	var back: float = [3.2, 2.7, 2.3][post]
+	var up: float = [1.95, 1.45, 0.95][post]
+	var cam: Camera3D = p["cam"]
+	var pos: Vector3 = a.position + Vector3(sin(yaw) * back, up, cos(yaw) * back)
+	var q: Vector2 = main.keep_out(Vector2(pos.x, pos.z), 0.25, true)
+	pos.x = q.x
+	pos.z = q.y
+	if p["state"] == "goal":                               # at the goal: slowly round the figure
+		var oy := now() * 0.4
+		pos = a.position + Vector3(sin(oy) * 4.0, 2.4, cos(oy) * 4.0)
+		cam.look_at_from_position(pos, a.position + Vector3(0, 1.0, 0), Vector3.UP)
+		return
+	cam.position = cam.position.lerp(pos, clamp(dt * 10.0, 0.0, 1.0)) if cam.position.distance_to(pos) < 4.0 else pos
+	cam.rotation = Vector3(float(p["pitch"]), yaw, 0)
+
+
+func _capture_next() -> void:
+	var t := now()
+	var best: Dictionary = {}
+	var late := 0.0
+	var q: Array = QUAL.get(main.game_quality, QUAL["mid"])
+	for p in players:
+		if p == null or not p["want"] or p["sock"] == null:
+			continue
+		var over: float = (t - float(p["last_cap"])) * float(q[2])
+		if over >= 1.0 and over > late:
+			late = over
+			best = p
+	if not best.is_empty():
+		_capture(best, q)
+
+
+func _capture(p: Dictionary, q: Array) -> void:
+	capturing = true
+	p["last_cap"] = now()
+	var vp: SubViewport = p["vp"]
+	if vp.size != Vector2i(q[0], q[1]):
+		vp.size = Vector2i(q[0], q[1])
+	vp.render_target_update_mode = SubViewport.UPDATE_ONCE
+	await RenderingServer.frame_post_draw
+	capturing = false
+	if players[p["slot"]] != p or p["sock"] == null or not is_instance_valid(vp):
+		return
+	var img := vp.get_texture().get_image()
+	if img == null or img.is_empty():
+		return
+	_exposure(p, img)
+	var w: WebSocketPeer = p["sock"]["ws"]
+	if w.get_ready_state() == WebSocketPeer.STATE_OPEN and w.get_current_outbound_buffered_amount() < 600000:
+		w.send(img.save_jpg_to_buffer(float(q[3])))
+		p["want"] = false
+
+
+func _exposure(p: Dictionary, img: Image) -> void:
+	"""like a phone camera: brighter at night, so the player still sees where to go"""
+	var small: Image = img.duplicate()
+	small.resize(24, 14, Image.INTERPOLATE_BILINEAR)
+	var sum := 0.0
+	for y in range(14):
+		for x in range(24):
+			var c := small.get_pixel(x, y)
+			sum += (c.r + c.g + c.b) / 3.0
+	var mean: float = max(0.01, sum / (24.0 * 14.0))
+	var want: float = clamp(float(p["gain"]) * 0.33 / mean, 0.7, 10.0)
+	p["gain"] = float(p["gain"]) + (want - float(p["gain"])) * 0.3
+	(p["attr"] as CameraAttributesPractical).exposure_multiplier = p["gain"]
+
+
+# ---- the round -------------------------------------------------------------------------------------------------------
+func start_round() -> void:
+	if not open or count() == 0 or round_state in ["countdown", "play"]:
+		return
+	round_state = "countdown"
+	t_start = now() + 4.0
+	t_end = t_start + float(main.game_minutes) * 60.0
+	results.clear()
+	for p in players:
+		if p != null:
+			_to_start(p)
+			p["caught"] = 0
+			p["state"] = "play"
+			p["t_goal"] = 0.0
+			p["actor"].frozen = true
+	paint()
+
+
+func end_round() -> void:
+	if round_state not in ["countdown", "play"]:
+		return
+	round_state = "end"
+	results.clear()
+	for p in players:
+		if p == null:
+			continue
+		var d: float = p["actor"].position.distance_to(goal)
+		var sc: int
+		if p["state"] == "goal":
+			sc = max(100, 1000 - int((float(p["t_goal"]) - t_start) * 2.0) - 150 * int(p["caught"]))
+		else:
+			sc = max(0, 300 - int(d * 6.0) - 150 * int(p["caught"]))
+		results.append({"n": p["name"], "c": CNAMES[p["slot"]], "goal": p["state"] == "goal",
+				"time": int(float(p["t_goal"]) - t_start) if p["state"] == "goal" else -1, "caught": p["caught"], "score": sc})
+		p["state"] = "lobby"
+		p["actor"].frozen = false
+		p["susp"] = 0.0
+	results.sort_custom(func(x, y): return x["score"] > y["score"])
+	paint()
+
+
+func _all_done() -> bool:
+	for p in players:
+		if p != null and p["state"] == "play":
+			return false
+	return true
+
+
+func _to_start(p: Dictionary) -> void:
+	var a = p["actor"]
+	a.position = start_point(p["slot"])
+	a.cur_speed = 0.0
+	var to_goal: Vector3 = goal - a.position
+	p["yaw"] = atan2(-to_goal.x, -to_goal.z)
+	p["pitch"] = deg_to_rad(-12.0)
+	a.heading = p["yaw"]
+	a.rotation.y = a.heading
+	p["susp"] = 0.0
+	p["cam"].position = a.position + Vector3(sin(p["yaw"]) * 3.2, 1.95, cos(p["yaw"]) * 3.2)
+
+
+# ---- the referee -----------------------------------------------------------------------------------------------------
+func visibility(p: Dictionary) -> float:
+	"""how well the cameras see this player right now (0 = not at all, about 1 = clearly)"""
+	var a = p["actor"]
+	var post: int = a.ctl_posture
+	var pos: Vector3 = a.position
+	var h: float = HEIGHT[post]
+	var spd: float = a.cur_speed
+	var move_f: float = clamp(0.45 + 0.4 * spd, 0.45, 2.0)     # standing still is seen too (person detection), moving more
+	var dark: bool = main.is_dark()
+	var L: Dictionary = main.mw.get("lights", {})
+	var ir: bool = L.get("ir", false) or (guard_auto and dark)
+	var white: bool = L.get("white", false) or now() < flash_until
+	var w: String = main.weather
+	var optic: float = {"fog": 0.45, "rain": 0.75, "snow": 0.7}.get(w, 1.0)
+	var therm: float = clamp(abs(34.0 - float(main.ambient)) / 20.0, 0.25, 1.0) * {"fog": 0.75, "rain": 0.85}.get(w, 1.0)
+	var best := 0.0
+	var sum := 0.0
+	for i in range(3):
+		var cam: Camera3D = main.cams[i]
+		var cp := cam.global_position
+		var d := cp.distance_to(pos)
+		if d > RANGE[i]:
+			continue
+		if not (cam.is_position_in_frustum(pos + Vector3(0, h * 0.85, 0)) or cam.is_position_in_frustum(pos + Vector3(0, h * 0.4, 0))):
+			continue
+		if not main.line_free(cp, pos + Vector3(0, h * 0.95, 0)):
+			continue                                     # hidden (the line of sight to the top of the head)
+		var f: float = clamp(1.25 - d / RANGE[i], 0.15, 1.0) * POST[post] * move_f
+		if i < 2:
+			var light := 1.0
+			if dark:
+				light = 1.0 if white and d < 18.0 else (0.75 if i == 0 and ir else 0.12)
+			f *= light * optic
+		else:
+			f *= therm
+		sum += f
+		best = max(best, f)
+	return best + 0.35 * (sum - best)
+
+
+func vis_debug(p: Dictionary) -> Array:
+	"""for tests: per camera [distance, in the picture, free view]"""
+	var out := []
+	var pos: Vector3 = p["actor"].position
+	for i in range(3):
+		var cam: Camera3D = main.cams[i]
+		out.append([snappedf(cam.global_position.distance_to(pos), 0.1), cam.is_position_in_frustum(pos + Vector3(0, 1.0, 0)),
+				str(main.line_blocker(cam.global_position, pos + Vector3(0, HEIGHT[p["actor"].ctl_posture] * 0.95, 0)).get("c", "")), snappedf(rad_to_deg(cam.global_rotation.y), 1)])
+	return out
+
+
+func _referee(dt: float) -> void:
+	var lv: float = LEVEL.get(main.game_level, 1.0)
+	for p in players:
+		if p == null or p["state"] != "play":
+			continue
+		var a = p["actor"]
+		if a.position.distance_to(goal) < 1.7:
+			p["state"] = "goal"
+			p["t_goal"] = now()
+			a.frozen = true
+			_say(p, "Im Ziel! 🎉", 4.0)
+			paint()
+			continue
+		if now() < float(p["safe_until"]):
+			p["seen"] = false
+			continue
+		var v := visibility(p)
+		p["seen"] = v > 0.02
+		if p["seen"]:
+			p["susp"] = min(100.0, float(p["susp"]) + v * 55.0 * lv * dt)
+		else:
+			p["susp"] = max(0.0, float(p["susp"]) - 8.0 * dt)
+		if float(p["susp"]) >= 100.0:
+			_caught(p)
+
+
+func _caught(p: Dictionary) -> void:
+	p["caught"] = int(p["caught"]) + 1
+	flash_until = now() + 3.0                             # the light goes on, like at a real alarm
+	_say(p, "Erwischt! Zurück zum Start", 3.0)
+	if p["sock"] != null:
+		p["sock"]["ws"].send_text(JSON.stringify({"t": "ev", "k": "caught"}))
+	_to_start(p)
+	p["safe_until"] = now() + 3.0
+	paint()
+
+
+func _say(p: Dictionary, txt: String, secs: float) -> void:
+	p["msg"] = txt
+	p["msg_until"] = now() + secs
+
+
+func _guard(dt: float) -> void:
+	"""without Motion Watch the head guards by itself: swings to and fro, turns towards somebody suspicious"""
+	guard_auto = main.game_guard and count() > 0 and main.now() - main.mw_t > 3.0
+	if not guard_auto:
+		return
+	var want: float = 1.0 * sin(now() * 0.32)
+	var top := 35.0
+	for p in players:
+		if p != null and p["state"] == "play" and float(p["susp"]) > top:
+			top = float(p["susp"])
+			var d: Vector3 = p["actor"].position
+			want = atan2(-d.x, -d.z)
+	guard_yaw = lerp_angle(guard_yaw, want, clamp(dt * 3.0, 0.0, 1.0))
+
+
+# ---- what the phone shows --------------------------------------------------------------------------------------------
+func _send_state(i: int) -> void:
+	var p: Dictionary = players[i]
+	if p["sock"] == null:
+		return
+	var w: WebSocketPeer = p["sock"]["ws"]
+	if w.get_ready_state() != WebSocketPeer.STATE_OPEN:
+		return
+	var a = p["actor"]
+	var to: Vector3 = goal - a.position
+	var ga := rad_to_deg(wrapf(atan2(-to.x, -to.z) - float(p["yaw"]), -PI, PI))
+	var lst := []
+	for q in players:
+		if q != null:
+			lst.append({"n": q["name"], "c": "#" + COLORS[q["slot"]].to_html(false), "s": q["state"], "k": q["caught"], "on": q["sock"] != null})
+	var d := {"t": "st", "rs": round_state, "susp": int(p["susp"]), "seen": p["seen"], "caught": p["caught"], "ps": p["state"],
+			"gd": snappedf(to.length(), 0.1), "ga": int(ga), "goal": goal_name, "list": lst,
+			"msg": p["msg"] if now() < float(p["msg_until"]) else ""}
+	if round_state == "countdown":
+		d["cd"] = int(ceil(t_start - now()))
+	if round_state == "play":
+		d["left"] = int(max(0.0, t_end - now()))
+	if round_state == "end":
+		d["res"] = results
+	w.send_text(JSON.stringify(d))
+
+
+# ---- in the window: address, QR code, players ------------------------------------------------------------------------
+func add_info(body, UI) -> void:
+	addr_label = UI.small("", UI.TXT)
+	addr_label.add_theme_font_size_override("font_size", 15)
+	body.add_child(addr_label)
+	qr_rect = TextureRect.new()
+	qr_rect.custom_minimum_size = Vector2(170, 170)
+	qr_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	qr_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
+	qr_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	qr_rect.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	body.add_child(qr_rect)
+	info_label = UI.small("")
+	body.add_child(info_label)
+	paint()
+
+
+func paint() -> void:
+	if info_label == null:
+		return
+	var ad := address()
+	addr_label.visible = open
+	qr_rect.visible = open
+	if open:
+		addr_label.text = "Mit dem Handy (gleiches WLAN): QR-Code scannen oder %s öffnen" % ad
+		if _qr_for != ad:
+			_qr_for = ad
+			qr_rect.texture = Qr.texture(ad, 4)
+	var lines := PackedStringArray()
+	if not open:
+		lines.append("Bis zu 4 Spieler schleichen mit dem Handy unentdeckt zum Ziel (%s). Zuerst «Spiel öffnen»." % goal_name)
+	else:
+		lines.append({"lobby": "Bereit – «Runde starten» (hier oder auf einem Handy)", "countdown": "Gleich geht es los …",
+				"play": "Runde läuft", "end": "Runde fertig"}.get(round_state, "") + " · Ziel: " + goal_name)
+		for p in players:
+			if p != null:
+				lines.append("● %s (%s)%s · erwischt %d%s" % [p["name"], CNAMES[p["slot"]], " – im Ziel" if p["state"] == "goal" else "",
+						p["caught"], "" if p["sock"] != null else " · getrennt"])
+		if count() == 0:
+			lines.append("Noch niemand dabei.")
+		if round_state == "end" and not results.is_empty():
+			lines.append("Rangliste: " + ", ".join(PackedStringArray(results.map(func(r): return "%s %d" % [r["n"], r["score"]]))))
+	info_label.text = "\n".join(lines)
+
+
+func status() -> String:
+	if not open:
+		return ""
+	return "Spiel: %d Spieler%s" % [count(), {"play": ", Runde läuft", "countdown": ", Start", "end": ", fertig"}.get(round_state, "")]
+
+
+const PAGE := r"""<!doctype html><html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0a0e14"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>Unentdeckt ans Ziel</title>
+<style>
+:root{--bg:#0a0e14;--panel:#111822;--line:#1f2b3a;--txt:#e6edf3;--mut:#8b98a8;--acc:#3b8cff;--grn:#34c759;--org:#ff9f0a;--red:#ff453a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+#v{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+.top{position:fixed;left:0;right:0;top:0;display:flex;gap:8px;align-items:center;padding:8px 10px;padding-top:max(8px,env(safe-area-inset-top));background:linear-gradient(#000a,#0000);pointer-events:none}
+.pill{background:#0a0e14cc;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px;white-space:nowrap}
+#me .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+#meter{flex:1;max-width:340px;margin:0 auto;height:14px;border-radius:999px;background:#0a0e14cc;border:1px solid var(--line);overflow:hidden;position:relative}
+#bar{height:100%;width:0;background:var(--grn);transition:width .2s,background .2s}
+#eye{position:absolute;left:50%;top:-1px;transform:translateX(-50%);font-size:12px}
+#goal{display:flex;align-items:center;gap:6px}
+#arrow{display:inline-block;transition:transform .2s;font-size:18px;line-height:1}
+#stick{position:fixed;left:0;top:0;bottom:0;width:45%}
+#look{position:fixed;right:0;top:0;bottom:0;width:55%}
+.base{position:fixed;width:130px;height:130px;border-radius:50%;border:2px solid #ffffff55;background:#ffffff14;transform:translate(-50%,-50%);pointer-events:none;display:none}
+.knob{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px;border-radius:50%;background:#ffffffaa}
+.hint{position:fixed;left:16px;bottom:max(16px,env(safe-area-inset-bottom));color:#fff9;font-size:12px;pointer-events:none}
+.btns{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:flex;gap:10px;align-items:flex-end}
+.b{width:74px;height:74px;border-radius:50%;border:2px solid #ffffff55;background:#0a0e14aa;color:#fff;font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.b i{font-style:normal;font-size:22px}
+.b.on{background:var(--acc);border-color:var(--acc)}
+#full{position:fixed;right:10px;top:46px;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#0a0e14aa;color:#fff;font-size:18px}
+.ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.card{background:#111822ee;border:1px solid var(--line);border-radius:16px;padding:18px 20px;max-width:min(92vw,520px);text-align:center;pointer-events:auto}
+.card h1{font-size:20px;margin:0 0 8px}.card p{margin:6px 0;color:var(--mut)}
+button.pr{background:var(--acc);color:#fff;border:0;border-radius:12px;padding:12px 18px;font-size:16px;font-weight:600;margin-top:10px}
+input{background:#0a0e14;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;width:100%}
+#big{font-size:96px;font-weight:800;text-shadow:0 4px 24px #000;pointer-events:none}
+#msg{position:fixed;left:50%;top:22%;transform:translateX(-50%);font-size:26px;font-weight:800;text-shadow:0 2px 12px #000;pointer-events:none;text-align:center}
+table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px;border-bottom:1px solid var(--line)}
+#list{position:fixed;left:10px;top:44px;font-size:12px;line-height:1.5;pointer-events:none;text-shadow:0 1px 4px #000}
+#rot{display:none;position:fixed;inset:0;background:#0a0e14f2;align-items:center;justify-content:center;text-align:center;padding:30px;font-size:18px}
+@media (orientation:portrait){#rot.ask{display:flex}}
+.red{animation:fl .4s 3}@keyframes fl{50%{background:#ff453a88}}
+</style></head><body>
+<img id="v" alt="">
+<div class="top"><span class="pill" id="me"><span class="dot"></span><b id="nm">…</b> · <span id="ck">0</span>× erwischt</span>
+<div id="meter"><div id="bar"></div><span id="eye">👁</span></div>
+<span class="pill" id="goal"><span id="arrow">⬆</span><span id="gd">–</span></span><span class="pill" id="tm">–</span></div>
+<div id="list"></div>
+<div id="stick"></div><div id="look"></div><div class="base" id="base"><div class="knob" id="knob"></div></div>
+<div class="hint" id="hint">links: gehen · rechts wischen: umschauen</div>
+<div class="btns"><div class="b" id="b-run"><i>🏃</i>Rennen</div><div class="b" id="b-crouch"><i>🧎</i>Ducken</div><div class="b" id="b-crawl"><i>🐍</i>Kriechen</div></div>
+<button id="full" title="Vollbild">⛶</button>
+<div id="msg"></div>
+<div class="ov" id="ov"></div>
+<div id="rot"><div>📱↻<br><br>Handy bitte <b>quer</b> halten.<br><small style="color:#8b98a8">Mit dem Knopf ⛶ wird es Vollbild.</small></div></div>
+<script>
+const $ = s => document.querySelector(s), WSP = %WSPORT%;
+let ws = null, me = null, token = "", name = "", st = {}, posture = 0, run = false, mx = 0, my = 0, look = 0, pitch = 0, lastSent = "", lastT = 0, lastFrame = 0, oldUrl = "";
+try { token = localStorage.getItem("mw3d-token") || ""; name = localStorage.getItem("mw3d-name") || ""; } catch (e) {}
+if (!token) { token = Math.random().toString(36).slice(2) + Date.now().toString(36); try { localStorage.setItem("mw3d-token", token); } catch (e) {} }
+const ov = (html) => { $("#ov").innerHTML = html ? '<div class="card">' + html + '</div>' : ""; };
+function joinForm() {
+  ov('<h1>🕵️ Unentdeckt ans Ziel</h1><p>Schleiche zum grünen Licht, ohne dass dich die Kameras entdecken. Ducken und Kriechen hilft, im Dunkeln und hinter Dingen sieht man dich schlechter.</p>' +
+     '<input id="nmi" maxlength="16" placeholder="Dein Name" value="' + name.replace(/"/g, "") + '"><button class="pr" id="go">Mitspielen</button>');
+  $("#go").onclick = () => { name = $("#nmi").value.trim(); try { localStorage.setItem("mw3d-name", name); } catch (e) {} goFull(); connect(); };
+}
+function connect() {
+  ov('<h1>Verbinde …</h1>');
+  ws = new WebSocket("ws://" + location.hostname + ":" + WSP); ws.binaryType = "blob";
+  ws.onopen = () => ws.send(JSON.stringify({t: "join", name, token}));
+  ws.onmessage = (e) => {
+    if (typeof e.data !== "string") { const u = URL.createObjectURL(e.data); $("#v").onload = () => { if (oldUrl) URL.revokeObjectURL(oldUrl); oldUrl = u; askFrame(); }; $("#v").src = u; lastFrame = Date.now(); return; }
+    const m = JSON.parse(e.data);
+    if (m.t === "hello") { me = m; $("#nm").textContent = m.name; $("#me .dot").style.background = m.color; ov(""); askFrame(); }
+    else if (m.t === "full") { ov('<h1>Schon 4 Spieler</h1><p>Das Spiel ist voll. Warte, bis jemand aufhört.</p>'); }
+    else if (m.t === "st") paint(m);
+    else if (m.t === "ev" && m.k === "caught") { if (navigator.vibrate) navigator.vibrate([300, 100, 300]); document.body.classList.remove("red"); void document.body.offsetWidth; document.body.classList.add("red"); }
+  };
+  ws.onclose = () => { me = null; ov('<h1>Verbindung weg</h1><p>Neuer Versuch …</p>'); setTimeout(connect, 1500); };
+}
+function askFrame() { if (ws && ws.readyState === 1) ws.send('{"t":"frame"}'); }
+setInterval(() => { if (me && Date.now() - lastFrame > 1500) { lastFrame = Date.now(); askFrame(); } }, 500);
+function fmtT(s) { return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+function paint(m) {
+  st = m; $("#ck").textContent = m.caught;
+  const s = Math.max(0, Math.min(100, m.susp)); $("#bar").style.width = s + "%";
+  $("#bar").style.background = s > 70 ? "var(--red)" : s > 35 ? "var(--org)" : "var(--grn)"; $("#eye").style.opacity = m.seen ? 1 : 0.35;
+  $("#arrow").style.transform = "rotate(" + (-m.ga) + "deg)"; $("#gd").textContent = Math.round(m.gd) + " m";
+  $("#tm").textContent = m.rs === "play" ? "⏱ " + fmtT(m.left) : m.rs === "countdown" ? "gleich" : "–";
+  $("#list").innerHTML = (m.list || []).map(p => '<span style="color:' + p.c + '">●</span> ' + esc(p.n) + (p.s === "goal" ? " 🏁" : "") + (p.k ? " · " + p.k + "×" : "") + (p.on ? "" : " (weg)")).join("<br>");
+  $("#msg").textContent = m.msg || "";
+  if (m.rs === "countdown") ov('<div id="big">' + Math.max(1, m.cd) + '</div>');
+  else if (m.rs === "lobby") ov('<h1>Bereit?</h1><p>Ziel: <b>' + esc(m.goal) + '</b> – folge dem Pfeil oben rechts zum grünen Licht.</p><p>Links ziehen = gehen · rechts wischen = umschauen</p><button class="pr" id="st">Runde starten</button>');
+  else if (m.rs === "end") ov('<h1>Rangliste</h1><table>' + (m.res || []).map((r, i) => '<tr><td>' + (i + 1) + '.</td><td>' + esc(r.n) + '</td><td>' + (r.goal ? "🏁 " + fmtT(r.time) : "–") + '</td><td>' + r.caught + '× erwischt</td><td><b>' + r.score + '</b></td></tr>').join("") + '</table><button class="pr" id="st">Nochmal</button>');
+  else if (m.ps === "goal") ov('<h1>🏁 Im Ziel!</h1><p>Warte auf die anderen.</p>');
+  else ov("");
+  const b = $("#st"); if (b) b.onclick = () => ws.send('{"t":"start"}');
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c])); }
+// joystick (left), looking round (right)
+let sid = null, sx = 0, sy = 0, lid = null, lx = 0, ly = 0;
+$("#stick").addEventListener("pointerdown", e => { sid = e.pointerId; sx = e.clientX; sy = e.clientY; const b = $("#base"); b.style.left = sx + "px"; b.style.top = sy + "px"; b.style.display = "block"; $("#hint").style.display = "none"; e.target.setPointerCapture(sid); });
+$("#stick").addEventListener("pointermove", e => { if (e.pointerId !== sid) return; let dx = e.clientX - sx, dy = e.clientY - sy; const l = Math.hypot(dx, dy), R = 55; if (l > R) { dx *= R / l; dy *= R / l; } mx = dx / R; my = dy / R; $("#knob").style.transform = "translate(" + dx + "px," + dy + "px)"; });
+const stickEnd = e => { if (e.pointerId !== sid) return; sid = null; mx = my = 0; $("#base").style.display = "none"; $("#knob").style.transform = ""; };
+$("#stick").addEventListener("pointerup", stickEnd); $("#stick").addEventListener("pointercancel", stickEnd);
+$("#look").addEventListener("pointerdown", e => { lid = e.pointerId; lx = e.clientX; ly = e.clientY; e.target.setPointerCapture(lid); });
+$("#look").addEventListener("pointermove", e => { if (e.pointerId !== lid) return; look += (e.clientX - lx) * 0.3; pitch += (e.clientY - ly) * 0.2; lx = e.clientX; ly = e.clientY; });
+const lookEnd = e => { if (e.pointerId === lid) lid = null; };
+$("#look").addEventListener("pointerup", lookEnd); $("#look").addEventListener("pointercancel", lookEnd);
+const hold = (el, on, off) => { el.addEventListener("pointerdown", e => { e.preventDefault(); on(); }); el.addEventListener("pointerup", off); el.addEventListener("pointercancel", off); el.addEventListener("pointerleave", off); };
+hold($("#b-run"), () => { run = true; posture = 0; btns(); }, () => { run = false; btns(); });
+$("#b-crouch").addEventListener("pointerdown", e => { e.preventDefault(); posture = posture === 1 ? 0 : 1; btns(); });
+$("#b-crawl").addEventListener("pointerdown", e => { e.preventDefault(); posture = posture === 2 ? 0 : 2; btns(); });
+function btns() { $("#b-run").classList.toggle("on", run); $("#b-crouch").classList.toggle("on", posture === 1); $("#b-crawl").classList.toggle("on", posture === 2); }
+// keyboard (for a computer): W A S D / arrows, Shift = run, C = crouch, X = crawl, Q / E = look round
+const keys = {};
+addEventListener("keydown", e => { if (e.target.tagName === "INPUT") return; keys[e.code] = true; if (e.code === "KeyC") { posture = posture === 1 ? 0 : 1; btns(); } if (e.code === "KeyX") { posture = posture === 2 ? 0 : 2; btns(); } });
+addEventListener("keyup", e => { keys[e.code] = false; });
+setInterval(() => {
+  if (!me || !ws || ws.readyState !== 1) return;
+  let kx = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0), ky = (keys.KeyS || keys.ArrowDown ? 1 : 0) - (keys.KeyW || keys.ArrowUp ? 1 : 0);
+  if (keys.KeyQ) look -= 6; if (keys.KeyE) look += 6;
+  const r = run || keys.ShiftLeft || keys.ShiftRight;
+  const d = {t: "in", mx: sid !== null ? mx : kx, my: sid !== null ? my : ky, look: Math.round(look * 10) / 10, pitch: Math.round(pitch * 10) / 10, run: !!r, pos: posture};
+  look = 0; pitch = 0;
+  const j = JSON.stringify(d), now = Date.now();
+  if (j !== lastSent || now - lastT > 250 || d.look || d.pitch) { ws.send(j); lastSent = j; lastT = now; }
+}, 50);
+function goFull() { const el = document.documentElement; try { (el.requestFullscreen || el.webkitRequestFullscreen).call(el).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock("landscape").catch(() => {})).catch(() => {}); } catch (e) {} $("#rot").classList.add("ask"); }
+$("#full").onclick = goFull;
+joinForm();
+</script></body></html>"""

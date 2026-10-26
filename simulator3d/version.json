@@ -1,7 +1,7 @@
 {
- "version": "3D-2.3",
+ "version": "3D-2.4",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30294150,
- "sha256": "711ba55dae7b1da1e12c2121dd14dcf977040048bb66d55b1513bd5477e5dc85",
- "notes": "Strom sparen: rechnet nur, wenn das Fenster offen ist oder Motion Watch verbunden ist (sonst Pause); das Kästchen zeigt die CPU des Computers, von Motion Watch und vom Simulator."
+ "size": 30347993,
+ "sha256": "cf0892f2d243096231e5a4cb104dbdde845f36cda73c9c995d07a09fcf95bfe6",
+ "notes": "Neu: Spiel «Unentdeckt ans Ziel» für bis zu 4 Spieler mit dem Handy (eigene Ansicht, Joystick, Ducken, Kriechen); der Simulator ist Schiedsrichter."
 }

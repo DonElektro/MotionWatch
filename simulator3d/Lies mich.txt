@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-2.3 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-2.4 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -31,6 +31,27 @@ UPDATES (ab 3D-1.7)
   nach und installiert eine neue Version selbst: 15 Sekunden lang kann man noch "Abbrechen" drücken, dann startet er neu
   (Senden, Szene und "Motion Watch auf diesem PC" laufen danach weiter). Der Knopf "Jetzt nach Updates suchen und
   installieren" in derselben Gruppe löst das sofort aus - auch vom Handy aus über Motion Watch.
+
+SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
+- Gruppe "Spiel": "Spiel öffnen" einschalten. Im Fenster erscheinen ein QR-Code und eine Adresse.
+  Die Handys (im gleichen WLAN wie der PC) scannen den QR-Code, Namen eingeben, "Mitspielen". Keine App nötig.
+  Fragt die Windows-Firewall: "Private Netzwerke" erlauben.
+- Jeder sieht auf seinem Handy seine eigene Figur von hinten (Rot, Blau, Grün, Gelb). Handy quer halten,
+  Knopf ⛶ = Vollbild.
+  Links auf dem Bildschirm ziehen = gehen · rechts wischen = umschauen · Knöpfe: Rennen (halten), Ducken, Kriechen.
+  Am Computer im Browser geht es auch: W A S D gehen, Shift rennen, C ducken, X kriechen, Q / E umschauen.
+- Ziel: das grüne Licht (Camping und Parkplatz: das Velo, sonst die Tür). Der Pfeil oben rechts zeigt hin.
+- Die Kameras des Simulators passen auf (Kopfkamera, feste Kamera, Wärmebild). Die Leiste mit dem Auge oben zeigt,
+  wie nahe man am Entdecktwerden ist. Voll = erwischt: das Licht geht an, das Handy vibriert, zurück zum Start.
+  Schwer zu sehen ist, wer sich duckt oder kriecht, weit weg ist, still steht, im Dunkeln (ohne Licht), im Nebel,
+  oder hinter Wohnwagen, Zelt, Auto, Hütte ... (hinter Zaun und Hecke nur, wer sich duckt oder kriecht).
+  Das Wärmebild sieht auch nachts, aber nicht durch Dinge hindurch.
+- Ohne Motion Watch bewacht der Kopf selbst: er schwenkt hin und her und dreht sich zu Verdächtigen. Ist Motion
+  Watch verbunden, steuert Motion Watch den Kopf (und erkennt die Spieler vielleicht selbst - als echter Test).
+- "Runde starten" (im Fenster, auf der Motion-Watch-Webseite oder auf einem Handy): 3-2-1, dann läuft die Zeit
+  (einstellbar 1-15 Minuten). Am Schluss die Rangliste: früh im Ziel und selten erwischt = viele Punkte.
+- Einstellungen: Wächter leicht / normal / schwer; Bild auf dem Handy klein / mittel / gross (Experte).
+- Jedes Handy-Bild braucht Leistung der Grafikkarte: bei Ruckeln "Bild auf dem Handy: klein" wählen.
 
 STROM SPAREN (ab 3D-2.3)
 - Der Simulator rechnet nur, wenn jemand hinschaut: wenn das Fenster offen ist oder Motion Watch verbunden ist.

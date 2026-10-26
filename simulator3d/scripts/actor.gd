@@ -47,6 +47,14 @@ var stuck_pos := Vector3.ZERO
 var detour_until := 0.0
 var detour_sign := 1.0
 var preview := false          # only a picture for the list of visitors (does not move)
+# ---- a player of the game (game.gd, from 3D-2.4): moved by the phone instead of a route ----
+var controlled := false
+var player_color := Color(0, 0, 0, 0)  # jacket colour of the player (red, blue, green, yellow)
+var ctl_move := Vector2.ZERO  # wanted direction in the world (x, z), length 0..1
+var ctl_run := false
+var ctl_posture := 0          # 0 standing, 1 crouching, 2 crawling
+var prone := 0.0              # 0..1 lying (crawling)
+var frozen := false           # stands still (countdown, at the goal, caught)
 
 const COLORS := {
 	"jacket": [Color(0.24, 0.24, 0.6), Color(0.5, 0.31, 0.16), Color(0.16, 0.43, 0.24), Color(0.6, 0.6, 0.6), Color(0.16, 0.16, 0.16),
@@ -169,7 +177,7 @@ func _build_person() -> void:
 	var cold: bool = main.ambient < 10.0
 	var kid := variant == "child"
 	var jog := variant == "jogger"
-	var jacket: Color = _pick("sport") if jog else _pick("jacket")
+	var jacket: Color = player_color if player_color.a > 0.0 else (_pick("sport") if jog else _pick("jacket"))
 	var trousers: Color = Color(0.1, 0.1, 0.12) if jog else _pick("trousers")
 	var skin := _pick("skin")
 	var hair := _pick("hair")
@@ -185,7 +193,7 @@ func _build_person() -> void:
 		legs.append([hip, s, knee])
 	_part(body_root, _caps(0.17, 0.26), Vector3(0, 0.98, 0), trousers, cloth_t, Vector3(0, 0, PI / 2), Vector3(1, 1, 0.75))  # hips
 	_part(body_root, _caps(0.2, 0.62), Vector3(0, 1.24, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.0, 1.0, 0.65))          # body
-	if not jog and not kid and randf() < 0.35:                                       # backpack
+	if not jog and not kid and not controlled and randf() < 0.35:                    # backpack
 		_part(body_root, _box(0.3, 0.42, 0.16), Vector3(0, 1.28, 0.2), jacket.darkened(0.5).lerp(Color(0.2, 0.3, 0.2), 0.5), main.ambient + 3.0)
 	for s in [-1, 1]:
 		var sh := _pivot(body_root, Vector3(0.24 * s, 1.48, 0))
@@ -413,6 +421,9 @@ func _process(dt: float) -> void:
 	if done or preview:
 		return
 	var now := now_s()
+	if controlled:
+		_player(dt, now)
+		return
 	if stars != null:
 		_dizzy(dt, now)
 	if leader != null:                                    # a dog on a walk: goes along with its person
@@ -488,6 +499,39 @@ func _process(dt: float) -> void:
 	_animate(dt, cur_speed, now)
 
 
+const PLAYER_SPEED := [1.5, 0.9, 0.45]   # walking: standing, crouching, crawling (m/s); running: × 2.3 (only standing)
+
+
+func player_speed_now() -> float:
+	return cur_speed
+
+
+func _player(dt: float, now: float) -> void:
+	"""moved by the phone: direction from the joystick, posture from the buttons, never inside an object"""
+	var want_c := 0.55 if ctl_posture == 1 else 0.0
+	var want_p := 1.0 if ctl_posture == 2 else 0.0
+	crouch = move_toward(crouch, want_c, dt * 2.5)
+	prone = move_toward(prone, want_p, dt * 2.0)
+	var mv := ctl_move.limit_length(1.0)
+	if frozen:
+		mv = Vector2.ZERO
+	var top: float = PLAYER_SPEED[ctl_posture] * (2.3 if ctl_run and ctl_posture == 0 else 1.0)
+	var want: float = top * mv.length()
+	cur_speed = move_toward(cur_speed, want, dt * 5.0)
+	if mv.length() > 0.08:
+		dir = Vector3(mv.x, 0, mv.y).normalized()
+		heading = lerp_angle(heading, atan2(-dir.x, -dir.z), clamp(10.0 * dt, 0.0, 1.0))
+		rotation.y = heading
+	if cur_speed > 0.01:
+		var mdir := dir if mv.length() > 0.08 else Vector3(-sin(heading), 0, -cos(heading))
+		position += mdir * cur_speed * dt
+		var q: Vector2 = main.keep_out(Vector2(position.x, position.z), radius, true)
+		position.x = q.x
+		position.z = q.y
+	speed = max(1.0, top)
+	_animate(dt, cur_speed, now)
+
+
 func _next_point(now: float) -> void:
 	if route.size() > 0:
 		var nxt = route.pop_front()
@@ -535,8 +579,8 @@ func _animate(dt: float, spd: float, now: float) -> void:
 			a[2].rotation.x = -(0.25 + (0.9 if variant == "jogger" else 0.0))
 	var bob: float = abs(sin(phase)) * 0.025 * clamp(gait, 0.0, 1.5)
 	if kind == "person":
-		body_root.position.y = -0.5 * crouch * body_root.scale.y + bob
-		body_root.rotation.x = -0.3 * crouch - (0.12 if variant == "jogger" and spd > 0.5 else 0.0)
+		body_root.position.y = (-0.5 * crouch * body_root.scale.y + bob) * (1.0 - prone) + 0.12 * prone
+		body_root.rotation.x = -0.3 * crouch * (1.0 - prone) - 1.35 * prone - (0.12 if variant == "jogger" and spd > 0.5 else 0.0)
 		if torch != null:
 			torch.light_energy = 3.0 if crouch > 0.5 and int(now * 3.0) % 4 != 0 else 0.0
 	elif kind != "car":

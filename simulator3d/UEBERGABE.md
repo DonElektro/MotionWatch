@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-2.3** · passende Motion-Watch-Version **2.92.4**
+Stand: 26.10.2026 · Simulator-Version **3D-2.4** · passende Motion-Watch-Version **2.93.1**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,20 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-2.4 – Spiel «Unentdeckt ans Ziel»** (`scripts/game.gd`, `scripts/qr.gd`): bis 4 Handys. HTTP-Seite (`PAGE`, in game.gd
+eingebettet) auf Port `stream_port + 5` (8770), WebSocket auf `+ 6` (8771, `WebSocketPeer.accept_stream`). Nachrichten: Handy →
+`join {name, token}` (token in localStorage: gleicher Platz nach Neuladen), `in {mx, my, look, pitch, run, pos}` (alle 50 ms),
+`frame` (nächstes Bild, Flusskontrolle), `start`. Simulator → `hello`, `st` (5×/s: Entdeckt-Wert, Ziel-Richtung, Runde, Liste,
+Rangliste), `ev caught`, Bilder als binäre JPEG. Jeder Spieler hat eine eigene SubViewport-Kamera hinter seiner Figur
+(`cull_mask 1|16`; Ebene 16 = nur für Spieler: Zielstrahl, farbige Kegel), Belichtung wie ein Handy (`_exposure`).
+Figur = `actor.gd` mit `controlled` (`_player()`: Joystick, Rennen, Ducken, Kriechen = `prone`). **Schiedsrichter**
+(`visibility()`, alle 0,2 s): pro Kamera (Kopf, fest, Wärmebild) Reichweite, Bildausschnitt (`is_position_in_frustum`), Sicht
+(`main.line_free()` zum Scheitel; Hindernisse haben Höhen `ht`, `set_obstacle_height()` in scenes.gd, Zaun/Hecke 1,2 m, dünne
+Kreise < 0,45 m zählen nicht), × Abstand × Haltung × Bewegung × Licht (Nacht: 0,12; IR nur Kopf 0,75; weisses Licht) × Wetter;
+Wärmebild × Temperaturunterschied. Wert × 55/s × Stufe → 100 = erwischt (Blitzlicht, zurück zum Start, 3 s Schutz).
+Ohne Motion Watch (`guard_auto`) dreht `game.guard_yaw` den Kopf. Test-Abfragen `{"action":"game"}`, `{"action":"game_put"}`.
+Gemessen unter Xvfb/llvmpipe: Handybilder nur ~2/s (CPU-Grafik); auf echter Grafikkarte nicht getestet.
+
 **3D-2.3 – Strom sparen:** `main._check_active()` (alle 0,5 s): `win_open` = nicht Kästchen (`mini.gd`) und nicht minimiert;
 `connected()` = senden an und Motion Watch hat in den letzten 10 s `/state` geschickt oder Bilder/Wärmebild geholt. Weder noch
 (und `eco_idle` an) → `sim_active = false`: `_process` endet nach dem langsamen Teil (Status, Speichern, Updates), Besucher
@@ -241,6 +255,8 @@ ONVIF-Dienst für Erkennung und PTZ) – ohne Server, mit einer gängigen Video�
 - Ton (Schuss «Plopp», Treffer «Boing») – hier ohne Lautsprecher.
 - Die Bildrate der neuen Szenen auf dem alten i5 (Wald hat rund 300 Bäume; ab 3D-2.0 mit gemeinsamen Materialien).
 - Ziehen der Besucher-Bildchen mit der echten Maus unter Windows (hier mit XTest getestet).
+- Das Spiel mit echten Handys im WLAN und unter Windows (hier nur mit Chromium-Handy-Nachbildung und Tastatur),
+  die Bildrate der Handybilder auf einer echten Grafikkarte, Vibration, Vollbild/Querformat-Sperre auf iPhone.
 - Autostart unter Windows (Registry-Eintrag, minimiert weiterzeichnen mit Direct3D/ANGLE, Sperren, Autologon) – nur unter Linux
   getestet (Autostart-Datei, minimiert weiterzeichnen).
 - Das Selbst-Update unter Windows (Umbenennen der laufenden .exe, HTTPS zu GitHub) – hier nur unter Linux mit lokalem Server.

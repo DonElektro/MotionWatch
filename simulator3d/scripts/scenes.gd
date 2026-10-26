@@ -315,6 +315,7 @@ func bike(p: Vector3, rot_y: float) -> void:
 	put(bk, cyl(0.09, 0.09, 0.02, 12), Vector3(0.03, 0.3, 0.0), Color(0.6, 0.6, 0.62), "stone", Vector3(0, 0, PI / 2))   # chain ring
 	m.obj["bike"] = p
 	m.add_obstacle(p, 0.5)
+	m.set_obstacle_height(1.0)
 
 
 func bench(p: Vector3, rot_y: float) -> void:
@@ -355,6 +356,7 @@ func static_car(p: Vector3, rot_y: float, col: Color) -> void:
 			put(c, cyl(0.33, 0.33, 0.22), Vector3(x, 0.33, z), Color(0.05, 0.05, 0.05), "caravan", Vector3(0, 0, PI / 2))
 			put(c, cyl(0.18, 0.18, 0.23), Vector3(x, 0.33, z), Color(0.6, 0.6, 0.62), "caravan", Vector3(0, 0, PI / 2))
 	m.add_obstacle_box(p, 1.95, 4.4, rot_y)
+	m.set_obstacle_height(1.5)
 
 
 func mushroom(p: Vector3, s := 1.0) -> void:
@@ -381,6 +383,7 @@ func _camping() -> void:
 		put(tn, m.box(0.01, 0.01, 1.4), Vector3(0, 0.8, 1.75 * s2), Color(0.85, 0.85, 0.8), "stone", Vector3(0.62 * s2, 0, 0))
 	m.obj["pir"] = m.pos_of(14.0, 7.0)
 	m.add_obstacle_node(tn, Vector3.ZERO, 3.0, 2.8)
+	m.set_obstacle_height(1.4)
 	bike(m.pos_of(32.0, 6.0), deg_to_rad(-32.0) + PI / 2)
 	put(root, m.box(1.2, 0.05, 0.8), m.pos_of(-62, 5.5, 0.72), Color(0.8, 0.8, 0.78), "stone")
 	for s in [-1, 1]:
@@ -390,6 +393,7 @@ func _camping() -> void:
 		for z in [-0.3, 0.3]:
 			put(root, cyl(0.015, 0.015, 0.7, 5), m.pos_of(-62, 5.5) + Vector3(x, 0.36, z), Color(0.6, 0.6, 0.62), "stone")
 	m.add_obstacle(m.pos_of(-62, 5.5), 0.7)
+	m.set_obstacle_height(0.5)
 	stones(8, 4.0, 15.0)
 	meadow(700, 3.0, 40.0)
 	for i in range(140):
@@ -423,11 +427,14 @@ func _wald() -> void:
 		glow.scale = Vector3.ONE * (1.0 + 0.15 * sin(t * 9.0)))
 	m.obj["pir"] = fire
 	m.add_obstacle(fire, 0.9)
+	m.set_obstacle_height(0.5)
 	bike(m.pos_of(-38.0, 13.0), deg_to_rad(20.0))
 	put(root, cyl(0.25, 0.3, 6.0, 10), Vector3(-7, 0.3, -18), Color(0.35, 0.25, 0.16), "tree", Vector3(0, 0.4, PI / 2))
 	m.add_obstacle_box(Vector3(-7, 0, -18), 6.0, 0.6, 0.4 + PI / 2)
+	m.set_obstacle_height(0.6)
 	put(root, cyl(0.2, 0.25, 4.0, 10), Vector3(9, 0.25, -6), Color(0.35, 0.25, 0.16), "tree", Vector3(0, -0.8, PI / 2))
 	m.add_obstacle_box(Vector3(9, 0, -6), 4.0, 0.5, -0.8 + PI / 2)
+	m.set_obstacle_height(0.6)
 	for i in range(6):
 		var sp: Vector3 = m.pos_of(rng.randf_range(-70, 70), rng.randf_range(5, 20))
 		put(root, cyl(0.3, 0.35, 0.4, 10), sp + Vector3(0, 0.2, 0), Color(0.42, 0.32, 0.2), "tree")
@@ -476,6 +483,7 @@ func _parkplatz() -> void:
 	# ticket machine (the PIR sensor is here)
 	put(root, m.box(0.7, 1.6, 0.5), Vector3(5, 0.8, -3.5), Color(0.9, 0.7, 0.1), "caravan")
 	m.add_obstacle_box(Vector3(5, 0, -3.5), 0.8, 0.6, 0.0)
+	m.set_obstacle_height(1.6)
 	put(root, m.box(0.5, 0.3, 0.05), Vector3(5, 1.25, -3.24), glow_mat(Color(0.5, 0.8, 1.0)), 30.0)
 	label(root, "P", Vector3(5, 1.85, -3.24), 96, Color(0.1, 0.2, 0.6))
 	m.obj["pir"] = Vector3(5, 0, -3.0)
@@ -487,6 +495,7 @@ func _parkplatz() -> void:
 		put(root, tor, Vector3(-9 + i * 0.7, 0.2, -3.5), Color(0.6, 0.6, 0.62), "stone", Vector3(0, PI / 2, PI / 2))
 	bike(Vector3(-8.65, 0, -3.5), 0.0)
 	m.add_obstacle_box(Vector3(-7.95, 0, -3.5), 2.6, 0.4, 0.0)
+	m.set_obstacle_height(1.0)
 	# barrier at the entrance
 	put(root, m.box(0.3, 1.0, 0.3), Vector3(26, 0.5, -29), Color(0.85, 0.85, 0.85), "stone")
 	put(root, m.box(0.08, 0.08, 4.0), Vector3(26, 1.0, -27), Color(0.85, 0.1, 0.1), "stone")
@@ -540,6 +549,7 @@ func _garten() -> void:
 	put(root, cyl(0.0, 1.4, 0.5, 12), terr + Vector3(0, 2.35, 0), Color(0.85, 0.2, 0.2), "tent")
 	m.obj["pir"] = terr
 	m.add_obstacle(terr, 1.2)
+	m.set_obstacle_height(1.0)
 	# garden shed with the bike
 	var sh := node(root, Vector3(10.0, 0, -15.0), deg_to_rad(-20.0))
 	put(sh, m.box(2.6, 2.2, 2.0), Vector3(0, 1.1, 0), Color(0.3, 0.42, 0.3), "caravan")
@@ -582,6 +592,7 @@ func _garten() -> void:
 			put(root, sph(0.12), Vector3(4.4 + i * 0.55, 0.3 + rng.randf() * 0.15, -5.5 - row * 2.0 + rng.randf_range(-0.3, 0.3)), fc[rng.randi() % fc.size()], "tree")
 	put(root, cyl(1.6, 1.6, 0.08, 24), Vector3(-6.0, 0.8, -6.0), Color(0.1, 0.1, 0.12), "stone")
 	m.add_obstacle(Vector3(-6.0, 0, -6.0), 1.7)
+	m.set_obstacle_height(0.9)
 	for row2 in range(2):
 		m.add_obstacle_box(Vector3(8.0, 0, -5.5 - row2 * 2.0), 8.0, 1.0, 0.0, true)
 	put(root, TorusMesh.new(), Vector3(-6.0, 0.8, -6.0), Color(0.2, 0.4, 0.8), "stone", Vector3.ZERO, Vector3(1.6, 0.6, 1.6))
@@ -675,6 +686,7 @@ func _ducks(c: Vector3) -> void:
 		for k in range(4):
 			put(root, cyl(0.01, 0.015, 0.9, 4), c + Vector3(cos(a) * 2.2 + k * 0.06, 0.45, sin(a) * 2.2), Color(0.35, 0.45, 0.2), "tree", Vector3(rng.randf_range(-0.15, 0.15), 0, rng.randf_range(-0.15, 0.15)))
 	m.add_obstacle(c, 2.5)
+	m.set_obstacle_height(0.1)
 	var ducks := []
 	for i in range(6):
 		var s := 1.0 if i == 0 else 0.6
@@ -710,6 +722,7 @@ func _gnome(p: Vector3) -> void:
 	"""a garden gnome hides behind a stone and peeks out every few seconds"""
 	put(root, sph(0.55, 0.7), p + Vector3(0, 0.2, 0), Color(0.48, 0.48, 0.46), "stone")
 	m.add_obstacle(p, 0.6)
+	m.set_obstacle_height(0.8)
 	var g := node(root, p + Vector3(0.2, 0, -0.5))
 	put(g, cyl(0.15, 0.2, 0.35, 10), Vector3(0, 0.2, 0), Color(0.2, 0.35, 0.7), 31.0)
 	put(g, sph(0.13), Vector3(0, 0.48, 0), Color(0.95, 0.75, 0.6), 34.0)
@@ -778,6 +791,7 @@ func _wild() -> void:
 	roof.size = Vector3(2.4, 0.5, 1.2)
 	put(fd, roof, Vector3(0, 1.85, 0), Color(0.3, 0.22, 0.14), "tree")
 	m.add_obstacle_box(f, 2.2, 0.7, 0.0)
+	m.set_obstacle_height(2.0)
 	for i in range(8):                                                     # hay on the ground
 		put(root, m.box(0.5, 0.06, 0.25), f + Vector3(rng.randf_range(-1.3, 1.3), 0.03, rng.randf_range(0.5, 1.6)), Color(0.85, 0.75, 0.35), "tree", Vector3(0, rng.randf() * PI, 0))
 	data["feeder"] = f
