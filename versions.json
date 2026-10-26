@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 01:30",
+ "generated": "2026-10-26 01:38",
  "versions": [
+  {
+   "version": "2.87.0",
+   "file": "webcam_bewegung_2_87_0.py",
+   "url": "",
+   "sha256": "63a19a6f983c5d4999a67635970e06166e88e6052931c44627840bbe2bb88e4f",
+   "date": "2026-10-26 01:38",
+   "notes": "Tools page redesigned, calmer: list of the tools on the left (with status), one tool at a time on the right; on a phone first the list, then the tool with a back button. Plain line icons, switches instead of check boxes, no empty boxes.",
+   "sig": "f281ea48a698dafacfe7bd366a94c3a9d7788ad478c93dc9d2c1f8e2e02d0e1ebb6f74c1a226892d60f66e97fd6878c2649290afcd3417f513106ccc3c0b1507"
+  },
   {
    "version": "2.86.0",
    "file": "webcam_bewegung_2_86_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 22:34",
    "notes": "header shows how many watch right now: every browser with the page or a guest link open, plus the window on the Pi screen (when it is not minimised); the tooltip splits web / Pi screen.",
    "sig": "ee9a418f5032d3f22909dda727b4439522a7bec67cd435cf287f3433916cce4b2da7ad8988274e6fa70a99ecfe07f53d06de5d49707bce0edb6dadfc64804007"
-  },
-  {
-   "version": "2.77.0",
-   "file": "webcam_bewegung_2_77_0.py",
-   "url": "",
-   "sha256": "6cadf6dff75341b7db93e5b3394aef221c8aa28f38d97f4657b0e9ad977c457e",
-   "date": "2026-10-25 22:13",
-   "notes": "simulator control on the web page for every simulator (CONTROL protocol 1: the simulator describes its scenarios, sliders, choices, switches and buttons itself - ready for a later 3D simulator on a PC); three example 360° video scenes (forest at night, car park at night with a thief, misty camping morning) made by the simulator itself; a running simulator now also restarts when Motion Watch has already put the new files in place.",
-   "sig": "88d92c1714cdc4faa3864d29df418564faac22c417d1968c29ad892ffe8695b67f8181e21caa23878239101408f4c38a879324175434d3a0b5f8b9b454282809"
   }
  ]
 }
