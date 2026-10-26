@@ -1,14 +1,14 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 09:08",
+ "generated": "2026-10-26 10:29",
  "versions": [
   {
-   "version": "2.90.0",
-   "file": "webcam_bewegung_2_90_0.py",
+   "version": "2.90.1",
+   "file": "webcam_bewegung_2_90_1.py",
    "url": "",
-   "sha256": "df0b9725c7fc4aa05e57156c5202a9fbf0fa5b1fe0cda68792f6c0e35869bf0a",
-   "date": "2026-10-26 09:08",
-   "notes": "3D simulator 3D-1.5 for download: six scenes to switch (camping place, forest, car park, garden with house, a funny place with a bench, carousel and ducks, wildlife watching with a high seat and a feeder) and a bloodless rifle for the wildlife watching (only animals: a hit animal hops, sees stars and runs away; aim also with the head camera)."
+   "sha256": "3ee3a3f497221383e5611a664bc41d514bf7863e9831b63e1dffa65e55d05d3a",
+   "date": "2026-10-26 10:29",
+   "notes": "3D simulator 3D-1.6: starts with the simple graphics (OpenGL), so a double click on the .exe works on PCs where the Vulkan graphics closed the window at once; the nicer Vulkan graphics with «Start mit Vulkan-Grafik (schoener).bat»."
   },
   {
    "version": "2.89.0",

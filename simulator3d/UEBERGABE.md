@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-1.5** · passende Motion-Watch-Version **2.90.0**
+Stand: 26.10.2026 · Simulator-Version **3D-1.6** · passende Motion-Watch-Version **2.90.1**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -21,6 +21,9 @@ Ein 3D-Simulator (Godot 4.3) auf einem Windows-PC. Er spielt für Motion Watch (
 - weisses Licht und Infrarot, Tag/Nacht, Wetter, Wind, Sensoren;
 - Besucher: Menschen, Tiere, Auto, Dieb;
 - ein Handy-/Tablet-Simulator (Taste P), der die echte Motion-Watch-Webseite über ein unsichtbares Edge/Chrome anzeigt.
+
+Seit 3D-1.6 startet der Simulator mit dem **Kompatibilitäts-Renderer (OpenGL)**: Auf Daniels PC schloss sich die .exe mit
+Forward+ (Vulkan) sofort wieder, mit OpenGL lief sie. Forward+ gibt es nur noch über «Start mit Vulkan-Grafik (schoener).bat».
 
 Seit 3D-1.5 gibt es **sechs Szenen** (Camping-Platz, Wald, Parkplatz, Garten/Haus, Lustiger Platz, Wildbeobachtung) und ein
 **unblutiges Gewehr** für die Wildbeobachtung (Taste G). Beides ist eine schnelle erste Fassung.
@@ -97,7 +100,7 @@ Szene (bräuchte eine Anpassung in Motion Watch), Wasser im Wald, mehr Witz im L
 
 - Die Windows-.exe auf echter Hardware (hier nur Linux mit llvmpipe über Xvfb).
 - Die Erkennung des Edge-Pfads unter Windows.
-- Nebel im Forward+-Renderer.
+- Nebel im Forward+-Renderer (Forward+ ist ab 3D-1.6 nur noch über die Vulkan-.bat erreichbar).
 - Die echte Netzsuche zwischen PC und Pi.
 - Ton (Schuss «Plopp», Treffer «Boing») – hier ohne Lautsprecher.
 - Die Bildrate der neuen Szenen auf dem alten i5 (Wald hat rund 300 Bäume).

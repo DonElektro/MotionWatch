@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-1.5 (6 Szenen, Wildbeobachtung)
+Motion Watch – 3D-Simulator 3D-1.6 (6 Szenen, Wildbeobachtung)
 =============================================================
 
 STARTEN
@@ -8,7 +8,9 @@ STARTEN
      auf "Weitere Informationen" und dann "Trotzdem ausführen" klicken (das Programm ist nicht signiert).
    - Die Windows-Firewall fragt nach dem Netzwerkzugriff: "Private Netzwerke" erlauben,
      sonst kann Motion Watch den Simulator nicht erreichen.
-3. Bleibt das Fenster schwarz oder stürzt es ab: "Start mit einfacher Grafik (OpenGL).bat" benutzen.
+3. Ab 3D-1.6 läuft der Simulator mit der einfachen Grafik (OpenGL), die auf fast jedem PC geht.
+   Wer es schöner möchte: "Start mit Vulkan-Grafik (schoener).bat" probieren. Bleibt das Fenster dann schwarz
+   oder schliesst es sich gleich wieder, kann der PC diese Grafik nicht: einfach wieder die .exe direkt starten.
 
 SENDEN EIN / AUS
 - Nach dem Start sendet der Simulator NICHTS: er meldet sich nicht im Netz und liefert keine Bilder.
