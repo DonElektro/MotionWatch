@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 00:23",
+ "generated": "2026-10-26 01:22",
  "versions": [
+  {
+   "version": "2.85.0",
+   "file": "webcam_bewegung_2_85_0.py",
+   "url": "",
+   "sha256": "7e1241fef0f0de2c2683612181ac592da4da9aa2a5948581efe0492639504f14",
+   "date": "2026-10-26 01:22",
+   "notes": "Second Wi-Fi adapter (USB stick): repeater (own Wi-Fi + internet from another network at the same time), change to another known network when the internet is gone, push message when it is back, devices in the own Wi-Fi without internet, Wi-Fi guard (alarm on jamming / deauthentication, needs a stick that can listen), adapter list with chip and abilities. Tools page tidied up: groups, every tool folds up and shows its last result. Fix: the Wi-Fi search of the settings works again.",
+   "sig": "2b4d0bc77cab9780c53ae0e2f7a53234f58dc1139146b45b0744b7d5efa181d85d9c986ad097fd4d78f39e6acfbc71052683e9e2f1535ff63ffe8c5a0472b809"
+  },
   {
    "version": "2.84.0",
    "file": "webcam_bewegung_2_84_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 21:45",
    "notes": "the camera can also follow animals and other movement when no person is in the picture (also animals the AI does not know): it must go in one direction for 2 s, swinging branches are let go, off in strong wind; once chosen the animal is followed by its look while the camera turns. Video scenarios of the simulator chosen, played, deleted and uploaded from the web page. Simulator: the camera tilt was upside down (fixed).",
    "sig": "d4390f7778d0a3943dbb5961afdc29c18b61f7ad5c2e2c011100ac56491bbd44508525f532de94e100259d406bc3eb91a389d14ebe397da0cebe88deafed2a01"
-  },
-  {
-   "version": "2.75.0",
-   "file": "webcam_bewegung_2_75_0.py",
-   "url": "",
-   "sha256": "dfdc2acadca400381e4c29764281f0692930b333be29e6eb1fcc0b5f9b01edf8",
-   "date": "2026-10-25 20:57",
-   "notes": "simulator video scenarios: a 360° video (or a normal video) instead of the drawn world - real pictures, the cameras look around in it with the servos, big videos are made smaller once, rough thermal picture (what moves is warm), optional sensor events per video second (.json next to the video).",
-   "sig": "054d6336800dfa1e8963d512dd3aa8901e1158e5c38975e42ca37b4ddc47259c2ab2a2c1932d6cc8c3d6d79313922e52cd3578b6502bb2880cd134434841c602"
   }
  ]
 }
