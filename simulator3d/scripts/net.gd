@@ -25,6 +25,16 @@ func start(p: int) -> void:
 	error_text = "" if listening else "Port %d is busy (another simulator running?)" % port
 
 
+func stop() -> void:
+	"""sending off: no more pictures, no more "here is a simulator" messages - Motion Watch does not see the simulator"""
+	for c in clients:
+		c["peer"].disconnect_from_host()
+	clients = []
+	server.stop()
+	listening = false
+	error_text = ""
+
+
 func _send_beacon() -> void:
 	"""every 2 s into the network: "here is a simulator" - Motion Watch finds it by itself (UDP port 8764)"""
 	var msg := JSON.stringify({"mwsim": 1, "name": "Motion Watch 3D-Simulator %s" % main.VERSION, "port": port, "version": main.VERSION}).to_utf8_buffer()

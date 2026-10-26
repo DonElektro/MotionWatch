@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator (Etappe 1: Camping)
+Motion Watch – 3D-Simulator 3D-1.4 (Etappe 1: Camping)
 ================================================
 
 STARTEN
@@ -10,7 +10,14 @@ STARTEN
      sonst kann Motion Watch den Simulator nicht erreichen.
 3. Bleibt das Fenster schwarz oder stürzt es ab: "Start mit einfacher Grafik (OpenGL).bat" benutzen.
 
-MIT MOTION WATCH VERBINDEN
+SENDEN EIN / AUS
+- Nach dem Start sendet der Simulator NICHTS: er meldet sich nicht im Netz und liefert keine Bilder.
+  So kannst du ihn zuerst in Ruhe ausprobieren.
+- Erst wenn du oben rechts den Schalter "An Motion Watch senden" einschaltest, findet Motion Watch den Simulator
+  und bekommt die Bilder. Ausschalten = sofort wieder still.
+- Soll er gleich beim Start senden: "Start und gleich senden.bat" benutzen (oder die Option --stream).
+
+MIT MOTION WATCH VERBINDEN (Schalter "An Motion Watch senden" muss eingeschaltet sein)
 - Ab Motion Watch 2.81.0 geht es von selbst: Der Simulator meldet sich alle 2 Sekunden im Netz (UDP-Port 8764),
   Motion Watch findet ihn und übernimmt seine Adresse. Dann nur noch in Motion Watch die Taste "Simulation" drücken.
   Gefundene Simulatoren stehen auch unter System & Netz -> Simulator ("Simulatoren im Netz", Knopf "Verwenden").
@@ -46,4 +53,5 @@ WAS ES KANN (Etappe 1)
 - Wärmebild: kalter Himmel, Boden warm am Tag und kühl in der Nacht, Menschen mit warmem Gesicht, Tiere, heisser Motor.
 
 PORT / START-OPTIONEN
-MotionWatch3D.exe -- --port 8766 --hour 22.5 --quality simple
+MotionWatch3D.exe -- --port 8766 --hour 22.5 --quality simple --stream
+  --stream: gleich beim Start an Motion Watch senden

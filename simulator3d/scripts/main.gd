@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-1.3"
+const VERSION := "3D-1.4"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -91,6 +91,10 @@ var th_preview: ImageTexture
 var controls: Array = []
 var ui_rows := {}
 var status_label: Label
+var stream_on := false                     # sending to Motion Watch: off at the start, the user switches it on in the window
+var stream_port := 8765
+var stream_cb: CheckButton
+var stream_note: Label
 var place_kind := "fox"
 var place_menu: OptionButton
 
@@ -127,12 +131,14 @@ func _ready() -> void:
 	visitors = Node3D.new()
 	add_child(visitors)
 	_build_view_camera()
+	stream_port = port
 	_register_controls()
 	_build_ui()
 	net = Net.new()
 	net.main = self
 	add_child(net)
-	net.start(port)
+	if "--stream" in args:                    # start sending at once (old behaviour)
+		set_stream(true)
 	_apply_quality()
 	_calibrate_thermal()
 	next_auto = now() + 20.0
@@ -142,6 +148,19 @@ func _ready() -> void:
 				phone.addr.text = args[i + 1]
 			get_tree().create_timer(2.0).timeout.connect(func(): phone.open())
 	DisplayServer.window_set_title("Motion Watch – 3D-Simulator %s (Port %d)" % [VERSION, port])
+
+
+func set_stream(on: bool) -> void:
+	if on:
+		net.start(stream_port)
+		stream_on = net.listening
+	else:
+		net.stop()
+		stream_on = false
+		mw_t = 0.0
+	if stream_cb != null:
+		stream_cb.set_pressed_no_signal(stream_on)
+	_update_status()
 
 
 func _make_lut(srgb: bool) -> void:
@@ -1051,7 +1070,7 @@ func control(d: Dictionary) -> Dictionary:
 
 func status_text() -> String:
 	var h := hour()
-	var mwc := "verbunden mit %s" % str(mw.get("device", "Motion Watch")) if now() - mw_t < 3.0 else "Motion Watch nicht verbunden"
+	var mwc := "verbunden mit %s" % str(mw.get("device", "Motion Watch")) if now() - mw_t < 3.0 else ("Motion Watch nicht verbunden" if stream_on else "Senden aus")
 	return "%02d:%02d · %s · %s · %.1f °C · Besucher %d · %s" % [int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), mwc]
 
 
@@ -1094,6 +1113,16 @@ func _build_ui() -> void:
 	title.text = "Motion Watch – 3D-Simulator"
 	title.add_theme_font_size_override("font_size", 18)
 	box_.add_child(title)
+	stream_cb = CheckButton.new()
+	stream_cb.text = "An Motion Watch senden (Port %d)" % stream_port
+	stream_cb.add_theme_font_size_override("font_size", 16)
+	stream_cb.button_pressed = stream_on
+	stream_cb.toggled.connect(func(on): set_stream(on))
+	box_.add_child(stream_cb)
+	stream_note = Label.new()
+	stream_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	stream_note.add_theme_font_size_override("font_size", 12)
+	box_.add_child(stream_note)
 	status_label = Label.new()
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status_label.add_theme_color_override("font_color", Color(0.7, 0.75, 0.8))
@@ -1246,7 +1275,17 @@ func _sync_ui() -> void:
 
 func _update_status() -> void:
 	if status_label != null:
-		status_label.text = status_text() + ("" if net.listening else "\n⚠ " + net.error_text)
+		status_label.text = status_text()
+	if stream_note != null:
+		if stream_on:
+			stream_note.text = "Sendet: Motion Watch findet den Simulator im Netz und bekommt die Bilder."
+			stream_note.add_theme_color_override("font_color", Color(0.35, 0.8, 0.45))
+		elif net != null and net.error_text != "":
+			stream_note.text = "⚠ " + net.error_text
+			stream_note.add_theme_color_override("font_color", Color(0.95, 0.6, 0.3))
+		else:
+			stream_note.text = "Senden aus – zum Ausprobieren. Motion Watch sieht den Simulator erst, wenn der Schalter eingeschaltet ist."
+			stream_note.add_theme_color_override("font_color", Color(0.6, 0.65, 0.7))
 	if Engine.get_process_frames() % 4 == 0:
 		_sync_ui()
 
