@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-1.10** · passende Motion-Watch-Version **2.90.5**
+Stand: 26.10.2026 · Simulator-Version **3D-1.11** · passende Motion-Watch-Version **2.90.6**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -34,6 +34,9 @@ github.com zu release-assets.githubusercontent.com); Godots HTTPRequest ist nur 
 Python-Download bei Daniel («Fehler 0» = keine Verbindung). Fehlertexte nennen jetzt den Grund (`RESULTS`).
 `--mw-test-python` lädt und entpackt das Windows-Python auch unter Linux (mit curl über den Proxy getestet: Download,
 SHA-256 und tar gehen). Die Webseiten-Prüfung fragt mit HEAD (die Startseite ist ~400 KB), Wartezeit bis 5 Minuten.
+Nur `sim_on` reicht nicht: Motion Watch suchte dann weiter eine USB-Kamera («NO CAMERA FOUND», schwarzes Handy-Bild). `_settings()`
+setzt darum wie der Schalter «Simulation» auch `source = sim:0`, `thermal_source = sim:thermal` und `sim:1` in `extra_cams`.
+Das Handy startet ab 3D-1.11 mit der normalen Startseite (Knopf «Vollbild» = nur Live-Bild).
 Unter Linux getestet bis «verbunden mit Motion Watch» und Webseite auf 127.0.0.1:5000; **unter Windows nicht getestet**
 (Python-Download, tar, pip, Motion Watch selbst unter Windows).
 

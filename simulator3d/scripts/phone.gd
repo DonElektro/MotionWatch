@@ -12,7 +12,7 @@ const UA_TABLET := "Mozilla/5.0 (Linux; Android 14; Tab) AppleWebKit/537.36 (KHT
 var main
 var device := "phone"
 var landscape := false
-var fullscreen := true
+var fullscreen := false               # normal start page; the button «Vollbild» shows only the live picture
 var pid := -1
 var ws := WebSocketPeer.new()
 var ws_url := ""

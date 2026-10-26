@@ -1,7 +1,7 @@
 {
- "version": "3D-1.10",
+ "version": "3D-1.11",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30224547,
- "sha256": "764408c164dda55eccde91640bed1b0723afdbf2991a99e750d735f815621991",
- "notes": "Behebt den Python-Download von «Motion Watch auf diesem PC» (lädt jetzt mit dem curl von Windows); genauere Fehlermeldungen."
+ "size": 30224679,
+ "sha256": "eb3dae052a1ec3cbfa7dd6d044c6d209015335821d64f523edf1b857e99d447d",
+ "notes": "Motion Watch auf diesem PC zeigt jetzt das Kamerabild des Simulators (vorher schwarz). Das Handy startet mit der normalen Startseite."
 }

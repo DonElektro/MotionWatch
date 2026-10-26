@@ -333,8 +333,9 @@ func _motion_watch() -> String:
 
 
 func _settings(py: String) -> void:
-	"""Motion Watch on this PC: simulation on, the simulator on this PC. Python writes it (keeps whole numbers whole)."""
-	var code := "import json,os,sys;p=sys.argv[1];d=json.load(open(p,encoding='utf-8')) if os.path.exists(p) else {};c=d.setdefault('cfg',{});c['sim_on']=True;c['sim_url']=sys.argv[2];c['sim_auto']=False;json.dump(d,open(p,'w',encoding='utf-8'),indent=1,ensure_ascii=False)"
+	"""Motion Watch on this PC: simulation on, the simulator on this PC, the cameras from the simulator (what the switch «Simulation»
+	of Motion Watch also sets). Python writes it (keeps whole numbers whole)."""
+	var code := "import json,os,sys;p=sys.argv[1];d=json.load(open(p,encoding='utf-8')) if os.path.exists(p) else {};c=d.setdefault('cfg',{});c['sim_on']=True;c['sim_url']=sys.argv[2];c['sim_auto']=False;c['source']='sim:0';c['thermal_source']='sim:thermal';c.setdefault('sim_prev_source','auto');x=[e for e in c.get('extra_cams',[]) if not str(e).startswith('sim:')];c['extra_cams']=x+['sim:1'];json.dump(d,open(p,'w',encoding='utf-8'),indent=1,ensure_ascii=False)"
 	var r: Array = await _run(py, ["-c", code, dir.path_join("config/motionwatch_settings.json"), "http://127.0.0.1:%d" % main.stream_port])
 	if int(r[0]) != 0:
 		print("motion watch on this PC: settings not written: " + str(r[1]))
