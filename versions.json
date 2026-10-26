@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 06:53",
+ "generated": "2026-10-26 07:54",
  "versions": [
+  {
+   "version": "2.89.0",
+   "file": "webcam_bewegung_2_89_0.py",
+   "url": "",
+   "sha256": "47b3d89528bc35b03463b9139a1dbde2672085c1a0c8da5d4b6e8918f3229cd4",
+   "date": "2026-10-26 07:54",
+   "notes": "Tools: «Full power for the tools» - Motion Watch rests for 10 to 120 minutes (camera, detection, AI, extra cameras; a recording is finished first), the web page and the tools keep running; it comes back by itself or with «Resume now».",
+   "sig": "85db0606fc0a8c02329d6165176d8d453de8e1b3eafec2e560efb87e820bb5c8a9467bbe20e4d724f893b0760253c327e9260b370ee9d368887322bb502f220a"
+  },
   {
    "version": "2.88.0",
    "file": "webcam_bewegung_2_88_0.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-25 23:11",
    "notes": "page /preview: the web page as on a phone or a tablet, upright or across, with or without full screen (button in the simulators and in the simulator section); the page may be shown in a frame of its own origin only (SAMEORIGIN).",
    "sig": "b310bd41e9b4dcebcd8792b6812172cf9e3477a598e566d49b0a0f78c8c2e6b6a89276925d6e3dfc9c56d807174fd063dae8144e1fac14df3f371f1f26f47002"
-  },
-  {
-   "version": "2.79.0",
-   "file": "webcam_bewegung_2_79_0.py",
-   "url": "",
-   "sha256": "3f7cf0361c3543fc51f4b92529f6d00ede9706ed28ba635f05fe9b6e89b97c33",
-   "date": "2026-10-25 23:03",
-   "notes": "the quick switches below the joystick can be chosen and arranged («Arrange» tile: tick, ▲ ▼, reset) - web page and window; the viewer count moved to the right in the header.",
-   "sig": "55857ec4cbc924924ce3c4014b18a7c64a88f2cfa084ea19d5a80fde7b3ad1e3052ace23557d1e04db1ee23bfa5808618d311dba7cca1e4c18c8fe7ed654d701"
   }
  ]
 }
