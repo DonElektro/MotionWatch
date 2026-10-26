@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-1.8"
+const VERSION := "3D-1.9"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -18,6 +18,10 @@ var Net = preload("res://scripts/net.gd")
 var Phone = preload("res://scripts/phone.gd")
 var Scenes = preload("res://scripts/scenes.gd")
 var Updater = preload("res://scripts/update.gd")
+var Mwpc = preload("res://scripts/mwpc.gd")
+var mwpc                              # Motion Watch on this PC (mwpc.gd)
+var mwpc_btn: Button
+var mwpc_label: Label
 var scenes
 var scene := "camping"
 var scene_parent: Node3D
@@ -164,7 +168,12 @@ func _ready() -> void:
 	_build_view_camera()
 	stream_port = port
 	_register_controls()
+	mwpc = Mwpc.new()
+	mwpc.main = self
+	add_child(mwpc)
 	_build_ui()
+	mwpc.changed.connect(_on_mwpc)
+	_on_mwpc()
 	net = Net.new()
 	net.main = self
 	add_child(net)
@@ -1217,6 +1226,13 @@ func _build_ui() -> void:
 	pv.text = "Handy- / Tablet-Simulator (P)"
 	pv.pressed.connect(_toggle_phone)
 	box_.add_child(pv)
+	mwpc_btn = Button.new()
+	mwpc_btn.pressed.connect(func(): mwpc.toggle())
+	box_.add_child(mwpc_btn)
+	mwpc_label = Label.new()
+	mwpc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	mwpc_label.add_theme_font_size_override("font_size", 12)
+	box_.add_child(mwpc_label)
 	var groups := {}
 	for c in controls:
 		if not groups.has(c.group):
@@ -1240,6 +1256,16 @@ func _build_ui() -> void:
 	info_label.text = "Maus rechts gedrückt halten: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienung aus/ein · P: Handy / Tablet · G: Gewehr ein/aus (Linksklick = Schuss)"
 	box_.add_child(info_label)
 	_sync_ui()
+
+
+func _on_mwpc() -> void:
+	"""Motion Watch on this PC changed: button, text, and the phone shows its page as soon as it runs"""
+	var st: String = mwpc.state
+	mwpc_btn.text = "Motion Watch auf diesem PC stoppen" if st == "running" else ("Motion Watch auf diesem PC wird vorbereitet …" if st == "busy" else "Motion Watch auf diesem PC starten (ohne Pi)")
+	mwpc_btn.disabled = st == "busy"
+	mwpc_label.text = mwpc.text if st != "off" else "Für das Handy ohne Pi: Motion Watch läuft dann unsichtbar auf diesem PC. Beim ersten Mal werden Python und Motion Watch geladen (rund 100 MB, einige Minuten)."
+	mwpc_label.add_theme_color_override("font_color", Color(0.35, 0.8, 0.45) if st == "running" else (Color(0.95, 0.6, 0.3) if st == "error" else Color(0.6, 0.65, 0.7)))
+	phone.on_mwpc(st, mwpc.url(), mwpc.text)
 
 
 func _toggle_phone() -> void:

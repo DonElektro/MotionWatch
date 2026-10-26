@@ -25,6 +25,8 @@ var frame: PanelContainer
 var msg: Label
 var addr: LineEdit
 var btns := {}
+var local_btn: Button
+var local_url := ""
 var touching := false
 var last_move := 0
 var started := false
@@ -67,6 +69,10 @@ func _ready() -> void:
 	msg.add_theme_color_override("font_color", Color(0.65, 0.7, 0.75))
 	msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(msg)
+	local_btn = Button.new()
+	local_btn.text = "Ohne Pi: Motion Watch auf diesem PC starten"
+	local_btn.pressed.connect(func(): main.mwpc.start())
+	v.add_child(local_btn)
 	frame = PanelContainer.new()
 	var fs := StyleBoxFlat.new()
 	fs.bg_color = Color(0, 0, 0)
@@ -99,8 +105,10 @@ func _ready() -> void:
 
 func open() -> void:
 	visible = true
-	if addr.text == "" and main.mw_addr != "":
+	if addr.text == "" and main.mw_addr != "" and not main.mw_addr.begins_with("127."):
 		addr.text = "%s://%s:%d" % [str(main.mw.get("mw_scheme", "http")), main.mw_addr, int(main.mw.get("mw_port", 5000))]
+	elif addr.text == "" and local_url != "":
+		addr.text = local_url
 	_layout()
 	if not started:
 		_start_browser()
@@ -302,12 +310,28 @@ func _apply_device() -> void:
 func _navigate() -> void:
 	var a := addr.text.strip_edges().rstrip("/")
 	if a == "":
-		msg.text = "Motion Watch ist noch nicht verbunden: Simulation in Motion Watch einschalten oder die Adresse eintragen."
+		msg.text = "Motion Watch ist noch nicht verbunden: Simulation in Motion Watch einschalten, die Adresse eintragen – oder ohne Pi: Motion Watch auf diesem PC starten."
 		return
 	if not a.begins_with("http"):
 		a = "http://" + a
 	msg.text = "lädt " + a + " …"
 	_send("Page.navigate", {"url": a + "/?preview=1" + ("&vo=1" if fullscreen else "")})
+
+
+func on_mwpc(st: String, u: String, info: String) -> void:
+	"""Motion Watch on this PC (main.mwpc): show its page as soon as it runs"""
+	local_btn.visible = st == "off" or st == "error"
+	local_btn.disabled = false
+	if st == "busy" or st == "error":
+		msg.text = info
+	if st == "running" and local_url == "":
+		local_url = u
+		if addr.text == "" or addr.text.begins_with("http://127.0.0.1"):
+			addr.text = u
+			if visible and connected:
+				_navigate()
+	elif st != "running":
+		local_url = ""
 
 
 # ---- the window part --------------------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 {
- "version": "3D-1.8",
+ "version": "3D-1.9",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30210802,
- "sha256": "e900204e0ff2f487bbfb02e88167e4745107241b1d13088c8e3d5981a9a35001",
- "notes": "Neu: In einer virtuellen Maschine (VMware, VirtualBox) schaltet der Simulator selbst auf ANGLE-Grafik um, damit die Welt sichtbar wird."
+ "size": 30222357,
+ "sha256": "9fa5f3f9bb715bb96adcb94621f16556d673e7de496aa5cad6d772534a6df22f",
+ "notes": "Neu: «Motion Watch auf diesem PC» - das Handy funktioniert jetzt ganz ohne Pi. Beim ersten Mal werden Python und Motion Watch geladen (rund 100 MB)."
 }

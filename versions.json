@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-26 11:24",
+ "generated": "2026-10-26 12:46",
  "versions": [
   {
-   "version": "2.90.3",
-   "file": "webcam_bewegung_2_90_3.py",
+   "version": "2.90.4",
+   "file": "webcam_bewegung_2_90_4.py",
    "url": "",
-   "sha256": "2ff85ffe0b971b60c2b7163819aa7f9363cbe53ede383753fb2d2461fb405ba0",
-   "date": "2026-10-26 11:24",
-   "notes": "3D simulator 3D-1.8: in a virtual machine (VMware, VirtualBox) it starts again with the ANGLE graphics by itself - the OpenGL driver there showed only the sky.",
-   "sig": "236ef80c773ccc8b5e9ab0faac30af0336525f2906bf823a8e585dbcaa4c7493a479ad4c1c680c924fee1e2ec60e76c203cf7e16758259a4f54263cec50e2308"
+   "sha256": "e3a075cc4e761b25b5cb06a29a6190aba6b6bf00cc53da601845946bca1f7af1",
+   "date": "2026-10-26 12:45",
+   "notes": "3D simulator 3D-1.9: «Motion Watch auf diesem PC» - the simulator runs Motion Watch itself on the Windows PC (Python and Motion Watch are fetched once), so the phone / tablet simulator works without a Raspberry Pi.",
+   "sig": "5b892fb34e56a1415a5e0541c1eb9f54a989d963d0426bba3ad19d4f40e67ed65338f8fb23e2fb65a7cea2709b25ce4ac96ed50fb913c859c2559ccc70dd9800"
   },
   {
    "version": "2.89.0",

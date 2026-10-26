@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-1.8 (6 Szenen, Wildbeobachtung)
+Motion Watch – 3D-Simulator 3D-1.9 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -43,6 +43,20 @@ MIT MOTION WATCH VERBINDEN (Schalter "An Motion Watch senden" muss eingeschaltet
 - Die Taste "Simulation" drücken. Oben im Simulator steht dann "verbunden mit ...".
 - Die Steuerung des Simulators erscheint auch auf der Motion-Watch-Webseite unter
   System & Netz -> Simulator -> Simulator-Steuerung.
+
+MOTION WATCH AUF DIESEM PC (ab 3D-1.9) - ganz ohne Raspberry Pi
+- Knopf "Motion Watch auf diesem PC starten (ohne Pi)" rechts unter dem Handy-Knopf (oder im Handy-Fenster).
+  Motion Watch läuft dann unsichtbar auf dem PC, bekommt Kameras, Wärmebild und Sensoren vom Simulator,
+  und das Handy / Tablet (Taste P) zeigt seine Webseite. So lässt sich alles ohne Pi ausprobieren.
+- Beim ersten Mal lädt der Simulator selbst: Python für Windows (rund 38 MB), die Pakete für Motion Watch
+  (rund 60 MB, ein paar Minuten) und die neuste Motion-Watch-Version von GitHub. Danach geht der Start schnell;
+  eine neue Motion-Watch-Version wird beim Start von selbst geholt.
+- Fragt die Windows-Firewall nach "Python": "Private Netzwerke" erlauben genügt.
+- Der Schalter "An Motion Watch senden" wird dabei von selbst eingeschaltet. Beim Schliessen des Simulators
+  wird Motion Watch auf dem PC auch beendet.
+- Alles liegt im Ordner %APPDATA%\Godot\app_userdata\Motion Watch 3D Simulator\motionwatch_pc
+  (Einstellungen und Protokoll in "config"). Den Ordner löschen = alles neu holen.
+- Die Hardware-Teile (Servos, Licht, Ton, WLAN des Pi) gibt es auf dem PC nicht; dafür ist der Simulator da.
 
 BEDIENUNG IM FENSTER
 - Rechte Maustaste gedrückt halten: umschauen.  W A S D: fliegen,  Q / E: tiefer / höher,  Shift: schneller,

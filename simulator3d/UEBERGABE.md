@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-1.8** · passende Motion-Watch-Version **2.90.3**
+Stand: 26.10.2026 · Simulator-Version **3D-1.9** · passende Motion-Watch-Version **2.90.4**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -21,6 +21,16 @@ Ein 3D-Simulator (Godot 4.3) auf einem Windows-PC. Er spielt für Motion Watch (
 - weisses Licht und Infrarot, Tag/Nacht, Wetter, Wind, Sensoren;
 - Besucher: Menschen, Tiere, Auto, Dieb;
 - ein Handy-/Tablet-Simulator (Taste P), der die echte Motion-Watch-Webseite über ein unsichtbares Edge/Chrome anzeigt.
+
+Seit 3D-1.9 gibt es **«Motion Watch auf diesem PC»** (`scripts/mwpc.gd`): Damit das Handy ohne Pi etwas zeigt, läuft das echte
+Motion Watch unsichtbar neben dem Simulator. Beim ersten Mal: Python 3.12.7 für Windows aus python-build-standalone (GitHub,
+`PY_URL`/`PY_SHA`), ausgepackt mit `tar.exe` von Windows; `pip install` von `PKGS` (PyPI); dann jeweils die neuste Datei aus
+`versions.json` (geprüft mit deren SHA-256, **nicht** mit der Signatur). Start: `python.exe <datei> --headless --config <…>/config
+--port 5000 --bind 127.0.0.1`; die Einstellungen `sim_on`, `sim_url`, `sim_auto=False` schreibt Python selbst (Godots JSON
+macht aus ganzen Zahlen Kommazahlen). Alles unter `user://motionwatch_pc`. Unter Linux nimmt es das System-Python
+(`--mw-python`), `--mw-base http://…/` ersetzt GitHub (Test: `python3 -m http.server` im Repository).
+Unter Linux getestet bis «verbunden mit Motion Watch» und Webseite auf 127.0.0.1:5000; **unter Windows nicht getestet**
+(Python-Download, tar, pip, Motion Watch selbst unter Windows).
 
 **Daniel testet in einer VMware-Maschine** (Log: «VMware, Inc. – SVGA3D», Mesa 24.1). Deren OpenGL lehnt die Godot-Shader ab
 («declarations for uniform `world_transform` have mismatching invariant qualifiers»), sichtbar ist nur der Himmel; Vulkan geht
