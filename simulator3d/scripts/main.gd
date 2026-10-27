@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.2"
+const VERSION := "3D-3.3"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -460,7 +460,9 @@ func _build_environment() -> void:
 	sky_mat = ProceduralSkyMaterial.new()
 	sky.sky_material = sky_mat
 	env.sky = sky
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR   # from 3D-3.3: the light of the sky as a colour - the
+	env.ambient_light_sky_contribution = 0.0                         # Compatibility renderer of Godot gave almost no light
+																	 # from the sky, so shadows were black (_update_sky)
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.fog_enabled = true
 	env.fog_density = 0.0008
@@ -473,6 +475,8 @@ func _build_environment() -> void:
 	sun = DirectionalLight3D.new()
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 80.0
+	sun.shadow_blur = 1.6                       # softer shadow edges (3D-3.3)
+	sun.shadow_normal_bias = 1.4
 	add_child(sun)
 	moonlight = DirectionalLight3D.new()
 	moonlight.light_color = Color(0.6, 0.7, 1.0)
@@ -931,7 +935,9 @@ func _update_sky() -> void:
 	sky_mat.ground_horizon_color = sky_mat.sky_horizon_color
 	sky_mat.ground_bottom_color = Color(0.1, 0.12, 0.08) * k
 	sky_mat.sky_energy_multiplier = 0.06 + 0.94 * day
-	env.ambient_light_energy = 0.025 + 0.95 * day
+	# light from the whole sky: bluish in the sun (shadows are never black, as outside), grey when cloudy, dark at night
+	env.ambient_light_color = Color(0.6, 0.68, 0.85).lerp(Color(0.72, 0.72, 0.74), cl).lerp(Color(0.9, 0.7, 0.6), dusk * 0.5)
+	env.ambient_light_energy = 0.03 + (0.55 + 0.25 * cl) * day
 	var dens: float = {"clear": 0.0007, "cloudy": 0.0012, "rain": 0.006, "fog": 0.045, "snow": 0.012}.get(weather, 0.0008)
 	env.fog_density = dens
 	env.fog_light_color = Color(0.72, 0.74, 0.78) * (0.05 + 0.95 * day)
@@ -1700,6 +1706,14 @@ func control(d: Dictionary) -> Dictionary:
 		if p2 == null:
 			return {"ok": false, "error": "no such player"}
 		p2["actor"].position = free_spot(Vector3(float(d.get("x", 0.0)), 0, float(d.get("z", 0.0))), 0.4, true)
+		return {"ok": true}
+	elif a == "view":                                  # for tests: the free view from a point to a point, panel away
+		var vp_: Array = d.get("pos", [0, 3, 6])
+		var la_: Array = d.get("look", [0, 1, 0])
+		view_mode = 0
+		view_cam.position = Vector3(float(vp_[0]), float(vp_[1]), float(vp_[2]))
+		view_cam.look_at(Vector3(float(la_[0]), float(la_[1]), float(la_[2])))
+		show_panel(bool(d.get("panel", false)))
 		return {"ok": true}
 	elif a == "window":                                # for tests: minimized? (2 = minimized) and how many frames were drawn
 		return {"ok": true, "mode": DisplayServer.window_get_mode(), "frames": Engine.get_frames_drawn(), "autostart": autostart_on}

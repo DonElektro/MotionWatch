@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 02:41",
+ "generated": "2026-10-27 02:58",
  "versions": [
   {
-   "version": "2.93.9",
-   "file": "webcam_bewegung_2_93_9.py",
+   "version": "2.93.10",
+   "file": "webcam_bewegung_2_93_10.py",
    "url": "",
-   "sha256": "5eab6cdc26320d359525bd8bfa7a5b792effd9e745ac4d5216b8b3cb8db135bd",
-   "date": "2026-10-27 02:41",
-   "notes": "Download of the 3D simulator 3D-3.2: game goal capture the flag with two teams.",
-   "sig": "ccaffacd5292d61be89934ac06c500469841fa7b05efc9242e8df5c4778b795d6650783b7ef8a04a256515881473032b92a8ced4f246852f3dd6a99da94ed302"
+   "sha256": "3d6300b53adf9c51d7e8704a529f91a20d474df86b39a2cbef0a5e6fafdc7f0c",
+   "date": "2026-10-27 02:58",
+   "notes": "3D simulator 3D-3.3: shadows are no longer black on some graphics cards (sky light as ambient colour), softer shadow edges.",
+   "sig": "14f82bc09da074876798b9cb734d2ff3acf38b6d271d99f3769047ef9ff7dba61be6777bb53ec07ffbf67f42af07731f403e19e22d87911f0681c44236cced03"
   },
   {
    "version": "2.92.4",

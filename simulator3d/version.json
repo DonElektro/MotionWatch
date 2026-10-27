@@ -1,7 +1,7 @@
 {
- "version": "3D-3.2",
+ "version": "3D-3.3",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30412777,
- "sha256": "0e3cb9dad7f6f88dfd9d5124bf7c68c804f62200f0e56330b821c139cbdace5e",
- "notes": "Spiel: Fahne erobern mit zwei Teams (Fahne der anderen holen und heimbringen, Träger abklatschen), der Weg führt durchs Bild der Kameras."
+ "size": 30413330,
+ "sha256": "a9e01dfdf9a2d6ac503416d7392869bd488dede976e7f4c99327eb16acdd0726",
+ "notes": "Schatten nicht mehr schwarz: Licht vom Himmel wird jetzt auf jedem PC gerechnet, weichere Schattenkanten."
 }
