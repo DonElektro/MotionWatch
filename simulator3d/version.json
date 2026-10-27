@@ -1,7 +1,7 @@
 {
- "version": "3D-3.40",
+ "version": "3D-3.41",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30789881,
- "sha256": "2c13bbc795579f29eeb29674449b3b020a5314bd747e5352e229f75f8f0eb9c8",
- "notes": "Abläufe: Einbruchsversuch, Grillabend, Heimkommen, Paket, Fuchs am Abfall, Wildschweine, Kinder, Traktor mäht; Stimmungen; Nacht im Zeitraffer; Kalender"
+ "size": 30810099,
+ "sha256": "6759128042de721ff2e4d7e2e7f3d3271bf8827a8a752c4b26792328b85615af",
+ "notes": "Der Spiel-Assistent läuft im Simulator; Motion Watch bedient ihn aus der Ferne"
 }

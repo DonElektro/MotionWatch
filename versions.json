@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 19:18",
+ "generated": "2026-10-27 19:26",
  "versions": [
   {
-   "version": "2.95.47",
-   "file": "webcam_bewegung_2_95_47.py",
+   "version": "2.95.48",
+   "file": "webcam_bewegung_2_95_48.py",
    "url": "",
-   "sha256": "f1665cb875fc9ce1e45293eebf42985c883ebbb49c6e9bdb93c2fe66dd34c2d5",
-   "date": "2026-10-27 19:18",
-   "notes": "modes: one switch for the whole device (tab Live → Camping / protection, also in the window): camping guard, campfire games (game corner, the guard watches on sparingly, back to the camping guard at a set time or with a low battery), gamer (only with mains power: power mode, all games, guard if wanted; falls back to campfire games on battery), home, wildlife watching, night guard, transport. «Own settings» restores what was set before.",
-   "sig": "d4bdec68a6ef5394c8c651f133d84e455c7a13f769f9432ae8967e3bc130eefd847f6a7c148d33b86a6082262405989af2c0ed821afff2db85d9a8b2c5d9bb0b"
+   "sha256": "fb555345898221f6bb537ca2c1bdb4be6d4a0323e037a09126941132a9fc886c",
+   "date": "2026-10-27 19:26",
+   "notes": "the game wizard of the 3D simulator now runs in the simulator itself (3D-3.41); the tab Simulator shows the same steps and works it from afar (both stay the same).",
+   "sig": "602033842d0b7f0ec701d29a2131307b46c0c3b19b0d9a5e68a6a7b56556d8b8e0f9963726e753d5f06b0c55b8331aa47af732599f9ed85f862cd9c4d9f13105"
   },
   {
    "version": "2.94.5",

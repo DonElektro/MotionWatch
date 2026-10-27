@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.40"
+const VERSION := "3D-3.41"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -33,6 +33,7 @@ var Geo = preload("res://scripts/geo.gd")
 var Karte = preload("res://scripts/karte.gd")
 var geo                               # geo.gd: a real place in Switzerland (scene «ort», from 3D-3.4)
 var karte                             # karte.gd: the map to choose the place
+var gamewiz                           # gamewiz.gd: the game wizard (3D-3.41), also worked from Motion Watch
 var ort_lat := 0.0                    # the chosen place (kept)
 var ort_lon := 0.0
 var ort_name := ""
@@ -2171,7 +2172,7 @@ const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort
 		"lamp_share": ["Besuch", "Verhalten"], "look_at_light": ["Besuch", "Verhalten"], "flee_light": ["Besuch", "Verhalten"],
 		"flee_sound": ["Besuch", "Verhalten"], "avoid_on": ["Besuch", "Verhalten"], "lens_vignette": ["Kamerabild", "Feineinstellungen"],
 		"sound_on": ["Kamerabild", "Feineinstellungen"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", "Runde"],
-		"game_stop": ["Spiel", "Runde"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
+		"game_stop": ["Spiel", "Runde"], "game_wizard": ["Spiel", "Runde"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
 		"game_level": ["Spiel", "Regeln"], "game_lives": ["Spiel", "Regeln"], "game_items": ["Spiel", "Regeln"], "game_teams": ["Spiel", "Regeln"],
 		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_powers": ["Spiel", "Regeln"], "game_spectate": ["Spiel", "Anzeige"], "game_photos": ["Spiel", "Extras"], "game_hides": ["Spiel", "Extras"], "game_decoy": ["Spiel", "Extras"],
 		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
@@ -2333,6 +2334,7 @@ func _register_controls() -> void:
 	add_control("toggle", "rec_loop", "Immer wieder abspielen", func(): return recorder.loop, func(v): recorder.loop = v, "Testlauf")
 	add_control("button", "rec_stopplay", "Wiedergabe beenden", null, func(): recorder.stop_play(), "Testlauf")
 	add_control("button", "testrun_open", "Letzten Bericht öffnen", null, func(): testrun.open_report(), "Testlauf")
+	add_control("button", "game_wizard", "🎮 Spiel-Assistent: Schritt für Schritt einrichten und starten", null, func(): gamewiz.open_wiz(), "Spiel")
 	add_control("toggle", "game_open", "Spiel öffnen (Handys können mitspielen)", func(): return game.open, func(v): game.set_open(v), "Spiel")
 	add_control("button", "game_start", "Runde starten", null, func(): game.start_round(), "Spiel")
 	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
@@ -2667,6 +2669,8 @@ func control(d: Dictionary) -> Dictionary:
 			sv.route = [[Vector3(float(t[0]), 0, float(t[1])), float(d["wait"]), 0.0, Vector3(0, 0, 0)], Vector3(float(t[0]) + 40.0, 0, float(t[1]))]
 			sv.next_idle = now() + 999.0
 		return {"ok": true}
+	elif a == "gamewiz":                               # the game wizard, worked from the page of Motion Watch (3D-3.41)
+		return gamewiz.op(d)
 	elif a == "set" or a == "press":
 		var c = null
 		for x in controls:
@@ -2735,6 +2739,10 @@ func _build_ui() -> void:
 	karte.theme = th
 	karte.visible = false
 	layer.add_child(karte)
+	gamewiz = preload("res://scripts/gamewiz.gd").new()     # the game wizard (3D-3.41)
+	gamewiz.main = self
+	gamewiz.theme = th
+	layer.add_child(gamewiz)
 	var panel := PanelContainer.new()
 	panel.theme = th
 	panel.anchor_left = 1.0
@@ -5128,3 +5136,24 @@ func sph_mesh(r: float, h: float) -> SphereMesh:
 	m.radial_segments = 10
 	m.rings = 6
 	return m
+
+
+func control_set(id: String, v) -> Dictionary:
+	"""one setting by its id (the game wizard; like the CONTROL action «set»)"""
+	for c in controls:
+		if c.id == id and c["set"] != null:
+			match c.type:
+				"slider":
+					v = clamp(float(v), float(c.extra.get("min", -1e9)), float(c.extra.get("max", 1e9)))
+				"toggle":
+					v = bool(v)
+				"button":
+					c["set"].call()
+					return {"ok": true}
+				_:
+					v = str(v)
+			c["set"].call(v)
+			_settings_dirty = true
+			_sync_ui()
+			return {"ok": true}
+	return {"ok": false}

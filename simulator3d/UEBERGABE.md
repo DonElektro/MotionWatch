@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 27.10.2026 · Simulator-Version **3D-3.40** · passende Motion-Watch-Version **2.95.45**
+Stand: 27.10.2026 · Simulator-Version **3D-3.41** · passende Motion-Watch-Version **2.95.48**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -72,6 +72,11 @@ Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
 **3D-3.16 bis 3D-3.36** wurden in einem anderen Chat gemacht (siehe Git-Geschichte und «Lies mich.txt», Abschnitte «NEU IN …»).
+
+**3D-3.41 – Spiel-Assistent im Simulator:** `gamewiz.gd` (Fenster-Teil + Modell `model()` / `op()`); CONTROL-Aktion
+`{"action":"gamewiz","op":"get|open|close|pick|set|extras|next|back|last", "key", "value"}`. `main.control_set(id, value)` setzt eine
+Einstellung wie «set». Motion Watch (2.95.48) rendert das Modell im Reiter Simulator (`gwOp`, `gwPaint`, Abfrage alle 1.5 s).
+«Wie letztes Mal»: `user://gamewiz_last.json`. Im Fenster ohne Emoji (`plain()`), Motion Watch zeigt sie.
 
 **3D-3.40 – Abläufe und Stimmungen:** `events.gd` (in main als `stories`): burglar, bbq, homecoming(parcel), fox_trash, boar_group,
 kids_tag, mowing, night_lapse; Helfer `_later` (Zeitgeber, nur gleiche Szene) und `_watch` (wartet auf eine Bedingung über `main.anims`).

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_47.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_48.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.48: the game wizard of the 3D simulator now runs in the simulator itself (3D-3.41); the tab Simulator shows the same
+    steps and works it from afar (both stay the same).
   * 2.95.47: modes: one switch for the whole device (tab Live → Camping / protection, also in the window): camping guard,
     campfire games (game corner, the guard watches on sparingly, back to the camping guard at a set time or with a low battery),
     gamer (only with mains power: power mode, all games, guard if wanted; falls back to campfire games on battery), home,
@@ -675,10 +677,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_47.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_48.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_47.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_47.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_48.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_48.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -695,7 +697,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.47"
+APP_VERSION = "2.95.48"
 
 
 def default_data_dir():
@@ -13657,8 +13659,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.40", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30789881,
-         "sha256": "2c13bbc795579f29eeb29674449b3b020a5314bd747e5352e229f75f8f0eb9c8"}
+SIM3D = {"version": "3D-3.41", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30810099,
+         "sha256": "6759128042de721ff2e4d7e2e7f3d3271bf8827a8a752c4b26792328b85615af"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -17415,7 +17417,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_47.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_48.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -22963,8 +22965,6 @@ function updPaint(r) {
 let GQR = "";
 function gamePaint(r) {
   if (r && r.ok) GWR = r;
-  if (!$("#gw").hidden && GWS === 3) { const n = $("#gw-next"); if (n && !n.disabled) n.textContent = GWR.game && GWR.game.open ? "▶ " + t("Start the round") : "✓ " + t("Open the game & show the QR code");
-    const q = $("#gw-qr"); if (q && !!q.firstChild !== !!(GWR.game && GWR.game.open)) gwQr(); else if (q && q.querySelector(".mut:last-child") && GWR.game) q.querySelector(".mut:last-child").textContent = t("players") + ": " + (GWR.game.players || 0) + " / 4"; }
   const G = r && r.ok ? r.game : null, c = $("#c-game");
   c.hidden = !G || !(S && S.on); if (c.hidden) return;
   $("#g-open").hidden = !!G.open; $("#g-close").hidden = !G.open; $("#g-big").hidden = !G.open; $("#g-qrbox").hidden = !G.open;
@@ -22975,125 +22975,81 @@ function gamePaint(r) {
   if (G.open && GQR !== G.url) { GQR = G.url; const u = "/sim/game_qr.png?r=" + Date.now(); $("#g-qr").src = u; $("#g-qrbig").src = u; $("#g-urlbig").textContent = G.url; }
   if (!G.open) { GQR = ""; gameBig(false); }
 }
-// ---- game wizard (2.95.12): type -> goal -> difficulty -> start; remembers the last game ----
-const GW_MODES = [["camera", "🎥", "Everybody against the camera", "gw-camera"], ["guard", "👮", "One player is the guard", "gw-guard"],
-  ["teamguard", "🔴🔵", "Team against team", "gw-teamguard"], ["mw", "🛡", "Motion Watch decides", "gw-mw"],
-  ["mwhand", "🕹", "Team against Motion Watch", "gw-mwhand"]];
-const gwModes = () => { const c = ((GWR && GWR.controls) || []).find(x => x.id === "game_mode"); const have = new Set(((c && c.options) || []).map(o => o[0]));
-  return GW_MODES.filter(m => !have.size || have.has(m[0])); };     // only what the simulator knows (mwhand: 3D-3.27)
-const GW_GOALS = [["reach", "🟢", "Sneak to the goal", "gw-reach"], ["return", "💰", "Fetch the loot and bring it back", "gw-return"], ["flag", "🚩", "Capture the flag (two teams)", "gw-flag"]];
-const GW_LEVELS = {easy: {game_level: "easy", game_lives: "0", game_minutes: 8, game_cones: true}, normal: {game_level: "normal", game_lives: "3", game_minutes: 5, game_cones: false},
-  hard: {game_level: "hard", game_lives: "1", game_minutes: 4, game_cones: false}};
-const GW_KEYS = ["game_mode", "game_goal", "game_level", "game_lives", "game_minutes", "game_items", "game_teams", "game_rescue", "game_stones", "game_cones", "game_powers", "game_spectate",
-  "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_autohandicap", "game_tasks", "game_mwguard"];
-let GW = null, GWS = 0, GWR = null;
-function gwCur() { const o = {}; ((GWR && GWR.controls) || []).forEach(c => { if (GW_KEYS.includes(c.id)) o[c.id] = c.value; }); return o; }
-function gwOpen() {
-  let last = null; try { last = JSON.parse(localStorage.getItem("mw-game-last") || "null"); } catch (e) {}
-  GW = Object.assign({game_mode: "camera", game_goal: "reach", game_level: "normal", game_lives: "3", game_minutes: 5, game_items: 3, game_teams: false,
-    game_rescue: false, game_stones: true, game_cones: false, game_powers: true, _lvl: "normal"}, gwCur(), last || {});
-  if (!((GWR && GWR.controls) || []).some(c => c.id === "game_powers")) delete GW.game_powers;     // simulator older than 3D-3.21
-  if (!((GWR && GWR.controls) || []).some(c => c.id === "game_spectate")) delete GW.game_spectate; else if (GW.game_spectate === undefined) GW.game_spectate = true;
-  const hv = new Set(((GWR && GWR.controls) || []).map(c => c.id));
-  [["game_photos", true], ["game_hides", 3], ["game_decoy", true], ["game_night", false], ["game_events", true], ["game_checkpoints", 0], ["game_autohandicap", false], ["game_tasks", true]].forEach(([k, d]) => {
-    if (!hv.has(k)) delete GW[k]; else if (GW[k] === undefined) GW[k] = d; });          // simulator 3D-3.25 or newer
-  GWS = 0; $("#gw").hidden = false; gwPaint();
+Object.assign(I18N.de, {"the game wizard runs in the 3D simulator from 3D-3.41 - please update the simulator": "der Spiel-Assistent läuft ab 3D-3.41 im 3D-Simulator – bitte den Simulator aktualisieren"});
+// ---- game wizard: from 2.95.48 it lives in the 3D simulator (3D-3.41) - this page shows its steps and works them from afar ----
+let GW = null, GWS = 0, GWR = null, GWM = null, gwT = null;
+async function gwOp(o) {
+  let r = null;
+  try { r = await post("/api/sim", Object.assign({action: "gamewiz", lang: LANG}, o)); } catch (e) { r = null; }
+  if (!r || r.ok === false) {
+    const B = $("#gw-body"); B.innerHTML = "";
+    B.append(el("h3", "", t("Game wizard")), el("div", "gw-err", "⚠ " + ((r && r.error) || t("simulator not reachable")) + " – " + t("the game wizard runs in the 3D simulator from 3D-3.41 - please update the simulator")));
+    $("#gw-next").hidden = true; $("#gw-back").style.visibility = "hidden"; return null; }
+  $("#gw-next").hidden = false; GWM = r; gwPaint(r); return r;
 }
-function gwClose() { $("#gw").hidden = true; }
-const gwRule = k => t(k);
-function gwPaint() {
-  const steps = [t("Game type"), t("Goal"), t("Difficulty"), t("Start")];
-  $("#gw-steps").innerHTML = ""; steps.forEach((x, i) => { const e = el("span", i === GWS ? "on" : i < GWS ? "done" : "", (i + 1) + " " + x); $("#gw-steps").appendChild(e); });
-  const B = $("#gw-body"); B.innerHTML = "";
-  const cards = (list, key, after) => { const g = el("div", "gw-cards"); list.forEach(([v, ic, ti, ru]) => { const b = el("button", "gw-card" + (String(GW[key]) === v ? " on" : ""));
-      b.type = "button"; b.append(el("span", "ic", ic), el("b", "", t(ti)), el("small", "", gwRule(ru))); b.onclick = () => { GW[key] = v; if (after) after(v); gwPaint(); }; g.appendChild(b); }); return g; };
-  if (GWS === 0) {
-    B.append(el("h3", "", t("Which game?")), el("p", "mut lead", t("gw-intro")), cards(gwModes(), "game_mode", v => { if (v === "teamguard") GW.game_teams = true; }));
-    let last = null; try { last = JSON.parse(localStorage.getItem("mw-game-last") || "null"); } catch (e) {}
-    if (last) { const q = el("button", "sec", "⚡ " + t("Like last time") + ": " + gwSummary(last)); q.type = "button"; q.style.cssText = "margin-top:14px;width:100%;white-space:normal";
-      q.onclick = () => { GW = Object.assign(GW, last); GWS = 3; gwPaint(); }; B.appendChild(q); }
-  } else if (GWS === 1) {
-    B.append(el("h3", "", t("What is the goal?")), cards(GW_GOALS, "game_goal", v => { if (v === "flag") GW.game_teams = true; }));
-  } else if (GWS === 2) {
-    B.append(el("h3", "", t("How hard?")), cards([["easy", "🌱", "Beginners", "gw-easy"], ["normal", "🎯", "Normal", "gw-normal"], ["hard", "🔥", "Pros", "gw-hard"]], "_lvl",
-      v => Object.assign(GW, GW_LEVELS[v])));
-    const row = (lab, inp) => { const r = el("div", "gw-row"); r.append(el("label", "", lab), inp); B.appendChild(r); return inp; };
-    const rng = (k, mn, mx, unit) => { const w = el("span", ""); const i = document.createElement("input"); i.type = "range"; i.min = mn; i.max = mx; i.value = GW[k];
-      const v = el("b", "", GW[k] + unit); i.oninput = () => { GW[k] = +i.value; v.textContent = i.value + unit; }; w.style.cssText = "display:flex;gap:10px;align-items:center;flex:1"; w.append(i, v); return w; };
-    const tg = k => { const i = document.createElement("input"); i.type = "checkbox"; i.className = "sc-sw"; i.checked = !!GW[k]; i.onchange = () => { GW[k] = i.checked; }; return i; };
-    const sel = (k, opts) => { const i = document.createElement("select"); opts.forEach(([v, l]) => { const o = el("option", "", t(l)); o.value = v; i.appendChild(o); }); i.value = String(GW[k]); i.onchange = () => { GW[k] = i.value; }; return i; };
-    row(t("Duration of a round"), rng("game_minutes", 1, 15, " min"));
-    row(t("Lives"), sel("game_lives", [["0", "unlimited"], ["3", "3 lives"], ["1", "1 life"]]));
-    row(t("Crystals to collect"), rng("game_items", 0, 6, ""));
-    row(t("Two teams (red against blue)"), tg("game_teams"));
-    row(t("Free the caught ones (they wait in the cell)"), tg("game_rescue"));
-    row(t("Throw stones to distract"), tg("game_stones"));
-    row(t("Show the field of view of the cameras"), tg("game_cones"));
-    if ("game_powers" in GW) row(t("Power-ups: cloak (purple) and turbo (yellow)"), tg("game_powers"));
-    if ("game_spectate" in GW) row(t("Spectator camera: flies over the field by itself"), tg("game_spectate"));
-    if ("game_hides" in GW) {                     // more game (3D-3.25): folded, so the page stays calm
-      const ex = document.createElement("details"); ex.className = "gw-ex"; if (GW._exopen) ex.open = true; ex.ontoggle = () => { GW._exopen = ex.open; };
-      const sm = document.createElement("summary"); sm.textContent = "✨ " + t("Extras") + " – " + t("photos, hiding places, decoy, night, events, checkpoints, handicap"); ex.appendChild(sm);
-      const B0 = B; const into = (lab, inp) => { const r = el("div", "gw-row"); r.append(el("label", "", lab), inp); ex.appendChild(r); };
-      into("📸 " + t("Caught photos (gallery at the end)"), tg("game_photos"));
-      into("🌳 " + t("Hiding places (bushes, 8 s invisible)"), rng("game_hides", 0, 6, ""));
-      into("🦆 " + t("Decoy allowed"), tg("game_decoy"));
-      into("🌙 " + t("Night round with torches"), tg("game_night"));
-      into("⛈ " + t("Random events (storm, dog, car)"), tg("game_events"));
-      into("🚩 " + t("Checkpoints (+150 points each)"), rng("game_checkpoints", 0, 3, ""));
-      into("🎯 " + t("Handicap for the leader of the ranking"), tg("game_autohandicap"));
-      if ("game_tasks" in GW) into("✅ " + t("A task for every round (bonus)"), tg("game_tasks"));
-      B0.appendChild(ex); }
-  } else {
-    B.append(el("h3", "", t("Ready!")));
-    const sm = el("div", "gw-sum"); const add = (k, v) => sm.append(el("div", "", k), el("div", "", v));
-    const md = GW_MODES.find(x => x[0] === GW.game_mode) || GW_MODES[0], gl = GW_GOALS.find(x => x[0] === GW.game_goal) || GW_GOALS[0];
-    add(t("Game type"), md[1] + " " + t(md[2])); add(t("Goal"), gl[1] + " " + t(gl[2])); add(t("Duration of a round"), GW.game_minutes + " min");
-    add(t("Lives"), GW.game_lives === "0" ? t("unlimited") : GW.game_lives); add(t("Crystals to collect"), String(GW.game_items));
-    add(t("Teams"), GW.game_teams ? t("red against blue") : t("no"));
-    B.appendChild(sm);
-    const rl = el("div", "gw-rules"); [t(md[3]), t(gl[3]), t("gw-tips"), GW.game_rescue ? t("gw-rescue") : "", GW.game_items ? t("gw-items") : "", GW.game_powers ? t("gw-powers") : "", ("game_powers" in GW) ? t("gw-lastmin") : "",
-      GW.game_photos ? t("gw-photos") : "", GW.game_hides ? t("gw-hides") : "", GW.game_decoy && ["camera", "mw"].includes(GW.game_mode) ? t("gw-decoy") : "", GW.game_night ? t("gw-night") : "",
-      GW.game_events ? t("gw-events") : "", GW.game_checkpoints ? t("gw-cps") : "", GW.game_tasks ? t("gw-tasks") : "", GW.game_autohandicap ? t("gw-hc") : ""].filter(x => x).forEach(x => rl.appendChild(el("p", "", x)));
-    B.appendChild(rl);
-    const qr = el("div", "gw-qr"); qr.id = "gw-qr"; B.appendChild(qr); gwQr();
-  }
-  $("#gw-back").style.visibility = GWS ? "visible" : "hidden";
-  $("#gw-next").textContent = GWS < 3 ? t("Next") + " ›" : (GWR && GWR.game && GWR.game.open ? "▶ " + t("Start the round") : "✓ " + t("Open the game & show the QR code"));
-}
-function gwSummary(c) { const md = GW_MODES.find(x => x[0] === c.game_mode), gl = GW_GOALS.find(x => x[0] === c.game_goal);
-  return (md ? t(md[2]) : "") + " · " + (gl ? t(gl[2]) : "") + " · " + c.game_minutes + " min"; }
-function gwQr() { const q = $("#gw-qr"); if (!q) return; const G = GWR && GWR.game; q.innerHTML = "";
-  if (G && G.open) { const im = el("img"); im.src = "/sim/game_qr.png?r=" + Date.now(); im.onclick = () => gameBig(true);
-    const tx = el("div", ""); tx.append(el("div", "mut", t("Players scan the QR code with their phone (same WLAN) or open the address:")), el("div", "gm-url", G.url),
-      el("div", "mut", t("players") + ": " + (G.players || 0) + " / 4")); q.append(im, tx); } }
-async function gwGo(d) {
-  if (d < 0) { GWS = Math.max(0, GWS - 1); gwPaint(); return; }
-  if (GWS < 3) { GWS++; gwPaint(); return; }
-  const b = $("#gw-next"); b.disabled = true;
-  try {
-    if (GWR && GWR.game && GWR.game.open) { await ctl({ctl: "press", id: "game_start"}); toast("▶ " + t("The round starts")); gwClose();
-      if (S && S.view) { PVM = "view"; try { localStorage.setItem("mw-sim-pvmode", "view"); } catch (e) {} pvPaint(); }   // the spectators watch the simulator window
-      SPECON = true; specPoll(); $("#c-prev").scrollIntoView({behavior: "smooth", block: "start"}); return; }
-    const save = {}; GW_KEYS.forEach(k => save[k] = GW[k]); save._lvl = GW._lvl;
-    try { localStorage.setItem("mw-game-last", JSON.stringify(save)); } catch (e) {}
-    const keys = GW_KEYS.filter(k => k in GW), errs = [];
-    const have = new Set(((GWR && GWR.controls) || []).map(c => c.id));
-    let n = 0;
-    for (const k of keys) {                                   // progress on the button: the simulator on the PC answers one by one
-      n++; b.textContent = "⏳ " + t("Settings") + " " + n + " / " + keys.length + " …";
-      if (have.size && !have.has(k)) continue;
-      const r = await post("/api/sim", {action: "ctl", ctl: "set", id: k, value: GW[k], lang: LANG});
-      if (!r || r.ok === false) errs.push(k + ": " + ((r && r.error) || "?"));
+async function gwOpen() { $("#gw").hidden = false; GWS = 0; await gwOp({op: "open"}); gwPoll(); }
+function gwClose() { $("#gw").hidden = true; clearTimeout(gwT); post("/api/sim", {action: "gamewiz", op: "close", lang: LANG}).catch(() => {}); }
+function gwPoll() {                                   // the simulator may change it too (its window) - and the players come
+  clearTimeout(gwT);
+  gwT = setTimeout(async () => {
+    if ($("#gw").hidden) return;
+    let r = null; try { r = await post("/api/sim", {action: "gamewiz", op: "get", lang: LANG}); } catch (e) {}
+    if (r && r.ok !== false) {
+      if (!r.shown) { $("#gw").hidden = true; return; }
+      const sig = r.seq + "|" + JSON.stringify(r.game);
+      if (!GWM || sig !== GWM.seq + "|" + JSON.stringify(GWM.game)) { GWM = r; gwPaint(r); }
     }
-    b.textContent = "⏳ " + t("Opening the game …");
-    const r = await post("/api/sim", {action: "ctl", ctl: "set", id: "game_open", value: true, lang: LANG});
-    if (r && r.ok) showCtl(r);
-    if (!r || r.ok === false || !(r.game && r.game.open)) errs.push(t("Open the game") + ": " + ((r && r.error) || t("the simulator did not open the game")));
-    const ew = $("#gw-err") || (() => { const d = el("div", "gw-err"); d.id = "gw-err"; $("#gw-body").prepend(d); return d; })();
-    ew.textContent = errs.length ? "⚠ " + errs.join(" · ") : ""; ew.hidden = !errs.length;
-    gwPaint(); if (errs.length) $("#gw-body").prepend(ew); const q = $("#gw-qr"); if (q && q.firstChild) q.scrollIntoView({behavior: "smooth", block: "center"});
-    if (errs.length) { const e2 = $("#gw-err"); if (e2 && !e2.isConnected) $("#gw-body").prepend(e2); toast("⚠ " + errs[0]); }
+    gwPoll();
+  }, 1500);
+}
+function gwPaint(M) {
+  GWS = M.step;
+  $("#gw-steps").innerHTML = ""; (M.steps || []).forEach((x, i) => $("#gw-steps").appendChild(el("span", i === M.step ? "on" : i < M.step ? "done" : "", (i + 1) + " " + x)));
+  const B = $("#gw-body"); B.innerHTML = "";
+  if (M.error) B.appendChild(el("div", "gw-err", M.error));
+  B.appendChild(el("h3", "", M.title)); if (M.lead) B.appendChild(el("p", "mut lead", M.lead));
+  if ((M.cards || []).length) { const g = el("div", "gw-cards");
+    M.cards.forEach(c => { const b = el("button", "gw-card" + (c.on ? " on" : "")); b.type = "button"; b.append(el("span", "ic", c.icon), el("b", "", c.title), el("small", "", c.text));
+      b.onclick = () => gwOp({op: "pick", key: M.key, value: c.v}); g.appendChild(b); }); B.appendChild(g); }
+  if (M.last) { const q = el("button", "sec", "⚡ " + t("Like last time") + ": " + M.last); q.type = "button"; q.style.cssText = "margin-top:14px;width:100%;white-space:normal";
+    q.onclick = () => gwOp({op: "last"}); B.appendChild(q); }
+  let ex = null;
+  (M.options || []).forEach(o => {
+    let into = B;
+    if (o.extra) { if (!ex) { ex = document.createElement("details"); ex.className = "gw-ex"; ex.open = !!M.extras_open;
+        ex.ontoggle = () => { if (ex.open !== !!M.extras_open) { M.extras_open = ex.open; post("/api/sim", {action: "gamewiz", op: "extras", value: ex.open, lang: LANG}); } };
+        const sm = document.createElement("summary"); sm.textContent = "✨ Extras – " + t("photos, hiding places, decoy, night, events, checkpoints, handicap"); ex.appendChild(sm); B.appendChild(ex); }
+      into = ex; }
+    const r = el("div", "gw-row"); r.appendChild(el("label", "", o.label));
+    const send = v => post("/api/sim", {action: "gamewiz", op: "set", key: o.id, value: v, lang: LANG}).then(x => { if (x && x.ok !== false) GWM = x; });
+    if (o.type === "range") { const w = el("span", ""); w.style.cssText = "display:flex;gap:10px;align-items:center;flex:1"; const i = document.createElement("input");
+      i.type = "range"; i.min = o.min; i.max = o.max; i.value = o.value; const v = el("b", "", Math.round(o.value) + (o.unit || ""));
+      i.oninput = () => { v.textContent = i.value + (o.unit || ""); }; i.onchange = () => send(+i.value); w.append(i, v); r.appendChild(w); }
+    else if (o.type === "toggle") { const i = document.createElement("input"); i.type = "checkbox"; i.className = "sc-sw"; i.checked = !!o.value; i.onchange = () => send(i.checked); r.appendChild(i); }
+    else { const i = document.createElement("select"); (o.options || []).forEach(([v, l]) => { const op = el("option", "", l); op.value = v; i.appendChild(op); });
+      i.value = String(o.value); i.onchange = () => send(i.value); r.appendChild(i); }
+    into.appendChild(r);
+  });
+  if ((M.summary || []).length) { const sm = el("div", "gw-sum"); M.summary.forEach(([k, v]) => sm.append(el("div", "", k), el("div", "", v))); B.appendChild(sm); }
+  if ((M.rules || []).length) { const rl = el("div", "gw-rules"); M.rules.forEach(x => rl.appendChild(el("p", "", x))); B.appendChild(rl); }
+  if (M.step === 3) { const q = el("div", "gw-qr"); q.id = "gw-qr"; B.appendChild(q);
+    const G = M.game || {};
+    if (G.open) { const im = el("img"); im.src = "/sim/game_qr.png?r=" + Date.now(); im.onclick = () => gameBig(true);
+      const tx = el("div", ""); tx.append(el("div", "mut", t("Players scan the QR code with their phone (same WLAN) or open the address:")), el("div", "gm-url", G.url),
+        el("div", "mut", t("players") + ": " + (G.players || 0) + " / 4")); q.append(im, tx); } }
+  $("#gw-back").style.visibility = M.back ? "visible" : "hidden";
+  $("#gw-next").textContent = M.next;
+}
+async function gwGo(d) {
+  if (d < 0) { await gwOp({op: "back"}); return; }
+  const b = $("#gw-next"); const wasOpen = GWM && GWM.step === 3 && GWM.game && GWM.game.open; b.disabled = true;
+  if (GWM && GWM.step === 3 && !wasOpen) b.textContent = "⏳ " + t("Opening the game …");
+  try {
+    const r = await gwOp({op: "next"});
+    if (r && wasOpen) { toast("▶ " + t("The round starts")); $("#gw").hidden = true; clearTimeout(gwT);
+      if (S && S.view) { PVM = "view"; try { localStorage.setItem("mw-sim-pvmode", "view"); } catch (e) {} pvPaint(); }   // the spectators watch the simulator window
+      SPECON = true; specPoll(); $("#c-prev").scrollIntoView({behavior: "smooth", block: "start"}); }
+    else if (r && r.step === 3 && r.game && r.game.open) { const q = $("#gw-qr"); if (q && q.firstChild) q.scrollIntoView({behavior: "smooth", block: "center"}); }
   } finally { b.disabled = false; }
 }
 // ---- spectators (2.95.14): time, players with their meter, what happened, the result - over the picture ----
@@ -35002,6 +34958,20 @@ class WebStream:
                         return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
                     SIMGAME["t"] = 0.0
                     return reply(r if isinstance(r, dict) else {"ok": False})
+                if act_ == "gamewiz":                        # the game wizard runs in the 3D simulator (3D-3.41), worked from here
+                    q_ = {"action": "gamewiz", "op": str(d.get("op") or "get")[:12]}
+                    if "key" in d:
+                        q_["key"] = str(d.get("key"))[:40]
+                    if "value" in d:
+                        v_ = d.get("value")
+                        q_["value"] = v_ if isinstance(v_, (bool, int, float)) else str(v_)[:80]
+                    try:
+                        r = sim_control(q_)
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    if not isinstance(r, dict) or not r.get("ok"):
+                        return reply({"ok": False, "error": tr_err(str((r or {}).get("error") or "not supported - update the simulator"), lang)}, 400)
+                    return reply(r)
                 if act_ == "game_hc":                        # handicap for a player (3D-3.25)
                     try:
                         r = sim_control({"action": "game_handicap", "slot": int(d.get("slot", -1)), "level": max(0, min(2, int(d.get("level", 0))))})
@@ -38157,7 +38127,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.47")
+        self.root.title("Motion Watch 2.95.48")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -38447,7 +38417,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.47 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.48 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
