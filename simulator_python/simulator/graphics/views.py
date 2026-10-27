@@ -102,7 +102,7 @@ class TopView:
                 a = math.radians(yaw + sgn * fov / 2)
                 cv2.line(img, P(camx, camy), P(camx + math.sin(a) * 60, camy + math.cos(a) * 60), col, th, cv2.LINE_AA)
         # servo travel (where the head CAN look)
-        half = SIM["pan_travel"] / 2.0
+        half = eng.servos["pan"].half
         base = SIM["mount_yaw"]
         if half < 179:
             cv2.ellipse(img, P(camx, camy), (int(3.0 * s), int(3.0 * s)), 0, base - half - 90, base + half - 90, (200, 200, 255), 1, cv2.LINE_AA)

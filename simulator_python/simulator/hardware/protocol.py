@@ -98,6 +98,12 @@ msi.ThreadingHTTPServer = _Http
 
 
 @dataclass
+class Info(SimInfo):
+    """GET /info plus the computer's name (Motion Watch 2.95.1+ shows it next to each simulator)."""
+    host: str = ""
+
+
+@dataclass
 class Reply(SimReply):
     """Answer to POST /state with the fields Motion Watch 2.93+ reads as well."""
     humidity: float = 60.0
@@ -115,6 +121,11 @@ def lan_ip():
     except OSError:
         return "127.0.0.1"
 
+
+try:
+    HOST = socket.gethostname()[:40]   # this computer's name, as Motion Watch shows it in «Simulators in the network»
+except OSError:
+    HOST = ""
 
 SENSORS = [{"name": "PIR", "kind": "pir"}, {"name": "Door", "kind": "door"}, {"name": "Gas", "kind": "gas"}]
 
@@ -141,7 +152,7 @@ class ProtocolServer(SimServer):
         vf = math.degrees(2 * math.atan(math.tan(math.radians(hf) / 2) * h / w))
         th = float(SIM["thermal_hfov"])
         tv = math.degrees(2 * math.atan(math.tan(math.radians(th) / 2) * 62 / 80))
-        return SimInfo(name=self.name,
+        return Info(name=self.name, host=HOST,
                        cameras=[CamInfo(0, "Head camera", w, h, float(SIM["cam_fps"]), hf, round(vf, 1), True, True),
                                 CamInfo(1, "Fixed camera", 960, 540, 6.0, 70.0, 42.0, False, False)],
                        thermal={"w": 80, "h": 62, "fps": 15.0, "fov_h": th, "fov_v": round(tv, 1), "unit": "C", "on_head": True},
@@ -225,7 +236,7 @@ class ProtocolServer(SimServer):
             time.sleep(2.0)
             if not (SIM["stream"] and self.running):
                 continue
-            msg = json.dumps({"mwsim": 1, "name": self.name, "port": self.port, "version": VERSION}).encode()
+            msg = json.dumps({"mwsim": 1, "name": self.name, "port": self.port, "version": VERSION, "host": HOST}).encode()
             try:
                 if so is None:
                     so = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

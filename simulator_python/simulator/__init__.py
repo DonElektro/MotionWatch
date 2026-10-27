@@ -2,5 +2,5 @@
 animals and traffic. Motion Watch itself runs as its own program and connects over the network (simulator protocol 1,
 see hardware/EIGENEN_SIMULATOR_ANBINDEN.md)."""
 
-NAME = "Python-Weltsimulator 1.1"      # unique name: Motion Watch lists the simulators in the network by it
-VERSION = "PY-1.1"                     # own prefix, so it is never mixed up with the 3D simulator's versions
+NAME = "Python-Weltsimulator 1.2"      # unique name: Motion Watch lists the simulators in the network by it
+VERSION = "PY-1.2"                     # own prefix, so it is never mixed up with the 3D simulator's versions

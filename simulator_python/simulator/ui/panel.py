@@ -59,7 +59,8 @@ TIPS = {
     "lens_cover": "Somebody holds a hand over the lens - the sabotage check should report 'covered'.",
     "lens_blur": "Dew or dirt on the lens - the picture gets blurred and flat (lens check).",
     "shake": "The mount wobbles (wind on a tripod).",
-    "pan_travel": "How far the pan servo really turns between 500 and 2500 µs (180° servo, 270°, or a 360° one).",
+    "pan_travel": "How far the pan servo really turns between 500 and 2500 µs (180° servo, 270°, or a 360° one).\n"
+                  "If Motion Watch says its servo turns further (up to ±180°), the simulated one follows it.",
     "tilt_travel": "Same for the tilt servo.", "tilt_stop": "The tilt bracket hits the base here, whatever the servo is told.",
     "servo_speed": "How fast the servos turn. Real servos with the camera on them: about 60 - 120 °/s (SG90 unloaded ~600 °/s).",
     "servo_jitter": "Random twitching of cheap servos.", "pan_reversed": "Servo built in the other way round: the program must use 'invert pan'.",

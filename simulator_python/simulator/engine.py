@@ -27,14 +27,17 @@ class SimServo:
         self._dir = 0
         self.last_cmd = 0.0
         self.cmds = 0
+        self.half = SIM[f"{name}_travel"] / 2.0   # how far it turns from the middle (Motion Watch may say it is more)
 
-    def command(self, pulse_us):
+    def command(self, pulse_us, half=None):
+        """half: degrees from the middle at 500 / 2500 us - by default the servo travel set in the simulator."""
         self.pulse = pulse_us
         self.last_cmd = time.time(); self.cmds += 1
         if pulse_us is None:
             return
         self.attached = True
-        half = SIM[f"{self.name}_travel"] / 2.0
+        self.half = half = float(half or SIM[f"{self.name}_travel"] / 2.0)
+        # no wrapping: from +179 to -179 degrees a servo goes the long way back, it cannot turn "over the back"
         self.target = max(-half, min(half, (pulse_us - 1500.0) / 1000.0 * half))
 
     def stuck(self):
@@ -184,9 +187,12 @@ class Engine:
             n = self.world.scare()
             if n:
                 bridge.log(f"sound «{st.sound}»: {n} animal(s) run away")
-        for name, deg in (("pan", st.servo.pan_deg), ("tilt", st.servo.tilt_deg)):
-            half = SIM[f"{name}_travel"] / 2.0
-            self.servos[name].command(1500.0 + max(-1.0, min(1.0, float(deg) / half)) * 1000.0)
+        sv = st.servo
+        for name, deg, limit in (("pan", sv.pan_deg, sv.pan_limit), ("tilt", sv.tilt_deg, sv.tilt_limit)):
+            # Motion Watch 2.95.4+: the pan servo may turn 270 or 360 degrees (pan_deg up to +-180) - then the simulated
+            # servo turns that far too, even if the simulator's own travel setting is smaller
+            half = min(180.0, max(SIM[f"{name}_travel"] / 2.0, abs(float(limit or 0)), abs(float(deg))))
+            self.servos[name].command(1500.0 + max(-1.0, min(1.0, float(deg) / half)) * 1000.0, half)
 
     def proto_live(self):
         return time.time() - self.proto_t < 3.0
