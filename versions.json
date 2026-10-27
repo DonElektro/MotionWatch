@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 22:59",
+ "generated": "2026-10-27 23:10",
  "versions": [
   {
-   "version": "2.95.56",
-   "file": "webcam_bewegung_2_95_56.py",
+   "version": "2.95.57",
+   "file": "webcam_bewegung_2_95_57.py",
    "url": "",
-   "sha256": "0c4bbe17a70629a10025fafa0d7eb13eed1902646a5ec696732ef6852d63791f",
-   "date": "2026-10-27 22:59",
-   "notes": "every page without its own way back (almanac, game corner, network check, party pages ...) gets a «✕ Zurück» button: as an app on the home screen there is no back button, so such pages could not be closed; it also leaves full screen; the product page and the preview use the same logic",
-   "sig": "ee2adb4f7dcf6ca2e22209e44724ad3bb1079f34955af87f045d626523f305eddae55ee8cc9e41366c282c8bed6f9ad953373c77a47643d50ef76e3922ddce04"
+   "sha256": "fe786475b260c12a5b36d7fbb3f26140d33d1f42752159ee8ad23a069454ef9c",
+   "date": "2026-10-27 23:10",
+   "notes": "product page for guests: the night story is now a deck of cards to swipe away, every situation plays its own little animation (countdown and scan, wind with leaves, fox in the thermal picture, intruder with light, siren and loudspeaker, deer photo into the diary, night report); swipe over the camera picture for day / night",
+   "sig": "306f6173e7a1e9fc64e26e9a467d895c78aa0b14fb57fb96060728b644084ef473263782bb9a92c9cdbdceada830823ec2d25dba7958122c99847c95e4bf860b"
   },
   {
    "version": "2.94.5",
