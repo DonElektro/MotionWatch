@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 11:05",
+ "generated": "2026-10-27 11:11",
  "versions": [
   {
-   "version": "2.95.14",
-   "file": "webcam_bewegung_2_95_14.py",
+   "version": "2.95.15",
+   "file": "webcam_bewegung_2_95_15.py",
    "url": "",
-   "sha256": "70cdefe3b3299bf518e0f20efe241ac015362a3b0f79cebaafffcb0249da2cb1",
-   "date": "2026-10-27 11:05",
-   "notes": "spectators: over the simulator window the time, the players with their «seen» meter, what happened and at the end the result (📊 on / off). Game wizard: spectator camera (3D-3.22 flies over the field by itself).",
-   "sig": "03b13fe15b515d64561082b92514531615edbc9ff4bfb2946d6f73b40b01acf52c23ad153e42ffff9a769524e5101e78f5cadef3dd7f0b5d52aedbc4d00d5f0a"
+   "sha256": "0d51dea786c07188baaaf1e59ce71f269fa7a3a1ececc5f8242b3768aed4ddb4",
+   "date": "2026-10-27 11:11",
+   "notes": "3D simulator 3D-3.23: the game page on a phone lying on its side tidied up, full screen help for the iPhone.",
+   "sig": "455b0f325e3f25f5c66e0ab7931e368b4c0cf39ae69f573fda2beea7a9c1f6cc0ab4b4230a62ada4ce037afb2972a09a533f936b4a58c54711f878f54fb4140b"
   },
   {
    "version": "2.94.5",

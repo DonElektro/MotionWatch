@@ -1,7 +1,7 @@
 {
- "version": "3D-3.22",
+ "version": "3D-3.23",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30575930,
- "sha256": "1d545fc6af31b86821f3ba845f38a1f9dfaf1f830206e9dc88619c225e583fe2",
- "notes": "Zuschauer-Kamera: fliegt beim Spiel selbst übers Feld; Spieldaten für die Zuschauer in Motion Watch."
+ "size": 30577077,
+ "sha256": "31798b641991395f86e466387ef972289f6ee7e2049c0123c7e75408cde6ee91",
+ "notes": "Spiel auf dem Handy: aufgeräumte Anzeige im Querformat, Vollbild-Hilfe fürs iPhone."
 }

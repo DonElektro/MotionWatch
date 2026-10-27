@@ -480,8 +480,13 @@ func _net() -> void:
 		if txt.contains("\r\n\r\n"):
 			var path := txt.get_slice(" ", 1)
 			var body := PAGE.replace("%WSPORT%", str(ws_port)).to_utf8_buffer() if path == "/" or path.begins_with("/?") else "nicht gefunden".to_utf8_buffer()
-			var head := "HTTP/1.1 %s\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: %d\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n" % [
-					"200 OK" if body.size() > 20 else "404 Not Found", body.size()]
+			var ctype := "text/html; charset=utf-8"
+			if path == "/manifest.json":                   # «Zum Home-Bildschirm»: then the game runs without the address bar (3D-3.23)
+				body = JSON.stringify({"name": "Unentdeckt ans Ziel", "short_name": "Unentdeckt", "start_url": "/", "display": "fullscreen",
+						"orientation": "landscape", "background_color": "#0a0e14", "theme_color": "#0a0e14"}).to_utf8_buffer()
+				ctype = "application/manifest+json"
+			var head := "HTTP/1.1 %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n" % [
+					"200 OK" if body.size() > 20 else "404 Not Found", ctype, body.size()]
 			c.put_data(head.to_utf8_buffer() + body)
 			c.disconnect_from_host()
 			http_conns.erase(h)
@@ -1701,14 +1706,15 @@ func status() -> String:
 const PAGE := r"""<!doctype html><html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0a0e14"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Unentdeckt"><link rel="manifest" href="/manifest.json">
 <title>Unentdeckt ans Ziel</title>
 <style>
 :root{--bg:#0a0e14;--panel:#111822;--line:#1f2b3a;--txt:#e6edf3;--mut:#8b98a8;--acc:#3b8cff;--grn:#34c759;--org:#ff9f0a;--red:#ff453a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;height:100dvh;background:var(--bg);color:var(--txt);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
 #v{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
 body.guard #v{object-fit:contain}
-.top{position:fixed;left:0;right:0;top:0;display:flex;gap:8px;align-items:center;padding:8px 10px;padding-top:max(8px,env(safe-area-inset-top));background:linear-gradient(#000a,#0000);pointer-events:none}
+.top{position:fixed;left:0;right:0;top:0;display:flex;gap:8px;align-items:center;padding:8px 10px;padding-top:max(8px,env(safe-area-inset-top));padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right));background:linear-gradient(#000a,#0000);pointer-events:none}
 .pill{background:#0a0e14cc;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px;white-space:nowrap}
 #me .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
 #meter{flex:1;max-width:340px;margin:0 auto;height:14px;border-radius:999px;background:#0a0e14cc;border:1px solid var(--line);overflow:hidden;position:relative}
@@ -1720,7 +1726,7 @@ body.guard #v{object-fit:contain}
 #look{position:fixed;right:0;top:0;bottom:0;width:55%}
 .base{position:fixed;width:130px;height:130px;border-radius:50%;border:2px solid #ffffff55;background:#ffffff14;transform:translate(-50%,-50%);pointer-events:none;display:none}
 .knob{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px;border-radius:50%;background:#ffffffaa}
-.hint{position:fixed;left:16px;bottom:max(16px,env(safe-area-inset-bottom));color:#fff9;font-size:12px;pointer-events:none}
+.hint{position:fixed;left:calc(max(10px,env(safe-area-inset-left)) + 58px);bottom:max(16px,env(safe-area-inset-bottom));color:#fff9;font-size:12px;pointer-events:none}
 .btns{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));display:flex;gap:10px;align-items:flex-end}
 .b{width:70px;height:70px;border-radius:50%;border:2px solid #ffffff55;background:#0a0e14aa;color:#fff;font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative}
 .b i{font-style:normal;font-size:21px}
@@ -1728,7 +1734,7 @@ body.guard #v{object-fit:contain}
 .b.wait{opacity:.45}
 .b.big{width:86px;height:86px;font-size:13px}
 .b.red{background:#ff453acc;border-color:var(--red)}
-#side{position:fixed;right:10px;top:46px;display:flex;flex-direction:column;gap:8px}
+#side{position:fixed;right:max(10px,env(safe-area-inset-right));top:calc(max(8px,env(safe-area-inset-top)) + 40px);display:flex;flex-direction:column;gap:8px}
 #side button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#0a0e14aa;color:#fff;font-size:17px}
 .ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .card{background:#111822ee;border:1px solid var(--line);border-radius:16px;padding:18px 20px;max-width:min(92vw,560px);max-height:92vh;overflow:auto;text-align:center;pointer-events:auto}
@@ -1740,14 +1746,23 @@ input{background:#0a0e14;color:var(--txt);border:1px solid var(--line);border-ra
 #big{font-size:96px;font-weight:800;text-shadow:0 4px 24px #000;pointer-events:none}
 #msg{position:fixed;left:50%;top:22%;transform:translateX(-50%);font-size:24px;font-weight:800;text-shadow:0 2px 12px #000;pointer-events:none;text-align:center;width:90%}
 table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px;border-bottom:1px solid var(--line);text-align:left}
-#list{position:fixed;left:10px;top:44px;font-size:12px;line-height:1.5;pointer-events:none;text-shadow:0 1px 4px #000}
-#extra{position:fixed;left:10px;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 22px);font-size:13px;pointer-events:none;text-shadow:0 1px 4px #000}
+#list{position:fixed;left:max(10px,env(safe-area-inset-left));top:calc(max(8px,env(safe-area-inset-top)) + 38px);font-size:12px;line-height:1.5;pointer-events:none;text-shadow:0 1px 4px #000}
+#extra{position:fixed;left:calc(max(10px,env(safe-area-inset-left)) + 58px);bottom:calc(max(16px,env(safe-area-inset-bottom)) + 22px);max-width:42vw;font-size:13px;pointer-events:none;text-shadow:0 1px 4px #000}
 #ear{position:fixed;left:50%;top:34px;transform:translateX(-50%);font-size:13px;pointer-events:none;opacity:0;transition:opacity .2s}
 #rot{display:none;position:fixed;inset:0;background:#0a0e14f2;align-items:center;justify-content:center;text-align:center;padding:30px;font-size:18px}
 @media (orientation:portrait){#rot.ask{display:flex}}
 .redfl{animation:fl .4s 3}@keyframes fl{50%{background:#ff453a88}}
 .cnt{position:absolute;top:-6px;right:-6px;background:#000c;border-radius:999px;font-size:11px;padding:1px 6px}
-#sig{position:fixed;left:10px;top:120px;display:flex;flex-direction:column;gap:6px;z-index:5}
+#sig{position:fixed;left:max(10px,env(safe-area-inset-left));top:50%;transform:translateY(-38%);display:flex;flex-direction:column;gap:6px;z-index:5}
+#tip{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(88vw,460px);background:#111822f2;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.4;text-align:center;z-index:20}
+#tip[hidden]{display:none}
+@media (max-height:440px){                      /* a phone lying on its side: everything a bit smaller, nothing on top of each other */
+  .b{width:58px;height:58px;font-size:10px}.b i{font-size:18px}.b.big{width:70px;height:70px;font-size:11px}.btns{gap:8px}
+  #side button{width:34px;height:34px;font-size:15px}#side{gap:6px}
+  #sig button{width:42px;height:34px;font-size:16px}#sig{gap:5px}
+  .pill{font-size:12px;padding:3px 9px}#meter{height:12px}#list{font-size:11px}
+  #msg{font-size:20px}#big{font-size:72px}
+}
 #sig[hidden]{display:none}
 #sig button{width:46px;height:40px;border-radius:12px;border:1px solid #ffffff44;background:#0a0e14aa;color:#fff;font-size:18px}
 #sigt{position:fixed;left:50%;top:58px;transform:translateX(-50%);background:#111822ee;border:1px solid var(--line);border-radius:12px;padding:6px 12px;font-size:15px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .25s;white-space:nowrap}
@@ -1771,6 +1786,7 @@ table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px
 <div class="hint" id="hint">links: gehen · rechts wischen: umschauen</div>
 <div class="btns" id="rb"><div class="b" id="b-stone"><i>🪨</i>Werfen</div><div class="b" id="b-run"><i>🏃</i>Rennen</div><div class="b" id="b-crouch"><i>🧎</i>Ducken</div><div class="b" id="b-crawl"><i>🐍</i>Kriechen</div></div>
 <div class="btns" id="gb" style="display:none"><div class="b" id="b-light"><i>💡</i>Licht</div><div class="b big red" id="b-catch"><i>🚨</i>Erwischt!</div></div>
+<div id="tip" hidden></div>
 <div id="side"><button id="full" title="Vollbild">⛶</button><button id="snd" title="Ton">🔊</button></div>
 <div id="msg"></div>
 <div id="sig" hidden><button data-k="wait" title="Warte">✋</button><button data-k="go" title="Los">▶</button><button data-k="cam" title="Kamera schaut her">👁</button><button data-k="here" title="Hier">📍</button></div>
@@ -1843,6 +1859,7 @@ function paint(m) {
   $("#arrow").style.transform = "rotate(" + (-m.ga) + "deg)"; $("#gd").textContent = Math.round(m.gd) + " m";
   $("#tm").textContent = m.rs === "play" ? "⏱ " + fmtT(m.left) : m.rs === "countdown" ? "gleich" : "–";
   $("#lv").textContent = role === "guard" ? "· Wächter · " + (m.catches || 0) + "× erwischt" : (m.lives ? "· " + "❤️".repeat(Math.max(0, m.lives - m.caught)) + "🤍".repeat(Math.min(m.lives, m.caught)) : "· " + m.caught + "× erwischt");
+  $("#list").hidden = (m.list || []).length < 2;                // alone: the name stands at the top already
   $("#list").innerHTML = (m.list || []).map(p => '<span style="color:' + p.c + '">●</span> ' + esc(p.n) + (p.r === "guard" ? " 👁" : "") + (p.s === "goal" ? " 🏁" : p.s === "out" ? " ✖" : "") + (p.r !== "guard" && p.k ? " · " + p.k + "×" : "") + (p.on ? "" : " (weg)")).join("<br>");
   $("#extra").textContent = (m.goal_mode === "flag" && role === "runner" ? "🚩 Rot " + m.caps[0] + " : " + m.caps[1] + " Blau · " + (m.flag >= 0 ? "Fahne dabei – zur eigenen Basis! · " : "") : "") + (m.gopen === false && role === "runner" ? "🔒 Ziel noch zu – zuerst alle Kristalle finden · " : "") + (m.carry ? "💰 Beute dabei – zurück zum Start! " : (m.goal_mode === "return" && role === "runner" ? "Ziel: Beute holen und zurückbringen · " : "")) + (m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "");
   $("#msg").textContent = m.msg || "";
@@ -1910,7 +1927,11 @@ setInterval(() => {
   const j = JSON.stringify(d), now = Date.now();
   if (j !== lastSent || now - lastT > 250 || d.look || d.pitch) { ws.send(j); lastSent = j; lastT = now; }
 }, 50);
-function goFull() { const el = document.documentElement; try { (el.requestFullscreen || el.webkitRequestFullscreen).call(el).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock("landscape").catch(() => {})).catch(() => {}); } catch (e) {} $("#rot").classList.add("ask"); }
+function goFull() { const el = document.documentElement;
+  if (!(el.requestFullscreen || el.webkitRequestFullscreen) || window.navigator.standalone === false && /iPhone|iPod/.test(navigator.userAgent)) {
+    const tp = $("#tip"); tp.innerHTML = "<b>Vollbild auf dem iPhone</b><br>Safari kann hier kein Vollbild. So geht es: unten <b>Teilen</b> ⬆︎ → <b>«Zum Home-Bildschirm»</b>, dann das Spiel über das neue Symbol starten – ohne Adressleiste.<br><small>Antippen zum Schliessen</small>";
+    tp.hidden = false; tp.onclick = () => { tp.hidden = true; }; setTimeout(() => { tp.hidden = true; }, 9000); return; }
+  try { (el.requestFullscreen || el.webkitRequestFullscreen).call(el).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock("landscape").catch(() => {})).catch(() => {}); } catch (e) {} $("#rot").classList.add("ask"); }
 $("#full").onclick = goFull;
 joinForm();
 </script></body></html>"""
