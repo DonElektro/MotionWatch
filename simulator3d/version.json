@@ -1,7 +1,7 @@
 {
- "version": "3D-3.30",
+ "version": "3D-3.31",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30749049,
- "sha256": "5a840a2e5a34e351bfd7e1c489784835ea116d38f4c05caed7308b64e5eaaca4",
- "notes": "Stromsparen zusammen mit Motion Watch."
+ "size": 30749387,
+ "sha256": "4890be59de8557d2aa87c64d79d78744cfa824e542f9b0b0aafe2fd5c778eaab",
+ "notes": "Testlauf: Zeitpunkte der verpassten Personen für die Bilder der Fehler."
 }

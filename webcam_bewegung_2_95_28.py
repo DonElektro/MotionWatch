@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_27.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_28.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -609,6 +609,9 @@ Features
   * 2.95.27: FIX - since 2.95.25 a few settings were missing from the defaults (simulator auto update, network watch,
     presence): errors on some pages. New: a keyword at the start of every message (MW-ALARM, MW-WAERME …) for iPhone
     shortcut automations, e-mail as a way for messages, shortcut addresses (/k/<key>/arm, siren_off, light_on, photo.jpg …).
+  * 2.95.28: test runs flow back into the development: «Report for the development» (ZIP with versions, settings,
+    results, causes and pictures - no secrets; for the chat or GitHub feedback/), pictures of every false alarm and missed
+    person (3D-3.31), comparison with the last run of another Motion Watch version, test run every night (optional).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -617,10 +620,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_27.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_28.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_27.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_27.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_28.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_28.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -637,7 +640,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.27"
+APP_VERSION = "2.95.28"
 
 
 def default_data_dir():
@@ -905,6 +908,8 @@ CFG = {
     "email_events": "alarms",       # alarms | all
     # shortcut key (2.95.27): /k/<key>/<action> works without the password, only for a few actions (arm, siren off, light ...)
     "shortcut_token": "",
+    # 2.95.28: a short test run every night (when the simulator runs), message only when it gets clearly worse
+    "testopt_nightly": False, "testopt_hour": 3, "testopt_plan": "quick",
     "deter_person_act": "off", "deter_person_sound": "two-tone",
     "deter_big_act": "both", "deter_big_sound": "bangs",
     "deter_small_act": "off", "deter_small_sound": "whistle",
@@ -12869,8 +12874,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.30", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30749049,
-         "sha256": "5a840a2e5a34e351bfd7e1c489784835ea116d38f4c05caed7308b64e5eaaca4"}
+SIM3D = {"version": "3D-3.31", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30749387,
+         "sha256": "4890be59de8557d2aa87c64d79d78744cfa824e542f9b0b0aafe2fd5c778eaab"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -13268,6 +13273,14 @@ def testopt_load():
 
 
 def testopt_save():
+    try:                                                # picture folders of runs that are no longer kept
+        keep = {str(int(r["t"])) for r in TESTOPT["runs"][-30:]}
+        if os.path.isdir(_testopt_dir()):
+            for n_ in os.listdir(_testopt_dir()):
+                if n_.isdigit() and n_ not in keep:
+                    shutil.rmtree(os.path.join(_testopt_dir(), n_), ignore_errors=True)
+    except OSError:
+        pass
     try:
         dst = os.path.join(DATA_DIR, "testruns.json"); tmp = dst + ".tmp"
         with open(tmp, "w") as f:
@@ -13427,6 +13440,52 @@ def _simtest(action, **kw):
         return {"ok": False, "error": str(e)[:120]}
 
 
+def _testopt_dir(run_id=None):
+    d = os.path.join(DATA_DIR, "testruns")
+    return os.path.join(d, str(int(run_id))) if run_id is not None else d
+
+
+def _testopt_frames(stop, frames, t0):
+    """during a test run: every 1.5 s a small picture of what Motion Watch sees (with its marks) - for the report"""
+    while not stop.is_set():
+        w = WATCH_REF.get("w")
+        f = getattr(w, "frame_out", None) if w is not None else None
+        if f is not None:
+            try:
+                h, wd = f.shape[:2]; sc = 360.0 / max(1, wd)
+                ok, buf = cv2.imencode(".jpg", cv2.resize(f, (360, int(h * sc))), [cv2.IMWRITE_JPEG_QUALITY, 62])
+                if ok:
+                    frames.append((time.time() - t0, buf.tobytes()))
+            except Exception:
+                pass
+        stop.wait(1.5)
+
+
+def _testopt_pics(run, frames):
+    """the moments of the false alarms and of the missed persons: Motion Watch's own picture of that moment"""
+    rep_ = run["report"]; out = []
+    want = [("false", f) for f in rep_.get("false_list", [])] + [("missed", m) for m in rep_.get("missed_list", [])]
+    if not want or not frames:
+        return out
+    d = _testopt_dir(run["t"]); os.makedirs(d, exist_ok=True)
+    for i, (kind, e) in enumerate(want[:24]):
+        t = float(e.get("t", 0))
+        best = min(frames, key=lambda x: abs(x[0] - t))
+        if abs(best[0] - t) > 6:
+            continue
+        name = f"{kind[0]}{i:02d}.jpg"
+        try:
+            with open(os.path.join(d, name), "wb") as f_:
+                f_.write(best[1])
+        except OSError:
+            continue
+        ph = rep_.get("phases", [])
+        pn = ph[int(e.get("phase", 0))]["name"] if 0 <= int(e.get("phase", 0)) < len(ph) else ""
+        out.append({"kind": kind, "t": round(t, 1), "phase": pn, "why": e.get("cause") if kind == "false" else ", ".join(e.get("why") or []) or "?",
+                    "what": e.get("kind", ""), "file": name})
+    return out
+
+
 def testopt_run(plan):
     """one test run, waits until it is finished (or stopped); returns the run (dict) or None"""
     r = _simtest("test_start", plan=plan)
@@ -13434,6 +13493,15 @@ def testopt_run(plan):
         TESTOPT["msg"] = str(r.get("error") or "the simulator does not answer (3D-3.27 or newer needed)")
         return None
     TESTOPT["sim"] = r
+    frames = []; stop_ = threading.Event()
+    threading.Thread(target=_testopt_frames, args=(stop_, frames, time.time()), daemon=True).start()
+    try:
+        return _testopt_wait(plan, r, frames)
+    finally:
+        stop_.set()
+
+
+def _testopt_wait(plan, r, frames):
     t_end = time.time() + max(120, int(r.get("total_s") or 600) * 2)
     seen_running = True
     while time.time() < t_end:
@@ -13452,7 +13520,12 @@ def testopt_run(plan):
         if not rep or rep.get("plan") != plan:
             TESTOPT["msg"] = str(st.get("info") or "test run ended without report")
             return None
-        run = {"t": time.time(), "plan": plan, "report": rep, "score": opt_score(rep), "cfg": opt_snapshot()}
+        run = {"t": time.time(), "plan": plan, "report": rep, "score": opt_score(rep), "cfg": opt_snapshot(),
+               "mw": APP_VERSION, "sim": str(rep.get("simulator") or "")}
+        try:
+            run["pics"] = _testopt_pics(run, frames)
+        except Exception as e:
+            run["pics"] = []; log_event("sys", f"Test run pictures: {e}"[:150])
         with _TESTOPT_LOCK:
             TESTOPT["runs"].append(run); TESTOPT["runs"] = TESTOPT["runs"][-30:]
             TESTOPT["sugg"] = opt_suggest(rep)
@@ -13506,15 +13579,74 @@ def _testopt_thread(kind, plan, tries=4):
         TESTOPT["busy"] = ""
 
 
+def testopt_compare():
+    """the last run against the last run of the same test with another Motion Watch version: what got better / worse"""
+    runs = TESTOPT["runs"]
+    if not runs:
+        return None
+    L = runs[-1]
+    prev = next((r for r in reversed(runs[:-1]) if r.get("plan") == L.get("plan") and r.get("mw") and r.get("mw") != L.get("mw")), None)
+    if prev is None or L.get("score") is None or prev.get("score") is None:
+        return None
+    ph = []
+    pp = {p["name"]: p for p in prev["report"].get("phases", [])}
+    for p in L["report"].get("phases", []):
+        q = pp.get(p["name"])
+        if not q:
+            continue
+        d_found = p["persons_detected"] - q["persons_detected"]; d_fa = p["false_alarms"] - q["false_alarms"]
+        if d_found or d_fa:
+            ph.append({"name": p["name"], "found": d_found, "fa": d_fa})
+    return {"from": prev.get("mw"), "to": L.get("mw"), "score": round(L["score"] - prev["score"], 1), "phases": ph}
+
+
+def testopt_nightly_loop():
+    """2.95.28: every night at the chosen hour one test run (when the simulator is connected and nothing else runs);
+    a message only when the score is clearly lower than at the last night run of the same test"""
+    done = ""
+    while True:
+        time.sleep(60)
+        try:
+            if not CFG.get("testopt_nightly"):
+                continue
+            now = datetime.now(); day = now.strftime("%Y-%m-%d")
+            if now.hour != int(CFG.get("testopt_hour", 3)) or done == day or TESTOPT["busy"]:
+                continue
+            if not (CFG["sim_on"] and SIM["ok"] and time.time() - SIM["t"] < 5):
+                continue
+            g_ = SIMGAME.get("g") or {}
+            if g_.get("round") in ("play", "countdown"):
+                continue
+            done = day
+            plan = CFG.get("testopt_plan") if CFG.get("testopt_plan") in ("standard", "quick", "hard", "night") else "quick"
+            prev = next((r for r in reversed(TESTOPT["runs"]) if r.get("plan") == plan and r.get("night")), None)
+            TESTOPT["busy"] = "night"; TESTOPT["stop"] = False
+            try:
+                run = testopt_run(plan)
+            finally:
+                TESTOPT["busy"] = ""
+            if run is None:
+                continue
+            run["night"] = True; testopt_save()
+            if prev and prev.get("score") is not None and run.get("score") is not None and run["score"] <= prev["score"] - 10:
+                w = WATCH_REF.get("w")
+                if w is not None:
+                    w.notifier.info(trf("Night test run: score {a} instead of {b} - the recognition got worse. Details: tab Simulator.",
+                                        a=run["score"], b=prev["score"]), title="{name}: " + tr("Test run"))
+        except Exception as e:
+            log_event("sys", f"Night test run: {e}"[:150])
+
+
 def testopt_state():
     runs = TESTOPT["runs"]
     small = [{"t": r["t"], "plan": r["plan"], "score": r["score"], "rate": r["report"].get("rate"), "fa": r["report"].get("false_alarms"),
               "lat": r["report"].get("latency_s"), "persons": r["report"].get("persons"), "found": r["report"].get("persons_detected"),
-              "cfg": r.get("cfg")} for r in runs[-12:]]
+              "cfg": r.get("cfg"), "mw": r.get("mw", ""), "night": bool(r.get("night"))} for r in runs[-12:]]
     return {"busy": TESTOPT["busy"], "msg": TESTOPT["msg"], "sim": TESTOPT["sim"], "runs": small,
             "last": runs[-1] if runs else None, "sugg": TESTOPT["sugg"], "undo": bool(TESTOPT["undo"]),
             "auto": TESTOPT["auto"], "connected": bool(CFG["sim_on"] and SIM["ok"] and time.time() - SIM["t"] < 5),
-            "keys": {k: CFG[k] for k in OPT_KEYS if k in CFG}}
+            "keys": {k: CFG[k] for k in OPT_KEYS if k in CFG}, "compare": testopt_compare(),
+            "nightly": {"on": bool(CFG.get("testopt_nightly")), "hour": int(CFG.get("testopt_hour", 3)), "plan": CFG.get("testopt_plan", "quick")}}
 
 
 SIMGAME = {"t": 0.0, "busy": False, "g": None}   # the game in the simulator, fetched now and then (2.95.22: «Team gegen Motion Watch»)
@@ -14982,7 +15114,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_27.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_28.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -19975,6 +20107,13 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "Task of this round": "Aufgabe dieser Runde", "Ranking of the week": "Rangliste der Woche", "week": "Woche", "task done": "Aufgabe erfüllt",
  "Switch the simulation on by itself when a simulator is online": "Simulation von selbst einschalten, sobald ein Simulator online ist",
  "autostart-note": "Und wieder aus (zurück zu den echten Kameras und Sensoren), wenn eine Minute lang keiner mehr da ist. Von Hand ausgeschaltet: bleibt aus, bis wieder ein neuer Simulator auftaucht.",
+ "persons found": "Personen erkannt", "false alarms": "Fehlalarme", "against": "gegen", "Version": "Version",
+ "Pictures of the mistakes (what Motion Watch saw)": "Bilder der Fehler (was Motion Watch gesehen hat)", "False alarm": "Fehlalarm",
+ "dark": "zu dunkel", "small": "klein / weit weg", "crouch": "geduckt", "?": "unklar", "fast": "schnell",
+ "For the development": "Für die Entwicklung", "Report for the development": "Bericht für die Entwicklung",
+ "dev-note": "Packt die letzten 10 Testläufe in eine Datei: Versionen, Erkennungs-Einstellungen, Ergebnisse, Ursachen und die Bilder der Fehler – ohne Passwörter, Schlüssel und Aufnahmen. Im Chat mit Claude anhängen oder auf GitHub in den Ordner «feedback» hochladen.",
+ "Test run every night": "Jede Nacht ein Testlauf", "Saved": "Gespeichert",
+ "night-note": "Läuft nur, wenn der Simulator verbunden ist und kein Spiel läuft. Eine Meldung kommt nur, wenn die Punktzahl um 10 oder mehr schlechter ist als in der Nacht davor.",
  "Test run and optimization": "Testlauf und Optimierung",
  "tr-note": "MW Sim · 3D spielt einen festen Test ab (jedes Mal dieselben Besucher auf denselben Wegen) und weiss, wer wirklich zu sehen war. Motion Watch vergleicht das mit dem, was es erkannt hat, und schlägt bessere Einstellungen vor. Du kannst sie einzeln oder alle übernehmen und rückgängig machen – oder «Automatisch optimieren» probiert sie nacheinander aus und behält nur, was im nächsten Test wirklich besser ist.",
  "Start test run": "Testlauf starten", "Optimize automatically": "Automatisch optimieren",
@@ -20454,7 +20593,9 @@ function trPaint() {
     $("#tr-left").textContent = SM.running ? t("still about") + " " + dur(left) : "";
     $("#tr-bar").style.width = Math.max(2, Math.min(100, 100 * (1 - left / tot))) + "%";
   }
-  const box = $("#tr-res"); box.innerHTML = "";
+  const box = $("#tr-res");
+  if (box.contains(document.activeElement) && document.activeElement.tagName === "SELECT") return;   // do not close an open list
+  box.innerHTML = "";
   const L = R.last;
   if (!L) { box.appendChild(el("div", "mut", t("No test run yet."))); return; }
   const rp = L.report || {}, same = (R.runs || []).filter(x => x.plan === L.plan), prev = same.length > 1 ? same[same.length - 2] : null;
@@ -20469,6 +20610,20 @@ function trPaint() {
   const dsc = prev && L.score != null && prev.score != null ? L.score - prev.score : null;
   tile(t("Score"), (L.score ?? "–") + (dsc != null ? " (" + (dsc >= 0 ? "+" : "") + dsc.toFixed(1) + ")" : ""), dsc > 0 ? "tr-good" : dsc < 0 ? "tr-bad" : "");
   box.appendChild(tiles);
+  const CP = R.compare;                             // against the last run with another Motion Watch version (2.95.28)
+  if (CP) { const d = el("div", CP.score > 0 ? "tr-good" : CP.score < 0 ? "tr-bad" : "mut");
+    const ph = (CP.phases || []).map(p => p.name + ": " + [p.found ? (p.found > 0 ? "+" : "") + p.found + " " + t("persons found") : "", p.fa ? (p.fa > 0 ? "+" : "") + p.fa + " " + t("false alarms") : ""].filter(x => x).join(", ")).join(" · ");
+    d.textContent = "📊 " + t("Version") + " " + CP.to + " " + t("against") + " " + CP.from + ": " + t("Score") + " " + (CP.score > 0 ? "+" : "") + CP.score + (ph ? " · " + ph : "");
+    d.style.margin = "8px 0"; box.appendChild(d); }
+  // pictures of the mistakes (2.95.28)
+  if ((L.pics || []).length) {
+    const hp = el("div", "", "📷 " + t("Pictures of the mistakes (what Motion Watch saw)")); hp.style.cssText = "font-weight:600;margin:10px 0 6px"; box.appendChild(hp);
+    const gr = el("div"); gr.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px";
+    L.pics.forEach(pc => { const f = el("figure"); f.style.cssText = "margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden";
+      const im = document.createElement("img"); im.src = "/api/simtest/pic/" + Math.floor(L.t) + "/" + pc.file; im.alt = ""; im.loading = "lazy"; im.style.cssText = "display:block;width:100%";
+      const cap = el("figcaption", "", (pc.kind === "false" ? "🚨 " + t("False alarm") + ": " + pc.why : "👻 " + t("Missed") + " (" + pc.what + "): " + String(pc.why).split(", ").map(x => t(x)).join(", ")) + " · " + pc.phase + " · " + Math.round(pc.t) + " s");
+      cap.style.cssText = "font-size:12px;padding:5px 7px"; f.append(im, cap); gr.appendChild(f); });
+    box.appendChild(gr); }
   // phases
   const sc = el("div", "tr-scroll"), tb = el("table", "tr-tab");
   tb.innerHTML = "<tr><th>" + [t("Phase"), t("Persons"), t("Reaction"), t("Animals reported"), t("False alarms"), t("Missed")].join("</th><th>") + "</th></tr>";
@@ -20502,6 +20657,21 @@ function trPaint() {
     const b2 = el("button", "sec", "✓▶ " + t("Take over and test again")); b2.type = "button"; b2.disabled = busy || !R.connected;
     b2.onclick = async () => { await post("/api/simtest", {action: "apply", id: x.id}); trAct({action: "run", plan: L.plan}); }; row.appendChild(b2);
     c.appendChild(row); box.appendChild(c); });
+  // the report for the development and the night test (2.95.28)
+  const hd = el("h3", "", "🛠 " + t("For the development")); hd.style.margin = "14px 0 4px"; box.appendChild(hd);
+  box.appendChild(el("div", "mut", t("dev-note")));
+  const rr = el("div", "tr-row"); rr.style.marginTop = "6px";
+  const dl = el("a", "btn", "📦 " + t("Report for the development")); dl.href = "/api/simtest/report.zip?n=10"; rr.appendChild(dl); box.appendChild(rr);
+  const NT = R.nightly || {}; const nr = el("div", "tr-row"); nr.style.marginTop = "10px";
+  const nl = el("label", "opt"); nl.style.cssText = "display:flex;gap:8px;align-items:center;flex:1 1 260px";
+  const nc = document.createElement("input"); nc.type = "checkbox"; nc.className = "sw"; nc.checked = !!NT.on;
+  nl.append(nc, el("span", "", "🌙 " + t("Test run every night")));
+  const nhs = document.createElement("select"); for (let h = 0; h < 24; h++) { const o = el("option", "", ("0" + h).slice(-2) + ":00"); o.value = h; nhs.appendChild(o); } nhs.value = NT.hour ?? 3;
+  const ps = document.createElement("select"); TR_PLANS.forEach(([k, n]) => { const o = el("option", "", t(n).split(" (")[0]); o.value = k; ps.appendChild(o); }); ps.value = NT.plan || "quick";
+  const save = () => post("/api/simtest", {action: "nightly", on: nc.checked, hour: +nhs.value, plan: ps.value}).then(() => toast("✓ " + t("Saved")));
+  nc.onchange = nhs.onchange = ps.onchange = save;
+  nr.append(nl, nhs, ps); box.appendChild(nr);
+  box.appendChild(el("div", "mut", t("night-note"))).style.marginTop = "4px";
   // the automatic optimization
   if (A && (A.log || []).length) {
     const ha = el("h3", "", "🤖 " + t("Automatic optimization")); ha.style.margin = "12px 0 4px"; box.appendChild(ha);
@@ -20517,10 +20687,10 @@ function trPaint() {
       b.title = trDate(r.t) + " · " + r.plan + " · " + t("Score") + " " + r.score + " · " + r.found + "/" + r.persons + " · " + t("False alarms") + " " + r.fa; hist.appendChild(b); });
     box.appendChild(hist);
     const sc2 = el("div", "tr-scroll"), t2 = el("table", "tr-tab");
-    t2.innerHTML = "<tr><th>" + [t("When"), t("Test"), t("Persons"), t("False alarms"), t("Score"), t("Changed before")].join("</th><th>") + "</th></tr>";
+    t2.innerHTML = "<tr><th>" + [t("When"), t("Test"), "MW", t("Persons"), t("False alarms"), t("Score"), t("Changed before")].join("</th><th>") + "</th></tr>";
     runs.slice().reverse().forEach((r, i, arr) => { const tr = el("tr"); const pv = arr.slice(i + 1).find(x => x.plan === r.plan);
       const diff = pv && r.cfg && pv.cfg ? Object.keys(r.cfg).filter(k => JSON.stringify(r.cfg[k]) !== JSON.stringify(pv.cfg[k])).map(k => t(TR_KEYS[k] || k) + " " + trVal(r.cfg[k])) : [];
-      [trDate(r.t), t((TR_PLANS.find(p => p[0] === r.plan) || ["", r.plan])[1]).split(" (")[0], r.found + " / " + r.persons, String(r.fa), String(r.score ?? "–"), diff.join(", ") || "–"].forEach(v => tr.appendChild(el("td", "", v)));
+      [trDate(r.t) + (r.night ? " 🌙" : ""), t((TR_PLANS.find(p => p[0] === r.plan) || ["", r.plan])[1]).split(" (")[0], r.mw || "–", r.found + " / " + r.persons, String(r.fa), String(r.score ?? "–"), diff.join(", ") || "–"].forEach(v => tr.appendChild(el("td", "", v)));
       t2.appendChild(tr); });
     sc2.appendChild(t2); box.appendChild(sc2);
   }
@@ -29185,9 +29355,51 @@ class WebStream:
                 opt_restore(TESTOPT["undo"]["cfg"]); TESTOPT["undo"] = None; testopt_save()
             elif a == "clear":
                 TESTOPT["runs"] = []; TESTOPT["sugg"] = []; TESTOPT["auto"] = None; testopt_save()
+            elif a == "nightly":
+                CFG["testopt_nightly"] = bool(d.get("on")); CFG["testopt_hour"] = max(0, min(23, int(d.get("hour", CFG["testopt_hour"]))))
+                if d.get("plan") in ("standard", "quick", "hard", "night"):
+                    CFG["testopt_plan"] = d["plan"]
+                save_settings()
             else:
                 return reply({"ok": False, "error": "unknown action"}, 400)
             return reply(dict(testopt_state(), ok=True))
+
+        @app.route("/api/simtest/pic/<int:rid>/<name>")
+        def api_simtest_pic(rid, name):
+            if not re.fullmatch(r"[fm]\d{2}\.jpg", name):
+                return Response("", 404)
+            p_ = os.path.join(_testopt_dir(rid), name)
+            if not os.path.isfile(p_):
+                return Response("", 404)
+            with open(p_, "rb") as f_:
+                return Response(f_.read(), mimetype="image/jpeg", headers={"Cache-Control": "private, max-age=86400"})
+
+        @app.route("/api/simtest/report.zip")
+        def api_simtest_report():
+            """«Report for the development» (2.95.28): the last test runs with versions, settings of the recognition, results,
+            causes and the pictures of the mistakes - no passwords, no addresses, no recordings"""
+            import io
+            n_ = max(1, min(30, int(request.args.get("n", 10)) if str(request.args.get("n", "10")).isdigit() else 10))
+            runs = TESTOPT["runs"][-n_:]
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+                info_ = {"made": datetime.now().isoformat(timespec="seconds"), "motion_watch": APP_VERSION, "simulator_expected": SIM3D["version"],
+                         "platform": "pi" if _is_pi() else sys.platform, "ai": STATE.get("ai_status"), "compare": testopt_compare(),
+                         "runs": [{k: r.get(k) for k in ("t", "plan", "score", "cfg", "mw", "sim", "night", "pics", "report")} for r in runs]}
+                for r in info_["runs"]:
+                    r["report"] = {k: v for k, v in (r.get("report") or {}).items() if k != "device"}
+                z.writestr("testlauf_bericht.json", json.dumps(info_, indent=1, ensure_ascii=False))
+                z.writestr("LIES_MICH.txt", "Bericht der Testläufe von Motion Watch " + APP_VERSION + " für die Entwicklung.\n"
+                           "Einfach im Chat mit Claude anhängen oder auf GitHub in den Ordner feedback/ hochladen.\n"
+                           "Enthält: Versionen, Erkennungs-Einstellungen, Ergebnisse pro Phase, Ursachen, kleine Bilder der Fehler.\n"
+                           "Enthält nicht: Passwörter, Schlüssel, Adressen, Aufnahmen.\n")
+                for r in runs:
+                    for pc in r.get("pics") or []:
+                        p_ = os.path.join(_testopt_dir(r["t"]), pc["file"])
+                        if os.path.isfile(p_):
+                            z.write(p_, f"bilder/{int(r['t'])}_{pc['file']}")
+            name = "MotionWatch_Testbericht_" + APP_VERSION.replace(".", "_") + "_" + datetime.now().strftime("%Y%m%d_%H%M") + ".zip"
+            return Response(buf.getvalue(), mimetype="application/zip", headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
         @app.route("/api/sim/upload", methods=["POST"])
         def api_sim_upload():
@@ -31967,7 +32179,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.27")
+        self.root.title("Motion Watch 2.95.28")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -32257,7 +32469,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.27 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.28 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -38959,7 +39171,7 @@ for _k, _v in _HX52.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_HX59 = {'Keyword at the start of every message (e.g. MW gives MW-ALARM)': ('Stichwort am Anfang jeder Meldung (z. B. MW ergibt MW-ALARM)', 'Mot-clé au début de chaque message (p. ex. MW donne MW-ALARM)', "Parola chiave all'inizio di ogni messaggio (es. MW dà MW-ALARM)", 'Pled-clav al cumenzament da mintga messadi (p. ex. MW dat MW-ALARM)'), 'Keyword at the start of every message (MW-ALARM, MW-WAERME …: for iPhone shortcuts)': ('Stichwort am Anfang jeder Meldung (MW-ALARM, MW-WAERME …: für iPhone-Kurzbefehle)', 'Mot-clé au début de chaque message (MW-ALARM … : pour les raccourcis iPhone)', 'Parola chiave all’inizio di ogni messaggio (MW-ALARM …: per i comandi rapidi iPhone)', 'Pled-clav al cumenzament da mintga messadi (MW-ALARM …: per scursanidas iPhone)'), 'E-mail: messages also by e-mail (the iPhone can start a shortcut from it)': ('E-Mail: Meldungen auch per E-Mail (das iPhone kann damit einen Kurzbefehl starten)', 'E-mail : messages aussi par e-mail (l’iPhone peut lancer un raccourci)', 'E-mail: messaggi anche per e-mail (l’iPhone può avviare un comando rapido)', 'E-mail: messadis era per e-mail (l’iPhone po aviar ina scursanida)'), 'E-mail: to (your address)': ('E-Mail: an (deine Adresse)', 'E-mail : à (votre adresse)', 'E-mail: a (il tuo indirizzo)', 'E-mail: a (tia adressa)'), 'E-mail: SMTP server (e.g. smtp.gmail.com, mail.gmx.net)': ('E-Mail: SMTP-Server (z. B. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com)', 'E-mail : serveur SMTP (p. ex. smtp.gmail.com)', 'E-mail: server SMTP (es. smtp.gmail.com)', 'E-mail: server SMTP (p. ex. smtp.gmail.com)'), 'E-mail: port (587 or 465)': ('E-Mail: Port (587 oder 465)', 'E-mail : port (587 ou 465)', 'E-mail: porta (587 o 465)', 'E-mail: port (587 u 465)'), 'E-mail: user name (usually the address)': ('E-Mail: Benutzername (meist die Adresse)', 'E-mail : nom d’utilisateur (souvent l’adresse)', 'E-mail: nome utente (di solito l’indirizzo)', 'E-mail: num d’utilisader (savens l’adressa)'), 'E-mail: password (Gmail / iCloud: app password)': ('E-Mail: Passwort (Gmail / iCloud: App-Passwort)', 'E-mail : mot de passe (Gmail / iCloud : mot de passe d’application)', 'E-mail: password (Gmail / iCloud: password per app)', 'E-mail: pled-clav (Gmail / iCloud: pled-clav d’app)'), 'E-mail: which messages': ('E-Mail: welche Meldungen', 'E-mail : quels messages', 'E-mail: quali messaggi', 'E-mail: tge messadis'), 'only alarms (person, warm, noise, sabotage)': ('nur Alarme (Person, Wärme, Lärm, Sabotage)', 'seulement les alarmes', 'solo gli allarmi', 'mo alarms'), 'all messages': ('alle Meldungen', 'tous les messages', 'tutti i messaggi', 'tut ils messadis'), 'invalid e-mail address': ('ungültige E-Mail-Adresse', 'adresse e-mail invalide', 'indirizzo e-mail non valido', 'adressa d’e-mail nunvalida'), 'port 587 or 465': ('Port 587 oder 465', 'port 587 ou 465', 'porta 587 o 465', 'port 587 u 465'), '1 to 12 letters or digits': ('1 bis 12 Buchstaben oder Ziffern', '1 à 12 lettres ou chiffres', 'da 1 a 12 lettere o cifre', '1 fin 12 bustabs u cifras')}
+_HX59 = {'Night test run: score {a} instead of {b} - the recognition got worse. Details: tab Simulator.': ('Nacht-Testlauf: Punktzahl {a} statt {b} – die Erkennung ist schlechter geworden. Einzelheiten: Reiter Simulator.', 'Test de nuit : score {a} au lieu de {b} – la détection s’est dégradée. Détails : onglet Simulateur.', 'Test notturno: punteggio {a} invece di {b} – il riconoscimento è peggiorato. Dettagli: scheda Simulatore.', 'Test da notg: puncts {a} empè da {b} – la renconuschientscha è daventada mendra. Detagls: tab Simulatur.'), 'Test run': ('Testlauf', 'Test', 'Test', 'Test'), 'Keyword at the start of every message (e.g. MW gives MW-ALARM)': ('Stichwort am Anfang jeder Meldung (z. B. MW ergibt MW-ALARM)', 'Mot-clé au début de chaque message (p. ex. MW donne MW-ALARM)', "Parola chiave all'inizio di ogni messaggio (es. MW dà MW-ALARM)", 'Pled-clav al cumenzament da mintga messadi (p. ex. MW dat MW-ALARM)'), 'Keyword at the start of every message (MW-ALARM, MW-WAERME …: for iPhone shortcuts)': ('Stichwort am Anfang jeder Meldung (MW-ALARM, MW-WAERME …: für iPhone-Kurzbefehle)', 'Mot-clé au début de chaque message (MW-ALARM … : pour les raccourcis iPhone)', 'Parola chiave all’inizio di ogni messaggio (MW-ALARM …: per i comandi rapidi iPhone)', 'Pled-clav al cumenzament da mintga messadi (MW-ALARM …: per scursanidas iPhone)'), 'E-mail: messages also by e-mail (the iPhone can start a shortcut from it)': ('E-Mail: Meldungen auch per E-Mail (das iPhone kann damit einen Kurzbefehl starten)', 'E-mail : messages aussi par e-mail (l’iPhone peut lancer un raccourci)', 'E-mail: messaggi anche per e-mail (l’iPhone può avviare un comando rapido)', 'E-mail: messadis era per e-mail (l’iPhone po aviar ina scursanida)'), 'E-mail: to (your address)': ('E-Mail: an (deine Adresse)', 'E-mail : à (votre adresse)', 'E-mail: a (il tuo indirizzo)', 'E-mail: a (tia adressa)'), 'E-mail: SMTP server (e.g. smtp.gmail.com, mail.gmx.net)': ('E-Mail: SMTP-Server (z. B. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com)', 'E-mail : serveur SMTP (p. ex. smtp.gmail.com)', 'E-mail: server SMTP (es. smtp.gmail.com)', 'E-mail: server SMTP (p. ex. smtp.gmail.com)'), 'E-mail: port (587 or 465)': ('E-Mail: Port (587 oder 465)', 'E-mail : port (587 ou 465)', 'E-mail: porta (587 o 465)', 'E-mail: port (587 u 465)'), 'E-mail: user name (usually the address)': ('E-Mail: Benutzername (meist die Adresse)', 'E-mail : nom d’utilisateur (souvent l’adresse)', 'E-mail: nome utente (di solito l’indirizzo)', 'E-mail: num d’utilisader (savens l’adressa)'), 'E-mail: password (Gmail / iCloud: app password)': ('E-Mail: Passwort (Gmail / iCloud: App-Passwort)', 'E-mail : mot de passe (Gmail / iCloud : mot de passe d’application)', 'E-mail: password (Gmail / iCloud: password per app)', 'E-mail: pled-clav (Gmail / iCloud: pled-clav d’app)'), 'E-mail: which messages': ('E-Mail: welche Meldungen', 'E-mail : quels messages', 'E-mail: quali messaggi', 'E-mail: tge messadis'), 'only alarms (person, warm, noise, sabotage)': ('nur Alarme (Person, Wärme, Lärm, Sabotage)', 'seulement les alarmes', 'solo gli allarmi', 'mo alarms'), 'all messages': ('alle Meldungen', 'tous les messages', 'tutti i messaggi', 'tut ils messadis'), 'invalid e-mail address': ('ungültige E-Mail-Adresse', 'adresse e-mail invalide', 'indirizzo e-mail non valido', 'adressa d’e-mail nunvalida'), 'port 587 or 465': ('Port 587 oder 465', 'port 587 ou 465', 'porta 587 o 465', 'port 587 u 465'), '1 to 12 letters or digits': ('1 bis 12 Buchstaben oder Ziffern', '1 à 12 lettres ou chiffres', 'da 1 a 12 lettere o cifre', '1 fin 12 bustabs u cifras')}
 for _k, _v in _HX59.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
@@ -39230,6 +39442,7 @@ if __name__ == "__main__":
     took = prepare_settings_file() if not a.demo else ""
     load_settings()
     testopt_load()
+    threading.Thread(target=testopt_nightly_loop, daemon=True, name="testnight").start()
     if not CFG.get("sim_autostart_v2"):                    # 2.95.26: the Pi outside does not switch to a PC simulator by itself
         CFG["sim_autostart_v2"] = True
         if _is_pi():

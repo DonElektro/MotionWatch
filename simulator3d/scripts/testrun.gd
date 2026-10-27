@@ -305,6 +305,7 @@ func _sample(dt: float) -> void:
 
 func _make_report() -> void:
 	var phs := []
+	var all_missed := []
 	var tp := 0
 	var td := 0
 	var lat_all := []
@@ -332,6 +333,17 @@ func _make_report() -> void:
 					lats.append(max(0.0, float(r["det"]) - float(r["first"])))
 				else:
 					missed.append(r["kind"])
+					var wy := []
+					if float(r["light"]) < 0.5:
+						wy.append("dark")
+					if float(r["px"]) < 70.0:
+						wy.append("small")
+					if r["kind"] == "jogger":
+						wy.append("fast")
+					if r["crouch"]:
+						wy.append("crouch")
+					# when it was best to see (3D-3.31): Motion Watch takes its own picture of that moment into the report
+					all_missed.append({"t": snappedf(float(r["first"]) - t0 + min(3.0, float(r["vis"]) / 2.0), 0.1), "phase": i, "kind": r["kind"], "why": wy})
 					if float(r["light"]) < 0.5:
 						why["dark"] += 1
 					if float(r["px"]) < 70.0:
@@ -369,7 +381,7 @@ func _make_report() -> void:
 	var dev := str(main.mw.get("device", "Motion Watch"))
 	report = {"v": 2, "plan": plan, "plan_name": PLANS[plan]["name"], "date": Time.get_datetime_string_from_system(false, true), "simulator": main.version(), "scene": main.scene,
 			"device": dev, "persons": tp, "persons_detected": td, "rate": snappedf(100.0 * td / max(1, tp), 1),
-			"latency_s": snappedf(lat_avg, 0.1), "false_alarms": falses.size(), "false_list": falses, "noise_alarms": noises,
+			"latency_s": snappedf(lat_avg, 0.1), "false_alarms": falses.size(), "false_list": falses, "missed_list": all_missed, "noise_alarms": noises,
 			"phases": phs, "note": "Wahrheit: sichtbar für Kopf- oder feste Kamera (frei, gross genug, genug Licht)."}
 	info = "Testlauf fertig: Personen erkannt %d von %d (%d %%), Reaktionszeit %s, Fehlalarme %d, Geräuschalarme %d." % [
 			td, tp, int(report["rate"]), ("%.1f s" % lat_avg) if lat_avg >= 0.0 else "–", falses.size(), noises.size()]

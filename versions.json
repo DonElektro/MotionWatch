@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 14:40",
+ "generated": "2026-10-27 14:48",
  "versions": [
   {
-   "version": "2.95.27",
-   "file": "webcam_bewegung_2_95_27.py",
+   "version": "2.95.28",
+   "file": "webcam_bewegung_2_95_28.py",
    "url": "",
-   "sha256": "5008a39bc533443dd2d499a80ce7252c65d7da007843841a77914bb7de8c358e",
-   "date": "2026-10-27 14:40",
-   "notes": "FIX - since 2.95.25 a few settings were missing from the defaults (simulator auto update, network watch, presence): errors on some pages. New: a keyword at the start of every message (MW-ALARM, MW-WAERME …) for iPhone shortcut automations, e-mail as a way for messages, shortcut addresses (/k/<key>/arm, siren_off, light_on, photo.jpg …).",
-   "sig": "9feab1c2eb018d432430bfbb2c328d4cb8bf51a887c8bc1e2bc96282a75ffcb60ac5aeb91e1436d28c9f7b3da60419a25f55165df76e13cf280a8d234e80070c"
+   "sha256": "520796dd91310129772831d1a736ffc89790a0b4fa4efde0a156410e93bd6f03",
+   "date": "2026-10-27 14:48",
+   "notes": "test runs flow back into the development: «Report for the development» (ZIP with versions, settings, results, causes and pictures - no secrets; for the chat or GitHub feedback/), pictures of every false alarm and missed person (3D-3.31), comparison with the last run of another Motion Watch version, test run every night (optional).",
+   "sig": "f59cc5357d0daf102616825574bf1dd747e5b6bf9304bfdcbd3437c6305939e70e25aa19c8537c73717d03a86055bf74126291acd2afe987dfc351a61f86fe0e"
   },
   {
    "version": "2.94.5",
