@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_28.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_29.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -612,6 +612,9 @@ Features
   * 2.95.28: test runs flow back into the development: «Report for the development» (ZIP with versions, settings,
     results, causes and pictures - no secrets; for the chat or GitHub feedback/), pictures of every false alarm and missed
     person (3D-3.31), comparison with the last run of another Motion Watch version, test run every night (optional).
+  * 2.95.29: game corner for game nights (Tools → Leisure): guests join with the phone via QR code - quiz with buzzer,
+    werewolf with narrator, drawing and guessing, connect four, dice and timer, scores. Game collection (8 free open-source
+    browser games, 13.5 MB, offline). In the own Wi-Fi without login at /spiele. Fix: 'random' was not imported.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -620,10 +623,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_28.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_29.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_28.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_28.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_29.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_29.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -632,7 +635,7 @@ Servo backends: gpiozero (works on Raspberry Pi 5) -> pigpio (older Pis, needs
 "sudo pigpiod") -> simulation (no hardware, everything else still works).
 """
 
-import argparse, atexit, functools, glob, hashlib, hmac, ipaddress, json, secrets, math, os, queue, re, shutil, signal, subprocess, sys, tempfile, threading, time, urllib.request, uuid, zipfile
+import argparse, atexit, random, functools, glob, hashlib, hmac, ipaddress, json, secrets, math, os, queue, re, shutil, signal, subprocess, sys, tempfile, threading, time, urllib.request, uuid, zipfile
 from collections import deque
 from datetime import datetime, timedelta
 
@@ -640,7 +643,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.28"
+APP_VERSION = "2.95.29"
 
 
 def default_data_dir():
@@ -13649,6 +13652,659 @@ def testopt_state():
             "nightly": {"on": bool(CFG.get("testopt_nightly")), "hour": int(CFG.get("testopt_hour", 3)), "plan": CFG.get("testopt_plan", "quick")}}
 
 
+# ---- game corner (2.95.29): party games for the phones in the own Wi-Fi - quiz with buzzer, werewolf narrator,
+# drawing and guessing, connect four, dice / timer / scores - and a collection of free browser games (from GitHub).
+# The phones join with a QR code (a room key in the address, no password); the room closes by itself after some hours.
+PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
+PARTY_COND = threading.Condition()
+GAMES_PKG = {"version": "GS-1.0", "file": "games/MotionWatch_Spiele.zip", "size": 13547626, "sha256": "6e0cbc3b9d39bb3fece9e2932d7eb36419fe3196f1fbdad87f688c6940f7e9a6"}
+GAMES_DL = {"running": False, "msg": "", "got": 0}
+
+QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
+        ("Welches Tier ist das grösste Landtier der Schweiz?", "Rothirsch (oder Wisent im Gehege)"), ("Wie viele Beine hat eine Spinne?", "8"),
+        ("Welcher Planet ist der Sonne am nächsten?", "Merkur"), ("Wie heisst der längste Fluss der Schweiz?", "Rhein (Aare: längster ganz in der Schweiz)"),
+        ("In welchem Jahr landeten Menschen zum ersten Mal auf dem Mond?", "1969"), ("Welches Gas atmen Pflanzen ein?", "Kohlendioxid (CO₂)"),
+        ("Wie heisst die Hauptstadt von Australien?", "Canberra"), ("Wie viele Minuten hat ein Tag?", "1440"),
+        ("Welches Tier schläft im Winter in einer Höhle und frisst vorher Honig und Beeren?", "Braunbär"),
+        ("Wie heisst der grösste See, der ganz in der Schweiz liegt?", "Neuenburgersee"), ("Welche Farbe hat der Fuchs im Winter in der Arktis?", "Weiss (Polarfuchs)"),
+        ("Wie viele Spieler hat eine Fussballmannschaft auf dem Feld?", "11"), ("Was misst ein Barometer?", "Luftdruck"),
+        ("Welcher Vogel kann rückwärts fliegen?", "Kolibri"), ("Wie heisst der Stern, der uns am nächsten ist?", "Die Sonne"),
+        ("Welches ist das schnellste Landtier?", "Gepard"), ("Aus welchem Land kommt die Pizza?", "Italien"),
+        ("Wie viele Zähne hat ein erwachsener Mensch normalerweise?", "32"), ("Welches Metall ist bei Zimmertemperatur flüssig?", "Quecksilber"),
+        ("Wie heisst das Nationalgericht mit geschmolzenem Käse im Caquelon?", "Fondue"), ("Welcher Pass verbindet Uri und das Tessin?", "Gotthard"),
+        ("Wie viele Seiten hat ein Sechseck?", "6"), ("Welches Tier ist das Wappentier von Bern?", "Bär"),
+        ("Was ist schwerer: ein Kilo Federn oder ein Kilo Steine?", "Gleich schwer"), ("Welche Blume ist das Symbol der Alpen?", "Edelweiss"),
+        ("Wie heisst der kleinste Planet unseres Sonnensystems?", "Merkur"), ("Bei wie viel Grad kocht Wasser auf Meereshöhe?", "100 °C"),
+        ("Welches Tier legt die grössten Eier?", "Strauss"), ("Wie viele Kontinente gibt es?", "7"),
+        ("Welcher Schweizer erfand die Klettverschluss-Idee?", "George de Mestral"), ("Welche Sprache spricht man im Engadin neben Deutsch?", "Rätoromanisch"),
+        ("Wie heisst der Wind, der warm über die Alpen fällt?", "Föhn"), ("Welches Organ pumpt das Blut?", "Herz"),
+        ("Wie lange braucht das Licht von der Sonne zur Erde (ungefähr)?", "8 Minuten"), ("Welches Tier hat schwarz-weisse Streifen am Kopf und gräbt Baue?", "Dachs"),
+        ("Wie viele Stunden Zeitunterschied hat die Schweiz im Sommer zu UTC?", "2"), ("Was sammeln Bienen?", "Nektar und Pollen"),
+        ("Welcher Kontinent ist der kälteste?", "Antarktis"), ("Welches Werkzeug zeigt immer nach Norden?", "Kompass"),
+        ("Wie heisst ein junger Fuchs?", "Welpe"), ("Wie viele Ecken hat ein Würfel?", "8"), ("Welches Sternbild zeigt den Polarstern?", "Kleiner Bär (Kleiner Wagen)")]
+WORDS = ["Zelt", "Wohnwagen", "Lagerfeuer", "Fuchs", "Igel", "Eule", "Berg", "Kuh", "Käse", "Fondue", "Schokolade", "Uhr", "Velo", "Zug",
+         "Schiff", "Ballon", "Regenbogen", "Gewitter", "Schneemann", "Ski", "Taschenlampe", "Mond", "Stern", "Sonne", "Wolke", "Baum", "Pilz",
+         "Blume", "Biene", "Schnecke", "Frosch", "Fisch", "Angel", "Brücke", "Tunnel", "Burg", "Krone", "Drache", "Ritter", "Pirat",
+         "Schatz", "Insel", "Palme", "Kaktus", "Wüste", "Kamel", "Elefant", "Giraffe", "Schlange", "Krokodil", "Pinguin", "Eisbär",
+         "Iglu", "Rakete", "Roboter", "Kamera", "Brille", "Schirm", "Hut", "Schuh", "Socke", "Handschuh", "Gitarre", "Trommel",
+         "Glocke", "Kuchen", "Pizza", "Banane", "Apfel", "Karotte", "Ei", "Hamburger", "Glace", "Teller", "Gabel", "Tasse",
+         "Kerze", "Lampe", "Sofa", "Bett", "Fenster", "Tür", "Schlüssel", "Leiter", "Hammer", "Schere", "Buch", "Brief", "Telefon",
+         "Computer", "Maus", "Katze", "Hund", "Pferd", "Hase", "Reh", "Wildschwein", "Spinne", "Schmetterling", "Vogelnest",
+         "Sandburg", "Wasserfall", "Vulkan", "Kompass", "Karte", "Rucksack", "Schlafsack", "Grill", "Wurst", "Marshmallow",
+         "Gespenst", "Hexe", "Zauberer", "König", "Clown", "Feuerwehr", "Polizei", "Traktor", "Helikopter", "Flugzeug", "U-Boot",
+         "Leuchtturm", "Anker", "Schneeflocke", "Herz", "Diamant", "Zahnbürste", "Badewanne", "Dusche", "Kran", "Bagger"]
+WOLF_NIGHT = ["Es wird Nacht. Alle schliessen die Augen.", "Die Werwölfe erwachen und einigen sich still auf ein Opfer. Zeigt auf die Person.",
+              "Die Werwölfe schlafen wieder ein.", "Die Seherin erwacht und zeigt auf eine Person. Der Erzähler zeigt Daumen hoch für Werwolf, Daumen runter für keinen.",
+              "Die Seherin schläft wieder ein.", "Die Hexe erwacht. Der Erzähler zeigt ihr das Opfer. Will sie heilen? Will sie jemanden vergiften?",
+              "Die Hexe schläft wieder ein.", "Es wird Tag. Alle wachen auf."]
+WOLF_DAY = ["Der Erzähler sagt, wer in der Nacht gestorben ist, und tippt diese Person als tot an.",
+            "Diskussion: Wer könnte ein Werwolf sein? Danach stimmen alle auf dem Handy ab."]
+WOLF_ROLES = {"wolf": "🐺 Werwolf", "seer": "🔮 Seherin", "witch": "🧪 Hexe", "villager": "🧑‍🌾 Dorfbewohner"}
+
+
+def party_on():
+    return bool(PARTY["key"]) and time.time() < PARTY["until"]
+
+
+def party_bump():
+    with PARTY_COND:
+        PARTY["seq"] += 1
+        PARTY_COND.notify_all()
+
+
+def party_open(hours=6.0):
+    if not party_on():
+        PARTY.update(key=secrets.token_urlsafe(9), game="lobby", players={}, host="", g={}, tools={})
+    PARTY["until"] = time.time() + max(0.5, min(24.0, float(hours))) * 3600
+    log_event("sys", f"Game corner open for {hours:g} h")
+    party_bump()
+
+
+def party_close():
+    PARTY.update(key="", until=0.0, game="lobby", players={}, host="", g={}, tools={})
+    log_event("sys", "Game corner closed")
+    party_bump()
+
+
+def _pl(pid):
+    return PARTY["players"].get(pid)
+
+
+def _pname(pid):
+    p = _pl(pid)
+    return p["name"] if p else "?"
+
+
+def party_view(pid):
+    """what one phone sees (the secret role only its own)"""
+    now = time.time()
+    me = _pl(pid)
+    pls = [{"id": k, "name": v["name"], "score": v["score"], "on": now - v["t"] < 25, "host": k == PARTY["host"]}
+           for k, v in sorted(PARTY["players"].items(), key=lambda kv: -kv[1]["score"])]
+    v = {"seq": PARTY["seq"], "now": now, "game": PARTY["game"], "players": pls, "me": pid if me else "", "host": PARTY["host"] == pid,
+         "hostname": _pname(PARTY["host"]) if PARTY["host"] else "", "until": int(PARTY["until"] - now), "tools": PARTY["tools"],
+         "games": games_list()}
+    G = PARTY["g"]; gm = PARTY["game"]
+    if gm == "quiz":
+        q = QUIZ[G.get("qi", 0) % len(QUIZ)]
+        v["quiz"] = {"phase": G.get("phase", "wait"), "order": [{"id": x, "name": _pname(x)} for x in G.get("order", [])],
+                     "q": q[0] if (G.get("show") or v["host"]) else "", "a": q[1] if v["host"] else "", "n": G.get("qi", 0) + 1, "own": G.get("own", "")}
+    elif gm == "wolf":
+        alive = G.get("alive", {})
+        v["wolf"] = {"phase": G.get("phase", "setup"), "step": G.get("step", 0), "cfg": G.get("cfg", {}),
+                     "role": WOLF_ROLES.get(G.get("roles", {}).get(pid, ""), "") if pid != PARTY["host"] else "",
+                     "alive": [{"id": k, "name": _pname(k), "alive": a} for k, a in alive.items()],
+                     "voting": G.get("voting", False), "myvote": G.get("votes", {}).get(pid, ""),
+                     "votes": len(G.get("votes", {})), "text": G.get("text", ""), "winner": G.get("winner", "")}
+        if v["host"]:
+            v["wolf"]["roles"] = [{"name": _pname(k), "role": WOLF_ROLES.get(r, r), "alive": alive.get(k, True)} for k, r in G.get("roles", {}).items()]
+            tally = {}
+            for t_ in G.get("votes", {}).values():
+                tally[t_] = tally.get(t_, 0) + 1
+            v["wolf"]["tally"] = sorted([{"name": _pname(k), "id": k, "n": n} for k, n in tally.items()], key=lambda x: -x["n"])
+    elif gm == "draw":
+        drawer = G.get("drawer", "")
+        v["draw"] = {"drawer": drawer, "drawername": _pname(drawer), "word": G.get("word", "") if pid == drawer else "",
+                     "hint": " ".join("_" if c.isalpha() else c for c in G.get("word", "")) if pid != drawer else "",
+                     "strokes": G.get("strokes", []), "guessed": [_pname(x) for x in G.get("guessed", [])], "iguessed": pid in G.get("guessed", []),
+                     "left": int(max(0, G.get("until", 0) - now)), "log": G.get("log", [])[-12:], "round": G.get("round", 0), "last": G.get("lastword", "")}
+    elif gm == "c4":
+        v["c4"] = {"seats": [{"id": x, "name": _pname(x)} if x else None for x in G.get("seats", [None, None])], "board": G.get("board", []),
+                   "turn": G.get("turn", 0), "win": G.get("win", -1), "line": G.get("line", [])}
+    return v
+
+
+def _c4_win(b):
+    for r in range(6):
+        for c in range(7):
+            p = b[r][c]
+            if p < 0:
+                continue
+            for dr, dc in ((0, 1), (1, 0), (1, 1), (1, -1)):
+                cells = [(r + i * dr, c + i * dc) for i in range(4)]
+                if all(0 <= rr < 6 and 0 <= cc < 7 and b[rr][cc] == p for rr, cc in cells):
+                    return p, cells
+    return -1, []
+
+
+def _draw_next():
+    G = PARTY["g"]
+    ids = [k for k, v in PARTY["players"].items() if time.time() - v["t"] < 40]
+    if not ids:
+        return
+    cur = G.get("drawer", "")
+    nxt = ids[(ids.index(cur) + 1) % len(ids)] if cur in ids else ids[0]
+    used = G.setdefault("used", [])
+    pool = [w for w in WORDS if w not in used] or WORDS
+    w = random.choice(pool); used.append(w)
+    G.update(lastword=G.get("word", ""), drawer=nxt, word=w, strokes=[], guessed=[], until=time.time() + 90, round=G.get("round", 0) + 1)
+    G.setdefault("log", []).append({"n": "🎨", "t": f"{_pname(nxt)} zeichnet jetzt."})
+
+
+def party_tick():
+    """time based things (drawing: next round when the time is over)"""
+    if PARTY["game"] == "draw":
+        G = PARTY["g"]
+        if G.get("drawer") and time.time() > G.get("until", 0):
+            G.setdefault("log", []).append({"n": "⏰", "t": "Zeit um! Es war: " + G.get("word", "")})
+            _draw_next(); party_bump()
+
+
+def party_act(pid, d):
+    """one action of a phone; returns an error text or ''"""
+    me = _pl(pid)
+    if not me:
+        return "please join first"
+    me["t"] = time.time()
+    a = str(d.get("a") or ""); host = PARTY["host"] == pid; G = PARTY["g"]
+    if a == "game":                                    # the host chooses the game
+        if not host:
+            return "only the host"
+        gm = str(d.get("game") or "lobby")
+        if gm not in ("lobby", "quiz", "wolf", "draw", "c4"):
+            return "unknown game"
+        PARTY["game"] = gm; PARTY["g"] = {}
+        if gm == "c4":
+            PARTY["g"] = {"seats": [None, None], "board": [[-1] * 7 for _ in range(6)], "turn": 0, "win": -1}
+        if gm == "wolf":
+            n = len(PARTY["players"]) - 1
+            PARTY["g"] = {"phase": "setup", "cfg": {"wolf": max(1, n // 4), "seer": 1 if n >= 4 else 0, "witch": 1 if n >= 6 else 0}}
+        if gm == "draw":
+            _draw_next()
+    elif a == "makehost":
+        if not host and PARTY["host"] in PARTY["players"]:
+            return "only the host"
+        if d.get("id") in PARTY["players"]:
+            PARTY["host"] = d["id"]
+    elif a == "score":                                 # the host changes points (scoreboard)
+        if not host:
+            return "only the host"
+        p = _pl(d.get("id"))
+        if p:
+            p["score"] += max(-10, min(10, int(d.get("n", 1))))
+    elif a == "resetscores":
+        if not host:
+            return "only the host"
+        for p in PARTY["players"].values():
+            p["score"] = 0
+    elif a == "dice":                                  # tools for everybody
+        n = max(1, min(6, int(d.get("n", 1)))); sides = int(d.get("sides", 6)) if int(d.get("sides", 6)) in (4, 6, 8, 10, 12, 20) else 6
+        PARTY["tools"]["dice"] = {"by": me["name"], "vals": [random.randint(1, sides) for _ in range(n)], "sides": sides, "t": time.time()}
+    elif a == "timer":
+        s_ = max(0, min(3600, int(d.get("s", 60))))
+        PARTY["tools"]["timer"] = {"by": me["name"], "end": time.time() + s_, "s": s_} if s_ else {}
+    elif PARTY["game"] == "quiz":
+        if a == "buzz":
+            if G.get("phase") == "open" and pid not in G.get("order", []) and not host:
+                G.setdefault("order", []).append(pid)
+                if len(G["order"]) == 1:
+                    G["phase"] = "locked"
+        elif not host:
+            return "only the host"
+        elif a == "open":
+            G.update(phase="open", order=[])
+        elif a == "right":
+            if G.get("order"):
+                p = _pl(G["order"][0])
+                if p:
+                    p["score"] += 1
+            G.update(phase="wait", order=[], qi=G.get("qi", 0) + (0 if G.get("own") else 1), show=False)
+        elif a == "wrong":
+            if G.get("order"):
+                G["order"].pop(0)
+            G["phase"] = "locked" if G.get("order") else "open"
+        elif a == "nextq":
+            G.update(qi=G.get("qi", random.randrange(len(QUIZ))) + 1, phase="wait", order=[], show=False, own="")
+        elif a == "showq":
+            G["show"] = not G.get("show")
+    elif PARTY["game"] == "wolf":
+        if a == "vote":
+            if G.get("voting") and G.get("alive", {}).get(pid) and d.get("id") in G.get("alive", {}):
+                G.setdefault("votes", {})[pid] = d["id"]
+        elif not host:
+            return "only the narrator"
+        elif a == "cfg":
+            for k in ("wolf", "seer", "witch"):
+                if k in d:
+                    G.setdefault("cfg", {})[k] = max(0, min(6, int(d[k])))
+        elif a == "start":
+            ids = [k for k in PARTY["players"] if k != PARTY["host"]]
+            c = G.get("cfg", {}); roles = ["wolf"] * c.get("wolf", 1) + ["seer"] * c.get("seer", 0) + ["witch"] * c.get("witch", 0)
+            if len(ids) < len(roles) + 1:
+                return "too few players"
+            roles += ["villager"] * (len(ids) - len(roles)); random.shuffle(roles)
+            G.update(roles=dict(zip(ids, roles)), alive={k: True for k in ids}, phase="night", step=0, votes={}, voting=False, winner="",
+                     text=WOLF_NIGHT[0])
+        elif a == "next":
+            if G.get("phase") == "night":
+                G["step"] = G.get("step", 0) + 1
+                if G["step"] >= len(WOLF_NIGHT):
+                    G.update(phase="day", step=0)
+            elif G.get("phase") == "day":
+                G["step"] = G.get("step", 0) + 1
+                if G["step"] >= len(WOLF_DAY):
+                    G.update(phase="night", step=0)
+            G["text"] = (WOLF_NIGHT if G.get("phase") == "night" else WOLF_DAY)[G.get("step", 0)]
+        elif a == "kill":
+            if d.get("id") in G.get("alive", {}):
+                G["alive"][d["id"]] = not G["alive"][d["id"]]
+        elif a == "voteopen":
+            G.update(voting=True, votes={})
+        elif a == "voteclose":
+            G["voting"] = False
+        if G.get("roles"):
+            al = [k for k, x in G.get("alive", {}).items() if x]
+            w = sum(1 for k in al if G["roles"].get(k) == "wolf")
+            G["winner"] = "Das Dorf gewinnt! 🎉" if w == 0 else ("Die Werwölfe gewinnen! 🐺" if w >= len(al) - w else "")
+    elif PARTY["game"] == "draw":
+        if a == "stroke" and pid == G.get("drawer"):
+            pts = d.get("p") or []
+            if isinstance(pts, list) and len(G.get("strokes", [])) < 1500:
+                pts = [[round(float(x), 3), round(float(y), 3)] for x, y in pts[:200] if 0 <= float(x) <= 1 and 0 <= float(y) <= 1]
+                col = d.get("c") if re.fullmatch(r"#[0-9a-fA-F]{6}", str(d.get("c") or "")) else "#000000"
+                G.setdefault("strokes", []).append({"p": pts, "c": col, "w": max(1, min(30, int(d.get("w", 4))))})
+        elif a == "clear" and pid == G.get("drawer"):
+            G["strokes"] = []
+        elif a == "skip" and (pid == G.get("drawer") or host):
+            G.setdefault("log", []).append({"n": "⏭", "t": "Übersprungen. Es war: " + G.get("word", "")}); _draw_next()
+        elif a == "guess" and pid != G.get("drawer") and pid not in G.get("guessed", []):
+            txt = str(d.get("t") or "")[:40].strip()
+            norm = lambda s_: re.sub(r"[^a-z0-9äöü]", "", s_.lower().replace("ss", "ß").replace("ß", "ss"))
+            if txt and norm(txt) == norm(G.get("word", "")):
+                G.setdefault("guessed", []).append(pid)
+                me["score"] += 2 if len(G["guessed"]) == 1 else 1
+                dr = _pl(G.get("drawer"))
+                if dr:
+                    dr["score"] += 1
+                G.setdefault("log", []).append({"n": "✅", "t": f"{me['name']} hat es erraten!"})
+                others = [k for k, v in PARTY["players"].items() if k != G.get("drawer") and time.time() - v["t"] < 40]
+                if set(others) <= set(G["guessed"]):
+                    G.setdefault("log", []).append({"n": "🎉", "t": "Alle haben es! Es war: " + G.get("word", "")}); _draw_next()
+            elif txt:
+                G.setdefault("log", []).append({"n": me["name"], "t": txt})
+        elif a == "start" and host:
+            _draw_next()
+    elif PARTY["game"] == "c4":
+        if a == "sit":
+            i = int(d.get("seat", 0)) % 2
+            if not G["seats"][i] and pid not in G["seats"]:
+                G["seats"][i] = pid
+        elif a == "drop":
+            if G.get("win", -1) >= 0 or None in G["seats"] or G["seats"][G["turn"]] != pid:
+                return "not your turn"
+            c = int(d.get("col", 0))
+            if not 0 <= c < 7:
+                return "bad column"
+            for r in range(5, -1, -1):
+                if G["board"][r][c] < 0:
+                    G["board"][r][c] = G["turn"]; break
+            else:
+                return "column full"
+            w, line = _c4_win(G["board"])
+            if w >= 0:
+                G.update(win=w, line=line); p = _pl(G["seats"][w])
+                if p:
+                    p["score"] += 1
+            elif all(G["board"][0][x] >= 0 for x in range(7)):
+                G["win"] = 2
+            else:
+                G["turn"] = 1 - G["turn"]
+        elif a == "reset":
+            G.update(board=[[-1] * 7 for _ in range(6)], turn=0, win=-1, line=[])
+            if d.get("swap"):
+                G["seats"] = [G["seats"][1], G["seats"][0]]
+        elif a == "leave":
+            G["seats"] = [None if x == pid else x for x in G["seats"]]
+    else:
+        return "unknown action"
+    return ""
+
+
+def games_dir():
+    return os.path.join(DATA_DIR, "games")
+
+
+def lan_guest_ip(ip, fwd=""):
+    """True for a device in the own home network (no login needed for /spiele). Not for tunnels or Tailscale."""
+    if fwd:
+        return False                                # came through a proxy/tunnel: treat as outside
+    try:
+        a = ipaddress.ip_address((ip or "").split("%")[0])
+        if getattr(a, "ipv4_mapped", None):
+            a = a.ipv4_mapped
+        return a.is_private and not a.is_loopback and not is_remote_ip(str(a))
+    except ValueError:
+        return False
+
+
+SPIELE_PAGE = """<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spielecke</title><link rel="icon" href="/icon-192.png"><style>
+body{margin:0;background:#0E1621;color:#E8EEF5;font-family:system-ui,sans-serif}main{max-width:720px;margin:0 auto;padding:20px 16px}
+h1{font-size:26px;margin:6px 0 4px}p{color:#9FB0C3;margin:4px 0 16px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+a.c{display:block;background:#16263A;border-radius:14px;padding:14px;color:inherit;text-decoration:none}a.c:active{transform:scale(.98)}
+.i{font-size:34px}.n{font-weight:700;margin:6px 0 2px}.d{font-size:13px;color:#9FB0C3}.big{background:#E9A23B;color:#0E1621;font-weight:700;
+display:block;text-align:center;padding:14px;border-radius:14px;text-decoration:none;margin:0 0 18px}</style></head><body><main>
+<h1>🎲 Spielecke</h1>__PARTY__<p>__NOTE__</p><div class="g">__GAMES__</div></main></body></html>"""
+
+
+def spiele_page():
+    from html import escape as _e
+    gl = games_list()
+    cards = "".join(f'<a class="c" href="/spiele/g/{_e(x["dir"])}/{_e(x.get("start", "index.html"))}"><div class="i">{_e(x.get("icon", "🎮"))}</div>'
+                    f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div></a>' for x in gl)
+    party = (f'<a class="big" href="/p/{PARTY["key"]}/">👥 Zum Spieleabend (Quiz, Werwolf, Malen, 4 gewinnt)</a>' if party_on()
+             else '<p>Der Spieleabend (Quiz, Werwolf, Malen …) ist gerade zu – öffnen kann ihn, wer Motion Watch verwaltet.</p>')
+    note = "Einzelspiele – laufen direkt im Browser:" if gl else "Die Spielesammlung ist noch nicht installiert (Motion Watch → Werkzeuge → Spielecke)."
+    return SPIELE_PAGE.replace("__PARTY__", party).replace("__NOTE__", note).replace("__GAMES__", cards)
+
+
+def games_list():
+    try:
+        with open(os.path.join(games_dir(), "games.json")) as f:
+            d = json.load(f)
+        return [g_ for g_ in d.get("games", []) if isinstance(g_, dict) and os.path.isfile(os.path.join(games_dir(), g_.get("dir", "-"), g_.get("start", "index.html")))]
+    except (OSError, ValueError):
+        return []
+
+
+def games_installed_version():
+    try:
+        with open(os.path.join(games_dir(), "games.json")) as f:
+            return json.load(f).get("version", "")
+    except (OSError, ValueError):
+        return ""
+
+
+def games_install():
+    """the collection of free browser games: from GitHub (checksum checked) into the data folder"""
+    if GAMES_DL["running"]:
+        return
+    GAMES_DL.update(running=True, msg="downloading …", got=0)
+    try:
+        import hashlib, io
+        src = CFG["update_url"].strip()
+        base = src.rsplit("/", 1)[0] + "/" if src.startswith("https://") else SIM3D_BASE
+        h = hashlib.sha256(); buf = io.BytesIO()
+        with urllib.request.urlopen(_upd_request(base + GAMES_PKG["file"]), timeout=60) as r:
+            while True:
+                b = r.read(1 << 16)
+                if not b:
+                    break
+                h.update(b); buf.write(b); GAMES_DL["got"] = buf.tell()
+                if GAMES_PKG["size"] and buf.tell() > GAMES_PKG["size"] + 1024:
+                    raise ValueError("file too large")
+        if h.hexdigest() != GAMES_PKG["sha256"]:
+            raise ValueError("checksum wrong")
+        tmp = games_dir() + ".new"
+        shutil.rmtree(tmp, ignore_errors=True)
+        with zipfile.ZipFile(buf) as z:
+            for n in z.namelist():
+                if n.startswith("/") or ".." in n.split("/"):
+                    raise ValueError("bad file name in the package")
+            z.extractall(tmp)
+        shutil.rmtree(games_dir(), ignore_errors=True)
+        os.replace(tmp, games_dir())
+        GAMES_DL["msg"] = "installed"
+        log_event("sys", f"Game collection {GAMES_PKG['version']} installed")
+    except Exception as e:
+        GAMES_DL["msg"] = "error: " + str(e)[:120]
+        log_event("sys", f"Game collection: {e}"[:160])
+    finally:
+        GAMES_DL["running"] = False
+
+
+def games_file(game, fn):
+    """a file of an installed game (only inside its folder)"""
+    gl = {g_["dir"]: g_ for g_ in games_list()}
+    if game not in gl:
+        return None
+    base = os.path.realpath(os.path.join(games_dir(), game))
+    p_ = os.path.realpath(os.path.join(base, fn or gl[game].get("start", "index.html")))
+    if not (p_ == base or p_.startswith(base + os.sep)) or not os.path.isfile(p_):
+        return None
+    return p_
+
+
+PARTY_PAGE = r"""<!doctype html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e1621"><title>Spielecke</title>
+<style>
+:root{--bg:#0e1621;--panel:#16212f;--line:#24324a;--txt:#e8eef6;--mut:#8ea0b6;--acc:#3b8cff;--teal:#5ed6c1;--amber:#e9a23b;--red:#ff5a5f;--grn:#3fcf6b}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+body{padding:calc(10px + env(safe-area-inset-top)) 12px calc(20px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;gap:10px;margin-bottom:12px}header img{width:34px;height:34px;border-radius:9px}
+header h1{font-size:19px;margin:0;flex:1}header .me{font-size:13px;color:var(--mut);text-align:right}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+h2{font-size:17px;margin:0 0 10px}.mut{color:var(--mut);font-size:14px}
+button{font:inherit;border:0;border-radius:12px;padding:12px 14px;background:var(--acc);color:#fff;font-weight:600;cursor:pointer;touch-action:manipulation}
+button.sec{background:#24324a;color:var(--txt)}button.red{background:var(--red)}button.grn{background:var(--grn);color:#062}button:disabled{opacity:.45}
+input,select{font:inherit;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:#0b121c;color:var(--txt);width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1 1 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.gbtn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;background:#1c2a3d;border:1px solid var(--line);color:var(--txt);min-height:86px}
+.gbtn b{font-size:16px}.gbtn span{font-size:12px;color:var(--mut);font-weight:400}.gbtn.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}
+.pl{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}.pl:last-child{border:0}
+.pl .n{flex:1}.pl .s{font-weight:700;min-width:36px;text-align:right}.off{opacity:.45}
+.buzz{width:min(72vw,300px);height:min(72vw,300px);border-radius:50%;font-size:34px;display:block;margin:12px auto;background:radial-gradient(circle at 35% 30%,#ff8a8d,#e0262c);box-shadow:0 10px 0 #8d1418,0 14px 30px rgba(0,0,0,.5)}
+.buzz:active{transform:translateY(6px);box-shadow:0 4px 0 #8d1418}
+.big{font-size:22px;font-weight:700;text-align:center;margin:10px 0}
+.role{font-size:28px;text-align:center;padding:26px;border-radius:16px;background:#0b121c;border:1px dashed var(--line);user-select:none}
+canvas{width:100%;aspect-ratio:4/3;background:#fff;border-radius:12px;touch-action:none;display:block}
+.cols{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.cols button{width:36px;height:36px;padding:0;border-radius:50%;border:2px solid #fff3}
+.cols button.on{border-color:#fff}
+.log{max-height:150px;overflow:auto;font-size:14px;margin-top:8px}.log div{padding:2px 0}
+.c4{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;background:#1d4fbf;padding:6px;border-radius:14px;max-width:420px;margin:8px auto}
+.c4 div{aspect-ratio:1;border-radius:50%;background:#0b121c}.c4 .p0{background:#ff5a5f}.c4 .p1{background:#ffd23f}.c4 .w{box-shadow:0 0 0 3px #fff inset}
+.c4b{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;max-width:420px;margin:0 auto}.c4b button{padding:8px 0;font-size:18px}
+.dice{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}.dice div{width:58px;height:58px;border-radius:12px;background:#fff;color:#111;font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.timer{font-size:46px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;background:#24324a;font-size:13px;margin:2px}
+a.gl{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--txt);background:#1c2a3d;border:1px solid var(--line);border-radius:12px;padding:10px}
+a.gl img{width:44px;height:44px;border-radius:10px;object-fit:cover;background:#0b121c}a.gl b{display:block}a.gl span{font-size:12px;color:var(--mut)}
+.hidden{display:none!important}
+</style></head><body>
+<header><img src="/icon-192.png" alt=""><h1>🎲 Spielecke</h1><div class="me" id="me"></div></header>
+<div id="join" class="card hidden"><h2>Mitspielen</h2><div class="row"><input id="nm" maxlength="20" placeholder="Dein Name" autocomplete="nickname"><button id="go">Los!</button></div></div>
+<div id="app" class="hidden">
+  <div id="gamebox"></div>
+  <div class="card" id="toolscard"><h2>🎲 Würfel und ⏳ Sanduhr</h2>
+    <div id="dice" class="dice"></div><div class="mut" id="dicewho" style="text-align:center"></div>
+    <div class="row" style="margin-top:8px"><select id="dn"><option value="1">1 Würfel</option><option value="2" selected>2 Würfel</option><option value="3">3 Würfel</option><option value="4">4 Würfel</option><option value="5">5 Würfel</option></select>
+      <select id="ds"><option value="6">W6</option><option value="4">W4</option><option value="8">W8</option><option value="10">W10</option><option value="12">W12</option><option value="20">W20</option></select>
+      <button id="roll">Würfeln</button></div>
+    <div class="timer" id="timer" style="margin-top:12px">–</div>
+    <div class="row"><button class="sec" data-s="30">30 s</button><button class="sec" data-s="60">1 min</button><button class="sec" data-s="120">2 min</button><button class="sec" data-s="300">5 min</button><button class="sec" data-s="0">Stopp</button></div>
+  </div>
+  <div class="card"><h2>🏆 Punkte</h2><div id="players"></div><div id="hostbox" class="hidden" style="margin-top:8px"><button class="sec" id="resetsc">Punkte auf 0</button></div></div>
+  <div class="card" id="collcard"><h2>🕹 Spielesammlung (für dich allein)</h2><div id="coll" class="grid"></div></div>
+</div>
+<script>
+const KEY = "__KEY__", BASE = "/p/" + KEY;
+const $ = s => document.querySelector(s);
+let PID = "", V = null, SEQ = -1, busy = false, drawing = null, myColor = "#111111", myWidth = 5, pending = [], lastBeep = 0;
+try { PID = localStorage.getItem("mwp-" + KEY) || ""; } catch (e) {}
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+async function act(a, extra) { const r = await fetch(BASE + "/a", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({pid: PID, a: a}, extra || {}))}).then(x => x.json()).catch(() => ({ok: false, error: "keine Verbindung"}));
+  if (!r.ok && r.error) toast(r.error); if (r.v) { r.v._skew = (r.v.now || Date.now() / 1000) - Date.now() / 1000; V = r.v; render(); } return r; }
+function toast(t) { let e = $("#toast"); if (!e) { e = document.createElement("div"); e.id = "toast"; e.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000c;padding:10px 16px;border-radius:12px;z-index:9"; document.body.appendChild(e); }
+  e.textContent = t; e.hidden = false; clearTimeout(e._t); e._t = setTimeout(() => e.hidden = true, 2500); }
+function beep(f, d) { try { const ac = beep.ac || (beep.ac = new (window.AudioContext || window.webkitAudioContext)()); const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = f || 880; g.gain.value = .2; o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (d || .15)); } catch (e) {} }
+function speak(t) { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = "de-CH"; u.rate = .95; speechSynthesis.speak(u); } catch (e) {} }
+async function join() { const name = $("#nm").value.trim(); if (!name) return;
+  const r = await fetch(BASE + "/join", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({pid: PID, name: name})}).then(x => x.json()).catch(() => ({}));
+  if (r.pid) { PID = r.pid; try { localStorage.setItem("mwp-" + KEY, PID); localStorage.setItem("mwp-name", name); } catch (e) {} SEQ = -1; poll(); } else toast(r.error || "Beitreten ging nicht"); }
+$("#go").onclick = join; $("#nm").onkeydown = e => { if (e.key === "Enter") join(); };
+try { $("#nm").value = localStorage.getItem("mwp-name") || ""; } catch (e) {}
+async function poll() {
+  if (busy) return; busy = true;
+  try { const r = await fetch(BASE + "/s?pid=" + encodeURIComponent(PID) + "&seq=" + SEQ, {cache: "no-store"});
+    if (r.status === 404) { document.body.innerHTML = "<div class='card' style='margin:20px'><h2>Die Spielecke ist geschlossen.</h2><p class='mut'>Frag den Gastgeber nach dem neuen QR-Code.</p></div>"; return; }
+    const j = await r.json(); V = j; V._skew = (j.now || Date.now() / 1000) - Date.now() / 1000; SEQ = j.seq; render(); } catch (e) { await new Promise(r => setTimeout(r, 1500)); }
+  busy = false; setTimeout(poll, 50);
+}
+const GAMES = [["lobby", "🏠 Lobby", "Alle sammeln"], ["quiz", "🔔 Quiz mit Buzzer", "Wer zuerst drückt, antwortet"], ["wolf", "🐺 Werwolf", "Der Erzähler führt durch die Nacht"],
+  ["draw", "🎨 Montagsmaler", "Einer zeichnet, alle raten"], ["c4", "🔴 Vier gewinnt", "Zwei spielen, alle schauen zu"]];
+function render() {
+  if (!V) return;
+  if (!V.me) { $("#join").classList.remove("hidden"); $("#app").classList.add("hidden"); return; }
+  $("#join").classList.add("hidden"); $("#app").classList.remove("hidden");
+  const me = V.players.find(p => p.id === V.me) || {};
+  $("#me").innerHTML = esc(me.name) + (V.host ? " · 👑 Gastgeber" : "") + "<br>" + me.score + " Punkte";
+  // players
+  $("#players").innerHTML = V.players.map(p => `<div class="pl ${p.on ? "" : "off"}"><span class="n">${p.host ? "👑 " : ""}${esc(p.name)}</span>`
+    + (V.host ? `<button class="sec" style="padding:6px 10px" onclick="act('score',{id:'${p.id}',n:-1})">−</button> <button class="sec" style="padding:6px 10px" onclick="act('score',{id:'${p.id}',n:1})">+</button> ${p.host ? "" : `<button class="sec" style="padding:6px 8px;font-size:12px" onclick="act('makehost',{id:'${p.id}'})">👑</button>`}` : "")
+    + `<span class="s">${p.score}</span></div>`).join("");
+  $("#hostbox").classList.toggle("hidden", !V.host);
+  // tools
+  const D = V.tools.dice; $("#dice").innerHTML = D ? D.vals.map(x => `<div>${x}</div>`).join("") : "";
+  $("#dicewho").textContent = D ? D.by + " hat gewürfelt (W" + D.sides + ")" + (D.vals.length > 1 ? " · Summe " + D.vals.reduce((a, b) => a + b, 0) : "") : "";
+  if (D && D.t !== render.lastDice) { render.lastDice = D.t; beep(660, .08); }
+  // collection
+  $("#coll").innerHTML = (V.games || []).length ? V.games.map(g => `<a class="gl" href="${BASE}/g/${g.dir}/" target="_blank"><img src="${BASE}/g/${g.dir}/${g.icon || ""}" alt="" onerror="this.style.visibility='hidden'"><div><b>${esc(g.name)}</b><span>${esc(g.desc || "")}</span></div></a>`).join("")
+    : "<div class='mut'>Die Spielesammlung ist auf diesem Gerät noch nicht installiert (Motion Watch → Werkzeuge → Spielecke).</div>";
+  renderGame();
+}
+function gameChooser() {
+  return `<div class="card"><h2>Was spielen wir?</h2><div class="grid">${GAMES.map(g => `<button class="gbtn ${V.game === g[0] ? "on" : ""}" onclick="act('game',{game:'${g[0]}'})"><b>${g[1]}</b><span>${g[2]}</span></button>`).join("")}</div></div>`;
+}
+function renderGame() {
+  const box = $("#gamebox"); let h = "";
+  if (V.host && V.game === "lobby") h += gameChooser();
+  if (V.game === "lobby") h += `<div class="card"><h2>🏠 Lobby</h2><div class="mut">${V.host ? "Du bist Gastgeber: wähle oben ein Spiel." : "Warte, bis " + esc(V.hostname || "der Gastgeber") + " ein Spiel wählt."}</div>
+      <div style="margin-top:8px">${V.players.map(p => `<span class="pill">${esc(p.name)}</span>`).join("")}</div></div>`;
+  if (V.game !== "lobby") h += `<div class="row" style="margin-bottom:10px"><span class="mut">${(GAMES.find(g => g[0] === V.game) || [])[1] || ""}</span>${V.host ? `<button class="sec" style="flex:0 0 auto" onclick="act('game',{game:'lobby'})">↩ Andere Spiele</button>` : ""}</div>`;
+  if (V.game === "quiz") h += quizHtml();
+  if (V.game === "wolf") h += wolfHtml();
+  if (V.game === "draw") h += drawHtml();
+  if (V.game === "c4") h += c4Html();
+  if (box.dataset.h !== h || V.game === "draw") {
+    if (V.game === "draw" && box.querySelector("canvas") && box.dataset.g === "draw" && box.dataset.drawer === V.draw.drawer) { drawUpdate(); return; }
+    box.innerHTML = h; box.dataset.h = h; box.dataset.g = V.game; box.dataset.drawer = V.draw ? V.draw.drawer : "";
+    if (V.game === "draw") drawSetup();
+  }
+}
+// ---- quiz ----
+function quizHtml() { const Q = V.quiz, first = Q.order[0];
+  if (V.host) return `<div class="card"><h2>🔔 Quiz · Frage ${Q.n}</h2><div class="big" style="font-size:19px">${esc(Q.q)}</div><div class="mut" style="text-align:center">Antwort: <b>${esc(Q.a)}</b></div>
+    <div class="row" style="margin-top:10px"><button class="sec" onclick="act('showq')">👁 Frage allen zeigen</button><button class="sec" onclick="act('nextq')">⏭ Andere Frage</button></div>
+    <div class="big">${Q.phase === "wait" ? "Bereit?" : Q.phase === "open" ? "Buzzer sind frei …" : "🔔 " + esc(first ? first.name : "")}</div>
+    ${Q.order.length > 1 ? `<div class="mut" style="text-align:center">danach: ${Q.order.slice(1).map(x => esc(x.name)).join(", ")}</div>` : ""}
+    <div class="row" style="margin-top:8px">${Q.phase === "locked" ? `<button class="grn" onclick="act('right')">✓ Richtig (+1)</button><button class="red" onclick="act('wrong')">✗ Falsch</button>` : `<button onclick="act('open')">🔓 Buzzer freigeben</button>`}</div>
+    <div class="mut" style="margin-top:8px">Tipp: Du kannst auch eigene Fragen vorlesen – einfach «Buzzer freigeben».</div></div>`;
+  const mine = Q.order.findIndex(x => x.id === V.me);
+  if (Q.phase === "locked" && first && first.id === V.me && render.lastBuzz !== Q.order.length) { render.lastBuzz = Q.order.length; beep(988, .3); }
+  return `<div class="card"><h2>🔔 Quiz · Frage ${Q.n}</h2>${Q.q ? `<div class="big" style="font-size:19px">${esc(Q.q)}</div>` : ""}
+    <button class="buzz" ${Q.phase !== "open" || mine >= 0 ? "disabled" : ""} onclick="act('buzz');navigator.vibrate&&navigator.vibrate(80)">BUZZ</button>
+    <div class="big">${Q.phase === "wait" ? "Warte auf die Frage …" : Q.phase === "open" ? (mine >= 0 ? "Gedrückt!" : "Jetzt drücken!") : first && first.id === V.me ? "🎤 Du bist dran!" : "🔔 " + esc(first ? first.name : "")}</div></div>`;
+}
+// ---- werewolf ----
+function wolfHtml() { const W = V.wolf;
+  if (V.host) {
+    if (W.phase === "setup") return `<div class="card"><h2>🐺 Werwolf · du bist Erzähler</h2><div class="mut">Mitspieler (ohne dich): ${V.players.length - 1}. Rollen:</div>
+      <div class="row" style="margin-top:8px"><label>🐺 Werwölfe<input type="number" min="1" max="6" value="${W.cfg.wolf || 1}" onchange="act('cfg',{wolf:+this.value})"></label>
+      <label>🔮 Seherin<input type="number" min="0" max="1" value="${W.cfg.seer || 0}" onchange="act('cfg',{seer:+this.value})"></label>
+      <label>🧪 Hexe<input type="number" min="0" max="1" value="${W.cfg.witch || 0}" onchange="act('cfg',{witch:+this.value})"></label></div>
+      <button style="margin-top:10px;width:100%" onclick="act('start')">Rollen verteilen und Nacht beginnen</button></div>`;
+    return `<div class="card"><h2>${W.phase === "night" ? "🌙 Nacht" : "☀️ Tag"}</h2><div class="big" style="font-size:18px">${esc(W.text)}</div>
+      <div class="row"><button class="sec" onclick="speak(${JSON.stringify(W.text).replace(/"/g, "&quot;")})">🔊 Vorlesen</button><button onclick="act('next').then(()=>speak(V.wolf.text))">Weiter ▶</button></div>
+      ${W.winner ? `<div class="big">${esc(W.winner)}</div>` : ""}
+      <h2 style="margin-top:14px">Spieler (antippen = tot / lebendig)</h2>${W.roles.map(r => `<div class="pl ${r.alive ? "" : "off"}"><span class="n">${r.alive ? "" : "💀 "}${esc(r.name)}</span><span class="mut">${esc(r.role)}</span></div>`).join("")}
+      <div class="row" style="margin-top:6px">${W.alive.map(p => `<button class="sec" style="flex:0 0 auto;padding:6px 10px" onclick="act('kill',{id:'${p.id}'})">${p.alive ? "☠ " : "↺ "}${esc(p.name)}</button>`).join("")}</div>
+      <h2 style="margin-top:14px">Abstimmung</h2><div class="row">${W.voting ? `<button class="red" onclick="act('voteclose')">Abstimmung beenden (${W.votes})</button>` : `<button onclick="act('voteopen')">🗳 Abstimmung starten</button>`}</div>
+      ${(W.tally || []).map(x => `<div class="pl"><span class="n">${esc(x.name)}</span><b>${x.n}</b><button class="sec" style="flex:0 0 auto;padding:6px 10px;margin-left:8px" onclick="act('kill',{id:'${x.id}'})">☠</button></div>`).join("")}
+      <button class="sec" style="margin-top:10px" onclick="act('game',{game:'wolf'})">Neues Spiel</button></div>`;
+  }
+  if (W.phase === "setup") return `<div class="card"><h2>🐺 Werwolf</h2><div class="mut">${esc(V.hostname)} ist Erzähler und verteilt gleich die Rollen.</div></div>`;
+  const alive = (W.alive.find(p => p.id === V.me) || {}).alive !== false;
+  return `<div class="card"><h2>${W.phase === "night" ? "🌙 Nacht" : "☀️ Tag"}${alive ? "" : " · 💀 du bist tot"}</h2>
+    <div class="role" onpointerdown="this.textContent=${JSON.stringify(W.role).replace(/"/g, "&quot;")}" onpointerup="this.textContent='👆 Gedrückt halten: deine Rolle'" onpointerleave="this.textContent='👆 Gedrückt halten: deine Rolle'">👆 Gedrückt halten: deine Rolle</div>
+    ${W.winner ? `<div class="big">${esc(W.winner)}</div>` : ""}
+    ${W.voting && alive ? `<h2 style="margin-top:12px">🗳 Wer ist der Werwolf?</h2><div class="grid">${W.alive.filter(p => p.alive && p.id !== V.me).map(p => `<button class="${W.myvote === p.id ? "" : "sec"}" onclick="act('vote',{id:'${p.id}'})">${esc(p.name)}</button>`).join("")}</div>` : ""}
+    </div>`;
+}
+// ---- drawing ----
+function drawHtml() { const D = V.draw, mine = D.drawer === V.me;
+  return `<div class="card"><h2>🎨 Montagsmaler · Runde ${D.round} · ⏳ <span id="dleft">${D.left}</span> s</h2>
+    <div class="big" id="dword" style="font-size:20px">${mine ? "Zeichne: " + esc(D.word) : esc(D.drawername) + " zeichnet · " + esc(D.hint)}</div>
+    <canvas id="cv" width="800" height="600"></canvas>
+    ${mine ? `<div class="cols">${["#111111", "#e0262c", "#1d6fe0", "#2a9d3a", "#f2b705", "#8b4513", "#9b59b6", "#ffffff"].map(c => `<button style="background:${c}" data-c="${c}"></button>`).join("")}
+      <button class="sec" style="width:auto;border-radius:12px;padding:0 12px" id="thick">✏️ dick</button></div>
+      <div class="row"><button class="sec" onclick="act('clear')">🗑 Leeren</button><button class="sec" onclick="act('skip')">⏭ Anderes Wort</button></div>`
+    : `<div class="row" style="margin-top:8px"><input id="gs" placeholder="${D.iguessed ? "Erraten! ✅" : "Dein Tipp …"}" ${D.iguessed ? "disabled" : ""} autocomplete="off"><button id="gsb" ${D.iguessed ? "disabled" : ""}>Raten</button></div>`}
+    <div class="log" id="dlog"></div>${D.last ? `<div class="mut">Letztes Wort: ${esc(D.last)}</div>` : ""}</div>`;
+}
+function drawSetup() { const cv = $("#cv"); if (!cv) return; const ctx = cv.getContext("2d"); const D = V.draw;
+  if (D.drawer === V.me) {
+    document.querySelectorAll(".cols [data-c]").forEach(b => { b.onclick = () => { myColor = b.dataset.c; document.querySelectorAll(".cols [data-c]").forEach(x => x.classList.toggle("on", x === b)); }; });
+    $("#thick").onclick = () => { myWidth = myWidth === 5 ? 14 : 5; $("#thick").textContent = myWidth === 5 ? "✏️ dick" : "✏️ dünn"; };
+    const pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; };
+    cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); drawing = {p: [pos(e)], c: myColor, w: myWidth}; };
+    cv.onpointermove = e => { if (!drawing) return; const p = pos(e); const l = drawing.p[drawing.p.length - 1]; drawing.p.push(p); seg(ctx, l, p, drawing.c, drawing.w);
+      if (drawing.p.length >= 30) { pending.push(drawing); drawing = {p: [p], c: drawing.c, w: drawing.w}; flush(); } };
+    cv.onpointerup = cv.onpointercancel = () => { if (drawing) { pending.push(drawing); drawing = null; flush(); } };
+  } else {
+    const send = () => { const t = $("#gs").value.trim(); if (t) { act("guess", {t: t}); $("#gs").value = ""; } };
+    if ($("#gsb")) { $("#gsb").onclick = send; $("#gs").onkeydown = e => { if (e.key === "Enter") send(); }; }
+  }
+  drawUpdate(true);
+}
+function seg(ctx, a, b, c, w) { ctx.strokeStyle = c; ctx.lineWidth = w; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.beginPath(); ctx.moveTo(a[0] * 800, a[1] * 600); ctx.lineTo(b[0] * 800, b[1] * 600); ctx.stroke(); }
+async function flush() { if (flush.busy) return; flush.busy = true; while (pending.length) { const s = pending.shift(); await act("stroke", {p: s.p, c: s.c, w: s.w}); } flush.busy = false; }
+function drawUpdate(full) { const cv = $("#cv"); if (!cv) return; const D = V.draw, ctx = cv.getContext("2d");
+  if (full || (cv._n || 0) > D.strokes.length) { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, 800, 600); cv._n = 0; }
+  if (!(D.drawer === V.me && drawing)) for (let i = cv._n || 0; i < D.strokes.length; i++) { const s = D.strokes[i]; for (let k = 1; k < s.p.length; k++) seg(ctx, s.p[k - 1], s.p[k], s.c, s.w); }
+  cv._n = D.strokes.length;
+  if ($("#dleft")) $("#dleft").textContent = D.left;
+  $("#dlog").innerHTML = D.log.slice().reverse().map(x => `<div><b>${esc(x.n)}</b> ${esc(x.t)}</div>`).join("");
+  if ($("#gs") && D.iguessed) { $("#gs").disabled = true; $("#gs").placeholder = "Erraten! ✅"; $("#gsb").disabled = true; }
+  const w = $("#dword"); if (w) w.textContent = D.drawer === V.me ? "Zeichne: " + D.word : D.drawername + " zeichnet · " + D.hint;
+}
+// ---- connect four ----
+function c4Html() { const C = V.c4, seat = C.seats.findIndex(s => s && s.id === V.me), my = seat >= 0 && C.turn === seat && C.win < 0 && C.seats[0] && C.seats[1];
+  const lw = new Set((C.line || []).map(x => x[0] * 7 + x[1]));
+  const st = C.win === 2 ? "Unentschieden!" : C.win >= 0 ? "🏆 " + esc(C.seats[C.win].name) + " gewinnt!" : !(C.seats[0] && C.seats[1]) ? "Zwei Spieler setzen sich hin" : my ? "Du bist dran!" : esc(C.seats[C.turn].name) + " ist dran";
+  return `<div class="card"><h2>🔴 Vier gewinnt</h2><div class="row">${[0, 1].map(i => C.seats[i] ? `<span class="pill">${i ? "🟡" : "🔴"} ${esc(C.seats[i].name)}</span>` : `<button class="sec" onclick="act('sit',{seat:${i}})">${i ? "🟡" : "🔴"} Hinsetzen</button>`).join("")}</div>
+    <div class="big">${st}</div>
+    ${my ? `<div class="c4b">${[0, 1, 2, 3, 4, 5, 6].map(c => `<button onclick="act('drop',{col:${c}})">⬇</button>`).join("")}</div>` : ""}
+    <div class="c4">${C.board.map((r, ri) => r.map((x, ci) => `<div class="${x >= 0 ? "p" + x : ""} ${lw.has(ri * 7 + ci) ? "w" : ""}"></div>`).join("")).join("")}</div>
+    <div class="row">${C.win >= 0 ? `<button onclick="act('reset',{swap:1})">Nochmal (Farben tauschen)</button>` : ""}${seat >= 0 ? `<button class="sec" onclick="act('leave')">Aufstehen</button>` : ""}</div></div>`;
+}
+// tools
+$("#roll").onclick = () => act("dice", {n: +$("#dn").value, sides: +$("#ds").value});
+document.querySelectorAll("[data-s]").forEach(b => b.onclick = () => act("timer", {s: +b.dataset.s}));
+$("#resetsc").onclick = () => { if (confirm("Alle Punkte auf 0?")) act("resetscores"); };
+setInterval(() => { if (!V) return; const T = V.tools.timer;
+  if (T && T.end) { const left = Math.max(0, Math.round(T.end - Date.now() / 1000 - (V._skew || 0))); $("#timer").textContent = Math.floor(left / 60) + ":" + ("0" + left % 60).slice(-2);
+    if (left === 0 && lastBeep !== T.end) { lastBeep = T.end; beep(880, .5); setTimeout(() => beep(660, .5), 600); navigator.vibrate && navigator.vibrate([300, 100, 300]); } }
+  else $("#timer").textContent = "–";
+  if (V.game === "draw" && $("#dleft")) $("#dleft").textContent = Math.max(0, (+$("#dleft").textContent || 0) - 1);
+}, 1000);
+poll();
+</script></body></html>
+"""
+
+
 SIMGAME = {"t": 0.0, "busy": False, "g": None}   # the game in the simulator, fetched now and then (2.95.22: «Team gegen Motion Watch»)
 
 
@@ -15114,7 +15770,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_28.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_29.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -19096,11 +19752,21 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <button type="button" class="tli" data-k="audio" onclick="pick('audio')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span class="tln"><b data-i18n="Speaker and microphone">Speaker and microphone</b><span class="tsum" id="s-audio"></span></span><i class="tdot" id="d-audio"></i></button>
   <button type="button" class="tli" data-k="sd" onclick="pick('sd')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><span class="tln"><b data-i18n="Memory card test">Memory card test</b><span class="tsum" id="s-sd"></span></span><i class="tdot" id="d-sd"></i></button>
   <button type="button" class="tli" data-k="bt" onclick="pick('bt')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span class="tln"><b data-i18n="Bluetooth scanner">Bluetooth scanner</b><span class="tsum" id="s-bt"></span></span><i class="tdot" id="d-bt"></i></button>
+  <div class="tlg" data-i18n="Leisure">Leisure</div>
+  <button type="button" class="tli" data-k="party" onclick="pick('party')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4"/><circle cx="16" cy="8" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="8" cy="16" r="1.4"/><circle cx="16" cy="16" r="1.4"/></svg><span class="tln"><b data-i18n="Game corner">Game corner</b><span class="mut" id="s-party"></span></span></button>
   <div class="tlg" data-i18n="Power and help">Power and help</div>
   <button type="button" class="tli" data-k="pow" onclick="pick('pow')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2M7 10v4M11 10v4"/></svg><span class="tln"><b data-i18n="Power calculator">Power calculator</b><span class="tsum" id="s-pow"></span></span><i class="tdot" id="d-pow"></i></button>
   <button type="button" class="tli" data-k="diag" onclick="pick('diag')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><span class="tln"><b data-i18n="Diagnosis package">Diagnosis package</b><span class="tsum" id="s-diag"></span></span><i class="tdot" id="d-diag"></i></button>
 </nav>
 <div class="tpane">
+  <section class="tool" id="c-party" data-k="party" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4"/><circle cx="16" cy="8" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="8" cy="16" r="1.4"/><circle cx="16" cy="16" r="1.4"/></svg><h2 data-i18n="Game corner">Game corner</h2></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="party-note">party-note</div>
+    <div id="party-box"></div>
+    </div>
+  </section>
   <section class="tool" id="c-net" data-k="net" hidden>
     <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
       <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-4h12v4"/></svg><h2 data-i18n="Network scanner">Network scanner</h2></div><div class="tact"><button id="b-net" onclick="run('net')" data-i18n="Scan">Scan</button></div></div>
@@ -19246,7 +19912,15 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
 </main>
 <script>
 /*COMMON*/
-Object.assign(I18N.de, {"Tools": "Werkzeuge", "Network scanner": "Netzwerkscanner", "Scan": "Suchen", "All devices in your own network (only there).": "Alle Geräte im eigenen Netz (nur dort).",
+Object.assign(I18N.de, {"Leisure": "Freizeit", "Game corner": "Spielecke",
+ "party-note": "Spiele für den Abend auf den Handys: Quiz mit Buzzer, Werwolf mit Erzähler, Montagsmaler, Vier gewinnt, Würfel, Sanduhr und Punkte. Alle verbinden sich mit dem QR-Code im WLAN von Motion Watch – ohne Passwort und ohne App. Die Spielecke schliesst sich nach der gewählten Zeit von selbst.",
+ "Open the game corner": "Spielecke öffnen", "Scan with the phone (same Wi-Fi as Motion Watch):": "Mit dem Handy scannen (gleiches WLAN wie Motion Watch):",
+ "open for": "offen noch", "game": "Spiel", "lobby": "Lobby", "quiz": "Quiz", "wolf": "Werwolf", "draw": "Montagsmaler", "c4": "Vier gewinnt",
+ "Play myself": "Selbst mitspielen", "Close": "Schliessen", "Player": "Spieler", "Points": "Punkte", "away": "weg", "Make host": "Zum Gastgeber machen", "Remove": "Entfernen",
+ "players": "Spieler", "Game collection": "Spielesammlung", "Without login in your own Wi-Fi:": "Ohne Login im eigenen WLAN:", "Installed": "Installiert", "Up to date": "Aktuell", "Install / update": "Installieren / aktualisieren",
+ "coll-note": "Freie Browserspiele (Open Source) zum Spielen allein: 2048, Hextris, A Dark Room, Schach, Rennspiel und mehr. Sie werden einmal von GitHub geladen und laufen danach ohne Internet.",
+ "installed": "installiert", "downloading …": "lädt herunter …",
+ "Tools": "Werkzeuge", "Network scanner": "Netzwerkscanner", "Scan": "Suchen", "All devices in your own network (only there).": "Alle Geräte im eigenen Netz (nur dort).",
  "Warn me about new devices (push, check every 10 min)": "Bei neuen Geräten warnen (Push, Prüfung alle 10 Min.)", "Am I at home?": "Bin ich zu Hause?",
  "pres-note": "Markiere unten im Netzwerkscanner dein Handy mit «🏠 meins». Handys melden sich im WLAN zuverlässiger als über Bluetooth.",
  "Disarm when my device comes, arm when it is gone": "Entschärfen, wenn mein Gerät kommt – scharf schalten, wenn es weg ist", "Gone after": "Weg nach", "minutes": "Minuten",
@@ -19374,6 +20048,50 @@ function draw() {
 // one tool at a time: list on the left (phone: list first, then the tool)
 const PLAIN = x => String(x == null ? "" : x).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{2705}\u{FE0F}\u{200D}]/gu, "").replace(/^\s+/, "");
 let SEL = "";
+// ---- game corner (2.95.29) ----
+let PTY = null, ptyT = null;
+async function partyLoad() {
+  clearTimeout(ptyT);
+  const r = await fetch("/api/party").then(x => x.ok ? x.json() : null).catch(() => null);
+  if (r) { PTY = r; partyPaint(); }
+  ptyT = setTimeout(partyLoad, SEL === "party" ? 3000 : 20000);
+}
+async function partyDo(d) { const r = await post("/api/party", d); if (r && r.ok) { PTY = r; partyPaint(); } }
+function partyPaint() {
+  const P = PTY || {}, box = $("#party-box"); if (!box) return;
+  const sm = $("#s-party"); if (sm) sm.textContent = P.on ? "🟢 " + t("open") + " · " + (P.players || []).length + " " + t("players") : "";
+  if (box.contains(document.activeElement) && document.activeElement.tagName === "SELECT") return;
+  box.innerHTML = "";
+  if (!P.on) {
+    const row = el("div", "trow"); const sel = document.createElement("select"); [[2, "2 h"], [4, "4 h"], [6, "6 h"], [12, "12 h"]].forEach(([v, n]) => { const o = el("option", "", n); o.value = v; sel.appendChild(o); }); sel.value = 6;
+    const b = el("button", "", "🎲 " + t("Open the game corner")); b.type = "button"; b.onclick = () => partyDo({action: "open", hours: +sel.value});
+    row.append(b, sel); box.appendChild(row);
+  } else {
+    const q = el("div"); q.style.cssText = "display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:10px 0";
+    const qr = el("div"); qr.innerHTML = P.qr; qr.style.cssText = "width:190px;height:190px;background:#fff;padding:8px;border-radius:12px"; const sv = qr.querySelector("svg"); if (sv) { sv.style.width = "100%"; sv.style.height = "100%"; }
+    const info = el("div"); info.style.flex = "1 1 240px";
+    info.append(el("div", "", t("Scan with the phone (same Wi-Fi as Motion Watch):")));
+    const a = el("a", "", P.url); a.href = P.url; a.target = "_blank"; a.style.wordBreak = "break-all"; info.appendChild(a);
+    info.appendChild(el("div", "mut", t("open for") + " " + Math.round(P.left / 60) + " min · " + t("game") + ": " + t(P.game)));
+    const r2 = el("div", "trow"); const pl = el("a", "btn", "▶ " + t("Play myself")); pl.href = P.url; pl.target = "_blank";
+    const cl = el("button", "sec", "⛔ " + t("Close")); cl.type = "button"; cl.onclick = () => partyDo({action: "close"}); r2.append(pl, cl); info.appendChild(r2);
+    q.append(qr, info); box.appendChild(q);
+    const tb = el("table", "tl"); tb.innerHTML = "<tr><th>" + [t("Player"), t("Points"), ""].join("</th><th>") + "</th></tr>";
+    (P.players || []).forEach(p => { const tr = el("tr"); tr.append(el("td", "", (p.host ? "👑 " : "") + p.name + (p.on ? "" : " (" + t("away") + ")")), el("td", "", String(p.score)));
+      const td = el("td"); if (!p.host) { const hb = el("button", "sec", "👑"); hb.type = "button"; hb.title = t("Make host"); hb.onclick = () => partyDo({action: "host", id: p.id}); td.appendChild(hb); }
+      const kb = el("button", "sec", "✕"); kb.type = "button"; kb.title = t("Remove"); kb.onclick = () => partyDo({action: "kick", id: p.id}); td.appendChild(kb); tr.appendChild(td); tb.appendChild(tr); });
+    if ((P.players || []).length) box.appendChild(tb);
+  }
+  if (P.lan_url) { const lr = el("div", "mut"); lr.style.margin = "8px 0"; lr.append(t("Without login in your own Wi-Fi:") + " "); const la = el("a", "", P.lan_url); la.href = P.lan_url; la.target = "_blank"; lr.appendChild(la); box.appendChild(lr); }
+  const h = el("h3", "", "🕹 " + t("Game collection")); h.style.margin = "16px 0 6px"; box.appendChild(h);
+  const gl = P.games || [];
+  box.appendChild(el("div", "mut", gl.length ? t("Installed") + ": " + gl.map(x => x.name).join(", ") + " (" + P.games_ver + ")" : t("coll-note")));
+  const ib = el("button", gl.length ? "sec" : "", (P.dl && P.dl.running) ? "⏳ " + Math.round((P.dl.got || 0) / 1e6) + " MB …" : (gl.length && P.games_ver === (P.games_pkg || {}).version ? "✓ " + t("Up to date") : "⬇ " + t("Install / update") + " (" + Math.round(((P.games_pkg || {}).size || 0) / 1e6) + " MB)"));
+  ib.type = "button"; ib.disabled = !!(P.dl && P.dl.running); ib.onclick = () => partyDo({action: "install"}); box.appendChild(ib);
+  if (P.dl && P.dl.msg && !P.dl.running) box.appendChild(el("div", "mut", t(P.dl.msg)));
+  if (gl.length) { const g2 = el("div", "trow"); gl.forEach(x => { const a = el("a", "btn sec", x.name); a.href = "/games/" + x.dir + "/"; a.target = "_blank"; g2.appendChild(a); }); box.appendChild(g2); }
+}
+partyLoad();
 function pick(k, push) {
   if (!document.getElementById("c-" + k)) k = "net";
   if (SEL === "focus" && k !== "focus" && FON) focusToggle();
@@ -29099,7 +29817,7 @@ class WebStream:
 
         @app.before_request
         def auth():
-            if request.path.startswith(("/g/", "/x/", "/k/")) or request.path in public:
+            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/spiele")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
             g.user, g.role = "", "admin"
@@ -29363,6 +30081,127 @@ class WebStream:
             else:
                 return reply({"ok": False, "error": "unknown action"}, 400)
             return reply(dict(testopt_state(), ok=True))
+
+        # ---- game corner (2.95.29): the phones of the players, with the room key instead of a password ----
+        def _pkey(key):
+            import hmac
+            return party_on() and hmac.compare_digest(PARTY["key"], key)
+
+        @app.route("/p/<key>/")
+        def party_page(key):
+            if not _pkey(key):
+                return Response("<h2 style='font-family:sans-serif'>Die Spielecke ist geschlossen.</h2>", 404, mimetype="text/html")
+            return Response(PARTY_PAGE.replace("__KEY__", key), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+        @app.route("/p/<key>/join", methods=["POST"])
+        def party_join(key):
+            if not _pkey(key):
+                return reply({"error": "closed"}, 404)
+            d = body(); name = re.sub(r"[\x00-\x1f<>]", "", str(d.get("name") or "")).strip()[:20]
+            if not name:
+                return reply({"error": "name missing"}, 400)
+            pid = str(d.get("pid") or "")
+            if pid not in PARTY["players"]:
+                if len(PARTY["players"]) >= 30:
+                    return reply({"error": "full (30 players)"}, 409)
+                pid = secrets.token_urlsafe(9)
+                PARTY["players"][pid] = {"name": name, "score": 0, "t": time.time()}
+            else:
+                PARTY["players"][pid].update(name=name, t=time.time())
+            if not PARTY["host"] or PARTY["host"] not in PARTY["players"]:
+                PARTY["host"] = pid
+            party_bump()
+            return reply({"ok": True, "pid": pid})
+
+        @app.route("/p/<key>/s")
+        def party_state(key):
+            if not _pkey(key):
+                return reply({"error": "closed"}, 404)
+            pid = request.args.get("pid", ""); seq = int(request.args.get("seq", "-1") or -1) if str(request.args.get("seq", "-1")).lstrip("-").isdigit() else -1
+            p = PARTY["players"].get(pid)
+            if p:
+                p["t"] = time.time()
+            end = time.time() + 20
+            with PARTY_COND:
+                while PARTY["seq"] == seq and time.time() < end and party_on():
+                    PARTY_COND.wait(min(1.0, end - time.time()))
+                    party_tick()
+            return reply(party_view(pid))
+
+        @app.route("/p/<key>/a", methods=["POST"])
+        def party_action(key):
+            if not _pkey(key):
+                return reply({"error": "closed"}, 404)
+            d = body(); pid = str(d.get("pid") or "")
+            try:
+                err = party_act(pid, d)
+            except (TypeError, ValueError, KeyError, IndexError):
+                err = "invalid values"
+            if not err:
+                party_bump()
+            return reply({"ok": not err, "error": err or None, "v": party_view(pid)})
+
+        @app.route("/p/<key>/g/<game>/")
+        @app.route("/p/<key>/g/<game>/<path:fn>")
+        def party_game_file(key, game, fn=""):
+            if not _pkey(key):
+                return Response("closed", 404)
+            p_ = games_file(game, fn)
+            return send_file(p_, max_age=3600) if p_ else Response("not found", 404)
+
+        def _lan_ok():
+            return lan_guest_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "") or request.headers.get("Forwarded", ""))
+
+        _lan_no = "<h2 style='font-family:sans-serif'>Die Spielecke ist nur im eigenen WLAN offen.</h2>"
+
+        @app.route("/spiele")
+        @app.route("/spiele/")
+        def spiele_home():
+            if not _lan_ok():
+                return Response(_lan_no, 403, mimetype="text/html")
+            return Response(spiele_page(), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+        @app.route("/spiele/g/<game>/")
+        @app.route("/spiele/g/<game>/<path:fn>")
+        def spiele_file(game, fn=""):
+            if not _lan_ok():
+                return Response(_lan_no, 403, mimetype="text/html")
+            p_ = games_file(game, fn)
+            return send_file(p_, max_age=3600) if p_ else Response("not found", 404)
+
+        @app.route("/games/<game>/")
+        @app.route("/games/<game>/<path:fn>")
+        def games_file_auth(game, fn=""):
+            p_ = games_file(game, fn)
+            return send_file(p_, max_age=3600) if p_ else Response("not found", 404)
+
+        @app.route("/api/party", methods=["GET", "POST"])
+        def api_party():
+            if request.method == "POST":
+                if getattr(g, "role", "admin") != "admin":
+                    return reply({"ok": False, "error": "not allowed"}, 403)
+                d = body(); a_ = d.get("action")
+                if a_ == "open":
+                    party_open(float(d.get("hours") or 6))
+                elif a_ == "close":
+                    party_close()
+                elif a_ == "kick" and d.get("id") in PARTY["players"]:
+                    PARTY["players"].pop(d["id"], None)
+                    if PARTY["host"] == d["id"]:
+                        PARTY["host"] = next(iter(PARTY["players"]), "")
+                    party_bump()
+                elif a_ == "host" and d.get("id") in PARTY["players"]:
+                    PARTY["host"] = d["id"]; party_bump()
+                elif a_ == "install":
+                    threading.Thread(target=games_install, daemon=True).start()
+            base = (CFG.get("public_url") or "").strip().rstrip("/")
+            local = page_address().rstrip("/") if "page_address" in globals() else request.host_url.rstrip("/")
+            url = (local or request.host_url.rstrip("/")) + "/p/" + PARTY["key"] + "/" if party_on() else ""
+            return reply({"ok": True, "on": party_on(), "url": url, "lan_url": (local or request.host_url.rstrip("/")) + "/spiele", "qr": qr_svg(url) if url else "", "left": int(max(0, PARTY["until"] - time.time())),
+                          "players": [{"id": k, "name": v["name"], "score": v["score"], "host": k == PARTY["host"], "on": time.time() - v["t"] < 25}
+                                      for k, v in PARTY["players"].items()], "game": PARTY["game"],
+                          "games": games_list(), "games_ver": games_installed_version(), "games_pkg": GAMES_PKG, "dl": dict(GAMES_DL),
+                          "remote": base})
 
         @app.route("/api/simtest/pic/<int:rid>/<name>")
         def api_simtest_pic(rid, name):
@@ -32179,7 +33018,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.28")
+        self.root.title("Motion Watch 2.95.29")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -32469,7 +33308,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.28 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.29 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

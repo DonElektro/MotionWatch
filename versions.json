@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 14:48",
+ "generated": "2026-10-27 15:15",
  "versions": [
   {
-   "version": "2.95.28",
-   "file": "webcam_bewegung_2_95_28.py",
+   "version": "2.95.29",
+   "file": "webcam_bewegung_2_95_29.py",
    "url": "",
-   "sha256": "520796dd91310129772831d1a736ffc89790a0b4fa4efde0a156410e93bd6f03",
-   "date": "2026-10-27 14:48",
-   "notes": "test runs flow back into the development: «Report for the development» (ZIP with versions, settings, results, causes and pictures - no secrets; for the chat or GitHub feedback/), pictures of every false alarm and missed person (3D-3.31), comparison with the last run of another Motion Watch version, test run every night (optional).",
-   "sig": "f59cc5357d0daf102616825574bf1dd747e5b6bf9304bfdcbd3437c6305939e70e25aa19c8537c73717d03a86055bf74126291acd2afe987dfc351a61f86fe0e"
+   "sha256": "ac0af61431e27a174413f40936cd3f5952a103d31ed8c23cbc7e267df42745a1",
+   "date": "2026-10-27 15:15",
+   "notes": "game corner for game nights (Tools → Leisure): guests join with the phone via QR code - quiz with buzzer, werewolf with narrator, drawing and guessing, connect four, dice and timer, scores. Game collection (8 free open-source browser games, 13.5 MB, offline). In the own Wi-Fi without login at /spiele. Fix: 'random' was not imported.",
+   "sig": "4192961c2fbeb182db52f7aae2f0cb775cc3e83c2127c03e33e0827301244cef381ce2bb56e646332ca688b1a373dcfe9f6db513766bb7832d792625f8805e06"
   },
   {
    "version": "2.94.5",

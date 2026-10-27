@@ -1,0 +1,51 @@
+Motion Watch Spielesammlung GS-1.0
+Alle Spiele sind Open Source. Angepasst nur für den Offline-Betrieb:
+Werbung, Statistik (Google Analytics), externe Schriften und nicht lizenzierte Musik/Töne entfernt.
+
+2048  (2048/)
+  Lizenz: MIT
+  Autor: Gabriele Cirulli
+  Quelle: https://github.com/gabrielecirulli/2048
+  Lizenztext: 2048/LICENSE bzw. Lizenzdatei im Ordner
+
+Hextris  (hextris/)
+  Lizenz: GPL-3.0
+  Autor: Logan Engstrom u.a.
+  Quelle: https://github.com/Hextris/hextris
+  Lizenztext: hextris/LICENSE bzw. Lizenzdatei im Ordner
+
+Astray  (astray/)
+  Lizenz: Public Domain
+  Autor: Rye Terrell
+  Quelle: https://github.com/wwwtyro/Astray
+  Lizenztext: astray/LICENSE bzw. Lizenzdatei im Ordner
+
+A Dark Room  (adarkroom/)
+  Lizenz: MPL-2.0
+  Autor: Doublespeak Games
+  Quelle: https://github.com/doublespeakgames/adarkroom
+  Lizenztext: adarkroom/LICENSE bzw. Lizenzdatei im Ordner
+
+Schach  (chess/)
+  Lizenz: BSD-artig
+  Autor: Gary Linscott
+  Quelle: https://github.com/glinscott/Garbochess-JS
+  Lizenztext: chess/LICENSE bzw. Lizenzdatei im Ordner
+
+Racer  (racer/)
+  Lizenz: MIT
+  Autor: Jake Gordon
+  Quelle: https://github.com/jakesgordon/javascript-racer
+  Lizenztext: racer/LICENSE bzw. Lizenzdatei im Ordner
+
+Breakout  (breakout/)
+  Lizenz: MIT
+  Autor: Jake Gordon
+  Quelle: https://github.com/jakesgordon/javascript-breakout
+  Lizenztext: breakout/LICENSE bzw. Lizenzdatei im Ordner
+
+Clumsy Bird  (clumsybird/)
+  Lizenz: GPL-3.0
+  Autor: Ellison Leão
+  Quelle: https://github.com/ellisonleao/clumsy-bird
+  Lizenztext: clumsybird/LICENSE bzw. Lizenzdatei im Ordner
