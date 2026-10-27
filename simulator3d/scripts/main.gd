@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.34"
+const VERSION := "3D-3.35"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2491,6 +2491,18 @@ func control(d: Dictionary) -> Dictionary:
 			out.append({"kind": v.kind, "x": snappedf(v.position.x, 0.01), "z": snappedf(v.position.z, 0.01), "gap": snappedf(deepest, 0.01), "r": v.radius,
 					"y": snappedf(v.position.y, 0.01), "sx": int(sp.x), "sy": int(sp.y), "selected": v == selected})
 		return {"ok": true, "visitors": out}
+	elif a == "wheel_probe":                           # for tests (3D-3.35): a mouse wheel at a point, through the whole input path
+		var e := InputEventMouseButton.new()
+		e.button_index = MOUSE_BUTTON_WHEEL_UP if int(d.get("dir", 1)) > 0 else MOUSE_BUTTON_WHEEL_DOWN
+		e.pressed = true
+		e.position = Vector2(float(d.get("x", 0)), float(d.get("y", 0)))
+		e.global_position = e.position
+		var cam_before := view_cam.global_position
+		get_viewport().push_input(e)
+		var e2 := e.duplicate()
+		e2.pressed = false
+		get_viewport().push_input(e2)
+		return {"ok": true, "moved": snappedf(view_cam.global_position.distance_to(cam_before), 0.001), "over": _over_hud(e.position)}
 	elif a == "pose_probe":                            # for tests: a person standing still in a given pose (joints in radians)
 		var px := float(d.get("x", 0.0))
 		var pz := float(d.get("z", -10.0))
@@ -3406,10 +3418,20 @@ var map_span := 80.0
 var map_btn: Button
 
 
+func _over_hud(p: Vector2) -> bool:
+	"""is the mouse over the control panel or one of the boxes on the view (map, live picture, stick, bar …)?"""
+	for c in [ui_root, show_btn, view_bar, minimap, liveview, rover_pad, sel_box, karte]:
+		if c != null and is_instance_valid(c) and c is Control and (c as Control).is_visible_in_tree() and (c as Control).get_global_rect().has_point(p):
+			return true
+	return false
+
+
 func _unhandled_input(ev: InputEvent) -> void:
 	if spectate and ((ev is InputEventMouseButton and ev.pressed and ev.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE])
 			or (ev is InputEventKey and ev.pressed and ev.keycode in [KEY_W, KEY_A, KEY_S, KEY_D, KEY_Q, KEY_E])):
 		spectate_stop()                                # somebody steers by hand: the spectator camera lets go
+	if ev is InputEventMouseButton and ev.pressed and _over_hud(ev.position):
+		return                                         # 3D-3.35: over the control panel (or another box) the view never moves
 	if ev is InputEventMouseButton:
 		var b: int = ev.button_index
 		if ev.pressed and b in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:

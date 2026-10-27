@@ -1,7 +1,7 @@
 {
- "version": "3D-3.34",
+ "version": "3D-3.35",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30894211,
- "sha256": "4043af2f2eea2bf843356632d7040563ce531bd64f410ba0452a775ec087ebad",
- "notes": "Livebild unter der Karte (Kamera 1, 2 oder Wärmebild), Einstellungen unter System → Ansicht."
+ "size": 30895112,
+ "sha256": "217bec6e0a39f9054bd2e1ece7ac75eb443a58ed5bdbfc159ff592a6ee2c0ba9",
+ "notes": "Mausrad über der Bedienfläche verändert die Ansicht nicht mehr"
 }

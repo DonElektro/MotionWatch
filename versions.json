@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 17:08",
+ "generated": "2026-10-27 17:14",
  "versions": [
   {
-   "version": "2.95.38",
-   "file": "webcam_bewegung_2_95_38.py",
+   "version": "2.95.39",
+   "file": "webcam_bewegung_2_95_39.py",
    "url": "",
-   "sha256": "6e2419291dd77f2ea4218e60198c25c1d8092dd39b9c7a805eee64396b849886",
-   "date": "2026-10-27 17:08",
-   "notes": "3D simulator 3D-3.34 (live picture of a camera below the overview map, settings under System → Ansicht).",
-   "sig": "b6d2248dce875dd4630a20cee9f99b0d84613a3ef37712668487635ba4b4d195f18527ed90a5ad078ffab581ae93b83def95d0bd02d273e2893ae126b697450d"
+   "sha256": "fe13ebb50de2afd2f763fab540d1b60f8290a224639c5ea735dbe46e86313fe8",
+   "date": "2026-10-27 17:14",
+   "notes": "3D simulator 3D-3.35 (mouse wheel and clicks over the control panel, map, live picture and stick no longer move the 3D view).",
+   "sig": "458d727ba7c76c47b7ee1910555205433351dba0007f5dcb9608f4a65a856f27c257401aedca921aa5e709fa06a899423d0222c7eee67905f268ba069cab3a05"
   },
   {
    "version": "2.94.5",
