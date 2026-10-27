@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 18:43",
+ "generated": "2026-10-27 18:50",
  "versions": [
   {
-   "version": "2.95.45",
-   "file": "webcam_bewegung_2_95_45.py",
+   "version": "2.95.46",
+   "file": "webcam_bewegung_2_95_46.py",
    "url": "",
-   "sha256": "75dd35287df4cf4eb9603f99a89cef4664149b265472b44e981fe247e1cd4f53",
-   "date": "2026-10-27 18:43",
-   "notes": "3D simulator 3D-3.40 (scenes that play by themselves: break-in attempt, barbecue evening, coming home late, parcel, fox at the bin, wild boars, children playing tag, farmer mowing; new moods, the whole night in time-lapse, calendar).",
-   "sig": "319b87439f3a56029c5d5d7c67a7bb73a11923c6c994a9e01b0a15b19f7f0bcc3d4699d5de197466800486dd452e2476ef2c8418d9515c52005f4d45a892930e"
+   "sha256": "0391e3ffebb1dfe39ccf6971e80fc3b03fddb5179dfd9c7714e51278ef944d91",
+   "date": "2026-10-27 18:50",
+   "notes": "eight new app icons from the proposals (light radar, night radar, forest with a find, thermal picture, field of view, tent watch, shield, radar with finds).",
+   "sig": "6a93e746f32416f91223c15fd30a1f214432768d776ceafbbd53a72ed73e3ffbc79e6d00579c2feaed1f4fae2ae6e1ff4108fa39108033812eeb4ef1fa489707"
   },
   {
    "version": "2.94.5",
