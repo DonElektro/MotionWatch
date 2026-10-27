@@ -231,6 +231,13 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 			c["out"] = ov
 		_:
 			var parts := path.strip_edges().trim_prefix("/").split("/")
+			if parts.size() == 2 and parts[0] == "game_pic":    # the «caught» photos (3D-3.25)
+				var gj: PackedByteArray = main.game.gallery_jpg(int(parts[1].get_basename())) if main.game != null else PackedByteArray()
+				if gj.is_empty():
+					_json(c, {"ok": false, "error": "no picture"}, 404)
+				else:
+					_send(c, 200, gj, "image/jpeg")
+				return
 			if parts.size() == 3 and parts[0] == "cam" and parts[1].is_valid_int():
 				var cam := int(parts[1])
 				if cam < 0 or cam > 1:

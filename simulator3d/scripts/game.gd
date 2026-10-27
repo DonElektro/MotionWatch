@@ -70,6 +70,24 @@ var items: Array = []                   # {"node", "pos", "by": -1}
 var powers: Array = []                  # power-ups (3D-3.21): {"node", "pos", "kind": "cloak" | "turbo", "back": time it comes back}
 var last_minute := false                # the last minute of a round: the cameras are more watchful
 var feed: Array = []                    # what happened (for the spectators, 3D-3.22): [time, text]
+# ---- more game (3D-3.25) ----
+var gallery: Array = []                 # «caught» photos: {"n", "c", "jpg"} (the last 8)
+var hides: Array = []                   # hiding places (bushes): {"node", "pos"}
+var checkpoints: Array = []             # checkpoints between start and goal: {"node", "pos"}
+var ev_kind := ""                       # random event now: storm | dog | car
+var ev_until := 0.0
+var ev_next := 0.0
+var ev_node = null
+var ev_weather := ""
+var ev_warned := {}
+var night_saved := -1.0                 # night round: the time of day before
+var decoy_pos := Vector3.ZERO           # the decoy is seen: the automatic head looks there
+var decoy_until := 0.0
+var board := {}                         # the ranking of the evening: name -> {"n", "c", "score", "rounds", "wins", "best", "clean"}
+var records := {}                       # "fast": [name, seconds], "items": [name, n], "catches": [name, n]
+var board_day := ""
+const HIDE_MAX := 8.0                   # seconds in a hiding place, then out
+const CP_BONUS := 150
 
 
 func news(txt: String) -> void:
@@ -297,7 +315,7 @@ func _spot_far(min_d: float) -> Vector3:
 		if c.length() > 7.0 and c.distance_to(goal) > 4.0:
 			p = _g(main.free_spot(c, 0.6, true))
 			var far := true
-			for it in items + powers:
+			for it in items + powers + hides:
 				if p.distance_to(it["pos"]) < min_d:
 					far = false
 			if far:
@@ -427,6 +445,7 @@ func _process(dt: float) -> void:
 				p["actor"].frozen = false
 	if round_state == "play":
 		_powers_tick(t, dt)
+		_events_tick(t)
 		if not last_minute and t_end - t <= 60.0 and t_end - t > 5.0 and main.game_minutes > 1:
 			last_minute = true                              # the last minute: more tension
 			news("⏰ Letzte Minute!")
@@ -596,6 +615,16 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 			_set_role(p2, str(m.get("r", "runner")))
 		"stone":
 			_throw(p2)
+		"decoy":                                       # the decoy (3D-3.25): attracts the camera, team points
+			if round_state not in ["countdown", "play"]:
+				p2["decoy"] = bool(m.get("v", false)) and main.game_decoy
+				paint()
+		"lamp":                                        # night round: the torch
+			p2["lamp"] = not bool(p2.get("lamp", false))
+			var la = p2["actor"]
+			if la.torch == null:
+				la.add_torch()
+			la.player_lamp = p2["lamp"]
 		"light":
 			_guard_light(p2)
 		"catch":
@@ -741,7 +770,8 @@ func _new_player(slot: int, token: String, name: String, lk := {}) -> Dictionary
 			"mx": 0.0, "my": 0.0, "want": false, "last_cap": 0.0, "susp": 0.0, "seen": false, "heard": 0.0, "caught": 0,
 			"state": "play" if round_state == "play" else "lobby", "t_goal": 0.0, "safe_until": 0.0, "msg": "", "msg_until": 0.0,
 			"role": "runner", "items": 0, "stone_t": 0.0, "catches": 0, "false": 0, "catch_t": 0.0, "sent_no": -1,
-			"loot": loot, "carry": false, "cone": cone, "look": lk, "team": 0, "sig_t": 0.0}
+			"loot": loot, "carry": false, "cone": cone, "look": lk, "team": 0, "sig_t": 0.0,
+			"decoy": false, "watched": 0.0, "hc": 0, "lamp": false, "hide_i": -1, "hide_t0": 0.0, "hide_cd": {}, "cps": []}
 	return p
 
 
@@ -898,6 +928,16 @@ func start_round() -> void:
 	_pick_goal(main.game_random)
 	_place_items(int(main.game_items))
 	_place_powers(main.game_powers)
+	_place_hides(int(main.game_hides))
+	_place_checkpoints(int(main.game_checkpoints))
+	gallery.clear()
+	ev_kind = ""
+	ev_next = now() + 4.0 + randf_range(35.0, 55.0)
+	ev_warned.clear()
+	if main.game_night and night_saved < 0.0:          # night round: 23 o'clock, back afterwards
+		night_saved = main.hour()
+		main.set_hour(23.0)
+	_auto_handicap()
 	last_minute = false
 	feed.clear()
 	news("▶ Die Runde beginnt")
@@ -921,6 +961,11 @@ func start_round() -> void:
 		p["loot"].visible = false
 		p["bonus"] = 0
 		p["rescues"] = 0
+		p["watched"] = 0.0
+		p["hide_i"] = -1
+		p["hide_cd"] = {}
+		p["cps"] = []
+		p["actor"].handicap = int(p.get("hc", 0))
 		if p["role"] == "guard":
 			p["state"] = "play"
 			continue
@@ -1130,6 +1175,12 @@ func end_round() -> void:
 			else:
 				sc = max(0, 300 - int(d * 6.0))
 				info = "noch %d m" % int(d)
+			if bool(p.get("decoy", false)):                     # the decoy: points for every second the cameras watched it
+				var dp: int = min(400, int(float(p.get("watched", 0.0)) * 12.0))
+				p["bonus"] = int(p.get("bonus", 0)) + dp
+				info += " · 🦆 %d s beobachtet" % int(float(p.get("watched", 0.0)))
+			if p.get("cps", []).size() > 0:
+				info += " · 🚩 %d" % p["cps"].size()
 			sc = max(0, sc - 150 * int(p["caught"]) + 100 * int(p["items"]) + int(p.get("bonus", 0)))
 			info += " · %d× erwischt" % p["caught"] + (" · 💎 %d" % p["items"] if int(p["items"]) > 0 else "")
 			if int(p.get("rescues", 0)) > 0:
@@ -1143,6 +1194,14 @@ func end_round() -> void:
 			p["state"] = "lobby"
 		p["susp"] = 0.0
 	results.sort_custom(func(x, y): return x["score"] > y["score"])
+	_board_add()
+	_event_end()
+	_place_hides(0)
+	_place_checkpoints(0)
+	if night_saved >= 0.0:
+		main.set_hour(night_saved)
+		night_saved = -1.0
+	_send_gallery()
 	team_results.clear()
 	if main.game_teams:                                    # team totals
 		var sums := [0, 0]
@@ -1240,6 +1299,8 @@ func cam_sees(p: Dictionary, i: int) -> float:
 		var contrast: float = clamp(abs(34.0 - float(main.ambient)) / 18.0, 0.2, 1.0) * {"fog": 0.7, "rain": 0.8}.get(main.weather, 1.0)
 		return smoothstep(2.5, 9.0, px) * contrast * (0.65 + 0.35 * clamp(spd, 0.0, 1.0))   # a warm spot of a few pixels
 	var light := light_at(pos, i)
+	if a.player_lamp:
+		light = max(light, 0.75)                           # the torch: the player sees more, but the cameras see the player
 	var optic: float = {"fog": 0.4, "rain": 0.75, "snow": 0.7}.get(main.weather, 1.0)
 	var see := light * optic
 	var cols: float = CAM_W[i]
@@ -1357,7 +1418,7 @@ func _referee(dt: float) -> void:
 			if float(w["back"]) == 0.0 and a.position.distance_to(w["pos"]) < 1.3:
 				var pk: Array = POWER_KIND[w["kind"]]
 				a.power = w["kind"]
-				a.power_until = now() + float(pk[1])
+				a.power_until = now() + float(pk[1]) * (1.0 - 0.35 * int(p.get("hc", 0)))
 				w["back"] = now() + 35.0
 				w["node"].visible = false
 				_say(p, pk[2] % int(pk[1]), 3.0)
@@ -1399,12 +1460,45 @@ func _referee(dt: float) -> void:
 			_event(p, "goal")
 			paint()
 			continue
+		for ci in range(checkpoints.size()):               # checkpoints: bonus on the first visit
+			if not (ci in p["cps"]) and a.position.distance_to(checkpoints[ci]["pos"]) < 1.6:
+				p["cps"].append(ci)
+				p["bonus"] = int(p.get("bonus", 0)) + CP_BONUS
+				_say(p, "🚩 Checkpoint %d/%d (+%d)" % [p["cps"].size(), checkpoints.size(), CP_BONUS], 2.5)
+				_event(p, "item")
+				news("🚩 %s erreicht einen Checkpoint" % p["name"])
 		if now() < float(p["safe_until"]):
 			p["seen"] = false
 			p["heard"] = 0.0
 			continue
 		var v := visibility(p)
 		var hr := hearing(p)
+		var hid := _hide_check(p)
+		if hid:
+			v = 0.0
+			hr = 0.0
+		v *= 1.0 + 0.25 * int(p.get("hc", 0))           # handicap: easier to see
+		if ev_kind == "storm":
+			hr *= 0.2                                      # thunder and rain: the microphone hears nearly nothing
+			v *= 0.85
+		elif ev_kind == "car" and ev_node != null and is_instance_valid(ev_node):
+			if a.position.distance_to(ev_node.position) < 7.0:
+				if main.is_dark():
+					v = max(v, 0.5)                        # in the headlights
+				hr *= 0.4                                  # the engine covers the steps
+		elif ev_kind == "dog" and ev_node != null and is_instance_valid(ev_node):
+			if a.position.distance_to(ev_node.position) < 5.0:
+				hr = max(hr, 0.7)                          # the dog barks
+				attention = a.position
+				attention_until = now() + 3.0
+				if not ev_warned.has(p["slot"]):
+					ev_warned[p["slot"]] = true
+					news("🐕 Der Hund bellt bei %s!" % p["name"])
+					_say(p, "🐕 Der Hund bellt dich an!", 2.5)
+		if bool(p.get("decoy", false)) and v > 0.1:       # the decoy: the camera follows it, it collects seconds
+			p["watched"] = float(p.get("watched", 0.0)) + dt * v
+			decoy_pos = a.position
+			decoy_until = now() + 1.0
 		if v < 0.1:
 			v = 0.0                                        # like a real detection: below its threshold nothing counts
 		p["seen"] = v > 0.0
@@ -1416,7 +1510,7 @@ func _referee(dt: float) -> void:
 			v *= 0.25                                      # cloak: hardly seen
 		if a.power == "turbo" and now() < float(a.power_until):
 			hr = min(1.0, hr * 1.6 + 0.1)                  # turbo: louder
-		var rate := (v * 55.0 + hr * 30.0) * (1.3 if last_minute else 1.0)
+		var rate := (v * 55.0 + hr * 30.0) * (1.3 if last_minute else 1.0) * (0.55 if bool(p.get("decoy", false)) else 1.0)
 		if rate > 0.5:
 			p["susp"] = min(100.0, float(p["susp"]) + rate * lv * dt)
 		else:
@@ -1430,6 +1524,9 @@ func _referee(dt: float) -> void:
 
 func _caught(p: Dictionary, by) -> void:
 	p["caught"] = int(p["caught"]) + 1
+	if main.game_photos:                               # the «caught» photo: what the camera saw (3D-3.25)
+		main.want_snapshot(0)
+		get_tree().create_timer(0.35).timeout.connect(func(): _grab_pic(p))
 	news("🚨 %s erwischt" % p["name"] + ((" von %s" % by["name"]) if by is Dictionary else ""))
 	if int(p.get("flag", -1)) >= 0 and flags.size() == 2:   # the flag goes back to its base
 		_flag_home(int(p["flag"]))
@@ -1589,6 +1686,9 @@ func _guard(dt: float) -> void:
 	if now() < attention_until:
 		want = atan2(-attention.x, -attention.z)
 	var top := 35.0
+	if now() < decoy_until:                            # the decoy is seen: the head stays on it unless somebody is nearly caught
+		want = atan2(-decoy_pos.x, -decoy_pos.z)
+		top = 70.0
 	for p in players:
 		if p != null and p["state"] == "play" and p["role"] == "runner" and float(p["susp"]) > top:
 			top = float(p["susp"])
@@ -1621,7 +1721,7 @@ func _send_state(i: int) -> void:
 	for q in players:
 		if q != null:
 			lst.append({"n": q["name"], "c": "#" + COLORS[q["slot"]].to_html(false), "s": q["state"], "k": q["caught"], "on": q["sock"] != null,
-					"r": q["role"], "i": q["items"], "tm": int(q["team"])})
+					"r": q["role"], "i": q["items"], "tm": int(q["team"]), "dc": bool(q.get("decoy", false))})
 	var left_items := 0
 	for it in items:
 		if int(it["by"]) < 0:
@@ -1634,7 +1734,11 @@ func _send_state(i: int) -> void:
 			"goal_mode": "flag" if flag_mode() else main.game_goal, "carry": p["carry"], "gopen": goal_open(), "flag": int(p.get("flag", -1)),
 			"caps": captures, "gcam": guard_cam(p) if p["role"] == "guard" else -1,
 			"tg": guard_team, "mround": match_round, "teams": main.game_teams, "team": int(p["team"]), "look": p["look"],
-			"tres": team_results if round_state == "end" else []}
+			"tres": team_results if round_state == "end" else [],
+			"decoy": bool(p.get("decoy", false)), "decoy_ok": main.game_decoy and main.game_mode in ["camera", "mw"],
+			"lamp": bool(p.get("lamp", false)), "dark": main.is_dark(), "hid": int(p.get("hide_i", -1)) >= 0, "hc": int(p.get("hc", 0)),
+			"cps": p.get("cps", []).size(), "cps_all": checkpoints.size(), "ev": ev_kind,
+			"board": board_list() if round_state in ["end", "lobby"] else []}
 	if p["role"] == "guard":
 		d["light"] = int(max(0.0, light_ready - now()))
 		d["catch"] = int(max(0.0, float(p["catch_t"]) - now()))
@@ -1756,6 +1860,11 @@ table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px
 #sig{position:fixed;left:max(10px,env(safe-area-inset-left));top:50%;transform:translateY(-38%);display:flex;flex-direction:column;gap:6px;z-index:5}
 #tip{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(88vw,460px);background:#111822f2;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.4;text-align:center;z-index:20}
 #tip[hidden]{display:none}
+#pic{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:15;background:#111822f2;border:2px solid var(--red);border-radius:14px;padding:8px;text-align:center;pointer-events:none}
+#pic[hidden]{display:none}#pic img{display:block;width:min(70vw,420px);max-height:60vh;object-fit:contain;border-radius:8px}#pictxt{font-weight:700;margin-top:6px}
+.gal{display:flex;gap:6px;overflow-x:auto;margin:8px 0;padding-bottom:4px}.gal figure{margin:0;flex:0 0 auto;text-align:center;font-size:12px}
+.gal img{height:90px;border-radius:8px;display:block}
+.brd td.n{font-weight:600}.rec{font-size:12px;color:var(--mut)}
 @media (max-height:440px){                      /* a phone lying on its side: everything a bit smaller, nothing on top of each other */
   .b{width:58px;height:58px;font-size:10px}.b i{font-size:18px}.b.big{width:70px;height:70px;font-size:11px}.btns{gap:8px}
   #side button{width:34px;height:34px;font-size:15px}#side{gap:6px}
@@ -1784,9 +1893,10 @@ table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px
 <div id="list"></div><div id="extra"></div>
 <div id="stick"></div><div id="look"></div><div class="base" id="base"><div class="knob" id="knob"></div></div>
 <div class="hint" id="hint">links: gehen · rechts wischen: umschauen</div>
-<div class="btns" id="rb"><div class="b" id="b-stone"><i>🪨</i>Werfen</div><div class="b" id="b-run"><i>🏃</i>Rennen</div><div class="b" id="b-crouch"><i>🧎</i>Ducken</div><div class="b" id="b-crawl"><i>🐍</i>Kriechen</div></div>
+<div class="btns" id="rb"><div class="b" id="b-lamp" style="display:none"><i>🔦</i>Lampe</div><div class="b" id="b-stone"><i>🪨</i>Werfen</div><div class="b" id="b-run"><i>🏃</i>Rennen</div><div class="b" id="b-crouch"><i>🧎</i>Ducken</div><div class="b" id="b-crawl"><i>🐍</i>Kriechen</div></div>
 <div class="btns" id="gb" style="display:none"><div class="b" id="b-light"><i>💡</i>Licht</div><div class="b big red" id="b-catch"><i>🚨</i>Erwischt!</div></div>
 <div id="tip" hidden></div>
+<div id="pic" hidden><img id="picimg" alt=""><div id="pictxt"></div></div>
 <div id="side"><button id="full" title="Vollbild">⛶</button><button id="snd" title="Ton">🔊</button></div>
 <div id="msg"></div>
 <div id="sig" hidden><button data-k="wait" title="Warte">✋</button><button data-k="go" title="Los">▶</button><button data-k="cam" title="Kamera schaut her">👁</button><button data-k="here" title="Hier">📍</button></div>
@@ -1798,7 +1908,7 @@ const $ = s => document.querySelector(s), WSP = %WSPORT%;
 let ws = null, me = null, token = "", name = "", st = {}, posture = 0, run = false, mx = 0, my = 0, look = 0, pitch = 0, lastSent = "", lastT = 0, lastFrame = 0, oldUrl = "", sound = true, role = "runner";
 try { token = localStorage.getItem("mw3d-token") || ""; name = localStorage.getItem("mw3d-name") || ""; sound = localStorage.getItem("mw3d-sound") !== "0"; } catch (e) {}
 if (!token) { token = Math.random().toString(36).slice(2) + Date.now().toString(36); try { localStorage.setItem("mw3d-token", token); } catch (e) {} }
-let lastOv = null, editing = false;
+let lastOv = null, editing = false, GAL = [];
 const ov = (html) => { if (html === lastOv) return; lastOv = html; $("#ov").innerHTML = html ? '<div class="card">' + html + '</div>' : ""; };
 let outfit = {hat: "", pack: false, camo: false};
 try { outfit = Object.assign(outfit, JSON.parse(localStorage.getItem("mw3d-look") || "{}")); } catch (e) {}
@@ -1838,6 +1948,9 @@ function connect() {
     if (m.t === "hello") { me = m; role = m.role; $("#nm").textContent = m.name; $("#me .dot").style.background = m.color; setRole(); ov(""); askFrame(); }
     else if (m.t === "full") { ov('<h1>Schon 4 Spieler</h1><p>Das Spiel ist voll. Warte, bis jemand aufhört.</p>'); }
     else if (m.t === "st") paint(m);
+    else if (m.t === "pic") { $("#picimg").src = "data:image/jpeg;base64," + m.b64; $("#pictxt").textContent = m.txt || ""; $("#pic").hidden = false;
+      clearTimeout(window.__picT); window.__picT = setTimeout(() => $("#pic").hidden = true, 3500); }
+    else if (m.t === "gal") { GAL = m.pics || []; lastOv = null; if (st && st.rs) paint(st); }
     else if (m.t === "sig") { const t = $("#sigt"); t.innerHTML = '<span style="color:' + m.c + '">●</span> ' + esc(m.n) + ': ' + esc(m.txt) + ' <span class="ar" style="transform:rotate(' + (-m.ga) + 'deg)">⬆</span> ' + m.d + ' m';
       t.style.opacity = 1; clearTimeout(window.__sigT); window.__sigT = setTimeout(() => t.style.opacity = 0, 3000); tone(880, 0.08, "triangle", 0.12); tone(1175, 0.1, "triangle", 0.12, 0.09); if (navigator.vibrate) navigator.vibrate(60); }
     else if (m.t === "ev") { if (m.k === "caught") { if (navigator.vibrate) navigator.vibrate([300, 100, 300]); document.body.classList.remove("redfl"); void document.body.offsetWidth; document.body.classList.add("redfl"); }
@@ -1862,11 +1975,14 @@ function paint(m) {
   $("#list").hidden = (m.list || []).length < 2;                // alone: the name stands at the top already
   $("#list").innerHTML = (m.list || []).map(p => '<span style="color:' + p.c + '">●</span> ' + esc(p.n) + (p.r === "guard" ? " 👁" : "") + (p.s === "goal" ? " 🏁" : p.s === "out" ? " ✖" : "") + (p.r !== "guard" && p.k ? " · " + p.k + "×" : "") + (p.on ? "" : " (weg)")).join("<br>");
   $("#extra").textContent = (m.goal_mode === "flag" && role === "runner" ? "🚩 Rot " + m.caps[0] + " : " + m.caps[1] + " Blau · " + (m.flag >= 0 ? "Fahne dabei – zur eigenen Basis! · " : "") : "") + (m.gopen === false && role === "runner" ? "🔒 Ziel noch zu – zuerst alle Kristalle finden · " : "") + (m.carry ? "💰 Beute dabei – zurück zum Start! " : (m.goal_mode === "return" && role === "runner" ? "Ziel: Beute holen und zurückbringen · " : "")) + (m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "");
+  if (m.cps_all && role === "runner") $("#extra").textContent = "🚩 " + m.cps + "/" + m.cps_all + " · " + $("#extra").textContent;
+  if (m.decoy && role === "runner") $("#extra").textContent = "🦆 Lockvogel – lass dich sehen! · " + $("#extra").textContent;
   $("#msg").textContent = m.msg || "";
   $("#sig").hidden = !(m.rs === "play" && role === "runner" && m.ps === "play");
   if (m.stone < 0) $("#b-stone").style.display = "none"; else { $("#b-stone").style.display = "flex"; cool($("#b-stone"), m.stone); }
+  $("#b-lamp").style.display = m.dark && role === "runner" ? "flex" : "none"; $("#b-lamp").classList.toggle("on", !!m.lamp);
   if (role === "guard") { cool($("#b-light"), m.light); cool($("#b-catch"), m.catch); $("#gd").textContent = m.gcam === 1 ? "feste Kamera" : (m.pan > 0 ? "◀ " : "▶ ") + Math.abs(m.pan) + "°"; }
-  if (m.rs === "countdown") ov('<div id="big">' + Math.max(1, m.cd) + '</div>');
+  if (m.rs === "countdown") { GAL = []; ov('<div id="big">' + Math.max(1, m.cd) + '</div>'); }
   else if ((m.rs === "lobby" || m.rs === "end") && editing) { /* the player changes the look */ }
   else if (m.rs === "lobby" || m.rs === "end") {
     let h = m.rs === "end" ? (m.tres && m.tres.length ? '<h1>' + (m.tres[0].lead ? 'Runde 1 von 2: ' + esc(m.tres[0].n) + ' führt' : esc(m.tres[0].n) + ' gewinnt!') + '</h1><p>' + m.tres.map(t => '<span style="color:' + t.c + '">●</span> ' + esc(t.n) + ' <b>' + t.score + '</b>' + (t.round !== undefined ? ' <small>(diese Runde ' + t.round + ')</small>' : '')).join(" · ") + '</p>' : '') + '<h1>Rangliste</h1><table>' + (m.res || []).map((r, i) => '<tr><td>' + (i + 1) + '.</td><td><span style="color:' + r.c + '">●</span> ' + esc(r.n) + '</td><td>' + esc(r.info) + '</td><td><b>' + r.score + '</b></td></tr>').join("") + '</table>'
@@ -1878,11 +1994,15 @@ function paint(m) {
     if (m.teams) { const tm = [0, 1].map(k => '<div class="tm' + (m.team === k ? " me" : "") + '"><b style="color:' + ["#eb2e1f", "#1f6bfa"][k] + '">' + ["Team Rot", "Team Blau"][k] + '</b>' +
         (m.list || []).filter(p => p.tm === k).map(p => '<span style="color:' + p.c + '">●</span> ' + esc(p.n)).join("<br>") + '<br><button class="sec' + (m.team === k ? " on" : "") + '" data-team="' + k + '">' + (m.team === k ? "✓ dabei" : "wechseln") + '</button></div>').join("");
       h += '<div class="teams">' + tm + '</div>'; }
+    if (m.decoy_ok && role === "runner") h += '<p>🦆 Ein <b>Lockvogel</b> lässt sich absichtlich sehen und lockt die Kamera weg. Er wird langsamer entdeckt und bekommt Punkte für jede Sekunde, in der ihn die Kamera beobachtet.</p><button class="sec' + (m.decoy ? " on" : "") + '" id="r-decoy">🦆 ' + (m.decoy ? "Ich bin Lockvogel" : "Lockvogel sein") + '</button><br>';
+    if (m.rs === "end" && GAL.length) h += '<h1>📸 Erwischt!</h1><div class="gal">' + GAL.map(g => '<figure><img src="data:image/jpeg;base64,' + g.b64 + '"><figcaption style="color:' + g.c + '">' + esc(g.n) + '</figcaption></figure>').join("") + '</div>';
+    if (m.board && m.board.length) h += '<h1>🏆 Rangliste des Abends</h1><table class="brd">' + m.board.map((b, i) => '<tr><td>' + (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + '</td><td class="n" style="color:' + b.c + '">' + esc(b.n) + '</td><td><b>' + b.score + '</b></td><td class="rec">' + b.rounds + ' Runden' + (b.wins ? ' · ' + b.wins + '× Sieg' : '') + (b.best ? ' · Bestzeit ' + fmtT(b.best) : '') + (b.clean ? ' · ' + b.clean + '× nie erwischt' : '') + '</td></tr>').join("") + '</table>';
     h += '<button class="sec" id="lk">👕 Aussehen ändern</button><br><button class="pr" id="st">' + (m.rs === "end" ? "Nochmal" : "Runde starten") + '</button>';
     ov(h);
     document.querySelectorAll("[data-team]").forEach(b => b.onclick = () => ws.send(JSON.stringify({t: "team", k: +b.dataset.team})));
     const lkb = $("#lk"); if (lkb) lkb.onclick = () => { editing = true; ov('<h1>Aussehen</h1>' + lookHtml() + '<button class="pr" id="lkok">Fertig</button>'); bindLook();
       $("#lkok").onclick = () => { ws.send(JSON.stringify(Object.assign({t: "look"}, outfit))); editing = false; lastOv = null; paint(st); }; };
+    const rd = $("#r-decoy"); if (rd) rd.onclick = () => ws.send(JSON.stringify({t: "decoy", v: !m.decoy}));
     const rr = $("#r-run"), rg = $("#r-guard"); if (rr) rr.onclick = () => ws.send('{"t":"role","r":"runner"}'); if (rg) rg.onclick = () => ws.send('{"t":"role","r":"guard"}');
   }
   else if (m.ps === "goal") ov('<h1>🏁 Im Ziel!</h1><p>Warte auf die anderen.</p>');
@@ -1908,6 +2028,7 @@ hold($("#b-run"), () => { run = true; posture = 0; btns(); }, () => { run = fals
 $("#b-crouch").addEventListener("pointerdown", e => { e.preventDefault(); posture = posture === 1 ? 0 : 1; btns(); });
 $("#b-crawl").addEventListener("pointerdown", e => { e.preventDefault(); posture = posture === 2 ? 0 : 2; btns(); });
 $("#b-stone").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "stone"}); });
+$("#b-lamp").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "lamp"}); });
 $("#b-light").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "light"}); });
 $("#b-catch").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "catch"}); });
 document.querySelectorAll("#sig button").forEach(b => b.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); send({t: "sig", k: b.dataset.k}); b.style.background = "var(--acc)"; setTimeout(() => b.style.background = "", 300); }));
@@ -1950,7 +2071,8 @@ func spectator_info() -> Dictionary:
 			pw = a.power
 		ps.append({"n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "s": p["state"], "r": p["role"], "susp": int(p["susp"]),
 				"k": int(p["caught"]), "i": int(p["items"]), "pw": pw, "tm": int(p["team"]), "on": p["sock"] != null, "carry": bool(p["carry"]),
-				"d": snappedf(a.position.distance_to(goal), 0.1)})
+				"d": snappedf(a.position.distance_to(goal), 0.1), "slot": int(p["slot"]), "hc": int(p.get("hc", 0)),
+				"dc": bool(p.get("decoy", false)), "hid": int(p.get("hide_i", -1)) >= 0, "cp": p.get("cps", []).size()})
 	var left_items := 0
 	for it in items:
 		if int(it["by"]) < 0:
@@ -1961,7 +2083,8 @@ func spectator_info() -> Dictionary:
 	var d := {"open": open, "round": round_state, "mode": main.game_mode, "goal_mode": "flag" if flag_mode() else main.game_goal,
 			"goal": goal_name, "players": ps, "items_left": left_items, "items_all": items.size(), "feed": fd, "last_minute": last_minute,
 			"teams": main.game_teams, "caps": captures, "shot": main.spec_label if main.spectate else "", "spectate": main.spectate,
-			"lives": int(main.game_lives)}
+			"lives": int(main.game_lives), "ev": ev_kind, "cps_all": checkpoints.size(), "board": board_list(), "records": records,
+			"pics": gallery.map(func(g): return {"n": g["n"], "c": g["c"]}), "night": night_saved >= 0.0}
 	if round_state == "countdown":
 		d["cd"] = int(ceil(t_start - t))
 	if round_state == "play":
@@ -1969,3 +2092,270 @@ func spectator_info() -> Dictionary:
 	if round_state == "end":
 		d["res"] = results
 	return d
+
+
+# ==== more game (3D-3.25): photos, hiding places, decoy, night, events, checkpoints, ranking, handicap ==============
+func _grab_pic(p: Dictionary) -> void:
+	var j: PackedByteArray = main.latest_jpg(0)
+	if j.size() < 100:
+		return
+	var img := Image.new()
+	if img.load_jpg_from_buffer(j) != OK:
+		return
+	if img.get_width() > 480:
+		img.resize(480, int(480.0 * img.get_height() / img.get_width()), Image.INTERPOLATE_BILINEAR)
+	var small := img.save_jpg_to_buffer(0.72)
+	gallery.append({"n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "jpg": small})
+	if gallery.size() > 8:
+		gallery.pop_front()
+	if p["sock"] != null:
+		p["sock"]["ws"].send_text(JSON.stringify({"t": "pic", "b64": Marshalls.raw_to_base64(small), "txt": "📸 So hat dich die Kamera gesehen"}))
+
+
+func _send_gallery() -> void:
+	"""end of the round: every phone gets the «caught» photos of this round"""
+	if gallery.is_empty():
+		return
+	var arr := []
+	for g in gallery:
+		arr.append({"n": g["n"], "c": g["c"], "b64": Marshalls.raw_to_base64(g["jpg"])})
+	var msg := JSON.stringify({"t": "gal", "pics": arr})
+	for q in players:
+		if q != null and q["sock"] != null:
+			q["sock"]["ws"].send_text(msg)
+
+
+func gallery_jpg(i: int) -> PackedByteArray:
+	return gallery[i]["jpg"] if i >= 0 and i < gallery.size() else PackedByteArray()
+
+
+func _bush(pos: Vector3) -> Node3D:
+	var n := Node3D.new()
+	n.position = pos
+	var mt := StandardMaterial3D.new()
+	mt.albedo_color = Color(0.16, 0.36, 0.14)
+	mt.roughness = 0.95
+	for k in range(4):
+		var m := MeshInstance3D.new()
+		var sm := SphereMesh.new()
+		var r := randf_range(0.45, 0.65)
+		sm.radius = r
+		sm.height = r * 1.7
+		m.mesh = sm
+		m.material_override = mt
+		m.position = Vector3(randf_range(-0.35, 0.35), r * 0.65, randf_range(-0.35, 0.35))
+		n.add_child(m)
+	root.add_child(n)
+	return n
+
+
+func _place_hides(n: int) -> void:
+	"""hiding places: bushes. Crouching or lying in one, the cameras do not see you - but only for 8 seconds"""
+	for h in hides:
+		if is_instance_valid(h["node"]):
+			h["node"].queue_free()
+	hides.clear()
+	for i in range(n):
+		var pos := _spot_far(7.0)
+		hides.append({"node": _bush(pos), "pos": pos})
+
+
+func _hide_check(p: Dictionary) -> bool:
+	var a = p["actor"]
+	var t := now()
+	var hi: int = int(p.get("hide_i", -1))
+	if hi >= 0:
+		if hi >= hides.size() or a.position.distance_to(hides[hi]["pos"]) > 1.3 or a.ctl_posture == 0:
+			p["hide_i"] = -1                             # left the bush
+			return false
+		var left: float = HIDE_MAX - (t - float(p["hide_t0"]))
+		if left <= 0.0:
+			p["hide_i"] = -1
+			p["hide_cd"][hi] = t + 12.0
+			_say(p, "🌳 Zu lange im Versteck – raus da!", 2.5)
+			return false
+		_say(p, "🌳 Versteckt – noch %d s" % int(ceil(left)), 0.4)
+		return true
+	if a.ctl_posture == 0:
+		return false
+	for i in range(hides.size()):
+		if a.position.distance_to(hides[i]["pos"]) < 1.0 and t > float(p["hide_cd"].get(i, 0.0)):
+			p["hide_i"] = i
+			p["hide_t0"] = t
+			news("🌳 %s versteckt sich" % p["name"])
+			return true
+	return false
+
+
+func _place_checkpoints(n: int) -> void:
+	"""checkpoints: glowing rings between start and goal (only the players see them), bonus on the first visit"""
+	for c in checkpoints:
+		if is_instance_valid(c["node"]):
+			c["node"].queue_free()
+	checkpoints.clear()
+	if n <= 0:
+		return
+	var a0 := Vector3.ZERO
+	var cnt := 0
+	for p in players:
+		if p != null and p["role"] == "runner":
+			a0 += start_point(p["slot"])
+			cnt += 1
+	a0 = (a0 / cnt) if cnt > 0 else start_point(0)
+	for i in range(n):
+		var f: float = float(i + 1) / float(n + 1)
+		var c: Vector3 = a0.lerp(goal, f)
+		var side := (goal - a0).cross(Vector3.UP).normalized()
+		c += side * randf_range(-8.0, 8.0)
+		var pos := _g(main.free_spot(c, 0.6, true))
+		var nd := MeshInstance3D.new()
+		var tm := TorusMesh.new()
+		tm.inner_radius = 0.55
+		tm.outer_radius = 0.7
+		nd.mesh = tm
+		nd.rotation = Vector3(PI / 2, 0, 0)
+		nd.position = pos + Vector3(0, 0.75, 0)
+		nd.material_override = _glow(Color(1.0, 0.55, 0.15))
+		nd.layers = 16
+		root.add_child(nd)
+		checkpoints.append({"node": nd, "pos": pos})
+
+
+func _events_tick(t: float) -> void:
+	"""random events: thunderstorm, a dog, a car - one at a time, about every minute"""
+	if not main.game_events:
+		return
+	if ev_kind != "":
+		if t >= ev_until:
+			_event_end()
+		return
+	if t < ev_next:
+		return
+	var kinds := ["storm", "dog", "car"]
+	ev_kind = kinds[randi() % kinds.size()]
+	ev_until = t + 15.0
+	ev_warned.clear()
+	match ev_kind:
+		"storm":
+			ev_weather = main.weather
+			main.weather = "rain"
+			news("⛈ Gewitter! 15 s lang hört das Mikrofon fast nichts")
+			for q in players:
+				if q != null:
+					_say(q, "⛈ Gewitter – jetzt hört man dich kaum!", 3.0)
+		"dog":
+			var rs := []
+			for q in players:
+				if q != null and q["role"] == "runner" and q["state"] == "play":
+					rs.append(q)
+			var c: Vector3 = rs[randi() % rs.size()]["actor"].position if not rs.is_empty() else goal * 0.5
+			var from := c + Vector3(randf_range(-12.0, 12.0), 0, randf_range(-12.0, 12.0))
+			ev_node = main.spawn("dog", from, c + (c - from) * 1.5)
+			news("🐕 Ein Hund läuft übers Feld – nicht zu nahe kommen!")
+		"car":
+			var z: float = goal.z * randf_range(0.3, 0.7)
+			var sgn := 1.0 if randf() < 0.5 else -1.0
+			ev_node = main.spawn("car", Vector3(-45.0 * sgn, 0, z), Vector3(45.0 * sgn, 0, z))
+			news("🚗 Ein Auto fährt vorbei" + (" – Vorsicht, Scheinwerfer!" if main.is_dark() else " – der Motor übertönt die Schritte"))
+
+
+func _event_end() -> void:
+	if ev_kind == "storm" and ev_weather != "":
+		main.weather = ev_weather
+	ev_weather = ""
+	ev_kind = ""
+	ev_node = null
+	ev_next = now() + randf_range(50.0, 85.0)
+
+
+func _board_load() -> void:
+	var day := Time.get_date_string_from_system()
+	if board_day == day:
+		return
+	board_day = day
+	board = {}
+	records = {}
+	var f := FileAccess.open("user://game_board.json", FileAccess.READ)
+	if f != null:
+		var d = JSON.parse_string(f.get_as_text())
+		if d is Dictionary and str(d.get("day", "")) == day:    # the ranking of the evening: from the same day only
+			board = d.get("board", {})
+			records = d.get("records", {})
+
+
+func _board_save() -> void:
+	var f := FileAccess.open("user://game_board.json", FileAccess.WRITE)
+	if f != null:
+		f.store_string(JSON.stringify({"day": board_day, "board": board, "records": records}))
+
+
+func _board_add() -> void:
+	_board_load()
+	var top := -1
+	for r in results:
+		top = max(top, int(r["score"]))
+	for p in players:
+		if p == null:
+			continue
+		var key := str(p["name"]).to_lower()
+		var b: Dictionary = board.get(key, {"n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "score": 0, "rounds": 0, "wins": 0, "best": 0, "clean": 0})
+		var sc := 0
+		for r in results:
+			if r["n"] == p["name"]:
+				sc = int(r["score"])
+		b["n"] = p["name"]
+		b["c"] = "#" + COLORS[p["slot"]].to_html(false)
+		b["score"] = int(b["score"]) + sc
+		b["rounds"] = int(b["rounds"]) + 1
+		if sc == top and top > 0:
+			b["wins"] = int(b["wins"]) + 1
+		if p["role"] == "runner" and int(p["caught"]) == 0:
+			b["clean"] = int(b["clean"]) + 1
+		if p["role"] == "runner" and float(p.get("t_goal", 0.0)) > 0.0:
+			var secs := int(float(p["t_goal"]) - t_start)
+			if secs > 0 and (int(b["best"]) == 0 or secs < int(b["best"])):
+				b["best"] = secs
+			if secs > 0 and (not records.has("fast") or secs < int(records["fast"][1])):
+				records["fast"] = [p["name"], secs]
+		if int(p["items"]) > 0 and (not records.has("items") or int(p["items"]) > int(records["items"][1])):
+			records["items"] = [p["name"], int(p["items"])]
+		if p["role"] == "guard" and int(p["catches"]) > 0 and (not records.has("catches") or int(p["catches"]) > int(records["catches"][1])):
+			records["catches"] = [p["name"], int(p["catches"])]
+		board[key] = b
+	_board_save()
+
+
+func board_list() -> Array:
+	_board_load()
+	var out: Array = board.values()
+	out.sort_custom(func(x, y): return int(x["score"]) > int(y["score"]))
+	return out.slice(0, 10)
+
+
+func board_reset() -> void:
+	board = {}
+	records = {}
+	board_day = Time.get_date_string_from_system()
+	_board_save()
+	news("🏆 Rangliste zurückgesetzt")
+
+
+func set_handicap(slot: int, level: int) -> void:
+	if slot >= 0 and slot < players.size() and players[slot] != null:
+		players[slot]["hc"] = clampi(level, 0, 2)
+		players[slot]["actor"].handicap = clampi(level, 0, 2)
+		paint()
+
+
+func _auto_handicap() -> void:
+	"""whoever leads the ranking of the evening gets a handicap (if switched on)"""
+	if not main.game_autohandicap:
+		return
+	var bl := board_list()
+	var lead := str(bl[0]["n"]).to_lower() if not bl.is_empty() and int(bl[0]["rounds"]) > 0 else ""
+	for p in players:
+		if p != null and p["role"] == "runner":
+			var on := lead != "" and str(p["name"]).to_lower() == lead and count() > 1
+			p["hc"] = 1 if on else 0
+			if on:
+				news("🎯 Handicap für %s (führt die Rangliste an)" % p["name"])

@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 11:39",
+ "generated": "2026-10-27 11:57",
  "versions": [
   {
-   "version": "2.95.17",
-   "file": "webcam_bewegung_2_95_17.py",
+   "version": "2.95.18",
+   "file": "webcam_bewegung_2_95_18.py",
    "url": "",
-   "sha256": "11e7d9a145e185d8a770c2a39f170b43ea44e355386650296c27f8c148f9dac8",
-   "date": "2026-10-27 11:39",
-   "notes": "CPU of the PC the simulator runs on (tab Simulator, header «SIMULATION · PC 45 %»). The simulator is updated by itself when a newer version is there (switch in «Connection»). 3D simulator 3D-3.24: human crouching and crawling.",
-   "sig": "d3cd487e1dcbfd71726f4bcfe89e7f8586ad50de231023697db7383e55a8e076d732dd2b281c23e2be44d487e06cff584e40ac4c85315afa3fa50c7d14ef0106"
+   "sha256": "e164bad6768fe028703f81f94202737fe615ca35c47f87906ce1b7ec144e4442",
+   "date": "2026-10-27 11:57",
+   "notes": "game (3D-3.25): «caught» photos and gallery, hiding places, decoy, night round with torches, random events, checkpoints, ranking of the evening with records, handicap per player - in the wizard (Extras), the game card and the spectator view.",
+   "sig": "52c5f35addfc2a709b32e35fa1d0f7cbddb21deeaab9436e250303a2be988e1d2ba81b3431851585220adc2cc12260cdb94a34897cea704e8d12d5f408acea0a"
   },
   {
    "version": "2.94.5",

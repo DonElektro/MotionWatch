@@ -1,7 +1,7 @@
 {
- "version": "3D-3.24",
+ "version": "3D-3.25",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30581182,
- "sha256": "26ba2acd0acc4ebe2513a6481bcc6231295a12e990a2c64b4381dac3551e1353",
- "notes": "Menschlichere Bewegungen beim Ducken und Kriechen, bewegte Vorschaubilder der Besucher, CPU dieses PCs für Motion Watch."
+ "size": 30595062,
+ "sha256": "e07040264893e4664f78ec4f4e5863a709e5a7ff60d181b13c7e1904b89fb5e4",
+ "notes": "Mehr Spiel: Erwischt-Fotos, Verstecke, Lockvogel, Nacht-Runde, Zufallsereignisse, Checkpoints, Rangliste des Abends, Handicap."
 }

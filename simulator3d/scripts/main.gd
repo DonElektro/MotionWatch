@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.24"
+const VERSION := "3D-3.25"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -53,6 +53,13 @@ var game_noise := true                # the microphone hears loud steps
 var game_stones := true               # stones to throw (distract the guard)
 var game_powers := true               # power-ups: cloak and turbo (3D-3.21)
 var game_spectate := true             # spectator camera: flies over the field by itself while a round runs (3D-3.22)
+var game_photos := true               # «caught» photos (3D-3.25)
+var game_hides := 3                   # hiding places (bushes)
+var game_decoy := true                # a player may be the decoy
+var game_night := false               # night round with torches
+var game_events := true               # random events: thunderstorm, dog, car
+var game_checkpoints := 0             # checkpoints with a bonus
+var game_autohandicap := false        # whoever leads the ranking gets a handicap
 var game_random := false              # start and goal by chance
 var game_rescue := false              # caught -> jail, a team mate frees you (3D-3.1)
 var game_teamgoal := false            # the goal opens only when all crystals are found
@@ -1834,7 +1841,9 @@ const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort
 		"sound_on": ["Kamerabild", "Feineinstellungen"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", "Runde"],
 		"game_stop": ["Spiel", "Runde"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
 		"game_level": ["Spiel", "Regeln"], "game_lives": ["Spiel", "Regeln"], "game_items": ["Spiel", "Regeln"], "game_teams": ["Spiel", "Regeln"],
-		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_powers": ["Spiel", "Regeln"], "game_spectate": ["Spiel", "Anzeige"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
+		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_powers": ["Spiel", "Regeln"], "game_spectate": ["Spiel", "Anzeige"], "game_photos": ["Spiel", "Extras"], "game_hides": ["Spiel", "Extras"], "game_decoy": ["Spiel", "Extras"],
+		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
+		"game_board_reset": ["Spiel", "Extras"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"],
 		"quality": ["System", "Grafik"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
@@ -1960,6 +1969,14 @@ func _register_controls() -> void:
 			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"]]})
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
 	add_control("toggle", "game_powers", "Power-ups: Tarnkappe (lila) und Turbo (gelb)", func(): return game_powers, func(v): game_powers = v, "Spiel")
+	add_control("toggle", "game_photos", "Erwischt-Fotos (Bild der Kamera beim Erwischen, Galerie am Schluss)", func(): return game_photos, func(v): game_photos = v, "Spiel")
+	add_control("slider", "game_hides", "Verstecke (Büsche: 8 s unsichtbar)", func(): return game_hides, func(v): game_hides = int(v), "Spiel", {"min": 0, "max": 6, "step": 1})
+	add_control("toggle", "game_decoy", "Lockvogel erlaubt (lockt die Kamera weg, Teampunkte)", func(): return game_decoy, func(v): game_decoy = v, "Spiel")
+	add_control("toggle", "game_night", "Nacht-Runde mit Taschenlampen", func(): return game_night, func(v): game_night = v, "Spiel")
+	add_control("toggle", "game_events", "Zufallsereignisse (Gewitter, Hund, Auto)", func(): return game_events, func(v): game_events = v, "Spiel")
+	add_control("slider", "game_checkpoints", "Checkpoints (+150 Punkte)", func(): return game_checkpoints, func(v): game_checkpoints = int(v), "Spiel", {"min": 0, "max": 3, "step": 1})
+	add_control("toggle", "game_autohandicap", "Handicap für den Ersten der Rangliste", func(): return game_autohandicap, func(v): game_autohandicap = v, "Spiel")
+	add_control("button", "game_board_reset", "Rangliste des Abends zurücksetzen", null, func(): game.board_reset(), "Spiel")
 	add_control("toggle", "game_spectate", "Zuschauer-Kamera: fliegt bei Spielstart selbst übers Spielfeld", func(): return game_spectate, func(v): game_spectate = v, "Spiel")
 	add_control("toggle", "spectate_now", "Zuschauer-Kamera jetzt", func(): return spectate, func(v): spectate_start() if v else spectate_stop(), "Spiel")
 	add_control("toggle", "game_noise", "Mikrofon hört laute Schritte", func(): return game_noise, func(v): game_noise = v, "Spiel", ex)
@@ -2075,7 +2092,10 @@ func control(d: Dictionary) -> Dictionary:
 				"items": game.items.map(func(it): return [snappedf(it["pos"].x, 0.1), snappedf(it["pos"].z, 0.1), it["by"], snappedf(it["pos"].y, 0.01), snappedf(ground_y(it["pos"].x, it["pos"].z), 0.01)]),
 				"goal_y": [snappedf(game.goal.y, 0.01), snappedf(ground_y(game.goal.x, game.goal.z), 0.01)], "insects": insects.emitting,
 				"powers": game.powers.map(func(w): return [w["kind"], snappedf(w["pos"].x, 0.1), snappedf(w["pos"].z, 0.1), float(w["back"]) > 0.0]),
-				"last_minute": game.last_minute}
+				"last_minute": game.last_minute,
+				"hides": game.hides.map(func(h): return [snappedf(h["pos"].x, 0.1), snappedf(h["pos"].z, 0.1)]),
+				"cps": game.checkpoints.map(func(h): return [snappedf(h["pos"].x, 0.1), snappedf(h["pos"].z, 0.1)]),
+				"ev": game.ev_kind, "gallery": game.gallery.size(), "board": game.board_list(), "hour": snappedf(hour(), 0.1)}
 	elif a == "game_put":                              # for tests: put a player somewhere
 		var p2 = game.players[clampi(int(d.get("slot", 0)), 0, 3)]
 		if p2 == null:
@@ -2115,6 +2135,9 @@ func control(d: Dictionary) -> Dictionary:
 	elif a == "input":                                 # the simulator window seen in Motion Watch: mouse / finger / keys from there
 		var ev = d.get("ev", [])
 		return {"ok": true, "n": view_input(ev if ev is Array else [])}
+	elif a == "game_handicap":                         # Motion Watch: handicap for a player (0 … 2)
+		game.set_handicap(int(d.get("slot", -1)), int(d.get("level", 0)))
+		return {"ok": true}
 	elif a == "game_info":                             # the spectators in Motion Watch: the game in numbers (3D-3.22)
 		if game == null:
 			return {"ok": false, "error": "no game"}
@@ -2775,7 +2798,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 

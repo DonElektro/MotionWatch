@@ -70,6 +70,8 @@ var last_spd := 0.0
 var lean_acc := 0.0           # leaning into a start, back when stopping
 var seed_t := randf() * 10.0  # standing: breathing and shifting the weight, not all in step
 var power := ""               # players: «cloak» / «turbo» for a few seconds (game.gd, 3D-3.21)
+var player_lamp := false      # players: the torch is on (night round, 3D-3.25)
+var handicap := 0             # players: 0 … 2 - a little slower (game.gd, 3D-3.25)
 var power_until := 0.0
 var emote := ""               # players: caught / goal / throw (game.gd)
 var emote_until := 0.0
@@ -642,6 +644,7 @@ func _player(dt: float, now: float) -> void:
 	var top: float = PLAYER_SPEED[ctl_posture] * (2.3 if ctl_run and ctl_posture == 0 else 1.0)
 	if power == "turbo" and now < power_until:
 		top *= 1.45
+	top *= 1.0 - 0.07 * handicap
 	var want: float = top * mv.length()
 	if mv.length() > 0.08:
 		dir = Vector3(mv.x, 0, mv.y).normalized()
@@ -902,7 +905,10 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 		if a.size() > 2:
 			a[2].rotation.x = lerp(a[2].rotation.x, ex, k)
 	if torch != null:
-		torch.light_energy = 3.0 if crouch > 0.5 and int(now * 3.0) % 4 != 0 else 0.0
+		if controlled:
+			torch.light_energy = 4.5 if player_lamp else 0.0
+		else:
+			torch.light_energy = 3.0 if crouch > 0.5 and int(now * 3.0) % 4 != 0 else 0.0
 
 
 func _at_door() -> bool:
