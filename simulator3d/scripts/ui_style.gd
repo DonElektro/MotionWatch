@@ -305,6 +305,11 @@ static func _draw_group_icon(d: Control, kind: String) -> void:
 				d.draw_line(c + Vector2(cos(a), sin(a)) * 5.5, c + Vector2(cos(a), sin(a)) * 8.5, col, 2.6, true)
 			d.draw_arc(c, 5.5, 0, TAU, 20, col, w, true)
 			d.draw_arc(c, 2.2, 0, TAU, 12, col, 1.4, true)
+		"track":                                      # tracked vehicle
+			d.draw_rect(Rect2(c + Vector2(-9, -1), Vector2(18, 8)), col, false, w)
+			for x in [-5, 0, 5]:
+				d.draw_arc(c + Vector2(x, 3), 1.8, 0, TAU, 8, col, 1.4, true)
+			d.draw_polyline(P.call([Vector2(-4, -1), Vector2(-4, -6), Vector2(4, -6), Vector2(4, -1)]), col, w, true)
 		"keys":
 			d.draw_rect(Rect2(c + Vector2(-9, -5), Vector2(18, 11)), col, false, w)
 			for x in [-5, -1, 3]:

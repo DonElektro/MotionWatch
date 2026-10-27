@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-3.10** · passende Motion-Watch-Version **2.93.17**
+Stand: 26.10.2026 · Simulator-Version **3D-3.11** · passende Motion-Watch-Version **2.94.0**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,14 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-3.11 – Mover und Mini-Kästchen:** `rig` (Basis von Motion Watch, Elternknoten von `head`) + `chassis` (Kettenfahrzeug);
+`mover_on` / `mover_max` (KEEP), `_drive()` liest `mw.drive.l/r` (−1 … 1, von Motion Watch 2.94.0), echte Zeit seit dem letzten Aufruf
+(Bilder werden zum Sparen ausgelassen), Hindernisse wie Besucher, Gelände `ground_y`; Antwort an Motion Watch: `"mover": true`.
+Test-Aktion `mover`. mini.gd: eigene CPU (Windows: PowerShell-Schleife über `OS.execute_with_pipe`, nur solange das Kästchen da ist;
+Linux /proc), `set_tiny()` = Symbol 64 × 64 (Test: MWSIM_MINI_TEST=2). Windows-Messung nicht getestet (kein Windows hier).
+Motion Watch 2.94.0: `MOVER`, `MoverControl` (PCA9685 als Motor HAT, 1600 Hz, Adafruit- oder Waveshare-Belegung, 0,6-s-Wächter,
+sanftes Anfahren), `/api/mover`, `st.mover`, zweiter Stick im Web (`#mstick`, `body.mover`, Vollbild `#vo-mctl`) und im Fenster (`MoverPad`).
+
 **3D-3.10 – 3D-Gebäude:** `b3d.gd`: `tileset.json` von 3d.geo.admin.ch (`geo.url("b3d")`), Baum ablaufen (region / box / sphere,
 verschachtelte tileset.json, höchstens 40 Kacheln), b3dm (RTC_CENTER) oder glb mit `GLTFDocument` laden, glTF y-oben → z-oben →
 Kachel-Transform → minus `ecef0` → Ost/Oben/Süd (Doppelgenauigkeit für die grossen Zahlen), flache Normalen passend zur Godot-Wicklung,

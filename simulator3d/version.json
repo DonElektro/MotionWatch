@@ -1,7 +1,7 @@
 {
- "version": "3D-3.10",
+ "version": "3D-3.11",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30513275,
- "sha256": "7ceaabd35e8e4dc39a50b03ebf14f8727273dfaf98fd1103f60142542dc009fa",
- "notes": "Echte 3D-Gebäude von swisstopo an echten Orten (sonst wie bisher die Häuser aus OpenStreetMap)."
+ "size": 30521648,
+ "sha256": "93f6792cb6d9b22730dffb5f0c6f7f4e4f6a6e36c1f9c072fb557c2073ec51bc",
+ "notes": "Neu: Mover (Kettenfahrzeug) simulieren – Motion Watch 2.94.0 zeigt einen zweiten Stick zum Fahren. Mini-Kästchen mit eigener CPU und zum Symbol zusammenklappbar."
 }

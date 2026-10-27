@@ -4,6 +4,8 @@ extends CanvasLayer
 ## «CONNECTING…». The box shows whether the simulator sends, how many pictures per second, and the connection.
 ## Click on the box: big again. Drag: move it. While it sends, the PC and the screen do not go to sleep.
 ## From 3D-2.3 also the CPU (measured by Motion Watch: the whole computer, Motion Watch, the simulator) and «Pause».
+## From 3D-3.11 also the CPU of this PC and of the simulator (measured here: Windows with a small PowerShell loop while the box
+## is shown, Linux from /proc), and «▁» folds the box into a small icon (click on it: the box again).
 
 var main                                   # the main script
 var mini := false
@@ -24,7 +26,17 @@ var drag_win := Vector2i.ZERO
 var dragging := false
 var moved := false
 
-const MINI_SIZE := Vector2i(360, 136)
+const MINI_SIZE := Vector2i(380, 156)
+const ICON_SIZE := Vector2i(64, 64)
+var tiny := false                          # folded into the small icon
+var icon_box: PanelContainer
+var icon_dot: Label
+var line_own: Label
+var own := {"pc": -1.0, "sim": -1.0}       # CPU of this PC / of the simulator (%), -1 = not known
+var cpu_pipe := {}
+var cpu_thread: Thread
+var cpu_run := false
+var _lin_prev := []
 
 
 func _ready() -> void:
@@ -70,6 +82,12 @@ func _ready() -> void:
 	line_cpu.clip_text = true
 	line_cpu.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(line_cpu)
+	line_own = Label.new()
+	line_own.add_theme_font_size_override("font_size", 13)
+	line_own.add_theme_color_override("font_color", Color(0.75, 0.8, 0.86))
+	line_own.clip_text = true
+	line_own.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(line_own)
 	var h2 := HBoxContainer.new()
 	h2.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(h2)
@@ -79,6 +97,14 @@ func _ready() -> void:
 	line3.text = "ziehen = verschieben"
 	line3.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h2.add_child(line3)
+	var fold := Button.new()
+	fold.text = "▁"
+	fold.tooltip_text = "Einklappen: nur noch ein kleines Symbol"
+	fold.add_theme_font_size_override("font_size", 13)
+	fold.focus_mode = Control.FOCUS_NONE
+	fold.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
+	fold.pressed.connect(func(): set_tiny(true))
+	h2.add_child(fold)
 	var big := Button.new()
 	big.text = "▢ Gross"
 	big.add_theme_font_size_override("font_size", 13)
@@ -90,8 +116,41 @@ func _ready() -> void:
 		c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.visible = false
 	add_child(panel)
-	if OS.get_environment("MWSIM_MINI_TEST") == "1":          # only for tests: mini mode by itself after 12 s
+	# the folded icon: the coloured «3D» - click = the box again, drag = move
+	icon_box = PanelContainer.new()
+	icon_box.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var ib := StyleBoxFlat.new()
+	ib.bg_color = Color(0.07, 0.09, 0.12, 1.0)
+	ib.border_color = Color(0.25, 0.32, 0.42)
+	ib.set_border_width_all(1)
+	ib.set_corner_radius_all(14)
+	icon_box.add_theme_stylebox_override("panel", ib)
+	icon_box.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	icon_box.tooltip_text = "Anklicken: Kästchen wieder gross · Ziehen: verschieben"
+	icon_box.gui_input.connect(_on_input)
+	var iv := VBoxContainer.new()
+	iv.alignment = BoxContainer.ALIGNMENT_CENTER
+	iv.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon_box.add_child(iv)
+	var il := Label.new()
+	il.text = "3D"
+	il.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	il.add_theme_font_size_override("font_size", 20)
+	il.add_theme_color_override("font_color", Color(0.96, 0.6, 0.29))
+	il.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	iv.add_child(il)
+	icon_dot = Label.new()
+	icon_dot.text = "●"
+	icon_dot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	icon_dot.add_theme_font_size_override("font_size", 12)
+	icon_dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	iv.add_child(icon_dot)
+	icon_box.visible = false
+	add_child(icon_box)
+	if OS.get_environment("MWSIM_MINI_TEST") in ["1", "2"]:   # only for tests: mini mode by itself after 12 s (2: then the icon)
 		get_tree().create_timer(12.0).timeout.connect(enter)
+		if OS.get_environment("MWSIM_MINI_TEST") == "2":
+			get_tree().create_timer(24.0).timeout.connect(func(): set_tiny(true))
 
 
 func _process(dt: float) -> void:
@@ -131,6 +190,11 @@ func _paint() -> void:
 	if not main.sim_active:
 		line2.text += "  ·  Pause (spart Strom)"
 	line_cpu.text = cpu_text(main.cpu_info if connected else {})
+	var same_pc: bool = connected and main.cpu_info.get("sim", null) != null      # Motion Watch runs on this PC: its line says it all
+	line_own.visible = not same_pc
+	line_own.text = "Dieser PC: CPU %s  ·  Simulator %s" % ["–" if own["pc"] < 0 else "%d %%" % roundi(own["pc"]), "–" if own["sim"] < 0 else "%d %%" % roundi(own["sim"])]
+	icon_dot.add_theme_color_override("font_color", dot.get_theme_color("font_color"))
+	icon_box.tooltip_text = "%s\n%s\nAnklicken: Kästchen wieder gross · Ziehen: verschieben" % [line1.text, line_own.text if line_own.visible else line_cpu.text]
 
 
 static func cpu_text(c: Dictionary) -> String:
@@ -159,15 +223,36 @@ func enter() -> void:
 	var scr := DisplayServer.window_get_current_screen()
 	var r := DisplayServer.screen_get_usable_rect(scr)
 	w.position = r.position + r.size - MINI_SIZE - Vector2i(16, 16)
+	tiny = false
 	panel.visible = true
+	icon_box.visible = false
 	t_upd = 0.0
+	_cpu_start()
+	_paint()
+
+
+func set_tiny(on: bool) -> void:
+	"""▁: the box becomes a small icon in the same corner (and back)"""
+	if not mini:
+		return
+	var w := get_window()
+	var corner := w.position + w.size                     # keep the lower right corner where it is
+	tiny = on
+	panel.visible = not on
+	icon_box.visible = on
+	w.min_size = Vector2i(48, 48)
+	w.size = ICON_SIZE if on else MINI_SIZE
+	w.position = corner - w.size
 	_paint()
 
 
 func leave() -> void:
 	var w := get_window()
 	mini = false
+	tiny = false
 	panel.visible = false
+	icon_box.visible = false
+	_cpu_stop()
 	w.always_on_top = bool(saved.get("top", false))
 	w.borderless = bool(saved.get("borderless", false))
 	w.min_size = saved.get("min", Vector2i.ZERO)
@@ -187,9 +272,109 @@ func _on_input(ev: InputEvent) -> void:
 			drag_win = get_window().position
 		else:
 			dragging = false
+			if tiny and not moved:
+				set_tiny(false)                           # click on the icon: the box again
 	elif ev is InputEventMouseMotion and dragging:
 		var d := DisplayServer.mouse_get_position() - drag_from
 		if d.length() > 4:
 			moved = true
 		if moved:
 			get_window().position = drag_win + d
+
+
+
+# ---- CPU of this PC and of the simulator (only while the box is shown) -----------------------------------------------------
+func _cpu_start() -> void:
+	if cpu_run:
+		return
+	cpu_run = true
+	own = {"pc": -1.0, "sim": -1.0}
+	if OS.get_name() == "Windows":
+		# one small PowerShell loop (language-independent, unlike the names of the performance counters): load of the
+		# processor in % and the CPU seconds of the simulator; it ends by itself when the simulator is gone
+		var pid := OS.get_process_id()
+		var cmd := ("$p=%d; while($true){ $pr=Get-Process -Id $p -ErrorAction SilentlyContinue; if(-not $pr){break}; " % pid
+				+ "$l=(Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average; "
+				+ "Write-Output ('{0};{1}' -f $l, $pr.CPU); Start-Sleep -Seconds 3 }")
+		cpu_pipe = OS.execute_with_pipe("powershell.exe", ["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", cmd])
+		if cpu_pipe.is_empty():
+			return
+		cpu_thread = Thread.new()
+		cpu_thread.start(_win_reader)
+	else:
+		cpu_thread = Thread.new()
+		cpu_thread.start(_linux_reader)
+
+
+func _cpu_stop() -> void:
+	cpu_run = false
+	if cpu_pipe.has("pid"):
+		OS.kill(int(cpu_pipe["pid"]))
+	cpu_pipe = {}
+	if cpu_thread != null:
+		cpu_thread.wait_to_finish()
+		cpu_thread = null
+
+
+func _win_reader() -> void:
+	var io: FileAccess = cpu_pipe.get("stdio")
+	var last_cpu := -1.0
+	var last_t := 0.0
+	var cores: int = max(1, OS.get_processor_count())
+	while cpu_run and io != null and io.is_open():
+		var line := io.get_line().strip_edges()
+		if line == "":
+			if io.eof_reached() or io.get_error() != OK:
+				break
+			continue
+		var parts := line.replace(",", ".").split(";")
+		if parts.size() < 2:
+			continue
+		var t := Time.get_ticks_msec() / 1000.0
+		var c := float(parts[1])
+		var pc := float(parts[0])
+		var sim := -1.0
+		if last_t > 0.0 and t > last_t:
+			sim = clampf((c - last_cpu) / (t - last_t) / cores * 100.0, 0.0, 100.0)
+		last_cpu = c
+		last_t = t
+		own = {"pc": pc, "sim": sim if sim >= 0.0 else own["sim"]}
+
+
+func _linux_reader() -> void:
+	var cores: int = max(1, OS.get_processor_count())
+	var tick := 100.0
+	var prev := []
+	while cpu_run:
+		var st := _proc("/proc/stat").get_slice("\n", 0).split(" ", false)
+		var me := _proc("/proc/self/stat")
+		me = me.substr(me.rfind(")") + 2)
+		var mf := me.split(" ", false)
+		if st.size() > 5 and mf.size() > 14:
+			var total := 0.0
+			for i in range(1, st.size()):
+				total += float(st[i])
+			var idle := float(st[4]) + (float(st[5]) if st.size() > 5 else 0.0)
+			var mine := float(mf[11]) + float(mf[12])
+			var t := Time.get_ticks_msec() / 1000.0
+			if not prev.is_empty() and total > prev[0]:
+				var pc: float = (1.0 - (idle - prev[1]) / (total - prev[0])) * 100.0
+				var sim: float = (mine - prev[2]) / tick / max(0.001, t - prev[3]) / cores * 100.0
+				own = {"pc": clampf(pc, 0.0, 100.0), "sim": clampf(sim, 0.0, 100.0)}
+			prev = [total, idle, mine, t]
+		for _i in range(30):
+			if not cpu_run:
+				return
+			OS.delay_msec(100)
+
+
+static func _proc(path: String) -> String:
+	"""files in /proc say «size 0»: read a block instead of «the whole file»"""
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return ""
+	return f.get_buffer(8192).get_string_from_utf8()
+
+
+func _exit_tree() -> void:
+	_cpu_stop()

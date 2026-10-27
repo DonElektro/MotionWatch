@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.10"
+const VERSION := "3D-3.11"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -126,6 +126,13 @@ var sun: DirectionalLight3D
 var moonlight: DirectionalLight3D
 var sky_mat: ProceduralSkyMaterial
 var head: Node3D
+var rig: Node3D                       # from 3D-3.11: the base of Motion Watch - stands still, or drives as the mover
+var chassis: Node3D
+var mover_on := false                 # «Mover simulieren»: a tracked vehicle under Motion Watch, driven by its second stick
+var mover_max := 0.8                  # top speed (m/s)
+var mover_wheels: Array = []
+var mover_dist := 0.0
+var _drive_t := 0.0
 var head_pitch: Node3D
 var white_light: SpotLight3D
 var ir_light: SpotLight3D
@@ -684,9 +691,12 @@ func set_scene(id: String) -> bool:
 
 
 func _build_head() -> void:
+	rig = Node3D.new()
+	add_child(rig)
 	head = Node3D.new()
 	head.position = Vector3(0, HEAD_H, 0)
-	add_child(head)
+	rig.add_child(head)
+	_build_chassis()
 	head_pitch = Node3D.new()
 	head.add_child(head_pitch)
 	white_light = SpotLight3D.new()
@@ -713,6 +723,73 @@ func _build_head() -> void:
 	pole.position = Vector3(0, -HEAD_H / 2.0, 0)
 	pole.material_override = mat(Color(0.2, 0.2, 0.2))
 	head.add_child(pole)
+
+
+func _build_chassis() -> void:
+	"""the mover: a small tracked vehicle under the pole (only seen when «Mover simulieren» is on)"""
+	chassis = Node3D.new()
+	rig.add_child(chassis)
+	var wheel := CylinderMesh.new()
+	wheel.top_radius = 0.07
+	wheel.bottom_radius = 0.07
+	wheel.height = 0.16
+	wheel.radial_segments = 10
+	add_mesh(chassis, box(0.62, 0.16, 0.78), Vector3(0, 0.2, 0), mat(Color(0.25, 0.27, 0.22)), "caravan")
+	for sx in [-1.0, 1.0]:
+		add_mesh(chassis, box(0.14, 0.2, 0.9), Vector3(sx * 0.37, 0.11, 0), mat(Color(0.08, 0.08, 0.08)), "stone")     # track
+		for k in range(4):
+			var wm: MeshInstance3D = add_mesh(chassis, wheel, Vector3(sx * 0.37, 0.1, -0.3 + k * 0.2), mat(Color(0.45, 0.45, 0.47)), "stone", Vector3(0, 0, PI / 2))
+			mover_wheels.append(wm)
+	add_mesh(chassis, box(0.3, 0.06, 0.08), Vector3(0, 0.3, -0.36), mat(Color(0.9, 0.55, 0.1)), "tent")       # front mark
+	chassis.visible = mover_on
+
+
+func mover_home() -> void:
+	rig.position = Vector3(0, ground_y(0, 0), 0)
+	rig.rotation = Vector3.ZERO
+
+
+func set_mover(on: bool) -> void:
+	mover_on = on
+	if chassis != null:
+		chassis.visible = on
+	if not on and rig != null:
+		mover_home()
+
+
+func _drive(dt: float) -> void:
+	"""the mover drives: left / right track from Motion Watch (-1 … 1); stops when Motion Watch is quiet for 2.5 s (it stops the tracks itself after 0.6 s without the stick)"""
+	if not mover_on:
+		if rig.position != Vector3.ZERO or rig.rotation != Vector3.ZERO:
+			mover_home()
+		return
+	var tnow := now()                                      # real time since the last call (frames are skipped to save CPU)
+	dt = clampf(tnow - _drive_t, 0.0, 1.0) if _drive_t > 0.0 else dt
+	_drive_t = tnow
+	var d: Dictionary = mw.get("drive", {})
+	var l := float(d.get("l", 0.0)) if now() - mw_t < 2.5 else 0.0
+	var r := float(d.get("r", 0.0)) if now() - mw_t < 2.5 else 0.0
+	var v := (l + r) / 2.0 * mover_max
+	var om := (l - r) / 0.74 * mover_max                    # track distance 0.74 m: left faster = turns right
+	rig.rotation.y -= om * dt
+	var fwd := Vector3(-sin(rig.rotation.y), 0, -cos(rig.rotation.y))
+	var np := rig.position + fwd * v * dt
+	if avoid_on:                                           # never into a house, a tree, the caravan
+		var cur := Vector2(rig.position.x, rig.position.z)
+		var q := Vector2(np.x, np.z)
+		for o in _ob_near(q):
+			var rr: Array = _ob_closest(o, q)
+			if float(rr[1]) < 0.55 and float(_ob_closest(o, cur)[1]) >= 0.5:   # (something it already stands in may be left)
+				q = (rr[0] as Vector2) + (rr[2] as Vector2) * 0.55
+		np.x = q.x
+		np.z = q.y
+	np.x = clampf(np.x, -180.0, 180.0)
+	np.z = clampf(np.z, -180.0, 180.0)
+	np.y = ground_y(np.x, np.z)
+	rig.position = np
+	mover_dist += (abs(l) + abs(r)) * mover_max * dt
+	for w in mover_wheels:
+		w.rotation.x = mover_dist * 4.0
 
 
 func _build_viewports() -> void:
@@ -923,7 +1000,7 @@ func sound_db() -> float:
 	base += clamp((wind - 10.0) * 0.35, 0.0, 22.0)
 	var pw := pow(10.0, base / 10.0)
 	var t := now()
-	var ear := Vector3(0, HEAD_H, 0)
+	var ear := head.global_position if head != null else Vector3(0, HEAD_H, 0)
 	for snd in sounds:
 		if t < float(snd[2]):
 			var d: float = max(1.0, (snd[1] as Vector3).distance_to(ear))
@@ -1215,6 +1292,7 @@ func _process(dt: float) -> void:
 		want_pan = game.guard_yaw
 		want_tilt = game.guard_tilt
 	var step := deg_to_rad(SERVO_DEG_S) * dt
+	_drive(dt)
 	head.rotation.y = move_toward(head.rotation.y, want_pan, step)
 	head_pitch.rotation.x = move_toward(head_pitch.rotation.x, want_tilt, step)
 	cams[0].global_transform = head_pitch.global_transform.translated_local(Vector3(0, 0.0, -0.13))
@@ -1479,7 +1557,7 @@ func world_reply() -> Dictionary:
 	return {"v": 1, "ok": true, "sim_time": midnight + hour() * 3600.0, "dark": is_dark(), "ambient_c": snappedf(ambient, 0.1),
 			"pressure_hpa": snappedf(press, 0.1), "wind_kmh": snappedf(wind, 0.1), "last_event": next_event_id - 1,
 			"pid": OS.get_process_id(), "active": sim_active, "sound_db": snappedf(sound_db(), 0.1) if sound_on else null,
-			"weather": weather, "humidity": humidity}
+			"weather": weather, "humidity": humidity, "mover": mover_on}
 
 
 func info() -> Dictionary:
@@ -1700,6 +1778,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
 		["Besuch", "person", "🚶", ["Besucher hinsetzen", "Besucher schicken", "Von selbst", "In bestimmten Szenen", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Feineinstellungen"]],
 		["Sensoren", "bell", "🔔", [""]],
+		["Mover", "track", "🚜", [""]],
 		["Spiel", "pad", "🎮", ["Runde", "Regeln", "Anzeige"]],
 		["Wildbeobachtung", "target", "🎯", [""]],
 		["Testlauf", "check", "✅", [""]],
@@ -1811,6 +1890,9 @@ func _register_controls() -> void:
 	add_control("toggle", "lens_drops", "Regentropfen auf der Linse", func(): return lens_drops, func(v): lens_drops = v, "Kamerabild")
 	add_control("toggle", "sound_on", "Geräusche der Welt ans Mikrofon von Motion Watch", func(): return sound_on, func(v): sound_on = v, "Kamerabild", ex)
 	add_control("toggle", "insects", "Insekten am Licht (nachts, lösen wie echt Bewegung aus)", func(): return insects_on, func(v): insects_on = v, "Kamerabild")
+	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – Motion Watch zeigt dann einen zweiten Stick zum Fahren", func(): return mover_on, func(v): set_mover(v), "Mover")
+	add_control("slider", "mover_max", "Höchstgeschwindigkeit des Movers", func(): return mover_max, func(v): mover_max = v, "Mover", {"min": 0.2, "max": 2.0, "step": 0.1, "unit": "m/s"})
+	add_control("button", "mover_home", "Mover zurück an den Startplatz", null, func(): mover_home(), "Mover")
 	add_control("toggle", "door", "Wohnwagentür offen", func(): return door_open, func(v): set_door(v), "Sensoren")
 	add_control("toggle", "gas", "Gas / Rauch", func(): return gas_on, func(v): set_gas(v), "Sensoren")
 	add_control("button", "pir", "PIR Zelt auslösen", null, func(): add_event("PIR Zelt", "pir"), "Sensoren")
@@ -1975,6 +2057,10 @@ func control(d: Dictionary) -> Dictionary:
 		show_panel(false)
 		karte.open(float(d.get("lat", 46.95)), float(d.get("lon", 7.44)), int(d.get("zoom", 0)))
 		return {"ok": true}
+	elif a == "mover":                                 # for tests: where the mover is
+		return {"ok": true, "on": mover_on, "x": snappedf(rig.position.x, 0.01), "z": snappedf(rig.position.z, 0.01),
+				"yaw": snappedf(rad_to_deg(rig.rotation.y), 0.1), "drive": mw.get("drive", {}),
+				"near": _ob_near(Vector2(rig.position.x, rig.position.z - 0.3)).map(func(o): return [o["c"], _ob_closest(o, Vector2(rig.position.x, rig.position.z))[1]])}
 	elif a == "view":                                  # for tests: the free view from a point to a point, panel away
 		var vp_: Array = d.get("pos", [0, 3, 6])
 		var la_: Array = d.get("look", [0, 1, 0])
@@ -2551,7 +2637,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "meadow_on", "season", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
+		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
 

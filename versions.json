@@ -1,13 +1,22 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 04:21",
+ "generated": "2026-10-27 04:47",
  "versions": [
+  {
+   "version": "2.94.0",
+   "file": "webcam_bewegung_2_94_0.py",
+   "url": "",
+   "sha256": "9edf59f6badf000d67c31c4de4230c94645d6f0f5918d6c43fdfd767b34fb46f",
+   "date": "2026-10-27 04:47",
+   "notes": "NEW: mover (optional tracked vehicle): second stick on the web page (also full screen) and in the window, settings Camera & servos -> Mover (Motor HAT with PCA9685 + TB6612 found by itself, top / turning speed, gentle start, invert / swap tracks, stops after 0.6 s without a command); the 3D simulator 3D-3.11 can simulate it.",
+   "sig": "597208059aad8dd78487c11afd6c7573232a34f9373dee3ffef900e35fa8beefb543c653c72b38891a4e15e5da1876627e07eb74583fc1fca944e69752f09f02"
+  },
   {
    "version": "2.93.17",
    "file": "webcam_bewegung_2_93_17.py",
    "url": "",
    "sha256": "70f36dcbc35e8c6ff18854dfada979bbb82fd5eaf3fda28e7927aea3de9c6ba0",
-   "date": "2026-10-27 04:21",
+   "date": "2026-10-27 04:47",
    "notes": "3D simulator 3D-3.10: real 3D buildings of swisstopo at real places.",
    "sig": "9722f91aa4a5a338477940378f3a3f22dca4636496c8e19a91c525460d7a9f84e75498e44eefbc4d0de74dd1cb60f10f8893eac2b4b8900576882e55571e3600"
   },
@@ -82,15 +91,6 @@
    "date": "2026-10-26 08:49",
    "notes": "Second Wi-Fi adapter (USB stick): repeater (own Wi-Fi + internet from another network at the same time), change to another known network when the internet is gone, push message when it is back, devices in the own Wi-Fi without internet, Wi-Fi guard (alarm on jamming / deauthentication, needs a stick that can listen), adapter list with chip and abilities. Tools page tidied up: groups, every tool folds up and shows its last result. Fix: the Wi-Fi search of the settings works again.",
    "sig": "2b4d0bc77cab9780c53ae0e2f7a53234f58dc1139146b45b0744b7d5efa181d85d9c986ad097fd4d78f39e6acfbc71052683e9e2f1535ff63ffe8c5a0472b809"
-  },
-  {
-   "version": "2.84.0",
-   "file": "webcam_bewegung_2_84_0.py",
-   "url": "",
-   "sha256": "2d56574e6d46944410d2fc6993e3f30e7e1e7b340e0b2dd7a63cb5533d912b6f",
-   "date": "2026-10-26 08:49",
-   "notes": "New page \"Tools\": network scanner (makers, names, warning about new devices, \"am I at home\" with automatic arming), Wi-Fi surroundings with the best channel, internet test, security check, Bluetooth scanner with tracker warning, focus assistant, servo test, loudspeaker / microphone test, memory card test, diagnosis package without secrets, power calculator.",
-   "sig": "3a30b044747a6d7d425230cd332ce2b8927dc67c80393396b3ff5a3a30ab2dbbe685d9b57d8ec6c69be2fae6edc513f320f8b0109ad3fa05069585546294b60e"
   }
  ]
 }
