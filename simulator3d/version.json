@@ -1,12 +1,12 @@
 {
- "version": "3D-3.44",
+ "version": "3D-3.45",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30858728,
- "sha256": "dd8bc58d532f457c043eaf73774306027731136e87a8a2ca3a585e93c65a821c",
- "notes": "Helfer für Motion Watch: KI-Rechenhilfe auf dem PC, TV-Modus, Aufstell-Planer, Alarm-Rückblick in 3D, Empfangskarte, Trainingsbilder.",
+ "size": 30865839,
+ "sha256": "909a59c6448b7d401e33aa30660c1391fce7411f6bcefc1e4567ad26ebde6cf6",
+ "notes": "Tunnel zu Motion Watch (Simulator hinter einer Firewall ohne Adminrechte), Trainingsbilder ohne Absturz.",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 23980925,
-  "sha256": "f74bb19be029417bd6f2d63b178e8944203b3878ea4faba52515ce03f20dd3f2"
+  "size": 23987262,
+  "sha256": "03c2b0fb10417df004923e4dcf5203f3b17dafe23d458ec59eeec2ff01ba51af"
  }
 }

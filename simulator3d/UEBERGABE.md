@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 27.10.2026 · Simulator-Version **3D-3.44** · passende Motion-Watch-Version **2.95.53**
+Stand: 27.10.2026 · Simulator-Version **3D-3.45** · passende Motion-Watch-Version **2.95.54**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -72,6 +72,10 @@ Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
 **3D-3.16 bis 3D-3.36** wurden in einem anderen Chat gemacht (siehe Git-Geschichte und «Lies mich.txt», Abschnitte «NEU IN …»).
+
+**3D-3.45 – Tunnel:** `tunnel.gd` hält ~10 Verbindungen zu MW:8766 offen (Hallo `MWTUN1 <code>` → `OK`); auf `GO <port>`
+(8765 Simulator, 5057 KI-Rechenhilfe) verbindet es sich zu 127.0.0.1:<port> und reicht die Bytes durch (Rest nach der GO-Zeile
+nicht verlieren!). MW: Türen 127.0.0.1:18765 / 15057, stellt `sim_url` von selbst um. KEEP: tunnel_host/code/on; CONTROL `tunnel`.
 
 **3D-3.44 – Helfer für Motion Watch:** `mwpc.gd` startet MW mit `--helper` und fragt `/helper/hello` (Port 5057); `info()`
 gibt `helper` {port, code} an den Pi. `tv.gd` (CanvasLayer 5, blendet `ui_layer` aus, CONTROL `tv`, Taste T). `planner.gd`

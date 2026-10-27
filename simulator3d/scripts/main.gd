@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.44"
+const VERSION := "3D-3.45"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -282,6 +282,12 @@ func _ready() -> void:
 	if k >= 0 and k + 1 < args.size():
 		update_url = args[k + 1]
 	_load_settings()
+	tunnel = preload("res://scripts/tunnel.gd").new()        # 3D-3.45: out through the firewall to Motion Watch
+	tunnel.main = self
+	add_child(tunnel)
+	tunnel.host = tunnel_host
+	tunnel.code = tunnel_code
+	tunnel.set_on(tunnel_on)
 	var at_boot := "--autostart" in args             # started with the PC
 	if at_boot and not "--scene" in args and last_scene != "":
 		scene = last_scene
@@ -869,6 +875,11 @@ var home_yaw := 0.0
 var planner                           # planner.gd
 var replay                            # replay.gd: Alarm-Rückblick in 3D (3D-3.44)
 var dataset                           # dataset.gd: Trainingsbilder (3D-3.44)
+var tunnel                            # tunnel.gd: Tunnel zu Motion Watch (3D-3.45)
+var tunnel_host := ""
+var tunnel_code := ""
+var tunnel_on := false
+var tunnel_label: Label
 
 
 var netmap_node: Node3D = null
@@ -2640,6 +2651,20 @@ func control(d: Dictionary) -> Dictionary:
 		if d.has("y"):
 			_test_scroll(float(d["y"]))
 		return {"ok": true, "max": (ui_box.get_parent() as ScrollContainer).get_v_scroll_bar().max_value}
+	elif a == "tunnel":                                # 3D-3.45: for tests / remote: {"host", "code", "on"}
+		if d.has("host"):
+			tunnel_host = str(d["host"])
+			tunnel.host = tunnel_host
+		if d.has("code"):
+			tunnel_code = str(d["code"])
+			tunnel.code = tunnel_code
+		if d.has("on"):
+			tunnel_on = bool(d["on"])
+			tunnel.set_on(false)
+			tunnel.set_on(tunnel_on)
+		var tst: Dictionary = tunnel.state()
+		tst["ok"] = true
+		return tst
 	elif a == "dataset":                               # Trainingsbilder (3D-3.44)
 		var op2 := str(d.get("op", "get"))
 		if op2 == "start":
@@ -3012,6 +3037,42 @@ func _build_ui() -> void:
 	status_label = UI.small("", UI.TXT)
 	status_label.add_theme_font_size_override("font_size", 13)
 	cn.add_child(status_label)
+	# 3D-3.45: tunnel - when the firewall of this PC lets nothing in (no admin rights)
+	var tn := UI.sub_fold(cn, "Tunnel zu Motion Watch (Firewall ohne Adminrechte)", tunnel_on)
+	sub_bodies.append(tn)
+	var tnote := UI.small("Lässt die Firewall dieses PCs Motion Watch nicht herein, verbindet sich der Simulator selbst zu Motion Watch. Adresse und Code stehen auf der Seite von Motion Watch unter Simulator → «Simulator hinter einer Firewall».")
+	tnote.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tn.add_child(tnote)
+	var th_ := LineEdit.new()
+	th_.placeholder_text = "Adresse von Motion Watch, z. B. 192.168.1.20"
+	th_.text = tunnel_host
+	tn.add_child(th_)
+	var tc_ := LineEdit.new()
+	tc_.placeholder_text = "Code (6 Ziffern)"
+	tc_.max_length = 6
+	tc_.text = tunnel_code
+	tn.add_child(tc_)
+	var tcb := CheckButton.new()
+	tcb.text = "Tunnel verwenden"
+	tcb.button_pressed = tunnel_on
+	tn.add_child(tcb)
+	tunnel_label = UI.small("")
+	tunnel_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tn.add_child(tunnel_label)
+	var apply_t := func():
+		tunnel_host = th_.text.strip_edges().trim_prefix("http://").trim_prefix("https://").get_slice("/", 0).get_slice(":", 0)
+		tunnel_code = tc_.text.strip_edges()
+		tunnel_on = tcb.button_pressed
+		tunnel.host = tunnel_host
+		tunnel.code = tunnel_code
+		tunnel.set_on(false)
+		tunnel.set_on(tunnel_on)
+		_settings_dirty = true
+	th_.text_submitted.connect(func(_t): apply_t.call())
+	th_.focus_exited.connect(apply_t)
+	tc_.text_submitted.connect(func(_t): apply_t.call())
+	tc_.focus_exited.connect(apply_t)
+	tcb.toggled.connect(func(_v): apply_t.call())
 	# camera pictures
 	var cm := UI.fold_card(top_box, "Kameras", true, "camera")   # always visible (also while searching); can be folded
 	fold_bodies.append(cm)
@@ -3516,7 +3577,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
@@ -3806,6 +3867,10 @@ func _paint_groups() -> void:
 func _update_status() -> void:
 	if status_label != null:
 		status_label.text = status_text()
+	if tunnel_label != null and tunnel != null:
+		var ts: Dictionary = tunnel.state()
+		tunnel_label.text = str(ts["msg"]) + ((" · %d offen · %.1f MB" % [int(ts["pipes"]), float(ts["mb"])]) if ts["on"] else "")
+		tunnel_label.add_theme_color_override("font_color", UI.GRN if ts["ok"] else (UI.ORG if ts["on"] else UI.MUT))
 	if conn_body != null:                                  # symbol: green = Motion Watch connected, orange = sending, grey = off
 		var st := 2 if connected() else (1 if stream_on else 0)
 		if st != _conn_state:
