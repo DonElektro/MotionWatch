@@ -7,12 +7,36 @@ extends Node
 
 var main
 
-const PHASES := [
+const STANDARD := [
 	{"name": "Tag, klar", "hour": 11.0, "weather": "clear", "wind": 5.0, "visits": ["person", "fox", "person", "deer", "child", "person"]},
 	{"name": "Tag, Wind und Wolken", "hour": 14.5, "weather": "cloudy", "wind": 65.0, "visits": ["person", "cat", "jogger", "person"]},
 	{"name": "Nacht, klar (Insekten am Licht)", "hour": 22.5, "weather": "clear", "wind": 5.0, "visits": ["person", "fox", "person", "boar"]},
 	{"name": "Nacht, Regen", "hour": 23.5, "weather": "rain", "wind": 20.0, "visits": ["person", "cat", "person"]},
 ]
+# 3D-3.27: more test runs. «cond» = difficult conditions of main.gd (switched on only during the phase)
+const PLANS := {
+	"standard": {"name": "Standard (Tag, Wind, Nacht, Regen · etwa 4 Min.)", "phases": STANDARD},
+	"quick": {"name": "Kurz (Tag und Nacht · etwa 2 Min., für die automatische Optimierung)", "phases": [
+		{"name": "Tag, Wind", "hour": 13.0, "weather": "cloudy", "wind": 45.0, "visits": ["person", "fox", "jogger", "person"]},
+		{"name": "Nacht mit Infrarot", "hour": 22.5, "weather": "clear", "wind": 10.0, "cond": ["ir"], "visits": ["person", "cat", "person"]}]},
+	"hard": {"name": "Schwierige Bedingungen (Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer, Wolkenschatten · etwa 7 Min.)", "phases": [
+		{"name": "Gegenlicht am Morgen", "hour": 7.3, "weather": "clear", "wind": 35.0, "cond": ["glare"], "visits": ["person", "deer", "person"]},
+		{"name": "Nebel", "hour": 9.0, "weather": "fog", "wind": 5.0, "visits": ["person", "fox", "person"]},
+		{"name": "Schnee", "hour": 15.0, "weather": "snow", "wind": 25.0, "visits": ["person", "hare", "child"]},
+		{"name": "Tropfen auf der Linse", "hour": 12.0, "weather": "cloudy", "wind": 15.0, "cond": ["drops"], "visits": ["person", "cat", "person"]},
+		{"name": "Spinnennetz, Nacht mit Infrarot", "hour": 23.0, "weather": "clear", "wind": 30.0, "cond": ["web", "ir"], "visits": ["person", "fox", "person"]},
+		{"name": "Scheinwerfer in der Nacht", "hour": 22.0, "weather": "clear", "wind": 5.0, "cond": ["headlights"], "visits": ["person", "badger", "person"]},
+		{"name": "Wolkenschatten und Wind", "hour": 14.0, "weather": "cloudy", "wind": 55.0, "cond": ["shadows"], "visits": ["person", "cat", "jogger"]}]},
+	"night": {"name": "Nacht (dunkel, Infrarot, Tiere · etwa 3 Min.)", "phases": [
+		{"name": "Nacht, ohne Licht", "hour": 1.0, "weather": "clear", "wind": 5.0, "visits": ["person", "fox", "person", "hedgehog"]},
+		{"name": "Nacht, Infrarot an", "hour": 2.0, "weather": "clear", "wind": 10.0, "cond": ["ir"], "visits": ["person", "boar", "child", "badger"]},
+		{"name": "Nacht, Regen", "hour": 3.0, "weather": "rain", "wind": 25.0, "visits": ["person", "cat", "person"]}]},
+}
+const COND_NAMES := {"glare": "Gegenlicht", "drops": "Tropfen auf der Linse", "web": "Spinnennetz", "headlights": "Scheinwerfer",
+		"shadows": "Wolkenschatten", "ir": "Infrarot"}
+var plan := "standard"
+var PHASES: Array = STANDARD
+var _cond_saved := {}
 const EVERY := 13.0                     # a new visitor every ... seconds
 const SETTLE := 8.0                     # quiet time at the start of a phase (Motion Watch adapts to the new light)
 const GRACE := 2.5                      # a report counts for a visitor up to ... s after it was last visible
@@ -41,6 +65,23 @@ func now() -> float:
 	return Time.get_ticks_msec() / 1000.0
 
 
+func plan_options() -> Array:
+	var o := []
+	for k in PLANS:
+		o.append([k, PLANS[k]["name"]])
+	return o
+
+
+func state() -> Dictionary:
+	"""for Motion Watch (CONTROL test_report): running, progress, the plans and the last report"""
+	var left := 0.0
+	if running:
+		left = max(0.0, t0 + duration() - now())
+	return {"ok": true, "running": running, "info": info, "report": report, "plan": plan, "plans": plan_options(),
+			"phase": phase + 1, "phases": PHASES.size(), "phase_name": PHASES[phase]["name"] if running and phase >= 0 else "",
+			"left_s": int(left), "total_s": int(duration())}
+
+
 func duration() -> float:
 	var s := 0.0
 	for ph in PHASES:
@@ -48,18 +89,24 @@ func duration() -> float:
 	return s
 
 
-func start() -> void:
+func start(which := "") -> String:
 	if running:
-		return
+		return "Es läuft schon ein Testlauf."
+	if which != "":
+		if not PLANS.has(which):
+			return "unbekannter Testlauf"
+		plan = which
+	PHASES = PLANS[plan]["phases"]
 	if not main.stream_on or main.now() - main.mw_t > 3.0:
 		info = "Motion Watch ist nicht verbunden. Zuerst «An Motion Watch senden» einschalten und Motion Watch verbinden (oder «Motion Watch auf diesem PC» starten)."
 		paint()
-		return
+		return info
 	if main.game != null and main.game.round_state in ["countdown", "play"]:
 		info = "Zuerst die Spielrunde beenden."
 		paint()
-		return
+		return info
 	saved = {"hour": main.hour(), "weather": main.weather, "wind": main.wind, "auto": main.auto_visitors}
+	_cond_saved = main.cond.duplicate()
 	main.auto_visitors = false
 	main.clear_visitors()
 	running = true
@@ -69,6 +116,7 @@ func start() -> void:
 	report = {}
 	t0 = now()
 	_start_phase(0)
+	return ""
 
 
 func stop(finished := false) -> void:
@@ -79,6 +127,8 @@ func stop(finished := false) -> void:
 	main.weather = str(saved.get("weather", "clear"))
 	main.wind = float(saved.get("wind", 10.0))
 	main.auto_visitors = bool(saved.get("auto", true))
+	if not _cond_saved.is_empty():
+		main.cond = _cond_saved.duplicate()
 	main.clear_visitors()
 	if finished:
 		_make_report()
@@ -93,6 +143,10 @@ func _start_phase(i: int) -> void:
 	main.set_hour(float(ph["hour"]))
 	main.weather = ph["weather"]
 	main.wind = float(ph["wind"])
+	for k in main.cond:                                   # the difficult conditions of this phase only
+		main.cond[k] = k in ph.get("cond", [])
+	main.clear_visitors()
+	seed(4711 + 97 * i + plan.hash() % 1000)               # the same visitors on the same ways every time: runs can be compared
 	t_phase = now()
 	next_visit = t_phase + SETTLE
 	visit_i = 0
@@ -114,7 +168,7 @@ func _process(dt: float) -> void:
 		var k: String = ph["visits"][visit_i]
 		var v = main.spawn(k)
 		truth[v.get_instance_id()] = {"kind": k, "person": v.kind == "person", "phase": phase, "first": -1.0, "last": -100.0,
-				"vis": 0.0, "det": -1.0, "rep": false, "as_person": false, "seen_ever": false}
+				"vis": 0.0, "det": -1.0, "rep": false, "as_person": false, "seen_ever": false, "px": 0.0, "light": 1.0, "crouch": false}
 		visit_i += 1
 		next_visit = t + EVERY
 	elif visit_i >= ph["visits"].size() and t >= next_visit + 6.0:
@@ -140,8 +194,13 @@ func present(v) -> bool:
 	return false
 
 
+var _vis_px := 0.0
+var _vis_light := 1.0
+
+
 func visible(v) -> bool:
-	"""the truth: could a camera (head or fixed) see this visitor well enough? (big enough in the picture, free view, light)"""
+	"""the truth: could a camera (head or fixed) see this visitor well enough? (big enough in the picture, free view, light)
+	(3D-3.27: also notes how big (_vis_px) and how well lit (_vis_light) it was, for the reasons of a miss)"""
 	var h: float = 1.7 * v.body_root.scale.y if v.kind == "person" else max(0.4, float(v.body_h) * 1.5)
 	var pos: Vector3 = v.position
 	for i in range(2):
@@ -155,8 +214,11 @@ func visible(v) -> bool:
 		var px: float = h / (2.0 * d * tan(deg_to_rad([41.0, 62.0][i]) / 2.0)) * [540.0, 360.0][i]
 		if px < (30.0 if v.kind == "person" else 18.0):
 			continue
-		if main.game.light_at(pos, i) < 0.25:
+		var lt: float = main.game.light_at(pos, i)
+		if lt < 0.25:
 			continue
+		_vis_px = px
+		_vis_light = lt
 		return true
 	return false
 
@@ -179,6 +241,10 @@ func _sample(dt: float) -> void:
 				r["first"] = t
 			r["last"] = t
 			r["vis"] = float(r["vis"]) + dt
+			r["px"] = max(float(r["px"]), _vis_px)
+			r["light"] = min(float(r["light"]), _vis_light)
+			if v.kind == "person" and float(v.get("crouch") if v.get("crouch") != null else 0.0) > 0.3:
+				r["crouch"] = true
 		var recent := t - float(r["last"]) <= GRACE and float(r["first"]) >= 0.0
 		if r["person"] and present(v):
 			any_present = true
@@ -200,8 +266,23 @@ func _sample(dt: float) -> void:
 	# a new person alarm without a visible person = false alarm (with the probable cause)
 	if persons > 0 and _prev_persons == 0 and t - _last_person_vis > GRACE:
 		var cause := "unbekannt"
+		var conds: Array = PHASES[phase].get("cond", [])
 		if not animals_vis.is_empty():
 			cause = "Tier (%s)" % ", ".join(PackedStringArray(animals_vis))
+		elif "web" in conds:
+			cause = "Spinnennetz"
+		elif "glare" in conds:
+			cause = "Gegenlicht"
+		elif "headlights" in conds:
+			cause = "Scheinwerfer"
+		elif "drops" in conds:
+			cause = "Tropfen auf der Linse"
+		elif "shadows" in conds:
+			cause = "Wolkenschatten"
+		elif main.weather == "snow":
+			cause = "Schnee"
+		elif main.weather == "fog":
+			cause = "Nebel"
 		elif main.insects != null and main.insects.emitting:
 			cause = "Insekten am Licht"
 		elif main.wind > 40.0:
@@ -234,6 +315,8 @@ func _make_report() -> void:
 		var ar := 0
 		var lats := []
 		var missed := []
+		var why := {"dark": 0, "small": 0, "fast": 0, "crouch": 0}
+		var as_person := 0
 		var hidden := 0
 		for r in truth.values():
 			if int(r["phase"]) != i:
@@ -249,10 +332,20 @@ func _make_report() -> void:
 					lats.append(max(0.0, float(r["det"]) - float(r["first"])))
 				else:
 					missed.append(r["kind"])
+					if float(r["light"]) < 0.5:
+						why["dark"] += 1
+					if float(r["px"]) < 70.0:
+						why["small"] += 1
+					if r["kind"] == "jogger":
+						why["fast"] += 1
+					if r["crouch"]:
+						why["crouch"] += 1
 			else:
 				an += 1
 				if r["rep"]:
 					ar += 1
+				if r["as_person"]:
+					as_person += 1
 		var fa := falses.filter(func(f): return int(f["phase"]) == i).size()
 		var lat := -1.0
 		if not lats.is_empty():
@@ -264,7 +357,9 @@ func _make_report() -> void:
 		tp += pn
 		td += pd
 		phs.append({"name": PHASES[i]["name"], "persons": pn, "persons_detected": pd, "animals": an, "animals_reported": ar,
-				"false_alarms": fa, "latency_s": snappedf(lat, 0.1), "missed": missed, "not_visible": hidden})
+				"false_alarms": fa, "latency_s": snappedf(lat, 0.1), "missed": missed, "not_visible": hidden, "missed_why": why,
+				"animals_as_person": as_person, "hour": PHASES[i]["hour"], "weather": PHASES[i]["weather"], "wind": PHASES[i]["wind"],
+				"cond": PHASES[i].get("cond", []), "dark": float(PHASES[i]["hour"]) < 6.0 or float(PHASES[i]["hour"]) > 20.5})
 	var lat_avg := -1.0
 	if not lat_all.is_empty():
 		var s2 := 0.0
@@ -272,7 +367,7 @@ func _make_report() -> void:
 			s2 += x
 		lat_avg = s2 / lat_all.size()
 	var dev := str(main.mw.get("device", "Motion Watch"))
-	report = {"v": 1, "date": Time.get_datetime_string_from_system(false, true), "simulator": main.version(), "scene": main.scene,
+	report = {"v": 2, "plan": plan, "plan_name": PLANS[plan]["name"], "date": Time.get_datetime_string_from_system(false, true), "simulator": main.version(), "scene": main.scene,
 			"device": dev, "persons": tp, "persons_detected": td, "rate": snappedf(100.0 * td / max(1, tp), 1),
 			"latency_s": snappedf(lat_avg, 0.1), "false_alarms": falses.size(), "false_list": falses, "noise_alarms": noises,
 			"phases": phs, "note": "Wahrheit: sichtbar für Kopf- oder feste Kamera (frei, gross genug, genug Licht)."}

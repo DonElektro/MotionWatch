@@ -83,6 +83,13 @@ var ev_warned := {}
 var night_saved := -1.0                 # night round: the time of day before
 var decoy_pos := Vector3.ZERO           # the decoy is seen: the automatic head looks there
 var decoy_until := 0.0
+# ---- 3D-3.27: a task for every round (bonus) and the ranking of the week ----
+const TASKS := [["crawl", "🐍 Nur kriechend ins Ziel", 250], ["nostone", "🤫 Ins Ziel, ohne einen Stein zu werfen", 150],
+		["fast", "⚡ In unter 60 Sekunden ins Ziel", 250], ["calm", "🧘 Nie über 50 % Verdacht", 200], ["nocatch", "🛡 Kein einziges Mal erwischt", 150],
+		["items", "💎 Mindestens 2 Dinge sammeln", 200], ["hide", "🌳 Mindestens 10 Sekunden in einem Versteck", 150]]
+var task := {}                          # the task of this round {"id", "text", "bonus"}
+var week := {}                          # the ranking of the week: name -> {"n", "c", "score", "rounds", "wins", "tasks"}
+var week_id := ""
 var board := {}                         # the ranking of the evening: name -> {"n", "c", "score", "rounds", "wins", "best", "clean"}
 var records := {}                       # "fast": [name, seconds], "items": [name, n], "catches": [name, n]
 var board_day := ""
@@ -938,6 +945,8 @@ func start_round() -> void:
 		night_saved = main.hour()
 		main.set_hour(23.0)
 	_auto_handicap()
+	_pick_task()
+	mwg = {"catches": 0, "false": 0, "t": 0.0, "names": []}
 	last_minute = false
 	feed.clear()
 	news("▶ Die Runde beginnt")
@@ -965,6 +974,11 @@ func start_round() -> void:
 		p["hide_i"] = -1
 		p["hide_cd"] = {}
 		p["cps"] = []
+		p["up_m"] = 0.0
+		p["stones"] = 0
+		p["max_susp"] = 0.0
+		p["hide_s"] = 0.0
+		p["task_ok"] = false
 		p["actor"].handicap = int(p.get("hc", 0))
 		if p["role"] == "guard":
 			p["state"] = "play"
@@ -973,6 +987,8 @@ func start_round() -> void:
 		p["state"] = "play"
 		p["actor"].visible = true
 		p["actor"].frozen = true
+		if not task.is_empty():
+			_say(p, "Aufgabe: %s (+%d)" % [task["text"], task["bonus"]], 6.0)
 	if guard_player() != null:
 		guard_yaw = 0.0
 		guard_tilt = deg_to_rad(-9.0)
@@ -1181,6 +1197,10 @@ func end_round() -> void:
 				info += " · 🦆 %d s beobachtet" % int(float(p.get("watched", 0.0)))
 			if p.get("cps", []).size() > 0:
 				info += " · 🚩 %d" % p["cps"].size()
+			if _task_done(p):
+				p["task_ok"] = true
+				p["bonus"] = int(p.get("bonus", 0)) + int(task["bonus"])
+				info += " · ✅ Aufgabe (+%d)" % int(task["bonus"])
 			sc = max(0, sc - 150 * int(p["caught"]) + 100 * int(p["items"]) + int(p.get("bonus", 0)))
 			info += " · %d× erwischt" % p["caught"] + (" · 💎 %d" % p["items"] if int(p["items"]) > 0 else "")
 			if int(p.get("rescues", 0)) > 0:
@@ -1193,6 +1213,10 @@ func end_round() -> void:
 		else:
 			p["state"] = "lobby"
 		p["susp"] = 0.0
+	if main.game_mode == "mwhand":                         # the guards at Motion Watch
+		var mn: String = ", ".join(PackedStringArray(mwg["names"])) if not mwg["names"].is_empty() else "Motion Watch"
+		results.append({"n": "🛡 " + mn, "c": "#3b8cff", "info": "Wächter an Motion Watch · %d× erwischt, %d× Fehlalarm" % [mwg["catches"], mwg["false"]],
+				"score": max(0, 150 * int(mwg["catches"]) - 50 * int(mwg["false"]) + 100 * missed)})
 	results.sort_custom(func(x, y): return x["score"] > y["score"])
 	_board_add()
 	_event_end()
@@ -1399,7 +1423,7 @@ func _referee(dt: float) -> void:
 	var lv: float = LEVEL.get(main.game_level, 1.0)
 	_check_distract()
 	_paint_goal()
-	var mw := mw_decides()
+	var mw: bool = mw_decides() or main.game_mode == "mwhand"     # 3D-3.27: a person at Motion Watch decides «Erwischt!»
 	if mw:
 		_mw_referee()
 	for p in players:
@@ -1496,6 +1520,10 @@ func _referee(dt: float) -> void:
 					ev_warned[p["slot"]] = true
 					news("🐕 Der Hund bellt bei %s!" % p["name"])
 					_say(p, "🐕 Der Hund bellt dich an!", 2.5)
+		if a.ctl_posture < 2 and a.cur_speed > 0.25:     # for the tasks: metres not crawled, time in a hiding place
+			p["up_m"] = float(p.get("up_m", 0.0)) + a.cur_speed * dt
+		if int(p.get("hide_i", -1)) >= 0:
+			p["hide_s"] = float(p.get("hide_s", 0.0)) + dt
 		if bool(p.get("decoy", false)) and v > 0.1:       # the decoy: the camera follows it, it collects seconds
 			p["watched"] = float(p.get("watched", 0.0)) + dt * v
 			decoy_pos = a.position
@@ -1516,6 +1544,7 @@ func _referee(dt: float) -> void:
 			p["susp"] = min(100.0, float(p["susp"]) + rate * lv * dt)
 		else:
 			p["susp"] = max(0.0, float(p["susp"]) - 8.0 * dt)
+		p["max_susp"] = max(float(p.get("max_susp", 0.0)), float(p["susp"]))
 		if float(p["susp"]) >= 100.0:
 			if mw:
 				p["susp"] = 99.0                           # the meter only hints: Motion Watch itself decides
@@ -1586,6 +1615,7 @@ func _throw(p: Dictionary) -> void:
 	if now() < float(p["stone_t"]):
 		return
 	p["stone_t"] = now() + STONE_EVERY
+	p["stones"] = int(p.get("stones", 0)) + 1
 	p["actor"].play_emote("throw", 0.6)
 	var yaw: float = p["yaw"]
 	var to: Vector3 = p["actor"].position + Vector3(-sin(yaw), 0, -cos(yaw)) * 10.0
@@ -1652,6 +1682,37 @@ func _guard_light(g: Dictionary) -> void:
 		return
 	light_ready = now() + LIGHT_EVERY
 	flash_until = now() + 6.0
+
+
+# ---- 3D-3.27: «Team gegen Motion Watch»: the guards sit at Motion Watch, turn the real camera head with its joystick and
+# press «Erwischt!» there. Right if the head camera sees a runner (meter at least 30 %), else a false alarm.
+var mwg := {"catches": 0, "false": 0, "t": 0.0, "names": []}
+
+
+func mw_catch(who: String) -> Dictionary:
+	if main.game_mode != "mwhand" or round_state != "play":
+		return {"ok": false, "error": "Gerade läuft keine Runde «Team gegen Motion Watch»."}
+	if now() < float(mwg["t"]):
+		return {"ok": false, "error": "Noch %d s warten (Fehlalarm)." % int(ceil(float(mwg["t"]) - now()))}
+	if who != "" and not (who in mwg["names"]):
+		mwg["names"].append(who)
+	var hit = null
+	var best := 0.02
+	for p in players:
+		if p != null and p["role"] == "runner" and p["state"] == "play" and now() >= float(p["safe_until"]) and float(p["susp"]) >= 30.0:
+			var f: float = cam_sees(p, 0)
+			if f > best:
+				best = f
+				hit = p
+	if hit == null:
+		mwg["false"] = int(mwg["false"]) + 1
+		mwg["t"] = now() + 4.0
+		news("❌ Fehlalarm von Motion Watch" + ((" (%s)" % who) if who != "" else ""))
+		return {"ok": true, "hit": false, "text": "Fehlalarm! 4 s warten."}
+	mwg["catches"] = int(mwg["catches"]) + 1
+	_say(hit, "🚨 Motion Watch hat dich erwischt!", 3.0)
+	_caught(hit, {"name": who if who != "" else "Motion Watch"})
+	return {"ok": true, "hit": true, "text": "✓ %s erwischt!" % hit["name"]}
 
 
 func _guard_catch(g: Dictionary) -> void:
@@ -1740,7 +1801,8 @@ func _send_state(i: int) -> void:
 			"decoy": bool(p.get("decoy", false)), "decoy_ok": main.game_decoy and main.game_mode in ["camera", "mw"],
 			"lamp": bool(p.get("lamp", false)), "dark": main.is_dark(), "hid": int(p.get("hide_i", -1)) >= 0, "hc": int(p.get("hc", 0)),
 			"cps": p.get("cps", []).size(), "cps_all": checkpoints.size(), "ev": ev_kind,
-			"board": board_list() if round_state in ["end", "lobby"] else []}
+			"board": board_list() if round_state in ["end", "lobby"] else [], "week": week_list() if round_state in ["end", "lobby"] else [],
+			"task": task.get("text", ""), "task_bonus": int(task.get("bonus", 0)), "task_ok": bool(p.get("task_ok", false))}
 	if p["role"] == "guard":
 		d["light"] = int(max(0.0, light_ready - now()))
 		d["catch"] = int(max(0.0, float(p["catch_t"]) - now()))
@@ -1991,6 +2053,7 @@ function paint(m) {
       : '<h1>Bereit?</h1><p>Ziel: <b>' + esc(m.goal) + '</b> – folge dem Pfeil oben rechts zum grünen Licht.</p><p>Links ziehen = gehen · rechts wischen = umschauen</p>';
     if (m.goal_mode === "flag") h += '<p>🚩 <b>Fahne erobern</b>: hol die Fahne der anderen bei ihrer Basis und bring sie zu deiner Basis (+500). Berührst du jemanden, der eure Fahne trägt, geht sie zurück (+100). Die Kamera passt auf alle auf.</p>';
     if (m.mode === "teamguard") h += '<p>⚔️ Team gegen Team · Runde ' + (m.mround + 1) + ' von 2: <b style="color:' + ["#eb2e1f", "#1f6bfa"][m.tg] + '">' + ["Team Rot", "Team Blau"][m.tg] + '</b> bewacht (Kopfkamera und feste Kamera), das andere Team schleicht. Danach wird getauscht.</p>';
+    if (m.mode === "mwhand") h += '<p>🕹 <b>Team gegen Motion Watch:</b> Die Wächter sitzen an Motion Watch, drehen die echte Kamera mit dem Joystick und drücken dort «Erwischt!». Der Balken zeigt nur, wie gut man dich sieht.</p>';
     if (m.mode === "mw") h += '<p>' + (m.mwd ? '🛡 Diesmal entscheidet die <b>echte Erkennung von Motion Watch</b>: meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht.' : '⚠ Motion Watch ist nicht verbunden – der Simulator entscheidet.') + '</p>';
     if (m.mode === "guard") h += '<p>Ein Spieler kann Wächter sein: er sieht durch die Kamera, dreht den Kopf und ruft «Erwischt!».</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🕵️ Schleicher</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">👁 Wächter</button><br>';
     if (m.teams) { const tm = [0, 1].map(k => '<div class="tm' + (m.team === k ? " me" : "") + '"><b style="color:' + ["#eb2e1f", "#1f6bfa"][k] + '">' + ["Team Rot", "Team Blau"][k] + '</b>' +
@@ -1999,6 +2062,8 @@ function paint(m) {
     if (m.decoy_ok && role === "runner") h += '<p>🦆 Ein <b>Lockvogel</b> lässt sich absichtlich sehen und lockt die Kamera weg. Er wird langsamer entdeckt und bekommt Punkte für jede Sekunde, in der ihn die Kamera beobachtet.</p><button class="sec' + (m.decoy ? " on" : "") + '" id="r-decoy">🦆 ' + (m.decoy ? "Ich bin Lockvogel" : "Lockvogel sein") + '</button><br>';
     if (m.rs === "end" && GAL.length) h += '<h1>📸 Erwischt!</h1><div class="gal">' + GAL.map(g => '<figure><img src="data:image/jpeg;base64,' + g.b64 + '"><figcaption style="color:' + g.c + '">' + esc(g.n) + '</figcaption></figure>').join("") + '</div>';
     if (m.board && m.board.length) h += '<h1>🏆 Rangliste des Abends</h1><table class="brd">' + m.board.map((b, i) => '<tr><td>' + (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + '</td><td class="n" style="color:' + b.c + '">' + esc(b.n) + '</td><td><b>' + b.score + '</b></td><td class="rec">' + b.rounds + ' Runden' + (b.wins ? ' · ' + b.wins + '× Sieg' : '') + (b.best ? ' · Bestzeit ' + fmtT(b.best) : '') + (b.clean ? ' · ' + b.clean + '× nie erwischt' : '') + '</td></tr>').join("") + '</table>';
+    if (m.week && m.week.length) h += '<h1>📅 Rangliste der Woche</h1><table class="brd">' + m.week.map((b, i) => '<tr><td>' + (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + '</td><td class="n" style="color:' + b.c + '">' + esc(b.n) + '</td><td><b>' + b.score + '</b></td><td class="rec">' + b.rounds + ' Runden' + (b.wins ? ' · ' + b.wins + '× Sieg' : '') + (b.tasks ? ' · ' + b.tasks + '× Aufgabe' : '') + '</td></tr>').join("") + '</table>';
+    if (m.task && m.rs !== "end") h += '<p>🎯 <b>Aufgabe:</b> ' + esc(m.task) + ' (+' + m.task_bonus + ')</p>';
     h += '<button class="sec" id="lk">👕 Aussehen ändern</button><br><button class="pr" id="st">' + (m.rs === "end" ? "Nochmal" : "Runde starten") + '</button>';
     ov(h);
     document.querySelectorAll("[data-team]").forEach(b => b.onclick = () => ws.send(JSON.stringify({t: "team", k: +b.dataset.team})));
@@ -2086,6 +2151,8 @@ func spectator_info() -> Dictionary:
 			"goal": goal_name, "players": ps, "items_left": left_items, "items_all": items.size(), "feed": fd, "last_minute": last_minute,
 			"teams": main.game_teams, "caps": captures, "shot": main.spec_label if main.spectate else "", "spectate": main.spectate,
 			"lives": int(main.game_lives), "ev": ev_kind, "cps_all": checkpoints.size(), "board": board_list(), "records": records,
+			"week": week_list(), "week_id": week_id, "task": task.get("text", ""), "task_bonus": int(task.get("bonus", 0)),
+			"mwg": {"catches": mwg["catches"], "false": mwg["false"], "wait": int(max(0.0, float(mwg["t"]) - now()))},
 			"pics": gallery.map(func(g): return {"n": g["n"], "c": g["c"]}), "night": night_saved >= 0.0}
 	if round_state == "countdown":
 		d["cd"] = int(ceil(t_start - t))
@@ -2270,25 +2337,40 @@ func _event_end() -> void:
 	ev_next = now() + randf_range(50.0, 85.0)
 
 
+func week_of(unix: float) -> String:
+	"""the ISO week (Monday to Sunday) as «2026-W44»"""
+	var d := Time.get_datetime_dict_from_unix_time(int(unix))
+	var wd := (int(d["weekday"]) + 6) % 7                       # 0 = Monday
+	var thu := int(unix) + (3 - wd) * 86400                     # the Thursday of this week decides the year
+	var td := Time.get_datetime_dict_from_unix_time(thu)
+	var jan1 := Time.get_unix_time_from_datetime_dict({"year": td["year"], "month": 1, "day": 1, "hour": 0, "minute": 0, "second": 0})
+	return "%d-W%02d" % [int(td["year"]), int((thu - jan1) / 86400) / 7 + 1]
+
+
 func _board_load() -> void:
 	var day := Time.get_date_string_from_system()
-	if board_day == day:
+	var wk := week_of(Time.get_unix_time_from_system())
+	if board_day == day and week_id == wk:
 		return
 	board_day = day
 	board = {}
 	records = {}
+	week = {}
+	week_id = wk
 	var f := FileAccess.open("user://game_board.json", FileAccess.READ)
 	if f != null:
 		var d = JSON.parse_string(f.get_as_text())
 		if d is Dictionary and str(d.get("day", "")) == day:    # the ranking of the evening: from the same day only
 			board = d.get("board", {})
 			records = d.get("records", {})
+		if d is Dictionary and str(d.get("week_id", "")) == wk:  # the ranking of the week: from the same week only
+			week = d.get("week", {})
 
 
 func _board_save() -> void:
 	var f := FileAccess.open("user://game_board.json", FileAccess.WRITE)
 	if f != null:
-		f.store_string(JSON.stringify({"day": board_day, "board": board, "records": records}))
+		f.store_string(JSON.stringify({"day": board_day, "board": board, "records": records, "week_id": week_id, "week": week}))
 
 
 func _board_add() -> void:
@@ -2324,6 +2406,17 @@ func _board_add() -> void:
 		if p["role"] == "guard" and int(p["catches"]) > 0 and (not records.has("catches") or int(p["catches"]) > int(records["catches"][1])):
 			records["catches"] = [p["name"], int(p["catches"])]
 		board[key] = b
+		var w: Dictionary = week.get(key, {"n": p["name"], "c": b["c"], "score": 0, "rounds": 0, "wins": 0, "tasks": 0})
+		w["n"] = p["name"]
+		w["c"] = b["c"]
+		w["score"] = int(w["score"]) + sc
+		w["rounds"] = int(w["rounds"]) + 1
+		if sc == top and top > 0:
+			w["wins"] = int(w["wins"]) + 1
+		if bool(p.get("task_ok", false)):
+			w["tasks"] = int(w["tasks"]) + 1
+			b["tasks"] = int(b.get("tasks", 0)) + 1
+		week[key] = w
 	_board_save()
 
 
@@ -2332,6 +2425,54 @@ func board_list() -> Array:
 	var out: Array = board.values()
 	out.sort_custom(func(x, y): return int(x["score"]) > int(y["score"]))
 	return out.slice(0, 10)
+
+
+func week_list() -> Array:
+	_board_load()
+	var out: Array = week.values()
+	out.sort_custom(func(x, y): return int(x["score"]) > int(y["score"]))
+	return out.slice(0, 10)
+
+
+func _pick_task() -> void:
+	task = {}
+	if not main.game_tasks or flag_mode():
+		return
+	var pool := []
+	for t in TASKS:
+		if t[0] == "items" and int(main.game_items) < 2:
+			continue
+		if t[0] == "hide" and int(main.game_hides) <= 0:
+			continue
+		if t[0] == "nostone" and not main.game_stones:
+			continue
+		pool.append(t)
+	var t2: Array = pool[randi() % pool.size()]
+	task = {"id": t2[0], "text": t2[1], "bonus": t2[2]}
+	news("🎯 Aufgabe dieser Runde: " + str(task["text"]))
+
+
+func _task_done(p: Dictionary) -> bool:
+	if task.is_empty() or p["role"] != "runner":
+		return false
+	var at_goal: bool = p["state"] == "goal"
+	var secs := float(p.get("t_goal", 0.0)) - t_start
+	match str(task["id"]):
+		"crawl":
+			return at_goal and float(p.get("up_m", 0.0)) < 3.0
+		"nostone":
+			return at_goal and int(p.get("stones", 0)) == 0
+		"fast":
+			return at_goal and secs > 0.0 and secs < 60.0
+		"calm":
+			return float(p.get("max_susp", 0.0)) <= 50.0 and (at_goal or p["state"] == "play")
+		"nocatch":
+			return int(p["caught"]) == 0 and (at_goal or p["state"] == "play")
+		"items":
+			return int(p["items"]) >= 2
+		"hide":
+			return float(p.get("hide_s", 0.0)) >= 10.0
+	return false
 
 
 func board_reset() -> void:

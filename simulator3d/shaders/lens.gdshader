@@ -9,6 +9,14 @@ uniform float vignette = 0.3;       // 0..1
 uniform float drops = 0.0;          // 0..1 share of the places with a drop
 uniform vec2 res = vec2(960.0, 540.0);
 uniform float expo = 1.0;           // only for the brightness of raindrops (the exposure itself: expo.gdshader)
+// difficult conditions (3D-3.27): low sun into the lens, a spider web in front of the camera, steady drops
+uniform float glare = 0.0;          // 0..1 low sun shining into the lens
+uniform vec2 glare_pos = vec2(0.82, 0.18);
+uniform float web = 0.0;            // 0..1 a spider web in the upper left corner
+uniform float web_lit = 0.0;        // 0..1 at night the lamp / infrared light makes it shine
+uniform float sway = 0.0;           // 0..1 the wind moves the web and the branches in front of the sun
+
+float seg(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a, ba = b - a; float t = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); return length(pa - ba * t); }
 
 float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 
@@ -41,6 +49,50 @@ void fragment() {
 		float na2 = da + al * (1.0 - da);
 		c = (dc * da + c * al * (1.0 - da)) / max(na2, 0.0001);
 		al = na2;
+	}
+	// spider web: threads from the corner, a spiral between them, moving in the wind; at night the light makes it bright
+	if (web > 0.0) {
+		vec2 asp = vec2(res.x / res.y, 1.0);
+		vec2 o = vec2(0.0, 0.0);
+		vec2 q = uv * asp + vec2(sin(TIME * 1.7) * 0.010, cos(TIME * 1.3) * 0.006) * (0.3 + sway);
+		vec2 ctr = vec2(0.22, 0.24) * asp;
+		float wd = 1e3;
+		for (int k = 0; k < 9; k++) {                       // spokes
+			float an = float(k) * 0.698 + 0.2 + (h(vec2(float(k), 3.0)) - 0.5) * 0.4;
+			wd = min(wd, seg(q, ctr, ctr + vec2(cos(an), sin(an)) * (0.24 + 0.1 * h(vec2(float(k), 9.0)))));
+		}
+		vec2 rv = q - ctr;
+		float rr = length(rv);
+		float ang = atan(rv.y, rv.x);
+		float ring = abs(fract((rr * (1.0 + 0.08 * sin(ang * 3.0)) + ang * 0.0045) * 22.0) - 0.5) / 22.0;   // the spiral
+		if (rr < 0.26 && rr > 0.02) wd = min(wd, ring);
+		float px1 = 1.4 / res.y;
+		float th = smoothstep(px1 * 1.1, 0.0, wd) * (rr < 0.34 ? 1.0 : 0.0) * web;
+		float wa = th * mix(0.25, 0.75, web_lit);
+		vec3 wc = vec3(0.92, 0.94, 0.96) * mix(0.6, 1.6, web_lit);
+		float na3 = wa + al * (1.0 - wa);
+		c = (wc * wa + c * al * (1.0 - wa)) / max(na3, 0.0001);
+		al = na3;
+	}
+	// low sun: a bright veil (less contrast), the sun as a big spot, ghosts along the line through the middle; branches in
+	// front of the sun make the light flicker (a classic cause of false alarms)
+	if (glare > 0.0) {
+		vec2 asp = vec2(res.x / res.y, 1.0);
+		float fl = 0.75 + 0.25 * sin(TIME * 2.3) * sin(TIME * 3.7 + 1.0) * (0.4 + sway);
+		float g = glare * fl;
+		float ds = length((uv - glare_pos) * asp);
+		float sun = smoothstep(0.32, 0.0, ds) * 0.9 + 0.25;
+		vec2 axis = vec2(0.5) - glare_pos;
+		float gh = 0.0;
+		for (int k = 1; k < 4; k++) {
+			vec2 gp = glare_pos + axis * (0.55 * float(k));
+			gh += smoothstep(0.05 + 0.02 * float(k), 0.0, length((uv - gp) * asp)) * 0.35;
+		}
+		float ga2 = clamp((sun + gh) * g, 0.0, 0.92);
+		vec3 gc2 = vec3(1.0, 0.93, 0.78);
+		float na4 = ga2 + al * (1.0 - ga2);
+		c = (gc2 * ga2 + c * al * (1.0 - ga2)) / max(na4, 0.0001);
+		al = na4;
 	}
 	ALBEDO = c;
 	ALPHA = clamp(al, 0.0, 1.0);

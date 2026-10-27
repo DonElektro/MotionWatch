@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_21.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_22.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -590,6 +590,11 @@ Features
     (no longer over the control stick and the arrow buttons).
   * 2.95.21: tab Simulator: the fold arrow of the status sits in the title line (on the phone it stood alone below the
     button) and is hidden while the simulation is off; «Computing power» turns green only when «Save CPU» is on.
+  * 2.95.22: tab Simulator: «Test run and optimization» - the 3D simulator (3D-3.27) plays a fixed test (standard, short,
+    difficult conditions, night), Motion Watch judges it (persons found, reaction time, false alarms by cause, score) and
+    proposes better settings: take over one or all, undo, «take over and test again», or «optimize automatically» (keeps
+    a change only if the next run is better); earlier runs with a bar chart. Game: «Team against Motion Watch» (floating
+    «Caught!» button on the live page), a task for every round, ranking of the week. 📱 phone as a window (motion sensor).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -598,10 +603,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_21.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_22.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_21.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_21.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_22.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_22.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -618,7 +623,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.21"
+APP_VERSION = "2.95.22"
 
 
 def default_data_dir():
@@ -12698,8 +12703,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.26", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30600102,
-         "sha256": "e0a1abcfe6071a0da99df001d3409c9ed153dbc80eaf57ab0806eb592791bbe1"}
+SIM3D = {"version": "3D-3.27", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30647110,
+         "sha256": "332cff003c86cfebb795e646549945ad103b50be340c1dae0deaf71d05b5616b"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.1", "file": "simulator_python/MotionWatchSimulator_PY-1.1.zip", "size": 137697,
@@ -13040,9 +13045,309 @@ def sim_auto_adopt():
         if w is not None and str(CFG["source"]).startswith("sim:"):
             w._open_gen += 1; w._start_opener(CFG["source"])
 
+# ---- test runs with evaluation and optimization (2.95.22) ----------------------------------------------------------
+# The 3D simulator (from 3D-3.27) plays a fixed test (the same visitors on the same ways every time) and knows the truth.
+# Motion Watch starts it, fetches the report, judges it (score) and proposes changes of its own settings. They can be
+# taken over one by one or all at once (with «undo»), and the automatic optimization tries them out one after the
+# other: a change stays only if the next test run is really better.
+OPT_KEYS = ["sensitivity", "min_area", "ai_conf", "ai_every", "ai_require", "wind_auto", "wind_threshold", "wind_boost_max",
+            "rain_auto", "rain_threshold", "lowlight_auto", "lowlight_threshold", "walk_frames", "speed_consistency",
+            "shadow_filter", "car_filter", "object_conf", "auto_tune"]
+TESTOPT = {"busy": "", "msg": "", "plan": "standard", "sim": {}, "runs": [], "undo": None, "sugg": [], "auto": None, "stop": False}
+_TESTOPT_LOCK = threading.Lock()
+
+
+def testopt_load():
+    try:
+        with open(os.path.join(DATA_DIR, "testruns.json")) as f:
+            d = json.load(f)
+        TESTOPT["runs"] = [r for r in d.get("runs", []) if isinstance(r, dict)][-30:]
+        TESTOPT["undo"] = d.get("undo") if isinstance(d.get("undo"), dict) else None
+        if TESTOPT["runs"]:
+            TESTOPT["sugg"] = opt_suggest(TESTOPT["runs"][-1].get("report") or {})
+    except (OSError, ValueError):
+        pass
+
+
+def testopt_save():
+    try:
+        dst = os.path.join(DATA_DIR, "testruns.json"); tmp = dst + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump({"runs": TESTOPT["runs"][-30:], "undo": TESTOPT["undo"]}, f)
+        os.replace(tmp, dst)
+    except OSError:
+        pass
+
+
+def opt_snapshot():
+    return {k: CFG[k] for k in OPT_KEYS if k in CFG}
+
+
+def opt_score(rep):
+    """one number for a test run (higher = better): persons found (0-100), minus false alarms, slow reactions and
+    animals taken for persons"""
+    if not rep or not rep.get("persons"):
+        return None
+    lat = float(rep.get("latency_s") if rep.get("latency_s") is not None else -1)
+    asp = sum(int(p.get("animals_as_person", 0)) for p in rep.get("phases", []))
+    sc = float(rep.get("rate", 0)) - 12.0 * int(rep.get("false_alarms", 0)) - 4.0 * max(0.0, lat - 1.5) - 4.0 * asp
+    return round(sc, 1)
+
+
+def _clampv(k, v):
+    sp = web_specs().get(k) or {}
+    if sp.get("type") == "bool":
+        return bool(v)
+    v = max(sp.get("min", v), min(sp.get("max", v), v))
+    st = sp.get("step") or 1
+    v = round(round(v / st) * st, 2)
+    return int(round(v)) if isinstance(CFG.get(k), int) and not isinstance(CFG.get(k), bool) else float(v)
+
+
+def opt_suggest(rep):
+    """What would make it better? Every proposal: id, title, why (English keys, the page translates them), the changes
+    [key, old, new] and how much it should help (prio)."""
+    if not rep or not rep.get("phases"):
+        return []
+    C = CFG; out = []
+    def add(id_, title, why, changes, prio, n=0):
+        ch = []
+        for k, v in changes:
+            if k not in C:
+                continue
+            nv = _clampv(k, v)
+            if nv != C[k]:
+                ch.append([k, C[k], nv])
+        if ch:
+            out.append({"id": id_, "title": title, "why": why, "n": n, "changes": ch, "prio": prio})
+    causes = {}
+    for f in rep.get("false_list", []):
+        c = str(f.get("cause", ""))
+        key = ("animal" if c.startswith("Tier") else {"Insekten am Licht": "insects", "Wind (Bäume, Büsche)": "wind", "Regen": "rain",
+               "Spinnennetz": "web", "Gegenlicht": "glare", "Scheinwerfer": "headlights", "Tropfen auf der Linse": "drops",
+               "Wolkenschatten": "shadows", "Schnee": "snow", "Nebel": "fog"}.get(c, "other"))
+        causes[key] = causes.get(key, 0) + 1
+    fa = int(rep.get("false_alarms", 0))
+    ph = rep.get("phases", [])
+    miss_day = sum(p["persons"] - p["persons_detected"] for p in ph if not p.get("dark"))
+    miss_night = sum(p["persons"] - p["persons_detected"] for p in ph if p.get("dark"))
+    why = {k: sum(int((p.get("missed_why") or {}).get(k, 0)) for p in ph) for k in ("dark", "small", "fast", "crouch")}
+    asp = sum(int(p.get("animals_as_person", 0)) for p in ph)
+    lat = float(rep.get("latency_s") if rep.get("latency_s") is not None else -1)
+    tune_off = [("auto_tune", False)] if C.get("auto_tune") else []     # otherwise auto-tune changes the values again
+    # ---- false alarms ----
+    if causes.get("wind", 0) + causes.get("shadows", 0):
+        n = causes.get("wind", 0) + causes.get("shadows", 0)
+        add("wind", "Calm down wind and cloud shadows",
+            "{n} false alarms from moving branches or cloud shadows: the wind filter reacts earlier and moving areas must be bigger.",
+            [("wind_auto", True), ("wind_threshold", C["wind_threshold"] - 0.1), ("wind_boost_max", C["wind_boost_max"] + 1.5),
+             ("min_area", C["min_area"] * 1.25)] + tune_off, 30 + 8 * n, n)
+    if causes.get("insects", 0) + causes.get("web", 0):
+        n = causes.get("insects", 0) + causes.get("web", 0)
+        add("insects", "AI confirms every person",
+            "{n} false alarms from insects or a spider web in the light: a person only counts when the AI sees it.",
+            [("ai_require", True), ("ai_conf", max(C["ai_conf"], 0.55))], 35 + 8 * n, n)
+    if causes.get("rain", 0) + causes.get("drops", 0) + causes.get("snow", 0):
+        n = causes.get("rain", 0) + causes.get("drops", 0) + causes.get("snow", 0)
+        add("rain", "Stronger rain and snow filter",
+            "{n} false alarms from rain, snow or drops on the lens: the rain filter switches on earlier.",
+            [("rain_auto", True), ("rain_threshold", C["rain_threshold"] - 0.1), ("min_area", C["min_area"] * 1.15)] + tune_off, 28 + 8 * n, n)
+    if causes.get("glare", 0) + causes.get("headlights", 0) + causes.get("fog", 0):
+        n = causes.get("glare", 0) + causes.get("headlights", 0) + causes.get("fog", 0)
+        add("light", "Ignore changes of the light",
+            "{n} false alarms from low sun, headlights or fog: the shadow filter and the AI check what moves.",
+            [("shadow_filter", True), ("ai_require", True), ("car_filter", True), ("sensitivity", C["sensitivity"] - 8)] + tune_off, 26 + 8 * n, n)
+    if causes.get("animal", 0) or asp:
+        n = causes.get("animal", 0) + asp
+        add("animals", "Do not take animals for persons",
+            "{n} times an animal was reported as a person: the AI must be surer and small moving things count less.",
+            [("ai_require", True), ("ai_conf", C["ai_conf"] + 0.1), ("min_area", C["min_area"] * 1.2)] + tune_off, 30 + 8 * n, n)
+    if causes.get("other", 0) >= 2:
+        n = causes.get("other", 0)
+        add("calm", "Less sensitive",
+            "{n} false alarms without a clear cause: a bit less sensitive.",
+            [("sensitivity", C["sensitivity"] - 10), ("ai_conf", C["ai_conf"] + 0.05)] + tune_off, 18 + 5 * n, n)
+    # ---- missed persons ----
+    if miss_night and why["dark"]:
+        add("night", "See better in the dark",
+            "{n} persons were missed at night: brighten the picture earlier and let the AI accept less sure persons.",
+            [("lowlight_auto", True), ("lowlight_threshold", C["lowlight_threshold"] + 20), ("ai_conf", C["ai_conf"] - 0.1),
+             ("ai_require", False if not causes.get("insects") else C["ai_require"])], 40 + 10 * miss_night, miss_night)
+    if why["small"] or why["crouch"]:
+        n = why["small"] + why["crouch"]
+        add("small", "Find small and crouching persons",
+            "{n} persons were far away, small or crouching and were missed: smaller moving areas count too.",
+            [("min_area", C["min_area"] * 0.7), ("sensitivity", C["sensitivity"] + 8), ("ai_conf", C["ai_conf"] - 0.05)] + tune_off, 38 + 10 * n, n)
+    if why["fast"]:
+        add("fast", "Catch fast persons",
+            "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.",
+            [("walk_frames", C["walk_frames"] - 2), ("ai_every", 1), ("speed_consistency", C["speed_consistency"] - 0.05)] + tune_off,
+            32 + 10 * why["fast"], why["fast"])
+    unexplained = miss_day - min(miss_day, why["small"] + why["crouch"] + why["fast"])
+    if unexplained > 0:
+        miss_day = unexplained
+        add("day", "More sensitive by day",
+            "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.",
+            [("sensitivity", C["sensitivity"] + 10), ("ai_conf", C["ai_conf"] - 0.1)] + tune_off, 36 + 10 * miss_day, miss_day)
+    # ---- reaction time ----
+    if lat > 2.0:
+        add("speed", "React faster",
+            "Motion Watch needed {n} s on average: the AI looks at every picture and walking is recognised sooner.",
+            [("ai_every", 1), ("walk_frames", C["walk_frames"] - 1)], 20 + int(6 * (lat - 2.0)), round(lat, 1))
+    # ---- conflicts: what makes it less sensitive does not go together with what makes it more sensitive ----
+    ids = {x["id"] for x in out}
+    if ids & {"night", "small", "day"} and ids & {"wind", "calm", "animals"}:
+        for x in out:                                   # keep both, but say it: the test after taking over decides
+            x["conflict"] = True
+    return sorted(out, key=lambda x: -x["prio"])
+
+
+def opt_apply(changes, why="test run"):
+    """take over changes [[key, old, new], ...]; returns the snapshot before (for «undo»)"""
+    before = opt_snapshot()
+    for k, _old, new in changes:
+        if k in CFG:
+            CFG[k] = _clampv(k, new); sched_user_changed(k)
+    save_settings()
+    log_event("sys", "Optimization (" + why + "): " + ", ".join(f"{k} {o} -> {CFG[k]}" for k, o, _n in changes))
+    return before
+
+
+def opt_restore(snap, why="undo"):
+    for k, v in (snap or {}).items():
+        if k in CFG and isinstance(v, type(CFG[k])) or (k in CFG and isinstance(CFG[k], float) and isinstance(v, int)):
+            CFG[k] = v; sched_user_changed(k)
+    save_settings()
+    log_event("sys", f"Optimization: settings restored ({why})")
+
+
+def _simtest(action, **kw):
+    try:
+        r = sim_control(dict(action=action, **kw))
+        return r if isinstance(r, dict) else {}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:120]}
+
+
+def testopt_run(plan):
+    """one test run, waits until it is finished (or stopped); returns the run (dict) or None"""
+    r = _simtest("test_start", plan=plan)
+    if not r.get("ok"):
+        TESTOPT["msg"] = str(r.get("error") or "the simulator does not answer (3D-3.27 or newer needed)")
+        return None
+    TESTOPT["sim"] = r
+    t_end = time.time() + max(120, int(r.get("total_s") or 600) * 2)
+    seen_running = True
+    while time.time() < t_end:
+        if TESTOPT["stop"]:
+            _simtest("test_stop")
+            TESTOPT["msg"] = "stopped"
+            return None
+        time.sleep(2.0)
+        st = _simtest("test_report")
+        if not st:
+            continue
+        TESTOPT["sim"] = st
+        if st.get("running"):
+            continue
+        rep = st.get("report") or {}
+        if not rep or rep.get("plan") != plan:
+            TESTOPT["msg"] = str(st.get("info") or "test run ended without report")
+            return None
+        run = {"t": time.time(), "plan": plan, "report": rep, "score": opt_score(rep), "cfg": opt_snapshot()}
+        with _TESTOPT_LOCK:
+            TESTOPT["runs"].append(run); TESTOPT["runs"] = TESTOPT["runs"][-30:]
+            TESTOPT["sugg"] = opt_suggest(rep)
+            testopt_save()
+        log_event("sys", f"Test run «{plan}» finished: persons {rep.get('persons_detected')}/{rep.get('persons')}, "
+                         f"false alarms {rep.get('false_alarms')}, score {run['score']}")
+        return run
+    TESTOPT["msg"] = "the test run takes too long - stopped"
+    _simtest("test_stop")
+    return None
+
+
+def _testopt_thread(kind, plan, tries=4):
+    try:
+        TESTOPT["stop"] = False; TESTOPT["msg"] = ""
+        if kind == "run":
+            TESTOPT["busy"] = "run"
+            testopt_run(plan)
+            return
+        # automatic optimization: base run, then try the proposals one by one; keep a change only if the score rises
+        TESTOPT["busy"] = "auto"
+        A = {"plan": plan, "step": 0, "tries": tries, "log": [], "start_cfg": opt_snapshot(), "base": None, "best": None, "kept": []}
+        TESTOPT["auto"] = A
+        base = testopt_run(plan)
+        if base is None or base["score"] is None:
+            A["log"].append({"what": "base", "ok": False}); return
+        A["base"] = A["best"] = base["score"]
+        tried = set()
+        while A["step"] < tries and not TESTOPT["stop"]:
+            sug = [x for x in opt_suggest(base["report"] if not A["kept"] else TESTOPT["runs"][-1]["report"]) if x["id"] not in tried]
+            if not sug:
+                break
+            x = sug[0]; tried.add(x["id"]); A["step"] += 1
+            A["now"] = x["title"]
+            before = opt_apply(x["changes"], "automatic, try " + x["id"])
+            run = testopt_run(plan)
+            if run is None or run["score"] is None:
+                opt_restore(before, "automatic, no result"); break
+            better = run["score"] >= A["best"] + 3.0
+            A["log"].append({"id": x["id"], "title": x["title"], "changes": x["changes"], "score": run["score"], "kept": better})
+            if better:
+                A["best"] = run["score"]; A["kept"].append(x["id"])
+            else:
+                opt_restore(before, "automatic, not better")
+        A["now"] = ""
+        if A["kept"]:
+            TESTOPT["undo"] = {"cfg": A["start_cfg"], "t": time.time(), "what": "auto"}
+            testopt_save()
+        log_event("sys", f"Automatic optimization finished: score {A['base']} -> {A['best']}, kept: {', '.join(A['kept']) or 'nothing'}")
+    finally:
+        TESTOPT["busy"] = ""
+
+
+def testopt_state():
+    runs = TESTOPT["runs"]
+    small = [{"t": r["t"], "plan": r["plan"], "score": r["score"], "rate": r["report"].get("rate"), "fa": r["report"].get("false_alarms"),
+              "lat": r["report"].get("latency_s"), "persons": r["report"].get("persons"), "found": r["report"].get("persons_detected"),
+              "cfg": r.get("cfg")} for r in runs[-12:]]
+    return {"busy": TESTOPT["busy"], "msg": TESTOPT["msg"], "sim": TESTOPT["sim"], "runs": small,
+            "last": runs[-1] if runs else None, "sugg": TESTOPT["sugg"], "undo": bool(TESTOPT["undo"]),
+            "auto": TESTOPT["auto"], "connected": bool(CFG["sim_on"] and SIM["ok"] and time.time() - SIM["t"] < 5),
+            "keys": {k: CFG[k] for k in OPT_KEYS if k in CFG}}
+
+
+SIMGAME = {"t": 0.0, "busy": False, "g": None}   # the game in the simulator, fetched now and then (2.95.22: «Team gegen Motion Watch»)
+
+
+def _simgame_fetch():
+    try:
+        r = sim_control({"action": "game_info"})
+        if isinstance(r, dict) and r.get("ok") and r.get("open"):
+            SIMGAME["g"] = {"round": r.get("round"), "mode": r.get("mode"), "left": r.get("left"), "cd": r.get("cd"),
+                            "mwg": r.get("mwg"), "task": r.get("task") or ""}
+        else:
+            SIMGAME["g"] = None
+    except Exception:
+        SIMGAME["g"] = None
+    finally:
+        SIMGAME["busy"] = False
+
+
+def sim_game():
+    if not (CFG["sim_on"] and SIM["ok"]):
+        SIMGAME["g"] = None
+        return None
+    if time.time() - SIMGAME["t"] > 2.5 and not SIMGAME["busy"]:
+        SIMGAME["t"] = time.time(); SIMGAME["busy"] = True
+        threading.Thread(target=_simgame_fetch, daemon=True).start()
+    return SIMGAME["g"]
+
 
 def sim_status():
-    return {"found": sim_found(), "auto": bool(CFG.get("sim_auto")), "autoupd": bool(CFG.get("sim_autoupd", True)), "stats": sim_stats(), "eco": bool(CFG.get("sim_eco")), "fps": int(CFG.get("sim_fps") or 6),
+    return {"game": sim_game(), "found": sim_found(), "auto": bool(CFG.get("sim_auto")), "autoupd": bool(CFG.get("sim_autoupd", True)), "stats": sim_stats(), "eco": bool(CFG.get("sim_eco")), "fps": int(CFG.get("sim_fps") or 6),
             "sim3d": {"version": SIM3D["version"], "size_mb": round(SIM3D["size"] / 1e6), "ready": sim3d_ready()},
             "simpy": {"version": SIMPY["version"], "size_kb": round(SIMPY["size"] / 1e3), "ready": sim3d_ready(SIMPY)},
             "view": bool(((SIM.get("info") or {}).get("view") or {}).get("input")) if CFG["sim_on"] else False,
@@ -14418,7 +14723,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_21.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_22.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -19174,6 +19479,16 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .sttl{font-size:20px;font-weight:600;flex:1;min-width:0}
 #s-btn{padding:10px 18px;font-size:14px}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+/* test run and optimization (2.95.22) */
+.tr-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.tr-row select{flex:1 1 240px;min-width:0}
+.tr-prog{height:8px;border-radius:5px;background:var(--field);overflow:hidden}.tr-prog i{display:block;height:100%;background:var(--acc,#3b82f6);transition:width .5s}
+.tr-tab{width:100%;border-collapse:collapse;font-size:13px}.tr-tab td,.tr-tab th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tr-tab th{font-weight:600;color:var(--mut);font-size:12px}.tr-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}.tr-tab{min-width:560px}.tr-tab td:last-child{min-width:150px}
+.tr-sug{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:6px}.tr-sug b{font-size:15px}
+.tr-sug .ch{font-size:13px;display:flex;flex-wrap:wrap;gap:4px 12px}.tr-sug .ch span{white-space:nowrap}.tr-sug .ch s{opacity:.6}
+.tr-chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:12px;margin:2px 4px 2px 0}
+.tr-good{color:var(--grn,#3fb950)}.tr-bad{color:#f85149}.tr-hist{display:flex;align-items:flex-end;gap:4px;height:70px;border-bottom:1px solid var(--line);padding-top:4px}
+.tr-hist i{flex:1;max-width:34px;background:var(--acc,#3b82f6);border-radius:4px 4px 0 0;min-height:3px;position:relative}.tr-hist i.cur{background:var(--grn,#3fb950)}
 .tile{border:1px solid var(--line);border-radius:10px;padding:8px 10px}.tile .mut{font-size:11px}.tile b{font-weight:600;font-size:15px}
 .opt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:14px;cursor:pointer}
 .row2{display:flex;gap:8px;align-items:center}.row2 input[type=text]{flex:1;min-width:0}
@@ -19323,7 +19638,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
       <div class="pvcam" id="s-pvcam" hidden title="Kamera gross zeigen"><img id="s-pvcimg" alt=""><span>📷 LIVE</span></div>
       <div class="spec" id="s-spec" hidden><div class="spec-h" id="s-spech"></div><div class="spec-p" id="s-specp"></div><div class="spec-f" id="s-specf"></div></div>
       <div class="specres" id="s-specres" hidden></div>
-      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><button type="button" id="s-vstat" title="Statistik ein / aus" hidden>📊</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vcam" title="Kamerabild klein ein / aus">📷</button><button type="button" id="s-vctl" title="Bedienen mit dem Finger (sonst scrollt die Seite)">✋</button><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
+      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><button type="button" id="s-vstat" title="Statistik ein / aus" hidden>📊</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vgyro" title="Handy als Fenster: das Handy drehen = umschauen" hidden>📱</button><button type="button" id="s-vcam" title="Kamerabild klein ein / aus">📷</button><button type="button" id="s-vctl" title="Bedienen mit dem Finger (sonst scrollt die Seite)">✋</button><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
     <div class="mut" id="s-prevnote"></div>
   </section>
 
@@ -19336,6 +19651,20 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div id="s-scn" hidden><select id="s-sel"></select><button type="button" onclick="scnLoad()" data-i18n="Load">Load</button><button type="button" class="sec" onclick="ctl({ctl:'get'})">↻</button><button type="button" class="sec" id="s-del" onclick="scnDel()" data-i18n="Delete">Delete</button></div>
     <div id="s-groups"></div>
     <div id="s-up" hidden><div class="mut" id="s-upl"></div><input type="file" id="s-file"><div class="mut" id="s-prog"></div></div>
+    </div>
+  </details>
+
+  <details class="sc fold wide" id="c-test" data-k="test">
+    <summary><h2><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><span data-i18n="Test run and optimization">Test run and optimization</span></h2></summary>
+    <div class="fb" id="tr-box">
+    <div class="mut" data-i18n="tr-note">tr-note</div>
+    <div class="tr-row"><select id="tr-plan"></select>
+      <button type="button" id="tr-run">▶ <span data-i18n="Start test run">Start test run</span></button>
+      <button type="button" class="sec" id="tr-auto">🤖 <span data-i18n="Optimize automatically">Optimize automatically</span></button>
+      <button type="button" class="sec" id="tr-stop" hidden>⏹ <span data-i18n="Stop">Stop</span></button></div>
+    <div class="mut" id="tr-autonote"></div>
+    <div id="tr-live" hidden><div class="rng"><span id="tr-livet"></span><b id="tr-left"></b></div><div class="tr-prog"><i id="tr-bar" style="width:0"></i></div></div>
+    <div id="tr-res"></div>
     </div>
   </details>
 
@@ -19377,6 +19706,52 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 <div id="pip" hidden data-c="br"><div class="pip-in"></div><span class="pip-live">● LIVE</span><button type="button" id="pip-x" aria-label="close">✕</button></div>
 <script>
 /*COMMON*/
+Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den Bewegungssensor", "The motion sensor needs https (iPhone / iPad)": "Der Bewegungssensor braucht https (iPhone / iPad)",
+ "Turn the phone to look round. Press 📱 again to stop.": "Handy drehen zum Umschauen. Nochmals 📱 drücken zum Beenden.",
+ "Team against Motion Watch": "Team gegen Motion Watch",
+ "gw-mwhand": "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an Motion Watch: sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken dort «🚨 Erwischt!». Stimmt es, ist der Spieler erwischt – sonst gibt es einen Fehlalarm und 4 Sekunden Pause.",
+ "A task for every round (bonus)": "Eine Aufgabe für jede Runde (Bonus)",
+ "gw-tasks": "🎯 Jede Runde hat eine Aufgabe, z. B. «nur kriechend ins Ziel» oder «nie über 50 % Verdacht». Wer sie schafft, bekommt Bonuspunkte. Neben der Rangliste des Abends gibt es eine Rangliste der Woche.",
+ "Task of this round": "Aufgabe dieser Runde", "Ranking of the week": "Rangliste der Woche", "week": "Woche", "task done": "Aufgabe erfüllt",
+ "Test run and optimization": "Testlauf und Optimierung",
+ "tr-note": "Der 3D-Simulator spielt einen festen Test ab (jedes Mal dieselben Besucher auf denselben Wegen) und weiss, wer wirklich zu sehen war. Motion Watch vergleicht das mit dem, was es erkannt hat, und schlägt bessere Einstellungen vor. Du kannst sie einzeln oder alle übernehmen und rückgängig machen – oder «Automatisch optimieren» probiert sie nacheinander aus und behält nur, was im nächsten Test wirklich besser ist.",
+ "Start test run": "Testlauf starten", "Optimize automatically": "Automatisch optimieren",
+ "tr-auto-ask": "Automatisch optimieren: zuerst ein Testlauf wie jetzt, dann werden bis zu 4 Vorschläge nacheinander ausprobiert (je ein Testlauf). Behalten wird nur, was besser ist. Das dauert je nach Test 10 bis 35 Minuten. Starten?",
+ "Standard (day, wind, night, rain · about 4 min)": "Standard (Tag, Wind, Nacht, Regen · etwa 4 Min.)", "Short (day and night · about 2 min)": "Kurz (Tag und Nacht · etwa 2 Min.)",
+ "Difficult conditions (low sun, fog, snow, drops, spider web, headlights, cloud shadows · about 7 min)": "Schwierige Bedingungen (Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer, Wolkenschatten · etwa 7 Min.)",
+ "Night (dark, infrared, animals · about 3 min)": "Nacht (dunkel, Infrarot, Tiere · etwa 3 Min.)",
+ "Connect the simulation first (3D simulator 3D-3.27 or newer).": "Zuerst die Simulation verbinden (3D-Simulator ab 3D-3.27).",
+ "Try": "Versuch", "first a test run as it is now": "zuerst ein Testlauf wie jetzt", "starting …": "startet …", "still about": "noch etwa",
+ "No test run yet.": "Noch kein Testlauf.", "Last test run": "Letzter Testlauf", "Persons found": "Personen erkannt", "Reaction time": "Reaktionszeit",
+ "False alarms": "Fehlalarme", "Animals taken for persons": "Tiere als Person gemeldet", "Score": "Punktzahl", "Phase": "Phase", "Persons": "Personen",
+ "Reaction": "Reaktion", "Animals reported": "Tiere gemeldet", "Missed": "Verpasst", "too dark": "zu dunkel", "small / far": "klein / weit weg", "fast": "schnell",
+ "crouching": "geduckt", "False alarms by cause": "Fehlalarme nach Ursache", "Proposals for Motion Watch": "Vorschläge für Motion Watch",
+ "Everything found, no false alarm - nothing to improve.": "Alles erkannt, kein Fehlalarm – nichts zu verbessern.", "No proposals for this test run.": "Keine Vorschläge für diesen Testlauf.",
+ "Take over all": "Alle übernehmen", "Take over all and test again": "Alle übernehmen und nochmals testen", "Undo the last change": "Letzte Änderung rückgängig",
+ "Take over": "Übernehmen", "Take over and test again": "Übernehmen und nochmals testen",
+ "(goes against another proposal - test again after taking it over)": "(widerspricht einem anderen Vorschlag – nach dem Übernehmen nochmals testen)",
+ "Automatic optimization": "Automatische Optimierung", "Score at the start": "Punktzahl am Anfang", "now": "jetzt", "kept": "behalten", "not better, undone": "nicht besser, rückgängig gemacht",
+ "Earlier test runs": "Frühere Testläufe", "When": "Wann", "Test": "Test", "Changed before": "Vorher geändert",
+ "The previous settings are back": "Die vorherigen Einstellungen sind zurück", "Taken over - a new test run shows whether it is better": "Übernommen – ein neuer Testlauf zeigt, ob es besser ist",
+ "on": "ein", "off": "aus", "stopped": "abgebrochen", "a test run is already going": "es läuft schon ein Testlauf", "the simulation is not connected": "die Simulation ist nicht verbunden",
+ "nothing to undo": "nichts rückgängig zu machen", "the test run takes too long - stopped": "der Testlauf dauert zu lange – abgebrochen",
+ "the simulator does not answer (3D-3.27 or newer needed)": "der Simulator antwortet nicht (3D-3.27 oder neuer nötig)",
+ "Sensitivity": "Empfindlichkeit", "Smallest moving area": "Kleinste bewegte Fläche", "AI: minimum certainty": "KI: Mindest-Sicherheit", "AI looks at every n-th picture": "KI prüft jedes n-te Bild",
+ "AI must confirm persons": "KI muss Personen bestätigen", "Wind filter": "Wind-Filter", "Wind filter: reacts from": "Wind-Filter: reagiert ab", "Wind filter: strongest": "Wind-Filter: höchstens",
+ "Rain filter": "Regen-Filter", "Rain filter: reacts from": "Regen-Filter: reagiert ab", "Brighten in the dark": "Im Dunkeln aufhellen", "Brighten below": "Aufhellen unter",
+ "Pictures to recognise walking": "Bilder bis Gehen erkannt", "Steadiness of walking": "Gleichmässigkeit des Gehens", "Shadow filter": "Schatten-Filter", "Vehicle filter": "Fahrzeug-Filter",
+ "Objects: minimum certainty": "Objekte: Mindest-Sicherheit", "Auto-tune": "Selbst-Einstellung",
+ "Calm down wind and cloud shadows": "Wind und Wolkenschatten beruhigen", "{n} false alarms from moving branches or cloud shadows: the wind filter reacts earlier and moving areas must be bigger.": "{n} Fehlalarme durch bewegte Äste oder Wolkenschatten: der Wind-Filter greift früher und bewegte Flächen müssen grösser sein.",
+ "AI confirms every person": "KI bestätigt jede Person", "{n} false alarms from insects or a spider web in the light: a person only counts when the AI sees it.": "{n} Fehlalarme durch Insekten oder ein Spinnennetz im Licht: eine Person zählt nur, wenn die KI sie sieht.",
+ "Stronger rain and snow filter": "Stärkerer Regen- und Schnee-Filter", "{n} false alarms from rain, snow or drops on the lens: the rain filter switches on earlier.": "{n} Fehlalarme durch Regen, Schnee oder Tropfen auf der Linse: der Regen-Filter schaltet früher ein.",
+ "Ignore changes of the light": "Lichtwechsel nicht beachten", "{n} false alarms from low sun, headlights or fog: the shadow filter and the AI check what moves.": "{n} Fehlalarme durch tiefe Sonne, Scheinwerfer oder Nebel: Schatten-Filter und KI prüfen, was sich bewegt.",
+ "Do not take animals for persons": "Tiere nicht für Personen halten", "{n} times an animal was reported as a person: the AI must be surer and small moving things count less.": "{n}-mal wurde ein Tier als Person gemeldet: die KI muss sicherer sein und kleine bewegte Dinge zählen weniger.",
+ "Less sensitive": "Weniger empfindlich", "{n} false alarms without a clear cause: a bit less sensitive.": "{n} Fehlalarme ohne klare Ursache: etwas weniger empfindlich.",
+ "See better in the dark": "Im Dunkeln besser sehen", "{n} persons were missed at night: brighten the picture earlier and let the AI accept less sure persons.": "{n} Personen in der Nacht verpasst: das Bild früher aufhellen und die KI auch weniger sichere Personen annehmen lassen.",
+ "Find small and crouching persons": "Kleine und geduckte Personen finden", "{n} persons were far away, small or crouching and were missed: smaller moving areas count too.": "{n} Personen waren weit weg, klein oder geduckt und wurden verpasst: auch kleinere bewegte Flächen zählen.",
+ "Catch fast persons": "Schnelle Personen erwischen", "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.": "{n} schnelle Personen (Jogger) verpasst: weniger Bilder bis das Gehen erkannt ist, die KI prüft jedes Bild.",
+ "More sensitive by day": "Am Tag empfindlicher", "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.": "{n} Personen am Tag verpasst: empfindlicher, und die KI nimmt auch weniger sichere Personen an.",
+ "React faster": "Schneller reagieren", "Motion Watch needed {n} s on average: the AI looks at every picture and walking is recognised sooner.": "Motion Watch brauchte im Mittel {n} s: die KI prüft jedes Bild und das Gehen wird früher erkannt."});
 Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
  "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
  "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
@@ -19417,7 +19792,7 @@ function stFold(set) {
 try { stFold(localStorage.getItem("mw-sim-stfold") === "1"); } catch (e) {}
 function foldAct() {                       // the arrows turn green when what is inside is switched on / works
   const ok = !!(S && S.on && S.ok);
-  const on = {conn: ok, ctl: ok, perf: !!(S && S.eco)};
+  const on = {conn: ok, ctl: ok, perf: !!(S && S.eco), test: !!(TR && (TR.busy || (TR.sim && TR.sim.running)))};
   document.querySelectorAll("details.fold[data-k]").forEach(d => d.classList.toggle("act", !!on[d.dataset.k]));
   $("#s-stfold").classList.toggle("act", ok);
   $("#s-stfold").hidden = !(S && S.on);      // simulation off: nothing to fold
@@ -19505,12 +19880,15 @@ function gamePaint(r) {
 }
 // ---- game wizard (2.95.12): type -> goal -> difficulty -> start; remembers the last game ----
 const GW_MODES = [["camera", "🎥", "Everybody against the camera", "gw-camera"], ["guard", "👮", "One player is the guard", "gw-guard"],
-  ["teamguard", "🔴🔵", "Team against team", "gw-teamguard"], ["mw", "🛡", "Motion Watch decides", "gw-mw"]];
+  ["teamguard", "🔴🔵", "Team against team", "gw-teamguard"], ["mw", "🛡", "Motion Watch decides", "gw-mw"],
+  ["mwhand", "🕹", "Team against Motion Watch", "gw-mwhand"]];
+const gwModes = () => { const c = ((GWR && GWR.controls) || []).find(x => x.id === "game_mode"); const have = new Set(((c && c.options) || []).map(o => o[0]));
+  return GW_MODES.filter(m => !have.size || have.has(m[0])); };     // only what the simulator knows (mwhand: 3D-3.27)
 const GW_GOALS = [["reach", "🟢", "Sneak to the goal", "gw-reach"], ["return", "💰", "Fetch the loot and bring it back", "gw-return"], ["flag", "🚩", "Capture the flag (two teams)", "gw-flag"]];
 const GW_LEVELS = {easy: {game_level: "easy", game_lives: "0", game_minutes: 8, game_cones: true}, normal: {game_level: "normal", game_lives: "3", game_minutes: 5, game_cones: false},
   hard: {game_level: "hard", game_lives: "1", game_minutes: 4, game_cones: false}};
 const GW_KEYS = ["game_mode", "game_goal", "game_level", "game_lives", "game_minutes", "game_items", "game_teams", "game_rescue", "game_stones", "game_cones", "game_powers", "game_spectate",
-  "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_autohandicap"];
+  "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_autohandicap", "game_tasks", "game_mwguard"];
 let GW = null, GWS = 0, GWR = null;
 function gwCur() { const o = {}; ((GWR && GWR.controls) || []).forEach(c => { if (GW_KEYS.includes(c.id)) o[c.id] = c.value; }); return o; }
 function gwOpen() {
@@ -19520,7 +19898,7 @@ function gwOpen() {
   if (!((GWR && GWR.controls) || []).some(c => c.id === "game_powers")) delete GW.game_powers;     // simulator older than 3D-3.21
   if (!((GWR && GWR.controls) || []).some(c => c.id === "game_spectate")) delete GW.game_spectate; else if (GW.game_spectate === undefined) GW.game_spectate = true;
   const hv = new Set(((GWR && GWR.controls) || []).map(c => c.id));
-  [["game_photos", true], ["game_hides", 3], ["game_decoy", true], ["game_night", false], ["game_events", true], ["game_checkpoints", 0], ["game_autohandicap", false]].forEach(([k, d]) => {
+  [["game_photos", true], ["game_hides", 3], ["game_decoy", true], ["game_night", false], ["game_events", true], ["game_checkpoints", 0], ["game_autohandicap", false], ["game_tasks", true]].forEach(([k, d]) => {
     if (!hv.has(k)) delete GW[k]; else if (GW[k] === undefined) GW[k] = d; });          // simulator 3D-3.25 or newer
   GWS = 0; $("#gw").hidden = false; gwPaint();
 }
@@ -19533,7 +19911,7 @@ function gwPaint() {
   const cards = (list, key, after) => { const g = el("div", "gw-cards"); list.forEach(([v, ic, ti, ru]) => { const b = el("button", "gw-card" + (String(GW[key]) === v ? " on" : ""));
       b.type = "button"; b.append(el("span", "ic", ic), el("b", "", t(ti)), el("small", "", gwRule(ru))); b.onclick = () => { GW[key] = v; if (after) after(v); gwPaint(); }; g.appendChild(b); }); return g; };
   if (GWS === 0) {
-    B.append(el("h3", "", t("Which game?")), el("p", "mut lead", t("gw-intro")), cards(GW_MODES, "game_mode", v => { if (v === "teamguard") GW.game_teams = true; }));
+    B.append(el("h3", "", t("Which game?")), el("p", "mut lead", t("gw-intro")), cards(gwModes(), "game_mode", v => { if (v === "teamguard") GW.game_teams = true; }));
     let last = null; try { last = JSON.parse(localStorage.getItem("mw-game-last") || "null"); } catch (e) {}
     if (last) { const q = el("button", "sec", "⚡ " + t("Like last time") + ": " + gwSummary(last)); q.type = "button"; q.style.cssText = "margin-top:14px;width:100%;white-space:normal";
       q.onclick = () => { GW = Object.assign(GW, last); GWS = 3; gwPaint(); }; B.appendChild(q); }
@@ -19567,6 +19945,7 @@ function gwPaint() {
       into("⛈ " + t("Random events (storm, dog, car)"), tg("game_events"));
       into("🚩 " + t("Checkpoints (+150 points each)"), rng("game_checkpoints", 0, 3, ""));
       into("🎯 " + t("Handicap for the leader of the ranking"), tg("game_autohandicap"));
+      if ("game_tasks" in GW) into("✅ " + t("A task for every round (bonus)"), tg("game_tasks"));
       B0.appendChild(ex); }
   } else {
     B.append(el("h3", "", t("Ready!")));
@@ -19578,7 +19957,7 @@ function gwPaint() {
     B.appendChild(sm);
     const rl = el("div", "gw-rules"); [t(md[3]), t(gl[3]), t("gw-tips"), GW.game_rescue ? t("gw-rescue") : "", GW.game_items ? t("gw-items") : "", GW.game_powers ? t("gw-powers") : "", ("game_powers" in GW) ? t("gw-lastmin") : "",
       GW.game_photos ? t("gw-photos") : "", GW.game_hides ? t("gw-hides") : "", GW.game_decoy && ["camera", "mw"].includes(GW.game_mode) ? t("gw-decoy") : "", GW.game_night ? t("gw-night") : "",
-      GW.game_events ? t("gw-events") : "", GW.game_checkpoints ? t("gw-cps") : "", GW.game_autohandicap ? t("gw-hc") : ""].filter(x => x).forEach(x => rl.appendChild(el("p", "", x)));
+      GW.game_events ? t("gw-events") : "", GW.game_checkpoints ? t("gw-cps") : "", GW.game_tasks ? t("gw-tasks") : "", GW.game_autohandicap ? t("gw-hc") : ""].filter(x => x).forEach(x => rl.appendChild(el("p", "", x)));
     B.appendChild(rl);
     const qr = el("div", "gw-qr"); qr.id = "gw-qr"; B.appendChild(qr); gwQr();
   }
@@ -19623,7 +20002,7 @@ async function gwGo(d) {
 // ---- spectators (2.95.14): time, players with their meter, what happened, the result - over the picture ----
 let SPEC = null, SPECON = true, SPECRES = "", specT = null;
 try { SPECON = localStorage.getItem("mw-sim-spec") !== "0"; } catch (e) {}
-const MODE_TXT = {camera: "Alle gegen die Kamera", guard: "Ein Spieler ist Wächter", teamguard: "Team gegen Team", mw: "Motion Watch entscheidet"};
+const MODE_TXT = {camera: "Alle gegen die Kamera", guard: "Ein Spieler ist Wächter", teamguard: "Team gegen Team", mw: "Motion Watch entscheidet", mwhand: "Team gegen Motion Watch"};
 const ST_IC = {play: "🏃", goal: "🎉", jail: "🔒", out: "👀", lobby: "⏳"};
 async function specPoll() {
   clearTimeout(specT);
@@ -19637,8 +20016,9 @@ const mmss = n => Math.floor(n / 60) + ":" + ("0" + (n % 60)).slice(-2);
 function gMorePaint() {                            // game card: players with handicap, the ranking of the evening (3D-3.25)
   const box = $("#g-more"), G = SPEC; if (!box) return;
   if (!G || !G.open) { box.innerHTML = ""; box.dataset.sig = ""; return; }
-  const sig = JSON.stringify([(G.players || []).map(p => [p.n, p.hc, p.slot, p.dc]), G.board, G.records]);
+  const sig = JSON.stringify([(G.players || []).map(p => [p.n, p.hc, p.slot, p.dc]), G.board, G.records, G.week, G.task]);
   if (box.dataset.sig === sig) return; box.dataset.sig = sig; box.innerHTML = "";
+  if (G.task) { const tk = el("div", "", "🎯 " + t("Task of this round") + ": " + G.task + " (+" + G.task_bonus + ")"); tk.style.cssText = "margin-top:8px;font-weight:600"; box.appendChild(tk); }
   if ((G.players || []).length && (G.players[0].hc !== undefined)) {
     const h = el("div", "mut", "🎯 " + t("Handicap (experienced players are seen more easily, are a bit slower, shorter cloak)") + ":"); h.style.marginTop = "8px"; box.appendChild(h);
     const row = el("div", "chips2");
@@ -19659,6 +20039,12 @@ function gMorePaint() {                            // game card: players with ha
     if (rec.length) box.appendChild(el("div", "mut", t("Records") + ": " + rec.join(" · ")));
     const rb = el("button", "sec", t("Reset the ranking")); rb.type = "button"; rb.style.marginTop = "6px";
     rb.onclick = async () => { if (confirm(t("Reset the ranking of the evening?"))) { await ctl({ctl: "press", id: "game_board_reset"}); specPoll(); } }; box.appendChild(rb); }
+  if ((G.week || []).length) {                     // the ranking of the week (3D-3.27)
+    const h = el("div", "", "📅 " + t("Ranking of the week") + (G.week_id ? " (" + G.week_id.replace("-W", " · " + t("week") + " ") + ")" : "")); h.style.cssText = "margin-top:10px;font-weight:600"; box.appendChild(h);
+    const tb = el("table", "gw-board");
+    G.week.forEach((b, i) => { const tr = el("tr"); const n = el("td", "", (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + " " + b.n); n.style.color = b.c;
+      tr.append(n, el("td", "", String(b.score)), el("td", "mut", b.rounds + " " + t("rounds") + (b.wins ? " · " + b.wins + "× " + t("won") : "") + (b.tasks ? " · " + b.tasks + "× " + t("task done") : ""))); tb.appendChild(tr); });
+    box.appendChild(tb); }
 }
 function specPaint() {
   gMorePaint();
@@ -19752,6 +20138,130 @@ $("#s-file").onchange = () => {
   x.send(f);
 };
 setInterval(() => { if (!document.hidden && S && S.ok) ctl({ctl: "get"}); }, 4000);
+
+// ---- test run and optimization (2.95.22): the simulator plays a fixed test, Motion Watch judges it and proposes settings ----
+const TR_KEYS = {sensitivity: "Sensitivity", min_area: "Smallest moving area", ai_conf: "AI: minimum certainty", ai_every: "AI looks at every n-th picture",
+  ai_require: "AI must confirm persons", wind_auto: "Wind filter", wind_threshold: "Wind filter: reacts from", wind_boost_max: "Wind filter: strongest",
+  rain_auto: "Rain filter", rain_threshold: "Rain filter: reacts from", lowlight_auto: "Brighten in the dark", lowlight_threshold: "Brighten below",
+  walk_frames: "Pictures to recognise walking", speed_consistency: "Steadiness of walking", shadow_filter: "Shadow filter", car_filter: "Vehicle filter",
+  object_conf: "Objects: minimum certainty", auto_tune: "Auto-tune"};
+const TR_PLANS = [["standard", "Standard (day, wind, night, rain · about 4 min)"], ["quick", "Short (day and night · about 2 min)"],
+  ["hard", "Difficult conditions (low sun, fog, snow, drops, spider web, headlights, cloud shadows · about 7 min)"], ["night", "Night (dark, infrared, animals · about 3 min)"]];
+let TR = null, trT = null, TRPLAN = "standard";
+try { TRPLAN = localStorage.getItem("mw-tr-plan") || "standard"; } catch (e) {}
+const trVal = v => v === true ? t("on") : v === false ? t("off") : (typeof v === "number" && !Number.isInteger(v) ? (+v).toFixed(2).replace(/0$/, "") : String(v));
+const trDate = ts => { const d = new Date(ts * 1000); return d.toLocaleDateString(LANG, {day: "2-digit", month: "2-digit"}) + " " + d.toLocaleTimeString(LANG, {hour: "2-digit", minute: "2-digit"}); };
+function trInit() {
+  const sel = $("#tr-plan"); sel.innerHTML = "";
+  TR_PLANS.forEach(([k, n]) => { const o = el("option", "", t(n)); o.value = k; sel.appendChild(o); }); sel.value = TRPLAN;
+  sel.onchange = () => { TRPLAN = sel.value; try { localStorage.setItem("mw-tr-plan", TRPLAN); } catch (e) {} };
+  $("#tr-run").onclick = () => trAct({action: "run", plan: TRPLAN});
+  $("#tr-auto").onclick = () => { if (confirm(t("tr-auto-ask"))) trAct({action: "auto", plan: TRPLAN, tries: 4}); };
+  $("#tr-stop").onclick = () => trAct({action: "stop"});
+  $("#c-test").addEventListener("toggle", () => trLoad());
+  trLoad();
+}
+async function trAct(d) {
+  const r = await post("/api/simtest", d);
+  if (r && r.ok === false) toast("⚠ " + t(r.error || "error")); else if (r) { TR = r; trPaint(); }
+  if (d.action === "undo" && r && r.ok) toast("↩ " + t("The previous settings are back"));
+  if ((d.action === "apply" || d.action === "apply_all") && r && r.ok) toast("✓ " + t("Taken over - a new test run shows whether it is better"));
+  setTimeout(trLoad, 800);
+}
+async function trLoad() {
+  clearTimeout(trT);
+  const open = $("#c-test").open;
+  const r = await fetch("/api/simtest").then(x => x.ok ? x.json() : null).catch(() => null);
+  if (r) { TR = r; trPaint(); }
+  const busy = r && (r.busy || (r.sim && r.sim.running));
+  trT = setTimeout(trLoad, busy ? 2000 : open ? 6000 : 20000);
+}
+function trPaint() {
+  const R = TR || {}, SM = R.sim || {}, busy = !!R.busy || !!SM.running, A = R.auto;
+  [...$("#tr-plan").options].forEach(o => { const p = TR_PLANS.find(x => x[0] === o.value); if (p) o.textContent = t(p[1]); });
+  $("#c-test").classList.toggle("act", busy);
+  $("#tr-run").disabled = busy || !R.connected; $("#tr-auto").disabled = busy || !R.connected; $("#tr-stop").hidden = !busy; $("#tr-plan").disabled = busy;
+  $("#tr-autonote").textContent = !R.connected ? t("Connect the simulation first (3D simulator 3D-3.27 or newer).") : R.msg && !busy ? "⚠ " + t(R.msg) : "";
+  $("#tr-live").hidden = !busy;
+  if (busy) {
+    const tot = SM.total_s || 1, left = SM.left_s || 0;
+    $("#tr-livet").textContent = (R.busy === "auto" && A ? "🤖 " + t("Try") + " " + (A.step || 0) + "/" + (A.tries || 0) + (A.now ? " · " + t(A.now) : " · " + t("first a test run as it is now")) + " — " : "")
+      + (SM.running ? t("Phase") + " " + SM.phase + "/" + SM.phases + " · " + (SM.phase_name || "") : t("starting …"));
+    $("#tr-left").textContent = SM.running ? t("still about") + " " + dur(left) : "";
+    $("#tr-bar").style.width = Math.max(2, Math.min(100, 100 * (1 - left / tot))) + "%";
+  }
+  const box = $("#tr-res"); box.innerHTML = "";
+  const L = R.last;
+  if (!L) { box.appendChild(el("div", "mut", t("No test run yet."))); return; }
+  const rp = L.report || {}, same = (R.runs || []).filter(x => x.plan === L.plan), prev = same.length > 1 ? same[same.length - 2] : null;
+  const h = el("h3", "", t("Last test run") + " · " + trDate(L.t) + " · " + t((TR_PLANS.find(p => p[0] === L.plan) || ["", L.plan])[1]).split(" (")[0]); h.style.margin = "6px 0"; box.appendChild(h);
+  const tiles = el("div", "tiles");
+  const tile = (lab, val, cls) => { const d = el("div", "tile"); d.appendChild(el("div", "mut", lab)); const b = el("b", cls || "", val); d.appendChild(b); tiles.appendChild(d); };
+  const asp = (rp.phases || []).reduce((a, p) => a + (p.animals_as_person || 0), 0);
+  tile(t("Persons found"), (rp.persons_detected ?? "–") + " / " + (rp.persons ?? "–") + " (" + (rp.rate ?? 0) + " %)", rp.rate >= 90 ? "tr-good" : rp.rate < 70 ? "tr-bad" : "");
+  tile(t("Reaction time"), rp.latency_s >= 0 ? rp.latency_s + " s" : "–", rp.latency_s > 2.5 ? "tr-bad" : "");
+  tile(t("False alarms"), String(rp.false_alarms ?? "–"), rp.false_alarms ? "tr-bad" : "tr-good");
+  tile(t("Animals taken for persons"), String(asp), asp ? "tr-bad" : "tr-good");
+  const dsc = prev && L.score != null && prev.score != null ? L.score - prev.score : null;
+  tile(t("Score"), (L.score ?? "–") + (dsc != null ? " (" + (dsc >= 0 ? "+" : "") + dsc.toFixed(1) + ")" : ""), dsc > 0 ? "tr-good" : dsc < 0 ? "tr-bad" : "");
+  box.appendChild(tiles);
+  // phases
+  const sc = el("div", "tr-scroll"), tb = el("table", "tr-tab");
+  tb.innerHTML = "<tr><th>" + [t("Phase"), t("Persons"), t("Reaction"), t("Animals reported"), t("False alarms"), t("Missed")].join("</th><th>") + "</th></tr>";
+  (rp.phases || []).forEach(p => { const tr = el("tr");
+    const why = Object.entries(p.missed_why || {}).filter(([, n]) => n).map(([k, n]) => t({dark: "too dark", small: "small / far", fast: "fast", crouch: "crouching"}[k]) + (n > 1 ? " ×" + n : ""));
+    [p.name, p.persons_detected + " / " + p.persons, p.latency_s >= 0 ? p.latency_s + " s" : "–", p.animals_reported + " / " + p.animals, String(p.false_alarms),
+     (p.missed || []).length ? (p.missed.length + (why.length ? " (" + why.join(", ") + ")" : "")) : "–"].forEach((v, i) => { const td = el("td", i === 4 && p.false_alarms ? "tr-bad" : "", v); tr.appendChild(td); });
+    tb.appendChild(tr); });
+  sc.appendChild(tb); box.appendChild(sc);
+  const causes = {}; (rp.false_list || []).forEach(f => { causes[f.cause] = (causes[f.cause] || 0) + 1; });
+  if (Object.keys(causes).length) { const d = el("div"); d.appendChild(el("span", "mut", t("False alarms by cause") + ": "));
+    Object.entries(causes).sort((a, b) => b[1] - a[1]).forEach(([c, n]) => d.appendChild(el("span", "tr-chip", c + " ×" + n))); box.appendChild(d); }
+  // proposals
+  const sg = R.sugg || [];
+  const hs = el("h3", "", "💡 " + t("Proposals for Motion Watch")); hs.style.margin = "12px 0 4px"; box.appendChild(hs);
+  if (!sg.length) box.appendChild(el("div", "mut", rp.persons && rp.rate >= 100 && !rp.false_alarms ? "🎉 " + t("Everything found, no false alarm - nothing to improve.") : t("No proposals for this test run.")));
+  if (sg.length > 1 || R.undo) { const row = el("div", "tr-row");
+    if (sg.length > 1) { const b = el("button", "", "✓ " + t("Take over all")); b.type = "button"; b.disabled = busy; b.onclick = () => trAct({action: "apply_all"}); row.appendChild(b);
+      const b2 = el("button", "sec", "✓▶ " + t("Take over all and test again")); b2.type = "button"; b2.disabled = busy || !R.connected;
+      b2.onclick = async () => { await post("/api/simtest", {action: "apply_all"}); trAct({action: "run", plan: L.plan}); }; row.appendChild(b2); }
+    if (R.undo) { const u = el("button", "sec", "↩ " + t("Undo the last change")); u.type = "button"; u.disabled = busy; u.onclick = () => trAct({action: "undo"}); row.appendChild(u); }
+    box.appendChild(row); }
+  sg.forEach(x => { const c = el("div", "tr-sug");
+    c.appendChild(el("b", "", t(x.title)));
+    c.appendChild(el("div", "mut", t(x.why).replace("{n}", x.n) + (x.conflict ? " " + t("(goes against another proposal - test again after taking it over)") : "")));
+    const ch = el("div", "ch"); x.changes.forEach(([k, o, n]) => { const sp = el("span"); sp.innerHTML = "";
+      sp.appendChild(document.createTextNode(t(TR_KEYS[k] || k) + ": ")); sp.appendChild(el("s", "", trVal(o))); sp.appendChild(document.createTextNode(" → ")); sp.appendChild(el("b", "", trVal(n))); ch.appendChild(sp); });
+    c.appendChild(ch);
+    const row = el("div", "tr-row");
+    const b = el("button", "", "✓ " + t("Take over")); b.type = "button"; b.disabled = busy; b.onclick = () => trAct({action: "apply", id: x.id}); row.appendChild(b);
+    const b2 = el("button", "sec", "✓▶ " + t("Take over and test again")); b2.type = "button"; b2.disabled = busy || !R.connected;
+    b2.onclick = async () => { await post("/api/simtest", {action: "apply", id: x.id}); trAct({action: "run", plan: L.plan}); }; row.appendChild(b2);
+    c.appendChild(row); box.appendChild(c); });
+  // the automatic optimization
+  if (A && (A.log || []).length) {
+    const ha = el("h3", "", "🤖 " + t("Automatic optimization")); ha.style.margin = "12px 0 4px"; box.appendChild(ha);
+    box.appendChild(el("div", "mut", t("Score at the start") + ": " + (A.base ?? "–") + " · " + t("now") + ": " + (A.best ?? "–")));
+    A.log.forEach(g => { if (!g.title) return; const d = el("div", "", (g.kept ? "✅ " : "✖ ") + t(g.title) + " → " + g.score + " · " + t(g.kept ? "kept" : "not better, undone")); d.className = g.kept ? "tr-good" : "mut"; box.appendChild(d); });
+  }
+  // history
+  const runs = R.runs || [];
+  if (runs.length > 1) {
+    const hh = el("h3", "", "📈 " + t("Earlier test runs")); hh.style.margin = "12px 0 4px"; box.appendChild(hh);
+    const hist = el("div", "tr-hist"), vals = runs.map(r => r.score).filter(v => v != null), lo = Math.min(0, ...vals), hi = Math.max(1, ...vals);
+    runs.forEach((r, i) => { const b = el("i", i === runs.length - 1 ? "cur" : ""); b.style.height = (r.score == null ? 3 : 6 + 64 * (r.score - lo) / (hi - lo || 1)) + "px";
+      b.title = trDate(r.t) + " · " + r.plan + " · " + t("Score") + " " + r.score + " · " + r.found + "/" + r.persons + " · " + t("False alarms") + " " + r.fa; hist.appendChild(b); });
+    box.appendChild(hist);
+    const sc2 = el("div", "tr-scroll"), t2 = el("table", "tr-tab");
+    t2.innerHTML = "<tr><th>" + [t("When"), t("Test"), t("Persons"), t("False alarms"), t("Score"), t("Changed before")].join("</th><th>") + "</th></tr>";
+    runs.slice().reverse().forEach((r, i, arr) => { const tr = el("tr"); const pv = arr.slice(i + 1).find(x => x.plan === r.plan);
+      const diff = pv && r.cfg && pv.cfg ? Object.keys(r.cfg).filter(k => JSON.stringify(r.cfg[k]) !== JSON.stringify(pv.cfg[k])).map(k => t(TR_KEYS[k] || k) + " " + trVal(r.cfg[k])) : [];
+      [trDate(r.t), t((TR_PLANS.find(p => p[0] === r.plan) || ["", r.plan])[1]).split(" (")[0], r.found + " / " + r.persons, String(r.fa), String(r.score ?? "–"), diff.join(", ") || "–"].forEach(v => tr.appendChild(el("td", "", v)));
+      t2.appendChild(tr); });
+    sc2.appendChild(t2); box.appendChild(sc2);
+  }
+}
+trInit();
 // ---- live picture: the same moving picture as on the live page; it shrinks into a corner while it is scrolled away ----
 let LIVE = false, liveRetry = null, PVM = "view", PVCUR = "";
 try { PVM = localStorage.getItem("mw-sim-pvmode") || "view"; } catch (e) {}
@@ -19772,6 +20282,31 @@ function pvPaint() {
   if (LIVE && PVCUR !== want) { PVCUR = want; pvLoad(); }
   pvCam();
 }
+// ---- the phone as a window (2.95.22 / 3D-3.27): turn the phone and look round in the simulator ----
+let GYRO = null;
+if (window.DeviceOrientationEvent && matchMedia("(pointer:coarse)").matches) $("#s-vgyro").hidden = false;
+function gyroAngles(e) {                         // yaw (compass) and pitch for the way the phone is held
+  const a = e.alpha || 0, ang = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+  const p = ang === 90 ? -(e.gamma || 0) : ang === -90 || ang === 270 ? (e.gamma || 0) : (e.beta || 0);
+  return [a, p];
+}
+async function gyroOn(on) {
+  if (!on) { if (GYRO) removeEventListener("deviceorientation", GYRO.h); GYRO = null; $("#s-vgyro").classList.remove("on"); return; }
+  if (typeof DeviceOrientationEvent.requestPermission === "function") {
+    try { if (await DeviceOrientationEvent.requestPermission() !== "granted") { toast("⚠ " + t("No access to the motion sensor")); return; } }
+    catch (e) { toast("⚠ " + t("The motion sensor needs https (iPhone / iPad)")); return; } }
+  GYRO = {a0: null, p0: 0, t: 0, busy: false, last: null};
+  GYRO.h = e => { if (!GYRO || e.alpha == null) return; const [a, p] = gyroAngles(e);
+    if (GYRO.a0 === null) { GYRO.a0 = a; GYRO.p0 = p; GYRO.start = true; }
+    let dy = a - GYRO.a0; dy = ((dy + 540) % 360) - 180;
+    GYRO.last = {yaw: dy, pitch: p - GYRO.p0};
+    if (GYRO.busy || Date.now() - GYRO.t < 70) return; GYRO.busy = true; GYRO.t = Date.now();
+    const st = !!GYRO.start; GYRO.start = false;
+    post("/api/sim", Object.assign({action: "look", start: st}, GYRO.last)).finally(() => { if (GYRO) GYRO.busy = false; }); };
+  addEventListener("deviceorientation", GYRO.h);
+  $("#s-vgyro").classList.add("on"); toast("📱 " + t("Turn the phone to look round. Press 📱 again to stop."));
+}
+$("#s-vgyro").addEventListener("click", e => { e.stopPropagation(); gyroOn(!GYRO); });
 function pvSbw() { document.documentElement.style.setProperty("--sbw", Math.max(0, innerWidth - document.documentElement.clientWidth) + "px"); }
 addEventListener("resize", pvSbw);
 // small camera live picture inside the simulator window (2.95.19): single pictures, so it never lags behind
@@ -23860,7 +24395,8 @@ function solarText(c, s) {
 }
 function solarPaint(c, s) { const st = $("#solar-st"); if (st) st.textContent = solarText(c, s); }
 /*SIMMAP*/
-Object.assign(I18N.de, {"Power mode": "Powermodus", "Power mode on: everything on the highest performance": "Powermodus ein: alles auf Höchstleistung", "Power mode off: your settings are back": "Powermodus aus: deine Einstellungen sind zurück", "active: every picture through the AI, best picture, processor at full clock": "aktiv: jedes Bild durch die KI, bestes Bild, Prozessor auf vollem Takt", "hot": "heiss", "the highest performance (uses more current and gets warmer) - switching it off restores your settings": "Höchstleistung (braucht mehr Strom und wird wärmer) – Ausschalten stellt deine Einstellungen wieder her", "Trusted devices": "Vertrauenswürdige Geräte", "A device that has logged in once is remembered (also after updates). Remove a device here if it is lost or should log in again.": "Ein Gerät, das sich einmal angemeldet hat, wird gemerkt (auch nach Updates). Entferne hier ein Gerät, wenn es verloren ist oder sich neu anmelden soll.", "since": "seit", "Remove this device? It must log in again.": "Dieses Gerät entfernen? Es muss sich neu anmelden.", "Remove all": "Alle entfernen", "Remove all trusted devices? Every device must log in again.": "Alle vertrauenswürdigen Geräte entfernen? Jedes Gerät muss sich neu anmelden.", "Update": "Update", "New update for the simulator": "Neues Update für den Simulator", "tab Simulator": "Reiter Simulator", "sim-view-help": "Das Fenster des Simulators: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen (nach einem Klick ins Bild), Doppelklick = hinfliegen. Finger: antippen = klicken, sonst scrollt die Seite; mit ✋ bedient der Finger den Simulator (ziehen = verschieben, ⟲ = drehen, zwei Finger = zoomen). Knöpfe unten wechseln die Ansicht.", "Python world simulator (ZIP)": "Python-Weltsimulator (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo Motion Watch steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
+Object.assign(I18N.de, {"Get ready": "Gleich geht's los", "You are the guard: turn the camera and catch them": "Du bist Wächter: Kamera drehen und erwischen", "Caught!": "Erwischt!",
+ "Power mode": "Powermodus", "Power mode on: everything on the highest performance": "Powermodus ein: alles auf Höchstleistung", "Power mode off: your settings are back": "Powermodus aus: deine Einstellungen sind zurück", "active: every picture through the AI, best picture, processor at full clock": "aktiv: jedes Bild durch die KI, bestes Bild, Prozessor auf vollem Takt", "hot": "heiss", "the highest performance (uses more current and gets warmer) - switching it off restores your settings": "Höchstleistung (braucht mehr Strom und wird wärmer) – Ausschalten stellt deine Einstellungen wieder her", "Trusted devices": "Vertrauenswürdige Geräte", "A device that has logged in once is remembered (also after updates). Remove a device here if it is lost or should log in again.": "Ein Gerät, das sich einmal angemeldet hat, wird gemerkt (auch nach Updates). Entferne hier ein Gerät, wenn es verloren ist oder sich neu anmelden soll.", "since": "seit", "Remove this device? It must log in again.": "Dieses Gerät entfernen? Es muss sich neu anmelden.", "Remove all": "Alle entfernen", "Remove all trusted devices? Every device must log in again.": "Alle vertrauenswürdigen Geräte entfernen? Jedes Gerät muss sich neu anmelden.", "Update": "Update", "New update for the simulator": "Neues Update für den Simulator", "tab Simulator": "Reiter Simulator", "sim-view-help": "Das Fenster des Simulators: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen (nach einem Klick ins Bild), Doppelklick = hinfliegen. Finger: antippen = klicken, sonst scrollt die Seite; mit ✋ bedient der Finger den Simulator (ziehen = verschieben, ⟲ = drehen, zwei Finger = zoomen). Knöpfe unten wechseln die Ansicht.", "Python world simulator (ZIP)": "Python-Weltsimulator (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo Motion Watch steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
 function simExtras(d) {
   // the settings of the section (switches, address, slider) go into a fold-out «Settings»
@@ -24489,6 +25025,20 @@ async function prHotspot(on) {
   const r = await post("/api/hotspot", {on: on, lang: LANG});
   if (!r.ok) { $("#pr-err").textContent = "⚠ " + (r.error || "error"); $("#pr-hs").checked = !on; }
 }
+// «Team gegen Motion Watch» (2.95.22): the guards sit here - turn the camera with the joystick and press «Erwischt!»
+function mwgPaint(s) {
+  const G = (s.sim || {}).game, on = !!(G && G.mode === "mwhand" && (G.round === "play" || G.round === "countdown"));
+  let b = $("#mwg");
+  if (!on) { if (b) b.hidden = true; return; }
+  if (!b) { b = el("div"); b.id = "mwg"; b.innerHTML = '<div id="mwg-t"></div><button type="button" id="mwg-b">🚨 <span></span></button>'; document.body.appendChild(b);
+    const st = document.createElement("style"); st.textContent = "#mwg{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:10px;background:rgba(10,14,20,.88);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 14px;box-shadow:0 4px 18px rgba(0,0,0,.45);color:#fff;font-size:13px;max-width:calc(100vw - 24px)}#mwg-b{background:#e5383b;border:0;color:#fff;font-weight:700;font-size:16px;padding:10px 18px;border-radius:999px}#mwg-b:disabled{opacity:.5}";
+    document.head.appendChild(st);
+    $("#mwg-b").onclick = async () => { const r = await post("/api/sim", {action: "game_mwcatch", lang: LANG}); toast(r.ok ? (r.text || "") : "⚠ " + (r.error || t("error"))); }; }
+  b.hidden = false;
+  const w = (G.mwg || {}).wait || 0;
+  $("#mwg-t").textContent = "🕹 " + (G.round === "countdown" ? t("Get ready") + " " + (G.cd || "") : t("You are the guard: turn the camera and catch them")) + " · " + ((G.mwg || {}).catches || 0) + "× ✓ · " + ((G.mwg || {}).false || 0) + "× ✗";
+  $("#mwg-b").disabled = G.round !== "play" || w > 0; $("#mwg-b span").textContent = w > 0 ? w + " s" : t("Caught!");
+}
 function updateProtect(s) {
   window.__lastState = s;
   const [txt, cls] = prText(s);
@@ -24500,6 +25050,7 @@ function updateProtect(s) {
   const hs = s.hotspot || {}, hc = s.hotspot_cfg || {};
   if (Date.now() > PR.campUntil) $("#pr-camp").checked = !!s.camping;
   if (!(Date.now() < (PR.ecoUntil || 0))) $("#pr-eco").checked = s.eco !== "off";
+  mwgPaint(s);
   const TB = s.turbo || {};
   if (!(Date.now() < (PR.turboUntil || 0))) $("#pr-turbo").checked = !!TB.on;
   $("#pr-turbo-info").textContent = TB.on ? t("active: every picture through the AI, best picture, processor at full clock") + (TB.temp != null ? " · " + Math.round(TB.temp) + " °C" : "") + (TB.temp > 75 ? " ⚠ " + t("hot") : "")
@@ -26545,6 +27096,13 @@ class WebStream:
                     if c_ in ("scenario", "delete"):
                         log_event("sys", f"Simulator: {c_} {q_.get('id', '')[:80]}")
                     return reply(dict(r, ok=True))
+                if act_ == "game_mwcatch":                   # «Team gegen Motion Watch»: «Erwischt!» from this page (3D-3.27)
+                    try:
+                        r = sim_control({"action": "game_mwcatch", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30]})
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    SIMGAME["t"] = 0.0
+                    return reply(r if isinstance(r, dict) else {"ok": False})
                 if act_ == "game_hc":                        # handicap for a player (3D-3.25)
                     try:
                         r = sim_control({"action": "game_handicap", "slot": int(d.get("slot", -1)), "level": max(0, min(2, int(d.get("level", 0))))})
@@ -26581,6 +27139,15 @@ class WebStream:
                     except Exception:
                         return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
                     return reply({"ok": bool(r.get("ok")), "n": r.get("n", 0)})
+                if act_ == "look":                           # the phone as a window (3D-3.27): turning the phone turns the view
+                    try:
+                        yw = max(-360.0, min(360.0, float(d.get("yaw", 0)))); pt = max(-90.0, min(90.0, float(d.get("pitch", 0))))
+                        r = sim_control({"action": "view_look", "yaw": yw, "pitch": pt, "start": bool(d.get("start"))})
+                    except (TypeError, ValueError):
+                        return reply({"ok": False, "error": "invalid values"}, 400)
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    return reply({"ok": bool(r.get("ok")), "error": r.get("error")})
                 if act_ == "search":
                     sim_scan()
                     return reply(dict(sim_status(), ok=True))
@@ -26609,6 +27176,50 @@ class WebStream:
             else:
                 qs_layout_set(d.get("order"), d.get("hidden"))
             return reply({"ok": True, "qs_layout": CFG["qs_layout"]})
+
+        @app.route("/api/simtest", methods=["GET", "POST"])
+        def api_simtest():
+            if request.method == "GET":
+                if not TESTOPT["busy"] and CFG["sim_on"] and SIM["ok"]:
+                    st = _simtest("test_report")            # also a test run started in the simulator window
+                    if st:
+                        TESTOPT["sim"] = st
+                return reply(testopt_state())
+            if getattr(g, "role", "admin") != "admin":
+                return reply({"ok": False, "error": "not allowed"}, 403)
+            d = body(); a = d.get("action"); plan = str(d.get("plan") or "standard")
+            if plan not in ("standard", "quick", "hard", "night"):
+                plan = "standard"
+            if a in ("run", "auto"):
+                if TESTOPT["busy"]:
+                    return reply({"ok": False, "error": "a test run is already going"}, 409)
+                if not (CFG["sim_on"] and SIM["ok"]):
+                    return reply({"ok": False, "error": "the simulation is not connected"}, 409)
+                TESTOPT["plan"] = plan
+                threading.Thread(target=_testopt_thread, args=(a, plan, max(1, min(8, int(d.get("tries") or 4)))), daemon=True).start()
+            elif a == "stop":
+                TESTOPT["stop"] = True; _simtest("test_stop")
+            elif a in ("apply", "apply_all"):
+                sel = [x for x in TESTOPT["sugg"] if a == "apply_all" or x["id"] == d.get("id")]
+                if not sel:
+                    return reply({"ok": False, "error": "no such proposal"}, 404)
+                ch = {}
+                for x in sel:                                # several proposals: the later (less important) do not overwrite
+                    for k, o, n in x["changes"]:
+                        ch.setdefault(k, [k, o, n])
+                before = opt_apply(list(ch.values()), "taken over: " + ", ".join(x["id"] for x in sel))
+                TESTOPT["undo"] = {"cfg": before, "t": time.time(), "what": ",".join(x["id"] for x in sel)}
+                TESTOPT["sugg"] = [x for x in TESTOPT["sugg"] if x not in sel]
+                testopt_save()
+            elif a == "undo":
+                if not TESTOPT["undo"]:
+                    return reply({"ok": False, "error": "nothing to undo"}, 404)
+                opt_restore(TESTOPT["undo"]["cfg"]); TESTOPT["undo"] = None; testopt_save()
+            elif a == "clear":
+                TESTOPT["runs"] = []; TESTOPT["sugg"] = []; TESTOPT["auto"] = None; testopt_save()
+            else:
+                return reply({"ok": False, "error": "unknown action"}, 400)
+            return reply(dict(testopt_state(), ok=True))
 
         @app.route("/api/sim/upload", methods=["POST"])
         def api_sim_upload():
@@ -29291,7 +29902,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.21")
+        self.root.title("Motion Watch 2.95.22")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -29581,7 +30192,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.21 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.22 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -36539,6 +37150,7 @@ if __name__ == "__main__":
         set_data_dir(a.config or DATA_DIR)
     took = prepare_settings_file() if not a.demo else ""
     load_settings()
+    testopt_load()
     if took:
         log_event("sys", took); print(took)
     print(f"Settings: {SETTINGS_FILE}")

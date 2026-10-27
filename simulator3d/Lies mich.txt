@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-3.16 (7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-3.27 (7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -368,3 +368,80 @@ MotionWatch3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene w
   --win X,Y,BREITE,HOEHE: Fenster an diese Stelle und in diese Grösse
   --mini: gleich als kleines Kästchen in der Ecke starten (--mini-tiny: als kleines Symbol)
   --maximized: gleich als grosses Fenster starten
+
+COMPUTERNAME (ab 3D-3.17)
+- Der Simulator schickt den Namen dieses Computers mit. Motion Watch (ab 2.95.1) zeigt ihn in der Liste
+  «Simulatoren im Netz» neben dem Simulator. So sieht man gleich, welcher Simulator auf welchem PC läuft.
+
+SIMULATOR-FENSTER IN MOTION WATCH (ab 3D-3.18)
+- Motion Watch (ab 2.95.3) zeigt auf der Live-Seite unter «Simulator-Steuerung» das Fenster des Simulators: mit Karte,
+  Kompass und den Knöpfen unten (Frei, Kamera 1, Kamera 2, Wärmebild, Karte, Zum Kopf, Von oben).
+- Bedienen wie hier: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen; am Handy mit dem Finger.
+- Ist die Einstellungsleiste rechts offen, zeigt Motion Watch nur den Teil links davon.
+- Ab 3D-3.19 auch, wenn der Simulator als kleines Kästchen läuft: dann zeichnet er die Ansicht für Motion Watch
+  unsichtbar in normaler Fenstergrösse.
+
+SPIEL UND TOUCH-STEUERUNG IN MOTION WATCH (ab 3D-3.20)
+- Ist das Spiel offen, zeigt Motion Watch (ab 2.95.11) im Reiter Simulator den QR-Code und die Adresse
+  (auch gross zum Abfotografieren).
+- Im Simulator-Fenster in Motion Watch: Knopf ✋ oder Vollbild zeigt zwei Sticks (links fliegen, rechts umschauen)
+  und ▲ ▼ für hoch / runter.
+
+NATÜRLICHERE BEWEGUNGEN UND MEHR PEP IM SPIEL (ab 3D-3.21)
+- Personen und Spieler: Schritte passen zur Geschwindigkeit (keine rutschenden Füsse), Gewicht von Fuss zu Fuss,
+  lehnen sich beim Losgehen vor, drehen erst den Kopf und dann den Körper, kleine Schritte beim Drehen an Ort,
+  atmen im Stehen; beim Kriechen bleibt die Hüfte an ihrem Platz.
+- Spiel: Power-ups – lila Kugel = Tarnkappe (9 s fast unsichtbar), gelbe Kugel = Turbo (7 s schneller, aber lauter).
+  Sie tauchen nach 35 s woanders wieder auf. In der letzten Minute passt die Kamera besser auf.
+
+ZUSCHAUER-KAMERA (ab 3D-3.22)
+- Startet eine Runde, fliegt die Kamera selbst übers Spielfeld: folgt Spielern (zuerst dem, der gleich entdeckt
+  wird), zeigt das Ziel, das ganze Feld und die Sicht von Motion Watch. Mit der Maus oder W A S D übernimmst du wieder.
+- Motion Watch (ab 2.95.14) zeigt dazu über dem Simulator-Fenster Zeit, Spieler, Entdeckt-Anzeige, Ereignisse und am
+  Schluss das Ergebnis.
+
+SPIEL AUF DEM HANDY (ab 3D-3.23)
+- Quer gehaltenes Handy: Knöpfe kleiner, nichts liegt mehr übereinander, Abstand zur Kamera-Aussparung.
+- iPhone: Safari kann kein Vollbild. Der Knopf ⛶ erklärt den Weg: Teilen → «Zum Home-Bildschirm», dann über das
+  neue Symbol starten – ohne Adressleiste.
+
+MENSCHLICHERE BEWEGUNGEN (ab 3D-3.24)
+- Knie und Ellbogen beugen sich jetzt in die richtige Richtung. Ducken: Hüfte und Knie gebeugt, Oberkörper vor,
+  Kopf schaut nach vorne. Kriechen: auf dem Bauch, die Arme greifen abwechselnd nach vorne, ein Knie kommt seitlich hoch.
+- Die Bilder der Besucher im Fenster bewegen sich (sie gehen an Ort).
+- Motion Watch (ab 2.95.17) zeigt die CPU-Auslastung dieses PCs und startet ein Simulator-Update selbst.
+
+MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extras, oder im Spiel-Assistenten von Motion Watch)
+- 📸 Erwischt-Fotos: wer erwischt wird, sieht das Bild der Kamera; am Schluss eine Galerie.
+- 🌳 Verstecke: Büsche – geduckt oder kriechend darin 8 s unsichtbar, dann raus.
+- 🦆 Lockvogel: auf dem Handy wählbar; lässt sich sehen, lockt die Kamera weg, Punkte pro beobachtete Sekunde.
+- 🌙 Nacht-Runde: 23 Uhr, Taschenlampe 🔦 auf dem Handy (hilft – verrät dich aber). Danach wieder die alte Uhrzeit.
+- ⛈ 🐕 🚗 Zufallsereignisse: Gewitter (Mikrofon hört kaum), Hund (bellt dich an), Auto (Scheinwerfer, Motor übertönt Schritte).
+- 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
+- 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
+- 🎯 Handicap für geübte Spieler (in Motion Watch einstellbar, oder automatisch für den Ersten der Rangliste).
+
+NEU IN 3D-3.26
+- Handy-Ansicht: Karte und Kompass stehen rechts, die Knopfzeile ist mittig (das Handy-Bild links bleibt frei).
+- Oben in der Mitte immer sichtbar: "PC-CPU … · Simulator …" (wie im kleinen Fenster).
+- Zuschauer-Kamera: mehr Abwechslung (Seitenfahrt, tiefe Kamera, Kreisfahrt), Nahaufnahme beim Erwischen und Jubel
+  beim Ziel, in der letzten Minute schnellere Schnitte.
+- Die Enten am Teich schwimmen jetzt vorwärts.
+
+NEU IN 3D-3.27
+- Testlauf mit Auswertung, jetzt in vier Varianten: Standard, Kurz, Schwierige Bedingungen, Nacht. Jedes Mal dieselben
+  Besucher auf denselben Wegen, damit man Läufe vergleichen kann. Motion Watch (ab 2.95.22) startet ihn selbst, wertet
+  ihn aus und schlägt bessere Einstellungen vor (Reiter Simulator → «Testlauf und Optimierung»).
+- Schwierige Bedingungen (Kamerabild → Schwierige Bedingungen): Gegenlicht, Tropfen auf der Linse, Spinnennetz vor der
+  Kamera, Scheinwerfer in der Nacht, Wolkenschatten, Infrarot immer an. Nebel und Schnee gab es schon (Wetter).
+- Tagesablauf: jeder kommt zu seiner Zeit (Fuchs, Dachs, Igel, Wildschwein nachts, Reh und Hase in der Dämmerung,
+  Eichhörnchen am Tag), dazu jeden Tag der Nachbar mit Hund (7 Uhr), der Briefträger (10 Uhr), Kinder (16 Uhr),
+  ein Jogger (19 Uhr).
+- Neue Tiere: Wolf, Marder, Eichhörnchen.
+- Echtes Wetter vom Ort (open-meteo.com, alle 10 Minuten) und echte Uhrzeit des PCs.
+- Aufnahme und Wiedergabe (Testlauf → Aufnahme): eine Situation aufnehmen und genau gleich wieder abspielen.
+- Zweites Motion-Watch-Gerät in der Welt (Mover → Zweites Gerät): eigener Mast mit rotem Kopf, eigene Adresse
+  (Port des Simulators + 20, meist 8785). Ein zweites Motion Watch verbindet sich damit wie mit einem Simulator.
+- Handy als Fenster: in Motion Watch auf dem Handy 📱 drücken, dann das Handy drehen = im Simulator umschauen.
+- Spiel: neue Spielart «Team gegen Motion Watch» (die Wächter drehen an Motion Watch die Kamera und drücken
+  «Erwischt!»), eine Aufgabe für jede Runde mit Bonus und eine Rangliste der Woche.

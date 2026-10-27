@@ -56,6 +56,7 @@ var ctl_run := false
 var ctl_posture := 0          # 0 standing, 1 crouching, 2 crawling
 var prone := 0.0              # 0..1 lying (crawling)
 var frozen := false           # stands still (countdown, at the goal, caught)
+var puppet := false           # replay (recorder.gd, 3D-3.27): position and pose are set from outside, only the animation runs
 # ---- joints and extras of a person (from 3D-2.7) ----
 var hips: Node3D = null
 var torso: Node3D = null
@@ -320,7 +321,10 @@ func _build_animal() -> void:
 	var spec := {"fox": [0.42, 0.62, Color(0.82, 0.38, 0.12), 28.0, 0.035], "deer": [0.95, 1.05, Color(0.58, 0.4, 0.23), 29.0, 0.042],
 			"boar": [0.62, 1.05, Color(0.22, 0.19, 0.16), 28.0, 0.07], "cat": [0.26, 0.4, Color(0.35, 0.33, 0.3), 29.0, 0.025],
 			"dog": [0.5, 0.7, Color(0.45, 0.35, 0.22), 30.0, 0.045], "badger": [0.3, 0.7, Color(0.42, 0.42, 0.42), 28.0, 0.05],
-			"hare": [0.28, 0.42, Color(0.55, 0.45, 0.32), 30.0, 0.03], "hedgehog": [0.12, 0.26, Color(0.35, 0.28, 0.2), 27.0, 0.02]}
+			"hare": [0.28, 0.42, Color(0.55, 0.45, 0.32), 30.0, 0.03], "hedgehog": [0.12, 0.26, Color(0.35, 0.28, 0.2), 27.0, 0.02],
+			# 3D-3.27: wolf, marten, squirrel
+			"wolf": [0.66, 1.0, Color(0.5, 0.48, 0.44), 30.0, 0.05], "marten": [0.17, 0.48, Color(0.34, 0.22, 0.12), 30.0, 0.02],
+			"squirrel": [0.13, 0.2, Color(0.62, 0.28, 0.1), 31.0, 0.014]}
 	var s: Array = spec.get(kind, spec["fox"])
 	var hb: float = s[0]
 	var L: float = s[1]
@@ -363,7 +367,7 @@ func _build_animal() -> void:
 	_part(body_root, _sph(bodyr * bulk, bodyr * bulk * 2.2), Vector3(0, hb + bodyr * 0.05, -L * 0.3), col, t)        # chest / shoulders
 	_part(body_root, _sph(bodyr * bulk * 0.96, bodyr * bulk * 2.1), Vector3(0, hb + bodyr * 0.08, L * 0.3), col.darkened(0.04), t)   # haunch
 	_part(body_root, _caps(bodyr * 0.45, L * 0.95), Vector3(0, hb + bodyr * 0.68, 0), col.darkened(0.22), t - 1.0, Vector3(PI / 2, 0, 0), Vector3(1.0, 1.0, 0.5))  # darker back
-	if kind in ["fox", "deer", "hare"]:                                       # light belly / chest
+	if kind in ["fox", "deer", "hare", "wolf"]:                               # light belly / chest
 		_part(body_root, _caps(bodyr * 0.72, L * 0.65), Vector3(0, hb - bodyr * 0.42, -L * 0.05), col.lightened(0.55), t - 1.0, Vector3(PI / 2, 0, 0))
 	if kind == "boar":                                                         # bristle ridge
 		_part(body_root, _box(0.06, 0.08, L * 0.8), Vector3(0, hb + bodyr * 0.95, -L * 0.05), col.darkened(0.3), t - 3.0)
@@ -393,7 +397,9 @@ func _build_animal() -> void:
 	if kind == "deer":
 		hr = 0.12                                                          # a slim head on the long neck
 	_part(head, _sph(hr), Vector3(0, hy, hz), col, t + 2.0)
-	if kind in ["fox", "dog", "cat", "badger", "hare"]:                         # neck
+	if kind == "marten":                                                       # the cream patch on the throat
+		_part(body_root, _sph(bodyr * 0.7), Vector3(0, hb - bodyr * 0.1, -L * 0.42), Color(0.93, 0.85, 0.6), t, Vector3.ZERO, Vector3(1.0, 0.9, 1.4))
+	if kind in ["fox", "dog", "cat", "badger", "hare", "wolf", "marten", "squirrel"]:   # neck
 		_part(head, _caps(hr * 0.62, max(0.05, Vector2(hy, hz).length()) + hr * 0.6), Vector3(0, hy * 0.5, hz * 0.5), col, t + 1.0, Vector3(-PI / 2 + atan2(hy, -hz), 0, 0))
 	if kind == "fox":                                                          # white chin and cheeks
 		_part(head, _sph(hr * 0.55), Vector3(0, hy - hr * 0.55, hz - hr * 0.55), Color(0.95, 0.93, 0.88), t + 1.0, Vector3.ZERO, Vector3(1.4, 0.8, 1.2))
@@ -412,7 +418,7 @@ func _build_animal() -> void:
 			_part(head, _box(hr * 0.25, hr * 0.3, hr * 1.8), Vector3(hr * 0.35 * s2, hy + hr * 0.6, hz - hr * 0.3), Color(0.92, 0.92, 0.9), t)
 	_eyes(head, hr * 0.13, hr * 0.45, hz - hr * 0.75, hy + hr * 0.25)
 	var floppy := kind == "dog" and randf() < 0.5
-	if kind in ["fox", "cat", "dog"] and not floppy:                           # pointed ears (fox: black tips)
+	if kind in ["fox", "cat", "dog", "wolf", "marten", "squirrel"] and not floppy:   # pointed ears (fox: black tips)
 		for s3 in [-1, 1]:
 			var ear := PrismMesh.new()
 			ear.size = Vector3(hr * 0.6, hr * 0.8, hr * 0.25)
@@ -450,6 +456,13 @@ func _build_animal() -> void:
 		_part(tail, _caps(0.015, 0.18), Vector3(0, -0.05, 0.05), col, t - 4.0, Vector3(0.3, 0, 0))
 	elif kind == "hare":
 		_part(tail, _sph(0.05), Vector3(0, 0.02, 0.0), Color(0.95, 0.95, 0.95), t - 4.0)
+	elif kind == "wolf":                                                       # a bushy tail, hanging down
+		_part(tail, _caps(bodyr * 0.42, L * 0.62), Vector3(0, -0.2, L * 0.16), col.darkened(0.1), t - 4.0, Vector3(0.45, 0, 0))
+	elif kind == "marten":                                                     # long bushy tail, held low
+		_part(tail, _caps(bodyr * 0.55, L * 0.75), Vector3(0, -0.03, L * 0.33), col.darkened(0.25), t - 4.0, Vector3(PI / 2 - 0.15, 0, 0))
+	elif kind == "squirrel":                                                   # the big tail, curled up over the back
+		_part(tail, _caps(0.045, 0.22), Vector3(0, 0.1, 0.05), col, t - 4.0, Vector3(-0.3, 0, 0))
+		_part(tail, _caps(0.05, 0.16), Vector3(0, 0.22, -0.02), col.darkened(0.1), t - 4.0, Vector3(-1.1, 0, 0))
 
 
 func _eyes(parent: Node3D, r: float, x: float, z: float, y := 0.0) -> void:
@@ -544,6 +557,9 @@ func _step(dt: float) -> void:
 	if done or preview:
 		return
 	var now := now_s()
+	if puppet:
+		_animate(dt, cur_speed, now)
+		return
 	if controlled:
 		_player(dt, now)
 		return
@@ -579,7 +595,8 @@ func _step(dt: float) -> void:
 		if randf() < (0.55 if is_animal() else 0.3):
 			var kinds: Array = {"person": ["look", "look", "phone", "bend"], "deer": ["graze", "graze", "look"], "boar": ["root", "graze"],
 					"fox": ["sniff", "look"], "hare": ["sit_up", "graze"], "cat": ["sit", "look"], "dog": ["sniff", "sit"],
-					"badger": ["root", "sniff"], "hedgehog": ["sniff"]}.get(kind, ["look"])
+					"badger": ["root", "sniff"], "hedgehog": ["sniff"], "wolf": ["look", "sniff", "look"], "marten": ["sniff", "look"],
+					"squirrel": ["sit_up", "look", "sit_up"]}.get(kind, ["look"])
 			idle_kind = kinds[randi() % kinds.size()]
 			idle_until = now + randf_range(2.0, 5.0)
 			look_yaw = randf_range(-0.8, 0.8)
@@ -687,7 +704,7 @@ func _next_point(now: float) -> void:
 func _turn(dt: float, standing: bool) -> void:
 	"""turn smoothly towards dir (cars a bit slower, small animals quicker)"""
 	var want := atan2(-dir.x, -dir.z)
-	var rate := 2.2 if kind == "car" else (6.0 if kind in ["cat", "hare", "hedgehog", "fox"] else 3.5)
+	var rate := 2.2 if kind == "car" else (6.0 if kind in ["cat", "hare", "hedgehog", "fox", "marten", "squirrel"] else 3.5)
 	if fled:
 		rate *= 1.6
 	if standing and now_s() < wait_until and crouch > 0.0:
@@ -723,7 +740,7 @@ func _animate(dt: float, spd: float, now: float) -> void:
 		lean_acc = lerp(lean_acc, clamp((spd - last_spd) / max(dt, 0.001) * 0.06, -0.15, 0.15), clamp(dt * 5.0, 0.0, 1.0))
 		last_spd = spd
 	else:
-		phase += dt * spd * (9.0 if kind in ["cat", "hedgehog", "hare"] else 6.5) / max(0.5, body_root.scale.y)
+		phase += dt * spd * (9.0 if kind in ["cat", "hedgehog", "hare", "marten", "squirrel"] else 6.5) / max(0.5, body_root.scale.y)
 		amp = clamp(spd / 1.2, 0.0, 1.0) * 0.55 * (1.0 + 0.25 * clamp(spd - 1.8, 0.0, 1.0))
 	var sw := sin(phase) * amp
 	var k: float = clamp(dt * 12.0, 0.0, 1.0)

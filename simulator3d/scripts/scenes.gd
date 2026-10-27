@@ -7,13 +7,13 @@ const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Pa
 		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"], ["verstecken", "Versteckspiel (viele Verstecke)"], ["ort", "Ort von der Karte (Schweiz)"]]
 
 # visitors that come by themselves, and how often (seconds from .. to)
-const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog"], 35.0, 110.0],
-		"wald": [["deer", "herd", "fox", "boar", "badger", "hare", "hedgehog", "person", "jogger", "dogwalk"], 25.0, 80.0],
+const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog", "marten", "squirrel"], 35.0, 110.0],
+		"wald": [["deer", "herd", "fox", "boar", "badger", "hare", "hedgehog", "person", "jogger", "dogwalk", "wolf", "marten", "squirrel", "squirrel"], 25.0, 80.0],
 		"parkplatz": [["person", "person", "child", "car_park", "car_park", "cat", "fox", "dogwalk"], 30.0, 80.0],
-		"garten": [["cat", "cat", "fox", "badger", "hedgehog", "hare", "garden_person", "garden_person", "dog"], 35.0, 100.0],
+		"garten": [["cat", "cat", "fox", "badger", "hedgehog", "hare", "garden_person", "garden_person", "dog", "marten", "squirrel"], 35.0, 100.0],
 		"lustig": [["bench", "bench", "child", "dogwalk", "fox", "deer", "cat", "hare"], 25.0, 60.0],
 		"verstecken": [["person", "child", "jogger", "dogwalk", "fox", "cat", "hare", "deer"], 30.0, 90.0],
-		"ort": [["person", "child", "jogger", "dogwalk", "fox", "deer", "cat", "cat", "badger", "hare", "hedgehog", "car"], 30.0, 100.0],
+		"ort": [["person", "child", "jogger", "dogwalk", "fox", "deer", "cat", "cat", "badger", "hare", "hedgehog", "car", "marten", "squirrel"], 30.0, 100.0],
 		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer"], 15.0, 40.0]}
 
 var m                     # main.gd

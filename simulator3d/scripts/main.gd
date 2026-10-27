@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.26"
+const VERSION := "3D-3.27"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -23,6 +23,9 @@ var UI = preload("res://scripts/ui_style.gd")
 var Autostart = preload("res://scripts/autostart.gd")
 var Game = preload("res://scripts/game.gd")
 var TestRun = preload("res://scripts/testrun.gd")
+var Life = preload("res://scripts/life.gd")
+var Recorder = preload("res://scripts/recorder.gd")
+var Device = preload("res://scripts/device.gd")
 var Geo = preload("res://scripts/geo.gd")
 var Karte = preload("res://scripts/karte.gd")
 var geo                               # geo.gd: a real place in Switzerland (scene «ort», from 3D-3.4)
@@ -40,6 +43,13 @@ var ground_mats: Array = []           # ground materials of the place (snow, wet
 var flat_nodes: Array = []            # flat meadow and the hills far away: hidden at a real place
 var geo_note := ""
 var testrun                           # testrun.gd: test run with evaluation (from 3D-2.6)
+var life                              # life.gd: daily life, real weather and time (3D-3.27)
+var recorder                          # recorder.gd: recording and replay of situations (3D-3.27)
+var dev2                              # device.gd: a second Motion Watch device in the world (3D-3.27)
+var game_tasks := true                # a task for every round of the game (bonus) - 3D-3.27
+var daily_life := true                # visitors at their own times, the postman and the neighbour every day
+var real_weather := false             # the weather of the place from open-meteo.com
+var real_time := false                # the clock of the PC
 var game                              # game.gd: «Unentdeckt ans Ziel» with up to 4 phones (from 3D-2.4)
 var game_minutes := 5.0
 var game_level := "normal"            # easy | normal | hard
@@ -184,6 +194,9 @@ var lens_noise := 0.5                 # grain, stronger at night
 var lens_vignette := 0.3              # dark corners
 var lens_drops := true                # raindrops on the lens when it rains
 var insects_on := true                # insects fly round the light at night (false alarms, as in reality)
+# difficult conditions (3D-3.27): each can be switched on by hand or by the test run «Schwierige Bedingungen»
+var cond := {"glare": false, "drops": false, "web": false, "headlights": false, "shadows": false, "ir": false}
+var _next_headlight := 0.0
 var night_gain := 2.5                 # how much a camera may amplify at night (real cameras: limited -> dark, grainy)
 var ir_range := 14.0                  # reach of the infrared light (m)
 var sound_on := true                  # the sounds of the world go to the microphone of Motion Watch (from 3D-2.6)
@@ -281,6 +294,15 @@ func _ready() -> void:
 	game = Game.new()
 	game.main = self
 	add_child(game)
+	life = Life.new()
+	life.main = self
+	add_child(life)
+	recorder = Recorder.new()
+	recorder.main = self
+	add_child(recorder)
+	dev2 = Device.new()
+	dev2.main = self
+	add_child(dev2)
 	testrun = TestRun.new()
 	testrun.main = self
 	add_child(testrun)
@@ -1084,7 +1106,13 @@ func _update_lens() -> void:
 		var m: ShaderMaterial = lens_mats[i]
 		m.set_shader_parameter("noise", lens_noise * (0.08 + 0.92 * (amp if dark else amp * 0.4)))
 		m.set_shader_parameter("vignette", lens_vignette)
-		m.set_shader_parameter("drops", (0.45 if i == 1 else 0.25) if lens_drops and weather == "rain" else 0.0)
+		m.set_shader_parameter("drops", 0.55 if cond["drops"] else ((0.45 if i == 1 else 0.25) if lens_drops and weather == "rain" else 0.0))
+		m.set_shader_parameter("glare", (0.85 if i == 0 else 0.6) if cond["glare"] and not dark else 0.0)
+		m.set_shader_parameter("glare_pos", Vector2(0.84, 0.16) if i == 0 else Vector2(0.15, 0.2))
+		m.set_shader_parameter("web", 1.0 if cond["web"] and i == 0 else 0.0)        # the web hangs in front of the head camera
+		var lit_now: bool = dark and (ir_on() or white_light.light_energy > 0.0)
+		m.set_shader_parameter("web_lit", 1.0 if lit_now else 0.0)
+		m.set_shader_parameter("sway", clamp(wind * gust() / 60.0, 0.0, 1.0))
 	var L: Dictionary = mw.get("lights", {})
 	var lit: bool = L.get("white", false) or L.get("ir", false) or (game != null and game.guard_auto)
 	insects.emitting = insects_on and dark and lit and weather != "rain" and weather != "snow" and ambient > 6.0
@@ -1471,6 +1499,10 @@ var lamp_share := 0.35                # at night this share of the people carrie
 
 func cloud_shade() -> float:
 	"""1 = full sun; cloudy: now and then a cloud shadow for some seconds (faster with wind)"""
+	if cond["shadows"]:                                   # condition «Wolkenschatten»: fast, deep shadows, also when clear
+		var tt := now() - clock0
+		var vv := 0.5 + 0.5 * sin(tt * 0.35) * cos(tt * 0.23 + 2.0)
+		return 1.0 - 0.7 * smoothstep(0.4, 0.65, vv)
 	if not cloud_shadows or weather in ["clear", "fog"]:
 		return 1.0
 	var t := now() - clock0
@@ -1502,7 +1534,7 @@ func gain_cap() -> float:
 func ir_on() -> bool:
 	"""infrared light: from Motion Watch, or from the game (the guard switches it on at night)"""
 	var L: Dictionary = mw.get("lights", {})
-	return L.get("ir", false) or (game != null and game.guard_auto and is_dark())
+	return L.get("ir", false) or cond["ir"] or (game != null and game.guard_auto and is_dark())
 
 
 func _auto_exposure(i: int, img: Image) -> void:
@@ -1639,11 +1671,18 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 	var a: Vector3 = from if from != null else Vector3(-side * (depth * 1.6 + 6.0), 0, -depth)
 	var b: Vector3 = to if to != null else Vector3(side * (depth * 1.6 + 6.0), 0, -depth)
 	var spd: float = {"person": 1.3, "child": 1.0, "jogger": 2.8, "fox": 2.0, "boar": 1.5, "deer": 1.6, "cat": 1.1, "dog": 1.8, "badger": 0.9,
-			"hare": 1.9, "hedgehog": 0.3, "car": 11.0}.get(kind, 1.3)
+			"hare": 1.9, "hedgehog": 0.3, "car": 11.0, "wolf": 1.7, "marten": 1.5, "squirrel": 1.6}.get(kind, 1.3)
 	var v = Actor.new()
 	visitors.add_child(v)
+	var sd := -1
+	if recorder != null and recorder.recording:             # the recording keeps the seed: the replay has the same look
+		sd = randi()
+		seed(sd)
 	v.setup(self, kind, a, b, spd * randf_range(0.85, 1.15))
 	v.set_night(is_dark())
+	if sd >= 0:
+		recorder.note_spawn(v, sd)
+		randomize()
 	return v
 
 
@@ -1723,8 +1762,13 @@ func _life() -> void:
 		var au: Array = Scenes.AUTO.get(scene, Scenes.AUTO["camping"])
 		var kinds := _mixed(au[0])
 		if visitors.get_child_count() < max_visitors and not kinds.is_empty():
-			visit(kinds[randi() % kinds.size()])
+			var kk: String = life.pick(kinds) if daily_life else kinds[randi() % kinds.size()]
+			if kk != "":
+				visit(kk)
 		next_auto = t + randf_range(au[1], au[2]) / max(0.1, visit_rate)
+	if cond["headlights"] and is_dark() and t > _next_headlight:     # condition «Scheinwerfer»: a car now and then
+		_next_headlight = t + randf_range(9.0, 15.0)
+		car()
 	if t > next_birds:
 		next_birds = t + randf_range(50.0, 140.0)
 		if not is_dark() and weather != "rain":
@@ -1821,7 +1865,7 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Besucher hinsetzen", "Besucher schicken", "Von selbst", "In bestimmten Szenen", "Verhalten"]],
-		["Kamerabild", "lens", "👁", ["", "Feineinstellungen"]],
+		["Kamerabild", "lens", "👁", ["", "Schwierige Bedingungen", "Feineinstellungen"]],
 		["Sensoren", "bell", "🔔", [""]],
 		["Mover", "track", "🚜", [""]],
 		["Spiel", "pad", "🎮", ["Runde", "Regeln", "Anzeige"]],
@@ -1837,18 +1881,21 @@ const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort
 		"dogwalk": ["Besuch", "Besucher schicken"], "herd": ["Besuch", "Besucher schicken"], "clear": ["Besuch", "Besucher schicken"],
 		"car_park": ["Besuch", "In bestimmten Szenen"], "bench": ["Besuch", "In bestimmten Szenen"], "feed": ["Besuch", "In bestimmten Szenen"],
 		"garden_person": ["Besuch", "In bestimmten Szenen"], "auto": ["Besuch", "Von selbst"], "mix": ["Besuch", "Von selbst"],
-		"visit_rate": ["Besuch", "Von selbst"], "max_visitors": ["Besuch", "Von selbst"], "visitor_speed": ["Besuch", "Verhalten"],
+		"visit_rate": ["Besuch", "Von selbst"], "daily_life": ["Besuch", "Von selbst"], "real_time": ["Szene", "Zeit"], "max_visitors": ["Besuch", "Von selbst"], "visitor_speed": ["Besuch", "Verhalten"],
 		"lamp_share": ["Besuch", "Verhalten"], "look_at_light": ["Besuch", "Verhalten"], "flee_light": ["Besuch", "Verhalten"],
 		"flee_sound": ["Besuch", "Verhalten"], "avoid_on": ["Besuch", "Verhalten"], "lens_vignette": ["Kamerabild", "Feineinstellungen"],
 		"sound_on": ["Kamerabild", "Feineinstellungen"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", "Runde"],
 		"game_stop": ["Spiel", "Runde"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
 		"game_level": ["Spiel", "Regeln"], "game_lives": ["Spiel", "Regeln"], "game_items": ["Spiel", "Regeln"], "game_teams": ["Spiel", "Regeln"],
 		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_powers": ["Spiel", "Regeln"], "game_spectate": ["Spiel", "Anzeige"], "game_photos": ["Spiel", "Extras"], "game_hides": ["Spiel", "Extras"], "game_decoy": ["Spiel", "Extras"],
-		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
+		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
 		"game_board_reset": ["Spiel", "Extras"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"],
 		"quality": ["System", "Grafik"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
+		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
+		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
+		"cond_shadows": ["Kamerabild", "Schwierige Bedingungen"], "cond_ir": ["Kamerabild", "Schwierige Bedingungen"],
 		"autologon": ["System", "Start mit dem PC"], "auto_update": ["System", "Updates"], "update_now": ["System", "Updates"]}
 
 
@@ -1905,6 +1952,8 @@ func _register_controls() -> void:
 	add_control("slider", "lamp_share", "Nachts mit Stirnlampe oder Handylicht", func(): return lamp_share, func(v): lamp_share = v, "Besuch", {"min": 0, "max": 1, "step": 0.05, "expert": true})
 	add_control("toggle", "look_at_light", "Menschen schauen zum Licht, wenn es angeht", func(): return look_at_light, func(v): look_at_light = v, "Besuch", ex)
 	add_control("slider", "wind", "Wind", func(): return wind, func(v): wind = v, "Wetter", {"min": 0, "max": 120, "step": 1, "unit": "km/h"})
+	add_control("toggle", "real_weather", "Echtes Wetter vom Ort (alle 10 Minuten, braucht Internet)", func(): return real_weather, func(v): real_weather = v; life._wx_t = -10000.0, "Wetter")
+	add_control("toggle", "real_time", "Echte Uhrzeit (die Uhr des PCs)", func(): return real_time, func(v): real_time = v, "Szene")
 	add_control("slider", "ambient", "Temperatur", func(): return ambient, func(v): ambient = v, "Wetter", {"min": -15, "max": 40, "step": 0.5, "unit": "°C"})
 	add_control("slider", "humidity", "Luftfeuchtigkeit", func(): return humidity, func(v): humidity = v, "Wetter", {"min": 10, "max": 100, "step": 1, "unit": "%", "expert": true})
 	add_control("slider", "pressure", "Luftdruck", func(): return pressure, func(v): pressure = v, "Wetter", {"min": 960, "max": 1040, "step": 0.5, "unit": "hPa", "expert": true})
@@ -1922,6 +1971,7 @@ func _register_controls() -> void:
 	add_control("button", "garden_person", "Besuch kommt durchs Gartentor (Garten)", null, func(): visit("garden_person"), "Besuch", ex)
 	add_control("button", "clear", "Alle Besucher weg", null, func(): clear_visitors(), "Besuch")
 	add_control("toggle", "auto", "ab und zu Besuch von selbst", func(): return auto_visitors, func(v): auto_visitors = v, "Besuch")
+	add_control("toggle", "daily_life", "Tagesablauf: jeder kommt zu seiner Zeit (Fuchs nachts, Reh in der Dämmerung, Briefträger um 10 Uhr …)", func(): return daily_life, func(v): daily_life = v, "Besuch")
 	add_control("select", "mix", "Wer kommt", func(): return mix, func(v): mix = v, "Besuch",
 			{"options": [["mixed", "Tiere und Menschen"], ["more_animals", "mehr Tiere"], ["more_people", "mehr Menschen"], ["animals", "nur Tiere"], ["people", "nur Menschen"]]})
 	add_control("slider", "visit_rate", "Wie oft Besuch kommt", func(): return visit_rate, func(v): visit_rate = v, "Besuch", {"min": 0.25, "max": 4.0, "step": 0.25, "unit": "×"})
@@ -1937,6 +1987,14 @@ func _register_controls() -> void:
 	add_control("toggle", "lens_drops", "Regentropfen auf der Linse", func(): return lens_drops, func(v): lens_drops = v, "Kamerabild")
 	add_control("toggle", "sound_on", "Geräusche der Welt ans Mikrofon von Motion Watch", func(): return sound_on, func(v): sound_on = v, "Kamerabild", ex)
 	add_control("toggle", "insects", "Insekten am Licht (nachts, lösen wie echt Bewegung aus)", func(): return insects_on, func(v): insects_on = v, "Kamerabild")
+	for cd in [["glare", "Gegenlicht (tiefe Sonne in der Linse, Äste lassen sie flackern)"], ["drops", "Tropfen auf der Linse (auch ohne Regen)"],
+			["web", "Spinnennetz vor der Kopfkamera (nachts im Licht hell)"], ["headlights", "Scheinwerfer: nachts fahren immer wieder Autos vorbei"],
+			["shadows", "Wolkenschatten: schnelle, tiefe Schatten"], ["ir", "Infrarot-Licht immer an (auch ohne Motion Watch)"]]:
+		var key: String = cd[0]
+		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
+	add_control("toggle", "dev2_on", "Zweites Motion-Watch-Gerät in der Welt (eigene Adresse: Port des Simulators + 20, meist 8785)", func(): return dev2.on, func(v): dev2.set_on(v), "Mover")
+	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
+			{"options": [["opposite", "gegenüber (30 m)"], ["left", "links"], ["right", "rechts"]]})
 	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – fahren mit dem grünen Stick unten rechts, den Pfeiltasten oder dem zweiten Stick in Motion Watch", func(): return mover_on, func(v): set_mover(v), "Mover")
 	add_control("slider", "mover_max", "Höchstgeschwindigkeit des Movers", func(): return mover_max, func(v): mover_max = v, "Mover", {"min": 0.2, "max": 2.0, "step": 0.1, "unit": "m/s"})
 	add_control("button", "mover_home", "Mover zurück an den Startplatz", null, func(): mover_home(), "Mover")
@@ -1950,15 +2008,23 @@ func _register_controls() -> void:
 	add_control("button", "score0", "Punkte auf 0", null, func(): reset_score(), "Wildbeobachtung")
 	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates")
 	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates")
-	add_control("button", "testrun_start", "Testlauf starten (etwa 4 Minuten, Motion Watch muss verbunden sein)", null, func(): testrun.start(), "Testlauf")
+	add_control("select", "testrun_plan", "Welcher Testlauf", func(): return testrun.plan, func(v): testrun.plan = v, "Testlauf",
+			{"options": testrun.plan_options()})
+	add_control("button", "testrun_start", "Testlauf starten (Motion Watch muss verbunden sein)", null, func(): testrun.start(), "Testlauf")
 	add_control("button", "testrun_stop", "Testlauf abbrechen", null, func(): testrun.stop(false), "Testlauf")
+	add_control("button", "rec_start", "● Aufnahme starten (wer wo geht, Zeit, Wetter – höchstens 5 Minuten)", null, func(): recorder.start_rec(), "Testlauf")
+	add_control("button", "rec_stop", "■ Aufnahme beenden und speichern", null, func(): recorder.stop_rec(), "Testlauf")
+	add_control("select", "rec_pick", "Aufnahme", func(): return recorder.pick, func(v): recorder.pick = str(v), "Testlauf", {"options": recorder.options()})
+	add_control("button", "rec_play", "▶ Aufnahme abspielen (genau gleich wie aufgenommen)", null, func(): recorder.play(), "Testlauf")
+	add_control("toggle", "rec_loop", "Immer wieder abspielen", func(): return recorder.loop, func(v): recorder.loop = v, "Testlauf")
+	add_control("button", "rec_stopplay", "Wiedergabe beenden", null, func(): recorder.stop_play(), "Testlauf")
 	add_control("button", "testrun_open", "Letzten Bericht öffnen", null, func(): testrun.open_report(), "Testlauf")
 	add_control("toggle", "game_open", "Spiel öffnen (Handys können mitspielen)", func(): return game.open, func(v): game.set_open(v), "Spiel")
 	add_control("button", "game_start", "Runde starten", null, func(): game.start_round(), "Spiel")
 	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
-			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "Motion Watch entscheidet (echte Erkennung)"]]})
+			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "Motion Watch entscheidet (echte Erkennung)"], ["mwhand", "Team gegen Motion Watch (Wächter steuern Motion Watch)"]]})
 	add_control("select", "game_level", "Wächter", func(): return game_level, func(v): game_level = v, "Spiel",
 			{"options": [["easy", "leicht"], ["normal", "normal"], ["hard", "schwer"]]})
 	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
@@ -1977,6 +2043,7 @@ func _register_controls() -> void:
 	add_control("toggle", "game_night", "Nacht-Runde mit Taschenlampen", func(): return game_night, func(v): game_night = v, "Spiel")
 	add_control("toggle", "game_events", "Zufallsereignisse (Gewitter, Hund, Auto)", func(): return game_events, func(v): game_events = v, "Spiel")
 	add_control("slider", "game_checkpoints", "Checkpoints (+150 Punkte)", func(): return game_checkpoints, func(v): game_checkpoints = int(v), "Spiel", {"min": 0, "max": 3, "step": 1})
+	add_control("toggle", "game_tasks", "Aufgabe für jede Runde (z. B. nur kriechend ins Ziel, Bonus)", func(): return game_tasks, func(v): game_tasks = v, "Spiel")
 	add_control("toggle", "game_autohandicap", "Handicap für den Ersten der Rangliste", func(): return game_autohandicap, func(v): game_autohandicap = v, "Spiel")
 	add_control("button", "game_board_reset", "Rangliste des Abends zurücksetzen", null, func(): game.board_reset(), "Spiel")
 	add_control("toggle", "game_spectate", "Zuschauer-Kamera: fliegt bei Spielstart selbst übers Spielfeld", func(): return game_spectate, func(v): game_spectate = v, "Spiel")
@@ -2000,7 +2067,8 @@ func _register_controls() -> void:
 
 
 const VISITOR_LIST := [["person", "Person"], ["child", "Kind"], ["jogger", "Jogger"], ["fox", "Fuchs"], ["deer", "Reh"], ["boar", "Wildschwein"],
-		["cat", "Katze"], ["dog", "Hund"], ["badger", "Dachs"], ["hare", "Hase"], ["hedgehog", "Igel"]]
+		["cat", "Katze"], ["dog", "Hund"], ["badger", "Dachs"], ["hare", "Hase"], ["hedgehog", "Igel"], ["wolf", "Wolf"], ["marten", "Marder"],
+		["squirrel", "Eichhörnchen"]]
 var meadow_on := true
 
 
@@ -2081,7 +2149,17 @@ func control(d: Dictionary) -> Dictionary:
 			sm.append([n.emitting, n.global_position, n.visible, n.is_visible_in_tree()])
 		return {"ok": true, "smoke": str(sm), "fireflies": [fireflies.emitting, fireflies.is_visible_in_tree()], "cloth": get_tree().get_nodes_in_group("cloth").size()}
 	elif a == "test_report":                           # the test run: progress and the last report
-		return {"ok": true, "running": testrun.running, "info": testrun.info, "report": testrun.report}
+		return testrun.state()
+	elif a == "test_start":                            # Motion Watch starts a test run (3D-3.27): {"plan": "standard" | "quick" | "hard" | "night"}
+		var err: String = testrun.start(str(d.get("plan", testrun.plan)))
+		var st: Dictionary = testrun.state()
+		st["ok"] = err == ""
+		if err != "":
+			st["error"] = err
+		return st
+	elif a == "test_stop":
+		testrun.stop(false)
+		return testrun.state()
 	elif a == "game":                                  # for tests: the game (players, meter, round)
 		var ps := []
 		for p in game.players:
@@ -2140,6 +2218,19 @@ func control(d: Dictionary) -> Dictionary:
 	elif a == "game_handicap":                         # Motion Watch: handicap for a player (0 … 2)
 		game.set_handicap(int(d.get("slot", -1)), int(d.get("level", 0)))
 		return {"ok": true}
+	elif a == "view_look":                             # the phone as a window (3D-3.27): turn the phone = look round in the free view
+		_to_free_view()
+		if d.get("start", false) or _look_base.is_empty():
+			_look_base = [view_cam.rotation.y, view_cam.rotation.x]
+		var yw := float(_look_base[0]) + deg_to_rad(clampf(float(d.get("yaw", 0.0)), -360.0, 360.0))
+		var pt := clampf(float(_look_base[1]) + deg_to_rad(float(d.get("pitch", 0.0))), deg_to_rad(-85.0), deg_to_rad(60.0))
+		view_cam.rotation = Vector3(pt, yw, 0)
+		view_want_t = now()
+		return {"ok": true}
+	elif a == "game_mwcatch":                          # «Team gegen Motion Watch»: «Erwischt!» pressed at Motion Watch (3D-3.27)
+		if game == null:
+			return {"ok": false, "error": "no game"}
+		return game.mw_catch(str(d.get("who", "")).left(30))
 	elif a == "game_info":                             # the spectators in Motion Watch: the game in numbers (3D-3.22)
 		if game == null:
 			return {"ok": false, "error": "no game"}
@@ -2228,7 +2319,7 @@ func status_text() -> String:
 	var h := hour()
 	var mwc := "verbunden mit %s" % str(mw.get("device", "Motion Watch")) if now() - mw_t < 3.0 else ("Motion Watch nicht verbunden" if stream_on else "Senden aus")
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
-	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
+	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
 
 
 func scenarios() -> Array:
@@ -2639,7 +2730,8 @@ func _notification(what: int) -> void:
 func _make_thumbs() -> void:
 	"""a little moving picture of every visitor (3D-3.24): each walks on the spot in a small world of its own; only
 	the pictures that can be seen are drawn again, about 12 times a second"""
-	var sizes := {"person": 1.9, "child": 1.3, "jogger": 1.9, "deer": 1.7, "boar": 1.1, "fox": 0.8, "dog": 0.9, "cat": 0.6, "badger": 0.6, "hare": 0.65, "hedgehog": 0.32}
+	var sizes := {"person": 1.9, "child": 1.3, "jogger": 1.9, "deer": 1.7, "boar": 1.1, "fox": 0.8, "dog": 0.9, "cat": 0.6, "badger": 0.6, "hare": 0.65, "hedgehog": 0.32,
+			"wolf": 1.1, "marten": 0.38, "squirrel": 0.3}
 	for k in VISITOR_LIST:
 		var vp := SubViewport.new()
 		vp.size = Vector2i(128, 116)
@@ -2668,7 +2760,7 @@ func _make_thumbs() -> void:
 		a.setup(self, k[0], Vector3.ZERO, Vector3(-0.8, 0, 1.0), 0.0)
 		a.speed = THUMB_SPEED.get(k[0], 1.0)
 		var h: float = sizes.get(k[0], 1.0)
-		var wide: bool = k[0] in ["fox", "deer", "boar", "dog", "cat", "badger", "hare", "hedgehog"]
+		var wide: bool = k[0] in ["fox", "deer", "boar", "dog", "cat", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel"]
 		cam.position = Vector3(h * 1.1, h * 0.62, h * 1.75) * (1.15 if wide else 0.78)
 		cam.look_at(Vector3(0, h * 0.48, 0), Vector3.UP)
 		thumb_vps[k[0]] = [vp, a]
@@ -2679,7 +2771,7 @@ func _make_thumbs() -> void:
 		await get_tree().process_frame
 
 
-const THUMB_SPEED := {"person": 1.35, "child": 1.1, "jogger": 2.9, "deer": 1.2, "boar": 1.1, "fox": 1.3, "dog": 1.4, "cat": 0.8, "badger": 0.7, "hare": 1.0, "hedgehog": 0.35}
+const THUMB_SPEED := {"person": 1.35, "child": 1.1, "jogger": 2.9, "deer": 1.2, "boar": 1.1, "fox": 1.3, "dog": 1.4, "cat": 0.8, "badger": 0.7, "hare": 1.0, "wolf": 1.2, "marten": 1.0, "squirrel": 0.9, "hedgehog": 0.35}
 var thumb_vps := {}                    # kind -> [SubViewport, actor walking on the spot]
 var _thumb_t := 0.0
 
@@ -2801,7 +2893,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
@@ -2997,6 +3089,14 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 var _syncing := false
 
 
+func refresh_controls() -> void:
+	"""the list of recordings changed: new options for the select (the page of Motion Watch shows them at once)"""
+	for c in controls:
+		if c.id == "rec_pick":
+			c.extra["options"] = recorder.options()
+	_sync_ui()
+
+
 func _sync_ui() -> void:
 	_syncing = true
 	for c in controls:
@@ -3043,6 +3143,7 @@ var yaw := 0.0
 var pitch := 0.0
 var fly_speed := 8.0
 var view_mode := 0                    # 0 free, 1 camera 1, 2 camera 2, 3 thermal picture
+var _look_base := []                  # «Handy als Fenster»: the direction when the phone started to steer
 var m_btn := 0                        # mouse button held in the world
 var m_from := Vector2.ZERO
 var m_moved := 0.0
@@ -3581,7 +3682,7 @@ func _place_at(k: String, p: Vector2) -> void:
 # ---- wildlife watching: the rifle (bloodless - a hit animal hops, sees stars and runs away; people cannot be hit) ----------
 var shot_msg := ""
 var shot_msg_t := 0.0
-const POINTS := {"fox": 10, "deer": 15, "boar": 20, "badger": 25, "cat": 5, "dog": 5}
+const POINTS := {"fox": 10, "deer": 15, "boar": 20, "badger": 25, "cat": 5, "dog": 5, "wolf": 40, "marten": 30, "squirrel": 10}
 
 
 func _build_crosshair(layer: CanvasLayer) -> void:
@@ -3690,7 +3791,8 @@ func shoot(from: Vector3, d: Vector3) -> void:
 
 
 func _animal_name(k: String) -> String:
-	return {"fox": "Fuchs", "deer": "Reh", "boar": "Wildschwein", "badger": "Dachs", "cat": "Katze", "dog": "Hund"}.get(k, k)
+	return {"fox": "Fuchs", "deer": "Reh", "boar": "Wildschwein", "badger": "Dachs", "cat": "Katze", "dog": "Hund", "wolf": "Wolf", "marten": "Marder",
+			"squirrel": "Eichhörnchen", "hare": "Hase", "hedgehog": "Igel"}.get(k, k)
 
 
 func _say(text: String, p: Vector3, col: Color) -> void:

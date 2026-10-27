@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 12:45",
+ "generated": "2026-10-27 13:22",
  "versions": [
   {
-   "version": "2.95.21",
-   "file": "webcam_bewegung_2_95_21.py",
+   "version": "2.95.22",
+   "file": "webcam_bewegung_2_95_22.py",
    "url": "",
-   "sha256": "8cf43fa9d5f56e82f6e801c788db95ee58e2810684c4ccf73a7250d94ade9823",
-   "date": "2026-10-27 12:45",
-   "notes": "tab Simulator: the fold arrow of the status sits in the title line (on the phone it stood alone below the button) and is hidden while the simulation is off; «Computing power» turns green only when «Save CPU» is on.",
-   "sig": "a748b31117d3c6941e68e940121c5de915053ddd54bf2a634f5255b96d3ffbfcae43e3d0d7617976c827f23d7156176ba9ac7601e85ec25f54283eec96a3ac0e"
+   "sha256": "dda1ae1bc6eeb125656435b584b7f1f302e7c0a57aef2063f69c3a5cec14dbb6",
+   "date": "2026-10-27 13:22",
+   "notes": "tab Simulator: «Test run and optimization» - the 3D simulator (3D-3.27) plays a fixed test (standard, short, difficult conditions, night), Motion Watch judges it (persons found, reaction time, false alarms by cause, score) and proposes better settings: take over one or all, undo, «take over and test again», or «optimize automatically» (keeps a change only if the next run is better); earlier runs with a bar chart. Game: «Team against Motion Watch» (floating «Caught!» button on the live page), a task for every round, ranking of the week. 📱 phone as a window (motion sensor).",
+   "sig": "acb01a2fa4aed57fa27104d4e0c14cc3edd692bd98e56da76a43cef95029f8df0fad35da4f8c766001086762690dabc98b941a62082bb7867dfba841e4722903"
   },
   {
    "version": "2.94.5",
