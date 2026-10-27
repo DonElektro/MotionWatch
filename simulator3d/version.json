@@ -1,7 +1,7 @@
 {
- "version": "3D-3.36",
+ "version": "3D-3.37",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30894906,
- "sha256": "a46785cbd6efa038f16cd4849a6be9441c9f2a5e406afc5e616848f5d1bdfa8d",
- "notes": "Neuer Name: 3D-Simulator Live"
+ "size": 30763966,
+ "sha256": "7132a25a495ef4d82e4f1acfb5a61fc5959cfdf3b11ff93b54e3a7b7b4efcdad",
+ "notes": "Verbindung zuklappbar, Symbol grün wenn verbunden"
 }

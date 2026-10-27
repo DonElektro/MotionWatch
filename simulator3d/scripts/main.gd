@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.36"
+const VERSION := "3D-3.37"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -226,6 +226,8 @@ var th_preview: ImageTexture
 var controls: Array = []
 var ui_rows := {}
 var status_label: Label
+var conn_body: Control                # the card «Verbindung» (symbol and title show the state)
+var _conn_state := -1
 var stream_on := false                     # sending to Motion Watch: off at the start, the user switches it on in the window
 var stream_port := 8765
 var stream_cb: CheckButton
@@ -2686,16 +2688,10 @@ func _build_ui() -> void:
 	search_none.visible = false
 	box_.add_child(search_none)
 	# connection to Motion Watch
-	var cn := UI.card(box_)
-	top_cards.append(cn.get_parent())
-	var cnh := HBoxContainer.new()
-	cnh.add_theme_constant_override("separation", 8)
-	cnh.add_child(UI.group_icon("link"))
-	var cnl := UI.heading("Verbindung")
-	cnl.add_theme_font_size_override("font_size", 12)
-	cnl.add_theme_color_override("font_color", UI.TXT)
-	cnh.add_child(cnl)
-	cn.add_child(cnh)
+	var cn := UI.fold_card(box_, "Verbindung", true, "link")     # from 3D-3.37 it folds; the symbol is green when connected
+	fold_bodies.append(cn)
+	top_cards.append(cn.get_meta("card"))
+	conn_body = cn
 	stream_cb = CheckButton.new()
 	stream_cb.text = "An Motion Watch senden (Port %d)" % stream_port
 	stream_cb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -2841,7 +2837,7 @@ func show_panel(on: bool) -> void:
 
 func _fold_all(how: String) -> void:
 	for b in fold_bodies:
-		var open: bool = how == "open" or (how == "groups" and not b in setting_bodies and b.get_meta("title") == "Kameras")
+		var open: bool = how == "open" or (how == "groups" and not b in setting_bodies and b.get_meta("title") in ["Kameras", "Verbindung"])
 		UI.set_open(b, open)
 	if how != "groups":
 		for sb in sub_bodies:
@@ -3360,6 +3356,18 @@ func _sync_ui() -> void:
 func _update_status() -> void:
 	if status_label != null:
 		status_label.text = status_text()
+	if conn_body != null:                                  # symbol: green = Motion Watch connected, orange = sending, grey = off
+		var st := 2 if connected() else (1 if stream_on else 0)
+		if st != _conn_state:
+			_conn_state = st
+			var ic: Control = conn_body.get_meta("icon", null)
+			if ic != null:
+				ic.set_meta("col", [UI.MUT, UI.ORG, UI.GRN][st])
+				ic.queue_redraw()
+			var hd: Label = conn_body.get_meta("head", null)
+			if hd != null:
+				hd.text = ("Verbindung · " + ["aus", "wartet auf Motion Watch", "verbunden"][st]).to_upper()
+				hd.add_theme_color_override("font_color", [UI.TXT, UI.ORG, UI.GRN][st])
 	if stream_note != null:
 		if stream_on:
 			stream_note.text = "Sendet: Motion Watch findet den Simulator im Netz und bekommt die Bilder."
