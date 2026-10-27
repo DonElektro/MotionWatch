@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 09:26",
+ "generated": "2026-10-27 09:31",
  "versions": [
   {
-   "version": "2.95.4",
-   "file": "webcam_bewegung_2_95_4.py",
+   "version": "2.95.5",
+   "file": "webcam_bewegung_2_95_5.py",
    "url": "",
-   "sha256": "0621034b82abcd73243712820c189ade9116fc22fe78d9b1bd8864e7a1059f64",
-   "date": "2026-10-27 09:26",
-   "notes": "pan up to ±180°: new setting «Pan servo: turning range» (180 / 270 / 360°), the pan limit goes up to half of it. The simulator gets the real angle (before, a tilt limit of 60° was shown as only 40° in the simulation).",
-   "sig": "5853e76ff89f4e545531cbac7a5b25f2432786ab6482d22b6dd6c2dd4f3a028b2281c919c5e0c51d1ef7677bea27a884b1d0d3e6ea4b143698dbb6abf44db200"
+   "sha256": "632c933c260abef1d8f2983ca3f1ea51d2e9d34cc9e123e2d7d054aff4833c3c",
+   "date": "2026-10-27 09:31",
+   "notes": "tab Simulator: button «Update the simulator» next to «Switch the simulation off» (blue with the version number when a newer 3D simulator exists); the simulator installs it and starts again by itself.",
+   "sig": "e5893684766a0b5e6652a62f7a0594f1790c663a2545ccac8635de21fea5fc65bc27669e404479374e7d3adb030d1ffdcf3a557ba044d6819694accee99d4400"
   },
   {
    "version": "2.94.5",
