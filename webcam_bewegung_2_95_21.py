@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_20.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_21.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -588,6 +588,8 @@ Features
     Small camera live picture inside the simulator window (📷). 3D simulator 3D-3.26.
   * 2.95.20: tab Simulator: the simulator window uses the whole screen width; the small camera picture sits top right
     (no longer over the control stick and the arrow buttons).
+  * 2.95.21: tab Simulator: the fold arrow of the status sits in the title line (on the phone it stood alone below the
+    button) and is hidden while the simulation is off; «Computing power» turns green only when «Save CPU» is on.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -596,10 +598,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_20.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_21.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_20.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_20.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_21.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_21.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -616,7 +618,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.20"
+APP_VERSION = "2.95.21"
 
 
 def default_data_dir():
@@ -14416,7 +14418,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_20.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_21.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -19154,7 +19156,7 @@ details.fold>summary h2{flex:1;margin:0}
 details.fold>summary::after{content:"▾";color:var(--mut);font-size:15px;transition:transform .15s;margin-left:10px}
 details.fold:not([open])>summary::after{transform:rotate(-90deg)}
 details.fold.act>summary::after,.stfold.act{color:var(--grn,#3fb950)}
-.stfold{background:none;border:0;padding:4px 6px;color:var(--mut);font-size:15px;cursor:pointer;margin-left:2px}
+.stfold{background:none;border:0;padding:4px 6px;color:var(--mut);font-size:15px;cursor:pointer;margin-left:2px;order:5}
 .stfold::after{content:"▾";display:inline-block;transition:transform .15s}#c-status.closed .stfold::after{transform:rotate(-90deg)}
 #c-status.closed #s-stbody{display:none}
 details.fold>.fb{padding:0 20px 18px}
@@ -19263,7 +19265,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 #s-scn{display:flex;gap:8px;flex-wrap:wrap}#s-scn select{flex:1 1 220px;min-width:0}
 .howto{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
 @media(max-width:820px){main.simp{grid-template-columns:1fr;padding:12px 12px 32px}.sc{padding:14px}details.fold{padding:0}details.fold>summary{padding:14px}details.fold>.fb{padding:0 14px 14px}.dl{grid-template-columns:1fr}
-  .sttl{font-size:17px}#s-btn{flex:1 1 100%}.tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
+  .sttl{font-size:17px}#s-btn{flex:1 1 100%;order:6}#s-upd{flex:1 1 100%;order:6}.stfold{order:0}.tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
 </style></head><body>
 <header>
   <h1>Motion Watch</h1>
@@ -19415,9 +19417,10 @@ function stFold(set) {
 try { stFold(localStorage.getItem("mw-sim-stfold") === "1"); } catch (e) {}
 function foldAct() {                       // the arrows turn green when what is inside is switched on / works
   const ok = !!(S && S.on && S.ok);
-  const on = {conn: ok, ctl: ok, perf: !!(S && S.on && S.eco)};
+  const on = {conn: ok, ctl: ok, perf: !!(S && S.eco)};
   document.querySelectorAll("details.fold[data-k]").forEach(d => d.classList.toggle("act", !!on[d.dataset.k]));
   $("#s-stfold").classList.toggle("act", ok);
+  $("#s-stfold").hidden = !(S && S.on);      // simulation off: nothing to fold
 }
 function paint() {
   foldAct();
@@ -29288,7 +29291,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.20")
+        self.root.title("Motion Watch 2.95.21")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -29578,7 +29581,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.20 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.21 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 12:35",
+ "generated": "2026-10-27 12:45",
  "versions": [
   {
-   "version": "2.95.20",
-   "file": "webcam_bewegung_2_95_20.py",
+   "version": "2.95.21",
+   "file": "webcam_bewegung_2_95_21.py",
    "url": "",
-   "sha256": "bcf48a68a38f2884a172fbd5fd190f7f4358112b589edec0d77493151793fc98",
-   "date": "2026-10-27 12:35",
-   "notes": "tab Simulator: the simulator window uses the whole screen width; the small camera picture sits top right (no longer over the control stick and the arrow buttons).",
-   "sig": "2d1adb8165f3147a92e0dc08316910e6f4c2cc2052342a7fafd6435501f7a99cd5f5e6c91c64443918865438d576a5240e3dc1aaf79c6179d0de502a9ca07305"
+   "sha256": "8cf43fa9d5f56e82f6e801c788db95ee58e2810684c4ccf73a7250d94ade9823",
+   "date": "2026-10-27 12:45",
+   "notes": "tab Simulator: the fold arrow of the status sits in the title line (on the phone it stood alone below the button) and is hidden while the simulation is off; «Computing power» turns green only when «Save CPU» is on.",
+   "sig": "a748b31117d3c6941e68e940121c5de915053ddd54bf2a634f5255b96d3ffbfcae43e3d0d7617976c827f23d7156176ba9ac7601e85ec25f54283eec96a3ac0e"
   },
   {
    "version": "2.94.5",
