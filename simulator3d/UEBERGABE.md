@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-3.9** · passende Motion-Watch-Version **2.93.16**
+Stand: 26.10.2026 · Simulator-Version **3D-3.10** · passende Motion-Watch-Version **2.93.17**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,13 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-3.10 – 3D-Gebäude:** `b3d.gd`: `tileset.json` von 3d.geo.admin.ch (`geo.url("b3d")`), Baum ablaufen (region / box / sphere,
+verschachtelte tileset.json, höchstens 40 Kacheln), b3dm (RTC_CENTER) oder glb mit `GLTFDocument` laden, glTF y-oben → z-oben →
+Kachel-Transform → minus `ecef0` → Ost/Oben/Süd (Doppelgenauigkeit für die grossen Zahlen), flache Normalen passend zur Godot-Wicklung,
+Haus um den Kopf weg (`keep_out`), Höhe an das Gelände angepasst (`_align`, 30-%-Wert). Shader `b3d.gdshader` (Dach/Wand nach Normale,
+Fenster aus der Weltposition, nachts einzelne hell, `geo._b3d_night`). OSM-Häuser dann nur noch als Hindernisse. Nicht mit echten
+swisstopo-Daten getestet (Ersatz-Server mit eigener b3dm-Datei); Draco-komprimierte Kacheln kann Godot 4.3 nicht → Rückfall auf OSM.
+
 **3D-3.9 – Karte und Bedienung im Web:** Control-Typ `map` (`ort_map`; Wert «lat, lon», Setzen «lat, lon[, Name]» → `set_place_text`),
 im Fenster ein Knopf auf `open_map`. `extra.iconk` = Name des gezeichneten Symbols. Motion Watch 2.93.16: `SIMMAP_JS` (`simMap` =
 Kachelkarte swisstopo im Browser, Suche über api3 SearchServer direkt vom Handy; `simCtlBuild` = Bedienung wie im Simulator, SVG-Symbole

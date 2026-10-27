@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.9"
+const VERSION := "3D-3.10"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1969,7 +1969,7 @@ func control(d: Dictionary) -> Dictionary:
 	elif a == "geo":                                   # for tests: the place (loading, what was built)
 		return {"ok": true, "busy": geo.busy, "loaded": geo.loaded, "info": geo.info, "counts": geo.counts, "terrain": terrain,
 				"h0": geo.h0, "src": geo.dem_source, "note": geo_note, "y": ground_y(float(d.get("x", 0.0)), float(d.get("z", 0.0))),
-				"map": karte.visible, "map_info": karte.status_text(), "sun": [snappedf(sun_pos().x, 0.1), snappedf(sun_pos().y, 0.1),
+				"map": karte.visible, "map_info": karte.status_text(), "dark": is_dark(), "anims": anims.size(), "b3d_night": geo.b3d_mat.get_shader_parameter("night") if geo.b3d_mat != null else -1, "sun": [snappedf(sun_pos().x, 0.1), snappedf(sun_pos().y, 0.1),
 				snappedf(horizon_el(sun_pos().y), 0.1), sun_behind_hills(), snappedf(sun.light_energy, 0.01)]}
 	elif a == "map":                                   # for tests: open the map at a place, zoom
 		show_panel(false)

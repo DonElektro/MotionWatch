@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-3.9 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-3.10 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -66,6 +66,8 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
     Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
   * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
+- Ab 3D-3.10: An einem echten Ort holt der Simulator zuerst die echten 3D-Gebäude von swisstopo (swissBUILDINGS3D, mit
+  den richtigen Dachformen). Klappt das nicht, baut er die Häuser wie bisher aus OpenStreetMap.
 - Ab 3D-3.9: Auf der Seite von Motion Watch (ab 2.93.16) sieht die Simulator-Steuerung aus wie das Bedienfeld des Simulators
   (Karten mit Symbolen, aufklappbare Teile, Schalter rechts, Suche, «Einfach | Experte»). Unter «Szene → Ort von der Karte»
   gibt es dort eine Karte: Ort suchen oder antippen, «Diesen Ort laden» - der Simulator baut ihn.

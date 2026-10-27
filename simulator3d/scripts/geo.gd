@@ -45,6 +45,8 @@ var rect_far := Rect2()
 var osm: Array = []
 var counts := {}                 # what was built (for the info line and tests)
 var gen := 0                     # a newer load cancels an older one
+var b3d_meshes: Array = []       # buildings of swisstopo in 3D (b3d.gd); empty = houses from OpenStreetMap
+var b3d_on := true
 var _last_err := ""
 
 
@@ -69,6 +71,8 @@ func url(kind: String, z := 0, x := 0, y := 0) -> String:
 			u = "https://api3.geo.admin.ch/rest/services/api/SearchServer?type=locations&sr=4326&limit=8&searchText="
 		"profile":
 			u = "https://api3.geo.admin.ch/rest/services/profile.json"
+		"b3d":
+			u = "https://3d.geo.admin.ch/ch.swisstopo.swissbuildings3d.3d/v1/tileset.json"
 	if base != "":
 		u = base + "/" + u.substr(8)
 	return u
@@ -371,6 +375,24 @@ func load_place(la: float, lo: float, nm: String, rebuild := true) -> void:
 				far_h[j * far_n + i] = height(p.x, p.y, true)
 			else:
 				far_h[j * far_n + i] = _terrarium(df["img"], df["rect"], p) + off - h0
+	# buildings of swisstopo in 3D (from 3D-3.10), else the houses of OpenStreetMap
+	b3d_meshes = []
+	if b3d_on:
+		var keep := []                                     # the house round Motion Watch is left out
+		for e in osm:
+			if typeof(e) == TYPE_DICTIONARY and typeof(e.get("tags")) == TYPE_DICTIONARY and e["tags"].has("building"):
+				for poly in _polys(e):
+					if Geometry2D.is_point_in_polygon(Vector2.ZERO, poly):
+						for grown in Geometry2D.offset_polygon(poly, 0.8):   # a bit bigger: also its walls go
+							keep.append(grown)
+		var b3 = load("res://scripts/b3d.gd").new()
+		b3d_meshes = await b3.fetch_buildings(self, my_gen, keep)
+		if my_gen != gen:
+			return
+		if b3d_meshes.is_empty() and b3.info != "":
+			problems.append(b3.info.trim_prefix("3D-Gebäude: "))
+		elif not b3d_meshes.is_empty():
+			problems.append("Häuser in 3D von swisstopo")
 	# aerial pictures
 	photo_near_img = got[2]["img"]
 	photo_near_img.generate_mipmaps()
@@ -493,6 +515,14 @@ func build(s) -> void:
 	buildings = []
 	road_segs = {}
 	_terrain_meshes()
+	if not b3d_meshes.is_empty():
+		var bm := ShaderMaterial.new()
+		bm.shader = load("res://shaders/b3d.gdshader")
+		for mesh in b3d_meshes:
+			main.add_mesh(sc.root, mesh, Vector3.ZERO, bm, "caravan")
+		b3d_mat = bm
+		main.anims.append(_b3d_night)
+		counts["b3d"] = b3d_meshes.size()
 	var trees_at := []                                  # [pos, size, conifer, prio]
 	var roads := []
 	var head_in := false
@@ -554,6 +584,16 @@ func build(s) -> void:
 		main.geo_note = "Motion Watch steht in einem Gebäude – das Gebäude wurde weggelassen."
 	counts["trees"] = counts.get("trees", 0)
 	sc = null
+
+
+var b3d_mat: ShaderMaterial
+
+
+func _b3d_night(_dt, _t):
+	"""windows of the swisstopo houses light up at night"""
+	if b3d_mat != null:
+		b3d_mat.set_shader_parameter("night", 1.2 if main.is_dark() else 0.0)
+	return false
 
 
 func _terrain_meshes() -> void:
@@ -841,6 +881,14 @@ func _building(poly: PackedVector2Array, tg: Dictionary) -> void:
 		hi = max(hi, gy)
 	var y0 := lo - 0.4
 	var top := hi + h
+	if not b3d_meshes.is_empty():                      # swisstopo draws the house: only the obstacle
+		if not r.is_empty():
+			var c0 := Vector3(r["c"].x, 0, r["c"].y)
+			main.add_obstacle_box(c0, 2.0 * float(r["a"]) + 0.3, 2.0 * float(r["b"]) + 0.3, -atan2((r["u"] as Vector2).y, (r["u"] as Vector2).x))
+			main.set_obstacle_height(hi + h + roof_h - lo)
+		buildings.append({"poly": poly, "top": hi + h + roof_h, "h": h})
+		counts["buildings"] = counts.get("buildings", 0) + 1
+		return
 	var plain := h < 3.6 or kind in ["garage", "garages", "shed", "carport", "roof", "barn", "farm_auxiliary", "stable"]
 	var ci := rng.randi_range(0, 4) if not kind in ["barn", "farm_auxiliary", "stable", "shed", "hut", "cabin"] else 5
 	var st := _st(wall_st, ci) if not plain else _st(wall_st, "plain%d" % ci)

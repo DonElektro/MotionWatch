@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 04:08",
+ "generated": "2026-10-27 04:21",
  "versions": [
   {
-   "version": "2.93.16",
-   "file": "webcam_bewegung_2_93_16.py",
+   "version": "2.93.17",
+   "file": "webcam_bewegung_2_93_17.py",
    "url": "",
-   "sha256": "83a9b15b5e83d74e52cdd956e4ba9c7ba9d09996b0f6e6a1bdf11e623c924927",
-   "date": "2026-10-27 04:08",
-   "notes": "Simulator control looks like the panel of the 3D simulator (cards with symbols, parts, search, Simple / Expert) and a swisstopo map to choose a real place (3D-3.9).",
-   "sig": "62404de2a693929b3f6433919a94712ec895bb900e39610705b508e3defb5f82d0ff062b5a50956258297582a6bc80541a2558ded72985b142dd273770720a06"
+   "sha256": "70f36dcbc35e8c6ff18854dfada979bbb82fd5eaf3fda28e7927aea3de9c6ba0",
+   "date": "2026-10-27 04:21",
+   "notes": "3D simulator 3D-3.10: real 3D buildings of swisstopo at real places.",
+   "sig": "9722f91aa4a5a338477940378f3a3f22dca4636496c8e19a91c525460d7a9f84e75498e44eefbc4d0de74dd1cb60f10f8893eac2b4b8900576882e55571e3600"
   },
   {
    "version": "2.92.4",
