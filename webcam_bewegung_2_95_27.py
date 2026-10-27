@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_26.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_27.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -606,6 +606,9 @@ Features
   * 2.95.26: Pushover as an extra way for alarms (emergency = critical alert on the iPhone, rings also when muted);
     «simulation on by itself» is off by default on a Raspberry Pi; the simulator calculates slower while Motion Watch
     saves power (3D-3.30); MW Sim · Basis 3.7 (new name and symbol).
+  * 2.95.27: FIX - since 2.95.25 a few settings were missing from the defaults (simulator auto update, network watch,
+    presence): errors on some pages. New: a keyword at the start of every message (MW-ALARM, MW-WAERME …) for iPhone
+    shortcut automations, e-mail as a way for messages, shortcut addresses (/k/<key>/arm, siren_off, light_on, photo.jpg …).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -614,10 +617,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_26.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_27.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_26.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_26.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_27.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_27.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -634,7 +637,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.26"
+APP_VERSION = "2.95.27"
 
 
 def default_data_dir():
@@ -895,6 +898,13 @@ CFG = {
     # Pushover (2.95.26): an extra way for alarms; «emergency» = priority 2: on an iPhone a critical alert (rings also when muted,
     # if «Critical Alerts» is on in the Pushover app), repeated every minute until it is acknowledged
     "pushover_on": False, "pushover_user": "", "pushover_token": "", "pushover_emergency": True,
+    # 2.95.27: a keyword at the start of every message (MW-ALARM, MW-WAERME ...): an iPhone shortcut automation reacts to it
+    "msg_keyword_on": True, "msg_keyword_prefix": "MW",
+    # e-mail as a way for messages (the iPhone «E-Mail» automation can start a shortcut)
+    "email_on": False, "email_to": "", "email_host": "", "email_port": "587", "email_user": "", "email_password": "", "email_from": "",
+    "email_events": "alarms",       # alarms | all
+    # shortcut key (2.95.27): /k/<key>/<action> works without the password, only for a few actions (arm, siren off, light ...)
+    "shortcut_token": "",
     "deter_person_act": "off", "deter_person_sound": "two-tone",
     "deter_big_act": "both", "deter_big_sound": "bangs",
     "deter_small_act": "off", "deter_small_sound": "whistle",
@@ -919,7 +929,8 @@ CFG = {
     "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_auto": True,
     "sim_autostart": True, "sim_autostart_v2": False,   # v2 (2.95.26): on a Raspberry Pi off by default (it guards the real place)
     # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
-    "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself) "sim_autoupd": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself)
+    "sim_autoupd": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_dual": True, "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True, "wifi_swap": False, "wifi_guard": False,
@@ -1396,6 +1407,13 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Notifications", "notify_url", "Webhook / ntfy URL", "str", None),
     ("Notifications", "telegram_token", "Telegram bot token", "secret", None),
     ("Notifications", "pushover_user", "Pushover: user key", "secret", None),
+    ("Notifications", "msg_keyword_prefix", "Keyword at the start of every message (e.g. MW gives MW-ALARM)", "str", None),
+    ("Notifications", "email_to", "E-mail: to (your address)", "str", None),
+    ("Notifications", "email_host", "E-mail: SMTP server (e.g. smtp.gmail.com, mail.gmx.net)", "str", None),
+    ("Notifications", "email_port", "E-mail: port (587 or 465)", "str", None),
+    ("Notifications", "email_user", "E-mail: user name (usually the address)", "str", None),
+    ("Notifications", "email_password", "E-mail: password (Gmail / iCloud: app password)", "secret", None),
+    ("Notifications", "email_events", "E-mail: which messages", "enum", "email_events"),
     ("Notifications", "pushover_token", "Pushover: app token (API token of your own app at pushover.net)", "secret", None),
     ("Deterrence", "deter_person_act", "Person", "enum", "deter_acts"),
     ("Deterrence", "deter_person_sound", "Person: sound", "enum", "sounds"),
@@ -1484,6 +1502,8 @@ def text_choice_pairs(key):
                 ("hotspot", tr("Own Wi-Fi at boot")), ("client", tr("Only known networks"))]
     if extra in ("light_white_out", "light_ir_out"):
         return light_out_pairs(extra[6:-4])
+    if extra == "email_events":
+        return [("alarms", tr("only alarms (person, warm, noise, sabotage)")), ("all", tr("all messages"))]
     if extra == "patrol_modes":
         return [("pendulum", tr("back and forth (1-2-3-2-1)")), ("loop", tr("round trip (1-2-3-1-2-3)"))]
     if extra == "rec_marks":
@@ -1612,6 +1632,16 @@ def set_text(key, value):
                 return False, "invalid URL (http:// or https:// expected)"
             if key in ("notify_url", "public_url") and not _http_ok(v):
                 return False, "invalid URL (http:// or https:// expected)"
+            if key == "msg_keyword_prefix" and not re.fullmatch(r"[A-Za-z0-9]{1,12}", v):
+                return False, "1 to 12 letters or digits"
+            if key == "email_to" and not _EMAIL_RE.fullmatch(v):
+                return False, "invalid e-mail address"
+            if key == "email_host" and not re.fullmatch(r"[A-Za-z0-9.\-]{3,120}", v):
+                return False, "invalid device name or address"
+            if key == "email_port" and v not in ("25", "465", "587", "2525"):
+                return False, "port 587 or 465"
+            if key == "email_user" and (len(v) > 120 or any(ord(c) < 32 for c in v)):
+                return False, "text too long or with control characters"
             if key in ("pushover_user", "pushover_token") and not re.fullmatch(r"[A-Za-z0-9]{30}", v):
                 return False, "30 letters and digits expected (from pushover.net)"
             if key == "telegram_token" and not re.fullmatch(r"\d{5,12}:[A-Za-z0-9_\-]{20,60}", v):
@@ -2273,7 +2303,8 @@ def reset_settings():
     for k, v in DEFAULTS.items():
         if k not in VOLATILE and k not in ("pan", "tilt", "source", "ip_sources", "extra_cams", "latitude", "longitude",
                                            "presence_hosts", "telegram_token", "telegram_chat", "public_url", "notify_url", "notify_type",
-                                           "pushover_user", "pushover_token",
+                                           "pushover_user", "pushover_token", "email_to", "email_host", "email_port", "email_user",
+                                           "email_password", "email_from", "shortcut_token",
                                            "web_ui", "ui_open", "ui_hidden", "theme", "lang"):
             CFG[k] = v
     WAYPOINTS.clear()
@@ -3283,6 +3314,55 @@ def day_summary(day, lang="en"):
             "sun": sun, "moon": {"icon": mi, "name": tr(mn, lang)}, "gps": g, "report": rep_txt}
 
 
+MSG_KEYWORDS = {"person": "ALARM", "warm": "WAERME", "noise": "LAERM", "tamper": "SABOTAGE", "prealarm": "VORALARM",
+                "info": "INFO", "test": "TEST"}
+
+
+def msg_keyword(ev):
+    """«MW-ALARM» etc. at the start of a message - a shortcut automation on the iPhone reacts to this word (2.95.27)"""
+    if not CFG.get("msg_keyword_on", True):
+        return ""
+    pre = re.sub(r"[^A-Za-z0-9]", "", str(CFG.get("msg_keyword_prefix") or "MW"))[:12] or "MW"
+    return f"{pre}-{MSG_KEYWORDS.get(ev, 'INFO')}"
+
+
+def email_ready():
+    return bool(CFG.get("email_on") and CFG.get("email_host", "").strip() and _EMAIL_RE.fullmatch(CFG.get("email_to", "").strip() or "-"))
+
+
+_EMAIL_RE = re.compile(r"[^@\s,;]{1,64}@[A-Za-z0-9.\-]{1,190}\.[A-Za-z]{2,24}")
+
+
+def email_send(subject, text, jpg=None, fname="photo.jpg"):
+    """send one e-mail (SMTP: port 465 = SSL, else STARTTLS); returns (ok, message)"""
+    import smtplib, ssl
+    from email.message import EmailMessage
+    to_ = CFG["email_to"].strip(); frm = (CFG.get("email_from") or CFG.get("email_user") or to_).strip()
+    m = EmailMessage(); m["Subject"] = subject[:200]; m["From"] = frm; m["To"] = to_
+    m.set_content(text or subject)
+    if jpg:
+        m.add_attachment(jpg, maintype="image", subtype="jpeg", filename=fname)
+    host = CFG["email_host"].strip(); port = int(CFG.get("email_port") or 587)
+    ctx = ssl.create_default_context()
+    try:
+        if port == 465:
+            srv = smtplib.SMTP_SSL(host, port, timeout=20, context=ctx)
+        else:
+            srv = smtplib.SMTP(host, port, timeout=20)
+            srv.starttls(context=ctx)
+        with srv:
+            if CFG.get("email_user"):
+                srv.login(CFG["email_user"], CFG.get("email_password", ""))
+            srv.send_message(m)
+        return True, ""
+    except Exception as e:
+        msg = str(e)
+        for sec_ in (CFG.get("email_password"),):
+            if sec_:
+                msg = msg.replace(sec_, "***")
+        return False, msg[:200]
+
+
 def pushover_ready():
     return bool(CFG.get("pushover_on") and re.fullmatch(r"[A-Za-z0-9]{30}", CFG.get("pushover_user", "").strip())
                 and re.fullmatch(r"[A-Za-z0-9]{30}", CFG.get("pushover_token", "").strip()))
@@ -3305,7 +3385,7 @@ class Notifier:
     @staticmethod
     def configured():
         return (Notifier.main_configured() or bool(CFG["webpush_on"] and webpush_subs()) or bool(CFG["sms_on"] and sms_numbers())
-                or pushover_ready())
+                or pushover_ready() or email_ready())
 
     def person(self, count, snapshot_path=None, frame=None):
         if count and not is_armed():
@@ -3417,7 +3497,9 @@ class Notifier:
     @staticmethod
     def _title(p):
         t_ = Notifier._title0(p)
-        return ("[SIM] " + t_) if CFG.get("sim_on") else t_
+        t_ = ("[SIM] " + t_) if CFG.get("sim_on") else t_
+        kw = msg_keyword(Notifier._event(p))
+        return (kw + " · " + t_) if kw else t_
 
     @staticmethod
     def _title0(p):
@@ -3445,6 +3527,11 @@ class Notifier:
         if pushover_ready():
             threading.Thread(target=self._pushover, args=(p, jpg, fname), daemon=True).start()
         ev = self._event(p)
+        if email_ready() and (CFG.get("email_events") == "all" or ev in ("person", "warm", "noise", "tamper", "test")):
+            def _mail():
+                ok, err = email_send(self._title(p), self._text(p) + (("\n" + p["link"]) if p.get("link") else ""), jpg, fname)
+                log_event("web", "E-mail sent" if ok else f"E-mail failed: {err}"[:200])
+            threading.Thread(target=_mail, daemon=True).start()
         if CFG["sms_on"] and ev in ("person", "tamper", "warm", "noise", "test") and sms_numbers():
             offline = STATE.get("net", {}).get("online") is False
             if not CFG["sms_only_offline"] or offline or not self.main_configured() or ev == "test":
@@ -6552,7 +6639,7 @@ SIMPLE_SECTIONS = {"Camera / Servos", "Patrol", "AI detection", "Detection", "Re
 SIMPLE_KEYS = {"track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
-               "pushover_on", "pushover_user", "pushover_token", "pushover_emergency",
+               "pushover_on", "pushover_user", "pushover_token", "pushover_emergency", "msg_keyword_on", "email_on", "email_to",
                "arm_delay", "net_mode", "hotspot_ssid", "hotspot_password", "thermal_on", "thermal_alarm", "noise_alarm", "audio_in",
                "audio_out", "siren_on", "siren_volume", "siren_sound", "light_white_auto", "light_ir_auto", "report_on", "report_hour",
                "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_auto", "loop_on", "loop_hours",
@@ -14895,7 +14982,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_26.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_27.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -26176,7 +26263,21 @@ function solarText(c, s) {
 }
 function solarPaint(c, s) { const st = $("#solar-st"); if (st) st.textContent = solarText(c, s); }
 /*SIMMAP*/
-Object.assign(I18N.de, {"Let the radar turn (in the header; the home screen icon cannot move)": "Radar kreisen lassen (in der Kopfzeile; das Symbol auf dem Startbildschirm kann sich nicht bewegen)",
+Object.assign(I18N.de, {"iPhone shortcuts": "iPhone-Kurzbefehle",
+ "sc-intro": "Jede Meldung beginnt mit einem Stichwort. Darauf kann eine Automation in der Kurzbefehle-App reagieren. Auf dem iPhone geht das mit E-Mail («E-Mail» in diesem Abschnitt einschalten) oder SMS – nicht mit Mitteilungen von Apps.",
+ "sc-1": "«E-Mail» in diesem Abschnitt einrichten und eine Testmeldung schicken.",
+ "sc-2": "iPhone: Kurzbefehle → Automation → «+» → «E-Mail». Absender: die Adresse von Motion Watch, Betreff enthält: MW-ALARM.",
+ "sc-3": "«Sofort ausführen» wählen (sonst fragt das iPhone jedes Mal).",
+ "sc-4": "Aktionen hinzufügen, z. B. «Lautstärke festlegen» 100 %, «Ton abspielen», «Taschenlampe», «URL öffnen» (Live-Seite), «Szene ausführen» (Home-App).",
+ "sc-5": "Für jedes Stichwort eine eigene Automation: MW-WAERME, MW-LAERM, MW-SABOTAGE …",
+ "Addresses back to Motion Watch (for «Get contents of URL»)": "Adressen zurück zu Motion Watch (für «Inhalte von URL abrufen»)",
+ "sc-key-off": "Damit ein Kurzbefehl Motion Watch ohne Passwort steuern kann, braucht er einen eigenen Schlüssel. Er erlaubt nur diese wenigen Aktionen.",
+ "Make a shortcut key": "Kurzbefehl-Schlüssel erstellen", "Arm": "Scharf schalten", "Disarm": "Unscharf schalten", "Siren off": "Sirene aus",
+ "White light on": "Weisses Licht an", "White light off": "Weisses Licht aus", "Photo now": "Foto jetzt", "Status (text)": "Status (Text)",
+ "Copy": "Kopieren", "copied": "kopiert", "New key": "Neuer Schlüssel", "Switch off": "Ausschalten",
+ "Make a new key? The old addresses stop working.": "Neuen Schlüssel erstellen? Die alten Adressen funktionieren dann nicht mehr.",
+ "sc-key-note": "Die Adresse enthält den Schlüssel – wie ein Passwort behandeln. Von unterwegs geht es über die Tailscale-Adresse (Meldungen → «Adresse dieser Seite für Links»).",
+ "Let the radar turn (in the header; the home screen icon cannot move)": "Radar kreisen lassen (in der Kopfzeile; das Symbol auf dem Startbildschirm kann sich nicht bewegen)",
  "App icon": "App-Symbol", "App icon changed": "App-Symbol geändert", "Radar": "Radar", "Radar, two rings": "Radar, zwei Ringe",
  "Radar, gaps crosswise": "Radar, Lücken über Kreuz", "Radar with afterglow": "Radar mit Nachleuchten", "Four directions": "Vier Richtungen",
  "Lens with waves": "Linse mit Wellen", "Classic (orange)": "Klassisch (orange)", "Done": "Erledigt", "Later": "Später",
@@ -26813,6 +26914,37 @@ async function prHotspot(on) {
   if (!r.ok) { $("#pr-err").textContent = "⚠ " + (r.error || "error"); $("#pr-hs").checked = !on; }
 }
 // «Team gegen Motion Watch» (2.95.22): the guards sit here - turn the camera with the joystick and press «Erwischt!»
+// ---- iPhone shortcuts (2.95.27): keywords in the messages, e-mail as trigger, addresses back to Motion Watch ----
+function scPick() {
+  const d = document.querySelector('details[data-view="sec:Notifications"]');
+  if (!d || d.querySelector("#scbox")) return;
+  const box = el("div"); box.id = "scbox"; box.style.cssText = "margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font-size:14px";
+  d.appendChild(box);
+  const paint = j => { box.innerHTML = "";
+    box.appendChild(el("div", "", "📲 " + t("iPhone shortcuts")));
+    box.appendChild(el("div", "mut", t("sc-intro"))).style.margin = "4px 0 8px";
+    const kw = el("div"); kw.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px";
+    Object.entries(j.keywords || {}).forEach(([k, v]) => { const c = el("code", "", v); c.title = t({person: "person", warm: "warm body", noise: "noise", tamper: "sabotage", prealarm: "pre-alarm", info: "info", test: "test"}[k] || k);
+      c.style.cssText = "padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-size:12px"; kw.appendChild(c); });
+    box.appendChild(kw);
+    const ol = el("ol"); ol.style.cssText = "margin:0 0 8px;padding-left:20px;line-height:1.5";
+    ["sc-1", "sc-2", "sc-3", "sc-4", "sc-5"].forEach(k => ol.appendChild(el("li", "", t(k)))); box.appendChild(ol);
+    const h = el("div", "", "↩ " + t("Addresses back to Motion Watch (for «Get contents of URL»)")); h.style.cssText = "font-weight:600;margin-top:6px"; box.appendChild(h);
+    if (!j.on) { box.appendChild(el("div", "mut", t("sc-key-off")));
+      const b = el("button", "", "🔑 " + t("Make a shortcut key")); b.type = "button"; b.onclick = async () => paint(await post("/api/shortcut", {action: "new"})); box.appendChild(b); return; }
+    [["arm", "Arm"], ["disarm", "Disarm"], ["siren_off", "Siren off"], ["light_on", "White light on"], ["light_off", "White light off"],
+     ["photo.jpg", "Photo now"], ["status", "Status (text)"]].forEach(([a, n]) => { const u = j.base + "/k/" + j.key + "/" + a;
+      const r = el("div"); r.style.cssText = "display:flex;gap:8px;align-items:center;margin:4px 0";
+      const c = el("button", "sec", "📋"); c.type = "button"; c.title = t("Copy"); c.onclick = () => { try { navigator.clipboard.writeText(u); toast("✓ " + t("copied")); } catch (e) { prompt(t(n), u); } };
+      const lab = el("span", "", t(n)); lab.style.minWidth = "140px"; const cd = el("code", "mut", u.replace(j.key, "•••")); cd.style.cssText = "font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1";
+      r.append(c, lab, cd); box.appendChild(r); });
+    box.appendChild(el("div", "mut", t("sc-key-note"))).style.marginTop = "6px";
+    const row = el("div", "btns"); row.style.marginTop = "6px";
+    const nb = el("button", "sec", "🔄 " + t("New key")); nb.type = "button"; nb.onclick = async () => { if (confirm(t("Make a new key? The old addresses stop working."))) paint(await post("/api/shortcut", {action: "new"})); };
+    const ob = el("button", "sec", "⛔ " + t("Switch off")); ob.type = "button"; ob.onclick = async () => paint(await post("/api/shortcut", {action: "off"}));
+    row.append(nb, ob); box.appendChild(row); };
+  fetch("/api/shortcut").then(r => r.json()).then(paint).catch(() => {});
+}
 // ---- app icon (2.95.23): choose it here; on an iPhone / iPad the home screen keeps the old one - a hint says what to do ----
 function iconPick() {
   const d = document.querySelector('details[data-view="sec:Setup"]') || document.querySelector('details[data-view="sec:Web stream"]');
@@ -26886,7 +27018,7 @@ function updateProtect(s) {
   const hs = s.hotspot || {}, hc = s.hotspot_cfg || {};
   if (Date.now() > PR.campUntil) $("#pr-camp").checked = !!s.camping;
   if (!(Date.now() < (PR.ecoUntil || 0))) $("#pr-eco").checked = s.eco !== "off";
-  mwgPaint(s); iconPick();
+  mwgPaint(s); iconPick(); scPick();
   const TB = s.turbo || {};
   if (!(Date.now() < (PR.turboUntil || 0))) $("#pr-turbo").checked = !!TB.on;
   $("#pr-turbo-info").textContent = TB.on ? t("active: every picture through the AI, best picture, processor at full clock") + (TB.temp != null ? " · " + Math.round(TB.temp) + " °C" : "") + (TB.temp > 75 ? " ⚠ " + t("hot") : "")
@@ -28797,7 +28929,7 @@ class WebStream:
 
         @app.before_request
         def auth():
-            if request.path.startswith(("/g/", "/x/")) or request.path in public:
+            if request.path.startswith(("/g/", "/x/", "/k/")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
             g.user, g.role = "", "admin"
@@ -29333,6 +29465,60 @@ class WebStream:
                 ext_new_token()
             host = (request.host or "").rsplit(":", 1)[0] or None
             return reply(ext_links(host if host not in ("localhost", "127.0.0.1") else None))
+
+        # ---- shortcut addresses (2.95.27): an iPhone shortcut calls them without the password, with its own key ----
+        SC_FAILS = {}
+
+        @app.route("/k/<key>/<action>")
+        def shortcut(key, action):
+            import hmac
+            ip = request.remote_addr or "?"; now = time.time()
+            rec = [x for x in SC_FAILS.get(ip, []) if now - x < 600]
+            if len(rec) >= 10:
+                return Response("too many wrong keys - wait 10 minutes", 429)
+            tok = CFG.get("shortcut_token") or ""
+            if len(tok) < 20 or not hmac.compare_digest(tok, key):
+                rec.append(now); SC_FAILS[ip] = rec
+                return Response("unknown key", 403)
+            txt = None
+            if action == "arm":
+                arm(); txt = "armed" if is_armed() else "arming (delay " + str(CFG.get("arm_delay", "")) + " s)"
+            elif action == "disarm":
+                disarm(); txt = "disarmed"
+            elif action == "siren_off":
+                sound_stop(); txt = "siren off"
+            elif action in ("light_on", "light_off", "light_auto"):
+                light_set("white", action.split("_")[1]); txt = "white light " + action.split("_")[1]
+            elif action == "ir_on" or action == "ir_off":
+                light_set("ir", action.split("_")[1]); txt = "infrared " + action.split("_")[1]
+            elif action == "status":
+                return reply({"device": CFG["device_name"] or "Motion Watch", "armed": is_armed(), "persons": int(STATE.get("persons") or 0),
+                              "simulation": bool(CFG["sim_on"]), "last_alarm": STATE.get("last_person_str") or ""})
+            elif action == "photo.jpg":
+                if watch.frame_out is None:
+                    return Response("no picture yet", 503)
+                ok, buf = cv2.imencode(".jpg", watch.frame_out, [cv2.IMWRITE_JPEG_QUALITY, 85])
+                return Response(buf.tobytes(), mimetype="image/jpeg") if ok else Response("error", 500)
+            else:
+                return Response("unknown action", 404)
+            log_event("web", f"Shortcut from {ip}: {txt}")
+            return Response(txt, mimetype="text/plain")
+
+        @app.route("/api/shortcut", methods=["GET", "POST"])
+        def api_shortcut():
+            if getattr(g, "role", "admin") != "admin":
+                return reply({"ok": False, "error": "not allowed"}, 403)
+            if request.method == "POST":
+                a_ = body().get("action")
+                if a_ == "new":
+                    CFG["shortcut_token"] = secrets.token_urlsafe(24); save_settings()
+                    log_event("sys", "New shortcut key made (the old addresses no longer work)")
+                elif a_ == "off":
+                    CFG["shortcut_token"] = ""; save_settings()
+            tok = CFG.get("shortcut_token") or ""
+            base = (CFG.get("public_url") or "").strip().rstrip("/") or request.host_url.rstrip("/")
+            return reply({"ok": True, "on": bool(tok), "base": base, "key": tok, "prefix": msg_keyword("person").split("-")[0] if msg_keyword("person") else "MW",
+                          "keywords": {k: msg_keyword(k) or ("MW-" + v) for k, v in MSG_KEYWORDS.items()}})
 
         @app.route("/snapshot.jpg")
         def snapshot():
@@ -31291,6 +31477,8 @@ TOGGLES = [  # (section, key, label)
     ("Backup", "backup_all", "Copy all recordings (otherwise only alarm recordings: armed or with a person)"),
     ("Notifications", "webpush_on", "Web push: alarm messages also to browsers that switched it on (no app needed)"),
     ("Notifications", "pushover_on", "Pushover: alarm messages also to the Pushover app (iPhone: can ring when muted)"),
+    ("Notifications", "msg_keyword_on", "Keyword at the start of every message (MW-ALARM, MW-WAERME …: for iPhone shortcuts)"),
+    ("Notifications", "email_on", "E-mail: messages also by e-mail (the iPhone can start a shortcut from it)"),
     ("Notifications", "pushover_emergency", "Pushover: alarms as emergency (critical alert, repeats until confirmed)"),
     ("Updates", "update_auto", "Look for new versions by itself (every 3 hours)"),
     ("Updates", "update_install", "Install new versions automatically"),
@@ -31779,7 +31967,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.26")
+        self.root.title("Motion Watch 2.95.27")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -32069,7 +32257,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.26 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.27 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -38768,6 +38956,11 @@ for _k, _v in _HX37.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX52 = {'Repeater switched off again by itself: the Pi had no connection to a network any more': ('Repeater wieder von selbst ausgeschaltet: der Pi hatte keine Verbindung zu einem Netz mehr', "Répéteur désactivé automatiquement : le Pi n'avait plus de connexion réseau", 'Ripetitore spento da solo: il Pi non aveva più connessione a una rete', "Repetitur deactivà da sasez: il Pi n'aveva nagina colliaziun cun ina rait pli")}
 for _k, _v in _HX52.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX59 = {'Keyword at the start of every message (e.g. MW gives MW-ALARM)': ('Stichwort am Anfang jeder Meldung (z. B. MW ergibt MW-ALARM)', 'Mot-clé au début de chaque message (p. ex. MW donne MW-ALARM)', "Parola chiave all'inizio di ogni messaggio (es. MW dà MW-ALARM)", 'Pled-clav al cumenzament da mintga messadi (p. ex. MW dat MW-ALARM)'), 'Keyword at the start of every message (MW-ALARM, MW-WAERME …: for iPhone shortcuts)': ('Stichwort am Anfang jeder Meldung (MW-ALARM, MW-WAERME …: für iPhone-Kurzbefehle)', 'Mot-clé au début de chaque message (MW-ALARM … : pour les raccourcis iPhone)', 'Parola chiave all’inizio di ogni messaggio (MW-ALARM …: per i comandi rapidi iPhone)', 'Pled-clav al cumenzament da mintga messadi (MW-ALARM …: per scursanidas iPhone)'), 'E-mail: messages also by e-mail (the iPhone can start a shortcut from it)': ('E-Mail: Meldungen auch per E-Mail (das iPhone kann damit einen Kurzbefehl starten)', 'E-mail : messages aussi par e-mail (l’iPhone peut lancer un raccourci)', 'E-mail: messaggi anche per e-mail (l’iPhone può avviare un comando rapido)', 'E-mail: messadis era per e-mail (l’iPhone po aviar ina scursanida)'), 'E-mail: to (your address)': ('E-Mail: an (deine Adresse)', 'E-mail : à (votre adresse)', 'E-mail: a (il tuo indirizzo)', 'E-mail: a (tia adressa)'), 'E-mail: SMTP server (e.g. smtp.gmail.com, mail.gmx.net)': ('E-Mail: SMTP-Server (z. B. smtp.gmail.com, mail.gmx.net, smtp.mail.me.com)', 'E-mail : serveur SMTP (p. ex. smtp.gmail.com)', 'E-mail: server SMTP (es. smtp.gmail.com)', 'E-mail: server SMTP (p. ex. smtp.gmail.com)'), 'E-mail: port (587 or 465)': ('E-Mail: Port (587 oder 465)', 'E-mail : port (587 ou 465)', 'E-mail: porta (587 o 465)', 'E-mail: port (587 u 465)'), 'E-mail: user name (usually the address)': ('E-Mail: Benutzername (meist die Adresse)', 'E-mail : nom d’utilisateur (souvent l’adresse)', 'E-mail: nome utente (di solito l’indirizzo)', 'E-mail: num d’utilisader (savens l’adressa)'), 'E-mail: password (Gmail / iCloud: app password)': ('E-Mail: Passwort (Gmail / iCloud: App-Passwort)', 'E-mail : mot de passe (Gmail / iCloud : mot de passe d’application)', 'E-mail: password (Gmail / iCloud: password per app)', 'E-mail: pled-clav (Gmail / iCloud: pled-clav d’app)'), 'E-mail: which messages': ('E-Mail: welche Meldungen', 'E-mail : quels messages', 'E-mail: quali messaggi', 'E-mail: tge messadis'), 'only alarms (person, warm, noise, sabotage)': ('nur Alarme (Person, Wärme, Lärm, Sabotage)', 'seulement les alarmes', 'solo gli allarmi', 'mo alarms'), 'all messages': ('alle Meldungen', 'tous les messages', 'tutti i messaggi', 'tut ils messadis'), 'invalid e-mail address': ('ungültige E-Mail-Adresse', 'adresse e-mail invalide', 'indirizzo e-mail non valido', 'adressa d’e-mail nunvalida'), 'port 587 or 465': ('Port 587 oder 465', 'port 587 ou 465', 'porta 587 o 465', 'port 587 u 465'), '1 to 12 letters or digits': ('1 bis 12 Buchstaben oder Ziffern', '1 à 12 lettres ou chiffres', 'da 1 a 12 lettere o cifre', '1 fin 12 bustabs u cifras')}
+for _k, _v in _HX59.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

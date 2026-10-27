@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 14:34",
+ "generated": "2026-10-27 14:40",
  "versions": [
   {
-   "version": "2.95.26",
-   "file": "webcam_bewegung_2_95_26.py",
+   "version": "2.95.27",
+   "file": "webcam_bewegung_2_95_27.py",
    "url": "",
-   "sha256": "114a8103b9bf14d9076126d36caacdb385181dfcd7045f42ebbc1ed9a53e1145",
-   "date": "2026-10-27 14:34",
-   "notes": "Pushover as an extra way for alarms (emergency = critical alert on the iPhone, rings also when muted); «simulation on by itself» is off by default on a Raspberry Pi; the simulator calculates slower while Motion Watch saves power (3D-3.30); MW Sim · Basis 3.7 (new name and symbol).",
-   "sig": "7fc4b86913b0239c86cd126b05fb1f52de1d5d944ec642285f4713ce7b77d479d0b791384770cd4c35d8520e4c5edc3031198b15a69848b76f77ed877ab58b01"
+   "sha256": "5008a39bc533443dd2d499a80ce7252c65d7da007843841a77914bb7de8c358e",
+   "date": "2026-10-27 14:40",
+   "notes": "FIX - since 2.95.25 a few settings were missing from the defaults (simulator auto update, network watch, presence): errors on some pages. New: a keyword at the start of every message (MW-ALARM, MW-WAERME …) for iPhone shortcut automations, e-mail as a way for messages, shortcut addresses (/k/<key>/arm, siren_off, light_on, photo.jpg …).",
+   "sig": "9feab1c2eb018d432430bfbb2c328d4cb8bf51a887c8bc1e2bc96282a75ffcb60ac5aeb91e1436d28c9f7b3da60419a25f55165df76e13cf280a8d234e80070c"
   },
   {
    "version": "2.94.5",
