@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.29 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.30 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -454,3 +454,7 @@ NEU IN 3D-3.28
 NEU IN 3D-3.29
 - Die Meldung «hier ist ein Simulator» enthält jetzt die CPU-Auslastung des PCs und des Simulators: Motion Watch zeigt
   sie in der Liste der Simulatoren schon an, bevor die Simulation eingeschaltet ist.
+
+NEU IN 3D-3.30
+- Stromsparen zusammen mit Motion Watch: ist dort alles ruhig (Stromsparmodus «spart»), rechnet der Simulator bei
+  geschlossenem Fenster langsamer (höchstens 12 statt 30 Bilder pro Sekunde). Bewegt sich etwas, geht es sofort normal weiter.

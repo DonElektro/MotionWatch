@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Motion Watch – camping simulator 3  (separate program, protocol: motionwatch_sim_interface.py in the same folder)
+MW Sim · Basis – the camping simulator of Motion Watch (separate program, protocol: motionwatch_sim_interface.py in the same folder)
 
 Tests Motion Watch without hardware:
   * real 3D: the cameras look into a 360° world with a depth for every pixel (a drawn camping place or YOUR OWN 360° photo);
@@ -43,7 +43,93 @@ import numpy as np
 
 from motionwatch_sim_interface import SimServer, SimInfo, CamInfo, SimReply, DEFAULT_PORT
 
-SIM_VERSION = "3.6"
+SIM_VERSION = "3.7"
+SIM_NAME = "MW Sim · Basis"          # the simulators are called MW Sim · Basis / 3D / Welt (3.7)
+SIM_ICON = ('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'
+            'gg==')   # 64 px PNG: the radar eye with the grey badge
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -332,7 +418,7 @@ class CampingSim(SimServer):
     def __init__(self, port=DEFAULT_PORT, pano=None, autoupdate=True, hd=False):
         # normal: a size that is plenty for motion detection and the AI and keeps the CPU of a Pi cool; --hd: bigger pictures
         w0, h0, w1, h1 = (1280, 720, 960, 540) if hd else (960, 540, 640, 360)
-        info = SimInfo(name=f"Motion Watch camping simulator {SIM_VERSION}",
+        info = SimInfo(name=f"{SIM_NAME} {SIM_VERSION}",
                        cameras=[CamInfo(0, "Head camera (NoIR)", w0, h0, 12.0, 66.0, 41.0, True, True),
                                 CamInfo(1, "Caravan camera", w1, h1, 8.0, 100.0, 62.0, False, False)],
                        thermal={"w": 80, "h": 62, "fps": 8.0, "fov_h": 45.0, "fov_v": 35.0, "unit": "C", "on_head": True},
@@ -1203,7 +1289,11 @@ def window(sim):
     except ImportError:
         Image = ImageTk = None
     BG, FG, MUT = "#161b22", "#c9d1d9", "#8b949e"
-    root = tk.Tk(); root.title(f"Motion Watch – Simulator {SIM_VERSION}"); root.configure(bg=BG)
+    root = tk.Tk(); root.title(f"{SIM_NAME} {SIM_VERSION}"); root.configure(bg=BG)
+    try:
+        root._icon = tk.PhotoImage(data=SIM_ICON); root.iconphoto(True, root._icon)
+    except Exception:
+        pass
     sty = ttk.Style(); sty.theme_use("clam")
     left = tk.Frame(root, bg=BG); left.pack(side="left", fill="both", expand=True, padx=8, pady=8)
     right = tk.Frame(root, bg=BG); right.pack(side="right", fill="y", padx=8, pady=8)
@@ -1372,7 +1462,7 @@ def window(sim):
 
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(description=f"Motion Watch camping simulator {SIM_VERSION}")
+    ap = argparse.ArgumentParser(description=f"{SIM_NAME} {SIM_VERSION}")
     ap.add_argument("--port", type=int, default=DEFAULT_PORT)
     ap.add_argument("--no-window", action="store_true", help="without the control window")
     ap.add_argument("--no-update", action="store_true", help="never update itself from Motion Watch")

@@ -1,7 +1,7 @@
 {
- "version": "3D-3.29",
+ "version": "3D-3.30",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30748634,
- "sha256": "f2a5df90dc32bda736fa4139ebec2b0be4e6ed8ad6afd188f3bbecaae14dd68c",
- "notes": "CPU-Auslastung schon in der Meldung «hier ist ein Simulator»."
+ "size": 30749049,
+ "sha256": "5a840a2e5a34e351bfd7e1c489784835ea116d38f4c05caed7308b64e5eaaca4",
+ "notes": "Stromsparen zusammen mit Motion Watch."
 }

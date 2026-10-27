@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.29"
+const VERSION := "3D-3.30"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1419,7 +1419,9 @@ func _check_active() -> void:
 			next_auto = max(next_auto, now() + 5.0)
 		print("simulation " + ("runs" if act else "pauses (nobody looks)"))
 	get_viewport().disable_3d = not win_open      # the big 3D view only when it can be seen
-	Engine.max_fps = _fps0 if win_open else (60 if playing else (30 if sim_active else 5))
+	# 3D-3.30: Motion Watch saves power (nothing happens there): the simulator calculates slower too (window closed)
+	var mw_saving: bool = conn and str(mw.get("eco", "")) == "saving" and not playing and not (testrun != null and testrun.running)
+	Engine.max_fps = _fps0 if win_open else (60 if playing else ((12 if mw_saving else 30) if sim_active else 5))
 
 
 # ---- pictures for Motion Watch -------------------------------------------------------------------------------------

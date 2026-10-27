@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 14:18",
+ "generated": "2026-10-27 14:34",
  "versions": [
   {
-   "version": "2.95.25",
-   "file": "webcam_bewegung_2_95_25.py",
+   "version": "2.95.26",
+   "file": "webcam_bewegung_2_95_26.py",
    "url": "",
-   "sha256": "9396b7cba7a6ca92d41fd8d355c37516e9256308c454fff41d5c4885ef51d49e",
-   "date": "2026-10-27 14:18",
-   "notes": "the simulation goes on by itself when a simulator is online (and off again 60 s after the last one is gone; switch «Switch the simulation on by itself»); CPU of a simulator's PC in the list before the simulation is on (3D-3.29); power saving also saves in the simulation; the radar sweep turns in the page header.",
-   "sig": "8bf4fa2db3232196c35f1667367bf4dbb177d7a599ae8b7c112374a108cab7feb10c405f1de7544131c3e4193bc7aa8c33fe404e88e856f5d86b0f6e894e4a0d"
+   "sha256": "114a8103b9bf14d9076126d36caacdb385181dfcd7045f42ebbc1ed9a53e1145",
+   "date": "2026-10-27 14:34",
+   "notes": "Pushover as an extra way for alarms (emergency = critical alert on the iPhone, rings also when muted); «simulation on by itself» is off by default on a Raspberry Pi; the simulator calculates slower while Motion Watch saves power (3D-3.30); MW Sim · Basis 3.7 (new name and symbol).",
+   "sig": "7fc4b86913b0239c86cd126b05fb1f52de1d5d944ec642285f4713ce7b77d479d0b791384770cd4c35d8520e4c5edc3031198b15a69848b76f77ed877ab58b01"
   },
   {
    "version": "2.94.5",
