@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 10:14",
+ "generated": "2026-10-27 10:23",
  "versions": [
   {
-   "version": "2.95.10",
-   "file": "webcam_bewegung_2_95_10.py",
+   "version": "2.95.11",
+   "file": "webcam_bewegung_2_95_11.py",
    "url": "",
-   "sha256": "f3faa5d7a7d81bc01fb8c04d876556630878b537fb175b755fbe2a7b709dce3e",
-   "date": "2026-10-27 10:14",
-   "notes": "tab Simulator: order Connection, status, picture. The simulator window is fetched picture by picture (never a growing delay). Finger on the picture: scrolls the page, a tap clicks; with ✋ the finger controls the simulator.",
-   "sig": "691bb949d0c75ae4aa71c6a603eb71edadf5c8aeeed324fd7ecd6615d15c9a03c843da71b0f524b70b651ed3a1f6656f58b3e223e5e825e0a17d4fb12ae51207"
+   "sha256": "02e6bf4a38224bbd4bda7e42154b8d91625acf31a1aa6c500e51841e09e9dd82",
+   "date": "2026-10-27 10:23",
+   "notes": "tab Simulator: the game of the 3D simulator (open / close, QR code and address, big QR code to photograph). Touch controls on the simulator window (✋ or full screen): left stick = fly, right stick = look around, ▲ ▼. 3D-3.20.",
+   "sig": "d14a33b150e2e2d243aceaa85e6aa5e40007fc4050227c0c0c481e2e623ade96f125396424ceedaf07f54387ecbd08fa45c7ca2a57d44ee44a6676b39e0f2700"
   },
   {
    "version": "2.94.5",

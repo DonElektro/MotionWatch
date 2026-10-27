@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.19"
+const VERSION := "3D-3.20"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2015,7 +2015,8 @@ func control_info() -> Dictionary:
 		out.append(d)
 	return {"ok": true, "v": 1, "name": "Motion Watch 3D-Simulator %s" % VERSION,
 				"scenarios": scenarios(), "scenario": scene,
-			"controls": out, "status": status_text(), "upload": null}
+			"controls": out, "status": status_text(), "upload": null,
+			"game": {"open": game != null and game.open, "url": game.address() if game != null and game.open else "", "players": game.count() if game != null else 0}}
 
 
 func control(d: Dictionary) -> Dictionary:
@@ -3950,6 +3951,7 @@ var view_no := 0
 var _view_t := 0.0
 var _in_pos := Vector2.ZERO
 var _in_mask := 0
+var _rkeys := {}                       # keys held from Motion Watch -> time when they are let go by themselves
 const VIEW_MAX_W := 1024
 const VIEW_KEYS := {"ArrowUp": KEY_UP, "ArrowDown": KEY_DOWN, "ArrowLeft": KEY_LEFT, "ArrowRight": KEY_RIGHT, "w": KEY_W, "a": KEY_A,
 		"s": KEY_S, "d": KEY_D, "q": KEY_Q, "e": KEY_E, "r": KEY_R, "f": KEY_F, "PageUp": KEY_PAGEUP, "PageDown": KEY_PAGEDOWN,
@@ -3967,6 +3969,14 @@ func view_rect() -> Rect2:
 
 func _view_capture() -> void:
 	var t := now()
+	for kc in _rkeys.keys():
+		if t > float(_rkeys[kc]):
+			_rkeys.erase(kc)
+			var ku := InputEventKey.new()
+			ku.keycode = kc
+			ku.physical_keycode = kc
+			ku.pressed = false
+			Input.parse_input_event(ku)
 	# the window is the small box (or minimized): the view for Motion Watch is drawn in a picture of its own (3D-3.19)
 	_remote_set(t - view_want_t < (10.0 if remote_vp != null else 3.0) and not win_open)
 	if t - view_want_t > 3.0 or t - _view_t < 1.0 / max(1.0, view_fps):
@@ -4037,6 +4047,10 @@ func view_input(evs: Array) -> int:
 			ke.physical_keycode = kc
 			ke.pressed = bool(e.get("down", true))
 			Input.parse_input_event(ke)
+			if ke.pressed:
+				_rkeys[kc] = now() + 1.2                 # held from Motion Watch: let go by itself if no news comes (lost connection)
+			else:
+				_rkeys.erase(kc)
 		else:
 			continue
 		if t != "key":

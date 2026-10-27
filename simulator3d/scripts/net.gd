@@ -210,6 +210,12 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 			for v in a2:
 				arr.append(snappedf(v, 0.01))
 			_json(c, {"v": 1, "w": main.TH_W, "h": main.TH_H, "unit": "C", "data": arr})
+		"/game_qr.png":                                  # the QR code of the game (for the page of Motion Watch) - 3D-3.20
+			if main.game == null or not main.game.open:
+				_json(c, {"ok": false, "error": "game not open"}, 404)
+			else:
+				var tq: ImageTexture = main.game.Qr.texture(main.game.address(), 8)
+				_send(c, 200, tq.get_image().save_png_to_buffer() if tq != null else PackedByteArray(), "image/png")
 		"/view.jpg":                                     # the simulator window (3D view with map, compass, buttons) - 3D-3.18
 			main.view_want_t = main.now()
 			_send(c, 200, main.view_jpg, "image/jpeg")

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_10.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_11.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -566,6 +566,8 @@ Features
     button ⛶ for the picture (simulator window or camera picture).
   * 2.95.10: tab Simulator: order Connection, status, picture. The simulator window is fetched picture by picture (never
     a growing delay). Finger on the picture: scrolls the page, a tap clicks; with ✋ the finger controls the simulator.
+  * 2.95.11: tab Simulator: the game of the 3D simulator (open / close, QR code and address, big QR code to photograph).
+    Touch controls on the simulator window (✋ or full screen): left stick = fly, right stick = look around, ▲ ▼. 3D-3.20.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -574,10 +576,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_10.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_11.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_10.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_10.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_11.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_11.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -594,7 +596,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.10"
+APP_VERSION = "2.95.11"
 
 
 def default_data_dir():
@@ -12571,8 +12573,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.19", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30565177,
-         "sha256": "84c315a6c413452719e5f2d205c309926768967ffd46f4ccc6cf688ba0b8e16b"}
+SIM3D = {"version": "3D-3.20", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30565851,
+         "sha256": "f582bbdba14cd0ec6e481223b3734d67391fcc032863d1dab2e89433b0e7f29d"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.1", "file": "simulator_python/MotionWatchSimulator_PY-1.1.zip", "size": 137697,
@@ -14264,7 +14266,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_10.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_11.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -18924,6 +18926,48 @@ function simViewBind(VI, opt) {
   return {push: push};
 }
 
+// ---- touch controls on the simulator window (2.95.11): left stick = fly (W A S D), right stick = look around, ▲ ▼ = up / down ----
+function simTouchPad(box, VB, show) {
+  if (!document.getElementById("stp-css")) { const st = document.createElement("style"); st.id = "stp-css"; st.textContent =
+    ".stp{position:absolute;inset:0;pointer-events:none;z-index:1}.stp .stk{position:absolute;bottom:22%;width:clamp(96px,22vmin,150px);aspect-ratio:1;border-radius:50%;" +
+    "background:rgba(10,14,20,.35);border:2px solid rgba(255,255,255,.45);pointer-events:auto;touch-action:none}.stp .stk.l{left:14px}.stp .stk.r{right:62px}" +
+    ".stp .kn{position:absolute;left:50%;top:50%;width:42%;height:42%;margin:-21% 0 0 -21%;border-radius:50%;background:rgba(255,255,255,.75);pointer-events:none}" +
+    ".stp .lb{position:absolute;left:0;right:0;bottom:-20px;text-align:center;font-size:11px;color:#fff;text-shadow:0 1px 2px #000}" +
+    ".stp .ud{position:absolute;right:14px;bottom:22%;display:flex;flex-direction:column;gap:8px;pointer-events:auto}" +
+    ".stp .ud button{width:42px;height:42px;border-radius:10px;border:1px solid rgba(255,255,255,.4);background:rgba(10,14,20,.55);color:#fff;font-size:18px;touch-action:none}";
+    document.head.appendChild(st); }
+  const P = document.createElement("div"); P.className = "stp"; P.hidden = true;
+  P.innerHTML = '<div class="stk l"><div class="kn"></div><div class="lb">fliegen</div></div><div class="stk r"><div class="kn"></div><div class="lb">umschauen</div></div>' +
+    '<div class="ud"><button type="button" data-k="e">▲</button><button type="button" data-k="q">▼</button></div>';
+  box.appendChild(P);
+  const held = new Set(), key = (k, on) => { if (on === held.has(k)) return; on ? held.add(k) : held.delete(k); VB.push({t: "key", k: k, down: on}, true); };
+  setInterval(() => held.forEach(k => VB.push({t: "key", k: k, down: true}, true)), 400);     // the simulator lets go by itself without news
+  const stick = (el, onMove, onEnd) => {
+    const kn = el.querySelector(".kn"); let id = null;
+    const at = e => { const r = el.getBoundingClientRect(); let x = (e.clientX - r.left) / r.width * 2 - 1, y = (e.clientY - r.top) / r.height * 2 - 1;
+      const m = Math.hypot(x, y); if (m > 1) { x /= m; y /= m; } kn.style.transform = "translate(" + x * 60 + "%," + y * 60 + "%)"; return [x, y]; };
+    el.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); id = e.pointerId; try { el.setPointerCapture(id); } catch (x) {} onMove(...at(e), true); });
+    el.addEventListener("pointermove", e => { if (e.pointerId !== id) return; e.preventDefault(); onMove(...at(e), false); });
+    const end = e => { if (e.pointerId !== id) return; id = null; kn.style.transform = ""; onEnd(); };
+    el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
+  };
+  stick(P.querySelector(".stk.l"), (x, y) => { key("w", y < -0.35); key("s", y > 0.35); key("a", x < -0.35); key("d", x > 0.35); key("Shift", Math.hypot(x, y) > 0.95); },
+    () => ["w", "s", "a", "d", "Shift"].forEach(k => key(k, false)));
+  let lk = null, lv = [0, 0], cur = [0.5, 0.5];                  // looking: a drag with the right mouse button that goes on while the stick is held
+  stick(P.querySelector(".stk.r"), (x, y, first) => { lv = [x, y];
+      if (first) { cur = [0.5, 0.5]; VB.push({t: "move", x: 0.5, y: 0.5}); VB.push({t: "down", b: 2, x: 0.5, y: 0.5}, true);
+        lk = setInterval(() => { cur = [cur[0] + lv[0] * 0.012, cur[1] + lv[1] * 0.008];
+          if (cur[0] < 0.05 || cur[0] > 0.95 || cur[1] < 0.05 || cur[1] > 0.95) {        // at the edge: let go and start again in the middle
+            VB.push({t: "up", b: 2, x: cur[0], y: cur[1]}); cur = [0.5, 0.5]; VB.push({t: "move", x: 0.5, y: 0.5}); VB.push({t: "down", b: 2, x: 0.5, y: 0.5}, true); }
+          else VB.push({t: "move", x: cur[0], y: cur[1]}); }, 50); } },
+    () => { clearInterval(lk); lk = null; VB.push({t: "up", b: 2, x: cur[0], y: cur[1]}, true); });
+  P.querySelectorAll(".ud button").forEach(b => { const k = b.dataset.k;
+    b.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); try { b.setPointerCapture(e.pointerId); } catch (x) {} key(k, true); });
+    ["pointerup", "pointercancel"].forEach(n => b.addEventListener(n, () => key(k, false))); });
+  setInterval(() => { const on = !!show(); if (P.hidden === on) { P.hidden = !on; if (!on) { ["w", "s", "a", "d", "e", "q", "Shift"].forEach(k => key(k, false)); } } }, 300);
+  return P;
+}
+
 // ---- the picture of the simulator window, fetched one by one (2.95.10): always the newest, never a growing delay ----
 function simViewPoll(VI, fps) {
   let on = false, gen = 0, url = "";
@@ -18987,6 +19031,11 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .dl .main{grid-column:1/-1}
 #c-prev{padding:12px}#c-prev>*+*{margin-top:8px}
 .pvw{position:relative;background:#000;border-radius:10px;overflow:hidden}
+.gm{display:flex;gap:18px;align-items:center;flex-wrap:wrap}.gm-t{flex:1;min-width:220px}
+.gm-qr img{width:180px;height:180px;image-rendering:pixelated;background:#fff;border-radius:8px;padding:6px;cursor:zoom-in;display:block}
+.gm-url{font-size:18px;font-weight:600;margin-top:6px;word-break:break-all;user-select:all}
+#g-bigov{position:fixed;inset:0;z-index:300;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}
+#g-bigov img{width:min(80vw,70vh);height:min(80vw,70vh);image-rendering:pixelated}#g-urlbig{font-size:clamp(18px,4vw,34px);font-weight:700;word-break:break-all;text-align:center}
 .supd{margin:10px 0 2px;padding:10px 12px;border-radius:10px;border:1px solid #b88a1c;background:rgba(240,180,40,.12)}
 .supd-t{font-weight:600;color:#e8b33a}.supd-n{margin-top:3px}.sver{margin-top:6px;font-size:13px}
 .pvmode{display:flex;border:1px solid var(--line,#1f2b3a);border-radius:10px;overflow:hidden;margin:0 0 10px}
@@ -19048,6 +19097,20 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="mut sver" id="s-ver"></div>
     <div class="tiles" id="s-tiles"></div>
   </section>
+  <section class="sc wide" id="c-game" hidden>
+    <div class="gm">
+      <div class="gm-qr" id="g-qrbox" hidden><img id="g-qr" alt="QR" onclick="gameBig(true)"></div>
+      <div class="gm-t">
+        <h2 style="margin:0 0 6px">🎮 <span data-i18n="Game «Unseen to the goal»">Game «Unseen to the goal»</span></h2>
+        <div class="mut" id="g-txt"></div>
+        <div class="gm-url" id="g-url"></div>
+        <div class="btns" style="margin-top:10px"><button type="button" id="g-open" onclick="gameOpen(true)"></button>
+          <button type="button" class="sec" id="g-big" onclick="gameBig(true)" hidden>🔍 <span data-i18n="Show the QR code big">Show the QR code big</span></button>
+          <button type="button" class="sec" id="g-close" onclick="gameOpen(false)" hidden data-i18n="Close the game">Close the game</button></div>
+      </div>
+    </div>
+  </section>
+  <div id="g-bigov" hidden onclick="gameBig(false)"><img id="g-qrbig" alt="QR"><div id="g-urlbig"></div><div class="mut" data-i18n="Tap to close">Tap to close</div></div>
   <section class="sc wide" id="c-prev">
     <div class="pvmode" id="s-pvmode" hidden><button type="button" data-m="view">🗺 <span data-i18n="Simulator window">Simulator window</span></button><button type="button" data-m="cam">📷 <span data-i18n="Camera picture">Camera picture</span></button></div>
     <div class="pvw" id="s-pvw"><img id="s-prev" alt="" draggable="false" tabindex="0"><span class="pvlive" id="s-pvlive" hidden>● LIVE</span>
@@ -19125,7 +19188,7 @@ Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "c
  "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in",
  "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.",
  "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "Use": "Verwenden", "in use": "in Gebrauch",
- "Version": "Version", "installed": "installiert", "newest": "neueste", "up to date": "aktuell", "newest version not known": "neueste Version unbekannt", "checking for the newest version …": "suche die neueste Version …", "New update for the simulator": "Neues Update für den Simulator", "Update it in the simulator on the PC.": "Im Simulator auf dem PC aktualisieren.", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» oben.", "The finger now controls the simulator (scrolling: press ✋ again)": "Der Finger bedient jetzt den Simulator (Scrollen: ✋ nochmals drücken)", "The finger scrolls the page again (a tap still clicks)": "Der Finger scrollt wieder die Seite (Antippen klickt trotzdem)", "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
+ "Version": "Version", "installed": "installiert", "newest": "neueste", "up to date": "aktuell", "newest version not known": "neueste Version unbekannt", "checking for the newest version …": "suche die neueste Version …", "New update for the simulator": "Neues Update für den Simulator", "Update it in the simulator on the PC.": "Im Simulator auf dem PC aktualisieren.", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» oben.", "The finger now controls the simulator (scrolling: press ✋ again)": "Der Finger bedient jetzt den Simulator (Scrollen: ✋ nochmals drücken)", "The finger scrolls the page again (a tap still clicks)": "Der Finger scrollt wieder die Seite (Antippen klickt trotzdem)", "Game «Unseen to the goal»": "Spiel «Unentdeckt ans Ziel»", "Show the QR code big": "QR-Code gross zeigen", "Close the game": "Spiel schliessen", "Tap to close": "Antippen zum Schliessen", "Open the game": "Spiel öffnen", "Players scan the QR code with their phone (same WLAN) or open the address:": "Mitspieler scannen den QR-Code mit dem Handy (gleiches WLAN) oder öffnen die Adresse:", "players": "Spieler", "Up to 4 players sneak unseen to the goal with their phones. Open the game, then they scan the QR code.": "Bis zu 4 Spieler schleichen mit dem Handy unentdeckt zum Ziel. Spiel öffnen, dann scannen sie den QR-Code.", "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
  "The picture appears when the simulation is on.": "Das Bild erscheint, wenn die Simulation eingeschaltet ist.",
  "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "running": "läuft", "Controls": "Bedienung",
  "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a file to the simulator": "Datei zum Simulator hochladen",
@@ -19201,6 +19264,21 @@ function updPaint(r) {
   b.title = newer ? t("New version available") + ": " + nw : t("The simulator looks for a new version and installs it");
   b.lastChild.textContent = newer ? t("Update the simulator") + " → " + nw : t("Update the simulator");
 }
+// ---- the game of the 3D simulator (3D-3.20): QR code and address here, for the phones of the players ----
+let GQR = "";
+function gamePaint(r) {
+  const G = r && r.ok ? r.game : null, c = $("#c-game");
+  c.hidden = !G || !(S && S.on); if (c.hidden) return;
+  $("#g-open").hidden = !!G.open; $("#g-close").hidden = !G.open; $("#g-big").hidden = !G.open; $("#g-qrbox").hidden = !G.open;
+  $("#g-open").textContent = "▶ " + t("Open the game");
+  $("#g-txt").textContent = G.open ? t("Players scan the QR code with their phone (same WLAN) or open the address:") + " · " + t("players") + ": " + (G.players || 0) + " / 4"
+    : t("Up to 4 players sneak unseen to the goal with their phones. Open the game, then they scan the QR code.");
+  $("#g-url").textContent = G.open ? G.url : "";
+  if (G.open && GQR !== G.url) { GQR = G.url; const u = "/sim/game_qr.png?r=" + Date.now(); $("#g-qr").src = u; $("#g-qrbig").src = u; $("#g-urlbig").textContent = G.url; }
+  if (!G.open) { GQR = ""; gameBig(false); }
+}
+async function gameOpen(on) { await ctl({ctl: "set", id: "game_open", value: !!on}); }
+function gameBig(on) { $("#g-bigov").hidden = !on; }
 async function simUpdate() {
   const b = $("#s-upd"); b.disabled = true;
   const r = await post("/api/sim", {action: "ctl", ctl: "press", id: "update_now", lang: LANG});
@@ -19226,7 +19304,7 @@ function showCtl(r) {
   $("#s-cname").textContent = r.name ? "· " + r.name : "";
   const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options, c.sub])]);
   if (sig !== CS) { CS = sig; buildCtl(r); }
-  updPaint(r);
+  updPaint(r); gamePaint(r);
   document.querySelectorAll("#s-groups [data-cid]").forEach(row => {
     const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
     if (c.type === "toggle") inp.checked = !!c.value; else if (c.value != null) inp.value = c.value;
@@ -19286,6 +19364,7 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) PVP.s
 { let rot = false;
   const VB = simViewBind($("#s-prev"), {rot: () => rot, active: () => pvView() && !$("#s-prev").closest("#pip"),
     ctl: () => PVCTL || !!(document.fullscreenElement || document.webkitFullscreenElement) || $("#s-pvw").classList.contains("fs")});
+  simTouchPad($("#s-pvw"), VB, () => pvView() && !$("#s-prev").closest("#pip") && (PVCTL || !!(document.fullscreenElement || document.webkitFullscreenElement) || $("#s-pvw").classList.contains("fs")));
   $("#s-vctl").onclick = () => { PVCTL = !PVCTL; $("#s-vctl").classList.toggle("on", PVCTL); toast(PVCTL ? "✋ " + t("The finger now controls the simulator (scrolling: press ✋ again)") : "↕ " + t("The finger scrolls the page again (a tap still clicks)")); };
   $("#s-vin").onclick = () => VB.push({t: "wheel", d: 1, x: 0.5, y: 0.5}, true);
   $("#s-vout").onclick = () => VB.push({t: "wheel", d: -1, x: 0.5, y: 0.5}, true);
@@ -23456,6 +23535,7 @@ function simExtras(d) {
     $("#lv-vin").onclick = zoom(1); $("#lv-vout").onclick = zoom(-1);
     $("#lv-vrot").onclick = () => { rot = !rot; $("#lv-vrot").classList.toggle("on", rot); };
     $("#lv-vctl").onclick = () => { vctl = !vctl; $("#lv-vctl").classList.toggle("on", vctl); };
+    simTouchPad(VI.parentElement, VB, () => vOn && (vctl || VW.classList.contains("big")));
     $("#lv-vbig").onclick = () => { VW.classList.toggle("big"); $("#lv-vbig").textContent = VW.classList.contains("big") ? "✕" : "⛶"; };
     const vtick = () => {
       const S_ = QSJ && QSJ.state && QSJ.state.sim, want = !!(S_ && S_.on && S_.ok && S_.view) && D.open && !document.hidden && !W.hidden;
@@ -26043,6 +26123,17 @@ class WebStream:
             if not SIM3D_DL["msg"]:
                 sim3d_fetch()
             return Response(sim3d_wait_page(lang), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+        @app.route("/sim/game_qr.png")
+        def sim_game_qr():
+            """the QR code of the game in the 3D simulator (3D-3.20): players photograph it with their phone"""
+            if not CFG["sim_on"]:
+                return Response("simulation off", 404)
+            try:
+                b_, _h = _sim_get("/game_qr.png", 3.0)
+            except Exception:
+                return Response("game not open", 404)
+            return Response(b_, mimetype="image/png", headers={"Cache-Control": "no-store"})
 
         @app.route("/sim/view.jpg")
         def sim_view_jpg():
@@ -28667,7 +28758,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.10")
+        self.root.title("Motion Watch 2.95.11")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -28957,7 +29048,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.10 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.11 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

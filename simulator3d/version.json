@@ -1,7 +1,7 @@
 {
- "version": "3D-3.19",
+ "version": "3D-3.20",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30565177,
- "sha256": "84c315a6c413452719e5f2d205c309926768967ffd46f4ccc6cf688ba0b8e16b",
- "notes": "Das Simulator-Fenster in Motion Watch geht jetzt auch, wenn der Simulator als kleines Kästchen läuft."
+ "size": 30565851,
+ "sha256": "f582bbdba14cd0ec6e481223b3734d67391fcc032863d1dab2e89433b0e7f29d",
+ "notes": "Spiel: QR-Code auch in Motion Watch. Touch-Steuerung (Sticks) für das Simulator-Fenster in Motion Watch."
 }
