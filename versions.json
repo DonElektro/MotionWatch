@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 09:41",
+ "generated": "2026-10-27 09:54",
  "versions": [
   {
-   "version": "2.95.6",
-   "file": "webcam_bewegung_2_95_6.py",
+   "version": "2.95.7",
+   "file": "webcam_bewegung_2_95_7.py",
    "url": "",
-   "sha256": "03da225b4d25ac5c4fae11eceb4cda55ec8e5cc22c210e93faec25d3ff3f2026",
-   "date": "2026-10-27 09:41",
-   "notes": "tab Simulator: the picture at the top shows the simulator window (map, compass, view buttons) and is operated with mouse / finger / keys; switch «Simulator window» / «Camera picture» above it.",
-   "sig": "99fb824a494c232966c0a3e610a0e5645f41c79acbc52937071c8bda9d96473577c977f8cf91b41a7a140b46ab44ae50a2e70c0f11724bb6e7a475769413d80e"
+   "sha256": "42eb8deff889b0822bbaf5b7bfbd16cdb7ae6560d5f824314274eabd361f07dd",
+   "date": "2026-10-27 09:54",
+   "notes": "3D simulator 3D-3.19: the simulator window also works while the simulator is the small box on the PC.",
+   "sig": "ad3974b9b27a857211af299e161ab8a8543c7b820d1019e2dbbdd7b3607e18e5266df4e8e45411b0843f243856063139848e5ad39d1834194d9ea1b7811c9604"
   },
   {
    "version": "2.94.5",

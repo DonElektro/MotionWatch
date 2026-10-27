@@ -1,7 +1,7 @@
 {
- "version": "3D-3.18",
+ "version": "3D-3.19",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30563303,
- "sha256": "fdb6dac274878420c6809cf271aee2d59e4f3346053465fe6dd63feba8125b1a",
- "notes": "Motion Watch (ab 2.95.3) zeigt das Fenster des Simulators mit Karte und Ansichts-Knöpfen auf der Live-Seite und lässt es mit Maus oder Finger bedienen."
+ "size": 30565177,
+ "sha256": "84c315a6c413452719e5f2d205c309926768967ffd46f4ccc6cf688ba0b8e16b",
+ "notes": "Das Simulator-Fenster in Motion Watch geht jetzt auch, wenn der Simulator als kleines Kästchen läuft."
 }

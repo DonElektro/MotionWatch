@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.18"
+const VERSION := "3D-3.19"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2188,6 +2188,7 @@ func _build_ui() -> void:
 	toolbar (hide, search, groups only, expand all, collapse all), cards, at the bottom «Einfach | Experte»"""
 	var layer := CanvasLayer.new()
 	add_child(layer)
+	ui_layer = layer
 	var th: Theme = UI.theme()
 	phone = Phone.new()
 	phone.main = self
@@ -3957,7 +3958,7 @@ const VIEW_KEYS := {"ArrowUp": KEY_UP, "ArrowDown": KEY_DOWN, "ArrowLeft": KEY_L
 
 func view_rect() -> Rect2:
 	"""the part of the window with the 3D world (without the panel on the right)"""
-	var vs := get_viewport().get_visible_rect().size
+	var vs: Vector2 = Vector2(remote_vp.size) if remote_vp != null else get_viewport().get_visible_rect().size
 	var w := vs.x
 	if ui_root != null and ui_root.visible:
 		w = min(w, ui_root.get_global_rect().position.x)
@@ -3966,13 +3967,15 @@ func view_rect() -> Rect2:
 
 func _view_capture() -> void:
 	var t := now()
+	# the window is the small box (or minimized): the view for Motion Watch is drawn in a picture of its own (3D-3.19)
+	_remote_set(t - view_want_t < (10.0 if remote_vp != null else 3.0) and not win_open)
 	if t - view_want_t > 3.0 or t - _view_t < 1.0 / max(1.0, view_fps):
 		return
 	_view_t = t
-	var img := get_viewport().get_texture().get_image()
+	var img := (remote_vp.get_texture() if remote_vp != null else get_viewport().get_texture()).get_image()
 	if img == null or img.is_empty():
 		return
-	var vs := get_viewport().get_visible_rect().size
+	var vs: Vector2 = Vector2(remote_vp.size) if remote_vp != null else get_viewport().get_visible_rect().size
 	var k: float = float(img.get_width()) / maxf(1.0, vs.x)
 	var r := view_rect()
 	var rr := Rect2i(int(r.position.x * k), int(r.position.y * k), int(r.size.x * k), int(r.size.y * k)).intersection(Rect2i(Vector2i.ZERO, img.get_size()))
@@ -4001,7 +4004,7 @@ func view_input(evs: Array) -> int:
 			m.relative = p - _in_pos
 			m.velocity = m.relative * 30.0
 			m.button_mask = _in_mask
-			Input.parse_input_event(m)
+			_view_send(m)
 		elif t in ["down", "up", "dbl"]:
 			var b := clampi(int(e.get("b", 1)), 1, 3)
 			var mb := InputEventMouseButton.new()
@@ -4015,7 +4018,7 @@ func view_input(evs: Array) -> int:
 			var bit := 1 << (b - 1)
 			_in_mask = (_in_mask | bit) if mb.pressed else (_in_mask & ~bit)
 			mb.button_mask = _in_mask
-			Input.parse_input_event(mb)
+			_view_send(mb)
 		elif t == "wheel":
 			for pr in [true, false]:
 				var w := InputEventMouseButton.new()
@@ -4024,7 +4027,7 @@ func view_input(evs: Array) -> int:
 				w.factor = 1.0
 				w.position = p
 				w.global_position = p
-				Input.parse_input_event(w)
+				_view_send(w)
 		elif t == "key":
 			var kc = VIEW_KEYS.get(str(e.get("k", "")))
 			if kc == null:
@@ -4040,3 +4043,52 @@ func view_input(evs: Array) -> int:
 			_in_pos = p
 		n += 1
 	return n
+
+
+var ui_layer: CanvasLayer
+var remote_vp: SubViewport = null
+var _remote_back := []                 # [node, parent, index] to put back
+
+
+func _remote_set(on: bool) -> void:
+	"""small box / minimized while Motion Watch looks at the window: the window (3D view, map, compass, buttons, panel)
+	is drawn into an invisible picture of the normal window size; back into the window as soon as it is big again"""
+	if on == (remote_vp != null) or ui_layer == null or view_cam == null:
+		return
+	if on:
+		var sz := Vector2i(1440, 860)
+		if mini_box != null and mini_box.mini:
+			sz = mini_box.saved.get("size", sz)
+		remote_vp = SubViewport.new()
+		remote_vp.size = Vector2i(clampi(sz.x, 640, 2560), clampi(sz.y, 400, 1600))
+		remote_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+		remote_vp.msaa_3d = Viewport.MSAA_2X
+		add_child(remote_vp)
+		_remote_back = []
+		for n in [ui_layer, view_cam]:
+			_remote_back.append([n, n.get_parent(), n.get_index()])
+			n.reparent(remote_vp)
+		view_cam.current = true
+		print("view for Motion Watch: drawn on its own (window small)")
+	else:
+		for e in _remote_back:
+			var n: Node = e[0]
+			if is_instance_valid(n):
+				n.reparent(e[1])
+				(e[1] as Node).move_child(n, mini(int(e[2]), (e[1] as Node).get_child_count() - 1))
+		_remote_back = []
+		view_cam.current = true
+		remote_vp.queue_free()
+		remote_vp = null
+		print("view for Motion Watch: back in the window")
+
+
+func _view_send(ev: InputEvent) -> void:
+	"""a mouse event from Motion Watch: into the window, or into the picture of its own (then the 3D view gets what the
+	panel, the map and the buttons do not take)"""
+	if remote_vp == null:
+		Input.parse_input_event(ev)
+		return
+	remote_vp.push_input(ev, true)
+	if not remote_vp.is_input_handled():
+		_unhandled_input(ev)
