@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 10:23",
+ "generated": "2026-10-27 10:28",
  "versions": [
   {
-   "version": "2.95.11",
-   "file": "webcam_bewegung_2_95_11.py",
+   "version": "2.95.12",
+   "file": "webcam_bewegung_2_95_12.py",
    "url": "",
-   "sha256": "02e6bf4a38224bbd4bda7e42154b8d91625acf31a1aa6c500e51841e09e9dd82",
-   "date": "2026-10-27 10:23",
-   "notes": "tab Simulator: the game of the 3D simulator (open / close, QR code and address, big QR code to photograph). Touch controls on the simulator window (✋ or full screen): left stick = fly, right stick = look around, ▲ ▼. 3D-3.20.",
-   "sig": "d14a33b150e2e2d243aceaa85e6aa5e40007fc4050227c0c0c481e2e623ade96f125396424ceedaf07f54387ecbd08fa45c7ca2a57d44ee44a6676b39e0f2700"
+   "sha256": "21f0ae81e8ddf8cb6be2548b99aceb689af09353a717899cf39716afea06118f",
+   "date": "2026-10-27 10:28",
+   "notes": "game wizard in the tab Simulator: game type, goal, difficulty (beginners / normal / pros), start - with the rules; «Like last time» starts with the settings of the last game.",
+   "sig": "35a6f75933042b648d28d758601390a4c7bc883fe64b4736904fbe2512b38d84592faade0f126d0d1a3c366f32d33c89b89f3c36a10c0ad3a225907dfa3f1503"
   },
   {
    "version": "2.94.5",
