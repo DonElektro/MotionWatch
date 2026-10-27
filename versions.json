@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 02:38",
+ "generated": "2026-10-27 02:41",
  "versions": [
   {
-   "version": "2.93.8",
-   "file": "webcam_bewegung_2_93_8.py",
+   "version": "2.93.9",
+   "file": "webcam_bewegung_2_93_9.py",
    "url": "",
-   "sha256": "4079e27740ba163771f93f6a8f78e71c409ca3a6a48392a4c75e93db5cfa9d75",
-   "date": "2026-10-27 02:38",
-   "notes": "Download of the 3D simulator 3D-3.1: game mode team against team (robbers and guards, roles swap), rescue from the jail, team goal, bonus for a good distraction.",
-   "sig": "5dc397d4fb0f0181ed56709984a9ad0d1c911fbdf5ff4bfd7e4915bbfdb3bc352a41d84470e0edf713d7f4e290aefe5e2f75d3f88dca24d052311671d63e5a0b"
+   "sha256": "5eab6cdc26320d359525bd8bfa7a5b792effd9e745ac4d5216b8b3cb8db135bd",
+   "date": "2026-10-27 02:41",
+   "notes": "Download of the 3D simulator 3D-3.2: game goal capture the flag with two teams.",
+   "sig": "ccaffacd5292d61be89934ac06c500469841fa7b05efc9242e8df5c4778b795d6650783b7ef8a04a256515881473032b92a8ced4f246852f3dd6a99da94ed302"
   },
   {
    "version": "2.92.4",

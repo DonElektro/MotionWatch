@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.1"
+const VERSION := "3D-3.2"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1583,7 +1583,7 @@ func _register_controls() -> void:
 	add_control("toggle", "game_rescue", "Befreien: Erwischte kommen in die Zelle, ein Teamkollege befreit sie", func(): return game_rescue, func(v): game_rescue = v, "Spiel")
 	add_control("toggle", "game_teamgoal", "Team-Ziel: das Ziel öffnet erst, wenn alle Kristalle gefunden sind", func(): return game_teamgoal, func(v): game_teamgoal = v, "Spiel", ex)
 	add_control("select", "game_goal", "Spielziel", func(): return game_goal, func(v): game_goal = v, "Spiel",
-			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"]]})
+			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"]]})
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
 	add_control("toggle", "game_noise", "Mikrofon hört laute Schritte", func(): return game_noise, func(v): game_noise = v, "Spiel", ex)
 	add_control("toggle", "game_cones", "Sichtfeld der Kameras zeigen (für Anfänger)", func(): return game_cones, func(v): game_cones = v, "Spiel")

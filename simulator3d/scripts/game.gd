@@ -55,6 +55,9 @@ var match_round := 0                   # 0 = first round, 1 = second round (role
 var match_scores := [0, 0]
 var jail := Vector3(0, 0, -44)
 var jail_node: Node3D
+var bases: Array = []                  # «Fahne erobern» (3D-3.2): [base of red, base of blue]
+var flags: Array = []                  # per team: {"node", "home", "by": carrier or null}
+var captures := [0, 0]
 var distract := {}                     # {"by": player, "until": t, "start": {slot: distance to the goal}, "caught": {slot: n}}
 var guard_auto := false                 # the game turns the head (automatic guard or a player as guard)
 var guard_yaw := 0.0
@@ -231,6 +234,9 @@ var _starts: Array = []
 
 
 func start_point(i: int) -> Vector3:
+	if flag_mode() and bases.size() == 2 and players[i] != null:   # «Fahne erobern»: start at the own base
+		var b: Vector3 = bases[int(players[i]["team"])]
+		return main.free_spot(b + Vector3((i - 1.5) * 1.3, 0, -3.0), 0.6, true)
 	var p: Vector3
 	if i < _starts.size():
 		p = _starts[i]
@@ -357,6 +363,7 @@ func _process(dt: float) -> void:
 		if t >= t_end or _all_done():
 			end_round()
 	_guard(dt)
+	_flags_follow()
 	_update_cones()
 	for it in items:
 		if is_instance_valid(it["node"]):
@@ -781,6 +788,9 @@ func start_round() -> void:
 			runners += 1
 	if runners == 0 and not team_mode():
 		return
+	if flag_mode() and not main.game_teams:                # «Fahne erobern» needs teams
+		main.game_teams = true
+		on_teams()
 	if team_mode():                                        # team against team: one team guards, the other sneaks
 		if not main.game_teams:
 			main.game_teams = true
@@ -833,6 +843,12 @@ func start_round() -> void:
 		guard_yaw = 0.0
 		guard_tilt = deg_to_rad(-9.0)
 	distract = {}
+	_build_flags()
+	for p in players:
+		if p != null and p["role"] == "runner":
+			p["flag"] = -1
+			if flag_mode():
+				_to_start(p)
 	_build_jail()
 	_paint_goal()
 	paint()
@@ -867,6 +883,113 @@ func _build_jail() -> void:
 	lb.layers = 16
 	lb.outline_size = 12
 	jail_node.add_child(lb)
+
+
+func flag_mode() -> bool:
+	return main.game_goal == "flag" and not team_mode()
+
+
+func _build_flags() -> void:
+	"""two bases at the sides, each with the flag of its team; the way between them crosses the picture of the cameras"""
+	_clear_flags()
+	if not flag_mode():
+		return
+	captures = [0, 0]
+	bases = [main.free_spot(Vector3(-24, 0, -22), 1.5, true), main.free_spot(Vector3(24, 0, -22), 1.5, true)]
+	for t in range(2):
+		var n := Node3D.new()
+		root.add_child(n)
+		n.position = bases[t]
+		var pole := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = 0.03
+		cm.bottom_radius = 0.04
+		cm.height = 2.2
+		pole.mesh = cm
+		pole.position.y = 1.1
+		var pm := StandardMaterial3D.new()
+		pm.albedo_color = Color(0.8, 0.8, 0.82)
+		pole.material_override = pm
+		n.add_child(pole)
+		var cl = main.scenes.cloth(n, Vector2(0.8, 0.5), Vector3(0.42, 1.95, 0), Vector3.ZERO, TEAM_COLORS[t])
+		cl.visible = true
+		cl.remove_from_group("cloth")                      # the flag of the game is always there
+		var ring := MeshInstance3D.new()                   # the base: a ring in the team colour (only the players see it)
+		var tm := TorusMesh.new()
+		tm.inner_radius = 2.0
+		tm.outer_radius = 2.2
+		ring.mesh = tm
+		ring.material_override = _glow(Color(TEAM_COLORS[t], 0.6))
+		ring.layers = 16
+		ring.position = bases[t] + Vector3(0, 0.05, 0)
+		root.add_child(ring)
+		flags.append({"node": n, "home": bases[t], "by": null, "ring": ring})
+	if goal_node != null:
+		goal_node.visible = false
+
+
+func _clear_flags() -> void:
+	for f in flags:
+		if is_instance_valid(f["node"]):
+			f["node"].queue_free()
+		if is_instance_valid(f["ring"]):
+			f["ring"].queue_free()
+	flags.clear()
+	if goal_node != null:
+		goal_node.visible = true
+
+
+func _flag_home(t: int) -> void:
+	var f: Dictionary = flags[t]
+	if f["by"] != null:
+		f["by"]["flag"] = -1
+	f["by"] = null
+	f["node"].position = f["home"]
+
+
+func _flags_follow() -> void:
+	"""a carried flag sits on the back of its carrier"""
+	for f in flags:
+		if f["by"] != null:
+			var a = f["by"]["actor"]
+			f["node"].position = a.position + a.global_transform.basis * Vector3(0, 0.2, 0.35)
+
+
+func _flag_rules(p: Dictionary) -> void:
+	var a = p["actor"]
+	var my := int(p["team"])
+	var other := 1 - my
+	var f: Dictionary = flags[other]
+	if f["by"] == null and int(p.get("flag", -1)) < 0 and a.position.distance_to(f["home"]) < 1.8:
+		f["by"] = p                                        # take the flag of the other team
+		p["flag"] = other
+		_say(p, "🚩 Fahne geholt – zurück zur eigenen Basis!", 3.0)
+		_event(p, "item")
+		for q in players:
+			if q != null and q != p and q["sock"] != null and int(q["team"]) == other:
+				_say(q, "⚠ %s hat eure Fahne!" % p["name"], 3.0)
+	if int(p.get("flag", -1)) == other and a.position.distance_to(bases[my]) < 2.2:
+		captures[my] += 1                                  # brought home
+		p["bonus"] = int(p.get("bonus", 0)) + 500
+		_flag_home(other)
+		_say(p, "🏆 Fahne erobert! (+500)", 3.5)
+		a.play_emote("goal", 3.0)
+		_event(p, "goal")
+		for q in players:
+			if q != null and q != p:
+				_say(q, "🏆 %s erobert die Fahne für %s" % [p["name"], TEAM_NAMES[my]], 3.0)
+		paint()
+	# tag: touch somebody of the other team who carries your flag -> the flag goes home
+	var mine: Dictionary = flags[my]
+	if mine["by"] != null and mine["by"] != p and a.position.distance_to(mine["by"]["actor"].position) < 1.3:
+		var thief: Dictionary = mine["by"]
+		_flag_home(my)
+		_to_start(thief)
+		thief["safe_until"] = now() + 3.0
+		p["bonus"] = int(p.get("bonus", 0)) + 100
+		_say(thief, "✋ %s hat dich erwischt – die Fahne ist zurück" % p["name"], 3.0)
+		_say(p, "✋ Fahne zurückgeholt (+100)", 3.0)
+		_event(thief, "caught")
 
 
 func goal_open() -> bool:
@@ -905,7 +1028,10 @@ func end_round() -> void:
 			info = "Wächter · %d× erwischt, %d× Fehlalarm" % [p["catches"], p["false"]]
 		else:
 			var d: float = p["actor"].position.distance_to(goal)
-			if p["state"] == "goal":
+			if flag_mode():
+				sc = 0
+				info = "🚩 Fahnen-Runde"
+			elif p["state"] == "goal":
 				sc = 1000 - int((float(p["t_goal"]) - t_start) * 2.0)
 				info = "🏁 %d:%02d" % [int(float(p["t_goal"]) - t_start) / 60, int(float(p["t_goal"]) - t_start) % 60]
 			elif p["state"] == "out":
@@ -950,6 +1076,7 @@ func end_round() -> void:
 				match_scores = [0, 0]
 		team_results.sort_custom(func(x, y): return x["score"] > y["score"])
 	_clear_items()
+	_clear_flags()
 	if jail_node != null:
 		jail_node.queue_free()
 		jail_node = null
@@ -1146,7 +1273,9 @@ func _referee(dt: float) -> void:
 				_event(q, "item")
 				_event(p, "item")
 				paint()
-		var near_goal: bool = a.position.distance_to(goal) < 1.7
+		if flag_mode() and flags.size() == 2:
+			_flag_rules(p)
+		var near_goal: bool = a.position.distance_to(goal) < 1.7 and not flag_mode()
 		if near_goal and not goal_open():
 			_say(p, "🔒 Ziel noch zu – zuerst alle Kristalle finden", 1.0)
 			near_goal = false
@@ -1193,6 +1322,8 @@ func _referee(dt: float) -> void:
 
 func _caught(p: Dictionary, by) -> void:
 	p["caught"] = int(p["caught"]) + 1
+	if int(p.get("flag", -1)) >= 0 and flags.size() == 2:   # the flag goes back to its base
+		_flag_home(int(p["flag"]))
 	if p["carry"]:                                         # the loot goes back to its place
 		p["carry"] = false
 		p["loot"].visible = false
@@ -1367,6 +1498,14 @@ func _send_state(i: int) -> void:
 		return
 	var a = p["actor"]
 	var target: Vector3 = start_point(p["slot"]) if p["carry"] else goal
+	if flag_mode() and flags.size() == 2 and p["role"] == "runner":
+		var my := int(p["team"])
+		if int(p.get("flag", -1)) >= 0:
+			target = bases[my]                                 # bring it home
+		elif flags[my]["by"] != null:
+			target = flags[my]["by"]["actor"].position         # get your flag back
+		else:
+			target = bases[1 - my]                             # fetch the flag of the others
 	var to: Vector3 = target - a.position
 	var ga := rad_to_deg(wrapf(atan2(-to.x, -to.z) - float(p["yaw"]), -PI, PI))
 	var lst := []
@@ -1383,7 +1522,8 @@ func _send_state(i: int) -> void:
 			"ga": int(ga), "goal": goal_name, "list": lst, "items": p["items"], "items_left": left_items, "items_all": items.size(),
 			"lives": int(main.game_lives), "stone": int(max(0.0, float(p["stone_t"]) - now())) if main.game_stones else -1,
 			"msg": p["msg"] if now() < float(p["msg_until"]) else "", "has_guard": guard_player() != null, "mwd": mw_decides(),
-			"goal_mode": main.game_goal, "carry": p["carry"], "gopen": goal_open(), "gcam": guard_cam(p) if p["role"] == "guard" else -1,
+			"goal_mode": "flag" if flag_mode() else main.game_goal, "carry": p["carry"], "gopen": goal_open(), "flag": int(p.get("flag", -1)),
+			"caps": captures, "gcam": guard_cam(p) if p["role"] == "guard" else -1,
 			"tg": guard_team, "mround": match_round, "teams": main.game_teams, "team": int(p["team"]), "look": p["look"],
 			"tres": team_results if round_state == "end" else []}
 	if p["role"] == "guard":
@@ -1600,7 +1740,7 @@ function paint(m) {
   $("#tm").textContent = m.rs === "play" ? "⏱ " + fmtT(m.left) : m.rs === "countdown" ? "gleich" : "–";
   $("#lv").textContent = role === "guard" ? "· Wächter · " + (m.catches || 0) + "× erwischt" : (m.lives ? "· " + "❤️".repeat(Math.max(0, m.lives - m.caught)) + "🤍".repeat(Math.min(m.lives, m.caught)) : "· " + m.caught + "× erwischt");
   $("#list").innerHTML = (m.list || []).map(p => '<span style="color:' + p.c + '">●</span> ' + esc(p.n) + (p.r === "guard" ? " 👁" : "") + (p.s === "goal" ? " 🏁" : p.s === "out" ? " ✖" : "") + (p.r !== "guard" && p.k ? " · " + p.k + "×" : "") + (p.on ? "" : " (weg)")).join("<br>");
-  $("#extra").textContent = (m.gopen === false && role === "runner" ? "🔒 Ziel noch zu – zuerst alle Kristalle finden · " : "") + (m.carry ? "💰 Beute dabei – zurück zum Start! " : (m.goal_mode === "return" && role === "runner" ? "Ziel: Beute holen und zurückbringen · " : "")) + (m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "");
+  $("#extra").textContent = (m.goal_mode === "flag" && role === "runner" ? "🚩 Rot " + m.caps[0] + " : " + m.caps[1] + " Blau · " + (m.flag >= 0 ? "Fahne dabei – zur eigenen Basis! · " : "") : "") + (m.gopen === false && role === "runner" ? "🔒 Ziel noch zu – zuerst alle Kristalle finden · " : "") + (m.carry ? "💰 Beute dabei – zurück zum Start! " : (m.goal_mode === "return" && role === "runner" ? "Ziel: Beute holen und zurückbringen · " : "")) + (m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "");
   $("#msg").textContent = m.msg || "";
   $("#sig").hidden = !(m.rs === "play" && role === "runner" && m.ps === "play");
   if (m.stone < 0) $("#b-stone").style.display = "none"; else { $("#b-stone").style.display = "flex"; cool($("#b-stone"), m.stone); }
@@ -1610,6 +1750,7 @@ function paint(m) {
   else if (m.rs === "lobby" || m.rs === "end") {
     let h = m.rs === "end" ? (m.tres && m.tres.length ? '<h1>' + (m.tres[0].lead ? 'Runde 1 von 2: ' + esc(m.tres[0].n) + ' führt' : esc(m.tres[0].n) + ' gewinnt!') + '</h1><p>' + m.tres.map(t => '<span style="color:' + t.c + '">●</span> ' + esc(t.n) + ' <b>' + t.score + '</b>' + (t.round !== undefined ? ' <small>(diese Runde ' + t.round + ')</small>' : '')).join(" · ") + '</p>' : '') + '<h1>Rangliste</h1><table>' + (m.res || []).map((r, i) => '<tr><td>' + (i + 1) + '.</td><td><span style="color:' + r.c + '">●</span> ' + esc(r.n) + '</td><td>' + esc(r.info) + '</td><td><b>' + r.score + '</b></td></tr>').join("") + '</table>'
       : '<h1>Bereit?</h1><p>Ziel: <b>' + esc(m.goal) + '</b> – folge dem Pfeil oben rechts zum grünen Licht.</p><p>Links ziehen = gehen · rechts wischen = umschauen</p>';
+    if (m.goal_mode === "flag") h += '<p>🚩 <b>Fahne erobern</b>: hol die Fahne der anderen bei ihrer Basis und bring sie zu deiner Basis (+500). Berührst du jemanden, der eure Fahne trägt, geht sie zurück (+100). Die Kamera passt auf alle auf.</p>';
     if (m.mode === "teamguard") h += '<p>⚔️ Team gegen Team · Runde ' + (m.mround + 1) + ' von 2: <b style="color:' + ["#eb2e1f", "#1f6bfa"][m.tg] + '">' + ["Team Rot", "Team Blau"][m.tg] + '</b> bewacht (Kopfkamera und feste Kamera), das andere Team schleicht. Danach wird getauscht.</p>';
     if (m.mode === "mw") h += '<p>' + (m.mwd ? '🛡 Diesmal entscheidet die <b>echte Erkennung von Motion Watch</b>: meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht.' : '⚠ Motion Watch ist nicht verbunden – der Simulator entscheidet.') + '</p>';
     if (m.mode === "guard") h += '<p>Ein Spieler kann Wächter sein: er sieht durch die Kamera, dreht den Kopf und ruft «Erwischt!».</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🕵️ Schleicher</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">👁 Wächter</button><br>';

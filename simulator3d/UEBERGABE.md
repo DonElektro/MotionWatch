@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-3.1** · passende Motion-Watch-Version **2.93.8**
+Stand: 26.10.2026 · Simulator-Version **3D-3.2** · passende Motion-Watch-Version **2.93.9**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,10 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-3.2 – Fahne erobern:** `game_goal` «flag» (`flag_mode()`, nicht mit «teamguard»), `bases`, `flags` (Fahne mit
+`scenes.cloth`, folgt dem Träger in `_flags_follow`), `_flag_rules()` (holen, heimbringen +500, abklatschen +100), `captures`.
+Start an der eigenen Basis (`start_point`). Handy: `caps`, `flag`, Pfeil zum jeweiligen Ziel.
+
 **3D-3.1 – Räuber/Wächter, Zelle, Team-Ziel:** `game_mode` «teamguard» (`team_mode()`, `guard_team`, `match_round`,
 `match_scores`; Rollen über `_assign()`), erster Wächter = Kopf (`guard_player()`), weitere = feste Kamera (`guard_cam()`,
 `guard2_watching()`, `main._wanted_fps(1)`). `game_rescue`: Zustand «jail» bei `jail` (`_build_jail`), Befreien im Referee

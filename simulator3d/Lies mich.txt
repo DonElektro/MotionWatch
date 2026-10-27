@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-3.1 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-3.2 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -66,6 +66,11 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
     Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
   * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
+- Ab 3D-3.2:
+  * Spielziel "Fahne erobern (zwei Teams)": jedes Team hat links oder rechts eine Basis mit seiner Fahne (Ring in der
+    Teamfarbe). Hol die Fahne der anderen und bring sie zu deiner Basis (+500). Berührst du jemanden, der eure Fahne
+    trägt, geht sie zurück und er muss zum Start (+100). Wer von der Kamera erwischt wird, verliert die Fahne.
+    Der Weg zwischen den Basen führt durchs Bild der Kameras. Der Pfeil zeigt jeweils, wohin es geht.
 - Ab 3D-3.1:
   * Spielart "Team gegen Team (Räuber und Wächter)": ein Team bewacht, das andere schleicht. Der erste Wächter sieht
     die Kopfkamera und dreht den Kopf, der zweite sieht die feste Kamera; beide haben Licht und "Erwischt!".
