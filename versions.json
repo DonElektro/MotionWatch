@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 10:04",
+ "generated": "2026-10-27 10:14",
  "versions": [
   {
-   "version": "2.95.9",
-   "file": "webcam_bewegung_2_95_9.py",
+   "version": "2.95.10",
+   "file": "webcam_bewegung_2_95_10.py",
    "url": "",
-   "sha256": "7a94ef8a602c5b28c2f0161d02d3eb20c3fa49f92a85e3065aa8876ee088652b",
-   "date": "2026-10-27 10:04",
-   "notes": "tab Simulator: «Connection» right under the picture, the picture as big as the screen allows, full screen button ⛶ for the picture (simulator window or camera picture).",
-   "sig": "39f75c751ae3915181ac27113d644f58cf43efd87e1ab53108352ff5cca2f95c141e0758513bba9e830aaaa26a5793abfee2bde75a33ba8fa93f3ec2fcc3690c"
+   "sha256": "f3faa5d7a7d81bc01fb8c04d876556630878b537fb175b755fbe2a7b709dce3e",
+   "date": "2026-10-27 10:14",
+   "notes": "tab Simulator: order Connection, status, picture. The simulator window is fetched picture by picture (never a growing delay). Finger on the picture: scrolls the page, a tap clicks; with ✋ the finger controls the simulator.",
+   "sig": "691bb949d0c75ae4aa71c6a603eb71edadf5c8aeeed324fd7ecd6615d15c9a03c843da71b0f524b70b651ed3a1f6656f58b3e223e5e825e0a17d4fb12ae51207"
   },
   {
    "version": "2.94.5",

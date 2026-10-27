@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_9.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_10.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -564,6 +564,8 @@ Features
     what is new when an update is there; the header shows «SIMULATION · ⟳ Update 3D-x.y» too.
   * 2.95.9: tab Simulator: «Connection» right under the picture, the picture as big as the screen allows, full screen
     button ⛶ for the picture (simulator window or camera picture).
+  * 2.95.10: tab Simulator: order Connection, status, picture. The simulator window is fetched picture by picture (never
+    a growing delay). Finger on the picture: scrolls the page, a tap clicks; with ✋ the finger controls the simulator.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -572,10 +574,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_9.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_10.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_9.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_9.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_10.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_10.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -592,7 +594,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.9"
+APP_VERSION = "2.95.10"
 
 
 def default_data_dir():
@@ -14262,7 +14264,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_9.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_10.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -18881,10 +18883,14 @@ function simViewBind(VI, opt) {
   const push = (e, now) => { if (e.t === "move" && Q.length && Q[Q.length - 1].t === "move") Q[Q.length - 1] = e; else Q.push(e);
     if (now) { clearTimeout(qT); flush(); } else if (!qT) qT = setTimeout(flush, 70); };
   const pos = (ev) => { const r = VI.getBoundingClientRect(); return {x: Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)), y: Math.max(0, Math.min(1, (ev.clientY - r.top) / r.height))}; };
-  const pts = new Map(); let pinch = 0, btn = 0;
+  const pts = new Map(); let pinch = 0, btn = 0, tap = null;
+  const ctlOn = () => !opt.ctl || opt.ctl();             // finger: control the simulator (else the page scrolls, a tap still clicks)
+  const tAct = () => { VI.style.touchAction = ctlOn() ? "none" : "pan-x pan-y pinch-zoom"; };
+  tAct(); setInterval(tAct, 500);
   VI.addEventListener("contextmenu", e => { if (!opt.active || opt.active()) e.preventDefault(); });
   VI.addEventListener("pointerdown", e => {
     if (opt.active && !opt.active()) return;
+    if (e.pointerType !== "mouse" && !ctlOn()) { tap = {id: e.pointerId, x: e.clientX, y: e.clientY, t: Date.now()}; return; }
     e.preventDefault(); VI.focus({preventScroll: true});
     try { VI.setPointerCapture(e.pointerId); } catch (x) {}
     pts.set(e.pointerId, {x: e.clientX, y: e.clientY});
@@ -18897,6 +18903,7 @@ function simViewBind(VI, opt) {
     const p = pos(e); push(Object.assign({t: "move"}, p)); push(Object.assign({t: "down", b: btn, shift: e.shiftKey, alt: e.altKey}, p), true);
   });
   VI.addEventListener("pointermove", e => {
+    if (tap && tap.id === e.pointerId) { if (Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 10) tap = null; return; }
     if (opt.active && !opt.active()) return;
     if (pts.has(e.pointerId)) pts.set(e.pointerId, {x: e.clientX, y: e.clientY});
     if (pts.size === 2 && pinch) { const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
@@ -18904,14 +18911,33 @@ function simViewBind(VI, opt) {
     if (e.pointerType !== "mouse" && !btn) return;
     push(Object.assign({t: "move"}, pos(e)));
   });
-  const upH = e => { if (pts.delete(e.pointerId) && btn) { push(Object.assign({t: "up", b: btn}, pos(e)), true); btn = 0; } if (pts.size < 2) pinch = 0; };
+  const upH = e => {
+    if (tap && tap.id === e.pointerId) { const ok = e.type === "pointerup" && Date.now() - tap.t < 700; tap = null;
+      if (ok) { const p = pos(e); push(Object.assign({t: "move"}, p)); push(Object.assign({t: "down", b: 1}, p)); push(Object.assign({t: "up", b: 1}, p), true); } return; }
+    if (pts.delete(e.pointerId) && btn) { push(Object.assign({t: "up", b: btn}, pos(e)), true); btn = 0; } if (pts.size < 2) pinch = 0; };
   VI.addEventListener("pointerup", upH); VI.addEventListener("pointercancel", upH);
   VI.addEventListener("dblclick", e => { if (opt.active && !opt.active()) return; const p = pos(e); push(Object.assign({t: "dbl", b: 1}, p)); push(Object.assign({t: "up", b: 1}, p), true); });
-  VI.addEventListener("wheel", e => { if (opt.active && !opt.active()) return; e.preventDefault(); push(Object.assign({t: "wheel", d: e.deltaY < 0 ? 1 : -1}, pos(e)), true); }, {passive: false});
+  VI.addEventListener("wheel", e => { if (opt.active && !opt.active()) return; if (!ctlOn() && document.activeElement !== VI) return; e.preventDefault(); push(Object.assign({t: "wheel", d: e.deltaY < 0 ? 1 : -1}, pos(e)), true); }, {passive: false});
   const KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d", "q", "e", "r", "f", "PageUp", "PageDown", "0", "1", "2", "3", "4", "5", "+", "-", "Shift"];
   const keyH = down => e => { if (opt.active && !opt.active()) return; const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; if (!KEYS.includes(k)) return; e.preventDefault(); if (down && e.repeat) return; push({t: "key", k: k, down: down}, true); };
   VI.addEventListener("keydown", keyH(true)); VI.addEventListener("keyup", keyH(false));
   return {push: push};
+}
+
+// ---- the picture of the simulator window, fetched one by one (2.95.10): always the newest, never a growing delay ----
+function simViewPoll(VI, fps) {
+  let on = false, gen = 0, url = "";
+  const step = async (g) => {
+    if (!on || g !== gen) return;
+    const t0 = Date.now(); let wait = 1000;
+    try {
+      const r = await fetch("/sim/view.jpg?r=" + t0, {cache: "no-store"});
+      if (r.ok) { const b = await r.blob(); if (on && g === gen && b.size > 0) { const u = URL.createObjectURL(b); const old = url; url = u; VI.src = u;
+        if (old) setTimeout(() => URL.revokeObjectURL(old), 1000); } wait = Math.max(0, 1000 / (fps || 8) - (Date.now() - t0)); }
+    } catch (e) {}
+    setTimeout(() => step(g), wait);
+  };
+  return {start() { if (on) return; on = true; gen++; step(gen); }, stop() { on = false; gen++; }, get on() { return on; }};
 }
 """
 
@@ -18965,7 +18991,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .supd-t{font-weight:600;color:#e8b33a}.supd-n{margin-top:3px}.sver{margin-top:6px;font-size:13px}
 .pvmode{display:flex;border:1px solid var(--line,#1f2b3a);border-radius:10px;overflow:hidden;margin:0 0 10px}
 .pvmode button{flex:1;padding:8px;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;cursor:pointer}.pvmode button.on{background:var(--acc,#3b8cff);color:#fff}
-.pvw.view img{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;outline:none}.pvw.view img:active{cursor:grabbing}
+.pvw.view img{cursor:grab;user-select:none;-webkit-user-select:none;outline:none}.pvw.view img:active{cursor:grabbing}
 .pvbtn{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px;z-index:2}.pvbtn .pvbtn{position:static}
 .pvw.fs{position:fixed;inset:0;z-index:200;border-radius:0;display:flex;align-items:center;justify-content:center;
   padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
@@ -18973,7 +18999,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .pvw:fullscreen{display:flex;align-items:center;justify-content:center;border-radius:0}
 .pvbtn button{width:38px;height:38px;padding:0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(10,14,20,.65);color:#fff;font-size:18px;cursor:pointer}
 .pvbtn button.on{background:var(--acc,#3b8cff)}
-#s-prev{width:100%;height:auto;min-height:200px;object-fit:contain;background:#000;display:block;max-height:calc(100vh - var(--hdr-h,64px) - 110px)}
+#s-prev{width:100%;height:auto;min-height:200px;object-fit:contain;background:#000;display:block;max-height:calc(100vh - var(--hdr-h,64px) - 170px)}
 #c-prev{padding:12px}
 .pvlive{position:absolute;left:10px;bottom:10px;font:700 11px/1 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px}
 #pip{position:fixed;z-index:45;width:min(44vw,300px);border-radius:12px;overflow:hidden;background:#000;cursor:pointer;touch-action:none;box-shadow:0 8px 26px rgba(0,0,0,.55);border:1px solid var(--line)}
@@ -19004,12 +19030,6 @@ details.fold>.fb>.mut:first-child{margin-top:0}
   </span>
 </header>
 <main class="simp">
-  <section class="sc wide" id="c-prev">
-    <div class="pvmode" id="s-pvmode" hidden><button type="button" data-m="view">🗺 <span data-i18n="Simulator window">Simulator window</span></button><button type="button" data-m="cam">📷 <span data-i18n="Camera picture">Camera picture</span></button></div>
-    <div class="pvw" id="s-pvw"><img id="s-prev" alt="" draggable="false" tabindex="0"><span class="pvlive" id="s-pvlive" hidden>● LIVE</span>
-      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
-    <div class="mut" id="s-prevnote"></div>
-  </section>
   <details class="sc fold wide" id="c-conn" data-k="conn" open>
     <summary><h2><svg viewBox="0 0 24 24"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><span data-i18n="Connection">Connection</span></h2></summary>
     <div class="fb">
@@ -19027,6 +19047,12 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="supd" id="s-supd" hidden><div class="supd-t" id="s-supdt"></div><div class="mut supd-n" id="s-supdn"></div></div>
     <div class="mut sver" id="s-ver"></div>
     <div class="tiles" id="s-tiles"></div>
+  </section>
+  <section class="sc wide" id="c-prev">
+    <div class="pvmode" id="s-pvmode" hidden><button type="button" data-m="view">🗺 <span data-i18n="Simulator window">Simulator window</span></button><button type="button" data-m="cam">📷 <span data-i18n="Camera picture">Camera picture</span></button></div>
+    <div class="pvw" id="s-pvw"><img id="s-prev" alt="" draggable="false" tabindex="0"><span class="pvlive" id="s-pvlive" hidden>● LIVE</span>
+      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vctl" title="Bedienen mit dem Finger (sonst scrollt die Seite)">✋</button><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
+    <div class="mut" id="s-prevnote"></div>
   </section>
 
 
@@ -19099,7 +19125,7 @@ Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "c
  "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in",
  "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.",
  "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "Use": "Verwenden", "in use": "in Gebrauch",
- "Version": "Version", "installed": "installiert", "newest": "neueste", "up to date": "aktuell", "newest version not known": "neueste Version unbekannt", "checking for the newest version …": "suche die neueste Version …", "New update for the simulator": "Neues Update für den Simulator", "Update it in the simulator on the PC.": "Im Simulator auf dem PC aktualisieren.", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» oben.", "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
+ "Version": "Version", "installed": "installiert", "newest": "neueste", "up to date": "aktuell", "newest version not known": "neueste Version unbekannt", "checking for the newest version …": "suche die neueste Version …", "New update for the simulator": "Neues Update für den Simulator", "Update it in the simulator on the PC.": "Im Simulator auf dem PC aktualisieren.", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» oben.", "The finger now controls the simulator (scrolling: press ✋ again)": "Der Finger bedient jetzt den Simulator (Scrollen: ✋ nochmals drücken)", "The finger scrolls the page again (a tap still clicks)": "Der Finger scrollt wieder die Seite (Antippen klickt trotzdem)", "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
  "The picture appears when the simulation is on.": "Das Bild erscheint, wenn die Simulation eingeschaltet ist.",
  "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "running": "läuft", "Controls": "Bedienung",
  "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a file to the simulator": "Datei zum Simulator hochladen",
@@ -19232,14 +19258,18 @@ let LIVE = false, liveRetry = null, PVM = "view", PVCUR = "";
 try { PVM = localStorage.getItem("mw-sim-pvmode") || "view"; } catch (e) {}
 // the picture at the top: the simulator window (map, compass, view buttons; 3D-3.18) or the camera picture of Motion Watch
 const pvView = () => PVM === "view" && !!(S && S.view);
-const pvSrc = () => (pvView() ? "/sim/view.mjpg?fps=8&r=" : "/video_feed?r=") + Date.now();
+const PVP = simViewPoll($("#s-prev"), 10);
+let PVCTL = false;
+const pvSrc = () => "/video_feed?r=" + Date.now();
+function pvLoad() { const img = $("#s-prev"); if (!LIVE) { PVP.stop(); return; }
+  if (pvView()) { img.removeAttribute("src"); PVP.start(); } else { PVP.stop(); img.src = pvSrc(); } }
 function pvPaint() {
   const has = !!(S && S.on && S.view), v = pvView();
   $("#s-pvmode").hidden = !(has && LIVE);
   $("#s-pvmode").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.m === (v ? "view" : "cam")));
   $("#s-pvw").classList.toggle("view", v); $("#s-pvbtn").hidden = !v; $("#s-pvlive").hidden = !LIVE || v;
   const want = v ? "view" : "cam";
-  if (LIVE && PVCUR !== want) { PVCUR = want; $("#s-prev").src = pvSrc(); }
+  if (LIVE && PVCUR !== want) { PVCUR = want; pvLoad(); }
 }
 $("#s-pvmode").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; PVM = b.dataset.m;
   try { localStorage.setItem("mw-sim-pvmode", PVM); } catch (x) {} pvPaint(); });
@@ -19247,14 +19277,16 @@ function liveOn(on) {
   const img = $("#s-prev");
   if (on === LIVE) return;
   LIVE = on; $("#s-pvw").hidden = !on; $("#s-pvlive").hidden = !on;
-  if (on) { PVCUR = pvView() ? "view" : "cam"; img.src = pvSrc(); }
-  else { clearTimeout(liveRetry); img.removeAttribute("src"); PVCUR = ""; pipShow(false); }
+  if (on) { PVCUR = pvView() ? "view" : "cam"; pvLoad(); }
+  else { clearTimeout(liveRetry); PVP.stop(); img.removeAttribute("src"); PVCUR = ""; pipShow(false); }
   pvPaint();
 }
-$("#s-prev").addEventListener("error", () => { if (!LIVE) return; clearTimeout(liveRetry); liveRetry = setTimeout(() => { if (LIVE) $("#s-prev").src = pvSrc(); }, 2000); });
-document.addEventListener("visibilitychange", () => { if (!document.hidden && LIVE) $("#s-prev").src = pvSrc(); });
+$("#s-prev").addEventListener("error", () => { if (!LIVE || pvView()) return; clearTimeout(liveRetry); liveRetry = setTimeout(() => { if (LIVE && !pvView()) $("#s-prev").src = pvSrc(); }, 2000); });
+document.addEventListener("visibilitychange", () => { if (document.hidden) PVP.stop(); else if (LIVE) pvLoad(); });
 { let rot = false;
-  const VB = simViewBind($("#s-prev"), {rot: () => rot, active: () => pvView() && !$("#s-prev").closest("#pip")});
+  const VB = simViewBind($("#s-prev"), {rot: () => rot, active: () => pvView() && !$("#s-prev").closest("#pip"),
+    ctl: () => PVCTL || !!(document.fullscreenElement || document.webkitFullscreenElement) || $("#s-pvw").classList.contains("fs")});
+  $("#s-vctl").onclick = () => { PVCTL = !PVCTL; $("#s-vctl").classList.toggle("on", PVCTL); toast(PVCTL ? "✋ " + t("The finger now controls the simulator (scrolling: press ✋ again)") : "↕ " + t("The finger scrolls the page again (a tap still clicks)")); };
   $("#s-vin").onclick = () => VB.push({t: "wheel", d: 1, x: 0.5, y: 0.5}, true);
   $("#s-vout").onclick = () => VB.push({t: "wheel", d: -1, x: 0.5, y: 0.5}, true);
   $("#s-vrot").onclick = () => { rot = !rot; $("#s-vrot").classList.toggle("on", rot); }; }
@@ -21048,7 +21080,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
     </details>
     <div id="lv-simw" hidden>
       <style>
-        .lv-vbox{position:relative;border-radius:10px;overflow:hidden;background:#000;touch-action:none;user-select:none;-webkit-user-select:none}
+        .lv-vbox{position:relative;border-radius:10px;overflow:hidden;background:#000;user-select:none;-webkit-user-select:none}
         .lv-vbox img{display:block;width:100%;height:auto;cursor:grab;outline:none}.lv-vbox img:active{cursor:grabbing}
         .lv-vbox img:focus-visible{box-shadow:inset 0 0 0 2px var(--acc,#3b8cff)}
         .lv-vbtn{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
@@ -21063,7 +21095,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
         <summary><span id="lv-simt" data-i18n="Simulator control">Simulator control</span></summary>
         <div id="lv-vw" hidden>
           <div class="lv-vbox"><img id="lv-vimg" alt="" draggable="false" tabindex="0">
-            <div class="lv-vbtn"><button type="button" id="lv-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="lv-vin">＋</button><button type="button" id="lv-vout">－</button><button type="button" id="lv-vbig" title="gross">⛶</button></div></div>
+            <div class="lv-vbtn"><button type="button" id="lv-vctl" title="Bedienen mit dem Finger (sonst scrollt die Seite)">✋</button><button type="button" id="lv-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="lv-vin">＋</button><button type="button" id="lv-vout">－</button><button type="button" id="lv-vbig" title="gross">⛶</button></div></div>
           <div class="mut lv-vhelp" id="lv-vhelp"></div>
         </div>
         <div class="mut" id="lv-simst" style="white-space:pre-wrap;margin:2px 0 6px"></div>
@@ -23288,7 +23320,7 @@ function solarText(c, s) {
 }
 function solarPaint(c, s) { const st = $("#solar-st"); if (st) st.textContent = solarText(c, s); }
 /*SIMMAP*/
-Object.assign(I18N.de, {"Update": "Update", "New update for the simulator": "Neues Update für den Simulator", "tab Simulator": "Reiter Simulator", "sim-view-help": "Das Fenster des Simulators: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen, Doppelklick = hinfliegen. Finger: ziehen = verschieben (⟲: drehen), zwei Finger = zoomen. Knöpfe unten wechseln die Ansicht. Tasten (Pfeile, WASD) gehen, wenn das Bild angeklickt ist.", "Python world simulator (ZIP)": "Python-Weltsimulator (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo Motion Watch steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
+Object.assign(I18N.de, {"Update": "Update", "New update for the simulator": "Neues Update für den Simulator", "tab Simulator": "Reiter Simulator", "sim-view-help": "Das Fenster des Simulators: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen (nach einem Klick ins Bild), Doppelklick = hinfliegen. Finger: antippen = klicken, sonst scrollt die Seite; mit ✋ bedient der Finger den Simulator (ziehen = verschieben, ⟲ = drehen, zwei Finger = zoomen). Knöpfe unten wechseln die Ansicht.", "Python world simulator (ZIP)": "Python-Weltsimulator (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo Motion Watch steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
 function simExtras(d) {
   // the settings of the section (switches, address, slider) go into a fold-out «Settings»
@@ -23417,20 +23449,21 @@ function simExtras(d) {
     // ---- the simulator window (3D-3.18): picture + mouse / finger / keys, like sitting at the simulator ----
     const VW = $("#lv-vw"), VI = $("#lv-vimg");
     $("#lv-vhelp").textContent = t("sim-view-help") === "sim-view-help" ? "The simulator window: drag with the left mouse button = move, right = turn, wheel = zoom, double click = fly there. Finger: drag = move (⟲: turn), two fingers = zoom. The buttons at the bottom change the view." : t("sim-view-help");
-    let rot = false, vOn = false;
-    const VB = simViewBind(VI, {rot: () => rot});
+    let rot = false, vOn = false, vctl = false;
+    const VP = simViewPoll(VI, 8);
+    const VB = simViewBind(VI, {rot: () => rot, ctl: () => vctl || VW.classList.contains("big")});
     const zoom = d => () => VB.push({t: "wheel", d: d, x: 0.5, y: 0.5}, true);
     $("#lv-vin").onclick = zoom(1); $("#lv-vout").onclick = zoom(-1);
     $("#lv-vrot").onclick = () => { rot = !rot; $("#lv-vrot").classList.toggle("on", rot); };
+    $("#lv-vctl").onclick = () => { vctl = !vctl; $("#lv-vctl").classList.toggle("on", vctl); };
     $("#lv-vbig").onclick = () => { VW.classList.toggle("big"); $("#lv-vbig").textContent = VW.classList.contains("big") ? "✕" : "⛶"; };
     const vtick = () => {
       const S_ = QSJ && QSJ.state && QSJ.state.sim, want = !!(S_ && S_.on && S_.ok && S_.view) && D.open && !document.hidden && !W.hidden;
       VW.hidden = !(S_ && S_.view);
       if (!VW.hidden) { const h = t("sim-view-help"); if (h !== "sim-view-help") $("#lv-vhelp").textContent = h; }
-      if (want && !vOn) { vOn = true; VI.src = "/sim/view.mjpg?fps=6&r=" + Date.now(); }
-      else if (!want && vOn) { vOn = false; VI.removeAttribute("src"); VW.classList.remove("big"); }
+      if (want && !vOn) { vOn = true; VP.start(); }
+      else if (!want && vOn) { vOn = false; VP.stop(); VI.removeAttribute("src"); VW.classList.remove("big"); }
     };
-    VI.addEventListener("error", () => { if (vOn) { vOn = false; setTimeout(vtick, 2500); } });
     D.addEventListener("toggle", vtick); document.addEventListener("visibilitychange", vtick); setInterval(vtick, 1500);
   })();
 Object.assign(I18N.de, {"Clap switch": "Klatschschalter", "Bless you": "Gesundheit", "«Bless you!»": "«Gesundheit!»", "Clap 2×": "2× klatschen", "Clap 3×": "3× klatschen", "Clap 4×": "4× klatschen", "Answer": "Antwort", "Words (several: separate with |)": "Worte (mehrere mit | trennen)", "Sensitivity (higher = also softer claps)": "Empfindlichkeit (höher = auch leisere Klatscher)", "Volume of the beep": "Lautstärke des Pieptons", "Sensitivity (higher = answers more readily)": "Empfindlichkeit (höher = antwortet eher)", "Volume of the answer": "Lautstärke der Antwort", "Clap switch on": "Klatschschalter ein", "Beep when recognised": "Piepton, wenn erkannt", "Only when not armed (claps of strangers switch nothing)": "Nur wenn nicht scharf (Klatscher von Fremden schalten nichts)", "Practice: only count and beep, switch nothing": "Üben: nur zählen und piepen, nichts schalten", "Say «Bless you!» after a sneeze": "Nach einem Niesen «Gesundheit!» sagen", "Quiet at night (22 to 7 o'clock)": "Nachts still (22 bis 7 Uhr)", "Test beep": "Piepton testen", "switch on and clap 2× to try it": "einschalten und zum Ausprobieren 2× klatschen", "clap 2, 3 or 4 times": "2, 3 oder 4 Mal klatschen", "counting": "zähle", "last": "zuletzt", "Hear the answer": "Antwort anhören", "Install": "Installieren", "sn-note": "Die Niesen-Erkennung nutzt ein kleines Erkennungsmodell (YAMNet von Google, etwa 4 MB). Es wird beim ersten lauten Geräusch einmal geladen. Tipp: «Gesundheit!» mit dem Handy als Sprachmemo aufnehmen und mit «Eigene Antwort» hochladen – sie wird sofort als Antwort gewählt.",
@@ -26010,6 +26043,19 @@ class WebStream:
             if not SIM3D_DL["msg"]:
                 sim3d_fetch()
             return Response(sim3d_wait_page(lang), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+        @app.route("/sim/view.jpg")
+        def sim_view_jpg():
+            """one picture of the simulator window (the page fetches them one by one: never a growing delay)"""
+            if not CFG["sim_on"]:
+                return Response("simulation off", 404)
+            try:
+                b_, _h = _sim_get("/view.jpg", 3.0)
+            except Exception:
+                return Response("simulator not reachable", 502)
+            if not b_:
+                return Response("no picture yet", 503, {"Retry-After": "1"})
+            return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
 
         @app.route("/sim/view.mjpg")
         def sim_view():
@@ -28621,7 +28667,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.9")
+        self.root.title("Motion Watch 2.95.10")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -28911,7 +28957,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.9 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.10 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
