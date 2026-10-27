@@ -1,12 +1,12 @@
 {
- "version": "3D-3.45",
+ "version": "3D-3.46",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30865839,
- "sha256": "909a59c6448b7d401e33aa30660c1391fce7411f6bcefc1e4567ad26ebde6cf6",
- "notes": "Tunnel zu Motion Watch (Simulator hinter einer Firewall ohne Adminrechte), Trainingsbilder ohne Absturz.",
+ "size": 30866341,
+ "sha256": "435ea33d1097f0d4dbecdfc78a681b76f9835b18c955ed3d4e307304cb1de746",
+ "notes": "Das Feld «Tunnel zu Motion Watch» ist jetzt zu sehen",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 23987262,
-  "sha256": "03c2b0fb10417df004923e4dcf5203f3b17dafe23d458ec59eeec2ff01ba51af"
+  "size": 23987729,
+  "sha256": "cf4584f613e4b0ece685be6d4044621cf62323ffaad3f32dd32928e6dce5c9d5"
  }
 }

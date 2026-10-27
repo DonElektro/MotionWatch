@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.45"
+const VERSION := "3D-3.46"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -3039,6 +3039,7 @@ func _build_ui() -> void:
 	cn.add_child(status_label)
 	# 3D-3.45: tunnel - when the firewall of this PC lets nothing in (no admin rights)
 	var tn := UI.sub_fold(cn, "Tunnel zu Motion Watch (Firewall ohne Adminrechte)", tunnel_on)
+	tn.set_meta("always", true)                     # 3D-3.46: it has no settings of the list - without this it was always hidden
 	sub_bodies.append(tn)
 	var tnote := UI.small("Lässt die Firewall dieses PCs Motion Watch nicht herein, verbindet sich der Simulator selbst zu Motion Watch. Adresse und Code stehen auf der Seite von Motion Watch unter Simulator → «Simulator hinter einer Firewall».")
 	tnote.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

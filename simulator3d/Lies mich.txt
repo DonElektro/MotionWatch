@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.45 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.46 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -536,3 +536,6 @@ NEU IN 3D-3.45
 (Simulator → «Simulator hinter einer Firewall») eintragen, «Tunnel verwenden» einschalten. Der Simulator verbindet sich dann
 selbst nach aussen zu Motion Watch (Port 8766); auch die KI-Rechenhilfe geht durch. Trainingsbilder ohne Absturz (Besucher
 bleiben für das Bild stehen). Disco-Licht von Motion Watch: die Lampe blitzt mit.
+
+NEU IN 3D-3.46
+3D-3.46: Das Feld «Tunnel zu Motion Watch» (unter Verbindung) war versteckt und ist jetzt zu sehen.

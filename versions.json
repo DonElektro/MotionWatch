@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 23:27",
+ "generated": "2026-10-27 23:39",
  "versions": [
   {
-   "version": "2.95.58",
-   "file": "webcam_bewegung_2_95_58.py",
+   "version": "2.95.59",
+   "file": "webcam_bewegung_2_95_59.py",
    "url": "",
-   "sha256": "d8a6727149ec7443afa41ff605cc64db3e5a3da4520d8fe7c932afa11b390973",
-   "date": "2026-10-27 23:27",
-   "notes": "product page for guests: the logo top left and the icon of the tab are now the app icon of this Motion Watch (the same as in the tab)",
-   "sig": "b84c08a190a8bb5d2c84c168051c2d55b0895311c3e8399905212316a42080a58f38edb2f6a2283cc752bf3d450a13cf2862b9b9854d26b0d4289e4187654a03"
+   "sha256": "8c192c72cbf92c01ea573ec219374039a7248d0495201bcf96039049b5b96202",
+   "date": "2026-10-27 23:39",
+   "notes": "3D simulator 3D-3.46: the field «Tunnel zu Motion Watch» in the simulator was hidden and can now be seen",
+   "sig": "663a61fd4e8fc2f3ebe40ee2cf405c0e13e384014cf71dccb4f11a29d65ee389cf3a87f96ddfd27bcdccc3c7a67ece5fc2f64cb91e437258d2196bee9f485101"
   },
   {
    "version": "2.94.5",
