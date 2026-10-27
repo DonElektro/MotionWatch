@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 23:10",
+ "generated": "2026-10-27 23:27",
  "versions": [
   {
-   "version": "2.95.57",
-   "file": "webcam_bewegung_2_95_57.py",
+   "version": "2.95.58",
+   "file": "webcam_bewegung_2_95_58.py",
    "url": "",
-   "sha256": "fe786475b260c12a5b36d7fbb3f26140d33d1f42752159ee8ad23a069454ef9c",
-   "date": "2026-10-27 23:10",
-   "notes": "product page for guests: the night story is now a deck of cards to swipe away, every situation plays its own little animation (countdown and scan, wind with leaves, fox in the thermal picture, intruder with light, siren and loudspeaker, deer photo into the diary, night report); swipe over the camera picture for day / night",
-   "sig": "306f6173e7a1e9fc64e26e9a467d895c78aa0b14fb57fb96060728b644084ef473263782bb9a92c9cdbdceada830823ec2d25dba7958122c99847c95e4bf860b"
+   "sha256": "d8a6727149ec7443afa41ff605cc64db3e5a3da4520d8fe7c932afa11b390973",
+   "date": "2026-10-27 23:27",
+   "notes": "product page for guests: the logo top left and the icon of the tab are now the app icon of this Motion Watch (the same as in the tab)",
+   "sig": "b84c08a190a8bb5d2c84c168051c2d55b0895311c3e8399905212316a42080a58f38edb2f6a2283cc752bf3d450a13cf2862b9b9854d26b0d4289e4187654a03"
   },
   {
    "version": "2.94.5",
