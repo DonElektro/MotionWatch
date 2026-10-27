@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 03:32",
+ "generated": "2026-10-27 03:53",
  "versions": [
   {
-   "version": "2.93.13",
-   "file": "webcam_bewegung_2_93_13.py",
+   "version": "2.93.14",
+   "file": "webcam_bewegung_2_93_14.py",
    "url": "",
-   "sha256": "b0eb1268fb9f4770c3ea60fd2237941e34930fdecc16200ce078ed36a691261b",
-   "date": "2026-10-27 03:32",
-   "notes": "3D simulator 3D-3.6: mouse control (move, turn, zoom, select and carry visitors).",
-   "sig": "c38ffd18bf398cec40f3e6d5a4efba4a5b73c6968372394dae8f9f5b377b551d60e64e2624ac45c3123b15e35fb4f7defa1dad14133915fc1daa242533550d0f"
+   "sha256": "5236cb7c0a4e5257da66c06d3dbc0f2a9c3675413b9a3a75bf476975bf72922f",
+   "date": "2026-10-27 03:53",
+   "notes": "3D simulator 3D-3.7: camera pictures stay visible while the panel scrolls.",
+   "sig": "5bcd91bc51779d41c4d8cb9c834e5506dd0a2f8d322499546ff8fc9c9ac80dc0adb905967121b57d307aefda7ef6ed87b5d626fa8bc1d62a988140820feb2600"
   },
   {
    "version": "2.92.4",

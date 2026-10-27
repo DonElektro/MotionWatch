@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.6"
+const VERSION := "3D-3.7"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2027,9 +2027,17 @@ func _build_ui() -> void:
 	show_btn.visible = false
 	show_btn.pressed.connect(func(): show_panel(true))
 	layer.add_child(show_btn)
+	var outer := VBoxContainer.new()                      # from 3D-3.7: name, toolbar and the camera pictures stay at the top,
+	outer.add_theme_constant_override("separation", 10)  # only the rest scrolls
+	panel.add_child(outer)
+	var top_box := VBoxContainer.new()
+	top_box.add_theme_constant_override("separation", 10)
+	top_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	outer.add_child(top_box)
 	var scroll := ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	panel.add_child(scroll)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	outer.add_child(scroll)
 	var box_ := VBoxContainer.new()
 	ui_box = box_
 	box_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -2038,7 +2046,7 @@ func _build_ui() -> void:
 	# header: logo, name, version (like the top bar of the page)
 	var hdr := HBoxContainer.new()
 	hdr.add_theme_constant_override("separation", 8)
-	box_.add_child(hdr)
+	top_box.add_child(hdr)
 	var logo := PanelContainer.new()
 	logo.add_theme_stylebox_override("panel", UI.box(UI.ORG, UI.ORG, 7, 2, 0))
 	logo.custom_minimum_size = Vector2(26, 26)
@@ -2062,7 +2070,7 @@ func _build_ui() -> void:
 	# toolbar like above the settings of Motion Watch
 	var tb := HBoxContainer.new()
 	tb.add_theme_constant_override("separation", 6)
-	box_.add_child(tb)
+	top_box.add_child(tb)
 	var hide_b := UI.icon_button("hide", "Bedienfeld ausblenden (H)")
 	hide_b.pressed.connect(func(): show_panel(false))
 	tb.add_child(hide_b)
@@ -2105,9 +2113,8 @@ func _build_ui() -> void:
 	status_label.add_theme_font_size_override("font_size", 13)
 	cn.add_child(status_label)
 	# camera pictures
-	var cm := UI.fold_card(box_, "Kameras", true, "camera")
+	var cm := UI.fold_card(top_box, "Kameras", true, "camera")   # always visible (also while searching); can be folded
 	fold_bodies.append(cm)
-	top_cards.append(cm.get_meta("card"))
 	prev0 = TextureRect.new()
 	prev0.texture = vps[0].get_texture()
 	prev0.expand_mode = TextureRect.EXPAND_IGNORE_SIZE

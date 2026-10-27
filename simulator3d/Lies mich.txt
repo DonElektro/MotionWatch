@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-3.6 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-3.7 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -66,6 +66,7 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
     Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
   * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
+- Ab 3D-3.7: Die Kamerabilder bleiben oben im Bedienfeld stehen, nur die Einstellungen darunter scrollen.
 - Ab 3D-3.6: Steuerung nur mit der Maus (siehe «Bedienung»), Knopfleiste unten im Bild, Kompass, Besucher auswählen,
   verfolgen und mit der Maus tragen.
 - Ab 3D-3.5: Bedienfeld aufgeräumt: jede Gruppe hat ein Symbol, die Gruppen stehen in einer festen Reihenfolge (Szene,

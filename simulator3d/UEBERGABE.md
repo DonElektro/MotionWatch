@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-3.6** · passende Motion-Watch-Version **2.93.13**
+Stand: 26.10.2026 · Simulator-Version **3D-3.7** · passende Motion-Watch-Version **2.93.14**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,8 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-3.7 – Kamerabilder fest:** Bedienfeld = `outer` VBox: `top_box` (Kopf, Werkzeugleiste, Karte «Kameras») + ScrollContainer mit `ui_box`.
+
 **3D-3.6 – Maus-Steuerung:** `_unhandled_input` neu: `m_btn`, `m_grab` (Bodenpunkt), `_pan_to`, `_orbit` (Drehen um den Punkt),
 `_zoom_at`, `fly_to` (Tween), `_visitor_at` (Bildschirm-Abstand), `selected` / `follow` / `_sel_action`; `_build_view_bar()` (Knöpfe,
 Kompass, `sel_box`, `sel_ring`, `thermal_full` = Ansicht 3); `_view_overlays()` jedes Bild. Test-Aktion `visitors` liefert `sx/sy`.
