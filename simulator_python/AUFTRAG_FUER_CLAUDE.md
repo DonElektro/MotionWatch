@@ -139,6 +139,32 @@ jede UDP-Meldung zwei Zahlen schreiben (in Prozent, 0–100, eine Nachkommastell
 `"pc_cpu"` = Auslastung des ganzen Computers, `"sim_cpu"` = Anteil deines Simulator-Prozesses (z. B. mit `psutil`,
 falls vorhanden; sonst weglassen). Fehlt ein Wert, zeigt Motion Watch einfach nichts an.
 
+### 3.11 Mover: Kettenfahrzeug in «MW Sim · Welt» (neu, Motion Watch 2.95.43)
+
+Daniel möchte, dass der **Mover** (das Kettenfahrzeug, auf dem der Kamerakopf sitzt) auch in deinem Simulator gefahren werden kann,
+nicht nur im 3D-Simulator. Motion Watch ist dafür fertig, es braucht nichts Neues von Motion Watch.
+Die ganze Schnittstelle steht jetzt in `simulator/Simulator_Schnittstelle.md`, Abschnitt «Mover» (bitte lesen, nicht ändern).
+Kurz:
+
+- **Rein:** In jedem `POST /state` steht `"drive": {"l": …, "r": …}` (je −1 … 1). Rechnen wie der 3D-Simulator:
+  `v = (l + r) / 2 × mover_max` (Standard 0,8 m/s), Drehung `(l − r) / 0,74 × mover_max` rad/s, links schneller = nach rechts.
+  2,5 s ohne `POST /state` = anhalten.
+- **Raus:** `"mover": true` in der Antwort, solange der Mover an ist (sonst weglassen). Freiwillig `"mover_pose"`:
+  `{"x", "y"` (m ab Start)`, "yaw"` (Grad, + = rechts)`, "odo"` (gefahrene m)`, "blocked"}`.
+- **Regler** in einer Gruppe `"Mover"`: Schalter `id: "mover_on"` (genau diese id, Motion Watch schaltet ihn darüber selbst ein,
+  wenn jemand den zweiten Knüppel bewegt), Schieber `id: "mover_max"` (0,2–2,0 m/s).
+- **Was sich bei dir bewegt:** `cam_x` / `cam_y` und die Blickrichtung des Kopfes (`mount_yaw` + Fahrzeugrichtung). Schwenken
+  (`pan_deg`) gilt relativ zum Fahrzeug. Wärmebild und Lampen fahren mit, die feste Kamera 1 nicht.
+- **Hinweis zur Leistung:** `_rebuild` / `build_panorama` ist für einen festen Platz gedacht. Das Panorama nicht bei jedem
+  Zentimeter neu bauen, sondern zum Beispiel erst nach einigen Metern im Hintergrund, und bis dahin das alte weiter benutzen.
+- **Hindernisse:** nicht durch Häuser, Bäume, Zelte, Wasser, und nicht aus der Karte hinaus (dann `blocked: true`).
+- **Beim Ausschalten** zurück an den Kamera-Platz, an dem er gestartet ist.
+- Auf der Karte oder im Fenster das Fahrzeug zeigen wäre schön (freiwillig).
+
+Test: Motion Watch 2.95.43 verbinden, im Reiter «Simulator» die Simulation einschalten, auf der Live-Seite den zweiten Knüppel
+bewegen. Der Mover muss sich von selbst einschalten und fahren, und in `/api/state` steht unter `mover.pose` die Position.
+Wie immer: neue Version (PY-1.4), Paket, und hier in einem neuen Abschnitt melden. Kevin entscheidet, ob du es machst.
+
 ## 4. So testest du mit Motion Watch
 
 1. Simulator starten: `python3 motion_sim.py --stream` (oder mit Fenster «An Motion Watch senden» einschalten).

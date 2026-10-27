@@ -253,3 +253,40 @@ Die Seite `/preview` von Motion Watch zeigt die aktuelle Webseite so, wie sie au
   - Ist **«Simulator im Netz selbst finden»** eingeschaltet (Standard) und hat Motion Watch gerade keine funktionierende Verbindung, übernimmt es die Adresse eines gefundenen Simulators von selbst. Ein Simulator auf einem PC hat dabei Vorrang vor einem auf dem Pi.
 - Ein eigener Simulator muss dafür nur diese Nachricht senden. In Python macht das `SimServer` schon von selbst.
 - Funktioniert nur im gleichen Netz (gleiches WLAN / LAN). Gäste-WLANs blockieren solche Nachrichten oft. Dann die Adresse von Hand eintragen.
+
+## Mover: ein Kettenfahrzeug im Simulator (ab Motion Watch 2.94.0, Position ab 2.95.43)
+
+Der Mover ist ein Kettenfahrzeug, auf dem der ganze Kamerakopf sitzt (Kopfkamera, Wärmebild, Lampen). Motion Watch fährt ihn mit dem
+**zweiten Steuerknüppel** auf der Live-Seite. Ein Simulator kann ihn nachspielen. Der 3D-Simulator macht das seit 3D-3.11
+(Schalter «Mover simulieren»).
+
+**Motion Watch → Simulator** (in jedem `POST /state`):
+
+```json
+"drive": {"l": 0.6, "r": 0.2}
+```
+
+- `l` / `r`: linke und rechte Kette, je −1 (voll rückwärts) … 0 … 1 (voll vorwärts). Hier fährt er eine Rechtskurve.
+- Motion Watch setzt beide auf 0, wenn 0,6 s lang niemand den Knüppel bewegt. Der Simulator soll zusätzlich anhalten, wenn
+  2,5 s lang kein `POST /state` mehr kommt.
+- So rechnet der 3D-Simulator (bitte gleich, damit sich beide gleich fahren):
+  `v = (l + r) / 2 × Höchstgeschwindigkeit` (Standard 0,8 m/s),
+  Drehung `ω = (l − r) / 0,74 m × Höchstgeschwindigkeit` (Kettenabstand 0,74 m, links schneller = dreht nach rechts).
+- Schwenken (`pan_deg`) gilt **relativ zum Fahrzeug**: Dreht der Mover, dreht der Kopf mit. Die feste Kamera 1 bleibt, wo sie ist.
+
+**Simulator → Motion Watch** (Antwort auf `POST /state`):
+
+| Feld | Pflicht? | Inhalt |
+|---|---|---|
+| `"mover": true` | ja, wenn der Mover an ist | Motion Watch zeigt dann den zweiten Knüppel und schickt `drive`. Ohne Mover das Feld weglassen. |
+| `"mover_pose"` | freiwillig (ab 2.95.43) | `{"x": 3.2, "y": -1.5, "yaw": 35.0, "odo": 12.4, "blocked": false}`: Position in Metern ab dem Startpunkt (x = rechts, y = vorwärts in Startrichtung), `yaw` in Grad (0 = Startrichtung, + = nach rechts gedreht), `odo` = gefahrene Meter, `blocked` = steht an einem Hindernis. Motion Watch zeigt es in `/api/state` (`mover.pose`) und braucht es später für selbst geplante Rundgänge. |
+
+**Fernsteuerung** (CONTROL-Protokoll, Gruppe `"Mover"`):
+
+- Schalter `id: "mover_on"`: Mover an / aus. Wird in Motion Watch der zweite Knüppel bewegt und der Mover ist aus, schaltet
+  Motion Watch ihn über genau diese `id` selbst ein. Darum bitte genau so nennen.
+- Schieber `id: "mover_max"`: Höchstgeschwindigkeit in m/s (0,2–2,0), freiwillig.
+- Beim Ausschalten fährt das Fahrzeug zurück an den Startplatz (Kamera wieder dort, wo sie ohne Mover steht).
+
+**Hindernisse:** Das Fahrzeug soll nicht durch Häuser, Bäume oder Zelte fahren (3D-Simulator: mindestens 0,55 m Abstand, dann
+`blocked: true`), und nicht aus der Welt hinaus.
