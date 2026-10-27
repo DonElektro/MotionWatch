@@ -144,9 +144,11 @@ static func fold_card(parent: Control, title: String, open: bool, icon := "") ->
 	row.set_anchors_preset(Control.PRESET_FULL_RECT)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hdr.add_child(row)
+	var ic: Control = null
 	if icon != "":
 		row.add_theme_constant_override("separation", 8)
-		row.add_child(group_icon(icon))
+		ic = group_icon(icon)
+		row.add_child(ic)
 	var h := heading(title)
 	h.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -172,6 +174,9 @@ static func fold_card(parent: Control, title: String, open: bool, icon := "") ->
 	body.set_meta("card", v.get_parent())            # for «alle auf / zu», the search and Simple / Expert
 	body.set_meta("paint", paint)
 	body.set_meta("title", title)
+	body.set_meta("head", h)
+	if ic != null:
+		body.set_meta("icon", ic)
 	return body
 
 
@@ -233,7 +238,7 @@ static func group_icon(kind: String) -> Control:
 
 static func _draw_group_icon(d: Control, kind: String) -> void:
 	var c := Vector2(10, 10)
-	var col := ACC
+	var col: Color = d.get_meta("col", ACC)             # from 3D-3.16 a symbol can change its colour (connection: green)
 	var w := 1.8
 	var P := func(pts: Array) -> PackedVector2Array:
 		var out := PackedVector2Array()

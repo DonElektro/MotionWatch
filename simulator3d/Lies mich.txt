@@ -66,6 +66,8 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
     Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
   * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
+- Ab 3D-3.16: Die Karte «Verbindung» lässt sich zuklappen. Ihr Symbol und der Titel zeigen den Zustand: grau = Senden aus,
+  orange = wartet auf Motion Watch, grün = verbunden.
 - Ab 3D-3.15: Mover im Simulator selbst fahren: bei «Mover simulieren» erscheint unten rechts ein grüner Stick (Kugel
   ziehen: hoch = vorwärts, runter = rückwärts, seitlich = an Ort drehen) – oder die Pfeiltasten. «Hinterher» = die Ansicht
   fährt hinter dem Mover her. Der Ortsassistent zeigt in Schritt 2, ob die 3D-Gebäude von swisstopo geladen wurden und
