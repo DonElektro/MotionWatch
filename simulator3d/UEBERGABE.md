@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-2.4** · passende Motion-Watch-Version **2.93.1**
+Stand: 26.10.2026 · Simulator-Version **3D-2.5** · passende Motion-Watch-Version **2.93.2**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,18 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-2.5 – Realismus und Spiel:** Kamerabild: `shaders/lens.gdshader` auf einem Quad 12 cm vor Kamera 0/1 (eigene Ebenen 32/64,
+`cull_mask` der Kameras), Rauschen aus `gain[i]` (Belichtung), Vignette, Regentropfen; Insekten = `CPUParticles3D` am
+`head_pitch` (nachts, wenn Licht an). Einstellungen Gruppe «Kamerabild» (`lens_noise`, `lens_vignette`, `lens_drops`, `insects_on`).
+Schiedsrichter `game.cam_sees()`: Personenhöhe in Pixeln (`VFOV`, Bildzeilen) → KI `smoothstep(18, 70 px)` × Haltung × Licht;
+Bewegung = Pixel pro Sekunde × Grösse (ab 20 px); Wärmebild = Fleck ab 2,5–9 px × Temperaturunterschied; Licht `light_at()`
+(Lampen `main.lamps`, weisses Licht/IR im Bildausschnitt des Kopfes, Mond). Unter 0,1 zählt nichts. Mikrofon `hearing()`.
+Start bei z = −46 (dort sieht keine Kamera genug). Spielart `game_mode` «guard»: Wächter-Handy bekommt `main.latest_jpg(0)`
+(`_send_guard_view`, `main._wanted_fps(0)` ≥ 8), steuert `guard_yaw/guard_tilt`, Nachrichten `light`, `catch`, `role`;
+`stone` für Steine (Aufmerksamkeit `attention`), Kristalle `items`, Leben `game_lives` (Zustand «out» = Zuschauer),
+Sichtkegel `cones` (Ebene 16), zufälliger Start/Ziel. Rangliste mit Wächter-Punkten (150 je Fang, −50 Fehlalarm, +100 je
+Schleicher nicht im Ziel). Test-Abfrage `game` liefert auch `cams` (pro Kamera Abstand, im Bild, Verdecker, Sicherheit), `items`.
+
 **3D-2.4 – Spiel «Unentdeckt ans Ziel»** (`scripts/game.gd`, `scripts/qr.gd`): bis 4 Handys. HTTP-Seite (`PAGE`, in game.gd
 eingebettet) auf Port `stream_port + 5` (8770), WebSocket auf `+ 6` (8771, `WebSocketPeer.accept_stream`). Nachrichten: Handy →
 `join {name, token}` (token in localStorage: gleicher Platz nach Neuladen), `in {mx, my, look, pitch, run, pos}` (alle 50 ms),

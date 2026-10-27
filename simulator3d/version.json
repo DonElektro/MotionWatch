@@ -1,7 +1,7 @@
 {
- "version": "3D-2.4",
+ "version": "3D-2.5",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30347993,
- "sha256": "cf0892f2d243096231e5a4cb104dbdde845f36cda73c9c995d07a09fcf95bfe6",
- "notes": "Neu: Spiel «Unentdeckt ans Ziel» für bis zu 4 Spieler mit dem Handy (eigene Ansicht, Joystick, Ducken, Kriechen); der Simulator ist Schiedsrichter."
+ "size": 30369689,
+ "sha256": "286822b082b8a10d889c774b733d806c9bab779d253ff506d21d88f52d52dcdc",
+ "notes": "Realistischeres Kamerabild (Rauschen, Regentropfen, Insekten am Licht); Spiel: ein Spieler als Wächter, Steine werfen, Kristalle, Leben, Mikrofon, Sichtfeld, Töne; Schiedsrichter wie die echte Erkennung."
 }

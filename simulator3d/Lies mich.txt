@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-2.4 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-2.5 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -51,7 +51,28 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
 - "Runde starten" (im Fenster, auf der Motion-Watch-Webseite oder auf einem Handy): 3-2-1, dann läuft die Zeit
   (einstellbar 1-15 Minuten). Am Schluss die Rangliste: früh im Ziel und selten erwischt = viele Punkte.
 - Einstellungen: Wächter leicht / normal / schwer; Bild auf dem Handy klein / mittel / gross (Experte).
+- Ab 3D-2.5:
+  * Spielart "Ein Spieler ist Wächter": im Startbild "👁 Wächter" wählen (nur einer). Der Wächter sieht auf dem Handy
+    das echte Bild der Kopfkamera (wie Motion Watch), dreht den Kopf mit dem Joystick, macht mit "💡 Licht" für
+    6 Sekunden hell (dann 20 s warten) und ruft "🚨 Erwischt!": stimmt es (die Kamera sieht jemanden), gibt es
+    +150 Punkte, sonst Fehlalarm −50 und 4 s warten. Die Kamera erwischt auch selbst, wer zu lange gut zu sehen ist.
+  * "🪨 Werfen": ein Stein fliegt 10 m weit und macht ein Geräusch - der Kopf schaut dorthin (alle 12 s einmal).
+  * Kristalle zum Sammeln (0-6, je +100 Punkte), nur die Spieler sehen sie.
+  * Leben: unbegrenzt, 3 oder 1. Wer keine mehr hat, schaut den anderen zu.
+  * Rennen hört man (das Mikrofon am Kopf, im Regen und bei Wind weniger): "👂 man hört dich".
+  * "Sichtfeld der Kameras zeigen": rote Fläche am Boden, wo die Kameras hinschauen (für Anfänger).
+  * "Start und Ziel zufällig" (Experte). Töne auf dem Handy (Ticken wenn gesehen, Herzschlag, Ziel), Knopf 🔊.
+  * Der Schiedsrichter arbeitet jetzt wie die echte Erkennung: eine Person wird erkannt, wenn sie gross genug im
+    Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
+    Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
+  * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
 - Jedes Handy-Bild braucht Leistung der Grafikkarte: bei Ruckeln "Bild auf dem Handy: klein" wählen.
+
+KAMERABILD (ab 3D-2.5, Gruppe "Kamerabild")
+- Bildrauschen: nachts, wenn die Kamera verstärkt, wird das Bild körnig - wie bei einer echten Kamera.
+- Dunkle Bildecken (Experte), Regentropfen auf der Linse (bei Regen), Insekten am Licht: nachts fliegen kleine
+  Insekten durch das Licht vor dem Kopf und lösen wie in echt Bewegungen aus (gut zum Testen von Fehlalarmen).
+- Alles einstellbar oder abschaltbar; Motion Watch bekommt genau dieses Bild.
 
 STROM SPAREN (ab 3D-2.3)
 - Der Simulator rechnet nur, wenn jemand hinschaut: wenn das Fenster offen ist oder Motion Watch verbunden ist.

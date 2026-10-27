@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 00:37",
+ "generated": "2026-10-27 01:01",
  "versions": [
   {
-   "version": "2.93.1",
-   "file": "webcam_bewegung_2_93_1.py",
+   "version": "2.93.2",
+   "file": "webcam_bewegung_2_93_2.py",
    "url": "",
-   "sha256": "9a29fbec00d4d5345cb005227c70f26796c80019f2abcc1c49339e9935d1aca2",
-   "date": "2026-10-27 00:37",
-   "notes": "Download of the 3D simulator 3D-2.4: game «Unentdeckt ans Ziel» for up to 4 players with their phones (own view, joystick, crouch, crawl); the simulator is the referee. Its settings appear in the simulator control (group «Spiel»).",
-   "sig": "86f6b8c41f94d18b03b76d64c88cd78e49a735bc9be2413baa7a36e4263dd5b8fdb5377989c755c35183db65a922762c73f2d4a16cf24ab152cb8af36d47420f"
+   "sha256": "d8aa239d38ca39e5a1e4f6eaef076de5be321c40b053f2d2b66bc8f9423b214f",
+   "date": "2026-10-27 01:01",
+   "notes": "Download of the 3D simulator 3D-2.5: more realistic camera pictures (grain at night, raindrops on the lens, insects in the light at night - real false alarms to test); game: one player can be the guard (sees through the head camera), stones to distract, crystals to collect, lives, a microphone hears running; the referee works like a real detection.",
+   "sig": "2a3047bee0413c1b83b42237c9f3b9fd729d172c325630ead28e4584ee95bfb6ef24fcba6644700302521685daae75cd4e95c6afa1d994c6672a345036459601"
   },
   {
    "version": "2.92.4",

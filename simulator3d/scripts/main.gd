@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-2.4"
+const VERSION := "3D-2.5"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -27,6 +27,13 @@ var game_minutes := 5.0
 var game_level := "normal"            # easy | normal | hard
 var game_quality := "mid"             # picture on the phone: small | mid | big
 var game_guard := true                # without Motion Watch the head guards by itself
+var game_mode := "camera"             # camera: all against the camera · guard: one player is the guard
+var game_lives := 0                   # 0 = unlimited
+var game_items := 3                   # crystals to collect (+100 each)
+var game_cones := false               # show the fields of view of the cameras (for beginners)
+var game_noise := true                # the microphone hears loud steps
+var game_stones := true               # stones to throw (distract the guard)
+var game_random := false              # start and goal by chance
 # ---- start with the PC (from 3D-2.1; autostart.gd) ----
 var autostart_on := false             # read from Windows (Run key) / Linux (autostart folder), not from the settings
 var autostart_min := true             # at the autostart: minimized = the small box of mini.gd
@@ -134,6 +141,13 @@ var th_lut := PackedFloat32Array()
 var th_srgb := true
 var th_bg_raw := false
 var gain := [1.0, 1.0]
+# ---- the picture of the cameras (from 3D-2.5; saved) ----
+var lens_noise := 0.5                 # grain, stronger at night
+var lens_vignette := 0.3              # dark corners
+var lens_drops := true                # raindrops on the lens when it rains
+var insects_on := true                # insects fly round the light at night (false alarms, as in reality)
+var lens_mats: Array = []
+var insects: CPUParticles3D
 var capturing := false
 var preview_on := true
 var th_preview: ImageTexture
@@ -209,6 +223,7 @@ func _ready() -> void:
 	_build_head()
 	_build_viewports()
 	_build_weather()
+	_build_lens()
 	visitors = Node3D.new()
 	add_child(visitors)
 	_build_view_camera()
@@ -650,6 +665,76 @@ func _build_weather() -> void:
 	add_child(snow)
 
 
+func _build_lens() -> void:
+	"""a quad right in front of camera 0 and 1 (own layer 32 / 64): grain, dark corners, raindrops (shaders/lens.gdshader).
+	Insects round the head at night when a light is on (CPU particles, only the normal cameras see them, not the thermal one)."""
+	var sh: Shader = load("res://shaders/lens.gdshader")
+	for i in range(2):
+		var cam: Camera3D = cams[i]
+		var lay := 32 if i == 0 else 64
+		cam.cull_mask = 1 | lay
+		var dist := 0.12
+		var w := 2.0 * dist * tan(deg_to_rad(CAM_FOV[i]) / 2.0) * 1.04
+		var hgt := w * float(CAM_H[i]) / float(CAM_W[i]) * 1.04
+		var q := MeshInstance3D.new()
+		var qm := QuadMesh.new()
+		qm.size = Vector2(w, hgt)
+		q.mesh = qm
+		q.position = Vector3(0, 0, -dist)
+		q.layers = lay
+		q.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var m := ShaderMaterial.new()
+		m.shader = sh
+		m.set_shader_parameter("res", Vector2(CAM_W[i], CAM_H[i]))
+		q.material_override = m
+		cam.add_child(q)
+		lens_mats.append(m)
+	insects = CPUParticles3D.new()
+	insects.amount = 28
+	insects.lifetime = 2.5
+	insects.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	insects.emission_sphere_radius = 0.7
+	insects.direction = Vector3(0, 0, -1)
+	insects.spread = 180.0
+	insects.gravity = Vector3.ZERO
+	insects.initial_velocity_min = 0.3
+	insects.initial_velocity_max = 1.4
+	insects.orbit_velocity_min = -1.5
+	insects.orbit_velocity_max = 1.5
+	insects.damping_min = 0.0
+	insects.damping_max = 0.8
+	insects.angular_velocity_min = -200.0
+	insects.angular_velocity_max = 200.0
+	var im := SphereMesh.new()
+	im.radius = 0.012
+	im.height = 0.02
+	im.radial_segments = 4
+	im.rings = 2
+	var imm := StandardMaterial3D.new()
+	imm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	imm.albedo_color = Color(0.95, 0.93, 0.85)
+	im.material = imm
+	insects.mesh = im
+	insects.position = Vector3(0, 0.2, -0.9)          # in front of the head, in its light
+	insects.emitting = false
+	insects.layers = 1
+	head_pitch.add_child(insects)
+
+
+func _update_lens() -> void:
+	"""every 0.5 s: grain from the amplification (gain), raindrops when it rains, insects at night with light"""
+	var dark := is_dark()
+	for i in range(lens_mats.size()):
+		var amp: float = clamp((float(gain[i]) - 1.0) / 4.0, 0.0, 1.0)
+		var m: ShaderMaterial = lens_mats[i]
+		m.set_shader_parameter("noise", lens_noise * (0.08 + 0.92 * (amp if dark else amp * 0.4)))
+		m.set_shader_parameter("vignette", lens_vignette)
+		m.set_shader_parameter("drops", (0.45 if i == 1 else 0.25) if lens_drops and weather == "rain" else 0.0)
+	var L: Dictionary = mw.get("lights", {})
+	var lit: bool = L.get("white", false) or L.get("ir", false) or (game != null and game.guard_auto)
+	insects.emitting = insects_on and dark and lit and weather != "rain" and weather != "snow" and ambient > 6.0
+
+
 func _build_view_camera() -> void:
 	view_cam = Camera3D.new()
 	view_cam.position = Vector3(6, 7, 9)
@@ -794,6 +879,7 @@ func _process(dt: float) -> void:
 		if game != null and game.open:
 			game.paint()
 		if sim_active:
+			_update_lens()
 			_update_sky()
 			_update_temps()
 			_life()
@@ -809,9 +895,9 @@ func _process(dt: float) -> void:
 	# the servos turn like real ones: towards the new angle with a limited speed (no jumps)
 	var want_pan := -deg_to_rad(float(s.get("pan_deg", 0.0)))
 	var want_tilt := deg_to_rad(float(s.get("tilt_deg", 0.0)) - 6.0)
-	if game != null and game.guard_auto:                 # the game without Motion Watch: the head guards by itself
+	if game != null and game.guard_auto:                 # the game: automatic guard or a player as guard turns the head
 		want_pan = game.guard_yaw
-		want_tilt = deg_to_rad(-9.0)
+		want_tilt = game.guard_tilt
 	var step := deg_to_rad(SERVO_DEG_S) * dt
 	head.rotation.y = move_toward(head.rotation.y, want_pan, step)
 	head_pitch.rotation.x = move_toward(head_pitch.rotation.x, want_tilt, step)
@@ -868,6 +954,8 @@ func _wanted_fps(i: int) -> float:
 	var f: float = float(d.get(i, 0.0))
 	if i < 2 and now() - snap_want[i] < 3.0:
 		f = max(f, 2.0)
+	if i == 0 and game != null and game.guard_watching():
+		f = max(f, 8.0)                                  # a player guards: he sees through the head camera
 	if i == 2 and now() - _th_asked < 3.0:
 		f = max(f, 8.0)
 	if preview_on and win_open:
@@ -1248,6 +1336,10 @@ func _register_controls() -> void:
 	add_control("toggle", "flee_light", "Tiere flüchten nachts vor dem weissen Licht", func(): return flee_light, func(v): flee_light = v, "Besuch", ex)
 	add_control("toggle", "flee_sound", "Tiere flüchten vor der Sirene", func(): return flee_sound, func(v): flee_sound = v, "Besuch", ex)
 	add_control("toggle", "avoid_on", "Um Bäume, Häuser und Fahrzeuge herumgehen", func(): return avoid_on, func(v): avoid_on = v, "Besuch", ex)
+	add_control("slider", "lens_noise", "Bildrauschen (nachts stärker)", func(): return lens_noise, func(v): lens_noise = v, "Kamerabild", {"min": 0, "max": 1, "step": 0.05})
+	add_control("slider", "lens_vignette", "Dunkle Bildecken", func(): return lens_vignette, func(v): lens_vignette = v, "Kamerabild", {"min": 0, "max": 1, "step": 0.05, "expert": true})
+	add_control("toggle", "lens_drops", "Regentropfen auf der Linse", func(): return lens_drops, func(v): lens_drops = v, "Kamerabild")
+	add_control("toggle", "insects", "Insekten am Licht (nachts, lösen wie echt Bewegung aus)", func(): return insects_on, func(v): insects_on = v, "Kamerabild")
 	add_control("toggle", "door", "Wohnwagentür offen", func(): return door_open, func(v): set_door(v), "Sensoren")
 	add_control("toggle", "gas", "Gas / Rauch", func(): return gas_on, func(v): set_gas(v), "Sensoren")
 	add_control("button", "pir", "PIR Zelt auslösen", null, func(): add_event("PIR Zelt", "pir"), "Sensoren")
@@ -1262,8 +1354,17 @@ func _register_controls() -> void:
 	add_control("button", "game_start", "Runde starten", null, func(): game.start_round(), "Spiel")
 	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
+	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
+			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"]]})
 	add_control("select", "game_level", "Wächter", func(): return game_level, func(v): game_level = v, "Spiel",
 			{"options": [["easy", "leicht"], ["normal", "normal"], ["hard", "schwer"]]})
+	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
+			{"options": [["0", "unbegrenzt"], ["3", "3 Leben"], ["1", "1 Leben"]]})
+	add_control("slider", "game_items", "Kristalle zum Sammeln", func(): return game_items, func(v): game_items = int(v), "Spiel", {"min": 0, "max": 6, "step": 1})
+	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
+	add_control("toggle", "game_noise", "Mikrofon hört laute Schritte", func(): return game_noise, func(v): game_noise = v, "Spiel", ex)
+	add_control("toggle", "game_cones", "Sichtfeld der Kameras zeigen (für Anfänger)", func(): return game_cones, func(v): game_cones = v, "Spiel")
+	add_control("toggle", "game_random", "Start und Ziel zufällig", func(): return game_random, func(v): game_random = v, "Spiel", ex)
 	add_control("select", "game_quality", "Bild auf dem Handy", func(): return game_quality, func(v): game_quality = v, "Spiel",
 			{"options": [["small", "klein (schnell)"], ["mid", "mittel"], ["big", "gross (braucht mehr Leistung)"]], "expert": true})
 	add_control("toggle", "game_guard", "Ohne Motion Watch bewacht der Kopf selbst", func(): return game_guard, func(v): game_guard = v, "Spiel", ex)
@@ -1345,7 +1446,8 @@ func control(d: Dictionary) -> Dictionary:
 						"susp": snappedf(p["susp"], 0.1), "seen": p["seen"], "state": p["state"], "caught": p["caught"], "posture": p["actor"].ctl_posture,
 						"online": p["sock"] != null, "vis": snappedf(game.visibility(p), 0.01), "cams": game.vis_debug(p)})
 		return {"ok": true, "open": game.open, "round": game.round_state, "players": ps, "guard": game.guard_auto, "guard_yaw": snappedf(game.guard_yaw, 0.01),
-				"goal": [snappedf(game.goal.x, 0.01), snappedf(game.goal.z, 0.01)], "address": game.address()}
+				"goal": [snappedf(game.goal.x, 0.01), snappedf(game.goal.z, 0.01)], "address": game.address(),
+				"items": game.items.map(func(it): return [snappedf(it["pos"].x, 0.1), snappedf(it["pos"].z, 0.1), it["by"]]), "insects": insects.emitting}
 	elif a == "game_put":                              # for tests: put a player somewhere
 		var p2 = game.players[clampi(int(d.get("slot", 0)), 0, 3)]
 		if p2 == null:
@@ -1848,7 +1950,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
