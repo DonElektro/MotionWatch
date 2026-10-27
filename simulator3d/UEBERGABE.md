@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-3.16** · passende Motion-Watch-Version **2.94.5**
+Stand: 26.10.2026 · Simulator-Version **3D-3.15** · passende Motion-Watch-Version **2.94.4**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,9 +71,6 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
-**3D-3.16 – Verbindung:** `fold_card` merkt sich `head` und `icon` (Meta); `_draw_group_icon` nimmt die Farbe aus `get_meta("col")`.
-`_update_status()` färbt Symbol und Titel der Karte `conn_body` (aus / wartet / verbunden).
-
 **3D-3.15 – Mover-Stick im Simulator:** `rover_pad.gd` (Control unten rechts, nur bei `mover_on`; Ziehen oder Pfeiltasten →
 `main.pad_drive` (vor, rechts) + `main.pad_on`; überstimmt in `_drive()` die Befehle von Motion Watch; «Hinterher» = Verfolgerkamera).
 Achtung: `pad_on` ist ein Bool pro Bild (keine Zeitschwelle – mit langsamer Grafik dauert ein Bild > 0.3 s).
