@@ -17,6 +17,7 @@ var rot := Basis()               # ECEF -> local (rows: east, up, south)
 var contents: Array = []         # [url, transform (16 doubles)]
 var fetched := 0
 var info := ""
+var diag: Array = []             # what happened, for the wizard and the report (from 3D-3.15)
 
 
 static func ecef(lat: float, lon: float, h: float) -> Array:
@@ -58,13 +59,17 @@ func fetch_buildings(g, my_gen: int, keep_out: Array) -> Array:
 	contents = []
 	fetched = 0
 	var u: String = geo.url("b3d") if geo.has_method("url") else TILESET
+	diag = []
 	var ts = await _json(u)
 	if typeof(ts) != TYPE_DICTIONARY or not ts.has("root"):
 		info = "3D-Gebäude: keine Antwort von swisstopo"
+		diag.append("tileset.json: " + ("keine Antwort" if ts == null else "unbekannter Inhalt") + " (" + u + ")" + (" – " + geo._last_err if str(geo._last_err) != "" else ""))
 		return []
+	diag.append("tileset.json ok, Version %s" % str((ts.get("asset", {}) as Dictionary).get("version", "?")) if typeof(ts.get("asset")) == TYPE_DICTIONARY else "tileset.json ok")
 	await _walk(ts["root"], u.get_base_dir() + "/", IDENT, 0, my_gen)
 	if my_gen != geo.gen:
 		return []
+	diag.append("%d Kacheln für diesen Ort (%d Verzeichnisse gelesen)" % [contents.size(), fetched])
 	if contents.is_empty():
 		info = "3D-Gebäude: keine Kacheln für diesen Ort"
 		return []
@@ -73,10 +78,12 @@ func fetch_buildings(g, my_gen: int, keep_out: Array) -> Array:
 	for c in contents:
 		n += 1
 		geo.info = "Lade 3D-Gebäude von swisstopo … %d von %d" % [n, contents.size()]
-		var bytes: PackedByteArray = await geo.fetch(c[0])
+		var bytes: PackedByteArray = _unzip(await geo.fetch(c[0]))
 		if my_gen != geo.gen:
 			return []
 		if bytes.size() < 28:
+			if diag.size() < 8:
+				diag.append("Kachel leer: " + str(c[0]).get_file())
 			continue
 		var m = _tile_mesh(bytes, c[1], keep_out)
 		if m != null:
@@ -85,12 +92,13 @@ func fetch_buildings(g, my_gen: int, keep_out: Array) -> Array:
 		info = "3D-Gebäude: Format nicht lesbar – Häuser aus OpenStreetMap"
 		return []
 	_align(meshes)
+	diag.append("%d Kacheln mit Häusern gelesen" % meshes.size())
 	info = ""
 	return meshes
 
 
 func _json(u: String):
-	var b: PackedByteArray = await geo.fetch(u)
+	var b: PackedByteArray = _unzip(await geo.fetch(u))
 	fetched += 1
 	return JSON.parse_string(b.get_string_from_utf8()) if b.size() > 0 else null
 
@@ -170,10 +178,12 @@ func _tile_mesh(bytes: PackedByteArray, tf: Array, keep_out: Array):
 				rtc = [float(rc[0]), float(rc[1]), float(rc[2])]
 		glb = bytes.slice(28 + ftj + ftb + btj + btb)
 	elif magic != "glTF":
+		_note("unbekanntes Kachelformat «%s»" % magic.c_escape())
 		return null
 	var doc := GLTFDocument.new()
 	var st := GLTFState.new()
 	if doc.append_from_buffer(glb, "", st) != OK:
+		_note("glTF nicht lesbar: " + _gltf_info(glb))
 		return null
 	var scene = doc.generate_scene(st)
 	if scene == null:
@@ -195,6 +205,7 @@ func _tile_mesh(bytes: PackedByteArray, tf: Array, keep_out: Array):
 			stack.append([ch, xf])
 	scene.free()
 	if count == 0:
+		_note("Kachel ohne Dreiecke: " + _gltf_info(glb))
 		return null
 	return st_out.commit()
 
@@ -276,3 +287,32 @@ func _align(meshes: Array) -> void:
 		var nm := ArrayMesh.new()
 		nm.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
 		meshes[i] = nm
+
+
+func _note(t: String) -> void:
+	if not t in diag and diag.size() < 10:
+		diag.append(t)
+
+
+static func _gltf_info(glb: PackedByteArray) -> String:
+	"""version and extensions of a glb (why Godot cannot read it, e.g. Draco compression)"""
+	if glb.size() < 20:
+		return "zu kurz"
+	var magic := glb.slice(0, 4).get_string_from_ascii()
+	var ver := glb.decode_u32(4)
+	var jl := glb.decode_u32(12)
+	var j = JSON.parse_string(glb.slice(20, 20 + jl).get_string_from_utf8()) if magic == "glTF" else null
+	if typeof(j) != TYPE_DICTIONARY:
+		return "glb Version %d, Kopf unlesbar" % ver
+	var a = j.get("asset", {})
+	var av := str(a.get("version", "?")) if typeof(a) == TYPE_DICTIONARY else "?"
+	return "glTF %s (glb %d), Erweiterungen: %s" % [av, ver, ", ".join(PackedStringArray(j.get("extensionsRequired", j.get("extensionsUsed", [])))) if typeof(j.get("extensionsUsed", [])) == TYPE_ARRAY else "?"]
+
+
+static func _unzip(b: PackedByteArray) -> PackedByteArray:
+	"""some servers send the files gzip-packed without saying so"""
+	if b.size() > 18 and b[0] == 0x1f and b[1] == 0x8b:
+		var u := b.decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP)
+		if u.size() > 0:
+			return u
+	return b

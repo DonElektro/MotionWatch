@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 05:16",
+ "generated": "2026-10-27 05:29",
  "versions": [
   {
-   "version": "2.94.3",
-   "file": "webcam_bewegung_2_94_3.py",
+   "version": "2.94.4",
+   "file": "webcam_bewegung_2_94_4.py",
    "url": "",
-   "sha256": "d705c633d29c41a165248cb44dcac19ffe52b35dedd3de0a61a2c02937b6ff6d",
-   "date": "2026-10-27 05:16",
-   "notes": "3D simulator 3D-3.14: place wizard (surroundings detected, presets for objects, objects that fit the surroundings)",
-   "sig": "ab0379f70bcaadbab2caed023eb4555d6e8bbe382dfacb1bb25f3a368add2c2aed3e56d82dc97e42fa5bde1dd5319d10878d6f126d5bd7984ce4f0d03207c209"
+   "sha256": "c691422cb6da7c0a800217cfef9afef149ac81db2e0edf9e93e3fbf2e8d5edbb",
+   "date": "2026-10-27 05:29",
+   "notes": "Mover stick can be shown in the simulation even without a mover or motor driver (setting, look only); 3D simulator 3D-3.15: drive the mover in the simulator, report on the 3D buildings",
+   "sig": "990bd1aee04ee685ea7675b9946b0212d1b5bcc7f2f7aabd2755ab6d72d622dc0fb6bf8f786697e3028927abdf098f5e06b0fa6c8d18cef9be7b1e834969a808"
   },
   {
    "version": "2.93.17",

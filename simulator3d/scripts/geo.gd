@@ -47,6 +47,7 @@ var counts := {}                 # what was built (for the info line and tests)
 var gen := 0                     # a newer load cancels an older one
 var b3d_meshes: Array = []       # buildings of swisstopo in 3D (b3d.gd); empty = houses from OpenStreetMap
 var b3d_on := true
+var b3d_diag: Array = []
 var _last_err := ""
 
 
@@ -388,6 +389,8 @@ func load_place(la: float, lo: float, nm: String, rebuild := true) -> void:
 							keep.append(grown)
 		var b3 = load("res://scripts/b3d.gd").new()
 		b3d_meshes = await b3.fetch_buildings(self, my_gen, keep)
+		b3d_diag = b3.diag
+		_save_b3d_report()
 		if my_gen != gen:
 			return
 		if b3d_meshes.is_empty() and b3.info != "":
@@ -1566,3 +1569,10 @@ func _env_props(e: String) -> void:
 		sc.prop(kind, Vector3(p3.x, 0.0, p3.y), rng.randf() * TAU)
 		made += 1
 	counts["props"] = made
+
+
+func _save_b3d_report() -> void:
+	"""user://orte/3d_gebaeude_bericht.txt: what happened with the 3D buildings (to send when they are missing)"""
+	var f := FileAccess.open("user://orte/3d_gebaeude_bericht.txt", FileAccess.WRITE)
+	if f != null:
+		f.store_string("Ort: %s (%.5f, %.5f)\n%s\n" % [place_name, lat, lon, "\n".join(PackedStringArray(b3d_diag))])

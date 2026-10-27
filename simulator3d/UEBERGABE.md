@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-3.14** · passende Motion-Watch-Version **2.94.3**
+Stand: 26.10.2026 · Simulator-Version **3D-3.15** · passende Motion-Watch-Version **2.94.4**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,12 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-3.15 – Mover-Stick im Simulator:** `rover_pad.gd` (Control unten rechts, nur bei `mover_on`; Ziehen oder Pfeiltasten →
+`main.pad_drive` (vor, rechts) + `main.pad_on`; überstimmt in `_drive()` die Befehle von Motion Watch; «Hinterher» = Verfolgerkamera).
+Achtung: `pad_on` ist ein Bool pro Bild (keine Zeitschwelle – mit langsamer Grafik dauert ein Bild > 0.3 s).
+3D-Gebäude-Diagnose: `b3d.diag` → `geo.b3d_diag`, Datei `user://orte/3d_gebaeude_bericht.txt`, Anzeige in Schritt 2; gzip ohne
+Kopfzeile wird entpackt (`_unzip`). Motion Watch 2.94.4: `mover_sim_show` = Stick in der Simulation auch ohne Mover (nur Anzeige).
+
 **3D-3.14 – Orts-Assistent:** `karte.gd` Schritte 1–3 (`step`, `_show_step`, `_page_env`, `_page_objects`, `_build`); lädt mit
 `geo.load_place(..., rebuild=false)` und baut erst bei «Szene bauen» (`main.place_loaded()`). `geo.detect_env()` (Häuser im
 Umkreis 150 m, Anteil Wald / Wasser / Wiesen / Siedlung im 10-m-Raster, Fluss, Höhe) → `geo.env`, `env_why`.

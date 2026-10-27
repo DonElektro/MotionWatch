@@ -1,7 +1,7 @@
 {
- "version": "3D-3.14",
+ "version": "3D-3.15",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30549321,
- "sha256": "04cc5fb38a38a2564f264f06555cfe2ff05735e750087fe3a32078c015384530",
- "notes": "Orts-Assistent: Umgebung erkennen, Voreinstellungen zu den Objekten, passende Objekte je Umgebung"
+ "size": 30557190,
+ "sha256": "41ad52f52e4d43cf2187edff8ba809ae1924e956a26874e5380537e4e674d456",
+ "notes": "Mover im Simulator mit eigenem Stick oder Pfeiltasten fahren, Ansicht «Hinterher»; Bericht zu den 3D-Gebäuden"
 }

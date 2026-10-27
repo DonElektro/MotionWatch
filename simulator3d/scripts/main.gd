@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.14"
+const VERSION := "3D-3.15"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -764,6 +764,10 @@ func set_mover(on: bool) -> void:
 		mover_home()
 
 
+var _pad_l := 0.0
+var _pad_r := 0.0
+
+
 func _drive(dt: float) -> void:
 	"""the mover drives: left / right track from Motion Watch (-1 … 1); stops when Motion Watch is quiet for 2.5 s (it stops the tracks itself after 0.6 s without the stick)"""
 	if not mover_on:
@@ -776,6 +780,17 @@ func _drive(dt: float) -> void:
 	var d: Dictionary = mw.get("drive", {})
 	var l := float(d.get("l", 0.0)) if now() - mw_t < 2.5 else 0.0
 	var r := float(d.get("r", 0.0)) if now() - mw_t < 2.5 else 0.0
+	if pad_on:                                             # driven here in the simulator (stick at the bottom right, arrow keys)
+		var tl := pad_drive.x + pad_drive.y * 0.7
+		var trr := pad_drive.x - pad_drive.y * 0.7
+		var mx: float = max(1.0, max(abs(tl), abs(trr)))
+		_pad_l = move_toward(_pad_l, tl / mx, dt * 3.0)
+		_pad_r = move_toward(_pad_r, trr / mx, dt * 3.0)
+		l = _pad_l
+		r = _pad_r
+	else:
+		_pad_l = 0.0
+		_pad_r = 0.0
 	var v := (l + r) / 2.0 * mover_max
 	var om := (l - r) / 0.74 * mover_max                    # track distance 0.74 m: left faster = turns right
 	rig.rotation.y -= om * dt
@@ -1897,7 +1912,7 @@ func _register_controls() -> void:
 	add_control("toggle", "lens_drops", "Regentropfen auf der Linse", func(): return lens_drops, func(v): lens_drops = v, "Kamerabild")
 	add_control("toggle", "sound_on", "Geräusche der Welt ans Mikrofon von Motion Watch", func(): return sound_on, func(v): sound_on = v, "Kamerabild", ex)
 	add_control("toggle", "insects", "Insekten am Licht (nachts, lösen wie echt Bewegung aus)", func(): return insects_on, func(v): insects_on = v, "Kamerabild")
-	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – Motion Watch zeigt dann einen zweiten Stick zum Fahren", func(): return mover_on, func(v): set_mover(v), "Mover")
+	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – fahren mit dem grünen Stick unten rechts, den Pfeiltasten oder dem zweiten Stick in Motion Watch", func(): return mover_on, func(v): set_mover(v), "Mover")
 	add_control("slider", "mover_max", "Höchstgeschwindigkeit des Movers", func(): return mover_max, func(v): mover_max = v, "Mover", {"min": 0.2, "max": 2.0, "step": 0.1, "unit": "m/s"})
 	add_control("button", "mover_home", "Mover zurück an den Startplatz", null, func(): mover_home(), "Mover")
 	add_control("toggle", "door", "Wohnwagentür offen", func(): return door_open, func(v): set_door(v), "Sensoren")
@@ -2078,7 +2093,7 @@ func control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "step": karte.step, "env": geo.env, "why": geo.env_why, "info": karte.info.text, "waiting": karte.waiting,
 				"counts": geo.counts, "ort_env": ort_env, "visible": karte.visible}
 	elif a == "mover":                                 # for tests: where the mover is
-		return {"ok": true, "on": mover_on, "x": snappedf(rig.position.x, 0.01), "z": snappedf(rig.position.z, 0.01),
+		return {"ok": true, "pad": [pad_drive.x, pad_drive.y, now() - pad_t, _pad_l, _pad_r, rover_pad.dragging, sim_active, now() - _drive_t], "on": mover_on, "x": snappedf(rig.position.x, 0.01), "z": snappedf(rig.position.z, 0.01),
 				"yaw": snappedf(rad_to_deg(rig.rotation.y), 0.1), "drive": mw.get("drive", {}),
 				"near": _ob_near(Vector2(rig.position.x, rig.position.z - 0.3)).map(func(o): return [o["c"], _ob_closest(o, Vector2(rig.position.x, rig.position.z))[1]])}
 	elif a == "view":                                  # for tests: the free view from a point to a point, panel away
@@ -2916,6 +2931,10 @@ var compass: Control
 var thermal_full: TextureRect
 var view_btns := {}
 var sel_ring: Control
+var rover_pad                         # rover_pad.gd: drive the mover here (from 3D-3.15)
+var pad_drive := Vector2.ZERO         # (forward, turn right) from rover_pad, -1 … 1
+var pad_t := -10.0
+var pad_on := false                   # rover_pad is used right now
 var minimap                           # minimap.gd: overview map in the corner (from 3D-3.12)
 var map_on := true
 var map_size := 220.0
@@ -3293,6 +3312,9 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	minimap.span = map_span
 	minimap.visible = map_on
 	layer.add_child(minimap)
+	rover_pad = preload("res://scripts/rover_pad.gd").new()
+	rover_pad.main = self
+	layer.add_child(rover_pad)
 	# the chosen visitor
 	sel_box = PanelContainer.new()
 	sel_box.theme = th

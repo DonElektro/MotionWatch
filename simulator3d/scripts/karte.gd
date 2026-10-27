@@ -476,6 +476,9 @@ func _page_env() -> void:
 	var place: String = sel_name if sel_name != "" else geo.place_name
 	_text("%s – so sieht es dort aus:" % place, 16, Color(1, 1, 1))
 	_text("Erkannt: %s  (%s)" % [geo.env_name(geo.env), geo.env_why], 14, Color(0.55, 0.85, 1.0))
+	var b3: String = "3D-Gebäude von swisstopo: " + ("ja, %d Kacheln" % geo.b3d_meshes.size() if not geo.b3d_meshes.is_empty() else "nein – Häuser aus OpenStreetMap")
+	_text(b3 + ("" if geo.b3d_meshes.is_empty() == false else "  ·  " + " · ".join(PackedStringArray(geo.b3d_diag))), 13,
+			Color(0.6, 0.9, 0.6) if not geo.b3d_meshes.is_empty() else Color(1.0, 0.75, 0.4))
 	_text("Die Umgebung bestimmt, welche Dinge zusätzlich in die Szene kommen. Gebäude, Strassen, Wald und Wasser kommen immer vom echten Ort.", 13, Color(0.7, 0.74, 0.8))
 	var opts := []
 	for e in geo.ENVS:
