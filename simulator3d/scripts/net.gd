@@ -193,6 +193,14 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 	if method != "GET" and method != "HEAD":
 		_json(c, {"ok": false, "error": "unknown path"}, 404)
 		return
+	if path.begins_with("/dataset/") and path.ends_with(".jpg"):          # Trainingsbilder (3D-3.44)
+		var i := int(path.get_file().get_basename())
+		var b: PackedByteArray = main.dataset.jpg(i)
+		if b.is_empty():
+			_json(c, {"ok": false, "error": "no such picture"}, 404)
+		else:
+			_send(c, 200, b, "image/jpeg")
+		return
 	match path:
 		"/info":
 			_json(c, main.info())

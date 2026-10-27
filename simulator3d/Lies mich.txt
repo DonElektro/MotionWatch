@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.43 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.44 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -516,3 +516,16 @@ Besucher kommen sofort.
 Neu auch für den Raspberry Pi 5 (64 Bit, Raspberry Pi OS mit Desktop): Motion Watch holt und startet den Simulator auf dem
 Pi und zeigt ihn am Fernseher (HDMI) – Tab Simulator → «3D-Simulator auf diesem Pi». Einfache Grafik, nicht getestet auf
 echter Pi-Hardware.
+
+NEU IN 3D-3.44
+3D-3.44: Der Simulator hilft Motion Watch:
+- KI-Rechenhilfe: «Motion Watch auf diesem PC starten» macht den PC auch zur Rechenhilfe für den Pi (Port 5057). Der Pi
+  findet sie über den Simulator von selbst und lässt die Erkennung vom PC rechnen. Windows fragt einmal, ob Python ins Netz
+  darf: «Zulassen».
+- TV-Modus (Taste T, Spiel → Anzeige, oder von Motion Watch): ganzer Bildschirm für den Spielabend, rechts Spielassistent,
+  QR-Code, Zeit, Spieler und Rangliste; wenn nichts los ist, kreist die Kamera ums Camp. Esc oder T beendet ihn.
+- Aufstell-Planer (Werkzeuge): Karte von oben mit dem, was die Kameras sehen, und den toten Winkeln um Zelt und Wohnwagen;
+  «Besten Platz suchen», «Motion Watch hierhin stellen». Motion Watch übernimmt daraus die Patrouille.
+- Alarm-Rückblick: Motion Watch spielt einen Alarm nach – eine orange Figur läuft den Weg, der Kopf dreht sich wie damals.
+- Empfangskarte: die Messpunkte des Empfangs-Rundgangs als farbige Flecken auf dem Boden.
+- Trainingsbilder: der Simulator macht Bilder mit Person oder Tier bei Tag, Abend, Nacht, Regen, Nebel für die KI-Prüfung.

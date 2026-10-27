@@ -28,6 +28,10 @@ var http: HTTPRequest
 var dl_total := 0
 var dl_what := ""
 var test_python := false      # test computer: fetch and unpack the Windows Python anyway (--mw-test-python), then stop
+var helper := {}              # 3D-3.44: Motion Watch on this PC also does the AI for the Pi (port 5057): its hello (code, model, served)
+var _helper_t := 0.0
+var _helper_busy := false
+const HELPER_PORT := 5057
 
 
 func _ready() -> void:
@@ -66,7 +70,40 @@ func _process(_dt: float) -> void:
 		changed.emit()
 	if state == "running" and pid > 0 and not OS.is_process_running(pid):
 		pid = -1
+		helper = {}
 		_say("Motion Watch hat sich beendet. Protokoll: " + dir.path_join("config/motionwatch.log"), "error")
+	if state == "running" and not _helper_busy and Time.get_ticks_msec() / 1000.0 - _helper_t > 10.0:
+		_helper_t = Time.get_ticks_msec() / 1000.0
+		_helper_hello()
+
+
+func _helper_hello() -> void:
+	"""ask the AI helper of Motion Watch on this PC how it is (the code goes to the Pi with /info)"""
+	_helper_busy = true
+	var h := HTTPRequest.new()
+	h.timeout = 4.0
+	add_child(h)
+	var d = null
+	if h.request("http://127.0.0.1:%d/helper/hello" % HELPER_PORT) == OK:
+		var r: Array = await h.request_completed
+		if r[0] == HTTPRequest.RESULT_SUCCESS and int(r[1]) == 200:
+			d = JSON.parse_string((r[3] as PackedByteArray).get_string_from_utf8())
+	h.queue_free()
+	var before := helper.size()
+	helper = d if typeof(d) == TYPE_DICTIONARY else {}
+	_helper_busy = false
+	if helper.size() != before or helper.size() > 0:
+		changed.emit()
+
+
+func helper_text() -> String:
+	"""one line for the panel"""
+	if helper.is_empty():
+		return ""
+	if not bool(helper.get("model", false)):
+		return "KI-Rechenhilfe für den Pi: lädt das KI-Modell … %d %%" % int(helper.get("pct", 0) if helper.get("pct") != null else 0)
+	var n := int(helper.get("served", 0))
+	return "KI-Rechenhilfe für den Pi: bereit (%s)" % str(helper.get("accel", "CPU")) + (" · %d Bilder erkannt, %d ms" % [n, int(helper.get("ms", 0))] if n > 0 else " · wartet auf den Pi")
 
 
 func _exit_tree() -> void:
@@ -118,7 +155,7 @@ func start() -> void:
 	if not main.stream_on:
 		main.set_stream(true)                     # Motion Watch gets its cameras and sensors from the simulator
 	_say("Starte Motion Watch …")
-	var args := [mw, "--headless", "--config", dir.path_join("config"), "--port", str(WEB_PORT), "--bind", "127.0.0.1"]
+	var args := [mw, "--headless", "--helper", "--config", dir.path_join("config"), "--port", str(WEB_PORT), "--bind", "127.0.0.1"]
 	pid = OS.create_process(py, args, false)
 	if pid <= 0:
 		_say("Motion Watch liess sich nicht starten.", "error")

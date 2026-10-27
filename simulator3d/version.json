@@ -1,12 +1,12 @@
 {
- "version": "3D-3.43",
+ "version": "3D-3.44",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30818720,
- "sha256": "3bc28e570a9b51ff4e1bd5aed99fb45cc602c3411205ad1e81e26efd72b130de",
- "notes": "Kein Überstand am rechten Rand mehr; Kamerabilder schweben frei, wenn das Bedienfeld weg ist; Gruppensymbole grün, wenn etwas an ist; Besuch-Vorlagen wechseln sichtbar; neu auch für den Raspberry Pi.",
+ "size": 30858728,
+ "sha256": "dd8bc58d532f457c043eaf73774306027731136e87a8a2ca3a585e93c65a821c",
+ "notes": "Helfer für Motion Watch: KI-Rechenhilfe auf dem PC, TV-Modus, Aufstell-Planer, Alarm-Rückblick in 3D, Empfangskarte, Trainingsbilder.",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 23940157,
-  "sha256": "77bae520872a49ef9ca81a931042cf4182ec2bb8d6c72c715cb156047338f017"
+  "size": 23980925,
+  "sha256": "f74bb19be029417bd6f2d63b178e8944203b3878ea4faba52515ce03f20dd3f2"
  }
 }

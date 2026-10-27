@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.43"
+const VERSION := "3D-3.44"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -864,9 +864,72 @@ func _build_chassis() -> void:
 	chassis.visible = mover_on
 
 
+var home_pos := Vector3.ZERO           # 3D-3.44: where Motion Watch stands (Aufstell-Planer «Hierhin stellen»)
+var home_yaw := 0.0
+var planner                           # planner.gd
+var replay                            # replay.gd: Alarm-Rückblick in 3D (3D-3.44)
+var dataset                           # dataset.gd: Trainingsbilder (3D-3.44)
+
+
+var netmap_node: Node3D = null
+
+
+func show_netmap(pts) -> int:
+	"""Empfangskarte from Motion Watch: x / z in metres from Motion Watch (z = where the camera looks), q 0 (bad) .. 1 (good)"""
+	if netmap_node != null:
+		netmap_node.queue_free()
+		netmap_node = null
+	if typeof(pts) != TYPE_ARRAY or pts.is_empty():
+		return 0
+	netmap_node = Node3D.new()
+	add_child(netmap_node)
+	var n := 0
+	for p in pts:
+		if typeof(p) != TYPE_DICTIONARY:
+			continue
+		var x := float(p.get("x", 0.0))
+		var z := float(p.get("z", 0.0))
+		var q := clampf(float(p.get("q", 0.0)), 0.0, 1.0)
+		var w: Vector3 = rig.global_position + rig.global_transform.basis * Vector3(x, 0, -z)
+		w.y = ground_y(w.x, w.z) + 0.04
+		var m := MeshInstance3D.new()
+		var cy := CylinderMesh.new()
+		cy.top_radius = 1.6
+		cy.bottom_radius = 1.6
+		cy.height = 0.04
+		m.mesh = cy
+		var mt := StandardMaterial3D.new()
+		mt.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mt.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		mt.albedo_color = Color.from_hsv(q * 0.33, 0.85, 0.95, 0.55)
+		m.material_override = mt
+		m.position = w
+		netmap_node.add_child(m)
+		var lb := Label3D.new()
+		var txt := "%d ms" % int(float(p.get("rtt", 0))) if p.get("rtt") != null else ""
+		if p.get("down") != null:
+			txt += "  %.0f Mbit/s" % float(p.get("down"))
+		if p.get("dbm") != null:
+			txt += "  %d dBm" % int(p.get("dbm"))
+		lb.text = txt
+		lb.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		lb.font_size = 40
+		lb.outline_size = 8
+		lb.position = w + Vector3(0, 0.6, 0)
+		netmap_node.add_child(lb)
+		n += 1
+	return n
+
+
+func set_home(p: Vector3, yaw: float) -> void:
+	home_pos = Vector3(p.x, 0, p.z)
+	home_yaw = yaw
+	mover_home()
+
+
 func mover_home() -> void:
-	rig.position = Vector3(0, ground_y(0, 0), 0)
-	rig.rotation = Vector3.ZERO
+	rig.position = Vector3(home_pos.x, ground_y(home_pos.x, home_pos.z), home_pos.z)
+	rig.rotation = Vector3(0, home_yaw, 0)
 
 
 func set_mover(on: bool) -> void:
@@ -884,7 +947,7 @@ var _pad_r := 0.0
 func _drive(dt: float) -> void:
 	"""the mover drives: left / right track from Motion Watch (-1 … 1); stops when Motion Watch is quiet for 2.5 s (it stops the tracks itself after 0.6 s without the stick)"""
 	if not mover_on:
-		if rig.position != Vector3.ZERO or rig.rotation != Vector3.ZERO:
+		if Vector2(rig.position.x - home_pos.x, rig.position.z - home_pos.z).length() > 0.01 or abs(rig.rotation.y - home_yaw) > 0.001:
 			mover_home()
 		return
 	var tnow := now()                                      # real time since the last call (frames are skipped to save CPU)
@@ -1538,7 +1601,15 @@ func _process(dt: float) -> void:
 	if game != null and game.guard_auto:                 # the game: automatic guard or a player as guard turns the head
 		want_pan = game.guard_yaw
 		want_tilt = game.guard_tilt
+	if dataset != null and dataset.servo != null:         # Trainingsbilder: the head looks where the picture needs it
+		want_pan = -deg_to_rad(dataset.servo.x)
+		want_tilt = deg_to_rad(dataset.servo.y - 6.0)
+	if replay != null and replay.on:                     # Alarm-Rückblick: the head turns like it did then
+		want_pan = -deg_to_rad(replay.servo.x)
+		want_tilt = deg_to_rad(replay.servo.y - 6.0)
 	var step := deg_to_rad(SERVO_DEG_S) * dt
+	if dataset != null and dataset.servo != null:
+		step *= 8.0                                      # the pictures: no need to wait for the slow servo
 	_drive(dt)
 	head.rotation.y = move_toward(head.rotation.y, want_pan, step)
 	head_pitch.rotation.x = move_toward(head_pitch.rotation.x, want_tilt, step)
@@ -1562,6 +1633,10 @@ func _process(dt: float) -> void:
 			anims.remove_at(i)
 	if spectate:
 		_spectate(dt)
+	elif replay != null and replay.on:
+		pass                                             # the replay moves the camera itself
+	elif tv != null and tv.on:
+		tv.idle_cam(dt)
 	else:
 		_fly(dt)
 	_view_overlays()
@@ -1731,7 +1806,8 @@ func gain_cap() -> float:
 func ir_on() -> bool:
 	"""infrared light: from Motion Watch, or from the game (the guard switches it on at night)"""
 	var L: Dictionary = mw.get("lights", {})
-	return L.get("ir", false) or cond["ir"] or (game != null and game.guard_auto and is_dark())
+	return L.get("ir", false) or cond["ir"] or (game != null and game.guard_auto and is_dark()) \
+			or (dataset != null and dataset.servo != null and is_dark())      # Trainingsbilder at night: like Motion Watch, with infrared
 
 
 func _auto_exposure(i: int, img: Image) -> void:
@@ -1839,7 +1915,8 @@ func info() -> Dictionary:
 						{"id": 1, "name": "Fixed camera", "w": CAM_W[1], "h": CAM_H[1], "fps": CAM_FPS[1], "fov_h": CAM_FOV[1], "fov_v": 62.0, "on_head": false, "noir": false}],
 			"thermal": {"w": TH_W, "h": TH_H, "fps": 8.0, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
 			"view": {"input": 1, "path": "/view.mjpg"},
-			"sensors": [{"name": "Wohnwagen-Tür", "kind": "door"}, {"name": "PIR Zelt", "kind": "pir"}, {"name": "Gas Wohnwagen", "kind": "gas"}, {"name": "Velo", "kind": "tag"}]}
+			"sensors": [{"name": "Wohnwagen-Tür", "kind": "door"}, {"name": "PIR Zelt", "kind": "pir"}, {"name": "Gas Wohnwagen", "kind": "gas"}, {"name": "Velo", "kind": "tag"}],
+			"helper": {"port": mwpc.HELPER_PORT, "code": str(mwpc.helper.get("code", "")), "accel": str(mwpc.helper.get("accel", ""))} if mwpc != null and mwpc.helper.has("code") else null}
 
 
 func add_event(sensor: String, kind: String, active = null) -> void:
@@ -2175,7 +2252,7 @@ const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort
 		"lamp_share": ["Besuch", "Verhalten"], "look_at_light": ["Besuch", "Verhalten"], "flee_light": ["Besuch", "Verhalten"],
 		"flee_sound": ["Besuch", "Verhalten"], "avoid_on": ["Besuch", "Verhalten"], "lens_vignette": ["Kamerabild", "Feineinstellungen"],
 		"sound_on": ["Kamerabild", "Feineinstellungen"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", "Runde"],
-		"game_stop": ["Spiel", "Runde"], "game_wizard": ["Spiel", "Runde"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
+		"game_stop": ["Spiel", "Runde"], "game_wizard": ["Spiel", "Runde"], "tv_mode": ["Spiel", "Anzeige"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
 		"game_level": ["Spiel", "Regeln"], "game_lives": ["Spiel", "Regeln"], "game_items": ["Spiel", "Regeln"], "game_teams": ["Spiel", "Regeln"],
 		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_powers": ["Spiel", "Regeln"], "game_spectate": ["Spiel", "Anzeige"], "game_photos": ["Spiel", "Extras"], "game_hides": ["Spiel", "Extras"], "game_decoy": ["Spiel", "Extras"],
 		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
@@ -2337,6 +2414,7 @@ func _register_controls() -> void:
 	add_control("toggle", "rec_loop", "Immer wieder abspielen", func(): return recorder.loop, func(v): recorder.loop = v, "Testlauf")
 	add_control("button", "rec_stopplay", "Wiedergabe beenden", null, func(): recorder.stop_play(), "Testlauf")
 	add_control("button", "testrun_open", "Letzten Bericht öffnen", null, func(): testrun.open_report(), "Testlauf")
+	add_control("button", "tv_mode", "📺 TV-Modus für den Spielabend (Taste T, ganzer Bildschirm)", null, func(): tv.set_on(not tv.on), "Spiel")
 	add_control("button", "game_wizard", "🎮 Spiel-Assistent: Schritt für Schritt einrichten und starten", null, func(): gamewiz.open_wiz(), "Spiel")
 	add_control("toggle", "game_open", "Spiel öffnen (Handys können mitspielen)", func(): return game.open, func(v): game.set_open(v), "Spiel")
 	add_control("button", "game_start", "Runde starten", null, func(): game.start_round(), "Spiel")
@@ -2562,6 +2640,46 @@ func control(d: Dictionary) -> Dictionary:
 		if d.has("y"):
 			_test_scroll(float(d["y"]))
 		return {"ok": true, "max": (ui_box.get_parent() as ScrollContainer).get_v_scroll_bar().max_value}
+	elif a == "dataset":                               # Trainingsbilder (3D-3.44)
+		var op2 := str(d.get("op", "get"))
+		if op2 == "start":
+			return dataset.start(int(d.get("n", 40)), d.get("conds", []) if typeof(d.get("conds", [])) == TYPE_ARRAY else [])
+		if op2 == "stop":
+			dataset.stop()
+		var st2: Dictionary = dataset.state()
+		if op2 == "list":
+			st2["items"] = dataset.list()
+		return st2
+	elif a == "netmap":                                # Empfangskarte (3D-3.44): measured spots as patches on the ground
+		return {"ok": true, "n": show_netmap(d.get("points", []))}
+	elif a == "replay":                                # Alarm-Rückblick in 3D (3D-3.44)
+		if bool(d.get("stop", false)):
+			replay.stop()
+			return {"ok": true}
+		if typeof(d.get("track")) != TYPE_DICTIONARY:
+			return {"ok": false, "error": "track missing"}
+		return replay.start(d["track"])
+	elif a == "planner":                               # Aufstell-Planer (3D-3.44): get / open / close / best / put
+		var op := str(d.get("op", "get"))
+		if op == "open":
+			planner.open(true)
+		elif op == "close":
+			planner.open(false)
+		elif op == "best":
+			if not planner.visible:
+				planner.open(true)
+			planner.search_best()                    # runs on over a few frames; "busy" in the answer
+		elif op == "put":
+			planner.place_here()
+		elif op == "home":
+			set_home(Vector3.ZERO, 0.0)
+		return planner.state()
+	elif a == "tv":                                    # TV mode (3D-3.44): {"on": true/false, "info_url": "...", "fullscreen": true}
+		if d.has("info_url"):
+			tv.info_url = str(d["info_url"]).substr(0, 200)
+		if d.has("on"):
+			tv.set_on(bool(d["on"]), bool(d.get("fullscreen", true)))
+		return {"ok": true, "tv": tv.state()}
 	elif a == "ui_wide":                               # for tests: which parts of the panel are wider than it (3D-3.43)
 		var lim := float(d.get("w", 360.0))
 		var out := []
@@ -2733,6 +2851,7 @@ func scenarios() -> Array:
 
 # ---- the window on the PC ------------------------------------------------------------------------------------------------
 var ui_root: Control
+var tv                                # tv.gd: TV mode for the games evening (3D-3.44)
 var cam_card: Control                 # 3D-3.43: the card with the camera pictures - floats where it was when the panel is hidden
 var cam_float: VBoxContainer
 var cam_fx := -1.0                    # where it was put (-1 = where it stood in the panel)
@@ -2765,6 +2884,24 @@ func _build_ui() -> void:
 	karte.theme = th
 	karte.visible = false
 	layer.add_child(karte)
+	dataset = preload("res://scripts/dataset.gd").new()      # Trainingsbilder (3D-3.44)
+	dataset.main = self
+	add_child(dataset)
+	replay = preload("res://scripts/replay.gd").new()        # Alarm-Rückblick (3D-3.44)
+	replay.main = self
+	add_child(replay)
+	replay.setup(layer)
+	planner = preload("res://scripts/planner.gd").new()      # Aufstell-Planer (3D-3.44)
+	planner.main = self
+	planner.theme = th
+	layer.add_child(planner)
+	var tvl := CanvasLayer.new()                            # the TV mode lies over everything (3D-3.44)
+	tvl.layer = 5
+	add_child(tvl)
+	tv = preload("res://scripts/tv.gd").new()
+	tv.main = self
+	tv.theme = th
+	tvl.add_child(tv)
 	gamewiz = preload("res://scripts/gamewiz.gd").new()     # the game wizard (3D-3.41)
 	gamewiz.main = self
 	gamewiz.theme = th
@@ -2932,6 +3069,11 @@ func _build_ui() -> void:
 	kb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	kb.pressed.connect(open_map)
 	tl.add_child(kb)
+	var plb := Button.new()
+	plb.text = "Aufstell-Planer: Wo soll Motion Watch hin?"
+	plb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	plb.pressed.connect(func(): planner.open(not planner.visible))
+	tl.add_child(plb)
 	var pv := Button.new()
 	pv.text = "Handy- / Tablet-Simulator (P)"
 	pv.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -3279,7 +3421,7 @@ func _on_mwpc() -> void:
 	var st: String = mwpc.state
 	mwpc_btn.text = "Motion Watch auf diesem PC stoppen" if st == "running" else ("Motion Watch auf diesem PC wird vorbereitet …" if st == "busy" else "Motion Watch auf diesem PC starten (ohne Pi)")
 	mwpc_btn.disabled = st == "busy"
-	mwpc_label.text = mwpc.text if st != "off" else "Für das Handy ohne Pi: Motion Watch läuft dann unsichtbar auf diesem PC. Beim ersten Mal werden Python und Motion Watch geladen (rund 100 MB, einige Minuten)."
+	mwpc_label.text = (mwpc.text + ("\n" + mwpc.helper_text() if mwpc.helper_text() != "" else "")) if st != "off" else "Für das Handy ohne Pi – und als KI-Rechenhilfe: Der Pi lässt dann die Erkennung von diesem PC rechnen (schneller, der Pi bleibt kühl). Beim ersten Mal werden Python, Motion Watch und das KI-Modell geladen (rund 170 MB, einige Minuten). Windows fragt dabei, ob Python ins Netz darf: «Zulassen» wählen."
 	mwpc_label.add_theme_color_override("font_color", UI.GRN if st == "running" else (UI.ORG if st == "error" else UI.MUT))
 	phone.on_mwpc(st, mwpc.url(), mwpc.text)
 
@@ -3823,6 +3965,8 @@ func _unhandled_input(ev: InputEvent) -> void:
 				set_view(0)
 			KEY_H:
 				show_panel(not ui_root.visible)
+			KEY_T:
+				tv.set_on(not tv.on)                    # TV mode (3D-3.44)
 			KEY_P:
 				_toggle_phone()
 			KEY_K:
@@ -3844,6 +3988,10 @@ func _unhandled_input(ev: InputEvent) -> void:
 			KEY_ESCAPE:
 				place_kind = ""
 				_paint_palette()
+				if tv.on:
+					tv.set_on(false)
+				if replay.on:
+					replay.stop()
 				select_visitor(null)
 			KEY_DELETE:
 				if selected != null and is_instance_valid(selected):

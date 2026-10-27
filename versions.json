@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 20:41",
+ "generated": "2026-10-27 21:50",
  "versions": [
   {
-   "version": "2.95.52",
-   "file": "webcam_bewegung_2_95_52.py",
+   "version": "2.95.53",
+   "file": "webcam_bewegung_2_95_53.py",
    "url": "",
-   "sha256": "22bfe2075cf505a946a145d472fc9eb6e1e53b7bd7a38e2f6ffc8ca667b9fcfe",
-   "date": "2026-10-27 20:41",
-   "notes": "Network check of the players (Tools): every phone measures reaction time, jitter, losses, download and upload to Motion Watch - phones in the game corner by themselves, others with a QR code; with the own Wi-Fi also the signal of each phone, grades and tips. Product page for guests (Tools, /info/): the Motion Watch homepage straight from the Pi for everybody in the same Wi-Fi, without login and internet; questions from its form arrive as push message; QR code also on the TV view.",
-   "sig": "5d920631f198cdfe153882ece316cec8beb378560d81a37e620e45a74d41fea18ea640dd3aaeacfe26cac8aae37a637cddf58d2cda54a0b2e76faba6a33e0705"
+   "sha256": "df197f32cf5497d51742ddc86cf43465b1dc54991acb279b01dd472d7d8fcca7",
+   "date": "2026-10-27 21:50",
+   "notes": "AI helper: a PC in the network does the detection for the Pi (Motion Watch with --helper on port 5057, pairing code; found by itself through the 3D simulator; the Pi takes over again at once when the PC is gone). TV mode of the 3D simulator from the page. Aufstell-Planer: take over the patrol. Alarm replay in 3D (tracks round each alarm). Reception map (walk round in the network check). AI test with simulator pictures and training pictures as ZIP. Preview page: close button. Simulator 3D-3.44.",
+   "sig": "cddac3315242bc5778de25c8de742d61fab8b050ae0cfff796b30f2c56d73a03f3a6ce2d0602c58777f464435411a05bd0edbfcfdd5780e279aaf22080c23a01"
   },
   {
    "version": "2.94.5",
