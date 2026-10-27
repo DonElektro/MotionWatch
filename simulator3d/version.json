@@ -1,7 +1,7 @@
 {
- "version": "3D-3.15",
+ "version": "3D-3.16",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30557190,
- "sha256": "41ad52f52e4d43cf2187edff8ba809ae1924e956a26874e5380537e4e674d456",
- "notes": "Mover im Simulator mit eigenem Stick oder Pfeiltasten fahren, Ansicht «Hinterher»; Bericht zu den 3D-Gebäuden"
+ "size": 30690955,
+ "sha256": "6d1e0255fab6be6917867c6f17e9e30e80e16eaafa962f345cb86a3a6755223d",
+ "notes": "Nach einem Update startet der Simulator wieder so wie vorher: sendend oder nicht, als kleines Kästchen oder Symbol, oder mit gleicher Fenstergrösse und -stelle."
 }

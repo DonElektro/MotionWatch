@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-3.15 (7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-3.16 (7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -354,9 +354,17 @@ WAS ES SONST KANN
 - Sensoren: Wohnwagentür, PIR beim Zelt, Gas, Velo; Nacht-Test (2 Minuten).
 - Wärmebild: kalter Himmel, Boden warm am Tag und kühl in der Nacht, Menschen mit warmem Gesicht, Tiere, heisser Motor.
 
+NACH EINEM UPDATE (ab 3D-3.16)
+- Der Simulator startet nach einem Update genau so wieder, wie er vorher war: sendend oder nicht, als kleines
+  Kästchen (oder Symbol) in der Ecke oder als normales Fenster mit gleicher Grösse und Stelle, oder als Vollbild.
+- Auch wenn das Update gleich beim Start kommt (vor dem Einschalten des Sendens), bleibt "--stream" erhalten.
+
 PORT / START-OPTIONEN
 MotionWatch3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene wald
   --scene: mit dieser Szene starten (camping, wald, parkplatz, garten, lustig, wild)
   --no-update: beim Start nicht nach einer neuen Version suchen
   --no-angle: in einer virtuellen Maschine nicht von selbst auf ANGLE umschalten
   --stream: gleich beim Start an Motion Watch senden
+  --win X,Y,BREITE,HOEHE: Fenster an diese Stelle und in diese Grösse
+  --mini: gleich als kleines Kästchen in der Ecke starten (--mini-tiny: als kleines Symbol)
+  --maximized: gleich als grosses Fenster starten

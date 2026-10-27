@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.15"
+const VERSION := "3D-3.16"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -314,6 +314,9 @@ func _ready() -> void:
 	mini_box = preload("res://scripts/mini.gd").new()      # minimize = small box, the simulator keeps drawing
 	mini_box.main = self
 	add_child(mini_box)
+	_restore_window(args)
+	if OS.get_environment("MWSIM_PRINT_RESTART") == "1":         # only for tests: which options an update restart would pass on
+		get_tree().create_timer(5.0).timeout.connect(func(): print("RESTART_ARGS: ", " ".join(restart_args())))
 	set_process(true)
 	set_process_unhandled_input(true)
 
@@ -2647,23 +2650,61 @@ func run_update(automatic: bool, by_hand: bool) -> void:
 	_sync_update_ui()
 
 
+func _restore_window(args: PackedStringArray) -> void:
+	"""after an update (or from the options): the window comes back as it was - size and place, full screen, or the
+	small box / icon in the corner"""
+	var w := get_window()
+	var i := args.find("--win")
+	if i >= 0 and i + 1 < args.size():
+		var p := args[i + 1].split(",")
+		if p.size() == 4:
+			w.size = Vector2i(maxi(400, int(p[2])), maxi(300, int(p[3])))
+			w.position = Vector2i(int(p[0]), int(p[1]))
+	if "--maximized" in args:
+		w.mode = Window.MODE_MAXIMIZED
+	if "--mini" in args or "--mini-tiny" in args:
+		var tiny := "--mini-tiny" in args
+		get_tree().create_timer(1.0).timeout.connect(func():
+			if not mini_box.mini:
+				mini_box.enter()
+			if tiny:
+				mini_box.set_tiny(true))
+
+
 func restart_args() -> PackedStringArray:
-	"""options for the start after an update: as before, plus what is on now (sending, scene, Motion Watch on this PC)"""
+	"""options for the start after an update: as before, plus what is on now (sending, scene, Motion Watch on this PC,
+	the window: size and place, full screen, or the small box)"""
 	var a := OS.get_cmdline_user_args()
 	var out := PackedStringArray()
 	var skip := false
+	var early := net == null                     # the update check right at the start: nothing is switched on yet - keep what was asked for
 	for x in a:
 		if skip:
 			skip = false
 			continue
-		if x in ["--stream", "--updated", "--mwpc"]:
+		if x in ["--stream", "--updated", "--mwpc"] or (not early and x in ["--mini", "--mini-tiny", "--maximized"]):
 			continue
-		if x == "--scene":
+		if x == "--scene" or (x == "--win" and not early):
 			skip = true
 			continue
 		out.append(x)
-	if stream_on:
+	if stream_on or (early and "--stream" in a):
 		out.append("--stream")
+	if not early:
+		var w := get_window()
+		if mini_box != null and mini_box.mini:
+			out.append("--mini-tiny" if mini_box.tiny else "--mini")
+			var sz: Vector2i = mini_box.saved.get("size", Vector2i(1440, 860))
+			var ps: Vector2i = mini_box.saved.get("pos", Vector2i(60, 60))
+			out.append("--win")
+			out.append("%d,%d,%d,%d" % [ps.x, ps.y, sz.x, sz.y])
+		elif w.mode == Window.MODE_MAXIMIZED or w.mode == Window.MODE_FULLSCREEN:
+			out.append("--maximized")
+		elif w.mode == Window.MODE_MINIMIZED:
+			out.append("--mini")
+		else:
+			out.append("--win")
+			out.append("%d,%d,%d,%d" % [w.position.x, w.position.y, w.size.x, w.size.y])
 	out.append("--scene")
 	out.append(scene)
 	if mwpc != null and mwpc.state == "running":
