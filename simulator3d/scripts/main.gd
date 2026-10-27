@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.46"
+const VERSION := "3D-3.47"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -3870,7 +3870,7 @@ func _update_status() -> void:
 		status_label.text = status_text()
 	if tunnel_label != null and tunnel != null:
 		var ts: Dictionary = tunnel.state()
-		tunnel_label.text = str(ts["msg"]) + ((" · %d offen · %.1f MB" % [int(ts["pipes"]), float(ts["mb"])]) if ts["on"] else "")
+		tunnel_label.text = ("Ziel: %s:%d (Port von Motion Watch) · " % [tunnel_host if tunnel_host != "" else "?", tunnel.PORT]) + str(ts["msg"]) + ((" · %d offen · %.1f MB" % [int(ts["pipes"]), float(ts["mb"])]) if ts["on"] else "")
 		tunnel_label.add_theme_color_override("font_color", UI.GRN if ts["ok"] else (UI.ORG if ts["on"] else UI.MUT))
 	if conn_body != null:                                  # symbol: green = Motion Watch connected, orange = sending, grey = off
 		var st := 2 if connected() else (1 if stream_on else 0)

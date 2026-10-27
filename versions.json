@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 23:39",
+ "generated": "2026-10-27 23:42",
  "versions": [
   {
-   "version": "2.95.59",
-   "file": "webcam_bewegung_2_95_59.py",
+   "version": "2.95.60",
+   "file": "webcam_bewegung_2_95_60.py",
    "url": "",
-   "sha256": "8c192c72cbf92c01ea573ec219374039a7248d0495201bcf96039049b5b96202",
-   "date": "2026-10-27 23:39",
-   "notes": "3D simulator 3D-3.46: the field «Tunnel zu Motion Watch» in the simulator was hidden and can now be seen",
-   "sig": "663a61fd4e8fc2f3ebe40ee2cf405c0e13e384014cf71dccb4f11a29d65ee389cf3a87f96ddfd27bcdccc3c7a67ece5fc2f64cb91e437258d2196bee9f485101"
+   "sha256": "d6213e7f19fd394cab20d154efff06d052cb43be3215ac0b62c2c9fdd0dd2bbb",
+   "date": "2026-10-27 23:42",
+   "notes": "3D simulator 3D-3.47 (tunnel field visible, shows the target with port); simulator page: the tunnel card shows the port Motion Watch listens on, the last try of a simulator (wrong code?) and the port of the direct connection",
+   "sig": "0afbbc84a8903503a26f12d8429a6366b1989d09087a05a784cd2d909c0628942a4877354c84ff811af77cb3f9c2f572b9dbd56c19715c27e5fa890473637a05"
   },
   {
    "version": "2.94.5",

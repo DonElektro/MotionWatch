@@ -101,7 +101,7 @@ func _step(c: Dictionary, now: float) -> void:
 					if line == "OK":
 						c["st"] = "idle"
 						ok_t = now
-						msg = "verbunden mit Motion Watch (%s)" % host
+						msg = "verbunden mit Motion Watch (%s:%d)" % [host, PORT]
 					else:
 						msg = "Code falsch – auf der Seite von Motion Watch nachsehen"
 						_next = now + 5.0

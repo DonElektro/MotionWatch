@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_59.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_60.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.60: 3D simulator 3D-3.47 (tunnel field visible, shows the target with port); simulator page: the tunnel card shows the
+    port Motion Watch listens on, the last try of a simulator (wrong code?) and the port of the direct connection
   * 2.95.59: 3D simulator 3D-3.46: the field «Tunnel zu Motion Watch» in the simulator was hidden and can now be seen
   * 2.95.58: product page for guests: the logo top left and the icon of the tab are now the app icon of this Motion Watch (the
     same as in the tab)
@@ -714,10 +716,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_59.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_60.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_59.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_59.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_60.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_60.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -734,7 +736,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.59"
+APP_VERSION = "2.95.60"
 
 
 def default_data_dir():
@@ -9727,7 +9729,8 @@ def dset_state():
 import socket as _socket
 TUN_PORT = 8766
 TUN_LOCAL = {18765: 8765, 15057: 5057}
-TUN = {"pool": deque(), "lock": threading.Lock(), "last": 0.0, "peer": "", "srv": False, "open": 0, "prev_url": "", "bytes": 0}
+TUN = {"pool": deque(), "lock": threading.Lock(), "last": 0.0, "peer": "", "srv": False, "open": 0, "prev_url": "", "bytes": 0,
+       "listen": "", "try": None}
 
 
 def tunnel_code():
@@ -9800,8 +9803,9 @@ def tunnel_start():
     def accept_sim():
         srv = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM); srv.setsockopt(_socket.SOL_SOCKET, _socket.SO_REUSEADDR, 1)
         try:
-            srv.bind(("0.0.0.0", TUN_PORT)); srv.listen(32)
+            srv.bind(("0.0.0.0", TUN_PORT)); srv.listen(32); TUN["listen"] = "ok"
         except OSError as e:
+            TUN["listen"] = str(e)[:80]
             log_event("sys", f"Tunnel for the simulator could not start (port {TUN_PORT}): {e}"); return
         while True:
             c, addr = srv.accept()
@@ -9814,7 +9818,9 @@ def tunnel_start():
                         break
                     line += ch
                 parts = line.decode("ascii", "replace").split()
-                if not CFG.get("tunnel_on") or len(parts) != 2 or parts[0] != "MWTUN1" or not secrets.compare_digest(parts[1], tunnel_code()):
+                good = bool(CFG.get("tunnel_on")) and len(parts) == 2 and parts[0] == "MWTUN1" and secrets.compare_digest(parts[1], tunnel_code())
+                TUN["try"] = {"peer": addr[0], "t": time.time(), "ok": good}     # 2.95.60: shown on the page (wrong code?)
+                if not good:
                     c.sendall(b"NO\n"); c.close(); continue
                 c.sendall(b"OK\n"); c.settimeout(None)
                 c.setsockopt(_socket.SOL_SOCKET, _socket.SO_KEEPALIVE, 1)
@@ -9862,8 +9868,23 @@ def tunnel_start():
 
 
 def tunnel_state():
+    from urllib.parse import urlparse
     return {"on": bool(CFG.get("tunnel_on")), "code": tunnel_code() if CFG.get("tunnel_on") else "", "port": TUN_PORT, "active": tunnel_active(),
-            "peer": TUN["peer"], "idle": len(TUN["pool"]), "open": TUN["open"], "mb": round(TUN["bytes"] / 1e6, 1)}
+            "peer": TUN["peer"], "idle": len(TUN["pool"]), "open": TUN["open"], "mb": round(TUN["bytes"] / 1e6, 1),
+            "listen": TUN["listen"], "try": ({"peer": TUN["try"]["peer"], "ago": int(time.time() - TUN["try"]["t"]), "ok": TUN["try"]["ok"]} if TUN["try"] else None),
+            "sim_port": _tun_direct_port()}
+
+
+def _tun_direct_port():
+    """the port Motion Watch uses for the simulator without the tunnel (while the tunnel runs: the address from before)"""
+    from urllib.parse import urlparse
+    u = CFG.get("sim_url") or ""
+    if u.startswith("http://127.0.0.1:18765"):
+        u = TUN.get("prev_url") or CFG.get("tunnel_prev_url") or ""
+    try:
+        return int(urlparse(u).port or 8765) if u else 8765
+    except ValueError:
+        return 8765
 
 
 # --- the helper side (on the PC) ---
@@ -14899,8 +14920,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.46", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30866341,
-         "sha256": "435ea33d1097f0d4dbecdfc78a681b76f9835b18c955ed3d4e307304cb1de746"}
+SIM3D = {"version": "3D-3.47", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30866348,
+         "sha256": "8a953cf68b85a1a37800938b540bab5d813841abdd35a8cbd94d52f83fe11c2b"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15039,8 +15060,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.46", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 23987729,
-           "sha256": "cf4584f613e4b0ece685be6d4044621cf62323ffaad3f32dd32928e6dce5c9d5", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.47", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 23987810,
+           "sha256": "6d516af03fa1871208fe6630021943ac1e614c0d44089f89643a6eef069fb67b", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -18827,7 +18848,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_59.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_60.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -35287,7 +35308,10 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D
   (async () => { const r = await P({action: "dataset"}); if (r && r.ok && r.dataset && (r.dataset.sum || r.dataset.busy)) dpaint(r); })();
 })();
 """
-SIMTUN_JS = r"""Object.assign(I18N.de, {"Simulator behind a firewall": "Simulator hinter einer Firewall", "tunnel-note": "Läuft der Simulator auf einem PC oder einer virtuellen Maschine ohne Administratorrechte, lässt dessen Firewall Motion Watch nicht hinein. Dann verbindet sich der Simulator selbst nach aussen zu Motion Watch (Port 8766) – das erlaubt jede Firewall. Im Simulator einmal die Adresse von Motion Watch und diesen Code eintragen.", "Code": "Code", "code": "Code", "In the simulator: Verbindung → «Tunnel zu Motion Watch»: address": "Im Simulator: Verbindung → «Tunnel zu Motion Watch»: Adresse", "Simulator connected through the tunnel": "Simulator über den Tunnel verbunden", "no simulator through the tunnel yet": "noch kein Simulator über den Tunnel", "Switch off": "Ausschalten", "Switch on": "Einschalten", "New code": "Neuer Code", "off": "aus"});
+SIMTUN_JS = r"""Object.assign(I18N.de, {"Simulator behind a firewall": "Simulator hinter einer Firewall", "tunnel-note": "Läuft der Simulator auf einem PC oder einer virtuellen Maschine ohne Administratorrechte, lässt dessen Firewall Motion Watch nicht hinein. Dann verbindet sich der Simulator selbst nach aussen zu Motion Watch (Port 8766) – das erlaubt jede Firewall. Im Simulator einmal die Adresse von Motion Watch und diesen Code eintragen.", "Code": "Code", "code": "Code", "In the simulator: Verbindung → «Tunnel zu Motion Watch»: address": "Im Simulator: Verbindung → «Tunnel zu Motion Watch»: Adresse", "Simulator connected through the tunnel": "Simulator über den Tunnel verbunden", "no simulator through the tunnel yet": "noch kein Simulator über den Tunnel", "Switch off": "Ausschalten", "Switch on": "Einschalten", "New code": "Neuer Code", "off": "aus",
+  "port": "Port", "Motion Watch listens on port": "Motion Watch wartet auf Port", "could not open port": "Port kann nicht geöffnet werden", "In the simulator the field shows": "Im Simulator muss dasselbe stehen",
+  "last try from": "Letzter Versuch von", "ago": "vor", "code accepted": "Code richtig", "wrong code": "Code falsch – im Simulator den Code von hier eintragen", "no try yet": "Noch kein Versuch eines Simulators angekommen – stimmt die Adresse? Ist «Tunnel verwenden» im Simulator an?",
+  "Direct connection": "Direkte Verbindung", "Motion Watch fetches the pictures from the simulator on port": "Ohne Tunnel holt Motion Watch die Bilder beim Simulator auf Port"});
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"tunnel-note": "If the simulator runs on a PC or a virtual machine without admin rights, its firewall does not let Motion Watch in. Then the simulator itself connects out to Motion Watch (port 8766) - every firewall allows that. Enter the address of Motion Watch and this code once in the simulator."});
 
 // ---- tunnel (2.95.54) ----
@@ -35299,6 +35323,15 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"tunnel-note": "If the simulato
     big.textContent = T.on ? t("Code") + ": " + T.code : t("off"); box.appendChild(big);
     const host = (j.address || "").replace(/^https?:\/\//, "").replace(/[:\/].*$/, "");
     if (T.on) box.appendChild(el("div", "", t("In the simulator: Verbindung → «Tunnel zu Motion Watch»: address") + " " + host + ", " + t("code") + " " + T.code));
+    if (T.on) {                                                         // 2.95.60: the ports, to compare with the simulator
+      const pt = el("div", T.listen && T.listen !== "ok" ? "" : "mut");
+      pt.textContent = T.listen && T.listen !== "ok" ? "⚠ " + t("could not open port") + " " + T.port + ": " + T.listen
+        : "🔌 " + t("Motion Watch listens on port") + " " + T.port + " · " + t("In the simulator the field shows") + " «" + host + ":" + T.port + "»";
+      box.appendChild(pt);
+      const tr_ = T.try;
+      box.appendChild(el("div", tr_ && !tr_.ok ? "" : "mut", tr_ ? (tr_.ok ? "✓ " : "✗ ") + t("last try from") + " " + tr_.peer + " (" + t("ago") + " " + tr_.ago + " s): " + t(tr_.ok ? "code accepted" : "wrong code") : "… " + t("no try yet")));
+      box.appendChild(el("div", "mut", t("Direct connection") + ": " + t("Motion Watch fetches the pictures from the simulator on port") + " " + T.sim_port));
+    }
     box.appendChild(el("div", T.active ? "" : "mut", T.active ? "🟢 " + t("Simulator connected through the tunnel") + " (" + T.peer + ") · " + T.mb + " MB" : "⚪ " + t("no simulator through the tunnel yet")));
     const r = el("div", "btns");
     const b1 = el("button", "sec", T.on ? t("Switch off") : t("Switch on")); b1.type = "button"; b1.onclick = async () => paint(await post("/api/tunnel", {on: !T.on}));
@@ -40263,7 +40296,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.59")
+        self.root.title("Motion Watch 2.95.60")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40553,7 +40586,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.59 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.60 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
