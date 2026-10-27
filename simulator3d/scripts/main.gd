@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.20"
+const VERSION := "3D-3.21"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -51,6 +51,7 @@ var game_items := 3                   # crystals to collect (+100 each)
 var game_cones := false               # show the fields of view of the cameras (for beginners)
 var game_noise := true                # the microphone hears loud steps
 var game_stones := true               # stones to throw (distract the guard)
+var game_powers := true               # power-ups: cloak and turbo (3D-3.21)
 var game_random := false              # start and goal by chance
 var game_rescue := false              # caught -> jail, a team mate frees you (3D-3.1)
 var game_teamgoal := false            # the goal opens only when all crystals are found
@@ -1825,7 +1826,7 @@ const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort
 		"sound_on": ["Kamerabild", "Feineinstellungen"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", "Runde"],
 		"game_stop": ["Spiel", "Runde"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
 		"game_level": ["Spiel", "Regeln"], "game_lives": ["Spiel", "Regeln"], "game_items": ["Spiel", "Regeln"], "game_teams": ["Spiel", "Regeln"],
-		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_noise": ["Spiel", "Regeln"],
+		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_powers": ["Spiel", "Regeln"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"],
 		"quality": ["System", "Grafik"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
@@ -1950,6 +1951,7 @@ func _register_controls() -> void:
 	add_control("select", "game_goal", "Spielziel", func(): return game_goal, func(v): game_goal = v, "Spiel",
 			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"]]})
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
+	add_control("toggle", "game_powers", "Power-ups: Tarnkappe (lila) und Turbo (gelb)", func(): return game_powers, func(v): game_powers = v, "Spiel")
 	add_control("toggle", "game_noise", "Mikrofon hört laute Schritte", func(): return game_noise, func(v): game_noise = v, "Spiel", ex)
 	add_control("toggle", "game_cones", "Sichtfeld der Kameras zeigen (für Anfänger)", func(): return game_cones, func(v): game_cones = v, "Spiel")
 	add_control("toggle", "game_random", "Start und Ziel zufällig", func(): return game_random, func(v): game_random = v, "Spiel", ex)
@@ -2061,7 +2063,9 @@ func control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "open": game.open, "round": game.round_state, "players": ps, "guard": game.guard_auto, "guard_yaw": snappedf(game.guard_yaw, 0.01),
 				"goal": [snappedf(game.goal.x, 0.01), snappedf(game.goal.z, 0.01)], "address": game.address(),
 				"items": game.items.map(func(it): return [snappedf(it["pos"].x, 0.1), snappedf(it["pos"].z, 0.1), it["by"], snappedf(it["pos"].y, 0.01), snappedf(ground_y(it["pos"].x, it["pos"].z), 0.01)]),
-				"goal_y": [snappedf(game.goal.y, 0.01), snappedf(ground_y(game.goal.x, game.goal.z), 0.01)], "insects": insects.emitting}
+				"goal_y": [snappedf(game.goal.y, 0.01), snappedf(ground_y(game.goal.x, game.goal.z), 0.01)], "insects": insects.emitting,
+				"powers": game.powers.map(func(w): return [w["kind"], snappedf(w["pos"].x, 0.1), snappedf(w["pos"].z, 0.1), float(w["back"]) > 0.0]),
+				"last_minute": game.last_minute}
 	elif a == "game_put":                              # for tests: put a player somewhere
 		var p2 = game.players[clampi(int(d.get("slot", 0)), 0, 3)]
 		if p2 == null:
@@ -2719,7 +2723,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 

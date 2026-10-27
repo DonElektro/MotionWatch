@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 10:28",
+ "generated": "2026-10-27 10:52",
  "versions": [
   {
-   "version": "2.95.12",
-   "file": "webcam_bewegung_2_95_12.py",
+   "version": "2.95.13",
+   "file": "webcam_bewegung_2_95_13.py",
    "url": "",
-   "sha256": "21f0ae81e8ddf8cb6be2548b99aceb689af09353a717899cf39716afea06118f",
-   "date": "2026-10-27 10:28",
-   "notes": "game wizard in the tab Simulator: game type, goal, difficulty (beginners / normal / pros), start - with the rules; «Like last time» starts with the settings of the last game.",
-   "sig": "35a6f75933042b648d28d758601390a4c7bc883fe64b4736904fbe2512b38d84592faade0f126d0d1a3c366f32d33c89b89f3c36a10c0ad3a225907dfa3f1503"
+   "sha256": "e1e60c1c08c97c28c8459d09bd7135ceba01ed4fe41d79db1e742f6d7764556b",
+   "date": "2026-10-27 10:52",
+   "notes": "tab Simulator: the status can be folded (arrow on the right); the arrows are green when what is inside works / is switched on. Game wizard: power-ups. 3D simulator 3D-3.21: more natural movements, power-ups, the last minute.",
+   "sig": "3c7f65899a983b8a58e6b1c9e78dd2de473b915a5e4c99596d7932612fa29bd7b784c5f3048083615cb67493e1b2ba15931465d3e704f09cfe6a5535ae6a6d0b"
   },
   {
    "version": "2.94.5",

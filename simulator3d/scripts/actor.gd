@@ -63,6 +63,14 @@ var lamp: SpotLight3D = null  # headlamp or phone light at night
 var lamp_mat: StandardMaterial3D = null
 var phone_out := false        # walks with the phone light in the hand (arm held forward)
 var startle_until := 0.0      # the light went on: startled, arms up for a moment
+var gait_amp := 0.0           # persons (3D-3.21): swing of the legs, matched to the speed (no sliding feet)
+var gait_fs := 0.0            # steps per second
+var want_heading := 0.0       # players: where the stick points (the head turns there first)
+var last_spd := 0.0
+var lean_acc := 0.0           # leaning into a start, back when stopping
+var seed_t := randf() * 10.0  # standing: breathing and shifting the weight, not all in step
+var power := ""               # players: «cloak» / «turbo» for a few seconds (game.gd, 3D-3.21)
+var power_until := 0.0
 var emote := ""               # players: caught / goal / throw (game.gd)
 var emote_until := 0.0
 
@@ -632,15 +640,23 @@ func _player(dt: float, now: float) -> void:
 	if frozen:
 		mv = Vector2.ZERO
 	var top: float = PLAYER_SPEED[ctl_posture] * (2.3 if ctl_run and ctl_posture == 0 else 1.0)
+	if power == "turbo" and now < power_until:
+		top *= 1.45
 	var want: float = top * mv.length()
-	cur_speed = move_toward(cur_speed, want, dt * 5.0)
 	if mv.length() > 0.08:
 		dir = Vector3(mv.x, 0, mv.y).normalized()
-		heading = lerp_angle(heading, atan2(-dir.x, -dir.z), clamp(10.0 * dt, 0.0, 1.0))
+		want_heading = atan2(-dir.x, -dir.z)
+		var diff: float = abs(wrapf(want_heading - heading, -PI, PI))
+		want *= clamp(1.15 - diff / 1.8, 0.15, 1.0)            # a sharp turn: slow down, turn, go on (no turning on the spot at full speed)
+		var rate: float = [7.0, 5.0, 2.2][ctl_posture] * (0.75 if cur_speed > 2.5 else 1.0)
+		heading = rotate_toward(heading, want_heading, rate * dt)
 		rotation.y = heading
+	else:
+		want_heading = heading
+	cur_speed = move_toward(cur_speed, want, dt * (4.0 if want > cur_speed else 6.0))   # starts a bit slower than it stops
 	if cur_speed > 0.01:
-		var mdir := dir if mv.length() > 0.08 else Vector3(-sin(heading), 0, -cos(heading))
-		position += mdir * cur_speed * dt
+		var mdir := Vector3(-sin(heading), 0, -cos(heading)).slerp(dir, 0.25) if mv.length() > 0.08 else Vector3(-sin(heading), 0, -cos(heading))
+		position += mdir.normalized() * cur_speed * dt
 		var q: Vector2 = main.keep_out(Vector2(position.x, position.z), radius, true)
 		position.x = q.x
 		position.z = q.y
@@ -681,9 +697,31 @@ func _animate(dt: float, spd: float, now: float) -> void:
 	"""walking, running, crawling, standing about - persons with hips and upper body swinging against each other (3D-2.7),
 	animals with their own ways (hopping, jumping when fleeing, stalking, grazing, sniffing, rooting, sitting up)"""
 	var gait: float = spd / max(0.3, speed if not fled else speed / 2.6)
-	var stride: float = 1.0 + (0.4 * max(0.0, spd - 1.5) if kind == "person" else 0.0)   # running: longer steps, not faster legs (3D-3.4)
-	phase += dt * spd * (5.0 if kind == "person" else (9.0 if kind in ["cat", "hedgehog", "hare"] else 6.5)) / max(0.5, body_root.scale.y) / stride
-	var amp: float = clamp(spd / 1.2, 0.0, 1.0) * (0.6 if kind == "person" else 0.55) * (1.0 + 0.25 * clamp(spd - 1.8, 0.0, 1.0))
+	var amp: float
+	if kind == "person":
+		# steps matched to the speed (3D-3.21): the feet stay on the ground instead of sliding. A person walks with about
+		# 1.8 steps per second at 1.4 m/s, runs with about 3; the step length gives the swing of the legs.
+		var L: float = 0.92 * body_root.scale.y * (1.0 - 0.38 * crouch)
+		var turning: bool = controlled and spd < 0.15 and abs(wrapf(want_heading - heading, -PI, PI)) > 0.15
+		var fs: float = 0.0
+		if prone > 0.5:
+			fs = clamp(spd / 0.45 * 1.3, 0.0, 2.2)
+		elif spd > 0.05:
+			fs = clamp(0.95 + 0.6 * spd, 0.95, 3.3)
+		elif turning:
+			fs = 1.6                                                   # turning on the spot: small steps
+		var stepl: float = spd / max(0.6, fs) if spd > 0.05 else (0.18 if turning else 0.0)
+		var want_amp: float = asin(clamp(stepl / (2.0 * L), 0.0, 0.8))
+		gait_amp = lerp(gait_amp, want_amp, clamp(dt * 8.0, 0.0, 1.0))
+		gait_fs = lerp(gait_fs, fs, clamp(dt * 6.0, 0.0, 1.0))
+		if gait_fs > 0.05 or abs(sin(phase)) > 0.05:
+			phase += dt * PI * max(gait_fs, 1.2 if gait_fs < 0.05 else 0.0)   # standing: the last step is finished
+		amp = gait_amp
+		lean_acc = lerp(lean_acc, clamp((spd - last_spd) / max(dt, 0.001) * 0.06, -0.15, 0.15), clamp(dt * 5.0, 0.0, 1.0))
+		last_spd = spd
+	else:
+		phase += dt * spd * (9.0 if kind in ["cat", "hedgehog", "hare"] else 6.5) / max(0.5, body_root.scale.y)
+		amp = clamp(spd / 1.2, 0.0, 1.0) * 0.55 * (1.0 + 0.25 * clamp(spd - 1.8, 0.0, 1.0))
 	var sw := sin(phase) * amp
 	var k: float = clamp(dt * 12.0, 0.0, 1.0)
 	var idle: String = idle_kind if now < idle_until else ""
@@ -749,7 +787,9 @@ func _animate(dt: float, spd: float, now: float) -> void:
 		if kind == "person" and (now < startle_until or emote == "caught" and now < emote_until):
 			hx = 0.15
 		head.rotation.x = lerp(head.rotation.x, hx, clamp(dt * 4.0, 0.0, 1.0))
-		head.rotation.y = lerp(head.rotation.y, hyaw, clamp(dt * 3.0, 0.0, 1.0))
+		if kind == "person" and controlled and idle == "":
+			hyaw = clamp(wrapf(want_heading - heading, -PI, PI), -0.75, 0.75)   # the head turns first, the body follows
+		head.rotation.y = lerp(head.rotation.y, hyaw, clamp(dt * (6.0 if controlled else 3.0), 0.0, 1.0))
 	if tail != null:
 		tail.rotation.y = sin(now * (9.0 if kind == "dog" else 2.0)) * (0.5 if kind == "dog" else 0.15)
 
@@ -757,18 +797,21 @@ func _animate(dt: float, spd: float, now: float) -> void:
 func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k: float, idle: String) -> void:
 	var run_f: float = clamp((spd - 1.8) / 1.5, 0.0, 1.0)
 	var jog := variant == "jogger"
-	var bob: float = abs(sin(phase)) * (0.025 + 0.03 * run_f) * clamp(spd / max(0.3, speed), 0.0, 1.5)
+	var bob: float = (abs(cos(phase)) - 0.6) * (0.03 + 0.05 * run_f) * clamp(amp / 0.35, 0.0, 1.3)   # highest over the standing leg
 	var em: String = emote if now < emote_until else ""
+	var still: float = clamp(1.0 - spd / 0.2, 0.0, 1.0) * (1.0 - prone) * (0.0 if em != "" else 1.0)
 	var jump := 0.0
 	if em == "goal":
 		jump = abs(sin(now * 7.0)) * 0.18
 	body_root.position.y = (-0.5 * crouch * body_root.scale.y + bob + jump) * (1.0 - prone) + 0.12 * prone
 	body_root.rotation.x = -1.35 * prone
+	body_root.position.z = 0.9 * prone * body_root.scale.y                 # lying down: the hips stay where the player is
+	body_root.position.x = sin(phase) * 0.025 * clamp(amp / 0.35, 0.0, 1.0) * (1.0 - prone) + still * 0.018 * sin(now * 0.45 + seed_t)  # weight from foot to foot
 	if hips != null:                                                      # hips and upper body swing against each other
 		hips.rotation.y = sw * 0.2 * (1.0 - prone)
-		hips.rotation.z = sin(phase) * 0.035 * amp
+		hips.rotation.z = sin(phase) * 0.05 * amp + still * 0.03 * sin(now * 0.45 + seed_t)
 		torso.rotation.y = -sw * 0.25 * (1.0 - prone)
-		var lean := -0.3 * crouch - 0.28 * run_f - (0.1 if jog and spd > 0.5 else 0.0)
+		var lean := -0.3 * crouch - 0.28 * run_f - (0.1 if jog and spd > 0.5 else 0.0) - lean_acc + still * 0.02 * sin(now * 1.6 + seed_t)   # into a start, breathing
 		if idle == "bend":
 			lean = -1.0
 		if now < startle_until or em == "caught":

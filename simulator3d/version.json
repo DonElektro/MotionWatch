@@ -1,7 +1,7 @@
 {
- "version": "3D-3.20",
+ "version": "3D-3.21",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30565851,
- "sha256": "f582bbdba14cd0ec6e481223b3734d67391fcc032863d1dab2e89433b0e7f29d",
- "notes": "Spiel: QR-Code auch in Motion Watch. Touch-Steuerung (Sticks) für das Simulator-Fenster in Motion Watch."
+ "size": 30569418,
+ "sha256": "eaf10d8b6fca8f82dbd01a3d2e81a4e84f6cc0194ab26781ba19008880b47064",
+ "notes": "Natürlichere Bewegungen der Figuren. Spiel: Power-ups (Tarnkappe, Turbo) und eine spannende letzte Minute."
 }

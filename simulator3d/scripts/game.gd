@@ -67,6 +67,8 @@ var light_ready := 0.0
 var attention := Vector3.ZERO           # a noise (stone, steps): the automatic guard looks there ...
 var attention_until := 0.0              # ... until then
 var items: Array = []                   # {"node", "pos", "by": -1}
+var powers: Array = []                  # power-ups (3D-3.21): {"node", "pos", "kind": "cloak" | "turbo", "back": time it comes back}
+var last_minute := false                # the last minute of a round: the cameras are more watchful
 var cones: Array = []                   # [node of the head camera, node of the fixed camera]
 var stones: Array = []                  # [node, until]
 var _ref_t := 0.0
@@ -185,6 +187,7 @@ func on_scene() -> void:
 		if players[i] != null:
 			_to_start(players[i])
 	_clear_items()
+	_place_powers(false)
 
 
 func _pick_goal(random: bool) -> void:
@@ -276,9 +279,64 @@ func _clear_items() -> void:
 	items.clear()
 
 
+const POWER_KIND := {"cloak": [Color(0.75, 0.45, 1.0), 9.0, "🌫 Tarnkappe! %d s lang sieht dich die Kamera kaum"],
+		"turbo": [Color(1.0, 0.85, 0.2), 7.0, "⚡ Turbo! %d s lang schneller – aber lauter"]}
+
+
+func _spot_far(min_d: float) -> Vector3:
+	var p := Vector3.ZERO
+	for _t in range(30):
+		var c := Vector3(_rng.randf_range(-22.0, 22.0), 0, _rng.randf_range(-36.0, -6.0))
+		if c.length() > 7.0 and c.distance_to(goal) > 4.0:
+			p = _g(main.free_spot(c, 0.6, true))
+			var far := true
+			for it in items + powers:
+				if p.distance_to(it["pos"]) < min_d:
+					far = false
+			if far:
+				break
+	return p
+
+
+func _place_powers(on: bool) -> void:
+	"""two power-ups that float and glow (only the players see them): purple = cloak, yellow = turbo"""
+	for w in powers:
+		if is_instance_valid(w["node"]):
+			w["node"].queue_free()
+	powers.clear()
+	if not on:
+		return
+	for k in ["cloak", "turbo"]:
+		var nd := MeshInstance3D.new()
+		var sm := SphereMesh.new()
+		sm.radius = 0.2
+		sm.height = 0.4
+		nd.mesh = sm
+		nd.material_override = _glow(POWER_KIND[k][0])
+		nd.layers = 16
+		root.add_child(nd)
+		var pos := _spot_far(6.0)
+		nd.position = pos + Vector3(0, 0.7, 0)
+		powers.append({"node": nd, "pos": pos, "kind": k, "back": 0.0})
+
+
+func _powers_tick(t: float, dt: float) -> void:
+	for w in powers:
+		var nd: Node3D = w["node"]
+		if not is_instance_valid(nd):
+			continue
+		if float(w["back"]) > 0.0 and t >= float(w["back"]):        # comes back somewhere else
+			w["back"] = 0.0
+			w["pos"] = _spot_far(6.0)
+			nd.visible = true
+		nd.position = w["pos"] + Vector3(0, 0.7 + 0.12 * sin(t * 2.5 + float(w["pos"].x)), 0)
+		nd.rotation.y += dt * 1.5
+
+
 func _place_items(n: int) -> void:
 	"""shining crystals between the starts and the goal (only the players see them)"""
 	_clear_items()
+	_place_powers(false)
 	for i in range(n):
 		var p := Vector3.ZERO
 		for _t in range(30):
@@ -361,6 +419,13 @@ func _process(dt: float) -> void:
 			if p != null and p["role"] == "runner":
 				p["actor"].frozen = false
 	if round_state == "play":
+		_powers_tick(t, dt)
+		if not last_minute and t_end - t <= 60.0 and t_end - t > 5.0 and main.game_minutes > 1:
+			last_minute = true                              # the last minute: more tension
+			for q in players:
+				if q != null:
+					_say(q, "⏰ Letzte Minute! Die Kamera passt jetzt besser auf." if q["role"] == "runner" else "⏰ Letzte Minute!", 4.0)
+					_event(q, "item")
 		_ref_t -= dt
 		if _ref_t <= 0.0:
 			_ref_t = 0.2
@@ -819,6 +884,8 @@ func start_round() -> void:
 	_new_starts(main.game_random)
 	_pick_goal(main.game_random)
 	_place_items(int(main.game_items))
+	_place_powers(main.game_powers)
+	last_minute = false
 	round_state = "countdown"
 	t_start = now() + 4.0
 	t_end = t_start + float(main.game_minutes) * 60.0
@@ -1081,6 +1148,7 @@ func end_round() -> void:
 				match_scores = [0, 0]
 		team_results.sort_custom(func(x, y): return x["score"] > y["score"])
 	_clear_items()
+	_place_powers(false)
 	_clear_flags()
 	if jail_node != null:
 		jail_node.queue_free()
@@ -1266,6 +1334,15 @@ func _referee(dt: float) -> void:
 				it["node"].visible = false
 				_say(p, "💎 gefunden! (+100)", 2.5)
 				_event(p, "item")
+		for w in powers:                                   # power-ups
+			if float(w["back"]) == 0.0 and a.position.distance_to(w["pos"]) < 1.3:
+				var pk: Array = POWER_KIND[w["kind"]]
+				a.power = w["kind"]
+				a.power_until = now() + float(pk[1])
+				w["back"] = now() + 35.0
+				w["node"].visible = false
+				_say(p, pk[2] % int(pk[1]), 3.0)
+				_event(p, "item")
 		for q in players:                                  # rescue somebody from the jail
 			if q != null and q["state"] == "jail" and (not main.game_teams or int(q["team"]) == int(p["team"])) and a.position.distance_to(q["actor"].position) < 1.6:
 				q["state"] = "play"
@@ -1313,7 +1390,11 @@ func _referee(dt: float) -> void:
 		if hr > 0.25:
 			attention = a.position
 			attention_until = now() + 3.0
-		var rate := v * 55.0 + hr * 30.0
+		if a.power == "cloak" and now() < float(a.power_until):
+			v *= 0.25                                      # cloak: hardly seen
+		if a.power == "turbo" and now() < float(a.power_until):
+			hr = min(1.0, hr * 1.6 + 0.1)                  # turbo: louder
+		var rate := (v * 55.0 + hr * 30.0) * (1.3 if last_minute else 1.0)
 		if rate > 0.5:
 			p["susp"] = min(100.0, float(p["susp"]) + rate * lv * dt)
 		else:
