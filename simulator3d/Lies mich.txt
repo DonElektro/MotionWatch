@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.41 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.42 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -501,3 +501,6 @@ NEU IN 3D-3.40
 
 NEU IN 3D-3.41
 3D-3.41: Der Spiel-Assistent läuft jetzt im Simulator selbst (Spiel → «Spiel-Assistent»): Spielart, Ziel, Schwierigkeit mit Extras, dann Zusammenfassung, Regeln, QR-Code und Spieler. Motion Watch (ab 2.95.48) zeigt dieselben Schritte im Browser und bedient den Assistenten aus der Ferne – beide bleiben gleich. «Wie letztes Mal» merkt sich der Simulator.
+
+NEU IN 3D-3.42
+3D-3.42: Der Spiel-Assistent zeigt zu jeder Spielart, jedem Ziel und jeder Schwierigkeit ein Bild, damit man sofort sieht, worum es geht (im Simulator und auf der Seite von Motion Watch). Am Schluss stehen die Bilder des gewählten Spiels über den Regeln.

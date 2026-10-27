@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_49.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_50.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,7 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.50: the game wizard shows a picture for every game type, goal and difficulty (3D simulator 3D-3.42).
   * 2.95.49: fix: the campfire games and the gamer mode no longer switch the own Wi-Fi on (it cut the phone off the network, the
     page froze); the camping guard asks first, as the camping profile does.
   * 2.95.48: the game wizard of the 3D simulator now runs in the simulator itself (3D-3.41); the tab Simulator shows the same
@@ -679,10 +680,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_49.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_50.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_49.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_49.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_50.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_50.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -699,7 +700,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.49"
+APP_VERSION = "2.95.50"
 
 
 def default_data_dir():
@@ -13660,8 +13661,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.41", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30810099,
-         "sha256": "6759128042de721ff2e4d7e2e7f3d3271bf8827a8a752c4b26792328b85615af"}
+SIM3D = {"version": "3D-3.42", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30813501,
+         "sha256": "7eeceee1b09f8bdff62d6a179481f1c423a360ccf7752a7644378ac1d4859d55"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -17418,7 +17419,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_49.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_50.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -22619,6 +22620,8 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .gw-body{padding:16px;overflow:auto}.gw-body h3{margin:0 0 4px;font-size:20px}.gw-body .lead{margin:0 0 14px}
 .gw-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .gw-card{text-align:left;padding:14px;border-radius:12px;border:2px solid var(--line,#1f2b3a);background:transparent;color:inherit;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:120px}
+.gw-pic{width:100%;aspect-ratio:16/9;border-radius:10px;display:block;margin-bottom:4px}.gw-card .ic:empty{display:none}
+.gw-pics2{display:flex;gap:8px;margin:2px 0 10px}.gw-pics2 img{width:calc(50% - 4px);border-radius:10px}
 .gw-card b{font-size:16px}.gw-card .ic{font-size:28px;line-height:1}.gw-card small{color:var(--mut,#8b9bb0);line-height:1.35}
 .gw-card.on{border-color:var(--acc,#3b8cff);background:rgba(59,140,255,.12)}
 .gw-row{display:flex;align-items:center;gap:10px;margin:12px 0}.gw-row label{flex:1}.gw-row input[type=range]{flex:1}
@@ -23010,7 +23013,9 @@ function gwPaint(M) {
   if (M.error) B.appendChild(el("div", "gw-err", M.error));
   B.appendChild(el("h3", "", M.title)); if (M.lead) B.appendChild(el("p", "mut lead", M.lead));
   if ((M.cards || []).length) { const g = el("div", "gw-cards");
-    M.cards.forEach(c => { const b = el("button", "gw-card" + (c.on ? " on" : "")); b.type = "button"; b.append(el("span", "ic", c.icon), el("b", "", c.title), el("small", "", c.text));
+    M.cards.forEach(c => { const b = el("button", "gw-card" + (c.on ? " on" : "")); b.type = "button";
+      if (c.pic) { const im = el("img", "gw-pic"); im.alt = ""; im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(c.pic); b.appendChild(im); }   // 3D-3.42: a picture
+      b.append(el("span", "ic", c.pic ? "" : c.icon), el("b", "", (c.pic ? c.icon + " " : "") + c.title), el("small", "", c.text));
       b.onclick = () => gwOp({op: "pick", key: M.key, value: c.v}); g.appendChild(b); }); B.appendChild(g); }
   if (M.last) { const q = el("button", "sec", "⚡ " + t("Like last time") + ": " + M.last); q.type = "button"; q.style.cssText = "margin-top:14px;width:100%;white-space:normal";
     q.onclick = () => gwOp({op: "last"}); B.appendChild(q); }
@@ -23031,6 +23036,7 @@ function gwPaint(M) {
       i.value = String(o.value); i.onchange = () => send(i.value); r.appendChild(i); }
     into.appendChild(r);
   });
+  if ((M.pics || []).some(x => x)) { const pr = el("div", "gw-pics2"); M.pics.forEach(x => { if (x) { const im = el("img"); im.alt = ""; im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(x); pr.appendChild(im); } }); B.appendChild(pr); }
   if ((M.summary || []).length) { const sm = el("div", "gw-sum"); M.summary.forEach(([k, v]) => sm.append(el("div", "", k), el("div", "", v))); B.appendChild(sm); }
   if ((M.rules || []).length) { const rl = el("div", "gw-rules"); M.rules.forEach(x => rl.appendChild(el("p", "", x))); B.appendChild(rl); }
   if (M.step === 3) { const q = el("div", "gw-qr"); q.id = "gw-qr"; B.appendChild(q);
@@ -38135,7 +38141,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.49")
+        self.root.title("Motion Watch 2.95.50")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -38425,7 +38431,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.49 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.50 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

@@ -21,6 +21,8 @@ var _painted := -1
 var _qr_for := ""
 
 const LAST := "user://gamewiz_last.json"
+const Pics = preload("res://scripts/wizpics.gd")
+var _tex := {}
 const KEYS := ["game_mode", "game_goal", "game_level", "game_lives", "game_minutes", "game_items", "game_teams", "game_rescue", "game_stones",
 		"game_cones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints",
 		"game_autohandicap", "game_tasks"]
@@ -160,7 +162,7 @@ func model() -> Dictionary:
 			title = "Bereit!"
 	for c in src:
 		var on: bool = (lvl == c[0]) if key == "_lvl" else str(W.get(key, "")) == c[0]
-		cards.append({"v": c[0], "icon": c[1], "title": c[2], "text": c[3], "on": on})
+		cards.append({"v": c[0], "icon": c[1], "title": c[2], "text": c[3], "on": on, "pic": Pics.PICS.get(c[0], "")})
 	var opts := []
 	if step == 2:
 		for o in OPTIONS:
@@ -192,7 +194,8 @@ func model() -> Dictionary:
 	if step == 3:
 		nl = "▶ Runde starten" if g.open else "✓ Spiel öffnen & QR-Code zeigen"
 	return {"ok": true, "shown": shown, "seq": seq, "step": step, "steps": STEPS, "title": title, "lead": lead, "key": key, "cards": cards,
-			"options": opts, "extras_open": extras_open, "summary": summary, "rules": _rules() if step == 3 else [],
+			"options": opts, "extras_open": extras_open, "summary": summary,
+			"pics": [Pics.PICS.get(str(W.get("game_mode")), ""), Pics.PICS.get(str(W.get("game_goal")), "")] if step == 3 else [], "rules": _rules() if step == 3 else [],
 			"last": _summary(last) if last != null and step == 0 else "", "error": error, "next": nl, "back": step > 0,
 			"game": {"open": g.open, "url": g.address() if g.open else "", "players": g.count(), "round": g.round_state}}
 
@@ -413,12 +416,19 @@ func _paint() -> void:
 			var b := Button.new()
 			b.toggle_mode = true
 			b.button_pressed = c["on"]
-			b.custom_minimum_size = Vector2(190, 110)
+			b.custom_minimum_size = Vector2(190, 230)
 			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			b.text = plain("%s\n%s" % [c["title"], c["text"]])
 			b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			b.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+			b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			b.expand_icon = false
 			b.add_theme_font_size_override("font_size", 13)
+			if not _tex.has(c["v"]):
+				_tex[c["v"]] = Pics.texture(c["v"], 0.8)
+			if _tex[c["v"]] != null:
+				b.icon = _tex[c["v"]]
 			var k: String = M["key"]
 			var vv: String = c["v"]
 			b.pressed.connect(func(): op({"op": "pick", "key": k, "value": vv}))
@@ -480,6 +490,17 @@ func _paint() -> void:
 				row.add_child(ob)
 		if id in ["game_minutes", "game_items", "game_hides", "game_checkpoints"] or o["type"] != "range":
 			pass
+	if step == 3:                                      # the pictures of the chosen game and goal
+		var pr := HBoxContainer.new()
+		pr.add_theme_constant_override("separation", 10)
+		body.add_child(pr)
+		for k2 in [str(W.get("game_mode")), str(W.get("game_goal"))]:
+			if not _tex.has(k2):
+				_tex[k2] = Pics.texture(k2, 0.8)
+			if _tex[k2] != null:
+				var tr := TextureRect.new()
+				tr.texture = _tex[k2]
+				pr.add_child(tr)
 	if not M["summary"].is_empty():
 		var gs := GridContainer.new()
 		gs.columns = 2

@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 19:28",
+ "generated": "2026-10-27 19:43",
  "versions": [
   {
-   "version": "2.95.49",
-   "file": "webcam_bewegung_2_95_49.py",
+   "version": "2.95.50",
+   "file": "webcam_bewegung_2_95_50.py",
    "url": "",
-   "sha256": "ef57a93874eedbd544a34475a5f6aaa42a2ef03a503266e1d80a2619122c7de1",
-   "date": "2026-10-27 19:28",
-   "notes": "fix: the campfire games and the gamer mode no longer switch the own Wi-Fi on (it cut the phone off the network, the page froze); the camping guard asks first, as the camping profile does.",
-   "sig": "231866d557f594f75357611ed7ede8a08d13542f81ac1ba4085f84c8aaf65e69d2ca9291ae17f517122aa84fe3a567086e308d39516f0a2efabaa335b6376f02"
+   "sha256": "1b9f73f4af2286ae022494766b16e4519a8dd8245419a856aab30eae42bf2c0a",
+   "date": "2026-10-27 19:43",
+   "notes": "the game wizard shows a picture for every game type, goal and difficulty (3D simulator 3D-3.42).",
+   "sig": "1a7a0698788d6907e473b03d588df82143323057ec30487a90b6a3308f544b7baa4e66b7a4627b678f293ab6d36df718f8201632eb535d5c35a3e82be330910f"
   },
   {
    "version": "2.94.5",
