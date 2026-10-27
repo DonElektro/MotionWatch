@@ -1,7 +1,7 @@
 {
- "version": "3D-3.32",
+ "version": "3D-3.33",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30881790,
- "sha256": "9354300b7d00412415169933e997f706a6efc9020149519c238da1ebf5745aad",
- "notes": "Mover-Stick neben dem Bedienfeld statt darunter."
+ "size": 30890565,
+ "sha256": "2e88caf2b417cbe5e842c7879caa9a5acfd5fcca272e041ed3628723b5f1ea11",
+ "notes": "Neuer Himmel (Wolken, Sterne, Mond), Grafikstufen, Gewitter, realistisches Infrarot-Nachtbild."
 }

@@ -19,6 +19,8 @@ uniform float sway = 0.0;           // 0..1 the wind moves the web and the branc
 float seg(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a, ba = b - a; float t = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); return length(pa - ba * t); }
 
 float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+// 3D-3.33: grain without sin() - with a growing TIME the old hash lost precision and drew horizontal streaks
+float hn(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
 
 void fragment() {
 	vec2 uv = UV;
@@ -27,7 +29,8 @@ void fragment() {
 	vec3 c = vec3(0.0);
 	// grain: every pixel a bit brighter or darker, new each frame
 	vec2 px = floor(uv * res);
-	float g = (h(px + floor(TIME * 30.0) * vec2(17.31, 43.77)) - 0.5) * noise * 0.85;
+	float fr = mod(floor(TIME * 30.0), 251.0);
+	float g = ((hn(px + fr * vec2(17.31, 43.77)) + hn(px.yx + fr * vec2(5.17, 3.71)) - 1.0) * 0.5) * noise * 0.4;   // softer, like a sensor with noise filter
 	float ga = abs(g);
 	vec3 gc = g > 0.0 ? vec3(1.0) : vec3(0.0);
 	float na = ga + al * (1.0 - ga);

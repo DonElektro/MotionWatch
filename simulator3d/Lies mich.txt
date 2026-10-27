@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.31 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.33 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -462,3 +462,16 @@ NEU IN 3D-3.30
 NEU IN 3D-3.31
 - Testlauf: der Bericht sagt jetzt auch, wann jede verpasste Person am besten zu sehen war. Motion Watch (ab 2.95.28)
   legt dazu sein eigenes Bild von diesem Moment in den Bericht («Bilder der Fehler»).
+
+NEU IN 3D-3.32
+- Der grüne Stick «Mover fahren» sitzt jetzt bündig neben dem Bedienfeld, wenn es offen ist, und ganz rechts, wenn es
+  ausgeblendet ist (vorher war er vom Bedienfeld verdeckt).
+
+NEU IN 3D-3.33
+- Neuer Himmel: Wolken, die mit dem Wind ziehen (mehr bei bewölktem Wetter), Sonne mit Lichthof, Mond und Sterne in der Nacht.
+- Grafik in vier Stufen: einfach, mittel, schön, ultra. Beim ersten Start wählt der Simulator selbst passend zur Grafikkarte.
+  «ultra» mit Vulkan-Grafik zusätzlich: Umgebungslicht, Schatten in Ecken, Spiegelungen, Lichtstrahlen im Nebel.
+- Feine Oberflächen-Struktur auf allen Gegenständen und Figuren (ab «mittel»).
+- Gewitter mit Blitzen (Wetter → Mehr Wetter), Regentropfen spritzen am Boden.
+- Infrarot-Nachtbild wie bei einer echten Nachtsicht-Kamera: nahe Personen gut sichtbar (vorher fast schwarz),
+  weniger und gleichmässigeres Bildrauschen (vorher mit Streifen).

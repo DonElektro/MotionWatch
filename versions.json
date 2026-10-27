@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 16:40",
+ "generated": "2026-10-27 17:06",
  "versions": [
   {
-   "version": "2.95.36",
-   "file": "webcam_bewegung_2_95_36.py",
+   "version": "2.95.37",
+   "file": "webcam_bewegung_2_95_37.py",
    "url": "",
-   "sha256": "c5b7526dddeebb7c1eaeedec625bcdc493cfb43327639198e47e74af964d46e4",
-   "date": "2026-10-27 16:40",
-   "notes": "game corner: «🚪 Leave» button on the phone page (also inside every game), «✕ Back» in every game of the collection; after joining the page shows the game at once (it waited up to 20 s). Collection GS-1.2 (Hextris without share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.",
-   "sig": "829733acc7bfddcfe00c5bff859c289d2c914e1df6401e9dea1ff6c597c78833c61de8f8e8eecfc5e22aa1cfb169c688597ae4622ceff33499c391f337ad3b07"
+   "sha256": "e494402e820bdb5166a36cd1ba29c6d8689c2b9d1092c8243e65f8a5d1975a2c",
+   "date": "2026-10-27 17:06",
+   "notes": "3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic infrared night picture - persons near the camera are now seen at night).",
+   "sig": "f57d39d4a40569e070b67ca955f8461d9ce8b081034969230240453ba4b020a64e00f98ff7d36701004465ea7c047829c7323ba42d1fd305e63b42a9c6ffef03"
   },
   {
    "version": "2.94.5",

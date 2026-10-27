@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.32"
+const VERSION := "3D-3.33"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -127,6 +127,14 @@ var ambient := 14.0
 var humidity := 70.0
 var pressure := 1013.0
 var storm_t := 0.0
+var thunder := false                  # 3D-3.33: thunderstorm with lightning (also a typical cause of false alarms)
+var flash_light: DirectionalLight3D
+var _flash_next := 0.0
+var _flash_seq: Array = []            # [time, energy] steps of the flash now
+var splashes: CPUParticles3D
+var _flash_boost := 0.0
+var _amb_base := 0.3
+var _sky_e_base := 1.0
 var moon := 0.6
 var auto_visitors := true
 var next_auto := 0.0
@@ -148,7 +156,10 @@ var next_event_id := 1
 var env: Environment
 var sun: DirectionalLight3D
 var moonlight: DirectionalLight3D
-var sky_mat: ProceduralSkyMaterial
+var sky_mat: ShaderMaterial              # 3D-3.33: own sky (clouds, stars, moon)
+var quality_set := false                  # the quality came from the saved settings (else: chosen by the graphics card)
+var detail_alb: NoiseTexture2D            # 3D-3.33: fine structure on every surface (no picture files needed)
+var detail_nrm: NoiseTexture2D
 var head: Node3D
 var rig: Node3D                       # from 3D-3.11: the base of Motion Watch - stands still, or drives as the mover
 var chassis: Node3D
@@ -288,6 +299,7 @@ func _ready() -> void:
 	_build_head()
 	_build_viewports()
 	_build_weather()
+	_build_effects()
 	_build_lens()
 	_build_fireflies()
 	visitors = Node3D.new()
@@ -335,6 +347,9 @@ func _ready() -> void:
 			get_tree().create_timer(1.5).timeout.connect(func(): DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED))
 		if autostart_lock and not "--updated" in args:
 			get_tree().create_timer(6.0).timeout.connect(func(): Autostart.lock_screen())
+	if not quality_set and not "--quality" in args:
+		quality = auto_quality()
+		print("graphics card: %s -> quality %s" % [RenderingServer.get_video_adapter_name(), quality])
 	_apply_quality()
 	_calibrate_thermal()
 	next_auto = now() + 20.0
@@ -457,8 +472,55 @@ func mat(c: Color) -> StandardMaterial3D:
 		var m := StandardMaterial3D.new()
 		m.albedo_color = c
 		m.roughness = 0.85
+		_mat_detail(m, quality != "simple")
 		mats[k] = m
 	return mats[k]
+
+
+func _make_detail() -> void:
+	"""3D-3.33: one fine, seamless structure (bright / dark spots + bumps) for all plain surfaces - wood, cloth, metal and
+	plastic no longer look like painted plastic. Made here from noise: no picture files."""
+	var fn := FastNoiseLite.new()
+	fn.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	fn.fractal_octaves = 4
+	fn.frequency = 0.035
+	detail_alb = NoiseTexture2D.new()
+	detail_alb.noise = fn
+	detail_alb.seamless = true
+	detail_alb.width = 256
+	detail_alb.height = 256
+	var ramp := Gradient.new()
+	ramp.set_color(0, Color(0.8, 0.8, 0.8))
+	ramp.set_color(1, Color(1.0, 1.0, 1.0))
+	detail_alb.color_ramp = ramp
+	var fn2 := FastNoiseLite.new()
+	fn2.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	fn2.fractal_octaves = 3
+	fn2.frequency = 0.08
+	detail_nrm = NoiseTexture2D.new()
+	detail_nrm.noise = fn2
+	detail_nrm.seamless = true
+	detail_nrm.width = 256
+	detail_nrm.height = 256
+	detail_nrm.as_normal_map = true
+	detail_nrm.bump_strength = 3.0
+
+
+func _mat_detail(m: StandardMaterial3D, on: bool) -> void:
+	if detail_alb == null:
+		_make_detail()
+	if on:
+		m.albedo_texture = detail_alb
+		m.normal_enabled = true
+		m.normal_texture = detail_nrm
+		m.normal_scale = 0.35
+		m.uv1_triplanar = true
+		m.uv1_world_triplanar = true
+		m.uv1_scale = Vector3(1.2, 1.2, 1.2)
+	else:
+		m.albedo_texture = null
+		m.normal_enabled = false
+		m.uv1_triplanar = false
 
 
 func tmat(key: String) -> ShaderMaterial:
@@ -521,8 +583,10 @@ func _build_environment() -> void:
 	env = Environment.new()
 	env.background_mode = Environment.BG_SKY
 	var sky := Sky.new()
-	sky_mat = ProceduralSkyMaterial.new()
+	sky_mat = ShaderMaterial.new()
+	sky_mat.shader = load("res://shaders/sky.gdshader")
 	sky.sky_material = sky_mat
+	sky.radiance_size = Sky.RADIANCE_SIZE_64
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR   # from 3D-3.3: the light of the sky as a colour - the
 	env.ambient_light_sky_contribution = 0.0                         # Compatibility renderer of Godot gave almost no light
@@ -530,6 +594,7 @@ func _build_environment() -> void:
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.fog_enabled = true
 	env.fog_density = 0.0008
+	env.fog_sky_affect = 0.35                     # 3D-3.33: the haze covers the sky only partly (clouds, stars, moon stay visible)
 	env.glow_enabled = true
 	env.glow_intensity = 0.6
 	env.glow_hdr_threshold = 1.2
@@ -929,6 +994,78 @@ func _build_weather() -> void:
 	add_child(snow)
 
 
+func _build_effects() -> void:
+	"""3D-3.33: lightning (a flash light from the sky) and raindrops splashing on the ground"""
+	flash_light = DirectionalLight3D.new()
+	flash_light.light_color = Color(0.85, 0.9, 1.0)
+	flash_light.light_energy = 0.0
+	flash_light.rotation = Vector3(deg_to_rad(-55), deg_to_rad(30), 0)
+	flash_light.shadow_enabled = false
+	flash_light.sky_mode = DirectionalLight3D.SKY_MODE_LIGHT_ONLY
+	add_child(flash_light)
+	splashes = CPUParticles3D.new()
+	splashes.amount = 700
+	splashes.lifetime = 0.35
+	splashes.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	splashes.emission_box_extents = Vector3(14, 0.01, 14)
+	splashes.direction = Vector3(0, 1, 0)
+	splashes.spread = 60.0
+	splashes.initial_velocity_min = 0.6
+	splashes.initial_velocity_max = 1.4
+	splashes.gravity = Vector3(0, -9.8, 0)
+	splashes.scale_amount_min = 0.6
+	splashes.scale_amount_max = 1.2
+	var sc := Curve.new()
+	sc.add_point(Vector2(0, 0.4))
+	sc.add_point(Vector2(1, 1.0))
+	splashes.scale_amount_curve = sc
+	var ramp := Gradient.new()
+	ramp.set_color(0, Color(0.85, 0.9, 0.95, 0.55))
+	ramp.set_color(1, Color(0.85, 0.9, 0.95, 0.0))
+	splashes.color_ramp = ramp
+	var q := QuadMesh.new()
+	q.size = Vector2(0.05, 0.05)
+	var qm := StandardMaterial3D.new()
+	qm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	qm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	qm.vertex_color_use_as_albedo = true
+	qm.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	q.material = qm
+	splashes.mesh = q
+	splashes.position = Vector3(0, ground_y(0, -8) + 0.03, -8)
+	splashes.emitting = false
+	add_child(splashes)
+
+
+func _lightning(dt: float) -> void:
+	"""a flash now and then while it rains with «Gewitter» (or a storm is coming): 2-3 quick flashes, thunder later"""
+	var on := thunder and weather == "rain" or (storm_t > 0.0 and now() - storm_t > 60.0 and weather == "rain")
+	if not _flash_seq.is_empty():
+		var t := now()
+		while not _flash_seq.is_empty() and t >= float(_flash_seq[0][0]):
+			var st: Array = _flash_seq.pop_front()
+			flash_light.light_energy = float(st[1])
+			_flash_boost = float(st[2])
+			env.ambient_light_energy = _amb_base + _flash_boost
+			sky_mat.set_shader_parameter("energy", _sky_e_base + _flash_boost * 0.6)
+		return
+	if not on:
+		flash_light.light_energy = 0.0
+		return
+	if _flash_next == 0.0:
+		_flash_next = now() + randf_range(4.0, 12.0)
+	if now() >= _flash_next:
+		_flash_next = now() + randf_range(8.0, 30.0)
+		var t0 := now()
+		var e := randf_range(2.0, 4.5)
+		_flash_seq = [[t0, e, 1.2], [t0 + 0.07, 0.0, 0.0], [t0 + 0.16, e * 0.7, 0.9], [t0 + 0.22, 0.0, 0.0]]
+		if randf() < 0.5:
+			_flash_seq += [[t0 + 0.4, e * 0.5, 0.6], [t0 + 0.47, 0.0, 0.0]]
+		var dist := randf_range(800.0, 4000.0)                # thunder: later and quieter the farther away
+		var dir := Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized()
+		get_tree().create_timer(dist / 340.0).timeout.connect(func(): add_sound(30.0, dir * dist, 2.5))
+
+
 func _build_fireflies() -> void:
 	"""fireflies on warm nights: small blinking lights over the meadow in front of the cameras (from 3D-2.9)"""
 	fireflies = CPUParticles3D.new()
@@ -1095,6 +1232,20 @@ func _update_sounds() -> void:
 					add_sound([-38.0, -48.0, -56.0][a.ctl_posture] + (12.0 if a.cur_speed > 2.2 else 0.0), a.position, 0.6)
 
 
+var _ir_curve: GradientTexture1D
+
+
+func ir_curve() -> GradientTexture1D:
+	if _ir_curve == null:
+		var g := Gradient.new()
+		g.offsets = PackedFloat32Array([0.0, 0.04, 0.12, 0.3, 0.6, 1.0])
+		g.colors = PackedColorArray([Color(0, 0, 0), Color(0.035, 0.035, 0.035), Color(0.3, 0.3, 0.3), Color(0.6, 0.6, 0.6), Color(0.85, 0.85, 0.85), Color(1, 1, 1)])
+		_ir_curve = GradientTexture1D.new()
+		_ir_curve.gradient = g
+		_ir_curve.width = 256
+	return _ir_curve
+
+
 func _update_lens() -> void:
 	"""every 0.5 s: grain from the amplification (gain), raindrops when it rains, insects at night with light"""
 	var dark := is_dark()
@@ -1103,6 +1254,9 @@ func _update_lens() -> void:
 			var e: Environment = env.duplicate()
 			e.adjustment_enabled = true
 			e.adjustment_saturation = 0.0 if k == 0 else 0.4
+			if k == 0:                                      # 3D-3.33: in near infrared clothes, skin and plants reflect much
+				e.adjustment_brightness = 1.6                # more than in visible light - the lit area looks bright
+				e.adjustment_color_correction = ir_curve()   # dark clothes too (but the unlit night stays black)
 			night_envs[k] = e
 	for i in range(lens_mats.size()):
 		var amp: float = clamp((float(gain[i]) - 1.0) / max(0.5, gain_cap() - 1.0), 0.0, 1.0)
@@ -1236,18 +1390,30 @@ func _update_sky() -> void:
 	var top := Color(0.25, 0.45, 0.8).lerp(Color(0.55, 0.57, 0.6), cl)
 	var hor := Color(0.7, 0.78, 0.88).lerp(Color(0.95, 0.65, 0.45), dusk).lerp(Color(0.7, 0.71, 0.72), cl * 0.8)
 	var k: float = max(0.02, day)
-	sky_mat.sky_top_color = top * k + Color(0.01, 0.015, 0.03) * (1.0 - k)
-	sky_mat.sky_horizon_color = hor * k + Color(0.02, 0.025, 0.04) * (1.0 - k)
-	sky_mat.ground_horizon_color = sky_mat.sky_horizon_color
-	sky_mat.ground_bottom_color = Color(0.1, 0.12, 0.08) * k if not terrain else sky_mat.sky_horizon_color * 0.9   # real place: haze below
-	sky_mat.sky_energy_multiplier = 0.06 + 0.94 * day
+	var sky_top := top * k + Color(0.01, 0.015, 0.03) * (1.0 - k)
+	var sky_hor := hor * k + Color(0.02, 0.025, 0.04) * (1.0 - k)
+	sky_mat.set_shader_parameter("top_color", sky_top)
+	sky_mat.set_shader_parameter("horizon_color", sky_hor)
+	sky_mat.set_shader_parameter("ground_color", Color(0.1, 0.12, 0.08) * k if not terrain else sky_hor * 0.9)   # real place: haze below
+	_sky_e_base = 0.06 + 0.94 * day
+	sky_mat.set_shader_parameter("energy", _sky_e_base + _flash_boost * 0.6)
+	sky_mat.set_shader_parameter("cloud_cover", clampf(cl * 1.05, 0.0, 1.0))
+	sky_mat.set_shader_parameter("night", clampf(1.0 - day * 3.0, 0.0, 1.0))
+	sky_mat.set_shader_parameter("cloud_light", Color(1.0, 0.97, 0.93).lerp(Color(1.0, 0.72, 0.55), dusk).lerp(Color(0.78, 0.79, 0.82), cl * 0.6) * (0.08 + 0.92 * day))
+	sky_mat.set_shader_parameter("cloud_shadow", Color(0.55, 0.6, 0.7).lerp(Color(0.45, 0.46, 0.5), cl) * (0.06 + 0.94 * day))
+	var wd := Vector2(0.006, 0.0025) * (0.4 + wind / 30.0)
+	sky_mat.set_shader_parameter("wind", wd)
 	# light from the whole sky: bluish in the sun (shadows are never black, as outside), grey when cloudy, dark at night
 	env.ambient_light_color = Color(0.6, 0.68, 0.85).lerp(Color(0.72, 0.72, 0.74), cl).lerp(Color(0.9, 0.7, 0.6), dusk * 0.5)
 	env.ambient_light_energy = 0.03 + (0.55 + 0.25 * cl) * day
+	_amb_base = env.ambient_light_energy
+	env.ambient_light_energy += _flash_boost
 	var dens: float = {"clear": 0.0007, "cloudy": 0.0012, "rain": 0.006, "fog": 0.045, "snow": 0.012}.get(weather, 0.0008)
 	env.fog_density = dens
 	env.fog_light_color = Color(0.72, 0.74, 0.78) * (0.05 + 0.95 * day)
 	rain.emitting = weather == "rain"
+	if splashes != null:
+		splashes.emitting = weather == "rain" and quality != "simple"
 	snow.emitting = weather == "snow"
 	grass_mat.set_shader_parameter("snow_amount", 0.85 if weather == "snow" else 0.0)
 	grass_mat.set_shader_parameter("wet", 1.0 if weather == "rain" else 0.0)
@@ -1320,6 +1486,7 @@ var _slow_t := 0.0
 
 
 func _process(dt: float) -> void:
+	_lightning(dt)
 	_view_capture()
 	_hud_layout()
 	_cpu_pill_tick(dt)
@@ -1465,7 +1632,7 @@ func _capture(i: int) -> void:
 	var L: Dictionary = mw.get("lights", {})
 	var dark := is_dark()
 	ir_light.spot_range = ir_range
-	ir_light.light_energy = 6.0 if (i == 0 and ir_on()) else 0.0   # infrared: only the NoIR camera sees it
+	ir_light.light_energy = 9.0 if (i == 0 and ir_on()) else 0.0   # infrared: only the NoIR camera sees it
 	if i == 0:
 		var grey: bool = ir_on() and dark and not white_light.light_energy > 0.0   # infrared picture: black and white
 		cams[0].environment = (night_envs[0] if grey else night_envs[1]) if dark and night_envs[0] != null else null
@@ -1473,6 +1640,8 @@ func _capture(i: int) -> void:
 		cams[1].environment = night_envs[1] if dark and night_envs[1] != null else null    # little light: little colour
 	if i < 2 and expo_mats.size() > i:
 		var ex: float = NIGHT_SCALE * gain[i] if dark else 1.0
+		if i == 0 and dark and ir_on() and not white_light.light_energy > 0.0:
+			ex = max(ex, 0.85)                   # 3D-3.33: an infrared camera exposes for its own light - near things bright
 		expo_mats[i].set_shader_parameter("expo", ex)
 		lens_mats[i].set_shader_parameter("expo", ex)
 	if i < 2:
@@ -1892,7 +2061,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
 # id -> [group, part]; not listed: the group given in add_control, no part
 const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort von der Karte"], "speed": ["Szene", "Zeit"], "moon": ["Szene", "Zeit"], "season": ["Szene", "Zeit"],
 		"cam1_yaw": ["Kamerabild", "Feineinstellungen"], "humidity": ["Wetter", "Mehr Wetter"], "pressure": ["Wetter", "Mehr Wetter"],
-		"storm": ["Wetter", "Mehr Wetter"], "cloud_shadows": ["Wetter", "Mehr Wetter"], "gusts": ["Wetter", "Natur und Wind"],
+		"storm": ["Wetter", "Mehr Wetter"], "thunder": ["Wetter", "Mehr Wetter"], "cloud_shadows": ["Wetter", "Mehr Wetter"], "gusts": ["Wetter", "Natur und Wind"],
 		"world_cloth": ["Wetter", "Natur und Wind"], "world_smoke": ["Wetter", "Natur und Wind"], "world_fireflies": ["Wetter", "Natur und Wind"],
 		"meadow": ["Wetter", "Natur und Wind"], "car": ["Besuch", "Besucher schicken"], "thief": ["Besuch", "Besucher schicken"],
 		"dogwalk": ["Besuch", "Besucher schicken"], "herd": ["Besuch", "Besucher schicken"], "clear": ["Besuch", "Besucher schicken"],
@@ -1975,6 +2144,7 @@ func _register_controls() -> void:
 	add_control("slider", "humidity", "Luftfeuchtigkeit", func(): return humidity, func(v): humidity = v, "Wetter", {"min": 10, "max": 100, "step": 1, "unit": "%", "expert": true})
 	add_control("slider", "pressure", "Luftdruck", func(): return pressure, func(v): pressure = v, "Wetter", {"min": 960, "max": 1040, "step": 0.5, "unit": "hPa", "expert": true})
 	add_control("button", "storm", "Sturm zieht auf", null, func(): storm_t = now(), "Wetter", ex)
+	add_control("toggle", "thunder", "Gewitter mit Blitzen (bei Regen; die Blitze sind auch eine typische Fehlalarm-Ursache)", func(): return thunder, func(v): thunder = v, "Wetter")
 	# visitors: one button each (the window has the pictures to drag, the web page these buttons)
 	for k in VISITOR_LIST:
 		add_control("button", "spawn_" + k[0], k[1], null, func(): visit(k[0]), "Besuch")
@@ -2078,7 +2248,8 @@ func _register_controls() -> void:
 		add_control("toggle", "autostart_lock", "Danach den Bildschirm sperren", func(): return autostart_lock, func(v): autostart_lock = v, "Start mit dem PC")
 		add_control("button", "autologon", "Ohne Anmelden: automatische Anmeldung von Windows einrichten …", null, func(): setup_autologon(), "Start mit dem PC", {"expert": true})
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
-			{"options": [["simple", "einfach (schnell)"], ["nice", "schön (Schatten, Leuchten)"]]})
+			{"options": [["simple", "einfach (schnell)"], ["medium", "mittel"], ["nice", "schön (Schatten, Leuchten, Wolken)"],
+						 ["ultra", "ultra (für starke Grafikkarten; mit Vulkan noch mehr Effekte)"]]})
 	add_control("toggle", "eco_idle", "Strom sparen: nur rechnen, wenn das Fenster offen ist oder Motion Watch verbunden ist", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
 	add_control("toggle", "meadow", "Gras und Blumen auf der Wiese", func(): return meadow_on, func(v): set_meadow(v), "Grafik", ex)
 
@@ -2110,14 +2281,47 @@ func _set_quality(v: String) -> void:
 	_apply_quality()
 
 
+func auto_quality() -> String:
+	"""3D-3.33: first start - the graphics level from the graphics card (later the own choice is kept)"""
+	var a := RenderingServer.get_video_adapter_name().to_lower() + " " + RenderingServer.get_video_adapter_vendor().to_lower()
+	if in_vm or a.contains("llvmpipe") or a.contains("swiftshader") or a.contains("basic render") or a.contains("software"):
+		return "simple"
+	if a.contains("nvidia") or a.contains("geforce") or a.contains("radeon") or a.contains("amd") or a.contains("arc"):
+		return "nice"
+	return "medium"                                       # Intel and other built-in graphics
+
+
 func _apply_quality() -> void:
-	var nice := quality == "nice"
-	sun.shadow_enabled = nice
-	white_light.shadow_enabled = nice
-	env.glow_enabled = nice
+	if not quality in ["simple", "medium", "nice", "ultra"]:
+		quality = "nice"
+	var lvl: int = ["simple", "medium", "nice", "ultra"].find(quality)
+	var nice := lvl >= 2
+	sun.shadow_enabled = lvl >= 1
+	sun.directional_shadow_max_distance = [40.0, 60.0, 80.0, 120.0][lvl]
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS if lvl <= 1 else DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+	white_light.shadow_enabled = lvl >= 1
+	env.glow_enabled = lvl >= 1
+	env.glow_intensity = 0.5 if lvl == 1 else 0.7
+	env.glow_bloom = 0.0 if lvl < 2 else 0.06
+	RenderingServer.directional_shadow_atlas_set_size(2048 if lvl <= 1 else 4096, true)
+	var aa: Viewport.MSAA = [Viewport.MSAA_DISABLED, Viewport.MSAA_2X, Viewport.MSAA_2X, Viewport.MSAA_4X][lvl]
 	for i in range(2):
-		vps[i].msaa_3d = Viewport.MSAA_2X if nice else Viewport.MSAA_DISABLED
-	get_viewport().msaa_3d = Viewport.MSAA_2X if nice else Viewport.MSAA_DISABLED
+		vps[i].msaa_3d = aa
+	get_viewport().msaa_3d = aa
+	sky_mat.set_shader_parameter("detail", 1.0 if lvl >= 1 else 0.0)
+	for m in mats.values():
+		_mat_detail(m, lvl >= 1)
+	# Forward+ (Vulkan) only: light bouncing off surfaces, shadows in corners, reflections, light shafts in the fog
+	var fwd: bool = RenderingServer.get_rendering_device() != null       # Vulkan / Forward+ (not the OpenGL renderer)
+	env.ssao_enabled = fwd and lvl >= 2
+	env.ssao_intensity = 1.6
+	env.ssil_enabled = fwd and lvl >= 3
+	env.ssr_enabled = fwd and lvl >= 3
+	env.sdfgi_enabled = fwd and lvl >= 3
+	env.volumetric_fog_enabled = fwd and lvl >= 3
+	env.volumetric_fog_density = 0.008
+	env.volumetric_fog_length = 80.0
+	get_viewport().use_taa = fwd and lvl >= 3
 
 
 func control_info() -> Dictionary:
@@ -2922,6 +3126,7 @@ func _load_settings() -> void:
 	var d = JSON.parse_string(FileAccess.get_file_as_string(SETTINGS_FILE))
 	if typeof(d) != TYPE_DICTIONARY:
 		return
+	quality_set = d.has("quality")
 	for k in KEEP:
 		if d.has(k):
 			var v = d[k]
