@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 11:11",
+ "generated": "2026-10-27 11:14",
  "versions": [
   {
-   "version": "2.95.15",
-   "file": "webcam_bewegung_2_95_15.py",
+   "version": "2.95.16",
+   "file": "webcam_bewegung_2_95_16.py",
    "url": "",
-   "sha256": "0d51dea786c07188baaaf1e59ce71f269fa7a3a1ececc5f8242b3768aed4ddb4",
-   "date": "2026-10-27 11:11",
-   "notes": "3D simulator 3D-3.23: the game page on a phone lying on its side tidied up, full screen help for the iPhone.",
-   "sig": "455b0f325e3f25f5c66e0ab7931e368b4c0cf39ae69f573fda2beea7a9c1f6cc0ab4b4230a62ada4ce037afb2972a09a533f936b4a58c54711f878f54fb4140b"
+   "sha256": "641306dc101a72e7346b98a42b99f703e29b9e25b2881844190f8efd3f2a2a6b",
+   "date": "2026-10-27 11:14",
+   "notes": "game wizard: «Open the game & show the QR code» shows its progress, errors of the simulator in the wizard, and the QR code at once.",
+   "sig": "9ba876d1b34c208fdae629d658dd6dd8a00b688760821f55e35010b99a3777993891b5d49a1abf56a959fe39c88f3062113a4acd5fd974d8a98b3fdf033d740c"
   },
   {
    "version": "2.94.5",
