@@ -920,6 +920,7 @@ func _referee(dt: float) -> void:
 			p["t_goal"] = now()
 			a.frozen = true
 			_say(p, "Im Ziel! 🎉", 4.0)
+			a.play_emote("goal", 5.0)
 			_event(p, "goal")
 			paint()
 			continue
@@ -958,6 +959,7 @@ func _caught(p: Dictionary, by) -> void:
 	if g != null:
 		g["catches"] = int(g["catches"]) + 1
 	_event(p, "caught")
+	p["actor"].play_emote("caught", 1.5)
 	var lives := int(main.game_lives)
 	if lives > 0 and int(p["caught"]) >= lives:
 		p["state"] = "out"
@@ -989,6 +991,7 @@ func _throw(p: Dictionary) -> void:
 	if now() < float(p["stone_t"]):
 		return
 	p["stone_t"] = now() + STONE_EVERY
+	p["actor"].play_emote("throw", 0.6)
 	var yaw: float = p["yaw"]
 	var to: Vector3 = p["actor"].position + Vector3(-sin(yaw), 0, -cos(yaw)) * 10.0
 	to = main.free_spot(to, 0.3, true)

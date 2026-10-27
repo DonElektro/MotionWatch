@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-2.6 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-2.7 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -73,6 +73,18 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
   * Spielziel "Beute holen und zurückbringen": beim grünen Licht die Beute holen (man trägt sie sichtbar auf dem
     Rücken) und zurück zum eigenen Start. Wer erwischt wird, verliert sie wieder.
 - Jedes Handy-Bild braucht Leistung der Grafikkarte: bei Ruckeln "Bild auf dem Handy: klein" wählen.
+
+FIGUREN UND BEWEGUNGEN (ab 3D-2.7)
+- Menschen: Gesicht (Augen, Brauen, Nase, Mund, Ohren), verschiedene Statur (schlank bis kräftig), Jacke offen oder zu,
+  Frisuren, Kapuze bei Kälte oder Regen, Handschuhe in der Kälte.
+- Natürlicher Gang: Hüfte und Oberkörper schwingen gegengleich, beim Rennen nach vorn gebeugt, beim Kriechen
+  greifen die Arme nach vorn.
+- Menschen bleiben stehen und schauen sich um, telefonieren oder bücken sich; geht das Licht an, erschrecken sie
+  (Hände hoch) und schauen hin.
+- Nachts tragen manche Menschen eine Stirnlampe oder das Handylicht (Experte, Gruppe "Besuch": wie viele).
+  Die Lampe blendet die Kamera und beleuchtet den Boden - wie in echt.
+- Tiere: Rehe springen auf der Flucht, Hasen hoppeln und machen Männchen, Wildschweine wühlen, Füchse und Hunde
+  schnüffeln, Katzen schleichen geduckt und setzen sich hin.
 
 TESTLAUF MIT BERICHT (ab 3D-2.6, Gruppe "Testlauf")
 - "Testlauf starten": etwa 4 Minuten, 4 Phasen (Tag klar, Tag mit Wind und Wolken, Nacht mit Insekten am Licht,
