@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_18.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_19.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -582,6 +582,10 @@ Features
   * 2.95.18: game (3D-3.25): «caught» photos and gallery, hiding places, decoy, night round with torches, random events,
     checkpoints, ranking of the evening with records, handicap per player - in the wizard (Extras), the game card and the
     spectator view.
+  * 2.95.19: trusted devices (a browser that logged in once stays logged in, also after updates; list in Users,
+    removable; a new password logs all out). Power mode 🚀 (counterpart of power saving: every picture through the AI,
+    best stream, simulator at full speed, processor governor «performance»; switching off restores everything).
+    Small camera live picture inside the simulator window (📷). 3D simulator 3D-3.26.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -590,10 +594,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_18.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_19.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_18.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_18.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_19.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_19.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -610,7 +614,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.18"
+APP_VERSION = "2.95.19"
 
 
 def default_data_dir():
@@ -859,7 +863,9 @@ CFG = {
     "thermal_zoom": 100, "thermal_dx": 0, "thermal_dy": 0,   # which part of the thermal picture the camera sees
     # power saving: few pictures per second while all is quiet; any movement / noise / alarm = full speed for eco_wake s
     "eco_on": False, "eco_fps": 3, "eco_wake": 30, "eco_view_full": True,
+    "turbo_on": False, "turbo_prev": {},   # power mode (2.95.19): everything on the highest performance, the values before are kept
     "users": [],                 # extra logins: [{"name", "hash", "role": "operate" | "view"}] (the web password = administrator)
+    "trusted": [],               # trusted devices (2.95.19): [{"h": sha256 of the cookie, "user", "name", "t0", "seen", "ip"}] - no login after updates
     "web_pw_hash": "",           # web password set on the page / in the window (only a salted hash is stored)
     "disk_warn_mb": 500,         # push message when less space is free on the memory card
     "setup_done": False,
@@ -1958,6 +1964,53 @@ def user_login(name, pw):
     return None
 
 
+TRUST_COOKIE = "mw_trust"
+
+
+def _trust_hash(tok):
+    import hashlib
+    return hashlib.sha256(("mw-trust|" + str(tok)).encode()).hexdigest()
+
+
+def trust_find(tok):
+    """the trusted device of this cookie: (user, role) or None. The user must still exist (the administrator always does)."""
+    if not tok or len(tok) < 20 or len(tok) > 100:
+        return None
+    h = _trust_hash(tok)
+    for e in CFG.get("trusted") or []:
+        if hmac.compare_digest(e.get("h", ""), h):
+            u = e.get("user", "admin")
+            if e.get("role", "admin") == "admin":
+                return (u, "admin"), e
+            for x in CFG["users"]:
+                if x["name"].lower() == u.lower():
+                    return (x["name"], x["role"]), e
+            return None
+    return None
+
+
+def trust_add(user, role, ua, ip):
+    """a new trusted device: returns the cookie value (only its hash is kept here)"""
+    import secrets
+    tok = secrets.token_urlsafe(32)
+    name = "Gerät"
+    for k, n in (("iPad", "iPad"), ("iPhone", "iPhone"), ("Android", "Android"), ("Macintosh", "Mac"), ("Windows", "Windows-PC"), ("Linux", "Linux")):
+        if k in ua:
+            name = n
+            break
+    for k, n in (("Edg/", "Edge"), ("Firefox", "Firefox"), ("Chrome", "Chrome"), ("Safari", "Safari")):
+        if k in ua:
+            name += " · " + n
+            break
+    lst = [e for e in (CFG.get("trusted") or [])][-29:]
+    lst.append({"h": _trust_hash(tok), "user": user, "role": "admin" if role == "admin" else "user", "name": name, "t0": int(time.time()),
+                "seen": int(time.time()), "ip": str(ip)[:45]})
+    CFG["trusted"] = lst
+    save_settings()
+    log_event("web", f"Trusted device added: {name} ({user}, {ip})")
+    return tok
+
+
 def users_action(d, who="admin"):
     a = d.get("action")
     if a == "add":
@@ -2024,6 +2077,7 @@ def web_pw_set(pw):
         return False, "the password must have 6 to 64 characters (letters, digits, signs, no umlauts)"
     CFG["web_pw_hash"] = pw_hash(pw) if pw else ""
     _PW_OK.clear()
+    CFG["trusted"] = []                                    # a new password: every device logs in again
     save_settings_now()
     log_event("web", "Web password set" if pw else "Web password removed")
     return True, ""
@@ -6462,6 +6516,59 @@ def night_guard(lang=None):
             for x in h["items"] if x["level"] == "bad" or (x["level"] == "warn" and x["id"] in ("servo", "net", "power", "temp", "disk", "batt"))]
     log_event("sys", "Guard tonight: armed" + (f", {len(miss)} problem(s) open" if miss else ""))
     return {"ok": True, "done": done, "missing": miss}
+
+
+# ---- power mode (2.95.19): the counterpart of power saving - every picture through the AI, bigger processing, best
+# stream, the simulator at full speed, the processor at its highest clock. Switching it off restores everything. ----
+TURBO_SET = {"eco_on": False, "ai_every": 1, "proc_width": 640, "web_quality": 88, "web_width": 1920, "sim_eco": False, "sim_fps": 15}
+_GOV = "/sys/devices/system/cpu/cpu{}/cpufreq/scaling_governor"
+
+
+def _governor(want=None):
+    """read (want=None) or set the governor of all processor cores; returns the old one (or "" if not possible)"""
+    old = ""
+    try:
+        with open(_GOV.format(0)) as f:
+            old = f.read().strip()
+    except OSError:
+        return ""
+    if want:
+        for i in range(os.cpu_count() or 4):
+            try:
+                with open(_GOV.format(i), "w") as f:
+                    f.write(want)
+            except OSError:
+                pass
+    return old
+
+
+def turbo_set(on, who="web"):
+    on = bool(on)
+    if on and not CFG["turbo_on"]:
+        prev = {k: CFG[k] for k in TURBO_SET if k in CFG}
+        prev["_governor"] = _governor()
+        CFG["turbo_prev"] = prev
+        for k, v in TURBO_SET.items():
+            if k in CFG:
+                CFG[k] = v; sched_user_changed(k)
+        g_ = _governor("performance")
+        CFG["turbo_on"] = True
+        log_event("sys", f"Power mode ON ({who}): every picture through the AI, best quality" + ("" if g_ else " (processor clock: not allowed without root)"))
+    elif not on and CFG["turbo_on"]:
+        prev = CFG["turbo_prev"] if isinstance(CFG["turbo_prev"], dict) else {}
+        for k, v in prev.items():
+            if k in CFG and isinstance(v, type(CFG[k])):
+                CFG[k] = v
+        if prev.get("_governor"):
+            _governor(prev["_governor"])
+        CFG["turbo_on"] = False; CFG["turbo_prev"] = {}
+        log_event("sys", f"Power mode OFF ({who}) - previous settings restored")
+    save_settings()
+    return True, ""
+
+
+def turbo_state():
+    return {"on": bool(CFG["turbo_on"]), "gov": _governor() if CFG["turbo_on"] else "", "temp": STATE.get("cpu_temp"), "cpu": STATE.get("cpu")}
 
 
 def camping_set(on, hotspot_delay=2.0):
@@ -12587,8 +12694,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.25", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30595062,
-         "sha256": "e07040264893e4664f78ec4f4e5863a709e5a7ff60d181b13c7e1904b89fb5e4"}
+SIM3D = {"version": "3D-3.26", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30600102,
+         "sha256": "e0a1abcfe6071a0da99df001d3409c9ed153dbc80eaf57ab0806eb592791bbe1"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.1", "file": "simulator_python/MotionWatchSimulator_PY-1.1.zip", "size": 137697,
@@ -14307,7 +14414,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_18.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_19.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -19130,6 +19237,8 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .pvbtn button.on{background:var(--acc,#3b8cff)}
 #s-prev{width:100%;height:auto;min-height:200px;object-fit:contain;background:#000;display:block;max-height:calc(100vh - var(--hdr-h,64px) - 170px)}
 #c-prev{padding:12px}
+.pvcam{position:absolute;right:10px;bottom:52px;width:28%;max-width:320px;min-width:120px;border:2px solid rgba(255,255,255,.8);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.5);background:#000;cursor:pointer;z-index:3}
+.pvcam img{display:block;width:100%;border-radius:6px}.pvcam span{position:absolute;left:5px;top:5px;font:700 10px/1 system-ui,sans-serif;color:#fff;background:rgba(200,0,0,.75);padding:3px 5px;border-radius:4px}
 .pvlive{position:absolute;left:10px;bottom:10px;font:700 11px/1 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px}
 #pip{position:fixed;z-index:45;width:min(44vw,300px);border-radius:12px;overflow:hidden;background:#000;cursor:pointer;touch-action:none;box-shadow:0 8px 26px rgba(0,0,0,.55);border:1px solid var(--line)}
 #pip[hidden]{display:none}
@@ -19203,9 +19312,10 @@ details.fold>.fb>.mut:first-child{margin-top:0}
   <section class="sc wide" id="c-prev">
     <div class="pvmode" id="s-pvmode" hidden><button type="button" data-m="view">🗺 <span data-i18n="Simulator window">Simulator window</span></button><button type="button" data-m="cam">📷 <span data-i18n="Camera picture">Camera picture</span></button></div>
     <div class="pvw" id="s-pvw"><img id="s-prev" alt="" draggable="false" tabindex="0"><span class="pvlive" id="s-pvlive" hidden>● LIVE</span>
+      <div class="pvcam" id="s-pvcam" hidden title="Kamera gross zeigen"><img id="s-pvcimg" alt=""><span>📷 LIVE</span></div>
       <div class="spec" id="s-spec" hidden><div class="spec-h" id="s-spech"></div><div class="spec-p" id="s-specp"></div><div class="spec-f" id="s-specf"></div></div>
       <div class="specres" id="s-specres" hidden></div>
-      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><button type="button" id="s-vstat" title="Statistik ein / aus" hidden>📊</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vctl" title="Bedienen mit dem Finger (sonst scrollt die Seite)">✋</button><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
+      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><button type="button" id="s-vstat" title="Statistik ein / aus" hidden>📊</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vcam" title="Kamerabild klein ein / aus">📷</button><button type="button" id="s-vctl" title="Bedienen mit dem Finger (sonst scrollt die Seite)">✋</button><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
     <div class="mut" id="s-prevnote"></div>
   </section>
 
@@ -19650,7 +19760,22 @@ function pvPaint() {
   $("#s-pvw").classList.toggle("view", v); $("#s-pvbtn").hidden = !v; $("#s-pvlive").hidden = !LIVE || v;
   const want = v ? "view" : "cam";
   if (LIVE && PVCUR !== want) { PVCUR = want; pvLoad(); }
+  pvCam();
 }
+// small camera live picture inside the simulator window (2.95.19): single pictures, so it never lags behind
+let PVCAM = true, pvCamT = null, pvCamBusy = false;
+try { PVCAM = localStorage.getItem("mw-sim-pvcam") !== "0"; } catch (e) {}
+function pvCam() {
+  const on = LIVE && pvView() && PVCAM, box = $("#s-pvcam"); box.hidden = !on;
+  $("#s-vcam").classList.toggle("on", PVCAM);
+  if (on && !pvCamT) {
+    const img = $("#s-pvcimg");
+    img.onload = img.onerror = () => { pvCamBusy = false; };
+    pvCamT = setInterval(() => { if (document.hidden || pvCamBusy) return; pvCamBusy = true; img.src = "/snapshot.jpg?r=" + Date.now(); }, 500);
+  } else if (!on && pvCamT) { clearInterval(pvCamT); pvCamT = null; pvCamBusy = false; }
+}
+$("#s-vcam").addEventListener("click", e => { e.stopPropagation(); PVCAM = !PVCAM; try { localStorage.setItem("mw-sim-pvcam", PVCAM ? "1" : "0"); } catch (x) {} pvCam(); });
+$("#s-pvcam").addEventListener("click", e => { e.stopPropagation(); PVM = "cam"; try { localStorage.setItem("mw-sim-pvmode", PVM); } catch (x) {} pvPaint(); });
 $("#s-pvmode").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; PVM = b.dataset.m;
   try { localStorage.setItem("mw-sim-pvmode", PVM); } catch (x) {} pvPaint(); });
 function liveOn(on) {
@@ -21364,6 +21489,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
   <span class="badge" id="b-rec" data-view="b-rec" data-vgroup="Header" data-vlabel="Recording" hidden>Idle</span>
   <span class="badge" id="b-camp" data-view="b-camp" data-vgroup="Header" data-vlabel="Camping profile" hidden>⛺</span>
   <span class="badge" id="b-eco" data-view="b-eco" data-vgroup="Header" data-vlabel="Power saving" hidden>🍃</span>
+  <span class="badge" id="b-turbo" data-view="b-turbo" data-vgroup="Header" data-vlabel="Power mode" hidden title="Power mode">🚀</span>
   <span class="badge" id="b-batt" data-view="b-batt" data-vgroup="Header" data-vlabel="Battery" hidden>🔋</span>
   <span class="badge yel" id="b-lock" data-view="b-lock" data-vgroup="Header" data-vlabel="Operator mode" hidden style="cursor:pointer" onclick="unlockAct()">🔐</span>
   <span class="badge" id="b-tl" data-view="b-tl" data-vgroup="Header" data-vlabel="Timelapse" hidden>⏱</span>
@@ -21506,6 +21632,8 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
         <input type="checkbox" class="sw" id="pr-camp"></label>
       <label class="row pr-sw"><span><b>🔋 <span data-i18n="Power saving">Power saving</span></b><br><span class="mut" id="pr-eco-info"></span></span>
         <input type="checkbox" class="sw" id="pr-eco"></label>
+      <label class="row pr-sw"><span><b>🚀 <span data-i18n="Power mode">Power mode</span></b><br><span class="mut" id="pr-turbo-info"></span></span>
+        <input type="checkbox" class="sw" id="pr-turbo"></label>
       <label class="row pr-sw l-hide"><span><b>📡 <span data-i18n="Own Wi-Fi (hotspot)">Own Wi-Fi (hotspot)</span></b><br><span class="mut" id="pr-hs-info"></span></span>
         <input type="checkbox" class="sw" id="pr-hs"></label>
       <div class="pr-sw l-hide" style="cursor:default"><b>🌐 <span data-i18n="Network">Network</span></b>
@@ -22151,6 +22279,25 @@ async function usersLoad() {
   [nm, pw, rs].forEach(x => { x.style.cssText = "width:100%;margin-top:6px"; }); ab.type = "button"; ab.style.marginTop = "8px";
   ab.onclick = () => go({action: "add", name: nm.value, password: pw.value, role: rs.value});
   add.append(nm, pw, rs, ab); box.append(add, err);
+  trustLoad(box);
+}
+// ---- trusted devices (2.95.19): after a login the browser is remembered - no new login after an update ----
+async function trustLoad(parent) {
+  let j = null; try { j = await (await fetch("/api/trusted")).json(); } catch (e) { return; }
+  if (!j || !j.ok || !j.pw) return;
+  let box = $("#trust-box"); if (!box) { box = el("div", "sens-card"); box.id = "trust-box"; parent.appendChild(box); }
+  box.textContent = "";
+  box.appendChild(el("b", "", "🔐 " + t("Trusted devices")));
+  box.appendChild(el("div", "mut", t("A device that has logged in once is remembered (also after updates). Remove a device here if it is lost or should log in again.")));
+  const d2 = n => { if (!n) return "–"; const d = new Date(n * 1000); return d.toLocaleDateString() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2); };
+  (j.devices || []).forEach((x, i) => { const r = el("div", "row"); r.style.marginTop = "6px";
+    const tx = el("div", ""); tx.style.flex = "1"; tx.append(el("div", "", (x.me ? "⭐ " : "") + x.name + " · " + x.user + (x.me ? " (" + t("this device") + ")" : "")),
+      el("div", "mut", t("since") + " " + d2(x.t0) + " · " + t("last") + " " + d2(x.seen) + " · " + (x.ip || "")));
+    const b = el("button", "sec", "✕"); b.type = "button"; b.title = t("Remove");
+    b.onclick = async () => { if (confirm(t("Remove this device? It must log in again.") + "\n" + x.name)) { await post("/api/trusted", {action: "remove", i: i}); trustLoad(parent); } };
+    r.append(tx, b); box.appendChild(r); });
+  if ((j.devices || []).length > 1) { const c = el("button", "sec", t("Remove all")); c.type = "button"; c.style.marginTop = "8px";
+    c.onclick = async () => { if (confirm(t("Remove all trusted devices? Every device must log in again."))) { await post("/api/trusted", {action: "clear"}); trustLoad(parent); } }; box.appendChild(c); }
 }
 function applyRole(me) {
   const role = (me && me.role) || "admin";
@@ -23701,7 +23848,7 @@ function solarText(c, s) {
 }
 function solarPaint(c, s) { const st = $("#solar-st"); if (st) st.textContent = solarText(c, s); }
 /*SIMMAP*/
-Object.assign(I18N.de, {"Update": "Update", "New update for the simulator": "Neues Update für den Simulator", "tab Simulator": "Reiter Simulator", "sim-view-help": "Das Fenster des Simulators: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen (nach einem Klick ins Bild), Doppelklick = hinfliegen. Finger: antippen = klicken, sonst scrollt die Seite; mit ✋ bedient der Finger den Simulator (ziehen = verschieben, ⟲ = drehen, zwei Finger = zoomen). Knöpfe unten wechseln die Ansicht.", "Python world simulator (ZIP)": "Python-Weltsimulator (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo Motion Watch steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
+Object.assign(I18N.de, {"Power mode": "Powermodus", "Power mode on: everything on the highest performance": "Powermodus ein: alles auf Höchstleistung", "Power mode off: your settings are back": "Powermodus aus: deine Einstellungen sind zurück", "active: every picture through the AI, best picture, processor at full clock": "aktiv: jedes Bild durch die KI, bestes Bild, Prozessor auf vollem Takt", "hot": "heiss", "the highest performance (uses more current and gets warmer) - switching it off restores your settings": "Höchstleistung (braucht mehr Strom und wird wärmer) – Ausschalten stellt deine Einstellungen wieder her", "Trusted devices": "Vertrauenswürdige Geräte", "A device that has logged in once is remembered (also after updates). Remove a device here if it is lost or should log in again.": "Ein Gerät, das sich einmal angemeldet hat, wird gemerkt (auch nach Updates). Entferne hier ein Gerät, wenn es verloren ist oder sich neu anmelden soll.", "since": "seit", "Remove this device? It must log in again.": "Dieses Gerät entfernen? Es muss sich neu anmelden.", "Remove all": "Alle entfernen", "Remove all trusted devices? Every device must log in again.": "Alle vertrauenswürdigen Geräte entfernen? Jedes Gerät muss sich neu anmelden.", "Update": "Update", "New update for the simulator": "Neues Update für den Simulator", "tab Simulator": "Reiter Simulator", "sim-view-help": "Das Fenster des Simulators: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen (nach einem Klick ins Bild), Doppelklick = hinfliegen. Finger: antippen = klicken, sonst scrollt die Seite; mit ✋ bedient der Finger den Simulator (ziehen = verschieben, ⟲ = drehen, zwei Finger = zoomen). Knöpfe unten wechseln die Ansicht.", "Python world simulator (ZIP)": "Python-Weltsimulator (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo Motion Watch steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
 function simExtras(d) {
   // the settings of the section (switches, address, slider) go into a fold-out «Settings»
@@ -24341,6 +24488,11 @@ function updateProtect(s) {
   const hs = s.hotspot || {}, hc = s.hotspot_cfg || {};
   if (Date.now() > PR.campUntil) $("#pr-camp").checked = !!s.camping;
   if (!(Date.now() < (PR.ecoUntil || 0))) $("#pr-eco").checked = s.eco !== "off";
+  const TB = s.turbo || {};
+  if (!(Date.now() < (PR.turboUntil || 0))) $("#pr-turbo").checked = !!TB.on;
+  $("#pr-turbo-info").textContent = TB.on ? t("active: every picture through the AI, best picture, processor at full clock") + (TB.temp != null ? " · " + Math.round(TB.temp) + " °C" : "") + (TB.temp > 75 ? " ⚠ " + t("hot") : "")
+    : t("the highest performance (uses more current and gets warmer) - switching it off restores your settings");
+  const bt = $("#b-turbo"); if (bt) bt.hidden = !TB.on;
   $("#pr-eco-info").textContent = s.eco === "saving" ? t("active: few pictures, everything quiet") : (s.eco === "awake" ? t("full speed (something happened or somebody watches)")
     : t("off") + " · " + t("fewer pictures while all is quiet, full speed at the first movement or noise"));
   if (Date.now() > PR.hsUntil && !hs.busy) $("#pr-hs").checked = !!hs.on;
@@ -24454,7 +24606,10 @@ $("#pr-arm").onclick = () => prArm("arm");
 $("#pr-armnow").onclick = () => prArm("arm_now");
 $("#pr-disarm").onclick = () => prArm("disarm");
 $("#pr-camp").onchange = e => prCamp(e.target.checked);
-$("#pr-eco").onchange = e => { PR.ecoUntil = Date.now() + 2500; post("/api/set", {key: "eco_on", value: e.target.checked}); };
+$("#pr-eco").onchange = async e => { PR.ecoUntil = Date.now() + 2500; if (e.target.checked && $("#pr-turbo").checked) await post("/api/turbo", {on: false});
+  post("/api/set", {key: "eco_on", value: e.target.checked}); };
+$("#pr-turbo").onchange = async e => { PR.turboUntil = Date.now() + 2500; const r = await post("/api/turbo", {on: e.target.checked});
+  toast(e.target.checked ? "🚀 " + t("Power mode on: everything on the highest performance") : "↩ " + t("Power mode off: your settings are back")); };
 $("#pr-hs").onchange = e => prHotspot(e.target.checked);
 $("#b-arm").addEventListener("click", () => { const s = window.__lastState || {}; prArm(s.arm_state === "disarmed" ? "arm" : "disarm"); });
 
@@ -26255,11 +26410,19 @@ class WebStream:
             if len(recent) >= 8:
                 fails[ip] = recent
                 return Response("Too many failed logins - try again in a few minutes", 429, {"Retry-After": "300"})
+            tf = trust_find(request.cookies.get(TRUST_COOKIE, ""))   # a trusted device: no login (also after updates)
+            if tf:
+                g.user, g.role = tf[0]
+                if now - float(tf[1].get("seen", 0)) > 3600:
+                    tf[1]["seen"] = int(now); tf[1]["ip"] = ip[:45]; save_settings()
+                return None
             a = request.authorization
             who = user_login(a.username or "", a.password or "") if a else None
             if who:
                 fails.pop(ip, None)
                 g.user, g.role = who
+                if request.method == "GET" and not request.path.startswith(("/api/", "/video", "/cam_feed", "/sim/", "/snapshot")):
+                    g.new_trust = trust_add(who[0], who[1], request.headers.get("User-Agent", ""), ip)   # remember this device
                 return None
             if a:
                 recent.append(now)
@@ -26283,6 +26446,30 @@ class WebStream:
                 return None
             lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or request.args.get("lang") or CFG["lang"])
             return reply({"ok": False, "error": tr("not allowed for your user", lang)}, 403)
+
+        @app.after_request
+        def trust_cookie(resp):                     # a device that just logged in gets its «trusted» cookie (one year)
+            tok = getattr(g, "new_trust", None)
+            if tok:
+                resp.set_cookie(TRUST_COOKIE, tok, max_age=365 * 86400, httponly=True, samesite="Lax", secure=request.is_secure, path="/")
+            return resp
+
+        @app.route("/api/trusted", methods=["GET", "POST"])
+        def api_trusted():
+            if getattr(g, "role", "admin") != "admin":
+                return reply({"ok": False, "error": "not allowed"}, 403)
+            mine = _trust_hash(request.cookies.get(TRUST_COOKIE, "")) if request.cookies.get(TRUST_COOKIE) else ""
+            if request.method == "POST":
+                d = body(); a_ = d.get("action")
+                if a_ == "remove":
+                    i_ = int(d.get("i", -1)); lst = CFG.get("trusted") or []
+                    if 0 <= i_ < len(lst):
+                        log_event("web", f"Trusted device removed: {lst[i_].get('name')}")
+                        CFG["trusted"] = lst[:i_] + lst[i_ + 1:]; save_settings()
+                elif a_ == "clear":
+                    CFG["trusted"] = []; save_settings(); log_event("web", "All trusted devices removed")
+            return reply({"ok": True, "pw": web_pw_active(), "devices": [{"name": e.get("name"), "user": e.get("user"), "t0": e.get("t0"), "seen": e.get("seen"),
+                          "ip": e.get("ip"), "me": e.get("h") == mine} for e in (CFG.get("trusted") or [])]})
 
         @app.after_request
         def count_viewer(resp):                     # who has a page open: counted for the header (other Motion Watch devices not)
@@ -26751,6 +26938,7 @@ class WebStream:
                 if CFG["sim_on"]:                          # the simulation has its own lamps
                     st["light_cfg"]["white_out"] = st["light_cfg"]["white_out"] or "sim"; st["light_cfg"]["ir_out"] = st["light_cfg"]["ir_out"] or "sim"
                 st["sim"] = sim_status()
+                st["turbo"] = turbo_state()
                 st["mover"] = {"avail": MOVER["avail"], "sim": MOVER["sim"], "test": MOVER["test"], "hw": MOVER["hw"], "l": MOVER["l"], "r": MOVER["r"],
                                "msg": tr(MOVER["msg"], lang_), "mode": CFG["mover_mode"]}
                 st["soundev"] = soundev_state()
@@ -26875,6 +27063,12 @@ class WebStream:
             netauto_pause()
             hotspot_switch_later(bool(d.get("on")))
             return reply({"ok": True, "ssid": CFG["hotspot_ssid"], "password": CFG["hotspot_password"], "address": page_address("10.42.0.1")})
+
+        @app.route("/api/turbo", methods=["POST"])
+        def api_turbo():
+            d = body()
+            ok, err = turbo_set(bool(d.get("on")), "web " + (request.remote_addr or "?"))
+            return reply({"ok": ok, "turbo": turbo_state()})
 
         @app.route("/api/camping", methods=["POST"])
         def api_camping():
@@ -29085,7 +29279,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.18")
+        self.root.title("Motion Watch 2.95.19")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -29375,7 +29569,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.18 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.19 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.25"
+const VERSION := "3D-3.26"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1290,6 +1290,8 @@ var _slow_t := 0.0
 
 func _process(dt: float) -> void:
 	_view_capture()
+	_hud_layout()
+	_cpu_pill_tick(dt)
 	_thumbs_tick(dt)
 	# minimized: Godot stops drawing then - but the cameras must go on for Motion Watch. mini.gd turns the window into a
 	# small box at once; this is only the safety net (e.g. when the box cannot be shown)
@@ -2259,6 +2261,7 @@ func _build_ui() -> void:
 	layer.add_child(phone)
 	_build_crosshair(layer)
 	_build_view_bar(layer, th)
+	_build_cpu_pill(layer)
 	karte = Karte.new()
 	karte.main = self
 	karte.theme = th
@@ -3381,6 +3384,7 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 		view_bar.add_child(b)
 	set_view(view_mode)
 	var help := UI.small("Links ziehen: verschieben · Rechts ziehen: drehen · Rad: zoomen · Doppelklick: hinfliegen")
+	view_help = help
 	help.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
 	help.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	help.add_theme_constant_override("shadow_offset_x", 1)
@@ -4037,7 +4041,7 @@ var _rkeys := {}                       # keys held from Motion Watch -> time whe
 const VIEW_MAX_W := 1024
 const VIEW_KEYS := {"ArrowUp": KEY_UP, "ArrowDown": KEY_DOWN, "ArrowLeft": KEY_LEFT, "ArrowRight": KEY_RIGHT, "w": KEY_W, "a": KEY_A,
 		"s": KEY_S, "d": KEY_D, "q": KEY_Q, "e": KEY_E, "r": KEY_R, "f": KEY_F, "PageUp": KEY_PAGEUP, "PageDown": KEY_PAGEDOWN,
-		"0": KEY_0, "1": KEY_1, "2": KEY_2, "3": KEY_3, "4": KEY_4, "5": KEY_5, "+": KEY_PLUS, "-": KEY_MINUS, "Shift": KEY_SHIFT}
+		"0": KEY_0, "1": KEY_1, "2": KEY_2, "3": KEY_3, "4": KEY_4, "5": KEY_5, "+": KEY_PLUS, "-": KEY_MINUS, "Shift": KEY_SHIFT, "p": KEY_P}
 
 
 func view_rect() -> Rect2:
@@ -4202,6 +4206,20 @@ var spec_orbit := 0.0
 var spec_order := 0
 var spec_end_t := 0.0
 var spec_switch_t := 0.0
+var spec_cut_until := 0.0              # an event shot (caught / goal) runs until then
+
+
+func spectate_cut(kind: String, slot: int, label: String) -> void:
+	"""an event: the camera goes there at once and circles close round the player (3D-3.26)"""
+	if not spectate:
+		return
+	spec_shot = kind
+	spec_who = slot
+	spec_label = label
+	spec_orbit = randf() * TAU
+	spec_until = now() + (3.2 if kind == "caught" else 4.5)
+	spec_cut_until = spec_until
+	spec_switch_t = now()
 
 
 func spectate_start() -> void:
@@ -4267,9 +4285,13 @@ func _spec_choose(t: float) -> void:
 		spec_until = t + 5.0
 	else:
 		var p = rs[randi() % rs.size()]
-		spec_shot = "follow"
 		spec_who = int(p["slot"])
-		spec_label = "Wir folgen %s" % p["name"]
+		var kinds := ["follow", "side", "low", "orbit", "follow"]
+		spec_shot = kinds[randi() % kinds.size()]
+		spec_orbit = randf() * TAU
+		spec_label = {"follow": "Wir folgen %s", "side": "%s von der Seite", "low": "%s kommt näher …", "orbit": "Rund um %s"}[spec_shot] % p["name"]
+	if game.last_minute:
+		spec_until = min(spec_until, t + randf_range(3.0, 5.0))      # the last minute: quicker cuts
 
 
 func _spectate(dt: float) -> void:
@@ -4287,7 +4309,9 @@ func _spectate(dt: float) -> void:
 	elif game.round_state == "lobby":
 		spectate_stop()
 		return
-	if game.round_state == "play" and t - spec_switch_t > 2.0:      # somebody is about to be discovered: show it at once
+	if t < spec_cut_until:
+		pass                                                       # an event shot is running
+	elif game.round_state == "play" and t - spec_switch_t > 2.0:      # somebody is about to be discovered: show it at once
 		for p in _spec_runners():
 			if float(p["susp"]) > 65.0 and not (spec_shot == "follow" and spec_who == int(p["slot"])):
 				spec_until = 0.0
@@ -4296,6 +4320,39 @@ func _spectate(dt: float) -> void:
 		_spec_choose(t)
 	view_cam.fov = 62.0
 	var want: Transform3D = view_cam.global_transform
+	var who = game.players[spec_who] if spec_who >= 0 and spec_who < game.players.size() else null
+	if spec_shot in ["side", "low", "orbit", "caught", "cheer"]:
+		if who == null:
+			spec_until = 0.0
+			return
+		var a2 = who["actor"]
+		var hd: float = a2.heading
+		var fw := Vector3(-sin(hd), 0, -cos(hd))
+		var rt := Vector3(cos(hd), 0, -sin(hd))
+		var c2: Vector3 = a2.position
+		var pos2: Vector3
+		var look2: Vector3 = c2 + Vector3(0, 0.9, 0)
+		match spec_shot:
+			"side":                                         # tracking shot from the side, at eye level
+				pos2 = c2 + rt * 4.2 + Vector3(0, 1.3, 0)
+				look2 = c2 + fw * 1.2 + Vector3(0, 0.8, 0)
+				view_cam.fov = 55.0
+			"low":                                          # low in front: the player comes towards the camera
+				pos2 = c2 + fw * 5.5 + Vector3(0, 0.45, 0)
+				view_cam.fov = 48.0
+			"orbit":                                        # slowly round the player
+				spec_orbit += dt * 0.45
+				pos2 = c2 + Vector3(sin(spec_orbit) * 4.0, 2.0, cos(spec_orbit) * 4.0)
+			_:                                              # caught / in the goal: close and quick round
+				spec_orbit += dt * (1.1 if spec_shot == "caught" else 0.8)
+				var r := 2.6 if spec_shot == "caught" else 3.2
+				pos2 = c2 + Vector3(sin(spec_orbit) * r, 1.4, cos(spec_orbit) * r)
+				view_cam.fov = 44.0 + 6.0 * sin(t * 2.0)       # a little zoom pulse
+		pos2.y = max(pos2.y, ground_y(pos2.x, pos2.z) + 0.35)
+		want = Transform3D(Basis(), pos2).looking_at(look2, Vector3.UP)
+		var k2: float = 1.0 - exp(-dt * (4.5 if spec_shot in ["caught", "cheer"] else 2.6))
+		view_cam.global_transform = view_cam.global_transform.interpolate_with(want, k2)
+		return
 	var focus: Vector3 = game.goal
 	var rs := _spec_runners()
 	if spec_shot == "follow":
@@ -4334,3 +4391,90 @@ func _spectate(dt: float) -> void:
 		want = Transform3D(Basis(), pos).looking_at(c + Vector3(0, 0.5, 0), Vector3.UP)
 	var k: float = 1.0 - exp(-dt * (6.0 if spec_shot == "mw" else 2.2))
 	view_cam.global_transform = view_cam.global_transform.interpolate_with(want, k)
+
+
+# ---- with the phone simulator open (left), the map and the compass move to the right, the buttons are centred (3D-3.26) ----
+var _hud_key := ""
+var view_help: Control = null
+
+
+var cpu_pill: Label = null
+var _cpu_t := 0.0
+
+
+func _build_cpu_pill(layer: CanvasLayer) -> void:
+	"""always to see: CPU of this PC and of the simulator (3D-3.26), like in the small box"""
+	cpu_pill = Label.new()
+	cpu_pill.add_theme_font_size_override("font_size", 13)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.05, 0.07, 0.1, 0.72)
+	sb.set_corner_radius_all(9)
+	sb.content_margin_left = 10
+	sb.content_margin_right = 10
+	sb.content_margin_top = 3
+	sb.content_margin_bottom = 3
+	cpu_pill.add_theme_stylebox_override("normal", sb)
+	cpu_pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cpu_pill.text = "CPU …"
+	layer.add_child(cpu_pill)
+
+
+func _cpu_pill_tick(dt: float) -> void:
+	if cpu_pill == null or mini_box == null:
+		return
+	_cpu_t -= dt
+	if _cpu_t > 0.0:
+		return
+	_cpu_t = 1.0
+	var o: Dictionary = mini_box.own
+	var pc: float = float(o.get("pc", -1.0))
+	var sm: float = float(o.get("sim", -1.0))
+	cpu_pill.text = "PC-CPU %s  ·  Simulator %s" % ["–" if pc < 0 else "%d %%" % roundi(pc), "–" if sm < 0 else "%d %%" % roundi(sm)]
+	cpu_pill.add_theme_color_override("font_color", Color(1.0, 0.45, 0.4) if pc > 85.0 else (Color(1.0, 0.8, 0.35) if pc > 60.0 else Color(0.85, 0.9, 0.95)))
+	# top, in the middle of the 3D view (between the phone and the panel)
+	var vw: float = get_viewport().get_visible_rect().size.x
+	var right: float = ui_root.get_global_rect().position.x if ui_root != null and ui_root.visible else vw
+	var left: float = phone.get_global_rect().end.x if phone != null and phone.visible else 0.0
+	cpu_pill.reset_size()
+	cpu_pill.position = Vector2((left + right - cpu_pill.size.x) / 2.0, 10.0)
+
+
+func _hud_layout() -> void:
+	if compass == null or view_bar == null or phone == null:
+		return
+	var vw: float = get_viewport().get_visible_rect().size.x
+	var right: float = ui_root.get_global_rect().position.x if ui_root != null and ui_root.visible else vw
+	var ph: bool = phone.visible
+	var left: float = phone.get_global_rect().end.x + 10.0 if ph else 0.0
+	var key := "%s|%d|%d|%d" % [ph, int(left), int(right), int(minimap.size.x) if minimap != null else 0]
+	if key == _hud_key:
+		return
+	_hud_key = key
+	if ph:
+		compass.position = Vector2(right - 68.0, 26.0)
+		if minimap != null:
+			minimap.position = Vector2(right - minimap.size.x - 14.0, 92.0)
+		view_bar.offset_left = left + 12.0
+		view_bar.offset_right = -(vw - right) - 12.0
+		view_bar.alignment = BoxContainer.ALIGNMENT_CENTER
+		if view_help != null:
+			view_help.visible = false                   # not enough room next to the phone
+		var room: float = right - left - 24.0
+		var fs: int = 14 if room > 640.0 else (12 if room > 520.0 else 11)
+		view_bar.add_theme_constant_override("separation", 6 if room > 640.0 else 3)
+		for b in view_bar.get_children():
+			if b is Button:
+				b.add_theme_font_size_override("font_size", fs)
+	else:
+		compass.position = Vector2(14, 26)
+		if minimap != null:
+			minimap.position = Vector2(14, 92)
+		view_bar.offset_left = 12.0
+		view_bar.offset_right = -404.0
+		view_bar.alignment = BoxContainer.ALIGNMENT_BEGIN
+		if view_help != null:
+			view_help.visible = true
+		view_bar.add_theme_constant_override("separation", 6)
+		for b in view_bar.get_children():
+			if b is Button:
+				b.remove_theme_font_size_override("font_size")

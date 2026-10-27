@@ -1456,6 +1456,7 @@ func _referee(dt: float) -> void:
 			a.frozen = true
 			_say(p, "Im Ziel! 🎉", 4.0)
 			news("🎉 %s ist im Ziel" % p["name"])
+			main.spectate_cut("cheer", int(p["slot"]), "🎉 %s ist im Ziel!" % p["name"])
 			a.play_emote("goal", 5.0)
 			_event(p, "goal")
 			paint()
@@ -1528,6 +1529,7 @@ func _caught(p: Dictionary, by) -> void:
 		main.want_snapshot(0)
 		get_tree().create_timer(0.35).timeout.connect(func(): _grab_pic(p))
 	news("🚨 %s erwischt" % p["name"] + ((" von %s" % by["name"]) if by is Dictionary else ""))
+	main.spectate_cut("caught", int(p["slot"]), "🚨 %s erwischt!" % p["name"])
 	if int(p.get("flag", -1)) >= 0 and flags.size() == 2:   # the flag goes back to its base
 		_flag_home(int(p["flag"]))
 	if p["carry"]:                                         # the loot goes back to its place

@@ -1,7 +1,7 @@
 {
- "version": "3D-3.25",
+ "version": "3D-3.26",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30595062,
- "sha256": "e07040264893e4664f78ec4f4e5863a709e5a7ff60d181b13c7e1904b89fb5e4",
- "notes": "Mehr Spiel: Erwischt-Fotos, Verstecke, Lockvogel, Nacht-Runde, Zufallsereignisse, Checkpoints, Rangliste des Abends, Handicap."
+ "size": 30600102,
+ "sha256": "e0a1abcfe6071a0da99df001d3409c9ed153dbc80eaf57ab0806eb592791bbe1",
+ "notes": "Handy-Ansicht aufgeräumt (Karte/Kompass rechts), PC-CPU immer sichtbar, spannendere Zuschauer-Kamera, Enten schwimmen vorwärts."
 }

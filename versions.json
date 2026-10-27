@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 11:57",
+ "generated": "2026-10-27 12:16",
  "versions": [
   {
-   "version": "2.95.18",
-   "file": "webcam_bewegung_2_95_18.py",
+   "version": "2.95.19",
+   "file": "webcam_bewegung_2_95_19.py",
    "url": "",
-   "sha256": "e164bad6768fe028703f81f94202737fe615ca35c47f87906ce1b7ec144e4442",
-   "date": "2026-10-27 11:57",
-   "notes": "game (3D-3.25): «caught» photos and gallery, hiding places, decoy, night round with torches, random events, checkpoints, ranking of the evening with records, handicap per player - in the wizard (Extras), the game card and the spectator view.",
-   "sig": "52c5f35addfc2a709b32e35fa1d0f7cbddb21deeaab9436e250303a2be988e1d2ba81b3431851585220adc2cc12260cdb94a34897cea704e8d12d5f408acea0a"
+   "sha256": "1beb97177dd7fcaf5136ef3930696c6a32f4b9164fcce6387869435e82bdba7d",
+   "date": "2026-10-27 12:16",
+   "notes": "trusted devices (a browser that logged in once stays logged in, also after updates; list in Users, removable; a new password logs all out). Power mode 🚀 (counterpart of power saving: every picture through the AI, best stream, simulator at full speed, processor governor «performance»; switching off restores everything). Small camera live picture inside the simulator window (📷). 3D simulator 3D-3.26.",
+   "sig": "3dfe3f16e4e2c2ba19ff5a1444931dc2552121f4f425f36a42f7cc99eeef3f7e2f61ce648c267b3dcd7f60ac8f4efd99f9629de6c9699d7ff0c00aed4cdabf09"
   },
   {
    "version": "2.94.5",

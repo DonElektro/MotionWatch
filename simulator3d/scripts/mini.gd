@@ -155,7 +155,7 @@ func _ready() -> void:
 
 func _process(dt: float) -> void:
 	# CPU of this PC: measured while the box is shown or while Motion Watch is connected (it shows it, 3D-3.24)
-	var want_cpu: bool = mini or (main != null and main.stream_on and main.now() - main.mw_t < 10.0)
+	var want_cpu := true                       # always (3D-3.26): the window shows it at the top, Motion Watch in its header
 	if want_cpu and not cpu_run:
 		_cpu_start()
 	elif not want_cpu and cpu_run and not mini:

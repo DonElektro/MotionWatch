@@ -823,7 +823,7 @@ func _ducks(c: Vector3) -> void:
 		for i in range(ducks.size()):
 			var a: float = t * 0.35 - i * 0.28
 			ducks[i].position = c + Vector3(cos(a) * 3.1, 0, sin(a) * 3.1)
-			ducks[i].rotation = Vector3(0, -a, 0.15 * sin(t * 9.0 + i)))
+			ducks[i].rotation = Vector3(0, PI - a, 0.15 * sin(t * 9.0 + i)))   # head forward (3D-3.26: before they swam backwards)
 
 
 func _scarecrow(p: Vector3) -> void:
