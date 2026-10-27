@@ -210,6 +210,19 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 			for v in a2:
 				arr.append(snappedf(v, 0.01))
 			_json(c, {"v": 1, "w": main.TH_W, "h": main.TH_H, "unit": "C", "data": arr})
+		"/view.jpg":                                     # the simulator window (3D view with map, compass, buttons) - 3D-3.18
+			main.view_want_t = main.now()
+			_send(c, 200, main.view_jpg, "image/jpeg")
+		"/view.mjpg":
+			main.view_want_t = main.now()
+			var fv := float(query.get("fps", "6"))
+			c["fps"] = clampf(fv, 1.0, 12.0)
+			main.view_fps = c["fps"]
+			c["stream_cam"] = 3
+			var hv := "HTTP/1.1 200 OK\r\nContent-Type: multipart/x-mixed-replace; boundary=%s\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n" % BOUNDARY
+			var ov: PackedByteArray = c["out"]
+			ov.append_array(hv.to_utf8_buffer())
+			c["out"] = ov
 		_:
 			var parts := path.strip_edges().trim_prefix("/").split("/")
 			if parts.size() == 3 and parts[0] == "cam" and parts[1].is_valid_int():
@@ -239,12 +252,14 @@ func _stream_tick(c: Dictionary) -> void:
 	var now := Time.get_ticks_msec() / 1000.0
 	if now - float(c["last_sent"]) < 1.0 / max(1.0, float(c["fps"])) * 0.95:
 		return
-	var n: int = main.frame_no[cam]
+	if cam == 3:
+		main.view_want_t = main.now()
+	var n: int = main.view_no if cam == 3 else main.frame_no[cam]
 	if n == c["last_frame"]:
 		return
 	if c["out"].size() > MAX_BUFFER:
 		return                                   # slow client: skip this picture
-	var jpg: PackedByteArray = main.latest_jpg(cam)
+	var jpg: PackedByteArray = main.view_jpg if cam == 3 else main.latest_jpg(cam)
 	if jpg.size() == 0:
 		return
 	var h := "--%s\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n" % [BOUNDARY, jpg.size()]

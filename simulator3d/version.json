@@ -1,7 +1,7 @@
 {
- "version": "3D-3.17",
+ "version": "3D-3.18",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30559135,
- "sha256": "b9d6f613f65da3d9fb1bcd35926fcfabeb81b843bc97f9aac25d619cc840562e",
- "notes": "Der Simulator schickt den Computernamen mit: Motion Watch zeigt ihn in der Liste «Simulatoren im Netz»."
+ "size": 30563303,
+ "sha256": "fdb6dac274878420c6809cf271aee2d59e4f3346053465fe6dd63feba8125b1a",
+ "notes": "Motion Watch (ab 2.95.3) zeigt das Fenster des Simulators mit Karte und Ansichts-Knöpfen auf der Live-Seite und lässt es mit Maus oder Finger bedienen."
 }

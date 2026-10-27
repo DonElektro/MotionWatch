@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 09:11",
+ "generated": "2026-10-27 09:24",
  "versions": [
   {
-   "version": "2.95.2",
-   "file": "webcam_bewegung_2_95_2.py",
+   "version": "2.95.3",
+   "file": "webcam_bewegung_2_95_3.py",
    "url": "",
-   "sha256": "031f1c955b318e6b54f18e7f7e4a7226eec193a787f570689aa5e823f82452ec",
-   "date": "2026-10-27 09:11",
-   "notes": "Live view: the simulator control (the same switches as in the simulator) under the picture while the simulation is on. Driving with the second stick switches the simulator's vehicle on by itself (3D simulator «Mover simulieren»).",
-   "sig": "33cb8389891604b800664f5f1a0099ccdfdbeec6d2e6c6f011545c4ff6f68b95a048f0f501fff2fda377e212e45d702d2a74c8072c1f4219b61d88b65005f901"
+   "sha256": "26f11a57312c328965ed9bd05b0bbd096c15528683f531f523328a22ca21fbc1",
+   "date": "2026-10-27 09:24",
+   "notes": "Live view: the window of the 3D simulator (map, compass, view buttons Frei / Kamera 1 / Kamera 2 / Wärmebild / Karte / Zum Kopf / Von oben) in the simulator control, operated with mouse, finger or keys (/sim/view.mjpg; 3D-3.18).",
+   "sig": "2a5c0538e12d6a94d99430546eb1e496bc8490365dbea5fb7b497be47fd1a876ac814613ee1d3f2748aa88f0bbb9a6e0762402f844f78f530d29a6823838e107"
   },
   {
    "version": "2.94.5",

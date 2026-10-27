@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.17"
+const VERSION := "3D-3.18"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1280,6 +1280,7 @@ var _slow_t := 0.0
 
 
 func _process(dt: float) -> void:
+	_view_capture()
 	# minimized: Godot stops drawing then - but the cameras must go on for Motion Watch. mini.gd turns the window into a
 	# small box at once; this is only the safety net (e.g. when the box cannot be shown)
 	if sim_active and DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_MINIMIZED:
@@ -1590,6 +1591,7 @@ func info() -> Dictionary:
 			"cameras": [{"id": 0, "name": "Head camera (NoIR)", "w": CAM_W[0], "h": CAM_H[0], "fps": CAM_FPS[0], "fov_h": CAM_FOV[0], "fov_v": 41.0, "on_head": true, "noir": true},
 						{"id": 1, "name": "Fixed camera", "w": CAM_W[1], "h": CAM_H[1], "fps": CAM_FPS[1], "fov_h": CAM_FOV[1], "fov_v": 62.0, "on_head": false, "noir": false}],
 			"thermal": {"w": TH_W, "h": TH_H, "fps": 8.0, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
+			"view": {"input": 1, "path": "/view.mjpg"},
 			"sensors": [{"name": "Wohnwagen-Tür", "kind": "door"}, {"name": "PIR Zelt", "kind": "pir"}, {"name": "Gas Wohnwagen", "kind": "gas"}, {"name": "Velo", "kind": "tag"}]}
 
 
@@ -2095,6 +2097,9 @@ func control(d: Dictionary) -> Dictionary:
 			karte._show_step(karte.step)
 		return {"ok": true, "step": karte.step, "env": geo.env, "why": geo.env_why, "info": karte.info.text, "waiting": karte.waiting,
 				"counts": geo.counts, "ort_env": ort_env, "visible": karte.visible}
+	elif a == "input":                                 # the simulator window seen in Motion Watch: mouse / finger / keys from there
+		var ev = d.get("ev", [])
+		return {"ok": true, "n": view_input(ev if ev is Array else [])}
 	elif a == "mover":                                 # for tests: where the mover is
 		return {"ok": true, "pad": [pad_drive.x, pad_drive.y, now() - pad_t, _pad_l, _pad_r, rover_pad.dragging, sim_active, now() - _drive_t], "on": mover_on, "x": snappedf(rig.position.x, 0.01), "z": snappedf(rig.position.z, 0.01),
 				"yaw": snappedf(rad_to_deg(rig.rotation.y), 0.1), "drive": mw.get("drive", {}),
@@ -3934,3 +3939,104 @@ func host_name() -> String:
 	if f != null:
 		return f.get_as_text().strip_edges().substr(0, 40)
 	return ""
+
+
+# ---- the simulator window in Motion Watch (3D-3.18): its picture as a stream, and mouse / finger / keys back -------------
+var view_want_t := -100.0
+var view_fps := 6.0
+var view_jpg := PackedByteArray()
+var view_no := 0
+var _view_t := 0.0
+var _in_pos := Vector2.ZERO
+var _in_mask := 0
+const VIEW_MAX_W := 1024
+const VIEW_KEYS := {"ArrowUp": KEY_UP, "ArrowDown": KEY_DOWN, "ArrowLeft": KEY_LEFT, "ArrowRight": KEY_RIGHT, "w": KEY_W, "a": KEY_A,
+		"s": KEY_S, "d": KEY_D, "q": KEY_Q, "e": KEY_E, "r": KEY_R, "f": KEY_F, "PageUp": KEY_PAGEUP, "PageDown": KEY_PAGEDOWN,
+		"0": KEY_0, "1": KEY_1, "2": KEY_2, "3": KEY_3, "4": KEY_4, "5": KEY_5, "+": KEY_PLUS, "-": KEY_MINUS, "Shift": KEY_SHIFT}
+
+
+func view_rect() -> Rect2:
+	"""the part of the window with the 3D world (without the panel on the right)"""
+	var vs := get_viewport().get_visible_rect().size
+	var w := vs.x
+	if ui_root != null and ui_root.visible:
+		w = min(w, ui_root.get_global_rect().position.x)
+	return Rect2(0, 0, max(64.0, w), vs.y)
+
+
+func _view_capture() -> void:
+	var t := now()
+	if t - view_want_t > 3.0 or t - _view_t < 1.0 / max(1.0, view_fps):
+		return
+	_view_t = t
+	var img := get_viewport().get_texture().get_image()
+	if img == null or img.is_empty():
+		return
+	var vs := get_viewport().get_visible_rect().size
+	var k: float = float(img.get_width()) / maxf(1.0, vs.x)
+	var r := view_rect()
+	var rr := Rect2i(int(r.position.x * k), int(r.position.y * k), int(r.size.x * k), int(r.size.y * k)).intersection(Rect2i(Vector2i.ZERO, img.get_size()))
+	if rr.size.x < 16 or rr.size.y < 16:
+		return
+	var sub := img.get_region(rr)
+	if sub.get_width() > VIEW_MAX_W:
+		sub.resize(VIEW_MAX_W, int(sub.get_height() * float(VIEW_MAX_W) / sub.get_width()), Image.INTERPOLATE_BILINEAR)
+	view_jpg = sub.save_jpg_to_buffer(0.72)
+	view_no += 1
+
+
+func view_input(evs: Array) -> int:
+	"""events from Motion Watch: x / y 0 … 1 in the picture of /view.mjpg -> the same as mouse / keys here"""
+	var r := view_rect()
+	var n := 0
+	for e in evs.slice(0, 60):
+		if not (e is Dictionary):
+			continue
+		var t := str(e.get("t", ""))
+		var p := r.position + Vector2(clampf(float(e.get("x", 0.5)), 0.0, 1.0) * r.size.x, clampf(float(e.get("y", 0.5)), 0.0, 1.0) * r.size.y)
+		if t == "move":
+			var m := InputEventMouseMotion.new()
+			m.position = p
+			m.global_position = p
+			m.relative = p - _in_pos
+			m.velocity = m.relative * 30.0
+			m.button_mask = _in_mask
+			Input.parse_input_event(m)
+		elif t in ["down", "up", "dbl"]:
+			var b := clampi(int(e.get("b", 1)), 1, 3)
+			var mb := InputEventMouseButton.new()
+			mb.button_index = b
+			mb.pressed = t != "up"
+			mb.double_click = t == "dbl"
+			mb.alt_pressed = bool(e.get("alt", false))
+			mb.shift_pressed = bool(e.get("shift", false))
+			mb.position = p
+			mb.global_position = p
+			var bit := 1 << (b - 1)
+			_in_mask = (_in_mask | bit) if mb.pressed else (_in_mask & ~bit)
+			mb.button_mask = _in_mask
+			Input.parse_input_event(mb)
+		elif t == "wheel":
+			for pr in [true, false]:
+				var w := InputEventMouseButton.new()
+				w.button_index = MOUSE_BUTTON_WHEEL_UP if float(e.get("d", 1)) > 0 else MOUSE_BUTTON_WHEEL_DOWN
+				w.pressed = pr
+				w.factor = 1.0
+				w.position = p
+				w.global_position = p
+				Input.parse_input_event(w)
+		elif t == "key":
+			var kc = VIEW_KEYS.get(str(e.get("k", "")))
+			if kc == null:
+				continue
+			var ke := InputEventKey.new()
+			ke.keycode = kc
+			ke.physical_keycode = kc
+			ke.pressed = bool(e.get("down", true))
+			Input.parse_input_event(ke)
+		else:
+			continue
+		if t != "key":
+			_in_pos = p
+		n += 1
+	return n
