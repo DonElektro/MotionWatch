@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 09:31",
+ "generated": "2026-10-27 09:41",
  "versions": [
   {
-   "version": "2.95.5",
-   "file": "webcam_bewegung_2_95_5.py",
+   "version": "2.95.6",
+   "file": "webcam_bewegung_2_95_6.py",
    "url": "",
-   "sha256": "632c933c260abef1d8f2983ca3f1ea51d2e9d34cc9e123e2d7d054aff4833c3c",
-   "date": "2026-10-27 09:31",
-   "notes": "tab Simulator: button «Update the simulator» next to «Switch the simulation off» (blue with the version number when a newer 3D simulator exists); the simulator installs it and starts again by itself.",
-   "sig": "e5893684766a0b5e6652a62f7a0594f1790c663a2545ccac8635de21fea5fc65bc27669e404479374e7d3adb030d1ffdcf3a557ba044d6819694accee99d4400"
+   "sha256": "03da225b4d25ac5c4fae11eceb4cda55ec8e5cc22c210e93faec25d3ff3f2026",
+   "date": "2026-10-27 09:41",
+   "notes": "tab Simulator: the picture at the top shows the simulator window (map, compass, view buttons) and is operated with mouse / finger / keys; switch «Simulator window» / «Camera picture» above it.",
+   "sig": "99fb824a494c232966c0a3e610a0e5645f41c79acbc52937071c8bda9d96473577c977f8cf91b41a7a140b46ab44ae50a2e70c0f11724bb6e7a475769413d80e"
   },
   {
    "version": "2.94.5",

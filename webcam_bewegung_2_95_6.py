@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_5.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_6.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -557,6 +557,8 @@ Features
     The simulator gets the real angle (before, a tilt limit of 60° was shown as only 40° in the simulation).
   * 2.95.5: tab Simulator: button «Update the simulator» next to «Switch the simulation off» (blue with the version number when
     a newer 3D simulator exists); the simulator installs it and starts again by itself.
+  * 2.95.6: tab Simulator: the picture at the top shows the simulator window (map, compass, view buttons) and is operated
+    with mouse / finger / keys; switch «Simulator window» / «Camera picture» above it.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -565,10 +567,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_5.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_6.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_5.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_5.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_6.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_6.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -585,7 +587,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.5"
+APP_VERSION = "2.95.6"
 
 
 def default_data_dir():
@@ -14203,7 +14205,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_5.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_6.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -18812,6 +18814,48 @@ function simCtlBuild(G, r, ctl, fmt) {
   qi.oninput = apply; b1.onclick = () => { expert = false; ss("mw-sc-expert", false); apply(); }; b2.onclick = () => { expert = true; ss("mw-sc-expert", true); apply(); };
   apply();
 }
+
+// ---- the simulator window (3D-3.18): mouse / finger / keys on a picture of /sim/view.mjpg go to the simulator ----
+function simViewBind(VI, opt) {
+  opt = opt || {};
+  let Q = [], qT = null;
+  const flush = () => { qT = null; if (!Q.length) return; const ev = Q; Q = [];
+    post("/api/sim", {action: "view_in", ev: ev, lang: LANG}).catch(() => {}); };
+  const push = (e, now) => { if (e.t === "move" && Q.length && Q[Q.length - 1].t === "move") Q[Q.length - 1] = e; else Q.push(e);
+    if (now) { clearTimeout(qT); flush(); } else if (!qT) qT = setTimeout(flush, 70); };
+  const pos = (ev) => { const r = VI.getBoundingClientRect(); return {x: Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)), y: Math.max(0, Math.min(1, (ev.clientY - r.top) / r.height))}; };
+  const pts = new Map(); let pinch = 0, btn = 0;
+  VI.addEventListener("contextmenu", e => { if (!opt.active || opt.active()) e.preventDefault(); });
+  VI.addEventListener("pointerdown", e => {
+    if (opt.active && !opt.active()) return;
+    e.preventDefault(); VI.focus({preventScroll: true});
+    try { VI.setPointerCapture(e.pointerId); } catch (x) {}
+    pts.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if (pts.size === 2) {                                   // two fingers: let go of the drag, zoom by pinching
+      if (btn) { push(Object.assign({t: "up", b: btn}, pos(e)), true); btn = 0; }
+      const [a, b] = [...pts.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); return;
+    }
+    if (pts.size > 2) return;
+    btn = e.pointerType === "mouse" ? ({0: 1, 1: 3, 2: 2}[e.button] || 1) : (opt.rot && opt.rot() ? 2 : 1);
+    const p = pos(e); push(Object.assign({t: "move"}, p)); push(Object.assign({t: "down", b: btn, shift: e.shiftKey, alt: e.altKey}, p), true);
+  });
+  VI.addEventListener("pointermove", e => {
+    if (opt.active && !opt.active()) return;
+    if (pts.has(e.pointerId)) pts.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if (pts.size === 2 && pinch) { const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (Math.abs(d - pinch) > 40) { const c = pos({clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2}); push(Object.assign({t: "wheel", d: d > pinch ? 1 : -1}, c), true); pinch = d; } return; }
+    if (e.pointerType !== "mouse" && !btn) return;
+    push(Object.assign({t: "move"}, pos(e)));
+  });
+  const upH = e => { if (pts.delete(e.pointerId) && btn) { push(Object.assign({t: "up", b: btn}, pos(e)), true); btn = 0; } if (pts.size < 2) pinch = 0; };
+  VI.addEventListener("pointerup", upH); VI.addEventListener("pointercancel", upH);
+  VI.addEventListener("dblclick", e => { if (opt.active && !opt.active()) return; const p = pos(e); push(Object.assign({t: "dbl", b: 1}, p)); push(Object.assign({t: "up", b: 1}, p), true); });
+  VI.addEventListener("wheel", e => { if (opt.active && !opt.active()) return; e.preventDefault(); push(Object.assign({t: "wheel", d: e.deltaY < 0 ? 1 : -1}, pos(e)), true); }, {passive: false});
+  const KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d", "q", "e", "r", "f", "PageUp", "PageDown", "0", "1", "2", "3", "4", "5", "+", "-", "Shift"];
+  const keyH = down => e => { if (opt.active && !opt.active()) return; const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; if (!KEYS.includes(k)) return; e.preventDefault(); if (down && e.repeat) return; push({t: "key", k: k, down: down}, true); };
+  VI.addEventListener("keydown", keyH(true)); VI.addEventListener("keyup", keyH(false));
+  return {push: push};
+}
 """
 
 
@@ -18860,6 +18904,12 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .dl .main{grid-column:1/-1}
 #c-prev{padding:12px}#c-prev>*+*{margin-top:8px}
 .pvw{position:relative;background:#000;border-radius:10px;overflow:hidden}
+.pvmode{display:flex;border:1px solid var(--line,#1f2b3a);border-radius:10px;overflow:hidden;margin:0 0 10px}
+.pvmode button{flex:1;padding:8px;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;cursor:pointer}.pvmode button.on{background:var(--acc,#3b8cff);color:#fff}
+.pvw.view img{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;outline:none}.pvw.view img:active{cursor:grabbing}
+.pvbtn{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
+.pvbtn button{width:38px;height:38px;padding:0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(10,14,20,.65);color:#fff;font-size:18px;cursor:pointer}
+.pvbtn button.on{background:var(--acc,#3b8cff)}
 #s-prev{width:100%;aspect-ratio:16/9;object-fit:contain;background:#000;display:block;max-height:62vh}
 .pvlive{position:absolute;left:10px;bottom:10px;font:700 11px/1 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px}
 #pip{position:fixed;z-index:45;width:min(44vw,300px);border-radius:12px;overflow:hidden;background:#000;cursor:pointer;touch-action:none;box-shadow:0 8px 26px rgba(0,0,0,.55);border:1px solid var(--line)}
@@ -18891,7 +18941,9 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 </header>
 <main class="simp">
   <section class="sc wide" id="c-prev">
-    <div class="pvw" id="s-pvw"><img id="s-prev" alt=""><span class="pvlive" id="s-pvlive" hidden>● LIVE</span></div>
+    <div class="pvmode" id="s-pvmode" hidden><button type="button" data-m="view">🗺 <span data-i18n="Simulator window">Simulator window</span></button><button type="button" data-m="cam">📷 <span data-i18n="Camera picture">Camera picture</span></button></div>
+    <div class="pvw" id="s-pvw"><img id="s-prev" alt="" draggable="false" tabindex="0"><span class="pvlive" id="s-pvlive" hidden>● LIVE</span>
+      <div class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></div></div>
     <div class="mut" id="s-prevnote"></div>
   </section>
   <section class="sc wide" id="c-status">
@@ -18981,7 +19033,7 @@ Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "c
  "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in",
  "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.",
  "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "Use": "Verwenden", "in use": "in Gebrauch",
- "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
+ "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
  "The picture appears when the simulation is on.": "Das Bild erscheint, wenn die Simulation eingeschaltet ist.",
  "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "running": "läuft", "Controls": "Bedienung",
  "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a file to the simulator": "Datei zum Simulator hochladen",
@@ -19029,7 +19081,7 @@ function paint() {
       fb.appendChild(r); }); }
   // preview
   $("#s-prevnote").textContent = S.on ? "" : t("The picture appears when the simulation is on.");
-  liveOn(!!S.on);
+  liveOn(!!S.on); pvPaint();
   // control
   if (S.ok && !CS) ctl({ctl: "get"});
   if (!S.ok) { CS = ""; $("#s-groups").textContent = ""; $("#s-scn").hidden = true; $("#s-up").hidden = true; $("#s-cname").textContent = ""; $("#s-cst").textContent = t("ctl-note"); }
@@ -19101,16 +19153,36 @@ $("#s-file").onchange = () => {
 };
 setInterval(() => { if (!document.hidden && S && S.ok) ctl({ctl: "get"}); }, 4000);
 // ---- live picture: the same moving picture as on the live page; it shrinks into a corner while it is scrolled away ----
-let LIVE = false, liveRetry = null;
+let LIVE = false, liveRetry = null, PVM = "view", PVCUR = "";
+try { PVM = localStorage.getItem("mw-sim-pvmode") || "view"; } catch (e) {}
+// the picture at the top: the simulator window (map, compass, view buttons; 3D-3.18) or the camera picture of Motion Watch
+const pvView = () => PVM === "view" && !!(S && S.view);
+const pvSrc = () => (pvView() ? "/sim/view.mjpg?fps=8&r=" : "/video_feed?r=") + Date.now();
+function pvPaint() {
+  const has = !!(S && S.on && S.view), v = pvView();
+  $("#s-pvmode").hidden = !(has && LIVE);
+  $("#s-pvmode").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.m === (v ? "view" : "cam")));
+  $("#s-pvw").classList.toggle("view", v); $("#s-pvbtn").hidden = !v; $("#s-pvlive").hidden = !LIVE || v;
+  const want = v ? "view" : "cam";
+  if (LIVE && PVCUR !== want) { PVCUR = want; $("#s-prev").src = pvSrc(); }
+}
+$("#s-pvmode").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; PVM = b.dataset.m;
+  try { localStorage.setItem("mw-sim-pvmode", PVM); } catch (x) {} pvPaint(); });
 function liveOn(on) {
   const img = $("#s-prev");
   if (on === LIVE) return;
   LIVE = on; $("#s-pvw").hidden = !on; $("#s-pvlive").hidden = !on;
-  if (on) img.src = "/video_feed?r=" + Date.now();
-  else { clearTimeout(liveRetry); img.removeAttribute("src"); pipShow(false); }
+  if (on) { PVCUR = pvView() ? "view" : "cam"; img.src = pvSrc(); }
+  else { clearTimeout(liveRetry); img.removeAttribute("src"); PVCUR = ""; pipShow(false); }
+  pvPaint();
 }
-$("#s-prev").addEventListener("error", () => { if (!LIVE) return; clearTimeout(liveRetry); liveRetry = setTimeout(() => { if (LIVE) $("#s-prev").src = "/video_feed?r=" + Date.now(); }, 2000); });
-document.addEventListener("visibilitychange", () => { if (!document.hidden && LIVE) $("#s-prev").src = "/video_feed?r=" + Date.now(); });
+$("#s-prev").addEventListener("error", () => { if (!LIVE) return; clearTimeout(liveRetry); liveRetry = setTimeout(() => { if (LIVE) $("#s-prev").src = pvSrc(); }, 2000); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden && LIVE) $("#s-prev").src = pvSrc(); });
+{ let rot = false;
+  const VB = simViewBind($("#s-prev"), {rot: () => rot, active: () => pvView() && !$("#s-prev").closest("#pip")});
+  $("#s-vin").onclick = () => VB.push({t: "wheel", d: 1, x: 0.5, y: 0.5}, true);
+  $("#s-vout").onclick = () => VB.push({t: "wheel", d: -1, x: 0.5, y: 0.5}, true);
+  $("#s-vrot").onclick = () => { rot = !rot; $("#s-vrot").classList.toggle("on", rot); }; }
 let pipShow = () => {};
 (function () {
   const pip = $("#pip"), slot = pip.querySelector(".pip-in"), img = $("#s-prev"), wrap = $("#s-pvw");
@@ -23252,41 +23324,9 @@ function simExtras(d) {
     // ---- the simulator window (3D-3.18): picture + mouse / finger / keys, like sitting at the simulator ----
     const VW = $("#lv-vw"), VI = $("#lv-vimg");
     $("#lv-vhelp").textContent = t("sim-view-help") === "sim-view-help" ? "The simulator window: drag with the left mouse button = move, right = turn, wheel = zoom, double click = fly there. Finger: drag = move (⟲: turn), two fingers = zoom. The buttons at the bottom change the view." : t("sim-view-help");
-    let Q = [], qT = null, rot = false, vOn = false;
-    const flush = () => { qT = null; if (!Q.length) return; const ev = Q; Q = [];
-      post("/api/sim", {action: "view_in", ev: ev, lang: LANG}).catch(() => {}); };
-    const push = (e, now) => { if (e.t === "move" && Q.length && Q[Q.length - 1].t === "move") Q[Q.length - 1] = e; else Q.push(e);
-      if (now) { clearTimeout(qT); flush(); } else if (!qT) qT = setTimeout(flush, 70); };
-    const pos = (ev) => { const r = VI.getBoundingClientRect(); return {x: Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)), y: Math.max(0, Math.min(1, (ev.clientY - r.top) / r.height))}; };
-    const pts = new Map(); let pinch = 0, btn = 0;
-    VI.addEventListener("contextmenu", e => e.preventDefault());
-    VI.addEventListener("pointerdown", e => {
-      e.preventDefault(); VI.focus({preventScroll: true});
-      try { VI.setPointerCapture(e.pointerId); } catch (x) {}
-      pts.set(e.pointerId, {x: e.clientX, y: e.clientY});
-      if (pts.size === 2) {                                   // two fingers: let go of the drag, zoom by pinching
-        if (btn) { push(Object.assign({t: "up", b: btn}, pos(e)), true); btn = 0; }
-        const [a, b] = [...pts.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); return;
-      }
-      if (pts.size > 2) return;
-      btn = e.pointerType === "mouse" ? ({0: 1, 1: 3, 2: 2}[e.button] || 1) : (rot ? 2 : 1);
-      const p = pos(e); push(Object.assign({t: "move"}, p)); push(Object.assign({t: "down", b: btn, shift: e.shiftKey, alt: e.altKey}, p), true);
-    });
-    VI.addEventListener("pointermove", e => {
-      if (pts.has(e.pointerId)) pts.set(e.pointerId, {x: e.clientX, y: e.clientY});
-      if (pts.size === 2 && pinch) { const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (Math.abs(d - pinch) > 40) { const c = pos({clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2}); push(Object.assign({t: "wheel", d: d > pinch ? 1 : -1}, c), true); pinch = d; } return; }
-      if (e.pointerType !== "mouse" && !btn) return;
-      push(Object.assign({t: "move"}, pos(e)));
-    });
-    const upH = e => { if (pts.delete(e.pointerId) && btn) { push(Object.assign({t: "up", b: btn}, pos(e)), true); btn = 0; } if (pts.size < 2) pinch = 0; };
-    VI.addEventListener("pointerup", upH); VI.addEventListener("pointercancel", upH);
-    VI.addEventListener("dblclick", e => { const p = pos(e); push(Object.assign({t: "dbl", b: 1}, p)); push(Object.assign({t: "up", b: 1}, p), true); });
-    VI.addEventListener("wheel", e => { e.preventDefault(); push(Object.assign({t: "wheel", d: e.deltaY < 0 ? 1 : -1}, pos(e)), true); }, {passive: false});
-    const KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "w", "a", "s", "d", "q", "e", "r", "f", "PageUp", "PageDown", "0", "1", "2", "3", "4", "5", "+", "-", "Shift"];
-    const keyH = down => e => { const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; if (!KEYS.includes(k)) return; e.preventDefault(); if (down && e.repeat) return; push({t: "key", k: k, down: down}, true); };
-    VI.addEventListener("keydown", keyH(true)); VI.addEventListener("keyup", keyH(false));
-    const zoom = d => () => push({t: "wheel", d: d, x: 0.5, y: 0.5}, true);
+    let rot = false, vOn = false;
+    const VB = simViewBind(VI, {rot: () => rot});
+    const zoom = d => () => VB.push({t: "wheel", d: d, x: 0.5, y: 0.5}, true);
     $("#lv-vin").onclick = zoom(1); $("#lv-vout").onclick = zoom(-1);
     $("#lv-vrot").onclick = () => { rot = !rot; $("#lv-vrot").classList.toggle("on", rot); };
     $("#lv-vbig").onclick = () => { VW.classList.toggle("big"); $("#lv-vbig").textContent = VW.classList.contains("big") ? "✕" : "⛶"; };
@@ -28486,7 +28526,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.5")
+        self.root.title("Motion Watch 2.95.6")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -28776,7 +28816,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.5 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.6 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
