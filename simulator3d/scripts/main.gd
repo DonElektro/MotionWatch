@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.42"
+const VERSION := "3D-3.43"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -230,6 +230,8 @@ var th_preview: ImageTexture
 var controls: Array = []
 var ui_rows := {}
 var status_label: Label
+var group_bodies := {}                # 3D-3.43: group name -> body of its card (the symbol shows when something is on)
+var _group_state := {}
 var conn_body: Control                # the card «Verbindung» (symbol and title show the state)
 var _conn_state := -1
 var stream_on := false                     # sending to Motion Watch: off at the start, the user switches it on in the window
@@ -2072,6 +2074,7 @@ const VISIT_PRESETS := [["calm", "Ruhige Nacht – selten jemand", true, false, 
 		["daily", "Tagesablauf – jeder kommt zu seiner Zeit", true, true, "mixed", 1.0, 12],
 		["busy", "Viel los – Belastungstest für Motion Watch", true, false, "mixed", 4.0, 30],
 		["off", "Kein Besuch von selbst", false, false, "mixed", 1.0, 12]]
+const PRESET_HOUR := {"calm": 23.0, "burglary": 1.0, "grill": 20.0, "farm": 10.0, "wildlife": 22.0, "camp": 16.0, "wild": 23.5, "busy": 15.0}   # 3D-3.43
 const PEOPLE_KINDS := ["person", "child", "jogger", "dogwalk", "bench", "garden_person", "car_park", "car", "cyclist", "stroller", "courier",
 		"police", "drunk", "couple", "horse_walk", "tractor", "moto", "van", "burglar", "bbq", "homecoming", "parcel", "kids_tag", "mowing"]
 
@@ -2422,6 +2425,8 @@ func _set_quality(v: String) -> void:
 func auto_quality() -> String:
 	"""3D-3.33: first start - the graphics level from the graphics card (later the own choice is kept)"""
 	var a := RenderingServer.get_video_adapter_name().to_lower() + " " + RenderingServer.get_video_adapter_vendor().to_lower()
+	if Engine.get_architecture_name() in ["arm64", "arm32"] or a.contains("v3d") or a.contains("videocore"):
+		return "simple"                                   # 3D-3.43: Raspberry Pi - the light graphics
 	if in_vm or a.contains("llvmpipe") or a.contains("swiftshader") or a.contains("basic render") or a.contains("software"):
 		return "simple"
 	if a.contains("nvidia") or a.contains("geforce") or a.contains("radeon") or a.contains("amd") or a.contains("arc"):
@@ -2473,7 +2478,7 @@ func control_info() -> Dictionary:
 		out.append(d)
 	return {"ok": true, "v": 1, "name": "MW Sim · 3D %s" % VERSION,
 				"scenarios": scenarios(), "scenario": scene,
-			"controls": out, "status": status_text(), "upload": null,
+			"controls": out, "status": status_text(), "upload": null, "groups_on": _groups_on(),
 			"game": {"open": game != null and game.open, "url": game.address() if game != null and game.open else "", "players": game.count() if game != null else 0}}
 
 
@@ -2557,6 +2562,22 @@ func control(d: Dictionary) -> Dictionary:
 		if d.has("y"):
 			_test_scroll(float(d["y"]))
 		return {"ok": true, "max": (ui_box.get_parent() as ScrollContainer).get_v_scroll_bar().max_value}
+	elif a == "ui_wide":                               # for tests: which parts of the panel are wider than it (3D-3.43)
+		var lim := float(d.get("w", 360.0))
+		var out := []
+		var stack: Array = [ui_root]
+		while stack.size() > 0:
+			var n = stack.pop_back()
+			if n is Control:
+				var w: float = (n as Control).get_combined_minimum_size().x
+				if w > lim and (n as Control).is_visible_in_tree():
+					var t := ""
+					if n is Label or n is Button:
+						t = str(n.text).substr(0, 40)
+					out.append([n.get_class(), int(w), t, str(n.get_path()).right(80)])
+			for ch in n.get_children():
+				stack.append(ch)
+		return {"ok": true, "panel": [int(ui_root.size.x), int(ui_root.position.x)], "win": get_viewport().get_visible_rect().size, "wide": out.slice(0, 60), "float": [cam_float.position, cam_float.size, cam_float.visible] if cam_float != null else []}
 	elif a == "geo":                                   # for tests: the place (loading, what was built)
 		return {"ok": true, "busy": geo.busy, "loaded": geo.loaded, "info": geo.info, "counts": geo.counts, "terrain": terrain,
 				"h0": geo.h0, "src": geo.dem_source, "note": geo_note, "y": ground_y(float(d.get("x", 0.0)), float(d.get("z", 0.0))),
@@ -2712,6 +2733,11 @@ func scenarios() -> Array:
 
 # ---- the window on the PC ------------------------------------------------------------------------------------------------
 var ui_root: Control
+var cam_card: Control                 # 3D-3.43: the card with the camera pictures - floats where it was when the panel is hidden
+var cam_float: VBoxContainer
+var cam_fx := -1.0                    # where it was put (-1 = where it stood in the panel)
+var cam_fy := -1.0
+var _cam_drag := Vector2(-1, -1)
 var ui_box: VBoxContainer             # the content of the panel (must never be wider than the panel)
 var prev0: TextureRect
 var prev1: TextureRect
@@ -2749,6 +2775,7 @@ func _build_ui() -> void:
 	panel.anchor_right = 1.0
 	panel.anchor_bottom = 1.0
 	panel.offset_left = -392
+	panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN   # 3D-3.43: if something is too wide it grows to the left, never off the window
 	var sb := UI.box(Color(UI.BG, 0.97), UI.LINE, 0, 8, 0)
 	sb.border_width_left = 1
 	sb.content_margin_left = 10
@@ -2851,6 +2878,23 @@ func _build_ui() -> void:
 	# camera pictures
 	var cm := UI.fold_card(top_box, "Kameras", true, "camera")   # always visible (also while searching); can be folded
 	fold_bodies.append(cm)
+	cam_card = cm.get_meta("card")
+	cam_float = VBoxContainer.new()
+	cam_float.theme = th
+	cam_float.visible = false
+	cam_float.add_theme_constant_override("separation", 0)
+	cam_float.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var grip := PanelContainer.new()
+	grip.add_theme_stylebox_override("panel", UI.box(Color(UI.BG, 0.92), UI.LINE, 8, 4, 1))
+	grip.mouse_default_cursor_shape = Control.CURSOR_MOVE
+	grip.tooltip_text = "Kamerabilder verschieben: hier ziehen"
+	var gl := UI.small("✥ Ziehen zum Verschieben · H = Bedienfeld")
+	gl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	gl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	grip.add_child(gl)
+	grip.gui_input.connect(_cam_float_input)
+	cam_float.add_child(grip)
+	layer.add_child(cam_float)
 	prev0 = TextureRect.new()
 	prev0.texture = vps[0].get_texture()
 	prev0.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -2904,6 +2948,7 @@ func _build_ui() -> void:
 				if g[0] == c.group:
 					ic = g[1]
 			groups[c.group] = UI.fold_card(box_, c.group, c.group in ["Szene", "Besuch"], ic)
+			group_bodies[c.group] = groups[c.group]
 			fold_bodies.append(groups[c.group])
 			setting_bodies.append(groups[c.group])
 		if c.group == "Besuch" and str(c.extra.get("sub", "")) != "Vorlagen" and not subs.has("Besuch/Besucher hinsetzen"):
@@ -2979,8 +3024,53 @@ var sub_bodies: Array = []            # the parts inside the cards (3D-3.5)
 
 
 func show_panel(on: bool) -> void:
+	if on == ui_root.visible:
+		show_btn.visible = not on
+		return
+	if not on and cam_card != null and cam_card.is_visible_in_tree():
+		# 3D-3.43: the camera pictures stay where they were and can be moved freely
+		var gp := cam_card.global_position
+		var w := cam_card.size.x
+		var home := cam_card.get_parent()
+		cam_card.set_meta("home", home)
+		cam_card.set_meta("home_i", cam_card.get_index())
+		home.remove_child(cam_card)
+		cam_card.custom_minimum_size.x = w
+		cam_float.add_child(cam_card)
+		cam_float.visible = true
+		cam_float.size = Vector2.ZERO
+		cam_float.position = Vector2(cam_fx, cam_fy) if cam_fx >= 0.0 else gp - Vector2(0, 26)
+		_cam_clamp()
+	elif on and cam_card != null and cam_card.get_parent() == cam_float:
+		var home: Control = cam_card.get_meta("home")
+		cam_float.remove_child(cam_card)
+		cam_card.custom_minimum_size.x = 0
+		home.add_child(cam_card)
+		home.move_child(cam_card, int(cam_card.get_meta("home_i")))
+		cam_float.visible = false
 	ui_root.visible = on
 	show_btn.visible = not on
+
+
+func _cam_clamp() -> void:
+	var vr := get_viewport().get_visible_rect().size
+	cam_float.position = Vector2(clampf(cam_float.position.x, 0.0, maxf(0.0, vr.x - cam_float.size.x)),
+			clampf(cam_float.position.y, 0.0, maxf(0.0, vr.y - 40.0)))
+
+
+func _cam_float_input(ev: InputEvent) -> void:
+	if ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT:
+		_cam_drag = get_viewport().get_mouse_position() - cam_float.position if ev.pressed else Vector2(-1, -1)
+		if not ev.pressed:
+			cam_fx = cam_float.position.x
+			cam_fy = cam_float.position.y
+			_settings_dirty = true
+	elif ev is InputEventMouseMotion and _cam_drag.x >= 0.0:
+		if not (ev.button_mask & MOUSE_BUTTON_MASK_LEFT):
+			_cam_drag = Vector2(-1, -1)
+			return
+		cam_float.position = get_viewport().get_mouse_position() - _cam_drag
+		_cam_clamp()
 
 
 func _fold_all(how: String) -> void:
@@ -3071,6 +3161,7 @@ func _palette_item(kind: String, name_: String) -> Control:
 	l.text = name_
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.add_theme_font_size_override("font_size", 11)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART     # 3D-3.43: long names wrap - before they pushed the panel over the right edge
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(l)
 	thumb_rects[kind] = tr
@@ -3283,7 +3374,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
@@ -3516,6 +3607,60 @@ func _sync_ui() -> void:
 	_syncing = false
 
 
+func group_active(g: String) -> int:
+	"""3D-3.43: is something of this group switched on? 0 = no, 1 = on (green), 2 = something to watch (orange)"""
+	match g:
+		"Szene":
+			return 1 if geo != null and geo.loaded and scene == "ort" else 0
+		"Wetter":
+			return 1 if real_weather else 0
+		"Besuch":
+			return 1 if auto_visitors else 0
+		"Kamerabild":
+			return 2 if cond.values().has(true) else 0
+		"Sensoren":
+			return 2 if door_open or gas_on else 0
+		"Mover":
+			return 1 if mover_on else 0
+		"Spiel":
+			return 1 if game != null and game.open else 0
+		"Wildbeobachtung":
+			return 1 if rifle_on else 0
+		"Testlauf":
+			return 1 if testrun != null and testrun.running else 0
+	return 0
+
+
+func _groups_on() -> Dictionary:
+	var o := {}
+	for g in group_bodies:
+		var v := group_active(g)
+		if v > 0:
+			o[g] = v
+	o["Verbindung"] = 1 if connected() else 0
+	return o
+
+
+func _paint_groups() -> void:
+	"""the symbol of a group card turns green when it is on (like «Verbindung»), orange when something is to be watched"""
+	for g in group_bodies:
+		var st := group_active(g)
+		if _group_state.get(g, -1) == st:
+			continue
+		_group_state[g] = st
+		var b: Control = group_bodies[g]
+		var ic: Control = b.get_meta("icon", null)
+		if ic != null:
+			ic.set_meta("col", [UI.ACC, UI.GRN, UI.ORG][st])
+			ic.queue_redraw()
+		var hd: Label = b.get_meta("head", null)
+		if hd != null:
+			if st == 0:
+				hd.add_theme_color_override("font_color", UI.TXT)
+			else:
+				hd.add_theme_color_override("font_color", [UI.TXT, UI.GRN, UI.ORG][st])
+
+
 func _update_status() -> void:
 	if status_label != null:
 		status_label.text = status_text()
@@ -3531,6 +3676,7 @@ func _update_status() -> void:
 			if hd != null:
 				hd.text = ("Verbindung · " + ["aus", "wartet auf Motion Watch", "verbunden"][st]).to_upper()
 				hd.add_theme_color_override("font_color", [UI.TXT, UI.ORG, UI.GRN][st])
+	_paint_groups()
 	if stream_note != null:
 		if stream_on:
 			stream_note.text = "Sendet: Motion Watch findet den Simulator im Netz und bekommt die Bilder."
@@ -5056,6 +5202,17 @@ func apply_visit_preset(id: String) -> void:
 			max_visitors = int(vp[6])
 			preset_kinds = (vp[7] as Array).duplicate() if vp.size() > 7 else []
 			next_auto = min(next_auto, now() + 3.0)
+	# 3D-3.43: the change is seen at once - the visitors of before go, the time fits the template, the first ones come now
+	if PRESET_HOUR.has(id):
+		set_hour(float(PRESET_HOUR[id]))
+	clear_visitors()
+	if auto_visitors:
+		var au: Array = Scenes.AUTO.get(scene, Scenes.AUTO["camping"])
+		var kinds: Array = _mixed(au[0] if preset_kinds.is_empty() else preset_kinds).duplicate()
+		kinds.shuffle()
+		for i in range(mini(3 if id != "calm" else 1, kinds.size())):
+			visit(str(kinds[i]))
+		next_auto = now() + 4.0
 	_settings_dirty = true
 	_sync_ui()
 

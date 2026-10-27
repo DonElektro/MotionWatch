@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.42 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.43 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -504,3 +504,15 @@ NEU IN 3D-3.41
 
 NEU IN 3D-3.42
 3D-3.42: Der Spiel-Assistent zeigt zu jeder Spielart, jedem Ziel und jeder Schwierigkeit ein Bild, damit man sofort sieht, worum es geht (im Simulator und auf der Seite von Motion Watch). Am Schluss stehen die Bilder des gewählten Spiels über den Regeln.
+
+NEU IN 3D-3.43
+3D-3.43: Bedienfeld rechts: Nichts ragt mehr über den rechten Rand hinaus (lange Besucher-Namen brechen jetzt um).
+Bedienfeld ausblenden (›): Die Kamerabilder bleiben stehen und lassen sich an der Leiste «Ziehen zum Verschieben» frei
+platzieren; der Platz wird gemerkt. Mit H oder ‹ kommen sie zurück ins Bedienfeld.
+Die Symbole der Gruppen werden grün, sobald etwas eingeschaltet ist – im Simulator und auf der Seite von Motion Watch (Spiel offen, Mover, Besuch von selbst, echter Ort,
+echtes Wetter, Gewehr, Testlauf) – orange, wenn etwas zu beachten ist (Tür offen / Gas, schwierige Bedingungen).
+Eine Besuch-Vorlage wechselt jetzt sichtbar: Die Besucher von vorher gehen, die Tageszeit passt zur Vorlage, die ersten
+Besucher kommen sofort.
+Neu auch für den Raspberry Pi 5 (64 Bit, Raspberry Pi OS mit Desktop): Motion Watch holt und startet den Simulator auf dem
+Pi und zeigt ihn am Fernseher (HDMI) – Tab Simulator → «3D-Simulator auf diesem Pi». Einfache Grafik, nicht getestet auf
+echter Pi-Hardware.

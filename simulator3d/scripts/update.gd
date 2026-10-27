@@ -50,6 +50,9 @@ func check(current: String, url := "") -> void:
 	"""await this: returns when the simulator may start (or never, when it restarts itself after an update)"""
 	if url != "":
 		base = url if url.ends_with("/") else url + "/"
+	if OS.get_name() == "Linux" and Engine.get_architecture_name().begins_with("arm"):
+		result = "Auf dem Pi bringt Motion Watch die neue Version"   # 3D-3.43: the package here is for Windows
+		return
 	_remove_old()
 	if not quiet:
 		_build_ui()

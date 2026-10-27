@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 19:43",
+ "generated": "2026-10-27 20:10",
  "versions": [
   {
-   "version": "2.95.50",
-   "file": "webcam_bewegung_2_95_50.py",
+   "version": "2.95.51",
+   "file": "webcam_bewegung_2_95_51.py",
    "url": "",
-   "sha256": "1b9f73f4af2286ae022494766b16e4519a8dd8245419a856aab30eae42bf2c0a",
-   "date": "2026-10-27 19:43",
-   "notes": "the game wizard shows a picture for every game type, goal and difficulty (3D simulator 3D-3.42).",
-   "sig": "1a7a0698788d6907e473b03d588df82143323057ec30487a90b6a3308f544b7baa4e66b7a4627b678f293ab6d36df718f8201632eb535d5c35a3e82be330910f"
+   "sha256": "63a5e108b7620d8d5121955e0f73b1779ec5e10fc68aad83087b492fd73d9295",
+   "date": "2026-10-27 20:09",
+   "notes": "TV view for the HDMI of the Pi (/tv/<key>/: simulator or camera picture, game wizard, QR code to join, time, players, ranking, game corner; starts by itself in the campfire / gamer mode; any screen in the network can open the link); the 3D simulator can run on the Pi itself (button in the tab Simulator, fetched and checked like the Windows package); USB tethering: a phone on the USB cable gives internet, also to the own Wi-Fi. Simulator 3D-3.43. The symbols of the simulator groups are green when something is on (orange: something to watch).",
+   "sig": "9405e36270398378200d0f9c44a8691fde6f5f6cc3690ef6155c78a99ded419f8397acbcd57902a9d2947201dde2f0b330357d00ea800b23e3940a676509cc0e"
   },
   {
    "version": "2.94.5",

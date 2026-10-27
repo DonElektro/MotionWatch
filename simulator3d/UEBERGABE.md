@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 27.10.2026 · Simulator-Version **3D-3.42** · passende Motion-Watch-Version **2.95.50**
+Stand: 27.10.2026 · Simulator-Version **3D-3.43** · passende Motion-Watch-Version **2.95.51**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -72,6 +72,13 @@ Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
 **3D-3.16 bis 3D-3.36** wurden in einem anderen Chat gemacht (siehe Git-Geschichte und «Lies mich.txt», Abschnitte «NEU IN …»).
+
+**3D-3.43 – Rand, schwebende Kamerabilder, grüne Symbole, Pi-Build:** `_palette_item` mit Zeilenumbruch, Panel
+`grow_horizontal = BEGIN` (Test-Aktion `ui_wide` listet zu breite Teile). `show_panel(false)` hängt die Karte «Kameras» in
+`cam_float` (Griff-Leiste, `cam_fx`/`cam_fy` in KEEP). `group_active()` / `_paint_groups()` färben die Gruppen-Symbole.
+`apply_visit_preset` räumt auf, setzt `PRESET_HOUR` und schickt sofort Besuch. Export-Vorlage «Linux Pi» (arm64, ETC2),
+ZIP `MotionWatch3D_Pi.zip` mit «Start auf dem Pi.sh»; `version.json` hat dazu `pi`. `update.gd` sucht auf Linux-ARM nicht
+selbst (Motion Watch bringt die Pi-Version). Auf echter Pi-Hardware ungetestet.
 
 **3D-3.42 – Bilder im Spiel-Assistenten:** `wizpics.gd` (SVG-Zeichnungen pro Karte, `texture()` über `Image.load_svg_from_string`);
 das Modell schickt sie als `pic` / `pics` mit, Motion Watch zeigt sie als `data:image/svg+xml`. Text in den SVG zeigt nur der Browser.

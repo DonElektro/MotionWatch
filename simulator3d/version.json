@@ -1,7 +1,12 @@
 {
- "version": "3D-3.42",
+ "version": "3D-3.43",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30813501,
- "sha256": "7eeceee1b09f8bdff62d6a179481f1c423a360ccf7752a7644378ac1d4859d55",
- "notes": "Bilder im Spiel-Assistenten"
+ "size": 30818720,
+ "sha256": "3bc28e570a9b51ff4e1bd5aed99fb45cc602c3411205ad1e81e26efd72b130de",
+ "notes": "Kein Überstand am rechten Rand mehr; Kamerabilder schweben frei, wenn das Bedienfeld weg ist; Gruppensymbole grün, wenn etwas an ist; Besuch-Vorlagen wechseln sichtbar; neu auch für den Raspberry Pi.",
+ "pi": {
+  "file": "simulator3d/MotionWatch3D_Pi.zip",
+  "size": 23940157,
+  "sha256": "77bae520872a49ef9ca81a931042cf4182ec2bb8d6c72c715cb156047338f017"
+ }
 }
