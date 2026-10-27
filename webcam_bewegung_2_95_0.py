@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_85_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_0.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -455,6 +455,98 @@ Features
     another known network when the internet is gone, push message when it is back, devices in the own Wi-Fi without internet,
     Wi-Fi guard (alarm on jamming / deauthentication, needs a stick that can listen), adapter list with chip and abilities.
     Tools page tidied up: groups, every tool folds up and shows its last result. Fix: the Wi-Fi search of the settings works again.
+  * 2.86.0: The 3D simulator for Windows can be downloaded from the Pi: /sim/simulator3d.zip (button under Simulator → Tools).
+  * 2.87.0: Tools page redesigned, calmer: list of the tools on the left (with status), one tool at a time on the right; on a phone
+    first the list, then the tool with a back button. Plain line icons, switches instead of check boxes, no empty boxes.
+  * 2.88.0: Download of the 3D simulator 3D-1.4: it starts without sending; the switch «An Motion Watch senden» in its window
+    turns sending on.
+  * 2.89.0: Tools: «Full power for the tools» - Motion Watch rests for 10 to 120 minutes (camera, detection, AI, extra cameras;
+    a recording is finished first), the web page and the tools keep running; it comes back by itself or with «Resume now».
+  * 2.90.0: 3D simulator 3D-1.5 for download: six scenes to switch (camping place, forest, car park, garden with house, a funny
+    place with a bench, carousel and ducks, wildlife watching with a high seat and a feeder) and a bloodless rifle for the
+    wildlife watching (only animals: a hit animal hops, sees stars and runs away; aim also with the head camera).
+  * 2.90.1: 3D simulator 3D-1.6: starts with the simple graphics (OpenGL), so a double click on the .exe works on PCs where the
+    Vulkan graphics closed the window at once; the nicer Vulkan graphics with «Start mit Vulkan-Grafik (schoener).bat».
+  * 2.90.2: 3D simulator 3D-1.7: it looks for a newer version on GitHub before it starts and offers «Jetzt aktualisieren»
+    (download, check, replace itself, start again) or «Ohne Update starten».
+  * 2.90.3: 3D simulator 3D-1.8: in a virtual machine (VMware, VirtualBox) it starts again with the ANGLE graphics by itself -
+    the OpenGL driver there showed only the sky.
+  * 2.90.4: 3D simulator 3D-1.9: «Motion Watch auf diesem PC» - the simulator runs Motion Watch itself on the Windows PC
+    (Python and Motion Watch are fetched once), so the phone / tablet simulator works without a Raspberry Pi.
+  * 2.90.5: 3D simulator 3D-1.10: the Python download for «Motion Watch auf diesem PC» uses the curl of Windows (it failed with
+    the own download of the simulator); clearer error messages.
+  * 2.90.6: 3D simulator 3D-1.11: «Motion Watch auf diesem PC» takes the cameras from the simulator (the picture was black);
+    the phone simulator starts with the normal start page.
+  * 2.90.7: 3D simulator 3D-1.12: button «Nach Updates suchen» in its window (check and install at any time); faster updates.
+  * 2.90.8: 3D simulator 3D-1.13: updates from far away (switch «Neue Versionen automatisch installieren» and a button, also in
+    the simulator control on this web page); its window in the look of Motion Watch; switches and the joystick work in its
+    phone simulator; lighter in virtual machines; the rifle goes off when leaving the wildlife watching.
+  * 2.90.9: The download of the 3D simulator for Windows (ZIP) is now a button right under «Search now» in the simulator section
+    (before hidden under Tools); the desktop window shows its address for the PC browser in the simulator line.
+  * 2.91.0: 3D simulator 3D-2.0 (big update): toolbar, search and «Einfach | Experte» like Motion Watch; visitors as small
+    pictures to drag into the world; people and animals walk around objects; smoother movement, finer objects, grass and
+    flowers; new visitors (child, jogger, hare, hedgehog, dog walk, deer herd, birds); new visitor settings (also here in the
+    simulator control).
+  * 2.92.0: Fix: plugging in a second Wi-Fi adapter made the Pi unreachable (the repeater switched itself on and took the
+    built-in adapter away from the home Wi-Fi). Now the repeater only runs when switched on by hand, the connected adapter keeps
+    its connection, and it switches itself off again when the Pi has no connection for 2.5 minutes. New tab «Simulator» in the
+    header: everything about the simulator on one page (switch, statistics, connection and search, picture, the control of the
+    simulator, computing power, programs and downloads, short guide).
+  * 2.92.1: Download of the 3D simulator 3D-2.1: minimizing makes it a small box in the corner (it keeps drawing pictures -
+    before, Motion Watch only showed «CONNECTING…»); while it sends, the PC does not go to sleep.
+  * 2.92.2: Tab «Simulator»: the live picture is at the very top and moves (like on the live page); scrolled down, it shrinks
+    into a corner (tap: back up, drag: other corner, ✕: away).
+  * 2.92.3: 3D simulator 3D-2.2: starts with the PC (also small in the corner and without signing in, see its group «Start mit
+    dem PC»). Simulator control: when the simulator brings new settings, they appear at once and the open groups stay open.
+  * 2.92.4: 3D simulator 3D-2.3: it only calculates while its window is open or Motion Watch is connected (saves power); its
+    small box shows the CPU of the whole computer, of Motion Watch and of the simulator (Motion Watch measures and sends it).
+  * 2.93.0: Clap switch (Light & sound): 2, 3 or 4 claps switch a relay, the white / infrared light, take a photo, record
+    or arm / disarm; beep as answer, practice mode, only when not armed (adjustable). «Bless you!»: a small sound recognition
+    model (YAMNet) recognises sneezing and the loudspeaker answers (spoken words or an own recording, uploaded from the
+    phone); quiet at night; sneezes of the day in the diary. Tab «Simulator»: the sections fold up with arrows.
+  * 2.93.1: Download of the 3D simulator 3D-2.4: game «Unentdeckt ans Ziel» for up to 4 players with their phones (own view,
+    joystick, crouch, crawl); the simulator is the referee. Its settings appear in the simulator control (group «Spiel»).
+  * 2.93.2: Download of the 3D simulator 3D-2.5: more realistic camera pictures (grain at night, raindrops on the lens, insects
+    in the light at night - real false alarms to test); game: one player can be the guard (sees through the head camera),
+    stones to distract, crystals to collect, lives, a microphone hears running; the referee works like a real detection.
+  * 2.93.3: For the 3D simulator 3D-2.6: Motion Watch tells the simulator what it detects (persons, animals, motion, noise) -
+    for its test run with report (detection rate, reaction time, false alarms) and the game mode «Motion Watch decides»;
+    without a real microphone the noise alarm uses the sound of the simulated world. Its CPU is measured as before.
+  * 2.93.4: Download of the 3D simulator 3D-2.7: nicer people (face, build, clothes), natural walking, activities, headlamps and
+    phone lights at night; animals jump, hop, root and sniff.
+  * 2.93.5: Download of the 3D simulator 3D-2.8: nicer animals (shaped body, darker back, neck, ears), people reach for the door
+    handle.
+  * 2.93.6: Download of the 3D simulator 3D-2.9: flags and laundry in the wind, chimney smoke, fireflies (all can be switched
+    off); fixed: rain was missing in the camera pictures since 3D-2.6.
+  * 2.93.7: Download of the 3D simulator 3D-3.0: game with two teams, team signals, choose your look (cap, hood, backpack,
+    camouflage); figures react (startled, cheering, throwing).
+  * 2.93.8: Download of the 3D simulator 3D-3.1: game mode team against team (robbers and guards, roles swap), rescue from the
+    jail, team goal, bonus for a good distraction.
+  * 2.93.9: Download of the 3D simulator 3D-3.2: game goal capture the flag with two teams.
+  * 2.93.10: 3D simulator 3D-3.3: shadows are no longer black on some graphics cards (sky light as ambient colour), softer
+    shadow edges.
+  * 2.93.11: 3D simulator 3D-3.4: real place from the map (Switzerland: swisstopo terrain and aerial picture, OpenStreetMap
+    buildings), sturdier update.
+  * 2.93.12: Simulator control: group symbols and sub-headings (3D simulator 3D-3.5 with a tidied panel).
+  * 2.93.13: 3D simulator 3D-3.6: mouse control (move, turn, zoom, select and carry visitors).
+  * 2.93.14: 3D simulator 3D-3.7: camera pictures stay visible while the panel scrolls.
+  * 2.93.15: 3D simulator 3D-3.8: real sun path for place and season, mountain shadows, game on real places.
+  * 2.93.16: Simulator control looks like the panel of the 3D simulator (cards with symbols, parts, search, Simple / Expert) and
+    a swisstopo map to choose a real place (3D-3.9).
+  * 2.93.17: 3D simulator 3D-3.10: real 3D buildings of swisstopo at real places.
+  * 2.94.0: NEW: mover (optional tracked vehicle): second stick on the web page (also full screen) and in the window, settings
+    Camera & servos -> Mover (Motor HAT with PCA9685 + TB6612 found by itself, top / turning speed, gentle start, invert / swap
+    tracks, stops after 0.6 s without a command); the 3D simulator 3D-3.11 can simulate it.
+  * 2.94.1: 3D simulator 3D-3.12: overview map.
+  * 2.94.2: 3D simulator 3D-3.13: new scene «hiding game» with many hiding places, more hiding places in all scenes
+  * 2.94.3: 3D simulator 3D-3.14: place wizard (surroundings detected, presets for objects, objects that fit the surroundings)
+  * 2.94.4: Mover stick can be shown in the simulation even without a mover or motor driver (setting, look only); 3D simulator
+    3D-3.15: drive the mover in the simulator, report on the 3D buildings
+  * 2.94.5: 3D simulator 3D-3.16: after an update it starts again as it was (sending or not, small box / icon, size and place
+    of the window). Simulator search: the number counts simulators (not addresses), also ports 8767 / 8768 (a second simulator),
+    a hint when a simulator is missing.
+  * 2.95.0: second simulator «Python world simulator» (simulator_python/) as an alternative to the 3D simulator: download button
+    (/sim/simulator_py.zip, fetched once and checked like the 3D one), tested with its settings in the tab Simulator.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -463,10 +555,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_85_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_85_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_85_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -483,7 +575,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.85.0"
+APP_VERSION = "2.95.0"
 
 
 def default_data_dir():
@@ -750,12 +842,17 @@ CFG = {
     "mqtt_on": False, "mqtt_host": "", "mqtt_port": "1883", "mqtt_user": "", "mqtt_password": "", "mqtt_tls": False,
     "mqtt_prefix": "motionwatch", "mqtt_discovery": True,   # MQTT / Home Assistant                 # other Motion Watch devices in the overview: [{id, url, name, pw}]          # shared pictures / videos get a small Motion Watch logo strip
     "gpsmod_on": False, "gpsmod_port": "auto", "gps_theft": True, "gps_theft_m": 150,
+    # mover: tracked vehicle under Motion Watch (from 2.94.0) - found by itself, second stick on the page and in the window
+    "mover_mode": "auto", "mover_driver": "adafruit", "mover_addr": "0x60", "mover_speed": 70, "mover_turn": 50, "mover_ramp": 0.5,
+    "mover_inv_l": False, "mover_inv_r": False, "mover_swap": False, "mover_sim_show": True,
     "storm_on": True, "storm_drop": 3.0, "storm_wind": 50, "storm_forecast": False, "wind_gpio": "", "wind_factor": 2.4,
     "solar_on": False, "solar_addr": "0x41", "solar_shunt": 0.1, "night_warn": True,
     "species_on": False, "species_model": "", "species_norm": "imagenet", "species_size": 224, "species_conf": 0.5,
     "desktop_notice": True,
     "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_auto": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
-    "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_dual": True, "wifi_swap": False, "wifi_guard": False,
+    "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_dual": True, "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
+    "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
+    "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True, "wifi_swap": False, "wifi_guard": False,
     "wifi_guard_thr": 20, "wifi_count": False, "wifi_presence": False, "net_noinet": [], "net_inet_notify": True, "sim_prev_source": "", "sim_prev_thermal": "",
     "lens_check": True, "temp_alarm_on": False, "temp_hot": 30, "temp_cold": 3,
     "sens_on": False, "sensors": [], "rf433_on": False, "zigbee_on": False, "ble_on": False, "tag_missing": 5, "eco_pir": True,
@@ -1268,6 +1365,11 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Microphone", "audio_in", "Microphone", "enum", "audio_in"),
     ("Loudspeaker", "audio_out", "Loudspeaker", "enum", "audio_out"),
     ("Loudspeaker", "siren_on", "Siren at an alarm (only when armed)", "enum", "siren_on"),
+    ("Clap switch", "clap_2", "Clap 2×", "enum", "clap_acts"),
+    ("Clap switch", "clap_3", "Clap 3×", "enum", "clap_acts"),
+    ("Clap switch", "clap_4", "Clap 4×", "enum", "clap_acts"),
+    ("Bless you", "sneeze_reply", "Answer", "enum", "sneeze_replies"),
+    ("Bless you", "sneeze_texts", "Words (several: separate with |)", "str", None),
     ("Loudspeaker", "siren_sound", "Sound", "enum", "sounds"),
     ("Lights", "light_white_out", "White light: connected to", "enum", "light_white_out"),
     ("Lights", "light_white_auto", "White light: Auto means", "enum", "light_auto"),
@@ -1278,6 +1380,9 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("AI detection", "species_norm", "Animal species: picture preparation of the model", "enum", "species_norm"),
     ("Solar panel", "solar_addr", "Current meter: address (I2C)", "enum", "pca_address"),
     ("GPS module", "gpsmod_port", "Connection", "enum", "gpsmod_port"),
+    ("Mover", "mover_mode", "Mover (tracked vehicle)", "enum", "mover_mode"),
+    ("Mover", "mover_driver", "Motor driver", "enum", "mover_driver"),
+    ("Mover", "mover_addr", "Motor driver: address (I2C)", "enum", "mover_addr"),
     ("Simulator", "sim_url", "Address of the simulation program", "str", None),
     ("Storm warning", "wind_gpio", "Wind meter (anemometer) connected to", "enum", "wind_gpio"),
     ("Camera / Servos", "cam_rotate", "Turn picture (camera mounted sideways or upside down)", "enum", "cam_rotate"),
@@ -1300,6 +1405,8 @@ TEXT_SPECS = {k: (kind, extra) for s, k, l, kind, extra in TEXTS}
 def text_choice_pairs(key):
     """[(value, label)] of an enum setting. The thermal camera list changes with the camera scan, so it is computed."""
     kind, extra = TEXT_SPECS[key]
+    if str(extra).startswith("mover_"):
+        return mover_choice_pairs(extra)
     if extra == "net_modes":
         return [("auto", tr("Automatic: known networks (e.g. phone hotspot), otherwise own Wi-Fi")),
                 ("hotspot", tr("Own Wi-Fi at boot")), ("client", tr("Only known networks"))]
@@ -1350,6 +1457,10 @@ def text_choice_pairs(key):
         return audio_choice_pairs(extra[6:])
     if extra == "sounds":
         return sound_choice_pairs()
+    if extra == "clap_acts":
+        return clap_act_pairs()
+    if extra == "sneeze_replies":
+        return sneeze_reply_pairs()
     if extra == "siren_on":
         return [("off", tr("off")), ("person", tr("person alarm")), ("alarm", tr("person, thermal and noise alarm")),
                 ("all", tr("every alarm, also the pre-alarm (movement)"))]
@@ -1436,6 +1547,8 @@ def set_text(key, value):
             if key == "telegram_chat" and not re.fullmatch(r"-?\d{1,20}|@[A-Za-z0-9_]{3,64}", v):
                 return False, "invalid Telegram chat id"
         if (key.startswith("msg_") or key == "device_name") and (len(v) > (40 if key == "device_name" else 300) or any(ord(c) < 32 for c in v)):
+            return False, "text too long or with control characters"
+        if key == "sneeze_texts" and (len(v) > 200 or any(ord(c) < 32 for c in v)):
             return False, "text too long or with control characters"
         if key == "update_url" and not _upd_source_ok(v):
             return False, "https://... address or a folder (/media/...) expected"
@@ -1775,7 +1888,7 @@ def pw_check(pw, stored=None):
 USER_ROLES = ("operate", "view")
 _USER_RE = re.compile(r"^[A-Za-z0-9ÄÖÜäöüéèàç][A-Za-z0-9ÄÖÜäöüéèàç ._\-]{0,23}$")
 # what an "operate" user may change (everything else is read-only); "view" may only look
-OPERATE_POST = {"/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/light", "/api/move", "/api/stick", "/api/talk",
+OPERATE_POST = {"/api/mover", "/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/light", "/api/move", "/api/stick", "/api/talk",
                 "/api/talk/stop", "/api/tts", "/api/rec/fav", "/api/rec/false", "/api/action"}
 VIEW_POST = {"/api/webpush", "/api/ui", "/api/time", "/api/gps", "/api/rec/prepare", "/rec/zip"}
 OPERATE_SET_KEYS = {"thermal_on", "nightvision", "show_objects", "show_mask", "track_person"}
@@ -3036,7 +3149,7 @@ def day_summary(day, lang="en"):
     press = [r[3] for r in clim if r[3] is not None]
     return {"day": day, "weekday": d.weekday(),
             "counts": {"persons": counts.get("person", 0), "animals": sum(c for _k, c in animals), "warm": counts.get("warm", 0),
-                       "noise": counts.get("noise", 0), "recordings": recs, "alarm_recordings": alarm_recs, "photos": photos, "mb": round(mb, 1)},
+                       "noise": counts.get("noise", 0), "sneezes": (sneeze_count() and _SNEEZE_DAYS["days"].get(day, 0)) or _SNEEZE_DAYS["days"].get(day, 0), "recordings": recs, "alarm_recordings": alarm_recs, "photos": photos, "mb": round(mb, 1)},
             "animals": [{"key": k, "label": tr_trigger(k, lang), "count": c} for k, c in animals],
             "best": [{"img": e["img"], "label": tr_trigger(e["label"], lang), "t": e["start"][11:16]} for e in best],
             "events": [{"t": e["start"][11:16], "kind": e["kind"], "label": tr_trigger(e["label"], lang) if e["kind"] in ("animal", "person", "object") else tr(e["label"], lang)} for e in ev][:400],
@@ -3347,6 +3460,140 @@ def pca_present(addr, bus=1):
             os.close(p.fd)
     except Exception:
         return False
+
+
+# ----------------------------------------------------------------------------
+# Mover (from 2.94.0): an optional tracked vehicle under Motion Watch - forward, back, turn on the spot with a second stick.
+#   Motor driver: a «Motor HAT» with a PCA9685 and two TB6612 motor bridges on I2C (Adafruit DC & Stepper Motor HAT, default
+#   0x60, or the Waveshare Motor Driver HAT). Found by itself (setting «automatic»); not found = no second stick anywhere.
+#   In the simulation the 3D simulator says whether it has a mover («Mover simulieren»); the tracks are driven there.
+#   Safety: without a new command for 0.6 s (page closed, Wi-Fi gone) both tracks stop; starting and stopping are gentle.
+# ----------------------------------------------------------------------------
+MOVER = {"test": False, "avail": False, "hw": False, "sim": False, "v": 0.0, "w": 0.0, "l": 0.0, "r": 0.0, "cmd_t": 0.0, "by": "", "msg": "off"}
+MOVER_MAP = {"adafruit": ((8, 10, 9), (13, 11, 12)),      # (PWM, IN1, IN2) of the left and the right motor (M1, M2)
+             "waveshare": ((0, 1, 2), (5, 3, 4))}          # (PWMA, AIN1, AIN2), (PWMB, BIN1, BIN2)
+MOVERCTL = None
+
+
+def mover_drive(v, w, who="web"):
+    """the second stick: v = forward (+) / back (-), w = turn right (+) / left (-), both -1 … 1"""
+    try:
+        v = max(-1.0, min(1.0, float(v))); w = max(-1.0, min(1.0, float(w)))
+    except (TypeError, ValueError):
+        return False
+    if not MOVER["avail"]:
+        return False
+    MOVER.update(v=v, w=w, cmd_t=time.time(), by=who)
+    if abs(v) > 0.05 or abs(w) > 0.05:
+        MANUAL["until"] = time.time() + CFG["manual_hold"]          # driving pauses tracking and patrol like the camera stick
+    return True
+
+
+def mover_choice_pairs(extra):
+    if extra == "mover_mode":
+        return [("auto", tr("automatic: on when the motor driver is found")), ("off", tr("off"))]
+    if extra == "mover_driver":
+        return [("adafruit", tr("Motor HAT (Adafruit or compatible): M1 left, M2 right")),
+                ("waveshare", tr("Waveshare Motor Driver HAT: A left, B right"))]
+    if extra == "mover_addr":
+        return [(f"0x{a:02x}", f"0x{a:02x}") for a in list(range(0x60, 0x70)) + list(range(0x40, 0x48))]
+    return []
+
+
+class MoverControl:
+    def __init__(self):
+        self.pca = None; self.addr = None; self.next_look = 0.0
+        threading.Thread(target=self.loop, daemon=True, name="mover").start()
+
+    def _close(self):
+        if self.pca is not None:
+            try:
+                self.pca.close()
+            except Exception:
+                pass
+        self.pca = None; self.addr = None
+
+    def _find(self):
+        """the motor driver at its address (not the one of the servos)"""
+        try:
+            a = int(str(CFG["mover_addr"]), 16)
+        except ValueError:
+            a = 0x60
+        if self.pca is not None and self.addr == a:
+            return True
+        self._close()
+        try:
+            if str(CFG.get("pca_address", "")).lower() == f"0x{a:02x}" and CFG.get("servo_driver") != "gpio":
+                MOVER["msg"] = "the address is the one of the servo driver"; return False
+        except Exception:
+            pass
+        if not pca_present(a):
+            MOVER["msg"] = "no motor driver found"; return False
+        try:
+            self.pca = PCA9685(a, freq=1600.0); self.addr = a
+            MOVER["msg"] = "motor driver found"
+            return True
+        except Exception as e:
+            MOVER["msg"] = "motor driver: " + str(e)[:60]; self.pca = None
+            return False
+
+    def _motor(self, pins, s):
+        pwm, in1, in2 = pins
+        s = max(-1.0, min(1.0, s))
+        if abs(s) < 0.02:
+            self.pca.switch(in1, False); self.pca.switch(in2, False); self.pca._set(pwm, 0, 0x1000)
+            return
+        self.pca.switch(in1, s > 0); self.pca.switch(in2, s < 0)
+        self.pca._set(pwm, 0, max(0, min(4095, int(abs(s) * 4095))))
+
+    def loop(self):
+        last = time.time()
+        while True:
+            time.sleep(0.05)
+            now = time.time(); dt = min(0.2, now - last); last = now
+            sim = bool(CFG.get("sim_on"))
+            if CFG["mover_mode"] == "off":
+                self._close(); MOVER.update(avail=False, hw=False, test=False, msg="off")
+            elif sim:
+                self._close(); MOVER["hw"] = False
+                real = bool(SIM.get("ok")) and bool(SIM.get("mover"))
+                MOVER["avail"] = real or bool(CFG.get("mover_sim_show"))        # stick for a look even without a mover (2.94.4)
+                MOVER["test"] = MOVER["avail"] and not real
+                MOVER["msg"] = "simulated" if real else ("stick shown for testing (the simulator has no mover)" if MOVER["avail"] else "the simulator has no mover")
+            else:
+                MOVER["test"] = False
+                if self.pca is None and now >= self.next_look:
+                    self.next_look = now + 15.0
+                    self._find()
+                MOVER["hw"] = self.pca is not None; MOVER["avail"] = MOVER["hw"]
+            MOVER["sim"] = sim and MOVER["avail"]
+            # target from the stick (stops by itself without new commands), gentle change
+            fresh = now - MOVER["cmd_t"] < 0.6
+            tv = MOVER["v"] if fresh and MOVER["avail"] else 0.0
+            tw = MOVER["w"] if fresh and MOVER["avail"] else 0.0
+            sp = float(CFG["mover_speed"]) / 100.0; tu = float(CFG["mover_turn"]) / 100.0
+            tl, trr = tv * sp + tw * tu, tv * sp - tw * tu
+            m = max(1.0, abs(tl), abs(trr)); tl /= m; trr /= m
+            ramp = float(CFG["mover_ramp"])
+            k = 1.0 if ramp <= 0.01 else dt / ramp
+            stop_fast = not fresh                                  # connection gone: stop quickly (4 × faster)
+            k2 = min(1.0, k * (4.0 if stop_fast else 1.0))
+            l = MOVER["l"] + max(-k2, min(k2, tl - MOVER["l"]))
+            r = MOVER["r"] + max(-k2, min(k2, trr - MOVER["r"]))
+            MOVER["l"], MOVER["r"] = round(l, 3), round(r, 3)
+            if self.pca is not None and not sim:
+                ml, mr = l, r
+                if CFG["mover_swap"]:
+                    ml, mr = mr, ml
+                if CFG["mover_inv_l"]:
+                    ml = -ml
+                if CFG["mover_inv_r"]:
+                    mr = -mr
+                pins = MOVER_MAP.get(CFG["mover_driver"], MOVER_MAP["adafruit"])
+                try:
+                    self._motor(pins[0], ml); self._motor(pins[1], mr)
+                except OSError as e:
+                    MOVER["msg"] = "motor driver: " + str(e)[:60]; self._close()
 
 
 # ----------------------------------------------------------------------------
@@ -4428,6 +4675,41 @@ class SysMonitor:
             return 0.0
         return max(0.0, min(100.0, 100.0 * (1.0 - (idle - prev[0]) / (total - prev[1]))))
 
+    def _shares(self):
+        """CPU of Motion Watch itself and of the 3D simulator (when it runs on the same computer), in % of the whole
+        computer like «cpu» - shown in the small box of the simulator (sim_state «cpu»)."""
+        if not self.ps:
+            STATE["cpu_mw"] = STATE["cpu_sim"] = None
+            return
+        n = max(1, STATE.get("cpu_count") or 1)
+        try:
+            if getattr(self, "me", None) is None:
+                self.me = self.ps.Process()
+                self.me.cpu_percent(None)
+            STATE["cpu_mw"] = round(self.me.cpu_percent(None) / n, 1)
+        except Exception:
+            STATE["cpu_mw"] = None
+        pid = int(SIM.get("pid") or 0) if CFG.get("sim_on") else 0
+        if pid <= 0:
+            self.sim_p = None
+            STATE["cpu_sim"] = None
+            return
+        try:
+            p = getattr(self, "sim_p", None)
+            if p is None or p.pid != pid:
+                p = self.ps.Process(pid)
+                if "motionwatch3d" not in p.name().lower():      # same number on another computer: not our simulator
+                    raise ValueError("other process")
+                self.sim_p = p
+                p.cpu_percent(None)
+                STATE["cpu_sim"] = None
+                return
+            STATE["cpu_sim"] = round(p.cpu_percent(None) / n, 1)
+        except Exception:
+            self.sim_p = None
+            STATE["cpu_sim"] = None
+            SIM["pid"] = 0                     # the simulator runs elsewhere (or ended): do not try again
+
     def _temp(self):
         try:                                   # Raspberry Pi / most Linux boards
             with open("/sys/class/thermal/thermal_zone0/temp") as f:
@@ -4519,6 +4801,7 @@ class SysMonitor:
             STATE.update(cpu=None if cpu is None else round(cpu, 1),
                          cpu_temp=None if temp is None else round(temp, 1),
                          cpu_hist=list(self.hist))
+            self._shares()
             self._supply_disk()
             if temp is not None:
                 lim = float(CFG["temp_warn"])
@@ -6076,15 +6359,15 @@ CAMPING_SET = {"detection_on": True, "record": True, "snapshot_on_person": True,
 
 # ---- simple settings: what most people need; Expert shows everything ----
 SIMPLE_SECTIONS = {"Camera / Servos", "Patrol", "AI detection", "Detection", "Recording", "Low light", "Setup", "Notifications",
-                   "Camping / protection", "Thermal camera", "Microphone", "Loudspeaker", "Lights", "Night report", "Battery",
-                   "Power saving", "Messages", "Updates", "Extra sensors", "Storm warning", "GPS module", "Solar panel"}
+                   "Camping / protection", "Thermal camera", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Night report", "Battery",
+                   "Power saving", "Messages", "Updates", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Mover"}
 SIMPLE_KEYS = {"track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
                "arm_delay", "net_mode", "hotspot_ssid", "hotspot_password", "thermal_on", "thermal_alarm", "noise_alarm", "audio_in",
                "audio_out", "siren_on", "siren_volume", "siren_sound", "light_white_auto", "light_ir_auto", "report_on", "report_hour",
                "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_auto", "loop_on", "loop_hours",
-               "cam_rotate", "cam_mirror", "sens_on", "rf433_on", "zigbee_on", "ble_on", "tag_missing", "eco_pir", "storm_on", "storm_drop", "storm_wind", "gpsmod_on", "gps_theft", "lens_check", "temp_alarm_on", "temp_hot", "temp_cold", "solar_on", "night_warn"}
+               "cam_rotate", "cam_mirror", "sens_on", "rf433_on", "zigbee_on", "ble_on", "tag_missing", "eco_pir", "storm_on", "storm_drop", "storm_wind", "mover_mode", "mover_speed", "gpsmod_on", "gps_theft", "lens_check", "temp_alarm_on", "temp_hot", "temp_cold", "solar_on", "night_warn"}
 
 
 def simple_hidden(key, sec=None):
@@ -6571,7 +6854,7 @@ def dual_roles():
     ads = wifi_adapters()
     DUAL["adapters"] = ads; DUAL["t"] = time.time()
     was = (DUAL["on"], DUAL["ap"], DUAL["up"])
-    if len(ads) < 2 or not CFG.get("wifi_dual", True) or wifi_backend() != "nm":
+    if len(ads) < 2 or not CFG.get("wifi_repeater") or wifi_backend() != "nm":
         DUAL.update(on=False, ap="", up="",
                     msg="" if len(ads) >= 2 or not ads else "only one Wi-Fi adapter")
         if len(ads) >= 2 and wifi_backend() != "nm":
@@ -6581,22 +6864,78 @@ def dual_roles():
             for a in ads:
                 _nm_dev_autoconnect(a["iface"], True)
             dual_log(tr("Second Wi-Fi adapter: off - back to one adapter"))
+        DUAL["choice"] = None
         return DUAL
-    intern = next((a for a in ads if not a["usb"]), ads[0])
-    stick = next((a for a in ads if a is not intern), ads[1])
-    ap, up = (stick, intern) if CFG.get("wifi_swap") else (intern, stick)
-    if ap["ap"] is False and up["ap"]:
-        ap, up = up, ap                                      # this adapter cannot make an own Wi-Fi
+    names = [a["iface"] for a in ads]
+    ch = DUAL.get("choice")
+    if ch and ch[0] in names and ch[1] in names and ch[2] == bool(CFG.get("wifi_swap")):
+        ap = next(a for a in ads if a["iface"] == ch[0]); up = next(a for a in ads if a["iface"] == ch[1])   # keep the roles once chosen
+    else:
+        # the adapter that is connected to a network now keeps that connection (the Pi must stay reachable);
+        # only when none is connected the USB stick is used for the internet (often the better antenna)
+        conn = [a for a in ads if (_iw_link(a["iface"]) or {}).get("connected")]
+        intern = next((a for a in ads if not a["usb"]), ads[0])
+        stick = next((a for a in ads if a is not intern), ads[1])
+        if CFG.get("wifi_swap"):                         # «internet over the USB stick (better antenna)»
+            up = stick
+        else:
+            up = conn[0] if conn else stick
+        ap = next(a for a in ads if a is not up)
+        if ap["ap"] is False and up["ap"]:
+            ap, up = up, ap                                  # this adapter cannot make an own Wi-Fi
+        DUAL["choice"] = (ap["iface"], up["iface"], bool(CFG.get("wifi_swap")))
     DUAL.update(on=True, ap=ap["iface"], up=up["iface"], msg="")
     WIFI["iface"] = up["iface"]; WIFI["ap_iface"] = ap["iface"]
     if was != (True, ap["iface"], up["iface"]):
+        _nm_unbind(ap["iface"])                              # known networks bound to the own-Wi-Fi adapter may use the other one
         _nm_dev_autoconnect(ap["iface"], False)              # the own Wi-Fi adapter does not join networks by itself
         _nm_dev_autoconnect(up["iface"], True)
+        DUAL["since"] = time.time(); DUAL["had_conn"] = bool((STATE.get("wifi") or {}).get("connected"))
         dual_log(trf("Second Wi-Fi adapter: own Wi-Fi on {ap} ({a}), internet over {up} ({b})", ap=ap["iface"], a=ap["chip"], up=up["iface"], b=up["chip"]))
         if STATE["hotspot"].get("on") and was[1] and was[1] != ap["iface"]:
             hotspot_switch_later(True, 0.5)                  # the own Wi-Fi moves to the other adapter
         WIFI["refresh"] = True
     return DUAL
+
+
+def _nm_unbind(iface):
+    """Saved networks that only work on one adapter (connection.interface-name, e.g. made by the Raspberry Pi Imager) may
+    then be used by the other adapter too - otherwise the stick cannot join the home Wi-Fi."""
+    if not iface or not shutil.which("nmcli"):
+        return
+    code, out, _e = _run(["nmcli", "-t", "-f", "UUID,TYPE", "connection", "show"], 10)
+    if code != 0:
+        return
+    for ln in out.splitlines():
+        f = _nm_split(ln)
+        if len(f) < 2 or f[1] not in ("802-11-wireless", "wifi"):
+            continue
+        c2, o2, _e = _run(["nmcli", "-t", "-g", "connection.interface-name,802-11-wireless.mode,connection.id", "connection", "show", "uuid", f[0]], 10)
+        g = o2.splitlines() if c2 == 0 else []
+        if len(g) >= 2 and g[0].strip() == iface and g[1].strip() != "ap":
+            if _run(["nmcli", "connection", "modify", "uuid", f[0], "connection.interface-name", ""], 10)[0] == 0:
+                log_event("sys", f"Wi-Fi «{g[2] if len(g) > 2 else f[0]}» may now be used by every adapter")
+
+
+def dual_safety():
+    """Safety net: the repeater was switched on, but the Pi has had no connection to a network for 2.5 minutes since then
+    -> switch it off again by itself, so the Pi becomes reachable again the old way."""
+    if not DUAL["on"] or not DUAL.get("had_conn"):
+        return
+    since = DUAL.get("since") or 0
+    if time.time() - since < 150 or time.time() - since > 600:
+        return
+    w = STATE.get("wifi") or {}
+    if w.get("connected") or (STATE.get("net") or {}).get("online"):
+        DUAL["had_conn"] = False                             # it works - the safety net is no longer needed
+        return
+    CFG["wifi_repeater"] = False; save_settings()
+    DUAL["choice"] = None
+    dual_roles()
+    if not CFG.get("hotspot_on"):
+        hotspot_set(False, persist=False)
+    DUAL["msg"] = "repeater switched off again: no connection to a network"
+    dual_log(tr("Repeater switched off again by itself: the Pi had no connection to a network any more"), push=True)
 
 
 def dual_log(text, push=False):
@@ -6641,6 +6980,10 @@ class UplinkWatch:
                 dual_roles()
             except Exception as e:
                 DUAL["msg"] = str(e)[:100]
+        try:
+            dual_safety()
+        except Exception as e:
+            DUAL["msg"] = str(e)[:100]
             noinet_apply()
         net = STATE.get("net") or {}; w = STATE.get("wifi") or {}
         online = net.get("online")
@@ -6883,13 +7226,15 @@ def dual_state():
             "repeater": bool(DUAL["on"] and hs.get("on") and w.get("connected")), "hotspot": {"on": hs.get("on"), "ssid": hs.get("ssid"), "clients": hs.get("clients")},
             "uplink": {"ssid": w.get("ssid"), "dbm": w.get("dbm"), "pct": w.get("pct"), "connected": w.get("connected")},
             "online": (STATE.get("net") or {}).get("online"),
-            "cfg": {k: CFG.get(k) for k in ("wifi_dual", "wifi_swap", "wifi_guard", "wifi_guard_thr", "wifi_count", "wifi_presence", "net_inet_notify", "net_noinet")},
+            "cfg": {k: CFG.get(k) for k in ("wifi_repeater", "wifi_swap", "wifi_guard", "wifi_guard_thr", "wifi_count", "wifi_presence", "net_inet_notify", "net_noinet")},
             "guard": {k: WGUARD[k] for k in ("state", "iface", "msg", "deauth_min", "deauth_now", "all_now", "frames", "alarms", "count_now", "count_hist")}}
 
 
 def dual_set(key, value):
-    if key in ("wifi_dual", "wifi_swap"):
-        CFG[key] = bool(value); save_settings(); dual_roles()
+    if key in ("wifi_repeater", "wifi_swap"):
+        CFG[key] = bool(value); save_settings(); DUAL["choice"] = None; dual_roles()
+        if key == "wifi_repeater" and value:
+            log_event("sys", "Repeater switched on by hand")
         if STATE["hotspot"].get("on"):
             hotspot_switch_later(True, 0.5)
         return True, ""
@@ -8835,6 +9180,427 @@ def _db(rms):
     return round(20.0 * math.log10(max(rms, 1.0) / 32768.0), 1)
 
 
+# ----------------------------------------------------------------------------
+# Clap switch and «Bless you!»: listens to the microphone (the same stream as the noise alarm).
+#   Clap switch: 2 / 3 / 4 claps in a row (¼ to ¾ s apart) -> an action (relay, light, photo, recording, arm / disarm).
+#     A clap = the level jumps up within 20 ms and is down again after 150 ms (speech, music, doors last longer).
+#   Bless you: after a loud sound, a small sound recognition model (YAMNet, Google, about 4 MB, ~500 kinds of sounds)
+#     checks whether it was a sneeze; then the loudspeaker says «Gesundheit!» (or plays an own recording).
+# ----------------------------------------------------------------------------
+SOUNDEV = {"claps": [], "last_clap": 0.0, "seq_n": 0, "last_n": 0, "last_n_t": 0.0, "last_act": "", "last_act_t": 0.0,
+           "sneeze_t": 0.0, "sneeze_score": None, "sneeze_last": 0.0, "model": "off", "model_msg": "", "install": "", "checks": 0}
+YAMNET_URLS = ("https://storage.googleapis.com/download.tensorflow.org/models/tflite/task_library/audio_classification/android/"
+               "lite-model_yamnet_classification_tflite_1.tflite",
+               "https://tfhub.dev/google/lite-model/yamnet/classification/tflite/1?lite-format=tflite")
+YAMNET_SNEEZE = 44                       # index of «Sneeze» in the 521 YAMNet classes (when the label list is missing)
+_SNEEZE_DAYS = {"loaded": False, "days": {}}
+
+
+def clap_act_pairs():
+    out = [("none", tr("nothing"))]
+    for i, r in enumerate(RELAYS):
+        out.append((f"relay:{i}", trf("{name} on / off", name=r.get("name") or f"Relay {i + 1}")))
+    out += [("light_white", tr("White light on / off")), ("light_ir", tr("Infrared light on / off")), ("photo", tr("Take a photo")),
+            ("rec", tr("Record (10 min) / stop")), ("arm", tr("Arm / disarm (with a beep)"))]
+    return out
+
+
+def sneeze_reply_pairs():
+    return [("tts", tr("Speak the words below"))] + [("file:" + f, "🎵 " + f) for f in own_sounds()]
+
+
+def sev_beep(n=1, ok=True):
+    """Short beep(s) as an answer: n beeps rising (done) or one low beep (only counted / not allowed)."""
+    if not CFG.get("clap_beep") or not out_selected():
+        return
+    sound_play("beep%d" % max(1, min(4, n)) if ok else "beeplow", 0.18 * max(1, n) + 0.1, CFG.get("clap_volume", 60), reason="test")
+
+
+def clap_action(n):
+    """n claps in a row: what was chosen for it."""
+    act = str(CFG.get(f"clap_{n}") or "none")
+    SOUNDEV.update(last_n=n, last_n_t=time.time())
+    if act == "none":
+        SOUNDEV["last_act"] = ""; return
+    label = dict(clap_act_pairs()).get(act, act)
+    if CFG.get("clap_practice"):
+        SOUNDEV.update(last_act=tr("practice") + ": " + label, last_act_t=time.time()); sev_beep(n); return
+    if CFG.get("clap_disarmed") and CFG["armed"] and act != "arm":
+        SOUNDEV.update(last_act=tr("not while armed"), last_act_t=time.time()); sev_beep(1, ok=False); return
+    w = WATCH_REF.get("w")
+    done = ""
+    try:
+        if act.startswith("relay:"):
+            i = int(act[6:])
+            if 0 <= i < len(RELAYS):
+                new = "off" if RELAYS[i].get("mode") == "on" else "on"
+                ok, _e = relay_update(i, "mode", new)
+                if ok:
+                    save_settings(); done = f"{RELAYS[i].get('name') or 'Relay %d' % (i + 1)} → {tr(new)}"
+        elif act in ("light_white", "light_ir"):
+            nm = act[6:]; new = "off" if CFG["light_" + nm] == "on" else "on"
+            ok, _e = light_set(nm, new)
+            if ok:
+                done = f"{tr('White light') if nm == 'white' else tr('Infrared light')} → {tr(new)}"
+        elif act == "photo":
+            nm = quick_photo(getattr(w, "frame_out", None)) if w is not None else None
+            done = tr("Photo") + f" {nm}" if nm else ""
+        elif act == "rec":
+            done = tr("Recording") + " → " + tr("on" if quick_rec() else "off")
+        elif act == "arm":
+            if is_armed() or CFG["armed"]:
+                disarm(); done = tr("disarmed")
+            else:
+                arm(); done = tr("armed (countdown)")
+    except Exception as e:
+        done = ""; log_event("sys", f"Clap switch: {e}"[:160])
+    SOUNDEV.update(last_act=done or tr("not possible"), last_act_t=time.time())
+    if done:
+        log_event("sys", f"Clap switch ({n}×): {done}")
+        sev_beep(n)
+    else:
+        sev_beep(1, ok=False)
+
+
+class SoundEvents:
+    """Fed with every 0.1 s piece of the microphone (16 kHz, 16 bit). Looks at 10 ms steps."""
+    FR = AUDIO_RATE // 100                                  # 10 ms
+
+    def __init__(self):
+        self.hist = deque(maxlen=60)                         # (t, dB) of the last 0.6 s in 10 ms steps
+        self.bg = None
+        self.pending = []                                    # onsets waiting for the check «short?» (t, peak dB)
+        self.pcm = deque(maxlen=30)                          # the last 3 s as float pieces (for the sneeze model)
+        self.q = queue.Queue(maxsize=2)
+        self.loud_t = 0.0
+        threading.Thread(target=self._model_loop, daemon=True, name="sneeze").start()
+
+    def feed(self, a, now):
+        if not (CFG.get("clap_on") or CFG.get("sneeze_on")):
+            self.pending.clear(); SOUNDEV["claps"] = []; return
+        muted = (AUDIO is not None and now < AUDIO.mute_until) or SOUND["playing"] or now - SERVO_MOVE["t"] < 1.0
+        x = a / 32768.0
+        self.pcm.append((now, x.astype(np.float32)))
+        n = x.size // self.FR
+        if n <= 0:
+            return
+        fr = x[:n * self.FR].reshape(n, self.FR)
+        dbs = 10.0 * np.log10(np.mean(fr * fr, axis=1) + 1e-10)
+        t0 = now - n * 0.01
+        for i, db in enumerate(dbs):
+            t = t0 + (i + 1) * 0.01
+            self._step(t, float(db), muted)
+
+    def _step(self, t, db, muted):
+        prev = [d for (tt, d) in self.hist if t - tt <= 0.04]
+        before = min(prev) if prev else db
+        self.hist.append((t, db))
+        if self.bg is None:
+            self.bg = db
+        quiet = db < self.bg + 6
+        self.bg += (db - self.bg) * (0.02 if quiet else 0.002)          # background follows slowly (not the claps)
+        sens = float(CFG.get("clap_sens", 5))
+        rise = 26.0 - 1.6 * sens                                          # sensitivity 1 = +24 dB ... 10 = +10 dB
+        loud = db > max(self.bg + rise, -42.0)
+        if CFG.get("sneeze_on") and db > max(self.bg + 14.0, -45.0) and t - self.loud_t > 0.7 and not muted:
+            self.loud_t = t                                              # something loud: look at it with the model in 0.6 s
+            threading.Timer(0.6, self._ask_model, args=(t,)).start()
+        if CFG.get("clap_on") and not muted and loud and before < db - 12.0 and not any(abs(t - p[0]) < 0.12 for p in self.pending):
+            self.pending.append((t, db))
+        for p in list(self.pending):
+            if t - p[0] >= 0.16:                                          # 160 ms later: was it short (a clap)?
+                self.pending.remove(p)
+                after = [d for (tt, d) in self.hist if 0.11 <= tt - p[0] <= 0.16]
+                if after and max(after) < p[1] - 10.0:
+                    self._clap(p[0])
+        c = SOUNDEV["claps"]
+        if c and t - c[-1] > 1.0:                                         # the row is over
+            n = len(c); SOUNDEV["claps"] = []
+            if 2 <= n <= 4:
+                clap_action(n)
+            elif n > 4:
+                SOUNDEV.update(last_n=n, last_n_t=time.time(), last_act=tr("too many claps"))
+
+    def _clap(self, t):
+        c = SOUNDEV["claps"]
+        if c and t - c[-1] < 0.15:
+            return
+        if c and t - c[-1] > 0.9:
+            c.clear()
+        c.append(t); SOUNDEV["last_clap"] = time.time(); SOUNDEV["seq_n"] = len(c)
+
+    # ---- sneeze ----
+    def _ask_model(self, t):
+        if not CFG.get("sneeze_on"):
+            return
+        pieces = [x for (tt, x) in list(self.pcm) if t - 0.45 <= tt <= t + 0.6]
+        if not pieces:
+            return
+        w = np.concatenate(pieces)[-15600:]
+        if w.size < 15600:
+            w = np.concatenate([np.zeros(15600 - w.size, np.float32), w])
+        try:
+            self.q.put_nowait((t, w))
+        except queue.Full:
+            pass
+
+    def _model_loop(self):
+        it = None
+        while True:
+            t, w = self.q.get()
+            if it is None:
+                it = yamnet_interpreter()
+                if it is None:
+                    continue
+            try:
+                sc = yamnet_scores(it, w)
+            except Exception as e:
+                SOUNDEV.update(model="error", model_msg=str(e)[:120]); it = None; continue
+            SOUNDEV["checks"] += 1
+            idx = YAMNET_INFO.get("sneeze", YAMNET_SNEEZE)
+            s = float(sc[idx]) if idx < sc.size else 0.0
+            top3 = np.argsort(sc)[-3:]
+            SOUNDEV.update(sneeze_score=round(s, 2), sneeze_t=time.time())
+            thr = 0.55 - 0.04 * (float(CFG.get("sneeze_sens", 5)) - 5)
+            if s >= thr and idx in top3:
+                sneeze_reply()
+
+
+YAMNET_INFO = {}
+
+
+def yamnet_runtime():
+    for mod in ("ai_edge_litert.interpreter", "tflite_runtime.interpreter"):
+        try:
+            import importlib
+            return importlib.import_module(mod).Interpreter
+        except Exception:
+            continue
+    try:
+        import tensorflow as tf
+        return tf.lite.Interpreter
+    except Exception:
+        return None
+
+
+def yamnet_path():
+    return os.path.join(DATA_DIR, "models", "yamnet.tflite")
+
+
+def yamnet_fetch():
+    """Fetch the sound recognition model once (about 4 MB, from Google)."""
+    p = yamnet_path()
+    if os.path.isfile(p) and os.path.getsize(p) > 1000000:
+        return True
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    SOUNDEV.update(model="downloading", model_msg="")
+    for u in YAMNET_URLS:
+        try:
+            req = urllib.request.Request(u, headers={"User-Agent": "MotionWatch/" + APP_VERSION})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                data = r.read(20 * 1024 * 1024)
+            if len(data) < 1000000 or data[4:8] != b"TFL3":
+                raise ValueError("not a model file")
+            with open(p + ".part", "wb") as f:
+                f.write(data)
+            os.replace(p + ".part", p)
+            log_event("sys", f"Sound recognition model loaded ({len(data) // 1024} kB)")
+            return True
+        except Exception as e:
+            SOUNDEV["model_msg"] = str(e)[:120]
+    SOUNDEV["model"] = "download failed"; SOUNDEV["fail_t"] = time.time()
+    return False
+
+
+def yamnet_interpreter():
+    if time.time() - SOUNDEV.get("fail_t", 0.0) < 600:
+        return None                                           # it did not work a moment ago: try again in 10 minutes
+    Interp = yamnet_runtime()
+    if Interp is None:
+        SOUNDEV.update(model="no runtime", model_msg="pip install ai-edge-litert"); return None
+    if not yamnet_fetch():
+        return None
+    try:
+        it = Interp(model_path=yamnet_path())
+        it.allocate_tensors()
+        inp = it.get_input_details()[0]
+        YAMNET_INFO["in"] = inp; YAMNET_INFO["out"] = it.get_output_details()[0]
+        try:                                                  # the class names travel inside the model file (zip part)
+            with zipfile.ZipFile(yamnet_path()) as z:
+                names = [n for n in z.namelist() if n.endswith(".txt")]
+                labels = z.read(names[0]).decode("utf-8", "replace").splitlines() if names else []
+            if "Sneeze" in labels:
+                YAMNET_INFO["sneeze"] = labels.index("Sneeze")
+        except (zipfile.BadZipFile, OSError, IndexError):
+            pass
+        SOUNDEV.update(model="ready", model_msg="")
+        return it
+    except Exception as e:
+        SOUNDEV.update(model="error", model_msg=str(e)[:120], fail_t=time.time()); return None
+
+
+def yamnet_scores(it, w):
+    inp, out = YAMNET_INFO["in"], YAMNET_INFO["out"]
+    x = w.astype(np.float32)
+    if len(inp["shape"]) == 2:
+        x = x.reshape(1, -1)
+    if tuple(inp["shape"]) != tuple(x.shape):
+        it.resize_tensor_input(inp["index"], list(x.shape)); it.allocate_tensors()
+    it.set_tensor(inp["index"], x)
+    it.invoke()
+    sc = np.asarray(it.get_tensor(out["index"]), dtype=np.float32)
+    return sc.reshape(-1, sc.shape[-1]).mean(axis=0) if sc.ndim > 1 else sc
+
+
+def sneeze_count(add=False):
+    d = datetime.now().strftime("%Y-%m-%d"); p = os.path.join(DATA_DIR, "sneezes.json")
+    if not _SNEEZE_DAYS["loaded"]:
+        _SNEEZE_DAYS["loaded"] = True
+        try:
+            with open(p) as f:
+                _SNEEZE_DAYS["days"] = {k: int(v) for k, v in json.load(f).items()}
+        except (OSError, ValueError, AttributeError):
+            pass
+    if add:
+        D = _SNEEZE_DAYS["days"]; D[d] = D.get(d, 0) + 1
+        for k in sorted(D)[:-120]:
+            D.pop(k, None)
+        try:
+            with open(p, "w") as f:
+                json.dump(D, f)
+        except OSError:
+            pass
+    return _SNEEZE_DAYS["days"].get(d, 0)
+
+
+def sneeze_reply():
+    now = time.time()
+    if now - SOUNDEV["sneeze_last"] < 5.0:                     # «hatschi - hatschi»: one answer
+        return
+    SOUNDEV["sneeze_last"] = now
+    n = sneeze_count(add=True)
+    h = datetime.now().hour
+    quiet = CFG.get("sneeze_night") and (h >= 22 or h < 7)
+    log_event("sys", f"Sneeze recognised (today {n}×)" + (" - quiet at night" if quiet else ""))
+    if quiet or not out_selected() or SOUND["playing"]:
+        return
+    rep = str(CFG.get("sneeze_reply") or "tts")
+    vol = CFG.get("sneeze_volume", 70)
+    if rep.startswith("file:") and rep[5:] in own_sounds():
+        sec = 3.0
+        try:
+            r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                                os.path.join(sounds_dir(), rep[5:])], capture_output=True, text=True, timeout=10)
+            sec = max(0.5, min(10.0, float(r.stdout.strip() or 3)))
+        except (OSError, ValueError, subprocess.SubprocessError):
+            pass
+        sound_play(rep, sec, vol, reason="test"); return
+    words = [x.strip() for x in str(CFG.get("sneeze_texts") or "").split("|") if x.strip()] or [tr("Bless you!")]
+    text = tr("Again? Get well soon!") if n >= 3 and n % 3 == 0 else words[(n - 1) % len(words)]
+    ok, err = tts_make(text, CFG["lang"], TTS["file"])
+    if not ok:                                                # no speech program: a small friendly melody
+        sound_play("beep3", 0.7, vol, reason="test"); SOUNDEV["model_msg"] = err; return
+    try:
+        import wave
+        with wave.open(TTS["file"]) as w_:
+            dur = w_.getnframes() / float(w_.getframerate() or 1)
+    except Exception:
+        dur = 2.0
+    sound_play("tts", dur + 0.3, vol, reason="test")
+
+
+def sneeze_upload(data):
+    """An own answer (e.g. «Gesundheit!» recorded on a phone): converted to a short .wav in the own sounds and chosen at once."""
+    if not data or len(data) > 8 * 1024 * 1024:
+        return False, "the file is too large (max. 8 MB)", ""
+    if not shutil.which("ffmpeg"):
+        return False, "ffmpeg is missing (sudo apt install ffmpeg)", ""
+    os.makedirs(sounds_dir(), exist_ok=True)
+    i = 1
+    while os.path.exists(os.path.join(sounds_dir(), f"Gesundheit {i}.wav")):
+        i += 1
+    name = f"Gesundheit {i}.wav"
+    tmp = os.path.join(tempfile.gettempdir(), "mw_sneeze_upload.bin")
+    with open(tmp, "wb") as f:
+        f.write(data)
+    try:
+        r = subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", tmp, "-t", "8", "-ac", "1", "-ar", "22050", os.path.join(sounds_dir(), name)],
+                           capture_output=True, timeout=60)
+        if r.returncode != 0 or not os.path.isfile(os.path.join(sounds_dir(), name)):
+            return False, "the file could not be read (a sound file like .m4a, .mp3 or .wav is needed)", ""
+    finally:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+    CFG["sneeze_reply"] = "file:" + name; save_settings()
+    log_event("sys", f"Own answer for «Bless you!» saved: {name}")
+    return True, "", name
+
+
+def sneeze_install():
+    """Install the runtime for the sound recognition model (pip, a few minutes; in the background)."""
+    if SOUNDEV["install"] == "running":
+        return False, "already running"
+    SOUNDEV["install"] = "running"
+
+    def work():
+        try:
+            r = subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", "ai-edge-litert"],
+                               capture_output=True, text=True, timeout=1200)
+            ok = r.returncode == 0
+            SOUNDEV["fail_t"] = 0.0
+            SOUNDEV["install"] = "done" if ok else "failed: " + ((r.stderr or r.stdout).strip().splitlines() or ["?"])[-1][:140]
+            log_event("sys", "Sound recognition: runtime installed" if ok else "Sound recognition: " + SOUNDEV["install"])
+            if ok:
+                SOUNDEV.update(model="off", model_msg="")
+        except Exception as e:
+            SOUNDEV["install"] = "failed: " + str(e)[:120]
+    threading.Thread(target=work, daemon=True, name="sneeze-install").start()
+    return True, ""
+
+
+def soundev_state():
+    now = time.time()
+    return {"clap_on": bool(CFG.get("clap_on")), "sneeze_on": bool(CFG.get("sneeze_on")), "counting": len(SOUNDEV["claps"]),
+            "last_n": SOUNDEV["last_n"] if now - SOUNDEV["last_n_t"] < 30 else 0, "last_act": SOUNDEV["last_act"] if now - SOUNDEV["last_act_t"] < 30 else "",
+            "model": SOUNDEV["model"], "model_msg": SOUNDEV["model_msg"], "install": SOUNDEV["install"], "runtime": yamnet_runtime() is not None,
+            "sneeze_score": SOUNDEV["sneeze_score"] if now - SOUNDEV["sneeze_t"] < 20 else None, "sneezes_today": sneeze_count(),
+            "mic": bool(CFG["audio_in"]), "spk": out_selected(), "tts": tts_engine() is not None}
+
+
+def soundev_text(which, lang=None):
+    s = soundev_state()
+    if not s["mic"]:
+        return tr("no microphone selected (Microphone)", lang)
+    if which == "clap":
+        if not s["clap_on"]:
+            return tr("off", lang)
+        t = tr("listening", lang) + (" · " + tr("counting", lang) + f": {s['counting']}×" if s["counting"] else "")
+        if s["last_n"]:
+            t += f" · {tr('last', lang)}: {s['last_n']}× → " + (tr(s["last_act"], lang) if s["last_act"] else "–")
+        return t + ("" if s["spk"] else " · " + tr("no loudspeaker for the beep", lang))
+    if not s["sneeze_on"]:
+        return tr("off", lang) + (f" · {tr('today', lang)}: {s['sneezes_today']}× {tr('sneezed', lang)}" if s["sneezes_today"] else "")
+    m = s["model"]
+    t = {"ready": tr("listening", lang), "downloading": tr("loading the sound recognition …", lang), "off": tr("waiting for the first loud sound", lang),
+         "no runtime": tr("needs the sound recognition program - button «Install»", lang), "download failed": tr("model could not be loaded", lang),
+         "error": tr("error", lang)}.get(m, m)
+    if s["install"] == "running":
+        t = tr("installing … (a few minutes)", lang)
+    elif s["install"].startswith("failed"):
+        t += " · ⚠ " + s["install"]
+    if s["sneeze_score"] is not None:
+        t += f" · {tr('last check', lang)}: {round(100 * s['sneeze_score'])} %"
+    t += f" · {tr('today', lang)}: {s['sneezes_today']}× {tr('sneezed', lang)}"
+    if not s["tts"] and str(CFG.get("sneeze_reply") or "tts") == "tts":
+        t += " · " + tr("no speech program (sudo apt install libttspico-utils)", lang)
+    return t
+
+
+SOUNDEV_OBJ = {"o": None}
+
+
 class AudioMonitor:
     """Reads the microphone (arecord), measures the level, raises the noise alarm, feeds the live listeners and the
     sound file of a running recording."""
@@ -8847,6 +9613,7 @@ class AudioMonitor:
         self.level = None; self.bg = None; self.peak = -90.0; self.peak_t = 0.0
         self.loud_since = 0.0; self.last_loud = 0.0; self.noisy_until = 0.0
         self.noise_alerted = False; self.last_noise = 0.0
+        self.sim_t = 0.0                     # the 3D simulator sends the sound of its world (no real microphone)
         self.mute_until = 0.0                # the Pi plays a sound itself: the noise alarm does not listen
         self.mux_threads = []
         self._status("off")
@@ -8864,7 +9631,21 @@ class AudioMonitor:
                           "talk": TALK["proc"] is not None, "https_port": STATE.get("https_port")}
 
     def noisy(self):
-        return self.proc is not None and time.time() < self.noisy_until
+        return (self.proc is not None or time.time() - self.sim_t < 1.5) and time.time() < self.noisy_until
+
+    def feed_sim(self, lvl):
+        """the sound level (dB) of the simulated world - only when no real microphone runs: noise alarm like with a microphone"""
+        if self.proc is not None:
+            return
+        now = time.time()
+        if now - self.sim_t > 5.0:
+            self._started = now; self.bg = None          # a new start: learn the background again
+        self.sim_t = now
+        self.level = float(lvl)
+        if self.level >= self.peak or now - self.peak_t > 3:
+            self.peak, self.peak_t = self.level, now
+        self._noise(now, self.level)
+        self._status("simulated")
 
     # ---- microphone process ----
     def _stop(self):
@@ -8891,6 +9672,8 @@ class AudioMonitor:
     def _loop_once(self):
         want = CFG["audio_in"]
         if not want or not AUDIO_DEV_RE.match(want):
+            if time.time() - self.sim_t < 1.5:           # the simulator supplies the sound
+                time.sleep(0.5); return
             if self.proc is not None:
                 self._stop(); log_event("sys", "Microphone off")
             self.rec_abort(); self._status("off"); time.sleep(0.5); return
@@ -8945,6 +9728,11 @@ class AudioMonitor:
                 except queue.Full:
                     pass                                 # slow phone: drop instead of waiting
         self._noise(now, lvl)
+        if SOUNDEV_OBJ["o"] is not None:
+            try:
+                SOUNDEV_OBJ["o"].feed(a, now)
+            except Exception as e:
+                SOUNDEV["model_msg"] = str(e)[:120]
         self._status("listening")
 
     # ---- noise alarm ----
@@ -9302,6 +10090,14 @@ def _smooth(env, rate):
 def sound_samples(kind, seconds, rate=OUT_RATE):
     """Float samples -1..1 of a generated alarm sound or an own file (looped to the length)."""
     n = max(1, int(seconds * rate)); t = np.arange(n, dtype=np.float64) / rate
+    if kind.startswith("beep"):                          # short answer beeps (clap switch): 1-4 rising, or one low
+        y = np.zeros(n, np.float32)
+        segs = [(0.0, 0.16, 440.0)] if kind == "beeplow" else [(i * 0.18, 0.12, 880.0 * (1.19 ** i)) for i in range(int(kind[4:] or 1))]
+        for st_, du, f in segs:
+            i0, i1 = int(st_ * rate), min(n, int((st_ + du) * rate))
+            if i1 > i0:
+                y[i0:i1] = (np.sin(2 * np.pi * f * (t[i0:i1] - st_)) * _smooth(np.ones(i1 - i0), rate) * 0.8).astype(np.float32)
+        return y
     if kind == "marmot":                                 # two short whistles
         y = np.zeros(n, np.float32)
         for st in (0.05, 0.55):
@@ -9368,7 +10164,7 @@ def sound_play(kind=None, seconds=None, volume=None, reason="test"):
     if not dev.startswith("bt:") and not shutil.which("aplay"):
         return False, "aplay is missing (sudo apt install alsa-utils)"
     kind = kind or CFG["siren_sound"]
-    if kind not in SOUND_KINDS + ("marmot", "tts") and not (kind.startswith("file:") and kind[5:] in own_sounds()):
+    if kind not in SOUND_KINDS + ("marmot", "tts", "beep1", "beep2", "beep3", "beep4", "beeplow") and not (kind.startswith("file:") and kind[5:] in own_sounds()):
         kind = "siren"
     seconds = max(0.5, min(120.0, float(seconds if seconds is not None else CFG["siren_seconds"])))
     vol = max(0.0, min(100.0, float(volume if volume is not None else CFG["siren_volume"]))) / 100.0
@@ -10766,7 +11562,7 @@ SOLARMON = None
 #   cameras, a thermal camera, day / night, weather and sensors. One switch: the sources change to the simulator, Motion Watch
 #   sends what it does (servos, lights, relays, sound, armed) about 10 x per second and takes the world from the answer.
 # ----------------------------------------------------------------------------
-SIM = {"t": 0.0, "ok": False, "msg": "off", "dark": False, "ambient": 15.0, "pressure": 1013.0, "wind": 0.0, "last_event": 0,
+SIM = {"mover": False, "t": 0.0, "ok": False, "msg": "off", "dark": False, "ambient": 15.0, "pressure": 1013.0, "wind": 0.0, "last_event": 0,
        "seen_event": 0, "info": None, "sent": 0, "since": 0.0, "errs": 0, "rtt": 0.0, "events_n": 0, "th_times": deque(maxlen=30)}
 
 
@@ -10824,7 +11620,14 @@ def sim_state():
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
             # automatic update: the simulator compares these checksums with its own files and fetches /sim/simulator.zip
-            "sim_files": sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"])}
+            "sim_files": sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
+            # CPU in % of the whole computer: total, Motion Watch, simulator (None = not on this computer / unknown)
+            "cpu": {"total": STATE.get("cpu"), "mw": STATE.get("cpu_mw"), "sim": STATE.get("cpu_sim")},
+            # what Motion Watch detects right now: the simulator compares it with the truth (test run, game «Motion Watch decides»)
+            "det": {"persons": int(STATE.get("persons") or 0), "present": list(STATE.get("present") or []), "armed": is_armed(),
+                    "noise": bool(AUDIO is not None and AUDIO.noisy())},
+            # the tracks of the mover: -1 … 1 each (from 2.94.0)
+            "drive": {"l": MOVER["l"], "r": MOVER["r"]}}
 
 
 _SIMFILES = {}
@@ -10979,11 +11782,13 @@ def _project_scan():
 
 def sim_control(d=None):
     """The video scenarios (and other switches) of the simulator: GET (d=None) or POST /control."""
+    lang_ = norm_lang(CFG.get("lang")) or "de"             # the simulator may show its names in this language (Accept-Language)
     if d is None:
-        data, _h = _sim_get("/control", 4.0)
-        return json.loads(data)
+        with _SIM_OPENER.open(urllib.request.Request(sim_base() + "/control", headers={"User-Agent": "MotionWatch", "Accept-Language": lang_}),
+                              timeout=4.0) as r:
+            return json.loads(r.read())
     req = urllib.request.Request(sim_base() + "/control", data=json.dumps(d).encode(),
-                                 headers={"Content-Type": "application/json", "User-Agent": "MotionWatch"})
+                                 headers={"Content-Type": "application/json", "User-Agent": "MotionWatch", "Accept-Language": lang_})
     with _SIM_OPENER.open(req, timeout=8.0) as r:
         return json.loads(r.read())
 
@@ -11654,7 +12459,7 @@ def tools_state():
             "servo": T["servo"], "sd": T["sd"], "presence": {"here": T["presence"]["here"], "since": T["presence"]["since"], "who": T["presence"]["who"]},
             "cfg": {k: CFG.get(k) for k in ("net_watch", "net_known", "presence_macs", "presence_auto", "presence_gone_min", "bt_tracker_warn",
                                             "bt_tracker_min", "presence_bt")},
-            "dual": dual_state(), "power": power_calc(), "has": {"nmcli": bool(shutil.which("nmcli")), "ping": bool(shutil.which("ping")), "bleak": _has_bleak()}}
+            "dual": dual_state(), "toolmode": toolmode_state(), "power": power_calc(), "has": {"nmcli": bool(shutil.which("nmcli")), "ping": bool(shutil.which("ping")), "bleak": _has_bleak()}}
 
 
 def _has_bleak():
@@ -11710,6 +12515,90 @@ def tools_cfg(key, value, mac=None):
         return False, "bad value"
     save_settings()
     return True, ""
+
+# ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
+# Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
+# signed, so the checksum can be trusted). ----
+SIM3D = {"version": "3D-3.16", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30690955,
+         "sha256": "6d1e0255fab6be6917867c6f17e9e30e80e16eaafa962f345cb86a3a6755223d"}
+SIM3D_DL = {"running": False, "got": 0, "msg": ""}
+# The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
+SIMPY = {"version": "PY-1.0", "file": "simulator_python/MotionWatchSimulator.zip", "size": 130085,
+         "sha256": "31ca87521ffc06f59099db7717dea22a8130dfd84c7cb53d16dbb57caad36510", "stem": "MotionWatch_PythonSimulator",
+         "label": "Python world simulator"}
+SIMPY_DL = {"running": False, "got": 0, "msg": ""}
+SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "3D simulator"
+SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
+
+
+def sim3d_path(pkg=None):
+    pkg = pkg or SIM3D
+    return os.path.join(DATA_DIR, "sim3d", pkg["stem"] + "_" + pkg["version"] + ".zip")
+
+
+def sim3d_ready(pkg=None):
+    pkg = pkg or SIM3D
+    p = sim3d_path(pkg)
+    return os.path.isfile(p) and os.path.getsize(p) == pkg["size"]
+
+
+def sim3d_fetch(pkg=None, dl=None):
+    """fetch a simulator package once from the project storage and check its checksum (3D simulator or Python world simulator)"""
+    SIM3D_ = pkg or SIM3D; SIM3D_DL_ = dl if dl is not None else SIM3D_DL
+    if SIM3D_DL_["running"] or sim3d_ready(SIM3D_):
+        return
+    SIM3D_DL_.update(running=True, got=0, msg="")
+
+    def work(SIM3D=SIM3D_, SIM3D_DL=SIM3D_DL_):
+        import hashlib
+        p = sim3d_path(SIM3D); tmp = p + ".part"
+        try:
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            src = CFG["update_url"].strip()
+            base = src.rsplit("/", 1)[0] + "/" if src.startswith("https://") else SIM3D_BASE
+            h = hashlib.sha256()
+            with urllib.request.urlopen(_upd_request(base + SIM3D["file"]), timeout=30) as r, open(tmp, "wb") as f:
+                while True:
+                    b = r.read(1 << 16)
+                    if not b:
+                        break
+                    f.write(b); h.update(b); SIM3D_DL["got"] += len(b)
+                    if SIM3D_DL["got"] > SIM3D["size"] + 1024:
+                        raise ValueError("file too large")
+            if h.hexdigest() != SIM3D["sha256"]:
+                raise ValueError("checksum wrong - the file was changed or is damaged")
+            os.replace(tmp, p)
+            for old in glob.glob(os.path.join(os.path.dirname(p), SIM3D["stem"] + "_*.zip")):
+                if old != p:
+                    os.remove(old)
+            log_event("sys", f"{SIM3D['label']} {SIM3D['version']} ready for download")
+        except Exception as e:
+            SIM3D_DL["msg"] = _upd_error(e)[:160]
+            log_event("sys", f"{SIM3D['label']} could not be fetched: " + SIM3D_DL["msg"])
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+        finally:
+            SIM3D_DL["running"] = False
+    threading.Thread(target=work, daemon=True, name="simpkg").start()
+
+
+def sim3d_wait_page(lang, pkg=None, dl=None, url="/sim/simulator3d.zip"):
+    SIM3D = pkg or globals()["SIM3D"]; SIM3D_DL = dl if dl is not None else globals()["SIM3D_DL"]
+    pct = int(100 * SIM3D_DL["got"] / SIM3D["size"])
+    err = SIM3D_DL["msg"]
+    title = tr("3D simulator for Windows" if pkg is None else "Python world simulator", lang)
+    body = (f"<p>⚠ {html_escape(tr('could not be prepared', lang))}: {html_escape(tr(err, lang))}</p><p><a href='{url}?retry=1'>"
+            f"{html_escape(tr('Try again', lang))}</a></p>") if err else (
+        f"<p>{html_escape(tr('The Pi prepares the download once (about 30 MB) …' if pkg is None else 'The Pi prepares the download once …', lang))}</p>"
+        f"<div style='height:14px;border-radius:7px;background:#1f2a38;overflow:hidden'><div style='height:100%;width:{pct}%;background:#2f81f7'></div></div>"
+        f"<p>{pct} %</p><p style='color:#8b9bb0'>{html_escape(tr('The download starts by itself.', lang))}</p>")
+    refresh = "" if err else '<meta http-equiv="refresh" content="2">'
+    return (f"<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>{refresh}"
+            f"<title>{html_escape(title)}</title></head><body style='font-family:system-ui,sans-serif;background:#0b0f14;color:#e6edf3;max-width:520px;"
+            f"margin:40px auto;padding:0 16px'><h2>🎮 {html_escape(title)} {SIM3D['version']}</h2>{body}</body></html>")
+
 
 SIM_BEACON_PORT = 8764
 SIMFOUND = {}                        # "ip:port" -> {"ip", "port", "name", "version", "t"}: simulators that announce themselves
@@ -11785,7 +12674,7 @@ def sim_scan():
     from concurrent.futures import ThreadPoolExecutor
     ip = _local_ipv4(); base = ".".join(ip.split(".")[:3])
     hosts = ["127.0.0.1"] + ([f"{base}.{i}" for i in range(1, 255)] if not ip.startswith("127.") else [])
-    ports = sorted({8765, 8766, int(urllib.parse.urlsplit(sim_base()).port or 8765)})
+    ports = sorted({8765, 8766, 8767, 8768, int(urllib.parse.urlsplit(sim_base()).port or 8765)})   # 8767 / 8768: further simulators
     SIMSCAN.update(running=True, t=time.time(), hosts=len(hosts) * len(ports), found=0, secs=0.0, net=f"{base}.0/24", done=0)
 
     def probe(hp):
@@ -11815,6 +12704,7 @@ def sim_scan():
                 list(ex.map(probe, [(h, p) for h in hosts for p in ports]))
         finally:
             SIMSCAN.update(running=False, secs=round(time.time() - t0, 1), t=time.time())
+            SIMSCAN["found"] = len(sim_found())             # simulators, not addresses (this device is reached twice: 127.0.0.1 and its own address)
             log_event("sys", f"Simulator search in {SIMSCAN['net']}: {SIMSCAN['found']} found ({SIMSCAN['hosts']} addresses in {SIMSCAN['secs']} s)")
     threading.Thread(target=run, daemon=True, name="simscan").start()
     return True
@@ -11865,7 +12755,9 @@ def sim_auto_adopt():
 
 
 def sim_status():
-    return {"found": sim_found(), "auto": bool(CFG.get("sim_auto")), "stats": sim_stats(),
+    return {"found": sim_found(), "auto": bool(CFG.get("sim_auto")), "stats": sim_stats(), "eco": bool(CFG.get("sim_eco")), "fps": int(CFG.get("sim_fps") or 6),
+            "sim3d": {"version": SIM3D["version"], "size_mb": round(SIM3D["size"] / 1e6), "ready": sim3d_ready()},
+            "simpy": {"version": SIMPY["version"], "size_kb": round(SIMPY["size"] / 1e3), "ready": sim3d_ready(SIMPY)},
             "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "msg": SIM["msg"], "url": sim_base(),
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
@@ -11942,8 +12834,16 @@ class SimLink:
         if not CFG["sim_on"]:
             return                                          # switched off while this request was running
         first = not SIM["ok"]
+        if rep_.get("sound_db") is not None and AUDIO is not None:
+            try:
+                AUDIO.feed_sim(float(rep_["sound_db"]))      # the sound of the simulated world for the noise alarm
+            except Exception:
+                pass
+        if first or int(rep_.get("pid") or 0) != SIM.get("pid_seen"):
+            SIM["pid"] = SIM["pid_seen"] = int(rep_.get("pid") or 0)  # its process number: CPU share if it runs on this computer
         SIM.update(t=time.time(), ok=True, msg="connected", dark=bool(rep_.get("dark")), ambient=float(rep_.get("ambient_c", 15.0)),
-                   pressure=float(rep_.get("pressure_hpa", 1013.0)), wind=float(rep_.get("wind_kmh", 0.0)), sent=SIM["sent"] + 1)
+                   pressure=float(rep_.get("pressure_hpa", 1013.0)), wind=float(rep_.get("wind_kmh", 0.0)), sent=SIM["sent"] + 1,
+                   mover=bool(rep_.get("mover")))                # the simulator has a mover (3D-3.11): second stick
         if first:
             SIM["since"] = time.time()
             self.hello()
@@ -13225,7 +14125,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_85_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -13881,6 +14781,37 @@ def _base_args():
 
 
 PAUSE_CHOICES = (5, 15, 30, 60, 120, 240, 480, 720)
+TOOLMODE = {"until": 0.0, "by": "", "since": 0.0}         # tool mode: camera, detection and AI rest - the tools get the computer
+
+
+def toolmode_on():
+    return time.time() < TOOLMODE["until"]
+
+
+def toolmode_set(minutes, source="web"):
+    """minutes > 0: Motion Watch rests (no camera, no detection, no alarms) and comes back by itself after the time.
+    0: back now. The web page and the tools keep running."""
+    try:
+        minutes = int(minutes)
+    except (TypeError, ValueError):
+        return False, "not a number"
+    if minutes <= 0:
+        if toolmode_on():
+            TOOLMODE["until"] = 0.0
+            log_event("sys", f"Tool mode ended by {source} - monitoring runs again")
+        return True, ""
+    if minutes > 240:
+        return False, "not a number"
+    was = toolmode_on()
+    TOOLMODE.update(until=time.time() + minutes * 60, by=source, since=TOOLMODE["since"] if was else time.time())
+    log_event("sys", f"Tool mode for {minutes} min by {source}: monitoring paused until {datetime.fromtimestamp(TOOLMODE['until']).strftime('%H:%M')}")
+    return True, ""
+
+
+def toolmode_state():
+    on = toolmode_on()
+    return {"on": on, "until": TOOLMODE["until"] if on else 0, "since": TOOLMODE["since"] if on else 0, "cpu": STATE.get("cpu"),
+            "temp": STATE.get("cpu_temp"), "armed": bool(CFG["armed"])}
 
 
 def pause_program(minutes, source="web"):
@@ -14480,6 +15411,9 @@ class MotionWatch:
             STORMWATCH = StormWatch()
         if GPSMODULE is None:
             GPSMODULE = GpsModule()
+        global MOVERCTL
+        if MOVERCTL is None:
+            MOVERCTL = MoverControl()
         global SOLARMON, SIMLINK
         if SOLARMON is None:
             SOLARMON = SolarMonitor()
@@ -14490,6 +15424,7 @@ class MotionWatch:
             threading.Thread(target=sim_autoupdate, daemon=True, name="simupdate").start()
         if AUDIO is None:
             AUDIO = AudioMonitor()
+            SOUNDEV_OBJ["o"] = SoundEvents()
             if bt_available():
                 threading.Thread(target=lambda: (bt_list(), bt_keeper()), daemon=True, name="bt").start()
         hotspot_password()                                 # the own Wi-Fi has its password from the start (shown on the page)
@@ -14947,9 +15882,43 @@ class MotionWatch:
         self._last_t0 = 0.0
 
     # ---- main loop -------------------------------------------------------
+    def toolmode_frame(self):
+        img = np.zeros((360, 640, 3), np.uint8)
+        cv2.putText(img, "|| TOOL MODE", (150, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (0, 200, 255), 3)
+        cv2.putText(img, "monitoring paused until " + datetime.fromtimestamp(TOOLMODE["until"]).strftime("%H:%M"), (150, 195),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (230, 230, 230), 2)
+        cv2.putText(img, "all computing power for the tools", (150, 230), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1)
+        return img
+
     def run(self):
+        tm_was = False
         while True:
             HEART["t"] = time.time()
+            if toolmode_on():                             # tool mode: the camera is closed, nothing is detected
+                if not tm_was:
+                    tm_was = True
+                    if self.cap is not None:
+                        try:
+                            self.cap.release()
+                        except Exception:
+                            pass
+                        self.cap = None
+                    try:
+                        self.reset_scene()                # a running recording is finished, the scene is learnt again later
+                    except Exception:
+                        pass
+                    self.relays.update(set()); STATE["present"] = []; STATE["persons"] = 0; STATE["tracking"] = False
+                    STATE["source_status"] = "tool mode"
+                    self.frame_out = self.toolmode_frame()
+                    ok_, buf_ = cv2.imencode(".jpg", self.frame_out, [cv2.IMWRITE_JPEG_QUALITY, 70])
+                    self._tm_jpeg = buf_.tobytes() if ok_ else None
+                if getattr(self, "_tm_jpeg", None):              # the live picture shows the pause picture (once a second)
+                    self.jpeg = self._tm_jpeg; self.jpeg_seq += 1
+                time.sleep(1.0); continue
+            if tm_was:
+                tm_was = False; self._retry_at = 0.0
+                STATE["source_status"] = "connecting"
+                log_event("sys", "Tool mode over - camera and detection run again")
             opened = self._take_opened()
             if opened is not None:
                 self._apply_opened(opened)
@@ -16629,6 +17598,8 @@ class ExtraCam:
 
     def loop(self):
         while not self.stop:
+            if toolmode_on():                                    # tool mode: this camera rests too
+                self.status = "tool mode"; self.motion = False; self._sleep(1.0); continue
             src, sid, label, err = open_source(self.spec)
             if src is None:
                 self.status = f"failed: {err}"; self._sleep(6.0); continue
@@ -16638,6 +17609,8 @@ class ExtraCam:
             fails, self.n = 0, 0
             try:
                 while not self.stop:
+                    if toolmode_on():
+                        break
                     ok, frame = src.read()
                     if not ok:
                         fails += 1
@@ -16650,7 +17623,7 @@ class ExtraCam:
                 log_event("sys", f"Camera {self.label}: {e}")
             finally:
                 src.release(); self._stop_rec()
-            if not self.stop:
+            if not self.stop and not toolmode_on():
                 self.status = "connection lost - reconnecting"; self.motion = False; self._sleep(2.0)
 
     def _process(self, frame, bg):
@@ -16796,6 +17769,8 @@ atexit.register(cams_close_all)
 # Shared look of all web pages (header, navigation, buttons, cards, forms)
 # ----------------------------------------------------------------------------
 BT_JS = r"""
+Object.assign(I18N.de, {"Everything about the simulator (tab Simulator)": "Alles zum Simulator (Reiter Simulator)"});
+Object.assign(I18N.de, {"3D simulator for Windows (ZIP)": "3D-Simulator für Windows (ZIP)", "Link for the PC browser": "Link für den Browser am PC"});
 Object.assign(I18N.de, {"own Wi-Fi on + internet from": "Eigenes WLAN ein + Internet von", "repeater": "Repeater",
   "own Wi-Fi on - the second adapter looks for known networks": "Eigenes WLAN ein – der zweite Adapter sucht bekannte Netze"});
 Object.assign(I18N.de, {"Bluetooth loudspeaker": "Bluetooth-Lautsprecher", "Search Bluetooth loudspeakers": "Bluetooth-Lautsprecher suchen",
@@ -17022,54 +17997,83 @@ TOOLS_PAGE = r"""<!doctype html>
 <title>Motion Watch - Tools</title>
 <style>
 /*BASECSS*/
-main{padding:16px;max-width:1500px;margin:0 auto}
-.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:10px;align-items:start;margin-bottom:8px}
-.tbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}.tbar .sp{flex:1}.tbar button{padding:6px 12px}
-.tgh{font-size:15px;margin:16px 2px 8px;color:var(--mut);font-weight:600;letter-spacing:.02em}
-details.tool{padding:0}
-details.card.tool>summary{display:flex;justify-content:flex-start;align-items:center;gap:10px;padding:12px 14px;min-height:50px;margin:0;
-  font-size:15px;letter-spacing:normal;text-transform:none;color:var(--txt);font-weight:600}
-details.card.tool[open]>summary{margin:0}
-details.card.tool>summary::after{flex:none;color:var(--mut)}
-details.card.tool>summary:hover{background:var(--field);border-radius:12px}
-details.tool>summary .ti{font-size:18px;width:24px;text-align:center;flex:none}
-details.tool>summary b{font-weight:600;min-width:0}
-.tsum{margin-left:auto;font-size:12.5px;font-weight:500;color:var(--mut);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;max-width:48%;flex:none}
-.tsum.ok{color:#3fb950}.tsum.warn{color:#d29922}.tsum.bad{color:#f85149;font-weight:600}
-.tbody{padding:0 14px 14px;border-top:1px solid var(--line)}
-#pres-st{font-size:22px}.tbody>.big:first-child,.tbody>.mut:first-child{margin-top:10px}
-.tact{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 6px}
-@media(max-width:520px){.tgrid{grid-template-columns:1fr}main{padding:10px}.tsum{max-width:42%}}
-.tgrid .card{margin:0}
-.tgrid h3{margin:0 0 4px;font-size:17px}
-.thead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
-.thead h3{flex:1}
-.tl{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
-.tl td,.tl th{padding:4px 5px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-.tl th{color:var(--mut);font-weight:600}
-.tl input[type=text]{padding:3px 6px;font-size:13px;width:110px}
-.tscroll{max-height:340px;overflow:auto}
-.newdev{color:#f5c542;font-weight:600}
-.lv{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--line);font-size:14px}
-.lv i{font-style:normal;flex:none;width:20px;text-align:center}
-.lv .mut{font-size:12px}
-.big{font-size:34px;font-weight:700;line-height:1.1}
-.bar{height:14px;border-radius:7px;background:var(--field);border:1px solid var(--line);overflow:hidden;margin:6px 0}
+main.tools{display:grid;grid-template-columns:270px minmax(0,1fr);gap:20px;max-width:1240px;margin:0 auto;padding:20px 16px 40px;align-items:start}
+.tlist{position:sticky;top:76px;display:flex;flex-direction:column;gap:1px;max-height:calc(100vh - 96px);overflow:auto;padding-right:2px}
+.tm{border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 14px;background:var(--panel)}
+.tm.on{border-color:var(--yel)}
+.tm-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.tm-h .mut{white-space:nowrap;margin:0}.tm-h b{font-weight:600;font-size:14px}
+.tm .mut{font-size:12px;margin-top:4px;line-height:1.45}
+.tm-a{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}.tm-a select{flex:none;width:auto}.tm-a button{flex:1;padding:7px 10px;font-size:13px}
+#tm-until{font-size:13px;color:var(--yel);flex-basis:100%}
+.tlg{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;margin:16px 10px 6px}
+.tlg:first-child{margin-top:0}
+.tli{display:flex;align-items:center;gap:11px;width:100%;background:none;border:0;border-radius:9px;padding:8px 10px;color:var(--txt);text-align:left;font-weight:400;cursor:pointer}
+.tli:hover{background:var(--field);filter:none}
+.tli.on{background:var(--btn2)}
+.tli .tln{display:flex;flex-direction:column;min-width:0;flex:1}
+.tli .tln b{font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tsum{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:0}
+.tsum:empty{display:none}
+.tdot{flex:none;width:7px;height:7px;border-radius:50%;background:transparent}
+.tdot.ok{background:var(--grn)}.tdot.warn{background:var(--yel)}.tdot.bad{background:var(--red)}
+svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--mut)}
+.tli.on svg.tico{color:var(--txt)}
+.tpane{min-width:0}
+.tool{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px 22px}
+.thd{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.tht{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.tht svg.tico{width:22px;height:22px;color:var(--txt)}
+.tht h2{margin:0;font-size:18px;font-weight:600}
+.thd .back{display:none}
+.tact{display:flex;gap:8px;flex-wrap:wrap}
+.tact button,.tact .btn{padding:7px 16px;font-size:13px}
+.tbd>*+*{margin-top:12px}
+.tbd .mut{font-size:13px;line-height:1.5}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:14px;cursor:pointer}
+.opt+.opt{margin-top:0}
+.tbd .opt + :not(.opt){margin-top:12px}
+.trow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}
+.trow input[type=number]{width:84px;flex:none}
+.tl{width:100%;border-collapse:collapse;font-size:13px}
+.tl th{color:var(--mut);font-weight:500;font-size:12px;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.tl td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tl tr:last-child td{border-bottom:0}
+.tl input[type=text]{padding:4px 8px;font-size:13px;width:120px}
+.tscroll{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.tscroll:has(table:empty){display:none}
+.newdev{color:var(--yel);font-weight:500}
+.lv{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.lv:last-of-type{border-bottom:0}
+.lv i.lvl{flex:none;width:8px;height:8px;border-radius:50%;margin-top:6px;background:var(--mut)}
+.lv i.ok{background:var(--grn)}.lv i.warn{background:var(--yel)}.lv i.bad{background:var(--red)}
+.big{font-size:24px;font-weight:600;line-height:1.2}
+.bar{height:6px;border-radius:3px;background:var(--field);overflow:hidden}
 .bar>div{height:100%;background:var(--acc);width:0;transition:width .3s}
-.spark{width:100%;height:50px;display:block;background:var(--field);border:1px solid var(--line);border-radius:8px}
-.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:14px;margin-top:6px}
+.spark{width:100%;height:56px;display:block;color:var(--acc)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px}
 .kv span:nth-child(odd){color:var(--mut)}
-.trow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0;font-size:14px;justify-content:flex-start}
-.trow input[type=number]{width:80px;flex:none}
-.trow label{display:flex;gap:8px;align-items:flex-start}
-.pw label{display:flex;gap:8px;align-items:center;padding:3px 0;font-size:14px}
-.pw label b{margin-left:auto;font-weight:600}
-.chans{display:flex;gap:4px;align-items:flex-end;height:60px;margin:6px 0}
-.chans div{flex:1;background:var(--acc);opacity:.7;border-radius:3px 3px 0 0;min-height:2px;position:relative}
-.chans div.best{background:#3fb950;opacity:1}
+.kv:empty{display:none}
+.pw label{display:flex;gap:10px;align-items:center;padding:7px 0;font-size:14px;border-bottom:1px solid var(--line)}
+.pw label{cursor:pointer;padding:9px 0}.pw label b{margin-left:auto;font-weight:500;color:var(--mut);font-size:13px}
+.chans{display:flex;gap:4px;align-items:flex-end;height:56px}
+.chans div{flex:1;background:var(--line);border-radius:3px 3px 0 0;min-height:2px}
+.chans div.best{background:var(--acc)}
 .chans:empty,.chl:empty{display:none}
-.chl{display:flex;gap:4px;font-size:10px;color:var(--mut)}.chl span{flex:1;text-align:center}
-.warnbox{background:rgba(245,197,66,.12);border:1px solid rgba(245,197,66,.5);border-radius:10px;padding:6px 10px;font-size:13px;margin:6px 0}
+.chl{display:flex;gap:4px;font-size:10px;color:var(--mut);margin-top:4px!important}.chl span{flex:1;text-align:center}
+.warnbox{border-left:3px solid var(--yel);padding:4px 12px;font-size:13px;color:var(--mut)}
+.adp{padding:10px 0;border-top:1px solid var(--line);font-size:14px}.adp:first-child{border-top:0}
+.adp-h{display:flex;justify-content:space-between;gap:10px}.adp-h b{font-weight:600}
+@media(max-width:760px){
+  main.tools{display:block;padding:12px 12px 32px}
+  .tlist{position:static;max-height:none;overflow:visible;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px}
+  .tli{padding:12px 10px}
+  .tlg{margin:14px 10px 4px}
+  body.picked .tlist{display:none}
+  body:not(.picked) .tpane{display:none}
+  .tool{padding:14px}
+  .thd .back{display:block;flex:0 0 100%;text-align:left;background:none;border:0;color:var(--acc2);padding:0 0 6px;font-size:14px;font-weight:500}
+  .tht h2{font-size:17px}
+}
 </style></head><body>
 <header>
   <h1>Motion Watch</h1>
@@ -17079,157 +18083,176 @@ details.tool>summary b{font-weight:600;min-width:0}
     <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
   </span>
 </header>
-<main>
-<div class="tbar"><span class="mut" data-i18n="tools-intro">tools-intro</span><span class="sp"></span><button class="sec" onclick="openAll(true)" data-i18n="Open all">Open all</button><button class="sec" onclick="openAll(false)" data-i18n="Close all">Close all</button></div>
-<h2 class="tgh">🌐 <span data-i18n="Network and internet">Network and internet</span></h2>
-<div class="tgrid">
-  <details class="card tool" id="c-net" data-k="net">
-    <summary><span class="ti">🖧</span><b data-i18n="Network scanner">Network scanner</b><span class="tsum" id="s-net"></span></summary>
-    <div class="tbody">
-    <div class="tact"><button id="b-net" onclick="run('net')" data-i18n="Scan">Scan</button></div>
-      <div class="mut" id="net-info" data-i18n="All devices in your own network (only there).">All devices in your own network (only there).</div>
-      <div class="trow"><label><input type="checkbox" id="cf-net_watch" onchange="cfg('net_watch',this.checked)"> <span data-i18n="Warn me about new devices (push, check every 10 min)">Warn me about new devices (push, check every 10 min)</span></label></div>
-      <div class="tscroll"><table class="tl" id="net-tab"></table></div>
+<main class="tools">
+<nav class="tlist" aria-label="Tools">
+  <div class="tm" id="tm">
+    <div class="tm-h"><b data-i18n="Full power for the tools">Full power for the tools</b><span class="mut" id="tm-cpu"></span></div>
+    <div class="mut" id="tm-note" data-i18n="tm-note">tm-note</div>
+    <div class="tm-a" id="tm-off"><select id="tm-min"><option value="10">10 min</option><option value="30" selected>30 min</option><option value="60">60 min</option><option value="120">120 min</option></select>
+      <button type="button" class="sec" onclick="toolmode(+$('#tm-min').value)" data-i18n="Pause Motion Watch">Pause Motion Watch</button></div>
+    <div class="tm-a" id="tm-on" hidden><span id="tm-until"></span><button type="button" onclick="toolmode(0)" data-i18n="Resume now">Resume now</button></div>
+  </div>
+  <div class="tlg" data-i18n="Network and internet">Network and internet</div>
+  <button type="button" class="tli" data-k="net" onclick="pick('net')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-4h12v4"/></svg><span class="tln"><b data-i18n="Network scanner">Network scanner</b><span class="tsum" id="s-net"></span></span><i class="tdot" id="d-net"></i></button>
+  <button type="button" class="tli" data-k="pres" onclick="pick('pres')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span class="tln"><b data-i18n="Am I at home?">Am I at home?</b><span class="tsum" id="s-pres"></span></span><i class="tdot" id="d-pres"></i></button>
+  <button type="button" class="tli" data-k="speed" onclick="pick('speed')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg><span class="tln"><b data-i18n="Internet test">Internet test</b><span class="tsum" id="s-speed"></span></span><i class="tdot" id="d-speed"></i></button>
+  <button type="button" class="tli" data-k="sec" onclick="pick('sec')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="tln"><b data-i18n="Security check">Security check</b><span class="tsum" id="s-sec"></span></span><i class="tdot" id="d-sec"></i></button>
+  <div class="tlg" data-i18n="Wi-Fi">Wi-Fi</div>
+  <button type="button" class="tli" data-k="dual" onclick="pick('dual')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><span class="tln"><b data-i18n="Wi-Fi adapters and repeater">Wi-Fi adapters and repeater</b><span class="tsum" id="s-dual"></span></span><i class="tdot" id="d-dual"></i></button>
+  <button type="button" class="tli" data-k="guard" onclick="pick('guard')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="tln"><b data-i18n="Wi-Fi guard">Wi-Fi guard</b><span class="tsum" id="s-guard"></span></span><i class="tdot" id="d-guard"></i></button>
+  <button type="button" class="tli" data-k="wifi" onclick="pick('wifi')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-4M9 20v-8M14 20V8M19 20V4"/></svg><span class="tln"><b data-i18n="Wi-Fi around">Wi-Fi around</b><span class="tsum" id="s-wifi"></span></span><i class="tdot" id="d-wifi"></i></button>
+  <div class="tlg" data-i18n="Device tests">Device tests</div>
+  <button type="button" class="tli" data-k="focus" onclick="pick('focus')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span class="tln"><b data-i18n="Focus assistant">Focus assistant</b><span class="tsum" id="s-focus"></span></span><i class="tdot" id="d-focus"></i></button>
+  <button type="button" class="tli" data-k="servo" onclick="pick('servo')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><span class="tln"><b data-i18n="Servo test">Servo test</b><span class="tsum" id="s-servo"></span></span><i class="tdot" id="d-servo"></i></button>
+  <button type="button" class="tli" data-k="audio" onclick="pick('audio')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span class="tln"><b data-i18n="Speaker and microphone">Speaker and microphone</b><span class="tsum" id="s-audio"></span></span><i class="tdot" id="d-audio"></i></button>
+  <button type="button" class="tli" data-k="sd" onclick="pick('sd')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><span class="tln"><b data-i18n="Memory card test">Memory card test</b><span class="tsum" id="s-sd"></span></span><i class="tdot" id="d-sd"></i></button>
+  <button type="button" class="tli" data-k="bt" onclick="pick('bt')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span class="tln"><b data-i18n="Bluetooth scanner">Bluetooth scanner</b><span class="tsum" id="s-bt"></span></span><i class="tdot" id="d-bt"></i></button>
+  <div class="tlg" data-i18n="Power and help">Power and help</div>
+  <button type="button" class="tli" data-k="pow" onclick="pick('pow')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2M7 10v4M11 10v4"/></svg><span class="tln"><b data-i18n="Power calculator">Power calculator</b><span class="tsum" id="s-pow"></span></span><i class="tdot" id="d-pow"></i></button>
+  <button type="button" class="tli" data-k="diag" onclick="pick('diag')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><span class="tln"><b data-i18n="Diagnosis package">Diagnosis package</b><span class="tsum" id="s-diag"></span></span><i class="tdot" id="d-diag"></i></button>
+</nav>
+<div class="tpane">
+  <section class="tool" id="c-net" data-k="net" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-4h12v4"/></svg><h2 data-i18n="Network scanner">Network scanner</h2></div><div class="tact"><button id="b-net" onclick="run('net')" data-i18n="Scan">Scan</button></div></div>
+    <div class="tbd">
+    <div class="mut" id="net-info" data-i18n="All devices in your own network (only there).">All devices in your own network (only there).</div>
+    <label class="opt"><span data-i18n="Warn me about new devices (push, check every 10 min)">Warn me about new devices (push, check every 10 min)</span><input type="checkbox" class="sw" id="cf-net_watch" onchange="cfg('net_watch',this.checked)"></label>
+    <div class="tscroll"><table class="tl" id="net-tab"></table></div>
     </div>
-  </details>
-  <details class="card tool" id="c-pres" data-k="pres">
-    <summary><span class="ti">🏠</span><b data-i18n="Am I at home?">Am I at home?</b><span class="tsum" id="s-pres"></span></summary>
-    <div class="tbody">
-      <div class="big" id="pres-st">–</div>
-      <div class="mut" id="pres-note" data-i18n="pres-note">pres-note</div>
-      <div class="trow"><label><input type="checkbox" id="cf-presence_auto" onchange="cfg('presence_auto',this.checked)"> <span data-i18n="Disarm when my device comes, arm when it is gone">Disarm when my device comes, arm when it is gone</span></label></div>
-      <div class="trow"><span data-i18n="Gone after">Gone after</span> <input type="number" id="cf-presence_gone_min" min="2" max="120" onchange="cfg('presence_gone_min',+this.value)"> <span data-i18n="minutes">minutes</span></div>
+  </section>
+  <section class="tool" id="c-pres" data-k="pres" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><h2 data-i18n="Am I at home?">Am I at home?</h2></div></div>
+    <div class="tbd">
+    <div class="big" id="pres-st">–</div>
+    <div class="mut" id="pres-note" data-i18n="pres-note">pres-note</div>
+    <label class="opt"><span data-i18n="Disarm when my device comes, arm when it is gone">Disarm when my device comes, arm when it is gone</span><input type="checkbox" class="sw" id="cf-presence_auto" onchange="cfg('presence_auto',this.checked)"></label>
+    <div class="trow"><span data-i18n="Gone after">Gone after</span> <input type="number" id="cf-presence_gone_min" min="2" max="120" onchange="cfg('presence_gone_min',+this.value)"> <span data-i18n="minutes">minutes</span></div>
     </div>
-  </details>
-  <details class="card tool" id="c-speed" data-k="speed">
-    <summary><span class="ti">🌐</span><b data-i18n="Internet test">Internet test</b><span class="tsum" id="s-speed"></span></summary>
-    <div class="tbody">
-    <div class="tact"><button id="b-speed" onclick="run('speed')" data-i18n="Start">Start</button></div>
-      <div class="warnbox" data-i18n="speed-warn">speed-warn</div>
-      <div class="kv" id="speed-now"></div>
-      <div class="tscroll"><table class="tl" id="speed-tab"></table></div>
+  </section>
+  <section class="tool" id="c-speed" data-k="speed" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg><h2 data-i18n="Internet test">Internet test</h2></div><div class="tact"><button id="b-speed" onclick="run('speed')" data-i18n="Start">Start</button></div></div>
+    <div class="tbd">
+    <div class="warnbox" data-i18n="speed-warn">speed-warn</div>
+    <div class="kv" id="speed-now"></div>
+    <div class="tscroll"><table class="tl" id="speed-tab"></table></div>
     </div>
-  </details>
-  <details class="card tool" id="c-sec" data-k="sec">
-    <summary><span class="ti">🛡</span><b data-i18n="Security check">Security check</b><span class="tsum" id="s-sec"></span></summary>
-    <div class="tbody">
-    <div class="tact"><button id="b-sec" onclick="run('sec')" data-i18n="Check">Check</button></div>
-      <div class="mut" data-i18n="What can be reached from the network or the internet, and what is risky.">What can be reached from the network or the internet, and what is risky.</div>
-      <div id="sec-list"></div>
+  </section>
+  <section class="tool" id="c-sec" data-k="sec" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><h2 data-i18n="Security check">Security check</h2></div><div class="tact"><button id="b-sec" onclick="run('sec')" data-i18n="Check">Check</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="What can be reached from the network or the internet, and what is risky.">What can be reached from the network or the internet, and what is risky.</div>
+    <div id="sec-list"></div>
     </div>
-  </details>
-</div>
-<h2 class="tgh">📡 <span data-i18n="Wi-Fi">Wi-Fi</span></h2>
-<div class="tgrid">
-  <details class="card tool" id="c-dual" data-k="dual">
-    <summary><span class="ti">📡</span><b data-i18n="Wi-Fi adapters and repeater">Wi-Fi adapters and repeater</b><span class="tsum" id="s-dual"></span></summary>
-    <div class="tbody">
-    <div class="tact"><button class="sec" onclick="dualAct('adapters')" data-i18n="Search again">Search again</button></div>
-      <div id="du-st" class="big" style="font-size:20px">–</div>
-      <div class="mut" id="du-note"></div>
-      <div id="du-ads"></div>
-      <div class="trow"><label><input type="checkbox" id="du-wifi_dual" onchange="dualSet('wifi_dual',this.checked)"> <span data-i18n="Use a second adapter (repeater)">Use a second adapter (repeater)</span></label></div>
-      <div class="trow"><label><input type="checkbox" id="du-wifi_swap" onchange="dualSet('wifi_swap',this.checked)"> <span data-i18n="Swap: the USB stick makes the own Wi-Fi">Swap: the USB stick makes the own Wi-Fi</span></label></div>
-      <div class="trow"><label><input type="checkbox" id="du-net_inet_notify" onchange="dualSet('net_inet_notify',this.checked)"> <span data-i18n="Push message when the internet was gone">Push message when the internet was gone</span></label></div>
-      <svg class="spark" id="du-spark" viewBox="0 0 300 50" preserveAspectRatio="none"><polyline id="du-line" fill="none" stroke="currentColor" stroke-width="2" points=""/></svg>
-      <div class="mut" id="du-sig"></div>
-      <div id="du-log"></div>
+  </section>
+  <section class="tool" id="c-dual" data-k="dual" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><h2 data-i18n="Wi-Fi adapters and repeater">Wi-Fi adapters and repeater</h2></div><div class="tact"><button class="sec" onclick="dualAct('adapters')" data-i18n="Search again">Search again</button></div></div>
+    <div class="tbd">
+    <div id="du-st" class="big" style="font-size:20px">–</div>
+    <div class="mut" id="du-note"></div>
+    <div id="du-ads"></div>
+    <label class="opt"><span data-i18n="Use a second adapter (repeater)">Use a second adapter (repeater)</span><input type="checkbox" class="sw" id="du-wifi_repeater" onchange="dualRep(this)"></label>
+    <label class="opt"><span data-i18n="Internet over the USB stick (better antenna)">Internet over the USB stick (better antenna)</span><input type="checkbox" class="sw" id="du-wifi_swap" onchange="dualSet('wifi_swap',this.checked)"></label>
+    <label class="opt"><span data-i18n="Push message when the internet was gone">Push message when the internet was gone</span><input type="checkbox" class="sw" id="du-net_inet_notify" onchange="dualSet('net_inet_notify',this.checked)"></label>
+    <svg class="spark" id="du-spark" viewBox="0 0 300 50" preserveAspectRatio="none"><polyline id="du-line" fill="none" stroke="currentColor" stroke-width="2" points=""/></svg>
+    <div class="mut" id="du-sig"></div>
+    <div id="du-log"></div>
     </div>
-  </details>
-  <details class="card tool" id="c-guard" data-k="guard">
-    <summary><span class="ti">🛡</span><b data-i18n="Wi-Fi guard">Wi-Fi guard</b><span class="tsum" id="s-guard"></span></summary>
-    <div class="tbody">
-      <div class="mut" data-i18n="guard-note">guard-note</div>
-      <div id="gu-st" class="big" style="font-size:20px">–</div>
-      <div class="mut" id="gu-msg"></div>
-      <div class="trow"><label><input type="checkbox" id="du-wifi_guard" onchange="dualSet('wifi_guard',this.checked)"> <span data-i18n="Alarm on Wi-Fi jamming (deauthentication attack)">Alarm on Wi-Fi jamming (deauthentication attack)</span></label></div>
-      <div class="trow"><span data-i18n="Alarm from">Alarm from</span> <input type="number" id="du-wifi_guard_thr" min="5" max="500" onchange="dualSet('wifi_guard_thr',+this.value)"> <span data-i18n="disconnect frames per minute">disconnect frames per minute</span></div>
-      <div class="trow"><label><input type="checkbox" id="du-wifi_presence" onchange="dualSet('wifi_presence',this.checked)"> <span data-i18n="Recognise my marked devices by listening (Am I at home?)">Recognise my marked devices by listening (Am I at home?)</span></label></div>
-      <div class="trow"><label><input type="checkbox" id="du-wifi_count" onchange="dualSet('wifi_count',this.checked)"> <span data-i18n="Count devices nearby (anonymous, nothing is stored)">Count devices nearby (anonymous, nothing is stored)</span></label></div>
-      <svg class="spark" id="gu-spark" viewBox="0 0 300 50" preserveAspectRatio="none"><polyline id="gu-line" fill="none" stroke="#f85149" stroke-width="2" points=""/><polyline id="gu-line2" fill="none" stroke="currentColor" stroke-width="1" opacity=".5" points=""/></svg>
-      <div class="mut" id="gu-info"></div>
-      <div id="gu-alarms"></div>
+  </section>
+  <section class="tool" id="c-guard" data-k="guard" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><h2 data-i18n="Wi-Fi guard">Wi-Fi guard</h2></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="guard-note">guard-note</div>
+    <div id="gu-st" class="big" style="font-size:20px">–</div>
+    <div class="mut" id="gu-msg"></div>
+    <label class="opt"><span data-i18n="Alarm on Wi-Fi jamming (deauthentication attack)">Alarm on Wi-Fi jamming (deauthentication attack)</span><input type="checkbox" class="sw" id="du-wifi_guard" onchange="dualSet('wifi_guard',this.checked)"></label>
+    <div class="trow"><span data-i18n="Alarm from">Alarm from</span> <input type="number" id="du-wifi_guard_thr" min="5" max="500" onchange="dualSet('wifi_guard_thr',+this.value)"> <span data-i18n="disconnect frames per minute">disconnect frames per minute</span></div>
+    <label class="opt"><span data-i18n="Recognise my marked devices by listening (Am I at home?)">Recognise my marked devices by listening (Am I at home?)</span><input type="checkbox" class="sw" id="du-wifi_presence" onchange="dualSet('wifi_presence',this.checked)"></label>
+    <label class="opt"><span data-i18n="Count devices nearby (anonymous, nothing is stored)">Count devices nearby (anonymous, nothing is stored)</span><input type="checkbox" class="sw" id="du-wifi_count" onchange="dualSet('wifi_count',this.checked)"></label>
+    <svg class="spark" id="gu-spark" viewBox="0 0 300 50" preserveAspectRatio="none"><polyline id="gu-line" fill="none" stroke="var(--red)" stroke-width="2" points=""/><polyline id="gu-line2" fill="none" stroke="currentColor" stroke-width="1" opacity=".5" points=""/></svg>
+    <div class="mut" id="gu-info"></div>
+    <div id="gu-alarms"></div>
     </div>
-  </details>
-  <details class="card tool" id="c-wifi" data-k="wifi">
-    <summary><span class="ti">📶</span><b data-i18n="Wi-Fi around">Wi-Fi around</b><span class="tsum" id="s-wifi"></span></summary>
-    <div class="tbody">
-    <div class="tact"><button id="b-wifi" onclick="run('wifi')" data-i18n="Scan">Scan</button></div>
-      <div id="wifi-best" class="mut" data-i18n="Shows the Wi-Fi networks nearby and the best channel for the own Wi-Fi (hotspot).">Shows the Wi-Fi networks nearby and the best channel for the own Wi-Fi (hotspot).</div>
-      <div class="chans" id="wifi-ch"></div><div class="chl" id="wifi-chl"></div>
-      <div class="tscroll"><table class="tl" id="wifi-tab"></table></div>
+  </section>
+  <section class="tool" id="c-wifi" data-k="wifi" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-4M9 20v-8M14 20V8M19 20V4"/></svg><h2 data-i18n="Wi-Fi around">Wi-Fi around</h2></div><div class="tact"><button id="b-wifi" onclick="run('wifi')" data-i18n="Scan">Scan</button></div></div>
+    <div class="tbd">
+    <div id="wifi-best" class="mut" data-i18n="Shows the Wi-Fi networks nearby and the best channel for the own Wi-Fi (hotspot).">Shows the Wi-Fi networks nearby and the best channel for the own Wi-Fi (hotspot).</div>
+    <div class="chans" id="wifi-ch"></div><div class="chl" id="wifi-chl"></div>
+    <div class="tscroll"><table class="tl" id="wifi-tab"></table></div>
     </div>
-  </details>
-</div>
-<h2 class="tgh">🔧 <span data-i18n="Device tests">Device tests</span></h2>
-<div class="tgrid">
-  <details class="card tool" id="c-focus" data-k="focus">
-    <summary><span class="ti">🎯</span><b data-i18n="Focus assistant">Focus assistant</b><span class="tsum" id="s-focus"></span></summary>
-    <div class="tbody">
-    <div class="tact"><button id="b-focus" onclick="focusToggle()" data-i18n="Start">Start</button></div>
-      <div class="mut" data-i18n="focus-note">focus-note</div>
-      <div class="trow"><span class="big" id="f-val">–</span><span class="mut" id="f-best"></span></div>
-      <div class="bar"><div id="f-bar"></div></div>
-      <svg class="spark" id="f-spark" viewBox="0 0 300 50" preserveAspectRatio="none"><polyline id="f-line" fill="none" stroke="currentColor" stroke-width="2" points=""/></svg>
-      <div class="mut" id="f-trend"></div>
+  </section>
+  <section class="tool" id="c-focus" data-k="focus" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><h2 data-i18n="Focus assistant">Focus assistant</h2></div><div class="tact"><button id="b-focus" onclick="focusToggle()" data-i18n="Start">Start</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="focus-note">focus-note</div>
+    <div class="trow"><span class="big" id="f-val">–</span><span class="mut" id="f-best"></span></div>
+    <div class="bar"><div id="f-bar"></div></div>
+    <svg class="spark" id="f-spark" style="display:none" viewBox="0 0 300 50" preserveAspectRatio="none"><polyline id="f-line" fill="none" stroke="currentColor" stroke-width="2" points=""/></svg>
+    <div class="mut" id="f-trend"></div>
     </div>
-  </details>
-  <details class="card tool" id="c-servo" data-k="servo">
-    <summary><span class="ti">🔧</span><b data-i18n="Servo test">Servo test</b><span class="tsum" id="s-servo"></span></summary>
-    <div class="tbody">
-    <div class="tact"><button id="b-servo" onclick="run('servo')" data-i18n="Start">Start</button></div>
-      <div class="mut" data-i18n="servo-note">servo-note</div>
-      <div id="servo-res"></div>
+  </section>
+  <section class="tool" id="c-servo" data-k="servo" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><h2 data-i18n="Servo test">Servo test</h2></div><div class="tact"><button id="b-servo" onclick="run('servo')" data-i18n="Start">Start</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="servo-note">servo-note</div>
+    <div id="servo-res"></div>
     </div>
-  </details>
-  <details class="card tool" id="c-audio" data-k="audio">
-    <summary><span class="ti">🔊</span><b data-i18n="Speaker and microphone">Speaker and microphone</b><span class="tsum" id="s-audio"></span></summary>
-    <div class="tbody">
-    <div class="tact"><button onclick="soundTest()" data-i18n="Test sound">Test sound</button></div>
-      <div class="mut" data-i18n="Clap or speak: the bar shows what the microphone hears.">Clap or speak: the bar shows what the microphone hears.</div>
-      <div class="bar"><div id="a-bar"></div></div>
-      <div class="mut" id="a-info"></div>
+  </section>
+  <section class="tool" id="c-audio" data-k="audio" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><h2 data-i18n="Speaker and microphone">Speaker and microphone</h2></div><div class="tact"><button onclick="soundTest()" data-i18n="Test sound">Test sound</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="Clap or speak: the bar shows what the microphone hears.">Clap or speak: the bar shows what the microphone hears.</div>
+    <div class="bar"><div id="a-bar"></div></div>
+    <div class="mut" id="a-info"></div>
     </div>
-  </details>
-  <details class="card tool" id="c-sd" data-k="sd">
-    <summary><span class="ti">💾</span><b data-i18n="Memory card test">Memory card test</b><span class="tsum" id="s-sd"></span></summary>
-    <div class="tbody">
-    <div class="tact"><button id="b-sd" onclick="run('sd')" data-i18n="Start">Start</button></div>
-      <div class="mut" data-i18n="Writes and reads 64 MB once, then deletes them again.">Writes and reads 64 MB once, then deletes them again.</div>
-      <div class="kv" id="sd-res"></div>
+  </section>
+  <section class="tool" id="c-sd" data-k="sd" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><h2 data-i18n="Memory card test">Memory card test</h2></div><div class="tact"><button id="b-sd" onclick="run('sd')" data-i18n="Start">Start</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="Writes and reads 64 MB once, then deletes them again.">Writes and reads 64 MB once, then deletes them again.</div>
+    <div class="kv" id="sd-res"></div>
     </div>
-  </details>
-  <details class="card tool" id="c-bt" data-k="bt">
-    <summary><span class="ti">ᛒ</span><b data-i18n="Bluetooth scanner">Bluetooth scanner</b><span class="tsum" id="s-bt"></span></summary>
-    <div class="tbody">
-    <div class="tact"><button id="b-bt" onclick="run('bt')" data-i18n="Scan (10 s)">Scan (10 s)</button></div>
-      <div class="mut" data-i18n="bt-note">bt-note</div>
-      <div class="trow"><label><input type="checkbox" id="cf-bt_tracker_warn" onchange="cfg('bt_tracker_warn',this.checked)"> <span data-i18n="Warn me about unknown trackers that stay near">Warn me about unknown trackers that stay near</span></label>
-        <span data-i18n="after">after</span> <input type="number" id="cf-bt_tracker_min" min="10" max="180" onchange="cfg('bt_tracker_min',+this.value)"> <span data-i18n="minutes">minutes</span></div>
-      <div id="bt-trk"></div>
-      <div class="tscroll"><table class="tl" id="bt-tab"></table></div>
+  </section>
+  <section class="tool" id="c-bt" data-k="bt" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><h2 data-i18n="Bluetooth scanner">Bluetooth scanner</h2></div><div class="tact"><button id="b-bt" onclick="run('bt')" data-i18n="Scan (10 s)">Scan (10 s)</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="bt-note">bt-note</div>
+    <label class="opt"><span data-i18n="Warn me about unknown trackers that stay near">Warn me about unknown trackers that stay near</span><input type="checkbox" class="sw" id="cf-bt_tracker_warn" onchange="cfg('bt_tracker_warn',this.checked)"></label>
+      <div class="trow"><span data-i18n="after">after</span> <input type="number" id="cf-bt_tracker_min" min="10" max="180" onchange="cfg('bt_tracker_min',+this.value)"> <span data-i18n="minutes">minutes</span></div>
+    <div id="bt-trk"></div>
+    <div class="tscroll"><table class="tl" id="bt-tab"></table></div>
     </div>
-  </details>
-</div>
-<h2 class="tgh">🔋 <span data-i18n="Power and help">Power and help</span></h2>
-<div class="tgrid">
-  <details class="card tool" id="c-pow" data-k="pow">
-    <summary><span class="ti">🔋</span><b data-i18n="Power calculator">Power calculator</b><span class="tsum" id="s-pow"></span></summary>
-    <div class="tbody">
-      <div class="trow"><span data-i18n="Now">Now</span> <span class="big" id="p-now">–</span><span class="mut" id="p-src"></span></div>
-      <div class="mut" data-i18n="Tick what should be on - the calculator shows the consumption and the running time.">Tick what should be on - the calculator shows the consumption and the running time.</div>
-      <div class="pw" id="p-parts"></div>
-      <div class="trow"><span data-i18n="Battery">Battery</span> <input type="number" id="p-wh" min="1" max="5000" step="1"> Wh <span class="mut" id="p-whn"></span></div>
-      <div class="kv" id="p-res"></div>
+  </section>
+  <section class="tool" id="c-pow" data-k="pow" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2M7 10v4M11 10v4"/></svg><h2 data-i18n="Power calculator">Power calculator</h2></div></div>
+    <div class="tbd">
+    <div class="trow"><span data-i18n="Now">Now</span> <span class="big" id="p-now">–</span><span class="mut" id="p-src"></span></div>
+    <div class="mut" data-i18n="Tick what should be on - the calculator shows the consumption and the running time.">Tick what should be on - the calculator shows the consumption and the running time.</div>
+    <div class="pw" id="p-parts"></div>
+    <div class="trow"><span data-i18n="Battery">Battery</span> <input type="number" id="p-wh" min="1" max="5000" step="1"> Wh <span class="mut" id="p-whn"></span></div>
+    <div class="kv" id="p-res"></div>
     </div>
-  </details>
-  <details class="card tool" id="c-diag" data-k="diag">
-    <summary><span class="ti">🩺</span><b data-i18n="Diagnosis package">Diagnosis package</b><span class="tsum" id="s-diag"></span></summary>
-    <div class="tbody">
-    <div class="tact"><button id="b-diag" onclick="location.href='/tools/diag.zip'" data-i18n="Download">Download</button></div>
-      <div class="mut" data-i18n="diag-note">diag-note</div>
+  </section>
+  <section class="tool" id="c-diag" data-k="diag" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><h2 data-i18n="Diagnosis package">Diagnosis package</h2></div><div class="tact"><button id="b-diag" onclick="location.href='/tools/diag.zip'" data-i18n="Download">Download</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="diag-note">diag-note</div>
     </div>
-  </details>
+  </section>
 </div>
 </main>
 <script>
@@ -17264,6 +18287,11 @@ Object.assign(I18N.de, {"Tools": "Werkzeuge", "Network scanner": "Netzwerkscanne
  "Own Wi-Fi (hotspot)": "Eigenes WLAN (Hotspot)", "Patrol (servos)": "Patrouille (Servos)", "Basic consumption": "Grundverbrauch"});
 Object.assign(I18N.de, {"Web password set": "Web-Passwort gesetzt", "Web password missing": "Web-Passwort fehlt", "Everybody in the network can operate Motion Watch": "Jeder im Netz kann Motion Watch bedienen", "Secure page (https) on": "Sichere Seite (https) ein", "Secure page (https) off": "Sichere Seite (https) aus", "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)": "Passwörter gehen unverschlüsselt durchs Netz – wichtig in fremden WLANs (Camping)", "Open in the network: port": "Offen im Netz: Port", "SSH: login with password allowed": "SSH: Anmelden mit Passwort erlaubt", "SSH: login with password off (keys only)": "SSH: Anmelden mit Passwort aus (nur Schlüssel)", "Use a strong password or keys": "Starkes Passwort oder Schlüssel verwenden", "Public IPv6 address present": "Öffentliche IPv6-Adresse vorhanden", "Depending on the router the Pi can be reached directly from the internet - keep the web password on": "Je nach Router ist der Pi direkt aus dem Internet erreichbar – Web-Passwort eingeschaltet lassen", "Router forwards ports to this device:": "Router leitet Ports an dieses Gerät weiter:", "No port forwarding of the router to this device (UPnP)": "Keine Port-Weiterleitung des Routers an dieses Gerät (UPnP)", "Address in the internet:": "Adresse im Internet:", "shared address of the mobile network - not reachable from outside": "geteilte Adresse des Handynetzes – von aussen nicht erreichbar", "Internet not reachable": "Internet nicht erreichbar", "Tailscale: access from outside only for your own devices": "Tailscale: Zugriff von aussen nur für die eigenen Geräte", "no network": "kein Netz", "no Wi-Fi scan possible (NetworkManager / nmcli missing or no Wi-Fi)": "keine WLAN-Suche möglich (NetworkManager / nmcli fehlt oder kein WLAN)", "Bluetooth scanner needs: sudo apt install python3-bleak": "Der Bluetooth-Scanner braucht: sudo apt install python3-bleak", "steps without a change of the picture - blocked, at the end or camera not on the head?": "Schritte ohne Bildänderung – blockiert, am Anschlag oder Kamera nicht auf dem Kopf?", "Apple Find My (AirTag or a lost Apple device)": "Apple «Wo ist?» (AirTag oder verlorenes Apple-Gerät)", "Apple device": "Apple-Gerät", "Samsung device": "Samsung-Gerät", "Microsoft device": "Microsoft-Gerät"});
 Object.assign(I18N.de, {"Wi-Fi adapters and repeater": "WLAN-Adapter und Repeater", "Search again": "Neu suchen", "Use a second adapter (repeater)": "Zweiten Adapter verwenden (Repeater)", "Swap: the USB stick makes the own Wi-Fi": "Tauschen: der USB-Stick macht das eigene WLAN", "Push message when the internet was gone": "Push-Meldung, wenn das Internet weg war", "Wi-Fi guard": "WLAN-Wächter", "guard-note": "Hört mit einem passenden USB-Stick mit, ob jemand das WLAN stört (Trennungs-Angriff, wie ihn Einbrecher gegen WLAN-Kameras benutzen).", "Alarm on Wi-Fi jamming (deauthentication attack)": "Alarm bei WLAN-Störung (Trennungs-Angriff)", "Alarm from": "Alarm ab", "disconnect frames per minute": "Trennungs-Meldungen pro Minute", "Recognise my marked devices by listening (Am I at home?)": "Meine markierten Geräte durch Mithören erkennen (Bin ich zu Hause?)", "Count devices nearby (anonymous, nothing is stored)": "Geräte in der Nähe zählen (anonym, nichts wird gespeichert)", "Repeater on": "Repeater aktiv", "Two adapters in use": "Zwei Adapter in Betrieb", "Second adapter not in use": "Zweiter Adapter nicht in Gebrauch", "Only one Wi-Fi adapter": "Nur ein WLAN-Adapter", "Own Wi-Fi": "Eigenes WLAN", "own Wi-Fi": "eigenes WLAN", "Internet": "Internet", "internet": "Internet", "off": "aus", "not connected": "nicht verbunden", "Plug in a USB Wi-Fi stick: then the Pi makes its own Wi-Fi and gets the internet from another network at the same time.": "Steck einen USB-WLAN-Stick ein: dann macht der Pi sein eigenes WLAN und holt gleichzeitig das Internet aus einem anderen Netz.", "no internet": "kein Internet", "connection unstable": "Verbindung unstabil", "No internet for devices": "Kein Internet für Geräte", "Adapter": "Adapter", "Chip": "Chip", "Listening": "Mithören", "Signal of the internet adapter (4 hours)": "Signal des Internet-Adapters (4 Stunden)", "weak: put the stick higher or nearer, use a USB extension cable": "schwach: Stick höher oder näher hinstellen, USB-Verlängerung benutzen", "listening": "hört mit", "error": "Fehler", "with": "mit", "Disconnect frames last minute": "Trennungs-Meldungen letzte Minute", "against your networks": "gegen deine Netze", "in total": "insgesamt", "devices nearby": "Geräte in der Nähe", "no internet for this device": "kein Internet für dieses Gerät", "only one Wi-Fi adapter": "nur ein WLAN-Adapter", "needs NetworkManager": "braucht NetworkManager", "very good: own Wi-Fi, 5 GHz and listening (monitor) work": "sehr gut: eigenes WLAN, 5 GHz und Mithören gehen", "good: 5 GHz and listening (monitor) work": "gut: 5 GHz und Mithören gehen", "simple stick: only 2.4 GHz": "einfacher Stick: nur 2,4 GHz", "only 2.4 GHz, listening (monitor) works": "nur 2,4 GHz, Mithören geht", "simple driver: no own Wi-Fi, no listening": "einfacher Treiber: kein eigenes WLAN, kein Mithören", "simple driver: no listening": "einfacher Treiber: kein Mithören", "listening (monitor) mostly not possible": "Mithören meist nicht möglich", "only 2.4 GHz": "nur 2,4 GHz", "extra driver needed": "braucht Zusatz-Treiber", "no Wi-Fi adapter here can listen (monitor mode) - e.g. a stick with MediaTek MT7612U / MT7921AU": "kein Adapter hier kann mithören (Monitor-Modus) – z. B. ein Stick mit MediaTek MT7612U / MT7921AU", "Built in": "Eingebaut"});
+Object.assign(I18N.de, {"Full power for the tools": "Volle Leistung für die Werkzeuge", "tm-note": "Pausiert Kamera, Erkennung und KI, damit rechenintensive Werkzeuge die ganze Leistung bekommen. Danach läuft alles von selbst wieder.", "Pause Motion Watch": "Motion Watch pausieren", "Resume now": "Jetzt fortsetzen", "paused until": "Pausiert bis", "Camera, detection and alarms are paused - they come back by themselves.": "Kamera, Erkennung und Alarme ruhen – sie kommen von selbst zurück.", "tm-confirm": "Motion Watch ist scharf. Während der Pause gibt es keine Überwachung und keine Alarme. Trotzdem pausieren?"});
+Object.assign(I18N.de, {"Internet over the USB stick (better antenna)": "Internet über den USB-Stick (bessere Antenne)"});
+Object.assign(I18N.de, {"rep-confirm": "Repeater einschalten? Ein Adapter wird dann zum eigenen WLAN «MotionWatch». Der Pi bekommt im Heimnetz eventuell eine neue Adresse. Hat er nach 2½ Minuten keine Verbindung mehr, schaltet er den Repeater selbst wieder aus.",
+  "repeater switched off again: no connection to a network": "Repeater wieder ausgeschaltet: keine Verbindung zu einem Netz"});
+Object.assign(I18N.de, {"All tools": "Alle Werkzeuge", "problem": "Problem", "problems": "Probleme", "warning": "Warnung", "warnings": "Warnungen", "all ok": "alles in Ordnung"});
 Object.assign(I18N.de, {"tools-intro": "Tippe auf ein Werkzeug, um es aufzuklappen. Die Zeile rechts zeigt das letzte Ergebnis.", "Open all": "Alle aufklappen", "Close all": "Alle zuklappen", "Network and internet": "Netz und Internet", "Wi-Fi": "WLAN", "Device tests": "Geräte-Tests", "Power and help": "Strom und Hilfe", "Wi-Fi jamming!": "WLAN-Störung!", "Best channel": "Bester Kanal", "networks": "Netze"});
 let S = null, FOC = null;
 const fmtT = ts => ts ? new Date(ts * 1000).toLocaleString(LOCALE || undefined, {hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit"}) : "–";
@@ -17327,7 +18355,7 @@ function draw() {
     Q.hist.slice().reverse().forEach(h => st.appendChild(tr_([fmtT(h.t), h.error ? "⚠" : h.down_mbit, h.error ? "" : h.up_mbit, h.error ? "" : h.ping_ms]))); }
   // security
   const sl = $("#sec-list"); sl.innerHTML = ""; btn("sec", "Check", S.sec.running);
-  (S.sec.items || []).forEach(it => { const r = el("div", "lv"); r.append(el("i", "", {ok: "✅", warn: "⚠️", bad: "⛔", info: "ℹ️"}[it.level] || "•"));
+  (S.sec.items || []).forEach(it => { const r = el("div", "lv"); r.append(el("i", "lvl " + it.level));
     const tx = el("div", "", t(it.text) + (it.arg ? " " + it.arg : "")); if (it.tip) { tx.appendChild(el("br")); tx.appendChild(el("span", "mut", t(it.tip))); } r.appendChild(tx); sl.appendChild(r); });
   if (S.sec.t) sl.appendChild(el("div", "mut", fmtT(S.sec.t)));
   // bluetooth
@@ -17351,14 +18379,29 @@ function draw() {
       ["Size", R.size_gb != null ? R.size_gb + " GB" : null], ["Written since start", R.written_gb != null ? R.written_gb + " GB" : null], ["Errors in the system log", R.errors],
       ["Verdict", {ok: "✅ " + t("good"), warn: "⚠ " + t("slow"), bad: "⛔ " + t("replace soon")}[R.verdict]]]
     .forEach(([a, b]) => { if (b != null && b !== "") sd.append(el("span", "", t(a)), el("span", "", b)); });
-  drawPower(); drawDual(); drawSums();
+  drawPower(); drawDual(); drawSums(); drawTm();
+  ["#pres-st", "#du-st", "#gu-st"].forEach(id => { const e = $(id); if (e) e.textContent = PLAIN(e.textContent); });
 }
-// fold / unfold, remembered in this browser
-function openSet() { try { return new Set(JSON.parse(localStorage.getItem("mw-tools-open") || "[]")); } catch (e) { return new Set(); } }
-function openSave() { try { localStorage.setItem("mw-tools-open", JSON.stringify([...document.querySelectorAll("details.tool[open]")].map(d => d.dataset.k))); } catch (e) {} }
-function openAll(on) { document.querySelectorAll("details.tool").forEach(d => d.open = on); openSave(); }
-(function () { const o = openSet(); document.querySelectorAll("details.tool").forEach(d => { if (o.has(d.dataset.k)) d.open = true; d.addEventListener("toggle", () => { openSave(); if (d.dataset.k === "focus" && !d.open && FON) focusToggle(); }); }); })();
-function sum(k, text, cls) { const e = $("#s-" + k); if (!e) return; e.textContent = text || ""; e.className = "tsum" + (cls ? " " + cls : ""); }
+// one tool at a time: list on the left (phone: list first, then the tool)
+const PLAIN = x => String(x == null ? "" : x).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{2705}\u{FE0F}\u{200D}]/gu, "").replace(/^\s+/, "");
+let SEL = "";
+function pick(k, push) {
+  if (!document.getElementById("c-" + k)) k = "net";
+  if (SEL === "focus" && k !== "focus" && FON) focusToggle();
+  SEL = k;
+  document.querySelectorAll("section.tool").forEach(x => x.hidden = x.dataset.k !== k);
+  document.querySelectorAll(".tli").forEach(x => x.classList.toggle("on", x.dataset.k === k));
+  document.body.classList.add("picked");
+  try { localStorage.setItem("mw-tool-sel", k); } catch (e) {}
+  if (push !== false && location.hash !== "#" + k) history.pushState(null, "", "#" + k);
+  if (matchMedia("(max-width:760px)").matches) scrollTo(0, 0);
+}
+function showList() { document.body.classList.remove("picked"); if (location.hash) history.pushState(null, "", location.pathname); }
+addEventListener("popstate", () => { const h = location.hash.slice(1); if (h) pick(h, false); else document.body.classList.remove("picked"); });
+(function () { let k = location.hash.slice(1); if (!k) { try { k = localStorage.getItem("mw-tool-sel") || ""; } catch (e) {} }
+  if (location.hash || !matchMedia("(max-width:760px)").matches) pick(k || "net", false);
+  else { SEL = k || "net"; document.querySelectorAll("section.tool").forEach(x => x.hidden = x.dataset.k !== SEL); } })();
+function sum(k, text, cls) { const e = $("#s-" + k); if (!e) return; e.textContent = PLAIN(text); const d = $("#d-" + k); if (d) d.className = "tdot" + (cls ? " " + cls : ""); }
 function drawSums() {
   const N = S.net, C = S.cfg || {};
   const nnew = N.devices.filter(d => d.new).length;
@@ -17367,7 +18410,8 @@ function drawSums() {
   const Q = S.speed, L = Q.hist[Q.hist.length - 1];
   sum("speed", Q.running ? t("running…") : L ? (L.error ? "⚠ " + t("error") : "↓ " + L.down_mbit + " · ↑ " + L.up_mbit + " Mbit/s") : "", L && L.error ? "warn" : "");
   const it = S.sec.items || [], nb = it.filter(x => x.level === "bad").length, nw = it.filter(x => x.level === "warn").length;
-  sum("sec", S.sec.running ? t("running…") : it.length ? (nb ? "⛔ " + nb + " " : "") + (nw ? "⚠ " + nw : "") + (!nb && !nw ? "✅ " + t("ok") : "") : "", nb ? "bad" : nw ? "warn" : "ok");
+  sum("sec", S.sec.running ? t("running…") : it.length ? [nb ? nb + " " + t(nb === 1 ? "problem" : "problems") : "", nw ? nw + " " + t(nw === 1 ? "warning" : "warnings") : ""].filter(Boolean).join(" · ") || t("all ok") : "",
+      !it.length ? "" : nb ? "bad" : nw ? "warn" : "ok");
   const D = S.dual || {}, G = D.guard || {};
   sum("dual", D.repeater ? "✅ " + t("Repeater on") : D.on ? t("Two adapters in use") : (D.adapters || []).length >= 2 ? t("Second adapter not in use") : t("Only one Wi-Fi adapter"), D.repeater ? "ok" : D.unstable || D.online === false ? "warn" : "");
   const recent = (G.alarms || []).some(a => Date.now() / 1000 - a.t < 3600);
@@ -17378,13 +18422,28 @@ function drawSums() {
   const R = (S.sd || {}).res || {}; sum("sd", S.sd.running ? t("running…") : R.write_mb_s != null ? "✍ " + R.write_mb_s + " · 📖 " + R.read_mb_s + " MB/s" : "", {ok: "ok", warn: "warn", bad: "bad"}[R.verdict] || "");
   if (S.power) sum("pow", S.power.watts.toFixed(1) + " W");
 }
+// tool mode: Motion Watch rests, the tools get the whole computer
+async function toolmode(min) {
+  if (min > 0 && S && S.toolmode && S.toolmode.armed && !confirm(t("tm-confirm"))) return;
+  const r = await post("/api/tools", {action: "toolmode", minutes: min}); if (!r.ok) toast(r.error || t("not possible")); else { S.toolmode = r.toolmode; drawTm(); }
+}
+function drawTm() {
+  const M = S.toolmode || {}; $("#tm").classList.toggle("on", !!M.on); $("#tm-off").hidden = !!M.on; $("#tm-on").hidden = !M.on;
+  $("#tm-cpu").textContent = M.cpu != null ? "CPU " + Math.round(M.cpu) + " %" + (M.temp != null ? " · " + Math.round(M.temp) + " °C" : "") : "";
+  $("#tm-note").textContent = M.on ? t("Camera, detection and alarms are paused - they come back by themselves.") : t("tm-note");
+  if (M.on) $("#tm-until").textContent = t("paused until") + " " + new Date(M.until * 1000).toLocaleTimeString(LOCALE || undefined, {hour: "2-digit", minute: "2-digit"});
+}
 // second Wi-Fi adapter + guard
 async function dualSet(key, value) { const r = await post("/api/tools", {action: "dual", key, value}); if (!r.ok) toast(r.error || t("not possible")); setTimeout(load, 800); }
+function dualRep(cb) {
+  if (cb.checked && !confirm(t("rep-confirm"))) { cb.checked = false; return; }
+  dualSet("wifi_repeater", cb.checked);
+}
 async function dualAct(a) { await post("/api/tools", {action: a}); setTimeout(load, 1500); }
-function spark(id, vals, lo, hi) { const n = vals.length; $(id).setAttribute("points", n < 2 ? "" : vals.map((v, i) => (i * 300 / (n - 1)).toFixed(1) + "," + (48 - 46 * (Math.max(lo, Math.min(hi, v)) - lo) / Math.max(1, hi - lo)).toFixed(1)).join(" ")); }
+function spark(id, vals, lo, hi) { const n = vals.length; const sv = $(id).closest("svg"); if (sv) sv.style.display = n < 2 ? "none" : ""; $(id).setAttribute("points", n < 2 ? "" : vals.map((v, i) => (i * 300 / (n - 1)).toFixed(1) + "," + (48 - 46 * (Math.max(lo, Math.min(hi, v)) - lo) / Math.max(1, hi - lo)).toFixed(1)).join(" ")); }
 function drawDual() {
   const D = S.dual; if (!D) return; const C = D.cfg || {};
-  ["wifi_dual", "wifi_swap", "net_inet_notify", "wifi_guard", "wifi_count", "wifi_presence"].forEach(k => { const e = $("#du-" + k); if (e) e.checked = !!C[k]; });
+  ["wifi_repeater", "wifi_swap", "net_inet_notify", "wifi_guard", "wifi_count", "wifi_presence"].forEach(k => { const e = $("#du-" + k); if (e) e.checked = !!C[k]; });
   const th = $("#du-wifi_guard_thr"); if (document.activeElement !== th) th.value = C.wifi_guard_thr || 20;
   const n = (D.adapters || []).length;
   $("#du-st").textContent = D.repeater ? "✅ " + t("Repeater on") : D.on ? "📡 " + t("Two adapters in use") : n >= 2 ? "⏸ " + t("Second adapter not in use") : "1️⃣ " + t("Only one Wi-Fi adapter");
@@ -17398,12 +18457,12 @@ function drawDual() {
   if (D.iso_msg) note += " · ⚠ " + t("No internet for devices") + ": " + D.iso_msg;
   $("#du-note").textContent = note;
   const ab = $("#du-ads"); ab.innerHTML = "";
-  if (n) { const tb = el("table", "tl"); tb.appendChild(tr_([t("Adapter"), t("Chip"), "5 GHz", t("Own Wi-Fi"), t("Listening")], true));
-    const yn = v => v == null ? "?" : v ? "✅" : "–";
-    D.adapters.forEach(a => { const role = a.iface === D.ap ? " · " + t("own Wi-Fi") : a.iface === D.up ? " · " + t("internet") : "";
-      const c = el("span", "", a.chip + (a.note ? " – " + t(a.note) : "")); if (a.usb_id) c.title = a.usb_id + " " + a.product + " (" + a.driver + ")";
-      tb.appendChild(tr_([(a.usb ? "USB " : "") + a.iface + role, c, yn(a.five), yn(a.ap), yn(a.monitor)])); });
-    ab.appendChild(tb); }
+  if (n) { const yn = (v, l) => t(l) + " " + (v == null ? "?" : v ? "✓" : "–");
+    D.adapters.forEach(a => { const role = a.iface === D.ap ? t("own Wi-Fi") : a.iface === D.up ? t("internet") : "";
+      const r = el("div", "adp"), h = el("div", "adp-h");
+      h.append(el("b", "", (a.usb ? "USB · " : t("Built in") + " · ") + a.iface), el("span", "mut", role));
+      const c = el("div", "", a.chip + (a.note ? " – " + t(a.note) : "")); if (a.usb_id) c.title = a.usb_id + " " + a.product + " (" + a.driver + ")";
+      r.append(h, c, el("div", "mut", [yn(a.five, "5 GHz"), yn(a.ap, "Own Wi-Fi"), yn(a.monitor, "Listening")].join(" · "))); ab.appendChild(r); }); }
   const sg = (D.sig || []).map(x => x[1]); spark("#du-line", sg, -95, -30);
   $("#du-sig").textContent = sg.length ? t("Signal of the internet adapter (4 hours)") + ": " + sg[sg.length - 1] + " dBm" + (sg[sg.length - 1] < -75 ? " – " + t("weak: put the stick higher or nearer, use a USB extension cable") : "") : "";
   const lg = $("#du-log"); lg.innerHTML = ""; (D.log || []).slice(0, 6).forEach(x => lg.appendChild(el("div", "mut", fmtT(x.t) + " · " + t(x.text))));
@@ -17423,8 +18482,8 @@ function drawPower() {
   const box = $("#p-parts");
   if (PWON === null) { PWON = {}; P.parts.forEach(p => PWON[p.name] = p.w !== 0); }
   if (!box.dataset.n) { box.dataset.n = 1;
-    P.parts.forEach(p => { const l = el("label"), c = el("input"); c.type = "checkbox"; c.checked = PWON[p.name]; c.onchange = () => { PWON[p.name] = c.checked; calc(); };
-      l.append(c, el("span", "", t(p.name)), el("b", "", "")); l.dataset.k = p.name; box.appendChild(l); }); }
+    P.parts.forEach(p => { const l = el("label"), c = el("input"); c.type = "checkbox"; c.className = "sw"; c.checked = PWON[p.name]; c.onchange = () => { PWON[p.name] = c.checked; calc(); };
+      l.append(el("span", "", t(p.name)), el("b", "", ""), c); l.dataset.k = p.name; box.appendChild(l); }); }
   const wh = $("#p-wh"); if (!wh.value && P.cap_wh) wh.value = Math.round(P.cap_wh);
   $("#p-whn").textContent = P.cap_wh ? "" : "(" + t("Battery") + "?)"; wh.oninput = calc; calc();
 }
@@ -17445,7 +18504,7 @@ async function live() {
     if (r) {
       const a = r.audio || {}, lv = a.level == null ? null : +a.level; sum("audio", a.dev ? "🎤 " + (lv == null ? "–" : lv.toFixed(0) + " dB") : t("no microphone")); $("#a-bar").style.width = lv == null ? "0" : Math.max(0, Math.min(100, Math.round((lv + 70) / 70 * 100))) + "%";
       $("#a-info").textContent = a.dev ? t("Microphone") + ": " + a.dev + " · " + t("Level") + " " + (lv == null ? "–" : lv.toFixed(0) + " dB") : t("no microphone");
-      if (FON && r.focus && r.focus.val != null) { const f = r.focus; FH.push(f.val); FH = FH.slice(-60);
+      if (FON && r.focus && r.focus.val != null) { const f = r.focus; $("#f-spark").style.display = ""; FH.push(f.val); FH = FH.slice(-60);
         $("#f-val").textContent = Math.round(f.val); sum("focus", Math.round(f.val) + " / " + Math.round(f.best), "ok"); $("#f-best").textContent = t("best") + ": " + Math.round(f.best);
         $("#f-bar").style.width = Math.round(100 * f.val / Math.max(1, f.best)) + "%";
         const mx = Math.max(...FH, 1), mn = Math.min(...FH); $("#f-line").setAttribute("points", FH.map((v, i) => (i * 300 / 59).toFixed(1) + "," + (48 - 46 * (v - mn) / Math.max(1, mx - mn)).toFixed(1)).join(" "));
@@ -17461,8 +18520,546 @@ async function soundTest() { const r = await post("/api/audio", {action: "test"}
 """
 
 
+SIMMAP_JS = r"""// ---- map of the simulator (control type "map", from 2.93.16): swisstopo map / aerial picture, drag, wheel / two fingers,
+// tap = choose the place where Motion Watch stands, search (swisstopo), «Load this place» -> the simulator builds it
+function simMap(c, send) {
+  const T = (k, z, x, y) => "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo." + k + "/default/current/3857/" + z + "/" + x + "/" + y + ".jpeg";
+  const W2 = (z) => 256 * Math.pow(2, z);
+  const lx = (lo, z) => (lo + 180) / 360 * W2(z);
+  const ly = (la, z) => { const s = Math.sin(la * Math.PI / 180); return (0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * W2(z); };
+  const xl = (x, z) => x / W2(z) * 360 - 180;
+  const yl = (y, z) => { const n = Math.PI - 2 * Math.PI * y / W2(z); return 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))); };
+  const inCH = (la, lo) => la > 45.8 && la < 47.85 && lo > 5.9 && lo < 10.5;
+  const box = document.createElement("div"); box.style.cssText = "flex:1 1 100%;width:100%;grid-column:1/-1";
+  const lab = el("div", "top", c.label); box.appendChild(lab);
+  const sr = document.createElement("div"); sr.style.cssText = "display:flex;gap:6px;margin:4px 0";
+  const q = document.createElement("input"); q.type = "search"; q.placeholder = t("Search a place (e.g. Zermatt)"); q.style.cssText = "flex:1;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--line,#1f2b3a);background:var(--field,#0c121a);color:var(--txt,#e8eef5)";
+  const sb = el("button", "sec", "🔎"); sb.type = "button";
+  const kb = el("button", "sec", t("Aerial picture")); kb.type = "button";
+  sr.append(q, sb, kb); box.appendChild(sr);
+  const res = document.createElement("div"); res.style.cssText = "display:flex;flex-direction:column;gap:4px;margin-bottom:4px"; box.appendChild(res);
+  const map = document.createElement("div");
+  map.style.cssText = "position:relative;height:300px;overflow:hidden;border-radius:10px;background:#cfd6cf;touch-action:none;cursor:crosshair;user-select:none";
+  const lay = document.createElement("div"); lay.style.cssText = "position:absolute;left:0;top:0"; map.appendChild(lay);
+  const sq = document.createElement("div"); sq.style.cssText = "position:absolute;border:2px solid #f5862a;background:rgba(245,134,42,.12);pointer-events:none;display:none";
+  const mk = document.createElement("div"); mk.style.cssText = "position:absolute;width:14px;height:14px;margin:-9px 0 0 -9px;border-radius:50%;background:#f0571a;border:2px solid #fff;pointer-events:none;display:none";
+  const at = el("div", "", "© swisstopo"); at.style.cssText = "position:absolute;right:4px;bottom:2px;font-size:10px;color:#222;background:rgba(255,255,255,.7);padding:0 4px;border-radius:4px";
+  map.append(sq, mk, at); box.appendChild(map);
+  const info = el("div", "mut", t("Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.")); info.style.margin = "4px 0"; box.appendChild(info);
+  const go = el("button", "", t("Load this place")); go.type = "button"; go.disabled = true; box.appendChild(go);
+  let kind = "pixelkarte-farbe", z = 7, cx = lx(8.23, 7), cy = ly(46.8, 7), sel = null, imgs = {};
+  const v = String(c.value || "").match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+  if (v && inCH(+v[1], +v[2])) { sel = {la: +v[1], lo: +v[2], name: ""}; z = 15; cx = lx(sel.lo, z); cy = ly(sel.la, z); go.disabled = false; }
+  function draw() {
+    const w = map.clientWidth, h = map.clientHeight; if (!w) return;
+    const tlx = cx - w / 2, tly = cy - h / 2, n = Math.pow(2, z), keep = {};
+    for (let ty = Math.floor(tly / 256); ty <= Math.floor((tly + h) / 256); ty++) for (let tx = Math.floor(tlx / 256); tx <= Math.floor((tlx + w) / 256); tx++) {
+      if (tx < 0 || ty < 0 || tx >= n || ty >= n) continue;
+      const k = kind + "/" + z + "/" + tx + "/" + ty; keep[k] = 1;
+      let im = imgs[k]; if (!im) { im = document.createElement("img"); im.src = T(kind, z, tx, ty); im.draggable = false; im.style.cssText = "position:absolute;width:256px;height:256px"; lay.appendChild(im); imgs[k] = im; }
+      im.style.left = (tx * 256 - tlx) + "px"; im.style.top = (ty * 256 - tly) + "px";
+    }
+    for (const k in imgs) if (!keep[k]) { imgs[k].remove(); delete imgs[k]; }
+    if (sel) {
+      const px = lx(sel.lo, z) - tlx, py = ly(sel.la, z) - tly, mpp = 40075016.7 * Math.cos(sel.la * Math.PI / 180) / W2(z), hs = 200 / mpp;
+      mk.style.display = "block"; mk.style.left = px + "px"; mk.style.top = py + "px";
+      sq.style.display = hs > 5 ? "block" : "none"; sq.style.left = (px - hs) + "px"; sq.style.top = (py - hs) + "px"; sq.style.width = sq.style.height = (2 * hs) + "px";
+    }
+  }
+  function zoomAt(px, py, dz) {
+    const z2 = Math.max(7, Math.min(19, z + dz)); if (z2 === z) return;
+    const f = Math.pow(2, z2 - z), w = map.clientWidth, h = map.clientHeight;
+    const ax = cx + px - w / 2, ay = cy + py - h / 2;
+    cx = ax * f - (px - w / 2); cy = ay * f - (py - h / 2); z = z2; draw();
+  }
+  function choose(px, py) {
+    const w = map.clientWidth, h = map.clientHeight, la = yl(cy + py - h / 2, z), lo = xl(cx + px - w / 2, z);
+    if (!inCH(la, lo)) { info.textContent = t("Only in Switzerland"); return; }
+    sel = {la: la, lo: lo, name: ""}; go.disabled = false; info.textContent = la.toFixed(5) + ", " + lo.toFixed(5); draw();
+  }
+  const P = new Map(); let moved = 0, pinch = 0;
+  map.addEventListener("pointerdown", e => { map.setPointerCapture(e.pointerId); P.set(e.pointerId, {x: e.offsetX, y: e.offsetY}); moved = 0; if (P.size === 2) { const a = [...P.values()]; pinch = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); } });
+  map.addEventListener("pointermove", e => {
+    const p = P.get(e.pointerId); if (!p) return;
+    const r = map.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    if (P.size === 1) { cx -= x - p.x; cy -= y - p.y; moved += Math.abs(x - p.x) + Math.abs(y - p.y); draw(); }
+    p.x = x; p.y = y;
+    if (P.size === 2) {
+      moved = 99; const a = [...P.values()], d = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
+      if (pinch && d / pinch > 1.6) { zoomAt((a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2, 1); pinch = d; }
+      else if (pinch && d / pinch < 0.62) { zoomAt((a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2, -1); pinch = d; }
+    }
+  });
+  const up = e => { const p = P.get(e.pointerId); P.delete(e.pointerId); if (p && P.size === 0 && moved < 6) { const r = map.getBoundingClientRect(); choose(e.clientX - r.left, e.clientY - r.top); } };
+  map.addEventListener("pointerup", up); map.addEventListener("pointercancel", e => P.delete(e.pointerId));
+  map.addEventListener("wheel", e => { e.preventDefault(); const r = map.getBoundingClientRect(); zoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1 : -1); }, {passive: false});
+  map.addEventListener("dblclick", e => { const r = map.getBoundingClientRect(); zoomAt(e.clientX - r.left, e.clientY - r.top, 1); });
+  kb.onclick = () => { kind = kind === "pixelkarte-farbe" ? "swissimage" : "pixelkarte-farbe"; kb.textContent = t(kind === "swissimage" ? "Map" : "Aerial picture"); for (const k in imgs) { imgs[k].remove(); delete imgs[k]; } draw(); };
+  async function search() {
+    const s = q.value.trim(); if (!s) return; res.textContent = "";
+    try {
+      const r = await fetch("https://api3.geo.admin.ch/rest/services/api/SearchServer?type=locations&sr=4326&limit=6&searchText=" + encodeURIComponent(s));
+      const d = await r.json(); const L = (d.results || []).filter(x => x.attrs && x.attrs.lat);
+      if (!L.length) { info.textContent = t("Nothing found"); return; }
+      L.forEach(x => { const name = String(x.attrs.label || "").replace(/<[^>]*>/g, ""); const b = el("button", "sec", name); b.type = "button"; b.style.textAlign = "left";
+        b.onclick = () => { sel = {la: x.attrs.lat, lo: x.attrs.lon, name: name}; z = 16; cx = lx(sel.lo, z); cy = ly(sel.la, z); res.textContent = ""; go.disabled = false; info.textContent = name; draw(); };
+        res.appendChild(b); });
+    } catch (e) { info.textContent = t("Search not possible – tap the place on the map"); }
+  }
+  sb.onclick = search; q.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); search(); } });
+  go.onclick = () => { if (!sel) return; send(sel.la.toFixed(6) + ", " + sel.lo.toFixed(6) + (sel.name ? ", " + sel.name.replace(/,/g, " ") : "")); info.textContent = t("The simulator loads the place (about a minute the first time)."); };
+  if (window.ResizeObserver) new ResizeObserver(() => draw()).observe(map); else setTimeout(draw, 300);
+  return box;
+}
+
+// ---- control of the simulator (from 2.93.16): built like the panel in the window of the simulator - a card per group with
+// its symbol, parts inside that open and close, switches on the right, «Simple | Expert», search. Rows keep data-cid /
+// .simv / .simvv, so the code that refreshes the values stays the same.
+const SC_ICON = {
+  link: '<path d="M9 7H7a5 5 0 0 0 0 10h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8"/>',
+  camera: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l2-3h4l2 3"/><circle cx="12" cy="13.5" r="3.5"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><ellipse cx="12" cy="12" rx="4" ry="9"/>',
+  cloud: '<path d="M7 17h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 1.5A3.3 3.3 0 0 0 7 17z"/><path d="M9 20l-1 2M14 20l-1 2"/>',
+  person: '<circle cx="12" cy="7" r="3.5"/><path d="M5 21a7 7 0 0 1 14 0z"/>',
+  lens: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/>',
+  bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><circle cx="12" cy="20.5" r="1.4" fill="currentColor"/>',
+  pad: '<rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 12.5h4M9 10.5v4"/><circle cx="15" cy="11.5" r="1.2" fill="currentColor"/><circle cx="17.5" cy="14" r="1.2" fill="currentColor"/>',
+  target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 1v5M12 18v5M1 12h5M18 12h5"/>',
+  check: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/>',
+  keys: '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h1M10 10h1M14 10h1M18 10h1M7 14h10"/>',
+  track: '<rect x="2" y="11" width="20" height="8" rx="4"/><circle cx="7" cy="15" r="1.8"/><circle cx="12" cy="15" r="1.8"/><circle cx="17" cy="15" r="1.8"/><path d="M8 11V6h8v5"/>'};
+function scCss() {
+  if (document.getElementById("simctl-css")) return;
+  const s = document.createElement("style"); s.id = "simctl-css";
+  s.textContent = `
+.sc-top{display:flex;gap:6px;margin:6px 0 10px}.sc-top input{flex:1;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--line,#1f2b3a);background:var(--field,#0c121a);color:var(--txt,#e8eef5)}
+.sc-card{background:var(--panel,#111822);border:1px solid var(--line,#1f2b3a);border-radius:12px;margin:0 0 10px;overflow:hidden}
+.sc-hd{display:flex;align-items:center;gap:9px;width:100%;padding:11px 12px;background:none;border:0;color:var(--txt,#e8eef5);cursor:pointer;font:inherit;text-align:left}
+.sc-hd svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--acc,#3b8cff);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sc-hd .sc-t{flex:1;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.sc-hd .sc-ar{color:var(--mut,#8a9bb0);font-size:12px}.sc-card.open>.sc-hd .sc-ar{color:var(--grn,#3fcf6b)}
+.sc-bd{display:none;padding:0 12px 12px}.sc-card.open>.sc-bd{display:block}
+.sc-sub{border-top:1px solid var(--line,#1f2b3a);margin-top:8px}
+.sc-sh{display:block;width:100%;background:none;border:0;padding:8px 0 4px;color:var(--mut,#8a9bb0);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.sc-sub.open>.sc-sh{color:var(--txt,#e8eef5)}.sc-sb{display:none;padding-left:10px}.sc-sub.open>.sc-sb{display:block}
+.sc-row{margin:8px 0}.sc-tg{display:flex;align-items:center;gap:10px;cursor:pointer}.sc-tg span{flex:1}
+.sc-sl .sc-l{display:flex;justify-content:space-between;gap:8px}.sc-sl input{width:100%}
+.sc-se select,.sc-tx input{width:100%;margin-top:4px;padding:8px 10px;border-radius:10px;border:1px solid var(--line,#1f2b3a);background:var(--field,#0c121a);color:var(--txt,#e8eef5)}
+.sc-bt{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.sc-bt button{min-height:38px;padding:6px 8px;border-radius:10px;
+  border:1px solid var(--line,#1f2b3a);background:var(--panel2,#1a2433);color:var(--txt,#e8eef5);font:inherit;cursor:pointer;line-height:1.25}
+.sc-bt button:active{background:var(--acc,#3b8cff);color:#fff}.sc-bt button.wide{grid-column:1/-1}
+.sc-sw{appearance:none;-webkit-appearance:none;flex:none;width:44px;height:26px;border-radius:99px;background:var(--line,#2a3646);position:relative;cursor:pointer;transition:.2s;margin:0}
+.sc-sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.sc-sw:checked{background:var(--grn,#3fcf6b)}.sc-sw:checked::after{left:21px}
+.sc-seg{display:flex;border:1px solid var(--line,#1f2b3a);border-radius:10px;overflow:hidden;margin:4px 0}.sc-seg button{flex:1;padding:9px;border:0;background:var(--panel,#111822);color:var(--txt,#e8eef5);font:inherit;cursor:pointer}
+.sc-seg button.on{background:var(--acc,#3b8cff);color:#fff}.sc-none{margin:8px 2px}
+.sc-hide{display:none!important}`;
+  document.head.appendChild(s);
+}
+function simCtlBuild(G, r, ctl, fmt) {
+  scCss();
+  const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
+  const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub", ["Besuch/Besucher schicken", "Spiel/Runde"]));
+  let expert = ls("mw-sc-expert", false), q = G.dataset.q || "";
+  G.textContent = "";
+  const top = el("div", "sc-top"); const qi = document.createElement("input"); qi.type = "search"; qi.placeholder = t("Search a setting …"); qi.value = q;
+  top.appendChild(qi); G.appendChild(top);
+  const none = el("div", "mut sc-none", t("Nothing found")); none.hidden = true; G.appendChild(none);
+  const byG = {}, order = [];
+  (r.controls || []).forEach(c => { const g = c.group || t("Controls"); if (!byG[g]) { byG[g] = []; order.push(g); } byG[g].push(c); });
+  const cards = [];
+  order.forEach(g => {
+    const cs = byG[g], card = el("div", "sc-card"); card.dataset.g = g; if (openC.has(g)) card.classList.add("open");
+    const hd = document.createElement("button"); hd.type = "button"; hd.className = "sc-hd";
+    const ik = (cs.find(c => c.iconk) || {}).iconk, ie = (cs.find(c => c.icon) || {}).icon;
+    hd.innerHTML = (ik && SC_ICON[ik] ? '<svg viewBox="0 0 24 24">' + SC_ICON[ik] + '</svg>' : (ie ? "<span>" + ie + "</span>" : "")) + '<span class="sc-t"></span><span class="sc-ar"></span>';
+    hd.querySelector(".sc-t").textContent = g;
+    const ar = () => { hd.querySelector(".sc-ar").textContent = card.classList.contains("open") ? "▼" : "▶"; };
+    hd.onclick = () => { card.classList.toggle("open"); ar(); card.classList.contains("open") ? openC.add(g) : openC.delete(g); ss("mw-sc-open", [...openC]); };
+    ar(); const bd = el("div", "sc-bd"); card.append(hd, bd); G.appendChild(card); cards.push(card);
+    const subs = {};
+    cs.forEach(c => {
+      let tgt = bd; const sub = c.sub || "";
+      if (sub) {
+        if (!subs[sub]) {
+          const key = g + "/" + sub, w = el("div", "sc-sub"); if (openS.has(key)) w.classList.add("open");
+          const sh = document.createElement("button"); sh.type = "button"; sh.className = "sc-sh";
+          const p = () => { sh.textContent = (w.classList.contains("open") ? "▾  " : "▸  ") + sub; };
+          sh.onclick = () => { w.classList.toggle("open"); p(); w.classList.contains("open") ? openS.add(key) : openS.delete(key); ss("mw-sc-sub", [...openS]); };
+          p(); const sb = el("div", "sc-sb"); w.append(sh, sb); bd.appendChild(w); subs[sub] = sb;
+        }
+        tgt = subs[sub];
+      }
+      let row;
+      if (c.type === "map") { row = simMap(c, v => ctl({ctl: "set", id: c.id, value: v})); row.classList.add("sc-row"); }
+      else if (c.type === "button") {
+        let grid = tgt.lastElementChild; if (!grid || !grid.classList.contains("sc-bt")) { grid = el("div", "sc-bt"); tgt.appendChild(grid); }
+        const x = el("button", "", c.label); x.type = "button"; if (c.label.length > 26) x.className = "wide";
+        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; x.dataset.ex = c.expert ? "1" : ""; grid.appendChild(x); return;
+      } else if (c.type === "toggle") {
+        row = el("label", "sc-row sc-tg"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sc-sw simv";
+        cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked}); row.append(el("span", "", c.label), cb);
+      } else if (c.type === "slider") {
+        row = el("div", "sc-row sc-sl"); const l = el("div", "sc-l"); const vv = el("span", "mut simvv"); l.append(el("span", "", c.label), vv);
+        const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1;
+        rg.oninput = () => { vv.textContent = fmt(c, +rg.value); }; rg.onchange = () => ctl({ctl: "set", id: c.id, value: +rg.value}); row.append(l, rg);
+      } else if (c.type === "select") {
+        row = el("div", "sc-row sc-se"); const se = document.createElement("select"); se.className = "simv";
+        (c.options || []).forEach(o => { const op = document.createElement("option"); op.value = o[0]; op.textContent = o[1] || o[0]; se.appendChild(op); });
+        se.onchange = () => ctl({ctl: "set", id: c.id, value: se.value}); row.append(el("div", "", c.label), se);
+      } else {
+        row = el("div", "sc-row sc-tx"); const ti = document.createElement("input"); ti.className = "simv";
+        ti.onkeydown = e => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(el("div", "", c.label), ti);
+      }
+      row.dataset.cid = c.id; row.dataset.lab = c.label; row.dataset.ex = c.expert ? "1" : ""; tgt.appendChild(row);
+    });
+  });
+  const seg = el("div", "sc-seg"); const b1 = el("button", "", t("Simple")), b2 = el("button", "", t("Expert")); b1.type = b2.type = "button"; seg.append(b1, b2); G.appendChild(seg);
+  const note = el("div", "mut", t("Simple: only the important settings. «Expert» shows all.")); G.appendChild(note);
+  function apply() {
+    q = qi.value.trim().toLowerCase(); G.dataset.q = qi.value; let any = false;
+    b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert;
+    cards.forEach(card => {
+      let vis = 0;
+      card.querySelectorAll("[data-lab]").forEach(n => { const ok = (q ? n.dataset.lab.toLowerCase().includes(q) : true) && (expert || q || n.dataset.ex !== "1"); n.classList.toggle("sc-hide", !ok); if (ok) vis++; });
+      card.querySelectorAll(".sc-sub").forEach(w => { const n = w.querySelectorAll("[data-lab]:not(.sc-hide)").length; w.classList.toggle("sc-hide", !n); if (q && n) w.classList.add("open"); });
+      card.querySelectorAll(".sc-bt").forEach(b => b.classList.toggle("sc-hide", !b.querySelector("button:not(.sc-hide)")));
+      card.classList.toggle("sc-hide", !vis); if (q && vis) { card.classList.add("open"); any = true; }
+      const ar = card.querySelector(".sc-ar"); ar.textContent = card.classList.contains("open") ? "▼" : "▶";
+    });
+    none.hidden = !q || any;
+  }
+  qi.oninput = apply; b1.onclick = () => { expert = false; ss("mw-sc-expert", false); apply(); }; b2.onclick = () => { expert = true; ss("mw-sc-expert", true); apply(); };
+  apply();
+}
+"""
+
+
+SIM_PAGE = r"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Motion Watch - Simulator</title>
+<style>
+/*BASECSS*/
+#c-prev{scroll-margin-top:calc(var(--hdr-h,64px) + 10px)}
+main.simp{max-width:1100px;margin:0 auto;padding:20px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.sc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.sc.wide{grid-column:1/-1}
+details.fold{padding:0}
+details.fold>summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;align-items:center;user-select:none;border-radius:14px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{background:var(--field)}
+details.fold>summary h2{flex:1;margin:0}
+details.fold>summary::after{content:"▾";color:var(--mut);font-size:15px;transition:transform .15s;margin-left:10px}
+details.fold:not([open])>summary::after{transform:rotate(-90deg)}
+details.fold>.fb{padding:0 20px 18px}
+details.fold>.fb>*+*{margin-top:12px}
+details.fold>.fb>.mut:first-child{margin-top:0}
+
+.sc h2{margin:0 0 4px;font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px}
+.sc h2 svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--mut);flex:none}
+.sc>.mut:first-of-type{margin-bottom:10px}
+.sc .mut{font-size:13px;line-height:1.5}
+.sc>*+*{margin-top:12px}
+.sthead{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.sdot{width:12px;height:12px;border-radius:50%;background:var(--mut);flex:none}
+.sdot.ok{background:var(--grn);box-shadow:0 0 8px var(--grn)}.sdot.bad{background:var(--red)}
+.sttl{font-size:20px;font-weight:600;flex:1;min-width:0}
+#s-btn{padding:10px 18px;font-size:14px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.tile{border:1px solid var(--line);border-radius:10px;padding:8px 10px}.tile .mut{font-size:11px}.tile b{font-weight:600;font-size:15px}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:14px;cursor:pointer}
+.row2{display:flex;gap:8px;align-items:center}.row2 input[type=text]{flex:1;min-width:0}
+.fnd{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:10px}
+.fnd+.fnd{margin-top:6px}.fnd .n{flex:1;min-width:0}.fnd .n b{font-weight:500}.fnd .n .mut{font-size:12px}
+.fnd.cur{border-color:var(--grn)}
+.rng{display:flex;justify-content:space-between;font-size:14px}
+.dl{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dl a,.dl button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px;font-size:14px}
+.dl a small,.dl button small{font-weight:400;font-size:12px;opacity:.75}
+.dl .main{grid-column:1/-1}
+#c-prev{padding:12px}#c-prev>*+*{margin-top:8px}
+.pvw{position:relative;background:#000;border-radius:10px;overflow:hidden}
+#s-prev{width:100%;aspect-ratio:16/9;object-fit:contain;background:#000;display:block;max-height:62vh}
+.pvlive{position:absolute;left:10px;bottom:10px;font:700 11px/1 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px}
+#pip{position:fixed;z-index:45;width:min(44vw,300px);border-radius:12px;overflow:hidden;background:#000;cursor:pointer;touch-action:none;box-shadow:0 8px 26px rgba(0,0,0,.55);border:1px solid var(--line)}
+#pip[hidden]{display:none}
+#pip[data-c="br"]{right:12px;bottom:calc(env(safe-area-inset-bottom) + 12px)}#pip[data-c="bl"]{left:12px;bottom:calc(env(safe-area-inset-bottom) + 12px)}
+#pip[data-c="tr"]{right:12px;top:calc(var(--hdr-h,64px) + 10px)}#pip[data-c="tl"]{left:12px;top:calc(var(--hdr-h,64px) + 10px)}
+#pip .pip-in img{width:100%;height:auto;max-height:none;aspect-ratio:auto;display:block;pointer-events:none}
+#pip .pip-live{position:absolute;left:6px;bottom:6px;font:700 10px/1 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:3px 6px;border-radius:6px}
+#pip-x{position:absolute;top:5px;right:5px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:28px;padding:0;min-height:0}
+.cg{border-top:1px solid var(--line);padding-top:6px}
+.cg>summary{cursor:pointer;padding:6px 0;font-weight:500;font-size:14px;list-style:none}
+.cg>summary::-webkit-details-marker{display:none}.cg>summary::before{content:"▸ ";color:var(--mut)}.cg[open]>summary::before{content:"▾ "}
+.cgb{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 10px}
+.cgb .cr{flex:1 1 100%}.cgb>button{flex:1 1 30%;padding:8px 10px;font-size:13px}
+.cgb .cr .top{display:flex;justify-content:space-between;font-size:14px;margin-bottom:2px}
+.cgb label.cr{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
+#s-scn{display:flex;gap:8px;flex-wrap:wrap}#s-scn select{flex:1 1 220px;min-width:0}
+.howto{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
+@media(max-width:820px){main.simp{grid-template-columns:1fr;padding:12px 12px 32px}.sc{padding:14px}details.fold{padding:0}details.fold>summary{padding:14px}details.fold>.fb{padding:0 14px 14px}.dl{grid-template-columns:1fr}
+  .sttl{font-size:17px}#s-btn{flex:1 1 100%}.tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
+</style></head><body>
+<header>
+  <h1>Motion Watch</h1>
+  <!--NAV-->
+  <span class="hdr-ctl">
+    <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
+    <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
+  </span>
+</header>
+<main class="simp">
+  <section class="sc wide" id="c-prev">
+    <div class="pvw" id="s-pvw"><img id="s-prev" alt=""><span class="pvlive" id="s-pvlive" hidden>● LIVE</span></div>
+    <div class="mut" id="s-prevnote"></div>
+  </section>
+  <section class="sc wide" id="c-status">
+    <div class="sthead"><i class="sdot" id="s-dot"></i><div class="sttl" id="s-ttl">–</div><button type="button" id="s-btn" onclick="simOnOff()">–</button></div>
+    <div class="mut" id="s-msg"></div>
+    <div class="tiles" id="s-tiles"></div>
+  </section>
+
+  <details class="sc fold" id="c-conn" data-k="conn" open>
+    <summary><h2><svg viewBox="0 0 24 24"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><span data-i18n="Connection">Connection</span></h2></summary>
+    <div class="fb">
+    <div class="mut" data-i18n="conn-note">conn-note</div>
+    <div class="row2"><input type="text" id="s-url" placeholder="http://192.168.1.50:8765" autocomplete="off"><button type="button" class="sec" onclick="saveUrl()" data-i18n="Save">Save</button></div>
+    <label class="opt"><span data-i18n="Find the simulator in the network by itself">Find the simulator in the network by itself</span><input type="checkbox" class="sw" id="k-sim_auto" onchange="setKey('sim_auto', this.checked)"></label>
+    <div><b style="font-weight:600;font-size:14px" data-i18n="Simulators in the network">Simulators in the network</b><div class="mut" id="s-scan"></div></div>
+    <div id="s-found"></div>
+    <button type="button" class="sec" id="s-search" onclick="search()" style="width:100%" data-i18n="Search now">Search now</button>
+    </div>
+  </details>
+
+
+  <details class="sc fold wide" id="c-ctl" data-k="ctl" open>
+    <summary><h2><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span data-i18n="Simulator control">Simulator control</span><span class="mut" id="s-cname" style="font-weight:400"></span></h2></summary>
+    <div class="fb">
+    <div class="mut" id="s-cst" data-i18n="ctl-note">ctl-note</div>
+    <div id="s-scn" hidden><select id="s-sel"></select><button type="button" onclick="scnLoad()" data-i18n="Load">Load</button><button type="button" class="sec" onclick="ctl({ctl:'get'})">↻</button><button type="button" class="sec" id="s-del" onclick="scnDel()" data-i18n="Delete">Delete</button></div>
+    <div id="s-groups"></div>
+    <div id="s-up" hidden><div class="mut" id="s-upl"></div><input type="file" id="s-file"><div class="mut" id="s-prog"></div></div>
+    </div>
+  </details>
+
+  <details class="sc fold" id="c-perf" data-k="perf">
+    <summary><h2><svg viewBox="0 0 24 24"><path d="M13 3L4 14h7l-1 7 9-11h-7z"/></svg><span data-i18n="Computing power">Computing power</span></h2></summary>
+    <div class="fb">
+    <div class="mut" data-i18n="perf-note">perf-note</div>
+    <label class="opt"><span data-i18n="Save CPU during the simulation">Save CPU during the simulation</span><input type="checkbox" class="sw" id="k-sim_eco" onchange="setKey('sim_eco', this.checked)"></label>
+    <div><div class="rng"><span data-i18n="Pictures per second">Pictures per second</span><b id="v-sim_fps">–</b></div>
+      <input type="range" id="k-sim_fps" min="2" max="15" step="1" oninput="$('#v-sim_fps').textContent=this.value" onchange="setKey('sim_fps', +this.value)"></div>
+    </div>
+  </details>
+
+  <details class="sc fold" id="c-dl" data-k="dl">
+    <summary><h2><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg><span data-i18n="Programs and downloads">Programs and downloads</span></h2></summary>
+    <div class="fb">
+    <div class="dl">
+      <a class="btn main" id="d-3d" href="/sim/simulator3d.zip"><span>⬇ <span data-i18n="3D simulator for Windows (ZIP)">3D simulator for Windows (ZIP)</span></span><small id="d-3dn"></small></a>
+      <a class="btn main" id="d-py" href="/sim/simulator_py.zip"><span>⬇ <span data-i18n="Python world simulator (ZIP)">Python world simulator (ZIP)</span></span><small id="d-pyn"></small></a>
+      <a class="btn sec" href="/sim/simulator.zip"><span>⬇ <span data-i18n="Simple simulator (ZIP)">Simple simulator (ZIP)</span></span><small data-i18n="Python, for a PC or the Pi">Python, for a PC or the Pi</small></a>
+      <a class="btn sec" href="/preview" target="_blank"><span>📱 <span data-i18n="Phone / tablet view">Phone / tablet view</span></span><small data-i18n="this page as on a phone">this page as on a phone</small></a>
+      <button type="button" class="sec" id="p-inst" onclick="piAct('install')"><span id="p-instt">📦</span><small data-i18n="simple simulator directly on the Pi">simple simulator directly on the Pi</small></button>
+      <button type="button" class="sec" id="p-start" onclick="piAct('start')"><span>▶ <span data-i18n="Start simulator here">Start simulator here</span></span><small data-i18n="on the Pi (uses its CPU)">on the Pi (uses its CPU)</small></button>
+      <button type="button" class="sec" id="p-stop" onclick="piAct('stop')" hidden><span>⏹ <span data-i18n="Stop simulator">Stop simulator</span></span><small data-i18n="on the Pi">on the Pi</small></button>
+    </div>
+    <div class="mut" id="d-link"></div>
+    </div>
+  </details>
+
+  <details class="sc fold wide" id="c-help" data-k="help">
+    <summary><h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/></svg><span data-i18n="How it works">How it works</span></h2></summary>
+    <div class="fb">
+    <ol class="howto">
+      <li data-i18n="how-1">how-1</li><li data-i18n="how-2">how-2</li><li data-i18n="how-3">how-3</li><li data-i18n="how-4">how-4</li>
+    </ol>
+    </div>
+  </details>
+</main>
+<div id="pip" hidden data-c="br"><div class="pip-in"></div><span class="pip-live">● LIVE</span><button type="button" id="pip-x" aria-label="close">✕</button></div>
+<script>
+/*COMMON*/
+Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
+ "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
+ "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
+ "Load": "Laden", "Delete": "Löschen", "Computing power": "Rechenleistung", "perf-note": "Weniger Bilder pro Sekunde entlasten den Pi und den PC.",
+ "Save CPU during the simulation": "Während der Simulation Rechenleistung sparen", "Pictures per second": "Bilder pro Sekunde",
+ "Programs and downloads": "Programme und Downloads", "3D simulator for Windows (ZIP)": "3D-Simulator für Windows (ZIP)", "Simple simulator (ZIP)": "Einfacher Simulator (ZIP)",
+ "Python, for a PC or the Pi": "Python, für PC oder Pi", "Phone / tablet view": "Handy- / Tablet-Ansicht", "this page as on a phone": "die Webseite wie auf dem Handy",
+ "simple simulator directly on the Pi": "einfacher Simulator direkt auf dem Pi", "Start simulator here": "Simulator hier starten", "on the Pi (uses its CPU)": "auf dem Pi (braucht seine Rechenleistung)",
+ "Stop simulator": "Simulator stoppen", "on the Pi": "auf dem Pi", "Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren",
+ "How it works": "So funktioniert es",
+ "how-1": "3D-Simulator für Windows herunterladen, auf dem PC entpacken und MotionWatch3D.exe starten.",
+ "how-2": "Im Simulator-Fenster oben rechts den Schalter «An Motion Watch senden» einschalten.",
+ "how-3": "Der Simulator erscheint hier unter «Simulatoren im Netz» – bei Bedarf «Verwenden» antippen.",
+ "how-4": "«Simulation einschalten»: Motion Watch arbeitet jetzt mit den Bildern und Sensoren des Simulators statt mit der echten Hardware. Ausschalten = zurück zur echten Hardware.",
+ "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "connected": "verbunden",
+ "Switch the simulation on": "Simulation einschalten", "Switch the simulation off": "Simulation ausschalten",
+ "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet",
+ "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in",
+ "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.",
+ "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "Use": "Verwenden", "in use": "in Gebrauch",
+ "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
+ "The picture appears when the simulation is on.": "Das Bild erscheint, wenn die Simulation eingeschaltet ist.",
+ "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "running": "läuft", "Controls": "Bedienung",
+ "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a file to the simulator": "Datei zum Simulator hochladen",
+ "Link for the PC browser": "Link für den Browser am PC", "Saved": "Gespeichert", "not possible": "nicht möglich", "Simulator installed": "Simulator installiert",
+ "Python world simulator (ZIP)": "Python-Weltsimulator (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "prepared on the first download": "wird beim ersten Download vorbereitet", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator gestoppt", "simulator not reachable": "Simulator nicht erreichbar", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo Motion Watch steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
+let S = null, CS = "", URLEDIT = false;
+const dur = n => n == null ? "–" : n < 60 ? n + " s" : n < 3600 ? Math.floor(n / 60) + " min" : Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min";
+async function load() {
+  const r = await fetch("/api/sim").then(x => x.ok ? x.json() : null).catch(() => null);
+  if (r) { S = r; paint(); }
+  clearTimeout(load.t); load.t = setTimeout(load, S && S.scan && S.scan.running ? 1000 : 3000);
+}
+function paint() {
+  const T = S.stats || {};
+  $("#s-dot").className = "sdot" + (S.on ? (S.ok ? " ok" : " bad") : "");
+  $("#s-ttl").textContent = !S.on ? t("Simulation off") : S.ok ? (T.name || t("connected")) : t("Simulator not reachable");
+  $("#s-btn").textContent = S.on ? t("Switch the simulation off") : t("Switch the simulation on");
+  $("#s-btn").className = S.on ? "sec" : "";
+  $("#s-msg").textContent = (S.msg ? t(S.msg) + " · " : "") + (S.url || "");
+  const tile = (k, v) => '<div class="tile"><div class="mut">' + k + '</div><b>' + v + '</b></div>';
+  $("#s-tiles").hidden = !S.on;
+  $("#s-tiles").innerHTML = tile(t("Connected for"), dur(T.since)) + tile(t("Response time"), T.rtt == null ? "–" : T.rtt + " ms") + tile(t("Camera pictures/s"), T.cam_fps == null ? "–" : T.cam_fps)
+    + tile(t("Thermal pictures/s"), T.th_fps == null ? "–" : T.th_fps) + tile(t("Messages sent"), T.sent || 0) + tile(t("Sensor events"), T.events || 0) + tile(t("Errors"), T.errs || 0);
+  const u = $("#s-url"); if (!URLEDIT && document.activeElement !== u) u.value = S.url || "";
+  $("#k-sim_auto").checked = !!S.auto; $("#k-sim_eco").checked = !!S.eco;
+  const fr = $("#k-sim_fps"); if (document.activeElement !== fr && S.fps != null) { fr.value = S.fps; $("#v-sim_fps").textContent = S.fps; }
+  paint3d();
+  const SC = S.scan || {}, ago = SC.t ? Math.round(Date.now() / 1000 - SC.t) : null;
+  $("#s-scan").textContent = SC.running ? t("Searching") + " " + SC.net + " … " + Math.round(100 * (SC.done || 0) / Math.max(1, SC.hosts || 1)) + " % · " + (SC.found || 0) + " " + t("found")
+    : SC.t ? t("Last search") + ": " + (ago < 60 ? ago + " s" : Math.round(ago / 60) + " min") + " · " + SC.hosts + " " + t("addresses in") + " " + SC.secs + " s · " + SC.found + " " + t("found")
+    : t("Simulators announce themselves every 2 s. «Search now» also asks every address of the network.");
+  $("#s-search").disabled = !!SC.running;
+  const fb = $("#s-found"), F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.count, x.age > 5])) + S.url;
+  if (fb.dataset.sig !== sig) { fb.dataset.sig = sig; fb.textContent = "";
+    if (!F.length) fb.appendChild(el("div", "mut", t("No simulator announces itself in the network right now.")));
+    fb.appendChild(el("div", "mut", t("sim-missing"))).style.marginTop = "6px";
+    F.forEach(x => { const cur = S.url === "http://" + x.ip + ":" + x.port; const r = el("div", "fnd" + (cur ? " cur" : ""));
+      const n = el("div", "n"); n.append(el("b", "", x.name || "Simulator"), el("div", "mut", x.ip + ":" + x.port + (x.version ? " · " + x.version : "")
+        + (x.via === "scan" ? " · " + t("found by the search") : " · " + t("last") + " " + Math.round(x.age || 0) + " s")));
+      r.appendChild(n);
+      if (cur) r.appendChild(el("span", "mut", "✓ " + t("in use")));
+      else { const b = el("button", "sec", t("Use")); b.type = "button"; b.onclick = async () => { const q = await post("/api/sim", {action: "use", ip: x.ip, port: x.port, lang: LANG}); if (q.ok === false) toast(q.error || t("not possible")); load(); }; r.appendChild(b); }
+      fb.appendChild(r); }); }
+  // preview
+  $("#s-prevnote").textContent = S.on ? "" : t("The picture appears when the simulation is on.");
+  liveOn(!!S.on);
+  // control
+  if (S.ok && !CS) ctl({ctl: "get"});
+  if (!S.ok) { CS = ""; $("#s-groups").textContent = ""; $("#s-scn").hidden = true; $("#s-up").hidden = true; $("#s-cname").textContent = ""; $("#s-cst").textContent = t("ctl-note"); }
+  // pi programs
+  $("#p-instt").textContent = "📦 " + t(S.installed ? "Install simulator again" : "Install simulator on the Pi");
+  $("#p-start").hidden = !!S.running; $("#p-stop").hidden = !S.running;
+}
+async function simOnOff() { const b = $("#s-btn"); b.disabled = true; await post("/api/sim", {on: !(S && S.on), lang: LANG}); b.disabled = false; CS = ""; load(); }
+async function saveUrl() { URLEDIT = false; const r = await post("/api/sim", {url: $("#s-url").value.trim(), lang: LANG}); toast(r.ok === false ? (r.error || t("not possible")) : t("Saved")); load(); }
+$("#s-url").addEventListener("input", () => URLEDIT = true);
+async function setKey(k, v) { const r = await post("/api/set", {key: k, value: v}); if (!r.ok) toast(r.error || t("not possible")); load(); }
+async function search() { $("#s-search").disabled = true; await post("/api/sim", {action: "search", lang: LANG}); load(); }
+async function piAct(a) { const r = await post("/api/sim", {action: a, lang: LANG}); toast(r.ok === false ? (r.error || t("not possible")) : t({install: "Simulator installed", start: "Simulator started", stop: "Simulator stopped"}[a])); load(); }
+// ---- simulator control (CONTROL protocol 1): the simulator describes its own controls ----
+const fmt = (c, v) => (v == null ? "–" : (Math.abs(v) >= 100 || c.step >= 1 ? Math.round(v) : (+v).toFixed(c.step < 0.1 ? 2 : 1))) + (c.unit ? " " + c.unit : "");
+async function ctl(d) { const r = await post("/api/sim", Object.assign({action: "ctl", lang: LANG}, d)); showCtl(r); return r; }
+function scnLoad() { const v = $("#s-sel").value; if (v) ctl({ctl: "scenario", id: v}); }
+function scnDel() { const s = $("#s-sel"); if (s.value && confirm(t("Delete this scenario in the simulator?") + "\n" + s.options[s.selectedIndex].textContent)) ctl({ctl: "delete", id: s.value}); }
+/*SIMMAP*/
+function buildCtl(r) { simCtlBuild($("#s-groups"), r, ctl, fmt); }        // like the panel of the simulator (simCtlBuild, 2.93.16)
+
+function showCtl(r) {
+  if (!r || !r.ok) { $("#s-cst").textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
+  $("#s-cname").textContent = r.name ? "· " + r.name : "";
+  const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options, c.sub])]);
+  if (sig !== CS) { CS = sig; buildCtl(r); }
+  document.querySelectorAll("#s-groups [data-cid]").forEach(row => {
+    const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
+    if (c.type === "toggle") inp.checked = !!c.value; else if (c.value != null) inp.value = c.value;
+    const vv = row.querySelector(".simvv"); if (vv) vv.textContent = fmt(c, c.value);
+  });
+  const sel = $("#s-sel"), cur = sel.value; sel.textContent = "";
+  (r.scenarios || []).forEach(o => { const op = document.createElement("option"); op.value = o.id; op.dataset.del = o.deletable ? "1" : "";
+    op.textContent = o.name + (o.id === r.scenario ? "  ◀ " + t("running") : ""); sel.appendChild(op); });
+  $("#s-scn").hidden = !(r.scenarios || []).length;
+  sel.value = [...sel.options].some(o => o.value === cur) ? cur : (r.scenario || (sel.options[0] && sel.options[0].value) || "");
+  const o = sel.options[sel.selectedIndex]; $("#s-del").hidden = !(o && o.dataset.del === "1");
+  $("#s-cst").textContent = r.status || "";
+  $("#s-up").hidden = !r.upload;
+  if (r.upload) { $("#s-upl").textContent = "⬆ " + (r.upload.label || t("Upload a file to the simulator")) + (r.upload.max_mb ? " (max. " + r.upload.max_mb + " MB)" : ""); $("#s-file").accept = (r.upload.accept || []).join(","); }
+}
+$("#s-sel").onchange = () => { const o = $("#s-sel").options[$("#s-sel").selectedIndex]; $("#s-del").hidden = !(o && o.dataset.del === "1"); };
+$("#s-file").onchange = () => {
+  const f = $("#s-file").files[0]; if (!f) return; const prog = $("#s-prog");
+  const x = new XMLHttpRequest(); x.open("POST", "/api/sim/upload?lang=" + LANG + "&name=" + encodeURIComponent(f.name));
+  x.upload.onprogress = e => { if (e.lengthComputable) prog.textContent = "⬆ " + f.name + " · " + Math.round(e.loaded / e.total * 100) + " %"; };
+  x.onload = () => { let r = null; try { r = JSON.parse(x.responseText); } catch (e) {}
+    prog.textContent = r && r.ok ? "✓ " + t("uploaded") + ": " + (r.saved || f.name) : "⚠ " + ((r && r.error) || x.status); $("#s-file").value = ""; if (r && r.ok) showCtl(r); };
+  x.onerror = () => { prog.textContent = "⚠ " + t("upload interrupted"); };
+  x.send(f);
+};
+setInterval(() => { if (!document.hidden && S && S.ok) ctl({ctl: "get"}); }, 4000);
+// ---- live picture: the same moving picture as on the live page; it shrinks into a corner while it is scrolled away ----
+let LIVE = false, liveRetry = null;
+function liveOn(on) {
+  const img = $("#s-prev");
+  if (on === LIVE) return;
+  LIVE = on; $("#s-pvw").hidden = !on; $("#s-pvlive").hidden = !on;
+  if (on) img.src = "/video_feed?r=" + Date.now();
+  else { clearTimeout(liveRetry); img.removeAttribute("src"); pipShow(false); }
+}
+$("#s-prev").addEventListener("error", () => { if (!LIVE) return; clearTimeout(liveRetry); liveRetry = setTimeout(() => { if (LIVE) $("#s-prev").src = "/video_feed?r=" + Date.now(); }, 2000); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden && LIVE) $("#s-prev").src = "/video_feed?r=" + Date.now(); });
+let pipShow = () => {};
+(function () {
+  const pip = $("#pip"), slot = pip.querySelector(".pip-in"), img = $("#s-prev"), wrap = $("#s-pvw");
+  if (!("IntersectionObserver" in window)) return;
+  let closed = false, seen = true;
+  try { pip.dataset.c = localStorage.getItem("mw-simpip-corner") || "br"; } catch (e) {}
+  img.draggable = false;
+  pipShow = on => {
+    on = !!on && LIVE && !closed;
+    if (on === !pip.hidden) return;
+    if (on) { wrap.style.minHeight = wrap.offsetHeight + "px"; slot.appendChild(img); pip.hidden = false; }
+    else { pip.hidden = true; wrap.insertBefore(img, wrap.firstChild); wrap.style.minHeight = ""; }
+  };
+  new IntersectionObserver(es => es.forEach(e => { seen = e.isIntersecting && e.intersectionRatio > 0.2; if (seen) closed = false; pipShow(!seen); }),
+    {threshold: [0, 0.2, 0.5, 1]}).observe(wrap);
+  $("#pip-x").addEventListener("pointerdown", e => e.stopPropagation());
+  $("#pip-x").addEventListener("click", e => { e.stopPropagation(); closed = true; pipShow(false); });
+  let st = null;
+  pip.addEventListener("pointerdown", e => { if (e.target.id === "pip-x") return; st = {x: e.clientX, y: e.clientY, moved: false};
+    try { pip.setPointerCapture(e.pointerId); } catch (x) {} });
+  pip.addEventListener("pointermove", e => { if (!st) return; const dx = e.clientX - st.x, dy = e.clientY - st.y;
+    if (Math.hypot(dx, dy) > 10) st.moved = true; if (st.moved) pip.style.transform = "translate(" + dx + "px," + dy + "px)"; });
+  pip.addEventListener("pointerup", e => {
+    if (!st) return; const moved = st.moved; st = null; pip.style.transform = "";
+    if (!moved) { $("#c-prev").scrollIntoView({behavior: "smooth", block: "start"}); return; }
+    const c = (e.clientY < innerHeight / 2 ? "t" : "b") + (e.clientX < innerWidth / 2 ? "l" : "r"); pip.dataset.c = c;
+    try { localStorage.setItem("mw-simpip-corner", c); } catch (x) {}
+  });
+})();
+$("#d-3d").href = "/sim/simulator3d.zip?lang=" + (LANG || "");
+function paint3d() { const D = S && S.sim3d; if (D) $("#d-3dn").textContent = D.version + " · " + D.size_mb + " MB" + (D.ready ? "" : " · " + t("prepared on the first download"));
+  $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin + "/sim/simulator3d.zip · " + location.origin + "/sim/simulator_py.zip";
+  const P = S && S.simpy; if (P) $("#d-pyn").textContent = P.version + " · " + t("second simulator, needs Python on the PC") + (P.ready ? "" : " · " + t("prepared on the first download")); }
+$("#d-py").href = "/sim/simulator_py.zip?lang=" + (LANG || "");
+$("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin + "/sim/simulator3d.zip";
+(function () { let o = null; try { o = JSON.parse(localStorage.getItem("mw-sim-fold") || "null"); } catch (e) {}
+  document.querySelectorAll("details.fold").forEach(d => { if (o && d.dataset.k in o) d.open = !!o[d.dataset.k];
+    d.addEventListener("toggle", () => { const m = {}; document.querySelectorAll("details.fold").forEach(x => m[x.dataset.k] = x.open);
+      try { localStorage.setItem("mw-sim-fold", JSON.stringify(m)); } catch (e) {} }); }); })();
+(async () => { await initAppearance(); load(); })();
+/*ALERTS*/
+</script></body></html>
+"""
+
+
 NAV_ITEMS = [("live", "/", "Live"), ("cams", "/cams", "Cameras"), ("rec", "/recordings", "Recordings"), ("zones", "/zones", "Zones"),
-             ("diary", "/diary", "Diary"), ("tools", "/tools", "Tools"), ("help", "/help", "Manual")]
+             ("diary", "/diary", "Diary"), ("tools", "/tools", "Tools"), ("sim", "/sim", "Simulator"), ("help", "/help", "Manual")]
 
 
 def nav_html(active):
@@ -17952,7 +19549,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
 let LANG = "", THEME = "";
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
-const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Tools": "Werkzeuge"}};
+const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Tools": "Werkzeuge", "Simulator": "Simulator"}};
 const t = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
@@ -18433,6 +20030,7 @@ main{padding:16px;max-width:1500px;margin:0 auto}
 <div id="big"><button class="x" onclick="closeBig()">&#x2715;</button><img id="big-img" alt=""><div class="cap" id="big-cap"></div></div>
 <script>
 /*COMMON*/
+Object.assign(I18N.de, {"Sneezes": "Mal geniest"});
 Object.assign(I18N.de, {"Day overview": "Tagesübersicht", "Persons": "Personen", "Animals": "Tiere", "Warm bodies": "Warme Körper", "Noises": "Geräusche", "Photos": "Fotos", "Sensor": "Fühler", "Temperature (sensor)": "Temperatur (Fühler)", "Temperature (weather)": "Temperatur (Wetter)", "Rain / humidity": "Regen / Feuchte", "Person": "Person", "Animal": "Tier", "Warm body": "Warmer Körper", "Noise": "Geräusch", "No measurements for this day yet.": "Für diesen Tag gibt es noch keine Messwerte.", "Weather from the internet: switch on under Notifications → Night report.": "Wetter aus dem Internet: einschalten unter Benachrichtigungen → Nachtbericht.", "No weather for this day": "Kein Wetter für diesen Tag", "no location": "kein Standort", "Day overview: weather from the internet (Open-Meteo; the location is sent there)": "Tagesübersicht: Wetter aus dem Internet (Open-Meteo; dafür wird der Standort dorthin geschickt)", "clear": "klar", "partly cloudy": "leicht bewölkt", "cloudy": "bewölkt", "fog": "Nebel", "drizzle": "Nieselregen", "rain": "Regen", "snow": "Schnee", "showers": "Schauer", "thunderstorm": "Gewitter", "new moon": "Neumond", "waxing crescent": "zunehmende Sichel", "first quarter": "erstes Viertel", "waxing gibbous": "zunehmender Mond", "full moon": "Vollmond", "waning gibbous": "abnehmender Mond", "last quarter": "letztes Viertel", "waning crescent": "abnehmende Sichel"});
 Object.assign(I18N.de, {"recordings": "Aufnahmen", "Diary": "Tagebuch", "Night report": "Nachtbericht", "Send now": "Jetzt senden", "Animal diary": "Tier-Tagebuch",
   "All animals": "Alle Tiere", "Favourites": "Favoriten", "Delete this entry?": "Diesen Eintrag löschen?", "Share": "Teilen",
@@ -18539,7 +20137,7 @@ function renderDay(j) {
   $("#d-title").textContent = d.toLocaleDateString(LOCALE(LANG), {weekday: "long", day: "numeric", month: "long", year: "numeric"});
   const c = j.counts, tl = el("div", "dtiles");
   [["👤", c.persons, "Persons"], ["🦊", c.animals, "Animals"], ["🔥", c.warm, "Warm bodies"], ["🔊", c.noise, "Noises"],
-   ["🎬", c.recordings + (c.alarm_recordings ? " (" + c.alarm_recordings + " 🚨)" : ""), "recordings"], ["📷", c.photos, "Photos"]].forEach(([i, n, k]) => {
+   ["🎬", c.recordings + (c.alarm_recordings ? " (" + c.alarm_recordings + " 🚨)" : ""), "recordings"], ["📷", c.photos, "Photos"]].concat(c.sneezes ? [["🤧", c.sneezes, "Sneezes"]] : []).forEach(([i, n, k]) => {
     const t_ = el("div", "dtile"), lb = t(k); t_.append(el("b", "", i + " " + n), el("span", "", lb.charAt(0).toUpperCase() + lb.slice(1))); tl.appendChild(t_); });
   b.appendChild(tl);
   const ln = el("div", "dline"), w = j.weather, cs = j.climate_sum || {};
@@ -18973,6 +20571,33 @@ body.videoonly #video{max-height:none!important;min-height:0}
 /* the buttons sit INSIDE the picture box (not "fixed" to the screen): on the iPhone fixed buttons were drawn some
    millimetres away from where they react to a touch */
 body.videoonly .vwrap{position:relative;overflow:hidden}
+/* ---- mover (from 2.94.0): the second stick drives a tracked vehicle - only there when the mover is found (or simulated) ---- */
+.ctl-mstick{display:none}body.mover .ctl-mstick{display:block;grid-area:mstick}
+.mstick .knob{background:radial-gradient(circle at 36% 30%,#8be3a0,#2f9e4f 62%)}
+.mstick::after{width:46%}
+.mtrk{position:absolute;top:20%;bottom:20%;width:7px;border-radius:4px;background:rgba(127,127,127,.2);overflow:hidden;pointer-events:none;z-index:1}
+.mtrk.l{left:9%}.mtrk.r{right:9%}.mtrk i{position:absolute;left:0;right:0;background:var(--grn);transition:all .12s}
+#mstick-txt{font-size:11px;text-align:center;margin-top:-4px}
+body.mover #ctl-left{grid-template-columns:auto auto 190px minmax(0,520px);grid-template-areas:"mstick stick side mid"}
+body.mover.swapside #ctl-left{grid-template-columns:190px auto auto minmax(0,520px);grid-template-areas:"side stick mstick mid"}
+@media(max-width:1180px) and (min-width:961px){body.mover #ctl-left .stick{width:132px;height:132px}
+  body.mover #ctl-left{grid-template-columns:auto auto 160px minmax(0,1fr)}body.mover.swapside #ctl-left{grid-template-columns:160px auto auto minmax(0,1fr)}}
+body.mover.mobctl #ctl-left{grid-template-columns:1fr 1fr;grid-template-areas:"mstick stick" "side side" "mid mid";justify-items:center}
+body.mover.mobctl.swapside #ctl-left{grid-template-areas:"stick mstick" "side side" "mid mid"}
+body.mover.mobctl #ctl-left .stick{width:140px;height:140px}body.mover.mobctl #ctl-left .ctl-side{width:100%}
+body.mover.mobland #ctl-left{grid-template-columns:1fr;grid-template-areas:"mstick" "stick" "side"}
+body.mover.mobland #ctl-left .stick{width:96px;height:96px}
+#vo-mctl{display:none}
+body.videoonly.mover #vo-mctl{display:flex;position:absolute;z-index:61;left:max(18px,env(safe-area-inset-left));bottom:calc(env(safe-area-inset-bottom) + 18px);transition:opacity .5s;touch-action:none}
+body.videoonly.mover.swapside #vo-mctl{left:auto;right:max(18px,env(safe-area-inset-right))}
+@media (orientation:landscape) and (max-height:520px){body.videoonly.mover #vo-mctl{bottom:calc(env(safe-area-inset-bottom) + 64px);left:calc(env(safe-area-inset-left) + 24px)}
+  body.videoonly.mover.swapside #vo-mctl{left:auto;right:calc(env(safe-area-inset-right) + 24px)}}
+#vo-mctl.idle{opacity:.38}
+#vo-mctl .stick{width:clamp(118px,24vmin,168px);height:clamp(118px,24vmin,168px);background:rgba(8,12,20,.22);border:2px solid rgba(255,255,255,.72);
+  box-shadow:0 2px 14px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+#vo-mctl .stick::before,#vo-mctl .stick::after{background:rgba(255,255,255,.3)}
+#vo-mctl .stick .ar{color:#fff;opacity:.85;text-shadow:0 1px 3px #000}
+#vo-mctl .knob{width:30%;height:30%;margin:-15% 0 0 -15%}
 #vo-ctl{display:none}
 body.videoonly #vo-ctl{display:flex;position:absolute;z-index:61;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));
   align-items:flex-end;gap:10px;transition:opacity .5s;touch-action:none}
@@ -19106,6 +20731,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
         <button type="button" id="vo-side" title="⇆">⇆</button>
         <div id="vo-ctl" class="idle"><div class="vbtns"><button type="button" id="vo-center" title="Centre">◎</button>
           <button type="button" id="vo-listen" title="Listen" hidden>🎧</button></div><div id="vo-slot"></div></div>
+        <div id="vo-mctl" class="idle"><div id="vo-mslot"></div></div>
         <div class="vtag"><span class="live">LIVE</span><span class="rec" id="v-rec" hidden>● REC</span><span id="v-src" hidden></span></div></div>
       <div id="mctl"></div>
     </div>
@@ -19114,6 +20740,12 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       <summary data-i18n="Controls">Controls</summary>
       <div class="ctl-grid">
         <div id="ctl-left">
+          <div class="ctl-mstick" id="ctl-mstick">
+            <div class="stickbox" id="mstickbox">
+              <div class="stick mstick" id="mstick" role="application" aria-label="mover joystick" title="Mover"><span class="ar u">&#8679;</span><span class="ar d">&#8681;</span><span class="ar l">&#8634;</span><span class="ar r">&#8635;</span><i class="mtrk l"><i id="mtl"></i></i><i class="mtrk r"><i id="mtr"></i></i><div class="knob" id="mknob"></div></div>
+              <div class="mut" id="mstick-txt" aria-live="off">Mover</div>
+            </div>
+          </div>
           <div class="ctl-stick">
             <div class="stickbox">
               <div class="stick" id="stick" role="application" aria-label="camera joystick" title="arrow keys work too"><span class="ar u">&#9650;</span><span class="ar d">&#9660;</span><span class="ar l">&#9664;</span><span class="ar r">&#9654;</span><div class="srange" aria-hidden="true"><svg class="swp" id="swp" viewBox="0 0 100 100" preserveAspectRatio="none"></svg><svg class="swp dots" id="swp2" viewBox="0 0 100 100" preserveAspectRatio="none"></svg><i class="sline h" id="sline-h"></i><i class="sline v" id="sline-v"></i><i class="spos" id="spos"></i></div><div class="knob" id="knob"></div></div>
@@ -19645,6 +21277,8 @@ function voStick(on) {
   if (!st || !slot || !box) return;
   if (on && st.parentNode !== slot) slot.appendChild(st);
   if (!on && st.parentNode !== box) box.insertBefore(st, box.firstChild);
+  const ms = $("#mstick"), mslot = $("#vo-mslot"), mbox = $("#mstickbox");      // the mover stick (2.94.0): other corner
+  if (ms && mslot && mbox) { if (on && ms.parentNode !== mslot) mslot.appendChild(ms); if (!on && ms.parentNode !== mbox) mbox.insertBefore(ms, mbox.firstChild); }
   if (on) { voWake(); const sl = $("#stick-listen"), vl = $("#vo-listen"); if (sl && vl) vl.hidden = sl.hidden;
             [50, 400, 1000].forEach(ms => setTimeout(() => { if (videoOnly) scrollTo(0, 0); }, ms)); }
 }
@@ -20379,10 +22013,10 @@ const GROUPS = [
   {id: "detect", icon: "🎯", name: "Detection", items: [{sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {fine: true},
    {sec: "Walking recognition", ic: "🚶"}, {sec: "Vehicle filter", ic: "🚗"}, {sec: "Rain", ic: "🌧️"}, {sec: "Wind", ic: "🌬️"}, {sec: "Low light", ic: "🌘"}, {sec: "Auto-tune", ic: "🎚️"}]},
   {id: "camera", icon: "📷", name: "Camera & servos", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {card: "source", sec: "Video source", ic: "🎥"},
-   {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
+   {sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}, {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
   {id: "thermal", icon: "🌡", name: "Thermal camera", items: [{sec: "Thermal camera"}]},
   {id: "sensors", icon: "📡", name: "Sensors", items: [{sec: "Extra sensors", ic: "📡"}, {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}, {sec: "Solar panel", ic: "☀️"}]},
-  {id: "lightsound", icon: "💡", name: "Light & sound", items: [{sec: "Lights", ic: "💡"}, {sec: "Deterrence", title: "Deterrence", ic: "📢"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"}]},
+  {id: "lightsound", icon: "💡", name: "Light & sound", items: [{sec: "Lights", ic: "💡"}, {sec: "Deterrence", title: "Deterrence", ic: "📢"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"}]},
   {id: "rec", icon: "🎬", name: "Recordings & timelapse", items: [{sec: "Recording", ic: "⏺"}, {sec: "Timelapse", ic: "⏱️"}, {sec: "Backup", title: "Backup", ic: "☁️"}]},
   {id: "relay", icon: "⚡", name: "Relays & schedule", items: [{card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"}]},
   {id: "sys", icon: "⚙", name: "System & network", items: [{card: "system", ic: "🖥️"}, {card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"}, {card: "guest", title: "Guest access", ic: "👥"},
@@ -20717,6 +22351,7 @@ async function build() {
     if (sec.id === "Extra sensors") sensExtras(d);
     if (sec.id === "Storm warning") stormExtras(d);
     if (sec.id === "GPS module") gpsExtras(d);
+    if (sec.id === "Mover") moverExtras(d);
     if (sec.id === "Simulator") simExtras(d);
     if (sec.id === "Solar panel") solarExtras(d);
     if (sec.id === "Deterrence") dtExtras(d);
@@ -21334,6 +22969,7 @@ function stormText(c, S) {
   if (S.last) L.push("⚠ " + t("Last warning") + ": " + S.last);
   return L.join("\n");
 }
+Object.assign(I18N.de, {"Mover": "Mover", "Mover (tracked vehicle)": "Mover (Kettenfahrzeug)", "Motor driver": "Motortreiber", "Motor driver: address (I2C)": "Motortreiber: Adresse (I2C)", "Top speed (%)": "Höchstgeschwindigkeit (%)", "Turning speed (%)": "Drehgeschwindigkeit (%)", "Gentle start and stop (seconds)": "Sanft anfahren und bremsen (Sekunden)", "Left track runs the wrong way (turn round)": "Linke Kette läuft falsch herum (umdrehen)", "Right track runs the wrong way (turn round)": "Rechte Kette läuft falsch herum (umdrehen)", "Left and right tracks swapped": "Linke und rechte Kette vertauscht", "automatic: on when the motor driver is found": "automatisch: an, wenn der Motortreiber gefunden wird", "Motor HAT (Adafruit or compatible): M1 left, M2 right": "Motor HAT (Adafruit oder kompatibel): M1 links, M2 rechts", "Waveshare Motor Driver HAT: A left, B right": "Waveshare Motor Driver HAT: A links, B rechts", "the address is the one of the servo driver": "die Adresse ist die des Servo-Treibers", "no motor driver found": "kein Motortreiber gefunden", "motor driver found": "Motortreiber gefunden", "simulated": "simuliert", "test only - nothing moves": "nur Test – nichts fährt", "Simulation: show the stick even without a mover or motor driver (to try it out)": "Simulation: den Stick auch ohne Mover oder Motortreiber zeigen (zum Ausprobieren)", "stick shown for testing (the simulator has no mover)": "Stick zum Testen eingeblendet (der Simulator hat keinen Mover)", "the simulator has no mover": "der Simulator hat keinen Mover (im Simulator «Mover simulieren» einschalten)", "A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "Ein Kettenfahrzeug unter Motion Watch: der zweite Stick fährt es (hoch = vorwärts, runter = rückwärts, seitlich = an Ort drehen). Der Motortreiber (Motor HAT mit PCA9685 + TB6612 an I2C) wird von selbst gefunden – ohne ihn bleibt der Stick verborgen. Kommt 0,6 s lang kein neuer Befehl, halten beide Ketten an."});
 Object.assign(I18N.de, {"GPS module": "GPS-Modul", "Own GPS module (USB or serial; gpsd is used if installed)": "Eigenes GPS-Modul (USB oder seriell; gpsd wird genutzt, falls installiert)", "Theft tracking: alarm when the armed device is carried away, then its position every 5 minutes": "Diebstahl-Ortung: Alarm, wenn das scharfe Gerät weggetragen wird, danach alle 5 Minuten seine Position", "Theft tracking: alarm from a distance of (m)": "Diebstahl-Ortung: Alarm ab einer Entfernung von (m)", "Connection": "Anschluss", "automatic": "automatisch", "the device was carried away": "das Gerät wurde weggetragen", "Position": "Position", "position": "Position", "Position now": "Position jetzt", "THEFT ALARM": "DIEBSTAHL-ALARM", "gpsd not running": "gpsd läuft nicht", "no GPS module found": "kein GPS-Modul gefunden", "searching satellites": "sucht Satelliten", "fix": "Position gefunden", "A USB GPS receiver (e.g. u-blox, VK-162) is found by itself. It needs a view of the sky. With an LTE stick the position arrives also when the device is stolen.": "Ein USB-GPS-Empfänger (z. B. u-blox, VK-162) wird von selbst gefunden. Er braucht freie Sicht zum Himmel. Mit LTE-Stick kommt die Position auch an, wenn das Gerät gestohlen wird.", "satellites": "Satelliten", "Theft tracking on guard": "Diebstahl-Ortung wacht", "Theft tracking starts when armed": "Diebstahl-Ortung startet, wenn scharf", "From the GPS module": "Vom GPS-Modul", "from the GPS module": "vom GPS-Modul"});
 Object.assign(I18N.de, {"Solar panel": "Solarpanel", "Solar panel with current meter (INA219 on I2C)": "Solarpanel mit Strommesser (INA219 an I2C)", "Push message in the evening when the battery will probably not last until sunrise": "Push-Nachricht am Abend, wenn der Akku voraussichtlich nicht bis Sonnenaufgang reicht", "Current meter: shunt resistor (Ohm, usually 0.1)": "Strommesser: Shunt-Widerstand (Ohm, meist 0,1)", "Current meter: address (I2C)": "Strommesser: Adresse (I2C)", "The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.": "Der Akku reicht voraussichtlich nicht bis Sonnenaufgang ({sr}): noch etwa {have} h, nötig {need} h. Aufladen oder Stromsparen einschalten.", "Battery": "Akku", "lasts until sunrise ({sr})": "reicht bis Sonnenaufgang ({sr})", "too little until sunrise ({sr})": "zu knapp bis Sonnenaufgang ({sr})", "INA219 current meter between the panel and the charger (address 0x41 or 0x44 - 0x40 is often taken by the servo board).": "INA219-Strommesser zwischen Panel und Laderegler (Adresse 0x41 oder 0x44 – 0x40 ist oft vom Servo-Board belegt).", "no current meter found at this address": "kein Strommesser an dieser Adresse gefunden", "today": "heute", "max.": "max.", "Battery lasts until sunrise": "Akku reicht bis Sonnenaufgang", "Battery probably too low until sunrise": "Akku reicht voraussichtlich nicht bis Sonnenaufgang", "Night forecast: needs a battery value (Settings → Battery)": "Nacht-Prognose: braucht einen Akku-Wert (Einstellungen → Akku)"});
 Object.assign(I18N.de, {"Recognise the animal species (second AI model - see the guide)": "Tierart erkennen (zweites KI-Modell – siehe Anleitung)", "Animal species: minimum certainty": "Tierart: Mindest-Sicherheit", "Animal species: model": "Tierart: Modell", "Animal species: picture preparation of the model": "Tierart: Bildaufbereitung des Modells", "Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.": "Tierart: ein zweites KI-Modell (ONNX) erkennt Fuchs, Dachs, Wildschwein … Es ist nicht dabei – von einer Adresse installieren oder in den Ordner kopieren.", "or .zip": "oder .zip", "Install model": "Modell installieren", "Folder": "Ordner", "Models": "Modelle", "Last": "Zuletzt", "downloading …": "lädt herunter …", "no model chosen": "kein Modell gewählt", "address must start with https://": "die Adresse muss mit https:// beginnen", "the address must end with .onnx or .zip": "die Adresse muss auf .onnx oder .zip enden", "file too big": "Datei zu gross"});
@@ -21364,7 +23000,8 @@ function solarText(c, s) {
   return L.join("\n");
 }
 function solarPaint(c, s) { const st = $("#solar-st"); if (st) st.textContent = solarText(c, s); }
-Object.assign(I18N.de, {"Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera"});
+/*SIMMAP*/
+Object.assign(I18N.de, {"Python world simulator (ZIP)": "Python-Weltsimulator (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo Motion Watch steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
 function simExtras(d) {
   // the settings of the section (switches, address, slider) go into a fold-out «Settings»
@@ -21383,7 +23020,14 @@ function simExtras(d) {
   srch.onclick = async () => { srch.disabled = true; await post("/api/sim", {action: "search", lang: LANG}); refresh(); setTimeout(() => { srch.disabled = false; }, 2500); };
   const sl = el("div", "mut"); sl.id = "sim-scan"; sl.style.cssText = "margin-top:6px;white-space:pre-wrap";
   const fnd = el("div", ""); fnd.id = "sim-found"; fnd.style.marginTop = "6px";
-  nb.append(nh, sl, fnd, srch);
+  // the 3D simulator for Windows to download - right here, not hidden under Tools
+  const d3 = el("a", "btn", "🎮 " + t("3D simulator for Windows (ZIP)")); d3.href = "/sim/simulator3d.zip?lang=" + (LANG || "");
+  d3.style.cssText = "display:block;margin-top:8px;width:100%;text-align:center;box-sizing:border-box";
+  const d3n = el("div", "mut", t("Link for the PC browser") + ": " + location.origin + "/sim/simulator3d.zip"); d3n.style.cssText = "margin-top:6px;font-size:12px;word-break:break-all";
+  const dpy = el("a", "btn sec", "🌍 " + t("Python world simulator (ZIP)")); dpy.href = "/sim/simulator_py.zip?lang=" + (LANG || "");
+  dpy.style.cssText = "display:block;margin-top:8px;width:100%;text-align:center;box-sizing:border-box";
+  const all = el("a", "btn sec", "⚙ " + t("Everything about the simulator (tab Simulator)")); all.href = "/sim"; all.style.cssText = "display:block;margin-top:8px;width:100%";
+  nb.append(nh, sl, fnd, srch, d3, d3n, dpy, all);
   // ---- settings (moved here) ----
   const set = el("details", "sub"); set.style.marginTop = "10px"; set.appendChild(el("summary", "", "⚙️ " + t("Settings")));
   const sbody = el("div", ""); sbody.style.padding = "4px 0";
@@ -21432,43 +23076,11 @@ function simExtras(d) {
   };
   let SIG = "";
   const fmt = (c, v) => (v == null ? "–" : (Math.abs(v) >= 100 || c.step >= 1 ? Math.round(v) : (+v).toFixed(c.step < 0.1 ? 2 : 1))) + (c.unit ? " " + c.unit : "");
-  const build = (r) => {
-    groups.innerHTML = ""; const byG = {};
-    (r.controls || []).forEach(c => { const g = c.group || ""; (byG[g] = byG[g] || []).push(c); });
-    Object.keys(byG).forEach((g, gi) => {
-      const det = document.createElement("details"); det.className = "simgrp"; det.dataset.g = g; det.style.marginTop = "4px";
-      const sm = document.createElement("summary"); sm.textContent = g || t("Controls"); sm.style.cursor = "pointer"; sm.style.padding = "4px 0"; det.appendChild(sm);
-      const body = el("div", ""); body.style.display = "flex"; body.style.flexWrap = "wrap"; body.style.gap = "6px"; body.style.padding = "4px 0 8px";
-      byG[g].forEach(c => {
-        if (c.type === "button") { const x = vk(c.label, () => ctl({ctl: "press", id: c.id})); x.style.flex = "1 1 30%"; body.appendChild(x); return; }
-        const row = el("div", ""); row.style.flex = "1 1 100%"; row.dataset.cid = c.id;
-        if (c.type === "toggle") {
-          const lb = el("label", "", ""); lb.style.display = "flex"; lb.style.gap = "8px"; lb.style.alignItems = "center";
-          const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "simv"; cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked});
-          lb.append(cb, document.createTextNode(c.label)); row.appendChild(lb);
-        } else if (c.type === "slider") {
-          const top = el("div", "", ""); top.style.display = "flex"; top.style.justifyContent = "space-between";
-          const vv = el("span", "mut simvv", ""); top.append(el("span", "", c.label), vv);
-          const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1; rg.style.width = "100%";
-          rg.oninput = () => { vv.textContent = fmt(c, +rg.value); }; rg.onchange = () => ctl({ctl: "set", id: c.id, value: +rg.value});
-          row.append(top, rg);
-        } else if (c.type === "select") {
-          const top = el("div", "", c.label); const se = document.createElement("select"); se.className = "simv"; se.style.width = "100%";
-          (c.options || []).forEach(o => { const op = document.createElement("option"); op.value = o[0]; op.textContent = o[1] || o[0]; se.appendChild(op); });
-          se.onchange = () => ctl({ctl: "set", id: c.id, value: se.value}); row.append(top, se);
-        } else {
-          const top = el("div", "", c.label); const ti = document.createElement("input"); ti.className = "simv"; ti.style.width = "100%";
-          ti.onkeydown = (e) => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(top, ti);
-        }
-        row._c = c; body.appendChild(row);
-      });
-      det.appendChild(body); if (gi === 0) det.open = true; groups.appendChild(det);
-    });
-  };
+  const build = (r) => simCtlBuild(groups, r, ctl, fmt);      // like the panel of the simulator (simCtlBuild, 2.93.16)
   const show = (r) => {
     if (!r || !r.ok) { vst.textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
     hd.textContent = "🎮 " + t("Simulator control") + (r.name ? " · " + r.name : "");
-    const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options]), r.upload ? r.upload.accept : null]);
+    const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options, c.sub]), r.upload ? r.upload.accept : null]);
     if (sig !== SIG) { SIG = sig; build(r); }
     groups.querySelectorAll("[data-cid]").forEach(row => {
       const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
@@ -21489,6 +23101,38 @@ function simExtras(d) {
   vb.append(hd, vst, srow, groups, upw);
   box.appendChild(vb); d.appendChild(box);
   setInterval(() => { const v = $("#sim-vbox"); if (v && !v.hidden && v.offsetParent !== null && !document.hidden) window.simCtl(); }, 4000);
+}
+Object.assign(I18N.de, {"Clap switch": "Klatschschalter", "Bless you": "Gesundheit", "«Bless you!»": "«Gesundheit!»", "Clap 2×": "2× klatschen", "Clap 3×": "3× klatschen", "Clap 4×": "4× klatschen", "Answer": "Antwort", "Words (several: separate with |)": "Worte (mehrere mit | trennen)", "Sensitivity (higher = also softer claps)": "Empfindlichkeit (höher = auch leisere Klatscher)", "Volume of the beep": "Lautstärke des Pieptons", "Sensitivity (higher = answers more readily)": "Empfindlichkeit (höher = antwortet eher)", "Volume of the answer": "Lautstärke der Antwort", "Clap switch on": "Klatschschalter ein", "Beep when recognised": "Piepton, wenn erkannt", "Only when not armed (claps of strangers switch nothing)": "Nur wenn nicht scharf (Klatscher von Fremden schalten nichts)", "Practice: only count and beep, switch nothing": "Üben: nur zählen und piepen, nichts schalten", "Say «Bless you!» after a sneeze": "Nach einem Niesen «Gesundheit!» sagen", "Quiet at night (22 to 7 o'clock)": "Nachts still (22 bis 7 Uhr)", "Test beep": "Piepton testen", "switch on and clap 2× to try it": "einschalten und zum Ausprobieren 2× klatschen", "clap 2, 3 or 4 times": "2, 3 oder 4 Mal klatschen", "counting": "zähle", "last": "zuletzt", "Hear the answer": "Antwort anhören", "Install": "Installieren", "sn-note": "Die Niesen-Erkennung nutzt ein kleines Erkennungsmodell (YAMNet von Google, etwa 4 MB). Es wird beim ersten lauten Geräusch einmal geladen. Tipp: «Gesundheit!» mit dem Handy als Sprachmemo aufnehmen und mit «Eigene Antwort» hochladen – sie wird sofort als Antwort gewählt.",
+ "Own answer (sound file)": "Eigene Antwort (Tondatei)", "saved and chosen as answer": "gespeichert und als Antwort gewählt", "loading the sound recognition …": "lade die Geräusch-Erkennung …", "waiting for the first loud sound": "wartet auf das erste laute Geräusch", "needs the sound recognition program - button «Install»": "braucht das Erkennungsprogramm – Knopf «Installieren»", "model could not be loaded": "Modell konnte nicht geladen werden", "installing … (a few minutes)": "installiere … (ein paar Minuten)", "last check": "letzte Prüfung", "today": "heute", "no speech program (sudo apt install libttspico-utils)": "kein Sprachprogramm (sudo apt install libttspico-utils)", "no microphone selected (Microphone)": "kein Mikrofon gewählt (Mikrofon)", "not while armed": "nicht, solange scharf", "too many claps": "zu viele Klatscher", "not possible": "nicht möglich"});
+function sevPaint(s) {
+  const V = s.soundev; if (!V) return;
+  const box = (view, id) => { const d = document.querySelector('details[data-view="sec:' + view + '"]'); if (!d) return null;
+    let b = document.getElementById(id); if (!b) { b = el("div", "sevbox"); b.id = id; b.style.cssText = "margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:13px"; d.appendChild(b); } return b; };
+  const c = box("Clap switch", "sev-clap");
+  if (c) { if (!c.dataset.b) { c.dataset.b = 1; const tx = el("div", "", ""); tx.id = "sev-clap-t"; const row = el("div", "btns");
+      const b2 = el("button", "sec", "🔔 " + t("Test beep")); b2.type = "button"; b2.onclick = () => post("/api/soundev", {action: "test_beep", n: 2, lang: LANG});
+      row.appendChild(b2); c.append(tx, row); }
+    const big = V.counting ? "👏 ".repeat(Math.min(6, V.counting)) : "";
+    $("#sev-clap-t").textContent = !V.mic ? t("no microphone selected (Microphone)") : !V.clap_on ? t("off") + " – " + t("switch on and clap 2× to try it")
+      : (big ? big + " " + t("counting") + " " + V.counting + "×" : "👂 " + t("listening") + " – " + t("clap 2, 3 or 4 times"))
+        + (V.last_n ? " · " + t("last") + ": " + V.last_n + "× → " + (V.last_act ? t(V.last_act) : "–") : ""); }
+  const n = box("Bless you", "sev-sn");
+  if (n) { if (!n.dataset.b) { n.dataset.b = 1; const tx = el("div", "", ""); tx.id = "sev-sn-t"; const row = el("div", "btns");
+      const bt = el("button", "sec", "🔊 " + t("Hear the answer")); bt.type = "button"; bt.onclick = async () => { const r = await post("/api/soundev", {action: "test_reply", lang: LANG}); if (!r.ok) toast(r.error || "⚠"); };
+      const bi = el("button", "", "📦 " + t("Install")); bi.type = "button"; bi.id = "sev-inst"; bi.onclick = async () => { bi.disabled = true; const r = await post("/api/soundev", {action: "install", lang: LANG}); if (!r.ok) toast(r.error || "⚠"); };
+      const up = document.createElement("input"); up.type = "file"; up.accept = "audio/*,.m4a,.mp3,.wav"; up.hidden = true;
+      const bu = el("button", "sec", "🎙 " + t("Own answer (sound file)")); bu.type = "button"; bu.onclick = () => up.click();
+      up.onchange = async () => { const f = up.files && up.files[0]; if (!f) return; bu.disabled = true;
+        const r = await fetch("/api/soundev/upload?lang=" + LANG, {method: "POST", body: f}).then(x => x.json()).catch(() => ({ok: false}));
+        bu.disabled = false; up.value = ""; toast(r.ok ? "✓ " + t("saved and chosen as answer") + ": " + r.name : "⚠ " + (r.error || t("not possible")));
+        if (r.ok) setTimeout(() => location.reload(), 1200); };
+      row.append(bt, bu, bi, up); n.append(tx, row, el("div", "mut", t("sn-note"))); }
+    const M = {ready: "👂 " + t("listening"), downloading: "⏳ " + t("loading the sound recognition …"), off: "👂 " + t("waiting for the first loud sound"),
+      "no runtime": "⚠ " + t("needs the sound recognition program - button «Install»"), "download failed": "⚠ " + t("model could not be loaded"), error: "⚠ " + t("error")};
+    $("#sev-sn-t").textContent = !V.mic ? t("no microphone selected (Microphone)") : (!V.sneeze_on ? t("off") : (V.install === "running" ? "⏳ " + t("installing … (a few minutes)") : (M[V.model] || V.model)))
+      + (V.sneeze_score != null && V.sneeze_on ? " · " + t("last check") + ": " + Math.round(100 * V.sneeze_score) + " %" : "")
+      + " · 🤧 " + t("today") + ": " + V.sneezes_today + "×" + (!V.tts ? " · " + t("no speech program (sudo apt install libttspico-utils)") : "");
+    $("#sev-inst").hidden = V.runtime || V.install === "done"; $("#sev-inst").disabled = V.install === "running"; }
 }
 function simPaint(s) {
   const S = s.sim || {}, st = $("#sim-st"), b = $("#sim-btn"); document.body.classList.toggle("sim-on", !!S.on);
@@ -21513,6 +23157,7 @@ function simPaint(s) {
   if (fb) { const F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.count, x.ms, x.age > 5])) + S.url;
     if (fb.dataset.sig !== sig) { fb.dataset.sig = sig; fb.textContent = "";
       if (!F.length) fb.appendChild(el("div", "mut", t("No simulator announces itself in the network right now.")));
+      fb.appendChild(el("div", "mut", t("sim-missing"))).style.marginTop = "6px";
       F.forEach(x => { const r = el("div"); r.style.cssText = "display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:10px;margin-top:6px";
         const cur = S.url === "http://" + x.ip + ":" + x.port;
         const info = el("div"); info.style.flex = "1";
@@ -22188,7 +23833,7 @@ async function refresh() {
   renderSchedules(j.schedules || [], s);
   $("#v-rec").hidden = !s.recording; $("#v-src").hidden = !s.source_label; $("#v-src").textContent = s.source_label || "";
   $("#b-sec").hidden = !s.web_open;
-  updateExtras(s); updateProtect(s); tpPaint(s); sensPaint(c, s); stormPaint(c, s); gpsPaint(c, s); simPaint(s); solarPaint(c, s); dtPaint(s); mqPaint(s); updateAutostart(s); updateAudio(s.audio); renderLights(s.light_cfg, s); updateSecurity(s); tidyHeader(s, c);
+  updateExtras(s); updateProtect(s); tpPaint(s); sensPaint(c, s); stormPaint(c, s); gpsPaint(c, s); simPaint(s); moverPaint(s); sevPaint(s); solarPaint(c, s); dtPaint(s); mqPaint(s); updateAutostart(s); updateAudio(s.audio); renderLights(s.light_cfg, s); updateSecurity(s); tidyHeader(s, c);
   badge("#b-pres", t("Presence") + ": " + t(s.presence || "unknown"), s.presence === "home" ? "grn" : (s.presence === "away" ? "org" : ""));
   $("#b-pres").hidden = !(s.presence === "home" || s.presence === "away") || HIDDEN.has("b-pres");
 
@@ -22239,6 +23884,46 @@ document.querySelectorAll("button.dp").forEach(b => {
   });
   ["pointerup", "pointerleave", "pointercancel"].forEach(ev => b.addEventListener(ev, stop));
 });
+// ---- mover (2.94.0): second stick = tracked vehicle; up = forward, down = back, sideways = turn on the spot ----
+(function () {
+  const pad = $("#mstick"), knob = $("#mknob"); if (!pad || !knob) return;
+  let id = null, v = 0, w = 0, timer = null, busy = false, ox = 0, oy = 0;
+  const show = (px, py) => { knob.style.transform = "translate(" + px + "px," + py + "px)"; };
+  const send = () => { if (busy) return; busy = true; post("/api/mover", {v: v, w: w}).then(r => { busy = false; if (r && r.l != null) moverBars(r.l, r.r); }); };
+  function track(e) {
+    const R = pad.clientWidth / 2 - knob.clientWidth / 2;
+    let dx = e.clientX - ox, dy = e.clientY - oy; const m = Math.hypot(dx, dy);
+    if (m > R) { dx *= R / m; dy *= R / m; }
+    show(dx, dy);
+    const dz = R * 0.12, mm = Math.min(m, R), k = mm <= dz ? 0 : (mm - dz) / (R - dz) / (mm || 1) * R;
+    w = Math.round(dx * k / R * 1000) / 1000; v = Math.round(-dy * k / R * 1000) / 1000;
+  }
+  function release() { if (id === null) return; id = null; v = w = 0; clearInterval(timer); timer = null; pad.classList.remove("on"); show(0, 0); busy = false; send(); }
+  pad.addEventListener("pointerdown", e => { if (id !== null) return; e.preventDefault(); id = e.pointerId; pad.setPointerCapture(id);
+    ox = e.clientX; oy = e.clientY; pad.classList.add("on"); track(e); busy = false; send(); timer = setInterval(send, 100); mvWake(); });
+  pad.addEventListener("pointermove", e => { if (e.pointerId === id) { e.preventDefault(); track(e); mvWake(); } });
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach(ev => pad.addEventListener(ev, e => { if (e.pointerId === id) release(); }));
+  window.addEventListener("blur", release); document.addEventListener("visibilitychange", () => { if (document.hidden) release(); });
+})();
+let mvIdleT = null;
+function mvWake() { const c = $("#vo-mctl"); if (!c) return; c.classList.remove("idle"); clearTimeout(mvIdleT); mvIdleT = setTimeout(() => c.classList.add("idle"), 3000); }
+function moverBars(l, r) {
+  const f = (el_, x) => { if (!el_) return; const h = Math.min(50, Math.abs(x) * 50); el_.style.height = h + "%"; el_.style.top = x >= 0 ? (50 - h) + "%" : "50%"; el_.style.background = x >= 0 ? "var(--grn)" : "var(--org)"; };
+  f($("#mtl"), l); f($("#mtr"), r);
+}
+function moverPaint(s) {
+  const m = s.mover || {}, on = !!m.avail;
+  if (document.body.classList.contains("mover") !== on) document.body.classList.toggle("mover", on);
+  const tx = $("#mstick-txt");
+  if (tx && on) tx.textContent = "🚜 " + ((Math.abs(m.l) > 0.02 || Math.abs(m.r) > 0.02) ? "L " + Math.round(m.l * 100) + " % · R " + Math.round(m.r * 100) + " %" : t("Mover") + (m.test ? " (" + t("test only - nothing moves") + ")" : m.sim ? " (" + t("simulated") + ")" : ""));
+  if (on) moverBars(m.l || 0, m.r || 0);
+  const st = $("#mover-st"); if (st) st.textContent = (on ? "✅ " : "⚪ ") + (m.msg || "");
+}
+function moverExtras(d) {
+  const box = el("div", "auxbox"); const st = el("div", "mut"); st.id = "mover-st"; st.style.whiteSpace = "pre-wrap";
+  box.append(el("div", "mut", t("A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.")), st);
+  d.appendChild(box);
+}
 // ---- joystick: deflection is sent ~10x per second, the server moves the camera proportionally ----
 (function () {
   const pad = $("#stick"), knob = $("#knob");
@@ -22532,6 +24217,10 @@ document.addEventListener("webkitfullscreenchange", fsChange);
 """
 
 
+SIM_PAGE = SIM_PAGE.replace("/*SIMMAP*/", SIMMAP_JS)
+WEB_PAGE = WEB_PAGE.replace("/*SIMMAP*/", SIMMAP_JS)
+
+
 HELP_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -22644,7 +24333,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>Person verfolgen:</b> die Kamera dreht einer erkannten Person nach.</li>
 <li><b>Patrouille:</b> die Kamera fährt zwischen Wegpunkten hin und her (Wegpunkt = aktuelle Position, Schwenk und Neigung, mit «+ Wegpunkt»; Anzeige z.B. 24/60 = 24 % links–rechts, 60 % unten–oben). Der Knopf 🔄 schaltet bei jedem Tippen weiter: Aus → hin und zurück (1-2-3-2-1) → Runde (1-2-3-1) → Aus.</li>
 <li><b>Videoquelle:</b> Pi-Kamera, USB- oder Netzwerkkamera. Weitere Kameras im Reiter <i>Kameras</i>.</li>
-<li><b>Servo-Treiber</b> (Feineinstellungen): PCA9685 und Adresse, Kanäle.</li></ul>
+<li><b>Servo-Treiber</b> (Feineinstellungen): PCA9685 und Adresse, Kanäle.</li><li><b>🚜 Mover (Kettenfahrzeug, ab 2.94.0):</b> steht Motion Watch auf einem kleinen Kettenfahrzeug, erscheint ein zweiter, grüner Stick: hoch = vorwärts, runter = rückwärts, seitlich = an Ort drehen. Den Motortreiber (Motor HAT mit PCA9685 + TB6612, I2C 0x60) findet Motion Watch von selbst – ohne ihn bleibt der Stick weg. Einstellungen unter Kamera &amp; Servos → Mover. Ohne neuen Befehl halten die Ketten nach 0,6 s an. Im 3D-Simulator: «Mover simulieren». In der Simulation lässt sich der Stick auch ohne Mover einblenden (Mover → «Simulation: den Stick auch ohne Mover … zeigen», ab 2.94.4) – zum Ausprobieren der Bedienung.</li></ul>
 </section>
 
 <section id="thermal" data-icon="🌡"><h2>Wärmebild</h2>
@@ -22855,7 +24544,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>Follow person:</b> the camera follows a detected person.</li>
 <li><b>Patrol:</b> the camera moves between waypoints (waypoint = current position, pan and tilt, «+ Waypoint»; shown e.g. as 24/60 = 24 % left–right, 60 % down–up). The 🔄 button steps on with each tap: off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off.</li>
 <li><b>Video source:</b> Pi camera, USB or network camera; more cameras in the tab <i>Cameras</i>.</li>
-<li><b>Servo driver</b> (fine-tuning): PCA9685, address, channels.</li></ul>
+<li><b>Servo driver</b> (fine-tuning): PCA9685, address, channels.</li><li><b>🚜 Mover (tracked vehicle, from 2.94.0):</b> when Motion Watch sits on a small tracked vehicle, a second, green stick appears: up = forward, down = back, sideways = turn on the spot. The motor driver (Motor HAT with PCA9685 + TB6612, I2C 0x60) is found by itself – without it the stick stays away. Settings under Camera &amp; servos → Mover. Without a new command the tracks stop after 0.6 s. In the 3D simulator: «Mover simulieren». In the simulation the stick can also be shown without a mover (Mover → «Simulation: show the stick even without …», from 2.94.4) – to try out the controls.</li></ul>
 </section>
 
 <section id="thermal" data-icon="🌡"><h2>Thermal camera</h2>
@@ -23953,6 +25642,30 @@ class WebStream:
             log_event("sys", f"Video for the simulator uploaded: {r.get('saved', name)} ({n / 1024 ** 2:.0f} MB)")
             return reply(dict(r, ok=True))
 
+        @app.route("/sim/simulator3d.zip")
+        def sim3d_zip():
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
+            if sim3d_ready():
+                return send_file(sim3d_path(), mimetype="application/zip", as_attachment=True,
+                                 download_name=f"MotionWatch3D_Simulator_{SIM3D['version']}.zip", conditional=True)
+            if request.args.get("retry"):
+                SIM3D_DL["msg"] = ""
+            if not SIM3D_DL["msg"]:
+                sim3d_fetch()
+            return Response(sim3d_wait_page(lang), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
+        @app.route("/sim/simulator_py.zip")
+        def simpy_zip():
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
+            if sim3d_ready(SIMPY):
+                return send_file(sim3d_path(SIMPY), mimetype="application/zip", as_attachment=True,
+                                 download_name=f"{SIMPY['stem']}_{SIMPY['version']}.zip", conditional=True)
+            if request.args.get("retry"):
+                SIMPY_DL["msg"] = ""
+            if not SIMPY_DL["msg"]:
+                sim3d_fetch(SIMPY, SIMPY_DL)
+            return Response(sim3d_wait_page(lang, SIMPY, SIMPY_DL, "/sim/simulator_py.zip"), mimetype="text/html", headers={"Cache-Control": "no-store"})
+
         @app.route("/sim/simulator.zip")
         def sim_zip():
             import base64
@@ -24187,6 +25900,9 @@ class WebStream:
                 if CFG["sim_on"]:                          # the simulation has its own lamps
                     st["light_cfg"]["white_out"] = st["light_cfg"]["white_out"] or "sim"; st["light_cfg"]["ir_out"] = st["light_cfg"]["ir_out"] or "sim"
                 st["sim"] = sim_status()
+                st["mover"] = {"avail": MOVER["avail"], "sim": MOVER["sim"], "test": MOVER["test"], "hw": MOVER["hw"], "l": MOVER["l"], "r": MOVER["r"],
+                               "msg": tr(MOVER["msg"], lang_), "mode": CFG["mover_mode"]}
+                st["soundev"] = soundev_state()
                 st["light_cfg"].update({n + "_auto_label": dict(text_choice_pairs("light_white_auto")).get(CFG[f"light_{n}_auto"], "")
                                         for n in ("white", "ir")})
                 st["hotspot_cfg"] = {"ssid": CFG["hotspot_ssid"], "password": CFG["hotspot_password"] if getattr(g, "role", "admin") == "admin" else "",
@@ -24272,6 +25988,12 @@ class WebStream:
             if not move_camera(d.get("dir"), d.get("step", 3)):
                 return reply({"ok": False, "error": "unknown direction"}, 400)
             return reply({"ok": True, "pan": CFG["pan"], "tilt": CFG["tilt"]})
+
+        @app.route("/api/mover", methods=["POST"])
+        def api_mover():
+            d = body()
+            ok = mover_drive(d.get("v", 0), d.get("w", 0), "web")
+            return reply({"ok": ok, "l": MOVER["l"], "r": MOVER["r"], "avail": MOVER["avail"]})
 
         @app.route("/api/stick", methods=["POST"])
         def api_stick():
@@ -24389,6 +26111,32 @@ class WebStream:
             d = body(); lang = norm_lang(d.get("lang"))
             ok, err = pause_program(d.get("minutes"), source="web " + (request.remote_addr or "?"))
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
+
+        @app.route("/api/soundev/upload", methods=["POST"])
+        def api_soundev_upload():
+            lang = norm_lang(request.args.get("lang"))
+            if (request.content_length or 0) > 8 * 1024 * 1024:
+                return reply({"ok": False, "error": tr_err("the file is too large (max. 8 MB)", lang)}, 413)
+            ok, err, name = sneeze_upload(request.get_data(cache=False))
+            return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "name": name}, 200 if ok else 400)
+
+        @app.route("/api/soundev", methods=["POST"])
+        def api_soundev():
+            d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
+            if a == "install":
+                ok, err = sneeze_install()
+            elif a == "test_reply":
+                SOUNDEV["sneeze_last"] = 0.0
+                if not out_selected():
+                    ok, err = False, "no loudspeaker selected"
+                else:
+                    n0 = sneeze_count(); sneeze_reply(); _SNEEZE_DAYS["days"][datetime.now().strftime("%Y-%m-%d")] = n0
+                    ok, err = True, ""
+            elif a == "test_beep":
+                sev_beep(int(d.get("n") or 2)); ok, err = True, ""
+            else:
+                ok, err = False, "unknown action"
+            return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "soundev": soundev_state()}, 200 if ok else 400)
 
         @app.route("/api/audio", methods=["GET", "POST"])
         def api_audio():
@@ -24799,6 +26547,10 @@ class WebStream:
         def icon180():
             return Response(app_icon_png(180, host_variant()), mimetype="image/png", headers={"Cache-Control": "no-cache"})
 
+        @app.route("/sim")
+        def sim_page():
+            return Response(render_page(SIM_PAGE, "sim"), mimetype="text/html")
+
         # ---- tools page ----
         @app.route("/tools")
         def tools_page():
@@ -24842,6 +26594,9 @@ class WebStream:
             if a == "adapters":
                 dual_roles()
                 return reply({"ok": True})
+            if a == "toolmode":
+                ok, err = toolmode_set(d.get("minutes"), "web " + (request.remote_addr or "?"))
+                return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "toolmode": toolmode_state()}, 200 if ok else 400)
             if a == "cfg":
                 ok, err = tools_cfg(d.get("key"), d.get("value"), d.get("mac"))
                 return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
@@ -25809,6 +27564,9 @@ DAYS_SHORT = {"de": ("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"), "fr": ("lu", "ma
               "it": ("lu", "ma", "me", "gi", "ve", "sa", "do"), "rm": ("gli", "ma", "me", "gie", "ve", "so", "du"), "en": DAYS_SHORT_EN}
 DAYS_SHORT_DE = ("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So")
 SLIDERS = [  # (section, key, label, min, max, step)
+    ("Mover", "mover_speed", "Top speed (%)", 10, 100, 5),
+    ("Mover", "mover_turn", "Turning speed (%)", 10, 100, 5),
+    ("Mover", "mover_ramp", "Gentle start and stop (seconds)", 0.0, 2.0, 0.1),
     ("AI detection", "species_conf", "Animal species: minimum certainty", 0.2, 0.95, 0.05),
     ("Solar panel", "solar_shunt", "Current meter: shunt resistor (Ohm, usually 0.1)", 0.01, 0.1, 0.005),
     ("GPS module", "gps_theft_m", "Theft tracking: alarm from a distance of (m)", 50, 1000, 50),
@@ -25900,12 +27658,20 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Thermal camera", "thermal_dy", "Thermal: shift up / down (%)", -30, 30, 1),
     ("Microphone", "noise_threshold", "Noise alarm: louder than the background by (dB)", 6, 40, 1),
     ("Microphone", "noise_min", "Noise alarm: at least (s)", 0.1, 3, 0.1),
+    ("Clap switch", "clap_sens", "Sensitivity (higher = also softer claps)", 1, 10, 1),
+    ("Clap switch", "clap_volume", "Volume of the beep", 0, 100, 5),
+    ("Bless you", "sneeze_sens", "Sensitivity (higher = answers more readily)", 1, 10, 1),
+    ("Bless you", "sneeze_volume", "Volume of the answer", 0, 100, 5),
     ("Loudspeaker", "siren_volume", "Volume (%)", 5, 100, 5),
     ("Loudspeaker", "siren_seconds", "Duration of the siren (s)", 1, 60, 1),
     ("Loudspeaker", "siren_pause", "Siren: min. pause between two alarms (s)", 0, 600, 10),
     ("Loudspeaker", "talk_gain", "Speaking from the phone: volume boost (dB)", 0, 20, 1),
 ]
 TOGGLES = [  # (section, key, label)
+    ("Mover", "mover_inv_l", "Left track runs the wrong way (turn round)"),
+    ("Mover", "mover_inv_r", "Right track runs the wrong way (turn round)"),
+    ("Mover", "mover_swap", "Left and right tracks swapped"),
+    ("Mover", "mover_sim_show", "Simulation: show the stick even without a mover or motor driver (to try it out)"),
     ("Simulator", "sim_eco", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)"),
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
@@ -26001,8 +27767,38 @@ TOGGLES = [  # (section, key, label)
     ("Thermal camera", "thermal_hot", "Show only the hot areas (people, animals, engines)"),
     ("Microphone", "noise_alarm", "Noise alarm: alarm when it gets loud (cracking, rustling, voices)"),
     ("Microphone", "noise_push", "Noise alarm: push message"),
+    ("Clap switch", "clap_on", "Clap switch on"),
+    ("Clap switch", "clap_beep", "Beep when recognised"),
+    ("Clap switch", "clap_disarmed", "Only when not armed (claps of strangers switch nothing)"),
+    ("Clap switch", "clap_practice", "Practice: only count and beep, switch nothing"),
+    ("Bless you", "sneeze_on", "Say «Bless you!» after a sneeze"),
+    ("Bless you", "sneeze_night", "Quiet at night (22 to 7 o'clock)"),
     ("Microphone", "audio_record", "Sound in the recordings"),
 ]
+DE.update({    # mover (2.94.0)
+    "Mover": "Mover",
+    "Mover (tracked vehicle)": "Mover (Kettenfahrzeug)",
+    "Motor driver": "Motortreiber",
+    "Motor driver: address (I2C)": "Motortreiber: Adresse (I2C)",
+    "Top speed (%)": "Höchstgeschwindigkeit (%)",
+    "Turning speed (%)": "Drehgeschwindigkeit (%)",
+    "Gentle start and stop (seconds)": "Sanft anfahren und bremsen (Sekunden)",
+    "Left track runs the wrong way (turn round)": "Linke Kette läuft falsch herum (umdrehen)",
+    "Right track runs the wrong way (turn round)": "Rechte Kette läuft falsch herum (umdrehen)",
+    "Left and right tracks swapped": "Linke und rechte Kette vertauscht",
+    "automatic: on when the motor driver is found": "automatisch: an, wenn der Motortreiber gefunden wird",
+    "Motor HAT (Adafruit or compatible): M1 left, M2 right": "Motor HAT (Adafruit oder kompatibel): M1 links, M2 rechts",
+    "Waveshare Motor Driver HAT: A left, B right": "Waveshare Motor Driver HAT: A links, B rechts",
+    "the address is the one of the servo driver": "die Adresse ist die des Servo-Treibers",
+    "no motor driver found": "kein Motortreiber gefunden",
+    "motor driver found": "Motortreiber gefunden",
+    "simulated": "simuliert",
+    "test only - nothing moves": "nur Test – nichts fährt",
+    "Simulation: show the stick even without a mover or motor driver (to try it out)": "Simulation: den Stick auch ohne Mover oder Motortreiber zeigen (zum Ausprobieren)",
+    "stick shown for testing (the simulator has no mover)": "Stick zum Testen eingeblendet (der Simulator hat keinen Mover)",
+    "the simulator has no mover": "der Simulator hat keinen Mover (im Simulator «Mover simulieren» einschalten)",
+    "A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "Ein Kettenfahrzeug unter Motion Watch: der zweite Stick fährt es (hoch = vorwärts, runter = rückwärts, seitlich = an Ort drehen). Der Motortreiber (Motor HAT mit PCA9685 + TB6612 an I2C) wird von selbst gefunden – ohne ihn bleibt der Stick verborgen. Kommt 0,6 s lang kein neuer Befehl, halten beide Ketten an.",
+})
 DE.update({    # window in the look of the web page (2.25.0)
     "Weather & system": "Wetter & System", "Slow": "Langsam", "Medium": "Mittel", "Fast": "Schnell", "Speed: slow": "Tempo: langsam", "Speed: medium": "Tempo: mittel", "Speed: fast": "Tempo: schnell",
     "Calibrate": "Kalibrieren", "Waypoint": "Wegpunkt", "Thermal": "Wärme", "Marks": "Markieren", "Lamp": "Licht", "IR light": "IR-Licht",
@@ -26162,23 +27958,23 @@ TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery":
                 "Night report": "☾", "Messages": "✎", "SMS (LTE stick)": "☏", "Detection": "◎", "AI detection": "⌬",
                 "Walking recognition": "➜", "Vehicle filter": "⛀", "Rain": "☂", "Wind": "≋", "Low light": "◐", "Auto-tune": "✱",
                 "Camera / Servos": "✥", "Patrol": "↻", "Video source": "▣", "Servo driver": "⚒", "Lights": "☀", "Deterrence": "⚠",
-                "Microphone": "♪", "Loudspeaker": "♫", "Recording": "●", "Timelapse": "◷", "Backup": "☁", "Relays": "⚡",
+                "Microphone": "♪", "Loudspeaker": "♫", "Clap switch": "✋", "Bless you": "☺", "Recording": "●", "Timelapse": "◷", "Backup": "☁", "Relays": "⚡",
                 "Schedule": "▦", "Setup": "⊕", "Wi-Fi / hotspot": "⌁", "Web stream": "⇅", "Guest access": "⚇",
-                "MQTT / Home Assistant": "⇆", "Updates": "⬆", "Extra sensors": "◉", "Simulator": "⚗", "Storm warning": "≈", "GPS module": "✈", "Solar panel": "☼"}
+                "MQTT / Home Assistant": "⇆", "Updates": "⬆", "Extra sensors": "◉", "Simulator": "⚗", "Storm warning": "≈", "GPS module": "✈", "Solar panel": "☼", "Mover": "⇕"}
 
 TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - the same 9 groups as the web page
     ("alarm", "Alarm & camping", ["Camping / protection", "Power saving", "Battery", "Theft protection"]),
     ("notify", "Notifications", ["Notifications", "Night report", "Messages", "SMS (LTE stick)"]),
     ("detect", "Detection", ["Detection", "AI detection", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
-    ("camera", "Camera & servos", ["Camera / Servos", "Patrol", "Video source", None, "Servo driver"]),
+    ("camera", "Camera & servos", ["Camera / Servos", "Patrol", "Video source", "Mover", None, "Servo driver"]),
     ("thermal", "Thermal camera", ["Thermal camera"]),
     ("sensors", "Sensors", ["Extra sensors", "Storm warning", "GPS module", "Solar panel"]),
-    ("lightsound", "Light & sound", ["Lights", "Deterrence", "Microphone", "Loudspeaker"]),
+    ("lightsound", "Light & sound", ["Lights", "Deterrence", "Microphone", "Loudspeaker", "Clap switch", "Bless you"]),
     ("rec", "Recordings & timelapse", ["Recording", "Timelapse", "Backup"]),
     ("relay", "Relays & schedule", ["Relays", "Schedule"]),
     ("sys", "System & network", ["Setup", "Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant", "Updates", "Simulator"]),
 ]
-SECTIONS = ["Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
+SECTIONS = ["Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
 
 
@@ -26344,6 +28140,65 @@ class StickPad(tk.Canvas):
         self.draw()
 
 
+class MoverPad(tk.Canvas):
+    """The second stick (from 2.94.0): drives the mover (tracked vehicle). Up = forward, down = back, sideways = turn on
+    the spot; release = stop. Green bars on the left and right = how fast each track runs."""
+
+    def __init__(self, parent, app, size):
+        super().__init__(parent, width=size, height=size, bg=C["panel"], highlightthickness=0, bd=0, cursor="fleur")
+        self.app, self.S, self.R = app, size, size * 0.30
+        self.o = None; self.dx = self.dy = 0.0; self.job = None
+        self.bind("<ButtonPress-1>", self._press); self.bind("<B1-Motion>", self._drag); self.bind("<ButtonRelease-1>", self._release)
+        self.draw()
+
+    def draw(self):
+        mix = App._mix; P = C["panel"]; s = self.S; c = s / 2
+        self.delete("all")
+        self.create_oval(4, 4, s - 4, s - 4, fill=mix(P, "#000000", 0.25), outline=mix(P, C["grn"], 0.3), width=6)
+        for txt, x, y in (("⇧", c, 14), ("⇩", c, s - 14), ("↺", 14, c), ("↻", s - 14, c)):
+            self.create_text(x, y, text=txt, fill=C["mut"], font=("DejaVu Sans", 9))
+        for side, val in ((0, MOVER["l"]), (1, MOVER["r"])):
+            x0 = s * (0.09 if side == 0 else 0.86); x1 = x0 + s * 0.05; top, bot = s * 0.2, s * 0.8
+            self.create_rectangle(x0, top, x1, bot, outline=mix(P, C["mut"], 0.3))
+            h = (bot - top) / 2 * min(1.0, abs(val))
+            if h > 1:
+                y0, y1 = (c - h, c) if val > 0 else (c, c + h)
+                self.create_rectangle(x0, y0, x1, y1, fill=C["grn"] if val > 0 else C["org"], outline="")
+        kx, ky, kr = c + self.dx * self.R, c + self.dy * self.R, s * 0.2
+        self.create_oval(kx - kr, ky - kr, kx + kr, ky + kr, fill=mix(C["grn"], "#ffffff", 0.18 if self.o else 0.05), outline=mix(C["grn"], "#000000", 0.2))
+
+    def _press(self, e):
+        self.o = (e.x, e.y); self.dx = self.dy = 0.0
+        if self.job is None:
+            self._tick()
+
+    def _drag(self, e):
+        if self.o is None:
+            return
+        dx, dy = (e.x - self.o[0]) / self.R, (e.y - self.o[1]) / self.R
+        m = math.hypot(dx, dy)
+        if m > 1:
+            dx, dy = dx / m, dy / m
+        self.dx, self.dy = dx, dy
+
+    def _tick(self):
+        self.job = None
+        if self.o is None:
+            return
+        m = math.hypot(self.dx, self.dy)
+        v, w = (-self.dy, self.dx) if m >= 0.12 else (0.0, 0.0)
+        mover_drive(v, w, "window")
+        self.draw()
+        self.job = self.after(80, self._tick)
+
+    def _release(self, _e=None):
+        self.o = None; self.dx = self.dy = 0.0
+        if self.job is not None:
+            self.after_cancel(self.job); self.job = None
+        mover_drive(0, 0, "window")
+        self.draw()
+
+
 class Seg(tk.Frame):
     """Segmented Off / On / Auto switch for one relay."""
     MODES = ("off", "on", "auto")
@@ -26377,7 +28232,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.85.0")
+        self.root.title("Motion Watch 2.95.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -26667,7 +28522,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.85.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -26942,6 +28797,10 @@ class App:
         sb = tk.Frame(bar, bg=C["panel"]); sb.grid(row=0, column=c_st, rowspan=1 if (wide or tiny) else 2, sticky="n")
         self.stick = StickPad(sb, self, 176 if wide else 140); self.stick.pack()
         self.l_pt = tk.Label(sb, text="", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8)); self.l_pt.pack(pady=(2, 0))
+        # the mover (2.94.0): second stick under the camera stick, only while the mover is there
+        self.mstick = MoverPad(sb, self, 140 if wide else 116)
+        if MOVER["avail"]:
+            self.mstick.pack(pady=(8, 0))
         # 2) speed, centre, calibrate, waypoints (narrow window: one row of symbols)
         names = [tr(n) for n, _ in self.SPEEDS]
         if wide:
@@ -27329,7 +29188,7 @@ class App:
         """Status line, switches, sliders, text fields and buttons of one section. settings_parent: put the switches /
         sliders / text fields there instead (the buttons stay in sbody)."""
         sp = settings_parent if settings_parent is not None else sbody
-        if sec in ("Setup", "Camera / Servos", "Video source", "Schedule", "Patrol", "AI detection", "Web stream", "Auto-tune", "Notifications", "Timelapse", "Thermal camera", "Wi-Fi / hotspot", "Camping / protection", "Microphone", "Loudspeaker", "Lights", "Servo driver"):
+        if sec in ("Setup", "Camera / Servos", "Video source", "Schedule", "Patrol", "AI detection", "Web stream", "Auto-tune", "Notifications", "Timelapse", "Thermal camera", "Wi-Fi / hotspot", "Camping / protection", "Microphone", "Loudspeaker", "Lights", "Servo driver", "Clap switch", "Bless you"):
             self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels[sec].pack(anchor="w")
         if sec == "Web stream":
@@ -27455,6 +29314,9 @@ class App:
             ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
+        if sec == "Mover":
+            self.status_labels["Mover"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels["Mover"].pack(anchor="w", pady=(4, 0))
         if sec == "GPS module":
             self.status_labels["GPS module"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["GPS module"].pack(anchor="w", pady=(4, 0))
@@ -27882,7 +29744,7 @@ class App:
                 "Timelapse": lambda: CFG["timelapse_on"], "Backup": lambda: CFG["backup_type"] != "off", "Relays": lambda: CFG["relays_on"],
                 "Schedule": lambda: any(x.get("enabled") for x in SCHEDULES), "Wi-Fi / hotspot": lambda: CFG["hotspot_on"],
                 "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG["update_auto"],
-                "Extra sensors": lambda: CFG["sens_on"] and bool(CFG["sensors"]), "Storm warning": lambda: CFG["storm_on"], "GPS module": lambda: CFG["gpsmod_on"], "Simulator": lambda: CFG["sim_on"], "Solar panel": lambda: CFG["solar_on"]}
+                "Extra sensors": lambda: CFG["sens_on"] and bool(CFG["sensors"]), "Storm warning": lambda: CFG["storm_on"], "GPS module": lambda: CFG["gpsmod_on"], "Mover": lambda: MOVER["avail"], "Simulator": lambda: CFG["sim_on"], "Solar panel": lambda: CFG["solar_on"]}
         for key, (arr, secs, _c, _w) in list(getattr(self, "grp_meta", {}).items()):
             try:
                 if arr.winfo_exists():
@@ -27911,7 +29773,8 @@ class App:
         self._status("Simulator", (tr("off - the real cameras and sensors are used") if not si_["on"] else
                                    (tr("connected") + f" · {si_['url']} · " + (tr("night") if si_["dark"] else tr("day")) + f" · {si_['ambient']} °C"
                                     if si_["ok"] else tr_err(si_["msg"]) + " · " + si_["url"]))
-                     + ("\n🔎 " + tr("Simulators in the network:") + " " + ", ".join(f"{x['name']} ({x['ip']}:{x['port']})" for x in si_["found"]) if si_["found"] else ""))
+                     + ("\n🔎 " + tr("Simulators in the network:") + " " + ", ".join(f"{x['name']} ({x['ip']}:{x['port']})" for x in si_["found"]) if si_["found"] else "")
+                     + ("\n🎮 " + tr("3D simulator for Windows (ZIP)") + ": " + page_address(ip3_) + "sim/simulator3d.zip" if (ip3_ := local_ip()) else ""))
         so_ = st.get("solar") or {}; nf_ = st.get("night")
         l_ = [(tr("off") if not CFG["solar_on"] else tr("no current meter found at this address") if not so_.get("ok")
                else f"{so_['w']} W ({so_['v']} V · {so_['a']} A) · {tr('today')} {so_['wh']} Wh · {tr('max.')} {so_['max']} W")]
@@ -27931,6 +29794,7 @@ class App:
             self._status("GPS module", t_)
         else:
             self._status("GPS module", tr("off"))
+        self._status("Mover", ("✓ " if MOVER["avail"] else "") + tr(MOVER["msg"]))
         S_ = st.get("storm") or {}
         if S_:
             L_ = [tr("Air pressure") + ": " + ((f"{S_['p']} hPa" + (f" ({S_['trend']:+.1f} hPa / 3 h)" if S_.get("trend") is not None else " (" + tr("trend after 1 hour") + ")"))
@@ -28547,6 +30411,8 @@ class App:
                                                                 if a.get("bg") is not None else "") if on else
                 ("⚠ " + st[7:] if st.startswith("error: ") else tr("starting …"))))
         self._status("Microphone", txt)
+        self._status("Clap switch", soundev_text("clap"))
+        self._status("Bless you", soundev_text("sneeze"))
         self._status("Loudspeaker", (tr("no loudspeaker selected") if not a.get("spk") else (tr("playing …") if a.get("playing") else ""))
                      + (" ⚠ " + a["sound_msg"] if a.get("sound_msg") else ""))
         cb = getattr(self, "bt_cb", None)
@@ -28703,6 +30569,17 @@ class App:
                 txt = ""
             self.l_ctl_status.config(text=txt)
         self._qs_paint()
+        ms_ = getattr(self, "mstick", None)
+        if ms_ is not None:
+            try:
+                if MOVER["avail"] and not ms_.winfo_ismapped():
+                    ms_.pack(pady=(8, 0))
+                elif not MOVER["avail"] and ms_.winfo_ismapped():
+                    ms_.pack_forget()
+                if ms_.winfo_ismapped() and ms_.o is None:
+                    ms_.draw()
+            except tk.TclError:
+                pass
         if self.stick is not None and self.stick.o is None:
             try:
                 self.stick.draw()
@@ -33123,6 +35000,15 @@ TRX["rm"].update({"All quiet – I'm keeping watch!": "Tut quiet – jau fatsch 
 TRX['fr'].update({'Night vision look: green picture, thermal outlines and temperatures': 'Vision nocturne : image verte, contours thermiques et températures', 'Night vision automatically at night (sunset to sunrise)': 'Vision nocturne automatique la nuit (du coucher au lever du soleil)', 'Night vision': 'Vision nocturne', 'Night vision: green picture, thermal outlines and temperatures': 'Vision nocturne : image verte, contours thermiques et températures'})
 TRX['it'].update({'Night vision look: green picture, thermal outlines and temperatures': 'Visione notturna: immagine verde, contorni termici e temperature', 'Night vision automatically at night (sunset to sunrise)': "Visione notturna automatica di notte (dal tramonto all'alba)", 'Night vision': 'Visione notturna', 'Night vision: green picture, thermal outlines and temperatures': 'Visione notturna: immagine verde, contorni termici e temperature'})
 TRX['rm'].update({'Night vision look: green picture, thermal outlines and temperatures': 'Vista da notg: maletg verd, conturas termicas e temperaturas', 'Night vision automatically at night (sunset to sunrise)': 'Vista da notg automaticamain la notg (da la rendida a la levada dal sulegl)', 'Night vision': 'Vista da notg', 'Night vision: green picture, thermal outlines and temperatures': 'Vista da notg: maletg verd, conturas termicas e temperaturas'})
+TRX['fr'].update({"Search a place (e.g. Zermatt)": "Chercher un lieu (p. ex. Zermatt)", "Aerial picture": "Photo aérienne", "Map": "Carte", "Load this place": "Charger ce lieu", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Touchez la carte là où se trouve Motion Watch. Glisser = déplacer, deux doigts ou molette = zoomer.", "Search not possible – tap the place on the map": "Recherche impossible – touchez le lieu sur la carte", "Nothing found": "Rien trouvé", "Only in Switzerland": "Seulement en Suisse", "The simulator loads the place (about a minute the first time).": "Le simulateur charge le lieu (environ une minute la première fois)."})
+TRX['it'].update({"Search a place (e.g. Zermatt)": "Cerca un luogo (p. es. Zermatt)", "Aerial picture": "Foto aerea", "Map": "Carta", "Load this place": "Carica questo luogo", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Tocca la carta dove si trova Motion Watch. Trascinare = spostare, due dita o rotellina = zoom.", "Search not possible – tap the place on the map": "Ricerca non possibile – tocca il luogo sulla carta", "Nothing found": "Nessun risultato", "Only in Switzerland": "Solo in Svizzera", "The simulator loads the place (about a minute the first time).": "Il simulatore carica il luogo (circa un minuto la prima volta)."})
+TRX['rm'].update({"Search a place (e.g. Zermatt)": "Tschertgar in lieu (p.ex. Zermatt)", "Aerial picture": "Fotografia aviatica", "Map": "Charta", "Load this place": "Chargiar quest lieu", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Tutgar la charta nua che Motion Watch stat. Trair = spustar, dus dets u rodella = zoom.", "Search not possible – tap the place on the map": "Tschertga betg pussaivla – tutgar il lieu sin la charta", "Nothing found": "Nagut chattà", "Only in Switzerland": "Mo en Svizra", "The simulator loads the place (about a minute the first time).": "Il simulatur chargia il lieu (la emprima giada var ina minuta)."})
+TRX['fr'].update({"Search a setting …": "Chercher un réglage …", "Simple": "Simple", "Expert": "Expert", "Simple: only the important settings. «Expert» shows all.": "Simple : seulement les réglages importants. «Expert» les montre tous."})
+TRX['it'].update({"Search a setting …": "Cerca un'impostazione …", "Simple": "Semplice", "Expert": "Esperto", "Simple: only the important settings. «Expert» shows all.": "Semplice: solo le impostazioni importanti. «Esperto» le mostra tutte."})
+TRX['rm'].update({"Search a setting …": "Tschertgar ina configuraziun …", "Simple": "Simpel", "Expert": "Expert", "Simple: only the important settings. «Expert» shows all.": "Simpel: mo las configuraziuns impurtantas. «Expert» mussa tuttas."})
+TRX['fr'].update({"Mover": "Mover", "test only - nothing moves": "test seulement – rien ne bouge", "Simulation: show the stick even without a mover or motor driver (to try it out)": "Simulation : afficher le joystick même sans mover ni pilote des moteurs (pour essayer)", "stick shown for testing (the simulator has no mover)": "joystick affiché pour tester (le simulateur n'a pas de mover)", "Mover (tracked vehicle)": "Mover (véhicule à chenilles)", "Motor driver": "Pilote des moteurs", "Motor driver: address (I2C)": "Pilote des moteurs : adresse (I2C)", "Top speed (%)": "Vitesse maximale (%)", "Turning speed (%)": "Vitesse de rotation (%)", "Gentle start and stop (seconds)": "Démarrage et arrêt en douceur (secondes)", "Left track runs the wrong way (turn round)": "La chenille gauche tourne à l'envers (inverser)", "Right track runs the wrong way (turn round)": "La chenille droite tourne à l'envers (inverser)", "Left and right tracks swapped": "Chenilles gauche et droite inversées", "automatic: on when the motor driver is found": "automatique : actif si le pilote des moteurs est trouvé", "Motor HAT (Adafruit or compatible): M1 left, M2 right": "Motor HAT (Adafruit ou compatible) : M1 gauche, M2 droite", "Waveshare Motor Driver HAT: A left, B right": "Waveshare Motor Driver HAT : A gauche, B droite", "the address is the one of the servo driver": "l'adresse est celle du pilote des servos", "no motor driver found": "aucun pilote des moteurs trouvé", "motor driver found": "pilote des moteurs trouvé", "simulated": "simulé", "the simulator has no mover": "le simulateur n'a pas de mover", "A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "Un véhicule à chenilles sous Motion Watch : le deuxième joystick le conduit (haut = avant, bas = arrière, côté = tourner sur place). Le pilote des moteurs (Motor HAT avec PCA9685 + TB6612 en I2C) est trouvé tout seul – sans lui le joystick reste caché. Sans nouvel ordre pendant 0,6 s, les deux chenilles s'arrêtent."})
+TRX['it'].update({"Mover": "Mover", "test only - nothing moves": "solo prova – non si muove nulla", "Simulation: show the stick even without a mover or motor driver (to try it out)": "Simulazione: mostrare il joystick anche senza mover né driver dei motori (per provare)", "stick shown for testing (the simulator has no mover)": "joystick mostrato per provare (il simulatore non ha un mover)", "Mover (tracked vehicle)": "Mover (veicolo cingolato)", "Motor driver": "Driver dei motori", "Motor driver: address (I2C)": "Driver dei motori: indirizzo (I2C)", "Top speed (%)": "Velocità massima (%)", "Turning speed (%)": "Velocità di rotazione (%)", "Gentle start and stop (seconds)": "Partenza e frenata dolci (secondi)", "Left track runs the wrong way (turn round)": "Il cingolo sinistro gira al contrario (invertire)", "Right track runs the wrong way (turn round)": "Il cingolo destro gira al contrario (invertire)", "Left and right tracks swapped": "Cingoli sinistro e destro scambiati", "automatic: on when the motor driver is found": "automatico: attivo se il driver dei motori viene trovato", "Motor HAT (Adafruit or compatible): M1 left, M2 right": "Motor HAT (Adafruit o compatibile): M1 sinistra, M2 destra", "Waveshare Motor Driver HAT: A left, B right": "Waveshare Motor Driver HAT: A sinistra, B destra", "the address is the one of the servo driver": "l'indirizzo è quello del driver dei servo", "no motor driver found": "nessun driver dei motori trovato", "motor driver found": "driver dei motori trovato", "simulated": "simulato", "the simulator has no mover": "il simulatore non ha un mover", "A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "Un veicolo cingolato sotto Motion Watch: il secondo joystick lo guida (su = avanti, giù = indietro, di lato = girare sul posto). Il driver dei motori (Motor HAT con PCA9685 + TB6612 su I2C) viene trovato da solo – senza di esso il joystick resta nascosto. Senza un nuovo comando per 0,6 s entrambi i cingoli si fermano."})
+TRX['rm'].update({"Mover": "Mover", "test only - nothing moves": "mo test – nagut na sa mova", "Simulation: show the stick even without a mover or motor driver (to try it out)": "Simulaziun: mussar il stick era senza mover u manischunz dals motors (per empruvar)", "stick shown for testing (the simulator has no mover)": "stick mussà per empruvar (il simulatur n'ha nagin mover)", "Mover (tracked vehicle)": "Mover (vehichel cun chadainas)", "Motor driver": "Manischunz dals motors", "Motor driver: address (I2C)": "Manischunz dals motors: adressa (I2C)", "Top speed (%)": "Sveltezza maximala (%)", "Turning speed (%)": "Sveltezza da sa volver (%)", "Gentle start and stop (seconds)": "Partir e franar plaun (secundas)", "Left track runs the wrong way (turn round)": "La chadaina sanestra gira dal fauss vers (volver)", "Right track runs the wrong way (turn round)": "La chadaina dretga gira dal fauss vers (volver)", "Left and right tracks swapped": "Chadainas sanestra e dretga barattadas", "automatic: on when the motor driver is found": "automatic: activ sch'il manischunz dals motors vegn chattà", "Motor HAT (Adafruit or compatible): M1 left, M2 right": "Motor HAT (Adafruit u cumpatibel): M1 sanester, M2 dretg", "Waveshare Motor Driver HAT: A left, B right": "Waveshare Motor Driver HAT: A sanester, B dretg", "the address is the one of the servo driver": "l'adressa è quella dal manischunz dals servos", "no motor driver found": "nagin manischunz dals motors chattà", "motor driver found": "manischunz dals motors chattà", "simulated": "simulà", "the simulator has no mover": "il simulatur n'ha nagin mover", "A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "In vehichel cun chadainas sut Motion Watch: il segund stick al maina (si = enavant, giu = enavos, da la vart = sa volver sin il lieu). Il manischunz dals motors (Motor HAT cun PCA9685 + TB6612 sin I2C) vegn chattà sez – senza el resta il stick zuppà. Sche 0,6 s vegn nagin nov cumond, stattan omaduas chadainas."})
 TRX['fr'].update({'Take the location from the phone (the page must be open over https)': 'Prendre la position du portable (la page doit être ouverte en https)', 'GPS position in photos and videos': 'Position GPS dans les photos et vidéos', 'Location': 'Position', 'from the phone': 'du portable', 'fixed (settings)': 'fixe (réglages)', 'unknown – the phone shares it only over the https page': 'inconnue – le portable ne la donne que via la page https'})
 TRX['it'].update({'Take the location from the phone (the page must be open over https)': 'Prendere la posizione dal cellulare (la pagina deve essere aperta via https)', 'GPS position in photos and videos': 'Posizione GPS in foto e video', 'Location': 'Posizione', 'from the phone': 'dal cellulare', 'fixed (settings)': 'fissa (impostazioni)', 'unknown – the phone shares it only over the https page': 'sconosciuta – il cellulare la fornisce solo tramite la pagina https'})
 TRX['rm'].update({'Take the location from the phone (the page must be open over https)': 'Prender la posiziun dal telefonin (la pagina sto esser averta via https)', 'GPS position in photos and videos': 'Posiziun GPS en fotos e videos', 'Location': 'Posiziun', 'from the phone': 'dal telefonin', 'fixed (settings)': 'fixa (parameters)', 'unknown – the phone shares it only over the https page': 'nunenconuschenta – il telefonin la dat mo via la pagina https'})
@@ -33333,6 +35219,36 @@ for _k, _v in _HX37.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX52 = {'Repeater switched off again by itself: the Pi had no connection to a network any more': ('Repeater wieder von selbst ausgeschaltet: der Pi hatte keine Verbindung zu einem Netz mehr', "Répéteur désactivé automatiquement : le Pi n'avait plus de connexion réseau", 'Ripetitore spento da solo: il Pi non aveva più connessione a una rete', "Repetitur deactivà da sasez: il Pi n'aveva nagina colliaziun cun ina rait pli")}
+for _k, _v in _HX52.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX55 = {'Python world simulator': ('Python-Weltsimulator', 'Simulateur de monde Python', 'Simulatore del mondo Python', 'Simulatur dal mund Python'), 'Python world simulator (ZIP)': ('Python-Weltsimulator (ZIP)', 'Simulateur de monde Python (ZIP)', 'Simulatore del mondo Python (ZIP)', 'Simulatur dal mund Python (ZIP)'), 'The Pi prepares the download once …': ('Der Pi bereitet den Download einmalig vor …', 'Le Pi prépare le téléchargement une seule fois …', 'Il Pi prepara il download una sola volta …', 'Il Pi prepara la telechargiada ina giada …'), 'second simulator, needs Python on the PC': ('zweiter Simulator, braucht Python auf dem PC', 'deuxième simulateur, nécessite Python sur le PC', 'secondo simulatore, serve Python sul PC', 'segund simulatur, dovra Python sin il PC')}
+for _k, _v in _HX55.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX54 = {'the file is too large (max. 8 MB)': ('die Datei ist zu gross (max. 8 MB)', 'le fichier est trop grand (max. 8 Mo)', 'il file è troppo grande (max. 8 MB)', 'la datoteca è memia gronda (max. 8 MB)'), 'the file could not be read (a sound file like .m4a, .mp3 or .wav is needed)': ('die Datei konnte nicht gelesen werden (eine Tondatei wie .m4a, .mp3 oder .wav ist nötig)', "le fichier n'a pas pu être lu (fichier son .m4a, .mp3 ou .wav)", 'impossibile leggere il file (serve un file audio .m4a, .mp3 o .wav)', "la datoteca n'ha betg pudì vegnir legida (ina datoteca da tun .m4a, .mp3 u .wav è necessaria)")}
+for _k, _v in _HX54.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX53 = {'Clap switch': ('Klatschschalter', 'Interrupteur à claquement', 'Interruttore a battito', 'Interruptur da batter'), 'Bless you': ('Gesundheit', 'À vos souhaits', 'Salute', 'Viva'), 'Clap 2×': ('2× klatschen', 'Taper 2×', 'Battere 2×', 'Batter 2×'), 'Clap 3×': ('3× klatschen', 'Taper 3×', 'Battere 3×', 'Batter 3×'), 'Clap 4×': ('4× klatschen', 'Taper 4×', 'Battere 4×', 'Batter 4×'), 'Answer': ('Antwort', 'Réponse', 'Risposta', 'Resposta'), 'Words (several: separate with |)': ('Worte (mehrere mit | trennen)', 'Mots (plusieurs : séparer par |)', 'Parole (più: separare con |)', 'Pleds (plirs: separar cun |)'), 'Sensitivity (higher = also softer claps)': ('Empfindlichkeit (höher = auch leisere Klatscher)', 'Sensibilité (plus haut = aussi les claquements plus doux)', 'Sensibilità (più alto = anche battiti più deboli)', 'Sensibladad (pli aut = era battidas pli lomas)'), 'Volume of the beep': ('Lautstärke des Pieptons', 'Volume du bip', 'Volume del bip', 'Volumen dal bip'), 'Sensitivity (higher = answers more readily)': ('Empfindlichkeit (höher = antwortet eher)', 'Sensibilité (plus haut = répond plus facilement)', 'Sensibilità (più alto = risponde più facilmente)', 'Sensibladad (pli aut = respunda pli svelt)'), 'Volume of the answer': ('Lautstärke der Antwort', 'Volume de la réponse', 'Volume della risposta', 'Volumen da la resposta'), 'Clap switch on': ('Klatschschalter ein', 'Interrupteur à claquement activé', 'Interruttore a battito attivo', 'Interruptur da batter activ'), 'Beep when recognised': ('Piepton, wenn erkannt', 'Bip quand reconnu', 'Bip quando riconosciuto', "Bip sch'enconuschent"), 'Only when not armed (claps of strangers switch nothing)': ('Nur wenn nicht scharf (Klatscher von Fremden schalten nichts)', "Seulement si désarmé (les claquements d'inconnus ne commutent rien)", 'Solo se non armato (i battiti di estranei non attivano nulla)', "Mo sch'betg armà (battidas da persunas estras na midan nagut)"), 'Practice: only count and beep, switch nothing': ('Üben: nur zählen und piepen, nichts schalten', 'Entraînement : compter et biper seulement', 'Prova: solo contare e fare bip', 'Exercitar: mo dumbrar e far bip'), 'Say «Bless you!» after a sneeze': ('Nach einem Niesen «Gesundheit!» sagen', 'Dire « À vos souhaits ! » après un éternuement', 'Dire «Salute!» dopo uno starnuto', 'Dir «Viva!» suenter in starnid'), "Quiet at night (22 to 7 o'clock)": ('Nachts still (22 bis 7 Uhr)', 'Silencieux la nuit (22 à 7 h)', 'Silenzioso di notte (22-7)', 'Quiet la notg (22 fin 7)'), 'nothing': ('nichts', 'rien', 'niente', 'nagut'), '{name} on / off': ('{name} ein / aus', '{name} on / off', '{name} on / off', '{name} en / ora'), 'White light on / off': ('Weisslicht ein / aus', 'Lumière blanche on / off', 'Luce bianca on / off', 'Glisch alva en / ora'), 'Infrared light on / off': ('Infrarot-Licht ein / aus', 'Lumière infrarouge on / off', 'Luce infrarossa on / off', 'Glisch infracotschna en / ora'), 'Take a photo': ('Foto machen', 'Prendre une photo', 'Scattare una foto', 'Far ina foto'), 'Record (10 min) / stop': ('Aufnehmen (10 Min.) / stoppen', 'Enregistrer (10 min) / arrêter', 'Registrare (10 min) / fermare', 'Registrar (10 min) / fermar'), 'Arm / disarm (with a beep)': ('Scharf / unscharf (mit Piepton)', 'Armer / désarmer (avec bip)', 'Armare / disarmare (con bip)', 'Armar / dezarmar (cun bip)'), 'Speak the words below': ('Die Worte unten sprechen', 'Dire les mots ci-dessous', 'Pronunciare le parole sotto', 'Dir ils pleds sutvart'), 'Bless you!': ('Gesundheit!', 'À vos souhaits !', 'Salute!', 'Viva!'), 'Again? Get well soon!': ('Schon wieder? Gute Besserung!', 'Encore ? Bon rétablissement !', 'Di nuovo? Guarisci presto!', 'Gia puspè? Buna meglierada!'), 'counting': ('zähle', 'je compte', 'conto', 'dumbrar'), 'last': ('zuletzt', 'dernier', 'ultimo', "l'ultim"), 'today': ('heute', "aujourd'hui", 'oggi', 'oz'), 'sneezed': ('geniest', 'éternué', 'starnutito', 'starnì'), 'no microphone selected (Microphone)': ('kein Mikrofon gewählt (Mikrofon)', 'aucun micro choisi (Microphone)', 'nessun microfono scelto (Microfono)', 'nagin microfon tschernì (Microfon)'), 'no loudspeaker for the beep': ('kein Lautsprecher für den Piepton', 'pas de haut-parleur pour le bip', 'nessun altoparlante per il bip', 'nagin autpledader per il bip'), 'loading the sound recognition …': ('lade die Geräusch-Erkennung …', 'chargement de la reconnaissance des sons …', 'caricamento del riconoscimento suoni …', 'chargiar la renconuschientscha da tuns …'), 'waiting for the first loud sound': ('wartet auf das erste laute Geräusch', 'attend le premier bruit fort', 'attende il primo suono forte', "spetga l'emprim tun ferm"), 'needs the sound recognition program - button «Install»': ('braucht das Erkennungsprogramm – Knopf «Installieren»', 'nécessite le programme de reconnaissance – bouton « Installer »', 'serve il programma di riconoscimento – pulsante «Installa»', 'dovra il program da renconuschientscha – buttun «Installar»'), 'model could not be loaded': ('Modell konnte nicht geladen werden', "le modèle n'a pas pu être chargé", 'impossibile caricare il modello', "il model n'ha betg pudì vegnir chargià"), 'installing … (a few minutes)': ('installiere … (ein paar Minuten)', 'installation … (quelques minutes)', 'installazione … (alcuni minuti)', 'installar … (in pèr minutas)'), 'last check': ('letzte Prüfung', 'dernier contrôle', 'ultimo controllo', 'ultima controlla'), 'no speech program (sudo apt install libttspico-utils)': ('kein Sprachprogramm (sudo apt install libttspico-utils)', 'pas de programme vocal (sudo apt install libttspico-utils)', 'nessun programma vocale (sudo apt install libttspico-utils)', 'nagin program da lingua (sudo apt install libttspico-utils)'), 'not while armed': ('nicht, solange scharf', 'pas en mode armé', 'non mentre armato', 'betg durant armà'), 'too many claps': ('zu viele Klatscher', 'trop de claquements', 'troppi battiti', 'memia bleras battidas'), 'practice': ('Üben', 'entraînement', 'prova', 'exercitar'), 'armed (countdown)': ('scharf (Countdown)', 'armé (compte à rebours)', 'armato (conto alla rovescia)', 'armà (dumbrar enavos)'), 'listening': ('hört zu', 'écoute', 'in ascolto', 'taidla'), 'error': ('Fehler', 'erreur', 'errore', 'errur'), 'not possible': ('nicht möglich', 'impossible', 'non possibile', 'betg pussaivel')}
+for _k, _v in _HX53.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX51 = {'tool mode': ('Werkzeug-Modus', 'mode outils', 'modalità strumenti', "modus d'utensils"), 'Full power for the tools': ('Volle Leistung für die Werkzeuge', 'Toute la puissance pour les outils', 'Tutta la potenza per gli strumenti', 'Tut la forza per ils utensils'), 'Pause Motion Watch': ('Motion Watch pausieren', 'Mettre Motion Watch en pause', 'Mettere in pausa Motion Watch', 'Pausar Motion Watch'), 'Resume now': ('Jetzt fortsetzen', 'Reprendre maintenant', 'Riprendi ora', 'Cuntinuar ussa'), 'paused until': ('pausiert bis', "en pause jusqu'à", 'in pausa fino alle', 'pausà fin'), 'not a number': ('keine gültige Zahl', 'pas un nombre valide', 'numero non valido', 'betg in numer valid')}
+for _k, _v in _HX51.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX50 = {'3D simulator for Windows': ('3D-Simulator für Windows', 'Simulateur 3D pour Windows', 'Simulatore 3D per Windows', 'Simulatur 3D per Windows'), '3D simulator for Windows (ZIP)': ('3D-Simulator für Windows (ZIP)', 'Simulateur 3D pour Windows (ZIP)', 'Simulatore 3D per Windows (ZIP)', 'Simulatur 3D per Windows (ZIP)'), 'Link for the PC browser': ('Link für den Browser am PC', 'Lien pour le navigateur du PC', 'Link per il browser del PC', 'Link per il navigatur dal PC'), 'could not be prepared': ('konnte nicht vorbereitet werden', "n'a pas pu être préparé", 'non è stato possibile prepararlo', "n'ha betg pudì vegnir preparà"), 'Try again': ('Nochmals versuchen', 'Réessayer', 'Riprova', 'Empruvar anc ina giada'), 'The Pi prepares the download once (about 30 MB) …': ('Der Pi bereitet den Download einmalig vor (etwa 30 MB) …', 'Le Pi prépare le téléchargement une seule fois (environ 30 Mo) …', 'Il Pi prepara il download una sola volta (circa 30 MB) …', 'Il Pi prepara la telechargiada ina giada (circa 30 MB) …'), 'The download starts by itself.': ('Der Download startet danach von selbst.', 'Le téléchargement démarre ensuite tout seul.', 'Il download parte poi da solo.', 'La telechargiada cumenza lura da sasezza.'), 'checksum wrong - the file was changed or is damaged': ('Prüfsumme falsch – die Datei wurde verändert oder ist beschädigt', 'somme de contrôle fausse - fichier modifié ou endommagé', 'checksum errato - file modificato o danneggiato', 'summa da controlla sbagliada - la datoteca è vegnida midada u è donnegiada')}
+for _k, _v in _HX50.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 _HX49 = {'Internet was gone for {min} min - it is back ({ssid})': ('Internet war {min} Min. weg – es ist wieder da ({ssid})', 'Internet était coupé {min} min - il est revenu ({ssid})', 'Internet assente per {min} min - è tornato ({ssid})', 'Internet era davent {min} min - el è puspè qua ({ssid})'), 'No internet over «{a}» - changed to «{b}»': ('Kein Internet über «{a}» – gewechselt zu «{b}»', "Pas d'internet via «{a}» - passage à «{b}»", 'Nessun internet tramite «{a}» - passato a «{b}»', 'Nagin internet sur «{a}» - midà a «{b}»'), 'No internet - «{b}» did not work either': ('Kein Internet – «{b}» ging auch nicht', "Pas d'internet - «{b}» ne fonctionne pas non plus", 'Nessun internet - anche «{b}» non funziona', "Nagin internet - «{b}» n'ha era betg funcziunà"), 'Wi-Fi connection dropped 3 times in 10 minutes although the signal is good - interference or jamming?': ('WLAN-Verbindung 3-mal in 10 Minuten abgebrochen, obwohl das Signal gut ist – Störung oder Störsender?', 'Connexion Wi-Fi coupée 3 fois en 10 minutes malgré un bon signal - interférence ou brouillage ?', 'Connessione Wi-Fi interrotta 3 volte in 10 minuti nonostante il buon segnale - interferenza o disturbo?', 'Colliaziun WLAN interrutta 3 giadas en 10 minutas, schebain il signal è bun - disturbi?'), 'Wi-Fi jamming: {n} disconnect frames in one minute ({all} in total on the channel)': ('WLAN-Störung: {n} Trennungs-Meldungen in einer Minute ({all} insgesamt auf dem Kanal)', 'Brouillage Wi-Fi : {n} trames de déconnexion en une minute ({all} au total sur le canal)', 'Disturbo Wi-Fi: {n} frame di disconnessione in un minuto ({all} in totale sul canale)', 'Disturbi WLAN: {n} messadis da separaziun en ina minuta ({all} en total sin il chanal)'), 'Wi-Fi jamming attack': ('WLAN-Störangriff', 'Attaque de brouillage Wi-Fi', 'Attacco di disturbo Wi-Fi', 'Attatga da disturbi WLAN'), 'Network': ('Netz', 'Réseau', 'Rete', 'Rait'),
  'Second Wi-Fi adapter: off - back to one adapter': ('Zweiter WLAN-Adapter: aus – zurück zu einem Adapter', 'Second adaptateur Wi-Fi : désactivé - retour à un adaptateur', 'Secondo adattatore Wi-Fi: spento - di nuovo un adattatore', 'Segund adapter WLAN: deactivà - enavos ad in adapter'),
  'Second Wi-Fi adapter: own Wi-Fi on {ap} ({a}), internet over {up} ({b})': ('Zweiter WLAN-Adapter: eigenes WLAN auf {ap} ({a}), Internet über {up} ({b})', 'Second adaptateur Wi-Fi : Wi-Fi propre sur {ap} ({a}), internet via {up} ({b})', 'Secondo adattatore Wi-Fi: Wi-Fi proprio su {ap} ({a}), internet tramite {up} ({b})', 'Segund adapter WLAN: agen WLAN sin {ap} ({a}), internet sur {up} ({b})'), 'own Wi-Fi on + internet from': ('Eigenes WLAN ein + Internet von', 'Wi-Fi propre actif + internet de', 'Wi-Fi proprio attivo + internet da', 'Agen WLAN activ + internet da'), 'repeater': ('Repeater', 'répéteur', 'ripetitore', 'repetitur'), 'own Wi-Fi on - the second adapter looks for known networks': ('Eigenes WLAN ein – der zweite Adapter sucht bekannte Netze', 'Wi-Fi propre actif - le second adaptateur cherche des réseaux connus', 'Wi-Fi proprio attivo - il secondo adattatore cerca reti note', 'Agen WLAN activ - il segund adapter tschertga raits enconuschentas'), 'Wi-Fi adapters and repeater': ('WLAN-Adapter und Repeater', 'Adaptateurs Wi-Fi et répéteur', 'Adattatori Wi-Fi e ripetitore', 'Adapters WLAN e repetitur'), 'Wi-Fi guard': ('WLAN-Wächter', 'Gardien Wi-Fi', 'Guardiano Wi-Fi', 'Guardian WLAN')}
@@ -33435,7 +35351,7 @@ _HELP_NEW = {
          '<li><b>☀ Solar panel:</b> an INA219 current meter shows watts, volts and the yield of the day. <b>Night forecast:</b> does the battery last until sunrise? Shown in the self-check; a push in the evening when it gets tight.</li>'
          '<li>How to connect the sensors: document <code>docs/Sensoren.md</code> on GitHub. ⚠ The GPIO pins only take 3.3 V.</li></ul>\n</section>\n\n'},
  "fr": {
-  "camera": '<li><b>Suivre aussi les animaux et autres mouvements</b> (Caméra / servos) : sans personne dans l\'image, la caméra suit aussi un animal – même inconnu de l\'IA. Il doit aller dans une direction pendant environ 2 secondes ; les branches qui oscillent au vent sont lâchées, par vent fort c\'est désactivé.</li><li><b>Tourner / miroir de l\'image</b> (Caméra / servos) : pour une caméra montée de côté ou à l\'envers (90° / 180° / 270°). Vérifiez ensuite les zones et les lignes.</li>'
+  "camera": '<li><b>🚜 Mover (véhicule à chenilles, dès 2.94.0) :</b> si Motion Watch est posé sur un petit véhicule à chenilles, un deuxième joystick vert apparaît : haut = avant, bas = arrière, côté = tourner sur place. Le pilote des moteurs (Motor HAT avec PCA9685 + TB6612, I2C 0x60) est trouvé tout seul – sans lui le joystick n\'apparaît pas. Réglages sous Caméra &amp; servos → Mover. Sans nouvel ordre, les chenilles s\'arrêtent après 0,6 s. En simulation, le joystick peut aussi être affiché sans mover (Mover → « Simulation : afficher le joystick … », dès 2.94.4).</li><li><b>Suivre aussi les animaux et autres mouvements</b> (Caméra / servos) : sans personne dans l\'image, la caméra suit aussi un animal – même inconnu de l\'IA. Il doit aller dans une direction pendant environ 2 secondes ; les branches qui oscillent au vent sont lâchées, par vent fort c\'est désactivé.</li><li><b>Tourner / miroir de l\'image</b> (Caméra / servos) : pour une caméra montée de côté ou à l\'envers (90° / 180° / 270°). Vérifiez ensuite les zones et les lignes.</li>'
             '<li><b>Objectif embué / sale :</b> si l\'image reste floue et terne pendant 15 minutes (rosée, poussière, toile d\'araignée), un message push arrive. Elle apprend d\'abord pendant une heure ce qui est normal.</li>'
             '<li><b>Tuiles de la commande :</b> <b>▒ Masque</b> colore en rouge discret tout ce que la détection voit bouger. <b>🎙 Parler</b> est protégé contre un appui involontaire : toucher une fois (devient orange «Maintenir»), puis maintenir dans les 6 secondes et parler.</li>',
   "lightsound": '<li><b>🗣 Annonce :</b> sous Haut-parleur, tapez un texte (ou touchez une proposition), choisissez la voix, «Parler maintenant». «Enregistrer comme son propre» le garde comme son – utilisable pour la sirène et la dissuasion. Nécessite une fois sur le Pi <code>sudo apt install espeak-ng</code>.</li>',
@@ -33451,7 +35367,7 @@ _HELP_NEW = {
          '<li><b>☀ Panneau solaire :</b> mesureur INA219 (watts, volts, rendement du jour) et <b>prévision de nuit</b> : la batterie tiendra-t-elle jusqu\'au lever du soleil ?</li>'
          '<li>Branchements : document <code>docs/Sensoren.md</code> sur GitHub. ⚠ Les GPIO ne supportent que 3,3 V.</li></ul>\n</section>\n\n'},
  "it": {
-  "camera": '<li><b>Segui anche animali e altri movimenti</b> (Telecamera / servo): senza persone nell\'immagine la telecamera segue anche un animale – anche se l\'IA non lo riconosce. Deve muoversi in una direzione per circa 2 secondi; i rami che oscillano al vento vengono lasciati, con vento forte è spento.</li><li><b>Ruotare / specchiare l\'immagine</b> (Telecamera / servo): per una telecamera montata di lato o capovolta (90° / 180° / 270°). Poi controllare zone e linee.</li>'
+  "camera": '<li><b>🚜 Mover (veicolo cingolato, da 2.94.0):</b> se Motion Watch è montato su un piccolo veicolo cingolato, appare un secondo joystick verde: su = avanti, giù = indietro, di lato = girare sul posto. Il driver dei motori (Motor HAT con PCA9685 + TB6612, I2C 0x60) viene trovato da solo – senza di esso il joystick non appare. Impostazioni in Telecamera &amp; servo → Mover. Senza un nuovo comando i cingoli si fermano dopo 0,6 s. In simulazione il joystick può essere mostrato anche senza mover (Mover → «Simulazione: mostrare il joystick …», da 2.94.4).</li><li><b>Segui anche animali e altri movimenti</b> (Telecamera / servo): senza persone nell\'immagine la telecamera segue anche un animale – anche se l\'IA non lo riconosce. Deve muoversi in una direzione per circa 2 secondi; i rami che oscillano al vento vengono lasciati, con vento forte è spento.</li><li><b>Ruotare / specchiare l\'immagine</b> (Telecamera / servo): per una telecamera montata di lato o capovolta (90° / 180° / 270°). Poi controllare zone e linee.</li>'
             '<li><b>Obiettivo appannato / sporco:</b> se l\'immagine resta sfocata e piatta per 15 minuti (rugiada, polvere, ragnatela) arriva un messaggio push. Prima impara per un\'ora cosa è normale.</li>'
             '<li><b>Riquadri nel comando:</b> <b>▒ Maschera</b> colora di un rosso discreto tutto ciò che il rilevamento vede muoversi. <b>🎙 Parlare</b> è protetto contro una pressione involontaria: toccare una volta (diventa arancione «Tieni premuto»), poi tenere premuto entro 6 secondi e parlare.</li>',
   "lightsound": '<li><b>🗣 Annuncio:</b> sotto Altoparlante scrivi un testo (o tocca un suggerimento), scegli la voce, «Parla ora». «Salva come suono proprio» lo conserva come suono – selezionabile per sirena e deterrenza. Serve una volta sul Pi <code>sudo apt install espeak-ng</code>.</li>',
@@ -33467,7 +35383,7 @@ _HELP_NEW = {
          '<li><b>☀ Pannello solare:</b> misuratore INA219 (watt, volt, resa del giorno) e <b>previsione notturna</b>: la batteria durerà fino all\'alba?</li>'
          '<li>Collegamenti: documento <code>docs/Sensoren.md</code> su GitHub. ⚠ I GPIO sopportano solo 3,3 V.</li></ul>\n</section>\n\n'},
  "rm": {
-  "camera": '<li><b>Suandar era animals ed autras moviments</b> (Camera / servos): sch\'i n\'ha nagina persuna en il maletg, suonda la camera era in animal – era sch\'la IA na l\'enconuscha betg. El sto sa mover var 2 secundas en ina direcziun; roms che sgulatschan en il vent vegnan laschads, cun vent ferm è quai deactivà.</li><li><b>Volver / spievlar il maletg</b> (Camera / servos): per ina camera montada da la vart u cun il chau engiu (90° / 180° / 270°). Suenter controllar las zonas e lingias.</li>'
+  "camera": '<li><b>🚜 Mover (vehichel cun chadainas, a partir da 2.94.0):</b> sche Motion Watch stat sin in pitschen vehichel cun chadainas, cumpara in segund stick verd: si = enavant, giu = enavos, da la vart = sa volver sin il lieu. Il manischunz dals motors (Motor HAT cun PCA9685 + TB6612, I2C 0x60) vegn chattà sez – senza el na cumpara il stick betg. Configuraziuns sut Camera &amp; servos → Mover. Senza nov cumond stattan las chadainas suenter 0,6 s. En la simulaziun po il stick vegnir mussà era senza mover (Mover → «Simulaziun: mussar il stick …», a partir da 2.94.4).</li><li><b>Suandar era animals ed autras moviments</b> (Camera / servos): sch\'i n\'ha nagina persuna en il maletg, suonda la camera era in animal – era sch\'la IA na l\'enconuscha betg. El sto sa mover var 2 secundas en ina direcziun; roms che sgulatschan en il vent vegnan laschads, cun vent ferm è quai deactivà.</li><li><b>Volver / spievlar il maletg</b> (Camera / servos): per ina camera montada da la vart u cun il chau engiu (90° / 180° / 270°). Suenter controllar las zonas e lingias.</li>'
             '<li><b>Lentilla stgiraida / maldischa:</b> sch\'il maletg resta 15 minutas betg net (rusada, pulvra, taila d\'arogn), vegn in messadi push. Ella emprenda l\'emprim ina ura tge ch\'è normal.</li>'
             '<li><b>Plattinas en la manipulaziun:</b> <b>▒ Mascra</b> colurescha cotschen tut quai che la detecziun vesa sco moviment. <b>🎙 Discurrer</b> è protegì cunter smatgar per sbagl: smatgar ina giada (daventa oransch «Tegnair ussa»), lura tegnair smatgà entaifer 6 secundas e discurrer.</li>',
   "lightsound": '<li><b>🗣 Annunzia:</b> sut Autpledader scriver in text, tscherner la vusch, «Discurrer ussa». «Memorisar sco agen tun» al tegna sco tun per la sirena e la deterrenza. Basegna ina giada sin il Pi <code>sudo apt install espeak-ng</code>.</li>',
@@ -33624,7 +35540,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.85.0 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.94.5 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:

@@ -1,7 +1,16 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 07:46",
+ "generated": "2026-10-27 08:21",
  "versions": [
+  {
+   "version": "2.95.0",
+   "file": "webcam_bewegung_2_95_0.py",
+   "url": "",
+   "sha256": "efb8c635a373c243ccd91ac43f48abb09c4cdf39a5d0d1c505a4d51d04616514",
+   "date": "2026-10-27 08:21",
+   "notes": "second simulator «Python world simulator» (simulator_python/) as an alternative to the 3D simulator: download button (/sim/simulator_py.zip, fetched once and checked like the 3D one), tested with its settings in the tab Simulator.",
+   "sig": "39f1bbc1462696b3e9d92ea787abbc091bee440b04153d578b22dcd177e5a82da274ec1891e6bf1b367f75cbeebd1268f1f1fec81584b6d8a08574585d00010a"
+  },
   {
    "version": "2.94.5",
    "file": "webcam_bewegung_2_94_5.py",
@@ -82,15 +91,6 @@
    "date": "2026-10-26 01:30",
    "notes": "The 3D simulator for Windows can be downloaded from the Pi: /sim/simulator3d.zip (button under Simulator → Tools).",
    "sig": "8fd4dcfa8a75604a92ec995cc1649135bc36cfcb26fac9a34b8e52e8ab4ab9a5f2c76e469d14ba1d722125b2051d22bd2cfe0c972d793a12c211173d6811f009"
-  },
-  {
-   "version": "2.85.0",
-   "file": "webcam_bewegung_2_85_0.py",
-   "url": "",
-   "sha256": "7e1241fef0f0de2c2683612181ac592da4da9aa2a5948581efe0492639504f14",
-   "date": "2026-10-26 01:22",
-   "notes": "Second Wi-Fi adapter (USB stick): repeater (own Wi-Fi + internet from another network at the same time), change to another known network when the internet is gone, push message when it is back, devices in the own Wi-Fi without internet, Wi-Fi guard (alarm on jamming / deauthentication, needs a stick that can listen), adapter list with chip and abilities. Tools page tidied up: groups, every tool folds up and shows its last result. Fix: the Wi-Fi search of the settings works again.",
-   "sig": "2b4d0bc77cab9780c53ae0e2f7a53234f58dc1139146b45b0744b7d5efa181d85d9c986ad097fd4d78f39e6acfbc71052683e9e2f1535ff63ffe8c5a0472b809"
   }
  ]
 }
