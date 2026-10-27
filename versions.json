@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 16:07",
+ "generated": "2026-10-27 16:13",
  "versions": [
   {
-   "version": "2.95.33",
-   "file": "webcam_bewegung_2_95_33.py",
+   "version": "2.95.34",
+   "file": "webcam_bewegung_2_95_34.py",
    "url": "",
-   "sha256": "e6e21508a1fabd5905711d300f7f9393dd9f8232329a64cdf7fedce412d3d88b",
-   "date": "2026-10-27 16:07",
-   "notes": "security and stability review. Camera loop restarts itself after an error (push after 5 errors), camera loss finishes the recording and tells the owner; damaged settings file -> backup copy instead of defaults; settings saved atomically; a new version that does not start is not installed again; update key never follows a redirect elsewhere; pages of other web sites cannot send commands (CSRF); viewers cannot move the clock by years or switch Tailscale HTTPS; alarm push tried 3 times, then SMS; the Wi-Fi password is not overwritten by a wrong one, the own Wi-Fi comes back after a failed switch;",
-   "sig": "add2673335f3437ec042e50473b8d6ff36c3d3db74e2147acd57bcd5419b643de8a5395e3557bedc54cb01fcab2240c3b08c335fcc549d0dbbacc01c73687002"
+   "sha256": "c62635d967192a8bb895c01a338b0e9bbc47d2c83d5d6e7470e9f6ecfaa2dbc6",
+   "date": "2026-10-27 16:13",
+   "notes": "review part 2. Mover: a clock set back no longer drives at full speed, motors stop on error / program end; battery shutdown tried again; a lost temperature sensor is reported; motion sensor and sound player robust; solar meter on the servo board address detected. Simulator control icons escaped (XSS); live pictures of rebuilt tiles stop their stream. Recordings: ZIP only with free space and without leftovers, share copies deleted with the recording, starring during a recording works, drive change never moves the running recording, unplugged drive under /media or /mnt is not used, loop pieces n",
+   "sig": "71b73eaf989b80973f06d937c1a1b6d833c4ab3f83023e660d0450c235a7e0678b18c8f699ab01c0923a33803f3e485694e738036ca48b1dcf41a2d0fff44502"
   },
   {
    "version": "2.94.5",

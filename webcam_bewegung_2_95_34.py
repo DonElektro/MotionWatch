@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_33.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_34.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -631,6 +631,13 @@ Features
     after a failed switch; MQTT robust and disarm via MQTT announced; diagnosis package without secrets; optimizer
     restores the settings after an interruption; simulator never switches on by itself while armed; game corner: player
     keys secret. Encoders: a missing USB disk no longer disables them, memory use limited.
+  * 2.95.34: review part 2. Mover: a clock set back no longer drives at full speed, motors stop on error / program end;
+    battery shutdown tried again; a lost temperature sensor is reported; motion sensor and sound player robust; solar meter
+    on the servo board address detected. Simulator control icons escaped (XSS); live pictures of rebuilt tiles stop their
+    stream. Recordings: ZIP only with free space and without leftovers, share copies deleted with the recording, starring
+    during a recording works, drive change never moves the running recording, unplugged drive under /media or /mnt is not
+    used, loop pieces never overwritten, PDF report not while writing; import cannot move the recordings folder; diary keeps
+    starred entries; operator mode also locks users, trusted devices and shortcuts.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -639,10 +646,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_33.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_34.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_33.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_33.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_34.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_34.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -659,7 +666,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.33"
+APP_VERSION = "2.95.34"
 
 
 def default_data_dir():
@@ -2018,7 +2025,7 @@ _USER_RE = re.compile(r"^[A-Za-z0-9ÄÖÜäöüéèàç][A-Za-z0-9ÄÖÜäöüé
 # what an "operate" user may change (everything else is read-only); "view" may only look
 OPERATE_POST = {"/api/mover", "/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/light", "/api/move", "/api/stick", "/api/talk",
                 "/api/talk/stop", "/api/tts", "/api/rec/fav", "/api/rec/false", "/api/action"}
-VIEW_POST = {"/api/webpush", "/api/ui", "/api/time", "/api/gps", "/api/rec/prepare", "/rec/zip"}
+VIEW_POST = {"/api/webpush", "/api/time", "/api/gps", "/api/rec/prepare", "/rec/zip"}
 OPERATE_SET_KEYS = {"thermal_on", "nightvision", "show_objects", "show_mask", "track_person"}
 ADMIN_GET = ("/api/settings/export", "/api/ext", "/api/wifi", "/api/qr", "/setup-card", "/api/update", "/api/guest", "/api/fleet",
              "/api/users", "/api/setup", "/api/log/file/", "/api/tools", "/tools/diag.zip", "/api/usb")
@@ -2261,6 +2268,7 @@ def import_settings(data):
         shutil.copy2(SETTINGS_FILE, os.path.join(DATA_DIR, "motionwatch_settings.before_import.json"))
     except OSError:
         pass
+    data = dict(data); data["cfg"] = {k: v for k, v in data["cfg"].items() if k not in ("record_dir",)}   # 2.95.34
     apply_settings(data)
     save_settings_now()
     HW_REINIT["want"] = True; _PW_OK.clear(); SETTINGS_GEN["n"] += 1
@@ -2951,6 +2959,14 @@ class TamperGuard:
         return [(x - 65536 if x > 32767 else x) / 16384.0 for x in v]
 
     def sensor_loop(self):
+        while True:                                     # 2.95.34: an error must not end the motion sensor watch
+            try:
+                self._sensor_loop()
+            except Exception as e:
+                log_event("sys", f"Motion sensor error (restarted): {type(e).__name__}: {e}"[:200])
+                time.sleep(10)
+
+    def _sensor_loop(self):
         fd = None; tried = 0.0
         while True:
             time.sleep(0.5)
@@ -3075,8 +3091,17 @@ TEMPA = {"state": "ok", "t": 0.0}
 
 
 def temp_check(env):
-    if not CFG["temp_alarm_on"] or not env or env.get("t") is None:
+    if not CFG["temp_alarm_on"]:
         TEMPA["state"] = "ok"; return
+    if not env or env.get("t") is None:                  # 2.95.34: a lost sensor is not «all fine»
+        TEMPA["miss"] = TEMPA.get("miss", 0) + 1
+        if TEMPA["miss"] == 10:
+            log_event("sys", "Temperature alarm: the sensor gives no values any more")
+            w_ = WATCH_REF.get("w")
+            if w_ is not None:
+                w_.notifier.alert("{name}: " + tr("TEMPERATURE ALARM"), tr("The temperature sensor gives no values any more - the alarm cannot work."), None)
+        return
+    TEMPA["miss"] = 0
     t, hot, cold = float(env["t"]), float(CFG["temp_hot"]), float(CFG["temp_cold"])
     prev = TEMPA["state"]
     st = "hot" if t >= hot else "cold" if t <= cold else ("ok" if cold + 1.0 < t < hot - 1.0 else prev)   # 1 °C hysteresis
@@ -3853,7 +3878,7 @@ def mover_drive(v, w, who="web"):
         return False
     if not MOVER["avail"]:
         return False
-    MOVER.update(v=v, w=w, cmd_t=time.time(), by=who)
+    MOVER.update(v=v, w=w, cmd_t=time.monotonic(), by=who)
     if abs(v) > 0.05 or abs(w) > 0.05:
         MANUAL["until"] = time.time() + CFG["manual_hold"]          # driving pauses tracking and patrol like the camera stick
         mover_sim_wake()
@@ -3938,11 +3963,32 @@ class MoverControl:
         self.pca.switch(in1, s > 0); self.pca.switch(in2, s < 0)
         self.pca._set(pwm, 0, max(0, min(4095, int(abs(s) * 4095))))
 
+    def stop_now(self):
+        """motors off at once (error, program end) - the PCA9685 keeps its last value by itself otherwise"""
+        MOVER.update(v=0.0, w=0.0, l=0.0, r=0.0)
+        if self.pca is not None:
+            try:
+                pins = MOVER_MAP.get(CFG["mover_driver"], MOVER_MAP["adafruit"])
+                self._motor(pins[0], 0.0); self._motor(pins[1], 0.0)
+            except Exception:
+                pass
+
     def loop(self):
-        last = time.time()
+        atexit.register(self.stop_now)
+        while True:                                     # 2.95.34: an error stops the motors, then the loop goes on
+            try:
+                self._loop()
+            except Exception as e:
+                self.stop_now()
+                log_event("sys", f"Mover error - motors stopped: {type(e).__name__}: {e}"[:200])
+                time.sleep(2)
+
+    def _loop(self):
+        last = time.monotonic()
         while True:
             time.sleep(0.05)
-            now = time.time(); dt = min(0.2, now - last); last = now
+            # 2.95.34: monotonic clock - a clock set back (phone time) made a negative step = full speed ahead
+            now = time.monotonic(); dt = max(0.0, min(0.2, now - last)); last = now
             sim = bool(CFG.get("sim_on"))
             if CFG["mover_mode"] == "off":
                 self._close(); MOVER.update(avail=False, hw=False, test=False, msg="off")
@@ -3954,8 +4000,8 @@ class MoverControl:
                 MOVER["msg"] = "simulated" if real else ("stick shown for testing (the simulator has no mover)" if MOVER["avail"] else "the simulator has no mover")
             else:
                 MOVER["test"] = False
-                if self.pca is None and now >= self.next_look:
-                    self.next_look = now + 15.0
+                if self.pca is None and time.time() >= self.next_look:
+                    self.next_look = time.time() + 15.0
                     self._find()
                 MOVER["hw"] = self.pca is not None; MOVER["avail"] = MOVER["hw"]
             MOVER["sim"] = sim and MOVER["avail"]
@@ -3969,7 +4015,7 @@ class MoverControl:
             ramp = float(CFG["mover_ramp"])
             k = 1.0 if ramp <= 0.01 else dt / ramp
             stop_fast = not fresh                                  # connection gone: stop quickly (4 × faster)
-            k2 = min(1.0, k * (4.0 if stop_fast else 1.0))
+            k2 = max(0.0, min(1.0, k * (4.0 if stop_fast else 1.0)))
             l = MOVER["l"] + max(-k2, min(k2, tl - MOVER["l"]))
             r = MOVER["r"] + max(-k2, min(k2, trr - MOVER["r"]))
             MOVER["l"], MOVER["r"] = round(l, 3), round(r, 3)
@@ -4583,7 +4629,17 @@ class SightingTracker:
                 log_event("rec", f"Diary picture could not be saved: {ex}")
         with SIGHT_LOCK:
             SIGHT["list"].append(e)
-            del SIGHT["list"][:-5000]
+            if len(SIGHT["list"]) > 5000:                # 2.95.34: starred entries stay, the others go (with their pictures)
+                drop = [e for e in SIGHT["list"][:len(SIGHT["list"]) - 5000] if not e.get("fav")]
+                ids = {id(e) for e in drop}
+                SIGHT["list"] = [e for e in SIGHT["list"] if id(e) not in ids]
+                for e in drop:
+                    for k_ in ("pic", "img", "jpg"):
+                        if isinstance(e.get(k_), str) and re.fullmatch(r"[\w.\-]+\.jpg", e[k_]):
+                            try:
+                                os.remove(os.path.join(diary_dir(), e[k_]))
+                            except (OSError, NameError):
+                                pass
             _sight_save()
         if e["kind"] == "animal":
             log_event("rec", f"Diary: {label} ({e['dur']} s)")
@@ -4992,8 +5048,10 @@ class BatteryMonitor:
         lim = int(CFG["ups_shutdown_pct"])
         plausible = volt_ok and time.time() - RUNGUARD["t0"] > 180            # a real battery value; never in the first 3 minutes
         self._low = (getattr(self, "_low", 0) + 1) if (on_batt and lim > 0 and pct <= lim and plausible) else 0
+        if getattr(self, "_shut", False) and not POWER.get("pending") and time.time() - getattr(self, "_shut_t", 0) > 300:
+            self._shut = False                           # 2.95.34: the shutdown did not happen (rights?) - try again
         if self._low >= 3 and not POWER.get("pending") and not getattr(self, "_shut", False):   # 30 s below the limit
-            self._shut = True
+            self._shut = True; self._shut_t = time.time()
             log_event("sys", f"Battery empty ({pct} %, {v:.2f} V) - shutting down the Pi to protect the memory card")
             push("Battery empty – the Pi shuts down cleanly")
             power_action("poweroff", source="battery")
@@ -10660,7 +10718,10 @@ def sound_play(kind=None, seconds=None, volume=None, reason="test"):
                 p.stdin.write(data); p.stdin.close()
             except (BrokenPipeError, OSError):
                 pass
-            p.wait(timeout=seconds + 30)
+            try:
+                p.wait(timeout=seconds + 30)
+            except subprocess.TimeoutExpired:           # 2.95.34: hangs (Bluetooth) - free the sound device
+                p.kill(); p.wait(timeout=5)
             err = (p.stderr.read() or b"").decode(errors="replace").strip()
             if p.returncode not in (0, -9, -15) and gen == SOUND["gen"]:
                 SOUND["msg"] = (err.splitlines()[-1] if err else f"{cmd[0]} exit {p.returncode}")[:200]
@@ -12018,9 +12079,16 @@ class SolarMonitor:
                 addr = int(str(CFG["solar_addr"]), 16)
             except ValueError:
                 addr = 0x41
-            r = ina219_read(addr, CFG["solar_shunt"])
+            try:
+                pca_ = int(str(CFG["pca_address"]), 16)
+            except ValueError:
+                pca_ = -1
+            clash = addr == pca_ and str(STATE.get("servo_backend", "")).startswith("pca9685")
+            r = None if clash else ina219_read(addr, CFG["solar_shunt"])
+            if r is not None and not (0.0 <= r[0] <= 40.0 and abs(r[1]) <= 20.0):
+                r = None                                  # not a plausible solar reading (another chip on that address?)
             if r is None:
-                STATE["solar"] = {"on": True, "ok": False}
+                STATE["solar"] = {"on": True, "ok": False, "msg": "same I2C address as the servo board" if clash else ""}
             else:
                 v, a = r; w = max(0.0, v * abs(a))
                 dt = min(60.0, now - SOLAR["t"]) if SOLAR["t"] else 0.0; SOLAR["t"] = now
@@ -14959,7 +15027,7 @@ const KEY = "__KEY__", BASE = "/p/" + KEY;
 const $ = s => document.querySelector(s);
 let PID = "", V = null, SEQ = -1, busy = false, drawing = null, myColor = "#111111", myWidth = 5, pending = [], lastBeep = 0;
 try { PID = localStorage.getItem("mwp-" + KEY) || ""; } catch (e) {}
-const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 async function act(a, extra) { const r = await fetch(BASE + "/a", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({pid: PID, a: a}, extra || {}))}).then(x => x.json()).catch(() => ({ok: false, error: "keine Verbindung"}));
   if (!r.ok && r.error) toast(r.error); if (r.v) { r.v._skew = (r.v.now || Date.now() / 1000) - Date.now() / 1000; V = r.v; render(); } return r; }
 function toast(t) { let e = $("#toast"); if (!e) { e = document.createElement("div"); e.id = "toast"; e.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000c;padding:10px 16px;border-radius:12px;z-index:9"; document.body.appendChild(e); }
@@ -16701,7 +16769,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_33.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_34.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -17195,7 +17263,8 @@ def lock_set(action, pin="", new_pin="", source="web"):
 
 
 # operator mode: everything may be changed and is put back at unlocking - except what could lock the owner out
-LOCK_DENY_PATHS = {"/api/wifi", "/api/hotspot", "/api/password", "/api/settings/import", "/api/autostart", "/api/setup", "/api/ext"}
+LOCK_DENY_PATHS = {"/api/wifi", "/api/hotspot", "/api/password", "/api/settings/import", "/api/autostart", "/api/setup", "/api/ext",
+                   "/api/users", "/api/trusted", "/api/shortcut"}     # 2.95.34: users, trusted devices, shortcut keys too
 LOCK_DENY_KEYS = {"net_mode", "hotspot_ssid", "hotspot_password", "hotspot_on", "update_url", "update_token", "update_unsigned",
                   "lock_on", "lock_pin", "autostart", "web_port"}
 
@@ -19261,6 +19330,11 @@ def storage_apply(start=False):
         CFG["record_dir"] = "recordings"; STORE["fallback"] = False; return True
     target = os.path.join(want, "MotionWatch", "recordings")
     ok = os.path.ismount(want) or os.path.isdir(want)
+    if ok and want.startswith(("/media/", "/mnt/")):           # 2.95.34: the folder of an unplugged drive is the SD card
+        q = os.path.abspath(want)
+        while q not in ("/", "/media", "/mnt") and not os.path.ismount(q):
+            q = os.path.dirname(q)
+        ok = q not in ("/", "/media", "/mnt")
     if ok:
         try:
             os.makedirs(target, exist_ok=True)
@@ -19299,7 +19373,7 @@ def storage_set(path, move=True):
             try:
                 for nm in os.listdir(old):
                     src, dst = os.path.join(old, nm), os.path.join(new, nm)
-                    if nm.startswith(".") or os.path.exists(dst) or nm in LIVE_RECS or (nm == "loop" and LOOPREC is not None and LOOPREC.cur):
+                    if nm.startswith(".") or os.path.exists(dst) or _is_live(nm, WATCH_REF.get("w")) or (nm == "loop" and LOOPREC is not None and LOOPREC.cur):
                         continue
                     try:
                         shutil.move(src, dst); n += 1
@@ -19382,8 +19456,9 @@ class LoopRecorder:
                 name = f"loop/{start:%Y-%m-%d}/{start:%H-%M}.mp4"
                 path = os.path.join(rec_dir(), name)
                 os.makedirs(os.path.dirname(path), exist_ok=True)
-                if os.path.exists(path):                          # restarted within the same 10 minutes: a new piece
-                    name = f"loop/{start:%Y-%m-%d}/{dt:%H-%M}.mp4"; path = os.path.join(rec_dir(), name)
+                k_ = 1
+                while os.path.exists(path):                       # restarted / clock change: a new piece, never overwrite
+                    name = f"loop/{start:%Y-%m-%d}/{start:%H-%M}_{k_}.mp4"; path = os.path.join(rec_dir(), name); k_ += 1
                 wr, _codec = open_writer(path, max(1, int(CFG["loop_fps"])), (w, h))
                 if wr is None:
                     time.sleep(10); return
@@ -20090,7 +20165,16 @@ def rec_set_fav(names, value, watch=None):
     """Star / un-star recordings. Starred recordings are never removed by the automatic cleanup."""
     n = 0
     for name in (names if isinstance(names, list) else [])[:500]:
-        if not rec_path(name) or name.lower().endswith(".json") or _is_live(name, watch):
+        if rec_path(name) and not name.lower().endswith(".json") and _is_live(name, watch):
+            def later(nm=name):                          # 2.95.34: still being written - star it when it is finished
+                for _ in range(80):
+                    time.sleep(15)
+                    if not _is_live(nm, watch):
+                        rec_set_fav([nm], value, watch); return
+            threading.Thread(target=later, daemon=True).start()
+            n += 1
+            continue
+        if not rec_path(name) or name.lower().endswith(".json"):
             continue
         meta = _read_sidecar(name)
         if value:
@@ -20113,13 +20197,17 @@ def rec_clean_tmp():
         pass
 
 
+_ZIP_LOCK = threading.Lock()
+
+
 def rec_zip(names, watch=None):
-    """Pack recordings (video + snapshot) into one ZIP in the temp folder. Returns the path or None."""
-    tdir = os.path.join(rec_dir(), ".tmp")
-    os.makedirs(tdir, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(suffix=".zip", dir=tdir); os.close(fd)
-    count, seen = 0, set()
-    with zipfile.ZipFile(tmp, "w", zipfile.ZIP_STORED, allowZip64=True) as z:
+    """Pack recordings (video + snapshot) into one ZIP in the temp folder. Returns the path or None.
+    2.95.34: one at a time, only when there is room for it (+ 500 MB), nothing left behind after an error."""
+    if not _ZIP_LOCK.acquire(blocking=False):
+        return None
+    tmp = None
+    try:
+        files, seen = [], set()
         for name in (names if isinstance(names, list) else [])[:300]:
             if not rec_path(name) or _is_live(name, watch):
                 continue
@@ -20127,11 +20215,30 @@ def rec_zip(names, watch=None):
             for e in ((".mp4", ".jpg") if ext.lower() == ".mp4" else (ext.lower(),)):
                 p = os.path.join(rec_dir(), stem + e)
                 if os.path.isfile(p) and p not in seen:
-                    seen.add(p); z.write(p, os.path.basename(p)); count += 1
-    if not count:
-        os.remove(tmp)
+                    seen.add(p); files.append(p)
+        if not files:
+            return None
+        need = sum(os.path.getsize(p) for p in files) + 500 * (1 << 20)
+        if shutil.disk_usage(rec_dir()).free < need:
+            log_event("rec", "ZIP download refused: not enough free space on the drive")
+            return None
+        tdir = os.path.join(rec_dir(), ".tmp")
+        os.makedirs(tdir, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(suffix=".zip", dir=tdir); os.close(fd)
+        with zipfile.ZipFile(tmp, "w", zipfile.ZIP_STORED, allowZip64=True) as z:
+            for p in files:
+                z.write(p, os.path.basename(p))
+        return tmp
+    except Exception as e:
+        log_event("rec", f"ZIP failed: {e}"[:160])
+        if tmp:
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
         return None
-    return tmp
+    finally:
+        _ZIP_LOCK.release()
 
 
 def _scan_events():
@@ -20289,7 +20396,8 @@ def rec_play_state(name, watch=None):
 def rec_purge_extras(stem):
     """Remove cached thumbnails / converted copies that belong to a recording."""
     for p in (os.path.join(rec_dir(), ".thumbs", stem + ".mp4.jpg"), os.path.join(rec_dir(), ".thumbs", stem + ".jpg.jpg"),
-              os.path.join(rec_dir(), ".cache", stem + ".h264.mp4")):
+              os.path.join(rec_dir(), ".cache", stem + ".h264.mp4"), os.path.join(rec_dir(), ".cache", stem + ".nogps.mp4"),
+              os.path.join(rec_dir(), ".cache", stem + ".share.mp4"), os.path.join(rec_dir(), ".cache", stem + ".share.gps.mp4")):
         try:
             os.remove(p)
         except OSError:
@@ -20303,7 +20411,7 @@ def rec_delete(names, watch=None):
     n_ok = 0
     for name in (names if isinstance(names, list) else [])[:500]:
         path = rec_path(name)
-        if not path or _is_live(name, watch):
+        if not path or _is_live(name, watch) or os.path.splitext(name)[1].lower() not in (".mp4", ".jpg"):
             continue
         stem = os.path.splitext(name)[0]
         for ext in ((".mp4", ".jpg", ".json") if name.lower().endswith(".mp4") else (os.path.splitext(name)[1].lower(),)):
@@ -21599,7 +21707,7 @@ function simCtlBuild(G, r, ctl, fmt) {
     const cs = byG[g], card = el("div", "sc-card"); card.dataset.g = g; if (openC.has(g)) card.classList.add("open");
     const hd = document.createElement("button"); hd.type = "button"; hd.className = "sc-hd";
     const ik = (cs.find(c => c.iconk) || {}).iconk, ie = (cs.find(c => c.icon) || {}).icon;
-    hd.innerHTML = (ik && SC_ICON[ik] ? '<svg viewBox="0 0 24 24">' + SC_ICON[ik] + '</svg>' : (ie ? "<span>" + ie + "</span>" : "")) + '<span class="sc-t"></span><span class="sc-ar"></span>';
+    hd.innerHTML = (ik && SC_ICON[ik] ? '<svg viewBox="0 0 24 24">' + SC_ICON[ik] + '</svg>' : (ie ? "<span>" + String(ie).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";") + "</span>" : "")) + '<span class="sc-t"></span><span class="sc-ar"></span>';
     hd.querySelector(".sc-t").textContent = g;
     const ar = () => { hd.querySelector(".sc-ar").textContent = card.classList.contains("open") ? "▼" : "▶"; };
     hd.onclick = () => { card.classList.toggle("open"); ar(); card.classList.contains("open") ? openC.add(g) : openC.delete(g); ss("mw-sc-open", [...openC]); };
@@ -24854,14 +24962,18 @@ function keepStream(img) {
   let tries = 0, timer = null;
   const box = img.parentNode;
   const lost = on => { img.style.visibility = on ? "hidden" : ""; if (box) box.classList.toggle("vlost", on); };
-  const restart = () => { clearTimeout(timer); timer = null; img.src = base + "?r=" + Date.now(); };
+  let iv = 0;
+  // 2.95.34: a picture that was removed from the page stops its stream (otherwise every rebuilt tile kept one open)
+  const alive = () => { if (img.isConnected) return true; clearInterval(iv); clearTimeout(timer); document.removeEventListener("visibilitychange", vis); img.src = ""; return false; };
+  const restart = () => { clearTimeout(timer); timer = null; if (alive()) img.src = base + "?r=" + Date.now(); };
   const later = () => { if (timer) return; lost(true); timer = setTimeout(restart, Math.min(10000, 1000 * (1 + tries++))); };
+  const vis = () => { if (!document.hidden) restart(); };
   img.addEventListener("error", later);
   img.addEventListener("load", () => { tries = 0; lost(false); });
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) restart(); });
+  document.addEventListener("visibilitychange", vis);
   addEventListener("pageshow", e => { if (e.persisted) restart(); });
-  setInterval(() => {
-    if (document.hidden) return;
+  iv = setInterval(() => {
+    if (!alive() || document.hidden) return;
     if (img.naturalWidth) { if (!timer) { tries = 0; lost(false); } }
     else if (img.complete) later();
   }, 3000);
@@ -25070,7 +25182,7 @@ function flTile(id, name, url, st, me) {
 async function fleetPoll() {
   if (document.hidden) return;
   let j; try { j = await (await fetch("/api/fleet", {cache: "no-store"})).json(); } catch (e) { return; }
-  const G = $("#fleet"); if (!G) return;
+  const G = $("#fleet"); if (!G || !j || !j.me || !Array.isArray(j.devices)) return;    // e.g. a user without admin rights
   const sig = JSON.stringify([j.me.arm, j.me.persons, j.me.recording, j.me.battery, j.me.tamper, j.me.last, j.devices.map(d => [d.id, d.name, d.st.ok, d.st.err, d.st.arm, d.st.persons, d.st.recording, d.st.battery, d.st.mains, d.st.tamper, d.st.last])]);
   if (sig !== FLSIG) {
     FLSIG = sig; G.textContent = "";
@@ -25104,7 +25216,7 @@ async function btUse() {
   } catch (e) {}
 }
 document.addEventListener("visibilitychange", () => {      // no stream while the tab is hidden = no CPU
-  document.querySelectorAll(".tile img").forEach(i => { i.src = document.hidden ? "" : i.dataset.src; });
+  document.querySelectorAll(".tile img").forEach(i => { if (i.dataset.src) i.src = document.hidden ? "" : i.dataset.src; });
 });
 (async () => { await initAppearance(); poll(); setInterval(poll, 2500);
   fleetPoll(); setInterval(fleetPoll, 3000); })();
@@ -26320,14 +26432,18 @@ function keepStream(img) {
   let tries = 0, timer = null;
   const box = img.parentNode;
   const lost = on => { img.style.visibility = on ? "hidden" : ""; if (box) box.classList.toggle("vlost", on); };
-  const restart = () => { clearTimeout(timer); timer = null; img.src = base + "?r=" + Date.now(); };
+  let iv = 0;
+  // 2.95.34: a picture that was removed from the page stops its stream (otherwise every rebuilt tile kept one open)
+  const alive = () => { if (img.isConnected) return true; clearInterval(iv); clearTimeout(timer); document.removeEventListener("visibilitychange", vis); img.src = ""; return false; };
+  const restart = () => { clearTimeout(timer); timer = null; if (alive()) img.src = base + "?r=" + Date.now(); };
   const later = () => { if (timer) return; lost(true); timer = setTimeout(restart, Math.min(10000, 1000 * (1 + tries++))); };
+  const vis = () => { if (!document.hidden) restart(); };
   img.addEventListener("error", later);
   img.addEventListener("load", () => { tries = 0; lost(false); });
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) restart(); });
+  document.addEventListener("visibilitychange", vis);
   addEventListener("pageshow", e => { if (e.persisted) restart(); });
-  setInterval(() => {
-    if (document.hidden) return;
+  iv = setInterval(() => {
+    if (!alive() || document.hidden) return;
     if (img.naturalWidth) { if (!timer) { tries = 0; lost(false); } }
     else if (img.complete) later();
   }, 3000);
@@ -32539,6 +32655,8 @@ class WebStream:
             lang = norm_lang(request.args.get("lang"))
             if rec_path(name) is None or os.path.splitext(name)[1].lower() not in REC_EXTS:
                 return Response("not found", 404)
+            if _is_live(name, self.watch if hasattr(self, "watch") else WATCH_REF.get("w")):
+                return Response("the recording is still being written - try again in a few minutes", 409)
             try:
                 pdf = rec_report_pdf(name, lang)
             except Exception as e:
@@ -34361,7 +34479,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.33")
+        self.root.title("Motion Watch 2.95.34")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -34651,7 +34769,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.33 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.34 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -41353,7 +41471,8 @@ for _k, _v in _HX52.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_HX60 = {'Simulation switched on automatically (a simulator is online)': ('Simulation automatisch eingeschaltet (ein Simulator ist online)', 'Simulation activée automatiquement (un simulateur est en ligne)', 'Simulazione attivata automaticamente (un simulatore è online)', 'Simulaziun activada automaticamain (in simulatur è online)'),
+_HX60 = {'The temperature sensor gives no values any more - the alarm cannot work.': ('Der Temperatursensor liefert keine Werte mehr – der Alarm kann nicht funktionieren.', 'Le capteur de température ne donne plus de valeurs – l’alarme ne peut pas fonctionner.', 'Il sensore di temperatura non fornisce più valori – l’allarme non può funzionare.', 'Il sensur da temperatura na dat nagina valur pli – l’alarm na po betg funcziunar.'),
+         'Simulation switched on automatically (a simulator is online)': ('Simulation automatisch eingeschaltet (ein Simulator ist online)', 'Simulation activée automatiquement (un simulateur est en ligne)', 'Simulazione attivata automaticamente (un simulatore è online)', 'Simulaziun activada automaticamain (in simulatur è online)'),
          'Disarmed via MQTT / Home Assistant': ('Über MQTT / Home Assistant unscharf geschaltet', 'Désarmé via MQTT / Home Assistant', 'Disattivato tramite MQTT / Home Assistant', 'Deschaltà via MQTT / Home Assistant'),
          'a test run is going on - wait until it is finished': ('ein Testlauf läuft – warte, bis er fertig ist', 'un test est en cours – attendez la fin', 'è in corso un test – attendi la fine', 'in test è en lavur – spetga fin ch\'el è finì'),
          'Camera loop disturbed': ('Kamera-Schleife gestört', 'Boucle caméra perturbée', 'Ciclo videocamera disturbato', 'Circul da camera disturbà'),
