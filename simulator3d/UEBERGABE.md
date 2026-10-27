@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-2.8** · passende Motion-Watch-Version **2.93.5**
+Stand: 26.10.2026 · Simulator-Version **3D-2.9** · passende Motion-Watch-Version **2.93.6**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,13 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-2.9 – Welt:** `scenes.cloth()` (Shader `cloth.gdshader`, Wind über `main.cloth_mats`), `flag()`, `laundry()`, `smoke()`
+(CPUParticles, Gruppe «smoke»), `main._build_fireflies()`. Schalter `world_cloth`, `world_smoke`, `world_fireflies`.
+**Wichtig:** Der Linsen-Shader las in 3D-2.6 das Bild über `hint_screen_texture` – diese Kopie enthält nur Undurchsichtiges, darum
+fehlten Regen, Rauch usw. im Kamerabild. Jetzt: Belichtung über ein eigenes Quad mit `blend_mul` (`expo.gdshader`, `expo_mats`),
+Farbe nachts über Kopien der Umgebung mit `adjustment_saturation` (`night_envs`: 0 = Infrarot, 0,4 = wenig Licht), Körnung/Tropfen
+wieder als durchsichtige Überlagerung. Test-Abfrage `world`.
+
 **3D-2.8 – Tiere:** `_build_animal()` mit Brust/Hinterteil (`bulk`), dunklerem Rücken, Oberschenkeln, Hals, Fuchs-Kinn und
 Ohrspitzen, Schlappohren (Hund 50 %), runden Ohren (Wildschwein, Dachs). Menschen an der Tür: `_at_door()` → Arm zur Klinke.
 

@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-2.8"
+const VERSION := "3D-2.9"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -156,6 +156,8 @@ var sounds: Array = []                # [dB at 1 m, position, until]
 var mw_det := {}                      # what Motion Watch detects right now (from 2.93.3: persons, present, noise)
 var mw_det_t := 0.0
 var lens_mats: Array = []
+var expo_mats: Array = []             # exposure quads (multiply) in front of camera 0 / 1
+var night_envs: Array = [null, null]  # [grey (infrared), little colour] - copies of env, renewed every 0.5 s at night
 var insects: CPUParticles3D
 var capturing := false
 var preview_on := true
@@ -233,6 +235,7 @@ func _ready() -> void:
 	_build_viewports()
 	_build_weather()
 	_build_lens()
+	_build_fireflies()
 	visitors = Node3D.new()
 	add_child(visitors)
 	_build_view_camera()
@@ -531,6 +534,7 @@ func _build_scene() -> void:
 	if Scenes.name_of(scene) == scene:
 		scene = "camping"                        # unknown name
 	foliage_mats.clear()
+	cloth_mats.clear()
 	clear_obstacles()
 	lamps.clear()
 	lamp_mats.clear()
@@ -677,6 +681,54 @@ func _build_weather() -> void:
 	add_child(snow)
 
 
+func _build_fireflies() -> void:
+	"""fireflies on warm nights: small blinking lights over the meadow in front of the cameras (from 3D-2.9)"""
+	fireflies = CPUParticles3D.new()
+	fireflies.amount = 40
+	fireflies.lifetime = 4.0
+	fireflies.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	fireflies.emission_box_extents = Vector3(14, 0.6, 9)
+	fireflies.position = Vector3(0, 0.9, -12)
+	fireflies.direction = Vector3(1, 0.2, 0)
+	fireflies.spread = 180.0
+	fireflies.gravity = Vector3.ZERO
+	fireflies.initial_velocity_min = 0.1
+	fireflies.initial_velocity_max = 0.5
+	var ramp := Gradient.new()
+	ramp.set_color(0, Color(1, 1, 0.5, 0))
+	ramp.set_color(1, Color(1, 1, 0.5, 0))
+	ramp.add_point(0.3, Color(0.85, 1.0, 0.35, 1))
+	ramp.add_point(0.55, Color(0.85, 1.0, 0.35, 0.1))
+	ramp.add_point(0.75, Color(0.85, 1.0, 0.35, 1))
+	fireflies.color_ramp = ramp
+	var sm := SphereMesh.new()
+	sm.radius = 0.04
+	sm.height = 0.08
+	sm.radial_segments = 4
+	sm.rings = 2
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.vertex_color_use_as_albedo = true
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_color = Color(3.0, 3.0, 1.8)
+	sm.material = mat
+	fireflies.mesh = sm
+	fireflies.emitting = false
+	add_child(fireflies)
+
+
+func set_cloth(on: bool) -> void:
+	world_cloth = on
+	for n in get_tree().get_nodes_in_group("cloth"):
+		n.visible = on
+
+
+func set_smoke(on: bool) -> void:
+	world_smoke = on
+	for n in get_tree().get_nodes_in_group("smoke"):
+		n.emitting = on
+
+
 func _build_lens() -> void:
 	"""a quad right in front of camera 0 and 1 (own layer 32 / 64): grain, dark corners, raindrops (shaders/lens.gdshader).
 	Insects round the head at night when a light is on (CPU particles, only the normal cameras see them, not the thermal one)."""
@@ -701,6 +753,18 @@ func _build_lens() -> void:
 		q.material_override = m
 		cam.add_child(q)
 		lens_mats.append(m)
+		var eq := MeshInstance3D.new()                       # exposure: a bit behind the lens quad, so it is drawn first
+		var eqm := QuadMesh.new()
+		eqm.size = Vector2(w, hgt) * 1.05
+		eq.mesh = eqm
+		eq.position = Vector3(0, 0, -dist * 1.05)
+		eq.layers = lay
+		eq.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var em := ShaderMaterial.new()
+		em.shader = load("res://shaders/expo.gdshader")
+		eq.material_override = em
+		cam.add_child(eq)
+		expo_mats.append(em)
 	insects = CPUParticles3D.new()
 	insects.amount = 28
 	insects.lifetime = 2.5
@@ -786,6 +850,12 @@ func _update_sounds() -> void:
 func _update_lens() -> void:
 	"""every 0.5 s: grain from the amplification (gain), raindrops when it rains, insects at night with light"""
 	var dark := is_dark()
+	if dark:                                                # copies of the sky / light settings with less colour
+		for k in range(2):
+			var e: Environment = env.duplicate()
+			e.adjustment_enabled = true
+			e.adjustment_saturation = 0.0 if k == 0 else 0.4
+			night_envs[k] = e
 	for i in range(lens_mats.size()):
 		var amp: float = clamp((float(gain[i]) - 1.0) / max(0.5, gain_cap() - 1.0), 0.0, 1.0)
 		var m: ShaderMaterial = lens_mats[i]
@@ -869,6 +939,10 @@ func _update_sky() -> void:
 	var w_now := wind * gust()
 	for fm in foliage_mats:
 		fm.set_shader_parameter("wind", w_now)
+	for cm in cloth_mats:
+		cm.set_shader_parameter("wind", w_now)
+	if fireflies != null:
+		fireflies.emitting = world_fireflies and is_dark() and ambient >= 12.0 and weather in ["clear", "cloudy"] and wind < 30.0
 	var dark := is_dark()
 	window_mat.emission_energy_multiplier = 2.5 if dark else 0.0
 	door_node.rotation.y = -1.3 if door_open else 0.0
@@ -1063,12 +1137,13 @@ func _capture(i: int) -> void:
 	ir_light.light_energy = 6.0 if (i == 0 and ir_on()) else 0.0   # infrared: only the NoIR camera sees it
 	if i == 0:
 		var grey: bool = ir_on() and dark and not white_light.light_energy > 0.0   # infrared picture: black and white
-		if lens_mats.size() > 0:
-			lens_mats[0].set_shader_parameter("grey", 1.0 if grey else (0.6 if dark else 0.0))
-	if i == 1 and lens_mats.size() > 1:
-		lens_mats[1].set_shader_parameter("grey", 0.6 if dark else 0.0)      # little light: little colour
-	if i < 2 and lens_mats.size() > i:
-		lens_mats[i].set_shader_parameter("expo", NIGHT_SCALE * gain[i] if dark else 1.0)
+		cams[0].environment = (night_envs[0] if grey else night_envs[1]) if dark and night_envs[0] != null else null
+	if i == 1:
+		cams[1].environment = night_envs[1] if dark and night_envs[1] != null else null    # little light: little colour
+	if i < 2 and expo_mats.size() > i:
+		var ex: float = NIGHT_SCALE * gain[i] if dark else 1.0
+		expo_mats[i].set_shader_parameter("expo", ex)
+		lens_mats[i].set_shader_parameter("expo", ex)
 	if i < 2:
 		cam_attr[i].exposure_multiplier = gain[i] if not dark else 1.0   # at night the lens shader does the exposure
 	vps[i].render_target_update_mode = SubViewport.UPDATE_ONCE
@@ -1088,6 +1163,11 @@ func _capture(i: int) -> void:
 var cloud_shadows := true             # clouds pass the sun: the light changes (from 3D-2.6; realistic cause of false alarms)
 var gusts := true                     # the wind blows in gusts
 var look_at_light := true             # people look at the light when it goes on
+var world_cloth := true               # flags and laundry move in the wind (3D-2.9)
+var world_smoke := true               # smoke from chimneys
+var world_fireflies := true           # fireflies on warm nights
+var cloth_mats: Array = []
+var fireflies: CPUParticles3D
 var lamp_share := 0.35                # at night this share of the people carries a headlamp or a phone light (3D-2.7)
 
 
@@ -1430,6 +1510,9 @@ func _register_controls() -> void:
 	add_control("slider", "cam1_yaw", "Kamera 1: Richtung", func(): return cam1_yaw, func(v): cam1_yaw = v, "Szene", {"min": -90, "max": 90, "step": 1, "unit": "°", "expert": true})
 	add_control("select", "weather", "Wetter", func(): return weather, func(v): weather = v, "Wetter",
 			{"options": [["clear", "klar"], ["cloudy", "bewölkt"], ["rain", "Regen"], ["fog", "Nebel"], ["snow", "Schnee"]]})
+	add_control("toggle", "world_cloth", "Fahnen und Wäsche im Wind", func(): return world_cloth, func(v): set_cloth(v), "Wetter", ex)
+	add_control("toggle", "world_smoke", "Rauch aus Kaminen", func(): return world_smoke, func(v): set_smoke(v), "Wetter", ex)
+	add_control("toggle", "world_fireflies", "Glühwürmchen in warmen Nächten", func(): return world_fireflies, func(v): world_fireflies = v, "Wetter", ex)
 	add_control("toggle", "gusts", "Wind in Böen", func(): return gusts, func(v): gusts = v, "Wetter", ex)
 	add_control("toggle", "cloud_shadows", "Wolkenschatten (die Helligkeit wechselt)", func(): return cloud_shadows, func(v): cloud_shadows = v, "Wetter", ex)
 	add_control("slider", "lamp_share", "Nachts mit Stirnlampe oder Handylicht", func(): return lamp_share, func(v): lamp_share = v, "Besuch", {"min": 0, "max": 1, "step": 0.05, "expert": true})
@@ -1587,6 +1670,11 @@ func control(d: Dictionary) -> Dictionary:
 						wide.append("%s %s %d" % [ch.get_class(), str(ch.get("text")).left(30), int(mw_)])
 					stack.append(ch)
 		return {"ok": true, "content_min": w, "panel": ui_root.size.x, "scroll_space": ui_box.get_parent().size.x, "wide": wide}
+	elif a == "world":                                 # for tests: life in the world
+		var sm := []
+		for n in get_tree().get_nodes_in_group("smoke"):
+			sm.append([n.emitting, n.global_position, n.visible, n.is_visible_in_tree()])
+		return {"ok": true, "smoke": str(sm), "fireflies": [fireflies.emitting, fireflies.is_visible_in_tree()], "cloth": get_tree().get_nodes_in_group("cloth").size()}
 	elif a == "test_report":                           # the test run: progress and the last report
 		return {"ok": true, "running": testrun.running, "info": testrun.info, "report": testrun.report}
 	elif a == "game":                                  # for tests: the game (players, meter, round)
@@ -2109,7 +2197,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 

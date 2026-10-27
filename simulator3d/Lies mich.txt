@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-2.8 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-2.9 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -73,6 +73,14 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
   * Spielziel "Beute holen und zurückbringen": beim grünen Licht die Beute holen (man trägt sie sichtbar auf dem
     Rücken) und zurück zum eigenen Start. Wer erwischt wird, verliert sie wieder.
 - Jedes Handy-Bild braucht Leistung der Grafikkarte: bei Ruckeln "Bild auf dem Handy: klein" wählen.
+
+MEHR LEBEN IN DER WELT (ab 3D-2.9, Experte, Gruppe "Wetter")
+- Fahnen (Camping, Parkplatz, Lustiger Platz) und Wäsche an der Leine (Camping, Garten) flattern im Wind.
+- Rauch aus den Kaminen (Haus im Garten, Hütte) steigt auf und treibt mit dem Wind.
+- Glühwürmchen in warmen, ruhigen Nächten (ab 12 °C, ohne Regen und starken Wind).
+- Alles bewegt sich auch im Kamerabild - typische Auslöser für Fehlalarme, gut zum Testen von Motion Watch.
+  Einzeln abschaltbar.
+- Behoben: Seit 3D-2.6 fehlten Regen und andere durchsichtige Dinge im Kamerabild für Motion Watch.
 
 FIGUREN UND BEWEGUNGEN (ab 3D-2.7)
 - Menschen: Gesicht (Augen, Brauen, Nase, Mund, Ohren), verschiedene Statur (schlank bis kräftig), Jacke offen oder zu,

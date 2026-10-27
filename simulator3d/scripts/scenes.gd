@@ -286,6 +286,7 @@ func hut(p: Vector3, rot_y: float, col := Color(0.45, 0.3, 0.18)) -> Node3D:
 	for y in [0.4, 0.8, 1.2, 1.6, 2.0]:                                                                    # planks
 		put(h, m.box(4.02, 0.03, 3.22), Vector3(0, y, 0), col.darkened(0.25), "caravan")
 	put(h, m.box(0.4, 1.0, 0.4), Vector3(1.2, 3.4, -0.6), Color(0.45, 0.42, 0.4), "stone")                # chimney
+	smoke(h.transform * Vector3(1.2, 4.0, -0.6))
 	for i in range(6):                                                                                     # wood pile
 		put(h, cyl(0.11, 0.11, 0.9, 8), Vector3(-2.35, 0.12 + (i / 3) * 0.2, -0.8 + (i % 3) * 0.24), Color(0.55, 0.4, 0.25), "tree", Vector3(PI / 2, 0, 0))
 	m.add_obstacle_node(h, Vector3(-0.2, 0, 0), 4.9, 3.5)
@@ -365,6 +366,87 @@ func mushroom(p: Vector3, s := 1.0) -> void:
 
 
 # ---- camping place (stage 1) ---------------------------------------------------------------------------------------
+# ---- life in the world (from 3D-2.9): flags and laundry in the wind, smoke from chimneys ----------------------------
+func cloth(parent: Node3D, size: Vector2, pos: Vector3, rot: Vector3, col: Color, hang := false) -> MeshInstance3D:
+	var q := QuadMesh.new()
+	q.size = size
+	q.subdivide_width = 8
+	q.subdivide_depth = 6
+	var mi := MeshInstance3D.new()
+	mi.mesh = q
+	mi.position = pos
+	mi.rotation = rot
+	var sm := ShaderMaterial.new()
+	sm.shader = load("res://shaders/cloth.gdshader")
+	sm.set_shader_parameter("color", col)
+	sm.set_shader_parameter("seed", rng.randf() * 10.0)
+	sm.set_shader_parameter("hang", 1.0 if hang else 0.0)
+	sm.set_shader_parameter("wind", m.wind)
+	mi.material_override = sm
+	mi.layers = 1
+	mi.add_to_group("cloth")
+	mi.visible = m.world_cloth
+	m.cloth_mats.append(sm)
+	parent.add_child(mi)
+	return mi
+
+
+func flag(p: Vector3, col: Color) -> void:
+	put(root, cyl(0.04, 0.05, 6.0, 8), p + Vector3(0, 3.0, 0), Color(0.75, 0.75, 0.78), "stone")
+	var f := cloth(root, Vector2(1.4, 0.9), p + Vector3(0.72, 5.4, 0), Vector3.ZERO, col)
+	f.add_to_group("cloth")
+
+
+func laundry(p: Vector3, rot_y: float) -> void:
+	"""a washing line between two poles with a few clothes"""
+	var n := node(root, p, rot_y)
+	for s2 in [-1, 1]:
+		put(n, cyl(0.03, 0.03, 1.9, 6), Vector3(1.6 * s2, 0.95, 0), Color(0.6, 0.6, 0.62), "stone")
+	put(n, m.box(3.2, 0.012, 0.012), Vector3(0, 1.85, 0), Color(0.9, 0.9, 0.9), "stone")
+	var cols := [Color(0.9, 0.9, 0.95), Color(0.2, 0.4, 0.8), Color(0.85, 0.25, 0.25), Color(0.95, 0.85, 0.3), Color(0.3, 0.6, 0.35)]
+	var x := -1.2
+	for i in range(4):
+		var w := rng.randf_range(0.4, 0.7)
+		var hgt := rng.randf_range(0.5, 0.8)
+		var c := cloth(n, Vector2(w, hgt), Vector3(x + w / 2.0, 1.85 - hgt / 2.0, 0), Vector3.ZERO, cols[rng.randi() % cols.size()], true)
+		c.rotation.z = PI                                  # UV.y = 0 at the line
+		c.rotation.y = PI
+		x += w + 0.12
+
+
+func smoke(at: Vector3) -> void:
+	"""smoke from a chimney: rises and drifts with the wind (moves in the picture - like in reality)"""
+	var p := CPUParticles3D.new()
+	p.amount = 40
+	p.lifetime = 7.0
+	p.position = at
+	p.direction = Vector3(0, 1, 0)
+	p.spread = 12.0
+	p.initial_velocity_min = 0.5
+	p.initial_velocity_max = 0.8
+	p.gravity = Vector3(0.25 + m.wind * 0.02, 0.05, 0.0)
+	p.scale_amount_min = 0.6
+	p.scale_amount_max = 1.0
+	var curve := Curve.new()
+	curve.add_point(Vector2(0, 0.3))
+	curve.add_point(Vector2(1, 2.2))
+	p.scale_amount_curve = curve
+	var sm := SphereMesh.new()
+	sm.radius = 0.5
+	sm.height = 1.0
+	sm.radial_segments = 8
+	sm.rings = 4
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.5, 0.5, 0.52, 0.5)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm.material = mat
+	p.mesh = sm
+	p.add_to_group("smoke")
+	p.emitting = m.world_smoke
+	root.add_child(p)
+
+
 func _camping() -> void:
 	road(-29.0)
 	caravan(m.pos_of(-28.0, 9.0), deg_to_rad(28.0))
@@ -394,6 +476,8 @@ func _camping() -> void:
 			put(root, cyl(0.015, 0.015, 0.7, 5), m.pos_of(-62, 5.5) + Vector3(x, 0.36, z), Color(0.6, 0.6, 0.62), "stone")
 	m.add_obstacle(m.pos_of(-62, 5.5), 0.7)
 	m.set_obstacle_height(0.5)
+	flag(m.pos_of(-42.0, 13.0), Color(0.8, 0.12, 0.12))
+	laundry(m.pos_of(-12.0, 11.0), deg_to_rad(20.0))
 	stones(8, 4.0, 15.0)
 	meadow(700, 3.0, 40.0)
 	for i in range(140):
@@ -457,6 +541,8 @@ func _wald() -> void:
 # ---- car park --------------------------------------------------------------------------------------------------------
 func _parkplatz() -> void:
 	road(-32.0, 7.0)
+	flag(Vector3(-20.0, 0, -27.0), Color(0.15, 0.35, 0.8))
+	flag(Vector3(-16.5, 0, -27.0), Color(0.95, 0.95, 0.95))
 	put(root, m.box(64, 0.03, 30), Vector3(0, 0.015, -15), Color(0.22, 0.22, 0.23), "road")
 	var spots := []
 	for row in [-9.0, -21.0]:
@@ -538,6 +624,8 @@ func _garten() -> void:
 		put(h, m.box(1.45, 1.25, 0.03), p2, Color(0.95, 0.95, 0.95), "caravan")        # window frames
 		put(h, m.box(1.5, 0.08, 0.2), p2 + Vector3(0, -0.62, 0.08), Color(0.5, 0.45, 0.4), "caravan")   # sills
 	put(h, m.box(0.5, 1.6, 0.5), Vector3(2.8, 7.4, -1.0), Color(0.5, 0.25, 0.2), "caravan")           # chimney
+	smoke(h.transform * Vector3(2.8, 8.3, -1.0))
+	laundry(Vector3(4.0, 0, -12.5), deg_to_rad(-8.0))
 	put(h, m.box(1.6, 0.12, 1.0), Vector3(0.0, 2.75, 4.0), Color(0.4, 0.4, 0.42), "caravan")          # canopy over the door
 	# terrace with table, chairs, a parasol (the PIR sensor is here)
 	var terr: Vector3 = h.transform * Vector3(2.5, 0, 6.0)
@@ -612,6 +700,7 @@ func _garten() -> void:
 # ---- the funny place: a bench to sit on and things to watch -----------------------------------------------------------
 func _lustig() -> void:
 	put(root, m.box(3.0, 0.03, 30.0), Vector3(0, 0.015, -12), Color(0.7, 0.6, 0.45), "road")
+	flag(Vector3(4.5, 0, -22.0), Color(0.95, 0.75, 0.1))
 	bench(Vector3(0, 0, -17.0), 0.0)                    # visitors sit here and look at the show (and at the camera)
 	data["bench"] = Vector3(0, 0, -16.8)
 	bench(Vector3(-3.0, 0, -17.0), 0.0)
