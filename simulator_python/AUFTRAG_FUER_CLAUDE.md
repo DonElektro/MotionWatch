@@ -132,6 +132,13 @@ Godot-Simulator) und **MW Sim · Welt** (deiner). Bitte:
   (`MotionWatchSimulator_<VERSION>.zip`, `simulator_python/`), sonst findet Motion Watch das Paket nicht mehr.
 - Danach wie gewohnt eine neue Version (PY-1.3) und hier in einem neuen Abschnitt melden.
 
+### 3.10 CPU-Auslastung in der UDP-Meldung (neu, Motion Watch 2.95.25, freiwillig)
+
+Motion Watch zeigt in der Liste der Simulatoren jetzt die CPU-Auslastung, schon bevor die Simulation läuft. Dafür in
+jede UDP-Meldung zwei Zahlen schreiben (in Prozent, 0–100, eine Nachkommastelle reicht):
+`"pc_cpu"` = Auslastung des ganzen Computers, `"sim_cpu"` = Anteil deines Simulator-Prozesses (z. B. mit `psutil`,
+falls vorhanden; sonst weglassen). Fehlt ein Wert, zeigt Motion Watch einfach nichts an.
+
 ## 4. So testest du mit Motion Watch
 
 1. Simulator starten: `python3 motion_sim.py --stream` (oder mit Fenster «An Motion Watch senden» einschalten).
