@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 18:12",
+ "generated": "2026-10-27 18:13",
  "versions": [
   {
-   "version": "2.95.43",
-   "file": "webcam_bewegung_2_95_43.py",
+   "version": "2.95.44",
+   "file": "webcam_bewegung_2_95_44.py",
    "url": "",
-   "sha256": "bfe82ba37f874401287076f61858a171d72e5e994d235ce4b72846b894df7b9f",
-   "date": "2026-10-27 18:12",
-   "notes": "simulator interface for the mover written down (simulator/Simulator_Schnittstelle.md); optional answer field «mover_pose» (position, direction, metres, blocked) is taken and shown in /api/state; order 3.11 for the world simulator.",
-   "sig": "9abbb9a636298a0c536456a9ad64502d7a05cc7c625cea58dd2df904281b0a2c739878e7002d460ce1bd007f015122b9fbabb9b50211828e4e1acaea81bf5006"
+   "sha256": "2dab83c4eeda0025946023450a772bc6a090f9207a650c42c280ffe30c6161c1",
+   "date": "2026-10-27 18:13",
+   "notes": "3D simulator 3D-3.39 (more visitors: cyclist, pram, pizza courier, police round, drunk, couple, horse, cows, sheep, chamois, ibex, lynx, bats and owl at night, tractor, motorbike, van).",
+   "sig": "f657850548b860cdcaa2dd1808a8857a5c37aa79b26033424c961faa6079102c16a374b7a69de02927e77df8cfc8beca01514dc08414e860caac521fdf72e301"
   },
   {
    "version": "2.94.5",
