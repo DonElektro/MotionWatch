@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 08:57",
+ "generated": "2026-10-27 09:11",
  "versions": [
   {
-   "version": "2.95.1",
-   "file": "webcam_bewegung_2_95_1.py",
+   "version": "2.95.2",
+   "file": "webcam_bewegung_2_95_2.py",
    "url": "",
-   "sha256": "fc1053de4449ea3deb81d5a366c82670cedf5b750d8a30f67bbf9dbb3c3bcd61",
-   "date": "2026-10-27 08:57",
-   "notes": "«Simulators in the network» shows the computer name next to each simulator (the simulator tells it, else the router's name service is asked once). 3D simulator 3D-3.17 (tells its computer name), Python world simulator PY-1.1.",
-   "sig": "63230b738b09ebf53611381c9d272b4a7ac2abff17d76898d27020e512406c7543187e7d394af5fe8112eb952ab1daaed086cb293e5e80ed8e6f06abeef23105"
+   "sha256": "031f1c955b318e6b54f18e7f7e4a7226eec193a787f570689aa5e823f82452ec",
+   "date": "2026-10-27 09:11",
+   "notes": "Live view: the simulator control (the same switches as in the simulator) under the picture while the simulation is on. Driving with the second stick switches the simulator's vehicle on by itself (3D simulator «Mover simulieren»).",
+   "sig": "33cb8389891604b800664f5f1a0099ccdfdbeec6d2e6c6f011545c4ff6f68b95a048f0f501fff2fda377e212e45d702d2a74c8072c1f4219b61d88b65005f901"
   },
   {
    "version": "2.94.5",

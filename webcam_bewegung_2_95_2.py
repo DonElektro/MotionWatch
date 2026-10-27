@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_1.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_2.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -549,6 +549,8 @@ Features
     (/sim/simulator_py.zip, fetched once and checked like the 3D one), tested with its settings in the tab Simulator.
   * 2.95.1: «Simulators in the network» shows the computer name next to each simulator (the simulator tells it, else the
     router's name service is asked once). 3D simulator 3D-3.17 (tells its computer name), Python world simulator PY-1.1.
+  * 2.95.2: Live view: the simulator control (the same switches as in the simulator) under the picture while the simulation
+    is on. Driving with the second stick switches the simulator's vehicle on by itself (3D simulator «Mover simulieren»).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -557,10 +559,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -577,7 +579,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.1"
+APP_VERSION = "2.95.2"
 
 
 def default_data_dir():
@@ -3488,7 +3490,29 @@ def mover_drive(v, w, who="web"):
     MOVER.update(v=v, w=w, cmd_t=time.time(), by=who)
     if abs(v) > 0.05 or abs(w) > 0.05:
         MANUAL["until"] = time.time() + CFG["manual_hold"]          # driving pauses tracking and patrol like the camera stick
+        mover_sim_wake()
     return True
+
+
+_MOVER_WAKE = {"t": 0.0}
+
+
+def mover_sim_wake():
+    """driving in the simulation, but the simulator's vehicle is off: switch it on there (3D simulator: «Mover simulieren»)"""
+    now = time.time()
+    if not (CFG.get("sim_on") and SIM.get("ok")) or SIM.get("mover") or now - _MOVER_WAKE["t"] < 8.0:
+        return
+    _MOVER_WAKE["t"] = now
+
+    def work():
+        try:
+            d = sim_control()
+            if any(c.get("id") == "mover_on" for c in (d.get("controls") or [])):
+                sim_control({"action": "set", "id": "mover_on", "value": True})
+                log_event("sys", "Simulation: vehicle switched on in the simulator (driven with the second stick)")
+        except Exception:
+            pass
+    threading.Thread(target=work, daemon=True, name="mover-wake").start()
 
 
 def mover_choice_pairs(extra):
@@ -14161,7 +14185,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_1.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_2.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -20821,6 +20845,13 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
         </div>
       </div>
     </details>
+    <div id="lv-simw" hidden>
+      <details class="card" id="lv-sim" open data-view="simctl" data-vgroup="Panels" data-vlabel="Simulator control">
+        <summary><span id="lv-simt" data-i18n="Simulator control">Simulator control</span></summary>
+        <div class="mut" id="lv-simst" style="white-space:pre-wrap;margin:2px 0 6px"></div>
+        <div id="lv-simg"></div>
+      </details>
+    </div>
   </section>
   <button type="button" id="side-open" onclick="toggleHidden('sidebar')" title="Settings"><span>⟨</span><b data-i18n="Settings">Settings</b></button>
   <aside data-view="sidebar" data-vgroup="Panels" data-vlabel="Settings panel">
@@ -23140,6 +23171,32 @@ function simExtras(d) {
   box.appendChild(vb); d.appendChild(box);
   setInterval(() => { const v = $("#sim-vbox"); if (v && !v.hidden && v.offsetParent !== null && !document.hidden) window.simCtl(); }, 4000);
 }
+  // ---- the same controls on the live view, under the picture (2.95.2): only while the simulation is on and connected ----
+  (function () {
+    const W = $("#lv-simw"), D = $("#lv-sim"), G = $("#lv-simg"); if (!W || !G) return;
+    let LSIG = "", busy = false;
+    const fmt = (c, v) => (v == null ? "–" : (Math.abs(v) >= 100 || c.step >= 1 ? Math.round(v) : (+v).toFixed(c.step < 0.1 ? 2 : 1))) + (c.unit ? " " + c.unit : "");
+    const lctl = async (d) => { const r = await post("/api/sim", Object.assign({action: "ctl", lang: LANG}, d)); lpaint(r); return r; };
+    const lpaint = (r) => {
+      if (!r || !r.ok) { $("#lv-simst").textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
+      $("#lv-simt").textContent = "🎮 " + t("Simulator control") + (r.name ? " · " + r.name : "");
+      const sig = JSON.stringify((r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options, c.sub, c.expert]));
+      if (sig !== LSIG) { LSIG = sig; simCtlBuild(G, r, lctl, fmt); }
+      G.querySelectorAll("[data-cid]").forEach(row => {
+        const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
+        if (c.type === "toggle") inp.checked = !!c.value; else if (c.value != null) inp.value = c.value;
+        const vv = row.querySelector(".simvv"); if (vv) vv.textContent = fmt(c, c.value);
+      });
+      $("#lv-simst").textContent = r.status || "";
+    };
+    const tick = async () => {
+      const S_ = QSJ && QSJ.state && QSJ.state.sim, on = !!(S_ && S_.on && S_.ok);
+      W.hidden = !on; if (!on) { LSIG = ""; return; }
+      if (busy || document.hidden || !D.open || D.offsetParent === null) return;
+      busy = true; try { lpaint(await post("/api/sim", {action: "ctl", ctl: "get", lang: LANG})); } finally { busy = false; }
+    };
+    D.addEventListener("toggle", tick); setInterval(tick, 3000); setTimeout(tick, 1500);
+  })();
 Object.assign(I18N.de, {"Clap switch": "Klatschschalter", "Bless you": "Gesundheit", "«Bless you!»": "«Gesundheit!»", "Clap 2×": "2× klatschen", "Clap 3×": "3× klatschen", "Clap 4×": "4× klatschen", "Answer": "Antwort", "Words (several: separate with |)": "Worte (mehrere mit | trennen)", "Sensitivity (higher = also softer claps)": "Empfindlichkeit (höher = auch leisere Klatscher)", "Volume of the beep": "Lautstärke des Pieptons", "Sensitivity (higher = answers more readily)": "Empfindlichkeit (höher = antwortet eher)", "Volume of the answer": "Lautstärke der Antwort", "Clap switch on": "Klatschschalter ein", "Beep when recognised": "Piepton, wenn erkannt", "Only when not armed (claps of strangers switch nothing)": "Nur wenn nicht scharf (Klatscher von Fremden schalten nichts)", "Practice: only count and beep, switch nothing": "Üben: nur zählen und piepen, nichts schalten", "Say «Bless you!» after a sneeze": "Nach einem Niesen «Gesundheit!» sagen", "Quiet at night (22 to 7 o'clock)": "Nachts still (22 bis 7 Uhr)", "Test beep": "Piepton testen", "switch on and clap 2× to try it": "einschalten und zum Ausprobieren 2× klatschen", "clap 2, 3 or 4 times": "2, 3 oder 4 Mal klatschen", "counting": "zähle", "last": "zuletzt", "Hear the answer": "Antwort anhören", "Install": "Installieren", "sn-note": "Die Niesen-Erkennung nutzt ein kleines Erkennungsmodell (YAMNet von Google, etwa 4 MB). Es wird beim ersten lauten Geräusch einmal geladen. Tipp: «Gesundheit!» mit dem Handy als Sprachmemo aufnehmen und mit «Eigene Antwort» hochladen – sie wird sofort als Antwort gewählt.",
  "Own answer (sound file)": "Eigene Antwort (Tondatei)", "saved and chosen as answer": "gespeichert und als Antwort gewählt", "loading the sound recognition …": "lade die Geräusch-Erkennung …", "waiting for the first loud sound": "wartet auf das erste laute Geräusch", "needs the sound recognition program - button «Install»": "braucht das Erkennungsprogramm – Knopf «Installieren»", "model could not be loaded": "Modell konnte nicht geladen werden", "installing … (a few minutes)": "installiere … (ein paar Minuten)", "last check": "letzte Prüfung", "today": "heute", "no speech program (sudo apt install libttspico-utils)": "kein Sprachprogramm (sudo apt install libttspico-utils)", "no microphone selected (Microphone)": "kein Mikrofon gewählt (Mikrofon)", "not while armed": "nicht, solange scharf", "too many claps": "zu viele Klatscher", "not possible": "nicht möglich"});
 function sevPaint(s) {
@@ -28270,7 +28327,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.1")
+        self.root.title("Motion Watch 2.95.2")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -28560,7 +28617,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
