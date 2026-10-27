@@ -680,14 +680,18 @@ class Panel:
         ttk.Label(r, text="Address").pack(side="left")
         self.mw_url = tk.StringVar(value=bridge.LINK["url"])
         e = ttk.Entry(r, textvariable=self.mw_url, width=30); e.pack(side="left", padx=4)
-        Tip(e, "Empty = automatic: the device that sends its servo positions to the simulator (web page on port 5000).\n"
-               "Or type it, e.g. 192.168.1.50:5000 (the Pi) or 127.0.0.1:5000 (Motion Watch on this PC).")
+        Tip(e, "Empty = automatic: the device that sends its servo positions to the simulator - it also tells http or https\n"
+               "and the port of its web page. Or type it, e.g. 192.168.1.50:5000, https://192.168.1.50:5000 or 127.0.0.1:5000.")
         ttk.Label(r, text="Password").pack(side="left", padx=(8, 0))
         self.mw_pw = tk.StringVar(value=bridge.LINK["password"])
         ttk.Entry(r, textvariable=self.mw_pw, width=16, show="•").pack(side="left", padx=4)
         ttk.Button(r, text="Connect", style="Accent.TButton",
                    command=lambda: bridge.configure(self.mw_url.get(), self.mw_pw.get())).pack(side="left")
         self.link_lbl = ttk.Label(mf, justify="left"); self.link_lbl.pack(anchor="w", pady=2)
+        self.cert_btn = ttk.Button(mf, text="Accept Motion Watch's new certificate", command=bridge.accept_new_cert)
+        Tip(self.cert_btn, "https: the simulator remembers Motion Watch's certificate at the first contact and then accepts only that one.\n"
+                           "Press this only if you know Motion Watch made a new certificate (new install, new Pi) - otherwise somebody\n"
+                           "else may pretend to be Motion Watch.")
         sf = ttk.LabelFrame(t, text="③ What Motion Watch sends (POST /state)"); sf.pack(fill="x", pady=4)
         self.mw_txt = self._text(sf, height=8, width=90); self.mw_txt.pack(fill="x")
         pf = ttk.LabelFrame(t, text="Motion detector (PIR) at the box"); pf.pack(fill="x", pady=4)
@@ -1150,11 +1154,17 @@ class Panel:
             self.proto_lbl.config(text=f"«{self.proto.name}»   server {st} on port {self.proto.port}   address http://{ip}:{self.proto.port}\n"
                                        f"announced: {ann}\n"
                                        f"camera http://{ip}:{self.proto.port}/cam/0/video.mjpg   (cam 1 = fixed camera, /thermal.bin, /events, /control)\n"
-                                       f"POST /state received: {self.proto.posts}   events sent: {len(self.proto.events)}")
+                                       f"POST /state received: {self.proto.posts}   events sent: {len(self.proto.events)}   "
+                                       f"sound at the camera: {self.proto.sound_db:.0f} dB")
         else:
             self.proto_lbl.config(text="protocol server off (--no-protocol)")
         ok = bridge.ready()
         self.link_lbl.config(text=("● " if ok else "○ ") + bridge.status(), foreground=GOOD if ok else MID)
+        if bool(bridge.LINK["cert_new"]) != bool(self.cert_btn.winfo_manager()):
+            if bridge.LINK["cert_new"]:
+                self.cert_btn.pack(anchor="w", pady=2)
+            else:
+                self.cert_btn.pack_forget()
         pr = self.eng.proto
         if pr is None:
             text = "nothing yet - Motion Watch has not sent its state to the simulator"

@@ -3,17 +3,20 @@
 The simulator describes its own controls (GET /control); Motion Watch draws them without knowing them and sends back
 POST /control {"action": "get" | "scenario" | "delete" | "set" | "press", "id": ..., "value": ...}.
 Every answer is the same as GET /control, an error is {"ok": false, "error": "..."}.
-The labels are German: they show up on Motion Watch's web page (see EIGENEN_SIMULATOR_ANBINDEN.md, section 4)."""
+The labels are German (Motion Watch sends its language with "lang" / Accept-Language; simulator/lang.py has the English
+ones and German names for the maps and places). "expert": shown only in Motion Watch's view «Experte»; "sub": a subgroup."""
 import os
 
 from simulator import NAME
 from simulator.config import SIM
+from simulator.lang import tr
 from simulator.scene import maps
 from simulator.scene import world as W
 
 WEATHER = [["clear", "klar"], ["cloudy", "bewölkt"], ["rain", "Regen"], ["storm", "Sturm"], ["fog", "Nebel"]]
 VISITS = [("person", "Personen", "Person", 15), ("dog", "Hunde", "Hund", 6), ("cat", "Katzen", "Katze", 6),
           ("bear", "Bären", "Bär", 3), ("horse", "Rehe", "Reh", 4), ("car", "Autos", "Auto", 6)]
+EXPERT = {"ambient_c", "want_bear", "want_horse", "spawn_bear", "spawn_horse", "hot_stone", "campfire", "quality"}
 FAULTS = [("cam_connected", "Kamera eingesteckt"), ("lens_cover", "Linse zugehalten (Sabotage)"),
           ("thermal_present", "Wärmebild eingesteckt"), ("hot_stone", "Heisser Stein (Wärmebild)"),
           ("campfire", "Lagerfeuer (Wärmebild)")]
@@ -36,17 +39,31 @@ def _set_weather(v):
                   "fog": dict(clouds=0.7, rain=0.0, fog=0.75, wind=0.05)}[v])
 
 
-def status(eng):
+def status(eng, lang="de"):
     h = W.sim_hour()
     light = W.ambient_light()
-    part = "Tag" if light > 0.5 else ("Nacht" if light < 0.1 else "Dämmerung")
+    part = tr("Tag" if light > 0.5 else ("Nacht" if light < 0.1 else "Dämmerung"), lang)
     people = sum(1 for e in eng.world.snapshot() if e.kind == "person")
     poi = eng.current_poi()
-    return (f"{int(h):02d}:{int(h * 60) % 60:02d} · {part} · {people} Person{'' if people == 1 else 'en'} unterwegs · "
-            f"{eng.world.map.label}" + (f" – {poi['name']}" if poi else "") + (" · lädt …" if eng.map_loading else ""))
+    who = (f"{people} Person{'' if people == 1 else 'en'} unterwegs" if not lang or lang == "de"
+           else f"{people} {'person' if people == 1 else 'people'} around")
+    return (f"{int(h):02d}:{int(h * 60) % 60:02d} · {part} · {who} · {tr(eng.world.map.label, lang)}"
+            + (f" – {tr(poi['name'], lang)}" if poi else "") + (" · " + tr("lädt …", lang) if eng.map_loading else ""))
 
 
-def describe(srv):
+def _local(c, lang):
+    """One control in the language of Motion Watch, with "expert" / "sub" where they belong."""
+    for k in ("label", "group", "sub"):
+        if k in c:
+            c[k] = tr(c[k], lang)
+    if "options" in c:
+        c["options"] = [[v, tr(t, lang)] for v, t in c["options"]]
+    if c["id"] in EXPERT:
+        c["expert"] = True
+    return c
+
+
+def describe(srv, lang="de"):
     eng = srv.eng
     m = eng.world.map
     ps = maps.pois(m)
@@ -67,11 +84,12 @@ def describe(srv):
         {"type": "toggle", "id": "auto", "label": "Besuch von selbst", "group": "Besuch", "value": bool(SIM["auto_spawn"])},
     ]
     for k, many, _one, hi in VISITS:
-        c.append({"type": "slider", "id": "want_" + k, "label": many + " unterwegs", "group": "Besuch", "min": 0, "max": hi,
+        c.append({"type": "slider", "id": "want_" + k, "label": many + " unterwegs", "group": "Besuch",
+                  "sub": "Personen & Autos" if k in ("person", "car") else "Tiere", "min": 0, "max": hi,
                   "step": 1, "unit": "", "value": SIM.want(k)})
     for k, _many, one, _hi in VISITS:
-        c.append({"type": "button", "id": "spawn_" + k, "label": one + " schicken", "group": "Besuch"})
-    c.append({"type": "button", "id": "clear", "label": "Alle wegschicken", "group": "Besuch"})
+        c.append({"type": "button", "id": "spawn_" + k, "label": one + " schicken", "group": "Besuch", "sub": "Jetzt schicken"})
+    c.append({"type": "button", "id": "clear", "label": "Alle wegschicken", "group": "Besuch", "sub": "Jetzt schicken"})
     for k, lab in FAULTS:
         c.append({"type": "toggle", "id": k, "label": lab, "group": "Störungen", "value": bool(SIM[k])})
     c += [{"type": "button", "id": "door_on", "label": "Tür auf", "group": "Sensoren"},
@@ -79,12 +97,13 @@ def describe(srv):
           {"type": "button", "id": "gas", "label": "Gas-Alarm", "group": "Sensoren"},
           {"type": "select", "id": "quality", "label": "Bildqualität", "group": "Bild",
            "options": [["1", "tief"], ["2", "mittel"], ["3", "hoch"], ["4", "sehr hoch"]], "value": str(SIM["quality"])}]
+    c = [_local(x, lang) for x in c]                                  # also the place names (English inside the simulator)
     return {"ok": True, "v": 1, "name": NAME,
-            "scenarios": [{"id": n, "name": d.label, "kind": "world", "deletable": bool(d.custom)} for n, d in maps.MAPS.items()],
-            "scenario": m.name, "status": status(eng), "controls": c, "upload": None}
+            "scenarios": [{"id": n, "name": tr(d.label, lang), "kind": "world", "deletable": bool(d.custom)} for n, d in maps.MAPS.items()],
+            "scenario": m.name, "status": status(eng, lang), "controls": c, "upload": None}
 
 
-def handle(srv, d):
+def handle(srv, d, lang="de"):
     """POST /control. Returns the new description or {"ok": False, "error": ...}."""
     eng = srv.eng
     a, cid, v = d.get("action", "get"), str(d.get("id", "")), d.get("value")
@@ -119,7 +138,7 @@ def handle(srv, d):
             return {"ok": False, "error": f"unbekannte Aktion: {a}"}
     except (TypeError, ValueError) as e:
         return {"ok": False, "error": f"ungültiger Wert: {e}"}
-    return describe(srv)
+    return describe(srv, lang)
 
 
 def _set(eng, cid, v):

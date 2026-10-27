@@ -68,15 +68,16 @@ def main():
 
     maps.load_custom(MAPS_DIR)
     # ---- start window: map, places, what is drawn (remembered in data/start_choices.json) ----
-    from simulator.ui import start as startwin
+    from simulator import choices as remembered        # without tkinter: --no-panel also runs on a Pi without python3-tk
     choices = os.path.join(DATA_DIR, "start_choices.json")
-    saved = startwin.load(choices)
-    startwin.apply(saved)
+    saved = remembered.load(choices)
+    remembered.apply(saved)
     map_name = a.map or saved.get("map") or "region"
     if map_name not in maps.MAPS:
         map_name = "region"
     show = (a.start_window or SIM["start_window"]) and not (a.no_start_window or a.no_panel or a.run_tests)
     if show:
+        from simulator.ui import start as startwin
         chosen = startwin.ask(choices, map_name)
         if chosen is None:
             print("[SIM] start window closed - nothing started")
@@ -108,6 +109,7 @@ def main():
     from simulator.hardware.protocol import ProtocolServer, lan_ip
     SIM["stream"] = bool(a.stream or a.run_tests)        # tests need Motion Watch: announce at once
     proto = ProtocolServer(eng, a.protocol_port, name=a.name or NAME).start()
+    bridge.use_cert_file(os.path.join(DATA_DIR, "mw_certs.json"))     # https: Motion Watch's certificate, remembered
     bridge.configure(a.mw, a.mw_password)
     bridge.start()
     ip = lan_ip()

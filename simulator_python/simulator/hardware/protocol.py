@@ -10,7 +10,9 @@
   UDP  port 8764, every 2 s     "here is a simulator" - only while «Send to Motion Watch» is on
 
 See EIGENEN_SIMULATOR_ANBINDEN.md next to this file."""
+import io
 import json
+import os
 import socket
 import threading
 import time
@@ -20,6 +22,7 @@ from http.server import ThreadingHTTPServer
 from simulator import NAME, VERSION, bridge
 from simulator.config import SIM
 from simulator.hardware import control
+from simulator.scene import sound
 from simulator.scene.world import ambient_light
 
 from simulator.hardware import motionwatch_sim_interface as msi
@@ -30,15 +33,22 @@ _peer = threading.local()
 _SERVER = {"s": None}                  # the ProtocolServer, for the request additions below
 
 
+def _lang(handler, d=None):
+    """The language Motion Watch shows: "lang" in POST /control, else the Accept-Language header."""
+    v = (d or {}).get("lang") or handler.headers.get("Accept-Language") or ""
+    return str(v).split(",")[0].split(";")[0].split("-")[0].strip().lower()
+
+
 def _extend(base):
-    """The protocol file's request handler plus what Motion Watch 2.93 asks for: /control and ?fps= on the video."""
+    """The protocol file's request handler plus what Motion Watch 2.93+ asks for: /control, ?fps= on the video, and the
+    fields of POST /state that the protocol file drops (mw_scheme, mw_port, det)."""
     class Handler(base):
         def do_GET(self):
             srv = _SERVER["s"]
             path, _, q = self.path.partition("?")
             args = dict(x.split("=", 1) for x in q.split("&") if "=" in x)
             if srv is not None and path == "/control":
-                return self._json(control.describe(srv))
+                return self._json(control.describe(srv, _lang(self)))
             parts = path.strip("/").split("/")
             if (srv is not None and "fps" in args and len(parts) == 3 and parts[0] == "cam" and parts[1].isdigit()
                     and parts[2] == "video.mjpg" and int(parts[1]) < len(srv.info.cameras)):
@@ -51,13 +61,24 @@ def _extend(base):
 
         def do_POST(self):
             srv = _SERVER["s"]
-            if srv is not None and self.path.split("?")[0] == "/control":
+            path = self.path.split("?")[0]
+            if srv is not None and path == "/control":
                 n = int(self.headers.get("Content-Length") or 0)
                 try:
                     d = json.loads(self.rfile.read(n) or b"{}")
                 except ValueError:
                     return self._json({"ok": False, "error": "kein gültiges JSON"})
-                return self._json(control.handle(srv, d if isinstance(d, dict) else {}))
+                d = d if isinstance(d, dict) else {}
+                return self._json(control.handle(srv, d, _lang(self, d)))
+            if path == "/state":
+                # MWState.from_dict drops fields it does not know: read the raw JSON first, then hand the same bytes on
+                body = self.rfile.read(int(self.headers.get("Content-Length") or 0))
+                try:
+                    raw = json.loads(body or b"{}")
+                except ValueError:
+                    raw = None
+                _peer.raw = raw if isinstance(raw, dict) else {}
+                self.rfile = io.BytesIO(body)
             return super().do_POST()
     return Handler
 
@@ -69,7 +90,7 @@ class _Http(ThreadingHTTPServer):
         super().__init__(addr, _extend(handler), bind_and_activate)
 
     def process_request_thread(self, request, client_address):
-        _peer.ip = client_address[0]
+        _peer.ip = client_address[0]; _peer.raw = {}
         super().process_request_thread(request, client_address)
 
 
@@ -78,9 +99,11 @@ msi.ThreadingHTTPServer = _Http
 
 @dataclass
 class Reply(SimReply):
-    """Answer to POST /state with the fields Motion Watch 2.93 reads as well."""
+    """Answer to POST /state with the fields Motion Watch 2.93+ reads as well."""
     humidity: float = 60.0
     weather: str = "clear"
+    pid: int = 0                       # this process: Motion Watch shows the simulator's CPU share if it runs on the same computer
+    sound_db: float = 30.0             # how loud the world is at the camera (noise alarm, clap switch test)
 
 
 def lan_ip():
@@ -107,6 +130,7 @@ class ProtocolServer(SimServer):
         self.error = ""
         self.announced = 0                 # UDP announcements sent
         self.announce_error = ""
+        self.sound_db = 0.0                # the last level sent to Motion Watch (shown in the window)
         self._pir = False
         threading.Thread(target=self._sensor_loop, daemon=True, name="sim-events").start()
         threading.Thread(target=self._announce_loop, daemon=True, name="sim-announce").start()
@@ -167,14 +191,20 @@ class ProtocolServer(SimServer):
 
     def on_state(self, state):
         self.posts += 1
-        bridge.note_client(getattr(_peer, "ip", ""))
+        bridge.note_client(getattr(_peer, "ip", ""), getattr(_peer, "raw", None))
         self.eng.protocol_state(state)
 
     def world(self, t):
         humid = min(100.0, 55.0 + 40.0 * max(float(SIM["rain"]), float(SIM["fog"])) + 10.0 * float(SIM["clouds"]))
+        try:
+            db = sound.level_db(self.eng.world, time.time())
+        except Exception:
+            db = 30.0
+        self.sound_db = db
         return Reply(sim_time=t, dark=ambient_light() < 0.15, ambient_c=float(SIM["ambient_c"]),
                      pressure_hpa=1013.0 - 25.0 * float(SIM["wind"]) ** 2, wind_kmh=round(float(SIM["wind"]) * 90.0, 1),
-                     last_event=self.events[-1].id if self.events else 0, humidity=round(humid), weather=control.weather())
+                     last_event=self.events[-1].id if self.events else 0, humidity=round(humid), weather=control.weather(),
+                     pid=os.getpid(), sound_db=db)
 
     # ---- sensor events ----
     def _sensor_loop(self):

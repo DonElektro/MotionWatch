@@ -1,47 +1,13 @@
 """The start window: before the simulation starts, choose the map, which places exist (Region map) and what is drawn.
 Everything can be changed later in the World tab. The choices are remembered in data/start_choices.json."""
-import json
-import os
 import tkinter as tk
 import types
 from tkinter import ttk
 
+from simulator.choices import KEYS, apply, load, save  # noqa: F401  (the remembering part works without tkinter)
 from simulator.config import SIM
 from simulator.scene import maps
 from simulator.scene.region import ORDER, TILES, layout
-
-KEYS = ("map", "tiles", "draw_trees", "draw_buildings", "draw_small", "draw_backdrop", "shadows", "bg_traffic", "quality", "time_mode",
-        "hour", "people", "start_window")
-
-
-def load(path):
-    try:
-        with open(path, encoding="utf-8") as f:
-            d = json.load(f)
-        return {k: d[k] for k in KEYS if k in d}
-    except (OSError, ValueError):
-        return {}
-
-
-def save(path, d):
-    try:
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(d, f, indent=1)
-    except OSError:
-        pass
-
-
-def apply(d):
-    """Put saved / chosen values into the simulator settings."""
-    for k in ("draw_trees", "draw_buildings", "draw_small", "draw_backdrop", "shadows", "bg_traffic", "quality", "time_mode", "hour",
-              "start_window"):
-        if k in d:
-            SIM[k] = d[k]
-    if "tiles" in d:
-        SIM["tiles"] = list(d["tiles"])
-    if "people" in d:
-        SIM.want("person", int(d["people"]))
 
 
 def ask(path, default_map):

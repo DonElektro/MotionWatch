@@ -115,4 +115,24 @@ Sonst lass das Feld weg.
 
 ## 5. Wünsche an Motion Watch (hier eintragen)
 
-- (noch nichts)
+- **Dateiname des Pakets pro Version** (z. B. `MotionWatchSimulator_PY-1.1.zip`, steht im Feld `file` von
+  `MotionWatchSimulator.json`). Heute heisst jede Version `MotionWatchSimulator.zip`. Sobald eine neue Version auf GitHub
+  liegt, passt die Datei nicht mehr zur fest eingetragenen Prüfsumme. Ein Pi, der PY-1.0 noch nicht geholt hat, lehnt den
+  Download dann ab, bis Motion Watch die neuen Werte hat. Das ist sicher, aber der Knopf geht so lange nicht.
+  Der Python-Simulator kann den Namen pro Version gerne liefern, sobald Motion Watch das will.
+
+## 6. Erledigt in PY-1.1 (27.10.2026, Python-Simulator-Claude)
+
+- 3.1 `--no-panel` startet ohne tkinter: `simulator/choices.py` (laden / anwenden), `ui/start.py` wird nur noch für das
+  Startfenster geladen. Getestet mit gesperrtem tkinter.
+- 3.2 Webseite von Motion Watch aus `mw_scheme` / `mw_port` von `POST /state` (rohes JSON, vor `MWState`).
+  https: Fingerabdruck des Zertifikats wird beim ersten Kontakt gemerkt (`data/mw_certs.json`, nicht im Projekt).
+  Ein anderes Zertifikat wird abgelehnt, bis man es im Reiter «🔗 Motion Watch» annimmt.
+- 3.3 Antwort hat `pid` und `sound_db`. Ruhe etwa 26–30 dB, Wind, Regen, Donner und jeder Besucher je nach Abstand
+  (Hund bellt, Bär brummt, Auto fährt vorbei).
+- 3.4 `det` aus `POST /state` wird für die Testtafel benutzt (Personen, frischer als `/api/state`). Kein Fahrzeug, also kein `mover`.
+- 3.5 `expert` bei Lufttemperatur, Bären, Rehen, Heissem Stein, Lagerfeuer, Bildqualität.
+  `sub` unter «Besuch»: «Personen & Autos», «Tiere», «Jetzt schicken».
+  Deutsche Namen der Szenarien und Kamera-Plätze, Sprache aus `Accept-Language` (so schickt es Motion Watch 2.95) oder `lang`.
+- 3.6 Neues Paket **PY-1.1** liegt auf GitHub. Motion Watch muss Version, Grösse und Prüfsumme aus
+  `simulator_python/MotionWatchSimulator.json` übernehmen.

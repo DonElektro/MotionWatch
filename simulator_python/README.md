@@ -7,7 +7,7 @@ sensors, people, animals, cars, planes, weather, day and night. Test Motion Watc
 and talks to the simulator over the network (simulator protocol 1, port **8767** – the 3D simulator has 8765). The rules
 for every Motion Watch simulator: `simulator/hardware/EIGENEN_SIMULATOR_ANBINDEN.md`.
 
-Name in the network: **«Python-Weltsimulator 1.0»**, version **PY-1.0**.
+Name in the network: **«Python-Weltsimulator 1.1»**, version **PY-1.1**.
 
 | Motion Watch … | … the simulator |
 |---|---|
@@ -15,9 +15,9 @@ Name in the network: **«Python-Weltsimulator 1.0»**, version **PY-1.0**.
 | reads the camera picture `http://<PC>:8767/cam/0/video.mjpg` (`?fps=6` = fewer pictures; cam 1 = a fixed camera) | renders what the head camera sees right now |
 | reads the thermal picture `/thermal.bin` | renders an 80 × 62 picture in °C: people ~30–34 °C, cool ground, cold sky |
 | reads sensor events `/events` | sends «PIR» when somebody comes near the box, door / gas from the buttons |
-| sends its servo, light and relay positions `POST /state` | turns the head – only as far and as fast as real servos (120 °/s) – and switches the lights; a siren makes animals run away |
-| shows the simulator's controls on its web page (`GET` / `POST /control`) | scenario (map), place, time, weather, wind, visitors, faults, door / gas |
-| shows what it sees on its web page `/api/state` | reads it for the scoreboard and the automatic tests |
+| sends its servo, light and relay positions `POST /state` | turns the head – only as far and as fast as real servos (120 °/s) – and switches the lights; a siren makes animals run away. The answer tells the weather, humidity, how loud the world is at the camera (`sound_db`: ~30 dB quiet, 45 talking, 60–75 car / barking dog / bear / thunder – for the noise alarm) and the simulator's process number (`pid`: CPU share when both run on one computer) |
+| shows the simulator's controls on its web page (`GET` / `POST /control`) | scenario (map), place, time, weather, wind, visitors, faults, door / gas – in Motion Watch's language (German names of maps and places), rarely used ones only in the view «Experte» |
+| shows what it sees on its web page `/api/state` | reads it for the scoreboard and the automatic tests – at the address Motion Watch sends with `POST /state` (http or https, its port). https: the certificate is remembered at the first contact (`data/mw_certs.json`), a changed one is refused until you accept it in tab 🔗 Motion Watch |
 
 ## Start
 
@@ -29,7 +29,7 @@ python motion_sim.py
 ```
 
 3. Switch **📡 Send to Motion Watch** on (top right) – the simulator starts silent.
-4. In Motion Watch: tab **«Simulator» → «Simulatoren im Netz»** → «Python-Weltsimulator 1.0» → **«Verwenden»** →
+4. In Motion Watch: tab **«Simulator» → «Simulatoren im Netz»** → «Python-Weltsimulator 1.1» → **«Verwenden»** →
    **«Simulation einschalten»**. The Windows firewall must allow port 8767 («Private Netzwerke»).
    The simulator finds Motion Watch's web page by itself (the device that sends its state, port 5000), or enter it in
    tab **🔗 Motion Watch**.
@@ -85,6 +85,8 @@ python motion_sim.py --no-panel --run-tests all --report results.txt --exit-afte
 ```bash
 python motion_sim.py --stream
 ```
+
+Without a screen (e.g. on a Raspberry Pi, also without `python3-tk`): `python3 motion_sim.py --no-panel --stream`.
 
 `--stream` announces to Motion Watch at once. `--protocol-port` changes port 8767, `--name` the name Motion Watch shows
 (must be unique). `--run-tests` announces at once, waits until Motion Watch is connected, then runs the tests.
