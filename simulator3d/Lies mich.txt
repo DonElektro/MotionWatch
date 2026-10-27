@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-3.4 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-3.5 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -66,6 +66,10 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
     Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
   * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
+- Ab 3D-3.5: Bedienfeld aufgeräumt: jede Gruppe hat ein Symbol, die Gruppen stehen in einer festen Reihenfolge (Szene,
+  Wetter, Besuch, Kamerabild, Sensoren, Spiel, Wildbeobachtung, Testlauf, System), darin aufklappbare Teile (z. B. Besuch →
+  Besucher hinsetzen / schicken / von selbst / in bestimmten Szenen / Verhalten; System → Grafik / Start mit dem PC / Updates).
+  Die Seite von Motion Watch zeigt dieselbe Ordnung (mit Symbolen und Zwischentiteln).
 - Ab 3D-3.4: Echter Ort von der Karte (nur Schweiz):
   * Taste K oder «Werkzeuge → Karte»: Landeskarte / Luftbild von swisstopo, ziehen = verschieben, Mausrad = zoomen,
     Suchfeld (z. B. «Zermatt» oder eine Adresse). Klick = dort steht Motion Watch. «Diesen Ort laden».

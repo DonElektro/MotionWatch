@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-3.4** · passende Motion-Watch-Version **2.93.11**
+Stand: 26.10.2026 · Simulator-Version **3D-3.5** · passende Motion-Watch-Version **2.93.12**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,11 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-3.5 – Bedienfeld:** `GROUPS` (Gruppe, gezeichnetes Symbol `UI.group_icon`, Emoji fürs Web, Teile) und `PLACE` (id → Gruppe,
+Teil) in main.gd; `_order_controls()` sortiert `controls` und setzt `extra.sub` / `extra.icon` (extra wird kopiert – mehrere
+Controls teilen sich `ex`). Fenster: `UI.fold_card(..., icon)`, `UI.sub_fold()`, `sub_bodies`, `ui_items[4]` = Teil. Motion Watch
+(ab 2.93.12) zeigt `icon` vor dem Gruppennamen und `sub` als Zwischentitel. Test-Aktion `ui_scroll` (fold, simple, y).
+
 **3D-3.4 – Ort von der Karte:** `geo.gd` (Download mit Cache `user://orte/cache/<md5>.bin`, Kacheln WMTS 3857 swisstopo,
 Terrarium-PNG, Overpass `out geom`, swisstopo profile.json 81 × 81 Punkte = swissALTI3D; lokale Koordinaten: Mercator × cos(lat),
 Norden = -z; `height()`, Gebäude extrudiert mit Satteldach über dem kleinsten Rechteck, Fassaden-Shader `facade.gdshader`,

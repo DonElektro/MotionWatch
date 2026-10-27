@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_93_11.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_93_12.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -527,6 +527,7 @@ Features
     shadow edges.
   * 2.93.11: 3D simulator 3D-3.4: real place from the map (Switzerland: swisstopo terrain and aerial picture, OpenStreetMap
     buildings), sturdier update.
+  * 2.93.12: Simulator control: group symbols and sub-headings (3D simulator 3D-3.5 with a tidied panel).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -535,10 +536,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_93_11.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_93_12.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_93_11.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_93_11.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_93_12.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_93_12.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -555,7 +556,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.93.11"
+APP_VERSION = "2.93.12"
 
 
 def default_data_dir():
@@ -12353,8 +12354,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.4", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30476234,
-         "sha256": "986efc5d28994e3a77d61484624dcb339a0d6ef6fc14a9b89422f0911ac7f5e9"}
+SIM3D = {"version": "3D-3.5", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30485230,
+         "sha256": "b427e89c84fa9bbb418435907312f99268cc18cd8fa8e139f5eea0db3cde2ca3"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
@@ -13945,7 +13946,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_93_11.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_93_12.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -18573,9 +18574,10 @@ function buildCtl(r) {
   Object.keys(byG).forEach((g, gi) => {
     const det = document.createElement("details"); det.className = "cg"; det.dataset.g = g; det.open = open.length ? open.includes(g) : gi === 0;
     det.addEventListener("toggle", () => { try { localStorage.setItem("mw-sim-open", JSON.stringify([...document.querySelectorAll(".cg[open]")].map(x => x.dataset.g))); } catch (e) {} });
-    det.appendChild(el("summary", "", g || t("Controls")));
-    const body = el("div", "cgb");
+    det.appendChild(el("summary", "", ((byG[g][0] && byG[g][0].icon) ? byG[g][0].icon + " " : "") + (g || t("Controls"))));
+    const body = el("div", "cgb"); let lastSub = "";
     byG[g].forEach(c => {
+      if ((c.sub || "") !== lastSub) { lastSub = c.sub || ""; if (lastSub) { const h = el("div", "mut", lastSub); h.style.cssText = "flex:1 1 100%;width:100%;grid-column:1/-1;font-weight:600;margin:10px 0 2px;border-top:1px solid rgba(128,128,128,.25);padding-top:8px"; body.appendChild(h); } }
       if (c.type === "button") { const x = el("button", "sec", c.label); x.type = "button"; x.onclick = () => ctl({ctl: "press", id: c.id}); body.appendChild(x); return; }
       let row;
       if (c.type === "toggle") {
@@ -18601,7 +18603,7 @@ function buildCtl(r) {
 function showCtl(r) {
   if (!r || !r.ok) { $("#s-cst").textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
   $("#s-cname").textContent = r.name ? "· " + r.name : "";
-  const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options])]);
+  const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options, c.sub])]);
   if (sig !== CS) { CS = sig; buildCtl(r); }
   document.querySelectorAll("#s-groups [data-cid]").forEach(row => {
     const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
@@ -22665,9 +22667,10 @@ function simExtras(d) {
     (r.controls || []).forEach(c => { const g = c.group || ""; (byG[g] = byG[g] || []).push(c); });
     Object.keys(byG).forEach((g, gi) => {
       const det = document.createElement("details"); det.className = "simgrp"; det.dataset.g = g; det.style.marginTop = "4px";
-      const sm = document.createElement("summary"); sm.textContent = g || t("Controls"); sm.style.cursor = "pointer"; sm.style.padding = "4px 0"; det.appendChild(sm);
-      const body = el("div", ""); body.style.display = "flex"; body.style.flexWrap = "wrap"; body.style.gap = "6px"; body.style.padding = "4px 0 8px";
+      const sm = document.createElement("summary"); sm.textContent = ((byG[g][0] && byG[g][0].icon) ? byG[g][0].icon + " " : "") + (g || t("Controls")); sm.style.cursor = "pointer"; sm.style.padding = "4px 0"; det.appendChild(sm);
+      const body = el("div", ""); body.style.display = "flex"; body.style.flexWrap = "wrap"; body.style.gap = "6px"; body.style.padding = "4px 0 8px"; let lastSub = "";
       byG[g].forEach(c => {
+        if ((c.sub || "") !== lastSub) { lastSub = c.sub || ""; if (lastSub) { const h = el("div", "mut", lastSub); h.style.cssText = "flex:1 1 100%;font-weight:600;margin-top:6px;border-top:1px solid rgba(128,128,128,.25);padding-top:6px"; body.appendChild(h); } }
         if (c.type === "button") { const x = vk(c.label, () => ctl({ctl: "press", id: c.id})); x.style.flex = "1 1 30%"; body.appendChild(x); return; }
         const row = el("div", ""); row.style.flex = "1 1 100%"; row.dataset.cid = c.id;
         if (c.type === "toggle") {
@@ -22696,7 +22699,7 @@ function simExtras(d) {
   const show = (r) => {
     if (!r || !r.ok) { vst.textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
     hd.textContent = "🎮 " + t("Simulator control") + (r.name ? " · " + r.name : "");
-    const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options]), r.upload ? r.upload.accept : null]);
+    const sig = JSON.stringify([(r.controls || []).map(c => [c.id, c.type, c.label, c.group, c.options, c.sub]), r.upload ? r.upload.accept : null]);
     if (sig !== SIG) { SIG = sig; build(r); }
     groups.querySelectorAll("[data-cid]").forEach(row => {
       const c = (r.controls || []).find(x => x.id === row.dataset.cid); const inp = row.querySelector(".simv"); if (!c || !inp || inp === document.activeElement) return;
@@ -27693,7 +27696,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.93.11")
+        self.root.title("Motion Watch 2.93.12")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -27983,7 +27986,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.93.11 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.93.12 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -34968,7 +34971,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.93.11 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.93.12 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:

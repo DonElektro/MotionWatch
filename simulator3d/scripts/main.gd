@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.4"
+const VERSION := "3D-3.5"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -264,6 +264,7 @@ func _ready() -> void:
 	testrun.main = self
 	add_child(testrun)
 	_register_controls()
+	_order_controls()
 	mwpc = Mwpc.new()
 	mwpc.main = self
 	add_child(mwpc)
@@ -1627,6 +1628,63 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 	controls.append({"type": type, "id": id, "label": label, "group": group, "get": getter, "set": st, "extra": extra})
 
 
+# ---- order of the settings: groups with a symbol, parts inside (from 3D-3.5) ------------------------------------------------
+# [group, symbol (window: drawn; page of Motion Watch: emoji), parts in their order]
+const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
+		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
+		["Besuch", "person", "🚶", ["Besucher hinsetzen", "Besucher schicken", "Von selbst", "In bestimmten Szenen", "Verhalten"]],
+		["Kamerabild", "lens", "👁", ["", "Feineinstellungen"]],
+		["Sensoren", "bell", "🔔", [""]],
+		["Spiel", "pad", "🎮", ["Runde", "Regeln", "Anzeige"]],
+		["Wildbeobachtung", "target", "🎯", [""]],
+		["Testlauf", "check", "✅", [""]],
+		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates"]]]
+# id -> [group, part]; not listed: the group given in add_control, no part
+const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort von der Karte"], "speed": ["Szene", "Zeit"], "moon": ["Szene", "Zeit"],
+		"cam1_yaw": ["Kamerabild", "Feineinstellungen"], "humidity": ["Wetter", "Mehr Wetter"], "pressure": ["Wetter", "Mehr Wetter"],
+		"storm": ["Wetter", "Mehr Wetter"], "cloud_shadows": ["Wetter", "Mehr Wetter"], "gusts": ["Wetter", "Natur und Wind"],
+		"world_cloth": ["Wetter", "Natur und Wind"], "world_smoke": ["Wetter", "Natur und Wind"], "world_fireflies": ["Wetter", "Natur und Wind"],
+		"meadow": ["Wetter", "Natur und Wind"], "car": ["Besuch", "Besucher schicken"], "thief": ["Besuch", "Besucher schicken"],
+		"dogwalk": ["Besuch", "Besucher schicken"], "herd": ["Besuch", "Besucher schicken"], "clear": ["Besuch", "Besucher schicken"],
+		"car_park": ["Besuch", "In bestimmten Szenen"], "bench": ["Besuch", "In bestimmten Szenen"], "feed": ["Besuch", "In bestimmten Szenen"],
+		"garden_person": ["Besuch", "In bestimmten Szenen"], "auto": ["Besuch", "Von selbst"], "mix": ["Besuch", "Von selbst"],
+		"visit_rate": ["Besuch", "Von selbst"], "max_visitors": ["Besuch", "Von selbst"], "visitor_speed": ["Besuch", "Verhalten"],
+		"lamp_share": ["Besuch", "Verhalten"], "look_at_light": ["Besuch", "Verhalten"], "flee_light": ["Besuch", "Verhalten"],
+		"flee_sound": ["Besuch", "Verhalten"], "avoid_on": ["Besuch", "Verhalten"], "lens_vignette": ["Kamerabild", "Feineinstellungen"],
+		"sound_on": ["Kamerabild", "Feineinstellungen"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", "Runde"],
+		"game_stop": ["Spiel", "Runde"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
+		"game_level": ["Spiel", "Regeln"], "game_lives": ["Spiel", "Regeln"], "game_items": ["Spiel", "Regeln"], "game_teams": ["Spiel", "Regeln"],
+		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_noise": ["Spiel", "Regeln"],
+		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"],
+		"quality": ["System", "Grafik"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
+		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
+		"autologon": ["System", "Start mit dem PC"], "auto_update": ["System", "Updates"], "update_now": ["System", "Updates"]}
+
+
+func _order_controls() -> void:
+	"""every setting into its group and part, sorted like GROUPS (the window and the page of Motion Watch show this order)"""
+	var gi := {}
+	for i in range(GROUPS.size()):
+		gi[GROUPS[i][0]] = i
+	var keyed := []
+	for i in range(controls.size()):
+		var c: Dictionary = controls[i]
+		c.extra = c.extra.duplicate()                     # several controls share one dictionary ({"expert": true})
+		var pl = PLACE.get(c.id, null)
+		if pl == null and str(c.id).begins_with("spawn_"):
+			pl = ["Besuch", "Besucher schicken"]
+		if pl != null:
+			c.group = pl[0]
+			c.extra["sub"] = pl[1]
+		var g: int = gi.get(c.group, GROUPS.size())
+		var sub := str(c.extra.get("sub", ""))
+		c.extra["icon"] = GROUPS[g][2] if g < GROUPS.size() else ""
+		var si: int = (GROUPS[g][3] as Array).find(sub) if g < GROUPS.size() else 0
+		keyed.append([g * 1000 + max(si, 0) * 100, i, c])
+	keyed.sort_custom(func(a, b): return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
+	controls = keyed.map(func(k): return k[2])
+
+
 func _register_controls() -> void:
 	"""every setting of the simulator - for the window and for the web page of Motion Watch (CONTROL protocol).
 	extra "expert": true = only shown with «Experte» in the window (the web page always shows everything)."""
@@ -1829,6 +1887,14 @@ func control(d: Dictionary) -> Dictionary:
 			return {"ok": false, "error": "no such player"}
 		p2["actor"].position = free_spot(Vector3(float(d.get("x", 0.0)), 0, float(d.get("z", 0.0))), 0.4, true)
 		return {"ok": true}
+	elif a == "ui_scroll":                             # for tests: fold the cards (open / close / groups) and scroll the panel
+		if d.has("fold"):
+			_fold_all(str(d["fold"]))
+		if d.has("simple"):
+			set_simple(bool(d["simple"]))
+		show_panel(true)
+		(ui_box.get_parent() as ScrollContainer).set_deferred("scroll_vertical", int(d.get("y", 0)))
+		return {"ok": true, "max": (ui_box.get_parent() as ScrollContainer).get_v_scroll_bar().max_value}
 	elif a == "geo":                                   # for tests: the place (loading, what was built)
 		return {"ok": true, "busy": geo.busy, "loaded": geo.loaded, "info": geo.info, "counts": geo.counts, "terrain": terrain,
 				"h0": geo.h0, "src": geo.dem_source, "note": geo_note, "y": ground_y(float(d.get("x", 0.0)), float(d.get("z", 0.0))),
@@ -2014,7 +2080,14 @@ func _build_ui() -> void:
 	# connection to Motion Watch
 	var cn := UI.card(box_)
 	top_cards.append(cn.get_parent())
-	cn.add_child(UI.heading("Verbindung"))
+	var cnh := HBoxContainer.new()
+	cnh.add_theme_constant_override("separation", 8)
+	cnh.add_child(UI.group_icon("link"))
+	var cnl := UI.heading("Verbindung")
+	cnl.add_theme_font_size_override("font_size", 12)
+	cnl.add_theme_color_override("font_color", UI.TXT)
+	cnh.add_child(cnl)
+	cn.add_child(cnh)
 	stream_cb = CheckButton.new()
 	stream_cb.text = "An Motion Watch senden (Port %d)" % stream_port
 	stream_cb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -2028,7 +2101,7 @@ func _build_ui() -> void:
 	status_label.add_theme_font_size_override("font_size", 13)
 	cn.add_child(status_label)
 	# camera pictures
-	var cm := UI.fold_card(box_, "Kameras", true)
+	var cm := UI.fold_card(box_, "Kameras", true, "camera")
 	fold_bodies.append(cm)
 	top_cards.append(cm.get_meta("card"))
 	prev0 = TextureRect.new()
@@ -2052,22 +2125,10 @@ func _build_ui() -> void:
 	prevt.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	prevt.custom_minimum_size = Vector2(146, 112)
 	row.add_child(prevt)
-	# visitors to put down: small pictures - click = choose (then click into the world), or drag them into the world
-	var vs := UI.fold_card(box_, "Besucher hinsetzen", true)
-	fold_bodies.append(vs)
-	top_cards.append(vs.get_meta("card"))
-	vs.add_child(UI.small("Bild in die Welt ziehen – oder anklicken und dann in die Welt klicken."))
-	var grid := GridContainer.new()
-	grid.columns = 4
-	grid.add_theme_constant_override("h_separation", 6)
-	grid.add_theme_constant_override("v_separation", 6)
-	vs.add_child(grid)
-	for k in VISITOR_LIST:
-		grid.add_child(_palette_item(k[0], k[1]))
-	# tools: Motion Watch on this PC, phone, updates
-	var tl := UI.card(box_)
-	top_cards.append(tl.get_parent())
-	tl.add_child(UI.heading("Werkzeuge"))
+	# tools: Motion Watch on this PC, map, phone
+	var tl := UI.fold_card(box_, "Werkzeuge", true, "tools")
+	fold_bodies.append(tl)
+	top_cards.append(tl.get_meta("card"))
 	mwpc_btn = Button.new()
 	mwpc_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	mwpc_btn.pressed.connect(func(): mwpc.toggle())
@@ -2085,24 +2146,58 @@ func _build_ui() -> void:
 	pv.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	pv.pressed.connect(_toggle_phone)
 	tl.add_child(pv)
+	# the settings of the simulator: one card per group (with a symbol), parts inside (the same list the page of Motion
+	# Watch shows, in the same order - GROUPS / PLACE)
+	var groups := {}
+	var subs := {}
+	for c in controls:
+		if not groups.has(c.group):
+			var ic := ""
+			for g in GROUPS:
+				if g[0] == c.group:
+					ic = g[1]
+			groups[c.group] = UI.fold_card(box_, c.group, c.group in ["Szene", "Besuch"], ic)
+			fold_bodies.append(groups[c.group])
+			setting_bodies.append(groups[c.group])
+			if c.group == "Besuch":                       # first part: the pictures of the visitors
+				var vs := UI.sub_fold(groups[c.group], "Besucher hinsetzen", true)
+				vs.set_meta("always", true)
+				sub_bodies.append(vs)
+				subs["Besuch/Besucher hinsetzen"] = vs
+				vs.add_child(UI.small("Bild in die Welt ziehen – oder anklicken und dann in die Welt klicken."))
+				var grid := GridContainer.new()
+				grid.columns = 4
+				grid.add_theme_constant_override("h_separation", 6)
+				grid.add_theme_constant_override("v_separation", 6)
+				vs.add_child(grid)
+				for k in VISITOR_LIST:
+					grid.add_child(_palette_item(k[0], k[1]))
+		var card_body: VBoxContainer = groups[c.group]
+		var target: VBoxContainer = card_body
+		var sub := str(c.extra.get("sub", ""))
+		if sub != "":
+			var key: String = c.group + "/" + sub
+			if not subs.has(key):
+				subs[key] = UI.sub_fold(card_body, sub, sub in ["Besucher schicken", "Runde"])
+				sub_bodies.append(subs[key])
+			target = subs[key]
+		var n0 := ui_items.size()
+		_ui_control(target, c)
+		for i in range(n0, ui_items.size()):
+			ui_items[i][3] = card_body
+			ui_items[i].append(target)
 	update_btn = Button.new()
 	update_btn.text = "Nach Updates suchen (jetzt %s)" % VERSION
 	update_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	update_btn.pressed.connect(check_updates)
-	tl.add_child(update_btn)
-	# the settings of the simulator, one card per group (the same list the web page of Motion Watch shows)
-	var groups := {}
-	for c in controls:
-		if not groups.has(c.group):
-			groups[c.group] = UI.fold_card(box_, c.group, c.group in ["Szene", "Besuch"])
-			fold_bodies.append(groups[c.group])
-			setting_bodies.append(groups[c.group])
-		_ui_control(groups[c.group], c)
+	(subs.get("System/Updates", tl) as Control).add_child(update_btn)
 	if groups.has("Testlauf"):
 		testrun.add_info(groups["Testlauf"], UI)      # progress and result of the test run
-	if groups.has("Spiel"):
-		game.add_info(groups["Spiel"], UI)            # address, QR code and players of the game
-	var keys := UI.fold_card(box_, "Tasten", false)
+	if subs.has("Spiel/Runde"):
+		game.add_info(subs["Spiel/Runde"], UI)        # address, QR code and players of the game
+	elif groups.has("Spiel"):
+		game.add_info(groups["Spiel"], UI)
+	var keys := UI.fold_card(box_, "Tasten", false, "keys")
 	fold_bodies.append(keys)
 	info_label = UI.small("Maus rechts gedrückt: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienfeld aus / ein · P: Handy / Tablet · K: Karte (Ort wählen) · G: Gewehr ein / aus (Linksklick = Schuss)")
 	keys.add_child(info_label)
@@ -2128,7 +2223,8 @@ var fold_bodies: Array = []           # every card that opens / closes
 var setting_bodies: Array = []        # the cards of the settings groups
 var top_cards: Array = []             # connection, cameras, visitors, tools (hidden while searching)
 var expert_cards: Array = []
-var ui_items: Array = []              # [widget, label, expert, body] of every setting
+var ui_items: Array = []              # [widget, label, expert, card body, part body] of every setting
+var sub_bodies: Array = []            # the parts inside the cards (3D-3.5)
 
 
 func show_panel(on: bool) -> void:
@@ -2140,6 +2236,9 @@ func _fold_all(how: String) -> void:
 	for b in fold_bodies:
 		var open: bool = how == "open" or (how == "groups" and not b in setting_bodies and b.get_meta("title") == "Kameras")
 		UI.set_open(b, open)
+	if how != "groups":
+		for sb in sub_bodies:
+			UI.set_sub_open(sb, how == "open")
 
 
 func _search(q: String) -> void:
@@ -2155,6 +2254,8 @@ func _search(q: String) -> void:
 		if q != "" and show_it:
 			hit_bodies[it[3]] = true
 			any = true
+			if it.size() > 4 and it[4] != it[3]:
+				UI.set_sub_open(it[4], true)
 	for b in setting_bodies:
 		b.get_meta("card").visible = q == "" or hit_bodies.has(b)
 		if q != "":
@@ -2180,6 +2281,12 @@ func _apply_simple() -> void:
 			counts[it[3]] = true
 	for b in setting_bodies:
 		b.get_meta("card").visible = counts.has(b)
+	var sub_counts := {}
+	for it in ui_items:
+		if it.size() > 4 and it[0].visible:
+			sub_counts[it[4]] = true
+	for sb in sub_bodies:
+		sb.get_meta("wrap").visible = sub_counts.has(sb) or sb.has_meta("always")
 	for c in expert_cards:
 		c.visible = not ui_simple
 	if simple_note != null:
@@ -2320,7 +2427,8 @@ func run_update(automatic: bool, by_hand: bool) -> void:
 	if update_busy:
 		return
 	update_busy = true
-	update_btn.disabled = true
+	if update_btn != null:
+		update_btn.disabled = true
 	update_info = "suche …"
 	var up = Updater.new()
 	up.manual = by_hand
@@ -2331,7 +2439,8 @@ func run_update(automatic: bool, by_hand: bool) -> void:
 	update_info = up.result
 	up.queue_free()
 	update_busy = false
-	update_btn.disabled = false
+	if update_btn != null:
+		update_btn.disabled = false
 	_sync_update_ui()
 
 

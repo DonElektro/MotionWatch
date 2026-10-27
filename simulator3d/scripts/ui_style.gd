@@ -128,8 +128,9 @@ static func card(parent: Control) -> VBoxContainer:
 	return v
 
 
-static func fold_card(parent: Control, title: String, open: bool) -> VBoxContainer:
-	"""a card whose heading opens / closes it (▸ / ▾ on the right, green when open - as on the page)"""
+static func fold_card(parent: Control, title: String, open: bool, icon := "") -> VBoxContainer:
+	"""a card whose heading opens / closes it (▸ / ▾ on the right, green when open - as on the page); from 3D-3.5 with a
+	drawn symbol in front of the name"""
 	var v := card(parent)
 	var hdr := Button.new()
 	hdr.flat = true
@@ -143,9 +144,16 @@ static func fold_card(parent: Control, title: String, open: bool) -> VBoxContain
 	row.set_anchors_preset(Control.PRESET_FULL_RECT)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hdr.add_child(row)
+	if icon != "":
+		row.add_theme_constant_override("separation", 8)
+		row.add_child(group_icon(icon))
 	var h := heading(title)
 	h.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if icon != "":
+		h.add_theme_font_size_override("font_size", 12)
+		h.add_theme_color_override("font_color", TXT)
+		h.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(h)
 	var arrow := Label.new()
 	arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -165,6 +173,145 @@ static func fold_card(parent: Control, title: String, open: bool) -> VBoxContain
 	body.set_meta("paint", paint)
 	body.set_meta("title", title)
 	return body
+
+
+static func sub_fold(parent: Control, title: String, open: bool) -> VBoxContainer:
+	"""a part inside a card (3D-3.5): a thin line, the name with ▸ / ▾, the settings a bit indented"""
+	var wrap := VBoxContainer.new()
+	wrap.add_theme_constant_override("separation", 4)
+	parent.add_child(wrap)
+	var sep := ColorRect.new()
+	sep.color = LINE
+	sep.custom_minimum_size = Vector2(0, 1)
+	wrap.add_child(sep)
+	var hdr := Button.new()
+	hdr.flat = true
+	hdr.focus_mode = Control.FOCUS_NONE
+	hdr.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	hdr.add_theme_font_size_override("font_size", 13)
+	hdr.add_theme_color_override("font_color", MUT)
+	hdr.add_theme_color_override("font_hover_color", TXT)
+	var e := StyleBoxEmpty.new()
+	for st in ["normal", "hover", "pressed", "hover_pressed", "focus"]:
+		hdr.add_theme_stylebox_override(st, e)
+	wrap.add_child(hdr)
+	var mc := MarginContainer.new()
+	mc.add_theme_constant_override("margin_left", 10)
+	wrap.add_child(mc)
+	var body := VBoxContainer.new()
+	body.add_theme_constant_override("separation", 6)
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	mc.add_child(body)
+	var paint := func():
+		hdr.text = ("▾  " if mc.visible else "▸  ") + title
+		hdr.add_theme_color_override("font_color", TXT if mc.visible else MUT)
+	mc.visible = open
+	paint.call()
+	hdr.pressed.connect(func():
+		mc.visible = not mc.visible
+		paint.call())
+	body.set_meta("wrap", wrap)
+	body.set_meta("fold", mc)
+	body.set_meta("paint", paint)
+	body.set_meta("title", title)
+	return body
+
+
+static func set_sub_open(body: Control, open: bool) -> void:
+	(body.get_meta("fold") as Control).visible = open
+	body.get_meta("paint").call()
+
+
+static func group_icon(kind: String) -> Control:
+	"""a small drawn symbol for a card (no emoji font needed - the same on every PC)"""
+	var d := Control.new()
+	d.custom_minimum_size = Vector2(20, 20)
+	d.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	d.draw.connect(func(): _draw_group_icon(d, kind))
+	return d
+
+
+static func _draw_group_icon(d: Control, kind: String) -> void:
+	var c := Vector2(10, 10)
+	var col := ACC
+	var w := 1.8
+	var P := func(pts: Array) -> PackedVector2Array:
+		var out := PackedVector2Array()
+		for q in pts:
+			out.append(c + q)
+		return out
+	match kind:
+		"link":                                       # two links of a chain
+			d.draw_arc(c + Vector2(-3.5, 0), 4.5, PI * 0.5, PI * 1.5, 10, col, w, true)
+			d.draw_arc(c + Vector2(3.5, 0), 4.5, -PI * 0.5, PI * 0.5, 10, col, w, true)
+			d.draw_line(c + Vector2(-3.5, -4.5), c + Vector2(-1, -4.5), col, w, true)
+			d.draw_line(c + Vector2(-3.5, 4.5), c + Vector2(-1, 4.5), col, w, true)
+			d.draw_line(c + Vector2(1, -4.5), c + Vector2(3.5, -4.5), col, w, true)
+			d.draw_line(c + Vector2(1, 4.5), c + Vector2(3.5, 4.5), col, w, true)
+			d.draw_line(c + Vector2(-3, 0), c + Vector2(3, 0), col, w, true)
+		"camera":
+			d.draw_rect(Rect2(c + Vector2(-8, -5), Vector2(16, 11)), col, false, w)
+			d.draw_rect(Rect2(c + Vector2(-4, -8), Vector2(6, 3)), col, true)
+			d.draw_arc(c + Vector2(0, 0.5), 3.2, 0, TAU, 16, col, w, true)
+		"tools":                                      # spanner
+			d.draw_line(c + Vector2(-6, 6), c + Vector2(2, -2), col, 2.6, true)
+			d.draw_arc(c + Vector2(4, -4), 4.0, PI * 0.95, PI * 2.55, 14, col, w, true)
+		"globe":
+			d.draw_arc(c, 8, 0, TAU, 24, col, w, true)
+			d.draw_line(c + Vector2(-8, 0), c + Vector2(8, 0), col, 1.4, true)
+			d.draw_arc(c, 8, 0, TAU, 24, col, w, true)
+			var e := PackedVector2Array()
+			for i in range(25):
+				var a := TAU * i / 24.0
+				e.append(c + Vector2(cos(a) * 3.6, sin(a) * 8))
+			d.draw_polyline(e, col, 1.4, true)
+		"cloud":
+			d.draw_arc(c + Vector2(-3, 1), 4, PI * 0.5, PI * 1.6, 10, col, w, true)
+			d.draw_arc(c + Vector2(1, -2), 5, PI * 1.05, PI * 2.0, 12, col, w, true)
+			d.draw_arc(c + Vector2(5, 2), 3, PI * 1.5, PI * 2.5, 8, col, w, true)
+			d.draw_line(c + Vector2(-3, 5), c + Vector2(5, 5), col, w, true)
+			d.draw_line(c + Vector2(-2, 8), c + Vector2(-3, 10), col, 1.4, true)
+			d.draw_line(c + Vector2(2, 8), c + Vector2(1, 10), col, 1.4, true)
+		"person":
+			d.draw_arc(c + Vector2(0, -5), 3, 0, TAU, 14, col, w, true)
+			d.draw_arc(c + Vector2(0, 8), 7, PI * 1.1, PI * 1.9, 14, col, w, true)
+			d.draw_line(c + Vector2(-6.2, 4.6), c + Vector2(6.2, 4.6), col, w, true)
+		"lens":                                       # an eye
+			d.draw_arc(c + Vector2(0, 6), 10, PI * 1.22, PI * 1.78, 14, col, w, true)
+			d.draw_arc(c + Vector2(0, -6), 10, PI * 0.22, PI * 0.78, 14, col, w, true)
+			d.draw_circle(c, 2.6, col)
+		"bell":
+			d.draw_polyline(P.call([Vector2(-6, 4), Vector2(-5, -2), Vector2(-3, -6), Vector2(0, -7), Vector2(3, -6), Vector2(5, -2), Vector2(6, 4), Vector2(-6, 4)]), col, w, true)
+			d.draw_circle(c + Vector2(0, 7), 1.8, col)
+		"pad":                                        # game pad
+			d.draw_rect(Rect2(c + Vector2(-9, -5), Vector2(18, 10)), col, false, w)
+			d.draw_line(c + Vector2(-6, 0), c + Vector2(-2, 0), col, w, true)
+			d.draw_line(c + Vector2(-4, -2), c + Vector2(-4, 2), col, w, true)
+			d.draw_circle(c + Vector2(3, -1), 1.3, col)
+			d.draw_circle(c + Vector2(6, 1.5), 1.3, col)
+		"target":
+			d.draw_arc(c, 7.5, 0, TAU, 24, col, w, true)
+			d.draw_arc(c, 3.5, 0, TAU, 16, col, w, true)
+			d.draw_line(c + Vector2(0, -10), c + Vector2(0, -5), col, w, true)
+			d.draw_line(c + Vector2(0, 5), c + Vector2(0, 10), col, w, true)
+			d.draw_line(c + Vector2(-10, 0), c + Vector2(-5, 0), col, w, true)
+			d.draw_line(c + Vector2(5, 0), c + Vector2(10, 0), col, w, true)
+		"check":
+			d.draw_rect(Rect2(c + Vector2(-7, -7), Vector2(14, 14)), col, false, w)
+			d.draw_polyline(P.call([Vector2(-4, 0), Vector2(-1, 3), Vector2(4, -3)]), col, 2.2, true)
+		"gear":
+			for i in range(8):
+				var a := TAU * i / 8.0
+				d.draw_line(c + Vector2(cos(a), sin(a)) * 5.5, c + Vector2(cos(a), sin(a)) * 8.5, col, 2.6, true)
+			d.draw_arc(c, 5.5, 0, TAU, 20, col, w, true)
+			d.draw_arc(c, 2.2, 0, TAU, 12, col, 1.4, true)
+		"keys":
+			d.draw_rect(Rect2(c + Vector2(-9, -5), Vector2(18, 11)), col, false, w)
+			for x in [-5, -1, 3]:
+				d.draw_rect(Rect2(c + Vector2(x, -2), Vector2(2, 2)), col, true)
+			d.draw_line(c + Vector2(-4, 3), c + Vector2(4, 3), col, w, true)
+		_:
+			d.draw_circle(c, 4, col)
 
 
 static func set_open(body: Control, open: bool) -> void:

@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 03:16",
+ "generated": "2026-10-27 03:24",
  "versions": [
   {
-   "version": "2.93.11",
-   "file": "webcam_bewegung_2_93_11.py",
+   "version": "2.93.12",
+   "file": "webcam_bewegung_2_93_12.py",
    "url": "",
-   "sha256": "d75d5469de82fdb1881325c7671bc4674efc5a10efc4d31b9b422e1fd9312ca4",
-   "date": "2026-10-27 03:16",
-   "notes": "3D simulator 3D-3.4: real place from the map (Switzerland: swisstopo terrain and aerial picture, OpenStreetMap buildings), sturdier update.",
-   "sig": "4ec93805ea67402b675cc6eb04b67a9eb9aea53bdf8fd687398b672f2a3e727f0d21009d3bcac64e1db1a9efe6a612fc3107c5269f96dba0da31e2dfe239ab07"
+   "sha256": "2e278f6a0ea2f5ebb5487f33bf1d637bae3ff6d83f0cc4432882d12f9587cee1",
+   "date": "2026-10-27 03:24",
+   "notes": "Simulator control: group symbols and sub-headings (3D simulator 3D-3.5 with a tidied panel).",
+   "sig": "d00499803435790ab3e300ac5f1d26e737d4be4c0c052e48a219e10bd4a5067594570b29c7e217236295de873b3ed6e7fe241eb56b82ae3421eb0837d97b680e"
   },
   {
    "version": "2.92.4",
