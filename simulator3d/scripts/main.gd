@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.28"
+const VERSION := "3D-3.29"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1520,6 +1520,18 @@ func gust() -> float:
 		return 1.0
 	var t := now() - clock0
 	return 0.6 + 0.9 * smoothstep(0.3, 0.9, 0.5 + 0.5 * sin(t * 0.21) * sin(t * 0.53 + 1.1))
+
+
+func cpu_now() -> Dictionary:
+	"""CPU of the PC and of the simulator in % (3D-3.29: also in every «here is a simulator» message, so Motion Watch
+	shows it before the simulation is on); null = not measured yet"""
+	var d := {"pc": null, "sim": null}
+	if mini_box != null:
+		if float(mini_box.own["pc"]) >= 0.0:
+			d["pc"] = snappedf(mini_box.own["pc"], 0.1)
+		if float(mini_box.own["sim"]) >= 0.0:
+			d["sim"] = snappedf(mini_box.own["sim"], 0.1)
+	return d
 
 
 func version() -> String:

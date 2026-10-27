@@ -197,6 +197,10 @@ func beacon_name() -> String:
 	return "MW Sim · 3D %s · Gerät 2" % main.VERSION
 
 
+func cpu_now() -> Dictionary:
+	return main.cpu_now()
+
+
 func host_name() -> String:
 	return main.host_name()
 

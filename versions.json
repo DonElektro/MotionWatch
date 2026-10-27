@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 14:10",
+ "generated": "2026-10-27 14:18",
  "versions": [
   {
-   "version": "2.95.24",
-   "file": "webcam_bewegung_2_95_24.py",
+   "version": "2.95.25",
+   "file": "webcam_bewegung_2_95_25.py",
    "url": "",
-   "sha256": "3b8043af9d86b2eacf0b81fc883bea573a87524916baf9f464b017747dfcf955",
-   "date": "2026-10-27 14:10",
-   "notes": "Python world simulator PY-1.2 (Kevin: computer name, panning up to ±180°); «pan_range» in the state for the simulators.",
-   "sig": "3fb505b533b76faa573f6f9999d07434757714f075ec75d44caefd45b1a5b703b06ce9a8e264c11740b91cdcb2f89b53b429b223ee892112a0cacd27fb175302"
+   "sha256": "9396b7cba7a6ca92d41fd8d355c37516e9256308c454fff41d5c4885ef51d49e",
+   "date": "2026-10-27 14:18",
+   "notes": "the simulation goes on by itself when a simulator is online (and off again 60 s after the last one is gone; switch «Switch the simulation on by itself»); CPU of a simulator's PC in the list before the simulation is on (3D-3.29); power saving also saves in the simulation; the radar sweep turns in the page header.",
+   "sig": "8bf4fa2db3232196c35f1667367bf4dbb177d7a599ae8b7c112374a108cab7feb10c405f1de7544131c3e4193bc7aa8c33fe404e88e856f5d86b0f6e894e4a0d"
   },
   {
    "version": "2.94.5",

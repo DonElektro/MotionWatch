@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.28 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.29 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -450,3 +450,7 @@ NEU IN 3D-3.28
 - Neuer Name: «MW Sim · 3D» (die Simulatoren heissen jetzt MW Sim · Basis, MW Sim · 3D und MW Sim · Welt).
 - Eigenes Symbol im Fenster und in der Taskleiste: das Radar-Auge von Motion Watch mit dem 3D-Würfel.
   (Das Symbol der .exe-Datei selbst bleibt vorerst das von Godot.)
+
+NEU IN 3D-3.29
+- Die Meldung «hier ist ein Simulator» enthält jetzt die CPU-Auslastung des PCs und des Simulators: Motion Watch zeigt
+  sie in der Liste der Simulatoren schon an, bevor die Simulation eingeschaltet ist.

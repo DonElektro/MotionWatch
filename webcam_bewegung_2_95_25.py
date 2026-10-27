@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_24.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_25.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -600,6 +600,9 @@ Features
     (Kevin), each with its own symbol. 3D simulator 3D-3.28.
   * 2.95.24: Python world simulator PY-1.2 (Kevin: computer name, panning up to ±180°); «pan_range» in the state for the
     simulators.
+  * 2.95.25: the simulation goes on by itself when a simulator is online (and off again 60 s after the last one is gone;
+    switch «Switch the simulation on by itself»); CPU of a simulator's PC in the list before the simulation is on
+    (3D-3.29); power saving also saves in the simulation; the radar sweep turns in the page header.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -608,10 +611,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_24.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_25.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_24.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_24.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_25.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_25.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -628,7 +631,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.24"
+APP_VERSION = "2.95.25"
 
 
 def default_data_dir():
@@ -801,6 +804,7 @@ CFG = {
     # appearance
     "theme": "dark", "lang": "en", "fullscreen": False,
     "app_icon": "radar",         # the app icon (2.95.23): radar | radar2 | cross | trail | rings4 | waves | classic
+    "app_icon_anim": True,       # 2.95.25: the radar sweep turns in the page header
     "ui_hidden": [],             # desktop fields the user has hidden (View menu)
     # web stream
     "web_stream": False, "web_port": 5000, "web_password": "",
@@ -906,7 +910,9 @@ CFG = {
     "solar_on": False, "solar_addr": "0x41", "solar_shunt": 0.1, "night_warn": True,
     "species_on": False, "species_model": "", "species_norm": "imagenet", "species_size": 224, "species_conf": 0.5,
     "desktop_notice": True,
-    "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_auto": True, "sim_autoupd": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "sim_on": False, "sim_url": "http://127.0.0.1:8765", "sim_eco": True, "sim_fps": 6, "sim_auto": True,
+    "sim_autostart": True,       # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
+    "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself) "sim_autoupd": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_dual": True, "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True, "wifi_swap": False, "wifi_guard": False,
@@ -7893,7 +7899,7 @@ class AIDetector:
         gap = max(0.3, 2.0 * (STATE.get("ai_ms") or 0) / 1000.0)
         ct = STATE.get("cpu_temp") or 0
         gap *= 4.0 if ct >= 80 else 2.0 if ct >= 75 else 1.0
-        if CFG.get("sim_on") and CFG.get("sim_eco"):
+        if CFG.get("sim_on") and sim_eco_now():
             gap *= 2.0                                     # simulation with CPU saving: the AI only half as often
         if time.time() - getattr(self, "_last_run", 0.0) < gap:
             return self.boxes
@@ -8633,7 +8639,7 @@ def open_source(spec, thermal=False):
             if arg == "thermal":
                 src = SimThermalSource()
                 return (src, spec, label, "") if src.ok() else (None, spec, label, "simulator not reachable")
-            src = _open_url(sim_base() + f"/cam/{arg}/video.mjpg" + (f"?fps={sim_cam_fps(arg)}" if CFG.get("sim_eco") else ""))
+            src = _open_url(sim_base() + f"/cam/{arg}/video.mjpg" + (f"?fps={sim_cam_fps(arg)}" if sim_eco_now() else ""))
             return (src, spec, label, "") if src else (None, spec, label, "simulator not reachable - is it running?")
         if spec == "auto":
             for idx in range(4):
@@ -11769,7 +11775,7 @@ class SimThermalSource:
         return r[0]
 
     def read(self):
-        wait = (1.0 / sim_cam_fps(1) if CFG.get("sim_eco") else 0.12) - (time.time() - self.t)
+        wait = (1.0 / sim_cam_fps(1) if sim_eco_now() else 0.12) - (time.time() - self.t)
         if wait > 0:
             time.sleep(wait)
         self.t = time.time()
@@ -12007,9 +12013,18 @@ def sim_upload(name, stream, length):
         con.close()
 
 
+def sim_eco_now():
+    """CPU saving in the simulation: its own switch, or the power saving of Motion Watch (2.95.25); the power mode
+    switches both off (TURBO_SET)."""
+    return bool(CFG.get("sim_eco") or CFG.get("eco_on"))
+
+
 def sim_cam_fps(cam):
-    """Pictures per second asked from the simulator: the head camera sim_fps, the fixed camera half of it."""
+    """Pictures per second asked from the simulator: the head camera sim_fps, the fixed camera half of it.
+    Power saving on and nothing happening: at most its pictures per second (eco_fps)."""
     f = max(2, min(15, int(CFG.get("sim_fps") or 6)))
+    if CFG.get("eco_on") and STATE.get("eco") == "saving":      # quiet: few pictures; something moves: full speed again
+        f = max(2, min(f, int(CFG.get("eco_fps") or 3)))
     return f if str(cam) == "0" else max(2, f // 2)
 
 
@@ -12710,8 +12725,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.28", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30748171,
-         "sha256": "21ec31b8e85051a3a57507feb574c016c6e66c8232aedcfaef1ff444c0b3dc98"}
+SIM3D = {"version": "3D-3.29", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30748634,
+         "sha256": "f2a5df90dc32bda736fa4139ebec2b0be4e6ed8ad6afd188f3bbecaae14dd68c"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -12901,7 +12916,10 @@ class SimDiscovery:
                 SIMFOUND[k] = {"ip": ip, "port": port, "name": str(d.get("name") or "Simulator")[:60],
                                "version": str(d.get("version") or "")[:20], "t": time.time(), "first": old.get("first") or time.time(),
                                "count": int(old.get("count") or 0) + 1, "via": "beacon", "ms": old.get("ms"),
-                               "host_told": str(d.get("host") or old.get("host_told") or "")[:40]}
+                               "host_told": str(d.get("host") or old.get("host_told") or "")[:40],
+                               # CPU of the PC and of the simulator, told in every message (3D-3.29) - seen before the simulation is on
+                               "pc_cpu": d.get("pc_cpu") if isinstance(d.get("pc_cpu"), (int, float)) else old.get("pc_cpu"),
+                               "sim_cpu": d.get("sim_cpu") if isinstance(d.get("sim_cpu"), (int, float)) else old.get("sim_cpu")}
                 if new:
                     log_event("sys", f"Simulator found in the network: {SIMFOUND[k]['name']} on {k}")
             except (ValueError, OSError):
@@ -12912,6 +12930,7 @@ class SimDiscovery:
             time.sleep(5)
             try:
                 sim_auto_adopt()
+                sim_autostart_tick()
             except Exception:
                 pass
 
@@ -13032,6 +13051,34 @@ def sim_found():
     local = {(v["port"], v["name"]) for v in live if v["ip"] == "127.0.0.1"}
     live = [v for v in live if v["ip"] == "127.0.0.1" or (v["port"], v["name"]) not in local]   # this device seen twice: once
     return sorted(live, key=lambda v: (v["ip"] == "127.0.0.1", v["ip"], v["port"]))
+
+
+_SIMGONE = {"t": 0.0}
+
+
+def sim_autostart_tick():
+    """2.95.25: «Simulation on by itself»: a simulator is online -> on; it was switched on that way and no simulator is
+    online for 60 s -> off again (back to the real cameras and sensors). Switched by hand: nothing happens by itself."""
+    if not CFG.get("sim_autostart"):
+        return
+    f = sim_found()
+    if not f:
+        _SIMGONE["block"] = False                       # switched off by hand: on again only with the next simulator
+    if f and not CFG["sim_on"]:
+        if not _SIMGONE.get("block"):
+            sim_auto_adopt()
+            sim_set(True, "automatic (a simulator is online)")
+            CFG["sim_auto_on"] = True; save_settings()
+        _SIMGONE["t"] = 0.0
+    elif CFG["sim_on"] and CFG.get("sim_auto_on"):
+        if f or (SIM["ok"] and time.time() - SIM["t"] < 5):
+            _SIMGONE["t"] = 0.0
+        elif not _SIMGONE["t"]:
+            _SIMGONE["t"] = time.time()
+        elif time.time() - _SIMGONE["t"] > 60:
+            _SIMGONE["t"] = 0.0
+            sim_set(False, "automatic (no simulator online any more)")
+            CFG["sim_auto_on"] = False; save_settings()
 
 
 def sim_auto_adopt():
@@ -13354,7 +13401,7 @@ def sim_game():
 
 
 def sim_status():
-    return {"game": sim_game(), "found": sim_found(), "auto": bool(CFG.get("sim_auto")), "autoupd": bool(CFG.get("sim_autoupd", True)), "stats": sim_stats(), "eco": bool(CFG.get("sim_eco")), "fps": int(CFG.get("sim_fps") or 6),
+    return {"game": sim_game(), "found": sim_found(), "auto": bool(CFG.get("sim_auto")), "autostart": bool(CFG.get("sim_autostart")), "auto_on": bool(CFG.get("sim_auto_on")), "autoupd": bool(CFG.get("sim_autoupd", True)), "stats": sim_stats(), "eco": bool(CFG.get("sim_eco")), "fps": int(CFG.get("sim_fps") or 6),
             "sim3d": {"version": SIM3D["version"], "size_mb": round(SIM3D["size"] / 1e6), "ready": sim3d_ready()},
             "simpy": {"version": SIMPY["version"], "size_kb": round(SIMPY["size"] / 1e3), "ready": sim3d_ready(SIMPY)},
             "view": bool(((SIM.get("info") or {}).get("view") or {}).get("input")) if CFG["sim_on"] else False,
@@ -13368,6 +13415,10 @@ def sim_set(on, who="web"):
     on = bool(on)
     if on == bool(CFG["sim_on"]):
         return True, ""
+    if not str(who).startswith("automatic"):            # by hand: the automatic does not switch it back (2.95.25)
+        CFG["sim_auto_on"] = False
+        if not on:
+            _SIMGONE["block"] = True
     w = WATCH_REF["w"]
     if on:
         CFG["sim_prev_source"] = CFG["source"] if not str(CFG["source"]).startswith("sim:") else "auto"
@@ -13408,7 +13459,7 @@ class SimLink:
         while True:
             if not CFG["sim_on"]:
                 eco = None; time.sleep(0.5); continue
-            now_eco = (bool(CFG.get("sim_eco")), sim_cam_fps(0))
+            now_eco = (bool(sim_eco_now()), sim_cam_fps(0))
             if eco is not None and now_eco != eco:                 # CPU saving changed: fetch the head camera again with the new rate
                 w = WATCH_REF.get("w")
                 if w is not None and str(CFG["source"]).startswith("sim:"):
@@ -13422,7 +13473,7 @@ class SimLink:
                 SIM.update(ok=False, msg=("not reachable: " + _short_net_err(e)) if "_short_net_err" in globals() else str(e)[:100],
                            errs=SIM["errs"] + 1, since=0.0)
                 time.sleep(2.0); continue
-            time.sleep(max(0.02, (0.2 if CFG.get("sim_eco") else 0.1) - (time.time() - t0)))
+            time.sleep(max(0.02, (0.2 if sim_eco_now() else 0.1) - (time.time() - t0)))
 
     def tick(self):
         body = json.dumps(sim_state()).encode()
@@ -14730,7 +14781,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_24.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_25.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -19604,6 +19655,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="mut" data-i18n="conn-note">conn-note</div>
     <div class="row2"><input type="text" id="s-url" placeholder="http://192.168.1.50:8765" autocomplete="off"><button type="button" class="sec" onclick="saveUrl()" data-i18n="Save">Save</button></div>
     <label class="opt"><span data-i18n="Find the simulator in the network by itself">Find the simulator in the network by itself</span><input type="checkbox" class="sw" id="k-sim_auto" onchange="setKey('sim_auto', this.checked)"></label>
+    <label class="opt"><span><span data-i18n="Switch the simulation on by itself when a simulator is online">Switch the simulation on by itself when a simulator is online</span><br><small class="mut" data-i18n="autostart-note">autostart-note</small></span><input type="checkbox" class="sw" id="k-sim_autostart" onchange="setKey('sim_autostart', this.checked)"></label>
     <label class="opt"><span data-i18n="Update the simulator by itself when a newer version is there">Update the simulator by itself when a newer version is there</span><input type="checkbox" class="sw" id="k-sim_autoupd" onchange="setKey('sim_autoupd', this.checked)"></label>
     <div><b style="font-weight:600;font-size:14px" data-i18n="Simulators in the network">Simulators in the network</b><div class="mut" id="s-scan"></div></div>
     <div id="s-found"></div>
@@ -19720,6 +19772,8 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "A task for every round (bonus)": "Eine Aufgabe für jede Runde (Bonus)",
  "gw-tasks": "🎯 Jede Runde hat eine Aufgabe, z. B. «nur kriechend ins Ziel» oder «nie über 50 % Verdacht». Wer sie schafft, bekommt Bonuspunkte. Neben der Rangliste des Abends gibt es eine Rangliste der Woche.",
  "Task of this round": "Aufgabe dieser Runde", "Ranking of the week": "Rangliste der Woche", "week": "Woche", "task done": "Aufgabe erfüllt",
+ "Switch the simulation on by itself when a simulator is online": "Simulation von selbst einschalten, sobald ein Simulator online ist",
+ "autostart-note": "Und wieder aus (zurück zu den echten Kameras und Sensoren), wenn eine Minute lang keiner mehr da ist. Von Hand ausgeschaltet: bleibt aus, bis wieder ein neuer Simulator auftaucht.",
  "Test run and optimization": "Testlauf und Optimierung",
  "tr-note": "MW Sim · 3D spielt einen festen Test ab (jedes Mal dieselben Besucher auf denselben Wegen) und weiss, wer wirklich zu sehen war. Motion Watch vergleicht das mit dem, was es erkannt hat, und schlägt bessere Einstellungen vor. Du kannst sie einzeln oder alle übernehmen und rückgängig machen – oder «Automatisch optimieren» probiert sie nacheinander aus und behält nur, was im nächsten Test wirklich besser ist.",
  "Start test run": "Testlauf starten", "Optimize automatically": "Automatisch optimieren",
@@ -19818,7 +19872,7 @@ function paint() {
   $("#s-tiles").innerHTML = tile(t("CPU of the PC"), '<span style="color:' + (T.pc_cpu > 85 ? "var(--red,#ff5b4b)" : T.pc_cpu > 60 ? "#e8b33a" : "inherit") + '">' + pcc + '</span>') + tile(t("Connected for"), dur(T.since)) + tile(t("Response time"), T.rtt == null ? "–" : T.rtt + " ms") + tile(t("Camera pictures/s"), T.cam_fps == null ? "–" : T.cam_fps)
     + tile(t("Thermal pictures/s"), T.th_fps == null ? "–" : T.th_fps) + tile(t("Messages sent"), T.sent || 0) + tile(t("Sensor events"), T.events || 0) + tile(t("Errors"), T.errs || 0);
   const u = $("#s-url"); if (!URLEDIT && document.activeElement !== u) u.value = S.url || "";
-  $("#k-sim_auto").checked = !!S.auto; $("#k-sim_eco").checked = !!S.eco; $("#k-sim_autoupd").checked = S.autoupd !== false;
+  $("#k-sim_auto").checked = !!S.auto; $("#k-sim_autostart").checked = S.autostart !== false; $("#k-sim_eco").checked = !!S.eco; $("#k-sim_autoupd").checked = S.autoupd !== false;
   const fr = $("#k-sim_fps"); if (document.activeElement !== fr && S.fps != null) { fr.value = S.fps; $("#v-sim_fps").textContent = S.fps; }
   paint3d();
   const SC = S.scan || {}, ago = SC.t ? Math.round(Date.now() / 1000 - SC.t) : null;
@@ -19826,13 +19880,15 @@ function paint() {
     : SC.t ? t("Last search") + ": " + (ago < 60 ? ago + " s" : Math.round(ago / 60) + " min") + " · " + SC.hosts + " " + t("addresses in") + " " + SC.secs + " s · " + SC.found + " " + t("found")
     : t("Simulators announce themselves every 2 s. «Search now» also asks every address of the network.");
   $("#s-search").disabled = !!SC.running;
-  const fb = $("#s-found"), F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.host, x.count, x.age > 5])) + S.url;
+  const fb = $("#s-found"), F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.host, x.count, x.age > 5, x.pc_cpu, x.sim_cpu])) + S.url;
   if (fb.dataset.sig !== sig) { fb.dataset.sig = sig; fb.textContent = "";
     if (!F.length) fb.appendChild(el("div", "mut", t("No simulator announces itself in the network right now.")));
     fb.appendChild(el("div", "mut", t("sim-missing"))).style.marginTop = "6px";
     F.forEach(x => { const cur = S.url === "http://" + x.ip + ":" + x.port; const r = el("div", "fnd" + (cur ? " cur" : ""));
       const n = el("div", "n"); n.append(el("b", "", x.name || "Simulator"));
       if (x.host) { const h = el("span", "host", "💻 " + x.host + (x.ip === "127.0.0.1" ? " (" + t("this device") + ")" : "")); n.firstChild.after(h); }
+      if (x.pc_cpu != null) { const c = el("span", "host", "⚙ PC " + Math.round(x.pc_cpu) + " %" + (x.sim_cpu != null ? " · Sim " + Math.round(x.sim_cpu) + " %" : ""));
+        c.style.color = x.pc_cpu > 85 ? "#f85149" : x.pc_cpu > 60 ? "#d29922" : ""; n.firstChild.after(c); }
       n.append(el("div", "mut", x.ip + ":" + x.port + (x.version ? " · " + x.version : "")
         + (x.via === "scan" ? " · " + t("found by the search") : " · " + t("last") + " " + Math.round(x.age || 0) + " s")));
       r.appendChild(n);
@@ -22022,6 +22078,12 @@ SIM_ICONS_PNG = {          # the symbols of the three simulators (2.95.23), 96 p
         "eqI4XM3nE2MENzczqMbwZ2RM6Igt+xaAiP8Ao5WWpPH7bgDfx8mk2hqufoP++/t8OjFIl2VAdZi/7Skwb/O3t/f5N8fr+2r1e7lc7V2cr5bL379X769z8hIYhI9P9j72Nmfe/2wwyLdD1193nr+9L9+XywMfYvA6ee/b4+3/deUdqMxquVrh+a8cy9WSWf3L9l/rTTlD"
         "lWtxdAAAAABJRU5ErkJggg=="),
 }
+APP_ICONS_ANIM = {        # the radar icons with a turning sweep (2.95.25): only in the page header, a home-screen icon cannot move
+    'radar': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512"><defs><radialGradient id="k1g" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3B8CFF" stop-opacity="0.55"></stop><stop offset="1" stop-color="#3B8CFF" stop-opacity="0"></stop></radialGradient>\n<linearGradient id="k1b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16243A"></stop><stop offset="1" stop-color="#0A1018"></stop></linearGradient>\n<linearGradient id="k1w" x1="60" y1="60" x2="452" y2="452" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1"></stop><stop offset="1" stop-color="#3B8CFF"></stop></linearGradient></defs>\n<rect width="512" height="512" fill="url(#k1b)"></rect>\n<circle cx="256" cy="256" r="230" fill="url(#k1g)"></circle>\n<g fill="none" stroke="url(#k1w)" stroke-linecap="round"><g stroke-width="18" opacity="1"><path d="M402.7 287.2 A150 150 0 0 1 287.2 402.7"></path><path d="M224.8 402.7 A150 150 0 0 1 109.3 287.2"></path><path d="M109.3 224.8 A150 150 0 0 1 224.8 109.3"></path><path d="M287.2 109.3 A150 150 0 0 1 402.7 224.8"></path></g><g stroke-width="15" opacity="0.6"><path d="M441.8 295.5 A190 190 0 0 1 295.5 441.8"></path><path d="M216.5 441.8 A190 190 0 0 1 70.2 295.5"></path><path d="M70.2 216.5 A190 190 0 0 1 216.5 70.2"></path><path d="M295.5 70.2 A190 190 0 0 1 441.8 216.5"></path></g><g stroke-width="12" opacity="0.32"><path d="M479.0 303.4 A228 228 0 0 1 303.4 479.0"></path><path d="M208.6 479.0 A228 228 0 0 1 33.0 303.4"></path><path d="M33.0 208.6 A228 228 0 0 1 208.6 33.0"></path><path d="M303.4 33.0 A228 228 0 0 1 479.0 208.6"></path></g></g>\n<g><animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="4s" repeatCount="indefinite"></animateTransform><defs><linearGradient id="k1s" x1="256" y1="256" x2="392" y2="68" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1" stop-opacity="0.05"></stop><stop offset="1" stop-color="#5ED6C1" stop-opacity="1"></stop></linearGradient></defs>\n<path d="M256 256 L296.3 27.5 A232 232 0 0 1 460.8 147.1 Z" fill="url(#k1s)" opacity="0.55"></path>\n<line x1="256" y1="256" x2="460.8" y2="147.1" stroke="#5ED6C1" stroke-width="6" stroke-linecap="round" opacity="0.85"></line></g><g><animate attributeName="opacity" values="1;0.12;0.12;1" keyTimes="0;0.4;0.96;1" dur="4s" repeatCount="indefinite"></animate><circle cx="409.7" cy="144.3" r="28" fill="#E9A23B" opacity="0.25"></circle><circle cx="409.7" cy="144.3" r="16" fill="#E9A23B"></circle></g><circle cx="256" cy="256" r="96" fill="#13202E" stroke="#E9A23B" stroke-width="24"></circle>\n<circle cx="256" cy="256" r="54" fill="#3B8CFF"></circle>\n<circle cx="256" cy="256" r="22" fill="#0E1621"></circle>\n<circle cx="238" cy="236" r="10" fill="#F2E3C6"></circle>\n</svg>',
+    'radar2': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512"><defs><radialGradient id="k2g" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3B8CFF" stop-opacity="0.55"></stop><stop offset="1" stop-color="#3B8CFF" stop-opacity="0"></stop></radialGradient>\n<linearGradient id="k2b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16243A"></stop><stop offset="1" stop-color="#0A1018"></stop></linearGradient>\n<linearGradient id="k2w" x1="60" y1="60" x2="452" y2="452" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1"></stop><stop offset="1" stop-color="#3B8CFF"></stop></linearGradient></defs>\n<rect width="512" height="512" fill="url(#k2b)"></rect>\n<circle cx="256" cy="256" r="230" fill="url(#k2g)"></circle>\n<g fill="none" stroke="url(#k2w)" stroke-linecap="round"><g stroke-width="18" opacity="1"><path d="M410.5 288.9 A158 158 0 0 1 288.9 410.5"></path><path d="M223.1 410.5 A158 158 0 0 1 101.5 288.9"></path><path d="M101.5 223.1 A158 158 0 0 1 223.1 101.5"></path><path d="M288.9 101.5 A158 158 0 0 1 410.5 223.1"></path></g><g stroke-width="15" opacity="0.6"><path d="M457.5 298.8 A206 206 0 0 1 298.8 457.5"></path><path d="M213.2 457.5 A206 206 0 0 1 54.5 298.8"></path><path d="M54.5 213.2 A206 206 0 0 1 213.2 54.5"></path><path d="M298.8 54.5 A206 206 0 0 1 457.5 213.2"></path></g></g>\n<g><animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="4s" repeatCount="indefinite"></animateTransform><defs><linearGradient id="k2s" x1="256" y1="256" x2="389" y2="73" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1" stop-opacity="0.05"></stop><stop offset="1" stop-color="#5ED6C1" stop-opacity="1"></stop></linearGradient></defs>\n<path d="M256 256 L295.2 33.4 A226 226 0 0 1 455.5 149.9 Z" fill="url(#k2s)" opacity="0.55"></path>\n<line x1="256" y1="256" x2="455.5" y2="149.9" stroke="#5ED6C1" stroke-width="6" stroke-linecap="round" opacity="0.85"></line></g><g><animate attributeName="opacity" values="1;0.12;0.12;1" keyTimes="0;0.4;0.96;1" dur="4s" repeatCount="indefinite"></animate><circle cx="418.3" cy="129.2" r="28" fill="#E9A23B" opacity="0.25"></circle><circle cx="418.3" cy="129.2" r="16" fill="#E9A23B"></circle></g><circle cx="256" cy="256" r="96" fill="#13202E" stroke="#E9A23B" stroke-width="24"></circle>\n<circle cx="256" cy="256" r="54" fill="#3B8CFF"></circle>\n<circle cx="256" cy="256" r="22" fill="#0E1621"></circle>\n<circle cx="238" cy="236" r="10" fill="#F2E3C6"></circle>\n</svg>',
+    'cross': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512"><defs><radialGradient id="k3g" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3B8CFF" stop-opacity="0.55"></stop><stop offset="1" stop-color="#3B8CFF" stop-opacity="0"></stop></radialGradient>\n<linearGradient id="k3b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16243A"></stop><stop offset="1" stop-color="#0A1018"></stop></linearGradient>\n<linearGradient id="k3w" x1="60" y1="60" x2="452" y2="452" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1"></stop><stop offset="1" stop-color="#3B8CFF"></stop></linearGradient></defs>\n<rect width="512" height="512" fill="url(#k3b)"></rect>\n<circle cx="256" cy="256" r="230" fill="url(#k3g)"></circle>\n<g fill="none" stroke="url(#k3w)" stroke-linecap="round"><g stroke-width="18" opacity="1"><path d="M378.9 170.0 A150 150 0 0 1 378.9 342.0"></path><path d="M342.0 378.9 A150 150 0 0 1 170.0 378.9"></path><path d="M133.1 342.0 A150 150 0 0 1 133.1 170.0"></path><path d="M170.0 133.1 A150 150 0 0 1 342.0 133.1"></path></g><g stroke-width="15" opacity="0.6"><path d="M411.6 147.0 A190 190 0 0 1 411.6 365.0"></path><path d="M365.0 411.6 A190 190 0 0 1 147.0 411.6"></path><path d="M100.4 365.0 A190 190 0 0 1 100.4 147.0"></path><path d="M147.0 100.4 A190 190 0 0 1 365.0 100.4"></path></g><g stroke-width="12" opacity="0.32"><path d="M442.8 125.2 A228 228 0 0 1 442.8 386.8"></path><path d="M386.8 442.8 A228 228 0 0 1 125.2 442.8"></path><path d="M69.2 386.8 A228 228 0 0 1 69.2 125.2"></path><path d="M125.2 69.2 A228 228 0 0 1 386.8 69.2"></path></g></g>\n<g><animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="4s" repeatCount="indefinite"></animateTransform><defs><linearGradient id="k3s" x1="256" y1="256" x2="377" y2="58" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1" stop-opacity="0.05"></stop><stop offset="1" stop-color="#5ED6C1" stop-opacity="1"></stop></linearGradient></defs>\n<path d="M256 256 L327.7 35.4 A232 232 0 0 1 420.0 92.0 Z" fill="url(#k3s)" opacity="0.55"></path>\n<line x1="256" y1="256" x2="420.0" y2="92.0" stroke="#5ED6C1" stroke-width="6" stroke-linecap="round" opacity="0.85"></line></g><g><animate attributeName="opacity" values="1;0.12;0.12;1" keyTimes="0;0.4;0.96;1" dur="4s" repeatCount="indefinite"></animate><circle cx="405.9" cy="106.1" r="27" fill="#E9A23B" opacity="0.25"></circle><circle cx="405.9" cy="106.1" r="15" fill="#E9A23B"></circle></g><circle cx="256" cy="256" r="96" fill="#13202E" stroke="#E9A23B" stroke-width="24"></circle>\n<circle cx="256" cy="256" r="54" fill="#3B8CFF"></circle>\n<circle cx="256" cy="256" r="22" fill="#0E1621"></circle>\n<circle cx="238" cy="236" r="10" fill="#F2E3C6"></circle>\n</svg>',
+    'trail': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512"><defs><radialGradient id="k4g" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3B8CFF" stop-opacity="0.55"></stop><stop offset="1" stop-color="#3B8CFF" stop-opacity="0"></stop></radialGradient>\n<linearGradient id="k4b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16243A"></stop><stop offset="1" stop-color="#0A1018"></stop></linearGradient>\n<linearGradient id="k4w" x1="60" y1="60" x2="452" y2="452" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1"></stop><stop offset="1" stop-color="#3B8CFF"></stop></linearGradient></defs>\n<rect width="512" height="512" fill="url(#k4b)"></rect>\n<circle cx="256" cy="256" r="230" fill="url(#k4g)"></circle>\n<g fill="none" stroke="url(#k4w)" stroke-linecap="round"><g stroke-width="18" opacity="1"><path d="M402.7 287.2 A150 150 0 0 1 287.2 402.7"></path><path d="M224.8 402.7 A150 150 0 0 1 109.3 287.2"></path><path d="M109.3 224.8 A150 150 0 0 1 224.8 109.3"></path><path d="M287.2 109.3 A150 150 0 0 1 402.7 224.8"></path></g><g stroke-width="15" opacity="0.6"><path d="M441.8 295.5 A190 190 0 0 1 295.5 441.8"></path><path d="M216.5 441.8 A190 190 0 0 1 70.2 295.5"></path><path d="M70.2 216.5 A190 190 0 0 1 216.5 70.2"></path><path d="M295.5 70.2 A190 190 0 0 1 441.8 216.5"></path></g><g stroke-width="12" opacity="0.32"><path d="M479.0 303.4 A228 228 0 0 1 303.4 479.0"></path><path d="M208.6 479.0 A228 228 0 0 1 33.0 303.4"></path><path d="M33.0 208.6 A228 228 0 0 1 208.6 33.0"></path><path d="M303.4 33.0 A228 228 0 0 1 479.0 208.6"></path></g></g>\n<g><animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="4s" repeatCount="indefinite"></animateTransform><defs><linearGradient id="k4s" x1="256" y1="256" x2="300" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1" stop-opacity="0.05"></stop><stop offset="1" stop-color="#5ED6C1" stop-opacity="1"></stop></linearGradient></defs>\n<path d="M256 256 L106.9 78.3 A232 232 0 0 1 460.8 147.1 Z" fill="url(#k4s)" opacity="0.12"></path><path d="M256 256 L149.8 49.7 A232 232 0 0 1 460.8 147.1 Z" fill="url(#k4s)" opacity="0.12"></path><path d="M256 256 L197.9 31.4 A232 232 0 0 1 460.8 147.1 Z" fill="url(#k4s)" opacity="0.12"></path><path d="M256 256 L248.9 24.1 A232 232 0 0 1 460.8 147.1 Z" fill="url(#k4s)" opacity="0.12"></path><path d="M256 256 L300.3 28.3 A232 232 0 0 1 460.8 147.1 Z" fill="url(#k4s)" opacity="0.12"></path><path d="M256 256 L349.4 43.6 A232 232 0 0 1 460.8 147.1 Z" fill="url(#k4s)" opacity="0.12"></path><path d="M256 256 L394.0 69.5 A232 232 0 0 1 460.8 147.1 Z" fill="url(#k4s)" opacity="0.12"></path><path d="M256 256 L431.8 104.6 A232 232 0 0 1 460.8 147.1 Z" fill="url(#k4s)" opacity="0.12"></path>\n<line x1="256" y1="256" x2="460.8" y2="147.1" stroke="#5ED6C1" stroke-width="6" stroke-linecap="round" opacity="0.85"></line></g><g><animate attributeName="opacity" values="1;0.12;0.12;1" keyTimes="0;0.4;0.96;1" dur="4s" repeatCount="indefinite"></animate><circle cx="409.7" cy="144.3" r="28" fill="#E9A23B" opacity="0.25"></circle><circle cx="409.7" cy="144.3" r="16" fill="#E9A23B"></circle></g><circle cx="256" cy="256" r="96" fill="#13202E" stroke="#E9A23B" stroke-width="24"></circle>\n<circle cx="256" cy="256" r="54" fill="#3B8CFF"></circle>\n<circle cx="256" cy="256" r="22" fill="#0E1621"></circle>\n<circle cx="238" cy="236" r="10" fill="#F2E3C6"></circle>\n</svg>',
+}
 APP_ICON_LIST = [("radar", "Radar"), ("radar2", "Radar, two rings"), ("cross", "Radar, gaps crosswise"), ("trail", "Radar with afterglow"),
                  ("rings4", "Four directions"), ("waves", "Lens with waves"), ("classic", "Classic (orange)")]
 
@@ -22142,7 +22204,9 @@ def render_page(page, active):
     """Fill the shared pieces into a page template."""
     page = page.replace("<head>", "<head>" + ui_seed_script() + i18n_loader(active == "help") + PWA_HEAD.replace(
         'content="Motion Watch">', 'content="' + app_title(host_variant()) + '">').replace(".png\"", ".png?i=" + app_icon_id() + "\"")
-        + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>", 1)
+        + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>"
+        + ("<style>:root{--mw-icon:url(/app-icon/anim.svg?i=" + app_icon_id() + ")}</style>"
+           if CFG.get("app_icon_anim", True) and app_icon_id() in APP_ICONS_ANIM else ""), 1)
     page = re.sub(r"(<h1[^>]*>)Motion Watch</h1>", r'\1Motion Watch <span class="ver">' + APP_VERSION + "</span>"
                   + ('<span class="badge yel" style="font-size:10px;padding:1px 7px;min-height:0">DEMO</span>' if DEMO["on"] else "") + "</h1>", page, count=1)
     return (page.replace("/*BASECSS*/", BASE_CSS).replace("/*COMMON*/", COMMON_JS).replace("<!--NAV-->", nav_html(active))
@@ -25998,7 +26062,8 @@ function solarText(c, s) {
 }
 function solarPaint(c, s) { const st = $("#solar-st"); if (st) st.textContent = solarText(c, s); }
 /*SIMMAP*/
-Object.assign(I18N.de, {"App icon": "App-Symbol", "App icon changed": "App-Symbol geändert", "Radar": "Radar", "Radar, two rings": "Radar, zwei Ringe",
+Object.assign(I18N.de, {"Let the radar turn (in the header; the home screen icon cannot move)": "Radar kreisen lassen (in der Kopfzeile; das Symbol auf dem Startbildschirm kann sich nicht bewegen)",
+ "App icon": "App-Symbol", "App icon changed": "App-Symbol geändert", "Radar": "Radar", "Radar, two rings": "Radar, zwei Ringe",
  "Radar, gaps crosswise": "Radar, Lücken über Kreuz", "Radar with afterglow": "Radar mit Nachleuchten", "Four directions": "Vier Richtungen",
  "Lens with waves": "Linse mit Wellen", "Classic (orange)": "Klassisch (orange)", "Done": "Erledigt", "Later": "Später",
  "icon-note": "Gilt für den Browser-Tab, die Kopfzeile und den Handy-Startbildschirm. Android holt das neue Symbol von selbst (kann einen Tag dauern). iPhone / iPad: das Symbol auf dem Startbildschirm löschen und die Seite neu «Zum Home-Bildschirm» hinzufügen.",
@@ -26651,11 +26716,17 @@ function iconPick() {
       b.onclick = async () => { const r = await post("/api/appicon", {icon: x.id}); if (!r.ok) { toast("⚠ " + t(r.error || "error")); return; }
         paint(x.id); window.MW_ICON = x.id; toast("✓ " + t("App icon changed"));
         const l = document.querySelector('link[rel="icon"]'); if (l) l.href = "/icon-192.png?i=" + x.id;
-        document.documentElement.style.setProperty("--mw-icon", "url(/icon-192.png?i=" + x.id + ")"); iconHint(true); };
+        AN.list = r.animated || AN.list; hdrIcon(x.id); iconHint(true); };
       row.appendChild(b); });
-    paint(j.icon); });
+    paint(j.icon); AN.on = j.anim; AN.list = j.animated || []; cb.checked = !!j.anim; });
+  const AN = {on: true, list: []};
+  const hdrIcon = id => document.documentElement.style.setProperty("--mw-icon", AN.on && AN.list.includes(id) ? "url(/app-icon/anim.svg?i=" + id + ")" : "url(/icon-192.png?i=" + id + ")");
+  const lb = el("label", "opt"); lb.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 8px";
+  const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw";
+  cb.onchange = async () => { AN.on = cb.checked; await post("/api/appicon", {anim: cb.checked}); hdrIcon(window.MW_ICON || "radar"); };
+  lb.append(el("span", "", t("Let the radar turn (in the header; the home screen icon cannot move)")), cb);
   note.textContent = t("icon-note");
-  box.append(row, note); d.appendChild(box);
+  box.append(row, lb, note); d.appendChild(box);
 }
 function iconHint(force) {
   const standalone = navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
@@ -29861,6 +29932,13 @@ class WebStream:
         def icon512():
             return Response(app_icon_png(512, host_variant()), mimetype="image/png", headers={"Cache-Control": "no-cache"})
 
+        @app.route("/app-icon/anim.svg")
+        def app_icon_anim():
+            ic = request.args.get("i") or app_icon_id()
+            if ic not in APP_ICONS_ANIM:
+                return Response("", 404)
+            return Response(APP_ICONS_ANIM[ic], mimetype="image/svg+xml", headers={"Cache-Control": "public, max-age=86400"})
+
         @app.route("/app-icon/<ic>.png")
         def app_icon_preview(ic):                        # the choice in the settings (2.95.23)
             if ic not in dict(APP_ICON_LIST):
@@ -29880,12 +29958,17 @@ class WebStream:
             if request.method == "POST":
                 if getattr(g, "role", "admin") != "admin":
                     return reply({"ok": False, "error": "not allowed"}, 403)
-                ic = str(body().get("icon") or "")
+                ic = str(body().get("icon") or app_icon_id())
                 if ic not in dict(APP_ICON_LIST):
                     return reply({"ok": False, "error": "unknown icon"}, 400)
-                CFG["app_icon"] = ic; save_settings()
-                log_event("sys", f"App icon: {ic}")
-            return reply({"ok": True, "icon": app_icon_id(), "list": [{"id": k, "name": n} for k, n in APP_ICON_LIST]})
+                d_ = body()
+                if "anim" in d_:
+                    CFG["app_icon_anim"] = bool(d_.get("anim")); save_settings()
+                else:
+                    CFG["app_icon"] = ic; save_settings()
+                    log_event("sys", f"App icon: {ic}")
+            return reply({"ok": True, "icon": app_icon_id(), "anim": bool(CFG.get("app_icon_anim", True)), "animated": list(APP_ICONS_ANIM),
+                          "list": [{"id": k, "name": n} for k, n in APP_ICON_LIST]})
 
         @app.route("/apple-touch-icon.png")
         @app.route("/apple-touch-icon-precomposed.png")
@@ -31020,6 +31103,7 @@ TOGGLES = [  # (section, key, label)
     ("Mover", "mover_sim_show", "Simulation: show the stick even without a mover or motor driver (to try it out)"),
     ("Simulator", "sim_eco", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)"),
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
+    ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself when a newer version is there"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when Motion Watch starts in the background"),
@@ -31579,7 +31663,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.24")
+        self.root.title("Motion Watch 2.95.25")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -31869,7 +31953,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.24 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.25 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

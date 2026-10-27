@@ -1,7 +1,7 @@
 {
- "version": "3D-3.28",
+ "version": "3D-3.29",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30748171,
- "sha256": "21ec31b8e85051a3a57507feb574c016c6e66c8232aedcfaef1ff444c0b3dc98",
- "notes": "Neuer Name «MW Sim · 3D» und eigenes Symbol (Radar-Auge mit 3D-Würfel)."
+ "size": 30748634,
+ "sha256": "f2a5df90dc32bda736fa4139ebec2b0be4e6ed8ad6afd188f3bbecaae14dd68c",
+ "notes": "CPU-Auslastung schon in der Meldung «hier ist ein Simulator»."
 }

@@ -38,7 +38,8 @@ func stop() -> void:
 func _send_beacon() -> void:
 	"""every 2 s into the network: "here is a simulator" - Motion Watch finds it by itself (UDP port 8764)"""
 	var nm: String = main.beacon_name() if main.has_method("beacon_name") else "MW Sim · 3D %s" % main.VERSION
-	var msg := JSON.stringify({"mwsim": 1, "name": nm, "port": port, "version": main.VERSION, "host": main.host_name()}).to_utf8_buffer()
+	var cp: Dictionary = main.cpu_now() if main.has_method("cpu_now") else {}
+	var msg := JSON.stringify({"mwsim": 1, "name": nm, "pc_cpu": cp.get("pc"), "sim_cpu": cp.get("sim"), "port": port, "version": main.VERSION, "host": main.host_name()}).to_utf8_buffer()
 	for dest in ["255.255.255.255", "127.0.0.1"]:
 		beacon.set_dest_address(dest, 8764)
 		beacon.put_packet(msg)
