@@ -202,7 +202,7 @@ func _pick_goal(random: bool) -> void:
 	if goal == Vector3.ZERO:
 		goal = o.get("door", Vector3(0, 0, -4))
 	goal_name = {"bike": "das Velo", "door": "die Tür", "pir": "der Platz beim Bewegungsmelder"}.get(key, "das Ziel")
-	goal.y = 0.0
+	goal = _g(goal)
 	if goal_node != null:
 		goal_node.queue_free()
 	goal_node = Node3D.new()
@@ -236,13 +236,18 @@ var _starts: Array = []
 func start_point(i: int) -> Vector3:
 	if flag_mode() and bases.size() == 2 and players[i] != null:   # «Fahne erobern»: start at the own base
 		var b: Vector3 = bases[int(players[i]["team"])]
-		return main.free_spot(b + Vector3((i - 1.5) * 1.3, 0, -3.0), 0.6, true)
+		return _g(main.free_spot(b + Vector3((i - 1.5) * 1.3, 0, -3.0), 0.6, true))
 	var p: Vector3
 	if i < _starts.size():
 		p = _starts[i]
 	else:
 		p = Vector3(-9.0 + 6.0 * i, 0, -46.0)
-	return main.free_spot(p, 0.6, true)
+	return _g(main.free_spot(p, 0.6, true))
+
+
+func _g(p: Vector3) -> Vector3:
+	"""the point on the ground (a real place has hills, from 3D-3.8)"""
+	return Vector3(p.x, main.ground_y(p.x, p.z), p.z)
 
 
 func _new_starts(random: bool) -> void:
@@ -279,7 +284,7 @@ func _place_items(n: int) -> void:
 		for _t in range(30):
 			var c := Vector3(_rng.randf_range(-22.0, 22.0), 0, _rng.randf_range(-36.0, -6.0))
 			if c.length() > 7.0 and c.distance_to(goal) > 4.0:
-				p = main.free_spot(c, 0.6, true)
+				p = _g(main.free_spot(c, 0.6, true))
 				var far := true
 				for it in items:
 					if p.distance_to(it["pos"]) < 6.0:
@@ -333,7 +338,7 @@ func _update_cones() -> void:
 		var r: float = [26.0, 17.0][i]
 		if dark:
 			r = float(main.ir_range) * 0.8 if (i == 0 and ir) else 5.0
-		c.position = Vector3(cam.global_position.x, 0.06, cam.global_position.z)
+		c.position = Vector3(cam.global_position.x, main.ground_y(cam.global_position.x, cam.global_position.z) + 0.06, cam.global_position.z)
 		c.rotation.y = cam.global_rotation.y
 		c.scale = Vector3(r, 1, r)
 
@@ -861,7 +866,7 @@ func _build_jail() -> void:
 		jail_node = null
 	if not main.game_rescue:
 		return
-	jail = main.free_spot(Vector3(0, 0, -44), 2.0, true)
+	jail = _g(main.free_spot(Vector3(0, 0, -44), 2.0, true))
 	jail_node = Node3D.new()
 	root.add_child(jail_node)
 	jail_node.position = jail
@@ -895,7 +900,7 @@ func _build_flags() -> void:
 	if not flag_mode():
 		return
 	captures = [0, 0]
-	bases = [main.free_spot(Vector3(-24, 0, -22), 1.5, true), main.free_spot(Vector3(24, 0, -22), 1.5, true)]
+	bases = [_g(main.free_spot(Vector3(-24, 0, -22), 1.5, true)), _g(main.free_spot(Vector3(24, 0, -22), 1.5, true))]
 	for t in range(2):
 		var n := Node3D.new()
 		root.add_child(n)
@@ -1390,7 +1395,7 @@ func _throw(p: Dictionary) -> void:
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color(0.5, 0.5, 0.48)
 	s.material_override = mat
-	s.position = to + Vector3(0, 0.07, 0)
+	s.position = _g(to) + Vector3(0, 0.07, 0)
 	root.add_child(s)
 	stones.append([s, now() + 8.0])
 	main.add_sound(-14.0, to, 0.6)                         # the microphone of Motion Watch hears it too

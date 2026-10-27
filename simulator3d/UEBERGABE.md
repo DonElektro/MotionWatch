@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-3.7** · passende Motion-Watch-Version **2.93.14**
+Stand: 26.10.2026 · Simulator-Version **3D-3.8** · passende Motion-Watch-Version **2.93.15**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,11 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-3.8 – Sonne und Spiel im Gelände:** `sun_pos()` (NOAA, Ort `ort_lat/lon` sonst 46.8/8.2, `season` «today» oder Monat,
+MEZ/MESZ grob nach Tag im Jahr), `sun_el()` nutzt sie, `_update_sky` dreht die Sonne nach dem Azimut (Rotation y = 180° − Azimut).
+`horizon_el(az)` (Geländewinkel in 2°-Schritten, Cache `_horizon`), `sun_behind_hills()` dämpft Sonnenlicht und Wärme, `sky_mode`
+LIGHT_ONLY dahinter (sonst dunkle Sonnenscheibe). game.gd: `_g()` setzt Ziel, Starts, Kristalle, Zelle, Basen auf `ground_y`.
+
 **3D-3.7 – Kamerabilder fest:** Bedienfeld = `outer` VBox: `top_box` (Kopf, Werkzeugleiste, Karte «Kameras») + ScrollContainer mit `ui_box`.
 
 **3D-3.6 – Maus-Steuerung:** `_unhandled_input` neu: `m_btn`, `m_grab` (Bodenpunkt), `_pan_to`, `_orbit` (Drehen um den Punkt),

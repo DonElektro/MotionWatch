@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 03:53",
+ "generated": "2026-10-27 03:58",
  "versions": [
   {
-   "version": "2.93.14",
-   "file": "webcam_bewegung_2_93_14.py",
+   "version": "2.93.15",
+   "file": "webcam_bewegung_2_93_15.py",
    "url": "",
-   "sha256": "5236cb7c0a4e5257da66c06d3dbc0f2a9c3675413b9a3a75bf476975bf72922f",
-   "date": "2026-10-27 03:53",
-   "notes": "3D simulator 3D-3.7: camera pictures stay visible while the panel scrolls.",
-   "sig": "5bcd91bc51779d41c4d8cb9c834e5506dd0a2f8d322499546ff8fc9c9ac80dc0adb905967121b57d307aefda7ef6ed87b5d626fa8bc1d62a988140820feb2600"
+   "sha256": "788478450ff538303de540199b81748a8aaa7cf8fe9fad569f63894cafba9106",
+   "date": "2026-10-27 03:58",
+   "notes": "3D simulator 3D-3.8: real sun path for place and season, mountain shadows, game on real places.",
+   "sig": "7210a0a54881599730af06cc490704e3e0ac2f81bb8fb64ec52e550e4d5ef4fa7e59a6f7829662172222b0b9e20332a9561fa168ffe7ca7f00274e29cac64003"
   },
   {
    "version": "2.92.4",

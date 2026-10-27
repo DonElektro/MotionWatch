@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.7"
+const VERSION := "3D-3.8"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -566,6 +566,7 @@ func _build_scene() -> void:
 	anims.clear()
 	door_open = false
 	terrain = false
+	_horizon.clear()
 	ground_mats.clear()
 	geo_note = ""
 	scenes.build(scene, scene_parent)
@@ -584,6 +585,7 @@ func place_loaded() -> void:
 	ort_lat = geo.lat
 	ort_lon = geo.lon
 	ort_name = geo.place_name
+	_sun_cache = [-1.0, Vector2.ZERO]
 	_settings_dirty = true
 	set_scene("ort")
 
@@ -995,12 +997,70 @@ func set_hour(h: float) -> void:
 	clock0 = now()
 
 
-func sun_el() -> float:
+var season := "today"                 # sun path: "today" (real date) or a month "1" .. "12" (from 3D-3.8)
+var _sun_cache := [-1.0, Vector2.ZERO]
+var _horizon := {}                    # real place: how high the hills are in a direction (2° steps) - mountain shadow
+
+
+func day_of_year() -> int:
+	if season == "today":
+		var d := Time.get_date_dict_from_system()
+		var cum := [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
+		return int(cum[int(d["month"]) - 1]) + int(d["day"])
+	var m := clampi(int(season), 1, 12)
+	return [15, 46, 74, 105, 135, 166, 196, 227, 258, 288, 319, 349][m - 1]
+
+
+func sun_pos() -> Vector2:
+	"""(elevation, azimuth from north) in degrees for the place (the map, else the middle of Switzerland), the date and the
+	time on the clock (Swiss time, summer time from the end of March to the end of October) - NOAA formulas"""
 	var h := hour()
-	if h >= 6.5 and h <= 19.5:
-		return 50.0 * sin((h - 6.5) / 13.0 * PI)
-	var x := h - 19.5 if h > 19.5 else h + 4.5
-	return -20.0 * sin(x / 11.0 * PI)
+	if abs(h - float(_sun_cache[0])) < 0.002:
+		return _sun_cache[1]
+	var la := ort_lat if ort_lat != 0.0 else 46.8
+	var lo := ort_lon if ort_lon != 0.0 else 8.2
+	var doy := day_of_year()
+	var tz := 2.0 if doy >= 88 and doy < 300 else 1.0
+	var hu := h - tz
+	var g := TAU / 365.0 * (doy - 1 + (hu - 12.0) / 24.0)
+	var eqt := 229.18 * (0.000075 + 0.001868 * cos(g) - 0.032077 * sin(g) - 0.014615 * cos(2 * g) - 0.040849 * sin(2 * g))
+	var decl := 0.006918 - 0.399912 * cos(g) + 0.070257 * sin(g) - 0.006758 * cos(2 * g) + 0.000907 * sin(2 * g) - 0.002697 * cos(3 * g) + 0.00148 * sin(3 * g)
+	var tst := hu * 60.0 + eqt + 4.0 * lo
+	var ha := deg_to_rad(tst / 4.0 - 180.0)
+	var phi := deg_to_rad(la)
+	var cz := sin(phi) * sin(decl) + cos(phi) * cos(decl) * cos(ha)
+	var el := 90.0 - rad_to_deg(acos(clampf(cz, -1.0, 1.0)))
+	var az := fposmod(rad_to_deg(atan2(sin(ha), cos(ha) * sin(phi) - tan(decl) * cos(phi))) + 180.0, 360.0)
+	_sun_cache = [h, Vector2(el, az)]
+	return _sun_cache[1]
+
+
+func sun_el() -> float:
+	return sun_pos().x
+
+
+func horizon_el(az: float) -> float:
+	"""at a real place: the angle of the hills / mountains in this direction, seen from the head (0 on a flat scene)"""
+	if not terrain:
+		return 0.0
+	var k := int(round(fposmod(az, 360.0) / 2.0)) % 180
+	if not _horizon.has(k):
+		var a := deg_to_rad(k * 2.0)
+		var d := Vector2(sin(a), -cos(a))
+		var best := -90.0
+		var r := 15.0
+		while r < 1600.0:
+			var p := d * r
+			best = max(best, rad_to_deg(atan2(ground_y(p.x, p.y) - 1.6, r)))
+			r += 8.0 if r < 200.0 else 25.0
+		_horizon[k] = best
+	return _horizon[k]
+
+
+func sun_behind_hills() -> float:
+	"""1 = the sun is behind the mountains (only at a real place), 0 = free; soft over one degree"""
+	var sp := sun_pos()
+	return clampf((horizon_el(sp.y) - sp.x) + 0.5, 0.0, 1.0)
 
 
 func clouds() -> float:
@@ -1020,10 +1080,11 @@ func _update_sky() -> void:
 	var el := sun_el()
 	var day: float = clamp((el + 6.0) / 18.0, 0.0, 1.0)
 	var cl := clouds()
-	var az := -60.0 + (hour() - 13.0) * 15.0
+	var az := sun_pos().y                                   # real path of the sun (from 3D-3.8)
 	sun.rotation = Vector3(deg_to_rad(-max(el, -10.0)), deg_to_rad(180.0 - az), 0)
-	sun.light_energy = max(0.0, sin(deg_to_rad(max(el, 0.0)))) * 1.6 * (1.0 - 0.6 * cl) * cloud_shade() + (0.02 if el > -4 else 0.0)
+	sun.light_energy = (max(0.0, sin(deg_to_rad(max(el, 0.0)))) * 1.6 * (1.0 - 0.6 * cl) * cloud_shade() + (0.02 if el > -4 else 0.0)) * (1.0 - sun_behind_hills())
 	sun.visible = el > -4.0
+	sun.sky_mode = DirectionalLight3D.SKY_MODE_LIGHT_AND_SKY if sun_behind_hills() < 0.5 else DirectionalLight3D.SKY_MODE_LIGHT_ONLY   # no dark sun disk behind a mountain
 	var dusk: float = max(0.0, 1.0 - abs(el - 2.0) / 10.0) if el > -8.0 else 0.0
 	sun.light_color = Color(1.0, 0.95, 0.88).lerp(Color(1.0, 0.6, 0.35), dusk)
 	moonlight.light_energy = 0.035 * moon * (1.0 - cl) * (1.0 - day)
@@ -1086,7 +1147,7 @@ func eye_shine(p: Vector3) -> float:
 func _update_temps() -> void:
 	"""temperatures of the surfaces for the thermal camera: sun warms the ground by day, clear nights cool it"""
 	var el := sun_el()
-	var sunk: float = max(0.0, el) / 50.0
+	var sunk: float = max(0.0, el) / 50.0 * (1.0 - sun_behind_hills())
 	var cl := clouds()
 	var h := hour()
 	var evening := 1.0 if h >= 17.0 or h < 1.0 else 0.0
@@ -1641,7 +1702,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
 		["Testlauf", "check", "✅", [""]],
 		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates"]]]
 # id -> [group, part]; not listed: the group given in add_control, no part
-const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort von der Karte"], "speed": ["Szene", "Zeit"], "moon": ["Szene", "Zeit"],
+const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort von der Karte"], "speed": ["Szene", "Zeit"], "moon": ["Szene", "Zeit"], "season": ["Szene", "Zeit"],
 		"cam1_yaw": ["Kamerabild", "Feineinstellungen"], "humidity": ["Wetter", "Mehr Wetter"], "pressure": ["Wetter", "Mehr Wetter"],
 		"storm": ["Wetter", "Mehr Wetter"], "cloud_shadows": ["Wetter", "Mehr Wetter"], "gusts": ["Wetter", "Natur und Wind"],
 		"world_cloth": ["Wetter", "Natur und Wind"], "world_smoke": ["Wetter", "Natur und Wind"], "world_fireflies": ["Wetter", "Natur und Wind"],
@@ -1697,6 +1758,9 @@ func _register_controls() -> void:
 	add_control("button", "ort_map", "Karte öffnen: Ort in der Schweiz wählen …", null, func(): open_map(), "Ort von der Karte")
 	add_control("text", "ort", "Ort (Name oder Koordinaten, z. B. «Zermatt» oder «46.0207, 7.7491»)", func(): return place_label(), func(v): set_place_text(str(v)), "Ort von der Karte")
 	add_control("slider", "hour", "Uhrzeit", func(): return snappedf(hour(), 0.01), func(v): set_hour(v), "Szene", {"min": 0, "max": 23.75, "step": 0.25, "unit": "h"})
+	add_control("select", "season", "Jahreszeit (Sonnenbahn)", func(): return season, func(v): season = str(v); _sun_cache = [-1.0, Vector2.ZERO]; _update_sky(), "Szene",
+			{"options": [["today", "wie heute (echtes Datum)"], ["1", "Januar"], ["2", "Februar"], ["3", "März"], ["4", "April"], ["5", "Mai"], ["6", "Juni"],
+			["7", "Juli"], ["8", "August"], ["9", "September"], ["10", "Oktober"], ["11", "November"], ["12", "Dezember"]]})
 	add_control("slider", "speed", "Zeit läuft x-fach", func(): return speed, func(v): _set_speed(v), "Szene", {"min": 1, "max": 120, "step": 1, "unit": "×", "expert": true})
 	add_control("slider", "moon", "Mond", func(): return moon, func(v): moon = v, "Szene", {"min": 0, "max": 1, "step": 0.1, "expert": true})
 	add_control("slider", "cam1_yaw", "Kamera 1: Richtung", func(): return cam1_yaw, func(v): cam1_yaw = v, "Szene", {"min": -90, "max": 90, "step": 1, "unit": "°", "expert": true})
@@ -1881,7 +1945,8 @@ func control(d: Dictionary) -> Dictionary:
 						"online": p["sock"] != null, "vis": snappedf(game.visibility(p), 0.01), "cams": game.vis_debug(p)})
 		return {"ok": true, "open": game.open, "round": game.round_state, "players": ps, "guard": game.guard_auto, "guard_yaw": snappedf(game.guard_yaw, 0.01),
 				"goal": [snappedf(game.goal.x, 0.01), snappedf(game.goal.z, 0.01)], "address": game.address(),
-				"items": game.items.map(func(it): return [snappedf(it["pos"].x, 0.1), snappedf(it["pos"].z, 0.1), it["by"]]), "insects": insects.emitting}
+				"items": game.items.map(func(it): return [snappedf(it["pos"].x, 0.1), snappedf(it["pos"].z, 0.1), it["by"], snappedf(it["pos"].y, 0.01), snappedf(ground_y(it["pos"].x, it["pos"].z), 0.01)]),
+				"goal_y": [snappedf(game.goal.y, 0.01), snappedf(ground_y(game.goal.x, game.goal.z), 0.01)], "insects": insects.emitting}
 	elif a == "game_put":                              # for tests: put a player somewhere
 		var p2 = game.players[clampi(int(d.get("slot", 0)), 0, 3)]
 		if p2 == null:
@@ -1899,7 +1964,8 @@ func control(d: Dictionary) -> Dictionary:
 	elif a == "geo":                                   # for tests: the place (loading, what was built)
 		return {"ok": true, "busy": geo.busy, "loaded": geo.loaded, "info": geo.info, "counts": geo.counts, "terrain": terrain,
 				"h0": geo.h0, "src": geo.dem_source, "note": geo_note, "y": ground_y(float(d.get("x", 0.0)), float(d.get("z", 0.0))),
-				"map": karte.visible, "map_info": karte.status_text()}
+				"map": karte.visible, "map_info": karte.status_text(), "sun": [snappedf(sun_pos().x, 0.1), snappedf(sun_pos().y, 0.1),
+				snappedf(horizon_el(sun_pos().y), 0.1), sun_behind_hills(), snappedf(sun.light_energy, 0.01)]}
 	elif a == "map":                                   # for tests: open the map at a place, zoom
 		show_panel(false)
 		karte.open(float(d.get("lat", 46.95)), float(d.get("lon", 7.44)), int(d.get("zoom", 0)))
@@ -2480,7 +2546,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "meadow_on", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
+		"avoid_on", "quality", "meadow_on", "season", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
 

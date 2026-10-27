@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-3.7 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-3.8 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -66,6 +66,11 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
     Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
   * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
+- Ab 3D-3.8: Echte Sonnenbahn: die Sonne steht so, wie sie am gewählten Ort (sonst Mitte der Schweiz) zur eingestellten Uhrzeit
+  steht (Schweizer Zeit mit Sommerzeit). «Szene → Zeit → Jahreszeit»: wie heute (echtes Datum) oder ein Monat - im Winter
+  kurze Tage und tiefe Sonne, im Sommer lange Tage. An einem echten Ort verschwindet die Sonne hinter Hügeln und Bergen
+  (Bergschatten am Morgen und Abend). Das Handy-Spiel geht auch an einem echten Ort: Start, Ziel, Kristalle, Zelle und
+  Fahnen stehen auf dem Gelände.
 - Ab 3D-3.7: Die Kamerabilder bleiben oben im Bedienfeld stehen, nur die Einstellungen darunter scrollen.
 - Ab 3D-3.6: Steuerung nur mit der Maus (siehe «Bedienung»), Knopfleiste unten im Bild, Kompass, Besucher auswählen,
   verfolgen und mit der Maus tragen.

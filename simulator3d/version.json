@@ -1,7 +1,7 @@
 {
- "version": "3D-3.7",
+ "version": "3D-3.8",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30498241,
- "sha256": "f1c6581cbf78b1ff582c3ca5082771eb5a307088000731a9df7a4d2303098a74",
- "notes": "Die Kamerabilder bleiben beim Scrollen im Bedienfeld immer sichtbar."
+ "size": 30500920,
+ "sha256": "cc5d1356630e5b42f0b3063702aae98f35accd9dcfbf8ebcd54374a2cd6ac94b",
+ "notes": "Echte Sonnenbahn für Ort und Jahreszeit, Bergschatten an echten Orten, Handy-Spiel auch an echten Orten."
 }
