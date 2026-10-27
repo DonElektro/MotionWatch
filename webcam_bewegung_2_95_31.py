@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_30.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_31.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -618,6 +618,8 @@ Features
   * 2.95.30: tool «USB devices» (maker, model, type, speed, power need, driver, serial number and what the Pi made of it:
     Wi-Fi card, drive, camera …; newly plugged devices are marked; hints for USB 3 in a USB 2 socket and high power need).
     Update with a progress bar: real download progress, check, restart (estimated from the last restarts).
+  * 2.95.31: the game corner has its own tab in the header. New button «Rest mode: only game server»: camera, detection
+    and alarms pause, the Pi gives all its power to the games; ends by itself when the game corner closes.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -626,10 +628,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_30.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_31.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_30.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_30.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_31.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_31.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -646,7 +648,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.30"
+APP_VERSION = "2.95.31"
 
 
 def default_data_dir():
@@ -13720,10 +13722,14 @@ def party_open(hours=6.0):
         PARTY.update(key=secrets.token_urlsafe(9), game="lobby", players={}, host="", g={}, tools={})
     PARTY["until"] = time.time() + max(0.5, min(24.0, float(hours))) * 3600
     log_event("sys", f"Game corner open for {hours:g} h")
+    if toolmode_on() and TOOLMODE.get("by") == "game corner":
+        toolmode_set(max(5, min(720, int((PARTY["until"] - time.time()) / 60 + 0.99))), "game corner")
     party_bump()
 
 
 def party_close():
+    if toolmode_on() and TOOLMODE.get("by") == "game corner":
+        toolmode_set(0, "game corner")              # the rest mode ends with the game corner
     PARTY.update(key="", until=0.0, game="lobby", players={}, host="", g={}, tools={})
     log_event("sys", "Game corner closed")
     party_bump()
@@ -15931,7 +15937,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_30.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_31.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -16670,7 +16676,7 @@ def toolmode_set(minutes, source="web"):
             TOOLMODE["until"] = 0.0
             log_event("sys", f"Tool mode ended by {source} - monitoring runs again")
         return True, ""
-    if minutes > 240:
+    if minutes > 720:
         return False, "not a number"
     was = toolmode_on()
     TOOLMODE.update(until=time.time() + minutes * 60, by=source, since=TOOLMODE["since"] if was else time.time())
@@ -19869,6 +19875,8 @@ TOOLS_PAGE = r"""<!doctype html>
 <style>
 /*BASECSS*/
 main.tools{display:grid;grid-template-columns:270px minmax(0,1fr);gap:20px;max-width:1240px;margin:0 auto;padding:20px 16px 40px;align-items:start}
+main.tools.solo{grid-template-columns:minmax(0,1fr);max-width:900px}main.tools.solo .tlist,main.tools.solo .thd .back{display:none!important}
+main.tools.solo .tpane{display:block!important}
 .tlist{position:sticky;top:76px;display:flex;flex-direction:column;gap:1px;max-height:calc(100vh - 96px);overflow:auto;padding-right:2px}
 .tm{border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 14px;background:var(--panel)}
 .tm.on{border-color:var(--yel)}
@@ -19979,8 +19987,7 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <button type="button" class="tli" data-k="sd" onclick="pick('sd')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><span class="tln"><b data-i18n="Memory card test">Memory card test</b><span class="tsum" id="s-sd"></span></span><i class="tdot" id="d-sd"></i></button>
   <button type="button" class="tli" data-k="bt" onclick="pick('bt')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span class="tln"><b data-i18n="Bluetooth scanner">Bluetooth scanner</b><span class="tsum" id="s-bt"></span></span><i class="tdot" id="d-bt"></i></button>
   <button type="button" class="tli" data-k="usb" onclick="pick('usb')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v15"/><path d="M9 5l3-3 3 3"/><path d="M12 13l-5-3V7"/><path d="M12 11l5-3V6"/><rect x="5.5" y="5" width="3" height="2.5"/><circle cx="17" cy="5" r="1.4"/><circle cx="12" cy="19" r="2.5"/></svg><span class="tln"><b data-i18n="USB devices">USB devices</b><span class="tsum" id="s-usb"></span></span></button>
-  <div class="tlg" data-i18n="Leisure">Leisure</div>
-  <button type="button" class="tli" data-k="party" onclick="pick('party')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4"/><circle cx="16" cy="8" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="8" cy="16" r="1.4"/><circle cx="16" cy="16" r="1.4"/></svg><span class="tln"><b data-i18n="Game corner">Game corner</b><span class="mut" id="s-party"></span></span></button>
+  <button type="button" class="tli" data-k="party" onclick="pick('party')" hidden><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4"/><circle cx="16" cy="8" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="8" cy="16" r="1.4"/><circle cx="16" cy="16" r="1.4"/></svg><span class="tln"><b data-i18n="Game corner">Game corner</b><span class="mut" id="s-party"></span></span></button>
   <div class="tlg" data-i18n="Power and help">Power and help</div>
   <button type="button" class="tli" data-k="pow" onclick="pick('pow')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2M7 10v4M11 10v4"/></svg><span class="tln"><b data-i18n="Power calculator">Power calculator</b><span class="tsum" id="s-pow"></span></span><i class="tdot" id="d-pow"></i></button>
   <button type="button" class="tli" data-k="diag" onclick="pick('diag')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><span class="tln"><b data-i18n="Diagnosis package">Diagnosis package</b><span class="tsum" id="s-diag"></span></span><i class="tdot" id="d-diag"></i></button>
@@ -20153,7 +20160,12 @@ Object.assign(I18N.de, {"Leisure": "Freizeit", "Game corner": "Spielecke",
  "Open the game corner": "Spielecke öffnen", "Scan with the phone (same Wi-Fi as Motion Watch):": "Mit dem Handy scannen (gleiches WLAN wie Motion Watch):",
  "open for": "offen noch", "game": "Spiel", "lobby": "Lobby", "quiz": "Quiz", "wolf": "Werwolf", "draw": "Montagsmaler", "c4": "Vier gewinnt",
  "Play myself": "Selbst mitspielen", "Close": "Schliessen", "Player": "Spieler", "Points": "Punkte", "away": "weg", "Make host": "Zum Gastgeber machen", "Remove": "Entfernen",
- "players": "Spieler", "Game collection": "Spielesammlung", "Without login in your own Wi-Fi:": "Ohne Login im eigenen WLAN:", "USB devices": "USB-Geräte", "Read again": "Neu einlesen",
+ "players": "Spieler", "Game collection": "Spielesammlung", "Without login in your own Wi-Fi:": "Ohne Login im eigenen WLAN:",
+  "Motion Watch is resting – only the game server runs": "Motion Watch ruht – nur der Spiele-Server läuft", "Motion Watch is watching": "Motion Watch wacht",
+  "rest-note": "Ruhemodus: Kamera, Erkennung und Alarme pausieren, der Pi hat die ganze Leistung für die Spiele. Endet von selbst, wenn die Spielecke schliesst.",
+  "rest-note-on": "Kamera, Erkennung und Alarme pausieren. Endet von selbst mit der Spielecke.",
+  "Watch again now": "Jetzt wieder überwachen", "Rest mode: only game server": "Ruhemodus: nur Spiele-Server",
+  "rest-armed": "Motion Watch ist scharf. Im Ruhemodus gibt es keine Alarme. Trotzdem einschalten?", "until": "bis", "USB devices": "USB-Geräte", "Read again": "Neu einlesen",
   "usb-note": "Alles, was am USB steckt: Hersteller, Modell, Geschwindigkeit, Strombedarf und was der Pi daraus macht (WLAN-Karte, Laufwerk, Kamera …). Neu eingesteckte Geräte werden markiert.",
   "devices": "Geräte", "power need together": "Strombedarf zusammen", "usb-power": "der Pi gibt an allen USB-Buchsen zusammen etwa 1,2 A ab (Pi 5 mit kleinem Netzteil nur 0,6 A).",
   "No USB device plugged in.": "Kein USB-Gerät eingesteckt.", "No USB information on this computer.": "Auf diesem Computer gibt es keine USB-Angaben.",
@@ -20331,6 +20343,14 @@ function partyPaint() {
       const kb = el("button", "sec", "✕"); kb.type = "button"; kb.title = t("Remove"); kb.onclick = () => partyDo({action: "kick", id: p.id}); td.appendChild(kb); tr.appendChild(td); tb.appendChild(tr); });
     if ((P.players || []).length) box.appendChild(tb);
   }
+  const R = P.rest || {}, rr = el("div", "adp"); rr.style.cssText = "margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:12px";
+  const rh = el("div", "adp-h"); rh.append(el("b", "", R.on ? "😴 " + t("Motion Watch is resting – only the game server runs") : "👁 " + t("Motion Watch is watching")),
+    el("span", "mut", R.cpu != null ? "CPU " + Math.round(R.cpu) + " %" + (R.temp != null ? " · " + Math.round(R.temp) + " °C" : "") : ""));
+  rr.appendChild(rh);
+  rr.appendChild(el("div", "mut", R.on ? t("until") + " " + new Date(R.until * 1000).toLocaleTimeString(LOCALE || undefined, {hour: "2-digit", minute: "2-digit"}) + " · " + t("rest-note-on") : t("rest-note")));
+  const rb = el("button", R.on ? "" : "sec", R.on ? "👁 " + t("Watch again now") : "😴 " + t("Rest mode: only game server")); rb.type = "button"; rb.style.marginTop = "8px";
+  rb.onclick = () => { if (!R.on && R.armed && !confirm(t("rest-armed"))) return; const hs = box.querySelector("select"); partyDo({action: "rest", on: !R.on, hours: hs ? +hs.value : 6}); };
+  rr.appendChild(rb); box.appendChild(rr);
   if (P.lan_url) { const lr = el("div", "mut"); lr.style.margin = "8px 0"; lr.append(t("Without login in your own Wi-Fi:") + " "); const la = el("a", "", P.lan_url); la.href = P.lan_url; la.target = "_blank"; lr.appendChild(la); box.appendChild(lr); }
   const h = el("h3", "", "🕹 " + t("Game collection")); h.style.margin = "16px 0 6px"; box.appendChild(h);
   const gl = P.games || [];
@@ -20340,7 +20360,7 @@ function partyPaint() {
   if (P.dl && P.dl.msg && !P.dl.running) box.appendChild(el("div", "mut", t(P.dl.msg)));
   if (gl.length) { const g2 = el("div", "trow"); gl.forEach(x => { const a = el("a", "btn sec", x.name); a.href = "/games/" + x.dir + "/"; a.target = "_blank"; g2.appendChild(a); }); box.appendChild(g2); }
 }
-partyLoad();
+(async () => { for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100)); partyLoad(); })();   // after the language is known
 // ---- USB devices (2.95.30) ----
 let USBSEEN = null, USBNEW = {}, usbT = 0;
 const USBICON = {"Mass storage": "💾", "Video (webcam)": "📷", "Image (photo camera)": "📷", "Audio": "🔊", "Input device (keyboard, mouse …)": "⌨️",
@@ -20401,7 +20421,7 @@ function usbPaint(j, manual) {
   });
   if (!j.ids) box.appendChild(el("div", "mut", t("usb-ids")));
 }
-usbLoad();
+(async () => { for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100)); usbLoad(); })();
 function pick(k, push) {
   if (!document.getElementById("c-" + k)) k = "net";
   if (SEL === "focus" && k !== "focus" && FON) focusToggle();
@@ -20409,13 +20429,17 @@ function pick(k, push) {
   document.querySelectorAll("section.tool").forEach(x => x.hidden = x.dataset.k !== k);
   document.querySelectorAll(".tli").forEach(x => x.classList.toggle("on", x.dataset.k === k));
   document.body.classList.add("picked");
+  if (window.MW_SOLO) return;
   try { localStorage.setItem("mw-tool-sel", k); } catch (e) {}
   if (push !== false && location.hash !== "#" + k) history.pushState(null, "", "#" + k);
   if (matchMedia("(max-width:760px)").matches) scrollTo(0, 0);
 }
 function showList() { document.body.classList.remove("picked"); if (location.hash) history.pushState(null, "", location.pathname); }
 addEventListener("popstate", () => { const h = location.hash.slice(1); if (h) pick(h, false); else document.body.classList.remove("picked"); });
-(function () { let k = location.hash.slice(1); if (!k) { try { k = localStorage.getItem("mw-tool-sel") || ""; } catch (e) {} }
+(function () { let k = location.hash.slice(1);
+  if (window.MW_SOLO) { pick(window.MW_SOLO, false); return; }
+  if (k === "party") { location.replace("/party"); return; }               // the game corner has its own tab now
+  if (k === "party" || !k) { try { k = localStorage.getItem("mw-tool-sel") || ""; } catch (e) {} if (k === "party") k = ""; }
   if (location.hash || !matchMedia("(max-width:760px)").matches) pick(k || "net", false);
   else { SEL = k || "net"; document.querySelectorAll("section.tool").forEach(x => x.hidden = x.dataset.k !== SEL); } })();
 function sum(k, text, cls) { const e = $("#s-" + k); if (!e) return; e.textContent = PLAIN(text); const d = $("#d-" + k); if (d) d.className = "tdot" + (cls ? " " + cls : ""); }
@@ -21869,7 +21893,8 @@ $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin
 
 
 NAV_ITEMS = [("live", "/", "Live"), ("cams", "/cams", "Cameras"), ("rec", "/recordings", "Recordings"), ("zones", "/zones", "Zones"),
-             ("diary", "/diary", "Diary"), ("tools", "/tools", "Tools"), ("sim", "/sim", "Simulator"), ("help", "/help", "Manual")]
+             ("diary", "/diary", "Diary"), ("tools", "/tools", "Tools"), ("party", "/party", "Game corner"), ("sim", "/sim", "Simulator"),
+             ("help", "/help", "Manual")]
 
 
 def nav_html(active):
@@ -23963,7 +23988,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
 let LANG = "", THEME = "";
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
-const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Tools": "Werkzeuge", "Simulator": "Simulator"}};
+const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Tools": "Werkzeuge", "Simulator": "Simulator", "Game corner": "Spielecke"}};
 const t = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
@@ -25614,7 +25639,7 @@ const I18N = {en: I18N_EN, de: {
     "Fernzugriff schaltet ein, solange jemand über Tailscale zuschaut – auch unscharf (z. B. kleine Warnlampe)."
 }};
 Object.assign(I18N.de, {
-  "Live": "Live", "Cameras": "Kameras", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch",
+  "Live": "Live", "Cameras": "Kameras", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Game corner": "Spielecke",
   "📜 Whole log & archive": "📜 Ganzes Protokoll & Archiv",
   "Nothing important yet – everything else is in the whole log.": "Noch nichts Wichtiges – alles andere steht im ganzen Protokoll.",
   "Event log (important)": "Ereignisprotokoll (Wichtiges)",
@@ -30547,6 +30572,14 @@ class WebStream:
                     party_open(float(d.get("hours") or 6))
                 elif a_ == "close":
                     party_close()
+                elif a_ == "rest":                     # Motion Watch rests, only the game server runs (2.95.31)
+                    if d.get("on"):
+                        mins = (PARTY["until"] - time.time()) / 60 if party_on() else float(d.get("hours") or 6) * 60
+                        ok_, e_ = toolmode_set(max(5, min(720, int(mins + 0.99))), "game corner")
+                        if not ok_:
+                            return reply({"ok": False, "error": e_}, 400)
+                    else:
+                        toolmode_set(0, "web " + (request.remote_addr or "?"))
                 elif a_ == "kick" and d.get("id") in PARTY["players"]:
                     PARTY["players"].pop(d["id"], None)
                     if PARTY["host"] == d["id"]:
@@ -30562,7 +30595,7 @@ class WebStream:
             return reply({"ok": True, "on": party_on(), "url": url, "lan_url": (local or request.host_url.rstrip("/")) + "/spiele", "qr": qr_svg(url) if url else "", "left": int(max(0, PARTY["until"] - time.time())),
                           "players": [{"id": k, "name": v["name"], "score": v["score"], "host": k == PARTY["host"], "on": time.time() - v["t"] < 25}
                                       for k, v in PARTY["players"].items()], "game": PARTY["game"],
-                          "games": games_list(), "games_ver": games_installed_version(), "games_pkg": GAMES_PKG, "dl": dict(GAMES_DL),
+                          "games": games_list(), "games_ver": games_installed_version(), "rest": toolmode_state(), "games_pkg": GAMES_PKG, "dl": dict(GAMES_DL),
                           "remote": base})
 
         @app.route("/api/simtest/pic/<int:rid>/<name>")
@@ -31701,6 +31734,12 @@ class WebStream:
         @app.route("/tools")
         def tools_page():
             return Response(render_page(TOOLS_PAGE, "tools"), mimetype="text/html")
+
+        @app.route("/party")
+        def party_admin_page():
+            """own tab «Game corner» (2.95.31): the tools page showing only the game corner"""
+            pg = TOOLS_PAGE.replace('<main class="tools">', '<main class="tools solo">', 1).replace("<head>", "<head><script>window.MW_SOLO='party';</script>", 1)
+            return Response(render_page(pg, "party"), mimetype="text/html")
 
         @app.route("/api/tools", methods=["GET", "POST"])
         def api_tools():
@@ -33385,7 +33424,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.30")
+        self.root.title("Motion Watch 2.95.31")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -33675,7 +33714,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.30 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.31 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -40377,7 +40416,7 @@ for _k, _v in _HX52.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_HX60 = {'Downloading': ('Herunterladen', 'Téléchargement', 'Download', 'Telechargiar'), 'Checking the signature': ('Unterschrift wird geprüft', 'Vérification de la signature', 'Verifica della firma', 'La signatura vegn controllada'),
+_HX60 = {'Game corner': ('Spielecke', 'Coin jeux', 'Angolo giochi', 'Chantun da gieus'), 'Downloading': ('Herunterladen', 'Téléchargement', 'Download', 'Telechargiar'), 'Checking the signature': ('Unterschrift wird geprüft', 'Vérification de la signature', 'Verifica della firma', 'La signatura vegn controllada'),
          'Restarting': ('Neustart', 'Redémarrage', 'Riavvio', 'Reaviar'), 'Still about': ('Noch etwa', 'Encore environ', 'Ancora circa', 'Anc var'),
          'Takes longer than usual …': ('Dauert länger als sonst …', 'Plus long que d’habitude …', 'Più lungo del solito …', 'Dura pli ditg che uschiglio …'), 'Done': ('Fertig', 'Terminé', 'Fatto', 'Finì'),
          'USB devices': ('USB-Geräte', 'Appareils USB', 'Dispositivi USB', 'Apparats USB'), 'Read again': ('Neu einlesen', 'Relire', 'Rileggi', 'Leger danovamain'),

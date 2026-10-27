@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 15:23",
+ "generated": "2026-10-27 15:33",
  "versions": [
   {
-   "version": "2.95.30",
-   "file": "webcam_bewegung_2_95_30.py",
+   "version": "2.95.31",
+   "file": "webcam_bewegung_2_95_31.py",
    "url": "",
-   "sha256": "fb8ebccb5749f9eca25acecdf957a5b12671c9122ae4462a797c6ff1e130cb7c",
-   "date": "2026-10-27 15:23",
-   "notes": "tool «USB devices» (maker, model, type, speed, power need, driver, serial number and what the Pi made of it: Wi-Fi card, drive, camera …; newly plugged devices are marked; hints for USB 3 in a USB 2 socket and high power need). Update with a progress bar: real download progress, check, restart (estimated from the last restarts).",
-   "sig": "e1ed66ce2b6735110339d0e342ee1ac039414fed688be6941eb3b861c0a39cb877897896787e1ccdb87bad13867e584178ad578e3bb84c3c210d2648d03bb909"
+   "sha256": "f5b1b07f393e409cb59fb1aabb1351d68e6d1996a2c91cff417125b271abfb2e",
+   "date": "2026-10-27 15:33",
+   "notes": "the game corner has its own tab in the header. New button «Rest mode: only game server»: camera, detection and alarms pause, the Pi gives all its power to the games; ends by itself when the game corner closes.",
+   "sig": "4068e2734c1dbfb9ae4730b4e9d3a827ca425425284e6d7b878cc1ca3aa5880443afe7de54e431977d7bd7f7ae76131f8cb5e5a6579834aebb21b862bc3dec0e"
   },
   {
    "version": "2.94.5",
