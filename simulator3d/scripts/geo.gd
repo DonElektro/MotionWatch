@@ -285,6 +285,7 @@ func load_place(la: float, lo: float, nm: String, rebuild := true) -> void:
 	lat = la
 	lon = lo
 	place_name = nm if nm != "" else "%.5f, %.5f" % [la, lo]
+	env = ""
 	k = cos(deg_to_rad(la))
 	m0 = merc(la, lo)
 	counts = {}
@@ -514,6 +515,11 @@ func build(s) -> void:
 	counts = {}
 	buildings = []
 	road_segs = {}
+	park_segs = []
+	water_polys = []
+	if env == "":
+		detect_env()
+	var use_env: String = main.ort_env if main.ort_env != "auto" else env
 	_terrain_meshes()
 	if not b3d_meshes.is_empty():
 		var bm := ShaderMaterial.new()
@@ -551,7 +557,7 @@ func build(s) -> void:
 			var orchard := str(tg.get("landuse", "")) == "orchard"
 			var conif := 1 if str(tg.get("leaf_type", "")) == "needleleaved" else (0 if str(tg.get("leaf_type", "")) == "broadleaved" or orchard else -1)
 			for poly in _polys(e):
-				for p in _fill(poly, 10.0 if orchard else 6.0):
+				for p in _fill(poly, 10.0 if orchard else [9.0, 6.0, 4.5][clampi(main.ort_forest, 0, 2)]):
 					trees_at.append([p, rng.randf_range(0.6, 0.9) if orchard else rng.randf_range(0.9, 1.6), conif, 2])
 		elif str(tg.get("natural", "")) == "water" or str(tg.get("leisure", "")) == "swimming_pool" or str(tg.get("landuse", "")) in ["reservoir", "basin"]:
 			for poly in _polys(e):
@@ -580,6 +586,7 @@ func build(s) -> void:
 	_trees(trees_at)
 	_far_trees()
 	_camp()
+	_env_props(use_env)
 	if head_in:
 		main.geo_note = "Motion Watch steht in einem Gebäude – das Gebäude wurde weggelassen."
 	counts["trees"] = counts.get("trees", 0)
@@ -1083,6 +1090,8 @@ func _road(l: PackedVector2Array, tg: Dictionary) -> void:
 	var paved := surf in ["asphalt", "paved", "concrete", "paving_stones"] or (surf == "" and not t in ["track", "path", "bridleway"])
 	for i in range(l.size() - 1):
 		var sg := [l[i], l[i + 1], w / 2.0 + 1.0]
+		if t in ["residential", "service", "unclassified", "tertiary", "living_street", "secondary"] and l[i].length() < 90.0:
+			park_segs.append([l[i], l[i + 1], w / 2.0])
 		var lo: Vector2 = Vector2(min(l[i].x, l[i + 1].x), min(l[i].y, l[i + 1].y)) - Vector2.ONE * sg[2]
 		var hi: Vector2 = Vector2(max(l[i].x, l[i + 1].x), max(l[i].y, l[i + 1].y)) + Vector2.ONE * sg[2]
 		if hi.x - lo.x > 2000.0 or hi.y - lo.y > 2000.0:
@@ -1156,6 +1165,7 @@ func _finish_ribbons() -> void:
 
 
 func _water(poly: PackedVector2Array) -> void:
+	water_polys.append(poly)
 	for cp in _clip(poly, NEAR + 20.0):
 		var lo := INF
 		var step := maxi(1, cp.size() / 40)
@@ -1348,15 +1358,211 @@ func _camp() -> void:
 		q.y = height(q.x, q.z)
 		used.append(q)
 		return q
+	var camp: int = clampi(main.ort_camp, 0, 2)          # 0 caravan and tent, 1 only the caravan, 2 tent and a hut
 	var cp: Vector3 = pick.call(3.5)
-	sc.caravan(cp, atan2(cp.x, cp.z) + PI / 2.0)
+	if camp == 2:
+		sc.hut(cp, atan2(cp.x, cp.z))
+	else:
+		sc.caravan(cp, atan2(cp.x, cp.z) + PI / 2.0)
 	var tp: Vector3 = pick.call(2.5)
-	var tn = sc.node(sc.root, tp, atan2(tp.x, tp.z))
-	var tent := PrismMesh.new()
-	tent.size = Vector3(2.6, 1.5, 2.4)
-	sc.put(tn, tent, Vector3(0, 0.75, 0), Color(0.9, 0.5, 0.15), "tent")
 	main.obj["pir"] = tp
-	main.add_obstacle_node(tn, Vector3.ZERO, 3.0, 2.8)
-	main.set_obstacle_height(1.4)
+	if camp != 1:
+		var tn = sc.node(sc.root, tp, atan2(tp.x, tp.z))
+		var tent := PrismMesh.new()
+		tent.size = Vector3(2.6, 1.5, 2.4)
+		sc.put(tn, tent, Vector3(0, 0.75, 0), Color(0.9, 0.5, 0.15), "tent")
+		main.add_obstacle_node(tn, Vector3.ZERO, 3.0, 2.8)
+		main.set_obstacle_height(1.4)
 	var bp: Vector3 = pick.call(1.0)
 	sc.bike(bp, atan2(bp.x, bp.z))
+
+
+# ---- the surroundings (from 3D-3.14): what kind of place is it, and things that fit there ----------------------------
+const ENVS := [["auto", "Automatisch (erkannt)"], ["dorf", "Dorf"], ["stadt", "Stadt"], ["land", "Bauernhof / Land"], ["wald", "Wald"],
+		["berge", "Berge"], ["see", "See / Fluss"]]
+const ENV_INFO := {"dorf": "Autos am Strassenrand, Bänke, Hecken, Mauern, Holzstapel, Fässer",
+		"stadt": "viele Autos, Container, Mauern, Paletten, Kisten, Bänke",
+		"land": "Heuballen, Anhänger, Holzstapel, Kompost, Schuppen, Hecken",
+		"wald": "Holzstapel, Felsen, Büsche, Waldhütte",
+		"berge": "Felsen und Steinblöcke, Holzstapel, Alphütte, Büsche",
+		"see": "Boote am Ufer, Schilf, Bänke, Büsche, Felsen"}
+const ENV_PROPS := {
+	"dorf": ["bush", "bush", "hedge", "wall", "barrels", "bench", "pallets", "woodpile", "compost"],
+	"stadt": ["container", "wall", "pallets", "barrels", "bench", "crates", "bush"],
+	"land": ["haybale", "haybale", "trailer", "woodpile", "compost", "shed", "hedge", "bush", "pallets"],
+	"wald": ["woodpile", "woodpile", "rock", "bush", "bush", "rock", "shed"],
+	"berge": ["rock", "rock", "rock", "woodpile", "shed", "bush"],
+	"see": ["boat", "reeds", "reeds", "bush", "rock", "bench", "woodpile"]}
+const ENV_CARS := {"dorf": 5, "stadt": 9, "land": 1, "wald": 1, "berge": 1, "see": 2}
+var env := ""                      # what the place looks like (detect_env)
+var env_why := ""
+var park_segs: Array = []          # [a, b, half width] of small roads near Motion Watch: parked cars
+var water_polys: Array = []
+
+
+func detect_env() -> String:
+	"""village, town, farm land, forest, mountains or lake - from OpenStreetMap and the height"""
+	var forest := []
+	var water := []
+	var farm := []
+	var urban := []
+	var houses := 0
+	var river := false
+	for e in osm:
+		if typeof(e) != TYPE_DICTIONARY or typeof(e.get("tags")) != TYPE_DICTIONARY:
+			continue
+		var tg: Dictionary = e["tags"]
+		var nat := str(tg.get("natural", ""))
+		var lu := str(tg.get("landuse", ""))
+		if tg.has("building") and str(tg.get("building")) != "no":
+			for poly in _polys(e):
+				var c := Vector2.ZERO
+				for q in poly:
+					c += q
+				if poly.size() > 0 and (c / poly.size()).length() < 150.0:
+					houses += 1
+		elif tg.has("waterway") and str(tg.get("waterway")) in ["river", "canal"]:
+			for q in _line(e):
+				if q.length() < 120.0:
+					river = true
+					break
+		var target = null
+		if nat in ["wood", "scrub"] or lu == "forest":
+			target = forest
+		elif nat == "water" or lu in ["reservoir", "basin"]:
+			target = water
+		elif lu in ["farmland", "meadow", "farmyard", "orchard", "vineyard", "grass", "allotments"]:
+			target = farm
+		elif lu in ["residential", "commercial", "retail", "industrial"]:
+			target = urban
+		if target != null:
+			for poly in _polys(e):
+				var bb := Rect2(poly[0], Vector2.ZERO)
+				for q in poly:
+					bb = bb.expand(q)
+				if bb.intersects(Rect2(-150, -150, 300, 300)):
+					target.append([poly, bb])
+	var n := 0
+	var f := [0, 0, 0, 0]
+	var z := -145.0
+	while z <= 145.0:
+		var x := -145.0
+		while x <= 145.0:
+			var p := Vector2(x, z)
+			if p.length() <= 150.0:
+				n += 1
+				var k2 := 0
+				for lst in [forest, water, farm, urban]:
+					for pb in lst:
+						if pb[1].has_point(p) and Geometry2D.is_point_in_polygon(p, pb[0]):
+							f[k2] += 1
+							break
+					k2 += 1
+			x += 10.0
+		z += 10.0
+	var fr: Array = f.map(func(v): return float(v) / max(1, n))
+	var e2 := "land"
+	if fr[1] > 0.08 or river:
+		e2 = "see"
+	elif h0 > 1300.0 and houses < 20:
+		e2 = "berge"
+	elif houses >= 120 or (fr[3] > 0.5 and houses >= 70):
+		e2 = "stadt"
+	elif fr[0] > 0.45:
+		e2 = "wald"
+	elif houses >= 25:
+		e2 = "dorf"
+	elif fr[2] < 0.15 and houses < 3 and h0 > 1000.0:
+		e2 = "berge"
+	env = e2
+	env_why = "%d Häuser, %d %% Wald, %d %% Wasser%s, %d %% Wiesen und Felder, %d m ü. M." % [houses, int(fr[0] * 100), int(fr[1] * 100),
+			" (Fluss)" if river else "", int(fr[2] * 100), int(h0)]
+	return env
+
+
+func env_name(e: String) -> String:
+	for x in ENVS:
+		if x[0] == e:
+			return x[1]
+	return e
+
+
+func _prop_free(p: Vector2, r: float, roads := true) -> bool:
+	if p.length() < 6.0 or abs(p.x) > NEAR - 5.0 or abs(p.y) > NEAR - 5.0:
+		return false
+	for o in main._ob_near(p):
+		if float(main._ob_closest(o, p)[1]) < r:
+			return false
+	for rs in (road_segs.get(Vector2i(int(floor(p.x / 8.0)), int(floor(p.y / 8.0))), []) if roads else []):
+		if Geometry2D.get_closest_point_to_segment(p, rs[0], rs[1]).distance_to(p) < float(rs[2]) + 1.0:
+			return false
+	for wp in water_polys:
+		if Geometry2D.is_point_in_polygon(p, wp):
+			return false
+	return true
+
+
+func _env_props(e: String) -> void:
+	"""hiding places that fit the surroundings (amount from the wizard: few / some / many)"""
+	var kinds: Array = ENV_PROPS.get(e, ENV_PROPS["land"])
+	var many: int = [8, 18, 34][clampi(main.ort_hide, 0, 2)]
+	var made := 0
+	# parked cars along the small roads
+	if main.ort_cars and not park_segs.is_empty():
+		var want: int = int(ENV_CARS.get(e, 1)) * (1 + clampi(main.ort_hide, 0, 2)) / 2 + 1
+		var tries := 0
+		var cars := 0
+		while cars < want and tries < want * 15:
+			tries += 1
+			var sg: Array = park_segs[rng.randi() % park_segs.size()]
+			var a: Vector2 = sg[0]
+			var b: Vector2 = sg[1]
+			if a.distance_to(b) < 5.0:
+				continue
+			var d := (b - a).normalized()
+			var side := 1.0 if rng.randf() < 0.5 else -1.0
+			var p := a + (b - a) * rng.randf_range(0.15, 0.85) + d.orthogonal() * side * (float(sg[2]) + 1.3)
+			if not _prop_free(p, 1.6, false):
+				continue
+			sc.static_car(Vector3(p.x, 0.0, p.y), atan2(d.x, d.y), [Color(0.75, 0.75, 0.78), Color(0.15, 0.18, 0.22), Color(0.6, 0.12, 0.1), Color(0.2, 0.35, 0.6), Color(0.85, 0.85, 0.82)][rng.randi() % 5])
+			cars += 1
+		counts["cars"] = cars
+	# boats and reeds at the shore
+	if e == "see" and not water_polys.is_empty():
+		var shore := []
+		for wp in water_polys:
+			for i in range(wp.size()):
+				if wp[i].length() < 90.0 and wp[i].length() > 7.0:
+					shore.append([wp[i], wp[(i + 1) % wp.size()]])
+		var tries2 := 0
+		var at_shore := 0
+		while at_shore < many / 2 and tries2 < many * 10 and not shore.is_empty():
+			tries2 += 1
+			var s2: Array = shore[rng.randi() % shore.size()]
+			var dd: Vector2 = (s2[1] - s2[0]).normalized()
+			var nrm := dd.orthogonal()
+			var p2: Vector2 = s2[0] + nrm * 2.5
+			var inside := false
+			for wp in water_polys:
+				if Geometry2D.is_point_in_polygon(p2, wp):
+					inside = true
+			if inside:
+				p2 = s2[0] - nrm * 2.5
+			if not _prop_free(p2, 2.0):
+				continue
+			sc.prop("boat" if rng.randf() < 0.5 else "reeds", Vector3(p2.x, 0.0, p2.y), atan2(dd.x, dd.y))
+			at_shore += 1
+		made += at_shore
+	# the rest spread round Motion Watch, more of them near
+	var tries3 := 0
+	while made < many and tries3 < many * 15:
+		tries3 += 1
+		var p3 := Vector2.from_angle(rng.randf() * TAU) * (7.0 + pow(rng.randf(), 1.4) * 55.0)
+		if not _prop_free(p3, 3.0):
+			continue
+		var kind: String = kinds[rng.randi() % kinds.size()]
+		if kind == "car" and not main.ort_cars:
+			continue
+		sc.prop(kind, Vector3(p3.x, 0.0, p3.y), rng.randf() * TAU)
+		made += 1
+	counts["props"] = made

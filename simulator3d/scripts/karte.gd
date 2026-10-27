@@ -29,6 +29,17 @@ var found: Array = []
 var info: Label
 var load_btn: Button
 var kind_btn: Button
+var title: Label
+var top_bar: HBoxContainer
+var back_btn: Button
+var wiz: ScrollContainer          # steps 2 and 3 of the wizard (3D-3.14)
+var wiz_box: VBoxContainer
+var step := 1                     # 1 the place, 2 the surroundings, 3 the objects
+var w_env := "auto"
+var w_hide := 1
+var w_cars := true
+var w_forest := 1
+var w_camp := 0
 
 
 func _ready() -> void:
@@ -49,9 +60,10 @@ func _ready() -> void:
 	var bar := HBoxContainer.new()
 	bar.add_theme_constant_override("separation", 6)
 	v.add_child(bar)
-	var t := Label.new()
-	t.text = "Ort wählen (Schweiz)"
-	bar.add_child(t)
+	top_bar = bar
+	title = Label.new()
+	title.text = "Schritt 1 von 3 · Ort wählen (Schweiz)"
+	bar.add_child(title)
 	search = LineEdit.new()
 	search.placeholder_text = "Ort suchen, z. B. Zermatt, Bahnhofstrasse 1 Zürich …"
 	search.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -87,6 +99,15 @@ func _ready() -> void:
 	view.gui_input.connect(_map_input)
 	view.resized.connect(func(): view.queue_redraw())
 	v.add_child(view)
+	wiz = ScrollContainer.new()
+	wiz.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	wiz.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	wiz.visible = false
+	v.add_child(wiz)
+	wiz_box = VBoxContainer.new()
+	wiz_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wiz_box.add_theme_constant_override("separation", 10)
+	wiz.add_child(wiz_box)
 	var bottom := HBoxContainer.new()
 	bottom.add_theme_constant_override("separation", 8)
 	v.add_child(bottom)
@@ -95,10 +116,15 @@ func _ready() -> void:
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	info.text = "Klicken = Ort wählen · Ziehen = verschieben · Mausrad = zoomen"
 	bottom.add_child(info)
+	back_btn = Button.new()
+	back_btn.text = "‹ Zurück"
+	back_btn.visible = false
+	back_btn.pressed.connect(func(): _show_step(step - 1))
+	bottom.add_child(back_btn)
 	load_btn = Button.new()
-	load_btn.text = "Diesen Ort laden"
+	load_btn.text = "Weiter: Umgebung ›"
 	load_btn.disabled = true
-	load_btn.pressed.connect(_load)
+	load_btn.pressed.connect(_next)
 	if main.UI.has_method("primary"):
 		main.UI.primary(load_btn)
 	bottom.add_child(load_btn)
@@ -111,6 +137,7 @@ func _ready() -> void:
 
 func open(la := 0.0, lo := 0.0, z := 0) -> void:
 	visible = true
+	_show_step(1)
 	get_parent().move_child(self, -1)                     # above everything else in the window
 	if la != 0.0:
 		sel = Vector2(la, lo)
@@ -323,12 +350,49 @@ func _pick_result(i: int) -> void:
 	view.queue_redraw()
 
 
+func _next() -> void:
+	match step:
+		1:
+			_load()
+		2:
+			_show_step(3)
+		_:
+			_build()
+
+
 func _load() -> void:
+	"""step 1 → 2: get the data of the place (not built yet), then look what kind of place it is"""
 	if sel == Vector2.ZERO:
+		return
+	if geo.loaded and not geo.busy and is_equal_approx(geo.lat, sel.x) and is_equal_approx(geo.lon, sel.y):
+		_loaded()
 		return
 	waiting = true
 	load_btn.disabled = true
-	main.choose_place(sel.x, sel.y, sel_name)
+	geo.load_place(sel.x, sel.y, sel_name, false)
+
+
+func _loaded() -> void:
+	if geo.env == "":
+		geo.detect_env()
+	w_env = main.ort_env if is_equal_approx(main.ort_lat, sel.x) and is_equal_approx(main.ort_lon, sel.y) else "auto"
+	w_hide = main.ort_hide
+	w_cars = main.ort_cars
+	w_forest = main.ort_forest
+	w_camp = main.ort_camp
+	_show_step(2)
+
+
+func _build() -> void:
+	"""step 3: build the scene with the choices"""
+	main.ort_env = w_env
+	main.ort_hide = w_hide
+	main.ort_cars = w_cars
+	main.ort_forest = w_forest
+	main.ort_camp = w_camp
+	main._settings_dirty = true
+	visible = false
+	main.place_loaded()
 
 
 func _process(_dt: float) -> void:
@@ -340,6 +404,109 @@ func _process(_dt: float) -> void:
 		waiting = false
 		load_btn.disabled = false
 		if geo.loaded and is_equal_approx(geo.lat, sel.x):
-			visible = false
+			_loaded()
 		else:
 			info.text = geo.info
+
+
+# ---- the wizard (from 3D-3.14): step 2 the surroundings, step 3 the objects ------------------------------------------
+func _show_step(n: int) -> void:
+	step = clampi(n, 1, 3)
+	var on_map := step == 1
+	view.visible = on_map
+	for c in top_bar.get_children():
+		if c != title:
+			c.visible = on_map
+	results.visible = on_map and not found.is_empty() and results.visible
+	wiz.visible = not on_map
+	back_btn.visible = not on_map
+	load_btn.disabled = on_map and sel == Vector2.ZERO
+	match step:
+		1:
+			title.text = "Schritt 1 von 3 · Ort wählen (Schweiz)"
+			load_btn.text = "Weiter: Umgebung ›"
+			_update_info()
+		2:
+			title.text = "Schritt 2 von 3 · Umgebung"
+			load_btn.text = "Weiter: Objekte ›"
+			_page_env()
+		3:
+			title.text = "Schritt 3 von 3 · Objekte und Verstecke"
+			load_btn.text = "Szene bauen ✓"
+			_page_objects()
+
+
+func _clear_wiz() -> void:
+	for c in wiz_box.get_children():
+		c.queue_free()
+
+
+func _text(t: String, sz := 14, col := Color(0.85, 0.88, 0.92)) -> Label:
+	var l := Label.new()
+	l.text = t
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.add_theme_font_size_override("font_size", sz)
+	l.add_theme_color_override("font_color", col)
+	wiz_box.add_child(l)
+	return l
+
+
+func _choice(head: String, opts: Array, cur, on_pick: Callable) -> void:
+	"""a row of buttons, one of them pressed"""
+	_text(head, 15, Color(1, 1, 1))
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 6)
+	row.add_theme_constant_override("v_separation", 6)
+	wiz_box.add_child(row)
+	var grp := ButtonGroup.new()
+	for o in opts:
+		var b := Button.new()
+		b.text = str(o[1])
+		b.toggle_mode = true
+		b.button_group = grp
+		b.custom_minimum_size = Vector2(120, 34)
+		b.button_pressed = o[0] == cur
+		var key = o[0]
+		b.pressed.connect(func(): on_pick.call(key))
+		row.add_child(b)
+
+
+func _page_env() -> void:
+	_clear_wiz()
+	var place: String = sel_name if sel_name != "" else geo.place_name
+	_text("%s – so sieht es dort aus:" % place, 16, Color(1, 1, 1))
+	_text("Erkannt: %s  (%s)" % [geo.env_name(geo.env), geo.env_why], 14, Color(0.55, 0.85, 1.0))
+	_text("Die Umgebung bestimmt, welche Dinge zusätzlich in die Szene kommen. Gebäude, Strassen, Wald und Wasser kommen immer vom echten Ort.", 13, Color(0.7, 0.74, 0.8))
+	var opts := []
+	for e in geo.ENVS:
+		opts.append([e[0], (e[1] + " → " + geo.env_name(geo.env)) if e[0] == "auto" else e[1]])
+	_choice("Umgebung", opts, w_env, _pick_env)
+	var hint := _text("", 13, Color(0.8, 0.82, 0.7))
+	hint.name = "hint"
+	_env_hint()
+	info.text = "Umgebung prüfen oder ändern, dann «Weiter»."
+
+
+func _pick_env(k) -> void:
+	w_env = k
+	_env_hint()
+
+
+func _env_hint() -> void:
+	var h := wiz_box.get_node_or_null("hint")
+	if h == null:
+		return
+	var e: String = geo.env if w_env == "auto" else w_env
+	h.text = "Dazu kommen: " + str(geo.ENV_INFO.get(e, ""))
+
+
+func _page_objects() -> void:
+	_clear_wiz()
+	var e: String = geo.env if w_env == "auto" else w_env
+	_text("Umgebung: %s – jetzt noch ein paar Voreinstellungen zu den Objekten:" % geo.env_name(e), 15, Color(1, 1, 1))
+	_choice("Verstecke (für die Spiele)", [[0, "wenige"], [1, "mittel"], [2, "viele"]], w_hide, func(k): w_hide = k)
+	_choice("Fahrzeuge (parkierte Autos)", [[true, "ja"], [false, "keine"]], w_cars, func(k): w_cars = k)
+	_choice("Wald und Bäume", [[0, "licht"], [1, "normal"], [2, "dicht"]], w_forest, func(k): w_forest = k)
+	_choice("Lager von Motion Watch", [[0, "Wohnwagen und Zelt"], [1, "nur Wohnwagen"], [2, "Zelt und Hütte"]], w_camp, func(k): w_camp = k)
+	_text("Mit «Szene bauen» entsteht der Ort. Ändern kann man es jederzeit: Karte öffnen (K) und den Ort nochmals laden.", 13, Color(0.7, 0.74, 0.8))
+	info.text = "Alles gewählt? Dann «Szene bauen»."

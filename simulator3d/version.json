@@ -1,7 +1,7 @@
 {
- "version": "3D-3.13",
+ "version": "3D-3.14",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30536188,
- "sha256": "20ca09dcfc8a1f459bb6e1882d71bdad49da4c4ff083bce1ab9e97192a8bc372",
- "notes": "Neue Szene «Versteckspiel» mit vielen Verstecken; mehr Verstecke in allen Szenen"
+ "size": 30549321,
+ "sha256": "04cc5fb38a38a2564f264f06555cfe2ff05735e750087fe3a32078c015384530",
+ "notes": "Orts-Assistent: Umgebung erkennen, Voreinstellungen zu den Objekten, passende Objekte je Umgebung"
 }

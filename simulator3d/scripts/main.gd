@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.13"
+const VERSION := "3D-3.14"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -30,6 +30,11 @@ var karte                             # karte.gd: the map to choose the place
 var ort_lat := 0.0                    # the chosen place (kept)
 var ort_lon := 0.0
 var ort_name := ""
+var ort_env := "auto"                 # the wizard (3D-3.14): surroundings, how many hiding places, cars, forest, camp
+var ort_hide := 1
+var ort_cars := true
+var ort_forest := 1
+var ort_camp := 0
 var terrain := false                  # the scene has hills (ground_y), else the ground is flat at y = 0
 var ground_mats: Array = []           # ground materials of the place (snow, wet)
 var flat_nodes: Array = []            # flat meadow and the hills far away: hidden at a real place
@@ -602,6 +607,8 @@ func choose_place(la: float, lo: float, nm: String) -> void:
 	if not geo.in_ch(la, lo):
 		geo.info = "Dieser Punkt liegt nicht in der Schweiz."
 		return
+	if not (is_equal_approx(la, ort_lat) and is_equal_approx(lo, ort_lon)):
+		ort_env = "auto"                                 # another place (from the page of Motion Watch): look what it is
 	geo.load_place(la, lo, nm)
 
 
@@ -2057,6 +2064,19 @@ func control(d: Dictionary) -> Dictionary:
 		show_panel(false)
 		karte.open(float(d.get("lat", 46.95)), float(d.get("lon", 7.44)), int(d.get("zoom", 0)))
 		return {"ok": true}
+	elif a == "wizard":                                # for tests: the place wizard (karte.gd) step by step
+		var op := str(d.get("op", ""))
+		if op == "pick":
+			karte.sel = Vector2(float(d.get("lat", 46.95)), float(d.get("lon", 7.45)))
+			karte.sel_name = str(d.get("name", ""))
+			karte._show_step(1)
+		elif op == "next":
+			karte._next()
+		elif op == "set":
+			karte.set("w_" + str(d.get("key", "")), d.get("value"))
+			karte._show_step(karte.step)
+		return {"ok": true, "step": karte.step, "env": geo.env, "why": geo.env_why, "info": karte.info.text, "waiting": karte.waiting,
+				"counts": geo.counts, "ort_env": ort_env, "visible": karte.visible}
 	elif a == "mover":                                 # for tests: where the mover is
 		return {"ok": true, "on": mover_on, "x": snappedf(rig.position.x, 0.01), "z": snappedf(rig.position.z, 0.01),
 				"yaw": snappedf(rad_to_deg(rig.rotation.y), 0.1), "drive": mw.get("drive", {}),
@@ -2636,7 +2656,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 

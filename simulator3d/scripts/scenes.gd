@@ -1053,6 +1053,27 @@ func prop(kind: String, p: Vector3, rot_y: float) -> void:
 					put(n, m.box(sz.x, sz.y, sz.z), Vector3(-0.55 + k * 1.1, 0.45, 0) + off, Color(0.45, 0.33, 0.2), "tree")
 			m.add_obstacle_node(n, Vector3.ZERO, 2.3, 1.2)
 			m.set_obstacle_height(0.9)
+		"boat":                                                   # a rowing boat pulled onto the shore, upside down
+			var n := node(root, p, rot_y)
+			var bcol: Color = [Color(0.85, 0.85, 0.82), Color(0.2, 0.4, 0.6), Color(0.6, 0.18, 0.12), Color(0.5, 0.36, 0.22)][rng.randi() % 4]
+			put(n, sph(0.8, 1.0), Vector3(0, 0.2, 0), bcol, "caravan", Vector3.ZERO, Vector3(1.0, 0.7, 2.9))
+			put(n, m.box(1.5, 0.08, 4.2), Vector3(0, 0.55, 0), bcol.darkened(0.3), "caravan")
+			put(n, cyl(0.03, 0.03, 2.4, 6), Vector3(0.9, 0.08, 0.2), Color(0.55, 0.4, 0.25), "tree", Vector3(PI / 2, 0, 0))
+			m.add_obstacle_node(n, Vector3.ZERO, 1.7, 4.6)
+			m.set_obstacle_height(0.75)
+		"reeds":                                                  # a thick clump of reeds (2 m)
+			var n := node(root, p, rot_y)
+			for k in range(26):
+				var q := Vector2.from_angle(rng.randf() * TAU) * sqrt(rng.randf()) * 1.6
+				var hh := rng.randf_range(1.4, 2.2)
+				put(n, cyl(0.015, 0.03, hh, 4), Vector3(q.x, hh / 2.0, q.y), Color(0.45, 0.55, 0.25).lerp(Color(0.65, 0.6, 0.35), rng.randf()), "tree", Vector3(rng.randf_range(-0.1, 0.1), 0, rng.randf_range(-0.1, 0.1)))
+			for k in range(6):
+				var q2 := Vector2.from_angle(rng.randf() * TAU) * rng.randf() * 1.4
+				put(n, cyl(0.05, 0.05, 0.35, 6), Vector3(q2.x, rng.randf_range(1.7, 2.1), q2.y), Color(0.38, 0.25, 0.15), "tree")
+			m.add_obstacle(p, 1.6)
+			m.set_obstacle_height(1.9)
+		"bench":
+			bench(p, rot_y)
 		_:
 			prop("bush", p, rot_y)
 

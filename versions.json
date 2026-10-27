@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 05:07",
+ "generated": "2026-10-27 05:16",
  "versions": [
   {
-   "version": "2.94.2",
-   "file": "webcam_bewegung_2_94_2.py",
+   "version": "2.94.3",
+   "file": "webcam_bewegung_2_94_3.py",
    "url": "",
-   "sha256": "ed7daaa49f036b0150695205a2ecf9dae3560b4bae89a540b51244833393c9c6",
-   "date": "2026-10-27 05:07",
-   "notes": "3D simulator 3D-3.13: new scene «hiding game» with many hiding places, more hiding places in all scenes",
-   "sig": "8e596a523f4cfa8acc64a997db3358209b31610db64f7528a385076bdd55aa4c2e4de63c61dd26a5a648ba25399175d1eea58db0276323b4566984e6cdfef70a"
+   "sha256": "d705c633d29c41a165248cb44dcac19ffe52b35dedd3de0a61a2c02937b6ff6d",
+   "date": "2026-10-27 05:16",
+   "notes": "3D simulator 3D-3.14: place wizard (surroundings detected, presets for objects, objects that fit the surroundings)",
+   "sig": "ab0379f70bcaadbab2caed023eb4555d6e8bbe382dfacb1bb25f3a368add2c2aed3e56d82dc97e42fa5bde1dd5319d10878d6f126d5bd7984ce4f0d03207c209"
   },
   {
    "version": "2.93.17",
