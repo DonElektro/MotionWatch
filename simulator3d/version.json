@@ -1,7 +1,7 @@
 {
- "version": "3D-3.0",
+ "version": "3D-3.1",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30403720,
- "sha256": "f091f58327fb4f0794bf79c42773f00d71e9eb010f29ac3581d5b7a9698c49cd",
- "notes": "Spiel: zwei Teams (Rot gegen Blau) mit Teamwertung, Team-Funk (Warte, Los, Kamera!, Hier), Aussehen wählen (Mütze, Kapuze, Rucksack, Tarnjacke), Figuren erschrecken, jubeln und holen zum Wurf aus."
+ "size": 30408938,
+ "sha256": "c46c9c9118d2e1a59ededed9497c53decebd868d7293e96a76ffa97ca609a054",
+ "notes": "Spiel: Team gegen Team (Räuber und Wächter, Rollentausch nach jeder Runde), Befreien aus der Zelle, Team-Ziel (Ziel öffnet erst mit allen Kristallen), Bonus für gelungene Ablenkung."
 }

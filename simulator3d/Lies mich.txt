@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-3.0 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-3.1 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -66,6 +66,15 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
     Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
   * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
+- Ab 3D-3.1:
+  * Spielart "Team gegen Team (Räuber und Wächter)": ein Team bewacht, das andere schleicht. Der erste Wächter sieht
+    die Kopfkamera und dreht den Kopf, der zweite sieht die feste Kamera; beide haben Licht und "Erwischt!".
+    Nach der Runde werden die Rollen getauscht; nach 2 Runden gewinnt das Team mit den meisten Punkten.
+  * "Befreien": Erwischte kommen in die Zelle (roter Ring beim Start). Ein Teamkollege geht hin und befreit sie
+    (+100 Punkte). Sind alle in der Zelle, ist die Runde vorbei.
+  * "Team-Ziel" (Experte): das grüne Licht ist rot und zu, bis alle Kristalle gefunden sind.
+  * Ablenk-Bonus: Wer einen Stein wirft und ein Teamkollege kommt in den nächsten Sekunden mindestens 3 m näher
+    ans Ziel, ohne erwischt zu werden, bekommt +50 Punkte.
 - Ab 3D-3.0:
   * "Zwei Teams (Rot gegen Blau)" in der Gruppe "Spiel": die Teams werden beim Beitreten ausgeglichen, im Startbild
     kann man wechseln. Die Punkte des Teams werden zusammengezählt, die Rangliste zeigt das Siegerteam.

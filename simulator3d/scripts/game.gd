@@ -49,6 +49,13 @@ var goal_name := "Ziel"
 var goal_node: Node3D
 var results: Array = []
 var team_results: Array = []
+# ---- 3D-3.1: team against team (robbers and guards), jail, team goal, distraction bonus ----
+var guard_team := 1                    # «Team gegen Team»: this team guards in the current round
+var match_round := 0                   # 0 = first round, 1 = second round (roles swapped)
+var match_scores := [0, 0]
+var jail := Vector3(0, 0, -44)
+var jail_node: Node3D
+var distract := {}                     # {"by": player, "until": t, "start": {slot: distance to the goal}, "caught": {slot: n}}
 var guard_auto := false                 # the game turns the head (automatic guard or a player as guard)
 var guard_yaw := 0.0
 var guard_tilt := deg_to_rad(-9.0)
@@ -134,10 +141,27 @@ func count() -> int:
 
 
 func guard_player() -> Variant:
+	"""the guard who turns the head (the first guard)"""
 	for p in players:
 		if p != null and p["role"] == "guard":
 			return p
 	return null
+
+
+func guard_cam(g: Dictionary) -> int:
+	"""which camera a guard looks through: the first one the head camera, a second one the fixed camera"""
+	return 0 if guard_player() == g else 1
+
+
+func guard2_watching() -> bool:
+	for p in players:
+		if p != null and p["role"] == "guard" and p != guard_player() and p["sock"] != null:
+			return true
+	return false
+
+
+func team_mode() -> bool:
+	return main.game_mode == "teamguard"
 
 
 func busy() -> bool:
@@ -455,10 +479,10 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 			p2["my"] = clamp(float(m.get("my", 0.0)), -1.0, 1.0)
 			var look: float = deg_to_rad(clamp(float(m.get("look", 0.0)), -90.0, 90.0))
 			var pit: float = deg_to_rad(clamp(float(m.get("pitch", 0.0)), -45.0, 45.0))
-			if p2["role"] == "guard":                     # the guard turns the head with the drag too
+			if p2["role"] == "guard" and p2 == guard_player():   # the (first) guard turns the head with the drag too
 				guard_yaw = wrapf(guard_yaw - look * 0.6, -PI, PI)
 				guard_tilt = clamp(guard_tilt - pit * 0.6, deg_to_rad(-40.0), deg_to_rad(15.0))
-			else:
+			elif p2["role"] != "guard":
 				p2["yaw"] = wrapf(float(p2["yaw"]) - look, -PI, PI)
 				p2["pitch"] = clamp(float(p2["pitch"]) - pit, deg_to_rad(-40.0), deg_to_rad(15.0))
 			p2["actor"].ctl_run = bool(m.get("run", false))
@@ -488,8 +512,18 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 			_guard_catch(p2)
 
 
+func _assign(p: Dictionary, r: String) -> void:
+	p["role"] = r
+	var a = p["actor"]
+	a.visible = r == "runner"
+	if r == "guard":
+		a.position = Vector3(0, 0, 4.0)
+	if p["sock"] != null:
+		_hello(p)
+
+
 func _set_role(p: Dictionary, r: String) -> void:
-	if round_state in ["countdown", "play"]:
+	if round_state in ["countdown", "play"] or team_mode():
 		return
 	if r == "guard":
 		if main.game_mode != "guard":
@@ -709,16 +743,17 @@ func _capture(p: Dictionary, q: Array) -> void:
 
 func _send_guard_view() -> void:
 	"""the guard sees what Motion Watch sees: the picture of the head camera (with grain, light, raindrops)"""
-	var g = guard_player()
-	if g == null or g["sock"] == null or not g["want"]:
-		return
-	if int(main.frame_no[0]) == int(g["sent_no"]):
-		return
-	var w: WebSocketPeer = g["sock"]["ws"]
-	if w.get_ready_state() == WebSocketPeer.STATE_OPEN and w.get_current_outbound_buffered_amount() < 600000:
-		g["sent_no"] = int(main.frame_no[0])
-		w.send(main.latest_jpg(0))
-		g["want"] = false
+	for g in players:                                      # first guard: head camera, others: fixed camera
+		if g == null or g["role"] != "guard" or g["sock"] == null or not g["want"]:
+			continue
+		var ci := guard_cam(g)
+		if int(main.frame_no[ci]) == int(g["sent_no"]):
+			continue
+		var w: WebSocketPeer = g["sock"]["ws"]
+		if w.get_ready_state() == WebSocketPeer.STATE_OPEN and w.get_current_outbound_buffered_amount() < 600000:
+			g["sent_no"] = int(main.frame_no[ci])
+			w.send(main.latest_jpg(ci))
+			g["want"] = false
 
 
 func _exposure(p: Dictionary, img: Image) -> void:
@@ -744,12 +779,28 @@ func start_round() -> void:
 	for p in players:
 		if p != null and p["role"] == "runner":
 			runners += 1
-	if runners == 0:
+	if runners == 0 and not team_mode():
 		return
-	if main.game_mode != "guard":                          # no player as guard in this mode
+	if team_mode():                                        # team against team: one team guards, the other sneaks
+		if not main.game_teams:
+			main.game_teams = true
+			on_teams()
+		var n := [0, 0]
+		for p in players:
+			if p != null:
+				n[int(p["team"])] += 1
+		if n[0] == 0 or n[1] == 0:
+			for p in players:
+				if p != null:
+					_say(p, "Für «Team gegen Team» braucht jedes Team mindestens einen Spieler", 4.0)
+			return
+		for p in players:
+			if p != null:
+				_assign(p, "guard" if int(p["team"]) == guard_team else "runner")
+	elif main.game_mode != "guard":                        # no player as guard in this mode
 		for p in players:
 			if p != null and p["role"] == "guard":
-				_set_role(p, "runner")
+				_assign(p, "runner")
 	_new_starts(main.game_random)
 	_pick_goal(main.game_random)
 	_place_items(int(main.game_items))
@@ -769,6 +820,8 @@ func start_round() -> void:
 		p["t_goal"] = 0.0
 		p["carry"] = false
 		p["loot"].visible = false
+		p["bonus"] = 0
+		p["rescues"] = 0
 		if p["role"] == "guard":
 			p["state"] = "play"
 			continue
@@ -779,7 +832,58 @@ func start_round() -> void:
 	if guard_player() != null:
 		guard_yaw = 0.0
 		guard_tilt = deg_to_rad(-9.0)
+	distract = {}
+	_build_jail()
+	_paint_goal()
 	paint()
+
+
+func _build_jail() -> void:
+	"""the jail (with «Befreien»): a red ring near the starts, only the players see it"""
+	if jail_node != null:
+		jail_node.queue_free()
+		jail_node = null
+	if not main.game_rescue:
+		return
+	jail = main.free_spot(Vector3(0, 0, -44), 2.0, true)
+	jail_node = Node3D.new()
+	root.add_child(jail_node)
+	jail_node.position = jail
+	var ring := MeshInstance3D.new()
+	var tm := TorusMesh.new()
+	tm.inner_radius = 1.8
+	tm.outer_radius = 2.0
+	ring.mesh = tm
+	ring.position.y = 0.05
+	ring.material_override = _glow(Color(1.0, 0.2, 0.15, 0.7))
+	ring.layers = 16
+	jail_node.add_child(ring)
+	var lb := Label3D.new()
+	lb.text = "🔒 Zelle"
+	lb.font_size = 64
+	lb.pixel_size = 0.006
+	lb.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	lb.position.y = 2.6
+	lb.layers = 16
+	lb.outline_size = 12
+	jail_node.add_child(lb)
+
+
+func goal_open() -> bool:
+	"""with «Team-Ziel» the goal opens only when all crystals are found"""
+	if not main.game_teamgoal or items.is_empty():
+		return true
+	for it in items:
+		if int(it["by"]) < 0:
+			return false
+	return true
+
+
+func _paint_goal() -> void:
+	if goal_node == null or goal_node.get_child_count() == 0:
+		return
+	var beam: MeshInstance3D = goal_node.get_child(0)
+	beam.material_override = _glow(Color(0.2, 1.0, 0.4, 0.28) if goal_open() else Color(1.0, 0.25, 0.2, 0.25))
 
 
 func end_round() -> void:
@@ -810,8 +914,10 @@ func end_round() -> void:
 			else:
 				sc = max(0, 300 - int(d * 6.0))
 				info = "noch %d m" % int(d)
-			sc = max(0, sc - 150 * int(p["caught"]) + 100 * int(p["items"]))
+			sc = max(0, sc - 150 * int(p["caught"]) + 100 * int(p["items"]) + int(p.get("bonus", 0)))
 			info += " · %d× erwischt" % p["caught"] + (" · 💎 %d" % p["items"] if int(p["items"]) > 0 else "")
+			if int(p.get("rescues", 0)) > 0:
+				info += " · %d× befreit" % p["rescues"]
 		results.append({"n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "info": info, "score": sc})
 		if p["role"] == "runner":
 			p["state"] = "lobby"
@@ -831,8 +937,22 @@ func end_round() -> void:
 						sums[int(p["team"])] += int(r["score"])
 		team_results = [{"n": TEAM_NAMES[0], "c": "#" + TEAM_COLORS[0].to_html(false), "score": sums[0]},
 				{"n": TEAM_NAMES[1], "c": "#" + TEAM_COLORS[1].to_html(false), "score": sums[1]}]
+		if team_mode():                                    # two rounds with swapped roles, then the winner of the match
+			match_scores[0] += sums[0]
+			match_scores[1] += sums[1]
+			var first := match_round == 0
+			team_results = [{"n": TEAM_NAMES[0], "c": "#" + TEAM_COLORS[0].to_html(false), "score": match_scores[0], "round": sums[0], "lead": first},
+					{"n": TEAM_NAMES[1], "c": "#" + TEAM_COLORS[1].to_html(false), "score": match_scores[1], "round": sums[1], "lead": first}]
+			match_round += 1
+			guard_team = 1 - guard_team                    # swap the roles for the next round
+			if match_round >= 2:
+				match_round = 0
+				match_scores = [0, 0]
 		team_results.sort_custom(func(x, y): return x["score"] > y["score"])
 	_clear_items()
+	if jail_node != null:
+		jail_node.queue_free()
+		jail_node = null
 	paint()
 
 
@@ -978,8 +1098,28 @@ func _mw_referee() -> void:
 		_say(best, "Motion Watch hat dich erkannt!", 3.0)
 
 
+func _check_distract() -> void:
+	"""a stone distracted the guard: did a team mate get 3 m closer to the goal meanwhile, unseen? -> bonus for the thrower"""
+	if distract.is_empty() or now() < float(distract["until"]):
+		return
+	var by: Dictionary = distract["by"]
+	for q in players:
+		if q == null or q == by or q["role"] != "runner" or not distract["start"].has(q["slot"]):
+			continue
+		if main.game_teams and int(q["team"]) != int(by["team"]):
+			continue
+		var gained: float = float(distract["start"][q["slot"]]) - q["actor"].position.distance_to(goal)
+		if gained >= 3.0 and int(q["caught"]) == int(distract["caught"][q["slot"]]):
+			by["bonus"] = int(by.get("bonus", 0)) + 50
+			_say(by, "🪨 Ablenkung geklappt – %s kam näher (+50)" % q["name"], 3.0)
+			break
+	distract = {}
+
+
 func _referee(dt: float) -> void:
 	var lv: float = LEVEL.get(main.game_level, 1.0)
+	_check_distract()
+	_paint_goal()
 	var mw := mw_decides()
 	if mw:
 		_mw_referee()
@@ -994,14 +1134,30 @@ func _referee(dt: float) -> void:
 				it["node"].visible = false
 				_say(p, "💎 gefunden! (+100)", 2.5)
 				_event(p, "item")
-		if main.game_goal == "return" and not p["carry"] and a.position.distance_to(goal) < 1.7:
+		for q in players:                                  # rescue somebody from the jail
+			if q != null and q["state"] == "jail" and (not main.game_teams or int(q["team"]) == int(p["team"])) and a.position.distance_to(q["actor"].position) < 1.6:
+				q["state"] = "play"
+				q["actor"].frozen = false
+				q["safe_until"] = now() + 3.0
+				p["rescues"] = int(p.get("rescues", 0)) + 1
+				p["bonus"] = int(p.get("bonus", 0)) + 100
+				_say(q, "🔓 %s hat dich befreit!" % p["name"], 3.0)
+				_say(p, "🔓 %s befreit (+100)" % q["name"], 3.0)
+				_event(q, "item")
+				_event(p, "item")
+				paint()
+		var near_goal: bool = a.position.distance_to(goal) < 1.7
+		if near_goal and not goal_open():
+			_say(p, "🔒 Ziel noch zu – zuerst alle Kristalle finden", 1.0)
+			near_goal = false
+		if main.game_goal == "return" and not p["carry"] and near_goal:
 			p["carry"] = true                              # the loot: now back to the start
 			p["loot"].visible = true
 			_say(p, "💰 Beute geholt – zurück zum Start!", 3.0)
 			_event(p, "item")
 			continue
 		var home := start_point(p["slot"])
-		if (main.game_goal != "return" and a.position.distance_to(goal) < 1.7) or (p["carry"] and a.position.distance_to(home) < 3.0):
+		if (main.game_goal != "return" and near_goal) or (p["carry"] and a.position.distance_to(home) < 3.0):
 			p["state"] = "goal"
 			p["t_goal"] = now()
 			a.frozen = true
@@ -1052,11 +1208,25 @@ func _caught(p: Dictionary, by) -> void:
 		p["actor"].visible = false
 		p["actor"].position = Vector3(0, 0, 4.0)
 		_say(p, "Erwischt – keine Leben mehr. Du schaust zu.", 5.0)
+	elif main.game_rescue and _others_can_rescue(p):
+		p["state"] = "jail"                                # in the jail until a team mate comes
+		var a = p["actor"]
+		a.position = jail + Vector3(cos(p["slot"] * 1.6) * 0.9, 0, sin(p["slot"] * 1.6) * 0.9)
+		a.frozen = true
+		a.ctl_posture = 0
+		_say(p, "🔒 In der Zelle – ein Teamkollege muss dich befreien", 4.0)
 	else:
 		_say(p, "Erwischt! Zurück zum Start", 3.0)
 		_to_start(p)
 		p["safe_until"] = now() + 3.0
 	paint()
+
+
+func _others_can_rescue(p: Dictionary) -> bool:
+	for q in players:
+		if q != null and q != p and q["role"] == "runner" and q["state"] == "play" and (not main.game_teams or int(q["team"]) == int(p["team"])):
+			return true
+	return false
 
 
 func _event(p: Dictionary, k: String) -> void:
@@ -1095,6 +1265,13 @@ func _throw(p: Dictionary) -> void:
 	main.add_sound(-14.0, to, 0.6)                         # the microphone of Motion Watch hears it too
 	attention = to
 	attention_until = now() + 4.0
+	var st := {}
+	var cn := {}
+	for q in players:
+		if q != null and q["role"] == "runner":
+			st[q["slot"]] = q["actor"].position.distance_to(goal)
+			cn[q["slot"]] = int(q["caught"])
+	distract = {"by": p, "until": now() + 5.0, "start": st, "caught": cn}
 	var g = guard_player()
 	if g != null:
 		var rel := rad_to_deg(wrapf(atan2(-to.x, -to.z) - guard_yaw, -PI, PI))
@@ -1144,7 +1321,7 @@ func _guard_catch(g: Dictionary) -> void:
 		return
 	var hit = null
 	for p in players:
-		if p != null and p["role"] == "runner" and p["state"] == "play" and float(p["susp"]) >= 30.0 and cam_sees(p, 0) > 0.02:
+		if p != null and p["role"] == "runner" and p["state"] == "play" and float(p["susp"]) >= 30.0 and cam_sees(p, guard_cam(g)) > 0.02:
 			hit = p
 	if hit == null:
 		g["false"] = int(g["false"]) + 1
@@ -1159,7 +1336,7 @@ func _guard(dt: float) -> void:
 	"""the head: a player as guard turns it with the joystick; without Motion Watch it guards by itself
 	(swings to and fro, turns towards noises and suspects)"""
 	var g = guard_player()
-	if g != null and main.game_mode == "guard":
+	if g != null and main.game_mode in ["guard", "teamguard"]:
 		guard_auto = true
 		guard_yaw = wrapf(guard_yaw - float(g["mx"]) * 1.3 * dt, -PI, PI)
 		guard_tilt = clamp(guard_tilt - float(g["my"]) * 0.7 * dt, deg_to_rad(-40.0), deg_to_rad(15.0))
@@ -1206,7 +1383,8 @@ func _send_state(i: int) -> void:
 			"ga": int(ga), "goal": goal_name, "list": lst, "items": p["items"], "items_left": left_items, "items_all": items.size(),
 			"lives": int(main.game_lives), "stone": int(max(0.0, float(p["stone_t"]) - now())) if main.game_stones else -1,
 			"msg": p["msg"] if now() < float(p["msg_until"]) else "", "has_guard": guard_player() != null, "mwd": mw_decides(),
-			"goal_mode": main.game_goal, "carry": p["carry"], "teams": main.game_teams, "team": int(p["team"]), "look": p["look"],
+			"goal_mode": main.game_goal, "carry": p["carry"], "gopen": goal_open(), "gcam": guard_cam(p) if p["role"] == "guard" else -1,
+			"tg": guard_team, "mround": match_round, "teams": main.game_teams, "team": int(p["team"]), "look": p["look"],
 			"tres": team_results if round_state == "end" else []}
 	if p["role"] == "guard":
 		d["light"] = int(max(0.0, light_ready - now()))
@@ -1422,16 +1600,17 @@ function paint(m) {
   $("#tm").textContent = m.rs === "play" ? "⏱ " + fmtT(m.left) : m.rs === "countdown" ? "gleich" : "–";
   $("#lv").textContent = role === "guard" ? "· Wächter · " + (m.catches || 0) + "× erwischt" : (m.lives ? "· " + "❤️".repeat(Math.max(0, m.lives - m.caught)) + "🤍".repeat(Math.min(m.lives, m.caught)) : "· " + m.caught + "× erwischt");
   $("#list").innerHTML = (m.list || []).map(p => '<span style="color:' + p.c + '">●</span> ' + esc(p.n) + (p.r === "guard" ? " 👁" : "") + (p.s === "goal" ? " 🏁" : p.s === "out" ? " ✖" : "") + (p.r !== "guard" && p.k ? " · " + p.k + "×" : "") + (p.on ? "" : " (weg)")).join("<br>");
-  $("#extra").textContent = (m.carry ? "💰 Beute dabei – zurück zum Start! " : (m.goal_mode === "return" && role === "runner" ? "Ziel: Beute holen und zurückbringen · " : "")) + (m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "");
+  $("#extra").textContent = (m.gopen === false && role === "runner" ? "🔒 Ziel noch zu – zuerst alle Kristalle finden · " : "") + (m.carry ? "💰 Beute dabei – zurück zum Start! " : (m.goal_mode === "return" && role === "runner" ? "Ziel: Beute holen und zurückbringen · " : "")) + (m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "");
   $("#msg").textContent = m.msg || "";
   $("#sig").hidden = !(m.rs === "play" && role === "runner" && m.ps === "play");
   if (m.stone < 0) $("#b-stone").style.display = "none"; else { $("#b-stone").style.display = "flex"; cool($("#b-stone"), m.stone); }
-  if (role === "guard") { cool($("#b-light"), m.light); cool($("#b-catch"), m.catch); $("#gd").textContent = (m.pan > 0 ? "◀ " : "▶ ") + Math.abs(m.pan) + "°"; }
+  if (role === "guard") { cool($("#b-light"), m.light); cool($("#b-catch"), m.catch); $("#gd").textContent = m.gcam === 1 ? "feste Kamera" : (m.pan > 0 ? "◀ " : "▶ ") + Math.abs(m.pan) + "°"; }
   if (m.rs === "countdown") ov('<div id="big">' + Math.max(1, m.cd) + '</div>');
   else if ((m.rs === "lobby" || m.rs === "end") && editing) { /* the player changes the look */ }
   else if (m.rs === "lobby" || m.rs === "end") {
-    let h = m.rs === "end" ? (m.tres && m.tres.length ? '<h1>' + esc(m.tres[0].n) + ' gewinnt!</h1><p>' + m.tres.map(t => '<span style="color:' + t.c + '">●</span> ' + esc(t.n) + ' <b>' + t.score + '</b>').join(" · ") + '</p>' : '') + '<h1>Rangliste</h1><table>' + (m.res || []).map((r, i) => '<tr><td>' + (i + 1) + '.</td><td><span style="color:' + r.c + '">●</span> ' + esc(r.n) + '</td><td>' + esc(r.info) + '</td><td><b>' + r.score + '</b></td></tr>').join("") + '</table>'
+    let h = m.rs === "end" ? (m.tres && m.tres.length ? '<h1>' + (m.tres[0].lead ? 'Runde 1 von 2: ' + esc(m.tres[0].n) + ' führt' : esc(m.tres[0].n) + ' gewinnt!') + '</h1><p>' + m.tres.map(t => '<span style="color:' + t.c + '">●</span> ' + esc(t.n) + ' <b>' + t.score + '</b>' + (t.round !== undefined ? ' <small>(diese Runde ' + t.round + ')</small>' : '')).join(" · ") + '</p>' : '') + '<h1>Rangliste</h1><table>' + (m.res || []).map((r, i) => '<tr><td>' + (i + 1) + '.</td><td><span style="color:' + r.c + '">●</span> ' + esc(r.n) + '</td><td>' + esc(r.info) + '</td><td><b>' + r.score + '</b></td></tr>').join("") + '</table>'
       : '<h1>Bereit?</h1><p>Ziel: <b>' + esc(m.goal) + '</b> – folge dem Pfeil oben rechts zum grünen Licht.</p><p>Links ziehen = gehen · rechts wischen = umschauen</p>';
+    if (m.mode === "teamguard") h += '<p>⚔️ Team gegen Team · Runde ' + (m.mround + 1) + ' von 2: <b style="color:' + ["#eb2e1f", "#1f6bfa"][m.tg] + '">' + ["Team Rot", "Team Blau"][m.tg] + '</b> bewacht (Kopfkamera und feste Kamera), das andere Team schleicht. Danach wird getauscht.</p>';
     if (m.mode === "mw") h += '<p>' + (m.mwd ? '🛡 Diesmal entscheidet die <b>echte Erkennung von Motion Watch</b>: meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht.' : '⚠ Motion Watch ist nicht verbunden – der Simulator entscheidet.') + '</p>';
     if (m.mode === "guard") h += '<p>Ein Spieler kann Wächter sein: er sieht durch die Kamera, dreht den Kopf und ruft «Erwischt!».</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🕵️ Schleicher</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">👁 Wächter</button><br>';
     if (m.teams) { const tm = [0, 1].map(k => '<div class="tm' + (m.team === k ? " me" : "") + '"><b style="color:' + ["#eb2e1f", "#1f6bfa"][k] + '">' + ["Team Rot", "Team Blau"][k] + '</b>' +
@@ -1445,6 +1624,7 @@ function paint(m) {
     const rr = $("#r-run"), rg = $("#r-guard"); if (rr) rr.onclick = () => ws.send('{"t":"role","r":"runner"}'); if (rg) rg.onclick = () => ws.send('{"t":"role","r":"guard"}');
   }
   else if (m.ps === "goal") ov('<h1>🏁 Im Ziel!</h1><p>Warte auf die anderen.</p>');
+  else if (m.ps === "jail") ov('<h1>🔒 In der Zelle</h1><p>Ein Teamkollege muss zu dir kommen und dich berühren – dann bist du frei.</p>');
   else if (m.ps === "out") ov('');
   else ov("");
   const b = $("#st"); if (b) b.onclick = () => ws.send('{"t":"start"}');

@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 02:34",
+ "generated": "2026-10-27 02:38",
  "versions": [
   {
-   "version": "2.93.7",
-   "file": "webcam_bewegung_2_93_7.py",
+   "version": "2.93.8",
+   "file": "webcam_bewegung_2_93_8.py",
    "url": "",
-   "sha256": "85490e95cd0b260cd75e5f45f55cfe059fb9a66c5f75214b62b5e832b3ce8666",
-   "date": "2026-10-27 02:34",
-   "notes": "Download of the 3D simulator 3D-3.0: game with two teams, team signals, choose your look (cap, hood, backpack, camouflage); figures react (startled, cheering, throwing).",
-   "sig": "65548146e8e49585dd84b2e8801b6f11493a399e94a4fa658f7143de5c863986dbccdb0226b00a38975177bd09f0793d2387455e1463bbbba7ff915acf0d610b"
+   "sha256": "4079e27740ba163771f93f6a8f78e71c409ca3a6a48392a4c75e93db5cfa9d75",
+   "date": "2026-10-27 02:38",
+   "notes": "Download of the 3D simulator 3D-3.1: game mode team against team (robbers and guards, roles swap), rescue from the jail, team goal, bonus for a good distraction.",
+   "sig": "5dc397d4fb0f0181ed56709984a9ad0d1c911fbdf5ff4bfd7e4915bbfdb3bc352a41d84470e0edf713d7f4e290aefe5e2f75d3f88dca24d052311671d63e5a0b"
   },
   {
    "version": "2.92.4",

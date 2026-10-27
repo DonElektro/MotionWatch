@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.0"
+const VERSION := "3D-3.1"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -36,6 +36,8 @@ var game_cones := false               # show the fields of view of the cameras (
 var game_noise := true                # the microphone hears loud steps
 var game_stones := true               # stones to throw (distract the guard)
 var game_random := false              # start and goal by chance
+var game_rescue := false              # caught -> jail, a team mate frees you (3D-3.1)
+var game_teamgoal := false            # the goal opens only when all crystals are found
 var game_teams := false               # two teams: red against blue (3D-3.0)
 var game_goal := "reach"              # reach: get to the goal · return: fetch the loot and bring it back to the start
 # ---- start with the PC (from 3D-2.1; autostart.gd) ----
@@ -1104,6 +1106,8 @@ func _wanted_fps(i: int) -> float:
 		f = max(f, 2.0)
 	if i == 0 and game != null and game.guard_watching():
 		f = max(f, 8.0)                                  # a player guards: he sees through the head camera
+	if i == 1 and game != null and game.guard2_watching():
+		f = max(f, 6.0)                                  # a second guard sees through the fixed camera
 	if i == 2 and now() - _th_asked < 3.0:
 		f = max(f, 8.0)
 	if preview_on and win_open:
@@ -1569,13 +1573,15 @@ func _register_controls() -> void:
 	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
-			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["mw", "Motion Watch entscheidet (echte Erkennung)"]]})
+			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "Motion Watch entscheidet (echte Erkennung)"]]})
 	add_control("select", "game_level", "Wächter", func(): return game_level, func(v): game_level = v, "Spiel",
 			{"options": [["easy", "leicht"], ["normal", "normal"], ["hard", "schwer"]]})
 	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
 			{"options": [["0", "unbegrenzt"], ["3", "3 Leben"], ["1", "1 Leben"]]})
 	add_control("slider", "game_items", "Kristalle zum Sammeln", func(): return game_items, func(v): game_items = int(v), "Spiel", {"min": 0, "max": 6, "step": 1})
 	add_control("toggle", "game_teams", "Zwei Teams (Rot gegen Blau)", func(): return game_teams, func(v): game_teams = v; game.on_teams(), "Spiel")
+	add_control("toggle", "game_rescue", "Befreien: Erwischte kommen in die Zelle, ein Teamkollege befreit sie", func(): return game_rescue, func(v): game_rescue = v, "Spiel")
+	add_control("toggle", "game_teamgoal", "Team-Ziel: das Ziel öffnet erst, wenn alle Kristalle gefunden sind", func(): return game_teamgoal, func(v): game_teamgoal = v, "Spiel", ex)
 	add_control("select", "game_goal", "Spielziel", func(): return game_goal, func(v): game_goal = v, "Spiel",
 			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"]]})
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
@@ -2199,7 +2205,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
