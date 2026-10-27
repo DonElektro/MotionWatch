@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 02:14",
+ "generated": "2026-10-27 02:19",
  "versions": [
   {
-   "version": "2.93.4",
-   "file": "webcam_bewegung_2_93_4.py",
+   "version": "2.93.5",
+   "file": "webcam_bewegung_2_93_5.py",
    "url": "",
-   "sha256": "f27a08fd55c6ab388663c6b1ddbf82a0890c091868b87f53e57117591830990a",
-   "date": "2026-10-27 02:14",
-   "notes": "Download of the 3D simulator 3D-2.7: nicer people (face, build, clothes), natural walking, activities, headlamps and phone lights at night; animals jump, hop, root and sniff.",
-   "sig": "7a77b279997b974f06764cc429fe5d8367657dbd2ffe2f2da3ec15bc4898fd9fbadfee20c97f8ea40d5bc13b8585098f0b830f189585d5e18d8ff1b19df8b10f"
+   "sha256": "5c4dfa1af2f14a93535f76c9229a4392a2d5f2ee66f96f132a135dd3f5c8d611",
+   "date": "2026-10-27 02:19",
+   "notes": "Download of the 3D simulator 3D-2.8: nicer animals (shaped body, darker back, neck, ears), people reach for the door handle.",
+   "sig": "17614d899fce23c18682244e76e67eeeebae56a057e40b0de40170d0141b462e7108d23bbb14a29acf6f7d978d0040167dabc1c8a365337247f23de7b6248b0b"
   },
   {
    "version": "2.92.4",

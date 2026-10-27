@@ -1,7 +1,7 @@
 {
- "version": "3D-2.7",
+ "version": "3D-2.8",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30393393,
- "sha256": "5d48de43bb7bc540a2b361499941ad06067977a84deff80841e2167aee341cd8",
- "notes": "Schönere Menschen (Gesicht, Statur, Kleidung, Kapuze), natürlicher Gang, Tätigkeiten (umschauen, telefonieren, bücken, erschrecken), nachts Stirnlampen und Handylicht; Tiere springen, hoppeln, wühlen, schnüffeln, schleichen."
+ "size": 30394969,
+ "sha256": "7417b0dc41d21a1d118accb96916b8cc1e2b6b77119120a1455ee5710d10bc73",
+ "notes": "Schönere Tiere: geformter Körper, dunklerer Rücken, kräftige Beine, Hals, Fuchs mit weissem Kinn und schwarzen Ohrspitzen, Hunde mit Schlappohren; Menschen greifen an der Tür nach der Klinke."
 }

@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-2.7 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-2.8 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -83,6 +83,9 @@ FIGUREN UND BEWEGUNGEN (ab 3D-2.7)
   (Hände hoch) und schauen hin.
 - Nachts tragen manche Menschen eine Stirnlampe oder das Handylicht (Experte, Gruppe "Besuch": wie viele).
   Die Lampe blendet die Kamera und beleuchtet den Boden - wie in echt.
+- Ab 3D-2.8 schönere Tiere: Brust und Hinterteil geformt, dunklerer Rücken, Beine oben kräftiger, Hals, Fuchs mit
+  weissem Kinn und schwarzen Ohrspitzen, Hunde teils mit Schlappohren, Wildschwein und Dachs mit runden Ohren.
+  Menschen greifen an der Tür nach der Klinke.
 - Tiere: Rehe springen auf der Flucht, Hasen hoppeln und machen Männchen, Wildschweine wühlen, Füchse und Hunde
   schnüffeln, Katzen schleichen geduckt und setzen sich hin.
 

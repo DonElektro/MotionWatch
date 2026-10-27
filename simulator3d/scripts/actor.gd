@@ -338,6 +338,11 @@ func _build_animal() -> void:
 		_eyes(head, 0.03, 0.01, -0.035)
 		return
 	_part(body_root, _caps(bodyr, L), Vector3(0, hb, 0), col, t, Vector3(PI / 2, 0, 0))
+	# from 3D-2.8: a shaped body - chest in front, haunch behind, a darker back, legs thicker at the top
+	var bulk: float = {"deer": 0.88, "boar": 1.02, "dog": 1.0}.get(kind, 1.02)
+	_part(body_root, _sph(bodyr * bulk, bodyr * bulk * 2.2), Vector3(0, hb + bodyr * 0.05, -L * 0.3), col, t)        # chest / shoulders
+	_part(body_root, _sph(bodyr * bulk * 0.96, bodyr * bulk * 2.1), Vector3(0, hb + bodyr * 0.08, L * 0.3), col.darkened(0.04), t)   # haunch
+	_part(body_root, _caps(bodyr * 0.45, L * 0.95), Vector3(0, hb + bodyr * 0.68, 0), col.darkened(0.22), t - 1.0, Vector3(PI / 2, 0, 0), Vector3(1.0, 1.0, 0.5))  # darker back
 	if kind in ["fox", "deer", "hare"]:                                       # light belly / chest
 		_part(body_root, _caps(bodyr * 0.72, L * 0.65), Vector3(0, hb - bodyr * 0.42, -L * 0.05), col.lightened(0.55), t - 1.0, Vector3(PI / 2, 0, 0))
 	if kind == "boar":                                                         # bristle ridge
@@ -351,6 +356,8 @@ func _build_animal() -> void:
 		var legc: Color = Color(0.1, 0.08, 0.07) if kind == "fox" else col.darkened(0.25)
 		var hare_back := kind == "hare" and i >= 2
 		_part(p, _caps(lw * (1.6 if hare_back else 1.0), hb * (0.55 if hare_back else 1.0)), Vector3(0, -hb / (3.0 if hare_back else 2.0), 0), legc, t - 4.0)
+		if not hare_back:                                                   # upper leg in the colour of the body
+			_part(p, _caps(lw * 1.75, hb * 0.48), Vector3(0, -hb * 0.17, 0), col, t - 1.0)
 		_part(p, _sph(lw * 1.2), Vector3(0, -hb + lw, -lw * 0.6), legc.darkened(0.3), t - 5.0)   # paw / hoof
 		legs.append([p, 1 if i in [0, 3] else -1, null])
 	var head_y := hb + bodyr * 0.4
@@ -366,6 +373,13 @@ func _build_animal() -> void:
 	if kind == "deer":
 		hr = 0.12                                                          # a slim head on the long neck
 	_part(head, _sph(hr), Vector3(0, hy, hz), col, t + 2.0)
+	if kind in ["fox", "dog", "cat", "badger", "hare"]:                         # neck
+		_part(head, _caps(hr * 0.62, max(0.05, Vector2(hy, hz).length()) + hr * 0.6), Vector3(0, hy * 0.5, hz * 0.5), col, t + 1.0, Vector3(-PI / 2 + atan2(hy, -hz), 0, 0))
+	if kind == "fox":                                                          # white chin and cheeks
+		_part(head, _sph(hr * 0.55), Vector3(0, hy - hr * 0.55, hz - hr * 0.55), Color(0.95, 0.93, 0.88), t + 1.0, Vector3.ZERO, Vector3(1.4, 0.8, 1.2))
+	if kind == "boar" or kind == "badger":                                     # small round ears
+		for s6 in [-1, 1]:
+			_part(head, _sph(hr * 0.25), Vector3(hr * 0.55 * s6, hy + hr * 0.7, hz + hr * 0.2), col.darkened(0.2), t - 2.0, Vector3.ZERO, Vector3(1.0, 1.2, 0.4))
 	var snout := col.darkened(0.1) if kind != "fox" else col
 	_part(head, _caps(hr * 0.45, hr * 1.6), Vector3(0, hy - hr * 0.2, hz - hr * 0.9), snout, t + 1.0, Vector3(PI / 2, 0, 0))
 	_part(head, _sph(hr * 0.16), Vector3(0, hy - hr * 0.15, hz - hr * 1.7), Color(0.05, 0.05, 0.05), t)         # nose
@@ -377,11 +391,19 @@ func _build_animal() -> void:
 		for s2 in [-1, 1]:
 			_part(head, _box(hr * 0.25, hr * 0.3, hr * 1.8), Vector3(hr * 0.35 * s2, hy + hr * 0.6, hz - hr * 0.3), Color(0.92, 0.92, 0.9), t)
 	_eyes(head, hr * 0.13, hr * 0.45, hz - hr * 0.75, hy + hr * 0.25)
-	if kind in ["fox", "cat", "dog"]:                                          # ears
+	var floppy := kind == "dog" and randf() < 0.5
+	if kind in ["fox", "cat", "dog"] and not floppy:                           # pointed ears (fox: black tips)
 		for s3 in [-1, 1]:
 			var ear := PrismMesh.new()
 			ear.size = Vector3(hr * 0.6, hr * 0.8, hr * 0.25)
 			_part(head, ear, Vector3(hr * 0.5 * s3, hy + hr * 0.95, hz), col.darkened(0.2), t - 2.0)
+			if kind == "fox":
+				var tip := PrismMesh.new()
+				tip.size = Vector3(hr * 0.25, hr * 0.32, hr * 0.27)
+				_part(head, tip, Vector3(hr * 0.5 * s3, hy + hr * 1.23, hz), Color(0.08, 0.06, 0.05), t - 3.0)
+	if floppy:                                                                 # hanging ears
+		for s3 in [-1, 1]:
+			_part(head, _caps(hr * 0.22, hr * 1.2), Vector3(hr * 0.85 * s3, hy - hr * 0.1, hz + hr * 0.1), col.darkened(0.3), t - 2.0, Vector3(0, 0, 0.25 * s3), Vector3(0.6, 1.0, 1.0))
 	if kind == "hare":                                                         # long ears
 		for s3 in [-1, 1]:
 			_part(head, _caps(hr * 0.22, hr * 2.4), Vector3(hr * 0.3 * s3, hy + hr * 1.4, hz + hr * 0.2), col, t - 2.0, Vector3(0.25, 0, 0.15 * s3))
@@ -759,6 +781,9 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 			sx = -0.4
 			ex = -2.3
 			sz = 0.25
+		elif side > 0 and now < wait_until and crouch == 0.0 and _at_door():   # at a door: reaches for the handle
+			sx = -1.4
+			ex = -0.35
 		elif phone_out and side > 0:                                       # walking with the phone light ahead
 			sx = -0.9
 			ex = -0.9
@@ -771,6 +796,11 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 			a[2].rotation.x = lerp(a[2].rotation.x, ex, k)
 	if torch != null:
 		torch.light_energy = 3.0 if crouch > 0.5 and int(now * 3.0) % 4 != 0 else 0.0
+
+
+func _at_door() -> bool:
+	var d = main.obj.get("door", null)
+	return d != null and d != Vector3.ZERO and Vector2(position.x - d.x, position.z - d.z).length() < 1.6
 
 
 func startle() -> void:

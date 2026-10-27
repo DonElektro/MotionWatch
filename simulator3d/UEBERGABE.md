@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-2.7** · passende Motion-Watch-Version **2.93.4**
+Stand: 26.10.2026 · Simulator-Version **3D-2.8** · passende Motion-Watch-Version **2.93.5**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,9 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-2.8 – Tiere:** `_build_animal()` mit Brust/Hinterteil (`bulk`), dunklerem Rücken, Oberschenkeln, Hals, Fuchs-Kinn und
+Ohrspitzen, Schlappohren (Hund 50 %), runden Ohren (Wildschwein, Dachs). Menschen an der Tür: `_at_door()` → Arm zur Klinke.
+
 **3D-2.7 – Figuren:** `actor._build_person()` mit Gelenken `hips` und `torso` (gegengleiches Schwingen in `_animate_person`),
 Gesicht, Statur (`body_root.scale` nicht gleichmässig), Kapuze/Handschuhe, Lampe (`lamp`, `lamp_mat`, Anteil `main.lamp_share`).
 Leerlauf-Arten pro Tier (`idle_kind`: graze, root, sniff, sit_up, sit, look, phone, bend), `startle()` beim Licht,
