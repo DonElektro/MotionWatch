@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 03:24",
+ "generated": "2026-10-27 03:32",
  "versions": [
   {
-   "version": "2.93.12",
-   "file": "webcam_bewegung_2_93_12.py",
+   "version": "2.93.13",
+   "file": "webcam_bewegung_2_93_13.py",
    "url": "",
-   "sha256": "2e278f6a0ea2f5ebb5487f33bf1d637bae3ff6d83f0cc4432882d12f9587cee1",
-   "date": "2026-10-27 03:24",
-   "notes": "Simulator control: group symbols and sub-headings (3D simulator 3D-3.5 with a tidied panel).",
-   "sig": "d00499803435790ab3e300ac5f1d26e737d4be4c0c052e48a219e10bd4a5067594570b29c7e217236295de873b3ed6e7fe241eb56b82ae3421eb0837d97b680e"
+   "sha256": "b0eb1268fb9f4770c3ea60fd2237941e34930fdecc16200ce078ed36a691261b",
+   "date": "2026-10-27 03:32",
+   "notes": "3D simulator 3D-3.6: mouse control (move, turn, zoom, select and carry visitors).",
+   "sig": "c38ffd18bf398cec40f3e6d5a4efba4a5b73c6968372394dae8f9f5b377b551d60e64e2624ac45c3123b15e35fb4f7defa1dad14133915fc1daa242533550d0f"
   },
   {
    "version": "2.92.4",

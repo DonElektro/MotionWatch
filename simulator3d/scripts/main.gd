@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.5"
+const VERSION := "3D-3.6"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1172,6 +1172,7 @@ func _process(dt: float) -> void:
 		if anims[i].call(dt, t) == true:      # true = finished (e.g. the birds are gone)
 			anims.remove_at(i)
 	_fly(dt)
+	_view_overlays()
 	if crosshair != null:
 		crosshair.visible = rifle_on
 		if rifle_on:
@@ -1922,7 +1923,9 @@ func control(d: Dictionary) -> Dictionary:
 				if o["po"] and v.kind != "person":
 					continue
 				deepest = min(deepest, float(_ob_closest(o, p2)[1]))
-			out.append({"kind": v.kind, "x": snappedf(v.position.x, 0.01), "z": snappedf(v.position.z, 0.01), "gap": snappedf(deepest, 0.01), "r": v.radius})
+			var sp := view_cam.unproject_position(v.global_position + Vector3(0, 0.6, 0))
+			out.append({"kind": v.kind, "x": snappedf(v.position.x, 0.01), "z": snappedf(v.position.z, 0.01), "gap": snappedf(deepest, 0.01), "r": v.radius,
+					"y": snappedf(v.position.y, 0.01), "sx": int(sp.x), "sy": int(sp.y), "selected": v == selected})
 		return {"ok": true, "visitors": out}
 	elif a == "spawn_at":                              # for tests: a visitor from one point to another
 		var f: Array = d.get("from", [0, 0])
@@ -1992,6 +1995,7 @@ func _build_ui() -> void:
 	phone.theme = th
 	layer.add_child(phone)
 	_build_crosshair(layer)
+	_build_view_bar(layer, th)
 	karte = Karte.new()
 	karte.main = self
 	karte.theme = th
@@ -2199,7 +2203,7 @@ func _build_ui() -> void:
 		game.add_info(groups["Spiel"], UI)
 	var keys := UI.fold_card(box_, "Tasten", false, "keys")
 	fold_bodies.append(keys)
-	info_label = UI.small("Maus rechts gedrückt: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienfeld aus / ein · P: Handy / Tablet · K: Karte (Ort wählen) · G: Gewehr ein / aus (Linksklick = Schuss)")
+	info_label = UI.small("Maus: links ziehen = verschieben · rechts ziehen = drehen · Rad = zoomen (Shift + Rad: Tempo von W A S D) · mittlere Taste oder Alt + rechts = umschauen · Doppelklick = hinfliegen · Besucher anklicken = auswählen, ziehen = tragen.  Tasten: W A S D Q E fliegen (Shift schneller) · 1 / 2 Kamera · 3 Wärmebild · 0 frei · F folgen · Entf entfernen · Esc abwählen · H Bedienfeld · P Handy / Tablet · K Karte · G Gewehr (Linksklick = Schuss)")
 	keys.add_child(info_label)
 	expert_cards.append(keys.get_meta("card"))
 	top_cards.append(keys.get_meta("card"))
@@ -2695,44 +2699,107 @@ func _update_status() -> void:
 
 
 # ---- flying through the world, placing visitors ---------------------------------------------------------------------------
+# From 3D-3.6 everything with the mouse (like a map): left drag = move (the ground sticks to the mouse), right drag = turn
+# round the point under the mouse, wheel = zoom to the mouse, middle drag (or Alt + right) = look round, double click = fly
+# there, click on a visitor = choose it (box with Folgen / Erschrecken / Weg), drag a visitor = carry it. Buttons below.
 var look := false
 var yaw := 0.0
 var pitch := 0.0
 var fly_speed := 8.0
-var view_mode := 0
+var view_mode := 0                    # 0 free, 1 camera 1, 2 camera 2, 3 thermal picture
+var m_btn := 0                        # mouse button held in the world
+var m_from := Vector2.ZERO
+var m_moved := 0.0
+var m_grab := Vector3.ZERO            # ground point that sticks to the mouse (moving) / turning point
+var m_drag = null                     # visitor carried with the mouse
+var m_cand = null                     # visitor under the mouse when the button went down
+var m_skip := false                   # the double click already did something
+var selected = null                   # chosen visitor (box below)
+var follow := false
+var fly_tw: Tween
+var view_bar: HBoxContainer
+var sel_box: PanelContainer
+var sel_label: Label
+var follow_btn: Button
+var compass: Control
+var thermal_full: TextureRect
+var view_btns := {}
+var sel_ring: Control
 
 
 func _unhandled_input(ev: InputEvent) -> void:
 	if ev is InputEventMouseButton:
-		if ev.button_index == MOUSE_BUTTON_RIGHT:
-			look = ev.pressed
-			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if look else Input.MOUSE_MODE_VISIBLE
-			if look:
-				yaw = view_cam.rotation.y
-				pitch = view_cam.rotation.x
-		elif ev.button_index == MOUSE_BUTTON_LEFT and ev.pressed:
-			if rifle_on:
-				var sp: Vector2 = get_viewport().get_visible_rect().size / 2.0 if look else ev.position
-				shoot(view_cam.project_ray_origin(sp), view_cam.project_ray_normal(sp))
+		var b: int = ev.button_index
+		if ev.pressed and b in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
+			if b == MOUSE_BUTTON_LEFT and rifle_on:
+				shoot(view_cam.project_ray_origin(ev.position), view_cam.project_ray_normal(ev.position))
+				return
+			_to_free_view()
+			m_btn = b
+			m_from = ev.position
+			m_moved = 0.0
+			m_skip = false
+			m_drag = null
+			m_cand = _visitor_at(ev.position) if b == MOUSE_BUTTON_LEFT else null
+			var g = _ground_at(ev.position)
+			m_grab = g if g != null else view_cam.global_position - view_cam.global_transform.basis.z * 30.0
+			yaw = view_cam.rotation.y
+			pitch = view_cam.rotation.x
+			look = b == MOUSE_BUTTON_MIDDLE or (b == MOUSE_BUTTON_RIGHT and ev.alt_pressed)
+			if b == MOUSE_BUTTON_LEFT and ev.double_click and m_cand == null and g != null:
+				fly_to(g)
+				m_skip = true
+		elif not ev.pressed and b == m_btn:
+			if b == MOUSE_BUTTON_LEFT and m_moved < 6.0 and not m_skip:
+				if place_kind != "":
+					_place(ev.position)
+				elif m_cand != null and is_instance_valid(m_cand):
+					select_visitor(m_cand)
+				else:
+					select_visitor(null)
+			m_btn = 0
+			m_drag = null
+			look = false
+		elif ev.pressed and b == MOUSE_BUTTON_WHEEL_UP:
+			if ev.shift_pressed:
+				fly_speed = min(80.0, fly_speed * 1.2)
 			else:
-				_place(ev.position)
-		elif ev.button_index == MOUSE_BUTTON_WHEEL_UP:
-			fly_speed = min(80.0, fly_speed * 1.2)
-		elif ev.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			fly_speed = max(1.0, fly_speed / 1.2)
-	elif ev is InputEventMouseMotion and look:
-		yaw -= ev.relative.x * 0.004
-		pitch = clamp(pitch - ev.relative.y * 0.004, -1.5, 1.5)
-		view_cam.rotation = Vector3(pitch, yaw, 0)
-		view_mode = 0
+				_zoom_at(ev.position, 1.0)
+		elif ev.pressed and b == MOUSE_BUTTON_WHEEL_DOWN:
+			if ev.shift_pressed:
+				fly_speed = max(1.0, fly_speed / 1.2)
+			else:
+				_zoom_at(ev.position, -1.0)
+	elif ev is InputEventMouseMotion and m_btn != 0:
+		m_moved += ev.relative.length()
+		if m_moved < 4.0:
+			return
+		follow = false
+		if look:                                          # look round from where the eye is
+			yaw -= ev.relative.x * 0.004
+			pitch = clamp(pitch - ev.relative.y * 0.004, -1.5, 1.5)
+			view_cam.rotation = Vector3(pitch, yaw, 0)
+		elif m_btn == MOUSE_BUTTON_LEFT:
+			if m_cand != null and is_instance_valid(m_cand) and place_kind == "":
+				m_drag = m_cand                           # carry the visitor
+				var g = _ground_at(ev.position)
+				if g != null:
+					var q: Vector3 = free_spot(g, m_drag.radius, m_drag.kind == "person")
+					m_drag.position = Vector3(q.x, ground_y(q.x, q.z), q.z)
+			else:
+				_pan_to(ev.position)
+		elif m_btn == MOUSE_BUTTON_RIGHT:
+			_orbit(ev.relative)
 	elif ev is InputEventKey and ev.pressed and not ev.echo:
 		match ev.keycode:
 			KEY_1:
-				view_mode = 1
+				set_view(1)
 			KEY_2:
-				view_mode = 2
+				set_view(2)
+			KEY_3:
+				set_view(3)
 			KEY_0:
-				view_mode = 0
+				set_view(0)
 			KEY_H:
 				show_panel(not ui_root.visible)
 			KEY_P:
@@ -2745,6 +2812,340 @@ func _unhandled_input(ev: InputEvent) -> void:
 			KEY_G:
 				rifle_on = not rifle_on
 				_sync_ui()
+			KEY_F:
+				if selected != null:
+					follow = not follow
+					_paint_sel()
+			KEY_ESCAPE:
+				place_kind = ""
+				_paint_palette()
+				select_visitor(null)
+			KEY_DELETE:
+				if selected != null and is_instance_valid(selected):
+					selected.queue_free()
+					select_visitor(null)
+
+
+func _ground_at(p: Vector2):
+	return ground_hit(view_cam.project_ray_origin(p), view_cam.project_ray_normal(p))
+
+
+func _to_free_view() -> void:
+	if view_mode != 0:
+		set_view(0)
+
+
+func _pan_to(p: Vector2) -> void:
+	"""the grabbed point of the ground stays under the mouse"""
+	var o := view_cam.project_ray_origin(p)
+	var d := view_cam.project_ray_normal(p)
+	if abs(d.y) < 0.02:
+		return
+	var t := (m_grab.y - o.y) / d.y
+	if t <= 0.0 or t > 3000.0:
+		return
+	var h := o + d * t
+	var delta := m_grab - h
+	delta.y = 0.0
+	if delta.length() > 200.0:
+		delta = delta.normalized() * 200.0
+	view_cam.global_position += delta
+	_keep_above()
+
+
+func _orbit(rel: Vector2) -> void:
+	"""turn round the grabbed point: sideways round the vertical, up / down round the side axis of the view"""
+	var t := view_cam.global_transform
+	t.origin -= m_grab
+	t = Transform3D(Basis(Vector3.UP, -rel.x * 0.006), Vector3.ZERO) * t
+	var side := t.basis.x.normalized()
+	var t2 := Transform3D(Basis(side, -rel.y * 0.005), Vector3.ZERO) * t
+	var up_ang := rad_to_deg(asin(clampf(t2.origin.normalized().y, -1.0, 1.0)))
+	if up_ang > 3.0 and up_ang < 88.0 and t2.basis.y.y > 0.05:
+		t = t2
+	t.origin += m_grab
+	view_cam.global_transform = t
+	_keep_above()
+
+
+func _zoom_at(p: Vector2, dir: float) -> void:
+	_to_free_view()
+	follow = false
+	var g = _ground_at(p)
+	var target: Vector3 = g if g != null else view_cam.global_position + view_cam.project_ray_normal(p) * 30.0
+	var dist := view_cam.global_position.distance_to(target)
+	var step: float = dist * (0.2 if dir > 0 else -0.25)
+	if dir > 0 and dist - step < 1.5:
+		step = max(0.0, dist - 1.5)
+	var np := view_cam.global_position + (target - view_cam.global_position).normalized() * step
+	if np.y - ground_y(np.x, np.z) > 400.0:
+		return
+	view_cam.global_position = np
+	_keep_above()
+
+
+func _keep_above() -> void:
+	var gy := ground_y(view_cam.global_position.x, view_cam.global_position.z) + 0.4
+	if view_cam.global_position.y < gy:
+		view_cam.global_position.y = gy
+
+
+func fly_to(p: Vector3, dist := 12.0) -> void:
+	"""fly smoothly towards p (it stays in the middle of the view)"""
+	_to_free_view()
+	var fwd := -view_cam.global_transform.basis.z
+	var to := p - fwd * dist
+	to.y = max(to.y, ground_y(to.x, to.z) + 1.5)
+	if fly_tw != null:
+		fly_tw.kill()
+	var start := view_cam.global_transform
+	var end := Transform3D(Basis(), to).looking_at(p, Vector3.UP)
+	fly_tw = create_tween()
+	fly_tw.tween_method(func(f: float):
+		view_cam.global_transform = start.interpolate_with(end, f), 0.0, 1.0, 0.7).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _visitor_at(p: Vector2):
+	"""the visitor nearest to the mouse on the screen (within 45 pixels)"""
+	var best = null
+	var bd := 45.0
+	for v in visitors.get_children():
+		if v.done:
+			continue
+		var w: Vector3 = v.global_position + Vector3(0, 0.6 if v.kind != "person" else 1.0, 0)
+		if view_cam.is_position_behind(w):
+			continue
+		var d := view_cam.unproject_position(w).distance_to(p)
+		if d < bd:
+			bd = d
+			best = v
+	return best
+
+
+func select_visitor(v) -> void:
+	selected = v
+	if v == null:
+		follow = false
+	_paint_sel()
+
+
+func _visitor_name(v) -> String:
+	var k: String = v.variant if v.kind == "person" and v.variant != "" else v.kind
+	for e in VISITOR_LIST:
+		if e[0] == k:
+			return e[1]
+	return {"person": "Person", "car": "Auto", "dog": "Hund"}.get(k, k)
+
+
+func _paint_sel() -> void:
+	if sel_box == null:
+		return
+	var ok: bool = selected != null and is_instance_valid(selected) and not selected.done
+	sel_box.visible = ok
+	if ok:
+		sel_label.text = _visitor_name(selected)
+		follow_btn.text = "Nicht mehr folgen" if follow else "Folgen (F)"
+
+
+func set_view(m: int) -> void:
+	view_mode = m
+	if thermal_full != null:
+		thermal_full.visible = m == 3
+	for k in view_btns:
+		view_btns[k].set_pressed_no_signal(k == m)
+
+
+func _view_preset(which: String) -> void:
+	set_view(0)
+	follow = false
+	var to: Transform3D
+	match which:
+		"top":
+			to = Transform3D(Basis(), Vector3(0, ground_y(0, 0) + 70.0, 8.0)).looking_at(Vector3(0, ground_y(0, 0), -6.0), Vector3.UP)
+		_:
+			to = Transform3D(Basis(), Vector3(0.0, ground_y(0, 4) + 3.2, 5.0)).looking_at(Vector3(0, ground_y(0, -12) + 1.0, -12.0), Vector3.UP)
+	if fly_tw != null:
+		fly_tw.kill()
+	var start := view_cam.global_transform
+	fly_tw = create_tween()
+	fly_tw.tween_method(func(f: float):
+		view_cam.global_transform = start.interpolate_with(to, f), 0.0, 1.0, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
+	"""buttons at the bottom of the view, a compass at the top left, the box of the chosen visitor"""
+	thermal_full = TextureRect.new()
+	thermal_full.texture = th_preview
+	thermal_full.set_anchors_preset(Control.PRESET_FULL_RECT)
+	thermal_full.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	thermal_full.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	thermal_full.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	thermal_full.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	thermal_full.visible = false
+	layer.add_child(thermal_full)
+	layer.move_child(thermal_full, 0)
+	view_bar = HBoxContainer.new()
+	view_bar.theme = th
+	view_bar.add_theme_constant_override("separation", 6)
+	view_bar.anchor_top = 1.0
+	view_bar.anchor_bottom = 1.0
+	view_bar.offset_left = 12
+	view_bar.offset_top = -50
+	view_bar.offset_bottom = -12
+	view_bar.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	view_bar.anchor_right = 1.0
+	view_bar.offset_right = -404                          # not under the panel
+	layer.add_child(view_bar)
+	for k in [[0, "Frei", "Frei herumfliegen (0)"], [1, "Kamera 1", "Durch die Kopfkamera schauen (1)"], [2, "Kamera 2", "Durch die zweite Kamera schauen (2)"],
+			[3, "Wärmebild", "Das Wärmebild gross (3)"]]:
+		var b := Button.new()
+		b.text = k[1]
+		b.tooltip_text = k[2]
+		b.toggle_mode = true
+		b.focus_mode = Control.FOCUS_NONE
+		var m: int = k[0]
+		b.pressed.connect(func(): set_view(m))
+		view_bar.add_child(b)
+		view_btns[m] = b
+	for k in [["head", "Zum Kopf", "Zurück zu Motion Watch"], ["top", "Von oben", "Von oben auf den Platz schauen"]]:
+		var b := Button.new()
+		b.text = k[1]
+		b.tooltip_text = k[2]
+		b.focus_mode = Control.FOCUS_NONE
+		var w: String = k[0]
+		b.pressed.connect(func(): _view_preset(w))
+		view_bar.add_child(b)
+	set_view(view_mode)
+	var help := UI.small("Links ziehen: verschieben · Rechts ziehen: drehen · Rad: zoomen · Doppelklick: hinfliegen")
+	help.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
+	help.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	help.add_theme_constant_override("shadow_offset_x", 1)
+	help.add_theme_constant_override("shadow_offset_y", 1)
+	help.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	help.autowrap_mode = TextServer.AUTOWRAP_OFF
+	help.clip_text = true
+	help.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	help.custom_minimum_size = Vector2(10, 0)
+	help.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	view_bar.add_child(help)
+	# compass: the red needle shows north; a click turns the view to the north
+	compass = Control.new()
+	compass.position = Vector2(14, 26)
+	compass.size = Vector2(54, 54)
+	compass.tooltip_text = "Norden – anklicken: nach Norden schauen"
+	compass.draw.connect(func():
+		var c := Vector2(27, 27)
+		compass.draw_circle(c, 25, Color(0.05, 0.07, 0.1, 0.75))
+		compass.draw_arc(c, 25, 0, TAU, 32, Color(1, 1, 1, 0.35), 1.5, true)
+		var fwd := -view_cam.global_transform.basis.z
+		var a := atan2(fwd.x, -fwd.z)                      # 0 = looking north
+		var n := Vector2(sin(-a), -cos(-a))
+		compass.draw_colored_polygon(PackedVector2Array([c + n * 19, c + n.orthogonal() * 5, c - n.orthogonal() * 5]), Color(0.95, 0.3, 0.25))
+		compass.draw_colored_polygon(PackedVector2Array([c - n * 19, c + n.orthogonal() * 5, c - n.orthogonal() * 5]), Color(0.85, 0.87, 0.9))
+		compass.draw_string(ThemeDB.fallback_font, c + n * 33 + Vector2(-4, 4), "N", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 1, 1, 0.95)))
+	compass.gui_input.connect(func(ev):
+		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+			set_view(0)
+			var p := view_cam.global_position
+			var fwd := -view_cam.global_transform.basis.z
+			var tilt := asin(clampf(fwd.y, -1.0, 1.0))
+			var start := view_cam.global_transform
+			var end := Transform3D(Basis.from_euler(Vector3(tilt, 0.0, 0.0)), p)
+			if fly_tw != null:
+				fly_tw.kill()
+			fly_tw = create_tween()
+			fly_tw.tween_method(func(f: float): view_cam.global_transform = start.interpolate_with(end, f), 0.0, 1.0, 0.5))
+	layer.add_child(compass)
+	sel_ring = Control.new()                              # a ring round the chosen visitor
+	sel_ring.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sel_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sel_ring.draw.connect(func():
+		if selected == null or not is_instance_valid(selected) or view_mode != 0:
+			return
+		var w: Vector3 = selected.global_position
+		if view_cam.is_position_behind(w):
+			return
+		var pts := PackedVector2Array()
+		for i in range(33):
+			var a := TAU * i / 32.0
+			pts.append(view_cam.unproject_position(w + Vector3(cos(a), 0.05, sin(a)) * (selected.radius + 0.35)))
+		sel_ring.draw_polyline(pts, Color(1.0, 0.75, 0.2, 0.95), 2.5, true))
+	layer.add_child(sel_ring)
+	layer.move_child(sel_ring, 1)
+	# the chosen visitor
+	sel_box = PanelContainer.new()
+	sel_box.theme = th
+	sel_box.add_theme_stylebox_override("panel", UI.box(Color(UI.PANEL, 0.95), UI.LINE, 10, 8))
+	sel_box.anchor_top = 1.0
+	sel_box.anchor_bottom = 1.0
+	sel_box.offset_left = 12
+	sel_box.offset_top = -104
+	sel_box.offset_bottom = -58
+	sel_box.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	sel_box.visible = false
+	layer.add_child(sel_box)
+	var hb := HBoxContainer.new()
+	hb.add_theme_constant_override("separation", 6)
+	sel_box.add_child(hb)
+	sel_label = Label.new()
+	sel_label.custom_minimum_size = Vector2(90, 0)
+	sel_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	hb.add_child(sel_label)
+	follow_btn = Button.new()
+	follow_btn.focus_mode = Control.FOCUS_NONE
+	follow_btn.pressed.connect(func():
+		follow = not follow
+		_paint_sel())
+	hb.add_child(follow_btn)
+	for k in [["scare", "Erschrecken"], ["away", "Wegschicken"], ["del", "Entfernen (Entf)"]]:
+		var b := Button.new()
+		b.text = k[1]
+		b.focus_mode = Control.FOCUS_NONE
+		var w: String = k[0]
+		b.pressed.connect(_sel_action.bind(w))
+		hb.add_child(b)
+	var x := Button.new()
+	x.text = "×"
+	x.focus_mode = Control.FOCUS_NONE
+	x.pressed.connect(func(): select_visitor(null))
+	hb.add_child(x)
+
+
+func _sel_action(w: String) -> void:
+	if selected == null or not is_instance_valid(selected):
+		return
+	if w == "scare":
+		if selected.kind == "person":
+			selected.startle()
+		else:
+			selected.scare()
+	elif w == "away":
+		var d: Vector3 = selected.position.normalized() if selected.position.length() > 0.5 else Vector3(1, 0, 0)
+		selected.route = [selected.position + d * 70.0]
+		selected.target = selected.position + d * 70.0
+	elif w == "del":
+		selected.queue_free()
+		select_visitor(null)
+
+
+func _view_overlays() -> void:
+	"""every frame: compass, ring round the chosen visitor, follow it"""
+	if compass != null:
+		compass.queue_redraw()
+	if selected != null and (not is_instance_valid(selected) or selected.done):
+		select_visitor(null)
+	if selected != null and follow and view_mode == 0 and (fly_tw == null or not fly_tw.is_running()):
+		var tp: Vector3 = selected.global_position + Vector3(0, 1.0, 0)
+		var back := view_cam.global_position - tp
+		back.y = 0.0
+		if back.length() < 0.1:
+			back = Vector3(0, 0, 1)
+		var want := tp + back.normalized() * 9.0 + Vector3(0, 4.0, 0)
+		want.y = max(want.y, ground_y(want.x, want.z) + 1.5)
+		view_cam.global_position = view_cam.global_position.lerp(want, clampf(get_process_delta_time() * 3.0, 0.0, 1.0))
+		view_cam.look_at(tp, Vector3.UP)
+	if sel_ring != null:
+		sel_ring.queue_redraw()
 
 
 func _fly(dt: float) -> void:
@@ -2757,6 +3158,7 @@ func _fly(dt: float) -> void:
 		view_cam.fov = 62
 		return
 	view_cam.fov = 70
+	view_cam.far = 7000.0 if terrain else 2000.0
 	if phone != null and phone.visible and phone.screen.has_focus():
 		return                                   # keys go to the phone
 	var mv := Vector3.ZERO

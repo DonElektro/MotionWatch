@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-3.5 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-3.6 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -66,6 +66,8 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
     Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
   * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
+- Ab 3D-3.6: Steuerung nur mit der Maus (siehe «Bedienung»), Knopfleiste unten im Bild, Kompass, Besucher auswählen,
+  verfolgen und mit der Maus tragen.
 - Ab 3D-3.5: Bedienfeld aufgeräumt: jede Gruppe hat ein Symbol, die Gruppen stehen in einer festen Reihenfolge (Szene,
   Wetter, Besuch, Kamerabild, Sensoren, Spiel, Wildbeobachtung, Testlauf, System), darin aufklappbare Teile (z. B. Besuch →
   Besucher hinsetzen / schicken / von selbst / in bestimmten Szenen / Verhalten; System → Grafik / Start mit dem PC / Updates).
@@ -242,8 +244,13 @@ MOTION WATCH AUF DIESEM PC (ab 3D-1.9) - ganz ohne Raspberry Pi
   4 statt 6 Bilder pro Sekunde. Auf einem PC mit echter Grafikkarte läuft alles deutlich flüssiger.
 
 BEDIENUNG IM FENSTER
-- Rechte Maustaste gedrückt halten: umschauen.  W A S D: fliegen,  Q / E: tiefer / höher,  Shift: schneller,
-  Mausrad: Fluggeschwindigkeit.
+- Maus (ab 3D-3.6, wie bei einer Karte): links ziehen = verschieben (der Boden klebt an der Maus), rechts ziehen = um den
+  Punkt unter der Maus drehen, Mausrad = zur Maus hin zoomen, mittlere Taste (oder Alt + rechts) = umschauen,
+  Doppelklick = dorthin fliegen. Besucher anklicken = auswählen (Kästchen: Folgen, Erschrecken, Wegschicken, Entfernen),
+  Besucher ziehen = tragen. Unten: Frei, Kamera 1, Kamera 2, Wärmebild, Zum Kopf, Von oben; oben links der Kompass
+  (anklicken = nach Norden schauen).
+- Tasten: W A S D fliegen, Q / E tiefer / höher, Shift schneller (Shift + Mausrad: Tempo), 1 / 2 Kamera, 3 Wärmebild,
+  0 frei, F folgen, Entf entfernen, Esc abwählen.
 - Besucher hinsetzen (Karte "Besucher hinsetzen"): kleine Bilder aller Menschen und Tiere. Ein Bild mit der Maus
   in die Welt ziehen und loslassen = der Besucher steht dort. Oder ein Bild anklicken (blau umrandet) und dann in die
   Welt klicken, so oft man will; nochmals anklicken = nichts mehr hinsetzen.
@@ -290,7 +297,7 @@ SZENEN (ab 3D-1.5, schnelle erste Fassung)
 WILDBEOBACHTUNG MIT DEM GEWEHR (unblutig)
 - Taste G oder Schalter "Gewehr (unblutig, nur Tiere)" in der Gruppe "Wildbeobachtung". In der Szene
   Wildbeobachtung ist es von selbst an, beim Wechsel in eine andere Szene wieder von selbst aus.
-- Linksklick = Schuss dorthin, wo das rote Fadenkreuz ist (beim Umschauen mit der rechten Maustaste: Bildmitte).
+- Linksklick = Schuss dorthin, wo das rote Fadenkreuz ist (dort, wo die Maus ist).
 - Ein getroffenes Tier macht einen Luftsprung mit Drehung, sieht Sterne und rennt dann davon. Kein Blut, nichts
   Schlimmes. Punkte: Katze / Hund 5, Fuchs 10, Reh 15, Wildschwein 20, Dachs 25.
 - Menschen und Autos kann man nicht treffen: es erscheint "Nicht auf Menschen! Nur Tiere."

@@ -1,7 +1,7 @@
 {
- "version": "3D-3.5",
+ "version": "3D-3.6",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30485230,
- "sha256": "b427e89c84fa9bbb418435907312f99268cc18cd8fa8e139f5eea0db3cde2ca3",
- "notes": "Bedienfeld aufgeräumt: Symbole vor den Gruppen, logische Reihenfolge, aufklappbare Unterteile."
+ "size": 30497628,
+ "sha256": "85138e518605ee016286b56b272e58a1a6e902d3958a6087f07c5f9c40adaad7",
+ "notes": "Steuerung mit der Maus: ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen, Doppelklick = hinfliegen, Besucher anklicken / tragen / verfolgen, Knopfleiste und Kompass."
 }
