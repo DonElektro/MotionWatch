@@ -4,7 +4,7 @@ extends RefCounted
 ## Every scene must give main: door_node + door_light + window_mat (the door sensor), obj["door"], obj["pir"], obj["bike"].
 
 const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Parkplatz"], ["garten", "Garten / Haus"],
-		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"], ["ort", "Ort von der Karte (Schweiz)"]]
+		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"], ["verstecken", "Versteckspiel (viele Verstecke)"], ["ort", "Ort von der Karte (Schweiz)"]]
 
 # visitors that come by themselves, and how often (seconds from .. to)
 const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog"], 35.0, 110.0],
@@ -12,6 +12,7 @@ const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox"
 		"parkplatz": [["person", "person", "child", "car_park", "car_park", "cat", "fox", "dogwalk"], 30.0, 80.0],
 		"garten": [["cat", "cat", "fox", "badger", "hedgehog", "hare", "garden_person", "garden_person", "dog"], 35.0, 100.0],
 		"lustig": [["bench", "bench", "child", "dogwalk", "fox", "deer", "cat", "hare"], 25.0, 60.0],
+		"verstecken": [["person", "child", "jogger", "dogwalk", "fox", "cat", "hare", "deer"], 30.0, 90.0],
 		"ort": [["person", "child", "jogger", "dogwalk", "fox", "deer", "cat", "cat", "badger", "hare", "hedgehog", "car"], 30.0, 100.0],
 		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer"], 15.0, 40.0]}
 
@@ -46,8 +47,23 @@ func build(id: String, parent: Node3D) -> void:
 			_wild()
 		"ort":
 			_ort()
+		"verstecken":
+			_verstecken()
 		_:
 			_camping()
+	if EXTRA_HIDE.has(id):                                        # more places to hide (3D-3.13)
+		var e: Array = EXTRA_HIDE[id]
+		hide_props(int(e[0]), float(e[1]), float(e[2]), e[3])
+
+
+const EXTRA_HIDE := {
+	"camping": [10, 9.0, 40.0, ["bush", "woodpile", "barrels", "rock", "car", "crates", "compost"]],
+	"wald": [12, 8.0, 45.0, ["bush", "bush", "woodpile", "rock", "rock", "haybale"]],
+	"parkplatz": [8, 9.0, 40.0, ["car", "container", "pallets", "barrels", "bush", "wall"]],
+	"garten": [8, 7.0, 30.0, ["bush", "hedge", "compost", "woodpile", "shed", "crates"]],
+	"lustig": [8, 9.0, 40.0, ["bush", "haybale", "crates", "barrels", "rock"]],
+	"wild": [10, 10.0, 50.0, ["bush", "bush", "rock", "rock", "woodpile", "haybale", "trailer"]],
+}
 
 
 # ---- small helpers -------------------------------------------------------------------------------------------------
@@ -784,6 +800,9 @@ func _ducks(c: Vector3) -> void:
 	wm.roughness = 0.1
 	wm.metallic = 0.3
 	put(root, cyl(2.4, 2.4, 0.04, 32), c + Vector3(0, 0.03, 0), wm, "pond")
+	if not data.has("clear"):
+		data["clear"] = []
+	data["clear"].append([Vector2(c.x, c.z), 5.0])
 	put(root, TorusMesh.new(), c + Vector3(0, 0.03, 0), Color(0.45, 0.42, 0.38), "stone", Vector3.ZERO, Vector3(2.45, 0.15, 2.45))   # stone rim
 	for i in range(5):                                                                             # reeds
 		var a := rng.randf() * TAU
@@ -922,3 +941,169 @@ func feed_route(v) -> void:
 	v.target = p
 	v.route = [[p, rng.randf_range(12.0, 30.0), 0.0, at], back]
 	v._face(p)
+
+
+# ---- hiding places (from 3D-3.13): things to hide behind in the games - every one is an obstacle with its height ----------
+const PROP_KINDS := ["bush", "bush", "hedge", "woodpile", "crates", "barrels", "haybale", "rock", "shed", "car", "container", "wall", "pallets",
+		"trailer", "compost"]
+
+
+func prop(kind: String, p: Vector3, rot_y: float) -> void:
+	"""one hiding place at p (on the ground), turned by rot_y"""
+	p.y = m.ground_y(p.x, p.z)
+	match kind:
+		"bush":                                                   # a big round bush (1.2 - 1.8 m)
+			var s := rng.randf_range(0.8, 1.25)
+			var n := node(root, p, rot_y)
+			var fm := foliage(rng.randi_range(0, 5))
+			for k in range(rng.randi_range(4, 6)):
+				var r := rng.randf_range(0.55, 0.85) * s
+				put(n, sph(r, r * 1.6), Vector3(rng.randf_range(-0.6, 0.6) * s, r * 0.75 + rng.randf_range(0.0, 0.3), rng.randf_range(-0.6, 0.6) * s), fm, "tree")
+			m.add_obstacle(p, 0.95 * s)
+			m.set_obstacle_height(1.5 * s)
+		"hedge":                                                  # a piece of hedge, 5 - 9 m long, 1.7 m high
+			var l := rng.randf_range(5.0, 9.0)
+			put(root, m.box(l, 1.7, 0.9), p + Vector3(0, 0.85, 0), foliage(2), "tree", Vector3(0, rot_y, 0))
+			m.add_obstacle_box(p, l, 1.0, rot_y)
+			m.set_obstacle_height(1.7)
+		"woodpile":                                               # stacked firewood
+			var n := node(root, p, rot_y)
+			for row in range(5):
+				for k in range(9):
+					put(n, cyl(0.12, 0.12, 0.9, 7), Vector3(-1.1 + k * 0.27 + (0.13 if row % 2 else 0.0), 0.12 + row * 0.22, 0), Color(0.5, 0.36, 0.22).lerp(Color(0.62, 0.47, 0.3), rng.randf()), "tree", Vector3(PI / 2, 0, 0))
+			put(n, m.box(2.7, 0.05, 1.2), Vector3(0, 1.25, 0), Color(0.3, 0.3, 0.32), "stone", Vector3(0.12, 0, 0))     # roof sheet
+			m.add_obstacle_node(n, Vector3.ZERO, 2.6, 1.1)
+			m.set_obstacle_height(1.3)
+		"crates":                                                 # wooden crates, some on top
+			var n := node(root, p, rot_y)
+			var cc := Color(0.62, 0.48, 0.3)
+			for k in range(4):
+				put(n, m.box(1.0, 1.0, 1.0), Vector3(-0.55 + (k % 2) * 1.1, 0.5 + (k / 2) * 1.0, 0.0 if k < 2 else -0.0), cc.darkened(rng.randf() * 0.25), "tent", Vector3(0, rng.randf_range(-0.1, 0.1), 0))
+			put(n, m.box(1.0, 1.0, 1.0), Vector3(0.2, 0.5, 1.15), cc.darkened(0.15), "tent")
+			m.add_obstacle_node(n, Vector3(0, 0, 0.5), 2.3, 2.3)
+			m.set_obstacle_height(2.0)
+		"barrels":                                                # a group of barrels
+			var n := node(root, p, rot_y)
+			var bc: Color = [Color(0.15, 0.35, 0.6), Color(0.6, 0.15, 0.1), Color(0.2, 0.45, 0.2)][rng.randi() % 3]
+			for k in range(5):
+				var a := k * TAU / 5.0
+				put(n, cyl(0.3, 0.3, 0.9, 12), Vector3(cos(a) * 0.55, 0.45, sin(a) * 0.55), bc.darkened(rng.randf() * 0.2), "stone")
+			put(n, cyl(0.3, 0.3, 0.9, 12), Vector3(0, 0.45, 0), bc, "stone")
+			m.add_obstacle(p, 1.0)
+			m.set_obstacle_height(0.95)
+		"haybale":                                                # round bales of hay (1.4 m), two or three
+			var n := node(root, p, rot_y)
+			for k in range(rng.randi_range(2, 3)):
+				put(n, cyl(0.7, 0.7, 1.2, 16), Vector3(-1.0 + k * 1.3, 0.7, rng.randf_range(-0.2, 0.2)), Color(0.82, 0.72, 0.42).darkened(rng.randf() * 0.15), "tree", Vector3(PI / 2, rng.randf_range(-0.2, 0.2), 0))
+			m.add_obstacle_node(n, Vector3(0.3, 0, 0), 4.0, 1.5)
+			m.set_obstacle_height(1.4)
+		"rock":                                                   # a boulder (1 - 2 m)
+			var s := rng.randf_range(1.0, 2.0)
+			var rk := put(root, sph(s * 0.8, s * 1.1), p + Vector3(0, s * 0.35, 0), Color(0.5, 0.5, 0.48).darkened(rng.randf() * 0.2), "stone", Vector3(rng.randf_range(-0.2, 0.2), rot_y, 0), Vector3(1.0, 0.8, rng.randf_range(0.7, 1.1)))
+			put(root, sph(s * 0.45, s * 0.6), p + Vector3(s * 0.7, s * 0.15, 0.2), Color(0.46, 0.46, 0.44), "stone")
+			m.add_obstacle(p, s * 0.8)
+			m.set_obstacle_height(s * 0.9)
+		"shed":                                                   # a small garden shed
+			var n := node(root, p, rot_y)
+			var col: Color = [Color(0.45, 0.3, 0.18), Color(0.3, 0.38, 0.28), Color(0.55, 0.2, 0.15)][rng.randi() % 3]
+			put(n, m.box(2.4, 2.1, 1.9), Vector3(0, 1.05, 0), col, "caravan")
+			var roof := PrismMesh.new()
+			roof.size = Vector3(2.8, 0.8, 2.3)
+			put(n, roof, Vector3(0, 2.5, 0), col.darkened(0.35), "caravan")
+			put(n, m.box(0.8, 1.8, 0.04), Vector3(0.4, 0.9, 0.97), col.darkened(0.25), "caravan")
+			m.add_obstacle_node(n, Vector3.ZERO, 2.6, 2.1)
+			m.set_obstacle_height(2.6)
+		"car":
+			static_car(p, rot_y, [Color(0.75, 0.75, 0.78), Color(0.15, 0.18, 0.22), Color(0.6, 0.12, 0.1), Color(0.2, 0.35, 0.6), Color(0.85, 0.85, 0.82)][rng.randi() % 5])
+		"container":                                              # a shipping container
+			var n := node(root, p, rot_y)
+			var col: Color = [Color(0.65, 0.2, 0.12), Color(0.15, 0.35, 0.55), Color(0.3, 0.45, 0.25)][rng.randi() % 3]
+			put(n, m.box(6.0, 2.6, 2.45), Vector3(0, 1.3, 0), col, "caravan")
+			for k in range(12):
+				put(n, m.box(0.06, 2.4, 2.5), Vector3(-2.75 + k * 0.5, 1.3, 0), col.darkened(0.2), "caravan")
+			m.add_obstacle_node(n, Vector3.ZERO, 6.1, 2.6)
+			m.set_obstacle_height(2.6)
+		"wall":                                                   # a stone wall (1.3 m)
+			var l := rng.randf_range(4.0, 8.0)
+			put(root, m.box(l, 1.3, 0.5), p + Vector3(0, 0.65, 0), Color(0.58, 0.56, 0.52), "stone", Vector3(0, rot_y, 0))
+			m.add_obstacle_box(p, l, 0.6, rot_y)
+			m.set_obstacle_height(1.3)
+		"pallets":                                                # stacked pallets
+			var n := node(root, p, rot_y)
+			for k in range(rng.randi_range(6, 9)):
+				put(n, m.box(1.2, 0.14, 0.8), Vector3(rng.randf_range(-0.04, 0.04), 0.07 + k * 0.15, 0), Color(0.68, 0.55, 0.38), "tree", Vector3(0, rng.randf_range(-0.06, 0.06), 0))
+			put(n, m.box(1.2, 0.14, 0.8), Vector3(1.35, 0.07, 0), Color(0.68, 0.55, 0.38), "tree")
+			m.add_obstacle_node(n, Vector3(0.6, 0, 0), 2.6, 1.0)
+			m.set_obstacle_height(1.2)
+		"trailer":                                                # a farm trailer
+			var n := node(root, p, rot_y)
+			put(n, m.box(2.2, 0.8, 4.0), Vector3(0, 1.0, 0), Color(0.55, 0.15, 0.1), "caravan")
+			put(n, m.box(2.0, 0.1, 3.8), Vector3(0, 0.62, 0), Color(0.3, 0.3, 0.3), "stone")
+			for sx in [-1.0, 1.0]:
+				put(n, cyl(0.38, 0.38, 0.3, 14), Vector3(sx * 1.0, 0.38, 0.4), Color(0.05, 0.05, 0.05), "stone", Vector3(0, 0, PI / 2))
+			put(n, m.box(0.1, 0.1, 1.4), Vector3(0, 0.6, -2.6), Color(0.2, 0.2, 0.2), "stone")
+			m.add_obstacle_node(n, Vector3.ZERO, 2.3, 4.2)
+			m.set_obstacle_height(1.4)
+		"compost":                                                # wooden compost boxes
+			var n := node(root, p, rot_y)
+			for k in range(2):
+				for side in range(4):
+					var off: Vector3 = [Vector3(0, 0, 0.5), Vector3(0, 0, -0.5), Vector3(0.5, 0, 0), Vector3(-0.5, 0, 0)][side]
+					var sz := Vector3(1.0, 0.9, 0.05) if side < 2 else Vector3(0.05, 0.9, 1.0)
+					put(n, m.box(sz.x, sz.y, sz.z), Vector3(-0.55 + k * 1.1, 0.45, 0) + off, Color(0.45, 0.33, 0.2), "tree")
+			m.add_obstacle_node(n, Vector3.ZERO, 2.3, 1.2)
+			m.set_obstacle_height(0.9)
+		_:
+			prop("bush", p, rot_y)
+
+
+func hide_props(n: int, dmin: float, dmax: float, kinds: Array, keep_clear := Callable()) -> int:
+	"""n hiding places between dmin and dmax from Motion Watch, away from each other and from obstacles; returns how many"""
+	var made := 0
+	var tries := 0
+	while made < n and tries < n * 12:
+		tries += 1
+		var p: Vector3 = m.pos_of(rng.randf_range(-180, 180), rng.randf_range(dmin, dmax))
+		if keep_clear.is_valid() and keep_clear.call(p):
+			continue
+		var ok := true
+		for o in m._ob_near(Vector2(p.x, p.z)):
+			if float(m._ob_closest(o, Vector2(p.x, p.z))[1]) < 3.0:
+				ok = false
+				break
+		for cl in data.get("clear", []):
+			if Vector2(p.x, p.z).distance_to(cl[0]) < float(cl[1]):
+				ok = false
+		if p.length() < 6.0:
+			ok = false
+		if not ok or (data.has("road_z") and abs(p.z - (float(data["road_z"]) - 1.2)) < 5.0):
+			continue
+		prop(kinds[rng.randi() % kinds.size()], p, rng.randf() * TAU)
+		made += 1
+	return made
+
+
+# ---- hiding game (from 3D-3.13): a yard full of things to hide behind ---------------------------------------------------
+func _verstecken() -> void:
+	road(-60.0, 6.0)
+	put(root, m.box(26, 0.03, 18), Vector3(20, 0.015, -20), Color(0.55, 0.52, 0.45), "road")       # gravel yard by the containers
+	var h := hut(m.pos_of(-35.0, 14.0), deg_to_rad(30.0))
+	bike(m.pos_of(25.0, 7.0), deg_to_rad(80.0))
+	var tn := node(root, m.pos_of(12.0, 6.0), deg_to_rad(-10.0))
+	var tent := PrismMesh.new()
+	tent.size = Vector3(2.6, 1.5, 2.4)
+	put(tn, tent, Vector3(0, 0.75, 0), Color(0.25, 0.55, 0.3), "tent")
+	m.obj["pir"] = m.pos_of(12.0, 6.0)
+	m.add_obstacle_node(tn, Vector3.ZERO, 3.0, 2.8)
+	m.set_obstacle_height(1.4)
+	# a little maze of hedges on the left, a container yard on the right, the rest spread
+	for i in range(5):
+		prop("hedge", Vector3(-28.0 + (i % 2) * 4.0, 0, -12.0 - i * 6.0), 0.0 if i % 2 == 0 else 0.25)
+	for i in range(4):
+		prop("container", Vector3(18.0 + (i % 2) * 7.5, 0, -16.0 - (i / 2) * 9.0), PI / 2 * (i % 2) * 0.0 + rng.randf_range(-0.1, 0.1))
+	hide_props(30, 6.0, 26.0, ["bush", "crates", "barrels", "woodpile", "rock", "pallets", "compost", "haybale"],
+			func(p: Vector3): return p.distance_to(h.position) < 6.0)
+	hide_props(30, 20.0, 50.0, ["bush", "bush", "woodpile", "crates", "barrels", "haybale", "rock", "shed", "car", "wall", "pallets", "trailer", "compost"],
+			func(p: Vector3): return p.distance_to(h.position) < 6.0)
+	trees(60, 20.0, 90.0, func(p: Vector3): return abs(p.z + 22.0) < 26.0 and abs(p.x) < 36.0)
+	meadow(400, 3.0, 40.0, func(p: Vector3): return abs(p.z + 22.0) < 25.0 and abs(p.x) < 35.0)

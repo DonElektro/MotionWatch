@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-3.12** · passende Motion-Watch-Version **2.94.1**
+Stand: 26.10.2026 · Simulator-Version **3D-3.13** · passende Motion-Watch-Version **2.94.2**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,10 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-3.13 – Verstecke:** `scenes.gd`: `prop(kind, p, rot)` (15 Arten, jede mit Hindernis + `set_obstacle_height`),
+`hide_props(n, dmin, dmax, kinds, keep_clear)` (Abstand ≥ 3 m zu Hindernissen, nicht auf Strasse / `data["clear"]` z. B. Teich),
+Szene `verstecken` (`_verstecken`), `EXTRA_HIDE` = zusätzliche Verstecke pro Szene nach dem Bau.
+
 **3D-3.12 – Übersichtskarte:** `minimap.gd` (Control im UI-Layer, zeichnet `obstacles`, Kamerakegel, Besucher, Spieler, Ziel, Luftbild),
 `map_on` / `map_size` / `map_span` (KEEP), `set_map()`, Taste M, Knopf «Karte».
 

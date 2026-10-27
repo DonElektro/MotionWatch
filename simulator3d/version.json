@@ -1,7 +1,7 @@
 {
- "version": "3D-3.12",
+ "version": "3D-3.13",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30529601,
- "sha256": "1f6172311ca0700dd7a592ca67fd9988c501820fed346f08025d3b34ca9065b6",
- "notes": "Übersichtskarte (Taste M), in der Grösse verstellbar."
+ "size": 30536188,
+ "sha256": "20ca09dcfc8a1f459bb6e1882d71bdad49da4c4ff083bce1ab9e97192a8bc372",
+ "notes": "Neue Szene «Versteckspiel» mit vielen Verstecken; mehr Verstecke in allen Szenen"
 }
