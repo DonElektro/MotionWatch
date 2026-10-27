@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 03:58",
+ "generated": "2026-10-27 04:08",
  "versions": [
   {
-   "version": "2.93.15",
-   "file": "webcam_bewegung_2_93_15.py",
+   "version": "2.93.16",
+   "file": "webcam_bewegung_2_93_16.py",
    "url": "",
-   "sha256": "788478450ff538303de540199b81748a8aaa7cf8fe9fad569f63894cafba9106",
-   "date": "2026-10-27 03:58",
-   "notes": "3D simulator 3D-3.8: real sun path for place and season, mountain shadows, game on real places.",
-   "sig": "7210a0a54881599730af06cc490704e3e0ac2f81bb8fb64ec52e550e4d5ef4fa7e59a6f7829662172222b0b9e20332a9561fa168ffe7ca7f00274e29cac64003"
+   "sha256": "83a9b15b5e83d74e52cdd956e4ba9c7ba9d09996b0f6e6a1bdf11e623c924927",
+   "date": "2026-10-27 04:08",
+   "notes": "Simulator control looks like the panel of the 3D simulator (cards with symbols, parts, search, Simple / Expert) and a swisstopo map to choose a real place (3D-3.9).",
+   "sig": "62404de2a693929b3f6433919a94712ec895bb900e39610705b508e3defb5f82d0ff062b5a50956258297582a6bc80541a2558ded72985b142dd273770720a06"
   },
   {
    "version": "2.92.4",

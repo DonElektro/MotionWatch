@@ -1,7 +1,7 @@
 {
- "version": "3D-3.8",
+ "version": "3D-3.9",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30500920,
- "sha256": "cc5d1356630e5b42f0b3063702aae98f35accd9dcfbf8ebcd54374a2cd6ac94b",
- "notes": "Echte Sonnenbahn für Ort und Jahreszeit, Bergschatten an echten Orten, Handy-Spiel auch an echten Orten."
+ "size": 30502296,
+ "sha256": "c78b34665959e5374e04f6b91e41612c03724f11d3f85cc99ae43adbc08888f9",
+ "notes": "Karte und Ortswahl auch auf der Seite von Motion Watch; die Simulator-Steuerung dort sieht aus wie das Bedienfeld des Simulators."
 }

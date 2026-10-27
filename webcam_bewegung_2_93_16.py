@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_93_15.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_93_16.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -531,6 +531,8 @@ Features
   * 2.93.13: 3D simulator 3D-3.6: mouse control (move, turn, zoom, select and carry visitors).
   * 2.93.14: 3D simulator 3D-3.7: camera pictures stay visible while the panel scrolls.
   * 2.93.15: 3D simulator 3D-3.8: real sun path for place and season, mountain shadows, game on real places.
+  * 2.93.16: Simulator control looks like the panel of the 3D simulator (cards with symbols, parts, search, Simple / Expert) and
+    a swisstopo map to choose a real place (3D-3.9).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -539,10 +541,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_93_15.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_93_16.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_93_15.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_93_15.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_93_16.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_93_16.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -559,7 +561,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.93.15"
+APP_VERSION = "2.93.16"
 
 
 def default_data_dir():
@@ -12357,8 +12359,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.8", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30500920,
-         "sha256": "cc5d1356630e5b42f0b3063702aae98f35accd9dcfbf8ebcd54374a2cd6ac94b"}
+SIM3D = {"version": "3D-3.9", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30502296,
+         "sha256": "c78b34665959e5374e04f6b91e41612c03724f11d3f85cc99ae43adbc08888f9"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
@@ -13949,7 +13951,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_93_15.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_93_16.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -18341,6 +18343,222 @@ async function soundTest() { const r = await post("/api/audio", {action: "test"}
 """
 
 
+SIMMAP_JS = r"""// ---- map of the simulator (control type "map", from 2.93.16): swisstopo map / aerial picture, drag, wheel / two fingers,
+// tap = choose the place where Motion Watch stands, search (swisstopo), «Load this place» -> the simulator builds it
+function simMap(c, send) {
+  const T = (k, z, x, y) => "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo." + k + "/default/current/3857/" + z + "/" + x + "/" + y + ".jpeg";
+  const W2 = (z) => 256 * Math.pow(2, z);
+  const lx = (lo, z) => (lo + 180) / 360 * W2(z);
+  const ly = (la, z) => { const s = Math.sin(la * Math.PI / 180); return (0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * W2(z); };
+  const xl = (x, z) => x / W2(z) * 360 - 180;
+  const yl = (y, z) => { const n = Math.PI - 2 * Math.PI * y / W2(z); return 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))); };
+  const inCH = (la, lo) => la > 45.8 && la < 47.85 && lo > 5.9 && lo < 10.5;
+  const box = document.createElement("div"); box.style.cssText = "flex:1 1 100%;width:100%;grid-column:1/-1";
+  const lab = el("div", "top", c.label); box.appendChild(lab);
+  const sr = document.createElement("div"); sr.style.cssText = "display:flex;gap:6px;margin:4px 0";
+  const q = document.createElement("input"); q.type = "search"; q.placeholder = t("Search a place (e.g. Zermatt)"); q.style.cssText = "flex:1;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--line,#1f2b3a);background:var(--field,#0c121a);color:var(--txt,#e8eef5)";
+  const sb = el("button", "sec", "🔎"); sb.type = "button";
+  const kb = el("button", "sec", t("Aerial picture")); kb.type = "button";
+  sr.append(q, sb, kb); box.appendChild(sr);
+  const res = document.createElement("div"); res.style.cssText = "display:flex;flex-direction:column;gap:4px;margin-bottom:4px"; box.appendChild(res);
+  const map = document.createElement("div");
+  map.style.cssText = "position:relative;height:300px;overflow:hidden;border-radius:10px;background:#cfd6cf;touch-action:none;cursor:crosshair;user-select:none";
+  const lay = document.createElement("div"); lay.style.cssText = "position:absolute;left:0;top:0"; map.appendChild(lay);
+  const sq = document.createElement("div"); sq.style.cssText = "position:absolute;border:2px solid #f5862a;background:rgba(245,134,42,.12);pointer-events:none;display:none";
+  const mk = document.createElement("div"); mk.style.cssText = "position:absolute;width:14px;height:14px;margin:-9px 0 0 -9px;border-radius:50%;background:#f0571a;border:2px solid #fff;pointer-events:none;display:none";
+  const at = el("div", "", "© swisstopo"); at.style.cssText = "position:absolute;right:4px;bottom:2px;font-size:10px;color:#222;background:rgba(255,255,255,.7);padding:0 4px;border-radius:4px";
+  map.append(sq, mk, at); box.appendChild(map);
+  const info = el("div", "mut", t("Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.")); info.style.margin = "4px 0"; box.appendChild(info);
+  const go = el("button", "", t("Load this place")); go.type = "button"; go.disabled = true; box.appendChild(go);
+  let kind = "pixelkarte-farbe", z = 7, cx = lx(8.23, 7), cy = ly(46.8, 7), sel = null, imgs = {};
+  const v = String(c.value || "").match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+  if (v && inCH(+v[1], +v[2])) { sel = {la: +v[1], lo: +v[2], name: ""}; z = 15; cx = lx(sel.lo, z); cy = ly(sel.la, z); go.disabled = false; }
+  function draw() {
+    const w = map.clientWidth, h = map.clientHeight; if (!w) return;
+    const tlx = cx - w / 2, tly = cy - h / 2, n = Math.pow(2, z), keep = {};
+    for (let ty = Math.floor(tly / 256); ty <= Math.floor((tly + h) / 256); ty++) for (let tx = Math.floor(tlx / 256); tx <= Math.floor((tlx + w) / 256); tx++) {
+      if (tx < 0 || ty < 0 || tx >= n || ty >= n) continue;
+      const k = kind + "/" + z + "/" + tx + "/" + ty; keep[k] = 1;
+      let im = imgs[k]; if (!im) { im = document.createElement("img"); im.src = T(kind, z, tx, ty); im.draggable = false; im.style.cssText = "position:absolute;width:256px;height:256px"; lay.appendChild(im); imgs[k] = im; }
+      im.style.left = (tx * 256 - tlx) + "px"; im.style.top = (ty * 256 - tly) + "px";
+    }
+    for (const k in imgs) if (!keep[k]) { imgs[k].remove(); delete imgs[k]; }
+    if (sel) {
+      const px = lx(sel.lo, z) - tlx, py = ly(sel.la, z) - tly, mpp = 40075016.7 * Math.cos(sel.la * Math.PI / 180) / W2(z), hs = 200 / mpp;
+      mk.style.display = "block"; mk.style.left = px + "px"; mk.style.top = py + "px";
+      sq.style.display = hs > 5 ? "block" : "none"; sq.style.left = (px - hs) + "px"; sq.style.top = (py - hs) + "px"; sq.style.width = sq.style.height = (2 * hs) + "px";
+    }
+  }
+  function zoomAt(px, py, dz) {
+    const z2 = Math.max(7, Math.min(19, z + dz)); if (z2 === z) return;
+    const f = Math.pow(2, z2 - z), w = map.clientWidth, h = map.clientHeight;
+    const ax = cx + px - w / 2, ay = cy + py - h / 2;
+    cx = ax * f - (px - w / 2); cy = ay * f - (py - h / 2); z = z2; draw();
+  }
+  function choose(px, py) {
+    const w = map.clientWidth, h = map.clientHeight, la = yl(cy + py - h / 2, z), lo = xl(cx + px - w / 2, z);
+    if (!inCH(la, lo)) { info.textContent = t("Only in Switzerland"); return; }
+    sel = {la: la, lo: lo, name: ""}; go.disabled = false; info.textContent = la.toFixed(5) + ", " + lo.toFixed(5); draw();
+  }
+  const P = new Map(); let moved = 0, pinch = 0;
+  map.addEventListener("pointerdown", e => { map.setPointerCapture(e.pointerId); P.set(e.pointerId, {x: e.offsetX, y: e.offsetY}); moved = 0; if (P.size === 2) { const a = [...P.values()]; pinch = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); } });
+  map.addEventListener("pointermove", e => {
+    const p = P.get(e.pointerId); if (!p) return;
+    const r = map.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    if (P.size === 1) { cx -= x - p.x; cy -= y - p.y; moved += Math.abs(x - p.x) + Math.abs(y - p.y); draw(); }
+    p.x = x; p.y = y;
+    if (P.size === 2) {
+      moved = 99; const a = [...P.values()], d = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
+      if (pinch && d / pinch > 1.6) { zoomAt((a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2, 1); pinch = d; }
+      else if (pinch && d / pinch < 0.62) { zoomAt((a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2, -1); pinch = d; }
+    }
+  });
+  const up = e => { const p = P.get(e.pointerId); P.delete(e.pointerId); if (p && P.size === 0 && moved < 6) { const r = map.getBoundingClientRect(); choose(e.clientX - r.left, e.clientY - r.top); } };
+  map.addEventListener("pointerup", up); map.addEventListener("pointercancel", e => P.delete(e.pointerId));
+  map.addEventListener("wheel", e => { e.preventDefault(); const r = map.getBoundingClientRect(); zoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1 : -1); }, {passive: false});
+  map.addEventListener("dblclick", e => { const r = map.getBoundingClientRect(); zoomAt(e.clientX - r.left, e.clientY - r.top, 1); });
+  kb.onclick = () => { kind = kind === "pixelkarte-farbe" ? "swissimage" : "pixelkarte-farbe"; kb.textContent = t(kind === "swissimage" ? "Map" : "Aerial picture"); for (const k in imgs) { imgs[k].remove(); delete imgs[k]; } draw(); };
+  async function search() {
+    const s = q.value.trim(); if (!s) return; res.textContent = "";
+    try {
+      const r = await fetch("https://api3.geo.admin.ch/rest/services/api/SearchServer?type=locations&sr=4326&limit=6&searchText=" + encodeURIComponent(s));
+      const d = await r.json(); const L = (d.results || []).filter(x => x.attrs && x.attrs.lat);
+      if (!L.length) { info.textContent = t("Nothing found"); return; }
+      L.forEach(x => { const name = String(x.attrs.label || "").replace(/<[^>]*>/g, ""); const b = el("button", "sec", name); b.type = "button"; b.style.textAlign = "left";
+        b.onclick = () => { sel = {la: x.attrs.lat, lo: x.attrs.lon, name: name}; z = 16; cx = lx(sel.lo, z); cy = ly(sel.la, z); res.textContent = ""; go.disabled = false; info.textContent = name; draw(); };
+        res.appendChild(b); });
+    } catch (e) { info.textContent = t("Search not possible – tap the place on the map"); }
+  }
+  sb.onclick = search; q.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); search(); } });
+  go.onclick = () => { if (!sel) return; send(sel.la.toFixed(6) + ", " + sel.lo.toFixed(6) + (sel.name ? ", " + sel.name.replace(/,/g, " ") : "")); info.textContent = t("The simulator loads the place (about a minute the first time)."); };
+  if (window.ResizeObserver) new ResizeObserver(() => draw()).observe(map); else setTimeout(draw, 300);
+  return box;
+}
+
+// ---- control of the simulator (from 2.93.16): built like the panel in the window of the simulator - a card per group with
+// its symbol, parts inside that open and close, switches on the right, «Simple | Expert», search. Rows keep data-cid /
+// .simv / .simvv, so the code that refreshes the values stays the same.
+const SC_ICON = {
+  link: '<path d="M9 7H7a5 5 0 0 0 0 10h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8"/>',
+  camera: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l2-3h4l2 3"/><circle cx="12" cy="13.5" r="3.5"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><ellipse cx="12" cy="12" rx="4" ry="9"/>',
+  cloud: '<path d="M7 17h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 1.5A3.3 3.3 0 0 0 7 17z"/><path d="M9 20l-1 2M14 20l-1 2"/>',
+  person: '<circle cx="12" cy="7" r="3.5"/><path d="M5 21a7 7 0 0 1 14 0z"/>',
+  lens: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/>',
+  bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><circle cx="12" cy="20.5" r="1.4" fill="currentColor"/>',
+  pad: '<rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 12.5h4M9 10.5v4"/><circle cx="15" cy="11.5" r="1.2" fill="currentColor"/><circle cx="17.5" cy="14" r="1.2" fill="currentColor"/>',
+  target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 1v5M12 18v5M1 12h5M18 12h5"/>',
+  check: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/>',
+  keys: '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h1M10 10h1M14 10h1M18 10h1M7 14h10"/>'};
+function scCss() {
+  if (document.getElementById("simctl-css")) return;
+  const s = document.createElement("style"); s.id = "simctl-css";
+  s.textContent = `
+.sc-top{display:flex;gap:6px;margin:6px 0 10px}.sc-top input{flex:1;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--line,#1f2b3a);background:var(--field,#0c121a);color:var(--txt,#e8eef5)}
+.sc-card{background:var(--panel,#111822);border:1px solid var(--line,#1f2b3a);border-radius:12px;margin:0 0 10px;overflow:hidden}
+.sc-hd{display:flex;align-items:center;gap:9px;width:100%;padding:11px 12px;background:none;border:0;color:var(--txt,#e8eef5);cursor:pointer;font:inherit;text-align:left}
+.sc-hd svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--acc,#3b8cff);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sc-hd .sc-t{flex:1;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.sc-hd .sc-ar{color:var(--mut,#8a9bb0);font-size:12px}.sc-card.open>.sc-hd .sc-ar{color:var(--grn,#3fcf6b)}
+.sc-bd{display:none;padding:0 12px 12px}.sc-card.open>.sc-bd{display:block}
+.sc-sub{border-top:1px solid var(--line,#1f2b3a);margin-top:8px}
+.sc-sh{display:block;width:100%;background:none;border:0;padding:8px 0 4px;color:var(--mut,#8a9bb0);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.sc-sub.open>.sc-sh{color:var(--txt,#e8eef5)}.sc-sb{display:none;padding-left:10px}.sc-sub.open>.sc-sb{display:block}
+.sc-row{margin:8px 0}.sc-tg{display:flex;align-items:center;gap:10px;cursor:pointer}.sc-tg span{flex:1}
+.sc-sl .sc-l{display:flex;justify-content:space-between;gap:8px}.sc-sl input{width:100%}
+.sc-se select,.sc-tx input{width:100%;margin-top:4px;padding:8px 10px;border-radius:10px;border:1px solid var(--line,#1f2b3a);background:var(--field,#0c121a);color:var(--txt,#e8eef5)}
+.sc-bt{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.sc-bt button{min-height:38px;padding:6px 8px;border-radius:10px;
+  border:1px solid var(--line,#1f2b3a);background:var(--panel2,#1a2433);color:var(--txt,#e8eef5);font:inherit;cursor:pointer;line-height:1.25}
+.sc-bt button:active{background:var(--acc,#3b8cff);color:#fff}.sc-bt button.wide{grid-column:1/-1}
+.sc-sw{appearance:none;-webkit-appearance:none;flex:none;width:44px;height:26px;border-radius:99px;background:var(--line,#2a3646);position:relative;cursor:pointer;transition:.2s;margin:0}
+.sc-sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.sc-sw:checked{background:var(--grn,#3fcf6b)}.sc-sw:checked::after{left:21px}
+.sc-seg{display:flex;border:1px solid var(--line,#1f2b3a);border-radius:10px;overflow:hidden;margin:4px 0}.sc-seg button{flex:1;padding:9px;border:0;background:var(--panel,#111822);color:var(--txt,#e8eef5);font:inherit;cursor:pointer}
+.sc-seg button.on{background:var(--acc,#3b8cff);color:#fff}.sc-none{margin:8px 2px}
+.sc-hide{display:none!important}`;
+  document.head.appendChild(s);
+}
+function simCtlBuild(G, r, ctl, fmt) {
+  scCss();
+  const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
+  const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub", ["Besuch/Besucher schicken", "Spiel/Runde"]));
+  let expert = ls("mw-sc-expert", false), q = G.dataset.q || "";
+  G.textContent = "";
+  const top = el("div", "sc-top"); const qi = document.createElement("input"); qi.type = "search"; qi.placeholder = t("Search a setting …"); qi.value = q;
+  top.appendChild(qi); G.appendChild(top);
+  const none = el("div", "mut sc-none", t("Nothing found")); none.hidden = true; G.appendChild(none);
+  const byG = {}, order = [];
+  (r.controls || []).forEach(c => { const g = c.group || t("Controls"); if (!byG[g]) { byG[g] = []; order.push(g); } byG[g].push(c); });
+  const cards = [];
+  order.forEach(g => {
+    const cs = byG[g], card = el("div", "sc-card"); card.dataset.g = g; if (openC.has(g)) card.classList.add("open");
+    const hd = document.createElement("button"); hd.type = "button"; hd.className = "sc-hd";
+    const ik = (cs.find(c => c.iconk) || {}).iconk, ie = (cs.find(c => c.icon) || {}).icon;
+    hd.innerHTML = (ik && SC_ICON[ik] ? '<svg viewBox="0 0 24 24">' + SC_ICON[ik] + '</svg>' : (ie ? "<span>" + ie + "</span>" : "")) + '<span class="sc-t"></span><span class="sc-ar"></span>';
+    hd.querySelector(".sc-t").textContent = g;
+    const ar = () => { hd.querySelector(".sc-ar").textContent = card.classList.contains("open") ? "▼" : "▶"; };
+    hd.onclick = () => { card.classList.toggle("open"); ar(); card.classList.contains("open") ? openC.add(g) : openC.delete(g); ss("mw-sc-open", [...openC]); };
+    ar(); const bd = el("div", "sc-bd"); card.append(hd, bd); G.appendChild(card); cards.push(card);
+    const subs = {};
+    cs.forEach(c => {
+      let tgt = bd; const sub = c.sub || "";
+      if (sub) {
+        if (!subs[sub]) {
+          const key = g + "/" + sub, w = el("div", "sc-sub"); if (openS.has(key)) w.classList.add("open");
+          const sh = document.createElement("button"); sh.type = "button"; sh.className = "sc-sh";
+          const p = () => { sh.textContent = (w.classList.contains("open") ? "▾  " : "▸  ") + sub; };
+          sh.onclick = () => { w.classList.toggle("open"); p(); w.classList.contains("open") ? openS.add(key) : openS.delete(key); ss("mw-sc-sub", [...openS]); };
+          p(); const sb = el("div", "sc-sb"); w.append(sh, sb); bd.appendChild(w); subs[sub] = sb;
+        }
+        tgt = subs[sub];
+      }
+      let row;
+      if (c.type === "map") { row = simMap(c, v => ctl({ctl: "set", id: c.id, value: v})); row.classList.add("sc-row"); }
+      else if (c.type === "button") {
+        let grid = tgt.lastElementChild; if (!grid || !grid.classList.contains("sc-bt")) { grid = el("div", "sc-bt"); tgt.appendChild(grid); }
+        const x = el("button", "", c.label); x.type = "button"; if (c.label.length > 26) x.className = "wide";
+        x.onclick = () => ctl({ctl: "press", id: c.id}); x.dataset.lab = c.label; x.dataset.ex = c.expert ? "1" : ""; grid.appendChild(x); return;
+      } else if (c.type === "toggle") {
+        row = el("label", "sc-row sc-tg"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sc-sw simv";
+        cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked}); row.append(el("span", "", c.label), cb);
+      } else if (c.type === "slider") {
+        row = el("div", "sc-row sc-sl"); const l = el("div", "sc-l"); const vv = el("span", "mut simvv"); l.append(el("span", "", c.label), vv);
+        const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1;
+        rg.oninput = () => { vv.textContent = fmt(c, +rg.value); }; rg.onchange = () => ctl({ctl: "set", id: c.id, value: +rg.value}); row.append(l, rg);
+      } else if (c.type === "select") {
+        row = el("div", "sc-row sc-se"); const se = document.createElement("select"); se.className = "simv";
+        (c.options || []).forEach(o => { const op = document.createElement("option"); op.value = o[0]; op.textContent = o[1] || o[0]; se.appendChild(op); });
+        se.onchange = () => ctl({ctl: "set", id: c.id, value: se.value}); row.append(el("div", "", c.label), se);
+      } else {
+        row = el("div", "sc-row sc-tx"); const ti = document.createElement("input"); ti.className = "simv";
+        ti.onkeydown = e => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(el("div", "", c.label), ti);
+      }
+      row.dataset.cid = c.id; row.dataset.lab = c.label; row.dataset.ex = c.expert ? "1" : ""; tgt.appendChild(row);
+    });
+  });
+  const seg = el("div", "sc-seg"); const b1 = el("button", "", t("Simple")), b2 = el("button", "", t("Expert")); b1.type = b2.type = "button"; seg.append(b1, b2); G.appendChild(seg);
+  const note = el("div", "mut", t("Simple: only the important settings. «Expert» shows all.")); G.appendChild(note);
+  function apply() {
+    q = qi.value.trim().toLowerCase(); G.dataset.q = qi.value; let any = false;
+    b1.classList.toggle("on", !expert); b2.classList.toggle("on", expert); note.hidden = expert;
+    cards.forEach(card => {
+      let vis = 0;
+      card.querySelectorAll("[data-lab]").forEach(n => { const ok = (q ? n.dataset.lab.toLowerCase().includes(q) : true) && (expert || q || n.dataset.ex !== "1"); n.classList.toggle("sc-hide", !ok); if (ok) vis++; });
+      card.querySelectorAll(".sc-sub").forEach(w => { const n = w.querySelectorAll("[data-lab]:not(.sc-hide)").length; w.classList.toggle("sc-hide", !n); if (q && n) w.classList.add("open"); });
+      card.querySelectorAll(".sc-bt").forEach(b => b.classList.toggle("sc-hide", !b.querySelector("button:not(.sc-hide)")));
+      card.classList.toggle("sc-hide", !vis); if (q && vis) { card.classList.add("open"); any = true; }
+      const ar = card.querySelector(".sc-ar"); ar.textContent = card.classList.contains("open") ? "▼" : "▶";
+    });
+    none.hidden = !q || any;
+  }
+  qi.oninput = apply; b1.onclick = () => { expert = false; ss("mw-sc-expert", false); apply(); }; b2.onclick = () => { expert = true; ss("mw-sc-expert", true); apply(); };
+  apply();
+}
+"""
+
+
 SIM_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -18511,7 +18729,7 @@ Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "c
  "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "running": "läuft", "Controls": "Bedienung",
  "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a file to the simulator": "Datei zum Simulator hochladen",
  "Link for the PC browser": "Link für den Browser am PC", "Saved": "Gespeichert", "not possible": "nicht möglich", "Simulator installed": "Simulator installiert",
- "prepared on the first download": "wird beim ersten Download vorbereitet", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator gestoppt", "simulator not reachable": "Simulator nicht erreichbar"});
+ "prepared on the first download": "wird beim ersten Download vorbereitet", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator gestoppt", "simulator not reachable": "Simulator nicht erreichbar", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo Motion Watch steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
 let S = null, CS = "", URLEDIT = false;
 const dur = n => n == null ? "–" : n < 60 ? n + " s" : n < 3600 ? Math.floor(n / 60) + " min" : Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min";
 async function load() {
@@ -18570,39 +18788,9 @@ const fmt = (c, v) => (v == null ? "–" : (Math.abs(v) >= 100 || c.step >= 1 ? 
 async function ctl(d) { const r = await post("/api/sim", Object.assign({action: "ctl", lang: LANG}, d)); showCtl(r); return r; }
 function scnLoad() { const v = $("#s-sel").value; if (v) ctl({ctl: "scenario", id: v}); }
 function scnDel() { const s = $("#s-sel"); if (s.value && confirm(t("Delete this scenario in the simulator?") + "\n" + s.options[s.selectedIndex].textContent)) ctl({ctl: "delete", id: s.value}); }
-function buildCtl(r) {
-  const G = $("#s-groups"); G.textContent = ""; const byG = {};
-  (r.controls || []).forEach(c => { const g = c.group || ""; (byG[g] = byG[g] || []).push(c); });
-  let open = []; try { open = JSON.parse(localStorage.getItem("mw-sim-open") || "[]"); } catch (e) {}
-  Object.keys(byG).forEach((g, gi) => {
-    const det = document.createElement("details"); det.className = "cg"; det.dataset.g = g; det.open = open.length ? open.includes(g) : gi === 0;
-    det.addEventListener("toggle", () => { try { localStorage.setItem("mw-sim-open", JSON.stringify([...document.querySelectorAll(".cg[open]")].map(x => x.dataset.g))); } catch (e) {} });
-    det.appendChild(el("summary", "", ((byG[g][0] && byG[g][0].icon) ? byG[g][0].icon + " " : "") + (g || t("Controls"))));
-    const body = el("div", "cgb"); let lastSub = "";
-    byG[g].forEach(c => {
-      if ((c.sub || "") !== lastSub) { lastSub = c.sub || ""; if (lastSub) { const h = el("div", "mut", lastSub); h.style.cssText = "flex:1 1 100%;width:100%;grid-column:1/-1;font-weight:600;margin:10px 0 2px;border-top:1px solid rgba(128,128,128,.25);padding-top:8px"; body.appendChild(h); } }
-      if (c.type === "button") { const x = el("button", "sec", c.label); x.type = "button"; x.onclick = () => ctl({ctl: "press", id: c.id}); body.appendChild(x); return; }
-      let row;
-      if (c.type === "toggle") {
-        row = el("label", "cr"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw simv"; cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked});
-        row.append(el("span", "", c.label), cb);
-      } else if (c.type === "slider") {
-        row = el("div", "cr"); const top = el("div", "top"); const vv = el("span", "mut simvv"); top.append(el("span", "", c.label), vv);
-        const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1;
-        rg.oninput = () => { vv.textContent = fmt(c, +rg.value); }; rg.onchange = () => ctl({ctl: "set", id: c.id, value: +rg.value}); row.append(top, rg);
-      } else if (c.type === "select") {
-        row = el("div", "cr"); const se = document.createElement("select"); se.className = "simv"; se.style.width = "100%";
-        (c.options || []).forEach(o => { const op = document.createElement("option"); op.value = o[0]; op.textContent = o[1] || o[0]; se.appendChild(op); });
-        se.onchange = () => ctl({ctl: "set", id: c.id, value: se.value}); row.append(el("div", "top", c.label), se);
-      } else {
-        row = el("div", "cr"); const ti = document.createElement("input"); ti.type = "text"; ti.className = "simv"; ti.style.width = "100%";
-        ti.onkeydown = e => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(el("div", "top", c.label), ti);
-      }
-      row.dataset.cid = c.id; body.appendChild(row);
-    });
-    det.appendChild(body); G.appendChild(det);
-  });
-}
+/*SIMMAP*/
+function buildCtl(r) { simCtlBuild($("#s-groups"), r, ctl, fmt); }        // like the panel of the simulator (simCtlBuild, 2.93.16)
+
 function showCtl(r) {
   if (!r || !r.ok) { $("#s-cst").textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
   $("#s-cname").textContent = r.name ? "· " + r.name : "";
@@ -22591,7 +22779,8 @@ function solarText(c, s) {
   return L.join("\n");
 }
 function solarPaint(c, s) { const st = $("#solar-st"); if (st) st.textContent = solarText(c, s); }
-Object.assign(I18N.de, {"Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera"});
+/*SIMMAP*/
+Object.assign(I18N.de, {"Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo Motion Watch steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
 function simExtras(d) {
   // the settings of the section (switches, address, slider) go into a fold-out «Settings»
@@ -22664,41 +22853,7 @@ function simExtras(d) {
   };
   let SIG = "";
   const fmt = (c, v) => (v == null ? "–" : (Math.abs(v) >= 100 || c.step >= 1 ? Math.round(v) : (+v).toFixed(c.step < 0.1 ? 2 : 1))) + (c.unit ? " " + c.unit : "");
-  const build = (r) => {                                     // new or changed controls of the simulator: built again, open groups stay open
-    const was = [...groups.querySelectorAll("details.simgrp")], open = new Set(was.filter(x => x.open).map(x => x.dataset.g));
-    groups.innerHTML = ""; const byG = {};
-    (r.controls || []).forEach(c => { const g = c.group || ""; (byG[g] = byG[g] || []).push(c); });
-    Object.keys(byG).forEach((g, gi) => {
-      const det = document.createElement("details"); det.className = "simgrp"; det.dataset.g = g; det.style.marginTop = "4px";
-      const sm = document.createElement("summary"); sm.textContent = ((byG[g][0] && byG[g][0].icon) ? byG[g][0].icon + " " : "") + (g || t("Controls")); sm.style.cursor = "pointer"; sm.style.padding = "4px 0"; det.appendChild(sm);
-      const body = el("div", ""); body.style.display = "flex"; body.style.flexWrap = "wrap"; body.style.gap = "6px"; body.style.padding = "4px 0 8px"; let lastSub = "";
-      byG[g].forEach(c => {
-        if ((c.sub || "") !== lastSub) { lastSub = c.sub || ""; if (lastSub) { const h = el("div", "mut", lastSub); h.style.cssText = "flex:1 1 100%;font-weight:600;margin-top:6px;border-top:1px solid rgba(128,128,128,.25);padding-top:6px"; body.appendChild(h); } }
-        if (c.type === "button") { const x = vk(c.label, () => ctl({ctl: "press", id: c.id})); x.style.flex = "1 1 30%"; body.appendChild(x); return; }
-        const row = el("div", ""); row.style.flex = "1 1 100%"; row.dataset.cid = c.id;
-        if (c.type === "toggle") {
-          const lb = el("label", "", ""); lb.style.display = "flex"; lb.style.gap = "8px"; lb.style.alignItems = "center";
-          const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "simv"; cb.onchange = () => ctl({ctl: "set", id: c.id, value: cb.checked});
-          lb.append(cb, document.createTextNode(c.label)); row.appendChild(lb);
-        } else if (c.type === "slider") {
-          const top = el("div", "", ""); top.style.display = "flex"; top.style.justifyContent = "space-between";
-          const vv = el("span", "mut simvv", ""); top.append(el("span", "", c.label), vv);
-          const rg = document.createElement("input"); rg.type = "range"; rg.className = "simv"; rg.min = c.min; rg.max = c.max; rg.step = c.step || 1; rg.style.width = "100%";
-          rg.oninput = () => { vv.textContent = fmt(c, +rg.value); }; rg.onchange = () => ctl({ctl: "set", id: c.id, value: +rg.value});
-          row.append(top, rg);
-        } else if (c.type === "select") {
-          const top = el("div", "", c.label); const se = document.createElement("select"); se.className = "simv"; se.style.width = "100%";
-          (c.options || []).forEach(o => { const op = document.createElement("option"); op.value = o[0]; op.textContent = o[1] || o[0]; se.appendChild(op); });
-          se.onchange = () => ctl({ctl: "set", id: c.id, value: se.value}); row.append(top, se);
-        } else {
-          const top = el("div", "", c.label); const ti = document.createElement("input"); ti.className = "simv"; ti.style.width = "100%";
-          ti.onkeydown = (e) => { if (e.key === "Enter") ctl({ctl: "set", id: c.id, value: ti.value}); }; row.append(top, ti);
-        }
-        row._c = c; body.appendChild(row);
-      });
-      det.appendChild(body); det.open = was.length ? open.has(g) : gi === 0; groups.appendChild(det);
-    });
-  };
+  const build = (r) => simCtlBuild(groups, r, ctl, fmt);      // like the panel of the simulator (simCtlBuild, 2.93.16)
   const show = (r) => {
     if (!r || !r.ok) { vst.textContent = "⚠ " + ((r && r.error) || t("simulator not reachable")); return; }
     hd.textContent = "🎮 " + t("Simulator control") + (r.name ? " · " + r.name : "");
@@ -23796,6 +23951,10 @@ document.addEventListener("webkitfullscreenchange", fsChange);
 /*ALERTS*/
 </script></body></html>
 """
+
+
+SIM_PAGE = SIM_PAGE.replace("/*SIMMAP*/", SIMMAP_JS)
+WEB_PAGE = WEB_PAGE.replace("/*SIMMAP*/", SIMMAP_JS)
 
 
 HELP_PAGE = r"""<!doctype html>
@@ -27699,7 +27858,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.93.15")
+        self.root.title("Motion Watch 2.93.16")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -27989,7 +28148,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.93.15 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.93.16 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -34448,6 +34607,12 @@ TRX["rm"].update({"All quiet – I'm keeping watch!": "Tut quiet – jau fatsch 
 TRX['fr'].update({'Night vision look: green picture, thermal outlines and temperatures': 'Vision nocturne : image verte, contours thermiques et températures', 'Night vision automatically at night (sunset to sunrise)': 'Vision nocturne automatique la nuit (du coucher au lever du soleil)', 'Night vision': 'Vision nocturne', 'Night vision: green picture, thermal outlines and temperatures': 'Vision nocturne : image verte, contours thermiques et températures'})
 TRX['it'].update({'Night vision look: green picture, thermal outlines and temperatures': 'Visione notturna: immagine verde, contorni termici e temperature', 'Night vision automatically at night (sunset to sunrise)': "Visione notturna automatica di notte (dal tramonto all'alba)", 'Night vision': 'Visione notturna', 'Night vision: green picture, thermal outlines and temperatures': 'Visione notturna: immagine verde, contorni termici e temperature'})
 TRX['rm'].update({'Night vision look: green picture, thermal outlines and temperatures': 'Vista da notg: maletg verd, conturas termicas e temperaturas', 'Night vision automatically at night (sunset to sunrise)': 'Vista da notg automaticamain la notg (da la rendida a la levada dal sulegl)', 'Night vision': 'Vista da notg', 'Night vision: green picture, thermal outlines and temperatures': 'Vista da notg: maletg verd, conturas termicas e temperaturas'})
+TRX['fr'].update({"Search a place (e.g. Zermatt)": "Chercher un lieu (p. ex. Zermatt)", "Aerial picture": "Photo aérienne", "Map": "Carte", "Load this place": "Charger ce lieu", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Touchez la carte là où se trouve Motion Watch. Glisser = déplacer, deux doigts ou molette = zoomer.", "Search not possible – tap the place on the map": "Recherche impossible – touchez le lieu sur la carte", "Nothing found": "Rien trouvé", "Only in Switzerland": "Seulement en Suisse", "The simulator loads the place (about a minute the first time).": "Le simulateur charge le lieu (environ une minute la première fois)."})
+TRX['it'].update({"Search a place (e.g. Zermatt)": "Cerca un luogo (p. es. Zermatt)", "Aerial picture": "Foto aerea", "Map": "Carta", "Load this place": "Carica questo luogo", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Tocca la carta dove si trova Motion Watch. Trascinare = spostare, due dita o rotellina = zoom.", "Search not possible – tap the place on the map": "Ricerca non possibile – tocca il luogo sulla carta", "Nothing found": "Nessun risultato", "Only in Switzerland": "Solo in Svizzera", "The simulator loads the place (about a minute the first time).": "Il simulatore carica il luogo (circa un minuto la prima volta)."})
+TRX['rm'].update({"Search a place (e.g. Zermatt)": "Tschertgar in lieu (p.ex. Zermatt)", "Aerial picture": "Fotografia aviatica", "Map": "Charta", "Load this place": "Chargiar quest lieu", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Tutgar la charta nua che Motion Watch stat. Trair = spustar, dus dets u rodella = zoom.", "Search not possible – tap the place on the map": "Tschertga betg pussaivla – tutgar il lieu sin la charta", "Nothing found": "Nagut chattà", "Only in Switzerland": "Mo en Svizra", "The simulator loads the place (about a minute the first time).": "Il simulatur chargia il lieu (la emprima giada var ina minuta)."})
+TRX['fr'].update({"Search a setting …": "Chercher un réglage …", "Simple": "Simple", "Expert": "Expert", "Simple: only the important settings. «Expert» shows all.": "Simple : seulement les réglages importants. «Expert» les montre tous."})
+TRX['it'].update({"Search a setting …": "Cerca un'impostazione …", "Simple": "Semplice", "Expert": "Esperto", "Simple: only the important settings. «Expert» shows all.": "Semplice: solo le impostazioni importanti. «Esperto» le mostra tutte."})
+TRX['rm'].update({"Search a setting …": "Tschertgar ina configuraziun …", "Simple": "Simpel", "Expert": "Expert", "Simple: only the important settings. «Expert» shows all.": "Simpel: mo las configuraziuns impurtantas. «Expert» mussa tuttas."})
 TRX['fr'].update({'Take the location from the phone (the page must be open over https)': 'Prendre la position du portable (la page doit être ouverte en https)', 'GPS position in photos and videos': 'Position GPS dans les photos et vidéos', 'Location': 'Position', 'from the phone': 'du portable', 'fixed (settings)': 'fixe (réglages)', 'unknown – the phone shares it only over the https page': 'inconnue – le portable ne la donne que via la page https'})
 TRX['it'].update({'Take the location from the phone (the page must be open over https)': 'Prendere la posizione dal cellulare (la pagina deve essere aperta via https)', 'GPS position in photos and videos': 'Posizione GPS in foto e video', 'Location': 'Posizione', 'from the phone': 'dal cellulare', 'fixed (settings)': 'fissa (impostazioni)', 'unknown – the phone shares it only over the https page': 'sconosciuta – il cellulare la fornisce solo tramite la pagina https'})
 TRX['rm'].update({'Take the location from the phone (the page must be open over https)': 'Prender la posiziun dal telefonin (la pagina sto esser averta via https)', 'GPS position in photos and videos': 'Posiziun GPS en fotos e videos', 'Location': 'Posiziun', 'from the phone': 'dal telefonin', 'fixed (settings)': 'fixa (parameters)', 'unknown – the phone shares it only over the https page': 'nunenconuschenta – il telefonin la dat mo via la pagina https'})
@@ -34974,7 +35139,7 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print("Motion Watch 2.93.15 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print("Motion Watch 2.93.16 started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:

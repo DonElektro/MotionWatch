@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.8"
+const VERSION := "3D-3.9"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -601,8 +601,11 @@ func choose_place(la: float, lo: float, nm: String) -> void:
 func set_place_text(t: String) -> void:
 	"""«Zermatt» or «46.0207, 7.7491» (field on the page of Motion Watch)"""
 	var parts := t.replace(";", ",").split(",")
-	if parts.size() == 2 and parts[0].strip_edges().is_valid_float() and parts[1].strip_edges().is_valid_float():
-		choose_place(float(parts[0]), float(parts[1]), "")
+	if parts.size() >= 2 and parts[0].strip_edges().is_valid_float() and parts[1].strip_edges().is_valid_float():
+		var nm := ""
+		if parts.size() > 2:
+			nm = ",".join(parts.slice(2)).strip_edges()      # «46.02, 7.75, Zermatt» from the map on the page of Motion Watch
+		choose_place(float(parts[0]), float(parts[1]), nm)
 		return
 	geo.info = "Suche «%s» …" % t
 	var res: Array = await geo.search(t)
@@ -1741,6 +1744,7 @@ func _order_controls() -> void:
 		var g: int = gi.get(c.group, GROUPS.size())
 		var sub := str(c.extra.get("sub", ""))
 		c.extra["icon"] = GROUPS[g][2] if g < GROUPS.size() else ""
+		c.extra["iconk"] = GROUPS[g][1] if g < GROUPS.size() else ""          # the drawn symbol (page of Motion Watch from 2.93.16)
 		var si: int = (GROUPS[g][3] as Array).find(sub) if g < GROUPS.size() else 0
 		keyed.append([g * 1000 + max(si, 0) * 100, i, c])
 	keyed.sort_custom(func(a, b): return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
@@ -1755,7 +1759,8 @@ func _register_controls() -> void:
 		sc.append([s[0], s[1]])
 	var ex := {"expert": true}
 	add_control("select", "scene", "Szene", func(): return scene, func(v): set_scene(v), "Szene", {"options": sc})
-	add_control("button", "ort_map", "Karte öffnen: Ort in der Schweiz wählen …", null, func(): open_map(), "Ort von der Karte")
+	add_control("map", "ort_map", "Ort auf der Karte wählen (Schweiz)", func(): return "%.6f, %.6f" % [ort_lat, ort_lon] if ort_lat != 0.0 else "",
+			func(v): set_place_text(str(v)), "Ort von der Karte")
 	add_control("text", "ort", "Ort (Name oder Koordinaten, z. B. «Zermatt» oder «46.0207, 7.7491»)", func(): return place_label(), func(v): set_place_text(str(v)), "Ort von der Karte")
 	add_control("slider", "hour", "Uhrzeit", func(): return snappedf(hour(), 0.01), func(v): set_hour(v), "Szene", {"min": 0, "max": 23.75, "step": 0.25, "unit": "h"})
 	add_control("select", "season", "Jahreszeit (Sonnenbahn)", func(): return season, func(v): season = str(v); _sun_cache = [-1.0, Vector2.ZERO]; _update_sky(), "Szene",
@@ -2692,6 +2697,13 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			parent.add_child(hb)
 			ui_rows[c.id] = ob
 			ui_items.append([hb, c.label, c.extra.get("expert", false), parent])
+		"map":                                            # in the window: a button that opens the map (karte.gd)
+			var mb := Button.new()
+			mb.text = "Karte öffnen: " + c.label + " (K)"
+			mb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			mb.pressed.connect(open_map)
+			parent.add_child(mb)
+			ui_items.append([mb, c.label, c.extra.get("expert", false), parent])
 		"text":
 			var tb := VBoxContainer.new()
 			tb.add_theme_constant_override("separation", 2)
