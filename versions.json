@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 22:43",
+ "generated": "2026-10-27 22:59",
  "versions": [
   {
-   "version": "2.95.55",
-   "file": "webcam_bewegung_2_95_55.py",
+   "version": "2.95.56",
+   "file": "webcam_bewegung_2_95_56.py",
    "url": "",
-   "sha256": "e25d8a58c6eb2c60971bc30f01526b0482c5bcf9ba73e65b938e9a34969a7f40",
-   "date": "2026-10-27 22:43",
-   "notes": "new product page for guests (/info/): animations start while scrolling, a scrollable night story, real camera pictures and current app screens, close button (leaves full screen); simulation on but its camera gives no picture (slow PC / VM): Motion Watch now tries the simulator again every 10 s instead of keeping the webcam for good; tunnel address no longer stays after a restart",
-   "sig": "94b55a4249d307411dee165ce1b234e0687e8eab47cb7882a83d631aabd873cef1016f139206fddd8b09971cf7eddfa46af7848434e42b0bda48956af2c24f0a"
+   "sha256": "0c4bbe17a70629a10025fafa0d7eb13eed1902646a5ec696732ef6852d63791f",
+   "date": "2026-10-27 22:59",
+   "notes": "every page without its own way back (almanac, game corner, network check, party pages ...) gets a «✕ Zurück» button: as an app on the home screen there is no back button, so such pages could not be closed; it also leaves full screen; the product page and the preview use the same logic",
+   "sig": "ee2adb4f7dcf6ca2e22209e44724ad3bb1079f34955af87f045d626523f305eddae55ee8cc9e41366c282c8bed6f9ad953373c77a47643d50ef76e3922ddce04"
   },
   {
    "version": "2.94.5",
