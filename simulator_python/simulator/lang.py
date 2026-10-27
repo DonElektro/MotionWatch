@@ -29,6 +29,7 @@ EN = {   # German -> English: the remote controls
     "Wärmebild eingesteckt": "Thermal camera plugged in", "Heisser Stein (Wärmebild)": "Hot stone (thermal)",
     "Lagerfeuer (Wärmebild)": "Camp fire (thermal)", "Tür auf": "Door open", "Tür zu": "Door closed", "Gas-Alarm": "Gas alarm",
     "Bildqualität": "Picture quality", "tief": "low", "mittel": "medium", "hoch": "high", "sehr hoch": "very high",
+    "Mover (Kettenfahrzeug)": "Mover (tracked vehicle)", "Höchstgeschwindigkeit": "Top speed", "blockiert": "blocked",
     "Personen & Autos": "People & cars", "Tiere": "Animals", "Jetzt schicken": "Send now",
     "Tag": "day", "Nacht": "night", "Dämmerung": "dusk", "unterwegs": "around", "lädt …": "loading …",
 }

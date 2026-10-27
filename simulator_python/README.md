@@ -7,7 +7,7 @@ sensors, people, animals, cars, planes, weather, day and night. Test Motion Watc
 and talks to the simulator over the network (simulator protocol 1, port **8767** – the 3D simulator has 8765). The rules
 for every Motion Watch simulator: `simulator/hardware/EIGENEN_SIMULATOR_ANBINDEN.md`.
 
-Name in the network: **«MW Sim · Welt PY-1.3»**, version **PY-1.3** (the version is part of the name - Motion Watch
+Name in the network: **«MW Sim · Welt PY-1.4»**, version **PY-1.4** (the version is part of the name - Motion Watch
 reads it there). The other two: «MW Sim · Basis» (built into Motion Watch) and «MW Sim · 3D» (the Godot simulator).
 
 | Motion Watch … | … the simulator |
@@ -30,7 +30,7 @@ python motion_sim.py
 ```
 
 3. Switch **📡 Send to Motion Watch** on (top right) – the simulator starts silent.
-4. In Motion Watch: tab **«Simulator» → «Simulatoren im Netz»** → «MW Sim · Welt PY-1.3» → **«Verwenden»** →
+4. In Motion Watch: tab **«Simulator» → «Simulatoren im Netz»** → «MW Sim · Welt PY-1.4» → **«Verwenden»** →
    **«Simulation einschalten»**. The Windows firewall must allow port 8767 («Private Netzwerke»).
    The simulator finds Motion Watch's web page by itself (the device that sends its state, port 5000), or enter it in
    tab **🔗 Motion Watch**.
@@ -98,7 +98,13 @@ Without a screen (e.g. on a Raspberry Pi, also without `python3-tk`): `python3 m
 * The servos only move where Motion Watch sends them, as fast as the speed allows, never past their travel or the
   bracket stop. Nobody connected = the head stays in the middle. If Motion Watch's pan servo turns further than the
   simulator's travel setting (270° / 360° servo, pan up to ±180°), the simulated servo turns that far too (Motion Watch
-  2.95.24+ sends `pan_range`, older ones are worked out from `pan_limit` / `pan_deg`). It never
+  2.95.24+ sends `pan_range`, older ones are worked out from `pan_limit` / `pan_deg`).
+* **Mover** (tracked vehicle under the head, Motion Watch's second joystick): switch «Mover» in Motion Watch's simulator
+  controls (it switches on by itself when the second joystick moves). It drives like the 3D simulator (0.8 m/s, tracks
+  0.74 m apart), stops 2.5 s after the last `POST /state`, not through houses, tents, trees, bushes, water or off the map
+  ("blocked"), and goes back to its starting place when switched off. The head camera, thermal camera and lamps ride
+  along, camera 1 stays. The picture of the surroundings is rebuilt in the background every few metres (about 6 s each).
+  Answer: `"mover": true` and `"mover_pose"` (x, y, yaw, odo, blocked). It never
   turns "over the back": from +179° to −179° it goes the long way round, like a real servo.
 * Motion Watch's AI works on the simulated picture as on the Pi – it needs its model files.
 * While the simulation is on, Motion Watch saves no recordings or timelapses (so nothing mixes with real clips) – the

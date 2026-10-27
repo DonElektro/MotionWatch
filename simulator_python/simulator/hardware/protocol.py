@@ -10,6 +10,7 @@
   UDP  port 8764, every 2 s     "here is a simulator" - only while «Send to Motion Watch» is on
 
 See EIGENEN_SIMULATOR_ANBINDEN.md next to this file."""
+import dataclasses
 import io
 import json
 import os
@@ -17,6 +18,7 @@ import socket
 import threading
 import time
 from dataclasses import dataclass
+from typing import Optional
 from http.server import ThreadingHTTPServer
 
 from simulator import NAME, VERSION, bridge
@@ -98,6 +100,20 @@ class _Http(ThreadingHTTPServer):
 msi.ThreadingHTTPServer = _Http
 
 
+def _asdict(obj):
+    """The protocol file's asdict, but the Mover fields are left out while there is no Mover (Motion Watch: «ohne Mover
+    das Feld weglassen»)."""
+    d = dataclasses.asdict(obj)
+    if isinstance(obj, Reply):
+        for k in ("mover", "mover_pose"):
+            if d.get(k) is None:
+                d.pop(k, None)
+    return d
+
+
+msi.asdict = _asdict
+
+
 @dataclass
 class Info(SimInfo):
     """GET /info plus the computer's name (Motion Watch 2.95.1+ shows it next to each simulator)."""
@@ -111,6 +127,8 @@ class Reply(SimReply):
     weather: str = "clear"
     pid: int = 0                       # this process: Motion Watch shows the simulator's CPU share if it runs on the same computer
     sound_db: float = 30.0             # how loud the world is at the camera (noise alarm, clap switch test)
+    mover: Optional[bool] = None       # True while the Mover (tracked vehicle) is on - left out otherwise
+    mover_pose: Optional[dict] = None  # {"x", "y", "yaw", "odo", "blocked"} from where it started
 
 
 def lan_ip():
@@ -168,7 +186,9 @@ class ProtocolServer(SimServer):
                 return fr
             import numpy as np
             return np.zeros((int(SIM["cam_height"]), int(SIM["cam_width"]), 3), np.uint8)    # camera unplugged: black
-        fr = self.eng.render_extra(SIM["mount_yaw"] + float(SIM.get("fixed_cam_yaw", 35.0)))
+        mv = self.eng.mover                      # the fixed camera does not ride on the Mover
+        base = mv.home[2] if mv.on and mv.home else SIM["mount_yaw"]
+        fr = self.eng.render_extra(base + float(SIM.get("fixed_cam_yaw", 35.0)))
         if fr is None:
             import numpy as np
             return np.zeros((540, 960, 3), np.uint8)
@@ -209,7 +229,7 @@ class ProtocolServer(SimServer):
             pan_range = float((raw.get("servo") or {}).get("pan_range") or 0)
         except (TypeError, ValueError, AttributeError):
             pan_range = 0.0
-        self.eng.protocol_state(state, pan_range)
+        self.eng.protocol_state(state, pan_range, raw.get("drive"))
 
     def world(self, t):
         humid = min(100.0, 55.0 + 40.0 * max(float(SIM["rain"]), float(SIM["fog"])) + 10.0 * float(SIM["clouds"]))
@@ -221,7 +241,9 @@ class ProtocolServer(SimServer):
         return Reply(sim_time=t, dark=ambient_light() < 0.15, ambient_c=float(SIM["ambient_c"]),
                      pressure_hpa=1013.0 - 25.0 * float(SIM["wind"]) ** 2, wind_kmh=round(float(SIM["wind"]) * 90.0, 1),
                      last_event=self.events[-1].id if self.events else 0, humidity=round(humid), weather=control.weather(),
-                     pid=os.getpid(), sound_db=db)
+                     pid=os.getpid(), sound_db=db,
+                     mover=True if self.eng.mover.on else None,
+                     mover_pose=self.eng.mover.pose() if self.eng.mover.on else None)
 
     # ---- sensor events ----
     def _sensor_loop(self):

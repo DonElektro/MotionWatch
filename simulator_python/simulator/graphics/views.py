@@ -152,6 +152,16 @@ class TopView:
                 cv2.polylines(img, [pts], True, (20, 20, 20), 1, cv2.LINE_AA)
                 cv2.putText(img, q["name"], (c[0] + 9, c[1] + 4), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (0, 0, 0), 3, cv2.LINE_AA)
                 cv2.putText(img, q["name"], (c[0] + 9, c[1] + 4), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (66, 200, 255), 1, cv2.LINE_AA)
+        # the Mover: the tracked vehicle under the head (1.0 x 0.9 m), a cross where it started
+        mv = eng.mover
+        if mv.on and mv.home:
+            hp = P(mv.home[0], mv.home[1])
+            cv2.drawMarker(img, hp, (0, 160, 255), cv2.MARKER_TILTED_CROSS, 12, 2, cv2.LINE_AA)
+            h = math.radians(SIM["mount_yaw"]); fx, fy, rx, ry = math.sin(h), math.cos(h), math.cos(h), -math.sin(h)
+            box = np.array([P(camx + fx * u * 0.5 + rx * w * 0.45, camy + fy * u * 0.5 + ry * w * 0.45)
+                            for u, w in ((1, 1), (1, -1), (-1, -1), (-1, 1))], np.int32)
+            cv2.fillConvexPoly(img, box, (40, 40, 200) if mv.blocked else (40, 110, 60), cv2.LINE_AA)
+            cv2.polylines(img, [box], True, (230, 230, 230), 1, cv2.LINE_AA)
         # the camera head
         cpt = P(camx, camy)
         cv2.circle(img, cpt, 9, (30, 30, 30), -1, cv2.LINE_AA); cv2.circle(img, cpt, 9, (0, 220, 255), 2, cv2.LINE_AA)

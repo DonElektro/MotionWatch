@@ -10,6 +10,7 @@ import numpy as np
 from simulator import bridge
 from simulator.config import SIM
 from simulator.graphics.render import Renderer, environment
+from simulator.mover import Mover
 from simulator.scene import world as worldmod
 from simulator.scene.world import World
 
@@ -70,6 +71,7 @@ class Engine:
         self._building = False
         self.extra = None
         self.servos = {"pan": SimServo("pan"), "tilt": SimServo("tilt")}
+        self.mover = Mover()                             # the tracked vehicle under the head (Motion Watch's 2nd joystick)
         self.cond = threading.Condition()
         self.frame = None; self.frame_seq = 0; self.frame_t = 0.0
         self.tcond = threading.Condition()
@@ -105,12 +107,13 @@ class Engine:
         """A second, fixed camera (protocol camera 1)."""
         if self.env is None:
             return None
-        if self.extra is None or self.extra.pano is not self.renderer.pano:
-            r = self.renderer
+        r = self.renderer
+        view = (self.mover.home_view if self.mover.on else None) or (r.map, r.pano, r.pano_height, r.pano_pos)
+        if self.extra is None or self.extra.pano is not view[1]:   # the fixed camera stays at the Mover's starting place
             self.extra = Renderer()
-            self.extra.use_map(r.map, r.pano, r.pano_height, r.pano_pos)
+            self.extra.use_map(*view)
         try:
-            px, py = self.renderer.pano_pos
+            px, py = self.extra.pano_pos
             img, _ = self.extra.render(float(yaw), SIM["mount_pitch"], self.world.snapshot(), self.world.nearby_plants(px, py, 360.0),
                                        self._far_props(px, py), self.env)
             return img
@@ -122,15 +125,17 @@ class Engine:
         """Switch to another map: camera goes to the map's camera place, panorama built in the background."""
         from simulator.scene import maps
         m = maps.get(name)
+        self.mover.forget()
         p0 = maps.pois(m)[0]                             # the first place of the map = where the camera starts
         SIM.update(cam_x=p0["x"], cam_y=p0["y"], mount_height=p0["h"], mount_yaw=p0["yaw"], mount_pitch=p0["pitch"])
         if m.ambient is not None:
             SIM["ambient_c"] = m.ambient
         self._rebuild(m, switch_world=True, done=done)
 
-    def _rebuild(self, m, switch_world=False, done=None):
+    def _rebuild(self, m, switch_world=False, done=None, quiet=False):
+        """quiet: the Mover drove on - the old picture stays until the new one is ready, no «loading» shown."""
         self._building = True
-        self.map_loading = m.label
+        self.map_loading = "" if quiet else m.label
 
         def work():
             from simulator.graphics.render import build_panorama
@@ -156,6 +161,7 @@ class Engine:
 
     def goto_poi(self, p):
         """Put the camera head on a place of interest: position, height, facing, look-down angle."""
+        self.mover.forget()
         SIM.update(cam_x=p["x"], cam_y=p["y"], mount_height=p["h"], mount_yaw=p["yaw"], mount_pitch=p.get("pitch", -4.0))
         self.world.clear()
         bridge.log(f"camera moved to: {p['name']}")
@@ -176,14 +182,18 @@ class Engine:
         R.set_quality(SIM["quality"])
         want = (float(SIM["cam_x"]), float(SIM["cam_y"]), float(SIM["mount_height"]))
         have = (r.pano_pos[0], r.pano_pos[1], r.pano_height)
+        if self.mover.moving and math.hypot(want[0] - have[0], want[1] - have[1]) < 1.0 and abs(want[2] - have[2]) < 1e-3:
+            return                                       # driving: build the picture again only every metre or so
         if any(abs(a - b) > 1e-3 for a, b in zip(want, have)) or r.pano.shape[1] != R.PW:
-            self._rebuild(r.map)
+            self._rebuild(r.map, quiet=self.mover.on)
 
     # ---- where the camera looks ----
-    def protocol_state(self, st, pan_range=0.0):
+    def protocol_state(self, st, pan_range=0.0, drive=None):
         """Servo / light positions sent by Motion Watch (POST /state). pan_range: the pan servo's whole turning range in
-        degrees if Motion Watch says it (2.95.24+), else 0."""
+        degrees if Motion Watch says it (2.95.24+), else 0. drive: {"l", "r"} of the Mover's tracks (second joystick)."""
         self.proto = st; self.proto_t = time.time()
+        if isinstance(drive, dict):
+            self.mover.drive(drive.get("l", 0.0), drive.get("r", 0.0))
         if st.sound:                                     # siren / loudspeaker: animals nearby run away (deterrent)
             n = self.world.scare()
             if n:
@@ -242,6 +252,7 @@ class Engine:
             sdt = 0.0 if SIM["paused"] else dt * float(SIM["time_scale"])
             self.sim_t += sdt
             try:
+                self.mover.step(self.world, paused=bool(SIM["paused"]))
                 self._placement_check()
                 yaw, _p = self.pose
                 worldmod.VIEW.update(yaw=yaw, half=max(SIM["cam_hfov"], SIM["thermal_hfov"]) / 2.0,

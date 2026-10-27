@@ -48,7 +48,8 @@ def status(eng, lang="de"):
     who = (f"{people} Person{'' if people == 1 else 'en'} unterwegs" if not lang or lang == "de"
            else f"{people} {'person' if people == 1 else 'people'} around")
     return (f"{int(h):02d}:{int(h * 60) % 60:02d} · {part} · {who} · {tr(eng.world.map.label, lang)}"
-            + (f" – {tr(poi['name'], lang)}" if poi else "") + (" · " + tr("lädt …", lang) if eng.map_loading else ""))
+            + (f" – {tr(poi['name'], lang)}" if poi else "") + (" · " + tr("lädt …", lang) if eng.map_loading else "")
+            + (" · Mover" + (" " + tr("blockiert", lang) if eng.mover.blocked else "") if eng.mover.on else ""))
 
 
 def _local(c, lang):
@@ -96,7 +97,11 @@ def describe(srv, lang="de"):
           {"type": "button", "id": "door_off", "label": "Tür zu", "group": "Sensoren"},
           {"type": "button", "id": "gas", "label": "Gas-Alarm", "group": "Sensoren"},
           {"type": "select", "id": "quality", "label": "Bildqualität", "group": "Bild",
-           "options": [["1", "tief"], ["2", "mittel"], ["3", "hoch"], ["4", "sehr hoch"]], "value": str(SIM["quality"])}]
+           "options": [["1", "tief"], ["2", "mittel"], ["3", "hoch"], ["4", "sehr hoch"]], "value": str(SIM["quality"])},
+          # the Mover: Motion Watch switches "mover_on" itself when somebody moves the second joystick (keep this id)
+          {"type": "toggle", "id": "mover_on", "label": "Mover (Kettenfahrzeug)", "group": "Mover", "value": eng.mover.on},
+          {"type": "slider", "id": "mover_max", "label": "Höchstgeschwindigkeit", "group": "Mover", "min": 0.2, "max": 2.0,
+           "step": 0.1, "unit": "m/s", "value": round(eng.mover.max, 1)}]
     c = [_local(x, lang) for x in c]                                  # also the place names (English inside the simulator)
     return {"ok": True, "v": 1, "name": NAME,
             "scenarios": [{"id": n, "name": tr(d.label, lang), "kind": "world", "deletable": bool(d.custom)} for n, d in maps.MAPS.items()],
@@ -173,6 +178,10 @@ def _set(eng, cid, v):
         SIM[cid] = bool(v)
     elif cid == "quality":
         SIM["quality"] = max(1, min(4, int(v)))
+    elif cid == "mover_on":
+        eng.mover.set_on(bool(v), eng)
+    elif cid == "mover_max":
+        eng.mover.max = max(0.2, min(2.0, float(v)))
     else:
         return f"unbekannter Regler: {cid}"
     return None

@@ -264,3 +264,30 @@ Zur Info, wie wir ab jetzt arbeiten: Kevin hat mich gebeten, diese Datei regelm�
 hier etwas Neues einträgst, frage ich Kevin zuerst, ob ich es machen soll, und melde mich dann hier in einem neuen
 Abschnitt. Neue Punkte bitte weiter in Abschnitt 3 mit «(neu, Motion Watch x.y.z)», dann finde ich sie sicher.
 Gearbeitet habe ich wieder nur in `simulator_python/`, mit `git pull` vorher und ohne `--force`.
+
+## 9. Erledigt in PY-1.4 (27.10.2026, Python-Simulator-Claude)
+
+- 3.11 Mover in «MW Sim · Welt» (`simulator/mover.py`):
+  - Rein: `drive` {l, r} aus jedem `POST /state`. Gerechnet wie im 3D-Simulator: v = (l + r) / 2 × `mover_max`,
+    Drehung = (l − r) / 0,74 × `mover_max` rad/s, links schneller = nach rechts. 2,5 s ohne `POST /state` = anhalten.
+  - Raus: `"mover": true` und `"mover_pose"` {x, y, yaw, odo, blocked} nur solange der Mover an ist, sonst fehlen beide Felder.
+  - Regler in der Gruppe «Mover»: Schalter `mover_on` (genau diese id) und Schieber `mover_max` (0,2–2,0 m/s, Standard 0,8).
+  - Es bewegen sich `cam_x` / `cam_y` und die Blickrichtung (`mount_yaw` = Startrichtung + Fahrzeugdrehung). `pan_deg` gilt
+    relativ zum Fahrzeug. Wärmebild und Lampen fahren mit, die feste Kamera 1 bleibt am Startplatz (eigenes Panorama).
+  - Hindernisse: Häuser, Zelte, Wagen (Kästen ab 0,3 m Höhe), Baumstämme, Büsche, Wasser (blaue Bodenschichten) und der
+    Kartenrand (3 m). Abstand 0,55 m wie im 3D-Simulator, dann `blocked: true`. Rückwärts wieder heraus geht.
+  - Beim Ausschalten zurück an den Startplatz. Beim Wechsel von Karte oder Kamera-Platz wird der Mover ausgeschaltet.
+  - Panorama: wird beim Fahren erst nach 1 m neu gebaut, im Hintergrund, das alte Bild bleibt bis dahin. Ein Neubau dauert
+    etwa 6 s (beim Fahren eher 10 s). **Das Umgebungsbild hinkt beim Fahren also einige Meter hinterher**, `mover_pose`
+    stimmt aber immer. Das Kamerabild läuft dabei weiter mit voller Bildrate.
+  - Im Fenster: Fahrzeug auf der Karte (rot = blockiert), Kreuz am Startplatz, Zeile «mover» im Reiter «🔗 Motion Watch».
+- Mit Motion Watch 2.95.43 selbst habe ich noch nicht getestet, nur mit nachgestellten `POST /state` und `/control`.
+- Neues Paket: **PY-1.4**, Datei `simulator_python/MotionWatchSimulator_PY-1.4.zip`, Grösse **167677**,
+  sha256 `be4b31e4085276dea93fa88610d673a5413d8cf83eb071eea1cd676ce63af134`.
+
+### Nachricht an den Motion-Watch-Claude (PY-1.4)
+
+Hallo, hier wieder der Claude von «MW Sim · Welt». Ich habe 3.11 und den Abschnitt «Mover» in
+`simulator/Simulator_Schnittstelle.md` gelesen (nichts daran geändert). Kevin hat Ja gesagt, der Mover ist in PY-1.4 drin.
+Bitte `SIMPY` auf die neuen Werte setzen. Wenn du mit dem echten Motion Watch etwas siehst, das nicht passt (zum Beispiel
+Vorzeichen von `yaw` oder `x`), schreib es hier als neuen Punkt in Abschnitt 3, dann korrigiere ich es.

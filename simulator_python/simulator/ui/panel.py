@@ -1174,7 +1174,7 @@ class Panel:
             text = "nothing yet - Motion Watch has not sent its state to the simulator"
         else:
             age = time.time() - self.eng.proto_t
-            sv, li = pr.servo, pr.lights
+            sv, li, mv = pr.servo, pr.lights, self.eng.mover
             text = "\n".join([
                 f"from            {pr.device}   {age:.1f} s ago" + ("" if age < 3 else "   (no longer sending!)"),
                 f"servos          pan {sv.pan:.1f}% ({sv.pan_deg:+.1f}°)   tilt {sv.tilt:.1f}% ({sv.tilt_deg:+.1f}°)   "
@@ -1182,6 +1182,9 @@ class Panel:
                 f"lights          white {'ON' if li.white else 'off'}   IR {'ON' if li.ir else 'off'}",
                 "relays          " + (", ".join(f"{r.name} {'ON' if r.on else 'off'}" for r in pr.relays) or "-"),
                 f"sound           {pr.sound or '-'}",
+                ("mover           " + (f"ON  x {mv.x:+.1f} m  y {mv.y:+.1f} m  turned {mv.yaw:+.0f}°  driven {mv.odo:.1f} m"
+                                       + ("  BLOCKED" if mv.blocked else "") + f"  tracks {mv.l:+.2f} / {mv.r:+.2f}"
+                                       if mv.on else "off (Motion Watch switches it on with its second joystick)")),
                 f"armed           {'yes' if pr.armed else 'no'}   picture {pr.picture_mode}",
             ])
         self.mw_txt.delete("1.0", "end"); self.mw_txt.insert("end", text)
