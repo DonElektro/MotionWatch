@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_31.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_32.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -620,6 +620,9 @@ Features
     Update with a progress bar: real download progress, check, restart (estimated from the last restarts).
   * 2.95.31: the game corner has its own tab in the header. New button «Rest mode: only game server»: camera, detection
     and alarms pause, the Pi gives all its power to the games; ends by itself when the game corner closes.
+  * 2.95.32: game corner: six new games for the phones - Stadt-Land-Fluss, estimating, explaining words (taboo), who am I,
+    reaction, battleships. Game collection GS-1.1 with 15 games (new: Tetris, Pong, Dino run, and own games snake,
+    minesweeper, sudoku, memory). Typed text is kept when the page updates.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -628,10 +631,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_31.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_32.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_31.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_31.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_32.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_32.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -648,7 +651,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.31"
+APP_VERSION = "2.95.32"
 
 
 def default_data_dir():
@@ -13662,7 +13665,7 @@ def testopt_state():
 # The phones join with a QR code (a room key in the address, no password); the room closes by itself after some hours.
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.0", "file": "games/MotionWatch_Spiele.zip", "size": 13547626, "sha256": "6e0cbc3b9d39bb3fece9e2932d7eb36419fe3196f1fbdad87f688c6940f7e9a6"}
+GAMES_PKG = {"version": "GS-1.1", "file": "games/MotionWatch_Spiele.zip", "size": 13682266, "sha256": "60f04256db21ea8d58406b74cb43695d4a08764dfcda447878cfdb3e05228ec1"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -13780,6 +13783,8 @@ def party_view(pid):
     elif gm == "c4":
         v["c4"] = {"seats": [{"id": x, "name": _pname(x)} if x else None for x in G.get("seats", [None, None])], "board": G.get("board", []),
                    "turn": G.get("turn", 0), "win": G.get("win", -1), "line": G.get("line", [])}
+    elif gm in MORE_GAMES:
+        party_view_more(pid, v, G, gm, now)
     return v
 
 
@@ -13817,6 +13822,356 @@ def party_tick():
         if G.get("drawer") and time.time() > G.get("until", 0):
             G.setdefault("log", []).append({"n": "⏰", "t": "Zeit um! Es war: " + G.get("word", "")})
             _draw_next(); party_bump()
+    party_tick_more()
+
+
+# ---- more party games (2.95.32): Stadt-Land-Fluss, estimating, explaining (taboo), battleships, reaction, who am I ----
+SLF_CATS = ["Stadt", "Land", "Fluss", "Tier", "Beruf", "Name"]
+SLF_LETTERS = "ABCDEFGHIKLMNOPRSTUVWZ"
+SCHAETZ = [("Wie hoch ist der Eiffelturm (mit Antennen)?", 330, "m"), ("Wie viele Einwohner hat die Schweiz (Millionen, 2024)?", 9, "Mio."),
+           ("Wie lang ist der Rhein?", 1230, "km"), ("Wie viele Knochen hat ein erwachsener Mensch?", 206, ""),
+           ("Wie schwer ist ein ausgewachsener Afrikanischer Elefant (Bulle)?", 6000, "kg"), ("Wie hoch ist das Matterhorn?", 4478, "m"),
+           ("Wie viele Tasten hat ein Klavier?", 88, ""), ("Wie weit ist der Mond von der Erde entfernt?", 384400, "km"),
+           ("Wie viele Liter Blut hat ein erwachsener Mensch?", 5, "l"), ("Wie lang ist der Gotthard-Basistunnel?", 57, "km"),
+           ("Wie viele Gemeinden hat die Schweiz (ungefähr, 2024)?", 2130, ""), ("Wie schnell fliegt ein Wanderfalke im Sturzflug höchstens?", 390, "km/h"),
+           ("Wie tief ist der Lago Maggiore an der tiefsten Stelle?", 372, "m"), ("Wie viele Herzschläge hat ein Mensch in Ruhe pro Minute (Mittel)?", 70, ""),
+           ("Wie alt kann eine Riesenschildkröte werden?", 150, "Jahre"), ("Wie viele Stacheln hat ein Igel?", 7000, ""),
+           ("Wie viele Länder gibt es auf der Welt (UNO-Mitglieder)?", 193, ""), ("Wie hoch ist der Mount Everest?", 8849, "m"),
+           ("Wie lang ist die Chinesische Mauer (alle Teile)?", 21196, "km"), ("Wie viele Kilometer Wanderwege hat die Schweiz (ungefähr)?", 65000, "km"),
+           ("Wie viele Kühe gibt es in der Schweiz (ungefähr)?", 1500000, ""), ("Wie gross ist der Bodensee?", 536, "km²"),
+           ("Wie viele Zähne hat ein Hund?", 42, ""), ("Wie heiss ist die Oberfläche der Sonne?", 5500, "°C"),
+           ("Wie lange braucht Licht vom Mond zur Erde?", 1.3, "s"), ("Wie viele Augen hat eine Spinne meistens?", 8, ""),
+           ("In welchem Jahr wurde die Schweiz (Bundesstaat) gegründet?", 1848, ""), ("Wie schnell ist ein Gepard höchstens?", 110, "km/h"),
+           ("Wie viele Stockwerke hat der Burj Khalifa?", 163, ""), ("Wie viele Federn hat ein Schwan (ungefähr)?", 25000, ""),
+           ("Wie lang ist ein Blauwal höchstens?", 30, "m"), ("Wie viele Kilometer Bahnnetz hat die Schweiz (ungefähr)?", 5300, "km"),
+           ("Wie viele Kalorien hat eine Tafel Milchschokolade (100 g)?", 540, "kcal"), ("Wie hoch fliegt ein Linienflugzeug normalerweise?", 11000, "m"),
+           ("Wie viele Sterne sieht man nachts ohne Fernglas höchstens (ungefähr)?", 4500, ""), ("Wie viele Seen hat die Schweiz (grösser als 0,5 ha, ungefähr)?", 1500, ""),
+           ("Wie viele Stunden schläft eine Katze pro Tag?", 15, "h"), ("Wie lang ist die Aare?", 288, "km"),
+           ("Wie viele Erdbeeren wachsen ungefähr an einer Pflanze pro Saison?", 50, ""), ("Wie viele Liter Milch gibt eine Kuh pro Tag (Durchschnitt CH)?", 22, "l")]
+TABU = [("Fondue", ["Käse", "Caquelon", "Brot", "Schmelzen"]), ("Zelt", ["Camping", "Schlafen", "Hering", "Plane"]), ("Lagerfeuer", ["Holz", "Wärme", "Flamme", "Wurst"]),
+        ("Schokolade", ["Kakao", "Süss", "Milch", "Tafel"]), ("Gotthard", ["Tunnel", "Pass", "Tessin", "Uri"]), ("Kuh", ["Milch", "Muh", "Weide", "Glocke"]),
+        ("Ski", ["Schnee", "Piste", "Fahren", "Winter"]), ("Velo", ["Fahrrad", "Pedal", "Lenker", "Rad"]), ("Zug", ["SBB", "Schiene", "Bahnhof", "Lok"]),
+        ("Kamera", ["Foto", "Bild", "Objektiv", "Linse"]), ("Igel", ["Stacheln", "Tier", "Winterschlaf", "Rollen"]), ("Gewitter", ["Blitz", "Donner", "Regen", "Sturm"]),
+        ("Regenbogen", ["Farben", "Regen", "Sonne", "Himmel"]), ("Pirat", ["Schiff", "Schatz", "Augenklappe", "Meer"]), ("Rakete", ["Weltall", "Start", "Mond", "Fliegen"]),
+        ("Zahnbürste", ["Zähne", "Putzen", "Zahnpasta", "Bad"]), ("Kühlschrank", ["Kalt", "Küche", "Essen", "Tür"]), ("Pizza", ["Italien", "Teig", "Käse", "Tomate"]),
+        ("Feuerwehr", ["Brand", "Löschen", "Rot", "Schlauch"]), ("Leuchtturm", ["Licht", "Meer", "Schiffe", "Turm"]), ("Schneemann", ["Schnee", "Karotte", "Winter", "Bauen"]),
+        ("Uhr", ["Zeit", "Zeiger", "Stunde", "Tick"]), ("Brille", ["Augen", "Sehen", "Gläser", "Nase"]), ("Geburtstag", ["Kuchen", "Geschenk", "Party", "Jahr"]),
+        ("Gitarre", ["Saiten", "Musik", "Spielen", "Instrument"]), ("Hexe", ["Besen", "Zaubern", "Märchen", "Hut"]), ("Spinne", ["Netz", "Acht", "Beine", "Insekt"]),
+        ("Sonnenbrille", ["Sonne", "Augen", "Dunkel", "Sommer"]), ("Kompass", ["Norden", "Nadel", "Richtung", "Wandern"]), ("Rucksack", ["Tragen", "Rücken", "Wandern", "Tasche"]),
+        ("Schlafsack", ["Schlafen", "Zelt", "Warm", "Camping"]), ("Taschenlampe", ["Licht", "Dunkel", "Batterie", "Leuchten"]), ("Wasserfall", ["Wasser", "Fallen", "Fluss", "Rauschen"]),
+        ("Vulkan", ["Lava", "Ausbruch", "Berg", "Feuer"]), ("Pinguin", ["Eis", "Vogel", "Schwarz", "Antarktis"]), ("Elefant", ["Rüssel", "Gross", "Grau", "Afrika"]),
+        ("Giraffe", ["Hals", "Lang", "Flecken", "Afrika"]), ("Biene", ["Honig", "Summen", "Stechen", "Blume"]), ("Fussball", ["Tor", "Ball", "Spieler", "Kicken"]),
+        ("Polizei", ["Verbrecher", "Blaulicht", "Uniform", "Gesetz"]), ("Arzt", ["Krank", "Spital", "Medizin", "Doktor"]), ("Bäcker", ["Brot", "Backen", "Mehl", "Gipfeli"]),
+        ("Helikopter", ["Fliegen", "Rotor", "Rettung", "Hubschrauber"]), ("Brücke", ["Fluss", "Über", "Bauen", "Überqueren"]), ("Schlüssel", ["Tür", "Schloss", "Öffnen", "Bund"]),
+        ("Kerze", ["Wachs", "Licht", "Docht", "Flamme"]), ("Regenschirm", ["Regen", "Nass", "Aufspannen", "Schutz"]), ("Weihnachten", ["Baum", "Geschenke", "Dezember", "Christkind"]),
+        ("Ostern", ["Hase", "Eier", "Suchen", "Frühling"]), ("Märchen", ["Prinzessin", "Es war einmal", "Grimm", "Geschichte"]), ("Drache", ["Feuer", "Flügel", "Ritter", "Spucken"]),
+        ("Roboter", ["Maschine", "Metall", "Computer", "Programm"]), ("Handy", ["Telefon", "Anrufen", "Smartphone", "App"]), ("Bergsteiger", ["Klettern", "Gipfel", "Seil", "Berg"]),
+        ("Seilbahn", ["Gondel", "Berg", "Seil", "Fahren"]), ("Muesli", ["Haferflocken", "Frühstück", "Bircher", "Milch"]), ("Alphorn", ["Blasen", "Lang", "Holz", "Musik"]),
+        ("Murmeltier", ["Pfeifen", "Alpen", "Winterschlaf", "Bau"]), ("Edelweiss", ["Blume", "Alpen", "Weiss", "Berg"]), ("Schwingen", ["Sägemehl", "Ringen", "Hosen", "Schwinger"])]
+WHO = ["Fuchs", "Eule", "Igel", "Murmeltier", "Steinbock", "Pinguin", "Elefant", "Giraffe", "Krokodil", "Delfin", "Biene", "Schnecke", "Katze", "Hund",
+       "Pferd", "Kuh", "Feuerwehrfrau", "Bäcker", "Astronautin", "Pirat", "Zauberer", "Hexe", "Ritter", "Prinzessin", "Lokführer", "Pilotin", "Koch",
+       "Bergführer", "Polizist", "Ärztin", "Lehrer", "Rotkäppchen", "Schneewittchen", "Froschkönig", "Rumpelstilzchen", "Weihnachtsmann", "Osterhase",
+       "Schneemann", "Roboter", "Drache", "Gespenst", "Vampir", "Dinosaurier", "Einhorn", "Meerjungfrau", "Bär", "Wolf", "Adler", "Känguru", "Koala"]
+
+
+def _slf_norm(t):
+    t = str(t or "").strip().lower()
+    for a, b in (("ä", "a"), ("ö", "o"), ("ü", "u"), ("é", "e"), ("è", "e"), ("à", "a"), ("ç", "c")):
+        t = t.replace(a, b)
+    return re.sub(r"\s+", " ", t)
+
+
+def _slf_results():
+    """points per player and per answer: 20 = only one in this category, 10 = unique, 5 = same as someone else, 0 = invalid"""
+    G = PARTY["g"]; L = G.get("letter", "").lower(); veto = set(G.get("veto", [])); res = {}
+    for i, _c in enumerate(G.get("cats", [])):
+        valid = {}
+        for pid, A in G.get("ans", {}).items():
+            a = _slf_norm(A.get(str(i), ""))
+            if a and a[0] == L and f"{pid}|{i}" not in veto:
+                valid[pid] = a
+        cnt = {}
+        for a in valid.values():
+            cnt[a] = cnt.get(a, 0) + 1
+        for pid in G.get("ans", {}):
+            pts = 0
+            if pid in valid:
+                pts = 20 if len(valid) == 1 else (10 if cnt[valid[pid]] == 1 else 5)
+            res.setdefault(pid, {})[str(i)] = pts
+    return res
+
+
+def _ships_place():
+    """ships 4,3,3,2,2 on 8x8, not touching each other; returns a list of cell lists"""
+    for _ in range(200):
+        taken, ships = set(), []
+        ok = True
+        for n in (4, 3, 3, 2, 2):
+            for _t in range(200):
+                hor = random.random() < 0.5
+                x = random.randrange(8 - (n - 1 if hor else 0)); y = random.randrange(8 - (0 if hor else n - 1))
+                cells = [(x + k, y) if hor else (x, y + k) for k in range(n)]
+                if all((cx + dx, cy + dy) not in taken for cx, cy in cells for dx in (-1, 0, 1) for dy in (-1, 0, 1)):
+                    ships.append([list(c) for c in cells]); taken.update(cells); break
+            else:
+                ok = False; break
+        if ok:
+            return ships
+    return []
+
+
+def _ships_new(seats=None):
+    return {"seats": seats or [None, None], "ships": [_ships_place(), _ships_place()], "shots": [[], []], "ready": [False, False],
+            "turn": 0, "win": -1, "last": None}
+
+
+def _ships_hit(ships, x, y):
+    for s in ships:
+        if [x, y] in s:
+            return s
+    return None
+
+
+def _react_done():
+    G = PARTY["g"]
+    if G.get("phase") not in ("wait",):
+        return
+    act = [k for k, v in PARTY["players"].items() if time.time() - v["t"] < 40 and k != PARTY["host"] or k == PARTY["host"] and G.get("hostplays")]
+    if time.time() > G.get("go_at", 0) + 6 or (act and all(k in G.get("res", {}) for k in act)):
+        ok = {k: v for k, v in G.get("res", {}).items() if v >= 0}
+        G["phase"] = "done"
+        if ok:
+            best = min(ok, key=ok.get); G["winner"] = best
+            p = _pl(best)
+            if p:
+                p["score"] += 1
+        party_bump()
+
+
+def party_tick_more():
+    G = PARTY["g"]; gm = PARTY["game"]; now = time.time()
+    if gm == "slf" and G.get("phase") == "play" and G.get("stop_at") and now > G["stop_at"]:
+        G["phase"] = "review"; party_bump()
+    elif gm == "taboo" and G.get("phase") == "turn" and now > G.get("until", 0):
+        G["phase"] = "pause"; G.setdefault("log", []).append(f"⏰ Zeit um! {_pname(G.get('explainer'))} hat {G.get('turn_n', 0)} Begriffe erklärt.")
+        party_bump()
+    elif gm == "react":
+        _react_done()
+
+
+def party_act_more(pid, a, d, host, G):
+    """actions of the new games; returns None when the action is not theirs"""
+    gm = PARTY["game"]; me = _pl(pid); now = time.time()
+    if gm == "slf":
+        if a == "cats" and host and G.get("phase") != "play":
+            cats = [c.strip()[:20] for c in str(d.get("t") or "").split(",") if c.strip()][:10]
+            if cats:
+                G["cats"] = cats
+        elif a == "start" and host:
+            used = G.setdefault("used", [])
+            pool = [c for c in SLF_LETTERS if c not in used] or list(SLF_LETTERS)
+            L = random.choice(pool); used.append(L)
+            G.update(phase="play", letter=L, ans={}, veto=[], stop_at=0, stop_by="", round=G.get("round", 0) + 1, awarded=False)
+        elif a == "ans" and G.get("phase") == "play":
+            i = str(int(d.get("i", 0)))
+            if int(i) < len(G.get("cats", [])):
+                G.setdefault("ans", {}).setdefault(pid, {})[i] = str(d.get("t") or "")[:40]
+                return "quiet"                         # no bump for every letter typed
+        elif a == "stop" and G.get("phase") == "play" and not G.get("stop_at"):
+            A = G.get("ans", {}).get(pid, {})
+            if sum(1 for i in range(len(G["cats"])) if A.get(str(i), "").strip()) < len(G["cats"]):
+                return "Zuerst alles ausfüllen"
+            G.update(stop_at=now + 10, stop_by=pid)
+        elif a == "end" and host and G.get("phase") == "play":
+            G["phase"] = "review"
+        elif a == "veto" and host and G.get("phase") == "review":
+            k = f"{d.get('id')}|{int(d.get('i', 0))}"; v = G.setdefault("veto", [])
+            v.remove(k) if k in v else v.append(k)
+        elif a == "award" and host and G.get("phase") == "review" and not G.get("awarded"):
+            for p_, R in _slf_results().items():
+                if _pl(p_):
+                    _pl(p_)["score"] += sum(R.values()) // 5          # 5 table points = 1 game point
+            G.update(awarded=True, phase="setup")
+        else:
+            return "Gerade nicht möglich"
+        return ""
+    if gm == "guess":
+        if a == "next" and host:
+            used = G.setdefault("used", [])
+            pool = [i for i in range(len(SCHAETZ)) if i not in used] or list(range(len(SCHAETZ)))
+            qi = random.choice(pool); used.append(qi)
+            G.update(qi=qi, phase="ask", g={}, n=G.get("n", 0) + 1, win=[])
+        elif a == "guess" and G.get("phase") == "ask" and not host:
+            try:
+                v = float(str(d.get("n", "")).replace("'", "").replace(",", ".").replace(" ", ""))
+            except ValueError:
+                return "Bitte eine Zahl"
+            G.setdefault("g", {})[pid] = v
+        elif a == "reveal" and host and G.get("phase") == "ask":
+            ans = SCHAETZ[G["qi"]][1]; gs = G.get("g", {})
+            if gs:
+                best = min(abs(v - ans) for v in gs.values())
+                G["win"] = [k for k, v in gs.items() if abs(v - ans) == best]
+                for k in G["win"]:
+                    if _pl(k):
+                        _pl(k)["score"] += 1
+            G["phase"] = "reveal"
+        else:
+            return "Gerade nicht möglich"
+        return ""
+    if gm == "taboo":
+        if a == "start" and (host or pid == G.get("next_up")) and G.get("phase") != "turn":
+            ids = [k for k, v in PARTY["players"].items() if now - v["t"] < 40]
+            cur = G.get("explainer", "")
+            nxt = ids[(ids.index(cur) + 1) % len(ids)] if cur in ids else (ids[0] if ids else pid)
+            G.update(phase="turn", explainer=nxt, until=now + int(G.get("secs", 60)), turn_n=0, round=G.get("round", 0) + 1)
+            _taboo_word(G)
+        elif a == "secs" and host and G.get("phase") != "turn":
+            G["secs"] = max(30, min(180, int(d.get("s", 60))))
+        elif a in ("ok", "taboo", "skip") and G.get("phase") == "turn" and pid == G.get("explainer"):
+            w = TABU[G["wi"]][0]
+            if a == "ok":
+                by = d.get("by") if d.get("by") in PARTY["players"] and d.get("by") != pid else ""
+                me["score"] += 1; G["turn_n"] = G.get("turn_n", 0) + 1
+                if by:
+                    _pl(by)["score"] += 1
+                G.setdefault("log", []).append(f"✅ {w}" + (f" – erraten von {_pname(by)}" if by else ""))
+            else:
+                G.setdefault("log", []).append(("🚫 Tabu: " if a == "taboo" else "⏭ ") + w)
+            _taboo_word(G)
+        else:
+            return "Gerade nicht möglich"
+        return ""
+    if gm == "ships":
+        seat = G["seats"].index(pid) if pid in G["seats"] else -1
+        if a == "sit":
+            i = int(d.get("seat", 0)) % 2
+            if not G["seats"][i] and seat < 0:
+                G["seats"][i] = pid
+        elif a == "leave" and seat >= 0:
+            G["seats"][seat] = None; G["ready"] = [False, False]
+        elif a == "shuffle" and seat >= 0 and not all(G["ready"]):
+            G["ships"][seat] = _ships_place(); G["ready"][seat] = False
+        elif a == "ready" and seat >= 0:
+            G["ready"][seat] = True
+        elif a == "shoot":
+            if not all(G["ready"]) or None in G["seats"] or G["win"] >= 0 or seat != G["turn"]:
+                return "Du bist nicht dran"
+            x, y = int(d.get("x", -1)), int(d.get("y", -1))
+            if not (0 <= x < 8 and 0 <= y < 8) or [x, y] in G["shots"][seat]:
+                return "Nicht möglich"
+            G["shots"][seat].append([x, y])
+            s = _ships_hit(G["ships"][1 - seat], x, y)
+            G["last"] = {"by": seat, "x": x, "y": y, "hit": bool(s), "sunk": bool(s) and all(c in G["shots"][seat] for c in s)}
+            if all(c in G["shots"][seat] for sh in G["ships"][1 - seat] for c in sh):
+                G["win"] = seat
+                if _pl(pid):
+                    _pl(pid)["score"] += 1
+            elif not s:
+                G["turn"] = 1 - seat
+        elif a == "reset":
+            if seat < 0 and not host:
+                return "Nicht möglich"
+            PARTY["g"] = _ships_new([G["seats"][1], G["seats"][0]])
+        else:
+            return "Gerade nicht möglich"
+        return ""
+    if gm == "react":
+        if a == "start" and host and G.get("phase") != "wait":
+            G.update(phase="wait", go_at=now + 2.5 + random.random() * 3.5, res={}, winner="", round=G.get("round", 0) + 1)
+        elif a == "hostplays" and host:
+            G["hostplays"] = not G.get("hostplays")
+        elif a == "tap" and G.get("phase") == "wait" and pid not in G.get("res", {}):
+            if host and not G.get("hostplays"):
+                return "Gerade nicht möglich"
+            try:
+                ms = float(d.get("ms", -1))
+            except (TypeError, ValueError):
+                ms = -1
+            early = now < G["go_at"] - 0.15 or ms < 0
+            G.setdefault("res", {})[pid] = -1 if early else max(80.0, min(5000.0, ms))
+            _react_done()
+        else:
+            return "Gerade nicht möglich"
+        return ""
+    if gm == "whoami":
+        if a == "start" and host:
+            ids = list(PARTY["players"]); pool = random.sample(WHO, min(len(WHO), len(ids)))
+            G.update(roles=dict(zip(ids, pool)), solved=[], round=G.get("round", 0) + 1)
+        elif a == "solved" and pid in G.get("roles", {}) and pid not in G.get("solved", []):
+            G.setdefault("solved", []).append(pid)
+            n = len(G["solved"])
+            me["score"] += 3 if n == 1 else 2 if n == 2 else 1
+        else:
+            return "Gerade nicht möglich"
+        return ""
+    return None
+
+
+def _taboo_word(G):
+    used = G.setdefault("used", [])
+    pool = [i for i in range(len(TABU)) if i not in used] or list(range(len(TABU)))
+    G["wi"] = random.choice(pool); used.append(G["wi"])
+
+
+def party_view_more(pid, v, G, gm, now):
+    host = v["host"]
+    if gm == "slf":
+        R = _slf_results() if G.get("phase") == "review" else {}
+        A = G.get("ans", {})
+        done = [p for p, X in A.items() if sum(1 for i in range(len(G.get("cats", []))) if X.get(str(i), "").strip()) >= len(G.get("cats", []))]
+        v["slf"] = {"phase": G.get("phase", "setup"), "cats": G.get("cats", SLF_CATS), "letter": G.get("letter", ""), "round": G.get("round", 0),
+                    "mine": A.get(pid, {}), "stop_by": _pname(G["stop_by"]) if G.get("stop_by") else "", "stop_left": max(0, G.get("stop_at", 0) - now) if G.get("stop_at") else -1,
+                    "done": [_pname(p) for p in done]}
+        if G.get("phase") == "review" or G.get("awarded"):
+            v["slf"]["table"] = [{"id": p, "name": _pname(p), "ans": [A[p].get(str(i), "") for i in range(len(G.get("cats", [])))],
+                                  "pts": [R.get(p, {}).get(str(i), 0) for i in range(len(G.get("cats", [])))],
+                                  "veto": [f"{p}|{i}" in G.get("veto", []) for i in range(len(G.get("cats", [])))]} for p in A]
+    elif gm == "guess":
+        q = SCHAETZ[G["qi"]] if "qi" in G else None
+        v["guess"] = {"phase": G.get("phase", "setup"), "q": q[0] if q else "", "unit": q[2] if q else "", "n": G.get("n", 0),
+                      "count": len(G.get("g", {})), "mine": G.get("g", {}).get(pid)}
+        if G.get("phase") == "reveal" and q:
+            v["guess"]["answer"] = q[1]
+            v["guess"]["list"] = sorted([{"name": _pname(k), "v": x, "d": abs(x - q[1]), "win": k in G.get("win", [])} for k, x in G.get("g", {}).items()], key=lambda r: r["d"])
+        if host and q:
+            v["guess"]["answer"] = q[1]
+    elif gm == "taboo":
+        ex = G.get("explainer", "")
+        ids = [k for k, x in PARTY["players"].items() if now - x["t"] < 40]
+        nxt = ids[(ids.index(ex) + 1) % len(ids)] if ex in ids else (ids[0] if ids else "")
+        G["next_up"] = nxt
+        v["taboo"] = {"phase": G.get("phase", "setup"), "explainer": ex, "explainername": _pname(ex) if ex else "", "left": max(0, int(G.get("until", 0) - now)),
+                      "secs": G.get("secs", 60), "log": G.get("log", [])[-10:], "n": G.get("turn_n", 0), "next": nxt, "nextname": _pname(nxt) if nxt else ""}
+        if pid == ex and G.get("phase") == "turn":
+            v["taboo"]["word"], v["taboo"]["forbidden"] = TABU[G["wi"]]
+    elif gm == "ships":
+        seat = G["seats"].index(pid) if pid in G["seats"] else -1
+        def board(i, show_ships):           # board of seat i: what was shot on it
+            shots = G["shots"][1 - i]
+            cells = [[0] * 8 for _ in range(8)]   # 0 water, 1 ship (own only), 2 miss, 3 hit, 4 sunk
+            if show_ships:
+                for s in G["ships"][i]:
+                    for x, y in s:
+                        cells[y][x] = 1
+            for x, y in shots:
+                s = _ships_hit(G["ships"][i], x, y)
+                cells[y][x] = (4 if all(c in shots for c in s) else 3) if s else 2
+            return cells
+        left = lambda i: sum(1 for s in G["ships"][i] if not all(c in G["shots"][1 - i] for c in s))
+        v["ships"] = {"seats": [{"id": x, "name": _pname(x)} if x else None for x in G["seats"]], "seat": seat, "ready": G["ready"], "turn": G["turn"],
+                      "win": G["win"], "last": G.get("last"), "left": [left(0), left(1)],
+                      "boards": [board(i, i == seat or G["win"] >= 0) for i in (0, 1)]}
+    elif gm == "react":
+        v["react"] = {"phase": G.get("phase", "idle"), "go_at": G.get("go_at", 0), "round": G.get("round", 0), "hostplays": bool(G.get("hostplays")),
+                      "res": sorted([{"name": _pname(k), "ms": x, "me": k == pid} for k, x in G.get("res", {}).items()], key=lambda r: (r["ms"] < 0, r["ms"])),
+                      "mine": G.get("res", {}).get(pid), "winner": _pname(G["winner"]) if G.get("winner") else ""}
+    elif gm == "whoami":
+        R = G.get("roles", {}); S = G.get("solved", [])
+        v["whoami"] = {"round": G.get("round", 0), "others": [{"name": _pname(k), "word": w, "solved": k in S} for k, w in R.items() if k != pid],
+                       "mine": R.get(pid, "") if pid in S else "", "have": pid in R, "solved": pid in S, "order": [_pname(k) for k in S]}
+
+MORE_GAMES = ("slf", "guess", "taboo", "ships", "react", "whoami")
 
 
 def party_act(pid, d):
@@ -13830,9 +14185,13 @@ def party_act(pid, d):
         if not host:
             return "only the host"
         gm = str(d.get("game") or "lobby")
-        if gm not in ("lobby", "quiz", "wolf", "draw", "c4"):
+        if gm not in ("lobby", "quiz", "wolf", "draw", "c4") + MORE_GAMES:
             return "unknown game"
         PARTY["game"] = gm; PARTY["g"] = {}
+        if gm == "slf":
+            PARTY["g"] = {"phase": "setup", "cats": SLF_CATS[:]}
+        if gm == "ships":
+            PARTY["g"] = _ships_new()
         if gm == "c4":
             PARTY["g"] = {"seats": [None, None], "board": [[-1] * 7 for _ in range(6)], "turn": 0, "win": -1}
         if gm == "wolf":
@@ -13862,6 +14221,13 @@ def party_act(pid, d):
     elif a == "timer":
         s_ = max(0, min(3600, int(d.get("s", 60))))
         PARTY["tools"]["timer"] = {"by": me["name"], "end": time.time() + s_, "s": s_} if s_ else {}
+    elif PARTY["game"] in MORE_GAMES:
+        r_ = party_act_more(pid, a, d, host, G)
+        if r_ is None:
+            return "unknown action"
+        if r_ == "quiet":
+            PARTY["_quiet"] = True; r_ = ""
+        return r_
     elif PARTY["game"] == "quiz":
         if a == "buzz":
             if G.get("phase") == "open" and pid not in G.get("order", []) and not host:
@@ -14181,7 +14547,7 @@ def spiele_page():
                     f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div></a>' for x in gl)
     party = (f'<a class="big" href="/p/{PARTY["key"]}/">👥 Zum Spieleabend (Quiz, Werwolf, Malen, 4 gewinnt)</a>' if party_on()
              else '<p>Der Spieleabend (Quiz, Werwolf, Malen …) ist gerade zu – öffnen kann ihn, wer Motion Watch verwaltet.</p>')
-    note = "Einzelspiele – laufen direkt im Browser:" if gl else "Die Spielesammlung ist noch nicht installiert (Motion Watch → Werkzeuge → Spielecke)."
+    note = "Einzelspiele – laufen direkt im Browser:" if gl else "Die Spielesammlung ist noch nicht installiert (Motion Watch → Reiter Spielecke)."
     return SPIELE_PAGE.replace("__PARTY__", party).replace("__NOTE__", note).replace("__GAMES__", cards)
 
 
@@ -14331,7 +14697,10 @@ async function poll() {
   busy = false; setTimeout(poll, 50);
 }
 const GAMES = [["lobby", "🏠 Lobby", "Alle sammeln"], ["quiz", "🔔 Quiz mit Buzzer", "Wer zuerst drückt, antwortet"], ["wolf", "🐺 Werwolf", "Der Erzähler führt durch die Nacht"],
-  ["draw", "🎨 Montagsmaler", "Einer zeichnet, alle raten"], ["c4", "🔴 Vier gewinnt", "Zwei spielen, alle schauen zu"]];
+  ["draw", "🎨 Montagsmaler", "Einer zeichnet, alle raten"], ["c4", "🔴 Vier gewinnt", "Zwei spielen, alle schauen zu"],
+  ["slf", "🏙 Stadt-Land-Fluss", "Buchstabe ziehen, schnell schreiben"], ["guess", "📏 Schätzfrage", "Wer am nächsten liegt, gewinnt"],
+  ["taboo", "🗣 Begriffe erklären", "Erklären ohne verbotene Wörter"], ["whoami", "🤔 Wer bin ich?", "Alle sehen deinen Begriff – nur du nicht"],
+  ["react", "⚡ Reaktion", "Wer tippt am schnellsten?"], ["ships", "🚢 Schiffe versenken", "Zwei gegeneinander"]];
 function render() {
   if (!V) return;
   if (!V.me) { $("#join").classList.remove("hidden"); $("#app").classList.add("hidden"); return; }
@@ -14348,8 +14717,8 @@ function render() {
   $("#dicewho").textContent = D ? D.by + " hat gewürfelt (W" + D.sides + ")" + (D.vals.length > 1 ? " · Summe " + D.vals.reduce((a, b) => a + b, 0) : "") : "";
   if (D && D.t !== render.lastDice) { render.lastDice = D.t; beep(660, .08); }
   // collection
-  $("#coll").innerHTML = (V.games || []).length ? V.games.map(g => `<a class="gl" href="${BASE}/g/${g.dir}/" target="_blank"><img src="${BASE}/g/${g.dir}/${g.icon || ""}" alt="" onerror="this.style.visibility='hidden'"><div><b>${esc(g.name)}</b><span>${esc(g.desc || "")}</span></div></a>`).join("")
-    : "<div class='mut'>Die Spielesammlung ist auf diesem Gerät noch nicht installiert (Motion Watch → Werkzeuge → Spielecke).</div>";
+  $("#coll").innerHTML = (V.games || []).length ? V.games.map(g => `<a class="gl" href="${BASE}/g/${g.dir}/" target="_blank">${/\./.test(g.icon || "") ? `<img src="${BASE}/g/${g.dir}/${g.icon}" alt="" onerror="this.style.visibility='hidden'">` : `<span style="font-size:30px;width:44px;text-align:center;flex:0 0 44px">${esc(g.icon || "🎮")}</span>`}<div><b>${esc(g.name)}</b><span>${esc(g.desc || "")}</span></div></a>`).join("")
+    : "<div class='mut'>Die Spielesammlung ist auf diesem Gerät noch nicht installiert (Motion Watch → Reiter Spielecke).</div>";
   renderGame();
 }
 function gameChooser() {
@@ -14365,11 +14734,24 @@ function renderGame() {
   if (V.game === "wolf") h += wolfHtml();
   if (V.game === "draw") h += drawHtml();
   if (V.game === "c4") h += c4Html();
+  if (V.game === "slf") h += slfHtml();
+  if (V.game === "guess") h += guessHtml();
+  if (V.game === "taboo") h += tabooHtml();
+  if (V.game === "ships") h += shipsHtml();
+  if (V.game === "react") h += reactHtml();
+  if (V.game === "whoami") h += whoHtml();
+  const G_ = V[V.game] || {}, stage = V.game + "|" + (G_.phase || "") + "|" + (G_.round || G_.n || "");
   if (box.dataset.h !== h || V.game === "draw") {
     if (V.game === "draw" && box.querySelector("canvas") && box.dataset.g === "draw" && box.dataset.drawer === V.draw.drawer) { drawUpdate(); return; }
-    box.innerHTML = h; box.dataset.h = h; box.dataset.g = V.game; box.dataset.drawer = V.draw ? V.draw.drawer : "";
+    // keep what is being typed (the page is drawn new when something changes)
+    const keep = {}, fe = document.activeElement, fid = fe && box.contains(fe) && fe.id ? fe.id : "";
+    if (box.dataset.stage === stage) box.querySelectorAll("input[id]:not([type=checkbox]):not([type=number])").forEach(x => keep[x.id] = x.value);
+    box.innerHTML = h; box.dataset.h = h; box.dataset.g = V.game; box.dataset.drawer = V.draw ? V.draw.drawer : ""; box.dataset.stage = stage;
+    for (const id in keep) { const x = document.getElementById(id); if (x && x.value !== keep[id]) { x.value = keep[id]; x._sent = undefined; } }
+    if (fid) { const f = document.getElementById(fid); if (f) { f.focus(); try { f.setSelectionRange(f.value.length, f.value.length); } catch (e) {} } }
     if (V.game === "draw") drawSetup();
   }
+  if (V.game === "react") reactArm();
 }
 // ---- quiz ----
 function quizHtml() { const Q = V.quiz, first = Q.order[0];
@@ -14457,6 +14839,106 @@ function c4Html() { const C = V.c4, seat = C.seats.findIndex(s => s && s.id === 
     <div class="c4">${C.board.map((r, ri) => r.map((x, ci) => `<div class="${x >= 0 ? "p" + x : ""} ${lw.has(ri * 7 + ci) ? "w" : ""}"></div>`).join("")).join("")}</div>
     <div class="row">${C.win >= 0 ? `<button onclick="act('reset',{swap:1})">Nochmal (Farben tauschen)</button>` : ""}${seat >= 0 ? `<button class="sec" onclick="act('leave')">Aufstehen</button>` : ""}</div></div>`;
 }
+// ---- more games (2.95.32) ----
+function slfHtml() { const S = V.slf, cats = S.cats || [];
+  let h = `<div class="card"><h2>🏙 Stadt-Land-Fluss${S.round ? " · Runde " + S.round : ""}</h2>`;
+  if (S.phase === "setup") {
+    h += V.host ? `<div class="mut">Kategorien (mit Komma getrennt):</div><input id="slfcats" value="${esc(cats.join(", "))}" onchange="act('cats',{t:this.value})">
+      <button style="width:100%;margin-top:10px" onclick="act('start')">🎲 Buchstabe ziehen und los!</button>` : `<div class="mut">Gleich zieht ${esc(V.hostname)} einen Buchstaben. Kategorien: ${esc(cats.join(", "))}</div>`;
+    return h + "</div>";
+  }
+  if (S.phase === "play") {
+    h += `<div class="big" style="font-size:54px;margin:4px 0">${esc(S.letter)}</div>`
+      + (S.stop_left >= 0 ? `<div class="big" style="color:var(--red)">⛔ ${esc(S.stop_by)} ruft STOPP! Noch <span class="slfleft" data-end="${Date.now() / 1000 + S.stop_left}">${Math.ceil(S.stop_left)}</span> s</div>` : "")
+      + cats.map((c, i) => `<label class="mut" style="display:block;margin-top:8px">${esc(c)}<input id="slf${i}" data-i="${i}" class="slfin" autocomplete="off" autocapitalize="words" value="${esc((S.mine || {})[i] || "")}"></label>`).join("")
+      + `<div class="row" style="margin-top:12px"><button class="red" onclick="slfSave();act('stop')">✋ STOPP!</button>${V.host ? `<button class="sec" onclick="slfSave();act('end')">Runde beenden</button>` : ""}</div>`
+      + `<div class="mut" style="margin-top:6px">Fertig: <span id="slfdone">${S.done.map(esc).join(", ") || "–"}</span></div>`;
+    return h + "</div>";
+  }
+  // review
+  h += `<div class="mut">Buchstabe <b>${esc(S.letter)}</b> · 20 = als Einzige(r) in der Kategorie, 10 = eigene Antwort, 5 = gleich wie jemand · ${V.host ? "Antippen = ungültig/gültig" : "Der Gastgeber kann Antworten streichen"}</div>
+    <div style="overflow-x:auto;margin-top:8px"><table style="border-collapse:collapse;width:100%;font-size:14px"><tr><th style="text-align:left">Spieler</th>${cats.map(c => `<th style="text-align:left;padding:4px">${esc(c)}</th>`).join("")}<th>Σ</th></tr>`
+    + (S.table || []).map(r => `<tr style="border-top:1px solid var(--line)"><td style="padding:4px"><b>${esc(r.name)}</b></td>${r.ans.map((a, i) => `<td style="padding:4px;${r.veto[i] ? "text-decoration:line-through;opacity:.5" : ""}" ${V.host ? `onclick="act('veto',{id:'${r.id}',i:${i}})"` : ""}>${esc(a) || "–"} <span class="mut">${r.pts[i]}</span></td>`).join("")}<td style="padding:4px"><b>${r.pts.reduce((a, b) => a + b, 0)}</b></td></tr>`).join("")
+    + `</table></div>` + (V.host ? `<button class="grn" style="width:100%;margin-top:10px" onclick="act('award')">✓ Punkte gutschreiben (5 = 1 Punkt) und nächste Runde</button>` : "");
+  return h + "</div>";
+}
+function slfSave() { document.querySelectorAll(".slfin").forEach(x => { if (x.value !== x._sent) { x._sent = x.value; act("ans", {i: +x.dataset.i, t: x.value}); } }); }
+document.addEventListener("input", e => { if (e.target.classList && e.target.classList.contains("slfin")) { clearTimeout(e.target._t); e.target._t = setTimeout(slfSave, 600); } });
+function guessHtml() { const G = V.guess;
+  if (G.phase === "setup") return `<div class="card"><h2>📏 Schätzfrage</h2><div class="mut">Wer am nächsten dran ist, bekommt einen Punkt.</div>${V.host ? `<button style="width:100%;margin-top:10px" onclick="act('next')">Erste Frage</button>` : ""}</div>`;
+  let h = `<div class="card"><h2>📏 Schätzfrage ${G.n}</h2><div class="big" style="font-size:19px">${esc(G.q)}</div>`;
+  if (G.phase === "ask") {
+    if (V.host) h += `<div class="mut" style="text-align:center">Antwort: <b>${fmtN(G.answer)} ${esc(G.unit)}</b> · ${G.count} Schätzungen</div><button style="width:100%;margin-top:10px" onclick="act('reveal')">🎯 Auflösen</button>`;
+    else h += `<div class="row"><input id="gsn" inputmode="decimal" placeholder="Deine Schätzung${G.unit ? " (" + esc(G.unit) + ")" : ""}" autocomplete="off"><button onclick="if($('#gsn').value.trim())act('guess',{n:$('#gsn').value})">Abgeben</button></div>`
+      + `<div class="mut" style="margin-top:6px">${G.mine != null ? "Deine Schätzung: <b>" + fmtN(G.mine) + "</b> (du kannst sie noch ändern)" : "Noch keine Schätzung abgegeben"} · ${G.count} haben geschätzt</div>`;
+  } else {
+    h += `<div class="big">${fmtN(G.answer)} ${esc(G.unit)}</div>` + G.list.map(r => `<div class="pl"><span class="n">${r.win ? "🏆 " : ""}${esc(r.name)}</span><span>${fmtN(r.v)}</span><span class="mut" style="margin-left:10px">±${fmtN(r.d)}</span></div>`).join("")
+      + (V.host ? `<button style="width:100%;margin-top:10px" onclick="act('next')">Nächste Frage</button>` : "");
+  }
+  return h + "</div>";
+}
+function fmtN(x) { return x == null ? "" : Number(x).toLocaleString("de-CH", {maximumFractionDigits: 2}); }
+function tabooHtml() { const T = V.taboo, mine = T.explainer === V.me;
+  let h = `<div class="card"><h2>🗣 Begriffe erklären${T.round ? " · Runde " + T.round : ""}</h2>`;
+  if (T.phase !== "turn") {
+    h += `<div class="mut">Eine Person erklärt Begriffe, ohne die verbotenen Wörter zu sagen. Die anderen rufen laut. Pro erratenem Begriff gibt es je einen Punkt für den Erklärer und für den, der es erraten hat.</div>`
+      + (V.host ? `<div class="row" style="margin-top:8px"><span class="mut">Zeit pro Runde</span><select onchange="act('secs',{s:+this.value})">${[45, 60, 90, 120].map(s => `<option value="${s}" ${T.secs === s ? "selected" : ""}>${s} s</option>`).join("")}</select></div>` : "")
+      + `<div class="big">Als Nächstes erklärt: ${esc(T.nextname)}</div>`
+      + (V.host || T.next === V.me ? `<button style="width:100%" onclick="act('start')">▶ Runde starten</button>` : "");
+  } else if (mine) {
+    h += `<div class="mut" style="text-align:center">⏳ <span class="tbleft" data-end="${Date.now() / 1000 + T.left}">${T.left}</span> s · ${T.n} erklärt</div>
+      <div style="background:#fff;color:#111;border-radius:14px;padding:14px;text-align:center;margin:8px 0"><div style="font-size:28px;font-weight:800">${esc(T.word)}</div>
+      <div style="border-top:2px solid #e0262c;margin-top:8px;padding-top:6px;color:#b0181d;font-weight:700">${T.forbidden.map(esc).join("<br>")}</div></div>
+      <div class="mut">Wer hat es erraten?</div><div class="row">${V.players.filter(p => p.id !== V.me).map(p => `<button class="grn" style="flex:0 0 auto" onclick="act('ok',{by:'${p.id}'})">✓ ${esc(p.name)}</button>`).join("")}</div>
+      <div class="row" style="margin-top:8px"><button class="red" onclick="act('taboo')">🚫 Tabu gesagt</button><button class="sec" onclick="act('skip')">⏭ Weiter</button></div>`;
+  } else {
+    h += `<div class="big">🗣 ${esc(T.explainername)} erklärt</div><div class="timer"><span class="tbleft" data-end="${Date.now() / 1000 + T.left}">${T.left}</span></div><div class="mut" style="text-align:center">Laut raten! ${T.n} erraten</div>`;
+  }
+  if (T.log.length) h += `<div class="log">${T.log.slice().reverse().map(x => `<div>${esc(x)}</div>`).join("")}</div>`;
+  return h + "</div>";
+}
+function shipsHtml() { const S = V.ships, me = S.seat, both = S.seats[0] && S.seats[1], go = both && S.ready[0] && S.ready[1];
+  const cell = (v, own) => ["", own ? "background:#5b6b82" : "", "background:#1d6fe0", "background:#e9a23b", "background:#e0262c"][v] || "";
+  const sym = v => ["", "", "•", "✸", "✖"][v];
+  const grid = (b, own, shoot) => `<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:3px;background:#0b2a4a;padding:5px;border-radius:10px;max-width:360px;margin:6px auto">${b.map((r, y) => r.map((v, x) => `<div style="aspect-ratio:1;border-radius:4px;background:#103c66;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;${cell(v, own)};${shoot && v < 2 ? "cursor:pointer" : ""}" ${shoot && v < 2 ? `onclick="act('shoot',{x:${x},y:${y}})"` : ""}>${sym(v)}</div>`).join("")).join("")}</div>`;
+  const st = S.win >= 0 ? "🏆 " + esc(S.seats[S.win].name) + " gewinnt!" : !both ? "Zwei Spieler setzen sich hin" : !go ? "Schiffe verteilen, dann «Bereit»" : me === S.turn ? "🎯 Du bist dran – schiess aufs Feld oben!" : esc(S.seats[S.turn].name) + " ist dran";
+  let h = `<div class="card"><h2>🚢 Schiffe versenken</h2><div class="row">${[0, 1].map(i => S.seats[i] ? `<span class="pill">${i ? "🟡" : "🔴"} ${esc(S.seats[i].name)} ${S.ready[i] ? "✓" : ""} · ${S.left[i]} Schiffe</span>` : `<button class="sec" onclick="act('sit',{seat:${i}})">${i ? "🟡" : "🔴"} Hinsetzen</button>`).join("")}</div><div class="big">${st}</div>`;
+  if (S.last && go) h += `<div class="mut" style="text-align:center">Letzter Schuss: ${esc(S.seats[S.last.by].name)} → ${"ABCDEFGH"[S.last.x]}${S.last.y + 1}: ${S.last.sunk ? "versenkt! 💥" : S.last.hit ? "Treffer!" : "Wasser"}</div>`;
+  if (me >= 0) {
+    h += `<div class="mut" style="text-align:center;margin-top:8px">Gegner</div>${grid(S.boards[1 - me], false, go && S.turn === me && S.win < 0)}<div class="mut" style="text-align:center">Deine Flotte</div>${grid(S.boards[me], true, false)}`;
+    if (!go && S.win < 0) h += `<div class="row"><button class="sec" onclick="act('shuffle')">🔀 Neu verteilen</button>${S.ready[me] ? "" : `<button class="grn" onclick="act('ready')">✓ Bereit</button>`}</div>`;
+  } else if (both) h += [0, 1].map(i => `<div class="mut" style="text-align:center;margin-top:8px">Flotte von ${esc(S.seats[i].name)}</div>${grid(S.boards[i], false, false)}`).join("");
+  h += `<div class="row" style="margin-top:8px">${S.win >= 0 ? `<button onclick="act('reset')">Nochmal (Seiten tauschen)</button>` : ""}${me >= 0 ? `<button class="sec" onclick="act('leave')">Aufstehen</button>` : ""}</div>`;
+  return h + "</div>";
+}
+function reactHtml() { const R = V.react, plays = !V.host || R.hostplays;
+  let h = `<div class="card"><h2>⚡ Reaktion${R.round ? " · Runde " + R.round : ""}</h2>`;
+  if (R.phase === "wait") {
+    h += plays ? `<button id="rbtn" class="rbtn" style="width:100%;height:46vh;font-size:30px;border-radius:20px;background:#e0262c" data-go="${R.go_at}">${R.mine != null ? (R.mine < 0 ? "Zu früh! 😬" : Math.round(R.mine) + " ms") : "Warten …<br><span style='font-size:16px;font-weight:400'>Tippen, sobald es GRÜN wird</span>"}</button>`
+      : `<div class="big">Gleich wird es grün …</div>`;
+  } else {
+    h += `<div class="mut">Alle warten, bis der Knopf grün wird – dann so schnell wie möglich tippen. Wer zu früh tippt, scheidet aus.</div>`;
+    if (R.phase === "done") h += `<div class="big">${R.winner ? "🏆 " + esc(R.winner) : "Niemand gültig"}</div>` + R.res.map(r => `<div class="pl"><span class="n">${r.me ? "<b>" + esc(r.name) + "</b>" : esc(r.name)}</span><span>${r.ms < 0 ? "zu früh" : Math.round(r.ms) + " ms"}</span></div>`).join("");
+  }
+  if (V.host && R.phase !== "wait") h += `<button style="width:100%;margin-top:10px" onclick="act('start')">▶ ${R.round ? "Nochmal" : "Start"}</button><label class="mut" style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" style="width:auto" ${R.hostplays ? "checked" : ""} onchange="act('hostplays')"> Ich spiele auch mit</label>`;
+  return h + "</div>";
+}
+function reactArm() { const b = $("#rbtn"); if (!b || b._armed === b.dataset.go || V.react.mine != null) return; b._armed = b.dataset.go;
+  const goLocal = (+b.dataset.go - (V._skew || 0)) * 1000; let green = false;
+  clearTimeout(reactArm.t); reactArm.t = setTimeout(() => { green = true; b.style.background = "#2fbf5b"; b.innerHTML = "JETZT!"; }, Math.max(0, goLocal - Date.now()));
+  b.onpointerdown = e => { e.preventDefault(); if (b._done) return; b._done = true; clearTimeout(reactArm.t); const ms = green ? Date.now() - goLocal : -1;
+    b.innerHTML = ms < 0 ? "Zu früh! 😬" : Math.round(ms) + " ms"; b.style.background = ms < 0 ? "#7a1d20" : "#1d6fe0"; act("tap", {ms}); };
+}
+function whoHtml() { const W = V.whoami;
+  let h = `<div class="card"><h2>🤔 Wer bin ich?${W.round ? " · Runde " + W.round : ""}</h2>`;
+  if (!W.round) return h + `<div class="mut">Jede Person bekommt einen Begriff (Tier, Beruf, Märchenfigur …), den alle anderen sehen – nur sie selbst nicht. Mit Ja/Nein-Fragen herausfinden, wer man ist!</div>${V.host ? `<button style="width:100%;margin-top:10px" onclick="act('start')">Begriffe verteilen</button>` : ""}</div>`;
+  h += W.have ? (W.solved ? `<div class="big">Du bist: ${esc(W.mine)} ✅</div>` : `<div class="role">❓ Wer bin ich?</div><button class="grn" style="width:100%;margin-top:10px" onclick="if(confirm('Wirklich erraten? Erst bestätigen, wenn die anderen Ja sagen.'))act('solved')">🎉 Ich habe es erraten!</button>`) : `<div class="mut">Du bist erst nach dem Verteilen dazugekommen – du kannst trotzdem mitraten.</div>`;
+  h += `<h2 style="margin-top:14px">Die anderen</h2>` + W.others.map(o => `<div class="pl"><span class="n">${esc(o.name)}</span><b style="font-size:18px">${esc(o.word)}</b>${o.solved ? " ✅" : ""}</div>`).join("");
+  if (W.order.length) h += `<div class="mut" style="margin-top:8px">Erraten: ${W.order.map((n, i) => (i + 1) + ". " + esc(n)).join(" · ")} (3/2/1 Punkte)</div>`;
+  if (V.host) h += `<button class="sec" style="width:100%;margin-top:10px" onclick="if(confirm('Neue Begriffe verteilen?'))act('start')">Neue Runde</button>`;
+  return h + "</div>";
+}
+setInterval(() => { document.querySelectorAll(".slfleft,.tbleft").forEach(e => { e.textContent = Math.max(0, Math.ceil(+e.dataset.end - Date.now() / 1000)); }); }, 500);
 // tools
 $("#roll").onclick = () => act("dice", {n: +$("#dn").value, sides: +$("#ds").value});
 document.querySelectorAll("[data-s]").forEach(b => b.onclick = () => act("timer", {s: +b.dataset.s}));
@@ -15937,7 +16419,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_31.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_32.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -30517,10 +30999,11 @@ class WebStream:
                 return reply({"error": "closed"}, 404)
             d = body(); pid = str(d.get("pid") or "")
             try:
-                err = party_act(pid, d)
-            except (TypeError, ValueError, KeyError, IndexError):
+                with PARTY_COND:
+                    err = party_act(pid, d)
+            except (TypeError, ValueError, KeyError, IndexError, AttributeError):
                 err = "invalid values"
-            if not err:
+            if not err and not PARTY.pop("_quiet", False):
                 party_bump()
             return reply({"ok": not err, "error": err or None, "v": party_view(pid)})
 
@@ -33424,7 +33907,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.31")
+        self.root.title("Motion Watch 2.95.32")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -33714,7 +34197,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.31 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.32 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

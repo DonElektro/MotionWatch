@@ -1,4 +1,4 @@
-Motion Watch Spielesammlung GS-1.0
+Motion Watch Spielesammlung GS-1.1
 Alle Spiele sind Open Source. Angepasst nur für den Offline-Betrieb:
 Werbung, Statistik (Google Analytics), externe Schriften und nicht lizenzierte Musik/Töne entfernt.
 
@@ -6,46 +6,88 @@ Werbung, Statistik (Google Analytics), externe Schriften und nicht lizenzierte M
   Lizenz: MIT
   Autor: Gabriele Cirulli
   Quelle: https://github.com/gabrielecirulli/2048
-  Lizenztext: 2048/LICENSE bzw. Lizenzdatei im Ordner
+  Lizenztext: Lizenzdatei im Ordner
+
+Tetris  (tetris/)
+  Lizenz: MIT
+  Autor: Jake Gordon
+  Quelle: https://github.com/jakesgordon/javascript-tetris
+  Lizenztext: Lizenzdatei im Ordner
+
+Schlange  (schlange/)
+  Lizenz: MIT
+  Autor: Motion Watch (eigenes Spiel)
+  Quelle: https://github.com/DonElektro/MotionWatch
+  Selbst geschrieben für Motion Watch, frei verwendbar (MIT).
+
+Minensuche  (minen/)
+  Lizenz: MIT
+  Autor: Motion Watch (eigenes Spiel)
+  Quelle: https://github.com/DonElektro/MotionWatch
+  Selbst geschrieben für Motion Watch, frei verwendbar (MIT).
+
+Sudoku  (sudoku/)
+  Lizenz: MIT
+  Autor: Motion Watch (eigenes Spiel)
+  Quelle: https://github.com/DonElektro/MotionWatch
+  Selbst geschrieben für Motion Watch, frei verwendbar (MIT).
+
+Memory  (memory/)
+  Lizenz: MIT
+  Autor: Motion Watch (eigenes Spiel)
+  Quelle: https://github.com/DonElektro/MotionWatch
+  Selbst geschrieben für Motion Watch, frei verwendbar (MIT).
 
 Hextris  (hextris/)
   Lizenz: GPL-3.0
   Autor: Logan Engstrom u.a.
   Quelle: https://github.com/Hextris/hextris
-  Lizenztext: hextris/LICENSE bzw. Lizenzdatei im Ordner
+  Lizenztext: Lizenzdatei im Ordner
+
+Dino-Lauf  (dino/)
+  Lizenz: BSD-3-Clause
+  Autor: Chromium-Autoren / wayou
+  Quelle: https://github.com/wayou/t-rex-runner
+  Lizenztext: Lizenzdatei im Ordner
 
 Astray  (astray/)
   Lizenz: Public Domain
   Autor: Rye Terrell
   Quelle: https://github.com/wwwtyro/Astray
-  Lizenztext: astray/LICENSE bzw. Lizenzdatei im Ordner
+  Lizenztext: Lizenzdatei im Ordner
 
 A Dark Room  (adarkroom/)
   Lizenz: MPL-2.0
   Autor: Doublespeak Games
   Quelle: https://github.com/doublespeakgames/adarkroom
-  Lizenztext: adarkroom/LICENSE bzw. Lizenzdatei im Ordner
+  Lizenztext: Lizenzdatei im Ordner
 
 Schach  (chess/)
   Lizenz: BSD-artig
   Autor: Gary Linscott
   Quelle: https://github.com/glinscott/Garbochess-JS
-  Lizenztext: chess/LICENSE bzw. Lizenzdatei im Ordner
+  Lizenztext: Lizenzdatei im Ordner
 
 Racer  (racer/)
   Lizenz: MIT
   Autor: Jake Gordon
   Quelle: https://github.com/jakesgordon/javascript-racer
-  Lizenztext: racer/LICENSE bzw. Lizenzdatei im Ordner
+  Lizenztext: Lizenzdatei im Ordner
 
 Breakout  (breakout/)
   Lizenz: MIT
   Autor: Jake Gordon
   Quelle: https://github.com/jakesgordon/javascript-breakout
-  Lizenztext: breakout/LICENSE bzw. Lizenzdatei im Ordner
+  Lizenztext: Lizenzdatei im Ordner
+
+Pong  (pong/)
+  Lizenz: MIT
+  Autor: Jake Gordon
+  Quelle: https://github.com/jakesgordon/javascript-pong
+  Lizenztext: Lizenzdatei im Ordner
 
 Clumsy Bird  (clumsybird/)
   Lizenz: GPL-3.0
   Autor: Ellison Leão
   Quelle: https://github.com/ellisonleao/clumsy-bird
-  Lizenztext: clumsybird/LICENSE bzw. Lizenzdatei im Ordner
+  Lizenztext: Lizenzdatei im Ordner

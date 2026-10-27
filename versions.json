@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 15:33",
+ "generated": "2026-10-27 15:52",
  "versions": [
   {
-   "version": "2.95.31",
-   "file": "webcam_bewegung_2_95_31.py",
+   "version": "2.95.32",
+   "file": "webcam_bewegung_2_95_32.py",
    "url": "",
-   "sha256": "f5b1b07f393e409cb59fb1aabb1351d68e6d1996a2c91cff417125b271abfb2e",
-   "date": "2026-10-27 15:33",
-   "notes": "the game corner has its own tab in the header. New button «Rest mode: only game server»: camera, detection and alarms pause, the Pi gives all its power to the games; ends by itself when the game corner closes.",
-   "sig": "4068e2734c1dbfb9ae4730b4e9d3a827ca425425284e6d7b878cc1ca3aa5880443afe7de54e431977d7bd7f7ae76131f8cb5e5a6579834aebb21b862bc3dec0e"
+   "sha256": "7dba3ba57ec1e15f7d6daf5ccd479ca6dfa0be2f0b31ca9b97b9bb54f8560255",
+   "date": "2026-10-27 15:52",
+   "notes": "game corner: six new games for the phones - Stadt-Land-Fluss, estimating, explaining words (taboo), who am I, reaction, battleships. Game collection GS-1.1 with 15 games (new: Tetris, Pong, Dino run, and own games snake, minesweeper, sudoku, memory). Typed text is kept when the page updates.",
+   "sig": "2566e057a20d61f0a4ffcf48d90d1554c6a90e93185312267d863b5344c7767cb4e5a73c4ec4700544cc8f6f2cd3a4ff1119180b2c1e6f953ddd76021432fd0e"
   },
   {
    "version": "2.94.5",
