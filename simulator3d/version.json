@@ -1,7 +1,7 @@
 {
- "version": "3D-3.31",
+ "version": "3D-3.32",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30749387,
- "sha256": "4890be59de8557d2aa87c64d79d78744cfa824e542f9b0b0aafe2fd5c778eaab",
- "notes": "Testlauf: Zeitpunkte der verpassten Personen für die Bilder der Fehler."
+ "size": 30881790,
+ "sha256": "9354300b7d00412415169933e997f706a6efc9020149519c238da1ebf5745aad",
+ "notes": "Mover-Stick neben dem Bedienfeld statt darunter."
 }

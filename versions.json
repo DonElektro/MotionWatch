@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 16:32",
+ "generated": "2026-10-27 16:40",
  "versions": [
   {
-   "version": "2.95.35",
-   "file": "webcam_bewegung_2_95_35.py",
+   "version": "2.95.36",
+   "file": "webcam_bewegung_2_95_36.py",
    "url": "",
-   "sha256": "b1431d6413e376a52c48ab8aed12c249590c6a2d9f81400add9f7b3ebf99871f",
-   "date": "2026-10-27 16:32",
-   "notes": "clock jumps (Pi without clock battery) no longer break timers and cool-downs; health list with detection loop, recording, continuous recording, background tasks and I2C conflicts - push message when something important fails while armed; alarm outbox: alarms that could not be sent are kept and sent later (also after a restart), «+N more detections»; live pictures limited (16, 6 per device), security headers, upload limit; browser games from their own port (web port + 2, only in the own Wi-Fi); one central list of what viewers may read; «Test all channels»; push address and I2C addresses checke",
-   "sig": "78946f622ef48a02091a07eaeb31d803a0081aaed96ac8cb30f36e45bc2d92ea3d86feba7e1f4bd45ab70897f5b7d31aa830db5c1fcda61373574f0990793e0e"
+   "sha256": "c5b7526dddeebb7c1eaeedec625bcdc493cfb43327639198e47e74af964d46e4",
+   "date": "2026-10-27 16:40",
+   "notes": "game corner: «🚪 Leave» button on the phone page (also inside every game), «✕ Back» in every game of the collection; after joining the page shows the game at once (it waited up to 20 s). Collection GS-1.2 (Hextris without share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.",
+   "sig": "829733acc7bfddcfe00c5bff859c289d2c914e1df6401e9dea1ff6c597c78833c61de8f8e8eecfc5e22aa1cfb169c688597ae4622ceff33499c391f337ad3b07"
   },
   {
    "version": "2.94.5",

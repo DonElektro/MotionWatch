@@ -1,4 +1,4 @@
-Motion Watch Spielesammlung GS-1.1
+Motion Watch Spielesammlung GS-1.2
 Alle Spiele sind Open Source. Angepasst nur für den Offline-Betrieb:
 Werbung, Statistik (Google Analytics), externe Schriften und nicht lizenzierte Musik/Töne entfernt.
 

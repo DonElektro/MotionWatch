@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_35.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_36.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -644,6 +644,9 @@ Features
     detections»; live pictures limited (16, 6 per device), security headers, upload limit; browser games from their own
     port (web port + 2, only in the own Wi-Fi); one central list of what viewers may read; «Test all channels»; push
     address and I2C addresses checked when saved.
+  * 2.95.36: game corner: «🚪 Leave» button on the phone page (also inside every game), «✕ Back» in every game of the
+    collection; after joining the page shows the game at once (it waited up to 20 s). Collection GS-1.2 (Hextris without
+    share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -652,10 +655,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_35.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_36.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_35.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_35.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_36.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_36.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -672,7 +675,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.35"
+APP_VERSION = "2.95.36"
 
 
 def default_data_dir():
@@ -13433,8 +13436,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.31", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30749387,
-         "sha256": "4890be59de8557d2aa87c64d79d78744cfa824e542f9b0b0aafe2fd5c778eaab"}
+SIM3D = {"version": "3D-3.32", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30881790,
+         "sha256": "9354300b7d00412415169933e997f706a6efc9020149519c238da1ebf5745aad"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -14305,7 +14308,7 @@ def testopt_state():
 # The phones join with a QR code (a room key in the address, no password); the room closes by itself after some hours.
 PARTY = {"key": "", "until": 0.0, "game": "lobby", "seq": 0, "players": {}, "host": "", "g": {}, "tools": {}}
 PARTY_COND = threading.Condition()
-GAMES_PKG = {"version": "GS-1.1", "file": "games/MotionWatch_Spiele.zip", "size": 13682266, "sha256": "60f04256db21ea8d58406b74cb43695d4a08764dfcda447878cfdb3e05228ec1"}
+GAMES_PKG = {"version": "GS-1.2", "file": "games/MotionWatch_Spiele.zip", "size": 13682337, "sha256": "e13fe97c83045596042a8b4c8b1021d0fdda6d3950eacda03e5ddf02eaba888c"}
 GAMES_DL = {"running": False, "msg": "", "got": 0}
 
 QUIZ = [("Wie heisst der höchste Berg der Schweiz?", "Dufourspitze (4634 m)"), ("Wie viele Kantone hat die Schweiz?", "26"),
@@ -14856,6 +14859,14 @@ def party_act(pid, d):
         return "please join first"
     me["t"] = time.time()
     a = str(d.get("a") or ""); host = PARTY["host"] == pid; G = PARTY["g"]
+    if a == "quit":                                    # 2.95.36: a player leaves the game corner
+        PARTY["players"].pop(pid, None)
+        for k_ in ("seats",):
+            if isinstance(G.get(k_), list):
+                G[k_] = [None if x == pid else x for x in G[k_]]
+        if host:
+            PARTY["host"] = next((k for k, v in PARTY["players"].items() if time.time() - v["t"] < 60), next(iter(PARTY["players"]), ""))
+        return ""
     if a == "game":                                    # the host chooses the game
         if not host:
             return "only the host"
@@ -15248,6 +15259,9 @@ def games_server_start():
             except OSError:
                 self.send_error(404); return
             ct = mimetypes.guess_type(p_)[0] or "application/octet-stream"
+            if ct == "text/html":
+                h_ = (self.headers.get("Host") or "").rsplit(":", 1)[0]
+                data = games_inject_back(data, f"http://{h_}:{CFG['web_port']}/spiele" if h_ else "/")
             self.send_response(200)
             self.send_header("Content-Type", ct + ("; charset=utf-8" if ct.startswith("text/") or ct.endswith("javascript") else ""))
             self.send_header("Content-Length", str(len(data))); self.send_header("Cache-Control", "max-age=3600")
@@ -15264,6 +15278,23 @@ def games_server_start():
         return
     GAMESRV.update(port=port, msg="")
     threading.Thread(target=srv.serve_forever, daemon=True, name="games").start()
+
+
+GAME_BACK = """<div id="mw-back" style="position:fixed;bottom:10px;left:10px;opacity:.85;z-index:2147483647;font:600 15px system-ui,sans-serif">
+<a href="__BACK__" onclick="if(history.length>1){history.back();return false}try{window.close()}catch(e){}" style="display:inline-block;
+background:rgba(14,22,33,.85);color:#fff;text-decoration:none;padding:8px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.25)">✕ Zurück</a></div>"""
+
+
+def games_inject_back(data, back):
+    """2.95.36: every game page gets a «✕ Zurück» button (to the game collection) - the games themselves have none"""
+    try:
+        txt = data.decode("utf-8")
+    except UnicodeDecodeError:
+        return data
+    btn = GAME_BACK.replace("__BACK__", html_escape(back, quote=True))
+    i = txt.lower().rfind("</body>")
+    txt = txt[:i] + btn + txt[i:] if i >= 0 else txt + btn
+    return txt.encode("utf-8")
 
 
 def games_url(game, fn="", host=""):
@@ -15391,7 +15422,7 @@ a.gl{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--t
 a.gl img{width:44px;height:44px;border-radius:10px;object-fit:cover;background:#0b121c}a.gl b{display:block}a.gl span{font-size:12px;color:var(--mut)}
 .hidden{display:none!important}
 </style></head><body>
-<header><img src="/icon-192.png" alt=""><h1>🎲 Spielecke</h1><div class="me" id="me"></div></header>
+<header><img src="/icon-192.png" alt=""><h1>🎲 Spielecke</h1><div class="me" id="me"></div><button class="sec" id="quit" style="padding:8px 12px" title="Spielecke verlassen">🚪 Verlassen</button></header>
 <div id="join" class="card hidden"><h2>Mitspielen</h2><div class="row"><input id="nm" maxlength="20" placeholder="Dein Name" autocomplete="nickname"><button id="go">Los!</button></div></div>
 <div id="app" class="hidden">
   <div id="gamebox"></div>
@@ -15421,13 +15452,22 @@ function speak(t) { try { speechSynthesis.cancel(); const u = new SpeechSynthesi
 async function join() { const name = $("#nm").value.trim(); if (!name) return;
   const r = await fetch(BASE + "/join", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({pid: PID, name: name})}).then(x => x.json()).catch(() => ({}));
   if (r.pid) { PID = r.pid; try { localStorage.setItem("mwp-" + KEY, PID); localStorage.setItem("mwp-name", name); } catch (e) {} SEQ = -1; poll(); } else toast(r.error || "Beitreten ging nicht"); }
+$("#quit").onclick = async () => {                 // 2.95.36: leave the game corner (also from inside a game)
+  if (V && V.me && !confirm("Spielecke verlassen? Deine Punkte gehen verloren.")) return;
+  if (V && V.me) { try { await act("quit"); } catch (e) {} }
+  try { localStorage.removeItem("mwp-" + KEY); } catch (e) {}
+  location.href = "/spiele";
+};
 $("#go").onclick = join; $("#nm").onkeydown = e => { if (e.key === "Enter") join(); };
 try { $("#nm").value = localStorage.getItem("mwp-name") || ""; } catch (e) {}
 async function poll() {
   if (busy) return; busy = true;
+  const askedPid = PID;
   try { const r = await fetch(BASE + "/s?pid=" + encodeURIComponent(PID) + "&seq=" + SEQ, {cache: "no-store"});
     if (r.status === 404) { document.body.innerHTML = "<div class='card' style='margin:20px'><h2>Die Spielecke ist geschlossen.</h2><p class='mut'>Frag den Gastgeber nach dem neuen QR-Code.</p></div>"; return; }
-    const j = await r.json(); V = j; V._skew = (j.now || Date.now() / 1000) - Date.now() / 1000; SEQ = j.seq; render(); } catch (e) { await new Promise(r => setTimeout(r, 1500)); }
+    const j = await r.json();
+    if (askedPid !== PID) { busy = false; SEQ = -1; setTimeout(poll, 0); return; }   // joined meanwhile: ask again at once (2.95.36)
+    V = j; V._skew = (j.now || Date.now() / 1000) - Date.now() / 1000; SEQ = j.seq; render(); } catch (e) { await new Promise(r => setTimeout(r, 1500)); }
   busy = false; setTimeout(poll, 50);
 }
 const GAMES = [["lobby", "🏠 Lobby", "Alle sammeln"], ["quiz", "🔔 Quiz mit Buzzer", "Wer zuerst drückt, antwortet"], ["wolf", "🐺 Werwolf", "Der Erzähler führt durch die Nacht"],
@@ -15463,7 +15503,7 @@ function renderGame() {
   if (V.host && V.game === "lobby") h += gameChooser();
   if (V.game === "lobby") h += `<div class="card"><h2>🏠 Lobby</h2><div class="mut">${V.host ? "Du bist Gastgeber: wähle oben ein Spiel." : "Warte, bis " + esc(V.hostname || "der Gastgeber") + " ein Spiel wählt."}</div>
       <div style="margin-top:8px">${V.players.map(p => `<span class="pill">${esc(p.name)}</span>`).join("")}</div></div>`;
-  if (V.game !== "lobby") h += `<div class="row" style="margin-bottom:10px"><span class="mut">${(GAMES.find(g => g[0] === V.game) || [])[1] || ""}</span>${V.host ? `<button class="sec" style="flex:0 0 auto" onclick="act('game',{game:'lobby'})">↩ Andere Spiele</button>` : ""}</div>`;
+  if (V.game !== "lobby") h += `<div class="row" style="margin-bottom:10px"><span class="mut">${(GAMES.find(g => g[0] === V.game) || [])[1] || ""}</span>${V.host ? `<button class="sec" style="flex:0 0 auto" onclick="act('game',{game:'lobby'})">↩ Andere Spiele</button>` : `<span class="mut" style="flex:0 0 auto">Spiel wechseln: ${esc(V.hostname || "Gastgeber")}</span>`}</div>`;
   if (V.game === "quiz") h += quizHtml();
   if (V.game === "wolf") h += wolfHtml();
   if (V.game === "draw") h += drawHtml();
@@ -17153,7 +17193,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_35.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_36.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -31986,6 +32026,9 @@ class WebStream:
             if u_:
                 return redirect(u_)
             p_ = games_file(game, fn)
+            if p_ and p_.lower().endswith((".html", ".htm")):
+                with open(p_, "rb") as f_:
+                    return Response(games_inject_back(f_.read(), "/p/" + key + "/"), mimetype="text/html")
             return send_file(p_, max_age=3600) if p_ else Response("not found", 404)
 
         def _lan_ok():
@@ -32013,6 +32056,9 @@ class WebStream:
             if u_:
                 return redirect(u_)                      # 2.95.35: games come from their own port
             p_ = games_file(game, fn)
+            if p_ and p_.lower().endswith((".html", ".htm")):
+                with open(p_, "rb") as f_:
+                    return Response(games_inject_back(f_.read(), "/spiele"), mimetype="text/html")
             return send_file(p_, max_age=3600) if p_ else Response("not found", 404)
 
         @app.route("/games/<game>/")
@@ -32022,6 +32068,9 @@ class WebStream:
             if u_:
                 return redirect(u_)
             p_ = games_file(game, fn)
+            if p_ and p_.lower().endswith((".html", ".htm")):
+                with open(p_, "rb") as f_:
+                    return Response(games_inject_back(f_.read(), "/party"), mimetype="text/html")
             return send_file(p_, max_age=3600) if p_ else Response("not found", 404)
 
         @app.route("/api/party", methods=["GET", "POST"])
@@ -34913,7 +34962,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.35")
+        self.root.title("Motion Watch 2.95.36")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -35203,7 +35252,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.35 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.36 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

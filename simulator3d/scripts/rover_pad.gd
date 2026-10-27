@@ -81,6 +81,13 @@ func _process(dt: float) -> void:
 		dragging = false
 		main.pad_on = false
 		return
+	# 3D-3.32: next to the control panel when it is shown, at the right edge when it is hidden (it covered the stick)
+	var right := 18.0
+	if main.ui_root != null and main.ui_root.visible:
+		right = main.ui_root.size.x + 14.0
+	if not is_equal_approx(offset_right, -right):
+		offset_right = -right
+		offset_left = -right - SZ.x
 	if dragging and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):   # let go outside (the release went elsewhere)
 		dragging = false
 		knob = Vector2.ZERO
