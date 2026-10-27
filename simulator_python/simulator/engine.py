@@ -180,8 +180,9 @@ class Engine:
             self._rebuild(r.map)
 
     # ---- where the camera looks ----
-    def protocol_state(self, st):
-        """Servo / light positions sent by Motion Watch (POST /state)."""
+    def protocol_state(self, st, pan_range=0.0):
+        """Servo / light positions sent by Motion Watch (POST /state). pan_range: the pan servo's whole turning range in
+        degrees if Motion Watch says it (2.95.24+), else 0."""
         self.proto = st; self.proto_t = time.time()
         if st.sound:                                     # siren / loudspeaker: animals nearby run away (deterrent)
             n = self.world.scare()
@@ -192,6 +193,8 @@ class Engine:
             # Motion Watch 2.95.4+: the pan servo may turn 270 or 360 degrees (pan_deg up to +-180) - then the simulated
             # servo turns that far too, even if the simulator's own travel setting is smaller
             half = min(180.0, max(SIM[f"{name}_travel"] / 2.0, abs(float(limit or 0)), abs(float(deg))))
+            if name == "pan" and pan_range > 0:          # Motion Watch says how far its servo turns: exactly that
+                half = min(180.0, max(pan_range / 2.0, abs(float(deg))))
             self.servos[name].command(1500.0 + max(-1.0, min(1.0, float(deg) / half)) * 1000.0, half)
 
     def proto_live(self):

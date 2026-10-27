@@ -14,14 +14,17 @@ def ask(path, default_map):
     """Show the window. Returns the chosen map name, or None when the window was closed without starting."""
     from simulator.ui.panel import ACC, BG, CARD, DIM, FIELD, TXT, Panel, Tip
     saved = load(path)
+    from simulator import TITLE
+    from simulator.ui.icon import set_icon
     root = tk.Tk()
-    root.title("Motion Watch Simulator - start")
+    root.title(f"{TITLE} - start")
+    set_icon(root)
     Panel._style(types.SimpleNamespace(win=root))
     root.configure(bg=BG)
     result = {"map": None}
 
     head = ttk.Frame(root, style="Card.TFrame", padding=(14, 10)); head.pack(fill="x")
-    ttk.Label(head, text="Motion Watch Simulator", style="Head.TLabel").pack(side="left")
+    ttk.Label(head, text=TITLE, style="Head.TLabel").pack(side="left")
     ttk.Label(head, text="   choose what the world contains - you can change all of it later (tab 🗺 World)",
               style="Card.TLabel", foreground=DIM).pack(side="left")
     body = ttk.Frame(root, padding=10); body.pack(fill="both", expand=True)

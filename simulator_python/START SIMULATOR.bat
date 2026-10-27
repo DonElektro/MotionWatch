@@ -1,5 +1,5 @@
 @echo off
-rem Double-click to start the Motion Watch simulator (the simulated world - Motion Watch connects to it over the network).
+rem Double-click to start MW Sim · Welt, the Python world simulator for Motion Watch (the simulated world - Motion Watch connects to it over the network).
 rem On the first start the missing Python packages are installed automatically.
 cd /d "%~dp0"
 

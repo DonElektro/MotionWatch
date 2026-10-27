@@ -137,7 +137,10 @@ class Panel:
     def __init__(self, root, eng, runner, proto, opts, own_root=False):
         self.eng, self.runner, self.proto, self.opts = eng, runner, proto, opts
         self.win = root if own_root else tk.Toplevel(root)
-        self.win.title("Motion Watch Simulator")
+        from simulator import NAME
+        from simulator.ui.icon import set_icon
+        self.win.title(NAME)
+        set_icon(self.win)
         try:
             self.win.geometry("1360x880+20+20")
         except tk.TclError:
@@ -253,7 +256,7 @@ class Panel:
             self.hint.config(text=f"Quality {q}: building the sharper background picture (a few seconds) …")
 
     def _guide(self):
-        g = tk.Toplevel(self.win); g.title("Motion Watch Simulator - quick start"); g.configure(bg=CARD)
+        g = tk.Toplevel(self.win); g.title("MW Sim · Welt - quick start"); g.configure(bg=CARD)
         g.transient(self.win)
         tk.Label(g, text=GUIDE, justify="left", bg=CARD, fg=TXT, font=("Segoe UI", 10), padx=22, pady=18).pack()
         ttk.Button(g, text="Got it", style="Accent.TButton", command=g.destroy).pack(pady=(0, 16))

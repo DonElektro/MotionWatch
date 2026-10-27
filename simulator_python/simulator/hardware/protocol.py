@@ -22,6 +22,7 @@ from http.server import ThreadingHTTPServer
 from simulator import NAME, VERSION, bridge
 from simulator.config import SIM
 from simulator.hardware import control
+from simulator.hardware.cpu import CpuMeter
 from simulator.scene import sound
 from simulator.scene.world import ambient_light
 
@@ -202,8 +203,13 @@ class ProtocolServer(SimServer):
 
     def on_state(self, state):
         self.posts += 1
-        bridge.note_client(getattr(_peer, "ip", ""), getattr(_peer, "raw", None))
-        self.eng.protocol_state(state)
+        raw = getattr(_peer, "raw", None) or {}
+        bridge.note_client(getattr(_peer, "ip", ""), raw)
+        try:                                     # Motion Watch 2.95.24+: the pan servo's whole turning range (180 / 270 / 360)
+            pan_range = float((raw.get("servo") or {}).get("pan_range") or 0)
+        except (TypeError, ValueError, AttributeError):
+            pan_range = 0.0
+        self.eng.protocol_state(state, pan_range)
 
     def world(self, t):
         humid = min(100.0, 55.0 + 40.0 * max(float(SIM["rain"]), float(SIM["fog"])) + 10.0 * float(SIM["clouds"]))
@@ -232,11 +238,18 @@ class ProtocolServer(SimServer):
     # ---- found in the network: "here is a simulator" every 2 s, but only while the user wants it ----
     def _announce_loop(self):
         so = None
+        cpu = CpuMeter()
         while True:
             time.sleep(2.0)
             if not (SIM["stream"] and self.running):
                 continue
-            msg = json.dumps({"mwsim": 1, "name": self.name, "port": self.port, "version": VERSION, "host": HOST}).encode()
+            d = {"mwsim": 1, "name": self.name, "port": self.port, "version": VERSION, "host": HOST}
+            pc, sim = cpu.read()                # Motion Watch 2.95.25+ shows how busy the computer is (left out if unknown)
+            if pc is not None:
+                d["pc_cpu"] = pc
+            if sim is not None:
+                d["sim_cpu"] = sim
+            msg = json.dumps(d).encode()
             try:
                 if so is None:
                     so = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

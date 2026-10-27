@@ -1,4 +1,4 @@
-# Motion Watch Simulator
+# MW Sim · Welt (Python world simulator for Motion Watch)
 
 A simulated world for Motion Watch: camera on a pan / tilt head, servos, Thermal-90 thermal camera, PIR / door / gas
 sensors, people, animals, cars, planes, weather, day and night. Test Motion Watch before the hardware arrives.
@@ -7,11 +7,12 @@ sensors, people, animals, cars, planes, weather, day and night. Test Motion Watc
 and talks to the simulator over the network (simulator protocol 1, port **8767** – the 3D simulator has 8765). The rules
 for every Motion Watch simulator: `simulator/hardware/EIGENEN_SIMULATOR_ANBINDEN.md`.
 
-Name in the network: **«Python-Weltsimulator 1.2»**, version **PY-1.2**.
+Name in the network: **«MW Sim · Welt PY-1.3»**, version **PY-1.3** (the version is part of the name - Motion Watch
+reads it there). The other two: «MW Sim · Basis» (built into Motion Watch) and «MW Sim · 3D» (the Godot simulator).
 
 | Motion Watch … | … the simulator |
 |---|---|
-| finds the simulator in the network | announces itself every 2 s (UDP port 8764) with its name and the computer's name (`host`, also in `/info`) – only while **📡 Send to Motion Watch** is on |
+| finds the simulator in the network | announces itself every 2 s (UDP port 8764) with its name, the computer's name (`host`, also in `/info`) and how busy the computer is (`pc_cpu`, `sim_cpu` in %) – only while **📡 Send to Motion Watch** is on |
 | reads the camera picture `http://<PC>:8767/cam/0/video.mjpg` (`?fps=6` = fewer pictures; cam 1 = a fixed camera) | renders what the head camera sees right now |
 | reads the thermal picture `/thermal.bin` | renders an 80 × 62 picture in °C: people ~30–34 °C, cool ground, cold sky |
 | reads sensor events `/events` | sends «PIR» when somebody comes near the box, door / gas from the buttons |
@@ -29,7 +30,7 @@ python motion_sim.py
 ```
 
 3. Switch **📡 Send to Motion Watch** on (top right) – the simulator starts silent.
-4. In Motion Watch: tab **«Simulator» → «Simulatoren im Netz»** → «Python-Weltsimulator 1.2» → **«Verwenden»** →
+4. In Motion Watch: tab **«Simulator» → «Simulatoren im Netz»** → «MW Sim · Welt PY-1.3» → **«Verwenden»** →
    **«Simulation einschalten»**. The Windows firewall must allow port 8767 («Private Netzwerke»).
    The simulator finds Motion Watch's web page by itself (the device that sends its state, port 5000), or enter it in
    tab **🔗 Motion Watch**.
@@ -96,7 +97,8 @@ Without a screen (e.g. on a Raspberry Pi, also without `python3-tk`): `python3 m
 * The picture starts at 13:00 (daylight). Real time: tab 🗺 World → "real clock".
 * The servos only move where Motion Watch sends them, as fast as the speed allows, never past their travel or the
   bracket stop. Nobody connected = the head stays in the middle. If Motion Watch's pan servo turns further than the
-  simulator's travel setting (270° / 360° servo, pan up to ±180°), the simulated servo turns that far too. It never
+  simulator's travel setting (270° / 360° servo, pan up to ±180°), the simulated servo turns that far too (Motion Watch
+  2.95.24+ sends `pan_range`, older ones are worked out from `pan_limit` / `pan_deg`). It never
   turns "over the back": from +179° to −179° it goes the long way round, like a real servo.
 * Motion Watch's AI works on the simulated picture as on the Pi – it needs its model files.
 * While the simulation is on, Motion Watch saves no recordings or timelapses (so nothing mixes with real clips) – the
