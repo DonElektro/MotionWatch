@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 20:10",
+ "generated": "2026-10-27 20:41",
  "versions": [
   {
-   "version": "2.95.51",
-   "file": "webcam_bewegung_2_95_51.py",
+   "version": "2.95.52",
+   "file": "webcam_bewegung_2_95_52.py",
    "url": "",
-   "sha256": "63a5e108b7620d8d5121955e0f73b1779ec5e10fc68aad83087b492fd73d9295",
-   "date": "2026-10-27 20:09",
-   "notes": "TV view for the HDMI of the Pi (/tv/<key>/: simulator or camera picture, game wizard, QR code to join, time, players, ranking, game corner; starts by itself in the campfire / gamer mode; any screen in the network can open the link); the 3D simulator can run on the Pi itself (button in the tab Simulator, fetched and checked like the Windows package); USB tethering: a phone on the USB cable gives internet, also to the own Wi-Fi. Simulator 3D-3.43. The symbols of the simulator groups are green when something is on (orange: something to watch).",
-   "sig": "9405e36270398378200d0f9c44a8691fde6f5f6cc3690ef6155c78a99ded419f8397acbcd57902a9d2947201dde2f0b330357d00ea800b23e3940a676509cc0e"
+   "sha256": "22bfe2075cf505a946a145d472fc9eb6e1e53b7bd7a38e2f6ffc8ca667b9fcfe",
+   "date": "2026-10-27 20:41",
+   "notes": "Network check of the players (Tools): every phone measures reaction time, jitter, losses, download and upload to Motion Watch - phones in the game corner by themselves, others with a QR code; with the own Wi-Fi also the signal of each phone, grades and tips. Product page for guests (Tools, /info/): the Motion Watch homepage straight from the Pi for everybody in the same Wi-Fi, without login and internet; questions from its form arrive as push message; QR code also on the TV view.",
+   "sig": "5d920631f198cdfe153882ece316cec8beb378560d81a37e620e45a74d41fea18ea640dd3aaeacfe26cac8aae37a637cddf58d2cda54a0b2e76faba6a33e0705"
   },
   {
    "version": "2.94.5",
