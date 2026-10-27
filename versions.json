@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 15:15",
+ "generated": "2026-10-27 15:23",
  "versions": [
   {
-   "version": "2.95.29",
-   "file": "webcam_bewegung_2_95_29.py",
+   "version": "2.95.30",
+   "file": "webcam_bewegung_2_95_30.py",
    "url": "",
-   "sha256": "ac0af61431e27a174413f40936cd3f5952a103d31ed8c23cbc7e267df42745a1",
-   "date": "2026-10-27 15:15",
-   "notes": "game corner for game nights (Tools → Leisure): guests join with the phone via QR code - quiz with buzzer, werewolf with narrator, drawing and guessing, connect four, dice and timer, scores. Game collection (8 free open-source browser games, 13.5 MB, offline). In the own Wi-Fi without login at /spiele. Fix: 'random' was not imported.",
-   "sig": "4192961c2fbeb182db52f7aae2f0cb775cc3e83c2127c03e33e0827301244cef381ce2bb56e646332ca688b1a373dcfe9f6db513766bb7832d792625f8805e06"
+   "sha256": "fb8ebccb5749f9eca25acecdf957a5b12671c9122ae4462a797c6ff1e130cb7c",
+   "date": "2026-10-27 15:23",
+   "notes": "tool «USB devices» (maker, model, type, speed, power need, driver, serial number and what the Pi made of it: Wi-Fi card, drive, camera …; newly plugged devices are marked; hints for USB 3 in a USB 2 socket and high power need). Update with a progress bar: real download progress, check, restart (estimated from the last restarts).",
+   "sig": "e1ed66ce2b6735110339d0e342ee1ac039414fed688be6941eb3b861c0a39cb877897896787e1ccdb87bad13867e584178ad578e3bb84c3c210d2648d03bb909"
   },
   {
    "version": "2.94.5",

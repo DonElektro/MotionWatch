@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_29.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_30.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -615,6 +615,9 @@ Features
   * 2.95.29: game corner for game nights (Tools → Leisure): guests join with the phone via QR code - quiz with buzzer,
     werewolf with narrator, drawing and guessing, connect four, dice and timer, scores. Game collection (8 free open-source
     browser games, 13.5 MB, offline). In the own Wi-Fi without login at /spiele. Fix: 'random' was not imported.
+  * 2.95.30: tool «USB devices» (maker, model, type, speed, power need, driver, serial number and what the Pi made of it:
+    Wi-Fi card, drive, camera …; newly plugged devices are marked; hints for USB 3 in a USB 2 socket and high power need).
+    Update with a progress bar: real download progress, check, restart (estimated from the last restarts).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -623,10 +626,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_29.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_30.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_29.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_29.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_30.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_30.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -643,7 +646,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.29"
+APP_VERSION = "2.95.30"
 
 
 def default_data_dir():
@@ -2005,7 +2008,7 @@ OPERATE_POST = {"/api/mover", "/api/arm", "/api/night", "/api/camping", "/api/qu
 VIEW_POST = {"/api/webpush", "/api/ui", "/api/time", "/api/gps", "/api/rec/prepare", "/rec/zip"}
 OPERATE_SET_KEYS = {"thermal_on", "nightvision", "show_objects", "show_mask", "track_person"}
 ADMIN_GET = ("/api/settings/export", "/api/ext", "/api/wifi", "/api/qr", "/setup-card", "/api/update", "/api/guest", "/api/fleet",
-             "/api/users", "/api/setup", "/api/log/file/", "/api/tools", "/tools/diag.zip")
+             "/api/users", "/api/setup", "/api/log/file/", "/api/tools", "/tools/diag.zip", "/api/usb")
 
 
 def users_clean(lst):
@@ -13984,6 +13987,164 @@ def games_dir():
     return os.path.join(DATA_DIR, "games")
 
 
+# ----------------------------------------------------------------------------
+# USB devices (2.95.30): what is plugged in, with maker, model, speed, power and what Linux made of it
+#   (network card wlan1, drive sda, camera /dev/video0, serial port …). Read from /sys - no extra program needed.
+# ----------------------------------------------------------------------------
+USB_SYS = "/sys"
+USB_CLASSES = {0x01: "Audio", 0x02: "Communication", 0x03: "Input device (keyboard, mouse …)", 0x05: "Physical", 0x06: "Image (photo camera)",
+               0x07: "Printer", 0x08: "Mass storage", 0x09: "Hub", 0x0a: "CDC data", 0x0b: "Smart card", 0x0d: "Content security",
+               0x0e: "Video (webcam)", 0x0f: "Health", 0x10: "Audio/video", 0x11: "Billboard", 0xdc: "Diagnostic",
+               0xe0: "Wireless (Bluetooth, Wi-Fi …)", 0xef: "Miscellaneous", 0xfe: "Application specific", 0xff: "Vendor specific"}
+_USB_IDS = {}
+
+
+def _srd(p):
+    try:
+        with open(p, errors="replace") as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
+def _usb_ids():
+    """names from the usb.ids list (comes with usbutils / hwdata); empty if it is not there"""
+    if _USB_IDS:
+        return _USB_IDS
+    _USB_IDS["-"] = {}
+    for fn in ("/usr/share/hwdata/usb.ids", "/usr/share/misc/usb.ids", "/var/lib/usbutils/usb.ids", "/usr/share/usb.ids"):
+        try:
+            with open(fn, encoding="utf-8", errors="replace") as f:
+                ven = None
+                for ln in f:
+                    if not ln.strip() or ln.startswith("#"):
+                        continue
+                    if ln[:2] == "C ":
+                        break                               # the class lists follow: done
+                    if ln[0] != "\t" and len(ln) > 6 and ln[4:6] == "  ":
+                        ven = ln[:4].lower(); _USB_IDS[ven] = (ln[6:].strip(), {})
+                    elif ln[0] == "\t" and ln[1] != "\t" and ven and ln[5:7] == "  ":
+                        _USB_IDS[ven][1][ln[1:5].lower()] = ln[7:].strip()
+            break
+        except OSError:
+            continue
+    return _USB_IDS
+
+
+def _usb_links(real):
+    """what Linux made of the device: network interfaces, drives, cameras, serial ports, sound cards"""
+    out = []
+    base = os.path.join(USB_SYS, "class")
+    def under(p):
+        try:
+            return os.path.realpath(p).startswith(real + "/")
+        except OSError:
+            return False
+    for kind, cls, pat in (("net", "net", None), ("video", "video4linux", None), ("serial", "tty", ("ttyUSB", "ttyACM")), ("sound", "sound", ("card",))):
+        try:
+            names = sorted(os.listdir(os.path.join(base, cls)))
+        except OSError:
+            continue
+        for n in names:
+            if pat and not n.startswith(pat):
+                continue
+            if under(os.path.join(base, cls, n, "device")):
+                x = {"kind": kind, "name": n if kind == "net" else "/dev/" + n if kind != "sound" else n}
+                if kind == "net":
+                    x["mac"] = _srd(os.path.join(base, cls, n, "address"))
+                    x["state"] = _srd(os.path.join(base, cls, n, "operstate"))
+                elif kind == "video":
+                    x["label"] = _srd(os.path.join(base, cls, n, "name"))
+                out.append(x)
+    try:
+        blocks = sorted(os.listdir(os.path.join(USB_SYS, "block")))
+    except OSError:
+        blocks = []
+    mounts = {}
+    try:
+        with open("/proc/mounts") as f:
+            for ln in f:
+                a = ln.split()
+                if len(a) > 2 and a[0].startswith("/dev/"):
+                    mounts.setdefault(a[0][5:], a[1].replace("\\040", " "))
+    except OSError:
+        pass
+    for b in blocks:
+        if under(os.path.join(USB_SYS, "block", b)):
+            try:
+                size = int(_srd(os.path.join(USB_SYS, "block", b, "size")) or 0) * 512
+            except ValueError:
+                size = 0
+            mp = [mounts[k] for k in sorted(mounts) if k == b or (k.startswith(b) and k[len(b):].lstrip("p").isdigit())]
+            out.append({"kind": "disk", "name": "/dev/" + b, "size": size, "mounts": mp[:4]})
+    return out
+
+
+def usb_list():
+    devs = []
+    root = os.path.join(USB_SYS, "bus", "usb", "devices")
+    try:
+        names = sorted(os.listdir(root))
+    except OSError:
+        return []
+    ids = _usb_ids()
+    for d in names:
+        if ":" in d:
+            continue                                      # an interface, not a device
+        p = os.path.join(root, d)
+        vid = _srd(os.path.join(p, "idVendor")).lower()
+        if not vid:
+            continue
+        pid = _srd(os.path.join(p, "idProduct")).lower()
+        try:
+            dcls = int(_srd(os.path.join(p, "bDeviceClass")) or "0", 16)
+        except ValueError:
+            dcls = 0
+        ifc, drv = [], []
+        try:
+            for i in sorted(os.listdir(p)):
+                if i.startswith(d + ":"):
+                    try:
+                        c_ = int(_srd(os.path.join(p, i, "bInterfaceClass")) or "0", 16)
+                    except ValueError:
+                        c_ = 0
+                    if c_ not in ifc:
+                        ifc.append(c_)
+                    dl = os.path.join(p, i, "driver")
+                    if os.path.islink(dl):
+                        n_ = os.path.basename(os.readlink(dl))
+                        if n_ not in drv:
+                            drv.append(n_)
+        except OSError:
+            pass
+        cls = [dcls] if dcls not in (0, 0xef) else []
+        cls += [c_ for c_ in ifc if c_ not in cls]
+        vname, prods = ids.get(vid, ("", {}))
+        try:
+            speed = float(_srd(os.path.join(p, "speed")) or 0)
+        except ValueError:
+            speed = 0
+        try:
+            ma = int(re.sub(r"[^0-9]", "", _srd(os.path.join(p, "bMaxPower"))) or 0)
+        except ValueError:
+            ma = 0
+        real = os.path.realpath(p)
+        leaf = dcls != 9 and not d.startswith("usb")      # hubs and controllers would show everything behind them
+        devs.append({"port": d, "bus": _srd(os.path.join(p, "busnum")), "dev": _srd(os.path.join(p, "devnum")),
+                     "vid": vid, "pid": pid, "maker": _srd(os.path.join(p, "manufacturer")) or vname, "product": _srd(os.path.join(p, "product")) or prods.get(pid, ""),
+                     "maker_db": vname, "product_db": prods.get(pid, ""), "serial": _srd(os.path.join(p, "serial")),
+                     "usb": _srd(os.path.join(p, "version")), "speed": speed, "ma": ma, "classes": [USB_CLASSES.get(c_, "class %02x" % c_) for c_ in cls],
+                     "hub": dcls == 9, "root": d.startswith("usb"), "drivers": drv, "links": _usb_links(real) if leaf else [],
+                     "depth": 0 if d.startswith("usb") else d.count(".") + 1})
+
+    def order(x):                                      # controller first, then the devices behind it (tree order)
+        try:
+            return (int(x["bus"] or 0), [] if x["root"] else [int(n_) for n_ in x["port"].split("-", 1)[1].split(".")])
+        except ValueError:
+            return (999, [])
+    return sorted(devs, key=order)
+
+
 def lan_guest_ip(ip, fwd=""):
     """True for a device in the own home network (no login needed for /spiele). Not for tunnels or Tailscale."""
     if fwd:
@@ -15770,10 +15931,58 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_29.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_30.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
+UPD_PROG = {"phase": "", "got": 0, "size": 0, "t0": 0.0, "tp": 0.0}   # progress of an update for the bar on the page (2.95.30)
+_RESTART_M = {"todo": True}
+
+
+def _restart_file():
+    return os.path.join(DATA_DIR, "restart_time.json")
+
+
+def restart_est():
+    """how long the last restarts took (from «update» to the first answer of the new program), in seconds"""
+    try:
+        with open(_restart_file()) as f:
+            return max(5.0, min(300.0, float(json.load(f).get("avg") or 25)))
+    except (OSError, ValueError, TypeError, AttributeError):
+        return 25.0
+
+
+def restart_measure():
+    """called by the first request of a new program: how long did the restart take?"""
+    _RESTART_M["todo"] = False
+    try:
+        with open(_restart_file()) as f:
+            d = json.load(f)
+        t0 = float(d.get("pending") or 0)
+        if not t0:
+            return
+        dur = time.time() - t0
+        d.pop("pending", None)
+        if 3 < dur < 300:
+            d["avg"] = round(dur if not d.get("avg") else 0.5 * float(d["avg"]) + 0.5 * dur, 1); d["last"] = round(dur, 1)
+        with open(_restart_file(), "w") as f:
+            json.dump(d, f)
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+
+
+def _restart_mark():
+    try:
+        try:
+            with open(_restart_file()) as f:
+                d = json.load(f)
+        except (OSError, ValueError):
+            d = {}
+        d["pending"] = time.time()
+        with open(_restart_file(), "w") as f:
+            json.dump(d, f)
+    except (OSError, TypeError, AttributeError):
+        pass
 # Signed updates: every version in versions.json carries a signature made with the developer's secret key (kept offline).
 # The program only installs versions whose signature fits this public key - so nobody who gets into the GitHub account can
 # push a program onto the devices. (Setting «Also accept unsigned versions» switches the check off, e.g. for own builds.)
@@ -16356,18 +16565,30 @@ def update_install(version):
     if not _installable(it):
         return False, "this version is not signed by the developer - not installed (only with the setting «Also accept unsigned versions»)"
     UPD["busy"] = True
+    UPD_PROG.update(phase="download", got=0, size=int(it.get("size") or 0), t0=time.time(), tp=time.time())
     try:
         dst = os.path.join(HERE, it["file"])
         if not it.get("installed"):
             if it.get("url"):
                 req = _upd_request(it["url"])
                 with urllib.request.urlopen(req, timeout=60) as r:
-                    data = r.read(8 * 1024 * 1024 + 1)
+                    try:
+                        UPD_PROG["size"] = int(r.headers.get("Content-Length") or 0) or UPD_PROG["size"]
+                    except ValueError:
+                        pass
+                    parts, n = [], 0
+                    while n <= 8 * 1024 * 1024:
+                        b = r.read(min(65536, 8 * 1024 * 1024 + 1 - n))
+                        if not b:
+                            break
+                        parts.append(b); n += len(b); UPD_PROG["got"] = n
+                    data = b"".join(parts)
             elif it.get("src_path"):
                 with open(it["src_path"], "rb") as f:
                     data = f.read(8 * 1024 * 1024 + 1)
             else:
                 return False, "unknown version"
+            UPD_PROG.update(phase="check", tp=time.time())
             err = _verify_program(data, version, it.get("sha256", ""))
             if err:
                 return False, err
@@ -16377,16 +16598,20 @@ def update_install(version):
             os.replace(tmp, dst)
             log_event("sys", f"Version {version} downloaded: {it['file']}")
         else:
+            UPD_PROG.update(phase="check", tp=time.time())
             with open(dst, "rb") as f:
                 err = _verify_program(f.read(8 * 1024 * 1024 + 1), version)
             if err:
                 return False, err
+        UPD_PROG.update(phase="restart", tp=time.time())
         update_restart(dst, version)
         return True, ""
     except Exception as e:
         return False, f"update failed: {_upd_error(e)}"[:240]
     finally:
         UPD["busy"] = False
+        if UPD_PROG["phase"] != "restart":
+            UPD_PROG["phase"] = ""
 
 
 RESTART = {"pending": ""}
@@ -16730,6 +16955,7 @@ def update_restart(path, version):
     the autostart keeps working and points to the new file from now on)."""
     RESTART["pending"] = version
     log_event("sys", f"Switching to version {version} - restarting")
+    _restart_mark()
 
     def work():
         time.sleep(2.0)                                   # the page gets its answer first
@@ -16750,7 +16976,7 @@ def update_restart(path, version):
             _close_fds_on_exec()
             os.execv(sys.executable, [sys.executable, path] + _base_args())
         except Exception as e:
-            RESTART["pending"] = ""; UPD["msg"] = f"restart failed: {e}"[:200]
+            RESTART["pending"] = ""; UPD["msg"] = f"restart failed: {e}"[:200]; UPD_PROG["phase"] = ""
             log_event("sys", UPD["msg"])
     threading.Thread(target=work, daemon=True, name="update").start()
 
@@ -19752,6 +19978,7 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <button type="button" class="tli" data-k="audio" onclick="pick('audio')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span class="tln"><b data-i18n="Speaker and microphone">Speaker and microphone</b><span class="tsum" id="s-audio"></span></span><i class="tdot" id="d-audio"></i></button>
   <button type="button" class="tli" data-k="sd" onclick="pick('sd')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><span class="tln"><b data-i18n="Memory card test">Memory card test</b><span class="tsum" id="s-sd"></span></span><i class="tdot" id="d-sd"></i></button>
   <button type="button" class="tli" data-k="bt" onclick="pick('bt')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span class="tln"><b data-i18n="Bluetooth scanner">Bluetooth scanner</b><span class="tsum" id="s-bt"></span></span><i class="tdot" id="d-bt"></i></button>
+  <button type="button" class="tli" data-k="usb" onclick="pick('usb')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v15"/><path d="M9 5l3-3 3 3"/><path d="M12 13l-5-3V7"/><path d="M12 11l5-3V6"/><rect x="5.5" y="5" width="3" height="2.5"/><circle cx="17" cy="5" r="1.4"/><circle cx="12" cy="19" r="2.5"/></svg><span class="tln"><b data-i18n="USB devices">USB devices</b><span class="tsum" id="s-usb"></span></span></button>
   <div class="tlg" data-i18n="Leisure">Leisure</div>
   <button type="button" class="tli" data-k="party" onclick="pick('party')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4"/><circle cx="16" cy="8" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="8" cy="16" r="1.4"/><circle cx="16" cy="16" r="1.4"/></svg><span class="tln"><b data-i18n="Game corner">Game corner</b><span class="mut" id="s-party"></span></span></button>
   <div class="tlg" data-i18n="Power and help">Power and help</div>
@@ -19759,6 +19986,15 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <button type="button" class="tli" data-k="diag" onclick="pick('diag')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><span class="tln"><b data-i18n="Diagnosis package">Diagnosis package</b><span class="tsum" id="s-diag"></span></span><i class="tdot" id="d-diag"></i></button>
 </nav>
 <div class="tpane">
+  <section class="tool" id="c-usb" data-k="usb" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v15"/><path d="M9 5l3-3 3 3"/><path d="M12 13l-5-3V7"/><path d="M12 11l5-3V6"/><rect x="5.5" y="5" width="3" height="2.5"/><circle cx="17" cy="5" r="1.4"/><circle cx="12" cy="19" r="2.5"/></svg><h2 data-i18n="USB devices">USB devices</h2></div><div class="tact"><button type="button" onclick="usbLoad(true)" data-i18n="Read again">Read again</button></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="usb-note">usb-note</div>
+    <div id="usb-sum" class="mut" style="margin:8px 0"></div>
+    <div id="usb-box"></div>
+    </div>
+  </section>
   <section class="tool" id="c-party" data-k="party" hidden>
     <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
       <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4"/><circle cx="16" cy="8" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="8" cy="16" r="1.4"/><circle cx="16" cy="16" r="1.4"/></svg><h2 data-i18n="Game corner">Game corner</h2></div></div>
@@ -19917,7 +20153,20 @@ Object.assign(I18N.de, {"Leisure": "Freizeit", "Game corner": "Spielecke",
  "Open the game corner": "Spielecke öffnen", "Scan with the phone (same Wi-Fi as Motion Watch):": "Mit dem Handy scannen (gleiches WLAN wie Motion Watch):",
  "open for": "offen noch", "game": "Spiel", "lobby": "Lobby", "quiz": "Quiz", "wolf": "Werwolf", "draw": "Montagsmaler", "c4": "Vier gewinnt",
  "Play myself": "Selbst mitspielen", "Close": "Schliessen", "Player": "Spieler", "Points": "Punkte", "away": "weg", "Make host": "Zum Gastgeber machen", "Remove": "Entfernen",
- "players": "Spieler", "Game collection": "Spielesammlung", "Without login in your own Wi-Fi:": "Ohne Login im eigenen WLAN:", "Installed": "Installiert", "Up to date": "Aktuell", "Install / update": "Installieren / aktualisieren",
+ "players": "Spieler", "Game collection": "Spielesammlung", "Without login in your own Wi-Fi:": "Ohne Login im eigenen WLAN:", "USB devices": "USB-Geräte", "Read again": "Neu einlesen",
+  "usb-note": "Alles, was am USB steckt: Hersteller, Modell, Geschwindigkeit, Strombedarf und was der Pi daraus macht (WLAN-Karte, Laufwerk, Kamera …). Neu eingesteckte Geräte werden markiert.",
+  "devices": "Geräte", "power need together": "Strombedarf zusammen", "usb-power": "der Pi gibt an allen USB-Buchsen zusammen etwa 1,2 A ab (Pi 5 mit kleinem Netzteil nur 0,6 A).",
+  "No USB device plugged in.": "Kein USB-Gerät eingesteckt.", "No USB information on this computer.": "Auf diesem Computer gibt es keine USB-Angaben.",
+  "USB controller": "USB-Anschluss", "bus": "Bus", "unknown device": "unbekanntes Gerät", "new": "neu", "Maker": "Hersteller", "Model (list)": "Modell (Liste)",
+  "Type": "Art", "Speed": "Geschwindigkeit", "device can": "Gerät kann", "Power need": "Strombedarf", "Port": "Anschluss", "device": "Gerät",
+  "Serial number": "Seriennummer", "Driver": "Treiber", "Network": "Netzwerk", "connected": "verbunden", "not connected": "nicht verbunden",
+  "Drive": "Laufwerk", "opened at": "eingebunden unter", "not opened": "nicht eingebunden", "Camera": "Kamera", "Serial port": "Serielle Schnittstelle",
+  "Sound card": "Soundkarte", "usb3-slow": "USB-3-Gerät läuft nur mit USB-2-Tempo: in eine blaue Buchse stecken (Pi 4/5).",
+  "usb-hungry": "braucht viel Strom – bei Problemen ein USB-Hub mit eigenem Netzteil verwenden.",
+  "usb-ids": "Hinweis: Die Namensliste usb.ids fehlt – Namen nur, wenn das Gerät sie selbst meldet (sudo apt install usbutils).",
+  "Audio": "Audio", "Communication": "Kommunikation", "Input device (keyboard, mouse …)": "Eingabegerät (Tastatur, Maus …)", "Image (photo camera)": "Bild (Fotokamera)",
+  "Printer": "Drucker", "Mass storage": "Massenspeicher", "Hub": "Verteiler (Hub)", "CDC data": "CDC-Daten", "Smart card": "Chipkarte", "Video (webcam)": "Video (Webcam)",
+  "Wireless (Bluetooth, Wi-Fi …)": "Funk (Bluetooth, WLAN …)", "Miscellaneous": "Verschiedenes", "Application specific": "Anwendungsspezifisch", "Vendor specific": "Herstellereigen", "Audio/video": "Audio/Video", "Installed": "Installiert", "Up to date": "Aktuell", "Install / update": "Installieren / aktualisieren",
  "coll-note": "Freie Browserspiele (Open Source) zum Spielen allein: 2048, Hextris, A Dark Room, Schach, Rennspiel und mehr. Sie werden einmal von GitHub geladen und laufen danach ohne Internet.",
  "installed": "installiert", "downloading …": "lädt herunter …",
  "Tools": "Werkzeuge", "Network scanner": "Netzwerkscanner", "Scan": "Suchen", "All devices in your own network (only there).": "Alle Geräte im eigenen Netz (nur dort).",
@@ -20092,6 +20341,67 @@ function partyPaint() {
   if (gl.length) { const g2 = el("div", "trow"); gl.forEach(x => { const a = el("a", "btn sec", x.name); a.href = "/games/" + x.dir + "/"; a.target = "_blank"; g2.appendChild(a); }); box.appendChild(g2); }
 }
 partyLoad();
+// ---- USB devices (2.95.30) ----
+let USBSEEN = null, USBNEW = {}, usbT = 0;
+const USBICON = {"Mass storage": "💾", "Video (webcam)": "📷", "Image (photo camera)": "📷", "Audio": "🔊", "Input device (keyboard, mouse …)": "⌨️",
+  "Wireless (Bluetooth, Wi-Fi …)": "📶", "Communication": "🔌", "Printer": "🖨", "Hub": "🔀", "Vendor specific": "🧩"};
+function usbSpeed(m) { return m >= 20000 ? "USB 3.2 · 20 Gbit/s" : m >= 10000 ? "USB 3.1 · 10 Gbit/s" : m >= 5000 ? "USB 3 · 5 Gbit/s" : m >= 480 ? "USB 2 · 480 Mbit/s" : m >= 12 ? "USB 1 · 12 Mbit/s" : m > 0 ? "USB 1 · 1,5 Mbit/s" : "?"; }
+function usbSize(b) { return b >= 1e12 ? (b / 1e12).toFixed(1) + " TB" : b >= 1e9 ? Math.round(b / 1e9) + " GB" : Math.round(b / 1e6) + " MB"; }
+async function usbLoad(manual) {
+  clearTimeout(usbT);
+  let j; try { j = await (await fetch("/api/usb", {cache: "no-store"})).json(); } catch (e) { j = null; }
+  if (j && j.ok) usbPaint(j, manual);
+  usbT = setTimeout(usbLoad, SEL === "usb" ? 4000 : 30000);
+}
+function usbPaint(j, manual) {
+  const box = $("#usb-box"); if (!box) return;
+  const D = (j.devices || []), real = D.filter(d => !d.root && !d.hub);
+  const keys = D.map(d => d.port + "|" + d.vid + ":" + d.pid);
+  const now = Date.now();
+  if (manual) USBNEW = {};
+  if (USBSEEN) keys.filter(k => !USBSEEN.includes(k)).forEach(k => USBNEW[k] = now);   // plugged in while the page is open: marked 5 minutes
+  Object.keys(USBNEW).forEach(k => { if (now - USBNEW[k] > 300000) delete USBNEW[k]; });
+  USBSEEN = keys; const fresh = keys.filter(k => USBNEW[k]);
+  const sm = $("#s-usb"); if (sm) sm.textContent = real.length + " " + t("devices");
+  const ma = real.reduce((a, d) => a + (d.ma || 0), 0);
+  $("#usb-sum").textContent = real.length ? real.length + " " + t("devices") + " · " + t("power need together") + " " + ma + " mA · " + t("usb-power") : (D.length ? t("No USB device plugged in.") : t("No USB information on this computer."));
+  if (box.dataset.k === keys.join() + fresh.join() && !manual) return;
+  box.dataset.k = keys.join() + fresh.join(); box.innerHTML = "";
+  D.forEach((d, i) => {
+    const c = el("div", "adp"); c.style.marginLeft = Math.min(4, d.depth) * 14 + "px";
+    const isNew = fresh.includes(keys[i]);
+    if (isNew) { c.style.background = "color-mix(in srgb, var(--acc) 14%, transparent)"; c.style.borderRadius = "10px"; c.style.padding = "10px"; }
+    const ic = d.root ? "🖥" : d.hub ? "🔀" : (d.classes.map(x => USBICON[x]).find(Boolean) || "🔌");
+    const nm = d.root ? t("USB controller") + " (" + t("bus") + " " + d.bus + ")" : (d.product || t("unknown device"));
+    const h = el("div", "adp-h"); h.append(el("b", "", ic + " " + nm + (isNew ? "  🆕 " + t("new") : "")), el("span", "mut", d.vid + ":" + d.pid));
+    c.appendChild(h);
+    const L = [];
+    if (!d.root) {
+      if (d.maker || d.maker_db) L.push([t("Maker"), (d.maker || d.maker_db) + (d.maker && d.maker_db && d.maker_db !== d.maker ? " (" + d.maker_db + ")" : "")]);
+      if (d.product_db && d.product_db !== d.product) L.push([t("Model (list)"), d.product_db]);
+      L.push([t("Type"), d.classes.map(x => t(x)).join(", ") || "?"]);
+    }
+    L.push([t("Speed"), usbSpeed(d.speed) + (d.usb && !d.root ? " · " + t("device can") + " USB " + d.usb.trim().replace(/\.00$/, "").replace(/0$/, "") : "")]);
+    if (!d.root && d.ma) L.push([t("Power need"), d.ma + " mA"]);
+    if (!d.root) L.push([t("Port"), d.port + " · " + t("bus") + " " + d.bus + " " + t("device") + " " + d.dev]);
+    if (d.serial && !d.root) L.push([t("Serial number"), d.serial]);
+    if (d.drivers.length) L.push([t("Driver"), d.drivers.join(", ")]);
+    (d.links || []).forEach(x => {
+      if (x.kind === "net") L.push([t("Network"), x.name + (x.mac ? " · " + x.mac : "") + (x.state ? " · " + t(x.state === "up" ? "connected" : x.state === "down" ? "not connected" : x.state) : "")]);
+      else if (x.kind === "disk") L.push([t("Drive"), x.name + " · " + usbSize(x.size) + (x.mounts.length ? " · " + t("opened at") + " " + x.mounts.join(", ") : " · " + t("not opened"))]);
+      else if (x.kind === "video") L.push([t("Camera"), x.name + (x.label ? " · " + x.label : "")]);
+      else if (x.kind === "serial") L.push([t("Serial port"), x.name]);
+      else if (x.kind === "sound") L.push([t("Sound card"), x.name]);
+    });
+    const kv = el("div"); kv.style.cssText = "display:grid;grid-template-columns:max-content 1fr;gap:2px 12px;font-size:13px;margin-top:4px";
+    L.forEach(([k, v]) => { kv.append(el("span", "mut", k), el("span", "", v)); }); c.appendChild(kv);
+    if (!d.root && d.usb && parseFloat(d.usb) >= 3 && d.speed && d.speed < 5000) c.appendChild(el("div", "warnbox", "⚠ " + t("usb3-slow")));
+    if (!d.root && d.ma >= 500) c.appendChild(el("div", "mut", "⚡ " + t("usb-hungry")));
+    box.appendChild(c);
+  });
+  if (!j.ids) box.appendChild(el("div", "mut", t("usb-ids")));
+}
+usbLoad();
 function pick(k, push) {
   if (!document.getElementById("c-" + k)) k = "net";
   if (SEL === "focus" && k !== "focus" && FON) focusToggle();
@@ -25149,6 +25459,8 @@ const I18N = {en: I18N_EN, de: {
   "available": "verfügbar", "Update": "Aktualisieren", "Switch": "Wechseln", "Install": "Installieren", "Switch to version": "Zu Version wechseln",
   "The program restarts (about 20 seconds). Settings, recordings and zones stay.": "Das Programm startet neu (ca. 20 Sekunden). Einstellungen, Aufnahmen und Zonen bleiben.",
   "Downloading and checking …": "Wird geladen und geprüft …", "Switching to version": "Wechsle zu Version", "The page reloads by itself.": "Die Seite lädt von selbst neu.",
+  "Downloading": "Herunterladen", "Checking the signature": "Unterschrift wird geprüft", "Restarting": "Neustart", "Still about": "Noch etwa",
+  "Takes longer than usual …": "Dauert länger als sonst …", "Done": "Fertig",
   "No update source set yet (see above)": "Noch keine Update-Quelle eingetragen (siehe oben)", "Updates": "Updates",
   "Fine-tuning": "Feineinstellungen", "Light & sound": "Licht & Ton", "Protection & network": "Schutz & Netzwerk",
   "Push messages": "Push-Nachrichten", "Switches": "Schalter", "Relays": "Relais", "Schedule": "Zeitplan",
@@ -25656,9 +25968,9 @@ function updBar(s) {
   go.onclick = async () => {
     if (!confirm(t("Switch to version") + " " + u.version + "?\n\n" + t("The program restarts (about 20 seconds). Settings, recordings and zones stay."))) return;
     go.disabled = true; go.textContent = t("Downloading and checking …");
-    const r = await post("/api/update", {action: "install", version: u.version, lang: LANG});
+    const r = await updInstall(u.version);
     if (!r.ok) { toast("⚠ " + (r.error || "error")); go.disabled = false; go.textContent = t("Update now"); return; }
-    bar.remove(); updWait(u.version);
+    bar.remove();
   };
   const no = el("button", "sec", t("later")); no.type = "button";
   no.onclick = () => { try { sessionStorage.setItem("mw-upd-later", u.version); } catch (e) {} bar.remove(); };
@@ -27457,9 +27769,8 @@ function updRender(j) {
       bt.onclick = async () => {
         if (!confirm(t("Switch to version") + " " + it.version + "?\n\n" + t("The program restarts (about 20 seconds). Settings, recordings and zones stay."))) return;
         bt.disabled = true; st.textContent = t("Downloading and checking …");
-        const r = await post("/api/update", {action: "install", version: it.version, lang: LANG});
+        const r = await updInstall(it.version);
         if (!r.ok) { st.textContent = "⚠ " + (r.error || "error"); bt.disabled = false; return; }
-        updWait(it.version);
       };
       top.appendChild(bt);
     }
@@ -27477,6 +27788,51 @@ function updFit() {
   if (rows.length <= 3) { L.style.maxHeight = ""; return; }
   const h = rows[3].getBoundingClientRect().top - rows[0].getBoundingClientRect().top;
   L.style.maxHeight = (h > 20 ? h + 2 : 260) + "px";
+}
+// update with a progress bar (2.95.30): download (real bytes), check, restart (as long as the last restarts took)
+async function updInstall(v) {
+  let ov = $("#pw-ov"); if (!ov) { ov = el("div"); ov.id = "pw-ov"; document.body.appendChild(ov); }
+  ov.textContent = ""; const c = el("div", "card"); c.style.minWidth = "min(340px, 86vw)"; ov.appendChild(c);
+  const ttl = el("div", "", t("Switching to version") + " " + v + " …"); ttl.style.cssText = "font-weight:700;margin:4px 0 12px";
+  const tr_ = el("div"); tr_.style.cssText = "height:12px;border-radius:6px;background:var(--line);overflow:hidden";
+  const fill = el("div"); fill.style.cssText = "height:100%;width:2%;background:var(--acc);border-radius:6px;transition:width .6s linear"; tr_.appendChild(fill);
+  const ph = el("div", ""); ph.style.cssText = "display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-size:14px";
+  const pl = el("span"), pr = el("b"); ph.append(pl, pr);
+  c.append(el("div", "", "🔄"), ttl, tr_, ph, el("div", "mut", t("The page reloads by itself.")));
+  c.firstChild.style.fontSize = "40px";
+  let est = 25, phase = "download", got = 0, size = 0, el0 = 0, tR = 0, done = false, best = 0, failed = false;
+  const t0 = Date.now();
+  const paint = () => {
+    const now = Date.now(), elapsed = (now - t0) / 1000;
+    let rem, lab;
+    if (phase === "download") {
+      const rate = el0 > 0.3 && got > 0 ? got / el0 : 150000;
+      rem = (size > got ? (size - got) / rate : 1) + 2 + est;
+      lab = "⬇ " + t("Downloading") + (size ? " " + (got / 1e6).toFixed(1) + " / " + (size / 1e6).toFixed(1) + " MB" : "");
+    } else if (phase === "check") { rem = 2 + est; lab = "🔏 " + t("Checking the signature"); }
+    else { const since = tR ? (now - tR) / 1000 : 0; rem = est - since; lab = "🔄 " + t("Restarting"); }
+    let pct = elapsed / (elapsed + Math.max(rem, 1)); pct = Math.min(0.97, Math.max(best, pct)); best = pct;
+    fill.style.width = (pct * 100).toFixed(1) + "%"; pl.textContent = lab;
+    pr.textContent = rem > 1 ? t("Still about") + " " + Math.ceil(rem) + " s" : t("Takes longer than usual …");
+  };
+  const poll = async () => {
+    if (done || failed) return;
+    try {
+      const r = await fetch("/api/version", {cache: "no-store"}); const j = await r.json();
+      if (j.version === v) { done = true; best = 1; fill.style.width = "100%"; pl.textContent = "✓ " + t("Done"); pr.textContent = ""; setTimeout(() => location.reload(), 600); return; }
+      if (j.est) est = j.est;
+      const u = j.upd || {};
+      if (u.phase) { phase = u.phase; got = u.got || 0; size = u.size || 0; el0 = u.el || 0; if (phase === "restart" && !tR) tR = Date.now() - (u.since || 0) * 1000; }
+    } catch (e) { if (phase !== "restart") { phase = "restart"; if (!tR) tR = Date.now(); } }
+    paint();
+    if (Date.now() - t0 > (est + 180) * 1000) { pr.textContent = t("No answer from the Pi."); return; }
+    setTimeout(poll, 800);
+  };
+  paint(); setTimeout(poll, 300);
+  const r = await post("/api/update", {action: "install", version: v, lang: LANG});
+  if (!r.ok) { failed = true; ov.remove(); }
+  else if (!tR) { phase = "restart"; tR = Date.now(); }
+  return r;
 }
 function updWait(v) {
   let ov = $("#pw-ov"); if (!ov) { ov = el("div"); ov.id = "pw-ov"; document.body.appendChild(ov); }
@@ -29817,6 +30173,8 @@ class WebStream:
 
         @app.before_request
         def auth():
+            if _RESTART_M["todo"]:
+                restart_measure()
             if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/spiele")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
@@ -30154,6 +30512,10 @@ class WebStream:
 
         _lan_no = "<h2 style='font-family:sans-serif'>Die Spielecke ist nur im eigenen WLAN offen.</h2>"
 
+        @app.route("/api/usb")
+        def api_usb():
+            return reply({"ok": True, "devices": usb_list(), "ids": len(_usb_ids()) > 1})
+
         @app.route("/spiele")
         @app.route("/spiele/")
         def spiele_home():
@@ -30428,7 +30790,12 @@ class WebStream:
 
         @app.route("/api/version")
         def api_version():
-            return reply({"app": "Motion Watch", "version": APP_VERSION, "file": os.path.basename(__file__)})
+            if _RESTART_M["todo"]:
+                restart_measure()
+            now = time.time(); P_ = UPD_PROG
+            up = ({"phase": P_["phase"], "got": P_["got"], "size": P_["size"], "el": round(now - P_["t0"], 1), "since": round(now - P_["tp"], 1)}
+                  if P_["phase"] else {})
+            return reply({"app": "Motion Watch", "version": APP_VERSION, "file": os.path.basename(__file__), "upd": up, "est": round(restart_est())})
 
         @app.after_request
         def secure_headers(resp):
@@ -33018,7 +33385,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.29")
+        self.root.title("Motion Watch 2.95.30")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -33308,7 +33675,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.29 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.30 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -40007,6 +40374,17 @@ for _k, _v in _HX37.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX52 = {'Repeater switched off again by itself: the Pi had no connection to a network any more': ('Repeater wieder von selbst ausgeschaltet: der Pi hatte keine Verbindung zu einem Netz mehr', "Répéteur désactivé automatiquement : le Pi n'avait plus de connexion réseau", 'Ripetitore spento da solo: il Pi non aveva più connessione a una rete', "Repetitur deactivà da sasez: il Pi n'aveva nagina colliaziun cun ina rait pli")}
 for _k, _v in _HX52.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX60 = {'Downloading': ('Herunterladen', 'Téléchargement', 'Download', 'Telechargiar'), 'Checking the signature': ('Unterschrift wird geprüft', 'Vérification de la signature', 'Verifica della firma', 'La signatura vegn controllada'),
+         'Restarting': ('Neustart', 'Redémarrage', 'Riavvio', 'Reaviar'), 'Still about': ('Noch etwa', 'Encore environ', 'Ancora circa', 'Anc var'),
+         'Takes longer than usual …': ('Dauert länger als sonst …', 'Plus long que d’habitude …', 'Più lungo del solito …', 'Dura pli ditg che uschiglio …'), 'Done': ('Fertig', 'Terminé', 'Fatto', 'Finì'),
+         'USB devices': ('USB-Geräte', 'Appareils USB', 'Dispositivi USB', 'Apparats USB'), 'Read again': ('Neu einlesen', 'Relire', 'Rileggi', 'Leger danovamain'),
+         'Maker': ('Hersteller', 'Fabricant', 'Produttore', 'Producent'), 'Speed': ('Geschwindigkeit', 'Vitesse', 'Velocità', 'Sveltezza'),
+         'Power need': ('Strombedarf', 'Consommation', 'Consumo', 'Consum da current'), 'Driver': ('Treiber', 'Pilote', 'Driver', 'Driver'),
+         'Drive': ('Laufwerk', 'Lecteur', 'Unità', 'Unitad'), 'Serial number': ('Seriennummer', 'Numéro de série', 'Numero di serie', 'Numer da serie')}
+for _k, _v in _HX60.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
