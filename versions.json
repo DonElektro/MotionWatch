@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 12:16",
+ "generated": "2026-10-27 12:35",
  "versions": [
   {
-   "version": "2.95.19",
-   "file": "webcam_bewegung_2_95_19.py",
+   "version": "2.95.20",
+   "file": "webcam_bewegung_2_95_20.py",
    "url": "",
-   "sha256": "1beb97177dd7fcaf5136ef3930696c6a32f4b9164fcce6387869435e82bdba7d",
-   "date": "2026-10-27 12:16",
-   "notes": "trusted devices (a browser that logged in once stays logged in, also after updates; list in Users, removable; a new password logs all out). Power mode 🚀 (counterpart of power saving: every picture through the AI, best stream, simulator at full speed, processor governor «performance»; switching off restores everything). Small camera live picture inside the simulator window (📷). 3D simulator 3D-3.26.",
-   "sig": "3dfe3f16e4e2c2ba19ff5a1444931dc2552121f4f425f36a42f7cc99eeef3f7e2f61ce648c267b3dcd7f60ac8f4efd99f9629de6c9699d7ff0c00aed4cdabf09"
+   "sha256": "bcf48a68a38f2884a172fbd5fd190f7f4358112b589edec0d77493151793fc98",
+   "date": "2026-10-27 12:35",
+   "notes": "tab Simulator: the simulator window uses the whole screen width; the small camera picture sits top right (no longer over the control stick and the arrow buttons).",
+   "sig": "2d1adb8165f3147a92e0dc08316910e6f4c2cc2052342a7fafd6435501f7a99cd5f5e6c91c64443918865438d576a5240e3dc1aaf79c6179d0de502a9ca07305"
   },
   {
    "version": "2.94.5",

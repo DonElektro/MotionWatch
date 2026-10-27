@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_19.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_20.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -586,6 +586,8 @@ Features
     removable; a new password logs all out). Power mode 🚀 (counterpart of power saving: every picture through the AI,
     best stream, simulator at full speed, processor governor «performance»; switching off restores everything).
     Small camera live picture inside the simulator window (📷). 3D simulator 3D-3.26.
+  * 2.95.20: tab Simulator: the simulator window uses the whole screen width; the small camera picture sits top right
+    (no longer over the control stick and the arrow buttons).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -594,10 +596,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_19.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_20.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_19.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_19.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_20.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_20.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -614,7 +616,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.19"
+APP_VERSION = "2.95.20"
 
 
 def default_data_dir():
@@ -14414,7 +14416,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_19.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_20.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -19182,6 +19184,10 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .dl a small,.dl button small{font-weight:400;font-size:12px;opacity:.75}
 .dl .main{grid-column:1/-1}
 #c-prev{padding:12px}#c-prev>*+*{margin-top:8px}
+/* 2.95.20: the simulator window uses the whole width of the screen (out of the page column) */
+#c-prev.full{width:calc(100vw - var(--sbw,0px));margin-left:calc(50% - (100vw - var(--sbw,0px)) / 2);border-radius:0;border-left:0;border-right:0;padding:8px 6px}
+#c-prev.full .pvw{border-radius:6px}
+#c-prev.full .pvw.view:not(.fs) #s-prev{max-height:none}
 .pvw{position:relative;background:#000;border-radius:10px;overflow:hidden}
 .gm{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
 .chips2{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}.hcp{display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 10px;font-size:13px}
@@ -19237,7 +19243,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .pvbtn button.on{background:var(--acc,#3b8cff)}
 #s-prev{width:100%;height:auto;min-height:200px;object-fit:contain;background:#000;display:block;max-height:calc(100vh - var(--hdr-h,64px) - 170px)}
 #c-prev{padding:12px}
-.pvcam{position:absolute;right:10px;bottom:52px;width:28%;max-width:320px;min-width:120px;border:2px solid rgba(255,255,255,.8);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.5);background:#000;cursor:pointer;z-index:3}
+.pvcam{position:absolute;right:58px;top:10px;width:28%;max-width:320px;min-width:120px;border:2px solid rgba(255,255,255,.8);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.5);background:#000;cursor:pointer;z-index:3}
 .pvcam img{display:block;width:100%;border-radius:6px}.pvcam span{position:absolute;left:5px;top:5px;font:700 10px/1 system-ui,sans-serif;color:#fff;background:rgba(200,0,0,.75);padding:3px 5px;border-radius:4px}
 .pvlive{position:absolute;left:10px;bottom:10px;font:700 11px/1 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px}
 #pip{position:fixed;z-index:45;width:min(44vw,300px);border-radius:12px;overflow:hidden;background:#000;cursor:pointer;touch-action:none;box-shadow:0 8px 26px rgba(0,0,0,.55);border:1px solid var(--line)}
@@ -19757,11 +19763,14 @@ function pvPaint() {
   const has = !!(S && S.on && S.view), v = pvView();
   $("#s-pvmode").hidden = !(has && LIVE);
   $("#s-pvmode").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.m === (v ? "view" : "cam")));
-  $("#s-pvw").classList.toggle("view", v); $("#s-pvbtn").hidden = !v; $("#s-pvlive").hidden = !LIVE || v;
+  $("#s-pvw").classList.toggle("view", v); $("#s-pvbtn").hidden = !v;
+  $("#c-prev").classList.toggle("full", v && LIVE); pvSbw(); $("#s-pvlive").hidden = !LIVE || v;
   const want = v ? "view" : "cam";
   if (LIVE && PVCUR !== want) { PVCUR = want; pvLoad(); }
   pvCam();
 }
+function pvSbw() { document.documentElement.style.setProperty("--sbw", Math.max(0, innerWidth - document.documentElement.clientWidth) + "px"); }
+addEventListener("resize", pvSbw);
 // small camera live picture inside the simulator window (2.95.19): single pictures, so it never lags behind
 let PVCAM = true, pvCamT = null, pvCamBusy = false;
 try { PVCAM = localStorage.getItem("mw-sim-pvcam") !== "0"; } catch (e) {}
@@ -29279,7 +29288,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.19")
+        self.root.title("Motion Watch 2.95.20")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -29569,7 +29578,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.19 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.20 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
