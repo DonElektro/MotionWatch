@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 14:08",
+ "generated": "2026-10-27 14:10",
  "versions": [
   {
-   "version": "2.95.23",
-   "file": "webcam_bewegung_2_95_23.py",
+   "version": "2.95.24",
+   "file": "webcam_bewegung_2_95_24.py",
    "url": "",
-   "sha256": "56898d5e1ec7427fbf9292eaa38efd613f2a13051469f907604c9e2fa844b39e",
-   "date": "2026-10-27 14:08",
-   "notes": "new app icon (radar eye) with a choice of 7 (settings → Setup → App icon; also the old orange one); iPhone / iPad home screen: a hint how to renew the icon. The simulators are called MW Sim · Basis, MW Sim · 3D, MW Sim · Welt (Kevin), each with its own symbol. 3D simulator 3D-3.28.",
-   "sig": "9954942070c9126942a7f2f17e3f23ab0c9eb06e605d3474b488dc54e2413818b4d6b78f352af82cebbdb24e44d5c558868599a8b540edc36d7484135605c501"
+   "sha256": "3b8043af9d86b2eacf0b81fc883bea573a87524916baf9f464b017747dfcf955",
+   "date": "2026-10-27 14:10",
+   "notes": "Python world simulator PY-1.2 (Kevin: computer name, panning up to ±180°); «pan_range» in the state for the simulators.",
+   "sig": "3fb505b533b76faa573f6f9999d07434757714f075ec75d44caefd45b1a5b703b06ce9a8e264c11740b91cdcb2f89b53b429b223ee892112a0cacd27fb175302"
   },
   {
    "version": "2.94.5",

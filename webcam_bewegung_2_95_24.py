@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_23.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_24.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -598,6 +598,8 @@ Features
   * 2.95.23: new app icon (radar eye) with a choice of 7 (settings → Setup → App icon; also the old orange one); iPhone /
     iPad home screen: a hint how to renew the icon. The simulators are called MW Sim · Basis, MW Sim · 3D, MW Sim · Welt
     (Kevin), each with its own symbol. 3D simulator 3D-3.28.
+  * 2.95.24: Python world simulator PY-1.2 (Kevin: computer name, panning up to ±180°); «pan_range» in the state for the
+    simulators.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -606,10 +608,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_23.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_24.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_23.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_23.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_24.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_24.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -626,7 +628,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.23"
+APP_VERSION = "2.95.24"
 
 
 def default_data_dir():
@@ -11803,6 +11805,7 @@ def sim_state():
     return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "Motion Watch", "armed": is_armed(), "picture_mode": CFG["picture_mode"],
             "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * hp, 2),
                       "tilt_deg": round((CFG["tilt"] - 50) / 50 * ht, 2), "pan_limit": pl, "tilt_limit": tl,
+                      "pan_range": round(2 * hp, 1),             # the whole turning range of the pan servo (2.95.24, for the Python simulator)
                       "moving": time.time() - SERVO_MOVE["t"] < 0.5},
             "lights": {"white": bool(L.get("white")), "ir": bool(L.get("ir")), "white_level": 1.0, "ir_level": 1.0},
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
@@ -12711,8 +12714,8 @@ SIM3D = {"version": "3D-3.28", "file": "simulator3d/MotionWatch3D_Simulator.zip"
          "sha256": "21ec31b8e85051a3a57507feb574c016c6e66c8232aedcfaef1ff444c0b3dc98"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
-SIMPY = {"version": "PY-1.1", "file": "simulator_python/MotionWatchSimulator_PY-1.1.zip", "size": 137697,
-         "sha256": "dfc992580eeae1698cb0f81bf3f82f8ceb51982a97f11a8977a4efb34ba33ee0", "stem": "MotionWatch_PythonSimulator",
+SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
+         "sha256": "7e278179dc8f1c79b964248ad0a5cb500cc42f2010587a07b7641fe9f0577385", "stem": "MotionWatch_PythonSimulator",
          "label": "MW Sim · Welt (Kevin)"}
 SIMPY_DL = {"running": False, "got": 0, "msg": ""}
 SIMLATEST = {"t": 0.0, "busy": False, "3d": None, "py": None, "err": ""}   # newest simulator versions in the project (2.95.8)
@@ -14727,7 +14730,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_23.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_24.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -31576,7 +31579,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.23")
+        self.root.title("Motion Watch 2.95.24")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -31866,7 +31869,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.23 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.24 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
