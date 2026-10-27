@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_32.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_33.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -623,6 +623,14 @@ Features
   * 2.95.32: game corner: six new games for the phones - Stadt-Land-Fluss, estimating, explaining words (taboo), who am I,
     reaction, battleships. Game collection GS-1.1 with 15 games (new: Tetris, Pong, Dino run, and own games snake,
     minesweeper, sudoku, memory). Typed text is kept when the page updates.
+  * 2.95.33: security and stability review. Camera loop restarts itself after an error (push after 5 errors), camera loss
+    finishes the recording and tells the owner; damaged settings file -> backup copy instead of defaults; settings saved
+    atomically; a new version that does not start is not installed again; update key never follows a redirect elsewhere;
+    pages of other web sites cannot send commands (CSRF); viewers cannot move the clock by years or switch Tailscale HTTPS;
+    alarm push tried 3 times, then SMS; the Wi-Fi password is not overwritten by a wrong one, the own Wi-Fi comes back
+    after a failed switch; MQTT robust and disarm via MQTT announced; diagnosis package without secrets; optimizer
+    restores the settings after an interruption; simulator never switches on by itself while armed; game corner: player
+    keys secret. Encoders: a missing USB disk no longer disables them, memory use limited.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -631,10 +639,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_32.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_33.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_32.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_32.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_33.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_33.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -651,7 +659,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.32"
+APP_VERSION = "2.95.33"
 
 
 def default_data_dir():
@@ -2120,6 +2128,7 @@ def users_action(d, who="admin"):
             u["hash"] = pw_hash(pw); log_event("web", f"{who}: new password for «{u['name']}»")
         else:
             return False, "unknown action"
+        CFG["trusted"] = [e for e in (CFG.get("trusted") or []) if e.get("user") != u["name"]]   # 2.95.33: log in again
     _PW_OK.clear(); save_settings_now()
     return True, ""
 
@@ -2129,6 +2138,8 @@ def role_allows(role, path, method, d):
         return True
     if method in ("GET", "HEAD"):
         return not path.startswith(ADMIN_GET)
+    if path == "/api/webpush":
+        return d.get("action") in ("subscribe", "unsubscribe", "key", None)
     if path in VIEW_POST:
         return True
     if role != "operate":
@@ -2196,14 +2207,38 @@ def settings_status_text(lang=None):
     return tr(st, lang)
 
 
+def _read_settings_file(p):
+    with open(p) as f:
+        d = json.load(f)
+    if not isinstance(d, dict) or not isinstance(d.get("cfg", {}), dict):
+        raise ValueError("not a settings object")
+    return d
+
+
 def load_settings():
+    """2.95.33: a broken file (power cut while saving) is kept as .bad and the backup copy of the last good settings is
+    used instead - otherwise password, users and messages would silently fall back to the defaults."""
     try:
-        with open(SETTINGS_FILE) as f:
-            data = json.load(f)
-    except (OSError, ValueError):
+        data = _read_settings_file(SETTINGS_FILE)
+    except OSError:
         STATE["settings_status"] = "defaults (no file yet)"
         return
+    except ValueError:
+        bad = SETTINGS_FILE + ".bad-" + datetime.now().strftime("%Y%m%d-%H%M%S")
+        try:
+            shutil.copy2(SETTINGS_FILE, bad)
+        except OSError:
+            pass
+        try:
+            data = _read_settings_file(os.path.join(DATA_DIR, "motionwatch_settings.backup.json"))
+            STATE["settings_restored"] = bad; STATE["settings_from_backup"] = True
+        except (OSError, ValueError):
+            STATE["settings_status"] = "defaults (settings file damaged, no usable backup)"
+            STATE["settings_restored"] = bad; STATE["settings_from_backup"] = False
+            return
     apply_settings(data)
+    if STATE.get("settings_from_backup"):
+        STATE["settings_status"] = "restored from the backup copy (the settings file was damaged)"
     if isinstance(data, dict) and isinstance(data.get("cfg"), dict) and "setup_done" not in data["cfg"]:
         CFG["setup_done"] = True                     # settings from an earlier version: already set up
 
@@ -2235,9 +2270,27 @@ def import_settings(data):
 
 def apply_settings(data):
     n = 0
-    for k, v in data.get("cfg", {}).items():
-        if k in CFG and k not in VOLATILE and isinstance(v, type(CFG[k])) or (k in CFG and isinstance(CFG[k], float) and isinstance(v, int)):
-            CFG[k] = type(CFG[k])(v); n += 1
+    if not isinstance(data, dict):
+        return
+    try:
+        specs = web_specs()
+    except Exception:
+        specs = {}
+    cfg_in = data.get("cfg", {}) if isinstance(data.get("cfg", {}), dict) else {}
+    for k, v in cfg_in.items():
+        if k not in CFG or k in VOLATILE:
+            continue
+        if isinstance(v, type(CFG[k])) or (isinstance(CFG[k], float) and isinstance(v, int) and not isinstance(v, bool)):
+            v = type(CFG[k])(v)
+            sp = specs.get(k) or {}
+            if isinstance(v, (int, float)) and not isinstance(v, bool) and sp.get("type") != "bool":
+                if isinstance(v, float) and not math.isfinite(v):
+                    continue
+                if "min" in sp:
+                    v = type(CFG[k])(max(sp["min"], v))
+                if "max" in sp:
+                    v = type(CFG[k])(min(sp["max"], v))
+            CFG[k] = v; n += 1
     wps = []
     for w in data.get("waypoints", []):
         if isinstance(w, (int, float)) and not isinstance(w, bool):        # old files: pan only
@@ -2292,19 +2345,37 @@ def apply_settings(data):
     log_event("sys", f"Settings loaded from {SETTINGS_FILE} ({n} values, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules)")
 
 
+_SAVE_LOCK = threading.Lock()
+
+
 def save_settings_now():
-    try:
-        tmp = SETTINGS_FILE + ".tmp"
-        with open(tmp, "w") as f:
-            json.dump(settings_data(), f, indent=1)
+    """Atomic: own temp file, flushed to the card (fsync) before it replaces the old one; one save at a time."""
+    with _SAVE_LOCK:
+        tmp = f"{SETTINGS_FILE}.{os.getpid()}.{threading.get_ident()}.tmp"
         try:
-            os.chmod(tmp, 0o600)
-        except OSError:
-            pass
-        os.replace(tmp, SETTINGS_FILE)
-        STATE["settings_status"] = "saved " + datetime.now().strftime("%H:%M:%S")
-    except OSError as e:
-        STATE["settings_status"] = f"save failed: {e}"
+            txt = json.dumps(settings_data(), indent=1)
+            with open(tmp, "w") as f:
+                f.write(txt); f.flush(); os.fsync(f.fileno())
+            try:
+                os.chmod(tmp, 0o600)
+            except OSError:
+                pass
+            os.replace(tmp, SETTINGS_FILE)
+            try:
+                dfd = os.open(os.path.dirname(os.path.abspath(SETTINGS_FILE)), os.O_RDONLY)
+                try:
+                    os.fsync(dfd)
+                finally:
+                    os.close(dfd)
+            except OSError:
+                pass
+            STATE["settings_status"] = "saved " + datetime.now().strftime("%H:%M:%S")
+        except Exception as e:                          # also TypeError / RuntimeError: must not vanish in a thread
+            STATE["settings_status"] = f"save failed: {e}"[:200]
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
 
 
 def save_settings():
@@ -2729,6 +2800,12 @@ def backup_copy(path, meta=None, test=False):
                 return False, "no folder set"
             if not os.path.isdir(os.path.dirname(base.rstrip("/")) or "/"):
                 return False, "folder not found (USB stick / NAS connected?)"
+            if base.startswith(("/media/", "/mnt/")):          # 2.95.33: never fill the SD card when the stick is missing
+                q = os.path.abspath(base)
+                while q not in ("/", "/media", "/mnt") and not os.path.ismount(q):
+                    q = os.path.dirname(q)
+                if q in ("/", "/media", "/mnt"):
+                    return False, "folder not found (USB stick / NAS connected?)"
             dst = os.path.join(base, day); os.makedirs(dst, exist_ok=True)
             if test:
                 with open(os.path.join(dst, name), "wb") as f:
@@ -3384,6 +3461,15 @@ def pushover_ready():
                 and re.fullmatch(r"[A-Za-z0-9]{30}", CFG.get("pushover_token", "").strip()))
 
 
+def _url_host(u):
+    """only the server of an address (the ntfy topic / webhook path is a secret and does not belong in the log)"""
+    try:
+        from urllib.parse import urlparse
+        return (urlparse(str(u).strip()).hostname or "?")
+    except ValueError:
+        return "?"
+
+
 class Notifier:
     """Alarm message when a person is detected (with cooldown). Three kinds:
          webhook   JSON POST to a URL (Home Assistant, IFTTT, ...)
@@ -3555,25 +3641,40 @@ class Notifier:
         if not self.main_configured():
             return
         kind, secret = CFG["notify_type"], CFG["telegram_token"]
-        try:
-            if kind == "telegram":
-                code = self._telegram(p, jpg, fname); where = "Telegram"
-            elif kind == "ntfy":
-                code = self._ntfy(p, jpg, fname); where = "ntfy " + CFG["notify_url"][:40]
-            else:
-                url = CFG["notify_url"].strip()
-                body_ = dict(p, title=self._title(p), text=self._text(p))
-                req = urllib.request.Request(url, data=json.dumps(body_).encode(),
-                                             headers={"Content-Type": "application/json", "Title": _hdr(self._title(p))})
-                with urllib.request.urlopen(req, timeout=8) as r:
-                    code = r.status
-                where = url[:40]
-            STATE["notify_status"] = f"sent {datetime.now().strftime('%H:%M:%S')} (HTTP {code})"
-            log_event("web", f"Notification sent to {where}… (HTTP {code})")
-        except Exception as e:
-            msg = str(e).replace(secret, "***") if secret else str(e)
-            STATE["notify_status"] = f"error: {msg}"[:200]
-            log_event("web", f"Notification failed: {msg}"[:200])
+        alarm = ev in ("person", "tamper", "warm", "noise")
+        tries = 3 if alarm else 1                       # 2.95.33: an alarm is tried 3 times (now, after 5 s, after 15 s)
+        for k_ in range(tries):
+            try:
+                if kind == "telegram":
+                    code = self._telegram(p, jpg, fname); where = "Telegram"
+                elif kind == "ntfy":
+                    code = self._ntfy(p, jpg, fname); where = "ntfy " + _url_host(CFG["notify_url"])
+                else:
+                    url = CFG["notify_url"].strip()
+                    body_ = dict(p, title=self._title(p), text=self._text(p))
+                    req = urllib.request.Request(url, data=json.dumps(body_).encode(),
+                                                 headers={"Content-Type": "application/json", "Title": _hdr(self._title(p))})
+                    with urllib.request.urlopen(req, timeout=8) as r:
+                        code = r.status
+                    where = _url_host(url)
+                STATE["notify_status"] = f"sent {datetime.now().strftime('%H:%M:%S')} (HTTP {code})"
+                log_event("web", f"Notification sent to {where} (HTTP {code})" + (f" - attempt {k_ + 1}" if k_ else ""))
+                return
+            except Exception as e:
+                msg = str(e).replace(secret, "***") if secret else str(e)
+                msg = msg.replace(CFG["notify_url"].strip(), _url_host(CFG["notify_url"])) if CFG["notify_url"].strip() else msg
+                STATE["notify_status"] = f"error: {msg}"[:200]
+                log_event("web", f"Notification failed (attempt {k_ + 1}/{tries}): {msg}"[:200])
+                try:
+                    WATCH_REF["w"].netmon.recheck = True
+                except Exception:
+                    pass
+                if k_ + 1 < tries:
+                    time.sleep(5 if k_ == 0 else 10)
+        # all attempts failed: the SMS (if it was held back for "only when offline") goes out now
+        if alarm and CFG["sms_on"] and CFG["sms_only_offline"] and sms_numbers() and STATE.get("net", {}).get("online") is not False:
+            log_event("web", "Push message could not be sent - SMS instead")
+            sms_send(self._title(p) + ": " + self._text(p))
 
     def _pushover(self, p, jpg, fname):
         ev = self._event(p)
@@ -5265,7 +5366,7 @@ class NetMonitor:
                     socket.create_connection((host, port), timeout=3).close()
                     res = {"online": True, "ms": int((time.time() - t0) * 1000)}
                     break
-                except OSError:
+                except Exception:                      # 2.95.33: also UnicodeError (mistyped push address) - must not end the loop
                     pass
             if STATE["net"].get("online") is not None and res["online"] != STATE["net"]["online"]:
                 log_event("sys", "Internet reachable again" if res["online"] else "Internet not reachable (push messages cannot be sent)")
@@ -5638,9 +5739,14 @@ def _nm_scan():
 def _nm_connect_now(ssid, password):
     saved = next((s for s in _nm_saved() if s["ssid"] == ssid), None)
     if saved:
+        old = ""
         if password:
+            c0, o0, _e0 = _run(["nmcli", "-s", "-g", "802-11-wireless-security.psk", "connection", "show", "uuid", saved["id"]], 15)
+            old = o0.strip() if c0 == 0 else ""
             _run(["nmcli", "connection", "modify", "uuid", saved["id"], "wifi-sec.key-mgmt", "wpa-psk", "wifi-sec.psk", password], 15)
         code, out, err = _run(["nmcli", "--wait", "40", "connection", "up", "uuid", saved["id"]], 50)
+        if code and old and old != password:           # 2.95.33: wrong new password - the saved (working) one comes back
+            _run(["nmcli", "connection", "modify", "uuid", saved["id"], "wifi-sec.psk", old], 15)
     else:
         cmd = ["nmcli", "--wait", "40", "device", "wifi", "connect", ssid] + (["password", password] if password else []) + ["ifname", WIFI["iface"]]
         code, out, err = _run(cmd, 50)
@@ -5829,6 +5935,7 @@ def wifi_connect(ssid, password="", preferred=True):
 
     def work():
         try:
+            hs_was = bool(b == "nm" and HOTSPOT_CON in _nm_active_names())
             with _WIFI_LOCK:
                 prev = next((s for s in (_nm_saved() if b == "nm" else _wpa_saved()) if s["active"]), None)
                 log_event("sys", f"Wi-Fi: switching to {ssid}" + (f" (from {prev['ssid']})" if prev else ""))
@@ -5864,6 +5971,9 @@ def wifi_connect(ssid, password="", preferred=True):
                             back = " - back on " + prev["ssid"]
                     WIFI["job"] = f"failed: {msg or 'could not connect'}{back}"; WIFI["job_ok"] = False
                     log_event("sys", f"Wi-Fi: {ssid} failed ({msg}){back}")
+            if not ok and hs_was and b == "nm" and HOTSPOT_CON not in _nm_active_names():
+                hok, _herr = hotspot_set(True, persist=False)    # 2.95.33: the Pi stays reachable over its own Wi-Fi
+                log_event("sys", "Own Wi-Fi switched on again" if hok else "Own Wi-Fi could not be switched on again")
         except Exception as e:
             WIFI["job"] = "failed: " + str(e)[:150]; WIFI["job_ok"] = False
         finally:
@@ -6572,7 +6682,7 @@ def places_assign(items):
     return out
 
 
-def sync_time_from_client(ms, tz=""):
+def sync_time_from_client(ms, tz="", admin=True):
     if not CFG["time_from_browser"]:
         return "off"
     try:
@@ -6581,7 +6691,9 @@ def sync_time_from_client(ms, tz=""):
         return "invalid"
     if not (1704067200 <= client <= 4102444800):             # 2024 .. 2100: anything else is not a real clock
         return "invalid"
-    msgs = [m for m in [_set_timezone(tz)] if m]
+    if not admin and abs(client - time.time()) > 3 * 86400:   # 2.95.33: a viewer must not move the clock by years (purges!)
+        return "only the administrator may change the clock that much"
+    msgs = [m for m in [_set_timezone(tz)] if m] if admin else []
     now = time.time(); diff = client - now
     if abs(diff) < 60:
         STATE["time_status"] = "ok" + (" · " + msgs[0] if msgs else ""); return STATE["time_status"]
@@ -7329,7 +7441,10 @@ class UplinkWatch:
             dual_safety()
         except Exception as e:
             DUAL["msg"] = str(e)[:100]
-            noinet_apply()
+        try:
+            noinet_apply()                               # 2.95.33: was only called after an error (also after a restart now)
+        except Exception as e:
+            DUAL["msg"] = str(e)[:100]
         net = STATE.get("net") or {}; w = STATE.get("wifi") or {}
         online = net.get("online")
         if online is False and DUAL["offline_since"] is None:
@@ -7503,6 +7618,14 @@ class WifiGuard:
         return own
 
     def loop(self):
+        while True:                                     # 2.95.33: an error must not end the jamming detection for good
+            try:
+                self._loop()
+            except Exception as e:
+                log_event("sys", f"Wi-Fi guard error (restarted): {type(e).__name__}: {e}"[:200])
+                time.sleep(30)
+
+    def _loop(self):
         time.sleep(20)
         minute_t = time.time(); dea = dall = 0; seen = {}; own = set(); own_t = 0.0; mine = set()
         while True:
@@ -8435,8 +8558,8 @@ class AutoTuner:
                 log_event("auto", "Auto-tune: calibration done, now adjusting live")
             return
         for t in tracks:
-            if t.id not in self.seen_ids:
-                self.seen_ids.add(t.id); self.new_candidates += 1
+            if not getattr(t, "_seen", False):
+                t._seen = True; self.new_candidates += 1
             if t.is_person and not getattr(t, "_counted", False):
                 t._counted = True; self.became_person += 1
             if (not t.is_person and not t.is_vehicle and t.age >= CFG["walk_frames"]
@@ -10850,14 +10973,25 @@ class MiniMQTT:
         return b
 
     def _read_packet(self):
-        h = self._recv_exact(1)[0]
-        mult, n = 1, 0
-        while True:
-            d = self._recv_exact(1)[0]
-            n += (d & 0x7F) * mult; mult *= 128
-            if not d & 0x80:
-                break
-        return h, self._recv_exact(n) if n else b""
+        h = self._recv_exact(1)[0]                       # may time out (nothing there) - the rest of a packet may not
+        old = self.sock.gettimeout()
+        try:
+            self.sock.settimeout(20.0)
+            mult, n = 1, 0
+            for _i in range(4):
+                d = self._recv_exact(1)[0]
+                n += (d & 0x7F) * mult; mult *= 128
+                if not d & 0x80:
+                    break
+            else:
+                raise ConnectionError("invalid packet from the broker")
+            if n > 256 * 1024:
+                raise ConnectionError("packet from the broker too big")
+            body = self._recv_exact(n) if n else b""
+        finally:
+            self.sock.settimeout(old)
+        self.last_rx = time.time()
+        return h, body
 
     def connect(self):
         import socket, ssl
@@ -10879,7 +11013,7 @@ class MiniMQTT:
             raise ConnectionError("no answer from the broker")
         if body[1] != 0:
             raise ConnectionError({4: "user name / password wrong", 5: "not allowed (user / password?)"}.get(body[1], f"refused ({body[1]})"))
-        self.sock.settimeout(1.0)
+        self.sock.settimeout(1.0); self.last_rx = time.time()
 
     def publish(self, topic, payload, retain=False):
         if isinstance(payload, str):
@@ -10895,6 +11029,8 @@ class MiniMQTT:
         import socket
         if time.time() - self.last_tx > 30:
             self._send(0xC0, b"")
+        if time.time() - getattr(self, "last_rx", time.time()) > 95:
+            raise ConnectionError("no answer from the broker for 95 s")
         try:
             h, body = self._read_packet()
         except socket.timeout:
@@ -11010,7 +11146,13 @@ class MqttBridge:
             elif v in ("ARM_NOW",):
                 arm(0)
             elif v in ("DISARM", "OFF"):
+                was = is_armed() or bool(CFG["armed"])
                 disarm()
+                if was:                                  # 2.95.33: the owner learns when MQTT switched the camera off
+                    try:
+                        WATCH_REF["w"].notifier.info(tr("Disarmed via MQTT / Home Assistant"))
+                    except Exception:
+                        pass
         elif cmd in ("light_white", "light_ir") and val.lower() in LIGHT_MODES:
             light_set(cmd[6:], val.lower())
         elif cmd == "snapshot" and MQTT["client"] is not None:
@@ -12705,6 +12847,8 @@ def sd_test():
     res = {}
     try:
         p = os.path.join(DATA_DIR, ".speedtest.bin"); blk = os.urandom(1 << 20); n = 64
+        if shutil.disk_usage(DATA_DIR).free < (n + 500) * (1 << 20):
+            raise OSError("not enough free space for the test (64 MB + 500 MB reserve)")
         t0 = time.time()
         with open(p, "wb") as f:
             for _ in range(n):
@@ -12759,11 +12903,22 @@ def sd_test():
     except Exception as e:
         S["msg"] = str(e)[:120]
     finally:
+        try:
+            os.remove(os.path.join(DATA_DIR, ".speedtest.bin"))   # 2.95.33: also after an error (full card)
+        except OSError:
+            pass
         S.update(res=res, t=time.time(), running=False)
     return True
 
 
-_SECRET_RE = re.compile(r"pass|token|secret|key|pin|topic|ntfy|webhook|sms_|phone|mail|user|telegram|chat|url|mqtt_|wifi|psk|feedback|mac|known|ssid|lat|lon|gps", re.I)
+_SECRET_RE = re.compile(r"pass|token|secret|key|pin|topic|ntfy|webhook|sms_|phone|mail|user|telegram|chat|url|mqtt_|wifi|psk|feedback|mac|known|ssid|lat|lon|gps"
+                        r"|pw|hash|trusted|fleet|source|cams|lock_snap|backup|host|addr|ip_|presence|pushover|shortcut|guest", re.I)
+_URL_SECRET = re.compile(r"\b([a-z][a-z0-9+.-]*://)([^\s/@'\"]+@)?([^\s/'\"?#]+)[^\s'\"]*", re.I)
+
+
+def _scrub_text(t):
+    """addresses in texts: only scheme + server stay (no user:password@, no ntfy topic / path)"""
+    return _URL_SECRET.sub(lambda m: m.group(1) + m.group(3) + "/…", str(t))
 
 
 def diag_zip():
@@ -12773,7 +12928,7 @@ def diag_zip():
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         cfg = {k: ("***" if _SECRET_RE.search(k) and v not in ("", None, [], {}) else v) for k, v in CFG.items() if k not in VOLATILE}
         z.writestr("settings_without_secrets.json", json.dumps(cfg, indent=1, ensure_ascii=False, default=str))
-        z.writestr("events.txt", "\n".join(f"{e.get('t', '')} [{e.get('kind', '')}] {e.get('text', '')}" for e in reversed(STATE["events"])))
+        z.writestr("events.txt", _scrub_text("\n".join(f"{e.get('t', '')} [{e.get('kind', '')}] {e.get('text', '')}" for e in reversed(STATE["events"]))))
         info = {"version": APP_VERSION, "project": project_info(), "health": None, "sim": {k: v for k, v in sim_status().items() if k != "found"},
                 "state": {k: STATE.get(k) for k in ("fps", "cpu", "cpu_temp", "source_label", "source_status", "web_status", "ai_status", "eco",
                                                     "disk", "supply", "battery", "audio", "thermal_res")}}
@@ -12787,7 +12942,7 @@ def diag_zip():
             if shutil.which(cmd[0]):
                 try:
                     r = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
-                    z.writestr(name, (r.stdout or r.stderr)[-400000:])
+                    z.writestr(name, _scrub_text((r.stdout or r.stderr)[-400000:]))
                 except (OSError, subprocess.SubprocessError):
                     pass
     return buf.getvalue()
@@ -13206,6 +13361,9 @@ def sim_stats():
 
 def sim_found():
     now = time.time()
+    if len(SIMFOUND) > 50:                              # 2.95.33: old / flooded entries go
+        for k in sorted(SIMFOUND, key=lambda k_: SIMFOUND[k_].get("t", 0))[:len(SIMFOUND) - 30]:
+            SIMFOUND.pop(k, None)
     live = [dict(v, age=int(now - v["t"]), host=sim_host(v["ip"], v.get("host_told", ""))) for v in SIMFOUND.values()
             if now - v["t"] < (15 if v.get("via") == "beacon" else 180)]
     local = {(v["port"], v["name"]) for v in live if v["ip"] == "127.0.0.1"}
@@ -13225,10 +13383,16 @@ def sim_autostart_tick():
     if not f:
         _SIMGONE["block"] = False                       # switched off by hand: on again only with the next simulator
     if f and not CFG["sim_on"]:
+        if is_armed() or CFG["armed"]:                  # 2.95.33: an armed camera keeps its real picture
+            return
         if not _SIMGONE.get("block"):
             sim_auto_adopt()
             sim_set(True, "automatic (a simulator is online)")
             CFG["sim_auto_on"] = True; save_settings()
+            try:
+                WATCH_REF["w"].notifier.info(tr("Simulation switched on automatically (a simulator is online)") + f": {f[0].get('name', '')} {f[0].get('ip', '')}")
+            except Exception:
+                pass
         _SIMGONE["t"] = 0.0
     elif CFG["sim_on"] and CFG.get("sim_auto_on"):
         if f or (SIM["ok"] and time.time() - SIM["t"] < 5):
@@ -13271,6 +13435,77 @@ TESTOPT = {"busy": "", "msg": "", "plan": "standard", "sim": {}, "runs": [], "un
 _TESTOPT_LOCK = threading.Lock()
 
 
+def _clean_report(rep):
+    """2.95.33: the simulator is network input - numbers checked, nothing that could break the scoring"""
+    if not isinstance(rep, dict):
+        return {}
+    def n(x, hi=1000000):
+        try:
+            v = float(x)
+        except (TypeError, ValueError):
+            return 0
+        return int(max(0, min(hi, v))) if math.isfinite(v) else 0
+    out = dict(rep); ph = []
+    for p in (rep.get("phases") if isinstance(rep.get("phases"), list) else [])[:60]:
+        if not isinstance(p, dict):
+            continue
+        q = dict(p)
+        for k in ("persons", "persons_detected", "false_alarms", "animals_as_person"):
+            q[k] = n(p.get(k, 0))
+        q["persons_detected"] = min(q["persons_detected"], q["persons"])
+        q["name"] = str(p.get("name", ""))[:80]; q["dark"] = bool(p.get("dark"))
+        mw_ = p.get("missed_why") if isinstance(p.get("missed_why"), dict) else {}
+        q["missed_why"] = {str(k)[:20]: n(v) for k, v in list(mw_.items())[:20]}
+        ph.append(q)
+    out["phases"] = ph
+    for k in ("persons", "persons_detected", "false_alarms"):
+        out[k] = n(rep.get(k, 0))
+    try:
+        r_ = float(rep.get("rate") or 0); out["rate"] = max(0.0, min(100.0, r_)) if math.isfinite(r_) else 0.0
+    except (TypeError, ValueError):
+        out["rate"] = 0.0
+    try:
+        l_ = rep.get("latency_s"); out["latency_s"] = max(0.0, min(600.0, float(l_))) if l_ is not None and math.isfinite(float(l_)) else None
+    except (TypeError, ValueError):
+        out["latency_s"] = None
+    for k in ("false_list", "missed_list"):
+        out[k] = [x for x in (rep.get(k) if isinstance(rep.get(k), list) else []) if isinstance(x, dict)][:500]
+    return out
+
+
+def _opt_trial_file():
+    return os.path.join(DATA_DIR, "opt_trial.json")
+
+
+def _opt_trial_mark(cfg):
+    """the last known good detection settings while the automatic optimization tries something"""
+    try:
+        with open(_opt_trial_file(), "w") as f:
+            json.dump({"cfg": cfg, "t": time.time()}, f)
+    except OSError:
+        pass
+
+
+def _opt_trial_end():
+    try:
+        os.remove(_opt_trial_file())
+    except OSError:
+        pass
+
+
+def testopt_recover():
+    """at the start: the program stopped during a trial of the automatic optimization -> the good settings come back"""
+    try:
+        with open(_opt_trial_file()) as f:
+            d = json.load(f)
+    except (OSError, ValueError):
+        return
+    if isinstance(d, dict) and isinstance(d.get("cfg"), dict):
+        opt_restore(d["cfg"], "automatic optimization was interrupted")
+        log_event("sys", "Automatic optimization was interrupted (restart) - the settings from before the trial are back")
+    _opt_trial_end()
+
+
 def testopt_load():
     try:
         with open(os.path.join(DATA_DIR, "testruns.json")) as f:
@@ -13278,8 +13513,12 @@ def testopt_load():
         TESTOPT["runs"] = [r for r in d.get("runs", []) if isinstance(r, dict)][-30:]
         TESTOPT["undo"] = d.get("undo") if isinstance(d.get("undo"), dict) else None
         if TESTOPT["runs"]:
-            TESTOPT["sugg"] = opt_suggest(TESTOPT["runs"][-1].get("report") or {})
-    except (OSError, ValueError):
+            TESTOPT["sugg"] = opt_suggest(_clean_report(TESTOPT["runs"][-1].get("report") or {}))
+    except Exception:                                   # a damaged file must not stop the program
+        pass
+    try:
+        testopt_recover()
+    except Exception:
         pass
 
 
@@ -13527,7 +13766,7 @@ def _testopt_wait(plan, r, frames):
         TESTOPT["sim"] = st
         if st.get("running"):
             continue
-        rep = st.get("report") or {}
+        rep = _clean_report(st.get("report") or {})
         if not rep or rep.get("plan") != plan:
             TESTOPT["msg"] = str(st.get("info") or "test run ended without report")
             return None
@@ -13565,6 +13804,7 @@ def _testopt_thread(kind, plan, tries=4):
             A["log"].append({"what": "base", "ok": False}); return
         A["base"] = A["best"] = base["score"]
         tried = set()
+        _opt_trial_mark(A["start_cfg"])
         while A["step"] < tries and not TESTOPT["stop"]:
             sug = [x for x in opt_suggest(base["report"] if not A["kept"] else TESTOPT["runs"][-1]["report"]) if x["id"] not in tried]
             if not sug:
@@ -13578,7 +13818,7 @@ def _testopt_thread(kind, plan, tries=4):
             better = run["score"] >= A["best"] + 3.0
             A["log"].append({"id": x["id"], "title": x["title"], "changes": x["changes"], "score": run["score"], "kept": better})
             if better:
-                A["best"] = run["score"]; A["kept"].append(x["id"])
+                A["best"] = run["score"]; A["kept"].append(x["id"]); _opt_trial_mark(opt_snapshot())
             else:
                 opt_restore(before, "automatic, not better")
         A["now"] = ""
@@ -13586,6 +13826,13 @@ def _testopt_thread(kind, plan, tries=4):
             TESTOPT["undo"] = {"cfg": A["start_cfg"], "t": time.time(), "what": "auto"}
             testopt_save()
         log_event("sys", f"Automatic optimization finished: score {A['base']} -> {A['best']}, kept: {', '.join(A['kept']) or 'nothing'}")
+        _opt_trial_end()
+    except Exception as e:                              # 2.95.33: an error in the middle of a trial -> the good settings back
+        log_event("sys", f"Optimization stopped by an error: {type(e).__name__}: {e}"[:200])
+        try:
+            testopt_recover()
+        except Exception:
+            pass
     finally:
         TESTOPT["busy"] = ""
 
@@ -13747,7 +13994,40 @@ def _pname(pid):
     return p["name"] if p else "?"
 
 
+def _pub_map():
+    """secret player key -> public id (2.95.33: the other phones only ever see the public one)"""
+    m = {}
+    for k, p in PARTY["players"].items():
+        if "pub" not in p:
+            p["pub"] = "u" + secrets.token_hex(4)
+        m[k] = p["pub"]
+    return m
+
+
+def _pubify(x, m):
+    if isinstance(x, str):
+        return m.get(x, x)
+    if isinstance(x, list):
+        return [_pubify(y, m) for y in x]
+    if isinstance(x, dict):
+        return {(m.get(k, k) if isinstance(k, str) else k): _pubify(v, m) for k, v in x.items()}
+    return x
+
+
+def party_unpub(d):
+    """actions name other players by their public id -> the secret key"""
+    rev = {v: k for k, v in _pub_map().items()}
+    for k in ("id", "by"):
+        if isinstance(d.get(k), str) and d[k] in rev:
+            d[k] = rev[d[k]]
+    return d
+
+
 def party_view(pid):
+    return _pubify(_party_view(pid), _pub_map())
+
+
+def _party_view(pid):
     """what one phone sees (the secret role only its own)"""
     now = time.time()
     me = _pl(pid)
@@ -14005,6 +14285,8 @@ def party_act_more(pid, a, d, host, G):
             try:
                 v = float(str(d.get("n", "")).replace("'", "").replace(",", ".").replace(" ", ""))
             except ValueError:
+                return "Bitte eine Zahl"
+            if not math.isfinite(v) or abs(v) > 1e15:
                 return "Bitte eine Zahl"
             G.setdefault("g", {})[pid] = v
         elif a == "reveal" and host and G.get("phase") == "ask":
@@ -16419,7 +16701,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_32.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_33.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -16937,6 +17219,31 @@ def lock_allows(path, method, data):
 _GH_HOSTS = ("raw.githubusercontent.com", "api.github.com", "github.com", "objects.githubusercontent.com")
 
 
+class _SafeRedirect(urllib.request.HTTPRedirectHandler):
+    """urllib copies the Authorization header to the new address of a redirect - only keep it on the same host
+    (or GitHub to GitHub). 2.95.33"""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        new = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if new is not None:
+            try:
+                from urllib.parse import urlparse
+                h0, h1 = (urlparse(req.full_url).hostname or "").lower(), (urlparse(new.full_url).hostname or "").lower()
+            except ValueError:
+                h0, h1 = "", "?"
+            if h0 != h1 and not (h0 in _GH_HOSTS and h1 in _GH_HOSTS):
+                for k in list(new.headers):
+                    if k.lower() == "authorization":
+                        del new.headers[k]
+                new.unredirected_hdrs.pop("Authorization", None)
+        return new
+
+
+try:
+    urllib.request.install_opener(urllib.request.build_opener(_SafeRedirect))
+except Exception:
+    pass
+
+
 def _upd_request(url, extra=None):
     """Request for the update source. The GitHub key is added only for GitHub addresses (never sent anywhere else)."""
     h = {"User-Agent": "MotionWatch/" + APP_VERSION}
@@ -17402,6 +17709,13 @@ def start_guard():
     except (OSError, ValueError):
         return
     if g.get("new") != APP_VERSION:
+        if g.get("old") == APP_VERSION and g.get("new"):   # the old program runs again: the new one did not get far
+            log_event("sys", f"Version {g['new']} did not start - back to {APP_VERSION}; it will not be installed automatically again")
+            try:
+                with open(os.path.join(DATA_DIR, "update_bad.json"), "w") as f:
+                    json.dump({"version": g["new"]}, f)
+            except OSError:
+                pass
         try:
             os.remove(p)
         except OSError:
@@ -18134,6 +18448,11 @@ class MotionWatch:
             want = False                                  # the Pi shuts down / simulation: no (or finish the) recording
         h, w = frame.shape[:2]
         if self.writer is not None and (self.rec_size != (w, h) or getattr(self.writer, "failed", False)):
+            early = getattr(self.writer, "failed", False) and time.time() - getattr(self.writer, "t_open", 0) < 15
+            if early:                                          # 2.95.33: died right away -> other encoder, wait before trying
+                _BAD_CODECS.add("ffmpeg_hw" if getattr(self.writer, "hw", False) else "ffmpeg")
+                self._rec_retry = now + 15.0
+                log_event("rec", "The video encoder stopped right after the start - trying another one in 15 s")
             self.writer.release(); self.writer = None          # picture size changed (camera switched) or the encoder died
             self._finish_recording()
         pre = float(CFG["pre_roll"])
@@ -18250,9 +18569,44 @@ class MotionWatch:
         return img
 
     def run(self):
+        """2.95.33: the camera loop must never stop for good. An error is logged, the scene is learnt again and the loop
+        goes on; after several errors in a row while armed, a push message says so."""
+        errs = deque(maxlen=20)
+        while True:
+            try:
+                self._run_loop()
+            except Exception as e:
+                now = time.time(); errs.append(now)
+                import traceback
+                tb = traceback.format_exc(limit=4).strip().splitlines()
+                log_event("sys", f"Camera loop error (restarted): {type(e).__name__}: {e}"[:200] + " | " + " / ".join(x.strip() for x in tb[-3:])[:300])
+                try:
+                    self._reset_models()
+                except Exception:
+                    pass
+                recent = [x for x in errs if now - x < 300]
+                if len(recent) == 5 and is_armed():
+                    try:
+                        self.notifier.alert("{name}: " + tr("Camera loop disturbed"), tr("The detection had 5 errors in 5 minutes and keeps restarting - please check the log."), None)
+                    except Exception:
+                        pass
+                time.sleep(min(10.0, 0.5 * len(recent)))
+
+    def _reset_models(self):
+        """only the learnt background / trackers (picture size changed) - a running recording goes on"""
+        self.bg = cv2.createBackgroundSubtractorMOG2(history=400, varThreshold=28, detectShadows=False)
+        self.weather = WeatherAnalyzer(); self.tracker = Tracker()
+        self.mask_buf.clear(); self.color_bg = None
+        self.tuner.reset()
+
+    def _run_loop(self):
         tm_was = False
         while True:
             HEART["t"] = time.time()
+            a_now = is_armed()
+            if a_now != getattr(self, "_armed_was", a_now):     # 2.95.33: a warm body / movement seen while disarmed
+                self.warm_alerted = False; self.pre_alerted = False   # must still alarm after arming
+            self._armed_was = a_now
             if toolmode_on():                             # tool mode: the camera is closed, nothing is detected
                 if not tm_was:
                     tm_was = True
@@ -18297,6 +18651,18 @@ class MotionWatch:
                 if self.read_failures >= 60:            # ~3 s without a frame -> reconnect the source
                     log_event("sys", "Camera stopped delivering frames - reconnecting")
                     STATE["source_status"] = "connection lost - reconnecting"
+                    if self.writer is not None:          # 2.95.33: the recording up to now is kept and backed up
+                        try:
+                            self.writer.release()
+                        except Exception:
+                            pass
+                        self.writer = None; self._finish_recording()
+                    if is_armed() and not CFG["sim_on"] and time.time() - getattr(self, "_lost_alert", 0) > 600:
+                        self._lost_alert = time.time()
+                        try:
+                            self.notifier.alert("{name}: " + tr("Camera lost"), tr("The camera stopped delivering pictures - reconnecting."), self.frame_out)
+                        except Exception:
+                            pass
                     self.cap.release()
                     self.cap = None; self.read_failures = 0; self._retry_at = time.time() + 2.0
                 time.sleep(0.05); continue
@@ -18330,6 +18696,9 @@ class MotionWatch:
                 self.frame_raw = frame.copy()
             H, W = frame.shape[:2]
             pw = CFG["proc_width"]; ph = int(H * pw / W); sx = W / pw; sy = H / ph
+            if (pw, ph) != getattr(self, "_proc_size", (pw, ph)):     # power mode / camera changed the working size
+                self._reset_models()
+            self._proc_size = (pw, ph)
             small = cv2.resize(frame, (pw, ph))
             if TAMPER is not None:
                 TAMPER.feed(small, t0)
@@ -18500,6 +18869,8 @@ class MotionWatch:
                     cv2.drawMarker(frame, (W // 2, H // 2), (0, 255, 255), cv2.MARKER_CROSS, 24, 1)
             else:
                 STATE["objects"] = 0; STATE["object_summary"] = ""
+                if STATE["tracking"]:
+                    STATE["tracking"] = False; STATE["track_what"] = ""
 
             if CFG["show_zones"] and ZONES:
                 for z in ZONES:
@@ -18684,7 +19055,17 @@ REC_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.\-]{0,120}$")
 REC_EXTS = {".mp4": "video", ".jpg": "image"}
 _STAMP_RE = re.compile(r"(\d{8})_(\d{6})")
 BROWSER_CODECS = {"avc1", "h264", "x264"}                   # what <video> can play everywhere (MPEG-4 part 2 "mp4v" cannot)
-_BAD_CODECS = set()                                         # encoders that failed once (avc1 is missing in many OpenCV builds)
+class _ExpiringSet(dict):
+    """«x in s» is true for 10 minutes after s.add(x) (2.95.33: a removed USB disk must not disable the encoders for good)"""
+    def add(self, k):
+        self[k] = time.time()
+
+    def __contains__(self, k):
+        t = self.get(k)
+        return t is not None and time.time() - t < 600
+
+
+_BAD_CODECS = _ExpiringSet()                                # encoders that failed lately (avc1 is missing in many OpenCV builds)
 _REC_META = {}                                              # name -> [mtime, size, meta, probed]
 _TRANSCODE = {}                                             # name -> "running" | "done" | "error: ..."
 _TRANSCODE_LOCK = threading.Lock()
@@ -18718,9 +19099,9 @@ class FfmpegWriter:
               ["-movflags", "+frag_keyframe+empty_moov+default_base_moof", path]
         if shutil.which("nice"):
             cmd = ["nice", "-n", "5"] + cmd
-        self.size = (w, h); self.failed = False; self.dropped = 0
+        self.size = (w, h); self.failed = False; self.dropped = 0; self.hw = hw; self.t_open = time.time()
         self.proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        self.q = queue.Queue(maxsize=60)
+        self.q = queue.Queue(maxsize=max(4, min(60, int(150e6 / max(1, w * h * 3)))))   # 2.95.33: at most ~150 MB of frames
         self.th = threading.Thread(target=self._pump, daemon=True); self.th.start()
 
     def _pump(self):
@@ -18764,8 +19145,17 @@ class FfmpegWriter:
 def open_writer(path, fps, size):
     """Open a video writer. H.264 plays in every browser. Order: ffmpeg (hardware, then x264) -> OpenCV 'avc1' -> OpenCV 'mp4v'
     (mp4v is the last resort; the preview page converts such files on first play). Returns (writer or None, codec)."""
+    d_ = os.path.dirname(os.path.abspath(path))
+    try:
+        os.makedirs(d_, exist_ok=True)
+    except OSError:
+        pass
+    if not os.access(d_, os.W_OK):
+        return None, ""                                       # the folder (USB disk?) is missing / read-only: not the encoders' fault
     if CFG["record_encoder"] == "auto" and "ffmpeg" not in _BAD_CODECS and shutil.which("ffmpeg"):
         for hw in ((True, False) if _ffmpeg_hw_ok() else (False,)):
+            if hw and ("ffmpeg_hw" in _BAD_CODECS or size[0] > 1920 or size[1] > 1088):
+                continue                                      # the Pi hardware encoder: max 1920x1088, or it died lately
             try:
                 w = FfmpegWriter(path, fps, size, hw)
                 time.sleep(0.2)
@@ -18961,14 +19351,26 @@ class LoopRecorder:
     def loop(self):
         while True:
             try:
+                self._step()
+            except Exception as e:                         # 2.95.33: e.g. the USB disk was removed - try again later
+                log_event("rec", f"Continuous recording: {type(e).__name__}: {e}"[:200])
+                try:
+                    self._close()
+                except Exception:
+                    self.wr = None
+                time.sleep(30)
+
+    def _step(self):
+        if True:
+            try:
                 frame, t = self.q.get(timeout=5)
             except queue.Empty:
                 if not CFG["loop_on"]:
                     self._close()
                 self._clean()
-                continue
+                return
             if not CFG["loop_on"]:
-                self._close(); continue
+                self._close(); return
             h, w = frame.shape[:2]
             if w > 1280:
                 frame = cv2.resize(frame, (1280, int(h * 1280 / w))); h, w = frame.shape[:2]
@@ -18984,7 +19386,7 @@ class LoopRecorder:
                     name = f"loop/{start:%Y-%m-%d}/{dt:%H-%M}.mp4"; path = os.path.join(rec_dir(), name)
                 wr, _codec = open_writer(path, max(1, int(CFG["loop_fps"])), (w, h))
                 if wr is None:
-                    time.sleep(10); continue
+                    time.sleep(10); return
                 self.wr, self.cur, self.size = wr, name, (w, h); LIVE_RECS.add(name)
             try:
                 self.wr.write(frame)
@@ -30670,7 +31072,8 @@ class WebStream:
                             status=code, mimetype="application/json")
 
         def body():
-            return request.get_json(force=True, silent=True) or {}
+            d_ = request.get_json(force=True, silent=True)
+            return d_ if isinstance(d_, dict) else {}            # 2.95.33: [] / "x" / 5 gave error 500
 
         fails = {}                                  # ip -> times of wrong passwords (lock-out after 8 in 5 minutes)
 
@@ -30678,10 +31081,51 @@ class WebStream:
                   "/apple-touch-icon-precomposed.png", "/favicon.ico", "/sw.js",
                   "/sim/simulator.zip"}                # the simulator fetches its updates here (public program, no secrets)
 
+        def local_req():
+            """really from this computer - not through Tailscale serve / a tunnel (those also arrive as 127.0.0.1)"""
+            return (request.remote_addr or "") in ("127.0.0.1", "::1") and not (request.headers.get("X-Forwarded-For")
+                                                                               or request.headers.get("Forwarded") or request.headers.get("X-Forwarded-Host"))
+
+        def origin_ok():
+            """2.95.33 (CSRF): a POST from a page of another web site is refused. Browsers always send «Origin» on such
+            requests; programs (simulator, other Motion Watch devices, shortcuts) send none and are let through."""
+            o = request.headers.get("Origin")
+            if o is None:
+                return True
+            from urllib.parse import urlparse
+            try:
+                u_ = urlparse(o)
+            except ValueError:
+                return False
+            if not u_.netloc:
+                return False                                  # "null" (sandboxed page, file://)
+            def norm(h, scheme):
+                h = (h or "").strip().lower()
+                if (scheme == "https" and h.endswith(":443")) or (scheme == "http" and h.endswith(":80")):
+                    h = h.rsplit(":", 1)[0]
+                return h
+            want = norm(u_.netloc, u_.scheme)
+            have = {norm(request.host, request.scheme), norm(request.host, u_.scheme)}
+            for hh in (request.headers.get("X-Forwarded-Host", ""),):
+                if hh:
+                    have.add(norm(hh.split(",")[0], u_.scheme))
+            pu = (CFG.get("public_url") or "").strip()
+            if pu:
+                try:
+                    pp = urlparse(pu); have.add(norm(pp.netloc, pp.scheme))
+                except ValueError:
+                    pass
+            return want in have
+
         @app.before_request
         def auth():
             if _RESTART_M["todo"]:
                 restart_measure()
+            if request.method not in ("GET", "HEAD", "OPTIONS") and not origin_ok():
+                if (request.content_length or 0) < 1 << 20:
+                    request.get_data()                      # read the body first, else the connection is reset
+                log_event("web", f"Blocked a request from another web page ({request.headers.get('Origin', '')[:60]}) to {request.path}")
+                return Response("Forbidden: request from another web page", 403)
             if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/spiele")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
@@ -30689,17 +31133,19 @@ class WebStream:
             if not pw and not CFG["web_pw_hash"]:
                 return None
             ip = request.remote_addr or "?"
+            if ip in ("127.0.0.1", "::1") and request.headers.get("X-Forwarded-For"):
+                ip = request.headers["X-Forwarded-For"].split(",")[0].strip()[:45] or ip   # behind Tailscale serve / a tunnel
             now = time.time()
-            recent = [x for x in fails.get(ip, []) if now - x < 300]
-            if len(recent) >= 8:
-                fails[ip] = recent
-                return Response("Too many failed logins - try again in a few minutes", 429, {"Retry-After": "300"})
             tf = trust_find(request.cookies.get(TRUST_COOKIE, ""))   # a trusted device: no login (also after updates)
             if tf:
                 g.user, g.role = tf[0]
                 if now - float(tf[1].get("seen", 0)) > 3600:
                     tf[1]["seen"] = int(now); tf[1]["ip"] = ip[:45]; save_settings()
                 return None
+            recent = [x for x in fails.get(ip, []) if now - x < 300]
+            if len(recent) >= 8:
+                fails[ip] = recent
+                return Response("Too many failed logins - try again in a few minutes", 429, {"Retry-After": "300"})
             a = request.authorization
             who = user_login(a.username or "", a.password or "") if a else None
             if who:
@@ -30920,6 +31366,8 @@ class WebStream:
                 threading.Thread(target=_testopt_thread, args=(a, plan, max(1, min(8, int(d.get("tries") or 4)))), daemon=True).start()
             elif a == "stop":
                 TESTOPT["stop"] = True; _simtest("test_stop")
+            elif a in ("apply", "apply_all", "undo") and TESTOPT["busy"]:
+                return reply({"ok": False, "error": "a test run is going on - wait until it is finished"}, 409)
             elif a in ("apply", "apply_all"):
                 sel = [x for x in TESTOPT["sugg"] if a == "apply_all" or x["id"] == d.get("id")]
                 if not sel:
@@ -30967,6 +31415,9 @@ class WebStream:
                 return reply({"error": "name missing"}, 400)
             pid = str(d.get("pid") or "")
             if pid not in PARTY["players"]:
+                if len(PARTY["players"]) >= 30:          # 2.95.33: players away for 10 minutes make room
+                    for k_ in [k_ for k_, p_ in PARTY["players"].items() if time.time() - p_["t"] > 600 and k_ != PARTY["host"]]:
+                        PARTY["players"].pop(k_, None)
                 if len(PARTY["players"]) >= 30:
                     return reply({"error": "full (30 players)"}, 409)
                 pid = secrets.token_urlsafe(9)
@@ -31000,7 +31451,10 @@ class WebStream:
             d = body(); pid = str(d.get("pid") or "")
             try:
                 with PARTY_COND:
-                    err = party_act(pid, d)
+                    err = party_act(pid, party_unpub(d))
+                    G_ = PARTY["g"]
+                    if isinstance(G_.get("log"), list) and len(G_["log"]) > 60:
+                        G_["log"] = G_["log"][-40:]
             except (TypeError, ValueError, KeyError, IndexError, AttributeError):
                 err = "invalid values"
             if not err and not PARTY.pop("_quiet", False):
@@ -31706,7 +32160,7 @@ class WebStream:
                         STATE["update_new"] = ({"version": new[-1]["version"], "notes": new[-1].get("notes", "")[:300], "date": new[-1].get("date", "")}
                                                if new else {})
                 elif a == "install":
-                    if not web_pw_active() and (request.remote_addr or "") not in ("127.0.0.1", "::1"):
+                    if not web_pw_active() and not local_req():
                         return reply({"ok": False, "error": tr("set a web password first - otherwise anybody in the network could install a program", lang)}, 403)
                     ok, err = update_install(str(d.get("version", "")))
                     return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
@@ -31845,14 +32299,14 @@ class WebStream:
         @app.route("/api/time", methods=["POST"])
         def api_time():
             d = body()
-            return reply({"ok": True, "status": sync_time_from_client(d.get("t"), d.get("tz") or "")})
+            return reply({"ok": True, "status": sync_time_from_client(d.get("t"), d.get("tz") or "", getattr(g, "role", "admin") == "admin")})
 
         @app.route("/api/wifi", methods=["GET", "POST"])
         def api_wifi():
             if request.method == "GET":
                 return reply(wifi_status())
             d = body(); a = d.get("action"); lang = norm_lang(d.get("lang"))
-            if not web_pw_active() and (request.remote_addr or "") not in ("127.0.0.1", "::1"):
+            if not web_pw_active() and not local_req():
                 return reply({"ok": False, "error": tr("set a web password first (--web-password) - otherwise anybody in the network could change the Wi-Fi", lang)}, 403)
             if a == "scan":
                 ok, err = wifi_scan()
@@ -32464,7 +32918,7 @@ class WebStream:
                 n = webpush_all("Motion Watch: Test", tr("Web push works ✓", lang), "/", tag="mw-test")
                 ok, err = n > 0, ("" if n else "no device reached")
             elif a == "https":
-                if not (request.remote_addr or "") in ("127.0.0.1", "::1") and not web_pw_active():
+                if not local_req() and not web_pw_active():
                     return reply({"ok": False, "error": tr_err("set a web password first", lang)}, 403)
                 ok, err = tailscale_https(bool(d.get("on", True)))
             else:
@@ -33907,7 +34361,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.32")
+        self.root.title("Motion Watch 2.95.33")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -34197,7 +34651,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.32 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.33 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -40899,7 +41353,14 @@ for _k, _v in _HX52.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
-_HX60 = {'Game corner': ('Spielecke', 'Coin jeux', 'Angolo giochi', 'Chantun da gieus'), 'Downloading': ('Herunterladen', 'Téléchargement', 'Download', 'Telechargiar'), 'Checking the signature': ('Unterschrift wird geprüft', 'Vérification de la signature', 'Verifica della firma', 'La signatura vegn controllada'),
+_HX60 = {'Simulation switched on automatically (a simulator is online)': ('Simulation automatisch eingeschaltet (ein Simulator ist online)', 'Simulation activée automatiquement (un simulateur est en ligne)', 'Simulazione attivata automaticamente (un simulatore è online)', 'Simulaziun activada automaticamain (in simulatur è online)'),
+         'Disarmed via MQTT / Home Assistant': ('Über MQTT / Home Assistant unscharf geschaltet', 'Désarmé via MQTT / Home Assistant', 'Disattivato tramite MQTT / Home Assistant', 'Deschaltà via MQTT / Home Assistant'),
+         'a test run is going on - wait until it is finished': ('ein Testlauf läuft – warte, bis er fertig ist', 'un test est en cours – attendez la fin', 'è in corso un test – attendi la fine', 'in test è en lavur – spetga fin ch\'el è finì'),
+         'Camera loop disturbed': ('Kamera-Schleife gestört', 'Boucle caméra perturbée', 'Ciclo videocamera disturbato', 'Circul da camera disturbà'),
+         'The detection had 5 errors in 5 minutes and keeps restarting - please check the log.': ('Die Erkennung hatte 5 Fehler in 5 Minuten und startet immer wieder neu – bitte das Protokoll ansehen.', 'La détection a eu 5 erreurs en 5 minutes et redémarre sans cesse – voir le journal.', 'Il rilevamento ha avuto 5 errori in 5 minuti e si riavvia di continuo – controlla il registro.', 'La renconuschientscha ha gì 5 sbagls en 5 minutas e reaviescha adina – controllar il protocol.'),
+         'Camera lost': ('Kamera weg', 'Caméra perdue', 'Videocamera persa', 'Camera persa'),
+         'The camera stopped delivering pictures - reconnecting.': ('Die Kamera liefert keine Bilder mehr – neu verbinden …', 'La caméra ne livre plus d’images – reconnexion …', 'La videocamera non invia più immagini – riconnessione …', 'La camera na furnescha nagins maletgs pli – colliar danovamain …'),
+         'Game corner': ('Spielecke', 'Coin jeux', 'Angolo giochi', 'Chantun da gieus'), 'Downloading': ('Herunterladen', 'Téléchargement', 'Download', 'Telechargiar'), 'Checking the signature': ('Unterschrift wird geprüft', 'Vérification de la signature', 'Verifica della firma', 'La signatura vegn controllada'),
          'Restarting': ('Neustart', 'Redémarrage', 'Riavvio', 'Reaviar'), 'Still about': ('Noch etwa', 'Encore environ', 'Ancora circa', 'Anc var'),
          'Takes longer than usual …': ('Dauert länger als sonst …', 'Plus long que d’habitude …', 'Più lungo del solito …', 'Dura pli ditg che uschiglio …'), 'Done': ('Fertig', 'Terminé', 'Fatto', 'Finì'),
          'USB devices': ('USB-Geräte', 'Appareils USB', 'Dispositivi USB', 'Apparats USB'), 'Read again': ('Neu einlesen', 'Relire', 'Rileggi', 'Leger danovamain'),
@@ -41180,6 +41641,9 @@ if __name__ == "__main__":
         set_data_dir(a.config or DATA_DIR)
     took = prepare_settings_file() if not a.demo else ""
     load_settings()
+    if STATE.get("settings_restored"):
+        log_event("sys", "The settings file was damaged (kept as " + os.path.basename(STATE["settings_restored"]) + ") - "
+                  + ("the backup copy was used" if STATE.get("settings_from_backup") else "no usable backup: default settings!"))
     testopt_load()
     threading.Thread(target=testopt_nightly_loop, daemon=True, name="testnight").start()
     if not CFG.get("sim_autostart_v2"):                    # 2.95.26: the Pi outside does not switch to a PC simulator by itself

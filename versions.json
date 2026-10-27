@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 15:52",
+ "generated": "2026-10-27 16:07",
  "versions": [
   {
-   "version": "2.95.32",
-   "file": "webcam_bewegung_2_95_32.py",
+   "version": "2.95.33",
+   "file": "webcam_bewegung_2_95_33.py",
    "url": "",
-   "sha256": "7dba3ba57ec1e15f7d6daf5ccd479ca6dfa0be2f0b31ca9b97b9bb54f8560255",
-   "date": "2026-10-27 15:52",
-   "notes": "game corner: six new games for the phones - Stadt-Land-Fluss, estimating, explaining words (taboo), who am I, reaction, battleships. Game collection GS-1.1 with 15 games (new: Tetris, Pong, Dino run, and own games snake, minesweeper, sudoku, memory). Typed text is kept when the page updates.",
-   "sig": "2566e057a20d61f0a4ffcf48d90d1554c6a90e93185312267d863b5344c7767cb4e5a73c4ec4700544cc8f6f2cd3a4ff1119180b2c1e6f953ddd76021432fd0e"
+   "sha256": "e6e21508a1fabd5905711d300f7f9393dd9f8232329a64cdf7fedce412d3d88b",
+   "date": "2026-10-27 16:07",
+   "notes": "security and stability review. Camera loop restarts itself after an error (push after 5 errors), camera loss finishes the recording and tells the owner; damaged settings file -> backup copy instead of defaults; settings saved atomically; a new version that does not start is not installed again; update key never follows a redirect elsewhere; pages of other web sites cannot send commands (CSRF); viewers cannot move the clock by years or switch Tailscale HTTPS; alarm push tried 3 times, then SMS; the Wi-Fi password is not overwritten by a wrong one, the own Wi-Fi comes back after a failed switch;",
+   "sig": "add2673335f3437ec042e50473b8d6ff36c3d3db74e2147acd57bcd5419b643de8a5395e3557bedc54cb01fcab2240c3b08c335fcc549d0dbbacc01c73687002"
   },
   {
    "version": "2.94.5",
