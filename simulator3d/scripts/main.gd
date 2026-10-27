@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.38"
+const VERSION := "3D-3.39"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1859,7 +1859,9 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 	var a: Vector3 = from if from != null else Vector3(-side * (depth * 1.6 + 6.0), 0, -depth)
 	var b: Vector3 = to if to != null else Vector3(side * (depth * 1.6 + 6.0), 0, -depth)
 	var spd: float = {"person": 1.3, "child": 1.0, "jogger": 2.8, "fox": 2.0, "boar": 1.5, "deer": 1.6, "cat": 1.1, "dog": 1.8, "badger": 0.9,
-			"hare": 1.9, "hedgehog": 0.3, "car": 11.0, "wolf": 1.7, "marten": 1.5, "squirrel": 1.6}.get(kind, 1.3)
+			"hare": 1.9, "hedgehog": 0.3, "car": 11.0, "wolf": 1.7, "marten": 1.5, "squirrel": 1.6,
+			"cyclist": 4.6, "stroller": 1.1, "drunk": 0.75, "courier": 1.8, "police": 1.2, "cow": 0.8, "sheep": 0.9, "horse": 1.4,
+			"chamois": 1.7, "ibex": 1.1, "lynx": 1.5, "tractor": 5.5, "moto": 14.0, "van": 10.0}.get(kind, 1.3)
 	var v = Actor.new()
 	visitors.add_child(v)
 	var sd := -1
@@ -1874,7 +1876,7 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 	return v
 
 
-func car() -> void:
+func car(kind_ := "car") -> void:
 	var side := 1.0 if randf() < 0.5 else -1.0
 	if scenes.data.has("road_line"):                      # a real place: along the nearest road (right-hand traffic)
 		var pts := []
@@ -1890,12 +1892,12 @@ func car() -> void:
 				var dd: Vector2 = (pts[mini(i + 1, pts.size() - 1)] - pts[maxi(i - 1, 0)]).normalized()
 				var q: Vector2 = pts[i] + Vector2(-dd.y, dd.x) * -1.3
 				path.append(Vector3(q.x, 0, q.y))
-			var v = spawn("car", path[0], path[1])
+			var v = spawn(kind_, path[0], path[1])
 			for i in range(2, path.size()):
 				v.route.append(path[i])
 			return
 	var z: float = scenes.data.get("road_z", -28.0)
-	spawn("car", Vector3(-side * 90.0, 0, z - side * 1.2), Vector3(side * 90.0, 0, z - side * 1.2))
+	spawn(kind_, Vector3(-side * 90.0, 0, z - side * 1.2), Vector3(side * 90.0, 0, z - side * 1.2))
 
 
 func visit(k: String) -> void:
@@ -1926,6 +1928,59 @@ func visit(k: String) -> void:
 			d2.speed = lead.speed
 			if randf() < 0.5:
 				d2.body_root.scale *= 0.7                        # a young one
+	elif k in ["tractor", "moto", "van"]:                      # vehicles (3D-3.39): along the road like a car
+		car(k)
+	elif k == "cyclist":                                       # on the road (or across the meadow)
+		var z0: float = scenes.data.get("road_z", -28.0) + 0.6
+		var sd := 1.0 if randf() < 0.5 else -1.0
+		if scenes.data.has("road_line"):
+			car("cyclist")
+		else:
+			spawn("cyclist", Vector3(-sd * 80.0, 0, z0), Vector3(sd * 80.0, 0, z0))
+	elif k == "couple":                                        # two people side by side, now and then they stop together
+		var a = spawn("person")
+		var b = spawn("person", a.position + Vector3(0.0, 0, 0.9), a.target)
+		b.leader = a
+		b.speed = a.speed * 1.3
+		b.follow_off = Vector3(0.8, 0, 0.1)
+	elif k == "cows" or k == "sheep_flock":                    # a herd moves slowly over the meadow
+		var ak := "cow" if k == "cows" else "sheep"
+		var lead2 = spawn(ak)
+		lead2.speed *= 0.8
+		for i in range(randi_range(2, 4) if ak == "cow" else randi_range(4, 8)):
+			var o2 := Vector3(randf_range(-3.0, 3.0), 0, randf_range(1.0, 5.0)) * (1.6 if ak == "cow" else 1.0)
+			var f2 = spawn(ak, lead2.position + o2, lead2.target + o2)
+			f2.speed = lead2.speed
+	elif k == "horse_walk":                                    # somebody leads a horse
+		var w2 = spawn("person")
+		w2.speed = 1.2
+		var hs = spawn("horse", w2.position + Vector3(0.9, 0, 1.6), w2.target)
+		hs.leader = w2
+		hs.speed = 1.6
+		hs.follow_off = Vector3(0.9, 0, 1.6)
+	elif k == "courier":                                       # brings a pizza to the door, waits, goes back
+		var door2: Vector3 = obj["door"]
+		var st2 := Vector3(30.0 if randf() < 0.5 else -30.0, 0, scenes.data.get("road_z", -28.0) + 1.0)
+		var c2 = spawn("courier", st2, door2 + Vector3(0, 0, 0.8))
+		c2.route = [[door2 + Vector3(0, 0, 0.8), 8.0, 0.0], st2]
+	elif k == "police":                                        # a round past the caravan and the tent, with a torch at night
+		var d3: Vector3 = obj["door"]
+		var p3: Vector3 = obj["pir"]
+		var s3 := Vector3(-32.0, 0, -12.0)
+		var c3 = spawn("police", s3, d3 + Vector3(1.5, 0, 1.5))
+		c3.route = [[d3 + Vector3(1.5, 0, 1.5), 4.0, 0.0], p3 + Vector3(2.0, 0, 2.0), [p3 + Vector3(2.0, 0, 2.0), 3.0, 0.0], Vector3(32.0, 0, -14.0)]
+	elif k == "drunk":                                         # staggers in a zigzag
+		var dz := randf_range(-18.0, -7.0)
+		var sd2 := 1.0 if randf() < 0.5 else -1.0
+		var c4 = spawn("drunk", Vector3(-sd2 * 30.0, 0, dz), Vector3(-sd2 * 20.0, 0, dz + 2.0))
+		for i in range(1, 9):
+			c4.route.append(Vector3(-sd2 * 30.0 + sd2 * i * 7.0, 0, dz + (2.5 if i % 2 == 0 else -2.5) + randf_range(-1.0, 1.0)))
+		if randf() < 0.5:
+			c4.route.insert(3, [c4.route[2], 6.0, 0.0])               # stops, sways
+	elif k == "bats":
+		_night_flyers(false)
+	elif k == "owl":
+		_night_flyers(true)
 	elif k == "garden_person":
 		var side := 1.0 if randf() < 0.5 else -1.0
 		var g = spawn("person", Vector3(side * 35.0, 0, -30.5), Vector3(0, 0, -30.0))
@@ -1979,7 +2034,10 @@ func _life() -> void:
 
 const VISIT_EMOJI := {"person": "🚶", "child": "🧒", "jogger": "🏃", "fox": "🦊", "deer": "🦌", "boar": "🐗", "cat": "🐈", "dog": "🐕",
 		"badger": "🦡", "hare": "🐇", "hedgehog": "🦔", "wolf": "🐺", "marten": "🐾", "squirrel": "🐿", "car": "🚗", "thief": "🦹",
-		"dogwalk": "🦮", "herd": "🦌", "car_park": "🅿", "bench": "🪑", "feed": "🌾", "garden_person": "🚪", "clear": "🧹"}
+		"dogwalk": "🦮", "herd": "🦌", "car_park": "🅿", "bench": "🪑", "feed": "🌾", "garden_person": "🚪", "clear": "🧹",
+		"cyclist": "🚴", "stroller": "👶", "courier": "🍕", "police": "👮", "drunk": "🥴", "couple": "👫", "horse_walk": "🐎",
+		"cow": "🐄", "sheep": "🐑", "horse": "🐎", "chamois": "🐐", "ibex": "🐐", "lynx": "🐆", "cows": "🐄", "sheep_flock": "🐑",
+		"bats": "🦇", "owl": "🦉", "tractor": "🚜", "moto": "🏍", "van": "🚐"}
 # presets of «Besuch» (3D-3.38): [id, name, auto, daily life, who comes, how often, at most]
 const VISIT_PRESETS := [["calm", "Ruhige Nacht – selten jemand", true, false, "mixed", 0.4, 4],
 		["camp", "Belebter Campingplatz – viele Menschen", true, false, "more_people", 2.0, 18],
@@ -1987,7 +2045,8 @@ const VISIT_PRESETS := [["calm", "Ruhige Nacht – selten jemand", true, false, 
 		["daily", "Tagesablauf – jeder kommt zu seiner Zeit", true, true, "mixed", 1.0, 12],
 		["busy", "Viel los – Belastungstest für Motion Watch", true, false, "mixed", 4.0, 30],
 		["off", "Kein Besuch von selbst", false, false, "mixed", 1.0, 12]]
-const PEOPLE_KINDS := ["person", "child", "jogger", "dogwalk", "bench", "garden_person", "car_park", "car"]
+const PEOPLE_KINDS := ["person", "child", "jogger", "dogwalk", "bench", "garden_person", "car_park", "car", "cyclist", "stroller", "courier",
+		"police", "drunk", "couple", "horse_walk", "tractor", "moto", "van"]
 
 
 func _mixed(kinds: Array) -> Array:
@@ -2078,7 +2137,10 @@ const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort
 		"meadow": ["Wetter", "Natur und Wind"], "car": ["Besuch", "Fahrzeuge und Abläufe"], "thief": ["Besuch", "Fahrzeuge und Abläufe"],
 		"dogwalk": ["Besuch", "Menschen schicken"], "herd": ["Besuch", "Tiere schicken"], "clear": ["Besuch", "Vorlagen"], "visit_preset": ["Besuch", "Vorlagen"],
 		"car_park": ["Besuch", "Fahrzeuge und Abläufe"], "bench": ["Besuch", "Menschen schicken"], "feed": ["Besuch", "Tiere schicken"],
-		"garden_person": ["Besuch", "Menschen schicken"], "auto": ["Besuch", "Von selbst"], "mix": ["Besuch", "Von selbst"],
+		"garden_person": ["Besuch", "Menschen schicken"], "couple": ["Besuch", "Menschen schicken"], "horse_walk": ["Besuch", "Menschen schicken"],
+		"courier_go": ["Besuch", "Menschen schicken"], "police_go": ["Besuch", "Menschen schicken"], "drunk_go": ["Besuch", "Menschen schicken"],
+		"cows": ["Besuch", "Tiere schicken"], "sheep_flock": ["Besuch", "Tiere schicken"], "bats": ["Besuch", "Tiere schicken"], "owl": ["Besuch", "Tiere schicken"],
+		"tractor": ["Besuch", "Fahrzeuge und Abläufe"], "moto": ["Besuch", "Fahrzeuge und Abläufe"], "van": ["Besuch", "Fahrzeuge und Abläufe"], "auto": ["Besuch", "Von selbst"], "mix": ["Besuch", "Von selbst"],
 		"visit_rate": ["Besuch", "Von selbst"], "daily_life": ["Besuch", "Von selbst"], "real_time": ["Szene", "Zeit"], "max_visitors": ["Besuch", "Von selbst"], "visitor_speed": ["Besuch", "Verhalten"],
 		"lamp_share": ["Besuch", "Verhalten"], "look_at_light": ["Besuch", "Verhalten"], "flee_light": ["Besuch", "Verhalten"],
 		"flee_sound": ["Besuch", "Verhalten"], "avoid_on": ["Besuch", "Verhalten"], "lens_vignette": ["Kamerabild", "Feineinstellungen"],
@@ -2166,6 +2228,16 @@ func _register_controls() -> void:
 	add_control("button", "thief", "Dieb (Velo, Tür)", null, func(): thief(), "Besuch")
 	add_control("button", "dogwalk", "Spaziergang mit Hund", null, func(): visit("dogwalk"), "Besuch")
 	add_control("button", "herd", "Rehrudel", null, func(): visit("herd"), "Besuch")
+	# 3D-3.39: more visitors (single people and animals are in VISITOR_LIST; these come in groups or do something)
+	add_control("button", "couple", "Paar (zu zweit)", null, func(): visit("couple"), "Besuch")
+	add_control("button", "horse_walk", "Mit dem Pferd unterwegs", null, func(): visit("horse_walk"), "Besuch")
+	add_control("button", "cows", "Kühe auf der Weide", null, func(): visit("cows"), "Besuch")
+	add_control("button", "sheep_flock", "Schafherde", null, func(): visit("sheep_flock"), "Besuch")
+	add_control("button", "bats", "Fledermäuse am Licht (nachts)", null, func(): visit("bats"), "Besuch")
+	add_control("button", "owl", "Eule fliegt vorbei", null, func(): visit("owl"), "Besuch")
+	add_control("button", "tractor", "Traktor", null, func(): visit("tractor"), "Besuch")
+	add_control("button", "moto", "Töff", null, func(): visit("moto"), "Besuch")
+	add_control("button", "van", "Lieferwagen", null, func(): visit("van"), "Besuch")
 	add_control("button", "car_park", "Auto parkiert (Parkplatz)", null, func(): visit("car_park"), "Besuch", ex)
 	add_control("button", "bench", "Besuch setzt sich auf die Bank (Lustiger Platz)", null, func(): visit("bench"), "Besuch", ex)
 	add_control("button", "feed", "Reh kommt zur Futterstelle (Wildbeobachtung)", null, func(): visit("feed_deer"), "Besuch", ex)
@@ -2279,10 +2351,12 @@ func _register_controls() -> void:
 			{"min": 160, "max": 520, "step": 20, "unit": "px"})
 
 
-const VISITOR_KINDS_ALL := ["person", "child", "jogger", "fox", "deer", "boar", "cat", "dog", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel"]
+const VISITOR_KINDS_ALL := ["person", "child", "jogger", "fox", "deer", "boar", "cat", "dog", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel",
+		"cyclist", "stroller", "courier", "police", "drunk", "cow", "sheep", "horse", "chamois", "ibex", "lynx"]
 const VISITOR_LIST := [["person", "Person"], ["child", "Kind"], ["jogger", "Jogger"], ["fox", "Fuchs"], ["deer", "Reh"], ["boar", "Wildschwein"],
 		["cat", "Katze"], ["dog", "Hund"], ["badger", "Dachs"], ["hare", "Hase"], ["hedgehog", "Igel"], ["wolf", "Wolf"], ["marten", "Marder"],
-		["squirrel", "Eichhörnchen"]]
+		["squirrel", "Eichhörnchen"], ["cyclist", "Velofahrer"], ["stroller", "Kinderwagen"], ["courier", "Pizzakurier"], ["police", "Polizei-Rundgang"],
+		["drunk", "Betrunkener"], ["cow", "Kuh"], ["sheep", "Schaf"], ["horse", "Pferd"], ["chamois", "Gämse"], ["ibex", "Steinbock"], ["lynx", "Luchs"]]
 var meadow_on := true
 
 
@@ -2997,7 +3071,8 @@ func _make_thumbs() -> void:
 	"""a little moving picture of every visitor (3D-3.24): each walks on the spot in a small world of its own; only
 	the pictures that can be seen are drawn again, about 12 times a second"""
 	var sizes := {"person": 1.9, "child": 1.3, "jogger": 1.9, "deer": 1.7, "boar": 1.1, "fox": 0.8, "dog": 0.9, "cat": 0.6, "badger": 0.6, "hare": 0.65, "hedgehog": 0.32,
-			"wolf": 1.1, "marten": 0.38, "squirrel": 0.3}
+			"wolf": 1.1, "marten": 0.38, "squirrel": 0.3, "cyclist": 1.9, "stroller": 1.9, "courier": 1.9, "police": 1.9, "drunk": 1.9,
+			"cow": 1.7, "sheep": 0.9, "horse": 2.0, "chamois": 1.1, "ibex": 1.3, "lynx": 0.9}
 	for k in VISITOR_LIST:
 		var vp := SubViewport.new()
 		vp.size = Vector2i(128, 116)
@@ -3026,7 +3101,8 @@ func _make_thumbs() -> void:
 		a.setup(self, k[0], Vector3.ZERO, Vector3(-0.8, 0, 1.0), 0.0)
 		a.speed = THUMB_SPEED.get(k[0], 1.0)
 		var h: float = sizes.get(k[0], 1.0)
-		var wide: bool = k[0] in ["fox", "deer", "boar", "dog", "cat", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel"]
+		var wide: bool = k[0] in ["fox", "deer", "boar", "dog", "cat", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel", "cow", "sheep", "horse",
+				"chamois", "ibex", "lynx", "cyclist", "stroller"]
 		cam.position = Vector3(h * 1.1, h * 0.62, h * 1.75) * (1.15 if wide else 0.78)
 		cam.look_at(Vector3(0, h * 0.48, 0), Vector3.UP)
 		thumb_vps[k[0]] = [vp, a]
@@ -3040,7 +3116,8 @@ func _make_thumbs() -> void:
 		await get_tree().process_frame
 
 
-const THUMB_SPEED := {"person": 1.35, "child": 1.1, "jogger": 2.9, "deer": 1.2, "boar": 1.1, "fox": 1.3, "dog": 1.4, "cat": 0.8, "badger": 0.7, "hare": 1.0, "wolf": 1.2, "marten": 1.0, "squirrel": 0.9, "hedgehog": 0.35}
+const THUMB_SPEED := {"cyclist": 3.0, "stroller": 1.1, "courier": 1.6, "police": 1.2, "drunk": 0.8, "cow": 0.8, "sheep": 0.9, "horse": 1.3,
+		"chamois": 1.2, "ibex": 1.0, "lynx": 1.1, "person": 1.35, "child": 1.1, "jogger": 2.9, "deer": 1.2, "boar": 1.1, "fox": 1.3, "dog": 1.4, "cat": 0.8, "badger": 0.7, "hare": 1.0, "wolf": 1.2, "marten": 1.0, "squirrel": 0.9, "hedgehog": 0.35}
 var thumb_vps := {}                    # kind -> [SubViewport, actor walking on the spot]
 var _thumb_t := 0.0
 
@@ -4010,7 +4087,7 @@ func _place_at(k: String, p: Vector2) -> void:
 	var hit = ground_hit(from, d)
 	if hit == null or from.distance_to(hit) > 400.0:
 		return
-	var a: Vector3 = free_spot(hit, 0.5, k in ["person", "child", "jogger"])
+	var a: Vector3 = free_spot(hit, 0.5, k in PEOPLE_KINDS)
 	var ang := randf() * TAU
 	var b := a + Vector3(cos(ang), 0, sin(ang)) * 40.0
 	spawn(k, a, b)
@@ -4019,7 +4096,7 @@ func _place_at(k: String, p: Vector2) -> void:
 # ---- wildlife watching: the rifle (bloodless - a hit animal hops, sees stars and runs away; people cannot be hit) ----------
 var shot_msg := ""
 var shot_msg_t := 0.0
-const POINTS := {"fox": 10, "deer": 15, "boar": 20, "badger": 25, "cat": 5, "dog": 5, "wolf": 40, "marten": 30, "squirrel": 10}
+const POINTS := {"chamois": 30, "ibex": 35, "lynx": 50, "fox": 10, "deer": 15, "boar": 20, "badger": 25, "cat": 5, "dog": 5, "wolf": 40, "marten": 30, "squirrel": 10}
 
 
 func _build_crosshair(layer: CanvasLayer) -> void:
@@ -4129,7 +4206,7 @@ func shoot(from: Vector3, d: Vector3) -> void:
 
 func _animal_name(k: String) -> String:
 	return {"fox": "Fuchs", "deer": "Reh", "boar": "Wildschwein", "badger": "Dachs", "cat": "Katze", "dog": "Hund", "wolf": "Wolf", "marten": "Marder",
-			"squirrel": "Eichhörnchen", "hare": "Hase", "hedgehog": "Igel"}.get(k, k)
+			"squirrel": "Eichhörnchen", "hare": "Hase", "hedgehog": "Igel", "chamois": "Gämse", "ibex": "Steinbock", "lynx": "Luchs"}.get(k, k)
 
 
 func _say(text: String, p: Vector3, col: Color) -> void:
@@ -4942,3 +5019,75 @@ func _test_scroll(y: float) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	(ui_box.get_parent() as ScrollContainer).get_v_scroll_bar().value = y
+
+
+# ---- night flyers (from 3D-3.39): bats round the light, an owl gliding past - typical false alarms at night ---------------
+func _night_flyers(owl: bool) -> void:
+	var root_ := Node3D.new()
+	scene_parent.add_child(root_)
+	var fw: Vector3 = -cams[0].global_transform.basis.z
+	fw.y = 0.0
+	fw = fw.normalized() if fw.length() > 0.01 else Vector3(0, 0, -1)
+	var side_v := Vector3(-fw.z, 0, fw.x)
+	var base: Vector3 = head.global_position + fw * randf_range(5.0, 9.0)
+	var dark := mat(Color(0.12, 0.1, 0.09) if not owl else Color(0.5, 0.4, 0.3))
+	var flyers := []
+	for i in range(1 if owl else randi_range(3, 6)):
+		var b := Node3D.new()
+		root_.add_child(b)
+		var span: float = 0.55 if owl else 0.16
+		add_mesh(b, sph_mesh(0.12 if owl else 0.04, 0.3 if owl else 0.09), Vector3.ZERO, dark, 36.0)
+		if owl:
+			add_mesh(b, sph_mesh(0.09, 0.17), Vector3(0, 0.08, -0.12), dark, 36.0)
+		var ws := []
+		for sg in [-1, 1]:
+			var w := Node3D.new()
+			b.add_child(w)
+			add_mesh(w, box(span, 0.012, span * 0.45), Vector3(span * 0.5 * sg, 0, 0), dark, 30.0)
+			ws.append([w, sg])
+		flyers.append([b, ws, randf() * TAU, randf_range(0.7, 1.4)])
+	var t0 := now()
+	var dur := 22.0 if not owl else 9.0
+	var from := base - side_v * 25.0 + Vector3(0, 4.5, 0)
+	var to := base + side_v * 25.0 + Vector3(0, 3.0, 0) + fw * randf_range(-3.0, 3.0)
+	var hold := {"r": root_}
+	var fly := func(_dt, t):
+		var r = hold["r"]
+		if r == null or not is_instance_valid(r):
+			return true
+		var f: float = (now() - t0) / dur
+		for fl in flyers:
+			var b: Node3D = fl[0]
+			var p: Vector3
+			if owl:
+				p = from.lerp(to, f) + Vector3(0, sin(f * PI) * -1.5, 0)
+				b.look_at_from_position(p, p + (to - from).normalized(), Vector3.UP)
+				for w in fl[1]:
+					w[0].rotation.z = w[1] * (0.5 * sin(t * 6.0) if fmod(t, 2.5) < 1.2 else 0.05)   # flaps, then glides
+			else:
+				var ph: float = t * fl[3] * 2.2 + fl[2]
+				var away: float = clamp((f - 0.8) / 0.2, 0.0, 1.0) * 30.0
+				p = base + side_v * (sin(ph) * 3.0 + sin(ph * 2.3) * 1.2 + away) + fw * (cos(ph * 1.3) * 2.0) + Vector3(0, 2.8 + sin(ph * 1.7) * 1.2 + away * 0.3, 0)
+				var nx: Vector3 = p - b.position
+				if nx.length() > 0.001:
+					b.look_at_from_position(p, p + nx, Vector3.UP)
+				else:
+					b.position = p
+				for w in fl[1]:
+					w[0].rotation.z = w[1] * 0.9 * sin(t * 18.0 + fl[2])
+		if f >= 1.0:
+			hold["r"] = null
+			flyers.clear()
+			r.queue_free()
+			return true
+		return false
+	anims.append(fly)
+
+
+func sph_mesh(r: float, h: float) -> SphereMesh:
+	var m := SphereMesh.new()
+	m.radius = r
+	m.height = h
+	m.radial_segments = 10
+	m.rings = 6
+	return m

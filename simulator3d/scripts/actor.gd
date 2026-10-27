@@ -87,12 +87,21 @@ const COLORS := {
 }
 
 
+const PERSON_VARIANTS := ["child", "jogger", "cyclist", "stroller", "drunk", "courier", "police"]
+const CAR_VARIANTS := ["tractor", "moto", "van"]
+var wheels: Array = []        # cyclist, stroller: wheels that turn
+var carry := false            # courier: holds the box in front with both hands
+
+
 func setup(m, k: String, from: Vector3, to: Vector3, spd: float) -> void:
 	main = m
 	kind = k
-	if kind == "child" or kind == "jogger":
+	if kind in PERSON_VARIANTS:
 		variant = kind
 		kind = "person"
+	elif kind in CAR_VARIANTS:                          # tractor, motorbike, van (3D-3.39): drive like a car
+		variant = kind
+		kind = "car"
 	position = from
 	target = to
 	speed = spd
@@ -104,7 +113,7 @@ func setup(m, k: String, from: Vector3, to: Vector3, spd: float) -> void:
 			radius = 0.3
 		"car":
 			_build_car()
-			radius = 1.2
+			radius = 1.2 if variant != "moto" else 0.6
 		_:
 			_build_animal()
 	var d := to - from
@@ -203,6 +212,12 @@ func _build_person() -> void:
 	var jog := variant == "jogger"
 	var camo: bool = controlled and bool(look.get("camo", false))
 	var jacket: Color = Color(0.33, 0.38, 0.22) if camo else (player_color if player_color.a > 0.0 else (_pick("sport") if jog else _pick("jacket")))
+	if variant == "police":
+		jacket = Color(0.1, 0.13, 0.25)
+	elif variant == "courier":
+		jacket = [Color(0.85, 0.15, 0.1), Color(0.95, 0.55, 0.1), Color(0.1, 0.55, 0.3)][randi() % 3]
+	elif variant == "cyclist":
+		jacket = _pick("sport")
 	var shirt: Color = [Color(0.9, 0.9, 0.88), Color(0.2, 0.25, 0.35), Color(0.6, 0.15, 0.15), Color(0.85, 0.75, 0.4)][randi() % 4]
 	var trousers: Color = Color(0.3, 0.3, 0.2) if camo else (Color(0.1, 0.1, 0.12) if jog else _pick("trousers"))
 	var skin := _pick("skin")
@@ -285,6 +300,7 @@ func _build_person() -> void:
 		_part(head, _cyl(0.115, 0.115, 0.05, 16), Vector3(0, 0.245, 0), Color(0.3, 0.25, 0.2), 27.0)       # hat
 		_part(head, _cyl(0.16, 0.16, 0.012, 18), Vector3(0, 0.22, 0), Color(0.3, 0.25, 0.2), 27.0)
 	body_h = 0.9 * body_root.scale.y
+	_person_extras(jacket, cloth_t)
 	# at night some people carry a light: a headlamp or the light of the phone (Motion Watch sees it)
 	if main.is_dark() and not kid and not controlled and not preview and randf() < main.lamp_share:
 		lamp = SpotLight3D.new()
@@ -316,6 +332,50 @@ func _build_person() -> void:
 		lamp.light_energy = 6.0
 
 
+func _person_extras(jacket: Color, cloth_t: float) -> void:
+	"""bike, pram, pizza box, police vest (3D-3.39)"""
+	match variant:
+		"police":
+			for y in [0.18, 0.4]:                                              # reflective stripes, a cap
+				_part(torso, _caps(0.21, 0.36), Vector3(0, y, 0), Color(0.85, 0.9, 0.2), cloth_t, Vector3.ZERO, Vector3(1.08, 0.12, 0.7))
+			_part(head, _cyl(0.12, 0.12, 0.06, 16), Vector3(0, 0.25, 0), Color(0.08, 0.1, 0.2), 27.0)
+			_part(head, _box(0.2, 0.015, 0.1), Vector3(0, 0.225, -0.1), Color(0.05, 0.05, 0.05), 27.0)
+			if main.is_dark() and not preview:
+				add_torch()
+		"courier":
+			carry = true
+			_part(torso, _box(0.36, 0.06, 0.36), Vector3(0, 0.18, -0.32), Color(0.85, 0.75, 0.55), 45.0)   # warm pizza box
+			_part(torso, _box(0.34, 0.4, 0.22), Vector3(0, 0.3, 0.2), jacket.darkened(0.3), cloth_t)          # delivery bag
+			_part(head, _sph(0.125, 0.16), Vector3(0, 0.22, 0.0), jacket.lightened(0.2), 26.0)               # helmet
+		"stroller":
+			var pr := _pivot(body_root, Vector3(0, 0, -0.85))
+			_part(pr, _box(0.5, 0.32, 0.75), Vector3(0, 0.62, 0), Color(0.2, 0.25, 0.32), main.ambient + 2.0)
+			_part(pr, _sph(0.3, 0.3), Vector3(0, 0.82, 0.2), Color(0.18, 0.22, 0.3), main.ambient + 2.0, Vector3.ZERO, Vector3(0.85, 1.0, 1.0))   # hood
+			_part(pr, _sph(0.08), Vector3(0, 0.8, -0.05), Color(0.95, 0.8, 0.7), 34.0)                         # the baby, warm
+			_part(pr, _cyl(0.015, 0.015, 0.5, 6), Vector3(0, 0.95, 0.5), Color(0.1, 0.1, 0.1), main.ambient, Vector3(0, 0, PI / 2))   # handle
+			for sx in [-0.22, 0.22]:
+				_part(pr, _cyl(0.015, 0.015, 0.5, 6), Vector3(sx, 0.75, 0.42), Color(0.1, 0.1, 0.1), main.ambient, Vector3(-0.6, 0, 0))
+				for z in [-0.28, 0.3]:
+					var w := _pivot(pr, Vector3(sx * 1.05, 0.14, z))
+					_part(w, _cyl(0.14, 0.14, 0.04, 14), Vector3.ZERO, Color(0.08, 0.08, 0.08), main.ambient + 3.0, Vector3(0, 0, PI / 2))
+					wheels.append([w, 0.14])
+		"cyclist":
+			var bk := _pivot(body_root, Vector3.ZERO)
+			var fc: Color = [Color(0.1, 0.4, 0.75), Color(0.75, 0.1, 0.1), Color(0.15, 0.15, 0.15), Color(0.9, 0.9, 0.9)][randi() % 4]
+			for z in [-0.55, 0.55]:
+				var w2 := _pivot(bk, Vector3(0, 0.34, z))
+				_part(w2, _cyl(0.34, 0.34, 0.035, 20), Vector3.ZERO, Color(0.06, 0.06, 0.06), main.ambient + 4.0, Vector3(0, 0, PI / 2))
+				_part(w2, _cyl(0.05, 0.05, 0.05, 8), Vector3.ZERO, Color(0.6, 0.6, 0.62), main.ambient + 2.0, Vector3(0, 0, PI / 2))
+				wheels.append([w2, 0.34])
+			_part(bk, _cyl(0.022, 0.022, 0.75, 6), Vector3(0, 0.55, -0.05), fc, main.ambient + 1.0, Vector3(PI / 2 - 0.25, 0, 0))   # top tube
+			_part(bk, _cyl(0.022, 0.022, 0.62, 6), Vector3(0, 0.48, 0.12), fc, main.ambient + 1.0, Vector3(0.35, 0, 0))            # seat tube
+			_part(bk, _cyl(0.022, 0.022, 0.6, 6), Vector3(0, 0.48, -0.45), fc, main.ambient + 1.0, Vector3(-0.3, 0, 0))            # fork
+			_part(bk, _box(0.12, 0.04, 0.24), Vector3(0, 0.86, 0.08), Color(0.08, 0.08, 0.08), main.ambient + 3.0)              # saddle
+			_part(bk, _cyl(0.016, 0.016, 0.5, 6), Vector3(0, 0.98, -0.5), Color(0.1, 0.1, 0.1), main.ambient, Vector3(0, 0, PI / 2))   # handlebar
+			_part(head, _sph(0.12, 0.14), Vector3(0, 0.23, 0.0), fc.lightened(0.3), 27.0)                          # helmet
+			body_root.position.y = -0.06
+
+
 func _build_animal() -> void:
 	# height of the back, body length, colour, body temperature (fur), leg thickness
 	var spec := {"fox": [0.42, 0.62, Color(0.82, 0.38, 0.12), 28.0, 0.035], "deer": [0.95, 1.05, Color(0.58, 0.4, 0.23), 29.0, 0.042],
@@ -324,7 +384,11 @@ func _build_animal() -> void:
 			"hare": [0.28, 0.42, Color(0.55, 0.45, 0.32), 30.0, 0.03], "hedgehog": [0.12, 0.26, Color(0.35, 0.28, 0.2), 27.0, 0.02],
 			# 3D-3.27: wolf, marten, squirrel
 			"wolf": [0.66, 1.0, Color(0.5, 0.48, 0.44), 30.0, 0.05], "marten": [0.17, 0.48, Color(0.34, 0.22, 0.12), 30.0, 0.02],
-			"squirrel": [0.13, 0.2, Color(0.62, 0.28, 0.1), 31.0, 0.014]}
+			"squirrel": [0.13, 0.2, Color(0.62, 0.28, 0.1), 31.0, 0.014],
+			# 3D-3.39: cow, sheep, horse, chamois, ibex, lynx
+			"cow": [1.05, 1.6, Color(0.95, 0.93, 0.9), 32.0, 0.06], "sheep": [0.55, 0.85, Color(0.9, 0.88, 0.8), 29.0, 0.032],
+			"horse": [1.25, 1.55, Color(0.45, 0.28, 0.15), 32.0, 0.06], "chamois": [0.7, 0.9, Color(0.38, 0.29, 0.2), 30.0, 0.035],
+			"ibex": [0.8, 1.05, Color(0.52, 0.45, 0.36), 30.0, 0.045], "lynx": [0.55, 0.8, Color(0.72, 0.56, 0.38), 30.0, 0.045]}
 	var s: Array = spec.get(kind, spec["fox"])
 	var hb: float = s[0]
 	var L: float = s[1]
@@ -333,12 +397,18 @@ func _build_animal() -> void:
 		col = [Color(0.35, 0.33, 0.3), Color(0.85, 0.5, 0.2), Color(0.1, 0.1, 0.1), Color(0.9, 0.88, 0.85)][randi() % 4]
 	elif kind == "dog":
 		col = [Color(0.45, 0.35, 0.22), Color(0.1, 0.1, 0.1), Color(0.85, 0.75, 0.55), Color(0.6, 0.55, 0.5)][randi() % 4]
+	elif kind == "cow":
+		col = [Color(0.95, 0.93, 0.9), Color(0.55, 0.36, 0.2), Color(0.7, 0.55, 0.4)][randi() % 3]
+	elif kind == "horse":
+		col = [Color(0.45, 0.28, 0.15), Color(0.2, 0.14, 0.1), Color(0.75, 0.72, 0.68), Color(0.6, 0.42, 0.25)][randi() % 4]
 	col = col.lerp(col.lightened(0.15), randf())
 	var t: float = s[3]
 	var lw: float = s[4]
 	var sc := randf_range(0.9, 1.1)
 	body_root.scale = Vector3.ONE * sc
 	var bodyr := hb * (0.32 if kind != "boar" else 0.45)
+	if kind in ["cow", "sheep"]:
+		bodyr = hb * 0.42
 	if kind == "hedgehog":
 		bodyr = 0.11
 	body_h = hb * sc
@@ -373,11 +443,27 @@ func _build_animal() -> void:
 		_part(body_root, _box(0.06, 0.08, L * 0.8), Vector3(0, hb + bodyr * 0.95, -L * 0.05), col.darkened(0.3), t - 3.0)
 	if kind == "badger":
 		_part(body_root, _caps(bodyr * 0.8, L * 0.9), Vector3(0, hb - bodyr * 0.3, 0), Color(0.12, 0.12, 0.12), t - 1.0, Vector3(PI / 2, 0, 0))
+	if kind == "cow":                                                          # patches and the udder
+		if col.r > 0.9:
+			for i in range(6):
+				var a := randf() * TAU
+				_part(body_root, _sph(bodyr * 0.45, bodyr * 0.3), Vector3(cos(a) * bodyr * 0.95, hb + sin(a) * bodyr * 0.7, randf_range(-L * 0.4, L * 0.4)),
+						Color(0.08, 0.08, 0.08), t - 1.0, Vector3(0, 0, a + PI / 2), Vector3(1.4, 1.0, 1.4))
+		_part(body_root, _sph(bodyr * 0.32), Vector3(0, hb - bodyr * 0.9, L * 0.3), Color(0.95, 0.7, 0.7), t + 2.0, Vector3.ZERO, Vector3(1.0, 0.8, 1.2))
+	if kind == "sheep":                                                        # thick wool
+		for i in range(10):
+			_part(body_root, _sph(bodyr * 0.55), Vector3(randf_range(-0.6, 0.6) * bodyr, hb + randf_range(-0.3, 0.75) * bodyr, randf_range(-0.45, 0.45) * L), col.darkened(randf() * 0.08), t - 4.0)
+	if kind == "lynx":                                                         # spots
+		for i in range(12):
+			var a2 := randf() * PI
+			_part(body_root, _sph(0.025), Vector3(cos(a2) * bodyr * 1.0, hb + sin(a2) * bodyr * 0.9, randf_range(-0.4, 0.4) * L), col.darkened(0.55), t - 1.0)
+	if kind == "horse":                                                        # mane along the neck comes below
+		pass
 	for i in range(4):
 		var fx := 0.6 * bodyr * (1 if i % 2 == 0 else -1)
 		var fz := (-L * 0.38) if i < 2 else (L * 0.38)
 		var p := _pivot(body_root, Vector3(fx, hb, fz))
-		var legc: Color = Color(0.1, 0.08, 0.07) if kind == "fox" else col.darkened(0.25)
+		var legc: Color = Color(0.1, 0.08, 0.07) if kind in ["fox", "sheep"] else col.darkened(0.25)
 		var hare_back := kind == "hare" and i >= 2
 		_part(p, _caps(lw * (1.6 if hare_back else 1.0), hb * (0.55 if hare_back else 1.0)), Vector3(0, -hb / (3.0 if hare_back else 2.0), 0), legc, t - 4.0)
 		if not hare_back:                                                   # upper leg in the colour of the body
@@ -393,20 +479,59 @@ func _build_animal() -> void:
 		_part(head, _caps(0.07, 0.6), Vector3(0, 0.25, -0.05), col, t, Vector3(-0.5, 0, 0))     # neck
 		hy = 0.55
 		hz = -0.18
+	elif kind in ["horse", "chamois", "ibex"]:                                  # a neck like the deer, the horse a strong one
+		var nk: float = {"horse": 0.13, "chamois": 0.07, "ibex": 0.09}[kind]
+		var nl: float = {"horse": 0.72, "chamois": 0.4, "ibex": 0.42}[kind]
+		var na := -0.75 if kind == "horse" else -0.6
+		_part(head, _caps(nk, nl), Vector3(0, nl * 0.4 * cos(na), nl * 0.4 * sin(na)), col, t, Vector3(na, 0, 0))
+		hy = nl * 0.82 * cos(na)
+		hz = nl * 0.82 * sin(na)
+		if kind == "horse":
+			_part(head, _box(0.05, nl * 0.9, 0.12), Vector3(0, nl * 0.45 * cos(na), nl * 0.45 * sin(na) + 0.08), Color(0.1, 0.08, 0.06), t - 4.0, Vector3(na, 0, 0))   # mane
 	var hr := bodyr * (0.75 if kind != "boar" else 0.9)
 	if kind == "deer":
 		hr = 0.12                                                          # a slim head on the long neck
+	elif kind in ["horse", "cow"]:
+		hr = 0.17 if kind == "horse" else 0.2
+	elif kind in ["chamois", "ibex", "sheep"]:
+		hr = 0.1 if kind != "sheep" else 0.12
 	_part(head, _sph(hr), Vector3(0, hy, hz), col, t + 2.0)
 	if kind == "marten":                                                       # the cream patch on the throat
 		_part(body_root, _sph(bodyr * 0.7), Vector3(0, hb - bodyr * 0.1, -L * 0.42), Color(0.93, 0.85, 0.6), t, Vector3.ZERO, Vector3(1.0, 0.9, 1.4))
-	if kind in ["fox", "dog", "cat", "badger", "hare", "wolf", "marten", "squirrel"]:   # neck
+	if kind in ["fox", "dog", "cat", "badger", "hare", "wolf", "marten", "squirrel", "cow", "sheep", "lynx"]:   # neck
 		_part(head, _caps(hr * 0.62, max(0.05, Vector2(hy, hz).length()) + hr * 0.6), Vector3(0, hy * 0.5, hz * 0.5), col, t + 1.0, Vector3(-PI / 2 + atan2(hy, -hz), 0, 0))
 	if kind == "fox":                                                          # white chin and cheeks
 		_part(head, _sph(hr * 0.55), Vector3(0, hy - hr * 0.55, hz - hr * 0.55), Color(0.95, 0.93, 0.88), t + 1.0, Vector3.ZERO, Vector3(1.4, 0.8, 1.2))
+	if kind in ["cow", "chamois", "ibex", "sheep", "horse"]:                     # ears to the side / up
+		for s7 in [-1, 1]:
+			var ear3 := PrismMesh.new()
+			ear3.size = Vector3(hr * 0.5, hr * (1.1 if kind == "horse" else 0.7), hr * 0.18)
+			_part(head, ear3, Vector3(hr * 0.75 * s7, hy + hr * (0.8 if kind == "horse" else 0.45), hz + hr * 0.2), col.darkened(0.15) if kind != "sheep" else Color(0.15, 0.13, 0.12), t - 2.0, Vector3(0, 0, -0.9 * s7 if kind in ["cow", "sheep"] else -0.2 * s7))
+	if kind == "cow":                                                          # short horns
+		for s8 in [-1, 1]:
+			_part(head, _cyl(0.008, 0.025, 0.14, 6), Vector3(hr * 0.6 * s8, hy + hr * 0.75, hz + hr * 0.1), Color(0.9, 0.88, 0.78), t - 8.0, Vector3(0, 0, -1.0 * s8))
+	if kind == "chamois":                                                      # small black hooked horns
+		for s8 in [-1, 1]:
+			_part(head, _cyl(0.006, 0.014, 0.16, 5), Vector3(hr * 0.3 * s8, hy + hr * 1.3, hz + hr * 0.1), Color(0.05, 0.05, 0.05), t - 8.0, Vector3(0.15, 0, 0))
+			_part(head, _cyl(0.004, 0.008, 0.07, 5), Vector3(hr * 0.3 * s8, hy + hr * 2.0, hz + hr * 0.4), Color(0.05, 0.05, 0.05), t - 8.0, Vector3(1.6, 0, 0))
+	if kind == "ibex":                                                         # the big curved horns, backwards
+		for s8 in [-1, 1]:
+			for i in range(5):
+				var a3 := 0.25 + i * 0.32
+				_part(head, _cyl(0.022 - i * 0.003, 0.026 - i * 0.003, 0.13, 6), Vector3(hr * 0.3 * s8, hy + hr * 0.9 + sin(a3) * 0.2, hz + hr * 0.1 + (1.0 - cos(a3)) * 0.25),
+						Color(0.45, 0.4, 0.32), t - 8.0, Vector3(a3, 0, 0))
+	if kind == "lynx":                                                         # ear tufts, whiskers
+		for s8 in [-1, 1]:
+			_part(head, _cyl(0.004, 0.006, 0.06, 4), Vector3(hr * 0.5 * s8, hy + hr * 1.5, hz), Color(0.05, 0.05, 0.05), t - 6.0)
 	if kind == "boar" or kind == "badger":                                     # small round ears
 		for s6 in [-1, 1]:
 			_part(head, _sph(hr * 0.25), Vector3(hr * 0.55 * s6, hy + hr * 0.7, hz + hr * 0.2), col.darkened(0.2), t - 2.0, Vector3.ZERO, Vector3(1.0, 1.2, 0.4))
 	var snout := col.darkened(0.1) if kind != "fox" else col
+	if kind == "sheep":
+		snout = Color(0.15, 0.13, 0.12)
+		_part(head, _sph(hr * 1.02), Vector3(0, hy, hz), Color(0.15, 0.13, 0.12), t + 2.0)               # dark face
+	if kind == "cow":
+		snout = Color(0.85, 0.65, 0.6)
 	_part(head, _caps(hr * 0.45, hr * 1.6), Vector3(0, hy - hr * 0.2, hz - hr * 0.9), snout, t + 1.0, Vector3(PI / 2, 0, 0))
 	_part(head, _sph(hr * 0.16), Vector3(0, hy - hr * 0.15, hz - hr * 1.7), Color(0.05, 0.05, 0.05), t)         # nose
 	if kind == "boar":                                                         # snout disc and tusks
@@ -418,7 +543,7 @@ func _build_animal() -> void:
 			_part(head, _box(hr * 0.25, hr * 0.3, hr * 1.8), Vector3(hr * 0.35 * s2, hy + hr * 0.6, hz - hr * 0.3), Color(0.92, 0.92, 0.9), t)
 	_eyes(head, hr * 0.13, hr * 0.45, hz - hr * 0.75, hy + hr * 0.25)
 	var floppy := kind == "dog" and randf() < 0.5
-	if kind in ["fox", "cat", "dog", "wolf", "marten", "squirrel"] and not floppy:   # pointed ears (fox: black tips)
+	if kind in ["fox", "cat", "dog", "wolf", "marten", "squirrel", "lynx"] and not floppy:   # pointed ears (fox: black tips)
 		for s3 in [-1, 1]:
 			var ear := PrismMesh.new()
 			ear.size = Vector3(hr * 0.6, hr * 0.8, hr * 0.25)
@@ -460,6 +585,14 @@ func _build_animal() -> void:
 		_part(tail, _caps(bodyr * 0.42, L * 0.62), Vector3(0, -0.2, L * 0.16), col.darkened(0.1), t - 4.0, Vector3(0.45, 0, 0))
 	elif kind == "marten":                                                     # long bushy tail, held low
 		_part(tail, _caps(bodyr * 0.55, L * 0.75), Vector3(0, -0.03, L * 0.33), col.darkened(0.25), t - 4.0, Vector3(PI / 2 - 0.15, 0, 0))
+	elif kind in ["cow", "horse"]:                                             # a long hanging tail (horse: full of hair)
+		_part(tail, _caps(0.02 if kind == "cow" else 0.06, L * 0.5), Vector3(0, -0.3, 0.06), col.darkened(0.2) if kind == "cow" else Color(0.1, 0.08, 0.06), t - 4.0, Vector3(0.15, 0, 0))
+		if kind == "cow":
+			_part(tail, _sph(0.05, 0.12), Vector3(0, -0.6, 0.1), Color(0.1, 0.1, 0.1), t - 4.0)
+	elif kind in ["lynx", "chamois", "ibex", "sheep"]:                         # short tails (lynx: black tip)
+		_part(tail, _caps(0.035, 0.14), Vector3(0, -0.02, 0.06), col, t - 4.0, Vector3(0.6, 0, 0))
+		if kind == "lynx":
+			_part(tail, _sph(0.035), Vector3(0, -0.06, 0.12), Color(0.05, 0.05, 0.05), t - 4.0)
 	elif kind == "squirrel":                                                   # the big tail, curled up over the back
 		_part(tail, _caps(0.045, 0.22), Vector3(0, 0.1, 0.05), col, t - 4.0, Vector3(-0.3, 0, 0))
 		_part(tail, _caps(0.05, 0.16), Vector3(0, 0.22, -0.02), col.darkened(0.1), t - 4.0, Vector3(-1.1, 0, 0))
@@ -479,7 +612,17 @@ func _eyes(parent: Node3D, r: float, x: float, z: float, y := 0.0) -> void:
 
 
 func _build_car() -> void:
+	if variant == "tractor":
+		_build_tractor()
+		return
+	if variant == "moto":
+		_build_moto()
+		return
+	var van := variant == "van"
 	var col: Color = [Color(0.6, 0.1, 0.1), Color(0.75, 0.75, 0.78), Color(0.08, 0.08, 0.1), Color(0.1, 0.25, 0.55), Color(0.85, 0.85, 0.85), Color(0.25, 0.35, 0.25)][randi() % 6]
+	if van:
+		col = [Color(0.92, 0.92, 0.9), Color(0.85, 0.75, 0.15), Color(0.1, 0.3, 0.6)][randi() % 3]
+		_part(body_root, _box(1.95, 1.55, 3.3), Vector3(0, 1.3, 0.65), col, main.ambient + 3.0)        # the high cargo box
 	_part(body_root, _box(1.75, 0.6, 4.2), Vector3(0, 0.6, 0), col, main.ambient + 4.0)
 	_part(body_root, _box(1.6, 0.5, 2.1), Vector3(0, 1.15, 0.25), col.darkened(0.15), main.ambient + 2.0)
 	_part(body_root, _box(1.5, 0.42, 0.05), Vector3(0, 1.15, -0.82), Color(0.15, 0.2, 0.25), main.ambient + 2.0, Vector3(-0.5, 0, 0))   # windscreen
@@ -513,6 +656,63 @@ func _build_car() -> void:
 		lamp.material_override = lm
 		lights.append(lm)
 		_part(body_root, _box(0.28, 0.1, 0.04), Vector3(x2, 0.72, 2.12), Color(0.7, 0.05, 0.05), main.ambient + 8.0)   # tail lights
+
+
+func _headlight(pos: Vector3) -> void:
+	var hl := SpotLight3D.new()
+	hl.position = pos
+	hl.spot_range = 40.0
+	hl.spot_angle = 26.0
+	hl.light_energy = 0.0
+	hl.light_color = Color(1.0, 0.95, 0.85)
+	hl.shadow_enabled = false
+	body_root.add_child(hl)
+	lights.append(hl)
+	var lp := _part(body_root, _box(0.22, 0.14, 0.05), pos + Vector3(0, 0, 0.02), Color(1, 1, 0.9), main.ambient + 30.0)
+	var lm := StandardMaterial3D.new()
+	lm.albedo_color = Color(1, 1, 0.9)
+	lm.emission_enabled = true
+	lm.emission = Color(1, 0.97, 0.85)
+	lm.emission_energy_multiplier = 0.0
+	lp.material_override = lm
+	lights.append(lm)
+
+
+func _build_tractor() -> void:
+	var col: Color = [Color(0.15, 0.5, 0.2), Color(0.75, 0.12, 0.1), Color(0.2, 0.35, 0.6)][randi() % 3]
+	_part(body_root, _box(0.9, 0.8, 2.0), Vector3(0, 1.0, -0.7), col, 70.0)                       # bonnet (warm engine)
+	_part(body_root, _box(1.3, 0.25, 1.2), Vector3(0, 0.95, 0.65), col.darkened(0.2), main.ambient + 6.0)
+	_part(body_root, _box(1.2, 1.3, 1.15), Vector3(0, 1.95, 0.65), Color(0.2, 0.25, 0.3), main.ambient + 8.0)   # cab (glass)
+	_part(body_root, _box(1.3, 0.08, 1.25), Vector3(0, 2.62, 0.65), col, main.ambient + 4.0)
+	_part(body_root, _cyl(0.05, 0.05, 1.2, 8), Vector3(0.35, 1.9, -1.2), Color(0.15, 0.15, 0.15), 120.0)        # exhaust, hot
+	for sx in [-1.0, 1.0]:
+		_part(body_root, _cyl(0.75, 0.75, 0.45, 18), Vector3(sx * 0.95, 0.75, 0.75), Color(0.07, 0.07, 0.07), main.ambient + 10.0, Vector3(0, 0, PI / 2))
+		_part(body_root, _cyl(0.42, 0.42, 0.3, 14), Vector3(sx * 0.75, 0.42, -1.25), Color(0.07, 0.07, 0.07), main.ambient + 10.0, Vector3(0, 0, PI / 2))
+		_part(body_root, _cyl(0.3, 0.3, 0.46, 12), Vector3(sx * 0.95, 0.75, 0.75), Color(0.85, 0.75, 0.2), main.ambient + 8.0, Vector3(0, 0, PI / 2))
+		_headlight(Vector3(sx * 0.35, 1.25, -1.72))
+	_part(body_root, _box(0.06, 0.06, 0.06), Vector3(0, 2.7, 0.65), Color(1.0, 0.6, 0.1), main.ambient + 5.0)   # orange beacon
+	body_h = 2.6
+	body_r = 1.6
+
+
+func _build_moto() -> void:
+	var col: Color = [Color(0.1, 0.1, 0.1), Color(0.8, 0.1, 0.1), Color(0.1, 0.3, 0.75), Color(0.9, 0.55, 0.1)][randi() % 4]
+	for z in [-0.72, 0.72]:
+		_part(body_root, _cyl(0.32, 0.32, 0.14, 18), Vector3(0, 0.32, z), Color(0.06, 0.06, 0.06), main.ambient + 10.0, Vector3(0, 0, PI / 2))
+	_part(body_root, _box(0.32, 0.4, 1.0), Vector3(0, 0.62, 0.0), col, main.ambient + 4.0)
+	_part(body_root, _box(0.3, 0.3, 0.45), Vector3(0, 0.5, -0.05), Color(0.3, 0.3, 0.32), 80.0)            # engine, hot
+	_part(body_root, _cyl(0.05, 0.05, 0.8, 8), Vector3(0.2, 0.38, 0.45), Color(0.6, 0.6, 0.6), 110.0, Vector3(PI / 2, 0, 0))   # exhaust
+	_part(body_root, _cyl(0.02, 0.02, 0.7, 6), Vector3(0, 1.05, -0.62), Color(0.1, 0.1, 0.1), main.ambient, Vector3(0, 0, PI / 2))
+	# the rider (simple): legs, body, arms to the handlebar, helmet
+	var rc: Color = [Color(0.1, 0.1, 0.1), Color(0.3, 0.3, 0.35), Color(0.6, 0.15, 0.1)][randi() % 3]
+	for sx in [-1.0, 1.0]:
+		_part(body_root, _caps(0.08, 0.6), Vector3(sx * 0.2, 0.7, -0.1), rc, 26.0, Vector3(1.2, 0, 0))
+		_part(body_root, _caps(0.06, 0.6), Vector3(sx * 0.22, 1.12, -0.38), rc, 26.0, Vector3(1.0, 0, 0))
+	_part(body_root, _caps(0.19, 0.6), Vector3(0, 1.15, 0.05), rc, 27.0, Vector3(-0.45, 0, 0))
+	_part(body_root, _sph(0.15, 0.3), Vector3(0, 1.55, -0.15), Color(0.9, 0.9, 0.9) if randf() < 0.5 else col, 25.0)   # helmet
+	_headlight(Vector3(0, 0.9, -0.95))
+	body_h = 1.5
+	body_r = 0.9
 
 
 # ---- moving --------------------------------------------------------------------------------------------------------
@@ -596,7 +796,8 @@ func _step(dt: float) -> void:
 			var kinds: Array = {"person": ["look", "look", "phone", "bend"], "deer": ["graze", "graze", "look"], "boar": ["root", "graze"],
 					"fox": ["sniff", "look"], "hare": ["sit_up", "graze"], "cat": ["sit", "look"], "dog": ["sniff", "sit"],
 					"badger": ["root", "sniff"], "hedgehog": ["sniff"], "wolf": ["look", "sniff", "look"], "marten": ["sniff", "look"],
-					"squirrel": ["sit_up", "look", "sit_up"]}.get(kind, ["look"])
+					"squirrel": ["sit_up", "look", "sit_up"], "cow": ["graze", "graze", "look"], "sheep": ["graze", "graze", "look"],
+					"horse": ["graze", "look"], "chamois": ["look", "graze", "look"], "ibex": ["look", "graze"], "lynx": ["look", "sniff", "sit"]}.get(kind, ["look"])
 			idle_kind = kinds[randi() % kinds.size()]
 			idle_until = now + randf_range(2.0, 5.0)
 			look_yaw = randf_range(-0.8, 0.8)
@@ -822,6 +1023,11 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 	"""a person (rebuilt in 3D-3.24): joints bend like a human's - hip + = thigh forward, knee - = lower leg back,
 	elbow + = forearm forward, torso - = leaning forward. Crouching = hips and knees bent, the body low and leaning
 	forward, the head up; crawling = lying on the belly, arms reach forward in turn, the opposite knee is drawn up."""
+	for w in wheels:                                               # bike and pram wheels turn
+		w[0].rotation.x -= spd * dt / float(w[1])
+	if variant == "cyclist":
+		_animate_cyclist(dt, spd, k)
+		return
 	var run_f: float = clamp((spd - 1.8) / 1.5, 0.0, 1.0)
 	var jog := variant == "jogger"
 	var em: String = emote if now < emote_until else ""
@@ -869,6 +1075,9 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 	body_root.rotation.z = sin(phase) * 0.06 * pr                     # crawling: the body rolls a little from side to side
 	body_root.position.z = 0.95 * pr * sc                              # lying down: the hips stay where the player is
 	body_root.position.x = sin(phase) * 0.025 * clamp(amp / 0.35, 0.0, 1.0) * (1.0 - pr) + still * 0.018 * sin(now * 0.45 + seed_t)
+	if variant == "drunk":                                         # sways and staggers
+		body_root.rotation.z = sin(now * 1.3 + seed_t) * 0.14 + sin(now * 3.1) * 0.04
+		body_root.position.x += sin(now * 0.9 + seed_t) * 0.25
 	if hips != null:
 		hips.rotation.y = sin(phase) * amp * 0.2 * (1.0 - pr)
 		hips.rotation.z = sin(phase) * 0.05 * amp + still * 0.03 * sin(now * 0.45 + seed_t)
@@ -914,6 +1123,10 @@ func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k
 		elif phone_out and side > 0:                                   # walking with the phone light ahead
 			sx = 0.9
 			ex = 0.9
+		elif carry or variant == "stroller":                           # holding the box / pushing the pram
+			sx = 0.75 if carry else 0.85
+			ex = 1.0 if carry else 0.35
+			sz = 0.12 * side
 		elif idle == "bend":
 			sx = 0.8
 			ex = 0.2
@@ -1017,3 +1230,21 @@ func _dizzy(dt: float, t: float) -> void:
 		body_root.rotation = Vector3.ZERO
 		fled = false
 		scare()
+
+
+func _animate_cyclist(dt: float, spd: float, k: float) -> void:
+	"""sitting on the bike: the legs go round with the pedals, hands on the handlebar, leaning forward"""
+	phase += dt * spd * 1.6
+	for l in legs:
+		var a: float = phase + (0.0 if l[1] > 0 else PI)
+		l[0].rotation.x = lerp(l[0].rotation.x, 1.05 + 0.38 * sin(a), k)
+		l[2].rotation.x = lerp(l[2].rotation.x, -(1.15 + 0.45 * cos(a)), k)
+	if torso != null:
+		torso.rotation.x = lerp(torso.rotation.x, -0.55, k)
+	for a2 in arms:
+		a2[0].rotation.x = lerp(a2[0].rotation.x, 1.0, k)
+		a2[0].rotation.z = lerp(a2[0].rotation.z, 0.12 * a2[1], k)
+		if a2.size() > 2:
+			a2[2].rotation.x = lerp(a2[2].rotation.x, 0.25, k)
+	if head != null:
+		head.rotation.x = lerp(head.rotation.x, 0.45, k)

@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 27.10.2026 · Simulator-Version **3D-3.38** · passende Motion-Watch-Version **2.95.42**
+Stand: 27.10.2026 · Simulator-Version **3D-3.39** · passende Motion-Watch-Version **2.95.43**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -72,6 +72,11 @@ Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
 **3D-3.16 bis 3D-3.36** wurden in einem anderen Chat gemacht (siehe Git-Geschichte und «Lies mich.txt», Abschnitte «NEU IN …»).
+
+**3D-3.39 – Mehr Besucher:** `actor.gd`: `PERSON_VARIANTS` (cyclist, stroller, drunk, courier, police → kind «person» + variant,
+`_person_extras`, `_animate_cyclist`), `CAR_VARIANTS` (tractor, moto, van → kind «car», `_build_tractor`, `_build_moto`), neue Tiere in
+`_build_animal` (cow, sheep, horse, chamois, ibex, lynx). `main.visit()`: couple, horse_walk, cows, sheep_flock, courier, police, drunk,
+cyclist, bats / owl (`_night_flyers`, keine Besucher, nur Bewegung). `life.activity()` und `Scenes.AUTO` kennen alle.
 
 **3D-3.38 – Besuch neu gegliedert:** Teile in `GROUPS` («Vorlagen», «Besucher hinsetzen», «Menschen schicken», «Tiere schicken»,
 «Fahrzeuge und Abläufe», «Von selbst», «Verhalten»); `VISIT_PRESETS` + `apply_visit_preset()` (Auswahl `visit_preset`);

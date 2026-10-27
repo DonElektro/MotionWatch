@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.38 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.39 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -492,3 +492,6 @@ NEU IN 3D-3.37
 
 NEU IN 3D-3.38
 3D-3.38: Karte «Besuch» neu gegliedert: Vorlagen (ruhige Nacht, belebter Campingplatz, Wildtier-Nacht, Tagesablauf, viel los, kein Besuch) – Besucher hinsetzen (Menschen und Tiere getrennt) – Menschen schicken – Tiere schicken – Fahrzeuge und Abläufe – Von selbst – Verhalten. Die Knöpfe der Besucher zeigen ein kleines Bild (auf der Seite von Motion Watch ein Symbol).
+
+NEU IN 3D-3.39
+3D-3.39: Mehr Besucher. Menschen: Velofahrer, Kinderwagen, Pizzakurier (bringt etwas an die Tür), Polizei-Rundgang (nachts mit Taschenlampe), Betrunkener (torkelt im Zickzack), Paar, mit dem Pferd unterwegs. Tiere: Kuh, Schaf, Pferd, Gämse, Steinbock, Luchs, Kühe auf der Weide, Schafherde, Fledermäuse am Licht und eine Eule (nachts typische Fehlalarme). Fahrzeuge: Traktor, Töff, Lieferwagen. Alle kommen auch von selbst, je nach Szene und Tageszeit.

@@ -7,14 +7,15 @@ const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Pa
 		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"], ["verstecken", "Versteckspiel (viele Verstecke)"], ["ort", "Ort von der Karte (Schweiz)"]]
 
 # visitors that come by themselves, and how often (seconds from .. to)
-const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog", "marten", "squirrel"], 35.0, 110.0],
-		"wald": [["deer", "herd", "fox", "boar", "badger", "hare", "hedgehog", "person", "jogger", "dogwalk", "wolf", "marten", "squirrel", "squirrel"], 25.0, 80.0],
-		"parkplatz": [["person", "person", "child", "car_park", "car_park", "cat", "fox", "dogwalk"], 30.0, 80.0],
-		"garten": [["cat", "cat", "fox", "badger", "hedgehog", "hare", "garden_person", "garden_person", "dog", "marten", "squirrel"], 35.0, 100.0],
-		"lustig": [["bench", "bench", "child", "dogwalk", "fox", "deer", "cat", "hare"], 25.0, 60.0],
-		"verstecken": [["person", "child", "jogger", "dogwalk", "fox", "cat", "hare", "deer"], 30.0, 90.0],
-		"ort": [["person", "child", "jogger", "dogwalk", "fox", "deer", "cat", "cat", "badger", "hare", "hedgehog", "car", "marten", "squirrel"], 30.0, 100.0],
-		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer"], 15.0, 40.0]}
+const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog", "marten", "squirrel", "cyclist", "couple", "stroller", "courier", "police", "drunk", "bats", "owl"], 35.0, 110.0],
+		"wald": [["deer", "herd", "fox", "boar", "badger", "hare", "hedgehog", "person", "jogger", "dogwalk", "wolf", "marten", "squirrel", "squirrel", "lynx", "chamois", "horse_walk", "cyclist", "owl", "bats"], 25.0, 80.0],
+		"parkplatz": [["person", "person", "child", "car_park", "car_park", "cat", "fox", "dogwalk", "van", "moto", "police", "courier", "couple", "stroller", "drunk"], 30.0, 80.0],
+		"garten": [["cat", "cat", "fox", "badger", "hedgehog", "hare", "garden_person", "garden_person", "dog", "marten", "squirrel", "courier", "bats", "owl"], 35.0, 100.0],
+		"lustig": [["bench", "bench", "child", "dogwalk", "fox", "deer", "cat", "hare", "couple", "stroller", "cyclist", "drunk"], 25.0, 60.0],
+		"verstecken": [["person", "child", "jogger", "dogwalk", "fox", "cat", "hare", "deer", "couple", "police", "sheep_flock"], 30.0, 90.0],
+		"ort": [["person", "child", "jogger", "dogwalk", "fox", "deer", "cat", "cat", "badger", "hare", "hedgehog", "car", "marten", "squirrel", "cyclist", "couple", "stroller", "courier", "tractor", "moto", "van", "cows", "sheep_flock",
+			"horse_walk", "bats", "owl"], 30.0, 100.0],
+		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer", "chamois", "ibex", "lynx", "owl"], 15.0, 40.0]}
 
 var m                     # main.gd
 var root: Node3D

@@ -1,13 +1,13 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 18:01",
+ "generated": "2026-10-27 18:12",
  "versions": [
   {
    "version": "2.95.43",
    "file": "webcam_bewegung_2_95_43.py",
    "url": "",
    "sha256": "bfe82ba37f874401287076f61858a171d72e5e994d235ce4b72846b894df7b9f",
-   "date": "2026-10-27 18:01",
+   "date": "2026-10-27 18:12",
    "notes": "simulator interface for the mover written down (simulator/Simulator_Schnittstelle.md); optional answer field «mover_pose» (position, direction, metres, blocked) is taken and shown in /api/state; order 3.11 for the world simulator.",
    "sig": "9abbb9a636298a0c536456a9ad64502d7a05cc7c625cea58dd2df904281b0a2c739878e7002d460ce1bd007f015122b9fbabb9b50211828e4e1acaea81bf5006"
   },
@@ -16,7 +16,7 @@
    "file": "webcam_bewegung_2_94_5.py",
    "url": "",
    "sha256": "5d5654c7292552b05854b661c98fb550c720dd5d9316f60bb1e4d623e422678b",
-   "date": "2026-10-27 07:46",
+   "date": "2026-10-27 17:42",
    "notes": "3D simulator 3D-3.16: after an update it starts again as it was (sending or not, small box / icon, size and place of the window). Simulator search: the number counts simulators (not addresses), also ports 8767 / 8768 (a second simulator), a hint when a simulator is missing.",
    "sig": "a1e77da1584bcb1374b9bdc0cc365a7c08c6f76d03acfe7f3df3b1344d1b2308510bf6b83d4f2dd3636ecdded0819991adef13bd142d677b6a2fd38a8eaa4b08"
   },
@@ -25,7 +25,7 @@
    "file": "webcam_bewegung_2_93_17.py",
    "url": "",
    "sha256": "70f36dcbc35e8c6ff18854dfada979bbb82fd5eaf3fda28e7927aea3de9c6ba0",
-   "date": "2026-10-27 07:41",
+   "date": "2026-10-27 04:47",
    "notes": "3D simulator 3D-3.10: real 3D buildings of swisstopo at real places.",
    "sig": "9722f91aa4a5a338477940378f3a3f22dca4636496c8e19a91c525460d7a9f84e75498e44eefbc4d0de74dd1cb60f10f8893eac2b4b8900576882e55571e3600"
   },
@@ -34,7 +34,7 @@
    "file": "webcam_bewegung_2_92_4.py",
    "url": "",
    "sha256": "77e30e51081d7c12e8270f68b79b805d08687d8f1cee811beab2a029628d70dc",
-   "date": "2026-10-26 23:06",
+   "date": "2026-10-26 21:06",
    "notes": "3D simulator 3D-2.3: it only calculates while its window is open or Motion Watch is connected (saves power); its small box shows the CPU of the whole computer, of Motion Watch and of the simulator (Motion Watch measures and sends it).",
    "sig": "1866818a15a7fbdbbcca8637b7e89a699907fe766448f7ec5807374de5c4db0413dc27a4b2f14ed211ceb6063b6371c79b1a1cacd97605d390a51960e60e0c03"
   },
@@ -43,7 +43,7 @@
    "file": "webcam_bewegung_2_91_0.py",
    "url": "",
    "sha256": "bc89f8535dd53f497ecd6b0db4692fd68228ca807e3e2db0b2cb906c6dc659d5",
-   "date": "2026-10-26 19:20",
+   "date": "2026-10-26 20:35",
    "notes": "3D simulator 3D-2.0 (big update): toolbar, search and «Einfach | Experte» like Motion Watch; visitors as small pictures to drag into the world; people and animals walk around objects; smoother movement, finer objects, grass and flowers; new visitors (child, jogger, hare, hedgehog, dog walk, deer herd, birds); new visitor settings (also here in the simulator control).",
    "sig": "aaf681e4ea061b4253bb45d62c3b4663c19fcd3d14664f9d32a585167f35095fd816c0c81e71028e6a072be41bfda184671b8e55112a01f855dc4ff0c4a26103"
   },
@@ -52,7 +52,7 @@
    "file": "webcam_bewegung_2_90_9.py",
    "url": "",
    "sha256": "ca0098cc8a98b2293d691d7a820dd1fb3caa58b2aa71bda683007ea6f99cbc7e",
-   "date": "2026-10-26 19:20",
+   "date": "2026-10-26 18:26",
    "notes": "The download of the 3D simulator for Windows (ZIP) is now a button right under «Search now» in the simulator section (before hidden under Tools); the desktop window shows its address for the PC browser in the simulator line.",
    "sig": "6ec9afbf1255355f142377a9fdff4c7feae0730afe568207a656ded68bc36e3392f125e266cb5bb94014279f5e4f58a1af9b6b57975ecb6f05a9839aa6349007"
   },
@@ -61,7 +61,7 @@
    "file": "webcam_bewegung_2_89_0.py",
    "url": "",
    "sha256": "47b3d89528bc35b03463b9139a1dbde2672085c1a0c8da5d4b6e8918f3229cd4",
-   "date": "2026-10-26 07:54",
+   "date": "2026-10-26 08:49",
    "notes": "Tools: «Full power for the tools» - Motion Watch rests for 10 to 120 minutes (camera, detection, AI, extra cameras; a recording is finished first), the web page and the tools keep running; it comes back by itself or with «Resume now».",
    "sig": "85db0606fc0a8c02329d6165176d8d453de8e1b3eafec2e560efb87e820bb5c8a9467bbe20e4d724f893b0760253c327e9260b370ee9d368887322bb502f220a"
   },
@@ -70,7 +70,7 @@
    "file": "webcam_bewegung_2_88_0.py",
    "url": "",
    "sha256": "96186b25d76326941becc62d434370db457976f84721ed374917d4b3c434909f",
-   "date": "2026-10-26 06:52",
+   "date": "2026-10-26 08:49",
    "notes": "Download of the 3D simulator 3D-1.4: it starts without sending; the switch «An Motion Watch senden» in its window turns sending on.",
    "sig": "8132b3cc4f9f323cc2640decb72fc9fcfe0cfc399a6c6d5df7ead6ef9c2a6137fe01e7b50212b03d67e0000ea6d0b692b62e3ab758d64f5ab8198cdeb960790e"
   },
@@ -79,7 +79,7 @@
    "file": "webcam_bewegung_2_87_0.py",
    "url": "",
    "sha256": "63a19a6f983c5d4999a67635970e06166e88e6052931c44627840bbe2bb88e4f",
-   "date": "2026-10-26 01:38",
+   "date": "2026-10-26 08:49",
    "notes": "Tools page redesigned, calmer: list of the tools on the left (with status), one tool at a time on the right; on a phone first the list, then the tool with a back button. Plain line icons, switches instead of check boxes, no empty boxes.",
    "sig": "f281ea48a698dafacfe7bd366a94c3a9d7788ad478c93dc9d2c1f8e2e02d0e1ebb6f74c1a226892d60f66e97fd6878c2649290afcd3417f513106ccc3c0b1507"
   },
@@ -88,7 +88,7 @@
    "file": "webcam_bewegung_2_86_0.py",
    "url": "",
    "sha256": "daaa28be417f6587f04d5b6bd575f5100d8af3f459ee4bc19c00a5105c433ea3",
-   "date": "2026-10-26 01:30",
+   "date": "2026-10-26 08:49",
    "notes": "The 3D simulator for Windows can be downloaded from the Pi: /sim/simulator3d.zip (button under Simulator → Tools).",
    "sig": "8fd4dcfa8a75604a92ec995cc1649135bc36cfcb26fac9a34b8e52e8ab4ab9a5f2c76e469d14ba1d722125b2051d22bd2cfe0c972d793a12c211173d6811f009"
   }
