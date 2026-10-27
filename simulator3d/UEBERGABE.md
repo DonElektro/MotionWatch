@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-3.3** · passende Motion-Watch-Version **2.93.10**
+Stand: 26.10.2026 · Simulator-Version **3D-3.4** · passende Motion-Watch-Version **2.93.11**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,15 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-3.4 – Ort von der Karte:** `geo.gd` (Download mit Cache `user://orte/cache/<md5>.bin`, Kacheln WMTS 3857 swisstopo,
+Terrarium-PNG, Overpass `out geom`, swisstopo profile.json 81 × 81 Punkte = swissALTI3D; lokale Koordinaten: Mercator × cos(lat),
+Norden = -z; `height()`, Gebäude extrudiert mit Satteldach über dem kleinsten Rechteck, Fassaden-Shader `facade.gdshader`,
+Bäume: nahe echte `tree()` (max. 380), sonst MultiMesh, Wald aus dem Luftbild bis 1.1 km), `karte.gd` (Kartenfenster, Suche über
+SearchServer), Szene «ort» in scenes.gd, `main.terrain` / `ground_y()` / `ground_hit()` (Besucher, Platzieren, Sichtlinie mit
+Gelände). Testen ohne Internet: `MW3D_GEO_BASE=http://127.0.0.1:8899` + Ersatz-Server (Host = erster Ordner). Test-Aktionen `geo`,
+`map`. Nicht getestet: echte Server (aus der Testumgebung nicht erreichbar). Update: `_download_check` mit bis zu 3 Versuchen,
+`.old2` usw. wenn `.old` gesperrt. Jogger: längere Schritte statt schnellerer Beine.
+
 **3D-3.3 – Schatten:** `env.ambient_light_source` = COLOR (statt SKY: im Compatibility-Renderer lieferte der Himmel auf manchen
 Grafikkarten kein Umgebungslicht → schwarze Schatten), Farbe/Stärke in `_update_sky()`; `sun.shadow_blur`, soft_shadow_filter_quality 3.
 Test-Aktion `view` (pos, look, panel) für Bildschirmfotos.

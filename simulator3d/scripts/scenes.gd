@@ -4,7 +4,7 @@ extends RefCounted
 ## Every scene must give main: door_node + door_light + window_mat (the door sensor), obj["door"], obj["pir"], obj["bike"].
 
 const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Parkplatz"], ["garten", "Garten / Haus"],
-		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"]]
+		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"], ["ort", "Ort von der Karte (Schweiz)"]]
 
 # visitors that come by themselves, and how often (seconds from .. to)
 const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog"], 35.0, 110.0],
@@ -12,6 +12,7 @@ const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox"
 		"parkplatz": [["person", "person", "child", "car_park", "car_park", "cat", "fox", "dogwalk"], 30.0, 80.0],
 		"garten": [["cat", "cat", "fox", "badger", "hedgehog", "hare", "garden_person", "garden_person", "dog"], 35.0, 100.0],
 		"lustig": [["bench", "bench", "child", "dogwalk", "fox", "deer", "cat", "hare"], 25.0, 60.0],
+		"ort": [["person", "child", "jogger", "dogwalk", "fox", "deer", "cat", "cat", "badger", "hare", "hedgehog", "car"], 30.0, 100.0],
 		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer"], 15.0, 40.0]}
 
 var m                     # main.gd
@@ -43,6 +44,8 @@ func build(id: String, parent: Node3D) -> void:
 			_lustig()
 		"wild":
 			_wild()
+		"ort":
+			_ort()
 		_:
 			_camping()
 
@@ -196,6 +199,8 @@ func meadow(n: int, dmin: float, dmax: float, keep_clear := Callable()) -> void:
 		var p: Vector3 = m.pos_of(rng.randf_range(-180, 180), rng.randf_range(dmin, dmax))
 		if keep_clear.is_valid() and keep_clear.call(p):
 			p = Vector3(0, -50, 0)                               # hidden below the ground
+		else:
+			p.y = m.ground_y(p.x, p.z)
 		for b in range(3):
 			var t := Transform3D(Basis(Vector3.UP, rng.randf() * TAU).rotated(Vector3.RIGHT, rng.randf_range(-0.25, 0.25)).scaled(Vector3.ONE * rng.randf_range(0.7, 1.4)),
 					p + Vector3(rng.randf_range(-0.12, 0.12), 0.12, rng.randf_range(-0.12, 0.12)))
@@ -445,6 +450,16 @@ func smoke(at: Vector3) -> void:
 	p.add_to_group("smoke")
 	p.emitting = m.world_smoke
 	root.add_child(p)
+
+
+func _ort() -> void:
+	"""a real place in Switzerland (geo.gd); until it is loaded: the camping place"""
+	if not m.geo.loaded:
+		_camping()
+		return
+	m.terrain = true
+	m.geo.build(self)
+	meadow(600, 3.0, 40.0, func(p: Vector3): return not m.geo.is_green(m.geo.photo_color(p.x, p.z)) or not m.geo._free_for_tree(Vector2(p.x, p.z)))
 
 
 func _camping() -> void:

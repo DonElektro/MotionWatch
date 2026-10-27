@@ -525,6 +525,12 @@ func is_animal() -> bool:
 
 
 func _process(dt: float) -> void:
+	_step(dt)
+	if main != null and main.terrain and not preview and is_inside_tree():
+		position.y = main.ground_y(position.x, position.z)   # a real place (from 3D-3.4): on the hills
+
+
+func _step(dt: float) -> void:
 	if done or preview:
 		return
 	var now := now_s()
@@ -675,8 +681,9 @@ func _animate(dt: float, spd: float, now: float) -> void:
 	"""walking, running, crawling, standing about - persons with hips and upper body swinging against each other (3D-2.7),
 	animals with their own ways (hopping, jumping when fleeing, stalking, grazing, sniffing, rooting, sitting up)"""
 	var gait: float = spd / max(0.3, speed if not fled else speed / 2.6)
-	phase += dt * spd * (5.0 if kind == "person" else (9.0 if kind in ["cat", "hedgehog", "hare"] else 6.5)) / max(0.5, body_root.scale.y)
-	var amp: float = clamp(spd / 1.2, 0.0, 1.0) * (0.6 if kind == "person" else 0.55)
+	var stride: float = 1.0 + (0.4 * max(0.0, spd - 1.5) if kind == "person" else 0.0)   # running: longer steps, not faster legs (3D-3.4)
+	phase += dt * spd * (5.0 if kind == "person" else (9.0 if kind in ["cat", "hedgehog", "hare"] else 6.5)) / max(0.5, body_root.scale.y) / stride
+	var amp: float = clamp(spd / 1.2, 0.0, 1.0) * (0.6 if kind == "person" else 0.55) * (1.0 + 0.25 * clamp(spd - 1.8, 0.0, 1.0))
 	var sw := sin(phase) * amp
 	var k: float = clamp(dt * 12.0, 0.0, 1.0)
 	var idle: String = idle_kind if now < idle_until else ""

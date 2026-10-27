@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 02:58",
+ "generated": "2026-10-27 03:16",
  "versions": [
   {
-   "version": "2.93.10",
-   "file": "webcam_bewegung_2_93_10.py",
+   "version": "2.93.11",
+   "file": "webcam_bewegung_2_93_11.py",
    "url": "",
-   "sha256": "3d6300b53adf9c51d7e8704a529f91a20d474df86b39a2cbef0a5e6fafdc7f0c",
-   "date": "2026-10-27 02:58",
-   "notes": "3D simulator 3D-3.3: shadows are no longer black on some graphics cards (sky light as ambient colour), softer shadow edges.",
-   "sig": "14f82bc09da074876798b9cb734d2ff3acf38b6d271d99f3769047ef9ff7dba61be6777bb53ec07ffbf67f42af07731f403e19e22d87911f0681c44236cced03"
+   "sha256": "d75d5469de82fdb1881325c7671bc4674efc5a10efc4d31b9b422e1fd9312ca4",
+   "date": "2026-10-27 03:16",
+   "notes": "3D simulator 3D-3.4: real place from the map (Switzerland: swisstopo terrain and aerial picture, OpenStreetMap buildings), sturdier update.",
+   "sig": "4ec93805ea67402b675cc6eb04b67a9eb9aea53bdf8fd687398b672f2a3e727f0d21009d3bcac64e1db1a9efe6a612fc3107c5269f96dba0da31e2dfe239ab07"
   },
   {
    "version": "2.92.4",

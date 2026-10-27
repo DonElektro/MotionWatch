@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-3.3 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-3.4 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -66,6 +66,18 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
     Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
   * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
+- Ab 3D-3.4: Echter Ort von der Karte (nur Schweiz):
+  * Taste K oder «Werkzeuge → Karte»: Landeskarte / Luftbild von swisstopo, ziehen = verschieben, Mausrad = zoomen,
+    Suchfeld (z. B. «Zermatt» oder eine Adresse). Klick = dort steht Motion Watch. «Diesen Ort laden».
+  * Der Simulator holt dann aus dem Internet: Höhenmodell (swisstopo swissALTI3D, sonst Terrarium), Luftbild (SWISSIMAGE)
+    und Gebäude, Wald, Bäume, Strassen, Wasser, Zäune und Hecken (OpenStreetMap). Daraus baut er die Szene «Ort von der
+    Karte»: 400 × 400 m genau, rundherum bis 1.6 km die Landschaft, nachts brennt in manchen Fenstern Licht.
+  * Beim ersten Mal dauert das etwa eine Minute, danach ist der Ort im Benutzerordner (orte) gespeichert und geht ohne
+    Internet. Wohnwagen, Zelt und Velo stellt der Simulator neben Motion Watch.
+  * Auch auf der Seite von Motion Watch: Feld «Ort» (Name oder Koordinaten, z. B. 46.0207, 7.7491).
+  * Daten: © swisstopo, © OpenStreetMap-Mitwirkende.
+  * Update: wenn GitHub kurz noch die alte Datei liefert, wartet es und holt sie neu; läuft eine alte .exe noch, nimmt es
+    einen anderen Namen.
 - Ab 3D-3.3: Schatten sind nicht mehr schwarz (das Himmelslicht wird auf jeder Grafikkarte gleich gerechnet),
   weichere Schattenkanten.
 - Ab 3D-3.2:

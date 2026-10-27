@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.3"
+const VERSION := "3D-3.4"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -23,6 +23,17 @@ var UI = preload("res://scripts/ui_style.gd")
 var Autostart = preload("res://scripts/autostart.gd")
 var Game = preload("res://scripts/game.gd")
 var TestRun = preload("res://scripts/testrun.gd")
+var Geo = preload("res://scripts/geo.gd")
+var Karte = preload("res://scripts/karte.gd")
+var geo                               # geo.gd: a real place in Switzerland (scene «ort», from 3D-3.4)
+var karte                             # karte.gd: the map to choose the place
+var ort_lat := 0.0                    # the chosen place (kept)
+var ort_lon := 0.0
+var ort_name := ""
+var terrain := false                  # the scene has hills (ground_y), else the ground is flat at y = 0
+var ground_mats: Array = []           # ground materials of the place (snow, wet)
+var flat_nodes: Array = []            # flat meadow and the hills far away: hidden at a real place
+var geo_note := ""
 var testrun                           # testrun.gd: test run with evaluation (from 3D-2.6)
 var game                              # game.gd: «Unentdeckt ans Ziel» with up to 4 phones (from 3D-2.4)
 var game_minutes := 5.0
@@ -233,6 +244,9 @@ func _ready() -> void:
 	noise_tex.width = 256
 	noise_tex.height = 256
 	_build_environment()
+	geo = Geo.new()
+	geo.main = self
+	add_child(geo)
 	_build_world()
 	_build_head()
 	_build_viewports()
@@ -501,6 +515,7 @@ func _build_world() -> void:
 	g.material_override = grass_mat
 	g.layers = 1
 	world.add_child(g)
+	flat_nodes.append(g)
 	var gt := MeshInstance3D.new()
 	gt.mesh = plane
 	var gm := ShaderMaterial.new()
@@ -509,6 +524,7 @@ func _build_world() -> void:
 	gt.material_override = gm
 	gt.layers = 2
 	world.add_child(gt)
+	flat_nodes.append(gt)
 	# the sky for the thermal camera: a big dome around everything (cold when clear, near air temperature when cloudy)
 	var dome := SphereMesh.new()
 	dome.radius = 1500.0
@@ -527,8 +543,9 @@ func _build_world() -> void:
 		var hill := SphereMesh.new()
 		hill.radius = rng.randf_range(90, 180)
 		hill.height = hill.radius * 0.8
-		add_mesh(world, hill, pos_of(i * 360.0 / 14 + rng.randf_range(-8, 8), rng.randf_range(420, 520), -hill.radius * 0.15),
-				mat(Color(0.25, 0.33, 0.25)), "hill")
+		flat_nodes.append(add_mesh(world, hill, pos_of(i * 360.0 / 14 + rng.randf_range(-8, 8), rng.randf_range(420, 520), -hill.radius * 0.15),
+				mat(Color(0.25, 0.33, 0.25)), "hill"))
+		flat_nodes.append(world.get_child(world.get_child_count() - 1))
 	scene_parent = Node3D.new()
 	add_child(scene_parent)
 	scenes = Scenes.new()
@@ -547,9 +564,91 @@ func _build_scene() -> void:
 	lamp_mats.clear()
 	anims.clear()
 	door_open = false
+	terrain = false
+	ground_mats.clear()
+	geo_note = ""
 	scenes.build(scene, scene_parent)
+	for n in flat_nodes:
+		n.visible = not terrain
+	if scene == "ort" and not geo.loaded and not geo.busy and ort_lat != 0.0:
+		geo.load_place(ort_lat, ort_lon, ort_name)      # from the cache or the internet; then place_loaded()
 	if scene == "wild":
 		rifle_on = true                          # wildlife watching: the rifle is on by itself
+
+
+func place_loaded() -> void:
+	"""the data of a place is there (geo.gd): keep it and show it"""
+	while visitors == null or ui_root == null or game == null:   # loaded from the cache at the start: wait for the rest
+		await get_tree().process_frame
+	ort_lat = geo.lat
+	ort_lon = geo.lon
+	ort_name = geo.place_name
+	_settings_dirty = true
+	set_scene("ort")
+
+
+func choose_place(la: float, lo: float, nm: String) -> void:
+	"""from the map or the page of Motion Watch: load this place"""
+	if not geo.in_ch(la, lo):
+		geo.info = "Dieser Punkt liegt nicht in der Schweiz."
+		return
+	geo.load_place(la, lo, nm)
+
+
+func set_place_text(t: String) -> void:
+	"""«Zermatt» or «46.0207, 7.7491» (field on the page of Motion Watch)"""
+	var parts := t.replace(";", ",").split(",")
+	if parts.size() == 2 and parts[0].strip_edges().is_valid_float() and parts[1].strip_edges().is_valid_float():
+		choose_place(float(parts[0]), float(parts[1]), "")
+		return
+	geo.info = "Suche «%s» …" % t
+	var res: Array = await geo.search(t)
+	if res.is_empty():
+		geo.info = "«%s» nicht gefunden." % t if geo.info.begins_with("Suche") else geo.info
+		return
+	choose_place(res[0]["lat"], res[0]["lon"], res[0]["label"])
+
+
+func place_label() -> String:
+	if geo.busy:
+		return geo.info
+	if ort_lat == 0.0:
+		return ""
+	return "%s (%.5f, %.5f)" % [ort_name, ort_lat, ort_lon] if not ort_name.begins_with("%.5f" % ort_lat) else "%.5f, %.5f" % [ort_lat, ort_lon]
+
+
+func open_map() -> void:
+	if karte == null:
+		return
+	karte.open(ort_lat, ort_lon)
+
+
+func ground_y(x: float, z: float) -> float:
+	"""height of the ground (0 everywhere except at a real place)"""
+	return geo.height(x, z) if terrain else 0.0
+
+
+func ground_hit(from: Vector3, d: Vector3):
+	"""where a ray meets the ground (null if not within 400 m)"""
+	if not terrain:
+		return Plane(Vector3.UP, 0).intersects_ray(from, d)
+	var t := 0.0
+	var prev := from
+	while t < 400.0:
+		t += 0.5 + t * 0.01
+		var p := from + d * t
+		if p.y <= ground_y(p.x, p.z):
+			var lo := prev
+			var hi := p
+			for _i in range(12):
+				var mid := (lo + hi) / 2.0
+				if mid.y <= ground_y(mid.x, mid.z):
+					hi = mid
+				else:
+					lo = mid
+			return hi
+		prev = p
+	return null
 
 
 func set_scene(id: String) -> bool:
@@ -933,7 +1032,7 @@ func _update_sky() -> void:
 	sky_mat.sky_top_color = top * k + Color(0.01, 0.015, 0.03) * (1.0 - k)
 	sky_mat.sky_horizon_color = hor * k + Color(0.02, 0.025, 0.04) * (1.0 - k)
 	sky_mat.ground_horizon_color = sky_mat.sky_horizon_color
-	sky_mat.ground_bottom_color = Color(0.1, 0.12, 0.08) * k
+	sky_mat.ground_bottom_color = Color(0.1, 0.12, 0.08) * k if not terrain else sky_mat.sky_horizon_color * 0.9   # real place: haze below
 	sky_mat.sky_energy_multiplier = 0.06 + 0.94 * day
 	# light from the whole sky: bluish in the sun (shadows are never black, as outside), grey when cloudy, dark at night
 	env.ambient_light_color = Color(0.6, 0.68, 0.85).lerp(Color(0.72, 0.72, 0.74), cl).lerp(Color(0.9, 0.7, 0.6), dusk * 0.5)
@@ -945,6 +1044,9 @@ func _update_sky() -> void:
 	snow.emitting = weather == "snow"
 	grass_mat.set_shader_parameter("snow_amount", 0.85 if weather == "snow" else 0.0)
 	grass_mat.set_shader_parameter("wet", 1.0 if weather == "rain" else 0.0)
+	for gm in ground_mats:
+		gm.set_shader_parameter("snow_amount", 0.85 if weather == "snow" else 0.0)
+		gm.set_shader_parameter("wet", 1.0 if weather == "rain" else 0.0)
 	var w_now := wind * gust()
 	for fm in foliage_mats:
 		fm.set_shader_parameter("wind", w_now)
@@ -1358,6 +1460,24 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 
 func car() -> void:
 	var side := 1.0 if randf() < 0.5 else -1.0
+	if scenes.data.has("road_line"):                      # a real place: along the nearest road (right-hand traffic)
+		var pts := []
+		var l: PackedVector2Array = scenes.data["road_line"]
+		for i in range(l.size()):
+			if l[i].length() < 140.0:
+				pts.append(l[i])
+		if side < 0:
+			pts.reverse()
+		if pts.size() >= 2:
+			var path := []
+			for i in range(pts.size()):
+				var dd: Vector2 = (pts[mini(i + 1, pts.size() - 1)] - pts[maxi(i - 1, 0)]).normalized()
+				var q: Vector2 = pts[i] + Vector2(-dd.y, dd.x) * -1.3
+				path.append(Vector3(q.x, 0, q.y))
+			var v = spawn("car", path[0], path[1])
+			for i in range(2, path.size()):
+				v.route.append(path[i])
+			return
 	var z: float = scenes.data.get("road_z", -28.0)
 	spawn("car", Vector3(-side * 90.0, 0, z - side * 1.2), Vector3(side * 90.0, 0, z - side * 1.2))
 
@@ -1515,6 +1635,8 @@ func _register_controls() -> void:
 		sc.append([s[0], s[1]])
 	var ex := {"expert": true}
 	add_control("select", "scene", "Szene", func(): return scene, func(v): set_scene(v), "Szene", {"options": sc})
+	add_control("button", "ort_map", "Karte öffnen: Ort in der Schweiz wählen …", null, func(): open_map(), "Ort von der Karte")
+	add_control("text", "ort", "Ort (Name oder Koordinaten, z. B. «Zermatt» oder «46.0207, 7.7491»)", func(): return place_label(), func(v): set_place_text(str(v)), "Ort von der Karte")
 	add_control("slider", "hour", "Uhrzeit", func(): return snappedf(hour(), 0.01), func(v): set_hour(v), "Szene", {"min": 0, "max": 23.75, "step": 0.25, "unit": "h"})
 	add_control("slider", "speed", "Zeit läuft x-fach", func(): return speed, func(v): _set_speed(v), "Szene", {"min": 1, "max": 120, "step": 1, "unit": "×", "expert": true})
 	add_control("slider", "moon", "Mond", func(): return moon, func(v): moon = v, "Szene", {"min": 0, "max": 1, "step": 0.1, "expert": true})
@@ -1707,6 +1829,14 @@ func control(d: Dictionary) -> Dictionary:
 			return {"ok": false, "error": "no such player"}
 		p2["actor"].position = free_spot(Vector3(float(d.get("x", 0.0)), 0, float(d.get("z", 0.0))), 0.4, true)
 		return {"ok": true}
+	elif a == "geo":                                   # for tests: the place (loading, what was built)
+		return {"ok": true, "busy": geo.busy, "loaded": geo.loaded, "info": geo.info, "counts": geo.counts, "terrain": terrain,
+				"h0": geo.h0, "src": geo.dem_source, "note": geo_note, "y": ground_y(float(d.get("x", 0.0)), float(d.get("z", 0.0))),
+				"map": karte.visible, "map_info": karte.status_text()}
+	elif a == "map":                                   # for tests: open the map at a place, zoom
+		show_panel(false)
+		karte.open(float(d.get("lat", 46.95)), float(d.get("lon", 7.44)), int(d.get("zoom", 0)))
+		return {"ok": true}
 	elif a == "view":                                  # for tests: the free view from a point to a point, panel away
 		var vp_: Array = d.get("pos", [0, 3, 6])
 		var la_: Array = d.get("look", [0, 1, 0])
@@ -1765,7 +1895,7 @@ func status_text() -> String:
 	var h := hour()
 	var mwc := "verbunden mit %s" % str(mw.get("device", "Motion Watch")) if now() - mw_t < 3.0 else ("Motion Watch nicht verbunden" if stream_on else "Senden aus")
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
-	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "")
+	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
 
 
 func scenarios() -> Array:
@@ -1796,6 +1926,11 @@ func _build_ui() -> void:
 	phone.theme = th
 	layer.add_child(phone)
 	_build_crosshair(layer)
+	karte = Karte.new()
+	karte.main = self
+	karte.theme = th
+	karte.visible = false
+	layer.add_child(karte)
 	var panel := PanelContainer.new()
 	panel.theme = th
 	panel.anchor_left = 1.0
@@ -1940,6 +2075,11 @@ func _build_ui() -> void:
 	tl.add_child(mwpc_btn)
 	mwpc_label = UI.small("")
 	tl.add_child(mwpc_label)
+	var kb := Button.new()
+	kb.text = "Karte: echten Ort in der Schweiz wählen (K)"
+	kb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	kb.pressed.connect(open_map)
+	tl.add_child(kb)
 	var pv := Button.new()
 	pv.text = "Handy- / Tablet-Simulator (P)"
 	pv.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1964,7 +2104,7 @@ func _build_ui() -> void:
 		game.add_info(groups["Spiel"], UI)            # address, QR code and players of the game
 	var keys := UI.fold_card(box_, "Tasten", false)
 	fold_bodies.append(keys)
-	info_label = UI.small("Maus rechts gedrückt: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienfeld aus / ein · P: Handy / Tablet · G: Gewehr ein / aus (Linksklick = Schuss)")
+	info_label = UI.small("Maus rechts gedrückt: umschauen · W A S D Q E: fliegen · Shift: schneller · 1: durch Kamera 0 schauen · 2: Kamera 1 · 0: frei · H: Bedienfeld aus / ein · P: Handy / Tablet · K: Karte (Ort wählen) · G: Gewehr ein / aus (Linksklick = Schuss)")
 	keys.add_child(info_label)
 	expert_cards.append(keys.get_meta("card"))
 	top_cards.append(keys.get_meta("card"))
@@ -2220,7 +2360,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "meadow_on", "weather", "wind", "ambient", "moon", "cam1_yaw"]
+		"avoid_on", "quality", "meadow_on", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
 
@@ -2366,6 +2506,20 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			parent.add_child(hb)
 			ui_rows[c.id] = ob
 			ui_items.append([hb, c.label, c.extra.get("expert", false), parent])
+		"text":
+			var tb := VBoxContainer.new()
+			tb.add_theme_constant_override("separation", 2)
+			var tl2 := Label.new()
+			tl2.text = c.label
+			tl2.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			tb.add_child(tl2)
+			var le := LineEdit.new()
+			le.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			le.text_submitted.connect(func(t): c["set"].call(t))
+			tb.add_child(le)
+			parent.add_child(tb)
+			ui_rows[c.id] = le
+			ui_items.append([tb, c.label, c.extra.get("expert", false), parent])
 		"slider":
 			var vb := VBoxContainer.new()
 			var hb2 := HBoxContainer.new()
@@ -2409,6 +2563,8 @@ func _sync_ui() -> void:
 					w.select(i)
 		elif w is HSlider and not w.has_focus():
 			w.value = float(v)
+		elif w is LineEdit and not w.has_focus():
+			w.text = str(v)
 	_syncing = false
 
 
@@ -2472,6 +2628,11 @@ func _unhandled_input(ev: InputEvent) -> void:
 				show_panel(not ui_root.visible)
 			KEY_P:
 				_toggle_phone()
+			KEY_K:
+				if karte.visible:
+					karte.visible = false
+				else:
+					open_map()
 			KEY_G:
 				rifle_on = not rifle_on
 				_sync_ui()
@@ -2505,7 +2666,7 @@ func _fly(dt: float) -> void:
 	if mv != Vector3.ZERO:
 		var f := fly_speed * (3.0 if Input.is_key_pressed(KEY_SHIFT) else 1.0)
 		view_cam.global_translate(view_cam.global_transform.basis * mv.normalized() * f * dt)
-		view_cam.position.y = max(0.3, view_cam.position.y)
+		view_cam.position.y = max(ground_y(view_cam.position.x, view_cam.position.z) + 0.3, view_cam.position.y)
 
 
 var place_kind := ""                  # chosen in the pictures of the visitors: a click into the world puts it there
@@ -2520,7 +2681,7 @@ func _place_at(k: String, p: Vector2) -> void:
 	"""a visitor where the mouse points (on the ground, never inside an object); it then walks off in some direction"""
 	var from := view_cam.project_ray_origin(p)
 	var d := view_cam.project_ray_normal(p)
-	var hit = Plane(Vector3.UP, 0).intersects_ray(from, d)
+	var hit = ground_hit(from, d)
 	if hit == null or from.distance_to(hit) > 400.0:
 		return
 	var a: Vector3 = free_spot(hit, 0.5, k in ["person", "child", "jogger"])
@@ -2851,9 +3012,17 @@ func line_blocker(a: Vector3, b: Vector3) -> Dictionary:
 			if t < 0.0:
 				continue
 			var ht: float = o.get("ht", 1.2 if o["po"] else 3.0)
-			if lerp(a.y, b.y, t) > ht:
+			var hp := a2.lerp(b2, t)
+			if lerp(a.y, b.y, t) - ground_y(hp.x, hp.y) > ht:
 				continue                                  # the line of sight goes above it
 			return o
+	if terrain:                                           # a real place: hills hide too
+		var m2 := int(ceil(seg.length() / 3.0))
+		for i in range(1, m2):
+			var f := float(i) / float(m2)
+			var p := a2 + seg * f
+			if ground_y(p.x, p.y) > lerp(a.y, b.y, f) + 0.05:
+				return {"id": -1, "c": "Gelände", "terrain": true}
 	return {}
 
 

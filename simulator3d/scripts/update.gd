@@ -204,46 +204,30 @@ func _fail(msg: String) -> void:
 
 
 func _update() -> void:
-	var exe := OS.get_executable_path().trim_suffix(".old")     # remember it now: after the renaming it may point to the .old file
+	var exe := real_exe()                           # remember it now: after the renaming it may point to the .old file
 	b_upd.visible = false
 	b_skip.visible = false
 	bar.visible = true
 	var zip_path := ProjectSettings.globalize_path("user://update.zip")
 	var file := str(info.get("file", "simulator3d/MotionWatch3D_Simulator.zip"))
-	if FileAccess.file_exists(zip_path):
-		DirAccess.remove_absolute(zip_path)
-	var got_it := false
-	if OS.get_name() == "Windows":                  # curl.exe of Windows: fast, Windows certificates and proxy
-		got_it = await _curl(base + file, zip_path)
-	if not got_it:
-		http.timeout = 0.0
-		http.download_file = zip_path
-		http.download_chunk_size = 1 << 20          # bigger pieces: much faster while the simulation runs
-		http.body_size_limit = int(info["size"]) + 4096
-		if http.request(base + file) != OK:
-			await _fail("Download liess sich nicht starten.")
+	var ok_file := false
+	for attempt in range(3):                        # GitHub may hand out the old ZIP for some minutes after a new version
+		var u := base + file                        # (cache): then wait and ask again, the address made new (from 3D-3.4)
+		if attempt > 0:
+			for i in range(20 * attempt, 0, -1):
+				text.text = "GitHub liefert noch die alte Datei – neuer Versuch in %d s …" % i
+				await get_tree().create_timer(1.0).timeout
+			u += "?v=%s%d" % [str(info["sha256"]).left(12), Time.get_ticks_msec()]
+		var why := await _download_check(u, zip_path)
+		if why == "":
+			ok_file = true
+			break
+		if why.begins_with("!"):
+			await _fail(why.substr(1))
 			return
-		downloading = true
-		var r: Array = await http.request_completed
-		downloading = false
-		if r[0] != HTTPRequest.RESULT_SUCCESS or r[1] != 200:
-			await _fail("Download abgebrochen (Fehler %s / %s)." % [r[0], r[1]])
+		if attempt == 2:
+			await _fail(why)
 			return
-	text.text = "Prüfe die Datei …"
-	await get_tree().process_frame
-	var f := FileAccess.open(zip_path, FileAccess.READ)
-	if f == null or f.get_length() != int(info["size"]):
-		await _fail("Die Datei hat die falsche Grösse.")
-		return
-	var h := HashingContext.new()
-	h.start(HashingContext.HASH_SHA256)
-	while not f.eof_reached():
-		h.update(f.get_buffer(1 << 20))
-	f.close()
-	if h.finish().hex_encode() != str(info["sha256"]).to_lower():
-		DirAccess.remove_absolute(zip_path)
-		await _fail("Die Prüfsumme stimmt nicht – die Datei wurde nicht benutzt.")
-		return
 	text.text = "Packe aus …"
 	await get_tree().process_frame
 	var err := _install(zip_path, exe)
@@ -309,14 +293,23 @@ func _install(zip_path: String, exe: String) -> String:
 				return "Kann im Ordner %s nicht schreiben." % dir
 			fw.store_buffer(data)
 			fw.close()
-			if FileAccess.file_exists(exe + ".old"):
-				DirAccess.remove_absolute(exe + ".old")
-			if DirAccess.rename_absolute(exe, exe + ".old") != OK:
+			# the running .exe gets another name (Windows allows that); an old one that is still running (a second
+			# simulator, or the one before the last update) cannot be deleted: then a free name (from 3D-3.4)
+			var old := exe + ".old"
+			if FileAccess.file_exists(old):
+				DirAccess.remove_absolute(old)
+			var k := 2
+			while FileAccess.file_exists(old) and k < 50:
+				old = exe + ".old%d" % k
+				if FileAccess.file_exists(old):
+					DirAccess.remove_absolute(old)
+				k += 1
+			if DirAccess.rename_absolute(exe, old) != OK:
 				DirAccess.remove_absolute(tmp)
 				z.close()
-				return "Die laufende Datei lässt sich nicht ersetzen."
+				return "Die laufende Datei lässt sich nicht ersetzen. Läuft der Simulator zweimal? Bitte alle Simulator-Fenster schliessen (auch das kleine Kästchen) und neu starten."
 			if DirAccess.rename_absolute(tmp, exe) != OK:
-				DirAccess.rename_absolute(exe + ".old", exe)       # put the old one back
+				DirAccess.rename_absolute(old, exe)                # put the old one back
 				z.close()
 				return "Die neue Datei lässt sich nicht hinlegen."
 		else:
@@ -335,6 +328,51 @@ func _install(zip_path: String, exe: String) -> String:
 
 func _remove_old() -> void:
 	"""the .exe of the version before the update (it could not be deleted while it was running)"""
-	var old := OS.get_executable_path().trim_suffix(".old") + ".old"
-	if FileAccess.file_exists(old):
-		DirAccess.remove_absolute(old)
+	var exe := real_exe()
+	for f in DirAccess.get_files_at(exe.get_base_dir()):
+		if f.begins_with(exe.get_file() + ".old"):
+			DirAccess.remove_absolute(exe.get_base_dir().path_join(f))   # fails quietly while it still runs
+
+
+static func real_exe() -> String:
+	"""the path of the .exe, also when this one runs as .old / .old2 after an update"""
+	var p := OS.get_executable_path()
+	var i := p.rfind(".old")
+	return p.substr(0, i) if i > 0 and p.substr(i + 4).is_valid_int() or p.ends_with(".old") else p
+
+
+func _download_check(u: String, zip_path: String) -> String:
+	"""download the ZIP and check size and SHA-256: "" = good, else what went wrong ("!" = do not try again)"""
+	if FileAccess.file_exists(zip_path):
+		DirAccess.remove_absolute(zip_path)
+	var got_it := false
+	if OS.get_name() == "Windows":                  # curl.exe of Windows: fast, Windows certificates and proxy
+		got_it = await _curl(u, zip_path)
+	if not got_it:
+		http.timeout = 0.0
+		http.download_file = zip_path
+		http.download_chunk_size = 1 << 20          # bigger pieces: much faster while the simulation runs
+		http.body_size_limit = int(info["size"]) + 4096
+		if http.request(u) != OK:
+			return "!Download liess sich nicht starten."
+		downloading = true
+		var r: Array = await http.request_completed
+		downloading = false
+		if r[0] != HTTPRequest.RESULT_SUCCESS or r[1] != 200:
+			return "Download abgebrochen (Fehler %s / %s)." % [r[0], r[1]]
+	text.text = "Prüfe die Datei …"
+	await get_tree().process_frame
+	var f := FileAccess.open(zip_path, FileAccess.READ)
+	if f == null or f.get_length() != int(info["size"]):
+		if f != null:
+			f.close()
+		return "Die Datei hat die falsche Grösse."
+	var h := HashingContext.new()
+	h.start(HashingContext.HASH_SHA256)
+	while not f.eof_reached():
+		h.update(f.get_buffer(1 << 20))
+	f.close()
+	if h.finish().hex_encode() != str(info["sha256"]).to_lower():
+		DirAccess.remove_absolute(zip_path)
+		return "Die Prüfsumme stimmt nicht – die Datei wurde nicht benutzt."
+	return ""

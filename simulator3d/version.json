@@ -1,7 +1,7 @@
 {
- "version": "3D-3.3",
+ "version": "3D-3.4",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30413330,
- "sha256": "a9e01dfdf9a2d6ac503416d7392869bd488dede976e7f4c99327eb16acdd0726",
- "notes": "Schatten nicht mehr schwarz: Licht vom Himmel wird jetzt auf jedem PC gerechnet, weichere Schattenkanten."
+ "size": 30476234,
+ "sha256": "986efc5d28994e3a77d61484624dcb339a0d6ef6fc14a9b89422f0911ac7f5e9",
+ "notes": "Neu: echter Ort von der Karte (Schweiz) – Taste K: Ort wählen, Gelände, Luftbild, Gebäude, Bäume und Strassen werden geladen. Update robuster. Jogger mit längeren Schritten."
 }
