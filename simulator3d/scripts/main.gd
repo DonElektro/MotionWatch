@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.16"
+const VERSION := "3D-3.17"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1586,7 +1586,7 @@ func world_reply() -> Dictionary:
 
 
 func info() -> Dictionary:
-	return {"v": 1, "name": "Motion Watch 3D-Simulator %s" % VERSION,
+	return {"v": 1, "name": "Motion Watch 3D-Simulator %s" % VERSION, "host": host_name(),
 			"cameras": [{"id": 0, "name": "Head camera (NoIR)", "w": CAM_W[0], "h": CAM_H[0], "fps": CAM_FPS[0], "fov_h": CAM_FOV[0], "fov_v": 41.0, "on_head": true, "noir": true},
 						{"id": 1, "name": "Fixed camera", "w": CAM_W[1], "h": CAM_H[1], "fps": CAM_FPS[1], "fov_h": CAM_FOV[1], "fov_v": 62.0, "on_head": false, "noir": false}],
 			"thermal": {"w": TH_W, "h": TH_H, "fps": 8.0, "fov_h": TH_FOV, "fov_v": 35.0, "unit": "C", "on_head": true},
@@ -3922,3 +3922,15 @@ func _birds() -> void:
 			return true
 		return false
 	anims.append(flap)
+
+
+func host_name() -> String:
+	## the name of this computer (Motion Watch shows it next to the simulator in its list)
+	for k in ["COMPUTERNAME", "HOSTNAME"]:
+		var h := OS.get_environment(k).strip_edges()
+		if h != "":
+			return h.substr(0, 40)
+	var f := FileAccess.open("/etc/hostname", FileAccess.READ)
+	if f != null:
+		return f.get_as_text().strip_edges().substr(0, 40)
+	return ""

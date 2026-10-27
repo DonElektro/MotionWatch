@@ -1,7 +1,7 @@
 {
- "version": "3D-3.16",
+ "version": "3D-3.17",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30690955,
- "sha256": "6d1e0255fab6be6917867c6f17e9e30e80e16eaafa962f345cb86a3a6755223d",
- "notes": "Nach einem Update startet der Simulator wieder so wie vorher: sendend oder nicht, als kleines Kästchen oder Symbol, oder mit gleicher Fenstergrösse und -stelle."
+ "size": 30559135,
+ "sha256": "b9d6f613f65da3d9fb1bcd35926fcfabeb81b843bc97f9aac25d619cc840562e",
+ "notes": "Der Simulator schickt den Computernamen mit: Motion Watch zeigt ihn in der Liste «Simulatoren im Netz»."
 }

@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 08:21",
+ "generated": "2026-10-27 08:57",
  "versions": [
   {
-   "version": "2.95.0",
-   "file": "webcam_bewegung_2_95_0.py",
+   "version": "2.95.1",
+   "file": "webcam_bewegung_2_95_1.py",
    "url": "",
-   "sha256": "efb8c635a373c243ccd91ac43f48abb09c4cdf39a5d0d1c505a4d51d04616514",
-   "date": "2026-10-27 08:21",
-   "notes": "second simulator «Python world simulator» (simulator_python/) as an alternative to the 3D simulator: download button (/sim/simulator_py.zip, fetched once and checked like the 3D one), tested with its settings in the tab Simulator.",
-   "sig": "39f1bbc1462696b3e9d92ea787abbc091bee440b04153d578b22dcd177e5a82da274ec1891e6bf1b367f75cbeebd1268f1f1fec81584b6d8a08574585d00010a"
+   "sha256": "fc1053de4449ea3deb81d5a366c82670cedf5b750d8a30f67bbf9dbb3c3bcd61",
+   "date": "2026-10-27 08:57",
+   "notes": "«Simulators in the network» shows the computer name next to each simulator (the simulator tells it, else the router's name service is asked once). 3D simulator 3D-3.17 (tells its computer name), Python world simulator PY-1.1.",
+   "sig": "63230b738b09ebf53611381c9d272b4a7ac2abff17d76898d27020e512406c7543187e7d394af5fe8112eb952ab1daaed086cb293e5e80ed8e6f06abeef23105"
   },
   {
    "version": "2.94.5",

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_1.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -547,6 +547,8 @@ Features
     a hint when a simulator is missing.
   * 2.95.0: second simulator «Python world simulator» (simulator_python/) as an alternative to the 3D simulator: download button
     (/sim/simulator_py.zip, fetched once and checked like the 3D one), tested with its settings in the tab Simulator.
+  * 2.95.1: «Simulators in the network» shows the computer name next to each simulator (the simulator tells it, else the
+    router's name service is asked once). 3D simulator 3D-3.17 (tells its computer name), Python world simulator PY-1.1.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -555,10 +557,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -575,7 +577,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.0"
+APP_VERSION = "2.95.1"
 
 
 def default_data_dir():
@@ -12519,12 +12521,12 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.16", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30690955,
-         "sha256": "6d1e0255fab6be6917867c6f17e9e30e80e16eaafa962f345cb86a3a6755223d"}
+SIM3D = {"version": "3D-3.17", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30559135,
+         "sha256": "b9d6f613f65da3d9fb1bcd35926fcfabeb81b843bc97f9aac25d619cc840562e"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
-SIMPY = {"version": "PY-1.0", "file": "simulator_python/MotionWatchSimulator.zip", "size": 130085,
-         "sha256": "31ca87521ffc06f59099db7717dea22a8130dfd84c7cb53d16dbb57caad36510", "stem": "MotionWatch_PythonSimulator",
+SIMPY = {"version": "PY-1.1", "file": "simulator_python/MotionWatchSimulator_PY-1.1.zip", "size": 137697,
+         "sha256": "dfc992580eeae1698cb0f81bf3f82f8ceb51982a97f11a8977a4efb34ba33ee0", "stem": "MotionWatch_PythonSimulator",
          "label": "Python world simulator"}
 SIMPY_DL = {"running": False, "got": 0, "msg": ""}
 SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "3D simulator"
@@ -12636,7 +12638,8 @@ class SimDiscovery:
                 old = SIMFOUND.get(k) or {}
                 SIMFOUND[k] = {"ip": ip, "port": port, "name": str(d.get("name") or "Simulator")[:60],
                                "version": str(d.get("version") or "")[:20], "t": time.time(), "first": old.get("first") or time.time(),
-                               "count": int(old.get("count") or 0) + 1, "via": "beacon", "ms": old.get("ms")}
+                               "count": int(old.get("count") or 0) + 1, "via": "beacon", "ms": old.get("ms"),
+                               "host_told": str(d.get("host") or old.get("host_told") or "")[:40]}
                 if new:
                     log_event("sys", f"Simulator found in the network: {SIMFOUND[k]['name']} on {k}")
             except (ValueError, OSError):
@@ -12652,6 +12655,38 @@ class SimDiscovery:
 
 
 SIMSCAN = {"running": False, "t": 0.0, "hosts": 0, "found": 0, "secs": 0.0, "net": "", "done": 0}
+SIMHOST = {}                       # ip -> computer name (from the simulator itself, or asked once from the router's name service)
+
+
+def _host_clean(h):
+    h = re.sub(r"[^\w .\-]", "", str(h or "")).strip()[:40]
+    if re.fullmatch(r"[0-9.]+", h):
+        return ""
+    for dom in (".local", ".lan", ".home", ".fritz.box", ".box", ".localdomain", ".internal"):   # «PC-DANIEL.fritz.box» -> «PC-DANIEL»
+        if h.lower().endswith(dom):
+            h = h[: -len(dom)]
+    return h
+
+
+def sim_host(ip, told=""):
+    """the computer name of a simulator: what it says itself, else this device's name, else asked once in the background"""
+    import socket
+    told = _host_clean(told)
+    if told:
+        SIMHOST[ip] = told; return told
+    if ip.startswith("127."):
+        return _host_clean(socket.gethostname())
+    if ip in SIMHOST:
+        return SIMHOST[ip]
+    SIMHOST[ip] = ""
+
+    def ask():
+        try:
+            SIMHOST[ip] = _host_clean(socket.gethostbyaddr(ip)[0]) or SIMHOST.get(ip, "")
+        except (OSError, UnicodeError):
+            pass
+    threading.Thread(target=ask, daemon=True, name="simhost").start()
+    return ""
 
 
 def _local_ipv4():
@@ -12690,7 +12725,7 @@ def sim_scan():
             old = SIMFOUND.get(k) or {}
             SIMFOUND[k] = dict(old, ip=k.split(":")[0], port=p, name=str(d.get("name") or "Simulator")[:60], t=time.time(),
                                first=old.get("first") or time.time(), count=int(old.get("count") or 0), via=old.get("via") or "scan", ms=ms,
-                               version=old.get("version") or "")
+                               version=old.get("version") or "", host_told=str(d.get("host") or old.get("host_told") or "")[:40])
             SIMSCAN["found"] += 1
         except Exception:
             pass
@@ -12729,7 +12764,8 @@ def sim_stats():
 
 def sim_found():
     now = time.time()
-    live = [dict(v, age=int(now - v["t"])) for v in SIMFOUND.values() if now - v["t"] < (15 if v.get("via") == "beacon" else 180)]
+    live = [dict(v, age=int(now - v["t"]), host=sim_host(v["ip"], v.get("host_told", ""))) for v in SIMFOUND.values()
+            if now - v["t"] < (15 if v.get("via") == "beacon" else 180)]
     local = {(v["port"], v["name"]) for v in live if v["ip"] == "127.0.0.1"}
     live = [v for v in live if v["ip"] == "127.0.0.1" or (v["port"], v["name"]) not in local]   # this device seen twice: once
     return sorted(live, key=lambda v: (v["ip"] == "127.0.0.1", v["ip"], v["port"]))
@@ -14125,7 +14161,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -18774,7 +18810,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .row2{display:flex;gap:8px;align-items:center}.row2 input[type=text]{flex:1;min-width:0}
 .fnd{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:10px}
 .fnd+.fnd{margin-top:6px}.fnd .n{flex:1;min-width:0}.fnd .n b{font-weight:500}.fnd .n .mut{font-size:12px}
-.fnd.cur{border-color:var(--grn)}
+.fnd.cur{border-color:var(--grn)}.fnd .host{margin-left:8px;font-size:13px;color:var(--mut);white-space:nowrap}
 .rng{display:flex;justify-content:space-between;font-size:14px}
 .dl{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .dl a,.dl button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px;font-size:14px}
@@ -18903,7 +18939,7 @@ Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "c
  "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in",
  "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.",
  "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "Use": "Verwenden", "in use": "in Gebrauch",
- "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
+ "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
  "The picture appears when the simulation is on.": "Das Bild erscheint, wenn die Simulation eingeschaltet ist.",
  "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "running": "läuft", "Controls": "Bedienung",
  "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a file to the simulator": "Datei zum Simulator hochladen",
@@ -18936,12 +18972,14 @@ function paint() {
     : SC.t ? t("Last search") + ": " + (ago < 60 ? ago + " s" : Math.round(ago / 60) + " min") + " · " + SC.hosts + " " + t("addresses in") + " " + SC.secs + " s · " + SC.found + " " + t("found")
     : t("Simulators announce themselves every 2 s. «Search now» also asks every address of the network.");
   $("#s-search").disabled = !!SC.running;
-  const fb = $("#s-found"), F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.count, x.age > 5])) + S.url;
+  const fb = $("#s-found"), F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.host, x.count, x.age > 5])) + S.url;
   if (fb.dataset.sig !== sig) { fb.dataset.sig = sig; fb.textContent = "";
     if (!F.length) fb.appendChild(el("div", "mut", t("No simulator announces itself in the network right now.")));
     fb.appendChild(el("div", "mut", t("sim-missing"))).style.marginTop = "6px";
     F.forEach(x => { const cur = S.url === "http://" + x.ip + ":" + x.port; const r = el("div", "fnd" + (cur ? " cur" : ""));
-      const n = el("div", "n"); n.append(el("b", "", x.name || "Simulator"), el("div", "mut", x.ip + ":" + x.port + (x.version ? " · " + x.version : "")
+      const n = el("div", "n"); n.append(el("b", "", x.name || "Simulator"));
+      if (x.host) { const h = el("span", "host", "💻 " + x.host + (x.ip === "127.0.0.1" ? " (" + t("this device") + ")" : "")); n.firstChild.after(h); }
+      n.append(el("div", "mut", x.ip + ":" + x.port + (x.version ? " · " + x.version : "")
         + (x.via === "scan" ? " · " + t("found by the search") : " · " + t("last") + " " + Math.round(x.age || 0) + " s")));
       r.appendChild(n);
       if (cur) r.appendChild(el("span", "mut", "✓ " + t("in use")));
@@ -23154,14 +23192,14 @@ function simPaint(s) {
       : (SC.t ? t("Last search") + ": " + (ago < 60 ? ago + " s" : Math.round(ago / 60) + " min") + " · " + SC.hosts + " " + t("addresses in") + " " + SC.secs + " s · " + SC.found + " " + t("found") + " (" + SC.net + ")"
         : t("Simulators announce themselves every 2 s. «Search now» also asks every address of the network.")); }
   const fb = $("#sim-found");
-  if (fb) { const F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.count, x.ms, x.age > 5])) + S.url;
+  if (fb) { const F = S.found || [], sig = JSON.stringify(F.map(x => [x.ip, x.port, x.name, x.host, x.count, x.ms, x.age > 5])) + S.url;
     if (fb.dataset.sig !== sig) { fb.dataset.sig = sig; fb.textContent = "";
       if (!F.length) fb.appendChild(el("div", "mut", t("No simulator announces itself in the network right now.")));
       fb.appendChild(el("div", "mut", t("sim-missing"))).style.marginTop = "6px";
       F.forEach(x => { const r = el("div"); r.style.cssText = "display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--line);border-radius:10px;margin-top:6px";
         const cur = S.url === "http://" + x.ip + ":" + x.port;
         const info = el("div"); info.style.flex = "1";
-        info.append(el("div", "", (cur ? "✅ " : "🖥 ") + x.name), el("div", "mut", x.ip + ":" + x.port + (x.ip === "127.0.0.1" ? " · " + t("this device") : "") + (x.version ? " · v" + x.version : "")));
+        info.append(el("div", "", (cur ? "✅ " : "🖥 ") + x.name + (x.host ? "  ·  💻 " + x.host : "")), el("div", "mut", x.ip + ":" + x.port + (x.ip === "127.0.0.1" ? " · " + t("this device") : "") + (x.version ? " · v" + x.version : "")));
         const f = new Date((x.first || x.t) * 1000);
         info.appendChild(el("div", "mut", t("seen since") + " " + (("0" + f.getHours()).slice(-2) + ":" + ("0" + f.getMinutes()).slice(-2)) + " · " + t("last") + " " + x.age + " s · "
           + (x.count ? x.count + " " + t("messages") : t("found by the search")) + (x.ms != null ? " · " + x.ms + " ms" : "")));
@@ -28232,7 +28270,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.0")
+        self.root.title("Motion Watch 2.95.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -28522,7 +28560,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

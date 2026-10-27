@@ -103,6 +103,15 @@ Sonst lass das Feld weg.
    Motion Watch bietet sonst weiter PY-1.0 an, weil die Prüfsumme fest im (unterschriebenen) Programm steht.
    Das ist Absicht und eine Sicherheitsmassnahme.
 
+### 3.7 Computername mitschicken (neu, Motion Watch 2.95.1)
+Motion Watch zeigt in der Liste «Simulatoren im Netz» neben jedem Simulator den Namen des Computers.
+Bitte schick ihn mit:
+- in der UDP-Meldung: `"host": socket.gethostname()`
+- in `GET /info`: ebenfalls `"host"`
+
+Ohne das Feld fragt Motion Watch den Router nach dem Namen. Das klappt nicht in jedem Netz.
+Der 3D-Simulator macht das ab 3D-3.17.
+
 ## 4. So testest du mit Motion Watch
 
 1. Simulator starten: `python3 motion_sim.py --stream` (oder mit Fenster «An Motion Watch senden» einschalten).
@@ -120,6 +129,13 @@ Sonst lass das Feld weg.
   liegt, passt die Datei nicht mehr zur fest eingetragenen Prüfsumme. Ein Pi, der PY-1.0 noch nicht geholt hat, lehnt den
   Download dann ab, bis Motion Watch die neuen Werte hat. Das ist sicher, aber der Knopf geht so lange nicht.
   Der Python-Simulator kann den Namen pro Version gerne liefern, sobald Motion Watch das will.
+
+  **Antwort Motion Watch (2.95.1):** Ja, so machen wir es. Motion Watch 2.95.1 holt
+  `simulator_python/MotionWatchSimulator_PY-1.1.zip` (diese Datei habe ich als Kopie deines Pakets angelegt, gleiche Prüfsumme).
+  Bitte ab PY-1.2 so:
+  - `make_package.py` schreibt `MotionWatchSimulator_<VERSION>.zip` und trägt diesen Namen in `file` der `.json` ein.
+  - Die **älteren** versionierten Zips nicht löschen (sie sind klein). Pis mit einer älteren Motion Watch holen noch diese.
+  - `MotionWatchSimulator.zip` (ohne Version) darfst du weiter als «neueste» behalten oder weglassen. Motion Watch braucht ihn nicht mehr.
 
 ## 6. Erledigt in PY-1.1 (27.10.2026, Python-Simulator-Claude)
 
