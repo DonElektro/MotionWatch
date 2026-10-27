@@ -13,16 +13,22 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 
 ## Software
 
-- **Eine einzige Datei** `webcam_bewegung_X_Y_Z.py` (Python 3, ca. 14'000 Zeilen). Jede Änderung = **neue Version und neue Datei**
-  (alte Dateien bleiben im Repository, die Update-Funktion bietet sie zur Auswahl an).
-- Versionsnummer an vier Stellen ändern: `APP_VERSION = "X"`, `Motion Watch X` (Fenstertitel / Startmeldung),
-  `{tr('Build')} X ·`, `webcam_bewegung_X.py` (Hilfe) – und eine Zeile `  * X: …` in der Änderungsliste oben in der Datei.
+- **Bearbeitet wird in `quelle/`** (ab 2.95.63): das Programm in rund 65 Teilen nach Thema (Übersicht in `quelle/LIESMICH.md`).
+  `python3 werkzeuge/bauen.py` setzt sie Byte für Byte zur **einen Datei** `webcam_bewegung_X_Y_Z.py` zusammen (ca. 51'000 Zeilen),
+  die der Pi, die Update-Funktion und die Signatur kennen. **Die grosse Datei nie von Hand ändern** – GitHub prüft bei jedem Push
+  (`bauen.py --pruefen`), dass sie zu `quelle/` passt. Alle Teile sind zusammen *ein* Programm (gemeinsame Namen, keine Importe).
+- Jede Änderung = **neue Version und neue Datei**: `python3 werkzeuge/bauen.py --neue-version "Was neu ist"` erhöht die Nummer an
+  allen Stellen (`APP_VERSION`, Fenstertitel, `{tr('Build')}`, Dateiname in der Hilfe), schreibt die Zeile in die Änderungsliste
+  (`quelle/000_kopf_aenderungen.py`), übernimmt die Simulator-Version aus `simulator3d/version.json`, baut die Datei und entfernt
+  die ältere Datei derselben Hauptversion. `--version X.Y.Z` für eine bestimmte Nummer.
+- **Prüfstand** (`pruefstand/`): misst die Erkennung mit dem 3D-Simulator (feste Testläufe) und schreibt `pruefstand/VERLAUF.md`.
+  Vor Änderungen an der Erkennung und danach laufen lassen und vergleichen; auf GitHub: Actions → «Prüfstand».
 - **Sprachen** (ab 2.28.0): Deutsch, Französisch, Italienisch, Rätoromanisch (Rumantsch Grischun), Englisch. Schlüssel ist immer der
   englische Text. Deutsch: `DE` (Python) bzw. `I18N.de` / `TX` / `ALT` / `WZ` (Web). Französisch / Italienisch / Romanisch: Tabellen
   `TRX["fr"|"it"|"rm"]` und die Anleitung `HELP_X` am Dateiende (das Web lädt sie über `/i18n/<sprache>.js`). Neue Texte in
   allen Sprachen ergänzen; fehlt ein romanischer Text, erscheint Deutsch, bei Französisch / Italienisch Englisch.
-- Danach im Repository: `python3 webcam_bewegung_X_Y_Z.py --make-manifest . --sign-key SCHLUESSELDATEI` (schreibt und **signiert**
-  `versions.json`), committen, pushen. Ab 2.4.0 installieren die Geräte nur signierte Versionen. Den geheimen Schlüssel
+- Danach im Repository: `python3 werkzeuge/bauen.py --signieren SCHLUESSELDATEI` (schreibt und **signiert** `versions.json`,
+  dann Selbsttest), committen, pushen. Ab 2.4.0 installieren die Geräte nur signierte Versionen. Den geheimen Schlüssel
   (`MotionWatch_Signierschluessel.txt`, 64 Hex-Zeichen) hat nur Daniel – bei Bedarf danach fragen; **nie ins Repository** legen.
   Ohne Schlüssel: Version trotzdem hochladen, Daniel signiert später (oder vorübergehend «Auch nicht signierte Versionen annehmen»).
   Der Pi holt Updates von `https://raw.githubusercontent.com/DonElektro/MotionWatch/main/versions.json`.
@@ -60,7 +66,7 @@ Push über ntfy (App «NTFY me», Server ntfy-me.com). Fernzugriff über Tailsca
 ## Simulator
 
 - Der Ordner `simulator/` ist ein eigenes Programm (motionwatch_simulator.py + motionwatch_sim_interface.py + Anleitung).
-- Ab 2.70.0 steckt er auch gepackt in der Motion-Watch-Datei (`SIM_ZIP_B64`, ZIP als base64). **Wer die Simulator-Dateien ändert, muss `SIM_ZIP_B64` neu erzeugen**, sonst installiert Motion Watch die alte Fassung.
+- Ab 2.70.0 steckt er auch gepackt in der Motion-Watch-Datei (`SIM_ZIP_B64`, ZIP als base64). **Wer die Simulator-Dateien ändert, muss `SIM_ZIP_B64` (in `quelle/360_daten_simulator_python.py`) neu erzeugen**, sonst installiert Motion Watch die alte Fassung.
 
 ## Rückmeldungen aus den Testläufen (ab 2.95.28)
 

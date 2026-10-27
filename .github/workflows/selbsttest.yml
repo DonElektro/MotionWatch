@@ -18,6 +18,8 @@ jobs:
           node-version: "20"
       - name: Pakete
         run: pip install opencv-python-headless numpy flask pillow cryptography
+      - name: Quelle und Datei passen zusammen
+        run: python3 werkzeuge/bauen.py --pruefen
       - name: Neuste Version testen
         run: |
           f=$(ls webcam_bewegung_*.py | sort -V | tail -1)

@@ -1,0 +1,70 @@
+# Prüfstand: lässt die neuste Version von Motion Watch gegen den 3D-Simulator laufen (feste Testläufe, immer dieselben
+# Besucher) und schreibt die Zahlen in pruefstand/VERLAUF.md: Personen erkannt, Reaktionszeit, Tiere, Fehlalarme.
+# Startet von Hand (Actions → Prüfstand → Run workflow) und jeden Sonntag in der Nacht.
+name: Prüfstand
+on:
+  workflow_dispatch:
+    inputs:
+      plaene:
+        description: "Testläufe (quick, standard, night, hard – mit Komma)"
+        default: "quick,night,standard"
+      wiederholungen:
+        description: "Jeden Testlauf so oft"
+        default: "1"
+  schedule:
+    - cron: "17 2 * * 0"
+permissions:
+  contents: write
+concurrency:
+  group: pruefstand
+  cancel-in-progress: false
+jobs:
+  pruefstand:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Pakete
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1 libgl1-mesa-dri libglu1-mesa libxcursor1 libxinerama1 libxrandr2 libxi6 libasound2t64 >/dev/null || \
+          sudo apt-get install -y -qq xvfb libgl1 libgl1-mesa-dri libglu1-mesa libxcursor1 libxinerama1 libxrandr2 libxi6 >/dev/null
+          pip install -q opencv-python-headless numpy flask pillow cryptography psutil
+      - name: Godot 4.3
+        run: |
+          curl -sSL -o godot.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip -q godot.zip && chmod +x Godot_v4.3-stable_linux.x86_64
+          # import the project once (textures, shaders) - otherwise the first start takes very long
+          timeout 600 ./Godot_v4.3-stable_linux.x86_64 --headless --editor --path simulator3d --quit >/dev/null 2>&1 || true
+      - name: KI-Modell (SSD MobileNet V2)
+        run: |
+          mkdir -p ki && cd ki
+          curl -sSL -o m.tgz https://storage.googleapis.com/download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz
+          tar xzf m.tgz && mv ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb . && rm -rf m.tgz ssd_mobilenet_v2_coco_2018_03_29
+          curl -sSL -o ssd_mobilenet_v2_coco.pbtxt https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt
+          ls -la
+      - name: Prüfstand
+        run: |
+          python3 pruefstand/pruefstand.py --godot ./Godot_v4.3-stable_linux.x86_64 --ki-ordner ki \
+            --plaene "${{ github.event.inputs.plaene || 'quick,night,standard' }}" --wiederholungen "${{ github.event.inputs.wiederholungen || '1' }}" \
+            --rechner "GitHub (ubuntu, $(nproc) Kerne)" --behalten
+      - name: Ergebnis aufbewahren
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pruefstand
+          path: |
+            pruefstand/ergebnisse
+            pruefstand/VERLAUF.md
+            /tmp/mw_pruefstand_*/*.log
+      - name: Ergebnis ins Repository
+        run: |
+          git config user.name "Prüfstand"
+          git config user.email "pruefstand@users.noreply.github.com"
+          git add pruefstand/ergebnisse pruefstand/VERLAUF.md
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Prüfstand: Ergebnis $(ls webcam_bewegung_*.py | sort -V | tail -1 | sed 's/webcam_bewegung_//; s/\.py//; s/_/./g')"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 5; done

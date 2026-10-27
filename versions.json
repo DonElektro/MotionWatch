@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 00:26",
+ "generated": "2026-10-28 00:58",
  "versions": [
   {
-   "version": "2.95.62",
-   "file": "webcam_bewegung_2_95_62.py",
+   "version": "2.95.63",
+   "file": "webcam_bewegung_2_95_63.py",
    "url": "",
-   "sha256": "292f46a20f55e578ff294c10b37db384c0327252dd7dca5a287a4eb71e232a98",
-   "date": "2026-10-28 00:26",
-   "notes": "the little extra: the secret is drawn tiny (one screen pixel per square, about 2 mm on a phone) - only readable with a magnifier; stays 20 s, a tap ends it",
-   "sig": "d06995d496c93d21be523e414dc2f30eea4dcacaeb02ff4d1be47e3a36b1f1953bc74517ee15b533964907ea6f96cc7a5f709eaf4eb955be26779efaba7be207"
+   "sha256": "cd24fb1e277369fff24c6c0adbfea3aa9d46fbebdaecfb99d0367545979153dc",
+   "date": "2026-10-28 00:57",
+   "notes": "program split into parts by topic (folder quelle/, put together by werkzeuge/bauen.py into this one file - nothing changes for the Pi); test bench pruefstand/ measures the detection with the 3D simulator",
+   "sig": "3a98915b20b508ccd3570fd7b566393a6cecc249e6649d81f2c44cd28bdf54b093a6b682db64d45eb89fa11a2bf1d780c33d51d97880abdd24a5f2e372db2001"
   },
   {
    "version": "2.94.5",
