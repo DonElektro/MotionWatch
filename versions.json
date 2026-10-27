@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 09:57",
+ "generated": "2026-10-27 10:04",
  "versions": [
   {
-   "version": "2.95.8",
-   "file": "webcam_bewegung_2_95_8.py",
+   "version": "2.95.9",
+   "file": "webcam_bewegung_2_95_9.py",
    "url": "",
-   "sha256": "4b8cbc7c491552c03374c62b8dd78ea1e6ec08d3d048d30bc7086c6f42cc7948",
-   "date": "2026-10-27 09:57",
-   "notes": "tab Simulator: installed and newest simulator version (looked up in the project once an hour), a warning with what is new when an update is there; the header shows «SIMULATION · ⟳ Update 3D-x.y» too.",
-   "sig": "2653bcc3e343e6b1429fe2049c135b0ccba3a634092f734462cc53c665faf60c6f2c71fa88bf3ce467bc0480fb27ef6a4b76cfbb61386d6198a41cda359eb108"
+   "sha256": "7a94ef8a602c5b28c2f0161d02d3eb20c3fa49f92a85e3065aa8876ee088652b",
+   "date": "2026-10-27 10:04",
+   "notes": "tab Simulator: «Connection» right under the picture, the picture as big as the screen allows, full screen button ⛶ for the picture (simulator window or camera picture).",
+   "sig": "39f75c751ae3915181ac27113d644f58cf43efd87e1ab53108352ff5cca2f95c141e0758513bba9e830aaaa26a5793abfee2bde75a33ba8fa93f3ec2fcc3690c"
   },
   {
    "version": "2.94.5",

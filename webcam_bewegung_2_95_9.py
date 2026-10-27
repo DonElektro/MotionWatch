@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_8.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_9.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -562,6 +562,8 @@ Features
   * 2.95.7: 3D simulator 3D-3.19: the simulator window also works while the simulator is the small box on the PC.
   * 2.95.8: tab Simulator: installed and newest simulator version (looked up in the project once an hour), a warning with
     what is new when an update is there; the header shows «SIMULATION · ⟳ Update 3D-x.y» too.
+  * 2.95.9: tab Simulator: «Connection» right under the picture, the picture as big as the screen allows, full screen
+    button ⛶ for the picture (simulator window or camera picture).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -570,10 +572,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_8.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_9.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_8.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_8.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_9.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_9.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -590,7 +592,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.8"
+APP_VERSION = "2.95.9"
 
 
 def default_data_dir():
@@ -14260,7 +14262,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_8.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_9.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -18921,7 +18923,7 @@ SIM_PAGE = r"""<!doctype html>
 <style>
 /*BASECSS*/
 #c-prev{scroll-margin-top:calc(var(--hdr-h,64px) + 10px)}
-main.simp{max-width:1100px;margin:0 auto;padding:20px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+main.simp{max-width:1500px;margin:0 auto;padding:20px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
 .sc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
 .sc.wide{grid-column:1/-1}
 details.fold{padding:0}
@@ -18964,10 +18966,15 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .pvmode{display:flex;border:1px solid var(--line,#1f2b3a);border-radius:10px;overflow:hidden;margin:0 0 10px}
 .pvmode button{flex:1;padding:8px;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;cursor:pointer}.pvmode button.on{background:var(--acc,#3b8cff);color:#fff}
 .pvw.view img{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;outline:none}.pvw.view img:active{cursor:grabbing}
-.pvbtn{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
+.pvbtn{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px;z-index:2}.pvbtn .pvbtn{position:static}
+.pvw.fs{position:fixed;inset:0;z-index:200;border-radius:0;display:flex;align-items:center;justify-content:center;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.pvw.fs #s-prev,.pvw:fullscreen #s-prev{max-height:100vh;height:100%;width:100%}
+.pvw:fullscreen{display:flex;align-items:center;justify-content:center;border-radius:0}
 .pvbtn button{width:38px;height:38px;padding:0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(10,14,20,.65);color:#fff;font-size:18px;cursor:pointer}
 .pvbtn button.on{background:var(--acc,#3b8cff)}
-#s-prev{width:100%;aspect-ratio:16/9;object-fit:contain;background:#000;display:block;max-height:62vh}
+#s-prev{width:100%;height:auto;min-height:200px;object-fit:contain;background:#000;display:block;max-height:calc(100vh - var(--hdr-h,64px) - 110px)}
+#c-prev{padding:12px}
 .pvlive{position:absolute;left:10px;bottom:10px;font:700 11px/1 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px}
 #pip{position:fixed;z-index:45;width:min(44vw,300px);border-radius:12px;overflow:hidden;background:#000;cursor:pointer;touch-action:none;box-shadow:0 8px 26px rgba(0,0,0,.55);border:1px solid var(--line)}
 #pip[hidden]{display:none}
@@ -19000,18 +19007,10 @@ details.fold>.fb>.mut:first-child{margin-top:0}
   <section class="sc wide" id="c-prev">
     <div class="pvmode" id="s-pvmode" hidden><button type="button" data-m="view">🗺 <span data-i18n="Simulator window">Simulator window</span></button><button type="button" data-m="cam">📷 <span data-i18n="Camera picture">Camera picture</span></button></div>
     <div class="pvw" id="s-pvw"><img id="s-prev" alt="" draggable="false" tabindex="0"><span class="pvlive" id="s-pvlive" hidden>● LIVE</span>
-      <div class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></div></div>
+      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
     <div class="mut" id="s-prevnote"></div>
   </section>
-  <section class="sc wide" id="c-status">
-    <div class="sthead"><i class="sdot" id="s-dot"></i><div class="sttl" id="s-ttl">–</div><button type="button" class="sec" id="s-upd" onclick="simUpdate()" hidden>⟳ <span data-i18n="Update the simulator">Update the simulator</span></button><button type="button" id="s-btn" onclick="simOnOff()">–</button></div>
-    <div class="mut" id="s-msg"></div>
-    <div class="supd" id="s-supd" hidden><div class="supd-t" id="s-supdt"></div><div class="mut supd-n" id="s-supdn"></div></div>
-    <div class="mut sver" id="s-ver"></div>
-    <div class="tiles" id="s-tiles"></div>
-  </section>
-
-  <details class="sc fold" id="c-conn" data-k="conn" open>
+  <details class="sc fold wide" id="c-conn" data-k="conn" open>
     <summary><h2><svg viewBox="0 0 24 24"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><span data-i18n="Connection">Connection</span></h2></summary>
     <div class="fb">
     <div class="mut" data-i18n="conn-note">conn-note</div>
@@ -19022,6 +19021,14 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <button type="button" class="sec" id="s-search" onclick="search()" style="width:100%" data-i18n="Search now">Search now</button>
     </div>
   </details>
+  <section class="sc wide" id="c-status">
+    <div class="sthead"><i class="sdot" id="s-dot"></i><div class="sttl" id="s-ttl">–</div><button type="button" class="sec" id="s-upd" onclick="simUpdate()" hidden>⟳ <span data-i18n="Update the simulator">Update the simulator</span></button><button type="button" id="s-btn" onclick="simOnOff()">–</button></div>
+    <div class="mut" id="s-msg"></div>
+    <div class="supd" id="s-supd" hidden><div class="supd-t" id="s-supdt"></div><div class="mut supd-n" id="s-supdn"></div></div>
+    <div class="mut sver" id="s-ver"></div>
+    <div class="tiles" id="s-tiles"></div>
+  </section>
+
 
 
   <details class="sc fold wide" id="c-ctl" data-k="ctl" open>
@@ -19251,6 +19258,24 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && LI
   $("#s-vin").onclick = () => VB.push({t: "wheel", d: 1, x: 0.5, y: 0.5}, true);
   $("#s-vout").onclick = () => VB.push({t: "wheel", d: -1, x: 0.5, y: 0.5}, true);
   $("#s-vrot").onclick = () => { rot = !rot; $("#s-vrot").classList.toggle("on", rot); }; }
+// full screen for the picture at the top (2.95.9): the real full screen where the browser allows it, else the whole window
+function pvFs(on) {
+  const w = $("#s-pvw"), fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+  if (on === undefined) on = !(fsEl || w.classList.contains("fs"));
+  if (on) {
+    pipShow(false);
+    const rq = w.requestFullscreen || w.webkitRequestFullscreen;
+    let p = null; try { p = rq ? rq.call(w) : null; } catch (e) { p = null; }
+    if (p && p.catch) p.catch(() => w.classList.add("fs")); else if (!rq) w.classList.add("fs");
+  } else {
+    w.classList.remove("fs");
+    if (fsEl) { const ex = document.exitFullscreen || document.webkitExitFullscreen; try { ex && ex.call(document); } catch (e) {} }
+  }
+  setTimeout(() => { const f = !!(document.fullscreenElement || document.webkitFullscreenElement) || w.classList.contains("fs"); $("#s-vfs").textContent = f ? "✕" : "⛶"; }, 300);
+}
+$("#s-vfs").onclick = () => pvFs();
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#s-pvw").classList.contains("fs")) pvFs(false); });
+["fullscreenchange", "webkitfullscreenchange"].forEach(n => document.addEventListener(n, () => { const f = !!(document.fullscreenElement || document.webkitFullscreenElement) || $("#s-pvw").classList.contains("fs"); $("#s-vfs").textContent = f ? "✕" : "⛶"; }));
 let pipShow = () => {};
 (function () {
   const pip = $("#pip"), slot = pip.querySelector(".pip-in"), img = $("#s-prev"), wrap = $("#s-pvw");
@@ -28596,7 +28621,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.8")
+        self.root.title("Motion Watch 2.95.9")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -28886,7 +28911,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.8 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.9 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
