@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 00:14",
+ "generated": "2026-10-28 00:26",
  "versions": [
   {
-   "version": "2.95.61",
-   "file": "webcam_bewegung_2_95_61.py",
+   "version": "2.95.62",
+   "file": "webcam_bewegung_2_95_62.py",
    "url": "",
-   "sha256": "47b49c7fb7bf2ba5847aa98269f701900fea7e076209a95706372a478631aaf4",
-   "date": "2026-10-28 00:14",
-   "notes": "the little extra (web page and window): a turning heart to touch, a big heart drawn counter-clockwise bursts into pieces before the secret shows",
-   "sig": "98279f0ed9100571499d7ee1eaeabc3f05539321a5b7aa101343144a53e99d705b4a02cdc40156f7465f53cea33ee51e061a5dc7e32a27c5e542c76ddabe6b09"
+   "sha256": "292f46a20f55e578ff294c10b37db384c0327252dd7dca5a287a4eb71e232a98",
+   "date": "2026-10-28 00:26",
+   "notes": "the little extra: the secret is drawn tiny (one screen pixel per square, about 2 mm on a phone) - only readable with a magnifier; stays 20 s, a tap ends it",
+   "sig": "d06995d496c93d21be523e414dc2f30eea4dcacaeb02ff4d1be47e3a36b1f1953bc74517ee15b533964907ea6f96cc7a5f709eaf4eb955be26779efaba7be207"
   },
   {
    "version": "2.94.5",

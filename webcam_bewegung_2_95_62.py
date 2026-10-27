@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_61.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_62.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.62: the little extra: the secret is drawn tiny (one screen pixel per square, about 2 mm on a phone) - only readable
+    with a magnifier; stays 20 s, a tap ends it
   * 2.95.61: the little extra (web page and window): a turning heart to touch, a big heart drawn counter-clockwise bursts into
     pieces before the secret shows
   * 2.95.60: 3D simulator 3D-3.47 (tunnel field visible, shows the target with port); simulator page: the tunnel card shows the
@@ -718,10 +720,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_61.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_62.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_61.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_61.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_62.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_62.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -738,7 +740,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.61"
+APP_VERSION = "2.95.62"
 
 
 def default_data_dir():
@@ -18892,7 +18894,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_61.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_62.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -29864,6 +29866,16 @@ HEADER_JS = r"""
     for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (bits[y * N + x] === "1") r += '<rect x="' + x + '" y="' + y + '" width="1.02" height="1.02" fill="#3a2516"/>';
     return '<svg viewBox="-2 -2 ' + (N + 4) + ' ' + (N + 4) + '" width="' + size + '" height="' + size + '" shape-rendering="crispEdges">' + r + '</svg>';
   }
+  function microBelly() {          // the pattern with one device pixel per square (canvas, no smoothing)
+    const [n, hx] = "__BELLY__".split(":"), N = +n, dpr = window.devicePixelRatio || 1;
+    const Q = Math.ceil((N + 8) / dpr) * dpr, o = Math.floor((Q - N) / 2); let bits = "";   // a whole number of CSS pixels: no stretching
+    for (const ch of hx) bits += parseInt(ch, 16).toString(2).padStart(4, "0");
+    const c = document.createElement("canvas"); c.width = Q; c.height = Q;
+    const g = c.getContext("2d"); g.fillStyle = "#c99d6e"; g.fillRect(0, 0, Q, Q); g.fillStyle = "#6e4529";
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (bits[y * N + x] === "1") g.fillRect(x + o, y + o, 1, 1);
+    c.style.cssText = "position:fixed;z-index:2147483602;pointer-events:none;width:" + (Q / dpr) + "px;height:" + (Q / dpr) + "px;image-rendering:pixelated;border-radius:0;border:0;margin:0;background:none;aspect-ratio:auto;display:block";
+    return c;
+  }
   let busy = false;
   // only over the live picture (an HTML layer: it is never part of the stream or of a recording)
   const liveOk = v => { const r = v.getBoundingClientRect(); return r.width > 160 && r.height > 120 && r.bottom > 80 && r.top < innerHeight - 80
@@ -29954,10 +29966,15 @@ HEADER_JS = r"""
     const end = e => { if (!held) return; held = false; e.stopPropagation(); m.classList.remove("drawing");
       if (trail) { trail.remove(); trail = null; }
       if (ccwHeart(pts)) { qr = true; bl.style.visibility = "hidden"; burst(pts);
-        setTimeout(() => { const q = document.createElement("div"); q.innerHTML = belly(58);
-          q.style.cssText = "position:absolute;left:61px;top:114px;width:58px;height:58px;border-radius:4px;overflow:hidden;opacity:0;transform:scale(.3) rotate(-25deg);transition:opacity .3s,transform .45s cubic-bezier(.3,1.6,.5,1);box-shadow:0 1px 4px rgba(0,0,0,.35)";
-          m.appendChild(q); requestAnimationFrame(() => { q.style.opacity = "1"; q.style.transform = "none"; });
-          setTimeout(() => { q.style.opacity = "0"; setTimeout(() => { q.remove(); qr = false; leave(); }, 300); }, 5000); }, 650);
+        setTimeout(() => { const q = microBelly();            // 2.95.62: tiny - one screen pixel per square, only readable with a magnifier
+          // fixed on the screen, exactly on whole screen pixels (inside the moving marmot it would get blurred)
+          const hr = bl.getBoundingClientRect(), dp = window.devicePixelRatio || 1, w = q.width / dp;
+          q.style.left = Math.round(hr.left + hr.width / 2 - w / 2) + "px"; q.style.top = Math.round(hr.top + hr.height / 2 - 6 - w / 2) + "px";
+          document.body.appendChild(q);                          // no fading: a see-through layer gets blurred on some screens
+          const done = () => { removeEventListener("scroll", done, true); q.remove(); setTimeout(() => { qr = false; leave(); }, 100); };
+          addEventListener("scroll", done, {capture: true, once: true});
+          const t_ = setTimeout(done, 20000); bl.style.visibility = "visible"; bl.style.opacity = "0";
+          bl.addEventListener("pointerdown", () => { clearTimeout(t_); done(); }, {once: true}); }, 650);
       } else setTimeout(leave, 700); };
     bl.addEventListener("pointerup", end); bl.addEventListener("pointercancel", end);
     bl.addEventListener("click", e => e.stopPropagation());
@@ -40394,7 +40411,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.61")
+        self.root.title("Motion Watch 2.95.62")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40684,7 +40701,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.61 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.62 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -40780,7 +40797,7 @@ class App:
         if ccw_heart(self._egg_pts):                                   # 2.95.61: a big heart, counter-clockwise
             xs = [p[0] for p in self._egg_pts]; ys = [p[1] for p in self._egg_pts]
             self._egg_burst = (now, (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (max(xs) - min(xs)) / 2)
-            self._egg_qr_from = now + 0.7; self._egg_qr = now + 5.7; self._egg_leave = now + 5.9
+            self._egg_qr_from = now + 0.7; self._egg_qr = now + 20.7; self._egg_leave = now + 20.9
         else:
             self._egg_leave = max(self._egg_leave, now + 0.7)
         self._egg_pts = []
@@ -40797,8 +40814,8 @@ class App:
         up = 1 - (1 - up) ** 3
         from PIL import ImageDraw, ImageFont
         W, H = im.size; k = max(0.6, min(1.6, H / 330.0))
-        bm = belly_matrix(); n = len(bm); mp = max(2, int(round(1.9 * k)))       # whole pixels per module: readable by a phone
-        S = (n + 4) * mp
+        bm = belly_matrix(); n = len(bm); mp = 1          # 2.95.62: one pixel per square - only readable with a magnifier
+        S = (n + 8) * mp
         x0 = W / 2 - 60 * k; y0 = H - (78 * k + S + 3) * up
         d = ImageDraw.Draw(im)
         def ov(cx, cy, rx, ry, col):
@@ -40813,7 +40830,7 @@ class App:
         for tx in (55.6, 60.4):
             d.rectangle([x0 + tx * k, y0 + 67.5 * k, x0 + (tx + 4) * k, y0 + 74.5 * k], fill="#ffffff")
         ov(40, 88, 9, 6.5, "#6e4529"); ov(80, 88, 9, 6.5, "#6e4529")
-        bx0 = int(W / 2 - S / 2); by0 = int(y0 + 77 * k)
+        bx0 = int(W / 2 - S / 2); by0 = min(int(y0 + 100 * k - S / 2), H - S - 2)
         self._egg_img = (W, H); self._egg_belly = (W / 2, y0 + 106 * k, max(30 * k, S * 0.6), max(26 * k, S * 0.55))
         if getattr(self, "_egg_burst", None) and now < getattr(self, "_egg_qr", 0):
             pass                                                       # burst and secret: no turning heart
@@ -40838,10 +40855,10 @@ class App:
                     d.polygon(poly, fill="#e8436a" if i % 2 else "#ff7aa2")
         for r_, row in (enumerate(bm) if getattr(self, "_egg_qr_from", 0) <= now < getattr(self, "_egg_qr", 0) else ()):
             if r_ == 0:
-                d.rectangle([bx0, by0, bx0 + S - 1, by0 + S - 1], fill="#f3e2c8")
+                d.rectangle([bx0, by0, bx0 + S - 1, by0 + S - 1], fill="#c99d6e")
             for c_, v in enumerate(row):
                 if v:
-                    d.rectangle([bx0 + (c_ + 2) * mp, by0 + (r_ + 2) * mp, bx0 + (c_ + 3) * mp - 1, by0 + (r_ + 3) * mp - 1], fill="#3a2516")
+                    d.rectangle([bx0 + (c_ + 4) * mp, by0 + (r_ + 4) * mp, bx0 + (c_ + 5) * mp - 1, by0 + (r_ + 5) * mp - 1], fill="#6e4529")
         if up > 0.85:
             try:
                 f = ImageFont.truetype("DejaVuSans-Bold.ttf", int(13 * k))
