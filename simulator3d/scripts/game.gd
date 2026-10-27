@@ -56,6 +56,7 @@ var items: Array = []                   # {"node", "pos", "by": -1}
 var cones: Array = []                   # [node of the head camera, node of the fixed camera]
 var stones: Array = []                  # [node, until]
 var _ref_t := 0.0
+var _mw_catch_t := 0.0                  # «Motion Watch decides»: not again before then
 var _st_t := 0.0
 var capturing := false
 var info_label: Label
@@ -288,7 +289,7 @@ func _update_cones() -> void:
 	var on: bool = main.game_cones and open and count() > 0
 	var dark: bool = main.is_dark()
 	var L: Dictionary = main.mw.get("lights", {})
-	var ir: bool = L.get("ir", false) or (guard_auto and dark)
+	var ir: bool = main.ir_on()
 	for i in range(2):
 		var c: MeshInstance3D = cones[i]
 		c.visible = on
@@ -297,7 +298,7 @@ func _update_cones() -> void:
 		var cam: Camera3D = main.cams[i]
 		var r: float = [26.0, 17.0][i]
 		if dark:
-			r = 11.0 if (i == 0 and ir) else 5.0
+			r = float(main.ir_range) * 0.8 if (i == 0 and ir) else 5.0
 		c.position = Vector3(cam.global_position.x, 0.06, cam.global_position.z)
 		c.rotation.y = cam.global_rotation.y
 		c.scale = Vector3(r, 1, r)
@@ -512,6 +513,17 @@ func _new_player(slot: int, token: String, name: String) -> Dictionary:
 	cone.material_override = _glow(COLORS[slot])
 	cone.layers = 16
 	a.add_child(cone)
+	var loot := MeshInstance3D.new()                       # the loot on the back (game goal «bring it back»; Motion Watch sees it)
+	var lm := BoxMesh.new()
+	lm.size = Vector3(0.32, 0.26, 0.2)
+	loot.mesh = lm
+	var lmat := StandardMaterial3D.new()
+	lmat.albedo_color = Color(0.85, 0.65, 0.15)
+	lmat.metallic = 0.6
+	loot.material_override = lmat
+	loot.position = Vector3(0, 1.3, 0.24)
+	loot.visible = false
+	a.body_root.add_child(loot)
 	var q: Array = QUAL.get(main.game_quality, QUAL["mid"])
 	var vp := SubViewport.new()
 	vp.size = Vector2i(q[0], q[1])
@@ -531,7 +543,8 @@ func _new_player(slot: int, token: String, name: String) -> Dictionary:
 			"actor": a, "vp": vp, "cam": cam, "attr": ca, "gain": 1.0, "yaw": atan2(-to_goal.x, -to_goal.z), "pitch": deg_to_rad(-12.0),
 			"mx": 0.0, "my": 0.0, "want": false, "last_cap": 0.0, "susp": 0.0, "seen": false, "heard": 0.0, "caught": 0,
 			"state": "play" if round_state == "play" else "lobby", "t_goal": 0.0, "safe_until": 0.0, "msg": "", "msg_until": 0.0,
-			"role": "runner", "items": 0, "stone_t": 0.0, "catches": 0, "false": 0, "catch_t": 0.0, "sent_no": -1}
+			"role": "runner", "items": 0, "stone_t": 0.0, "catches": 0, "false": 0, "catch_t": 0.0, "sent_no": -1,
+			"loot": loot, "carry": false}
 	return p
 
 
@@ -681,6 +694,8 @@ func start_round() -> void:
 		p["false"] = 0
 		p["stone_t"] = 0.0
 		p["t_goal"] = 0.0
+		p["carry"] = false
+		p["loot"].visible = false
 		if p["role"] == "guard":
 			p["state"] = "play"
 			continue
@@ -776,8 +791,8 @@ func light_at(pos: Vector3, i: int) -> float:
 	var in_beam: bool = main.cams[0].is_position_in_frustum(pos + Vector3(0, 0.8, 0))
 	if (L.get("white", false) or now() < flash_until) and in_beam:
 		l = max(l, clamp(1.15 - dh / 25.0, 0.0, 1.0))
-	if i == 0 and (L.get("ir", false) or (guard_auto and main.is_dark())) and in_beam:
-		l = max(l, clamp(0.95 - dh / 20.0, 0.0, 0.85))
+	if i == 0 and main.ir_on() and in_beam:
+		l = max(l, clamp(0.95 * (1.0 - dh / float(main.ir_range)), 0.0, 0.85))
 	return l
 
 
@@ -853,8 +868,35 @@ func vis_debug(p: Dictionary) -> Array:
 	return out
 
 
+func mw_decides() -> bool:
+	"""game mode «Motion Watch entscheidet» and Motion Watch is connected (and sends its detections, from 2.93.3)"""
+	return main.game_mode == "mw" and main.now() - main.mw_det_t < 3.0
+
+
+func _mw_referee() -> void:
+	"""the real detection of Motion Watch decides: it reports a person -> the player the cameras see best is caught"""
+	if int(main.mw_det.get("persons", 0)) <= 0 or now() < _mw_catch_t:
+		return
+	var best = null
+	var top := 0.02
+	for p in players:
+		if p == null or p["role"] != "runner" or p["state"] != "play" or now() < float(p["safe_until"]):
+			continue
+		var f: float = max(cam_sees(p, 0), cam_sees(p, 1))
+		if f > top:
+			top = f
+			best = p
+	if best != null:
+		_mw_catch_t = now() + 3.0
+		_caught(best, null)
+		_say(best, "Motion Watch hat dich erkannt!", 3.0)
+
+
 func _referee(dt: float) -> void:
 	var lv: float = LEVEL.get(main.game_level, 1.0)
+	var mw := mw_decides()
+	if mw:
+		_mw_referee()
 	for p in players:
 		if p == null or p["state"] != "play" or p["role"] != "runner":
 			continue
@@ -866,7 +908,14 @@ func _referee(dt: float) -> void:
 				it["node"].visible = false
 				_say(p, "💎 gefunden! (+100)", 2.5)
 				_event(p, "item")
-		if a.position.distance_to(goal) < 1.7:
+		if main.game_goal == "return" and not p["carry"] and a.position.distance_to(goal) < 1.7:
+			p["carry"] = true                              # the loot: now back to the start
+			p["loot"].visible = true
+			_say(p, "💰 Beute geholt – zurück zum Start!", 3.0)
+			_event(p, "item")
+			continue
+		var home := start_point(p["slot"])
+		if (main.game_goal != "return" and a.position.distance_to(goal) < 1.7) or (p["carry"] and a.position.distance_to(home) < 3.0):
 			p["state"] = "goal"
 			p["t_goal"] = now()
 			a.frozen = true
@@ -893,11 +942,17 @@ func _referee(dt: float) -> void:
 		else:
 			p["susp"] = max(0.0, float(p["susp"]) - 8.0 * dt)
 		if float(p["susp"]) >= 100.0:
-			_caught(p, null)
+			if mw:
+				p["susp"] = 99.0                           # the meter only hints: Motion Watch itself decides
+			else:
+				_caught(p, null)
 
 
 func _caught(p: Dictionary, by) -> void:
 	p["caught"] = int(p["caught"]) + 1
+	if p["carry"]:                                         # the loot goes back to its place
+		p["carry"] = false
+		p["loot"].visible = false
 	flash_until = now() + 3.0                             # the light goes on, like at a real alarm
 	var g = by if by != null else guard_player()
 	if g != null:
@@ -948,6 +1003,7 @@ func _throw(p: Dictionary) -> void:
 	s.position = to + Vector3(0, 0.07, 0)
 	root.add_child(s)
 	stones.append([s, now() + 8.0])
+	main.add_sound(-14.0, to, 0.6)                         # the microphone of Motion Watch hears it too
 	attention = to
 	attention_until = now() + 4.0
 	var g = guard_player()
@@ -1015,7 +1071,8 @@ func _send_state(i: int) -> void:
 	if w.get_ready_state() != WebSocketPeer.STATE_OPEN:
 		return
 	var a = p["actor"]
-	var to: Vector3 = goal - a.position
+	var target: Vector3 = start_point(p["slot"]) if p["carry"] else goal
+	var to: Vector3 = target - a.position
 	var ga := rad_to_deg(wrapf(atan2(-to.x, -to.z) - float(p["yaw"]), -PI, PI))
 	var lst := []
 	for q in players:
@@ -1030,7 +1087,8 @@ func _send_state(i: int) -> void:
 			"caught": p["caught"], "ps": p["state"], "role": p["role"], "mode": main.game_mode, "gd": snappedf(to.length(), 0.1),
 			"ga": int(ga), "goal": goal_name, "list": lst, "items": p["items"], "items_left": left_items, "items_all": items.size(),
 			"lives": int(main.game_lives), "stone": int(max(0.0, float(p["stone_t"]) - now())) if main.game_stones else -1,
-			"msg": p["msg"] if now() < float(p["msg_until"]) else "", "has_guard": guard_player() != null}
+			"msg": p["msg"] if now() < float(p["msg_until"]) else "", "has_guard": guard_player() != null, "mwd": mw_decides(),
+			"goal_mode": main.game_goal, "carry": p["carry"]}
 	if p["role"] == "guard":
 		d["light"] = int(max(0.0, light_ready - now()))
 		d["catch"] = int(max(0.0, float(p["catch_t"]) - now()))
@@ -1074,6 +1132,8 @@ func paint() -> void:
 			_qr_for = ad
 			qr_rect.texture = Qr.texture(ad, 4)
 	var lines := PackedStringArray()
+	if open and main.game_mode == "mw" and not mw_decides():
+		lines.append("⚠ «Motion Watch entscheidet»: Motion Watch ist nicht verbunden (ab Version 2.93.3) – bis dahin entscheidet der Simulator.")
 	if not open:
 		lines.append("Bis zu 4 Spieler schleichen mit dem Handy unentdeckt zum Ziel (%s). Zuerst «Spiel öffnen»." % goal_name)
 	else:
@@ -1212,7 +1272,7 @@ function paint(m) {
   $("#tm").textContent = m.rs === "play" ? "⏱ " + fmtT(m.left) : m.rs === "countdown" ? "gleich" : "–";
   $("#lv").textContent = role === "guard" ? "· Wächter · " + (m.catches || 0) + "× erwischt" : (m.lives ? "· " + "❤️".repeat(Math.max(0, m.lives - m.caught)) + "🤍".repeat(Math.min(m.lives, m.caught)) : "· " + m.caught + "× erwischt");
   $("#list").innerHTML = (m.list || []).map(p => '<span style="color:' + p.c + '">●</span> ' + esc(p.n) + (p.r === "guard" ? " 👁" : "") + (p.s === "goal" ? " 🏁" : p.s === "out" ? " ✖" : "") + (p.r !== "guard" && p.k ? " · " + p.k + "×" : "") + (p.on ? "" : " (weg)")).join("<br>");
-  $("#extra").textContent = m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "";
+  $("#extra").textContent = (m.carry ? "💰 Beute dabei – zurück zum Start! " : (m.goal_mode === "return" && role === "runner" ? "Ziel: Beute holen und zurückbringen · " : "")) + (m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "");
   $("#msg").textContent = m.msg || "";
   if (m.stone < 0) $("#b-stone").style.display = "none"; else { $("#b-stone").style.display = "flex"; cool($("#b-stone"), m.stone); }
   if (role === "guard") { cool($("#b-light"), m.light); cool($("#b-catch"), m.catch); $("#gd").textContent = (m.pan > 0 ? "◀ " : "▶ ") + Math.abs(m.pan) + "°"; }
@@ -1220,6 +1280,7 @@ function paint(m) {
   else if (m.rs === "lobby" || m.rs === "end") {
     let h = m.rs === "end" ? '<h1>Rangliste</h1><table>' + (m.res || []).map((r, i) => '<tr><td>' + (i + 1) + '.</td><td><span style="color:' + r.c + '">●</span> ' + esc(r.n) + '</td><td>' + esc(r.info) + '</td><td><b>' + r.score + '</b></td></tr>').join("") + '</table>'
       : '<h1>Bereit?</h1><p>Ziel: <b>' + esc(m.goal) + '</b> – folge dem Pfeil oben rechts zum grünen Licht.</p><p>Links ziehen = gehen · rechts wischen = umschauen</p>';
+    if (m.mode === "mw") h += '<p>' + (m.mwd ? '🛡 Diesmal entscheidet die <b>echte Erkennung von Motion Watch</b>: meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht.' : '⚠ Motion Watch ist nicht verbunden – der Simulator entscheidet.') + '</p>';
     if (m.mode === "guard") h += '<p>Ein Spieler kann Wächter sein: er sieht durch die Kamera, dreht den Kopf und ruft «Erwischt!».</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🕵️ Schleicher</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">👁 Wächter</button><br>';
     h += '<button class="pr" id="st">' + (m.rs === "end" ? "Nochmal" : "Runde starten") + '</button>';
     ov(h);

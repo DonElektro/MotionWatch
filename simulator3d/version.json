@@ -1,7 +1,7 @@
 {
- "version": "3D-2.5",
+ "version": "3D-2.6",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30369689,
- "sha256": "286822b082b8a10d889c774b733d806c9bab779d253ff506d21d88f52d52dcdc",
- "notes": "Realistischeres Kamerabild (Rauschen, Regentropfen, Insekten am Licht); Spiel: ein Spieler als Wächter, Steine werfen, Kristalle, Leben, Mikrofon, Sichtfeld, Töne; Schiedsrichter wie die echte Erkennung."
+ "size": 30385583,
+ "sha256": "ab1c523ddee2fb3a59ff313fb9d8e20f77f7a06f97397683c19fa1c6bab747fb",
+ "notes": "Echtere Nachtbilder (dunkel, körnig, Infrarot schwarz-weiss mit Reichweite); Testlauf mit Bericht (Erkennungsquote, Reaktionszeit, Fehlalarme); Geräusche für das Mikrofon von Motion Watch; Spielart «Motion Watch entscheidet», Spielziel Beute zurückbringen; Bedienfeld wird nicht mehr abgeschnitten."
 }

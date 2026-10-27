@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-2.5 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-2.6 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -66,9 +66,32 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
     Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
   * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
+- Ab 3D-2.6:
+  * Spielart "Motion Watch entscheidet (echte Erkennung)": meldet Motion Watch eine Person, ist der erwischt, den
+    die Kamera am besten sieht. Die Leiste zeigt dann nur noch, wie gut man zu sehen ist. Ein echter Test von
+    Motion Watch (ab Version 2.93.3; ohne Verbindung entscheidet der Simulator).
+  * Spielziel "Beute holen und zurückbringen": beim grünen Licht die Beute holen (man trägt sie sichtbar auf dem
+    Rücken) und zurück zum eigenen Start. Wer erwischt wird, verliert sie wieder.
 - Jedes Handy-Bild braucht Leistung der Grafikkarte: bei Ruckeln "Bild auf dem Handy: klein" wählen.
 
+TESTLAUF MIT BERICHT (ab 3D-2.6, Gruppe "Testlauf")
+- "Testlauf starten": etwa 4 Minuten, 4 Phasen (Tag klar, Tag mit Wind und Wolken, Nacht mit Insekten am Licht,
+  Nacht mit Regen). Menschen und Tiere gehen durchs Bild. Der Simulator weiss, wer wann für die Kameras sichtbar war,
+  und vergleicht das mit dem, was Motion Watch meldet (ab Motion Watch 2.93.3).
+- Bericht: Personen erkannt (z. B. 9 von 11), Reaktionszeit, Tiere gemeldet, Fehlalarme mit vermuteter Ursache
+  (Tier, Insekten, Wind, Regen), Geräuschalarme, und wer für die Kamera gar nicht sichtbar war (zu dunkel, verdeckt).
+  Er steht im Fenster, kurz auf der Motion-Watch-Webseite, und als Datei (Knopf "Letzten Bericht öffnen").
+- Motion Watch muss verbunden sein; danach sind Uhrzeit, Wetter und Wind wieder wie vorher.
+
+GERÄUSCHE (ab 3D-2.6)
+- Die Welt macht Geräusche: Schritte, rennende Menschen, bellende Hunde, Autos, Steine, Regen, Wind.
+  Ohne echtes Mikrofon bekommt Motion Watch (ab 2.93.3) diesen Pegel und kann damit Geräuschalarm auslösen.
+  Abschaltbar (Experte, Gruppe "Kamerabild").
+
 KAMERABILD (ab 3D-2.5, Gruppe "Kamerabild")
+- Ab 3D-2.6 sind die Nachtbilder echter: Eine Kamera verstärkt nachts nur begrenzt ("Nachtverstärkung", Standard 2,5×),
+  darum ist es ohne Licht fast schwarz, körnig und fast ohne Farbe. Mit Infrarot ist das Bild schwarz-weiss und nur
+  bis zur "Reichweite des Infrarot-Lichts" (Standard 14 m) hell. Mehr Verstärkung = heller, aber körniger.
 - Bildrauschen: nachts, wenn die Kamera verstärkt, wird das Bild körnig - wie bei einer echten Kamera.
 - Dunkle Bildecken (Experte), Regentropfen auf der Linse (bei Regen), Insekten am Licht: nachts fliegen kleine
   Insekten durch das Licht vor dem Kopf und lösen wie in echt Bewegungen aus (gut zum Testen von Fehlalarmen).
@@ -175,6 +198,10 @@ BEDIENUNG IM FENSTER
   Sensoren, Wildbeobachtung, Updates, Grafik).
 - Ganz unten "Einfach | Experte": Einfach zeigt nur die wichtigen Einstellungen, Experte alle. Die Motion-Watch-
   Webseite zeigt immer alle.
+- Ab 3D-2.6 brechen lange Texte im Bedienfeld um, der Schalter steht rechts daneben (vorher wurde das Bedienfeld
+  auf manchen Bildschirmen rechts abgeschnitten).
+- Weitere Einstellungen (Experte): Wind in Böen, Wolkenschatten (die Helligkeit wechselt, wie wenn Wolken vor der
+  Sonne durchziehen - ein typischer Grund für Fehlalarme), Menschen schauen zum Licht, wenn es angeht.
 - Die Einstellungen bleiben beim nächsten Start erhalten (Wetter, Besuch, Grafik, Einfach/Experte, Updates ...).
 
 SZENEN (ab 3D-1.5, schnelle erste Fassung)

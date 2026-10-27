@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 26.10.2026 · Simulator-Version **3D-2.5** · passende Motion-Watch-Version **2.93.2**
+Stand: 26.10.2026 · Simulator-Version **3D-2.6** · passende Motion-Watch-Version **2.93.3**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -71,6 +71,25 @@ Der Programmpfad wird **vor** dem Umbenennen gemerkt (unter Linux zeigt er danac
 Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`, `Updater.manual = true`: meldet auch
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
+**3D-2.6 – Nacht, Testlauf, Geräusche:**
+- **Belichtung im Linsen-Shader:** Der Kompatibilitäts-Renderer ignoriert `CameraAttributesPractical.exposure_multiplier`
+  (gemessen: Nachtbild gleich hell bei Verstärkung 1 und 8). Darum liest `lens.gdshader` das Bild (`hint_screen_texture`)
+  und multipliziert nachts mit `expo = NIGHT_SCALE (0,15) × gain` (gain ≤ `night_gain`), `grey` = 1 bei IR, 0,6 nachts.
+  Tags `expo = 1` (Bild unverändert, gemessen). IR-Licht `spot_range = ir_range`, `main.ir_on()` (MW oder Spiel-Wächter).
+- **Motion Watch 2.93.3** schickt in `sim_state()["det"]` `persons`, `present`, `armed`, `noise`; der Simulator speichert
+  `main.mw_det`. Der Simulator schickt in der `/state`-Antwort `sound_db` (`main.sound_db()`: Grundpegel, Regen, Wind,
+  `sounds` aus `_update_sounds()` und `add_sound()`); Motion Watch füttert damit `AudioMonitor.feed_sim()` (nur ohne
+  echtes Mikrofon) → normaler Geräuschalarm.
+- **Testlauf** `scripts/testrun.gd`: `PHASES`, Wahrheit `visible()` (Kopf- oder feste Kamera, frei, ≥ 30 px Person /
+  18 px Tier, Licht ≥ 0,25 über `game.light_at`), lockerer `present()` für Fehlalarme. Bericht JSON + HTML in
+  `user://testlauf/`, CONTROL `test_report`. Geprüft mit einem nachgebauten Motion-Watch-Client (bekannte Meldungen):
+  Erkennungen, Reaktionszeit, Fehlalarme und Ursachen stimmen. Mit dem echten Motion Watch hier: Tiere als Bewegung
+  gemeldet, Personen 0 (KI-Modell in dieser Umgebung nicht ladbar).
+- **Spiel:** `game_mode` «mw» (`_mw_referee`: Personenmeldung → sichtbarster Spieler), `game_goal` «return» (Beute).
+- **Wolkenschatten** `cloud_shade()`, **Böen** `gust()`, Menschen schauen zum Licht (`look_at_light`).
+- **Bedienfeld:** Schalter = Label (Umbruch) + CheckButton, Knöpfe `autowrap_mode`, Auswahl mit Label darüber und
+  `fit_to_longest_item = false`. Test-Abfrage `ui_width` (Mindestbreite des Inhalts vs. Platz; jetzt 341 von 376 px).
+
 **3D-2.5 – Realismus und Spiel:** Kamerabild: `shaders/lens.gdshader` auf einem Quad 12 cm vor Kamera 0/1 (eigene Ebenen 32/64,
 `cull_mask` der Kameras), Rauschen aus `gain[i]` (Belichtung), Vignette, Regentropfen; Insekten = `CPUParticles3D` am
 `head_pitch` (nachts, wenn Licht an). Einstellungen Gruppe «Kamerabild» (`lens_noise`, `lens_vignette`, `lens_drops`, `insects_on`).
@@ -267,6 +286,8 @@ ONVIF-Dienst für Erkennung und PTZ) – ohne Server, mit einer gängigen Video�
 - Ton (Schuss «Plopp», Treffer «Boing») – hier ohne Lautsprecher.
 - Die Bildrate der neuen Szenen auf dem alten i5 (Wald hat rund 300 Bäume; ab 3D-2.0 mit gemeinsamen Materialien).
 - Ziehen der Besucher-Bildchen mit der echten Maus unter Windows (hier mit XTest getestet).
+- Die echte Erkennungsquote von Motion Watch im Testlauf (hier ohne KI-Modell) und der Geräuschalarm mit simuliertem Pegel
+  auf dem Pi.
 - Das Spiel mit echten Handys im WLAN und unter Windows (hier nur mit Chromium-Handy-Nachbildung und Tastatur),
   die Bildrate der Handybilder auf einer echten Grafikkarte, Vibration, Vollbild/Querformat-Sperre auf iPhone.
 - Autostart unter Windows (Registry-Eintrag, minimiert weiterzeichnen mit Direct3D/ANGLE, Sperren, Autologon) – nur unter Linux

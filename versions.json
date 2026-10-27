@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 01:01",
+ "generated": "2026-10-27 01:57",
  "versions": [
   {
-   "version": "2.93.2",
-   "file": "webcam_bewegung_2_93_2.py",
+   "version": "2.93.3",
+   "file": "webcam_bewegung_2_93_3.py",
    "url": "",
-   "sha256": "d8aa239d38ca39e5a1e4f6eaef076de5be321c40b053f2d2b66bc8f9423b214f",
-   "date": "2026-10-27 01:01",
-   "notes": "Download of the 3D simulator 3D-2.5: more realistic camera pictures (grain at night, raindrops on the lens, insects in the light at night - real false alarms to test); game: one player can be the guard (sees through the head camera), stones to distract, crystals to collect, lives, a microphone hears running; the referee works like a real detection.",
-   "sig": "2a3047bee0413c1b83b42237c9f3b9fd729d172c325630ead28e4584ee95bfb6ef24fcba6644700302521685daae75cd4e95c6afa1d994c6672a345036459601"
+   "sha256": "e0b3b8f43896e2561e6af0f4c195347129e2868262ada5f215a5109f8e8de220",
+   "date": "2026-10-27 01:57",
+   "notes": "For the 3D simulator 3D-2.6: Motion Watch tells the simulator what it detects (persons, animals, motion, noise) - for its test run with report (detection rate, reaction time, false alarms) and the game mode «Motion Watch decides»; without a real microphone the noise alarm uses the sound of the simulated world. Its CPU is measured as before.",
+   "sig": "a7d08a5c89f2394d50e0aa9063ec24d1fcf8cbd41085e690f63a1e11211598ffc60a700fa7e9163359cbbb4361cb9c0bbd8a41cc69f69c321314711c84918607"
   },
   {
    "version": "2.92.4",
