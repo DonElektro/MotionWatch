@@ -1,7 +1,7 @@
 {
- "version": "3D-3.11",
+ "version": "3D-3.12",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30521648,
- "sha256": "93f6792cb6d9b22730dffb5f0c6f7f4e4f6a6e36c1f9c072fb557c2073ec51bc",
- "notes": "Neu: Mover (Kettenfahrzeug) simulieren – Motion Watch 2.94.0 zeigt einen zweiten Stick zum Fahren. Mini-Kästchen mit eigener CPU und zum Symbol zusammenklappbar."
+ "size": 30529601,
+ "sha256": "1f6172311ca0700dd7a592ca67fd9988c501820fed346f08025d3b34ca9065b6",
+ "notes": "Übersichtskarte (Taste M), in der Grösse verstellbar."
 }

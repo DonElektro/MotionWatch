@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.11"
+const VERSION := "3D-3.12"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2637,7 +2637,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
+		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
 
@@ -2896,6 +2896,11 @@ var compass: Control
 var thermal_full: TextureRect
 var view_btns := {}
 var sel_ring: Control
+var minimap                           # minimap.gd: overview map in the corner (from 3D-3.12)
+var map_on := true
+var map_size := 220.0
+var map_span := 80.0
+var map_btn: Button
 
 
 func _unhandled_input(ev: InputEvent) -> void:
@@ -2983,6 +2988,8 @@ func _unhandled_input(ev: InputEvent) -> void:
 			KEY_G:
 				rifle_on = not rifle_on
 				_sync_ui()
+			KEY_M:
+				set_map(not map_on)
 			KEY_F:
 				if selected != null:
 					follow = not follow
@@ -3126,6 +3133,15 @@ func set_view(m: int) -> void:
 		view_btns[k].set_pressed_no_signal(k == m)
 
 
+func set_map(on: bool) -> void:
+	map_on = on
+	_settings_dirty = true
+	if minimap != null:
+		minimap.visible = on
+	if map_btn != null:
+		map_btn.set_pressed_no_signal(on)
+
+
 func _view_preset(which: String) -> void:
 	set_view(0)
 	follow = false
@@ -3178,6 +3194,14 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 		b.pressed.connect(func(): set_view(m))
 		view_bar.add_child(b)
 		view_btns[m] = b
+	map_btn = Button.new()
+	map_btn.text = "Karte"
+	map_btn.tooltip_text = "Übersichtskarte ein / aus (M)"
+	map_btn.toggle_mode = true
+	map_btn.focus_mode = Control.FOCUS_NONE
+	map_btn.button_pressed = map_on
+	map_btn.toggled.connect(func(on): set_map(on))
+	view_bar.add_child(map_btn)
 	for k in [["head", "Zum Kopf", "Zurück zu Motion Watch"], ["top", "Von oben", "Von oben auf den Platz schauen"]]:
 		var b := Button.new()
 		b.text = k[1]
@@ -3243,6 +3267,12 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 		sel_ring.draw_polyline(pts, Color(1.0, 0.75, 0.2, 0.95), 2.5, true))
 	layer.add_child(sel_ring)
 	layer.move_child(sel_ring, 1)
+	minimap = preload("res://scripts/minimap.gd").new()
+	minimap.main = self
+	minimap.size_px = map_size
+	minimap.span = map_span
+	minimap.visible = map_on
+	layer.add_child(minimap)
 	# the chosen visitor
 	sel_box = PanelContainer.new()
 	sel_box.theme = th

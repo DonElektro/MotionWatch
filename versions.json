@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 04:47",
+ "generated": "2026-10-27 04:59",
  "versions": [
   {
-   "version": "2.94.0",
-   "file": "webcam_bewegung_2_94_0.py",
+   "version": "2.94.1",
+   "file": "webcam_bewegung_2_94_1.py",
    "url": "",
-   "sha256": "9edf59f6badf000d67c31c4de4230c94645d6f0f5918d6c43fdfd767b34fb46f",
-   "date": "2026-10-27 04:47",
-   "notes": "NEW: mover (optional tracked vehicle): second stick on the web page (also full screen) and in the window, settings Camera & servos -> Mover (Motor HAT with PCA9685 + TB6612 found by itself, top / turning speed, gentle start, invert / swap tracks, stops after 0.6 s without a command); the 3D simulator 3D-3.11 can simulate it.",
-   "sig": "597208059aad8dd78487c11afd6c7573232a34f9373dee3ffef900e35fa8beefb543c653c72b38891a4e15e5da1876627e07eb74583fc1fca944e69752f09f02"
+   "sha256": "6bc743fefadea33a4e26f77f449342ceea7643f404f83175e3b58eac174a1b26",
+   "date": "2026-10-27 04:59",
+   "notes": "3D simulator 3D-3.12: overview map.",
+   "sig": "1b1db3d23fa7284deee790fff784aac8f1a7097bf8b17b77e5f4056ce5ec75268569dd4b5c2b2c57f8d90a70a30c3084705de3f4c8a6a31c577fca8828af5307"
   },
   {
    "version": "2.93.17",

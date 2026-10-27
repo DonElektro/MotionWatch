@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-3.11 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-3.12 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -66,6 +66,9 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
     Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
   * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
+- Ab 3D-3.12: Übersichtskarte oben links (Knopf «Karte» unten oder Taste M): Norden oben, Motion Watch in der Mitte mit dem
+  Blickfeld der Kameras, Häuser und Hindernisse, Besucher, Spieler und Ziel des Spiels, dein Blickpunkt. Mausrad = zoomen,
+  Ecke unten rechts ziehen = Grösse, Klick = dorthin fliegen. An echten Orten liegt das Luftbild darunter.
 - Ab 3D-3.11:
   * Mover (Kettenfahrzeug): «Mover → Mover simulieren» stellt Motion Watch auf ein kleines Kettenfahrzeug. Motion Watch
     (ab 2.94.0) zeigt dann einen zweiten, grünen Stick: hoch = vorwärts, runter = rückwärts, seitlich = an Ort drehen.
