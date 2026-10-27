@@ -69,6 +69,13 @@ var attention_until := 0.0              # ... until then
 var items: Array = []                   # {"node", "pos", "by": -1}
 var powers: Array = []                  # power-ups (3D-3.21): {"node", "pos", "kind": "cloak" | "turbo", "back": time it comes back}
 var last_minute := false                # the last minute of a round: the cameras are more watchful
+var feed: Array = []                    # what happened (for the spectators, 3D-3.22): [time, text]
+
+
+func news(txt: String) -> void:
+	feed.append([now(), txt])
+	if feed.size() > 12:
+		feed.pop_front()
 var cones: Array = []                   # [node of the head camera, node of the fixed camera]
 var stones: Array = []                  # [node, until]
 var _ref_t := 0.0
@@ -422,6 +429,7 @@ func _process(dt: float) -> void:
 		_powers_tick(t, dt)
 		if not last_minute and t_end - t <= 60.0 and t_end - t > 5.0 and main.game_minutes > 1:
 			last_minute = true                              # the last minute: more tension
+			news("⏰ Letzte Minute!")
 			for q in players:
 				if q != null:
 					_say(q, "⏰ Letzte Minute! Die Kamera passt jetzt besser auf." if q["role"] == "runner" else "⏰ Letzte Minute!", 4.0)
@@ -886,6 +894,10 @@ func start_round() -> void:
 	_place_items(int(main.game_items))
 	_place_powers(main.game_powers)
 	last_minute = false
+	feed.clear()
+	news("▶ Die Runde beginnt")
+	if main.game_spectate:
+		main.spectate_start()
 	round_state = "countdown"
 	t_start = now() + 4.0
 	t_end = t_start + float(main.game_minutes) * 60.0
@@ -1085,6 +1097,7 @@ func end_round() -> void:
 	if round_state not in ["countdown", "play"]:
 		return
 	round_state = "end"
+	news("🏁 Die Runde ist vorbei")
 	results.clear()
 	var missed := 0
 	for p in players:
@@ -1333,6 +1346,7 @@ func _referee(dt: float) -> void:
 				p["items"] = int(p["items"]) + 1
 				it["node"].visible = false
 				_say(p, "💎 gefunden! (+100)", 2.5)
+				news("💎 %s findet einen Kristall" % p["name"])
 				_event(p, "item")
 		for w in powers:                                   # power-ups
 			if float(w["back"]) == 0.0 and a.position.distance_to(w["pos"]) < 1.3:
@@ -1342,6 +1356,7 @@ func _referee(dt: float) -> void:
 				w["back"] = now() + 35.0
 				w["node"].visible = false
 				_say(p, pk[2] % int(pk[1]), 3.0)
+				news(("🌫 %s hat die Tarnkappe" if w["kind"] == "cloak" else "⚡ %s hat den Turbo") % p["name"])
 				_event(p, "item")
 		for q in players:                                  # rescue somebody from the jail
 			if q != null and q["state"] == "jail" and (not main.game_teams or int(q["team"]) == int(p["team"])) and a.position.distance_to(q["actor"].position) < 1.6:
@@ -1351,6 +1366,7 @@ func _referee(dt: float) -> void:
 				p["rescues"] = int(p.get("rescues", 0)) + 1
 				p["bonus"] = int(p.get("bonus", 0)) + 100
 				_say(q, "🔓 %s hat dich befreit!" % p["name"], 3.0)
+				news("🔓 %s befreit %s" % [p["name"], q["name"]])
 				_say(p, "🔓 %s befreit (+100)" % q["name"], 3.0)
 				_event(q, "item")
 				_event(p, "item")
@@ -1373,6 +1389,7 @@ func _referee(dt: float) -> void:
 			p["t_goal"] = now()
 			a.frozen = true
 			_say(p, "Im Ziel! 🎉", 4.0)
+			news("🎉 %s ist im Ziel" % p["name"])
 			a.play_emote("goal", 5.0)
 			_event(p, "goal")
 			paint()
@@ -1408,6 +1425,7 @@ func _referee(dt: float) -> void:
 
 func _caught(p: Dictionary, by) -> void:
 	p["caught"] = int(p["caught"]) + 1
+	news("🚨 %s erwischt" % p["name"] + ((" von %s" % by["name"]) if by is Dictionary else ""))
 	if int(p.get("flag", -1)) >= 0 and flags.size() == 2:   # the flag goes back to its base
 		_flag_home(int(p["flag"]))
 	if p["carry"]:                                         # the loot goes back to its place
@@ -1896,3 +1914,37 @@ function goFull() { const el = document.documentElement; try { (el.requestFullsc
 $("#full").onclick = goFull;
 joinForm();
 </script></body></html>"""
+
+
+func spectator_info() -> Dictionary:
+	"""everything the spectators see in Motion Watch (3D-3.22): time, players, meters, what happened"""
+	var t := now()
+	var ps := []
+	for p in players:
+		if p == null:
+			continue
+		var a = p["actor"]
+		var pw := ""
+		if a.power != "" and t < float(a.power_until):
+			pw = a.power
+		ps.append({"n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "s": p["state"], "r": p["role"], "susp": int(p["susp"]),
+				"k": int(p["caught"]), "i": int(p["items"]), "pw": pw, "tm": int(p["team"]), "on": p["sock"] != null, "carry": bool(p["carry"]),
+				"d": snappedf(a.position.distance_to(goal), 0.1)})
+	var left_items := 0
+	for it in items:
+		if int(it["by"]) < 0:
+			left_items += 1
+	var fd := []
+	for e in feed.slice(max(0, feed.size() - 6)):
+		fd.append({"a": int(t - float(e[0])), "x": e[1]})
+	var d := {"open": open, "round": round_state, "mode": main.game_mode, "goal_mode": "flag" if flag_mode() else main.game_goal,
+			"goal": goal_name, "players": ps, "items_left": left_items, "items_all": items.size(), "feed": fd, "last_minute": last_minute,
+			"teams": main.game_teams, "caps": captures, "shot": main.spec_label if main.spectate else "", "spectate": main.spectate,
+			"lives": int(main.game_lives)}
+	if round_state == "countdown":
+		d["cd"] = int(ceil(t_start - t))
+	if round_state == "play":
+		d["left"] = int(max(0.0, t_end - t))
+	if round_state == "end":
+		d["res"] = results
+	return d

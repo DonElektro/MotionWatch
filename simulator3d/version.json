@@ -1,7 +1,7 @@
 {
- "version": "3D-3.21",
+ "version": "3D-3.22",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30569418,
- "sha256": "eaf10d8b6fca8f82dbd01a3d2e81a4e84f6cc0194ab26781ba19008880b47064",
- "notes": "Natürlichere Bewegungen der Figuren. Spiel: Power-ups (Tarnkappe, Turbo) und eine spannende letzte Minute."
+ "size": 30575930,
+ "sha256": "1d545fc6af31b86821f3ba845f38a1f9dfaf1f830206e9dc88619c225e583fe2",
+ "notes": "Zuschauer-Kamera: fliegt beim Spiel selbst übers Feld; Spieldaten für die Zuschauer in Motion Watch."
 }

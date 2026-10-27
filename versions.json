@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 10:52",
+ "generated": "2026-10-27 11:05",
  "versions": [
   {
-   "version": "2.95.13",
-   "file": "webcam_bewegung_2_95_13.py",
+   "version": "2.95.14",
+   "file": "webcam_bewegung_2_95_14.py",
    "url": "",
-   "sha256": "e1e60c1c08c97c28c8459d09bd7135ceba01ed4fe41d79db1e742f6d7764556b",
-   "date": "2026-10-27 10:52",
-   "notes": "tab Simulator: the status can be folded (arrow on the right); the arrows are green when what is inside works / is switched on. Game wizard: power-ups. 3D simulator 3D-3.21: more natural movements, power-ups, the last minute.",
-   "sig": "3c7f65899a983b8a58e6b1c9e78dd2de473b915a5e4c99596d7932612fa29bd7b784c5f3048083615cb67493e1b2ba15931465d3e704f09cfe6a5535ae6a6d0b"
+   "sha256": "70cdefe3b3299bf518e0f20efe241ac015362a3b0f79cebaafffcb0249da2cb1",
+   "date": "2026-10-27 11:05",
+   "notes": "spectators: over the simulator window the time, the players with their «seen» meter, what happened and at the end the result (📊 on / off). Game wizard: spectator camera (3D-3.22 flies over the field by itself).",
+   "sig": "03b13fe15b515d64561082b92514531615edbc9ff4bfb2946d6f73b40b01acf52c23ad153e42ffff9a769524e5101e78f5cadef3dd7f0b5d52aedbc4d00d5f0a"
   },
   {
    "version": "2.94.5",

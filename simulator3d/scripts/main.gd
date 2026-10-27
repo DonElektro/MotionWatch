@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.21"
+const VERSION := "3D-3.22"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -52,6 +52,7 @@ var game_cones := false               # show the fields of view of the cameras (
 var game_noise := true                # the microphone hears loud steps
 var game_stones := true               # stones to throw (distract the guard)
 var game_powers := true               # power-ups: cloak and turbo (3D-3.21)
+var game_spectate := true             # spectator camera: flies over the field by itself while a round runs (3D-3.22)
 var game_random := false              # start and goal by chance
 var game_rescue := false              # caught -> jail, a team mate frees you (3D-3.1)
 var game_teamgoal := false            # the goal opens only when all crystals are found
@@ -1340,7 +1341,10 @@ func _process(dt: float) -> void:
 	for i in range(anims.size() - 1, -1, -1):
 		if anims[i].call(dt, t) == true:      # true = finished (e.g. the birds are gone)
 			anims.remove_at(i)
-	_fly(dt)
+	if spectate:
+		_spectate(dt)
+	else:
+		_fly(dt)
 	_view_overlays()
 	if crosshair != null:
 		crosshair.visible = rifle_on
@@ -1826,7 +1830,7 @@ const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort
 		"sound_on": ["Kamerabild", "Feineinstellungen"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", "Runde"],
 		"game_stop": ["Spiel", "Runde"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
 		"game_level": ["Spiel", "Regeln"], "game_lives": ["Spiel", "Regeln"], "game_items": ["Spiel", "Regeln"], "game_teams": ["Spiel", "Regeln"],
-		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_powers": ["Spiel", "Regeln"], "game_noise": ["Spiel", "Regeln"],
+		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_powers": ["Spiel", "Regeln"], "game_spectate": ["Spiel", "Anzeige"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"],
 		"quality": ["System", "Grafik"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
@@ -1952,6 +1956,8 @@ func _register_controls() -> void:
 			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"]]})
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
 	add_control("toggle", "game_powers", "Power-ups: Tarnkappe (lila) und Turbo (gelb)", func(): return game_powers, func(v): game_powers = v, "Spiel")
+	add_control("toggle", "game_spectate", "Zuschauer-Kamera: fliegt bei Spielstart selbst übers Spielfeld", func(): return game_spectate, func(v): game_spectate = v, "Spiel")
+	add_control("toggle", "spectate_now", "Zuschauer-Kamera jetzt", func(): return spectate, func(v): spectate_start() if v else spectate_stop(), "Spiel")
 	add_control("toggle", "game_noise", "Mikrofon hört laute Schritte", func(): return game_noise, func(v): game_noise = v, "Spiel", ex)
 	add_control("toggle", "game_cones", "Sichtfeld der Kameras zeigen (für Anfänger)", func(): return game_cones, func(v): game_cones = v, "Spiel")
 	add_control("toggle", "game_random", "Start und Ziel zufällig", func(): return game_random, func(v): game_random = v, "Spiel", ex)
@@ -2105,6 +2111,12 @@ func control(d: Dictionary) -> Dictionary:
 	elif a == "input":                                 # the simulator window seen in Motion Watch: mouse / finger / keys from there
 		var ev = d.get("ev", [])
 		return {"ok": true, "n": view_input(ev if ev is Array else [])}
+	elif a == "game_info":                             # the spectators in Motion Watch: the game in numbers (3D-3.22)
+		if game == null:
+			return {"ok": false, "error": "no game"}
+		var gi: Dictionary = game.spectator_info()
+		gi["ok"] = true
+		return gi
 	elif a == "mover":                                 # for tests: where the mover is
 		return {"ok": true, "pad": [pad_drive.x, pad_drive.y, now() - pad_t, _pad_l, _pad_r, rover_pad.dragging, sim_active, now() - _drive_t], "on": mover_on, "x": snappedf(rig.position.x, 0.01), "z": snappedf(rig.position.z, 0.01),
 				"yaw": snappedf(rad_to_deg(rig.rotation.y), 0.1), "drive": mw.get("drive", {}),
@@ -2723,7 +2735,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
@@ -2995,6 +3007,9 @@ var map_btn: Button
 
 
 func _unhandled_input(ev: InputEvent) -> void:
+	if spectate and ((ev is InputEventMouseButton and ev.pressed and ev.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE])
+			or (ev is InputEventKey and ev.pressed and ev.keycode in [KEY_W, KEY_A, KEY_S, KEY_D, KEY_Q, KEY_E])):
+		spectate_stop()                                # somebody steers by hand: the spectator camera lets go
 	if ev is InputEventMouseButton:
 		var b: int = ev.button_index
 		if ev.pressed and b in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
@@ -4110,3 +4125,149 @@ func _view_send(ev: InputEvent) -> void:
 	remote_vp.push_input(ev, true)
 	if not remote_vp.is_input_handled():
 		_unhandled_input(ev)
+
+
+
+# ---- spectator camera (3D-3.22): a little director - follows the player in danger, shows the goal, the whole field,
+# the view of Motion Watch; changes the shot every few seconds and glides from one to the next ----
+var spectate := false
+var spec_shot := ""
+var spec_who := -1
+var spec_until := 0.0
+var spec_label := ""
+var spec_orbit := 0.0
+var spec_order := 0
+var spec_end_t := 0.0
+var spec_switch_t := 0.0
+
+
+func spectate_start() -> void:
+	spectate = true
+	set_view(0)
+	follow = false
+	spec_until = 0.0
+	spec_end_t = 0.0
+
+
+func spectate_stop() -> void:
+	spectate = false
+	spec_label = ""
+
+
+func _spec_runners() -> Array:
+	var out := []
+	if game == null:
+		return out
+	for p in game.players:
+		if p != null and p["role"] == "runner" and p["state"] == "play":
+			out.append(p)
+	return out
+
+
+func _spec_choose(t: float) -> void:
+	spec_switch_t = t
+	var rs := _spec_runners()
+	spec_until = t + randf_range(6.0, 9.0)
+	if game.round_state == "countdown":
+		spec_shot = "field"
+		spec_label = "Übersicht · gleich geht es los"
+		return
+	if game.round_state == "end":
+		spec_shot = "goal"
+		spec_label = "Ziel · die Runde ist vorbei"
+		return
+	var danger = null
+	var near = null
+	for p in rs:
+		if danger == null or float(p["susp"]) > float(danger["susp"]):
+			danger = p
+		if near == null or p["actor"].position.distance_to(game.goal) < near["actor"].position.distance_to(game.goal):
+			near = p
+	if danger != null and float(danger["susp"]) > 55.0:
+		spec_shot = "follow"
+		spec_who = int(danger["slot"])
+		spec_label = "Achtung: %s wird gleich entdeckt!" % danger["name"]
+		spec_until = t + 5.0
+		return
+	if near != null and near["actor"].position.distance_to(game.goal) < 9.0 and randf() < 0.7:
+		spec_shot = "goal"
+		spec_who = int(near["slot"])
+		spec_label = "%s ist kurz vor dem Ziel" % near["name"]
+		return
+	spec_order = (spec_order + 1) % 4
+	if rs.is_empty() or spec_order == 1:
+		spec_shot = "field"
+		spec_label = "Übersicht über das Spielfeld"
+	elif spec_order == 3:
+		spec_shot = "mw"
+		spec_label = "So sieht Motion Watch das Feld"
+		spec_until = t + 5.0
+	else:
+		var p = rs[randi() % rs.size()]
+		spec_shot = "follow"
+		spec_who = int(p["slot"])
+		spec_label = "Wir folgen %s" % p["name"]
+
+
+func _spectate(dt: float) -> void:
+	if game == null or not game.open:
+		spectate_stop()
+		return
+	var t := now()
+	if game.round_state == "end":
+		if spec_end_t == 0.0:
+			spec_end_t = t
+			spec_until = 0.0
+		elif t - spec_end_t > 15.0:
+			spectate_stop()                              # after the end: the camera stays where it is
+			return
+	elif game.round_state == "lobby":
+		spectate_stop()
+		return
+	if game.round_state == "play" and t - spec_switch_t > 2.0:      # somebody is about to be discovered: show it at once
+		for p in _spec_runners():
+			if float(p["susp"]) > 65.0 and not (spec_shot == "follow" and spec_who == int(p["slot"])):
+				spec_until = 0.0
+				break
+	if t >= spec_until:
+		_spec_choose(t)
+	view_cam.fov = 62.0
+	var want: Transform3D = view_cam.global_transform
+	var focus: Vector3 = game.goal
+	var rs := _spec_runners()
+	if spec_shot == "follow":
+		var p = game.players[spec_who] if spec_who >= 0 and spec_who < game.players.size() else null
+		if p == null or p["state"] != "play":
+			spec_until = 0.0
+			return
+		var a = p["actor"]
+		var back := Vector3(sin(a.heading), 0, cos(a.heading))
+		var pos: Vector3 = a.position + back * 4.5 + Vector3(0, 2.6, 0)
+		pos.y = max(pos.y, ground_y(pos.x, pos.z) + 1.5)
+		want = Transform3D(Basis(), pos).looking_at(a.position + Vector3(0, 0.9, 0) - back * 1.5, Vector3.UP)
+	elif spec_shot == "goal":
+		var to := Vector3(0, 0, 8)
+		if spec_who >= 0 and spec_who < game.players.size() and game.players[spec_who] != null:
+			to = game.players[spec_who]["actor"].position - game.goal
+		to.y = 0
+		if to.length() < 0.5:
+			to = Vector3(0, 0, 8)
+		var pos: Vector3 = game.goal - to.normalized() * 5.0 + Vector3(0, 2.4, 0)
+		pos.y = max(pos.y, ground_y(pos.x, pos.z) + 1.5)
+		want = Transform3D(Basis(), pos).looking_at(game.goal + to * 0.45 + Vector3(0, 0.8, 0), Vector3.UP)
+	elif spec_shot == "mw":
+		want = cams[0].global_transform
+		view_cam.fov = 41.0
+	else:                                                # the whole field: slowly round from above
+		var c := Vector3.ZERO
+		for p in rs:
+			c += p["actor"].position
+		c = (c / rs.size()) if not rs.is_empty() else (game.goal * 0.5)
+		c = c.lerp(game.goal * 0.5, 0.4)
+		spec_orbit += dt * 0.08
+		var pos := c + Vector3(sin(spec_orbit) * 18.0, 0, cos(spec_orbit) * 18.0)
+		pos.y = ground_y(pos.x, pos.z) + 16.0
+		focus = c
+		want = Transform3D(Basis(), pos).looking_at(c + Vector3(0, 0.5, 0), Vector3.UP)
+	var k: float = 1.0 - exp(-dt * (6.0 if spec_shot == "mw" else 2.2))
+	view_cam.global_transform = view_cam.global_transform.interpolate_with(want, k)
