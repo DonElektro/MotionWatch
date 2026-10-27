@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-2.9"
+const VERSION := "3D-3.0"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -36,6 +36,7 @@ var game_cones := false               # show the fields of view of the cameras (
 var game_noise := true                # the microphone hears loud steps
 var game_stones := true               # stones to throw (distract the guard)
 var game_random := false              # start and goal by chance
+var game_teams := false               # two teams: red against blue (3D-3.0)
 var game_goal := "reach"              # reach: get to the goal · return: fetch the loot and bring it back to the start
 # ---- start with the PC (from 3D-2.1; autostart.gd) ----
 var autostart_on := false             # read from Windows (Run key) / Linux (autostart folder), not from the settings
@@ -1574,6 +1575,7 @@ func _register_controls() -> void:
 	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
 			{"options": [["0", "unbegrenzt"], ["3", "3 Leben"], ["1", "1 Leben"]]})
 	add_control("slider", "game_items", "Kristalle zum Sammeln", func(): return game_items, func(v): game_items = int(v), "Spiel", {"min": 0, "max": 6, "step": 1})
+	add_control("toggle", "game_teams", "Zwei Teams (Rot gegen Blau)", func(): return game_teams, func(v): game_teams = v; game.on_teams(), "Spiel")
 	add_control("select", "game_goal", "Spielziel", func(): return game_goal, func(v): game_goal = v, "Spiel",
 			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"]]})
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
@@ -2197,7 +2199,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 

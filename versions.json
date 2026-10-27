@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 02:28",
+ "generated": "2026-10-27 02:34",
  "versions": [
   {
-   "version": "2.93.6",
-   "file": "webcam_bewegung_2_93_6.py",
+   "version": "2.93.7",
+   "file": "webcam_bewegung_2_93_7.py",
    "url": "",
-   "sha256": "e7a810412b0e2f08de846a13dd8580c730bbf4d8788abfafea1a78af727c7fe9",
-   "date": "2026-10-27 02:28",
-   "notes": "Download of the 3D simulator 3D-2.9: flags and laundry in the wind, chimney smoke, fireflies (all can be switched off); fixed: rain was missing in the camera pictures since 3D-2.6.",
-   "sig": "64a8cc2377c7c0e972e46d08b80a7df7b3ea99a9a85082fc88c688052b59e63babe9ffbc80e27422d54e085f259c44fed50a735025ad86fc556d873a1f66400a"
+   "sha256": "85490e95cd0b260cd75e5f45f55cfe059fb9a66c5f75214b62b5e832b3ce8666",
+   "date": "2026-10-27 02:34",
+   "notes": "Download of the 3D simulator 3D-3.0: game with two teams, team signals, choose your look (cap, hood, backpack, camouflage); figures react (startled, cheering, throwing).",
+   "sig": "65548146e8e49585dd84b2e8801b6f11493a399e94a4fa658f7143de5c863986dbccdb0226b00a38975177bd09f0793d2387455e1463bbbba7ff915acf0d610b"
   },
   {
    "version": "2.92.4",

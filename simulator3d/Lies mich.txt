@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-2.9 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+Motion Watch – 3D-Simulator 3D-3.0 (6 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -66,6 +66,15 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Bild ist (Pixel) und genug Licht hat; Bewegung fällt eher auf; das Wärmebild sieht nachts einen warmen Fleck;
     Lampen der Szene, das weisse Licht und (nur Kopfkamera) Infrarot machen sichtbar. Unter einer Schwelle zählt nichts.
   * Am Computer: F = Werfen (Wächter: Licht), Leertaste = Erwischt!
+- Ab 3D-3.0:
+  * "Zwei Teams (Rot gegen Blau)" in der Gruppe "Spiel": die Teams werden beim Beitreten ausgeglichen, im Startbild
+    kann man wechseln. Die Punkte des Teams werden zusammengezählt, die Rangliste zeigt das Siegerteam.
+    Der Kegel über dem Kopf hat dann die Teamfarbe.
+  * Team-Funk: während der Runde links vier Knöpfe ✋ Warte, ▶ Los, 👁 Kamera!, 📍 Hier. Die Teamkollegen (ohne
+    Teams: alle) sehen die Nachricht mit Pfeil und Abstand, hören einen Ton, und über dem Kopf erscheint das Zeichen.
+  * Aussehen wählen beim Beitreten (und im Startbild "Aussehen ändern"): Haare, Mütze oder Kapuze, mit oder ohne
+    Rucksack, eigene Farbe oder Tarnjacke. Tarnung macht einen bei Tag im Grünen etwas schwerer erkennbar.
+  * Die Figuren erschrecken beim Erwischtwerden, jubeln im Ziel und holen beim Werfen aus.
 - Ab 3D-2.6:
   * Spielart "Motion Watch entscheidet (echte Erkennung)": meldet Motion Watch eine Person, ist der erwischt, den
     die Kamera am besten sieht. Die Leiste zeigt dann nur noch, wie gut man zu sehen ist. Ein echter Test von

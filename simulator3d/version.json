@@ -1,7 +1,7 @@
 {
- "version": "3D-2.9",
+ "version": "3D-3.0",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30397587,
- "sha256": "e8dd88f57630716f7598db16a4b8f354422c98a8c5123b79a186dce341205b32",
- "notes": "Mehr Leben in der Welt: Fahnen und Wäsche im Wind, Rauch aus Kaminen, Glühwürmchen in warmen Nächten (einzeln abschaltbar). Behoben: Regen und andere durchsichtige Dinge fehlten seit 3D-2.6 im Kamerabild."
+ "size": 30403720,
+ "sha256": "f091f58327fb4f0794bf79c42773f00d71e9eb010f29ac3581d5b7a9698c49cd",
+ "notes": "Spiel: zwei Teams (Rot gegen Blau) mit Teamwertung, Team-Funk (Warte, Los, Kamera!, Hier), Aussehen wählen (Mütze, Kapuze, Rucksack, Tarnjacke), Figuren erschrecken, jubeln und holen zum Wurf aus."
 }

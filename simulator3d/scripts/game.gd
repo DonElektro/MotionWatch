@@ -16,6 +16,9 @@ var Qr = preload("res://scripts/qr.gd")
 const MAX_P := 4
 const COLORS := [Color(0.85, 0.12, 0.12), Color(0.12, 0.38, 0.92), Color(0.12, 0.68, 0.22), Color(0.95, 0.78, 0.08)]
 const CNAMES := ["Rot", "Blau", "Grün", "Gelb"]
+const TEAM_COLORS := [Color(0.92, 0.18, 0.12), Color(0.12, 0.42, 0.98)]
+const TEAM_NAMES := ["Team Rot", "Team Blau"]
+const SIGNALS := {"wait": "✋ Warte", "go": "▶ Los", "cam": "👁 Kamera!", "here": "📍 Hier"}
 const QUAL := {"small": [320, 180, 10.0, 0.55], "mid": [480, 270, 12.0, 0.6], "big": [640, 360, 15.0, 0.65]}
 const HEIGHT := [1.7, 1.1, 0.45]                 # standing, crouching, crawling (m)
 const SHAPE := [1.0, 0.7, 0.3]                   # how well the person detection recognises the posture
@@ -45,6 +48,7 @@ var goal := Vector3.ZERO
 var goal_name := "Ziel"
 var goal_node: Node3D
 var results: Array = []
+var team_results: Array = []
 var guard_auto := false                 # the game turns the head (automatic guard or a player as guard)
 var guard_yaw := 0.0
 var guard_tilt := deg_to_rad(-9.0)
@@ -427,8 +431,11 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 		if slot < 0:
 			s["ws"].send_text(JSON.stringify({"t": "full"}))
 			return
+		var lk = m.get("look", {})
 		if players[slot] == null:
-			players[slot] = _new_player(slot, token, name)
+			players[slot] = _new_player(slot, token, name, _clean_look(lk))
+			players[slot]["team"] = _smaller_team(slot)
+			_paint_cone(players[slot])
 		var p: Dictionary = players[slot]
 		if name != "":
 			p["name"] = name
@@ -460,6 +467,17 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 			p2["want"] = true
 		"start":
 			start_round()
+		"team":
+			if round_state not in ["countdown", "play"]:
+				p2["team"] = clampi(int(m.get("k", 0)), 0, 1)
+				_paint_cone(p2)
+				paint()
+		"look":
+			if round_state not in ["countdown", "play"]:
+				p2["look"] = _clean_look(m)
+				_rebuild(p2)
+		"sig":
+			_signal(p2, str(m.get("k", "")))
 		"role":
 			_set_role(p2, str(m.get("r", "runner")))
 		"stone":
@@ -494,12 +512,59 @@ func _set_role(p: Dictionary, r: String) -> void:
 	paint()
 
 
-func _new_player(slot: int, token: String, name: String) -> Dictionary:
+func _clean_look(m) -> Dictionary:
+	if typeof(m) != TYPE_DICTIONARY:
+		return {}
+	var h := str(m.get("hat", ""))
+	return {"hat": h if h in ["", "cap", "hood"] else "", "pack": bool(m.get("pack", false)), "camo": bool(m.get("camo", false))}
+
+
+func _smaller_team(me: int) -> int:
+	var n := [0, 0]
+	for q in players:
+		if q != null and q["slot"] != me:
+			n[int(q.get("team", 0))] += 1
+	return 0 if n[0] <= n[1] else 1
+
+
+func on_teams() -> void:
+	for p in players:
+		if p != null:
+			_paint_cone(p)
+	paint()
+
+
+func _paint_cone(p: Dictionary) -> void:
+	"""the cone above the head: team colour with teams, else the colour of the player"""
+	var c: Color = TEAM_COLORS[int(p.get("team", 0))] if main.game_teams else COLORS[p["slot"]]
+	if p.has("cone") and is_instance_valid(p["cone"]):
+		p["cone"].material_override = _glow(c)
+
+
+func _rebuild(p: Dictionary) -> void:
+	"""a new look: build the figure again at the same place"""
+	var old = p["actor"]
+	var parts := _make_actor(p["slot"], p["look"], old.position)
+	var a = parts[0]
+	a.heading = old.heading
+	a.rotation.y = old.rotation.y
+	a.frozen = old.frozen
+	a.visible = old.visible
+	old.queue_free()
+	p["actor"] = a
+	p["cone"] = parts[1]
+	p["loot"] = parts[2]
+	p["loot"].visible = p["carry"]
+	_paint_cone(p)
+
+
+func _make_actor(slot: int, lk: Dictionary, pos: Vector3) -> Array:
 	var a = Actor.new()
 	a.controlled = true
 	a.player_color = COLORS[slot]
+	a.look = lk
 	root.add_child(a)
-	a.setup(main, "person", start_point(slot), goal, 1.5)
+	a.setup(main, "person", pos, goal, 1.5)
 	a.frozen = round_state == "countdown"
 	# a small coloured cone above the head: the others see who is who (only the players, not Motion Watch)
 	var cone := MeshInstance3D.new()
@@ -524,6 +589,14 @@ func _new_player(slot: int, token: String, name: String) -> Dictionary:
 	loot.position = Vector3(0, 1.3, 0.24)
 	loot.visible = false
 	a.body_root.add_child(loot)
+	return [a, cone, loot]
+
+
+func _new_player(slot: int, token: String, name: String, lk := {}) -> Dictionary:
+	var parts := _make_actor(slot, lk, start_point(slot))
+	var a = parts[0]
+	var cone = parts[1]
+	var loot = parts[2]
 	var q: Array = QUAL.get(main.game_quality, QUAL["mid"])
 	var vp := SubViewport.new()
 	vp.size = Vector2i(q[0], q[1])
@@ -544,7 +617,7 @@ func _new_player(slot: int, token: String, name: String) -> Dictionary:
 			"mx": 0.0, "my": 0.0, "want": false, "last_cap": 0.0, "susp": 0.0, "seen": false, "heard": 0.0, "caught": 0,
 			"state": "play" if round_state == "play" else "lobby", "t_goal": 0.0, "safe_until": 0.0, "msg": "", "msg_until": 0.0,
 			"role": "runner", "items": 0, "stone_t": 0.0, "catches": 0, "false": 0, "catch_t": 0.0, "sent_no": -1,
-			"loot": loot, "carry": false}
+			"loot": loot, "carry": false, "cone": cone, "look": lk, "team": 0, "sig_t": 0.0}
 	return p
 
 
@@ -748,6 +821,17 @@ func end_round() -> void:
 			p["state"] = "lobby"
 		p["susp"] = 0.0
 	results.sort_custom(func(x, y): return x["score"] > y["score"])
+	team_results.clear()
+	if main.game_teams:                                    # team totals
+		var sums := [0, 0]
+		for p in players:
+			if p != null:
+				for r in results:
+					if r["n"] == p["name"] and r["c"] == "#" + COLORS[p["slot"]].to_html(false):
+						sums[int(p["team"])] += int(r["score"])
+		team_results = [{"n": TEAM_NAMES[0], "c": "#" + TEAM_COLORS[0].to_html(false), "score": sums[0]},
+				{"n": TEAM_NAMES[1], "c": "#" + TEAM_COLORS[1].to_html(false), "score": sums[1]}]
+		team_results.sort_custom(func(x, y): return x["score"] > y["score"])
 	_clear_items()
 	paint()
 
@@ -824,6 +908,8 @@ func cam_sees(p: Dictionary, i: int) -> float:
 	var hfov: float = deg_to_rad(CAM_FOV[i])
 	# person detection (AI): needs enough pixels, a recognisable shape and light
 	var ai: float = smoothstep(18.0, 70.0, px) * SHAPE[post] * smoothstep(0.08, 0.5, see)
+	if bool(a.look.get("camo", false)) and not main.is_dark() and main.scene != "parkplatz":
+		ai *= 0.8                                          # camouflage in the green: the person is a bit harder to recognise
 	# motion detection: something moves across the picture (pixels per second), big enough, visible
 	var move_px: float = spd / (2.0 * d * tan(hfov / 2.0)) * cols
 	var motion: float = smoothstep(6.0, 45.0, move_px) * smoothstep(20.0, 60.0, px) * smoothstep(0.03, 0.3, see)
@@ -1016,6 +1102,35 @@ func _throw(p: Dictionary) -> void:
 	_say(p, "🪨 geworfen – der Wächter hört es", 2.0)
 
 
+func _signal(p: Dictionary, k: String) -> void:
+	"""a short sign to the team (or to everybody without teams): wait, go, camera looks here, here"""
+	if not SIGNALS.has(k) or now() < float(p["sig_t"]):
+		return
+	p["sig_t"] = now() + 1.0
+	var a = p["actor"]
+	var lb := Label3D.new()                                # above the head, only the players see it
+	lb.text = SIGNALS[k]
+	lb.font_size = 64
+	lb.pixel_size = 0.004
+	lb.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	lb.no_depth_test = true
+	lb.modulate = TEAM_COLORS[int(p["team"])] if main.game_teams else COLORS[p["slot"]]
+	lb.outline_size = 12
+	lb.position = Vector3(0, 2.55, 0)
+	lb.layers = 16
+	a.add_child(lb)
+	get_tree().create_timer(2.5).timeout.connect(func(): if is_instance_valid(lb): lb.queue_free())
+	for q in players:
+		if q == null or q == p or q["sock"] == null:
+			continue
+		if main.game_teams and int(q["team"]) != int(p["team"]):
+			continue
+		var to: Vector3 = a.position - q["actor"].position
+		var ga := rad_to_deg(wrapf(atan2(-to.x, -to.z) - float(q["yaw"]), -PI, PI))
+		q["sock"]["ws"].send_text(JSON.stringify({"t": "sig", "n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "k": k,
+				"txt": SIGNALS[k], "ga": int(ga), "d": int(to.length())}))
+
+
 func _guard_light(g: Dictionary) -> void:
 	if g["role"] != "guard" or now() < light_ready:
 		return
@@ -1081,7 +1196,7 @@ func _send_state(i: int) -> void:
 	for q in players:
 		if q != null:
 			lst.append({"n": q["name"], "c": "#" + COLORS[q["slot"]].to_html(false), "s": q["state"], "k": q["caught"], "on": q["sock"] != null,
-					"r": q["role"], "i": q["items"]})
+					"r": q["role"], "i": q["items"], "tm": int(q["team"])})
 	var left_items := 0
 	for it in items:
 		if int(it["by"]) < 0:
@@ -1091,7 +1206,8 @@ func _send_state(i: int) -> void:
 			"ga": int(ga), "goal": goal_name, "list": lst, "items": p["items"], "items_left": left_items, "items_all": items.size(),
 			"lives": int(main.game_lives), "stone": int(max(0.0, float(p["stone_t"]) - now())) if main.game_stones else -1,
 			"msg": p["msg"] if now() < float(p["msg_until"]) else "", "has_guard": guard_player() != null, "mwd": mw_decides(),
-			"goal_mode": main.game_goal, "carry": p["carry"]}
+			"goal_mode": main.game_goal, "carry": p["carry"], "teams": main.game_teams, "team": int(p["team"]), "look": p["look"],
+			"tres": team_results if round_state == "end" else []}
 	if p["role"] == "guard":
 		d["light"] = int(max(0.0, light_ready - now()))
 		d["catch"] = int(max(0.0, float(p["catch_t"]) - now()))
@@ -1145,7 +1261,7 @@ func paint() -> void:
 		for p in players:
 			if p != null:
 				var st: String = {"goal": " – im Ziel", "out": " – ausgeschieden"}.get(p["state"], "")
-				lines.append("● %s (%s)%s%s · erwischt %d%s" % [p["name"], CNAMES[p["slot"]], " – Wächter" if p["role"] == "guard" else "", st,
+				lines.append("● %s (%s)%s%s%s · erwischt %d%s" % [p["name"], CNAMES[p["slot"]], (" · " + TEAM_NAMES[int(p["team"])]) if main.game_teams else "", " – Wächter" if p["role"] == "guard" else "", st,
 						p["caught"] if p["role"] == "runner" else p["catches"], "" if p["sock"] != null else " · getrennt"])
 		if count() == 0:
 			lines.append("Noch niemand dabei.")
@@ -1209,6 +1325,19 @@ table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px
 @media (orientation:portrait){#rot.ask{display:flex}}
 .redfl{animation:fl .4s 3}@keyframes fl{50%{background:#ff453a88}}
 .cnt{position:absolute;top:-6px;right:-6px;background:#000c;border-radius:999px;font-size:11px;padding:1px 6px}
+#sig{position:fixed;left:10px;top:120px;display:flex;flex-direction:column;gap:6px;z-index:5}
+#sig[hidden]{display:none}
+#sig button{width:46px;height:40px;border-radius:12px;border:1px solid #ffffff44;background:#0a0e14aa;color:#fff;font-size:18px}
+#sigt{position:fixed;left:50%;top:58px;transform:translateX(-50%);background:#111822ee;border:1px solid var(--line);border-radius:12px;padding:6px 12px;font-size:15px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .25s;white-space:nowrap}
+#sigt .ar{display:inline-block;margin-left:6px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0}
+.chips button{background:#151e2b;color:var(--txt);border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:14px}
+.chips button.on{border-color:var(--acc);background:#3b8cff33}
+.lab{font-size:12px;color:var(--mut);margin-top:8px}
+.teams{display:flex;gap:10px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.teams .tm{border:1px solid var(--line);border-radius:12px;padding:8px 12px;min-width:140px;text-align:left}
+.teams .tm.me{border-color:var(--acc)}
+.teams .tm b{display:block;margin-bottom:4px}
 </style></head><body>
 <img id="v" alt="">
 <div class="top"><span class="pill" id="me"><span class="dot"></span><b id="nm">…</b> <span id="lv"></span></span>
@@ -1222,6 +1351,8 @@ table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px
 <div class="btns" id="gb" style="display:none"><div class="b" id="b-light"><i>💡</i>Licht</div><div class="b big red" id="b-catch"><i>🚨</i>Erwischt!</div></div>
 <div id="side"><button id="full" title="Vollbild">⛶</button><button id="snd" title="Ton">🔊</button></div>
 <div id="msg"></div>
+<div id="sig" hidden><button data-k="wait" title="Warte">✋</button><button data-k="go" title="Los">▶</button><button data-k="cam" title="Kamera schaut her">👁</button><button data-k="here" title="Hier">📍</button></div>
+<div id="sigt"></div>
 <div class="ov" id="ov"></div>
 <div id="rot"><div>📱↻<br><br>Handy bitte <b>quer</b> halten.<br><small style="color:#8b98a8">Mit dem Knopf ⛶ wird es Vollbild.</small></div></div>
 <script>
@@ -1229,7 +1360,20 @@ const $ = s => document.querySelector(s), WSP = %WSPORT%;
 let ws = null, me = null, token = "", name = "", st = {}, posture = 0, run = false, mx = 0, my = 0, look = 0, pitch = 0, lastSent = "", lastT = 0, lastFrame = 0, oldUrl = "", sound = true, role = "runner";
 try { token = localStorage.getItem("mw3d-token") || ""; name = localStorage.getItem("mw3d-name") || ""; sound = localStorage.getItem("mw3d-sound") !== "0"; } catch (e) {}
 if (!token) { token = Math.random().toString(36).slice(2) + Date.now().toString(36); try { localStorage.setItem("mw3d-token", token); } catch (e) {} }
-const ov = (html) => { $("#ov").innerHTML = html ? '<div class="card">' + html + '</div>' : ""; };
+let lastOv = null, editing = false;
+const ov = (html) => { if (html === lastOv) return; lastOv = html; $("#ov").innerHTML = html ? '<div class="card">' + html + '</div>' : ""; };
+let outfit = {hat: "", pack: false, camo: false};
+try { outfit = Object.assign(outfit, JSON.parse(localStorage.getItem("mw3d-look") || "{}")); } catch (e) {}
+function lookHtml() {
+  const c = (grp, v, txt) => '<button type="button" data-g="' + grp + '" data-v="' + v + '" class="' + (String(outfit[grp]) === String(v) ? "on" : "") + '">' + txt + '</button>';
+  return '<div class="lab">Kopf</div><div class="chips">' + c("hat", "", "Haare") + c("hat", "cap", "Mütze") + c("hat", "hood", "Kapuze") + '</div>' +
+    '<div class="lab">Rucksack</div><div class="chips">' + c("pack", false, "ohne") + c("pack", true, "mit") + '</div>' +
+    '<div class="lab">Jacke</div><div class="chips">' + c("camo", false, "meine Farbe") + c("camo", true, "Tarnung (im Grünen schwerer zu sehen)") + '</div>';
+}
+function bindLook() { document.querySelectorAll(".chips button[data-g]").forEach(b => b.onclick = () => {
+  const g = b.dataset.g; outfit[g] = g === "hat" ? b.dataset.v : b.dataset.v === "true";
+  try { localStorage.setItem("mw3d-look", JSON.stringify(outfit)); } catch (e) {}
+  document.querySelectorAll('.chips button[data-g="' + g + '"]').forEach(x => x.classList.toggle("on", x === b)); }); }
 // ---- sounds (Web Audio, no files): tick while seen, heartbeat when close to being caught, signals ----
 let ac = null;
 function tone(f, d, type, vol, when) { if (!sound) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + (when || 0); o.type = type || "sine"; o.frequency.value = f; g.gain.setValueAtTime(vol || 0.15, t); g.gain.exponentialRampToValueAtTime(0.001, t + d); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d); } catch (e) {} }
@@ -1242,19 +1386,22 @@ setInterval(() => { if (!me || st.rs !== "play" || st.ps !== "play" || role !== 
   if (st.seen && n - tickT > 450) { tickT = n; sfx.tick(st.susp); } if (st.susp > 60 && n - beatT > (st.susp > 85 ? 500 : 800)) { beatT = n; sfx.beat(); } }, 100);
 function joinForm() {
   ov('<h1>🕵️ Unentdeckt ans Ziel</h1><p>Schleiche zum grünen Licht, ohne dass dich die Kameras entdecken. Ducken und Kriechen hilft, im Dunkeln und hinter Dingen sieht man dich schlechter. Rennen hört man.</p>' +
-     '<input id="nmi" maxlength="16" placeholder="Dein Name" value="' + name.replace(/"/g, "") + '"><button class="pr" id="go">Mitspielen</button>');
+     '<input id="nmi" maxlength="16" placeholder="Dein Name" value="' + name.replace(/"/g, "") + '">' + lookHtml() + '<button class="pr" id="go">Mitspielen</button>');
+  bindLook();
   $("#go").onclick = () => { name = $("#nmi").value.trim(); try { localStorage.setItem("mw3d-name", name); } catch (e) {} goFull(); tone(660, 0.05, "sine", 0.01); connect(); };
 }
 function connect() {
   ov('<h1>Verbinde …</h1>');
   ws = new WebSocket("ws://" + location.hostname + ":" + WSP); ws.binaryType = "blob";
-  ws.onopen = () => ws.send(JSON.stringify({t: "join", name, token}));
+  ws.onopen = () => ws.send(JSON.stringify({t: "join", name, token, look: outfit}));
   ws.onmessage = (e) => {
     if (typeof e.data !== "string") { const u = URL.createObjectURL(e.data); $("#v").onload = () => { if (oldUrl) URL.revokeObjectURL(oldUrl); oldUrl = u; askFrame(); }; $("#v").src = u; lastFrame = Date.now(); return; }
     const m = JSON.parse(e.data);
     if (m.t === "hello") { me = m; role = m.role; $("#nm").textContent = m.name; $("#me .dot").style.background = m.color; setRole(); ov(""); askFrame(); }
     else if (m.t === "full") { ov('<h1>Schon 4 Spieler</h1><p>Das Spiel ist voll. Warte, bis jemand aufhört.</p>'); }
     else if (m.t === "st") paint(m);
+    else if (m.t === "sig") { const t = $("#sigt"); t.innerHTML = '<span style="color:' + m.c + '">●</span> ' + esc(m.n) + ': ' + esc(m.txt) + ' <span class="ar" style="transform:rotate(' + (-m.ga) + 'deg)">⬆</span> ' + m.d + ' m';
+      t.style.opacity = 1; clearTimeout(window.__sigT); window.__sigT = setTimeout(() => t.style.opacity = 0, 3000); tone(880, 0.08, "triangle", 0.12); tone(1175, 0.1, "triangle", 0.12, 0.09); if (navigator.vibrate) navigator.vibrate(60); }
     else if (m.t === "ev") { if (m.k === "caught") { if (navigator.vibrate) navigator.vibrate([300, 100, 300]); document.body.classList.remove("redfl"); void document.body.offsetWidth; document.body.classList.add("redfl"); }
       if (sfx[m.k]) sfx[m.k](); }
   };
@@ -1277,16 +1424,24 @@ function paint(m) {
   $("#list").innerHTML = (m.list || []).map(p => '<span style="color:' + p.c + '">●</span> ' + esc(p.n) + (p.r === "guard" ? " 👁" : "") + (p.s === "goal" ? " 🏁" : p.s === "out" ? " ✖" : "") + (p.r !== "guard" && p.k ? " · " + p.k + "×" : "") + (p.on ? "" : " (weg)")).join("<br>");
   $("#extra").textContent = (m.carry ? "💰 Beute dabei – zurück zum Start! " : (m.goal_mode === "return" && role === "runner" ? "Ziel: Beute holen und zurückbringen · " : "")) + (m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "");
   $("#msg").textContent = m.msg || "";
+  $("#sig").hidden = !(m.rs === "play" && role === "runner" && m.ps === "play");
   if (m.stone < 0) $("#b-stone").style.display = "none"; else { $("#b-stone").style.display = "flex"; cool($("#b-stone"), m.stone); }
   if (role === "guard") { cool($("#b-light"), m.light); cool($("#b-catch"), m.catch); $("#gd").textContent = (m.pan > 0 ? "◀ " : "▶ ") + Math.abs(m.pan) + "°"; }
   if (m.rs === "countdown") ov('<div id="big">' + Math.max(1, m.cd) + '</div>');
+  else if ((m.rs === "lobby" || m.rs === "end") && editing) { /* the player changes the look */ }
   else if (m.rs === "lobby" || m.rs === "end") {
-    let h = m.rs === "end" ? '<h1>Rangliste</h1><table>' + (m.res || []).map((r, i) => '<tr><td>' + (i + 1) + '.</td><td><span style="color:' + r.c + '">●</span> ' + esc(r.n) + '</td><td>' + esc(r.info) + '</td><td><b>' + r.score + '</b></td></tr>').join("") + '</table>'
+    let h = m.rs === "end" ? (m.tres && m.tres.length ? '<h1>' + esc(m.tres[0].n) + ' gewinnt!</h1><p>' + m.tres.map(t => '<span style="color:' + t.c + '">●</span> ' + esc(t.n) + ' <b>' + t.score + '</b>').join(" · ") + '</p>' : '') + '<h1>Rangliste</h1><table>' + (m.res || []).map((r, i) => '<tr><td>' + (i + 1) + '.</td><td><span style="color:' + r.c + '">●</span> ' + esc(r.n) + '</td><td>' + esc(r.info) + '</td><td><b>' + r.score + '</b></td></tr>').join("") + '</table>'
       : '<h1>Bereit?</h1><p>Ziel: <b>' + esc(m.goal) + '</b> – folge dem Pfeil oben rechts zum grünen Licht.</p><p>Links ziehen = gehen · rechts wischen = umschauen</p>';
     if (m.mode === "mw") h += '<p>' + (m.mwd ? '🛡 Diesmal entscheidet die <b>echte Erkennung von Motion Watch</b>: meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht.' : '⚠ Motion Watch ist nicht verbunden – der Simulator entscheidet.') + '</p>';
     if (m.mode === "guard") h += '<p>Ein Spieler kann Wächter sein: er sieht durch die Kamera, dreht den Kopf und ruft «Erwischt!».</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🕵️ Schleicher</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">👁 Wächter</button><br>';
-    h += '<button class="pr" id="st">' + (m.rs === "end" ? "Nochmal" : "Runde starten") + '</button>';
+    if (m.teams) { const tm = [0, 1].map(k => '<div class="tm' + (m.team === k ? " me" : "") + '"><b style="color:' + ["#eb2e1f", "#1f6bfa"][k] + '">' + ["Team Rot", "Team Blau"][k] + '</b>' +
+        (m.list || []).filter(p => p.tm === k).map(p => '<span style="color:' + p.c + '">●</span> ' + esc(p.n)).join("<br>") + '<br><button class="sec' + (m.team === k ? " on" : "") + '" data-team="' + k + '">' + (m.team === k ? "✓ dabei" : "wechseln") + '</button></div>').join("");
+      h += '<div class="teams">' + tm + '</div>'; }
+    h += '<button class="sec" id="lk">👕 Aussehen ändern</button><br><button class="pr" id="st">' + (m.rs === "end" ? "Nochmal" : "Runde starten") + '</button>';
     ov(h);
+    document.querySelectorAll("[data-team]").forEach(b => b.onclick = () => ws.send(JSON.stringify({t: "team", k: +b.dataset.team})));
+    const lkb = $("#lk"); if (lkb) lkb.onclick = () => { editing = true; ov('<h1>Aussehen</h1>' + lookHtml() + '<button class="pr" id="lkok">Fertig</button>'); bindLook();
+      $("#lkok").onclick = () => { ws.send(JSON.stringify(Object.assign({t: "look"}, outfit))); editing = false; lastOv = null; paint(st); }; };
     const rr = $("#r-run"), rg = $("#r-guard"); if (rr) rr.onclick = () => ws.send('{"t":"role","r":"runner"}'); if (rg) rg.onclick = () => ws.send('{"t":"role","r":"guard"}');
   }
   else if (m.ps === "goal") ov('<h1>🏁 Im Ziel!</h1><p>Warte auf die anderen.</p>');
@@ -1313,6 +1468,7 @@ $("#b-crawl").addEventListener("pointerdown", e => { e.preventDefault(); posture
 $("#b-stone").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "stone"}); });
 $("#b-light").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "light"}); });
 $("#b-catch").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "catch"}); });
+document.querySelectorAll("#sig button").forEach(b => b.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); send({t: "sig", k: b.dataset.k}); b.style.background = "var(--acc)"; setTimeout(() => b.style.background = "", 300); }));
 function btns() { $("#b-run").classList.toggle("on", run); $("#b-crouch").classList.toggle("on", posture === 1); $("#b-crawl").classList.toggle("on", posture === 2); }
 // keyboard (for a computer): W A S D / arrows, Shift = run, C = crouch, X = crawl, Q / E = look round, F = throw / light, Space = «Erwischt!»
 const keys = {};

@@ -50,6 +50,7 @@ var preview := false          # only a picture for the list of visitors (does no
 # ---- a player of the game (game.gd, from 3D-2.4): moved by the phone instead of a route ----
 var controlled := false
 var player_color := Color(0, 0, 0, 0)  # jacket colour of the player (red, blue, green, yellow)
+var look := {}                # a player's choice (3D-3.0): {"hat": "" | "cap" | "hood", "pack": bool, "camo": bool}
 var ctl_move := Vector2.ZERO  # wanted direction in the world (x, z), length 0..1
 var ctl_run := false
 var ctl_posture := 0          # 0 standing, 1 crouching, 2 crawling
@@ -189,9 +190,10 @@ func _build_person() -> void:
 	var wet: bool = main.weather == "rain"
 	var kid := variant == "child"
 	var jog := variant == "jogger"
-	var jacket: Color = player_color if player_color.a > 0.0 else (_pick("sport") if jog else _pick("jacket"))
+	var camo: bool = controlled and bool(look.get("camo", false))
+	var jacket: Color = Color(0.33, 0.38, 0.22) if camo else (player_color if player_color.a > 0.0 else (_pick("sport") if jog else _pick("jacket")))
 	var shirt: Color = [Color(0.9, 0.9, 0.88), Color(0.2, 0.25, 0.35), Color(0.6, 0.15, 0.15), Color(0.85, 0.75, 0.4)][randi() % 4]
-	var trousers: Color = Color(0.1, 0.1, 0.12) if jog else _pick("trousers")
+	var trousers: Color = Color(0.3, 0.3, 0.2) if camo else (Color(0.1, 0.1, 0.12) if jog else _pick("trousers"))
 	var skin := _pick("skin")
 	var hair := _pick("hair")
 	var shoe: Color = Color(0.95, 0.95, 0.95) if jog else [Color(0.12, 0.1, 0.09), Color(0.35, 0.22, 0.12), Color(0.2, 0.2, 0.22)][randi() % 3]
@@ -220,7 +222,12 @@ func _build_person() -> void:
 		_part(torso, _box(0.13, 0.42, 0.02), Vector3(0, 0.27, -0.142), shirt, cloth_t + 2.0)
 	else:
 		_part(torso, _box(0.012, 0.42, 0.012), Vector3(0, 0.27, -0.142), jacket.darkened(0.45), cloth_t)               # zip
-	if not jog and not kid and not controlled and randf() < 0.35:            # backpack
+	if camo:                                                               # camouflage: darker and brown patches
+		for k2 in range(7):
+			var pc: Color = Color(0.2, 0.24, 0.13) if k2 % 2 == 0 else Color(0.38, 0.3, 0.18)
+			var a2 := randf() * TAU
+			_part(torso, _sph(0.07, 0.05), Vector3(cos(a2) * 0.16, randf_range(0.05, 0.45), sin(a2) * 0.12), pc, cloth_t, Vector3(0, a2, 0), Vector3(1.4, 1.0, 0.4))
+	if (controlled and bool(look.get("pack", false))) or (not jog and not kid and not controlled and randf() < 0.35):   # backpack
 		var bp: Color = jacket.darkened(0.5).lerp(Color(0.2, 0.3, 0.2), 0.5)
 		_part(torso, _box(0.3, 0.4, 0.15), Vector3(0, 0.3, 0.19), bp, main.ambient + 3.0)
 		_part(torso, _box(0.26, 0.12, 0.05), Vector3(0, 0.18, 0.28), bp.darkened(0.2), main.ambient + 3.0)
@@ -245,7 +252,10 @@ func _build_person() -> void:
 		_part(head, _sph(0.025, 0.05), Vector3(0.107 * s3, 0.16, 0.0), skin.darkened(0.05), 33.5, Vector3.ZERO, Vector3(0.5, 1.0, 0.8))   # ear
 	_part(head, _box(0.05, 0.008, 0.01), Vector3(0, 0.11, -0.108), Color(0.45, 0.2, 0.18), 34.0)           # mouth
 	var style := randi() % 5
-	var hooded := (cold or wet) and not jog and randf() < 0.45
+	var hooded: bool = (cold or wet) and not jog and randf() < 0.45
+	if controlled and not look.is_empty():                                  # a player chose
+		hooded = look.get("hat", "") == "hood"
+		style = 3 if look.get("hat", "") == "cap" else 0
 	if hooded:                                                             # hood up
 		_part(head, _sph(0.13, 0.27), Vector3(0, 0.18, 0.02), jacket.darkened(0.1), cloth_t - 2.0, Vector3.ZERO, Vector3(1.0, 1.0, 1.05))
 		_part(torso, _sph(0.11, 0.12), Vector3(0, 0.55, 0.12), jacket.darkened(0.1), cloth_t)
@@ -257,7 +267,7 @@ func _build_person() -> void:
 	elif style == 2:
 		_part(head, _sph(0.114, 0.15), Vector3(0, 0.21, 0.012), hair, 30.0)
 		_part(head, _caps(0.035, 0.16), Vector3(0, 0.12, 0.12), hair, 30.0, Vector3(0.4, 0, 0))            # ponytail
-	elif style == 3 or (cold and not jog):
+	elif style == 3 or (cold and not jog and not controlled):
 		_part(head, _sph(0.118, 0.14), Vector3(0, 0.23, 0.0), jacket.lightened(0.3), 28.0)                 # cap
 		_part(head, _sph(0.03), Vector3(0, 0.31, 0.0), Color(0.95, 0.95, 0.95), 26.0)
 	else:
