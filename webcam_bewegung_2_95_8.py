@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_7.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_8.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -560,6 +560,8 @@ Features
   * 2.95.6: tab Simulator: the picture at the top shows the simulator window (map, compass, view buttons) and is operated
     with mouse / finger / keys; switch «Simulator window» / «Camera picture» above it.
   * 2.95.7: 3D simulator 3D-3.19: the simulator window also works while the simulator is the small box on the PC.
+  * 2.95.8: tab Simulator: installed and newest simulator version (looked up in the project once an hour), a warning with
+    what is new when an update is there; the header shows «SIMULATION · ⟳ Update 3D-x.y» too.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -568,10 +570,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_7.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_8.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_7.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_7.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_8.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_8.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -588,7 +590,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.7"
+APP_VERSION = "2.95.8"
 
 
 def default_data_dir():
@@ -12573,6 +12575,57 @@ SIMPY = {"version": "PY-1.1", "file": "simulator_python/MotionWatchSimulator_PY-
          "sha256": "dfc992580eeae1698cb0f81bf3f82f8ceb51982a97f11a8977a4efb34ba33ee0", "stem": "MotionWatch_PythonSimulator",
          "label": "Python world simulator"}
 SIMPY_DL = {"running": False, "got": 0, "msg": ""}
+SIMLATEST = {"t": 0.0, "busy": False, "3d": None, "py": None, "err": ""}   # newest simulator versions in the project (2.95.8)
+
+
+def sim_latest_check(force=False):
+    """look up the newest simulator versions (simulator3d/version.json, simulator_python/MotionWatchSimulator.json) - at
+    most once an hour, in the background; only shown, nothing is installed"""
+    if SIMLATEST["busy"] or (not force and time.time() - SIMLATEST["t"] < 3600):
+        return
+    SIMLATEST["busy"] = True; SIMLATEST["t"] = time.time()
+
+    def work():
+        try:
+            src = CFG["update_url"].strip()
+            base = src.rsplit("/", 1)[0] + "/" if src.startswith("https://") else SIM3D_BASE
+            for key, path in (("3d", "simulator3d/version.json"), ("py", "simulator_python/MotionWatchSimulator.json")):
+                try:
+                    with urllib.request.urlopen(_upd_request(base + path), timeout=15) as r:
+                        d = json.loads(r.read(65536))
+                    SIMLATEST[key] = {"version": str(d.get("version") or "")[:20], "notes": str(d.get("notes") or "")[:400]}
+                    SIMLATEST["err"] = ""
+                except Exception as e:
+                    SIMLATEST["err"] = _upd_error(e)[:120] if "_upd_error" in globals() else str(e)[:120]
+        finally:
+            SIMLATEST["busy"] = False
+    threading.Thread(target=work, daemon=True, name="simlatest").start()
+
+
+def _vnum(v):
+    m = re.search(r"(\d+)\.(\d+)(?:\.(\d+))?", str(v or ""))
+    return tuple(int(x or 0) for x in m.groups()) if m else None
+
+
+def sim_versions():
+    """installed version of the simulator in use and the newest one in the project (for the tab Simulator)"""
+    sim_latest_check()
+    info = SIM.get("info") or {}
+    name = str(info.get("name") or "")
+    cur, kind = "", ""
+    m = re.search(r"3D-\d+\.\d+", name)
+    if m:
+        cur, kind = m.group(0), "3d"
+    else:
+        u = sim_base().split("//")[-1]
+        f = SIMFOUND.get(u) or SIMFOUND.get(u.replace("localhost", "127.0.0.1")) or {}
+        v = str(f.get("version") or "")
+        if v.startswith("PY-") or "Python" in name:
+            kind = "py"; cur = v if v.startswith("PY-") else ("PY-" + (re.search(r"\d+\.\d+", name) or [""])[0] if re.search(r"\d+\.\d+", name) else "")
+    lat = SIMLATEST.get(kind) if kind else None
+    newer = bool(lat and cur and _vnum(lat["version"]) and _vnum(cur) and _vnum(lat["version"]) > _vnum(cur))
+    return {"kind": kind, "current": cur, "latest": (lat or {}).get("version", ""), "notes": (lat or {}).get("notes", ""), "newer": newer,
+            "checked": int(time.time() - SIMLATEST["t"]) if SIMLATEST["t"] else None, "err": SIMLATEST["err"]}
 SIM3D["stem"] = "MotionWatch3D_Simulator"; SIM3D["label"] = "3D simulator"
 SIM3D_BASE = "https://raw.githubusercontent.com/DonElektro/MotionWatch/main/"
 
@@ -12839,6 +12892,7 @@ def sim_status():
             "sim3d": {"version": SIM3D["version"], "size_mb": round(SIM3D["size"] / 1e6), "ready": sim3d_ready()},
             "simpy": {"version": SIMPY["version"], "size_kb": round(SIMPY["size"] / 1e3), "ready": sim3d_ready(SIMPY)},
             "view": bool(((SIM.get("info") or {}).get("view") or {}).get("input")) if CFG["sim_on"] else False,
+            "versions": sim_versions() if CFG["sim_on"] and SIM["ok"] else None,
             "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "msg": SIM["msg"], "url": sim_base(),
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
@@ -14206,7 +14260,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_7.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_8.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -18905,6 +18959,8 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .dl .main{grid-column:1/-1}
 #c-prev{padding:12px}#c-prev>*+*{margin-top:8px}
 .pvw{position:relative;background:#000;border-radius:10px;overflow:hidden}
+.supd{margin:10px 0 2px;padding:10px 12px;border-radius:10px;border:1px solid #b88a1c;background:rgba(240,180,40,.12)}
+.supd-t{font-weight:600;color:#e8b33a}.supd-n{margin-top:3px}.sver{margin-top:6px;font-size:13px}
 .pvmode{display:flex;border:1px solid var(--line,#1f2b3a);border-radius:10px;overflow:hidden;margin:0 0 10px}
 .pvmode button{flex:1;padding:8px;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;cursor:pointer}.pvmode button.on{background:var(--acc,#3b8cff);color:#fff}
 .pvw.view img{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;outline:none}.pvw.view img:active{cursor:grabbing}
@@ -18950,6 +19006,8 @@ details.fold>.fb>.mut:first-child{margin-top:0}
   <section class="sc wide" id="c-status">
     <div class="sthead"><i class="sdot" id="s-dot"></i><div class="sttl" id="s-ttl">–</div><button type="button" class="sec" id="s-upd" onclick="simUpdate()" hidden>⟳ <span data-i18n="Update the simulator">Update the simulator</span></button><button type="button" id="s-btn" onclick="simOnOff()">–</button></div>
     <div class="mut" id="s-msg"></div>
+    <div class="supd" id="s-supd" hidden><div class="supd-t" id="s-supdt"></div><div class="mut supd-n" id="s-supdn"></div></div>
+    <div class="mut sver" id="s-ver"></div>
     <div class="tiles" id="s-tiles"></div>
   </section>
 
@@ -19034,7 +19092,7 @@ Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "c
  "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in",
  "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.",
  "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "Use": "Verwenden", "in use": "in Gebrauch",
- "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
+ "Version": "Version", "installed": "installiert", "newest": "neueste", "up to date": "aktuell", "newest version not known": "neueste Version unbekannt", "checking for the newest version …": "suche die neueste Version …", "New update for the simulator": "Neues Update für den Simulator", "Update it in the simulator on the PC.": "Im Simulator auf dem PC aktualisieren.", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» oben.", "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
  "The picture appears when the simulation is on.": "Das Bild erscheint, wenn die Simulation eingeschaltet ist.",
  "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "running": "läuft", "Controls": "Bedienung",
  "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a file to the simulator": "Datei zum Simulator hochladen",
@@ -19082,7 +19140,7 @@ function paint() {
       fb.appendChild(r); }); }
   // preview
   $("#s-prevnote").textContent = S.on ? "" : t("The picture appears when the simulation is on.");
-  liveOn(!!S.on); pvPaint();
+  liveOn(!!S.on); pvPaint(); verPaint();
   // control
   if (S.ok && !CS) ctl({ctl: "get"});
   if (!S.ok) { CS = ""; $("#s-groups").textContent = ""; $("#s-scn").hidden = true; $("#s-up").hidden = true; $("#s-cname").textContent = ""; $("#s-cst").textContent = t("ctl-note"); }
@@ -19092,10 +19150,19 @@ function paint() {
 }
 // ---- button «Update the simulator» (2.95.5): the simulator's own update (control «update_now»), newest version shown ----
 const vnum = v => (String(v || "").match(/(\d+)\.(\d+)/) || [0, 0, 0]).slice(1).map(Number);
+function verPaint() {
+  const V = S && S.on && S.versions, w = $("#s-supd");
+  if (!V || !V.current) { $("#s-ver").textContent = ""; w.hidden = true; return; }
+  $("#s-ver").textContent = t("Version") + ": " + V.current + " " + t("installed") + " · " + (V.latest ? t("newest") + ": " + V.latest + (V.newer ? "" : " ✓ " + t("up to date"))
+    : (V.err ? t("newest version not known") + " (" + V.err + ")" : t("checking for the newest version …")));
+  w.hidden = !V.newer;
+  if (V.newer) { $("#s-supdt").textContent = "⚠ " + t("New update for the simulator") + ": " + V.latest + " (" + t("installed") + ": " + V.current + ")";
+    $("#s-supdn").textContent = (V.notes ? V.notes + " · " : "") + ($("#s-upd").hidden ? t("Update it in the simulator on the PC.") : t("Button «Update the simulator» above.")); }
+}
 function updPaint(r) {
   const b = $("#s-upd"), has = !!(r && r.ok && (r.controls || []).some(c => c.id === "update_now"));
-  b.hidden = !(has && S && S.on); if (b.hidden) return;
-  const m = String(r.name || "").match(/3D-\d+\.\d+/), cur = m ? m[0] : "", nw = S.sim3d && S.sim3d.version;
+  b.hidden = !(has && S && S.on); verPaint(); if (b.hidden) return;
+  const V = S.versions || {}, m = String(r.name || "").match(/3D-\d+\.\d+/), cur = V.current || (m ? m[0] : ""), nw = V.latest || (S.sim3d && S.sim3d.version);
   const [a1, a2] = vnum(cur), [b1, b2] = vnum(nw), newer = cur && nw && (b1 > a1 || (b1 === a1 && b2 > a2));
   b.className = newer ? "" : "sec";
   b.title = newer ? t("New version available") + ": " + nw : t("The simulator looks for a new version and installs it");
@@ -23196,7 +23263,7 @@ function solarText(c, s) {
 }
 function solarPaint(c, s) { const st = $("#solar-st"); if (st) st.textContent = solarText(c, s); }
 /*SIMMAP*/
-Object.assign(I18N.de, {"sim-view-help": "Das Fenster des Simulators: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen, Doppelklick = hinfliegen. Finger: ziehen = verschieben (⟲: drehen), zwei Finger = zoomen. Knöpfe unten wechseln die Ansicht. Tasten (Pfeile, WASD) gehen, wenn das Bild angeklickt ist.", "Python world simulator (ZIP)": "Python-Weltsimulator (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo Motion Watch steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
+Object.assign(I18N.de, {"Update": "Update", "New update for the simulator": "Neues Update für den Simulator", "tab Simulator": "Reiter Simulator", "sim-view-help": "Das Fenster des Simulators: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen, Doppelklick = hinfliegen. Finger: ziehen = verschieben (⟲: drehen), zwei Finger = zoomen. Knöpfe unten wechseln die Ansicht. Tasten (Pfeile, WASD) gehen, wenn das Bild angeklickt ist.", "Python world simulator (ZIP)": "Python-Weltsimulator (ZIP)", "second simulator, needs Python on the PC": "zweiter Simulator, braucht Python auf dem PC", "Program": "Programm", "lines": "Zeilen", "Data": "Daten", "files": "Dateien", "settings": "Einstellungen", "simulator": "Simulator", "running for": "läuft seit", "memory": "Arbeitsspeicher", "days": "Tagen", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen", "Tools": "Werkzeuge", "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet", "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in", "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.", "seen since": "gesehen seit", "last": "zuletzt vor", "messages": "Meldungen", "found by the search": "durch die Suche gefunden", "Find the simulator in the network by itself (and take over its address)": "Simulator im Netz selbst finden (und seine Adresse übernehmen)", "Simulators in the network:": "Simulatoren im Netz:", "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An Motion Watch senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "this device": "dieses Gerät", "Use": "Verwenden", "bad address": "ungültige Adresse", "Phone / tablet view": "Handy- / Tablet-Ansicht", "Arrange": "Anpassen", "Arrange the switches": "Schalter anpassen", "Choose and arrange the switches": "Schalter auswählen und anordnen", "Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.": "Anhaken, was du sehen willst, mit ▲ ▼ verschieben. Gilt für alle an diesem Gerät.", "Reset": "Zurücksetzen", "Saved": "Gespeichert", "viewer": "Zuschauer", "viewers": "Zuschauer", "Viewers": "Zuschauer", "web": "Web", "screen of the Pi": "Pi-Bildschirm", "Simulator control": "Simulator-Steuerung", "Load": "Laden", "Controls": "Bedienung", "running": "läuft", "Upload a file to the simulator": "Eine Datei in den Simulator hochladen", "unknown control": "unbekannter Regler", "unknown scenario": "unbekanntes Szenario", "unknown choice": "unbekannte Auswahl", "cannot be deleted": "kann nicht gelöscht werden", "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "Video scenarios": "Video-Szenarien", "A 360° video (or a normal video) instead of the drawn world: real pictures, the camera looks around in it. Simulator 3.3 or newer.": "Ein 360°-Video (oder ein normales Video) statt der gezeichneten Welt: echte Bilder, die Kamera schaut darin herum. Ab Simulator 3.3.", "also drawn visitors in the video": "zusätzlich gezeichnete Besucher im Video", "(no videos yet - upload one below)": "(noch keine Videos – unten eines hochladen)", "off - drawn world": "aus – gezeichnete Welt", "Play": "Abspielen", "Stop": "Stopp", "Delete": "Löschen", "Delete this video in the simulator?": "Dieses Video im Simulator löschen?", "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a video into the video folder of the simulator (big 4K videos are made smaller once):": "Ein Video in den Video-Ordner des Simulators hochladen (grosse 4K-Videos werden einmal verkleinert):", "video not found": "Video nicht gefunden", "not supported - update the simulator": "geht nicht – Simulator aktualisieren", "only videos (mp4, mov, mkv, webm, avi) or .json": "nur Videos (mp4, mov, mkv, webm, avi) oder .json", "file empty or bigger than 4 GB": "Datei leer oder grösser als 4 GB", "no file": "keine Datei", "Also follow animals and other movement (when no person is in the picture)": "Auch Tieren und anderen Bewegungen folgen (wenn keine Person im Bild ist)", "Follow movement: smallest size (% of the picture)": "Bewegung folgen: kleinste Grösse (% des Bildes)", "Follow movement: must move for (seconds)": "Bewegung folgen: muss sich so lange bewegen (Sekunden)", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)": "CPU schonen während der Simulation (weniger Bilder, der Simulator zeichnet nur, was abgeholt wird)", "Pictures per second in the simulation (CPU saving)": "Bilder pro Sekunde in der Simulation (CPU schonen)", "Simulator": "Simulator", "Simulation": "Simulation", "SIMULATION": "SIMULATION", "Address of the simulation program": "Adresse des Simulationsprogramms", "A separate simulation program on a PC or the Pi (motionwatch_simulator.py): two cameras, thermal camera, lights, day / night, weather and sensors. The switch «Simulation» changes between the real hardware and the simulation.": "Ein separates Simulationsprogramm auf einem PC oder dem Pi (motionwatch_simulator.py): zwei Kameras, Wärmebild, Licht, Tag/Nacht, Wetter und Sensoren. Der Schalter «Simulation» wechselt zwischen echter Hardware und Simulation.", "Switch the simulation off": "Simulation ausschalten", "Switch the simulation on": "Simulation einschalten", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "connected": "verbunden", "night": "Nacht", "day": "Tag", "not reachable": "nicht erreichbar", "connecting …": "verbinde …", "simulator not reachable - is it running?": "Simulator nicht erreichbar – läuft er?", "simulator not reachable": "Simulator nicht erreichbar", "Simulation on / off: cameras, thermal camera and sensors from the simulation program": "Simulation ein / aus: Kameras, Wärmebild und Sensoren aus dem Simulationsprogramm", "Simulation on / off": "Simulation ein / aus", "Simulator camera 0": "Simulator-Kamera 0", "Simulator camera 1": "Simulator-Kamera 1", "Simulator thermal camera": "Simulator-Wärmebildkamera", "Search a place (e.g. Zermatt)": "Ort suchen (z. B. Zermatt)", "Aerial picture": "Luftbild", "Map": "Karte", "Load this place": "Diesen Ort laden", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Auf der Karte antippen, wo Motion Watch steht. Ziehen = verschieben, zwei Finger oder Mausrad = zoomen.", "Search not possible – tap the place on the map": "Suche nicht möglich – den Ort direkt auf der Karte antippen", "Search a setting …": "Einstellung suchen …", "Simple": "Einfach", "Expert": "Experte", "Simple: only the important settings. «Expert» shows all.": "Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.", "Nothing found": "Nichts gefunden", "Only in Switzerland": "Nur in der Schweiz", "The simulator loads the place (about a minute the first time).": "Der Simulator lädt den Ort (beim ersten Mal etwa eine Minute)."});
 Object.assign(I18N.de, {"Install simulator on the Pi": "Simulator auf dem Pi installieren", "Install simulator again": "Simulator neu installieren", "Start simulator here": "Simulator hier starten", "Stop simulator": "Simulator beenden", "Download for a PC (ZIP)": "Für einen PC herunterladen (ZIP)", "Simulator installed": "Simulator installiert", "Simulator started": "Simulator gestartet", "Simulator stopped": "Simulator beendet", "the simulator runs on this Pi": "der Simulator läuft auf diesem Pi", "Install": "Installieren", "Start": "Starten"});
 function simExtras(d) {
   // the settings of the section (switches, address, slider) go into a fold-out «Settings»
@@ -23409,7 +23476,9 @@ function simPaint(s) {
         fb.appendChild(r); }); } }
   if (st) st.textContent = (!S.on ? t("off - the real cameras and sensors are used") + " · " + S.url : (S.ok ? S.url + " · " + (S.dark ? t("night") : t("day")) + " · " + S.ambient + " °C" : t(S.msg || "not reachable") + " · " + S.url))
     + (S.running ? "\n▶ " + t("the simulator runs on this Pi") : "");
-  const bs = $("#b-sim"); if (bs) { bs.hidden = !S.on; bs.textContent = "🧪 " + t("SIMULATION") + (S.on && !S.ok ? " ⚠" : ""); }
+  const bs = $("#b-sim"); if (bs) { bs.hidden = !S.on; const nv = S.on && S.versions && S.versions.newer;
+    bs.textContent = "🧪 " + t("SIMULATION") + (S.on && !S.ok ? " ⚠" : "") + (nv ? " · ⟳ " + t("Update") + " " + S.versions.latest : "");
+    bs.title = nv ? t("New update for the simulator") + ": " + S.versions.latest + " – " + t("tab Simulator") : ""; }
 }
 function gpsExtras(d) {
   const box = el("div", "auxbox"); const st = el("div", "mut"); st.id = "gpsm-st"; st.style.whiteSpace = "pre-wrap";
@@ -28527,7 +28596,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.7")
+        self.root.title("Motion Watch 2.95.8")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -28817,7 +28886,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.7 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.8 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

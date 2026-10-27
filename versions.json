@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 09:54",
+ "generated": "2026-10-27 09:57",
  "versions": [
   {
-   "version": "2.95.7",
-   "file": "webcam_bewegung_2_95_7.py",
+   "version": "2.95.8",
+   "file": "webcam_bewegung_2_95_8.py",
    "url": "",
-   "sha256": "42eb8deff889b0822bbaf5b7bfbd16cdb7ae6560d5f824314274eabd361f07dd",
-   "date": "2026-10-27 09:54",
-   "notes": "3D simulator 3D-3.19: the simulator window also works while the simulator is the small box on the PC.",
-   "sig": "ad3974b9b27a857211af299e161ab8a8543c7b820d1019e2dbbdd7b3607e18e5266df4e8e45411b0843f243856063139848e5ad39d1834194d9ea1b7811c9604"
+   "sha256": "4b8cbc7c491552c03374c62b8dd78ea1e6ec08d3d048d30bc7086c6f42cc7948",
+   "date": "2026-10-27 09:57",
+   "notes": "tab Simulator: installed and newest simulator version (looked up in the project once an hour), a warning with what is new when an update is there; the header shows «SIMULATION · ⟳ Update 3D-x.y» too.",
+   "sig": "2653bcc3e343e6b1429fe2049c135b0ccba3a634092f734462cc53c665faf60c6f2c71fa88bf3ce467bc0480fb27ef6a4b76cfbb61386d6198a41cda359eb108"
   },
   {
    "version": "2.94.5",
