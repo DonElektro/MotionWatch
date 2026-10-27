@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 09:24",
+ "generated": "2026-10-27 09:26",
  "versions": [
   {
-   "version": "2.95.3",
-   "file": "webcam_bewegung_2_95_3.py",
+   "version": "2.95.4",
+   "file": "webcam_bewegung_2_95_4.py",
    "url": "",
-   "sha256": "26f11a57312c328965ed9bd05b0bbd096c15528683f531f523328a22ca21fbc1",
-   "date": "2026-10-27 09:24",
-   "notes": "Live view: the window of the 3D simulator (map, compass, view buttons Frei / Kamera 1 / Kamera 2 / Wärmebild / Karte / Zum Kopf / Von oben) in the simulator control, operated with mouse, finger or keys (/sim/view.mjpg; 3D-3.18).",
-   "sig": "2a5c0538e12d6a94d99430546eb1e496bc8490365dbea5fb7b497be47fd1a876ac814613ee1d3f2748aa88f0bbb9a6e0762402f844f78f530d29a6823838e107"
+   "sha256": "0621034b82abcd73243712820c189ade9116fc22fe78d9b1bd8864e7a1059f64",
+   "date": "2026-10-27 09:26",
+   "notes": "pan up to ±180°: new setting «Pan servo: turning range» (180 / 270 / 360°), the pan limit goes up to half of it. The simulator gets the real angle (before, a tilt limit of 60° was shown as only 40° in the simulation).",
+   "sig": "5853e76ff89f4e545531cbac7a5b25f2432786ab6482d22b6dd6c2dd4f3a028b2281c919c5e0c51d1ef7677bea27a884b1d0d3e6ea4b143698dbb6abf44db200"
   },
   {
    "version": "2.94.5",

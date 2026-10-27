@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_3.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_4.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -553,6 +553,8 @@ Features
     is on. Driving with the second stick switches the simulator's vehicle on by itself (3D simulator «Mover simulieren»).
   * 2.95.3: Live view: the window of the 3D simulator (map, compass, view buttons Frei / Kamera 1 / Kamera 2 / Wärmebild /
     Karte / Zum Kopf / Von oben) in the simulator control, operated with mouse, finger or keys (/sim/view.mjpg; 3D-3.18).
+  * 2.95.4: pan up to ±180°: new setting «Pan servo: turning range» (180 / 270 / 360°), the pan limit goes up to half of it.
+    The simulator gets the real angle (before, a tilt limit of 60° was shown as only 40° in the simulation).
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -561,10 +563,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_3.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_4.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_3.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_3.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_4.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_4.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -581,7 +583,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.3"
+APP_VERSION = "2.95.4"
 
 
 def default_data_dir():
@@ -821,6 +823,7 @@ CFG = {
     # servo driver: auto = PCA9685 if found, else GPIO 17 / 27 | pca9685 | gpio; limits in degrees from the middle
     "servo_driver": "auto", "pca_address": "0x41", "pca_pan_ch": 0, "pca_tilt_ch": 1,
     "pan_limit": 90, "tilt_limit": 60, "servo_range": 180,
+    "pan_servo_range": 180,      # turning range of the pan servo in degrees (180 / 270 / 360): the pan limit can go up to half of it
     # lights (white + infrared): off | on | auto, where they are connected, what "auto" means, how long after an alarm
     "light_white": "off", "light_ir": "off", "light_white_out": "", "light_ir_out": "",
     "light_white_auto": "alarm_dark", "light_ir_auto": "dark", "light_hold": 60,
@@ -3908,9 +3911,9 @@ class Hardware:
     @staticmethod
     def limits():
         """(lo, hi) in percent for pan and tilt from the limits in degrees (middle = 50 %, 0..100 % = servo_range degrees)."""
-        half = max(10.0, float(CFG["servo_range"])) / 2.0
         out = []
         for k in ("pan_limit", "tilt_limit"):
+            half = servo_half("pan" if k == "pan_limit" else "tilt")
             d = max(0.0, min(50.0, float(CFG[k]) / half * 50.0))
             out.append((50.0 - d, 50.0 + d))
         return out
@@ -11636,13 +11639,23 @@ class SimThermalSource:
         pass
 
 
+def servo_half(axis):
+    """half the turning range of a servo in degrees: 0 … 100 % = -half … +half (the pan servo may turn 270° or 360°)"""
+    try:
+        r = float(CFG.get("pan_servo_range") or CFG["servo_range"]) if axis == "pan" else float(CFG["servo_range"])
+    except (TypeError, ValueError):
+        r = 180.0
+    return max(10.0, min(360.0, r)) / 2.0
+
+
 def sim_state():
-    pl, tl = float(CFG["pan_limit"]), float(CFG["tilt_limit"])
+    hp, ht = servo_half("pan"), servo_half("tilt")
+    pl, tl = min(float(CFG["pan_limit"]), hp), min(float(CFG["tilt_limit"]), ht)
     L = STATE.get("lights") or {}
     rs = STATE.get("relay_states") or []
     return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "Motion Watch", "armed": is_armed(), "picture_mode": CFG["picture_mode"],
-            "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * pl, 2),
-                      "tilt_deg": round((CFG["tilt"] - 50) / 50 * tl, 2), "pan_limit": pl, "tilt_limit": tl,
+            "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * hp, 2),
+                      "tilt_deg": round((CFG["tilt"] - 50) / 50 * ht, 2), "pan_limit": pl, "tilt_limit": tl,
                       "moving": time.time() - SERVO_MOVE["t"] < 0.5},
             "lights": {"white": bool(L.get("white")), "ir": bool(L.get("ir")), "white_level": 1.0, "ir_level": 1.0},
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
@@ -14188,7 +14201,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_3.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_4.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -27866,7 +27879,8 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Battery", "batt_extra_w", "Other devices (W): camera, USB, servos", 0.0, 10.0, 0.5),
     ("Camping / protection", "auto_retry", "Automatic: look for known networks every (min, 0 = never)", 0, 60, 1),
     ("Microphone", "audio_gain", "Microphone gain (dB)", 0, 30, 1),
-    ("Camera / Servos", "pan_limit", "Pan limit: max. degrees from the middle", 10, 90, 5),
+    ("Camera / Servos", "pan_servo_range", "Pan servo: turning range (degrees: 180, 270 or 360)", 90, 360, 90),
+    ("Camera / Servos", "pan_limit", "Pan limit: max. degrees from the middle", 10, 180, 5),
     ("Camera / Servos", "tilt_limit", "Tilt limit: max. degrees from the middle", 10, 90, 5),
     ("Lights", "light_hold", "Light stays on after an alarm (s)", 5, 600, 5),
     ("Servo driver", "pca_pan_ch", "PCA9685 channel pan", 0, 15, 1),
@@ -28452,7 +28466,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.3")
+        self.root.title("Motion Watch 2.95.4")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -28742,7 +28756,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.3 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.4 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -35441,6 +35455,11 @@ for _k, _v in _HX37.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX52 = {'Repeater switched off again by itself: the Pi had no connection to a network any more': ('Repeater wieder von selbst ausgeschaltet: der Pi hatte keine Verbindung zu einem Netz mehr', "Répéteur désactivé automatiquement : le Pi n'avait plus de connexion réseau", 'Ripetitore spento da solo: il Pi non aveva più connessione a una rete', "Repetitur deactivà da sasez: il Pi n'aveva nagina colliaziun cun ina rait pli")}
 for _k, _v in _HX52.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX56 = {'Pan servo: turning range (degrees: 180, 270 or 360)': ('Schwenk-Servo: Drehbereich (Grad: 180, 270 oder 360)', 'Servo panoramique : plage de rotation (degrés : 180, 270 ou 360)', 'Servo panoramica: campo di rotazione (gradi: 180, 270 o 360)', 'Servo da sviar: champ da rotaziun (grads: 180, 270 u 360)')}
+for _k, _v in _HX56.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

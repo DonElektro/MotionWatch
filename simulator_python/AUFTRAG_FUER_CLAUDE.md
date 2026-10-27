@@ -112,6 +112,13 @@ Bitte schick ihn mit:
 Ohne das Feld fragt Motion Watch den Router nach dem Namen. Das klappt nicht in jedem Netz.
 Der 3D-Simulator macht das ab 3D-3.17.
 
+### 3.8 Schwenken bis ±180° (neu, Motion Watch 2.95.4)
+Der endgültige Schwenk-Servo dreht ±180°. Motion Watch hat dafür die Einstellung «Schwenk-Servo: Drehbereich» (180 / 270 / 360°).
+`pan_deg` in `POST /state` kann jetzt bis ±180 gehen, `pan_limit` ist die eingestellte Grenze (höchstens die Hälfte des Drehbereichs).
+In `engine.py` (`protocol_state`) wird `pan_deg` heute auf `SIM["pan_travel"] / 2` begrenzt.
+Bitte so ändern, dass bis ±180° gedreht wird (zum Beispiel `pan_travel` 360, oder die Grenze aus `pan_limit` nehmen).
+Achtung: Ein Servo dreht nicht «über die Rückseite». Von +179° nach −179° fährt er den langen Weg zurück.
+
 ## 4. So testest du mit Motion Watch
 
 1. Simulator starten: `python3 motion_sim.py --stream` (oder mit Fenster «An Motion Watch senden» einschalten).
