@@ -194,7 +194,7 @@ func _capture(i: int) -> void:
 
 # ---- what net.gd asks --------------------------------------------------------------------------------------------
 func beacon_name() -> String:
-	return "Motion Watch 3D-Simulator %s · Gerät 2" % main.VERSION
+	return "MW Sim · 3D %s · Gerät 2" % main.VERSION
 
 
 func host_name() -> String:

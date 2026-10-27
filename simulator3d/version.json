@@ -1,7 +1,7 @@
 {
- "version": "3D-3.27",
+ "version": "3D-3.28",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30647110,
- "sha256": "332cff003c86cfebb795e646549945ad103b50be340c1dae0deaf71d05b5616b",
- "notes": "Testlauf mit Optimierung, schwierige Bedingungen, Tagesablauf, Wolf/Marder/Eichhörnchen, echtes Wetter, Aufnahme/Wiedergabe, zweites Gerät, Handy als Fenster, Team gegen Motion Watch, Aufgaben, Wochen-Rangliste."
+ "size": 30748171,
+ "sha256": "21ec31b8e85051a3a57507feb574c016c6e66c8232aedcfaef1ff444c0b3dc98",
+ "notes": "Neuer Name «MW Sim · 3D» und eigenes Symbol (Radar-Auge mit 3D-Würfel)."
 }

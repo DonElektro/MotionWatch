@@ -1,4 +1,4 @@
-Motion Watch – 3D-Simulator 3D-3.27 (7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.28 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -445,3 +445,8 @@ NEU IN 3D-3.27
 - Handy als Fenster: in Motion Watch auf dem Handy 📱 drücken, dann das Handy drehen = im Simulator umschauen.
 - Spiel: neue Spielart «Team gegen Motion Watch» (die Wächter drehen an Motion Watch die Kamera und drücken
   «Erwischt!»), eine Aufgabe für jede Runde mit Bonus und eine Rangliste der Woche.
+
+NEU IN 3D-3.28
+- Neuer Name: «MW Sim · 3D» (die Simulatoren heissen jetzt MW Sim · Basis, MW Sim · 3D und MW Sim · Welt).
+- Eigenes Symbol im Fenster und in der Taskleiste: das Radar-Auge von Motion Watch mit dem 3D-Würfel.
+  (Das Symbol der .exe-Datei selbst bleibt vorerst das von Godot.)

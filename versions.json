@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 13:22",
+ "generated": "2026-10-27 14:08",
  "versions": [
   {
-   "version": "2.95.22",
-   "file": "webcam_bewegung_2_95_22.py",
+   "version": "2.95.23",
+   "file": "webcam_bewegung_2_95_23.py",
    "url": "",
-   "sha256": "dda1ae1bc6eeb125656435b584b7f1f302e7c0a57aef2063f69c3a5cec14dbb6",
-   "date": "2026-10-27 13:22",
-   "notes": "tab Simulator: «Test run and optimization» - the 3D simulator (3D-3.27) plays a fixed test (standard, short, difficult conditions, night), Motion Watch judges it (persons found, reaction time, false alarms by cause, score) and proposes better settings: take over one or all, undo, «take over and test again», or «optimize automatically» (keeps a change only if the next run is better); earlier runs with a bar chart. Game: «Team against Motion Watch» (floating «Caught!» button on the live page), a task for every round, ranking of the week. 📱 phone as a window (motion sensor).",
-   "sig": "acb01a2fa4aed57fa27104d4e0c14cc3edd692bd98e56da76a43cef95029f8df0fad35da4f8c766001086762690dabc98b941a62082bb7867dfba841e4722903"
+   "sha256": "56898d5e1ec7427fbf9292eaa38efd613f2a13051469f907604c9e2fa844b39e",
+   "date": "2026-10-27 14:08",
+   "notes": "new app icon (radar eye) with a choice of 7 (settings → Setup → App icon; also the old orange one); iPhone / iPad home screen: a hint how to renew the icon. The simulators are called MW Sim · Basis, MW Sim · 3D, MW Sim · Welt (Kevin), each with its own symbol. 3D simulator 3D-3.28.",
+   "sig": "9954942070c9126942a7f2f17e3f23ab0c9eb06e605d3474b488dc54e2413818b4d6b78f352af82cebbdb24e44d5c558868599a8b540edc36d7484135605c501"
   },
   {
    "version": "2.94.5",

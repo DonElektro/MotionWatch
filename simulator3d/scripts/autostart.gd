@@ -68,7 +68,7 @@ static func set_on(on: bool) -> String:
 	var f := FileAccess.open(p, FileAccess.WRITE)
 	if f == null:
 		return "kann %s nicht schreiben" % p
-	f.store_string("[Desktop Entry]\nType=Application\nName=Motion Watch 3D-Simulator\nExec=%s\nX-GNOME-Autostart-enabled=true\n" % command())
+	f.store_string("[Desktop Entry]\nType=Application\nName=MW Sim 3D\nExec=%s\nX-GNOME-Autostart-enabled=true\n" % command())
 	return ""
 
 
