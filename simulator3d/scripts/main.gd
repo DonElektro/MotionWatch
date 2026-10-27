@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.33"
+const VERSION := "3D-3.34"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2077,7 +2077,7 @@ const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort
 		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
 		"game_board_reset": ["Spiel", "Extras"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"],
-		"quality": ["System", "Grafik"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
+		"quality": ["System", "Grafik"], "map_on": ["System", "Ansicht"], "live_on": ["System", "Ansicht"], "live_cam": ["System", "Ansicht"], "live_size": ["System", "Ansicht"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
@@ -2252,6 +2252,12 @@ func _register_controls() -> void:
 						 ["ultra", "ultra (für starke Grafikkarten; mit Vulkan noch mehr Effekte)"]]})
 	add_control("toggle", "eco_idle", "Strom sparen: nur rechnen, wenn das Fenster offen ist oder Motion Watch verbunden ist", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
 	add_control("toggle", "meadow", "Gras und Blumen auf der Wiese", func(): return meadow_on, func(v): set_meadow(v), "Grafik", ex)
+	add_control("toggle", "map_on", "Übersichtskarte oben links (M)", func(): return map_on, func(v): set_map(v), "Grafik")
+	add_control("toggle", "live_on", "Livebild unter der Karte (L)", func(): return live_on, func(v): set_live(v), "Grafik")
+	add_control("select", "live_cam", "Livebild: welche Kamera", func(): return str(live_cam), func(v): set_live(live_on, int(v)), "Grafik",
+			{"options": [["0", "Kamera 1 (Kopf)"], ["1", "Kamera 2"], ["2", "Wärmebild"]]})
+	add_control("slider", "live_size", "Livebild: Breite", func(): return live_size, func(v): set_live(live_on, -1, float(v)), "Grafik",
+			{"min": 160, "max": 520, "step": 20, "unit": "px"})
 
 
 const VISITOR_LIST := [["person", "Person"], ["child", "Kind"], ["jogger", "Jogger"], ["fox", "Fuchs"], ["deer", "Reh"], ["boar", "Wildschwein"],
@@ -3115,7 +3121,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
+		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
 
@@ -3389,6 +3395,11 @@ var pad_drive := Vector2.ZERO         # (forward, turn right) from rover_pad, -1
 var pad_t := -10.0
 var pad_on := false                   # rover_pad is used right now
 var minimap                           # minimap.gd: overview map in the corner (from 3D-3.12)
+var liveview                          # liveview.gd: live picture of a camera below the map (3D-3.34)
+var live_on := false
+var live_cam := 0
+var live_size := 260.0
+var live_btn: Button
 var map_on := true
 var map_size := 220.0
 var map_span := 80.0
@@ -3485,6 +3496,8 @@ func _unhandled_input(ev: InputEvent) -> void:
 				_sync_ui()
 			KEY_M:
 				set_map(not map_on)
+			KEY_L:
+				set_live(not live_on)
 			KEY_F:
 				if selected != null:
 					follow = not follow
@@ -3628,6 +3641,22 @@ func set_view(m: int) -> void:
 		view_btns[k].set_pressed_no_signal(k == m)
 
 
+func set_live(on: bool, which := -1, w := -1.0) -> void:
+	live_on = on
+	if which >= 0:
+		live_cam = which
+	if w > 0.0:
+		live_size = w
+	_settings_dirty = true
+	if liveview != null:
+		liveview.visible = on
+		liveview.cam = live_cam
+		liveview.width_px = live_size
+		liveview.apply()
+	if live_btn != null:
+		live_btn.set_pressed_no_signal(on)
+
+
 func set_map(on: bool) -> void:
 	map_on = on
 	_settings_dirty = true
@@ -3697,6 +3726,14 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	map_btn.button_pressed = map_on
 	map_btn.toggled.connect(func(on): set_map(on))
 	view_bar.add_child(map_btn)
+	live_btn = Button.new()
+	live_btn.text = "Livebild"
+	live_btn.tooltip_text = "Livebild einer Kamera unter der Karte ein / aus (L)"
+	live_btn.toggle_mode = true
+	live_btn.focus_mode = Control.FOCUS_NONE
+	live_btn.button_pressed = live_on
+	live_btn.toggled.connect(func(on): set_live(on))
+	view_bar.add_child(live_btn)
 	for k in [["head", "Zum Kopf", "Zurück zu Motion Watch"], ["top", "Von oben", "Von oben auf den Platz schauen"]]:
 		var b := Button.new()
 		b.text = k[1]
@@ -3769,6 +3806,12 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	minimap.span = map_span
 	minimap.visible = map_on
 	layer.add_child(minimap)
+	liveview = preload("res://scripts/liveview.gd").new()
+	liveview.main = self
+	liveview.cam = live_cam
+	liveview.width_px = live_size
+	liveview.visible = live_on
+	layer.add_child(liveview)
 	rover_pad = preload("res://scripts/rover_pad.gd").new()
 	rover_pad.main = self
 	layer.add_child(rover_pad)

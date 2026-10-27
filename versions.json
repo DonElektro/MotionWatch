@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 17:06",
+ "generated": "2026-10-27 17:08",
  "versions": [
   {
-   "version": "2.95.37",
-   "file": "webcam_bewegung_2_95_37.py",
+   "version": "2.95.38",
+   "file": "webcam_bewegung_2_95_38.py",
    "url": "",
-   "sha256": "e494402e820bdb5166a36cd1ba29c6d8689c2b9d1092c8243e65f8a5d1975a2c",
-   "date": "2026-10-27 17:06",
-   "notes": "3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic infrared night picture - persons near the camera are now seen at night).",
-   "sig": "f57d39d4a40569e070b67ca955f8461d9ce8b081034969230240453ba4b020a64e00f98ff7d36701004465ea7c047829c7323ba42d1fd305e63b42a9c6ffef03"
+   "sha256": "6e2419291dd77f2ea4218e60198c25c1d8092dd39b9c7a805eee64396b849886",
+   "date": "2026-10-27 17:08",
+   "notes": "3D simulator 3D-3.34 (live picture of a camera below the overview map, settings under System → Ansicht).",
+   "sig": "b6d2248dce875dd4630a20cee9f99b0d84613a3ef37712668487635ba4b4d195f18527ed90a5ad078ffab581ae93b83def95d0bd02d273e2893ae126b697450d"
   },
   {
    "version": "2.94.5",

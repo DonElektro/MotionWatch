@@ -1,7 +1,7 @@
 {
- "version": "3D-3.33",
+ "version": "3D-3.34",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30890565,
- "sha256": "2e88caf2b417cbe5e842c7879caa9a5acfd5fcca272e041ed3628723b5f1ea11",
- "notes": "Neuer Himmel (Wolken, Sterne, Mond), Grafikstufen, Gewitter, realistisches Infrarot-Nachtbild."
+ "size": 30894211,
+ "sha256": "4043af2f2eea2bf843356632d7040563ce531bd64f410ba0452a775ec087ebad",
+ "notes": "Livebild unter der Karte (Kamera 1, 2 oder Wärmebild), Einstellungen unter System → Ansicht."
 }

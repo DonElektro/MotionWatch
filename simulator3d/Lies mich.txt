@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.33 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.34 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -475,3 +475,8 @@ NEU IN 3D-3.33
 - Gewitter mit Blitzen (Wetter → Mehr Wetter), Regentropfen spritzen am Boden.
 - Infrarot-Nachtbild wie bei einer echten Nachtsicht-Kamera: nahe Personen gut sichtbar (vorher fast schwarz),
   weniger und gleichmässigeres Bildrauschen (vorher mit Streifen).
+
+NEU IN 3D-3.34
+- Livebild unter der Karte: Knopf «Livebild» unten (oder Taste L) zeigt Kamera 1, Kamera 2 oder das Wärmebild
+  oben links unter der Übersichtskarte. Klick darauf = durch diese Kamera schauen.
+- Einstellungen dazu unter System → Ansicht: Übersichtskarte ein/aus, Livebild ein/aus, welche Kamera, Breite.
