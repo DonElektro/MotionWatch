@@ -1,7 +1,7 @@
 {
- "version": "3D-3.35",
+ "version": "3D-3.36",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30895112,
- "sha256": "217bec6e0a39f9054bd2e1ece7ac75eb443a58ed5bdbfc159ff592a6ee2c0ba9",
- "notes": "Mausrad über der Bedienfläche verändert die Ansicht nicht mehr"
+ "size": 30894906,
+ "sha256": "a46785cbd6efa038f16cd4849a6be9441c9f2a5e406afc5e616848f5d1bdfa8d",
+ "notes": "Neuer Name: 3D-Simulator Live"
 }

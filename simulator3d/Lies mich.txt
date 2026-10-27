@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.35 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.36 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -483,3 +483,6 @@ NEU IN 3D-3.34
 
 NEU IN 3D-3.35
 3D-3.35: Mausrad und Klicks über der Bedienfläche (rechts), der Karte, dem Livebild und dem Steuerstick verändern die 3D-Ansicht nicht mehr.
+
+NEU IN 3D-3.36
+3D-3.36: Neuer Name «3D-Simulator Live» oben in der Bedienfläche und im Fenstertitel.

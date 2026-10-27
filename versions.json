@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 17:14",
+ "generated": "2026-10-27 17:16",
  "versions": [
   {
-   "version": "2.95.39",
-   "file": "webcam_bewegung_2_95_39.py",
+   "version": "2.95.40",
+   "file": "webcam_bewegung_2_95_40.py",
    "url": "",
-   "sha256": "fe13ebb50de2afd2f763fab540d1b60f8290a224639c5ea735dbe46e86313fe8",
-   "date": "2026-10-27 17:14",
-   "notes": "3D simulator 3D-3.35 (mouse wheel and clicks over the control panel, map, live picture and stick no longer move the 3D view).",
-   "sig": "458d727ba7c76c47b7ee1910555205433351dba0007f5dcb9608f4a65a856f27c257401aedca921aa5e709fa06a899423d0222c7eee67905f268ba069cab3a05"
+   "sha256": "cefbaadb3ad56d471c758fd8d7cc8fc7613e17dc066d411a393090b00d29a663",
+   "date": "2026-10-27 17:16",
+   "notes": "3D simulator 3D-3.36 (new name «3D-Simulator Live» in the panel and the window title).",
+   "sig": "a461b502c486be70c1324fbdeed851af6170289bb2176b0a63ad65e49411d5ff7f3be825296539d4ca698ac555d7cabe87634f2e7b6cd7a86e97ddecafcf0206"
   },
   {
    "version": "2.94.5",

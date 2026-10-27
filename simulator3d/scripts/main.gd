@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.35"
+const VERSION := "3D-3.36"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -266,7 +266,7 @@ func _ready() -> void:
 	in_vm = _in_vm()
 	if in_vm and not "--quality" in args:
 		quality = "simple"                      # virtual machine: no real graphics card - the light graphics by default
-	DisplayServer.window_set_title("MW Sim · 3D %s" % VERSION)
+	DisplayServer.window_set_title("3D-Simulator Live · %s" % VERSION)
 	var ic := load("res://icon_sim3d.png")              # the window icon (3D-3.28): the radar eye with the 3D cube
 	if ic is Texture2D:
 		DisplayServer.set_icon((ic as Texture2D).get_image())
@@ -358,7 +358,7 @@ func _ready() -> void:
 			if i + 1 < args.size() and args[i + 1].begins_with("http"):
 				phone.addr.text = args[i + 1]
 			get_tree().create_timer(2.0).timeout.connect(func(): phone.open())
-	DisplayServer.window_set_title("MW Sim · 3D %s (Port %d)" % [VERSION, port])
+	DisplayServer.window_set_title("3D-Simulator Live · %s (Port %d)" % [VERSION, port])
 	_fps0 = Engine.max_fps
 	mini_box = preload("res://scripts/mini.gd").new()      # minimize = small box, the simulator keeps drawing
 	mini_box.main = self
@@ -2655,11 +2655,11 @@ func _build_ui() -> void:
 	logo.add_child(ll)
 	hdr.add_child(logo)
 	var title := Label.new()
-	title.text = "Motion Watch"
+	title.text = "3D-Simulator Live"
 	title.add_theme_font_override("font", UI.heading_font())
 	title.add_theme_font_size_override("font_size", 17)
 	hdr.add_child(title)
-	var ver := UI.small("3D-Simulator %s" % VERSION)
+	var ver := UI.small(VERSION)
 	ver.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
 	hdr.add_child(ver)
