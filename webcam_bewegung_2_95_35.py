@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_34.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_35.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -638,6 +638,12 @@ Features
     during a recording works, drive change never moves the running recording, unplugged drive under /media or /mnt is not
     used, loop pieces never overwritten, PDF report not while writing; import cannot move the recordings folder; diary keeps
     starred entries; operator mode also locks users, trusted devices and shortcuts.
+  * 2.95.35: clock jumps (Pi without clock battery) no longer break timers and cool-downs; health list with detection loop,
+    recording, continuous recording, background tasks and I2C conflicts - push message when something important fails
+    while armed; alarm outbox: alarms that could not be sent are kept and sent later (also after a restart), «+N more
+    detections»; live pictures limited (16, 6 per device), security headers, upload limit; browser games from their own
+    port (web port + 2, only in the own Wi-Fi); one central list of what viewers may read; «Test all channels»; push
+    address and I2C addresses checked when saved.
 
 Install:  sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils
           pip install opencv-python numpy pillow flask psutil
@@ -646,10 +652,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_34.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_35.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_34.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_34.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_35.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_35.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -666,7 +672,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.34"
+APP_VERSION = "2.95.35"
 
 
 def default_data_dir():
@@ -1595,7 +1601,43 @@ def text_choice_pairs(key):
 
 
 def _http_ok(u):
-    return isinstance(u, str) and len(u) <= 500 and re.match(r"^https?://[^\s]+$", u, re.I) is not None
+    if not (isinstance(u, str) and len(u) <= 500 and re.match(r"^https?://[^\s]+$", u, re.I) is not None):
+        return False
+    try:                                                 # 2.95.35: a real server name (ntfy..sh stopped the internet check)
+        from urllib.parse import urlparse
+        h = urlparse(u).hostname or ""
+        if not h or ".." in h or h.startswith((".", "-")) or h.endswith("-"):
+            return False
+        h.encode("idna")
+        urlparse(u).port
+    except (ValueError, UnicodeError):
+        return False
+    return True
+
+
+I2C_KEYS = {"pca_address": "servo board (PCA9685)", "solar_addr": "solar meter (INA219)", "mover_addr": "motor driver (mover)",
+            "ups_addr": "UPS HAT"}
+
+
+def _i2c_active(key, cfg=None):
+    c = cfg or CFG
+    pca_on = c.get("servo_driver") == "pca9685" or (c.get("servo_driver") == "auto" and str(STATE.get("servo_backend", "")).startswith("pca9685"))
+    return {"pca_address": pca_on, "solar_addr": bool(c.get("solar_on")),
+            "mover_addr": c.get("mover_mode") != "off", "ups_addr": bool(c.get("ups_on"))}.get(key, False)
+
+
+def i2c_conflicts(cfg=None):
+    """2.95.35: two devices that are switched on with the same I2C address read each other's registers (wrong values)"""
+    c = cfg or CFG; seen = {}; out = []
+    for k in I2C_KEYS:
+        if not _i2c_active(k, c):
+            continue
+        a = str(c.get(k, "")).lower()
+        if a in seen:
+            out.append((seen[a], k, a))
+        else:
+            seen[a] = k
+    return out
 
 
 def text_value(key):
@@ -1611,6 +1653,11 @@ def set_text(key, value):
     if kind == "enum":
         if value not in [c for c, _l in text_choice_pairs(key)]:
             return False, "invalid value"
+        if key in I2C_KEYS or key in ("servo_driver", "mover_mode"):
+            cf = i2c_conflicts(dict(CFG, **{key: value}))
+            if cf:
+                a_, b_, ad = cf[0]
+                return False, trf("I2C address {a} is already used by the {x} - choose another address", a=ad, x=tr(I2C_KEYS[a_ if a_ != key else b_]))
         CFG[key] = value
         if key == "net_mode":
             NETAUTO["paused"] = False
@@ -2140,11 +2187,22 @@ def users_action(d, who="admin"):
     return True, ""
 
 
+# 2.95.35: ONE list of what users without admin rights may read. Everything else (also every new function) is only for
+# the administrator. Changing things (POST): VIEW_POST for everybody, OPERATE_POST (+ the keys below) for «operate».
+VIEW_GET_PAGES = {"/", "/cams", "/recordings", "/diary", "/help", "/quick", "/preview", "/zones"}
+VIEW_GET = ("/api/state", "/api/alerts", "/api/appearance", "/api/version", "/api/health", "/api/cams", "/api/frame.jpg",
+            "/video_feed", "/cam_feed/", "/snapshot.jpg", "/api/audio/live", "/api/recordings", "/api/places", "/rec/file/",
+            "/rec/play/", "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse",
+            "/timelapse/", "/api/species", "/api/loop", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/report",
+            "/api/battery", "/api/sensors", "/api/qs", "/api/schedule", "/api/schema", "/api/triggers", "/api/fa", "/api/appicon",
+            "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/sim/view.jpg", "/sim/view.mjpg")
+
+
 def role_allows(role, path, method, d):
     if role == "admin":
         return True
     if method in ("GET", "HEAD"):
-        return not path.startswith(ADMIN_GET)
+        return (path in VIEW_GET_PAGES or path.startswith(VIEW_GET)) and not path.startswith(ADMIN_GET)
     if path == "/api/webpush":
         return d.get("action") in ("subscribe", "unsubscribe", "key", None)
     if path in VIEW_POST:
@@ -2970,6 +3028,7 @@ class TamperGuard:
         fd = None; tried = 0.0
         while True:
             time.sleep(0.5)
+            beat("tamper", 120, "Motion sensor")
             if not CFG["tamper_motion"]:
                 continue
             if fd is None:
@@ -3495,6 +3554,86 @@ def _url_host(u):
         return "?"
 
 
+# ---- outbox (2.95.35): alarms that could not be sent are kept on the card and sent later (also after a restart) ----
+OUTBOX = {"n": 0, "lock": threading.Lock()}
+
+
+def _outbox_dir():
+    return os.path.join(DATA_DIR, "outbox")
+
+
+def outbox_add(p, jpg, fname):
+    try:
+        d = _outbox_dir(); os.makedirs(d, exist_ok=True)
+        files = sorted(f for f in os.listdir(d) if f.endswith(".json"))
+        for f in files[:max(0, len(files) - 49)]:        # at most 50 waiting
+            for e in (".json", ".jpg"):
+                try:
+                    os.remove(os.path.join(d, f[:-5] + e))
+                except OSError:
+                    pass
+        k = f"{time.time():.3f}"
+        meta = {"p": {x: v for x, v in p.items() if isinstance(v, (str, int, float, bool, type(None)))}, "fname": fname, "t": time.time(), "tries": 0}
+        if jpg:
+            with open(os.path.join(d, k + ".jpg"), "wb") as f:
+                f.write(jpg)
+        with open(os.path.join(d, k + ".json"), "w") as f:
+            json.dump(meta, f)
+        log_event("web", "Alarm message kept in the outbox - it is sent as soon as the connection works")
+    except OSError as e:
+        log_event("web", f"Outbox: {e}"[:160])
+
+
+def outbox_count():
+    try:
+        return sum(1 for f in os.listdir(_outbox_dir()) if f.endswith(".json"))
+    except OSError:
+        return 0
+
+
+def outbox_loop():
+    """every minute (at once when the internet is back): send what is waiting, oldest first; given up after 24 h"""
+    time.sleep(30)
+    while True:
+        try:
+            w = WATCH_REF.get("w"); d = _outbox_dir()
+            files = sorted(f for f in os.listdir(d) if f.endswith(".json")) if os.path.isdir(d) else []
+            OUTBOX["n"] = len(files)
+            if files and w is not None and Notifier.main_configured() and STATE.get("net", {}).get("online") is not False:
+                for f in files:
+                    pj = os.path.join(d, f); pi = pj[:-5] + ".jpg"
+                    try:
+                        with open(pj) as fh:
+                            m = json.load(fh)
+                    except (OSError, ValueError):
+                        m = None
+                    if not m or time.time() - float(m.get("t", 0)) > 86400:
+                        for x in (pj, pi):
+                            try:
+                                os.remove(x)
+                            except OSError:
+                                pass
+                        continue
+                    jpg = None
+                    if os.path.isfile(pi):
+                        with open(pi, "rb") as fh:
+                            jpg = fh.read()
+                    try:
+                        code, where = w.notifier._send_main(dict(m["p"], late=True), jpg, m.get("fname") or "alarm.jpg")
+                        log_event("web", f"Alarm from the outbox sent to {where} (HTTP {code})")
+                        for x in (pj, pi):
+                            try:
+                                os.remove(x)
+                            except OSError:
+                                pass
+                    except Exception:
+                        break                            # still not possible - next round
+            beat("outbox", 600, "Message outbox")
+        except Exception as e:
+            print(f"outbox: {e}")
+        time.sleep(60)
+
+
 class Notifier:
     """Alarm message when a person is detected (with cooldown). Three kinds:
          webhook   JSON POST to a URL (Home Assistant, IFTTT, ...)
@@ -3523,8 +3662,11 @@ class Notifier:
             STATE["notify_status"] = "paused"; return
         now = time.time()
         if now - self.last < CFG["notify_cooldown"]:
+            if count:
+                self.more = getattr(self, "more", 0) + 1      # 2.95.35: counted, told with the next message
             return
         self.last = now
+        more, self.more = getattr(self, "more", 0), 0
         jpg, fname = None, "snapshot.jpg"
         try:
             if snapshot_path and os.path.isfile(snapshot_path) and os.path.getsize(snapshot_path) < 8 * 1024 * 1024:
@@ -3539,7 +3681,7 @@ class Notifier:
         pub = CFG["public_url"].strip().rstrip("/")
         payload = {"event": "person" if count else "test", "persons": int(count), "time": datetime.now().isoformat(timespec="seconds"),
                    "snapshot": snapshot_path, "rain": bool(STATE["rain_mode"]), "wind": STATE["wind_level"],
-                   "source": STATE["source_label"], "link": pub + "/recordings" if pub else ""}
+                   "source": STATE["source_label"], "link": pub + "/recordings" if pub else "", "more": more}
         threading.Thread(target=self._dispatch, args=(payload, jpg, fname), daemon=True).start()
 
     def test(self, frame):
@@ -3641,6 +3783,11 @@ class Notifier:
 
     @staticmethod
     def _text(p):
+        return Notifier._text0(p) + (" " + trf("(+{n} more detections since the last message)", n=p["more"]) if p.get("more") else "") \
+            + (" · " + trf("late - from {t} (the message could not be sent then)", t=str(p.get("time", ""))[11:16]) if p.get("late") else "")
+
+    @staticmethod
+    def _text0(p):
         ev = Notifier._event(p)
         if ev in ("info", "tamper"):
             return p.get("text", "")
@@ -3670,18 +3817,7 @@ class Notifier:
         tries = 3 if alarm else 1                       # 2.95.33: an alarm is tried 3 times (now, after 5 s, after 15 s)
         for k_ in range(tries):
             try:
-                if kind == "telegram":
-                    code = self._telegram(p, jpg, fname); where = "Telegram"
-                elif kind == "ntfy":
-                    code = self._ntfy(p, jpg, fname); where = "ntfy " + _url_host(CFG["notify_url"])
-                else:
-                    url = CFG["notify_url"].strip()
-                    body_ = dict(p, title=self._title(p), text=self._text(p))
-                    req = urllib.request.Request(url, data=json.dumps(body_).encode(),
-                                                 headers={"Content-Type": "application/json", "Title": _hdr(self._title(p))})
-                    with urllib.request.urlopen(req, timeout=8) as r:
-                        code = r.status
-                    where = _url_host(url)
+                code, where = self._send_main(p, jpg, fname)
                 STATE["notify_status"] = f"sent {datetime.now().strftime('%H:%M:%S')} (HTTP {code})"
                 log_event("web", f"Notification sent to {where} (HTTP {code})" + (f" - attempt {k_ + 1}" if k_ else ""))
                 return
@@ -3700,6 +3836,22 @@ class Notifier:
         if alarm and CFG["sms_on"] and CFG["sms_only_offline"] and sms_numbers() and STATE.get("net", {}).get("online") is not False:
             log_event("web", "Push message could not be sent - SMS instead")
             sms_send(self._title(p) + ": " + self._text(p))
+        if alarm and not p.get("late"):
+            outbox_add(p, jpg, fname)                    # 2.95.35: kept on the card and sent as soon as it works
+
+    def _send_main(self, p, jpg, fname):
+        """the main channel (ntfy / Telegram / webhook) once; raises on failure; returns (HTTP code, where)"""
+        kind = CFG["notify_type"]
+        if kind == "telegram":
+            return self._telegram(p, jpg, fname), "Telegram"
+        if kind == "ntfy":
+            return self._ntfy(p, jpg, fname), "ntfy " + _url_host(CFG["notify_url"])
+        url = CFG["notify_url"].strip()
+        body_ = dict(p, title=self._title(p), text=self._text(p))
+        req = urllib.request.Request(url, data=json.dumps(body_).encode(),
+                                     headers={"Content-Type": "application/json", "Title": _hdr(self._title(p))})
+        with urllib.request.urlopen(req, timeout=8) as r:
+            return r.status, _url_host(url)
 
     def _pushover(self, p, jpg, fname):
         ev = self._event(p)
@@ -3723,18 +3875,63 @@ class Notifier:
                                          headers={"Content-Type": "multipart/form-data; boundary=" + b, "User-Agent": "MotionWatch"})
             with urllib.request.urlopen(req, timeout=15) as r:
                 log_event("web", f"Pushover sent (priority {prio}, HTTP {r.status})")
+                return True, f"HTTP {r.status}"
         except urllib.error.HTTPError as e:
             try:
                 why = ", ".join(json.loads(e.read(4000)).get("errors") or [])[:150]
             except Exception:
                 why = ""
             log_event("web", f"Pushover failed: HTTP {e.code} {why}"[:200])
+            return False, f"HTTP {e.code} {why}"[:150]
         except Exception as e:
             msg = str(e)
             for sec_ in (CFG["pushover_token"], CFG["pushover_user"]):
                 if sec_:
                     msg = msg.replace(sec_, "***")
             log_event("web", f"Pushover failed: {msg}"[:200])
+            return False, msg[:150]
+
+    def test_all(self, frame=None):
+        """2.95.35: every channel on its own, with its result (✓ / ✗ and why) - for «Test all channels»"""
+        jpg = None
+        if frame is not None:
+            ok_, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80]); jpg = buf.tobytes() if ok_ else None
+        pub = CFG["public_url"].strip().rstrip("/")
+        p = {"event": "test", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"), "snapshot": None, "rain": False, "wind": "",
+             "source": STATE["source_label"], "link": pub + "/recordings" if pub else ""}
+        res = []
+        def run(name, fn):
+            try:
+                ok, msg = fn()
+            except Exception as e:
+                ok, msg = False, str(e)
+            for sec_ in (CFG["telegram_token"], CFG["pushover_token"], CFG["pushover_user"], CFG.get("email_password", ""), CFG["notify_url"].strip()):
+                if sec_ and isinstance(msg, str):
+                    msg = msg.replace(sec_, "***")
+            res.append({"ch": name, "ok": bool(ok), "msg": str(msg)[:160]})
+        if self.main_configured():
+            def main_():
+                code, where = self._send_main(p, jpg, "test.jpg"); return True, f"{where} · HTTP {code}"
+            run({"telegram": "Telegram", "ntfy": "ntfy"}.get(CFG["notify_type"], "Webhook"), main_)
+        if pushover_ready():
+            run("Pushover", lambda: self._pushover(p, jpg, "test.jpg"))
+        if email_ready():
+            run("E-Mail", lambda: email_send(self._title(p), self._text(p), jpg, "test.jpg"))
+        if CFG["sms_on"] and sms_numbers():
+            run("SMS", lambda: sms_send(self._title(p) + ": " + self._text(p), force=True))
+        if CFG["webpush_on"] and webpush_subs():
+            def wp_():
+                n = webpush_all(self._title(p), self._text(p), "/", tag="mw-test", urgent=True); return n > 0, f"{n} device(s)"
+            run("Web-Push", wp_)
+        if CFG.get("mqtt_on"):
+            def mq_():
+                c_ = MQTT.get("client")
+                if c_ is None:
+                    return False, MQTT.get("status") or "not connected"
+                c_.publish(f"motionwatch/{mqtt_id()}/test" if "mqtt_id" in globals() else "motionwatch/test", "test"); return True, MQTT.get("status") or "connected"
+            run("MQTT", mq_)
+        log_event("web", "Test of all channels: " + ", ".join(f"{r['ch']} {'ok' if r['ok'] else 'FAILED'}" for r in res))
+        return res
 
     def _webpush(self, p):
         ev = self._event(p)
@@ -5430,6 +5627,7 @@ class NetMonitor:
                 log_event("sys", "Internet reachable again" if res["online"] else "Internet not reachable (push messages cannot be sent)")
             res["t"] = time.time()
             STATE["net"] = res
+            beat("online", 120, "Internet check")
             self.recheck = False
             for _ in range(30 if res["online"] else 10):     # every 30 s (10 s while offline), at once after a network change
                 if self.recheck:
@@ -6484,7 +6682,10 @@ def health_check(lang=None):
     if not Notifier.configured():
         add("push", "📲", "Push messages", "bad", T("not set up"), "Notifications: set up ntfy, Telegram or web push and send a test message.")
     elif ns.startswith("error"):
-        add("push", "📲", "Push messages", "bad", ns[:120], "Send a test message; check the address / token of the push service.")
+        add("push", "📲", "Push messages", "bad", ns[:120] + (" · " + trf("{n} alarm(s) waiting in the outbox", L, n=outbox_count()) if outbox_count() else ""),
+            "Send a test message; check the address / token of the push service.")
+    elif outbox_count():
+        add("push", "📲", "Push messages", "warn", trf("{n} alarm(s) waiting in the outbox", L, n=outbox_count()), "They are sent as soon as the connection works.")
     else:
         add("push", "📲", "Push messages", "ok", tl_status_text(ns) if ns else T("ready"))
     dk = STATE.get("disk") or {}
@@ -6562,6 +6763,31 @@ def health_check(lang=None):
                "cooling (heat sink / fan), then switch them on again one by one." if RUNGUARD["safe"] else
                "Power cut, power supply too weak (Pi 5: 5 V / 5 A) or too hot. If it happens again, switch the AI off for a test.")
         add("lastrun", "🔌", "Last run", "bad" if RUNGUARD["safe"] else "warn", " · ".join(det), tip)
+    for a_, b_, ad in i2c_conflicts():
+        add("i2c_" + ad, "🔌", "I2C address conflict", "bad", f"{ad}: {T(I2C_KEYS[a_])} + {T(I2C_KEYS[b_])}", "Settings → hardware: give one of them another address.")
+    hb = time.time() - HEART["t"]                          # 2.95.35: the detection itself
+    if toolmode_on():
+        add("loop", "🫀", "Detection loop", "off", T("paused (tool mode)"))
+    elif hb > 20:
+        add("loop", "🫀", "Detection loop", "bad", trf("no sign of life for {s} s", L, s=int(hb)), "Restart Motion Watch; look at the log for «Camera loop error».")
+    else:
+        add("loop", "🫀", "Detection loop", "ok", T("running"))
+    if REC_HEALTH["fail_t"] and time.time() - REC_HEALTH["fail_t"] < 900:
+        add("rec", "🎬", "Recording", "bad" if REC_HEALTH["fail_n"] >= 3 else "warn", T(REC_HEALTH["msg"] or "recording failed"),
+            "Check the drive (full? unplugged?) under Settings → Recording.")
+    elif CFG["record"]:
+        add("rec", "🎬", "Recording", "ok", STATE.get("recording_enc") or T("ready"))
+    if CFG.get("loop_on"):
+        lb = BEATS.get("looprec")
+        if lb and time.monotonic() - lb[0] > lb[1]:
+            add("looprec", "🔁", "Continuous recording", "bad", T("stopped"), "Check the drive; look at the log.")
+        else:
+            add("looprec", "🔁", "Continuous recording", "ok", T("running"))
+    dead = [b[2] for b in BEATS.values() if time.monotonic() - b[0] > b[1]]
+    if dead:
+        add("bg", "⚙", "Background tasks", "bad", ", ".join(T(x) for x in dead)[:150], "Restart Motion Watch; send the diagnosis package if it happens again.")
+    elif BEATS:
+        add("bg", "⚙", "Background tasks", "ok", trf("{n} running", L, n=len(BEATS)))
     if STATE.get("update_new"):
         add("upd", "⬆", "Updates", "warn", T("new version available") + f": {STATE['update_new']}", "Settings → Updates.")
     out.sort(key=lambda x: HEALTH_ORDER.index(x["level"]))
@@ -7068,6 +7294,104 @@ def autostart_args():
 
 
 HEART = {"t": time.time()}           # the camera loop is alive (systemd watchdog)
+BEATS = {}                            # 2.95.35: name -> [last beat (monotonic), max. age s, label] of background tasks
+REC_HEALTH = {"fail_t": 0.0, "fail_n": 0, "msg": ""}   # encoder trouble lately (for the health list)
+
+
+def beat(name, max_age=120.0, label=""):
+    """a background task says «I am alive» - the health list and the guard watch report it when it stops"""
+    b = BEATS.get(name)
+    if b is None:
+        BEATS[name] = [time.monotonic(), float(max_age), label or name]
+    else:
+        b[0] = time.monotonic(); b[1] = float(max_age)
+
+
+def _shift_times(obj, d, ref, depth=0):
+    """after a jump of the system clock: move time stamps that mean «x seconds ago / in x seconds» along with it,
+    so that cool-downs, holds and timers keep their length (2.95.35)"""
+    near = lambda v: isinstance(v, float) and abs(v - ref) < 40 * 86400
+    if isinstance(obj, dict):
+        for k, v in list(obj.items()):
+            if near(v):
+                obj[k] = v + d
+        return
+    try:
+        items = list(vars(obj).items())
+    except TypeError:
+        return
+    for k, v in items:
+        if isinstance(v, bool):
+            continue
+        if near(v):
+            setattr(obj, k, v + d)
+        elif isinstance(v, deque) and v and isinstance(v[0], tuple) and v[0] and near(v[0][0]):
+            setattr(obj, k, deque(((t[0] + d,) + tuple(t[1:]) for t in list(v)), maxlen=v.maxlen))
+        elif depth == 0 and isinstance(v, list) and v and hasattr(v[0], "__dict__"):
+            for o in list(v):
+                _shift_times(o, d, ref, 1)
+        elif depth == 0 and isinstance(v, dict) and v and all(isinstance(x, (int, float, str, type(None))) for x in v.values()):
+            _shift_times(v, d, ref, 1)
+
+
+def clock_guard_loop():
+    """The Pi has no clock battery: the time is set later from the internet or the phone and jumps (hours, days).
+    Timers measured with the wall clock would then fire at once or never - they are moved by the jump."""
+    w0, m0 = time.time(), time.monotonic()
+    while True:
+        time.sleep(1.0)
+        try:
+            w, m = time.time(), time.monotonic()
+            d = (w - w0) - (m - m0)
+            if abs(d) > 5.0:
+                ref = w0 + (m - m0)
+                wa = WATCH_REF.get("w")
+                objs = [ARM, LIGHTS, TEMPA, TOOLMODE, HEART]
+                if wa is not None:
+                    objs += [wa] + [getattr(wa, a_, None) for a_ in ("notifier", "ai", "patrol", "relays", "zwatch", "tracker", "tuner", "weather")]
+                if "DETER" in globals():
+                    objs.append(DETER)
+                if PARTY.get("until"):
+                    PARTY["until"] += d
+                for o in objs:
+                    if o is not None:
+                        try:
+                            _shift_times(o, d, ref)
+                        except Exception:
+                            pass
+                log_event("sys", f"System clock jumped {d:+.0f} s - running timers adjusted")
+            w0, m0 = w, m
+        except Exception:
+            w0, m0 = time.time(), time.monotonic()
+
+
+GUARD_WATCH = {"bad": {}, "last_push": {}}
+_GUARD_IDS = ("loop", "cam", "rec", "looprec", "bg", "disk", "push", "temp", "power", "batt", "store")
+
+
+def guard_watch_loop():
+    """every 30 s: something important failed while armed -> one push message (again after 6 h at the earliest);
+    fixed again -> a short note"""
+    time.sleep(90)
+    while True:
+        try:
+            h = health_check()
+            now = time.time(); w = WATCH_REF.get("w")
+            bad = {x["id"]: x for x in h["items"] if x["level"] == "bad" and x["id"] in _GUARD_IDS}
+            for k, x in bad.items():
+                if k not in GUARD_WATCH["bad"]:
+                    GUARD_WATCH["bad"][k] = now
+                    log_event("sys", f"Health: {x['title']} - {x['text']}"[:200])
+                if is_armed() and now - GUARD_WATCH["bad"][k] > 60 and now - GUARD_WATCH["last_push"].get(k, 0) > 6 * 3600 and w is not None:
+                    GUARD_WATCH["last_push"][k] = now
+                    w.notifier.alert("{name}: " + tr("Problem") + " – " + x["title"], (x["text"] + (" · " + x["tip"] if x.get("tip") else ""))[:300], None)
+            for k in [k for k in GUARD_WATCH["bad"] if k not in bad]:
+                GUARD_WATCH["bad"].pop(k, None)
+                if GUARD_WATCH["last_push"].pop(k, None) and w is not None:
+                    w.notifier.info(tr("Fixed again") + ": " + k)
+        except Exception as e:
+            print(f"guard watch: {e}")
+        time.sleep(30)
 
 
 def sd_notify(msg):
@@ -7687,6 +8011,7 @@ class WifiGuard:
         time.sleep(20)
         minute_t = time.time(); dea = dall = 0; seen = {}; own = set(); own_t = 0.0; mine = set()
         while True:
+            beat("wifiguard", 600, "Wi-Fi guard")
             if not self.want():
                 if self.sock is not None:
                     self.close()
@@ -14890,10 +15215,69 @@ display:block;text-align:center;padding:14px;border-radius:14px;text-decoration:
 <h1>🎲 Spielecke</h1>__PARTY__<p>__NOTE__</p><div class="g">__GAMES__</div></main></body></html>"""
 
 
-def spiele_page():
+GAMESRV = {"port": 0, "msg": ""}
+STREAMS = {"n": 0, "ip": {}, "lock": threading.Lock()}
+
+
+def games_server_start():
+    """2.95.35: the browser games come from their own port (web port + 2). For the browser that is another «origin»:
+    game code can neither read the pages of Motion Watch nor send commands with the login of the administrator.
+    Only for devices in the own network."""
+    import http.server, socketserver, mimetypes
+    port = int(CFG["web_port"]) + 2                      # + 1 is the https page
+
+    class H(http.server.BaseHTTPRequestHandler):
+        server_version = "MotionWatchGames"
+        def log_message(self, *a):
+            pass
+
+        def do_GET(self):
+            if not lan_guest_ip(self.client_address[0], self.headers.get("X-Forwarded-For", "")):
+                self.send_error(403, "only in the own Wi-Fi"); return
+            from urllib.parse import unquote, urlsplit
+            path = unquote(urlsplit(self.path).path)
+            m = re.fullmatch(r"/g/([A-Za-z0-9_\-]{1,40})/?(.*)", path)
+            p_ = games_file(m.group(1), m.group(2)) if m else None
+            if not p_:
+                self.send_error(404); return
+            if m.group(2) == "" and not path.endswith("/"):
+                self.send_response(301); self.send_header("Location", path + "/"); self.end_headers(); return
+            try:
+                with open(p_, "rb") as f:
+                    data = f.read()
+            except OSError:
+                self.send_error(404); return
+            ct = mimetypes.guess_type(p_)[0] or "application/octet-stream"
+            self.send_response(200)
+            self.send_header("Content-Type", ct + ("; charset=utf-8" if ct.startswith("text/") or ct.endswith("javascript") else ""))
+            self.send_header("Content-Length", str(len(data))); self.send_header("Cache-Control", "max-age=3600")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.end_headers(); self.wfile.write(data)
+
+    class S(socketserver.ThreadingMixIn, http.server.HTTPServer):
+        daemon_threads = True
+        allow_reuse_address = True
+    try:
+        srv = S(("0.0.0.0", port), H)
+    except OSError as e:
+        GAMESRV.update(port=0, msg=f"port {port}: {e}"[:120])
+        return
+    GAMESRV.update(port=port, msg="")
+    threading.Thread(target=srv.serve_forever, daemon=True, name="games").start()
+
+
+def games_url(game, fn="", host=""):
+    """where a game is opened: the games port when it runs, otherwise the same server as before"""
+    if GAMESRV["port"] and host:
+        h = host.rsplit(":", 1)[0] if host.count(":") == 1 or host.startswith("[") and "]:" in host else host
+        return f"http://{h}:{GAMESRV['port']}/g/{game}/{fn}"
+    return ""
+
+
+def spiele_page(host=""):
     from html import escape as _e
     gl = games_list()
-    cards = "".join(f'<a class="c" href="/spiele/g/{_e(x["dir"])}/{_e(x.get("start", "index.html"))}"><div class="i">{_e(x.get("icon", "🎮"))}</div>'
+    cards = "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_e(x.get("icon", "🎮"))}</div>'
                     f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div></a>' for x in gl)
     party = (f'<a class="big" href="/p/{PARTY["key"]}/">👥 Zum Spieleabend (Quiz, Werwolf, Malen, 4 gewinnt)</a>' if party_on()
              else '<p>Der Spieleabend (Quiz, Werwolf, Malen …) ist gerade zu – öffnen kann ihn, wer Motion Watch verwaltet.</p>')
@@ -16769,7 +17153,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_34.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_35.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -18522,6 +18906,7 @@ class MotionWatch:
                 _BAD_CODECS.add("ffmpeg_hw" if getattr(self.writer, "hw", False) else "ffmpeg")
                 self._rec_retry = now + 15.0
                 log_event("rec", "The video encoder stopped right after the start - trying another one in 15 s")
+                REC_HEALTH.update(fail_t=time.time(), fail_n=REC_HEALTH["fail_n"] + 1, msg="the video encoder stopped right after the start")
             self.writer.release(); self.writer = None          # picture size changed (camera switched) or the encoder died
             self._finish_recording()
         pre = float(CFG["pre_roll"])
@@ -18541,8 +18926,10 @@ class MotionWatch:
             if self.writer is None:
                 self._rec_retry = now + 30.0
                 log_event("rec", "Recording failed: no video encoder could be opened (retry in 30 s)")
+                REC_HEALTH.update(fail_t=time.time(), fail_n=REC_HEALTH["fail_n"] + 1, msg="no video encoder could be opened (drive full or missing?)")
             else:
                 self.rec_name = os.path.basename(name); self.rec_size = (w, h); STATE["rec_name"] = self.rec_name
+                REC_HEALTH.update(fail_n=0)
                 self.rec_info = {"start": now - (now - self.preroll[0][0] if self.preroll else 0.0), "fps": fps, "frames": 0, "persons": 0,
                                  "codec": codec, "source": STATE["source_label"], "source_id": STATE["source_id"],
                                  "schedules": list(SCHED["active"])}
@@ -19435,6 +19822,7 @@ class LoopRecorder:
                 time.sleep(30)
 
     def _step(self):
+        beat("looprec", 120, "Continuous recording")
         if True:
             try:
                 frame, t = self.q.get(timeout=5)
@@ -26673,7 +27061,7 @@ Object.assign(I18N.de, {
   "Link copied": "Link kopiert", "Copy the link from the field": "Link aus dem Feld kopieren", "Battery marked as full": "Akku als voll markiert",
   "g-note": "Ein Link für Familie oder Mitcamper: Sie sehen nur das Live-Bild und können nichts verstellen. Der Gast muss den Pi erreichen können – im selben WLAN / Hotspot oder über Tailscale. Ein neuer Link macht den alten ungültig.",
   "b-note": "USV-Akku (Akku-Modul auf dem Pi): wird selbst erkannt und echt gemessen. Sonst Schätzung für die Powerbank: Kapazität minus Verbrauch seit «Akku ist jetzt voll».", "Presence": "Anwesenheit", "Security warning": "Sicherheitswarnung",
-  "⚠ no password": "⚠ kein Passwort", "Saved": "Gespeichert", "Clear": "Löschen", "set": "gesetzt", "Test notification": "Test-Nachricht senden",
+  "⚠ no password": "⚠ kein Passwort", "Saved": "Gespeichert", "Clear": "Löschen", "set": "gesetzt", "Test notification": "Test-Nachricht senden", "Test all channels": "Alle Kanäle testen", "testing …": "teste …", "No channel set up.": "Kein Kanal eingerichtet.",
   "Test sent": "Test gesendet", "Fixed times": "Feste Zeiten", "Sunset → sunrise": "Sonnenuntergang → Sonnenaufgang", "Sunrise → sunset": "Sonnenaufgang → Sonnenuntergang",
   "Shift (minutes)": "Versatz (Minuten)", "Time window": "Zeitfenster", "Applies": "Gilt", "Always": "Immer", "Only when nobody is home": "Nur wenn niemand zuhause ist",
   "Only when somebody is home": "Nur wenn jemand zuhause ist", "Skip dates (YYYY-MM-DD, ranges with .., MM-DD every year)": "Ausnahmedaten (JJJJ-MM-TT, Bereiche mit .., MM-TT jedes Jahr)",
@@ -27813,6 +28201,12 @@ async function build() {
     if (sec.id === "Notifications") {
       const tb = el("button", "sec", t("Test notification")); tb.style.marginTop = "8px";
       tb.onclick = () => post("/api/notify_test", {lang: LANG}).then(r => toast(r.ok ? t("Test sent") : "⚠ " + (r.error || "error"))); d.appendChild(tb);
+      const ta = el("button", "sec", "🧪 " + t("Test all channels")); ta.style.margin = "8px 0 0 8px";
+      const tr_ = el("div", "mut"); tr_.style.cssText = "margin-top:6px;white-space:pre-line";
+      ta.onclick = async () => { ta.disabled = true; tr_.textContent = t("testing …");
+        const r = await post("/api/notify_test", {lang: LANG, all: true}); ta.disabled = false;
+        tr_.textContent = !r.ok ? "⚠ " + (r.error || "error") : (r.results || []).length ? r.results.map(x => (x.ok ? "✓ " : "✗ ") + x.ch + " – " + x.msg).join("\n") : t("No channel set up."); };
+      d.append(ta, tr_);
     }
     sec.sliders.forEach(s => {
       const wrap = el("div", "sl"), top = el("div", "row");
@@ -31176,11 +31570,17 @@ class WebStream:
         if self.started:
             return
         try:
-            from flask import Flask, Response, request, send_file, g
+            from flask import Flask, Response, request, send_file, g, redirect
         except ImportError:
             STATE["web_status"] = "flask not installed"
             log_event("web", "Web stream: pip install flask"); return
+        if not GAMESRV["port"]:
+            try:
+                games_server_start()
+            except Exception as e:
+                GAMESRV["msg"] = str(e)[:120]
         app = Flask("motionwatch")
+        app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024 * 1024        # 2.95.35: no endless uploads
         watch = self.watch
 
         def reply(obj, code=200):
@@ -31582,6 +31982,9 @@ class WebStream:
         def party_game_file(key, game, fn=""):
             if not _pkey(key):
                 return Response("closed", 404)
+            u_ = games_url(game, fn, request.host) if lan_guest_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "")) else ""
+            if u_:
+                return redirect(u_)
             p_ = games_file(game, fn)
             return send_file(p_, max_age=3600) if p_ else Response("not found", 404)
 
@@ -31599,19 +32002,25 @@ class WebStream:
         def spiele_home():
             if not _lan_ok():
                 return Response(_lan_no, 403, mimetype="text/html")
-            return Response(spiele_page(), mimetype="text/html", headers={"Cache-Control": "no-store"})
+            return Response(spiele_page(request.host), mimetype="text/html", headers={"Cache-Control": "no-store"})
 
         @app.route("/spiele/g/<game>/")
         @app.route("/spiele/g/<game>/<path:fn>")
         def spiele_file(game, fn=""):
             if not _lan_ok():
                 return Response(_lan_no, 403, mimetype="text/html")
+            u_ = games_url(game, fn, request.host)
+            if u_:
+                return redirect(u_)                      # 2.95.35: games come from their own port
             p_ = games_file(game, fn)
             return send_file(p_, max_age=3600) if p_ else Response("not found", 404)
 
         @app.route("/games/<game>/")
         @app.route("/games/<game>/<path:fn>")
         def games_file_auth(game, fn=""):
+            u_ = games_url(game, fn, request.host) if lan_guest_ip(request.remote_addr, request.headers.get("X-Forwarded-For", "")) else ""
+            if u_:
+                return redirect(u_)
             p_ = games_file(game, fn)
             return send_file(p_, max_age=3600) if p_ else Response("not found", 404)
 
@@ -31885,8 +32294,31 @@ class WebStream:
 
         @app.after_request
         def secure_headers(resp):
+            mt_ = resp.mimetype or ""
+            if resp.is_streamed and mt_.startswith(("multipart/x-mixed-replace", "text/event-stream")):
+                ip_ = request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote_addr or "?"
+                with STREAMS["lock"]:
+                    if STREAMS["n"] >= 16 or STREAMS["ip"].get(ip_, 0) >= 6:      # 2.95.35: a Pi cannot feed more
+                        try:
+                            resp.response.close()
+                        except Exception:
+                            pass
+                        return Response("too many live pictures open - close some pages", 503, {"Retry-After": "10"})
+                    STREAMS["n"] += 1; STREAMS["ip"][ip_] = STREAMS["ip"].get(ip_, 0) + 1
+                inner = resp.response
+
+                def counted():
+                    try:
+                        yield from inner
+                    finally:
+                        with STREAMS["lock"]:
+                            STREAMS["n"] -= 1; STREAMS["ip"][ip_] = STREAMS["ip"].get(ip_, 1) - 1
+                            if STREAMS["ip"][ip_] <= 0:
+                                STREAMS["ip"].pop(ip_, None)
+                resp.response = counted()
             if resp.mimetype == "text/html":
                 resp.headers["Cache-Control"] = "no-store"          # always the page of the program that runs now
+                resp.headers.setdefault("Content-Security-Policy", "object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'")
             resp.headers.setdefault("X-Content-Type-Options", "nosniff")
             resp.headers.setdefault("X-Frame-Options", "SAMEORIGIN")    # only our own preview page (/preview) may show it in a frame
             resp.headers.setdefault("Referrer-Policy", "no-referrer")
@@ -33198,8 +33630,10 @@ class WebStream:
         @app.route("/api/notify_test", methods=["POST"])
         def api_notify_test():
             lang = norm_lang(body().get("lang"))
-            if not Notifier.configured():
+            if not Notifier.configured() and not CFG.get("mqtt_on"):
                 return reply({"ok": False, "error": tr_err("notification is not configured", lang)}, 400)
+            if body().get("all"):
+                return reply({"ok": True, "results": watch.notifier.test_all(watch.frame_out)})
             watch.notifier.test(watch.frame_out)
             return reply({"ok": True})
 
@@ -33328,7 +33762,7 @@ DE = {
     "EVENT LOG": "EREIGNISPROTOKOLL", "important": "Wichtiges", "Expand all": "Alle öffnen", "Collapse all": "Alle schliessen",
     "Centre camera": "Kamera zentrieren", "Snapshot": "Schnappschuss", "Add current pan as waypoint": "Aktuelle Position als Wegpunkt",
     "Clear": "Löschen", "Recalibrate (scene empty)": "Neu kalibrieren (Szene leer)", "Reset all settings": "Alle Einstellungen zurücksetzen",
-    "Test notification": "Test-Benachrichtigung", "Webhook URL (POST JSON on person; e.g. https://ntfy.sh/my-topic)":
+    "Test notification": "Test-Benachrichtigung", "Test all channels": "Alle Kanäle testen", "testing …": "teste …", "No channel set up.": "Kein Kanal eingerichtet.", "Webhook URL (POST JSON on person; e.g. https://ntfy.sh/my-topic)":
         "Webhook-URL (POST JSON bei Person; z. B. https://ntfy.sh/mein-thema)",
     "backend": "Backend", "pan": "Schwenk", "tilt": "Neigung", "waypoints": "Wegpunkte", "none": "keine",
     "AI persons": "KI-Personen", "objects": "Objekte", "automatic changes": "automatische Änderungen", "status": "Status",
@@ -34479,7 +34913,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.34")
+        self.root.title("Motion Watch 2.95.35")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -34769,7 +35203,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.34 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.35 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -41471,6 +41905,11 @@ for _k, _v in _HX52.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX61 = {"Problem": ["Problem", "Problème", "Problema", "Problem"], "Fixed again": ["Wieder in Ordnung", "De nouveau en ordre", "Di nuovo a posto", "Puspè en urden"], "Detection loop": ["Erkennung (Kamera-Schleife)", "Détection (boucle caméra)", "Rilevamento (ciclo videocamera)", "Renconuschientscha (circul da camera)"], "paused (tool mode)": ["pausiert (Werkzeugmodus)", "en pause (mode outils)", "in pausa (modalità strumenti)", "en pausa (modus d'utensils)"], "no sign of life for {s} s": ["seit {s} s kein Lebenszeichen", "aucun signe de vie depuis {s} s", "nessun segno di vita da {s} s", "nagin segn da vita dapi {s} s"], "Restart Motion Watch; look at the log for «Camera loop error».": ["Motion Watch neu starten; im Protokoll nach «Camera loop error» schauen.", "Redémarrer Motion Watch ; chercher «Camera loop error» dans le journal.", "Riavvia Motion Watch; cerca «Camera loop error» nel registro.", "Reaviar Motion Watch; tschertgar «Camera loop error» en il protocol."], "running": ["läuft", "en marche", "in funzione", "funcziuna"], "Recording": ["Aufnahme", "Enregistrement", "Registrazione", "Registraziun"], "recording failed": ["Aufnahme fehlgeschlagen", "échec de l'enregistrement", "registrazione non riuscita", "registraziun betg reussida"], "no video encoder could be opened (drive full or missing?)": ["kein Video-Encoder liess sich öffnen (Laufwerk voll oder weg?)", "aucun encodeur vidéo (disque plein ou absent ?)", "nessun codificatore video (unità piena o assente?)", "nagin encoder da video (unitad plaina u davent?)"], "the video encoder stopped right after the start": ["der Video-Encoder stoppte gleich nach dem Start", "l'encodeur vidéo s'est arrêté juste après le démarrage", "il codificatore video si è fermato subito dopo l'avvio", "l'encoder da video è sa fermà gist suenter l'aviament"], "Check the drive (full? unplugged?) under Settings → Recording.": ["Laufwerk prüfen (voll? ausgesteckt?) unter Einstellungen → Aufnahme.", "Vérifier le disque (plein ? débranché ?) sous Réglages → Enregistrement.", "Controlla l'unità (piena? scollegata?) in Impostazioni → Registrazione.", "Controllar l'unitad (plaina? deconnectada?) sut Parameters → Registraziun."], "Continuous recording": ["Daueraufnahme", "Enregistrement continu", "Registrazione continua", "Registraziun cuntinuanta"], "stopped": ["gestoppt", "arrêté", "fermato", "fermà"], "Check the drive; look at the log.": ["Laufwerk prüfen; ins Protokoll schauen.", "Vérifier le disque ; voir le journal.", "Controlla l'unità; guarda il registro.", "Controllar l'unitad; guardar il protocol."], "Background tasks": ["Hintergrund-Aufgaben", "Tâches de fond", "Attività in background", "Lavurs en il fund"], "Restart Motion Watch; send the diagnosis package if it happens again.": ["Motion Watch neu starten; wenn es wieder passiert, das Diagnosepaket schicken.", "Redémarrer Motion Watch ; si cela se reproduit, envoyer le paquet de diagnostic.", "Riavvia Motion Watch; se succede di nuovo, invia il pacchetto di diagnosi.", "Reaviar Motion Watch; sche quai capita danovamain, trametter il pachet da diagnosa."], "{n} running": ["{n} laufen", "{n} en marche", "{n} in funzione", "{n} funcziunan"], "Internet check": ["Internet-Prüfung", "Contrôle Internet", "Controllo Internet", "Controlla d'internet"], "Wi-Fi guard": ["WLAN-Wächter", "Gardien Wi-Fi", "Guardiano Wi-Fi", "Guardian WLAN"], "Motion sensor": ["Bewegungssensor", "Capteur de mouvement", "Sensore di movimento", "Sensur da moviment"], "Message outbox": ["Meldungs-Ausgangskorb", "Boîte d'envoi des messages", "Posta in uscita dei messaggi", "Chascha da sortida dals messadis"], "(+{n} more detections since the last message)": ["(+{n} weitere Erkennungen seit der letzten Meldung)", "(+{n} autres détections depuis le dernier message)", "(+{n} altri rilevamenti dall'ultimo messaggio)", "(+{n} ulteriuras renconuschientschas dapi l'ultim messadi)"], "late - from {t} (the message could not be sent then)": ["verspätet – von {t} (die Meldung ging damals nicht raus)", "en retard – de {t} (le message n'a pas pu partir)", "in ritardo – delle {t} (il messaggio non era partito)", "tard – da las {t} (il messadi n'è betg partì lura)"], "{n} alarm(s) waiting in the outbox": ["{n} Alarm(e) warten im Ausgangskorb", "{n} alarme(s) en attente", "{n} allarme/i in attesa", "{n} alarm(s) spetgan"], "They are sent as soon as the connection works.": ["Sie werden gesendet, sobald die Verbindung klappt.", "Ils seront envoyés dès que la connexion fonctionne.", "Verranno inviati appena la connessione funziona.", "Els vegnan tramess uschespert che la connexiun funcziuna."], "Test all channels": ["Alle Kanäle testen", "Tester tous les canaux", "Prova tutti i canali", "Testar tut ils chanals"], "testing …": ["teste …", "test …", "prova …", "test …"], "No channel set up.": ["Kein Kanal eingerichtet.", "Aucun canal configuré.", "Nessun canale configurato.", "Nagin chanal endrizzà."], "I2C address {a} is already used by the {x} - choose another address": ["Die I2C-Adresse {a} wird schon von {x} benutzt – andere Adresse wählen", "L'adresse I2C {a} est déjà utilisée par {x} – choisir une autre adresse", "L'indirizzo I2C {a} è già usato da {x} – scegli un altro indirizzo", "L'adressa I2C {a} vegn gia duvrada da {x} – tscherner in'autra adressa"], "servo board (PCA9685)": ["der Servo-Platine (PCA9685)", "la carte servo (PCA9685)", "la scheda servo (PCA9685)", "la plattina da servos (PCA9685)"], "solar meter (INA219)": ["dem Solar-Messgerät (INA219)", "le compteur solaire (INA219)", "il misuratore solare (INA219)", "l'apparat da mesirar solar (INA219)"], "motor driver (mover)": ["dem Motortreiber (Fahrzeug)", "le pilote moteur (véhicule)", "il driver motore (veicolo)", "il driver da motor (vehichel)"], "UPS HAT": ["dem USV-Aufsatz (UPS HAT)", "le HAT UPS", "l'HAT UPS", "il HAT UPS"], "I2C address conflict": ["I2C-Adresskonflikt", "Conflit d'adresse I2C", "Conflitto di indirizzo I2C", "Conflict d'adressa I2C"], "Settings → hardware: give one of them another address.": ["Einstellungen → Hardware: einem davon eine andere Adresse geben.", "Réglages → matériel : donner une autre adresse à l'un d'eux.", "Impostazioni → hardware: dai a uno dei due un altro indirizzo.", "Parameters → hardware: dar ad in da quels in'autra adressa."]}
+for _k, _v in _HX61.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 _HX60 = {'The temperature sensor gives no values any more - the alarm cannot work.': ('Der Temperatursensor liefert keine Werte mehr – der Alarm kann nicht funktionieren.', 'Le capteur de température ne donne plus de valeurs – l’alarme ne peut pas fonctionner.', 'Il sensore di temperatura non fornisce più valori – l’allarme non può funzionare.', 'Il sensur da temperatura na dat nagina valur pli – l’alarm na po betg funcziunar.'),
          'Simulation switched on automatically (a simulator is online)': ('Simulation automatisch eingeschaltet (ein Simulator ist online)', 'Simulation activée automatiquement (un simulateur est en ligne)', 'Simulazione attivata automaticamente (un simulatore è online)', 'Simulaziun activada automaticamain (in simulatur è online)'),
          'Disarmed via MQTT / Home Assistant': ('Über MQTT / Home Assistant unscharf geschaltet', 'Désarmé via MQTT / Home Assistant', 'Disattivato tramite MQTT / Home Assistant', 'Deschaltà via MQTT / Home Assistant'),
@@ -41759,6 +42198,9 @@ if __name__ == "__main__":
     else:
         set_data_dir(a.config or DATA_DIR)
     took = prepare_settings_file() if not a.demo else ""
+    threading.Thread(target=clock_guard_loop, daemon=True, name="clockguard").start()
+    threading.Thread(target=outbox_loop, daemon=True, name="outbox").start()
+    threading.Thread(target=guard_watch_loop, daemon=True, name="guardwatch").start()
     load_settings()
     if STATE.get("settings_restored"):
         log_event("sys", "The settings file was damaged (kept as " + os.path.basename(STATE["settings_restored"]) + ") - "
