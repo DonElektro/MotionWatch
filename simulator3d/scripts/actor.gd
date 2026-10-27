@@ -87,7 +87,7 @@ const COLORS := {
 }
 
 
-const PERSON_VARIANTS := ["child", "jogger", "cyclist", "stroller", "drunk", "courier", "police"]
+const PERSON_VARIANTS := ["child", "jogger", "cyclist", "stroller", "drunk", "courier", "police", "burglar"]
 const CAR_VARIANTS := ["tractor", "moto", "van"]
 var wheels: Array = []        # cyclist, stroller: wheels that turn
 var carry := false            # courier: holds the box in front with both hands
@@ -214,12 +214,14 @@ func _build_person() -> void:
 	var jacket: Color = Color(0.33, 0.38, 0.22) if camo else (player_color if player_color.a > 0.0 else (_pick("sport") if jog else _pick("jacket")))
 	if variant == "police":
 		jacket = Color(0.1, 0.13, 0.25)
+	elif variant == "burglar":                                  # dark clothes, hood up (3D-3.40)
+		jacket = Color(0.1, 0.1, 0.11)
 	elif variant == "courier":
 		jacket = [Color(0.85, 0.15, 0.1), Color(0.95, 0.55, 0.1), Color(0.1, 0.55, 0.3)][randi() % 3]
 	elif variant == "cyclist":
 		jacket = _pick("sport")
 	var shirt: Color = [Color(0.9, 0.9, 0.88), Color(0.2, 0.25, 0.35), Color(0.6, 0.15, 0.15), Color(0.85, 0.75, 0.4)][randi() % 4]
-	var trousers: Color = Color(0.3, 0.3, 0.2) if camo else (Color(0.1, 0.1, 0.12) if jog else _pick("trousers"))
+	var trousers: Color = Color(0.3, 0.3, 0.2) if camo else (Color(0.1, 0.1, 0.12) if jog or variant == "burglar" else _pick("trousers"))
 	var skin := _pick("skin")
 	var hair := _pick("hair")
 	var shoe: Color = Color(0.95, 0.95, 0.95) if jog else [Color(0.12, 0.1, 0.09), Color(0.35, 0.22, 0.12), Color(0.2, 0.2, 0.22)][randi() % 3]
@@ -278,7 +280,7 @@ func _build_person() -> void:
 		_part(head, _sph(0.025, 0.05), Vector3(0.107 * s3, 0.16, 0.0), skin.darkened(0.05), 33.5, Vector3.ZERO, Vector3(0.5, 1.0, 0.8))   # ear
 	_part(head, _box(0.05, 0.008, 0.01), Vector3(0, 0.11, -0.108), Color(0.45, 0.2, 0.18), 34.0)           # mouth
 	var style := randi() % 5
-	var hooded: bool = (cold or wet) and not jog and randf() < 0.45
+	var hooded: bool = ((cold or wet) and not jog and randf() < 0.45) or variant == "burglar"
 	if controlled and not look.is_empty():                                  # a player chose
 		hooded = look.get("hat", "") == "hood"
 		style = 3 if look.get("hat", "") == "cap" else 0

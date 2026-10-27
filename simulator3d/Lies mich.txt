@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.39 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.40 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -495,3 +495,6 @@ NEU IN 3D-3.38
 
 NEU IN 3D-3.39
 3D-3.39: Mehr Besucher. Menschen: Velofahrer, Kinderwagen, Pizzakurier (bringt etwas an die Tür), Polizei-Rundgang (nachts mit Taschenlampe), Betrunkener (torkelt im Zickzack), Paar, mit dem Pferd unterwegs. Tiere: Kuh, Schaf, Pferd, Gämse, Steinbock, Luchs, Kühe auf der Weide, Schafherde, Fledermäuse am Licht und eine Eule (nachts typische Fehlalarme). Fahrzeuge: Traktor, Töff, Lieferwagen. Alle kommen auch von selbst, je nach Szene und Tageszeit.
+
+NEU IN 3D-3.40
+3D-3.40: Abläufe (Besuch → Abläufe): Einbruchsversuch (schleicht geduckt, prüft die Tür, schaut ins Fenster – flieht vor weissem Licht und Sirene), Grillabend (Grill mit Rauch und Glut, Gäste kommen nach und nach), spät heimkommen (Auto hält, Tür auf und zu), Paket wird gebracht, Fuchs am Abfalleimer (der Eimer kippt), Wildschweine mit Jungen, Kinder spielen Fangen, Bauer mäht mit dem Traktor. Neue Vorlagen: Einbruch-Nacht, Grillabend, Bauernhof, Wildtiere. «Ganze Nacht im Zeitraffer» (20 bis 6 Uhr in etwa 10 Minuten). Kalender: am Wochenende mehr Leute, im Winter weniger.

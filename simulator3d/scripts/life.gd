@@ -71,6 +71,20 @@ func activity(kind: String, h: float) -> float:
 			return 1.5 if night or dusk else 0.0
 		"moto", "van":
 			return 0.2 if night else 1.0
+		"burglar":                                          # 3D-3.40: the stories
+			return 1.6 if _band(h, 23.0, 4.0) else 0.0
+		"bbq":
+			return 1.5 if _band(h, 17.5, 21.5) else 0.0
+		"homecoming":
+			return 1.4 if _band(h, 21.0, 1.0) else (0.4 if dusk else 0.05)
+		"parcel":
+			return 1.2 if _band(h, 9.0, 17.0) else 0.0
+		"fox_trash", "boar_group":
+			return 1.5 if night else (0.3 if dawn or dusk else 0.0)
+		"kids_tag":
+			return 1.3 if _band(h, 14.0, 19.0) else 0.0
+		"mowing":
+			return 1.0 if _band(h, 8.0, 18.0) else 0.0
 	return 1.0
 
 
@@ -78,8 +92,11 @@ func pick(kinds: Array) -> String:
 	var h: float = main.hour()
 	var tot := 0.0
 	var w := []
+	var cal := calendar()
 	for k in kinds:
 		var a := activity(str(k), h)
+		if str(k) in main.PEOPLE_KINDS or str(k) in ["bbq", "homecoming", "parcel", "kids_tag", "burglar"]:
+			a *= cal
 		w.append(a)
 		tot += a
 	if tot <= 0.0:
@@ -197,3 +214,19 @@ func apply_weather(c: Dictionary) -> void:
 	main.pressure = clampf(float(c.get("surface_pressure", main.pressure)), 960.0, 1040.0)
 	info = "Echtes Wetter: %s, %.0f °C, Wind %.0f km/h" % [{"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}[wx], main.ambient, main.wind]
 	main._sync_ui()
+
+
+func calendar() -> float:
+	"""more people at the weekend, fewer in winter, more in summer (3D-3.40)"""
+	if not main.calendar_on:
+		return 1.0
+	var f := 1.0
+	var wd := int(Time.get_date_dict_from_system()["weekday"])         # 0 = Sunday
+	if wd == 0 or wd == 6:
+		f *= 1.5
+	var d: int = main.day_of_year()
+	if d < 60 or d > 334:
+		f *= 0.5
+	elif d > 152 and d < 244:
+		f *= 1.3
+	return f

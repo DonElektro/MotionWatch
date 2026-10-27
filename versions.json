@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 18:13",
+ "generated": "2026-10-27 18:43",
  "versions": [
   {
-   "version": "2.95.44",
-   "file": "webcam_bewegung_2_95_44.py",
+   "version": "2.95.45",
+   "file": "webcam_bewegung_2_95_45.py",
    "url": "",
-   "sha256": "2dab83c4eeda0025946023450a772bc6a090f9207a650c42c280ffe30c6161c1",
-   "date": "2026-10-27 18:13",
-   "notes": "3D simulator 3D-3.39 (more visitors: cyclist, pram, pizza courier, police round, drunk, couple, horse, cows, sheep, chamois, ibex, lynx, bats and owl at night, tractor, motorbike, van).",
-   "sig": "f657850548b860cdcaa2dd1808a8857a5c37aa79b26033424c961faa6079102c16a374b7a69de02927e77df8cfc8beca01514dc08414e860caac521fdf72e301"
+   "sha256": "75dd35287df4cf4eb9603f99a89cef4664149b265472b44e981fe247e1cd4f53",
+   "date": "2026-10-27 18:43",
+   "notes": "3D simulator 3D-3.40 (scenes that play by themselves: break-in attempt, barbecue evening, coming home late, parcel, fox at the bin, wild boars, children playing tag, farmer mowing; new moods, the whole night in time-lapse, calendar).",
+   "sig": "319b87439f3a56029c5d5d7c67a7bb73a11923c6c994a9e01b0a15b19f7f0bcc3d4699d5de197466800486dd452e2476ef2c8418d9515c52005f4d45a892930e"
   },
   {
    "version": "2.94.5",

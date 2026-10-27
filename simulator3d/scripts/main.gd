@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.39"
+const VERSION := "3D-3.40"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -24,6 +24,9 @@ var Autostart = preload("res://scripts/autostart.gd")
 var Game = preload("res://scripts/game.gd")
 var TestRun = preload("res://scripts/testrun.gd")
 var Life = preload("res://scripts/life.gd")
+var stories                           # events.gd: break-in, barbecue, coming home ... (3D-3.40)
+var preset_kinds: Array = []          # a mood of «Vorlagen» brings its own visitors (empty = those of the scene)
+var calendar_on := true               # weekend more people, winter fewer
 var Recorder = preload("res://scripts/recorder.gd")
 var Device = preload("res://scripts/device.gd")
 var Geo = preload("res://scripts/geo.gd")
@@ -314,6 +317,9 @@ func _ready() -> void:
 	life = Life.new()
 	life.main = self
 	add_child(life)
+	stories = preload("res://scripts/events.gd").new()    # little stories (3D-3.40)
+	stories.main = self
+	add_child(stories)
 	recorder = Recorder.new()
 	recorder.main = self
 	add_child(recorder)
@@ -1977,6 +1983,11 @@ func visit(k: String) -> void:
 			c4.route.append(Vector3(-sd2 * 30.0 + sd2 * i * 7.0, 0, dz + (2.5 if i % 2 == 0 else -2.5) + randf_range(-1.0, 1.0)))
 		if randf() < 0.5:
 			c4.route.insert(3, [c4.route[2], 6.0, 0.0])               # stops, sways
+	elif k in ["burglar", "bbq", "homecoming", "parcel", "fox_trash", "boar_group", "kids_tag", "mowing"]:
+		if k == "parcel":
+			stories.homecoming(true)
+		else:
+			stories.call(k)
 	elif k == "bats":
 		_night_flyers(false)
 	elif k == "owl":
@@ -2003,7 +2014,7 @@ func _life() -> void:
 	var t := now()
 	if auto_visitors and t > next_auto:
 		var au: Array = Scenes.AUTO.get(scene, Scenes.AUTO["camping"])
-		var kinds := _mixed(au[0])
+		var kinds := _mixed(au[0] if preset_kinds.is_empty() else preset_kinds)
 		if visitors.get_child_count() < max_visitors and not kinds.is_empty():
 			var kk: String = life.pick(kinds) if daily_life else kinds[randi() % kinds.size()]
 			if kk != "":
@@ -2024,6 +2035,16 @@ func _life() -> void:
 		if v.kind == "person" and not v.pir_done and v.position.distance_to(tent) < 3.0:
 			v.pir_done = true
 			add_event("PIR Zelt", "pir")
+		var lit: bool = bool(L.get("white", false)) and is_dark() and v.position.distance_to(head.global_position) < 18.0
+		if v.has_meta("shy") and not v.has_meta("fled") and (lit or str(mw.get("sound", "")) != ""):
+			v.set_meta("fled", true)                                     # the burglar: light or siren - and away (3D-3.40)
+			v.startle()
+			v.route = [Vector3(v.position.x + (40.0 if v.position.x > 0 else -40.0), 0, v.position.z + 12.0)]
+			v.target = v.route.pop_front()
+			v.speed = 4.2
+			v.crouch = 0.0
+			v.wait_until = 0.0
+			continue
 		if v.kind == "person" and v.torch != null and v.route.size() > 0 and str(mw.get("sound", "")) != "":
 			v.route = [Vector3(v.position.x + 40.0, 0, v.position.z + 10.0)]      # the siren: the thief runs away
 			v.target = v.route.pop_front()
@@ -2037,16 +2058,21 @@ const VISIT_EMOJI := {"person": "🚶", "child": "🧒", "jogger": "🏃", "fox"
 		"dogwalk": "🦮", "herd": "🦌", "car_park": "🅿", "bench": "🪑", "feed": "🌾", "garden_person": "🚪", "clear": "🧹",
 		"cyclist": "🚴", "stroller": "👶", "courier": "🍕", "police": "👮", "drunk": "🥴", "couple": "👫", "horse_walk": "🐎",
 		"cow": "🐄", "sheep": "🐑", "horse": "🐎", "chamois": "🐐", "ibex": "🐐", "lynx": "🐆", "cows": "🐄", "sheep_flock": "🐑",
-		"bats": "🦇", "owl": "🦉", "tractor": "🚜", "moto": "🏍", "van": "🚐"}
+		"bats": "🦇", "owl": "🦉", "tractor": "🚜", "moto": "🏍", "van": "🚐", "burglar": "🥷", "bbq": "🍖", "homecoming": "🏠",
+		"parcel": "📦", "fox_trash": "🗑", "boar_group": "🐗", "kids_tag": "🏃", "mowing": "🌾", "night_lapse": "🌙"}
 # presets of «Besuch» (3D-3.38): [id, name, auto, daily life, who comes, how often, at most]
 const VISIT_PRESETS := [["calm", "Ruhige Nacht – selten jemand", true, false, "mixed", 0.4, 4],
+		["burglary", "Einbruch-Nacht – Einbrecher, Diebe, Polizei", true, false, "mixed", 1.2, 6, ["burglar", "burglar", "thief", "police", "drunk", "cat", "fox", "bats"]],
+		["grill", "Grillabend – Gäste, Grill, Kinder", true, false, "mixed", 1.5, 16, ["bbq", "couple", "person", "child", "kids_tag", "dogwalk", "stroller", "bats", "homecoming"]],
+		["farm", "Bauernhof – Kühe, Schafe, Traktor", true, false, "mixed", 1.2, 16, ["cows", "sheep_flock", "tractor", "mowing", "horse_walk", "cat", "dog", "person", "fox"]],
+		["wildlife", "Wildtiere – Fuchs am Abfall, Wildschweine, Luchs", true, false, "mixed", 1.5, 12, ["fox_trash", "boar_group", "lynx", "deer", "herd", "badger", "hedgehog", "owl"]],
 		["camp", "Belebter Campingplatz – viele Menschen", true, false, "more_people", 2.0, 18],
 		["wild", "Wildtier-Nacht – nur Tiere, öfter", true, false, "animals", 1.6, 10],
 		["daily", "Tagesablauf – jeder kommt zu seiner Zeit", true, true, "mixed", 1.0, 12],
 		["busy", "Viel los – Belastungstest für Motion Watch", true, false, "mixed", 4.0, 30],
 		["off", "Kein Besuch von selbst", false, false, "mixed", 1.0, 12]]
 const PEOPLE_KINDS := ["person", "child", "jogger", "dogwalk", "bench", "garden_person", "car_park", "car", "cyclist", "stroller", "courier",
-		"police", "drunk", "couple", "horse_walk", "tractor", "moto", "van"]
+		"police", "drunk", "couple", "horse_walk", "tractor", "moto", "van", "burglar", "bbq", "homecoming", "parcel", "kids_tag", "mowing"]
 
 
 func _mixed(kinds: Array) -> Array:
@@ -2121,7 +2147,7 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 # [group, symbol (window: drawn; page of Motion Watch: emoji), parts in their order]
 const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
-		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge und Abläufe", "Von selbst", "Verhalten"]],
+		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Schwierige Bedingungen", "Feineinstellungen"]],
 		["Sensoren", "bell", "🔔", [""]],
 		["Mover", "track", "🚜", [""]],
@@ -2134,13 +2160,13 @@ const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort
 		"cam1_yaw": ["Kamerabild", "Feineinstellungen"], "humidity": ["Wetter", "Mehr Wetter"], "pressure": ["Wetter", "Mehr Wetter"],
 		"storm": ["Wetter", "Mehr Wetter"], "thunder": ["Wetter", "Mehr Wetter"], "cloud_shadows": ["Wetter", "Mehr Wetter"], "gusts": ["Wetter", "Natur und Wind"],
 		"world_cloth": ["Wetter", "Natur und Wind"], "world_smoke": ["Wetter", "Natur und Wind"], "world_fireflies": ["Wetter", "Natur und Wind"],
-		"meadow": ["Wetter", "Natur und Wind"], "car": ["Besuch", "Fahrzeuge und Abläufe"], "thief": ["Besuch", "Fahrzeuge und Abläufe"],
+		"meadow": ["Wetter", "Natur und Wind"], "car": ["Besuch", "Fahrzeuge"], "thief": ["Besuch", "Abläufe"], "burglar": ["Besuch", "Abläufe"], "bbq": ["Besuch", "Abläufe"], "homecoming": ["Besuch", "Abläufe"], "parcel": ["Besuch", "Abläufe"], "fox_trash": ["Besuch", "Abläufe"], "boar_group": ["Besuch", "Abläufe"], "kids_tag": ["Besuch", "Abläufe"], "mowing": ["Besuch", "Abläufe"], "night_lapse": ["Besuch", "Von selbst"], "calendar": ["Besuch", "Von selbst"],
 		"dogwalk": ["Besuch", "Menschen schicken"], "herd": ["Besuch", "Tiere schicken"], "clear": ["Besuch", "Vorlagen"], "visit_preset": ["Besuch", "Vorlagen"],
-		"car_park": ["Besuch", "Fahrzeuge und Abläufe"], "bench": ["Besuch", "Menschen schicken"], "feed": ["Besuch", "Tiere schicken"],
+		"car_park": ["Besuch", "Fahrzeuge"], "bench": ["Besuch", "Menschen schicken"], "feed": ["Besuch", "Tiere schicken"],
 		"garden_person": ["Besuch", "Menschen schicken"], "couple": ["Besuch", "Menschen schicken"], "horse_walk": ["Besuch", "Menschen schicken"],
 		"courier_go": ["Besuch", "Menschen schicken"], "police_go": ["Besuch", "Menschen schicken"], "drunk_go": ["Besuch", "Menschen schicken"],
 		"cows": ["Besuch", "Tiere schicken"], "sheep_flock": ["Besuch", "Tiere schicken"], "bats": ["Besuch", "Tiere schicken"], "owl": ["Besuch", "Tiere schicken"],
-		"tractor": ["Besuch", "Fahrzeuge und Abläufe"], "moto": ["Besuch", "Fahrzeuge und Abläufe"], "van": ["Besuch", "Fahrzeuge und Abläufe"], "auto": ["Besuch", "Von selbst"], "mix": ["Besuch", "Von selbst"],
+		"tractor": ["Besuch", "Fahrzeuge"], "moto": ["Besuch", "Fahrzeuge"], "van": ["Besuch", "Fahrzeuge"], "auto": ["Besuch", "Von selbst"], "mix": ["Besuch", "Von selbst"],
 		"visit_rate": ["Besuch", "Von selbst"], "daily_life": ["Besuch", "Von selbst"], "real_time": ["Szene", "Zeit"], "max_visitors": ["Besuch", "Von selbst"], "visitor_speed": ["Besuch", "Verhalten"],
 		"lamp_share": ["Besuch", "Verhalten"], "look_at_light": ["Besuch", "Verhalten"], "flee_light": ["Besuch", "Verhalten"],
 		"flee_sound": ["Besuch", "Verhalten"], "avoid_on": ["Besuch", "Verhalten"], "lens_vignette": ["Kamerabild", "Feineinstellungen"],
@@ -2235,6 +2261,16 @@ func _register_controls() -> void:
 	add_control("button", "sheep_flock", "Schafherde", null, func(): visit("sheep_flock"), "Besuch")
 	add_control("button", "bats", "Fledermäuse am Licht (nachts)", null, func(): visit("bats"), "Besuch")
 	add_control("button", "owl", "Eule fliegt vorbei", null, func(): visit("owl"), "Besuch")
+	add_control("button", "burglar", "Einbruchsversuch (schleicht, prüft die Tür – flieht vor Licht und Sirene)", null, func(): visit("burglar"), "Besuch")
+	add_control("button", "bbq", "Grillabend (Grill, Rauch, Freunde kommen)", null, func(): visit("bbq"), "Besuch")
+	add_control("button", "homecoming", "Spät heimkommen (Auto hält, Tür auf und zu)", null, func(): visit("homecoming"), "Besuch")
+	add_control("button", "parcel", "Paket wird gebracht", null, func(): visit("parcel"), "Besuch")
+	add_control("button", "fox_trash", "Fuchs am Abfalleimer", null, func(): visit("fox_trash"), "Besuch")
+	add_control("button", "boar_group", "Wildschweine mit Jungen", null, func(): visit("boar_group"), "Besuch")
+	add_control("button", "kids_tag", "Kinder spielen Fangen", null, func(): visit("kids_tag"), "Besuch")
+	add_control("button", "mowing", "Bauer mäht mit dem Traktor", null, func(): visit("mowing"), "Besuch")
+	add_control("button", "night_lapse", "Ganze Nacht im Zeitraffer (20 → 6 Uhr, 60-fach, etwa 10 Minuten)", null, func(): stories.night_lapse(), "Besuch")
+	add_control("toggle", "calendar", "Kalender: am Wochenende mehr Leute, im Winter weniger", func(): return calendar_on, func(v): calendar_on = v, "Besuch")
 	add_control("button", "tractor", "Traktor", null, func(): visit("tractor"), "Besuch")
 	add_control("button", "moto", "Töff", null, func(): visit("moto"), "Besuch")
 	add_control("button", "van", "Lieferwagen", null, func(): visit("van"), "Besuch")
@@ -2590,7 +2626,7 @@ func control(d: Dictionary) -> Dictionary:
 					continue
 				deepest = min(deepest, float(_ob_closest(o, p2)[1]))
 			var sp := view_cam.unproject_position(v.global_position + Vector3(0, 0.6, 0))
-			out.append({"kind": v.kind, "x": snappedf(v.position.x, 0.01), "z": snappedf(v.position.z, 0.01), "gap": snappedf(deepest, 0.01), "r": v.radius,
+			out.append({"kind": v.kind, "x": snappedf(v.position.x, 0.01), "z": snappedf(v.position.z, 0.01), "gap": snappedf(deepest, 0.01), "variant": v.variant, "route": v.route.size(), "wait": snappedf(max(0.0, v.wait_until - v.now_s()), 0.1), "tx": snappedf(v.target.x, 0.1), "tz": snappedf(v.target.z, 0.1), "spd": snappedf(v.cur_speed, 0.01), "r": v.radius,
 					"y": snappedf(v.position.y, 0.01), "sx": int(sp.x), "sy": int(sp.y), "selected": v == selected})
 		return {"ok": true, "visitors": out}
 	elif a == "wheel_probe":                           # for tests (3D-3.35): a mouse wheel at a point, through the whole input path
@@ -3239,7 +3275,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
@@ -5010,6 +5046,7 @@ func apply_visit_preset(id: String) -> void:
 			mix = str(vp[4])
 			visit_rate = float(vp[5])
 			max_visitors = int(vp[6])
+			preset_kinds = (vp[7] as Array).duplicate() if vp.size() > 7 else []
 			next_auto = min(next_auto, now() + 3.0)
 	_settings_dirty = true
 	_sync_ui()
