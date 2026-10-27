@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 23:42",
+ "generated": "2026-10-28 00:14",
  "versions": [
   {
-   "version": "2.95.60",
-   "file": "webcam_bewegung_2_95_60.py",
+   "version": "2.95.61",
+   "file": "webcam_bewegung_2_95_61.py",
    "url": "",
-   "sha256": "d6213e7f19fd394cab20d154efff06d052cb43be3215ac0b62c2c9fdd0dd2bbb",
-   "date": "2026-10-27 23:42",
-   "notes": "3D simulator 3D-3.47 (tunnel field visible, shows the target with port); simulator page: the tunnel card shows the port Motion Watch listens on, the last try of a simulator (wrong code?) and the port of the direct connection",
-   "sig": "0afbbc84a8903503a26f12d8429a6366b1989d09087a05a784cd2d909c0628942a4877354c84ff811af77cb3f9c2f572b9dbd56c19715c27e5fa890473637a05"
+   "sha256": "47b49c7fb7bf2ba5847aa98269f701900fea7e076209a95706372a478631aaf4",
+   "date": "2026-10-28 00:14",
+   "notes": "the little extra (web page and window): a turning heart to touch, a big heart drawn counter-clockwise bursts into pieces before the secret shows",
+   "sig": "98279f0ed9100571499d7ee1eaeabc3f05539321a5b7aa101343144a53e99d705b4a02cdc40156f7465f53cea33ee51e061a5dc7e32a27c5e542c76ddabe6b09"
   },
   {
    "version": "2.94.5",

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_60.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_61.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.61: the little extra (web page and window): a turning heart to touch, a big heart drawn counter-clockwise bursts into
+    pieces before the secret shows
   * 2.95.60: 3D simulator 3D-3.47 (tunnel field visible, shows the target with port); simulator page: the tunnel card shows the
     port Motion Watch listens on, the last try of a simulator (wrong code?) and the port of the direct connection
   * 2.95.59: 3D simulator 3D-3.46: the field «Tunnel zu Motion Watch» in the simulator was hidden and can now be seen
@@ -716,10 +718,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_60.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_61.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_60.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_60.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_61.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_61.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -736,7 +738,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.60"
+APP_VERSION = "2.95.61"
 
 
 def default_data_dir():
@@ -11362,6 +11364,48 @@ def cw_triangle(P):
     return len(V) == 3
 
 
+def ccw_heart(P, min_size=90):
+    """2.95.61: True when the points (screen coordinates, y down) are a big closed heart drawn counter-clockwise:
+    two round lobes at the top, a dip in the middle between them, a point at the bottom."""
+    if len(P) < 12:
+        return False
+    xs = [p[0] for p in P]; ys = [p[1] for p in P]
+    left, right, top, bot = min(xs), max(xs), min(ys), max(ys)
+    w, h = right - left, bot - top; size = max(w, h)
+    if size < min_size or not (0.6 <= w / max(h, 1e-6) <= 1.6) or math.hypot(P[0][0] - P[-1][0], P[0][1] - P[-1][1]) > size * 0.3:
+        return False
+    area = sum(P[i][0] * P[(i + 1) % len(P)][1] - P[(i + 1) % len(P)][0] * P[i][1] for i in range(len(P))) / 2
+    if area >= 0 or not (0.4 <= -area / (w * h) <= 0.88):          # y down: negative = counter-clockwise on the screen
+        return False
+    cx = (left + right) / 2
+    D = []                                                           # more points on long, fast strokes
+    for i in range(len(P)):
+        a_, b_ = P[i], P[(i + 1) % len(P)]; k_ = max(1, int(math.hypot(b_[0] - a_[0], b_[1] - a_[1]) / (size / 80)))
+        D += [(a_[0] + (b_[0] - a_[0]) * j / k_, a_[1] + (b_[1] - a_[1]) * j / k_) for j in range(k_)]
+    P = D
+    tip = max(P, key=lambda p: p[1])
+    if abs(tip[0] - cx) > 0.22 * w:                                  # the point at the bottom, in the middle
+        return False
+    low = [p[0] for p in P if p[1] > top + 0.8 * h]
+    if low and max(low) - min(low) > 0.55 * w:                       # it gets narrow towards the point
+        return False
+    mid = [p[1] for p in P if abs(p[0] - cx) < 0.07 * w and p[1] < top + 0.6 * h]
+    if not mid or min(mid) < top + 0.07 * h:                         # the dip between the lobes
+        return False
+    lt = [p[1] for p in P if p[0] < cx - 0.15 * w]; rt = [p[1] for p in P if p[0] > cx + 0.15 * w]
+    return bool(lt and rt and min(lt) <= top + 0.15 * h and min(rt) <= top + 0.15 * h)     # two lobes up high
+
+
+def heart_points(cx, cy, s, n=48, scale_x=1.0):
+    """the outline of a heart around (cx, cy), s = half the width (screen: y down)"""
+    out = []
+    for i in range(n):
+        t = 2 * math.pi * i / n
+        x = 16 * math.sin(t) ** 3; y = -(13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t))
+        out.append((cx + x / 16 * s * scale_x, cy + (y + 2.5) / 16 * s))
+    return out
+
+
 class NightVision:
     """Night vision look: the picture brightened and tinted green like an image intensifier (a little grain, dark
     corners); a thermal camera adds glowing outlines of warm bodies and - with the Thermal-90 - their temperature."""
@@ -18848,7 +18892,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_60.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_61.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -22831,6 +22875,13 @@ header h1{font-size:17px;margin:0 8px 0 0;font-weight:700;letter-spacing:.2px;di
   background:#fff;color:#1b2430;font:700 14px system-ui,sans-serif;padding:8px 12px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
 .mw-marmot .bub::after{content:"";position:absolute;left:50%;bottom:-7px;margin-left:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
 .mw-marmot.up .bub{opacity:1;transform:translateX(-50%) scale(1)}
+.mw-marmot .hrt{position:absolute;left:52px;top:104px;width:76px;height:74px;display:grid;place-items:center;pointer-events:auto;touch-action:none;cursor:grab;perspective:200px}
+.mw-marmot .hrt svg{width:34px;height:31px;animation:mwHrt 1.6s linear infinite;filter:drop-shadow(0 0 6px rgba(255,90,140,.8))}
+@keyframes mwHrt{0%{transform:rotateY(0) scale(1)}25%{transform:rotateY(90deg) scale(1.12)}50%{transform:rotateY(180deg) scale(1)}75%{transform:rotateY(270deg) scale(1.12)}100%{transform:rotateY(360deg) scale(1)}}
+.mw-marmot.drawing .hrt svg{animation-duration:.6s}
+.mw-trail{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:2147483600;pointer-events:none}
+.mw-burst{position:fixed;z-index:2147483601;pointer-events:none}
+.mw-burst svg{position:absolute;inset:0;width:100%;height:100%;transition:transform .75s cubic-bezier(.2,.7,.3,1),opacity .75s ease-in}
 /* 1 August (Swiss national day): a small Swiss cross and sparks next to the name */
 body.aug1 header h1{position:relative}
 body.aug1 header h1::after{content:"";flex:none;width:18px;height:18px;border-radius:3px;margin-left:2px;
@@ -29843,29 +29894,76 @@ HEADER_JS = r"""
     return V.length === 3;
   }
   window.mwTri = cwTriangle;
+  function ccwHeart(P0) {                  // 2.95.61: a big closed heart, drawn counter-clockwise (same rules as ccw_heart in Python)
+    let P = P0; if (P.length < 12) return false;
+    const xs = P.map(p => p[0]), ys = P.map(p => p[1]), L = Math.min(...xs), R = Math.max(...xs), T = Math.min(...ys), B = Math.max(...ys);
+    const w = R - L, h = B - T, size = Math.max(w, h);
+    if (size < 90 || w / Math.max(h, 1e-6) < 0.6 || w / Math.max(h, 1e-6) > 1.6 || Math.hypot(P[0][0] - P[P.length - 1][0], P[0][1] - P[P.length - 1][1]) > size * 0.3) return false;
+    let A = 0; for (let i = 0; i < P.length; i++) { const p = P[i], q = P[(i + 1) % P.length]; A += p[0] * q[1] - q[0] * p[1]; }
+    A /= 2; if (A >= 0 || -A / (w * h) < 0.4 || -A / (w * h) > 0.88) return false;
+    const cx = (L + R) / 2, D = [];
+    for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length], k = Math.max(1, Math.floor(Math.hypot(b[0] - a[0], b[1] - a[1]) / (size / 80)));
+      for (let j = 0; j < k; j++) D.push([a[0] + (b[0] - a[0]) * j / k, a[1] + (b[1] - a[1]) * j / k]); }
+    P = D; const tip = P.reduce((m, p) => p[1] > m[1] ? p : m, P[0]);
+    if (Math.abs(tip[0] - cx) > 0.22 * w) return false;
+    const low = P.filter(p => p[1] > T + 0.8 * h).map(p => p[0]);
+    if (low.length && Math.max(...low) - Math.min(...low) > 0.55 * w) return false;
+    const mid = P.filter(p => Math.abs(p[0] - cx) < 0.07 * w && p[1] < T + 0.6 * h).map(p => p[1]);
+    if (!mid.length || Math.min(...mid) < T + 0.07 * h) return false;
+    const lt = P.filter(p => p[0] < cx - 0.15 * w).map(p => p[1]), rt = P.filter(p => p[0] > cx + 0.15 * w).map(p => p[1]);
+    return !!(lt.length && rt.length && Math.min(...lt) <= T + 0.15 * h && Math.min(...rt) <= T + 0.15 * h);
+  }
+  window.mwHeart = ccwHeart;
+  const HEART_D = (() => { let d = ""; for (let i = 0; i <= 60; i++) { const t = 2 * Math.PI * i / 60;
+    const x = 16 * Math.pow(Math.sin(t), 3), y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+    d += (i ? "L" : "M") + x.toFixed(2) + " " + y.toFixed(2); } return d + "Z"; })();
+  const heartSvg = (fill) => '<svg viewBox="-17 -13 34 31" aria-hidden="true"><path d="' + HEART_D + '" fill="' + fill + '"/></svg>';
+  function burst(pts) {                    // the drawn heart bursts into pieces
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), L = Math.min(...xs), T = Math.min(...ys), w = Math.max(...xs) - L, h = Math.max(...ys) - T;
+    const b = document.createElement("div"); b.className = "mw-burst";
+    b.style.cssText += "left:" + L + "px;top:" + T + "px;width:" + w + "px;height:" + h + "px";
+    const N = 12, pieces = [];
+    for (let i = 0; i < N; i++) {
+      const a0 = 2 * Math.PI * i / N, a1 = 2 * Math.PI * (i + 1) / N, am = (a0 + a1) / 2;
+      const pt = a => (50 + Math.cos(a) * 110).toFixed(1) + "% " + (50 + Math.sin(a) * 110).toFixed(1) + "%";
+      const d = document.createElement("div"); d.innerHTML = heartSvg(i % 2 ? "#e8436a" : "#ff7aa2");
+      const sv = d.firstChild; sv.style.clipPath = "polygon(50% 50%, " + pt(a0) + ", " + pt(am) + ", " + pt(a1) + ")";
+      b.appendChild(sv); pieces.push([sv, am]);
+    }
+    document.body.appendChild(b);
+    requestAnimationFrame(() => requestAnimationFrame(() => pieces.forEach(([sv, am], i) => {
+      sv.style.transform = "translate(" + Math.round(Math.cos(am) * w * .9) + "px," + Math.round(Math.sin(am) * h * .9 + h * .5) + "px) rotate(" + ((i % 2 ? 1 : -1) * (60 + i * 17)) + "deg) scale(.6)";
+      sv.style.opacity = "0"; })));
+    setTimeout(() => b.remove(), 900);
+  }
   function show(v) {
     const m = document.createElement("div"); m.className = "mw-marmot";
     m.innerHTML = SVG; const b = document.createElement("div"); b.className = "bub"; b.textContent = say("All quiet – I'm keeping watch!"); m.appendChild(b);
-    // the belly: grab it and draw a triangle clockwise - only then the secret shows for a moment
-    const bl = document.createElement("div");
-    bl.style.cssText = "position:absolute;left:52px;top:104px;width:76px;height:74px;border-radius:50%;pointer-events:auto;touch-action:none;cursor:grab";
+    // 2.95.61: on the belly a turning heart: touch it and draw a big heart counter-clockwise - it bursts, the secret shows
+    const bl = document.createElement("div"); bl.className = "hrt"; bl.innerHTML = heartSvg("#e8436a");
     m.appendChild(bl); v.appendChild(m);
-    let held = false, qr = false, pts = [];
+    let held = false, qr = false, pts = [], trail = null;
     const leave = () => { if (held || qr) return; m.classList.remove("up"); setTimeout(() => { m.remove(); busy = false; }, 500); };
-    bl.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); held = true; pts = [[e.clientX, e.clientY]];
+    const drawTrail = () => { if (!trail) return; trail.firstChild.setAttribute("points", pts.map(p => p[0] + "," + p[1]).join(" ")); };
+    bl.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); held = true; pts = [[e.clientX, e.clientY]]; m.classList.add("drawing");
+      trail = document.createElementNS("http://www.w3.org/2000/svg", "svg"); trail.setAttribute("class", "mw-trail");
+      trail.innerHTML = '<polyline fill="none" stroke="#ff7aa2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>';
+      document.body.appendChild(trail);
       try { bl.setPointerCapture(e.pointerId); } catch (x) {} });
-    bl.addEventListener("pointermove", e => { if (held) { e.preventDefault(); pts.push([e.clientX, e.clientY]); } });
-    const end = e => { if (!held) return; held = false; e.stopPropagation();
-      if (cwTriangle(pts)) { qr = true; const q = document.createElement("div"); q.innerHTML = belly(58);
-        q.style.cssText = "position:absolute;left:61px;top:114px;width:58px;height:58px;border-radius:4px;overflow:hidden;opacity:0;transition:opacity .25s;box-shadow:0 1px 4px rgba(0,0,0,.35)";
-        m.appendChild(q); requestAnimationFrame(() => { q.style.opacity = "1"; });
-        setTimeout(() => { q.style.opacity = "0"; setTimeout(() => { q.remove(); qr = false; leave(); }, 300); }, 4000);
+    bl.addEventListener("pointermove", e => { if (held) { e.preventDefault(); pts.push([e.clientX, e.clientY]); drawTrail(); } });
+    const end = e => { if (!held) return; held = false; e.stopPropagation(); m.classList.remove("drawing");
+      if (trail) { trail.remove(); trail = null; }
+      if (ccwHeart(pts)) { qr = true; bl.style.visibility = "hidden"; burst(pts);
+        setTimeout(() => { const q = document.createElement("div"); q.innerHTML = belly(58);
+          q.style.cssText = "position:absolute;left:61px;top:114px;width:58px;height:58px;border-radius:4px;overflow:hidden;opacity:0;transform:scale(.3) rotate(-25deg);transition:opacity .3s,transform .45s cubic-bezier(.3,1.6,.5,1);box-shadow:0 1px 4px rgba(0,0,0,.35)";
+          m.appendChild(q); requestAnimationFrame(() => { q.style.opacity = "1"; q.style.transform = "none"; });
+          setTimeout(() => { q.style.opacity = "0"; setTimeout(() => { q.remove(); qr = false; leave(); }, 300); }, 5000); }, 650);
       } else setTimeout(leave, 700); };
     bl.addEventListener("pointerup", end); bl.addEventListener("pointercancel", end);
     bl.addEventListener("click", e => e.stopPropagation());
     requestAnimationFrame(() => requestAnimationFrame(() => m.classList.add("up")));
     setTimeout(whistle, 250);
-    setTimeout(leave, 2300);
+    setTimeout(leave, 3200);                // a little longer than before: time to find the heart
   }
   let taps = [];
   h1.addEventListener("click", () => { const now = Date.now(); taps = taps.filter(x => now - x < 3000); taps.push(now);
@@ -40296,7 +40394,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.60")
+        self.root.title("Motion Watch 2.95.61")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40586,7 +40684,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.60 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.61 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -40648,7 +40746,8 @@ class App:
             self._tab("live")                                          # only over the live picture
             if self.video is None:
                 return
-        self._egg_t0 = now; self._egg_leave = now + 2.35; self._egg_held = False; self._egg_qr = 0.0; self._egg_pts = []
+        self._egg_t0 = now; self._egg_leave = now + 3.2; self._egg_held = False; self._egg_qr = 0.0; self._egg_qr_from = 0.0; self._egg_pts = []
+        self._egg_burst = None
         if getattr(self, "_egg_bound", None) is not self.video:
             self._egg_bound = self.video
             self.video.bind("<ButtonPress-1>", self._egg_press, add="+")
@@ -40678,8 +40777,10 @@ class App:
         if not getattr(self, "_egg_held", False):
             return
         self._egg_held = False; now = time.time()
-        if cw_triangle(self._egg_pts):
-            self._egg_qr = now + 4.0; self._egg_leave = now + 4.2
+        if ccw_heart(self._egg_pts):                                   # 2.95.61: a big heart, counter-clockwise
+            xs = [p[0] for p in self._egg_pts]; ys = [p[1] for p in self._egg_pts]
+            self._egg_burst = (now, (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (max(xs) - min(xs)) / 2)
+            self._egg_qr_from = now + 0.7; self._egg_qr = now + 5.7; self._egg_leave = now + 5.9
         else:
             self._egg_leave = max(self._egg_leave, now + 0.7)
         self._egg_pts = []
@@ -40714,7 +40815,28 @@ class App:
         ov(40, 88, 9, 6.5, "#6e4529"); ov(80, 88, 9, 6.5, "#6e4529")
         bx0 = int(W / 2 - S / 2); by0 = int(y0 + 77 * k)
         self._egg_img = (W, H); self._egg_belly = (W / 2, y0 + 106 * k, max(30 * k, S * 0.6), max(26 * k, S * 0.55))
-        for r_, row in (enumerate(bm) if now < getattr(self, "_egg_qr", 0) else ()):
+        if getattr(self, "_egg_burst", None) and now < getattr(self, "_egg_qr", 0):
+            pass                                                       # burst and secret: no turning heart
+        else:                                                          # 2.95.61: the turning heart where to touch
+            sx = math.cos(t * 3.2); hcx, hcy = W / 2, y0 + 106 * k; hs = 15 * k
+            if abs(sx) > 0.06:
+                d.polygon(heart_points(hcx, hcy, hs, 40, abs(sx)), fill="#e8436a" if sx > 0 else "#b8284c")
+        if getattr(self, "_egg_held", False) and len(self._egg_pts) > 1:   # the line while drawing
+            ox, oy = 0, 0
+            d.line([(p[0] + ox, p[1] + oy) for p in self._egg_pts], fill="#ff7aa2", width=max(2, int(3 * k)), joint="curve")
+        bu = getattr(self, "_egg_burst", None)
+        if bu and now - bu[0] < 0.75:                                  # the heart bursts into pieces
+            q = (now - bu[0]) / 0.75; pts_ = heart_points(bu[1], bu[2], bu[3], 48)
+            for i in range(12):
+                a0, a1 = 2 * math.pi * i / 12, 2 * math.pi * (i + 1) / 12; am = (a0 + a1) / 2
+                dx_, dy_ = math.cos(am) * bu[3] * 1.4 * q, math.sin(am) * bu[3] * 1.4 * q + 60 * k * q * q
+                seg_ = [p for j, p in enumerate(pts_) if a0 <= (math.atan2(p[1] - bu[2], p[0] - bu[1]) % (2 * math.pi)) < a1]
+                if not seg_:
+                    continue
+                poly = [(bu[1] + dx_, bu[2] + dy_)] + [(p[0] + dx_, p[1] + dy_) for p in seg_]
+                if len(poly) >= 3:
+                    d.polygon(poly, fill="#e8436a" if i % 2 else "#ff7aa2")
+        for r_, row in (enumerate(bm) if getattr(self, "_egg_qr_from", 0) <= now < getattr(self, "_egg_qr", 0) else ()):
             if r_ == 0:
                 d.rectangle([bx0, by0, bx0 + S - 1, by0 + S - 1], fill="#f3e2c8")
             for c_, v in enumerate(row):
