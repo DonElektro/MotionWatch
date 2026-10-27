@@ -1,6 +1,6 @@
 # Übergabe: Motion Watch 3D-Simulator
 
-Stand: 27.10.2026 · Simulator-Version **3D-3.37** · passende Motion-Watch-Version **2.95.41**
+Stand: 27.10.2026 · Simulator-Version **3D-3.38** · passende Motion-Watch-Version **2.95.42**
 
 Diese Datei ist der Startpunkt für einen neuen Chat, der den 3D-Simulator weiter ausbaut.
 
@@ -72,6 +72,11 @@ Ab 3D-1.12 gibt es den Knopf **«Nach Updates suchen»** (`main.check_updates()`
 «schon die neuste Version» / «GitHub antwortet nicht»). Das Update-ZIP lädt unter Windows **curl.exe**; Godots HTTPRequest
 nur als Ersatz, mit `download_chunk_size` 1 MB (mit 64 KB pro Bild dauerte es bei laufender Simulation viele Minuten).
 **3D-3.16 bis 3D-3.36** wurden in einem anderen Chat gemacht (siehe Git-Geschichte und «Lies mich.txt», Abschnitte «NEU IN …»).
+
+**3D-3.38 – Besuch neu gegliedert:** Teile in `GROUPS` («Vorlagen», «Besucher hinsetzen», «Menschen schicken», «Tiere schicken»,
+«Fahrzeuge und Abläufe», «Von selbst», «Verhalten»); `VISIT_PRESETS` + `apply_visit_preset()` (Auswahl `visit_preset`);
+`VISIT_EMOJI` → `extra.emoji` (Seite von Motion Watch zeigt es vor dem Knopftext); Knöpfe im Fenster mit Bildchen (`thumb_btns`).
+Test-Befehl `ui_scroll` kennt `open` (eine Karte mit allen Teilen öffnen).
 
 **3D-3.37 – Verbindung:** `fold_card` merkt sich `head` und `icon` (Meta); `_draw_group_icon` nimmt die Farbe aus `get_meta("col")`.
 `_update_status()` färbt Symbol und Titel der Karte `conn_body` (aus / wartet / verbunden).

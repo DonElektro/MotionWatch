@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.37 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.38 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -489,3 +489,6 @@ NEU IN 3D-3.36
 
 NEU IN 3D-3.37
 3D-3.37: Die Karte «Verbindung» lässt sich zuklappen. Symbol und Titel zeigen den Zustand: grau = Senden aus, orange = wartet auf Motion Watch, grün = verbunden.
+
+NEU IN 3D-3.38
+3D-3.38: Karte «Besuch» neu gegliedert: Vorlagen (ruhige Nacht, belebter Campingplatz, Wildtier-Nacht, Tagesablauf, viel los, kein Besuch) – Besucher hinsetzen (Menschen und Tiere getrennt) – Menschen schicken – Tiere schicken – Fahrzeuge und Abläufe – Von selbst – Verhalten. Die Knöpfe der Besucher zeigen ein kleines Bild (auf der Seite von Motion Watch ein Symbol).

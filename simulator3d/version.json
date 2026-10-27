@@ -1,7 +1,7 @@
 {
- "version": "3D-3.37",
+ "version": "3D-3.38",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30763966,
- "sha256": "7132a25a495ef4d82e4f1acfb5a61fc5959cfdf3b11ff93b54e3a7b7b4efcdad",
- "notes": "Verbindung zuklappbar, Symbol grün wenn verbunden"
+ "size": 30766982,
+ "sha256": "ec8153b71cc71f67566854a6fea01d87b2b7d9287f819f90b798608ce519a0e6",
+ "notes": "Besuch neu gegliedert: Vorlagen, Menschen, Tiere, Fahrzeuge und Abläufe; Knöpfe mit Bildern"
 }

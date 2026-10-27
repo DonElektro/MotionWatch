@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 17:47",
+ "generated": "2026-10-27 18:00",
  "versions": [
   {
-   "version": "2.95.41",
-   "file": "webcam_bewegung_2_95_41.py",
+   "version": "2.95.42",
+   "file": "webcam_bewegung_2_95_42.py",
    "url": "",
-   "sha256": "ac7e60ac93d9a4afe74d65b29ce29815ed186a04bd2697e46a4ce4aeaa009878",
-   "date": "2026-10-27 17:47",
-   "notes": "3D simulator 3D-3.37 (the card «Verbindung» folds; its symbol and title turn green when Motion Watch is connected).",
-   "sig": "e573e1179c7a5629ab58c1ed895c00ddc2a26cccfe80ce6ba4db59e9c9492f02212b7a2da6ac632b20c5e06b8edf3979d31cad11f848c4ebea8e775868c34904"
+   "sha256": "f964ca7bfe128fce1999ba399f099feab12b405533083a12b99ad73544f4abbc",
+   "date": "2026-10-27 18:00",
+   "notes": "3D simulator 3D-3.38 (card «Besuch» newly arranged: presets, people, animals, vehicles and scenes, by itself, behaviour; buttons with pictures). Simulator panel on the page: a symbol in front of the visitor buttons.",
+   "sig": "870163763a9e64b3a363ce6e7bf9d85eeebb8f3e2bb218dd873497fd80c11f2bac2a765a21dafe31716fbccf6dca7c3a4a859fb3ba72b7b4de038f4cdcfc6309"
   },
   {
    "version": "2.94.5",

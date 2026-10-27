@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.37"
+const VERSION := "3D-3.38"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1977,6 +1977,16 @@ func _life() -> void:
 			v.wait_until = 0.0
 
 
+const VISIT_EMOJI := {"person": "🚶", "child": "🧒", "jogger": "🏃", "fox": "🦊", "deer": "🦌", "boar": "🐗", "cat": "🐈", "dog": "🐕",
+		"badger": "🦡", "hare": "🐇", "hedgehog": "🦔", "wolf": "🐺", "marten": "🐾", "squirrel": "🐿", "car": "🚗", "thief": "🦹",
+		"dogwalk": "🦮", "herd": "🦌", "car_park": "🅿", "bench": "🪑", "feed": "🌾", "garden_person": "🚪", "clear": "🧹"}
+# presets of «Besuch» (3D-3.38): [id, name, auto, daily life, who comes, how often, at most]
+const VISIT_PRESETS := [["calm", "Ruhige Nacht – selten jemand", true, false, "mixed", 0.4, 4],
+		["camp", "Belebter Campingplatz – viele Menschen", true, false, "more_people", 2.0, 18],
+		["wild", "Wildtier-Nacht – nur Tiere, öfter", true, false, "animals", 1.6, 10],
+		["daily", "Tagesablauf – jeder kommt zu seiner Zeit", true, true, "mixed", 1.0, 12],
+		["busy", "Viel los – Belastungstest für Motion Watch", true, false, "mixed", 4.0, 30],
+		["off", "Kein Besuch von selbst", false, false, "mixed", 1.0, 12]]
 const PEOPLE_KINDS := ["person", "child", "jogger", "dogwalk", "bench", "garden_person", "car_park", "car"]
 
 
@@ -2052,7 +2062,7 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 # [group, symbol (window: drawn; page of Motion Watch: emoji), parts in their order]
 const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
-		["Besuch", "person", "🚶", ["Besucher hinsetzen", "Besucher schicken", "Von selbst", "In bestimmten Szenen", "Verhalten"]],
+		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge und Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Schwierige Bedingungen", "Feineinstellungen"]],
 		["Sensoren", "bell", "🔔", [""]],
 		["Mover", "track", "🚜", [""]],
@@ -2065,10 +2075,10 @@ const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort
 		"cam1_yaw": ["Kamerabild", "Feineinstellungen"], "humidity": ["Wetter", "Mehr Wetter"], "pressure": ["Wetter", "Mehr Wetter"],
 		"storm": ["Wetter", "Mehr Wetter"], "thunder": ["Wetter", "Mehr Wetter"], "cloud_shadows": ["Wetter", "Mehr Wetter"], "gusts": ["Wetter", "Natur und Wind"],
 		"world_cloth": ["Wetter", "Natur und Wind"], "world_smoke": ["Wetter", "Natur und Wind"], "world_fireflies": ["Wetter", "Natur und Wind"],
-		"meadow": ["Wetter", "Natur und Wind"], "car": ["Besuch", "Besucher schicken"], "thief": ["Besuch", "Besucher schicken"],
-		"dogwalk": ["Besuch", "Besucher schicken"], "herd": ["Besuch", "Besucher schicken"], "clear": ["Besuch", "Besucher schicken"],
-		"car_park": ["Besuch", "In bestimmten Szenen"], "bench": ["Besuch", "In bestimmten Szenen"], "feed": ["Besuch", "In bestimmten Szenen"],
-		"garden_person": ["Besuch", "In bestimmten Szenen"], "auto": ["Besuch", "Von selbst"], "mix": ["Besuch", "Von selbst"],
+		"meadow": ["Wetter", "Natur und Wind"], "car": ["Besuch", "Fahrzeuge und Abläufe"], "thief": ["Besuch", "Fahrzeuge und Abläufe"],
+		"dogwalk": ["Besuch", "Menschen schicken"], "herd": ["Besuch", "Tiere schicken"], "clear": ["Besuch", "Vorlagen"], "visit_preset": ["Besuch", "Vorlagen"],
+		"car_park": ["Besuch", "Fahrzeuge und Abläufe"], "bench": ["Besuch", "Menschen schicken"], "feed": ["Besuch", "Tiere schicken"],
+		"garden_person": ["Besuch", "Menschen schicken"], "auto": ["Besuch", "Von selbst"], "mix": ["Besuch", "Von selbst"],
 		"visit_rate": ["Besuch", "Von selbst"], "daily_life": ["Besuch", "Von selbst"], "real_time": ["Szene", "Zeit"], "max_visitors": ["Besuch", "Von selbst"], "visitor_speed": ["Besuch", "Verhalten"],
 		"lamp_share": ["Besuch", "Verhalten"], "look_at_light": ["Besuch", "Verhalten"], "flee_light": ["Besuch", "Verhalten"],
 		"flee_sound": ["Besuch", "Verhalten"], "avoid_on": ["Besuch", "Verhalten"], "lens_vignette": ["Kamerabild", "Feineinstellungen"],
@@ -2098,7 +2108,9 @@ func _order_controls() -> void:
 		c.extra = c.extra.duplicate()                     # several controls share one dictionary ({"expert": true})
 		var pl = PLACE.get(c.id, null)
 		if pl == null and str(c.id).begins_with("spawn_"):
-			pl = ["Besuch", "Besucher schicken"]
+			pl = ["Besuch", "Menschen schicken" if str(c.id).trim_prefix("spawn_") in PEOPLE_KINDS else "Tiere schicken"]
+		if VISIT_EMOJI.has(str(c.id).trim_prefix("spawn_")):
+			c.extra["emoji"] = VISIT_EMOJI[str(c.id).trim_prefix("spawn_")]      # a picture on the button of the page (3D-3.38)
 		if pl != null:
 			c.group = pl[0]
 			c.extra["sub"] = pl[1]
@@ -2158,6 +2170,11 @@ func _register_controls() -> void:
 	add_control("button", "bench", "Besuch setzt sich auf die Bank (Lustiger Platz)", null, func(): visit("bench"), "Besuch", ex)
 	add_control("button", "feed", "Reh kommt zur Futterstelle (Wildbeobachtung)", null, func(): visit("feed_deer"), "Besuch", ex)
 	add_control("button", "garden_person", "Besuch kommt durchs Gartentor (Garten)", null, func(): visit("garden_person"), "Besuch", ex)
+	var pre_opts := [["", "– Vorlage wählen –"]]
+	for vp in VISIT_PRESETS:
+		pre_opts.append([vp[0], vp[1]])
+	add_control("select", "visit_preset", "Vorlage für den Besuch (stellt «Von selbst» passend ein)", func(): return visit_preset, func(v): apply_visit_preset(str(v)), "Besuch",
+			{"options": pre_opts})
 	add_control("button", "clear", "Alle Besucher weg", null, func(): clear_visitors(), "Besuch")
 	add_control("toggle", "auto", "ab und zu Besuch von selbst", func(): return auto_visitors, func(v): auto_visitors = v, "Besuch")
 	add_control("toggle", "daily_life", "Tagesablauf: jeder kommt zu seiner Zeit (Fuchs nachts, Reh in der Dämmerung, Briefträger um 10 Uhr …)", func(): return daily_life, func(v): daily_life = v, "Besuch")
@@ -2262,6 +2279,7 @@ func _register_controls() -> void:
 			{"min": 160, "max": 520, "step": 20, "unit": "px"})
 
 
+const VISITOR_KINDS_ALL := ["person", "child", "jogger", "fox", "deer", "boar", "cat", "dog", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel"]
 const VISITOR_LIST := [["person", "Person"], ["child", "Kind"], ["jogger", "Jogger"], ["fox", "Fuchs"], ["deer", "Reh"], ["boar", "Wildschwein"],
 		["cat", "Katze"], ["dog", "Hund"], ["badger", "Dachs"], ["hare", "Hase"], ["hedgehog", "Igel"], ["wolf", "Wolf"], ["marten", "Marder"],
 		["squirrel", "Eichhörnchen"]]
@@ -2416,8 +2434,16 @@ func control(d: Dictionary) -> Dictionary:
 			_fold_all(str(d["fold"]))
 		if d.has("simple"):
 			set_simple(bool(d["simple"]))
+		if d.has("open"):                                  # one card open, with all its parts
+			for b in fold_bodies:
+				if str(b.get_meta("title", "")) == str(d["open"]):
+					UI.set_open(b, true)
+					for sb in sub_bodies:
+						if b.is_ancestor_of(sb):
+							UI.set_sub_open(sb, true)
 		show_panel(true)
-		(ui_box.get_parent() as ScrollContainer).set_deferred("scroll_vertical", int(d.get("y", 0)))
+		if d.has("y"):
+			_test_scroll(float(d["y"]))
 		return {"ok": true, "max": (ui_box.get_parent() as ScrollContainer).get_v_scroll_bar().max_value}
 	elif a == "geo":                                   # for tests: the place (loading, what was built)
 		return {"ok": true, "busy": geo.busy, "loaded": geo.loaded, "info": geo.info, "counts": geo.counts, "terrain": terrain,
@@ -2762,26 +2788,30 @@ func _build_ui() -> void:
 			groups[c.group] = UI.fold_card(box_, c.group, c.group in ["Szene", "Besuch"], ic)
 			fold_bodies.append(groups[c.group])
 			setting_bodies.append(groups[c.group])
-			if c.group == "Besuch":                       # first part: the pictures of the visitors
-				var vs := UI.sub_fold(groups[c.group], "Besucher hinsetzen", true)
-				vs.set_meta("always", true)
-				sub_bodies.append(vs)
-				subs["Besuch/Besucher hinsetzen"] = vs
-				vs.add_child(UI.small("Bild in die Welt ziehen – oder anklicken und dann in die Welt klicken."))
+		if c.group == "Besuch" and str(c.extra.get("sub", "")) != "Vorlagen" and not subs.has("Besuch/Besucher hinsetzen"):
+			# after «Vorlagen»: the pictures of the visitors, people and animals apart (3D-3.38)
+			var vs := UI.sub_fold(groups[c.group], "Besucher hinsetzen", true)
+			vs.set_meta("always", true)
+			sub_bodies.append(vs)
+			subs["Besuch/Besucher hinsetzen"] = vs
+			vs.add_child(UI.small("Bild in die Welt ziehen – oder anklicken und dann in die Welt klicken. Die Knöpfe weiter unten schicken Besuch, der von selbst daherkommt."))
+			for part in [["Menschen", true], ["Tiere", false]]:
+				vs.add_child(UI.small(part[0], UI.TXT))
 				var grid := GridContainer.new()
 				grid.columns = 4
 				grid.add_theme_constant_override("h_separation", 6)
 				grid.add_theme_constant_override("v_separation", 6)
 				vs.add_child(grid)
 				for k in VISITOR_LIST:
-					grid.add_child(_palette_item(k[0], k[1]))
+					if (k[0] in PEOPLE_KINDS) == part[1]:
+						grid.add_child(_palette_item(k[0], k[1]))
 		var card_body: VBoxContainer = groups[c.group]
 		var target: VBoxContainer = card_body
 		var sub := str(c.extra.get("sub", ""))
 		if sub != "":
 			var key: String = c.group + "/" + sub
 			if not subs.has(key):
-				subs[key] = UI.sub_fold(card_body, sub, sub in ["Besucher schicken", "Runde"])
+				subs[key] = UI.sub_fold(card_body, sub, sub in ["Vorlagen", "Menschen schicken", "Tiere schicken", "Runde"])
 				sub_bodies.append(subs[key])
 			target = subs[key]
 		var n0 := ui_items.size()
@@ -2900,6 +2930,7 @@ func _apply_simple() -> void:
 var thumbs := {}                      # kind -> ImageTexture
 var thumb_rects := {}
 var palette_items := {}
+var thumb_btns: Array = []            # [button, visitor kind]: the picture comes when it is drawn
 var drag_kind := ""
 
 
@@ -3003,6 +3034,9 @@ func _make_thumbs() -> void:
 		thumbs[k[0]] = t
 		if thumb_rects.has(k[0]):
 			thumb_rects[k[0]].texture = t
+		for tb in thumb_btns:
+			if tb[1] == k[0] and is_instance_valid(tb[0]):
+				tb[0].icon = t
 		await get_tree().process_frame
 
 
@@ -3223,6 +3257,14 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			var b := Button.new()
 			b.text = c.label
 			b.pressed.connect(func(): c["set"].call())
+			var tk: String = {"dogwalk": "dog", "herd": "deer", "feed": "deer", "garden_person": "person", "bench": "person", "thief": "person"}.get(
+					str(c.id), str(c.id).trim_prefix("spawn_"))
+			if tk in VISITOR_KINDS_ALL:                    # the small picture of the visitor on its button (3D-3.38)
+				b.add_theme_constant_override("icon_max_width", 26)
+				b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+				thumb_btns.append([b, tk])
+				if thumbs.has(tk):
+					b.icon = thumbs[tk]
 			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			var flow: HFlowContainer = null                # buttons side by side, wrapping (like the tiles on the page)
 			if parent.get_child_count() > 0 and parent.get_child(parent.get_child_count() - 1) is HFlowContainer:
@@ -4875,3 +4917,28 @@ func _hud_layout() -> void:
 		for b in view_bar.get_children():
 			if b is Button:
 				b.remove_theme_font_size_override("font_size")
+
+
+# ---- presets for the visitors (from 3D-3.38) ------------------------------------------------------------------------------
+var visit_preset := ""
+
+
+func apply_visit_preset(id: String) -> void:
+	"""set «Von selbst» in one go: calm night, busy camping place, wildlife night, daily life, load test, nothing"""
+	visit_preset = id
+	for vp in VISIT_PRESETS:
+		if vp[0] == id:
+			auto_visitors = bool(vp[2])
+			daily_life = bool(vp[3])
+			mix = str(vp[4])
+			visit_rate = float(vp[5])
+			max_visitors = int(vp[6])
+			next_auto = min(next_auto, now() + 3.0)
+	_settings_dirty = true
+	_sync_ui()
+
+
+func _test_scroll(y: float) -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	(ui_box.get_parent() as ScrollContainer).get_v_scroll_bar().value = y
