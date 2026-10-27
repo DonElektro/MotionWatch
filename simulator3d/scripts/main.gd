@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.23"
+const VERSION := "3D-3.24"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1283,6 +1283,7 @@ var _slow_t := 0.0
 
 func _process(dt: float) -> void:
 	_view_capture()
+	_thumbs_tick(dt)
 	# minimized: Godot stops drawing then - but the cameras must go on for Motion Watch. mini.gd turns the window into a
 	# small box at once; this is only the safety net (e.g. when the box cannot be shown)
 	if sim_active and DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_MINIMIZED:
@@ -1588,7 +1589,10 @@ func world_reply() -> Dictionary:
 	return {"v": 1, "ok": true, "sim_time": midnight + hour() * 3600.0, "dark": is_dark(), "ambient_c": snappedf(ambient, 0.1),
 			"pressure_hpa": snappedf(press, 0.1), "wind_kmh": snappedf(wind, 0.1), "last_event": next_event_id - 1,
 			"pid": OS.get_process_id(), "active": sim_active, "sound_db": snappedf(sound_db(), 0.1) if sound_on else null,
-			"weather": weather, "humidity": humidity, "mover": mover_on}
+			"weather": weather, "humidity": humidity, "mover": mover_on,
+			"pc_cpu": snappedf(mini_box.own["pc"], 0.1) if mini_box != null and float(mini_box.own["pc"]) >= 0.0 else null,
+			"sim_cpu_own": snappedf(mini_box.own["sim"], 0.1) if mini_box != null and float(mini_box.own["sim"]) >= 0.0 else null,
+			"cores": OS.get_processor_count()}
 
 
 func info() -> Dictionary:
@@ -2144,6 +2148,24 @@ func control(d: Dictionary) -> Dictionary:
 			out.append({"kind": v.kind, "x": snappedf(v.position.x, 0.01), "z": snappedf(v.position.z, 0.01), "gap": snappedf(deepest, 0.01), "r": v.radius,
 					"y": snappedf(v.position.y, 0.01), "sx": int(sp.x), "sy": int(sp.y), "selected": v == selected})
 		return {"ok": true, "visitors": out}
+	elif a == "pose_probe":                            # for tests: a person standing still in a given pose (joints in radians)
+		var px := float(d.get("x", 0.0))
+		var pz := float(d.get("z", -10.0))
+		var pv = spawn("person", Vector3(px, 0, pz), Vector3(px, 0, pz - 5.0))
+		pv.preview = true
+		pv.heading = float(d.get("heading", 0.0))
+		pv.rotation.y = pv.heading
+		var jt: Dictionary = d.get("j", {})
+		for i in range(2):
+			pv.legs[i][0].rotation = Vector3(float(jt.get("hip%d" % i, 0.0)), 0, float(jt.get("hipz%d" % i, 0.0)))
+			pv.legs[i][2].rotation.x = float(jt.get("knee%d" % i, 0.0))
+			pv.arms[i][0].rotation = Vector3(float(jt.get("sh%d" % i, 0.0)), 0, float(jt.get("shz%d" % i, 0.0)))
+			pv.arms[i][2].rotation.x = float(jt.get("el%d" % i, 0.0))
+		pv.torso.rotation.x = float(jt.get("torso", 0.0))
+		pv.head.rotation.x = float(jt.get("head", 0.0))
+		pv.body_root.rotation.x = float(jt.get("body", 0.0))
+		pv.body_root.position = Vector3(0, float(jt.get("by", 0.0)), float(jt.get("bz", 0.0)))
+		return {"ok": true}
 	elif a == "spawn_at":                              # for tests: a visitor from one point to another
 		var f: Array = d.get("from", [0, 0])
 		var t: Array = d.get("to", [10, 0])
@@ -2589,50 +2611,68 @@ func _notification(what: int) -> void:
 
 
 func _make_thumbs() -> void:
-	"""a little picture of every visitor: drawn once at the start in a small world of its own"""
-	var vp := SubViewport.new()
-	vp.size = Vector2i(128, 116)
-	vp.transparent_bg = true
-	vp.own_world_3d = true
-	vp.msaa_3d = Viewport.MSAA_2X
-	vp.render_target_update_mode = SubViewport.UPDATE_DISABLED
-	add_child(vp)
-	var cam := Camera3D.new()
-	cam.cull_mask = 1
-	cam.fov = 30
-	var e := Environment.new()
-	e.background_mode = Environment.BG_CLEAR_COLOR
-	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	e.ambient_light_color = Color(0.75, 0.78, 0.85)
-	e.ambient_light_energy = 0.7
-	cam.environment = e
-	vp.add_child(cam)
-	var sun_ := DirectionalLight3D.new()
-	sun_.rotation = Vector3(deg_to_rad(-45), deg_to_rad(-35), 0)
-	sun_.light_energy = 1.3
-	vp.add_child(sun_)
+	"""a little moving picture of every visitor (3D-3.24): each walks on the spot in a small world of its own; only
+	the pictures that can be seen are drawn again, about 12 times a second"""
 	var sizes := {"person": 1.9, "child": 1.3, "jogger": 1.9, "deer": 1.7, "boar": 1.1, "fox": 0.8, "dog": 0.9, "cat": 0.6, "badger": 0.6, "hare": 0.65, "hedgehog": 0.32}
 	for k in VISITOR_LIST:
+		var vp := SubViewport.new()
+		vp.size = Vector2i(128, 116)
+		vp.transparent_bg = true
+		vp.own_world_3d = true
+		vp.msaa_3d = Viewport.MSAA_2X
+		vp.render_target_update_mode = SubViewport.UPDATE_ONCE
+		add_child(vp)
+		var cam := Camera3D.new()
+		cam.cull_mask = 1
+		cam.fov = 30
+		var e := Environment.new()
+		e.background_mode = Environment.BG_CLEAR_COLOR
+		e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+		e.ambient_light_color = Color(0.75, 0.78, 0.85)
+		e.ambient_light_energy = 0.7
+		cam.environment = e
+		vp.add_child(cam)
+		var sun_ := DirectionalLight3D.new()
+		sun_.rotation = Vector3(deg_to_rad(-45), deg_to_rad(-35), 0)
+		sun_.light_energy = 1.3
+		vp.add_child(sun_)
 		var a = Actor.new()
 		a.preview = true
 		vp.add_child(a)
 		a.setup(self, k[0], Vector3.ZERO, Vector3(-0.8, 0, 1.0), 0.0)
+		a.speed = THUMB_SPEED.get(k[0], 1.0)
 		var h: float = sizes.get(k[0], 1.0)
 		var wide: bool = k[0] in ["fox", "deer", "boar", "dog", "cat", "badger", "hare", "hedgehog"]
 		cam.position = Vector3(h * 1.1, h * 0.62, h * 1.75) * (1.15 if wide else 0.78)
 		cam.look_at(Vector3(0, h * 0.48, 0), Vector3.UP)
-		vp.render_target_update_mode = SubViewport.UPDATE_ONCE
-		await RenderingServer.frame_post_draw
-		await RenderingServer.frame_post_draw
-		var img := vp.get_texture().get_image()
-		if img != null and not img.is_empty():
-			var t := ImageTexture.create_from_image(img)
-			thumbs[k[0]] = t
-			if thumb_rects.has(k[0]):
-				thumb_rects[k[0]].texture = t
-		a.queue_free()
+		thumb_vps[k[0]] = [vp, a]
+		var t: Texture2D = vp.get_texture()
+		thumbs[k[0]] = t
+		if thumb_rects.has(k[0]):
+			thumb_rects[k[0]].texture = t
 		await get_tree().process_frame
-	vp.queue_free()
+
+
+const THUMB_SPEED := {"person": 1.35, "child": 1.1, "jogger": 2.9, "deer": 1.2, "boar": 1.1, "fox": 1.3, "dog": 1.4, "cat": 0.8, "badger": 0.7, "hare": 1.0, "hedgehog": 0.35}
+var thumb_vps := {}                    # kind -> [SubViewport, actor walking on the spot]
+var _thumb_t := 0.0
+
+
+func _thumbs_tick(dt: float) -> void:
+	_thumb_t += dt
+	if _thumb_t < 0.08 or not win_open:
+		return
+	var step := _thumb_t
+	_thumb_t = 0.0
+	var t_ := Time.get_ticks_msec() / 1000.0
+	for kd in thumb_vps:
+		var r = thumb_rects.get(kd)
+		if r == null or not is_instance_valid(r) or not r.is_visible_in_tree():
+			continue
+		var vp: SubViewport = thumb_vps[kd][0]
+		var a = thumb_vps[kd][1]
+		a._animate(step, a.speed, t_)
+		vp.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 
 func _on_mwpc() -> void:

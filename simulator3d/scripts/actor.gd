@@ -632,7 +632,7 @@ func player_speed_now() -> float:
 
 func _player(dt: float, now: float) -> void:
 	"""moved by the phone: direction from the joystick, posture from the buttons, never inside an object"""
-	var want_c := 0.55 if ctl_posture == 1 else 0.0
+	var want_c := 1.0 if ctl_posture == 1 else 0.0
 	var want_p := 1.0 if ctl_posture == 2 else 0.0
 	crouch = move_toward(crouch, want_c, dt * 2.5)
 	prone = move_toward(prone, want_p, dt * 2.0)
@@ -727,6 +727,8 @@ func _animate(dt: float, spd: float, now: float) -> void:
 	var idle: String = idle_kind if now < idle_until else ""
 	var leap := kind == "deer" and fled and spd > 2.0                     # a fleeing deer jumps
 	for l in legs:
+		if kind == "person":
+			break                                         # persons: legs in _animate_person (3D-3.24)
 		var want: float = sw * l[1]
 		if kind == "hare":
 			want = sin(phase * 0.5) * amp * 1.6 * (1 if legs.find(l) < 2 else -1)
@@ -786,6 +788,8 @@ func _animate(dt: float, spd: float, now: float) -> void:
 				hx = -0.6
 		if kind == "person" and (now < startle_until or emote == "caught" and now < emote_until):
 			hx = 0.15
+		if kind == "person" and idle == "":
+			hx += 1.05 * clamp(prone, 0.0, 1.0) + 0.5 * clamp(crouch, 0.0, 1.0) * (1.0 - clamp(prone, 0.0, 1.0))   # crouching / lying: looks ahead
 		head.rotation.x = lerp(head.rotation.x, hx, clamp(dt * 4.0, 0.0, 1.0))
 		if kind == "person" and controlled and idle == "":
 			hyaw = clamp(wrapf(want_heading - heading, -PI, PI), -0.75, 0.75)   # the head turns first, the body follows
@@ -795,61 +799,104 @@ func _animate(dt: float, spd: float, now: float) -> void:
 
 
 func _animate_person(dt: float, spd: float, now: float, sw: float, amp: float, k: float, idle: String) -> void:
+	"""a person (rebuilt in 3D-3.24): joints bend like a human's - hip + = thigh forward, knee - = lower leg back,
+	elbow + = forearm forward, torso - = leaning forward. Crouching = hips and knees bent, the body low and leaning
+	forward, the head up; crawling = lying on the belly, arms reach forward in turn, the opposite knee is drawn up."""
 	var run_f: float = clamp((spd - 1.8) / 1.5, 0.0, 1.0)
 	var jog := variant == "jogger"
-	var bob: float = (abs(cos(phase)) - 0.6) * (0.03 + 0.05 * run_f) * clamp(amp / 0.35, 0.0, 1.3)   # highest over the standing leg
 	var em: String = emote if now < emote_until else ""
 	var still: float = clamp(1.0 - spd / 0.2, 0.0, 1.0) * (1.0 - prone) * (0.0 if em != "" else 1.0)
+	var c: float = clamp(crouch, 0.0, 1.0) * (1.0 - prone)
+	if idle == "bend":
+		c = max(c, 0.35)
+	var pr: float = clamp(prone, 0.0, 1.0)
+	var sc: float = body_root.scale.y
+	var kl: float = 1.0 if not (now < startle_until or em == "caught") else 0.0
+	# ---- legs: base pose of the crouch + the swing of the steps ----
+	var hf: float = 1.05 * c                                       # thigh forward
+	var kf: float = 1.8 * c                                        # knee bent
+	var drop: float = 0.46 * (1.0 - cos(hf)) + 0.46 * (1.0 - cos(hf - kf))   # how much lower the hips are
+	var swing_k: float = 1.0 - 0.45 * c                            # crouched: shorter steps
+	for l in legs:
+		var side: int = l[1]
+		var hip_x: float
+		var hip_z := 0.0
+		var knee_x: float
+		if pr > 0.5:
+			# belly crawl: one knee drawn up to the side while the other leg is stretched, in turn
+			var draw: float = max(0.0, sin(phase + (0.0 if side > 0 else PI)))
+			hip_x = 0.06 + 0.3 * draw                                    # (lying: + = towards the ground)
+			hip_z = side * (0.08 + 0.85 * draw)                          # the knee comes up at the side, on the ground
+			knee_x = -(0.08 + 0.4 * draw)
+		else:
+			var s: float = sin(phase) * amp * side * swing_k
+			var swing_fw: float = max(0.0, cos(phase) * side)            # this leg is swinging forward: the knee bends
+			hip_x = hf + s
+			knee_x = -(kf + swing_fw * amp * (1.5 + 1.0 * run_f) + 0.12 * amp)
+			if idle == "bend":
+				knee_x = -0.6
+		l[0].rotation.x = lerp(l[0].rotation.x, hip_x, k)
+		l[0].rotation.z = lerp(l[0].rotation.z, hip_z, k)
+		l[2].rotation.x = lerp(l[2].rotation.x, knee_x, k)
+	# ---- the body ----
+	var bob: float = (abs(cos(phase)) - 0.6) * (0.03 + 0.05 * run_f) * clamp(amp / 0.35, 0.0, 1.3) * (1.0 - c * 0.6)
 	var jump := 0.0
 	if em == "goal":
 		jump = abs(sin(now * 7.0)) * 0.18
-	body_root.position.y = (-0.5 * crouch * body_root.scale.y + bob + jump) * (1.0 - prone) + 0.12 * prone
-	body_root.rotation.x = -1.35 * prone
-	body_root.position.z = 0.9 * prone * body_root.scale.y                 # lying down: the hips stay where the player is
-	body_root.position.x = sin(phase) * 0.025 * clamp(amp / 0.35, 0.0, 1.0) * (1.0 - prone) + still * 0.018 * sin(now * 0.45 + seed_t)  # weight from foot to foot
-	if hips != null:                                                      # hips and upper body swing against each other
-		hips.rotation.y = sw * 0.2 * (1.0 - prone)
+	var crawl_bob: float = abs(sin(phase)) * 0.02
+	body_root.position.y = lerp((-drop * sc + bob + jump), 0.05 * sc + crawl_bob, pr)
+	body_root.rotation.x = -1.52 * pr
+	body_root.rotation.z = sin(phase) * 0.06 * pr                     # crawling: the body rolls a little from side to side
+	body_root.position.z = 0.95 * pr * sc                              # lying down: the hips stay where the player is
+	body_root.position.x = sin(phase) * 0.025 * clamp(amp / 0.35, 0.0, 1.0) * (1.0 - pr) + still * 0.018 * sin(now * 0.45 + seed_t)
+	if hips != null:
+		hips.rotation.y = sin(phase) * amp * 0.2 * (1.0 - pr)
 		hips.rotation.z = sin(phase) * 0.05 * amp + still * 0.03 * sin(now * 0.45 + seed_t)
-		torso.rotation.y = -sw * 0.25 * (1.0 - prone)
-		var lean := -0.3 * crouch - 0.28 * run_f - (0.1 if jog and spd > 0.5 else 0.0) - lean_acc + still * 0.02 * sin(now * 1.6 + seed_t)   # into a start, breathing
+		torso.rotation.y = -sin(phase) * amp * 0.25 * (1.0 - pr) + sin(phase) * 0.15 * pr
+		var lean := -0.62 * c - 0.28 * run_f - (0.1 if jog and spd > 0.5 else 0.0) - lean_acc * (1.0 - pr) + still * 0.02 * sin(now * 1.6 + seed_t)
 		if idle == "bend":
-			lean = -1.0
-		if now < startle_until or em == "caught":
+			lean = -1.05
+		if kl == 0.0:
 			lean = 0.12
+		if pr > 0.5:
+			lean = 0.0
 		torso.rotation.x = lerp(torso.rotation.x, lean, k)
+	# ---- arms ----
 	for a in arms:
 		var side: int = a[1]
-		var sx := -sw * side * (1.2 if jog or run_f > 0.3 else 0.8)
-		var ex := -(0.25 + (0.9 if jog else 0.0) + 0.9 * run_f)
-		var sz := 0.0
-		if prone > 0.5:                                                   # crawling: arms reach forward in turn
-			sx = -2.7 + sin(phase + (0.0 if side > 0 else PI)) * 0.5
-			ex = -0.3
-		elif now < startle_until or em == "caught":                          # startled / caught: hands up
-			sx = -2.7
-			ex = -0.4
-			sz = 0.35 * side
-		elif em == "goal":                                                 # cheering
-			sx = -2.9 + 0.3 * sin(now * 10.0 + side)
-			ex = -0.2
+		var sx: float = -sin(phase) * amp * side * (1.25 if jog or run_f > 0.3 else 0.85) * swing_k + 0.35 * c
+		var ex: float = 0.2 + (1.1 if jog else 0.0) + 1.0 * run_f + 0.55 * c
+		var sz := 0.06 * side + 0.1 * c * side
+		if pr > 0.5:                                                   # crawling: reach forward along the ground, pull back
+			var reach: float = max(0.0, sin(phase + (PI if side > 0 else 0.0)))
+			sx = lerp(0.4, -3.2, reach)                                  # elbow beside the chest, forearm flat ahead -> arm stretched ahead
+			ex = lerp(2.6, 0.15, reach)
+			sz = side * lerp(0.45, 0.2, reach)
+		elif kl == 0.0:                                                # startled / caught: hands up
+			sx = 2.8
+			ex = 0.35
 			sz = 0.3 * side
-		elif em == "throw" and side > 0:                                   # throwing a stone
+		elif em == "goal":                                             # cheering
+			sx = 2.95 + 0.25 * sin(now * 10.0 + side)
+			ex = 0.15
+			sz = 0.35 * side
+		elif em == "throw" and side > 0:                               # throwing a stone: back over the shoulder, then forward
 			var f: float = clamp(1.0 - (emote_until - now) / 0.6, 0.0, 1.0)
-			sx = lerp(-2.9, 0.6, f)
-			ex = -0.3
-		elif idle == "phone" and side > 0:                                 # on the phone
-			sx = -0.4
-			ex = -2.3
+			sx = lerp(-2.6, 0.9, f)
+			ex = lerp(1.2, 0.1, f)
+		elif idle == "phone" and side > 0:                             # on the phone
+			sx = 0.5
+			ex = 2.3
 			sz = 0.25
 		elif side > 0 and now < wait_until and crouch == 0.0 and _at_door():   # at a door: reaches for the handle
-			sx = -1.4
-			ex = -0.35
-		elif phone_out and side > 0:                                       # walking with the phone light ahead
-			sx = -0.9
-			ex = -0.9
+			sx = 1.3
+			ex = 0.3
+		elif phone_out and side > 0:                                   # walking with the phone light ahead
+			sx = 0.9
+			ex = 0.9
 		elif idle == "bend":
-			sx = -0.7
-			ex = -0.2
+			sx = 0.8
+			ex = 0.2
 		a[0].rotation.x = lerp(a[0].rotation.x, sx, k)
 		a[0].rotation.z = lerp(a[0].rotation.z, sz, k)
 		if a.size() > 2:
