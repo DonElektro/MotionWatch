@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-27 18:50",
+ "generated": "2026-10-27 19:18",
  "versions": [
   {
-   "version": "2.95.46",
-   "file": "webcam_bewegung_2_95_46.py",
+   "version": "2.95.47",
+   "file": "webcam_bewegung_2_95_47.py",
    "url": "",
-   "sha256": "0391e3ffebb1dfe39ccf6971e80fc3b03fddb5179dfd9c7714e51278ef944d91",
-   "date": "2026-10-27 18:50",
-   "notes": "eight new app icons from the proposals (light radar, night radar, forest with a find, thermal picture, field of view, tent watch, shield, radar with finds).",
-   "sig": "6a93e746f32416f91223c15fd30a1f214432768d776ceafbbd53a72ed73e3ffbc79e6d00579c2feaed1f4fae2ae6e1ff4108fa39108033812eeb4ef1fa489707"
+   "sha256": "f1665cb875fc9ce1e45293eebf42985c883ebbb49c6e9bdb93c2fe66dd34c2d5",
+   "date": "2026-10-27 19:18",
+   "notes": "modes: one switch for the whole device (tab Live → Camping / protection, also in the window): camping guard, campfire games (game corner, the guard watches on sparingly, back to the camping guard at a set time or with a low battery), gamer (only with mains power: power mode, all games, guard if wanted; falls back to campfire games on battery), home, wildlife watching, night guard, transport. «Own settings» restores what was set before.",
+   "sig": "d4bdec68a6ef5394c8c651f133d84e455c7a13f769f9432ae8967e3bc130eefd847f6a7c148d33b86a6082262405989af2c0ed821afff2db85d9a8b2c5d9bb0b"
   },
   {
    "version": "2.94.5",
