@@ -286,6 +286,12 @@ class WebStream:
                         log_event("sys", f"Simulator: {c_} {q_.get('id', '')[:80]}")
                     return reply(dict(r, ok=True))
                 if act_ == "dataset":                            # 2.95.53: KI-Prüfung mit Simulator-Bildern
+                    if d.get("export"):                          # 2.95.99: a training set (YOLO) made in the simulator, saved on its PC
+                        try:
+                            r = sim_control({"action": "dataset", "op": "export", "n": max(10, min(5000, int(d.get("n") or 500)))})
+                        except Exception:
+                            return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                        return reply({"ok": True, "export": r})
                     if d.get("start"):
                         ok_, err_ = dset_run("game" if str(d.get("n")) == "game" else (int(d.get("n") or 24) if str(d.get("n") or "24").isdigit() else 24))
                         if not ok_:

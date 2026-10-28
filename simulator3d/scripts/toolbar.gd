@@ -169,7 +169,7 @@ func _paint() -> void:
 
 
 func _process(dt: float) -> void:
-	visible = not main.kids_on                 # 3D-3.69: no tool bar in the «Kinder» mode
+	visible = not main.kids_on and not (main.home_editor != null and main.home_editor.visible)   # 3D-3.69 / 3.73
 	if not visible:
 		return
 	# at the bottom in the middle of the view (left of the panel when it is shown), above the view buttons

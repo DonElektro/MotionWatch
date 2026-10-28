@@ -2909,6 +2909,14 @@ function simExtras(d) {
     const z = document.createElement("a"); z.className = "btn sec"; z.href = "/api/dataset.zip"; z.textContent = "⬇ " + t("Training pictures (ZIP)"); z.style.display = "inline-block"; z.style.marginTop = "6px"; dout.appendChild(z); };
   dgo.onclick = async () => { const r = await post("/api/sim", {action: "dataset", start: true, n: dn.value === "game" ? "game" : +dn.value, lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
   dr.append(dn, dgo); dsb.append(dr, dout); rb.appendChild(dsb);
+  // 2.95.99: a big training set for an own AI model - made by the simulator, saved as ZIP on the desktop of its PC
+  const xr = el("div", "trow"); xr.style.marginTop = "8px"; const xn = document.createElement("select");
+  [200, 500, 1000, 2000].forEach(n => { const o = document.createElement("option"); o.value = n; o.textContent = n + " " + t("pictures"); if (n === 500) o.selected = true; xn.appendChild(o); });
+  const xgo = el("button", "sec", "📦 " + t("Training set for an own AI model (YOLO)")); xgo.type = "button";
+  const xout = el("div", "mut");
+  xgo.onclick = async () => { const r = await post("/api/sim", {action: "dataset", export: true, n: +xn.value, lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; }
+    xout.textContent = t("The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).") + " " + ((r.export || {}).msg || ""); };
+  xr.append(xn, xgo); dsb.append(xr, xout);
   (async () => { const r = await post("/api/sim", {action: "dataset"}); if (r && r.ok) dpaint(r); })();
   nb.append(nh, sl, fnd, srch, pi, pl, rb, d3, d3n, dpy, all);
   // ---- settings (moved here) ----
@@ -3732,6 +3740,7 @@ function simShootPaint(s) {
   $("#mws-b span").textContent = SHOOT.on ? t("Shooting on") : t("Shoot");
   $("#mws-t").textContent = t("Tap the picture") + " · " + SHOOT.hits + "× ✓ · " + SHOOT.miss + "× ✗ " + t("false alarm");
 }
+Object.assign(I18N.de, {"Training set for an own AI model (YOLO)": "Trainingspaket für ein eigenes KI-Modell (YOLO)", "pictures": "Bilder", "The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).": "Der Simulator macht die Bilder und legt ein ZIP auf den Schreibtisch seines PCs (etwa 2 s pro Bild)."});
 Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Open the assistant": "Assistent öffnen", "refscan-note": "Der Kopf fährt ein Raster von Richtungen ab und speichert Fotos als Referenz. Später vergleicht Motion Watch dieselben Richtungen und zeigt im Bericht, was fehlt, neu ist oder sich verändert hat."});
 Object.assign(I18N.de, {"Shoot": "Schiessen", "Shooting on": "Schiessen an", "Shooting off": "Schiessen aus", "Tap the picture": "Ins Bild tippen", "false alarm": "Fehlalarm",
   "Tap into the live picture to shoot - a miss is marked as a false alarm": "Ins Livebild tippen zum Schiessen – daneben wird als Fehlalarm markiert"});

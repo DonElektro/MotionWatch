@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_98.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_99.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.99: Simulation: Trainingspaket für ein eigenes KI-Modell (YOLO, im Simulator gemacht); 3D-Simulator 3D-3.73: Szene
+    «Mein Zuhause» mit Baukasten
   * 2.95.98: Referenz-Scan: Gegenstände bewachen (Rechteck im Referenz-Foto, fehlt er beim Vergleich = sofort Alarm), eigene
     Nacht-Referenz; 3D-Simulator 3D-3.72: Nacht-Test, Testhilfen, Sabotage-Test, Planer + Referenz-Scan
   * 2.95.97: Referenz-Scan: Assistent (Werkzeuge) – der Kopf fährt alle Richtungen ab und speichert Referenz-Fotos; Vergleich
@@ -786,10 +788,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_98.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_99.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_98.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_98.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_99.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_99.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -806,7 +808,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.98"
+APP_VERSION = "2.95.99"
 
 
 def default_data_dir():
@@ -15131,8 +15133,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.72", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30903405,
-         "sha256": "5185ec5b4cc43fa9807f3b656dca531028b55d5371e9a17cbbfd24c307e7c288"}
+SIM3D = {"version": "3D-3.73", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30925291,
+         "sha256": "67f63c77a77cf728d4bf62f03fb74c6cbb9a9fbc8569ef43ffe6a715bde5fd5b"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15271,8 +15273,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.72", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24024213,
-           "sha256": "89a05eac1dee316101911bd3f82f864c9004244a40efab04a3f6a762141066fe", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.73", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24046728,
+           "sha256": "0ee922fd72fc422873e722e8604ebd105cb705ed27978c504ceab828e8738707", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -19649,7 +19651,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_98.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_99.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -35092,6 +35094,14 @@ function simExtras(d) {
     const z = document.createElement("a"); z.className = "btn sec"; z.href = "/api/dataset.zip"; z.textContent = "⬇ " + t("Training pictures (ZIP)"); z.style.display = "inline-block"; z.style.marginTop = "6px"; dout.appendChild(z); };
   dgo.onclick = async () => { const r = await post("/api/sim", {action: "dataset", start: true, n: dn.value === "game" ? "game" : +dn.value, lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
   dr.append(dn, dgo); dsb.append(dr, dout); rb.appendChild(dsb);
+  // 2.95.99: a big training set for an own AI model - made by the simulator, saved as ZIP on the desktop of its PC
+  const xr = el("div", "trow"); xr.style.marginTop = "8px"; const xn = document.createElement("select");
+  [200, 500, 1000, 2000].forEach(n => { const o = document.createElement("option"); o.value = n; o.textContent = n + " " + t("pictures"); if (n === 500) o.selected = true; xn.appendChild(o); });
+  const xgo = el("button", "sec", "📦 " + t("Training set for an own AI model (YOLO)")); xgo.type = "button";
+  const xout = el("div", "mut");
+  xgo.onclick = async () => { const r = await post("/api/sim", {action: "dataset", export: true, n: +xn.value, lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; }
+    xout.textContent = t("The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).") + " " + ((r.export || {}).msg || ""); };
+  xr.append(xn, xgo); dsb.append(xr, xout);
   (async () => { const r = await post("/api/sim", {action: "dataset"}); if (r && r.ok) dpaint(r); })();
   nb.append(nh, sl, fnd, srch, pi, pl, rb, d3, d3n, dpy, all);
   // ---- settings (moved here) ----
@@ -35915,6 +35925,7 @@ function simShootPaint(s) {
   $("#mws-b span").textContent = SHOOT.on ? t("Shooting on") : t("Shoot");
   $("#mws-t").textContent = t("Tap the picture") + " · " + SHOOT.hits + "× ✓ · " + SHOOT.miss + "× ✗ " + t("false alarm");
 }
+Object.assign(I18N.de, {"Training set for an own AI model (YOLO)": "Trainingspaket für ein eigenes KI-Modell (YOLO)", "pictures": "Bilder", "The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).": "Der Simulator macht die Bilder und legt ein ZIP auf den Schreibtisch seines PCs (etwa 2 s pro Bild)."});
 Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Open the assistant": "Assistent öffnen", "refscan-note": "Der Kopf fährt ein Raster von Richtungen ab und speichert Fotos als Referenz. Später vergleicht Motion Watch dieselben Richtungen und zeigt im Bericht, was fehlt, neu ist oder sich verändert hat."});
 Object.assign(I18N.de, {"Shoot": "Schiessen", "Shooting on": "Schiessen an", "Shooting off": "Schiessen aus", "Tap the picture": "Ins Bild tippen", "false alarm": "Fehlalarm",
   "Tap into the live picture to shoot - a miss is marked as a false alarm": "Ins Livebild tippen zum Schiessen – daneben wird als Fehlalarm markiert"});
@@ -38290,6 +38301,12 @@ class WebStream:
                         log_event("sys", f"Simulator: {c_} {q_.get('id', '')[:80]}")
                     return reply(dict(r, ok=True))
                 if act_ == "dataset":                            # 2.95.53: KI-Prüfung mit Simulator-Bildern
+                    if d.get("export"):                          # 2.95.99: a training set (YOLO) made in the simulator, saved on its PC
+                        try:
+                            r = sim_control({"action": "dataset", "op": "export", "n": max(10, min(5000, int(d.get("n") or 500)))})
+                        except Exception:
+                            return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                        return reply({"ok": True, "export": r})
                     if d.get("start"):
                         ok_, err_ = dset_run("game" if str(d.get("n")) == "game" else (int(d.get("n") or 24) if str(d.get("n") or "24").isdigit() else 24))
                         if not ok_:
@@ -41895,7 +41912,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.98")
+        self.root.title("Motion Watch 2.95.99")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -42185,7 +42202,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.98 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.99 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

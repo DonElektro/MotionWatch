@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.72"
+const VERSION := "3D-3.73"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -296,6 +296,7 @@ func _ready() -> void:
 	if k >= 0 and k + 1 < args.size():
 		update_url = args[k + 1]
 	_load_settings()
+	home_load()                                # 3D-3.73: «Mein Zuhause»
 	tunnel = preload("res://scripts/tunnel.gd").new()        # 3D-3.45: out through the firewall to Motion Watch
 	tunnel.main = self
 	add_child(tunnel)
@@ -1992,6 +1993,7 @@ func world_reply() -> Dictionary:
 var mw_cmd := {}                       # 3D-3.71: a request to Motion Watch (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
 var bike_node: Node3D = null
 var refscan_label: Label
+var ds_label: Label
 
 
 func mw_request(op: String) -> void:
@@ -2003,6 +2005,29 @@ func mw_request(op: String) -> void:
 func set_bike(on: bool) -> void:
 	"""test aid for the reference scan: the bike is gone / back"""
 	set_prop("Velo", on)
+
+
+var home_items: Array = []             # 3D-3.73: the things of «Mein Zuhause» (user://zuhause.json)
+var home_editor: Control = null
+const HOME_FILE := "user://zuhause.json"
+
+
+func home_load() -> void:
+	if FileAccess.file_exists(HOME_FILE):
+		var d = JSON.parse_string(FileAccess.get_file_as_string(HOME_FILE))
+		if d is Array:
+			home_items = d
+
+
+func home_save() -> void:
+	var f := FileAccess.open(HOME_FILE, FileAccess.WRITE)
+	if f != null:
+		f.store_string(JSON.stringify(home_items, " "))
+
+
+func home_rebuild() -> void:
+	if scene == "zuhause":
+		set_scene("zuhause")
 
 
 var test_props := {}                   # 3D-3.72: name -> node the test aids take away (set by scenes.gd)
@@ -2506,6 +2531,7 @@ func _register_controls() -> void:
 		sc.append([s[0], s[1]])
 	var ex := {"expert": true}
 	add_control("select", "scene", "Szene", func(): return scene, func(v): set_scene(v), "Szene", {"options": sc})
+	add_control("button", "home_edit", "Mein Zuhause bauen (Baukasten mit der Maus)", null, func(): home_editor.open(true), "Szene")
 	add_control("map", "ort_map", "Ort auf der Karte wählen (Schweiz)", func(): return "%.6f, %.6f" % [ort_lat, ort_lon] if ort_lat != 0.0 else "",
 			func(v): set_place_text(str(v)), "Ort von der Karte")
 	add_control("text", "ort", "Ort (Name oder Koordinaten, z. B. «Zermatt» oder «46.0207, 7.7491»)", func(): return place_label(), func(v): set_place_text(str(v)), "Ort von der Karte")
@@ -2897,6 +2923,8 @@ func control(d: Dictionary) -> Dictionary:
 			return dataset.start(int(d.get("n", 40)), d.get("conds", []) if typeof(d.get("conds", [])) == TYPE_ARRAY else [])
 		if op2 == "game":                                # 3D-3.53: the «missed» pictures of the game
 			return dataset.load_game()
+		if op2 == "export":                              # 3D-3.74: a training set (YOLO) for an own AI model
+			return dataset.export_pack(int(d.get("n", 500)), bool(d.get("scenes", true)))
 		if op2 == "stop":
 			dataset.stop()
 		var st2: Dictionary = dataset.state()
@@ -3073,6 +3101,15 @@ func control(d: Dictionary) -> Dictionary:
 	elif a == "ref_night_test":
 		ref_night_test()
 		return {"ok": true}
+	elif a == "home":                                  # 3D-3.73: «Mein Zuhause» {op: get | set (items) | edit (on)}
+		var op := str(d.get("op", "get"))
+		if op == "set" and d.get("items") is Array:
+			home_items = (d["items"] as Array).filter(func(x): return typeof(x) == TYPE_DICTIONARY).slice(0, 400)
+			home_save()
+			home_rebuild()
+		elif op == "edit":
+			home_editor.open(bool(d.get("on", true)))
+		return {"ok": true, "items": home_items, "kinds": Scenes.HOME_KINDS, "scene": scene}
 	elif a == "shoot":                                 # 3D-3.70: a shot / trigger from Motion Watch at a spot of the head camera picture
 		return mw_shot(float(d.get("x", 0.5)), float(d.get("y", 0.5)), str(d.get("who", "")).left(30))
 	elif a == "game_mwcatch":                          # «Team gegen Motion Watch»: «Erwischt!» pressed at Motion Watch (3D-3.27)
@@ -3494,6 +3531,26 @@ func _build_ui() -> void:
 		sg.add_child(sb_)
 	refscan_label = UI.small("")
 	tl.add_child(refscan_label)
+	var dsr := HBoxContainer.new()                   # 3D-3.74: a training set for an own AI model
+	dsr.add_theme_constant_override("separation", 6)
+	tl.add_child(dsr)
+	var dsn := OptionButton.new()
+	for n_ in [200, 500, 1000, 2000]:
+		dsn.add_item("%d Bilder" % n_)
+	dsn.select(1)
+	dsr.add_child(dsn)
+	var dsb := Button.new()
+	dsb.text = "Trainingspaket (YOLO) machen"
+	dsb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dsb.tooltip_text = "Bilder mit Rahmen für ein eigenes KI-Modell: viele Szenen, Tag, Nacht, Regen, Nebel, Schnee, Menschen und Tiere. ZIP auf den Schreibtisch."
+	dsb.pressed.connect(func():
+		if dataset.busy:
+			dataset.stop()
+		else:
+			dataset.export_pack([200, 500, 1000, 2000][dsn.selected], true))
+	dsr.add_child(dsb)
+	ds_label = UI.small("")
+	tl.add_child(ds_label)
 	var plb := Button.new()
 	plb.text = "Aufstell-Planer: Wo soll Motion Watch hin?"
 	plb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -4369,6 +4426,8 @@ func _update_status() -> void:
 	_night_test_tick()
 	if refscan_label != null:
 		refscan_label.text = refscan_text()
+	if ds_label != null and dataset != null:
+		ds_label.text = ("Trainingspaket: " + dataset.msg) if dataset.msg != "" else ""
 	if not mw_cmd.is_empty() and start_info.begins_with("Motion Watch: "):
 		var r_ = mw.get("refscan", null)
 		if typeof(r_) == TYPE_DICTIONARY and int(r_.get("cmd_seen", 0)) >= int(mw_cmd["id"]):
@@ -4452,13 +4511,15 @@ var map_btn: Button
 
 func _over_hud(p: Vector2) -> bool:
 	"""is the mouse over the control panel or one of the boxes on the view (map, live picture, stick, bar …)?"""
-	for c in [ui_root, show_btn, view_bar, minimap, liveview, rover_pad, sel_box, karte, toolbar, cam_card]:
+	for c in [ui_root, show_btn, view_bar, minimap, liveview, rover_pad, sel_box, karte, toolbar, cam_card, home_editor]:
 		if c != null and is_instance_valid(c) and c is Control and (c as Control).is_visible_in_tree() and (c as Control).modulate.a > 0.01 and (c as Control).get_global_rect().has_point(p):
 			return true
 	return false
 
 
 func _unhandled_input(ev: InputEvent) -> void:
+	if home_editor != null and home_editor.handle_input(ev):
+		return                                         # 3D-3.73: the building kit (right click = away)
 	if patrol != null and patrol.handle_input(ev):
 		return                                         # 3D-3.61: setting the route / dragging the area
 	if spectate and ((ev is InputEventMouseButton and ev.pressed and ev.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE])
@@ -4889,6 +4950,11 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	toolbar = preload("res://scripts/toolbar.gd").new()       # 3D-3.61: everything with the mouse
 	toolbar.main = self
 	layer.add_child(toolbar)
+	home_editor = preload("res://scripts/home_editor.gd").new()   # 3D-3.73: «Mein Zuhause bauen»
+	home_editor.main = self
+	home_editor.theme = th
+	home_editor.position = Vector2(10, 345)
+	layer.add_child(home_editor)
 	# the chosen visitor
 	sel_box = PanelContainer.new()
 	sel_box.theme = th

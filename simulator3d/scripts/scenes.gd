@@ -4,7 +4,8 @@ extends RefCounted
 ## Every scene must give main: door_node + door_light + window_mat (the door sensor), obj["door"], obj["pir"], obj["bike"].
 
 const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Parkplatz"], ["garten", "Garten / Haus"],
-		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"], ["verstecken", "Versteckspiel (viele Verstecke)"], ["ort", "Ort von der Karte (Schweiz)"]]
+		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"], ["verstecken", "Versteckspiel (viele Verstecke)"], ["ort", "Ort von der Karte (Schweiz)"],
+		["zuhause", "Mein Zuhause (selbst gebaut)"]]
 
 # visitors that come by themselves, and how often (seconds from .. to)
 const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog", "marten", "squirrel", "cyclist", "couple", "stroller", "courier", "police", "drunk", "bats", "owl", "burglar", "bbq", "homecoming", "fox_trash", "kids_tag", "boar_group"], 35.0, 110.0],
@@ -15,6 +16,7 @@ const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox"
 		"verstecken": [["person", "child", "jogger", "dogwalk", "fox", "cat", "hare", "deer", "couple", "police", "sheep_flock"], 30.0, 90.0],
 		"ort": [["person", "child", "jogger", "dogwalk", "fox", "deer", "cat", "cat", "badger", "hare", "hedgehog", "car", "marten", "squirrel", "cyclist", "couple", "stroller", "courier", "tractor", "moto", "van", "cows", "sheep_flock",
 			"horse_walk", "bats", "owl", "parcel", "homecoming", "burglar", "mowing", "fox_trash", "kids_tag"], 30.0, 100.0],
+		"zuhause": [["cat", "cat", "fox", "badger", "hedgehog", "hare", "garden_person", "garden_person", "dog", "marten", "squirrel", "courier", "bats", "owl", "parcel", "burglar", "kids_tag", "person", "dogwalk"], 35.0, 100.0],
 		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer", "chamois", "ibex", "lynx", "owl"], 15.0, 40.0]}
 
 var m                     # main.gd
@@ -42,6 +44,8 @@ func build(id: String, parent: Node3D) -> void:
 			_wald()
 		"parkplatz":
 			_parkplatz()
+		"zuhause":
+			_zuhause()
 		"garten":
 			_garten()
 		"lustig":
@@ -1147,3 +1151,169 @@ func _verstecken() -> void:
 			func(p: Vector3): return p.distance_to(h.position) < 6.0)
 	trees(60, 20.0, 90.0, func(p: Vector3): return abs(p.z + 22.0) < 26.0 and abs(p.x) < 36.0)
 	meadow(400, 3.0, 40.0, func(p: Vector3): return abs(p.z + 22.0) < 25.0 and abs(p.x) < 35.0)
+
+
+# ---- 3D-3.73: «Mein Zuhause» - built from the things the operator placed (main.home_items, user://zuhause.json) -----------
+const HOME_KINDS := [["haus", "Haus"], ["gartenhaus", "Gartenhaus"], ["garage", "Garage"], ["zaun", "Zaun (2 Klicks)"], ["hecke", "Hecke (2 Klicks)"],
+		["mauer", "Mauer (2 Klicks)"], ["weg", "Weg (2 Klicks)"], ["baum", "Laubbaum"], ["tanne", "Tanne"], ["busch", "Busch"], ["auto", "Auto"],
+		["velo", "Velo"], ["bank", "Bank"], ["tisch", "Tisch + Stühle"], ["grill", "Grill"], ["trampolin", "Trampolin"], ["beet", "Blumenbeet"],
+		["laterne", "Laterne"], ["sandkasten", "Sandkasten"], ["pool", "Planschbecken"]]
+const HOME_LINES := ["zaun", "hecke", "mauer", "weg"]
+const HOME_DEFAULT := [{"k": "haus", "x": -6.0, "z": -16.0, "r": 0.0, "s": 1.0}, {"k": "zaun", "x": -18.0, "z": -25.0, "x2": 18.0, "z2": -25.0, "r": 0.0, "s": 1.0},
+		{"k": "baum", "x": 9.0, "z": -12.0, "r": 0.0, "s": 1.0}, {"k": "auto", "x": 8.0, "z": -20.0, "r": 90.0, "s": 1.0},
+		{"k": "velo", "x": 4.0, "z": -9.0, "r": 30.0, "s": 1.0}, {"k": "tisch", "x": -3.0, "z": -8.0, "r": 0.0, "s": 1.0}]
+
+
+func _zuhause() -> void:
+	road(-34.0)
+	var items: Array = m.home_items if not m.home_items.is_empty() else HOME_DEFAULT
+	data["home_nodes"] = []
+	var has_door := false
+	data["door_done"] = false
+	m.obj["pir"] = Vector3(0, 0, -8)
+	m.obj["bike"] = Vector3(4, 0, -9)
+	for it in items:
+		var n := home_item(it)
+		data["home_nodes"].append(n)
+		if str(it.get("k", "")) == "haus" and not has_door:
+			has_door = true
+	if not has_door:                                               # every scene needs a door (sensor): a small one, far away
+		var h := node(root, Vector3(0, 0, -60))
+		m.door_node = node(h, Vector3(0, 0, 0))
+		put(m.door_node, m.box(1.0, 2.1, 0.06), Vector3(0.5, 1.05, 0), Color(0.35, 0.2, 0.12), "caravan")
+		door_light_at(h, Vector3(0.0, 2.5, 0.6))
+		m.obj["door"] = Vector3(0, 0, -59)
+	meadow(600, 3.0, 40.0)
+	stones(6, 4.0, 15.0)
+	for i in range(60):
+		tree(root, m.pos_of(rng.randf_range(-180, 180), rng.randf_range(45, 120)), rng.randf_range(0.8, 1.4))
+
+
+func _hm() -> ShaderMaterial:
+	var hm := ShaderMaterial.new()
+	hm.shader = load("res://shaders/foliage.gdshader")
+	hm.set_shader_parameter("noise_tex", m.noise_tex)
+	hm.set_shader_parameter("color", Color(0.12, 0.3, 0.1))
+	m.foliage_mats.append(hm)
+	return hm
+
+
+func home_item(it: Dictionary) -> Node3D:
+	"""one thing of «Mein Zuhause»: kind k at x, z, turned r degrees, size s (lines: from x, z to x2, z2)"""
+	var k := str(it.get("k", ""))
+	var p := Vector3(float(it.get("x", 0.0)), 0, float(it.get("z", 0.0)))
+	p.y = m.ground_y(p.x, p.z)
+	var r := deg_to_rad(float(it.get("r", 0.0)))
+	var sc := clampf(float(it.get("s", 1.0)), 0.3, 3.0)
+	if k in HOME_LINES:
+		var q := Vector3(float(it.get("x2", p.x + 4.0)), 0, float(it.get("z2", p.z)))
+		var d := q - p
+		var ln := maxf(0.5, Vector2(d.x, d.z).length())
+		var ang := atan2(-d.z, d.x)
+		var c := node(root, (p + q) / 2.0, ang)
+		c.position.y = m.ground_y(c.position.x, c.position.z)
+		match k:
+			"zaun":
+				var nposts := int(ln / 2.0) + 1
+				for i in range(nposts + 1):
+					put(c, m.box(0.1, 1.1, 0.1), Vector3(-ln / 2.0 + ln * i / max(1, nposts), 0.55, 0), Color(0.55, 0.4, 0.25), "tree")
+				for y in [0.4, 0.9]:
+					put(c, m.box(ln, 0.08, 0.04), Vector3(0, y, 0), Color(0.55, 0.4, 0.25), "tree")
+				m.add_obstacle_box(c.position, ln, 0.3, ang, true)
+			"hecke":
+				put(c, m.box(ln, 1.8 * sc, 1.0), Vector3(0, 0.9 * sc, 0), _hm(), "tree")
+				m.add_obstacle_box(c.position, ln, 1.1, ang, true)
+				m.set_obstacle_height(1.8 * sc)
+			"mauer":
+				put(c, m.box(ln, 1.2 * sc, 0.3), Vector3(0, 0.6 * sc, 0), Color(0.7, 0.68, 0.64), "stone")
+				m.add_obstacle_box(c.position, ln, 0.4, ang, true)
+				m.set_obstacle_height(1.2 * sc)
+			"weg":
+				put(c, m.box(ln, 0.02, 1.2 * sc), Vector3(0, 0.015, 0), Color(0.62, 0.58, 0.52), "road")
+		return c
+	var n := node(root, p, r)
+	n.scale = Vector3.ONE * sc
+	match k:
+		"haus":
+			put(n, m.box(9.0, 5.4, 7.0), Vector3(0, 2.7, 0), Color(0.93, 0.9, 0.82), "caravan")
+			var roof := PrismMesh.new()
+			roof.size = Vector3(10.0, 2.6, 7.8)
+			put(n, roof, Vector3(0, 6.7, 0), Color(0.55, 0.22, 0.16), "caravan", Vector3(0, PI / 2, 0), Vector3(7.8 / 10.0, 1, 10.0 / 7.8))
+			var wm := window_mat()
+			for wp in [Vector3(-2.8, 1.6, 3.51), Vector3(2.6, 1.6, 3.51), Vector3(-2.8, 4.1, 3.51), Vector3(0.2, 4.1, 3.51), Vector3(2.6, 4.1, 3.51)]:
+				put(n, m.box(1.3, 1.1, 0.05), wp, wm, "window")
+			if not data.get("door_done", false):
+				data["door_done"] = true
+				m.door_node = node(n, Vector3(-0.5, 0, 3.52))
+				put(m.door_node, m.box(1.0, 2.1, 0.06), Vector3(0.5, 1.05, 0), Color(0.35, 0.2, 0.12), "caravan")
+				door_light_at(n, Vector3(0.0, 2.5, 4.2))
+				m.obj["door"] = n.transform * Vector3(0.0, 0, 4.4)
+			put(n, m.box(0.5, 1.6, 0.5), Vector3(2.8, 7.4, -1.0), Color(0.5, 0.25, 0.2), "caravan")
+			m.add_obstacle_node(n, Vector3.ZERO, 9.2 * sc, 7.2 * sc)
+			m.set_obstacle_height(6.0 * sc)
+		"gartenhaus":
+			put(n, m.box(2.6, 2.2, 2.0), Vector3(0, 1.1, 0), Color(0.3, 0.42, 0.3), "caravan")
+			put(n, m.box(3.0, 0.12, 2.4), Vector3(0, 2.25, 0), Color(0.2, 0.2, 0.2), "caravan")
+			m.add_obstacle_node(n, Vector3.ZERO, 2.8 * sc, 2.2 * sc)
+			m.set_obstacle_height(2.2 * sc)
+		"garage":
+			put(n, m.box(3.4, 2.6, 6.0), Vector3(0, 1.3, 0), Color(0.82, 0.8, 0.76), "caravan")
+			put(n, m.box(3.6, 0.15, 6.3), Vector3(0, 2.65, 0), Color(0.3, 0.3, 0.32), "caravan")
+			put(n, m.box(2.6, 2.1, 0.05), Vector3(0, 1.05, 3.01), Color(0.6, 0.62, 0.65), "caravan")
+			m.add_obstacle_node(n, Vector3.ZERO, 3.4 * sc, 6.0 * sc)
+			m.set_obstacle_height(2.6 * sc)
+		"baum":
+			tree(n, Vector3.ZERO, 1.0, 0)
+			m.add_obstacle(p, 0.4)
+		"tanne":
+			tree(n, Vector3.ZERO, 1.0, 1)
+			m.add_obstacle(p, 0.4)
+		"busch":
+			put(n, sph(0.9, 1.3), Vector3(0, 0.6, 0), _hm(), "tree")
+			m.add_obstacle(p, 0.9 * sc)
+			m.set_obstacle_height(1.3 * sc)
+		"auto":                                                      # these build at the real place (their obstacles too)
+			static_car(p, r, [Color(0.7, 0.1, 0.1), Color(0.15, 0.3, 0.6), Color(0.85, 0.85, 0.85), Color(0.1, 0.1, 0.1)][int(absf(p.x * 7 + p.z)) % 4])
+		"velo":
+			bike(p, r)
+		"bank":
+			bench(p, r)
+		"tisch":
+			put(n, m.box(1.2, 0.05, 0.8), Vector3(0, 0.74, 0), Color(0.8, 0.8, 0.78), "stone")
+			for x in [-0.5, 0.5]:
+				for z in [-0.3, 0.3]:
+					put(n, cyl(0.015, 0.015, 0.7, 5), Vector3(x, 0.36, z), Color(0.6, 0.6, 0.62), "stone")
+			for sx in [-1, 1]:
+				put(n, m.box(0.45, 0.45, 0.45), Vector3(0.9 * sx, 0.23, 0), Color(0.6, 0.3, 0.1), "tent")
+			m.add_obstacle(p, 1.0)
+			m.set_obstacle_height(0.8)
+			m.obj["pir"] = p
+		"grill":
+			for kk in range(3):
+				var a_ := TAU * kk / 3.0
+				put(n, cyl(0.015, 0.015, 0.75, 5), Vector3(cos(a_) * 0.2, 0.36, sin(a_) * 0.2), Color(0.2, 0.2, 0.2), "stone", Vector3(sin(a_) * 0.25, 0, -cos(a_) * 0.25))
+			put(n, sph(0.3, 0.3), Vector3(0, 0.78, 0), Color(0.08, 0.08, 0.08), 45.0)
+			put(n, sph(0.3, 0.3), Vector3(0, 0.82, 0), Color(0.1, 0.1, 0.1), 40.0, Vector3(PI, 0, 0))
+			m.add_obstacle(p, 0.4)
+		"trampolin":
+			put(n, cyl(1.6, 1.6, 0.08, 24), Vector3(0, 0.8, 0), Color(0.1, 0.1, 0.12), "stone")
+			for kk in range(6):
+				var a2 := TAU * kk / 6.0
+				put(n, cyl(0.03, 0.03, 0.8, 5), Vector3(cos(a2) * 1.55, 0.4, sin(a2) * 1.55), Color(0.3, 0.5, 0.3), "stone")
+			m.add_obstacle(p, 1.7 * sc)
+			m.set_obstacle_height(0.9)
+		"beet":
+			put(n, m.box(4.0, 0.12, 1.0), Vector3(0, 0.06, 0), Color(0.3, 0.2, 0.12), "stone")
+			var fc := [Color(0.9, 0.2, 0.3), Color(0.95, 0.85, 0.2), Color(0.6, 0.3, 0.8), Color(1, 1, 1)]
+			for i in range(10):
+				put(n, sph(0.12), Vector3(-1.8 + i * 0.4, 0.3, rng.randf_range(-0.3, 0.3)), fc[i % fc.size()], "tree")
+		"laterne":
+			lamp_post(p)
+		"sandkasten":
+			put(n, m.box(2.0, 0.25, 2.0), Vector3(0, 0.12, 0), Color(0.55, 0.4, 0.25), "tree")
+			put(n, m.box(1.8, 0.27, 1.8), Vector3(0, 0.13, 0), Color(0.9, 0.82, 0.6), "stone")
+		"pool":
+			put(n, cyl(1.5, 1.5, 0.45, 24), Vector3(0, 0.22, 0), Color(0.2, 0.55, 0.85), "stone")
+			put(n, cyl(1.35, 1.35, 0.46, 24), Vector3(0, 0.24, 0), Color(0.45, 0.8, 0.95), 18.0)
+			m.add_obstacle(p, 1.6 * sc)
+	return n

@@ -1,12 +1,12 @@
 {
- "version": "3D-3.72",
+ "version": "3D-3.73",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30903405,
- "sha256": "5185ec5b4cc43fa9807f3b656dca531028b55d5371e9a17cbbfd24c307e7c288",
- "notes": "Nacht-Test, Testhilfen (Velo, Zelt, Tisch, Kühlboxen, Grill), Sabotage-Test, Planer + Referenz-Scan",
+ "size": 30925291,
+ "sha256": "67f63c77a77cf728d4bf62f03fb74c6cbb9a9fbc8569ef43ffe6a715bde5fd5b",
+ "notes": "Mein Zuhause bauen (Baukasten), Trainingspaket YOLO für ein eigenes KI-Modell",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24024213,
-  "sha256": "89a05eac1dee316101911bd3f82f864c9004244a40efab04a3f6a762141066fe"
+  "size": 24046728,
+  "sha256": "0ee922fd72fc422873e722e8604ebd105cb705ed27978c504ceab828e8738707"
  }
 }

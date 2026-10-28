@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 17:39",
+ "generated": "2026-10-28 18:29",
  "versions": [
   {
-   "version": "2.95.98",
-   "file": "webcam_bewegung_2_95_98.py",
+   "version": "2.95.99",
+   "file": "webcam_bewegung_2_95_99.py",
    "url": "",
-   "sha256": "5408bfc2ce33626939d989bd44b05dad868b07968e884f8958c7582cfc33d899",
-   "date": "2026-10-28 17:39",
-   "notes": "Referenz-Scan: Gegenstände bewachen (Rechteck im Referenz-Foto, fehlt er beim Vergleich = sofort Alarm), eigene Nacht-Referenz; 3D-Simulator 3D-3.72: Nacht-Test, Testhilfen, Sabotage-Test, Planer + Referenz-Scan",
-   "sig": "c24b8e63b403fc58b76b5a23bb8753472e12827dbef18b695bfbb416d36e6679d695b28c4fe311990ebfb60ee7f9f347f6f4075dc159dc2695191c1aac37a104"
+   "sha256": "30e3b1ad607bbffa3df702e81e73c02c4ccea931f990aaa133da69aad6d86ed1",
+   "date": "2026-10-28 18:29",
+   "notes": "Simulation: Trainingspaket für ein eigenes KI-Modell (YOLO, im Simulator gemacht); 3D-Simulator 3D-3.73: Szene «Mein Zuhause» mit Baukasten",
+   "sig": "7becbc358ad9bac90531daa504985f3dc804db4df6a0d768ab822e1bbc390e434692f8573845f8b21f7847b5386e09fc21cce4b34ff20d47f983a584ba45ed00"
   },
   {
    "version": "2.94.5",
