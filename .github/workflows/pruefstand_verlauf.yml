@@ -1,0 +1,27 @@
+# Writes pruefstand/VERLAUF.md again when a result arrives from outside (e.g. «Ergebnis senden» in the 3D simulator on a PC).
+name: Prüfstand-Verlauf
+on:
+  push:
+    paths:
+      - "pruefstand/ergebnisse/**"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: pruefstand-verlauf
+  cancel-in-progress: false
+jobs:
+  verlauf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: VERLAUF.md schreiben
+        run: python3 pruefstand/pruefstand.py --nur-verlauf
+      - name: Ins Repository
+        run: |
+          git config user.name "Prüfstand"
+          git config user.email "pruefstand@users.noreply.github.com"
+          git add pruefstand/VERLAUF.md
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Prüfstand: Verlauf aktualisiert"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 5; done

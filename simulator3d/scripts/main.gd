@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.48"
+const VERSION := "3D-3.49"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -873,6 +873,7 @@ func _build_chassis() -> void:
 var home_pos := Vector3.ZERO           # 3D-3.44: where Motion Watch stands (Aufstell-Planer «Hierhin stellen»)
 var home_yaw := 0.0
 var planner                           # planner.gd
+var pruef                             # pruefstand.gd (3D-3.49): the test bench on this PC
 var replay                            # replay.gd: Alarm-Rückblick in 3D (3D-3.44)
 var dataset                           # dataset.gd: Trainingsbilder (3D-3.44)
 var tunnel                            # tunnel.gd: Tunnel zu Motion Watch (3D-3.45)
@@ -2684,6 +2685,19 @@ func control(d: Dictionary) -> Dictionary:
 		if typeof(d.get("track")) != TYPE_DICTIONARY:
 			return {"ok": false, "error": "track missing"}
 		return replay.start(d["track"])
+	elif a == "pruefstand":                            # Prüfstand (3D-3.49): get / open / start (for tests)
+		var w_: String = str(d.get("do", "get"))
+		if w_ == "open":
+			pruef.open(true)
+		elif w_ == "start":
+			pruef.open(true)
+			for k_ in pruef.plan_cbs:
+				pruef.plan_cbs[k_].button_pressed = k_ in (d.get("plans", ["quick"]) as Array)
+			pruef.reps.value = int(d.get("reps", 1))
+			pruef.start()
+		elif w_ == "send":
+			pruef.send()
+		return pruef.state()
 	elif a == "planner":                               # Aufstell-Planer (3D-3.44): get / open / close / best / put
 		var op := str(d.get("op", "get"))
 		if op == "open":
@@ -2920,6 +2934,10 @@ func _build_ui() -> void:
 	planner.main = self
 	planner.theme = th
 	layer.add_child(planner)
+	pruef = preload("res://scripts/pruefstand.gd").new()    # Prüfstand (3D-3.49)
+	pruef.main = self
+	pruef.theme = th
+	layer.add_child(pruef)
 	var tvl := CanvasLayer.new()                            # the TV mode lies over everything (3D-3.44)
 	tvl.layer = 5
 	add_child(tvl)
@@ -3136,6 +3154,11 @@ func _build_ui() -> void:
 	plb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	plb.pressed.connect(func(): planner.open(not planner.visible))
 	tl.add_child(plb)
+	var psb := Button.new()
+	psb.text = "Prüfstand: Erkennung messen (auf diesem PC)"
+	psb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	psb.pressed.connect(func(): pruef.open(not pruef.visible))
+	tl.add_child(psb)
 	var pv := Button.new()
 	pv.text = "Handy- / Tablet-Simulator (P)"
 	pv.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

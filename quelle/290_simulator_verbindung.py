@@ -65,6 +65,7 @@ def sim_state():
     L = STATE.get("lights") or {}
     rs = STATE.get("relay_states") or []
     return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "Motion Watch", "armed": is_armed(), "picture_mode": CFG["picture_mode"],
+            "mw_version": APP_VERSION, "ai_status": str(STATE.get("ai_status") or ""),     # 2.95.67: for the test bench in the simulator
             "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * hp, 2),
                       "tilt_deg": round((CFG["tilt"] - 50) / 50 * ht, 2), "pan_limit": pl, "tilt_limit": tl,
                       "pan_range": round(2 * hp, 1),             # the whole turning range of the pan servo (2.95.24, for the Python simulator)

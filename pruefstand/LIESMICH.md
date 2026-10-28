@@ -48,3 +48,11 @@ python3 pruefstand/pruefstand.py --nur-verlauf          # nur VERLAUF.md neu sch
 - Pro Lauf sind nur wenige Personen gut sichtbar (3–6). Für verlässlichere Zahlen `--wiederholungen 3` oder den Testlauf `standard`
   nehmen; ein Unterschied von einer Person ist noch kein Beweis.
 - Ohne KI-Modell (z. B. ohne Internet) erkennt Motion Watch Personen nur über Bewegung und Gehmuster – die Spalte «KI» zeigt das.
+
+## Auf dem eigenen PC (ab Simulator 3D-3.49)
+
+Im 3D-Simulator: Werkzeuge → «Prüfstand: Erkennung messen». Motion Watch wählen (das verbundene oder eine Datei
+`webcam_bewegung_X.py` einlesen), Testläufe ankreuzen, «Messung starten». Am Schluss erscheint das Ergebnis.
+«Ergebnis senden» legt die Datei mit einem GitHub-Schlüssel (fein abgestuft, nur dieses Repository, «Contents: Read and write»)
+direkt in `pruefstand/ergebnisse/`; der Ablauf «Prüfstand-Verlauf» schreibt dann `VERLAUF.md` neu. Ohne Schlüssel landet die
+Datei auf dem Schreibtisch und kann im Chat angehängt werden.

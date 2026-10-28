@@ -1,12 +1,12 @@
 {
- "version": "3D-3.48",
+ "version": "3D-3.49",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30867227,
- "sha256": "17ef0e1c5a5369d30583e134041549fcc06bee540227e58d4f971ca2ece8567e",
- "notes": "Prüfstand: Kopfkamera als Wahrheit, Besucher nach Grösse",
+ "size": 30882249,
+ "sha256": "86df1887dbcb3ced06481d3abd5430365a78d23a717d3a6746b770febe489a59",
+ "notes": "Prüfstand auf dem PC: Motion Watch (verbunden oder Datei) mit festen Testläufen messen, Ergebnis direkt senden",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 23988768,
-  "sha256": "815be824899d98650c37f752060464da42cac38cba7950bf566bb8d5a0175862"
+  "size": 24003768,
+  "sha256": "d1f713967e788ed7d5052c3db764792f2a1075c0912bcc97e23ce7641c603ce3"
  }
 }

@@ -1,0 +1,410 @@
+extends PanelContainer
+## Prüfstand auf diesem PC (3D-3.49): misst die Erkennung von Motion Watch mit den festen Testläufen (testrun.gd), hier auf
+## einem echten PC mit Grafikkarte – realistische Bildraten statt der 1–3 Bilder/s ohne Grafikkarte. Von Hand ausgelöst:
+##   1. Motion Watch wählen: das gerade verbundene (Pi oder PC) – oder eine Datei webcam_bewegung_X.py einlesen, die dann als
+##      «Motion Watch auf diesem PC» startet
+##   2. Testläufe und Wiederholungen wählen, starten
+##   3. am Schluss erscheint das Ergebnis; «Senden» legt es ins GitHub-Repository (pruefstand/ergebnisse/, mit einem
+##      GitHub-Schlüssel) oder auf den Schreibtisch.
+## Das Ergebnis hat dasselbe Format wie pruefstand/pruefstand.py im Repository (VERLAUF.md liest beide).
+
+const UI = preload("res://scripts/ui_style.gd")
+const PLANS := [["quick", "Kurz (Tag + Nacht, ~2½ Min.)", true], ["night", "Nacht (~4 Min.)", true],
+		["standard", "Standard (Tag, Wind, Nacht, Regen, ~5 Min.)", true], ["hard", "Schwierig (Gegenlicht, Nebel, Schnee …, ~9 Min.)", false]]
+const PLAN_DAUER := {"quick": 150, "night": 230, "standard": 300, "hard": 520}
+const REPO_API := "https://api.github.com/repos/DonElektro/MotionWatch/contents/pruefstand/ergebnisse/"
+
+var main
+var file_lbl: Label
+var src_seg: OptionButton
+var plan_cbs := {}
+var reps: SpinBox
+var info: Label
+var start_b: Button
+var stop_b: Button
+var token_le: LineEdit
+var result_box: VBoxContainer
+var result_lbl: Label
+var send_b: Button
+var send_lbl: Label
+var setup_box: VBoxContainer
+var mw_file := ""
+var running := false
+var queue: Array = []
+var done: Array = []
+var current := ""
+var t_run := 0.0
+var t_all := 0.0
+var result := {}
+var result_path := ""
+var _wait_mw := 0.0
+var http: HTTPRequest
+
+
+func _ready() -> void:
+	visible = false
+	add_theme_stylebox_override("panel", UI.box(Color(UI.BG, 0.98), UI.LINE, 14, 14, 1))
+	anchor_right = 1.0
+	anchor_bottom = 1.0
+	offset_left = 16
+	offset_top = 16
+	offset_right = -410
+	offset_bottom = -16
+	http = HTTPRequest.new()
+	add_child(http)
+	var sc := ScrollContainer.new()
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	add_child(sc)
+	var v := VBoxContainer.new()
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.add_theme_constant_override("separation", 10)
+	sc.add_child(v)
+	var hd := HBoxContainer.new()
+	v.add_child(hd)
+	var t := UI.heading("Prüfstand: Erkennung messen")
+	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hd.add_child(t)
+	var x := Button.new()
+	x.text = "Schliessen"
+	x.pressed.connect(func(): open(false))
+	hd.add_child(x)
+	var lead := UI.small("Feste Testläufe: immer dieselben Besucher auf denselben Wegen. Der Simulator weiss, wer für die Kopfkamera gut sichtbar war, und vergleicht das mit den Meldungen von Motion Watch. Auf diesem PC (mit Grafikkarte) sind die Zahlen realistischer als auf GitHub.")
+	lead.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(lead)
+	setup_box = VBoxContainer.new()
+	setup_box.add_theme_constant_override("separation", 8)
+	v.add_child(setup_box)
+	setup_box.add_child(UI.small("1. Welches Motion Watch wird gemessen?", UI.TXT))
+	src_seg = OptionButton.new()
+	src_seg.add_item("Das gerade verbundene (Pi oder Motion Watch auf diesem PC)", 0)
+	src_seg.add_item("Eine Datei einlesen und hier auf diesem PC starten", 1)
+	src_seg.item_selected.connect(func(_i): _paint())
+	setup_box.add_child(src_seg)
+	var fr := HBoxContainer.new()
+	setup_box.add_child(fr)
+	var fb := Button.new()
+	fb.text = "Datei wählen … (webcam_bewegung_X.py)"
+	fb.pressed.connect(_pick_file)
+	fr.add_child(fb)
+	file_lbl = UI.small("keine Datei gewählt")
+	file_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	file_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	fr.add_child(file_lbl)
+	var warn := UI.small("Während der Messung darf nur EIN Motion Watch mit diesem Simulator verbunden sein (z. B. beim Pi die Simulation ausschalten, wenn eine Datei hier gemessen wird).")
+	warn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	setup_box.add_child(warn)
+	setup_box.add_child(UI.small("2. Welche Testläufe?", UI.TXT))
+	for p in PLANS:
+		var cb := CheckBox.new()
+		cb.text = p[1]
+		cb.button_pressed = p[2]
+		setup_box.add_child(cb)
+		plan_cbs[p[0]] = cb
+	var rr := HBoxContainer.new()
+	setup_box.add_child(rr)
+	var rl := UI.small("Jeden Testlauf so oft:", UI.TXT)
+	rl.autowrap_mode = TextServer.AUTOWRAP_OFF
+	rr.add_child(rl)
+	reps = SpinBox.new()
+	reps.min_value = 1
+	reps.max_value = 5
+	reps.value = 2
+	rr.add_child(reps)
+	var tk := HBoxContainer.new()
+	setup_box.add_child(tk)
+	var tl := UI.small("GitHub-Schlüssel (nur für «Senden»):", UI.TXT)
+	tl.autowrap_mode = TextServer.AUTOWRAP_OFF
+	tk.add_child(tl)
+	token_le = LineEdit.new()
+	token_le.secret = true
+	token_le.placeholder_text = "github_pat_… (leer = Datei auf den Schreibtisch)"
+	token_le.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	token_le.text = _token()
+	token_le.text_changed.connect(func(s): _save_token(s.strip_edges()))
+	tk.add_child(token_le)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	v.add_child(row)
+	start_b = Button.new()
+	start_b.text = "▶ Messung starten"
+	UI.primary(start_b)
+	start_b.pressed.connect(start)
+	row.add_child(start_b)
+	stop_b = Button.new()
+	stop_b.text = "Abbrechen"
+	stop_b.pressed.connect(func(): stop("abgebrochen"))
+	row.add_child(stop_b)
+	info = UI.small("", UI.TXT)
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.add_theme_font_size_override("font_size", 15)
+	v.add_child(info)
+	# the result («pop-up» at the end)
+	result_box = VBoxContainer.new()
+	result_box.add_theme_constant_override("separation", 8)
+	result_box.visible = false
+	var rp := PanelContainer.new()
+	rp.add_theme_stylebox_override("panel", UI.box(Color(0.10, 0.20, 0.14, 1.0), UI.GRN, 12, 14, 2))
+	rp.add_child(result_box)
+	v.add_child(rp)
+	result_box.add_child(UI.heading("Messung fertig"))
+	result_lbl = UI.small("", UI.TXT)
+	result_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	result_lbl.add_theme_font_size_override("font_size", 15)
+	result_box.add_child(result_lbl)
+	var r2 := HBoxContainer.new()
+	r2.add_theme_constant_override("separation", 8)
+	result_box.add_child(r2)
+	send_b = Button.new()
+	send_b.text = "Ergebnis senden"
+	UI.primary(send_b)
+	send_b.pressed.connect(send)
+	r2.add_child(send_b)
+	var ob := Button.new()
+	ob.text = "Ordner öffnen"
+	ob.pressed.connect(func(): OS.shell_show_in_file_manager(ProjectSettings.globalize_path(result_path)) if result_path != "" else null)
+	r2.add_child(ob)
+	send_lbl = UI.small("")
+	send_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	result_box.add_child(send_lbl)
+	_paint()
+
+
+func open(on: bool) -> void:
+	visible = on
+	if on:
+		_paint()
+
+
+func state() -> Dictionary:
+	return {"ok": true, "running": running, "current": current, "left": queue.size(), "done": done.size(), "info": info.text if info else "",
+			"result": result, "file": result_path}
+
+
+func _token() -> String:
+	var f := FileAccess.open("user://pruefstand/schluessel.txt", FileAccess.READ)
+	return f.get_as_text().strip_edges() if f != null else ""
+
+
+func _save_token(s: String) -> void:
+	DirAccess.make_dir_recursive_absolute("user://pruefstand")
+	var f := FileAccess.open("user://pruefstand/schluessel.txt", FileAccess.WRITE)
+	if f != null:
+		f.store_string(s)
+
+
+func _pick_file() -> void:
+	var d := FileDialog.new()
+	d.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+	d.access = FileDialog.ACCESS_FILESYSTEM
+	d.use_native_dialog = true
+	d.filters = PackedStringArray(["webcam_bewegung_*.py ; Motion Watch", "*.py ; Python"])
+	d.title = "Motion Watch für den Prüfstand wählen"
+	d.file_selected.connect(func(p):
+		mw_file = p
+		src_seg.select(1)
+		_paint()
+		d.queue_free())
+	d.canceled.connect(func(): d.queue_free())
+	add_child(d)
+	d.popup_centered(Vector2i(900, 600))
+
+
+func _paint() -> void:
+	if file_lbl == null:
+		return
+	file_lbl.text = mw_file.get_file() if mw_file != "" else "keine Datei gewählt"
+	start_b.disabled = running
+	stop_b.disabled = not running
+	setup_box.modulate.a = 0.5 if running else 1.0
+	if not running and info.text == "":
+		var con: bool = main.now() - main.mw_t < 3.0
+		info.text = ("Verbunden: %s" % str(main.mw.get("device", "Motion Watch"))) if con else "Noch kein Motion Watch verbunden."
+
+
+func start() -> void:
+	if running:
+		return
+	queue = []
+	for p in PLANS:
+		if (plan_cbs[p[0]] as CheckBox).button_pressed:
+			for i in int(reps.value):
+				queue.append(p[0])
+	if queue.is_empty():
+		info.text = "Bitte mindestens einen Testlauf wählen."
+		return
+	if src_seg.selected == 1:
+		if mw_file == "" or not FileAccess.file_exists(mw_file):
+			info.text = "Bitte zuerst die Datei wählen (webcam_bewegung_X.py)."
+			return
+		# Motion Watch on this PC with exactly this file (stopped first if it runs with another one)
+		main.mwpc.override_file = mw_file
+		if main.mwpc.state == "running":
+			main.mwpc.stop()
+		main.mwpc.start()
+	done = []
+	result = {}
+	result_box.visible = false
+	running = true
+	t_all = main.now()
+	_wait_mw = main.now()
+	current = ""
+	info.text = "Warte auf Motion Watch …"
+	_paint()
+
+
+func stop(why := "") -> void:
+	if not running:
+		return
+	running = false
+	if main.testrun.running:
+		main.testrun.stop(false)
+	current = ""
+	info.text = "Messung " + why + "."
+	_paint()
+
+
+func _process(_dt: float) -> void:
+	if not running:
+		return
+	var now: float = main.now()
+	var con: bool = now - main.mw_t < 3.0
+	if current == "":
+		if not con:                                       # Motion Watch not (yet) connected
+			var waited := now - _wait_mw
+			info.text = "Warte auf Motion Watch … %d s%s" % [int(waited), (" · " + main.mwpc.text) if src_seg.selected == 1 else ""]
+			if waited > (900.0 if src_seg.selected == 1 else 120.0):   # the first start on this PC loads Python (minutes)
+				stop("abgebrochen: Motion Watch hat sich nicht verbunden")
+			return
+		if queue.is_empty():
+			_finish()
+			return
+		if now - _wait_mw < 20.0 and done.is_empty():
+			info.text = "Motion Watch verbunden – %d s eingewöhnen …" % int(20.0 - (now - _wait_mw))
+			return
+		current = queue.pop_front()
+		var err: String = main.testrun.start(current, [0])
+		if err != "":
+			info.text = "Testlauf startet nicht: " + err
+			queue.push_front(current)
+			current = ""
+			_wait_mw = now
+			return
+		t_run = now
+		return
+	if main.testrun.running:
+		var left: float = 0.0
+		for q in queue:
+			left += PLAN_DAUER.get(q, 300)
+		left += max(0.0, PLAN_DAUER.get(current, 300) - (now - t_run))
+		info.text = "Läuft: %s (Lauf %d von %d) · %s · noch etwa %d Min." % [_name(current), done.size() + 1, done.size() + queue.size() + 1,
+				main.testrun.info.get_slice("–", 1).strip_edges() if "–" in main.testrun.info else main.testrun.info, int(ceil(left / 60.0))]
+		return
+	var rep: Dictionary = main.testrun.report
+	if rep.get("plan", "") == current and rep.has("phases"):
+		var r := rep.duplicate(true)
+		r["dauer_s"] = int(now - t_run)
+		done.append(r)
+	else:
+		info.text = "Testlauf %s ohne Bericht: %s" % [_name(current), main.testrun.info]
+	current = ""
+
+
+func _name(p: String) -> String:
+	for x in PLANS:
+		if x[0] == p:
+			return str(x[1]).get_slice(" (", 0)
+	return p
+
+
+func _finish() -> void:
+	running = false
+	var plans := {}
+	for r in done:
+		if not plans.has(r["plan"]):
+			plans[r["plan"]] = []
+		plans[r["plan"]].append(r)
+	var dt := Time.get_datetime_dict_from_system()
+	var stamp := "%04d-%02d-%02d %02d:%02d" % [dt.year, dt.month, dt.day, dt.hour, dt.minute]
+	var gpu := RenderingServer.get_video_adapter_name()
+	result = {"datum": stamp, "mw_version": str(main.mw.get("mw_version", "?")), "sim_version": main.VERSION,
+			"ki": str(main.mw.get("ai_status", "?")), "rechner": "PC %s (%s)" % [main.host_name(), gpu],
+			"qualitaet": main.quality, "szene": main.scene, "kameras": "Kopfkamera", "quelle": "Simulator-Prüfstand",
+			"motion_watch": "Datei " + mw_file.get_file() if src_seg.selected == 1 else str(main.mw.get("device", "verbunden")),
+			"plaene": plans}
+	DirAccess.make_dir_recursive_absolute("user://pruefstand")
+	var fn := "%04d-%02d-%02d_%02d%02d_%s.json" % [dt.year, dt.month, dt.day, dt.hour, dt.minute, str(result["mw_version"]).replace("?", "unbekannt")]
+	result_path = "user://pruefstand/" + fn
+	var f := FileAccess.open(result_path, FileAccess.WRITE)
+	if f != null:
+		f.store_string(JSON.stringify(result, " "))
+		f.close()
+	# the numbers
+	var lines := []
+	var tp := 0
+	var td := 0
+	var fa := 0
+	for p in plans:
+		var P := 0
+		var D := 0
+		var F := 0
+		for r in plans[p]:
+			P += int(r.get("persons", 0))
+			D += int(r.get("persons_detected", 0))
+			F += int(r.get("false_alarms", 0))
+		tp += P
+		td += D
+		fa += F
+		lines.append("%s ×%d: Personen %d von %d erkannt (%d %%), Fehlalarme %d" % [_name(p), (plans[p] as Array).size(), D, P, int(round(100.0 * D / max(1, P))), F])
+	result_lbl.text = "Motion Watch %s · %s\n\nInsgesamt: Personen %d von %d erkannt (%d %%), Fehlalarme %d · Dauer %d Min.\n\n%s" % [
+			result["mw_version"], result["rechner"], td, tp, int(round(100.0 * td / max(1, tp))), fa, int((main.now() - t_all) / 60.0), "\n".join(PackedStringArray(lines))]
+	result_box.visible = true
+	send_lbl.text = "Gespeichert: " + ProjectSettings.globalize_path(result_path)
+	info.text = "Fertig."
+	visible = true
+	DisplayServer.window_request_attention()
+	_paint()
+
+
+func send() -> void:
+	if result_path == "":
+		return
+	var body_txt := FileAccess.get_file_as_string(result_path)
+	var tok := token_le.text.strip_edges()
+	if tok == "":
+		# no key: on the desktop, the folder opens - attach the file in the chat
+		var desk := OS.get_system_dir(OS.SYSTEM_DIR_DESKTOP)
+		if desk == "" or not DirAccess.dir_exists_absolute(desk):
+			desk = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
+		if desk == "" or not DirAccess.dir_exists_absolute(desk):
+			desk = ProjectSettings.globalize_path("user://pruefstand")
+		var to := desk.path_join("Pruefstand_" + result_path.get_file())
+		var f := FileAccess.open(to, FileAccess.WRITE)
+		if f != null:
+			f.store_string(body_txt)
+			f.close()
+			OS.shell_show_in_file_manager(to)
+			send_lbl.text = "Auf den Schreibtisch gelegt: %s – diese Datei im Chat anhängen." % to.get_file()
+		else:
+			send_lbl.text = "Konnte nicht auf den Schreibtisch schreiben – «Ordner öffnen» und die Datei im Chat anhängen."
+		return
+	send_b.disabled = true
+	send_lbl.text = "Sende an GitHub …"
+	var data := JSON.stringify({"message": "Prüfstand (PC): Ergebnis %s" % result.get("mw_version", "?"),
+			"content": Marshalls.utf8_to_base64(body_txt)})
+	var headers := ["Authorization: Bearer " + tok, "Accept: application/vnd.github+json", "User-Agent: MotionWatch3D", "Content-Type: application/json"]
+	var err := http.request(REPO_API + result_path.get_file(), headers, HTTPClient.METHOD_PUT, data)
+	if err != OK:
+		send_b.disabled = false
+		send_lbl.text = "Senden ging nicht (%d)." % err
+		return
+	var r: Array = await http.request_completed
+	send_b.disabled = false
+	var code: int = r[1]
+	if code == 201 or code == 200:
+		send_lbl.text = "✅ Gesendet: pruefstand/ergebnisse/%s – die Tabelle VERLAUF.md wird auf GitHub nachgeführt." % result_path.get_file()
+	elif code == 401 or code == 403:
+		send_lbl.text = "GitHub lehnt den Schlüssel ab (%d) – Schlüssel prüfen (Rechte: Contents lesen und schreiben, nur dieses Repository)." % code
+	elif code == 422:
+		send_lbl.text = "Diese Datei ist schon auf GitHub."
+	else:
+		send_lbl.text = "Senden ging nicht (Antwort %d) – «Ordner öffnen» und die Datei im Chat anhängen." % code

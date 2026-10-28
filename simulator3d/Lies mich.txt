@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.48 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.49 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -544,3 +544,8 @@ mit Port (Adresse:8766), zum Vergleichen mit der Seite von Motion Watch.
 NEU IN 3D-3.48
 3D-3.48: Testlauf für den Prüfstand von Motion Watch: wählbar, welche Kameras für die Wahrheit zählen (nur die Kopfkamera
 erkennt Personen), und im Bericht jeder Besucher mit seiner Grösse im Bild (nah / mittel / weit).
+
+NEU IN 3D-3.49
+3D-3.49: Prüfstand auf diesem PC: Werkzeuge → «Prüfstand: Erkennung messen». Wählen, welches Motion Watch gemessen wird
+(das verbundene oder eine Datei webcam_bewegung_X.py einlesen), Testläufe ankreuzen, «Messung starten». Am Schluss erscheint
+das Ergebnis; mit «Ergebnis senden» geht es direkt auf GitHub (mit GitHub-Schlüssel) oder als Datei auf den Schreibtisch.

@@ -27,6 +27,7 @@ var py_cmd := ""              # Linux: python of the system
 var http: HTTPRequest
 var dl_total := 0
 var dl_what := ""
+var override_file := ""        # 3D-3.49: the test bench runs exactly this file (webcam_bewegung_X.py chosen on the PC)
 var test_python := false      # test computer: fetch and unpack the Windows Python anyway (--mw-test-python), then stop
 var helper := {}              # 3D-3.44: Motion Watch on this PC also does the AI for the Pi (port 5057): its hello (code, model, served)
 var _helper_t := 0.0
@@ -148,7 +149,13 @@ func start() -> void:
 		return
 	if not await _packages(py):
 		return
-	var mw := await _motion_watch()
+	var mw := ""
+	if override_file != "" and FileAccess.file_exists(override_file):
+		mw = dir.path_join("mw").path_join(override_file.get_file())      # a copy next to the others (the file may be anywhere)
+		if mw != override_file:
+			DirAccess.copy_absolute(override_file, mw)
+	else:
+		mw = await _motion_watch()
 	if mw == "":
 		return
 	await _settings(py)
