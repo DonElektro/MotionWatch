@@ -101,7 +101,9 @@ DE = {
     "MQTT on (state, events, commands)": "MQTT ein (Zustand, Ereignisse, Befehle)", "Encrypted (TLS, usually port 8883)": "Verschlüsselt (TLS, meist Port 8883)",
     "Home Assistant finds Motion Watch by itself (discovery)": "Home Assistant findet Motion Watch von selbst (Discovery)",
     "only letters, digits, - _ /": "nur Buchstaben, Ziffern, - _ /", "port 1-65535": "Port 1–65535", "Other devices": "Weitere Geräte", "overview on the web page: Cameras": "Übersicht auf der Webseite: Kameras",
-    "password wrong": "Passwort falsch", "not reachable": "nicht erreichbar", "invalid address (e.g. http://192.168.1.20:5000)": "ungültige Adresse (z. B. http://192.168.1.20:5000)",
+    "password wrong": "Passwort falsch", "not reachable": "nicht erreichbar",
+    "announces itself but does not answer - its firewall or security software blocks Motion Watch: use the tunnel":
+        "meldet sich im Netz, antwortet aber nicht – die Firewall oder Sicherheitssoftware des PCs sperrt Motion Watch: den Tunnel verwenden (unten)", "invalid address (e.g. http://192.168.1.20:5000)": "ungültige Adresse (z. B. http://192.168.1.20:5000)",
     "this device is in the list already": "dieses Gerät ist schon in der Liste", "this is this device itself": "das ist dieses Gerät selbst", "at most 12 devices": "höchstens 12 Geräte", "Shared pictures and videos with a small Motion Watch logo": "Geteilte Bilder und Videos mit kleinem Motion-Watch-Logo", "Backup": "Sicherung", "Theft protection": "Diebstahlschutz", "Deterrence": "Abschreckung",
     "Person: sound": "Person: Ton", "Big animal (bear, cow, horse, ...)": "Grosses Tier (Bär, Kuh, Pferd, …)", "Big animal: sound": "Grosses Tier: Ton",
     "Small animal (cat, dog, bird)": "Kleines Tier (Katze, Hund, Vogel)", "Small animal: sound": "Kleines Tier: Ton",

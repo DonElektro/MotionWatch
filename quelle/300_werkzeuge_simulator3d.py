@@ -1062,7 +1062,8 @@ def sim_scan():
         t0 = time.time()
         try:
             with ThreadPoolExecutor(max_workers=64) as ex:
-                list(ex.map(probe, [(h, p) for h in hosts for p in ports]))
+                list(ex.map(probe, [(h, p) for h in hosts for p in ports
+                                    if not (p == TUN_PORT and CFG.get("tunnel_on") and h in ("127.0.0.1", ip))]))   # 2.95.66: not the own tunnel
         finally:
             SIMSCAN.update(running=False, secs=round(time.time() - t0, 1), t=time.time())
             SIMSCAN["found"] = len(sim_found())             # simulators, not addresses (this device is reached twice: 127.0.0.1 and its own address)

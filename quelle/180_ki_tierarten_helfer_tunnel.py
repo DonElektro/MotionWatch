@@ -567,7 +567,8 @@ def tunnel_start():
                     line += ch
                 parts = line.decode("ascii", "replace").split()
                 good = bool(CFG.get("tunnel_on")) and len(parts) == 2 and parts[0] == "MWTUN1" and secrets.compare_digest(parts[1], tunnel_code())
-                TUN["try"] = {"peer": addr[0], "t": time.time(), "ok": good}     # 2.95.60: shown on the page (wrong code?)
+                if parts and parts[0] == "MWTUN1":           # 2.95.66: only a simulator counts (not the own simulator search)
+                    TUN["try"] = {"peer": addr[0], "t": time.time(), "ok": good}     # 2.95.60: shown on the page (wrong code?)
                 if not good:
                     c.sendall(b"NO\n"); c.close(); continue
                 c.sendall(b"OK\n"); c.settimeout(None)

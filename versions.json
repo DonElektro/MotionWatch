@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 07:56",
+ "generated": "2026-10-28 08:26",
  "versions": [
   {
-   "version": "2.95.65",
-   "file": "webcam_bewegung_2_95_65.py",
+   "version": "2.95.66",
+   "file": "webcam_bewegung_2_95_66.py",
    "url": "",
-   "sha256": "50b63ad9176b812277cf461b5de71ed80cbfbaacb632dc64d6c6603b0c989311",
-   "date": "2026-10-28 07:56",
-   "notes": "detection with few pictures per second (power saving, night, slow simulator): the speed limits in pixels per picture and the distance of the tracker grow with the real frame rate - before a walking person counted as a vehicle and was ignored, or the tracker lost it; a vehicle is judged from the median speed of two steps on",
-   "sig": "5a5749b79352932cc2bebc41f3393de352bc638b95d254fac93e3ffc92d358edf3b84b0e8b0b5e5e82f8a2f4c0fa49229edbda56260eacb29145cb98dbea8903"
+   "sha256": "8a937306eea32b1b36cbe5a2252fdb8b96c6ee39aa2939c38a1daf2960c457f8",
+   "date": "2026-10-28 08:26",
+   "notes": "simulator: when it announces itself in the network but does not answer, the page says so (firewall or security software of the PC blocks Motion Watch - use the tunnel); the own simulator search no longer knocks at the own tunnel port, the tunnel shows only real simulator tries",
+   "sig": "19818b4da79bb5916f10d308d65253a0d3c12a641cc008c5bd90760eed0d88144045065d3395ecb31e2ab75af59b4facd792248a8d92a623f3021d897df00002"
   },
   {
    "version": "2.94.5",

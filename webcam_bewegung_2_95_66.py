@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_65.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_66.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.66: simulator: when it announces itself in the network but does not answer, the page says so (firewall or security
+    software of the PC blocks Motion Watch - use the tunnel); the own simulator search no longer knocks at the own tunnel port,
+    the tunnel shows only real simulator tries
   * 2.95.65: detection with few pictures per second (power saving, night, slow simulator): the speed limits in pixels per
     picture and the distance of the tracker grow with the real frame rate - before a walking person counted as a vehicle and was
     ignored, or the tracker lost it; a vehicle is judged from the median speed of two steps on
@@ -728,10 +731,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_65.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_66.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_65.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_65.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_66.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_66.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -748,7 +751,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.65"
+APP_VERSION = "2.95.66"
 
 
 def default_data_dir():
@@ -9831,7 +9834,8 @@ def tunnel_start():
                     line += ch
                 parts = line.decode("ascii", "replace").split()
                 good = bool(CFG.get("tunnel_on")) and len(parts) == 2 and parts[0] == "MWTUN1" and secrets.compare_digest(parts[1], tunnel_code())
-                TUN["try"] = {"peer": addr[0], "t": time.time(), "ok": good}     # 2.95.60: shown on the page (wrong code?)
+                if parts and parts[0] == "MWTUN1":           # 2.95.66: only a simulator counts (not the own simulator search)
+                    TUN["try"] = {"peer": addr[0], "t": time.time(), "ok": good}     # 2.95.60: shown on the page (wrong code?)
                 if not good:
                     c.sendall(b"NO\n"); c.close(); continue
                 c.sendall(b"OK\n"); c.settimeout(None)
@@ -15380,7 +15384,8 @@ def sim_scan():
         t0 = time.time()
         try:
             with ThreadPoolExecutor(max_workers=64) as ex:
-                list(ex.map(probe, [(h, p) for h in hosts for p in ports]))
+                list(ex.map(probe, [(h, p) for h in hosts for p in ports
+                                    if not (p == TUN_PORT and CFG.get("tunnel_on") and h in ("127.0.0.1", ip))]))   # 2.95.66: not the own tunnel
         finally:
             SIMSCAN.update(running=False, secs=round(time.time() - t0, 1), t=time.time())
             SIMSCAN["found"] = len(sim_found())             # simulators, not addresses (this device is reached twice: 127.0.0.1 and its own address)
@@ -17542,8 +17547,15 @@ class SimLink:
             try:
                 self.tick()
             except Exception as e:
-                SIM.update(ok=False, msg=("not reachable: " + _short_net_err(e)) if "_short_net_err" in globals() else str(e)[:100],
-                           errs=SIM["errs"] + 1, since=0.0)
+                msg_ = ("not reachable: " + _short_net_err(e)) if "_short_net_err" in globals() else str(e)[:100]
+                try:                                         # 2.95.66: it announces itself (broadcast) but does not answer
+                    u_ = urllib.parse.urlsplit(sim_base())
+                    f_ = SIMFOUND.get(f"{u_.hostname}:{u_.port or 8765}") or {}
+                    if f_ and time.time() - float(f_.get("t") or 0) < 15 and not str(u_.hostname).startswith("127."):
+                        msg_ = "announces itself but does not answer - its firewall or security software blocks Motion Watch: use the tunnel"
+                except Exception:
+                    pass
+                SIM.update(ok=False, msg=msg_, errs=SIM["errs"] + 1, since=0.0)
                 time.sleep(2.0); continue
             time.sleep(max(0.02, (0.2 if sim_eco_now() else 0.1) - (time.time() - t0)))
 
@@ -18911,7 +18923,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_65.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_66.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -35455,6 +35467,7 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D
 SIMTUN_JS = r"""Object.assign(I18N.de, {"Simulator behind a firewall": "Simulator hinter einer Firewall", "tunnel-note": "Läuft der Simulator auf einem PC oder einer virtuellen Maschine ohne Administratorrechte, lässt dessen Firewall Motion Watch nicht hinein. Dann verbindet sich der Simulator selbst nach aussen zu Motion Watch (Port 8766) – das erlaubt jede Firewall. Im Simulator einmal die Adresse von Motion Watch und diesen Code eintragen.", "Code": "Code", "code": "Code", "In the simulator: Verbindung → «Tunnel zu Motion Watch»: address": "Im Simulator: Verbindung → «Tunnel zu Motion Watch»: Adresse", "Simulator connected through the tunnel": "Simulator über den Tunnel verbunden", "no simulator through the tunnel yet": "noch kein Simulator über den Tunnel", "Switch off": "Ausschalten", "Switch on": "Einschalten", "New code": "Neuer Code", "off": "aus",
   "port": "Port", "Motion Watch listens on port": "Motion Watch wartet auf Port", "could not open port": "Port kann nicht geöffnet werden", "In the simulator the field shows": "Im Simulator muss dasselbe stehen",
   "last try from": "Letzter Versuch von", "ago": "vor", "code accepted": "Code richtig", "wrong code": "Code falsch – im Simulator den Code von hier eintragen", "no try yet": "Noch kein Versuch eines Simulators angekommen – stimmt die Adresse? Ist «Tunnel verwenden» im Simulator an?",
+  "announces itself but does not answer - its firewall or security software blocks Motion Watch: use the tunnel": "meldet sich im Netz, antwortet aber nicht – die Firewall oder Sicherheitssoftware des PCs sperrt Motion Watch: den Tunnel verwenden (unten)",
   "Direct connection": "Direkte Verbindung", "Motion Watch fetches the pictures from the simulator on port": "Ohne Tunnel holt Motion Watch die Bilder beim Simulator auf Port"});
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"tunnel-note": "If the simulator runs on a PC or a virtual machine without admin rights, its firewall does not let Motion Watch in. Then the simulator itself connects out to Motion Watch (port 8766) - every firewall allows that. Enter the address of Motion Watch and this code once in the simulator."});
 
@@ -39338,7 +39351,9 @@ DE = {
     "MQTT on (state, events, commands)": "MQTT ein (Zustand, Ereignisse, Befehle)", "Encrypted (TLS, usually port 8883)": "Verschlüsselt (TLS, meist Port 8883)",
     "Home Assistant finds Motion Watch by itself (discovery)": "Home Assistant findet Motion Watch von selbst (Discovery)",
     "only letters, digits, - _ /": "nur Buchstaben, Ziffern, - _ /", "port 1-65535": "Port 1–65535", "Other devices": "Weitere Geräte", "overview on the web page: Cameras": "Übersicht auf der Webseite: Kameras",
-    "password wrong": "Passwort falsch", "not reachable": "nicht erreichbar", "invalid address (e.g. http://192.168.1.20:5000)": "ungültige Adresse (z. B. http://192.168.1.20:5000)",
+    "password wrong": "Passwort falsch", "not reachable": "nicht erreichbar",
+    "announces itself but does not answer - its firewall or security software blocks Motion Watch: use the tunnel":
+        "meldet sich im Netz, antwortet aber nicht – die Firewall oder Sicherheitssoftware des PCs sperrt Motion Watch: den Tunnel verwenden (unten)", "invalid address (e.g. http://192.168.1.20:5000)": "ungültige Adresse (z. B. http://192.168.1.20:5000)",
     "this device is in the list already": "dieses Gerät ist schon in der Liste", "this is this device itself": "das ist dieses Gerät selbst", "at most 12 devices": "höchstens 12 Geräte", "Shared pictures and videos with a small Motion Watch logo": "Geteilte Bilder und Videos mit kleinem Motion-Watch-Logo", "Backup": "Sicherung", "Theft protection": "Diebstahlschutz", "Deterrence": "Abschreckung",
     "Person: sound": "Person: Ton", "Big animal (bear, cow, horse, ...)": "Grosses Tier (Bär, Kuh, Pferd, …)", "Big animal: sound": "Grosses Tier: Ton",
     "Small animal (cat, dog, bird)": "Kleines Tier (Katze, Hund, Vogel)", "Small animal: sound": "Kleines Tier: Ton",
@@ -40440,7 +40455,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.65")
+        self.root.title("Motion Watch 2.95.66")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40730,7 +40745,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.65 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.66 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

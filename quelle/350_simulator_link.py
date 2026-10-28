@@ -19,8 +19,15 @@ class SimLink:
             try:
                 self.tick()
             except Exception as e:
-                SIM.update(ok=False, msg=("not reachable: " + _short_net_err(e)) if "_short_net_err" in globals() else str(e)[:100],
-                           errs=SIM["errs"] + 1, since=0.0)
+                msg_ = ("not reachable: " + _short_net_err(e)) if "_short_net_err" in globals() else str(e)[:100]
+                try:                                         # 2.95.66: it announces itself (broadcast) but does not answer
+                    u_ = urllib.parse.urlsplit(sim_base())
+                    f_ = SIMFOUND.get(f"{u_.hostname}:{u_.port or 8765}") or {}
+                    if f_ and time.time() - float(f_.get("t") or 0) < 15 and not str(u_.hostname).startswith("127."):
+                        msg_ = "announces itself but does not answer - its firewall or security software blocks Motion Watch: use the tunnel"
+                except Exception:
+                    pass
+                SIM.update(ok=False, msg=msg_, errs=SIM["errs"] + 1, since=0.0)
                 time.sleep(2.0); continue
             time.sleep(max(0.02, (0.2 if sim_eco_now() else 0.1) - (time.time() - t0)))
 
