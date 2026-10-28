@@ -96,7 +96,11 @@ def sim_state():
                     "boxes": list(STATE.get("person_boxes") or []) if STATE.get("persons") else [],   # 2.95.75: 0..1 of the head camera
                     "noise": bool(AUDIO is not None and AUDIO.noisy())},
             # the tracks of the mover: -1 … 1 each (from 2.94.0)
-            "drive": {"l": MOVER["l"], "r": MOVER["r"]}}
+            "drive": {"l": MOVER["l"], "r": MOVER["r"]},
+            # 2.96.5 (makeover 9 / 10): the twin - zones (0..1 of the picture), patrol points (degrees), the place
+            "zones": [{"name": z.get("name", ""), "mode": z.get("mode", "ignore"), "points": z.get("points", [])} for z in ZONES[:12]],
+            "waypoints": [[round((float(w[0]) - 50) / 50 * hp, 1), round((float(w[1]) - 50) / 50 * ht, 1)] for w in WAYPOINTS[:12]
+                          if isinstance(w, (list, tuple)) and len(w) >= 2]}
 
 
 _SIMFILES = {}

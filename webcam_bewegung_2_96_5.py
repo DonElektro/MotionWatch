@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_4.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_5.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,10 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.96.5: Makeover 8–11: «Was wäre wenn …?» – jede Aufnahme mit 🧪 im Simulator nachstellen (Uhrzeit, Regen, Richtung, Anzahl
+    Personen; neue Aufnahmen merken sich die Situation); Zwilling deines Platzes (Ort, Zonen, Patrouillen-Punkte an den
+    Simulator, zurück Ort und Stangenhöhe); Zonen und Erkennung live in der 3D-Ansicht (Kacheln in der Simulator-Zentrale);
+    passt zum Simulator 3D-3.83
   * 2.96.4: Makeover 1–7: gleiche Farben in Fenster, Webseite und Simulator; Streifen «SIMULATION – Alarme sind nicht echt» mit
     orangem Rahmen auf allen Seiten; Simulator-Kachel auf der Startseite und Simulator-Zentrale (Szene, Tageszeit, Wetter,
     Besuch schicken, Überraschungsnacht, Vorlagen, Spiel, Tests, Tagebuch); Kino-Modus /kino (Vollbild für TV / Beamer mit
@@ -812,10 +816,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_96_4.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_96_5.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_96_4.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_96_4.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_96_5.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_96_5.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -832,7 +836,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.96.4"
+APP_VERSION = "2.96.5"
 
 
 def default_data_dir():
@@ -7914,7 +7918,7 @@ MAKEOVER_ALL = [
     (21, "Fehlalarm-Lernen"), (22, "Karte der blinden Flecken"), (23, "Nacht-Generalprobe vor dem Scharfschalten"),
     (24, "Schwellen automatisch einstellen"), (25, "Erkennungs-Check jede Woche"),
 ]
-MAKEOVER_DONE = {1, 2, 3, 4, 5, 6, 7}                                # numbers already delivered (nachführen)
+MAKEOVER_DONE = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}                                # numbers already delivered (nachführen)
 
 
 def _news_vt(v):
@@ -8036,10 +8040,16 @@ def sim_hub(force=False):
         d.update(ok=True, name=str(r.get("name") or ""), scene=str(r.get("scenario") or ""), status=st,
                  scenes=[{"id": s.get("id"), "name": str(s.get("name") or "").replace(" (3D)", "")} for s in r.get("scenarios") or []][:40],
                  hour=h, clock="%02d:%02d" % (int(h), int(round((h % 1) * 60)) % 60), dark=" Nacht " in st or st.find("· Nacht ·") >= 0,
-                 weather=wx, ambient=vals.get("ambient"), visitors=int(m.group(1)) if m else None, surprise=bool(vals.get("surprise_on")),
+                 weather=wx, ambient=vals.get("ambient"), visitors=int(m.group(1)) if m else None, surprise=bool(vals.get("surprise_on")), zones3d=bool(vals.get("show_zones3d")), det3d=bool(vals.get("show_det3d")),
+                 twin_ok="show_zones3d" in vals,
                  game=r.get("game") or {}, has={k: k in vals for k in ("surprise_on", "weather", "hour", "spawn_person", "thief")})
     except Exception as e:
         d["msg"] = str(e)[:80]
+    if d.get("ok"):                                         # the twin, back from the simulator (place, mast)
+        try:
+            d["twin"] = sim_twin_info() if d.get("twin_ok") else {}
+        except Exception:
+            d["twin"] = {}
     _SIMHUB.update(t=now, d=d)
     return d
 
@@ -8060,6 +8070,10 @@ def sim_hub_do(a, v=None):
             r = sim_control({"action": "set", "id": "surprise_on", "value": bool(v)})
         elif a == "templates":
             r = sim_control({"action": "templates", "do": "open", "tab": 0})
+        elif a == "twin":
+            r = sim_twin()
+        elif a == "overlay":
+            r = sim_control({"action": "set", "id": str(v.get("id")), "value": bool(v.get("on"))}) if isinstance(v, dict) and v.get("id") in ("show_zones3d", "show_det3d") else {"ok": False}
         else:
             return False, "unknown action"
         _SIMHUB["t"] = 0.0
@@ -8091,7 +8105,8 @@ SIMHUB_JS = r"""
     "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
     "Tap = control": "Antippen = steuern", "person": "Person", "burglar": "Dieb", "child": "Kind", "dogwalk": "Hund", "fox": "Fuchs", "deer": "Reh", "cat": "Katze",
     "boar": "Wildschwein", "hedgehog": "Igel", "cyclist": "Velo", "courier": "Kurier", "car": "Auto", "sent": "geschickt", "Test run, test bench": "Testlauf, Prüfstand",
-    "Play on the phone": "Mitspielen mit dem Handy", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"};
+    "Play on the phone": "Mitspielen mit dem Handy", "Twin of your place": "Zwilling deines Platzes", "Place, zones, patrol": "Ort, Zonen, Patrouille",
+    "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"};
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
   const WX = [["clear", "☀"], ["cloudy", "☁"], ["rain", "🌧"], ["fog", "🌫"], ["snow", "❄"]];
   const VIS = __VIS__;
@@ -8118,15 +8133,21 @@ SIMHUB_JS = r"""
       ["weather", wxIcon(H.weather), tt("Weather"), tt(H.weather || "–") + (H.ambient != null ? " · " + Math.round(H.ambient) + " °C" : "")],
       ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")],
       ["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]];
+    if (full && H.twin_ok) T.push(["twin", "🪞", tt("Twin of your place"), tt("Place, zones, patrol")], ["zones3d", "▱", tt("Zones in 3D"), H.zones3d ? tt("on") : tt("off")],
+      ["det3d", "🎯", tt("Detection in 3D"), H.det3d ? tt("on") : tt("off")]);
     if (full) T.push(["templates", "🧩", tt("Templates"), tt("Opens on the PC")], ["game", "🎮", tt("Game"), tt("Play on the phone")],
       ["tests", "🧪", tt("Tests"), tt("Test run, test bench")], ["diary", "📔", tt("Diary"), tt("Visits and detection")]);
     T.forEach(([k, ic, n, sub]) => { const b = E("button", "st" + (open === k || (k === "surprise" && H.surprise) ? " on" : "")); b.type = "button";
       b.append(E("i", "", ic), E("b", "", n), E("small", "", sub));
       b.onclick = () => { if (k === "surprise") return act("surprise", !H.surprise); if (k === "templates") return act("templates").then(r => r && r.ok && say("🧩 " + tt("Opens on the PC")));
+        if (k === "twin") return act("twin").then(r => r && r.ok && say("🪞 " + tt("The map opens at your place on the PC – confirm «Load this place»")));
+        if (k === "zones3d") return act("overlay", {id: "show_zones3d", on: !H.zones3d}); if (k === "det3d") return act("overlay", {id: "show_det3d", on: !H.det3d});
         if (k === "game") return location.href = "/sim#c-game"; if (k === "tests") return location.href = "/sim#c-test"; if (k === "diary") return location.href = "/diary#simcard";
         open = open === k ? "" : k; paintAll(); };
       g.appendChild(b); });
     box.appendChild(g); if (open) sheet(box, open);
+    if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Twin of your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
+      + (H.twin.zones != null ? " · " + H.twin.zones + " " + tt("zones") : "") + (H.twin.waypoints != null ? " · " + H.twin.waypoints + " " + tt("patrol points") : "")); w.style.cssText = "margin-top:8px;font-size:12px"; box.appendChild(w); }
   }
   function paintTile(el_) {
     el_.hidden = !(H && H.on); if (!H || !H.on) return; el_.textContent = "";
@@ -8196,6 +8217,68 @@ document.addEventListener("keydown", e => { if (e.key === "f" || e.key === "F") 
   if (e.key === "Escape" && !document.fullscreenElement) location.href = "/"; });
 document.body.ondblclick = () => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(() => {});
 </script></body></html>"""
+
+
+# ---- 2.96.5 (Makeover-Punkt 8): «Was wäre wenn …?» - eine echte Aufnahme im Simulator nachstellen: gleiche Uhrzeit, Licht,
+# Regen, Richtung des Kopfes, gleich viele Personen (bzw. ein Tier / Auto). Jede neue Aufnahme bekommt dafür «situ» in ihre
+# Info-Datei; ältere Aufnahmen nehmen die Uhrzeit aus dem Namen und schauen geradeaus.
+def whatif_situ_now(info=None):
+    hp, ht = servo_half("pan"), servo_half("tilt")
+    obj = str(STATE.get("object_summary") or "").lower()
+    animal = any(w in obj for w in ("cat", "dog", "fox", "deer", "bird", "animal", "horse", "sheep", "cow", "bear", "boar"))
+    car = any(w in obj for w in ("car", "truck", "bus", "motorcycle"))
+    return {"pan_deg": round((CFG["pan"] - 50) / 50 * hp, 1), "tilt_deg": round((CFG["tilt"] - 50) / 50 * ht, 1),
+            "dark": bool(STATE.get("lowlight")), "rain": bool(STATE.get("rain_mode")), "wind": str(STATE.get("wind_level") or ""),
+            "animal": animal, "car": car, "ir": bool((STATE.get("lights") or {}).get("ir")) if isinstance(STATE.get("lights"), dict) else False}
+
+
+def whatif(name):
+    """re-enact the recording «name» in the simulator. Returns (ok, error, text)"""
+    if not CFG.get("sim_on"):
+        return False, "the simulator is not switched on (tab Simulator)", ""
+    if not rec_path(name):
+        return False, "not found", ""
+    meta = _read_sidecar(name)
+    situ = meta.get("situ") or {}
+    try:
+        dt = datetime.fromisoformat(meta["start"]) if meta.get("start") else (parse_stamp(os.path.basename(name)) or datetime.now())
+    except ValueError:
+        dt = datetime.now()
+    persons = int(meta.get("persons") or 0)
+    kind = "person" if persons or not (situ.get("animal") or situ.get("car")) else ("fox" if situ.get("animal") else "car")
+    q = {"action": "whatif", "hour": round(dt.hour + dt.minute / 60.0, 2), "weather": "rain" if situ.get("rain") else "clear",
+         "kind": kind, "n": max(1, min(4, persons or 1)), "pan_deg": float(situ.get("pan_deg") or 0.0),
+         "dist": 9.0 if situ.get("dark") else 14.0, "name": os.path.basename(name)}
+    try:
+        r = sim_control(q)
+    except Exception:
+        return False, "simulator not reachable", ""
+    if not r.get("ok"):
+        return False, str(r.get("error") or "not supported - update the simulator"), ""
+    log_event("sys", f"What if: {name} re-enacted in the simulator ({kind}, {q['hour']:.2f} h)")
+    _SIMHUB["t"] = 0.0
+    return True, "", "%02d:%02d · %s%s · %s" % (dt.hour, dt.minute, ev_icon("person" if kind == "person" else "animal" if kind == "fox" else "vehicle"),
+                                                 (" ×%d" % q["n"]) if q["n"] > 1 else "", "🌧" if situ.get("rain") else ("🌙" if situ.get("dark") else "☀"))
+
+
+# ---- 2.96.5 (Makeover-Punkt 9): Zwilling deines Platzes. MoveEye -> Simulator: Ort (GPS / eingestellter Ort), Zonen und
+# Patrouillen-Punkte (die beiden letzten gehen laufend im Zustand mit, sim_state). Der Simulator öffnet die Karte an diesem Ort
+# («Diesen Ort laden» bestätigen). Simulator -> MoveEye: der geladene Ort, die Stangenhöhe und die Szene (sim_twin_info).
+def sim_twin():
+    g = gps_now()
+    q = {"action": "twin", "name": CFG.get("device_name") or "MoveEye", "zones": len(ZONES), "waypoints": len(WAYPOINTS)}
+    if g:
+        q.update(lat=round(g[0], 6), lon=round(g[1], 6), src=g[2])
+    r = sim_control(q)
+    return r
+
+
+def sim_twin_info():
+    try:
+        r = sim_control({"action": "twin", "op": "info"})
+        return r.get("twin") or {}
+    except Exception:
+        return {}
 # ----------------------------------------------------------------------------
 # Autostart: when switched on, the Pi starts MoveEye when it boots (no screen needed) and switches the own Wi-Fi on.
 # When switched off, nothing starts at boot and the Pi joins its known networks as usual (the own Wi-Fi never starts by itself).
@@ -14840,7 +14923,11 @@ def sim_state():
                     "boxes": list(STATE.get("person_boxes") or []) if STATE.get("persons") else [],   # 2.95.75: 0..1 of the head camera
                     "noise": bool(AUDIO is not None and AUDIO.noisy())},
             # the tracks of the mover: -1 … 1 each (from 2.94.0)
-            "drive": {"l": MOVER["l"], "r": MOVER["r"]}}
+            "drive": {"l": MOVER["l"], "r": MOVER["r"]},
+            # 2.96.5 (makeover 9 / 10): the twin - zones (0..1 of the picture), patrol points (degrees), the place
+            "zones": [{"name": z.get("name", ""), "mode": z.get("mode", "ignore"), "points": z.get("points", [])} for z in ZONES[:12]],
+            "waypoints": [[round((float(w[0]) - 50) / 50 * hp, 1), round((float(w[1]) - 50) / 50 * ht, 1)] for w in WAYPOINTS[:12]
+                          if isinstance(w, (list, tuple)) and len(w) >= 2]}
 
 
 _SIMFILES = {}
@@ -15756,8 +15843,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.82", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31129067,
-         "sha256": "0e16b0671e2b71f816aaedcda7f8d813e38aeb864c2b5e32286c25e9f0e93525"}
+SIM3D = {"version": "3D-3.83", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31140452,
+         "sha256": "d6942aa3bf75ee49820f23824f4302e01a5102765ca5a1a7cb6ba9f77782e8d4"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15896,8 +15983,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.82", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24250598,
-           "sha256": "9d1c34f0a379d70ed24c720500b1f976a0a5ead1d02b405d2da5136a4ca810a6", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.83", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24261898,
+           "sha256": "7e9bc11db898df06f24876384fecad634733805e95864541da31d9a3aa396921", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -20569,7 +20656,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_4.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_5.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -22459,6 +22546,10 @@ class MotionWatch:
                 "frames": info["frames"], "fps": round(info["fps"], 1), "codec": info["codec"],
                 "persons": info["persons"], "source": info["source"], "source_id": info["source_id"],
                 "schedules": info["schedules"]}
+        try:                                               # 2.96.5: the situation, for «Was wäre wenn …?» (139_makeover_simzentrale)
+            meta["situ"] = whatif_situ_now(info)
+        except Exception:
+            pass
         g = gps_now() if CFG["gps_tag"] else None
         if g:
             meta["gps"] = {"lat": g[0], "lon": g[1], "src": g[2]}
@@ -38619,6 +38710,7 @@ body.selecting .chk{display:block}
       <button class="sec" id="m-prev" title="←">&#8249;</button><button class="sec" id="m-next" title="→">&#8250;</button>
       <button class="sec" id="m-fav" title="★">☆</button>
       <button class="sec" id="m-fa" title="👎">👎</button>
+      <button class="sec" id="m-wi" title="🧪">🧪</button>
       <button class="sec" id="m-share" title="Share">⤴</button>
       <a class="btn sec" id="m-pdf" target="_blank" rel="noopener" title="Report (PDF)">📄</a>
       <a class="btn sec" id="m-dl" download data-i18n="Download">Download</a>
@@ -38876,13 +38968,16 @@ $("#f-place").onchange = () => { F.place = $("#f-place").value; load(true); };
 // ---- false alarms: «was nothing» + suggestions ----
 Object.assign(I18N.de, {"Continuous recording (all the time, few pictures per second) with a timeline": "Daueraufnahme (immer, wenige Bilder pro Sekunde) mit Zeitleiste", "Continuous recording: keep (hours)": "Daueraufnahme: behalten (Stunden)", "Continuous recording: pictures per second": "Daueraufnahme: Bilder pro Sekunde", "🎞 Continuous recording": "🎞 Daueraufnahme", "Continuous recording": "Daueraufnahme", "recording now": "wird gerade aufgenommen", "alarms": "Alarme", "Tap a blue piece to watch it. Red lines: alarms.": "Ein blaues Stück antippen zum Ansehen. Rote Striche: Alarme.", "Continuous recording is off (Settings → Recording).": "Daueraufnahme ist aus (Einstellungen → Aufnahme)."});
 Object.assign(I18N.de, {"Event report (PDF) for the police / insurance": "Ereignisbericht (PDF) für Polizei / Versicherung"});
-Object.assign(I18N.de, {"False alarms": "Fehlalarme", "Animal": "Tier", "Wind / branches": "Wind / Äste", "Light / shadow": "Licht / Schatten", "Rain": "Regen", "Car": "Auto", "Other": "Anderes", "Was nothing (false alarm)": "War nichts (Fehlalarm)", "Was nothing - what was it?": "War nichts – was war es?", "Was real after all": "War doch echt", "false alarms marked in the last": "Fehlalarme markiert in den letzten", "days": "Tagen", "of": "von", "suggestions:": "Vorschläge:", "Open": "Öffnen", "Take over": "Übernehmen", "Switch on the automatic wind detection": "Automatische Wind-Erkennung einschalten", "Less sensitive to light changes": "Weniger empfindlich auf Lichtwechsel", "Switch on the automatic rain detection": "Automatische Regen-Erkennung einschalten", "Detect rain earlier": "Regen früher erkennen", "Switch on the vehicle filter": "Fahrzeug-Filter einschalten", "Somewhat less sensitive overall": "Insgesamt etwas weniger empfindlich"});
+Object.assign(I18N.de, {"What if …? Re-enact it in the simulator": "Was wäre wenn …? Im Simulator nachstellen", "Re-enacted in the simulator": "Im Simulator nachgestellt", "False alarms": "Fehlalarme", "Animal": "Tier", "Wind / branches": "Wind / Äste", "Light / shadow": "Licht / Schatten", "Rain": "Regen", "Car": "Auto", "Other": "Anderes", "Was nothing (false alarm)": "War nichts (Fehlalarm)", "Was nothing - what was it?": "War nichts – was war es?", "Was real after all": "War doch echt", "false alarms marked in the last": "Fehlalarme markiert in den letzten", "days": "Tagen", "of": "von", "suggestions:": "Vorschläge:", "Open": "Öffnen", "Take over": "Übernehmen", "Switch on the automatic wind detection": "Automatische Wind-Erkennung einschalten", "Less sensitive to light changes": "Weniger empfindlich auf Lichtwechsel", "Switch on the automatic rain detection": "Automatische Regen-Erkennung einschalten", "Detect rain earlier": "Regen früher erkennen", "Switch on the vehicle filter": "Fahrzeug-Filter einschalten", "Somewhat less sensitive overall": "Insgesamt etwas weniger empfindlich"});
 const FA_TXT = () => ({animal: "🐾 " + t("Animal"), wind: "🌿 " + t("Wind / branches"), light: "💡 " + t("Light / shadow"), rain: "🌧 " + t("Rain"), car: "🚗 " + t("Car"), other: "❓ " + t("Other")});
 function faRow(it) {
   const r = $("#m-farow"); r.textContent = ""; r.hidden = true;
   $("#m-fa").hidden = !!it.timelapse; $("#m-fa").classList.toggle("on", !!it.false);
   $("#m-fa").title = t("Was nothing (false alarm)");
   $("#m-fa").onclick = () => { r.hidden = !r.hidden; };
+  const wi = $("#m-wi"); if (wi) { wi.hidden = !!it.timelapse; wi.title = t("What if …? Re-enact it in the simulator");      // 2.96.5: makeover 8
+    wi.onclick = async () => { wi.disabled = true; const q = await post("/api/whatif", {name: it.name, lang: LANG}); wi.disabled = false;
+      toast(q.ok ? "🧪 " + t("Re-enacted in the simulator") + " · " + (q.text || "") : "⚠ " + (q.error || t("error"))); }; }
   r.appendChild(el("span", "mut", t("Was nothing - what was it?")));
   Object.entries(FA_TXT()).forEach(([k, v]) => { const b = el("button", "sec" + (it.false === k ? " on" : ""), v); b.type = "button";
     b.onclick = () => faSet(it, k); r.appendChild(b); });
@@ -40664,6 +40759,12 @@ class WebStream:
                 ok, err = sim_hub_do(str(d.get("a") or ""), d.get("v"))
                 return reply({"ok": ok, "error": tr_err(err, norm_lang(d.get("lang"))) if err else "", "hub": sim_hub(True)})
             return reply(sim_hub())
+
+        @app.route("/api/whatif", methods=["POST"])
+        def api_whatif():                                    # 2.96.5: re-enact a recording in the simulator
+            d = body(); lang = norm_lang(d.get("lang"))
+            ok, err, txt = whatif(str(d.get("name") or ""))
+            return reply({"ok": ok, "error": tr_err(err, lang) if err else "", "text": txt}, 200 if ok else 400)
 
         @app.route("/kino")
         def kino_page():                                     # 2.96.4: cinema mode (TV / projector)
@@ -43089,7 +43190,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.4")
+        self.root.title("MoveEye 2.96.5")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -43406,7 +43507,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.4 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.5 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -50586,6 +50687,15 @@ _HX111 = {  # 2.96.4: cinema mode
     'Cinema mode': ('Kino-Modus', 'Mode cinéma', 'Modalità cinema', 'Modus kino'),
 }
 for _k, _v in _HX111.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX112 = {  # 2.96.5: what if
+    'What if …? Re-enact it in the simulator': ('Was wäre wenn …? Im Simulator nachstellen', 'Et si … ? Reconstituer dans le simulateur', 'E se …? Ricostruire nel simulatore', 'Tge fiss sche …? Reconstruir en il simulatur'),
+    'Re-enacted in the simulator': ('Im Simulator nachgestellt', 'Reconstitué dans le simulateur', 'Ricostruito nel simulatore', 'Reconstruì en il simulatur'),
+    'the simulator is not switched on (tab Simulator)': ('Der Simulator ist nicht eingeschaltet (Reiter Simulator)', 'Le simulateur n’est pas activé (onglet Simulateur)', 'Il simulatore non è attivo (scheda Simulatore)', 'Il simulatur n’è betg activà (tab Simulatur)'),
+}
+for _k, _v in _HX112.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

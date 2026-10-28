@@ -32,10 +32,16 @@ def sim_hub(force=False):
         d.update(ok=True, name=str(r.get("name") or ""), scene=str(r.get("scenario") or ""), status=st,
                  scenes=[{"id": s.get("id"), "name": str(s.get("name") or "").replace(" (3D)", "")} for s in r.get("scenarios") or []][:40],
                  hour=h, clock="%02d:%02d" % (int(h), int(round((h % 1) * 60)) % 60), dark=" Nacht " in st or st.find("· Nacht ·") >= 0,
-                 weather=wx, ambient=vals.get("ambient"), visitors=int(m.group(1)) if m else None, surprise=bool(vals.get("surprise_on")),
+                 weather=wx, ambient=vals.get("ambient"), visitors=int(m.group(1)) if m else None, surprise=bool(vals.get("surprise_on")), zones3d=bool(vals.get("show_zones3d")), det3d=bool(vals.get("show_det3d")),
+                 twin_ok="show_zones3d" in vals,
                  game=r.get("game") or {}, has={k: k in vals for k in ("surprise_on", "weather", "hour", "spawn_person", "thief")})
     except Exception as e:
         d["msg"] = str(e)[:80]
+    if d.get("ok"):                                         # the twin, back from the simulator (place, mast)
+        try:
+            d["twin"] = sim_twin_info() if d.get("twin_ok") else {}
+        except Exception:
+            d["twin"] = {}
     _SIMHUB.update(t=now, d=d)
     return d
 
@@ -56,6 +62,10 @@ def sim_hub_do(a, v=None):
             r = sim_control({"action": "set", "id": "surprise_on", "value": bool(v)})
         elif a == "templates":
             r = sim_control({"action": "templates", "do": "open", "tab": 0})
+        elif a == "twin":
+            r = sim_twin()
+        elif a == "overlay":
+            r = sim_control({"action": "set", "id": str(v.get("id")), "value": bool(v.get("on"))}) if isinstance(v, dict) and v.get("id") in ("show_zones3d", "show_det3d") else {"ok": False}
         else:
             return False, "unknown action"
         _SIMHUB["t"] = 0.0
@@ -87,7 +97,8 @@ SIMHUB_JS = r"""
     "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
     "Tap = control": "Antippen = steuern", "person": "Person", "burglar": "Dieb", "child": "Kind", "dogwalk": "Hund", "fox": "Fuchs", "deer": "Reh", "cat": "Katze",
     "boar": "Wildschwein", "hedgehog": "Igel", "cyclist": "Velo", "courier": "Kurier", "car": "Auto", "sent": "geschickt", "Test run, test bench": "Testlauf, Prüfstand",
-    "Play on the phone": "Mitspielen mit dem Handy", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"};
+    "Play on the phone": "Mitspielen mit dem Handy", "Twin of your place": "Zwilling deines Platzes", "Place, zones, patrol": "Ort, Zonen, Patrouille",
+    "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"};
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
   const WX = [["clear", "☀"], ["cloudy", "☁"], ["rain", "🌧"], ["fog", "🌫"], ["snow", "❄"]];
   const VIS = __VIS__;
@@ -114,15 +125,21 @@ SIMHUB_JS = r"""
       ["weather", wxIcon(H.weather), tt("Weather"), tt(H.weather || "–") + (H.ambient != null ? " · " + Math.round(H.ambient) + " °C" : "")],
       ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")],
       ["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]];
+    if (full && H.twin_ok) T.push(["twin", "🪞", tt("Twin of your place"), tt("Place, zones, patrol")], ["zones3d", "▱", tt("Zones in 3D"), H.zones3d ? tt("on") : tt("off")],
+      ["det3d", "🎯", tt("Detection in 3D"), H.det3d ? tt("on") : tt("off")]);
     if (full) T.push(["templates", "🧩", tt("Templates"), tt("Opens on the PC")], ["game", "🎮", tt("Game"), tt("Play on the phone")],
       ["tests", "🧪", tt("Tests"), tt("Test run, test bench")], ["diary", "📔", tt("Diary"), tt("Visits and detection")]);
     T.forEach(([k, ic, n, sub]) => { const b = E("button", "st" + (open === k || (k === "surprise" && H.surprise) ? " on" : "")); b.type = "button";
       b.append(E("i", "", ic), E("b", "", n), E("small", "", sub));
       b.onclick = () => { if (k === "surprise") return act("surprise", !H.surprise); if (k === "templates") return act("templates").then(r => r && r.ok && say("🧩 " + tt("Opens on the PC")));
+        if (k === "twin") return act("twin").then(r => r && r.ok && say("🪞 " + tt("The map opens at your place on the PC – confirm «Load this place»")));
+        if (k === "zones3d") return act("overlay", {id: "show_zones3d", on: !H.zones3d}); if (k === "det3d") return act("overlay", {id: "show_det3d", on: !H.det3d});
         if (k === "game") return location.href = "/sim#c-game"; if (k === "tests") return location.href = "/sim#c-test"; if (k === "diary") return location.href = "/diary#simcard";
         open = open === k ? "" : k; paintAll(); };
       g.appendChild(b); });
     box.appendChild(g); if (open) sheet(box, open);
+    if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Twin of your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
+      + (H.twin.zones != null ? " · " + H.twin.zones + " " + tt("zones") : "") + (H.twin.waypoints != null ? " · " + H.twin.waypoints + " " + tt("patrol points") : "")); w.style.cssText = "margin-top:8px;font-size:12px"; box.appendChild(w); }
   }
   function paintTile(el_) {
     el_.hidden = !(H && H.on); if (!H || !H.on) return; el_.textContent = "";
@@ -192,3 +209,65 @@ document.addEventListener("keydown", e => { if (e.key === "f" || e.key === "F") 
   if (e.key === "Escape" && !document.fullscreenElement) location.href = "/"; });
 document.body.ondblclick = () => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(() => {});
 </script></body></html>"""
+
+
+# ---- 2.96.5 (Makeover-Punkt 8): «Was wäre wenn …?» - eine echte Aufnahme im Simulator nachstellen: gleiche Uhrzeit, Licht,
+# Regen, Richtung des Kopfes, gleich viele Personen (bzw. ein Tier / Auto). Jede neue Aufnahme bekommt dafür «situ» in ihre
+# Info-Datei; ältere Aufnahmen nehmen die Uhrzeit aus dem Namen und schauen geradeaus.
+def whatif_situ_now(info=None):
+    hp, ht = servo_half("pan"), servo_half("tilt")
+    obj = str(STATE.get("object_summary") or "").lower()
+    animal = any(w in obj for w in ("cat", "dog", "fox", "deer", "bird", "animal", "horse", "sheep", "cow", "bear", "boar"))
+    car = any(w in obj for w in ("car", "truck", "bus", "motorcycle"))
+    return {"pan_deg": round((CFG["pan"] - 50) / 50 * hp, 1), "tilt_deg": round((CFG["tilt"] - 50) / 50 * ht, 1),
+            "dark": bool(STATE.get("lowlight")), "rain": bool(STATE.get("rain_mode")), "wind": str(STATE.get("wind_level") or ""),
+            "animal": animal, "car": car, "ir": bool((STATE.get("lights") or {}).get("ir")) if isinstance(STATE.get("lights"), dict) else False}
+
+
+def whatif(name):
+    """re-enact the recording «name» in the simulator. Returns (ok, error, text)"""
+    if not CFG.get("sim_on"):
+        return False, "the simulator is not switched on (tab Simulator)", ""
+    if not rec_path(name):
+        return False, "not found", ""
+    meta = _read_sidecar(name)
+    situ = meta.get("situ") or {}
+    try:
+        dt = datetime.fromisoformat(meta["start"]) if meta.get("start") else (parse_stamp(os.path.basename(name)) or datetime.now())
+    except ValueError:
+        dt = datetime.now()
+    persons = int(meta.get("persons") or 0)
+    kind = "person" if persons or not (situ.get("animal") or situ.get("car")) else ("fox" if situ.get("animal") else "car")
+    q = {"action": "whatif", "hour": round(dt.hour + dt.minute / 60.0, 2), "weather": "rain" if situ.get("rain") else "clear",
+         "kind": kind, "n": max(1, min(4, persons or 1)), "pan_deg": float(situ.get("pan_deg") or 0.0),
+         "dist": 9.0 if situ.get("dark") else 14.0, "name": os.path.basename(name)}
+    try:
+        r = sim_control(q)
+    except Exception:
+        return False, "simulator not reachable", ""
+    if not r.get("ok"):
+        return False, str(r.get("error") or "not supported - update the simulator"), ""
+    log_event("sys", f"What if: {name} re-enacted in the simulator ({kind}, {q['hour']:.2f} h)")
+    _SIMHUB["t"] = 0.0
+    return True, "", "%02d:%02d · %s%s · %s" % (dt.hour, dt.minute, ev_icon("person" if kind == "person" else "animal" if kind == "fox" else "vehicle"),
+                                                 (" ×%d" % q["n"]) if q["n"] > 1 else "", "🌧" if situ.get("rain") else ("🌙" if situ.get("dark") else "☀"))
+
+
+# ---- 2.96.5 (Makeover-Punkt 9): Zwilling deines Platzes. MoveEye -> Simulator: Ort (GPS / eingestellter Ort), Zonen und
+# Patrouillen-Punkte (die beiden letzten gehen laufend im Zustand mit, sim_state). Der Simulator öffnet die Karte an diesem Ort
+# («Diesen Ort laden» bestätigen). Simulator -> MoveEye: der geladene Ort, die Stangenhöhe und die Szene (sim_twin_info).
+def sim_twin():
+    g = gps_now()
+    q = {"action": "twin", "name": CFG.get("device_name") or "MoveEye", "zones": len(ZONES), "waypoints": len(WAYPOINTS)}
+    if g:
+        q.update(lat=round(g[0], 6), lon=round(g[1], 6), src=g[2])
+    r = sim_control(q)
+    return r
+
+
+def sim_twin_info():
+    try:
+        r = sim_control({"action": "twin", "op": "info"})
+        return r.get("twin") or {}
+    except Exception:
+        return {}

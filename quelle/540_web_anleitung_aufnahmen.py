@@ -700,6 +700,7 @@ body.selecting .chk{display:block}
       <button class="sec" id="m-prev" title="←">&#8249;</button><button class="sec" id="m-next" title="→">&#8250;</button>
       <button class="sec" id="m-fav" title="★">☆</button>
       <button class="sec" id="m-fa" title="👎">👎</button>
+      <button class="sec" id="m-wi" title="🧪">🧪</button>
       <button class="sec" id="m-share" title="Share">⤴</button>
       <a class="btn sec" id="m-pdf" target="_blank" rel="noopener" title="Report (PDF)">📄</a>
       <a class="btn sec" id="m-dl" download data-i18n="Download">Download</a>
@@ -957,13 +958,16 @@ $("#f-place").onchange = () => { F.place = $("#f-place").value; load(true); };
 // ---- false alarms: «was nothing» + suggestions ----
 Object.assign(I18N.de, {"Continuous recording (all the time, few pictures per second) with a timeline": "Daueraufnahme (immer, wenige Bilder pro Sekunde) mit Zeitleiste", "Continuous recording: keep (hours)": "Daueraufnahme: behalten (Stunden)", "Continuous recording: pictures per second": "Daueraufnahme: Bilder pro Sekunde", "🎞 Continuous recording": "🎞 Daueraufnahme", "Continuous recording": "Daueraufnahme", "recording now": "wird gerade aufgenommen", "alarms": "Alarme", "Tap a blue piece to watch it. Red lines: alarms.": "Ein blaues Stück antippen zum Ansehen. Rote Striche: Alarme.", "Continuous recording is off (Settings → Recording).": "Daueraufnahme ist aus (Einstellungen → Aufnahme)."});
 Object.assign(I18N.de, {"Event report (PDF) for the police / insurance": "Ereignisbericht (PDF) für Polizei / Versicherung"});
-Object.assign(I18N.de, {"False alarms": "Fehlalarme", "Animal": "Tier", "Wind / branches": "Wind / Äste", "Light / shadow": "Licht / Schatten", "Rain": "Regen", "Car": "Auto", "Other": "Anderes", "Was nothing (false alarm)": "War nichts (Fehlalarm)", "Was nothing - what was it?": "War nichts – was war es?", "Was real after all": "War doch echt", "false alarms marked in the last": "Fehlalarme markiert in den letzten", "days": "Tagen", "of": "von", "suggestions:": "Vorschläge:", "Open": "Öffnen", "Take over": "Übernehmen", "Switch on the automatic wind detection": "Automatische Wind-Erkennung einschalten", "Less sensitive to light changes": "Weniger empfindlich auf Lichtwechsel", "Switch on the automatic rain detection": "Automatische Regen-Erkennung einschalten", "Detect rain earlier": "Regen früher erkennen", "Switch on the vehicle filter": "Fahrzeug-Filter einschalten", "Somewhat less sensitive overall": "Insgesamt etwas weniger empfindlich"});
+Object.assign(I18N.de, {"What if …? Re-enact it in the simulator": "Was wäre wenn …? Im Simulator nachstellen", "Re-enacted in the simulator": "Im Simulator nachgestellt", "False alarms": "Fehlalarme", "Animal": "Tier", "Wind / branches": "Wind / Äste", "Light / shadow": "Licht / Schatten", "Rain": "Regen", "Car": "Auto", "Other": "Anderes", "Was nothing (false alarm)": "War nichts (Fehlalarm)", "Was nothing - what was it?": "War nichts – was war es?", "Was real after all": "War doch echt", "false alarms marked in the last": "Fehlalarme markiert in den letzten", "days": "Tagen", "of": "von", "suggestions:": "Vorschläge:", "Open": "Öffnen", "Take over": "Übernehmen", "Switch on the automatic wind detection": "Automatische Wind-Erkennung einschalten", "Less sensitive to light changes": "Weniger empfindlich auf Lichtwechsel", "Switch on the automatic rain detection": "Automatische Regen-Erkennung einschalten", "Detect rain earlier": "Regen früher erkennen", "Switch on the vehicle filter": "Fahrzeug-Filter einschalten", "Somewhat less sensitive overall": "Insgesamt etwas weniger empfindlich"});
 const FA_TXT = () => ({animal: "🐾 " + t("Animal"), wind: "🌿 " + t("Wind / branches"), light: "💡 " + t("Light / shadow"), rain: "🌧 " + t("Rain"), car: "🚗 " + t("Car"), other: "❓ " + t("Other")});
 function faRow(it) {
   const r = $("#m-farow"); r.textContent = ""; r.hidden = true;
   $("#m-fa").hidden = !!it.timelapse; $("#m-fa").classList.toggle("on", !!it.false);
   $("#m-fa").title = t("Was nothing (false alarm)");
   $("#m-fa").onclick = () => { r.hidden = !r.hidden; };
+  const wi = $("#m-wi"); if (wi) { wi.hidden = !!it.timelapse; wi.title = t("What if …? Re-enact it in the simulator");      // 2.96.5: makeover 8
+    wi.onclick = async () => { wi.disabled = true; const q = await post("/api/whatif", {name: it.name, lang: LANG}); wi.disabled = false;
+      toast(q.ok ? "🧪 " + t("Re-enacted in the simulator") + " · " + (q.text || "") : "⚠ " + (q.error || t("error"))); }; }
   r.appendChild(el("span", "mut", t("Was nothing - what was it?")));
   Object.entries(FA_TXT()).forEach(([k, v]) => { const b = el("button", "sec" + (it.false === k ? " on" : ""), v); b.type = "button";
     b.onclick = () => faSet(it, k); r.appendChild(b); });

@@ -519,6 +519,10 @@ class MotionWatch:
                 "frames": info["frames"], "fps": round(info["fps"], 1), "codec": info["codec"],
                 "persons": info["persons"], "source": info["source"], "source_id": info["source_id"],
                 "schedules": info["schedules"]}
+        try:                                               # 2.96.5: the situation, for «Was wäre wenn …?» (139_makeover_simzentrale)
+            meta["situ"] = whatif_situ_now(info)
+        except Exception:
+            pass
         g = gps_now() if CFG["gps_tag"] else None
         if g:
             meta["gps"] = {"lat": g[0], "lon": g[1], "src": g[2]}

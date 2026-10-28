@@ -1560,6 +1560,12 @@ class WebStream:
                 return reply({"ok": ok, "error": tr_err(err, norm_lang(d.get("lang"))) if err else "", "hub": sim_hub(True)})
             return reply(sim_hub())
 
+        @app.route("/api/whatif", methods=["POST"])
+        def api_whatif():                                    # 2.96.5: re-enact a recording in the simulator
+            d = body(); lang = norm_lang(d.get("lang"))
+            ok, err, txt = whatif(str(d.get("name") or ""))
+            return reply({"ok": ok, "error": tr_err(err, lang) if err else "", "text": txt}, 200 if ok else 400)
+
         @app.route("/kino")
         def kino_page():                                     # 2.96.4: cinema mode (TV / projector)
             return Response(KINO_PAGE, mimetype="text/html")

@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 21:02",
+ "generated": "2026-10-28 21:09",
  "versions": [
   {
-   "version": "2.96.4",
-   "file": "webcam_bewegung_2_96_4.py",
+   "version": "2.96.5",
+   "file": "webcam_bewegung_2_96_5.py",
    "url": "",
-   "sha256": "6549a99804984803ec5faaf21cfd9a14479b6ee7339cf7484cce0a5be43b3f88",
-   "date": "2026-10-28 21:02",
-   "notes": "Makeover 1–7: gleiche Farben in Fenster, Webseite und Simulator; Streifen «SIMULATION – Alarme sind nicht echt» mit orangem Rahmen auf allen Seiten; Simulator-Kachel auf der Startseite und Simulator-Zentrale (Szene, Tageszeit, Wetter, Besuch schicken, Überraschungsnacht, Vorlagen, Spiel, Tests, Tagebuch); Kino-Modus /kino (Vollbild für TV / Beamer mit Laufband); einheitliche Ereignis-Symbole in Push-Titeln, Tagebuch und Fenster-Protokoll",
-   "sig": "4a83aeb5c9b9f878450d0a85f3578a57eeac1ee2130f961ad519607dce6ce3944a401ee53935eb095b3161d888a4a997563b4abc13b54ebcc752f6c9004a4302"
+   "sha256": "40a6c1e56a7ee21dc598e7a695a84667cc8434400c620fcb3be3a63658d96c09",
+   "date": "2026-10-28 21:09",
+   "notes": "Makeover 8–11: «Was wäre wenn …?» – jede Aufnahme mit 🧪 im Simulator nachstellen (Uhrzeit, Regen, Richtung, Anzahl Personen; neue Aufnahmen merken sich die Situation); Zwilling deines Platzes (Ort, Zonen, Patrouillen-Punkte an den Simulator, zurück Ort und Stangenhöhe); Zonen und Erkennung live in der 3D-Ansicht (Kacheln in der Simulator-Zentrale); passt zum Simulator 3D-3.83",
+   "sig": "d8d06fe6b690c49253867acbcf3cdda0465eff2f01661c5eb0773ab68d868f56aab050419cb843775b891576ad14f6a2c44dd0c83a818685f8d07f6fdfb6c208"
   },
   {
    "version": "2.95.105",

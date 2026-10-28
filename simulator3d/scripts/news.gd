@@ -19,7 +19,7 @@ const NEXT_ALL := [
 	[18, "Tagebuch-Statistik aus dem Simulator"], [19, "Versionen vergleichen (Kurve)"], [20, "Ein-Klick-Demo"],
 	[21, "Fehlalarm-Lernen"], [22, "Karte der blinden Flecken"], [23, "Nacht-Generalprobe vor dem Scharfschalten"],
 	[24, "Schwellen automatisch einstellen"], [25, "Erkennungs-Check jede Woche"]]
-const DONE := []                       # numbers already delivered (nachführen)
+const DONE := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]                       # numbers already delivered (nachführen)
 
 
 static func _vt(v: String) -> Array:

@@ -1971,3 +1971,12 @@ for _k, _v in _HX111.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX112 = {  # 2.96.5: what if
+    'What if …? Re-enact it in the simulator': ('Was wäre wenn …? Im Simulator nachstellen', 'Et si … ? Reconstituer dans le simulateur', 'E se …? Ricostruire nel simulatore', 'Tge fiss sche …? Reconstruir en il simulatur'),
+    'Re-enacted in the simulator': ('Im Simulator nachgestellt', 'Reconstitué dans le simulateur', 'Ricostruito nel simulatore', 'Reconstruì en il simulatur'),
+    'the simulator is not switched on (tab Simulator)': ('Der Simulator ist nicht eingeschaltet (Reiter Simulator)', 'Le simulateur n’est pas activé (onglet Simulateur)', 'Il simulatore non è attivo (scheda Simulatore)', 'Il simulatur n’è betg activà (tab Simulatur)'),
+}
+for _k, _v in _HX112.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
