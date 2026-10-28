@@ -305,6 +305,7 @@ def helper_tick():
     if (CFG["sim_url"].startswith("http://127.0.0.1:18765") and prev_ and time.time() - (TUN["last"] or START) > 180):
         CFG["sim_url"] = prev_; TUN["prev_url"] = ""; CFG["tunnel_prev_url"] = ""; save_settings()   # 2.95.55: also after a restart      # 2.95.54: the tunnel is gone - the old address again
         log_event("sys", "Tunnel of the simulator gone for 3 minutes - back to the normal address")
+    _tun_reclaim()
     if CFG.get("sim_on") and not CFG.get("helper_url"):
         hi = None
         if not HELPER["ok"] or time.time() - HELPER.get("info_t", 0) > 60:
@@ -614,6 +615,28 @@ def tunnel_start():
     threading.Thread(target=accept_sim, daemon=True, name="tunnel").start()
     for lp, rp in TUN_LOCAL.items():
         threading.Thread(target=door, args=(lp, rp), daemon=True, name=f"tunnel{lp}").start()
+
+
+_TUN_RECLAIM = {"t": 0.0}
+
+
+def _tun_reclaim():
+    """2.95.68: the tunnel runs, but the address was set to the direct one again (automatic search, card tapped) and that one
+    does not answer (firewall) - back to the tunnel, otherwise the picture stays black for good"""
+    if not tunnel_active() or CFG["sim_url"].startswith("http://127.0.0.1:18765"):
+        _TUN_RECLAIM["t"] = 0.0; return
+    if SIM["ok"] and time.time() - SIM["t"] < 5:
+        _TUN_RECLAIM["t"] = 0.0; return            # the direct address works - leave it
+    if not _TUN_RECLAIM["t"]:
+        _TUN_RECLAIM["t"] = time.time(); return
+    if time.time() - _TUN_RECLAIM["t"] < 8:
+        return
+    _TUN_RECLAIM["t"] = 0.0
+    TUN["prev_url"] = CFG["tunnel_prev_url"] = CFG["sim_url"]; CFG["sim_url"] = "http://127.0.0.1:18765"; save_settings()
+    log_event("sys", "Simulator does not answer directly, but the tunnel runs - back to the tunnel")
+    w = WATCH_REF.get("w")
+    if CFG.get("sim_on") and w is not None and str(CFG["source"]).startswith("sim:"):
+        w._open_gen += 1; w._start_opener(CFG["source"])
 
 
 def tunnel_state():

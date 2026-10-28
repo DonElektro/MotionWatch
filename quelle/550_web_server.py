@@ -403,7 +403,11 @@ class WebStream:
                     ip_, port_ = str(d.get("ip") or ""), int(d.get("port") or 8765)
                     if not re.fullmatch(r"[0-9.]{7,15}", ip_) or not (1 <= port_ <= 65535):
                         return reply({"ok": False, "error": "bad address"}, 400)
-                    CFG["sim_url"] = f"http://{ip_}:{port_}"; save_settings()
+                    if tunnel_active() and ip_ == TUN.get("peer"):   # 2.95.68: this simulator comes through the tunnel
+                        TUN["prev_url"] = CFG["tunnel_prev_url"] = f"http://{ip_}:{port_}"; CFG["sim_url"] = "http://127.0.0.1:18765"
+                    else:
+                        CFG["sim_url"] = f"http://{ip_}:{port_}"
+                    save_settings()
                     log_event("sys", f"Simulator address set to {CFG['sim_url']} (web)")
                     if CFG["sim_on"] and WATCH_REF.get("w") is not None and str(CFG["source"]).startswith("sim:"):
                         w_ = WATCH_REF["w"]; w_._open_gen += 1; w_._start_opener(CFG["source"])

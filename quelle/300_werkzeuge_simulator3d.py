@@ -1140,6 +1140,8 @@ def sim_auto_adopt():
     """no working simulator connection, but one announces itself -> take its address (the PC one before the Pi's own)"""
     if not CFG.get("sim_auto") or (SIM["ok"] and time.time() - SIM["t"] < 5):
         return
+    if tunnel_active() and sim_base().startswith("http://127.0.0.1:18765"):
+        return                                     # 2.95.68: the simulator comes through the tunnel - keep it
     f = sim_found()
     if not f:
         return

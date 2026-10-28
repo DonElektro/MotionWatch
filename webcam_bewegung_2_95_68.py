@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_67.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_68.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.68: Simulator über den Tunnel: Motion Watch stellt nicht mehr auf die direkte Adresse um (schwarzes Livebild), und
+    kehrt von selbst zum Tunnel zurück
   * 2.95.67: Simulator-Verbindung meldet die Version und den KI-Stand (für den Prüfstand im 3D-Simulator 3D-3.49)
   * 2.95.66: simulator: when it announces itself in the network but does not answer, the page says so (firewall or security
     software of the PC blocks Motion Watch - use the tunnel); the own simulator search no longer knocks at the own tunnel port,
@@ -732,10 +734,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_67.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_68.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_67.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_67.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_68.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_68.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -752,7 +754,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.67"
+APP_VERSION = "2.95.68"
 
 
 def default_data_dir():
@@ -9573,6 +9575,7 @@ def helper_tick():
     if (CFG["sim_url"].startswith("http://127.0.0.1:18765") and prev_ and time.time() - (TUN["last"] or START) > 180):
         CFG["sim_url"] = prev_; TUN["prev_url"] = ""; CFG["tunnel_prev_url"] = ""; save_settings()   # 2.95.55: also after a restart      # 2.95.54: the tunnel is gone - the old address again
         log_event("sys", "Tunnel of the simulator gone for 3 minutes - back to the normal address")
+    _tun_reclaim()
     if CFG.get("sim_on") and not CFG.get("helper_url"):
         hi = None
         if not HELPER["ok"] or time.time() - HELPER.get("info_t", 0) > 60:
@@ -9882,6 +9885,28 @@ def tunnel_start():
     threading.Thread(target=accept_sim, daemon=True, name="tunnel").start()
     for lp, rp in TUN_LOCAL.items():
         threading.Thread(target=door, args=(lp, rp), daemon=True, name=f"tunnel{lp}").start()
+
+
+_TUN_RECLAIM = {"t": 0.0}
+
+
+def _tun_reclaim():
+    """2.95.68: the tunnel runs, but the address was set to the direct one again (automatic search, card tapped) and that one
+    does not answer (firewall) - back to the tunnel, otherwise the picture stays black for good"""
+    if not tunnel_active() or CFG["sim_url"].startswith("http://127.0.0.1:18765"):
+        _TUN_RECLAIM["t"] = 0.0; return
+    if SIM["ok"] and time.time() - SIM["t"] < 5:
+        _TUN_RECLAIM["t"] = 0.0; return            # the direct address works - leave it
+    if not _TUN_RECLAIM["t"]:
+        _TUN_RECLAIM["t"] = time.time(); return
+    if time.time() - _TUN_RECLAIM["t"] < 8:
+        return
+    _TUN_RECLAIM["t"] = 0.0
+    TUN["prev_url"] = CFG["tunnel_prev_url"] = CFG["sim_url"]; CFG["sim_url"] = "http://127.0.0.1:18765"; save_settings()
+    log_event("sys", "Simulator does not answer directly, but the tunnel runs - back to the tunnel")
+    w = WATCH_REF.get("w")
+    if CFG.get("sim_on") and w is not None and str(CFG["source"]).startswith("sim:"):
+        w._open_gen += 1; w._start_opener(CFG["source"])
 
 
 def tunnel_state():
@@ -15464,6 +15489,8 @@ def sim_auto_adopt():
     """no working simulator connection, but one announces itself -> take its address (the PC one before the Pi's own)"""
     if not CFG.get("sim_auto") or (SIM["ok"] and time.time() - SIM["t"] < 5):
         return
+    if tunnel_active() and sim_base().startswith("http://127.0.0.1:18765"):
+        return                                     # 2.95.68: the simulator comes through the tunnel - keep it
     f = sim_found()
     if not f:
         return
@@ -18925,7 +18952,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_67.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_68.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -37094,7 +37121,11 @@ class WebStream:
                     ip_, port_ = str(d.get("ip") or ""), int(d.get("port") or 8765)
                     if not re.fullmatch(r"[0-9.]{7,15}", ip_) or not (1 <= port_ <= 65535):
                         return reply({"ok": False, "error": "bad address"}, 400)
-                    CFG["sim_url"] = f"http://{ip_}:{port_}"; save_settings()
+                    if tunnel_active() and ip_ == TUN.get("peer"):   # 2.95.68: this simulator comes through the tunnel
+                        TUN["prev_url"] = CFG["tunnel_prev_url"] = f"http://{ip_}:{port_}"; CFG["sim_url"] = "http://127.0.0.1:18765"
+                    else:
+                        CFG["sim_url"] = f"http://{ip_}:{port_}"
+                    save_settings()
                     log_event("sys", f"Simulator address set to {CFG['sim_url']} (web)")
                     if CFG["sim_on"] and WATCH_REF.get("w") is not None and str(CFG["source"]).startswith("sim:"):
                         w_ = WATCH_REF["w"]; w_._open_gen += 1; w_._start_opener(CFG["source"])
@@ -40457,7 +40488,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.67")
+        self.root.title("Motion Watch 2.95.68")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40747,7 +40778,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.67 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.68 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

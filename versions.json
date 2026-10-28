@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 09:05",
+ "generated": "2026-10-28 09:28",
  "versions": [
   {
-   "version": "2.95.67",
-   "file": "webcam_bewegung_2_95_67.py",
+   "version": "2.95.68",
+   "file": "webcam_bewegung_2_95_68.py",
    "url": "",
-   "sha256": "e2856624d97244a4c373079582254654ce60cc330f4642b3e58166f84c457d0b",
-   "date": "2026-10-28 09:05",
-   "notes": "Simulator-Verbindung meldet die Version und den KI-Stand (für den Prüfstand im 3D-Simulator 3D-3.49)",
-   "sig": "ffc9529d4318acbedb0fbe8a8a3e6b40071a6b3165574499895b2b4bf3d550c221620e531374317fe4b14d8b333da997e1f7556b28ed90b8a13f784ed1994007"
+   "sha256": "9855e9d911a9d82d089799234b2dc44c8d3f6334b623e993eb82d2a96741f69f",
+   "date": "2026-10-28 09:28",
+   "notes": "Simulator über den Tunnel: Motion Watch stellt nicht mehr auf die direkte Adresse um (schwarzes Livebild), und kehrt von selbst zum Tunnel zurück",
+   "sig": "8a48c83eb227c53937575eb9e0ee7501ffb98f5fa066ca55a5aab6348c523cbdc40ca704baec8b2679714cb1b96e396acc5795697941adc8d0463c200df6080d"
   },
   {
    "version": "2.94.5",
