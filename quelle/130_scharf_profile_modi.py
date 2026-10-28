@@ -22,6 +22,28 @@ def arm(delay=None):
     arm_tick()
 
 
+def arm_by_schedule(on, name=""):
+    """2.97.0: a schedule switches «armed»: with the countdown and the messages of arm() (rehearsal, reference scan),
+    but without counting as a change by hand (the schedule keeps control)"""
+    if bool(on) == bool(CFG["armed"]):
+        return
+    if on:
+        try:
+            d = max(0.0, min(600.0, float(CFG["arm_delay"])))
+        except (TypeError, ValueError):
+            d = 60.0
+        CFG["armed"] = True; ARM["at"] = time.time() + d; ARM["announced"] = d <= 0
+        log_event("sys", f"Armed in {d:.0f} s (schedule {name})" if d else f"Armed (schedule {name})")
+    else:
+        CFG["armed"] = False; ARM["at"] = 0.0; ARM["announced"] = True
+        try:
+            protect_cancel_escalation()
+        except NameError:
+            pass
+        log_event("sys", f"Disarmed - no alarms (schedule {name})")
+    arm_tick()
+
+
 def disarm():
     CFG["armed"] = False; ARM["at"] = 0.0; ARM["announced"] = True
     sched_user_changed("armed"); save_settings()
@@ -79,7 +101,7 @@ def simple_hidden(key, sec=None):
 
 NIGHT_SET = {"detection_on": True, "ai_enabled": True, "record": True, "snapshot_on_person": True, "notify_on": True,
              "notify_prealarm": True, "lowlight_auto": True, "nightvision_auto": True, "report_on": True, "diary_on": True,
-             "eco_on": True, "timelapse_on": False}
+             "timelapse_on": False}   # 2.97.0: power saving only on battery (like the mode «Nachtwache» with mains power)
 
 
 def night_guard(lang=None):
@@ -89,13 +111,20 @@ def night_guard(lang=None):
     for k, v in NIGHT_SET.items():
         if k in CFG and CFG[k] != v:
             CFG[k] = v; sched_user_changed(k)
+    try:
+        mains = bool(mode_power()[0])
+    except Exception:
+        mains = False
+    if CFG["eco_on"] != (not mains):
+        CFG["eco_on"] = not mains; sched_user_changed("eco_on")
     if (STATE.get("audio") or {}).get("status") == "listening" and not CFG["noise_alarm"]:
         CFG["noise_alarm"] = True; done.append(tr("Noise alarm on", L))
     if STATE.get("thermal") == "connected" and not CFG["thermal_alarm"]:
         CFG["thermal_alarm"] = True; done.append(tr("Thermal alarm on", L))
     save_settings()
     done = [tr("Detection, AI and recordings on", L), tr("Push messages on", L), tr("Night vision and low light automatic", L),
-            tr("Night report in the morning", L) + f" ({int(CFG['report_hour']):02d}:00)", tr("Power saving on", L)] + done
+            tr("Night report in the morning", L) + f" ({int(CFG['report_hour']):02d}:00)",
+            tr("Power saving on", L) if CFG["eco_on"] else tr("Power saving off (mains power): full attention", L)] + done
     arm()
     d = int(float(CFG["arm_delay"]))
     done.append(trf("Armed in {s} s - leave the area now", L, s=d) if d else tr("Armed", L))
@@ -130,11 +159,27 @@ def _governor(want=None):
     return old
 
 
+def _ovl_handover(me, k, v):
+    """2.97.0: an overlay (camping, mode, power mode) is switched off while one switched on AFTER it still holds k: that one
+    gets the value to give back later - otherwise switching off in another order left e.g. power saving on for good"""
+    mine = (CFG.get({"camping": "camping_prev", "mode": "mode_prev", "turbo": "turbo_prev"}[me]) or {})
+    seq = float(mine.get("_seq", 0) or 0) if isinstance(mine, dict) else 0.0
+    for name, on_key, prev_key in (("camping", "camping", "camping_prev"), ("mode", "mode", "mode_prev"), ("turbo", "turbo_on", "turbo_prev")):
+        if name == me or not CFG.get(on_key):
+            continue
+        p = CFG.get(prev_key)
+        if isinstance(p, dict) and k in p and float(p.get("_seq", 0) or 0) > seq:
+            p[k] = v
+            return True
+    return False
+
+
 def turbo_set(on, who="web"):
     on = bool(on)
     if on and not CFG["turbo_on"]:
         prev = {k: CFG[k] for k in TURBO_SET if k in CFG}
         prev["_governor"] = _governor()
+        prev["_seq"] = time.time()
         CFG["turbo_prev"] = prev
         for k, v in TURBO_SET.items():
             if k in CFG:
@@ -145,7 +190,7 @@ def turbo_set(on, who="web"):
     elif not on and CFG["turbo_on"]:
         prev = CFG["turbo_prev"] if isinstance(CFG["turbo_prev"], dict) else {}
         for k, v in prev.items():
-            if k in CFG and isinstance(v, type(CFG[k])):
+            if k in CFG and isinstance(v, type(CFG[k])) and not _ovl_handover("turbo", k, v):
                 CFG[k] = v
         if prev.get("_governor"):
             _governor(prev["_governor"])
@@ -240,9 +285,10 @@ def mode_set(m, who="web"):
     if not old:                                             # first mode: keep the own settings
         prev = {k: CFG[k] for k in _mode_keys()}
         prev["hotspot_on"] = bool((STATE.get("hotspot") or {}).get("on"))
+        prev["_seq"] = time.time()
         CFG["mode_prev"] = prev
     for k, v in prev.items():                               # every mode starts from the own settings
-        if k in CFG and k not in ("armed", "hotspot_on") and isinstance(v, type(CFG[k])):
+        if k in CFG and k not in ("armed", "hotspot_on") and isinstance(v, type(CFG[k])) and not (not m and _ovl_handover("mode", k, v)):
             CFG[k] = v
     CFG["mode"] = m
     CFG["mode_since"] = time.time()
@@ -347,6 +393,7 @@ def camping_set(on, hotspot_delay=2.0):
     netauto_pause()
     if on and not CFG["camping"]:
         prev = {k: CFG[k] for k in list(CAMPING_SET) + ["thermal_alarm", "armed", "hotspot_on"]}
+        prev["_seq"] = time.time()
         CFG["camping_prev"] = prev
         for k, v in CAMPING_SET.items():
             CFG[k] = v; sched_user_changed(k)
@@ -360,7 +407,7 @@ def camping_set(on, hotspot_delay=2.0):
     elif not on and CFG["camping"]:
         prev = CFG["camping_prev"] if isinstance(CFG["camping_prev"], dict) else {}
         for k, v in prev.items():
-            if k in CFG and k not in ("armed", "hotspot_on") and isinstance(v, type(CFG[k])):
+            if k in CFG and k not in ("armed", "hotspot_on") and isinstance(v, type(CFG[k])) and not _ovl_handover("camping", k, v):
                 CFG[k] = v
         CFG["camping"] = False; CFG["camping_prev"] = {}
         log_event("sys", "Camping profile OFF - previous settings restored")

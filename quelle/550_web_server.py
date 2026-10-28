@@ -475,11 +475,11 @@ class WebStream:
             if getattr(g, "role", "admin") != "admin":
                 return reply({"ok": False, "error": "not allowed"}, 403)
             d = body(); a = d.get("action"); plan = str(d.get("plan") or "standard")
-            if plan not in ("standard", "quick", "hard", "night"):
+            if plan not in ("standard", "quick", "hard", "night", "spielwege"):     # 2.97.0: the sneak paths of the games too
                 plan = "standard"
             if a in ("run", "auto"):
-                if TESTOPT["busy"]:
-                    return reply({"ok": False, "error": "a test run is already going"}, 409)
+                if TESTOPT["busy"] or simtask_busy():
+                    return reply({"ok": False, "error": tr_err(simtask_refuse("test run") or "a test run is already going", norm_lang(d.get("lang")))}, 409)
                 if not (CFG["sim_on"] and SIM["ok"]):
                     return reply({"ok": False, "error": "the simulation is not connected"}, 409)
                 TESTOPT["plan"] = plan
@@ -497,18 +497,20 @@ class WebStream:
                     for k, o, n in x["changes"]:
                         ch.setdefault(k, [k, o, n])
                 before = opt_apply(list(ch.values()), "taken over: " + ", ".join(x["id"] for x in sel))
-                TESTOPT["undo"] = {"cfg": before, "t": time.time(), "what": ",".join(x["id"] for x in sel)}
+                TESTOPT["undo"] = {"cfg": before, "t": time.time(), "what": ",".join(x["id"] for x in sel), "sim": bool(CFG.get("sim_on"))}
                 TESTOPT["sugg"] = [x for x in TESTOPT["sugg"] if x not in sel]
                 testopt_save()
             elif a == "undo":
                 if not TESTOPT["undo"]:
                     return reply({"ok": False, "error": "nothing to undo"}, 404)
+                if bool(TESTOPT["undo"].get("sim", CFG.get("sim_on"))) != bool(CFG.get("sim_on")):   # 2.97.0
+                    return reply({"ok": False, "error": tr_err("This was changed in the other profile (simulation / real). Switch the simulation back first.", norm_lang(d.get("lang")))}, 409)
                 opt_restore(TESTOPT["undo"]["cfg"]); TESTOPT["undo"] = None; testopt_save()
             elif a == "clear":
                 TESTOPT["runs"] = []; TESTOPT["sugg"] = []; TESTOPT["auto"] = None; testopt_save()
             elif a == "nightly":
                 CFG["testopt_nightly"] = bool(d.get("on")); CFG["testopt_hour"] = max(0, min(23, int(d.get("hour", CFG["testopt_hour"]))))
-                if d.get("plan") in ("standard", "quick", "hard", "night"):
+                if d.get("plan") in ("standard", "quick", "hard", "night", "spielwege"):
                     CFG["testopt_plan"] = d["plan"]
                 save_settings()
             else:

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_97_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_97_1.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.97.1: Ordnung im Hintergrund: eine Sperre für alle Simulator-Aufgaben, Zeitplan schaltet über die Scharf-Logik, Modi
+    stellen in jeder Reihenfolge richtig zurück, Optimierung fragt «auch echt übernehmen?», AutoTuner pausiert bei Tests,
+    Anwesenheit aus beiden Quellen, Updates warten auf Tests
   * 2.97.0: Sicherheit: PIN beim Klatschschalter, Simulation fragt bei scharfem MoveEye, Sirene nicht mehr doppelt, Spiele und
     Übungen ohne echte Sirene und Pushes, Lagerfeuer ohne Personen-Alarm, Herkunft bei Aufnahmen
   * 2.96.13: Passt zum Simulator 3D-3.87 (Schriftzug MoveEye auch im Simulator)
@@ -839,10 +842,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_97_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_97_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_97_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_97_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_97_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_97_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -859,7 +862,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.97.0"
+APP_VERSION = "2.97.1"
 
 
 def default_data_dir():
@@ -1162,7 +1165,7 @@ CFG = {
     # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
     "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself)
     "sim_autoupd": True, "sim_separate": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
-    "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_dual": True, "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
+    "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True, "wifi_swap": False, "wifi_guard": False,
     "wifi_guard_thr": 20, "wifi_count": False, "wifi_presence": False, "net_noinet": [], "net_inet_notify": True, "sim_prev_source": "", "sim_prev_thermal": "",
@@ -1183,7 +1186,7 @@ CFG = {
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
@@ -1361,7 +1364,8 @@ ALERTS_COND = threading.Condition()
 def push_alert(kind, text="", **extra):
     try:
         protect_on_alert(kind)                         # 2.95.105: escalation (light, then the siren unless disarmed)
-        rover_on_alarm(kind)                           # 2.96.7: the rover drives to the alarm (simulator, makeover 17)
+        if CFG.get("sim_on"):                          # 2.97.0: simulator code only in the simulation
+            rover_on_alarm(kind)                       # 2.96.7: the rover drives to the alarm (simulator, makeover 17)
     except NameError:
         pass
     if not CFG.get("browser_alarm", True):
@@ -1404,7 +1408,8 @@ def log_event(kind, text):
         except Exception:
             pass
     try:
-        drill_note(kind, text)                           # 2.96.6: what MoveEye does during a drill (141)
+        if CFG.get("sim_on"):
+            drill_note(kind, text)                       # 2.96.6: what MoveEye does during a drill (141)
     except NameError:
         pass
     with LOCK:
@@ -1588,6 +1593,22 @@ def zones_set(lst):
         ZONES[:] = out
     save_settings(); log_event("sys", f"Zones updated ({len(out)})")
     return True, ""
+
+
+def presence_home():
+    """2.97.0: one answer to «is somebody home?» from both ways: the ping of the devices (presence_hosts) and the phone /
+    watch seen in the Wi-Fi or by Bluetooth (presence_macs / presence_bt). True if one of them sees somebody."""
+    a = PRESENCE["home"]
+    try:
+        P = TOOLS["presence"]
+        b = P.get("here") if (CFG.get("presence_macs") or CFG.get("presence_bt")) else None
+    except (NameError, KeyError):
+        b = None
+    if a is True or b is True:
+        return True
+    if a is None and b is None:
+        return None
+    return False
 
 
 # ----------------------------------------------------------------------------
@@ -2119,7 +2140,7 @@ def schedule_window_contains(s, dt):
 
 def presence_ok(s):
     p = s.get("presence")
-    home = PRESENCE["home"]
+    home = presence_home()
     if not p or home is None:                    # no rule, or presence unknown -> stay armed
         return True
     return home if p == "home" else not home
@@ -2168,11 +2189,18 @@ def schedule_tick():
         if k not in base:
             base[k] = CFG[k]
         if CFG[k] != v:
-            CFG[k] = v
+            if k == "armed":                             # 2.97.0: through the arm logic (countdown, «armed now», rehearsal)
+                arm_by_schedule(v, ", ".join(active))
+            else:
+                CFG[k] = v
             log_event("sched", f"Schedule: {labels.get(k, k)} {'ON' if v else 'OFF'}")
     for k in list(base):
         if k not in forced:                              # no schedule controls it any more -> give the user's value back
-            CFG[k] = base.pop(k); manual.discard(k)
+            v0 = base.pop(k); manual.discard(k)
+            if k == "armed":
+                arm_by_schedule(v0, "end")
+            else:
+                CFG[k] = v0
             log_event("sched", f"Schedule: {labels.get(k, k)} back to {'ON' if CFG[k] else 'OFF'}")
     SCHED["last"] = dict(forced)
     STATE["sched_active"] = list(active); STATE["sched_active_idx"] = active_idx
@@ -7327,6 +7355,28 @@ def arm(delay=None):
     arm_tick()
 
 
+def arm_by_schedule(on, name=""):
+    """2.97.0: a schedule switches «armed»: with the countdown and the messages of arm() (rehearsal, reference scan),
+    but without counting as a change by hand (the schedule keeps control)"""
+    if bool(on) == bool(CFG["armed"]):
+        return
+    if on:
+        try:
+            d = max(0.0, min(600.0, float(CFG["arm_delay"])))
+        except (TypeError, ValueError):
+            d = 60.0
+        CFG["armed"] = True; ARM["at"] = time.time() + d; ARM["announced"] = d <= 0
+        log_event("sys", f"Armed in {d:.0f} s (schedule {name})" if d else f"Armed (schedule {name})")
+    else:
+        CFG["armed"] = False; ARM["at"] = 0.0; ARM["announced"] = True
+        try:
+            protect_cancel_escalation()
+        except NameError:
+            pass
+        log_event("sys", f"Disarmed - no alarms (schedule {name})")
+    arm_tick()
+
+
 def disarm():
     CFG["armed"] = False; ARM["at"] = 0.0; ARM["announced"] = True
     sched_user_changed("armed"); save_settings()
@@ -7384,7 +7434,7 @@ def simple_hidden(key, sec=None):
 
 NIGHT_SET = {"detection_on": True, "ai_enabled": True, "record": True, "snapshot_on_person": True, "notify_on": True,
              "notify_prealarm": True, "lowlight_auto": True, "nightvision_auto": True, "report_on": True, "diary_on": True,
-             "eco_on": True, "timelapse_on": False}
+             "timelapse_on": False}   # 2.97.0: power saving only on battery (like the mode «Nachtwache» with mains power)
 
 
 def night_guard(lang=None):
@@ -7394,13 +7444,20 @@ def night_guard(lang=None):
     for k, v in NIGHT_SET.items():
         if k in CFG and CFG[k] != v:
             CFG[k] = v; sched_user_changed(k)
+    try:
+        mains = bool(mode_power()[0])
+    except Exception:
+        mains = False
+    if CFG["eco_on"] != (not mains):
+        CFG["eco_on"] = not mains; sched_user_changed("eco_on")
     if (STATE.get("audio") or {}).get("status") == "listening" and not CFG["noise_alarm"]:
         CFG["noise_alarm"] = True; done.append(tr("Noise alarm on", L))
     if STATE.get("thermal") == "connected" and not CFG["thermal_alarm"]:
         CFG["thermal_alarm"] = True; done.append(tr("Thermal alarm on", L))
     save_settings()
     done = [tr("Detection, AI and recordings on", L), tr("Push messages on", L), tr("Night vision and low light automatic", L),
-            tr("Night report in the morning", L) + f" ({int(CFG['report_hour']):02d}:00)", tr("Power saving on", L)] + done
+            tr("Night report in the morning", L) + f" ({int(CFG['report_hour']):02d}:00)",
+            tr("Power saving on", L) if CFG["eco_on"] else tr("Power saving off (mains power): full attention", L)] + done
     arm()
     d = int(float(CFG["arm_delay"]))
     done.append(trf("Armed in {s} s - leave the area now", L, s=d) if d else tr("Armed", L))
@@ -7435,11 +7492,27 @@ def _governor(want=None):
     return old
 
 
+def _ovl_handover(me, k, v):
+    """2.97.0: an overlay (camping, mode, power mode) is switched off while one switched on AFTER it still holds k: that one
+    gets the value to give back later - otherwise switching off in another order left e.g. power saving on for good"""
+    mine = (CFG.get({"camping": "camping_prev", "mode": "mode_prev", "turbo": "turbo_prev"}[me]) or {})
+    seq = float(mine.get("_seq", 0) or 0) if isinstance(mine, dict) else 0.0
+    for name, on_key, prev_key in (("camping", "camping", "camping_prev"), ("mode", "mode", "mode_prev"), ("turbo", "turbo_on", "turbo_prev")):
+        if name == me or not CFG.get(on_key):
+            continue
+        p = CFG.get(prev_key)
+        if isinstance(p, dict) and k in p and float(p.get("_seq", 0) or 0) > seq:
+            p[k] = v
+            return True
+    return False
+
+
 def turbo_set(on, who="web"):
     on = bool(on)
     if on and not CFG["turbo_on"]:
         prev = {k: CFG[k] for k in TURBO_SET if k in CFG}
         prev["_governor"] = _governor()
+        prev["_seq"] = time.time()
         CFG["turbo_prev"] = prev
         for k, v in TURBO_SET.items():
             if k in CFG:
@@ -7450,7 +7523,7 @@ def turbo_set(on, who="web"):
     elif not on and CFG["turbo_on"]:
         prev = CFG["turbo_prev"] if isinstance(CFG["turbo_prev"], dict) else {}
         for k, v in prev.items():
-            if k in CFG and isinstance(v, type(CFG[k])):
+            if k in CFG and isinstance(v, type(CFG[k])) and not _ovl_handover("turbo", k, v):
                 CFG[k] = v
         if prev.get("_governor"):
             _governor(prev["_governor"])
@@ -7545,9 +7618,10 @@ def mode_set(m, who="web"):
     if not old:                                             # first mode: keep the own settings
         prev = {k: CFG[k] for k in _mode_keys()}
         prev["hotspot_on"] = bool((STATE.get("hotspot") or {}).get("on"))
+        prev["_seq"] = time.time()
         CFG["mode_prev"] = prev
     for k, v in prev.items():                               # every mode starts from the own settings
-        if k in CFG and k not in ("armed", "hotspot_on") and isinstance(v, type(CFG[k])):
+        if k in CFG and k not in ("armed", "hotspot_on") and isinstance(v, type(CFG[k])) and not (not m and _ovl_handover("mode", k, v)):
             CFG[k] = v
     CFG["mode"] = m
     CFG["mode_since"] = time.time()
@@ -7652,6 +7726,7 @@ def camping_set(on, hotspot_delay=2.0):
     netauto_pause()
     if on and not CFG["camping"]:
         prev = {k: CFG[k] for k in list(CAMPING_SET) + ["thermal_alarm", "armed", "hotspot_on"]}
+        prev["_seq"] = time.time()
         CFG["camping_prev"] = prev
         for k, v in CAMPING_SET.items():
             CFG[k] = v; sched_user_changed(k)
@@ -7665,7 +7740,7 @@ def camping_set(on, hotspot_delay=2.0):
     elif not on and CFG["camping"]:
         prev = CFG["camping_prev"] if isinstance(CFG["camping_prev"], dict) else {}
         for k, v in prev.items():
-            if k in CFG and k not in ("armed", "hotspot_on") and isinstance(v, type(CFG[k])):
+            if k in CFG and k not in ("armed", "hotspot_on") and isinstance(v, type(CFG[k])) and not _ovl_handover("camping", k, v):
                 CFG[k] = v
         CFG["camping"] = False; CFG["camping_prev"] = {}
         log_event("sys", "Camping profile OFF - previous settings restored")
@@ -7905,6 +7980,8 @@ def protect_disarm(pin, source="web"):
 def protect_test(lang=None):
     if PROTECT["test"]["busy"]:
         return False, "a test is already running"
+    if CFG.get("sim_on") and simtask_busy("protection test"):
+        return False, simtask_refuse("protection test")
     L = norm_lang(lang) if lang else cur_lang()
     PROTECT["test"] = {"busy": True, "steps": [], "t": time.time()}
     threading.Thread(target=_protect_test_run, args=(L,), daemon=True, name="protect-test").start()
@@ -8941,6 +9018,39 @@ AB_PRESETS = {
 }
 
 
+def simtask_busy(except_=""):
+    """2.97.0: one lock for everything that uses the simulator to measure or to train: who is busy now ('' = free).
+    Every start asks here first, so two of them never mix (a person of the blind spots in a test run, a game round
+    in the training night ...). A game round in the simulator counts too."""
+    def g(n, d, k="busy"):
+        try:
+            return n if d.get(k) else ""
+        except Exception:
+            return ""
+    for name, busy in (("test run", TESTOPT.get("busy")), ("training night", TRAIN.get("busy")), ("A/B comparison", ABT.get("busy")),
+                       ("drill", DRILL.get("busy"))):
+        if busy and name != except_:
+            return name
+    for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN")):
+        d = globals().get(ref)
+        if isinstance(d, dict) and d.get("busy") and name != except_:
+            return name
+    try:
+        if PROTECT["test"]["busy"] and except_ != "protection test":
+            return "protection test"
+    except (NameError, KeyError):
+        pass
+    if except_ != "game" and sim_game_running():
+        return "game"
+    return ""
+
+
+def simtask_refuse(me):
+    """'' when free, else the reason for the page"""
+    b = simtask_busy(me)
+    return "" if not b else trf("The simulator is busy: {what}", what=tr(b))
+
+
 def sim_ready():
     return bool(CFG.get("sim_on")) and SIM.get("ok") and time.time() - SIM.get("t", 0) < 6
 
@@ -9061,6 +9171,8 @@ def drill_start(kind):
         return False, "unknown drill"
     if DRILL["busy"]:
         return False, "a drill is already running"
+    if simtask_busy():
+        return False, simtask_refuse("drill")
     if not sim_ready():
         return False, "only with the simulator"
     DRILL.update(kind=kind, t0=time.time(), until=time.time() + DRILL_KINDS[kind], seen=[], busy=True, restore={})
@@ -9139,8 +9251,8 @@ TRAIN_SCENES = ["camping", "wald", "garten", "parkplatz", "stellplatz"]
 
 
 def train_run(manual=False):
-    if TRAIN["busy"] or TESTOPT["busy"]:
-        return False, "already running"
+    if TRAIN["busy"] or simtask_busy():
+        return False, simtask_refuse("training night") or "already running"
     if not sim_ready():
         return False, "only with the simulator"
     TRAIN.update(busy=True, stop=False, step="")
@@ -9220,7 +9332,7 @@ def train_loop():
             now = datetime.now(); day = now.strftime("%Y-%m-%d")
             if now.hour != int(CFG.get("train_hour", 1)) or TRAIN["day"] == day or CFG.get("train_day") == day:
                 continue
-            if not sim_ready() or is_armed() or (SIMGAME.get("g") or {}).get("round") in ("play", "countdown"):
+            if not sim_ready() or is_armed() or simtask_busy():
                 continue
             TRAIN["day"] = day
             CFG["train_day"] = day
@@ -9235,8 +9347,8 @@ threading.Thread(target=train_loop, daemon=True, name="training-night").start()
 
 # ---- 13: A/B -----------------------------------------------------------------------------------------------------------
 def ab_run(preset, plan="quick"):
-    if ABT["busy"] or TESTOPT["busy"] or TRAIN["busy"]:
-        return False, "already running"
+    if ABT["busy"] or simtask_busy():
+        return False, simtask_refuse("A/B comparison") or "already running"
     if preset not in AB_PRESETS:
         return False, "unknown"
     if not sim_ready():
@@ -9448,6 +9560,8 @@ DEMO_STEPS = [
 def demo_start():
     if DEMO_RUN["busy"]:
         return False, "the demo is already running"
+    if simtask_busy("demo"):
+        return False, simtask_refuse("demo")
     if CFG["armed"] and not CFG.get("sim_on"):
         return False, "MoveEye is armed - disarm it first (the demo uses the simulator instead of the real camera)"
     if not CFG.get("sim_on") or not SIM.get("ok"):
@@ -9510,6 +9624,8 @@ AUTOTH = {"busy": False, "step": "", "last": None}
 def falearn_start(name, cause):
     if FALEARN["busy"]:
         return False, "already running"
+    if simtask_busy():
+        return False, simtask_refuse("false alarm learning")
     if not sim_ready():
         return False, "only with the simulator"
     if not rec_path(name):
@@ -9568,6 +9684,8 @@ def _falearn_thread(name, cause):
 def blind_start(kind="map", hour=None):
     if BLIND["busy"]:
         return False, "already running"
+    if simtask_busy():
+        return False, simtask_refuse("blind spots")
     if not sim_ready():
         return False, "only with the simulator"
     q = {"action": "blindmap", "do": "start"}
@@ -9644,7 +9762,7 @@ def blind_tip(res):
 
 def rehearsal_on_arm():
     """armed in the simulation: the night rehearsal by itself (when switched on)"""
-    if CFG.get("rehearsal_on_arm") and sim_ready() and not BLIND["busy"]:
+    if CFG.get("rehearsal_on_arm") and sim_ready() and not BLIND["busy"] and not simtask_busy():
         now = datetime.now()
         h = now.hour + now.minute / 60.0
         blind_start("rehearsal", h if (h >= 20 or h < 6) else 22.5)
@@ -9652,8 +9770,8 @@ def rehearsal_on_arm():
 
 # ---- 24 --------------------------------------------------------------------------------------------------------------------
 def autoth_start():
-    if AUTOTH["busy"] or TESTOPT["busy"] or TRAIN["busy"]:
-        return False, "already running"
+    if AUTOTH["busy"] or simtask_busy():
+        return False, simtask_refuse("automatic thresholds") or "already running"
     if not sim_ready():
         return False, "only with the simulator"
     AUTOTH.update(busy=True, step="day")
@@ -9686,10 +9804,8 @@ def weekcheck_loop():
             wk = now.strftime("%G-W%V")
             if now.weekday() != 6 or now.hour != int(CFG.get("testopt_hour", 3)) or CFG.get("weekcheck_last") == wk:
                 continue
-            if not sim_ready() or TESTOPT["busy"] or TRAIN["busy"] or is_armed():
+            if not sim_ready() or simtask_busy() or is_armed():
                 continue
-            CFG["weekcheck_last"] = wk
-            save_settings()
             prev = next((r for r in reversed(TESTOPT["runs"]) if r.get("week")), None)
             TESTOPT["busy"] = "week"
             try:
@@ -9698,7 +9814,9 @@ def weekcheck_loop():
             finally:
                 TESTOPT["busy"] = ""
             if run is None:
-                continue
+                continue                                   # 2.97.0: refused / stopped - try again in 2 min (the week is not lost)
+            CFG["weekcheck_last"] = wk
+            save_settings()
             run["week"] = True
             testopt_save()
             log_event("sys", f"Weekly recognition check: score {run['score']}")
@@ -10612,8 +10730,10 @@ def presence_eval():
         was = P["here"]; P.update(here=is_here, since=now)
         if was is not None:
             log_event("sys", "Presence: " + ("your device is back" if is_here else "your device is gone"))
-            if CFG.get("presence_auto"):
-                if is_here and CFG["armed"]:
+            if CFG.get("presence_auto") and CFG.get("mode") != "transport":   # 2.97.0: not while travelling
+                if not is_here and PRESENCE.get("home") is True:
+                    log_event("sys", "Presence: your device is gone, but a device still answers the ping - not armed")
+                elif is_here and CFG["armed"]:
                     disarm(); log_event("sys", "Disarmed automatically (your device is here)")
                 elif not is_here and not CFG["armed"]:
                     arm(); log_event("sys", "Armed automatically (your device is gone)")
@@ -12254,6 +12374,8 @@ class AutoTuner:
     def observe(self, fg, tracks, persons, fps):
         if not CFG["auto_tune"]:
             STATE["auto_status"] = "off"; return
+        if TESTOPT.get("busy") or ABT.get("busy") or TRAIN.get("busy"):
+            STATE["auto_status"] = "paused (test run)"; return   # 2.97.0: a measurement needs fixed values
         now = time.time()
         if fps > 1:
             self._set("walk_frames", max(4, min(24, round(fps * CFG["walk_seconds"]))), "fps")
@@ -16937,8 +17059,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.88", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31194910,
-         "sha256": "1c614420013f08d9436434c1018c1dc679275835162e43998dc40b5d3447cc4c"}
+SIM3D = {"version": "3D-3.89", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31196971,
+         "sha256": "c22f9a2bcad5747e92880736e8a4f4f28bff84afcb7aa57786d8096750f51dbf"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -17077,8 +17199,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.88", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24316524,
-           "sha256": "beaffa654dfcaf9894231e4bf5d9e0614dd8c538b384f02e796c8e690f924375", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.89", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24318537,
+           "sha256": "e4709bb0ffdd6fd17f3b53e8dd887eac713da45d4a6ddbb04ccfc7721e0e5f04", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -17486,7 +17608,7 @@ def _opt_trial_mark(cfg):
     """the last known good detection settings while the automatic optimization tries something"""
     try:
         with open(_opt_trial_file(), "w") as f:
-            json.dump({"cfg": cfg, "t": time.time()}, f)
+            json.dump({"cfg": cfg, "t": time.time(), "sim": bool(CFG.get("sim_on"))}, f)
     except OSError:
         pass
 
@@ -17506,6 +17628,10 @@ def testopt_recover():
     except (OSError, ValueError):
         return
     if isinstance(d, dict) and isinstance(d.get("cfg"), dict):
+        if bool(d.get("sim", False)) != bool(CFG.get("sim_on")):   # 2.97.0: measured in the other profile - do not mix
+            log_event("sys", "Automatic optimization was interrupted (restart) - other profile, nothing restored")
+            _opt_trial_end()
+            return
         opt_restore(d["cfg"], "automatic optimization was interrupted")
         log_event("sys", "Automatic optimization was interrupted (restart) - the settings from before the trial are back")
     _opt_trial_end()
@@ -17600,7 +17726,7 @@ def opt_suggest(rep):
     why = {k: sum(int((p.get("missed_why") or {}).get(k, 0)) for p in ph) for k in ("dark", "small", "fast", "crouch")}
     asp = sum(int(p.get("animals_as_person", 0)) for p in ph)
     lat = float(rep.get("latency_s") if rep.get("latency_s") is not None else -1)
-    tune_off = [("auto_tune", False)] if C.get("auto_tune") else []     # otherwise auto-tune changes the values again
+    tune_off = []      # 2.97.0: the auto-tuner rests during test runs instead of being switched off for good by a suggestion
     # ---- false alarms ----
     if causes.get("wind", 0) + causes.get("shadows", 0):
         n = causes.get("wind", 0) + causes.get("shadows", 0)
@@ -17674,6 +17800,12 @@ def opt_apply(changes, why="test run"):
     for k, _old, new in changes:
         if k in CFG:
             CFG[k] = _clampv(k, new); sched_user_changed(k)
+    if CFG.get("sim_on"):                                  # 2.97.0: found in the simulation - asked «also real?» when it ends
+        so = dict(CFG.get("simprof_opt") or {})
+        for k, _old, _new in changes:
+            if k in CFG:
+                so[k] = CFG[k]
+        CFG["simprof_opt"] = so
     save_settings()
     log_event("sys", "Optimization (" + why + "): " + ", ".join(f"{k} {o} -> {CFG[k]}" for k, o, _n in changes))
     return before
@@ -17873,15 +18005,14 @@ def testopt_nightly_loop():
             if not CFG.get("testopt_nightly"):
                 continue
             now = datetime.now(); day = now.strftime("%Y-%m-%d")
-            if now.hour != int(CFG.get("testopt_hour", 3)) or done == day or TESTOPT["busy"]:
+            if now.hour != int(CFG.get("testopt_hour", 3)) or done == day or simtask_busy() or is_armed():
                 continue
             if not (CFG["sim_on"] and SIM["ok"] and time.time() - SIM["t"] < 5):
                 continue
-            g_ = SIMGAME.get("g") or {}
-            if g_.get("round") in ("play", "countdown"):
-                continue
+            if now.weekday() == 6 and CFG.get("weekcheck_on"):
+                continue                                   # 2.97.0: Sunday at this hour the weekly check runs (same plan family)
             done = day
-            plan = CFG.get("testopt_plan") if CFG.get("testopt_plan") in ("standard", "quick", "hard", "night") else "quick"
+            plan = CFG.get("testopt_plan") if CFG.get("testopt_plan") in ("standard", "quick", "hard", "night", "spielwege") else "quick"
             prev = next((r for r in reversed(TESTOPT["runs"]) if r.get("plan") == plan and r.get("night")), None)
             TESTOPT["busy"] = "night"; TESTOPT["stop"] = False
             try:
@@ -20179,9 +20310,13 @@ def simprof_off():
     for k, label in keys.items():
         if k in real and real[k] != simv[k]:
             # 2.95.93: asked only when changed during this simulation (not by the auto-tuner, not already at its start)
-            if k not in _SIMPROF_AUTO_KEYS and k not in (CFG.get("simprof_ignore") or []) and (k not in start or start[k] != simv[k]):
+            opt = CFG.get("simprof_opt") or {}
+            if k in opt and k not in ("pan", "tilt"):           # 2.97.0: found by the optimisation in the simulation - always asked
+                ch.append({"key": k, "label": label + " (" + tr("optimisation") + ")", "real": real[k], "sim": simv[k], "opt": True})
+            elif k not in _SIMPROF_AUTO_KEYS and k not in (CFG.get("simprof_ignore") or []) and (k not in start or start[k] != simv[k]):
                 ch.append({"key": k, "label": label, "real": real[k], "sim": simv[k]})
             CFG[k] = real[k]
+    CFG["simprof_opt"] = {}
     SIMPROF["q"] = {"t": time.time(), "changes": ch[:80]} if ch else None
     if ch:
         log_event("sys", f"Simulation off: {len(ch)} settings of the simulation not taken over yet (question on the page)")
@@ -21767,7 +21902,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_97_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_97_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -22922,6 +23057,11 @@ class UpdateWatcher:
             return
         if (is_armed() and not CFG["update_install_armed"] and not fast) or STATE.get("recording") or STATE.get("persons") or STATE.get("arm_state") == "arming":
             return
+        try:
+            if simtask_busy():                            # 2.97.0: not in the middle of a test run, a training night or a game
+                return
+        except NameError:
+            pass
         try:
             with open(os.path.join(DATA_DIR, "update_bad.json")) as f:
                 if json.load(f).get("version") == v:
@@ -40824,11 +40964,11 @@ class WebStream:
             if getattr(g, "role", "admin") != "admin":
                 return reply({"ok": False, "error": "not allowed"}, 403)
             d = body(); a = d.get("action"); plan = str(d.get("plan") or "standard")
-            if plan not in ("standard", "quick", "hard", "night"):
+            if plan not in ("standard", "quick", "hard", "night", "spielwege"):     # 2.97.0: the sneak paths of the games too
                 plan = "standard"
             if a in ("run", "auto"):
-                if TESTOPT["busy"]:
-                    return reply({"ok": False, "error": "a test run is already going"}, 409)
+                if TESTOPT["busy"] or simtask_busy():
+                    return reply({"ok": False, "error": tr_err(simtask_refuse("test run") or "a test run is already going", norm_lang(d.get("lang")))}, 409)
                 if not (CFG["sim_on"] and SIM["ok"]):
                     return reply({"ok": False, "error": "the simulation is not connected"}, 409)
                 TESTOPT["plan"] = plan
@@ -40846,18 +40986,20 @@ class WebStream:
                     for k, o, n in x["changes"]:
                         ch.setdefault(k, [k, o, n])
                 before = opt_apply(list(ch.values()), "taken over: " + ", ".join(x["id"] for x in sel))
-                TESTOPT["undo"] = {"cfg": before, "t": time.time(), "what": ",".join(x["id"] for x in sel)}
+                TESTOPT["undo"] = {"cfg": before, "t": time.time(), "what": ",".join(x["id"] for x in sel), "sim": bool(CFG.get("sim_on"))}
                 TESTOPT["sugg"] = [x for x in TESTOPT["sugg"] if x not in sel]
                 testopt_save()
             elif a == "undo":
                 if not TESTOPT["undo"]:
                     return reply({"ok": False, "error": "nothing to undo"}, 404)
+                if bool(TESTOPT["undo"].get("sim", CFG.get("sim_on"))) != bool(CFG.get("sim_on")):   # 2.97.0
+                    return reply({"ok": False, "error": tr_err("This was changed in the other profile (simulation / real). Switch the simulation back first.", norm_lang(d.get("lang")))}, 409)
                 opt_restore(TESTOPT["undo"]["cfg"]); TESTOPT["undo"] = None; testopt_save()
             elif a == "clear":
                 TESTOPT["runs"] = []; TESTOPT["sugg"] = []; TESTOPT["auto"] = None; testopt_save()
             elif a == "nightly":
                 CFG["testopt_nightly"] = bool(d.get("on")); CFG["testopt_hour"] = max(0, min(23, int(d.get("hour", CFG["testopt_hour"]))))
-                if d.get("plan") in ("standard", "quick", "hard", "night"):
+                if d.get("plan") in ("standard", "quick", "hard", "night", "spielwege"):
                     CFG["testopt_plan"] = d["plan"]
                 save_settings()
             else:
@@ -44428,7 +44570,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.97.0")
+        self.root.title("MoveEye 2.97.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -44745,7 +44887,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.97.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.97.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -52023,6 +52165,27 @@ _HX118 = {  # 2.97.0
     'sim-missing': ('Ein Simulator fehlt? Im Simulator den Schalter «An MoveEye senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).', 'Un simulateur manque ? Dans le simulateur, activer «Envoyer à MoveEye». Sur un PC, le pare-feu Windows doit autoriser son port (8765 ; un deuxième simulateur p. ex. 8767).', 'Manca un simulatore? Nel simulatore attivare «Invia a MoveEye». Su un PC il firewall di Windows deve permettere la sua porta (8765; un secondo simulatore p. es. 8767).', 'Mancanta in simulatur? En il simulatur activar «Trametter a MoveEye». Sin in PC sto il firewall da Windows permetter ses port (8765; in segund simulatur p. ex. 8767).'),
 }
 for _k, _v in _HX118.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+_HX119 = {  # 2.97.1
+    'The simulator is busy: {what}': ('Der Simulator ist belegt: {what}', 'Le simulateur est occupé : {what}', 'Il simulatore è occupato: {what}', 'Il simulatur è occupà: {what}'),
+    'test run': ('Testlauf', 'test', 'test', 'test'),
+    'training night': ('Trainings-Nacht', 'nuit d’entraînement', 'notte di allenamento', 'notg da trenament'),
+    'A/B comparison': ('A/B-Vergleich', 'comparaison A/B', 'confronto A/B', 'cumparegliaziun A/B'),
+    'drill': ('Störfall-Übung', 'exercice de panne', 'esercitazione guasto', 'exercizi da disturbi'),
+    'blind spots': ('blinde Flecken', 'angles morts', 'punti ciechi', 'flatgs ciechs'),
+    'false alarm learning': ('Fehlalarm-Lernen', 'apprentissage des fausses alarmes', 'apprendimento falsi allarmi', 'emprender falsas alarms'),
+    'automatic thresholds': ('Schwellen automatisch', 'seuils automatiques', 'soglie automatiche', 'limits automatics'),
+    'demo': ('Demo', 'démo', 'demo', 'demo'),
+    'protection test': ('Schutz-Test', 'test de protection', 'test di protezione', 'test da protecziun'),
+    'game': ('Spielrunde', 'partie', 'partita', 'giug'),
+    'optimisation': ('Optimierung', 'optimisation', 'ottimizzazione', 'optimaziun'),
+    'This was changed in the other profile (simulation / real). Switch the simulation back first.': ('Das wurde im anderen Profil geändert (Simulation / echt). Zuerst die Simulation wieder umschalten.', 'Cela a été changé dans l’autre profil (simulation / réel). D’abord rebasculer la simulation.', 'È stato cambiato nell’altro profilo (simulazione / reale). Prima rimettere la simulazione.', 'Quai è vegnì midà en l’auter profil (simulaziun / vair). L’emprim midar enavos la simulaziun.'),
+    'Power saving off (mains power): full attention': ('Energiesparen aus (Netzstrom): volle Aufmerksamkeit', 'Économie d’énergie désactivée (secteur) : pleine attention', 'Risparmio energetico spento (rete): piena attenzione', 'Spargnar energia deactivà (current da rait): attenziun cumplaina'),
+}
+for _k, _v in _HX119.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

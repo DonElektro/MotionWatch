@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.88"
+const VERSION := "3D-3.89"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1544,6 +1544,30 @@ func _night_weather_tick() -> void:
 	humidity = 92.0 if dew or weather in ["fog", "rain"] else (78.0 if h > 20.0 or h < 7.0 else 60.0)
 
 
+func measuring() -> bool:
+	"""3D-3.88: a measurement runs - the head and the mover must stand still (the patrol waits)"""
+	return busy_with() in ["Testlauf", "Prüfstand", "Trainingsbilder", "Blinde Flecken", "Fehlalarm nachstellen"]
+
+
+func typing() -> bool:
+	"""3D-3.88: somebody types into a text field (search, inventory) - the keys must not move the view or the rover"""
+	var f = get_viewport().gui_get_focus_owner()
+	return f != null and (f is LineEdit or f is TextEdit)
+
+
+func head_owner() -> String:
+	"""3D-3.88: who turns the head right now (shown in «Kopf steuern»)"""
+	if dataset != null and dataset.servo != null:
+		return "Trainingsbilder"
+	if replay != null and replay.on:
+		return "Alarm-Rückblick"
+	if patrol != null and patrol.active and not measuring():
+		return "Patrouille"
+	if game != null and game.guard_auto:
+		return "Spiel (Wächter)"
+	return ""
+
+
 func busy_with(except_ := "") -> String:
 	"""3D-3.88: who has the world (time, weather, visitors) right now - a test, a measurement or a game round. While one runs,
 	the automatics rest (real time and weather, night weather, surprise night, headlights, updates, lighter graphics) and a
@@ -1815,7 +1839,7 @@ func _process(dt: float) -> void:
 	if game != null and game.guard_auto:                 # the game: automatic guard or a player as guard turns the head
 		want_pan = game.guard_yaw
 		want_tilt = game.guard_tilt
-	if patrol != null and patrol.active:                 # 3D-3.61: on patrol the head swings / looks round / follows
+	if patrol != null and patrol.active and not measuring():   # 3D-3.61: on patrol the head swings (3D-3.88: not while measuring)
 		want_pan = patrol.head_yaw
 		want_tilt = deg_to_rad(-8.0)
 	if dataset != null and dataset.servo != null:         # Trainingsbilder: the head looks where the picture needs it
@@ -2946,7 +2970,13 @@ const VISITOR_LIST := [["person", "Person"], ["child", "Kind"], ["jogger", "Jogg
 var meadow_on := true
 
 
+var _perf_orig := {}                     # 3D-3.88: the own graphics choice before «automatisch leichter»
+var _perf_auto := false
+
+
 func set_meadow(on: bool) -> void:
+	if not _perf_auto:
+		_perf_orig.erase("meadow_on")                  # chosen by hand: saved again
 	meadow_on = on
 	for n in get_tree().get_nodes_in_group("meadow"):
 		n.visible = on
@@ -2963,6 +2993,8 @@ func _set_speed(v: float) -> void:
 
 
 func set_view_scale(v: float) -> void:
+	if not _perf_auto:
+		_perf_orig.erase("view_scale")
 	view_scale = clampf(v, 0.4, 1.0)
 	get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
 	get_viewport().scaling_3d_scale = view_scale
@@ -2984,6 +3016,10 @@ func _perf_tick() -> void:
 		return
 	_slow_n = 0
 	_perf_t = now()
+	for k_ in ["quality", "view_scale", "meadow_on"]:     # 3D-3.88: only for this session - the own choice stays saved
+		if not _perf_orig.has(k_):
+			_perf_orig[k_] = get(k_)
+	_perf_auto = true
 	var lvl: int = ["simple", "medium", "nice", "ultra"].find(quality)
 	var what := ""
 	if lvl > 0:
@@ -2999,13 +3035,16 @@ func _perf_tick() -> void:
 		set_view_scale(0.55)
 		what = "Ansicht 55 % scharf"
 	else:
+		_perf_auto = false
 		return
-	_settings_dirty = true
-	start_info = "Der PC ist langsam – leichter gemacht: %s (Bilder für MoveEye unverändert)" % what
+	_perf_auto = false
+	start_info = "Der PC ist langsam – leichter gemacht: %s (nur bis zum Neustart; Bilder für MoveEye unverändert)" % what
 	print("auto graphics: " + what)
 
 
 func _set_quality(v: String) -> void:
+	if not _perf_auto:
+		_perf_orig.erase("quality")
 	quality = v
 	_apply_quality()
 
@@ -4566,6 +4605,8 @@ func _save_settings() -> void:
 	var d := {}
 	for k in KEEP:
 		d[k] = get(k)
+	for k in _perf_orig:                                   # 3D-3.88: «automatisch leichter» is not saved
+		d[k] = _perf_orig[k]
 	d["hour_now"] = snappedf(hour(), 0.001)               # 3D-3.76: the time of the scene stays after a restart
 	d["hour_at"] = int(Time.get_unix_time_from_system())
 	d["speed_now"] = speed
@@ -5516,6 +5557,8 @@ func _fly(dt: float) -> void:
 		return                                   # keys go to the phone
 	if explore != null and explore.on:
 		return                                   # exploring: W A S D drive the rover
+	if typing():
+		return                                   # 3D-3.88: letters typed into a search field do not fly the view
 	var mv := Vector3.ZERO
 	if Input.is_key_pressed(KEY_W):
 		mv.z -= 1

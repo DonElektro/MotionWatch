@@ -2062,3 +2062,24 @@ for _k, _v in _HX118.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+
+_HX119 = {  # 2.97.1
+    'The simulator is busy: {what}': ('Der Simulator ist belegt: {what}', 'Le simulateur est occupé : {what}', 'Il simulatore è occupato: {what}', 'Il simulatur è occupà: {what}'),
+    'test run': ('Testlauf', 'test', 'test', 'test'),
+    'training night': ('Trainings-Nacht', 'nuit d’entraînement', 'notte di allenamento', 'notg da trenament'),
+    'A/B comparison': ('A/B-Vergleich', 'comparaison A/B', 'confronto A/B', 'cumparegliaziun A/B'),
+    'drill': ('Störfall-Übung', 'exercice de panne', 'esercitazione guasto', 'exercizi da disturbi'),
+    'blind spots': ('blinde Flecken', 'angles morts', 'punti ciechi', 'flatgs ciechs'),
+    'false alarm learning': ('Fehlalarm-Lernen', 'apprentissage des fausses alarmes', 'apprendimento falsi allarmi', 'emprender falsas alarms'),
+    'automatic thresholds': ('Schwellen automatisch', 'seuils automatiques', 'soglie automatiche', 'limits automatics'),
+    'demo': ('Demo', 'démo', 'demo', 'demo'),
+    'protection test': ('Schutz-Test', 'test de protection', 'test di protezione', 'test da protecziun'),
+    'game': ('Spielrunde', 'partie', 'partita', 'giug'),
+    'optimisation': ('Optimierung', 'optimisation', 'ottimizzazione', 'optimaziun'),
+    'This was changed in the other profile (simulation / real). Switch the simulation back first.': ('Das wurde im anderen Profil geändert (Simulation / echt). Zuerst die Simulation wieder umschalten.', 'Cela a été changé dans l’autre profil (simulation / réel). D’abord rebasculer la simulation.', 'È stato cambiato nell’altro profilo (simulazione / reale). Prima rimettere la simulazione.', 'Quai è vegnì midà en l’auter profil (simulaziun / vair). L’emprim midar enavos la simulaziun.'),
+    'Power saving off (mains power): full attention': ('Energiesparen aus (Netzstrom): volle Aufmerksamkeit', 'Économie d’énergie désactivée (secteur) : pleine attention', 'Risparmio energetico spento (rete): piena attenzione', 'Spargnar energia deactivà (current da rait): attenziun cumplaina'),
+}
+for _k, _v in _HX119.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])

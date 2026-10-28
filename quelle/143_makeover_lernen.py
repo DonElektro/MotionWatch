@@ -20,6 +20,8 @@ AUTOTH = {"busy": False, "step": "", "last": None}
 def falearn_start(name, cause):
     if FALEARN["busy"]:
         return False, "already running"
+    if simtask_busy():
+        return False, simtask_refuse("false alarm learning")
     if not sim_ready():
         return False, "only with the simulator"
     if not rec_path(name):
@@ -78,6 +80,8 @@ def _falearn_thread(name, cause):
 def blind_start(kind="map", hour=None):
     if BLIND["busy"]:
         return False, "already running"
+    if simtask_busy():
+        return False, simtask_refuse("blind spots")
     if not sim_ready():
         return False, "only with the simulator"
     q = {"action": "blindmap", "do": "start"}
@@ -154,7 +158,7 @@ def blind_tip(res):
 
 def rehearsal_on_arm():
     """armed in the simulation: the night rehearsal by itself (when switched on)"""
-    if CFG.get("rehearsal_on_arm") and sim_ready() and not BLIND["busy"]:
+    if CFG.get("rehearsal_on_arm") and sim_ready() and not BLIND["busy"] and not simtask_busy():
         now = datetime.now()
         h = now.hour + now.minute / 60.0
         blind_start("rehearsal", h if (h >= 20 or h < 6) else 22.5)
@@ -162,8 +166,8 @@ def rehearsal_on_arm():
 
 # ---- 24 --------------------------------------------------------------------------------------------------------------------
 def autoth_start():
-    if AUTOTH["busy"] or TESTOPT["busy"] or TRAIN["busy"]:
-        return False, "already running"
+    if AUTOTH["busy"] or simtask_busy():
+        return False, simtask_refuse("automatic thresholds") or "already running"
     if not sim_ready():
         return False, "only with the simulator"
     AUTOTH.update(busy=True, step="day")
@@ -196,10 +200,8 @@ def weekcheck_loop():
             wk = now.strftime("%G-W%V")
             if now.weekday() != 6 or now.hour != int(CFG.get("testopt_hour", 3)) or CFG.get("weekcheck_last") == wk:
                 continue
-            if not sim_ready() or TESTOPT["busy"] or TRAIN["busy"] or is_armed():
+            if not sim_ready() or simtask_busy() or is_armed():
                 continue
-            CFG["weekcheck_last"] = wk
-            save_settings()
             prev = next((r for r in reversed(TESTOPT["runs"]) if r.get("week")), None)
             TESTOPT["busy"] = "week"
             try:
@@ -208,7 +210,9 @@ def weekcheck_loop():
             finally:
                 TESTOPT["busy"] = ""
             if run is None:
-                continue
+                continue                                   # 2.97.0: refused / stopped - try again in 2 min (the week is not lost)
+            CFG["weekcheck_last"] = wk
+            save_settings()
             run["week"] = True
             testopt_save()
             log_event("sys", f"Weekly recognition check: score {run['score']}")

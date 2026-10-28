@@ -41,6 +41,9 @@ var http_conns: Array = []              # [StreamPeerTCP, request so far, start 
 var socks: Array = []                   # {"ws": WebSocketPeer, "slot": -1, "t": time}
 var players: Array = []                 # per slot: null or Dictionary (see _new_player)
 var root: Node3D                        # figures and markers
+var _patrol_was := false
+var _mover_was := false
+var _rig_was := Transform3D.IDENTITY                # 3D-3.88: was the patrol on before a «Patrouille» round
 var round_state := "lobby"              # lobby | countdown | play | end
 var t_start := 0.0
 var t_end := 0.0
@@ -80,6 +83,7 @@ var ev_next := 0.0
 var ev_node = null
 var ev_weather := ""
 var ev_warned := {}
+var scene_saved := ""                   # 3D-3.88: the scene before the daily task
 var night_saved := -1.0                 # night round: the time of day before
 var decoy_pos := Vector3.ZERO           # the decoy is seen: the automatic head looks there
 var decoy_until := 0.0
@@ -1064,6 +1068,7 @@ func start_round() -> void:
 	_paint_goal()
 	learn.round_start()
 	if main.game_mode == "patrol" and main.patrol != null:  # 3D-3.61: the patrol drives during the round
+		_patrol_was = main.patrol.active                     # 3D-3.88: afterwards as before
 		main.patrol.set_active(true)
 	_rec_start()
 	_ghosts_start()
@@ -1233,7 +1238,12 @@ func end_round() -> void:
 	round_state = "end"
 	learn.round_end()                                      # 3D-3.52: before the players go back to the lobby
 	if main.game_mode == "patrol" and main.patrol != null:
-		main.patrol.set_active(false)
+		main.patrol.set_active(_patrol_was)
+	if main.game_mode == "seek" and seek_set:              # 3D-3.88: back to the place of before (zones, reference scan)
+		if _mover_was:
+			main.rig.global_transform = _rig_was
+		else:
+			main.set_mover(false)
 	news("🏁 Die Runde ist vorbei")
 	results.clear()
 	var missed := 0
@@ -1309,6 +1319,10 @@ func end_round() -> void:
 	if night_saved >= 0.0:
 		main.set_hour(night_saved)
 		night_saved = -1.0
+	if scene_saved != "":
+		var sc_ := scene_saved
+		scene_saved = ""
+		main.set_scene.call_deferred(sc_)
 	_send_gallery()
 	team_results.clear()
 	if main.game_teams:                                    # team totals
@@ -3293,6 +3307,7 @@ func _daily_setup() -> void:
 		return
 	var pl := daily_plan()
 	if main.scene != str(pl["scene"]):
+		scene_saved = main.scene                         # 3D-3.88: back to the own scene after the daily task
 		main.set_scene(str(pl["scene"]))
 	_rng.seed = int(pl["seed"])
 	if night_saved < 0.0:
@@ -3392,6 +3407,8 @@ func _seek_start() -> void:
 	for q in players:
 		if q != null and q.has("bot"):
 			q["bot"].erase("hide")
+	_mover_was = main.mover_on                            # 3D-3.88: after the round MoveEye stands where it stood
+	_rig_was = main.rig.global_transform
 	main.set_mover(true)
 	var r: Vector3 = main.rig.global_position
 	seek_base = Vector3(r.x, 0, r.z)

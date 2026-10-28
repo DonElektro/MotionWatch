@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 23:10",
+ "generated": "2026-10-28 23:18",
  "versions": [
   {
-   "version": "2.97.0",
-   "file": "webcam_bewegung_2_97_0.py",
+   "version": "2.97.1",
+   "file": "webcam_bewegung_2_97_1.py",
    "url": "",
-   "sha256": "e2a80a8f37abfd4d303c3457eb295f63476984715875bf678c58bc3e4c4a17c3",
-   "date": "2026-10-28 23:10",
-   "notes": "Sicherheit: PIN beim Klatschschalter, Simulation fragt bei scharfem MoveEye, Sirene nicht mehr doppelt, Spiele und Übungen ohne echte Sirene und Pushes, Lagerfeuer ohne Personen-Alarm, Herkunft bei Aufnahmen",
-   "sig": "d007407501d757b7e17545c4a867a6a881a3ca4c521fb217275d6824f1533c07cc18b5d67247c05ef8d559221b6cd38ff806824cd7b0a011d0df7d8b0935c101"
+   "sha256": "5ff15f79d534f5ba0564034763e3468406ba7fd1e9c6d522cddb61b65e0f9393",
+   "date": "2026-10-28 23:18",
+   "notes": "Ordnung im Hintergrund: eine Sperre für alle Simulator-Aufgaben, Zeitplan schaltet über die Scharf-Logik, Modi stellen in jeder Reihenfolge richtig zurück, Optimierung fragt «auch echt übernehmen?», AutoTuner pausiert bei Tests, Anwesenheit aus beiden Quellen, Updates warten auf Tests",
+   "sig": "6ef023224ca0241fe8d4ab33deedd9ff09d7d8d63e64186530e4dfda222dec24ec76104f81afa9ab203a7e303ef18f3c193f3dd8784b24dad5273fafa0ce9000"
   },
   {
    "version": "2.96.13",

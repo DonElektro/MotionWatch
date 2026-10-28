@@ -23,6 +23,39 @@ AB_PRESETS = {
 }
 
 
+def simtask_busy(except_=""):
+    """2.97.0: one lock for everything that uses the simulator to measure or to train: who is busy now ('' = free).
+    Every start asks here first, so two of them never mix (a person of the blind spots in a test run, a game round
+    in the training night ...). A game round in the simulator counts too."""
+    def g(n, d, k="busy"):
+        try:
+            return n if d.get(k) else ""
+        except Exception:
+            return ""
+    for name, busy in (("test run", TESTOPT.get("busy")), ("training night", TRAIN.get("busy")), ("A/B comparison", ABT.get("busy")),
+                       ("drill", DRILL.get("busy"))):
+        if busy and name != except_:
+            return name
+    for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN")):
+        d = globals().get(ref)
+        if isinstance(d, dict) and d.get("busy") and name != except_:
+            return name
+    try:
+        if PROTECT["test"]["busy"] and except_ != "protection test":
+            return "protection test"
+    except (NameError, KeyError):
+        pass
+    if except_ != "game" and sim_game_running():
+        return "game"
+    return ""
+
+
+def simtask_refuse(me):
+    """'' when free, else the reason for the page"""
+    b = simtask_busy(me)
+    return "" if not b else trf("The simulator is busy: {what}", what=tr(b))
+
+
 def sim_ready():
     return bool(CFG.get("sim_on")) and SIM.get("ok") and time.time() - SIM.get("t", 0) < 6
 
@@ -143,6 +176,8 @@ def drill_start(kind):
         return False, "unknown drill"
     if DRILL["busy"]:
         return False, "a drill is already running"
+    if simtask_busy():
+        return False, simtask_refuse("drill")
     if not sim_ready():
         return False, "only with the simulator"
     DRILL.update(kind=kind, t0=time.time(), until=time.time() + DRILL_KINDS[kind], seen=[], busy=True, restore={})
@@ -221,8 +256,8 @@ TRAIN_SCENES = ["camping", "wald", "garten", "parkplatz", "stellplatz"]
 
 
 def train_run(manual=False):
-    if TRAIN["busy"] or TESTOPT["busy"]:
-        return False, "already running"
+    if TRAIN["busy"] or simtask_busy():
+        return False, simtask_refuse("training night") or "already running"
     if not sim_ready():
         return False, "only with the simulator"
     TRAIN.update(busy=True, stop=False, step="")
@@ -302,7 +337,7 @@ def train_loop():
             now = datetime.now(); day = now.strftime("%Y-%m-%d")
             if now.hour != int(CFG.get("train_hour", 1)) or TRAIN["day"] == day or CFG.get("train_day") == day:
                 continue
-            if not sim_ready() or is_armed() or (SIMGAME.get("g") or {}).get("round") in ("play", "countdown"):
+            if not sim_ready() or is_armed() or simtask_busy():
                 continue
             TRAIN["day"] = day
             CFG["train_day"] = day
@@ -317,8 +352,8 @@ threading.Thread(target=train_loop, daemon=True, name="training-night").start()
 
 # ---- 13: A/B -----------------------------------------------------------------------------------------------------------
 def ab_run(preset, plan="quick"):
-    if ABT["busy"] or TESTOPT["busy"] or TRAIN["busy"]:
-        return False, "already running"
+    if ABT["busy"] or simtask_busy():
+        return False, simtask_refuse("A/B comparison") or "already running"
     if preset not in AB_PRESETS:
         return False, "unknown"
     if not sim_ready():

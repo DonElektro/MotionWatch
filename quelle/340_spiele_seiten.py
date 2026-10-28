@@ -704,9 +704,13 @@ def simprof_off():
     for k, label in keys.items():
         if k in real and real[k] != simv[k]:
             # 2.95.93: asked only when changed during this simulation (not by the auto-tuner, not already at its start)
-            if k not in _SIMPROF_AUTO_KEYS and k not in (CFG.get("simprof_ignore") or []) and (k not in start or start[k] != simv[k]):
+            opt = CFG.get("simprof_opt") or {}
+            if k in opt and k not in ("pan", "tilt"):           # 2.97.0: found by the optimisation in the simulation - always asked
+                ch.append({"key": k, "label": label + " (" + tr("optimisation") + ")", "real": real[k], "sim": simv[k], "opt": True})
+            elif k not in _SIMPROF_AUTO_KEYS and k not in (CFG.get("simprof_ignore") or []) and (k not in start or start[k] != simv[k]):
                 ch.append({"key": k, "label": label, "real": real[k], "sim": simv[k]})
             CFG[k] = real[k]
+    CFG["simprof_opt"] = {}
     SIMPROF["q"] = {"t": time.time(), "changes": ch[:80]} if ch else None
     if ch:
         log_event("sys", f"Simulation off: {len(ch)} settings of the simulation not taken over yet (question on the page)")

@@ -66,7 +66,7 @@ func command() -> Vector2:
 		return g.seek_drive.limit_length(1.0)               # 3D-3.78: the seeker of «Verstecken» drives
 	if main.localplay != null and main.localplay.active:
 		return Vector2.ZERO                                  # 3D-3.77: the keys belong to the player at the PC
-	if not main.karte.visible:
+	if not main.karte.visible and not main.typing():
 		if Input.is_key_pressed(KEY_UP):
 			k.x += 1.0
 		if Input.is_key_pressed(KEY_DOWN):

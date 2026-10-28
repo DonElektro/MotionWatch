@@ -1,12 +1,12 @@
 {
- "version": "3D-3.88",
+ "version": "3D-3.89",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31194910,
- "sha256": "1c614420013f08d9436434c1018c1dc679275835162e43998dc40b5d3447cc4c",
- "notes": "Tests und Spiele stoeren sich nicht mehr: zentrale Sperre, Automatiken ruhen, Testbesucher nicht im Tagebuch",
+ "size": 31196971,
+ "sha256": "c22f9a2bcad5747e92880736e8a4f4f28bff84afcb7aa57786d8096750f51dbf",
+ "notes": "Kopf und Rover klar geregelt, Tippen bewegt nichts, automatisch leichter nur fuer die Sitzung",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24316524,
-  "sha256": "beaffa654dfcaf9894231e4bf5d9e0614dd8c538b384f02e796c8e690f924375"
+  "size": 24318537,
+  "sha256": "e4709bb0ffdd6fd17f3b53e8dd887eac713da45d4a6ddbb04ccfc7721e0e5f04"
  }
 }

@@ -139,6 +139,8 @@ DEMO_STEPS = [
 def demo_start():
     if DEMO_RUN["busy"]:
         return False, "the demo is already running"
+    if simtask_busy("demo"):
+        return False, simtask_refuse("demo")
     if CFG["armed"] and not CFG.get("sim_on"):
         return False, "MoveEye is armed - disarm it first (the demo uses the simulator instead of the real camera)"
     if not CFG.get("sim_on") or not SIM.get("ok"):

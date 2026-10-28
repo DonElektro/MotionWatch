@@ -225,6 +225,8 @@ def protect_disarm(pin, source="web"):
 def protect_test(lang=None):
     if PROTECT["test"]["busy"]:
         return False, "a test is already running"
+    if CFG.get("sim_on") and simtask_busy("protection test"):
+        return False, simtask_refuse("protection test")
     L = norm_lang(lang) if lang else cur_lang()
     PROTECT["test"] = {"busy": True, "steps": [], "t": time.time()}
     threading.Thread(target=_protect_test_run, args=(L,), daemon=True, name="protect-test").start()

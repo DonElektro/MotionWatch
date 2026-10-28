@@ -90,6 +90,8 @@ func set_invite(v: bool) -> void:
 	if g == null:
 		return
 	if v:
+		if main.game_mode != "free":                     # 3D-3.88: say it instead of switching silently
+			main.start_info = "Spielart auf «Frei bewegen» gestellt (Mitspieler einladen)"
 		main.game_mode = "free"
 		g.set_open(true)
 	invite.visible = v
@@ -100,6 +102,9 @@ func set_on(v: bool) -> void:
 	if v == on:
 		return
 	on = v
+	if on and main.patrol != null and main.patrol.active:
+		main.patrol.set_active(false)                    # 3D-3.88: exploring and patrol exclude each other
+		main.start_info = "Patrouille angehalten (Erkunden)"
 	if on:
 		_saved = {"mover": main.mover_on, "max": main.mover_max, "panel": main.ui_root.visible}
 		main.set_mover(true)
@@ -294,7 +299,7 @@ func command() -> Vector2:
 	if not on:
 		return Vector2.ZERO
 	var k := Vector2.ZERO
-	if not main.karte.visible:
+	if not main.karte.visible and not main.typing():
 		if Input.is_key_pressed(KEY_W):
 			k.x += 1.0
 		if Input.is_key_pressed(KEY_S):

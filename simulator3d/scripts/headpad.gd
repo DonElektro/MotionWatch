@@ -95,8 +95,10 @@ func _process(dt: float) -> void:
 	position = Vector2(14, vs.y - size.y - 110)
 	img.texture = main.vps[0].get_texture()
 	var con: bool = main.now() - main.mw_t < 3.0
-	info.text = ("MoveEye dreht den Kopf (auch Tracking und Patrouille pausieren kurz)." if con
-			else "MoveEye ist nicht verbunden – zuerst «An MoveEye senden» und MoveEye verbinden.")
+	var own: String = main.head_owner()
+	info.text = ("Den Kopf steuert gerade: %s – deine Befehle wirken erst danach." % own if con and own != ""
+			else ("MoveEye dreht den Kopf (auch Tracking und Patrouille pausieren kurz)." if con
+			else "MoveEye ist nicht verbunden – zuerst «An MoveEye senden» und MoveEye verbinden."))
 	if _hold != "":
 		_hold_t -= dt
 		if _hold_t <= 0.0:

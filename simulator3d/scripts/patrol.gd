@@ -64,6 +64,8 @@ func set_active(v: bool) -> String:
 	if v:
 		if not ready_to_go():
 			random_route()                               # nothing set yet: a route round MoveEye
+		if main.explore != null and main.explore.on:
+			main.explore.set_on(false)                   # 3D-3.88: exploring and patrol exclude each other
 		active = true
 		_saved_max = main.mover_max
 		main.set_mover(true)
@@ -305,8 +307,8 @@ func _next() -> void:
 
 func command() -> Vector2:
 	"""(forward, turn right) for the mover, like the green stick"""
-	if not active:
-		return Vector2.ZERO
+	if not active or main.measuring():
+		return Vector2.ZERO                               # 3D-3.88: a test measures - the patrol waits where it is
 	var rig: Node3D = main.rig
 	var me := Vector2(rig.position.x, rig.position.z)
 	if state == "look":

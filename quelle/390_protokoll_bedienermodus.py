@@ -943,6 +943,11 @@ class UpdateWatcher:
         if (is_armed() and not CFG["update_install_armed"] and not fast) or STATE.get("recording") or STATE.get("persons") or STATE.get("arm_state") == "arming":
             return
         try:
+            if simtask_busy():                            # 2.97.0: not in the middle of a test run, a training night or a game
+                return
+        except NameError:
+            pass
+        try:
             with open(os.path.join(DATA_DIR, "update_bad.json")) as f:
                 if json.load(f).get("version") == v:
                     return                                   # this version was rolled back once: only by hand

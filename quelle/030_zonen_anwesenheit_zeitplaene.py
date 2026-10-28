@@ -171,6 +171,22 @@ def zones_set(lst):
     return True, ""
 
 
+def presence_home():
+    """2.97.0: one answer to «is somebody home?» from both ways: the ping of the devices (presence_hosts) and the phone /
+    watch seen in the Wi-Fi or by Bluetooth (presence_macs / presence_bt). True if one of them sees somebody."""
+    a = PRESENCE["home"]
+    try:
+        P = TOOLS["presence"]
+        b = P.get("here") if (CFG.get("presence_macs") or CFG.get("presence_bt")) else None
+    except (NameError, KeyError):
+        b = None
+    if a is True or b is True:
+        return True
+    if a is None and b is None:
+        return None
+    return False
+
+
 # ----------------------------------------------------------------------------
 # Presence: is somebody home? (ping the phones / devices from the settings)
 # ----------------------------------------------------------------------------
@@ -700,7 +716,7 @@ def schedule_window_contains(s, dt):
 
 def presence_ok(s):
     p = s.get("presence")
-    home = PRESENCE["home"]
+    home = presence_home()
     if not p or home is None:                    # no rule, or presence unknown -> stay armed
         return True
     return home if p == "home" else not home
@@ -749,11 +765,18 @@ def schedule_tick():
         if k not in base:
             base[k] = CFG[k]
         if CFG[k] != v:
-            CFG[k] = v
+            if k == "armed":                             # 2.97.0: through the arm logic (countdown, «armed now», rehearsal)
+                arm_by_schedule(v, ", ".join(active))
+            else:
+                CFG[k] = v
             log_event("sched", f"Schedule: {labels.get(k, k)} {'ON' if v else 'OFF'}")
     for k in list(base):
         if k not in forced:                              # no schedule controls it any more -> give the user's value back
-            CFG[k] = base.pop(k); manual.discard(k)
+            v0 = base.pop(k); manual.discard(k)
+            if k == "armed":
+                arm_by_schedule(v0, "end")
+            else:
+                CFG[k] = v0
             log_event("sched", f"Schedule: {labels.get(k, k)} back to {'ON' if CFG[k] else 'OFF'}")
     SCHED["last"] = dict(forced)
     STATE["sched_active"] = list(active); STATE["sched_active_idx"] = active_idx

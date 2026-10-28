@@ -57,7 +57,7 @@ def _opt_trial_mark(cfg):
     """the last known good detection settings while the automatic optimization tries something"""
     try:
         with open(_opt_trial_file(), "w") as f:
-            json.dump({"cfg": cfg, "t": time.time()}, f)
+            json.dump({"cfg": cfg, "t": time.time(), "sim": bool(CFG.get("sim_on"))}, f)
     except OSError:
         pass
 
@@ -77,6 +77,10 @@ def testopt_recover():
     except (OSError, ValueError):
         return
     if isinstance(d, dict) and isinstance(d.get("cfg"), dict):
+        if bool(d.get("sim", False)) != bool(CFG.get("sim_on")):   # 2.97.0: measured in the other profile - do not mix
+            log_event("sys", "Automatic optimization was interrupted (restart) - other profile, nothing restored")
+            _opt_trial_end()
+            return
         opt_restore(d["cfg"], "automatic optimization was interrupted")
         log_event("sys", "Automatic optimization was interrupted (restart) - the settings from before the trial are back")
     _opt_trial_end()
@@ -171,7 +175,7 @@ def opt_suggest(rep):
     why = {k: sum(int((p.get("missed_why") or {}).get(k, 0)) for p in ph) for k in ("dark", "small", "fast", "crouch")}
     asp = sum(int(p.get("animals_as_person", 0)) for p in ph)
     lat = float(rep.get("latency_s") if rep.get("latency_s") is not None else -1)
-    tune_off = [("auto_tune", False)] if C.get("auto_tune") else []     # otherwise auto-tune changes the values again
+    tune_off = []      # 2.97.0: the auto-tuner rests during test runs instead of being switched off for good by a suggestion
     # ---- false alarms ----
     if causes.get("wind", 0) + causes.get("shadows", 0):
         n = causes.get("wind", 0) + causes.get("shadows", 0)
@@ -245,6 +249,12 @@ def opt_apply(changes, why="test run"):
     for k, _old, new in changes:
         if k in CFG:
             CFG[k] = _clampv(k, new); sched_user_changed(k)
+    if CFG.get("sim_on"):                                  # 2.97.0: found in the simulation - asked «also real?» when it ends
+        so = dict(CFG.get("simprof_opt") or {})
+        for k, _old, _new in changes:
+            if k in CFG:
+                so[k] = CFG[k]
+        CFG["simprof_opt"] = so
     save_settings()
     log_event("sys", "Optimization (" + why + "): " + ", ".join(f"{k} {o} -> {CFG[k]}" for k, o, _n in changes))
     return before
@@ -444,15 +454,14 @@ def testopt_nightly_loop():
             if not CFG.get("testopt_nightly"):
                 continue
             now = datetime.now(); day = now.strftime("%Y-%m-%d")
-            if now.hour != int(CFG.get("testopt_hour", 3)) or done == day or TESTOPT["busy"]:
+            if now.hour != int(CFG.get("testopt_hour", 3)) or done == day or simtask_busy() or is_armed():
                 continue
             if not (CFG["sim_on"] and SIM["ok"] and time.time() - SIM["t"] < 5):
                 continue
-            g_ = SIMGAME.get("g") or {}
-            if g_.get("round") in ("play", "countdown"):
-                continue
+            if now.weekday() == 6 and CFG.get("weekcheck_on"):
+                continue                                   # 2.97.0: Sunday at this hour the weekly check runs (same plan family)
             done = day
-            plan = CFG.get("testopt_plan") if CFG.get("testopt_plan") in ("standard", "quick", "hard", "night") else "quick"
+            plan = CFG.get("testopt_plan") if CFG.get("testopt_plan") in ("standard", "quick", "hard", "night", "spielwege") else "quick"
             prev = next((r for r in reversed(TESTOPT["runs"]) if r.get("plan") == plan and r.get("night")), None)
             TESTOPT["busy"] = "night"; TESTOPT["stop"] = False
             try:

@@ -192,7 +192,7 @@ CFG = {
     # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
     "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself)
     "sim_autoupd": True, "sim_separate": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
-    "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_dual": True, "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
+    "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True, "wifi_swap": False, "wifi_guard": False,
     "wifi_guard_thr": 20, "wifi_count": False, "wifi_presence": False, "net_noinet": [], "net_inet_notify": True, "sim_prev_source": "", "sim_prev_thermal": "",
@@ -213,7 +213,7 @@ CFG = {
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
@@ -391,7 +391,8 @@ ALERTS_COND = threading.Condition()
 def push_alert(kind, text="", **extra):
     try:
         protect_on_alert(kind)                         # 2.95.105: escalation (light, then the siren unless disarmed)
-        rover_on_alarm(kind)                           # 2.96.7: the rover drives to the alarm (simulator, makeover 17)
+        if CFG.get("sim_on"):                          # 2.97.0: simulator code only in the simulation
+            rover_on_alarm(kind)                       # 2.96.7: the rover drives to the alarm (simulator, makeover 17)
     except NameError:
         pass
     if not CFG.get("browser_alarm", True):
@@ -434,7 +435,8 @@ def log_event(kind, text):
         except Exception:
             pass
     try:
-        drill_note(kind, text)                           # 2.96.6: what MoveEye does during a drill (141)
+        if CFG.get("sim_on"):
+            drill_note(kind, text)                       # 2.96.6: what MoveEye does during a drill (141)
     except NameError:
         pass
     with LOCK:
