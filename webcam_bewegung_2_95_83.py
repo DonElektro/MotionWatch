@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_82.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_83.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.83: Game-Controller am Browser (z. B. PS5) steuert den Rover im Simulator – auch wenn der Simulator in einer VM läuft;
+    3D-Simulator 3D-3.59
   * 2.95.82: Vollbild: Mover-Stick mit ✥ frei auf dem Bild verschiebbar (doppelt tippen = zurück), Platz je Seite gemerkt
   * 2.95.81: Simulator-Fenster im Browser schärfer: Bildgrösse passend zum Bildschirm, Wahl «Bildqualität» (automatisch, sehr
     hoch, hoch, mittel, niedrig), WebP; 3D-Simulator 3D-3.58
@@ -755,10 +757,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_82.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_83.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_82.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_82.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_83.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_83.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -775,7 +777,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.82"
+APP_VERSION = "2.95.83"
 
 
 def default_data_dir():
@@ -15044,8 +15046,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.58", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30924527,
-         "sha256": "67bd53479c041ca8b6a026e48e278407297fbbe1fee5d99c02c8629c515ef42f"}
+SIM3D = {"version": "3D-3.59", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30925390,
+         "sha256": "2ba1f11cf1c8e0357bd43a7a6bcb3786a9932340bb373f17554cc8c326b81813"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15184,8 +15186,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.58", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24045911,
-           "sha256": "031abce2c9c8c0a84ce4cd5d63d2b5886080e8b7d47eb9f48b81cff3d6051c79", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.59", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24047397,
+           "sha256": "71f30440acfa7bf55b0747095d01d793e449f3177b701cfe541b6ce40d347fcf", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -18982,7 +18984,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_82.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_83.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -24388,8 +24390,29 @@ function simViewPoll(VI, fps) {
   };
   return {start() { if (on) return; on = true; gen++; step(gen); }, stop() { on = false; gen++; }, get on() { return on; }, info};
 }
+// 2.95.83: a game controller at this browser (PS5, Xbox, …: paired with the PC or the phone) drives the rover in the
+// simulator - also when the simulator runs in a virtual machine that cannot see the controller. Start = explore on / off.
+const SIMPAD = {name: "", on: false};
+(function simPadLink() {
+  if (window._simPad || !navigator.getGamepads) return; window._simPad = true;
+  let last = "", lastT = 0, idle = true;
+  const tick = () => {
+    let g = null; try { g = [...navigator.getGamepads()].find(x => x && x.connected); } catch (e) {}
+    SIMPAD.on = !!g; SIMPAD.name = g ? String(g.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) : "";
+    if (!g || document.hidden) return;
+    const ax = [0, 1, 2, 3].map(i => { const v = g.axes[i] || 0; return Math.abs(v) < 0.08 ? 0 : Math.round(v * 100) / 100; });
+    const bt = g.buttons.slice(0, 17).map(b => Math.round((b.value || (b.pressed ? 1 : 0)) * 100) / 100);
+    const sig = JSON.stringify([ax, bt]), neutral = ax.every(v => v === 0) && bt.every(v => v === 0), now = Date.now();
+    if (neutral && idle) return;                     // nothing pressed: nothing to send
+    if (sig === last && now - lastT < 300) return;   // unchanged: only now and then (the simulator lets go after 0.6 s)
+    last = sig; lastT = now; idle = neutral;
+    post("/api/sim", {action: "pad", ax: ax, bt: bt, name: SIMPAD.name});
+  };
+  setInterval(tick, 66);
+  addEventListener("gamepadconnected", e => { try { toast("🎮 " + t("Controller connected") + ": " + String(e.gamepad.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) + " – " + t("Start = explore with the rover")); } catch (x) {} });
+})();
 function simQBox(VP) {                             // «Bildqualität» under the picture of the simulator window
-  try { if (I18N && I18N.de) Object.assign(I18N.de, {"Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig"}); } catch (e) {}
+  try { if (I18N && I18N.de) Object.assign(I18N.de, {"Controller connected": "Controller verbunden", "Start = explore with the rover": "Start = mit dem Rover erkunden", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig"}); } catch (e) {}
   if (!document.getElementById("simq-css")) { const c = document.createElement("style"); c.id = "simq-css";
     c.textContent = ".simq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:8px}.simq select{padding:4px 8px;font-size:13px;width:auto}"; document.head.appendChild(c); }
   const box = document.createElement("div"); box.className = "simq";
@@ -24400,7 +24423,8 @@ function simQBox(VP) {                             // «Bildqualität» under th
   const lab = document.createElement("span"); lab.textContent = t("Picture quality") + ":";
   const st = document.createElement("span"); st.className = "mut";
   box.append(lab, sel, st);
-  setInterval(() => { const I = VP.info; st.textContent = I.w ? I.w + " px · " + (I.fmt === "webp" ? "WebP" : "JPEG") + " " + I.q + " % · " + I.kb + " kB" + (I.mode === "auto" ? " · " + t(["low", "medium", "high", "very high"][I.lvl]) : "") : ""; }, 1000);
+  setInterval(() => { const I = VP.info; st.textContent = (I.w ? I.w + " px · " + (I.fmt === "webp" ? "WebP" : "JPEG") + " " + I.q + " % · " + I.kb + " kB" + (I.mode === "auto" ? " · " + t(["low", "medium", "high", "very high"][I.lvl]) : "") : "")
+    + (SIMPAD.on ? " · 🎮 " + SIMPAD.name + " (" + t("Start = explore with the rover") + ")" : ""); }, 1000);
   return box;
 }
 """
@@ -37380,6 +37404,16 @@ class WebStream:
                     except Exception:
                         return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
                     return reply({"ok": bool(r.get("ok")), "n": r.get("n", 0)})
+                if act_ == "pad":                            # 2.95.83: a game controller at the browser (e.g. PS5) drives the rover
+                    try:
+                        ax_ = [max(-1.0, min(1.0, float(v))) for v in (d.get("ax") or [])[:6]]
+                        bt_ = [round(max(0.0, min(1.0, float(v))), 2) for v in (d.get("bt") or [])[:17]]   # triggers have a value
+                        r = sim_control({"action": "pad", "ax": ax_, "bt": bt_, "name": str(d.get("name") or "")[:40]})
+                    except (TypeError, ValueError):
+                        return reply({"ok": False, "error": "invalid values"}, 400)
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    return reply(r if isinstance(r, dict) else {"ok": False})
                 if act_ == "look":                           # the phone as a window (3D-3.27): turning the phone turns the view
                     try:
                         yw = max(-360.0, min(360.0, float(d.get("yaw", 0)))); pt = max(-90.0, min(90.0, float(d.get("pitch", 0))))
@@ -40795,7 +40829,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.82")
+        self.root.title("Motion Watch 2.95.83")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -41085,7 +41119,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.82 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.83 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

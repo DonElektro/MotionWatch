@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.58 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.59 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -594,3 +594,8 @@ NEU IN 3D-3.58
 3D-3.58: Das Simulator-Fenster im Browser (Motion Watch → Simulator) ist schärfer: der Simulator liefert das Bild in
 der Grösse, die der Bildschirm braucht (Handy mit feinem Display bis etwa 1200 Pixel, Vollbild bis 2560), in der
 gewählten Qualität und als WebP (rund ein Drittel weniger Daten als JPEG). Ab Motion Watch 2.95.81.
+
+NEU IN 3D-3.59
+3D-3.59: Game-Controller am Browser: Ein Controller (z. B. PS5), der am normalen PC oder am Handy gekoppelt ist, steuert
+den Rover über die Seite von Motion Watch (Simulator-Seite oder Simulator-Steuerung offen lassen). So geht es auch, wenn
+der Simulator in einer virtuellen Maschine läuft, die den Controller nicht sieht. Start = Erkunden ein / aus.

@@ -390,6 +390,16 @@ class WebStream:
                     except Exception:
                         return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
                     return reply({"ok": bool(r.get("ok")), "n": r.get("n", 0)})
+                if act_ == "pad":                            # 2.95.83: a game controller at the browser (e.g. PS5) drives the rover
+                    try:
+                        ax_ = [max(-1.0, min(1.0, float(v))) for v in (d.get("ax") or [])[:6]]
+                        bt_ = [round(max(0.0, min(1.0, float(v))), 2) for v in (d.get("bt") or [])[:17]]   # triggers have a value
+                        r = sim_control({"action": "pad", "ax": ax_, "bt": bt_, "name": str(d.get("name") or "")[:40]})
+                    except (TypeError, ValueError):
+                        return reply({"ok": False, "error": "invalid values"}, 400)
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    return reply(r if isinstance(r, dict) else {"ok": False})
                 if act_ == "look":                           # the phone as a window (3D-3.27): turning the phone turns the view
                     try:
                         yw = max(-360.0, min(360.0, float(d.get("yaw", 0)))); pt = max(-90.0, min(90.0, float(d.get("pitch", 0))))

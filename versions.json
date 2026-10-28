@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 13:29",
+ "generated": "2026-10-28 13:34",
  "versions": [
   {
-   "version": "2.95.82",
-   "file": "webcam_bewegung_2_95_82.py",
+   "version": "2.95.83",
+   "file": "webcam_bewegung_2_95_83.py",
    "url": "",
-   "sha256": "bbd37513149f111b6680c979fa03dfcf9e07bda63499469fe6e9f8409b41f9b9",
-   "date": "2026-10-28 13:29",
-   "notes": "Vollbild: Mover-Stick mit ✥ frei auf dem Bild verschiebbar (doppelt tippen = zurück), Platz je Seite gemerkt",
-   "sig": "82d392881d56a3af6ab80e59e994323e326c7781fcc728f60cbaaf7ff3c5ded6476bf12d25de55041e408c61f6ce0deeab8953bec6d638ebd80e4cbf4f33fe08"
+   "sha256": "73371a6ce236b0b8096a7263df5cd95ed6db5efe7097806ba4581dc5ddf031d1",
+   "date": "2026-10-28 13:34",
+   "notes": "Game-Controller am Browser (z. B. PS5) steuert den Rover im Simulator – auch wenn der Simulator in einer VM läuft; 3D-Simulator 3D-3.59",
+   "sig": "dfd1041b164c604ba0ac8907b9a0411d9b3b39b4b1be8bad5d760f0c69c00551df0dbb1f67eb89f688b61ceb5c762109fbd09f10daf4969a6e8c2de487d1660b"
   },
   {
    "version": "2.94.5",

@@ -1,12 +1,12 @@
 {
- "version": "3D-3.58",
+ "version": "3D-3.59",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30924527,
- "sha256": "67bd53479c041ca8b6a026e48e278407297fbbe1fee5d99c02c8629c515ef42f",
- "notes": "Simulator-Fenster im Browser schärfer: passende Grösse, Qualität, WebP",
+ "size": 30925390,
+ "sha256": "2ba1f11cf1c8e0357bd43a7a6bcb3786a9932340bb373f17554cc8c326b81813",
+ "notes": "Game-Controller am Browser steuert den Rover (auch bei Simulator in einer VM)",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24045911,
-  "sha256": "031abce2c9c8c0a84ce4cd5d63d2b5886080e8b7d47eb9f48b81cff3d6051c79"
+  "size": 24047397,
+  "sha256": "71f30440acfa7bf55b0747095d01d793e449f3177b701cfe541b6ce40d347fcf"
  }
 }

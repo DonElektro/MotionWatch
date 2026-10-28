@@ -20,6 +20,10 @@ var _dev_t := 0.0
 var auto_top := false                # 3D-3.56: something stands between the rover and the view: from above for now
 var _blk_t := 0.0                     # blocked since … / free since …
 var _free_t := 0.0
+var rp_ax: Array = []                 # 3D-3.59: the controller at the browser (standard mapping): axes, buttons, when, its name
+var rp_bt: Array = []
+var rp_t := -100.0
+var rp_name := ""
 var test_drive := Vector2.ZERO        # for tests (control «explore» drive)
 var test_until := 0.0
 const VIEWS := ["chase", "driver", "top"]
@@ -152,8 +156,49 @@ func next_view() -> void:
 	queue_redraw()
 
 
+func remote_pad(ax: Array, bt: Array, nm: String) -> void:
+	"""a controller at the browser (Motion Watch page, e.g. a PS5 controller at the PC while the simulator runs in a VM).
+	Standard mapping: axes 0/1 left stick, 2/3 right stick; buttons 0 A/✕, 1 B/○, 3 Y/△, 6 LT/L2, 7 RT/R2, 8 Back/Create,
+	9 Start/Options, 12 / 13 pad up / down"""
+	var old: Array = rp_bt
+	rp_ax = ax
+	rp_bt = bt
+	rp_t = main.now()
+	rp_name = nm
+	var pressed := func(i: int) -> bool: return i < bt.size() and int(bt[i]) == 1 and not (i < old.size() and int(old[i]) == 1)
+	if pressed.call(9):
+		set_on(not on)
+	if not on:
+		return
+	_set_device("pad")
+	if pressed.call(1):
+		set_on(false)
+	elif pressed.call(3):
+		next_view()
+	elif pressed.call(8):
+		main.show_panel(not main.ui_root.visible)
+	if pressed.call(12):
+		main.set_mast(main.mast_h + 0.1)
+	if pressed.call(13):
+		main.set_mast(main.mast_h - 0.1)
+
+
+func _rp_on() -> bool:
+	return main.now() - rp_t < 0.6
+
+
+func _rp_axis(a: int) -> float:
+	"""the browser controller in Godot's numbering (left x/y = 0/1, right x/y = 2/3, triggers = 4/5)"""
+	if not _rp_on():
+		return 0.0
+	if a == JOY_AXIS_TRIGGER_LEFT or a == JOY_AXIS_TRIGGER_RIGHT:
+		var i := 6 if a == JOY_AXIS_TRIGGER_LEFT else 7       # the triggers are buttons with a value in the browser
+		return float(rp_bt[i]) if i < rp_bt.size() else 0.0
+	return float(rp_ax[a]) if a < rp_ax.size() else 0.0
+
+
 func _axis(a: int) -> float:
-	var v := 0.0
+	var v := _rp_axis(a)
 	for d in Input.get_connected_joypads():
 		var x := Input.get_joy_axis(d, a)
 		if abs(x) > abs(v):
@@ -162,6 +207,8 @@ func _axis(a: int) -> float:
 
 
 func _pad_btn(b: int) -> bool:
+	if _rp_on() and b == JOY_BUTTON_A and rp_bt.size() > 0 and int(rp_bt[0]) == 1:
+		return true
 	for d in Input.get_connected_joypads():
 		if Input.is_joy_button_pressed(d, b):
 			return true
@@ -244,7 +291,10 @@ func _process(dt: float) -> void:
 		cam.global_position = cam.global_position.lerp(want2, clampf(dt * (2.5 if auto_top else 4.0), 0.0, 1.0))
 		cam.look_at(tp + fwd * (0.5 if auto_top else 2.0), Vector3.UP)
 	var kmh: float = main.mover_max * 3.6 * max(abs(main._pad_l), abs(main._pad_r))
-	_info.text = "Erkunden · %s · %s · %.1f km/h · Stange %.1f m%s\n%s" % [{"keyboard": "Tastatur", "mouse": "Maus", "touch": "Touch", "pad": "Controller"}[device],
+	var dn: String = {"keyboard": "Tastatur", "mouse": "Maus", "touch": "Touch", "pad": "Controller"}[device]
+	if device == "pad" and _rp_on():
+		dn = "Controller im Browser"
+	_info.text = "Erkunden · %s · %s · %.1f km/h · Stange %.1f m%s\n%s" % [dn,
 			VIEW_NAMES[view] + (" (automatisch von oben)" if auto_top and view == "chase" else ""), kmh, main.mast_h, " · schnell" if turbo else "", _help()]
 
 

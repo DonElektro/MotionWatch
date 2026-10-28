@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.58"
+const VERSION := "3D-3.59"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2822,6 +2822,11 @@ func control(d: Dictionary) -> Dictionary:
 		var ap: Vector3 = gp["actor"].position
 		return {"ok": true, "box": game.learn.box(gp), "sees": game.cam_sees(gp, 0), "state": gp["state"], "fx": game.fx_nodes.size(),
 				"head": [hp.x, hp.y, hp.z], "pos": [ap.x, ap.y, ap.z], "goal": [game.goal.x, game.goal.z], "report": game.learn.report_dict() if d.get("report", false) else {}}
+	elif a == "pad":                                   # 3D-3.59: a game controller at the browser (Motion Watch page): axes and buttons
+		if explore == null:
+			return {"ok": false, "error": "no explore"}
+		explore.remote_pad(d.get("ax", []), d.get("bt", []), str(d.get("name", "")))
+		return {"ok": true, "on": explore.on, "view": explore.view}
 	elif a == "explore":                               # 3D-3.55: explore with the rover (for tests and remote)
 		if explore == null:
 			return {"ok": false, "error": "no explore"}

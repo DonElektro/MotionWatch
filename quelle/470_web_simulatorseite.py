@@ -351,8 +351,29 @@ function simViewPoll(VI, fps) {
   };
   return {start() { if (on) return; on = true; gen++; step(gen); }, stop() { on = false; gen++; }, get on() { return on; }, info};
 }
+// 2.95.83: a game controller at this browser (PS5, Xbox, …: paired with the PC or the phone) drives the rover in the
+// simulator - also when the simulator runs in a virtual machine that cannot see the controller. Start = explore on / off.
+const SIMPAD = {name: "", on: false};
+(function simPadLink() {
+  if (window._simPad || !navigator.getGamepads) return; window._simPad = true;
+  let last = "", lastT = 0, idle = true;
+  const tick = () => {
+    let g = null; try { g = [...navigator.getGamepads()].find(x => x && x.connected); } catch (e) {}
+    SIMPAD.on = !!g; SIMPAD.name = g ? String(g.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) : "";
+    if (!g || document.hidden) return;
+    const ax = [0, 1, 2, 3].map(i => { const v = g.axes[i] || 0; return Math.abs(v) < 0.08 ? 0 : Math.round(v * 100) / 100; });
+    const bt = g.buttons.slice(0, 17).map(b => Math.round((b.value || (b.pressed ? 1 : 0)) * 100) / 100);
+    const sig = JSON.stringify([ax, bt]), neutral = ax.every(v => v === 0) && bt.every(v => v === 0), now = Date.now();
+    if (neutral && idle) return;                     // nothing pressed: nothing to send
+    if (sig === last && now - lastT < 300) return;   // unchanged: only now and then (the simulator lets go after 0.6 s)
+    last = sig; lastT = now; idle = neutral;
+    post("/api/sim", {action: "pad", ax: ax, bt: bt, name: SIMPAD.name});
+  };
+  setInterval(tick, 66);
+  addEventListener("gamepadconnected", e => { try { toast("🎮 " + t("Controller connected") + ": " + String(e.gamepad.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) + " – " + t("Start = explore with the rover")); } catch (x) {} });
+})();
 function simQBox(VP) {                             // «Bildqualität» under the picture of the simulator window
-  try { if (I18N && I18N.de) Object.assign(I18N.de, {"Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig"}); } catch (e) {}
+  try { if (I18N && I18N.de) Object.assign(I18N.de, {"Controller connected": "Controller verbunden", "Start = explore with the rover": "Start = mit dem Rover erkunden", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig"}); } catch (e) {}
   if (!document.getElementById("simq-css")) { const c = document.createElement("style"); c.id = "simq-css";
     c.textContent = ".simq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:8px}.simq select{padding:4px 8px;font-size:13px;width:auto}"; document.head.appendChild(c); }
   const box = document.createElement("div"); box.className = "simq";
@@ -363,7 +384,8 @@ function simQBox(VP) {                             // «Bildqualität» under th
   const lab = document.createElement("span"); lab.textContent = t("Picture quality") + ":";
   const st = document.createElement("span"); st.className = "mut";
   box.append(lab, sel, st);
-  setInterval(() => { const I = VP.info; st.textContent = I.w ? I.w + " px · " + (I.fmt === "webp" ? "WebP" : "JPEG") + " " + I.q + " % · " + I.kb + " kB" + (I.mode === "auto" ? " · " + t(["low", "medium", "high", "very high"][I.lvl]) : "") : ""; }, 1000);
+  setInterval(() => { const I = VP.info; st.textContent = (I.w ? I.w + " px · " + (I.fmt === "webp" ? "WebP" : "JPEG") + " " + I.q + " % · " + I.kb + " kB" + (I.mode === "auto" ? " · " + t(["low", "medium", "high", "very high"][I.lvl]) : "") : "")
+    + (SIMPAD.on ? " · 🎮 " + SIMPAD.name + " (" + t("Start = explore with the rover") + ")" : ""); }, 1000);
   return box;
 }
 """
