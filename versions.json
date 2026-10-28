@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 00:18",
+ "generated": "2026-10-29 00:39",
  "versions": [
   {
-   "version": "2.98.5",
-   "file": "webcam_bewegung_2_98_5.py",
+   "version": "2.98.6",
+   "file": "webcam_bewegung_2_98_6.py",
    "url": "",
-   "sha256": "a3405b107c835a172dee532ac1f0df75e7a39bab702e6d96c1eefc7e473103a0",
-   "date": "2026-10-29 00:18",
-   "notes": "Simulator-Zentrale: «Zonen in 3D» und «Erkennung in 3D» sind jetzt im Simulator unter «Ansicht»",
-   "sig": "267be93e0ec4b5e6590bc5dbfd3ae4924c70d382c5bdf466c2a7febe5e8ff10436941e9965dac5a4ba443132f8efc55ac23afeaa3fe2de282066076bb95bc605"
+   "sha256": "d9685c45e405d8d05835d68ebb0a13b68fdaf8c3b6bcf17f1f1cee9f2ace15fd",
+   "date": "2026-10-29 00:39",
+   "notes": "Echt-Abgleich: MoveEye misst das Aussehen seiner echten Bilder (Tag/Nacht) und schickt es dem 3D-Simulator; Schnellschalter kompakt, nicht verfügbare ausgeblendet",
+   "sig": "528eecb32a2c80cf812709e0372909b1c12e141a837c1a2e40f02fee83042e6701a00e42d5aa9f27d4c81c7cb58f7ce449faafe2240e96c6ba731e989969b900"
   },
   {
    "version": "2.97.1",

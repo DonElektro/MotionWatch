@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_5.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_6.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.6: Echt-Abgleich: MoveEye misst das Aussehen seiner echten Bilder (Tag/Nacht) und schickt es dem 3D-Simulator;
+    Schnellschalter kompakt, nicht verfügbare ausgeblendet
   * 2.98.5: Simulator-Zentrale: «Zonen in 3D» und «Erkennung in 3D» sind jetzt im Simulator unter «Ansicht»
   * 2.98.4: Simulator-Zentrale in zwei Gruppen: «Ausprobieren» und «Lernen & Testen»
   * 2.98.3: Kopf der Einstellungen aufgeräumt: Suche über die ganze Breite, darunter Einfach/Experte und Symbole kompakt,
@@ -853,10 +855,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_5.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_6.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_5.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_5.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_6.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_6.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -873,7 +875,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.5"
+APP_VERSION = "2.98.6"
 
 
 def default_data_dir():
@@ -10069,6 +10071,73 @@ def wordmark_h1(m):
     tag = tag[:-1] + (' class="wm"' if "class=" not in tag else "") + ">"
     return tag + WORDMARK_W6 + WORDMARK_W1
 # ----------------------------------------------------------------------------
+# The simulator (3D-3.94, realism.gd) makes its pictures look like the real ones of THIS MoveEye: brightness, contrast,
+# saturation, colour cast (red / blue to green), sharpness and grain - day and night separately. The real pictures are the
+# diary pictures and the alarm pictures (never taken in the simulation). Measured the same way as realism.gd.stats():
+# 160 x 90 bilinear, luminance 0.299 / 0.587 / 0.114. Only picture data leaves MoveEye (no map data, no picture itself).
+# ----------------------------------------------------------------------------
+REAL_LOOK = {"t": 0.0, "v": None, "busy": False}
+
+
+def real_look_stats(img):
+    s = cv2.resize(img, (160, 90), interpolation=cv2.INTER_LINEAR).astype(np.float32) / 255.0
+    b, g, r = s[:, :, 0], s[:, :, 1], s[:, :, 2]
+    L = 0.299 * r + 0.587 * g + 0.114 * b
+    mean = float(L.mean())
+    sat = float((s.max(axis=2) - s.min(axis=2)).mean())
+    inner = L[1:89, 1:159]
+    sharp = float(np.abs(inner - L[1:89, 0:158]).mean())
+    noise = float(np.abs(inner - (L[1:89, 0:158] + L[1:89, 2:160] + L[0:88, 1:159] + L[2:90, 1:159]) * 0.25).mean())
+    gm = max(0.001, float(g.mean()))
+    return {"mean": mean, "std": float(L.std()), "sat": sat, "r": float(r.mean()) / gm, "b": float(b.mean()) / gm, "sharp": sharp, "noise": noise}
+
+
+def _real_look_files():
+    out = []
+    for d, pat in ((diary_dir(), None), (rec_dir(), "person_")):
+        try:
+            for f in os.listdir(d):
+                if f.lower().endswith(".jpg") and (pat is None or f.startswith(pat)):
+                    p = os.path.join(d, f)
+                    out.append((os.path.getmtime(p), p))
+        except OSError:
+            pass
+    out.sort(reverse=True)
+    return [p for _t, p in out[:80]]
+
+
+def real_look_build():
+    acc = {"day": [], "night": []}
+    for p in _real_look_files():
+        img = cv2.imread(p)
+        if img is None or img.shape[0] < 90:
+            continue
+        st = real_look_stats(img)
+        acc["night" if st["mean"] < 0.18 or st["sat"] < 0.03 else "day"].append(st)
+    res = {}
+    for k, lst in acc.items():
+        if lst:
+            res[k] = {key: round(float(np.median([x[key] for x in lst])), 4) for key in lst[0]}
+            res[k]["n"] = len(lst)
+    return res
+
+
+def real_look():
+    """for the simulator state: the look of the real pictures (computed in the background, at most every 6 h)"""
+    if not REAL_LOOK["busy"] and time.time() - REAL_LOOK["t"] > 6 * 3600:
+        REAL_LOOK["busy"] = True
+
+        def run():
+            try:
+                REAL_LOOK["v"] = real_look_build()
+                log_event("sys", "Real look for the simulator: " + ", ".join(f"{k} {v['n']} picture(s)" for k, v in (REAL_LOOK["v"] or {}).items()))
+            except Exception as e:
+                log_event("sys", f"Real look: {e}"[:120])
+            REAL_LOOK["t"] = time.time()
+            REAL_LOOK["busy"] = False
+        threading.Thread(target=run, daemon=True, name="reallook").start()
+    return REAL_LOOK["v"] or None
+# ----------------------------------------------------------------------------
 # Second Wi-Fi adapter (USB stick): one adapter makes the own Wi-Fi, the other one joins a known network (campsite, phone)
 # -> repeater: the devices in the own Wi-Fi have internet (NetworkManager "shared" does the routing). Also: automatic change
 # to another known network when the internet is gone, devices in the own Wi-Fi without internet (cameras), and a guard
@@ -16365,6 +16434,7 @@ def sim_state():
             # CPU in % of the whole computer: total, MoveEye, simulator (None = not on this computer / unknown)
             "cpu": {"total": STATE.get("cpu"), "mw": STATE.get("cpu_mw"), "sim": STATE.get("cpu_sim")},
             # what MoveEye detects right now: the simulator compares it with the truth (test run, game «MoveEye decides»)
+            "real_look": real_look(),               # 2.98.6: the look of the real pictures (146_echt_abgleich.py, realism.gd 3D-3.94)
             "det": {"persons": int(STATE.get("persons") or 0), "present": list(STATE.get("present") or []), "armed": is_armed(),
                     "boxes": list(STATE.get("person_boxes") or []) if STATE.get("persons") else [],   # 2.95.75: 0..1 of the head camera
                     "noise": bool(AUDIO is not None and AUDIO.noisy())},
@@ -17289,8 +17359,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.93", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31207479,
-         "sha256": "feb9034b861c28ea0cb38e23fe1a4ccb20b9d4ee207f2df35024baac736b6a7f"}
+SIM3D = {"version": "3D-3.94", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31223840,
+         "sha256": "d1caea566831bb78219c356496240b64db9085d5b83d2bcde025808d7aea5812"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -17429,8 +17499,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.93", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24329017,
-           "sha256": "0e28c6a181ad88cade67ff015192f21b6e17f3fc44d4028c76ccb68a09dc98d0", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.94", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24346663,
+           "sha256": "8215bf4e047813836c730972ff31dbeb8037648b8b04dbfa78db7cce583fdf67", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -22152,7 +22222,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_5.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_6.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -35227,6 +35297,15 @@ body[data-tab="protect"] main,body[data-tab="settings"] main{grid-template-colum
 body[data-tab="protect"] main>aside,body[data-tab="settings"] main>aside{display:block!important}
 body[data-tab="protect"] [data-tab-of="settings"],body[data-tab="settings"] [data-tab-of="protect"],body[data-tab="settings"] #alarm-chain{display:none!important}
 body[data-tab="live"] #set-foot{display:block!important}
+/* 2.98.6: quick switches compact - what is not available is hidden, smaller tiles, more per line: the live picture gets the room */
+.qsw button.na{display:none!important}
+@media(max-width:960px){body[data-tab="live"] #ctl-left .ctl-mid{grid-column:1/-1;width:100%}}
+body[data-tab="live"] .qsw,body[data-tab="live"] #ctl-left .qsw,body.mobctl[data-tab="live"] #ctl-left .qsw{grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px 5px;max-width:none;width:100%}
+body[data-tab="live"] .qsw button{padding:4px 1px 3px;border-radius:10px;gap:1px;font-size:16px}
+body[data-tab="live"] .qsw button span{font-size:17px;line-height:1.1}
+body[data-tab="live"] .qsw button small{font-size:9px}
+body[data-tab="live"] #set-foot{padding:6px;font-size:13px;margin-top:4px}
+body[data-tab="live"] #spos-txt{font-size:11px}
 /* 2.98.3: the head of the settings tidy - search with its 3 buttons over the full width, below one small line
    «Einfach | Experte» and «Symbole farbig | schlicht» side by side; the explanations as tooltips */
 body[data-tab] #srch{padding-left:0!important}body[data-tab] #srch .ic{left:12px!important}
@@ -36947,6 +37026,7 @@ function qsPaint(j) {
     if (q.lbf) { const sm = b.querySelector("small"), tx = t(q.lbf(c, s)); if (sm.textContent !== tx) sm.textContent = tx; }
     if (q.icf) { const sp = b.querySelector("span"), ic = q.icf(c, s); if (sp.textContent !== ic) sp.textContent = ic; }
     const ok = q.ok ? q.ok(c, s) : true; if (!b.dataset.busy) b.disabled = !ok;
+    b.classList.toggle("na", !ok);                          // 2.98.6: not available here (no lamp, no thermal camera ...) = hidden
     b.title = t(q.tip) + (ok ? "" : " – " + t("not connected")); });
   talkTilePaint();
 }
@@ -45020,7 +45100,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.5")
+        self.root.title("MoveEye 2.98.6")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -45337,7 +45417,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.5 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.6 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

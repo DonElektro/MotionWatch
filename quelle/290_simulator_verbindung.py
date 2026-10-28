@@ -111,6 +111,7 @@ def sim_state():
             # CPU in % of the whole computer: total, MoveEye, simulator (None = not on this computer / unknown)
             "cpu": {"total": STATE.get("cpu"), "mw": STATE.get("cpu_mw"), "sim": STATE.get("cpu_sim")},
             # what MoveEye detects right now: the simulator compares it with the truth (test run, game «MoveEye decides»)
+            "real_look": real_look(),               # 2.98.6: the look of the real pictures (146_echt_abgleich.py, realism.gd 3D-3.94)
             "det": {"persons": int(STATE.get("persons") or 0), "present": list(STATE.get("present") or []), "armed": is_armed(),
                     "boxes": list(STATE.get("person_boxes") or []) if STATE.get("persons") else [],   # 2.95.75: 0..1 of the head camera
                     "noise": bool(AUDIO is not None and AUDIO.noisy())},

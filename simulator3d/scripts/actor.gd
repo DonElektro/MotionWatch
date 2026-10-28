@@ -87,7 +87,10 @@ const COLORS := {
 }
 
 
-const PERSON_VARIANTS := ["child", "jogger", "cyclist", "stroller", "drunk", "courier", "police", "burglar"]
+const PERSON_VARIANTS := ["child", "jogger", "cyclist", "stroller", "drunk", "courier", "police", "burglar", "elderly"]   # 3D-3.95: elderly
+var _eye_t := 0.0                          # 3D-3.95: eye shine follows where the animal looks
+var _bike_lamps := false
+var bike_lamp: Array = []                 # [spot, front material, rear material]
 const CAR_VARIANTS := ["tractor", "moto", "van"]
 var wheels: Array = []        # cyclist, stroller: wheels that turn
 var carry := false            # courier: holds the box in front with both hands
@@ -226,6 +229,11 @@ func _build_person() -> void:
 	var hair := _pick("hair")
 	var shoe: Color = Color(0.95, 0.95, 0.95) if jog else [Color(0.12, 0.1, 0.09), Color(0.35, 0.22, 0.12), Color(0.2, 0.2, 0.22)][randi() % 3]
 	var cloth_t := 26.0 - (3.0 if cold else 0.0) + (2.0 if jog else 0.0)
+	var old_ := variant == "elderly"                                      # 3D-3.95: more kinds of people
+	var shorts: bool = main.ambient > 21.0 and not wet and not kid and not old_ and variant not in ["police", "burglar", "courier"] and randf() < 0.45
+	var coat: bool = cold and not jog and not kid and variant == "" and randf() < 0.3
+	if old_:
+		hair = Color(0.78, 0.78, 0.76) if randf() < 0.7 else Color(0.55, 0.55, 0.53)
 	var wide := randf_range(0.9, 1.15) if not kid else 1.0                  # build: slim … sturdy
 	var tall := randf_range(0.93, 1.07)
 	body_root.scale = Vector3(wide, tall, wide) * (0.62 if kid else 1.0)
@@ -237,10 +245,12 @@ func _build_person() -> void:
 		var hip := _pivot(hips, Vector3(0.1 * s, -0.03, 0))
 		_part(hip, _caps(0.078, 0.5), Vector3(0, -0.22, 0), trousers, cloth_t - 1.0)            # thigh
 		var knee := _pivot(hip, Vector3(0, -0.46, 0))
-		_part(knee, _caps(0.062, 0.46), Vector3(0, -0.21, 0), trousers, cloth_t - 1.5)           # shin
+		_part(knee, _caps(0.062, 0.46), Vector3(0, -0.21, 0), skin if shorts else trousers, 31.0 if shorts else cloth_t - 1.5)   # shin (bare with shorts)
 		_part(knee, _box(0.11, 0.06, 0.27), Vector3(0, -0.43, -0.06), shoe, cloth_t - 4.0)       # shoe
 		_part(knee, _box(0.115, 0.02, 0.28), Vector3(0, -0.465, -0.06), shoe.darkened(0.5), cloth_t - 5.0)   # sole
 		legs.append([hip, s, knee])
+	if coat:                                                               # 3D-3.95: a long coat down to the knees
+		_part(hips, _cyl(0.2, 0.27, 0.62, 12), Vector3(0, -0.25, 0), jacket.darkened(0.15), cloth_t - 1.0)
 	# ---- upper body ----
 	torso = _pivot(body_root, Vector3(0, 0.98, 0))
 	_part(torso, _caps(0.17, 0.34), Vector3(0, 0.12, 0), jacket, cloth_t, Vector3.ZERO, Vector3(1.0, 1.0, 0.68))      # belly
@@ -303,6 +313,12 @@ func _build_person() -> void:
 		_part(head, _cyl(0.16, 0.16, 0.012, 18), Vector3(0, 0.22, 0), Color(0.3, 0.25, 0.2), 27.0)
 	body_h = 0.9 * body_root.scale.y
 	_person_extras(jacket, cloth_t)
+	if wet and not kid and not jog and variant in ["", "elderly"] and not controlled and randf() < 0.55:   # 3D-3.95: umbrella in the rain
+		var uc: Color = [Color(0.1, 0.1, 0.12), Color(0.55, 0.1, 0.12), Color(0.1, 0.25, 0.55), Color(0.85, 0.75, 0.2)][randi() % 4]
+		_part(torso, _cyl(0.012, 0.012, 0.85, 6), Vector3(0.12, 0.85, -0.12), Color(0.15, 0.15, 0.15), main.ambient)
+		_part(torso, _cyl(0.02, 0.55, 0.22, 16), Vector3(0.12, 1.28, -0.12), uc, main.ambient)
+	if old_:                                                              # walking stick
+		_part(arms[1][2], _cyl(0.014, 0.014, 0.9, 6), Vector3(0.02, -0.75, -0.1), Color(0.3, 0.2, 0.12), main.ambient)
 	# at night some people carry a light: a headlamp or the light of the phone (MoveEye sees it)
 	if main.is_dark() and not kid and not controlled and not preview and randf() < main.lamp_share:
 		lamp = SpotLight3D.new()
@@ -376,6 +392,32 @@ func _person_extras(jacket: Color, cloth_t: float) -> void:
 			_part(bk, _cyl(0.016, 0.016, 0.5, 6), Vector3(0, 0.98, -0.5), Color(0.1, 0.1, 0.1), main.ambient, Vector3(0, 0, PI / 2))   # handlebar
 			_part(head, _sph(0.12, 0.14), Vector3(0, 0.23, 0.0), fc.lightened(0.3), 27.0)                          # helmet
 			body_root.position.y = -0.06
+			if not preview:                                                    # 3D-3.95: bike lamps (on at night)
+				var fl := MeshInstance3D.new()
+				fl.mesh = _sph(0.035)
+				var flm := StandardMaterial3D.new()
+				flm.albedo_color = Color(1, 1, 0.95)
+				flm.emission_enabled = true
+				flm.emission = Color(1, 1, 0.95)
+				fl.material_override = flm
+				fl.position = Vector3(0, 0.8, -0.62)
+				bk.add_child(fl)
+				var rl := MeshInstance3D.new()
+				rl.mesh = _sph(0.03)
+				var rlm := StandardMaterial3D.new()
+				rlm.albedo_color = Color(0.9, 0.05, 0.05)
+				rlm.emission_enabled = true
+				rlm.emission = Color(1, 0.05, 0.05)
+				rl.material_override = rlm
+				rl.position = Vector3(0, 0.75, 0.62)
+				bk.add_child(rl)
+				var bl := SpotLight3D.new()
+				bl.spot_range = 12.0
+				bl.spot_angle = 22.0
+				bl.position = Vector3(0, 0.8, -0.64)
+				bl.rotation = Vector3(-0.12, 0, 0)
+				bk.add_child(bl)
+				bike_lamp = [bl, flm, rlm]
 
 
 func _build_animal() -> void:
@@ -719,6 +761,10 @@ func _build_moto() -> void:
 
 # ---- moving --------------------------------------------------------------------------------------------------------
 func set_night(night: bool) -> void:
+	if not bike_lamp.is_empty():
+		bike_lamp[0].light_energy = 5.0 if night else 0.0
+		bike_lamp[1].emission_energy_multiplier = 12.0 if night else 0.0
+		bike_lamp[2].emission_energy_multiplier = 6.0 if night else 0.0
 	if lamp != null:
 		lamp.light_energy = 6.0 if night else 0.0
 		lamp_mat.emission_energy_multiplier = 16.0 if night else 0.0
@@ -751,6 +797,25 @@ func is_animal() -> bool:
 
 func _process(dt: float) -> void:
 	_step(dt)
+	if kind == "person" and not preview and main != null and main.is_dark():
+		var tn: float = now_s() + float(get_instance_id() % 97)   # 3D-3.95: lights are not held still - they sweep
+		if lamp != null and phone_out:
+			lamp.rotation = Vector3(-1.2 + 0.25 * sin(tn * 1.1), 0.5 * sin(tn * 0.7), 0)
+		if torch != null and torch.light_energy > 0.0:
+			torch.rotation = Vector3(-0.5 + 0.2 * sin(tn * 0.9), 0.6 * sin(tn * 0.55), 0)
+	if is_animal() and not preview and main != null and not lights.is_empty():
+		_eye_t -= dt
+		if _eye_t <= 0.0:                                # 3D-3.95: the eyes glow only when the animal looks into the light
+			_eye_t = 0.2
+			var base: float = main.eye_shine(global_position) if main.is_dark() else 0.0
+			var f := 1.0
+			if head != null and base > 0.06:
+				var fw: Vector3 = -head.global_transform.basis.z
+				var tc: Vector3 = (main.head.global_position - head.global_position).normalized()
+				f = pow(maxf(0.0, fw.dot(tc)), 4.0)
+			for l in lights:
+				if l is StandardMaterial3D:
+					l.emission_energy_multiplier = base * f
 	if main != null and main.terrain and not preview and is_inside_tree():
 		position.y = main.ground_y(position.x, position.z)   # a real place (from 3D-3.4): on the hills
 
@@ -802,6 +867,9 @@ func _step(dt: float) -> void:
 					"horse": ["graze", "look"], "chamois": ["look", "graze", "look"], "ibex": ["look", "graze"], "lynx": ["look", "sniff", "sit"]}.get(kind, ["look"])
 			idle_kind = kinds[randi() % kinds.size()]
 			idle_until = now + randf_range(2.0, 5.0)
+			if is_animal() and main.is_dark() and main.eye_shine(global_position) > 0.5 and randf() < 0.6:
+				idle_kind = "stare"                                  # 3D-3.95: in the light animals stop and stare into it (eyes glow)
+				idle_until = now + randf_range(2.5, 6.0)
 			look_yaw = randf_range(-0.8, 0.8)
 			return
 	idle_kind = ""
@@ -1011,6 +1079,10 @@ func _animate(dt: float, spd: float, now: float) -> void:
 				hyaw = look_yaw * sin(min(1.0, (idle_until - now)) * PI)
 			"phone":
 				hx = -0.25
+			"stare":                                                     # 3D-3.95: towards the camera
+				var to_c: Vector3 = main.head.global_position - global_position
+				hyaw = clampf(wrapf(atan2(-to_c.x, -to_c.z) - heading, -PI, PI), -1.3, 1.3)
+				hx = 0.1
 			"sit_up":
 				hx = -0.6
 		if kind == "person" and (now < startle_until or emote == "caught" and now < emote_until):

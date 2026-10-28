@@ -443,22 +443,31 @@ static func search_field(placeholder: String) -> LineEdit:
 	return e
 
 
-static func segment(left: String, right: String, right_on: bool, on_change: Callable) -> HBoxContainer:
-	"""two buttons side by side, one of them blue (like «Einfach | Experte» at the bottom of the page)"""
+static func segment(left: String, right: String, right_on: bool, on_change: Callable, compact := false) -> HBoxContainer:
+	"""two buttons side by side, one of them blue (like «Einfach | Experte» at the bottom of the page); compact: small (3D-3.94)"""
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 0)
 	var a := Button.new()
 	var b := Button.new()
 	for x in [a, b]:
 		x.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		x.custom_minimum_size = Vector2(0, 40)
+		x.custom_minimum_size = Vector2(0, 26 if compact else 40)
 		x.focus_mode = Control.FOCUS_NONE
+		if compact:
+			x.add_theme_font_size_override("font_size", 12)
+			x.clip_text = true
 		h.add_child(x)
 	a.text = left
 	b.text = right
 	var paint := func(r_on: bool):
 		var on_box := box(ACC, ACC, 10)
 		var off_box := box(FIELD, LINE, 10)
+		if compact:
+			for bx in [on_box, off_box]:
+				bx.content_margin_top = 2
+				bx.content_margin_bottom = 2
+				bx.content_margin_left = 6
+				bx.content_margin_right = 6
 		on_box.corner_radius_top_right = 0 if not r_on else 10
 		var l_st: StyleBoxFlat = off_box.duplicate() if r_on else on_box.duplicate()
 		var r_st: StyleBoxFlat = on_box.duplicate() if r_on else off_box.duplicate()

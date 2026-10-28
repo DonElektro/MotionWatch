@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.93"
+const VERSION := "3D-3.94"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -263,6 +263,13 @@ var sounds: Array = []                # [dB at 1 m, position, until]
 var mw_det := {}                      # what MoveEye detects right now (from 2.93.3: persons, present, noise)
 var mw_det_t := 0.0
 var lens_mats: Array = []
+var camfx_mats: Array = []            # 3D-3.94: camfx.gdshader per camera (realism.gd sets it)
+var realism                           # realism.gd
+var fauna                             # fauna.gd (3D-3.95)
+var fauna_on := true
+var pan_vel := 0.0                    # rad/s of the head (for the blur while turning)
+var tilt_vel := 0.0
+var _srv := {"v": 0.0, "wob": 0.0, "t": 0.0, "dir": 1.0}
 var expo_mats: Array = []             # exposure quads (multiply) in front of camera 0 / 1
 var night_envs: Array = [null, null]  # [grey (infrared), little colour] - copies of env, renewed every 0.5 s at night
 var insects: CPUParticles3D
@@ -330,6 +337,13 @@ func _ready() -> void:
 		update_url = args[k + 1]
 	_load_settings()
 	home_load()                                # 3D-3.73: «Mein Zuhause»
+	realism = preload("res://scripts/realism.gd").new()      # 3D-3.94: cameras like real ones (and like the real one of MoveEye)
+	realism.main = self
+	add_child(realism)
+	fauna = preload("res://scripts/fauna.gd").new()          # 3D-3.95: birds and bats
+	fauna.main = self
+	add_child(fauna)
+	fauna.on = fauna_on
 	tunnel = preload("res://scripts/tunnel.gd").new()        # 3D-3.45: out through the firewall to MoveEye
 	tunnel.main = self
 	add_child(tunnel)
@@ -1386,6 +1400,19 @@ func _build_lens() -> void:
 		eq.material_override = em
 		cam.add_child(eq)
 		expo_mats.append(em)
+		var fq := MeshInstance3D.new()                       # 3D-3.94: the camera effects - between exposure and lens (drawn in that order)
+		var fqm := QuadMesh.new()
+		fqm.size = Vector2(w, hgt) * 1.02
+		fq.mesh = fqm
+		fq.position = Vector3(0, 0, -dist * 1.02)
+		fq.layers = lay
+		fq.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var fm := ShaderMaterial.new()
+		fm.shader = load("res://shaders/camfx.gdshader")
+		fm.set_shader_parameter("res", Vector2(CAM_W[i], CAM_H[i]))
+		fq.material_override = fm
+		cam.add_child(fq)
+		camfx_mats.append(fm)
 	insects = CPUParticles3D.new()
 	insects.amount = 28
 	insects.lifetime = 2.5
@@ -1497,7 +1524,7 @@ func _update_lens() -> void:
 	for i in range(lens_mats.size()):
 		var amp: float = clamp((float(gain[i]) - 1.0) / max(0.5, gain_cap() - 1.0), 0.0, 1.0)
 		var m: ShaderMaterial = lens_mats[i]
-		m.set_shader_parameter("noise", lens_noise * (0.08 + 0.92 * (amp if dark else amp * 0.4)))
+		m.set_shader_parameter("noise", lens_noise * (0.08 + 0.92 * (amp if dark else amp * 0.4)) * (realism.noise_scale() if realism != null else 1.0))
 		m.set_shader_parameter("vignette", lens_vignette)
 		m.set_shader_parameter("drops", 0.55 if cond["drops"] else ((0.45 if i == 1 else 0.25) if lens_drops and weather == "rain" else 0.0))
 		m.set_shader_parameter("glare", (0.85 if i == 0 else 0.6) if cond["glare"] and not dark else 0.0)
@@ -1862,9 +1889,27 @@ func _process(dt: float) -> void:
 	if dataset != null and dataset.servo != null:
 		step *= 8.0                                      # the pictures: no need to wait for the slow servo
 	_drive(dt)
-	head.rotation.y = move_toward(head.rotation.y, want_pan + sabotage_turn, step * (6.0 if absf(sabotage_turn) > 0.0 else 1.0))
-	head_pitch.rotation.x = move_toward(head_pitch.rotation.x, want_tilt, step)
+	var y0: float = head.rotation.y
+	var x0: float = head_pitch.rotation.x
+	var sreal: bool = realism != null and realism.servo_real
+	var dead := deg_to_rad(0.6) if sreal else 0.0          # 3D-3.94: an MG90S does not move for less than about half a degree
+	if absf(want_pan + sabotage_turn - head.rotation.y) > dead:
+		head.rotation.y = move_toward(head.rotation.y, want_pan + sabotage_turn, step * (6.0 if absf(sabotage_turn) > 0.0 else 1.0))
+	if absf(want_tilt - head_pitch.rotation.x) > dead:
+		head_pitch.rotation.x = move_toward(head_pitch.rotation.x, want_tilt, step)
+	var vy: float = (head.rotation.y - y0) / maxf(dt, 0.0001)
+	tilt_vel = (head_pitch.rotation.x - x0) / maxf(dt, 0.0001)
+	if sreal and absf(float(_srv["v"])) > 0.3 and absf(vy) < 0.05:    # it stops: the light head swings a little
+		_srv = {"v": vy, "wob": clampf(absf(float(_srv["v"])) * 0.012, 0.004, 0.02), "t": now(), "dir": signf(float(_srv["v"]))}
+	_srv["v"] = vy
+	pan_vel = vy
 	cams[0].global_transform = head_pitch.global_transform.translated_local(Vector3(0, 0.0, -0.13))
+	if sreal and float(_srv["wob"]) > 0.0:
+		var k_: float = now() - float(_srv["t"])
+		if k_ < 0.6:
+			cams[0].rotate_object_local(Vector3.UP, float(_srv["dir"]) * float(_srv["wob"]) * exp(-k_ * 7.0) * sin(k_ * 38.0))
+		else:
+			_srv["wob"] = 0.0
 	if cond["shake"]:                                    # 3D-3.74: the mast sways in the wind - the whole picture moves
 		var amp: float = deg_to_rad(0.35 + 0.9 * clampf(wind * gust() / 40.0, 0.0, 1.0))
 		var tt := now()
@@ -1992,6 +2037,8 @@ func _capture(i: int) -> void:
 		lens_mats[i].set_shader_parameter("expo", ex)
 	if i < 2:
 		cam_attr[i].exposure_multiplier = gain[i] if not dark else 1.0   # at night the lens shader does the exposure
+		if realism != null:
+			realism.before_capture(i)
 	vps[i].render_target_update_mode = SubViewport.UPDATE_ONCE
 	await RenderingServer.frame_post_draw
 	var img: Image = vps[i].get_texture().get_image()
@@ -1999,6 +2046,8 @@ func _capture(i: int) -> void:
 	if img != null and not img.is_empty():
 		if i < 2:
 			_auto_exposure(i, img)
+			if realism != null:
+				realism.after_capture(i, img)
 			var hold := false
 			if cond["net"] and i == 0:                   # 3D-3.74: bad Wi-Fi - pictures get lost, sometimes it stands still
 				if now() < _net_hold:
@@ -2009,7 +2058,7 @@ func _capture(i: int) -> void:
 				elif randf() < 0.3:
 					hold = true
 			if not hold:
-				jpgs[i] = img.save_jpg_to_buffer(0.8)
+				jpgs[i] = img.save_jpg_to_buffer(realism.jpg_q if realism != null and realism.fx_on else 0.8)
 				frame_no[i] += 1
 		else:
 			_decode_thermal(img)
@@ -2089,8 +2138,10 @@ func _auto_exposure(i: int, img: Image) -> void:
 			var c := small.get_pixel(x, y)
 			sum += (c.r + c.g + c.b) / 3.0
 	var mean: float = max(0.01, sum / (12.0 * 32.0))
-	var want: float = clamp(gain[i] * 0.35 / mean, 0.6, gain_cap())
-	gain[i] += (want - gain[i]) * 0.25
+	var tgt: float = realism.ae_target() if realism != null else 0.35
+	var want: float = clamp(gain[i] * tgt / mean, 0.6, gain_cap())
+	# 3D-3.94: a real camera needs 1-2 s to follow (headlights blind for a moment); before: a quarter per picture
+	gain[i] += (want - gain[i]) * (0.1 if realism != null and realism.fx_on else 0.25)
 	gain[i] = min(gain[i], gain_cap())
 
 
@@ -2385,7 +2436,7 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 	var side := 1.0 if randf() < 0.5 else -1.0
 	var a: Vector3 = from if from != null else Vector3(-side * (depth * 1.6 + 6.0), 0, -depth)
 	var b: Vector3 = to if to != null else Vector3(side * (depth * 1.6 + 6.0), 0, -depth)
-	var spd: float = {"person": 1.3, "child": 1.0, "jogger": 2.8, "fox": 2.0, "boar": 1.5, "deer": 1.6, "cat": 1.1, "dog": 1.8, "badger": 0.9,
+	var spd: float = {"person": 1.3, "elderly": 0.7, "child": 1.0, "jogger": 2.8, "fox": 2.0, "boar": 1.5, "deer": 1.6, "cat": 1.1, "dog": 1.8, "badger": 0.9,
 			"hare": 1.9, "hedgehog": 0.3, "car": 11.0, "wolf": 1.7, "marten": 1.5, "squirrel": 1.6,
 			"cyclist": 4.6, "stroller": 1.1, "drunk": 0.75, "courier": 1.8, "police": 1.2, "cow": 0.8, "sheep": 0.9, "horse": 1.4,
 			"chamois": 1.7, "ibex": 1.1, "lynx": 1.5, "tractor": 5.5, "moto": 14.0, "van": 10.0}.get(kind, 1.3)
@@ -2591,7 +2642,7 @@ func _life() -> void:
 			v.wait_until = 0.0
 
 
-const VISIT_EMOJI := {"person": "🚶", "child": "🧒", "jogger": "🏃", "fox": "🦊", "deer": "🦌", "boar": "🐗", "cat": "🐈", "dog": "🐕",
+const VISIT_EMOJI := {"person": "🚶", "elderly": "🧓", "child": "🧒", "jogger": "🏃", "fox": "🦊", "deer": "🦌", "boar": "🐗", "cat": "🐈", "dog": "🐕",
 		"badger": "🦡", "hare": "🐇", "hedgehog": "🦔", "wolf": "🐺", "marten": "🐾", "squirrel": "🐿", "car": "🚗", "thief": "🦹",
 		"dogwalk": "🦮", "herd": "🦌", "car_park": "🅿", "bench": "🪑", "feed": "🌾", "garden_person": "🚪", "clear": "🧹",
 		"cyclist": "🚴", "stroller": "👶", "courier": "🍕", "police": "👮", "drunk": "🥴", "couple": "👫", "horse_walk": "🐎",
@@ -2610,7 +2661,7 @@ const VISIT_PRESETS := [["calm", "Ruhige Nacht – selten jemand", true, false, 
 		["busy", "Viel los – Belastungstest für MoveEye", true, false, "mixed", 4.0, 30],
 		["off", "Kein Besuch von selbst", false, false, "mixed", 1.0, 12]]
 const PRESET_HOUR := {"calm": 23.0, "burglary": 1.0, "grill": 20.0, "farm": 10.0, "wildlife": 22.0, "camp": 16.0, "wild": 23.5, "busy": 15.0}   # 3D-3.43
-const PEOPLE_KINDS := ["person", "child", "jogger", "dogwalk", "bench", "garden_person", "car_park", "car", "cyclist", "stroller", "courier",
+const PEOPLE_KINDS := ["person", "elderly", "child", "jogger", "dogwalk", "bench", "garden_person", "car_park", "car", "cyclist", "stroller", "courier",
 		"police", "drunk", "couple", "horse_walk", "tractor", "moto", "van", "burglar", "bbq", "homecoming", "parcel", "kids_tag", "mowing"]
 
 
@@ -2687,7 +2738,7 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
-		["Kamerabild", "lens", "👁", ["", "Schwierige Bedingungen", "Feineinstellungen"]],
+		["Kamerabild", "lens", "👁", ["", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
 		["Sensoren", "bell", "🔔", [""]],
 		["Mover", "track", "🚜", ["", "Patrouille"]],
 		["Spiel", "pad", "🎮", ["Runde", "Regeln", "Anzeige"]],
@@ -2725,7 +2776,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_shadows": ["Kamerabild", "Schwierige Bedingungen"], "cond_ir": ["Kamerabild", "Schwierige Bedingungen"],
-		"autologon": ["System", "Start mit dem PC"], "kids_scary": ["System", "Kinder-Modus"], "kids_thief": ["System", "Kinder-Modus"], "kids_laser": ["System", "Kinder-Modus"], "kids_sound": ["System", "Kinder-Modus"], "auto_update": ["System", "Updates"], "dev_updates": ["System", "Updates"], "news_popup": ["System", "Updates"], "news_show": ["System", "Updates"], "update_now": ["System", "Updates"]}
+		"autologon": ["System", "Start mit dem PC"], "kids_scary": ["System", "Kinder-Modus"], "kids_thief": ["System", "Kinder-Modus"], "kids_laser": ["System", "Kinder-Modus"], "kids_sound": ["System", "Kinder-Modus"], "kids_ask": ["System", "Kinder-Modus"], "auto_update": ["System", "Updates"], "dev_updates": ["System", "Updates"], "news_popup": ["System", "Updates"], "news_show": ["System", "Updates"], "update_now": ["System", "Updates"]}
 
 
 const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testlauf", "Spiel"]
@@ -2738,7 +2789,7 @@ func _simple_ok(c: Dictionary) -> bool:
 	if c.group == "Spiel":
 		return c.id in ["game_wizard", "game_stop"]
 	if c.group == "System":
-		return c.id in ["update_mode"]
+		return c.id in ["update_mode", "kids_ask"]
 	if not c.group in SIMPLE_GROUPS:
 		return false
 	return not str(c.extra.get("sub", "")) in SIMPLE_HIDE_SUBS
@@ -2797,6 +2848,7 @@ func _register_controls() -> void:
 	add_control("toggle", "world_cloth", "Fahnen und Wäsche im Wind", func(): return world_cloth, func(v): set_cloth(v), "Wetter", ex)
 	add_control("toggle", "world_smoke", "Rauch aus Kaminen", func(): return world_smoke, func(v): set_smoke(v), "Wetter", ex)
 	add_control("toggle", "world_fireflies", "Glühwürmchen in warmen Nächten", func(): return world_fireflies, func(v): world_fireflies = v, "Wetter", ex)
+	add_control("toggle", "fauna_on", "Vögel am Tag, Fledermäuse in der Nacht (warm im Wärmebild, typische Fehlalarm-Ursache)", func(): return fauna_on, func(v): fauna_on = bool(v); fauna.on = fauna_on, "Wetter", {"sub": "Natur und Wind"})
 	add_control("toggle", "gusts", "Wind in Böen", func(): return gusts, func(v): gusts = v, "Wetter", ex)
 	add_control("toggle", "cloud_shadows", "Wolkenschatten (die Helligkeit wechselt)", func(): return cloud_shadows, func(v): cloud_shadows = v, "Wetter", ex)
 	add_control("slider", "lamp_share", "Nachts mit Stirnlampe oder Handylicht", func(): return lamp_share, func(v): lamp_share = v, "Besuch", {"min": 0, "max": 1, "step": 0.05, "expert": true})
@@ -2863,6 +2915,11 @@ func _register_controls() -> void:
 	add_control("slider", "night_gain", "Nachtverstärkung der Kameras (höchstens)", func(): return night_gain, func(v): night_gain = v, "Kamerabild", {"min": 1, "max": 8, "step": 0.5, "unit": "×"})
 	add_control("slider", "ir_range", "Reichweite des Infrarot-Lichts", func(): return ir_range, func(v): ir_range = v, "Kamerabild", {"min": 4, "max": 30, "step": 1, "unit": "m"})
 	add_control("slider", "lens_vignette", "Dunkle Bildecken", func(): return lens_vignette, func(v): lens_vignette = v, "Kamerabild", {"min": 0, "max": 1, "step": 0.05, "expert": true})
+	# 3D-3.94: the camera like a real one - and like the real one of MoveEye
+	add_control("toggle", "real_fx", "Kamera wie echt: Bewegungsunschärfe (nachts stärker), Farben des Sensors, NoIR-Rosastich am Tag, langsamere Belichtung", func(): return realism.fx_on, func(v): realism.fx_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
+	add_control("toggle", "real_look", "Echt-Abgleich: Helligkeit, Farbe, Schärfe und Rauschen an die echten Bilder von MoveEye angleichen", func(): return realism.real_on, func(v): realism.real_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
+	add_control("toggle", "real_servo", "Servos wie echt: kleines Spiel, Nachschwingen nach dem Drehen", func(): return realism.servo_real, func(v): realism.servo_real = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
+	add_control("button", "real_reset", "Echt-Abgleich zurücksetzen", null, func(): realism.reset(), "Kamerabild", {"sub": "Wie echt", "expert": true})
 	add_control("toggle", "show_zones3d", "Zonen von MoveEye in der 3D-Ansicht (nur für dich sichtbar)", func(): return show_zones3d, func(v): show_zones3d = v; _settings_dirty = true, "Kamerabild")
 	add_control("toggle", "show_det3d", "Erkennung live in 3D: Rahmen von MoveEye über den Figuren (grün erkannt, rot Fehlalarm, orange übersehen)", func(): return show_det3d, func(v): show_det3d = v; _settings_dirty = true, "Kamerabild")
 	add_control("toggle", "lens_drops", "Regentropfen auf der Linse", func(): return lens_drops, func(v): lens_drops = v, "Kamerabild")
@@ -2991,6 +3048,7 @@ func _register_controls() -> void:
 	add_control("toggle", "kids_thief", "Kinder-Modus: Schleicher (Dieb) und Einbrecher", func(): return kids_thief, func(v): kids_thief = v, "Kinder-Modus")
 	add_control("toggle", "kids_laser", "Kinder-Modus: Laser-Treffer im Spiel", func(): return kids_laser, func(v): kids_laser = v, "Kinder-Modus")
 	add_control("toggle", "kids_sound", "Kinder-Modus: Töne bei den Knöpfen", func(): return kids_sound, func(v): kids_sound = v, "Kinder-Modus")
+	add_control("toggle", "kids_ask", "Kinder-Modus: zum Verlassen eine Rechenaufgabe stellen (aus = ein Klick auf «Erwachsene» genügt)", func(): return kids_ask, func(v): kids_ask = bool(v), "Kinder-Modus")
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
 			{"options": [["simple", "einfach (schnell)"], ["medium", "mittel"], ["nice", "schön (Schatten, Leuchten, Wolken)"],
 						 ["ultra", "ultra (für starke Grafikkarten; mit Vulkan noch mehr Effekte)"]]})
@@ -3013,7 +3071,7 @@ const VISITOR_KINDS_ALL := ["person", "child", "jogger", "fox", "deer", "boar", 
 const VISITOR_LIST := [["person", "Person"], ["child", "Kind"], ["jogger", "Jogger"], ["fox", "Fuchs"], ["deer", "Reh"], ["boar", "Wildschwein"],
 		["cat", "Katze"], ["dog", "Hund"], ["badger", "Dachs"], ["hare", "Hase"], ["hedgehog", "Igel"], ["wolf", "Wolf"], ["marten", "Marder"],
 		["squirrel", "Eichhörnchen"], ["cyclist", "Velofahrer"], ["stroller", "Kinderwagen"], ["courier", "Pizzakurier"], ["police", "Polizei-Rundgang"],
-		["drunk", "Betrunkener"], ["cow", "Kuh"], ["sheep", "Schaf"], ["horse", "Pferd"], ["chamois", "Gämse"], ["ibex", "Steinbock"], ["lynx", "Luchs"]]
+		["drunk", "Betrunkener"], ["elderly", "Älterer Mensch mit Stock"], ["cow", "Kuh"], ["sheep", "Schaf"], ["horse", "Pferd"], ["chamois", "Gämse"], ["ibex", "Steinbock"], ["lynx", "Luchs"]]
 var meadow_on := true
 
 
@@ -3688,6 +3746,7 @@ var prev0: TextureRect
 var prev1: TextureRect
 var prevt: TextureRect
 var info_label: Label
+var real_label: Label
 
 
 func _build_ui() -> void:
@@ -3829,7 +3888,7 @@ func _build_ui() -> void:
 	search_none = UI.small("Kein Treffer")
 	search_none.visible = false
 	box_.add_child(search_none)
-	_mode_row = VBoxContainer.new()                 # 3D-3.90: Einfach | Experte and Kinder | Erwachsene on top (were at the very bottom)
+	_mode_row = HBoxContainer.new()                 # 3D-3.94: one small line; 3D-3.90: Einfach | Experte and Kinder | Erwachsene on top (were at the very bottom)
 	_mode_row.add_theme_constant_override("separation", 6)
 	box_.add_child(_mode_row)
 	top_cards.append(_mode_row)
@@ -4149,6 +4208,10 @@ func _build_ui() -> void:
 	(subs.get("System/Updates", tl) as Control).add_child(update_btn)
 	if groups.has("Testlauf"):
 		testrun.add_info(groups["Testlauf"], UI)      # progress and result of the test run
+	if subs.has("Kamerabild/Wie echt"):              # 3D-3.94: what the real look adjustment does
+		real_label = UI.small("")
+		real_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		subs["Kamerabild/Wie echt"].add_child(real_label)
 	if subs.has("Spiel/Runde"):
 		game.add_info(subs["Spiel/Runde"], UI)        # address, QR code and players of the game
 	elif groups.has("Spiel"):
@@ -4160,16 +4223,16 @@ func _build_ui() -> void:
 	expert_cards.append(keys.get_meta("card"))
 	top_cards.append(keys.get_meta("card"))
 	# Simple | Expert and Kinder | Erwachsene: on top, next to the search (3D-3.90)
-	var se := UI.segment("Einfach", "Experte", not ui_simple, func(expert): set_simple(not expert))
+	var se := UI.segment("Einfach", "Experte", not ui_simple, func(expert): set_simple(not expert), true)
 	simple_seg = se
 	se.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_mode_row.add_child(se)
-	kids_seg = UI.segment("Kinder", "Erwachsene", not kids_on, func(adult): _kids_switch(adult))   # 3D-3.69
+	kids_seg = UI.segment("Kinder", "Erwachsene", not kids_on, func(adult): _kids_switch(adult), true)   # 3D-3.69
 	kids_seg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_mode_row.add_child(kids_seg)
-	simple_note = UI.small("Einfach: das Wichtigste (Szene, Zeit, Wetter, Besuch, Testen, Spiel-Assistent). «Experte» zeigt alle.")
-	box_.add_child(simple_note)
-	box_.move_child(simple_note, _mode_row.get_index() + 1)
+	se.tooltip_text = "Einfach: das Wichtigste (Szene, Zeit, Wetter, Besuch, Testen, Spiel-Assistent). «Experte» zeigt alle."
+	simple_note = UI.small("")                      # 3D-3.94: the explanation as a tooltip, no line of its own
+	simple_note.visible = false
 	_apply_simple()
 	_sync_ui()
 	await _make_thumbs()
@@ -4187,6 +4250,7 @@ var search_none: Label
 var simple_note: Label
 var ui_simple := true                 # «Einfach»: only the important settings (saved)
 var kids_on := false                  # 3D-3.69: «Kinder»: a panel with big picture buttons instead of the settings (saved)
+var kids_ask := true                   # 3D-3.95: the sum before leaving the «Kinder» mode (can be switched off)
 var kids_thief := true                # what children may see (set by the adults; everything allowed at first)
 var kids_scary := true
 var kids_laser := true
@@ -4194,7 +4258,7 @@ var kids_sound := true
 var kids_stars := 0                   # 3D-3.74: stars of the missions
 var kids: Control
 var kids_seg: Control
-var _mode_row: VBoxContainer
+var _mode_row: HBoxContainer
 var simple_seg: Control
 var ui_tb: Control
 var fold_bodies: Array = []           # every card that opens / closes
@@ -4343,7 +4407,10 @@ var _adult_box: Control = null
 
 
 func ask_adult(done: Callable) -> void:
-	"""a little sum for the adults (7 × 8 = ?) before leaving the «Kinder» mode"""
+	"""a little sum for the adults (7 × 8 = ?) before leaving the «Kinder» mode (3D-3.95: can be switched off)"""
+	if not kids_ask:
+		done.call(true)
+		return
 	if _adult_box != null and is_instance_valid(_adult_box):
 		_adult_box.queue_free()
 	var a := randi_range(6, 9)
@@ -4423,7 +4490,7 @@ func _apply_simple() -> void:
 	for c in expert_cards:
 		c.visible = not ui_simple
 	if simple_note != null:
-		simple_note.visible = ui_simple
+		simple_note.visible = false                    # 3D-3.94: tooltip of the switch instead
 	if kids_on and kids != null:
 		_apply_kids()
 
@@ -4685,8 +4752,8 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "kids_on", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
+const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
 var _settings_dirty := false
 
 
@@ -5019,6 +5086,8 @@ func _paint_groups() -> void:
 
 
 func _update_status() -> void:
+	if real_label != null and realism != null:
+		real_label.text = "Echt-Abgleich: " + realism.info
 	_night_test_tick()
 	if refscan_label != null:
 		refscan_label.text = refscan_text()

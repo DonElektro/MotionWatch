@@ -404,6 +404,15 @@ body[data-tab="protect"] main,body[data-tab="settings"] main{grid-template-colum
 body[data-tab="protect"] main>aside,body[data-tab="settings"] main>aside{display:block!important}
 body[data-tab="protect"] [data-tab-of="settings"],body[data-tab="settings"] [data-tab-of="protect"],body[data-tab="settings"] #alarm-chain{display:none!important}
 body[data-tab="live"] #set-foot{display:block!important}
+/* 2.98.6: quick switches compact - what is not available is hidden, smaller tiles, more per line: the live picture gets the room */
+.qsw button.na{display:none!important}
+@media(max-width:960px){body[data-tab="live"] #ctl-left .ctl-mid{grid-column:1/-1;width:100%}}
+body[data-tab="live"] .qsw,body[data-tab="live"] #ctl-left .qsw,body.mobctl[data-tab="live"] #ctl-left .qsw{grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px 5px;max-width:none;width:100%}
+body[data-tab="live"] .qsw button{padding:4px 1px 3px;border-radius:10px;gap:1px;font-size:16px}
+body[data-tab="live"] .qsw button span{font-size:17px;line-height:1.1}
+body[data-tab="live"] .qsw button small{font-size:9px}
+body[data-tab="live"] #set-foot{padding:6px;font-size:13px;margin-top:4px}
+body[data-tab="live"] #spos-txt{font-size:11px}
 /* 2.98.3: the head of the settings tidy - search with its 3 buttons over the full width, below one small line
    «Einfach | Experte» and «Symbole farbig | schlicht» side by side; the explanations as tooltips */
 body[data-tab] #srch{padding-left:0!important}body[data-tab] #srch .ic{left:12px!important}
@@ -2124,6 +2133,7 @@ function qsPaint(j) {
     if (q.lbf) { const sm = b.querySelector("small"), tx = t(q.lbf(c, s)); if (sm.textContent !== tx) sm.textContent = tx; }
     if (q.icf) { const sp = b.querySelector("span"), ic = q.icf(c, s); if (sp.textContent !== ic) sp.textContent = ic; }
     const ok = q.ok ? q.ok(c, s) : true; if (!b.dataset.busy) b.disabled = !ok;
+    b.classList.toggle("na", !ok);                          // 2.98.6: not available here (no lamp, no thermal camera ...) = hidden
     b.title = t(q.tip) + (ok ? "" : " – " + t("not connected")); });
   talkTilePaint();
 }

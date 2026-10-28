@@ -1,12 +1,12 @@
 {
- "version": "3D-3.93",
+ "version": "3D-3.94",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31207479,
- "sha256": "feb9034b861c28ea0cb38e23fe1a4ccb20b9d4ee207f2df35024baac736b6a7f",
- "notes": "Zonen und Erkennung in 3D unter Ansicht",
+ "size": 31223840,
+ "sha256": "d1caea566831bb78219c356496240b64db9085d5b83d2bcde025808d7aea5812",
+ "notes": "Kamera wie echt, Echt-Abgleich, Menschen und Tiere realistischer, Voegel und Fledermaeuse, Kinder-Rechenaufgabe abschaltbar, kleinere Modus-Schalter",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24329017,
-  "sha256": "0e28c6a181ad88cade67ff015192f21b6e17f3fc44d4028c76ccb68a09dc98d0"
+  "size": 24346663,
+  "sha256": "8215bf4e047813836c730972ff31dbeb8037648b8b04dbfa78db7cce583fdf67"
  }
 }
