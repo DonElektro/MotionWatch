@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 20:00",
+ "generated": "2026-10-28 20:18",
  "versions": [
   {
-   "version": "2.95.104",
-   "file": "webcam_bewegung_2_95_104.py",
+   "version": "2.95.105",
+   "file": "webcam_bewegung_2_95_105.py",
    "url": "",
-   "sha256": "6d76546bb12b6eb7be5c0428c526d8f93087d9486a8c490dfa77cfd19e1e86dd",
-   "date": "2026-10-28 20:00",
-   "notes": "Passt zum Simulator 3D-3.78 (Spiel-Assistent neu, übersichtlich und animiert)",
-   "sig": "1ae52c7ee06b40d21dd49af29ebb6e5907f96316bef1b348db69665412b8d98809ad79dee41ea64f36976252381b6964998f9f8b51f776a3c52fe1304ce8510b"
+   "sha256": "2885418aa984b5e841cf034f05eb125a4c52792c812714b9e5fa908ef1c7de10",
+   "date": "2026-10-28 20:17",
+   "notes": "Schutz: Stufen Aus / Wachsam / Voller Schutz, Schutz-Assistent, Ampel mit «Beheben», Diebstahlschutz-Zeile, bewachte Gegenstände, Sirene nach X s, PIN zum Ausschalten, «Schutz testen»; Begriffe «Schutz an / aus»; Bluetooth-Lautsprecher schnell erreichbar unter den Modi",
+   "sig": "6fe0733a67e9b7a62c4a567f69a95999a2351aa7dd5b35543554987580560d4b94386fca8abb5cd9a56a9483ba49f5fcf7491f23d887cc2f36e0dbf9fa940703"
   },
   {
    "version": "2.94.5",

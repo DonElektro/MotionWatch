@@ -136,8 +136,8 @@ async function addIp() {
 Object.assign(I18N.de, {"Other Motion Watch devices": "Weitere Motion-Watch-Geräte",
   "Several devices around the tent or camper: see them all here and arm / disarm them together.": "Mehrere Geräte rund ums Zelt oder Wohnmobil: hier alle sehen und gemeinsam scharf / unscharf schalten.",
   "🛡 Arm all": "🛡 Alle scharf", "Disarm all": "Alle unscharf", "Add a device": "Gerät hinzufügen", "Password": "Passwort",
-  "🔍 Search in the network": "🔍 Im Netzwerk suchen", "This device": "Dieses Gerät", "armed": "scharf", "disarmed": "unscharf", "arming": "wird scharf",
-  "ALARM": "ALARM", "not reachable": "nicht erreichbar", "password wrong": "Passwort falsch", "Open": "Öffnen", "Arm": "Scharf", "Disarm": "Unscharf",
+  "🔍 Search in the network": "🔍 Im Netzwerk suchen", "This device": "Dieses Gerät", "armed": "Schutz an", "disarmed": "Schutz aus", "arming": "Schutz startet",
+  "ALARM": "ALARM", "not reachable": "nicht erreichbar", "password wrong": "Passwort falsch", "Open": "Öffnen", "Arm": "Scharf", "Disarm": "Schutz aus",
   "Remove this device from the list?": "Dieses Gerät aus der Liste entfernen?", "needs a password": "braucht ein Passwort", "Nothing found.": "Nichts gefunden.",
   "searching (about 10 s) …": "suche (ca. 10 s) …", "mains": "Netz", "battery": "Akku", "Set password": "Passwort setzen", "recording": "Aufnahme"});
 let FLSIG = "";

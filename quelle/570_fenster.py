@@ -744,7 +744,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.104")
+        self.root.title("Motion Watch 2.95.105")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1034,7 +1034,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.104 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.105 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1586,6 +1586,18 @@ class App:
         if bool(CFG["ui_simple"]) != v:
             CFG["ui_simple"] = v; save_settings(); self._simple_seen = v; self.root.after(30, self._rebuild)
 
+    def _protect(self, level):
+        """2.95.105: protection level; switching off needs the PIN if one is set"""
+        if level == "off" and CFG.get("protect_pin"):
+            from tkinter import simpledialog
+            pin = simpledialog.askstring("Motion Watch", tr("PIN for switching off"), show="*", parent=self.root)
+            if pin is None:
+                return
+            ok_, err_ = protect_disarm(pin, "window")
+        else:
+            ok_, err_ = protect_set(level, "window")
+        self._status("Protection", ("✓ " if ok_ else "⚠ ") + (tr(err_) if err_ else tr({"off": "Off", "watch": "Watchful", "full": "Full protection"}[level])))
+
     def _night(self):
         r = night_guard()
         txt = "\n".join("✓ " + x for x in r["done"])
@@ -1953,6 +1965,12 @@ class App:
         if sec == "Wi-Fi / hotspot" and not CFG["lock_on"]:
             self._build_wifi_box(sbody)
         if sec == "Camping / protection":
+            ttk.Label(sbody, text="🛡 " + tr("Protection")).pack(anchor="w", pady=(8, 2))      # 2.95.105: one level
+            pf = ttk.Frame(sbody); pf.pack(fill="x")
+            for i_, (lv_, nm_) in enumerate([("off", "Off"), ("watch", "Watchful"), ("full", "Full protection")]):
+                ttk.Button(pf, text=tr(nm_), command=lambda l_=lv_: self._protect(l_)).grid(row=0, column=i_, sticky="ew", padx=(0, 4))
+                pf.columnconfigure(i_, weight=1)
+            ttk.Label(sbody, text=tr(protect_status().get("device", "")), foreground="#8a96a6", wraplength=380).pack(anchor="w", pady=(4, 0))
             ttk.Label(sbody, text=tr("Mode") + " (" + tr("one switch for the whole device") + ")").pack(anchor="w", pady=(8, 2))
             mg = ttk.Frame(sbody); mg.pack(fill="x")
             for i_, (mid, mic, mname) in enumerate(MODES + [("", "⚙", "Own settings")]):
@@ -1966,7 +1984,7 @@ class App:
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(6, 0))
             ttk.Button(bf, text=tr("Arm (countdown)"), command=arm).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Arm now"), command=lambda: arm(0)).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf, text=tr("Disarm"), command=disarm).pack(side="left", expand=True, fill="x")
+            ttk.Button(bf, text=tr("Disarm"), command=lambda: self._protect("off")).pack(side="left", expand=True, fill="x")
             bf2 = ttk.Frame(sbody); bf2.pack(fill="x", pady=(6, 0))
             ttk.Button(bf2, text=tr("Camping ON"), command=lambda: camping_set(True)).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf2, text=tr("Camping OFF"), command=lambda: camping_set(False)).pack(side="left", expand=True, fill="x")

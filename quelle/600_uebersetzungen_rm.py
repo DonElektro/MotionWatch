@@ -1828,3 +1828,78 @@ for _k, _v in _HX97.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX105 = {  # 2.95.105: the Bluetooth loudspeaker under the modes
+    'Loudspeaker': ('Lautsprecher', 'Haut-parleur', 'Altoparlante', 'Autpledader'),
+    'built-in / none': ('eingebaut / keiner', 'intégré / aucun', 'integrato / nessuno', 'integrà / nagin'),
+    'no Bluetooth': ('kein Bluetooth', 'pas de Bluetooth', 'nessun Bluetooth', 'nagin Bluetooth'),
+}
+for _k, _v in _HX105.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX105b = {  # 2.95.105: protection (135, main page, window)
+    'Protection': ('Schutz', 'Protection', 'Protezione', 'Protecziun'),
+    'Off': ('Aus', 'Arrêt', 'Spento', 'Deactivà'),
+    'Watchful': ('Wachsam', 'Vigilant', 'Vigile', 'Attent'),
+    'Full protection': ('Voller Schutz', 'Protection complète', 'Protezione completa', 'Protecziun cumpletta'),
+    'starts in': ('startet in', 'démarre dans', 'parte tra', 'cumenza en'),
+    'siren in': ('Sirene in', 'sirène dans', 'sirena tra', 'sirena en'),
+    'prt-off': ('Keine Alarme. Antippen, was geschützt werden soll – oder den Schutz-Assistenten fragen.', 'Pas d’alarme. Choisir ce qu’il faut protéger – ou demander à l’assistant.', 'Nessun allarme. Scegliere cosa proteggere – o chiedere all’assistente.', 'Nagins alarms. Tscherner tge che duai vegnir protegì – u dumandar l’assistent.'),
+    'prt-watch': ('Meldet Personen und Sabotage aufs Handy. Keine Sirene.', 'Signale personnes et sabotage sur le téléphone. Pas de sirène.', 'Segnala persone e sabotaggi sul telefono. Nessuna sirena.', 'Avisa persunas e sabotascha sin il telefonin. Nagina sirena.'),
+    'prt-full': ('Personen, bewachte Gegenstände, Sabotage, GPS-Ortung – und die Sirene, wenn niemand ausschaltet.', 'Personnes, objets surveillés, sabotage, localisation GPS – et la sirène si personne n’arrête.', 'Persone, oggetti sorvegliati, sabotaggio, localizzazione GPS – e la sirena se nessuno spegne.', 'Persunas, objects survegliads, sabotascha, localisaziun GPS – e la sirena, sche nagin na stizza.'),
+    'Switch off': ('Ausschalten', 'Arrêter', 'Spegnere', 'Stizzar'),
+    'Protection off': ('Schutz aus', 'Protection arrêtée', 'Protezione spenta', 'Protecziun deactivada'),
+    'All ready': ('Alles bereit', 'Tout est prêt', 'Tutto pronto', 'Tut pront'),
+    'thing(s) missing': ('Punkt(e) offen', 'point(s) à régler', 'punto/i da sistemare', 'punct(s) avert(s)'),
+    'Fix': ('Beheben', 'Corriger', 'Sistemare', 'Reparar'),
+    'Device protection': ('Gerät', 'Appareil', 'Dispositivo', 'Apparat'),
+    'Protection assistant': ('Schutz-Assistent', 'Assistant de protection', 'Assistente di protezione', 'Assistent da protecziun'),
+    'Test runs …': ('Test läuft …', 'Test en cours …', 'Test in corso …', 'Test en lavur …'),
+    'Test the protection': ('Schutz testen', 'Tester la protection', 'Testare la protezione', 'Testar la protecziun'),
+    'Change PIN': ('PIN ändern', 'Changer le PIN', 'Cambiare il PIN', 'Midar il PIN'),
+    'PIN for switching off': ('PIN zum Ausschalten', 'PIN pour arrêter', 'PIN per spegnere', 'PIN per stizzar'),
+    'More: siren delay, presence': ('Mehr: Sirene, Abwesenheit', 'Plus : sirène, absence', 'Altro: sirena, assenza', 'Dapli: sirena, absenza'),
+    'Siren when nobody switches off after': ('Sirene, wenn niemand ausschaltet, nach', 'Sirène si personne n’arrête après', 'Sirena se nessuno spegne dopo', 'Sirena, sche nagin na stizza, suenter'),
+    'Automatic: on when my phone is gone, off when it is back': ('Automatisch: an, wenn mein Handy weg ist, aus, wenn es zurück ist', 'Automatique : activée quand mon téléphone part, arrêtée à son retour', 'Automatico: attiva quando il mio telefono se ne va, spenta al ritorno', 'Automatic: activ, sch’il telefonin è davent, deactivà, sch’el è enavos'),
+    'here': ('da', 'ici', 'qui', 'qua'), 'away': ('weg', 'absent', 'via', 'davent'),
+    'choose the phone under Tools → Network': ('Handy unter Werkzeuge → Netz wählen', 'choisir le téléphone sous Outils → Réseau', 'scegliere il telefono in Strumenti → Rete', 'tscherner il telefonin sut Utensils → Rait'),
+    'Current PIN': ('Bisherige PIN', 'PIN actuel', 'PIN attuale', 'PIN actual'),
+    'New PIN (4 to 8 digits, empty = no PIN)': ('Neue PIN (4 bis 8 Ziffern, leer = keine PIN)', 'Nouveau PIN (4 à 8 chiffres, vide = aucun)', 'Nuovo PIN (da 4 a 8 cifre, vuoto = nessuno)', 'Nov PIN (4 fin 8 cifras, vid = nagin)'),
+    'PIN saved': ('PIN gespeichert', 'PIN enregistré', 'PIN salvato', 'PIN memorisà'), 'PIN removed': ('PIN entfernt', 'PIN supprimé', 'PIN rimosso', 'PIN allontanà'),
+    'What shall be protected?': ('Was soll geschützt werden?', 'Que faut-il protéger ?', 'Cosa va protetto?', 'Tge duai vegnir protegì?'),
+    'The place / tent': ('Der Platz / das Zelt', 'L’emplacement / la tente', 'Il posto / la tenda', 'La plazza / la tenda'),
+    'Things like the bike': ('Gegenstände wie das Velo', 'Des objets comme le vélo', 'Oggetti come la bici', 'Objects sco il velo'),
+    'The device itself': ('Das Gerät selbst', 'L’appareil lui-même', 'Il dispositivo stesso', 'L’apparat sez'),
+    'Everything': ('Alles', 'Tout', 'Tutto', 'Tut'), 'When?': ('Wann?', 'Quand ?', 'Quando?', 'Cura?'), 'Now': ('Jetzt', 'Maintenant', 'Adesso', 'Ussa'),
+    'Tonight': ('Heute Nacht', 'Cette nuit', 'Stanotte', 'Questa notg'), 'While I am away': ('Solange ich weg bin', 'Pendant mon absence', 'Mentre sono via', 'Durant che jau sun davent'),
+    'How shall it react?': ('Wie soll er reagieren?', 'Comment réagir ?', 'Come deve reagire?', 'Co duai el reagir?'),
+    'Quietly: push message': ('Still: Push-Nachricht', 'Discret : message push', 'In silenzio: messaggio push', 'Quiet: messadi push'),
+    'Light + push': ('Licht + Push', 'Lumière + push', 'Luce + push', 'Glisch + push'),
+    'Light, push, then the siren': ('Licht, Push, dann Sirene', 'Lumière, push, puis sirène', 'Luce, push, poi sirena', 'Glisch, push, lura sirena'),
+    'Ready': ('Bereit', 'Prêt', 'Pronto', 'Pront'), 'Switch on the protection': ('Schutz einschalten', 'Activer la protection', 'Attivare la protezione', 'Activar la protecziun'),
+    'Push messages are off': ('Push-Nachrichten sind aus', 'Les messages push sont désactivés', 'I messaggi push sono spenti', 'Ils messadis push èn deactivads'),
+    'No reference scan yet - guarded things cannot be checked': ('Noch kein Referenz-Scan – bewachte Gegenstände können nicht geprüft werden', 'Pas encore de scan de référence – les objets surveillés ne peuvent pas être vérifiés', 'Ancora nessuna scansione di riferimento – gli oggetti sorvegliati non possono essere controllati', 'Anc nagin scan da referenza – ils objects survegliads na pon betg vegnir controllads'),
+    'GPS has no position yet': ('GPS hat noch keine Position', 'Le GPS n’a pas encore de position', 'Il GPS non ha ancora una posizione', 'Il GPS n’ha anc nagina posiziun'),
+    'No loudspeaker for the siren': ('Kein Lautsprecher für die Sirene', 'Pas de haut-parleur pour la sirène', 'Nessun altoparlante per la sirena', 'Nagin autpledader per la sirena'),
+    'No PIN for disarming - a thief could switch it off': ('Keine PIN zum Ausschalten – ein Dieb könnte den Schutz abstellen', 'Pas de PIN pour arrêter – un voleur pourrait désactiver la protection', 'Nessun PIN per spegnere – un ladro potrebbe disattivare la protezione', 'Nagin PIN per stizzar – in lader pudess deactivar la protecziun'),
+    'Recordings are not copied away (backup off)': ('Aufnahmen werden nicht weggesichert (Sicherung aus)', 'Les enregistrements ne sont pas sauvegardés (sauvegarde désactivée)', 'Le registrazioni non vengono salvate altrove (backup spento)', 'Las registraziuns na vegnan betg segiradas (segiranza deactivada)'),
+    'sabotage check': ('Sabotage-Prüfung', 'contrôle de sabotage', 'controllo sabotaggio', 'controlla da sabotascha'), 'backup': ('Sicherung', 'sauvegarde', 'backup', 'segiranza'),
+    'Camera picture': ('Kamerabild', 'Image de la caméra', 'Immagine della telecamera', 'Maletg da la camera'), 'no recent picture': ('kein aktuelles Bild', 'pas d’image récente', 'nessuna immagine recente', 'nagin maletg actual'),
+    'Loudspeaker / siren': ('Lautsprecher / Sirene', 'Haut-parleur / sirène', 'Altoparlante / sirena', 'Autpledader / sirena'), 'no loudspeaker': ('kein Lautsprecher', 'pas de haut-parleur', 'nessun altoparlante', 'nagin autpledader'),
+    'Reference scan': ('Referenz-Scan', 'Scan de référence', 'Scansione di riferimento', 'Scan da referenza'),
+    '{n} guarded things': ('{n} bewachte Gegenstände', '{n} objets surveillés', '{n} oggetti sorvegliati', '{n} objects survegliads'), 'not yet': ('noch nicht', 'pas encore', 'non ancora', 'anc betg'),
+    'Sabotage and person': ('Sabotage und Person', 'Sabotage et personne', 'Sabotaggio e persona', 'Sabotascha e persuna'),
+    'only automatic with the simulator - test by hand: cover the camera, walk past': ('nur mit dem Simulator automatisch – von Hand testen: Kamera abdecken, vorbeigehen', 'automatique seulement avec le simulateur – tester à la main : couvrir la caméra, passer devant', 'automatico solo con il simulatore – testare a mano: coprire la telecamera, passare davanti', 'mo cun il simulatur automatic – testar a maun: cuvrir la camera, passar speravia'),
+    'Sabotage (camera covered)': ('Sabotage (Kamera abgedeckt)', 'Sabotage (caméra couverte)', 'Sabotaggio (telecamera coperta)', 'Sabotascha (camera cuverta)'),
+    'not noticed within 25 s': ('nicht bemerkt innert 25 s', 'non remarqué en 25 s', 'non notato entro 25 s', 'betg remartgà entaifer 25 s'),
+    'Person walks past': ('Person geht vorbei', 'Une personne passe', 'Una persona passa', 'Ina persuna passa'),
+    'no person detected within 60 s': ('keine Person erkannt innert 60 s', 'aucune personne détectée en 60 s', 'nessuna persona rilevata entro 60 s', 'nagina persuna renconuschida entaifer 60 s'),
+    'Somebody tries to disarm with a wrong PIN': ('Jemand versucht, mit falscher PIN auszuschalten', 'Quelqu’un essaie d’arrêter avec un faux PIN', 'Qualcuno cerca di spegnere con un PIN errato', 'Insatgi emprova da stizzar cun in PIN fauss'),
+    'too many wrong PINs - try again in 10 minutes': ('zu viele falsche PINs – in 10 Minuten nochmals', 'trop de PIN erronés – réessayer dans 10 minutes', 'troppi PIN errati – riprovare tra 10 minuti', 'memia blers PINs fauss – en 10 minutas anc ina giada'),
+    'a test is already running': ('es läuft schon ein Test', 'un test est déjà en cours', 'un test è già in corso', 'in test è gia en lavur'),
+    'unknown level': ('unbekannte Stufe', 'niveau inconnu', 'livello sconosciuto', 'nivel nunenconuschent'),
+}
+for _k, _v in _HX105b.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])

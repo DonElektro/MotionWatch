@@ -1414,6 +1414,7 @@ class WebStream:
                 st["mode"] = mode_state()
                 st["tv"] = tv_state()
                 st["disco"] = disco_state()
+                st["protect"] = protect_status(lang_)          # 2.95.105
                 st["tunnel"] = tunnel_state()
                 st["sim_pi"] = simpi_state()
                 st["helper"] = helper_state()
@@ -1530,10 +1531,49 @@ class WebStream:
             elif a == "arm_now":
                 arm(0)
             elif a == "disarm":
-                disarm()
+                if CFG.get("protect_pin"):                 # 2.95.105: disarming needs the PIN
+                    ok_, err_ = protect_disarm(body().get("pin"), "web")
+                    if not ok_:
+                        return reply({"ok": False, "error": tr(err_, norm_lang(body().get("lang"))), "need_pin": True}, 403)
+                else:
+                    protect_cancel_escalation()
+                    CFG["protect_level"] = "off"
+                    disarm()
             else:
                 return reply({"ok": False, "error": "unknown action"}, 400)
             return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"]})
+
+        @app.route("/api/protect", methods=["GET", "POST"])
+        def api_protect():
+            """2.95.105: the protection level, the assistant, the PIN, «Schutz testen», escalation, presence"""
+            if request.method == "GET":
+                return reply(dict(protect_status(request.args.get("lang")), ok=True))
+            d = body(); a = str(d.get("action") or ""); lang = norm_lang(d.get("lang"))
+            ok, err = True, ""
+            if a == "level":
+                lv = str(d.get("level") or "")
+                if lv == "off" and CFG.get("protect_pin"):
+                    ok, err = protect_disarm(d.get("pin"), "web")
+                else:
+                    ok, err = protect_set(lv, "web", d.get("answers") if isinstance(d.get("answers"), dict) else None)
+            elif a == "pin":
+                ok, err = protect_pin_set(d.get("new"), d.get("old"))
+            elif a == "test":
+                ok, err = protect_test(lang)
+            elif a == "escalate":
+                CFG["escalate_on"] = bool(d.get("on", CFG.get("escalate_on")))
+                try:
+                    CFG["escalate_siren_s"] = max(0, min(600, int(d.get("s", CFG.get("escalate_siren_s", 30)))))
+                except (TypeError, ValueError):
+                    pass
+                save_settings()
+            elif a == "presence":
+                CFG["presence_auto"] = bool(d.get("on")); save_settings()
+            elif a == "fix_push":
+                CFG["notify_on"] = True; sched_user_changed("notify_on"); save_settings()
+            else:
+                ok, err = False, "unknown action"
+            return reply(dict(protect_status(lang, True), ok=ok, error=tr(err, lang) if err else None), 200 if ok else 400)
 
         @app.route("/api/hotspot", methods=["POST"])
         def api_hotspot():

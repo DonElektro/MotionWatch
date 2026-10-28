@@ -543,8 +543,9 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
     </div>
     <details class="card" open data-view="protect" data-vgroup="Panels" data-vlabel="Camping / protection" id="pr-card">
       <summary data-i18n="Camping / protection">Camping / protection</summary>
+      <div id="protect-box"></div>
       <div id="mode-box" style="margin:2px 0 12px"><div class="row" style="justify-content:space-between"><b data-i18n="Mode">Mode</b><span class="mut" id="mode-cur"></span></div>
-        <div id="mode-grid" class="mode-grid"></div><div class="mut" id="mode-info" style="margin-top:6px"></div><div id="mode-opts"></div><div class="err" id="mode-err"></div><div id="mode-tv"></div><details id="disco-more" class="more" style="margin-top:8px"><summary id="disco-sum" style="cursor:pointer;color:var(--mut,#8a96a6);font-size:14px">🪩 <span>Disco light</span></summary><div id="mode-disco"></div></details></div>
+        <div id="mode-grid" class="mode-grid"></div><div class="mut" id="mode-info" style="margin-top:6px"></div><div id="mode-opts"></div><div class="err" id="mode-err"></div><div id="mode-tv"></div><details id="btq" style="margin-top:8px"><summary id="btq-sum" style="cursor:pointer;font-size:14px">🔊 …</summary><div id="btq-box"></div></details><details id="disco-more" class="more" style="margin-top:8px"><summary id="disco-sum" style="cursor:pointer;color:var(--mut,#8a96a6);font-size:14px">🪩 <span>Disco light</span></summary><div id="mode-disco"></div></details></div>
       <div class="row"><b id="pr-state" style="font-size:18px">–</b><span class="mut" id="pr-left"></span></div>
       <button type="button" class="night-btn" id="pr-night" onclick="nightGuard()"><span data-i18n="🌙 Guard tonight">🌙 Guard tonight</span><small data-i18n="night-desc">switches on what a night needs, arms with the countdown and tells what is missing</small></button>
       <div id="night-res" hidden></div>
@@ -879,10 +880,10 @@ const I18N = {en: I18N_EN, de: {
   "Alarm & camping": "Alarm & Camping", "Notifications": "Benachrichtigungen", "Detection": "Erkennung", "Camera & servos": "Kamera & Servos",
   "Recordings & timelapse": "Aufnahmen & Zeitraffer", "Thermal camera": "Wärmebild", "Relays & schedule": "Relais & Zeitplan",
   "System & network": "System & Netz", "Advanced": "Erweitert",
-  "Camping / protection": "Camping / Schutz", "Armed": "Scharf", "Armed in": "Scharf in", "Disarmed": "Unscharf",
-  "🛡 Arm (countdown)": "🛡 Scharf schalten (Countdown)", "Arm now": "Sofort scharf", "Disarm": "Unscharf schalten",
+  "Camping / protection": "Camping / Schutz", "Armed": "Schutz an", "Armed in": "Schutz an in", "Disarmed": "Schutz aus",
+  "🛡 Arm (countdown)": "🛡 Schutz an (Countdown)", "Arm now": "Sofort an", "Disarm": "Schutz aus",
   "no alarms, no recordings": "keine Alarme, keine Aufnahmen", "leave the area now": "jetzt den Bereich verlassen", "alarms active": "Alarme aktiv",
-  "tap: arm / disarm": "Antippen: scharf / unscharf", "Camping profile": "Camping-Profil",
+  "tap: arm / disarm": "Antippen: Schutz an / aus", "Camping profile": "Camping-Profil",
   "cp-desc": "Eigenes WLAN an, die Kamera bleibt stehen (keine Patrouille / Verfolgung / Zeitraffer), Alarme und Aufnahmen an, scharf nach dem Countdown. Ausschalten stellt deine Einstellungen wieder her.",
   "Own Wi-Fi (hotspot)": "Eigenes WLAN (Hotspot)", "Own Wi-Fi": "Eigenes WLAN", "own Wi-Fi": "eigenes WLAN", "device": "Gerät", "devices": "Geräte",
   "switching …": "schaltet um …", "on": "an", "name": "Name", "password": "Passwort", "Clock": "Uhrzeit", "taken from the phone": "vom Handy übernommen",
@@ -2833,7 +2834,7 @@ Object.assign(I18N.de, {"iPhone shortcuts": "iPhone-Kurzbefehle",
  "sc-5": "Für jedes Stichwort eine eigene Automation: MW-WAERME, MW-LAERM, MW-SABOTAGE …",
  "Addresses back to Motion Watch (for «Get contents of URL»)": "Adressen zurück zu Motion Watch (für «Inhalte von URL abrufen»)",
  "sc-key-off": "Damit ein Kurzbefehl Motion Watch ohne Passwort steuern kann, braucht er einen eigenen Schlüssel. Er erlaubt nur diese wenigen Aktionen.",
- "Make a shortcut key": "Kurzbefehl-Schlüssel erstellen", "Arm": "Scharf schalten", "Disarm": "Unscharf schalten", "Siren off": "Sirene aus",
+ "Make a shortcut key": "Kurzbefehl-Schlüssel erstellen", "Arm": "Scharf schalten", "Disarm": "Schutz aus", "Siren off": "Sirene aus",
  "White light on": "Weisses Licht an", "White light off": "Weisses Licht aus", "Photo now": "Foto jetzt", "Status (text)": "Status (Text)",
  "Copy": "Kopieren", "copied": "kopiert", "New key": "Neuer Schlüssel", "Switch off": "Ausschalten",
  "Make a new key? The old addresses stop working.": "Neuen Schlüssel erstellen? Die alten Adressen funktionieren dann nicht mehr.",
@@ -3555,6 +3556,7 @@ function prText(s) {
   return ["🛡 " + t("Disarmed"), ""];
 }
 async function prArm(action) {
+  if (action === "disarm" && ((window.__lastState || {}).protect || {}).pin) { protectOff(); return; }   // 2.95.105: with the PIN
   const r = await post("/api/arm", {action: action});
   if (r && r.ok) toast(action === "disarm" ? t("Disarmed") : (r.left ? t("Armed in") + " " + r.left + " s" : t("Armed")));
 }
@@ -3753,7 +3755,7 @@ Object.assign(I18N.de, {"AI test with simulator pictures": "KI-Prüfung mit Simu
 Object.assign(I18N.en, {"dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. Motion Watch runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
 Object.assign(I18N.en, {"sim-pi-hint": "Runs on the Pi with simple graphics and shows on the television at the HDMI. The first time it is fetched (about 30 MB)."});
 Object.assign(I18N.de, {"Stop the 3D simulator on the Pi": "3D-Simulator auf dem Pi beenden", "3D simulator on this Pi (HDMI / TV)": "3D-Simulator auf diesem Pi (HDMI / Fernseher)", "loading": "lädt", "sim-pi-hint": "Läuft auf dem Pi mit einfacher Grafik und zeigt sich am Fernseher am HDMI. Beim ersten Mal wird er geholt (etwa 30 MB).", "only on a Raspberry Pi (64 bit)": "nur auf einem Raspberry Pi (64 Bit)"});
-Object.assign(I18N.de, {"Disco light": "Disco-Licht", "Stop": "Aus", "Start": "Los", "with the music (microphone)": "mit der Musik (Mikrofon)", "fixed tempo": "fester Takt", "needs the white light (Lights)": "braucht das weisse Licht (Licht)", "No microphone: the fixed tempo is used.": "Kein Mikrofon: dann gilt der feste Takt.", "disco-note": "Musik über die Bluetooth-Box oder ein Handy laufen lassen – das Mikrofon hört den Takt und das weisse Licht blitzt mit (höchstens 3-mal pro Sekunde; Vorsicht bei Menschen mit Epilepsie, Rücksicht auf Nachbarn). Ein Alarm geht immer vor. Endet nach 2 Stunden von selbst."});
+Object.assign(I18N.de, {"Loudspeaker": "Lautsprecher", "built-in / none": "eingebaut / keiner", "no Bluetooth": "kein Bluetooth", "Disco light": "Disco-Licht", "Stop": "Aus", "Start": "Los", "with the music (microphone)": "mit der Musik (Mikrofon)", "fixed tempo": "fester Takt", "needs the white light (Lights)": "braucht das weisse Licht (Licht)", "No microphone: the fixed tempo is used.": "Kein Mikrofon: dann gilt der feste Takt.", "disco-note": "Musik über die Bluetooth-Box oder ein Handy laufen lassen – das Mikrofon hört den Takt und das weisse Licht blitzt mit (höchstens 3-mal pro Sekunde; Vorsicht bei Menschen mit Epilepsie, Rücksicht auf Nachbarn). Ein Alarm geht immer vor. Endet nach 2 Stunden von selbst."});
 Object.assign(I18N.en, {"disco-note": "Play music on the Bluetooth box or a phone - the microphone hears the beat and the white light flashes along (at most 3 times a second; careful with people with epilepsy, think of the neighbours). An alarm always comes first. Ends by itself after 2 hours."});
 Object.assign(I18N.en, {"tv-auto": "In the campfire and gamer mode show it on the HDMI by itself (TV at the Pi). Any screen in the same network can open the link."});
 Object.assign(I18N.de, {"TV view": "TV-Anzeige", "Stop on the HDMI": "Am HDMI beenden", "Show on the HDMI": "Am HDMI zeigen", "Open the link": "Link öffnen", "Copy the link": "Link kopieren", "Link copied": "Link kopiert", "tv-auto": "Beim Lagerfeuer- und Gamer-Modus von selbst am HDMI zeigen (Fernseher am Pi). Den Link kann jeder Bildschirm im gleichen Netz öffnen.", "no browser on this device (Chromium)": "kein Browser auf diesem Gerät (Chromium)", "no desktop on the HDMI (Raspberry Pi OS with desktop needed)": "kein Desktop am HDMI (Raspberry Pi OS mit Desktop nötig)"});
@@ -3779,7 +3781,13 @@ const MD = {built: 0, until: 0, hover: null};
 function modePaint(s) {
   const M = s.mode, g = $("#mode-grid"); if (!M || !g) return;
   if (!document.getElementById("mode-css")) { const c = document.createElement("style"); c.id = "mode-css";
-    c.textContent = ".mode-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:6px}.mode-grid button{padding:8px 2px;font-size:11.5px;line-height:1.15;overflow-wrap:anywhere;hyphens:auto;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:64px}.mode-grid button .mi{font-size:22px}.mode-grid button.on{outline:3px solid var(--acc,#3b8cff);background:rgba(59,140,255,.18)}.mode-grid button.off{opacity:.45}#mode-opts .row{margin-top:6px}";
+    c.textContent = ".mode-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:6px}.mode-grid button{padding:8px 2px;font-size:11.5px;line-height:1.15;overflow-wrap:anywhere;hyphens:auto;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:64px}.mode-grid button .mi{font-size:22px}.mode-grid button.on{outline:3px solid var(--acc,#3b8cff);background:rgba(59,140,255,.18)}.mode-grid button.off{opacity:.45}#mode-opts .row{margin-top:6px}"
+      + "#protect-box{margin:2px 0 14px}.prt-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.prt-b{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;font-size:13px;font-weight:700;min-height:58px}.prt-b .ic{font-size:20px}.prt-b.on{outline:3px solid var(--acc,#3b8cff);background:rgba(59,140,255,.2)}"
+      + ".prt-what{margin-top:6px}.prt-amp{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04)}.prt-amp.green{border-left:4px solid #3fcf6b}.prt-amp.orange{border-left:4px solid #f2a33a}.prt-amp.red{border-left:4px solid #e5484d}.prt-it{margin-top:6px;gap:8px;font-size:13px}"
+      + ".prt-dev{margin-top:8px;font-size:13px}.prt-things{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.prt-th{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;max-width:92px}.prt-th.miss span{color:#ff6b6b;font-weight:700}"
+      + ".prt-img{width:84px;height:60px;border-radius:8px;background:#222 no-repeat;border:2px solid #3fcf6b}.prt-th.miss .prt-img{border-color:#e5484d}.prt-test{margin-top:8px;font-size:13px;line-height:1.6}"
+      + ".prt-wiz{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px}.prt-card{background:var(--card,#161b22);border-radius:16px;padding:18px;width:min(420px,100%);display:flex;flex-direction:column;gap:8px;animation:prtin .2s ease-out}"
+      + ".prt-opt{display:flex;align-items:center;gap:12px;padding:12px;font-size:15px;text-align:left}.prt-opt .ic{font-size:22px}.prt-opt.on{outline:2px solid var(--acc,#3b8cff)}@keyframes prtin{from{transform:scale(.95);opacity:0}to{transform:none;opacity:1}}";
     document.head.appendChild(c); }
   const all = M.list.concat([{id: "", icon: "⚙", name: "Own settings", info: M.own_info}]);
   if (MD.built !== all.length) { g.textContent = ""; MD.built = all.length;
@@ -3795,7 +3803,8 @@ function modePaint(s) {
   const sh = (MD.hover !== null && all.find(x => x.id === MD.hover)) || me;
   $("#mode-info").textContent = t(sh.info) + (M.msg ? "  ·  " + t(M.msg) : "");
   const bm = $("#b-mode"); if (bm) { bm.hidden = !cur; bm.textContent = cur ? me.icon : ""; bm.title = t("Mode") + ": " + t(me.name); bm.onclick = () => { const c = $("#pr-card"); if (c) { c.open = true; c.scrollIntoView({behavior: "smooth"}); } }; }
-  tvPaint(s.tv); discoPaint(s.disco);
+  tvPaint(s.tv); discoPaint(s.disco); btqPoll(false);
+  const bq = $("#btq"); if (bq && !bq.dataset.on) { bq.dataset.on = 1; bq.ontoggle = () => { if (bq.open) btqPoll(true); }; }
   const o = $("#mode-opts"); const key = cur + "|" + M.fire_until + "|" + M.fire_min_pct + "|" + M.gamer_watch;
   if (o.dataset.k === key) return; o.dataset.k = key; o.textContent = "";
   if (cur === "fire") {
@@ -3811,6 +3820,143 @@ function modePaint(s) {
     cb.onchange = async () => { await post("/api/mode", {mode_gamer_watch: cb.checked}); if (M.id === "gamer") { await post("/api/mode", {mode: ""}); await post("/api/mode", {mode: "gamer"}); } };
     r.append(el("span", "", "👁 " + t("Guard during the games")), cb); o.appendChild(r);
   }
+}
+// 2.95.105: «Schutz» - one level instead of many switches, the traffic light, device protection, guarded things, assistant,
+// test, PIN, escalation, presence
+const PRT = {key: "", pinFor: "", until: 0};
+function protectPaint(P) {
+  const box = $("#protect-box"); if (!box || !P) return;
+  const key = JSON.stringify([P.level, P.chosen, P.arm, P.colour, P.items, P.device, P.things, P.pin, P.presence, P.escalate.on, P.escalate.s, P.test, PRT.pinFor, LANG]);
+  if (key === PRT.key) { const c = $("#prt-left"); if (c) c.textContent = P.arm === "arming" ? t("starts in") + " " + P.left + " s" : (P.escalate.pending ? "🚨 " + t("siren in") + " " + P.escalate.pending + " s" : ""); return; }
+  PRT.key = key; box.textContent = "";
+  const head = el("div", "row"); head.style.cssText = "justify-content:space-between;align-items:center";
+  head.append(el("b", "", "🛡 " + t("Protection")), el("span", "mut", "")); head.lastChild.id = "prt-left"; box.appendChild(head);
+  const seg = el("div", "prt-seg");
+  [["off", "⚪", t("Off")], ["watch", "🟡", t("Watchful")], ["full", "🛡", t("Full protection")]].forEach(([k, ic, n]) => {
+    const b = el("button", "prt-b" + (P.level === k ? " on" : " sec"), ""); b.type = "button"; b.append(el("span", "ic", ic), el("span", "", n));
+    b.onclick = () => k === "off" ? protectOff() : protectLevel(k); seg.appendChild(b); });
+  box.appendChild(seg);
+  box.appendChild(el("div", "mut prt-what", P.level === "off" ? t("prt-off") : (P.level === "watch" ? t("prt-watch") : t("prt-full"))));
+  if (PRT.pinFor) { const r = el("div", "row"); r.style.cssText = "gap:6px;margin-top:8px"; const i = document.createElement("input"); i.type = "password"; i.inputMode = "numeric";
+    i.placeholder = "PIN"; i.style.flex = "1"; const ok = el("button", "", t("Switch off")); ok.type = "button"; const no = el("button", "sec", "✕"); no.type = "button";
+    ok.onclick = async () => { const x = await post("/api/protect", {action: "level", level: "off", pin: i.value, lang: LANG}); if (x.ok) { PRT.pinFor = ""; toast("✓ " + t("Protection off")); } else toast("⚠ " + (x.error || t("error"))); PRT.key = ""; protectPaint(x.level ? x : P); };
+    i.onkeydown = e => { if (e.key === "Enter") ok.click(); }; no.onclick = () => { PRT.pinFor = ""; PRT.key = ""; protectPaint(P); };
+    r.append(i, ok, no); box.appendChild(r); setTimeout(() => i.focus(), 50); }
+  const amp = el("div", "prt-amp " + P.colour);                // the traffic light
+  const bad = (P.items || []).filter(x => !x.minor);
+  amp.appendChild(el("div", "", (P.colour === "green" ? "🟢 " + t("All ready") : (P.colour === "red" ? "🔴 " : "🟠 ") + bad.length + " " + t("thing(s) missing"))));
+  (P.items || []).forEach(x => { const r = el("div", "row prt-it"); r.appendChild(el("span", x.minor ? "mut" : "", (x.minor ? "• " : "⚠ ") + x.text)); r.firstChild.style.flex = "1";
+    if (x.fix) { const f = el("button", "sec", t("Fix")); f.type = "button"; f.style.padding = "3px 10px"; f.onclick = () => protectFix(x.fix); r.appendChild(f); }
+    amp.appendChild(r); });
+  box.appendChild(amp);
+  box.appendChild(el("div", "mut prt-dev", "🔒 " + t("Device protection") + ": " + P.device));
+  if ((P.things || []).length) { const tg = el("div", "prt-things");
+    P.things.forEach(x => { const c = el("div", "prt-th" + (x.missing ? " miss" : "")); const im = el("div", "prt-img");
+      const [bx, by, bw, bh] = x.box; im.style.backgroundImage = "url(/refscan/file/" + x.dir + "/pos_" + String(x.pos).padStart(2, "0") + ".jpg)";
+      im.style.backgroundSize = (100 / Math.max(0.05, bw)) + "% " + (100 / Math.max(0.05, bh)) + "%";
+      im.style.backgroundPosition = (bw >= 1 ? 0 : bx / (1 - bw) * 100) + "% " + (bh >= 1 ? 0 : by / (1 - bh) * 100) + "%";
+      c.append(im, el("span", "", (x.missing ? "⚠ " : "✓ ") + x.name)); tg.appendChild(c); });
+    box.appendChild(tg); }
+  const bs = el("div", "btns"); bs.style.marginTop = "8px";
+  const as_ = el("button", "", "🧭 " + t("Protection assistant")); as_.type = "button"; as_.onclick = protectWizard;
+  const ts = el("button", "sec", P.test.busy ? "⏳ " + t("Test runs …") : "🧪 " + t("Test the protection")); ts.type = "button"; ts.disabled = P.test.busy;
+  ts.onclick = async () => { await post("/api/protect", {action: "test", lang: LANG}); PRT.key = ""; };
+  const pn = el("button", "sec", "🔐 " + (P.pin ? t("Change PIN") : t("PIN for switching off"))); pn.type = "button"; pn.onclick = () => protectPin(P.pin);
+  bs.append(as_, ts, pn); box.appendChild(bs);
+  if ((P.test.steps || []).length) { const tl = el("div", "prt-test"); P.test.steps.forEach(x => tl.appendChild(el("div", "", (x.ok === true ? "✅ " : x.ok === false ? "❌ " : "➖ ") + x.name + (x.text ? " – " + x.text : ""))));
+    box.appendChild(tl); }
+  const more = document.createElement("details"); more.className = "more"; more.style.marginTop = "6px";
+  const sm = document.createElement("summary"); sm.textContent = "⚙ " + t("More: siren delay, presence"); sm.style.cssText = "cursor:pointer;font-size:14px;color:var(--mut,#8a96a6)"; more.appendChild(sm);
+  const e1 = el("label", "row pr-sw"); const c1 = document.createElement("input"); c1.type = "checkbox"; c1.className = "sw"; c1.checked = !!P.escalate.on;
+  const sel = document.createElement("select"); [10, 20, 30, 60, 120].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + " s"; sel.appendChild(o); }); sel.value = String(P.escalate.s);
+  c1.onchange = sel.onchange = () => post("/api/protect", {action: "escalate", on: c1.checked, s: +sel.value, lang: LANG});
+  const sp1 = el("span", "", t("Siren when nobody switches off after")); e1.append(sp1, sel, c1); more.appendChild(e1);
+  const e2 = el("label", "row pr-sw"); const c2 = document.createElement("input"); c2.type = "checkbox"; c2.className = "sw"; c2.checked = !!P.presence.on;
+  c2.onchange = () => post("/api/protect", {action: "presence", on: c2.checked, lang: LANG});
+  const sp2 = el("span", "", t("Automatic: on when my phone is gone, off when it is back") + (P.presence.devices ? (P.presence.here === true ? " · 🏠 " + t("here") : P.presence.here === false ? " · 🚶 " + t("away") : "") : " · " + t("choose the phone under Tools → Network")));
+  e2.append(sp2, c2); more.appendChild(e2); box.appendChild(more);
+}
+async function protectLevel(k, answers) {
+  const r = await post("/api/protect", {action: "level", level: k, answers: answers || null, lang: LANG});
+  if (r.ok) toast("✓ " + (k === "full" ? t("Full protection") : t("Watchful")) + (r.arm === "arming" ? " – " + t("leave the area now") : "")); else toast("⚠ " + (r.error || t("error")));
+  PRT.key = ""; if (r.level) protectPaint(r);
+}
+function protectOff() {
+  const P = (window.__lastState || {}).protect || {};
+  if (P.pin) { PRT.pinFor = "off"; PRT.key = ""; protectPaint(P); return; }
+  protectLevel("off");
+}
+function protectFix(f) {
+  if (f === "push") post("/api/protect", {action: "fix_push", lang: LANG}).then(r => { PRT.key = ""; if (r.level) protectPaint(r); });
+  else if (f === "refscan") location.href = "/tools#refscan";
+  else if (f === "speaker") { const b = $("#btq"); if (b) { b.open = true; b.scrollIntoView({behavior: "smooth", block: "center"}); } }
+  else if (f === "pin") protectPin(false);
+  else if (f === "backup") { const q = $("#set-search") || document.querySelector("input[type=search]"); if (q) { q.value = "Backup"; q.dispatchEvent(new Event("input")); q.scrollIntoView({behavior: "smooth"}); } }
+}
+async function protectPin(has) {
+  const old = has ? prompt(t("Current PIN")) : ""; if (has && old === null) return;
+  const nw = prompt(t("New PIN (4 to 8 digits, empty = no PIN)")); if (nw === null) return;
+  const r = await post("/api/protect", {action: "pin", new: nw, old: old, lang: LANG});
+  toast(r.ok ? "✓ " + (nw ? t("PIN saved") : t("PIN removed")) : "⚠ " + (r.error || t("error"))); PRT.key = "";
+}
+function protectWizard() {                       // three questions, then everything is set
+  const A = {what: "place", when: "now", react: "push"};
+  const Q = [["what", t("What shall be protected?"), [["place", "⛺", t("The place / tent")], ["things", "🚲", t("Things like the bike")], ["device", "📷", t("The device itself")], ["all", "🛡", t("Everything")]]],
+    ["when", t("When?"), [["now", "▶", t("Now")], ["night", "🌙", t("Tonight")], ["away", "🚶", t("While I am away")]]],
+    ["react", t("How shall it react?"), [["push", "📱", t("Quietly: push message")], ["light", "💡", t("Light + push")], ["siren", "🚨", t("Light, push, then the siren")]]]];
+  let i = 0; const ov = el("div", "prt-wiz"); document.body.appendChild(ov);
+  const show = () => { ov.textContent = ""; const c = el("div", "prt-card"); ov.appendChild(c);
+    if (i < Q.length) { const [k, q, opts] = Q[i]; c.append(el("div", "mut", (i + 1) + " / " + Q.length), el("h3", "", q));
+      opts.forEach(([v, ic, n]) => { const b = el("button", "prt-opt" + (A[k] === v ? " on" : ""), ""); b.type = "button"; b.append(el("span", "ic", ic), el("span", "", n));
+        b.onclick = () => { A[k] = v; i++; show(); }; c.appendChild(b); });
+    } else { const lv = A.react === "siren" || A.what === "all" ? "full" : "watch";
+      c.append(el("h3", "", t("Ready")), el("p", "", (lv === "full" ? "🛡 " + t("Full protection") : "🟡 " + t("Watchful")) + " · " + t(A.when === "night" ? "Tonight" : A.when === "away" ? "While I am away" : "Now")));
+      const go = el("button", "", "🛡 " + t("Switch on the protection")); go.type = "button"; go.style.width = "100%";
+      go.onclick = () => { ov.remove(); if (A.when === "away") post("/api/protect", {action: "presence", on: true, lang: LANG});
+        protectLevel(lv, {things: A.what === "things" || A.what === "all", device: A.what === "device" || A.what === "all", when: A.when === "night" ? "night" : "now", react: A.react}); };
+      c.appendChild(go); }
+    const x = el("button", "sec", i ? "‹ " + t("Back") : t("Cancel")); x.type = "button"; x.style.marginTop = "8px"; x.onclick = () => { if (i) { i--; show(); } else ov.remove(); }; c.appendChild(x); };
+  show();
+}
+Object.assign(I18N.de, {"Protection": "Schutz", "Off": "Aus", "Watchful": "Wachsam", "Full protection": "Voller Schutz", "starts in": "startet in", "siren in": "Sirene in",
+  "prt-off": "Keine Alarme. Antippen, was geschützt werden soll – oder den Schutz-Assistenten fragen.",
+  "prt-watch": "Meldet Personen und Sabotage aufs Handy. Keine Sirene.",
+  "prt-full": "Personen, bewachte Gegenstände, Sabotage, GPS-Ortung – und die Sirene, wenn niemand ausschaltet.",
+  "Switch off": "Ausschalten", "Protection off": "Schutz aus", "All ready": "Alles bereit", "thing(s) missing": "Punkt(e) offen", "Fix": "Beheben",
+  "Device protection": "Gerät", "Protection assistant": "Schutz-Assistent", "Test runs …": "Test läuft …", "Test the protection": "Schutz testen",
+  "Change PIN": "PIN ändern", "PIN for switching off": "PIN zum Ausschalten", "More: siren delay, presence": "Mehr: Sirene, Abwesenheit",
+  "Siren when nobody switches off after": "Sirene, wenn niemand ausschaltet, nach", "Automatic: on when my phone is gone, off when it is back": "Automatisch: an, wenn mein Handy weg ist, aus, wenn es zurück ist",
+  "here": "da", "away": "weg", "choose the phone under Tools → Network": "Handy unter Werkzeuge → Netz wählen", "Current PIN": "Bisherige PIN",
+  "New PIN (4 to 8 digits, empty = no PIN)": "Neue PIN (4 bis 8 Ziffern, leer = keine PIN)", "PIN saved": "PIN gespeichert", "PIN removed": "PIN entfernt",
+  "What shall be protected?": "Was soll geschützt werden?", "The place / tent": "Der Platz / das Zelt", "Things like the bike": "Gegenstände wie das Velo",
+  "The device itself": "Das Gerät selbst", "Everything": "Alles", "When?": "Wann?", "Now": "Jetzt", "Tonight": "Heute Nacht", "While I am away": "Solange ich weg bin",
+  "How shall it react?": "Wie soll er reagieren?", "Quietly: push message": "Still: Push-Nachricht", "Light + push": "Licht + Push", "Light, push, then the siren": "Licht, Push, dann Sirene",
+  "Ready": "Bereit", "Switch on the protection": "Schutz einschalten", "Back": "Zurück", "Cancel": "Abbrechen"});
+Object.assign(I18N.en, {"prt-off": "No alarms. Tap what shall be protected - or ask the protection assistant.", "prt-watch": "Reports persons and sabotage to the phone. No siren.",
+  "prt-full": "Persons, guarded things, sabotage, GPS tracking - and the siren when nobody switches off."});
+// 2.95.105: the Bluetooth loudspeaker - small and quick to reach (under the modes): which one plays, connect / disconnect, search
+let BTQ = {t: 0, busy: false};
+async function btqPoll(force) {
+  const sum = $("#btq-sum"); if (!sum) return;
+  if (!force && Date.now() - BTQ.t < 20000) return; BTQ.t = Date.now();
+  let j; try { j = await (await fetch("/api/bt", {cache: "no-store"})).json(); } catch (e) { return; }
+  const cur = (j.devices || []).find(d => "bt:" + d.mac === j.out && d.connected);
+  sum.textContent = "🔊 " + t("Loudspeaker") + ": " + (cur ? cur.name + " ✓" : (j.available ? t("built-in / none") : t("no Bluetooth")));
+  const box = $("#btq-box"); if (!box || !$("#btq").open) return; box.textContent = "";
+  if (!j.available) { box.appendChild(el("div", "mut", t("Bluetooth is not available (sudo apt install bluez)"))); return; }
+  (j.devices || []).filter(d => d.audio || d.paired).forEach(d => {
+    const r = el("div", "row"); r.style.cssText = "gap:6px;margin-top:6px";
+    const used = "bt:" + d.mac === j.out && d.connected;
+    r.appendChild(el("span", "", (used ? "✓ " : "• ") + d.name)); r.lastChild.style.flex = "1";
+    const b = el("button", used ? "sec" : "", used ? t("Disconnect") : t("Connect")); b.type = "button"; b.style.padding = "4px 10px";
+    b.onclick = async () => { b.disabled = true; b.textContent = "…"; const x = await post("/api/bt", {action: used ? "disconnect" : "connect", mac: d.mac, lang: LANG});
+      if (!x.ok) toast("⚠ " + (x.error || t("error"))); else if (window.refreshEnums) refreshEnums(["audio_out"]); btqPoll(true); };
+    r.appendChild(b); box.appendChild(r); });
+  const sb = el("button", "sec", j.scanning ? t("Searching … put the loudspeaker into pairing mode (blue light blinking)") : "🔍 " + t("Search Bluetooth loudspeakers")); sb.type = "button";
+  sb.disabled = !!j.scanning; sb.style.cssText = "margin-top:8px;width:100%;white-space:normal";
+  sb.onclick = async () => { await post("/api/bt", {action: "scan", lang: LANG}); BTQ.t = 0; setTimeout(() => btqPoll(true), 1500); };
+  box.appendChild(sb);
+  if (j.scanning || j.busy) setTimeout(() => btqPoll(true), 1500);
 }
 function discoPaint(D) {                            // 2.95.54: the white light flashes with the music
   const b = $("#mode-disco"); if (!b || !D) return;
@@ -3870,7 +4016,7 @@ function updateProtect(s) {
   const hs = s.hotspot || {}, hc = s.hotspot_cfg || {};
   if (Date.now() > PR.campUntil) $("#pr-camp").checked = !!s.camping;
   if (!(Date.now() < (PR.ecoUntil || 0))) $("#pr-eco").checked = s.eco !== "off";
-  mwgPaint(s); simShootPaint(s); iconPick(); scPick(); modePaint(s);
+  mwgPaint(s); simShootPaint(s); iconPick(); scPick(); modePaint(s); protectPaint(s.protect);
   const TT = s.tether || {}, te = $("#pr-teth");
   if (te) te.textContent = TT.on ? (TT.ready ? "✓ " + t("connected") + " · " + TT.kind + " · " + TT.iface + " · " + t("the own Wi-Fi gets this internet too")
       : "⏳ " + t("phone found, connecting …") + " (" + TT.iface + ")")

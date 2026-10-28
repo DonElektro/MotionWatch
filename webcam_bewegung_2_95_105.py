@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_104.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_105.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.105: Schutz: Stufen Aus / Wachsam / Voller Schutz, Schutz-Assistent, Ampel mit «Beheben», Diebstahlschutz-Zeile,
+    bewachte Gegenstände, Sirene nach X s, PIN zum Ausschalten, «Schutz testen»; Begriffe «Schutz an / aus»;
+    Bluetooth-Lautsprecher schnell erreichbar unter den Modi
   * 2.95.104: Passt zum Simulator 3D-3.78 (Spiel-Assistent neu, übersichtlich und animiert)
   * 2.95.103: Simulator: Kopf steuern und Licht aus dem Simulator-Fenster; Disco-Licht in einem kleinen Untermenü; passt zum
     Simulator 3D-3.77 (am PC mitspielen, Verstecken mit dem Rover, Bots, Wiederholung u. a.)
@@ -796,10 +799,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_104.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_105.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_104.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_104.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_105.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_105.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -816,7 +819,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.104"
+APP_VERSION = "2.95.105"
 
 
 def default_data_dir():
@@ -1128,6 +1131,7 @@ CFG = {
     "refscan_pan_steps": 6, "refscan_pan_from": 10, "refscan_pan_to": 90, "refscan_tilt_steps": 1, "refscan_tilt_span": 16, "refscan_tilt_mid": 50,
     "refscan_photos": 2, "refscan_settle": 1.5, "refscan_sens": 50, "refscan_min_area": 0.6,   # reference scan (2.95.97)
     "refscan_on_arm": False, "refscan_every": 0, "refscan_push": True, "refscan_push_all": False,
+    "protect_level": "off", "protect_pin": "", "escalate_on": False, "escalate_siren_s": 30,   # 2.95.105: protection (135)
     "tamper_on": True,           # sabotage: camera covered or turned away (picture check)
     "tamper_motion": True,       # motion sensor MPU-6050 (I2C 0x68), if fitted: device moved / knocked over
     "tamper_power": True,        # power cut while armed = alarm (needs the UPS HAT)
@@ -1314,6 +1318,10 @@ ALERTS_COND = threading.Condition()
 
 
 def push_alert(kind, text="", **extra):
+    try:
+        protect_on_alert(kind)                         # 2.95.105: escalation (light, then the siren unless disarmed)
+    except NameError:
+        pass
     if not CFG.get("browser_alarm", True):
         return
     if kind in ("person", "prealarm", "warm", "noise") and not is_armed():
@@ -7594,6 +7602,274 @@ def camping_set(on, hotspot_delay=2.0):
             hotspot_switch_later(False, hotspot_delay)
     save_settings()
     return True, ""
+
+
+# ----------------------------------------------------------------------------
+# 2.95.105: one place for everything that protects: a level instead of many switches
+#   off   - no alarms
+#   watch - «Wachsam»: armed, push messages, sabotage check; no siren
+#   full  - «Voller Schutz»: + guarded things (reference scan), GPS theft tracking, siren after a while (escalation)
+# Plus: the traffic light (what is missing, with a fix), presence of the owner's phone (armed when it is gone), a PIN
+# for disarming (a wrong PIN 3 times = theft alarm); presence (presence_auto, 150) is shown here too, and «Schutz testen» (with the simulator: sabotage, a person).
+# ----------------------------------------------------------------------------
+PROTECT = {"esc_t": 0.0, "esc_id": 0, "pin_fails": [], "test": {"busy": False, "steps": [], "t": 0.0}}
+PROTECT_LEVELS = ("off", "watch", "full")
+
+
+def protect_level():
+    """the level now: off when disarmed, else the chosen one (armed by other means = «watch»)"""
+    if not CFG["armed"]:
+        return "off"
+    lv = CFG.get("protect_level") or "watch"
+    return lv if lv in PROTECT_LEVELS and lv != "off" else "watch"
+
+
+def protect_set(level, who="web", answers=None):
+    """switch the level; answers of the assistant (what, when, how) adjust what is switched on"""
+    if level not in PROTECT_LEVELS:
+        return False, "unknown level"
+    A = answers or {}
+    if level == "off":
+        CFG["protect_level"] = "off"
+        disarm()
+        return True, ""
+    CFG["protect_level"] = level
+    CFG["notify_on"] = True
+    CFG["tamper_on"] = True
+    if level == "full" or A.get("device"):
+        if CFG.get("gpsmod_on"):
+            CFG["gps_theft"] = True
+    if level == "full" or A.get("things"):
+        CFG["refscan_on_arm"] = True                     # compare with the reference when armed (guarded things)
+    react = A.get("react") or ("siren" if level == "full" else "push")
+    CFG["escalate_on"] = react == "siren"
+    if react in ("light", "siren"):
+        CFG["light_white_auto"] = "alarm_dark" if CFG.get("light_white_auto") in ("", "dark") else CFG["light_white_auto"]
+    if react == "siren" and CFG.get("siren_on") == "off":
+        CFG["siren_on"] = "person"
+    for k in ("protect_level", "notify_on", "tamper_on", "gps_theft", "refscan_on_arm", "escalate_on", "siren_on"):
+        sched_user_changed(k)
+    save_settings()
+    when = A.get("when") or "now"
+    if when == "night":
+        night_guard()
+    else:
+        arm()
+    if (level == "full" or A.get("things")) and not refscan_meta() and not REFSCAN["busy"]:
+        refscan_start("scan", "protection assistant")     # no reference yet: take it now (before the countdown ends)
+    log_event("sys", f"Protection: {level} ({who})")
+    return True, ""
+
+
+# ---- the traffic light ---------------------------------------------------------------------------------------------------
+_PROT_CACHE = {"t": 0.0, "k": "", "v": None}
+
+
+def protect_status(lang=None, force=False):
+    """the state for the page (cached 3 s - the page asks every second)"""
+    L = norm_lang(lang) if lang else cur_lang()
+    k = L + str(CFG["armed"]) + str(CFG.get("protect_level")) + str(PROTECT["test"]["busy"]) + str(len(PROTECT["test"]["steps"]))
+    if not force and _PROT_CACHE["v"] is not None and _PROT_CACHE["k"] == k and time.time() - _PROT_CACHE["t"] < 3.0:
+        v = dict(_PROT_CACHE["v"]); v["arm"] = STATE.get("arm_state"); v["left"] = STATE.get("arm_left", 0)
+        return v
+    v = _protect_status(L)
+    _PROT_CACHE.update(t=time.time(), k=k, v=v)
+    return v
+
+
+def _protect_status(L):
+    T = lambda x: tr(x, L)
+    lv = protect_level()
+    items = []                                           # {"id", "ok", "text", "fix"}
+    try:
+        h = health_check(L)
+        for x in h["items"]:
+            if x["level"] == "bad":
+                items.append({"id": "h_" + str(x["id"]), "ok": False, "text": x["title"] + ": " + x["text"], "fix": ""})
+    except Exception:
+        pass
+    if not CFG.get("notify_on"):
+        items.append({"id": "push", "ok": False, "text": T("Push messages are off"), "fix": "push"})
+    if lv == "full" or CFG.get("protect_level") == "full":
+        if not refscan_meta():
+            items.append({"id": "ref", "ok": False, "text": T("No reference scan yet - guarded things cannot be checked"), "fix": "refscan"})
+        if CFG.get("gpsmod_on") and GPSMOD.get("status") != "fix":
+            items.append({"id": "gps", "ok": False, "text": T("GPS has no position yet"), "fix": ""})
+        if CFG.get("escalate_on") and not out_selected():
+            items.append({"id": "spk", "ok": False, "text": T("No loudspeaker for the siren"), "fix": "speaker"})
+        if not CFG.get("protect_pin"):
+            items.append({"id": "pin", "ok": False, "text": T("No PIN for disarming - a thief could switch it off"), "fix": "pin"})
+    if CFG.get("backup_type", "off") == "off":
+        items.append({"id": "backup", "ok": False, "text": T("Recordings are not copied away (backup off)"), "fix": "backup", "minor": True})
+    tam = STATE.get("tamper") or {}
+    tl = str(tam.get("last") or "")
+    recent = False
+    if re.match(r"\d\d:\d\d ", tl):
+        try:
+            hm = datetime.now().replace(hour=int(tl[:2]), minute=int(tl[3:5]), second=0)
+            recent = 0 <= (datetime.now() - hm).total_seconds() < 600
+        except ValueError:
+            pass
+    if recent:
+        items.append({"id": "tamper", "ok": False, "text": T("Sabotage") + ": " + str(tam.get("last")), "fix": ""})
+    bad = [x for x in items if not x.get("minor")]
+    colour = "green" if not bad else ("red" if any(x["id"].startswith("h_") or x["id"] == "tamper" for x in bad) else "orange")
+    # device protection in one line
+    dev = []
+    dev.append(("✓ " if CFG.get("tamper_on") else "– ") + T("sabotage check"))
+    if CFG.get("gpsmod_on"):
+        dev.append(("✓ " if GPSMOD.get("status") == "fix" else "⚠ ") + "GPS")
+    dev.append(("✓ " if CFG.get("backup_type", "off") != "off" else "– ") + T("backup"))
+    if CFG.get("protect_pin"):
+        dev.append("✓ PIN")
+    # the guarded things of the reference scan
+    things = []
+    meta = refscan_meta()
+    if meta:
+        miss = set()
+        reps = refscan_reports()
+        if reps:
+            for n in (reps[0].get("gone") or []):
+                miss.add(str(n))
+        for it in (meta.get("watch") or [])[:12]:
+            things.append({"name": it["name"], "pos": it["pos"], "box": [it["x"], it["y"], it["w"], it["h"]], "dir": REFSCAN_KINDS[meta["_kind"]],
+                           "missing": it["name"] in miss})
+    return {"level": lv, "chosen": CFG.get("protect_level") or "off", "arm": STATE.get("arm_state"), "left": STATE.get("arm_left", 0),
+            "colour": colour, "items": items, "device": "  ·  ".join(dev), "things": things, "pin": bool(CFG.get("protect_pin")),
+            "presence": {"on": bool(CFG.get("presence_auto")), "devices": len(CFG.get("presence_macs") or []) + len(CFG.get("presence_bt") or []),
+                         "here": (TOOLS.get("presence") or {}).get("here")},
+            "escalate": {"on": bool(CFG.get("escalate_on")), "s": int(CFG.get("escalate_siren_s", 30)), "pending": max(0, int(PROTECT["esc_t"] - time.time())) if PROTECT["esc_t"] else 0},
+            "test": PROTECT["test"]}
+
+
+# ---- escalation: light at once, push, the siren after a while unless somebody disarms --------------------------------------
+def protect_on_alert(kind):
+    if kind != "person" or not is_armed() or not CFG.get("escalate_on"):
+        return
+    light_alarm()
+    if PROTECT["esc_t"] and time.time() < PROTECT["esc_t"]:
+        return                                           # already counting
+    s = max(0, int(CFG.get("escalate_siren_s", 30)))
+    PROTECT["esc_t"] = time.time() + s
+    PROTECT["esc_id"] += 1
+    my = PROTECT["esc_id"]
+
+    def later():
+        time.sleep(s)
+        if PROTECT["esc_id"] != my:
+            return
+        PROTECT["esc_t"] = 0.0
+        if is_armed() and out_selected() and not SOUND["playing"]:
+            log_event("sys", f"Escalation: siren after {s} s (nobody disarmed)")
+            sound_play(None, None, None, reason="escalation")
+    threading.Thread(target=later, daemon=True, name="escalate").start()
+
+
+def protect_cancel_escalation():
+    PROTECT["esc_id"] += 1
+    PROTECT["esc_t"] = 0.0
+
+
+# ---- PIN for disarming ---------------------------------------------------------------------------------------------------
+def protect_pin_set(new_pin, old_pin=""):
+    new_pin = str(new_pin or "").strip()
+    if CFG.get("protect_pin") and not protect_pin_ok(old_pin):
+        return False, "wrong PIN"
+    if new_pin and not re.fullmatch(r"\d{4,8}", new_pin):
+        return False, "the PIN must have 4 to 8 digits"
+    CFG["protect_pin"] = _pin_hash(new_pin) if new_pin else ""
+    save_settings()
+    log_event("sys", "Protection: PIN " + ("set" if new_pin else "removed"))
+    return True, ""
+
+
+def protect_pin_ok(pin):
+    h = CFG.get("protect_pin") or ""
+    if not h:
+        return True
+    try:
+        return hmac.compare_digest(_pin_hash(str(pin or "").strip(), h.split("$", 1)[0]), h)
+    except Exception:
+        return False
+
+
+def protect_disarm(pin, source="web"):
+    """disarm with the PIN (if one is set). 3 wrong PINs within 10 minutes: theft alarm (push with picture)"""
+    now = time.time()
+    PROTECT["pin_fails"] = [t for t in PROTECT["pin_fails"] if now - t < 600]
+    if len(PROTECT["pin_fails"]) >= 5:
+        return False, "too many wrong PINs - try again in 10 minutes"
+    if not protect_pin_ok(pin):
+        PROTECT["pin_fails"].append(now)
+        log_event("sys", f"Protection: wrong PIN for disarming ({source})")
+        if len(PROTECT["pin_fails"]) >= 3:
+            w = WATCH_REF.get("w")
+            try:
+                if w is not None:
+                    w.notifier.tamper(tr("Somebody tries to disarm with a wrong PIN"), w.frame_out)
+            except Exception:
+                pass
+            siren_alarm("tamper")
+        return False, "wrong PIN"
+    PROTECT["pin_fails"] = []
+    protect_cancel_escalation()
+    protect_set("off", source)
+    return True, ""
+
+
+# ---- «Schutz testen» ---------------------------------------------------------------------------------------------------
+def protect_test(lang=None):
+    if PROTECT["test"]["busy"]:
+        return False, "a test is already running"
+    L = norm_lang(lang) if lang else cur_lang()
+    PROTECT["test"] = {"busy": True, "steps": [], "t": time.time()}
+    threading.Thread(target=_protect_test_run, args=(L,), daemon=True, name="protect-test").start()
+    return True, ""
+
+
+def _protect_test_run(L):
+    T = lambda x: tr(x, L)
+    S = PROTECT["test"]["steps"]
+
+    def step(name, ok, text=""):
+        S.append({"name": name, "ok": ok, "text": text})
+
+    sim = bool(CFG.get("sim_on")) and SIM.get("ok") and time.time() - SIM.get("t", 0) < 5
+    try:
+        w = WATCH_REF.get("w")
+        fresh = w is not None and time.time() - float(getattr(w, "last_frame_t", time.time())) < 5
+        step(T("Camera picture"), bool(w is not None), "" if fresh else T("no recent picture"))
+        step(T("Push messages"), bool(CFG.get("notify_on")), "" if CFG.get("notify_on") else T("off"))
+        step(T("Loudspeaker / siren"), bool(out_selected()), "" if out_selected() else T("no loudspeaker"))
+        meta = refscan_meta()
+        step(T("Reference scan"), bool(meta), (trf("{n} guarded things", L, n=len(meta.get("watch") or [])) if meta else T("not yet")))
+        if not sim:
+            step(T("Sabotage and person"), None, T("only automatic with the simulator - test by hand: cover the camera, walk past"))
+        else:
+            t0 = (STATE.get("tamper") or {}).get("last", "")
+            sim_control({"action": "sabotage", "cover": True})
+            hit = False
+            for _ in range(25):
+                time.sleep(1)
+                if (STATE.get("tamper") or {}).get("last", "") != t0:
+                    hit = True
+                    break
+            sim_control({"action": "sabotage", "cover": False})
+            step(T("Sabotage (camera covered)"), hit, "" if hit else T("not noticed within 25 s"))
+            time.sleep(4)
+            sim_control({"action": "press", "id": "spawn_person"})
+            seen = False
+            for _ in range(60):
+                time.sleep(1)
+                if int(STATE.get("persons") or 0) > 0:
+                    seen = True
+                    break
+            step(T("Person walks past"), seen, "" if seen else T("no person detected within 60 s"))
+    except Exception as e:
+        step(T("Test"), False, str(e)[:120])
+    PROTECT["test"]["busy"] = False
+    ok = sum(1 for x in S if x["ok"])
+    log_event("sys", f"Protection test: {ok} of {len(S)} ok")
 
 
 # ----------------------------------------------------------------------------
@@ -19678,7 +19954,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_104.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_105.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -31532,8 +31808,8 @@ async function addIp() {
 Object.assign(I18N.de, {"Other Motion Watch devices": "Weitere Motion-Watch-Geräte",
   "Several devices around the tent or camper: see them all here and arm / disarm them together.": "Mehrere Geräte rund ums Zelt oder Wohnmobil: hier alle sehen und gemeinsam scharf / unscharf schalten.",
   "🛡 Arm all": "🛡 Alle scharf", "Disarm all": "Alle unscharf", "Add a device": "Gerät hinzufügen", "Password": "Passwort",
-  "🔍 Search in the network": "🔍 Im Netzwerk suchen", "This device": "Dieses Gerät", "armed": "scharf", "disarmed": "unscharf", "arming": "wird scharf",
-  "ALARM": "ALARM", "not reachable": "nicht erreichbar", "password wrong": "Passwort falsch", "Open": "Öffnen", "Arm": "Scharf", "Disarm": "Unscharf",
+  "🔍 Search in the network": "🔍 Im Netzwerk suchen", "This device": "Dieses Gerät", "armed": "Schutz an", "disarmed": "Schutz aus", "arming": "Schutz startet",
+  "ALARM": "ALARM", "not reachable": "nicht erreichbar", "password wrong": "Passwort falsch", "Open": "Öffnen", "Arm": "Scharf", "Disarm": "Schutz aus",
   "Remove this device from the list?": "Dieses Gerät aus der Liste entfernen?", "needs a password": "braucht ein Passwort", "Nothing found.": "Nichts gefunden.",
   "searching (about 10 s) …": "suche (ca. 10 s) …", "mains": "Netz", "battery": "Akku", "Set password": "Passwort setzen", "recording": "Aufnahme"});
 let FLSIG = "";
@@ -32668,8 +32944,9 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
     </div>
     <details class="card" open data-view="protect" data-vgroup="Panels" data-vlabel="Camping / protection" id="pr-card">
       <summary data-i18n="Camping / protection">Camping / protection</summary>
+      <div id="protect-box"></div>
       <div id="mode-box" style="margin:2px 0 12px"><div class="row" style="justify-content:space-between"><b data-i18n="Mode">Mode</b><span class="mut" id="mode-cur"></span></div>
-        <div id="mode-grid" class="mode-grid"></div><div class="mut" id="mode-info" style="margin-top:6px"></div><div id="mode-opts"></div><div class="err" id="mode-err"></div><div id="mode-tv"></div><details id="disco-more" class="more" style="margin-top:8px"><summary id="disco-sum" style="cursor:pointer;color:var(--mut,#8a96a6);font-size:14px">🪩 <span>Disco light</span></summary><div id="mode-disco"></div></details></div>
+        <div id="mode-grid" class="mode-grid"></div><div class="mut" id="mode-info" style="margin-top:6px"></div><div id="mode-opts"></div><div class="err" id="mode-err"></div><div id="mode-tv"></div><details id="btq" style="margin-top:8px"><summary id="btq-sum" style="cursor:pointer;font-size:14px">🔊 …</summary><div id="btq-box"></div></details><details id="disco-more" class="more" style="margin-top:8px"><summary id="disco-sum" style="cursor:pointer;color:var(--mut,#8a96a6);font-size:14px">🪩 <span>Disco light</span></summary><div id="mode-disco"></div></details></div>
       <div class="row"><b id="pr-state" style="font-size:18px">–</b><span class="mut" id="pr-left"></span></div>
       <button type="button" class="night-btn" id="pr-night" onclick="nightGuard()"><span data-i18n="🌙 Guard tonight">🌙 Guard tonight</span><small data-i18n="night-desc">switches on what a night needs, arms with the countdown and tells what is missing</small></button>
       <div id="night-res" hidden></div>
@@ -33004,10 +33281,10 @@ const I18N = {en: I18N_EN, de: {
   "Alarm & camping": "Alarm & Camping", "Notifications": "Benachrichtigungen", "Detection": "Erkennung", "Camera & servos": "Kamera & Servos",
   "Recordings & timelapse": "Aufnahmen & Zeitraffer", "Thermal camera": "Wärmebild", "Relays & schedule": "Relais & Zeitplan",
   "System & network": "System & Netz", "Advanced": "Erweitert",
-  "Camping / protection": "Camping / Schutz", "Armed": "Scharf", "Armed in": "Scharf in", "Disarmed": "Unscharf",
-  "🛡 Arm (countdown)": "🛡 Scharf schalten (Countdown)", "Arm now": "Sofort scharf", "Disarm": "Unscharf schalten",
+  "Camping / protection": "Camping / Schutz", "Armed": "Schutz an", "Armed in": "Schutz an in", "Disarmed": "Schutz aus",
+  "🛡 Arm (countdown)": "🛡 Schutz an (Countdown)", "Arm now": "Sofort an", "Disarm": "Schutz aus",
   "no alarms, no recordings": "keine Alarme, keine Aufnahmen", "leave the area now": "jetzt den Bereich verlassen", "alarms active": "Alarme aktiv",
-  "tap: arm / disarm": "Antippen: scharf / unscharf", "Camping profile": "Camping-Profil",
+  "tap: arm / disarm": "Antippen: Schutz an / aus", "Camping profile": "Camping-Profil",
   "cp-desc": "Eigenes WLAN an, die Kamera bleibt stehen (keine Patrouille / Verfolgung / Zeitraffer), Alarme und Aufnahmen an, scharf nach dem Countdown. Ausschalten stellt deine Einstellungen wieder her.",
   "Own Wi-Fi (hotspot)": "Eigenes WLAN (Hotspot)", "Own Wi-Fi": "Eigenes WLAN", "own Wi-Fi": "eigenes WLAN", "device": "Gerät", "devices": "Geräte",
   "switching …": "schaltet um …", "on": "an", "name": "Name", "password": "Passwort", "Clock": "Uhrzeit", "taken from the phone": "vom Handy übernommen",
@@ -34958,7 +35235,7 @@ Object.assign(I18N.de, {"iPhone shortcuts": "iPhone-Kurzbefehle",
  "sc-5": "Für jedes Stichwort eine eigene Automation: MW-WAERME, MW-LAERM, MW-SABOTAGE …",
  "Addresses back to Motion Watch (for «Get contents of URL»)": "Adressen zurück zu Motion Watch (für «Inhalte von URL abrufen»)",
  "sc-key-off": "Damit ein Kurzbefehl Motion Watch ohne Passwort steuern kann, braucht er einen eigenen Schlüssel. Er erlaubt nur diese wenigen Aktionen.",
- "Make a shortcut key": "Kurzbefehl-Schlüssel erstellen", "Arm": "Scharf schalten", "Disarm": "Unscharf schalten", "Siren off": "Sirene aus",
+ "Make a shortcut key": "Kurzbefehl-Schlüssel erstellen", "Arm": "Scharf schalten", "Disarm": "Schutz aus", "Siren off": "Sirene aus",
  "White light on": "Weisses Licht an", "White light off": "Weisses Licht aus", "Photo now": "Foto jetzt", "Status (text)": "Status (Text)",
  "Copy": "Kopieren", "copied": "kopiert", "New key": "Neuer Schlüssel", "Switch off": "Ausschalten",
  "Make a new key? The old addresses stop working.": "Neuen Schlüssel erstellen? Die alten Adressen funktionieren dann nicht mehr.",
@@ -35680,6 +35957,7 @@ function prText(s) {
   return ["🛡 " + t("Disarmed"), ""];
 }
 async function prArm(action) {
+  if (action === "disarm" && ((window.__lastState || {}).protect || {}).pin) { protectOff(); return; }   // 2.95.105: with the PIN
   const r = await post("/api/arm", {action: action});
   if (r && r.ok) toast(action === "disarm" ? t("Disarmed") : (r.left ? t("Armed in") + " " + r.left + " s" : t("Armed")));
 }
@@ -35878,7 +36156,7 @@ Object.assign(I18N.de, {"AI test with simulator pictures": "KI-Prüfung mit Simu
 Object.assign(I18N.en, {"dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. Motion Watch runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
 Object.assign(I18N.en, {"sim-pi-hint": "Runs on the Pi with simple graphics and shows on the television at the HDMI. The first time it is fetched (about 30 MB)."});
 Object.assign(I18N.de, {"Stop the 3D simulator on the Pi": "3D-Simulator auf dem Pi beenden", "3D simulator on this Pi (HDMI / TV)": "3D-Simulator auf diesem Pi (HDMI / Fernseher)", "loading": "lädt", "sim-pi-hint": "Läuft auf dem Pi mit einfacher Grafik und zeigt sich am Fernseher am HDMI. Beim ersten Mal wird er geholt (etwa 30 MB).", "only on a Raspberry Pi (64 bit)": "nur auf einem Raspberry Pi (64 Bit)"});
-Object.assign(I18N.de, {"Disco light": "Disco-Licht", "Stop": "Aus", "Start": "Los", "with the music (microphone)": "mit der Musik (Mikrofon)", "fixed tempo": "fester Takt", "needs the white light (Lights)": "braucht das weisse Licht (Licht)", "No microphone: the fixed tempo is used.": "Kein Mikrofon: dann gilt der feste Takt.", "disco-note": "Musik über die Bluetooth-Box oder ein Handy laufen lassen – das Mikrofon hört den Takt und das weisse Licht blitzt mit (höchstens 3-mal pro Sekunde; Vorsicht bei Menschen mit Epilepsie, Rücksicht auf Nachbarn). Ein Alarm geht immer vor. Endet nach 2 Stunden von selbst."});
+Object.assign(I18N.de, {"Loudspeaker": "Lautsprecher", "built-in / none": "eingebaut / keiner", "no Bluetooth": "kein Bluetooth", "Disco light": "Disco-Licht", "Stop": "Aus", "Start": "Los", "with the music (microphone)": "mit der Musik (Mikrofon)", "fixed tempo": "fester Takt", "needs the white light (Lights)": "braucht das weisse Licht (Licht)", "No microphone: the fixed tempo is used.": "Kein Mikrofon: dann gilt der feste Takt.", "disco-note": "Musik über die Bluetooth-Box oder ein Handy laufen lassen – das Mikrofon hört den Takt und das weisse Licht blitzt mit (höchstens 3-mal pro Sekunde; Vorsicht bei Menschen mit Epilepsie, Rücksicht auf Nachbarn). Ein Alarm geht immer vor. Endet nach 2 Stunden von selbst."});
 Object.assign(I18N.en, {"disco-note": "Play music on the Bluetooth box or a phone - the microphone hears the beat and the white light flashes along (at most 3 times a second; careful with people with epilepsy, think of the neighbours). An alarm always comes first. Ends by itself after 2 hours."});
 Object.assign(I18N.en, {"tv-auto": "In the campfire and gamer mode show it on the HDMI by itself (TV at the Pi). Any screen in the same network can open the link."});
 Object.assign(I18N.de, {"TV view": "TV-Anzeige", "Stop on the HDMI": "Am HDMI beenden", "Show on the HDMI": "Am HDMI zeigen", "Open the link": "Link öffnen", "Copy the link": "Link kopieren", "Link copied": "Link kopiert", "tv-auto": "Beim Lagerfeuer- und Gamer-Modus von selbst am HDMI zeigen (Fernseher am Pi). Den Link kann jeder Bildschirm im gleichen Netz öffnen.", "no browser on this device (Chromium)": "kein Browser auf diesem Gerät (Chromium)", "no desktop on the HDMI (Raspberry Pi OS with desktop needed)": "kein Desktop am HDMI (Raspberry Pi OS mit Desktop nötig)"});
@@ -35904,7 +36182,13 @@ const MD = {built: 0, until: 0, hover: null};
 function modePaint(s) {
   const M = s.mode, g = $("#mode-grid"); if (!M || !g) return;
   if (!document.getElementById("mode-css")) { const c = document.createElement("style"); c.id = "mode-css";
-    c.textContent = ".mode-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:6px}.mode-grid button{padding:8px 2px;font-size:11.5px;line-height:1.15;overflow-wrap:anywhere;hyphens:auto;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:64px}.mode-grid button .mi{font-size:22px}.mode-grid button.on{outline:3px solid var(--acc,#3b8cff);background:rgba(59,140,255,.18)}.mode-grid button.off{opacity:.45}#mode-opts .row{margin-top:6px}";
+    c.textContent = ".mode-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:6px}.mode-grid button{padding:8px 2px;font-size:11.5px;line-height:1.15;overflow-wrap:anywhere;hyphens:auto;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:64px}.mode-grid button .mi{font-size:22px}.mode-grid button.on{outline:3px solid var(--acc,#3b8cff);background:rgba(59,140,255,.18)}.mode-grid button.off{opacity:.45}#mode-opts .row{margin-top:6px}"
+      + "#protect-box{margin:2px 0 14px}.prt-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.prt-b{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;font-size:13px;font-weight:700;min-height:58px}.prt-b .ic{font-size:20px}.prt-b.on{outline:3px solid var(--acc,#3b8cff);background:rgba(59,140,255,.2)}"
+      + ".prt-what{margin-top:6px}.prt-amp{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04)}.prt-amp.green{border-left:4px solid #3fcf6b}.prt-amp.orange{border-left:4px solid #f2a33a}.prt-amp.red{border-left:4px solid #e5484d}.prt-it{margin-top:6px;gap:8px;font-size:13px}"
+      + ".prt-dev{margin-top:8px;font-size:13px}.prt-things{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.prt-th{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;max-width:92px}.prt-th.miss span{color:#ff6b6b;font-weight:700}"
+      + ".prt-img{width:84px;height:60px;border-radius:8px;background:#222 no-repeat;border:2px solid #3fcf6b}.prt-th.miss .prt-img{border-color:#e5484d}.prt-test{margin-top:8px;font-size:13px;line-height:1.6}"
+      + ".prt-wiz{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px}.prt-card{background:var(--card,#161b22);border-radius:16px;padding:18px;width:min(420px,100%);display:flex;flex-direction:column;gap:8px;animation:prtin .2s ease-out}"
+      + ".prt-opt{display:flex;align-items:center;gap:12px;padding:12px;font-size:15px;text-align:left}.prt-opt .ic{font-size:22px}.prt-opt.on{outline:2px solid var(--acc,#3b8cff)}@keyframes prtin{from{transform:scale(.95);opacity:0}to{transform:none;opacity:1}}";
     document.head.appendChild(c); }
   const all = M.list.concat([{id: "", icon: "⚙", name: "Own settings", info: M.own_info}]);
   if (MD.built !== all.length) { g.textContent = ""; MD.built = all.length;
@@ -35920,7 +36204,8 @@ function modePaint(s) {
   const sh = (MD.hover !== null && all.find(x => x.id === MD.hover)) || me;
   $("#mode-info").textContent = t(sh.info) + (M.msg ? "  ·  " + t(M.msg) : "");
   const bm = $("#b-mode"); if (bm) { bm.hidden = !cur; bm.textContent = cur ? me.icon : ""; bm.title = t("Mode") + ": " + t(me.name); bm.onclick = () => { const c = $("#pr-card"); if (c) { c.open = true; c.scrollIntoView({behavior: "smooth"}); } }; }
-  tvPaint(s.tv); discoPaint(s.disco);
+  tvPaint(s.tv); discoPaint(s.disco); btqPoll(false);
+  const bq = $("#btq"); if (bq && !bq.dataset.on) { bq.dataset.on = 1; bq.ontoggle = () => { if (bq.open) btqPoll(true); }; }
   const o = $("#mode-opts"); const key = cur + "|" + M.fire_until + "|" + M.fire_min_pct + "|" + M.gamer_watch;
   if (o.dataset.k === key) return; o.dataset.k = key; o.textContent = "";
   if (cur === "fire") {
@@ -35936,6 +36221,143 @@ function modePaint(s) {
     cb.onchange = async () => { await post("/api/mode", {mode_gamer_watch: cb.checked}); if (M.id === "gamer") { await post("/api/mode", {mode: ""}); await post("/api/mode", {mode: "gamer"}); } };
     r.append(el("span", "", "👁 " + t("Guard during the games")), cb); o.appendChild(r);
   }
+}
+// 2.95.105: «Schutz» - one level instead of many switches, the traffic light, device protection, guarded things, assistant,
+// test, PIN, escalation, presence
+const PRT = {key: "", pinFor: "", until: 0};
+function protectPaint(P) {
+  const box = $("#protect-box"); if (!box || !P) return;
+  const key = JSON.stringify([P.level, P.chosen, P.arm, P.colour, P.items, P.device, P.things, P.pin, P.presence, P.escalate.on, P.escalate.s, P.test, PRT.pinFor, LANG]);
+  if (key === PRT.key) { const c = $("#prt-left"); if (c) c.textContent = P.arm === "arming" ? t("starts in") + " " + P.left + " s" : (P.escalate.pending ? "🚨 " + t("siren in") + " " + P.escalate.pending + " s" : ""); return; }
+  PRT.key = key; box.textContent = "";
+  const head = el("div", "row"); head.style.cssText = "justify-content:space-between;align-items:center";
+  head.append(el("b", "", "🛡 " + t("Protection")), el("span", "mut", "")); head.lastChild.id = "prt-left"; box.appendChild(head);
+  const seg = el("div", "prt-seg");
+  [["off", "⚪", t("Off")], ["watch", "🟡", t("Watchful")], ["full", "🛡", t("Full protection")]].forEach(([k, ic, n]) => {
+    const b = el("button", "prt-b" + (P.level === k ? " on" : " sec"), ""); b.type = "button"; b.append(el("span", "ic", ic), el("span", "", n));
+    b.onclick = () => k === "off" ? protectOff() : protectLevel(k); seg.appendChild(b); });
+  box.appendChild(seg);
+  box.appendChild(el("div", "mut prt-what", P.level === "off" ? t("prt-off") : (P.level === "watch" ? t("prt-watch") : t("prt-full"))));
+  if (PRT.pinFor) { const r = el("div", "row"); r.style.cssText = "gap:6px;margin-top:8px"; const i = document.createElement("input"); i.type = "password"; i.inputMode = "numeric";
+    i.placeholder = "PIN"; i.style.flex = "1"; const ok = el("button", "", t("Switch off")); ok.type = "button"; const no = el("button", "sec", "✕"); no.type = "button";
+    ok.onclick = async () => { const x = await post("/api/protect", {action: "level", level: "off", pin: i.value, lang: LANG}); if (x.ok) { PRT.pinFor = ""; toast("✓ " + t("Protection off")); } else toast("⚠ " + (x.error || t("error"))); PRT.key = ""; protectPaint(x.level ? x : P); };
+    i.onkeydown = e => { if (e.key === "Enter") ok.click(); }; no.onclick = () => { PRT.pinFor = ""; PRT.key = ""; protectPaint(P); };
+    r.append(i, ok, no); box.appendChild(r); setTimeout(() => i.focus(), 50); }
+  const amp = el("div", "prt-amp " + P.colour);                // the traffic light
+  const bad = (P.items || []).filter(x => !x.minor);
+  amp.appendChild(el("div", "", (P.colour === "green" ? "🟢 " + t("All ready") : (P.colour === "red" ? "🔴 " : "🟠 ") + bad.length + " " + t("thing(s) missing"))));
+  (P.items || []).forEach(x => { const r = el("div", "row prt-it"); r.appendChild(el("span", x.minor ? "mut" : "", (x.minor ? "• " : "⚠ ") + x.text)); r.firstChild.style.flex = "1";
+    if (x.fix) { const f = el("button", "sec", t("Fix")); f.type = "button"; f.style.padding = "3px 10px"; f.onclick = () => protectFix(x.fix); r.appendChild(f); }
+    amp.appendChild(r); });
+  box.appendChild(amp);
+  box.appendChild(el("div", "mut prt-dev", "🔒 " + t("Device protection") + ": " + P.device));
+  if ((P.things || []).length) { const tg = el("div", "prt-things");
+    P.things.forEach(x => { const c = el("div", "prt-th" + (x.missing ? " miss" : "")); const im = el("div", "prt-img");
+      const [bx, by, bw, bh] = x.box; im.style.backgroundImage = "url(/refscan/file/" + x.dir + "/pos_" + String(x.pos).padStart(2, "0") + ".jpg)";
+      im.style.backgroundSize = (100 / Math.max(0.05, bw)) + "% " + (100 / Math.max(0.05, bh)) + "%";
+      im.style.backgroundPosition = (bw >= 1 ? 0 : bx / (1 - bw) * 100) + "% " + (bh >= 1 ? 0 : by / (1 - bh) * 100) + "%";
+      c.append(im, el("span", "", (x.missing ? "⚠ " : "✓ ") + x.name)); tg.appendChild(c); });
+    box.appendChild(tg); }
+  const bs = el("div", "btns"); bs.style.marginTop = "8px";
+  const as_ = el("button", "", "🧭 " + t("Protection assistant")); as_.type = "button"; as_.onclick = protectWizard;
+  const ts = el("button", "sec", P.test.busy ? "⏳ " + t("Test runs …") : "🧪 " + t("Test the protection")); ts.type = "button"; ts.disabled = P.test.busy;
+  ts.onclick = async () => { await post("/api/protect", {action: "test", lang: LANG}); PRT.key = ""; };
+  const pn = el("button", "sec", "🔐 " + (P.pin ? t("Change PIN") : t("PIN for switching off"))); pn.type = "button"; pn.onclick = () => protectPin(P.pin);
+  bs.append(as_, ts, pn); box.appendChild(bs);
+  if ((P.test.steps || []).length) { const tl = el("div", "prt-test"); P.test.steps.forEach(x => tl.appendChild(el("div", "", (x.ok === true ? "✅ " : x.ok === false ? "❌ " : "➖ ") + x.name + (x.text ? " – " + x.text : ""))));
+    box.appendChild(tl); }
+  const more = document.createElement("details"); more.className = "more"; more.style.marginTop = "6px";
+  const sm = document.createElement("summary"); sm.textContent = "⚙ " + t("More: siren delay, presence"); sm.style.cssText = "cursor:pointer;font-size:14px;color:var(--mut,#8a96a6)"; more.appendChild(sm);
+  const e1 = el("label", "row pr-sw"); const c1 = document.createElement("input"); c1.type = "checkbox"; c1.className = "sw"; c1.checked = !!P.escalate.on;
+  const sel = document.createElement("select"); [10, 20, 30, 60, 120].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + " s"; sel.appendChild(o); }); sel.value = String(P.escalate.s);
+  c1.onchange = sel.onchange = () => post("/api/protect", {action: "escalate", on: c1.checked, s: +sel.value, lang: LANG});
+  const sp1 = el("span", "", t("Siren when nobody switches off after")); e1.append(sp1, sel, c1); more.appendChild(e1);
+  const e2 = el("label", "row pr-sw"); const c2 = document.createElement("input"); c2.type = "checkbox"; c2.className = "sw"; c2.checked = !!P.presence.on;
+  c2.onchange = () => post("/api/protect", {action: "presence", on: c2.checked, lang: LANG});
+  const sp2 = el("span", "", t("Automatic: on when my phone is gone, off when it is back") + (P.presence.devices ? (P.presence.here === true ? " · 🏠 " + t("here") : P.presence.here === false ? " · 🚶 " + t("away") : "") : " · " + t("choose the phone under Tools → Network")));
+  e2.append(sp2, c2); more.appendChild(e2); box.appendChild(more);
+}
+async function protectLevel(k, answers) {
+  const r = await post("/api/protect", {action: "level", level: k, answers: answers || null, lang: LANG});
+  if (r.ok) toast("✓ " + (k === "full" ? t("Full protection") : t("Watchful")) + (r.arm === "arming" ? " – " + t("leave the area now") : "")); else toast("⚠ " + (r.error || t("error")));
+  PRT.key = ""; if (r.level) protectPaint(r);
+}
+function protectOff() {
+  const P = (window.__lastState || {}).protect || {};
+  if (P.pin) { PRT.pinFor = "off"; PRT.key = ""; protectPaint(P); return; }
+  protectLevel("off");
+}
+function protectFix(f) {
+  if (f === "push") post("/api/protect", {action: "fix_push", lang: LANG}).then(r => { PRT.key = ""; if (r.level) protectPaint(r); });
+  else if (f === "refscan") location.href = "/tools#refscan";
+  else if (f === "speaker") { const b = $("#btq"); if (b) { b.open = true; b.scrollIntoView({behavior: "smooth", block: "center"}); } }
+  else if (f === "pin") protectPin(false);
+  else if (f === "backup") { const q = $("#set-search") || document.querySelector("input[type=search]"); if (q) { q.value = "Backup"; q.dispatchEvent(new Event("input")); q.scrollIntoView({behavior: "smooth"}); } }
+}
+async function protectPin(has) {
+  const old = has ? prompt(t("Current PIN")) : ""; if (has && old === null) return;
+  const nw = prompt(t("New PIN (4 to 8 digits, empty = no PIN)")); if (nw === null) return;
+  const r = await post("/api/protect", {action: "pin", new: nw, old: old, lang: LANG});
+  toast(r.ok ? "✓ " + (nw ? t("PIN saved") : t("PIN removed")) : "⚠ " + (r.error || t("error"))); PRT.key = "";
+}
+function protectWizard() {                       // three questions, then everything is set
+  const A = {what: "place", when: "now", react: "push"};
+  const Q = [["what", t("What shall be protected?"), [["place", "⛺", t("The place / tent")], ["things", "🚲", t("Things like the bike")], ["device", "📷", t("The device itself")], ["all", "🛡", t("Everything")]]],
+    ["when", t("When?"), [["now", "▶", t("Now")], ["night", "🌙", t("Tonight")], ["away", "🚶", t("While I am away")]]],
+    ["react", t("How shall it react?"), [["push", "📱", t("Quietly: push message")], ["light", "💡", t("Light + push")], ["siren", "🚨", t("Light, push, then the siren")]]]];
+  let i = 0; const ov = el("div", "prt-wiz"); document.body.appendChild(ov);
+  const show = () => { ov.textContent = ""; const c = el("div", "prt-card"); ov.appendChild(c);
+    if (i < Q.length) { const [k, q, opts] = Q[i]; c.append(el("div", "mut", (i + 1) + " / " + Q.length), el("h3", "", q));
+      opts.forEach(([v, ic, n]) => { const b = el("button", "prt-opt" + (A[k] === v ? " on" : ""), ""); b.type = "button"; b.append(el("span", "ic", ic), el("span", "", n));
+        b.onclick = () => { A[k] = v; i++; show(); }; c.appendChild(b); });
+    } else { const lv = A.react === "siren" || A.what === "all" ? "full" : "watch";
+      c.append(el("h3", "", t("Ready")), el("p", "", (lv === "full" ? "🛡 " + t("Full protection") : "🟡 " + t("Watchful")) + " · " + t(A.when === "night" ? "Tonight" : A.when === "away" ? "While I am away" : "Now")));
+      const go = el("button", "", "🛡 " + t("Switch on the protection")); go.type = "button"; go.style.width = "100%";
+      go.onclick = () => { ov.remove(); if (A.when === "away") post("/api/protect", {action: "presence", on: true, lang: LANG});
+        protectLevel(lv, {things: A.what === "things" || A.what === "all", device: A.what === "device" || A.what === "all", when: A.when === "night" ? "night" : "now", react: A.react}); };
+      c.appendChild(go); }
+    const x = el("button", "sec", i ? "‹ " + t("Back") : t("Cancel")); x.type = "button"; x.style.marginTop = "8px"; x.onclick = () => { if (i) { i--; show(); } else ov.remove(); }; c.appendChild(x); };
+  show();
+}
+Object.assign(I18N.de, {"Protection": "Schutz", "Off": "Aus", "Watchful": "Wachsam", "Full protection": "Voller Schutz", "starts in": "startet in", "siren in": "Sirene in",
+  "prt-off": "Keine Alarme. Antippen, was geschützt werden soll – oder den Schutz-Assistenten fragen.",
+  "prt-watch": "Meldet Personen und Sabotage aufs Handy. Keine Sirene.",
+  "prt-full": "Personen, bewachte Gegenstände, Sabotage, GPS-Ortung – und die Sirene, wenn niemand ausschaltet.",
+  "Switch off": "Ausschalten", "Protection off": "Schutz aus", "All ready": "Alles bereit", "thing(s) missing": "Punkt(e) offen", "Fix": "Beheben",
+  "Device protection": "Gerät", "Protection assistant": "Schutz-Assistent", "Test runs …": "Test läuft …", "Test the protection": "Schutz testen",
+  "Change PIN": "PIN ändern", "PIN for switching off": "PIN zum Ausschalten", "More: siren delay, presence": "Mehr: Sirene, Abwesenheit",
+  "Siren when nobody switches off after": "Sirene, wenn niemand ausschaltet, nach", "Automatic: on when my phone is gone, off when it is back": "Automatisch: an, wenn mein Handy weg ist, aus, wenn es zurück ist",
+  "here": "da", "away": "weg", "choose the phone under Tools → Network": "Handy unter Werkzeuge → Netz wählen", "Current PIN": "Bisherige PIN",
+  "New PIN (4 to 8 digits, empty = no PIN)": "Neue PIN (4 bis 8 Ziffern, leer = keine PIN)", "PIN saved": "PIN gespeichert", "PIN removed": "PIN entfernt",
+  "What shall be protected?": "Was soll geschützt werden?", "The place / tent": "Der Platz / das Zelt", "Things like the bike": "Gegenstände wie das Velo",
+  "The device itself": "Das Gerät selbst", "Everything": "Alles", "When?": "Wann?", "Now": "Jetzt", "Tonight": "Heute Nacht", "While I am away": "Solange ich weg bin",
+  "How shall it react?": "Wie soll er reagieren?", "Quietly: push message": "Still: Push-Nachricht", "Light + push": "Licht + Push", "Light, push, then the siren": "Licht, Push, dann Sirene",
+  "Ready": "Bereit", "Switch on the protection": "Schutz einschalten", "Back": "Zurück", "Cancel": "Abbrechen"});
+Object.assign(I18N.en, {"prt-off": "No alarms. Tap what shall be protected - or ask the protection assistant.", "prt-watch": "Reports persons and sabotage to the phone. No siren.",
+  "prt-full": "Persons, guarded things, sabotage, GPS tracking - and the siren when nobody switches off."});
+// 2.95.105: the Bluetooth loudspeaker - small and quick to reach (under the modes): which one plays, connect / disconnect, search
+let BTQ = {t: 0, busy: false};
+async function btqPoll(force) {
+  const sum = $("#btq-sum"); if (!sum) return;
+  if (!force && Date.now() - BTQ.t < 20000) return; BTQ.t = Date.now();
+  let j; try { j = await (await fetch("/api/bt", {cache: "no-store"})).json(); } catch (e) { return; }
+  const cur = (j.devices || []).find(d => "bt:" + d.mac === j.out && d.connected);
+  sum.textContent = "🔊 " + t("Loudspeaker") + ": " + (cur ? cur.name + " ✓" : (j.available ? t("built-in / none") : t("no Bluetooth")));
+  const box = $("#btq-box"); if (!box || !$("#btq").open) return; box.textContent = "";
+  if (!j.available) { box.appendChild(el("div", "mut", t("Bluetooth is not available (sudo apt install bluez)"))); return; }
+  (j.devices || []).filter(d => d.audio || d.paired).forEach(d => {
+    const r = el("div", "row"); r.style.cssText = "gap:6px;margin-top:6px";
+    const used = "bt:" + d.mac === j.out && d.connected;
+    r.appendChild(el("span", "", (used ? "✓ " : "• ") + d.name)); r.lastChild.style.flex = "1";
+    const b = el("button", used ? "sec" : "", used ? t("Disconnect") : t("Connect")); b.type = "button"; b.style.padding = "4px 10px";
+    b.onclick = async () => { b.disabled = true; b.textContent = "…"; const x = await post("/api/bt", {action: used ? "disconnect" : "connect", mac: d.mac, lang: LANG});
+      if (!x.ok) toast("⚠ " + (x.error || t("error"))); else if (window.refreshEnums) refreshEnums(["audio_out"]); btqPoll(true); };
+    r.appendChild(b); box.appendChild(r); });
+  const sb = el("button", "sec", j.scanning ? t("Searching … put the loudspeaker into pairing mode (blue light blinking)") : "🔍 " + t("Search Bluetooth loudspeakers")); sb.type = "button";
+  sb.disabled = !!j.scanning; sb.style.cssText = "margin-top:8px;width:100%;white-space:normal";
+  sb.onclick = async () => { await post("/api/bt", {action: "scan", lang: LANG}); BTQ.t = 0; setTimeout(() => btqPoll(true), 1500); };
+  box.appendChild(sb);
+  if (j.scanning || j.busy) setTimeout(() => btqPoll(true), 1500);
 }
 function discoPaint(D) {                            // 2.95.54: the white light flashes with the music
   const b = $("#mode-disco"); if (!b || !D) return;
@@ -35995,7 +36417,7 @@ function updateProtect(s) {
   const hs = s.hotspot || {}, hc = s.hotspot_cfg || {};
   if (Date.now() > PR.campUntil) $("#pr-camp").checked = !!s.camping;
   if (!(Date.now() < (PR.ecoUntil || 0))) $("#pr-eco").checked = s.eco !== "off";
-  mwgPaint(s); simShootPaint(s); iconPick(); scPick(); modePaint(s);
+  mwgPaint(s); simShootPaint(s); iconPick(); scPick(); modePaint(s); protectPaint(s.protect);
   const TT = s.tether || {}, te = $("#pr-teth");
   if (te) te.textContent = TT.on ? (TT.ready ? "✓ " + t("connected") + " · " + TT.kind + " · " + TT.iface + " · " + t("the own Wi-Fi gets this internet too")
       : "⏳ " + t("phone found, connecting …") + " (" + TT.iface + ")")
@@ -36843,7 +37265,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li>Doppelklick aufs Bild: nur noch Video, nochmals doppelklicken: zurück.</li></ul>
 </section>
 
-<section id="alarm" data-icon="🛡"><h2>Alarm &amp; Camping</h2><p><b>Modus (ab 2.95.47):</b> ein Schalter für das ganze Gerät, oben in «Camping / Schutz» (auch im Fenster): ⛺ Camping-Wache · 🔥 Lagerfeuer-Spiele (Spielecke offen im bestehenden WLAN, die Wache schaut sparsam weiter; zur eingestellten Zeit oder bei knappem Akku zurück zur Camping-Wache) · 🎮 Gamer (nur mit Netzstrom: Powermodus, alle Spiele, Wache nach Wahl; auf Akku zurück zu den Lagerfeuer-Spielen) · 🏠 Zuhause · 🦌 Wildbeobachtung (keine Sirene, kein Licht von selbst) · 🌙 Nachtwache · 🔕 Transport. «Eigene Einstellungen» stellt alles zurück, wie es vor dem ersten Modus war.</p><p><b>📺 TV-Anzeige und Internet vom Handy (ab 2.95.51):</b> Unter dem Modus zeigt «Am HDMI zeigen» eine grosse Spielseite auf dem Fernseher am Pi (Raspberry Pi OS mit Desktop und Chromium nötig): links das Bild des Simulators oder der Kamera, rechts der Spielassistent, der QR-Code zum Mitspielen, die Zeit, die Spieler und die Rangliste. Bei Lagerfeuer und Gamer geht sie von selbst an. Den Link kann auch jeder andere Bildschirm im gleichen Netz öffnen. Ein Handy am USB-Kabel (Android «USB-Tethering», iPhone «Persönlicher Hotspot») gibt Motion Watch Internet – das eigene WLAN (Spiel-Netz) bekommt es dann auch.</p><p><b>📶 Netz-Check und 🛈 Infoseite (ab 2.95.52):</b> Werkzeuge → «Netz-Check der Mitspieler» misst bei allen Handys Reaktionszeit, Schwankung, Verluste, Download und Upload bis zu Motion Watch; Handys in der Spielecke messen von selbst, alle anderen über den QR-Code. Ist Motion Watch selbst das WLAN, kommt das Empfangssignal jedes Handys dazu, mit Tipps für schwache Verbindungen. Werkzeuge → «Infoseite für Gäste» zeigt deine Homepage von Motion Watch allen im gleichen WLAN, ohne Login und ohne Internet (QR-Code, auch auf der TV-Anzeige). Fragen aus dem Formular kommen als Push-Nachricht.</p><p><b>🖥 Simulator als Helfer (ab 2.95.53):</b> <b>KI-Rechenhilfe</b> (Werkzeuge): Läuft Motion Watch auch auf dem PC (im 3D-Simulator «Motion Watch auf diesem PC starten»), rechnet der PC die Erkennung für den Pi – der Pi findet ihn von selbst und rechnet wieder selbst, wenn der PC weg ist. <b>TV-Modus</b>: Taste T im Simulator oder «TV-Modus im 3D-Simulator» unter dem Modus – grosses Bild mit Spiel, QR-Code und Rangliste. Im Tab Simulator: <b>Aufstell-Planer</b> (wo Motion Watch hin soll, tote Winkel, Patrouille übernehmen), <b>Alarm-Rückblick in 3D</b> (ein Alarm wird nachgespielt), <b>KI-Prüfung mit Simulator-Bildern</b> (wie gut erkennt die KI bei Nacht, Regen, Nebel? mit Trainingsbildern als ZIP). Im Netz-Check: <b>Empfangs-Rundgang</b> – eine Karte, wo das WLAN gut ist.</p><p><b>📖 Almanach, 🪩 Disco-Licht, 🔒 Tunnel, 🎮 Spiele (ab 2.95.54):</b> Werkzeuge → «Überlebens-Almanach»: Tipps fürs Camping in der Schweiz zum Nachschlagen oder als Abendlektüre, offline, mit Suche, Rotlicht und Vorlesen (Adresse /almanach/, auch für Gäste). Unter dem Modus: «Disco-Licht» – das weisse Licht blitzt im Takt der Musik (Mikrofon) oder in festem Takt, höchstens 3-mal pro Sekunde, ein Alarm geht vor. Tab Simulator → «Simulator hinter einer Firewall»: Läuft der Simulator auf einem PC ohne Adminrechte, verbindet er sich mit Adresse und Code selbst zu Motion Watch. Die Spielesammlung ist in Touch-Spiele und Spiele mit Bildschirm-Tasten geteilt (Tetris, Racer, Breakout, Pong, Astray).</p>
+<section id="alarm" data-icon="🛡"><h2>Alarm &amp; Camping</h2><p><b>🛡 Schutz (ab 2.95.105):</b> Oben in «Camping / Schutz» eine Stufe statt vieler Schalter: <b>Aus</b> · <b>Wachsam</b> (Personen und Sabotage aufs Handy, keine Sirene) · <b>Voller Schutz</b> (dazu bewachte Gegenstände aus dem Referenz-Scan, GPS-Ortung und die Sirene, wenn niemand ausschaltet). Der <b>Schutz-Assistent</b> fragt drei Dinge (was, wann, wie reagieren) und stellt alles ein. Die <b>Ampel</b> zeigt, was noch fehlt, mit «Beheben». <b>PIN zum Ausschalten</b>: ohne PIN kein «Schutz aus»; 3 falsche PINs lösen einen Diebstahl-Alarm aus. <b>Schutz testen</b> prüft Kamera, Push, Lautsprecher, Referenz-Scan – mit dem Simulator auch Abdecken und eine Person. Unter «Mehr»: Sirene nach 10–120 s und «automatisch an, wenn mein Handy weg ist». Die Begriffe «scharf / unscharf» heissen jetzt «Schutz an / aus». Der Bluetooth-Lautsprecher ist unter den Modi schnell erreichbar, das Disco-Licht zugeklappt darunter.</p><p><b>Modus (ab 2.95.47):</b> ein Schalter für das ganze Gerät, oben in «Camping / Schutz» (auch im Fenster): ⛺ Camping-Wache · 🔥 Lagerfeuer-Spiele (Spielecke offen im bestehenden WLAN, die Wache schaut sparsam weiter; zur eingestellten Zeit oder bei knappem Akku zurück zur Camping-Wache) · 🎮 Gamer (nur mit Netzstrom: Powermodus, alle Spiele, Wache nach Wahl; auf Akku zurück zu den Lagerfeuer-Spielen) · 🏠 Zuhause · 🦌 Wildbeobachtung (keine Sirene, kein Licht von selbst) · 🌙 Nachtwache · 🔕 Transport. «Eigene Einstellungen» stellt alles zurück, wie es vor dem ersten Modus war.</p><p><b>📺 TV-Anzeige und Internet vom Handy (ab 2.95.51):</b> Unter dem Modus zeigt «Am HDMI zeigen» eine grosse Spielseite auf dem Fernseher am Pi (Raspberry Pi OS mit Desktop und Chromium nötig): links das Bild des Simulators oder der Kamera, rechts der Spielassistent, der QR-Code zum Mitspielen, die Zeit, die Spieler und die Rangliste. Bei Lagerfeuer und Gamer geht sie von selbst an. Den Link kann auch jeder andere Bildschirm im gleichen Netz öffnen. Ein Handy am USB-Kabel (Android «USB-Tethering», iPhone «Persönlicher Hotspot») gibt Motion Watch Internet – das eigene WLAN (Spiel-Netz) bekommt es dann auch.</p><p><b>📶 Netz-Check und 🛈 Infoseite (ab 2.95.52):</b> Werkzeuge → «Netz-Check der Mitspieler» misst bei allen Handys Reaktionszeit, Schwankung, Verluste, Download und Upload bis zu Motion Watch; Handys in der Spielecke messen von selbst, alle anderen über den QR-Code. Ist Motion Watch selbst das WLAN, kommt das Empfangssignal jedes Handys dazu, mit Tipps für schwache Verbindungen. Werkzeuge → «Infoseite für Gäste» zeigt deine Homepage von Motion Watch allen im gleichen WLAN, ohne Login und ohne Internet (QR-Code, auch auf der TV-Anzeige). Fragen aus dem Formular kommen als Push-Nachricht.</p><p><b>🖥 Simulator als Helfer (ab 2.95.53):</b> <b>KI-Rechenhilfe</b> (Werkzeuge): Läuft Motion Watch auch auf dem PC (im 3D-Simulator «Motion Watch auf diesem PC starten»), rechnet der PC die Erkennung für den Pi – der Pi findet ihn von selbst und rechnet wieder selbst, wenn der PC weg ist. <b>TV-Modus</b>: Taste T im Simulator oder «TV-Modus im 3D-Simulator» unter dem Modus – grosses Bild mit Spiel, QR-Code und Rangliste. Im Tab Simulator: <b>Aufstell-Planer</b> (wo Motion Watch hin soll, tote Winkel, Patrouille übernehmen), <b>Alarm-Rückblick in 3D</b> (ein Alarm wird nachgespielt), <b>KI-Prüfung mit Simulator-Bildern</b> (wie gut erkennt die KI bei Nacht, Regen, Nebel? mit Trainingsbildern als ZIP). Im Netz-Check: <b>Empfangs-Rundgang</b> – eine Karte, wo das WLAN gut ist.</p><p><b>📖 Almanach, 🪩 Disco-Licht, 🔒 Tunnel, 🎮 Spiele (ab 2.95.54):</b> Werkzeuge → «Überlebens-Almanach»: Tipps fürs Camping in der Schweiz zum Nachschlagen oder als Abendlektüre, offline, mit Suche, Rotlicht und Vorlesen (Adresse /almanach/, auch für Gäste). Unter dem Modus: «Disco-Licht» – das weisse Licht blitzt im Takt der Musik (Mikrofon) oder in festem Takt, höchstens 3-mal pro Sekunde, ein Alarm geht vor. Tab Simulator → «Simulator hinter einer Firewall»: Läuft der Simulator auf einem PC ohne Adminrechte, verbindet er sich mit Adresse und Code selbst zu Motion Watch. Die Spielesammlung ist in Touch-Spiele und Spiele mit Bildschirm-Tasten geteilt (Tetris, Racer, Breakout, Pong, Astray).</p>
 <ul><li><b>Scharf / Unscharf:</b> nur scharf gibt es Alarme, Push-Nachrichten, Sirene und Aufnahmen. Der Countdown (einstellbar) gibt dir Zeit wegzugehen. «Sofort scharf» überspringt ihn.</li>
 <li><b>Camping-Profil:</b> ein Schalter für alles Nötige: eigenes WLAN an, Kamera bleibt stehen (keine Patrouille/Verfolgung/Zeitraffer), Alarme, Aufnahmen und Stromsparen an, nach dem Countdown scharf. Ausschalten stellt deine vorherigen Einstellungen wieder her.</li>
 <li><b>Eigenes WLAN (Hotspot):</b> der Pi macht sein eigenes WLAN – funktioniert ohne Handynetz. Name und Passwort unter <i>Schutz &amp; Netzwerk</i>.</li>
@@ -37054,7 +37476,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li>Double-click the picture: video only; double-click again: back.</li></ul>
 </section>
 
-<section id="alarm" data-icon="🛡"><h2>Alarm &amp; camping</h2><p><b>Mode (from 2.95.47):</b> one switch for the whole device, at the top of «Camping / protection» (also in the window): ⛺ camping guard · 🔥 campfire games (game corner open, the guard watches on sparingly; back to the camping guard at the set time or when the battery gets low) · 🎮 gamer (only with mains power: power mode, all games, guard if you want; on battery back to the campfire games) · 🏠 home · 🦌 wildlife watching (no siren, no light by itself) · 🌙 night guard · 🔕 transport. «Own settings» brings everything back as it was before the first mode.</p><p><b>📺 TV view and internet from the phone (from 2.95.51):</b> Below the mode, «Show on the HDMI» puts a big game page on the TV at the Pi (Raspberry Pi OS with desktop and Chromium needed): left the picture of the simulator or the camera, right the game wizard, the QR code to join, the time, the players and the ranking. In the campfire and gamer mode it starts by itself. Any other screen in the same network can open the link too. A phone on the USB cable (Android «USB tethering», iPhone «Personal Hotspot») gives Motion Watch internet – the own Wi-Fi (game network) gets it too.</p><p><b>📶 Network check and 🛈 product page (from 2.95.52):</b> Tools → «Network check of the players» measures reaction time, jitter, losses, download and upload from every phone to Motion Watch; phones in the game corner measure by themselves, all others with the QR code. When Motion Watch is the Wi-Fi itself, the signal of every phone is added, with tips for weak connections. Tools → «Product page for guests» shows your Motion Watch homepage to everybody in the same Wi-Fi, without login and without internet (QR code, also on the TV view). Questions from the form arrive as a push message.</p><p><b>🖥 The simulator as helper (from 2.95.53):</b> <b>AI helper</b> (Tools): when Motion Watch also runs on the PC (in the 3D simulator «Start Motion Watch on this PC»), the PC does the detection for the Pi - the Pi finds it by itself and does it again itself when the PC is gone. <b>TV mode</b>: key T in the simulator or «TV mode in the 3D simulator» below the mode. In the tab Simulator: <b>Aufstell-Planer</b> (where Motion Watch should stand, blind spots, take over the patrol), <b>alarm replay in 3D</b>, <b>AI test with simulator pictures</b> (how well does the AI see at night, in rain, fog? with training pictures as ZIP). In the network check: <b>walk round</b> - a map where the Wi-Fi is good.</p><p><b>📖 Almanac, 🪩 disco light, 🔒 tunnel, 🎮 games (from 2.95.54):</b> Tools → «Survival almanac» (German): camping tips to look up or read in the evening, offline, with search, red light and reading aloud (/almanach/, also for guests). Below the mode: «Disco light» - the white light flashes with the music (microphone) or a fixed tempo, at most 3 times a second, an alarm comes first. Tab Simulator → «Simulator behind a firewall»: a simulator on a PC without admin rights connects to Motion Watch itself with address and code. The game collection is split into touch games and games with on-screen buttons.</p>
+<section id="alarm" data-icon="🛡"><h2>Alarm &amp; camping</h2><p><b>🛡 Protection (from 2.95.105):</b> at the top of «Camping / protection» one level instead of many switches: <b>Off</b> · <b>Watchful</b> (persons and sabotage to the phone, no siren) · <b>Full protection</b> (plus guarded things of the reference scan, GPS tracking and the siren when nobody switches off). The <b>protection assistant</b> asks three things (what, when, how to react) and sets everything. The <b>traffic light</b> shows what is missing, with «Fix». <b>PIN for switching off</b>: no «off» without the PIN; 3 wrong PINs raise a theft alarm. <b>Test the protection</b> checks camera, push, loudspeaker, reference scan – with the simulator also covering the camera and a person. Under «More»: siren after 10–120 s and «on automatically when my phone is gone». The Bluetooth loudspeaker is quick to reach below the modes, the disco light folded away below it.</p><p><b>Mode (from 2.95.47):</b> one switch for the whole device, at the top of «Camping / protection» (also in the window): ⛺ camping guard · 🔥 campfire games (game corner open, the guard watches on sparingly; back to the camping guard at the set time or when the battery gets low) · 🎮 gamer (only with mains power: power mode, all games, guard if you want; on battery back to the campfire games) · 🏠 home · 🦌 wildlife watching (no siren, no light by itself) · 🌙 night guard · 🔕 transport. «Own settings» brings everything back as it was before the first mode.</p><p><b>📺 TV view and internet from the phone (from 2.95.51):</b> Below the mode, «Show on the HDMI» puts a big game page on the TV at the Pi (Raspberry Pi OS with desktop and Chromium needed): left the picture of the simulator or the camera, right the game wizard, the QR code to join, the time, the players and the ranking. In the campfire and gamer mode it starts by itself. Any other screen in the same network can open the link too. A phone on the USB cable (Android «USB tethering», iPhone «Personal Hotspot») gives Motion Watch internet – the own Wi-Fi (game network) gets it too.</p><p><b>📶 Network check and 🛈 product page (from 2.95.52):</b> Tools → «Network check of the players» measures reaction time, jitter, losses, download and upload from every phone to Motion Watch; phones in the game corner measure by themselves, all others with the QR code. When Motion Watch is the Wi-Fi itself, the signal of every phone is added, with tips for weak connections. Tools → «Product page for guests» shows your Motion Watch homepage to everybody in the same Wi-Fi, without login and without internet (QR code, also on the TV view). Questions from the form arrive as a push message.</p><p><b>🖥 The simulator as helper (from 2.95.53):</b> <b>AI helper</b> (Tools): when Motion Watch also runs on the PC (in the 3D simulator «Start Motion Watch on this PC»), the PC does the detection for the Pi - the Pi finds it by itself and does it again itself when the PC is gone. <b>TV mode</b>: key T in the simulator or «TV mode in the 3D simulator» below the mode. In the tab Simulator: <b>Aufstell-Planer</b> (where Motion Watch should stand, blind spots, take over the patrol), <b>alarm replay in 3D</b>, <b>AI test with simulator pictures</b> (how well does the AI see at night, in rain, fog? with training pictures as ZIP). In the network check: <b>walk round</b> - a map where the Wi-Fi is good.</p><p><b>📖 Almanac, 🪩 disco light, 🔒 tunnel, 🎮 games (from 2.95.54):</b> Tools → «Survival almanac» (German): camping tips to look up or read in the evening, offline, with search, red light and reading aloud (/almanach/, also for guests). Below the mode: «Disco light» - the white light flashes with the music (microphone) or a fixed tempo, at most 3 times a second, an alarm comes first. Tab Simulator → «Simulator behind a firewall»: a simulator on a PC without admin rights connects to Motion Watch itself with address and code. The game collection is split into touch games and games with on-screen buttons.</p>
 <ul><li><b>Armed / disarmed:</b> only when armed there are alarms, push messages, siren and recordings. The countdown gives you time to leave; «Arm now» skips it.</li>
 <li><b>Camping profile:</b> one switch for everything: own Wi-Fi on, the camera stays where it is, alarms, recordings and power saving on, armed after the countdown. Switching it off restores your settings.</li>
 <li><b>Own Wi-Fi (hotspot):</b> the Pi makes its own Wi-Fi – works without a mobile network. Name and password under <i>Protection &amp; network</i>.</li>
@@ -39369,6 +39791,7 @@ class WebStream:
                 st["mode"] = mode_state()
                 st["tv"] = tv_state()
                 st["disco"] = disco_state()
+                st["protect"] = protect_status(lang_)          # 2.95.105
                 st["tunnel"] = tunnel_state()
                 st["sim_pi"] = simpi_state()
                 st["helper"] = helper_state()
@@ -39485,10 +39908,49 @@ class WebStream:
             elif a == "arm_now":
                 arm(0)
             elif a == "disarm":
-                disarm()
+                if CFG.get("protect_pin"):                 # 2.95.105: disarming needs the PIN
+                    ok_, err_ = protect_disarm(body().get("pin"), "web")
+                    if not ok_:
+                        return reply({"ok": False, "error": tr(err_, norm_lang(body().get("lang"))), "need_pin": True}, 403)
+                else:
+                    protect_cancel_escalation()
+                    CFG["protect_level"] = "off"
+                    disarm()
             else:
                 return reply({"ok": False, "error": "unknown action"}, 400)
             return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"]})
+
+        @app.route("/api/protect", methods=["GET", "POST"])
+        def api_protect():
+            """2.95.105: the protection level, the assistant, the PIN, «Schutz testen», escalation, presence"""
+            if request.method == "GET":
+                return reply(dict(protect_status(request.args.get("lang")), ok=True))
+            d = body(); a = str(d.get("action") or ""); lang = norm_lang(d.get("lang"))
+            ok, err = True, ""
+            if a == "level":
+                lv = str(d.get("level") or "")
+                if lv == "off" and CFG.get("protect_pin"):
+                    ok, err = protect_disarm(d.get("pin"), "web")
+                else:
+                    ok, err = protect_set(lv, "web", d.get("answers") if isinstance(d.get("answers"), dict) else None)
+            elif a == "pin":
+                ok, err = protect_pin_set(d.get("new"), d.get("old"))
+            elif a == "test":
+                ok, err = protect_test(lang)
+            elif a == "escalate":
+                CFG["escalate_on"] = bool(d.get("on", CFG.get("escalate_on")))
+                try:
+                    CFG["escalate_siren_s"] = max(0, min(600, int(d.get("s", CFG.get("escalate_siren_s", 30)))))
+                except (TypeError, ValueError):
+                    pass
+                save_settings()
+            elif a == "presence":
+                CFG["presence_auto"] = bool(d.get("on")); save_settings()
+            elif a == "fix_push":
+                CFG["notify_on"] = True; sched_user_changed("notify_on"); save_settings()
+            else:
+                ok, err = False, "unknown action"
+            return reply(dict(protect_status(lang, True), ok=ok, error=tr(err, lang) if err else None), 200 if ok else 400)
 
         @app.route("/api/hotspot", methods=["POST"])
         def api_hotspot():
@@ -40894,9 +41356,9 @@ DE.update({
     "Arming countdown (s)": "Countdown bis scharf (s)", "Own Wi-Fi: name": "Eigenes WLAN: Name",
     "Own Wi-Fi: password (8-63 characters)": "Eigenes WLAN: Passwort (8-63 Zeichen)", "warm body (thermal camera)": "warmer Körper (Wärmebild)",
     "the own Wi-Fi needs NetworkManager (Raspberry Pi OS Bookworm or newer)": "das eigene WLAN braucht NetworkManager (Raspberry Pi OS Bookworm oder neuer)",
-    "Armed": "Scharf", "Disarmed": "Unscharf", "Arm (countdown)": "Scharf (Countdown)", "Arm now": "Sofort scharf", "Disarm": "Unscharf schalten",
+    "Armed": "Schutz an", "Disarmed": "Schutz aus", "Arm (countdown)": "Schutz an (Countdown)", "Arm now": "Sofort an", "Disarm": "Schutz aus",
     "Camping profile": "Camping-Profil", "Camping ON": "Camping an", "Camping OFF": "Camping aus", "Own Wi-Fi ON": "Eigenes WLAN an",
-    "Own Wi-Fi OFF": "Eigenes WLAN aus", "Armed in": "Scharf in", "devices": "Geräte", "Clock": "Uhrzeit",
+    "Own Wi-Fi OFF": "Eigenes WLAN aus", "Armed in": "Schutz an in", "devices": "Geräte", "Clock": "Uhrzeit",
     "Saved": "Gespeichert",
     "Wi-Fi / hotspot": "WLAN / Hotspot", "Search networks": "Netze suchen", "Connect now": "Jetzt verbinden",
     "Only save (connects automatically)": "Nur speichern (verbindet automatisch)", "Forget network": "Netz vergessen",
@@ -41852,7 +42314,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.104")
+        self.root.title("Motion Watch 2.95.105")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -42142,7 +42604,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.104 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.105 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -42694,6 +43156,18 @@ class App:
         if bool(CFG["ui_simple"]) != v:
             CFG["ui_simple"] = v; save_settings(); self._simple_seen = v; self.root.after(30, self._rebuild)
 
+    def _protect(self, level):
+        """2.95.105: protection level; switching off needs the PIN if one is set"""
+        if level == "off" and CFG.get("protect_pin"):
+            from tkinter import simpledialog
+            pin = simpledialog.askstring("Motion Watch", tr("PIN for switching off"), show="*", parent=self.root)
+            if pin is None:
+                return
+            ok_, err_ = protect_disarm(pin, "window")
+        else:
+            ok_, err_ = protect_set(level, "window")
+        self._status("Protection", ("✓ " if ok_ else "⚠ ") + (tr(err_) if err_ else tr({"off": "Off", "watch": "Watchful", "full": "Full protection"}[level])))
+
     def _night(self):
         r = night_guard()
         txt = "\n".join("✓ " + x for x in r["done"])
@@ -43061,6 +43535,12 @@ class App:
         if sec == "Wi-Fi / hotspot" and not CFG["lock_on"]:
             self._build_wifi_box(sbody)
         if sec == "Camping / protection":
+            ttk.Label(sbody, text="🛡 " + tr("Protection")).pack(anchor="w", pady=(8, 2))      # 2.95.105: one level
+            pf = ttk.Frame(sbody); pf.pack(fill="x")
+            for i_, (lv_, nm_) in enumerate([("off", "Off"), ("watch", "Watchful"), ("full", "Full protection")]):
+                ttk.Button(pf, text=tr(nm_), command=lambda l_=lv_: self._protect(l_)).grid(row=0, column=i_, sticky="ew", padx=(0, 4))
+                pf.columnconfigure(i_, weight=1)
+            ttk.Label(sbody, text=tr(protect_status().get("device", "")), foreground="#8a96a6", wraplength=380).pack(anchor="w", pady=(4, 0))
             ttk.Label(sbody, text=tr("Mode") + " (" + tr("one switch for the whole device") + ")").pack(anchor="w", pady=(8, 2))
             mg = ttk.Frame(sbody); mg.pack(fill="x")
             for i_, (mid, mic, mname) in enumerate(MODES + [("", "⚙", "Own settings")]):
@@ -43074,7 +43554,7 @@ class App:
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(6, 0))
             ttk.Button(bf, text=tr("Arm (countdown)"), command=arm).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Arm now"), command=lambda: arm(0)).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf, text=tr("Disarm"), command=disarm).pack(side="left", expand=True, fill="x")
+            ttk.Button(bf, text=tr("Disarm"), command=lambda: self._protect("off")).pack(side="left", expand=True, fill="x")
             bf2 = ttk.Frame(sbody); bf2.pack(fill="x", pady=(6, 0))
             ttk.Button(bf2, text=tr("Camping ON"), command=lambda: camping_set(True)).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf2, text=tr("Camping OFF"), command=lambda: camping_set(False)).pack(side="left", expand=True, fill="x")
@@ -49163,6 +49643,81 @@ for _k, _v in _HX97.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX105 = {  # 2.95.105: the Bluetooth loudspeaker under the modes
+    'Loudspeaker': ('Lautsprecher', 'Haut-parleur', 'Altoparlante', 'Autpledader'),
+    'built-in / none': ('eingebaut / keiner', 'intégré / aucun', 'integrato / nessuno', 'integrà / nagin'),
+    'no Bluetooth': ('kein Bluetooth', 'pas de Bluetooth', 'nessun Bluetooth', 'nagin Bluetooth'),
+}
+for _k, _v in _HX105.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX105b = {  # 2.95.105: protection (135, main page, window)
+    'Protection': ('Schutz', 'Protection', 'Protezione', 'Protecziun'),
+    'Off': ('Aus', 'Arrêt', 'Spento', 'Deactivà'),
+    'Watchful': ('Wachsam', 'Vigilant', 'Vigile', 'Attent'),
+    'Full protection': ('Voller Schutz', 'Protection complète', 'Protezione completa', 'Protecziun cumpletta'),
+    'starts in': ('startet in', 'démarre dans', 'parte tra', 'cumenza en'),
+    'siren in': ('Sirene in', 'sirène dans', 'sirena tra', 'sirena en'),
+    'prt-off': ('Keine Alarme. Antippen, was geschützt werden soll – oder den Schutz-Assistenten fragen.', 'Pas d’alarme. Choisir ce qu’il faut protéger – ou demander à l’assistant.', 'Nessun allarme. Scegliere cosa proteggere – o chiedere all’assistente.', 'Nagins alarms. Tscherner tge che duai vegnir protegì – u dumandar l’assistent.'),
+    'prt-watch': ('Meldet Personen und Sabotage aufs Handy. Keine Sirene.', 'Signale personnes et sabotage sur le téléphone. Pas de sirène.', 'Segnala persone e sabotaggi sul telefono. Nessuna sirena.', 'Avisa persunas e sabotascha sin il telefonin. Nagina sirena.'),
+    'prt-full': ('Personen, bewachte Gegenstände, Sabotage, GPS-Ortung – und die Sirene, wenn niemand ausschaltet.', 'Personnes, objets surveillés, sabotage, localisation GPS – et la sirène si personne n’arrête.', 'Persone, oggetti sorvegliati, sabotaggio, localizzazione GPS – e la sirena se nessuno spegne.', 'Persunas, objects survegliads, sabotascha, localisaziun GPS – e la sirena, sche nagin na stizza.'),
+    'Switch off': ('Ausschalten', 'Arrêter', 'Spegnere', 'Stizzar'),
+    'Protection off': ('Schutz aus', 'Protection arrêtée', 'Protezione spenta', 'Protecziun deactivada'),
+    'All ready': ('Alles bereit', 'Tout est prêt', 'Tutto pronto', 'Tut pront'),
+    'thing(s) missing': ('Punkt(e) offen', 'point(s) à régler', 'punto/i da sistemare', 'punct(s) avert(s)'),
+    'Fix': ('Beheben', 'Corriger', 'Sistemare', 'Reparar'),
+    'Device protection': ('Gerät', 'Appareil', 'Dispositivo', 'Apparat'),
+    'Protection assistant': ('Schutz-Assistent', 'Assistant de protection', 'Assistente di protezione', 'Assistent da protecziun'),
+    'Test runs …': ('Test läuft …', 'Test en cours …', 'Test in corso …', 'Test en lavur …'),
+    'Test the protection': ('Schutz testen', 'Tester la protection', 'Testare la protezione', 'Testar la protecziun'),
+    'Change PIN': ('PIN ändern', 'Changer le PIN', 'Cambiare il PIN', 'Midar il PIN'),
+    'PIN for switching off': ('PIN zum Ausschalten', 'PIN pour arrêter', 'PIN per spegnere', 'PIN per stizzar'),
+    'More: siren delay, presence': ('Mehr: Sirene, Abwesenheit', 'Plus : sirène, absence', 'Altro: sirena, assenza', 'Dapli: sirena, absenza'),
+    'Siren when nobody switches off after': ('Sirene, wenn niemand ausschaltet, nach', 'Sirène si personne n’arrête après', 'Sirena se nessuno spegne dopo', 'Sirena, sche nagin na stizza, suenter'),
+    'Automatic: on when my phone is gone, off when it is back': ('Automatisch: an, wenn mein Handy weg ist, aus, wenn es zurück ist', 'Automatique : activée quand mon téléphone part, arrêtée à son retour', 'Automatico: attiva quando il mio telefono se ne va, spenta al ritorno', 'Automatic: activ, sch’il telefonin è davent, deactivà, sch’el è enavos'),
+    'here': ('da', 'ici', 'qui', 'qua'), 'away': ('weg', 'absent', 'via', 'davent'),
+    'choose the phone under Tools → Network': ('Handy unter Werkzeuge → Netz wählen', 'choisir le téléphone sous Outils → Réseau', 'scegliere il telefono in Strumenti → Rete', 'tscherner il telefonin sut Utensils → Rait'),
+    'Current PIN': ('Bisherige PIN', 'PIN actuel', 'PIN attuale', 'PIN actual'),
+    'New PIN (4 to 8 digits, empty = no PIN)': ('Neue PIN (4 bis 8 Ziffern, leer = keine PIN)', 'Nouveau PIN (4 à 8 chiffres, vide = aucun)', 'Nuovo PIN (da 4 a 8 cifre, vuoto = nessuno)', 'Nov PIN (4 fin 8 cifras, vid = nagin)'),
+    'PIN saved': ('PIN gespeichert', 'PIN enregistré', 'PIN salvato', 'PIN memorisà'), 'PIN removed': ('PIN entfernt', 'PIN supprimé', 'PIN rimosso', 'PIN allontanà'),
+    'What shall be protected?': ('Was soll geschützt werden?', 'Que faut-il protéger ?', 'Cosa va protetto?', 'Tge duai vegnir protegì?'),
+    'The place / tent': ('Der Platz / das Zelt', 'L’emplacement / la tente', 'Il posto / la tenda', 'La plazza / la tenda'),
+    'Things like the bike': ('Gegenstände wie das Velo', 'Des objets comme le vélo', 'Oggetti come la bici', 'Objects sco il velo'),
+    'The device itself': ('Das Gerät selbst', 'L’appareil lui-même', 'Il dispositivo stesso', 'L’apparat sez'),
+    'Everything': ('Alles', 'Tout', 'Tutto', 'Tut'), 'When?': ('Wann?', 'Quand ?', 'Quando?', 'Cura?'), 'Now': ('Jetzt', 'Maintenant', 'Adesso', 'Ussa'),
+    'Tonight': ('Heute Nacht', 'Cette nuit', 'Stanotte', 'Questa notg'), 'While I am away': ('Solange ich weg bin', 'Pendant mon absence', 'Mentre sono via', 'Durant che jau sun davent'),
+    'How shall it react?': ('Wie soll er reagieren?', 'Comment réagir ?', 'Come deve reagire?', 'Co duai el reagir?'),
+    'Quietly: push message': ('Still: Push-Nachricht', 'Discret : message push', 'In silenzio: messaggio push', 'Quiet: messadi push'),
+    'Light + push': ('Licht + Push', 'Lumière + push', 'Luce + push', 'Glisch + push'),
+    'Light, push, then the siren': ('Licht, Push, dann Sirene', 'Lumière, push, puis sirène', 'Luce, push, poi sirena', 'Glisch, push, lura sirena'),
+    'Ready': ('Bereit', 'Prêt', 'Pronto', 'Pront'), 'Switch on the protection': ('Schutz einschalten', 'Activer la protection', 'Attivare la protezione', 'Activar la protecziun'),
+    'Push messages are off': ('Push-Nachrichten sind aus', 'Les messages push sont désactivés', 'I messaggi push sono spenti', 'Ils messadis push èn deactivads'),
+    'No reference scan yet - guarded things cannot be checked': ('Noch kein Referenz-Scan – bewachte Gegenstände können nicht geprüft werden', 'Pas encore de scan de référence – les objets surveillés ne peuvent pas être vérifiés', 'Ancora nessuna scansione di riferimento – gli oggetti sorvegliati non possono essere controllati', 'Anc nagin scan da referenza – ils objects survegliads na pon betg vegnir controllads'),
+    'GPS has no position yet': ('GPS hat noch keine Position', 'Le GPS n’a pas encore de position', 'Il GPS non ha ancora una posizione', 'Il GPS n’ha anc nagina posiziun'),
+    'No loudspeaker for the siren': ('Kein Lautsprecher für die Sirene', 'Pas de haut-parleur pour la sirène', 'Nessun altoparlante per la sirena', 'Nagin autpledader per la sirena'),
+    'No PIN for disarming - a thief could switch it off': ('Keine PIN zum Ausschalten – ein Dieb könnte den Schutz abstellen', 'Pas de PIN pour arrêter – un voleur pourrait désactiver la protection', 'Nessun PIN per spegnere – un ladro potrebbe disattivare la protezione', 'Nagin PIN per stizzar – in lader pudess deactivar la protecziun'),
+    'Recordings are not copied away (backup off)': ('Aufnahmen werden nicht weggesichert (Sicherung aus)', 'Les enregistrements ne sont pas sauvegardés (sauvegarde désactivée)', 'Le registrazioni non vengono salvate altrove (backup spento)', 'Las registraziuns na vegnan betg segiradas (segiranza deactivada)'),
+    'sabotage check': ('Sabotage-Prüfung', 'contrôle de sabotage', 'controllo sabotaggio', 'controlla da sabotascha'), 'backup': ('Sicherung', 'sauvegarde', 'backup', 'segiranza'),
+    'Camera picture': ('Kamerabild', 'Image de la caméra', 'Immagine della telecamera', 'Maletg da la camera'), 'no recent picture': ('kein aktuelles Bild', 'pas d’image récente', 'nessuna immagine recente', 'nagin maletg actual'),
+    'Loudspeaker / siren': ('Lautsprecher / Sirene', 'Haut-parleur / sirène', 'Altoparlante / sirena', 'Autpledader / sirena'), 'no loudspeaker': ('kein Lautsprecher', 'pas de haut-parleur', 'nessun altoparlante', 'nagin autpledader'),
+    'Reference scan': ('Referenz-Scan', 'Scan de référence', 'Scansione di riferimento', 'Scan da referenza'),
+    '{n} guarded things': ('{n} bewachte Gegenstände', '{n} objets surveillés', '{n} oggetti sorvegliati', '{n} objects survegliads'), 'not yet': ('noch nicht', 'pas encore', 'non ancora', 'anc betg'),
+    'Sabotage and person': ('Sabotage und Person', 'Sabotage et personne', 'Sabotaggio e persona', 'Sabotascha e persuna'),
+    'only automatic with the simulator - test by hand: cover the camera, walk past': ('nur mit dem Simulator automatisch – von Hand testen: Kamera abdecken, vorbeigehen', 'automatique seulement avec le simulateur – tester à la main : couvrir la caméra, passer devant', 'automatico solo con il simulatore – testare a mano: coprire la telecamera, passare davanti', 'mo cun il simulatur automatic – testar a maun: cuvrir la camera, passar speravia'),
+    'Sabotage (camera covered)': ('Sabotage (Kamera abgedeckt)', 'Sabotage (caméra couverte)', 'Sabotaggio (telecamera coperta)', 'Sabotascha (camera cuverta)'),
+    'not noticed within 25 s': ('nicht bemerkt innert 25 s', 'non remarqué en 25 s', 'non notato entro 25 s', 'betg remartgà entaifer 25 s'),
+    'Person walks past': ('Person geht vorbei', 'Une personne passe', 'Una persona passa', 'Ina persuna passa'),
+    'no person detected within 60 s': ('keine Person erkannt innert 60 s', 'aucune personne détectée en 60 s', 'nessuna persona rilevata entro 60 s', 'nagina persuna renconuschida entaifer 60 s'),
+    'Somebody tries to disarm with a wrong PIN': ('Jemand versucht, mit falscher PIN auszuschalten', 'Quelqu’un essaie d’arrêter avec un faux PIN', 'Qualcuno cerca di spegnere con un PIN errato', 'Insatgi emprova da stizzar cun in PIN fauss'),
+    'too many wrong PINs - try again in 10 minutes': ('zu viele falsche PINs – in 10 Minuten nochmals', 'trop de PIN erronés – réessayer dans 10 minutes', 'troppi PIN errati – riprovare tra 10 minuti', 'memia blers PINs fauss – en 10 minutas anc ina giada'),
+    'a test is already running': ('es läuft schon ein Test', 'un test est déjà en cours', 'un test è già in corso', 'in test è gia en lavur'),
+    'unknown level': ('unbekannte Stufe', 'niveau inconnu', 'livello sconosciuto', 'nivel nunenconuschent'),
+}
+for _k, _v in _HX105b.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 # ---- guide: the parts added in 2.53 - 2.65 (inserted into the existing chapters of every language) ----
 _HELP_NEW = {
  "de": {
@@ -49321,7 +49876,7 @@ DE.update({"only on a Raspberry Pi (64 bit)": "nur auf einem Raspberry Pi (64 Bi
 TRX['fr'].update({"Stop the 3D simulator on the Pi": "Arrêter le simulateur 3D sur le Pi", "3D simulator on this Pi (HDMI / TV)": "Simulateur 3D sur ce Pi (HDMI / TV)", "loading": "chargement", "sim-pi-hint": "Tourne sur le Pi avec des graphismes simples et s'affiche sur le téléviseur au HDMI. La première fois, il est téléchargé (environ 30 Mo).", "only on a Raspberry Pi (64 bit)": "seulement sur un Raspberry Pi (64 bits)"})   # 3D simulator on the Pi (2.95.51)
 TRX['it'].update({"Stop the 3D simulator on the Pi": "Ferma il simulatore 3D sul Pi", "3D simulator on this Pi (HDMI / TV)": "Simulatore 3D su questo Pi (HDMI / TV)", "loading": "caricamento", "sim-pi-hint": "Gira sul Pi con grafica semplice e si vede sul televisore all'HDMI. La prima volta viene scaricato (circa 30 MB).", "only on a Raspberry Pi (64 bit)": "solo su un Raspberry Pi (64 bit)"})   # 3D simulator on the Pi (2.95.51)
 TRX['rm'].update({"Stop the 3D simulator on the Pi": "Finir il simulatur 3D sin il Pi", "3D simulator on this Pi (HDMI / TV)": "Simulatur 3D sin quest Pi (HDMI / TV)", "loading": "chargiar", "sim-pi-hint": "Cuorra sin il Pi cun grafica simpla e sa mussa sin la televisiun al HDMI. L'emprima giada vegn el chargià (circa 30 MB).", "only on a Raspberry Pi (64 bit)": "mo sin in Raspberry Pi (64 bit)"})   # 3D simulator on the Pi (2.95.51)
-DE.update({"The game is being set up": "Das Spiel wird eingerichtet", "Join: scan the QR code with the phone (same Wi-Fi) or open": "Mitspielen: QR-Code mit dem Handy scannen (gleiches WLAN) oder öffnen", "Get ready": "Macht euch bereit", "Round running": "Runde läuft", "Round over": "Runde vorbei", "Waiting for players": "Warte auf Spieler", "Ranking of the evening": "Rangliste des Abends", "Game corner": "Spielecke", "Nothing is going on at the moment - Motion Watch keeps watch.": "Gerade ist nichts los – Motion Watch hält Wache.", "Simulator": "Simulator", "Camera": "Kamera", "Game in the 3D simulator": "Spiel im 3D-Simulator", "Armed": "Scharf", "Arming …": "Wird scharf …", "Not armed": "Nicht scharf", "no browser on this device (Chromium)": "kein Browser auf diesem Gerät (Chromium)", "no desktop on the HDMI (Raspberry Pi OS with desktop needed)": "kein Desktop am HDMI (Raspberry Pi OS mit Desktop nötig)"})   # TV view (2.95.51)
+DE.update({"The game is being set up": "Das Spiel wird eingerichtet", "Join: scan the QR code with the phone (same Wi-Fi) or open": "Mitspielen: QR-Code mit dem Handy scannen (gleiches WLAN) oder öffnen", "Get ready": "Macht euch bereit", "Round running": "Runde läuft", "Round over": "Runde vorbei", "Waiting for players": "Warte auf Spieler", "Ranking of the evening": "Rangliste des Abends", "Game corner": "Spielecke", "Nothing is going on at the moment - Motion Watch keeps watch.": "Gerade ist nichts los – Motion Watch hält Wache.", "Simulator": "Simulator", "Camera": "Kamera", "Game in the 3D simulator": "Spiel im 3D-Simulator", "Armed": "Schutz an", "Arming …": "Wird scharf …", "Not armed": "Nicht scharf", "no browser on this device (Chromium)": "kein Browser auf diesem Gerät (Chromium)", "no desktop on the HDMI (Raspberry Pi OS with desktop needed)": "kein Desktop am HDMI (Raspberry Pi OS mit Desktop nötig)"})   # TV view (2.95.51)
 TRX['fr'].update({"TV view": "Affichage TV", "Stop on the HDMI": "Arrêter sur le HDMI", "Show on the HDMI": "Afficher sur le HDMI", "Open the link": "Ouvrir le lien", "Copy the link": "Copier le lien", "Link copied": "Lien copié", "tv-auto": "En mode feu de camp et gamer, afficher tout seul sur le HDMI (téléviseur au Pi). Tout écran du même réseau peut ouvrir le lien.", "The game is being set up": "Le jeu est en préparation", "Join: scan the QR code with the phone (same Wi-Fi) or open": "Participer : scanner le code QR avec le portable (même Wi-Fi) ou ouvrir", "Get ready": "Préparez-vous", "Round running": "Manche en cours", "Round over": "Manche terminée", "Waiting for players": "En attente de joueurs", "Ranking of the evening": "Classement de la soirée", "Game corner": "Coin jeux", "Nothing is going on at the moment - Motion Watch keeps watch.": "Rien ne se passe – Motion Watch veille.", "Camera": "Caméra", "Game in the 3D simulator": "Jeu dans le simulateur 3D", "no browser on this device (Chromium)": "pas de navigateur sur cet appareil (Chromium)", "no desktop on the HDMI (Raspberry Pi OS with desktop needed)": "pas de bureau sur le HDMI (Raspberry Pi OS avec bureau requis)"})   # TV view (2.95.51)
 TRX['it'].update({"TV view": "Vista TV", "Stop on the HDMI": "Ferma sull'HDMI", "Show on the HDMI": "Mostra sull'HDMI", "Open the link": "Apri il link", "Copy the link": "Copia il link", "Link copied": "Link copiato", "tv-auto": "In modalità falò e gamer mostrare da solo sull'HDMI (televisore al Pi). Ogni schermo nella stessa rete può aprire il link.", "The game is being set up": "Il gioco viene preparato", "Join: scan the QR code with the phone (same Wi-Fi) or open": "Partecipare: scansionare il codice QR con il telefono (stesso Wi-Fi) o aprire", "Get ready": "Preparatevi", "Round running": "Turno in corso", "Round over": "Turno finito", "Waiting for players": "In attesa di giocatori", "Ranking of the evening": "Classifica della serata", "Game corner": "Angolo giochi", "Nothing is going on at the moment - Motion Watch keeps watch.": "Non succede niente – Motion Watch fa la guardia.", "Camera": "Camera", "Game in the 3D simulator": "Gioco nel simulatore 3D", "no browser on this device (Chromium)": "nessun browser su questo dispositivo (Chromium)", "no desktop on the HDMI (Raspberry Pi OS with desktop needed)": "nessun desktop sull'HDMI (serve Raspberry Pi OS con desktop)"})   # TV view (2.95.51)
 TRX['rm'].update({"TV view": "Vista TV", "Stop on the HDMI": "Finir sin il HDMI", "Show on the HDMI": "Mussar sin il HDMI", "Open the link": "Avrir la colliaziun", "Copy the link": "Copiar la colliaziun", "Link copied": "Colliaziun copiada", "tv-auto": "En il modus fieu da champ e gamer mussar sez sin il HDMI (televisiun al Pi). Mintga visur en la medema rait po avrir la colliaziun.", "The game is being set up": "Il gieu vegn preparà", "Join: scan the QR code with the phone (same Wi-Fi) or open": "Giugar cun: scannar il code QR cun il telefonin (medem WLAN) u avrir", "Get ready": "Pinai vus", "Round running": "Runda en curs", "Round over": "Runda finida", "Waiting for players": "Spetgar giugaders", "Ranking of the evening": "Ranglista da la saira", "Game corner": "Chantun da gieus", "Nothing is going on at the moment - Motion Watch keeps watch.": "Ussa na capita nagut – Motion Watch fa la guardia.", "Camera": "Camera", "Game in the 3D simulator": "Gieu en il simulatur 3D"})   # TV view (2.95.51)
