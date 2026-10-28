@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 22:14",
+ "generated": "2026-10-28 22:16",
  "versions": [
   {
-   "version": "2.96.9",
-   "file": "webcam_bewegung_2_96_9.py",
+   "version": "2.96.10",
+   "file": "webcam_bewegung_2_96_10.py",
    "url": "",
-   "sha256": "c1c0b887d6958e0cf50ea7d4b8fb41a3032333eb0134ebe6c5dd058eb4c16b33",
-   "date": "2026-10-28 22:14",
-   "notes": "Reiter Simulator: die Zentrale steht jetzt unter dem Livebild; Schiessen-Knopf im Livebild: ausgeschaltet nur noch ein kleiner runder Knopf am Rand und nur, solange das Livebild sichtbar ist; passt zum Simulator 3D-3.86 (aufgeräumte Menüs, Inventar mit allen 80 Dingen der KI)",
-   "sig": "2c9e38a474d69761f70a0a31b9569a229e61610b685113a9598684f2e788b3ba03c03f7a6d15717ad9d942e687b4d7d1da51dd83000e2bc9b00768636c8b5004"
+   "sha256": "a2d895dd750a27da2f6175db0037f371e9a94f282623f30199780671430cc02a",
+   "date": "2026-10-28 22:16",
+   "notes": "Einstellungen aus der Simulation: Schwenken / Neigen werden nie mehr gefragt (nur zurückgestellt); bei jeder Einstellung «🔕 nie fragen» – sie wird künftig ausgelassen (die echte bleibt), «wieder fragen» setzt das zurück",
+   "sig": "4744b59ccf20affbb91a70ac332cabfec7d48213497ef80757e12bc83266e0cf6c16b99e7f37e8d36789cb358d820a0b5b8d3e5a66f167cc0a257da1f8f64e02"
   },
   {
    "version": "2.95.105",

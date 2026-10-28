@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_9.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_10.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.96.10: Einstellungen aus der Simulation: Schwenken / Neigen werden nie mehr gefragt (nur zurückgestellt); bei jeder
+    Einstellung «🔕 nie fragen» – sie wird künftig ausgelassen (die echte bleibt), «wieder fragen» setzt das zurück
   * 2.96.9: Reiter Simulator: die Zentrale steht jetzt unter dem Livebild; Schiessen-Knopf im Livebild: ausgeschaltet nur noch
     ein kleiner runder Knopf am Rand und nur, solange das Livebild sichtbar ist; passt zum Simulator 3D-3.86 (aufgeräumte Menüs,
     Inventar mit allen 80 Dingen der KI)
@@ -830,10 +832,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_96_9.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_96_10.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_96_9.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_96_9.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_96_10.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_96_10.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -850,7 +852,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.96.9"
+APP_VERSION = "2.96.10"
 
 
 def default_data_dir():
@@ -1174,7 +1176,7 @@ CFG = {
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
@@ -20021,7 +20023,8 @@ def sim_status():
 # of the last simulation); switching back restores the real ones and asks which changes of the simulation to take over.
 SIMPROF = {"q": None, "start": None}                               # the open question: {"t", "changes": [{key, label, real, sim}]}
 _SIMPROF_SKIP_KEYS = {"source", "thermal_source"}          # 2.95.93: switched by the simulation itself (sim_set), never asked
-_SIMPROF_AUTO_KEYS = {"min_area", "sensitivity", "speed_consistency", "walk_frames"}   # the auto-tuner sets them: kept apart, not asked
+_SIMPROF_AUTO_KEYS = {"min_area", "sensitivity", "speed_consistency", "walk_frames",   # the auto-tuner sets them: kept apart, not asked
+                      "pan", "tilt"}                        # 2.96.10: where the head looks - restored, never asked
 _SIMPROF_SKIP_SECTIONS = {"Simulator", "Updates", "Wi-Fi / hotspot", "Setup", "Web stream", "Guest access", "MQTT / Home Assistant", "Backup", "SMS (LTE stick)"}
 
 
@@ -20090,12 +20093,22 @@ def simprof_off():
     for k, label in keys.items():
         if k in real and real[k] != simv[k]:
             # 2.95.93: asked only when changed during this simulation (not by the auto-tuner, not already at its start)
-            if k not in _SIMPROF_AUTO_KEYS and (k not in start or start[k] != simv[k]):
+            if k not in _SIMPROF_AUTO_KEYS and k not in (CFG.get("simprof_ignore") or []) and (k not in start or start[k] != simv[k]):
                 ch.append({"key": k, "label": label, "real": real[k], "sim": simv[k]})
             CFG[k] = real[k]
     SIMPROF["q"] = {"t": time.time(), "changes": ch[:80]} if ch else None
     if ch:
         log_event("sys", f"Simulation off: {len(ch)} settings of the simulation not taken over yet (question on the page)")
+
+
+def simprof_ignore(keys, reset=False):
+    """2.96.10: settings the question leaves out from now on (the real value always comes back)"""
+    cur = [] if reset else list(CFG.get("simprof_ignore") or [])
+    for k in keys:
+        if isinstance(k, str) and k in CFG and k not in cur:
+            cur.append(k)
+    CFG["simprof_ignore"] = cur[:200]
+    save_settings()
 
 
 def simprof_answer(take):
@@ -20119,7 +20132,7 @@ def simprof_state(lang=None):
     if not q:
         return None
     lg = lang or CFG.get("lang", "de")
-    return {"t": q["t"], "changes": [dict(c, label=tr(c["label"], lg)) for c in q["changes"]]}
+    return {"t": q["t"], "changes": [dict(c, label=tr(c["label"], lg)) for c in q["changes"]], "ignored": len(CFG.get("simprof_ignore") or [])}
 
 
 def sim_set(on, who="web"):
@@ -21662,7 +21675,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_9.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_10.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -32927,7 +32940,8 @@ HEADER_JS = r"""
 (function simProfAsk() {
   if (window._spa) return; window._spa = true;
   const T = {de: {"Settings from the simulation": "Einstellungen aus der Simulation", "During the simulation these settings were changed. MoveEye now uses the real settings again. Take over changes for the real camera?": "Während der Simulation wurden diese Einstellungen geändert. MoveEye arbeitet jetzt wieder mit den echten Einstellungen. Änderungen für die echte Kamera übernehmen?",
-      "Take over the selected": "Ausgewählte übernehmen", "Keep the real settings": "Echte Einstellungen behalten", "real": "echt", "simulation": "Simulation", "All": "Alle", "on": "ein", "off": "aus", "taken over": "übernommen"}};
+      "Take over the selected": "Ausgewählte übernehmen", "Keep the real settings": "Echte Einstellungen behalten", "real": "echt", "simulation": "Simulation", "All": "Alle", "on": "ein", "off": "aus", "taken over": "übernommen",
+      "never ask": "nie fragen", "never asked again": "wird nie mehr gefragt", "settings are never asked": "Einstellungen werden nie gefragt", "ask again": "wieder fragen"}};
   const L = () => { try { return (typeof LANG !== "undefined" && LANG) || "de"; } catch (e) { return "de"; } };
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : ((T[L()] || {})[k] || k);
   const fmt = v => v === true ? tt("on") : v === false ? tt("off") : (Array.isArray(v) || (v && typeof v === "object")) ? "…" : String(v).slice(0, 40);
@@ -32943,19 +32957,27 @@ HEADER_JS = r"""
     const list = document.createElement("div"); list.style.cssText = "overflow:auto;padding:0 16px;flex:1";
     const all = document.createElement("label"); all.style.cssText = "display:flex;gap:8px;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid var(--line,#1f2b3a)";
     const ca = document.createElement("input"); ca.type = "checkbox"; ca.checked = true; all.append(ca, document.createTextNode(tt("All") + " (" + q.changes.length + ")")); list.appendChild(all);
-    const boxes = [];
+    const boxes = [], nev = {};
     q.changes.forEach(c => { const r = document.createElement("label"); r.style.cssText = "display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line,#1f2b3a);font-size:14px";
       const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = true; cb.value = c.key; cb.style.marginTop = "3px"; boxes.push(cb);
       const tx = document.createElement("div"); tx.style.flex = "1";
       const n = document.createElement("div"); n.textContent = c.label;
       const v = document.createElement("div"); v.style.cssText = "font-size:12px;color:var(--mut,#8b9bb0)"; v.textContent = tt("real") + ": " + fmt(c.real) + "  →  " + tt("simulation") + ": " + fmt(c.sim);
-      tx.append(n, v); r.append(cb, tx); list.appendChild(r); });
+      const nv = document.createElement("button"); nv.type = "button"; nv.className = "sec"; nv.textContent = "🔕 " + tt("never ask");      // 2.96.10
+      nv.style.cssText = "font-size:12px;padding:4px 8px;min-height:0;align-self:center;white-space:nowrap";
+      nv.onclick = e => { e.preventDefault(); const on = !nv.classList.contains("on"); nv.classList.toggle("on", on); nv.style.borderColor = on ? "#f59a4a" : "";
+        nv.textContent = (on ? "✓ " + tt("never asked again") : "🔕 " + tt("never ask")); cb.checked = !on && cb.checked; cb.disabled = on; nev[c.key] = on; };
+      tx.append(n, v); r.append(cb, tx, nv); list.appendChild(r); });
+    if (q.ignored) { const ig = document.createElement("div"); ig.style.cssText = "font-size:12px;color:var(--mut,#8b9bb0);padding:8px 0";
+      ig.textContent = q.ignored + " " + tt("settings are never asked") + " · "; const a = document.createElement("a"); a.href = "#"; a.textContent = tt("ask again");
+      a.onclick = async e => { e.preventDefault(); await fetch("/api/simprofile", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({reset_ignore: true})}); ig.remove(); };
+      ig.appendChild(a); list.appendChild(ig); }
     ca.onchange = () => boxes.forEach(x => x.checked = ca.checked);
     const bt = document.createElement("div"); bt.style.cssText = "display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line,#1f2b3a);flex-wrap:wrap";
     const ok = document.createElement("button"); ok.type = "button"; ok.textContent = tt("Take over the selected"); ok.style.flex = "1";
     const no = document.createElement("button"); no.type = "button"; no.className = "sec"; no.textContent = tt("Keep the real settings"); no.style.flex = "1";
     const send = async take => { ok.disabled = no.disabled = true;
-      try { const r = await (await fetch("/api/simprofile", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({take: take})})).json();
+      try { const r = await (await fetch("/api/simprofile", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({take: take, ignore: Object.keys(nev).filter(k => nev[k])})})).json();
         if (take.length && typeof toast === "function") toast("✓ " + (r.taken || 0) + " " + tt("taken over")); } catch (e) {}
       ov.remove(); };
     ok.onclick = () => send(boxes.filter(x => x.checked).map(x => x.value)); no.onclick = () => send([]);
@@ -42197,6 +42219,10 @@ class WebStream:
             lang = norm_lang(request.args.get("lang") or CFG["lang"])
             if request.method == "POST":
                 d = body()
+                if d.get("ignore") or d.get("reset_ignore"):          # 2.96.10: «never ask again» for some settings
+                    simprof_ignore([str(k) for k in (d.get("ignore") or [])][:200], bool(d.get("reset_ignore")))
+                    if "take" not in d:
+                        return reply({"ok": True, "ignored": len(CFG.get("simprof_ignore") or [])})
                 n = simprof_answer([str(k) for k in (d.get("take") or [])][:200])
                 return reply({"ok": True, "taken": n})
             return reply({"ok": True, "q": simprof_state(lang)})
@@ -44288,7 +44314,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.9")
+        self.root.title("MoveEye 2.96.10")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -44605,7 +44631,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.9 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.10 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

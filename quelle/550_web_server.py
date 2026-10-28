@@ -1981,6 +1981,10 @@ class WebStream:
             lang = norm_lang(request.args.get("lang") or CFG["lang"])
             if request.method == "POST":
                 d = body()
+                if d.get("ignore") or d.get("reset_ignore"):          # 2.96.10: «never ask again» for some settings
+                    simprof_ignore([str(k) for k in (d.get("ignore") or [])][:200], bool(d.get("reset_ignore")))
+                    if "take" not in d:
+                        return reply({"ok": True, "ignored": len(CFG.get("simprof_ignore") or [])})
                 n = simprof_answer([str(k) for k in (d.get("take") or [])][:200])
                 return reply({"ok": True, "taken": n})
             return reply({"ok": True, "q": simprof_state(lang)})

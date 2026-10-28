@@ -634,7 +634,8 @@ def sim_status():
 # of the last simulation); switching back restores the real ones and asks which changes of the simulation to take over.
 SIMPROF = {"q": None, "start": None}                               # the open question: {"t", "changes": [{key, label, real, sim}]}
 _SIMPROF_SKIP_KEYS = {"source", "thermal_source"}          # 2.95.93: switched by the simulation itself (sim_set), never asked
-_SIMPROF_AUTO_KEYS = {"min_area", "sensitivity", "speed_consistency", "walk_frames"}   # the auto-tuner sets them: kept apart, not asked
+_SIMPROF_AUTO_KEYS = {"min_area", "sensitivity", "speed_consistency", "walk_frames",   # the auto-tuner sets them: kept apart, not asked
+                      "pan", "tilt"}                        # 2.96.10: where the head looks - restored, never asked
 _SIMPROF_SKIP_SECTIONS = {"Simulator", "Updates", "Wi-Fi / hotspot", "Setup", "Web stream", "Guest access", "MQTT / Home Assistant", "Backup", "SMS (LTE stick)"}
 
 
@@ -703,12 +704,22 @@ def simprof_off():
     for k, label in keys.items():
         if k in real and real[k] != simv[k]:
             # 2.95.93: asked only when changed during this simulation (not by the auto-tuner, not already at its start)
-            if k not in _SIMPROF_AUTO_KEYS and (k not in start or start[k] != simv[k]):
+            if k not in _SIMPROF_AUTO_KEYS and k not in (CFG.get("simprof_ignore") or []) and (k not in start or start[k] != simv[k]):
                 ch.append({"key": k, "label": label, "real": real[k], "sim": simv[k]})
             CFG[k] = real[k]
     SIMPROF["q"] = {"t": time.time(), "changes": ch[:80]} if ch else None
     if ch:
         log_event("sys", f"Simulation off: {len(ch)} settings of the simulation not taken over yet (question on the page)")
+
+
+def simprof_ignore(keys, reset=False):
+    """2.96.10: settings the question leaves out from now on (the real value always comes back)"""
+    cur = [] if reset else list(CFG.get("simprof_ignore") or [])
+    for k in keys:
+        if isinstance(k, str) and k in CFG and k not in cur:
+            cur.append(k)
+    CFG["simprof_ignore"] = cur[:200]
+    save_settings()
 
 
 def simprof_answer(take):
@@ -732,7 +743,7 @@ def simprof_state(lang=None):
     if not q:
         return None
     lg = lang or CFG.get("lang", "de")
-    return {"t": q["t"], "changes": [dict(c, label=tr(c["label"], lg)) for c in q["changes"]]}
+    return {"t": q["t"], "changes": [dict(c, label=tr(c["label"], lg)) for c in q["changes"]], "ignored": len(CFG.get("simprof_ignore") or [])}
 
 
 def sim_set(on, who="web"):
