@@ -1,12 +1,12 @@
 {
- "version": "3D-3.67",
+ "version": "3D-3.68",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30875010,
- "sha256": "bdfacd0b5970236612660b0ffcd4fe292c1215bd44692ef283802b1e37f4d00b",
- "notes": "Vollbild im Browser: Mover-Stick im Bild ausgeblendet",
+ "size": 30876214,
+ "sha256": "647dc2d653dd5016133bc76194e3b8cd78244500c165823fcddd565e9c8755c6",
+ "notes": "Nach dem Update verbindet sich der Simulator wieder von selbst (Port nicht mehr blockiert, sonst Ausweichport)",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 23996243,
-  "sha256": "d4f6ec2f48c7cd94d844888d3efa88ce79ec33095041288e510b7b69cd685146"
+  "size": 23997459,
+  "sha256": "9b7425bcbb80747539c2c5bf9abdb259cc397193d415bb7b4de85c918ff07d44"
  }
 }

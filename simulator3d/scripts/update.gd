@@ -248,6 +248,8 @@ func _update() -> void:
 	args.append("--")
 	args.append_array(user)
 	args.append("--updated")
+	if get_parent().has_method("release_ports"):
+		get_parent().release_ports()          # 3D-3.68: the new simulator must not inherit port 8765
 	OS.create_process(exe, args)
 	get_tree().quit()
 	await get_tree().create_timer(60.0).timeout       # never come back

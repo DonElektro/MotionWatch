@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 16:25",
+ "generated": "2026-10-28 16:28",
  "versions": [
   {
-   "version": "2.95.93",
-   "file": "webcam_bewegung_2_95_93.py",
+   "version": "2.95.94",
+   "file": "webcam_bewegung_2_95_94.py",
    "url": "",
-   "sha256": "ec55ea0dbfe15a4329c219e1971f5b6c124c962c27d328202695b03f75707bdc",
-   "date": "2026-10-28 16:25",
-   "notes": "Simulator: «verbunden» und grün nur, wenn der Simulator antwortet UND Bilder ankommen (vorher immer «verbunden», sobald die Simulation an war) – auch in den Menüs und im Fenster; Einstellungen aus der Simulation: nur noch fragen, was während dieser Simulation geändert wurde, ohne Wärmekamera-Quelle und Werte der Selbstoptimierung",
-   "sig": "e43ae4ea8b4de2d75044a9c4c1b074c4dce69cdd16f0a0d5c670e4dc2318d2a7232a0ff8cc4cc7c4dc367a7c3c22fdb629eef3f099efa98b2b0b395a33cbe60e"
+   "sha256": "58b82f4c4a41f04e7ab966b67935d040dc68f9a67f9af9b44ba11db99597e0b6",
+   "date": "2026-10-28 16:28",
+   "notes": "3D-Simulator 3D-3.68: nach einem Update verbindet sich der Simulator wieder von selbst (kein «Port 8765 is busy» mehr)",
+   "sig": "66e3b682ce085b18330b333e46827e76af9d04e19a68cccb14bd6f2aedd29914f197a2dcf3525c1da1509d4c752321ec22e37f60bb4aaa673890e91ba5ed940a"
   },
   {
    "version": "2.94.5",

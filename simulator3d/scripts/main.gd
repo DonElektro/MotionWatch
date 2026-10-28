@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.67"
+const VERSION := "3D-3.68"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -369,7 +369,7 @@ func _ready() -> void:
 	if "--stream" in args or at_boot or stream_last:   # start sending at once (autostart, update, or it was on the last time)
 		set_stream(true)
 		if not stream_on:
-			_stream_retry(30)                     # 3D-3.65: after an update the old simulator still holds the port for a moment
+			_stream_retry(60)                     # 3D-3.65: after an update the old simulator still holds the port for a moment
 	autostart_on = Autostart.is_on()
 	if autostart_on:
 		Autostart.repair()                         # the folder of the program was moved: the autostart follows it
@@ -431,28 +431,47 @@ func _vm_needs_angle(args: Array) -> bool:
 		a.append(x)
 	a.append_array(OS.get_cmdline_user_args())
 	a.append("--angle-tried")
+	release_ports()
 	OS.create_process(OS.get_executable_path(), a)
 	get_tree().quit()
 	return true
 
 
-func _stream_retry(left: int) -> void:
-	"""the port is still busy (the old simulator closes after an update): try again every second, at most `left` times"""
+const ALT_PORTS := [8775, 8785, 8795]       # 3D-3.68: if 8765 stays busy (a process holds it), send on one of these
+
+
+func _stream_retry(left: int, tries := 0) -> void:
+	"""the port is still busy (the old simulator closes after an update): try again every second; after 8 tries a
+	free port of ALT_PORTS (Motion Watch finds it by the "here is a simulator" message, the tunnel follows it)"""
 	if stream_on or left <= 0 or (stream_cb != null and not stream_last and not "--stream" in OS.get_cmdline_user_args()):
 		return
 	await get_tree().create_timer(1.0).timeout
 	if stream_on:
 		return
-	set_stream(true)
+	set_stream(true, tries >= 8)
 	if not stream_on:
-		_stream_retry(left - 1)
+		_stream_retry(left - 1, tries + 1)
 	else:
-		print("sending to Motion Watch: port free again")
+		print("sending to Motion Watch: port %d" % net.port)
 
 
-func set_stream(on: bool) -> void:
+func release_ports() -> void:
+	"""3D-3.68: before starting a new simulator (update, graphics restart): close every listening port. On Windows the
+	new process would otherwise get them too and its own «An Motion Watch senden» stays «Port 8765 is busy»."""
+	if net != null:
+		net.stop()
+	if game != null and game.open:
+		game.set_open(false)
+
+
+func set_stream(on: bool, alt := false) -> void:
 	if on:
 		net.start(stream_port)
+		if not net.listening and alt:
+			for p in ALT_PORTS:
+				net.start(p)
+				if net.listening:
+					break
 		stream_on = net.listening
 	else:
 		net.stop()
@@ -460,6 +479,7 @@ func set_stream(on: bool) -> void:
 		mw_t = 0.0
 	if stream_cb != null:
 		stream_cb.set_pressed_no_signal(stream_on)
+		stream_cb.text = "An Motion Watch senden (Port %d)" % (net.port if stream_on else stream_port)
 	_update_status()
 
 

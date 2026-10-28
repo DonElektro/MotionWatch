@@ -113,7 +113,7 @@ func _step(c: Dictionary, now: float) -> void:
 						_close(c)
 						return
 					var l := StreamPeerTCP.new()
-					l.connect_to_host("127.0.0.1", port)
+					l.connect_to_host("127.0.0.1", main.net.port if port == 8765 and main.net != null and main.net.listening else port)   # 3D-3.68: also on a spare port
 					for _w in 20:                           # to itself: connected at once - no need to wait a frame
 						l.poll()
 						if l.get_status() != StreamPeerTCP.STATUS_CONNECTING:
