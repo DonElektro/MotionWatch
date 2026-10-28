@@ -10,6 +10,8 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - Rückfragen nur bei echten Entscheidungen; sonst umsetzen und am Schluss kurz erklären (was neu ist, was getestet ist, was nicht).
 - Ehrlich sagen, was nicht getestet werden konnte (echte Hardware, iPhone usw.).
 - Keine Passwörter, privaten ntfy-Themen oder Zugangsdaten in Dateien, Commits oder geteilte Pakete.
+- **Zwischenberichte (Wunsch Daniel, bis 2.11.2026 24:00):** bei jeder Aufgabe, die länger als 3–4 Minuten dauert, jede Minute
+  eine kurze Checkliste senden (✅ erledigt / ⏳ offen).
 
 ## Software
 
