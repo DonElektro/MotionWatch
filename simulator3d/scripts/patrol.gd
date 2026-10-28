@@ -254,10 +254,12 @@ func _draw_route() -> void:
 			cm.height = 1.2
 			post.mesh = cm
 			post.material_override = m
+			post.layers = main.HELPER_LAYER        # 3D-3.64: Motion Watch must not see the posts
 			_mk.add_child(post)
 			post.position = Vector3(p.x, y.call(p) + 0.6, p.y)
 			var lb := Label3D.new()
 			lb.text = str(i + 1)
+			lb.layers = main.HELPER_LAYER
 			lb.font_size = 64
 			lb.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 			lb.modulate = col
@@ -285,6 +287,7 @@ func _line(a: Vector2, b: Vector2, m: Material) -> void:
 		bm.size = Vector3(0.08, 0.04, p0.distance_to(p1))
 		seg.mesh = bm
 		seg.material_override = m
+		seg.layers = main.HELPER_LAYER
 		_mk.add_child(seg)
 		seg.position = Vector3(mid.x, main.ground_y(mid.x, mid.y) + 0.06, mid.y)
 		seg.rotation.y = atan2(-(p1 - p0).x, -(p1 - p0).y)

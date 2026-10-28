@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.63"
+const VERSION := "3D-3.64"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -12,6 +12,7 @@ const TH_W := 80
 const TH_H := 62
 const TH_FOV := 45.0
 const HEAD_H := 1.6
+const HELPER_LAYER := 128         # 3D-3.64: marks for the operator only - the cameras of Motion Watch do not see them
 
 var Actor = preload("res://scripts/actor.gd")
 var Net = preload("res://scripts/net.gd")
@@ -939,6 +940,7 @@ func show_netmap(pts) -> int:
 		mt.albedo_color = Color.from_hsv(q * 0.33, 0.85, 0.95, 0.55)
 		m.material_override = mt
 		m.position = w
+		m.layers = HELPER_LAYER
 		netmap_node.add_child(m)
 		var lb := Label3D.new()
 		var txt := "%d ms" % int(float(p.get("rtt", 0))) if p.get("rtt") != null else ""
@@ -947,6 +949,7 @@ func show_netmap(pts) -> int:
 		if p.get("dbm") != null:
 			txt += "  %d dBm" % int(p.get("dbm"))
 		lb.text = txt
+		lb.layers = HELPER_LAYER
 		lb.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		lb.font_size = 40
 		lb.outline_size = 8
@@ -1387,7 +1390,7 @@ func _update_lens() -> void:
 func _build_view_camera() -> void:
 	view_cam = Camera3D.new()
 	view_cam.position = Vector3(6, 7, 9)
-	view_cam.cull_mask = 1
+	view_cam.cull_mask = 1 | HELPER_LAYER          # 3D-3.64: helpers (route posts, net map, replay) only for the operator
 	view_cam.fov = 70
 	view_cam.far = 2000.0
 	add_child(view_cam)

@@ -1,12 +1,12 @@
 {
- "version": "3D-3.63",
+ "version": "3D-3.64",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30872266,
- "sha256": "fb5c41cfb2927f71c9b009caff0c2c5d2093477a61ad2fda16f7b8854a6d57e0",
- "notes": "Oranges Motion-Watch-Symbol auch als Fenster-Symbol; nur die Pupille schaut links und rechts",
+ "size": 30872957,
+ "sha256": "1aa57af44069e64fd91a2178fe4d76b987faaf5097185e8ccd9157a08780ca4d",
+ "notes": "Patrouillen-Route nur noch für den Bediener sichtbar, nicht für die Kameras von Motion Watch",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 23993582,
-  "sha256": "fb4e822cec6985c8de868d41647afa485b2f81d1d2e303fb86e888a53b00d6c3"
+  "size": 23994233,
+  "sha256": "f78b2dc00777735f692b1d49a66992af81a63ace81a6eef2ccbcbc1603df11ae"
  }
 }

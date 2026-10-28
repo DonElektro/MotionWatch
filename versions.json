@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 15:29",
+ "generated": "2026-10-28 15:32",
  "versions": [
   {
-   "version": "2.95.88",
-   "file": "webcam_bewegung_2_95_88.py",
+   "version": "2.95.89",
+   "file": "webcam_bewegung_2_95_89.py",
    "url": "",
-   "sha256": "5d68f4c583523c99ff8823afb7e0fdfce93861633c3fef0ae8d5185c6bed74f3",
-   "date": "2026-10-28 15:29",
-   "notes": "Wärmebild in der Simulation passend über dem Videobild (Blickwinkel beider Kameras, vorher nach aussen verschoben); Symbol «Klassisch»: nur die Pupille bewegt sich; kleines Extra: 3 s Zielscheibe, dann 3 s das Geheimnis; Simulator 3D-3.63",
-   "sig": "0f7a81bbce54037cdd8f82bdd2840cba91db18f413fd09a302d5f8ed8cd619ecc06d282bebf83eba619449b6ef81fbf47686374f37b0313cd9bb729cb67fb503"
+   "sha256": "3de87bd2989e164c08a4f41e6dd5eecf424044dfbe8902d465a84e88f0e3e6d9",
+   "date": "2026-10-28 15:32",
+   "notes": "3D-Simulator 3D-3.64: die Pfosten der Patrouillen-Route stören die Bildauswertung nicht mehr (nur der Bediener sieht sie)",
+   "sig": "5f07c5420f9664005aa7e203cf0e5f9e480884979ca751bed62d13bb9848f92fb90e687591c8ebccaf82dbb0f13cddf861117f4b30e9059073c2524c4c73d201"
   },
   {
    "version": "2.94.5",
