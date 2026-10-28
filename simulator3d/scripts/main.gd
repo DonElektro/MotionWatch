@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.86"
+const VERSION := "3D-3.87"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -3668,18 +3668,28 @@ func _build_ui() -> void:
 	var hdr := HBoxContainer.new()
 	hdr.add_theme_constant_override("separation", 8)
 	top_box.add_child(hdr)
-	var logo: Control = load("res://scripts/mw_logo.gd").new()      # 3D-3.62: the orange MoveEye symbol, the eye looks around
-	logo.custom_minimum_size = Vector2(30, 30)
-	logo.tooltip_text = "MoveEye"
-	hdr.add_child(logo)
+	var wmt: ImageTexture = preload("res://scripts/wordmark.gd").texture(44.0)   # 3D-3.87: the wordmark W6 like on the web page
+	if wmt != null:
+		var wm := TextureRect.new()
+		wm.texture = wmt
+		wm.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		wm.tooltip_text = "MoveEye"
+		hdr.add_child(wm)
+	else:
+		var logo: Control = load("res://scripts/mw_logo.gd").new()  # (fallback) the orange MoveEye symbol
+		logo.custom_minimum_size = Vector2(30, 30)
+		hdr.add_child(logo)
 	var title := Label.new()
-	title.text = "3D-Simulator Live"
+	title.text = "Simulator"
 	title.add_theme_font_override("font", UI.heading_font())
-	title.add_theme_font_size_override("font_size", 17)
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", UI.MUT)
+	title.size_flags_vertical = Control.SIZE_SHRINK_END
 	hdr.add_child(title)
 	var ver := UI.small(VERSION)
 	ver.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
+	ver.size_flags_vertical = Control.SIZE_SHRINK_END
 	hdr.add_child(ver)
 	# toolbar like above the settings of MoveEye
 	var tb := HBoxContainer.new()

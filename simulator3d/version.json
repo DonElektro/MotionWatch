@@ -1,12 +1,12 @@
 {
- "version": "3D-3.86",
+ "version": "3D-3.87",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31190288,
- "sha256": "34cac9295c093980919ec38deae3b866e6b0e730c4214c6c3438fbcfb7401d54",
- "notes": "Aufgeräumt: Schnellzugriff, Inventar mit allen 80 KI-Dingen, Leiste einzeilig",
+ "size": 31192294,
+ "sha256": "3dc2a32f8511180eb5bcf0b81484111ad48d725b08367c723c6073bdcc219f8f",
+ "notes": "Schriftzug MoveEye im Kopf des Bedienfelds",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24311966,
-  "sha256": "2107c7e5d8f7a6955e589c29ddf3945acc811e4fc99c0cb80a65f02fe910e3a1"
+  "size": 24313936,
+  "sha256": "477259c98f5c8656727ce21c8a89b6484ce146eae627f74457a3f1fde5d7befb"
  }
 }

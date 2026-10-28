@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 22:30",
+ "generated": "2026-10-28 22:37",
  "versions": [
   {
-   "version": "2.96.12",
-   "file": "webcam_bewegung_2_96_12.py",
+   "version": "2.96.13",
+   "file": "webcam_bewegung_2_96_13.py",
    "url": "",
-   "sha256": "9aaf39d20c4d11a94e2bed86e3f69bf8389f08d4f0c5c0e44f797e01e65e0a0c",
-   "date": "2026-10-28 22:30",
-   "notes": "Aufgeräumt: die Knopfzeile über den Einstellungen hat wieder nur ihre drei Knöpfe (Kino und Demo standen dort leer über der Suche) – «Kino» und «Demo» sind jetzt bei den Schaltern unter dem Livebild (mit «Anpassen» ein- / ausblendbar)",
-   "sig": "0c5c134eedbe71ba4cd466455a9b72e54da79b8a52ff6e4fa6faaf66da310966e97480c22a4c73a8202f726dfffd72b510d1330de511b9fb2b57a8ddcef99105"
+   "sha256": "d5212f0e776ba7da351fe5fd15d71abfed40ee859d5be3c1b57732745db4b859",
+   "date": "2026-10-28 22:36",
+   "notes": "Passt zum Simulator 3D-3.87 (Schriftzug MoveEye auch im Simulator)",
+   "sig": "f3824196256118afc582c2e8a5ff4b2856f8c5db432bde2540814f940c1a792384b92f46ce31c05a0598ecc66f9641ec63c0a43699ffcb9920cd293b64d0c80c"
   },
   {
    "version": "2.95.105",
