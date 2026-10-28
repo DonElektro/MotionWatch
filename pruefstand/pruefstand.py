@@ -37,6 +37,20 @@ PLAN_NAME = {"quick": "Kurz (Tag + Nacht)", "standard": "Standard (Tag, Wind, Na
 
 def log(*a):
     print("[pruefstand]", *a, flush=True)
+    if os.environ.get("GITHUB_ACTIONS"):                       # on GitHub: also as a note on the page of the run
+        print("::notice title=Prüfstand::" + " ".join(str(x) for x in a).replace("%", "%25").replace("\n", "%0A"), flush=True)
+
+
+def log_tail(path, title, n=25):
+    """the end of a log file (when something went wrong) - on GitHub as a warning on the page of the run"""
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            tail = "".join(f.readlines()[-n:])
+    except OSError:
+        tail = "(keine Datei)"
+    print("----- %s -----\n%s" % (title, tail), flush=True)
+    if os.environ.get("GITHUB_ACTIONS"):
+        print("::warning title=%s::%s" % (title, tail.replace("%", "%25").replace("\r", "").replace("\n", "%0A")), flush=True)
 
 
 def http_json(url, data=None, timeout=8.0):
@@ -145,6 +159,17 @@ def run(a):
             time.sleep(2)
         if not ok:
             log("Simulator und Motion Watch kamen nicht zusammen. Protokolle:", tmp)
+            try:
+                s = http_json(web + "/api/state", timeout=4)["state"]
+                log("Motion Watch: Quelle «%s», %s Bilder/s, KI: %s" % (s.get("source_status"), s.get("fps"), s.get("ai_status")))
+            except Exception as e:
+                log("Motion Watch antwortet nicht:", e)
+            try:
+                log("Simulator:", http_json(sim + "/control", {"action": "get"}, timeout=4).get("status"))
+            except Exception as e:
+                log("Simulator antwortet nicht:", e)
+            log_tail(os.path.join(tmp, "simulator.log"), "Simulator-Protokoll")
+            log_tail(os.path.join(tmp, "motionwatch.log"), "Motion-Watch-Protokoll")
             return 2, None
         log("verbunden - %d s eingewöhnen" % a.eingewoehnen)
         time.sleep(a.eingewoehnen)
