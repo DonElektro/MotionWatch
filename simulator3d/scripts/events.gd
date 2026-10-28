@@ -2,7 +2,7 @@ extends Node
 ## Little stories that play by themselves (from 3D-3.40): a break-in attempt, a barbecue evening, coming home late, a
 ## parcel at the door, a fox at the bin, a family of wild boars, children playing tag, the farmer mowing - and the whole
 ## night in time-lapse. Every story uses the normal visitors (actor.gd) with routes, and a few things put into the scene
-## for a while (grill, bin, parcel). Motion Watch sees them like real ones.
+## for a while (grill, bin, parcel). MoveEye sees them like real ones.
 
 var main
 var lapse := false                 # «ganze Nacht im Zeitraffer» runs

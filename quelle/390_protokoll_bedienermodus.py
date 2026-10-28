@@ -425,7 +425,7 @@ def update_check():
 def _verify_program(data, want_version, sha=""):
     import hashlib
     if len(data) > 8 * 1024 * 1024 or len(data) < 10000:
-        return "the file does not look like Motion Watch"
+        return "the file does not look like MoveEye"
     if sha and hashlib.sha256(data).hexdigest() != sha:
         return "the file is damaged (checksum does not match) - try again"
     try:
@@ -434,7 +434,7 @@ def _verify_program(data, want_version, sha=""):
     except Exception:
         return "the file is not a working Python program"
     if "class MotionWatch" not in text or file_version(text) != want_version:
-        return "the file does not look like Motion Watch"
+        return "the file does not look like MoveEye"
     return ""
 
 
@@ -546,7 +546,7 @@ def toolmode_on():
 
 
 def toolmode_set(minutes, source="web"):
-    """minutes > 0: Motion Watch rests (no camera, no detection, no alarms) and comes back by itself after the time.
+    """minutes > 0: MoveEye rests (no camera, no detection, no alarms) and comes back by itself after the time.
     0: back now. The web page and the tools keep running."""
     try:
         minutes = int(minutes)
@@ -611,7 +611,7 @@ def pause_program(minutes, source="web"):
 
 
 PAUSE_PAGE = """<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Motion Watch – __T_TITLE__</title><style>
+<title>MoveEye – __T_TITLE__</title><style>
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0b0f14;color:#e6edf3;
 font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;text-align:center;padding:20px;box-sizing:border-box}
 .c{max-width:420px}.big{font-size:56px}.t{font-size:22px;font-weight:700;margin:6px 0}.m{color:#8b9bb0}
@@ -637,7 +637,7 @@ def run_paused(until, argv_rest):
     state = {"go": False}
 
     def restart():
-        print("Pause over - starting Motion Watch again")
+        print("Pause over - starting MoveEye again")
         log_event("sys", "Pause over - starting again")
         _close_fds_on_exec()
         os.execv(sys.executable, [sys.executable, os.path.abspath(__file__)] + argv_rest)
@@ -693,7 +693,7 @@ def run_paused(until, argv_rest):
     if srv is not None:
         srv.daemon_threads = True
         threading.Thread(target=srv.serve_forever, daemon=True).start()
-    print(f"Motion Watch paused until {datetime.fromtimestamp(until).strftime('%H:%M')} - page on port {CFG['web_port']}")
+    print(f"MoveEye paused until {datetime.fromtimestamp(until).strftime('%H:%M')} - page on port {CFG['web_port']}")
     sd_notify("READY=1\nSTATUS=paused")
     last_ping = 0.0
     try:
@@ -1073,7 +1073,7 @@ def self_test(folder=""):
     ok = all(r[1] for r in res)
     for name, good, note in res:
         print(("✓ " if good else "✗ ") + name + (f" – {note}" if note else ""))
-    print("Self-test " + ("OK" if ok else "FAILED") + f" (Motion Watch {APP_VERSION})")
+    print("Self-test " + ("OK" if ok else "FAILED") + f" (MoveEye {APP_VERSION})")
     return 0 if ok else 1
 
 

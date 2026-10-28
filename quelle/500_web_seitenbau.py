@@ -1,5 +1,5 @@
 #@ Motion Watch – Teil 500: Web: App-Symbol, Seiten zusammensetzen. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
-APP_ICON_LIST = [("radar", "Radar"), ("radar2", "Radar, two rings"), ("cross", "Radar, gaps crosswise"), ("trail", "Radar with afterglow"),
+APP_ICON_LIST = [("moveeye", "MoveEye"), ("radar", "Radar"), ("radar2", "Radar, two rings"), ("cross", "Radar, gaps crosswise"), ("trail", "Radar with afterglow"),
                  ("rings4", "Four directions"), ("waves", "Lens with waves"),
                  ("light", "Light radar (green)"), ("night", "Night radar (orange beam)"), ("forest", "Forest with a find"), ("thermal", "Thermal picture"),
                  ("fov", "Field of view"), ("camp", "Tent watch"), ("shield", "Shield"), ("hits", "Radar with finds"),
@@ -7,8 +7,8 @@ APP_ICON_LIST = [("radar", "Radar"), ("radar2", "Radar, two rings"), ("cross", "
 
 
 def app_icon_id():
-    ic = str(CFG.get("app_icon") or "classic")
-    return ic if ic in dict(APP_ICON_LIST) else "classic"
+    ic = str(CFG.get("app_icon") or "moveeye")
+    return ic if ic in dict(APP_ICON_LIST) else "moveeye"
 
 
 def host_variant():
@@ -24,7 +24,7 @@ def host_variant():
 
 
 def app_title(variant):
-    return "Motion Watch"          # one name and one icon for every address (since 2.3.0)
+    return "MoveEye"          # 2.96.0: MoveEye (before: Motion Watch); one name and one icon for every address (since 2.3.0)
 
 
 def app_icon_png(size, variant="", icon=None):
@@ -72,7 +72,7 @@ def app_icon_png(size, variant="", icon=None):
 def app_manifest():
     v = host_variant(); name = app_title(v)
     return json.dumps({"name": name, "short_name": name, "start_url": "/", "scope": "/", "display": "standalone",
-                       "background_color": "#e8590c" if app_icon_id() == "classic" else "#0e1621", "theme_color": "#0b0f14", "lang": CFG["lang"],
+                       "background_color": "#e8590c" if app_icon_id() in ("classic", "moveeye") else "#0e1621", "theme_color": "#0b0f14", "lang": CFG["lang"],
                        # the name of the icon in the address: a new icon is a new address, so Android fetches it again
                        "icons": [{"src": "/icon-192.png?i=" + app_icon_id(), "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
                                  {"src": "/icon-512.png?i=" + app_icon_id(), "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}]})

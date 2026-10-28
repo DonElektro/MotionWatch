@@ -2,7 +2,7 @@
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_105.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_0.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -178,7 +178,7 @@ def _vkey(v):
 def file_version(text):
     """Version of a program file: APP_VERSION (from 1.8.5), else the window title (older versions)."""
     m = (re.search(r'^APP_VERSION = "(\d+\.\d+\.\d+)"', text, re.M)
-         or re.search(r'root\.title\("Motion Watch (\d+\.\d+\.\d+)"\)', text))
+         or re.search(r'root\.title\("MoveEye (\d+\.\d+\.\d+)"\)', text))
     return m.group(1) if m else ""
 
 

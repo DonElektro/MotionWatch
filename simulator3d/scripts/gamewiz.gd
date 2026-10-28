@@ -1,17 +1,17 @@
 extends PanelContainer
 ## The game wizard (from 3D-3.41): it lives here in the simulator. Step by step: game type -> goal -> difficulty (with
-## the extras) -> start (summary, rules, QR code, players). Motion Watch shows the same steps on its page and works them
+## the extras) -> start (summary, rules, QR code, players). MoveEye shows the same steps on its page and works them
 ## from afar (CONTROL action «gamewiz»: get, open, close, pick, set, next, back, last). The settings are the normal
 ## controls of the game; «Like last time» is kept in user://gamewiz_last.json.
 
 var main
-var shown := false               # open (in this window and / or on the page of Motion Watch)
+var shown := false               # open (in this window and / or on the page of MoveEye)
 var step := 0
 var W := {}                      # the choice being made
 var lvl := "normal"
 var extras_open := false
 var error := ""
-var seq := 0                     # every change counts up: Motion Watch repaints only when it changed
+var seq := 0                     # every change counts up: MoveEye repaints only when it changed
 
 var steps_box: HBoxContainer
 var body: VBoxContainer
@@ -33,12 +33,12 @@ const PLAYER_OPTS := [["game_bots", "Computer-Spieler (Bots)", "select", 0, 0, "
 		["game_daily", "Tagesaufgabe: heute für alle dieselbe Szene, dasselbe Ziel, dieselben Startpunkte", "toggle", 0, 0, "", false],
 		["game_ghost", "Geisterläufer: der eigene beste Weg läuft als Geist mit", "toggle", 0, 0, "", false],
 		["game_heart", "Herzschlag, wenn die Kamera dich gleich sieht", "toggle", 0, 0, "", false]]
-const MODES := [["camera", "🎥", "Alle gegen die Kamera", "Alle schleichen zum Ziel. Der Kopf von Motion Watch dreht sich und sucht euch. Wer zu lange gesehen wird, ist erwischt."],
+const MODES := [["camera", "🎥", "Alle gegen die Kamera", "Alle schleichen zum Ziel. Der Kopf von MoveEye dreht sich und sucht euch. Wer zu lange gesehen wird, ist erwischt."],
 		["guard", "👮", "Ein Spieler ist Wächter", "Ein Spieler ist Wächter: Er dreht mit dem Handy den Kopf, schaltet das Licht ein und ruft «Erwischt!», wenn er jemanden sieht."],
 		["teamguard", "🔴🔵", "Team gegen Team", "Räuber und Wächter: Rot gegen Blau. Ein Team schleicht, das andere bewacht mit dem Kopf und ruft «Erwischt!»."],
-		["mw", "🛡", "Motion Watch entscheidet", "Die echte Erkennung von Motion Watch passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht."],
-		["mwhand", "🕹", "Team gegen Motion Watch", "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an Motion Watch: Sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken «Erwischt!»."],
-		["patrol", "🚜", "Patrouille", "Motion Watch fährt auf dem Mover eine Route ab und schaut sich an jedem Punkt um. Die Spieler schleichen zum Ziel, während die Patrouille unterwegs ist. Wer erwischt: unter Mover → Patrouille wählbar (Motion Watch oder Simulator)."],
+		["mw", "🛡", "MoveEye entscheidet", "Die echte Erkennung von MoveEye passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht."],
+		["mwhand", "🕹", "Team gegen MoveEye", "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an MoveEye: Sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken «Erwischt!»."],
+		["patrol", "🚜", "Patrouille", "MoveEye fährt auf dem Mover eine Route ab und schaut sich an jedem Punkt um. Die Spieler schleichen zum Ziel, während die Patrouille unterwegs ist. Wer erwischt: unter Mover → Patrouille wählbar (MoveEye oder Simulator)."],
 		["seek", "🙈", "Verstecken mit dem Rover", "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Rover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Am besten in der Szene «Versteckspiel»."],
 		["free", "🧪", "Frei bewegen", "Ohne Regeln: alle bewegen sich frei (gehen, rennen, ducken, kriechen), niemand wird erwischt. Zum Testen der Erkennung."]]
 const GOALS := [["reach", "🟢", "Zum Ziel schleichen", "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg."],
@@ -76,7 +76,7 @@ const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter
 		"hc": "🎯 Handicap: Wer in der Rangliste vorne liegt, wird leichter gesehen und ist etwas langsamer."}
 
 
-# ---- the model (the same for this window and for Motion Watch) ------------------------------------------------------
+# ---- the model (the same for this window and for MoveEye) ------------------------------------------------------
 func _cur() -> Dictionary:
 	var o := {}
 	for c in main.controls:
@@ -210,7 +210,7 @@ func model() -> Dictionary:
 
 
 func op(d: Dictionary) -> Dictionary:
-	"""Motion Watch (or this window) works the wizard"""
+	"""MoveEye (or this window) works the wizard"""
 	var o := str(d.get("op", "get"))
 	match o:
 		"open":
@@ -445,7 +445,7 @@ func _prog_input(ev: InputEvent) -> void:
 
 
 static func plain(t: String) -> String:
-	"""without emoji (the font of the window does not have them on every PC); Motion Watch shows them"""
+	"""without emoji (the font of the window does not have them on every PC); MoveEye shows them"""
 	var o := ""
 	for i in range(t.length()):
 		var c := t.unicode_at(i)

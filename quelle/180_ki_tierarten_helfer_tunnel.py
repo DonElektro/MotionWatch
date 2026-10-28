@@ -229,7 +229,7 @@ def alarm_tracks_list():
     return out
 
 
-# ---- AI helper (2.95.53): a PC in the same network does the AI for the Pi. The simulator starts Motion Watch on the PC with
+# ---- AI helper (2.95.53): a PC in the same network does the AI for the Pi. The simulator starts MoveEye on the PC with
 # --helper; the Pi finds it through the simulator (address + pairing code) or by hand. The Pi sends a small picture, the PC
 # answers with the boxes. No answer -> the Pi does it itself again. Only pictures go to the PC, nothing is stored there. ----
 HELPER_PORT = 5057
@@ -333,7 +333,7 @@ def helper_tick():
         with _SIM_OPENER.open(urllib.request.Request(u + "/helper/hello", headers={"X-Helper-Code": code, "User-Agent": "MotionWatch"}), timeout=3) as r:
             d = json.loads(r.read(20000))
         if not d.get("helper"):
-            raise ValueError("not a Motion Watch helper")
+            raise ValueError("not a MoveEye helper")
         if not d.get("paired"):
             raise ValueError("pairing code wrong")
         if not d.get("model"):
@@ -355,7 +355,7 @@ def helper_state():
 
 
 # ---- KI-Prüfung mit Simulator-Bildern (2.95.53): the 3D simulator makes pictures with a person or an animal (day, dusk,
-# night with infrared, rain, fog; near and far) and knows where it is. Motion Watch runs its AI (or the PC helper) on each and
+# night with infrared, rain, fog; near and far) and knows where it is. MoveEye runs its AI (or the PC helper) on each and
 # counts what it found, what it missed and false persons. The pictures can be downloaded as training pictures (ZIP). ----
 DSET = {"busy": False, "msg": "", "pct": 0, "res": [], "sum": None, "imgs": {}, "t": 0.0}
 DSET_ANIMALS = {"bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe"}
@@ -387,12 +387,12 @@ def dset_run(n):
 
     def work():
         try:
-            if n == "game":                                  # 2.95.75: the pictures the game collected (Motion Watch missed the player)
+            if n == "game":                                  # 2.95.75: the pictures the game collected (MoveEye missed the player)
                 r = sim_control({"action": "dataset", "op": "game"})
                 if not isinstance(r, dict) or not r.get("ok"):
                     raise ValueError("not supported - update the simulator")
                 if int(r.get("total") or 0) <= 0:
-                    raise ValueError("no missed pictures from the game yet - play a round with Motion Watch first")
+                    raise ValueError("no missed pictures from the game yet - play a round with MoveEye first")
             else:
                 r = sim_control({"action": "dataset", "op": "start", "n": int(n)})
             if not isinstance(r, dict) or not r.get("ok"):
@@ -459,7 +459,7 @@ def dset_zip():
     bio = io.BytesIO()
     cls = {"person": 0}
     with zipfile.ZipFile(bio, "w", zipfile.ZIP_DEFLATED) as z:
-        z.writestr("README.txt", "Motion Watch - training pictures from the 3D simulator\nimages/*.jpg + labels/*.txt (YOLO: class cx cy w h, 0..1)\n"
+        z.writestr("README.txt", "MoveEye - training pictures from the 3D simulator\nimages/*.jpg + labels/*.txt (YOLO: class cx cy w h, 0..1)\n"
                    "classes: 0 person, 1 animal\nmeta.json: kind, condition, distance, found by the AI\n")
         meta = []
         for r_ in DSET["res"]:
@@ -480,7 +480,7 @@ def dset_state():
 
 
 # ---- Tunnel (2.95.54): a simulator behind a firewall that lets nothing in (a PC / virtual machine without admin rights)
-# connects OUT to the Pi (port 8766) and keeps a few connections open. Motion Watch then talks to it through them as if it
+# connects OUT to the Pi (port 8766) and keeps a few connections open. MoveEye then talks to it through them as if it
 # ran here: 127.0.0.1:18765 = the simulator, 127.0.0.1:15057 = the AI helper on that PC. Paired with a 6-digit code. ----
 import socket as _socket
 TUN_PORT = 8766
@@ -666,7 +666,7 @@ def tunnel_state():
 
 
 def _tun_direct_port():
-    """the port Motion Watch uses for the simulator without the tunnel (while the tunnel runs: the address from before)"""
+    """the port MoveEye uses for the simulator without the tunnel (while the tunnel runs: the address from before)"""
     from urllib.parse import urlparse
     u = CFG.get("sim_url") or ""
     if u.startswith("http://127.0.0.1:18765"):
@@ -727,7 +727,7 @@ def helper_run(jpg, conf, oconf):
 
 
 def helper_server_start():
-    """a small separate web server for the helper (port 5057, whole network) - the page of Motion Watch on the PC stays local"""
+    """a small separate web server for the helper (port 5057, whole network) - the page of MoveEye on the PC stays local"""
     if HELPER_NET["srv"] is not None:
         return
     if not CFG.get("helper_my_code"):
@@ -783,7 +783,7 @@ def helper_server_start():
     srv.daemon_threads = True
     HELPER_NET["srv"] = srv
     threading.Thread(target=srv.serve_forever, daemon=True, name="helpersrv").start()
-    log_event("ai", f"AI helper for other Motion Watch ready (port {HELPER_PORT}, pairing code {CFG['helper_my_code']})")
+    log_event("ai", f"AI helper for other MoveEye ready (port {HELPER_PORT}, pairing code {CFG['helper_my_code']})")
 
 
 class AIDetector:

@@ -1,7 +1,7 @@
 extends Node
-## A second Motion Watch device in the same world (3D-3.27): its own pole with a pan/tilt head camera and a fixed camera,
+## A second MoveEye device in the same world (3D-3.27): its own pole with a pan/tilt head camera and a fixed camera,
 ## its own lamps, at another place (opposite, left or right). It answers on its own port (the port of the simulator + 20,
-## normally 8785) exactly like the simulator itself, so a second Motion Watch (or a second copy on the PC) connects to it
+## normally 8785) exactly like the simulator itself, so a second MoveEye (or a second copy on the PC) connects to it
 ## like to a simulator. A person crossing the place is then seen by both, one after the other.
 
 var main
@@ -86,7 +86,7 @@ func set_on(v: bool) -> void:
 func status() -> String:
 	if not on:
 		return ""
-	var c := "verbunden" if main.now() - mw_t < 3.0 else "wartet auf Motion Watch"
+	var c := "verbunden" if main.now() - mw_t < 3.0 else "wartet auf MoveEye"
 	return "Gerät 2: Port %d, %s" % [port, c] + ("" if net == null or net.listening else " (Port belegt!)")
 
 

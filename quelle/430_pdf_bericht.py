@@ -65,7 +65,7 @@ class MiniPDF:
         res = b"<< /Font << /F1 %d 0 R /F2 %d 0 R >> /XObject << %s >> >>" % (f1, f2, xo)
         kids = []
         for i, pg in enumerate(self.pages):
-            foot = b"BT 0.5 0.5 0.5 rg /F1 8 Tf 50 30 Td (Motion Watch - %d / %d) Tj ET" % (i + 1, len(self.pages))
+            foot = b"BT 0.5 0.5 0.5 rg /F1 8 Tf 50 30 Td (MoveEye - %d / %d) Tj ET" % (i + 1, len(self.pages))
             body = b"\n".join(pg + [foot])
             c = add(b"<< /Length %d >>\nstream\n" % len(body) + body + b"\nendstream")
             kids.append(add(b"<< /Type /Page /Parent %d 0 R /MediaBox [0 0 595 842] /Resources %s /Contents %d 0 R >>" % (pages_n, res, c)))
@@ -125,7 +125,7 @@ def rec_report_pdf(name, lang=None):
     gps = rec_gps(os.path.basename(name), meta, os.path.dirname(p), os.path.basename(snap) if snap else None)
     pdf = MiniPDF()
     pdf.text(T("Event report"), 18, bold=True); pdf.space(2)
-    pdf.text(((CFG["device_name"] + " · ") if CFG["device_name"] else "") + "Motion Watch " + APP_VERSION, 10, color=(0.35, 0.35, 0.35))
+    pdf.text(((CFG["device_name"] + " · ") if CFG["device_name"] else "") + "MoveEye " + APP_VERSION, 10, color=(0.35, 0.35, 0.35))
     pdf.line()
     rows = [(T("Date / time"), dt.strftime("%d.%m.%Y %H:%M:%S")), (T("File"), name),
             (T("Kind"), T("Video") if is_video else T("Picture")), (T("Size"), f"{st.st_size / 1e6:.1f} MB")]

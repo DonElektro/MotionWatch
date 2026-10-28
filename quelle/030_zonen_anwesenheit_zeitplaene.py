@@ -543,7 +543,7 @@ def web_texts(lang=None):
         if m_:
             ph = msg_defaults(lang)[m_.group(1)][0 if m_.group(2) == "title" else 1]
         elif key == "device_name":
-            ph = "Motion Watch"
+            ph = "MoveEye"
         elif key == "backup_url":
             ph = "https://cloud.example.ch/remote.php/dav/files/USER/MotionWatch/"
         out.append({"section": sec, "key": key, "label": tr(label, lang), "placeholder": ph,

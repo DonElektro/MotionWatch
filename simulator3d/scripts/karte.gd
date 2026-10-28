@@ -1,6 +1,6 @@
 extends PanelContainer
 ## The map to choose a place in Switzerland (from 3D-3.4): swisstopo map or aerial picture, drag with the mouse, zoom with
-## the wheel, search a name; a click puts the marker (where Motion Watch stands, the square shows the detailed 400 × 400 m),
+## the wheel, search a name; a click puts the marker (where MoveEye stands, the square shows the detailed 400 × 400 m),
 ## «Diesen Ort laden» loads the place (geo.gd) and builds the scene. Map tiles are kept on the disk like the place data.
 
 const ZMIN := 7
@@ -314,7 +314,7 @@ func _update_info() -> void:
 	if waiting:
 		return
 	if sel == Vector2.ZERO:
-		info.text = "Klicken = Ort wählen (dort steht Motion Watch) · Ziehen = verschieben · Mausrad = zoomen"
+		info.text = "Klicken = Ort wählen (dort steht MoveEye) · Ziehen = verschieben · Mausrad = zoomen"
 	else:
 		info.text = "%s%.5f, %.5f – das Quadrat (400 × 400 m) wird genau gebaut, rundherum bis 1.6 km die Landschaft." % [(sel_name + " · ") if sel_name != "" else "", sel.x, sel.y]
 
@@ -510,6 +510,6 @@ func _page_objects() -> void:
 	_choice("Verstecke (für die Spiele)", [[0, "wenige"], [1, "mittel"], [2, "viele"]], w_hide, func(k): w_hide = k)
 	_choice("Fahrzeuge (parkierte Autos)", [[true, "ja"], [false, "keine"]], w_cars, func(k): w_cars = k)
 	_choice("Wald und Bäume", [[0, "licht"], [1, "normal"], [2, "dicht"]], w_forest, func(k): w_forest = k)
-	_choice("Lager von Motion Watch", [[0, "Wohnwagen und Zelt"], [1, "nur Wohnwagen"], [2, "Zelt und Hütte"]], w_camp, func(k): w_camp = k)
+	_choice("Lager von MoveEye", [[0, "Wohnwagen und Zelt"], [1, "nur Wohnwagen"], [2, "Zelt und Hütte"]], w_camp, func(k): w_camp = k)
 	_text("Mit «Szene bauen» entsteht der Ort. Ändern kann man es jederzeit: Karte öffnen (K) und den Ort nochmals laden.", 13, Color(0.7, 0.74, 0.8))
 	info.text = "Alles gewählt? Dann «Szene bauen»."

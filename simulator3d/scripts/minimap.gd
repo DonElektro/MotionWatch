@@ -1,5 +1,5 @@
 extends Control
-## Overview map in the corner of the view (from 3D-3.12): north up, Motion Watch in the middle, what the cameras see (cones),
+## Overview map in the corner of the view (from 3D-3.12): north up, MoveEye in the middle, what the cameras see (cones),
 ## houses and obstacles, visitors, players of the game, the goal, where you look from. Wheel = zoom, drag the corner = size,
 ## click = fly there. M or the button «Karte» shows / hides it. At a real place the aerial picture lies below.
 
@@ -131,7 +131,7 @@ func _draw() -> void:
 		draw_circle(vp, 3.0 if v.kind != "car" else 4.0, vc)
 		if v == main.selected:
 			draw_arc(vp, 6.0, 0, TAU, 16, Color(1, 0.8, 0.2), 2.0)
-	# Motion Watch
+	# MoveEye
 	var mp0 := w2m(main.head.global_position)
 	draw_circle(mp0, 5.0, Color(0.95, 0.45, 0.1))
 	draw_arc(mp0, 5.0, 0, TAU, 16, Color(1, 1, 1), 1.2)

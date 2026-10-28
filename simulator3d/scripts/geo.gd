@@ -1,9 +1,9 @@
 extends Node
-## A real place in Switzerland as a scene (from 3D-3.3). On the map (karte.gd) the user picks the place where Motion Watch
+## A real place in Switzerland as a scene (from 3D-3.3). On the map (karte.gd) the user picks the place where MoveEye
 ## stands; this loads - on the PC of the user, from the internet - the terrain (swisstopo height model swissALTI3D, else the
 ## free Terrarium tiles), the aerial picture (swisstopo SWISSIMAGE) and buildings, trees, forests, roads, water, fences and
 ## hedges (OpenStreetMap, Overpass), keeps everything in user://orte/cache/ (once loaded it works without internet) and
-## builds the scene «ort» from it: Motion Watch stands in the middle, north is -z.
+## builds the scene «ort» from it: MoveEye stands in the middle, north is -z.
 ## Data: © swisstopo (free use with source, OGD) · © OpenStreetMap contributors (ODbL) · Terrarium: Mapzen / AWS open data.
 
 const NEAR := 200.0              # half side of the detailed square around the head (m)
@@ -380,7 +380,7 @@ func load_place(la: float, lo: float, nm: String, rebuild := true) -> void:
 	# buildings of swisstopo in 3D (from 3D-3.10), else the houses of OpenStreetMap
 	b3d_meshes = []
 	if b3d_on:
-		var keep := []                                     # the house round Motion Watch is left out
+		var keep := []                                     # the house round MoveEye is left out
 		for e in osm:
 			if typeof(e) == TYPE_DICTIONARY and typeof(e.get("tags")) == TYPE_DICTIONARY and e["tags"].has("building"):
 				for poly in _polys(e):
@@ -545,7 +545,7 @@ func build(s) -> void:
 			for poly in _polys(e):
 				if Geometry2D.is_point_in_polygon(Vector2.ZERO, poly):
 					head_in = true
-					continue                                # Motion Watch stands here: no house round it
+					continue                                # MoveEye stands here: no house round it
 				_building(poly, tg)
 		elif tg.has("highway") and e.get("type") == "way" and str(tg.get("area", "")) != "yes" and str(tg.get("tunnel", "")) != "yes":
 			roads.append([_line(e), tg])
@@ -591,7 +591,7 @@ func build(s) -> void:
 	_camp()
 	_env_props(use_env)
 	if head_in:
-		main.geo_note = "Motion Watch steht in einem Gebäude – das Gebäude wurde weggelassen."
+		main.geo_note = "MoveEye steht in einem Gebäude – das Gebäude wurde weggelassen."
 	counts["trees"] = counts.get("trees", 0)
 	sc = null
 
@@ -1339,7 +1339,7 @@ func _far_trees() -> void:
 	_simple_trees(list)
 
 
-# ---- the camp: caravan (door sensor), tent (PIR), bike next to Motion Watch ------------------------------------------
+# ---- the camp: caravan (door sensor), tent (PIR), bike next to MoveEye ------------------------------------------
 func _camp() -> void:
 	var spots := [[-28.0, 9.0], [28.0, 9.0], [-60.0, 8.0], [60.0, 8.0], [180.0, 9.0], [-120.0, 9.0], [120.0, 9.0], [0.0, 12.0]]
 	var used := []
@@ -1399,7 +1399,7 @@ const ENV_PROPS := {
 const ENV_CARS := {"dorf": 5, "stadt": 9, "land": 1, "wald": 1, "berge": 1, "see": 2}
 var env := ""                      # what the place looks like (detect_env)
 var env_why := ""
-var park_segs: Array = []          # [a, b, half width] of small roads near Motion Watch: parked cars
+var park_segs: Array = []          # [a, b, half width] of small roads near MoveEye: parked cars
 var water_polys: Array = []
 
 
@@ -1556,7 +1556,7 @@ func _env_props(e: String) -> void:
 			sc.prop("boat" if rng.randf() < 0.5 else "reeds", Vector3(p2.x, 0.0, p2.y), atan2(dd.x, dd.y))
 			at_shore += 1
 		made += at_shore
-	# the rest spread round Motion Watch, more of them near
+	# the rest spread round MoveEye, more of them near
 	var tries3 := 0
 	while made < many and tries3 < many * 15:
 		tries3 += 1

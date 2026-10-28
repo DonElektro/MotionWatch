@@ -303,7 +303,7 @@ func _build_person() -> void:
 		_part(head, _cyl(0.16, 0.16, 0.012, 18), Vector3(0, 0.22, 0), Color(0.3, 0.25, 0.2), 27.0)
 	body_h = 0.9 * body_root.scale.y
 	_person_extras(jacket, cloth_t)
-	# at night some people carry a light: a headlamp or the light of the phone (Motion Watch sees it)
+	# at night some people carry a light: a headlamp or the light of the phone (MoveEye sees it)
 	if main.is_dark() and not kid and not controlled and not preview and randf() < main.lamp_share:
 		lamp = SpotLight3D.new()
 		lamp.spot_range = 9.0

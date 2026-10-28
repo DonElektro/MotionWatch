@@ -1,4 +1,6 @@
-# Motion Watch – Hinweise für Claude
+# MoveEye (früher Motion Watch) – Hinweise für Claude
+
+**Name ab 2.96.0: MoveEye** (Logo E6a-4: Sichtfeld, Auge unten, gehende Person in Erkennungs-Ecken). In allen sichtbaren Texten «MoveEye»; interne Namen bleiben (Dateien `webcam_bewegung_*.py`, Ordner `~/.config/motionwatch/`, Repository, `"app": "Motion Watch"` in Protokollen wie versions.json und der Geräte-Suche, Basic-Realm).
 
 Raspberry-Pi-5-Gerät zur Wildtier- und Personenwarnung beim Camping (Schwenk-/Neigekopf, KI-Erkennung, Wärmebild,
 Push-Nachrichten). Besitzer: Daniel (Schweiz). Eventuell später als Produkt vermarkten.

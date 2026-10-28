@@ -1,6 +1,6 @@
 #@ Motion Watch – Teil 140: Autostart. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Autostart: when switched on, the Pi starts Motion Watch when it boots (no screen needed) and switches the own Wi-Fi on.
+# Autostart: when switched on, the Pi starts MoveEye when it boots (no screen needed) and switches the own Wi-Fi on.
 # When switched off, nothing starts at boot and the Pi joins its known networks as usual (the own Wi-Fi never starts by itself).
 #   normal user: systemd USER service  ~/.config/systemd/user/motionwatch.service  (+ "linger" so it starts without login)
 #   root (sudo): systemd system service /etc/systemd/system/motionwatch.service
@@ -36,7 +36,7 @@ INSTANCE = {"fd": None, "stopped": None}
 
 
 def instance_lock(port):
-    """Only one Motion Watch per web port (two would fight over camera, servos and port). True = we may run."""
+    """Only one MoveEye per web port (two would fight over camera, servos and port). True = we may run."""
     try:
         import fcntl
     except ImportError:
@@ -62,19 +62,19 @@ def instance_lock(port):
 
 
 def instance_takeover(port, gui):
-    """Another Motion Watch holds the port. Started by hand with a window while the autostart service runs: ask and take
+    """Another MoveEye holds the port. Started by hand with a window while the autostart service runs: ask and take
     over (the service is stopped now and started again when this window closes). Returns True when we may run."""
     url = f"http://127.0.0.1:{int(port)}/"
     mode = _autostart_mode()
     code, out, _e = _systemctl(mode, "is-active", SERVICE_NAME, timeout=10) if shutil.which("systemctl") else (1, "", "")
     service = out.strip() == "active"
-    msg = (tr("Motion Watch is already running") + (" " + tr("in the background (autostart, without a window).") if service else ".")
+    msg = (tr("MoveEye is already running") + (" " + tr("in the background (autostart, without a window).") if service else ".")
            + "\n\n" + tr("Web page") + ": " + url)
     if not (gui and GUI_OK and service):
         print(msg.replace("\n\n", " - ")); return False
     try:
         r = tk.Tk(); r.withdraw()
-        yes = messagebox.askyesno("Motion Watch", msg + "\n\n" + tr("Open the window here instead? The background service is stopped for "
+        yes = messagebox.askyesno("MoveEye", msg + "\n\n" + tr("Open the window here instead? The background service is stopped for "
                                   "that and starts again when you close the window."), parent=r)
         r.destroy()
     except Exception:
@@ -246,11 +246,11 @@ def autostart_unit(mode):
     exe = " ".join(shlex.quote(x) for x in [sys.executable, os.path.abspath(__file__)] + autostart_args())
     # StartLimitIntervalSec=0: never give up (e.g. after a power cut the camera / network may need a while)
     if mode == "system":
-        head = ("[Unit]\nDescription=Motion Watch (camera surveillance)\nAfter=network.target NetworkManager.service\n"
+        head = ("[Unit]\nDescription=MoveEye (camera surveillance)\nAfter=network.target NetworkManager.service\n"
                 "Wants=NetworkManager.service\nStartLimitIntervalSec=0\n\n")
         install = "WantedBy=multi-user.target"
     else:
-        head = "[Unit]\nDescription=Motion Watch (camera surveillance)\nStartLimitIntervalSec=0\n\n"
+        head = "[Unit]\nDescription=MoveEye (camera surveillance)\nStartLimitIntervalSec=0\n\n"
         install = "WantedBy=default.target"
     return (head + "[Service]\nType=simple\n" + f"WorkingDirectory={HERE}\nExecStart={exe}\n"
             + f"Environment=PYTHONUNBUFFERED=1\nEnvironment=MOTIONWATCH_HOME={DATA_DIR}\n"
@@ -292,10 +292,10 @@ def desktop_notice(title, text, wait=300):
         except Exception:
             icon = "camera-web"
         if shutil.which("notify-send"):
-            cmd = ["notify-send", "-a", "Motion Watch", "-i", icon, "-t", "12000", title, text]
+            cmd = ["notify-send", "-a", "MoveEye", "-i", icon, "-t", "12000", title, text]
         elif shutil.which("gdbus"):
             cmd = ["gdbus", "call", "--session", "--dest", "org.freedesktop.Notifications", "--object-path", "/org/freedesktop/Notifications",
-                   "--method", "org.freedesktop.Notifications.Notify", gq("Motion Watch"), "0", gq(icon), gq(title), gq(text), "[]", "{}", "12000"]
+                   "--method", "org.freedesktop.Notifications.Notify", gq("MoveEye"), "0", gq(icon), gq(title), gq(text), "[]", "{}", "12000"]
         else:
             return None                                      # nothing on this system can show a message
         try:

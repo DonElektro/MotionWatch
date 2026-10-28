@@ -1,6 +1,6 @@
 extends PanelContainer
-## 3D-3.77: «Kopf steuern» - turn the head of Motion Watch from the simulator window: big arrows (hold = keeps turning),
-## centre, the white light, and the picture of the head camera (drag in it = turn). Motion Watch does it (2.95.103,
+## 3D-3.77: «Kopf steuern» - turn the head of MoveEye from the simulator window: big arrows (hold = keeps turning),
+## centre, the white light, and the picture of the head camera (drag in it = turn). MoveEye does it (2.95.103,
 ## request «look» / «light» through mw_cmd) - like the arrows on its own page. In a game with a PC guard the game turns
 ## the head (localplay.gd).
 
@@ -95,8 +95,8 @@ func _process(dt: float) -> void:
 	position = Vector2(14, vs.y - size.y - 110)
 	img.texture = main.vps[0].get_texture()
 	var con: bool = main.now() - main.mw_t < 3.0
-	info.text = ("Motion Watch dreht den Kopf (auch Tracking und Patrouille pausieren kurz)." if con
-			else "Motion Watch ist nicht verbunden – zuerst «An Motion Watch senden» und Motion Watch verbinden.")
+	info.text = ("MoveEye dreht den Kopf (auch Tracking und Patrouille pausieren kurz)." if con
+			else "MoveEye ist nicht verbunden – zuerst «An MoveEye senden» und MoveEye verbinden.")
 	if _hold != "":
 		_hold_t -= dt
 		if _hold_t <= 0.0:

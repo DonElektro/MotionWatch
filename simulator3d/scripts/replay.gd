@@ -1,5 +1,5 @@
 extends Node3D
-## Alarm-Rückblick in 3D (3D-3.44): Motion Watch sends what its camera saw around an alarm - where its head looked and where in
+## Alarm-Rückblick in 3D (3D-3.44): MoveEye sends what its camera saw around an alarm - where its head looked and where in
 ## the picture each person / animal was, about twice a second. Here that is turned back into the world: a ray from the head
 ## through the spot in the picture, the distance from the height of the box (a person ~1.7 m, an animal ~0.6 m). A see-through
 ## figure walks the way again, with its trail; the head turns like it did; a strip at the top tells the time and what it was.
@@ -18,7 +18,7 @@ var ghosts := {}              # kind index -> MeshInstance3D
 var trail: MeshInstance3D
 var trail_pts := []
 var strip: Label
-var servo := Vector2.ZERO     # pan / tilt in degrees while replaying (main takes this instead of Motion Watch)
+var servo := Vector2.ZERO     # pan / tilt in degrees while replaying (main takes this instead of MoveEye)
 var _cam_t := 0.0
 
 
@@ -176,7 +176,7 @@ func _process(dt: float) -> void:
 			im.surface_add_vertex(q)
 		im.surface_end()
 	strip.text = "Alarm-Rückblick: %s  ·  %d / %d s%s  ·  Esc beendet" % [title, int(rt), int(dur), "  ·  %dx schneller" % int(speed) if speed > 1.0 else ""]
-	# the camera: from above and behind Motion Watch, looking at what happens
+	# the camera: from above and behind MoveEye, looking at what happens
 	if nf > 0:
 		focus /= nf
 	else:

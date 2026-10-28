@@ -2,7 +2,7 @@
 # ----------------------------------------------------------------------------
 # MQTT / Home Assistant: state (armed, person, motion, animal, recording, battery, temperature), events and the alarm picture
 #   go to an MQTT broker (e.g. the Mosquitto add-on of Home Assistant); commands come back (arm / disarm, lights).
-#   Home Assistant finds Motion Watch by itself (MQTT discovery): alarm panel, sensors, camera picture.
+#   Home Assistant finds MoveEye by itself (MQTT discovery): alarm panel, sensors, camera picture.
 #   Own small MQTT 3.1.1 client (no extra package), optional TLS.
 # ----------------------------------------------------------------------------
 class MiniMQTT:
@@ -177,7 +177,7 @@ class MqttBridge:
         return {"arm": arm, "alarm_panel": ha, "person": "ON" if STATE["persons"] else "OFF", "motion": "ON" if "motion" in present else "OFF",
                 "animal": "ON" if "animal" in present else "OFF", "recording": "ON" if STATE.get("recording") else "OFF",
                 "persons": STATE["persons"], "battery": b.get("pct"), "cpu_temp": STATE.get("cpu_temp"), "fps": STATE.get("fps"),
-                "tamper": (STATE.get("tamper") or {}).get("last", ""), "version": APP_VERSION, "name": CFG["device_name"] or "Motion Watch"}
+                "tamper": (STATE.get("tamper") or {}).get("last", ""), "version": APP_VERSION, "name": CFG["device_name"] or "MoveEye"}
 
     def push_state(self, c):
         st = self.state(); now = time.time()
@@ -226,8 +226,8 @@ class MqttBridge:
 
     def discovery(self, c):
         """Home Assistant MQTT discovery: the device and its entities appear by themselves."""
-        b = self.base(); uid = device_uid(); name = CFG["device_name"] or "Motion Watch"
-        dev = {"identifiers": ["motionwatch_" + uid], "name": name, "manufacturer": "Motion Watch", "model": "Raspberry Pi camera", "sw_version": APP_VERSION}
+        b = self.base(); uid = device_uid(); name = CFG["device_name"] or "MoveEye"
+        dev = {"identifiers": ["motionwatch_" + uid], "name": name, "manufacturer": "MoveEye", "model": "Raspberry Pi camera", "sw_version": APP_VERSION}
         avail = {"availability_topic": b + "/availability"}
         ents = [
             ("alarm_control_panel", "alarm", {"name": "Alarm", "state_topic": b + "/state", "value_template": "{{ value_json.alarm_panel }}",

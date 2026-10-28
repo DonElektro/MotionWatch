@@ -231,7 +231,7 @@ func next_view() -> void:
 
 
 func remote_pad(ax: Array, bt: Array, nm: String) -> void:
-	"""a controller at the browser (Motion Watch page, e.g. a PS5 controller at the PC while the simulator runs in a VM).
+	"""a controller at the browser (MoveEye page, e.g. a PS5 controller at the PC while the simulator runs in a VM).
 	Standard mapping: axes 0/1 left stick, 2/3 right stick; buttons 0 A/✕, 1 B/○, 3 Y/△, 6 LT/L2, 7 RT/R2, 8 Back/Create,
 	9 Start/Options, 12 / 13 pad up / down"""
 	var old: Array = rp_bt

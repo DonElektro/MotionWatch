@@ -14,7 +14,7 @@ class WebStream:
                 return False
 
     def _serve(self, app, ctx):
-        """Start the web server. If the port is taken by the autostart copy of Motion Watch (e.g. an older version that runs as
+        """Start the web server. If the port is taken by the autostart copy of MoveEye (e.g. an older version that runs as
         service), that copy is stopped: the program started by hand takes over (the next boot starts the service again)."""
         port = int(CFG["web_port"]); took = False; warned = False
         while not self._port_free(port):
@@ -23,18 +23,18 @@ class WebStream:
                 for mode in ("user", "system"):
                     rc, out, _e = _systemctl(mode, "is-active", SERVICE_NAME, timeout=10)
                     if rc == 0 and out.strip() == "active" and (mode == "user" or _is_root()):
-                        log_event("web", f"Port {port} is used by the autostart copy of Motion Watch - it is stopped, this program takes over")
+                        log_event("web", f"Port {port} is used by the autostart copy of MoveEye - it is stopped, this program takes over")
                         _systemctl(mode, "stop", SERVICE_NAME, timeout=30)
                         time.sleep(2.0)
                 if self._port_free(port):
                     break
-            STATE["web_status"] = f"port {port} busy - another program (an older Motion Watch?) uses it"
+            STATE["web_status"] = f"port {port} busy - another program (an older MoveEye?) uses it"
             if not warned:
                 warned = True
-                STATE["web_status"] = f"port {port} busy - another program (an older Motion Watch?) uses it"
-                log_event("web", f"Web page NOT started: port {port} is used by another program (an older Motion Watch still running?). "
+                STATE["web_status"] = f"port {port} busy - another program (an older MoveEye?) uses it"
+                log_event("web", f"Web page NOT started: port {port} is used by another program (an older MoveEye still running?). "
                                  f"Stop it, e.g.: systemctl --user stop motionwatch  -  trying again every 10 s")
-                print(f"   Web page: port {port} is busy (another Motion Watch?) - trying again every 10 s")
+                print(f"   Web page: port {port} is busy (another MoveEye?) - trying again every 10 s")
             time.sleep(10)
         if warned:
             log_event("web", f"Port {port} is free again - web page started")
@@ -98,7 +98,7 @@ class WebStream:
 
         def origin_ok():
             """2.95.33 (CSRF): a POST from a page of another web site is refused. Browsers always send «Origin» on such
-            requests; programs (simulator, other Motion Watch devices, shortcuts) send none and are let through."""
+            requests; programs (simulator, other MoveEye devices, shortcuts) send none and are let through."""
             o = request.headers.get("Origin")
             if o is None:
                 return True
@@ -212,7 +212,7 @@ class WebStream:
                           "ip": e.get("ip"), "me": e.get("h") == mine} for e in (CFG.get("trusted") or [])]})
 
         @app.after_request
-        def count_viewer(resp):                     # who has a page open: counted for the header (other Motion Watch devices not)
+        def count_viewer(resp):                     # who has a page open: counted for the header (other MoveEye devices not)
             p = request.path
             if resp.status_code < 400 and (p == "/api/state" or (p.startswith("/g/") and p.endswith(("/state", "/state.json")))):
                 ua = request.headers.get("User-Agent", "")
@@ -346,10 +346,10 @@ class WebStream:
                     if not isinstance(r, dict):
                         return reply({"ok": False, "error": tr_err("not supported - update the simulator", lang)}, 400)
                     if r.get("ok") and not r.get("hit"):
-                        log_event("sim", f"False alarm marked: a shot of {q_['who'] or 'Motion Watch'} into the simulation missed")
+                        log_event("sim", f"False alarm marked: a shot of {q_['who'] or 'MoveEye'} into the simulation missed")
                     SIMGAME["t"] = 0.0
                     return reply(r)
-                if act_ == "game_mwcatch":                   # «Team gegen Motion Watch»: «Erwischt!» from this page (3D-3.27)
+                if act_ == "game_mwcatch":                   # «Team gegen MoveEye»: «Erwischt!» from this page (3D-3.27)
                     try:
                         q_ = {"action": "game_mwcatch", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30]}
                         if d.get("x") is not None and d.get("y") is not None:      # 2.95.74: the hunter tapped this spot of the live picture
@@ -681,7 +681,7 @@ class WebStream:
         @app.route("/info/")
         def info_page():
             if not CFG.get("info_page"):
-                return Response("<h2 style='font-family:sans-serif'>Motion Watch</h2>", 404, mimetype="text/html")
+                return Response("<h2 style='font-family:sans-serif'>MoveEye</h2>", 404, mimetype="text/html")
             return Response(info_html(), mimetype="text/html", headers={"Cache-Control": "no-store"})
 
         @app.route("/info/ask", methods=["POST"])
@@ -915,7 +915,7 @@ class WebStream:
                     party_open(float(d.get("hours") or 6))
                 elif a_ == "close":
                     party_close()
-                elif a_ == "rest":                     # Motion Watch rests, only the game server runs (2.95.31)
+                elif a_ == "rest":                     # MoveEye rests, only the game server runs (2.95.31)
                     if d.get("on"):
                         mins = (PARTY["until"] - time.time()) / 60 if party_on() else float(d.get("hours") or 6) * 60
                         ok_, e_ = toolmode_set(max(5, min(720, int(mins + 0.99))), "game corner")
@@ -966,7 +966,7 @@ class WebStream:
                 for r in info_["runs"]:
                     r["report"] = {k: v for k, v in (r.get("report") or {}).items() if k != "device"}
                 z.writestr("testlauf_bericht.json", json.dumps(info_, indent=1, ensure_ascii=False))
-                z.writestr("LIES_MICH.txt", "Bericht der Testläufe von Motion Watch " + APP_VERSION + " für die Entwicklung.\n"
+                z.writestr("LIES_MICH.txt", "Bericht der Testläufe von MoveEye " + APP_VERSION + " für die Entwicklung.\n"
                            "Einfach im Chat mit Claude anhängen oder auf GitHub in den Ordner feedback/ hochladen.\n"
                            "Enthält: Versionen, Erkennungs-Einstellungen, Ergebnisse pro Phase, Ursachen, kleine Bilder der Fehler.\n"
                            "Enthält nicht: Passwörter, Schlüssel, Adressen, Aufnahmen.\n")
@@ -1319,7 +1319,7 @@ class WebStream:
             elif action == "ir_on" or action == "ir_off":
                 light_set("ir", action.split("_")[1]); txt = "infrared " + action.split("_")[1]
             elif action == "status":
-                return reply({"device": CFG["device_name"] or "Motion Watch", "armed": is_armed(), "persons": int(STATE.get("persons") or 0),
+                return reply({"device": CFG["device_name"] or "MoveEye", "armed": is_armed(), "persons": int(STATE.get("persons") or 0),
                               "simulation": bool(CFG["sim_on"]), "last_alarm": STATE.get("last_person_str") or ""})
             elif action == "photo.jpg":
                 if watch.frame_out is None:
@@ -1634,7 +1634,7 @@ class WebStream:
 
         @app.route("/api/settings/export")
         def api_settings_export():
-            data = dict(settings_data(), app="Motion Watch", version=os.path.basename(__file__))
+            data = dict(settings_data(), app="MoveEye", version=os.path.basename(__file__))
             name = "motionwatch_einstellungen_" + datetime.now().strftime("%Y%m%d_%H%M") + ".json"
             return Response(json.dumps(data, indent=1), mimetype="application/json",
                             headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
@@ -2447,7 +2447,7 @@ class WebStream:
                 webpush_remove(str((d.get("sub") or {}).get("endpoint") or d.get("endpoint") or ""))
             elif a == "test":
                 de = lang == "de"
-                n = webpush_all("Motion Watch: Test", tr("Web push works ✓", lang), "/", tag="mw-test")
+                n = webpush_all("MoveEye: Test", tr("Web push works ✓", lang), "/", tag="mw-test")
                 ok, err = n > 0, ("" if n else "no device reached")
             elif a == "https":
                 if not local_req() and not web_pw_active():
@@ -2520,7 +2520,7 @@ class WebStream:
             if d.get("action") != "test":
                 return reply({"ok": False, "error": "unknown action"}, 400)
             de = CFG["lang"] == "de"
-            ok, err = sms_send(f"{CFG['device_name'] or 'Motion Watch'}: " + tr("test SMS - it works"), force=True)
+            ok, err = sms_send(f"{CFG['device_name'] or 'MoveEye'}: " + tr("test SMS - it works"), force=True)
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
 
         @app.route("/api/qr")
@@ -2578,7 +2578,7 @@ class WebStream:
         def setup_card():
             L = norm_lang(request.args.get("lang") or CFG["lang"])
             T = (lambda d_, e_: tr(e_, L))
-            name = html_escape(CFG["device_name"] or "Motion Watch")
+            name = html_escape(CFG["device_name"] or "MoveEye")
             cards = []
             if CFG["hotspot_on"] and CFG["hotspot_password"]:
                 cards.append((T("1 · Mit dem WLAN des Geräts verbinden", "1 · Join the device's Wi-Fi"),
@@ -2594,9 +2594,9 @@ class WebStream:
                 cards.append((t_, qr_svg(a["url"]), html_escape(a["url"])))
             items = "".join(f'<div class="c"><h3>{h}</h3>{svg}<p>{txt}</p></div>' for h, svg, txt in cards)
             steps = T("<li>QR-Code mit der Handy-Kamera scannen.</li><li>Seite öffnen, beim ersten Mal führt der Einrichtungs-Assistent durch Passwort und Push-Nachrichten.</li>"
-                      "<li>Teilen → «Zum Home-Bildschirm»: Motion Watch wie eine App starten.</li><li>Schutz scharf schalten: grosse Taste «Scharf» oben.</li>",
+                      "<li>Teilen → «Zum Home-Bildschirm»: MoveEye wie eine App starten.</li><li>Schutz scharf schalten: grosse Taste «Scharf» oben.</li>",
                       "<li>Scan the QR code with the phone camera.</li><li>Open the page; the first time the setup assistant guides you through password and push messages.</li>"
-                      "<li>Share → «Add to Home Screen»: start Motion Watch like an app.</li><li>Arm the protection: big «Armed» button at the top.</li>")
+                      "<li>Share → «Add to Home Screen»: start MoveEye like an app.</li><li>Arm the protection: big «Armed» button at the top.</li>")
             page = (f'<!doctype html><html lang="{L}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
                     f'<title>{name} – {T("Kurzanleitung", "Quick start")}</title><style>body{{font:15px/1.45 system-ui,sans-serif;color:#111;background:#fff;margin:0;padding:24px;max-width:780px;margin:auto}}'
                     'h1{font-size:22px;margin:0 0 4px}.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin:18px 0}'

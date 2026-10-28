@@ -1,7 +1,7 @@
 extends Node
 ## Daily life (3D-3.27): who comes when. Animals and people come at their own times of the day (fox and badger at
 ## night, deer at dawn and dusk, squirrels by day ...), and some come every day at about the same time: the neighbour
-## with the dog in the morning, the postman, children in the afternoon, a jogger in the evening. Motion Watch can learn
+## with the dog in the morning, the postman, children in the afternoon, a jogger in the evening. MoveEye can learn
 ## what is «normal». Also: the real weather and the real time of the place (Open-Meteo, no key needed).
 
 var main

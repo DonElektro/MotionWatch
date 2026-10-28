@@ -1,9 +1,9 @@
 extends CanvasLayer
 ## Mini window: when the simulator window is minimized, it becomes a small box in the corner of the screen instead
-## (on top of the other windows). A minimized window draws no pictures any more - then Motion Watch would only see
+## (on top of the other windows). A minimized window draws no pictures any more - then MoveEye would only see
 ## «CONNECTING…». The box shows whether the simulator sends, how many pictures per second, and the connection.
 ## Click on the box: big again. Drag: move it. While it sends, the PC and the screen do not go to sleep.
-## From 3D-2.3 also the CPU (measured by Motion Watch: the whole computer, Motion Watch, the simulator) and «Pause».
+## From 3D-2.3 also the CPU (measured by MoveEye: the whole computer, MoveEye, the simulator) and «Pause».
 ## From 3D-3.11 also the CPU of this PC and of the simulator (measured here: Windows with a small PowerShell loop while the box
 ## is shown, Linux from /proc), and «▁» folds the box into a small icon (click on it: the box again).
 
@@ -40,7 +40,7 @@ var _lin_prev := []
 
 
 func _ready() -> void:
-	"""3D-3.77: compact - logo, version, state at the top; pictures, CPU and Motion Watch in one line; a note only when needed"""
+	"""3D-3.77: compact - logo, version, state at the top; pictures, CPU and MoveEye in one line; a note only when needed"""
 	layer = 120
 	panel = PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -106,7 +106,7 @@ func _ready() -> void:
 	line2.add_theme_color_override("font_color", Color(0.82, 0.86, 0.9))
 	line2.clip_text = true
 	v.add_child(line2)
-	line_cpu = Label.new()                            # Motion Watch: device, version, its CPU
+	line_cpu = Label.new()                            # MoveEye: device, version, its CPU
 	line_cpu.add_theme_font_size_override("font_size", 12)
 	line_cpu.add_theme_color_override("font_color", Color(0.65, 0.7, 0.77))
 	line_cpu.clip_text = true
@@ -160,8 +160,8 @@ func _ready() -> void:
 
 
 func _process(dt: float) -> void:
-	# CPU of this PC: measured while the box is shown or while Motion Watch is connected (it shows it, 3D-3.24)
-	var want_cpu := true                       # always (3D-3.26): the window shows it at the top, Motion Watch in its header
+	# CPU of this PC: measured while the box is shown or while MoveEye is connected (it shows it, 3D-3.24)
+	var want_cpu := true                       # always (3D-3.26): the window shows it at the top, MoveEye in its header
 	if want_cpu and not cpu_run:
 		_cpu_start()
 	elif not want_cpu and cpu_run and not mini:
@@ -195,7 +195,7 @@ func _paint() -> void:
 	dot.add_theme_color_override("font_color", col)
 	line3.add_theme_color_override("font_color", col)
 	line3.text = "verbunden" if connected else ("wartet" if sending else "aus")
-	line1.text = "MW Sim 3D  %s" % main.VERSION
+	line1.text = "MoveEye Sim  %s" % main.VERSION
 	var parts := PackedStringArray()
 	parts.append(("%.0f Bilder/s" % fps) if sending else "sendet nicht")
 	if own["pc"] >= 0:
@@ -207,19 +207,19 @@ func _paint() -> void:
 	line2.text = "  ·  ".join(parts)
 	if connected:
 		var c: Dictionary = main.cpu_info
-		var mwp := PackedStringArray([(str(main.mw.get("device", "Motion Watch")) + " " + str(main.mw.get("mw_version", ""))).strip_edges()])
+		var mwp := PackedStringArray([(str(main.mw.get("device", "MoveEye")) + " " + str(main.mw.get("mw_version", ""))).strip_edges()])
 		if c.get("total", null) != null and c.get("sim", null) == null:
 			mwp.append("Gerät-CPU %d %%" % roundi(float(c["total"])))
 		elif c.get("mw", null) != null:
 			mwp.append("MW %d %%" % roundi(float(c["mw"])))
 		line_cpu.text = "  ·  ".join(mwp).strip_edges()
 	else:
-		line_cpu.text = "Motion Watch: –" if sending else "Motion Watch sieht den Simulator nicht"
+		line_cpu.text = "MoveEye: –" if sending else "MoveEye sieht den Simulator nicht"
 	var note := ""
 	if not main.sim_active:
-		note = "Pause – spart Strom, bis Motion Watch fragt"
+		note = "Pause – spart Strom, bis MoveEye fragt"
 	elif sending and not connected:
-		note = "wartet auf Motion Watch …"
+		note = "wartet auf MoveEye …"
 	if net_err() != "":
 		note = net_err()
 	line_own.text = note
@@ -235,16 +235,16 @@ func net_err() -> String:
 
 
 static func cpu_text(c: Dictionary) -> String:
-	"""CPU as Motion Watch measures it. Same computer (the simulator is found there): whole PC, Motion Watch, simulator.
-	Motion Watch on the Pi: the Pi and Motion Watch on it (the CPU of this PC cannot be measured then)."""
+	"""CPU as MoveEye measures it. Same computer (the simulator is found there): whole PC, MoveEye, simulator.
+	MoveEye on the Pi: the Pi and MoveEye on it (the CPU of this PC cannot be measured then)."""
 	var pc = c.get("total", null)
 	if pc == null:
-		return "CPU: – (misst Motion Watch, sobald verbunden)"
+		return "CPU: – (misst MoveEye, sobald verbunden)"
 	var mw = c.get("mw", null)
 	var sim = c.get("sim", null)
 	if sim != null:
-		return "CPU PC %d %%  ·  Motion Watch %s  ·  Simulator %d %%" % [roundi(float(pc)), "–" if mw == null else "%d %%" % roundi(float(mw)), roundi(float(sim))]
-	return "CPU Motion-Watch-Gerät %d %%  ·  davon Motion Watch %s" % [roundi(float(pc)), "–" if mw == null else "%d %%" % roundi(float(mw))]
+		return "CPU PC %d %%  ·  MoveEye %s  ·  Simulator %d %%" % [roundi(float(pc)), "–" if mw == null else "%d %%" % roundi(float(mw)), roundi(float(sim))]
+	return "CPU Motion-Watch-Gerät %d %%  ·  davon MoveEye %s" % [roundi(float(pc)), "–" if mw == null else "%d %%" % roundi(float(mw))]
 
 
 func enter() -> void:

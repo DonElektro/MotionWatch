@@ -3,7 +3,7 @@ extends Node
 ## same Wi-Fi). Every player has an own view (a camera behind the own figure, JPEG over a WebSocket).
 ## Modes: «Alle gegen die Kamera» (the simulator guards) or «Ein Spieler ist Wächter» (one phone sees through the head
 ## camera, turns the head, switches the light on and calls «Erwischt!»).
-## The referee (visibility()) works like the real detection of Motion Watch: a person is recognised when it is big enough
+## The referee (visibility()) works like the real detection of MoveEye: a person is recognised when it is big enough
 ## in the picture (pixels) and there is enough light; movement is noticed by the motion detection; the thermal camera
 ## sees a warm spot also at night; the microphone hears loud steps. Objects hide (with their height).
 ## Extras (all adjustable): stones to distract, things to collect, lives, cones of view for beginners, random start/goal.
@@ -104,7 +104,7 @@ func news(txt: String) -> void:
 var cones: Array = []                   # [node of the head camera, node of the fixed camera]
 var stones: Array = []                  # [node, until]
 var _ref_t := 0.0
-var _mw_catch_t := 0.0                  # «Motion Watch decides»: not again before then
+var _mw_catch_t := 0.0                  # «MoveEye decides»: not again before then
 var _st_t := 0.0
 var capturing := false
 var info_label: Label
@@ -126,7 +126,7 @@ func _ready() -> void:
 	_rng.randomize()
 	_build_cones()
 	on_scene()
-	learn = preload("res://scripts/gamelearn.gd").new()     # 3D-3.52: the game teaches Motion Watch
+	learn = preload("res://scripts/gamelearn.gd").new()     # 3D-3.52: the game teaches MoveEye
 	learn.main = main
 	learn.game = self
 	add_child(learn)
@@ -258,7 +258,7 @@ func _pick_goal(random: bool) -> void:
 	beam.mesh = cm
 	beam.position.y = 3.5
 	beam.material_override = _glow(Color(0.2, 1.0, 0.4, 0.28))
-	beam.layers = 16                                       # only the players see it (not Motion Watch)
+	beam.layers = 16                                       # only the players see it (not MoveEye)
 	goal_node.add_child(beam)
 
 
@@ -772,7 +772,7 @@ func _make_actor(slot: int, lk: Dictionary, pos: Vector3) -> Array:
 	root.add_child(a)
 	a.setup(main, "person", pos, goal, 1.5)
 	a.frozen = round_state == "countdown"
-	# a small coloured cone above the head: the others see who is who (only the players, not Motion Watch)
+	# a small coloured cone above the head: the others see who is who (only the players, not MoveEye)
 	var cone := MeshInstance3D.new()
 	var cm := CylinderMesh.new()
 	cm.top_radius = 0.0
@@ -784,7 +784,7 @@ func _make_actor(slot: int, lk: Dictionary, pos: Vector3) -> Array:
 	cone.material_override = _glow(COLORS[slot])
 	cone.layers = 16
 	a.add_child(cone)
-	var loot := MeshInstance3D.new()                       # the loot on the back (game goal «bring it back»; Motion Watch sees it)
+	var loot := MeshInstance3D.new()                       # the loot on the back (game goal «bring it back»; MoveEye sees it)
 	var lm := BoxMesh.new()
 	lm.size = Vector3(0.32, 0.26, 0.2)
 	loot.mesh = lm
@@ -920,7 +920,7 @@ func _capture(p: Dictionary, q: Array) -> void:
 
 
 func _send_guard_view() -> void:
-	"""the guard sees what Motion Watch sees: the picture of the head camera (with grain, light, raindrops)"""
+	"""the guard sees what MoveEye sees: the picture of the head camera (with grain, light, raindrops)"""
 	for g in players:                                      # first guard: head camera, others: fixed camera
 		if g == null or g["role"] != "guard" or g["sock"] == null or not g["want"]:
 			continue
@@ -1274,7 +1274,7 @@ func end_round() -> void:
 				p["task_ok"] = true
 				p["bonus"] = int(p.get("bonus", 0)) + int(task["bonus"])
 				info += " · ✅ Aufgabe (+%d)" % int(task["bonus"])
-			var bb: int = learn.bonus(p)                    # 3D-3.52: the blind spots of Motion Watch
+			var bb: int = learn.bonus(p)                    # 3D-3.52: the blind spots of MoveEye
 			if bb > 0:
 				info += " · 🙈 %d s unerkannt (+%d)" % [learn.blind_s(p), bb]
 			sc = max(0, sc - 150 * int(p["caught"]) + 100 * int(p["items"]) + int(p.get("bonus", 0)) + bb)
@@ -1292,9 +1292,9 @@ func end_round() -> void:
 		else:
 			p["state"] = "lobby"
 		p["susp"] = 0.0
-	if main.game_mode == "mwhand":                         # the guards at Motion Watch
-		var mn: String = ", ".join(PackedStringArray(mwg["names"])) if not mwg["names"].is_empty() else "Motion Watch"
-		results.append({"n": "🛡 " + mn, "c": "#3b8cff", "info": "Wächter an Motion Watch · %d× erwischt, %d× Fehlalarm" % [mwg["catches"], mwg["false"]],
+	if main.game_mode == "mwhand":                         # the guards at MoveEye
+		var mn: String = ", ".join(PackedStringArray(mwg["names"])) if not mwg["names"].is_empty() else "MoveEye"
+		results.append({"n": "🛡 " + mn, "c": "#3b8cff", "info": "Wächter an MoveEye · %d× erwischt, %d× Fehlalarm" % [mwg["catches"], mwg["false"]],
 				"score": max(0, 150 * int(mwg["catches"]) - 50 * int(mwg["false"]) + 100 * missed)})
 	results.sort_custom(func(x, y): return x["score"] > y["score"])
 	_rec_end()                                             # 3D-3.77: replay, ghosts, challenge of the day
@@ -1460,12 +1460,12 @@ func vis_debug(p: Dictionary) -> Array:
 
 
 func mw_decides() -> bool:
-	"""game mode «Motion Watch entscheidet» and Motion Watch is connected (and sends its detections, from 2.93.3)"""
+	"""game mode «MoveEye entscheidet» and MoveEye is connected (and sends its detections, from 2.93.3)"""
 	return (main.game_mode == "mw" or (main.game_mode == "patrol" and main.patrol_judge == "mw")) and main.now() - main.mw_det_t < 3.0
 
 
-# 3D-3.53: the difficulty also for Motion Watch as the hunter (Spiel → Regeln → «Schwierigkeit»):
-# how long Motion Watch must report a player before he is caught, the pause after a catch, crawling players safe in easy
+# 3D-3.53: the difficulty also for MoveEye as the hunter (Spiel → Regeln → «Schwierigkeit»):
+# how long MoveEye must report a player before he is caught, the pause after a catch, crawling players safe in easy
 const MW_HOLD := {"easy": 2.5, "normal": 1.0, "hard": 0.2}
 const MW_PAUSE := {"easy": 6.0, "normal": 3.0, "hard": 2.0}
 var _mw_hold := {}                       # slot (or -1 = any person) -> seconds reported without a break
@@ -1473,7 +1473,7 @@ var _mw_ref_t := 0.0
 
 
 func _mw_referee() -> void:
-	"""the real detection of Motion Watch decides: it reports a person -> the player it means (its boxes, from Motion Watch
+	"""the real detection of MoveEye decides: it reports a person -> the player it means (its boxes, from MoveEye
 	2.95.75) or else the player the cameras see best is caught - after it was reported long enough (difficulty)"""
 	var t := now()
 	var dt: float = clampf(t - _mw_ref_t, 0.0, 0.5)
@@ -1499,7 +1499,7 @@ func _mw_referee() -> void:
 		elif float(_mw_hold.get(-1, 0.0)) < need:
 			continue
 		if lvl == "easy" and int(p["actor"].ctl_posture) == 2:
-			continue                                       # easy: crawling players are safe from Motion Watch
+			continue                                       # easy: crawling players are safe from MoveEye
 		var f: float = max(cam_sees(p, 0), cam_sees(p, 1))
 		if f > top:
 			top = f
@@ -1508,7 +1508,7 @@ func _mw_referee() -> void:
 		_mw_catch_t = t + float(MW_PAUSE.get(lvl, 3.0))
 		_mw_hold.clear()
 		_caught(best, null)
-		_say(best, "Motion Watch hat dich erkannt!", 3.0)
+		_say(best, "MoveEye hat dich erkannt!", 3.0)
 
 
 func _check_distract() -> void:
@@ -1533,11 +1533,11 @@ func _referee(dt: float) -> void:
 	var lv: float = LEVEL.get(main.game_level, 1.0)
 	_check_distract()
 	_paint_goal()
-	var mw: bool = mw_decides() or main.game_mode == "mwhand"     # 3D-3.27: a person at Motion Watch decides «Erwischt!»
+	var mw: bool = mw_decides() or main.game_mode == "mwhand"     # 3D-3.27: a person at MoveEye decides «Erwischt!»
 	if mw:
 		_mw_referee()
 	learn.tick(dt)
-	if main.game_mode == "free":                           # 3D-3.60: free moving: nobody is caught, no goal - Motion Watch is only watched
+	if main.game_mode == "free":                           # 3D-3.60: free moving: nobody is caught, no goal - MoveEye is only watched
 		return
 	for p in players:
 		if p == null or p["state"] != "play" or p["role"] != "runner":
@@ -1665,7 +1665,7 @@ func _referee(dt: float) -> void:
 		p["max_susp"] = max(float(p.get("max_susp", 0.0)), float(p["susp"]))
 		if float(p["susp"]) >= 100.0:
 			if mw or main.game_mode == "seek":
-				p["susp"] = 99.0                           # the meter only hints: Motion Watch itself (or the seeker) decides
+				p["susp"] = 99.0                           # the meter only hints: MoveEye itself (or the seeker) decides
 			else:
 				_caught(p, null)
 
@@ -1899,7 +1899,7 @@ func _throw(p: Dictionary) -> void:
 	s.position = _g(to) + Vector3(0, 0.07, 0)
 	root.add_child(s)
 	stones.append([s, now() + 8.0])
-	main.add_sound(-14.0, to, 0.6)                         # the microphone of Motion Watch hears it too
+	main.add_sound(-14.0, to, 0.6)                         # the microphone of MoveEye hears it too
 	attention = to
 	attention_until = now() + 4.0
 	var st := {}
@@ -1952,7 +1952,7 @@ func _guard_light(g: Dictionary) -> void:
 	flash_until = now() + 6.0
 
 
-# ---- 3D-3.27: «Team gegen Motion Watch»: the guards sit at Motion Watch, turn the real camera head with its joystick and
+# ---- 3D-3.27: «Team gegen MoveEye»: the guards sit at MoveEye, turn the real camera head with its joystick and
 # press «Erwischt!» there. Right if the head camera sees a runner (meter at least 30 %), else a false alarm.
 var mwg := {"catches": 0, "false": 0, "t": 0.0, "names": []}
 
@@ -1960,7 +1960,7 @@ var mwg := {"catches": 0, "false": 0, "t": 0.0, "names": []}
 func mw_catch(who: String, x := -1.0, y := -1.0) -> Dictionary:
 	"""3D-3.52: x, y (0..1) = the hunter tapped this spot of the live picture (head camera): hit only who is there"""
 	if not main.game_mode in ["mwhand", "seek"] or round_state != "play":
-		return {"ok": false, "error": "Gerade läuft keine Runde «Team gegen Motion Watch» oder «Verstecken»."}
+		return {"ok": false, "error": "Gerade läuft keine Runde «Team gegen MoveEye» oder «Verstecken»."}
 	if now() < float(mwg["t"]):
 		return {"ok": false, "error": "Noch %d s warten (Fehlalarm)." % int(ceil(float(mwg["t"]) - now()))}
 	if who != "" and not (who in mwg["names"]):
@@ -1994,17 +1994,17 @@ func mw_catch(who: String, x := -1.0, y := -1.0) -> Dictionary:
 	if hit == null:
 		mwg["false"] = int(mwg["false"]) + 1
 		mwg["t"] = now() + 4.0
-		news("❌ Fehlalarm von Motion Watch" + ((" (%s)" % who) if who != "" else ""))
+		news("❌ Fehlalarm von MoveEye" + ((" (%s)" % who) if who != "" else ""))
 		return {"ok": true, "hit": false, "text": "Fehlalarm! 4 s warten."}
 	mwg["catches"] = int(mwg["catches"]) + 1
-	_say(hit, "🚨 Motion Watch hat dich erwischt!", 3.0)
-	_caught(hit, {"name": who if who != "" else "Motion Watch"})
+	_say(hit, "🚨 MoveEye hat dich erwischt!", 3.0)
+	_caught(hit, {"name": who if who != "" else "MoveEye"})
 	return {"ok": true, "hit": true, "text": "✓ %s erwischt!" % hit["name"]}
 
 
 func shot_at(who: String, x: float, y: float) -> Dictionary:
-	"""3D-3.70: a shot / trigger from Motion Watch in any kind of round: hit = the runner on this spot of the head camera picture
-	is caught; a miss counts as a false alarm of Motion Watch"""
+	"""3D-3.70: a shot / trigger from MoveEye in any kind of round: hit = the runner on this spot of the head camera picture
+	is caught; a miss counts as a false alarm of MoveEye"""
 	var hit = null
 	var near := 9.0
 	for p in players:
@@ -2022,11 +2022,11 @@ func shot_at(who: String, x: float, y: float) -> Dictionary:
 				hit = p
 	if hit == null:
 		mwg["false"] = int(mwg["false"]) + 1
-		news("❌ Fehlschuss von Motion Watch – Fehlalarm" + ((" (%s)" % who) if who != "" else ""))
+		news("❌ Fehlschuss von MoveEye – Fehlalarm" + ((" (%s)" % who) if who != "" else ""))
 		return {"ok": true, "hit": false, "text": "✗ Daneben – als Fehlalarm gezählt"}
 	mwg["catches"] = int(mwg["catches"]) + 1
-	_say(hit, "🎯 Motion Watch hat dich erwischt!", 3.0)
-	_caught(hit, {"name": who if who != "" else "Motion Watch"})
+	_say(hit, "🎯 MoveEye hat dich erwischt!", 3.0)
+	_caught(hit, {"name": who if who != "" else "MoveEye"})
 	return {"ok": true, "hit": true, "text": "✓ %s erwischt!" % hit["name"]}
 
 
@@ -2048,7 +2048,7 @@ func _guard_catch(g: Dictionary) -> void:
 
 
 func _guard(dt: float) -> void:
-	"""the head: a player as guard turns it with the joystick; without Motion Watch it guards by itself
+	"""the head: a player as guard turns it with the joystick; without MoveEye it guards by itself
 	(swings to and fro, turns towards noises and suspects)"""
 	var g = guard_player()
 	seek_drive = Vector2.ZERO
@@ -2177,7 +2177,7 @@ func paint() -> void:
 			qr_rect.texture = Qr.texture(ad, 4)
 	var lines := PackedStringArray()
 	if open and main.game_mode == "mw" and not mw_decides():
-		lines.append("⚠ «Motion Watch entscheidet»: Motion Watch ist nicht verbunden (ab Version 2.93.3) – bis dahin entscheidet der Simulator.")
+		lines.append("⚠ «MoveEye entscheidet»: MoveEye ist nicht verbunden (ab Version 2.93.3) – bis dahin entscheidet der Simulator.")
 	if not open:
 		lines.append("Bis zu 4 Spieler schleichen mit dem Handy unentdeckt zum Ziel (%s). Zuerst «Spiel öffnen»." % goal_name)
 	else:
@@ -2423,8 +2423,8 @@ function paint(m) {
     if (m.goal_mode === "flag") h += '<p>🚩 <b>Fahne erobern</b>: hol die Fahne der anderen bei ihrer Basis und bring sie zu deiner Basis (+500). Berührst du jemanden, der eure Fahne trägt, geht sie zurück (+100). Die Kamera passt auf alle auf.</p>';
     if (m.mode === "teamguard") h += '<p>⚔️ Team gegen Team · Runde ' + (m.mround + 1) + ' von 2: <b style="color:' + ["#eb2e1f", "#1f6bfa"][m.tg] + '">' + ["Team Rot", "Team Blau"][m.tg] + '</b> bewacht (Kopfkamera und feste Kamera), das andere Team schleicht. Danach wird getauscht.</p>';
     if (m.mode === "seek") h += '<p>🙈 <b>Verstecken mit dem Rover:</b> Alle starten bei der Basis. ' + (role === "guard" ? 'Du bist der <b>Fänger</b>: 30 s Augen zu, dann fährst du den Rover (Joystick links), drehst den Kopf (rechts wischen) und drückst «Erwischt!», wenn du jemanden im Bild hast.' : 'Du hast 30 s zum Verstecken. Der Fänger sieht nur die Kamera des Rovers. Berühre die Basis (Pfeil), ohne gefunden zu werden – dann gewinnen alle Verstecker!') + '</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🌳 Verstecker</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">🔎 Fänger</button>';
-    if (m.mode === "mwhand") h += '<p>🕹 <b>Team gegen Motion Watch:</b> Die Wächter sitzen an Motion Watch, drehen die echte Kamera mit dem Joystick und drücken dort «Erwischt!». Der Balken zeigt nur, wie gut man dich sieht.</p>';
-    if (m.mode === "mw") h += '<p>' + (m.mwd ? '🛡 Diesmal entscheidet die <b>echte Erkennung von Motion Watch</b>: meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht.' : '⚠ Motion Watch ist nicht verbunden – der Simulator entscheidet.') + '</p>';
+    if (m.mode === "mwhand") h += '<p>🕹 <b>Team gegen MoveEye:</b> Die Wächter sitzen an MoveEye, drehen die echte Kamera mit dem Joystick und drücken dort «Erwischt!». Der Balken zeigt nur, wie gut man dich sieht.</p>';
+    if (m.mode === "mw") h += '<p>' + (m.mwd ? '🛡 Diesmal entscheidet die <b>echte Erkennung von MoveEye</b>: meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht.' : '⚠ MoveEye ist nicht verbunden – der Simulator entscheidet.') + '</p>';
     if (m.mode === "guard") h += '<p>Ein Spieler kann Wächter sein: er sieht durch die Kamera, dreht den Kopf und ruft «Erwischt!».</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🕵️ Schleicher</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">👁 Wächter</button><br>';
     if (m.teams) { const tm = [0, 1].map(k => '<div class="tm' + (m.team === k ? " me" : "") + '"><b style="color:' + ["#eb2e1f", "#1f6bfa"][k] + '">' + ["Team Rot", "Team Blau"][k] + '</b>' +
         (m.list || []).filter(p => p.tm === k).map(p => '<span style="color:' + p.c + '">●</span> ' + esc(p.n)).join("<br>") + '<br><button class="sec' + (m.team === k ? " on" : "") + '" data-team="' + k + '">' + (m.team === k ? "✓ dabei" : "wechseln") + '</button></div>').join("");
@@ -2536,7 +2536,7 @@ joinForm();
 
 
 func spectator_info() -> Dictionary:
-	"""everything the spectators see in Motion Watch (3D-3.22): time, players, meters, what happened"""
+	"""everything the spectators see in MoveEye (3D-3.22): time, players, meters, what happened"""
 	var t := now()
 	var ps := []
 	for p in players:
@@ -2845,7 +2845,7 @@ func board_list() -> Array:
 
 
 func sneak_list() -> Array:
-	"""3D-3.53: «Bester Schleicher der Woche»: who was longest visible but not reported by Motion Watch"""
+	"""3D-3.53: «Bester Schleicher der Woche»: who was longest visible but not reported by MoveEye"""
 	_board_load()
 	var out: Array = week.values().filter(func(x): return int(x.get("blind", 0)) > 0)
 	out.sort_custom(func(x, y): return int(x.get("blind", 0)) > int(y.get("blind", 0)))
@@ -3200,7 +3200,7 @@ func _ghosts_start() -> void:
 		mt.emission_energy_multiplier = 0.6
 		mt.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		body.material_override = mt
-		body.layers = 16                                   # only the players see the ghost - never Motion Watch
+		body.layers = 16                                   # only the players see the ghost - never MoveEye
 		n.add_child(body)
 		var lb := Label3D.new()
 		lb.text = "👻 %s %d:%02d" % [p["name"], int(g["t"]) / 60, int(g["t"]) % 60]
@@ -3408,7 +3408,7 @@ func _seek_start() -> void:
 		else:
 			_say(p, "🙈 Augen zu! Die anderen verstecken sich (%d s). Dann: Rover fahren und suchen." % int(SEEK_HIDE), 5.0)
 	if guard_player() == null:
-		news("🕹 Fänger an Motion Watch: Rover mit dem zweiten Stick fahren, «Erwischt!» = gefunden")
+		news("🕹 Fänger an MoveEye: Rover mit dem zweiten Stick fahren, «Erwischt!» = gefunden")
 
 
 func seek_hiding() -> bool:

@@ -24,7 +24,7 @@ class SimLink:
                     u_ = urllib.parse.urlsplit(sim_base())
                     f_ = SIMFOUND.get(f"{u_.hostname}:{u_.port or 8765}") or {}
                     if f_ and time.time() - float(f_.get("t") or 0) < 15 and not str(u_.hostname).startswith("127."):
-                        msg_ = "announces itself but does not answer - its firewall or security software blocks Motion Watch: use the tunnel"
+                        msg_ = "announces itself but does not answer - its firewall or security software blocks MoveEye: use the tunnel"
                 except Exception:
                     pass
                 SIM.update(ok=False, msg=msg_, errs=SIM["errs"] + 1, since=0.0)
@@ -60,7 +60,7 @@ class SimLink:
         if first:
             SIM["since"] = time.time()
             self.hello()
-        mc_ = rep_.get("mw_cmd")                            # 2.95.97: the simulator asks Motion Watch for something (button there)
+        mc_ = rep_.get("mw_cmd")                            # 2.95.97: the simulator asks MoveEye for something (button there)
         if isinstance(mc_, dict) and int(mc_.get("id") or 0) > int(SIM.get("cmd_seen") or 0):
             SIM["cmd_seen"] = int(mc_.get("id") or 0)
             if not first:                                   # an old request of before the connection does not count
@@ -105,4 +105,4 @@ class SimLink:
 SIMLINK = None
 
 # The simulation program itself (motionwatch_simulator.py + motionwatch_sim_interface.py + guide), packed (ZIP, base64):
-#   it is signed together with Motion Watch and can be installed without internet.
+#   it is signed together with MoveEye and can be installed without internet.

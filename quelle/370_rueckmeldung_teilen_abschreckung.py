@@ -63,7 +63,7 @@ def feedback_flush():
             title = {"idea": "Idee", "bug": "Fehler", "praise": "Lob", "other": "Feedback"}[m.get("kind", "other")]
             try:
                 req = urllib.request.Request(url, data=m["body"].encode(), method="POST",
-                                             headers={"Title": _hdr("Motion Watch – " + title), "Tags": {"bug": "bug", "idea": "bulb", "praise": "star"}.get(m.get("kind"), "speech_balloon")})
+                                             headers={"Title": _hdr("MoveEye – " + title), "Tags": {"bug": "bug", "idea": "bulb", "praise": "star"}.get(m.get("kind"), "speech_balloon")})
                 with urllib.request.urlopen(req, timeout=15) as r:
                     if r.status >= 300:
                         left.append(m)
@@ -93,7 +93,7 @@ def feedback_loop():
 
 # ----------------------------------------------------------------------------
 # Sharing with a small logo: pictures (animal diary, snapshots, night report) and videos (recordings, timelapse) get a
-#   discreet strip at the bottom right: app icon + "Motion Watch" + what / when. Every shared fox picture is a little advert.
+#   discreet strip at the bottom right: app icon + "MoveEye" + what / when. Every shared fox picture is a little advert.
 # ----------------------------------------------------------------------------
 _FONT_CACHE = {}
 
@@ -123,7 +123,7 @@ def brand_strip(width, caption=""):
         return None
     hgt = max(26, int(width * 0.045)); pad = max(5, hgt // 5)
     f1, f2 = _font(int(hgt * 0.42)), _font(int(hgt * 0.32), bold=False)
-    title = "Motion Watch"; cap = str(caption or "")[:60]
+    title = "MoveEye"; cap = str(caption or "")[:60]
     tmp = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
     tw = max(tmp.textlength(title, font=f1), tmp.textlength(cap, font=f2) if cap else 0)
     icon = int(hgt - 2 * pad + pad)
@@ -151,7 +151,7 @@ def brand_image(img_bgr, caption=""):
     out = img_bgr.copy()
     m = max(6, w // 80)
     if strip is None:
-        txt = "Motion Watch" + ((" - " + caption.encode("ascii", "replace").decode()) if caption else "")
+        txt = "MoveEye" + ((" - " + caption.encode("ascii", "replace").decode()) if caption else "")
         cv2.putText(out, txt, (m, h - m), cv2.FONT_HERSHEY_SIMPLEX, max(0.4, w / 1600), (255, 255, 255), max(1, w // 800), cv2.LINE_AA)
         return out
     a = np.array(strip); sh, sw = a.shape[:2]

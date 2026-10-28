@@ -1,5 +1,5 @@
 extends Node
-## The connection to Motion Watch: a small HTTP server with the same protocol as motionwatch_sim_interface.py
+## The connection to MoveEye: a small HTTP server with the same protocol as motionwatch_sim_interface.py
 ## (POST /state, GET /info, /events, /cam/<n>/video.mjpg, /cam/<n>/snapshot.jpg, /thermal.bin, GET+POST /control).
 
 const BOUNDARY := "mwsimframe"
@@ -26,7 +26,7 @@ func start(p: int) -> void:
 
 
 func stop() -> void:
-	"""sending off: no more pictures, no more "here is a simulator" messages - Motion Watch does not see the simulator"""
+	"""sending off: no more pictures, no more "here is a simulator" messages - MoveEye does not see the simulator"""
 	for c in clients:
 		c["peer"].disconnect_from_host()
 	clients = []
@@ -36,7 +36,7 @@ func stop() -> void:
 
 
 func _send_beacon() -> void:
-	"""every 2 s into the network: "here is a simulator" - Motion Watch finds it by itself (UDP port 8764)"""
+	"""every 2 s into the network: "here is a simulator" - MoveEye finds it by itself (UDP port 8764)"""
 	var nm: String = main.beacon_name() if main.has_method("beacon_name") else "MW Sim · 3D %s" % main.VERSION
 	var cp: Dictionary = main.cpu_now() if main.has_method("cpu_now") else {}
 	var msg := JSON.stringify({"mwsim": 1, "name": nm, "pc_cpu": cp.get("pc"), "sim_cpu": cp.get("sim"), "port": port, "version": main.VERSION, "host": main.host_name()}).to_utf8_buffer()
@@ -220,7 +220,7 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 			for v in a2:
 				arr.append(snappedf(v, 0.01))
 			_json(c, {"v": 1, "w": main.TH_W, "h": main.TH_H, "unit": "C", "data": arr})
-		"/game_qr.png":                                  # the QR code of the game (for the page of Motion Watch) - 3D-3.20
+		"/game_qr.png":                                  # the QR code of the game (for the page of MoveEye) - 3D-3.20
 			if main.game == null or not main.game.open:
 				_json(c, {"ok": false, "error": "game not open"}, 404)
 			else:

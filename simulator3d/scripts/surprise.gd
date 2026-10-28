@@ -2,7 +2,7 @@ extends Node
 ## 3D-3.75: «Überraschungsnacht» - during the night, now and then something unexpected happens: a power cut (all lamps
 ## go out), a fog bank drifts through, a distraction (an animal on one side, a careful sneaker on the other), a car stops
 ## and blinds the camera with its headlights, an animal stands still in front of the camera for minutes.
-## Motion Watch is watched all the time (what it reports in «det», its light and siren); in the morning there is a score:
+## MoveEye is watched all the time (what it reports in «det», its light and siren); in the morning there is a score:
 ## stayed calm when nothing was there, found the person when there was one.
 
 var main
@@ -114,7 +114,7 @@ func start(k: String) -> void:
 
 
 func _truth_person() -> bool:
-	"""is there a person in front of Motion Watch right now (inside 40 m)?"""
+	"""is there a person in front of MoveEye right now (inside 40 m)?"""
 	for v in main.visitors.get_children():
 		if v.kind == "person" and not v.done and v.position.distance_to(main.head.global_position) < 40.0:
 			return true
@@ -172,7 +172,7 @@ func _finish() -> void:
 	var why: String
 	if not bool(cur["mw"]):
 		ok = false
-		why = "Motion Watch war nicht verbunden"
+		why = "MoveEye war nicht verbunden"
 	elif bool(cur["person"]) and float(cur["seen"]) < 0.0 and float(cur.get("vis", 0.0)) < 2.0:
 		ok = true
 		why = "nicht bewertet: der Mensch war nie gut im Bild der Kopfkamera"

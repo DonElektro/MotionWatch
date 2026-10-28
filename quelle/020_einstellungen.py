@@ -64,9 +64,9 @@ CFG = {
     "tv_key": "", "tv_auto": True,   # 2.95.51: TV view on the HDMI of the Pi (and for any other screen with the link)
     "tunnel_on": True, "tunnel_code": "", "tunnel_prev_url": "",                       # 2.95.54: the simulator connects out to the Pi (firewall without admin)
     "helper_use": True, "helper_url": "", "helper_code": "",   # 2.95.53: let a PC do the AI (address + pairing code; empty = found by itself)
-    "helper_serve": False, "helper_my_code": "",                # 2.95.53: this Motion Watch works as AI helper for others (port 5057)
+    "helper_serve": False, "helper_my_code": "",                # 2.95.53: this MoveEye works as AI helper for others (port 5057)
     "info_page": True, "info_mail": "",   # 2.95.52: the product page for guests in the same Wi-Fi (/info/), own e-mail address on it
-    "app_icon": "classic", "app_icon_orange_done": False,         # the app icon (2.95.23): radar | radar2 | cross | trail | rings4 | waves | classic (+ 2.95.46: light, night, forest, thermal, fov, camp, shield, hits)
+    "app_icon": "moveeye", "app_icon_orange_done": False, "app_icon_moveeye_done": False,         # the app icon (2.95.23): radar | radar2 | cross | trail | rings4 | waves | classic (+ 2.95.46: light, night, forest, thermal, fov, camp, shield, hits)
     "app_icon_anim": True,       # 2.95.25: the radar sweep turns in the page header
     "ui_hidden": [],             # desktop fields the user has hidden (View menu)
     # web stream
@@ -178,9 +178,9 @@ CFG = {
     "sms_on": False, "sms_numbers": "", "sms_mode": "auto", "sms_port": "/dev/ttyUSB2", "sms_hilink": "192.168.8.1",
     "sms_only_offline": True, "sms_pause": 5, "sms_day_max": 20,          # SMS over an LTE stick
     "mqtt_on": False, "mqtt_host": "", "mqtt_port": "1883", "mqtt_user": "", "mqtt_password": "", "mqtt_tls": False,
-    "mqtt_prefix": "motionwatch", "mqtt_discovery": True,   # MQTT / Home Assistant                 # other Motion Watch devices in the overview: [{id, url, name, pw}]          # shared pictures / videos get a small Motion Watch logo strip
+    "mqtt_prefix": "motionwatch", "mqtt_discovery": True,   # MQTT / Home Assistant                 # other MoveEye devices in the overview: [{id, url, name, pw}]          # shared pictures / videos get a small MoveEye logo strip
     "gpsmod_on": False, "gpsmod_port": "auto", "gps_theft": True, "gps_theft_m": 150,
-    # mover: tracked vehicle under Motion Watch (from 2.94.0) - found by itself, second stick on the page and in the window
+    # mover: tracked vehicle under MoveEye (from 2.94.0) - found by itself, second stick on the page and in the window
     "mover_mode": "auto", "mover_driver": "adafruit", "mover_addr": "0x60", "mover_speed": 70, "mover_turn": 50, "mover_ramp": 0.5,
     "mover_inv_l": False, "mover_inv_r": False, "mover_swap": False, "mover_sim_show": True,
     "storm_on": True, "storm_drop": 3.0, "storm_wind": 50, "storm_forecast": False, "wind_gpio": "", "wind_factor": 2.4,

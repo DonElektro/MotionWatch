@@ -1,6 +1,6 @@
 extends VBoxContainer
 ## 3D-3.69: the «Kinder» mode of the panel - big colourful buttons with pictures, short sentences in the «Du» form,
-## the marmot of Motion Watch explains in a speech bubble, small sounds and confetti. Technical things are not here.
+## the marmot of MoveEye explains in a speech bubble, small sounds and confetti. Technical things are not here.
 ## Leaving to «Erwachsene» needs a little sum (main.ask_adult).
 
 const UI = preload("res://scripts/ui_style.gd")
@@ -20,7 +20,7 @@ const C_WILD := Color("#8a6cff")
 const C_SKY := Color("#2fa8ff")
 const C_PLAY := Color("#ff4f8b")
 
-const FRIENDLY := [["person", "Mensch", "Ein Mensch spaziert vorbei. Sieht Motion Watch ihn?"], ["child", "Kind", "Ein Kind kommt zum Spielen!"],
+const FRIENDLY := [["person", "Mensch", "Ein Mensch spaziert vorbei. Sieht MoveEye ihn?"], ["child", "Kind", "Ein Kind kommt zum Spielen!"],
 		["jogger", "Jogger", "Schnell, schnell! Ein Jogger rennt vorbei."], ["fox", "Fuchs", "Ein Fuchs schleicht herbei – psst!"],
 		["deer", "Reh", "Ein Reh kommt aus dem Wald."], ["hare", "Hase", "Hoppel, hoppel – ein Hase!"], ["hedgehog", "Igel", "Ein kleiner Igel tapst vorbei."],
 		["squirrel", "Eichhörnchen", "Ein Eichhörnchen sucht Nüsse."], ["cat", "Katze", "Miau! Eine Katze schaut vorbei."], ["dog", "Hund", "Wuff! Ein Hund kommt."],
@@ -74,24 +74,24 @@ func _build() -> void:
 		for v in WILD:
 			_tile(g, v[1], C_WILD, v[0], "", v[2], func(): main.visit(v[0]))
 	if main.kids_thief:
-		_tile(g, "Schleicher", C_WILD, "", "mask", "Ein Schleicher will das Velo holen! Erwischt ihn Motion Watch?", func(): main.thief())
+		_tile(g, "Schleicher", C_WILD, "", "mask", "Ein Schleicher will das Velo holen! Erwischt ihn MoveEye?", func(): main.thief())
 	_tile(g, "Alle nach Hause", Color("#6b7c93"), "", "broom", "Tschüss zusammen! Alle gehen nach Hause.", func(): main.clear_visitors())
 	# weather and time
 	_title("Wetter und Zeit")
 	var w := _grid()
 	_tile(w, "Tag", C_SKY, "", "sun", "Guten Morgen! Die Sonne scheint.", func(): main.set_hour(12.0))
-	_tile(w, "Nacht", Color("#3b4a8f"), "", "moon", "Gute Nacht! Jetzt braucht Motion Watch Infrarot.", func(): main.set_hour(22.5))
+	_tile(w, "Nacht", Color("#3b4a8f"), "", "moon", "Gute Nacht! Jetzt braucht MoveEye Infrarot.", func(): main.set_hour(22.5))
 	_tile(w, "Sonne", Color("#f5b82e"), "", "sun2", "Der Himmel ist ganz klar.", func(): main.weather = "clear"; main._settings_dirty = true)
 	_tile(w, "Regen", C_SKY, "", "rain", "Plitsch, platsch – es regnet!", func(): main.weather = "rain"; main._settings_dirty = true)
 	_tile(w, "Schnee", Color("#7fb8e6"), "", "snow", "Es schneit! Schau, wie alles weiss wird.", func(): main.weather = "snow"; main._settings_dirty = true)
-	_tile(w, "Nebel", Color("#8a9bb0"), "", "fog", "Huch, Nebel! Kann Motion Watch noch etwas sehen?", func(): main.weather = "fog"; main._settings_dirty = true)
+	_tile(w, "Nebel", Color("#8a9bb0"), "", "fog", "Huch, Nebel! Kann MoveEye noch etwas sehen?", func(): main.weather = "fog"; main._settings_dirty = true)
 	# play
 	_title("Spielen")
 	var p := _grid()
 	_tile(p, "Rover fahren", C_PLAY, "", "rover", "Du fährst den Rover! Pfeiltasten, Maus oder Controller.", func(): main.explore.set_on(not main.explore.on))
 	_tile(p, "Versteckspiel", C_PLAY, "", "game", "Spielt mit dem Handy gegen die Kamera! Wer schafft es ungesehen ans Ziel?", func(): main.gamewiz.open_wiz())
 	_tile(p, "Andere Welt", Color("#2bb3a3"), "", "world", "", func(): _next_world())
-	_tile(p, "Was sieht die Kamera?", Color("#e0613f"), "", "camera", "So sieht Motion Watch die Welt.", func(): main.set_live(not main.live_on))
+	_tile(p, "Was sieht die Kamera?", Color("#e0613f"), "", "camera", "So sieht MoveEye die Welt.", func(): main.set_live(not main.live_on))
 	# 3D-3.74: missions with stars
 	_title("Missionen  ⭐ %d" % main.kids_stars)
 	_mtitle = get_child(get_child_count() - 1)

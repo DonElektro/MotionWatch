@@ -121,7 +121,7 @@ class NetMonitor:
             return
         addr = page_address(self.ip)
         de = CFG["lang"] == "de"
-        txt = trf("Motion Watch is online in Wi-Fi {ssid}: {addr}", ssid=ssid or "?", addr=addr)
+        txt = trf("MoveEye is online in Wi-Fi {ssid}: {addr}", ssid=ssid or "?", addr=addr)
         if w.notifier.info(txt, addr):
             self.announced = key
             log_event("sys", f"Address sent as push message: {addr}")
@@ -773,7 +773,7 @@ def wifi_connect(ssid, password="", preferred=True):
     return True, ""
 
 
-POLKIT_RULE = """// Motion Watch: allow user "{user}" to manage Wi-Fi / the own hotspot (NetworkManager), the clock (timedated)
+POLKIT_RULE = """// MoveEye: allow user "{user}" to manage Wi-Fi / the own hotspot (NetworkManager), the clock (timedated)
 // and to shut down / restart the Pi (logind)
 polkit.addRule(function(action, subject) {{
     if ((action.id.indexOf("org.freedesktop.NetworkManager.") == 0 || action.id.indexOf("org.freedesktop.timedate1.") == 0
@@ -786,7 +786,7 @@ polkit.addRule(function(action, subject) {{
 
 
 def allow_wifi():
-    """--allow-wifi: one-time permission so Motion Watch may change Wi-Fi without running as root."""
+    """--allow-wifi: one-time permission so MoveEye may change Wi-Fi without running as root."""
     user = os.environ.get("SUDO_USER") or os.environ.get("USER") or "pi"
     path = "/etc/polkit-1/rules.d/50-motionwatch-wifi.rules"
     if not hasattr(os, "geteuid") or os.geteuid() != 0:
@@ -802,7 +802,7 @@ def allow_wifi():
     try:                                     # hardware watchdog: if the whole Pi freezes, it restarts by itself after 15 s
         os.makedirs("/etc/systemd/system.conf.d", exist_ok=True)
         with open("/etc/systemd/system.conf.d/90-motionwatch-watchdog.conf", "w") as f:
-            f.write("# Motion Watch: restart the Pi if it freezes\n[Manager]\nRuntimeWatchdogSec=15s\n")
+            f.write("# MoveEye: restart the Pi if it freezes\n[Manager]\nRuntimeWatchdogSec=15s\n")
         subprocess.run(["systemctl", "daemon-reexec"], capture_output=True)
         print("Hardware watchdog on: a frozen Pi restarts by itself.")
     except OSError as e:

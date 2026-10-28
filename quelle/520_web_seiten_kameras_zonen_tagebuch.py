@@ -2,7 +2,7 @@
 CAMS_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Motion Watch - Cameras</title>
+<title>MoveEye - Cameras</title>
 <style>
 /*BASECSS*/
 main{padding:16px;max-width:1700px;margin:0 auto}
@@ -26,7 +26,7 @@ h3{margin:0 0 8px;font-size:11px;letter-spacing:.09em;color:var(--mut);text-tran
 .btrow{gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}.btrow>span:first-child{flex:1;min-width:0;overflow-wrap:anywhere}
 </style></head><body>
 <header>
-  <h1>Motion Watch</h1>
+  <h1>MoveEye</h1>
   <!--NAV-->
   <span class="badge" id="b-n">–</span>
   <span class="hdr-ctl">
@@ -53,7 +53,7 @@ h3{margin:0 0 8px;font-size:11px;letter-spacing:.09em;color:var(--mut);text-tran
     <div class="mut note" id="note"></div>
   </section>
   <section class="card" style="margin-top:16px" id="fleet-card">
-    <h3 data-i18n="Other Motion Watch devices">Other Motion Watch devices</h3>
+    <h3 data-i18n="Other MoveEye devices">Other MoveEye devices</h3>
     <div class="mut" data-i18n="Several devices around the tent or camper: see them all here and arm / disarm them together.">Several devices around the tent or camper: see them all here and arm / disarm them together.</div>
     <div class="btns">
       <button type="button" onclick="fleetArm('all','arm')" data-i18n="🛡 Arm all">🛡 Arm all</button>
@@ -132,8 +132,8 @@ async function addIp() {
   $("#ip-name").value = $("#ip-url").value = "";
   const r2 = await post("/api/cams", {action: "add", id: r.id, lang: LANG}); showErr(r2.ok ? "" : r2.error); SIG = ""; poll();
 }
-// ---- other Motion Watch devices ----
-Object.assign(I18N.de, {"Other Motion Watch devices": "Weitere Motion-Watch-Geräte",
+// ---- other MoveEye devices ----
+Object.assign(I18N.de, {"Other MoveEye devices": "Weitere Motion-Watch-Geräte",
   "Several devices around the tent or camper: see them all here and arm / disarm them together.": "Mehrere Geräte rund ums Zelt oder Wohnmobil: hier alle sehen und gemeinsam scharf / unscharf schalten.",
   "🛡 Arm all": "🛡 Alle scharf", "Disarm all": "Alle unscharf", "Add a device": "Gerät hinzufügen", "Password": "Passwort",
   "🔍 Search in the network": "🔍 Im Netzwerk suchen", "This device": "Dieses Gerät", "armed": "Schutz an", "disarmed": "Schutz aus", "arming": "Schutz startet",
@@ -178,7 +178,7 @@ async function fleetPoll() {
   const sig = JSON.stringify([j.me.arm, j.me.persons, j.me.recording, j.me.battery, j.me.tamper, j.me.last, j.devices.map(d => [d.id, d.name, d.st.ok, d.st.err, d.st.arm, d.st.persons, d.st.recording, d.st.battery, d.st.mains, d.st.tamper, d.st.last])]);
   if (sig !== FLSIG) {
     FLSIG = sig; G.textContent = "";
-    G.appendChild(flTile("me", t("This device") + (j.me.name && j.me.name !== "Motion Watch" ? " – " + j.me.name : ""), "", Object.assign({ok: true}, j.me), true));
+    G.appendChild(flTile("me", t("This device") + (j.me.name && j.me.name !== "MoveEye" ? " – " + j.me.name : ""), "", Object.assign({ok: true}, j.me), true));
     j.devices.forEach(d => G.appendChild(flTile(d.id, d.name, d.url, d.st || {}, false)));
   } else {
     G.querySelectorAll("img[data-fl]").forEach(i => { i.src = "/fleet/snap/" + i.dataset.fl + "?t=" + Date.now(); });
@@ -198,7 +198,7 @@ async function fleetScan() {
   const b = $("#fl-scan"), out = $("#fl-found"); b.disabled = true; out.textContent = t("searching (about 10 s) …");
   const r = await post("/api/fleet", {action: "scan", lang: LANG}); b.disabled = false; out.textContent = "";
   if (!r.found || !r.found.length) { out.textContent = t("Nothing found."); return; }
-  r.found.forEach(f => { const row = el("div", "row btrow"); row.append(el("span", "", (f.name || "Motion Watch") + " · " + f.url + (f.needs_pw ? " · 🔑 " + t("needs a password") : "")));
+  r.found.forEach(f => { const row = el("div", "row btrow"); row.append(el("span", "", (f.name || "MoveEye") + " · " + f.url + (f.needs_pw ? " · 🔑 " + t("needs a password") : "")));
     const a = el("button", "sec", t("Add")); a.type = "button"; a.onclick = () => { fleetAdd(f.url, f.needs_pw); row.remove(); }; row.appendChild(a); out.appendChild(row); });
 }
 /*BTJS*/
@@ -219,7 +219,7 @@ document.addEventListener("visibilitychange", () => {      // no stream while th
 ZONES_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Motion Watch - Zones</title>
+<title>MoveEye - Zones</title>
 <style>
 /*BASECSS*/
 main{padding:16px;max-width:1500px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
@@ -232,7 +232,7 @@ main{padding:16px;max-width:1500px;margin:0 auto;display:grid;grid-template-colu
 ol{padding-left:18px;margin:6px 0}
 </style></head><body>
 <header>
-  <h1>Motion Watch</h1>
+  <h1>MoveEye</h1>
   <!--NAV-->
   <span class="hdr-ctl">
     <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
@@ -388,7 +388,7 @@ function loadFrame() { img.onload = draw; img.onerror = draw; img.src = "/api/fr
 DIARY_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Motion Watch - Diary</title>
+<title>MoveEye - Diary</title>
 <style>
 /*BASECSS*/
 main{padding:16px;max-width:1500px;margin:0 auto}
@@ -427,7 +427,7 @@ main{padding:16px;max-width:1500px;margin:0 auto}
 #d-rep{white-space:pre-wrap;line-height:1.5;margin-top:6px}
 </style></head><body>
 <header>
-  <h1>Motion Watch</h1>
+  <h1>MoveEye</h1>
   <!--NAV-->
   <span class="hdr-ctl">
     <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
@@ -602,7 +602,7 @@ GUEST_PAGE = r"""<!doctype html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Motion Watch – Live</title>
+<title>MoveEye – Live</title>
 <style>
 html,body{margin:0;background:#000;color:#e6edf3;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;height:100%}
 .top{display:flex;align-items:center;gap:10px;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top))}
@@ -614,7 +614,7 @@ html,body{margin:0;background:#000;color:#e6edf3;font:15px/1.4 system-ui,-apple-
 .foot{padding:8px 14px;font-size:12px;color:#8b9bb0}
 .big .top,.big .foot{display:none}.big #v{max-height:100dvh;height:100dvh}
 </style></head><body>
-<div class="top"><span class="dot"></span><b>Motion Watch</b><span class="st" id="st">…</span></div>
+<div class="top"><span class="dot"></span><b>MoveEye</b><span class="st" id="st">…</span></div>
 <div class="wrap vwrap"><img id="v" alt="" src="__BASE__/video"></div>
 <div class="foot" id="ft"></div>
 <script>
@@ -643,7 +643,7 @@ st();
 LOG_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Motion Watch - Event log</title>
+<title>MoveEye - Event log</title>
 <style>
 /*BASECSS*/
 main{padding:16px;max-width:1400px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
@@ -658,7 +658,7 @@ main{padding:16px;max-width:1400px;margin:0 auto;display:grid;grid-template-colu
 #arch a:hover{color:var(--acc2)}#arch .on{color:var(--acc2);font-weight:700}
 </style></head><body>
 <header>
-  <h1>Motion Watch</h1>
+  <h1>MoveEye</h1>
   <!--NAV-->
   <span class="hdr-ctl">
     <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>

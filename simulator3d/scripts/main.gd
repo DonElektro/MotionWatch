@@ -1,9 +1,9 @@
 extends Node3D
-## Motion Watch 3D simulator - scenes: camping place, forest, car park, garden, funny place, wildlife watching (scenes.gd)
-## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
+## MoveEye 3D simulator - scenes: camping place, forest, car park, garden, funny place, wildlife watching (scenes.gd)
+## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.78"
+const VERSION := "3D-3.79"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -12,7 +12,7 @@ const TH_W := 80
 const TH_H := 62
 const TH_FOV := 45.0
 const HEAD_H := 1.6
-const HELPER_LAYER := 128         # 3D-3.64: marks for the operator only - the cameras of Motion Watch do not see them
+const HELPER_LAYER := 128         # 3D-3.64: marks for the operator only - the cameras of MoveEye do not see them
 
 var Actor = preload("res://scripts/actor.gd")
 var Net = preload("res://scripts/net.gd")
@@ -34,7 +34,7 @@ var Geo = preload("res://scripts/geo.gd")
 var Karte = preload("res://scripts/karte.gd")
 var geo                               # geo.gd: a real place in Switzerland (scene «ort», from 3D-3.4)
 var karte                             # karte.gd: the map to choose the place
-var gamewiz                           # gamewiz.gd: the game wizard (3D-3.41), also worked from Motion Watch
+var gamewiz                           # gamewiz.gd: the game wizard (3D-3.41), also worked from MoveEye
 var ort_lat := 0.0                    # the chosen place (kept)
 var ort_lon := 0.0
 var ort_name := ""
@@ -50,14 +50,14 @@ var geo_note := ""
 var testrun                           # testrun.gd: test run with evaluation (from 3D-2.6)
 var life                              # life.gd: daily life, real weather and time (3D-3.27)
 var recorder                          # recorder.gd: recording and replay of situations (3D-3.27)
-var dev2                              # device.gd: a second Motion Watch device in the world (3D-3.27)
+var dev2                              # device.gd: a second MoveEye device in the world (3D-3.27)
 var game_bots := 0                    # 3D-3.77: computer players
 var game_tutorial := false            # 3D-3.77: practice round with explanations, nobody is caught
 var game_daily := false               # 3D-3.77: the challenge of the day
 var game_ghost := true                # 3D-3.77: the ghost of the own best way
 var game_heart := true                # 3D-3.77: heartbeat when the camera nearly sees you
 var localplay                         # 3D-3.77: localplay.gd - play here at the PC
-var headpad                           # 3D-3.77: headpad.gd - steer the head of Motion Watch
+var headpad                           # 3D-3.77: headpad.gd - steer the head of MoveEye
 var game_tasks := true                # a task for every round of the game (bonus) - 3D-3.27
 var daily_life := true                # visitors at their own times, the postman and the neighbour every day
 var real_weather := false             # the weather of the place from open-meteo.com
@@ -71,7 +71,7 @@ var game                              # game.gd: «Unentdeckt ans Ziel» with up
 var game_minutes := 5.0
 var game_level := "normal"            # easy | normal | hard
 var game_quality := "mid"             # picture on the phone: small | mid | big
-var game_guard := true                # without Motion Watch the head guards by itself
+var game_guard := true                # without MoveEye the head guards by itself
 var game_mode := "camera"             # camera: all against the camera · guard: one player is the guard
 var game_lives := 0                   # 0 = unlimited
 var game_items := 3                   # crystals to collect (+100 each)
@@ -84,8 +84,8 @@ var game_photos := true               # «caught» photos (3D-3.25)
 var game_fx_laser := true             # 3D-3.52: hit sequence - red laser from the camera head
 var game_fx_paint := false            # ... paint ball with a splash on the ground
 var game_fx_flash := true             # ... flash like a speed camera
-var game_tap := true                  # the hunter at Motion Watch aims by tapping the live picture
-var game_learn_miss := true           # the game teaches Motion Watch: pictures of players it did not report
+var game_tap := true                  # the hunter at MoveEye aims by tapping the live picture
+var game_learn_miss := true           # the game teaches MoveEye: pictures of players it did not report
 var game_learn_report := true         # ... game report (how long until reported, distance, posture, light)
 var game_learn_paths := true          # ... ways of players who reached the goal unreported (test run for the bench)
 var game_blind_bonus := true          # ... points for seconds visible but not reported
@@ -103,25 +103,25 @@ var game_goal := "reach"              # reach: get to the goal · return: fetch 
 # ---- start with the PC (from 3D-2.1; autostart.gd) ----
 var autostart_on := false             # read from Windows (Run key) / Linux (autostart folder), not from the settings
 var autostart_min := true             # at the autostart: minimized = the small box of mini.gd
-var autostart_mwpc := false           # at the autostart: also start Motion Watch on this PC
+var autostart_mwpc := false           # at the autostart: also start MoveEye on this PC
 var autostart_lock := false           # at the autostart: lock the screen afterwards (with the automatic sign-in of Windows)
 var last_scene := ""                  # the scene of the last time (the autostart comes back to it)
 var start_info := ""                  # message of the autostart for the status line
 var _bg_t := 0.0
-# ---- saving power (from 3D-2.3): the world only moves while the window is open or Motion Watch is connected ----
+# ---- saving power (from 3D-2.3): the world only moves while the window is open or MoveEye is connected ----
 var eco_idle := true                  # setting «Nur rechnen, wenn ...» (saved)
-var sim_active := true                # false = pause: nobody looks (window small / minimized, no Motion Watch)
+var sim_active := true                # false = pause: nobody looks (window small / minimized, no MoveEye)
 var win_open := true                  # the big window is visible (not the small box, not minimized)
 var mini_box                          # mini.gd
-var cpu_info := {}                    # measured by Motion Watch: {"total", "mw", "sim"} in % of the whole computer
+var cpu_info := {}                    # measured by MoveEye: {"total", "mw", "sim"} in % of the whole computer
 var _fps0 := 0
-var mwpc                              # Motion Watch on this PC (mwpc.gd)
+var mwpc                              # MoveEye on this PC (mwpc.gd)
 var mwpc_btn: Button
 var mwpc_label: Label
 var in_vm := false                    # virtual machine / no graphics card: lighter graphics, fewer preview pictures
 var update_url := ""                  # --update-url (tests); empty = GitHub
 var update_btn: Button
-var auto_update := false              # «Neue Versionen automatisch installieren» (saved; also from the web page of Motion Watch)
+var auto_update := false              # «Neue Versionen automatisch installieren» (saved; also from the web page of MoveEye)
 var update_busy := false
 var update_info := ""                 # result of the last check
 var next_update_check := 0.0
@@ -166,14 +166,14 @@ var next_auto := 0.0
 var door_open := false
 var gas_on := false
 var quality := "nice"
-var view_scale := 1.0                 # 3D-3.75: sharpness of the big view on the screen (the pictures for Motion Watch stay sharp)
+var view_scale := 1.0                 # 3D-3.75: sharpness of the big view on the screen (the pictures for MoveEye stay sharp)
 var win_fps := 0                     # 3D-3.75: frames per second of the big view (0 = as fast as it goes)
 var auto_perf := true                 # 3D-3.75: too slow? the graphics get lighter by themselves
 var _slow_n := 0
 var _perf_t := 0.0
 var cam1_yaw := -12.0
 
-# ---- what Motion Watch sends -----------------------------------------------------------------------------------
+# ---- what MoveEye sends -----------------------------------------------------------------------------------
 var mw := {"servo": {"pan_deg": 0.0, "tilt_deg": 0.0, "moving": false}, "lights": {"white": false, "ir": false}, "sound": "", "armed": false, "device": ""}
 var mw_t := 0.0
 var mw_addr := ""
@@ -191,11 +191,11 @@ var quality_set := false                  # the quality came from the saved sett
 var detail_alb: NoiseTexture2D            # 3D-3.33: fine structure on every surface (no picture files needed)
 var detail_nrm: NoiseTexture2D
 var head: Node3D
-var rig: Node3D                       # from 3D-3.11: the base of Motion Watch - stands still, or drives as the mover
+var rig: Node3D                       # from 3D-3.11: the base of MoveEye - stands still, or drives as the mover
 var chassis: Node3D
 var mast_h := HEAD_H                  # 3D-3.57: length of the pole with the camera head (m), adjustable (Mover, Erkunden)
 var mast_pole: MeshInstance3D
-var mover_on := false                 # «Mover simulieren»: a tracked vehicle under Motion Watch, driven by its second stick
+var mover_on := false                 # «Mover simulieren»: a tracked vehicle under MoveEye, driven by its second stick
 var mover_max := 0.8                  # top speed (m/s)
 var mover_wheels: Array = []
 var mover_dist := 0.0
@@ -243,9 +243,9 @@ var _net_hold := 0.0                  # 3D-3.74: bad Wi-Fi - the picture stands 
 var _next_headlight := 0.0
 var night_gain := 2.5                 # how much a camera may amplify at night (real cameras: limited -> dark, grainy)
 var ir_range := 14.0                  # reach of the infrared light (m)
-var sound_on := true                  # the sounds of the world go to the microphone of Motion Watch (from 3D-2.6)
+var sound_on := true                  # the sounds of the world go to the microphone of MoveEye (from 3D-2.6)
 var sounds: Array = []                # [dB at 1 m, position, until]
-var mw_det := {}                      # what Motion Watch detects right now (from 2.93.3: persons, present, noise)
+var mw_det := {}                      # what MoveEye detects right now (from 2.93.3: persons, present, noise)
 var mw_det_t := 0.0
 var lens_mats: Array = []
 var expo_mats: Array = []             # exposure quads (multiply) in front of camera 0 / 1
@@ -255,7 +255,7 @@ var capturing := false
 var preview_on := true
 var th_preview: ImageTexture
 
-# ---- remote control (CONTROL protocol 1, shared by the window and the web page of Motion Watch) ---------------------
+# ---- remote control (CONTROL protocol 1, shared by the window and the web page of MoveEye) ---------------------
 var controls: Array = []
 var ui_rows := {}
 var status_label: Label
@@ -265,7 +265,7 @@ var conn_body: Control                # the card «Verbindung» (symbol and titl
 var cam_body: Control                 # 3D-3.50: the cards «Kameras» and «Werkzeuge» (symbol + arrow green while working)
 var tools_body: Control
 var _conn_state := -1
-var stream_on := false                     # sending to Motion Watch: off at the start, the user switches it on in the window
+var stream_on := false                     # sending to MoveEye: off at the start, the user switches it on in the window
 var stream_last := false                   # 3D-3.65: was sending switched on the last time? then on again at the start (also after an update)
 var stream_port := 8765
 var stream_cb: CheckButton
@@ -274,7 +274,7 @@ var stream_note: Label
 var obj := {"door": Vector3.ZERO, "pir": Vector3.ZERO, "bike": Vector3.ZERO}   # set by the scene
 const SERVO_DEG_S := 200.0            # how fast the pan / tilt servos turn (MG90S: about 0.1 s per 60°, with load slower)
 var next_birds := 0.0
-# ---- settings for the visitors (from 3D-2.0; saved, also on the web page of Motion Watch) ----
+# ---- settings for the visitors (from 3D-2.0; saved, also on the web page of MoveEye) ----
 var visit_rate := 1.0                 # how often visitors come by themselves (× the scene's normal rate)
 var max_visitors := 12
 var visitor_speed := 1.0
@@ -307,7 +307,7 @@ func _ready() -> void:
 	if in_vm and not "--quality" in args:
 		quality = "simple"                      # virtual machine: no real graphics card - the light graphics by default
 	DisplayServer.window_set_title("3D-Simulator Live · %s" % VERSION)
-	var ic := load("res://icon_sim3d.png")              # the window icon (3D-3.28; 3D-3.63: the orange Motion Watch symbol)
+	var ic := load("res://icon_sim3d.png")              # the window icon (3D-3.28; 3D-3.63: the orange MoveEye symbol)
 	if ic is Texture2D:
 		DisplayServer.set_icon((ic as Texture2D).get_image())
 	var k := args.find("--update-url")
@@ -315,7 +315,7 @@ func _ready() -> void:
 		update_url = args[k + 1]
 	_load_settings()
 	home_load()                                # 3D-3.73: «Mein Zuhause»
-	tunnel = preload("res://scripts/tunnel.gd").new()        # 3D-3.45: out through the firewall to Motion Watch
+	tunnel = preload("res://scripts/tunnel.gd").new()        # 3D-3.45: out through the firewall to MoveEye
 	tunnel.main = self
 	add_child(tunnel)
 	tunnel.host = tunnel_host
@@ -383,7 +383,7 @@ func _ready() -> void:
 	mwpc.changed.connect(_on_mwpc)
 	_on_mwpc()
 	next_update_check = now() + UPDATE_EVERY
-	if "--mwpc" in args:                          # after an update: Motion Watch on this PC was running - start it again
+	if "--mwpc" in args:                          # after an update: MoveEye on this PC was running - start it again
 		mwpc.start.call_deferred()
 	net = Net.new()
 	net.main = self
@@ -466,7 +466,7 @@ const ALT_PORTS := [8775, 8785, 8795]       # 3D-3.68: if 8765 stays busy (a pro
 
 func _stream_retry(left: int, tries := 0) -> void:
 	"""the port is still busy (the old simulator closes after an update): try again every second; after 8 tries a
-	free port of ALT_PORTS (Motion Watch finds it by the "here is a simulator" message, the tunnel follows it)"""
+	free port of ALT_PORTS (MoveEye finds it by the "here is a simulator" message, the tunnel follows it)"""
 	if stream_on or left <= 0 or (stream_cb != null and not stream_last and not "--stream" in OS.get_cmdline_user_args()):
 		return
 	await get_tree().create_timer(1.0).timeout
@@ -476,7 +476,7 @@ func _stream_retry(left: int, tries := 0) -> void:
 	if not stream_on:
 		_stream_retry(left - 1, tries + 1)
 	else:
-		print("sending to Motion Watch: port %d" % net.port)
+		print("sending to MoveEye: port %d" % net.port)
 
 
 var _sw_t := 0.0
@@ -486,7 +486,7 @@ var _old_killed := false
 
 func _stream_watch() -> void:
 	"""3D-3.75: sending should be on (switched on the last time, the tunnel is on, or --stream) but the port is busy -
-	after an update the old simulator (or a program it started, e.g. Motion Watch on this PC) may still hold port 8765.
+	after an update the old simulator (or a program it started, e.g. MoveEye on this PC) may still hold port 8765.
 	Try again every 3 s; after 5 s stop the old simulator (--old-pid), after the 3rd try take a spare port (8775 …).
 	Never gives up (before 3D-3.75 the tunnel switched sending on only once)."""
 	var want: bool = stream_last or tunnel_on or "--stream" in OS.get_cmdline_user_args()
@@ -506,13 +506,13 @@ func _stream_watch() -> void:
 			print("old simulator %d stopped (port still busy)" % op)
 	set_stream(true, _sw_tries >= 3)
 	if stream_on:
-		print("sending to Motion Watch: port %d (try %d)" % [net.port, _sw_tries])
+		print("sending to MoveEye: port %d (try %d)" % [net.port, _sw_tries])
 		_sw_tries = 0
 
 
 func release_ports() -> void:
 	"""3D-3.68: before starting a new simulator (update, graphics restart): close every listening port. On Windows the
-	new process would otherwise get them too and its own «An Motion Watch senden» stays «Port 8765 is busy»."""
+	new process would otherwise get them too and its own «An MoveEye senden» stays «Port 8765 is busy»."""
 	_save_settings()                                  # 3D-3.76: the time of the scene for the new simulator
 	if net != null:
 		net.stop()
@@ -535,7 +535,7 @@ func set_stream(on: bool, alt := false) -> void:
 		mw_t = 0.0
 	if stream_cb != null:
 		stream_cb.set_pressed_no_signal(stream_on)
-		stream_cb.text = "An Motion Watch senden (Port %d)" % (net.port if stream_on else stream_port)
+		stream_cb.text = "An MoveEye senden (Port %d)" % (net.port if stream_on else stream_port)
 	_update_status()
 
 
@@ -828,22 +828,22 @@ func place_loaded() -> void:
 
 
 func choose_place(la: float, lo: float, nm: String) -> void:
-	"""from the map or the page of Motion Watch: load this place"""
+	"""from the map or the page of MoveEye: load this place"""
 	if not geo.in_ch(la, lo):
 		geo.info = "Dieser Punkt liegt nicht in der Schweiz."
 		return
 	if not (is_equal_approx(la, ort_lat) and is_equal_approx(lo, ort_lon)):
-		ort_env = "auto"                                 # another place (from the page of Motion Watch): look what it is
+		ort_env = "auto"                                 # another place (from the page of MoveEye): look what it is
 	geo.load_place(la, lo, nm)
 
 
 func set_place_text(t: String) -> void:
-	"""«Zermatt» or «46.0207, 7.7491» (field on the page of Motion Watch)"""
+	"""«Zermatt» or «46.0207, 7.7491» (field on the page of MoveEye)"""
 	var parts := t.replace(";", ",").split(",")
 	if parts.size() >= 2 and parts[0].strip_edges().is_valid_float() and parts[1].strip_edges().is_valid_float():
 		var nm := ""
 		if parts.size() > 2:
-			nm = ",".join(parts.slice(2)).strip_edges()      # «46.02, 7.75, Zermatt» from the map on the page of Motion Watch
+			nm = ",".join(parts.slice(2)).strip_edges()      # «46.02, 7.75, Zermatt» from the map on the page of MoveEye
 		choose_place(float(parts[0]), float(parts[1]), nm)
 		return
 	geo.info = "Suche «%s» …" % t
@@ -987,13 +987,13 @@ func _build_chassis() -> void:
 	chassis.visible = mover_on
 
 
-var home_pos := Vector3.ZERO           # 3D-3.44: where Motion Watch stands (Aufstell-Planer «Hierhin stellen»)
+var home_pos := Vector3.ZERO           # 3D-3.44: where MoveEye stands (Aufstell-Planer «Hierhin stellen»)
 var home_yaw := 0.0
 var planner                           # planner.gd
 var pruef                             # pruefstand.gd (3D-3.49): the test bench on this PC
 var replay                            # replay.gd: Alarm-Rückblick in 3D (3D-3.44)
 var dataset                           # dataset.gd: Trainingsbilder (3D-3.44)
-var tunnel                            # tunnel.gd: Tunnel zu Motion Watch (3D-3.45)
+var tunnel                            # tunnel.gd: Tunnel zu MoveEye (3D-3.45)
 var tunnel_host := ""
 var tunnel_code := ""
 var tunnel_on := false
@@ -1004,7 +1004,7 @@ var netmap_node: Node3D = null
 
 
 func show_netmap(pts) -> int:
-	"""Empfangskarte from Motion Watch: x / z in metres from Motion Watch (z = where the camera looks), q 0 (bad) .. 1 (good)"""
+	"""Empfangskarte from MoveEye: x / z in metres from MoveEye (z = where the camera looks), q 0 (bad) .. 1 (good)"""
 	if netmap_node != null:
 		netmap_node.queue_free()
 		netmap_node = null
@@ -1076,7 +1076,7 @@ var _pad_r := 0.0
 
 
 func _drive(dt: float) -> void:
-	"""the mover drives: left / right track from Motion Watch (-1 … 1); stops when Motion Watch is quiet for 2.5 s (it stops the tracks itself after 0.6 s without the stick)"""
+	"""the mover drives: left / right track from MoveEye (-1 … 1); stops when MoveEye is quiet for 2.5 s (it stops the tracks itself after 0.6 s without the stick)"""
 	if not mover_on:
 		if Vector2(rig.position.x - home_pos.x, rig.position.z - home_pos.z).length() > 0.01 or abs(rig.rotation.y - home_yaw) > 0.001:
 			mover_home()
@@ -1387,7 +1387,7 @@ func _build_lens() -> void:
 	head_pitch.add_child(insects)
 
 
-# ---- sounds of the world (for the microphone of Motion Watch) --------------------------------------------------------
+# ---- sounds of the world (for the microphone of MoveEye) --------------------------------------------------------
 func add_sound(db1m: float, pos: Vector3, secs: float) -> void:
 	"""a sound: loudness at 1 m (dB, 0 = very loud), where, how long"""
 	sounds.append([db1m, pos, now() + secs])
@@ -1728,7 +1728,7 @@ func _process(dt: float) -> void:
 	_hud_layout()
 	_cpu_pill_tick(dt)
 	_thumbs_tick(dt)
-	# minimized: Godot stops drawing then - but the cameras must go on for Motion Watch. mini.gd turns the window into a
+	# minimized: Godot stops drawing then - but the cameras must go on for MoveEye. mini.gd turns the window into a
 	# small box at once; this is only the safety net (e.g. when the box cannot be shown)
 	if sim_active and DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_MINIMIZED:
 		_bg_t -= dt
@@ -1828,7 +1828,7 @@ func _process(dt: float) -> void:
 
 # ---- saving power ---------------------------------------------------------------------------------------------------
 func connected() -> bool:
-	"""Motion Watch is connected: it sent its state lately or fetches pictures / thermal values"""
+	"""MoveEye is connected: it sent its state lately or fetches pictures / thermal values"""
 	if not stream_on:
 		return false
 	var t := now()
@@ -1836,7 +1836,7 @@ func connected() -> bool:
 
 
 func _check_active() -> void:
-	"""every 0.5 s: is somebody looking? Window open -> everything; only Motion Watch -> the world moves, but the big
+	"""every 0.5 s: is somebody looking? Window open -> everything; only MoveEye -> the world moves, but the big
 	3D view is not drawn and at most 30 pictures per second; nobody -> pause with 5 frames per second (only answering)"""
 	var small: bool = mini_box != null and mini_box.mini
 	win_open = not small and DisplayServer.window_get_mode() != DisplayServer.WINDOW_MODE_MINIMIZED
@@ -1850,12 +1850,12 @@ func _check_active() -> void:
 			next_auto = max(next_auto, now() + 5.0)
 		print("simulation " + ("runs" if act else "pauses (nobody looks)"))
 	get_viewport().disable_3d = not win_open      # the big 3D view only when it can be seen
-	# 3D-3.30: Motion Watch saves power (nothing happens there): the simulator calculates slower too (window closed)
+	# 3D-3.30: MoveEye saves power (nothing happens there): the simulator calculates slower too (window closed)
 	var mw_saving: bool = conn and str(mw.get("eco", "")) == "saving" and not playing and not (testrun != null and testrun.running)
 	Engine.max_fps = (win_fps if win_fps > 0 else _fps0) if win_open else (60 if playing else ((12 if mw_saving else 30) if sim_active else 5))
 
 
-# ---- pictures for Motion Watch -------------------------------------------------------------------------------------
+# ---- pictures for MoveEye -------------------------------------------------------------------------------------
 func _wanted_fps(i: int) -> float:
 	var d: Dictionary = net.stream_demand() if net != null else {}
 	var f: float = float(d.get(i, 0.0))
@@ -1970,7 +1970,7 @@ func gust() -> float:
 
 
 func cpu_now() -> Dictionary:
-	"""CPU of the PC and of the simulator in % (3D-3.29: also in every «here is a simulator» message, so Motion Watch
+	"""CPU of the PC and of the simulator in % (3D-3.29: also in every «here is a simulator» message, so MoveEye
 	shows it before the simulation is on); null = not measured yet"""
 	var d := {"pc": null, "sim": null}
 	if mini_box != null:
@@ -1994,10 +1994,10 @@ func gain_cap() -> float:
 
 
 func ir_on() -> bool:
-	"""infrared light: from Motion Watch, or from the game (the guard switches it on at night)"""
+	"""infrared light: from MoveEye, or from the game (the guard switches it on at night)"""
 	var L: Dictionary = mw.get("lights", {})
 	return L.get("ir", false) or cond["ir"] or (game != null and game.guard_auto and is_dark()) \
-			or (dataset != null and dataset.servo != null and is_dark())      # Trainingsbilder at night: like Motion Watch, with infrared
+			or (dataset != null and dataset.servo != null and is_dark())      # Trainingsbilder at night: like MoveEye, with infrared
 
 
 func _auto_exposure(i: int, img: Image) -> void:
@@ -2067,7 +2067,7 @@ func thermal_values() -> PackedFloat32Array:
 	return thermal
 
 
-# ---- protocol with Motion Watch -------------------------------------------------------------------------------------
+# ---- protocol with MoveEye -------------------------------------------------------------------------------------
 func on_state(d: Dictionary, host: String) -> void:
 	var old_sound: String = str(mw.get("sound", ""))
 	mw = d
@@ -2099,7 +2099,7 @@ func world_reply() -> Dictionary:
 			"cores": OS.get_processor_count(), "mw_cmd": mw_cmd if not mw_cmd.is_empty() else null}
 
 
-var mw_cmd := {}                       # 3D-3.71: a request to Motion Watch (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
+var mw_cmd := {}                       # 3D-3.71: a request to MoveEye (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
 var bike_node: Node3D = null
 var refscan_label: Label
 var surprise_label: Label              # 3D-3.75
@@ -2107,7 +2107,7 @@ var ds_label: Label
 
 
 func mw_look(dir: String, step := 3.0) -> void:
-	"""3D-3.77: turn the head of Motion Watch from here (Motion Watch 2.95.103: op «look»)"""
+	"""3D-3.77: turn the head of MoveEye from here (MoveEye 2.95.103: op «look»)"""
 	mw_cmd = {"id": max(int(Time.get_unix_time_from_system() * 1000.0), int(mw_cmd.get("id", 0)) + 1), "op": "look", "dir": dir, "step": step}
 
 
@@ -2116,9 +2116,9 @@ func mw_light(on: bool) -> void:
 
 
 func mw_request(op: String) -> void:
-	"""a button here asks Motion Watch for something; it fetches the request with its next state (about 10 times a second)"""
+	"""a button here asks MoveEye for something; it fetches the request with its next state (about 10 times a second)"""
 	mw_cmd = {"id": int(Time.get_unix_time_from_system() * 1000.0), "op": op}
-	start_info = {"refscan": "Motion Watch: Referenz-Scan angefordert …", "refcompare": "Motion Watch: Vergleich angefordert …", "refcompare_day": "Motion Watch: Vergleich mit der Tag-Referenz …", "refstop": "Motion Watch: Scan abbrechen …"}.get(op, op)
+	start_info = {"refscan": "MoveEye: Referenz-Scan angefordert …", "refcompare": "MoveEye: Vergleich angefordert …", "refcompare_day": "MoveEye: Vergleich mit der Tag-Referenz …", "refstop": "MoveEye: Scan abbrechen …"}.get(op, op)
 
 
 func set_bike(on: bool) -> void:
@@ -2172,7 +2172,7 @@ func _sabotage_btn(k: String) -> void:
 
 
 func set_sabotage(cover, turn) -> void:
-	"""3D-3.72: sabotage test - the head camera covered, or the head turned away by hand (Motion Watch does not know)"""
+	"""3D-3.72: sabotage test - the head camera covered, or the head turned away by hand (MoveEye does not know)"""
 	if cover != null:
 		sabotage_cover = bool(cover)
 		if _cover_mesh == null:
@@ -2211,7 +2211,7 @@ func _night_test_tick() -> void:
 	var idle: bool = str(r.get("busy", "")) == "" and int(r.get("cmd_seen", 0)) >= int(mw_cmd.get("id", 0))
 	if not idle:
 		return
-	if _night_test["step"] == "day0":                  # Motion Watch has seen the day (a few states later): the reference
+	if _night_test["step"] == "day0":                  # MoveEye has seen the day (a few states later): the reference
 		_night_test["step"] = "day"
 		_night_test["t"] = now()
 		mw_request("refscan")
@@ -2230,16 +2230,16 @@ func _night_test_tick() -> void:
 		start_info = "Nacht-Test: Vergleich in der Nacht …"
 	elif _night_test["step"] == "night":
 		_night_test["step"] = ""
-		start_info = "Nacht-Test fertig – Bericht in Motion Watch (Werkzeuge → Referenz-Scan)"
+		start_info = "Nacht-Test fertig – Bericht in MoveEye (Werkzeuge → Referenz-Scan)"
 
 
 func refscan_text() -> String:
-	"""what Motion Watch tells about its reference scan (with its state)"""
+	"""what MoveEye tells about its reference scan (with its state)"""
 	var r = mw.get("refscan", null)
 	if typeof(r) != TYPE_DICTIONARY:
-		return "Motion Watch: noch keine Angaben (verbinden, Motion Watch ab 2.95.97)"
+		return "MoveEye: noch keine Angaben (verbinden, MoveEye ab 2.95.97)"
 	if str(r.get("busy", "")) != "":
-		return "Motion Watch %s: Richtung %d von %d …" % ["scannt" if r["busy"] == "scan" else "vergleicht", int(r.get("step", 0)), int(r.get("n", 0))]
+		return "MoveEye %s: Richtung %d von %d …" % ["scannt" if r["busy"] == "scan" else "vergleicht", int(r.get("step", 0)), int(r.get("n", 0))]
 	var s := ("Referenz: %d Richtungen" % int(r.get("ref_n", 0))) if r.get("ref", false) else "Noch keine Referenz"
 	var l = r.get("last", null)
 	if typeof(l) == TYPE_DICTIONARY:
@@ -2506,7 +2506,7 @@ const VISIT_PRESETS := [["calm", "Ruhige Nacht – selten jemand", true, false, 
 		["camp", "Belebter Campingplatz – viele Menschen", true, false, "more_people", 2.0, 18],
 		["wild", "Wildtier-Nacht – nur Tiere, öfter", true, false, "animals", 1.6, 10],
 		["daily", "Tagesablauf – jeder kommt zu seiner Zeit", true, true, "mixed", 1.0, 12],
-		["busy", "Viel los – Belastungstest für Motion Watch", true, false, "mixed", 4.0, 30],
+		["busy", "Viel los – Belastungstest für MoveEye", true, false, "mixed", 4.0, 30],
 		["off", "Kein Besuch von selbst", false, false, "mixed", 1.0, 12]]
 const PRESET_HOUR := {"calm": 23.0, "burglary": 1.0, "grill": 20.0, "farm": 10.0, "wildlife": 22.0, "camp": 16.0, "wild": 23.5, "busy": 15.0}   # 3D-3.43
 const PEOPLE_KINDS := ["person", "child", "jogger", "dogwalk", "bench", "garden_person", "car_park", "car", "cyclist", "stroller", "courier",
@@ -2582,7 +2582,7 @@ func add_control(type: String, id: String, label: String, getter, setter, group:
 
 
 # ---- order of the settings: groups with a symbol, parts inside (from 3D-3.5) ------------------------------------------------
-# [group, symbol (window: drawn; page of Motion Watch: emoji), parts in their order]
+# [group, symbol (window: drawn; page of MoveEye: emoji), parts in their order]
 const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
 		["Wetter", "cloud", "🌦", ["", "Mehr Wetter", "Natur und Wind"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
@@ -2628,7 +2628,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 
 
 func _order_controls() -> void:
-	"""every setting into its group and part, sorted like GROUPS (the window and the page of Motion Watch show this order)"""
+	"""every setting into its group and part, sorted like GROUPS (the window and the page of MoveEye show this order)"""
 	var gi := {}
 	for i in range(GROUPS.size()):
 		gi[GROUPS[i][0]] = i
@@ -2647,7 +2647,7 @@ func _order_controls() -> void:
 		var g: int = gi.get(c.group, GROUPS.size())
 		var sub := str(c.extra.get("sub", ""))
 		c.extra["icon"] = GROUPS[g][2] if g < GROUPS.size() else ""
-		c.extra["iconk"] = GROUPS[g][1] if g < GROUPS.size() else ""          # the drawn symbol (page of Motion Watch from 2.93.16)
+		c.extra["iconk"] = GROUPS[g][1] if g < GROUPS.size() else ""          # the drawn symbol (page of MoveEye from 2.93.16)
 		var si: int = (GROUPS[g][3] as Array).find(sub) if g < GROUPS.size() else 0
 		keyed.append([g * 1000 + max(si, 0) * 100, i, c])
 	keyed.sort_custom(func(a, b): return a[0] < b[0] or (a[0] == b[0] and a[1] < b[1]))
@@ -2655,7 +2655,7 @@ func _order_controls() -> void:
 
 
 func _register_controls() -> void:
-	"""every setting of the simulator - for the window and for the web page of Motion Watch (CONTROL protocol).
+	"""every setting of the simulator - for the window and for the web page of MoveEye (CONTROL protocol).
 	extra "expert": true = only shown with «Experte» in the window (the web page always shows everything)."""
 	var sc := []
 	for s in Scenes.LIST:
@@ -2684,7 +2684,7 @@ func _register_controls() -> void:
 	add_control("toggle", "look_at_light", "Menschen schauen zum Licht, wenn es angeht", func(): return look_at_light, func(v): look_at_light = v, "Besuch", ex)
 	add_control("slider", "wind", "Wind", func(): return wind, func(v): wind = v, "Wetter", {"min": 0, "max": 120, "step": 1, "unit": "km/h"})
 	add_control("toggle", "real_weather", "Echtes Wetter vom Ort (alle 10 Minuten, braucht Internet)", func(): return real_weather, func(v): real_weather = v; life._wx_t = -10000.0, "Wetter")
-	add_control("toggle", "surprise_on", "Überraschungsnacht: nachts ab und zu Stromausfall, Nebelbank, Ablenkung, Scheinwerfer, ein Tier steht still – am Morgen die Bewertung von Motion Watch", func(): return surprise_on, func(v): surprise.set_on(bool(v)), "Wetter")
+	add_control("toggle", "surprise_on", "Überraschungsnacht: nachts ab und zu Stromausfall, Nebelbank, Ablenkung, Scheinwerfer, ein Tier steht still – am Morgen die Bewertung von MoveEye", func(): return surprise_on, func(v): surprise.set_on(bool(v)), "Wetter")
 	add_control("toggle", "night_weather", "Wetterverlauf über die Nacht (Dämmerung, Regenschauer, Tau auf der Linse, Morgennebel)", func(): return night_weather, func(v): night_weather = v; _nw["day"] = -1, "Wetter")
 	add_control("toggle", "real_time", "Echte Uhrzeit (die Uhr des PCs)", func(): return real_time, func(v): real_time = v, "Szene")
 	add_control("slider", "ambient", "Temperatur", func(): return ambient, func(v): ambient = v, "Wetter", {"min": -15, "max": 40, "step": 0.5, "unit": "°C"})
@@ -2745,11 +2745,11 @@ func _register_controls() -> void:
 	add_control("slider", "ir_range", "Reichweite des Infrarot-Lichts", func(): return ir_range, func(v): ir_range = v, "Kamerabild", {"min": 4, "max": 30, "step": 1, "unit": "m"})
 	add_control("slider", "lens_vignette", "Dunkle Bildecken", func(): return lens_vignette, func(v): lens_vignette = v, "Kamerabild", {"min": 0, "max": 1, "step": 0.05, "expert": true})
 	add_control("toggle", "lens_drops", "Regentropfen auf der Linse", func(): return lens_drops, func(v): lens_drops = v, "Kamerabild")
-	add_control("toggle", "sound_on", "Geräusche der Welt ans Mikrofon von Motion Watch", func(): return sound_on, func(v): sound_on = v, "Kamerabild", ex)
+	add_control("toggle", "sound_on", "Geräusche der Welt ans Mikrofon von MoveEye", func(): return sound_on, func(v): sound_on = v, "Kamerabild", ex)
 	add_control("toggle", "insects", "Insekten am Licht (nachts, lösen wie echt Bewegung aus)", func(): return insects_on, func(v): insects_on = v, "Kamerabild")
 	for cd in [["glare", "Gegenlicht (tiefe Sonne in der Linse, Äste lassen sie flackern)"], ["drops", "Tropfen auf der Linse (auch ohne Regen)"],
 			["web", "Spinnennetz vor der Kopfkamera (nachts im Licht hell)"], ["headlights", "Scheinwerfer: nachts fahren immer wieder Autos vorbei"],
-			["shadows", "Wolkenschatten: schnelle, tiefe Schatten"], ["ir", "Infrarot-Licht immer an (auch ohne Motion Watch)"],
+			["shadows", "Wolkenschatten: schnelle, tiefe Schatten"], ["ir", "Infrarot-Licht immer an (auch ohne MoveEye)"],
 			["fogged", "Beschlagene Linse (Tau am Morgen, milchiger Schleier)"], ["dirt", "Schmutz und Pollen auf der Linse"],
 			["shake", "Kamera wackelt im Wind (Mast, Stange)"], ["net", "Schlechtes WLAN: das Bild ruckelt und bleibt hängen"]]:
 		var key: String = cd[0]
@@ -2757,21 +2757,21 @@ func _register_controls() -> void:
 	add_control("toggle", "dev2_on", "Zweites Motion-Watch-Gerät in der Welt (eigene Adresse: Port des Simulators + 20, meist 8785)", func(): return dev2.on, func(v): dev2.set_on(v), "Mover")
 	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
 			{"options": [["opposite", "gegenüber (30 m)"], ["left", "links"], ["right", "rechts"]]})
-	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – fahren mit dem grünen Stick unten rechts, den Pfeiltasten oder dem zweiten Stick in Motion Watch", func(): return mover_on, func(v): set_mover(v), "Mover")
+	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – fahren mit dem grünen Stick unten rechts, den Pfeiltasten oder dem zweiten Stick in MoveEye", func(): return mover_on, func(v): set_mover(v), "Mover")
 	# 3D-3.61: «Patrouille»
-	add_control("toggle", "patrol_on", "Patrouille: der Mover fährt Motion Watch die Route ab", func(): return patrol != null and patrol.active, func(v): if patrol != null: patrol.set_active(bool(v)), "Mover")
+	add_control("toggle", "patrol_on", "Patrouille: der Mover fährt MoveEye die Route ab", func(): return patrol != null and patrol.active, func(v): if patrol != null: patrol.set_active(bool(v)), "Mover")
 	add_control("select", "patrol_mode", "Route", func(): return patrol.mode if patrol != null else "points", func(v): if patrol != null: patrol.mode = str(v); patrol._dirty = true, "Mover",
 			{"options": [["points", "feste Punkte (mit der Maus gesetzt)"], ["area", "zufällig im Bereich"]]})
 	add_control("button", "patrol_points", "Punkte setzen: in die Welt klicken (Rechtsklick = Punkt weg)", null, func(): patrol.edit = "points"; patrol.mode = "points", "Mover")
 	add_control("button", "patrol_area", "Bereich aufziehen (mit gedrückter Maustaste)", null, func(): patrol.edit = "area", "Mover")
-	add_control("button", "patrol_random", "Zufällige Route rund um Motion Watch", null, func(): patrol.random_route(), "Mover")
+	add_control("button", "patrol_random", "Zufällige Route rund um MoveEye", null, func(): patrol.random_route(), "Mover")
 	add_control("button", "patrol_clear", "Route löschen", null, func(): patrol.clear_route(), "Mover")
 	add_control("slider", "patrol_speed", "Tempo der Patrouille", func(): return patrol.speed if patrol != null else 0.9, func(v): if patrol != null: patrol.speed = float(v), "Mover", {"min": 0.3, "max": 3.0, "step": 0.1, "unit": "m/s"})
 	add_control("slider", "patrol_dwell", "An jedem Punkt umschauen", func(): return patrol.dwell if patrol != null else 5.0, func(v): if patrol != null: patrol.dwell = float(v), "Mover", {"min": 1.0, "max": 20.0, "step": 1.0, "unit": "s"})
 	add_control("slider", "patrol_sweep", "Kopf schwenkt beim Fahren", func(): return patrol.sweep if patrol != null else 70.0, func(v): if patrol != null: patrol.sweep = float(v), "Mover", {"min": 0.0, "max": 160.0, "step": 10.0, "unit": "°"})
 	add_control("toggle", "patrol_follow", "Kopf dreht zu Verdächtigem, der Mover fährt dann langsamer", func(): return patrol.follow if patrol != null else true, func(v): if patrol != null: patrol.follow = bool(v), "Mover")
 	add_control("select", "patrol_judge", "Spiel «Patrouille»: wer erwischt", func(): return patrol_judge, func(v): patrol_judge = str(v), "Mover",
-			{"options": [["mw", "die echte Erkennung von Motion Watch"], ["sim", "der Wächter des Simulators (geht ohne Pi)"]]})
+			{"options": [["mw", "die echte Erkennung von MoveEye"], ["sim", "der Wächter des Simulators (geht ohne Pi)"]]})
 	add_control("button", "rover_place", "📍 Rover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)", null, func(): place_kind = "rover", "Mover")
 	add_control("slider", "mast_h", "Stangenlänge (Höhe des Kamerakopfs; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": 0.4, "max": 4.0, "step": 0.1, "unit": "m"})
 	add_control("slider", "explore_speed", "Tempo beim Erkunden (Shift / A = schneller)", func(): return explore.speed if explore != null else 1.6, func(v): if explore != null: explore.speed = v, "Mover", {"min": 0.5, "max": 6.0, "step": 0.1, "unit": "m/s"})
@@ -2789,7 +2789,7 @@ func _register_controls() -> void:
 	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates")
 	add_control("select", "testrun_plan", "Welcher Testlauf", func(): return testrun.plan, func(v): testrun.plan = v, "Testlauf",
 			{"options": testrun.plan_options()})
-	add_control("button", "testrun_start", "Testlauf starten (Motion Watch muss verbunden sein)", null, func(): testrun.start(), "Testlauf")
+	add_control("button", "testrun_start", "Testlauf starten (MoveEye muss verbunden sein)", null, func(): testrun.start(), "Testlauf")
 	add_control("button", "testrun_stop", "Testlauf abbrechen", null, func(): testrun.stop(false), "Testlauf")
 	add_control("button", "rec_start", "● Aufnahme starten (wer wo geht, Zeit, Wetter – höchstens 5 Minuten)", null, func(): recorder.start_rec(), "Testlauf")
 	add_control("button", "rec_stop", "■ Aufnahme beenden und speichern", null, func(): recorder.stop_rec(), "Testlauf")
@@ -2805,9 +2805,9 @@ func _register_controls() -> void:
 	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
-			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "Motion Watch entscheidet (echte Erkennung)"], ["mwhand", "Team gegen Motion Watch (Wächter steuern Motion Watch)"], ["free", "Frei bewegen – ohne Regeln (zum Testen der Erkennung)"], ["patrol", "Patrouille: Motion Watch fährt mit dem Mover die Route ab"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"]]})
-	add_control("select", "game_level", "Schwierigkeit (Wächter und Motion Watch)", func(): return game_level, func(v): game_level = v, "Spiel",
-			{"options": [["easy", "leicht – Easy-Mode: Motion Watch muss 2.5 s melden, Kriechen ist sicher, 6 s Pause"], ["normal", "normal – 1 s melden, 3 s Pause"], ["hard", "schwer – sofort, 2 s Pause"]]})
+			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "MoveEye entscheidet (echte Erkennung)"], ["mwhand", "Team gegen MoveEye (Wächter steuern MoveEye)"], ["free", "Frei bewegen – ohne Regeln (zum Testen der Erkennung)"], ["patrol", "Patrouille: MoveEye fährt mit dem Mover die Route ab"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"]]})
+	add_control("select", "game_level", "Schwierigkeit (Wächter und MoveEye)", func(): return game_level, func(v): game_level = v, "Spiel",
+			{"options": [["easy", "leicht – Easy-Mode: MoveEye muss 2.5 s melden, Kriechen ist sicher, 6 s Pause"], ["normal", "normal – 1 s melden, 3 s Pause"], ["hard", "schwer – sofort, 2 s Pause"]]})
 	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
 			{"options": [["0", "unbegrenzt"], ["3", "3 Leben"], ["1", "1 Leben"]]})
 	add_control("slider", "game_items", "Kristalle zum Sammeln", func(): return game_items, func(v): game_items = int(v), "Spiel", {"min": 0, "max": 6, "step": 1})
@@ -2819,12 +2819,12 @@ func _register_controls() -> void:
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
 	add_control("toggle", "game_powers", "Power-ups: Tarnkappe (lila) und Turbo (gelb)", func(): return game_powers, func(v): game_powers = v, "Spiel")
 	add_control("toggle", "game_photos", "Erwischt-Fotos (Bild der Kamera beim Erwischen, Galerie am Schluss)", func(): return game_photos, func(v): game_photos = v, "Spiel")
-	# 3D-3.52: the hit sequence (each on its own) and what the game teaches Motion Watch
+	# 3D-3.52: the hit sequence (each on its own) and what the game teaches MoveEye
 	add_control("toggle", "game_fx_laser", "Treffer: roter Laser vom Kamerakopf (Handy: Fadenkreuz)", func(): return game_fx_laser, func(v): game_fx_laser = v, "Spiel")
 	add_control("toggle", "game_fx_paint", "Treffer: Farbklecks (Handy: Klecks auf dem Bildschirm)", func(): return game_fx_paint, func(v): game_fx_paint = v, "Spiel")
 	add_control("toggle", "game_fx_flash", "Treffer: Blitz wie ein Radarfoto (Handy: weisser Blitz)", func(): return game_fx_flash, func(v): game_fx_flash = v, "Spiel")
-	add_control("toggle", "game_tap", "Jäger an Motion Watch zielt durch Antippen im Livebild", func(): return game_tap, func(v): game_tap = v, "Spiel")
-	add_control("toggle", "game_learn_miss", "Erkennung lernen: Bilder von Spielern, die Motion Watch nicht gemeldet hat", func(): return game_learn_miss, func(v): game_learn_miss = v, "Spiel")
+	add_control("toggle", "game_tap", "Jäger an MoveEye zielt durch Antippen im Livebild", func(): return game_tap, func(v): game_tap = v, "Spiel")
+	add_control("toggle", "game_learn_miss", "Erkennung lernen: Bilder von Spielern, die MoveEye nicht gemeldet hat", func(): return game_learn_miss, func(v): game_learn_miss = v, "Spiel")
 	add_control("toggle", "game_learn_report", "Erkennung lernen: Spielbericht (wie schnell gemeldet, Abstand, Haltung, Licht)", func(): return game_learn_report, func(v): game_learn_report = v, "Spiel")
 	add_control("toggle", "game_learn_paths", "Erkennung lernen: unerkannte Schleichwege als Testlauf speichern", func(): return game_learn_paths, func(v): game_learn_paths = v, "Spiel")
 	add_control("toggle", "game_blind_bonus", "Bonus für blinde Flecken (+20 Punkte pro Sekunde sichtbar, aber nicht gemeldet)", func(): return game_blind_bonus, func(v): game_blind_bonus = v, "Spiel")
@@ -2852,10 +2852,10 @@ func _register_controls() -> void:
 	add_control("toggle", "game_random", "Start und Ziel zufällig", func(): return game_random, func(v): game_random = v, "Spiel", ex)
 	add_control("select", "game_quality", "Bild auf dem Handy", func(): return game_quality, func(v): game_quality = v, "Spiel",
 			{"options": [["small", "klein (schnell)"], ["mid", "mittel"], ["big", "gross (braucht mehr Leistung)"]], "expert": true})
-	add_control("toggle", "game_guard", "Ohne Motion Watch bewacht der Kopf selbst", func(): return game_guard, func(v): game_guard = v, "Spiel", ex)
-	add_control("toggle", "autostart", "Mit dem PC starten (sendet gleich an Motion Watch)", func(): return autostart_on, func(v): set_autostart(v), "Start mit dem PC")
+	add_control("toggle", "game_guard", "Ohne MoveEye bewacht der Kopf selbst", func(): return game_guard, func(v): game_guard = v, "Spiel", ex)
+	add_control("toggle", "autostart", "Mit dem PC starten (sendet gleich an MoveEye)", func(): return autostart_on, func(v): set_autostart(v), "Start mit dem PC")
 	add_control("toggle", "autostart_min", "Dabei klein (nur das Kästchen in der Ecke)", func(): return autostart_min, func(v): autostart_min = v, "Start mit dem PC")
-	add_control("toggle", "autostart_mwpc", "Dabei auch Motion Watch auf diesem PC starten (ohne Pi)", func(): return autostart_mwpc, func(v): autostart_mwpc = v, "Start mit dem PC")
+	add_control("toggle", "autostart_mwpc", "Dabei auch MoveEye auf diesem PC starten (ohne Pi)", func(): return autostart_mwpc, func(v): autostart_mwpc = v, "Start mit dem PC")
 	if OS.get_name() == "Windows":
 		add_control("toggle", "autostart_lock", "Danach den Bildschirm sperren", func(): return autostart_lock, func(v): autostart_lock = v, "Start mit dem PC")
 		add_control("button", "autologon", "Ohne Anmelden: automatische Anmeldung von Windows einrichten …", null, func(): setup_autologon(), "Start mit dem PC", {"expert": true})
@@ -2867,11 +2867,11 @@ func _register_controls() -> void:
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
 			{"options": [["simple", "einfach (schnell)"], ["medium", "mittel"], ["nice", "schön (Schatten, Leuchten, Wolken)"],
 						 ["ultra", "ultra (für starke Grafikkarten; mit Vulkan noch mehr Effekte)"]]})
-	add_control("slider", "view_scale", "Schärfe der Ansicht im Fenster (weniger = schneller; die Bilder für Motion Watch bleiben scharf)", func(): return view_scale, func(v): set_view_scale(float(v)), "Grafik", {"min": 0.4, "max": 1.0, "step": 0.05, "unit": "×"})
+	add_control("slider", "view_scale", "Schärfe der Ansicht im Fenster (weniger = schneller; die Bilder für MoveEye bleiben scharf)", func(): return view_scale, func(v): set_view_scale(float(v)), "Grafik", {"min": 0.4, "max": 1.0, "step": 0.05, "unit": "×"})
 	add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(win_fps), func(v): win_fps = int(v); _settings_dirty = true, "Grafik",
 			{"options": [["0", "so viele wie möglich"], ["60", "60"], ["30", "30 (spart Strom)"], ["20", "20 (schwacher PC)"]]})
 	add_control("toggle", "auto_perf", "Automatisch leichter, wenn der PC zu langsam ist", func(): return auto_perf, func(v): auto_perf = v; _slow_n = 0, "Grafik")
-	add_control("toggle", "eco_idle", "Strom sparen: nur rechnen, wenn das Fenster offen ist oder Motion Watch verbunden ist", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
+	add_control("toggle", "eco_idle", "Strom sparen: nur rechnen, wenn das Fenster offen ist oder MoveEye verbunden ist", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
 	add_control("toggle", "meadow", "Gras und Blumen auf der Wiese", func(): return meadow_on, func(v): set_meadow(v), "Grafik", ex)
 	add_control("toggle", "map_on", "Übersichtskarte oben links (M)", func(): return map_on, func(v): set_map(v), "Grafik")
 	add_control("toggle", "live_on", "Livebild unter der Karte (L)", func(): return live_on, func(v): set_live(v), "Grafik")
@@ -2915,7 +2915,7 @@ func set_view_scale(v: float) -> void:
 
 func _perf_tick() -> void:
 	"""3D-3.75: the window draws fewer than 14 pictures per second for 20 s: one step lighter (quality, then sharpness of the
-	view, then the grass). The pictures for Motion Watch are not touched."""
+	view, then the grass). The pictures for MoveEye are not touched."""
 	if not auto_perf or not win_open or not sim_active or now() - _perf_t < 30.0:
 		_slow_n = 0 if not auto_perf else _slow_n
 		return
@@ -2945,7 +2945,7 @@ func _perf_tick() -> void:
 	else:
 		return
 	_settings_dirty = true
-	start_info = "Der PC ist langsam – leichter gemacht: %s (Bilder für Motion Watch unverändert)" % what
+	start_info = "Der PC ist langsam – leichter gemacht: %s (Bilder für MoveEye unverändert)" % what
 	print("auto graphics: " + what)
 
 
@@ -3046,7 +3046,7 @@ func control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "smoke": str(sm), "fireflies": [fireflies.emitting, fireflies.is_visible_in_tree()], "cloth": get_tree().get_nodes_in_group("cloth").size()}
 	elif a == "test_report":                           # the test run: progress and the last report
 		return testrun.state()
-	elif a == "test_start":                            # Motion Watch starts a test run (3D-3.27): {"plan": "standard" | "quick" | "hard" | "night"}
+	elif a == "test_start":                            # MoveEye starts a test run (3D-3.27): {"plan": "standard" | "quick" | "hard" | "night"}
 		var err: String = testrun.start(str(d.get("plan", testrun.plan)), d.get("cams", []) if typeof(d.get("cams", [])) == TYPE_ARRAY else [])
 		var st: Dictionary = testrun.state()
 		st["ok"] = err == ""
@@ -3143,7 +3143,7 @@ func control(d: Dictionary) -> Dictionary:
 			pruef.start()
 		elif w_ == "send":
 			pruef.send()
-		elif w_ == "auto":                             # 3D-3.75: {on} - automatically after every update of Motion Watch
+		elif w_ == "auto":                             # 3D-3.75: {on} - automatically after every update of MoveEye
 			pruef.set_auto(bool(d.get("on", true)))
 			if d.has("last"):
 				var ad: Dictionary = pruef._auto_data()
@@ -3211,10 +3211,10 @@ func control(d: Dictionary) -> Dictionary:
 			karte._show_step(karte.step)
 		return {"ok": true, "step": karte.step, "env": geo.env, "why": geo.env_why, "info": karte.info.text, "waiting": karte.waiting,
 				"counts": geo.counts, "ort_env": ort_env, "visible": karte.visible}
-	elif a == "input":                                 # the simulator window seen in Motion Watch: mouse / finger / keys from there
+	elif a == "input":                                 # the simulator window seen in MoveEye: mouse / finger / keys from there
 		var ev = d.get("ev", [])
 		return {"ok": true, "n": view_input(ev if ev is Array else [])}
-	elif a == "game_handicap":                         # Motion Watch: handicap for a player (0 … 2)
+	elif a == "game_handicap":                         # MoveEye: handicap for a player (0 … 2)
 		game.set_handicap(int(d.get("slot", -1)), int(d.get("level", 0)))
 		return {"ok": true}
 	elif a == "view_look":                             # the phone as a window (3D-3.27): turn the phone = look round in the free view
@@ -3238,7 +3238,7 @@ func control(d: Dictionary) -> Dictionary:
 		var ap: Vector3 = gp["actor"].position
 		return {"ok": true, "box": game.learn.box(gp), "sees": game.cam_sees(gp, 0), "state": gp["state"], "fx": game.fx_nodes.size(),
 				"head": [hp.x, hp.y, hp.z], "pos": [ap.x, ap.y, ap.z], "goal": [game.goal.x, game.goal.z], "report": game.learn.report_dict() if d.get("report", false) else {}}
-	elif a == "pad":                                   # 3D-3.59: a game controller at the browser (Motion Watch page): axes and buttons
+	elif a == "pad":                                   # 3D-3.59: a game controller at the browser (MoveEye page): axes and buttons
 		if explore == null:
 			return {"ok": false, "error": "no explore"}
 		explore.remote_pad(d.get("ax", []), d.get("bt", []), str(d.get("name", "")))
@@ -3335,13 +3335,13 @@ func control(d: Dictionary) -> Dictionary:
 		elif op == "edit":
 			home_editor.open(bool(d.get("on", true)))
 		return {"ok": true, "items": home_items, "kinds": Scenes.HOME_KINDS, "scene": scene}
-	elif a == "shoot":                                 # 3D-3.70: a shot / trigger from Motion Watch at a spot of the head camera picture
+	elif a == "shoot":                                 # 3D-3.70: a shot / trigger from MoveEye at a spot of the head camera picture
 		return mw_shot(float(d.get("x", 0.5)), float(d.get("y", 0.5)), str(d.get("who", "")).left(30))
-	elif a == "game_mwcatch":                          # «Team gegen Motion Watch»: «Erwischt!» pressed at Motion Watch (3D-3.27)
+	elif a == "game_mwcatch":                          # «Team gegen MoveEye»: «Erwischt!» pressed at MoveEye (3D-3.27)
 		if game == null:
 			return {"ok": false, "error": "no game"}
 		return game.mw_catch(str(d.get("who", "")).left(30), float(d.get("x", -1.0)), float(d.get("y", -1.0)))
-	elif a == "game_info":                             # the spectators in Motion Watch: the game in numbers (3D-3.22)
+	elif a == "game_info":                             # the spectators in MoveEye: the game in numbers (3D-3.22)
 		if game == null:
 			return {"ok": false, "error": "no game"}
 		var gi: Dictionary = game.spectator_info()
@@ -3412,7 +3412,7 @@ func control(d: Dictionary) -> Dictionary:
 			sv.route = [[Vector3(float(t[0]), 0, float(t[1])), float(d["wait"]), 0.0, Vector3(0, 0, 0)], Vector3(float(t[0]) + 40.0, 0, float(t[1]))]
 			sv.next_idle = now() + 999.0
 		return {"ok": true}
-	elif a == "gamewiz":                               # the game wizard, worked from the page of Motion Watch (3D-3.41)
+	elif a == "gamewiz":                               # the game wizard, worked from the page of MoveEye (3D-3.41)
 		return gamewiz.op(d)
 	elif a == "set" or a == "press":
 		var c = null
@@ -3441,7 +3441,7 @@ func control(d: Dictionary) -> Dictionary:
 
 func status_text() -> String:
 	var h := hour()
-	var mwc := "verbunden mit %s" % str(mw.get("device", "Motion Watch")) if now() - mw_t < 3.0 else ("Motion Watch nicht verbunden" if stream_on else "Senden aus")
+	var mwc := "verbunden mit %s" % str(mw.get("device", "MoveEye")) if now() - mw_t < 3.0 else ("MoveEye nicht verbunden" if stream_on else "Senden aus")
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
 	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
 
@@ -3469,7 +3469,7 @@ var info_label: Label
 
 
 func _build_ui() -> void:
-	"""the window: phone on the left, on the right the panel in the look of the web page of Motion Watch (ui_style.gd):
+	"""the window: phone on the left, on the right the panel in the look of the web page of MoveEye (ui_style.gd):
 	toolbar (hide, search, groups only, expand all, collapse all), cards, at the bottom «Einfach | Experte»"""
 	var layer := CanvasLayer.new()
 	add_child(layer)
@@ -3561,9 +3561,9 @@ func _build_ui() -> void:
 	var hdr := HBoxContainer.new()
 	hdr.add_theme_constant_override("separation", 8)
 	top_box.add_child(hdr)
-	var logo: Control = load("res://scripts/mw_logo.gd").new()      # 3D-3.62: the orange Motion Watch symbol, the eye looks around
+	var logo: Control = load("res://scripts/mw_logo.gd").new()      # 3D-3.62: the orange MoveEye symbol, the eye looks around
 	logo.custom_minimum_size = Vector2(30, 30)
-	logo.tooltip_text = "Motion Watch"
+	logo.tooltip_text = "MoveEye"
 	hdr.add_child(logo)
 	var title := Label.new()
 	title.text = "3D-Simulator Live"
@@ -3574,7 +3574,7 @@ func _build_ui() -> void:
 	ver.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ver.autowrap_mode = TextServer.AUTOWRAP_OFF
 	hdr.add_child(ver)
-	# toolbar like above the settings of Motion Watch
+	# toolbar like above the settings of MoveEye
 	var tb := HBoxContainer.new()
 	ui_tb = tb
 	tb.add_theme_constant_override("separation", 6)
@@ -3597,13 +3597,13 @@ func _build_ui() -> void:
 	search_none = UI.small("Kein Treffer")
 	search_none.visible = false
 	box_.add_child(search_none)
-	# connection to Motion Watch
+	# connection to MoveEye
 	var cn := UI.fold_card(box_, "Verbindung", true, "link")     # from 3D-3.37 it folds; the symbol is green when connected
 	fold_bodies.append(cn)
 	top_cards.append(cn.get_meta("card"))
 	conn_body = cn
 	stream_cb = CheckButton.new()
-	stream_cb.text = "An Motion Watch senden (Port %d)" % stream_port
+	stream_cb.text = "An MoveEye senden (Port %d)" % stream_port
 	stream_cb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	stream_cb.add_theme_font_size_override("font_size", 15)
 	stream_cb.button_pressed = stream_on
@@ -3615,14 +3615,14 @@ func _build_ui() -> void:
 	status_label.add_theme_font_size_override("font_size", 13)
 	cn.add_child(status_label)
 	# 3D-3.45: tunnel - when the firewall of this PC lets nothing in (no admin rights)
-	var tn := UI.sub_fold(cn, "Tunnel zu Motion Watch (Firewall ohne Adminrechte)", tunnel_on)
+	var tn := UI.sub_fold(cn, "Tunnel zu MoveEye (Firewall ohne Adminrechte)", tunnel_on)
 	tn.set_meta("always", true)                     # 3D-3.46: it has no settings of the list - without this it was always hidden
 	sub_bodies.append(tn)
-	var tnote := UI.small("Lässt die Firewall dieses PCs Motion Watch nicht herein, verbindet sich der Simulator selbst zu Motion Watch. Adresse und Code stehen auf der Seite von Motion Watch unter Simulator → «Simulator hinter einer Firewall».")
+	var tnote := UI.small("Lässt die Firewall dieses PCs MoveEye nicht herein, verbindet sich der Simulator selbst zu MoveEye. Adresse und Code stehen auf der Seite von MoveEye unter Simulator → «Simulator hinter einer Firewall».")
 	tnote.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	tn.add_child(tnote)
 	var th_ := LineEdit.new()
-	th_.placeholder_text = "Adresse von Motion Watch, z. B. 192.168.1.20"
+	th_.placeholder_text = "Adresse von MoveEye, z. B. 192.168.1.20"
 	th_.text = tunnel_host
 	tn.add_child(th_)
 	var tc_ := LineEdit.new()
@@ -3695,7 +3695,7 @@ func _build_ui() -> void:
 	prevt.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	prevt.custom_minimum_size = Vector2(146, 112)
 	row.add_child(prevt)
-	# tools: Motion Watch on this PC, map, phone
+	# tools: MoveEye on this PC, map, phone
 	var tl := UI.fold_card(box_, "Werkzeuge", true, "tools")
 	fold_bodies.append(tl)
 	tools_body = tl
@@ -3712,16 +3712,16 @@ func _build_ui() -> void:
 	kb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	kb.pressed.connect(open_map)
 	tl.add_child(kb)
-	# 3D-3.71: the reference scan of Motion Watch, started from here
+	# 3D-3.71: the reference scan of MoveEye, started from here
 	var rsh := HBoxContainer.new()
 	rsh.add_theme_constant_override("separation", 6)
 	tl.add_child(rsh)
-	for b_ in [["Motion Watch: Referenz-Scan", "refscan"], ["Mit Referenz vergleichen", "refcompare"]]:
+	for b_ in [["MoveEye: Referenz-Scan", "refscan"], ["Mit Referenz vergleichen", "refcompare"]]:
 		var rb := Button.new()
 		rb.text = b_[0]
 		rb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		rb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		rb.tooltip_text = "Motion Watch fährt mit dem Kopf alle Richtungen ab: Referenz-Fotos aufnehmen bzw. vergleichen (Bericht in Motion Watch unter Werkzeuge → Referenz-Scan)"
+		rb.tooltip_text = "MoveEye fährt mit dem Kopf alle Richtungen ab: Referenz-Fotos aufnehmen bzw. vergleichen (Bericht in MoveEye unter Werkzeuge → Referenz-Scan)"
 		rb.pressed.connect(mw_request.bind(b_[1]))
 		rsh.add_child(rb)
 	var ntb := Button.new()                          # 3D-3.72
@@ -3743,7 +3743,7 @@ func _build_ui() -> void:
 			var n = test_props.get(nm, null)
 			set_prop(nm, n == null or not is_instance_valid(n) or not n.visible))
 		pg.add_child(pb)
-	tl.add_child(UI.small("Sabotage-Test für den Diebstahlschutz von Motion Watch (scharf schalten):"))
+	tl.add_child(UI.small("Sabotage-Test für den Diebstahlschutz von MoveEye (scharf schalten):"))
 	var sg := HBoxContainer.new()
 	sg.add_theme_constant_override("separation", 6)
 	tl.add_child(sg)
@@ -3756,7 +3756,7 @@ func _build_ui() -> void:
 		sg.add_child(sb_)
 	refscan_label = UI.small("")
 	tl.add_child(refscan_label)
-	tl.add_child(UI.small("Überraschung jetzt auslösen (bewertet Motion Watch; nachts von selbst: Wetter → Überraschungsnacht):"))
+	tl.add_child(UI.small("Überraschung jetzt auslösen (bewertet MoveEye; nachts von selbst: Wetter → Überraschungsnacht):"))
 	var sug := GridContainer.new()                   # 3D-3.75
 	sug.columns = 3
 	sug.add_theme_constant_override("h_separation", 6)
@@ -3793,7 +3793,7 @@ func _build_ui() -> void:
 	ds_label = UI.small("")
 	tl.add_child(ds_label)
 	var plb := Button.new()
-	plb.text = "Aufstell-Planer: Wo soll Motion Watch hin?"
+	plb.text = "Aufstell-Planer: Wo soll MoveEye hin?"
 	plb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	plb.pressed.connect(func(): planner.open(not planner.visible))
 	tl.add_child(plb)
@@ -3875,7 +3875,7 @@ func _build_ui() -> void:
 	keys.add_child(info_label)
 	expert_cards.append(keys.get_meta("card"))
 	top_cards.append(keys.get_meta("card"))
-	# Simple | Expert at the very bottom (like on the page of Motion Watch)
+	# Simple | Expert at the very bottom (like on the page of MoveEye)
 	kids_seg = UI.segment("Kinder", "Erwachsene", not kids_on, func(adult): _kids_switch(adult))   # 3D-3.69
 	box_.add_child(kids_seg)
 	var se := UI.segment("Einfach", "Experte", not ui_simple, func(expert): set_simple(not expert))
@@ -4276,11 +4276,11 @@ func _thumbs_tick(dt: float) -> void:
 
 
 func _on_mwpc() -> void:
-	"""Motion Watch on this PC changed: button, text, and the phone shows its page as soon as it runs"""
+	"""MoveEye on this PC changed: button, text, and the phone shows its page as soon as it runs"""
 	var st: String = mwpc.state
-	mwpc_btn.text = "Motion Watch auf diesem PC stoppen" if st == "running" else ("Motion Watch auf diesem PC wird vorbereitet …" if st == "busy" else "Motion Watch auf diesem PC starten (ohne Pi)")
+	mwpc_btn.text = "MoveEye auf diesem PC stoppen" if st == "running" else ("MoveEye auf diesem PC wird vorbereitet …" if st == "busy" else "MoveEye auf diesem PC starten (ohne Pi)")
 	mwpc_btn.disabled = st == "busy"
-	mwpc_label.text = (mwpc.text + ("\n" + mwpc.helper_text() if mwpc.helper_text() != "" else "")) if st != "off" else "Für das Handy ohne Pi – und als KI-Rechenhilfe: Der Pi lässt dann die Erkennung von diesem PC rechnen (schneller, der Pi bleibt kühl). Beim ersten Mal werden Python, Motion Watch und das KI-Modell geladen (rund 170 MB, einige Minuten). Windows fragt dabei, ob Python ins Netz darf: «Zulassen» wählen."
+	mwpc_label.text = (mwpc.text + ("\n" + mwpc.helper_text() if mwpc.helper_text() != "" else "")) if st != "off" else "Für das Handy ohne Pi – und als KI-Rechenhilfe: Der Pi lässt dann die Erkennung von diesem PC rechnen (schneller, der Pi bleibt kühl). Beim ersten Mal werden Python, MoveEye und das KI-Modell geladen (rund 170 MB, einige Minuten). Windows fragt dabei, ob Python ins Netz darf: «Zulassen» wählen."
 	mwpc_label.add_theme_color_override("font_color", UI.GRN if st == "running" else (UI.ORG if st == "error" else UI.MUT))
 	phone.on_mwpc(st, mwpc.url(), mwpc.text)
 
@@ -4292,7 +4292,7 @@ func check_updates() -> void:
 
 func run_update(automatic: bool, by_hand: bool) -> void:
 	"""check GitHub for a newer simulator. automatic: install by itself after 15 s (can be cancelled) - for the setting
-	«Neue Versionen automatisch installieren» and for the button on the web page of Motion Watch (from far away)."""
+	«Neue Versionen automatisch installieren» and for the button on the web page of MoveEye (from far away)."""
 	if update_busy:
 		return
 	update_busy = true
@@ -4335,7 +4335,7 @@ func _restore_window(args: PackedStringArray) -> void:
 
 
 func restart_args() -> PackedStringArray:
-	"""options for the start after an update: as before, plus what is on now (sending, scene, Motion Watch on this PC,
+	"""options for the start after an update: as before, plus what is on now (sending, scene, MoveEye on this PC,
 	the window: size and place, full screen, or the small box)"""
 	var a := OS.get_cmdline_user_args()
 	var out := PackedStringArray()
@@ -4471,9 +4471,9 @@ func _toggle_phone() -> void:
 
 
 func _open_preview() -> void:
-	"""the web page of Motion Watch as it looks on a phone / tablet, upright and across (page /preview of Motion Watch)"""
+	"""the web page of MoveEye as it looks on a phone / tablet, upright and across (page /preview of MoveEye)"""
 	if mw_addr == "" or now() - mw_t > 10.0:
-		status_label.text = "Motion Watch ist nicht verbunden – zuerst in Motion Watch die Simulation einschalten."
+		status_label.text = "MoveEye ist nicht verbunden – zuerst in MoveEye die Simulation einschalten."
 		return
 	OS.shell_open("%s://%s:%d/preview" % [str(mw.get("mw_scheme", "http")), mw_addr, int(mw.get("mw_port", 5000))])
 
@@ -4507,7 +4507,7 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 			flow.add_child(b)
 			ui_items.append([b, c.label, c.extra.get("expert", false), parent])
 		"toggle":
-			var row := HBoxContainer.new()                   # text (wraps) + switch on the right, like on the page of Motion Watch
+			var row := HBoxContainer.new()                   # text (wraps) + switch on the right, like on the page of MoveEye
 			var tl := Label.new()
 			tl.text = c.label
 			tl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -4595,7 +4595,7 @@ var _syncing := false
 
 
 func refresh_controls() -> void:
-	"""the list of recordings changed: new options for the select (the page of Motion Watch shows them at once)"""
+	"""the list of recordings changed: new options for the select (the page of MoveEye shows them at once)"""
 	for c in controls:
 		if c.id == "rec_pick":
 			c.extra["options"] = recorder.options()
@@ -4686,34 +4686,34 @@ func _update_status() -> void:
 		surprise_label.text = surprise.status_text()
 	if ds_label != null and dataset != null:
 		ds_label.text = ("Trainingspaket: " + dataset.msg) if dataset.msg != "" else ""
-	if not mw_cmd.is_empty() and start_info.begins_with("Motion Watch: "):
+	if not mw_cmd.is_empty() and start_info.begins_with("MoveEye: "):
 		var r_ = mw.get("refscan", null)
 		if typeof(r_) == TYPE_DICTIONARY and int(r_.get("cmd_seen", 0)) >= int(mw_cmd["id"]):
-			start_info = ""                                  # Motion Watch took the request
+			start_info = ""                                  # MoveEye took the request
 	if status_label != null:
 		status_label.text = status_text()
 	if tunnel_label != null and tunnel != null:
 		var ts: Dictionary = tunnel.state()
-		tunnel_label.text = ("Ziel: %s:%d (Port von Motion Watch) · " % [tunnel_host if tunnel_host != "" else "?", tunnel.PORT]) + str(ts["msg"]) + ((" · %d offen · %.1f MB" % [int(ts["pipes"]), float(ts["mb"])]) if ts["on"] else "")
+		tunnel_label.text = ("Ziel: %s:%d (Port von MoveEye) · " % [tunnel_host if tunnel_host != "" else "?", tunnel.PORT]) + str(ts["msg"]) + ((" · %d offen · %.1f MB" % [int(ts["pipes"]), float(ts["mb"])]) if ts["on"] else "")
 		tunnel_label.add_theme_color_override("font_color", UI.GRN if ts["ok"] else (UI.ORG if ts["on"] else UI.MUT))
-	if conn_body != null:                                  # symbol: green = Motion Watch connected, orange = sending, grey = off
+	if conn_body != null:                                  # symbol: green = MoveEye connected, orange = sending, grey = off
 		var st := 2 if connected() else (1 if stream_on else 0)
 		if st != _conn_state:
 			_conn_state = st
 			UI.fold_active(conn_body, [0, 2, 1][st])          # 3D-3.50: symbol and arrow; the name stays white
 			var hd: Label = conn_body.get_meta("head", null)
 			if hd != null:
-				hd.text = ("Verbindung · " + ["aus", "wartet auf Motion Watch", "verbunden"][st]).to_upper()
+				hd.text = ("Verbindung · " + ["aus", "wartet auf MoveEye", "verbunden"][st]).to_upper()
 	_paint_groups()
 	if stream_note != null:
 		if stream_on:
-			stream_note.text = "Sendet: Motion Watch findet den Simulator im Netz und bekommt die Bilder." + ("" if net.port == stream_port else " (Port %d war besetzt – sendet auf Port %d; Motion Watch findet ihn von selbst, der Tunnel auch.)" % [stream_port, net.port])
+			stream_note.text = "Sendet: MoveEye findet den Simulator im Netz und bekommt die Bilder." + ("" if net.port == stream_port else " (Port %d war besetzt – sendet auf Port %d; MoveEye findet ihn von selbst, der Tunnel auch.)" % [stream_port, net.port])
 			stream_note.add_theme_color_override("font_color", UI.GRN)
 		elif net != null and net.error_text != "":
 			stream_note.text = "⚠ " + net.error_text + (" – versucht es weiter (gleich auf einem freien Port)" if (stream_last or tunnel_on) else "")
 			stream_note.add_theme_color_override("font_color", UI.ORG)
 		else:
-			stream_note.text = "Senden aus – zum Ausprobieren. Motion Watch sieht den Simulator erst, wenn der Schalter eingeschaltet ist."
+			stream_note.text = "Senden aus – zum Ausprobieren. MoveEye sieht den Simulator erst, wenn der Schalter eingeschaltet ist."
 			stream_note.add_theme_color_override("font_color", UI.MUT)
 	if Engine.get_process_frames() % 4 == 0:
 		_sync_ui()
@@ -4750,7 +4750,7 @@ var sel_ring: Control
 var rover_pad                         # rover_pad.gd: drive the mover here (from 3D-3.15)
 var patrol                            # patrol.gd: «Patrouille» (3D-3.61)
 var toolbar                           # toolbar.gd: the tool bar at the bottom (3D-3.61)
-var patrol_judge := "mw"              # game «Patrouille»: mw = the real detection of Motion Watch decides, sim = the simulator guard
+var patrol_judge := "mw"              # game «Patrouille»: mw = the real detection of MoveEye decides, sim = the simulator guard
 var explore                           # explore.gd: «Erkunden» with the rover - keyboard, mouse, touch, game controller (3D-3.55)
 var pad_drive := Vector2.ZERO         # (forward, turn right) from rover_pad, -1 … 1
 var pad_t := -10.0
@@ -5117,7 +5117,7 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	live_btn.button_pressed = live_on
 	live_btn.toggled.connect(func(on): set_live(on))
 	view_bar.add_child(live_btn)
-	for k in [["head", "Zum Kopf", "Zurück zu Motion Watch"], ["top", "Von oben", "Von oben auf den Platz schauen"]]:
+	for k in [["head", "Zum Kopf", "Zurück zu MoveEye"], ["top", "Von oben", "Von oben auf den Platz schauen"]]:
 		var b := Button.new()
 		b.text = k[1]
 		b.tooltip_text = k[2]
@@ -5201,14 +5201,14 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	explore = preload("res://scripts/explore.gd").new()       # 3D-3.55: explore with the rover
 	explore.main = self
 	layer.add_child(explore)
-	patrol = preload("res://scripts/patrol.gd").new()         # 3D-3.61: the mover drives Motion Watch round a route
+	patrol = preload("res://scripts/patrol.gd").new()         # 3D-3.61: the mover drives MoveEye round a route
 	patrol.main = self
 	add_child(patrol)
 	patrol.load_route()
 	toolbar = preload("res://scripts/toolbar.gd").new()       # 3D-3.61: everything with the mouse
 	toolbar.main = self
 	layer.add_child(toolbar)
-	headpad = preload("res://scripts/headpad.gd").new()       # 3D-3.77: steer the head of Motion Watch
+	headpad = preload("res://scripts/headpad.gd").new()       # 3D-3.77: steer the head of MoveEye
 	headpad.main = self
 	headpad.theme = th
 	layer.add_child(headpad)
@@ -5348,7 +5348,7 @@ func _place(p: Vector2) -> void:
 
 
 func place_rover_at(p: Vector2) -> bool:
-	"""the rover (or Motion Watch standing still) to the spot under the mouse, never inside an object"""
+	"""the rover (or MoveEye standing still) to the spot under the mouse, never inside an object"""
 	var from := view_cam.project_ray_origin(p)
 	var hit = ground_hit(from, view_cam.project_ray_normal(p))
 	if hit == null or from.distance_to(hit) > 400.0:
@@ -5439,7 +5439,7 @@ func reset_score() -> void:
 
 
 func shoot_head() -> void:
-	"""a shot straight out of the head camera: aim with the pan / tilt head of Motion Watch"""
+	"""a shot straight out of the head camera: aim with the pan / tilt head of MoveEye"""
 	var tr: Transform3D = cams[0].global_transform
 	shoot(tr.origin, -tr.basis.z)
 
@@ -5486,11 +5486,11 @@ func shoot(from: Vector3, d: Vector3) -> void:
 	_update_status()
 
 
-var mw_shots := {"hits": 0, "false": 0}   # 3D-3.70: shots of Motion Watch into the world (outside a game round)
+var mw_shots := {"hits": 0, "false": 0}   # 3D-3.70: shots of MoveEye into the world (outside a game round)
 
 
 func mw_shot(x: float, y: float, who: String) -> Dictionary:
-	"""a shot from Motion Watch: x, y (0..1) in the picture of the head camera. In a round: catch a runner (a miss is a false
+	"""a shot from MoveEye: x, y (0..1) in the picture of the head camera. In a round: catch a runner (a miss is a false
 	alarm). Otherwise into the world: a person is caught (runs away), an animal sees stars - a miss is a false alarm."""
 	if game != null and game.round_state == "play":
 		if game_mode == "mwhand":
@@ -5894,7 +5894,7 @@ func _birds() -> void:
 
 
 func host_name() -> String:
-	## the name of this computer (Motion Watch shows it next to the simulator in its list)
+	## the name of this computer (MoveEye shows it next to the simulator in its list)
 	for k in ["COMPUTERNAME", "HOSTNAME"]:
 		var h := OS.get_environment(k).strip_edges()
 		if h != "":
@@ -5905,7 +5905,7 @@ func host_name() -> String:
 	return ""
 
 
-# ---- the simulator window in Motion Watch (3D-3.18): its picture as a stream, and mouse / finger / keys back -------------
+# ---- the simulator window in MoveEye (3D-3.18): its picture as a stream, and mouse / finger / keys back -------------
 var view_want_t := -100.0
 var view_fps := 6.0
 var view_jpg := PackedByteArray()
@@ -5913,7 +5913,7 @@ var view_no := 0
 var _view_t := 0.0
 var _in_pos := Vector2.ZERO
 var _in_mask := 0
-var _rkeys := {}                       # keys held from Motion Watch -> time when they are let go by themselves
+var _rkeys := {}                       # keys held from MoveEye -> time when they are let go by themselves
 const VIEW_MAX_W := 1024
 # 3D-3.58: the browser asks for its size (width × pixel density), quality and WebP (/view.jpg?w=&q=&fmt=)
 var view_w := VIEW_MAX_W
@@ -5931,7 +5931,7 @@ func view_request(q: Dictionary) -> void:
 	if q.has("fmt"):
 		view_webp = str(q["fmt"]) == "webp"
 	if str(q.get("clean", "")) == "1":
-		view_clean_t = now()                    # 3D-3.67: Motion Watch shows the picture in full screen: no rover stick
+		view_clean_t = now()                    # 3D-3.67: MoveEye shows the picture in full screen: no rover stick
 const VIEW_KEYS := {"ArrowUp": KEY_UP, "ArrowDown": KEY_DOWN, "ArrowLeft": KEY_LEFT, "ArrowRight": KEY_RIGHT, "w": KEY_W, "a": KEY_A,
 		"s": KEY_S, "d": KEY_D, "q": KEY_Q, "e": KEY_E, "r": KEY_R, "f": KEY_F, "PageUp": KEY_PAGEUP, "PageDown": KEY_PAGEDOWN,
 		"0": KEY_0, "1": KEY_1, "2": KEY_2, "3": KEY_3, "4": KEY_4, "5": KEY_5, "+": KEY_PLUS, "-": KEY_MINUS, "Shift": KEY_SHIFT, "p": KEY_P}
@@ -5956,7 +5956,7 @@ func _view_capture() -> void:
 			ku.physical_keycode = kc
 			ku.pressed = false
 			Input.parse_input_event(ku)
-	# the window is the small box (or minimized): the view for Motion Watch is drawn in a picture of its own (3D-3.19)
+	# the window is the small box (or minimized): the view for MoveEye is drawn in a picture of its own (3D-3.19)
 	_remote_set(t - view_want_t < (10.0 if remote_vp != null else 3.0) and not win_open)
 	if t - view_want_t > 3.0 or t - _view_t < 1.0 / max(1.0, view_fps):
 		return
@@ -5983,7 +5983,7 @@ func _view_capture() -> void:
 
 
 func view_input(evs: Array) -> int:
-	"""events from Motion Watch: x / y 0 … 1 in the picture of /view.mjpg -> the same as mouse / keys here"""
+	"""events from MoveEye: x / y 0 … 1 in the picture of /view.mjpg -> the same as mouse / keys here"""
 	var r := view_rect()
 	var n := 0
 	for e in evs.slice(0, 60):
@@ -6032,7 +6032,7 @@ func view_input(evs: Array) -> int:
 			ke.pressed = bool(e.get("down", true))
 			Input.parse_input_event(ke)
 			if ke.pressed:
-				_rkeys[kc] = now() + 1.2                 # held from Motion Watch: let go by itself if no news comes (lost connection)
+				_rkeys[kc] = now() + 1.2                 # held from MoveEye: let go by itself if no news comes (lost connection)
 			else:
 				_rkeys.erase(kc)
 		else:
@@ -6050,7 +6050,7 @@ var _remote_back := []                 # [node, parent, index] to put back
 
 
 func _remote_set(on: bool) -> void:
-	"""small box / minimized while Motion Watch looks at the window: the window (3D view, map, compass, buttons, panel)
+	"""small box / minimized while MoveEye looks at the window: the window (3D view, map, compass, buttons, panel)
 	is drawn into an invisible picture of the normal window size; back into the window as soon as it is big again"""
 	if on == (remote_vp != null) or ui_layer == null or view_cam == null:
 		return
@@ -6068,7 +6068,7 @@ func _remote_set(on: bool) -> void:
 			_remote_back.append([n, n.get_parent(), n.get_index()])
 			n.reparent(remote_vp)
 		view_cam.current = true
-		print("view for Motion Watch: drawn on its own (window small)")
+		print("view for MoveEye: drawn on its own (window small)")
 	else:
 		for e in _remote_back:
 			var n: Node = e[0]
@@ -6079,11 +6079,11 @@ func _remote_set(on: bool) -> void:
 		view_cam.current = true
 		remote_vp.queue_free()
 		remote_vp = null
-		print("view for Motion Watch: back in the window")
+		print("view for MoveEye: back in the window")
 
 
 func _view_send(ev: InputEvent) -> void:
-	"""a mouse event from Motion Watch: into the window, or into the picture of its own (then the 3D view gets what the
+	"""a mouse event from MoveEye: into the window, or into the picture of its own (then the 3D view gets what the
 	panel, the map and the buttons do not take)"""
 	if remote_vp == null:
 		Input.parse_input_event(ev)
@@ -6095,7 +6095,7 @@ func _view_send(ev: InputEvent) -> void:
 
 
 # ---- spectator camera (3D-3.22): a little director - follows the player in danger, shows the goal, the whole field,
-# the view of Motion Watch; changes the shot every few seconds and glides from one to the next ----
+# the view of MoveEye; changes the shot every few seconds and glides from one to the next ----
 var spectate := false
 var spec_shot := ""
 var spec_who := -1
@@ -6184,7 +6184,7 @@ func _spec_choose(t: float) -> void:
 		spec_label = "Übersicht über das Spielfeld"
 	elif spec_order == 3:
 		spec_shot = "mw"
-		spec_label = "So sieht Motion Watch das Feld"
+		spec_label = "So sieht MoveEye das Feld"
 		spec_until = t + 5.0
 	else:
 		var p = rs[randi() % rs.size()]
@@ -6366,7 +6366,7 @@ func _spectate_explore(dt: float) -> void:
 		spec_orbit = randf() * TAU
 		var nm: String = tg[_spx_who][0]
 		spec_label = {"chase": "Wir folgen: %s", "side": "%s von der Seite", "low": "%s kommt näher …", "orbit": "Rund um %s",
-				"crane": "%s von oben", "group": "Alle im Bild", "mw": "So sieht Motion Watch das"}[spec_shot] % ([nm] if spec_shot not in ["group", "mw"] else [])
+				"crane": "%s von oben", "group": "Alle im Bild", "mw": "So sieht MoveEye das"}[spec_shot] % ([nm] if spec_shot not in ["group", "mw"] else [])
 	view_cam.fov = 60.0
 	var n: Node3D = tg[_spx_who][1]
 	var c: Vector3 = n.global_position

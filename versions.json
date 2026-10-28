@@ -1,15 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 20:18",
+ "generated": "2026-10-28 20:22",
  "versions": [
+  {
+   "version": "2.96.0",
+   "file": "webcam_bewegung_2_96_0.py",
+   "url": "",
+   "sha256": "20da12769479ad24ee7e692eeb135d60ee6a74eb82a141a569c8273cc295fa90",
+   "date": "2026-10-28 20:22",
+   "notes": "Neuer Name: MoveEye (früher Motion Watch) mit neuem Logo (Sichtfeld, gehende Person in Erkennungs-Ecken, bewegt sich in der Kopfzeile); einmalige Umstellung des App-Symbols; passt zum Simulator 3D-3.79",
+   "sig": "830e068f5530e1fcbdf5b1e7b595ef303b85fc2fa24b0364b40f68321734d233974de4cce8eefe9b53ef6b4c44796a939ca11804865bfce00fd86b55a786bc06"
+  },
   {
    "version": "2.95.105",
    "file": "webcam_bewegung_2_95_105.py",
    "url": "",
-   "sha256": "2885418aa984b5e841cf034f05eb125a4c52792c812714b9e5fa908ef1c7de10",
-   "date": "2026-10-28 20:17",
+   "sha256": "c28491b8f823442befdf1df7547020a889bf9abba373b36642cc6bc02e833b69",
+   "date": "2026-10-28 20:20",
    "notes": "Schutz: Stufen Aus / Wachsam / Voller Schutz, Schutz-Assistent, Ampel mit «Beheben», Diebstahlschutz-Zeile, bewachte Gegenstände, Sirene nach X s, PIN zum Ausschalten, «Schutz testen»; Begriffe «Schutz an / aus»; Bluetooth-Lautsprecher schnell erreichbar unter den Modi",
-   "sig": "6fe0733a67e9b7a62c4a567f69a95999a2351aa7dd5b35543554987580560d4b94386fca8abb5cd9a56a9483ba49f5fcf7491f23d887cc2f36e0dbf9fa940703"
+   "sig": "afa8a0d419eef51be7626c1643444247f45258766538a30292a8e5f46ab157f67f5b42b5efb921947c4ab6fe81d6c9ce7b4cef0dc1875b628b3cc8382b96050f"
   },
   {
    "version": "2.94.5",
@@ -82,15 +91,6 @@
    "date": "2026-10-26 08:49",
    "notes": "Tools page redesigned, calmer: list of the tools on the left (with status), one tool at a time on the right; on a phone first the list, then the tool with a back button. Plain line icons, switches instead of check boxes, no empty boxes.",
    "sig": "f281ea48a698dafacfe7bd366a94c3a9d7788ad478c93dc9d2c1f8e2e02d0e1ebb6f74c1a226892d60f66e97fd6878c2649290afcd3417f513106ccc3c0b1507"
-  },
-  {
-   "version": "2.86.0",
-   "file": "webcam_bewegung_2_86_0.py",
-   "url": "",
-   "sha256": "daaa28be417f6587f04d5b6bd575f5100d8af3f459ee4bc19c00a5105c433ea3",
-   "date": "2026-10-26 08:49",
-   "notes": "The 3D simulator for Windows can be downloaded from the Pi: /sim/simulator3d.zip (button under Simulator → Tools).",
-   "sig": "8fd4dcfa8a75604a92ec995cc1649135bc36cfcb26fac9a34b8e52e8ab4ab9a5f2c76e469d14ba1d722125b2051d22bd2cfe0c972d793a12c211173d6811f009"
   }
  ]
 }

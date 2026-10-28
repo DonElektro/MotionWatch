@@ -15,7 +15,7 @@ STREAMS = {"n": 0, "ip": {}, "lock": threading.Lock()}
 
 def games_server_start():
     """2.95.35: the browser games come from their own port (web port + 2). For the browser that is another «origin»:
-    game code can neither read the pages of Motion Watch nor send commands with the login of the administrator.
+    game code can neither read the pages of MoveEye nor send commands with the login of the administrator.
     Only for devices in the own network."""
     import http.server, socketserver, mimetypes
     port = int(CFG["web_port"]) + 2                      # + 1 is the https page
@@ -68,7 +68,7 @@ GAME_BACK = """<div id="mw-back" style="position:fixed;bottom:10px;left:10px;opa
 background:rgba(14,22,33,.85);color:#fff;text-decoration:none;padding:8px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.25)">✕ Zurück</a></div>"""
 
 
-# 2.95.56: every page without its own way back gets a «✕ Zurück» button. On the phone Motion Watch often runs as an app from
+# 2.95.56: every page without its own way back gets a «✕ Zurück» button. On the phone MoveEye often runs as an app from
 # the home screen (no address bar, no back button): a page like the almanac then could not be closed any more.
 PAGE_EXIT = """<script>(function () {
   if (window.__mwExit) return; window.__mwExit = 1;
@@ -149,8 +149,8 @@ def spiele_page(host=""):
         cards += "".join(f'<a class="c" href="{_e(games_url(x["dir"], x.get("start", "index.html"), host) or "/spiele/g/" + x["dir"] + "/" + x.get("start", "index.html"))}"><div class="i">{_e(x.get("icon", "🎮"))}</div>'
                          f'<div class="n">{_e(x.get("name", x["dir"]))}</div><div class="d">{_e(x.get("desc", ""))}</div></a>' for x in part)
     party = (f'<a class="big" href="/p/{PARTY["key"]}/">👥 Zum Spieleabend (Quiz, Werwolf, Malen, 4 gewinnt)</a>' if party_on()
-             else '<p>Der Spieleabend (Quiz, Werwolf, Malen …) ist gerade zu – öffnen kann ihn, wer Motion Watch verwaltet.</p>')
-    note = "Einzelspiele – laufen direkt im Browser:" if gl else "Die Spielesammlung ist noch nicht installiert (Motion Watch → Reiter Spielecke)."
+             else '<p>Der Spieleabend (Quiz, Werwolf, Malen …) ist gerade zu – öffnen kann ihn, wer MoveEye verwaltet.</p>')
+    note = "Einzelspiele – laufen direkt im Browser:" if gl else "Die Spielesammlung ist noch nicht installiert (MoveEye → Reiter Spielecke)."
     return SPIELE_PAGE.replace("__PARTY__", party).replace("__NOTE__", note).replace("__GAMES__", cards)
 
 
@@ -339,7 +339,7 @@ function render() {
   const gsorted = (V.games || []).slice().sort((a, b) => (a.input === "buttons") - (b.input === "buttons"));
   let gprev = null;
   $("#coll").innerHTML = gsorted.length ? gsorted.map(g => { const hd = g.input && g.input !== gprev ? `<div style="font-weight:700;margin:12px 0 4px;grid-column:1/-1">${GG[g.input] || ""}</div>` : ""; gprev = g.input; return hd + `<a class="gl" href="${BASE}/g/${g.dir}/" target="_blank">${/\./.test(g.icon || "") ? `<img src="${BASE}/g/${g.dir}/${g.icon}" alt="" onerror="this.style.visibility='hidden'">` : `<span style="font-size:30px;width:44px;text-align:center;flex:0 0 44px">${esc(g.icon || "🎮")}</span>`}<div><b>${esc(g.name)}</b><span>${esc(g.desc || "")}</span></div></a>`; }).join("")
-    : "<div class='mut'>Die Spielesammlung ist auf diesem Gerät noch nicht installiert (Motion Watch → Reiter Spielecke).</div>";
+    : "<div class='mut'>Die Spielesammlung ist auf diesem Gerät noch nicht installiert (MoveEye → Reiter Spielecke).</div>";
   renderGame();
 }
 function gameChooser() {
@@ -576,7 +576,7 @@ __NTJS__
 """
 
 
-SIMGAME = {"t": 0.0, "busy": False, "g": None}   # the game in the simulator, fetched now and then (2.95.22: «Team gegen Motion Watch»)
+SIMGAME = {"t": 0.0, "busy": False, "g": None}   # the game in the simulator, fetched now and then (2.95.22: «Team gegen MoveEye»)
 
 
 def _simgame_fetch():
@@ -685,7 +685,7 @@ def simprof_on():
         if k in keys and type(v) == type(CFG[k]):
             CFG[k] = v
     SIMPROF["start"] = {k: CFG[k] for k in keys}             # 2.95.93: only changes of this simulation are asked about
-    _simprof_save("start", SIMPROF["start"])                  # also after a restart of Motion Watch during the simulation
+    _simprof_save("start", SIMPROF["start"])                  # also after a restart of MoveEye during the simulation
 
 
 def simprof_off():

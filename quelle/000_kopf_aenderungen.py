@@ -1,7 +1,7 @@
 #@ Motion Watch – Teil 000: Kopf: Beschreibung und die Liste aller Änderungen (neueste oben). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 #!/usr/bin/env python3
 """
-Motion Watch 1.4.0  -  Webcam motion / person detection with weather awareness,
+MoveEye 1.4.0  -  Webcam motion / person detection with weather awareness,
                        pan/tilt servos, pendulum patrol, AI verification & relay
 ===============================================================================
 Features
@@ -74,7 +74,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_105.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_0.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -88,7 +88,7 @@ Features
     countdown (alarms, push, browser sound, relays, recordings only while armed); THERMAL ALARM (warm body moving in the
     zones: relay trigger, push, sound, recording); the clock of the Pi is taken from the phone when there is no internet
     time; CAMPING PROFILE: own Wi-Fi + camera stays still + alarms on + armed after the countdown (switching off restores)
-  * 1.7.1: AUTOSTART switch: on = at boot Motion Watch starts by itself (systemd, no screen needed) and switches the own
+  * 1.7.1: AUTOSTART switch: on = at boot MoveEye starts by itself (systemd, no screen needed) and switches the own
     Wi-Fi on; off = nothing starts at boot and the Pi joins its known networks
   * 1.7.2: NETWORK AUTOMATIC: known networks first (phone hotspot = internet + push), otherwise the own Wi-Fi; when the
     phone hotspot disappears the own Wi-Fi comes on, and every 10 min (only if no device is connected) it looks again
@@ -206,7 +206,7 @@ Features
     (phone unchanged); window: small symbol buttons too.
   * 2.2.10: the reload button (app mode) first looks for a new version, then reloads the page - a new version shows
     right away in the update bar.
-  * 2.3.0: new app icon: orange tile with the white camera head (pan / tilt fork); one icon and one name «Motion Watch»
+  * 2.3.0: new app icon: orange tile with the white camera head (pan / tilt fork); one icon and one name «MoveEye»
     for every address (no more green / red, «MW Intern / Extern») - one Tailscale link works at home and away.
   * 2.3.1: phone too: "Expand all / Collapse all" as two symbols right of the settings search (no more big buttons).
   * 2.4.0: signed updates: every version in versions.json is signed with the developer's secret key (Ed25519, kept offline);
@@ -228,9 +228,9 @@ Features
     body - sound (new: high whistle, bangs / claps, or own sound files) and / or the white light flashing; duration, pause,
     also when disarmed (garden).
   * 2.10.0: sharing with a small logo: animal diary pictures, snapshots, recordings and timelapse videos (new share button
-    in the recordings viewer) and the night report picture get a discreet strip "Motion Watch" + what / when (switch:
-    Recording -> "Shared pictures and videos with a small Motion Watch logo").
-  * 2.11.0: several devices: Cameras page -> "Other Motion Watch devices": picture, armed / alarm, battery, last event of
+    in the recordings viewer) and the night report picture get a discreet strip "MoveEye" + what / when (switch:
+    Recording -> "Shared pictures and videos with a small MoveEye logo").
+  * 2.11.0: several devices: Cameras page -> "Other MoveEye devices": picture, armed / alarm, battery, last event of
     every device (home network or Tailscale), arm / disarm one or all, search in the network, own password per device.
   * 2.12.0: MQTT / Home Assistant (System & network): state, events and the alarm picture to an MQTT broker, commands back
     (arm / disarm, lights, snapshot); Home Assistant discovery (alarm panel, person / motion / animal / recording, battery,
@@ -336,7 +336,7 @@ Features
     Pi gets hot; every 10 s the program notes CPU temperature and power supply - after an unexpected end the self-check
     shows what it was like; two short runs in a row -> «safe start» (AI, thermal camera, night vision, IR light,
     patrol off) with a push message. The UPS shutdown needs plausible values and 3 minutes of running first.
-  * 2.43.1: only one Motion Watch at a time: started by hand while the autostart runs it in the background (without a
+  * 2.43.1: only one MoveEye at a time: started by hand while the autostart runs it in the background (without a
     window), the program asks and takes over with its window (the background service starts again when the window
     is closed). The web page notices when a switched-off Pi is back and reloads by itself.
   * 2.44.0: operator mode keeps a copy of all settings when it is switched on; unlocking with the PIN puts back
@@ -395,7 +395,7 @@ Features
     The model is not included - it is installed from an address (URL) or copied into the models folder.
   * 2.66.0: the guide (all five languages) describes the new parts: sensors, storm warning, GPS, solar, turning the
     picture, mask and talk tiles, lens check, announcements, animal species, PDF report, users, hardware check.
-  * 2.67.0: when Motion Watch starts in the background (autostart), a small message appears on the Pi's desktop
+  * 2.67.0: when MoveEye starts in the background (autostart), a small message appears on the Pi's desktop
     with the address of the page (waits for the desktop after booting; can be switched off under Setup).
   * 2.68.0: Waveshare UPS HAT (E) (4 x 21700, for the Pi 5): found by itself at I2C 0x2D - charge level, time left
     and charging from its battery chip, the 4 cell voltages, USB-C input; power cut / back and safe shutdown as before.
@@ -403,10 +403,10 @@ Features
   * 2.68.1: UPS HAT (E): the state register read as in the Waveshare register manual (bit 7 charging, bit 6 fast
     charging, bit 5 power at the input); the chip is recognised by its ID (0x0A).
   * 2.69.0: simulator connection: one button (quick switch «Simulation», F9 in the window) switches to a separate
-    simulation program (motionwatch_simulator.py): its two cameras and thermal camera become the sources, Motion Watch
+    simulation program (motionwatch_simulator.py): its two cameras and thermal camera become the sources, MoveEye
     sends servos, lights, relays and sound, and takes day / night, temperature, pressure, wind and sensor events from it.
     Switching off brings the real cameras back.
-  * 2.70.0: the simulator is inside Motion Watch (signed with it): «Install simulator» puts it on the Pi with a menu
+  * 2.70.0: the simulator is inside MoveEye (signed with it): «Install simulator» puts it on the Pi with a menu
     entry and a desktop icon, «Start» / «Stop» runs it on the Pi; «Download (ZIP)» for a PC.
   * 2.71.0: simulator 2: real 3D view into a 360° world (own 360° photo possible), clock with fast time, moon and stars,
     rain / fog / snow, wind in the trees, cars with headlights, insects in the IR light, dew and spider web on the lens,
@@ -415,11 +415,11 @@ Features
     no photos, no diary entries, no backup. Push messages still come (to test them), marked «[SIM]».
   * 2.72.1: switching the simulation off no longer starts a recording: the alarms of the simulation are forgotten and
     the real camera first learns its picture for 30 seconds (no recording, no alarm during that time).
-  * 2.73.0: Simulator 3 - updates itself (on the Pi when Motion Watch starts, on a PC when it connects: it fetches the new
-    version from Motion Watch, checks the checksums and restarts); much more real: a distance for every pixel, light that
+  * 2.73.0: Simulator 3 - updates itself (on the Pi when MoveEye starts, on a PC when it connects: it fetches the new
+    version from MoveEye, checks the checksums and restarts); much more real: a distance for every pixel, light that
     falls off with the distance, haze and fog, ground pattern, clouds, sun, stars, better figures, lens distortion, glare;
     thermal picture with physics (cold clear sky, ground warmed by the sun and cooling at night, warm walls, clothes, engine).
-  * 2.74.0: much less CPU during the simulation: Motion Watch fetches only 6 pictures per second (adjustable, fixed camera and
+  * 2.74.0: much less CPU during the simulation: MoveEye fetches only 6 pictures per second (adjustable, fixed camera and
     thermal picture half of it), the simulator draws every picture once for all viewers (its window shows the fetched ones),
     smaller simulator pictures (960x540, --hd for the big ones), pre-made picture noise.
   * 2.74.1: simulation with CPU saving: the AI runs only half as often (smoother CPU load when somebody is in the picture).
@@ -433,14 +433,14 @@ Features
   * 2.77.0: simulator control on the web page for every simulator (CONTROL protocol 1: the simulator describes its scenarios,
     sliders, choices, switches and buttons itself - ready for a later 3D simulator on a PC); three example 360° video scenes
     (forest at night, car park at night with a thief, misty camping morning) made by the simulator itself; a running simulator
-    now also restarts when Motion Watch has already put the new files in place.
+    now also restarts when MoveEye has already put the new files in place.
   * 2.78.0: header shows how many watch right now: every browser with the page or a guest link open, plus the window on the
     Pi screen (when it is not minimised); the tooltip splits web / Pi screen.
   * 2.79.0: the quick switches below the joystick can be chosen and arranged («Arrange» tile: tick, ▲ ▼, reset) - web page
     and window; the viewer count moved to the right in the header.
   * 2.80.0: page /preview: the web page as on a phone or a tablet, upright or across, with or without full screen (button in
     the simulators and in the simulator section); the page may be shown in a frame of its own origin only (SAMEORIGIN).
-  * 2.81.0: simulators are found by themselves: every simulator announces itself every 2 s (UDP 8764), Motion Watch lists
+  * 2.81.0: simulators are found by themselves: every simulator announces itself every 2 s (UDP 8764), MoveEye lists
     them («Use») and - with «find by itself» on and no working connection - takes over the address (a PC before the Pi);
     simulator requests never go through a proxy.
   * 2.82.0: simulator section tidied up: status with statistics (connected for, response time, camera / thermal pictures
@@ -459,9 +459,9 @@ Features
   * 2.86.0: The 3D simulator for Windows can be downloaded from the Pi: /sim/simulator3d.zip (button under Simulator → Tools).
   * 2.87.0: Tools page redesigned, calmer: list of the tools on the left (with status), one tool at a time on the right; on a phone
     first the list, then the tool with a back button. Plain line icons, switches instead of check boxes, no empty boxes.
-  * 2.88.0: Download of the 3D simulator 3D-1.4: it starts without sending; the switch «An Motion Watch senden» in its window
+  * 2.88.0: Download of the 3D simulator 3D-1.4: it starts without sending; the switch «An MoveEye senden» in its window
     turns sending on.
-  * 2.89.0: Tools: «Full power for the tools» - Motion Watch rests for 10 to 120 minutes (camera, detection, AI, extra cameras;
+  * 2.89.0: Tools: «Full power for the tools» - MoveEye rests for 10 to 120 minutes (camera, detection, AI, extra cameras;
     a recording is finished first), the web page and the tools keep running; it comes back by itself or with «Resume now».
   * 2.90.0: 3D simulator 3D-1.5 for download: six scenes to switch (camping place, forest, car park, garden with house, a funny
     place with a bench, carousel and ducks, wildlife watching with a high seat and a feeder) and a bloodless rifle for the
@@ -472,19 +472,19 @@ Features
     (download, check, replace itself, start again) or «Ohne Update starten».
   * 2.90.3: 3D simulator 3D-1.8: in a virtual machine (VMware, VirtualBox) it starts again with the ANGLE graphics by itself -
     the OpenGL driver there showed only the sky.
-  * 2.90.4: 3D simulator 3D-1.9: «Motion Watch auf diesem PC» - the simulator runs Motion Watch itself on the Windows PC
-    (Python and Motion Watch are fetched once), so the phone / tablet simulator works without a Raspberry Pi.
-  * 2.90.5: 3D simulator 3D-1.10: the Python download for «Motion Watch auf diesem PC» uses the curl of Windows (it failed with
+  * 2.90.4: 3D simulator 3D-1.9: «MoveEye auf diesem PC» - the simulator runs MoveEye itself on the Windows PC
+    (Python and MoveEye are fetched once), so the phone / tablet simulator works without a Raspberry Pi.
+  * 2.90.5: 3D simulator 3D-1.10: the Python download for «MoveEye auf diesem PC» uses the curl of Windows (it failed with
     the own download of the simulator); clearer error messages.
-  * 2.90.6: 3D simulator 3D-1.11: «Motion Watch auf diesem PC» takes the cameras from the simulator (the picture was black);
+  * 2.90.6: 3D simulator 3D-1.11: «MoveEye auf diesem PC» takes the cameras from the simulator (the picture was black);
     the phone simulator starts with the normal start page.
   * 2.90.7: 3D simulator 3D-1.12: button «Nach Updates suchen» in its window (check and install at any time); faster updates.
   * 2.90.8: 3D simulator 3D-1.13: updates from far away (switch «Neue Versionen automatisch installieren» and a button, also in
-    the simulator control on this web page); its window in the look of Motion Watch; switches and the joystick work in its
+    the simulator control on this web page); its window in the look of MoveEye; switches and the joystick work in its
     phone simulator; lighter in virtual machines; the rifle goes off when leaving the wildlife watching.
   * 2.90.9: The download of the 3D simulator for Windows (ZIP) is now a button right under «Search now» in the simulator section
     (before hidden under Tools); the desktop window shows its address for the PC browser in the simulator line.
-  * 2.91.0: 3D simulator 3D-2.0 (big update): toolbar, search and «Einfach | Experte» like Motion Watch; visitors as small
+  * 2.91.0: 3D simulator 3D-2.0 (big update): toolbar, search and «Einfach | Experte» like MoveEye; visitors as small
     pictures to drag into the world; people and animals walk around objects; smoother movement, finer objects, grass and
     flowers; new visitors (child, jogger, hare, hedgehog, dog walk, deer herd, birds); new visitor settings (also here in the
     simulator control).
@@ -494,13 +494,13 @@ Features
     header: everything about the simulator on one page (switch, statistics, connection and search, picture, the control of the
     simulator, computing power, programs and downloads, short guide).
   * 2.92.1: Download of the 3D simulator 3D-2.1: minimizing makes it a small box in the corner (it keeps drawing pictures -
-    before, Motion Watch only showed «CONNECTING…»); while it sends, the PC does not go to sleep.
+    before, MoveEye only showed «CONNECTING…»); while it sends, the PC does not go to sleep.
   * 2.92.2: Tab «Simulator»: the live picture is at the very top and moves (like on the live page); scrolled down, it shrinks
     into a corner (tap: back up, drag: other corner, ✕: away).
   * 2.92.3: 3D simulator 3D-2.2: starts with the PC (also small in the corner and without signing in, see its group «Start mit
     dem PC»). Simulator control: when the simulator brings new settings, they appear at once and the open groups stay open.
-  * 2.92.4: 3D simulator 3D-2.3: it only calculates while its window is open or Motion Watch is connected (saves power); its
-    small box shows the CPU of the whole computer, of Motion Watch and of the simulator (Motion Watch measures and sends it).
+  * 2.92.4: 3D simulator 3D-2.3: it only calculates while its window is open or MoveEye is connected (saves power); its
+    small box shows the CPU of the whole computer, of MoveEye and of the simulator (MoveEye measures and sends it).
   * 2.93.0: Clap switch (Light & sound): 2, 3 or 4 claps switch a relay, the white / infrared light, take a photo, record
     or arm / disarm; beep as answer, practice mode, only when not armed (adjustable). «Bless you!»: a small sound recognition
     model (YAMNet) recognises sneezing and the loudspeaker answers (spoken words or an own recording, uploaded from the
@@ -510,8 +510,8 @@ Features
   * 2.93.2: Download of the 3D simulator 3D-2.5: more realistic camera pictures (grain at night, raindrops on the lens, insects
     in the light at night - real false alarms to test); game: one player can be the guard (sees through the head camera),
     stones to distract, crystals to collect, lives, a microphone hears running; the referee works like a real detection.
-  * 2.93.3: For the 3D simulator 3D-2.6: Motion Watch tells the simulator what it detects (persons, animals, motion, noise) -
-    for its test run with report (detection rate, reaction time, false alarms) and the game mode «Motion Watch decides»;
+  * 2.93.3: For the 3D simulator 3D-2.6: MoveEye tells the simulator what it detects (persons, animals, motion, noise) -
+    for its test run with report (detection rate, reaction time, false alarms) and the game mode «MoveEye decides»;
     without a real microphone the noise alarm uses the sound of the simulated world. Its CPU is measured as before.
   * 2.93.4: Download of the 3D simulator 3D-2.7: nicer people (face, build, clothes), natural walking, activities, headlamps and
     phone lights at night; animals jump, hop, root and sniff.
@@ -592,9 +592,9 @@ Features
   * 2.95.21: tab Simulator: the fold arrow of the status sits in the title line (on the phone it stood alone below the
     button) and is hidden while the simulation is off; «Computing power» turns green only when «Save CPU» is on.
   * 2.95.22: tab Simulator: «Test run and optimization» - the 3D simulator (3D-3.27) plays a fixed test (standard, short,
-    difficult conditions, night), Motion Watch judges it (persons found, reaction time, false alarms by cause, score) and
+    difficult conditions, night), MoveEye judges it (persons found, reaction time, false alarms by cause, score) and
     proposes better settings: take over one or all, undo, «take over and test again», or «optimize automatically» (keeps
-    a change only if the next run is better); earlier runs with a bar chart. Game: «Team against Motion Watch» (floating
+    a change only if the next run is better); earlier runs with a bar chart. Game: «Team against MoveEye» (floating
     «Caught!» button on the live page), a task for every round, ranking of the week. 📱 phone as a window (motion sensor).
   * 2.95.23: new app icon (radar eye) with a choice of 7 (settings → Setup → App icon; also the old orange one); iPhone /
     iPad home screen: a hint how to renew the icon. The simulators are called MW Sim · Basis, MW Sim · 3D, MW Sim · Welt
@@ -605,14 +605,14 @@ Features
     switch «Switch the simulation on by itself»); CPU of a simulator's PC in the list before the simulation is on
     (3D-3.29); power saving also saves in the simulation; the radar sweep turns in the page header.
   * 2.95.26: Pushover as an extra way for alarms (emergency = critical alert on the iPhone, rings also when muted);
-    «simulation on by itself» is off by default on a Raspberry Pi; the simulator calculates slower while Motion Watch
+    «simulation on by itself» is off by default on a Raspberry Pi; the simulator calculates slower while MoveEye
     saves power (3D-3.30); MW Sim · Basis 3.7 (new name and symbol).
   * 2.95.27: FIX - since 2.95.25 a few settings were missing from the defaults (simulator auto update, network watch,
     presence): errors on some pages. New: a keyword at the start of every message (MW-ALARM, MW-WAERME …) for iPhone
     shortcut automations, e-mail as a way for messages, shortcut addresses (/k/<key>/arm, siren_off, light_on, photo.jpg …).
   * 2.95.28: test runs flow back into the development: «Report for the development» (ZIP with versions, settings,
     results, causes and pictures - no secrets; for the chat or GitHub feedback/), pictures of every false alarm and missed
-    person (3D-3.31), comparison with the last run of another Motion Watch version, test run every night (optional).
+    person (3D-3.31), comparison with the last run of another MoveEye version, test run every night (optional).
   * 2.95.29: game corner for game nights (Tools → Leisure): guests join with the phone via QR code - quiz with buzzer,
     werewolf with narrator, drawing and guessing, connect four, dice and timer, scores. Game collection (8 free open-source
     browser games, 13.5 MB, offline). In the own Wi-Fi without login at /spiele. Fix: 'random' was not imported.
@@ -650,6 +650,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.96.0: Neuer Name: MoveEye (früher Motion Watch) mit neuem Logo (Sichtfeld, gehende Person in Erkennungs-Ecken, bewegt sich
+    in der Kopfzeile); einmalige Umstellung des App-Symbols; passt zum Simulator 3D-3.79
   * 2.95.105: Schutz: Stufen Aus / Wachsam / Voller Schutz, Schutz-Assistent, Ampel mit «Beheben», Diebstahlschutz-Zeile,
     bewachte Gegenstände, Sirene nach X s, PIN zum Ausschalten, «Schutz testen»; Begriffe «Schutz an / aus»;
     Bluetooth-Lautsprecher schnell erreichbar unter den Modi
@@ -682,7 +684,7 @@ Features
     im Simulatorbild verschwindet; 3D-Simulator 3D-3.67
   * 2.95.91: 3D-Simulator 3D-3.66: beim Setzen der Patrouillen-Punkte bleibt die Ansicht bedienbar, «Fertig» und Esc beenden das
     Setzen
-  * 2.95.90: 3D-Simulator 3D-3.65: «An Motion Watch senden» bleibt nach einem Update und Neustart so wie vorher
+  * 2.95.90: 3D-Simulator 3D-3.65: «An MoveEye senden» bleibt nach einem Update und Neustart so wie vorher
   * 2.95.89: 3D-Simulator 3D-3.64: die Pfosten der Patrouillen-Route stören die Bildauswertung nicht mehr (nur der Bediener
     sieht sie)
   * 2.95.88: Wärmebild in der Simulation passend über dem Videobild (Blickwinkel beider Kameras, vorher nach aussen verschoben);
@@ -702,9 +704,9 @@ Features
   * 2.95.78: 3D-Simulator 3D-3.55: Erkunden mit dem Rover (Tastatur, Maus, Touch, Game-Controller)
   * 2.95.77: Vollbild: Knopf 🚜 blendet den Mover-Stick ein (gegenüber dem Kamera-Stick, mit ⇆ tauschbar)
   * 2.95.76: 3D-Simulator 3D-3.54: Schleichwege nur auf ihrer eigenen Karte
-  * 2.95.75: Simulator: Motion Watch schickt die Rahmen der erkannten Personen (genaue Zuordnung im Spiel); KI-Prüfung mit den
+  * 2.95.75: Simulator: MoveEye schickt die Rahmen der erkannten Personen (genaue Zuordnung im Spiel); KI-Prüfung mit den
     verpassten Bildern aus dem Spiel; Rangliste «Bester Schleicher»
-  * 2.95.74: Spiel «Team gegen Motion Watch»: der Jäger zielt durch Antippen der Spieler im Livebild (oder Knopf); 3D-Simulator
+  * 2.95.74: Spiel «Team gegen MoveEye»: der Jäger zielt durch Antippen der Spieler im Livebild (oder Knopf); 3D-Simulator
     3D-3.52: Treffer-Effekte und Erkennung lernen aus dem Spiel
   * 2.95.73: Handy: Einstellungen als Knopf unten bei der Bedienung statt am rechten Rand; Mover-Stick standardmässig
     ausgeblendet, mit 🚜 einblendbar
@@ -715,11 +717,11 @@ Features
     3D-Simulator 3D-3.51: Verbindung vor Kameras
   * 2.95.69: Simulator-Seite nach Logik geordnet (Verbindung, Status, dann Livebild und Steuerung erst wenn verbunden); Symbol
     und Pfeil grün, wenn die Funktion läuft; Vollbild quer: Steuer-Stick wieder am richtigen Platz
-  * 2.95.68: Simulator über den Tunnel: Motion Watch stellt nicht mehr auf die direkte Adresse um (schwarzes Livebild), und
+  * 2.95.68: Simulator über den Tunnel: MoveEye stellt nicht mehr auf die direkte Adresse um (schwarzes Livebild), und
     kehrt von selbst zum Tunnel zurück
   * 2.95.67: Simulator-Verbindung meldet die Version und den KI-Stand (für den Prüfstand im 3D-Simulator 3D-3.49)
   * 2.95.66: simulator: when it announces itself in the network but does not answer, the page says so (firewall or security
-    software of the PC blocks Motion Watch - use the tunnel); the own simulator search no longer knocks at the own tunnel port,
+    software of the PC blocks MoveEye - use the tunnel); the own simulator search no longer knocks at the own tunnel port,
     the tunnel shows only real simulator tries
   * 2.95.65: detection with few pictures per second (power saving, night, slow simulator): the speed limits in pixels per
     picture and the distance of the tracker grow with the real frame rate - before a walking person counted as a vehicle and was
@@ -734,9 +736,9 @@ Features
   * 2.95.61: the little extra (web page and window): a turning heart to touch, a big heart drawn counter-clockwise bursts into
     pieces before the secret shows
   * 2.95.60: 3D simulator 3D-3.47 (tunnel field visible, shows the target with port); simulator page: the tunnel card shows the
-    port Motion Watch listens on, the last try of a simulator (wrong code?) and the port of the direct connection
-  * 2.95.59: 3D simulator 3D-3.46: the field «Tunnel zu Motion Watch» in the simulator was hidden and can now be seen
-  * 2.95.58: product page for guests: the logo top left and the icon of the tab are now the app icon of this Motion Watch (the
+    port MoveEye listens on, the last try of a simulator (wrong code?) and the port of the direct connection
+  * 2.95.59: 3D simulator 3D-3.46: the field «Tunnel zu MoveEye» in the simulator was hidden and can now be seen
+  * 2.95.58: product page for guests: the logo top left and the icon of the tab are now the app icon of this MoveEye (the
     same as in the tab)
   * 2.95.57: product page for guests: the night story is now a deck of cards to swipe away, every situation plays its own little
     animation (countdown and scan, wind with leaves, fox in the thermal picture, intruder with light, siren and loudspeaker,
@@ -746,7 +748,7 @@ Features
     the product page and the preview use the same logic
   * 2.95.55: new product page for guests (/info/): animations start while scrolling, a scrollable night story, real camera
     pictures and current app screens, close button (leaves full screen); simulation on but its camera gives no picture (slow PC
-    / VM): Motion Watch now tries the simulator again every 10 s instead of keeping the webcam for good; tunnel address no
+    / VM): MoveEye now tries the simulator again every 10 s instead of keeping the webcam for good; tunnel address no
     longer stays after a restart
   * 2.95.54: Survival almanac (German, offline, /almanach/, also for guests: emergency numbers, weather, health, water, fire,
     orientation, camp and wild animals, knots, night sky, evening stories; search, red light, reading aloud; tip of the evening
@@ -754,14 +756,14 @@ Features
     second, alarms first. Bluetooth loudspeaker: pairing with an agent for speakers without keyboard, search with newer bluez.
     Tunnel for a simulator behind a firewall without admin rights (port 8766, code). Game collection GS-1.3: touch games and
     games with on-screen buttons (Tetris, Racer, Breakout, Pong, Astray). Simulator 3D-3.45.
-  * 2.95.53: AI helper: a PC in the network does the detection for the Pi (Motion Watch with --helper on port 5057, pairing
+  * 2.95.53: AI helper: a PC in the network does the detection for the Pi (MoveEye with --helper on port 5057, pairing
     code; found by itself through the 3D simulator; the Pi takes over again at once when the PC is gone). TV mode of the 3D
     simulator from the page. Aufstell-Planer: take over the patrol. Alarm replay in 3D (tracks round each alarm). Reception map
     (walk round in the network check). AI test with simulator pictures and training pictures as ZIP. Preview page: close button.
     Simulator 3D-3.44.
   * 2.95.52: Network check of the players (Tools): every phone measures reaction time, jitter, losses, download and upload to
-    Motion Watch - phones in the game corner by themselves, others with a QR code; with the own Wi-Fi also the signal of each
-    phone, grades and tips. Product page for guests (Tools, /info/): the Motion Watch homepage straight from the Pi for
+    MoveEye - phones in the game corner by themselves, others with a QR code; with the own Wi-Fi also the signal of each
+    phone, grades and tips. Product page for guests (Tools, /info/): the MoveEye homepage straight from the Pi for
     everybody in the same Wi-Fi, without login and internet; questions from its form arrive as push message; QR code also on the
     TV view.
   * 2.95.51: TV view for the HDMI of the Pi (/tv/<key>/: simulator or camera picture, game wizard, QR code to join, time,
@@ -788,7 +790,7 @@ Features
     field «mover_pose» (position, direction, metres, blocked) is taken and shown in /api/state; order 3.11 for the world simulator.
   * 2.95.42: 3D simulator 3D-3.38 (card «Besuch» newly arranged: presets, people, animals, vehicles and scenes, by itself,
     behaviour; buttons with pictures). Simulator panel on the page: a symbol in front of the visitor buttons.
-  * 2.95.41: 3D simulator 3D-3.37 (the card «Verbindung» folds; its symbol and title turn green when Motion Watch is connected).
+  * 2.95.41: 3D simulator 3D-3.37 (the card «Verbindung» folds; its symbol and title turn green when MoveEye is connected).
   * 2.95.40: 3D simulator 3D-3.36 (new name «3D-Simulator Live» in the panel and the window title).
   * 2.95.39: 3D simulator 3D-3.35 (mouse wheel and clicks over the control panel, map, live picture and stick no longer move the 3D view).
   * 2.95.38: 3D simulator 3D-3.34 (live picture of a camera below the overview map, settings under System → Ansicht).
@@ -800,10 +802,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_105.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_96_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_105.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_105.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_96_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_96_0.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)

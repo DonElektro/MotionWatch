@@ -1,10 +1,10 @@
 extends Node3D
-## 3D-3.61: «Patrouille» - the mover drives Motion Watch round a fixed route (points set with the mouse) or to random
-## points in an area (dragged open with the mouse). Motion Watch watches the whole time: while driving the head swings to
+## 3D-3.61: «Patrouille» - the mover drives MoveEye round a fixed route (points set with the mouse) or to random
+## points in an area (dragged open with the mouse). MoveEye watches the whole time: while driving the head swings to
 ## and fro, at every point the mover stops and the head looks all round. Optional: the head turns to something
-## suspicious (a box of Motion Watch, or a player the simulator guard suspects) and the mover drives slower.
+## suspicious (a box of MoveEye, or a player the simulator guard suspects) and the mover drives slower.
 ## The game «Patrouille» (game.gd): the players sneak to the goal while the patrol drives; caught by the real detection
-## of Motion Watch or by the simulator guard (setting).
+## of MoveEye or by the simulator guard (setting).
 
 var main
 var active := false
@@ -34,7 +34,7 @@ var _back_until := 0.0                 # stuck at an object: back a little and t
 var _back_turn := 1.0
 var _tries := 0
 # 3D-3.76: «Überwachen»: first the question which place is guarded; the mover plans its own route round it (around the
-# objects) and Motion Watch keeps looking towards the place while it drives.
+# objects) and MoveEye keeps looking towards the place while it drives.
 var guard := {}                        # {"c": Vector2, "r": float, "name": String} - empty = a route set by hand
 var _ask: PanelContainer
 var _ask_r := 10.0
@@ -58,7 +58,7 @@ func set_active(v: bool) -> String:
 		return ""
 	if v:
 		if not ready_to_go():
-			random_route()                               # nothing set yet: a route round Motion Watch
+			random_route()                               # nothing set yet: a route round MoveEye
 		active = true
 		_saved_max = main.mover_max
 		main.set_mover(true)
@@ -73,7 +73,7 @@ func set_active(v: bool) -> String:
 
 
 func ask() -> void:
-	"""the question at the start: what shall be guarded? (things of the scene, Motion Watch itself, or a click into the world)"""
+	"""the question at the start: what shall be guarded? (things of the scene, MoveEye itself, or a click into the world)"""
 	if _ask != null and is_instance_valid(_ask):
 		_ask.queue_free()
 	var UI = preload("res://scripts/ui_style.gd")
@@ -86,7 +86,7 @@ func ask() -> void:
 	v.add_theme_constant_override("separation", 10)
 	pc.add_child(v)
 	v.add_child(UI.heading("Was soll überwacht werden?"))
-	var tip := UI.small("Der Mover fährt selbst eine Runde um diesen Ort – um Hindernisse herum – und Motion Watch schaut dabei immer wieder hin.")
+	var tip := UI.small("Der Mover fährt selbst eine Runde um diesen Ort – um Hindernisse herum – und MoveEye schaut dabei immer wieder hin.")
 	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	tip.custom_minimum_size = Vector2(380, 0)
 	v.add_child(tip)
@@ -154,7 +154,7 @@ func ask() -> void:
 
 func places() -> Array:
 	"""[name, Vector2] of the things worth guarding in this scene"""
-	var out := [["Motion Watch (Standort)", Vector2(main.home_pos.x, main.home_pos.z)]]
+	var out := [["MoveEye (Standort)", Vector2(main.home_pos.x, main.home_pos.z)]]
 	for k in ["door", "bike"]:
 		var p: Vector3 = main.obj.get(k, Vector3.ZERO)
 		if p != Vector3.ZERO:
@@ -226,7 +226,7 @@ func _way_blocked(a: Vector2, b: Vector2) -> bool:
 
 
 func random_route() -> void:
-	"""6 points in a ring round the place of Motion Watch, never inside an object"""
+	"""6 points in a ring round the place of MoveEye, never inside an object"""
 	points.clear()
 	var c := Vector2(main.home_pos.x, main.home_pos.z)
 	var n := 6
@@ -331,7 +331,7 @@ func _process(dt: float) -> void:
 
 
 func _suspect_angle():
-	"""where something suspicious is, relative to the mover: a box of Motion Watch, else a player the guard suspects"""
+	"""where something suspicious is, relative to the mover: a box of MoveEye, else a player the guard suspects"""
 	var b = main.mw_det.get("boxes", [])
 	if main.now() - main.mw_det_t < 2.0 and typeof(b) == TYPE_ARRAY and not b.is_empty():
 		var bb: Array = b[0]
@@ -433,7 +433,7 @@ func _draw_route() -> void:
 			cm.height = 1.2
 			post.mesh = cm
 			post.material_override = m
-			post.layers = main.HELPER_LAYER        # 3D-3.64: Motion Watch must not see the posts
+			post.layers = main.HELPER_LAYER        # 3D-3.64: MoveEye must not see the posts
 			_mk.add_child(post)
 			post.position = Vector3(p.x, y.call(p) + 0.6, p.y)
 			var lb := Label3D.new()

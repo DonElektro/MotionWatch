@@ -291,11 +291,11 @@ QUICK_GUIDE = {
 def quick_guide_html(lang=None):
     L = norm_lang(lang) if lang else cur_lang()
     title, blocks = QUICK_GUIDE.get(L) or QUICK_GUIDE["en"]
-    name = html_escape(CFG["device_name"] or "Motion Watch")
+    name = html_escape(CFG["device_name"] or "MoveEye")
     cards = "".join('<section class="qg"><h2><span>' + ic + '</span> ' + html_escape(h) + '</h2><ol>' + "".join("<li>" + x + "</li>" for x in items)
                     + "</ol></section>" for ic, h, items in blocks)
     return ('<!doctype html><html lang="' + L + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-            '<title>Motion Watch – ' + html_escape(title) + '</title><style>'
+            '<title>MoveEye – ' + html_escape(title) + '</title><style>'
             'body{margin:0;background:#fff;color:#111;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}'
             'main{max-width:960px;margin:0 auto;padding:18px}'
             '.top{display:flex;align-items:center;gap:12px;border-bottom:3px solid #f08c2e;padding-bottom:8px;margin-bottom:12px}'
@@ -307,7 +307,7 @@ def quick_guide_html(lang=None):
             '.foot{margin-top:10px;color:#777;font-size:12px;text-align:center}'
             '@media(max-width:640px){.grid{grid-template-columns:1fr}}'
             '@media print{@page{size:A4;margin:12mm}.noprint{display:none}main{padding:0}body{font-size:12.5px}.qg h2{font-size:15px}}'
-            '</style></head><body><main><div class="top"><h1>🎥 ' + name + '</h1><div><b>' + html_escape(title) + '</b><div class="sub">Motion Watch '
+            '</style></head><body><main><div class="top"><h1>🎥 ' + name + '</h1><div><b>' + html_escape(title) + '</b><div class="sub">MoveEye '
             + APP_VERSION + '</div></div><span class="sp"></span><a class="noprint" href="/setup-card?lang=' + L + '">' + html_escape("🖨 QR codes for connecting" if L == "en" else tr("🖨 Quick start (QR)", L))
             + '</a><button class="noprint" onclick="print()">🖨</button></div><div class="grid">' + cards + '</div>'
             '<div class="foot">' + html_escape(tr("Manual", L)) + ': /help</div></main></body></html>')
@@ -492,7 +492,7 @@ def health_check(lang=None):
     if toolmode_on():
         add("loop", "🫀", "Detection loop", "off", T("paused (tool mode)"))
     elif hb > 20:
-        add("loop", "🫀", "Detection loop", "bad", trf("no sign of life for {s} s", L, s=int(hb)), "Restart Motion Watch; look at the log for «Camera loop error».")
+        add("loop", "🫀", "Detection loop", "bad", trf("no sign of life for {s} s", L, s=int(hb)), "Restart MoveEye; look at the log for «Camera loop error».")
     else:
         add("loop", "🫀", "Detection loop", "ok", T("running"))
     if REC_HEALTH["fail_t"] and time.time() - REC_HEALTH["fail_t"] < 900:
@@ -508,7 +508,7 @@ def health_check(lang=None):
             add("looprec", "🔁", "Continuous recording", "ok", T("running"))
     dead = [b[2] for b in BEATS.values() if time.monotonic() - b[0] > b[1]]
     if dead:
-        add("bg", "⚙", "Background tasks", "bad", ", ".join(T(x) for x in dead)[:150], "Restart Motion Watch; send the diagnosis package if it happens again.")
+        add("bg", "⚙", "Background tasks", "bad", ", ".join(T(x) for x in dead)[:150], "Restart MoveEye; send the diagnosis package if it happens again.")
     elif BEATS:
         add("bg", "⚙", "Background tasks", "ok", trf("{n} running", L, n=len(BEATS)))
     if STATE.get("update_new"):

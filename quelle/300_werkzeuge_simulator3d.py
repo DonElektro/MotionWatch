@@ -276,7 +276,7 @@ def security_check():
     def add(level, text, tip="", arg=""):
         items.append({"level": level, "text": text, "tip": tip, "arg": arg})
     add("ok" if CFG["web_password"] else "bad", "Web password " + ("set" if CFG["web_password"] else "missing"),
-        "" if CFG["web_password"] else "Everybody in the network can operate Motion Watch")
+        "" if CFG["web_password"] else "Everybody in the network can operate MoveEye")
     add("ok" if WEB_OPTS.get("https") else "warn", "Secure page (https) " + ("on" if WEB_OPTS.get("https") else "off"),
         "" if WEB_OPTS.get("https") else "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)")
     ports = set()
@@ -291,7 +291,7 @@ def security_check():
                             ports.add(int(lp, 16))
     except (OSError, ValueError, IndexError):
         pass
-    names = {22: "SSH", 80: "web", 443: "https", 5000: "Motion Watch", 5001: "Motion Watch https", 8554: "RTSP (camera stream)", 1883: "MQTT",
+    names = {22: "SSH", 80: "web", 443: "https", 5000: "MoveEye", 5001: "MoveEye https", 8554: "RTSP (camera stream)", 1883: "MQTT",
              8765: "simulator", 5900: "VNC", 3389: "remote desktop", 139: "Windows share", 445: "Windows share", 53: "DNS"}
     for p in sorted(ports)[:30]:
         lvl = "warn" if p in (5900, 3389, 139, 445, 1883) else "info"
@@ -665,8 +665,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.78", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31013082,
-         "sha256": "c8660251c9c134de49d2eeba6b8a4477311491315078b84ad493e768ace90bb7"}
+SIM3D = {"version": "3D-3.79", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31085685,
+         "sha256": "5b977160a5fe1843413e7ac5e4f2c6774168b851eb55b391c4bd28801657e3e8"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -709,10 +709,10 @@ SIM_AUTOUPD = {}                   # (address, newest version) -> time the updat
 
 
 def sim_auto_update_check():
-    """Motion Watch knows a newer simulator than the one connected: let it update itself (it starts again as it was)"""
+    """MoveEye knows a newer simulator than the one connected: let it update itself (it starts again as it was)"""
     try:
         v = sim_versions()
-        if not v.get("newer") or (SIMPI["proc"] is not None and SIMPI["proc"].poll() is None):   # the Pi build comes with Motion Watch
+        if not v.get("newer") or (SIMPI["proc"] is not None and SIMPI["proc"].poll() is None):   # the Pi build comes with MoveEye
             return
         key = (sim_base(), v["latest"])
         if key in SIM_AUTOUPD:
@@ -804,9 +804,9 @@ def sim3d_fetch(pkg=None, dl=None):
 
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
-# the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.78", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24135452,
-           "sha256": "ed9e018058b94ccd4ad34d4416605bf988250d02dd3a0382b258ab8a6f44cf21", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+# the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
+SIM3DPI = {"version": "3D-3.79", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24208277,
+           "sha256": "4db45165970c36380d492bf72a671ff2328669fd9f6e542f8c77a1ffa4c988a4", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -847,7 +847,7 @@ def simpi_state():
 
 
 def simpi_start(who="web"):
-    """fetch (once), unpack and start the 3D simulator on the Pi; Motion Watch then uses it"""
+    """fetch (once), unpack and start the 3D simulator on the Pi; MoveEye then uses it"""
     if not simpi_possible():
         return False, "only on a Raspberry Pi (64 bit)"
     if SIMPI["proc"] is not None and SIMPI["proc"].poll() is None:
@@ -930,7 +930,7 @@ SIMFOUND = {}                        # "ip:port" -> {"ip", "port", "name", "vers
 
 class SimDiscovery:
     """The simulators (Python on the Pi or a PC, 3D on a PC) send a small UDP message every 2 s into the network
-    ("I am a Motion Watch simulator on port 8765"). Here they are collected; when the simulation has no working connection
+    ("I am a MoveEye simulator on port 8765"). Here they are collected; when the simulation has no working connection
     (and «find automatically» is on), the address of a found simulator is taken over."""
     def __init__(self):
         threading.Thread(target=self.listen, daemon=True, name="simfind").start()

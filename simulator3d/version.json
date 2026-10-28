@@ -1,12 +1,12 @@
 {
- "version": "3D-3.78",
+ "version": "3D-3.79",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31013082,
- "sha256": "c8660251c9c134de49d2eeba6b8a4477311491315078b84ad493e768ace90bb7",
- "notes": "Spiel-Assistent neu: übersichtlich und animiert, Mitspieler & Start",
+ "size": 31085685,
+ "sha256": "5b977160a5fe1843413e7ac5e4f2c6774168b851eb55b391c4bd28801657e3e8",
+ "notes": "Neuer Name MoveEye und neues Logo",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24135452,
-  "sha256": "ed9e018058b94ccd4ad34d4416605bf988250d02dd3a0382b258ab8a6f44cf21"
+  "size": 24208277,
+  "sha256": "4db45165970c36380d492bf72a671ff2328669fd9f6e542f8c77a1ffa4c988a4"
  }
 }

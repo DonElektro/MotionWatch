@@ -1104,7 +1104,7 @@ func prop(kind: String, p: Vector3, rot_y: float) -> void:
 
 
 func hide_props(n: int, dmin: float, dmax: float, kinds: Array, keep_clear := Callable()) -> int:
-	"""n hiding places between dmin and dmax from Motion Watch, away from each other and from obstacles; returns how many"""
+	"""n hiding places between dmin and dmax from MoveEye, away from each other and from obstacles; returns how many"""
 	var made := 0
 	var tries := 0
 	while made < n and tries < n * 12:

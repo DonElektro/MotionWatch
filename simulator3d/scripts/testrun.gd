@@ -1,9 +1,9 @@
 extends Node
 ## Test run with evaluation (from 3D-2.6): a fixed sequence of phases (day, wind and clouds, night with insects, rain at
 ## night) with visitors crossing the picture. The simulator knows the truth (who is visible to the cameras, when) and
-## compares it with what Motion Watch reports (sim_state «det», from Motion Watch 2.93.3): persons recognised, how fast,
+## compares it with what MoveEye reports (sim_state «det», from MoveEye 2.93.3): persons recognised, how fast,
 ## animals reported, false alarms and their probable cause, noise alarms. Report: in the window, on the web page of
-## Motion Watch (status), as JSON / HTML file in the user folder (testlauf/), and via CONTROL {"action": "test_report"}.
+## MoveEye (status), as JSON / HTML file in the user folder (testlauf/), and via CONTROL {"action": "test_report"}.
 
 var main
 
@@ -39,7 +39,7 @@ var truth_cams := [0, 1]                # 3D-3.48: which cameras count for the t
 var PHASES: Array = STANDARD
 var _cond_saved := {}
 const EVERY := 13.0                     # a new visitor every ... seconds
-const SETTLE := 8.0                     # quiet time at the start of a phase (Motion Watch adapts to the new light)
+const SETTLE := 8.0                     # quiet time at the start of a phase (MoveEye adapts to the new light)
 const GRACE := 2.5                      # a report counts for a visitor up to ... s after it was last visible
 
 var running := false
@@ -71,7 +71,7 @@ func plan_options() -> Array:
 	for k in PLANS:
 		o.append([k, PLANS[k]["name"]])
 	var n: int = ways().size()
-	if n > 0:                                             # 3D-3.52: sneaking ways from the game, where Motion Watch saw nobody
+	if n > 0:                                             # 3D-3.52: sneaking ways from the game, where MoveEye saw nobody
 		o.append(["spielwege", "Schleichwege aus dem Spiel (%d unerkannte Wege nachgehen)" % n])
 	return o
 
@@ -101,7 +101,7 @@ func _way_phases() -> Array:
 
 
 func state() -> Dictionary:
-	"""for Motion Watch (CONTROL test_report): running, progress, the plans and the last report"""
+	"""for MoveEye (CONTROL test_report): running, progress, the plans and the last report"""
 	var left := 0.0
 	if running:
 		left = max(0.0, t0 + duration() - now())
@@ -156,11 +156,11 @@ func start(which := "", cams: Array = []) -> String:
 		PHASES = _way_phases()
 		if PHASES.is_empty():
 			plan = "standard"
-			return "Noch keine Schleichwege – zuerst eine Spielrunde mit Motion Watch spielen."
+			return "Noch keine Schleichwege – zuerst eine Spielrunde mit MoveEye spielen."
 	else:
 		PHASES = PLANS[plan]["phases"]
 	if not main.stream_on or main.now() - main.mw_t > 3.0:
-		info = "Motion Watch ist nicht verbunden. Zuerst «An Motion Watch senden» einschalten und Motion Watch verbinden (oder «Motion Watch auf diesem PC» starten)."
+		info = "MoveEye ist nicht verbunden. Zuerst «An MoveEye senden» einschalten und MoveEye verbinden (oder «MoveEye auf diesem PC» starten)."
 		paint()
 		return info
 	if main.game != null and main.game.round_state in ["countdown", "play"]:
@@ -212,7 +212,7 @@ func _start_phase(i: int) -> void:
 	t_phase = now()
 	next_visit = t_phase + SETTLE
 	visit_i = 0
-	_prev_persons = int(main.mw_det.get("persons", 0))       # what Motion Watch already sees does not count as new
+	_prev_persons = int(main.mw_det.get("persons", 0))       # what MoveEye already sees does not count as new
 	_last_person_vis = now()                                 # the light changes: give it a moment
 	paint()
 
@@ -222,7 +222,7 @@ func _process(dt: float) -> void:
 		return
 	var t := now()
 	if main.now() - main.mw_t > 10.0:
-		info = "Motion Watch hat die Verbindung verloren – Testlauf abgebrochen."
+		info = "MoveEye hat die Verbindung verloren – Testlauf abgebrochen."
 		stop(false)
 		return
 	var ph: Dictionary = PHASES[phase]
@@ -412,7 +412,7 @@ func _make_report() -> void:
 						wy.append("fast")
 					if r["crouch"]:
 						wy.append("crouch")
-					# when it was best to see (3D-3.31): Motion Watch takes its own picture of that moment into the report
+					# when it was best to see (3D-3.31): MoveEye takes its own picture of that moment into the report
 					all_missed.append({"t": snappedf(float(r["first"]) - t0 + min(3.0, float(r["vis"]) / 2.0), 0.1), "phase": i, "kind": r["kind"], "why": wy})
 					if float(r["light"]) < 0.5:
 						why["dark"] += 1
@@ -448,7 +448,7 @@ func _make_report() -> void:
 		for x in lat_all:
 			s2 += x
 		lat_avg = s2 / lat_all.size()
-	var dev := str(main.mw.get("device", "Motion Watch"))
+	var dev := str(main.mw.get("device", "MoveEye"))
 	report = {"v": 2, "plan": plan, "plan_name": PLANS[plan]["name"], "date": Time.get_datetime_string_from_system(false, true), "simulator": main.version(), "scene": main.scene,
 			"device": dev, "persons": tp, "persons_detected": td, "rate": snappedf(100.0 * td / max(1, tp), 1),
 			"latency_s": snappedf(lat_avg, 0.1), "false_alarms": falses.size(), "false_list": falses, "missed_list": all_missed, "noise_alarms": noises,

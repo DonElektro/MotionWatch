@@ -1,5 +1,5 @@
 extends RefCounted
-## The look of the web page of Motion Watch for the window of the simulator (from 3D-1.13): the same colours (dark blue-grey,
+## The look of the web page of MoveEye for the window of the simulator (from 3D-1.13): the same colours (dark blue-grey,
 ## cards with round corners, blue accent), small spaced capitals as headings, buttons like on the page.
 
 const BG := Color("#0a0e14")
@@ -348,7 +348,7 @@ static func set_open(body: Control, open: bool) -> void:
 
 
 static func icon_button(kind: String, tip: String) -> Button:
-	"""a square button with a drawn symbol like on the page of Motion Watch (no font needed):
+	"""a square button with a drawn symbol like on the page of MoveEye (no font needed):
 	hide «⟩», groups only (two bars), expand all (arrows out), collapse all (arrows in)"""
 	var b := Button.new()
 	b.custom_minimum_size = Vector2(38, 38)

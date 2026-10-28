@@ -1,11 +1,11 @@
 extends Node
-## «Motion Watch auf diesem PC» (from 3D-1.9): runs the real Motion Watch next to the simulator, without a Raspberry Pi, so that
+## «MoveEye auf diesem PC» (from 3D-1.9): runs the real MoveEye next to the simulator, without a Raspberry Pi, so that
 ## the phone / tablet simulator has a web page to show. Everything is fetched by itself the first time:
 ##   1. Python for Windows (python-build-standalone from GitHub, ~38 MB, checked with SHA-256), unpacked with tar.exe of Windows
-##   2. the packages Motion Watch needs (pip from PyPI: opencv, numpy, flask, pillow, cryptography; a few minutes)
-##   3. the newest Motion Watch from GitHub (versions.json, checked with its SHA-256)
-## Then Motion Watch is started invisibly: own settings folder, simulation switched on, web page only on this PC (127.0.0.1).
-## Everything lives in the user folder of the simulator (%APPDATA%\Godot\app_userdata\Motion Watch 3D Simulator\motionwatch_pc).
+##   2. the packages MoveEye needs (pip from PyPI: opencv, numpy, flask, pillow, cryptography; a few minutes)
+##   3. the newest MoveEye from GitHub (versions.json, checked with its SHA-256)
+## Then MoveEye is started invisibly: own settings folder, simulation switched on, web page only on this PC (127.0.0.1).
+## Everything lives in the user folder of the simulator (%APPDATA%\Godot\app_userdata\MoveEye 3D Simulator\motionwatch_pc).
 ## On Linux (test computer) the Python of the system is used instead (option --mw-python).
 
 signal changed
@@ -29,7 +29,7 @@ var dl_total := 0
 var dl_what := ""
 var override_file := ""        # 3D-3.49: the test bench runs exactly this file (webcam_bewegung_X.py chosen on the PC)
 var test_python := false      # test computer: fetch and unpack the Windows Python anyway (--mw-test-python), then stop
-var helper := {}              # 3D-3.44: Motion Watch on this PC also does the AI for the Pi (port 5057): its hello (code, model, served)
+var helper := {}              # 3D-3.44: MoveEye on this PC also does the AI for the Pi (port 5057): its hello (code, model, served)
 var _helper_t := 0.0
 var _helper_busy := false
 const HELPER_PORT := 5057
@@ -72,14 +72,14 @@ func _process(_dt: float) -> void:
 	if state == "running" and pid > 0 and not OS.is_process_running(pid):
 		pid = -1
 		helper = {}
-		_say("Motion Watch hat sich beendet. Protokoll: " + dir.path_join("config/motionwatch.log"), "error")
+		_say("MoveEye hat sich beendet. Protokoll: " + dir.path_join("config/motionwatch.log"), "error")
 	if state == "running" and not _helper_busy and Time.get_ticks_msec() / 1000.0 - _helper_t > 10.0:
 		_helper_t = Time.get_ticks_msec() / 1000.0
 		_helper_hello()
 
 
 func _helper_hello() -> void:
-	"""ask the AI helper of Motion Watch on this PC how it is (the code goes to the Pi with /info)"""
+	"""ask the AI helper of MoveEye on this PC how it is (the code goes to the Pi with /info)"""
 	_helper_busy = true
 	var h := HTTPRequest.new()
 	h.timeout = 4.0
@@ -126,7 +126,7 @@ func toggle() -> void:
 		start()
 
 
-# ---- start: fetch what is missing, then run Motion Watch ----------------------------------------------------------------
+# ---- start: fetch what is missing, then run MoveEye ----------------------------------------------------------------
 func start() -> void:
 	if busy():
 		return
@@ -160,12 +160,12 @@ func start() -> void:
 		return
 	await _settings(py)
 	if not main.stream_on:
-		main.set_stream(true)                     # Motion Watch gets its cameras and sensors from the simulator
-	_say("Starte Motion Watch …")
+		main.set_stream(true)                     # MoveEye gets its cameras and sensors from the simulator
+	_say("Starte MoveEye …")
 	var args := [mw, "--headless", "--helper", "--config", dir.path_join("config"), "--port", str(WEB_PORT), "--bind", "127.0.0.1"]
 	pid = OS.create_process(py, args, false)
 	if pid <= 0:
-		_say("Motion Watch liess sich nicht starten.", "error")
+		_say("MoveEye liess sich nicht starten.", "error")
 		return
 	var pf := FileAccess.open(dir.path_join("mw.pid"), FileAccess.WRITE)
 	if pf != null:
@@ -176,13 +176,13 @@ func start() -> void:
 		await get_tree().create_timer(1.5).timeout
 		if pid <= 0 or not OS.is_process_running(pid):
 			pid = -1
-			_say("Motion Watch hat sich gleich wieder beendet. Protokoll: " + dir.path_join("config/motionwatch.log"), "error")
+			_say("MoveEye hat sich gleich wieder beendet. Protokoll: " + dir.path_join("config/motionwatch.log"), "error")
 			return
 		if await _web_up():
 			_say("Läuft auf diesem PC (%s)" % url(), "running")
 			return
-		_say("Starte Motion Watch … %d s" % int((Time.get_ticks_msec() - t0) / 1000))
-	_say("Die Webseite von Motion Watch antwortet nicht. Protokoll: " + dir.path_join("config/motionwatch.log"), "error")
+		_say("Starte MoveEye … %d s" % int((Time.get_ticks_msec() - t0) / 1000))
+	_say("Die Webseite von MoveEye antwortet nicht. Protokoll: " + dir.path_join("config/motionwatch.log"), "error")
 
 
 func _web_up() -> bool:
@@ -316,7 +316,7 @@ func _python() -> String:
 
 
 func _packages(py: String) -> bool:
-	"""2. the packages for Motion Watch (once; a file remembers it)"""
+	"""2. the packages for MoveEye (once; a file remembers it)"""
 	var mark := dir.path_join("pakete_ok.txt")
 	var want := " ".join(PKGS)
 	if FileAccess.file_exists(mark) and FileAccess.get_file_as_string(mark).strip_edges() == want:
@@ -324,10 +324,10 @@ func _packages(py: String) -> bool:
 	if py_cmd != "":                                # Linux test computer: the packages are already there
 		var c: Array = await _run(py, ["-c", "import cv2, numpy, flask, PIL"])
 		if int(c[0]) != 0:
-			_say("Für Motion Watch fehlen Python-Pakete: " + want, "error")
+			_say("Für MoveEye fehlen Python-Pakete: " + want, "error")
 			return false
 		return true
-	_say("Installiere die Pakete für Motion Watch (nur beim ersten Mal, ein paar Minuten)")
+	_say("Installiere die Pakete für MoveEye (nur beim ersten Mal, ein paar Minuten)")
 	var args := ["-m", "pip", "install", "--disable-pip-version-check", "--no-warn-script-location"]
 	args.append_array(PKGS)
 	var r: Array = await _run(py, args)
@@ -342,7 +342,7 @@ func _packages(py: String) -> bool:
 
 
 func _motion_watch() -> String:
-	"""3. the newest Motion Watch (from versions.json on GitHub); without internet the one fetched before"""
+	"""3. the newest MoveEye (from versions.json on GitHub); without internet the one fetched before"""
 	_say("Suche die neuste Motion-Watch-Version …")
 	var have := ""
 	for f in DirAccess.get_files_at(dir.path_join("mw")):
@@ -353,7 +353,7 @@ func _motion_watch() -> String:
 	if typeof(d) != TYPE_DICTIONARY or (d.get("versions", []) as Array).is_empty():
 		if have != "":
 			return have
-		_say("Motion Watch liess sich nicht finden (GitHub nicht erreichbar: %s)." % _why(r), "error")
+		_say("MoveEye liess sich nicht finden (GitHub nicht erreichbar: %s)." % _why(r), "error")
 		return ""
 	var e: Dictionary = d["versions"][0]
 	var file := str(e.get("file", ""))
@@ -363,12 +363,12 @@ func _motion_watch() -> String:
 	var target := dir.path_join("mw").path_join(file)
 	if FileAccess.file_exists(target) and _sha256_file(target) == str(e.get("sha256", "")):
 		return target
-	var why := await _download(base + file, target + ".part", 0, "Lade Motion Watch %s" % str(e.get("version", "")))
+	var why := await _download(base + file, target + ".part", 0, "Lade MoveEye %s" % str(e.get("version", "")))
 	if why != "":
 		DirAccess.remove_absolute(target + ".part")
 		if have != "":
 			return have
-		_say("Motion Watch liess sich nicht herunterladen (%s)." % why, "error")
+		_say("MoveEye liess sich nicht herunterladen (%s)." % why, "error")
 		return ""
 	if _sha256_file(target + ".part") != str(e.get("sha256", "")):
 		DirAccess.remove_absolute(target + ".part")
@@ -384,8 +384,8 @@ func _motion_watch() -> String:
 
 
 func _settings(py: String) -> void:
-	"""Motion Watch on this PC: simulation on, the simulator on this PC, the cameras from the simulator (what the switch «Simulation»
-	of Motion Watch also sets). Python writes it (keeps whole numbers whole)."""
+	"""MoveEye on this PC: simulation on, the simulator on this PC, the cameras from the simulator (what the switch «Simulation»
+	of MoveEye also sets). Python writes it (keeps whole numbers whole)."""
 	var code := "import json,os,sys;p=sys.argv[1];d=json.load(open(p,encoding='utf-8')) if os.path.exists(p) else {};c=d.setdefault('cfg',{});c['sim_on']=True;c['sim_url']=sys.argv[2];c['sim_auto']=False;c['sim_fps']=4 if c.get('sim_fps',6)==6 else c['sim_fps'];c['sim_eco']=True;c['source']='sim:0';c['thermal_source']='sim:thermal';c.setdefault('sim_prev_source','auto');x=[e for e in c.get('extra_cams',[]) if not str(e).startswith('sim:')];c['extra_cams']=x+['sim:1'];json.dump(d,open(p,'w',encoding='utf-8'),indent=1,ensure_ascii=False)"
 	var r: Array = await _run(py, ["-c", code, dir.path_join("config/motionwatch_settings.json"), "http://127.0.0.1:%d" % main.stream_port])
 	if int(r[0]) != 0:

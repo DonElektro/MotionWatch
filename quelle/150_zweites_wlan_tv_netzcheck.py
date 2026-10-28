@@ -207,7 +207,7 @@ def _visible_saved(iface):
 
 # ---- USB tethering (2.95.51): a phone on the USB cable gives its internet (Android «USB tethering», iPhone «Personal
 # hotspot» + cable). NetworkManager prefers the cable to the Wi-Fi, so the own Wi-Fi (game network) gets the internet of
-# the phone too - without a second Wi-Fi adapter. Motion Watch finds the phone, connects it and shows it. ----
+# the phone too - without a second Wi-Fi adapter. MoveEye finds the phone, connects it and shows it. ----
 TETHER_DRV = {"rndis_host": "Android", "cdc_ether": "Android", "cdc_ncm": "Android", "ipheth": "iPhone"}
 TETHER = {"t_try": 0.0, "was": ""}
 
@@ -250,7 +250,7 @@ def tether_tick():
 # the campfire / gamer mode) or any screen with the link. Left the simulator window (or the camera), right the game:
 # the wizard while it is set up, the QR code to join, the time, the players, the ranking; or the game corner of the Pi. ----
 TV_PAGE = r"""<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Motion Watch · TV</title>
+<title>MoveEye · TV</title>
 <style>
 :root{--bg:#0b0f14;--panel:#111822;--line:#1f2b3a;--txt:#e8eef5;--mut:#8a9bb0;--acc:#3b8cff;--grn:#3fcf6b;--org:#f2a33a;--red:#e5484d}
 *{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;cursor:none}
@@ -273,7 +273,7 @@ h1{font-size:4.2vh;margin:0}h2{font-size:2.6vh;margin:0;color:var(--mut);font-we
 .cards{display:grid;grid-template-columns:1fr 1fr;gap:1vh}.card{border:2px solid var(--line);border-radius:1.2vh;padding:.8vh;font-size:2vh}.card.on{border-color:var(--acc);background:rgba(59,140,255,.15)}.card img{width:100%;border-radius:.8vh}
 .idle{font-size:2.6vh;line-height:1.5;color:var(--mut)}
 </style></head><body>
-<div class="top"><img src="/icon-192.png" id="ic" alt=""><div><div class="n">Motion Watch</div><div class="m" id="mode"></div></div><div class="c" id="clock"></div></div>
+<div class="top"><img src="/icon-192.png" id="ic" alt=""><div><div class="n">MoveEye</div><div class="m" id="mode"></div></div><div class="c" id="clock"></div></div>
 <div class="main"><div class="view"><img id="v" alt=""><div class="lbl" id="vl"></div></div><div class="side" id="side"></div></div>
 <script>
 const K = location.pathname.split("/")[2];
@@ -428,7 +428,7 @@ def tv_data():
          "state": T({"armed": "Armed", "arming": "Arming …", "disarmed": "Not armed"}.get(STATE.get("arm_state"), "")),
          "t_setup": T("The game is being set up"), "t_join": T("Join: scan the QR code with the phone (same Wi-Fi) or open"),
          "t_ready": T("Get ready"), "t_play": T("Round running"), "t_end": T("Round over"), "t_waiting": T("Waiting for players"),
-         "t_board": T("Ranking of the evening"), "t_corner": T("Game corner"), "t_idle": T("Nothing is going on at the moment - Motion Watch keeps watch."),
+         "t_board": T("Ranking of the evening"), "t_corner": T("Game corner"), "t_idle": T("Nothing is going on at the moment - MoveEye keeps watch."),
          "events": [], "game": {}, "wiz": {}, "party": {}}
     try:
         d["events"] = [str(e.get("text") or e.get("msg") or "")[:90] for e in list(EVENTS)[-5:]][::-1] if "EVENTS" in globals() else []
@@ -459,7 +459,7 @@ def tv_data():
         pass
     if CFG.get("info_page") and page_address():
         iu = page_address().rstrip("/") + "/info/"
-        d["info"] = {"url": iu, "qr": qr_svg(iu)}; d["t_info"] = T("More about Motion Watch")
+        d["info"] = {"url": iu, "qr": qr_svg(iu)}; d["t_info"] = T("More about MoveEye")
     if party_on():
         url = page_address().rstrip("/") + "/p/" + PARTY["key"] + "/"
         d["party"] = {"on": True, "url": url, "qr": qr_svg(url), "game": str(PARTY.get("game") or ""),
@@ -467,8 +467,8 @@ def tv_data():
     return d
 
 
-# ---- network check of the players (2.95.52): every phone measures its connection to Motion Watch - ping (reaction time),
-# jitter, losses, download and upload - and Motion Watch adds what only it sees: the signal of each phone at its own Wi-Fi.
+# ---- network check of the players (2.95.52): every phone measures its connection to MoveEye - ping (reaction time),
+# jitter, losses, download and upload - and MoveEye adds what only it sees: the signal of each phone at its own Wi-Fi.
 # Open only while a check runs (a few minutes); limited data per phone, so nobody can use it to load the Pi. ----
 NETTEST = {"round": 0, "until": 0.0, "res": {}, "bytes": {}, "t0": 0.0}
 NT_DOWN_MAX = 8 << 20          # one phone: at most this much down and up per check
@@ -494,7 +494,7 @@ def nettest_stop():
 
 
 def _wifi_stations():
-    """the phones at the own Wi-Fi of Motion Watch: MAC -> signal, speeds (only when Motion Watch is the access point)"""
+    """the phones at the own Wi-Fi of MoveEye: MAC -> signal, speeds (only when MoveEye is the access point)"""
     out = {}
     hs = STATE.get("hotspot") or {}
     if not hs.get("on") or shutil.which("iw") is None:
@@ -574,7 +574,7 @@ def nettest_report(ip, d):
     return r
 
 
-NETWALK = deque(maxlen=200)          # 2.95.53: Empfangs-Rundgang: measured spots round Motion Watch (metres; z = where the camera looks)
+NETWALK = deque(maxlen=200)          # 2.95.53: Empfangs-Rundgang: measured spots round MoveEye (metres; z = where the camera looks)
 
 
 def netwalk_add(ip, d):
@@ -622,7 +622,7 @@ def nettest_state():
 
 
 NT_JS = r"""
-// network check (2.95.52): reaction time, jitter, losses, download, upload - to Motion Watch, not to the internet
+// network check (2.95.52): reaction time, jitter, losses, download, upload - to MoveEye, not to the internet
 async function ntMeasure(name, step, src) {
   const now = () => performance.now(), rtts = []; let loss = 0;
   step("ping", 0);
@@ -661,7 +661,7 @@ button{font:inherit;width:100%;padding:14px;border:0;border-radius:12px;backgrou
 input{font:inherit;width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:#0b121c;color:var(--txt);margin-top:6px}
 </style></head><body>
 <h1>📶 Empfangs-Rundgang</h1>
-<div class="mut">Geh mit dem Handy um den Platz. Tippe auf dem Plan, wo du gerade stehst (Motion Watch ist in der Mitte, oben ist die Richtung, in die die Kamera schaut, die Kreise sind 5 / 10 / 20 m), dann «Hier messen». Jede Messung dauert 2–3 Sekunden.</div>
+<div class="mut">Geh mit dem Handy um den Platz. Tippe auf dem Plan, wo du gerade stehst (MoveEye ist in der Mitte, oben ist die Richtung, in die die Kamera schaut, die Kreise sind 5 / 10 / 20 m), dann «Hier messen». Jede Messung dauert 2–3 Sekunden.</div>
 <input id="nm" maxlength="20" placeholder="Dein Name (freiwillig)">
 <canvas id="cv" width="640" height="640"></canvas>
 <button id="go" disabled>Zuerst auf dem Plan tippen</button>
@@ -720,8 +720,8 @@ button{font:inherit;width:100%;margin-top:10px;padding:14px;border:0;border-radi
 <div class="card" id="c-res" hidden><div class="big" id="gr"></div><div class="grid" id="vals"></div><div class="mut" id="why" style="margin-top:10px"></div></div>
 <script>
 const L = (navigator.language || "de").slice(0, 2);
-const T = {de: {h: "Netz-Check", intro: "Misst, wie gut dein Handy Motion Watch erreicht: Reaktionszeit, Schwankung, Verluste und Geschwindigkeit. Dauert etwa 10 Sekunden.", name: "Dein Name", go: "Jetzt messen", ping: "Reaktionszeit …", down: "Download …", up: "Upload …", closed: "Der Netz-Check ist gerade nicht offen.", good: "✅ Gute Verbindung", fair: "🟠 Geht so", weak: "🔴 Schwache Verbindung", rtt: "Reaktion", jitter: "Schwankung", down2: "Download", up2: "Upload", sig: "Signal", again: "Nochmals messen", tip: "Tipp: näher zu Motion Watch, Hindernisse (Wände, Auto, Körper) vermeiden."},
-  en: {h: "Network check", intro: "Measures how well your phone reaches Motion Watch: reaction time, jitter, losses and speed. Takes about 10 seconds.", name: "Your name", go: "Measure now", ping: "Reaction time …", down: "Download …", up: "Upload …", closed: "The network check is not open right now.", good: "✅ Good connection", fair: "🟠 So-so", weak: "🔴 Weak connection", rtt: "Reaction", jitter: "Jitter", down2: "Download", up2: "Upload", sig: "Signal", again: "Measure again", tip: "Tip: closer to Motion Watch, avoid obstacles (walls, car, bodies)."}};
+const T = {de: {h: "Netz-Check", intro: "Misst, wie gut dein Handy MoveEye erreicht: Reaktionszeit, Schwankung, Verluste und Geschwindigkeit. Dauert etwa 10 Sekunden.", name: "Dein Name", go: "Jetzt messen", ping: "Reaktionszeit …", down: "Download …", up: "Upload …", closed: "Der Netz-Check ist gerade nicht offen.", good: "✅ Gute Verbindung", fair: "🟠 Geht so", weak: "🔴 Schwache Verbindung", rtt: "Reaktion", jitter: "Schwankung", down2: "Download", up2: "Upload", sig: "Signal", again: "Nochmals messen", tip: "Tipp: näher zu MoveEye, Hindernisse (Wände, Auto, Körper) vermeiden."},
+  en: {h: "Network check", intro: "Measures how well your phone reaches MoveEye: reaction time, jitter, losses and speed. Takes about 10 seconds.", name: "Your name", go: "Measure now", ping: "Reaction time …", down: "Download …", up: "Upload …", closed: "The network check is not open right now.", good: "✅ Good connection", fair: "🟠 So-so", weak: "🔴 Weak connection", rtt: "Reaction", jitter: "Jitter", down2: "Download", up2: "Upload", sig: "Signal", again: "Measure again", tip: "Tip: closer to MoveEye, avoid obstacles (walls, car, bodies)."}};
 const X = T[L] || (L === "fr" || L === "it" ? T.en : T.de);
 const $ = s => document.querySelector(s);
 $("#h").textContent = X.h; $("#intro").textContent = X.intro; $("#nm").placeholder = X.name; $("#go").textContent = X.go;

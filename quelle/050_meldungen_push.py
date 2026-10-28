@@ -69,7 +69,7 @@ def msg_template(kind, part):
 
 def render_msg(tpl, p):
     t = p.get("time", "")
-    vals = {"name": CFG["device_name"].strip() or "Motion Watch", "time": t[11:19], "count": str(p.get("persons", 0)),
+    vals = {"name": CFG["device_name"].strip() or "MoveEye", "time": t[11:19], "count": str(p.get("persons", 0)),
             "date": f"{t[8:10]}.{t[5:7]}.{t[0:4]}" if len(t) >= 10 else "", "camera": p.get("source", ""), "link": p.get("link", ""),
             "db": str(p.get("db", ""))}
     return re.sub(r"\{(\w+)\}", lambda m: vals.get(m.group(1), m.group(0)), tpl)     # only known placeholders, nothing else

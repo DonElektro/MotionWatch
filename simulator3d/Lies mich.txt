@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.78 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MoveEye Sim · 3D – 3D-3.79 (der 3D-Simulator von MoveEye: 7 Szenen, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -7,7 +7,7 @@ STARTEN
    - Windows zeigt vielleicht "Der Computer wurde durch Windows geschützt":
      auf "Weitere Informationen" und dann "Trotzdem ausführen" klicken (das Programm ist nicht signiert).
    - Die Windows-Firewall fragt nach dem Netzwerkzugriff: "Private Netzwerke" erlauben,
-     sonst kann Motion Watch den Simulator nicht erreichen.
+     sonst kann MoveEye den Simulator nicht erreichen.
 3. Ab 3D-1.6 läuft der Simulator mit der einfachen Grafik (OpenGL), die auf fast jedem PC geht.
    Wer es schöner möchte: "Start mit Vulkan-Grafik (schoener).bat" probieren. Bleibt das Fenster dann schwarz
    oder schliesst es sich gleich wieder, kann der PC diese Grafik nicht: einfach wieder die .exe direkt starten.
@@ -29,8 +29,8 @@ UPDATES (ab 3D-1.7)
 - Aus der Ferne (ab 3D-1.13): Schalter "Neue Versionen automatisch installieren" in der Gruppe "Updates" (rechts im
   Fenster und auf der Motion-Watch-Webseite unter Simulator-Steuerung). Ist er an, schaut der Simulator alle 10 Minuten
   nach und installiert eine neue Version selbst: 15 Sekunden lang kann man noch "Abbrechen" drücken, dann startet er neu
-  (Senden, Szene und "Motion Watch auf diesem PC" laufen danach weiter). Der Knopf "Jetzt nach Updates suchen und
-  installieren" in derselben Gruppe löst das sofort aus - auch vom Handy aus über Motion Watch.
+  (Senden, Szene und "MoveEye auf diesem PC" laufen danach weiter). Der Knopf "Jetzt nach Updates suchen und
+  installieren" in derselben Gruppe löst das sofort aus - auch vom Handy aus über MoveEye.
 
 SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
 - Gruppe "Spiel": "Spiel öffnen" einschalten. Im Fenster erscheinen ein QR-Code und eine Adresse.
@@ -46,14 +46,14 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
   Schwer zu sehen ist, wer sich duckt oder kriecht, weit weg ist, still steht, im Dunkeln (ohne Licht), im Nebel,
   oder hinter Wohnwagen, Zelt, Auto, Hütte ... (hinter Zaun und Hecke nur, wer sich duckt oder kriecht).
   Das Wärmebild sieht auch nachts, aber nicht durch Dinge hindurch.
-- Ohne Motion Watch bewacht der Kopf selbst: er schwenkt hin und her und dreht sich zu Verdächtigen. Ist Motion
-  Watch verbunden, steuert Motion Watch den Kopf (und erkennt die Spieler vielleicht selbst - als echter Test).
+- Ohne MoveEye bewacht der Kopf selbst: er schwenkt hin und her und dreht sich zu Verdächtigen. Ist Motion
+  Watch verbunden, steuert MoveEye den Kopf (und erkennt die Spieler vielleicht selbst - als echter Test).
 - "Runde starten" (im Fenster, auf der Motion-Watch-Webseite oder auf einem Handy): 3-2-1, dann läuft die Zeit
   (einstellbar 1-15 Minuten). Am Schluss die Rangliste: früh im Ziel und selten erwischt = viele Punkte.
 - Einstellungen: Wächter leicht / normal / schwer; Bild auf dem Handy klein / mittel / gross (Experte).
 - Ab 3D-2.5:
   * Spielart "Ein Spieler ist Wächter": im Startbild "👁 Wächter" wählen (nur einer). Der Wächter sieht auf dem Handy
-    das echte Bild der Kopfkamera (wie Motion Watch), dreht den Kopf mit dem Joystick, macht mit "💡 Licht" für
+    das echte Bild der Kopfkamera (wie MoveEye), dreht den Kopf mit dem Joystick, macht mit "💡 Licht" für
     6 Sekunden hell (dann 20 s warten) und ruft "🚨 Erwischt!": stimmt es (die Kamera sieht jemanden), gibt es
     +150 Punkte, sonst Fehlalarm −50 und 4 s warten. Die Kamera erwischt auch selbst, wer zu lange gut zu sehen ist.
   * "🪨 Werfen": ein Stein fliegt 10 m weit und macht ein Geräusch - der Kopf schaut dorthin (alle 12 s einmal).
@@ -69,27 +69,27 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
 - Ab 3D-3.15: Mover im Simulator selbst fahren: bei «Mover simulieren» erscheint unten rechts ein grüner Stick (Kugel
   ziehen: hoch = vorwärts, runter = rückwärts, seitlich = an Ort drehen) – oder die Pfeiltasten. «Hinterher» = die Ansicht
   fährt hinter dem Mover her. Der Ortsassistent zeigt in Schritt 2, ob die 3D-Gebäude von swisstopo geladen wurden und
-  wenn nicht, warum. Bericht dazu: %APPDATA%\Godot\app_userdata\Motion Watch 3D Simulator\orte\3d_gebaeude_bericht.txt
+  wenn nicht, warum. Bericht dazu: %APPDATA%\Godot\app_userdata\MoveEye 3D Simulator\orte\3d_gebaeude_bericht.txt
 - Ab 3D-3.14: Orts-Assistent. Die Karte (K) führt in 3 Schritten: 1. Ort wählen, 2. Umgebung (wird erkannt: Dorf, Stadt,
   Bauernhof / Land, Wald, Berge, See / Fluss – kann geändert werden), 3. Objekte (Verstecke wenige / mittel / viele,
   parkierte Autos ja / nein, Wald licht / normal / dicht, Lager: Wohnwagen und Zelt / nur Wohnwagen / Zelt und Hütte).
   Dann «Szene bauen». Je nach Umgebung kommen passende Dinge dazu (z. B. Heuballen auf dem Land, Felsen in den Bergen,
-  Autos am Strassenrand im Dorf, Boote und Schilf am See). Wird der Ort über Motion Watch gewählt, gilt «automatisch».
+  Autos am Strassenrand im Dorf, Boote und Schilf am See). Wird der Ort über MoveEye gewählt, gilt «automatisch».
 - Ab 3D-3.13: neue Szene «Versteckspiel» mit vielen Verstecken (Hecken, Büsche, Holzstapel, Kisten, Fässer, Heuballen,
   Felsen, Schuppen, Autos, Container, Mauern, Paletten, Anhänger, Kompost). Auch die anderen Szenen haben zusätzliche
   Verstecke bekommen. Alle Verstecke verdecken die Sicht der Kameras im Spiel (je nach Höhe).
-- Ab 3D-3.12: Übersichtskarte oben links (Knopf «Karte» unten oder Taste M): Norden oben, Motion Watch in der Mitte mit dem
+- Ab 3D-3.12: Übersichtskarte oben links (Knopf «Karte» unten oder Taste M): Norden oben, MoveEye in der Mitte mit dem
   Blickfeld der Kameras, Häuser und Hindernisse, Besucher, Spieler und Ziel des Spiels, dein Blickpunkt. Mausrad = zoomen,
   Ecke unten rechts ziehen = Grösse, Klick = dorthin fliegen. An echten Orten liegt das Luftbild darunter.
 - Ab 3D-3.11:
-  * Mover (Kettenfahrzeug): «Mover → Mover simulieren» stellt Motion Watch auf ein kleines Kettenfahrzeug. Motion Watch
+  * Mover (Kettenfahrzeug): «Mover → Mover simulieren» stellt MoveEye auf ein kleines Kettenfahrzeug. MoveEye
     (ab 2.94.0) zeigt dann einen zweiten, grünen Stick: hoch = vorwärts, runter = rückwärts, seitlich = an Ort drehen.
     Der Mover fährt nicht in Häuser, Bäume oder den Wohnwagen und folgt dem Gelände. «Mover zurück an den Startplatz».
   * Das kleine Kästchen (minimiert) zeigt jetzt auch die CPU dieses PCs und des Simulators. «▁» klappt es zu einem
     kleinen «3D»-Symbol zusammen; ein Klick darauf öffnet das Kästchen wieder.
 - Ab 3D-3.10: An einem echten Ort holt der Simulator zuerst die echten 3D-Gebäude von swisstopo (swissBUILDINGS3D, mit
   den richtigen Dachformen). Klappt das nicht, baut er die Häuser wie bisher aus OpenStreetMap.
-- Ab 3D-3.9: Auf der Seite von Motion Watch (ab 2.93.16) sieht die Simulator-Steuerung aus wie das Bedienfeld des Simulators
+- Ab 3D-3.9: Auf der Seite von MoveEye (ab 2.93.16) sieht die Simulator-Steuerung aus wie das Bedienfeld des Simulators
   (Karten mit Symbolen, aufklappbare Teile, Schalter rechts, Suche, «Einfach | Experte»). Unter «Szene → Ort von der Karte»
   gibt es dort eine Karte: Ort suchen oder antippen, «Diesen Ort laden» - der Simulator baut ihn.
 - Ab 3D-3.8: Echte Sonnenbahn: die Sonne steht so, wie sie am gewählten Ort (sonst Mitte der Schweiz) zur eingestellten Uhrzeit
@@ -103,16 +103,16 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
 - Ab 3D-3.5: Bedienfeld aufgeräumt: jede Gruppe hat ein Symbol, die Gruppen stehen in einer festen Reihenfolge (Szene,
   Wetter, Besuch, Kamerabild, Sensoren, Spiel, Wildbeobachtung, Testlauf, System), darin aufklappbare Teile (z. B. Besuch →
   Besucher hinsetzen / schicken / von selbst / in bestimmten Szenen / Verhalten; System → Grafik / Start mit dem PC / Updates).
-  Die Seite von Motion Watch zeigt dieselbe Ordnung (mit Symbolen und Zwischentiteln).
+  Die Seite von MoveEye zeigt dieselbe Ordnung (mit Symbolen und Zwischentiteln).
 - Ab 3D-3.4: Echter Ort von der Karte (nur Schweiz):
   * Taste K oder «Werkzeuge → Karte»: Landeskarte / Luftbild von swisstopo, ziehen = verschieben, Mausrad = zoomen,
-    Suchfeld (z. B. «Zermatt» oder eine Adresse). Klick = dort steht Motion Watch. «Diesen Ort laden».
+    Suchfeld (z. B. «Zermatt» oder eine Adresse). Klick = dort steht MoveEye. «Diesen Ort laden».
   * Der Simulator holt dann aus dem Internet: Höhenmodell (swisstopo swissALTI3D, sonst Terrarium), Luftbild (SWISSIMAGE)
     und Gebäude, Wald, Bäume, Strassen, Wasser, Zäune und Hecken (OpenStreetMap). Daraus baut er die Szene «Ort von der
     Karte»: 400 × 400 m genau, rundherum bis 1.6 km die Landschaft, nachts brennt in manchen Fenstern Licht.
   * Beim ersten Mal dauert das etwa eine Minute, danach ist der Ort im Benutzerordner (orte) gespeichert und geht ohne
-    Internet. Wohnwagen, Zelt und Velo stellt der Simulator neben Motion Watch.
-  * Auch auf der Seite von Motion Watch: Feld «Ort» (Name oder Koordinaten, z. B. 46.0207, 7.7491).
+    Internet. Wohnwagen, Zelt und Velo stellt der Simulator neben MoveEye.
+  * Auch auf der Seite von MoveEye: Feld «Ort» (Name oder Koordinaten, z. B. 46.0207, 7.7491).
   * Daten: © swisstopo, © OpenStreetMap-Mitwirkende.
   * Update: wenn GitHub kurz noch die alte Datei liefert, wartet es und holt sie neu; läuft eine alte .exe noch, nimmt es
     einen anderen Namen.
@@ -142,9 +142,9 @@ SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
     Rucksack, eigene Farbe oder Tarnjacke. Tarnung macht einen bei Tag im Grünen etwas schwerer erkennbar.
   * Die Figuren erschrecken beim Erwischtwerden, jubeln im Ziel und holen beim Werfen aus.
 - Ab 3D-2.6:
-  * Spielart "Motion Watch entscheidet (echte Erkennung)": meldet Motion Watch eine Person, ist der erwischt, den
+  * Spielart "MoveEye entscheidet (echte Erkennung)": meldet MoveEye eine Person, ist der erwischt, den
     die Kamera am besten sieht. Die Leiste zeigt dann nur noch, wie gut man zu sehen ist. Ein echter Test von
-    Motion Watch (ab Version 2.93.3; ohne Verbindung entscheidet der Simulator).
+    MoveEye (ab Version 2.93.3; ohne Verbindung entscheidet der Simulator).
   * Spielziel "Beute holen und zurückbringen": beim grünen Licht die Beute holen (man trägt sie sichtbar auf dem
     Rücken) und zurück zum eigenen Start. Wer erwischt wird, verliert sie wieder.
 - Jedes Handy-Bild braucht Leistung der Grafikkarte: bei Ruckeln "Bild auf dem Handy: klein" wählen.
@@ -153,9 +153,9 @@ MEHR LEBEN IN DER WELT (ab 3D-2.9, Experte, Gruppe "Wetter")
 - Fahnen (Camping, Parkplatz, Lustiger Platz) und Wäsche an der Leine (Camping, Garten) flattern im Wind.
 - Rauch aus den Kaminen (Haus im Garten, Hütte) steigt auf und treibt mit dem Wind.
 - Glühwürmchen in warmen, ruhigen Nächten (ab 12 °C, ohne Regen und starken Wind).
-- Alles bewegt sich auch im Kamerabild - typische Auslöser für Fehlalarme, gut zum Testen von Motion Watch.
+- Alles bewegt sich auch im Kamerabild - typische Auslöser für Fehlalarme, gut zum Testen von MoveEye.
   Einzeln abschaltbar.
-- Behoben: Seit 3D-2.6 fehlten Regen und andere durchsichtige Dinge im Kamerabild für Motion Watch.
+- Behoben: Seit 3D-2.6 fehlten Regen und andere durchsichtige Dinge im Kamerabild für MoveEye.
 
 FIGUREN UND BEWEGUNGEN (ab 3D-2.7)
 - Menschen: Gesicht (Augen, Brauen, Nase, Mund, Ohren), verschiedene Statur (schlank bis kräftig), Jacke offen oder zu,
@@ -175,15 +175,15 @@ FIGUREN UND BEWEGUNGEN (ab 3D-2.7)
 TESTLAUF MIT BERICHT (ab 3D-2.6, Gruppe "Testlauf")
 - "Testlauf starten": etwa 4 Minuten, 4 Phasen (Tag klar, Tag mit Wind und Wolken, Nacht mit Insekten am Licht,
   Nacht mit Regen). Menschen und Tiere gehen durchs Bild. Der Simulator weiss, wer wann für die Kameras sichtbar war,
-  und vergleicht das mit dem, was Motion Watch meldet (ab Motion Watch 2.93.3).
+  und vergleicht das mit dem, was MoveEye meldet (ab MoveEye 2.93.3).
 - Bericht: Personen erkannt (z. B. 9 von 11), Reaktionszeit, Tiere gemeldet, Fehlalarme mit vermuteter Ursache
   (Tier, Insekten, Wind, Regen), Geräuschalarme, und wer für die Kamera gar nicht sichtbar war (zu dunkel, verdeckt).
   Er steht im Fenster, kurz auf der Motion-Watch-Webseite, und als Datei (Knopf "Letzten Bericht öffnen").
-- Motion Watch muss verbunden sein; danach sind Uhrzeit, Wetter und Wind wieder wie vorher.
+- MoveEye muss verbunden sein; danach sind Uhrzeit, Wetter und Wind wieder wie vorher.
 
 GERÄUSCHE (ab 3D-2.6)
 - Die Welt macht Geräusche: Schritte, rennende Menschen, bellende Hunde, Autos, Steine, Regen, Wind.
-  Ohne echtes Mikrofon bekommt Motion Watch (ab 2.93.3) diesen Pegel und kann damit Geräuschalarm auslösen.
+  Ohne echtes Mikrofon bekommt MoveEye (ab 2.93.3) diesen Pegel und kann damit Geräuschalarm auslösen.
   Abschaltbar (Experte, Gruppe "Kamerabild").
 
 KAMERABILD (ab 3D-2.5, Gruppe "Kamerabild")
@@ -193,26 +193,26 @@ KAMERABILD (ab 3D-2.5, Gruppe "Kamerabild")
 - Bildrauschen: nachts, wenn die Kamera verstärkt, wird das Bild körnig - wie bei einer echten Kamera.
 - Dunkle Bildecken (Experte), Regentropfen auf der Linse (bei Regen), Insekten am Licht: nachts fliegen kleine
   Insekten durch das Licht vor dem Kopf und lösen wie in echt Bewegungen aus (gut zum Testen von Fehlalarmen).
-- Alles einstellbar oder abschaltbar; Motion Watch bekommt genau dieses Bild.
+- Alles einstellbar oder abschaltbar; MoveEye bekommt genau dieses Bild.
 
 STROM SPAREN (ab 3D-2.3)
-- Der Simulator rechnet nur, wenn jemand hinschaut: wenn das Fenster offen ist oder Motion Watch verbunden ist.
-  Klein (Kästchen) und ohne Motion Watch macht er Pause: nichts bewegt sich, er wartet nur auf Motion Watch
-  ("Pause (spart Strom)" im Kästchen). Sobald sich Motion Watch meldet, läuft die Welt weiter.
-- Klein mit Motion Watch zeichnet er nur noch die Kamerabilder für Motion Watch, nicht mehr die grosse 3D-Ansicht.
-- Das Kästchen zeigt die CPU: "CPU PC" = der ganze Computer, dazu der Anteil von Motion Watch und vom Simulator.
-  Läuft Motion Watch auf dem Pi, zeigt es die CPU des Pi und den Anteil von Motion Watch dort.
-  Gemessen wird von Motion Watch (ab Version 2.92.4), darum erst, wenn es verbunden ist.
+- Der Simulator rechnet nur, wenn jemand hinschaut: wenn das Fenster offen ist oder MoveEye verbunden ist.
+  Klein (Kästchen) und ohne MoveEye macht er Pause: nichts bewegt sich, er wartet nur auf MoveEye
+  ("Pause (spart Strom)" im Kästchen). Sobald sich MoveEye meldet, läuft die Welt weiter.
+- Klein mit MoveEye zeichnet er nur noch die Kamerabilder für MoveEye, nicht mehr die grosse 3D-Ansicht.
+- Das Kästchen zeigt die CPU: "CPU PC" = der ganze Computer, dazu der Anteil von MoveEye und vom Simulator.
+  Läuft MoveEye auf dem Pi, zeigt es die CPU des Pi und den Anteil von MoveEye dort.
+  Gemessen wird von MoveEye (ab Version 2.92.4), darum erst, wenn es verbunden ist.
 - Abschalten (immer rechnen): Experte, Gruppe "Grafik", Schalter "Strom sparen: nur rechnen, wenn ...".
-- Gemessen hier (Linux ohne Grafikkarte): Fenster offen 170 % eines Kerns, Kästchen mit Motion Watch 135 %,
-  Kästchen ohne Motion Watch 7 %.
+- Gemessen hier (Linux ohne Grafikkarte): Fenster offen 170 % eines Kerns, Kästchen mit MoveEye 135 %,
+  Kästchen ohne MoveEye 7 %.
 
 MIT DEM PC STARTEN (ab 3D-2.2)
 - Gruppe "Start mit dem PC" im Bedienfeld (oder auf der Motion-Watch-Webseite unter Simulator-Steuerung):
   "Mit dem PC starten" = der Simulator startet von selbst, sobald du dich bei Windows anmeldest, sendet gleich an
-  Motion Watch und kommt mit der Szene vom letzten Mal. Kein Administrator nötig.
+  MoveEye und kommt mit der Szene vom letzten Mal. Kein Administrator nötig.
   "Dabei klein" = er startet als kleines Kästchen unten rechts (siehe MINIMIEREN), die Kameras laufen weiter.
-  "Dabei auch Motion Watch auf diesem PC starten" = für den Betrieb ohne Pi.
+  "Dabei auch MoveEye auf diesem PC starten" = für den Betrieb ohne Pi.
   Bei diesem Start fragt er nicht nach Updates (es ist ja niemand da) - ausser "Neue Versionen automatisch installieren"
   ist an.
 - Willst du ihn vom PC aus wieder loswerden: Schalter aus (oder Windows: Task-Manager -> Autostart).
@@ -233,46 +233,46 @@ OHNE ANMELDEN - NUR DEN PC EINSCHALTEN
 SENDEN EIN / AUS
 - Nach dem Start sendet der Simulator NICHTS: er meldet sich nicht im Netz und liefert keine Bilder.
   So kannst du ihn zuerst in Ruhe ausprobieren.
-- Erst wenn du oben rechts den Schalter "An Motion Watch senden" einschaltest, findet Motion Watch den Simulator
+- Erst wenn du oben rechts den Schalter "An MoveEye senden" einschaltest, findet MoveEye den Simulator
   und bekommt die Bilder. Ausschalten = sofort wieder still.
 - Soll er gleich beim Start senden: "Start und gleich senden.bat" benutzen (oder die Option --stream).
 
 MINIMIEREN (ab 3D-2.1)
-- Ein ganz minimiertes Fenster zeichnet keine Bilder mehr - Motion Watch zeigte dann nur "CONNECTING...".
+- Ein ganz minimiertes Fenster zeichnet keine Bilder mehr - MoveEye zeigte dann nur "CONNECTING...".
   Darum wird der Simulator beim Minimieren zu einem kleinen Kästchen unten rechts (immer im Vordergrund).
-  Es zeigt: sendet / Senden aus, Bilder pro Sekunde und ob Motion Watch verbunden ist.
+  Es zeigt: sendet / Senden aus, Bilder pro Sekunde und ob MoveEye verbunden ist.
 - Knopf "Gross" im Kästchen: wieder normales Fenster. Kästchen am Hintergrund ziehen: verschieben.
 - Solange der Simulator sendet, gehen PC und Bildschirm nicht in den Ruhezustand.
   (Sperrt man den PC mit Windows+L, läuft der Simulator weiter.)
 
-MIT MOTION WATCH VERBINDEN (Schalter "An Motion Watch senden" muss eingeschaltet sein)
-- Ab Motion Watch 2.81.0 geht es von selbst: Der Simulator meldet sich alle 2 Sekunden im Netz (UDP-Port 8764),
-  Motion Watch findet ihn und übernimmt seine Adresse. Dann nur noch in Motion Watch die Taste "Simulation" drücken.
+MIT MOTION WATCH VERBINDEN (Schalter "An MoveEye senden" muss eingeschaltet sein)
+- Ab MoveEye 2.81.0 geht es von selbst: Der Simulator meldet sich alle 2 Sekunden im Netz (UDP-Port 8764),
+  MoveEye findet ihn und übernimmt seine Adresse. Dann nur noch in MoveEye die Taste "Simulation" drücken.
   Gefundene Simulatoren stehen auch unter System & Netz -> Simulator ("Simulatoren im Netz", Knopf "Verwenden").
   Geht es nicht (z. B. Firewall oder Gäste-WLAN), die Adresse wie unten von Hand eintragen:
 - Die Adresse des PCs herausfinden: Windows-Taste, "cmd" eingeben, Enter, dann "ipconfig" eingeben.
   Bei "IPv4-Adresse" steht z. B. 192.168.1.50
-- In Motion Watch unter System & Netz -> Simulator die Adresse eintragen: http://192.168.1.50:8765
+- In MoveEye unter System & Netz -> Simulator die Adresse eintragen: http://192.168.1.50:8765
 - Die Taste "Simulation" drücken. Oben im Simulator steht dann "verbunden mit ...".
 - Die Steuerung des Simulators erscheint auch auf der Motion-Watch-Webseite unter
   System & Netz -> Simulator -> Simulator-Steuerung.
 
 MOTION WATCH AUF DIESEM PC (ab 3D-1.9) - ganz ohne Raspberry Pi
-- Knopf "Motion Watch auf diesem PC starten (ohne Pi)" rechts unter dem Handy-Knopf (oder im Handy-Fenster).
-  Motion Watch läuft dann unsichtbar auf dem PC, bekommt Kameras, Wärmebild und Sensoren vom Simulator,
+- Knopf "MoveEye auf diesem PC starten (ohne Pi)" rechts unter dem Handy-Knopf (oder im Handy-Fenster).
+  MoveEye läuft dann unsichtbar auf dem PC, bekommt Kameras, Wärmebild und Sensoren vom Simulator,
   und das Handy / Tablet (Taste P) zeigt seine Webseite. So lässt sich alles ohne Pi ausprobieren.
-- Beim ersten Mal lädt der Simulator selbst: Python für Windows (rund 38 MB), die Pakete für Motion Watch
+- Beim ersten Mal lädt der Simulator selbst: Python für Windows (rund 38 MB), die Pakete für MoveEye
   (rund 60 MB, ein paar Minuten) und die neuste Motion-Watch-Version von GitHub. Danach geht der Start schnell;
   eine neue Motion-Watch-Version wird beim Start von selbst geholt.
 - Fragt die Windows-Firewall nach "Python": "Private Netzwerke" erlauben genügt.
-- Der Schalter "An Motion Watch senden" wird dabei von selbst eingeschaltet. Beim Schliessen des Simulators
-  wird Motion Watch auf dem PC auch beendet.
-- Alles liegt im Ordner %APPDATA%\Godot\app_userdata\Motion Watch 3D Simulator\motionwatch_pc
+- Der Schalter "An MoveEye senden" wird dabei von selbst eingeschaltet. Beim Schliessen des Simulators
+  wird MoveEye auf dem PC auch beendet.
+- Alles liegt im Ordner %APPDATA%\Godot\app_userdata\MoveEye 3D Simulator\motionwatch_pc
   (Einstellungen und Protokoll in "config"). Den Ordner löschen = alles neu holen.
 - Die Hardware-Teile (Servos, Licht, Ton, WLAN des Pi) gibt es auf dem PC nicht; dafür ist der Simulator da.
 - Im Handy: klicken = antippen (Schalter wie "Markieren" gehen ein / aus), klicken und ziehen = Joystick.
 - Langsam? In einer virtuellen Maschine (ohne echte Grafikkarte) stellt der Simulator ab 3D-1.13 von selbst die
-  einfache Grafik ein, zeichnet die Vorschau seltener, das Handy-Bild ist leichter und Motion Watch auf dem PC holt
+  einfache Grafik ein, zeichnet die Vorschau seltener, das Handy-Bild ist leichter und MoveEye auf dem PC holt
   4 statt 6 Bilder pro Sekunde. Auf einem PC mit echter Grafikkarte läuft alles deutlich flüssiger.
 
 BEDIENUNG IM FENSTER
@@ -287,13 +287,13 @@ BEDIENUNG IM FENSTER
   in die Welt ziehen und loslassen = der Besucher steht dort. Oder ein Bild anklicken (blau umrandet) und dann in die
   Welt klicken, so oft man will; nochmals anklicken = nichts mehr hinsetzen.
 - Knopf «Handy- / Tablet-Simulator (P)» oder Taste P: links erscheint ein Handy oder Tablet mit der ECHTEN, aktuellen
-  Webseite deines Motion Watch. Bedienen wie auf dem Handy: klicken = antippen, klicken und ziehen = Finger (Joystick),
+  Webseite deines MoveEye. Bedienen wie auf dem Handy: klicken = antippen, klicken und ziehen = Finger (Joystick),
   Mausrad = scrollen, tippen auf der Tastatur, wenn das Handy-Bild angeklickt ist.
   Oben umschalten: Handy / Tablet, Hoch / Quer, Vollbild, Neu laden. Braucht Microsoft Edge oder Chrome (ist bei Windows dabei);
-  der Browser läuft dabei unsichtbar im Hintergrund. Ist Motion Watch mit Passwort geschützt, einmal im Handy anmelden.
+  der Browser läuft dabei unsichtbar im Hintergrund. Ist MoveEye mit Passwort geschützt, einmal im Handy anmelden.
 - Taste 1: durch die Kopfkamera schauen,  2: durch die feste Kamera,  0: frei fliegen,  H: Bedienfeld aus / ein.
 - Taste G: Gewehr ein / aus (siehe WILDBEOBACHTUNG).
-- Rechts das Bedienfeld im Stil von Motion Watch. Oben die Leiste wie bei Motion Watch:
+- Rechts das Bedienfeld im Stil von MoveEye. Oben die Leiste wie bei MoveEye:
   ⟩ = Bedienfeld ausblenden (oben rechts bleibt ⟨ zum Zurückholen, oder Taste H),
   Suchfeld = Einstellung suchen (z. B. "Mond", "Regen"): nur die Treffer bleiben stehen,
   ▤ = nur Gruppen,  ⌃⌄ = alle aufklappen,  ⌄⌃ = alle zuklappen.
@@ -322,7 +322,7 @@ SZENEN (ab 3D-1.5, schnelle erste Fassung)
   eine winkende Vogelscheuche, ein Gartenzwerg, der hinter einem Stein hervorschaut, eine Lichterkette.
 - Wildbeobachtung: Hochsitz, Futterstelle und Salzlecke vor dem Waldrand. Die Tiere kommen aus dem Wald,
   fressen eine Weile und gehen wieder.
-- Die Sensoren heissen in allen Szenen gleich (Motion Watch kennt sie so): "Wohnwagen-Tür" ist die Tür der Szene
+- Die Sensoren heissen in allen Szenen gleich (MoveEye kennt sie so): "Wohnwagen-Tür" ist die Tür der Szene
   (Wohnwagen, Hütte, Haus, Wohnmobil), "PIR Zelt" der Bewegungsmelder (Zelt, Feuerstelle, Billettautomat,
   Terrasse, Bank, Futterstelle), "Velo" das Velo.
 
@@ -333,11 +333,11 @@ WILDBEOBACHTUNG MIT DEM GEWEHR (unblutig)
 - Ein getroffenes Tier macht einen Luftsprung mit Drehung, sieht Sterne und rennt dann davon. Kein Blut, nichts
   Schlimmes. Punkte: Katze / Hund 5, Fuchs 10, Reh 15, Wildschwein 20, Dachs 25.
 - Menschen und Autos kann man nicht treffen: es erscheint "Nicht auf Menschen! Nur Tiere."
-- Knopf "Schuss aus der Kopfkamera": zielt genau dorthin, wohin die Kopfkamera von Motion Watch schaut.
-  So kann man auf dem Handy mit dem Joystick von Motion Watch zielen und auf der Simulator-Steuerung abdrücken.
+- Knopf "Schuss aus der Kopfkamera": zielt genau dorthin, wohin die Kopfkamera von MoveEye schaut.
+  So kann man auf dem Handy mit dem Joystick von MoveEye zielen und auf der Simulator-Steuerung abdrücken.
 
 WAS ES SONST KANN
-- Kamera 0 auf dem Schwenkkopf (folgt den Servos von Motion Watch), Kamera 1 fest, Wärmebildkamera.
+- Kamera 0 auf dem Schwenkkopf (folgt den Servos von MoveEye), Kamera 1 fest, Wärmebildkamera.
 - Weisses Licht und Infrarot als echte Scheinwerfer (Infrarot sieht nur die Kopfkamera, nachts grau).
 - Tag und Nacht mit eigener Uhr, Mond, Wetter (klar, bewölkt, Regen, Nebel, Schnee), Wind bewegt die Bäume.
 - Besuch: Person, Kind, Jogger, Spaziergang mit Hund, Fuchs, Reh (auch als Rudel, manche Böcke mit Geweih), Wildschwein,
@@ -364,27 +364,27 @@ MotionWatch3D.exe -- --port 8766 --hour 22.5 --quality simple --stream --scene w
   --scene: mit dieser Szene starten (camping, wald, parkplatz, garten, lustig, wild)
   --no-update: beim Start nicht nach einer neuen Version suchen
   --no-angle: in einer virtuellen Maschine nicht von selbst auf ANGLE umschalten
-  --stream: gleich beim Start an Motion Watch senden
+  --stream: gleich beim Start an MoveEye senden
   --win X,Y,BREITE,HOEHE: Fenster an diese Stelle und in diese Grösse
   --mini: gleich als kleines Kästchen in der Ecke starten (--mini-tiny: als kleines Symbol)
   --maximized: gleich als grosses Fenster starten
 
 COMPUTERNAME (ab 3D-3.17)
-- Der Simulator schickt den Namen dieses Computers mit. Motion Watch (ab 2.95.1) zeigt ihn in der Liste
+- Der Simulator schickt den Namen dieses Computers mit. MoveEye (ab 2.95.1) zeigt ihn in der Liste
   «Simulatoren im Netz» neben dem Simulator. So sieht man gleich, welcher Simulator auf welchem PC läuft.
 
 SIMULATOR-FENSTER IN MOTION WATCH (ab 3D-3.18)
-- Motion Watch (ab 2.95.3) zeigt auf der Live-Seite unter «Simulator-Steuerung» das Fenster des Simulators: mit Karte,
+- MoveEye (ab 2.95.3) zeigt auf der Live-Seite unter «Simulator-Steuerung» das Fenster des Simulators: mit Karte,
   Kompass und den Knöpfen unten (Frei, Kamera 1, Kamera 2, Wärmebild, Karte, Zum Kopf, Von oben).
 - Bedienen wie hier: Maus links ziehen = verschieben, rechts ziehen = drehen, Rad = zoomen; am Handy mit dem Finger.
-- Ist die Einstellungsleiste rechts offen, zeigt Motion Watch nur den Teil links davon.
-- Ab 3D-3.19 auch, wenn der Simulator als kleines Kästchen läuft: dann zeichnet er die Ansicht für Motion Watch
+- Ist die Einstellungsleiste rechts offen, zeigt MoveEye nur den Teil links davon.
+- Ab 3D-3.19 auch, wenn der Simulator als kleines Kästchen läuft: dann zeichnet er die Ansicht für MoveEye
   unsichtbar in normaler Fenstergrösse.
 
 SPIEL UND TOUCH-STEUERUNG IN MOTION WATCH (ab 3D-3.20)
-- Ist das Spiel offen, zeigt Motion Watch (ab 2.95.11) im Reiter Simulator den QR-Code und die Adresse
+- Ist das Spiel offen, zeigt MoveEye (ab 2.95.11) im Reiter Simulator den QR-Code und die Adresse
   (auch gross zum Abfotografieren).
-- Im Simulator-Fenster in Motion Watch: Knopf ✋ oder Vollbild zeigt zwei Sticks (links fliegen, rechts umschauen)
+- Im Simulator-Fenster in MoveEye: Knopf ✋ oder Vollbild zeigt zwei Sticks (links fliegen, rechts umschauen)
   und ▲ ▼ für hoch / runter.
 
 NATÜRLICHERE BEWEGUNGEN UND MEHR PEP IM SPIEL (ab 3D-3.21)
@@ -396,8 +396,8 @@ NATÜRLICHERE BEWEGUNGEN UND MEHR PEP IM SPIEL (ab 3D-3.21)
 
 ZUSCHAUER-KAMERA (ab 3D-3.22)
 - Startet eine Runde, fliegt die Kamera selbst übers Spielfeld: folgt Spielern (zuerst dem, der gleich entdeckt
-  wird), zeigt das Ziel, das ganze Feld und die Sicht von Motion Watch. Mit der Maus oder W A S D übernimmst du wieder.
-- Motion Watch (ab 2.95.14) zeigt dazu über dem Simulator-Fenster Zeit, Spieler, Entdeckt-Anzeige, Ereignisse und am
+  wird), zeigt das Ziel, das ganze Feld und die Sicht von MoveEye. Mit der Maus oder W A S D übernimmst du wieder.
+- MoveEye (ab 2.95.14) zeigt dazu über dem Simulator-Fenster Zeit, Spieler, Entdeckt-Anzeige, Ereignisse und am
   Schluss das Ergebnis.
 
 SPIEL AUF DEM HANDY (ab 3D-3.23)
@@ -409,9 +409,9 @@ MENSCHLICHERE BEWEGUNGEN (ab 3D-3.24)
 - Knie und Ellbogen beugen sich jetzt in die richtige Richtung. Ducken: Hüfte und Knie gebeugt, Oberkörper vor,
   Kopf schaut nach vorne. Kriechen: auf dem Bauch, die Arme greifen abwechselnd nach vorne, ein Knie kommt seitlich hoch.
 - Die Bilder der Besucher im Fenster bewegen sich (sie gehen an Ort).
-- Motion Watch (ab 2.95.17) zeigt die CPU-Auslastung dieses PCs und startet ein Simulator-Update selbst.
+- MoveEye (ab 2.95.17) zeigt die CPU-Auslastung dieses PCs und startet ein Simulator-Update selbst.
 
-MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extras, oder im Spiel-Assistenten von Motion Watch)
+MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extras, oder im Spiel-Assistenten von MoveEye)
 - 📸 Erwischt-Fotos: wer erwischt wird, sieht das Bild der Kamera; am Schluss eine Galerie.
 - 🌳 Verstecke: Büsche – geduckt oder kriechend darin 8 s unsichtbar, dann raus.
 - 🦆 Lockvogel: auf dem Handy wählbar; lässt sich sehen, lockt die Kamera weg, Punkte pro beobachtete Sekunde.
@@ -419,7 +419,7 @@ MEHR SPIEL (ab 3D-3.25) – alles einzeln ein- und ausschaltbar (Spiel → Extra
 - ⛈ 🐕 🚗 Zufallsereignisse: Gewitter (Mikrofon hört kaum), Hund (bellt dich an), Auto (Scheinwerfer, Motor übertönt Schritte).
 - 🚩 Checkpoints: leuchtende Ringe unterwegs, je +150 Punkte.
 - 🏆 Rangliste des Abends über alle Runden, mit Rekorden; am nächsten Tag beginnt sie neu.
-- 🎯 Handicap für geübte Spieler (in Motion Watch einstellbar, oder automatisch für den Ersten der Rangliste).
+- 🎯 Handicap für geübte Spieler (in MoveEye einstellbar, oder automatisch für den Ersten der Rangliste).
 
 NEU IN 3D-3.26
 - Handy-Ansicht: Karte und Kompass stehen rechts, die Knopfzeile ist mittig (das Handy-Bild links bleibt frei).
@@ -430,7 +430,7 @@ NEU IN 3D-3.26
 
 NEU IN 3D-3.27
 - Testlauf mit Auswertung, jetzt in vier Varianten: Standard, Kurz, Schwierige Bedingungen, Nacht. Jedes Mal dieselben
-  Besucher auf denselben Wegen, damit man Läufe vergleichen kann. Motion Watch (ab 2.95.22) startet ihn selbst, wertet
+  Besucher auf denselben Wegen, damit man Läufe vergleichen kann. MoveEye (ab 2.95.22) startet ihn selbst, wertet
   ihn aus und schlägt bessere Einstellungen vor (Reiter Simulator → «Testlauf und Optimierung»).
 - Schwierige Bedingungen (Kamerabild → Schwierige Bedingungen): Gegenlicht, Tropfen auf der Linse, Spinnennetz vor der
   Kamera, Scheinwerfer in der Nacht, Wolkenschatten, Infrarot immer an. Nebel und Schnee gab es schon (Wetter).
@@ -441,26 +441,26 @@ NEU IN 3D-3.27
 - Echtes Wetter vom Ort (open-meteo.com, alle 10 Minuten) und echte Uhrzeit des PCs.
 - Aufnahme und Wiedergabe (Testlauf → Aufnahme): eine Situation aufnehmen und genau gleich wieder abspielen.
 - Zweites Motion-Watch-Gerät in der Welt (Mover → Zweites Gerät): eigener Mast mit rotem Kopf, eigene Adresse
-  (Port des Simulators + 20, meist 8785). Ein zweites Motion Watch verbindet sich damit wie mit einem Simulator.
-- Handy als Fenster: in Motion Watch auf dem Handy 📱 drücken, dann das Handy drehen = im Simulator umschauen.
-- Spiel: neue Spielart «Team gegen Motion Watch» (die Wächter drehen an Motion Watch die Kamera und drücken
+  (Port des Simulators + 20, meist 8785). Ein zweites MoveEye verbindet sich damit wie mit einem Simulator.
+- Handy als Fenster: in MoveEye auf dem Handy 📱 drücken, dann das Handy drehen = im Simulator umschauen.
+- Spiel: neue Spielart «Team gegen MoveEye» (die Wächter drehen an MoveEye die Kamera und drücken
   «Erwischt!»), eine Aufgabe für jede Runde mit Bonus und eine Rangliste der Woche.
 
 NEU IN 3D-3.28
 - Neuer Name: «MW Sim · 3D» (die Simulatoren heissen jetzt MW Sim · Basis, MW Sim · 3D und MW Sim · Welt).
-- Eigenes Symbol im Fenster und in der Taskleiste: das Radar-Auge von Motion Watch mit dem 3D-Würfel.
+- Eigenes Symbol im Fenster und in der Taskleiste: das Radar-Auge von MoveEye mit dem 3D-Würfel.
   (Das Symbol der .exe-Datei selbst bleibt vorerst das von Godot.)
 
 NEU IN 3D-3.29
-- Die Meldung «hier ist ein Simulator» enthält jetzt die CPU-Auslastung des PCs und des Simulators: Motion Watch zeigt
+- Die Meldung «hier ist ein Simulator» enthält jetzt die CPU-Auslastung des PCs und des Simulators: MoveEye zeigt
   sie in der Liste der Simulatoren schon an, bevor die Simulation eingeschaltet ist.
 
 NEU IN 3D-3.30
-- Stromsparen zusammen mit Motion Watch: ist dort alles ruhig (Stromsparmodus «spart»), rechnet der Simulator bei
+- Stromsparen zusammen mit MoveEye: ist dort alles ruhig (Stromsparmodus «spart»), rechnet der Simulator bei
   geschlossenem Fenster langsamer (höchstens 12 statt 30 Bilder pro Sekunde). Bewegt sich etwas, geht es sofort normal weiter.
 
 NEU IN 3D-3.31
-- Testlauf: der Bericht sagt jetzt auch, wann jede verpasste Person am besten zu sehen war. Motion Watch (ab 2.95.28)
+- Testlauf: der Bericht sagt jetzt auch, wann jede verpasste Person am besten zu sehen war. MoveEye (ab 2.95.28)
   legt dazu sein eigenes Bild von diesem Moment in den Bericht («Bilder der Fehler»).
 
 NEU IN 3D-3.32
@@ -488,10 +488,10 @@ NEU IN 3D-3.36
 3D-3.36: Neuer Name «3D-Simulator Live» oben in der Bedienfläche und im Fenstertitel.
 
 NEU IN 3D-3.37
-3D-3.37: Die Karte «Verbindung» lässt sich zuklappen. Symbol und Titel zeigen den Zustand: grau = Senden aus, orange = wartet auf Motion Watch, grün = verbunden.
+3D-3.37: Die Karte «Verbindung» lässt sich zuklappen. Symbol und Titel zeigen den Zustand: grau = Senden aus, orange = wartet auf MoveEye, grün = verbunden.
 
 NEU IN 3D-3.38
-3D-3.38: Karte «Besuch» neu gegliedert: Vorlagen (ruhige Nacht, belebter Campingplatz, Wildtier-Nacht, Tagesablauf, viel los, kein Besuch) – Besucher hinsetzen (Menschen und Tiere getrennt) – Menschen schicken – Tiere schicken – Fahrzeuge und Abläufe – Von selbst – Verhalten. Die Knöpfe der Besucher zeigen ein kleines Bild (auf der Seite von Motion Watch ein Symbol).
+3D-3.38: Karte «Besuch» neu gegliedert: Vorlagen (ruhige Nacht, belebter Campingplatz, Wildtier-Nacht, Tagesablauf, viel los, kein Besuch) – Besucher hinsetzen (Menschen und Tiere getrennt) – Menschen schicken – Tiere schicken – Fahrzeuge und Abläufe – Von selbst – Verhalten. Die Knöpfe der Besucher zeigen ein kleines Bild (auf der Seite von MoveEye ein Symbol).
 
 NEU IN 3D-3.39
 3D-3.39: Mehr Besucher. Menschen: Velofahrer, Kinderwagen, Pizzakurier (bringt etwas an die Tür), Polizei-Rundgang (nachts mit Taschenlampe), Betrunkener (torkelt im Zickzack), Paar, mit dem Pferd unterwegs. Tiere: Kuh, Schaf, Pferd, Gämse, Steinbock, Luchs, Kühe auf der Weide, Schafherde, Fledermäuse am Licht und eine Eule (nachts typische Fehlalarme). Fahrzeuge: Traktor, Töff, Lieferwagen. Alle kommen auch von selbst, je nach Szene und Tageszeit.
@@ -500,53 +500,53 @@ NEU IN 3D-3.40
 3D-3.40: Abläufe (Besuch → Abläufe): Einbruchsversuch (schleicht geduckt, prüft die Tür, schaut ins Fenster – flieht vor weissem Licht und Sirene), Grillabend (Grill mit Rauch und Glut, Gäste kommen nach und nach), spät heimkommen (Auto hält, Tür auf und zu), Paket wird gebracht, Fuchs am Abfalleimer (der Eimer kippt), Wildschweine mit Jungen, Kinder spielen Fangen, Bauer mäht mit dem Traktor. Neue Vorlagen: Einbruch-Nacht, Grillabend, Bauernhof, Wildtiere. «Ganze Nacht im Zeitraffer» (20 bis 6 Uhr in etwa 10 Minuten). Kalender: am Wochenende mehr Leute, im Winter weniger.
 
 NEU IN 3D-3.41
-3D-3.41: Der Spiel-Assistent läuft jetzt im Simulator selbst (Spiel → «Spiel-Assistent»): Spielart, Ziel, Schwierigkeit mit Extras, dann Zusammenfassung, Regeln, QR-Code und Spieler. Motion Watch (ab 2.95.48) zeigt dieselben Schritte im Browser und bedient den Assistenten aus der Ferne – beide bleiben gleich. «Wie letztes Mal» merkt sich der Simulator.
+3D-3.41: Der Spiel-Assistent läuft jetzt im Simulator selbst (Spiel → «Spiel-Assistent»): Spielart, Ziel, Schwierigkeit mit Extras, dann Zusammenfassung, Regeln, QR-Code und Spieler. MoveEye (ab 2.95.48) zeigt dieselben Schritte im Browser und bedient den Assistenten aus der Ferne – beide bleiben gleich. «Wie letztes Mal» merkt sich der Simulator.
 
 NEU IN 3D-3.42
-3D-3.42: Der Spiel-Assistent zeigt zu jeder Spielart, jedem Ziel und jeder Schwierigkeit ein Bild, damit man sofort sieht, worum es geht (im Simulator und auf der Seite von Motion Watch). Am Schluss stehen die Bilder des gewählten Spiels über den Regeln.
+3D-3.42: Der Spiel-Assistent zeigt zu jeder Spielart, jedem Ziel und jeder Schwierigkeit ein Bild, damit man sofort sieht, worum es geht (im Simulator und auf der Seite von MoveEye). Am Schluss stehen die Bilder des gewählten Spiels über den Regeln.
 
 NEU IN 3D-3.43
 3D-3.43: Bedienfeld rechts: Nichts ragt mehr über den rechten Rand hinaus (lange Besucher-Namen brechen jetzt um).
 Bedienfeld ausblenden (›): Die Kamerabilder bleiben stehen und lassen sich an der Leiste «Ziehen zum Verschieben» frei
 platzieren; der Platz wird gemerkt. Mit H oder ‹ kommen sie zurück ins Bedienfeld.
-Die Symbole der Gruppen werden grün, sobald etwas eingeschaltet ist – im Simulator und auf der Seite von Motion Watch (Spiel offen, Mover, Besuch von selbst, echter Ort,
+Die Symbole der Gruppen werden grün, sobald etwas eingeschaltet ist – im Simulator und auf der Seite von MoveEye (Spiel offen, Mover, Besuch von selbst, echter Ort,
 echtes Wetter, Gewehr, Testlauf) – orange, wenn etwas zu beachten ist (Tür offen / Gas, schwierige Bedingungen).
 Eine Besuch-Vorlage wechselt jetzt sichtbar: Die Besucher von vorher gehen, die Tageszeit passt zur Vorlage, die ersten
 Besucher kommen sofort.
-Neu auch für den Raspberry Pi 5 (64 Bit, Raspberry Pi OS mit Desktop): Motion Watch holt und startet den Simulator auf dem
+Neu auch für den Raspberry Pi 5 (64 Bit, Raspberry Pi OS mit Desktop): MoveEye holt und startet den Simulator auf dem
 Pi und zeigt ihn am Fernseher (HDMI) – Tab Simulator → «3D-Simulator auf diesem Pi». Einfache Grafik, nicht getestet auf
 echter Pi-Hardware.
 
 NEU IN 3D-3.44
-3D-3.44: Der Simulator hilft Motion Watch:
-- KI-Rechenhilfe: «Motion Watch auf diesem PC starten» macht den PC auch zur Rechenhilfe für den Pi (Port 5057). Der Pi
+3D-3.44: Der Simulator hilft MoveEye:
+- KI-Rechenhilfe: «MoveEye auf diesem PC starten» macht den PC auch zur Rechenhilfe für den Pi (Port 5057). Der Pi
   findet sie über den Simulator von selbst und lässt die Erkennung vom PC rechnen. Windows fragt einmal, ob Python ins Netz
   darf: «Zulassen».
-- TV-Modus (Taste T, Spiel → Anzeige, oder von Motion Watch): ganzer Bildschirm für den Spielabend, rechts Spielassistent,
+- TV-Modus (Taste T, Spiel → Anzeige, oder von MoveEye): ganzer Bildschirm für den Spielabend, rechts Spielassistent,
   QR-Code, Zeit, Spieler und Rangliste; wenn nichts los ist, kreist die Kamera ums Camp. Esc oder T beendet ihn.
 - Aufstell-Planer (Werkzeuge): Karte von oben mit dem, was die Kameras sehen, und den toten Winkeln um Zelt und Wohnwagen;
-  «Besten Platz suchen», «Motion Watch hierhin stellen». Motion Watch übernimmt daraus die Patrouille.
-- Alarm-Rückblick: Motion Watch spielt einen Alarm nach – eine orange Figur läuft den Weg, der Kopf dreht sich wie damals.
+  «Besten Platz suchen», «MoveEye hierhin stellen». MoveEye übernimmt daraus die Patrouille.
+- Alarm-Rückblick: MoveEye spielt einen Alarm nach – eine orange Figur läuft den Weg, der Kopf dreht sich wie damals.
 - Empfangskarte: die Messpunkte des Empfangs-Rundgangs als farbige Flecken auf dem Boden.
 - Trainingsbilder: der Simulator macht Bilder mit Person oder Tier bei Tag, Abend, Nacht, Regen, Nebel für die KI-Prüfung.
 
 NEU IN 3D-3.45
-3D-3.45: Tunnel zu Motion Watch – für einen PC oder eine virtuelle Maschine, deren Firewall Motion Watch nicht hereinlässt
-(keine Administratorrechte). Verbindung → «Tunnel zu Motion Watch»: Adresse des Pi und den Code von der Seite von Motion Watch
+3D-3.45: Tunnel zu MoveEye – für einen PC oder eine virtuelle Maschine, deren Firewall MoveEye nicht hereinlässt
+(keine Administratorrechte). Verbindung → «Tunnel zu MoveEye»: Adresse des Pi und den Code von der Seite von MoveEye
 (Simulator → «Simulator hinter einer Firewall») eintragen, «Tunnel verwenden» einschalten. Der Simulator verbindet sich dann
-selbst nach aussen zu Motion Watch (Port 8766); auch die KI-Rechenhilfe geht durch. Trainingsbilder ohne Absturz (Besucher
-bleiben für das Bild stehen). Disco-Licht von Motion Watch: die Lampe blitzt mit.
+selbst nach aussen zu MoveEye (Port 8766); auch die KI-Rechenhilfe geht durch. Trainingsbilder ohne Absturz (Besucher
+bleiben für das Bild stehen). Disco-Licht von MoveEye: die Lampe blitzt mit.
 
 NEU IN 3D-3.47
-3D-3.47: Das Feld «Tunnel zu Motion Watch» (unter Verbindung) war versteckt und ist jetzt zu sehen. Darunter steht das Ziel
-mit Port (Adresse:8766), zum Vergleichen mit der Seite von Motion Watch.
+3D-3.47: Das Feld «Tunnel zu MoveEye» (unter Verbindung) war versteckt und ist jetzt zu sehen. Darunter steht das Ziel
+mit Port (Adresse:8766), zum Vergleichen mit der Seite von MoveEye.
 
 NEU IN 3D-3.48
-3D-3.48: Testlauf für den Prüfstand von Motion Watch: wählbar, welche Kameras für die Wahrheit zählen (nur die Kopfkamera
+3D-3.48: Testlauf für den Prüfstand von MoveEye: wählbar, welche Kameras für die Wahrheit zählen (nur die Kopfkamera
 erkennt Personen), und im Bericht jeder Besucher mit seiner Grösse im Bild (nah / mittel / weit).
 
 NEU IN 3D-3.49
-3D-3.49: Prüfstand auf diesem PC: Werkzeuge → «Prüfstand: Erkennung messen». Wählen, welches Motion Watch gemessen wird
+3D-3.49: Prüfstand auf diesem PC: Werkzeuge → «Prüfstand: Erkennung messen». Wählen, welches MoveEye gemessen wird
 (das verbundene oder eine Datei webcam_bewegung_X.py einlesen), Testläufe ankreuzen, «Messung starten». Am Schluss erscheint
 das Ergebnis; mit «Ergebnis senden» geht es direkt auf GitHub (mit GitHub-Schlüssel) oder als Datei auf den Schreibtisch.
 
@@ -559,17 +559,17 @@ NEU IN 3D-3.51
 
 NEU IN 3D-3.52
 3D-3.52: Spiel – Treffer-Effekte, einzeln schaltbar (Spiel → Treffer): roter Laser vom Kamerakopf, Farbklecks, Blitz wie
-ein Radarfoto; das Handy zeigt Fadenkreuz, Klecks oder Blitz und vibriert. Bei «Team gegen Motion Watch» zielt der Jäger
-durch Antippen der Spieler im Livebild von Motion Watch (oder Knopf «Erwischt!»). Neu «Erkennung lernen»: Bilder von
-Spielern, die Motion Watch nicht gemeldet hat, Spielbericht (wie schnell gemeldet), unerkannte Schleichwege als Testlauf
+ein Radarfoto; das Handy zeigt Fadenkreuz, Klecks oder Blitz und vibriert. Bei «Team gegen MoveEye» zielt der Jäger
+durch Antippen der Spieler im Livebild von MoveEye (oder Knopf «Erwischt!»). Neu «Erkennung lernen»: Bilder von
+Spielern, die MoveEye nicht gemeldet hat, Spielbericht (wie schnell gemeldet), unerkannte Schleichwege als Testlauf
 (Prüfstand-Plan «Schleichwege aus dem Spiel»), Bonus für blinde Flecken. «Spielberichte senden» schickt alles an die
 Entwicklung (mit dem GitHub-Schlüssel des Prüfstands) oder legt die Datei auf den Schreibtisch.
 
 NEU IN 3D-3.53
-3D-3.53: Motion Watch (ab 2.95.75) sagt, wo es Personen sieht: das Spiel weiss jetzt, welcher Spieler gemeldet wurde, und
-merkt sich Fehlalarme mit Ort. Schwierigkeit gilt auch für Motion Watch: leicht (Easy-Mode: 2.5 s melden, Kriechen ist
+3D-3.53: MoveEye (ab 2.95.75) sagt, wo es Personen sieht: das Spiel weiss jetzt, welcher Spieler gemeldet wurde, und
+merkt sich Fehlalarme mit Ort. Schwierigkeit gilt auch für MoveEye: leicht (Easy-Mode: 2.5 s melden, Kriechen ist
 sicher, 6 s Pause, Kopf dreht langsamer), normal, schwer. Rangliste «Bester Schleicher der Woche» (am längsten sichtbar,
-aber nicht gemeldet). Die verpassten Bilder aus dem Spiel kann Motion Watch mit seiner KI prüfen (KI-Prüfung →
+aber nicht gemeldet). Die verpassten Bilder aus dem Spiel kann MoveEye mit seiner KI prüfen (KI-Prüfung →
 «verpasste Bilder aus dem Spiel»).
 
 NEU IN 3D-3.54
@@ -591,13 +591,13 @@ NEU IN 3D-3.57
 oder dem Steuerkreuz des Controllers.
 
 NEU IN 3D-3.58
-3D-3.58: Das Simulator-Fenster im Browser (Motion Watch → Simulator) ist schärfer: der Simulator liefert das Bild in
+3D-3.58: Das Simulator-Fenster im Browser (MoveEye → Simulator) ist schärfer: der Simulator liefert das Bild in
 der Grösse, die der Bildschirm braucht (Handy mit feinem Display bis etwa 1200 Pixel, Vollbild bis 2560), in der
-gewählten Qualität und als WebP (rund ein Drittel weniger Daten als JPEG). Ab Motion Watch 2.95.81.
+gewählten Qualität und als WebP (rund ein Drittel weniger Daten als JPEG). Ab MoveEye 2.95.81.
 
 NEU IN 3D-3.59
 3D-3.59: Game-Controller am Browser: Ein Controller (z. B. PS5), der am normalen PC oder am Handy gekoppelt ist, steuert
-den Rover über die Seite von Motion Watch (Simulator-Seite oder Simulator-Steuerung offen lassen). So geht es auch, wenn
+den Rover über die Seite von MoveEye (Simulator-Seite oder Simulator-Steuerung offen lassen). So geht es auch, wenn
 der Simulator in einer virtuellen Maschine läuft, die den Controller nicht sieht. Start = Erkunden ein / aus.
 
 NEU IN 3D-3.60
@@ -605,8 +605,12 @@ NEU IN 3D-3.60
 Mitspieler einladen (J oder Steuerkreuz →): QR-Code für die Handys, die Spieler bewegen sich frei (gehen, rennen, ducken,
 kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen der Erkennung. Beobachter (C oder Controller X):
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
-Motion Watch); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
+MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.79
+3D-3.79: Neuer Name: aus «Motion Watch» wird «MoveEye». Neues Logo (Sichtfeld, Auge unten, eine gehende Person in
+Erkennungs-Ecken – im Simulator läuft sie hin und her). Programmdateien, Ordner und Updates bleiben gleich.
 
 NEU IN 3D-3.78
 3D-3.78: Spiel-Assistent neu: übersichtlicher und animiert – Schritte als Punkte auf einer Linie (erledigte anklickbar),
@@ -625,14 +629,14 @@ Computer-Spieler (Bots, 0–3), Übungsrunde mit Erklärungen, Herzschlag (Handy
 (Karte mit allen Wegen, rot = gesehen; auf dem Handy und am PC mit R), Abzeichen (Unsichtbar, Blitz, Kriech-Profi, Retter,
 Sammler, Busch-Meister, Adlerauge), Tagesaufgabe (heute für alle dieselbe Szene, dasselbe Ziel, dieselben Startpunkte),
 Geisterläufer (der eigene beste Weg läuft als Geist mit – nur die Spieler sehen ihn).
-Werkzeugleiste: «Kopf steuern» – den Kopf von Motion Watch mit Pfeilen drehen, im Bild ziehen, Licht ein / aus
-(ab Motion Watch 2.95.103).
-Das kleine Kästchen (Fenster minimiert) ist kompakter: Version, Status, Bilder/s, CPU, Motion Watch mit Version.
+Werkzeugleiste: «Kopf steuern» – den Kopf von MoveEye mit Pfeilen drehen, im Bild ziehen, Licht ein / aus
+(ab MoveEye 2.95.103).
+Das kleine Kästchen (Fenster minimiert) ist kompakter: Version, Status, Bilder/s, CPU, MoveEye mit Version.
 
 NEU IN 3D-3.76
-3D-3.76: Patrouille / Überwachen: beim Start fragt der Simulator, was überwacht werden soll (Motion Watch selbst, Tür,
+3D-3.76: Patrouille / Überwachen: beim Start fragt der Simulator, was überwacht werden soll (MoveEye selbst, Tür,
 Velo, Zelt, Tisch, Kühlboxen, Grill oder ein Ort, den man anklickt) und wie weit die Runde ist (6, 10 oder 16 m). Der Mover
-plant die Strecke selbst um die Hindernisse herum, Motion Watch schaut beim Fahren immer wieder zum bewachten Ort.
+plant die Strecke selbst um die Hindernisse herum, MoveEye schaut beim Fahren immer wieder zum bewachten Ort.
 Die Uhrzeit der Szene bleibt nach einem Neustart oder Update eingestellt (die Uhr läuft in einer kurzen Pause weiter).
 Spiel auf dem Handy: Knopf 🚪 «Spiel verlassen» (mit Rückfrage), danach «Wieder mitspielen».
 Startpunkte im Spiel: die Kamera hinter der Figur steht nicht mehr in einem Baum; im Spiel rückt die Kamera näher, wenn
@@ -641,13 +645,13 @@ ein Baum oder eine Wand dazwischen ist.
 NEU IN 3D-3.75
 3D-3.75: «Überraschungsnacht» (Wetter): nachts passiert ab und zu etwas Unerwartetes – Stromausfall (alle Lampen aus),
 Nebelbank, Ablenkung (ein Tier auf der einen Seite, ein Schleicher auf der anderen), ein Auto blendet mit den Scheinwerfern,
-ein Tier steht minutenlang still vor der Kamera. Am Morgen gibt es die Bewertung von Motion Watch (ruhig geblieben? Mensch
+ein Tier steht minutenlang still vor der Kamera. Am Morgen gibt es die Bewertung von MoveEye (ruhig geblieben? Mensch
 erkannt?), gespeichert im Ordner «ueberraschung». Einzeln auslösen: Werkzeuge → Überraschung jetzt auslösen.
 Schwacher PC / virtuelle Maschine (Grafik): «Schärfe der Ansicht» (weniger = schneller), «Bilder pro Sekunde im Fenster»
-und «Automatisch leichter, wenn der PC zu langsam ist» – die Bilder für Motion Watch bleiben dabei unverändert.
-Tunnel stabiler: die Leitungen zu Motion Watch werden regelmässig erneuert (Router vergessen ruhige Verbindungen), nach
+und «Automatisch leichter, wenn der PC zu langsam ist» – die Bilder für MoveEye bleiben dabei unverändert.
+Tunnel stabiler: die Leitungen zu MoveEye werden regelmässig erneuert (Router vergessen ruhige Verbindungen), nach
 Fehlern wartet er etwas länger, hängende Leitungen werden geschlossen.
-Prüfstand: «Nach jedem Update von Motion Watch automatisch messen» – misst kurz, sobald eine neue Motion-Watch-Version
+Prüfstand: «Nach jedem Update von MoveEye automatisch messen» – misst kurz, sobald eine neue Motion-Watch-Version
 verbunden ist und 3 Minuten niemand den Simulator bedient; mit GitHub-Schlüssel wird das Ergebnis gleich gesendet.
 
 NEU IN 3D-3.74
@@ -664,25 +668,25 @@ NEU IN 3D-3.73
 3D-3.73: Neue Szene «Mein Zuhause (selbst gebaut)» mit Baukasten: Szene → «Mein Zuhause bauen». Ein Ding wählen (Haus,
 Gartenhaus, Garage, Zaun, Hecke, Mauer, Weg, Laubbaum, Tanne, Busch, Auto, Velo, Bank, Tisch, Grill, Trampolin, Blumenbeet,
 Laterne, Sandkasten, Planschbecken) und in die Welt klicken; Zaun, Hecke, Mauer und Weg mit zwei Klicks (Anfang, Ende). Ein
-gesetztes Ding anklicken: drehen, grösser / kleiner, weg; Rechtsklick = weg; rückgängig. Motion Watch steht in der Mitte.
+gesetztes Ding anklicken: drehen, grösser / kleiner, weg; Rechtsklick = weg; rückgängig. MoveEye steht in der Mitte.
 Gespeichert in zuhause.json.
 Trainingspaket für ein eigenes KI-Modell (Werkzeuge): 200 bis 2000 Bilder mit Rahmen im YOLO-Format, 18 Klassen (Menschen
 und Tiere), alle Szenen inkl. «Mein Zuhause», Tag, Dämmerung, Nacht mit Infrarot, Regen, Nebel, Schnee, auch geduckte und
 kriechende Personen und leere Bilder. Ein ZIP kommt auf den Schreibtisch. Nur Bilddaten, keine Kartendaten.
 
 NEU IN 3D-3.72
-3D-3.72: Werkzeuge: «Nacht-Test» (Motion Watch nimmt am Tag die Referenz auf, vergleicht in der Nacht mit Infrarot),
+3D-3.72: Werkzeuge: «Nacht-Test» (MoveEye nimmt am Tag die Referenz auf, vergleicht in der Nacht mit Infrarot),
 Testhilfen zum Wegnehmen / Zurückstellen von Velo, Zelt, Tisch, Kühlboxen und dem neuen Grill (Camping-Platz),
 Sabotage-Test für den Diebstahlschutz (Kamera abdecken, Kopf wegdrehen, alles normal). Im Aufstell-Planer:
 «Hierhin stellen + Referenz-Scan». Unter den Knöpfen steht, ob ein bewachter Gegenstand fehlt.
 
 NEU IN 3D-3.71
-3D-3.71: Werkzeuge → «Motion Watch: Referenz-Scan» und «Mit Referenz vergleichen»: Motion Watch (ab 2.95.97) fährt mit dem
+3D-3.71: Werkzeuge → «MoveEye: Referenz-Scan» und «Mit Referenz vergleichen»: MoveEye (ab 2.95.97) fährt mit dem
 Kopf alle Richtungen ab, speichert Referenz-Fotos bzw. vergleicht und schreibt einen Bericht (was fehlt, neu ist, sich
-verändert hat). Darunter steht der Stand von Motion Watch. «Testhilfe: Velo wegnehmen / zurückstellen» zum Ausprobieren.
+verändert hat). Darunter steht der Stand von MoveEye. «Testhilfe: Velo wegnehmen / zurückstellen» zum Ausprobieren.
 
 NEU IN 3D-3.70
-3D-3.70: Motion Watch kann mitspielen: ein Tipp ins Livebild ist ein Schuss / Auslöser an genau diese Stelle der Kopfkamera.
+3D-3.70: MoveEye kann mitspielen: ein Tipp ins Livebild ist ein Schuss / Auslöser an genau diese Stelle der Kopfkamera.
 Im Spiel wird der Spieler dort erwischt, sonst wird ein Mensch dort ertappt (läuft weg) oder ein Tier sieht Sterne.
 Daneben = Fehlalarm (wird gezählt).
 
@@ -698,10 +702,10 @@ alles eingeschaltet.
 NEU IN 3D-3.68
 3D-3.68: Nach einem Update verbindet sich der Simulator wieder von selbst: der alte Simulator schliesst seinen Port, bevor
 der neue startet (Windows gab ihn sonst an den neuen weiter – «Port 8765 is busy», nur ein Neustart half). Bleibt 8765
-trotzdem besetzt, sendet er nach 8 Sekunden auf 8775 (oder 8785, 8795); Motion Watch findet ihn dort von selbst, der Tunnel auch.
+trotzdem besetzt, sendet er nach 8 Sekunden auf 8775 (oder 8785, 8795); MoveEye findet ihn dort von selbst, der Tunnel auch.
 
 NEU IN 3D-3.67
-3D-3.67: Zeigt Motion Watch das Simulator-Fenster im Browser als Vollbild, blendet der Simulator dort seinen Mover-Stick aus
+3D-3.67: Zeigt MoveEye das Simulator-Fenster im Browser als Vollbild, blendet der Simulator dort seinen Mover-Stick aus
 (fahren geht weiter: Patrouille, Tastatur, Controller).
 
 NEU IN 3D-3.66
@@ -710,12 +714,12 @@ Rechtsklick löscht nur direkt auf einem Punkt. Solange man Punkte setzt, steht 
 «✓ Fertig (Esc)» – auch die Esc-Taste beendet das Setzen.
 
 NEU IN 3D-3.65
-3D-3.65: «An Motion Watch senden» bleibt so, wie es das letzte Mal war – auch nach einem Update. Ist der Port beim Start noch
+3D-3.65: «An MoveEye senden» bleibt so, wie es das letzte Mal war – auch nach einem Update. Ist der Port beim Start noch
 besetzt (der alte Simulator schliesst gerade), versucht es der Simulator bis zu 30 Sekunden lang weiter.
 
 NEU IN 3D-3.64
 3D-3.64: Pfosten, Nummern und Linien der Patrouillen-Route (und die Empfangskarte) sieht nur noch der Bediener in der
-freien Ansicht – die Kameras von Motion Watch sehen sie nicht mehr, die Erkennung wird nicht gestört.
+freien Ansicht – die Kameras von MoveEye sehen sie nicht mehr, die Erkennung wird nicht gestört.
 
 NEU IN 3D-3.63
 3D-3.63: Im orangen Symbol oben links bleibt das Auge stehen, nur die Pupille schaut nach links und rechts.
@@ -725,10 +729,10 @@ NEU IN 3D-3.62
 und rechts.
 
 NEU IN 3D-3.61
-3D-3.61: Patrouille: der Mover fährt Motion Watch eine Route ab (Punkte mit der Maus setzen, Rechtsklick = Punkt weg, oder
+3D-3.61: Patrouille: der Mover fährt MoveEye eine Route ab (Punkte mit der Maus setzen, Rechtsklick = Punkt weg, oder
 einen Bereich aufziehen: zufällige Punkte darin). Beim Fahren schwenkt der Kopf, an jedem Punkt hält der Mover an und
 schaut sich einmal ganz um; zuschaltbar dreht der Kopf zu Verdächtigem und der Mover fährt langsamer. Neue Spielart
 «Patrouille»: die Spieler schleichen, während die Patrouille fährt; wer erwischt, ist wählbar (echte Erkennung von
-Motion Watch oder der Wächter des Simulators). Neue Werkzeugleiste unten: alles mit der Maus (Erkunden, Patrouille,
+MoveEye oder der Wächter des Simulators). Neue Werkzeugleiste unten: alles mit der Maus (Erkunden, Patrouille,
 Punkte, Bereich, Zufall, Löschen, Kopf folgt, Versetzen, Stange, Ansicht, Beobachter, Mitspieler) und Anzeigen ein- und
 ausblenden (Route, Karte, Kameras, Info, Menü); mit ▾ einklappbar. Grün = eingeschaltet.

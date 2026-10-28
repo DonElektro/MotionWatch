@@ -159,8 +159,8 @@ MODES = [("camping", "⛺", "Camping guard"), ("fire", "🔥", "Campfire games")
 MODE_INFO = {
     "": "Your own settings, no mode.",
     "camping": "Full guard: alarms, recordings, own Wi-Fi, armed after the countdown. Power saving while all is quiet.",
-    "fire": "The game corner is open for the phones (in the Wi-Fi Motion Watch is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to the camping guard at the set time or when the battery gets low.",
-    "gamer": "Only with mains power: power mode, all games and the game collection, the best picture. The guard only if you want it. On battery Motion Watch goes back to the campfire games by itself.",
+    "fire": "The game corner is open for the phones (in the Wi-Fi MoveEye is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to the camping guard at the set time or when the battery gets low.",
+    "gamer": "Only with mains power: power mode, all games and the game collection, the best picture. The guard only if you want it. On battery MoveEye goes back to the campfire games by itself.",
     "home": "Guarding house and garden: alarms and recordings on, no own Wi-Fi, no camping profile.",
     "wild": "Animals: no siren, the light does not go on by itself (it would scare them), many pictures, the camera follows what moves.",
     "night": "The highest attention: more sensitive, thermal alarm, infrared light by itself, the pre-alarm too.",
@@ -262,7 +262,7 @@ def mode_set(m, who="web"):
         camping_set(True)
     elif m in ("fire", "gamer"):
         # 2.95.49: the Wi-Fi is NOT switched here - the own Wi-Fi would cut the phones off the network they are in (the
-        # page froze). The game corner works in the network Motion Watch is in; the own Wi-Fi is a switch of its own.
+        # page froze). The game corner works in the network MoveEye is in; the own Wi-Fi is a switch of its own.
         if not party_on():
             party_open(float(CFG["mode_fire_hours"]) if m == "fire" else 8.0); MODE_RT["party"] = True
         if m == "fire":

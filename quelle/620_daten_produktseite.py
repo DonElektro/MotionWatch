@@ -1,5 +1,5 @@
 #@ Motion Watch – Teil 620: Daten: Produktseite für Gäste (/info/). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
-# ---- the product page (2.95.52): the homepage of Motion Watch (made as an artifact), packed here (gzip + base64) so the Pi
+# ---- the product page (2.95.52): the homepage of MoveEye (made as an artifact), packed here (gzip + base64) so the Pi
 # can show it without internet to guests in the same Wi-Fi at /info/. Questions from the form arrive as a push message. ----
 INFO_HTML_GZ = (
     "H4sIAAAAAAAC/8S92Y7kSJcmdl9P4YpCjSrbI4L7FllVavq+7wvdG40Gd9K5OlenJxKYC2FuBUEQdDOAbv5nGEGDvlK9ST+BHkFmpLsHfYnMrH96oCpkhDtp"
@@ -2620,7 +2620,7 @@ def info_html():
 
 
 INFO_INJECT = r"""<script>
-// shown by Motion Watch itself (2.95.52): the form sends the question straight to the owner (push message)
+// shown by MoveEye itself (2.95.52): the form sends the question straight to the owner (push message)
 (function () {
   const M = __MAIL__, f = document.getElementById("ask"), note = document.getElementById("note");
   const T = {de: {go: "Senden", ok: "✓ Danke! Die Nachricht ist angekommen.", err: "Senden ging nicht - bitte später nochmals.", many: "Zu viele Nachrichten - bitte später nochmals."},

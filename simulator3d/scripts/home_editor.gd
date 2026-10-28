@@ -104,7 +104,7 @@ func _paint() -> void:
 	elif sel >= 0 and sel < main.home_items.size():
 		_info.text = "Gewählt: %s – drehen, grösser / kleiner oder weg. Ziehen bewegt weiterhin die Ansicht." % _name(str(main.home_items[sel].get("k", "")))
 	else:
-		_info.text = "Ein Ding wählen und in die Welt klicken, oder ein gesetztes Ding anklicken. Motion Watch steht in der Mitte (roter Punkt auf der Karte). %d Dinge." % main.home_items.size()
+		_info.text = "Ein Ding wählen und in die Welt klicken, oder ein gesetztes Ding anklicken. MoveEye steht in der Mitte (roter Punkt auf der Karte). %d Dinge." % main.home_items.size()
 	_mark()
 
 

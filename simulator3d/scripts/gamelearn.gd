@@ -1,9 +1,9 @@
 extends Node
-# 3D-3.52: the game teaches Motion Watch. While a round runs with Motion Watch connected, this compares what the head
-# camera really sees (the players, game.cam_sees) with what Motion Watch reports (main.mw_det.persons):
-#  - «verpasste Personen»: a player the hunter hit (or who was visible for a while) but Motion Watch did not report ->
+# 3D-3.52: the game teaches MoveEye. While a round runs with MoveEye connected, this compares what the head
+# camera really sees (the players, game.cam_sees) with what MoveEye reports (main.mw_det.persons):
+#  - «verpasste Personen»: a player the hunter hit (or who was visible for a while) but MoveEye did not report ->
 #    picture of the head camera + box of the player (training pictures of exactly the hard cases)
-#  - «Spielbericht»: every time a player is visible: how long until Motion Watch reported him (distance, posture, light)
+#  - «Spielbericht»: every time a player is visible: how long until MoveEye reported him (distance, posture, light)
 #  - «Schleichwege»: the way of a player who reached the goal without being reported -> a fixed test run for the bench
 #  - «blinde Flecken»: points for every second a player was visible but not reported
 # Everything is saved in user://spiel/ and can be sent with «Spielbericht senden» (GitHub key of the test bench, or the desktop).
@@ -25,8 +25,8 @@ var blind := {}                           # slot -> seconds visible but not repo
 var hunter := {"shots": 0, "hits": 0, "miss_mw": 0}
 var _path_t := 0.0
 var _last_report := -100.0
-var _rep_by := {}                         # 3D-3.53: slot -> last time Motion Watch reported exactly this player (its boxes)
-var mw_false: Array = []                  # boxes Motion Watch reported where no player was {"t", "box"}
+var _rep_by := {}                         # 3D-3.53: slot -> last time MoveEye reported exactly this player (its boxes)
+var mw_false: Array = []                  # boxes MoveEye reported where no player was {"t", "box"}
 var _false_t := 0.0
 var info := ""
 var http: HTTPRequest
@@ -70,7 +70,7 @@ func tick(dt: float) -> void:
 	if int(main.mw_det.get("persons", 0)) > 0:
 		_last_report = t
 	var mwb: Array = mw_boxes()
-	if not mwb.is_empty():                                # 3D-3.53: which player is meant (Motion Watch 2.95.75 sends boxes)
+	if not mwb.is_empty():                                # 3D-3.53: which player is meant (MoveEye 2.95.75 sends boxes)
 		var used := {}
 		for p in game.players:
 			if p == null or p["role"] != "runner" or p["state"] != "play":
@@ -183,7 +183,7 @@ func reported_recently(p = null) -> bool:
 
 
 func has_boxes() -> bool:
-	"""Motion Watch 2.95.75 or newer: it sends where the persons are"""
+	"""MoveEye 2.95.75 or newer: it sends where the persons are"""
 	return main.mw_det.has("boxes")
 
 
@@ -211,7 +211,7 @@ func overlap(a: Array, b: Array) -> bool:
 
 
 func reported_for(p: Dictionary) -> bool:
-	"""did Motion Watch report this player just now? With boxes exactly him, otherwise any person"""
+	"""did MoveEye report this player just now? With boxes exactly him, otherwise any person"""
 	if has_boxes():
 		return now() - float(_rep_by.get(int(p["slot"]), -100.0)) < REPORT_GRACE
 	return now() - _last_report < REPORT_GRACE
@@ -265,7 +265,7 @@ func _save_pic(rec: Dictionary) -> void:
 
 
 func bonus(p: Dictionary) -> int:
-	"""points for the blind spots of Motion Watch: 20 per second visible but not reported (at most 600)"""
+	"""points for the blind spots of MoveEye: 20 per second visible but not reported (at most 600)"""
 	if not main.game_blind_bonus:
 		return 0
 	return min(600, int(float(blind.get(int(p["slot"]), 0.0)) * 20.0))
@@ -354,7 +354,7 @@ func send() -> String:
 	var base := "user://spiel"
 	var d := DirAccess.open(base)
 	if d == null:
-		return "Noch kein Spielbericht – zuerst eine Runde mit Motion Watch spielen."
+		return "Noch kein Spielbericht – zuerst eine Runde mit MoveEye spielen."
 	var rounds: Array = []
 	for r in d.get_directories():
 		if not FileAccess.file_exists(base + "/" + r + "/.gesendet"):

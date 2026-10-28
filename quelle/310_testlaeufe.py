@@ -1,7 +1,7 @@
 #@ Motion Watch – Teil 310: Testläufe mit Auswertung und Optimierung. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ---- test runs with evaluation and optimization (2.95.22) ----------------------------------------------------------
 # The 3D simulator (from 3D-3.27) plays a fixed test (the same visitors on the same ways every time) and knows the truth.
-# Motion Watch starts it, fetches the report, judges it (score) and proposes changes of its own settings. They can be
+# MoveEye starts it, fetches the report, judges it (score) and proposes changes of its own settings. They can be
 # taken over one by one or all at once (with «undo»), and the automatic optimization tries them out one after the
 # other: a change stays only if the next test run is really better.
 OPT_KEYS = ["sensitivity", "min_area", "ai_conf", "ai_every", "ai_require", "wind_auto", "wind_threshold", "wind_boost_max",
@@ -229,7 +229,7 @@ def opt_suggest(rep):
     # ---- reaction time ----
     if lat > 2.0:
         add("speed", "React faster",
-            "Motion Watch needed {n} s on average: the AI looks at every picture and walking is recognised sooner.",
+            "MoveEye needed {n} s on average: the AI looks at every picture and walking is recognised sooner.",
             [("ai_every", 1), ("walk_frames", C["walk_frames"] - 1)], 20 + int(6 * (lat - 2.0)), round(lat, 1))
     # ---- conflicts: what makes it less sensitive does not go together with what makes it more sensitive ----
     ids = {x["id"] for x in out}
@@ -272,7 +272,7 @@ def _testopt_dir(run_id=None):
 
 
 def _testopt_frames(stop, frames, t0):
-    """during a test run: every 1.5 s a small picture of what Motion Watch sees (with its marks) - for the report"""
+    """during a test run: every 1.5 s a small picture of what MoveEye sees (with its marks) - for the report"""
     while not stop.is_set():
         w = WATCH_REF.get("w")
         f = getattr(w, "frame_out", None) if w is not None else None
@@ -288,7 +288,7 @@ def _testopt_frames(stop, frames, t0):
 
 
 def _testopt_pics(run, frames):
-    """the moments of the false alarms and of the missed persons: Motion Watch's own picture of that moment"""
+    """the moments of the false alarms and of the missed persons: MoveEye's own picture of that moment"""
     rep_ = run["report"]; out = []
     want = [("false", f) for f in rep_.get("false_list", [])] + [("missed", m) for m in rep_.get("missed_list", [])]
     if not want or not frames:
@@ -414,7 +414,7 @@ def _testopt_thread(kind, plan, tries=4):
 
 
 def testopt_compare():
-    """the last run against the last run of the same test with another Motion Watch version: what got better / worse"""
+    """the last run against the last run of the same test with another MoveEye version: what got better / worse"""
     runs = TESTOPT["runs"]
     if not runs:
         return None

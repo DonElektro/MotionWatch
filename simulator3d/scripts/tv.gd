@@ -3,7 +3,7 @@ extends Control
 ## The whole window shows the 3D world (the director of the spectators chooses the shots during a round, otherwise the camera
 ## glides slowly round the camp); on the right a panel with the game: the wizard while it is set up, the QR code to join, the
 ## countdown / time left, the players with their state, what happened and the ranking. All other buttons are hidden.
-## Switched with the key T, from the panel (System), or from Motion Watch (CONTROL action "tv").
+## Switched with the key T, from the panel (System), or from MoveEye (CONTROL action "tv").
 
 const UI = preload("res://scripts/ui_style.gd")
 const Qr = preload("res://scripts/qr.gd")
@@ -11,7 +11,7 @@ const Pics = preload("res://scripts/wizpics.gd")
 
 var main
 var on := false
-var info_url := ""            # the product page of Motion Watch (/info/) - shown when nothing is going on
+var info_url := ""            # the product page of MoveEye (/info/) - shown when nothing is going on
 var _was_full := false
 var _t := 0.0
 var _qr_for := ""
@@ -45,7 +45,7 @@ func _ready() -> void:
 	th.add_theme_constant_override("separation", 22)
 	topbar.add_child(th)
 	title = Label.new()
-	title.text = "Motion Watch"
+	title.text = "MoveEye"
 	title.add_theme_font_override("font", UI.heading_font())
 	title.add_theme_font_size_override("font_size", 30)
 	th.add_child(title)
@@ -306,9 +306,9 @@ func _paint_idle() -> void:
 	pics.visible = false
 	state_l.text = main.status_text() if main.has_method("status_text") else ""
 	big.text = "Gerade ist nichts los"
-	sub.text = "Motion Watch hält Wache. Ein Spiel startet man im Spiel-Assistenten – auf der Seite von Motion Watch oder im Simulator."
+	sub.text = "MoveEye hält Wache. Ein Spiel startet man im Spiel-Assistenten – auf der Seite von MoveEye oder im Simulator."
 	if info_url != "":
-		_set_qr(info_url, "Mehr über Motion Watch:\nQR-Code scannen\n" + info_url)
+		_set_qr(info_url, "Mehr über MoveEye:\nQR-Code scannen\n" + info_url)
 	else:
 		_set_qr("", "")
 	_players([])

@@ -1,7 +1,7 @@
 extends Node
 ## Recording and replay (3D-3.27): an interesting situation (who walked where, how, at which time of day, in which
 ## weather) is recorded and can be played again exactly the same, as often as wanted - good to compare settings of
-## Motion Watch. The visitors of the replay are puppets: they walk the recorded ways, the same figures (same colours).
+## MoveEye. The visitors of the replay are puppets: they walk the recorded ways, the same figures (same colours).
 ## Files: user://aufnahmen/*.json (at most 12, at most 5 minutes each).
 
 var main

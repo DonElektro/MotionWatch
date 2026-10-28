@@ -76,7 +76,7 @@ def pca_present(addr, bus=1):
 
 
 # ----------------------------------------------------------------------------
-# Mover (from 2.94.0): an optional tracked vehicle under Motion Watch - forward, back, turn on the spot with a second stick.
+# Mover (from 2.94.0): an optional tracked vehicle under MoveEye - forward, back, turn on the spot with a second stick.
 #   Motor driver: a «Motor HAT» with a PCA9685 and two TB6612 motor bridges on I2C (Adafruit DC & Stepper Motor HAT, default
 #   0x60, or the Waveshare Motor Driver HAT). Found by itself (setting «automatic»); not found = no second stick anywhere.
 #   In the simulation the 3D simulator says whether it has a mover («Mover simulieren»); the tracks are driven there.

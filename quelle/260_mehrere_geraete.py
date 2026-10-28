@@ -1,6 +1,6 @@
 #@ Motion Watch – Teil 260: mehrere Motion-Watch-Geräte. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
-# Several devices: one Motion Watch shows the others (Cameras page): picture, armed / alarm, battery, last event; arm or
+# Several devices: one MoveEye shows the others (Cameras page): picture, armed / alarm, battery, last event; arm or
 #   disarm one or all. The other devices are reached over the network (home network or Tailscale) with their own password.
 #   Passwords are only ever sent to the address of that device.
 # ----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ def fleet_hello():
     """Small status of this device for the overview of another one."""
     imp = [e for e in STATE["events"] if e.get("imp")][:1]
     b = STATE.get("battery") or {}
-    return {"app": "Motion Watch", "uid": device_uid(), "name": CFG["device_name"] or "Motion Watch", "version": APP_VERSION, "arm": STATE["arm_state"],
+    return {"app": "Motion Watch", "uid": device_uid(), "name": CFG["device_name"] or "MoveEye", "version": APP_VERSION, "arm": STATE["arm_state"],
             "persons": STATE["persons"], "recording": bool(STATE.get("recording")), "fps": STATE.get("fps"),
             "battery": b.get("pct"), "mains": (not b.get("on_battery")) if b.get("src") == "ups" else None,
             "temp": STATE.get("cpu_temp"), "last": (imp[0].get("t", "")[:5] + " " + imp[0].get("text", ""))[:120] if imp else "",
@@ -100,7 +100,7 @@ def fleet_add(url, name="", pw=""):
 
 
 def fleet_scan():
-    """Look for other Motion Watch devices: own network (x.y.z.1-254, same port) + Tailscale devices."""
+    """Look for other MoveEye devices: own network (x.y.z.1-254, same port) + Tailscale devices."""
     from concurrent.futures import ThreadPoolExecutor
     ips = set()
     ip = wifi_ip()
@@ -123,9 +123,9 @@ def fleet_scan():
         try:
             raw, _ = _fleet_req({"url": url}, "/api/fleet_state", timeout=0.8)
             j = json.loads(raw.decode())
-            return {"url": url, "name": j.get("name", ""), "needs_pw": False, "uid": j.get("uid", "")} if j.get("app") == "Motion Watch" else None
+            return {"url": url, "name": j.get("name", ""), "needs_pw": False, "uid": j.get("uid", "")} if j.get("app") in ("Motion Watch", "MoveEye") else None
         except urllib.error.HTTPError as e:
-            if e.code == 401 and "Motion Watch" in str(e.headers.get("WWW-Authenticate", "")):
+            if e.code == 401 and ("Motion Watch" in str(e.headers.get("WWW-Authenticate", "")) or "MoveEye" in str(e.headers.get("WWW-Authenticate", ""))):
                 return {"url": url, "name": "", "needs_pw": True}
         except Exception:
             pass

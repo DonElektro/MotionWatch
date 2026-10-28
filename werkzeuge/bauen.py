@@ -70,7 +70,7 @@ def neue_version(text_aenderung, ziel=""):
     for name in teile():                                       # the number at every place (title, build, help, file name)
         t = lesen(name)
         t2 = (t.replace(alt.replace(".", "_"), neu.replace(".", "_")).replace('APP_VERSION = "%s"' % alt, 'APP_VERSION = "%s"' % neu)
-              .replace("Motion Watch %s" % alt, "Motion Watch %s" % neu).replace("{tr('Build')} %s ·" % alt, "{tr('Build')} %s ·" % neu))
+              .replace("Motion Watch %s" % alt, "Motion Watch %s" % neu).replace("MoveEye %s" % alt, "MoveEye %s" % neu).replace("{tr('Build')} %s ·" % alt, "{tr('Build')} %s ·" % neu))
         if name.startswith("300_"):                            # the 3D simulator that belongs to this version
             try:
                 d = json.load(open(os.path.join(REPO, "simulator3d", "version.json")))

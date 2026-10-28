@@ -14,21 +14,21 @@ var _hint: HBoxContainer               # 3D-3.66: while setting points / the are
 var _hint_l: Label
 
 const ROW1 := [["explore", "Erkunden", "Mit dem Rover herumfahren (Tastatur, Maus, Touch, Controller)"],
-		["patrol", "Patrouille", "Der Mover fährt Motion Watch die Route ab, Motion Watch passt die ganze Zeit auf"],
+		["patrol", "Patrouille", "Der Mover fährt MoveEye die Route ab, MoveEye passt die ganze Zeit auf"],
 		["points", "Punkte", "Route setzen: in die Welt klicken = Punkt, Rechtsklick auf einen Punkt = weg"],
 		["area", "Bereich", "Bereich aufziehen: der Mover fährt zufällige Punkte darin ab"],
-		["random", "Zufall", "Zufällige Route rund um Motion Watch"],
+		["random", "Zufall", "Zufällige Route rund um MoveEye"],
 		["clear", "Löschen", "Route und Bereich löschen"],
 		["follow", "Kopf folgt", "Der Kopf dreht zu Verdächtigem, der Mover fährt dann langsamer"],
 		["place", "Versetzen", "Rover versetzen: danach in die Welt klicken"],
-		["head", "Kopf steuern", "Den Kopf von Motion Watch mit Pfeilen drehen, Licht ein / aus"],
+		["head", "Kopf steuern", "Den Kopf von MoveEye mit Pfeilen drehen, Licht ein / aus"],
 		["mast_dn", "Stange −", "Kamerakopf tiefer"], ["mast_up", "Stange +", "Kamerakopf höher"]]
 const ROW2 := [["view", "Ansicht", "Hinterher, Fahrersicht, von oben"],
 		["spectate", "Beobachter", "Wechselnde Kamera-Einstellungen von Rover und Spielern"],
 		["invite", "Mitspieler", "QR-Code: Mitspieler mit dem Handy, frei bewegen"],
 		["route", "Route", "Route und Bereich anzeigen"],
 		["map", "Karte", "Kleine Karte oben links"],
-		["cams", "Kameras", "Kamerabilder (was Motion Watch sieht)"],
+		["cams", "Kameras", "Kamerabilder (was MoveEye sieht)"],
 		["info", "Info", "Anzeige oben (Steuerung, Tempo, Stange)"],
 		["panel", "Menü", "Bedienfeld rechts"]]
 

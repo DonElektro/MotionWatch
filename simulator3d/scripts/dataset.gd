@@ -1,7 +1,7 @@
 extends Node
 ## Trainingsbilder (3D-3.44): the simulator makes pictures of the head camera with a person or an animal in it - by day, at
 ## dusk, at night with infrared, in rain and fog, near and far - and knows for each picture where the visitor really is
-## (the box in the picture). Motion Watch fetches them (/dataset.json, /dataset/<i>.jpg) and checks how well its AI finds
+## (the box in the picture). MoveEye fetches them (/dataset.json, /dataset/<i>.jpg) and checks how well its AI finds
 ## them; it can also pack them as training pictures. CONTROL action "dataset": {"op": "start", "n": 40} / "get" / "stop".
 
 const CONDS := [["Tag", 11.0, "clear"], ["Abend", 19.6, "clear"], ["Nacht (Infrarot)", 23.5, "clear"], ["Regen", 14.0, "rain"],
@@ -30,7 +30,7 @@ func start(n: int, conds := []) -> Dictionary:
 
 
 func load_game() -> Dictionary:
-	"""3D-3.53: the «missed» pictures of the game (players Motion Watch did not report) as the test pictures: the hard cases"""
+	"""3D-3.53: the «missed» pictures of the game (players MoveEye did not report) as the test pictures: the hard cases"""
 	if busy:
 		return state()
 	items = []

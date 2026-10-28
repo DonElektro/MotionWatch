@@ -1,5 +1,5 @@
 extends PanelContainer
-## Phone / tablet simulator inside the simulator: the real web page of Motion Watch, as on a phone or a tablet, upright or
+## Phone / tablet simulator inside the simulator: the real web page of MoveEye, as on a phone or a tablet, upright or
 ## across, full screen or not - and it can be operated with the mouse (touch) and the keyboard.
 ## How: an invisible Edge / Chrome (on every Windows PC) renders the page with the size of the device; its pictures come
 ## over the DevTools connection (screencast) and the mouse / keys go back as touches (Chrome DevTools Protocol).
@@ -72,7 +72,7 @@ func _ready() -> void:
 	msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(msg)
 	local_btn = Button.new()
-	local_btn.text = "Ohne Pi: Motion Watch auf diesem PC starten"
+	local_btn.text = "Ohne Pi: MoveEye auf diesem PC starten"
 	local_btn.pressed.connect(func(): main.mwpc.start())
 	v.add_child(local_btn)
 	frame = PanelContainer.new()
@@ -310,7 +310,7 @@ func _process(_dt: float) -> void:
 				else:
 					tex.update(img)
 		elif d.get("method", "") == "Page.loadEventFired":
-			msg.text = "Motion Watch als %s · %s%s" % ["Handy" if device == "phone" else "Tablet", "Querformat" if landscape else "Hochformat", " · Vollbild" if fullscreen else ""]
+			msg.text = "MoveEye als %s · %s%s" % ["Handy" if device == "phone" else "Tablet", "Querformat" if landscape else "Hochformat", " · Vollbild" if fullscreen else ""]
 
 
 func _size() -> Vector2i:
@@ -332,7 +332,7 @@ func _apply_device() -> void:
 func _navigate() -> void:
 	var a := addr.text.strip_edges().rstrip("/")
 	if a == "":
-		msg.text = "Motion Watch ist noch nicht verbunden: Simulation in Motion Watch einschalten, die Adresse eintragen – oder ohne Pi: Motion Watch auf diesem PC starten."
+		msg.text = "MoveEye ist noch nicht verbunden: Simulation in MoveEye einschalten, die Adresse eintragen – oder ohne Pi: MoveEye auf diesem PC starten."
 		return
 	if not a.begins_with("http"):
 		a = "http://" + a
@@ -341,7 +341,7 @@ func _navigate() -> void:
 
 
 func on_mwpc(st: String, u: String, info: String) -> void:
-	"""Motion Watch on this PC (main.mwpc): show its page as soon as it runs"""
+	"""MoveEye on this PC (main.mwpc): show its page as soon as it runs"""
 	local_btn.visible = st == "off" or st == "error"
 	local_btn.disabled = false
 	if st == "busy" or st == "error":
@@ -377,7 +377,7 @@ func _on_btn(k: String) -> void:
 
 func _paint() -> void:
 	if connected:
-		msg.text = "Motion Watch als %s · %s%s" % ["Handy" if device == "phone" else "Tablet", "Querformat" if landscape else "Hochformat", " · Vollbild" if fullscreen else ""]
+		msg.text = "MoveEye als %s · %s%s" % ["Handy" if device == "phone" else "Tablet", "Querformat" if landscape else "Hochformat", " · Vollbild" if fullscreen else ""]
 	btns["phone"].set_pressed_no_signal(device == "phone")
 	btns["tablet"].set_pressed_no_signal(device == "tablet")
 	btns["portrait"].set_pressed_no_signal(not landscape)

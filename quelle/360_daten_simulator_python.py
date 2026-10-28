@@ -688,7 +688,7 @@ def sim_install():
             f.write(base64.b64decode("".join(SIM_ICONS_PNG["simbasis"])))      # MW Sim · Basis: the radar eye with the grey badge
     except Exception:
         pass
-    entry = ("[Desktop Entry]\nType=Application\nName=MW Sim · Basis\nComment=Test Motion Watch without hardware\n"
+    entry = ("[Desktop Entry]\nType=Application\nName=MW Sim · Basis\nComment=Test MoveEye without hardware\n"
              f"Exec={sys.executable} {os.path.join(d, 'motionwatch_simulator.py')}\nPath={d}\nIcon={icon}\nTerminal=false\nCategories=Utility;\n")
     uid, gid, home, name = _desktop_user()
     made = []

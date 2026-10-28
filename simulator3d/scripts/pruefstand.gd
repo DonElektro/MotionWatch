@@ -1,8 +1,8 @@
 extends PanelContainer
-## Prüfstand auf diesem PC (3D-3.49): misst die Erkennung von Motion Watch mit den festen Testläufen (testrun.gd), hier auf
+## Prüfstand auf diesem PC (3D-3.49): misst die Erkennung von MoveEye mit den festen Testläufen (testrun.gd), hier auf
 ## einem echten PC mit Grafikkarte – realistische Bildraten statt der 1–3 Bilder/s ohne Grafikkarte. Von Hand ausgelöst:
-##   1. Motion Watch wählen: das gerade verbundene (Pi oder PC) – oder eine Datei webcam_bewegung_X.py einlesen, die dann als
-##      «Motion Watch auf diesem PC» startet
+##   1. MoveEye wählen: das gerade verbundene (Pi oder PC) – oder eine Datei webcam_bewegung_X.py einlesen, die dann als
+##      «MoveEye auf diesem PC» startet
 ##   2. Testläufe und Wiederholungen wählen, starten
 ##   3. am Schluss erscheint das Ergebnis; «Senden» legt es ins GitHub-Repository (pruefstand/ergebnisse/, mit einem
 ##      GitHub-Schlüssel) oder auf den Schreibtisch.
@@ -39,7 +39,7 @@ var result := {}
 var result_path := ""
 var _wait_mw := 0.0
 var http: HTTPRequest
-# 3D-3.75: automatically after every update of Motion Watch: when the connected Motion Watch has a new version and nobody
+# 3D-3.75: automatically after every update of MoveEye: when the connected MoveEye has a new version and nobody
 # uses the simulator (no click for 3 minutes, no game, no test run), the short test runs once; the result is sent when a
 # GitHub key is there, else it stays in the folder (and on the list of results here).
 var auto_cb: CheckBox
@@ -78,15 +78,15 @@ func _ready() -> void:
 	x.text = "Schliessen"
 	x.pressed.connect(func(): open(false))
 	hd.add_child(x)
-	var lead := UI.small("Feste Testläufe: immer dieselben Besucher auf denselben Wegen. Der Simulator weiss, wer für die Kopfkamera gut sichtbar war, und vergleicht das mit den Meldungen von Motion Watch. Auf diesem PC (mit Grafikkarte) sind die Zahlen realistischer als auf GitHub.")
+	var lead := UI.small("Feste Testläufe: immer dieselben Besucher auf denselben Wegen. Der Simulator weiss, wer für die Kopfkamera gut sichtbar war, und vergleicht das mit den Meldungen von MoveEye. Auf diesem PC (mit Grafikkarte) sind die Zahlen realistischer als auf GitHub.")
 	lead.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(lead)
 	setup_box = VBoxContainer.new()
 	setup_box.add_theme_constant_override("separation", 8)
 	v.add_child(setup_box)
-	setup_box.add_child(UI.small("1. Welches Motion Watch wird gemessen?", UI.TXT))
+	setup_box.add_child(UI.small("1. Welches MoveEye wird gemessen?", UI.TXT))
 	src_seg = OptionButton.new()
-	src_seg.add_item("Das gerade verbundene (Pi oder Motion Watch auf diesem PC)", 0)
+	src_seg.add_item("Das gerade verbundene (Pi oder MoveEye auf diesem PC)", 0)
 	src_seg.add_item("Eine Datei einlesen und hier auf diesem PC starten", 1)
 	src_seg.item_selected.connect(func(_i): _paint())
 	setup_box.add_child(src_seg)
@@ -100,7 +100,7 @@ func _ready() -> void:
 	file_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	file_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	fr.add_child(file_lbl)
-	var warn := UI.small("Während der Messung darf nur EIN Motion Watch mit diesem Simulator verbunden sein (z. B. beim Pi die Simulation ausschalten, wenn eine Datei hier gemessen wird).")
+	var warn := UI.small("Während der Messung darf nur EIN MoveEye mit diesem Simulator verbunden sein (z. B. beim Pi die Simulation ausschalten, wenn eine Datei hier gemessen wird).")
 	warn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	setup_box.add_child(warn)
 	setup_box.add_child(UI.small("2. Welche Testläufe?", UI.TXT))
@@ -133,7 +133,7 @@ func _ready() -> void:
 	token_le.text_changed.connect(func(s): _save_token(s.strip_edges()))
 	tk.add_child(token_le)
 	auto_cb = CheckBox.new()
-	auto_cb.text = "Nach jedem Update von Motion Watch automatisch messen (Kurz, 1×, wenn 3 Minuten niemand den Simulator bedient; mit Schlüssel wird das Ergebnis gesendet)"
+	auto_cb.text = "Nach jedem Update von MoveEye automatisch messen (Kurz, 1×, wenn 3 Minuten niemand den Simulator bedient; mit Schlüssel wird das Ergebnis gesendet)"
 	auto_cb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	auto = bool(_auto_data().get("on", false))
 	auto_cb.button_pressed = auto
@@ -216,7 +216,7 @@ func _input(ev: InputEvent) -> void:
 
 
 func _auto_tick(now: float) -> void:
-	"""a new version of Motion Watch is connected: measure once when the simulator is quiet"""
+	"""a new version of MoveEye is connected: measure once when the simulator is quiet"""
 	if not auto or running or now - main.mw_t > 3.0:
 		_ver_seen = ""
 		return
@@ -225,7 +225,7 @@ func _auto_tick(now: float) -> void:
 		return
 	if ver != _ver_seen:
 		_ver_seen = ver
-		_ver_t = now                                     # Motion Watch just came back after its update: let it settle
+		_ver_t = now                                     # MoveEye just came back after its update: let it settle
 		return
 	var busy: bool = (main.game != null and main.game.busy()) or main.testrun.running or (main.surprise != null and not main.surprise.cur.is_empty())
 	if busy or now - _ver_t < 90.0 or now - _touch_t < 180.0:
@@ -265,8 +265,8 @@ func _pick_file() -> void:
 	d.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	d.access = FileDialog.ACCESS_FILESYSTEM
 	d.use_native_dialog = true
-	d.filters = PackedStringArray(["webcam_bewegung_*.py ; Motion Watch", "*.py ; Python"])
-	d.title = "Motion Watch für den Prüfstand wählen"
+	d.filters = PackedStringArray(["webcam_bewegung_*.py ; MoveEye", "*.py ; Python"])
+	d.title = "MoveEye für den Prüfstand wählen"
 	d.file_selected.connect(func(p):
 		mw_file = p
 		src_seg.select(1)
@@ -286,14 +286,14 @@ func _paint() -> void:
 	setup_box.modulate.a = 0.5 if running else 1.0
 	if not running and info.text == "":
 		var con: bool = main.now() - main.mw_t < 3.0
-		info.text = ("Verbunden: %s" % str(main.mw.get("device", "Motion Watch"))) if con else "Noch kein Motion Watch verbunden."
+		info.text = ("Verbunden: %s" % str(main.mw.get("device", "MoveEye"))) if con else "Noch kein MoveEye verbunden."
 
 
 func start(plans_: Array = [], reps_ := 0) -> void:
 	if running:
 		return
 	queue = []
-	if not plans_.is_empty():                            # 3D-3.75: the automatic run (the connected Motion Watch)
+	if not plans_.is_empty():                            # 3D-3.75: the automatic run (the connected MoveEye)
 		for p_ in plans_:
 			for i in range(max(1, reps_)):
 				queue.append(p_)
@@ -310,7 +310,7 @@ func start(plans_: Array = [], reps_ := 0) -> void:
 		if mw_file == "" or not FileAccess.file_exists(mw_file):
 			info.text = "Bitte zuerst die Datei wählen (webcam_bewegung_X.py)."
 			return
-		# Motion Watch on this PC with exactly this file (stopped first if it runs with another one)
+		# MoveEye on this PC with exactly this file (stopped first if it runs with another one)
 		main.mwpc.override_file = mw_file
 		if main.mwpc.state == "running":
 			main.mwpc.stop()
@@ -322,7 +322,7 @@ func start(plans_: Array = [], reps_ := 0) -> void:
 	t_all = main.now()
 	_wait_mw = main.now()
 	current = ""
-	info.text = "Warte auf Motion Watch …"
+	info.text = "Warte auf MoveEye …"
 	_paint()
 
 
@@ -347,17 +347,17 @@ func _process(_dt: float) -> void:
 	var con: bool = now - main.mw_t < 3.0
 	var file_mode: bool = src_seg.selected == 1 and not auto_run
 	if current == "":
-		if not con:                                       # Motion Watch not (yet) connected
+		if not con:                                       # MoveEye not (yet) connected
 			var waited := now - _wait_mw
-			info.text = "Warte auf Motion Watch … %d s%s" % [int(waited), (" · " + main.mwpc.text) if file_mode else ""]
+			info.text = "Warte auf MoveEye … %d s%s" % [int(waited), (" · " + main.mwpc.text) if file_mode else ""]
 			if waited > (900.0 if file_mode else 120.0):   # the first start on this PC loads Python (minutes)
-				stop("abgebrochen: Motion Watch hat sich nicht verbunden")
+				stop("abgebrochen: MoveEye hat sich nicht verbunden")
 			return
 		if queue.is_empty():
 			_finish()
 			return
 		if now - _wait_mw < 20.0 and done.is_empty():
-			info.text = "Motion Watch verbunden – %d s eingewöhnen …" % int(20.0 - (now - _wait_mw))
+			info.text = "MoveEye verbunden – %d s eingewöhnen …" % int(20.0 - (now - _wait_mw))
 			return
 		current = queue.pop_front()
 		var err: String = main.testrun.start(current, [0])
@@ -434,12 +434,12 @@ func _finish() -> void:
 		td += D
 		fa += F
 		lines.append("%s ×%d: Personen %d von %d erkannt (%d %%), Fehlalarme %d" % [_name(p), (plans[p] as Array).size(), D, P, int(round(100.0 * D / max(1, P))), F])
-	result_lbl.text = "Motion Watch %s · %s\n\nInsgesamt: Personen %d von %d erkannt (%d %%), Fehlalarme %d · Dauer %d Min.\n\n%s" % [
+	result_lbl.text = "MoveEye %s · %s\n\nInsgesamt: Personen %d von %d erkannt (%d %%), Fehlalarme %d · Dauer %d Min.\n\n%s" % [
 			result["mw_version"], result["rechner"], td, tp, int(round(100.0 * td / max(1, tp))), fa, int((main.now() - t_all) / 60.0), "\n".join(PackedStringArray(lines))]
 	result_box.visible = true
 	send_lbl.text = "Gespeichert: " + ProjectSettings.globalize_path(result_path)
-	info.text = "Fertig." + (" (automatisch nach dem Update von Motion Watch)" if auto_run else "")
-	main.start_info = "Prüfstand fertig: Motion Watch %s – Personen %d von %d, Fehlalarme %d" % [result["mw_version"], td, tp, fa]
+	info.text = "Fertig." + (" (automatisch nach dem Update von MoveEye)" if auto_run else "")
+	main.start_info = "Prüfstand fertig: MoveEye %s – Personen %d von %d, Fehlalarme %d" % [result["mw_version"], td, tp, fa]
 	if auto_run:
 		if token_le.text.strip_edges() != "":
 			send()                                       # with a key: straight to GitHub

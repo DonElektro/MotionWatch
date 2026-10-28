@@ -1,7 +1,7 @@
 #@ Motion Watch – Teil 290: Verbindung zum Simulator. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Simulator connection: a separate program (motionwatch_simulator.py, protocol in motionwatch_sim_interface.py) simulates two
-#   cameras, a thermal camera, day / night, weather and sensors. One switch: the sources change to the simulator, Motion Watch
+#   cameras, a thermal camera, day / night, weather and sensors. One switch: the sources change to the simulator, MoveEye
 #   sends what it does (servos, lights, relays, sound, armed) about 10 x per second and takes the world from the answer.
 # ----------------------------------------------------------------------------
 SIM = {"mover": False, "t": 0.0, "ok": False, "msg": "off", "dark": False, "ambient": 15.0, "pressure": 1013.0, "wind": 0.0, "last_event": 0,
@@ -76,7 +76,7 @@ def sim_state():
     pl, tl = min(float(CFG["pan_limit"]), hp), min(float(CFG["tilt_limit"]), ht)
     L = STATE.get("lights") or {}
     rs = STATE.get("relay_states") or []
-    return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "Motion Watch", "armed": is_armed(), "picture_mode": CFG["picture_mode"],
+    return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "MoveEye", "armed": is_armed(), "picture_mode": CFG["picture_mode"],
             "mw_version": APP_VERSION, "ai_status": str(STATE.get("ai_status") or ""),     # 2.95.67: for the test bench in the simulator
             "refscan": _sim_refscan_info(),                                                  # 2.95.97: the reference scan, for the button there
             "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * hp, 2),
@@ -86,12 +86,12 @@ def sim_state():
             "lights": {"white": bool(L.get("white")), "ir": bool(L.get("ir")), "white_level": 1.0, "ir_level": 1.0},
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
-            "eco": STATE.get("eco") or "off",     # power saving of Motion Watch: «saving» = quiet - the simulator may calculate slower (3D-3.30)
+            "eco": STATE.get("eco") or "off",     # power saving of MoveEye: «saving» = quiet - the simulator may calculate slower (3D-3.30)
             # automatic update: the simulator compares these checksums with its own files and fetches /sim/simulator.zip
             "sim_files": sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
-            # CPU in % of the whole computer: total, Motion Watch, simulator (None = not on this computer / unknown)
+            # CPU in % of the whole computer: total, MoveEye, simulator (None = not on this computer / unknown)
             "cpu": {"total": STATE.get("cpu"), "mw": STATE.get("cpu_mw"), "sim": STATE.get("cpu_sim")},
-            # what Motion Watch detects right now: the simulator compares it with the truth (test run, game «Motion Watch decides»)
+            # what MoveEye detects right now: the simulator compares it with the truth (test run, game «MoveEye decides»)
             "det": {"persons": int(STATE.get("persons") or 0), "present": list(STATE.get("present") or []), "armed": is_armed(),
                     "boxes": list(STATE.get("person_boxes") or []) if STATE.get("persons") else [],   # 2.95.75: 0..1 of the head camera
                     "noise": bool(AUDIO is not None and AUDIO.noisy())},
@@ -117,7 +117,7 @@ def viewers_now():
 
 
 PREVIEW_PAGE = r'''<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Motion Watch – Handy / Tablet</title><style>
+<title>MoveEye – Handy / Tablet</title><style>
 :root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--txt:#c9d1d9;--mut:#8b949e;--acc:#388bfd}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:14px system-ui,-apple-system,"Segoe UI",sans-serif}
 .bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
@@ -130,12 +130,12 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:14px s
 #dev.tab iframe{border-radius:10px}
 #notch{position:absolute;background:#000;border-radius:0 0 14px 14px;z-index:2}
 </style></head><body>
-<div class="bar"><b>📱 Motion Watch auf Handy / Tablet</b>
+<div class="bar"><b>📱 MoveEye auf Handy / Tablet</b>
  <button id="b-ph" class="on">📱 Handy</button><button id="b-tb">📲 Tablet</button>
  <button id="b-po" class="on">▯ Hochformat</button><button id="b-la">▭ Querformat</button>
  <button id="b-fs" class="on">⛶ Vollbild</button><button id="b-rl">↻ Neu laden</button>
  <span class="sp"></span><span class="mut" id="info"></span><button id="b-x" data-mw-exit title="Vorschau schliessen">✕ Schliessen</button></div>
-<div id="stage"><div id="dev"><div id="notch"></div><iframe id="fr" title="Motion Watch"></iframe></div></div>
+<div id="stage"><div id="dev"><div id="notch"></div><iframe id="fr" title="MoveEye"></iframe></div></div>
 <script>
 const S = {dev: "phone", land: false, fs: true};
 try { Object.assign(S, JSON.parse(localStorage.getItem("mwprev") || "{}")); } catch (e) {}
@@ -288,7 +288,7 @@ def sim_upload(name, stream, length):
 
 
 def sim_eco_now():
-    """CPU saving in the simulation: its own switch, or the power saving of Motion Watch (2.95.25); the power mode
+    """CPU saving in the simulation: its own switch, or the power saving of MoveEye (2.95.25); the power mode
     switches both off (TURBO_SET)."""
     return bool(CFG.get("sim_eco") or CFG.get("eco_on"))
 
@@ -303,7 +303,7 @@ def sim_cam_fps(cam):
 
 
 def sim_files():
-    """sha256 of the simulator program files this Motion Watch carries (name -> checksum)."""
+    """sha256 of the simulator program files this MoveEye carries (name -> checksum)."""
     if not _SIMFILES:
         import base64, hashlib, io
         try:
@@ -317,7 +317,7 @@ def sim_files():
 
 
 def sim_autoupdate():
-    """The simulator on this Pi is older than the one inside Motion Watch -> install the new one (and restart it if it runs)."""
+    """The simulator on this Pi is older than the one inside MoveEye -> install the new one (and restart it if it runs)."""
     import hashlib
     d = sim_dir()
     if not os.path.isfile(os.path.join(d, "motionwatch_simulator.py")):
@@ -340,7 +340,7 @@ def sim_autoupdate():
         sim_install()
     except Exception as e:
         log_event("sys", f"Simulator update failed: {e}"[:200]); return False
-    log_event("sys", "Simulator updated automatically to the version inside Motion Watch " + APP_VERSION)
+    log_event("sys", "Simulator updated automatically to the version inside MoveEye " + APP_VERSION)
     if was:
         sim_start()
     return True

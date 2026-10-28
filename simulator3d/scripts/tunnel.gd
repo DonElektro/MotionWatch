@@ -1,9 +1,9 @@
 extends Node
-## Tunnel zu Motion Watch (3D-3.45): for a PC or a virtual machine whose firewall lets nothing in (no admin rights to allow
-## the port). The simulator connects OUT to Motion Watch (port 8766) - every firewall allows that - and keeps a few
-## connections ready. When Motion Watch wants something it writes "GO <port>" on one of them; the simulator then connects to
-## itself (127.0.0.1:<port>: 8765 = the simulator, 5057 = the AI helper of Motion Watch on this PC) and passes the bytes both
-## ways. Paired with the 6-digit code from the page of Motion Watch (Simulator → Simulator hinter einer Firewall).
+## Tunnel zu MoveEye (3D-3.45): for a PC or a virtual machine whose firewall lets nothing in (no admin rights to allow
+## the port). The simulator connects OUT to MoveEye (port 8766) - every firewall allows that - and keeps a few
+## connections ready. When MoveEye wants something it writes "GO <port>" on one of them; the simulator then connects to
+## itself (127.0.0.1:<port>: 8765 = the simulator, 5057 = the AI helper of MoveEye on this PC) and passes the bytes both
+## ways. Paired with the 6-digit code from the page of MoveEye (Simulator → Simulator hinter einer Firewall).
 
 const PORT := 8766
 const IDLE := 10                    # connections kept ready
@@ -13,9 +13,9 @@ var main
 var host := ""
 var code := ""
 var on := false
-var conns := []                     # {"o": StreamPeerTCP (to Motion Watch), "st": "connect|hello|idle|pipe", "l": StreamPeerTCP (local), "buf": String, "t": float}
+var conns := []                     # {"o": StreamPeerTCP (to MoveEye), "st": "connect|hello|idle|pipe", "l": StreamPeerTCP (local), "buf": String, "t": float}
 var msg := "aus"
-var ok_t := 0.0                     # last time Motion Watch accepted the code
+var ok_t := 0.0                     # last time MoveEye accepted the code
 var bytes := 0
 var _next := 0.0
 var _fails := 0                     # 3D-3.75: failed tries in a row - wait longer each time (3 s … 15 s)
@@ -26,7 +26,7 @@ const PIPE_IDLE := 180.0            # 3D-3.75: a pipe without any byte for 3 min
 func set_on(v: bool) -> void:
 	on = v and host != "" and code.length() == 6
 	if on and main.has_method("set_stream") and not main.stream_on:
-		main.set_stream.call_deferred(true, true)       # 3D-3.75: busy after an update -> a spare port (main._stream_watch keeps trying)             # Motion Watch reaches the simulator only while it «sends»
+		main.set_stream.call_deferred(true, true)       # 3D-3.75: busy after an update -> a spare port (main._stream_watch keeps trying)             # MoveEye reaches the simulator only while it «sends»
 	_fails = 0
 	_next = 0.0
 	if not on:
@@ -65,7 +65,7 @@ func _process(_dt: float) -> void:
 			ready += 1
 	conns = conns.filter(func(c): return c["st"] != "dead")
 	if now >= _next:
-		for _k in range(IDLE - ready):                  # Motion Watch asks often (pictures, state): always some ready
+		for _k in range(IDLE - ready):                  # MoveEye asks often (pictures, state): always some ready
 			if conns.size() >= 48:
 				break
 			var o := StreamPeerTCP.new()
@@ -82,7 +82,7 @@ func _step(c: Dictionary, now: float) -> void:
 	var s := o.get_status()
 	if s == StreamPeerTCP.STATUS_ERROR or (s == StreamPeerTCP.STATUS_NONE and c["st"] != "connect"):
 		if c["st"] == "connect" or c["st"] == "hello":
-			msg = "Motion Watch nicht erreichbar (%s:%d)" % [host, PORT]
+			msg = "MoveEye nicht erreichbar (%s:%d)" % [host, PORT]
 			_next = now + 3.0                       # wait a little before trying again
 		_close(c)
 		return
@@ -94,7 +94,7 @@ func _step(c: Dictionary, now: float) -> void:
 				c["st"] = "hello"
 				c["t"] = now
 			elif now - float(c["t"]) > 6.0:
-				_fail(now, "Motion Watch antwortet nicht (%s:%d)" % [host, PORT])
+				_fail(now, "MoveEye antwortet nicht (%s:%d)" % [host, PORT])
 				_close(c)
 		"hello", "idle":
 			var n := o.get_available_bytes()
@@ -113,9 +113,9 @@ func _step(c: Dictionary, now: float) -> void:
 						c["life"] = RECYCLE + randf() * 15.0
 						ok_t = now
 						_fails = 0
-						msg = "verbunden mit Motion Watch (%s:%d)" % [host, PORT]
+						msg = "verbunden mit MoveEye (%s:%d)" % [host, PORT]
 					else:
-						_fail(now, "Code falsch – auf der Seite von Motion Watch nachsehen")
+						_fail(now, "Code falsch – auf der Seite von MoveEye nachsehen")
 						_close(c)
 						return
 				elif line.begins_with("GO "):

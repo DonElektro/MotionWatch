@@ -1,5 +1,5 @@
 extends RefCounted
-## QR code (byte mode, error correction M) for the join address of the game - after the encoder of Motion Watch
+## QR code (byte mode, error correction M) for the join address of the game - after the encoder of MoveEye
 ## (qr_matrix, ISO 18004). Only short texts (versions 1 to 10). Mask 0 (every mask is valid; scanners read it).
 
 const ECW_M := [-1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26]

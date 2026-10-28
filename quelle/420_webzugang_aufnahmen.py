@@ -38,7 +38,7 @@ def service_text():
     user = os.environ.get("SUDO_USER") or os.environ.get("USER") or "pi"
     exe = " ".join(shlex.quote(x) for x in [sys.executable, os.path.abspath(__file__)] + args)
     return f"""[Unit]
-Description=Motion Watch (camera motion / person detection)
+Description=MoveEye (camera motion / person detection)
 After=network-online.target
 Wants=network-online.target
 

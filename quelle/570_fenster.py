@@ -156,7 +156,7 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_autoupd", "Update the simulator by itself when a newer version is there"),
     ("Simulator", "sim_separate", "The simulation has its own settings (when switching back: ask which changes to take over)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
-    ("Setup", "desktop_notice", "Small message on the Pi's desktop when Motion Watch starts in the background"),
+    ("Setup", "desktop_notice", "Small message on the Pi's desktop when MoveEye starts in the background"),
     ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
     ("Battery", "night_warn", "Push message in the evening when the battery will probably not last until sunrise"),
     ("GPS module", "gpsmod_on", "Own GPS module (USB or serial; gpsd is used if installed)"),
@@ -216,8 +216,8 @@ TOGGLES = [  # (section, key, label)
     ("SMS (LTE stick)", "sms_only_offline", "Only when push messages cannot be sent (no internet)"),
     ("MQTT / Home Assistant", "mqtt_on", "MQTT on (state, events, commands)"),
     ("MQTT / Home Assistant", "mqtt_tls", "Encrypted (TLS, usually port 8883)"),
-    ("MQTT / Home Assistant", "mqtt_discovery", "Home Assistant finds Motion Watch by itself (discovery)"),
-    ("Recording", "share_logo", "Shared pictures and videos with a small Motion Watch logo"),
+    ("MQTT / Home Assistant", "mqtt_discovery", "Home Assistant finds MoveEye by itself (discovery)"),
+    ("Recording", "share_logo", "Shared pictures and videos with a small MoveEye logo"),
     ("Recording", "share_gps", "Send the location along when sharing pictures and videos"),
     ("Recording", "loop_on", "Continuous recording (all the time, few pictures per second) with a timeline"),
     ("Deterrence", "deter_always", "Also when disarmed (e.g. keep animals out of the garden)"),
@@ -287,7 +287,7 @@ DE.update({    # mover (2.94.0)
     "Simulation: show the stick even without a mover or motor driver (to try it out)": "Simulation: den Stick auch ohne Mover oder Motortreiber zeigen (zum Ausprobieren)",
     "stick shown for testing (the simulator has no mover)": "Stick zum Testen eingeblendet (der Simulator hat keinen Mover)",
     "the simulator has no mover": "der Simulator hat keinen Mover (im Simulator «Mover simulieren» einschalten)",
-    "A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "Ein Kettenfahrzeug unter Motion Watch: der zweite Stick fährt es (hoch = vorwärts, runter = rückwärts, seitlich = an Ort drehen). Der Motortreiber (Motor HAT mit PCA9685 + TB6612 an I2C) wird von selbst gefunden – ohne ihn bleibt der Stick verborgen. Kommt 0,6 s lang kein neuer Befehl, halten beide Ketten an.",
+    "A tracked vehicle under MoveEye: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "Ein Kettenfahrzeug unter MoveEye: der zweite Stick fährt es (hoch = vorwärts, runter = rückwärts, seitlich = an Ort drehen). Der Motortreiber (Motor HAT mit PCA9685 + TB6612 an I2C) wird von selbst gefunden – ohne ihn bleibt der Stick verborgen. Kommt 0,6 s lang kein neuer Befehl, halten beide Ketten an.",
 })
 DE.update({    # window in the look of the web page (2.25.0)
     "Weather & system": "Wetter & System", "Slow": "Langsam", "Medium": "Mittel", "Fast": "Schnell", "Speed: slow": "Tempo: langsam", "Speed: medium": "Tempo: mittel", "Speed: fast": "Tempo: schnell",
@@ -339,7 +339,7 @@ DE.update({    # texts that were written twice in the code (German / English) - 
     "memory": "Speicher",
     "Pi too hot: {temp:.0f} °C (limit {lim:.0f} °C) - check the cooling / ventilation": "Pi zu heiss: {temp:.0f} °C (Grenze {lim:.0f} °C) - Kühlung / Lüftung prüfen",
     "temperature": "Temperatur",
-    "Motion Watch is online in Wi-Fi {ssid}: {addr}": "Motion Watch ist online im WLAN {ssid}: {addr}",
+    "MoveEye is online in Wi-Fi {ssid}: {addr}": "MoveEye ist online im WLAN {ssid}: {addr}",
     "Program paused": "Programm pausiert",
     "Starts again at": "Startet wieder um",
     "While paused there is no monitoring and there are no alarms.": "Während der Pause gibt es keine Überwachung und keine Alarme.",
@@ -354,7 +354,7 @@ DE.update({    # texts that were written twice in the code (German / English) - 
     "2 · Open the page (own Wi-Fi)": "2 · Seite öffnen (eigenes WLAN)",
     "Open the page (home network)": "Seite öffnen (Heimnetz)",
     "On the road (Tailscale)": "Von unterwegs (Tailscale)",
-    "<li>Scan the QR code with the phone camera.</li><li>Open the page; the first time the setup assistant guides you through password and push messages.</li><li>Share → «Add to Home Screen»: start Motion Watch like an app.</li><li>Arm the protection: big «Armed» button at the top.</li>": "<li>QR-Code mit der Handy-Kamera scannen.</li><li>Seite öffnen, beim ersten Mal führt der Einrichtungs-Assistent durch Passwort und Push-Nachrichten.</li><li>Teilen → «Zum Home-Bildschirm»: Motion Watch wie eine App starten.</li><li>Schutz scharf schalten: grosse Taste «Scharf» oben.</li>",
+    "<li>Scan the QR code with the phone camera.</li><li>Open the page; the first time the setup assistant guides you through password and push messages.</li><li>Share → «Add to Home Screen»: start MoveEye like an app.</li><li>Arm the protection: big «Armed» button at the top.</li>": "<li>QR-Code mit der Handy-Kamera scannen.</li><li>Seite öffnen, beim ersten Mal führt der Einrichtungs-Assistent durch Passwort und Push-Nachrichten.</li><li>Teilen → «Zum Home-Bildschirm»: MoveEye wie eine App starten.</li><li>Schutz scharf schalten: grosse Taste «Scharf» oben.</li>",
     "Quick start": "Kurzanleitung",
     "Quick start – print it and keep it with the device": "Kurzanleitung – zum Ausdrucken und ins Gehäuse legen",
     "No address found (network?)": "Keine Adresse gefunden (Netzwerk?)",
@@ -744,7 +744,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.105")
+        self.root.title("MoveEye 2.96.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1031,10 +1031,10 @@ class App:
             except Exception:
                 tk.Label(tl, text="●", bg=C["bg"], fg=C["acc"], font=("DejaVu Sans", 12)).pack(side="left")
             small = self._lay[0]
-            nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
+            nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.105 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1559,7 +1559,7 @@ class App:
         self.watch.tuner.reset(); log_event("auto", "Recalibration started (window)")
 
     def _clear_wp_ask(self):
-        if WAYPOINTS and messagebox.askyesno("Motion Watch", tr("Clear all waypoints?")):
+        if WAYPOINTS and messagebox.askyesno("MoveEye", tr("Clear all waypoints?")):
             self._clear_wp()
 
     def _trigger_box(self, parent, i, rl, labels):
@@ -1590,7 +1590,7 @@ class App:
         """2.95.105: protection level; switching off needs the PIN if one is set"""
         if level == "off" and CFG.get("protect_pin"):
             from tkinter import simpledialog
-            pin = simpledialog.askstring("Motion Watch", tr("PIN for switching off"), show="*", parent=self.root)
+            pin = simpledialog.askstring("MoveEye", tr("PIN for switching off"), show="*", parent=self.root)
             if pin is None:
                 return
             ok_, err_ = protect_disarm(pin, "window")
@@ -1868,7 +1868,7 @@ class App:
         self._build_texts(sp, sec)
         if sec == "SMS (LTE stick)":
             def sms_test():
-                ok, err = sms_send(f"{CFG['device_name'] or 'Motion Watch'}: " + tr("test SMS - it works"), force=True)
+                ok, err = sms_send(f"{CFG['device_name'] or 'MoveEye'}: " + tr("test SMS - it works"), force=True)
                 self._status("SMS (LTE stick)", ("✓ " + tr("SMS sent")) if ok else "⚠ " + tr_err(err))
             ttk.Button(sbody, text="📱 " + tr("Send test SMS"), command=lambda: threading.Thread(target=sms_test, daemon=True).start()).pack(fill="x", pady=(8, 0))
             self.status_labels["SMS (LTE stick)"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
@@ -1948,7 +1948,7 @@ class App:
                 p = self._store_opts[self.store_cb.current()][0]
                 if p == CFG["storage_path"]:
                     return
-                if not messagebox.askyesno("Motion Watch", tr("Store the recordings there from now on? The existing ones are moved over (this can take a while)."), parent=self.root):
+                if not messagebox.askyesno("MoveEye", tr("Store the recordings there from now on? The existing ones are moved over (this can take a while)."), parent=self.root):
                     return
                 ok, err = storage_set(p)
                 self._status("Storage", ("✓ " + rec_dir()) if ok else "⚠ " + tr_err(err))
@@ -2286,30 +2286,30 @@ class App:
     def _lock(self):
         from tkinter import simpledialog
         np_ = ""
-        if not CFG["lock_pin"] or messagebox.askyesno("Motion Watch", tr("Set a new PIN? (No = keep the current PIN)"), parent=self.root):
-            np_ = simpledialog.askstring("Motion Watch", tr("New PIN for unlocking (4-8 digits):"), show="•", parent=self.root) or ""
+        if not CFG["lock_pin"] or messagebox.askyesno("MoveEye", tr("Set a new PIN? (No = keep the current PIN)"), parent=self.root):
+            np_ = simpledialog.askstring("MoveEye", tr("New PIN for unlocking (4-8 digits):"), show="•", parent=self.root) or ""
             if not np_:
                 return
-            if (simpledialog.askstring("Motion Watch", tr("Repeat the PIN:"), show="•", parent=self.root) or "") != np_:
-                messagebox.showerror("Motion Watch", tr("The PINs are not the same"), parent=self.root); return
-        if not messagebox.askyesno("Motion Watch", tr("Lock the settings now? Only the main switches stay usable. Everything changed until then is put back when unlocking with the PIN."), parent=self.root):
+            if (simpledialog.askstring("MoveEye", tr("Repeat the PIN:"), show="•", parent=self.root) or "") != np_:
+                messagebox.showerror("MoveEye", tr("The PINs are not the same"), parent=self.root); return
+        if not messagebox.askyesno("MoveEye", tr("Lock the settings now? Only the main switches stay usable. Everything changed until then is put back when unlocking with the PIN."), parent=self.root):
             return
         ok, err = lock_set("lock", new_pin=np_, source="window")
         if not ok:
-            messagebox.showerror("Motion Watch", tr_err(err), parent=self.root); return
+            messagebox.showerror("MoveEye", tr_err(err), parent=self.root); return
         self._rebuild()
 
     def _unlock(self):
         from tkinter import simpledialog
-        pin = simpledialog.askstring("Motion Watch", tr("PIN:"), show="•", parent=self.root)
+        pin = simpledialog.askstring("MoveEye", tr("PIN:"), show="•", parent=self.root)
         if not pin:
             return
         ok, err = lock_set("unlock", pin=pin, source="window")
         if not ok:
-            messagebox.showerror("Motion Watch", tr_err(err), parent=self.root); return
+            messagebox.showerror("MoveEye", tr_err(err), parent=self.root); return
         n = len(LOCK_LAST["restored"])
         if n:
-            messagebox.showinfo("Motion Watch", tr("Settings unlocked") + " · " + str(n) + " " + tr("changes put back"), parent=self.root)
+            messagebox.showinfo("MoveEye", tr("Settings unlocked") + " · " + str(n) + " " + tr("changes put back"), parent=self.root)
         self._rebuild()
 
     def _pause(self):
@@ -2318,7 +2318,7 @@ class App:
         except (IndexError, tk.TclError, TypeError):
             m = 30
         txt = f"{m} min" if m < 60 else f"{m // 60} h"
-        if not messagebox.askyesno("Motion Watch", tr("Switch the program off now and start it again in") + f" {txt}?\n\n"
+        if not messagebox.askyesno("MoveEye", tr("Switch the program off now and start it again in") + f" {txt}?\n\n"
                                    + tr("While paused there is no monitoring and there are no alarms."), parent=self.root):
             return
         ok, err = pause_program(m, source="window")
@@ -2488,7 +2488,7 @@ class App:
     def _src_remove(self):
         i = self.src_cb.current()
         if 0 <= i < len(self.src_items) and self.src_items[i]["kind"] == "url":
-            if messagebox.askyesno("Motion Watch", tr("Remove this network camera?")):
+            if messagebox.askyesno("MoveEye", tr("Remove this network camera?")):
                 source_remove(self.watch, self.src_items[i]["id"][4:]); self._fill_sources()
 
     def _open_page(self, path):
@@ -2528,7 +2528,7 @@ class App:
         schedule_add(); self._schedule_rebuild()
 
     def _sched_remove(self, i):
-        if messagebox.askyesno("Motion Watch", tr("Remove this schedule?")):
+        if messagebox.askyesno("MoveEye", tr("Remove this schedule?")):
             schedule_remove(i); self._schedule_rebuild()
 
     def _sched_dialog(self, i):
@@ -2573,7 +2573,7 @@ class App:
         def save():
             for t_ in (sv.get().strip(), ev.get().strip()):
                 if not _TIME_RE.match(t_):
-                    messagebox.showerror("Motion Watch", tr("Time must look like 07:30"), parent=dlg); return
+                    messagebox.showerror("MoveEye", tr("Time must look like 07:30"), parent=dlg); return
             acts = {}
             for key, cb in fv.items():
                 if cb.get() == opts[1]: acts[key] = True
@@ -2903,7 +2903,7 @@ class App:
         from tkinter import messagebox
         q = (tr("Shut down the Raspberry Pi now?") + "\n\n" + tr("A running recording is finished first. To switch it on again: unplug the power and plug it in again.")
              if action == "poweroff" else tr("Restart the Raspberry Pi now?"))
-        if not messagebox.askyesno("Motion Watch", q, parent=self.root):
+        if not messagebox.askyesno("MoveEye", q, parent=self.root):
             return
         ok, err = power_action(action, source="desktop")
         self._status("Power", (tr("The Pi is shutting down …") if action == "poweroff" else tr("The Pi is restarting …")) if ok else "⚠ " + tr_err(err))
@@ -2945,12 +2945,12 @@ class App:
         v = (STATE.get("update_new") or {}).get("version")
         if not v or CFG["lock_on"]:
             return
-        if not messagebox.askyesno("Motion Watch", tr("Switch to version") + f" {v}?\n\n" + tr("The program restarts (about 20 seconds). Settings, recordings and zones stay."), parent=self.root):
+        if not messagebox.askyesno("MoveEye", tr("Switch to version") + f" {v}?\n\n" + tr("The program restarts (about 20 seconds). Settings, recordings and zones stay."), parent=self.root):
             return
         def work():
             ok, err = update_install(v)
             if not ok:
-                self.root.after(0, lambda: messagebox.showerror("Motion Watch", tr_err(err), parent=self.root))
+                self.root.after(0, lambda: messagebox.showerror("MoveEye", tr_err(err), parent=self.root))
         threading.Thread(target=work, daemon=True).start()
 
     def _upd_install(self):
@@ -2959,7 +2959,7 @@ class App:
         if not 0 <= i < len(UPD["items"]):
             self._status("Updates", "⚠ " + tr("Search versions")); return
         v = UPD["items"][i]["version"]
-        if not messagebox.askyesno("Motion Watch", tr("Switch to version") + f" {v}?\n\n" + tr("The program restarts (about 20 seconds). Settings, recordings and zones stay."), parent=self.root):
+        if not messagebox.askyesno("MoveEye", tr("Switch to version") + f" {v}?\n\n" + tr("The program restarts (about 20 seconds). Settings, recordings and zones stay."), parent=self.root):
             return
         self._status("Updates", tr("Downloading and checking …"))
         def work():
@@ -2993,7 +2993,7 @@ class App:
         if p:
             try:
                 with open(p, "w") as f:
-                    json.dump(dict(settings_data(), app="Motion Watch", version=os.path.basename(__file__)), f, indent=1)
+                    json.dump(dict(settings_data(), app="MoveEye", version=os.path.basename(__file__)), f, indent=1)
                 self._status("Power", "✓ " + p)
             except OSError as e:
                 self._status("Power", f"⚠ {e}")
@@ -3001,7 +3001,7 @@ class App:
     def _import(self):
         from tkinter import filedialog, messagebox
         p = filedialog.askopenfilename(parent=self.root, filetypes=[("JSON", "*.json")])
-        if not p or not messagebox.askyesno("Motion Watch", tr("Load settings …") + "\n\n" + os.path.basename(p), parent=self.root):
+        if not p or not messagebox.askyesno("MoveEye", tr("Load settings …") + "\n\n" + os.path.basename(p), parent=self.root):
             return
         try:
             with open(p) as f:
@@ -3093,7 +3093,7 @@ class App:
         try:
             from tkinter import messagebox as mb_
             yes = mb_.askyesno(tr("Settings from the simulation"),
-                               tr("During the simulation these settings were changed. Motion Watch now uses the real settings again. Take over changes for the real camera?") + "\n\n" + "\n".join(lines))
+                               tr("During the simulation these settings were changed. MoveEye now uses the real settings again. Take over changes for the real camera?") + "\n\n" + "\n".join(lines))
         except Exception:
             return
         simprof_answer([c["key"] for c in q_["changes"]] if yes else [])
@@ -3394,7 +3394,7 @@ class App:
 
     def _feedback(self):
         from tkinter import messagebox
-        w = tk.Toplevel(self.root); w.title("Motion Watch – " + tr("Feedback to the developer")); w.configure(bg=C["bg"])
+        w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Feedback to the developer")); w.configure(bg=C["bg"])
         ttk.Label(w, text=tr("Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one."),
                   style="Mut.TLabel", wraplength=420, justify="left").pack(padx=14, pady=(12, 6), anchor="w")
         kinds = [("idea", tr("Idea")), ("bug", tr("Error")), ("praise", tr("Praise")), ("other", tr("Other"))]
@@ -3408,17 +3408,17 @@ class App:
         def send():
             ok, err = feedback_send(kinds[cb.current()][0], txt.get("1.0", "end"), "", diag.get())
             if ok:
-                messagebox.showinfo("Motion Watch", tr("Thank you! The message is on its way."), parent=w); w.destroy()
+                messagebox.showinfo("MoveEye", tr("Thank you! The message is on its way."), parent=w); w.destroy()
             else:
-                messagebox.showerror("Motion Watch", tr_err(err), parent=w)
+                messagebox.showerror("MoveEye", tr_err(err), parent=w)
         ttk.Button(bf, text=tr("Send"), command=send).pack(side="right")
         ttk.Button(bf, text=tr("Cancel"), command=w.destroy).pack(side="right", padx=(0, 6))
 
     def _qr_window(self, first):
         """QR codes on the Pi screen: scan with the phone camera - the setup goes on there (own Wi-Fi of the Pi: first its code)."""
         import base64
-        w = tk.Toplevel(self.root); w.title("Motion Watch – " + tr("QR code for the phone")); w.configure(bg=C["bg"])
-        tk.Label(w, text=("👋 " + tr("Welcome to Motion Watch")) if first else ("📱 " + tr("QR code for the phone")), bg=C["bg"], fg=C["txt"],
+        w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("QR code for the phone")); w.configure(bg=C["bg"])
+        tk.Label(w, text=("👋 " + tr("Welcome to MoveEye")) if first else ("📱 " + tr("QR code for the phone")), bg=C["bg"], fg=C["txt"],
                  font=("DejaVu Sans", 14, "bold")).pack(padx=16, pady=(14, 4))
         ttk.Label(w, text=tr("Scan a code with the phone camera and open the page - the setup assistant continues there (password, push messages)."),
                   style="Mut.TLabel", wraplength=520, justify="center").pack(padx=16)

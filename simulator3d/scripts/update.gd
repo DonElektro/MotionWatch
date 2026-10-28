@@ -22,7 +22,7 @@ var manual := false           # started with the button «Nach Updates suchen» 
 var quiet := false            # check in the background: show nothing unless there is a new version
 var auto := false             # install without asking (setting «Neue Versionen automatisch installieren» or from far away):
 							  # 15 seconds to cancel, then it installs by itself
-var result := ""              # what came out (for the window and the web page of Motion Watch)
+var result := ""              # what came out (for the window and the web page of MoveEye)
 var choice := -1              # -1 not decided, 0 later / OK, 1 update
 
 
@@ -51,7 +51,7 @@ func check(current: String, url := "") -> void:
 	if url != "":
 		base = url if url.ends_with("/") else url + "/"
 	if OS.get_name() == "Linux" and Engine.get_architecture_name().begins_with("arm"):
-		result = "Auf dem Pi bringt Motion Watch die neue Version"   # 3D-3.43: the package here is for Windows
+		result = "Auf dem Pi bringt MoveEye die neue Version"   # 3D-3.43: the package here is for Windows
 		return
 	_remove_old()
 	if not quiet:
@@ -90,7 +90,7 @@ func check(current: String, url := "") -> void:
 		b_upd.disabled = true
 	if manual:
 		b_skip.text = "Später"
-		text.text += "\n\nDer Simulator startet nach dem Update neu. Läuft Motion Watch auf diesem PC, danach bitte wieder starten."
+		text.text += "\n\nDer Simulator startet nach dem Update neu. Läuft MoveEye auf diesem PC, danach bitte wieder starten."
 	b_upd.visible = true
 	b_skip.visible = true
 	b_upd.grab_focus()

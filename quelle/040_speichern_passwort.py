@@ -295,7 +295,7 @@ SETTINGS_GEN = {"n": 0}                  # +1 after an import: the window rebuil
 def import_settings(data):
     """Settings from an exported file. The current file is kept as motionwatch_settings.before_import.json."""
     if not isinstance(data, dict) or not isinstance(data.get("cfg"), dict):
-        return False, "not a Motion Watch settings file"
+        return False, "not a MoveEye settings file"
     try:
         shutil.copy2(SETTINGS_FILE, os.path.join(DATA_DIR, "motionwatch_settings.before_import.json"))
     except OSError:
@@ -343,7 +343,11 @@ def apply_settings(data):
     _ql = CFG["qs_layout"] if isinstance(CFG["qs_layout"], dict) else {}
     CFG["qs_layout"] = {"order": [k for k in (_ql.get("order") or []) if isinstance(k, str)][:60], "hidden": [k for k in (_ql.get("hidden") or []) if isinstance(k, str)][:60]}
     CFG["web_ui"] = clean_web_ui(CFG["web_ui"])
-    if not CFG.get("app_icon_orange_done"):            # 2.95.100: Daniel wants the orange Motion Watch symbol everywhere (once)
+    if not CFG.get("app_icon_moveeye_done"):          # 2.96.0: the new name MoveEye and its symbol for everybody (once)
+        CFG["app_icon_moveeye_done"] = True
+        CFG["app_icon_orange_done"] = True
+        CFG["app_icon"] = "moveeye"
+    if not CFG.get("app_icon_orange_done"):            # 2.95.100: Daniel wants the orange MoveEye symbol everywhere (once)
         CFG["app_icon_orange_done"] = True
         if CFG.get("app_icon") in ("radar", "", None):
             CFG["app_icon"] = "classic"

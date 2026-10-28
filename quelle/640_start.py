@@ -79,7 +79,7 @@ if __name__ == "__main__":
                    device_name=CFG["device_name"] or "Demo")
         a.source = None; a.cam = None
         print("DEMO MODE - settings in " + DATA_DIR)
-    if not DEMO["on"] and not instance_lock(CFG["web_port"]):          # only one Motion Watch at a time
+    if not DEMO["on"] and not instance_lock(CFG["web_port"]):          # only one MoveEye at a time
         if a.boot or not instance_takeover(CFG["web_port"], not a.headless):
             sys.exit(0)
     start_guard()                                     # after an update: go back if the new version keeps crashing
@@ -135,12 +135,12 @@ if __name__ == "__main__":
     threading.Thread(target=WATCH.run, daemon=True).start()
     apply_theme()
     ip = local_ip()
-    print(f"Motion Watch {APP_VERSION} started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
+    print(f"MoveEye {APP_VERSION} started" + (f" - web page on {page_address(ip) if ip else 'http://<ip>:' + str(CFG['web_port']) + '/'}" if CFG["web_stream"] else ""))
     if CFG["web_stream"] and not web_pw_active():
         print("   Note: the web page has no password - anybody in this network can open it. Start with --web-password SECRET")
     if a.headless:
         if CFG["desktop_notice"] and not DEMO["on"]:      # started in the background: tell the person at the Pi
-            desktop_notice(tr("Motion Watch is running"),
+            desktop_notice(tr("MoveEye is running"),
                            tr("Started in the background.") + (" " + tr("Page") + ": " + page_address(ip) if ip and CFG["web_stream"] else ""),
                            wait=300 if a.boot else 30)
         try:

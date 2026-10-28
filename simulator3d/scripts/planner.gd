@@ -1,8 +1,8 @@
 extends PanelContainer
-## Aufstell-Planer (3D-3.44): where should Motion Watch stand? A map from above of the place: what the head camera can see
+## Aufstell-Planer (3D-3.44): where should MoveEye stand? A map from above of the place: what the head camera can see
 ## (with its turning range), what the fixed camera sees, and the blind spots behind caravan, hedges, houses and hills - for
 ## the area that matters (tent / caravan). «Besten Platz suchen» tries many spots and directions; «Hierhin stellen» puts
-## Motion Watch there in the simulator; Motion Watch takes over the patrol (3 waypoints across the area) with one button on
+## MoveEye there in the simulator; MoveEye takes over the patrol (3 waypoints across the area) with one button on
 ## its page (Simulator → Aufstell-Planer) - CONTROL action "planner".
 
 const UI = preload("res://scripts/ui_style.gd")
@@ -41,14 +41,14 @@ func _ready() -> void:
 	add_child(v)
 	var hd := HBoxContainer.new()
 	v.add_child(hd)
-	var t := UI.heading("Aufstell-Planer: Wo soll Motion Watch hin?")
+	var t := UI.heading("Aufstell-Planer: Wo soll MoveEye hin?")
 	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hd.add_child(t)
 	var x := Button.new()
 	x.text = "Schliessen"
 	x.pressed.connect(func(): open(false))
 	hd.add_child(x)
-	var lead := UI.small("Grün: sieht die Kopfkamera (mit Drehen) · Blau: die feste Kamera · Rot: tote Winkel im wichtigen Bereich (Kreis um Zelt und Wohnwagen). Den Punkt von Motion Watch auf der Karte ziehen, um andere Plätze auszuprobieren; Rechtsklick dreht die Blickrichtung.")
+	var lead := UI.small("Grün: sieht die Kopfkamera (mit Drehen) · Blau: die feste Kamera · Rot: tote Winkel im wichtigen Bereich (Kreis um Zelt und Wohnwagen). Den Punkt von MoveEye auf der Karte ziehen, um andere Plätze auszuprobieren; Rechtsklick dreht die Blickrichtung.")
 	lead.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(lead)
 	map = Control.new()
@@ -72,12 +72,12 @@ func _ready() -> void:
 	UI.primary(best_b)
 	row.add_child(best_b)
 	put_b = Button.new()
-	put_b.text = "Motion Watch hierhin stellen"
+	put_b.text = "MoveEye hierhin stellen"
 	put_b.pressed.connect(place_here)
 	row.add_child(put_b)
-	var put_rs := Button.new()                       # 3D-3.72: place it and let Motion Watch take the reference scan there
+	var put_rs := Button.new()                       # 3D-3.72: place it and let MoveEye take the reference scan there
 	put_rs.text = "Hierhin stellen + Referenz-Scan"
-	put_rs.tooltip_text = "Motion Watch an diesen Platz stellen und gleich die Referenz-Fotos aufnehmen lassen"
+	put_rs.tooltip_text = "MoveEye an diesen Platz stellen und gleich die Referenz-Fotos aufnehmen lassen"
 	put_rs.pressed.connect(func():
 		place_here()
 		main.mw_request("refscan"))
@@ -200,13 +200,13 @@ func compute() -> void:
 	if not best.is_empty():
 		lines.append("Bester gefundener Platz: %d %% im Blick (gelber Ring auf der Karte)." % int(best["pct"]))
 	var wp := waypoints()
-	lines.append("Für Motion Watch: Patrouille über 3 Punkte (Schwenk %d / %d / %d %%) – auf der Seite von Motion Watch unter Simulator → «Vom Aufstell-Planer übernehmen»." % [int(wp[0][0]), int(wp[1][0]), int(wp[2][0])])
+	lines.append("Für MoveEye: Patrouille über 3 Punkte (Schwenk %d / %d / %d %%) – auf der Seite von MoveEye unter Simulator → «Vom Aufstell-Planer übernehmen»." % [int(wp[0][0]), int(wp[1][0]), int(wp[2][0])])
 	info.text = "\n".join(lines)
 	map.queue_redraw()
 
 
 func waypoints() -> Array:
-	"""3 patrol points (pan %, tilt %) across the important area, as seen from the current spot of Motion Watch"""
+	"""3 patrol points (pan %, tilt %) across the important area, as seen from the current spot of MoveEye"""
 	var p: Vector3 = main.rig.global_position
 	var yaw: float = main.rig.rotation.y
 	var c := area_center()
@@ -322,7 +322,7 @@ func _draw_map() -> void:
 			map.draw_colored_polygon(pts, Color(0.75, 0.75, 0.7, 0.8))
 	var ac := area_center()
 	map.draw_arc(_w2m(Vector2(ac.x, ac.z)), zone_r * k, 0, TAU, 64, Color(1, 0.85, 0.3, 0.9), 2.0)
-	# Motion Watch: spot, «straight ahead», the turning range
+	# MoveEye: spot, «straight ahead», the turning range
 	var pm := _w2m(Vector2(cand_pos.x, cand_pos.z))
 	var hp := deg_to_rad(_pan_half() + main.CAM_FOV[0] / 2.0)
 	for a in [cand_yaw - hp, cand_yaw + hp]:

@@ -1,11 +1,11 @@
 #@ Motion Watch – Teil 510: Web: Service Worker, Kopf, Alarm, gemeinsames JavaScript. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
-SW_JS = r"""// Motion Watch service worker: shows web push messages (alarm) and opens the page on a tap
+SW_JS = r"""// MoveEye service worker: shows web push messages (alarm) and opens the page on a tap
 self.addEventListener("install", e => self.skipWaiting());
 self.addEventListener("activate", e => e.waitUntil(self.clients.claim()));
 self.addEventListener("push", e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (x) { d = {body: e.data ? e.data.text() : ""}; }
-  e.waitUntil(self.registration.showNotification(d.title || "Motion Watch", {
+  e.waitUntil(self.registration.showNotification(d.title || "MoveEye", {
     body: d.body || "", icon: "/icon-192.png", badge: "/icon-192.png", tag: d.tag || "mw", renotify: true,
     requireInteraction: !!d.urgent, vibrate: d.urgent ? [300, 120, 300, 120, 300] : [120], data: {url: d.url || "/"}}));
 });
@@ -42,11 +42,11 @@ def i18n_js(lang, help_=False):
 def render_page(page, active):
     """Fill the shared pieces into a page template."""
     page = page.replace("<head>", "<head>" + ui_seed_script() + i18n_loader(active == "help") + PWA_HEAD.replace(
-        'content="Motion Watch">', 'content="' + app_title(host_variant()) + '">').replace(".png\"", ".png?i=" + app_icon_id() + "\"")
+        'content="MoveEye">', 'content="' + app_title(host_variant()) + '">').replace(".png\"", ".png?i=" + app_icon_id() + "\"")
         + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>"
         + ("<style>:root{--mw-icon:url(/app-icon/anim.svg?i=" + app_icon_id() + ")}</style>"
            if CFG.get("app_icon_anim", True) and app_icon_id() in APP_ICONS_ANIM else ""), 1)
-    page = re.sub(r"(<h1[^>]*>)Motion Watch</h1>", r'\1Motion Watch <span class="ver">' + APP_VERSION + "</span>"
+    page = re.sub(r"(<h1[^>]*>)MoveEye</h1>", r'\1MoveEye <span class="ver">' + APP_VERSION + "</span>"
                   + ('<span class="badge yel" style="font-size:10px;padding:1px 7px;min-height:0">DEMO</span>' if DEMO["on"] else "") + "</h1>", page, count=1)
     return (page.replace("/*BASECSS*/", BASE_CSS).replace("/*COMMON*/", COMMON_JS).replace("<!--NAV-->", nav_html(active))
             .replace("/*ALERTS*/", HEADER_JS.replace("__APPVER__", APP_VERSION).replace("__BELLY__", _BELLY) + ALERT_JS).replace("/*BTJS*/", BT_JS))
@@ -56,7 +56,7 @@ HEADER_JS = r"""
 // ---- 2.95.86: back from the simulation - which settings changed there are taken over? (all pages) ----
 (function simProfAsk() {
   if (window._spa) return; window._spa = true;
-  const T = {de: {"Settings from the simulation": "Einstellungen aus der Simulation", "During the simulation these settings were changed. Motion Watch now uses the real settings again. Take over changes for the real camera?": "Während der Simulation wurden diese Einstellungen geändert. Motion Watch arbeitet jetzt wieder mit den echten Einstellungen. Änderungen für die echte Kamera übernehmen?",
+  const T = {de: {"Settings from the simulation": "Einstellungen aus der Simulation", "During the simulation these settings were changed. MoveEye now uses the real settings again. Take over changes for the real camera?": "Während der Simulation wurden diese Einstellungen geändert. MoveEye arbeitet jetzt wieder mit den echten Einstellungen. Änderungen für die echte Kamera übernehmen?",
       "Take over the selected": "Ausgewählte übernehmen", "Keep the real settings": "Echte Einstellungen behalten", "real": "echt", "simulation": "Simulation", "All": "Alle", "on": "ein", "off": "aus", "taken over": "übernommen"}};
   const L = () => { try { return (typeof LANG !== "undefined" && LANG) || "de"; } catch (e) { return "de"; } };
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : ((T[L()] || {})[k] || k);
@@ -69,7 +69,7 @@ HEADER_JS = r"""
     const b = document.createElement("div");
     b.style.cssText = "background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-radius:16px;max-width:560px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden";
     const h = document.createElement("div"); h.style.cssText = "padding:14px 16px 6px;font-weight:600;font-size:17px"; h.textContent = "🧪 " + tt("Settings from the simulation");
-    const p = document.createElement("div"); p.style.cssText = "padding:0 16px 8px;font-size:13px;color:var(--mut,#8b9bb0);line-height:1.45"; p.textContent = tt("During the simulation these settings were changed. Motion Watch now uses the real settings again. Take over changes for the real camera?");
+    const p = document.createElement("div"); p.style.cssText = "padding:0 16px 8px;font-size:13px;color:var(--mut,#8b9bb0);line-height:1.45"; p.textContent = tt("During the simulation these settings were changed. MoveEye now uses the real settings again. Take over changes for the real camera?");
     const list = document.createElement("div"); list.style.cssText = "overflow:auto;padding:0 16px;flex:1";
     const all = document.createElement("label"); all.style.cssText = "display:flex;gap:8px;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid var(--line,#1f2b3a)";
     const ca = document.createElement("input"); ca.type = "checkbox"; ca.checked = true; all.append(ca, document.createTextNode(tt("All") + " (" + q.changes.length + ")")); list.appendChild(all);

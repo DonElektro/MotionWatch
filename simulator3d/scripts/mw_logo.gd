@@ -1,5 +1,5 @@
 extends Control
-## 3D-3.62: the orange Motion Watch symbol (like «Classic» in Motion Watch) at the top left of the panel.
+## 3D-3.62: the orange MoveEye symbol (like «Classic» in MoveEye) at the top left of the panel.
 ## The pupil in the eye looks around: slowly to the left, short stop, to the right, short stop.
 
 var t := 0.0
@@ -47,25 +47,32 @@ func _draw() -> void:
 			pts.append(o + q * k)
 			cols.append(TOP.lerp(BOT, q.y / 100.0))
 	draw_polygon(pts, cols)
-	var P := func(x: float, y: float) -> Vector2: return o + Vector2(50.0 + x, 46.0 + y) * k
-	var w: float = max(1.5, 6.0 * k)
-	# fork, stand
-	var fork := PackedVector2Array([P.call(-26, -6), P.call(-26, 10)])
-	for i in range(1, 9):
-		var a: float = PI - i * (PI / 2.0) / 8.0
-		fork.append(P.call(-16 + cos(a) * 10.0, 10 + sin(a) * 10.0))
-	for i in range(0, 9):
-		var a: float = PI / 2.0 - i * (PI / 2.0) / 8.0
-		fork.append(P.call(16 + cos(a) * 10.0, 10 + sin(a) * 10.0))
-	fork.append(P.call(26, -6))
-	draw_polyline(fork, Color.WHITE, w, true)
-	draw_line(P.call(0, 20), P.call(0, 30), Color.WHITE, w, true)
-	draw_line(P.call(-14, 32), P.call(14, 32), Color.WHITE, w, true)
-	for q in [P.call(-26, -6), P.call(26, -6), P.call(-14, 32), P.call(14, 32)]:
-		draw_circle(q, w / 2.0, Color.WHITE)
-	# camera head with the moving eye
-	draw_circle(P.call(0, 0), 19.0 * k, Color.WHITE)
-	draw_circle(P.call(0, 0), 11.0 * k, DARK)                # the eye stays, only the pupil moves (3D-3.63)
-	var dx: float = look() * 4.5
-	draw_circle(P.call(dx, 0), 6.0 * k, BOT)
-	draw_circle(P.call(dx - 3.5, -3.5), 2.6 * k, Color.WHITE)
+	# 3D-3.79: MoveEye - the field of view, the eye at the bottom, a walking person inside detection corners (walks to and fro)
+	var P := func(x: float, y: float) -> Vector2: return o + Vector2(x, y) * k
+	var fan := PackedVector2Array([P.call(50, 78)])
+	var fcol := PackedColorArray([Color(1, 1, 1, 1)])
+	for i in range(17):
+		var ang: float = deg_to_rad(-140.0 + 100.0 * i / 16.0)
+		var q := Vector2(50 + cos(ang) * 62.0, 78 + sin(ang) * 62.0)
+		fan.append(P.call(q.x, q.y))
+		fcol.append(Color(1, 1, 1, lerpf(0.35, 1.0, clampf((q.y - 16.0) / 62.0, 0.0, 1.0))))
+	draw_polygon(fan, fcol)
+	var dx: float = look() * 3.0
+	var ph: float = t * 4.0                                # the legs and arms swing
+	var hx := 60.0 + dx
+	var Wc := BOT
+	var lw: float = max(1.0, 3.5 * k * 1.1)
+	draw_circle(P.call(hx + 1.1, 40 - 16.5), 5.5 * k, Wc)                      # head
+	draw_line(P.call(hx, 40 - 9.9), P.call(hx - 1.1, 40 + 3.3), Wc, max(1.5, 7.7 * k), true)   # body
+	var sw := sin(ph) * 4.5
+	draw_line(P.call(hx - 1.1, 43.3), P.call(hx - 1.1 - 5.0 - sw * 0.6, 54.3), Wc, lw, true)    # legs
+	draw_line(P.call(hx - 1.1, 43.3), P.call(hx - 1.1 + 5.0 + sw * 0.6, 53.2), Wc, lw, true)
+	draw_line(P.call(hx, 33.4), P.call(hx - 6.6 + sw * 0.4, 40), Wc, max(1.0, 3.3 * k), true)   # arms
+	draw_line(P.call(hx, 33.4), P.call(hx + 6.6 - sw * 0.4, 38.9), Wc, max(1.0, 3.3 * k), true)
+	var cw: float = max(1.0, 2.5 * k)                      # the detection corners move with the person
+	var x0 := 48.0 + dx
+	var x1 := 72.0 + dx
+	for c in [[x0, 21, x0, 16, x0 + 5, 16], [x1 - 5, 16, x1, 16, x1, 21], [x1, 49, x1, 54, x1 - 5, 54], [x0 + 5, 54, x0, 54, x0, 49]]:
+		draw_polyline(PackedVector2Array([P.call(c[0], c[1]), P.call(c[2], c[3]), P.call(c[4], c[5])]), DARK, cw, true)
+	draw_circle(P.call(50, 78), 10.0 * k, Color.WHITE)    # the eye
+	draw_circle(P.call(50, 78), 5.0 * k, DARK)

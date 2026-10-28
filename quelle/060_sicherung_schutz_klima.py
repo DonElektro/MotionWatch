@@ -100,10 +100,10 @@ def backup_copy(path, meta=None, test=False):
     kind = CFG["backup_type"]
     day = datetime.now().strftime("%Y-%m-%d")
     name = os.path.basename(path) if path else "motionwatch_test.txt"
-    dev = (CFG["device_name"] or "Motion Watch").strip()
+    dev = (CFG["device_name"] or "MoveEye").strip()
     try:
         if test:
-            data = f"Motion Watch {APP_VERSION} - backup test {datetime.now().isoformat(timespec='seconds')} ({dev})\n".encode()
+            data = f"MoveEye {APP_VERSION} - backup test {datetime.now().isoformat(timespec='seconds')} ({dev})\n".encode()
         if kind == "folder":
             base = CFG["backup_folder"].strip()
             if not base.startswith("/"):
@@ -1106,7 +1106,7 @@ class Notifier:
         if prio == 2:
             f.update(retry="60", expire="1800")                 # every minute again, at most 30 minutes, until confirmed
         if p.get("link"):
-            f.update(url=p["link"][:500], url_title="Motion Watch")
+            f.update(url=p["link"][:500], url_title="MoveEye")
         b = uuid.uuid4().hex; parts = []
         for k, v in f.items():
             parts.append(f'--{b}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode())

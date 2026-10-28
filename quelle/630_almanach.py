@@ -1,7 +1,7 @@
 #@ Motion Watch – Teil 630: Extras: Überlebens-Almanach. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ---- Überlebens-Almanach (2.95.54): tips and tricks for camping in Switzerland, to look up or to read in the evening;
 # offline on the device (/almanach/, also for guests in the same Wi-Fi), «Tipp des Abends» on the TV view. ----
-# Überlebens-Almanach für Motion Watch: Kapitel -> Artikel. Text: Absätze mit Leerzeile, Listenpunkte mit "- ".
+# Überlebens-Almanach für MoveEye: Kapitel -> Artikel. Text: Absätze mit Leerzeile, Listenpunkte mit "- ".
 ALMANAC = [
  ("notfall", "🆘", "Notfall", [
   ("Notrufnummern Schweiz", """Merk dir diese Nummern – sie funktionieren auch ohne Guthaben und meist auch ohne SIM-Karte:
@@ -157,7 +157,7 @@ Mit einer Zeigeruhr: den Stundenzeiger auf die Sonne richten. Die Mitte zwischen
 - Essen und Abfall nie im Zelt lassen, sondern im Auto oder dicht verschlossen und hoch aufgehängt.
 - Abfall jeden Abend wegräumen.
 - Tiere nie füttern – sie verlieren die Scheu und werden zum Problem.
-- Marder beissen gern Kabel im Motorraum an: ein Duftstoff oder ein Marderschutz hilft, Motion Watch meldet sie in der Nacht."""),
+- Marder beissen gern Kabel im Motorraum an: ein Duftstoff oder ein Marderschutz hilft, MoveEye meldet sie in der Nacht."""),
   ("Wolf, Bär, Luchs", """Der Wolf ist in vielen Regionen der Schweiz zurück, vereinzelt streifen Bären aus Italien durch Graubünden, der Luchs lebt im Jura und in den Alpen. Für Menschen sind sie sehr selten gefährlich.
 
 - Begegnung mit einem Wolf: stehen bleiben, auf sich aufmerksam machen (laut sprechen, gross machen), langsam zurückziehen. Nicht rennen, nicht füttern. Hunde an die Leine.
@@ -194,7 +194,7 @@ Die Urner willigten ein. Als die Brücke fertig war, schickten sie einen Ziegenb
 Der «Teufelsstein» liegt noch heute bei Göschenen. (Nacherzählt nach der Urner Sage.)"""),
   ("Warum Füchse in der Nacht bellen", """Wer am Waldrand zeltet, hört manchmal ein heiseres, fast schreiendes Bellen in der Nacht. Das sind Füchse. Im Winter, in der Paarungszeit, rufen sie sich über weite Strecken zu. Im Sommer hört man die Jungen, die vor dem Bau spielen und sich mit kurzen Lauten verständigen.
 
-Füchse sind neugierig und kommen nahe an Zelte, wenn es nach Essen riecht – Motion Watch sieht sie dann als kleine, warme Gestalt im Wärmebild. Gefährlich sind sie nicht; sie stehlen höchstens Schuhe oder die Wurst vom Tisch."""),
+Füchse sind neugierig und kommen nahe an Zelte, wenn es nach Essen riecht – MoveEye sieht sie dann als kleine, warme Gestalt im Wärmebild. Gefährlich sind sie nicht; sie stehlen höchstens Schuhe oder die Wurst vom Tisch."""),
   ("Glühwürmchen", """In warmen Juninächten leuchten an Waldrändern und in Gärten kleine grüne Lichter: Glühwürmchen. Es sind Käfer; die Weibchen sitzen leuchtend im Gras, die Männchen fliegen suchend darüber. Das Licht entsteht ohne Wärme – fast ohne Energieverlust.
 
 Künstliches Licht stört sie beim Finden ihrer Partner. Darum: Wenn ihr Glühwürmchen seht, löscht die Lampen und schaut einfach zu."""),
@@ -240,7 +240,7 @@ function home(q) {
     if (!items.length) return; h += '<div class="ch">' + c[1] + " " + esc(c[2]) + "</div>";
     items.forEach(a => { h += '<button class="it" onclick="show(' + all.indexOf(a) + ')">' + esc(a.t) + "</button>"; }); });
   if (q && !h) h = '<p class="mut">Nichts gefunden.</p>';
-  h += '<p class="mut" style="margin-top:22px">Von Motion Watch, offline auf dem Gerät. Ersetzt keinen Erste-Hilfe-Kurs – im Notfall 112 / 144. Weiterlesen (englisch, gemeinfrei): «US Army Survival Manual FM 21-76».</p>';
+  h += '<p class="mut" style="margin-top:22px">Von MoveEye, offline auf dem Gerät. Ersetzt keinen Erste-Hilfe-Kurs – im Notfall 112 / 144. Weiterlesen (englisch, gemeinfrei): «US Army Survival Manual FM 21-76».</p>';
   m.innerHTML = h; scrollTo(0, 0);
 }
 function show(i) {

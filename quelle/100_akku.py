@@ -266,7 +266,7 @@ class SysMonitor:
         return max(0.0, min(100.0, 100.0 * (1.0 - (idle - prev[0]) / (total - prev[1]))))
 
     def _shares(self):
-        """CPU of Motion Watch itself and of the 3D simulator (when it runs on the same computer), in % of the whole
+        """CPU of MoveEye itself and of the 3D simulator (when it runs on the same computer), in % of the whole
         computer like «cpu» - shown in the small box of the simulator (sim_state «cpu»)."""
         if not self.ps:
             STATE["cpu_mw"] = STATE["cpu_sim"] = None

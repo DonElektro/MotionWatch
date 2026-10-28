@@ -1,7 +1,7 @@
 extends Control
 ## Driving the mover in the simulator itself (from 3D-3.15): a green stick at the bottom right (drag with the mouse:
 ## up = forward, down = back, sideways = turn on the spot), or the arrow keys. «Hinterher» = the view follows the mover.
-## Shown only when «Mover simulieren» is on. Overrides Motion Watch while it is used.
+## Shown only when «Mover simulieren» is on. Overrides MoveEye while it is used.
 
 var main
 var dragging := false
