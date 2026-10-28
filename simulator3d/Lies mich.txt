@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.70 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.71 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,6 +607,11 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 Motion Watch); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.71
+3D-3.71: Werkzeuge → «Motion Watch: Referenz-Scan» und «Mit Referenz vergleichen»: Motion Watch (ab 2.95.97) fährt mit dem
+Kopf alle Richtungen ab, speichert Referenz-Fotos bzw. vergleicht und schreibt einen Bericht (was fehlt, neu ist, sich
+verändert hat). Darunter steht der Stand von Motion Watch. «Testhilfe: Velo wegnehmen / zurückstellen» zum Ausprobieren.
 
 NEU IN 3D-3.70
 3D-3.70: Motion Watch kann mitspielen: ein Tipp ins Livebild ist ein Schuss / Auslöser an genau diese Stelle der Kopfkamera.

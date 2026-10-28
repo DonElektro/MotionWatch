@@ -1784,3 +1784,43 @@ _HX96 = {"Shoot": ("Tirer", "Sparare", "Sajettar"), "Shooting on": ("Tir activé
          "Tap into the live picture to shoot - a miss is marked as a false alarm": ("Touchez l'image en direct pour tirer – un tir manqué compte comme fausse alarme", "Tocca l'immagine dal vivo per sparare – un colpo mancato conta come falso allarme", "Tutga il maletg live per sajettar – sch'ins fala, vala quai sco fals alarm")}
 for _k, (_fr, _it, _rm) in _HX96.items():
     TRX["fr"].setdefault(_k, _fr); TRX["it"].setdefault(_k, _it); TRX["rm"].setdefault(_k, _rm)
+_HX97 = {  # 2.95.97: reference scan
+    'Reference scan': ('Referenz-Scan', 'Scan de référence', 'Scansione di riferimento', 'Scan da referenza'),
+    'Directions side by side': ('Richtungen nebeneinander', 'Directions côte à côte', 'Direzioni affiancate', 'Direcziuns ina sper l’autra'),
+    'Turn from (% of the pan range)': ('Drehen von (% des Schwenkbereichs)', 'Tourner de (% de la plage)', 'Ruotare da (% del campo)', 'Sviar da (% dal champ)'),
+    'Turn to (% of the pan range)': ('Drehen bis (% des Schwenkbereichs)', 'Tourner jusqu’à (% de la plage)', 'Ruotare fino a (% del campo)', 'Sviar fin (% dal champ)'),
+    'Heights (rows)': ('Höhen (Reihen)', 'Hauteurs (rangées)', 'Altezze (file)', 'Autezzas (rangs)'),
+    'Middle height (tilt %)': ('Mittlere Höhe (Neigung %)', 'Hauteur moyenne (inclinaison %)', 'Altezza media (inclinazione %)', 'Autezza media (inclinaziun %)'),
+    'Distance between the rows (tilt %)': ('Abstand der Reihen (Neigung %)', 'Écart entre les rangées (inclinaison %)', 'Distanza tra le file (inclinazione %)', 'Distanza tranter ils rangs (inclinaziun %)'),
+    'Photos per direction (more = less noise)': ('Fotos pro Richtung (mehr = weniger Rauschen)', 'Photos par direction (plus = moins de bruit)', 'Foto per direzione (più = meno rumore)', 'Fotos per direcziun (dapli = main canera)'),
+    'Wait after turning (seconds)': ('Warten nach dem Drehen (Sekunden)', 'Attente après rotation (secondes)', 'Attesa dopo la rotazione (secondi)', 'Spetgar suenter sviar (secundas)'),
+    'Sensitivity of the comparison (%)': ('Empfindlichkeit des Vergleichs (%)', 'Sensibilité de la comparaison (%)', 'Sensibilità del confronto (%)', 'Sensibilitad da la cumparegliaziun (%)'),
+    'Smallest change (% of the picture)': ('Kleinste Veränderung (% des Bildes)', 'Plus petit changement (% de l’image)', 'Cambiamento minimo (% dell’immagine)', 'Midada la pli pitschna (% dal maletg)'),
+    'Compare every (minutes while armed, 0 = off)': ('Vergleichen alle (Minuten, wenn scharf; 0 = aus)', 'Comparer toutes les (minutes, armé ; 0 = non)', 'Confronta ogni (minuti, se armato; 0 = no)', 'Cumparegliar mintga (minutas, sch’activà; 0 = na)'),
+    'Compare with the reference when armed': ('Beim Scharfschalten mit der Referenz vergleichen', 'Comparer à la référence lors de l’armement', 'Confronta con il riferimento all’attivazione', 'Cumparegliar cun la referenza cun activar'),
+    'Push message when something is missing': ('Push-Meldung, wenn etwas fehlt', 'Notification si quelque chose manque', 'Notifica se manca qualcosa', 'Messadi push, sch’insatge manca'),
+    'Push message also for new or changed things': ('Push-Meldung auch bei Neuem oder Verändertem', 'Notification aussi pour du nouveau ou du changé', 'Notifica anche per cose nuove o cambiate', 'Messadi push er per nov u midà'),
+    'Scan now': ('Jetzt scannen', 'Scanner maintenant', 'Scansiona ora', 'Scannar ussa'),
+    'Compare now': ('Jetzt vergleichen', 'Comparer maintenant', 'Confronta ora', 'Cumparegliar ussa'),
+    'Reports (browser)': ('Berichte (Browser)', 'Rapports (navigateur)', 'Rapporti (browser)', 'Rapports (navigatur)'),
+    'refscan-note': ('Der Kopf fährt ein Raster von Richtungen ab und speichert Fotos als Referenz. Später vergleicht Motion Watch dieselben Richtungen und zeigt im Bericht, was fehlt, neu ist oder sich verändert hat. Der Assistent ist unter Werkzeuge → Referenz-Scan.',
+                     'La tête parcourt une grille de directions et garde des photos comme référence. Plus tard, Motion Watch compare les mêmes directions et montre ce qui manque, est nouveau ou a changé. L’assistant se trouve sous Outils → Scan de référence.',
+                     'La testa percorre una griglia di direzioni e salva foto come riferimento. Più tardi Motion Watch confronta le stesse direzioni e mostra cosa manca, è nuovo o è cambiato. L’assistente è in Strumenti → Scansione di riferimento.',
+                     'Il chau percurra ina rait da direcziuns e memorisescha fotos sco referenza. Pli tard cumpareglia Motion Watch las medemas direcziuns e mussa tge che manca, è nov u midà. L’assistent è sut Utensils → Scan da referenza.'),
+    'Scanning': ('Scannen', 'Scan', 'Scansione', 'Scannar'), 'Comparing': ('Vergleichen', 'Comparaison', 'Confronto', 'Cumparegliar'),
+    'No reference yet': ('Noch keine Referenz', 'Pas encore de référence', 'Ancora nessun riferimento', 'Anc nagina referenza'),
+    'missing': ('fehlt', 'manque', 'manca', 'manca'), 'new': ('neu', 'nouveau', 'nuovo', 'nov'), 'changed': ('verändert', 'changé', 'cambiato', 'midà'),
+    '{what}: direction {i} of {n} …': ('{what}: Richtung {i} von {n} …', '{what} : direction {i} sur {n} …', '{what}: direzione {i} di {n} …', '{what}: direcziun {i} da {n} …'),
+    'Reference: {n} directions, {t}': ('Referenz: {n} Richtungen, {t}', 'Référence : {n} directions, {t}', 'Riferimento: {n} direzioni, {t}', 'Referenza: {n} direcziuns, {t}'),
+    'last check: {m} missing, {n} new, {c} changed': ('letzter Vergleich: {m} fehlt, {n} neu, {c} verändert', 'dernier contrôle : {m} manque, {n} nouveau, {c} changé', 'ultimo controllo: {m} manca, {n} nuovo, {c} cambiato', 'ultima controlla: {m} manca, {n} nov, {c} midà'),
+    'Reference scan: {m} missing, {n} new, {c} changed - see the report': ('Referenz-Scan: {m} fehlt, {n} neu, {c} verändert – siehe Bericht', 'Scan de référence : {m} manque, {n} nouveau, {c} changé – voir le rapport', 'Scansione di riferimento: {m} manca, {n} nuovo, {c} cambiato – vedi il rapporto', 'Scan da referenza: {m} manca, {n} nov, {c} midà – guarda il rapport'),
+    'a scan is already running': ('es läuft schon ein Scan', 'un scan est déjà en cours', 'una scansione è già in corso', 'in scan è gia en lavur'),
+    'no camera': ('keine Kamera', 'pas de caméra', 'nessuna telecamera', 'nagina camera'),
+    'no reference yet - scan first': ('noch keine Referenz – zuerst scannen', 'pas encore de référence – scanner d’abord', 'ancora nessun riferimento – prima scansionare', 'anc nagina referenza – l’emprim scannar'),
+    'Open the assistant': ('Assistent öffnen', 'Ouvrir l’assistant', 'Apri l’assistente', 'Avrir l’assistent'),
+    'Motion Watch: reference scan': ('Motion Watch: Referenz-Scan', 'Motion Watch : scan de référence', 'Motion Watch: scansione di riferimento', 'Motion Watch: scan da referenza'),
+}
+for _k, _v in _HX97.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])

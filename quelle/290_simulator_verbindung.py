@@ -59,6 +59,17 @@ def servo_half(axis):
     return max(10.0, min(360.0, r)) / 2.0
 
 
+def _sim_refscan_info():
+    try:
+        st = refscan_state()
+        r = st["reports"][0] if st["reports"] else None
+        return {"busy": st["busy"], "step": st["step"], "n": st["n"], "ref": bool(st["ref"]), "ref_n": (st["ref"] or {}).get("n", 0),
+                "last": {"missing": r["missing"], "new": r["new"], "changed": r["changed"], "t": r["t"]} if r else None,
+                "cmd_seen": int(SIM.get("cmd_seen") or 0)}
+    except Exception:
+        return None
+
+
 def sim_state():
     hp, ht = servo_half("pan"), servo_half("tilt")
     pl, tl = min(float(CFG["pan_limit"]), hp), min(float(CFG["tilt_limit"]), ht)
@@ -66,6 +77,7 @@ def sim_state():
     rs = STATE.get("relay_states") or []
     return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "Motion Watch", "armed": is_armed(), "picture_mode": CFG["picture_mode"],
             "mw_version": APP_VERSION, "ai_status": str(STATE.get("ai_status") or ""),     # 2.95.67: for the test bench in the simulator
+            "refscan": _sim_refscan_info(),                                                  # 2.95.97: the reference scan, for the button there
             "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * hp, 2),
                       "tilt_deg": round((CFG["tilt"] - 50) / 50 * ht, 2), "pan_limit": pl, "tilt_limit": tl,
                       "pan_range": round(2 * hp, 1),             # the whole turning range of the pan servo (2.95.24, for the Python simulator)

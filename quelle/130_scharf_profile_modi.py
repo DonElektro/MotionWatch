@@ -37,6 +37,10 @@ def arm_tick():
         ARM["announced"] = True
         log_event("sys", "Armed now - alarms are active")
         push_alert("armed", "armed")
+        try:
+            refscan_on_armed()                         # 2.95.97: compare with the reference scan (if wanted)
+        except Exception:
+            pass
 
 
 # ----------------------------------------------------------------------------

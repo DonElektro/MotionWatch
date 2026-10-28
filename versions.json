@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 16:50",
+ "generated": "2026-10-28 17:19",
  "versions": [
   {
-   "version": "2.95.96",
-   "file": "webcam_bewegung_2_95_96.py",
+   "version": "2.95.97",
+   "file": "webcam_bewegung_2_95_97.py",
    "url": "",
-   "sha256": "fa9ee54338aa5f9a517e81e3abd3f7138d88bd4dbe00c6702c83565caad4a8b5",
-   "date": "2026-10-28 16:50",
-   "notes": "Simulation: 🎯 Schiessen im Livebild (Schuss / Auslöser an die angetippte Stelle, in jedem Spiel und in der freien Welt; daneben = Fehlalarm, wird markiert); nach dem Schwenken von Hand keine weissen Bewegungs-Umrisse mehr (Hintergrund wird sofort neu gelernt); 3D-Simulator 3D-3.70",
-   "sig": "56cc4ce4c4afb7a2d024c577a8bc7a69a805beaeffff3875b89edb2a076cda2be5b85ca7bebdb721209276baf7a7cf53bc294a7b1148a068ff52e88f442e040a"
+   "sha256": "0c24a841eba7b917734bd6ae7fe0a48b8fa5519bc2e8af03a9545065d48be1ed",
+   "date": "2026-10-28 17:19",
+   "notes": "Referenz-Scan: Assistent (Werkzeuge) – der Kopf fährt alle Richtungen ab und speichert Referenz-Fotos; Vergleich von Hand, beim Scharfschalten oder alle N Minuten, Bericht mit fehlt / neu / verändert, Push-Meldung; auch vom 3D-Simulator aus startbar (3D-3.71)",
+   "sig": "39aacffdc0f6b0845f3a1483ef6aa102d5486874f2a0eaad1dc712a6f3b82a3105514dfca4ab105410cb9177b2092b6d33e63cc952b6fc9b3313c5386504910b"
   },
   {
    "version": "2.94.5",

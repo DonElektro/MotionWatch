@@ -337,6 +337,7 @@ func bike(p: Vector3, rot_y: float) -> void:
 	put(bk, m.box(0.12, 0.05, 0.24), Vector3(0, 0.84, 0.32), Color(0.1, 0.1, 0.1), "stone")                 # saddle
 	put(bk, cyl(0.09, 0.09, 0.02, 12), Vector3(0.03, 0.3, 0.0), Color(0.6, 0.6, 0.62), "stone", Vector3(0, 0, PI / 2))   # chain ring
 	m.obj["bike"] = p
+	m.bike_node = bk                             # 3D-3.71: the test aid «Velo wegnehmen» hides it
 	m.add_obstacle(p, 0.5)
 	m.set_obstacle_height(1.0)
 

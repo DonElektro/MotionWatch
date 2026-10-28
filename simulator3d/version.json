@@ -1,12 +1,12 @@
 {
- "version": "3D-3.70",
+ "version": "3D-3.71",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30896042,
- "sha256": "96b27c01ca093d173b0bda1b1af3d8851f6c144d882115a2427d4fd10eda7da5",
- "notes": "Motion Watch spielt mit: Schuss / Auslöser aus dem Livebild, daneben = Fehlalarm",
+ "size": 30898925,
+ "sha256": "da56e68e29cad32d13ac4204970e89b7886a154b8577c48e541ba95f20ce3f94",
+ "notes": "Knöpfe für den Referenz-Scan von Motion Watch, Testhilfe Velo",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24017765,
-  "sha256": "76b68548288b1cee82493a6d38d3a20f2735eb67f79dcb4f0b940c4af786b6ce"
+  "size": 24020372,
+  "sha256": "95770a83082816c6ebc8fda22b9b689cadadd1be2b6c2f38512c9c7abe7a7da1"
  }
 }

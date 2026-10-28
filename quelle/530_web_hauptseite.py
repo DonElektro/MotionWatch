@@ -1821,7 +1821,7 @@ try { document.body.classList.toggle("icplain", localStorage.getItem("mw-icons")
 const GROUPS = [
   {id: "alarm", icon: "🛡", name: "Alarm & camping", open: true,
    items: [{card: "protect", title: "Switches", ic: "🔘"}, {sec: "Camping / protection", title: "Protection & network", ic: "🏕️"}, {sec: "Power saving", ic: "🍃"},
-           {card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Theft protection", title: "Theft protection", ic: "🔒"}]},
+           {card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Theft protection", title: "Theft protection", ic: "🔒"}, {sec: "Reference scan", title: "Reference scan", ic: "🧭"}]},
   {id: "notify", icon: "🔔", name: "Notifications", items: [{sec: "Notifications", title: "Push messages", ic: "📲"},
    {card: "report", sec: "Night report", title: "Night report", ic: "🌙"}, {sec: "Messages", ic: "💬"}, {sec: "SMS (LTE stick)", title: "SMS (LTE stick)", ic: "📱"}]},
   {id: "detect", icon: "🎯", name: "Detection", items: [{sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {fine: true},
@@ -2043,7 +2043,7 @@ function qsPaint(j) {
 // ---- overview: green arrow = main function of this topic is on ----
 const MAINSW = {
   "protect": (c, s) => s.arm_state === "armed" || s.arm_state === "arming", "sec:Camping / protection": (c, s) => !!s.camping,
-  "sec:Power saving": c => c.eco_on, "sec:Extra sensors": c => c.sens_on && (c.sensors || []).length > 0, "sec:Storm warning": c => c.storm_on, "sec:GPS module": c => c.gpsmod_on, "sec:Simulator": (c, s) => !!(s.sim && s.sim.on && s.sim.ok && s.sim.pic !== false), "sec:Solar panel": c => c.solar_on, "batt": (c, s) => !!(s.battery && s.battery.on), "sec:Theft protection": c => c.tamper_on || c.tamper_motion || c.tamper_power,
+  "sec:Reference scan": c => !!(c.refscan_on_arm || +c.refscan_every > 0), "sec:Power saving": c => c.eco_on, "sec:Extra sensors": c => c.sens_on && (c.sensors || []).length > 0, "sec:Storm warning": c => c.storm_on, "sec:GPS module": c => c.gpsmod_on, "sec:Simulator": (c, s) => !!(s.sim && s.sim.on && s.sim.ok && s.sim.pic !== false), "sec:Solar panel": c => c.solar_on, "batt": (c, s) => !!(s.battery && s.battery.on), "sec:Theft protection": c => c.tamper_on || c.tamper_motion || c.tamper_power,
   "sec:Notifications": c => c.notify_on, "report": c => c.report_on, "sec:SMS (LTE stick)": c => c.sms_on,
   "sec:Detection": c => c.detection_on, "sec:AI detection": c => c.ai_enabled, "sec:Vehicle filter": c => c.car_filter, "sec:Rain": c => c.rain_auto,
   "sec:Wind": c => c.wind_auto, "sec:Low light": c => c.lowlight_auto || c.nightvision || c.nightvision_auto, "sec:Auto-tune": c => c.auto_tune,
@@ -2168,6 +2168,8 @@ async function build() {
     if (sec.id === "Notifications") wpExtras(d);
     if (sec.id === "Backup") bkExtras(d);
     if (sec.id === "Theft protection") tpExtras(d);
+    if (sec.id === "Reference scan") { const bx = el("div", "auxbox"); bx.append(el("div", "mut", t("refscan-note")));   // 2.95.97
+      const a_ = el("a", "btn", "🧭 " + t("Open the assistant")); a_.href = "/tools#refscan"; a_.style.cssText = "display:block;margin-top:8px;text-align:center"; bx.appendChild(a_); d.appendChild(bx); }
     if (sec.id === "Extra sensors") sensExtras(d);
     if (sec.id === "Storm warning") stormExtras(d);
     if (sec.id === "GPS module") gpsExtras(d);
@@ -3730,6 +3732,7 @@ function simShootPaint(s) {
   $("#mws-b span").textContent = SHOOT.on ? t("Shooting on") : t("Shoot");
   $("#mws-t").textContent = t("Tap the picture") + " · " + SHOOT.hits + "× ✓ · " + SHOOT.miss + "× ✗ " + t("false alarm");
 }
+Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Open the assistant": "Assistent öffnen", "refscan-note": "Der Kopf fährt ein Raster von Richtungen ab und speichert Fotos als Referenz. Später vergleicht Motion Watch dieselben Richtungen und zeigt im Bericht, was fehlt, neu ist oder sich verändert hat."});
 Object.assign(I18N.de, {"Shoot": "Schiessen", "Shooting on": "Schiessen an", "Shooting off": "Schiessen aus", "Tap the picture": "Ins Bild tippen", "false alarm": "Fehlalarm",
   "Tap into the live picture to shoot - a miss is marked as a false alarm": "Ins Livebild tippen zum Schiessen – daneben wird als Fehlalarm markiert"});
 // ---- modes (2.95.47): camping guard, campfire games, gamer, home, wildlife, night guard, transport ----

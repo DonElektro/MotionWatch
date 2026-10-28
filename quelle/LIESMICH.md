@@ -53,6 +53,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `290_simulator_verbindung.py` | Verbindung zum Simulator | 333 |
 | `300_werkzeuge_simulator3d.py` | Werkzeuge, 3D-Simulator für Windows und den Pi, Simulator-Suche | 1155 |
 | `310_testlaeufe.py` | Testläufe mit Auswertung und Optimierung | 485 |
+| `315_referenz_scan.py` | Referenz-Scan: Raster abfahren, Referenz-Fotos, Vergleich, Bericht (2.95.97) | 347 |
 | `320_spielecke.py` | Extras: Spielecke und Spieleabend | 743 |
 | `330_usb_geraete.py` | USB-Geräte, Spielesammlung, Seite verlassen (✕ Zurück) | 172 |
 | `340_spiele_seiten.py` | Extras: Seiten der Spielecke und des Spieleabends | 655 |

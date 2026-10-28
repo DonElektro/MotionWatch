@@ -42,6 +42,17 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
 .tact button,.tact .btn{padding:7px 16px;font-size:13px}
 .tbd>*+*{margin-top:12px}
 .tbd .mut{font-size:13px;line-height:1.5}
+.rs-steps{display:flex;gap:6px;flex-wrap:wrap}.rs-steps>span{font-size:12px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);color:var(--mut);cursor:pointer}
+.rs-steps>span.on{background:var(--acc,#3b8cff);border-color:var(--acc,#3b8cff);color:#fff}.rs-steps>span.done{color:var(--grn);border-color:var(--grn)}
+.rs-live img{width:100%;max-height:52vh;object-fit:contain;border-radius:12px;background:#000;display:block}
+.rs-pad button{flex:1;min-width:48px}
+.rs-prog{height:10px;border-radius:6px;background:var(--field);overflow:hidden}.rs-prog i{display:block;height:100%;width:0;background:var(--acc,#3b8cff);transition:width .4s}
+.rs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}.rs-grid img{width:100%;border-radius:8px;display:block}
+.rs-grid figure{margin:0}.rs-grid figcaption{font-size:11px;color:var(--mut);text-align:center}
+.rs-rep{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.rs-rep.sel{border-color:var(--acc,#3b8cff)}.rs-rep b{font-weight:600}
+.rs-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.rs-pair img{width:100%;border-radius:8px;display:block}.rs-pair div{font-size:11px;color:var(--mut)}
+.rs-ch{font-size:13px;margin:2px 0}.rs-ch.missing{color:#ff6b6b}.rs-ch.new{color:#4fa3ff}.rs-ch.changed{color:#f5a623}
 .opt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:14px;cursor:pointer}
 .opt+.opt{margin-top:0}
 .tbd .opt + :not(.opt){margin-top:12px}
@@ -118,6 +129,7 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <button type="button" class="tli" data-k="wifi" onclick="pick('wifi')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-4M9 20v-8M14 20V8M19 20V4"/></svg><span class="tln"><b data-i18n="Wi-Fi around">Wi-Fi around</b><span class="tsum" id="s-wifi"></span></span><i class="tdot" id="d-wifi"></i></button>
   <div class="tlg" data-i18n="Device tests">Device tests</div>
   <button type="button" class="tli" data-k="focus" onclick="pick('focus')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span class="tln"><b data-i18n="Focus assistant">Focus assistant</b><span class="tsum" id="s-focus"></span></span><i class="tdot" id="d-focus"></i></button>
+  <button type="button" class="tli" data-k="refscan" onclick="pick('refscan')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="12" cy="12" r="3.5"/><path d="M12 6v2M12 16v2M6 12h2M16 12h2"/></svg><span class="tln"><b data-i18n="Reference scan">Reference scan</b><span class="tsum" id="s-refscan"></span></span><i class="tdot" id="d-refscan"></i></button>
   <button type="button" class="tli" data-k="servo" onclick="pick('servo')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><span class="tln"><b data-i18n="Servo test">Servo test</b><span class="tsum" id="s-servo"></span></span><i class="tdot" id="d-servo"></i></button>
   <button type="button" class="tli" data-k="audio" onclick="pick('audio')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span class="tln"><b data-i18n="Speaker and microphone">Speaker and microphone</b><span class="tsum" id="s-audio"></span></span><i class="tdot" id="d-audio"></i></button>
   <button type="button" class="tli" data-k="sd" onclick="pick('sd')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><span class="tln"><b data-i18n="Memory card test">Memory card test</b><span class="tsum" id="s-sd"></span></span><i class="tdot" id="d-sd"></i></button>
@@ -131,6 +143,42 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <button type="button" class="tli" data-k="diag" onclick="pick('diag')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><span class="tln"><b data-i18n="Diagnosis package">Diagnosis package</b><span class="tsum" id="s-diag"></span></span><i class="tdot" id="d-diag"></i></button>
 </nav>
 <div class="tpane">
+  <section class="tool" id="c-refscan" data-k="refscan" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="12" cy="12" r="3.5"/><path d="M12 6v2M12 16v2M6 12h2M16 12h2"/></svg><h2 data-i18n="Reference scan">Reference scan</h2></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="refscan-note">refscan-note</div>
+    <div class="rs-steps"><span data-n="1">1 · <span data-i18n="Set up">Set up</span></span><span data-n="2">2 · <span data-i18n="Settings">Settings</span></span><span data-n="3">3 · <span data-i18n="Scan">Scan</span></span><span data-n="4">4 · <span data-i18n="Compare">Compare</span></span></div>
+    <div class="rs-pane" data-p="1">
+      <div class="mut" data-i18n="rs-setup">rs-setup</div>
+      <div class="rs-live"><img id="rs-live" alt=""></div>
+      <div class="trow rs-pad"><button type="button" class="sec" onclick="rsMove('left')">◀</button><button type="button" class="sec" onclick="rsMove('up')">▲</button><button type="button" class="sec" onclick="rsMove('down')">▼</button><button type="button" class="sec" onclick="rsMove('right')">▶</button><button type="button" class="sec" onclick="rsMove('center')" data-i18n="Middle">Middle</button></div>
+      <div class="trow"><button type="button" onclick="rsStep(2)"><span data-i18n="Next">Next</span> ›</button></div>
+    </div>
+    <div class="rs-pane" data-p="2" hidden>
+      <div class="mut" data-i18n="rs-settings">rs-settings</div>
+      <div id="rs-set"></div>
+      <div class="mut" id="rs-plan"></div>
+      <div class="trow"><button type="button" class="sec" onclick="rsStep(1)">‹ <span data-i18n="Back">Back</span></button><button type="button" onclick="rsStep(3)"><span data-i18n="Next">Next</span> ›</button></div>
+    </div>
+    <div class="rs-pane" data-p="3" hidden>
+      <div class="mut" data-i18n="rs-scan">rs-scan</div>
+      <div class="trow"><button type="button" id="rs-scan" onclick="rsGo('scan')">📸 <span data-i18n="Take the reference now">Take the reference now</span></button><button type="button" class="sec" id="rs-stop" onclick="rsGo('stop')" hidden data-i18n="Stop">Stop</button></div>
+      <div class="rs-prog" id="rs-prog" hidden><i></i></div><div class="mut" id="rs-msg"></div>
+      <div id="rs-ref" class="rs-grid"></div>
+      <div class="trow"><button type="button" class="sec" onclick="rsStep(2)">‹ <span data-i18n="Back">Back</span></button><button type="button" id="rs-to4" onclick="rsStep(4)"><span data-i18n="Next">Next</span> ›</button></div>
+    </div>
+    <div class="rs-pane" data-p="4" hidden>
+      <div class="mut" data-i18n="rs-compare">rs-compare</div>
+      <div class="trow"><button type="button" id="rs-cmp" onclick="rsGo('compare')">🔍 <span data-i18n="Compare now">Compare now</span></button><button type="button" class="sec" onclick="rsStep(3)" data-i18n="New reference">New reference</button></div>
+      <div class="rs-prog" id="rs-prog2" hidden><i></i></div><div class="mut" id="rs-msg2"></div>
+      <div id="rs-opts"></div>
+      <h3 data-i18n="Reports">Reports</h3>
+      <div id="rs-reps"></div>
+      <div id="rs-rep"></div>
+    </div>
+    </div>
+  </section>
   <section class="tool" id="c-usb" data-k="usb" hidden>
     <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
       <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v15"/><path d="M9 5l3-3 3 3"/><path d="M12 13l-5-3V7"/><path d="M12 11l5-3V6"/><rect x="5.5" y="5" width="3" height="2.5"/><circle cx="17" cy="5" r="1.4"/><circle cx="12" cy="19" r="2.5"/></svg><h2 data-i18n="USB devices">USB devices</h2></div><div class="tact"><button type="button" onclick="usbLoad(true)" data-i18n="Read again">Read again</button></div></div>
@@ -737,6 +785,112 @@ function usbPaint(j, manual) {
   if (!j.ids) box.appendChild(el("div", "mut", t("usb-ids")));
 }
 (async () => { for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100)); usbLoad(); })();
+// ---- 2.95.97: reference scan - assistant, progress, reports ----
+let RS = null, RSP = 0, RST = null, RSLIVE = null, RSREP = "";
+const RSSET = [["refscan_pan_steps", "Directions side by side", 1, 12, 1], ["refscan_pan_from", "Turn from (% of the pan range)", 0, 100, 1], ["refscan_pan_to", "Turn to (% of the pan range)", 0, 100, 1],
+  ["refscan_tilt_steps", "Heights (rows)", 1, 3, 1], ["refscan_tilt_mid", "Middle height (tilt %)", 20, 80, 1], ["refscan_tilt_span", "Distance between the rows (tilt %)", 4, 40, 1],
+  ["refscan_photos", "Photos per direction (more = less noise)", 1, 5, 1], ["refscan_settle", "Wait after turning (seconds)", 0.5, 5, 0.5], ["refscan_sens", "Sensitivity of the comparison (%)", 10, 100, 5],
+  ["refscan_min_area", "Smallest change (% of the picture)", 0.1, 5, 0.1]];
+const RSOPT = [["refscan_on_arm", "Compare with the reference when armed"], ["refscan_push", "Push message when something is missing"], ["refscan_push_all", "Push message also for new or changed things"]];
+async function rsPost(d) { return await fetch("/api/refscan", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: LANG}, d))}).then(x => x.json()).catch(() => null); }
+async function rsSet(k, v) { await fetch("/api/set", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({key: k, value: v})}).catch(() => null); rsLoad(); }
+async function rsMove(dir) { await fetch("/api/move", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({dir: dir, step: 4})}).catch(() => null); }
+async function rsGo(op) { const r = await rsPost({op: op}); if (r && !r.ok && r.error) alert(r.error); rsLoad(); }
+function rsStep(n) {
+  RSP = n; try { localStorage.setItem("mw-rs-step", n); } catch (e) {}
+  document.querySelectorAll("#c-refscan .rs-pane").forEach(x => x.hidden = +x.dataset.p !== n);
+  document.querySelectorAll("#c-refscan .rs-steps>span").forEach(x => { x.classList.toggle("on", +x.dataset.n === n); x.classList.toggle("done", +x.dataset.n < n || (+x.dataset.n === 3 && RS && RS.ref)); });
+  clearInterval(RSLIVE); RSLIVE = null;
+  if (n === 1) { const im = $("#rs-live"); const go = () => { if (SEL === "refscan" && RSP === 1 && !document.hidden) im.src = "/snapshot.jpg?r=" + Date.now(); }; go(); RSLIVE = setInterval(go, 1200); }
+  if (n === 2) rsSetPaint();
+}
+function rsSetPaint() {
+  const C = (RS && RS.cfg) || {}, box = $("#rs-set"); box.textContent = "";
+  RSSET.forEach(([k, lb, mn, mx, st]) => { const r = el("label", "opt"); r.style.display = "block";
+    const v = C[k] ?? mn, top = el("div", "trow"); top.append(el("span", "", t(lb)), el("b", "", String(v))); top.style.justifyContent = "space-between";
+    const i = document.createElement("input"); i.type = "range"; i.min = mn; i.max = mx; i.step = st; i.value = v; i.style.width = "100%";
+    i.oninput = () => { top.lastChild.textContent = i.value; }; i.onchange = () => rsSet(k, +i.value); r.append(top, i); box.appendChild(r); });
+  const n = (RS && RS.plan) || 0, sec = Math.round(n * ((+(C.refscan_settle || 1.5)) + 0.6 * (+(C.refscan_photos || 2)) + 0.8));
+  $("#rs-plan").textContent = n + " " + t("directions") + " · " + t("about") + " " + (sec >= 60 ? Math.round(sec / 60) + " min" : sec + " s");
+}
+function rsOptsPaint() {
+  const C = (RS && RS.cfg) || {}, box = $("#rs-opts"); if (box.dataset.k === JSON.stringify(C)) return; box.dataset.k = JSON.stringify(C); box.textContent = "";
+  RSOPT.forEach(([k, lb]) => { const l = el("label", "opt"); const i = document.createElement("input"); i.type = "checkbox"; i.className = "sw"; i.checked = !!C[k];
+    i.onchange = () => rsSet(k, i.checked); l.append(el("span", "", t(lb)), i); box.appendChild(l); });
+  const l = el("label", "opt"); l.style.display = "block"; const top = el("div", "trow"); top.style.justifyContent = "space-between";
+  top.append(el("span", "", t("Compare every (minutes while armed, 0 = off)")), el("b", "", String(C.refscan_every || 0)));
+  const i = document.createElement("input"); i.type = "range"; i.min = 0; i.max = 240; i.step = 5; i.value = C.refscan_every || 0; i.style.width = "100%";
+  i.oninput = () => { top.lastChild.textContent = i.value; }; i.onchange = () => rsSet("refscan_every", +i.value); l.append(top, i); box.appendChild(l);
+}
+async function rsLoad() {
+  clearTimeout(RST);
+  const r = await fetch("/api/refscan", {cache: "no-store"}).then(x => x.ok ? x.json() : null).catch(() => null);
+  if (r) { RS = r; rsPaint(); }
+  RST = setTimeout(rsLoad, RS && RS.busy ? 1000 : (SEL === "refscan" ? 4000 : 30000));
+}
+function rsWhen(ts) { const d = new Date(ts * 1000); return d.toLocaleDateString(LANG === "de" ? "de-CH" : undefined) + " " + d.toTimeString().slice(0, 5); }
+function rsPaint() {
+  const R = RS, L = (R.reports || [])[0];
+  sum("refscan", R.busy ? (R.busy === "scan" ? t("Scanning") : t("Comparing")) + " " + R.step + "/" + R.n : !R.ref ? t("No reference yet") : L ? (L.missing ? "⚠ " + L.missing + " " + t("missing") : "✓ " + t("nothing missing")) : R.ref.n + " " + t("directions"),
+      R.busy ? "warn" : L && L.missing ? "bad" : R.ref ? "ok" : "");
+  if (!RSP) { let n = 0; try { n = +localStorage.getItem("mw-rs-step") || 0; } catch (e) {} rsStep(n || (R.ref ? 4 : 1)); }
+  const pr = R.n ? Math.round(100 * Math.max(0, R.step - (R.busy ? 0.5 : 0)) / R.n) : 0;
+  [["scan", "#rs-prog", "#rs-msg"], ["compare", "#rs-prog2", "#rs-msg2"]].forEach(([op, pg, mg]) => {
+    $(pg).hidden = R.busy !== op; $(pg).firstChild.style.width = pr + "%";
+    $(mg).textContent = R.busy === op ? (op === "scan" ? t("Scanning") : t("Comparing")) + ": " + t("direction") + " " + R.step + " / " + R.n + " …" : (R.msg ? t(R.msg) : ""); });
+  $("#rs-scan").disabled = !!R.busy; $("#rs-cmp").disabled = !!R.busy || !R.ref; $("#rs-stop").hidden = !R.busy;
+  const rb = $("#rs-ref"), key = R.ref ? R.ref.t + ":" + R.ref.n : "";
+  if (rb.dataset.k !== key) { rb.dataset.k = key; rb.textContent = "";
+    if (R.ref) (R.ref.positions || []).forEach(p => { const f = el("figure"); const im = document.createElement("img"); im.loading = "lazy"; im.src = "/refscan/file/ref/" + p.file + "?t=" + R.ref.t;
+      f.append(im, el("figcaption", "", t("Pan") + " " + p.pan + " % · " + t("Tilt") + " " + p.tilt + " %")); rb.appendChild(f); }); }
+  if (R.ref) $("#rs-msg").textContent = R.busy === "scan" ? $("#rs-msg").textContent : "✓ " + t("Reference") + ": " + R.ref.n + " " + t("directions") + " · " + rsWhen(R.ref.t);
+  rsOptsPaint();
+  const rl = $("#rs-reps"), rk = JSON.stringify((R.reports || []).map(x => x.id));
+  if (rl.dataset.k !== rk) { rl.dataset.k = rk; rl.textContent = "";
+    if (!(R.reports || []).length) rl.appendChild(el("div", "mut", t("No report yet - press «Compare now».")));
+    (R.reports || []).forEach(x => { const d = el("div", "rs-rep"); d.dataset.id = x.id;
+      d.append(el("span", "", rsWhen(x.t) + " · " + t(x.reason || "")), el("b", "", (x.missing ? "⚠ " + x.missing + " " + t("missing") + " · " : "") + x.new + " " + t("new") + " · " + x.changed + " " + t("changed")));
+      d.onclick = () => rsReport(x.id); rl.appendChild(d); });
+    if ((R.reports || []).length && !RSREP) rsReport(R.reports[0].id); }
+}
+async function rsReport(id) {
+  RSREP = id; document.querySelectorAll(".rs-rep").forEach(x => x.classList.toggle("sel", x.dataset.id === id));
+  const r = await rsPost({op: "report", id: id}); const box = $("#rs-rep"); box.textContent = ""; if (!r || !r.report) return;
+  const P = r.report.positions || [];
+  box.appendChild(el("h3", "", t("Report") + " " + rsWhen(r.report.t)));
+  box.appendChild(el("div", "mut", r.report.missing + " " + t("missing") + " · " + r.report.new + " " + t("new") + " · " + r.report.changed + " " + t("changed") + " · " + P.length + " " + t("directions")));
+  const lab = {missing: "missing", new: "new", changed: "changed"};
+  P.filter(p => (p.changes || []).length).concat(P.filter(p => !(p.changes || []).length)).forEach(p => {
+    const w = el("div", "");
+    w.appendChild(el("div", "mut", t("Pan") + " " + p.pan + " % · " + t("Tilt") + " " + p.tilt + " %" + ((p.changes || []).length ? "" : " · ✓ " + t("no change"))));
+    if ((p.changes || []).length) {
+      const pr = el("div", "rs-pair"); const a = el("div"), b = el("div");
+      const ia = document.createElement("img"); ia.src = "/refscan/file/reports/" + id + "/ref_" + String(p.i).padStart(2, "0") + ".jpg"; a.append(ia, el("div", "", t("Reference")));
+      const ib = document.createElement("img"); ib.src = "/refscan/file/reports/" + id + "/cur_" + String(p.i).padStart(2, "0") + ".jpg"; b.append(ib, el("div", "", t("Now")));
+      pr.append(a, b); w.appendChild(pr);
+      p.changes.forEach(c => w.appendChild(el("div", "rs-ch " + c.kind, "● " + t(lab[c.kind] || c.kind) + " · " + Math.round(c.w * c.h * 1000) / 10 + " % " + t("of the picture")))); }
+    box.appendChild(w); });
+}
+document.querySelectorAll("#c-refscan .rs-steps>span").forEach(x => x.onclick = () => rsStep(+x.dataset.n));
+(async () => { for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100)); rsLoad(); })();
+Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Set up": "Aufstellen", "Settings": "Einstellungen", "Scan": "Scannen", "Compare": "Vergleichen", "Middle": "Mitte", "Next": "Weiter", "Back": "Zurück",
+  "refscan-note": "Motion Watch fährt mit dem Kopf ein Raster von Richtungen ab und speichert Fotos als Referenz. Später fährt es dieselben Richtungen wieder ab und zeigt im Bericht, was fehlt, was neu ist und was sich verändert hat – z. B. ob das Velo, der Grill oder das Zelt noch da ist.",
+  "rs-setup": "Stell die Kamera dort auf, wo sie bleiben soll, und richte sie gerade aus. Die Mitte zeigt in die Hauptrichtung. Danach die Kamera nicht mehr verschieben – sonst passt die Referenz nicht mehr.",
+  "rs-settings": "Wie viele Richtungen und Höhen der Kopf abfährt. Mehr Richtungen = genauer, dauert länger.",
+  "rs-scan": "Jetzt bitte nichts mehr verändern und aus dem Bild gehen. Motion Watch fährt alle Richtungen ab und speichert die Fotos als Referenz.",
+  "rs-compare": "Fährt dieselben Richtungen ab und vergleicht mit der Referenz. Rot = fehlt, blau = neu, orange = verändert.",
+  "Take the reference now": "Referenz jetzt aufnehmen", "Compare now": "Jetzt vergleichen", "New reference": "Neue Referenz", "Reports": "Berichte", "Report": "Bericht",
+  "Directions side by side": "Richtungen nebeneinander", "Turn from (% of the pan range)": "Drehen von (% des Schwenkbereichs)", "Turn to (% of the pan range)": "Drehen bis (% des Schwenkbereichs)",
+  "Heights (rows)": "Höhen (Reihen)", "Middle height (tilt %)": "Mittlere Höhe (Neigung %)", "Distance between the rows (tilt %)": "Abstand der Reihen (Neigung %)",
+  "Photos per direction (more = less noise)": "Fotos pro Richtung (mehr = weniger Rauschen)", "Wait after turning (seconds)": "Warten nach dem Drehen (Sekunden)",
+  "Sensitivity of the comparison (%)": "Empfindlichkeit des Vergleichs (%)", "Smallest change (% of the picture)": "Kleinste Veränderung (% des Bildes)",
+  "Compare with the reference when armed": "Beim Scharfschalten mit der Referenz vergleichen", "Push message when something is missing": "Push-Meldung, wenn etwas fehlt",
+  "Push message also for new or changed things": "Push-Meldung auch bei Neuem oder Verändertem", "Compare every (minutes while armed, 0 = off)": "Vergleichen alle (Minuten, wenn scharf; 0 = aus)",
+  "directions": "Richtungen", "direction": "Richtung", "about": "etwa", "Scanning": "Scannen", "Comparing": "Vergleichen", "No reference yet": "Noch keine Referenz", "missing": "fehlt", "new": "neu", "changed": "verändert",
+  "nothing missing": "nichts fehlt", "Reference": "Referenz", "Now": "Jetzt", "Pan": "Schwenk", "Tilt": "Neigung", "no change": "keine Veränderung", "of the picture": "des Bildes",
+  "No report yet - press «Compare now».": "Noch kein Bericht – «Jetzt vergleichen» drücken.", "by hand": "von Hand", "armed": "beim Scharfschalten", "simulator": "vom Simulator", "window": "im Fenster",
+  "reference saved": "Referenz gespeichert", "report ready": "Bericht fertig", "stopped": "abgebrochen", "no picture from the camera": "kein Bild von der Kamera",
+  "a scan is already running": "es läuft schon ein Scan", "no camera": "keine Kamera", "no reference yet - scan first": "noch keine Referenz – zuerst scannen"});
 function pick(k, push) {
   if (!document.getElementById("c-" + k)) k = "net";
   if (SEL === "focus" && k !== "focus" && FON) focusToggle();

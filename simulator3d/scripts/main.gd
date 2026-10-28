@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.70"
+const VERSION := "3D-3.71"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1984,7 +1984,38 @@ func world_reply() -> Dictionary:
 			"weather": weather, "humidity": humidity, "mover": mover_on,
 			"pc_cpu": snappedf(mini_box.own["pc"], 0.1) if mini_box != null and float(mini_box.own["pc"]) >= 0.0 else null,
 			"sim_cpu_own": snappedf(mini_box.own["sim"], 0.1) if mini_box != null and float(mini_box.own["sim"]) >= 0.0 else null,
-			"cores": OS.get_processor_count()}
+			"cores": OS.get_processor_count(), "mw_cmd": mw_cmd if not mw_cmd.is_empty() else null}
+
+
+var mw_cmd := {}                       # 3D-3.71: a request to Motion Watch (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
+var bike_node: Node3D = null
+var refscan_label: Label
+
+
+func mw_request(op: String) -> void:
+	"""a button here asks Motion Watch for something; it fetches the request with its next state (about 10 times a second)"""
+	mw_cmd = {"id": int(Time.get_unix_time_from_system() * 1000.0), "op": op}
+	start_info = {"refscan": "Motion Watch: Referenz-Scan angefordert …", "refcompare": "Motion Watch: Vergleich angefordert …", "refstop": "Motion Watch: Scan abbrechen …"}.get(op, op)
+
+
+func set_bike(on: bool) -> void:
+	"""test aid for the reference scan: the bike is gone / back"""
+	if bike_node != null and is_instance_valid(bike_node):
+		bike_node.visible = on
+
+
+func refscan_text() -> String:
+	"""what Motion Watch tells about its reference scan (with its state)"""
+	var r = mw.get("refscan", null)
+	if typeof(r) != TYPE_DICTIONARY:
+		return "Motion Watch: noch keine Angaben (verbinden, Motion Watch ab 2.95.97)"
+	if str(r.get("busy", "")) != "":
+		return "Motion Watch %s: Richtung %d von %d …" % ["scannt" if r["busy"] == "scan" else "vergleicht", int(r.get("step", 0)), int(r.get("n", 0))]
+	var s := ("Referenz: %d Richtungen" % int(r.get("ref_n", 0))) if r.get("ref", false) else "Noch keine Referenz"
+	var l = r.get("last", null)
+	if typeof(l) == TYPE_DICTIONARY:
+		s += " · letzter Vergleich: %d fehlt, %d neu, %d verändert" % [int(l.get("missing", 0)), int(l.get("new", 0)), int(l.get("changed", 0))]
+	return s
 
 
 func info() -> Dictionary:
@@ -2939,6 +2970,12 @@ func control(d: Dictionary) -> Dictionary:
 			explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
 			explore.test_until = explore.main.now() + (float(dv[2]) if dv.size() > 2 else 2.0)
 		return explore.state()
+	elif a == "mw_request":                            # 3D-3.71: like the buttons «Referenz-Scan» / «Vergleichen» (tests, remote)
+		mw_request(str(d.get("op", "")))
+		return {"ok": true, "cmd": mw_cmd}
+	elif a == "bike":
+		set_bike(bool(d.get("on", true)))
+		return {"ok": true}
 	elif a == "shoot":                                 # 3D-3.70: a shot / trigger from Motion Watch at a spot of the head camera picture
 		return mw_shot(float(d.get("x", 0.5)), float(d.get("y", 0.5)), str(d.get("who", "")).left(30))
 	elif a == "game_mwcatch":                          # «Team gegen Motion Watch»: «Erwischt!» pressed at Motion Watch (3D-3.27)
@@ -3316,6 +3353,25 @@ func _build_ui() -> void:
 	kb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	kb.pressed.connect(open_map)
 	tl.add_child(kb)
+	# 3D-3.71: the reference scan of Motion Watch, started from here
+	var rsh := HBoxContainer.new()
+	rsh.add_theme_constant_override("separation", 6)
+	tl.add_child(rsh)
+	for b_ in [["Motion Watch: Referenz-Scan", "refscan"], ["Mit Referenz vergleichen", "refcompare"]]:
+		var rb := Button.new()
+		rb.text = b_[0]
+		rb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		rb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		rb.tooltip_text = "Motion Watch fährt mit dem Kopf alle Richtungen ab: Referenz-Fotos aufnehmen bzw. vergleichen (Bericht in Motion Watch unter Werkzeuge → Referenz-Scan)"
+		rb.pressed.connect(mw_request.bind(b_[1]))
+		rsh.add_child(rb)
+	var vb_ := Button.new()
+	vb_.text = "Testhilfe: Velo wegnehmen / zurückstellen"
+	vb_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vb_.pressed.connect(func(): set_bike(bike_node == null or not bike_node.visible))
+	tl.add_child(vb_)
+	refscan_label = UI.small("")
+	tl.add_child(refscan_label)
 	var plb := Button.new()
 	plb.text = "Aufstell-Planer: Wo soll Motion Watch hin?"
 	plb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -4188,6 +4244,12 @@ func _paint_groups() -> void:
 
 
 func _update_status() -> void:
+	if refscan_label != null:
+		refscan_label.text = refscan_text()
+	if not mw_cmd.is_empty() and start_info.begins_with("Motion Watch: "):
+		var r_ = mw.get("refscan", null)
+		if typeof(r_) == TYPE_DICTIONARY and int(r_.get("cmd_seen", 0)) >= int(mw_cmd["id"]):
+			start_info = ""                                  # Motion Watch took the request
 	if status_label != null:
 		status_label.text = status_text()
 	if tunnel_label != null and tunnel != null:

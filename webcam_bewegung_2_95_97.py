@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_96.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_97.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.97: Referenz-Scan: Assistent (Werkzeuge) – der Kopf fährt alle Richtungen ab und speichert Referenz-Fotos; Vergleich
+    von Hand, beim Scharfschalten oder alle N Minuten, Bericht mit fehlt / neu / verändert, Push-Meldung; auch vom 3D-Simulator
+    aus startbar (3D-3.71)
   * 2.95.96: Simulation: 🎯 Schiessen im Livebild (Schuss / Auslöser an die angetippte Stelle, in jedem Spiel und in der freien
     Welt; daneben = Fehlalarm, wird markiert); nach dem Schwenken von Hand keine weissen Bewegungs-Umrisse mehr (Hintergrund
     wird sofort neu gelernt); 3D-Simulator 3D-3.70
@@ -781,10 +784,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_96.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_97.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_96.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_96.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_97.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_97.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -801,7 +804,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.96"
+APP_VERSION = "2.95.97"
 
 
 def default_data_dir():
@@ -1110,6 +1113,9 @@ CFG = {
     "wifi_guard_thr": 20, "wifi_count": False, "wifi_presence": False, "net_noinet": [], "net_inet_notify": True, "sim_prev_source": "", "sim_prev_thermal": "",
     "lens_check": True, "temp_alarm_on": False, "temp_hot": 30, "temp_cold": 3,
     "sens_on": False, "sensors": [], "rf433_on": False, "zigbee_on": False, "ble_on": False, "tag_missing": 5, "eco_pir": True,
+    "refscan_pan_steps": 6, "refscan_pan_from": 10, "refscan_pan_to": 90, "refscan_tilt_steps": 1, "refscan_tilt_span": 16, "refscan_tilt_mid": 50,
+    "refscan_photos": 2, "refscan_settle": 1.5, "refscan_sens": 50, "refscan_min_area": 0.6,   # reference scan (2.95.97)
+    "refscan_on_arm": False, "refscan_every": 0, "refscan_push": True, "refscan_push_all": False,
     "tamper_on": True,           # sabotage: camera covered or turned away (picture check)
     "tamper_motion": True,       # motion sensor MPU-6050 (I2C 0x68), if fitted: device moved / knocked over
     "tamper_power": True,        # power cut while armed = alarm (needs the UPS HAT)
@@ -7241,6 +7247,10 @@ def arm_tick():
         ARM["announced"] = True
         log_event("sys", "Armed now - alarms are active")
         push_alert("armed", "armed")
+        try:
+            refscan_on_armed()                         # 2.95.97: compare with the reference scan (if wanted)
+        except Exception:
+            pass
 
 
 # ----------------------------------------------------------------------------
@@ -14166,6 +14176,17 @@ def servo_half(axis):
     return max(10.0, min(360.0, r)) / 2.0
 
 
+def _sim_refscan_info():
+    try:
+        st = refscan_state()
+        r = st["reports"][0] if st["reports"] else None
+        return {"busy": st["busy"], "step": st["step"], "n": st["n"], "ref": bool(st["ref"]), "ref_n": (st["ref"] or {}).get("n", 0),
+                "last": {"missing": r["missing"], "new": r["new"], "changed": r["changed"], "t": r["t"]} if r else None,
+                "cmd_seen": int(SIM.get("cmd_seen") or 0)}
+    except Exception:
+        return None
+
+
 def sim_state():
     hp, ht = servo_half("pan"), servo_half("tilt")
     pl, tl = min(float(CFG["pan_limit"]), hp), min(float(CFG["tilt_limit"]), ht)
@@ -14173,6 +14194,7 @@ def sim_state():
     rs = STATE.get("relay_states") or []
     return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "Motion Watch", "armed": is_armed(), "picture_mode": CFG["picture_mode"],
             "mw_version": APP_VERSION, "ai_status": str(STATE.get("ai_status") or ""),     # 2.95.67: for the test bench in the simulator
+            "refscan": _sim_refscan_info(),                                                  # 2.95.97: the reference scan, for the button there
             "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * hp, 2),
                       "tilt_deg": round((CFG["tilt"] - 50) / 50 * ht, 2), "pan_limit": pl, "tilt_limit": tl,
                       "pan_range": round(2 * hp, 1),             # the whole turning range of the pan servo (2.95.24, for the Python simulator)
@@ -15106,8 +15128,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.70", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30896042,
-         "sha256": "96b27c01ca093d173b0bda1b1af3d8851f6c144d882115a2427d4fd10eda7da5"}
+SIM3D = {"version": "3D-3.71", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30898925,
+         "sha256": "da56e68e29cad32d13ac4204970e89b7886a154b8577c48e541ba95f20ce3f94"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15246,8 +15268,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.70", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24017765,
-           "sha256": "76b68548288b1cee82493a6d38d3a20f2735eb67f79dcb4f0b940c4af786b6ce", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.71", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24020372,
+           "sha256": "95770a83082816c6ebc8fda22b9b689cadadd1be2b6c2f38512c9c7abe7a7da1", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -16081,6 +16103,352 @@ def testopt_state():
             "nightly": {"on": bool(CFG.get("testopt_nightly")), "hour": int(CFG.get("testopt_hour", 3)), "plan": CFG.get("testopt_plan", "quick")}}
 
 
+# The camera head drives a grid of directions and keeps a few photos of each as the reference. Later it drives the same
+# directions again, compares and writes a report: what is missing, what is new, what changed. Started from the web page
+# (assistant), the window, automatically when armed / every N minutes, or from the 3D simulator (button).
+
+REFSCAN = {"busy": "", "step": 0, "n": 0, "msg": "", "stop": False, "t": 0.0, "last": None, "next_t": 0.0}
+_REFSCAN_LOCK = threading.Lock()
+
+
+def refscan_dir(*p):
+    d = os.path.join(DATA_DIR, "refscan", *p)
+    return d
+
+
+def refscan_positions():
+    """the directions of the scan: pan steps from .. to, tilt steps around the middle (in % like the servos)"""
+    n = max(1, min(12, int(CFG.get("refscan_pan_steps", 6))))
+    a, b = float(CFG.get("refscan_pan_from", 10)), float(CFG.get("refscan_pan_to", 90))
+    pans = [round((a + b) / 2.0, 1)] if n == 1 else [round(a + (b - a) * i / (n - 1), 1) for i in range(n)]
+    m = max(1, min(3, int(CFG.get("refscan_tilt_steps", 1))))
+    sp = float(CFG.get("refscan_tilt_span", 16))
+    c = float(CFG.get("refscan_tilt_mid", 50))
+    tilts = [round(c, 1)] if m == 1 else [round(c - sp / 2.0 + sp * j / (m - 1), 1) for j in range(m)]
+    out = []
+    for j, t in enumerate(tilts):                       # a snake: left to right, then right to left (short ways)
+        row = pans if j % 2 == 0 else list(reversed(pans))
+        out += [(p, t) for p in row]
+    return out
+
+
+def refscan_meta():
+    try:
+        with open(refscan_dir("ref", "meta.json"), encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
+def _refscan_move(pan, tilt):
+    CFG["pan"] = max(0.0, min(100.0, float(pan))); CFG["tilt"] = max(0.0, min(100.0, float(tilt)))
+    MANUAL["until"] = time.time() + 60                  # following / patrol pause while the scan drives the head
+
+
+def _refscan_next(w, after, end):
+    """the next picture (without boxes and texts) that is newer than `after`: (time, picture) or (None, None)"""
+    while time.time() < end and not REFSCAN["stop"]:
+        w.raw_until = time.time() + 20
+        fr = w.frame_raw
+        t0 = float(getattr(w, "_last_t0", 0) or 0)
+        if fr is not None and t0 > after:
+            return t0, fr.copy()
+        time.sleep(0.04)
+    return None, None
+
+
+def _refscan_small(img):
+    return cv2.cvtColor(cv2.resize(img, (160, 90), interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2GRAY).astype(np.float32)
+
+
+def _refscan_grab(w, settle, count):
+    """wait until the head stands and the picture no longer changes (a servo or the simulator may be late), then a few
+    pictures (without boxes and texts) -> median"""
+    time.sleep(settle)
+    end = time.time() + 15 + count * 2
+    t_last, prev = _refscan_next(w, time.time() - 0.01, end)
+    stable = 0
+    while prev is not None and stable < 2 and time.time() < end:      # still turning? two quiet pictures in a row
+        t_last, cur = _refscan_next(w, t_last, end)
+        if cur is None:
+            break
+        d = float(np.mean(cv2.absdiff(_refscan_small(prev), _refscan_small(cur))))
+        stable = stable + 1 if d < 3.0 else 0
+        prev = cur
+    if prev is None:
+        return None
+    pics = [prev]
+    while len(pics) < count and time.time() < end:
+        t_last, cur = _refscan_next(w, t_last, end)
+        if cur is None:
+            break
+        pics.append(cur)
+    if len(pics) == 1:
+        return pics[0]
+    try:
+        return np.median(np.stack(pics[:5]), axis=0).astype(np.uint8)
+    except ValueError:
+        return pics[-1]
+
+
+def _refscan_settle():
+    return max(0.3, float(CFG.get("refscan_settle", 1.5))) + (1.5 if CFG.get("sim_on") else 0.0)   # the simulator answers later
+
+
+def refscan_start(op, reason="by hand"):
+    """op: scan | compare. Runs in the background; False when something else runs or there is no reference."""
+    with _REFSCAN_LOCK:
+        if REFSCAN["busy"]:
+            return False, "a scan is already running"
+        if WATCH_REF.get("w") is None:
+            return False, "no camera"
+        if op == "compare" and not refscan_meta():
+            return False, "no reference yet - scan first"
+        REFSCAN.update(busy=op, step=0, n=len(refscan_positions()) if op == "scan" else len((refscan_meta() or {}).get("positions") or []),
+                       msg="", stop=False, t=time.time())
+    threading.Thread(target=_refscan_run, args=(op, reason), daemon=True, name="refscan").start()
+    log_event("sys", f"Reference scan: {'scan' if op == 'scan' else 'compare'} started ({reason})")
+    return True, ""
+
+
+def refscan_stop():
+    REFSCAN["stop"] = True
+
+
+def _refscan_run(op, reason):
+    w = WATCH_REF.get("w")
+    old = (CFG["pan"], CFG["tilt"])
+    try:
+        if op == "scan":
+            _refscan_do_scan(w)
+        else:
+            _refscan_do_compare(w, reason)
+    except Exception as e:                               # never leave the head in a strange place
+        REFSCAN["msg"] = "error: " + str(e)[:120]
+        log_event("sys", f"Reference scan failed: {e}")
+    finally:
+        _refscan_move(*old)
+        MANUAL["until"] = time.time() + 2
+        REFSCAN["busy"] = ""; REFSCAN["stop"] = False
+
+
+def _refscan_do_scan(w):
+    pos = refscan_positions()
+    tmp = refscan_dir("ref_new")
+    shutil.rmtree(tmp, ignore_errors=True); os.makedirs(tmp, exist_ok=True)
+    meta = {"t": time.time(), "positions": [], "source": STATE.get("source_label", ""), "sim": bool(CFG.get("sim_on")),
+            "dark": bool(LIGHTS.get("dark")), "photos": int(CFG.get("refscan_photos", 2))}
+    for i, (p, t) in enumerate(pos):
+        if REFSCAN["stop"]:
+            REFSCAN["msg"] = "stopped"; shutil.rmtree(tmp, ignore_errors=True); return
+        REFSCAN["step"] = i + 1
+        _refscan_move(p, t)
+        img = _refscan_grab(w, _refscan_settle() if i else _refscan_settle() + 1.0, max(1, min(5, int(CFG.get("refscan_photos", 2)))))
+        if img is None:
+            REFSCAN["msg"] = "no picture from the camera"; shutil.rmtree(tmp, ignore_errors=True); return
+        fn = f"pos_{i:02d}.jpg"
+        cv2.imwrite(os.path.join(tmp, fn), img, [cv2.IMWRITE_JPEG_QUALITY, 90])
+        meta["positions"].append({"i": i, "pan": p, "tilt": t, "file": fn})
+    with open(os.path.join(tmp, "meta.json"), "w", encoding="utf-8") as f:
+        json.dump(meta, f)
+    shutil.rmtree(refscan_dir("ref"), ignore_errors=True)
+    os.replace(tmp, refscan_dir("ref"))
+    REFSCAN["msg"] = "reference saved"
+    log_event("sys", f"Reference scan: {len(pos)} directions saved as the reference")
+
+
+def _refscan_prep(img, width=640):
+    h, w_ = img.shape[:2]
+    s = width / float(w_)
+    g = cv2.cvtColor(cv2.resize(img, (width, int(h * s)), interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2GRAY)
+    g = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(g)
+    return cv2.GaussianBlur(g, (3, 3), 0), s
+
+
+def refscan_compare_images(ref, cur):
+    """the changes between two pictures of the same direction: [{x, y, w, h (0..1), kind: missing | new | changed, score}]"""
+    a, _ = _refscan_prep(ref)
+    b, _ = _refscan_prep(cur)
+    if a.shape != b.shape:
+        b = cv2.resize(b, (a.shape[1], a.shape[0]))
+    H, W = a.shape
+    try:                                                 # the head never stands exactly where it stood: shift it back
+        win = cv2.createHanningWindow((W, H), cv2.CV_32F)
+        (dx, dy), _r = cv2.phaseCorrelate(a.astype(np.float32), b.astype(np.float32), win)
+        if abs(dx) < W * 0.12 and abs(dy) < H * 0.12:
+            b = cv2.warpAffine(b, np.float32([[1, 0, -dx], [0, 1, -dy]]), (W, H), borderMode=cv2.BORDER_REPLICATE)
+    except cv2.error:
+        dx = dy = 0.0
+    # brightness of the whole picture may differ (sun, clouds): both to the same mean and spread
+    af, bf = a.astype(np.float32), b.astype(np.float32)
+    bf = (bf - bf.mean()) / max(1.0, bf.std()) * max(1.0, af.std()) + af.mean()
+    d1 = cv2.absdiff(af, bf)
+    ga = cv2.magnitude(cv2.Sobel(af, cv2.CV_32F, 1, 0), cv2.Sobel(af, cv2.CV_32F, 0, 1))
+    gb = cv2.magnitude(cv2.Sobel(bf, cv2.CV_32F, 1, 0), cv2.Sobel(bf, cv2.CV_32F, 0, 1))
+    d2 = cv2.absdiff(cv2.GaussianBlur(ga, (9, 9), 0), cv2.GaussianBlur(gb, (9, 9), 0)) * 0.5
+    d = cv2.GaussianBlur(0.55 * d1 + 0.45 * d2, (7, 7), 0)
+    sens = max(5.0, min(100.0, float(CFG.get("refscan_sens", 50))))
+    thr = 52.0 - sens * 0.45                              # 50 % -> 29.5 grey values
+    m = (d > thr).astype(np.uint8) * 255
+    bx = int(W * 0.03); by = int(H * 0.03)
+    m[:by, :] = 0; m[-by:, :] = 0; m[:, :bx] = 0; m[:, -bx:] = 0      # the border (shifted picture) does not count
+    m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8))   # thin things (a bike, a chair) first become areas
+    m = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+    cnts, _ = cv2.findContours(m, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    min_a = W * H * max(0.05, float(CFG.get("refscan_min_area", 0.6))) / 100.0
+    out = []
+    for c in cnts:
+        if cv2.contourArea(c) < min_a:
+            continue
+        x, y, w_, h_ = cv2.boundingRect(c)
+        ea = float(ga[y:y + h_, x:x + w_].mean()); eb = float(gb[y:y + h_, x:x + w_].mean())
+        kind = "missing" if ea > eb * 1.3 + 2 else ("new" if eb > ea * 1.3 + 2 else "changed")
+        out.append({"x": round(x / W, 4), "y": round(y / H, 4), "w": round(w_ / W, 4), "h": round(h_ / H, 4), "kind": kind,
+                    "score": round(float(d[y:y + h_, x:x + w_].mean()), 1)})
+    out.sort(key=lambda r: -r["w"] * r["h"])
+    return out[:12], (round(float(dx), 1), round(float(dy), 1))
+
+
+REFSCAN_COLORS = {"missing": (60, 60, 255), "new": (255, 160, 60), "changed": (40, 170, 255)}
+
+
+def _refscan_mark(img, changes):
+    out = img.copy(); H, W = out.shape[:2]
+    lab = {"missing": tr("missing"), "new": tr("new"), "changed": tr("changed")}
+    for c in changes:
+        x, y, w_, h_ = int(c["x"] * W), int(c["y"] * H), int(c["w"] * W), int(c["h"] * H)
+        col = REFSCAN_COLORS.get(c["kind"], (255, 255, 255))
+        cv2.rectangle(out, (x, y), (x + w_, y + h_), col, max(2, W // 320))
+        txt = lab.get(c["kind"], c["kind"]).encode("ascii", "replace").decode()
+        cv2.putText(out, txt, (x + 4, max(18, y - 6)), cv2.FONT_HERSHEY_SIMPLEX, max(0.5, W / 1400), col, 2, cv2.LINE_AA)
+    return out
+
+
+def _refscan_do_compare(w, reason):
+    meta = refscan_meta() or {}
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    rd = refscan_dir("reports", stamp)
+    os.makedirs(rd, exist_ok=True)
+    rep = {"id": stamp, "t": time.time(), "reason": reason, "ref_t": meta.get("t"), "positions": [], "missing": 0, "new": 0, "changed": 0}
+    for k, p in enumerate(meta.get("positions") or []):
+        if REFSCAN["stop"]:
+            REFSCAN["msg"] = "stopped"; break
+        REFSCAN["step"] = k + 1
+        ref = cv2.imread(refscan_dir("ref", p["file"]))
+        _refscan_move(p["pan"], p["tilt"])
+        cur = _refscan_grab(w, _refscan_settle() if k else _refscan_settle() + 1.0, max(1, min(5, int(CFG.get("refscan_photos", 2)))))
+        if ref is None or cur is None:
+            continue
+        if cur.shape != ref.shape:
+            cur = cv2.resize(cur, (ref.shape[1], ref.shape[0]))
+        ch, sh = refscan_compare_images(ref, cur)
+        for c in ch:
+            rep[c["kind"]] += 1
+        cv2.imwrite(os.path.join(rd, f"cur_{p['i']:02d}.jpg"), _refscan_mark(cur, ch), [cv2.IMWRITE_JPEG_QUALITY, 82])
+        cv2.imwrite(os.path.join(rd, f"ref_{p['i']:02d}.jpg"), _refscan_mark(ref, [c for c in ch if c["kind"] != "new"]), [cv2.IMWRITE_JPEG_QUALITY, 82])
+        rep["positions"].append({"i": p["i"], "pan": p["pan"], "tilt": p["tilt"], "changes": ch, "shift": sh})
+    with open(os.path.join(rd, "report.json"), "w", encoding="utf-8") as f:
+        json.dump(rep, f)
+    _refscan_trim()
+    REFSCAN["last"] = refscan_summary(rep)
+    REFSCAN["msg"] = "report ready"
+    n = rep["missing"] + rep["new"] + rep["changed"]
+    log_event("sys", f"Reference scan compared ({reason}): {rep['missing']} missing, {rep['new']} new, {rep['changed']} changed")
+    if n and CFG.get("refscan_push", True) and (rep["missing"] or CFG.get("refscan_push_all", False)) and w is not None:
+        try:
+            w.notifier.info(trf("Reference scan: {m} missing, {n} new, {c} changed - see the report", m=rep["missing"], n=rep["new"], c=rep["changed"]),
+                            title="{name}: " + tr("Reference scan"))
+        except Exception:
+            pass
+
+
+def _refscan_trim(keep=20):
+    try:
+        ids = sorted(os.listdir(refscan_dir("reports")))
+        for x in ids[:-keep]:
+            shutil.rmtree(refscan_dir("reports", x), ignore_errors=True)
+    except OSError:
+        pass
+
+
+def refscan_report(rid):
+    if not re.fullmatch(r"\d{8}_\d{6}", str(rid or "")):
+        return None
+    try:
+        with open(refscan_dir("reports", rid, "report.json"), encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
+def refscan_summary(rep):
+    return {"id": rep["id"], "t": rep["t"], "reason": rep.get("reason", ""), "missing": rep["missing"], "new": rep["new"], "changed": rep["changed"],
+            "positions": len(rep.get("positions") or [])}
+
+
+def refscan_reports():
+    out = []
+    try:
+        for x in sorted(os.listdir(refscan_dir("reports")), reverse=True)[:20]:
+            r = refscan_report(x)
+            if r:
+                out.append(refscan_summary(r))
+    except OSError:
+        pass
+    return out
+
+
+def refscan_state():
+    meta = refscan_meta()
+    return {"busy": REFSCAN["busy"], "step": REFSCAN["step"], "n": REFSCAN["n"], "msg": REFSCAN["msg"],
+            "ref": {"t": meta.get("t"), "n": len(meta.get("positions") or []), "sim": meta.get("sim"),
+                    "positions": meta.get("positions")} if meta else None,
+            "plan": len(refscan_positions()), "reports": refscan_reports(), "next_t": REFSCAN["next_t"] or None}
+
+
+def refscan_status_text():
+    st = refscan_state()
+    if st["busy"]:
+        return trf("{what}: direction {i} of {n} …", what=tr("Scanning") if st["busy"] == "scan" else tr("Comparing"), i=st["step"], n=st["n"])
+    s = (trf("Reference: {n} directions, {t}", n=st["ref"]["n"], t=datetime.fromtimestamp(st["ref"]["t"]).strftime("%d.%m. %H:%M"))
+         if st["ref"] else tr("No reference yet"))
+    if st["reports"]:
+        r = st["reports"][0]
+        s += " · " + trf("last check: {m} missing, {n} new, {c} changed", m=r["missing"], n=r["new"], c=r["changed"])
+    return s
+
+
+def refscan_on_armed():
+    """armed now: compare with the reference (if wanted and there is one)"""
+    if CFG.get("refscan_on_arm") and refscan_meta() and not REFSCAN["busy"]:
+        refscan_start("compare", "armed")
+
+
+def refscan_tick():
+    """every N minutes while armed (called by the background loop)"""
+    every = float(CFG.get("refscan_every", 0) or 0)
+    if every <= 0 or not CFG.get("armed") or STATE.get("arm_state") != "armed" or not refscan_meta():
+        REFSCAN["next_t"] = 0.0
+        return
+    now = time.time()
+    if not REFSCAN["next_t"]:
+        REFSCAN["next_t"] = now + every * 60
+    if now >= REFSCAN["next_t"] and not REFSCAN["busy"] and STATE.get("persons", 0) == 0:
+        REFSCAN["next_t"] = now + every * 60
+        refscan_start("compare", "every %d min" % int(every))
+
+
+def _refscan_loop():
+    while True:
+        time.sleep(20)
+        try:
+            refscan_tick()
+        except Exception:
+            pass
+
+
+threading.Thread(target=_refscan_loop, daemon=True, name="refscantick").start()
 # ---- game corner (2.95.29): party games for the phones in the own Wi-Fi - quiz with buzzer, werewolf narrator,
 # drawing and guessing, connect four, dice / timer / scores - and a collection of free browser games (from GitHub).
 # The phones join with a QR code (a room key in the address, no password); the room closes by itself after some hours.
@@ -17833,6 +18201,15 @@ class SimLink:
         if first:
             SIM["since"] = time.time()
             self.hello()
+        mc_ = rep_.get("mw_cmd")                            # 2.95.97: the simulator asks Motion Watch for something (button there)
+        if isinstance(mc_, dict) and int(mc_.get("id") or 0) > int(SIM.get("cmd_seen") or 0):
+            SIM["cmd_seen"] = int(mc_.get("id") or 0)
+            if not first:                                   # an old request of before the connection does not count
+                op_ = str(mc_.get("op") or "")
+                if op_ in ("refscan", "refcompare"):
+                    refscan_start("scan" if op_ == "refscan" else "compare", "simulator")
+                elif op_ == "refstop":
+                    refscan_stop()
         le = int(rep_.get("last_event") or 0)
         if le > SIM["seen_event"]:
             data, _ = _sim_get(f"/events?since={SIM['seen_event']}")
@@ -19168,7 +19545,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_96.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_97.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -23406,6 +23783,17 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
 .tact button,.tact .btn{padding:7px 16px;font-size:13px}
 .tbd>*+*{margin-top:12px}
 .tbd .mut{font-size:13px;line-height:1.5}
+.rs-steps{display:flex;gap:6px;flex-wrap:wrap}.rs-steps>span{font-size:12px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);color:var(--mut);cursor:pointer}
+.rs-steps>span.on{background:var(--acc,#3b8cff);border-color:var(--acc,#3b8cff);color:#fff}.rs-steps>span.done{color:var(--grn);border-color:var(--grn)}
+.rs-live img{width:100%;max-height:52vh;object-fit:contain;border-radius:12px;background:#000;display:block}
+.rs-pad button{flex:1;min-width:48px}
+.rs-prog{height:10px;border-radius:6px;background:var(--field);overflow:hidden}.rs-prog i{display:block;height:100%;width:0;background:var(--acc,#3b8cff);transition:width .4s}
+.rs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}.rs-grid img{width:100%;border-radius:8px;display:block}
+.rs-grid figure{margin:0}.rs-grid figcaption{font-size:11px;color:var(--mut);text-align:center}
+.rs-rep{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.rs-rep.sel{border-color:var(--acc,#3b8cff)}.rs-rep b{font-weight:600}
+.rs-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.rs-pair img{width:100%;border-radius:8px;display:block}.rs-pair div{font-size:11px;color:var(--mut)}
+.rs-ch{font-size:13px;margin:2px 0}.rs-ch.missing{color:#ff6b6b}.rs-ch.new{color:#4fa3ff}.rs-ch.changed{color:#f5a623}
 .opt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:14px;cursor:pointer}
 .opt+.opt{margin-top:0}
 .tbd .opt + :not(.opt){margin-top:12px}
@@ -23482,6 +23870,7 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <button type="button" class="tli" data-k="wifi" onclick="pick('wifi')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-4M9 20v-8M14 20V8M19 20V4"/></svg><span class="tln"><b data-i18n="Wi-Fi around">Wi-Fi around</b><span class="tsum" id="s-wifi"></span></span><i class="tdot" id="d-wifi"></i></button>
   <div class="tlg" data-i18n="Device tests">Device tests</div>
   <button type="button" class="tli" data-k="focus" onclick="pick('focus')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span class="tln"><b data-i18n="Focus assistant">Focus assistant</b><span class="tsum" id="s-focus"></span></span><i class="tdot" id="d-focus"></i></button>
+  <button type="button" class="tli" data-k="refscan" onclick="pick('refscan')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="12" cy="12" r="3.5"/><path d="M12 6v2M12 16v2M6 12h2M16 12h2"/></svg><span class="tln"><b data-i18n="Reference scan">Reference scan</b><span class="tsum" id="s-refscan"></span></span><i class="tdot" id="d-refscan"></i></button>
   <button type="button" class="tli" data-k="servo" onclick="pick('servo')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg><span class="tln"><b data-i18n="Servo test">Servo test</b><span class="tsum" id="s-servo"></span></span><i class="tdot" id="d-servo"></i></button>
   <button type="button" class="tli" data-k="audio" onclick="pick('audio')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span class="tln"><b data-i18n="Speaker and microphone">Speaker and microphone</b><span class="tsum" id="s-audio"></span></span><i class="tdot" id="d-audio"></i></button>
   <button type="button" class="tli" data-k="sd" onclick="pick('sd')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><span class="tln"><b data-i18n="Memory card test">Memory card test</b><span class="tsum" id="s-sd"></span></span><i class="tdot" id="d-sd"></i></button>
@@ -23495,6 +23884,42 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <button type="button" class="tli" data-k="diag" onclick="pick('diag')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><span class="tln"><b data-i18n="Diagnosis package">Diagnosis package</b><span class="tsum" id="s-diag"></span></span><i class="tdot" id="d-diag"></i></button>
 </nav>
 <div class="tpane">
+  <section class="tool" id="c-refscan" data-k="refscan" hidden>
+    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
+      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="12" cy="12" r="3.5"/><path d="M12 6v2M12 16v2M6 12h2M16 12h2"/></svg><h2 data-i18n="Reference scan">Reference scan</h2></div></div>
+    <div class="tbd">
+    <div class="mut" data-i18n="refscan-note">refscan-note</div>
+    <div class="rs-steps"><span data-n="1">1 · <span data-i18n="Set up">Set up</span></span><span data-n="2">2 · <span data-i18n="Settings">Settings</span></span><span data-n="3">3 · <span data-i18n="Scan">Scan</span></span><span data-n="4">4 · <span data-i18n="Compare">Compare</span></span></div>
+    <div class="rs-pane" data-p="1">
+      <div class="mut" data-i18n="rs-setup">rs-setup</div>
+      <div class="rs-live"><img id="rs-live" alt=""></div>
+      <div class="trow rs-pad"><button type="button" class="sec" onclick="rsMove('left')">◀</button><button type="button" class="sec" onclick="rsMove('up')">▲</button><button type="button" class="sec" onclick="rsMove('down')">▼</button><button type="button" class="sec" onclick="rsMove('right')">▶</button><button type="button" class="sec" onclick="rsMove('center')" data-i18n="Middle">Middle</button></div>
+      <div class="trow"><button type="button" onclick="rsStep(2)"><span data-i18n="Next">Next</span> ›</button></div>
+    </div>
+    <div class="rs-pane" data-p="2" hidden>
+      <div class="mut" data-i18n="rs-settings">rs-settings</div>
+      <div id="rs-set"></div>
+      <div class="mut" id="rs-plan"></div>
+      <div class="trow"><button type="button" class="sec" onclick="rsStep(1)">‹ <span data-i18n="Back">Back</span></button><button type="button" onclick="rsStep(3)"><span data-i18n="Next">Next</span> ›</button></div>
+    </div>
+    <div class="rs-pane" data-p="3" hidden>
+      <div class="mut" data-i18n="rs-scan">rs-scan</div>
+      <div class="trow"><button type="button" id="rs-scan" onclick="rsGo('scan')">📸 <span data-i18n="Take the reference now">Take the reference now</span></button><button type="button" class="sec" id="rs-stop" onclick="rsGo('stop')" hidden data-i18n="Stop">Stop</button></div>
+      <div class="rs-prog" id="rs-prog" hidden><i></i></div><div class="mut" id="rs-msg"></div>
+      <div id="rs-ref" class="rs-grid"></div>
+      <div class="trow"><button type="button" class="sec" onclick="rsStep(2)">‹ <span data-i18n="Back">Back</span></button><button type="button" id="rs-to4" onclick="rsStep(4)"><span data-i18n="Next">Next</span> ›</button></div>
+    </div>
+    <div class="rs-pane" data-p="4" hidden>
+      <div class="mut" data-i18n="rs-compare">rs-compare</div>
+      <div class="trow"><button type="button" id="rs-cmp" onclick="rsGo('compare')">🔍 <span data-i18n="Compare now">Compare now</span></button><button type="button" class="sec" onclick="rsStep(3)" data-i18n="New reference">New reference</button></div>
+      <div class="rs-prog" id="rs-prog2" hidden><i></i></div><div class="mut" id="rs-msg2"></div>
+      <div id="rs-opts"></div>
+      <h3 data-i18n="Reports">Reports</h3>
+      <div id="rs-reps"></div>
+      <div id="rs-rep"></div>
+    </div>
+    </div>
+  </section>
   <section class="tool" id="c-usb" data-k="usb" hidden>
     <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
       <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v15"/><path d="M9 5l3-3 3 3"/><path d="M12 13l-5-3V7"/><path d="M12 11l5-3V6"/><rect x="5.5" y="5" width="3" height="2.5"/><circle cx="17" cy="5" r="1.4"/><circle cx="12" cy="19" r="2.5"/></svg><h2 data-i18n="USB devices">USB devices</h2></div><div class="tact"><button type="button" onclick="usbLoad(true)" data-i18n="Read again">Read again</button></div></div>
@@ -24101,6 +24526,112 @@ function usbPaint(j, manual) {
   if (!j.ids) box.appendChild(el("div", "mut", t("usb-ids")));
 }
 (async () => { for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100)); usbLoad(); })();
+// ---- 2.95.97: reference scan - assistant, progress, reports ----
+let RS = null, RSP = 0, RST = null, RSLIVE = null, RSREP = "";
+const RSSET = [["refscan_pan_steps", "Directions side by side", 1, 12, 1], ["refscan_pan_from", "Turn from (% of the pan range)", 0, 100, 1], ["refscan_pan_to", "Turn to (% of the pan range)", 0, 100, 1],
+  ["refscan_tilt_steps", "Heights (rows)", 1, 3, 1], ["refscan_tilt_mid", "Middle height (tilt %)", 20, 80, 1], ["refscan_tilt_span", "Distance between the rows (tilt %)", 4, 40, 1],
+  ["refscan_photos", "Photos per direction (more = less noise)", 1, 5, 1], ["refscan_settle", "Wait after turning (seconds)", 0.5, 5, 0.5], ["refscan_sens", "Sensitivity of the comparison (%)", 10, 100, 5],
+  ["refscan_min_area", "Smallest change (% of the picture)", 0.1, 5, 0.1]];
+const RSOPT = [["refscan_on_arm", "Compare with the reference when armed"], ["refscan_push", "Push message when something is missing"], ["refscan_push_all", "Push message also for new or changed things"]];
+async function rsPost(d) { return await fetch("/api/refscan", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: LANG}, d))}).then(x => x.json()).catch(() => null); }
+async function rsSet(k, v) { await fetch("/api/set", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({key: k, value: v})}).catch(() => null); rsLoad(); }
+async function rsMove(dir) { await fetch("/api/move", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({dir: dir, step: 4})}).catch(() => null); }
+async function rsGo(op) { const r = await rsPost({op: op}); if (r && !r.ok && r.error) alert(r.error); rsLoad(); }
+function rsStep(n) {
+  RSP = n; try { localStorage.setItem("mw-rs-step", n); } catch (e) {}
+  document.querySelectorAll("#c-refscan .rs-pane").forEach(x => x.hidden = +x.dataset.p !== n);
+  document.querySelectorAll("#c-refscan .rs-steps>span").forEach(x => { x.classList.toggle("on", +x.dataset.n === n); x.classList.toggle("done", +x.dataset.n < n || (+x.dataset.n === 3 && RS && RS.ref)); });
+  clearInterval(RSLIVE); RSLIVE = null;
+  if (n === 1) { const im = $("#rs-live"); const go = () => { if (SEL === "refscan" && RSP === 1 && !document.hidden) im.src = "/snapshot.jpg?r=" + Date.now(); }; go(); RSLIVE = setInterval(go, 1200); }
+  if (n === 2) rsSetPaint();
+}
+function rsSetPaint() {
+  const C = (RS && RS.cfg) || {}, box = $("#rs-set"); box.textContent = "";
+  RSSET.forEach(([k, lb, mn, mx, st]) => { const r = el("label", "opt"); r.style.display = "block";
+    const v = C[k] ?? mn, top = el("div", "trow"); top.append(el("span", "", t(lb)), el("b", "", String(v))); top.style.justifyContent = "space-between";
+    const i = document.createElement("input"); i.type = "range"; i.min = mn; i.max = mx; i.step = st; i.value = v; i.style.width = "100%";
+    i.oninput = () => { top.lastChild.textContent = i.value; }; i.onchange = () => rsSet(k, +i.value); r.append(top, i); box.appendChild(r); });
+  const n = (RS && RS.plan) || 0, sec = Math.round(n * ((+(C.refscan_settle || 1.5)) + 0.6 * (+(C.refscan_photos || 2)) + 0.8));
+  $("#rs-plan").textContent = n + " " + t("directions") + " · " + t("about") + " " + (sec >= 60 ? Math.round(sec / 60) + " min" : sec + " s");
+}
+function rsOptsPaint() {
+  const C = (RS && RS.cfg) || {}, box = $("#rs-opts"); if (box.dataset.k === JSON.stringify(C)) return; box.dataset.k = JSON.stringify(C); box.textContent = "";
+  RSOPT.forEach(([k, lb]) => { const l = el("label", "opt"); const i = document.createElement("input"); i.type = "checkbox"; i.className = "sw"; i.checked = !!C[k];
+    i.onchange = () => rsSet(k, i.checked); l.append(el("span", "", t(lb)), i); box.appendChild(l); });
+  const l = el("label", "opt"); l.style.display = "block"; const top = el("div", "trow"); top.style.justifyContent = "space-between";
+  top.append(el("span", "", t("Compare every (minutes while armed, 0 = off)")), el("b", "", String(C.refscan_every || 0)));
+  const i = document.createElement("input"); i.type = "range"; i.min = 0; i.max = 240; i.step = 5; i.value = C.refscan_every || 0; i.style.width = "100%";
+  i.oninput = () => { top.lastChild.textContent = i.value; }; i.onchange = () => rsSet("refscan_every", +i.value); l.append(top, i); box.appendChild(l);
+}
+async function rsLoad() {
+  clearTimeout(RST);
+  const r = await fetch("/api/refscan", {cache: "no-store"}).then(x => x.ok ? x.json() : null).catch(() => null);
+  if (r) { RS = r; rsPaint(); }
+  RST = setTimeout(rsLoad, RS && RS.busy ? 1000 : (SEL === "refscan" ? 4000 : 30000));
+}
+function rsWhen(ts) { const d = new Date(ts * 1000); return d.toLocaleDateString(LANG === "de" ? "de-CH" : undefined) + " " + d.toTimeString().slice(0, 5); }
+function rsPaint() {
+  const R = RS, L = (R.reports || [])[0];
+  sum("refscan", R.busy ? (R.busy === "scan" ? t("Scanning") : t("Comparing")) + " " + R.step + "/" + R.n : !R.ref ? t("No reference yet") : L ? (L.missing ? "⚠ " + L.missing + " " + t("missing") : "✓ " + t("nothing missing")) : R.ref.n + " " + t("directions"),
+      R.busy ? "warn" : L && L.missing ? "bad" : R.ref ? "ok" : "");
+  if (!RSP) { let n = 0; try { n = +localStorage.getItem("mw-rs-step") || 0; } catch (e) {} rsStep(n || (R.ref ? 4 : 1)); }
+  const pr = R.n ? Math.round(100 * Math.max(0, R.step - (R.busy ? 0.5 : 0)) / R.n) : 0;
+  [["scan", "#rs-prog", "#rs-msg"], ["compare", "#rs-prog2", "#rs-msg2"]].forEach(([op, pg, mg]) => {
+    $(pg).hidden = R.busy !== op; $(pg).firstChild.style.width = pr + "%";
+    $(mg).textContent = R.busy === op ? (op === "scan" ? t("Scanning") : t("Comparing")) + ": " + t("direction") + " " + R.step + " / " + R.n + " …" : (R.msg ? t(R.msg) : ""); });
+  $("#rs-scan").disabled = !!R.busy; $("#rs-cmp").disabled = !!R.busy || !R.ref; $("#rs-stop").hidden = !R.busy;
+  const rb = $("#rs-ref"), key = R.ref ? R.ref.t + ":" + R.ref.n : "";
+  if (rb.dataset.k !== key) { rb.dataset.k = key; rb.textContent = "";
+    if (R.ref) (R.ref.positions || []).forEach(p => { const f = el("figure"); const im = document.createElement("img"); im.loading = "lazy"; im.src = "/refscan/file/ref/" + p.file + "?t=" + R.ref.t;
+      f.append(im, el("figcaption", "", t("Pan") + " " + p.pan + " % · " + t("Tilt") + " " + p.tilt + " %")); rb.appendChild(f); }); }
+  if (R.ref) $("#rs-msg").textContent = R.busy === "scan" ? $("#rs-msg").textContent : "✓ " + t("Reference") + ": " + R.ref.n + " " + t("directions") + " · " + rsWhen(R.ref.t);
+  rsOptsPaint();
+  const rl = $("#rs-reps"), rk = JSON.stringify((R.reports || []).map(x => x.id));
+  if (rl.dataset.k !== rk) { rl.dataset.k = rk; rl.textContent = "";
+    if (!(R.reports || []).length) rl.appendChild(el("div", "mut", t("No report yet - press «Compare now».")));
+    (R.reports || []).forEach(x => { const d = el("div", "rs-rep"); d.dataset.id = x.id;
+      d.append(el("span", "", rsWhen(x.t) + " · " + t(x.reason || "")), el("b", "", (x.missing ? "⚠ " + x.missing + " " + t("missing") + " · " : "") + x.new + " " + t("new") + " · " + x.changed + " " + t("changed")));
+      d.onclick = () => rsReport(x.id); rl.appendChild(d); });
+    if ((R.reports || []).length && !RSREP) rsReport(R.reports[0].id); }
+}
+async function rsReport(id) {
+  RSREP = id; document.querySelectorAll(".rs-rep").forEach(x => x.classList.toggle("sel", x.dataset.id === id));
+  const r = await rsPost({op: "report", id: id}); const box = $("#rs-rep"); box.textContent = ""; if (!r || !r.report) return;
+  const P = r.report.positions || [];
+  box.appendChild(el("h3", "", t("Report") + " " + rsWhen(r.report.t)));
+  box.appendChild(el("div", "mut", r.report.missing + " " + t("missing") + " · " + r.report.new + " " + t("new") + " · " + r.report.changed + " " + t("changed") + " · " + P.length + " " + t("directions")));
+  const lab = {missing: "missing", new: "new", changed: "changed"};
+  P.filter(p => (p.changes || []).length).concat(P.filter(p => !(p.changes || []).length)).forEach(p => {
+    const w = el("div", "");
+    w.appendChild(el("div", "mut", t("Pan") + " " + p.pan + " % · " + t("Tilt") + " " + p.tilt + " %" + ((p.changes || []).length ? "" : " · ✓ " + t("no change"))));
+    if ((p.changes || []).length) {
+      const pr = el("div", "rs-pair"); const a = el("div"), b = el("div");
+      const ia = document.createElement("img"); ia.src = "/refscan/file/reports/" + id + "/ref_" + String(p.i).padStart(2, "0") + ".jpg"; a.append(ia, el("div", "", t("Reference")));
+      const ib = document.createElement("img"); ib.src = "/refscan/file/reports/" + id + "/cur_" + String(p.i).padStart(2, "0") + ".jpg"; b.append(ib, el("div", "", t("Now")));
+      pr.append(a, b); w.appendChild(pr);
+      p.changes.forEach(c => w.appendChild(el("div", "rs-ch " + c.kind, "● " + t(lab[c.kind] || c.kind) + " · " + Math.round(c.w * c.h * 1000) / 10 + " % " + t("of the picture")))); }
+    box.appendChild(w); });
+}
+document.querySelectorAll("#c-refscan .rs-steps>span").forEach(x => x.onclick = () => rsStep(+x.dataset.n));
+(async () => { for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100)); rsLoad(); })();
+Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Set up": "Aufstellen", "Settings": "Einstellungen", "Scan": "Scannen", "Compare": "Vergleichen", "Middle": "Mitte", "Next": "Weiter", "Back": "Zurück",
+  "refscan-note": "Motion Watch fährt mit dem Kopf ein Raster von Richtungen ab und speichert Fotos als Referenz. Später fährt es dieselben Richtungen wieder ab und zeigt im Bericht, was fehlt, was neu ist und was sich verändert hat – z. B. ob das Velo, der Grill oder das Zelt noch da ist.",
+  "rs-setup": "Stell die Kamera dort auf, wo sie bleiben soll, und richte sie gerade aus. Die Mitte zeigt in die Hauptrichtung. Danach die Kamera nicht mehr verschieben – sonst passt die Referenz nicht mehr.",
+  "rs-settings": "Wie viele Richtungen und Höhen der Kopf abfährt. Mehr Richtungen = genauer, dauert länger.",
+  "rs-scan": "Jetzt bitte nichts mehr verändern und aus dem Bild gehen. Motion Watch fährt alle Richtungen ab und speichert die Fotos als Referenz.",
+  "rs-compare": "Fährt dieselben Richtungen ab und vergleicht mit der Referenz. Rot = fehlt, blau = neu, orange = verändert.",
+  "Take the reference now": "Referenz jetzt aufnehmen", "Compare now": "Jetzt vergleichen", "New reference": "Neue Referenz", "Reports": "Berichte", "Report": "Bericht",
+  "Directions side by side": "Richtungen nebeneinander", "Turn from (% of the pan range)": "Drehen von (% des Schwenkbereichs)", "Turn to (% of the pan range)": "Drehen bis (% des Schwenkbereichs)",
+  "Heights (rows)": "Höhen (Reihen)", "Middle height (tilt %)": "Mittlere Höhe (Neigung %)", "Distance between the rows (tilt %)": "Abstand der Reihen (Neigung %)",
+  "Photos per direction (more = less noise)": "Fotos pro Richtung (mehr = weniger Rauschen)", "Wait after turning (seconds)": "Warten nach dem Drehen (Sekunden)",
+  "Sensitivity of the comparison (%)": "Empfindlichkeit des Vergleichs (%)", "Smallest change (% of the picture)": "Kleinste Veränderung (% des Bildes)",
+  "Compare with the reference when armed": "Beim Scharfschalten mit der Referenz vergleichen", "Push message when something is missing": "Push-Meldung, wenn etwas fehlt",
+  "Push message also for new or changed things": "Push-Meldung auch bei Neuem oder Verändertem", "Compare every (minutes while armed, 0 = off)": "Vergleichen alle (Minuten, wenn scharf; 0 = aus)",
+  "directions": "Richtungen", "direction": "Richtung", "about": "etwa", "Scanning": "Scannen", "Comparing": "Vergleichen", "No reference yet": "Noch keine Referenz", "missing": "fehlt", "new": "neu", "changed": "verändert",
+  "nothing missing": "nichts fehlt", "Reference": "Referenz", "Now": "Jetzt", "Pan": "Schwenk", "Tilt": "Neigung", "no change": "keine Veränderung", "of the picture": "des Bildes",
+  "No report yet - press «Compare now».": "Noch kein Bericht – «Jetzt vergleichen» drücken.", "by hand": "von Hand", "armed": "beim Scharfschalten", "simulator": "vom Simulator", "window": "im Fenster",
+  "reference saved": "Referenz gespeichert", "report ready": "Bericht fertig", "stopped": "abgebrochen", "no picture from the camera": "kein Bild von der Kamera",
+  "a scan is already running": "es läuft schon ein Scan", "no camera": "keine Kamera", "no reference yet - scan first": "noch keine Referenz – zuerst scannen"});
 function pick(k, push) {
   if (!document.getElementById("c-" + k)) k = "net";
   if (SEL === "focus" && k !== "focus" && FON) focusToggle();
@@ -33322,7 +33853,7 @@ try { document.body.classList.toggle("icplain", localStorage.getItem("mw-icons")
 const GROUPS = [
   {id: "alarm", icon: "🛡", name: "Alarm & camping", open: true,
    items: [{card: "protect", title: "Switches", ic: "🔘"}, {sec: "Camping / protection", title: "Protection & network", ic: "🏕️"}, {sec: "Power saving", ic: "🍃"},
-           {card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Theft protection", title: "Theft protection", ic: "🔒"}]},
+           {card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Theft protection", title: "Theft protection", ic: "🔒"}, {sec: "Reference scan", title: "Reference scan", ic: "🧭"}]},
   {id: "notify", icon: "🔔", name: "Notifications", items: [{sec: "Notifications", title: "Push messages", ic: "📲"},
    {card: "report", sec: "Night report", title: "Night report", ic: "🌙"}, {sec: "Messages", ic: "💬"}, {sec: "SMS (LTE stick)", title: "SMS (LTE stick)", ic: "📱"}]},
   {id: "detect", icon: "🎯", name: "Detection", items: [{sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {fine: true},
@@ -33544,7 +34075,7 @@ function qsPaint(j) {
 // ---- overview: green arrow = main function of this topic is on ----
 const MAINSW = {
   "protect": (c, s) => s.arm_state === "armed" || s.arm_state === "arming", "sec:Camping / protection": (c, s) => !!s.camping,
-  "sec:Power saving": c => c.eco_on, "sec:Extra sensors": c => c.sens_on && (c.sensors || []).length > 0, "sec:Storm warning": c => c.storm_on, "sec:GPS module": c => c.gpsmod_on, "sec:Simulator": (c, s) => !!(s.sim && s.sim.on && s.sim.ok && s.sim.pic !== false), "sec:Solar panel": c => c.solar_on, "batt": (c, s) => !!(s.battery && s.battery.on), "sec:Theft protection": c => c.tamper_on || c.tamper_motion || c.tamper_power,
+  "sec:Reference scan": c => !!(c.refscan_on_arm || +c.refscan_every > 0), "sec:Power saving": c => c.eco_on, "sec:Extra sensors": c => c.sens_on && (c.sensors || []).length > 0, "sec:Storm warning": c => c.storm_on, "sec:GPS module": c => c.gpsmod_on, "sec:Simulator": (c, s) => !!(s.sim && s.sim.on && s.sim.ok && s.sim.pic !== false), "sec:Solar panel": c => c.solar_on, "batt": (c, s) => !!(s.battery && s.battery.on), "sec:Theft protection": c => c.tamper_on || c.tamper_motion || c.tamper_power,
   "sec:Notifications": c => c.notify_on, "report": c => c.report_on, "sec:SMS (LTE stick)": c => c.sms_on,
   "sec:Detection": c => c.detection_on, "sec:AI detection": c => c.ai_enabled, "sec:Vehicle filter": c => c.car_filter, "sec:Rain": c => c.rain_auto,
   "sec:Wind": c => c.wind_auto, "sec:Low light": c => c.lowlight_auto || c.nightvision || c.nightvision_auto, "sec:Auto-tune": c => c.auto_tune,
@@ -33669,6 +34200,8 @@ async function build() {
     if (sec.id === "Notifications") wpExtras(d);
     if (sec.id === "Backup") bkExtras(d);
     if (sec.id === "Theft protection") tpExtras(d);
+    if (sec.id === "Reference scan") { const bx = el("div", "auxbox"); bx.append(el("div", "mut", t("refscan-note")));   // 2.95.97
+      const a_ = el("a", "btn", "🧭 " + t("Open the assistant")); a_.href = "/tools#refscan"; a_.style.cssText = "display:block;margin-top:8px;text-align:center"; bx.appendChild(a_); d.appendChild(bx); }
     if (sec.id === "Extra sensors") sensExtras(d);
     if (sec.id === "Storm warning") stormExtras(d);
     if (sec.id === "GPS module") gpsExtras(d);
@@ -35231,6 +35764,7 @@ function simShootPaint(s) {
   $("#mws-b span").textContent = SHOOT.on ? t("Shooting on") : t("Shoot");
   $("#mws-t").textContent = t("Tap the picture") + " · " + SHOOT.hits + "× ✓ · " + SHOOT.miss + "× ✗ " + t("false alarm");
 }
+Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Open the assistant": "Assistent öffnen", "refscan-note": "Der Kopf fährt ein Raster von Richtungen ab und speichert Fotos als Referenz. Später vergleicht Motion Watch dieselben Richtungen und zeigt im Bericht, was fehlt, neu ist oder sich verändert hat."});
 Object.assign(I18N.de, {"Shoot": "Schiessen", "Shooting on": "Schiessen an", "Shooting off": "Schiessen aus", "Tap the picture": "Ins Bild tippen", "false alarm": "Fehlalarm",
   "Tap into the live picture to shoot - a miss is marked as a false alarm": "Ins Livebild tippen zum Schiessen – daneben wird als Fehlalarm markiert"});
 // ---- modes (2.95.47): camping guard, campfire games, gamer, home, wildlife, night guard, transport ----
@@ -36217,7 +36751,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>🔋 USV-Akku (Waveshare UPS HAT, 2 × 18650):</b> wird selbst erkannt (I2C 0x42). Oben steht 🔌 bei Netzstrom bzw. 🔋 % und Restzeit im Akkubetrieb. Bei Stromausfall und wenn der Strom zurück ist kommt eine Push-Nachricht, bei 20 % eine Warnung, bei 8 % (einstellbar) schaltet sich der Pi sauber aus. Unter Akku die Kapazität einer Zelle eintragen (z. B. 3450 mAh).</li>
 <li><b>🔋 Akku:</b> Kapazität der Powerbank eintragen (mAh, wie aufgedruckt), nach dem Laden «Akku ist jetzt voll» drücken. Oben steht dann z. B. «🔋 62 % · 14 h». Bei 15 % kommt eine Push-Nachricht. Es ist eine Schätzung aus dem Verbrauch des Pi (Powerbanks melden ihren Ladestand nicht).</li>
 <li><b>Uhrzeit vom Handy:</b> ohne Internet holt sich der Pi die Uhrzeit vom Handy, damit Aufnahmen die richtige Zeit haben.</li></ul>
-</section>
+<p><b>🧭 Referenz-Scan (ab 2.95.97):</b> Werkzeuge → «Referenz-Scan» führt in vier Schritten: Kamera aufstellen und ausrichten, Raster einstellen (Richtungen, Höhen, Fotos pro Richtung), Referenz aufnehmen, vergleichen. Motion Watch fährt dabei mit dem Kopf alle Richtungen ab. Der Bericht zeigt pro Richtung Referenz und jetzt nebeneinander: rot = fehlt, blau = neu, orange = verändert. Vergleichen geht von Hand, beim Scharfschalten oder alle N Minuten (Einstellungen → Alarm &amp; Camping → Referenz-Scan), auf Wunsch mit Push-Meldung. Im 3D-Simulator starten die Knöpfe «Motion Watch: Referenz-Scan» und «Mit Referenz vergleichen» dasselbe; «Testhilfe: Velo wegnehmen» zeigt, wie ein fehlender Gegenstand gemeldet wird.</p></section>
 
 <section id="notify" data-icon="🔔"><h2>Benachrichtigungen</h2>
 <ul><li><b>📲 Web-Push (ohne App):</b> Benachrichtigungen → «Auf diesem Gerät einschalten». Braucht https: unter Benachrichtigungen «https über Tailscale einschalten» (in der Tailscale-Verwaltung einmal «HTTPS Certificates» erlauben), dann die Seite über <code>https://NAME.….ts.net/</code> öffnen. iPhone / iPad: diese https-Seite zum Home-Bildschirm hinzufügen und von dort einschalten. Funktioniert neben ntfy / Telegram.</li>
@@ -36428,7 +36962,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>🔋 UPS HAT (Waveshare, 2 × 18650):</b> found by itself (I2C 0x42). The header shows 🔌 on mains power or 🔋 % and time left on battery. A push message at a power cut and when power is back, a warning at 20 %, a clean shutdown at 8 % (adjustable). Under Battery enter the capacity of one cell (e.g. 3450 mAh).</li>
 <li><b>🔋 Battery:</b> enter the capacity of the powerbank (mAh, as on the label), press «Battery is full now» after charging. The header then shows e.g. «🔋 62 % · 14 h». At 15 % a push message comes. It is an estimate from what the Pi uses (powerbanks do not report their charge).</li>
 <li><b>Clock from the phone:</b> without internet the Pi takes the time from the phone, so recordings have the right time.</li></ul>
-</section>
+<p><b>🧭 Reference scan (from 2.95.97):</b> Tools → «Reference scan» guides you in four steps: set up and align the camera, set the grid (directions, heights, photos per direction), take the reference, compare. Motion Watch drives the head through all directions. The report shows reference and now side by side for every direction: red = missing, blue = new, orange = changed. Compare by hand, when armed or every N minutes (Settings → Alarm &amp; camping → Reference scan), with a push message if you like. In the 3D simulator the buttons «Motion Watch: Referenz-Scan» and «Mit Referenz vergleichen» start the same; «Testhilfe: Velo wegnehmen» shows how a missing thing is reported.</p></section>
 
 <section id="notify" data-icon="🔔"><h2>Notifications</h2>
 <ul><li><b>📲 Web push (no app):</b> Notifications → «Switch on on this device». Needs https: under Notifications «Switch on https over Tailscale» (allow «HTTPS Certificates» once in the Tailscale admin page), then open the page via <code>https://NAME.….ts.net/</code>. iPhone / iPad: add this https page to the home screen and switch it on from there. Works besides ntfy / Telegram.</li>
@@ -37929,6 +38463,38 @@ class WebStream:
         def almanac_page():
             return Response(ALM_PAGE.replace("__DATA__", json.dumps(ALMANAC, ensure_ascii=False).replace("</", "<\\/")), mimetype="text/html",
                             headers={"Cache-Control": "no-store"})
+
+        @app.route("/api/refscan", methods=["GET", "POST"])
+        def api_refscan():                                   # 2.95.97: reference scan (assistant on the tools page)
+            if request.method == "POST":
+                d = body(); lang = norm_lang(d.get("lang")); op = str(d.get("op") or "")
+                if op == "report":
+                    r_ = refscan_report(str(d.get("id") or ""))
+                    return reply({"ok": bool(r_), "report": r_})
+                if getattr(g, "role", "admin") != "admin":
+                    return reply({"ok": False, "error": "not allowed"}, 403)
+                if op in ("scan", "compare"):
+                    ok_, err_ = refscan_start(op, "by hand")
+                    if not ok_:
+                        return reply({"ok": False, "error": tr(err_, lang)}, 400)
+                elif op == "stop":
+                    refscan_stop()
+                else:
+                    return reply({"ok": False, "error": "unknown"}, 400)
+            st_ = refscan_state()
+            st_["cfg"] = {k: v for k, v in CFG.items() if k.startswith("refscan_")}
+            return reply(dict(st_, ok=True))
+
+        @app.route("/refscan")
+        def refscan_page():
+            return redirect("/tools#refscan")
+
+        @app.route("/refscan/file/<path:fp>")
+        def refscan_file(fp):
+            if not re.fullmatch(r"(ref/pos_\d{2}\.jpg|reports/\d{8}_\d{6}/(cur|ref)_\d{2}\.jpg)", fp):
+                return Response("not found", 404)
+            p_ = refscan_dir(*fp.split("/"))
+            return send_file(p_, max_age=60) if os.path.isfile(p_) else Response("not found", 404)
 
         @app.route("/api/helper", methods=["GET", "POST"])
         def api_helper():
@@ -40476,6 +41042,17 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Deterrence", "deter_seconds", "Duration of sound / flashing (s)", 2, 30, 1),
     ("Deterrence", "deter_pause", "Pause between two reactions (s)", 10, 600, 10),
     ("Theft protection", "tamper_tilt", "Motion sensor: alarm from a tilt of (degrees)", 5, 45, 1),
+    ("Reference scan", "refscan_pan_steps", "Directions side by side", 1, 12, 1),
+    ("Reference scan", "refscan_pan_from", "Turn from (% of the pan range)", 0, 100, 1),
+    ("Reference scan", "refscan_pan_to", "Turn to (% of the pan range)", 0, 100, 1),
+    ("Reference scan", "refscan_tilt_steps", "Heights (rows)", 1, 3, 1),
+    ("Reference scan", "refscan_tilt_mid", "Middle height (tilt %)", 20, 80, 1),
+    ("Reference scan", "refscan_tilt_span", "Distance between the rows (tilt %)", 4, 40, 1),
+    ("Reference scan", "refscan_photos", "Photos per direction (more = less noise)", 1, 5, 1),
+    ("Reference scan", "refscan_settle", "Wait after turning (seconds)", 0.5, 5, 0.5),
+    ("Reference scan", "refscan_sens", "Sensitivity of the comparison (%)", 10, 100, 5),
+    ("Reference scan", "refscan_min_area", "Smallest change (% of the picture)", 0.1, 5, 0.1),
+    ("Reference scan", "refscan_every", "Compare every (minutes while armed, 0 = off)", 0, 240, 5),
     ("Camera / Servos", "pan", "Pan (%)", 0, 100, 1),
     ("Camera / Servos", "tilt", "Tilt (%)", 0, 100, 1),
     ("Camera / Servos", "track_gain", "Tracking gain", 0.1, 2.0, 0.1),
@@ -40642,6 +41219,9 @@ TOGGLES = [  # (section, key, label)
     ("Recording", "loop_on", "Continuous recording (all the time, few pictures per second) with a timeline"),
     ("Deterrence", "deter_always", "Also when disarmed (e.g. keep animals out of the garden)"),
     ("Theft protection", "tamper_on", "Sabotage alarm: camera covered or turned away (when armed)"),
+    ("Reference scan", "refscan_on_arm", "Compare with the reference when armed"),
+    ("Reference scan", "refscan_push", "Push message when something is missing"),
+    ("Reference scan", "refscan_push_all", "Push message also for new or changed things"),
     ("Theft protection", "tamper_motion", "Motion sensor (MPU-6050, if fitted): alarm when the device is moved or knocked over"),
     ("Theft protection", "tamper_power", "Power cut while armed = alarm (needs the UPS HAT)"),
     ("Backup", "backup_all", "Copy all recordings (otherwise only alarm recordings: armed or with a person)"),
@@ -40875,14 +41455,15 @@ def tk_main_on(sec):
             "Microphone": lambda: g("audio_in"), "Loudspeaker": lambda: g("siren_on") and g("siren_on") != "off", "Recording": lambda: g("record"),
             "Timelapse": lambda: g("timelapse_on"), "Backup": lambda: g("backup_type") and g("backup_type") != "off", "Relays": lambda: g("relays_on"),
             "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_auto") or g("update_fast"),
-            "Simulator": lambda: sim_live(), "Mover": lambda: g("mover_on"), "Guest access": lambda: g("guest_on")}.get(sec, lambda: False)())
+            "Simulator": lambda: sim_live(), "Mover": lambda: g("mover_on"), "Guest access": lambda: g("guest_on"),
+            "Reference scan": lambda: bool(refscan_meta())}.get(sec, lambda: False)())
     except Exception:
         return False
 
 
 TK_GROUP_ICONS = {"alarm": "⚠", "notify": "✉", "detect": "◎", "camera": "▣", "thermal": "♨", "lightsound": "☀", "rec": "●", "relay": "⚡", "sys": "⚙", "sensors": "◉"}
 
-TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery": "▮", "Theft protection": "⚷", "Notifications": "✉",
+TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery": "▮", "Theft protection": "⚷", "Reference scan": "◎", "Notifications": "✉",
                 "Night report": "☾", "Messages": "✎", "SMS (LTE stick)": "☏", "Detection": "◎", "AI detection": "⌬",
                 "Walking recognition": "➜", "Vehicle filter": "⛀", "Rain": "☂", "Wind": "≋", "Low light": "◐", "Auto-tune": "✱",
                 "Camera / Servos": "✥", "Patrol": "↻", "Video source": "▣", "Servo driver": "⚒", "Lights": "☀", "Deterrence": "⚠",
@@ -40891,7 +41472,7 @@ TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery":
                 "MQTT / Home Assistant": "⇆", "Updates": "⬆", "Extra sensors": "◉", "Simulator": "⚗", "Storm warning": "≈", "GPS module": "✈", "Solar panel": "☼", "Mover": "⇕"}
 
 TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - the same 9 groups as the web page
-    ("alarm", "Alarm & camping", ["Camping / protection", "Power saving", "Battery", "Theft protection"]),
+    ("alarm", "Alarm & camping", ["Camping / protection", "Power saving", "Battery", "Theft protection", "Reference scan"]),
     ("notify", "Notifications", ["Notifications", "Night report", "Messages", "SMS (LTE stick)"]),
     ("detect", "Detection", ["Detection", "AI detection", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
     ("camera", "Camera & servos", ["Camera / Servos", "Patrol", "Video source", "Mover", None, "Servo driver"]),
@@ -40902,7 +41483,7 @@ TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - the same 9 grou
     ("relay", "Relays & schedule", ["Relays", "Schedule"]),
     ("sys", "System & network", ["Setup", "Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant", "Updates", "Simulator"]),
 ]
-SECTIONS = ["Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
+SECTIONS = ["Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
 
 
@@ -41160,7 +41741,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.96")
+        self.root.title("Motion Watch 2.95.97")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -41450,7 +42031,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.96 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.97 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -42311,6 +42892,19 @@ class App:
             self.status_labels["Storm warning"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Storm warning"].pack(anchor="w", pady=(4, 0))
             ttk.Button(sbody, text=tr("Test"), command=lambda: storm_warn("test", tr("test - it works"), test=True)).pack(fill="x", pady=(6, 0))
+        if sec == "Reference scan":                                   # 2.95.97
+            self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels[sec].pack(anchor="w", pady=(4, 0))
+            ttk.Label(sbody, text=tr("refscan-note"), style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(4, 0))
+            bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(6, 0))
+            def rs_go(op):
+                ok, err = refscan_start(op, "window")
+                if not ok:
+                    self._status("Reference scan", "⚠ " + tr(err))
+            ttk.Button(bf, text="📸 " + tr("Scan now"), command=lambda: rs_go("scan")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            ttk.Button(bf, text="🔍 " + tr("Compare now"), command=lambda: rs_go("compare")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            ttk.Button(bf, text=tr("Stop"), command=refscan_stop).pack(side="left", expand=True, fill="x")
+            ttk.Button(sbody, text=tr("Reports (browser)"), command=lambda: self._open_page("/refscan")).pack(fill="x", pady=(4, 0))
         if sec == "Theft protection":
             self.status_labels["Theft protection"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Theft protection"].pack(anchor="w", pady=(4, 0))
@@ -43498,6 +44092,11 @@ class App:
 
     def _refresh(self):
         st = STATE
+        if "Reference scan" in self.status_labels:
+            try:
+                self._status("Reference scan", refscan_status_text())
+            except Exception:
+                pass
         self._sync_relays()
         q_ = SIMPROF.get("q")                              # 2.95.86: back from the simulation - take over its changes?
         if q_ and getattr(self, "_simprof_t", None) != q_["t"]:
@@ -48409,6 +49008,46 @@ _HX96 = {"Shoot": ("Tirer", "Sparare", "Sajettar"), "Shooting on": ("Tir activé
          "Tap into the live picture to shoot - a miss is marked as a false alarm": ("Touchez l'image en direct pour tirer – un tir manqué compte comme fausse alarme", "Tocca l'immagine dal vivo per sparare – un colpo mancato conta come falso allarme", "Tutga il maletg live per sajettar – sch'ins fala, vala quai sco fals alarm")}
 for _k, (_fr, _it, _rm) in _HX96.items():
     TRX["fr"].setdefault(_k, _fr); TRX["it"].setdefault(_k, _it); TRX["rm"].setdefault(_k, _rm)
+_HX97 = {  # 2.95.97: reference scan
+    'Reference scan': ('Referenz-Scan', 'Scan de référence', 'Scansione di riferimento', 'Scan da referenza'),
+    'Directions side by side': ('Richtungen nebeneinander', 'Directions côte à côte', 'Direzioni affiancate', 'Direcziuns ina sper l’autra'),
+    'Turn from (% of the pan range)': ('Drehen von (% des Schwenkbereichs)', 'Tourner de (% de la plage)', 'Ruotare da (% del campo)', 'Sviar da (% dal champ)'),
+    'Turn to (% of the pan range)': ('Drehen bis (% des Schwenkbereichs)', 'Tourner jusqu’à (% de la plage)', 'Ruotare fino a (% del campo)', 'Sviar fin (% dal champ)'),
+    'Heights (rows)': ('Höhen (Reihen)', 'Hauteurs (rangées)', 'Altezze (file)', 'Autezzas (rangs)'),
+    'Middle height (tilt %)': ('Mittlere Höhe (Neigung %)', 'Hauteur moyenne (inclinaison %)', 'Altezza media (inclinazione %)', 'Autezza media (inclinaziun %)'),
+    'Distance between the rows (tilt %)': ('Abstand der Reihen (Neigung %)', 'Écart entre les rangées (inclinaison %)', 'Distanza tra le file (inclinazione %)', 'Distanza tranter ils rangs (inclinaziun %)'),
+    'Photos per direction (more = less noise)': ('Fotos pro Richtung (mehr = weniger Rauschen)', 'Photos par direction (plus = moins de bruit)', 'Foto per direzione (più = meno rumore)', 'Fotos per direcziun (dapli = main canera)'),
+    'Wait after turning (seconds)': ('Warten nach dem Drehen (Sekunden)', 'Attente après rotation (secondes)', 'Attesa dopo la rotazione (secondi)', 'Spetgar suenter sviar (secundas)'),
+    'Sensitivity of the comparison (%)': ('Empfindlichkeit des Vergleichs (%)', 'Sensibilité de la comparaison (%)', 'Sensibilità del confronto (%)', 'Sensibilitad da la cumparegliaziun (%)'),
+    'Smallest change (% of the picture)': ('Kleinste Veränderung (% des Bildes)', 'Plus petit changement (% de l’image)', 'Cambiamento minimo (% dell’immagine)', 'Midada la pli pitschna (% dal maletg)'),
+    'Compare every (minutes while armed, 0 = off)': ('Vergleichen alle (Minuten, wenn scharf; 0 = aus)', 'Comparer toutes les (minutes, armé ; 0 = non)', 'Confronta ogni (minuti, se armato; 0 = no)', 'Cumparegliar mintga (minutas, sch’activà; 0 = na)'),
+    'Compare with the reference when armed': ('Beim Scharfschalten mit der Referenz vergleichen', 'Comparer à la référence lors de l’armement', 'Confronta con il riferimento all’attivazione', 'Cumparegliar cun la referenza cun activar'),
+    'Push message when something is missing': ('Push-Meldung, wenn etwas fehlt', 'Notification si quelque chose manque', 'Notifica se manca qualcosa', 'Messadi push, sch’insatge manca'),
+    'Push message also for new or changed things': ('Push-Meldung auch bei Neuem oder Verändertem', 'Notification aussi pour du nouveau ou du changé', 'Notifica anche per cose nuove o cambiate', 'Messadi push er per nov u midà'),
+    'Scan now': ('Jetzt scannen', 'Scanner maintenant', 'Scansiona ora', 'Scannar ussa'),
+    'Compare now': ('Jetzt vergleichen', 'Comparer maintenant', 'Confronta ora', 'Cumparegliar ussa'),
+    'Reports (browser)': ('Berichte (Browser)', 'Rapports (navigateur)', 'Rapporti (browser)', 'Rapports (navigatur)'),
+    'refscan-note': ('Der Kopf fährt ein Raster von Richtungen ab und speichert Fotos als Referenz. Später vergleicht Motion Watch dieselben Richtungen und zeigt im Bericht, was fehlt, neu ist oder sich verändert hat. Der Assistent ist unter Werkzeuge → Referenz-Scan.',
+                     'La tête parcourt une grille de directions et garde des photos comme référence. Plus tard, Motion Watch compare les mêmes directions et montre ce qui manque, est nouveau ou a changé. L’assistant se trouve sous Outils → Scan de référence.',
+                     'La testa percorre una griglia di direzioni e salva foto come riferimento. Più tardi Motion Watch confronta le stesse direzioni e mostra cosa manca, è nuovo o è cambiato. L’assistente è in Strumenti → Scansione di riferimento.',
+                     'Il chau percurra ina rait da direcziuns e memorisescha fotos sco referenza. Pli tard cumpareglia Motion Watch las medemas direcziuns e mussa tge che manca, è nov u midà. L’assistent è sut Utensils → Scan da referenza.'),
+    'Scanning': ('Scannen', 'Scan', 'Scansione', 'Scannar'), 'Comparing': ('Vergleichen', 'Comparaison', 'Confronto', 'Cumparegliar'),
+    'No reference yet': ('Noch keine Referenz', 'Pas encore de référence', 'Ancora nessun riferimento', 'Anc nagina referenza'),
+    'missing': ('fehlt', 'manque', 'manca', 'manca'), 'new': ('neu', 'nouveau', 'nuovo', 'nov'), 'changed': ('verändert', 'changé', 'cambiato', 'midà'),
+    '{what}: direction {i} of {n} …': ('{what}: Richtung {i} von {n} …', '{what} : direction {i} sur {n} …', '{what}: direzione {i} di {n} …', '{what}: direcziun {i} da {n} …'),
+    'Reference: {n} directions, {t}': ('Referenz: {n} Richtungen, {t}', 'Référence : {n} directions, {t}', 'Riferimento: {n} direzioni, {t}', 'Referenza: {n} direcziuns, {t}'),
+    'last check: {m} missing, {n} new, {c} changed': ('letzter Vergleich: {m} fehlt, {n} neu, {c} verändert', 'dernier contrôle : {m} manque, {n} nouveau, {c} changé', 'ultimo controllo: {m} manca, {n} nuovo, {c} cambiato', 'ultima controlla: {m} manca, {n} nov, {c} midà'),
+    'Reference scan: {m} missing, {n} new, {c} changed - see the report': ('Referenz-Scan: {m} fehlt, {n} neu, {c} verändert – siehe Bericht', 'Scan de référence : {m} manque, {n} nouveau, {c} changé – voir le rapport', 'Scansione di riferimento: {m} manca, {n} nuovo, {c} cambiato – vedi il rapporto', 'Scan da referenza: {m} manca, {n} nov, {c} midà – guarda il rapport'),
+    'a scan is already running': ('es läuft schon ein Scan', 'un scan est déjà en cours', 'una scansione è già in corso', 'in scan è gia en lavur'),
+    'no camera': ('keine Kamera', 'pas de caméra', 'nessuna telecamera', 'nagina camera'),
+    'no reference yet - scan first': ('noch keine Referenz – zuerst scannen', 'pas encore de référence – scanner d’abord', 'ancora nessun riferimento – prima scansionare', 'anc nagina referenza – l’emprim scannar'),
+    'Open the assistant': ('Assistent öffnen', 'Ouvrir l’assistant', 'Apri l’assistente', 'Avrir l’assistent'),
+    'Motion Watch: reference scan': ('Motion Watch: Referenz-Scan', 'Motion Watch : scan de référence', 'Motion Watch: scansione di riferimento', 'Motion Watch: scan da referenza'),
+}
+for _k, _v in _HX97.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 # ---- guide: the parts added in 2.53 - 2.65 (inserted into the existing chapters of every language) ----
 _HELP_NEW = {
  "de": {

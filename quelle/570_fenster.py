@@ -45,6 +45,17 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Deterrence", "deter_seconds", "Duration of sound / flashing (s)", 2, 30, 1),
     ("Deterrence", "deter_pause", "Pause between two reactions (s)", 10, 600, 10),
     ("Theft protection", "tamper_tilt", "Motion sensor: alarm from a tilt of (degrees)", 5, 45, 1),
+    ("Reference scan", "refscan_pan_steps", "Directions side by side", 1, 12, 1),
+    ("Reference scan", "refscan_pan_from", "Turn from (% of the pan range)", 0, 100, 1),
+    ("Reference scan", "refscan_pan_to", "Turn to (% of the pan range)", 0, 100, 1),
+    ("Reference scan", "refscan_tilt_steps", "Heights (rows)", 1, 3, 1),
+    ("Reference scan", "refscan_tilt_mid", "Middle height (tilt %)", 20, 80, 1),
+    ("Reference scan", "refscan_tilt_span", "Distance between the rows (tilt %)", 4, 40, 1),
+    ("Reference scan", "refscan_photos", "Photos per direction (more = less noise)", 1, 5, 1),
+    ("Reference scan", "refscan_settle", "Wait after turning (seconds)", 0.5, 5, 0.5),
+    ("Reference scan", "refscan_sens", "Sensitivity of the comparison (%)", 10, 100, 5),
+    ("Reference scan", "refscan_min_area", "Smallest change (% of the picture)", 0.1, 5, 0.1),
+    ("Reference scan", "refscan_every", "Compare every (minutes while armed, 0 = off)", 0, 240, 5),
     ("Camera / Servos", "pan", "Pan (%)", 0, 100, 1),
     ("Camera / Servos", "tilt", "Tilt (%)", 0, 100, 1),
     ("Camera / Servos", "track_gain", "Tracking gain", 0.1, 2.0, 0.1),
@@ -211,6 +222,9 @@ TOGGLES = [  # (section, key, label)
     ("Recording", "loop_on", "Continuous recording (all the time, few pictures per second) with a timeline"),
     ("Deterrence", "deter_always", "Also when disarmed (e.g. keep animals out of the garden)"),
     ("Theft protection", "tamper_on", "Sabotage alarm: camera covered or turned away (when armed)"),
+    ("Reference scan", "refscan_on_arm", "Compare with the reference when armed"),
+    ("Reference scan", "refscan_push", "Push message when something is missing"),
+    ("Reference scan", "refscan_push_all", "Push message also for new or changed things"),
     ("Theft protection", "tamper_motion", "Motion sensor (MPU-6050, if fitted): alarm when the device is moved or knocked over"),
     ("Theft protection", "tamper_power", "Power cut while armed = alarm (needs the UPS HAT)"),
     ("Backup", "backup_all", "Copy all recordings (otherwise only alarm recordings: armed or with a person)"),
@@ -444,14 +458,15 @@ def tk_main_on(sec):
             "Microphone": lambda: g("audio_in"), "Loudspeaker": lambda: g("siren_on") and g("siren_on") != "off", "Recording": lambda: g("record"),
             "Timelapse": lambda: g("timelapse_on"), "Backup": lambda: g("backup_type") and g("backup_type") != "off", "Relays": lambda: g("relays_on"),
             "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_auto") or g("update_fast"),
-            "Simulator": lambda: sim_live(), "Mover": lambda: g("mover_on"), "Guest access": lambda: g("guest_on")}.get(sec, lambda: False)())
+            "Simulator": lambda: sim_live(), "Mover": lambda: g("mover_on"), "Guest access": lambda: g("guest_on"),
+            "Reference scan": lambda: bool(refscan_meta())}.get(sec, lambda: False)())
     except Exception:
         return False
 
 
 TK_GROUP_ICONS = {"alarm": "⚠", "notify": "✉", "detect": "◎", "camera": "▣", "thermal": "♨", "lightsound": "☀", "rec": "●", "relay": "⚡", "sys": "⚙", "sensors": "◉"}
 
-TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery": "▮", "Theft protection": "⚷", "Notifications": "✉",
+TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery": "▮", "Theft protection": "⚷", "Reference scan": "◎", "Notifications": "✉",
                 "Night report": "☾", "Messages": "✎", "SMS (LTE stick)": "☏", "Detection": "◎", "AI detection": "⌬",
                 "Walking recognition": "➜", "Vehicle filter": "⛀", "Rain": "☂", "Wind": "≋", "Low light": "◐", "Auto-tune": "✱",
                 "Camera / Servos": "✥", "Patrol": "↻", "Video source": "▣", "Servo driver": "⚒", "Lights": "☀", "Deterrence": "⚠",
@@ -460,7 +475,7 @@ TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery":
                 "MQTT / Home Assistant": "⇆", "Updates": "⬆", "Extra sensors": "◉", "Simulator": "⚗", "Storm warning": "≈", "GPS module": "✈", "Solar panel": "☼", "Mover": "⇕"}
 
 TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - the same 9 groups as the web page
-    ("alarm", "Alarm & camping", ["Camping / protection", "Power saving", "Battery", "Theft protection"]),
+    ("alarm", "Alarm & camping", ["Camping / protection", "Power saving", "Battery", "Theft protection", "Reference scan"]),
     ("notify", "Notifications", ["Notifications", "Night report", "Messages", "SMS (LTE stick)"]),
     ("detect", "Detection", ["Detection", "AI detection", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
     ("camera", "Camera & servos", ["Camera / Servos", "Patrol", "Video source", "Mover", None, "Servo driver"]),
@@ -471,7 +486,7 @@ TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - the same 9 grou
     ("relay", "Relays & schedule", ["Relays", "Schedule"]),
     ("sys", "System & network", ["Setup", "Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant", "Updates", "Simulator"]),
 ]
-SECTIONS = ["Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
+SECTIONS = ["Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
 
 
@@ -729,7 +744,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.96")
+        self.root.title("Motion Watch 2.95.97")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1019,7 +1034,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.96 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.97 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1880,6 +1895,19 @@ class App:
             self.status_labels["Storm warning"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Storm warning"].pack(anchor="w", pady=(4, 0))
             ttk.Button(sbody, text=tr("Test"), command=lambda: storm_warn("test", tr("test - it works"), test=True)).pack(fill="x", pady=(6, 0))
+        if sec == "Reference scan":                                   # 2.95.97
+            self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels[sec].pack(anchor="w", pady=(4, 0))
+            ttk.Label(sbody, text=tr("refscan-note"), style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(4, 0))
+            bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(6, 0))
+            def rs_go(op):
+                ok, err = refscan_start(op, "window")
+                if not ok:
+                    self._status("Reference scan", "⚠ " + tr(err))
+            ttk.Button(bf, text="📸 " + tr("Scan now"), command=lambda: rs_go("scan")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            ttk.Button(bf, text="🔍 " + tr("Compare now"), command=lambda: rs_go("compare")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            ttk.Button(bf, text=tr("Stop"), command=refscan_stop).pack(side="left", expand=True, fill="x")
+            ttk.Button(sbody, text=tr("Reports (browser)"), command=lambda: self._open_page("/refscan")).pack(fill="x", pady=(4, 0))
         if sec == "Theft protection":
             self.status_labels["Theft protection"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Theft protection"].pack(anchor="w", pady=(4, 0))
@@ -3067,6 +3095,11 @@ class App:
 
     def _refresh(self):
         st = STATE
+        if "Reference scan" in self.status_labels:
+            try:
+                self._status("Reference scan", refscan_status_text())
+            except Exception:
+                pass
         self._sync_relays()
         q_ = SIMPROF.get("q")                              # 2.95.86: back from the simulation - take over its changes?
         if q_ and getattr(self, "_simprof_t", None) != q_["t"]:

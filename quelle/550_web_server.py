@@ -611,6 +611,38 @@ class WebStream:
             return Response(ALM_PAGE.replace("__DATA__", json.dumps(ALMANAC, ensure_ascii=False).replace("</", "<\\/")), mimetype="text/html",
                             headers={"Cache-Control": "no-store"})
 
+        @app.route("/api/refscan", methods=["GET", "POST"])
+        def api_refscan():                                   # 2.95.97: reference scan (assistant on the tools page)
+            if request.method == "POST":
+                d = body(); lang = norm_lang(d.get("lang")); op = str(d.get("op") or "")
+                if op == "report":
+                    r_ = refscan_report(str(d.get("id") or ""))
+                    return reply({"ok": bool(r_), "report": r_})
+                if getattr(g, "role", "admin") != "admin":
+                    return reply({"ok": False, "error": "not allowed"}, 403)
+                if op in ("scan", "compare"):
+                    ok_, err_ = refscan_start(op, "by hand")
+                    if not ok_:
+                        return reply({"ok": False, "error": tr(err_, lang)}, 400)
+                elif op == "stop":
+                    refscan_stop()
+                else:
+                    return reply({"ok": False, "error": "unknown"}, 400)
+            st_ = refscan_state()
+            st_["cfg"] = {k: v for k, v in CFG.items() if k.startswith("refscan_")}
+            return reply(dict(st_, ok=True))
+
+        @app.route("/refscan")
+        def refscan_page():
+            return redirect("/tools#refscan")
+
+        @app.route("/refscan/file/<path:fp>")
+        def refscan_file(fp):
+            if not re.fullmatch(r"(ref/pos_\d{2}\.jpg|reports/\d{8}_\d{6}/(cur|ref)_\d{2}\.jpg)", fp):
+                return Response("not found", 404)
+            p_ = refscan_dir(*fp.split("/"))
+            return send_file(p_, max_age=60) if os.path.isfile(p_) else Response("not found", 404)
+
         @app.route("/api/helper", methods=["GET", "POST"])
         def api_helper():
             if request.method == "POST":

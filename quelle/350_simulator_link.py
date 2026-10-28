@@ -60,6 +60,15 @@ class SimLink:
         if first:
             SIM["since"] = time.time()
             self.hello()
+        mc_ = rep_.get("mw_cmd")                            # 2.95.97: the simulator asks Motion Watch for something (button there)
+        if isinstance(mc_, dict) and int(mc_.get("id") or 0) > int(SIM.get("cmd_seen") or 0):
+            SIM["cmd_seen"] = int(mc_.get("id") or 0)
+            if not first:                                   # an old request of before the connection does not count
+                op_ = str(mc_.get("op") or "")
+                if op_ in ("refscan", "refcompare"):
+                    refscan_start("scan" if op_ == "refscan" else "compare", "simulator")
+                elif op_ == "refstop":
+                    refscan_stop()
         le = int(rep_.get("last_event") or 0)
         if le > SIM["seen_event"]:
             data, _ = _sim_get(f"/events?since={SIM['seen_event']}")
