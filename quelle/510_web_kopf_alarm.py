@@ -46,6 +46,10 @@ def render_page(page, active):
         + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>" + makeover_head()
         + ("<style>:root{--mw-icon:url(/app-icon/anim.svg?i=" + app_icon_id() + ")}</style>"
            if CFG.get("app_icon_anim", True) and app_icon_id() in APP_ICONS_ANIM else ""), 1)
+    if CFG.get("header_wordmark", True):                # 2.96.11: the wordmark W6 / W1 instead of icon + name (144)
+        page = re.sub(r"(<h1[^>]*>)MoveEye</h1>", lambda m_: wordmark_h1(m_) + "</h1>", page, count=1)
+        page = page.replace("</svg></h1>", '</svg><span class="ver">' + APP_VERSION + "</span>"
+                            + ('<span class="badge yel" style="font-size:10px;padding:1px 7px;min-height:0">DEMO</span>' if DEMO["on"] else "") + "</h1>", 1)
     page = re.sub(r"(<h1[^>]*>)MoveEye</h1>", r'\1MoveEye <span class="ver">' + APP_VERSION + "</span>"
                   + ('<span class="badge yel" style="font-size:10px;padding:1px 7px;min-height:0">DEMO</span>' if DEMO["on"] else "") + "</h1>", page, count=1)
     return (page.replace("/*BASECSS*/", BASE_CSS).replace("/*COMMON*/", COMMON_JS).replace("<!--NAV-->", nav_html(active))

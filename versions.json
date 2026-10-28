@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 22:16",
+ "generated": "2026-10-28 22:28",
  "versions": [
   {
-   "version": "2.96.10",
-   "file": "webcam_bewegung_2_96_10.py",
+   "version": "2.96.11",
+   "file": "webcam_bewegung_2_96_11.py",
    "url": "",
-   "sha256": "a2d895dd750a27da2f6175db0037f371e9a94f282623f30199780671430cc02a",
-   "date": "2026-10-28 22:16",
-   "notes": "Einstellungen aus der Simulation: Schwenken / Neigen werden nie mehr gefragt (nur zurückgestellt); bei jeder Einstellung «🔕 nie fragen» – sie wird künftig ausgelassen (die echte bleibt), «wieder fragen» setzt das zurück",
-   "sig": "4744b59ccf20affbb91a70ac332cabfec7d48213497ef80757e12bc83266e0cf6c16b99e7f37e8d36789cb358d820a0b5b8d3e5a66f167cc0a257da1f8f64e02"
+   "sha256": "4f6765faca51703f079705aaba2a730fdcfb2f89529a62bf38ec9aa18e940251",
+   "date": "2026-10-28 22:28",
+   "notes": "Neuer Schriftzug in der Kopfzeile: am PC eine Zeile (W6: «Move» hell, «Eye» orange, das «o» ist das Auge mit Sichtfächer und erkannter Person), auf dem Handy untereinander (W1, wie die Skizze)",
+   "sig": "baf058fd284df1fd256cd27b343847d5eceb0116fca7f80f1e0151aaa5a96e8a4d72bc1f63c28e9d392051f599166ac5de87e2c818dce30470bc5c1934a8790e"
   },
   {
    "version": "2.95.105",

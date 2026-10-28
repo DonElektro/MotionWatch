@@ -40,4 +40,4 @@ def makeover_head():
           "if(b){b.hidden=!on;b.firstChild.textContent='🧪 '+(TX[L()]||TX.en);}};"
           "document.addEventListener('DOMContentLoaded',paint);"
           "setInterval(async()=>{try{const r=await (await fetch('/api/simbar')).json();if(r.on!==on){on=r.on;}paint();}catch(e){}},15000);setTimeout(paint,1500);})();</script>")
-    return "<style>" + SIMBAR_CSS + "</style>" + js + simhub_head()
+    return "<style>" + SIMBAR_CSS + WORDMARK_CSS + "</style>" + js + simhub_head()
