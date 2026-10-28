@@ -237,6 +237,7 @@ TOGGLES = [  # (section, key, label)
     ("Updates", "update_auto", "Look for new versions by itself (every 3 hours)"),
     ("Updates", "update_install", "Install new versions automatically"),
     ("Updates", "update_fast", "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)"),
+    ("Updates", "news_popup", "After an update: show briefly what is new and what comes next"),
     ("Updates", "update_install_armed", "Automatic update also while armed (otherwise only when disarmed)"),
     ("Updates", "update_unsigned", "Also accept unsigned versions (not recommended - only for own builds)"),
     ("Battery", "ups_on", "UPS HAT (battery pack on the Pi): use it when found"),
@@ -745,7 +746,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.2")
+        self.root.title("MoveEye 2.96.3")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -777,6 +778,33 @@ class App:
         if CFG.get("fullscreen"):
             self.toggle_fullscreen()
         self.root.after(30, self._update_video); self.root.after(500, self._update_state)
+        self.root.after(2500, self._news)                  # 2.96.3: after an update: what is new
+
+    def _news(self, force=False):
+        """2.96.3: a small window «Neu in dieser Version» (once per version; «Nicht mehr anzeigen» switches it off)"""
+        try:
+            st = news_state("tk")
+            if not (st["show"] or force):
+                return
+            top = tk.Toplevel(self.root); top.title("MoveEye " + st["version"]); top.configure(bg=C["panel"]); top.transient(self.root)
+            tk.Label(top, text="✨ " + tr("New in this version"), bg=C["panel"], fg=C["fg"], font=("TkDefaultFont", 13, "bold")).pack(anchor="w", padx=16, pady=(14, 6))
+            for it in st["items"] or [{"v": st["version"], "t": tr("No changes noted.")}]:
+                tk.Label(top, text=it["v"] + "  " + it["t"], bg=C["panel"], fg=C["fg"], wraplength=520, justify="left").pack(anchor="w", padx=16, pady=2)
+            if st["next"]:
+                tk.Label(top, text="🔜 %s (%d/%d)" % (tr("Next in the makeover"), st["done"], st["total"]), bg=C["panel"], fg=C["fg"],
+                         font=("TkDefaultFont", 11, "bold")).pack(anchor="w", padx=16, pady=(10, 2))
+                for x in st["next"]:
+                    tk.Label(top, text="%d. %s" % (x["n"], x["t"]), bg=C["panel"], fg=C.get("mut", C["fg"]), justify="left").pack(anchor="w", padx=24)
+            bf = tk.Frame(top, bg=C["panel"]); bf.pack(fill="x", padx=16, pady=12)
+            def close(off):
+                if off:
+                    CFG["news_popup"] = False
+                news_seen("tk"); top.destroy()
+            tk.Button(bf, text=tr("OK"), command=lambda: close(False)).pack(side="right")
+            tk.Button(bf, text=tr("Do not show any more"), command=lambda: close(True)).pack(side="right", padx=8)
+            top.protocol("WM_DELETE_WINDOW", lambda: close(False))
+        except Exception as e:
+            print("news:", e)
 
     # ---- (re)building the window ----------------------------------------
     def _rebuild(self):
@@ -1035,7 +1063,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.3 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

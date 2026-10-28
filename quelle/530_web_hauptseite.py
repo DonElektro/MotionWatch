@@ -3786,7 +3786,7 @@ function modePaint(s) {
       + ".prt-what{margin-top:6px}.prt-amp{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04)}.prt-amp.green{border-left:4px solid #3fcf6b}.prt-amp.orange{border-left:4px solid #f2a33a}.prt-amp.red{border-left:4px solid #e5484d}.prt-it{margin-top:6px;gap:8px;font-size:13px}"
       + ".prt-dev{margin-top:8px;font-size:13px}.prt-things{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.prt-th{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;max-width:92px}.prt-th.miss span{color:#ff6b6b;font-weight:700}"
       + ".prt-img{width:84px;height:60px;border-radius:8px;background:#222 no-repeat;border:2px solid #3fcf6b}.prt-th.miss .prt-img{border-color:#e5484d}.prt-test{margin-top:8px;font-size:13px;line-height:1.6}"
-      + ".prt-wiz{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px}.prt-card{background:var(--card,#161b22);border-radius:16px;padding:18px;width:min(420px,100%);display:flex;flex-direction:column;gap:8px;animation:prtin .2s ease-out}"
+      + ".prt-wiz{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px}.prt-card{background:var(--card,#161b22);border-radius:16px;padding:18px;width:min(420px,100%);display:flex;flex-direction:column;gap:8px;animation:prtin .2s ease-out}.nws-card{width:min(520px,100%);max-height:86vh;overflow:auto}.nws-tag{font-size:12px;color:#f59a4a;letter-spacing:.08em;text-transform:uppercase}.nws-list{display:flex;flex-direction:column;gap:8px}.nws-it{display:flex;gap:10px;font-size:14px;line-height:1.35}.nws-it b{flex:0 0 auto;color:#3b8cff}.nws-next{font-size:13px;opacity:.85;display:flex;flex-direction:column;gap:3px}.nws-card h4{margin:6px 0 0}"
       + ".prt-opt{display:flex;align-items:center;gap:12px;padding:12px;font-size:15px;text-align:left}.prt-opt .ic{font-size:22px}.prt-opt.on{outline:2px solid var(--acc,#3b8cff)}@keyframes prtin{from{transform:scale(.95);opacity:0}to{transform:none;opacity:1}}";
     document.head.appendChild(c); }
   const all = M.list.concat([{id: "", icon: "⚙", name: "Own settings", info: M.own_info}]);
@@ -3899,6 +3899,25 @@ async function protectPin(has) {
   const r = await post("/api/protect", {action: "pin", new: nw, old: old, lang: LANG});
   toast(r.ok ? "✓ " + (nw ? t("PIN saved") : t("PIN removed")) : "⚠ " + (r.error || t("error"))); PRT.key = "";
 }
+async function newsCheck(force) {                    // 2.96.3: after an update - what is new, what comes next
+  let r; try { r = await (await fetch("/api/news")).json(); } catch (e) { return; }
+  if (!r || !(r.show || force) || document.querySelector(".nws")) return;
+  const ov = el("div", "prt-wiz nws"), c = el("div", "prt-card nws-card"); ov.appendChild(c); document.body.appendChild(ov);
+  c.append(el("div", "nws-tag", "MoveEye " + r.version), el("h3", "", "✨ " + t("New in this version")));
+  const its = r.items.length ? r.items : [{v: r.version, t: t("No changes noted.")}];
+  const ul = el("div", "nws-list"); its.forEach(x => { const d = el("div", "nws-it"); d.append(el("b", "", x.v), el("span", "", x.t)); ul.appendChild(d); }); c.appendChild(ul);
+  if (r.next && r.next.length) { c.append(el("h4", "", "🔜 " + t("Next in the makeover") + " (" + r.done + "/" + r.total + ")"));
+    const nx = el("div", "nws-next"); r.next.forEach(x => nx.appendChild(el("div", "", x.n + ". " + x.t))); c.appendChild(nx); }
+  const ok = el("button", "", t("OK")); ok.type = "button"; ok.style.width = "100%";
+  const off = el("button", "sec", t("Do not show any more")); off.type = "button";
+  const close = (o) => { ov.remove(); post("/api/news", {seen: true, off: o}); };
+  ok.onclick = () => close(false); off.onclick = () => close(true); ov.onclick = e => { if (e.target === ov) close(false); };
+  c.append(ok, off);
+}
+setTimeout(newsCheck, 2500);
+Object.assign(I18N.de, {"New in this version": "Neu in dieser Version", "Next in the makeover": "Als Nächstes im Makeover", "No changes noted.": "Keine Änderungen notiert.",
+  "Do not show any more": "Nicht mehr anzeigen", "What is new?": "Was ist neu?"});
+
 function protectWizard() {                       // three questions, then everything is set
   const A = {what: "place", when: "now", react: "push"};
   const Q = [["what", t("What shall be protected?"), [["place", "⛺", t("The place / tent")], ["things", "🚲", t("Things like the bike")], ["device", "📷", t("The device itself")], ["all", "🛡", t("Everything")]]],

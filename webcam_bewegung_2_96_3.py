@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_2.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_3.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.96.3: Nach jedem Update erscheint einmal kurz «Neu in dieser Version» (Webseite und Fenster) mit dem, was als Nächstes im
+    Makeover kommt (abschaltbar unter Updates); passt zum Simulator 3D-3.82 (Fenster «Vorlagen»: fertige Szenen, echte Orte,
+    3D-Bausätze, eigene .glb-Dateien; 4 neue Szenen)
   * 2.96.2: Entwicklungsphase: schnelle Updates einmalig eingeschaltet (jede Minute nachsehen, sofort installieren); passt zum
     Simulator 3D-3.81 (der Simulator schaut jetzt auch jede Minute)
   * 2.96.1: Panorama-Bericht «Fehlende Gegenstände» (separat einschaltbar, jeden Morgen mit Bild und Uhrzeiten);
@@ -805,10 +808,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_96_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_96_3.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_96_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_96_2.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_96_3.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_96_3.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -825,7 +828,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.96.2"
+APP_VERSION = "2.96.3"
 
 
 def default_data_dir():
@@ -1149,7 +1152,8 @@ CFG = {
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False,        # 2.95.71: test mode - look on GitHub every minute, install a new version at once
+    "update_fast": False, "dev_phase_done": False, "news_popup": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+           # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
     "update_push": True,         # push message when a new version is there (once per version)
@@ -7885,6 +7889,71 @@ def _protect_test_run(L):
     log_event("sys", f"Protection test: {ok} of {len(S)} ok")
 
 
+# ----------------------------------------------------------------------------
+# 2.96.3 (Wunsch Daniel, während dem grossen Makeover): nach jedem Update erscheint am PC einmal eine kurze Info - was neu ist
+# (aus der Änderungsliste am Dateianfang, alle Versionen seit der zuletzt gesehenen) und was als Nächstes kommt
+# (MAKEOVER_NEXT, wird bei jeder Makeover-Version nachgeführt). Web und Fenster merken sich getrennt, was gesehen wurde
+# (news_seen_web / news_seen_tk). Abschaltbar mit «news_popup».
+# ----------------------------------------------------------------------------
+# the makeover list (Daniel, 28.10.2026): number, title - what is still to come (done ones are taken out)
+MAKEOVER_ALL = [
+    (1, "Ein gemeinsames Erscheinungsbild (Web, Fenster, Simulator)"), (2, "Simulations-Modus sichtbar (oranger Streifen «SIMULATION»)"),
+    (3, "Startseite mit Simulator-Kachel"), (4, "Kachel-Steuerung des Simulators auf dem Handy"), (5, "Kino-Modus (Vollbild für TV / Beamer)"),
+    (6, "Einheitliche Ereignis-Symbole"), (7, "Simulator-Zentrale in MoveEye"), (8, "«Was wäre wenn …?» bei echten Alarmen"),
+    (9, "Zwilling deines Platzes (Ort, Winkel, Zonen, Patrouille)"), (10, "Zonen im Simulator sehen"), (11, "Erkennung live in der 3D-Ansicht"),
+    (12, "Automatische Trainings-Nacht"), (13, "Einstellungs-Vergleich A/B"), (14, "Benachrichtigungen testen (Test-Kanal)"),
+    (15, "Akku-, Wetter- und WLAN-Ausfall üben"), (16, "Mehrere MoveEye-Geräte im Simulator"), (17, "Rover voll integriert"),
+    (18, "Tagebuch-Statistik aus dem Simulator"), (19, "Versionen vergleichen (Kurve)"), (20, "Ein-Klick-Demo"),
+    (21, "Fehlalarm-Lernen"), (22, "Karte der blinden Flecken"), (23, "Nacht-Generalprobe vor dem Scharfschalten"),
+    (24, "Schwellen automatisch einstellen"), (25, "Erkennungs-Check jede Woche"),
+]
+MAKEOVER_DONE = set()                                  # numbers already delivered (nachführen)
+
+
+def _news_vt(v):
+    try:
+        return tuple(int(x) for x in str(v).split("."))
+    except ValueError:
+        return (0,)
+
+
+def news_entries():
+    """{version: text} from the list of changes at the top of the file"""
+    out, cur = {}, None
+    for ln in (globals().get("__doc__") or "").splitlines():
+        m = re.match(r"^  \* (\d+\.\d+\.\d+): (.*)$", ln)
+        if m:
+            cur = m.group(1)
+            out[cur] = m.group(2).strip()
+        elif cur and ln.startswith("    ") and ln.strip():
+            out[cur] += " " + ln.strip()
+        elif not ln.strip():
+            cur = None
+    return out
+
+
+def news_next(n=5):
+    return [{"n": k, "t": t} for k, t in MAKEOVER_ALL if k not in MAKEOVER_DONE][:n]
+
+
+def news_state(who="web"):
+    seen = str(CFG.get("news_seen_" + who) or "")
+    ent = news_entries()
+    cur = APP_VERSION
+    if seen == cur:
+        items = []
+    elif not seen:
+        items = [{"v": cur, "t": ent.get(cur, "")}] if ent.get(cur) else []
+    else:
+        vs = sorted((v for v in ent if _news_vt(seen) < _news_vt(v) <= _news_vt(cur)), key=_news_vt, reverse=True)[:6]
+        items = [{"v": v, "t": ent[v]} for v in vs]
+    return {"version": cur, "show": bool(items) and bool(CFG.get("news_popup", True)), "items": items, "next": news_next(),
+            "done": len(MAKEOVER_DONE), "total": len(MAKEOVER_ALL)}
+
+
+def news_seen(who="web"):
+    CFG["news_seen_" + who] = APP_VERSION
+    save_settings()
 # ----------------------------------------------------------------------------
 # Autostart: when switched on, the Pi starts MoveEye when it boots (no screen needed) and switches the own Wi-Fi on.
 # When switched off, nothing starts at boot and the Pi joins its known networks as usual (the own Wi-Fi never starts by itself).
@@ -15445,8 +15514,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.81", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31091606,
-         "sha256": "0fdcf88b21d1ea4a801df3a07089f6f7b651f403f673823b90d206427c2e4cb2"}
+SIM3D = {"version": "3D-3.82", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31129067,
+         "sha256": "0e16b0671e2b71f816aaedcda7f8d813e38aeb864c2b5e32286c25e9f0e93525"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15585,8 +15654,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.81", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24213212,
-           "sha256": "c21808df332158159473f5c9596a419fd357328a5dd987c6391d94d48ca85a76", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.82", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24250598,
+           "sha256": "9d1c34f0a379d70ed24c720500b1f976a0a5ead1d02b405d2da5136a4ca810a6", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -20258,7 +20327,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_2.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_3.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -36581,7 +36650,7 @@ function modePaint(s) {
       + ".prt-what{margin-top:6px}.prt-amp{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04)}.prt-amp.green{border-left:4px solid #3fcf6b}.prt-amp.orange{border-left:4px solid #f2a33a}.prt-amp.red{border-left:4px solid #e5484d}.prt-it{margin-top:6px;gap:8px;font-size:13px}"
       + ".prt-dev{margin-top:8px;font-size:13px}.prt-things{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.prt-th{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;max-width:92px}.prt-th.miss span{color:#ff6b6b;font-weight:700}"
       + ".prt-img{width:84px;height:60px;border-radius:8px;background:#222 no-repeat;border:2px solid #3fcf6b}.prt-th.miss .prt-img{border-color:#e5484d}.prt-test{margin-top:8px;font-size:13px;line-height:1.6}"
-      + ".prt-wiz{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px}.prt-card{background:var(--card,#161b22);border-radius:16px;padding:18px;width:min(420px,100%);display:flex;flex-direction:column;gap:8px;animation:prtin .2s ease-out}"
+      + ".prt-wiz{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px}.prt-card{background:var(--card,#161b22);border-radius:16px;padding:18px;width:min(420px,100%);display:flex;flex-direction:column;gap:8px;animation:prtin .2s ease-out}.nws-card{width:min(520px,100%);max-height:86vh;overflow:auto}.nws-tag{font-size:12px;color:#f59a4a;letter-spacing:.08em;text-transform:uppercase}.nws-list{display:flex;flex-direction:column;gap:8px}.nws-it{display:flex;gap:10px;font-size:14px;line-height:1.35}.nws-it b{flex:0 0 auto;color:#3b8cff}.nws-next{font-size:13px;opacity:.85;display:flex;flex-direction:column;gap:3px}.nws-card h4{margin:6px 0 0}"
       + ".prt-opt{display:flex;align-items:center;gap:12px;padding:12px;font-size:15px;text-align:left}.prt-opt .ic{font-size:22px}.prt-opt.on{outline:2px solid var(--acc,#3b8cff)}@keyframes prtin{from{transform:scale(.95);opacity:0}to{transform:none;opacity:1}}";
     document.head.appendChild(c); }
   const all = M.list.concat([{id: "", icon: "⚙", name: "Own settings", info: M.own_info}]);
@@ -36694,6 +36763,25 @@ async function protectPin(has) {
   const r = await post("/api/protect", {action: "pin", new: nw, old: old, lang: LANG});
   toast(r.ok ? "✓ " + (nw ? t("PIN saved") : t("PIN removed")) : "⚠ " + (r.error || t("error"))); PRT.key = "";
 }
+async function newsCheck(force) {                    // 2.96.3: after an update - what is new, what comes next
+  let r; try { r = await (await fetch("/api/news")).json(); } catch (e) { return; }
+  if (!r || !(r.show || force) || document.querySelector(".nws")) return;
+  const ov = el("div", "prt-wiz nws"), c = el("div", "prt-card nws-card"); ov.appendChild(c); document.body.appendChild(ov);
+  c.append(el("div", "nws-tag", "MoveEye " + r.version), el("h3", "", "✨ " + t("New in this version")));
+  const its = r.items.length ? r.items : [{v: r.version, t: t("No changes noted.")}];
+  const ul = el("div", "nws-list"); its.forEach(x => { const d = el("div", "nws-it"); d.append(el("b", "", x.v), el("span", "", x.t)); ul.appendChild(d); }); c.appendChild(ul);
+  if (r.next && r.next.length) { c.append(el("h4", "", "🔜 " + t("Next in the makeover") + " (" + r.done + "/" + r.total + ")"));
+    const nx = el("div", "nws-next"); r.next.forEach(x => nx.appendChild(el("div", "", x.n + ". " + x.t))); c.appendChild(nx); }
+  const ok = el("button", "", t("OK")); ok.type = "button"; ok.style.width = "100%";
+  const off = el("button", "sec", t("Do not show any more")); off.type = "button";
+  const close = (o) => { ov.remove(); post("/api/news", {seen: true, off: o}); };
+  ok.onclick = () => close(false); off.onclick = () => close(true); ov.onclick = e => { if (e.target === ov) close(false); };
+  c.append(ok, off);
+}
+setTimeout(newsCheck, 2500);
+Object.assign(I18N.de, {"New in this version": "Neu in dieser Version", "Next in the makeover": "Als Nächstes im Makeover", "No changes noted.": "Keine Änderungen notiert.",
+  "Do not show any more": "Nicht mehr anzeigen", "What is new?": "Was ist neu?"});
+
 function protectWizard() {                       // three questions, then everything is set
   const A = {what: "place", when: "now", react: "push"};
   const Q = [["what", t("What shall be protected?"), [["place", "⛺", t("The place / tent")], ["things", "🚲", t("Things like the bike")], ["device", "📷", t("The device itself")], ["all", "🛡", t("Everything")]]],
@@ -40323,6 +40411,16 @@ class WebStream:
                 return reply({"ok": False, "error": "unknown action"}, 400)
             return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"]})
 
+        @app.route("/api/news", methods=["GET", "POST"])
+        def api_news():                                      # 2.96.3: «Neu in dieser Version» after an update
+            who = "tk" if request.args.get("who") == "tk" else "web"
+            if request.method == "POST":
+                d = body()
+                if d.get("off"):
+                    CFG["news_popup"] = False
+                news_seen(who)
+            return reply(dict(news_state(who), ok=True))
+
         @app.route("/api/sim_diary")
         def api_sim_diary():                                 # 2.96.1: the diary of the simulator
             day = str(request.args.get("day") or "")[:10]
@@ -42215,6 +42313,7 @@ TOGGLES = [  # (section, key, label)
     ("Updates", "update_auto", "Look for new versions by itself (every 3 hours)"),
     ("Updates", "update_install", "Install new versions automatically"),
     ("Updates", "update_fast", "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)"),
+    ("Updates", "news_popup", "After an update: show briefly what is new and what comes next"),
     ("Updates", "update_install_armed", "Automatic update also while armed (otherwise only when disarmed)"),
     ("Updates", "update_unsigned", "Also accept unsigned versions (not recommended - only for own builds)"),
     ("Battery", "ups_on", "UPS HAT (battery pack on the Pi): use it when found"),
@@ -42723,7 +42822,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.2")
+        self.root.title("MoveEye 2.96.3")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -42755,6 +42854,33 @@ class App:
         if CFG.get("fullscreen"):
             self.toggle_fullscreen()
         self.root.after(30, self._update_video); self.root.after(500, self._update_state)
+        self.root.after(2500, self._news)                  # 2.96.3: after an update: what is new
+
+    def _news(self, force=False):
+        """2.96.3: a small window «Neu in dieser Version» (once per version; «Nicht mehr anzeigen» switches it off)"""
+        try:
+            st = news_state("tk")
+            if not (st["show"] or force):
+                return
+            top = tk.Toplevel(self.root); top.title("MoveEye " + st["version"]); top.configure(bg=C["panel"]); top.transient(self.root)
+            tk.Label(top, text="✨ " + tr("New in this version"), bg=C["panel"], fg=C["fg"], font=("TkDefaultFont", 13, "bold")).pack(anchor="w", padx=16, pady=(14, 6))
+            for it in st["items"] or [{"v": st["version"], "t": tr("No changes noted.")}]:
+                tk.Label(top, text=it["v"] + "  " + it["t"], bg=C["panel"], fg=C["fg"], wraplength=520, justify="left").pack(anchor="w", padx=16, pady=2)
+            if st["next"]:
+                tk.Label(top, text="🔜 %s (%d/%d)" % (tr("Next in the makeover"), st["done"], st["total"]), bg=C["panel"], fg=C["fg"],
+                         font=("TkDefaultFont", 11, "bold")).pack(anchor="w", padx=16, pady=(10, 2))
+                for x in st["next"]:
+                    tk.Label(top, text="%d. %s" % (x["n"], x["t"]), bg=C["panel"], fg=C.get("mut", C["fg"]), justify="left").pack(anchor="w", padx=24)
+            bf = tk.Frame(top, bg=C["panel"]); bf.pack(fill="x", padx=16, pady=12)
+            def close(off):
+                if off:
+                    CFG["news_popup"] = False
+                news_seen("tk"); top.destroy()
+            tk.Button(bf, text=tr("OK"), command=lambda: close(False)).pack(side="right")
+            tk.Button(bf, text=tr("Do not show any more"), command=lambda: close(True)).pack(side="right", padx=8)
+            top.protocol("WM_DELETE_WINDOW", lambda: close(False))
+        except Exception as e:
+            print("news:", e)
 
     # ---- (re)building the window ----------------------------------------
     def _rebuild(self):
@@ -43013,7 +43139,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.3 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -50159,6 +50285,18 @@ _HX107 = {  # 2.96.1: simulator diary
     'Duration': ('Dauer', 'Durée', 'Durata', 'Durada'), 'not connected': ('nicht verbunden', 'non connecté', 'non connesso', 'betg collià'),
 }
 for _k, _v in _HX107.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX108 = {  # 2.96.3: «Neu in dieser Version»
+    'After an update: show briefly what is new and what comes next': ('Nach einem Update kurz zeigen, was neu ist und was als Nächstes kommt', 'Après une mise à jour : montrer brièvement les nouveautés et la suite', 'Dopo un aggiornamento: mostrare brevemente le novità e cosa arriva dopo', 'Suenter in update: mussar curt tge ch’è nov e tge che vegn sco proxim'),
+    'New in this version': ('Neu in dieser Version', 'Nouveau dans cette version', 'Novità di questa versione', 'Nov en questa versiun'),
+    'Next in the makeover': ('Als Nächstes im Makeover', 'Prochaines étapes du renouveau', 'Prossimi passi del rinnovo', 'Proxims pass da la renovaziun'),
+    'No changes noted.': ('Keine Änderungen notiert.', 'Aucun changement noté.', 'Nessuna modifica annotata.', 'Naginas midadas notadas.'),
+    'Do not show any more': ('Nicht mehr anzeigen', 'Ne plus afficher', 'Non mostrare più', 'Betg pli mussar'),
+    'What is new?': ('Was ist neu?', 'Quoi de neuf ?', 'Cosa c’è di nuovo?', 'Tge è nov?'),
+}
+for _k, _v in _HX108.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

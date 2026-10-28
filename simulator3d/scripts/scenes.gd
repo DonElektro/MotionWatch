@@ -5,7 +5,8 @@ extends RefCounted
 
 const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Parkplatz"], ["garten", "Garten / Haus"],
 		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"], ["verstecken", "Versteckspiel (viele Verstecke)"], ["ort", "Ort von der Karte (Schweiz)"],
-		["zuhause", "Mein Zuhause (selbst gebaut)"]]
+		["zuhause", "Mein Zuhause (selbst gebaut)"], ["bauernhof", "Bauernhof"], ["seeufer", "Seeufer mit Steg"], ["baustelle", "Baustelle"],
+		["stellplatz", "Wohnmobil-Stellplatz"], ["vorlage", "Meine Vorlage (3D-Datei)"]]
 
 # visitors that come by themselves, and how often (seconds from .. to)
 const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog", "marten", "squirrel", "cyclist", "couple", "stroller", "courier", "police", "drunk", "bats", "owl", "burglar", "bbq", "homecoming", "fox_trash", "kids_tag", "boar_group"], 35.0, 110.0],
@@ -16,6 +17,11 @@ const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox"
 		"verstecken": [["person", "child", "jogger", "dogwalk", "fox", "cat", "hare", "deer", "couple", "police", "sheep_flock"], 30.0, 90.0],
 		"ort": [["person", "child", "jogger", "dogwalk", "fox", "deer", "cat", "cat", "badger", "hare", "hedgehog", "car", "marten", "squirrel", "cyclist", "couple", "stroller", "courier", "tractor", "moto", "van", "cows", "sheep_flock",
 			"horse_walk", "bats", "owl", "parcel", "homecoming", "burglar", "mowing", "fox_trash", "kids_tag"], 30.0, 100.0],
+		"bauernhof": [["cows", "sheep_flock", "cat", "cat", "dog", "fox", "fox", "marten", "badger", "hare", "person", "tractor", "horse_walk", "owl", "bats", "burglar", "dogwalk"], 30.0, 90.0],
+		"seeufer": [["person", "couple", "jogger", "dogwalk", "fox", "deer", "hare", "cyclist", "child", "bats", "owl", "drunk", "burglar"], 30.0, 90.0],
+		"baustelle": [["person", "burglar", "burglar", "police", "fox", "cat", "marten", "courier", "van", "drunk", "hare"], 40.0, 120.0],
+		"stellplatz": [["person", "couple", "child", "dogwalk", "cat", "fox", "hedgehog", "cyclist", "van", "moto", "courier", "burglar", "homecoming", "drunk", "bbq"], 30.0, 90.0],
+		"vorlage": [["person", "child", "dogwalk", "cat", "fox", "deer", "hare", "hedgehog", "courier", "burglar", "cyclist"], 35.0, 100.0],
 		"zuhause": [["cat", "cat", "fox", "badger", "hedgehog", "hare", "garden_person", "garden_person", "dog", "marten", "squirrel", "courier", "bats", "owl", "parcel", "burglar", "kids_tag", "person", "dogwalk"], 35.0, 100.0],
 		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer", "chamois", "ibex", "lynx", "owl"], 15.0, 40.0]}
 
@@ -56,6 +62,16 @@ func build(id: String, parent: Node3D) -> void:
 			_ort()
 		"verstecken":
 			_verstecken()
+		"bauernhof":
+			_bauernhof()
+		"seeufer":
+			_seeufer()
+		"baustelle":
+			_baustelle()
+		"stellplatz":
+			_stellplatz()
+		"vorlage":
+			_vorlage()
 		_:
 			_camping()
 	if EXTRA_HIDE.has(id):                                        # more places to hide (3D-3.13)
@@ -70,6 +86,10 @@ const EXTRA_HIDE := {
 	"garten": [8, 7.0, 30.0, ["bush", "hedge", "compost", "woodpile", "shed", "crates"]],
 	"lustig": [8, 9.0, 40.0, ["bush", "haybale", "crates", "barrels", "rock"]],
 	"wild": [10, 10.0, 50.0, ["bush", "bush", "rock", "rock", "woodpile", "haybale", "trailer"]],
+	"bauernhof": [10, 9.0, 45.0, ["haybale", "haybale", "woodpile", "trailer", "bush", "compost", "barrels"]],
+	"seeufer": [8, 8.0, 40.0, ["bush", "bush", "rock", "woodpile", "crates"]],
+	"baustelle": [12, 7.0, 35.0, ["pallets", "container", "barrels", "crates", "wall", "pallets"]],
+	"stellplatz": [8, 8.0, 40.0, ["bush", "hedge", "car", "crates", "barrels"]],
 }
 
 
@@ -1319,3 +1339,164 @@ func home_item(it: Dictionary) -> Node3D:
 			put(n, cyl(1.35, 1.35, 0.46, 24), Vector3(0, 0.24, 0), Color(0.45, 0.8, 0.95), 18.0)
 			m.add_obstacle(p, 1.6 * sc)
 	return n
+
+
+
+# ---- 3D-3.82: four more scenes ------------------------------------------------------------------------------------------
+func _fence(a: Vector3, b: Vector3, h := 1.3, col := Color(0.55, 0.42, 0.28)) -> void:
+	"""a wooden (or site) fence from a to b: posts and two rails"""
+	var d := b - a
+	var n := maxi(1, int(Vector2(d.x, d.z).length() / 2.5))
+	for i in range(n + 1):
+		var p := a.lerp(b, float(i) / n)
+		put(root, m.box(0.12, h, 0.12), Vector3(p.x, h / 2.0, p.z), col, "tree")
+	var ang := atan2(-d.z, d.x)
+	var c := (a + b) / 2.0
+	for y in [h * 0.4, h * 0.85]:
+		put(root, m.box(Vector2(d.x, d.z).length(), 0.08, 0.05), Vector3(c.x, y, c.z), col, "tree", Vector3(0, ang, 0))
+	m.add_obstacle_box(c, Vector2(d.x, d.z).length(), 0.3, ang)
+	m.set_obstacle_height(h)
+
+
+func _bauernhof() -> void:
+	"""a farm: house with the door, a big barn, hay bales, a tractor, a pasture with a fence"""
+	road(-38.0)
+	var h := hut(Vector3(-10, 0, -18), 0.2, Color(0.82, 0.78, 0.7))
+	h.scale = Vector3(1.6, 1.4, 1.6)
+	var barn := node(root, Vector3(9, 0, -22), -0.1)
+	put(barn, m.box(12, 6, 8), Vector3(0, 3, 0), Color(0.55, 0.16, 0.12), "caravan")
+	var roof := PrismMesh.new()
+	roof.size = Vector3(13, 3, 9)
+	put(barn, roof, Vector3(0, 7.5, 0), Color(0.3, 0.3, 0.32), "caravan")
+	put(barn, m.box(4, 4.5, 0.1), Vector3(0, 2.25, 4.02), Color(0.4, 0.12, 0.08), "caravan")
+	m.add_obstacle_node(barn, Vector3.ZERO, 12.2, 8.2)
+	static_car(Vector3(4, 0, -12), 0.6, Color(0.1, 0.5, 0.15))
+	for i in range(6):
+		prop("haybale", Vector3(16 + (i % 3) * 1.6, 0, -10 - (i / 3) * 1.6), 0.0)
+	_fence(Vector3(-30, 0, -4), Vector3(-30, 0, -32))
+	_fence(Vector3(-30, 0, -4), Vector3(-18, 0, -4))
+	bike(Vector3(-4, 0, -9), 0.4)
+	m.obj["pir"] = Vector3(3, 0, -14)
+	lamp_post(Vector3(0, 0, -15))
+	meadow(500, 3.0, 45.0)
+	for i in range(50):
+		tree(root, m.pos_of(rng.randf_range(-180, 180), rng.randf_range(45, 120)), rng.randf_range(0.8, 1.5))
+
+
+func _seeufer() -> void:
+	"""a lake shore: water, a wooden jetty with a boat, reeds, a tent and benches"""
+	var water := StandardMaterial3D.new()
+	water.albedo_color = Color(0.12, 0.3, 0.42)
+	water.metallic = 0.3
+	water.roughness = 0.08
+	put(root, m.box(160, 0.05, 70), Vector3(0, 0.02, -60), water, "road")
+	for i in range(14):                                    # the jetty
+		put(root, m.box(1.8, 0.08, 0.3), Vector3(4, 0.45, -26 - i * 0.35), Color(0.5, 0.36, 0.22), "tree")
+	for z in [-26.0, -28.5, -30.5]:
+		for x in [3.2, 4.8]:
+			put(root, cyl(0.08, 0.08, 1.2, 6), Vector3(x, 0.1, z), Color(0.35, 0.25, 0.15), "tree")
+	var boat := node(root, Vector3(6.2, 0.2, -29), 0.1)
+	put(boat, m.box(1.2, 0.4, 3.4), Vector3(0, 0.1, 0), Color(0.85, 0.85, 0.82), "caravan")
+	for i in range(80):                                    # reeds
+		var x := rng.randf_range(-40, 40)
+		if absf(x - 4.0) < 4.0:
+			continue
+		put(root, cyl(0.02, 0.03, rng.randf_range(1.0, 1.8), 4), Vector3(x, 0.6, rng.randf_range(-26.5, -24.5)), Color(0.45, 0.5, 0.25), "tree")
+	var tent := node(root, Vector3(-6, 0, -12), 0.3)
+	var tm := PrismMesh.new()
+	tm.size = Vector3(2.6, 1.5, 2.2)
+	put(tent, tm, Vector3(0, 0.75, 0), Color(0.15, 0.45, 0.25), "tent", Vector3(0, PI / 2, 0))
+	m.add_obstacle_node(tent, Vector3.ZERO, 2.4, 2.8)
+	bench(Vector3(1, 0, -20), PI)
+	bench(Vector3(-12, 0, -20), PI)
+	hut(Vector3(14, 0, -14), -0.4)
+	bike(Vector3(-2, 0, -10), 0.2)
+	m.obj["pir"] = Vector3(-6, 0, -9)
+	lamp_post(Vector3(4, 0, -22))
+	road(30.0)
+	meadow(400, 3.0, 40.0, func(p: Vector3): return p.z < -24.0)
+	for i in range(40):
+		var p2: Vector3 = m.pos_of(rng.randf_range(-180, 180), rng.randf_range(40, 110))
+		if p2.z > -24.0:
+			tree(root, p2, rng.randf_range(0.8, 1.4))
+
+
+func _baustelle() -> void:
+	"""a building site at night: a site fence, a container (door), an excavator, pallets, pipes, a crane"""
+	road(-36.0)
+	_fence(Vector3(-22, 0, -4), Vector3(22, 0, -4), 2.0, Color(0.75, 0.75, 0.78))
+	_fence(Vector3(-22, 0, -4), Vector3(-22, 0, -30), 2.0, Color(0.75, 0.75, 0.78))
+	_fence(Vector3(22, 0, -4), Vector3(22, 0, -30), 2.0, Color(0.75, 0.75, 0.78))
+	put(root, m.box(44, 0.03, 26), Vector3(0, 0.015, -17), Color(0.45, 0.38, 0.3), "road")
+	var c := node(root, Vector3(-14, 0, -10), 0.0)          # the site container with the door
+	put(c, m.box(6, 2.6, 2.4), Vector3(0, 1.3, 0), Color(0.15, 0.35, 0.65), "caravan")
+	put(c, m.box(1.0, 0.6, 0.05), Vector3(-1.5, 1.6, 1.22), window_mat(), "window")
+	m.door_node = node(c, Vector3(1.5, 0, 1.22))
+	put(m.door_node, m.box(0.9, 2.0, 0.05), Vector3(0.45, 1.0, 0), Color(0.12, 0.28, 0.5), "caravan")
+	door_light_at(c, Vector3(2.0, 2.2, 1.8))
+	m.obj["door"] = c.transform * Vector3(2.0, 0, 2.6)
+	m.add_obstacle_node(c, Vector3.ZERO, 6.1, 2.5)
+	var ex := node(root, Vector3(6, 0, -16), 0.7)            # the excavator
+	put(ex, m.box(3, 0.8, 4), Vector3(0, 0.4, 0), Color(0.15, 0.15, 0.15), "caravan")
+	put(ex, m.box(2.6, 1.6, 2.6), Vector3(0, 1.6, 0), Color(0.95, 0.7, 0.1), "caravan")
+	put(ex, m.box(0.4, 0.4, 4.5), Vector3(0.8, 2.6, 2.6), Color(0.95, 0.7, 0.1), "caravan", Vector3(-0.5, 0, 0))
+	m.add_obstacle_node(ex, Vector3.ZERO, 3.2, 4.2)
+	for i in range(5):
+		put(root, cyl(0.35, 0.35, 5, 12), Vector3(-4 + i * 0.75, 0.35, -24), Color(0.6, 0.6, 0.62), "stone", Vector3(0, 0, PI / 2))
+	m.add_obstacle_box(Vector3(-2.5, 0, -24), 5, 4, 0.0)
+	put(root, m.box(1, 22, 1), Vector3(16, 11, -26), Color(0.95, 0.75, 0.1), "stone")      # the crane
+	put(root, m.box(24, 0.8, 0.8), Vector3(10, 21.6, -26), Color(0.95, 0.75, 0.1), "stone")
+	m.add_obstacle(Vector3(16, 0, -26), 0.8)
+	var tools := node(root, Vector3(-6, 0, -8), 0.2)         # the tool box (the thing a thief wants)
+	put(tools, m.box(1.2, 0.8, 0.7), Vector3(0, 0.4, 0), Color(0.75, 0.1, 0.1), "caravan")
+	m.add_obstacle_node(tools, Vector3.ZERO, 1.3, 0.8)
+	m.test_props["Werkzeugkiste"] = tools
+	m.obj["bike"] = Vector3(-6, 0, -7.2)
+	m.obj["pir"] = Vector3(0, 0, -6)
+	for x in [-18.0, 0.0, 18.0]:
+		lamp_post(Vector3(x, 0, -6))
+	meadow(300, 30.0, 60.0)
+	for i in range(30):
+		tree(root, m.pos_of(rng.randf_range(-180, 180), rng.randf_range(50, 120)), rng.randf_range(0.8, 1.4))
+
+
+func _stellplatz() -> void:
+	"""a camper van site: pitches with hedges between, power posts, a sanitary building, vans and a caravan"""
+	road(-40.0, 6.0)
+	put(root, m.box(50, 0.03, 4), Vector3(0, 0.015, -30), Color(0.4, 0.38, 0.35), "road")
+	for i in range(5):
+		var x := -20.0 + i * 10.0
+		prop("hedge", Vector3(x - 5, 0, -22), PI / 2)
+		var post := node(root, Vector3(x - 3.8, 0, -27))
+		put(post, m.box(0.3, 1.0, 0.3), Vector3(0, 0.5, 0), Color(0.2, 0.45, 0.25), "caravan")
+		put(post, m.box(0.25, 0.1, 0.05), Vector3(0, 0.85, 0.16), glow_mat(Color(0.3, 1.0, 0.4)), 30.0)
+		m.add_obstacle(Vector3(x - 3.8, 0, -27), 0.25)
+		if i == 2:
+			caravan(Vector3(x, 0, -21), PI / 2)
+		elif i != 3:
+			static_car(Vector3(x, 0, -21), PI / 2, [Color(0.9, 0.9, 0.9), Color(0.75, 0.75, 0.7), Color(0.2, 0.3, 0.5)][i % 3])
+	var sb := hut(Vector3(-24, 0, -8), 0.0, Color(0.85, 0.85, 0.82))
+	sb.scale = Vector3(1.8, 1.2, 1.4)
+	bike(Vector3(3, 0, -14), 0.5)
+	bench(Vector3(8, 0, -12), 0.0)
+	m.obj["pir"] = Vector3(10, 0, -18)
+	for x in [-15.0, 5.0, 25.0]:
+		lamp_post(Vector3(x, 0, -28))
+	meadow(500, 3.0, 45.0, func(p: Vector3): return p.z < -26.0 and p.z > -34.0)
+	for i in range(45):
+		tree(root, m.pos_of(rng.randf_range(-180, 180), rng.randf_range(45, 120)), rng.randf_range(0.8, 1.4))
+
+
+# ---- 3D-3.82: «Meine Vorlage» - a 3D file (.glb / .gltf) the operator loaded (templates.gd) ---------------------------------
+func _vorlage() -> void:
+	road(-60.0)
+	m.obj["pir"] = Vector3(0, 0, -8)
+	m.obj["bike"] = Vector3(4, 0, -9)
+	var h := node(root, Vector3(0, 0, -55))                  # every scene needs a door (sensor): a small one, far away
+	m.door_node = node(h, Vector3(0, 0, 0))
+	put(m.door_node, m.box(1.0, 2.1, 0.06), Vector3(0.5, 1.05, 0), Color(0.35, 0.2, 0.12), "caravan")
+	door_light_at(h, Vector3(0.0, 2.5, 0.6))
+	m.obj["door"] = Vector3(0, 0, -54)
+	meadow(300, 30.0, 60.0)
+	if m.templates != null:
+		m.templates.place_into(root)

@@ -2,7 +2,7 @@ extends PanelContainer
 ## 3D-3.61: the tool bar at the bottom of the simulator window - everything of «Erkunden», «Patrouille» and the view
 ## with the mouse only (also on a PC with a keyboard). Green = on. «▾» folds it to one small button.
 ## Row 1 (drive): Erkunden, Patrouille, Punkte, Bereich, Zufall, Löschen, Kopf folgt, Versetzen, Stange − / +
-## Row 2 (show):  Ansicht, Beobachter, Mitspieler, Route, Karte, Kameras, Info, Menü
+## Row 2 (show):  Ansicht, Beobachter, Mitspieler, Route, Karte, Kameras, Info, Vorlagen, Menü
 
 var main
 var folded := false
@@ -30,6 +30,7 @@ const ROW2 := [["view", "Ansicht", "Hinterher, Fahrersicht, von oben"],
 		["map", "Karte", "Kleine Karte oben links"],
 		["cams", "Kameras", "Kamerabilder (was MoveEye sieht)"],
 		["info", "Info", "Anzeige oben (Steuerung, Tempo, Stange)"],
+		["templates", "Vorlagen", "Fertige Szenen, echte Orte, 3D-Bausätze, eigene 3D-Datei (.glb) laden"],
 		["panel", "Menü", "Bedienfeld rechts"]]
 
 
@@ -146,6 +147,8 @@ func _press(id: String) -> void:
 			ex.info_hidden = not ex.info_hidden
 		"panel":
 			main.show_panel(not main.ui_root.visible)
+		"templates":
+			main.templates.toggle()
 	main._settings_dirty = true
 	_paint()
 
@@ -156,7 +159,8 @@ func _paint() -> void:
 	var st := {"explore": ex.on, "patrol": pt.active, "points": pt.edit == "points", "area": pt.edit == "area" or (pt.mode == "area" and pt.area.size.x > 0.5),
 			"follow": pt.follow, "place": main.place_kind == "rover", "spectate": main.spectate, "invite": ex.invite != null and ex.invite.visible,
 			"route": pt.show_route, "map": main.map_on, "cams": main.cam_card != null and main.cam_card.visible, "info": not ex.info_hidden,
-			"panel": main.ui_root.visible, "view": ex.on, "head": main.headpad != null and main.headpad.visible}
+			"panel": main.ui_root.visible, "view": ex.on, "head": main.headpad != null and main.headpad.visible,
+			"templates": main.templates != null and main.templates.visible}
 	for k in _btn:
 		var b: Button = _btn[k]
 		var on: bool = st.get(k, false)

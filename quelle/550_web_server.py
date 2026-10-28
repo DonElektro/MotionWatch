@@ -1552,6 +1552,16 @@ class WebStream:
                 return reply({"ok": False, "error": "unknown action"}, 400)
             return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"]})
 
+        @app.route("/api/news", methods=["GET", "POST"])
+        def api_news():                                      # 2.96.3: «Neu in dieser Version» after an update
+            who = "tk" if request.args.get("who") == "tk" else "web"
+            if request.method == "POST":
+                d = body()
+                if d.get("off"):
+                    CFG["news_popup"] = False
+                news_seen(who)
+            return reply(dict(news_state(who), ok=True))
+
         @app.route("/api/sim_diary")
         def api_sim_diary():                                 # 2.96.1: the diary of the simulator
             day = str(request.args.get("day") or "")[:10]

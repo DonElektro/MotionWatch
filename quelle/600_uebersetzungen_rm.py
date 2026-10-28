@@ -1938,3 +1938,15 @@ for _k, _v in _HX107.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX108 = {  # 2.96.3: «Neu in dieser Version»
+    'After an update: show briefly what is new and what comes next': ('Nach einem Update kurz zeigen, was neu ist und was als Nächstes kommt', 'Après une mise à jour : montrer brièvement les nouveautés et la suite', 'Dopo un aggiornamento: mostrare brevemente le novità e cosa arriva dopo', 'Suenter in update: mussar curt tge ch’è nov e tge che vegn sco proxim'),
+    'New in this version': ('Neu in dieser Version', 'Nouveau dans cette version', 'Novità di questa versione', 'Nov en questa versiun'),
+    'Next in the makeover': ('Als Nächstes im Makeover', 'Prochaines étapes du renouveau', 'Prossimi passi del rinnovo', 'Proxims pass da la renovaziun'),
+    'No changes noted.': ('Keine Änderungen notiert.', 'Aucun changement noté.', 'Nessuna modifica annotata.', 'Naginas midadas notadas.'),
+    'Do not show any more': ('Nicht mehr anzeigen', 'Ne plus afficher', 'Non mostrare più', 'Betg pli mussar'),
+    'What is new?': ('Was ist neu?', 'Quoi de neuf ?', 'Cosa c’è di nuovo?', 'Tge è nov?'),
+}
+for _k, _v in _HX108.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])

@@ -1,12 +1,12 @@
 {
- "version": "3D-3.81",
+ "version": "3D-3.82",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31091606,
- "sha256": "0fdcf88b21d1ea4a801df3a07089f6f7b651f403f673823b90d206427c2e4cb2",
- "notes": "Entwicklungsphase: jede Minute nach Updates schauen",
+ "size": 31129067,
+ "sha256": "0e16b0671e2b71f816aaedcda7f8d813e38aeb864c2b5e32286c25e9f0e93525",
+ "notes": "Vorlagen-Fenster (Szenen, Orte, Bausätze, eigene .glb), 4 neue Szenen, Info nach Updates",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24213212,
-  "sha256": "c21808df332158159473f5c9596a419fd357328a5dd987c6391d94d48ca85a76"
+  "size": 24250598,
+  "sha256": "9d1c34f0a379d70ed24c720500b1f976a0a5ead1d02b405d2da5136a4ca810a6"
  }
 }

@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3D-3.81 (der 3D-Simulator von MoveEye: 7 Szenen, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3D-3.82 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,6 +607,16 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.82
+3D-3.82: Neues Fenster «Vorlagen» (Werkzeugleiste unten): alle Wege zu fertigen Welten an einem Ort, in vier Reitern –
+Fertige Szenen (alle Szenen mit kurzer Beschreibung, Suche), Ganze Orte (Karte der Schweiz, Anleitung für Blender + Blosm
+mit OpenStreetMap, swisstopo-Daten), Bausätze (Kenney, Quaternius, Poly Pizza, KayKit, Poly Haven, ambientCG, Sketchfab,
+OpenGameArt, Smithsonian – mit Lizenz und Link), Eigene Datei (.glb / .gltf laden oder einfach ins Fenster ziehen:
+erscheint in der Szene «Meine Vorlage», Grösse und Mitte stellt der Simulator selbst ein, Wände werden zu Hindernissen;
+verschieben, drehen, grösser / kleiner). Vier neue Szenen: Bauernhof, Seeufer mit Steg, Baustelle, Wohnmobil-Stellplatz.
+Nach jedem Update zeigt der Simulator einmal kurz, was neu ist und was als Nächstes im Makeover kommt (abschaltbar
+unter Updates, dort auch «Was ist neu?»).
 
 NEU IN 3D-3.81
 3D-3.81: «Entwicklungsphase» (Updates, standardmässig an): der Simulator fragt jede Minute bei GitHub, ob es eine neue

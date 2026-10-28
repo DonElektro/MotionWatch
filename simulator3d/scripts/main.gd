@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.81"
+const VERSION := "3D-3.82"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -58,6 +58,7 @@ var game_ghost := true                # 3D-3.77: the ghost of the own best way
 var game_heart := true                # 3D-3.77: heartbeat when the camera nearly sees you
 var localplay                         # 3D-3.77: localplay.gd - play here at the PC
 var headpad                           # 3D-3.77: headpad.gd - steer the head of MoveEye
+var templates                         # 3D-3.82: templates.gd - «Vorlagen»: scenes, places, kits, own 3D files
 var game_tasks := true                # a task for every round of the game (bonus) - 3D-3.27
 var daily_life := true                # visitors at their own times, the postman and the neighbour every day
 var real_weather := false             # the weather of the place from open-meteo.com
@@ -122,6 +123,9 @@ var mwpc_label: Label
 var in_vm := false                    # virtual machine / no graphics card: lighter graphics, fewer preview pictures
 var update_url := ""                  # --update-url (tests); empty = GitHub
 var update_btn: Button
+var news_seen := ""                   # 3D-3.82: «Neu in dieser Version» - the version whose news was seen
+var news_popup := true
+var news                              # news.gd
 var dev_updates := true               # 3D-3.81: development phase - ask GitHub every minute, install a new version at once
 var _dev := {"t": 0.0, "etag": "", "sha": "", "busy": false}
 var auto_update := false              # «Neue Versionen automatisch installieren» (saved; also from the web page of MoveEye)
@@ -2634,7 +2638,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_shadows": ["Kamerabild", "Schwierige Bedingungen"], "cond_ir": ["Kamerabild", "Schwierige Bedingungen"],
-		"autologon": ["System", "Start mit dem PC"], "kids_scary": ["System", "Kinder-Modus"], "kids_thief": ["System", "Kinder-Modus"], "kids_laser": ["System", "Kinder-Modus"], "kids_sound": ["System", "Kinder-Modus"], "auto_update": ["System", "Updates"], "dev_updates": ["System", "Updates"], "update_now": ["System", "Updates"]}
+		"autologon": ["System", "Start mit dem PC"], "kids_scary": ["System", "Kinder-Modus"], "kids_thief": ["System", "Kinder-Modus"], "kids_laser": ["System", "Kinder-Modus"], "kids_sound": ["System", "Kinder-Modus"], "auto_update": ["System", "Updates"], "dev_updates": ["System", "Updates"], "news_popup": ["System", "Updates"], "news_show": ["System", "Updates"], "update_now": ["System", "Updates"]}
 
 
 func _order_controls() -> void:
@@ -2795,6 +2799,8 @@ func _register_controls() -> void:
 	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
 	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")
 	add_control("button", "score0", "Punkte auf 0", null, func(): reset_score(), "Wildbeobachtung")
+	add_control("toggle", "news_popup", "Nach einem Update kurz zeigen, was neu ist (und was als Nächstes kommt)", func(): return news_popup, func(v): news_popup = v; _settings_dirty = true, "Updates")
+	add_control("button", "news_show", "Was ist neu?", null, func(): news.show_news(), "Updates")
 	add_control("toggle", "dev_updates", "Entwicklungsphase: jede Minute nach neuen Versionen schauen und sofort installieren", func(): return dev_updates, func(v): dev_updates = v; _settings_dirty = true, "Updates")
 	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates")
 	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates")
@@ -3301,6 +3307,27 @@ func control(d: Dictionary) -> Dictionary:
 			explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
 			explore.test_until = explore.main.now() + (float(dv[2]) if dv.size() > 2 else 2.0)
 		return explore.state()
+	elif a == "news":                                  # 3D-3.82: {do: info | show | close}
+		if str(d.get("do", "")) == "show":
+			news.show_news()
+		elif str(d.get("do", "")) == "close":
+			news.close(bool(d.get("off", false)))
+		return {"ok": true, "news": news.info()}
+	elif a == "templates":                             # 3D-3.82: {do: info|open|import|remove|adjust, path, i, key, d, tab}
+		var dd := str(d.get("do", "info"))
+		if dd == "open":
+			templates.toggle(int(d.get("tab", 0)))
+		elif dd == "close":
+			templates.visible = false
+		elif dd == "import":
+			return {"ok": templates.import_file(str(d.get("path", "")), bool(d.get("show", true))), "info": templates.info(), "msg": templates._msg.text}
+		elif dd == "drop":
+			templates._on_drop(PackedStringArray([str(d.get("path", ""))]))
+		elif dd == "remove":
+			templates.remove(int(d.get("i", 0)))
+		elif dd == "adjust":
+			templates._adjust(int(d.get("i", 0)), str(d.get("key", "x")), float(d.get("d", 1.0)))
+		return {"ok": true, "info": templates.info(), "obstacles": obstacles.size(), "scene": scene}
 	elif a == "visits":                                # 3D-3.80: finished visits for the diary of MoveEye {since: id}
 		return {"ok": true, "visits": visitlog.since(int(d.get("since", 0))), "seq": visitlog.seq, "live": visitlog.live.size(), "sim": VERSION}
 	elif a == "localplay":                             # 3D-3.77: play here at the PC (tests): {do: start | stop | get, role}
@@ -4390,7 +4417,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "kids_on", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
 var _settings_dirty := false
 
@@ -5255,6 +5282,17 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	headpad.main = self
 	headpad.theme = th
 	layer.add_child(headpad)
+	templates = preload("res://scripts/templates.gd").new()   # 3D-3.82: «Vorlagen»
+	templates.main = self
+	templates.theme = th
+	layer.add_child(templates)
+	if scene == "vorlage":
+		set_scene("vorlage")                                   # built before the window existed: once more with the files
+	news = preload("res://scripts/news.gd").new()             # 3D-3.82: «Neu in dieser Version» after an update
+	news.main = self
+	news.theme = th
+	layer.add_child(news)
+	get_tree().create_timer(3.0).timeout.connect(func(): news.check())
 	localplay = preload("res://scripts/localplay.gd").new()   # 3D-3.77: play here at the PC
 	localplay.main = self
 	localplay.theme = th
