@@ -1,12 +1,12 @@
 {
- "version": "3D-3.80",
+ "version": "3D-3.81",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31089977,
- "sha256": "dea5191cd72a35014644671a8640ca7f352c98877430ebcc09589547d43ba71c",
- "notes": "Besuchs-Tagebuch für MoveEye",
+ "size": 31091606,
+ "sha256": "0fdcf88b21d1ea4a801df3a07089f6f7b651f403f673823b90d206427c2e4cb2",
+ "notes": "Entwicklungsphase: jede Minute nach Updates schauen",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24211514,
-  "sha256": "d13c7e8d48c13915ca2a5e20eaa9a2c719af0906d4ff62fcb027237e5ef3be01"
+  "size": 24213212,
+  "sha256": "c21808df332158159473f5c9596a419fd357328a5dd987c6391d94d48ca85a76"
  }
 }

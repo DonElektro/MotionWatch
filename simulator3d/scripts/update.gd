@@ -61,7 +61,7 @@ func check(current: String, url := "") -> void:
 	http = HTTPRequest.new()
 	http.timeout = 6.0
 	add_child(http)
-	if http.request(base + INFO_FILE) != OK:
+	if http.request(base + INFO_FILE + "?t=%d" % int(Time.get_unix_time_from_system())) != OK:   # 3D-3.81: past the cache
 		await _note("Die Suche liess sich nicht starten.")
 		return
 	var r: Array = await http.request_completed
