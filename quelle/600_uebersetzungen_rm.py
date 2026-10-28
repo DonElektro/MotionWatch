@@ -1667,6 +1667,18 @@ for _k, _v in _HX57.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX86 = {  # 2.95.86: the simulation has its own settings
+    'The simulation has its own settings (when switching back: ask which changes to take over)': ('Die Simulation hat eigene Einstellungen (beim Zurückschalten fragen, welche Änderungen übernommen werden)', 'La simulation a ses propres réglages (au retour : demander quels changements reprendre)', 'La simulazione ha le sue impostazioni (al ritorno: chiedere quali modifiche adottare)', 'La simulaziun ha agens parameters (cun turnar: dumandar tge midadas surpigliar)'),
+    'Settings from the simulation': ('Einstellungen aus der Simulation', 'Réglages de la simulation', 'Impostazioni dalla simulazione', 'Parameters da la simulaziun'),
+    'During the simulation these settings were changed. Motion Watch now uses the real settings again. Take over changes for the real camera?': ('Während der Simulation wurden diese Einstellungen geändert. Motion Watch arbeitet jetzt wieder mit den echten Einstellungen. Änderungen für die echte Kamera übernehmen?', 'Pendant la simulation, ces réglages ont été modifiés. Motion Watch utilise de nouveau les vrais réglages. Reprendre les changements pour la vraie caméra ?', 'Durante la simulazione queste impostazioni sono state cambiate. Motion Watch usa di nuovo le impostazioni reali. Adottare le modifiche per la telecamera vera?', 'Durant la simulaziun èn vegnids midads quests parameters. Motion Watch lavura puspè cun ils parameters reals. Surpigliar las midadas per la camera reala?'),
+    'Take over the selected': ('Ausgewählte übernehmen', 'Reprendre la sélection', 'Adottare i selezionati', 'Surpigliar ils tschernids'),
+    'Keep the real settings': ('Echte Einstellungen behalten', 'Garder les vrais réglages', 'Tenere le impostazioni reali', 'Tegnair ils parameters reals'),
+    'real': ('echt', 'réel', 'reale', 'real'), 'simulation': ('Simulation', 'simulation', 'simulazione', 'simulaziun'), 'taken over': ('übernommen', 'repris', 'adottate', 'surpigliads'),
+}
+for _k, _v in _HX86.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 _HX56 = {'Pan servo: turning range (degrees: 180, 270 or 360)': ('Schwenk-Servo: Drehbereich (Grad: 180, 270 oder 360)', 'Servo panoramique : plage de rotation (degrés : 180, 270 ou 360)', 'Servo panoramica: campo di rotazione (gradi: 180, 270 o 360)', 'Servo da sviar: champ da rotaziun (grads: 180, 270 u 360)')}
 for _k, _v in _HX56.items():
     DE.setdefault(_k, _v[0])

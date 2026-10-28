@@ -143,6 +143,7 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself when a newer version is there"),
+    ("Simulator", "sim_separate", "The simulation has its own settings (when switching back: ask which changes to take over)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when Motion Watch starts in the background"),
     ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
@@ -728,7 +729,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.85")
+        self.root.title("Motion Watch 2.95.86")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1018,7 +1019,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.85 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.86 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -3030,6 +3031,24 @@ class App:
         if not ok:
             self._status("Timelapse", "⚠ " + tr_err(err))
 
+    def _simprof_ask(self):
+        q_ = SIMPROF.get("q")
+        if not q_:
+            return
+        def val(v):
+            return tr("on") if v is True else tr("off") if v is False else str(v)[:30]
+        lines = [f"• {tr(c['label'])}: {val(c['real'])} → {val(c['sim'])}" for c in q_["changes"][:15]]
+        if len(q_["changes"]) > 15:
+            lines.append(f"… (+{len(q_['changes']) - 15})")
+        try:
+            from tkinter import messagebox as mb_
+            yes = mb_.askyesno(tr("Settings from the simulation"),
+                               tr("During the simulation these settings were changed. Motion Watch now uses the real settings again. Take over changes for the real camera?") + "\n\n" + "\n".join(lines))
+        except Exception:
+            return
+        simprof_answer([c["key"] for c in q_["changes"]] if yes else [])
+        self._schedule_rebuild() if hasattr(self, "_schedule_rebuild") else None
+
     def _status(self, sec, text):
         lbl = self.status_labels.get(sec)
         if lbl is not None:
@@ -3045,6 +3064,10 @@ class App:
     def _refresh(self):
         st = STATE
         self._sync_relays()
+        q_ = SIMPROF.get("q")                              # 2.95.86: back from the simulation - take over its changes?
+        if q_ and getattr(self, "_simprof_t", None) != q_["t"]:
+            self._simprof_t = q_["t"]
+            self.root.after(200, self._simprof_ask)
         try:
             self._paint_main()
         except Exception:

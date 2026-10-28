@@ -53,6 +53,48 @@ def render_page(page, active):
 
 
 HEADER_JS = r"""
+// ---- 2.95.86: back from the simulation - which settings changed there are taken over? (all pages) ----
+(function simProfAsk() {
+  if (window._spa) return; window._spa = true;
+  const T = {de: {"Settings from the simulation": "Einstellungen aus der Simulation", "During the simulation these settings were changed. Motion Watch now uses the real settings again. Take over changes for the real camera?": "Während der Simulation wurden diese Einstellungen geändert. Motion Watch arbeitet jetzt wieder mit den echten Einstellungen. Änderungen für die echte Kamera übernehmen?",
+      "Take over the selected": "Ausgewählte übernehmen", "Keep the real settings": "Echte Einstellungen behalten", "real": "echt", "simulation": "Simulation", "All": "Alle", "on": "ein", "off": "aus", "taken over": "übernommen"}};
+  const L = () => { try { return (typeof LANG !== "undefined" && LANG) || "de"; } catch (e) { return "de"; } };
+  const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : ((T[L()] || {})[k] || k);
+  const fmt = v => v === true ? tt("on") : v === false ? tt("off") : (Array.isArray(v) || (v && typeof v === "object")) ? "…" : String(v).slice(0, 40);
+  let shown = 0;
+  const show = q => {
+    if (!q || shown === q.t || document.getElementById("spa")) return; shown = q.t;
+    const ov = document.createElement("div"); ov.id = "spa";
+    ov.style.cssText = "position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:12px";
+    const b = document.createElement("div");
+    b.style.cssText = "background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-radius:16px;max-width:560px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden";
+    const h = document.createElement("div"); h.style.cssText = "padding:14px 16px 6px;font-weight:600;font-size:17px"; h.textContent = "🧪 " + tt("Settings from the simulation");
+    const p = document.createElement("div"); p.style.cssText = "padding:0 16px 8px;font-size:13px;color:var(--mut,#8b9bb0);line-height:1.45"; p.textContent = tt("During the simulation these settings were changed. Motion Watch now uses the real settings again. Take over changes for the real camera?");
+    const list = document.createElement("div"); list.style.cssText = "overflow:auto;padding:0 16px;flex:1";
+    const all = document.createElement("label"); all.style.cssText = "display:flex;gap:8px;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid var(--line,#1f2b3a)";
+    const ca = document.createElement("input"); ca.type = "checkbox"; ca.checked = true; all.append(ca, document.createTextNode(tt("All") + " (" + q.changes.length + ")")); list.appendChild(all);
+    const boxes = [];
+    q.changes.forEach(c => { const r = document.createElement("label"); r.style.cssText = "display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line,#1f2b3a);font-size:14px";
+      const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = true; cb.value = c.key; cb.style.marginTop = "3px"; boxes.push(cb);
+      const tx = document.createElement("div"); tx.style.flex = "1";
+      const n = document.createElement("div"); n.textContent = c.label;
+      const v = document.createElement("div"); v.style.cssText = "font-size:12px;color:var(--mut,#8b9bb0)"; v.textContent = tt("real") + ": " + fmt(c.real) + "  →  " + tt("simulation") + ": " + fmt(c.sim);
+      tx.append(n, v); r.append(cb, tx); list.appendChild(r); });
+    ca.onchange = () => boxes.forEach(x => x.checked = ca.checked);
+    const bt = document.createElement("div"); bt.style.cssText = "display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line,#1f2b3a);flex-wrap:wrap";
+    const ok = document.createElement("button"); ok.type = "button"; ok.textContent = tt("Take over the selected"); ok.style.flex = "1";
+    const no = document.createElement("button"); no.type = "button"; no.className = "sec"; no.textContent = tt("Keep the real settings"); no.style.flex = "1";
+    const send = async take => { ok.disabled = no.disabled = true;
+      try { const r = await (await fetch("/api/simprofile", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({take: take})})).json();
+        if (take.length && typeof toast === "function") toast("✓ " + (r.taken || 0) + " " + tt("taken over")); } catch (e) {}
+      ov.remove(); };
+    ok.onclick = () => send(boxes.filter(x => x.checked).map(x => x.value)); no.onclick = () => send([]);
+    bt.append(ok, no); b.append(h, p, list, bt); ov.appendChild(b); document.body.appendChild(ov);
+  };
+  const poll = async () => { try { if (!document.hidden) { const r = await fetch("/api/simprofile?lang=" + L(), {cache: "no-store"}); if (r.ok) { const j = await r.json(); if (j && j.q) show(j.q); } } } catch (e) {}
+    setTimeout(poll, 4000); };
+  setTimeout(poll, 1500);
+})();
 // ---- little extras; 1 August = Swiss cross with sparks ----
 (function () {
   const h1 = document.querySelector("header h1"); if (!h1) return;

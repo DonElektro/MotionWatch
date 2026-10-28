@@ -613,6 +613,104 @@ def sim_status():
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
 
+# ---- 2.95.86: the simulation has its own settings. Switching it on puts the real settings aside (and brings back the ones
+# of the last simulation); switching back restores the real ones and asks which changes of the simulation to take over.
+SIMPROF = {"q": None}                               # the open question: {"t", "changes": [{key, label, real, sim}]}
+_SIMPROF_SKIP_SECTIONS = {"Simulator", "Updates", "Wi-Fi / hotspot", "Setup", "Web stream", "Guest access", "MQTT / Home Assistant", "Backup", "SMS (LTE stick)"}
+
+
+def simprof_keys():
+    """the settings that belong to the profile: switches, sliders and texts of the settings - without the simulator itself,
+    network, access, updates and anything secret"""
+    out = {}
+    for lst in (TOGGLES, SLIDERS, TEXTS):
+        for t_ in lst:
+            sec, key, label = t_[0], t_[1], t_[2]
+            if sec in _SIMPROF_SKIP_SECTIONS or key not in CFG or key.startswith("sim_"):
+                continue
+            if len(t_) > 3 and t_[3] == "secret" or any(w in key for w in ("password", "token", "secret", "topic", "_key", "user", "pin")):
+                continue
+            out.setdefault(key, label)
+    return out
+
+
+def _simprof_file(which):
+    return os.path.join(DATA_DIR, f"settings_{which}.json")
+
+
+def _simprof_save(which, vals):
+    try:
+        with open(_simprof_file(which), "w", encoding="utf-8") as f:
+            json.dump(vals, f)
+    except OSError:
+        pass
+
+
+def _simprof_load(which):
+    try:
+        with open(_simprof_file(which), encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def simprof_on():
+    """simulation on: the real settings aside, the ones of the last simulation back"""
+    if not CFG.get("sim_separate", True):
+        return
+    keys = simprof_keys()
+    _simprof_save("real", {k: CFG[k] for k in keys})
+    SIMPROF["q"] = None
+    for k, v in _simprof_load("sim").items():
+        if k in keys and type(v) == type(CFG[k]):
+            CFG[k] = v
+
+
+def simprof_off():
+    """simulation off: remember its settings, the real ones back, the question which changes to take over"""
+    if not CFG.get("sim_separate", True):
+        return
+    keys = simprof_keys()
+    real = _simprof_load("real")
+    if not real:
+        return
+    simv = {k: CFG[k] for k in keys}
+    _simprof_save("sim", simv)
+    ch = []
+    for k, label in keys.items():
+        if k in real and real[k] != simv[k]:
+            ch.append({"key": k, "label": label, "real": real[k], "sim": simv[k]})
+            CFG[k] = real[k]
+    SIMPROF["q"] = {"t": time.time(), "changes": ch[:80]} if ch else None
+    if ch:
+        log_event("sys", f"Simulation off: {len(ch)} settings of the simulation not taken over yet (question on the page)")
+
+
+def simprof_answer(take):
+    """the answer: these keys get the value of the simulation (an empty list: keep the real settings)"""
+    q = SIMPROF["q"]
+    if not q:
+        return 0
+    n = 0
+    for c in q["changes"]:
+        if c["key"] in take and c["key"] in CFG:
+            CFG[c["key"]] = c["sim"]; n += 1
+    SIMPROF["q"] = None
+    save_settings()
+    if n:
+        log_event("sys", f"{n} settings of the simulation taken over")
+    return n
+
+
+def simprof_state(lang=None):
+    q = SIMPROF["q"]
+    if not q:
+        return None
+    lg = lang or CFG.get("lang", "de")
+    return {"t": q["t"], "changes": [dict(c, label=tr(c["label"], lg)) for c in q["changes"]]}
+
+
 def sim_set(on, who="web"):
     """The one switch: real hardware <-> simulator."""
     on = bool(on)
@@ -626,6 +724,7 @@ def sim_set(on, who="web"):
     if on:
         CFG["sim_prev_source"] = CFG["source"] if not str(CFG["source"]).startswith("sim:") else "auto"
         CFG["sim_prev_thermal"] = CFG["thermal_source"] if not str(CFG["thermal_source"]).startswith("sim:") else ""
+        simprof_on()                                    # 2.95.86: own settings for the simulation
         CFG["sim_on"] = True; CFG["source"] = "sim:0"; CFG["thermal_source"] = "sim:thermal"
         if "sim:1" not in CFG["extra_cams"] and len(CFG["extra_cams"]) < MAX_EXTRA:
             CFG["extra_cams"] = CFG["extra_cams"] + ["sim:1"]
@@ -633,6 +732,7 @@ def sim_set(on, who="web"):
         log_event("sys", f"SIMULATION ON ({who}) - {sim_base()}")
     else:
         CFG["sim_on"] = False
+        simprof_off()                                   # 2.95.86: the real settings back, question about the changes
         CFG["source"] = CFG["sim_prev_source"] or "auto"; CFG["thermal_source"] = CFG["sim_prev_thermal"] or ""
         CFG["extra_cams"] = [x for x in CFG["extra_cams"] if not x.startswith("sim:")]
         CFG["sensors"] = [x for x in CFG["sensors"] if not x["src"].startswith("sim:")]

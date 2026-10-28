@@ -1754,6 +1754,16 @@ class WebStream:
                 return reply({"ok": True})
             return reply(CFG["web_ui"])
 
+        @app.route("/api/simprofile", methods=["GET", "POST"])
+        def api_simprofile():
+            """2.95.86: after the simulation - which changed settings to take over (GET: the open question, POST {take: [keys]})"""
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
+            if request.method == "POST":
+                d = body()
+                n = simprof_answer([str(k) for k in (d.get("take") or [])][:200])
+                return reply({"ok": True, "taken": n})
+            return reply({"ok": True, "q": simprof_state(lang)})
+
         @app.route("/api/alerts")
         def api_alerts():
             """Server-Sent Events: open pages get every alarm at once (also in a background tab)."""

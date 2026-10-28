@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_85.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_86.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,7 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.86: Simulation mit eigenen Einstellungen: beim Zurückschalten die Liste der Änderungen, Übernahme wählbar (abschaltbar)
   * 2.95.85: 3D-Simulator 3D-3.61: Patrouille mit dem Mover, Spielart «Patrouille», Werkzeugleiste – alles mit der Maus
   * 2.95.84: 3D-Simulator 3D-3.60: Rover versetzen, Mitspieler frei beim Erkunden, besserer Beobachter-Modus
   * 2.95.83: Game-Controller am Browser (z. B. PS5) steuert den Rover im Simulator – auch wenn der Simulator in einer VM läuft;
@@ -759,10 +760,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_85.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_86.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_85.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_85.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_86.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_86.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -779,7 +780,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.85"
+APP_VERSION = "2.95.86"
 
 
 def default_data_dir():
@@ -1081,7 +1082,7 @@ CFG = {
     "sim_autostart": True, "sim_autostart_v2": False,   # v2 (2.95.26): on a Raspberry Pi off by default (it guards the real place)
     # 2.95.25: a simulator announces itself -> the simulation goes on by itself (and off again when it is gone)
     "sim_auto_on": False,        # ... it was switched on by that (only then it is switched off again by itself)
-    "sim_autoupd": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
+    "sim_autoupd": True, "sim_separate": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_dual": True, "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
     "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True, "wifi_swap": False, "wifi_guard": False,
@@ -17550,6 +17551,104 @@ def sim_status():
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
 
+# ---- 2.95.86: the simulation has its own settings. Switching it on puts the real settings aside (and brings back the ones
+# of the last simulation); switching back restores the real ones and asks which changes of the simulation to take over.
+SIMPROF = {"q": None}                               # the open question: {"t", "changes": [{key, label, real, sim}]}
+_SIMPROF_SKIP_SECTIONS = {"Simulator", "Updates", "Wi-Fi / hotspot", "Setup", "Web stream", "Guest access", "MQTT / Home Assistant", "Backup", "SMS (LTE stick)"}
+
+
+def simprof_keys():
+    """the settings that belong to the profile: switches, sliders and texts of the settings - without the simulator itself,
+    network, access, updates and anything secret"""
+    out = {}
+    for lst in (TOGGLES, SLIDERS, TEXTS):
+        for t_ in lst:
+            sec, key, label = t_[0], t_[1], t_[2]
+            if sec in _SIMPROF_SKIP_SECTIONS or key not in CFG or key.startswith("sim_"):
+                continue
+            if len(t_) > 3 and t_[3] == "secret" or any(w in key for w in ("password", "token", "secret", "topic", "_key", "user", "pin")):
+                continue
+            out.setdefault(key, label)
+    return out
+
+
+def _simprof_file(which):
+    return os.path.join(DATA_DIR, f"settings_{which}.json")
+
+
+def _simprof_save(which, vals):
+    try:
+        with open(_simprof_file(which), "w", encoding="utf-8") as f:
+            json.dump(vals, f)
+    except OSError:
+        pass
+
+
+def _simprof_load(which):
+    try:
+        with open(_simprof_file(which), encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def simprof_on():
+    """simulation on: the real settings aside, the ones of the last simulation back"""
+    if not CFG.get("sim_separate", True):
+        return
+    keys = simprof_keys()
+    _simprof_save("real", {k: CFG[k] for k in keys})
+    SIMPROF["q"] = None
+    for k, v in _simprof_load("sim").items():
+        if k in keys and type(v) == type(CFG[k]):
+            CFG[k] = v
+
+
+def simprof_off():
+    """simulation off: remember its settings, the real ones back, the question which changes to take over"""
+    if not CFG.get("sim_separate", True):
+        return
+    keys = simprof_keys()
+    real = _simprof_load("real")
+    if not real:
+        return
+    simv = {k: CFG[k] for k in keys}
+    _simprof_save("sim", simv)
+    ch = []
+    for k, label in keys.items():
+        if k in real and real[k] != simv[k]:
+            ch.append({"key": k, "label": label, "real": real[k], "sim": simv[k]})
+            CFG[k] = real[k]
+    SIMPROF["q"] = {"t": time.time(), "changes": ch[:80]} if ch else None
+    if ch:
+        log_event("sys", f"Simulation off: {len(ch)} settings of the simulation not taken over yet (question on the page)")
+
+
+def simprof_answer(take):
+    """the answer: these keys get the value of the simulation (an empty list: keep the real settings)"""
+    q = SIMPROF["q"]
+    if not q:
+        return 0
+    n = 0
+    for c in q["changes"]:
+        if c["key"] in take and c["key"] in CFG:
+            CFG[c["key"]] = c["sim"]; n += 1
+    SIMPROF["q"] = None
+    save_settings()
+    if n:
+        log_event("sys", f"{n} settings of the simulation taken over")
+    return n
+
+
+def simprof_state(lang=None):
+    q = SIMPROF["q"]
+    if not q:
+        return None
+    lg = lang or CFG.get("lang", "de")
+    return {"t": q["t"], "changes": [dict(c, label=tr(c["label"], lg)) for c in q["changes"]]}
+
+
 def sim_set(on, who="web"):
     """The one switch: real hardware <-> simulator."""
     on = bool(on)
@@ -17563,6 +17662,7 @@ def sim_set(on, who="web"):
     if on:
         CFG["sim_prev_source"] = CFG["source"] if not str(CFG["source"]).startswith("sim:") else "auto"
         CFG["sim_prev_thermal"] = CFG["thermal_source"] if not str(CFG["thermal_source"]).startswith("sim:") else ""
+        simprof_on()                                    # 2.95.86: own settings for the simulation
         CFG["sim_on"] = True; CFG["source"] = "sim:0"; CFG["thermal_source"] = "sim:thermal"
         if "sim:1" not in CFG["extra_cams"] and len(CFG["extra_cams"]) < MAX_EXTRA:
             CFG["extra_cams"] = CFG["extra_cams"] + ["sim:1"]
@@ -17570,6 +17670,7 @@ def sim_set(on, who="web"):
         log_event("sys", f"SIMULATION ON ({who}) - {sim_base()}")
     else:
         CFG["sim_on"] = False
+        simprof_off()                                   # 2.95.86: the real settings back, question about the changes
         CFG["source"] = CFG["sim_prev_source"] or "auto"; CFG["thermal_source"] = CFG["sim_prev_thermal"] or ""
         CFG["extra_cams"] = [x for x in CFG["extra_cams"] if not x.startswith("sim:")]
         CFG["sensors"] = [x for x in CFG["sensors"] if not x["src"].startswith("sim:")]
@@ -18986,7 +19087,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_85.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_86.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -30070,6 +30171,48 @@ def render_page(page, active):
 
 
 HEADER_JS = r"""
+// ---- 2.95.86: back from the simulation - which settings changed there are taken over? (all pages) ----
+(function simProfAsk() {
+  if (window._spa) return; window._spa = true;
+  const T = {de: {"Settings from the simulation": "Einstellungen aus der Simulation", "During the simulation these settings were changed. Motion Watch now uses the real settings again. Take over changes for the real camera?": "Während der Simulation wurden diese Einstellungen geändert. Motion Watch arbeitet jetzt wieder mit den echten Einstellungen. Änderungen für die echte Kamera übernehmen?",
+      "Take over the selected": "Ausgewählte übernehmen", "Keep the real settings": "Echte Einstellungen behalten", "real": "echt", "simulation": "Simulation", "All": "Alle", "on": "ein", "off": "aus", "taken over": "übernommen"}};
+  const L = () => { try { return (typeof LANG !== "undefined" && LANG) || "de"; } catch (e) { return "de"; } };
+  const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : ((T[L()] || {})[k] || k);
+  const fmt = v => v === true ? tt("on") : v === false ? tt("off") : (Array.isArray(v) || (v && typeof v === "object")) ? "…" : String(v).slice(0, 40);
+  let shown = 0;
+  const show = q => {
+    if (!q || shown === q.t || document.getElementById("spa")) return; shown = q.t;
+    const ov = document.createElement("div"); ov.id = "spa";
+    ov.style.cssText = "position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:12px";
+    const b = document.createElement("div");
+    b.style.cssText = "background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-radius:16px;max-width:560px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden";
+    const h = document.createElement("div"); h.style.cssText = "padding:14px 16px 6px;font-weight:600;font-size:17px"; h.textContent = "🧪 " + tt("Settings from the simulation");
+    const p = document.createElement("div"); p.style.cssText = "padding:0 16px 8px;font-size:13px;color:var(--mut,#8b9bb0);line-height:1.45"; p.textContent = tt("During the simulation these settings were changed. Motion Watch now uses the real settings again. Take over changes for the real camera?");
+    const list = document.createElement("div"); list.style.cssText = "overflow:auto;padding:0 16px;flex:1";
+    const all = document.createElement("label"); all.style.cssText = "display:flex;gap:8px;align-items:center;padding:6px 0;font-size:13px;border-bottom:1px solid var(--line,#1f2b3a)";
+    const ca = document.createElement("input"); ca.type = "checkbox"; ca.checked = true; all.append(ca, document.createTextNode(tt("All") + " (" + q.changes.length + ")")); list.appendChild(all);
+    const boxes = [];
+    q.changes.forEach(c => { const r = document.createElement("label"); r.style.cssText = "display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line,#1f2b3a);font-size:14px";
+      const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = true; cb.value = c.key; cb.style.marginTop = "3px"; boxes.push(cb);
+      const tx = document.createElement("div"); tx.style.flex = "1";
+      const n = document.createElement("div"); n.textContent = c.label;
+      const v = document.createElement("div"); v.style.cssText = "font-size:12px;color:var(--mut,#8b9bb0)"; v.textContent = tt("real") + ": " + fmt(c.real) + "  →  " + tt("simulation") + ": " + fmt(c.sim);
+      tx.append(n, v); r.append(cb, tx); list.appendChild(r); });
+    ca.onchange = () => boxes.forEach(x => x.checked = ca.checked);
+    const bt = document.createElement("div"); bt.style.cssText = "display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line,#1f2b3a);flex-wrap:wrap";
+    const ok = document.createElement("button"); ok.type = "button"; ok.textContent = tt("Take over the selected"); ok.style.flex = "1";
+    const no = document.createElement("button"); no.type = "button"; no.className = "sec"; no.textContent = tt("Keep the real settings"); no.style.flex = "1";
+    const send = async take => { ok.disabled = no.disabled = true;
+      try { const r = await (await fetch("/api/simprofile", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({take: take})})).json();
+        if (take.length && typeof toast === "function") toast("✓ " + (r.taken || 0) + " " + tt("taken over")); } catch (e) {}
+      ov.remove(); };
+    ok.onclick = () => send(boxes.filter(x => x.checked).map(x => x.value)); no.onclick = () => send([]);
+    bt.append(ok, no); b.append(h, p, list, bt); ov.appendChild(b); document.body.appendChild(ov);
+  };
+  const poll = async () => { try { if (!document.hidden) { const r = await fetch("/api/simprofile?lang=" + L(), {cache: "no-store"}); if (r.ok) { const j = await r.json(); if (j && j.q) show(j.q); } } } catch (e) {}
+    setTimeout(poll, 4000); };
+  setTimeout(poll, 1500);
+})();
 // ---- little extras; 1 August = Swiss cross with sparks ----
 (function () {
   const h1 = document.querySelector("header h1"); if (!h1) return;
@@ -38770,6 +38913,16 @@ class WebStream:
                 return reply({"ok": True})
             return reply(CFG["web_ui"])
 
+        @app.route("/api/simprofile", methods=["GET", "POST"])
+        def api_simprofile():
+            """2.95.86: after the simulation - which changed settings to take over (GET: the open question, POST {take: [keys]})"""
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
+            if request.method == "POST":
+                d = body()
+                n = simprof_answer([str(k) for k in (d.get("take") or [])][:200])
+                return reply({"ok": True, "taken": n})
+            return reply({"ok": True, "q": simprof_state(lang)})
+
         @app.route("/api/alerts")
         def api_alerts():
             """Server-Sent Events: open pages get every alarm at once (also in a background tab)."""
@@ -40246,6 +40399,7 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself when a newer version is there"),
+    ("Simulator", "sim_separate", "The simulation has its own settings (when switching back: ask which changes to take over)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when Motion Watch starts in the background"),
     ("Solar panel", "solar_on", "Solar panel with current meter (INA219 on I2C)"),
@@ -40831,7 +40985,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.85")
+        self.root.title("Motion Watch 2.95.86")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -41121,7 +41275,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.85 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.86 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -43133,6 +43287,24 @@ class App:
         if not ok:
             self._status("Timelapse", "⚠ " + tr_err(err))
 
+    def _simprof_ask(self):
+        q_ = SIMPROF.get("q")
+        if not q_:
+            return
+        def val(v):
+            return tr("on") if v is True else tr("off") if v is False else str(v)[:30]
+        lines = [f"• {tr(c['label'])}: {val(c['real'])} → {val(c['sim'])}" for c in q_["changes"][:15]]
+        if len(q_["changes"]) > 15:
+            lines.append(f"… (+{len(q_['changes']) - 15})")
+        try:
+            from tkinter import messagebox as mb_
+            yes = mb_.askyesno(tr("Settings from the simulation"),
+                               tr("During the simulation these settings were changed. Motion Watch now uses the real settings again. Take over changes for the real camera?") + "\n\n" + "\n".join(lines))
+        except Exception:
+            return
+        simprof_answer([c["key"] for c in q_["changes"]] if yes else [])
+        self._schedule_rebuild() if hasattr(self, "_schedule_rebuild") else None
+
     def _status(self, sec, text):
         lbl = self.status_labels.get(sec)
         if lbl is not None:
@@ -43148,6 +43320,10 @@ class App:
     def _refresh(self):
         st = STATE
         self._sync_relays()
+        q_ = SIMPROF.get("q")                              # 2.95.86: back from the simulation - take over its changes?
+        if q_ and getattr(self, "_simprof_t", None) != q_["t"]:
+            self._simprof_t = q_["t"]
+            self.root.after(200, self._simprof_ask)
         try:
             self._paint_main()
         except Exception:
@@ -47934,6 +48110,18 @@ for _k, _v in _HX58.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX57 = {'Update the simulator by itself when a newer version is there': ('Simulator selbst aktualisieren, wenn eine neuere Version da ist', 'Mettre à jour le simulateur tout seul quand une version plus récente existe', 'Aggiornare il simulatore da solo quando c’è una versione più recente', 'Actualisar il simulatur sez cura ch’i dat ina versiun pli nova')}
 for _k, _v in _HX57.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX86 = {  # 2.95.86: the simulation has its own settings
+    'The simulation has its own settings (when switching back: ask which changes to take over)': ('Die Simulation hat eigene Einstellungen (beim Zurückschalten fragen, welche Änderungen übernommen werden)', 'La simulation a ses propres réglages (au retour : demander quels changements reprendre)', 'La simulazione ha le sue impostazioni (al ritorno: chiedere quali modifiche adottare)', 'La simulaziun ha agens parameters (cun turnar: dumandar tge midadas surpigliar)'),
+    'Settings from the simulation': ('Einstellungen aus der Simulation', 'Réglages de la simulation', 'Impostazioni dalla simulazione', 'Parameters da la simulaziun'),
+    'During the simulation these settings were changed. Motion Watch now uses the real settings again. Take over changes for the real camera?': ('Während der Simulation wurden diese Einstellungen geändert. Motion Watch arbeitet jetzt wieder mit den echten Einstellungen. Änderungen für die echte Kamera übernehmen?', 'Pendant la simulation, ces réglages ont été modifiés. Motion Watch utilise de nouveau les vrais réglages. Reprendre les changements pour la vraie caméra ?', 'Durante la simulazione queste impostazioni sono state cambiate. Motion Watch usa di nuovo le impostazioni reali. Adottare le modifiche per la telecamera vera?', 'Durant la simulaziun èn vegnids midads quests parameters. Motion Watch lavura puspè cun ils parameters reals. Surpigliar las midadas per la camera reala?'),
+    'Take over the selected': ('Ausgewählte übernehmen', 'Reprendre la sélection', 'Adottare i selezionati', 'Surpigliar ils tschernids'),
+    'Keep the real settings': ('Echte Einstellungen behalten', 'Garder les vrais réglages', 'Tenere le impostazioni reali', 'Tegnair ils parameters reals'),
+    'real': ('echt', 'réel', 'reale', 'real'), 'simulation': ('Simulation', 'simulation', 'simulazione', 'simulaziun'), 'taken over': ('übernommen', 'repris', 'adottate', 'surpigliads'),
+}
+for _k, _v in _HX86.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

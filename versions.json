@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 14:50",
+ "generated": "2026-10-28 14:55",
  "versions": [
   {
-   "version": "2.95.85",
-   "file": "webcam_bewegung_2_95_85.py",
+   "version": "2.95.86",
+   "file": "webcam_bewegung_2_95_86.py",
    "url": "",
-   "sha256": "737d31592e588c746574581cc20b51c396a9ca1be22e0fb29a0db261b83d528f",
-   "date": "2026-10-28 14:50",
-   "notes": "3D-Simulator 3D-3.61: Patrouille mit dem Mover, Spielart «Patrouille», Werkzeugleiste – alles mit der Maus",
-   "sig": "3282a894517ed1809fe08f067b7716b16a5289a28ec546b425838e6a1a46a33410597049b77d9c8f4227cee3523bb9c188192091254af5be85df096c29e34605"
+   "sha256": "8f03304fb16707a4b33002468b71690340fa105b92b850d21953e022aba1cfcb",
+   "date": "2026-10-28 14:55",
+   "notes": "Simulation mit eigenen Einstellungen: beim Zurückschalten die Liste der Änderungen, Übernahme wählbar (abschaltbar)",
+   "sig": "524bc6443e6e00c84b8f3efed5ebb35285adccbc37f74c2da77c827423d8fb7149a4c7f39497ae7cb58761f5d5ce29378b77bdaa7d7fe670c767eec163710f07"
   },
   {
    "version": "2.94.5",
