@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_64.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_65.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.65: detection with few pictures per second (power saving, night, slow simulator): the speed limits in pixels per
+    picture and the distance of the tracker grow with the real frame rate - before a walking person counted as a vehicle and was
+    ignored, or the tracker lost it; a vehicle is judged from the median speed of two steps on
   * 2.95.64: detection: the frame rate is now the real number of pictures per second (before 1 / processing time, far too high
     with a slow camera, power saving or the simulator - the auto-tuner then wanted up to 24 pictures of walking before a person
     counted); FPS badge shows the power saving; 3D simulator 3D-3.48 (test bench: head camera as truth, visitors by size)
@@ -725,10 +728,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_64.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_65.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_64.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_64.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_65.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_65.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -745,7 +748,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.64"
+APP_VERSION = "2.95.65"
 
 
 def default_data_dir():
@@ -10435,7 +10438,7 @@ class AutoTuner:
             if t.is_person and not getattr(t, "_counted", False):
                 t._counted = True; self.became_person += 1
             if (not t.is_person and not t.is_vehicle and t.age >= CFG["walk_frames"]
-                    and CFG["walk_min_speed"] <= t.speed() <= CFG["walk_max_speed"]
+                    and CFG["walk_min_speed"] <= t.speed() <= CFG["walk_max_speed"] * fps_k()
                     and 0.3 <= t.steadiness() < CFG["speed_consistency"]):
                 self.near_miss += 1
         if now - self.last_eval < 10:
@@ -10461,6 +10464,14 @@ class AutoTuner:
 # ----------------------------------------------------------------------------
 # Tracker
 # ----------------------------------------------------------------------------
+def fps_k():
+    """2.95.65: the speed limits (pixels per picture) were made for about 12 pictures per second. With fewer pictures
+    (power saving, night, a slow simulator) a walking person moves much further from one picture to the next - before it
+    then counted as a vehicle and was ignored, or the tracker lost it. Factor 1 … 6 for these limits."""
+    fps = float(STATE.get("fps") or 0)
+    return max(1.0, min(6.0, 12.0 / fps)) if fps > 0.5 else 1.0
+
+
 class Track:
     _next = 1
 
@@ -10502,6 +10513,7 @@ class Tracker:
         self.tracks = []
 
     def update(self, boxes, max_dist=60):
+        max_dist = max_dist * fps_k()                             # 2.95.65: fewer pictures -> bigger steps between them
         unmatched = list(range(len(boxes)))
         for t in self.tracks:
             best, bd = None, max_dist
@@ -18899,7 +18911,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_64.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_65.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -20493,9 +20505,12 @@ class MotionWatch:
         x, y, w, h = t.box
         aspect = w / float(h + 1e-6); area = w * h; sp = t.speed()
         t.ai_confirmed = any(iou(t.box, b) > 0.2 for b in ai_boxes)
+        k = fps_k()                                            # 2.95.65: speed limits for the real frame rate
         if CFG["car_filter"] and not t.ai_confirmed:
-            vehicle = (aspect > CFG["car_aspect"] and sp > 3.0) or sp > CFG["car_speed"] or \
-                      (area > CFG["car_area_frac"] * frame_area and aspect > 1.2 and sp > 1.0)
+            sv = float(np.median(t.speeds)) if len(t.speeds) >= 3 else sp     # one jump of the tracker is no vehicle
+            vehicle = (aspect > CFG["car_aspect"] and sv > 3.0 * k) or sv > CFG["car_speed"] * k or \
+                      (area > CFG["car_area_frac"] * frame_area and aspect > 1.2 and sv > 1.0 * k)
+            vehicle = vehicle and len(t.speeds) >= 2                 # judged from two steps on, not from the very first
             if vehicle:
                 if not t.is_vehicle:
                     STATE["ignored_vehicles"] += 1
@@ -20504,13 +20519,13 @@ class MotionWatch:
                 return
             t.is_vehicle = False                               # shape became person-like again -> re-evaluate
         need_frames = int(CFG["walk_frames"] * wind_boost)
-        walking = (len(t.speeds) >= need_frames and CFG["walk_min_speed"] <= sp <= CFG["walk_max_speed"]
+        walking = (len(t.speeds) >= need_frames and CFG["walk_min_speed"] <= sp <= CFG["walk_max_speed"] * k
                    and t.steadiness() >= CFG["speed_consistency"] and aspect < CFG["car_aspect"])
         if t.ai_confirmed:
             walking = True                                  # AI says person -> person
         elif CFG["ai_require"] and self.ai.net is not None and CFG["ai_enabled"]:
             walking = False                                 # needs AI confirmation
-        elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"]:
+        elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k:
             walking = True                                  # keep flag while tracked (may stand still)
         if walking and not t.is_person:
             STATE["detections_total"] += 1
@@ -40425,7 +40440,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.64")
+        self.root.title("Motion Watch 2.95.65")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40715,7 +40730,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.64 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.65 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

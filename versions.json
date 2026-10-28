@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 01:36",
+ "generated": "2026-10-28 07:56",
  "versions": [
   {
-   "version": "2.95.64",
-   "file": "webcam_bewegung_2_95_64.py",
+   "version": "2.95.65",
+   "file": "webcam_bewegung_2_95_65.py",
    "url": "",
-   "sha256": "e19f961a77a0338cd98ab1f8682262669cdc2deef7dfacdaf1232227003f121c",
-   "date": "2026-10-28 01:36",
-   "notes": "detection: the frame rate is now the real number of pictures per second (before 1 / processing time, far too high with a slow camera, power saving or the simulator - the auto-tuner then wanted up to 24 pictures of walking before a person counted); FPS badge shows the power saving; 3D simulator 3D-3.48 (test bench: head camera as truth, visitors by size)",
-   "sig": "9d92ee35100fe22f83d8416439c91720057e6692a55c61bc7fb1b20c2aa44e5f85f1bf2d112e81873cf8e314e6f835ea976cff776213b954b8bda9a2a6e2d80b"
+   "sha256": "50b63ad9176b812277cf461b5de71ed80cbfbaacb632dc64d6c6603b0c989311",
+   "date": "2026-10-28 07:56",
+   "notes": "detection with few pictures per second (power saving, night, slow simulator): the speed limits in pixels per picture and the distance of the tracker grow with the real frame rate - before a walking person counted as a vehicle and was ignored, or the tracker lost it; a vehicle is judged from the median speed of two steps on",
+   "sig": "5a5749b79352932cc2bebc41f3393de352bc638b95d254fac93e3ffc92d358edf3b84b0e8b0b5e5e82f8a2f4c0fa49229edbda56260eacb29145cb98dbea8903"
   },
   {
    "version": "2.94.5",

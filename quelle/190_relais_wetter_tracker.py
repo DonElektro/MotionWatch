@@ -334,7 +334,7 @@ class AutoTuner:
             if t.is_person and not getattr(t, "_counted", False):
                 t._counted = True; self.became_person += 1
             if (not t.is_person and not t.is_vehicle and t.age >= CFG["walk_frames"]
-                    and CFG["walk_min_speed"] <= t.speed() <= CFG["walk_max_speed"]
+                    and CFG["walk_min_speed"] <= t.speed() <= CFG["walk_max_speed"] * fps_k()
                     and 0.3 <= t.steadiness() < CFG["speed_consistency"]):
                 self.near_miss += 1
         if now - self.last_eval < 10:
@@ -360,6 +360,14 @@ class AutoTuner:
 # ----------------------------------------------------------------------------
 # Tracker
 # ----------------------------------------------------------------------------
+def fps_k():
+    """2.95.65: the speed limits (pixels per picture) were made for about 12 pictures per second. With fewer pictures
+    (power saving, night, a slow simulator) a walking person moves much further from one picture to the next - before it
+    then counted as a vehicle and was ignored, or the tracker lost it. Factor 1 … 6 for these limits."""
+    fps = float(STATE.get("fps") or 0)
+    return max(1.0, min(6.0, 12.0 / fps)) if fps > 0.5 else 1.0
+
+
 class Track:
     _next = 1
 
@@ -401,6 +409,7 @@ class Tracker:
         self.tracks = []
 
     def update(self, boxes, max_dist=60):
+        max_dist = max_dist * fps_k()                             # 2.95.65: fewer pictures -> bigger steps between them
         unmatched = list(range(len(boxes)))
         for t in self.tracks:
             best, bd = None, max_dist

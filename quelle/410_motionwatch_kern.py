@@ -265,9 +265,12 @@ class MotionWatch:
         x, y, w, h = t.box
         aspect = w / float(h + 1e-6); area = w * h; sp = t.speed()
         t.ai_confirmed = any(iou(t.box, b) > 0.2 for b in ai_boxes)
+        k = fps_k()                                            # 2.95.65: speed limits for the real frame rate
         if CFG["car_filter"] and not t.ai_confirmed:
-            vehicle = (aspect > CFG["car_aspect"] and sp > 3.0) or sp > CFG["car_speed"] or \
-                      (area > CFG["car_area_frac"] * frame_area and aspect > 1.2 and sp > 1.0)
+            sv = float(np.median(t.speeds)) if len(t.speeds) >= 3 else sp     # one jump of the tracker is no vehicle
+            vehicle = (aspect > CFG["car_aspect"] and sv > 3.0 * k) or sv > CFG["car_speed"] * k or \
+                      (area > CFG["car_area_frac"] * frame_area and aspect > 1.2 and sv > 1.0 * k)
+            vehicle = vehicle and len(t.speeds) >= 2                 # judged from two steps on, not from the very first
             if vehicle:
                 if not t.is_vehicle:
                     STATE["ignored_vehicles"] += 1
@@ -276,13 +279,13 @@ class MotionWatch:
                 return
             t.is_vehicle = False                               # shape became person-like again -> re-evaluate
         need_frames = int(CFG["walk_frames"] * wind_boost)
-        walking = (len(t.speeds) >= need_frames and CFG["walk_min_speed"] <= sp <= CFG["walk_max_speed"]
+        walking = (len(t.speeds) >= need_frames and CFG["walk_min_speed"] <= sp <= CFG["walk_max_speed"] * k
                    and t.steadiness() >= CFG["speed_consistency"] and aspect < CFG["car_aspect"])
         if t.ai_confirmed:
             walking = True                                  # AI says person -> person
         elif CFG["ai_require"] and self.ai.net is not None and CFG["ai_enabled"]:
             walking = False                                 # needs AI confirmation
-        elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"]:
+        elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k:
             walking = True                                  # keep flag while tracked (may stand still)
         if walking and not t.is_person:
             STATE["detections_total"] += 1
