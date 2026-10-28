@@ -2158,3 +2158,12 @@ for _k, _v in _HX123.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+
+_HX124 = {  # 2.98.4
+    'Try out': ('Ausprobieren', 'Essayer', 'Provare', 'Empruvar'),
+    'Learn & test': ('Lernen & Testen', 'Apprendre et tester', 'Imparare e testare', 'Emprender e testar'),
+}
+for _k, _v in _HX124.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])

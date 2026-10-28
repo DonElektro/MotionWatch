@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 00:12",
+ "generated": "2026-10-29 00:16",
  "versions": [
   {
-   "version": "2.98.3",
-   "file": "webcam_bewegung_2_98_3.py",
+   "version": "2.98.4",
+   "file": "webcam_bewegung_2_98_4.py",
    "url": "",
-   "sha256": "63a08f634785ba65f83c12c8836a25b1ef206440bc04a532a901974ed0258fd1",
-   "date": "2026-10-29 00:12",
-   "notes": "Kopf der Einstellungen aufgeräumt: Suche über die ganze Breite, darunter Einfach/Experte und Symbole kompakt, Erklärungen als Hinweis beim Darüberfahren",
-   "sig": "6ead2821761df0477a1d2aca8bf3adb78226df612c83d67aeaa55f87a1a97d3f2e2b15d614ae8b43066846b224f5b59c295ff25665b5cc38be51550e1de5d809"
+   "sha256": "6519ff8874abd6ea9114e164affbc7c70d1ab0f667a94817f1255fd638673500",
+   "date": "2026-10-29 00:16",
+   "notes": "Simulator-Zentrale in zwei Gruppen: «Ausprobieren» und «Lernen & Testen»",
+   "sig": "687d1db88732f3e0dafcc7b66c16e86a7bc38826c821551fe25bc486f664e0f14af22f433e30ec570c4553881ba3368c644d908160f6714d7cefe84d1953d006"
   },
   {
    "version": "2.97.1",
