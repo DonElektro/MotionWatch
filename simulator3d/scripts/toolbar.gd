@@ -10,6 +10,8 @@ var _rows: VBoxContainer
 var _fold_b: Button
 var _btn := {}                         # id -> Button
 var _t := 0.0
+var _hint: HBoxContainer               # 3D-3.66: while setting points / the area: what to do and «Fertig»
+var _hint_l: Label
 
 const ROW1 := [["explore", "Erkunden", "Mit dem Rover herumfahren (Tastatur, Maus, Touch, Controller)"],
 		["patrol", "Patrouille", "Der Mover fährt Motion Watch die Route ab, Motion Watch passt die ganze Zeit auf"],
@@ -51,6 +53,22 @@ func _ready() -> void:
 	_rows = VBoxContainer.new()
 	_rows.add_theme_constant_override("separation", 4)
 	hb.add_child(_rows)
+	_hint = HBoxContainer.new()
+	_hint.add_theme_constant_override("separation", 8)
+	_hint_l = Label.new()
+	_hint_l.add_theme_font_size_override("font_size", 12)
+	_hint_l.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
+	_hint.add_child(_hint_l)
+	var done := Button.new()
+	done.text = "✓ Fertig (Esc)"
+	done.tooltip_text = "Keine Punkte mehr setzen – die Maus bewegt wieder nur die Ansicht"
+	done.focus_mode = Control.FOCUS_NONE
+	done.add_theme_font_size_override("font_size", 12)
+	done.custom_minimum_size = Vector2(0, 28)
+	done.pressed.connect(func(): main.patrol.edit = ""; main.patrol._click_at = null; _paint())
+	_hint.add_child(done)
+	_hint.visible = false
+	_rows.add_child(_hint)
 	for row in [ROW1, ROW2]:
 		var r := HBoxContainer.new()
 		r.add_theme_constant_override("separation", 4)
@@ -136,6 +154,14 @@ func _paint() -> void:
 		var on: bool = st.get(k, false)
 		b.add_theme_color_override("font_color", Color(0.45, 0.95, 0.55) if on else Color(0.85, 0.88, 0.92))
 		b.add_theme_color_override("font_hover_color", Color(0.6, 1.0, 0.7) if on else Color(1, 1, 1))
+	var ed: String = pt.edit
+	_hint.visible = ed != ""
+	if ed != "" and folded:
+		set_folded(false)
+	if ed == "points":
+		_hint_l.text = "Punkte setzen: klicken = Punkt · Rechtsklick auf einen Punkt = weg · Ziehen = Ansicht bewegen"
+	elif ed == "area":
+		_hint_l.text = "Bereich: mit gedrückter Maustaste aufziehen"
 	if _btn.has("view"):
 		(_btn["view"] as Button).text = "Ansicht: " + str(ex.VIEW_NAMES.get(ex.view, ex.view)) if ex.on else "Ansicht"
 	if _btn.has("patrol"):

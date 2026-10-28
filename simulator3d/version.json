@@ -1,12 +1,12 @@
 {
- "version": "3D-3.65",
+ "version": "3D-3.66",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30873291,
- "sha256": "eb1b2e645cb66cb0f6fbae09a4c23980dcc7c60f6733979a6585d6f1545c727c",
- "notes": "Senden an Motion Watch bleibt nach einem Update eingeschaltet (wie vorher)",
+ "size": 30874577,
+ "sha256": "c6d6cee47d255556dbe074afeb7e65cb31c766cdd3d40f1b706c84c3ee5c026d",
+ "notes": "Punkte setzen: Ziehen bewegt die Ansicht, Hinweis mit Fertig, Esc beendet",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 23994449,
-  "sha256": "a4b308bdfb084e7a0a7817192043a328c914bf4769ab3c07c71df45edee60098"
+  "size": 23995720,
+  "sha256": "1bafccd3182b5266b54b3fd1902f5be2ff8765f4a9eb573d9a40647a20ef5efc"
  }
 }

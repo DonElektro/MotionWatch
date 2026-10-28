@@ -24,6 +24,7 @@ var suspect := false
 var edit := ""                        # "" | points | area: the mouse sets points / drags the area
 var show_route := true
 var _drag_from = null
+var _click_at = null                   # 3D-3.66: where the left button went down (a click, not a drag, sets a point)
 var _saved_max := 0.8
 var _mk: Node3D
 var _dirty := true
@@ -197,19 +198,28 @@ func handle_input(ev: InputEvent) -> bool:
 	if ev is InputEventMouseButton and main._over_hud(ev.position):
 		return false
 	var hit = _ground(ev.position)
-	if edit == "points" and ev is InputEventMouseButton and ev.pressed and hit != null:
-		var q := Vector2(hit.x, hit.z)
+	if edit == "points" and ev is InputEventMouseButton:
+		# 3D-3.66: only a short click sets a point - dragging still moves / turns the view; right click only on a point removes it
 		if ev.button_index == MOUSE_BUTTON_LEFT:
-			var p: Vector3 = main.free_spot(Vector3(q.x, 0, q.y), 0.8, false)
-			points.append(Vector2(p.x, p.z))
-			mode = "points"
-		elif ev.button_index == MOUSE_BUTTON_RIGHT:
+			if ev.pressed:
+				_click_at = ev.position
+			elif _click_at != null and (ev.position as Vector2).distance_to(_click_at) < 8.0 and hit != null:
+				var p: Vector3 = main.free_spot(Vector3(hit.x, 0, hit.z), 0.8, false)
+				points.append(Vector2(p.x, p.z))
+				mode = "points"
+				_dirty = true
+				_click_at = null
+			else:
+				_click_at = null
+			return false
+		if ev.button_index == MOUSE_BUTTON_RIGHT and ev.pressed and hit != null:
+			var q := Vector2(hit.x, hit.z)
 			for i in range(points.size()):
 				if (points[i] as Vector2).distance_to(q) < 1.8:
 					points.remove_at(i)
-					break
-		_dirty = true
-		return true
+					_dirty = true
+					return true
+		return false
 	if edit == "area":
 		if ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT:
 			if ev.pressed and hit != null:

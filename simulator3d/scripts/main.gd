@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.65"
+const VERSION := "3D-3.66"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -4222,6 +4222,8 @@ func _unhandled_input(ev: InputEvent) -> void:
 			KEY_ESCAPE:
 				place_kind = ""
 				_paint_palette()
+				if patrol != null:
+					patrol.edit = ""                # 3D-3.66: Esc ends setting points / the area
 				if tv.on:
 					tv.set_on(false)
 				if replay.on:

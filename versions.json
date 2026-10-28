@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 15:40",
+ "generated": "2026-10-28 15:48",
  "versions": [
   {
-   "version": "2.95.90",
-   "file": "webcam_bewegung_2_95_90.py",
+   "version": "2.95.91",
+   "file": "webcam_bewegung_2_95_91.py",
    "url": "",
-   "sha256": "364f25d5a953d40147c507bc027f9d7ba53fa54b06c97f2544a8d89eb63bc8a9",
-   "date": "2026-10-28 15:40",
-   "notes": "3D-Simulator 3D-3.65: «An Motion Watch senden» bleibt nach einem Update und Neustart so wie vorher",
-   "sig": "420bb9f98fdef288ed208d6175e597cb6778cfdbdd5882f6ef23d10046fdf81f034166c98d58d201a5519de463d4bafeb86d00c960f831b5f43845b8ff21820f"
+   "sha256": "ea33f502a746f9a62d3ffb8225c7943daeb89922916403b3002dbe7b5e8a1911",
+   "date": "2026-10-28 15:48",
+   "notes": "3D-Simulator 3D-3.66: beim Setzen der Patrouillen-Punkte bleibt die Ansicht bedienbar, «Fertig» und Esc beenden das Setzen",
+   "sig": "17245d91472be9d8d277da580f424294996cf050eedb15ae11600064c895d6ded1b876428e004eeec22a994ac61fc7b4bc1567af546448f8d01756eac7175c07"
   },
   {
    "version": "2.94.5",
