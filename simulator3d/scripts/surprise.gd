@@ -50,7 +50,7 @@ func _process(_dt: float) -> void:
 	var t: float = main.now()
 	if not cur.is_empty():
 		_watch(t)
-	elif main.surprise_on and main.is_dark() and t > next_t:
+	elif main.surprise_on and main.is_dark() and t > next_t and main.busy_with() == "":
 		start(str(KINDS[randi() % KINDS.size()][0]))
 	var dark: bool = main.is_dark()
 	if _was_dark and not dark and not log_.is_empty() and cur.is_empty():

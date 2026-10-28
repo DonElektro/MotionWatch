@@ -276,7 +276,7 @@ TRX['rm'].update({
     'Inside any schedule': 'En in plan da temp',
     'Install': 'Installar',
     'Install new versions automatically': 'Installar automaticamain novas versiuns',
-    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)': "Modus da test: prender novas versiuns immediat (guarda mintga minuta sin GitHub ed installescha dalunga, er sch'armà)",
+    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)': "Modus da test: prender novas versiuns immediat (guarda mintga minuta sin GitHub ed installescha dalunga, er sch'armà; uschè ditg ch’el è activ na valan ils auters cumtschs d'actualisaziun betg)",
     'Internet': 'Internet',
     'Invert pan direction': 'Invertir la direcziun da panorama',
     'Invert tilt direction': "Invertir la direcziun d'inclinaziun",
@@ -2046,6 +2046,19 @@ _HX117 = {  # 2.96.8
     'The person was never in the picture – check where the head looks (patrol, pan).': ('Die Person war nie im Bild – prüfen, wohin der Kopf schaut (Patrouille, Schwenk).', 'La personne n’a jamais été dans l’image – vérifier où regarde la tête (patrouille, panoramique).', 'La persona non è mai stata nell’immagine – controllare dove guarda la testa (pattuglia, brandeggio).', 'La persuna n’era mai en il maletg – controllar nua che il chau guarda (patrulla, sviament).'),
 }
 for _k, _v in _HX117.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+_HX118 = {  # 2.97.0
+    'MoveEye is armed. The simulation replaces the real camera - nothing real is watched then. Disarm and switch the simulation on?': ('MoveEye ist scharf. Die Simulation ersetzt die echte Kamera – dann wird nichts Echtes bewacht. Unscharf schalten und die Simulation einschalten?', 'MoveEye est armé. La simulation remplace la vraie caméra – plus rien de réel n’est surveillé. Désarmer et activer la simulation ?', 'MoveEye è armato. La simulazione sostituisce la vera telecamera – allora non si sorveglia niente di reale. Disarmare e attivare la simulazione?', 'MoveEye è armà. La simulaziun remplazza la camera vera – lura na vegn nagut vair survegnì. Disarmar ed activar la simulaziun?'),
+    'MoveEye is armed - disarm it first (the demo uses the simulator instead of the real camera)': ('MoveEye ist scharf – zuerst unscharf schalten (die Demo braucht den Simulator statt der echten Kamera)', 'MoveEye est armé – d’abord désarmer (la démo utilise le simulateur à la place de la vraie caméra)', 'MoveEye è armato – prima disarmare (la demo usa il simulatore invece della vera telecamera)', 'MoveEye è armà – l’emprim disarmar (la demo dovra il simulatur empè da la camera vera)'),
+    'Person alarms at the campfire (off: only animals - the people at the fire are not burglars)': ('Personen-Alarm am Lagerfeuer (aus: nur Tiere – die Leute am Feuer sind keine Einbrecher)', 'Alarme personnes au feu de camp (désactivé : seulement les animaux – les gens autour du feu ne sont pas des cambrioleurs)', 'Allarme persone al fuoco (spento: solo animali – la gente attorno al fuoco non sono ladri)', 'Alarm da persunas al fieu (deactivà: mo animals – la glieud al fieu n’èn nagins lumbards)'),
+    'conn-note': ('Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.', 'Adresse du programme simulateur. En général inutile : le simulateur s’annonce dans le réseau et est trouvé tout seul.', 'Indirizzo del programma simulatore. Di solito non serve: il simulatore si annuncia in rete e viene trovato da solo.', 'Adressa dal program dal simulatur. Per il solit betg necessari: il simulatur s’annunzia en la rait e vegn chattà sez.'),
+    'autostart-note': ('Und wieder aus (zurück zu den echten Kameras und Sensoren), wenn eine Minute lang keiner mehr da ist. Von Hand ausgeschaltet: bleibt aus, bis wieder ein neuer Simulator auftaucht.', 'Et de nouveau éteint (retour aux vraies caméras et capteurs) quand plus aucun n’est là pendant une minute. Éteint à la main : reste éteint jusqu’à l’arrivée d’un nouveau simulateur.', 'E di nuovo spento (ritorno alle vere telecamere e sensori) quando per un minuto non c’è più nessuno. Spento a mano: resta spento finché appare un nuovo simulatore.', 'Ed puspè deactivà (enavos a las cameras e sensurs vairs) sch’i na dat durant ina minuta nagin pli. Deactivà a maun: resta deactivà fin ch’in nov simulatur cumpara.'),
+    'sim-missing': ('Ein Simulator fehlt? Im Simulator den Schalter «An MoveEye senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).', 'Un simulateur manque ? Dans le simulateur, activer «Envoyer à MoveEye». Sur un PC, le pare-feu Windows doit autoriser son port (8765 ; un deuxième simulateur p. ex. 8767).', 'Manca un simulatore? Nel simulatore attivare «Invia a MoveEye». Su un PC il firewall di Windows deve permettere la sua porta (8765; un secondo simulatore p. es. 8767).', 'Mancanta in simulatur? En il simulatur activar «Trametter a MoveEye». Sin in PC sto il firewall da Windows permetter ses port (8765; in segund simulatur p. ex. 8767).'),
+}
+for _k, _v in _HX118.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

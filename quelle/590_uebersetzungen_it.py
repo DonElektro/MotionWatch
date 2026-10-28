@@ -276,7 +276,7 @@ TRX['it'].update({
     'Inside any schedule': 'In una pianificazione',
     'Install': 'Installa',
     'Install new versions automatically': 'Installare automaticamente le nuove versioni',
-    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)': 'Modalità test: prendere subito le nuove versioni (guarda GitHub ogni minuto e installa subito, anche se armato)',
+    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)': 'Modalità test: prendere subito le nuove versioni (guarda GitHub ogni minuto e installa subito, anche se armato; finché è attiva, gli altri interruttori di aggiornamento non contano)',
     'Internet': 'Internet',
     'Invert pan direction': 'Invertire direzione brandeggio',
     'Invert tilt direction': 'Invertire direzione inclinazione',

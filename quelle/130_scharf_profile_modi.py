@@ -335,7 +335,7 @@ def mode_state():
     m = CFG.get("mode") or ""
     return {"id": m, "since": CFG.get("mode_since") or 0, "msg": MODE_RT["msg"], "power_ok": ok, "power_why": why,
             "list": [{"id": i, "icon": ic, "name": n, "info": MODE_INFO[i]} for i, ic, n in MODES], "own_info": MODE_INFO[""],
-            "fire_until": CFG["mode_fire_until"], "fire_min_pct": CFG["mode_fire_min_pct"], "gamer_watch": bool(CFG["mode_gamer_watch"]),
+            "fire_until": CFG["mode_fire_until"], "fire_min_pct": CFG["mode_fire_min_pct"], "gamer_watch": bool(CFG["mode_gamer_watch"]), "fire_persons": bool(CFG.get("mode_fire_persons")),
             "camping": bool(CFG["camping"])}
 
 

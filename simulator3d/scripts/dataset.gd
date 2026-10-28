@@ -21,7 +21,7 @@ var only := []                # which conditions (index into CONDS); empty = all
 
 
 func start(n: int, conds := []) -> Dictionary:
-	if busy:
+	if busy or main.busy_with() != "":
 		return state()
 	n = clampi(n, 2, 80)
 	only = conds.filter(func(c): return int(c) >= 0 and int(c) < CONDS.size()).map(func(c): return int(c))

@@ -77,7 +77,7 @@ DE = {
     "UPS HAT: address (I2C)": "USV-Akku: Adresse (I2C)",
     "New version": "Neue Version", "click to update": "zum Aktualisieren klicken",
     "Install new versions automatically": "Neue Versionen automatisch installieren",
-    "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)": "Entwicklungsphase: neue Versionen sofort holen (schaut jede Minute auf GitHub und installiert gleich, auch wenn der Schutz an ist)",
+    "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)": "Entwicklungsphase: neue Versionen sofort holen (schaut jede Minute auf GitHub und installiert gleich, auch wenn der Schutz an ist; solange an, gelten die anderen Update-Schalter nicht)",
     "QR code for the phone": "QR-Code fürs Handy", "Markings in recordings and alarm pictures": "Markierungen in Aufnahmen und Alarmbildern",
     "thin corner marks (face stays free)": "dünne Eckmarken (Gesicht bleibt frei)", "none (clean picture)": "keine (sauberes Bild)",
     "like the live picture (red boxes)": "wie im Live-Bild (rote Rahmen)", "please write a few words": "bitte ein paar Worte schreiben",

@@ -425,6 +425,8 @@ class MotionWatch:
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S")          # video and snapshot of one event share the same name
         if not is_armed():
             persons = []                                  # disarmed: no snapshots, no notifications, no new recordings
+        elif persons and CFG.get("mode") == "fire" and not CFG.get("mode_fire_persons"):
+            persons = []                                  # 2.97.0: campfire - the people at the fire are no alarm, animals still are
         settle = now - SIM.get("off_t", 0.0) < 30.0       # just back from the simulation: the camera learns its picture
         if settle:
             persons = []; self.last_person_time = 0
@@ -521,6 +523,10 @@ class MotionWatch:
                 "schedules": info["schedules"]}
         try:                                               # 2.96.5: the situation, for «Was wäre wenn …?» (139_makeover_simzentrale)
             meta["situ"] = whatif_situ_now(info)
+        except Exception:
+            pass
+        try:                                               # 2.97.0: where it came from - real / simulation / game / drill
+            meta["origin"] = event_origin()
         except Exception:
             pass
         g = gps_now() if CFG["gps_tag"] else None
@@ -928,7 +934,7 @@ class MotionWatch:
             STATE["warm"] = len(warm_boxes)
             if AUDIO is not None and AUDIO.noisy():
                 present.add("noise")                      # relay trigger: loud noise at the microphone
-            if CFG["diary_on"]:
+            if CFG["diary_on"] and not CFG["sim_on"]:       # 2.97.0: like animals and persons - not from the simulation
                 for lab in ("warm", "noise"):
                     if lab in present:
                         self.sights.see(lab, t0)

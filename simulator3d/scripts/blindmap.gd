@@ -22,6 +22,9 @@ const SHOW_S := 6.0
 func start(d: Dictionary) -> Dictionary:
 	if busy:
 		return {"ok": false, "error": "already running"}
+	var _b: String = main.busy_with()
+	if _b != "":
+		return {"ok": false, "error": "busy: " + _b}
 	pts = []
 	var azs = d.get("az", [-60, -30, 0, 30, 60])
 	var ds = d.get("dist", [5, 10, 15, 20, 25])

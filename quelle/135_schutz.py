@@ -154,7 +154,16 @@ def protect_on_alert(kind):
         if PROTECT["esc_id"] != my:
             return
         PROTECT["esc_t"] = 0.0
+        if CFG.get("siren_on") == "off":                 # 2.97.0: «siren off» (e.g. mode wildlife) counts here too
+            log_event("sys", "Escalation: the siren is switched off - only light and push")
+            return
+        if siren_quiet():
+            log_event("sys", "Escalation: siren held back (simulation / game / drill)")
+            return
+        if time.time() - SOUND["last_alarm"] < float(CFG["siren_pause"]):
+            return
         if is_armed() and out_selected() and not SOUND["playing"]:
+            SOUND["last_alarm"] = time.time()
             log_event("sys", f"Escalation: siren after {s} s (nobody disarmed)")
             sound_play(None, None, None, reason="escalation")
     threading.Thread(target=later, daemon=True, name="escalate").start()

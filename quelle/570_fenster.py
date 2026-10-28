@@ -244,7 +244,7 @@ TOGGLES = [  # (section, key, label)
     ("Notifications", "pushover_emergency", "Pushover: alarms as emergency (critical alert, repeats until confirmed)"),
     ("Updates", "update_auto", "Look for new versions by itself (every 3 hours)"),
     ("Updates", "update_install", "Install new versions automatically"),
-    ("Updates", "update_fast", "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)"),
+    ("Updates", "update_fast", "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)"),
     ("Updates", "news_popup", "After an update: show briefly what is new and what comes next"),
     ("Updates", "update_install_armed", "Automatic update also while armed (otherwise only when disarmed)"),
     ("Updates", "update_unsigned", "Also accept unsigned versions (not recommended - only for own builds)"),
@@ -754,7 +754,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.13")
+        self.root.title("MoveEye 2.97.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -776,7 +776,7 @@ class App:
         self.root.bind("<Control-t>", lambda e: self.toggle_theme())
         self.root.bind("<Control-l>", lambda e: self.toggle_lang())
         self.root.bind("<Control-b>", lambda e: self.toggle_sidebar())
-        self.root.bind("<F9>", lambda e: sim_set(not CFG["sim_on"], "window (F9)"))
+        self.root.bind("<F9>", lambda e: self._sim_toggle("window (F9)"))
         for key, cmd in (("<Left>", "left"), ("<Right>", "right"), ("<Up>", "up"), ("<Down>", "down"), ("<Home>", "center")):
             self.root.bind_all(key, lambda e, c=cmd: self._key_move(c))
         self.root.bind_all("<Button-4>", lambda e: self._wheel(e, -1))
@@ -1071,7 +1071,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.13 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.97.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1487,7 +1487,7 @@ class App:
             dict(id="ir", ic="◉", lb=tr("IR light"), tip=tr("Infrared light on / off"), on=lambda: bool((STATE.get("lights") or {}).get("ir")),
                  ok=lambda: bool(CFG["light_ir_out"]) or CFG["sim_on"], go=lambda: light_set("ir", "off" if (STATE.get("lights") or {}).get("ir") else "on")),
             dict(id="sim", ic="⚗", lb=tr("Simulation"), tip=tr("Simulation on / off: cameras, thermal camera and sensors from the simulation program") + " (F9)",
-                 on=lambda: sim_live(), go=lambda: sim_set(not CFG["sim_on"], "window")),
+                 on=lambda: sim_live(), go=lambda: self._sim_toggle("window")),
             dict(id="track", ic="◎", lb=tr("Follow"), tip=tr("Follow a detected person"), on=lambda: CFG["track_person"],
                  go=lambda: self._set("track_person", not CFG["track_person"])),
             dict(id="patrol", ic="⇄", lb=tr("Patrol"), tip=tr("Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off"),
@@ -1924,7 +1924,7 @@ class App:
         if sec == "Simulator":
             self.status_labels["Simulator"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Simulator"].pack(anchor="w", pady=(4, 0))
-            ttk.Button(sbody, text=tr("Simulation on / off") + "  (F9)", command=lambda: sim_set(not CFG["sim_on"], "window")).pack(fill="x", pady=(6, 0))
+            ttk.Button(sbody, text=tr("Simulation on / off") + "  (F9)", command=lambda: self._sim_toggle("window")).pack(fill="x", pady=(6, 0))
             sf = ttk.Frame(sbody); sf.pack(fill="x", pady=(4, 0))
             def sim_do(fn, done):
                 def run():
@@ -3135,6 +3135,13 @@ class App:
             return
         simprof_answer([c["key"] for c in q_["changes"]] if yes else [])
         self._schedule_rebuild() if hasattr(self, "_schedule_rebuild") else None
+
+    def _sim_toggle(self, who):
+        """2.97.0: simulation on / off; armed -> ask first (the real camera is not watched during the simulation)"""
+        ok, err = sim_set(not CFG["sim_on"], who)
+        if not ok and err == "armed":
+            if messagebox.askyesno("MoveEye", tr("MoveEye is armed. The simulation replaces the real camera - nothing real is watched then. Disarm and switch the simulation on?"), parent=self.root):
+                sim_set(True, who, True)
 
     def _status(self, sec, text):
         lbl = self.status_labels.get(sec)

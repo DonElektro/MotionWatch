@@ -280,7 +280,7 @@ TRX['fr'].update({
     'Inside any schedule': 'Dans un programme horaire',
     'Install': 'Installer',
     'Install new versions automatically': 'Installer automatiquement les nouvelles versions',
-    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)': 'Mode test : prendre les nouvelles versions tout de suite (regarde GitHub chaque minute et installe aussitôt, même armé)',
+    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)': 'Mode test : prendre les nouvelles versions tout de suite (regarde GitHub chaque minute et installe aussitôt, même armé ; tant qu’il est actif, les autres réglages de mise à jour ne comptent pas)',
     'Internet': 'Internet',
     'Invert pan direction': 'Inverser le sens du panoramique',
     'Invert tilt direction': "Inverser le sens d'inclinaison",

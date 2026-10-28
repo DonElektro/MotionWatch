@@ -746,11 +746,17 @@ def simprof_state(lang=None):
     return {"t": q["t"], "changes": [dict(c, label=tr(c["label"], lg)) for c in q["changes"]], "ignored": len(CFG.get("simprof_ignore") or [])}
 
 
-def sim_set(on, who="web"):
-    """The one switch: real hardware <-> simulator."""
+def sim_set(on, who="web", confirm=False):
+    """The one switch: real hardware <-> simulator.
+    2.97.0: armed, the simulation would make the real device blind - only with confirm=True (then disarmed first)."""
     on = bool(on)
     if on == bool(CFG["sim_on"]):
         return True, ""
+    if on and CFG["armed"]:
+        if not confirm:
+            return False, "armed"
+        disarm()
+        log_event("sys", f"Disarmed for the simulation ({who}) - the real camera is not watched now")
     if not str(who).startswith("automatic"):            # by hand: the automatic does not switch it back (2.95.25)
         CFG["sim_auto_on"] = False
         if not on:

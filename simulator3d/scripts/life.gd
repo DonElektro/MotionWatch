@@ -131,13 +131,13 @@ func _process(_dt: float) -> void:
 			if _crossed(_prev_h, h, float(e[0])):
 				_event(str(e[1]), str(e[2]))
 	_prev_h = h
-	if main.real_time:
+	if main.real_time and main.busy_with() == "":       # 3D-3.88: a test sets its own time
 		var t := Time.get_time_dict_from_system()
 		var lh := float(t["hour"]) + float(t["minute"]) / 60.0 + float(t["second"]) / 3600.0
 		if main.speed != 1.0 or abs(h - lh) > 0.03 and abs(h - lh) < 23.97:
 			main.speed = 1.0
 			main.set_hour(lh)
-	if main.real_weather and main.now() - _wx_t > 600.0 and not _wx_busy:
+	if main.real_weather and main.now() - _wx_t > 600.0 and not _wx_busy and main.busy_with() == "":
 		_wx_t = main.now()
 		_fetch_weather()
 

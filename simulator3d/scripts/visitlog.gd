@@ -16,7 +16,10 @@ func add(v) -> void:
 	if v == null or not is_instance_valid(v):
 		return
 	var k: String = str(v.kind)
-	live[v.get_instance_id()] = {"v": v, "kind": k, "var": str(v.variant), "t_in": Time.get_unix_time_from_system(), "scene": str(main.scene),
+	var src: String = main.busy_with()
+	if src in ["Testlauf", "Prüfstand", "Trainingsbilder", "Blinde Flecken", "Fehlalarm nachstellen"]:
+		return                                   # 3D-3.88: test visitors do not belong into the diary (MoveEye's statistics)
+	live[v.get_instance_id()] = {"src": "game" if src == "Spielrunde" else ("replay" if src == "Wiedergabe" else "normal"), "v": v, "kind": k, "var": str(v.variant), "t_in": Time.get_unix_time_from_system(), "scene": str(main.scene),
 			"dark": main.is_dark(), "weather": str(main.weather), "hour": snappedf(main.hour(), 0.01), "min_d": 999.0, "vis_s": 0.0, "first_vis": -1.0,
 			"det": -1.0, "post": 0, "fled": false, "game": main.game != null and main.game.open and main.game.count() > 0}
 
@@ -27,6 +30,12 @@ func _process(dt: float) -> void:
 		return
 	var step := _t
 	_t = 0.0
+	if main.mw_t <= 0.0 or main.now() - main.mw_t > 10.0:
+		for id in live.keys():                   # 3D-3.88: no MoveEye -> nothing to measure (saves CPU on an older PC)
+			var r0: Dictionary = live[id]
+			if not is_instance_valid(r0["v"]) or r0["v"].done:
+				_finish(id, Time.get_unix_time_from_system())
+		return
 	var now := Time.get_unix_time_from_system()
 	var head: Vector3 = main.head.global_position
 	var fresh: bool = main.now() - main.mw_det_t < 3.0
@@ -64,7 +73,7 @@ func _finish(id, now: float) -> void:
 	var e := {"id": seq, "kind": r["kind"], "var": r["var"], "t_in": int(r["t_in"]), "t_out": int(now), "scene": r["scene"], "dark": r["dark"],
 			"weather": r["weather"], "hour": r["hour"], "min_d": snappedf(float(r["min_d"]), 0.1), "vis_s": snappedf(float(r["vis_s"]), 0.1),
 			"detected": det > 0.0, "detect_s": snappedf(det - fv, 0.1) if det > 0.0 and fv > 0.0 else -1.0, "post": r["post"], "fled": r["fled"],
-			"game": r["game"], "mw": main.now() - main.mw_t < 5.0}
+			"game": r["game"] or r.get("src", "") == "game", "src": r.get("src", "normal"), "mw": main.now() - main.mw_t < 5.0}
 	done.append(e)
 	if done.size() > 500:
 		done.pop_front()

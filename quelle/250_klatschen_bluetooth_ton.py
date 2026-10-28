@@ -68,7 +68,10 @@ def clap_action(n):
             done = tr("Recording") + " → " + tr("on" if quick_rec() else "off")
         elif act == "arm":
             if is_armed() or CFG["armed"]:
-                disarm(); done = tr("disarmed")
+                if CFG.get("protect_pin"):                  # 2.97.0: with a PIN, clapping only arms (anyone can clap)
+                    done = ""; log_event("sys", "Clap switch: disarming needs the PIN")
+                else:
+                    disarm(); done = tr("disarmed")
             else:
                 arm(); done = tr("armed (countdown)")
     except Exception as e:
@@ -1112,11 +1115,24 @@ def sound_stop():
             pass
 
 
+def siren_quiet():
+    """2.97.0: no real siren while the test inbox takes the messages (simulation, game round, drill, demo)"""
+    try:
+        return sandbox_active()
+    except Exception:
+        return False
+
+
 def siren_alarm(kind):
     """Siren on the Pi at an alarm (only when armed). siren_on: off | person | alarm (person, thermal, noise) | all (+ pre-alarm)."""
     mode = CFG["siren_on"]
     if mode == "off" or not out_selected() or not is_armed() or SOUND["playing"] or TALK["proc"] is not None:
         return                                           # somebody talks through the loudspeaker: no siren over the voice
+    if siren_quiet():
+        log_event("sys", f"Siren held back ({kind}): simulation / game / drill - into the test inbox")
+        return
+    if kind == "person" and CFG.get("escalate_on"):
+        return                                           # 2.97.0: the escalation decides (light now, siren after the wait)
     if kind == "prealarm" and mode != "all":
         return
     if kind in ("warm", "noise") and mode not in ("alarm", "all"):

@@ -39,5 +39,9 @@ def makeover_head():
           "if(on&&!b&&document.body){b=document.createElement('div');b.className='mwsimbar';b.title='MoveEye';const s=document.createElement('span');b.appendChild(s);document.body.prepend(b);}"
           "if(b){b.hidden=!on;b.firstChild.textContent='🧪 '+(TX[L()]||TX.en);}};"
           "document.addEventListener('DOMContentLoaded',paint);"
-          "setInterval(async()=>{try{const r=await (await fetch('/api/simbar')).json();if(r.on!==on){on=r.on;}paint();}catch(e){}},15000);setTimeout(paint,1500);})();</script>")
+          "setInterval(async()=>{try{const r=await (await fetch('/api/simbar')).json();if(r.on!==on){on=r.on;}paint();}catch(e){}},15000);setTimeout(paint,1500);"
+          # 2.97.0: switch the simulation; armed -> ask «disarm and simulate?» first (sim_set needs confirm)
+          "window.mwSimSet=async(v,lang)=>{const P=b=>fetch('/api/sim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(x=>x.json()).catch(()=>({}));"
+          "let r=await P({on:v,lang:lang||L()});if(r&&r.need_confirm){if(!confirm(r.error))return r;r=await P({on:v,confirm:true,lang:lang||L()});}return r;};"
+          "})();</script>")
     return "<style>" + SIMBAR_CSS + WORDMARK_CSS + "</style>" + js + simhub_head()

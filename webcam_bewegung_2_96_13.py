@@ -1114,7 +1114,7 @@ CFG = {
     # power saving: few pictures per second while all is quiet; any movement / noise / alarm = full speed for eco_wake s
     "eco_on": False, "eco_fps": 3, "eco_wake": 30, "eco_view_full": True,
     "mode": "", "mode_prev": {}, "mode_since": 0.0,   # 2.95.47: one switch for the whole device (camping, campfire, gamer ...)
-    "mode_fire_until": "23:00", "mode_fire_min_pct": 30, "mode_gamer_watch": False, "mode_fire_hours": 4.0,
+    "mode_fire_until": "23:00", "mode_fire_min_pct": 30, "mode_gamer_watch": False, "mode_fire_hours": 4.0, "mode_fire_persons": False,
     "turbo_on": False, "turbo_prev": {},   # power mode (2.95.19): everything on the highest performance, the values before are kept
     "users": [],                 # extra logins: [{"name", "hash", "role": "operate" | "view"}] (the web password = administrator)
     "trusted": [],               # trusted devices (2.95.19): [{"h": sha256 of the cookie, "user", "name", "t0", "seen", "ip"}] - no login after updates
@@ -4022,7 +4022,7 @@ class Notifier:
         return render_msg(msg_template(ev, 1), p)
 
     def _dispatch(self, p, jpg, fname):
-        if sandbox_active():                             # 2.96.6: simulator test inbox - nobody is disturbed (141)
+        if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
             sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
             return
         if CFG["webpush_on"] and webpush_subs():
@@ -7638,7 +7638,7 @@ def mode_state():
     m = CFG.get("mode") or ""
     return {"id": m, "since": CFG.get("mode_since") or 0, "msg": MODE_RT["msg"], "power_ok": ok, "power_why": why,
             "list": [{"id": i, "icon": ic, "name": n, "info": MODE_INFO[i]} for i, ic, n in MODES], "own_info": MODE_INFO[""],
-            "fire_until": CFG["mode_fire_until"], "fire_min_pct": CFG["mode_fire_min_pct"], "gamer_watch": bool(CFG["mode_gamer_watch"]),
+            "fire_until": CFG["mode_fire_until"], "fire_min_pct": CFG["mode_fire_min_pct"], "gamer_watch": bool(CFG["mode_gamer_watch"]), "fire_persons": bool(CFG.get("mode_fire_persons")),
             "camping": bool(CFG["camping"])}
 
 
@@ -7832,7 +7832,16 @@ def protect_on_alert(kind):
         if PROTECT["esc_id"] != my:
             return
         PROTECT["esc_t"] = 0.0
+        if CFG.get("siren_on") == "off":                 # 2.97.0: «siren off» (e.g. mode wildlife) counts here too
+            log_event("sys", "Escalation: the siren is switched off - only light and push")
+            return
+        if siren_quiet():
+            log_event("sys", "Escalation: siren held back (simulation / game / drill)")
+            return
+        if time.time() - SOUND["last_alarm"] < float(CFG["siren_pause"]):
+            return
         if is_armed() and out_selected() and not SOUND["playing"]:
+            SOUND["last_alarm"] = time.time()
             log_event("sys", f"Escalation: siren after {s} s (nobody disarmed)")
             sound_play(None, None, None, reason="escalation")
     threading.Thread(target=later, daemon=True, name="escalate").start()
@@ -8050,7 +8059,11 @@ def makeover_head():
           "if(on&&!b&&document.body){b=document.createElement('div');b.className='mwsimbar';b.title='MoveEye';const s=document.createElement('span');b.appendChild(s);document.body.prepend(b);}"
           "if(b){b.hidden=!on;b.firstChild.textContent='🧪 '+(TX[L()]||TX.en);}};"
           "document.addEventListener('DOMContentLoaded',paint);"
-          "setInterval(async()=>{try{const r=await (await fetch('/api/simbar')).json();if(r.on!==on){on=r.on;}paint();}catch(e){}},15000);setTimeout(paint,1500);})();</script>")
+          "setInterval(async()=>{try{const r=await (await fetch('/api/simbar')).json();if(r.on!==on){on=r.on;}paint();}catch(e){}},15000);setTimeout(paint,1500);"
+          # 2.97.0: switch the simulation; armed -> ask «disarm and simulate?» first (sim_set needs confirm)
+          "window.mwSimSet=async(v,lang)=>{const P=b=>fetch('/api/sim',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(x=>x.json()).catch(()=>({}));"
+          "let r=await P({on:v,lang:lang||L()});if(r&&r.need_confirm){if(!confirm(r.error))return r;r=await P({on:v,confirm:true,lang:lang||L()});}return r;};"
+          "})();</script>")
     return "<style>" + SIMBAR_CSS + WORDMARK_CSS + "</style>" + js + simhub_head()
 # ----------------------------------------------------------------------------
 # 2.96.4 (Makeover-Punkte 3, 4, 7):
@@ -8931,8 +8944,38 @@ def sim_ready():
 
 
 # ---- 14: the test inbox ---------------------------------------------------------------------------------------------
+def sim_game_running():
+    """2.97.0: a round in the simulator (countdown / play) - the players are not burglars"""
+    if not CFG.get("sim_on"):
+        return False
+    try:
+        g = sim_game()                                     # fetches it fresh in the background now and then
+    except Exception:
+        g = SIMGAME.get("g")
+    return bool(g) and g.get("round") in ("play", "countdown")
+
+
+def event_origin():
+    """2.97.0: real | sim | game | drill | demo - recordings, the diary and the reports can tell them apart"""
+    if not CFG.get("sim_on"):
+        return "real"
+    if DRILL.get("kind") and time.time() < DRILL.get("until", 0):
+        return "drill"
+    try:
+        if DEMO_RUN.get("busy"):
+            return "demo"
+    except NameError:
+        pass
+    return "game" if sim_game_running() else "sim"
+
+
 def sandbox_active():
-    return SANDBOX["force"] > 0 or (bool(CFG.get("notify_sandbox")) and bool(CFG.get("sim_on")))
+    """the test inbox instead of the phone: drills / demo (force), simulation with the switch, and always while a game runs"""
+    if SANDBOX["force"] > 0:
+        return True
+    if not CFG.get("sim_on"):
+        return False
+    return bool(CFG.get("notify_sandbox")) or sim_game_running()
 
 
 def sandbox_add(title, text, jpg=None, ev=""):
@@ -8961,13 +9004,12 @@ def sandbox_add(title, text, jpg=None, ev=""):
 def alarmchain_test():
     """Push, light, siren - one after the other, into the test inbox (nobody is disturbed)"""
     out = []
-    SANDBOX["force"] += 1
     try:
         w = WATCH_REF.get("w")
         n0 = len(SANDBOX["items"])
         if w is not None:
             p = {"event": "person", "persons": 1, "time": datetime.now().isoformat(timespec="seconds"), "snapshot": None, "rain": False,
-                 "wind": "", "source": STATE.get("source_label", ""), "link": "", "more": 0}
+                 "wind": "", "source": STATE.get("source_label", ""), "link": "", "more": 0, "_test": True}
             jpg = None
             f = getattr(w, "frame_out", None)
             if f is not None:
@@ -8995,8 +9037,8 @@ def alarmchain_test():
             pass
         esc = bool(CFG.get("escalate_on"))
         out.append({"name": "Siren after a while (escalation)", "ok": esc, "text": trf("after {s} s", s=int(CFG.get("escalate_siren_s", 30))) if esc else "off"})
-    finally:
-        SANDBOX["force"] = max(0, SANDBOX["force"] - 1)
+    except Exception as e:
+        out.append({"name": "Error", "ok": False, "text": str(e)[:100]})
     log_event("sys", "Alarm chain test: " + ", ".join(f"{x['name']} {'ok' if x['ok'] else 'no'}" for x in out))
     return out
 
@@ -9404,6 +9446,8 @@ DEMO_STEPS = [
 def demo_start():
     if DEMO_RUN["busy"]:
         return False, "the demo is already running"
+    if CFG["armed"] and not CFG.get("sim_on"):
+        return False, "MoveEye is armed - disarm it first (the demo uses the simulator instead of the real camera)"
     if not CFG.get("sim_on") or not SIM.get("ok"):
         try:
             if not SIM.get("ok") and simpi_possible() and sim3d_ready("pi"):
@@ -13477,7 +13521,10 @@ def clap_action(n):
             done = tr("Recording") + " → " + tr("on" if quick_rec() else "off")
         elif act == "arm":
             if is_armed() or CFG["armed"]:
-                disarm(); done = tr("disarmed")
+                if CFG.get("protect_pin"):                  # 2.97.0: with a PIN, clapping only arms (anyone can clap)
+                    done = ""; log_event("sys", "Clap switch: disarming needs the PIN")
+                else:
+                    disarm(); done = tr("disarmed")
             else:
                 arm(); done = tr("armed (countdown)")
     except Exception as e:
@@ -14521,11 +14568,24 @@ def sound_stop():
             pass
 
 
+def siren_quiet():
+    """2.97.0: no real siren while the test inbox takes the messages (simulation, game round, drill, demo)"""
+    try:
+        return sandbox_active()
+    except Exception:
+        return False
+
+
 def siren_alarm(kind):
     """Siren on the Pi at an alarm (only when armed). siren_on: off | person | alarm (person, thermal, noise) | all (+ pre-alarm)."""
     mode = CFG["siren_on"]
     if mode == "off" or not out_selected() or not is_armed() or SOUND["playing"] or TALK["proc"] is not None:
         return                                           # somebody talks through the loudspeaker: no siren over the voice
+    if siren_quiet():
+        log_event("sys", f"Siren held back ({kind}): simulation / game / drill - into the test inbox")
+        return
+    if kind == "person" and CFG.get("escalate_on"):
+        return                                           # 2.97.0: the escalation decides (light now, siren after the wait)
     if kind == "prealarm" and mode != "all":
         return
     if kind in ("warm", "noise") and mode not in ("alarm", "all"):
@@ -20159,11 +20219,17 @@ def simprof_state(lang=None):
     return {"t": q["t"], "changes": [dict(c, label=tr(c["label"], lg)) for c in q["changes"]], "ignored": len(CFG.get("simprof_ignore") or [])}
 
 
-def sim_set(on, who="web"):
-    """The one switch: real hardware <-> simulator."""
+def sim_set(on, who="web", confirm=False):
+    """The one switch: real hardware <-> simulator.
+    2.97.0: armed, the simulation would make the real device blind - only with confirm=True (then disarmed first)."""
     on = bool(on)
     if on == bool(CFG["sim_on"]):
         return True, ""
+    if on and CFG["armed"]:
+        if not confirm:
+            return False, "armed"
+        disarm()
+        log_event("sys", f"Disarmed for the simulation ({who}) - the real camera is not watched now")
     if not str(who).startswith("automatic"):            # by hand: the automatic does not switch it back (2.95.25)
         CFG["sim_auto_on"] = False
         if not on:
@@ -23495,6 +23561,8 @@ class MotionWatch:
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S")          # video and snapshot of one event share the same name
         if not is_armed():
             persons = []                                  # disarmed: no snapshots, no notifications, no new recordings
+        elif persons and CFG.get("mode") == "fire" and not CFG.get("mode_fire_persons"):
+            persons = []                                  # 2.97.0: campfire - the people at the fire are no alarm, animals still are
         settle = now - SIM.get("off_t", 0.0) < 30.0       # just back from the simulation: the camera learns its picture
         if settle:
             persons = []; self.last_person_time = 0
@@ -23591,6 +23659,10 @@ class MotionWatch:
                 "schedules": info["schedules"]}
         try:                                               # 2.96.5: the situation, for «Was wäre wenn …?» (139_makeover_simzentrale)
             meta["situ"] = whatif_situ_now(info)
+        except Exception:
+            pass
+        try:                                               # 2.97.0: where it came from - real / simulation / game / drill
+            meta["origin"] = event_origin()
         except Exception:
             pass
         g = gps_now() if CFG["gps_tag"] else None
@@ -23998,7 +24070,7 @@ class MotionWatch:
             STATE["warm"] = len(warm_boxes)
             if AUDIO is not None and AUDIO.noisy():
                 present.add("noise")                      # relay trigger: loud noise at the microphone
-            if CFG["diary_on"]:
+            if CFG["diary_on"] and not CFG["sim_on"]:       # 2.97.0: like animals and persons - not from the simulation
                 for lab in ("warm", "noise"):
                     if lab in present:
                         self.sights.see(lab, t0)
@@ -27747,6 +27819,7 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "Catch fast persons": "Schnelle Personen erwischen", "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.": "{n} schnelle Personen (Jogger) verpasst: weniger Bilder bis das Gehen erkannt ist, die KI prüft jedes Bild.",
  "More sensitive by day": "Am Tag empfindlicher", "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.": "{n} Personen am Tag verpasst: empfindlicher, und die KI nimmt auch weniger sichere Personen an.",
  "React faster": "Schneller reagieren", "MoveEye needed {n} s on average: the AI looks at every picture and walking is recognised sooner.": "MoveEye brauchte im Mittel {n} s: die KI prüft jedes Bild und das Gehen wird früher erkannt."});
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
 Object.assign(I18N.de, {"Simulator centre": "Simulator-Zentrale", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig", "best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by MoveEye": "sichtbar, aber von MoveEye nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
  "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
  "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
@@ -28055,7 +28128,7 @@ async function simUpdate() {
   toast(r.ok ? "⟳ " + t("The simulator looks for a new version and installs it (about a minute, it starts again by itself).") : "⚠ " + (r.error || t("not possible")));
   setTimeout(() => { b.disabled = false; }, 20000);
 }
-async function simOnOff() { const b = $("#s-on"); b.disabled = true; await post("/api/sim", {on: b.checked, lang: LANG}); b.disabled = false; CS = ""; load(); }
+async function simOnOff() { const b = $("#s-on"); b.disabled = true; await mwSimSet(b.checked, LANG); b.disabled = false; CS = ""; load(); }
 async function saveUrl() { URLEDIT = false; const r = await post("/api/sim", {url: $("#s-url").value.trim(), lang: LANG}); toast(r.ok === false ? (r.error || t("not possible")) : t("Saved")); load(); }
 $("#s-url").addEventListener("input", () => URLEDIT = true);
 async function setKey(k, v) { const r = await post("/api/set", {key: k, value: v}); if (!r.ok) toast(r.error || t("not possible")); load(); }
@@ -36191,7 +36264,7 @@ const QS = [
   {id: "talk", ic: "🎙", lb: "Talk", tip: "Talk through the loudspeaker: tap once to unlock, then hold the button while you talk",
    on: () => false, ok: (c, s) => !!(s.audio && s.audio.spk) || TK.on, talk: true},
   {id: "sim", ic: "🧪", lb: "Simulation", tip: "Simulation on / off: cameras, thermal camera and sensors from the simulation program", on: (c, s) => !!(s.sim && s.sim.on && s.sim.ok && s.sim.pic !== false),   /* 2.95.93: lit only with a real connection */
-   go: (c, s) => post("/api/sim", {on: !(s.sim && s.sim.on), lang: LANG})},
+   go: (c, s) => mwSimSet(!(s.sim && s.sim.on), LANG)},
   {id: "track", ic: "🎯", lb: "Follow", tip: "Follow a detected person", on: c => c.track_person, go: c => post("/api/set", {key: "track_person", value: !c.track_person})},
   {id: "patrol", ic: "🔄", lb: "Patrol", tip: "Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off", on: c => c.patrol,
    lbf: c => !c.patrol ? "Patrol" : c.patrol_mode === "loop" ? "↻ Round" : "⇄ Pendulum",
@@ -37115,7 +37188,7 @@ function simExtras(d) {
   const head = el("div", ""); head.id = "sim-head"; head.style.cssText = "font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap";
   const st = el("div", "mut"); st.id = "sim-st"; st.style.cssText = "white-space:pre-wrap;margin-top:2px";
   const b = el("button", "", ""); b.type = "button"; b.id = "sim-btn"; b.style.cssText = "margin-top:10px;width:100%";
-  b.onclick = async () => { const on = !(QSJ && QSJ.state.sim && QSJ.state.sim.on); b.disabled = true; await post("/api/sim", {on: on, lang: LANG}); b.disabled = false; refresh(); };
+  b.onclick = async () => { const on = !(QSJ && QSJ.state.sim && QSJ.state.sim.on); b.disabled = true; await mwSimSet(on, LANG); b.disabled = false; refresh(); };
   const stats = el("div", ""); stats.id = "sim-stats"; stats.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px;margin-top:10px";
   box.append(head, st, stats, b);
   // ---- search in the network ----
@@ -38068,7 +38141,7 @@ function modePaint(s) {
   const bm = $("#b-mode"); if (bm) { bm.hidden = !cur; bm.textContent = cur ? me.icon : ""; bm.title = t("Mode") + ": " + t(me.name); bm.onclick = () => { const c = $("#pr-card"); if (c) { c.open = true; c.scrollIntoView({behavior: "smooth"}); } }; }
   tvPaint(s.tv); discoPaint(s.disco); btqPoll(false);
   const bq = $("#btq"); if (bq && !bq.dataset.on) { bq.dataset.on = 1; bq.ontoggle = () => { if (bq.open) btqPoll(true); }; }
-  const o = $("#mode-opts"); const key = cur + "|" + M.fire_until + "|" + M.fire_min_pct + "|" + M.gamer_watch;
+  const o = $("#mode-opts"); const key = cur + "|" + M.fire_until + "|" + M.fire_min_pct + "|" + M.gamer_watch + "|" + M.fire_persons;
   if (o.dataset.k === key) return; o.dataset.k = key; o.textContent = "";
   if (cur === "fire") {
     const r = el("div", "row"); r.append(el("span", "", t("Back to the camping guard at")));
@@ -38078,6 +38151,9 @@ function modePaint(s) {
     [0, 20, 30, 40, 50].forEach(v => { const op = document.createElement("option"); op.value = v; op.textContent = v ? v + " %" : t("never"); se.appendChild(op); });
     se.value = String(M.fire_min_pct); se.onchange = () => post("/api/mode", {mode_fire_min_pct: +se.value});
     r.append(ti, sp, se); o.appendChild(r);
+    const r2 = el("label", "row pr-sw"); const c2 = document.createElement("input"); c2.type = "checkbox"; c2.className = "sw"; c2.checked = !!M.fire_persons;
+    c2.onchange = () => post("/api/mode", {mode_fire_persons: c2.checked});
+    r2.append(el("span", "", "🚶 " + t("Person alarms at the campfire (off: only animals - the people at the fire are not burglars)")), c2); o.appendChild(r2);
   } else if (cur === "gamer") {
     const r = el("label", "row pr-sw"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!M.gamer_watch;
     cb.onchange = async () => { await post("/api/mode", {mode_gamer_watch: cb.checked}); if (M.id === "gamer") { await post("/api/mode", {mode: ""}); await post("/api/mode", {mode: "gamer"}); } };
@@ -38989,6 +39065,8 @@ document.addEventListener("webkitfullscreenchange", fsChange);
 SIMTOOLS_JS = r"""
 // ---- simulator tools in the tab Simulator (2.95.53): Aufstell-Planer, alarm replay, AI test ----
 Object.assign(I18N.de, {"pictures": "Bilder", "Tag": "Anhänger", "Aufstell-Planer in the simulator": "Aufstell-Planer im Simulator", "open in the window of the simulator": "im Fenster des Simulators geöffnet", "Take over the patrol of the planner": "Patrouille vom Planer übernehmen", "Patrol set": "Patrouille gesetzt", "of the area in view": "des Bereichs im Blick", "Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in the simulator": "Im Simulator abspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators", "no alarms yet": "noch keine Alarme", "replay-note": "Zeigt im 3D-Simulator nach, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Hilft, Fehlalarme zu verstehen. Die Positionen sind geschätzt (aus Bildposition und Grösse).", "AI test with simulator pictures": "KI-Prüfung mit Simulator-Bildern", "dset-note": "Der Simulator macht Bilder mit Person oder Tier – bei Tag, Abend, Nacht mit Infrarot, Regen und Nebel, nah und fern – und weiss, wo sie sind. MoveEye lässt seine KI (oder die PC-Rechenhilfe) darüber laufen und zählt Treffer, Fehlschläge und falsche Personen. Dauert pro Bild etwa 3 Sekunden.", "Start the test": "Prüfung starten", "found": "erkannt", "false persons": "falsche Personen", "near (under 8 m)": "nah (unter 8 m)", "far (8 m and more)": "fern (ab 8 m)", "AI time per picture": "KI-Zeit pro Bild", "Training pictures (ZIP)": "Trainingsbilder (ZIP)", "Abend": "Abend", "Nacht (Infrarot)": "Nacht (Infrarot)", "Regen": "Regen", "Nebel": "Nebel", "Nacht + Regen": "Nacht + Regen", "person": "Person", "fox": "Fuchs", "deer": "Reh", "dog": "Hund", "cat": "Katze", "boar": "Wildschwein", "the simulator makes the pictures …": "der Simulator macht die Bilder …", "done": "fertig", "Simulator tools": "Simulator-Werkzeuge"});
+Object.assign(I18N.de, {"Person alarms at the campfire (off: only animals - the people at the fire are not burglars)": "Personen-Alarm am Lagerfeuer (aus: nur Tiere – die Leute am Feuer sind keine Einbrecher)"});  // 2.97.0
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture).", "dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. MoveEye runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
 (async function () {
   for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100));     // after the language is known
@@ -40532,7 +40610,10 @@ class WebStream:
                     if not ok:
                         return reply({"ok": False, "error": tr_err(err, lang)}, 400)
                 if "on" in d:
-                    sim_set(d.get("on"), "web " + (request.remote_addr or "?"))
+                    ok_s, err_s = sim_set(d.get("on"), "web " + (request.remote_addr or "?"), bool(d.get("confirm")))
+                    if not ok_s and err_s == "armed":       # 2.97.0: the page asks «disarm and simulate?»
+                        return reply({"ok": False, "need_confirm": "armed",
+                                      "error": tr_err("MoveEye is armed. The simulation replaces the real camera - nothing real is watched then. Disarm and switch the simulation on?", lang)})
                 act_ = d.get("action")
                 if act_ == "ctl":                           # remote control of the simulator: passed on as it is (CONTROL protocol 1)
                     c_ = str(d.get("ctl") or "get")
@@ -41981,7 +42062,7 @@ class WebStream:
         @app.route("/api/mode", methods=["POST"])
         def api_mode():
             d = body(); lang = norm_lang(d.get("lang"))
-            for k, typ in (("mode_fire_until", str), ("mode_fire_min_pct", int), ("mode_gamer_watch", bool), ("mode_fire_hours", float)):
+            for k, typ in (("mode_fire_until", str), ("mode_fire_min_pct", int), ("mode_gamer_watch", bool), ("mode_fire_hours", float), ("mode_fire_persons", bool)):
                 if k in d:
                     try:
                         CFG[k] = typ(d[k])
@@ -43167,7 +43248,7 @@ DE = {
     "UPS HAT: address (I2C)": "USV-Akku: Adresse (I2C)",
     "New version": "Neue Version", "click to update": "zum Aktualisieren klicken",
     "Install new versions automatically": "Neue Versionen automatisch installieren",
-    "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)": "Entwicklungsphase: neue Versionen sofort holen (schaut jede Minute auf GitHub und installiert gleich, auch wenn der Schutz an ist)",
+    "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)": "Entwicklungsphase: neue Versionen sofort holen (schaut jede Minute auf GitHub und installiert gleich, auch wenn der Schutz an ist; solange an, gelten die anderen Update-Schalter nicht)",
     "QR code for the phone": "QR-Code fürs Handy", "Markings in recordings and alarm pictures": "Markierungen in Aufnahmen und Alarmbildern",
     "thin corner marks (face stays free)": "dünne Eckmarken (Gesicht bleibt frei)", "none (clean picture)": "keine (sauberes Bild)",
     "like the live picture (red boxes)": "wie im Live-Bild (rote Rahmen)", "please write a few words": "bitte ein paar Worte schreiben",
@@ -43834,7 +43915,7 @@ TOGGLES = [  # (section, key, label)
     ("Notifications", "pushover_emergency", "Pushover: alarms as emergency (critical alert, repeats until confirmed)"),
     ("Updates", "update_auto", "Look for new versions by itself (every 3 hours)"),
     ("Updates", "update_install", "Install new versions automatically"),
-    ("Updates", "update_fast", "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)"),
+    ("Updates", "update_fast", "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)"),
     ("Updates", "news_popup", "After an update: show briefly what is new and what comes next"),
     ("Updates", "update_install_armed", "Automatic update also while armed (otherwise only when disarmed)"),
     ("Updates", "update_unsigned", "Also accept unsigned versions (not recommended - only for own builds)"),
@@ -44366,7 +44447,7 @@ class App:
         self.root.bind("<Control-t>", lambda e: self.toggle_theme())
         self.root.bind("<Control-l>", lambda e: self.toggle_lang())
         self.root.bind("<Control-b>", lambda e: self.toggle_sidebar())
-        self.root.bind("<F9>", lambda e: sim_set(not CFG["sim_on"], "window (F9)"))
+        self.root.bind("<F9>", lambda e: self._sim_toggle("window (F9)"))
         for key, cmd in (("<Left>", "left"), ("<Right>", "right"), ("<Up>", "up"), ("<Down>", "down"), ("<Home>", "center")):
             self.root.bind_all(key, lambda e, c=cmd: self._key_move(c))
         self.root.bind_all("<Button-4>", lambda e: self._wheel(e, -1))
@@ -45077,7 +45158,7 @@ class App:
             dict(id="ir", ic="◉", lb=tr("IR light"), tip=tr("Infrared light on / off"), on=lambda: bool((STATE.get("lights") or {}).get("ir")),
                  ok=lambda: bool(CFG["light_ir_out"]) or CFG["sim_on"], go=lambda: light_set("ir", "off" if (STATE.get("lights") or {}).get("ir") else "on")),
             dict(id="sim", ic="⚗", lb=tr("Simulation"), tip=tr("Simulation on / off: cameras, thermal camera and sensors from the simulation program") + " (F9)",
-                 on=lambda: sim_live(), go=lambda: sim_set(not CFG["sim_on"], "window")),
+                 on=lambda: sim_live(), go=lambda: self._sim_toggle("window")),
             dict(id="track", ic="◎", lb=tr("Follow"), tip=tr("Follow a detected person"), on=lambda: CFG["track_person"],
                  go=lambda: self._set("track_person", not CFG["track_person"])),
             dict(id="patrol", ic="⇄", lb=tr("Patrol"), tip=tr("Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off"),
@@ -45514,7 +45595,7 @@ class App:
         if sec == "Simulator":
             self.status_labels["Simulator"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Simulator"].pack(anchor="w", pady=(4, 0))
-            ttk.Button(sbody, text=tr("Simulation on / off") + "  (F9)", command=lambda: sim_set(not CFG["sim_on"], "window")).pack(fill="x", pady=(6, 0))
+            ttk.Button(sbody, text=tr("Simulation on / off") + "  (F9)", command=lambda: self._sim_toggle("window")).pack(fill="x", pady=(6, 0))
             sf = ttk.Frame(sbody); sf.pack(fill="x", pady=(4, 0))
             def sim_do(fn, done):
                 def run():
@@ -46726,6 +46807,13 @@ class App:
         simprof_answer([c["key"] for c in q_["changes"]] if yes else [])
         self._schedule_rebuild() if hasattr(self, "_schedule_rebuild") else None
 
+    def _sim_toggle(self, who):
+        """2.97.0: simulation on / off; armed -> ask first (the real camera is not watched during the simulation)"""
+        ok, err = sim_set(not CFG["sim_on"], who)
+        if not ok and err == "armed":
+            if messagebox.askyesno("MoveEye", tr("MoveEye is armed. The simulation replaces the real camera - nothing real is watched then. Disarm and switch the simulation on?"), parent=self.root):
+                sim_set(True, who, True)
+
     def _status(self, sec, text):
         lbl = self.status_labels.get(sec)
         if lbl is not None:
@@ -47365,7 +47453,7 @@ TRX['fr'].update({
     'Inside any schedule': 'Dans un programme horaire',
     'Install': 'Installer',
     'Install new versions automatically': 'Installer automatiquement les nouvelles versions',
-    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)': 'Mode test : prendre les nouvelles versions tout de suite (regarde GitHub chaque minute et installe aussitôt, même armé)',
+    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)': 'Mode test : prendre les nouvelles versions tout de suite (regarde GitHub chaque minute et installe aussitôt, même armé ; tant qu’il est actif, les autres réglages de mise à jour ne comptent pas)',
     'Internet': 'Internet',
     'Invert pan direction': 'Inverser le sens du panoramique',
     'Invert tilt direction': "Inverser le sens d'inclinaison",
@@ -48757,7 +48845,7 @@ TRX['it'].update({
     'Inside any schedule': 'In una pianificazione',
     'Install': 'Installa',
     'Install new versions automatically': 'Installare automaticamente le nuove versioni',
-    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)': 'Modalità test: prendere subito le nuove versioni (guarda GitHub ogni minuto e installa subito, anche se armato)',
+    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)': 'Modalità test: prendere subito le nuove versioni (guarda GitHub ogni minuto e installa subito, anche se armato; finché è attiva, gli altri interruttori di aggiornamento non contano)',
     'Internet': 'Internet',
     'Invert pan direction': 'Invertire direzione brandeggio',
     'Invert tilt direction': 'Invertire direzione inclinazione',
@@ -50149,7 +50237,7 @@ TRX['rm'].update({
     'Inside any schedule': 'En in plan da temp',
     'Install': 'Installar',
     'Install new versions automatically': 'Installar automaticamain novas versiuns',
-    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)': "Modus da test: prender novas versiuns immediat (guarda mintga minuta sin GitHub ed installescha dalunga, er sch'armà)",
+    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed; while on, the other update switches do not count)': "Modus da test: prender novas versiuns immediat (guarda mintga minuta sin GitHub ed installescha dalunga, er sch'armà; uschè ditg ch’el è activ na valan ils auters cumtschs d'actualisaziun betg)",
     'Internet': 'Internet',
     'Invert pan direction': 'Invertir la direcziun da panorama',
     'Invert tilt direction': "Invertir la direcziun d'inclinaziun",
@@ -51919,6 +52007,19 @@ _HX117 = {  # 2.96.8
     'The person was never in the picture – check where the head looks (patrol, pan).': ('Die Person war nie im Bild – prüfen, wohin der Kopf schaut (Patrouille, Schwenk).', 'La personne n’a jamais été dans l’image – vérifier où regarde la tête (patrouille, panoramique).', 'La persona non è mai stata nell’immagine – controllare dove guarda la testa (pattuglia, brandeggio).', 'La persuna n’era mai en il maletg – controllar nua che il chau guarda (patrulla, sviament).'),
 }
 for _k, _v in _HX117.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+_HX118 = {  # 2.97.0
+    'MoveEye is armed. The simulation replaces the real camera - nothing real is watched then. Disarm and switch the simulation on?': ('MoveEye ist scharf. Die Simulation ersetzt die echte Kamera – dann wird nichts Echtes bewacht. Unscharf schalten und die Simulation einschalten?', 'MoveEye est armé. La simulation remplace la vraie caméra – plus rien de réel n’est surveillé. Désarmer et activer la simulation ?', 'MoveEye è armato. La simulazione sostituisce la vera telecamera – allora non si sorveglia niente di reale. Disarmare e attivare la simulazione?', 'MoveEye è armà. La simulaziun remplazza la camera vera – lura na vegn nagut vair survegnì. Disarmar ed activar la simulaziun?'),
+    'MoveEye is armed - disarm it first (the demo uses the simulator instead of the real camera)': ('MoveEye ist scharf – zuerst unscharf schalten (die Demo braucht den Simulator statt der echten Kamera)', 'MoveEye est armé – d’abord désarmer (la démo utilise le simulateur à la place de la vraie caméra)', 'MoveEye è armato – prima disarmare (la demo usa il simulatore invece della vera telecamera)', 'MoveEye è armà – l’emprim disarmar (la demo dovra il simulatur empè da la camera vera)'),
+    'Person alarms at the campfire (off: only animals - the people at the fire are not burglars)': ('Personen-Alarm am Lagerfeuer (aus: nur Tiere – die Leute am Feuer sind keine Einbrecher)', 'Alarme personnes au feu de camp (désactivé : seulement les animaux – les gens autour du feu ne sont pas des cambrioleurs)', 'Allarme persone al fuoco (spento: solo animali – la gente attorno al fuoco non sono ladri)', 'Alarm da persunas al fieu (deactivà: mo animals – la glieud al fieu n’èn nagins lumbards)'),
+    'conn-note': ('Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.', 'Adresse du programme simulateur. En général inutile : le simulateur s’annonce dans le réseau et est trouvé tout seul.', 'Indirizzo del programma simulatore. Di solito non serve: il simulatore si annuncia in rete e viene trovato da solo.', 'Adressa dal program dal simulatur. Per il solit betg necessari: il simulatur s’annunzia en la rait e vegn chattà sez.'),
+    'autostart-note': ('Und wieder aus (zurück zu den echten Kameras und Sensoren), wenn eine Minute lang keiner mehr da ist. Von Hand ausgeschaltet: bleibt aus, bis wieder ein neuer Simulator auftaucht.', 'Et de nouveau éteint (retour aux vraies caméras et capteurs) quand plus aucun n’est là pendant une minute. Éteint à la main : reste éteint jusqu’à l’arrivée d’un nouveau simulateur.', 'E di nuovo spento (ritorno alle vere telecamere e sensori) quando per un minuto non c’è più nessuno. Spento a mano: resta spento finché appare un nuovo simulatore.', 'Ed puspè deactivà (enavos a las cameras e sensurs vairs) sch’i na dat durant ina minuta nagin pli. Deactivà a maun: resta deactivà fin ch’in nov simulatur cumpara.'),
+    'sim-missing': ('Ein Simulator fehlt? Im Simulator den Schalter «An MoveEye senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).', 'Un simulateur manque ? Dans le simulateur, activer «Envoyer à MoveEye». Sur un PC, le pare-feu Windows doit autoriser son port (8765 ; un deuxième simulateur p. ex. 8767).', 'Manca un simulatore? Nel simulatore attivare «Invia a MoveEye». Su un PC il firewall di Windows deve permettere la sua porta (8765; un secondo simulatore p. es. 8767).', 'Mancanta in simulatur? En il simulatur activar «Trametter a MoveEye». Sin in PC sto il firewall da Windows permetter ses port (8765; in segund simulatur p. ex. 8767).'),
+}
+for _k, _v in _HX118.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
@@ -55083,7 +55184,7 @@ if __name__ == "__main__":
         CFG["notify_url"] = a.notify_url
     if DEMO["on"]:
         CFG.update(source="demo", setup_done=True, record_dir=os.path.join(DATA_DIR, "recordings"), notify_on=False, update_auto=False,
-                   update_install=False, hotspot_on=False, mqtt_on=False, backup_type="off", fleet=[], ai_enabled=True, diary_on=True,
+                   update_install=False, update_fast=False, dev_phase_done=True, hotspot_on=False, mqtt_on=False, backup_type="off", fleet=[], ai_enabled=True, diary_on=True,
                    device_name=CFG["device_name"] or "Demo")
         a.source = None; a.cam = None
         print("DEMO MODE - settings in " + DATA_DIR)

@@ -28,8 +28,38 @@ def sim_ready():
 
 
 # ---- 14: the test inbox ---------------------------------------------------------------------------------------------
+def sim_game_running():
+    """2.97.0: a round in the simulator (countdown / play) - the players are not burglars"""
+    if not CFG.get("sim_on"):
+        return False
+    try:
+        g = sim_game()                                     # fetches it fresh in the background now and then
+    except Exception:
+        g = SIMGAME.get("g")
+    return bool(g) and g.get("round") in ("play", "countdown")
+
+
+def event_origin():
+    """2.97.0: real | sim | game | drill | demo - recordings, the diary and the reports can tell them apart"""
+    if not CFG.get("sim_on"):
+        return "real"
+    if DRILL.get("kind") and time.time() < DRILL.get("until", 0):
+        return "drill"
+    try:
+        if DEMO_RUN.get("busy"):
+            return "demo"
+    except NameError:
+        pass
+    return "game" if sim_game_running() else "sim"
+
+
 def sandbox_active():
-    return SANDBOX["force"] > 0 or (bool(CFG.get("notify_sandbox")) and bool(CFG.get("sim_on")))
+    """the test inbox instead of the phone: drills / demo (force), simulation with the switch, and always while a game runs"""
+    if SANDBOX["force"] > 0:
+        return True
+    if not CFG.get("sim_on"):
+        return False
+    return bool(CFG.get("notify_sandbox")) or sim_game_running()
 
 
 def sandbox_add(title, text, jpg=None, ev=""):
@@ -58,13 +88,12 @@ def sandbox_add(title, text, jpg=None, ev=""):
 def alarmchain_test():
     """Push, light, siren - one after the other, into the test inbox (nobody is disturbed)"""
     out = []
-    SANDBOX["force"] += 1
     try:
         w = WATCH_REF.get("w")
         n0 = len(SANDBOX["items"])
         if w is not None:
             p = {"event": "person", "persons": 1, "time": datetime.now().isoformat(timespec="seconds"), "snapshot": None, "rain": False,
-                 "wind": "", "source": STATE.get("source_label", ""), "link": "", "more": 0}
+                 "wind": "", "source": STATE.get("source_label", ""), "link": "", "more": 0, "_test": True}
             jpg = None
             f = getattr(w, "frame_out", None)
             if f is not None:
@@ -92,8 +121,8 @@ def alarmchain_test():
             pass
         esc = bool(CFG.get("escalate_on"))
         out.append({"name": "Siren after a while (escalation)", "ok": esc, "text": trf("after {s} s", s=int(CFG.get("escalate_siren_s", 30))) if esc else "off"})
-    finally:
-        SANDBOX["force"] = max(0, SANDBOX["force"] - 1)
+    except Exception as e:
+        out.append({"name": "Error", "ok": False, "text": str(e)[:100]})
     log_event("sys", "Alarm chain test: " + ", ".join(f"{x['name']} {'ok' if x['ok'] else 'no'}" for x in out))
     return out
 

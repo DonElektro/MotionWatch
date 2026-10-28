@@ -1,12 +1,12 @@
 {
- "version": "3D-3.87",
+ "version": "3D-3.88",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31192294,
- "sha256": "3dc2a32f8511180eb5bcf0b81484111ad48d725b08367c723c6073bdcc219f8f",
- "notes": "Schriftzug MoveEye im Kopf des Bedienfelds",
+ "size": 31194910,
+ "sha256": "1c614420013f08d9436434c1018c1dc679275835162e43998dc40b5d3447cc4c",
+ "notes": "Tests und Spiele stoeren sich nicht mehr: zentrale Sperre, Automatiken ruhen, Testbesucher nicht im Tagebuch",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24313936,
-  "sha256": "477259c98f5c8656727ce21c8a89b6484ce146eae627f74457a3f1fde5d7befb"
+  "size": 24316524,
+  "sha256": "beaffa654dfcaf9894231e4bf5d9e0614dd8c538b384f02e796c8e690f924375"
  }
 }

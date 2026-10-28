@@ -1,15 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 22:37",
+ "generated": "2026-10-28 23:10",
  "versions": [
+  {
+   "version": "2.97.0",
+   "file": "webcam_bewegung_2_97_0.py",
+   "url": "",
+   "sha256": "e2a80a8f37abfd4d303c3457eb295f63476984715875bf678c58bc3e4c4a17c3",
+   "date": "2026-10-28 23:10",
+   "notes": "Sicherheit: PIN beim Klatschschalter, Simulation fragt bei scharfem MoveEye, Sirene nicht mehr doppelt, Spiele und Übungen ohne echte Sirene und Pushes, Lagerfeuer ohne Personen-Alarm, Herkunft bei Aufnahmen",
+   "sig": "d007407501d757b7e17545c4a867a6a881a3ca4c521fb217275d6824f1533c07cc18b5d67247c05ef8d559221b6cd38ff806824cd7b0a011d0df7d8b0935c101"
+  },
   {
    "version": "2.96.13",
    "file": "webcam_bewegung_2_96_13.py",
    "url": "",
-   "sha256": "d5212f0e776ba7da351fe5fd15d71abfed40ee859d5be3c1b57732745db4b859",
-   "date": "2026-10-28 22:36",
+   "sha256": "33b5eb317dd5693e3c03e03d8f9d5fcddbb4b7f6ad1185618034bbbf8aaa7093",
+   "date": "2026-10-28 23:06",
    "notes": "Passt zum Simulator 3D-3.87 (Schriftzug MoveEye auch im Simulator)",
-   "sig": "f3824196256118afc582c2e8a5ff4b2856f8c5db432bde2540814f940c1a792384b92f46ce31c05a0598ecc66f9641ec63c0a43699ffcb9920cd293b64d0c80c"
+   "sig": "470269de335765ab58b20e9becf236a6860692b0cf9a5dfdac1b9941cf56e86f1c7d537a13aa223e57090b070f9707488800c83b23f2326427565095b206010a"
   },
   {
    "version": "2.95.105",
@@ -82,15 +91,6 @@
    "date": "2026-10-26 08:49",
    "notes": "Download of the 3D simulator 3D-1.4: it starts without sending; the switch «An Motion Watch senden» in its window turns sending on.",
    "sig": "8132b3cc4f9f323cc2640decb72fc9fcfe0cfc399a6c6d5df7ead6ef9c2a6137fe01e7b50212b03d67e0000ea6d0b692b62e3ab758d64f5ab8198cdeb960790e"
-  },
-  {
-   "version": "2.87.0",
-   "file": "webcam_bewegung_2_87_0.py",
-   "url": "",
-   "sha256": "63a19a6f983c5d4999a67635970e06166e88e6052931c44627840bbe2bb88e4f",
-   "date": "2026-10-26 08:49",
-   "notes": "Tools page redesigned, calmer: list of the tools on the left (with status), one tool at a time on the right; on a phone first the list, then the tool with a back button. Plain line icons, switches instead of check boxes, no empty boxes.",
-   "sig": "f281ea48a698dafacfe7bd366a94c3a9d7788ad478c93dc9d2c1f8e2e02d0e1ebb6f74c1a226892d60f66e97fd6878c2649290afcd3417f513106ccc3c0b1507"
   }
  ]
 }

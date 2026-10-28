@@ -744,6 +744,7 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "Catch fast persons": "Schnelle Personen erwischen", "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.": "{n} schnelle Personen (Jogger) verpasst: weniger Bilder bis das Gehen erkannt ist, die KI prüft jedes Bild.",
  "More sensitive by day": "Am Tag empfindlicher", "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.": "{n} Personen am Tag verpasst: empfindlicher, und die KI nimmt auch weniger sichere Personen an.",
  "React faster": "Schneller reagieren", "MoveEye needed {n} s on average: the AI looks at every picture and walking is recognised sooner.": "MoveEye brauchte im Mittel {n} s: die KI prüft jedes Bild und das Gehen wird früher erkannt."});
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
 Object.assign(I18N.de, {"Simulator centre": "Simulator-Zentrale", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig", "best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by MoveEye": "sichtbar, aber von MoveEye nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
  "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
  "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
@@ -1052,7 +1053,7 @@ async function simUpdate() {
   toast(r.ok ? "⟳ " + t("The simulator looks for a new version and installs it (about a minute, it starts again by itself).") : "⚠ " + (r.error || t("not possible")));
   setTimeout(() => { b.disabled = false; }, 20000);
 }
-async function simOnOff() { const b = $("#s-on"); b.disabled = true; await post("/api/sim", {on: b.checked, lang: LANG}); b.disabled = false; CS = ""; load(); }
+async function simOnOff() { const b = $("#s-on"); b.disabled = true; await mwSimSet(b.checked, LANG); b.disabled = false; CS = ""; load(); }
 async function saveUrl() { URLEDIT = false; const r = await post("/api/sim", {url: $("#s-url").value.trim(), lang: LANG}); toast(r.ok === false ? (r.error || t("not possible")) : t("Saved")); load(); }
 $("#s-url").addEventListener("input", () => URLEDIT = true);
 async function setKey(k, v) { const r = await post("/api/set", {key: k, value: v}); if (!r.ok) toast(r.error || t("not possible")); load(); }
@@ -1111,7 +1112,8 @@ const TR_PLANS = [["standard", "Standard (day, wind, night, rain · about 4 min)
 let TR = null, trT = null, TRPLAN = "standard";
 try { TRPLAN = localStorage.getItem("mw-tr-plan") || "standard"; } catch (e) {}
 const trVal = v => v === true ? t("on") : v === false ? t("off") : (typeof v === "number" && !Number.isInteger(v) ? (+v).toFixed(2).replace(/0$/, "") : String(v));
-const trDate = ts => { const d = new Date(ts * 1000); return d.toLocaleDateString(LANG, {day: "2-digit", month: "2-digit"}) + " " + d.toLocaleTimeString(LANG, {hour: "2-digit", minute: "2-digit"}); };
+const trLC = () => { try { return Intl.DateTimeFormat.supportedLocalesOf([LANG || "de"]).length ? (LANG || "de") : "de"; } catch (e) { return "de"; } };  // 2.97.0: an empty LANG broke the page
+const trDate = ts => { const d = new Date(ts * 1000); const LANG_ = trLC(); return d.toLocaleDateString(LANG_, {day: "2-digit", month: "2-digit"}) + " " + d.toLocaleTimeString(LANG_, {hour: "2-digit", minute: "2-digit"}); };
 function trInit() {
   const sel = $("#tr-plan"); sel.innerHTML = "";
   TR_PLANS.forEach(([k, n]) => { const o = el("option", "", t(n)); o.value = k; sel.appendChild(o); }); sel.value = TRPLAN;

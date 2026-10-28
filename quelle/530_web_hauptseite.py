@@ -1936,7 +1936,7 @@ const QS = [
   {id: "talk", ic: "🎙", lb: "Talk", tip: "Talk through the loudspeaker: tap once to unlock, then hold the button while you talk",
    on: () => false, ok: (c, s) => !!(s.audio && s.audio.spk) || TK.on, talk: true},
   {id: "sim", ic: "🧪", lb: "Simulation", tip: "Simulation on / off: cameras, thermal camera and sensors from the simulation program", on: (c, s) => !!(s.sim && s.sim.on && s.sim.ok && s.sim.pic !== false),   /* 2.95.93: lit only with a real connection */
-   go: (c, s) => post("/api/sim", {on: !(s.sim && s.sim.on), lang: LANG})},
+   go: (c, s) => mwSimSet(!(s.sim && s.sim.on), LANG)},
   {id: "track", ic: "🎯", lb: "Follow", tip: "Follow a detected person", on: c => c.track_person, go: c => post("/api/set", {key: "track_person", value: !c.track_person})},
   {id: "patrol", ic: "🔄", lb: "Patrol", tip: "Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off", on: c => c.patrol,
    lbf: c => !c.patrol ? "Patrol" : c.patrol_mode === "loop" ? "↻ Round" : "⇄ Pendulum",
@@ -2860,7 +2860,7 @@ function simExtras(d) {
   const head = el("div", ""); head.id = "sim-head"; head.style.cssText = "font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap";
   const st = el("div", "mut"); st.id = "sim-st"; st.style.cssText = "white-space:pre-wrap;margin-top:2px";
   const b = el("button", "", ""); b.type = "button"; b.id = "sim-btn"; b.style.cssText = "margin-top:10px;width:100%";
-  b.onclick = async () => { const on = !(QSJ && QSJ.state.sim && QSJ.state.sim.on); b.disabled = true; await post("/api/sim", {on: on, lang: LANG}); b.disabled = false; refresh(); };
+  b.onclick = async () => { const on = !(QSJ && QSJ.state.sim && QSJ.state.sim.on); b.disabled = true; await mwSimSet(on, LANG); b.disabled = false; refresh(); };
   const stats = el("div", ""); stats.id = "sim-stats"; stats.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px;margin-top:10px";
   box.append(head, st, stats, b);
   // ---- search in the network ----
@@ -3813,7 +3813,7 @@ function modePaint(s) {
   const bm = $("#b-mode"); if (bm) { bm.hidden = !cur; bm.textContent = cur ? me.icon : ""; bm.title = t("Mode") + ": " + t(me.name); bm.onclick = () => { const c = $("#pr-card"); if (c) { c.open = true; c.scrollIntoView({behavior: "smooth"}); } }; }
   tvPaint(s.tv); discoPaint(s.disco); btqPoll(false);
   const bq = $("#btq"); if (bq && !bq.dataset.on) { bq.dataset.on = 1; bq.ontoggle = () => { if (bq.open) btqPoll(true); }; }
-  const o = $("#mode-opts"); const key = cur + "|" + M.fire_until + "|" + M.fire_min_pct + "|" + M.gamer_watch;
+  const o = $("#mode-opts"); const key = cur + "|" + M.fire_until + "|" + M.fire_min_pct + "|" + M.gamer_watch + "|" + M.fire_persons;
   if (o.dataset.k === key) return; o.dataset.k = key; o.textContent = "";
   if (cur === "fire") {
     const r = el("div", "row"); r.append(el("span", "", t("Back to the camping guard at")));
@@ -3823,6 +3823,9 @@ function modePaint(s) {
     [0, 20, 30, 40, 50].forEach(v => { const op = document.createElement("option"); op.value = v; op.textContent = v ? v + " %" : t("never"); se.appendChild(op); });
     se.value = String(M.fire_min_pct); se.onchange = () => post("/api/mode", {mode_fire_min_pct: +se.value});
     r.append(ti, sp, se); o.appendChild(r);
+    const r2 = el("label", "row pr-sw"); const c2 = document.createElement("input"); c2.type = "checkbox"; c2.className = "sw"; c2.checked = !!M.fire_persons;
+    c2.onchange = () => post("/api/mode", {mode_fire_persons: c2.checked});
+    r2.append(el("span", "", "🚶 " + t("Person alarms at the campfire (off: only animals - the people at the fire are not burglars)")), c2); o.appendChild(r2);
   } else if (cur === "gamer") {
     const r = el("label", "row pr-sw"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!M.gamer_watch;
     cb.onchange = async () => { await post("/api/mode", {mode_gamer_watch: cb.checked}); if (M.id === "gamer") { await post("/api/mode", {mode: ""}); await post("/api/mode", {mode: "gamer"}); } };
@@ -4734,6 +4737,8 @@ document.addEventListener("webkitfullscreenchange", fsChange);
 SIMTOOLS_JS = r"""
 // ---- simulator tools in the tab Simulator (2.95.53): Aufstell-Planer, alarm replay, AI test ----
 Object.assign(I18N.de, {"pictures": "Bilder", "Tag": "Anhänger", "Aufstell-Planer in the simulator": "Aufstell-Planer im Simulator", "open in the window of the simulator": "im Fenster des Simulators geöffnet", "Take over the patrol of the planner": "Patrouille vom Planer übernehmen", "Patrol set": "Patrouille gesetzt", "of the area in view": "des Bereichs im Blick", "Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in the simulator": "Im Simulator abspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators", "no alarms yet": "noch keine Alarme", "replay-note": "Zeigt im 3D-Simulator nach, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Hilft, Fehlalarme zu verstehen. Die Positionen sind geschätzt (aus Bildposition und Grösse).", "AI test with simulator pictures": "KI-Prüfung mit Simulator-Bildern", "dset-note": "Der Simulator macht Bilder mit Person oder Tier – bei Tag, Abend, Nacht mit Infrarot, Regen und Nebel, nah und fern – und weiss, wo sie sind. MoveEye lässt seine KI (oder die PC-Rechenhilfe) darüber laufen und zählt Treffer, Fehlschläge und falsche Personen. Dauert pro Bild etwa 3 Sekunden.", "Start the test": "Prüfung starten", "found": "erkannt", "false persons": "falsche Personen", "near (under 8 m)": "nah (unter 8 m)", "far (8 m and more)": "fern (ab 8 m)", "AI time per picture": "KI-Zeit pro Bild", "Training pictures (ZIP)": "Trainingsbilder (ZIP)", "Abend": "Abend", "Nacht (Infrarot)": "Nacht (Infrarot)", "Regen": "Regen", "Nebel": "Nebel", "Nacht + Regen": "Nacht + Regen", "person": "Person", "fox": "Fuchs", "deer": "Reh", "dog": "Hund", "cat": "Katze", "boar": "Wildschwein", "the simulator makes the pictures …": "der Simulator macht die Bilder …", "done": "fertig", "Simulator tools": "Simulator-Werkzeuge"});
+Object.assign(I18N.de, {"Person alarms at the campfire (off: only animals - the people at the fire are not burglars)": "Personen-Alarm am Lagerfeuer (aus: nur Tiere – die Leute am Feuer sind keine Einbrecher)"});  // 2.97.0
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture).", "dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. MoveEye runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
 (async function () {
   for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100));     // after the language is known

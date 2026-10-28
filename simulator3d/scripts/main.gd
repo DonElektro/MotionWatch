@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.87"
+const VERSION := "3D-3.88"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1518,7 +1518,7 @@ func _build_view_camera() -> void:
 func _night_weather_tick() -> void:
 	"""3D-3.74: every night a little different - evening clear, maybe a shower before midnight, a clear cold night, dew on the
 	lens towards morning and fog at dawn; the day clears up again"""
-	if not night_weather or real_weather:
+	if not night_weather or real_weather or busy_with() != "":
 		return
 	var h := hour()
 	var day := int((now() - clock0) * speed / 86400.0 + hour0 / 24.0 + 0.5)
@@ -1534,7 +1534,7 @@ func _night_weather_tick() -> void:
 	for e in _nw["plan"]:
 		if h >= float(e[0]) and h < float(e[1]):
 			want = str(e[2])
-	if want != weather and want != str(_nw["last"]) or (want != weather and str(_nw["last"]) == want and randf() < 0.02):
+	if want != weather and want != str(_nw["last"]):       # 3D-3.88: only when the plan changes - a weather chosen by hand stays
 		weather = want
 		_nw["last"] = want
 	var dew := h >= 4.0 and h < 8.0                    # dew on the lens towards morning, gone when the sun warms it
@@ -1542,6 +1542,28 @@ func _night_weather_tick() -> void:
 		_nw["fog_lens"] = dew
 		cond["fogged"] = dew
 	humidity = 92.0 if dew or weather in ["fog", "rain"] else (78.0 if h > 20.0 or h < 7.0 else 60.0)
+
+
+func busy_with(except_ := "") -> String:
+	"""3D-3.88: who has the world (time, weather, visitors) right now - a test, a measurement or a game round. While one runs,
+	the automatics rest (real time and weather, night weather, surprise night, headlights, updates, lighter graphics) and a
+	second one is refused instead of mixing."""
+	var w := ""
+	if testrun != null and testrun.running:
+		w = "Testlauf"
+	elif pruef != null and pruef.running:
+		w = "Prüfstand"
+	elif dataset != null and dataset.busy:
+		w = "Trainingsbilder"
+	elif blindmap != null and blindmap.busy:
+		w = "Blinde Flecken"
+	elif not _fa_saved.is_empty():
+		w = "Fehlalarm nachstellen"
+	elif game != null and game.round_state in ["countdown", "play"]:
+		w = "Spielrunde"
+	elif recorder != null and recorder.playing:
+		w = "Wiedergabe"
+	return "" if w == except_ else w
 
 
 func hour() -> float:
@@ -1778,9 +1800,10 @@ func _process(dt: float) -> void:
 			_settings_dirty = true                         # 3D-3.76: the time of the scene is saved now and then
 		if _settings_dirty:
 			_save_settings()
-		if dev_updates and not update_busy and now() - float(_dev["t"]) > 60.0 and not bool(_dev["busy"]):
+		var _busy := busy_with()                      # 3D-3.88: no update in the middle of a test or a round
+		if dev_updates and not update_busy and now() - float(_dev["t"]) > 60.0 and not bool(_dev["busy"]) and _busy == "":
 			_dev_check()
-		if auto_update and not update_busy and now() > next_update_check:
+		if auto_update and not update_busy and now() > next_update_check and _busy == "":
 			next_update_check = now() + UPDATE_EVERY
 			run_update(true, false)
 	if not sim_active:
@@ -2452,6 +2475,9 @@ func visit(k: String) -> void:
 
 func thief() -> void:
 	"""somebody sneaks to the bike, kneels at it with a torch, then goes to the caravan door - and runs away"""
+	if kids_on and not kids_thief:
+		visit("person")                           # 3D-3.88: Kinder-Modus without thief - an ordinary walker instead
+		return
 	var bike: Vector3 = obj["bike"]
 	var door: Vector3 = obj["door"]
 	var v = spawn("person", Vector3(25, 0, -14), bike + Vector3(0.6, 0, 0.4))
@@ -2470,7 +2496,7 @@ func _life() -> void:
 			if kk != "":
 				visit(kk)
 		next_auto = t + randf_range(au[1], au[2]) / max(0.1, visit_rate)
-	if cond["headlights"] and is_dark() and t > _next_headlight:     # condition «Scheinwerfer»: a car now and then
+	if cond["headlights"] and is_dark() and t > _next_headlight and busy_with() in ["", "Testlauf", "Prüfstand"]:     # condition «Scheinwerfer»: a car now and then
 		_next_headlight = t + randf_range(9.0, 15.0)
 		car()
 	if t > next_birds:
@@ -2946,7 +2972,7 @@ func set_view_scale(v: float) -> void:
 func _perf_tick() -> void:
 	"""3D-3.75: the window draws fewer than 14 pictures per second for 20 s: one step lighter (quality, then sharpness of the
 	view, then the grass). The pictures for MoveEye are not touched."""
-	if not auto_perf or not win_open or not sim_active or now() - _perf_t < 30.0:
+	if not auto_perf or not win_open or not sim_active or now() - _perf_t < 30.0 or busy_with() != "":
 		_slow_n = 0 if not auto_perf else _slow_n
 		return
 	var lim: int = win_fps if win_fps > 0 else 60
@@ -6815,6 +6841,10 @@ func control_set(id: String, v) -> Dictionary:
 func whatif(d: Dictionary) -> Dictionary:
 	"""«Was wäre wenn …?»: the situation of a real recording - same time, rain, the direction of the head, as many people
 	(or an animal / a car) crossing the picture at about the same distance"""
+	var _b := busy_with()
+	if _b != "":
+		return {"ok": false, "error": "busy: " + _b}
+	auto_visitors = false                                  # 3D-3.88: only the visitors of the situation
 	set_hour(clampf(float(d.get("hour", 12.0)), 0.0, 23.75))
 	weather = str(d.get("weather", "clear"))
 	_update_sky()
@@ -6858,10 +6888,18 @@ func farecreate(d: Dictionary) -> Dictionary:
 		if _fa_saved.has("weather"):
 			weather = str(_fa_saved["weather"])
 			_update_sky()
+		if _fa_saved.has("auto"):
+			auto_visitors = bool(_fa_saved["auto"])
 		_fa_saved = {}
 		start_info = "Fehlalarm-Lernen fertig"
 		return {"ok": true}
-	_fa_saved = {"wind": wind, "gusts": gusts, "weather": weather}
+	if not _fa_saved.is_empty():
+		return {"ok": false, "error": "already running"}  # 3D-3.88: a second call kept the changed weather as «original»
+	var _b := busy_with()
+	if _b != "":
+		return {"ok": false, "error": "busy: " + _b}
+	_fa_saved = {"wind": wind, "gusts": gusts, "weather": weather, "auto": auto_visitors}
+	auto_visitors = false
 	if d.has("hour"):
 		set_hour(clampf(float(d["hour"]), 0.0, 23.75))
 	if bool(d.get("rain", false)):

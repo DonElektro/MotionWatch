@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3D-3.87 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3D-3.88 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,6 +607,14 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.88
+3D-3.88: Tests und Spiele stören sich nicht mehr. Läuft ein Testlauf, der Prüfstand, Trainingsbilder, blinde Flecken,
+das Fehlalarm-Lernen oder eine Spielrunde, ruhen echte Uhrzeit, echtes Wetter, Wetterverlauf, Überraschungsnacht,
+Scheinwerfer und Updates; ein zweiter Test oder eine Spielrunde wartet. Ein von Hand gewähltes Wetter bleibt, bis der
+Wetterverlauf den nächsten Abschnitt der Nacht erreicht. «Automatisch leichter» pausiert während Tests. Im
+Kinder-Modus ohne Dieb kommt statt des Schleichers ein normaler Spaziergänger. Testbesucher erscheinen nicht mehr im
+Tagebuch von MoveEye, und ohne verbundenes MoveEye misst das Tagebuch nichts (weniger Last für den PC).
 
 NEU IN 3D-3.87
 3D-3.87: Oben im Bedienfeld steht jetzt der Schriftzug «MoveEye» wie auf der Webseite (das «o» ist das Auge mit dem

@@ -163,8 +163,9 @@ func start(which := "", cams: Array = []) -> String:
 		info = "MoveEye ist nicht verbunden. Zuerst «An MoveEye senden» einschalten und MoveEye verbinden (oder «MoveEye auf diesem PC» starten)."
 		paint()
 		return info
-	if main.game != null and main.game.round_state in ["countdown", "play"]:
-		info = "Zuerst die Spielrunde beenden."
+	var _b: String = main.busy_with("Prüfstand")       # 3D-3.88: the test bench runs test runs itself
+	if _b != "":
+		info = "Zuerst beenden: %s." % _b
 		paint()
 		return info
 	saved = {"hour": main.hour(), "weather": main.weather, "wind": main.wind, "auto": main.auto_visitors}

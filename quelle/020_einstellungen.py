@@ -146,7 +146,7 @@ CFG = {
     # power saving: few pictures per second while all is quiet; any movement / noise / alarm = full speed for eco_wake s
     "eco_on": False, "eco_fps": 3, "eco_wake": 30, "eco_view_full": True,
     "mode": "", "mode_prev": {}, "mode_since": 0.0,   # 2.95.47: one switch for the whole device (camping, campfire, gamer ...)
-    "mode_fire_until": "23:00", "mode_fire_min_pct": 30, "mode_gamer_watch": False, "mode_fire_hours": 4.0,
+    "mode_fire_until": "23:00", "mode_fire_min_pct": 30, "mode_gamer_watch": False, "mode_fire_hours": 4.0, "mode_fire_persons": False,
     "turbo_on": False, "turbo_prev": {},   # power mode (2.95.19): everything on the highest performance, the values before are kept
     "users": [],                 # extra logins: [{"name", "hash", "role": "operate" | "view"}] (the web password = administrator)
     "trusted": [],               # trusted devices (2.95.19): [{"h": sha256 of the cookie, "user", "name", "t0", "seen", "ip"}] - no login after updates

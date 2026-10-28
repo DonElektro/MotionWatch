@@ -953,6 +953,10 @@ func _exposure(p: Dictionary, img: Image) -> void:
 func start_round() -> void:
 	if not open or count() == 0 or round_state in ["countdown", "play"]:
 		return
+	var _b: String = main.busy_with()
+	if _b != "":                                           # 3D-3.88: no round in the middle of a measurement
+		main.start_info = "Spielrunde wartet: zuerst %s beenden" % _b
+		return
 	var runners := 0
 	for p in players:
 		if p != null and p["role"] == "runner":

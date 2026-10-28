@@ -1048,7 +1048,7 @@ class Notifier:
         return render_msg(msg_template(ev, 1), p)
 
     def _dispatch(self, p, jpg, fname):
-        if sandbox_active():                             # 2.96.6: simulator test inbox - nobody is disturbed (141)
+        if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
             sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
             return
         if CFG["webpush_on"] and webpush_subs():

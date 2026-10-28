@@ -264,7 +264,10 @@ class WebStream:
                     if not ok:
                         return reply({"ok": False, "error": tr_err(err, lang)}, 400)
                 if "on" in d:
-                    sim_set(d.get("on"), "web " + (request.remote_addr or "?"))
+                    ok_s, err_s = sim_set(d.get("on"), "web " + (request.remote_addr or "?"), bool(d.get("confirm")))
+                    if not ok_s and err_s == "armed":       # 2.97.0: the page asks «disarm and simulate?»
+                        return reply({"ok": False, "need_confirm": "armed",
+                                      "error": tr_err("MoveEye is armed. The simulation replaces the real camera - nothing real is watched then. Disarm and switch the simulation on?", lang)})
                 act_ = d.get("action")
                 if act_ == "ctl":                           # remote control of the simulator: passed on as it is (CONTROL protocol 1)
                     c_ = str(d.get("ctl") or "get")
@@ -1713,7 +1716,7 @@ class WebStream:
         @app.route("/api/mode", methods=["POST"])
         def api_mode():
             d = body(); lang = norm_lang(d.get("lang"))
-            for k, typ in (("mode_fire_until", str), ("mode_fire_min_pct", int), ("mode_gamer_watch", bool), ("mode_fire_hours", float)):
+            for k, typ in (("mode_fire_until", str), ("mode_fire_min_pct", int), ("mode_gamer_watch", bool), ("mode_fire_hours", float), ("mode_fire_persons", bool)):
                 if k in d:
                     try:
                         CFG[k] = typ(d[k])
