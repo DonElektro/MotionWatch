@@ -10,16 +10,34 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Personen erkannt | nah / mittel / weit | Reaktion | Tiere gemeldet | Fehlalarme | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 2026-10-28 01:49 | 2.95.64 | 3D-3.48 | Nacht | 0 / 1 (**0 %**) | 0/1 / – / – | – | 0 / 0 | 0 | 1.8 | no model files | Testumgebung Claude (2 Kerne) |
+| 2026-10-28 00:54 | 2.95.64 | 3D-3.48 | Kurz (Tag + Nacht) | 2 / 3 (**67 %**) | – / 1/2 / 1/1 | 4.2 s | 0 / 1 | 0 | 1.9 | running · 62 ms | GitHub (ubuntu, 4 Kerne) |
+| 2026-10-28 00:54 | 2.95.64 | 3D-3.48 | Nacht | 1 / 1 (**100 %**) | 1/1 / – / – | 0.0 s | 0 / 0 | 0 | 2.0 | running · 62 ms | GitHub (ubuntu, 4 Kerne) |
+| 2026-10-28 00:54 | 2.95.64 | 3D-3.48 | Standard (Tag, Wind, Nacht, Regen) | 4 / 5 (**80 %**) | 2/2 / 2/2 / 0/1 | 2.6 s | 2 / 2 | 0 | 2.0 | running · 62 ms | GitHub (ubuntu, 4 Kerne) |
 | 2026-10-28 00:07 | 2.95.63 | 3D-3.47 | Kurz (Tag + Nacht) | 0 / 4 (**0 %**) | – | – | 0 / 1 | 0 | 29.0 | running · 77 ms | GitHub (ubuntu, 4 Kerne) |
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Nacht** – 2026-10-28 01:49, Motion Watch 2.95.64
+**Kurz (Tag + Nacht)** – 2026-10-28 00:54, Motion Watch 2.95.64
+
+| Phase | Personen | Reaktion | Tiere | Fehlalarme | verpasst, weil … |
+|---|---|---|---|---|---|
+| Tag, Wind | 2 / 3 | 4.2 s | 0 / 1 | 0 | – |
+| Nacht mit Infrarot | 0 / 0 | – | 0 / 0 | 0 | – |
+
+**Nacht** – 2026-10-28 00:54, Motion Watch 2.95.64
 
 | Phase | Personen | Reaktion | Tiere | Fehlalarme | verpasst, weil … |
 |---|---|---|---|---|---|
 | Nacht, ohne Licht | 0 / 0 | – | 0 / 0 | 0 | – |
-| Nacht, Infrarot an | 0 / 1 | – | 0 / 0 | 0 | 1× zu dunkel |
+| Nacht, Infrarot an | 1 / 1 | 0.0 s | 0 / 0 | 0 | – |
+| Nacht, Regen | 0 / 0 | – | 0 / 0 | 0 | – |
+
+**Standard (Tag, Wind, Nacht, Regen)** – 2026-10-28 00:54, Motion Watch 2.95.64
+
+| Phase | Personen | Reaktion | Tiere | Fehlalarme | verpasst, weil … |
+|---|---|---|---|---|---|
+| Tag, klar | 3 / 3 | 2.6 s | 2 / 2 | 0 | – |
+| Tag, Wind und Wolken | 1 / 2 | 2.4 s | 0 / 0 | 0 | 1× zu klein / weit weg |
+| Nacht, klar (Insekten am Licht) | 0 / 0 | – | 0 / 0 | 0 | – |
 | Nacht, Regen | 0 / 0 | – | 0 / 0 | 0 | – |
 
