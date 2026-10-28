@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_11.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_12.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.96.12: Aufgeräumt: die Knopfzeile über den Einstellungen hat wieder nur ihre drei Knöpfe (Kino und Demo standen dort leer
+    über der Suche) – «Kino» und «Demo» sind jetzt bei den Schaltern unter dem Livebild (mit «Anpassen» ein- / ausblendbar)
   * 2.96.11: Neuer Schriftzug in der Kopfzeile: am PC eine Zeile (W6: «Move» hell, «Eye» orange, das «o» ist das Auge mit
     Sichtfächer und erkannter Person), auf dem Handy untereinander (W1, wie die Skizze)
   * 2.96.10: Einstellungen aus der Simulation: Schwenken / Neigen werden nie mehr gefragt (nur zurückgestellt); bei jeder
@@ -834,10 +836,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_96_11.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_96_12.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_96_11.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_96_11.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_96_12.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_96_12.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -854,7 +856,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.96.11"
+APP_VERSION = "2.96.12"
 
 
 def default_data_dir():
@@ -21696,7 +21698,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_11.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_12.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -34792,8 +34794,6 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       <button class="sec" id="all-groups" onclick="allGroups()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v5H4zM4 14h16v5H4z"/></svg><span data-i18n="Groups only">Groups only</span></button>
       <button class="sec" id="all-open" onclick="allSections(true)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg><span data-i18n="Expand all">Expand all</span></button>
       <button class="sec" id="all-close" onclick="allSections(false)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l5 5 5-5M7 20l5-5 5 5"/></svg><span data-i18n="Collapse all">Collapse all</span></button>
-      <button class="sec" id="demo-btn" onclick="demoGo()" title="3 Minuten Vorführung mit dem Simulator"><span>▶</span><span data-i18n="One-click demo">One-click demo</span></button>
-      <button class="sec" id="kino-btn" onclick="location.href='/kino'" title="Vollbild für TV / Beamer"><span>🎬</span><span data-i18n="Cinema mode">Cinema mode</span></button>
     </div>
     <div id="simtile" data-simhub="tile" hidden style="margin-bottom:12px"></div>
     <details class="card" open data-view="protect" data-vgroup="Panels" data-vlabel="Camping / protection" id="pr-card">
@@ -36196,7 +36196,11 @@ const QS = [
    lbf: c => !c.patrol ? "Patrol" : c.patrol_mode === "loop" ? "↻ Round" : "⇄ Pendulum",
    icf: c => c.patrol && c.patrol_mode === "loop" ? "🔁" : "🔄", go: c => post("/api/quick", {action: "patrol"})},
   {id: "rec", ic: "⏺", lb: "Record", tip: "Record now (max. 10 min) / stop", on: (c, s) => s.quick_rec, cls: "rec", go: () => post("/api/quick", {action: "rec"})},
-  {id: "photo", ic: "📷", lb: "Photo", tip: "Photo into the recordings", on: () => false, go: () => post("/api/quick", {action: "photo"}), flash: true}];
+  {id: "photo", ic: "📷", lb: "Photo", tip: "Photo into the recordings", on: () => false, go: () => post("/api/quick", {action: "photo"}), flash: true},
+  {id: "kino", ic: "🎬", lb: "Cinema", tip: "Full screen for TV / projector: live picture, clock and the last events", on: () => false,     // 2.96.12: from the tool row
+   go: () => { location.href = "/kino"; return Promise.resolve({ok: true}); }},
+  {id: "demo", ic: "▶", lb: "Demo", tip: "3 minutes demonstration with the simulator (in the cinema mode)", on: () => false, ok: (c, s) => !!(s.sim && s.sim.on),
+   go: () => { demoGo(); return Promise.resolve({ok: true}); }}];
 let QSJ = null, QSSIG = "";
 var RELPREV = {};                          // relay mode before the quick switch turned it on (back to it on the next tap)
 function relQuick(i) {
@@ -38177,7 +38181,7 @@ async function demoGo() {                             // 2.96.7: makeover 20
   const r = await post("/api/demo", {lang: LANG}); if (r.ok) location.href = "/kino"; else toast("⚠ " + (r.error || t("error")));
 }
 Object.assign(I18N.de, {"New in this version": "Neu in dieser Version", "Next in the makeover": "Als Nächstes im Makeover", "No changes noted.": "Keine Änderungen notiert.",
-  "Do not show any more": "Nicht mehr anzeigen", "What is new?": "Was ist neu?", "Cinema mode": "Kino-Modus", "One-click demo": "Ein-Klick-Demo"});
+  "Do not show any more": "Nicht mehr anzeigen", "What is new?": "Was ist neu?", "Cinema mode": "Kino-Modus", "One-click demo": "Ein-Klick-Demo", "Cinema": "Kino", "Demo": "Demo"});
 
 function protectWizard() {                       // three questions, then everything is set
   const A = {what: "place", when: "now", react: "push"};
@@ -44339,7 +44343,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.11")
+        self.root.title("MoveEye 2.96.12")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -44656,7 +44660,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.11 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.12 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
