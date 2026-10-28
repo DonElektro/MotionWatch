@@ -453,6 +453,7 @@ function keepStream(img) {
   const restart = () => { clearTimeout(timer); timer = null; if (alive()) img.src = base + "?r=" + Date.now(); };
   const later = () => { if (timer) return; lost(true); timer = setTimeout(restart, Math.min(10000, 1000 * (1 + tries++))); };
   const vis = () => { if (!document.hidden) restart(); };
+  img.mwRestart = restart;                  // 2.95.72: the page fetches the picture anew when the video source changes
   img.addEventListener("error", later);
   img.addEventListener("load", () => { tries = 0; lost(false); });
   document.addEventListener("visibilitychange", vis);

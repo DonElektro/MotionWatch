@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_71.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_72.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.72: Live-Ansicht: beim Wechsel der Videoquelle (z. B. Simulation aus → Webcam) holt die Seite das Livebild von selbst
+    neu
   * 2.95.71: Updates: Test-Modus «neue Versionen sofort holen» (schaut jede Minute auf GitHub, installiert gleich); Werkzeuge-Seite und Fenster auf dem Pi: Symbol links, Pfeil rechts, beide grün, wenn die Funktion läuft
   * 2.95.70: Einstellungen: Umschalter «Symbole» – farbige Emoji mit grünem Punkt oder schlichte Symbole, die grün werden;
     3D-Simulator 3D-3.51: Verbindung vor Kameras
@@ -739,10 +741,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_71.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_72.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_71.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_71.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_72.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_72.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -759,7 +761,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.71"
+APP_VERSION = "2.95.72"
 
 
 def default_data_dir():
@@ -18958,7 +18960,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_71.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_72.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -30370,6 +30372,7 @@ function keepStream(img) {
   const restart = () => { clearTimeout(timer); timer = null; if (alive()) img.src = base + "?r=" + Date.now(); };
   const later = () => { if (timer) return; lost(true); timer = setTimeout(restart, Math.min(10000, 1000 * (1 + tries++))); };
   const vis = () => { if (!document.hidden) restart(); };
+  img.mwRestart = restart;                  // 2.95.72: the page fetches the picture anew when the video source changes
   img.addEventListener("error", later);
   img.addEventListener("load", () => { tries = 0; lost(false); });
   document.addEventListener("visibilitychange", vis);
@@ -31852,6 +31855,7 @@ function keepStream(img) {
   const restart = () => { clearTimeout(timer); timer = null; if (alive()) img.src = base + "?r=" + Date.now(); };
   const later = () => { if (timer) return; lost(true); timer = setTimeout(restart, Math.min(10000, 1000 * (1 + tries++))); };
   const vis = () => { if (!document.hidden) restart(); };
+  img.mwRestart = restart;                  // 2.95.72: the page fetches the picture anew when the video source changes
   img.addEventListener("error", later);
   img.addEventListener("load", () => { tries = 0; lost(false); });
   document.addEventListener("visibilitychange", vis);
@@ -35172,6 +35176,11 @@ async function refresh() {
   badge("#b-sched", t("Schedule") + ": " + ((s.sched_active || []).length ? s.sched_active.join(", ") : "–"), (s.sched_active || []).length ? "blu" : "");
   renderSourceStatus(s);
   if (s.source_id !== lastSrcId) { lastSrcId = s.source_id; loadSources(false); }
+  // 2.95.72: another video source (simulation off -> webcam, other camera): fetch the live picture anew - the old stream can
+  // stand still on the last picture of the old source (seen on the iPhone), only a reload of the page helped
+  { const k = (s.source_label || "") + "|" + (s.source_res || "") + "|" + ssrc;
+    if (window._vKey !== undefined && k !== window._vKey && ssrc === "connected") { const v = $("#video"); if (v && v.mwRestart) setTimeout(() => v.mwRestart(), 300); }
+    window._vKey = k; }
   renderSchedules(j.schedules || [], s);
   $("#v-rec").hidden = !s.recording; $("#v-src").hidden = !s.source_label; $("#v-src").textContent = s.source_label || "";
   $("#b-sec").hidden = !s.web_open;
@@ -40627,7 +40636,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.71")
+        self.root.title("Motion Watch 2.95.72")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40917,7 +40926,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.71 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.72 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

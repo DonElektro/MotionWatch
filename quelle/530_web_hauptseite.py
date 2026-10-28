@@ -713,6 +713,7 @@ function keepStream(img) {
   const restart = () => { clearTimeout(timer); timer = null; if (alive()) img.src = base + "?r=" + Date.now(); };
   const later = () => { if (timer) return; lost(true); timer = setTimeout(restart, Math.min(10000, 1000 * (1 + tries++))); };
   const vis = () => { if (!document.hidden) restart(); };
+  img.mwRestart = restart;                  // 2.95.72: the page fetches the picture anew when the video source changes
   img.addEventListener("error", later);
   img.addEventListener("load", () => { tries = 0; lost(false); });
   document.addEventListener("visibilitychange", vis);
@@ -4033,6 +4034,11 @@ async function refresh() {
   badge("#b-sched", t("Schedule") + ": " + ((s.sched_active || []).length ? s.sched_active.join(", ") : "–"), (s.sched_active || []).length ? "blu" : "");
   renderSourceStatus(s);
   if (s.source_id !== lastSrcId) { lastSrcId = s.source_id; loadSources(false); }
+  // 2.95.72: another video source (simulation off -> webcam, other camera): fetch the live picture anew - the old stream can
+  // stand still on the last picture of the old source (seen on the iPhone), only a reload of the page helped
+  { const k = (s.source_label || "") + "|" + (s.source_res || "") + "|" + ssrc;
+    if (window._vKey !== undefined && k !== window._vKey && ssrc === "connected") { const v = $("#video"); if (v && v.mwRestart) setTimeout(() => v.mwRestart(), 300); }
+    window._vKey = k; }
   renderSchedules(j.schedules || [], s);
   $("#v-rec").hidden = !s.recording; $("#v-src").hidden = !s.source_label; $("#v-src").textContent = s.source_label || "";
   $("#b-sec").hidden = !s.web_open;

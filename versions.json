@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 10:16",
+ "generated": "2026-10-28 10:25",
  "versions": [
   {
-   "version": "2.95.71",
-   "file": "webcam_bewegung_2_95_71.py",
+   "version": "2.95.72",
+   "file": "webcam_bewegung_2_95_72.py",
    "url": "",
-   "sha256": "0473904eb73b07603584023f0b486d3c891a49035916f6597552eea98c9b9423",
-   "date": "2026-10-28 10:16",
-   "notes": "Updates: Test-Modus «neue Versionen sofort holen» (schaut jede Minute auf GitHub, installiert gleich); Werkzeuge-Seite und Fenster auf dem Pi: Symbol links, Pfeil rechts, beide grün, wenn die Funktion läuft",
-   "sig": "bbe28d124a05330b2fad36438a5a298ac237d01df2a7473e070e156456c874794eda5451e77cf9b82fa055529383480cc0d6997bdbff385af4137b831a332c01"
+   "sha256": "b6c34d19c7bd0207fdd437def3f2df253dc5b4f0c5737b42aac73c6d81106aa8",
+   "date": "2026-10-28 10:25",
+   "notes": "Live-Ansicht: beim Wechsel der Videoquelle (z. B. Simulation aus → Webcam) holt die Seite das Livebild von selbst neu",
+   "sig": "9e489441b889103565c90c6085004b911f0b4d76afef0aba4e2a77958cfa1b7c9180a772787fe64448c888b0366b8bd7b192ea5fae3a33caf1137734bcef0e03"
   },
   {
    "version": "2.94.5",
