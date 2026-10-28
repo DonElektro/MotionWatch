@@ -17,6 +17,9 @@ var turbo := false
 var _saved := {}
 var _info: Label
 var _dev_t := 0.0
+var auto_top := false                # 3D-3.56: something stands between the rover and the view: from above for now
+var _blk_t := 0.0                     # blocked since … / free since …
+var _free_t := 0.0
 var test_drive := Vector2.ZERO        # for tests (control «explore» drive)
 var test_until := 0.0
 const VIEWS := ["chase", "driver", "top"]
@@ -66,7 +69,7 @@ func set_on(v: bool) -> void:
 
 func state() -> Dictionary:
 	var r: Node3D = main.rig
-	return {"ok": true, "on": on, "view": view, "device": device, "speed": speed, "turbo": turbo,
+	return {"ok": true, "on": on, "view": view, "auto_top": auto_top, "device": device, "speed": speed, "turbo": turbo,
 			"x": snappedf(r.position.x, 0.01), "z": snappedf(r.position.z, 0.01), "pads": Input.get_connected_joypads().size(),
 			"pad_name": Input.get_joy_name(Input.get_connected_joypads()[0]) if not Input.get_connected_joypads().is_empty() else ""}
 
@@ -135,6 +138,7 @@ func _input(ev: InputEvent) -> void:
 func next_view() -> void:
 	view = VIEWS[(VIEWS.find(view) + 1) % VIEWS.size()]
 	orbit = 0.0
+	auto_top = false
 	queue_redraw()
 
 
@@ -211,17 +215,45 @@ func _process(dt: float) -> void:
 	else:
 		var y3 := yaw + orbit
 		var back := Vector3(sin(y3), 0, cos(y3))
-		var dd := dist
-		var want2 := tp + back * dd * cos(pitch) + Vector3(0, dd * sin(pitch) + 0.6, 0)
-		while dd > 1.5 and not main.line_free(tp, want2):     # a house or a tree between: come closer (never inside it)
-			dd -= 0.5
-			want2 = tp + back * dd * cos(pitch) + Vector3(0, dd * sin(pitch) + 0.6, 0)
+		var want2 := tp + back * dist * cos(pitch) + Vector3(0, dist * sin(pitch) + 0.6, 0)
+		# 3D-3.56: a caravan, a tent, a house between the rover and the view -> by itself from above (steep), back when free
+		var t: float = main.now()
+		if _blocked(tp, want2):
+			_free_t = t
+			if not auto_top and t - _blk_t > 0.3:
+				auto_top = true
+				queue_redraw()
+		else:
+			_blk_t = t
+			if auto_top and t - _free_t > 1.5:
+				auto_top = false
+				queue_redraw()
+		if auto_top:
+			want2 = tp + back * 2.0 + Vector3(0, dist * 1.4 + 5.0, 0)
 		want2.y = max(want2.y, main.ground_y(want2.x, want2.z) + 1.0)
-		cam.global_position = cam.global_position.lerp(want2, clampf(dt * 4.0, 0.0, 1.0))
-		cam.look_at(tp + fwd * 2.0, Vector3.UP)
+		cam.global_position = cam.global_position.lerp(want2, clampf(dt * (2.5 if auto_top else 4.0), 0.0, 1.0))
+		cam.look_at(tp + fwd * (0.5 if auto_top else 2.0), Vector3.UP)
 	var kmh: float = main.mover_max * 3.6 * max(abs(main._pad_l), abs(main._pad_r))
 	_info.text = "Erkunden · %s · %s · %.1f km/h%s\n%s" % [{"keyboard": "Tastatur", "mouse": "Maus", "touch": "Touch", "pad": "Controller"}[device],
-			VIEW_NAMES[view], kmh, " · schnell" if turbo else "", _help()]
+			VIEW_NAMES[view] + (" (automatisch von oben)" if auto_top and view == "chase" else ""), kmh, " · schnell" if turbo else "", _help()]
+
+
+func _blocked(a: Vector3, b: Vector3) -> bool:
+	"""is something higher than the rover close to the line between the rover (a) and the view (b)?"""
+	var a2 := Vector2(a.x, a.z)
+	var b2 := Vector2(b.x, b.z)
+	var seg := b2 - a2
+	var n := int(ceil(seg.length() / 0.7))
+	for i in range(1, n + 1):
+		var p: Vector2 = a2 + seg * (float(i) / float(n))
+		for o in main._ob_near(p):
+			if o.has("r") and float(o["r"]) < 0.3:
+				continue                                  # thin poles, trunks: they hide nothing
+			if float(o.get("ht", 3.0)) < 1.0:
+				continue
+			if float(main._ob_closest(o, p)[1]) < 0.6:
+				return true
+	return false
 
 
 func _help() -> String:
