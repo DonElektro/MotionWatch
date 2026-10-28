@@ -1015,6 +1015,8 @@ func start_round() -> void:
 	_build_jail()
 	_paint_goal()
 	learn.round_start()
+	if main.game_mode == "patrol" and main.patrol != null:  # 3D-3.61: the patrol drives during the round
+		main.patrol.set_active(true)
 	paint()
 
 
@@ -1178,6 +1180,8 @@ func end_round() -> void:
 		return
 	round_state = "end"
 	learn.round_end()                                      # 3D-3.52: before the players go back to the lobby
+	if main.game_mode == "patrol" and main.patrol != null:
+		main.patrol.set_active(false)
 	news("🏁 Die Runde ist vorbei")
 	results.clear()
 	var missed := 0
@@ -1399,7 +1403,7 @@ func vis_debug(p: Dictionary) -> Array:
 
 func mw_decides() -> bool:
 	"""game mode «Motion Watch entscheidet» and Motion Watch is connected (and sends its detections, from 2.93.3)"""
-	return main.game_mode == "mw" and main.now() - main.mw_det_t < 3.0
+	return (main.game_mode == "mw" or (main.game_mode == "patrol" and main.patrol_judge == "mw")) and main.now() - main.mw_det_t < 3.0
 
 
 # 3D-3.53: the difficulty also for Motion Watch as the hunter (Spiel → Regeln → «Schwierigkeit»):

@@ -31,7 +31,9 @@ const MODES := [["camera", "🎥", "Alle gegen die Kamera", "Alle schleichen zum
 		["guard", "👮", "Ein Spieler ist Wächter", "Ein Spieler ist Wächter: Er dreht mit dem Handy den Kopf, schaltet das Licht ein und ruft «Erwischt!», wenn er jemanden sieht."],
 		["teamguard", "🔴🔵", "Team gegen Team", "Räuber und Wächter: Rot gegen Blau. Ein Team schleicht, das andere bewacht mit dem Kopf und ruft «Erwischt!»."],
 		["mw", "🛡", "Motion Watch entscheidet", "Die echte Erkennung von Motion Watch passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht."],
-		["mwhand", "🕹", "Team gegen Motion Watch", "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an Motion Watch: Sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken «Erwischt!»."]]
+		["mwhand", "🕹", "Team gegen Motion Watch", "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an Motion Watch: Sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken «Erwischt!»."],
+		["patrol", "🚜", "Patrouille", "Motion Watch fährt auf dem Mover eine Route ab und schaut sich an jedem Punkt um. Die Spieler schleichen zum Ziel, während die Patrouille unterwegs ist. Wer erwischt: unter Mover → Patrouille wählbar (Motion Watch oder Simulator)."],
+		["free", "🧪", "Frei bewegen", "Ohne Regeln: alle bewegen sich frei (gehen, rennen, ducken, kriechen), niemand wird erwischt. Zum Testen der Erkennung."]]
 const GOALS := [["reach", "🟢", "Zum Ziel schleichen", "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg."],
 		["return", "💰", "Beute holen und zurückbringen", "Ziel: die Beute beim grünen Licht holen und zurück zum Start bringen."],
 		["flag", "🚩", "Fahne erobern (zwei Teams)", "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie."]]

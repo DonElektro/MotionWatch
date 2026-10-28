@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.60"
+const VERSION := "3D-3.61"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1636,6 +1636,9 @@ func _process(dt: float) -> void:
 	if game != null and game.guard_auto:                 # the game: automatic guard or a player as guard turns the head
 		want_pan = game.guard_yaw
 		want_tilt = game.guard_tilt
+	if patrol != null and patrol.active:                 # 3D-3.61: on patrol the head swings / looks round / follows
+		want_pan = patrol.head_yaw
+		want_tilt = deg_to_rad(-8.0)
 	if dataset != null and dataset.servo != null:         # Trainingsbilder: the head looks where the picture needs it
 		want_pan = -deg_to_rad(dataset.servo.x)
 		want_tilt = deg_to_rad(dataset.servo.y - 6.0)
@@ -2266,13 +2269,16 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
 		["Besuch", "person", "🚶", ["Vorlagen", "Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Abläufe", "Von selbst", "Verhalten"]],
 		["Kamerabild", "lens", "👁", ["", "Schwierige Bedingungen", "Feineinstellungen"]],
 		["Sensoren", "bell", "🔔", [""]],
-		["Mover", "track", "🚜", [""]],
+		["Mover", "track", "🚜", ["", "Patrouille"]],
 		["Spiel", "pad", "🎮", ["Runde", "Regeln", "Anzeige"]],
 		["Wildbeobachtung", "target", "🎯", [""]],
 		["Testlauf", "check", "✅", [""]],
 		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates"]]]
 # id -> [group, part]; not listed: the group given in add_control, no part
-const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort von der Karte"], "speed": ["Szene", "Zeit"], "moon": ["Szene", "Zeit"], "season": ["Szene", "Zeit"],
+const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "Patrouille"], "patrol_points": ["Mover", "Patrouille"], "patrol_area": ["Mover", "Patrouille"],
+		"patrol_random": ["Mover", "Patrouille"], "patrol_clear": ["Mover", "Patrouille"], "patrol_speed": ["Mover", "Patrouille"], "patrol_dwell": ["Mover", "Patrouille"],
+		"patrol_sweep": ["Mover", "Patrouille"], "patrol_follow": ["Mover", "Patrouille"], "patrol_judge": ["Mover", "Patrouille"],
+"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort von der Karte"], "speed": ["Szene", "Zeit"], "moon": ["Szene", "Zeit"], "season": ["Szene", "Zeit"],
 		"cam1_yaw": ["Kamerabild", "Feineinstellungen"], "humidity": ["Wetter", "Mehr Wetter"], "pressure": ["Wetter", "Mehr Wetter"],
 		"storm": ["Wetter", "Mehr Wetter"], "thunder": ["Wetter", "Mehr Wetter"], "cloud_shadows": ["Wetter", "Mehr Wetter"], "gusts": ["Wetter", "Natur und Wind"],
 		"world_cloth": ["Wetter", "Natur und Wind"], "world_smoke": ["Wetter", "Natur und Wind"], "world_fireflies": ["Wetter", "Natur und Wind"],
@@ -2427,6 +2433,20 @@ func _register_controls() -> void:
 	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
 			{"options": [["opposite", "gegenüber (30 m)"], ["left", "links"], ["right", "rechts"]]})
 	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – fahren mit dem grünen Stick unten rechts, den Pfeiltasten oder dem zweiten Stick in Motion Watch", func(): return mover_on, func(v): set_mover(v), "Mover")
+	# 3D-3.61: «Patrouille»
+	add_control("toggle", "patrol_on", "Patrouille: der Mover fährt Motion Watch die Route ab", func(): return patrol != null and patrol.active, func(v): if patrol != null: patrol.set_active(bool(v)), "Mover")
+	add_control("select", "patrol_mode", "Route", func(): return patrol.mode if patrol != null else "points", func(v): if patrol != null: patrol.mode = str(v); patrol._dirty = true, "Mover",
+			{"options": [["points", "feste Punkte (mit der Maus gesetzt)"], ["area", "zufällig im Bereich"]]})
+	add_control("button", "patrol_points", "Punkte setzen: in die Welt klicken (Rechtsklick = Punkt weg)", null, func(): patrol.edit = "points"; patrol.mode = "points", "Mover")
+	add_control("button", "patrol_area", "Bereich aufziehen (mit gedrückter Maustaste)", null, func(): patrol.edit = "area", "Mover")
+	add_control("button", "patrol_random", "Zufällige Route rund um Motion Watch", null, func(): patrol.random_route(), "Mover")
+	add_control("button", "patrol_clear", "Route löschen", null, func(): patrol.clear_route(), "Mover")
+	add_control("slider", "patrol_speed", "Tempo der Patrouille", func(): return patrol.speed if patrol != null else 0.9, func(v): if patrol != null: patrol.speed = float(v), "Mover", {"min": 0.3, "max": 3.0, "step": 0.1, "unit": "m/s"})
+	add_control("slider", "patrol_dwell", "An jedem Punkt umschauen", func(): return patrol.dwell if patrol != null else 5.0, func(v): if patrol != null: patrol.dwell = float(v), "Mover", {"min": 1.0, "max": 20.0, "step": 1.0, "unit": "s"})
+	add_control("slider", "patrol_sweep", "Kopf schwenkt beim Fahren", func(): return patrol.sweep if patrol != null else 70.0, func(v): if patrol != null: patrol.sweep = float(v), "Mover", {"min": 0.0, "max": 160.0, "step": 10.0, "unit": "°"})
+	add_control("toggle", "patrol_follow", "Kopf dreht zu Verdächtigem, der Mover fährt dann langsamer", func(): return patrol.follow if patrol != null else true, func(v): if patrol != null: patrol.follow = bool(v), "Mover")
+	add_control("select", "patrol_judge", "Spiel «Patrouille»: wer erwischt", func(): return patrol_judge, func(v): patrol_judge = str(v), "Mover",
+			{"options": [["mw", "die echte Erkennung von Motion Watch"], ["sim", "der Wächter des Simulators (geht ohne Pi)"]]})
 	add_control("button", "rover_place", "📍 Rover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)", null, func(): place_kind = "rover", "Mover")
 	add_control("slider", "mast_h", "Stangenlänge (Höhe des Kamerakopfs; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": 0.4, "max": 4.0, "step": 0.1, "unit": "m"})
 	add_control("slider", "explore_speed", "Tempo beim Erkunden (Shift / A = schneller)", func(): return explore.speed if explore != null else 1.6, func(v): if explore != null: explore.speed = v, "Mover", {"min": 0.5, "max": 6.0, "step": 0.1, "unit": "m/s"})
@@ -2460,7 +2480,7 @@ func _register_controls() -> void:
 	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
-			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "Motion Watch entscheidet (echte Erkennung)"], ["mwhand", "Team gegen Motion Watch (Wächter steuern Motion Watch)"], ["free", "Frei bewegen – ohne Regeln (zum Testen der Erkennung)"]]})
+			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "Motion Watch entscheidet (echte Erkennung)"], ["mwhand", "Team gegen Motion Watch (Wächter steuern Motion Watch)"], ["free", "Frei bewegen – ohne Regeln (zum Testen der Erkennung)"], ["patrol", "Patrouille: Motion Watch fährt mit dem Mover die Route ab"]]})
 	add_control("select", "game_level", "Schwierigkeit (Wächter und Motion Watch)", func(): return game_level, func(v): game_level = v, "Spiel",
 			{"options": [["easy", "leicht – Easy-Mode: Motion Watch muss 2.5 s melden, Kriechen ist sicher, 6 s Pause"], ["normal", "normal – 1 s melden, 3 s Pause"], ["hard", "schwer – sofort, 2 s Pause"]]})
 	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
@@ -2828,6 +2848,25 @@ func control(d: Dictionary) -> Dictionary:
 			return {"ok": false, "error": "no explore"}
 		explore.remote_pad(d.get("ax", []), d.get("bt", []), str(d.get("name", "")))
 		return {"ok": true, "on": explore.on, "view": explore.view}
+	elif a == "patrol":                                # 3D-3.61: «Patrouille» (for tests and remote): {on, points: [[x, z], …], area: [x, z, w, d], mode}
+		if patrol == null:
+			return {"ok": false, "error": "no patrol"}
+		if d.has("points"):
+			patrol.points = []
+			for q in d["points"]:
+				patrol.points.append(Vector2(float(q[0]), float(q[1])))
+			patrol.mode = "points"
+			patrol._dirty = true
+		if d.has("area"):
+			var ar: Array = d["area"]
+			patrol.area = Rect2(float(ar[0]), float(ar[1]), float(ar[2]), float(ar[3]))
+			patrol.mode = "area"
+			patrol._dirty = true
+		if d.has("mode"):
+			patrol.mode = str(d["mode"])
+		if d.has("on"):
+			patrol.set_active(bool(d["on"]))
+		return patrol.state_dict()
 	elif a == "explore":                               # 3D-3.55: explore with the rover (for tests and remote)
 		if explore == null:
 			return {"ok": false, "error": "no explore"}
@@ -3691,7 +3730,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
+		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
 
@@ -4038,6 +4077,9 @@ var thermal_full: TextureRect
 var view_btns := {}
 var sel_ring: Control
 var rover_pad                         # rover_pad.gd: drive the mover here (from 3D-3.15)
+var patrol                            # patrol.gd: «Patrouille» (3D-3.61)
+var toolbar                           # toolbar.gd: the tool bar at the bottom (3D-3.61)
+var patrol_judge := "mw"              # game «Patrouille»: mw = the real detection of Motion Watch decides, sim = the simulator guard
 var explore                           # explore.gd: «Erkunden» with the rover - keyboard, mouse, touch, game controller (3D-3.55)
 var pad_drive := Vector2.ZERO         # (forward, turn right) from rover_pad, -1 … 1
 var pad_t := -10.0
@@ -4056,13 +4098,15 @@ var map_btn: Button
 
 func _over_hud(p: Vector2) -> bool:
 	"""is the mouse over the control panel or one of the boxes on the view (map, live picture, stick, bar …)?"""
-	for c in [ui_root, show_btn, view_bar, minimap, liveview, rover_pad, sel_box, karte]:
+	for c in [ui_root, show_btn, view_bar, minimap, liveview, rover_pad, sel_box, karte, toolbar, cam_card]:
 		if c != null and is_instance_valid(c) and c is Control and (c as Control).is_visible_in_tree() and (c as Control).get_global_rect().has_point(p):
 			return true
 	return false
 
 
 func _unhandled_input(ev: InputEvent) -> void:
+	if patrol != null and patrol.handle_input(ev):
+		return                                         # 3D-3.61: setting the route / dragging the area
 	if spectate and ((ev is InputEventMouseButton and ev.pressed and ev.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE])
 			or (ev is InputEventKey and ev.pressed and ev.keycode in [KEY_W, KEY_A, KEY_S, KEY_D, KEY_Q, KEY_E])):
 		spectate_stop()                                # somebody steers by hand: the spectator camera lets go
@@ -4482,6 +4526,13 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	explore = preload("res://scripts/explore.gd").new()       # 3D-3.55: explore with the rover
 	explore.main = self
 	layer.add_child(explore)
+	patrol = preload("res://scripts/patrol.gd").new()         # 3D-3.61: the mover drives Motion Watch round a route
+	patrol.main = self
+	add_child(patrol)
+	patrol.load_route()
+	toolbar = preload("res://scripts/toolbar.gd").new()       # 3D-3.61: everything with the mouse
+	toolbar.main = self
+	layer.add_child(toolbar)
 	# the chosen visitor
 	sel_box = PanelContainer.new()
 	sel_box.theme = th

@@ -74,6 +74,8 @@ func command() -> Vector2:
 		k += main.explore.command()
 	if dragging:
 		k = Vector2(-knob.y, knob.x)
+	if k == Vector2.ZERO and main.patrol != null and main.patrol.active:   # 3D-3.61: the patrol drives (a hand on the stick wins)
+		k = main.patrol.command()
 	return k.limit_length(1.0)
 
 

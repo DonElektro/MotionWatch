@@ -20,6 +20,7 @@ var _dev_t := 0.0
 var auto_top := false                # 3D-3.56: something stands between the rover and the view: from above for now
 var _blk_t := 0.0                     # blocked since … / free since …
 var _free_t := 0.0
+var info_hidden := false              # 3D-3.61: the info at the top hidden (tool bar «Info»)
 var invite: Control = null           # 3D-3.60: «Mitspieler einladen»: QR code + address, players move freely (game mode «free»)
 var _inv_qr: TextureRect
 var _inv_lbl: Label
@@ -181,9 +182,9 @@ func _input(ev: InputEvent) -> void:
 		elif ev.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			dist = clampf(dist + 0.8, 2.5, 30.0)
 			get_viewport().set_input_as_handled()
-		elif ev.button_index == MOUSE_BUTTON_RIGHT:
+		elif ev.button_index == MOUSE_BUTTON_RIGHT and main.patrol.edit == "":
 			get_viewport().set_input_as_handled()        # right button: look round (not the free view)
-	elif ev is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+	elif ev is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) and main.patrol.edit == "":
 		_set_device("mouse")
 		orbit -= ev.relative.x * 0.006
 		pitch = clampf(pitch + ev.relative.y * 0.004, 0.05, 1.3)
@@ -329,6 +330,7 @@ func _process(dt: float) -> void:
 		orbit = lerp_angle(orbit, 0.0, clampf(dt * 0.8, 0.0, 1.0))   # driving: the view swings back behind the rover
 	main.view_mode = 0
 	_invite_tick()
+	visible = not info_hidden
 	if main.spectate:                                    # the spectator moves the view
 		_info.text = "Erkunden · Beobachter: %s\nC / X = zurück zur eigenen Ansicht · J / Steuerkreuz → = Mitspieler einladen" % main.spec_label
 		return

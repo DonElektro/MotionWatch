@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.60 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.61 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,3 +607,12 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 Motion Watch); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.61
+3D-3.61: Patrouille: der Mover fährt Motion Watch eine Route ab (Punkte mit der Maus setzen, Rechtsklick = Punkt weg, oder
+einen Bereich aufziehen: zufällige Punkte darin). Beim Fahren schwenkt der Kopf, an jedem Punkt hält der Mover an und
+schaut sich einmal ganz um; zuschaltbar dreht der Kopf zu Verdächtigem und der Mover fährt langsamer. Neue Spielart
+«Patrouille»: die Spieler schleichen, während die Patrouille fährt; wer erwischt, ist wählbar (echte Erkennung von
+Motion Watch oder der Wächter des Simulators). Neue Werkzeugleiste unten: alles mit der Maus (Erkunden, Patrouille,
+Punkte, Bereich, Zufall, Löschen, Kopf folgt, Versetzen, Stange, Ansicht, Beobachter, Mitspieler) und Anzeigen ein- und
+ausblenden (Route, Karte, Kameras, Info, Menü); mit ▾ einklappbar. Grün = eingeschaltet.
