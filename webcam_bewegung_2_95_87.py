@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_86.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_87.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.87: Symbol «Klassisch (orange)»: das Auge in der Kopfzeile schaut links und rechts; Simulator 3D-3.62 mit dem orangen
+    Symbol
   * 2.95.86: Simulation mit eigenen Einstellungen: beim Zurückschalten die Liste der Änderungen, Übernahme wählbar (abschaltbar)
   * 2.95.85: 3D-Simulator 3D-3.61: Patrouille mit dem Mover, Spielart «Patrouille», Werkzeugleiste – alles mit der Maus
   * 2.95.84: 3D-Simulator 3D-3.60: Rover versetzen, Mitspieler frei beim Erkunden, besserer Beobachter-Modus
@@ -760,10 +762,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_86.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_87.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_86.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_86.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_87.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_87.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -780,7 +782,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.86"
+APP_VERSION = "2.95.87"
 
 
 def default_data_dir():
@@ -15049,8 +15051,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.61", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30953136,
-         "sha256": "af7269de56e75f3d450b29c7a995d080709e17a5bc93510f5573ea8b96514112"}
+SIM3D = {"version": "3D-3.62", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30955266,
+         "sha256": "accd89a9bb4f720069fee5544eca2bdd878c2971cfd4284dc78c609871c918fc"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15189,8 +15191,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.61", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24073640,
-           "sha256": "5e1792d0805988adc50260accc6f64e9f297a0cb97cb92d745b20d172848a407", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.62", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24076810,
+           "sha256": "bafa86a841a7a5cc28081d0372e9136b597f1bfb16df86c7b966e278ebe643f2", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -19087,7 +19089,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_86.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_87.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -30032,7 +30034,8 @@ SIM_ICONS_PNG = {          # the symbols of the three simulators (2.95.23), 96 p
         "eqI4XM3nE2MENzczqMbwZ2RM6Igt+xaAiP8Ao5WWpPH7bgDfx8mk2hqufoP++/t8OjFIl2VAdZi/7Skwb/O3t/f5N8fr+2r1e7lc7V2cr5bL379X769z8hIYhI9P9j72Nmfe/2wwyLdD1193nr+9L9+XywMfYvA6ee/b4+3/deUdqMxquVrh+a8cy9WSWf3L9l/rTTlD"
         "lWtxdAAAAABJRU5ErkJggg=="),
 }
-APP_ICONS_ANIM = {        # the radar icons with a turning sweep (2.95.25): only in the page header, a home-screen icon cannot move
+APP_ICONS_ANIM = {
+    'classic': '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100"><defs><linearGradient id="kcg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9f43"/><stop offset="1" stop-color="#e8590c"/></linearGradient></defs><rect width="100" height="100" fill="url(#kcg)"/><g fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 40V56Q24 66 34 66H66Q76 66 76 56V40"/><path d="M50 66V76M36 78H64"/></g><circle cx="50" cy="46" r="19" fill="#fff"/><g><animateTransform attributeName="transform" type="translate" dur="6s" repeatCount="indefinite" calcMode="spline" values="0 0;-6 0;-6 0;6 0;6 0;0 0" keyTimes="0;0.12;0.38;0.62;0.88;1" keySplines=".45 0 .55 1;0 0 1 1;.45 0 .55 1;0 0 1 1;.45 0 .55 1"/><circle cx="50" cy="46" r="11" fill="#0a0e14"/><circle cx="50" cy="46" r="6" fill="#e8590c"/><circle cx="46.5" cy="42.5" r="2.6" fill="#fff"/></g></svg>',      # 2.95.87: the orange tile, the eye looks left and right        # the radar icons with a turning sweep (2.95.25): only in the page header, a home-screen icon cannot move
     'radar': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512"><defs><radialGradient id="k1g" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3B8CFF" stop-opacity="0.55"></stop><stop offset="1" stop-color="#3B8CFF" stop-opacity="0"></stop></radialGradient>\n<linearGradient id="k1b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16243A"></stop><stop offset="1" stop-color="#0A1018"></stop></linearGradient>\n<linearGradient id="k1w" x1="60" y1="60" x2="452" y2="452" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1"></stop><stop offset="1" stop-color="#3B8CFF"></stop></linearGradient></defs>\n<rect width="512" height="512" fill="url(#k1b)"></rect>\n<circle cx="256" cy="256" r="230" fill="url(#k1g)"></circle>\n<g fill="none" stroke="url(#k1w)" stroke-linecap="round"><g stroke-width="18" opacity="1"><path d="M402.7 287.2 A150 150 0 0 1 287.2 402.7"></path><path d="M224.8 402.7 A150 150 0 0 1 109.3 287.2"></path><path d="M109.3 224.8 A150 150 0 0 1 224.8 109.3"></path><path d="M287.2 109.3 A150 150 0 0 1 402.7 224.8"></path></g><g stroke-width="15" opacity="0.6"><path d="M441.8 295.5 A190 190 0 0 1 295.5 441.8"></path><path d="M216.5 441.8 A190 190 0 0 1 70.2 295.5"></path><path d="M70.2 216.5 A190 190 0 0 1 216.5 70.2"></path><path d="M295.5 70.2 A190 190 0 0 1 441.8 216.5"></path></g><g stroke-width="12" opacity="0.32"><path d="M479.0 303.4 A228 228 0 0 1 303.4 479.0"></path><path d="M208.6 479.0 A228 228 0 0 1 33.0 303.4"></path><path d="M33.0 208.6 A228 228 0 0 1 208.6 33.0"></path><path d="M303.4 33.0 A228 228 0 0 1 479.0 208.6"></path></g></g>\n<g><animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="4s" repeatCount="indefinite"></animateTransform><defs><linearGradient id="k1s" x1="256" y1="256" x2="392" y2="68" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1" stop-opacity="0.05"></stop><stop offset="1" stop-color="#5ED6C1" stop-opacity="1"></stop></linearGradient></defs>\n<path d="M256 256 L296.3 27.5 A232 232 0 0 1 460.8 147.1 Z" fill="url(#k1s)" opacity="0.55"></path>\n<line x1="256" y1="256" x2="460.8" y2="147.1" stroke="#5ED6C1" stroke-width="6" stroke-linecap="round" opacity="0.85"></line></g><g><animate attributeName="opacity" values="1;0.12;0.12;1" keyTimes="0;0.4;0.96;1" dur="4s" repeatCount="indefinite"></animate><circle cx="409.7" cy="144.3" r="28" fill="#E9A23B" opacity="0.25"></circle><circle cx="409.7" cy="144.3" r="16" fill="#E9A23B"></circle></g><circle cx="256" cy="256" r="96" fill="#13202E" stroke="#E9A23B" stroke-width="24"></circle>\n<circle cx="256" cy="256" r="54" fill="#3B8CFF"></circle>\n<circle cx="256" cy="256" r="22" fill="#0E1621"></circle>\n<circle cx="238" cy="236" r="10" fill="#F2E3C6"></circle>\n</svg>',
     'radar2': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512"><defs><radialGradient id="k2g" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3B8CFF" stop-opacity="0.55"></stop><stop offset="1" stop-color="#3B8CFF" stop-opacity="0"></stop></radialGradient>\n<linearGradient id="k2b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16243A"></stop><stop offset="1" stop-color="#0A1018"></stop></linearGradient>\n<linearGradient id="k2w" x1="60" y1="60" x2="452" y2="452" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1"></stop><stop offset="1" stop-color="#3B8CFF"></stop></linearGradient></defs>\n<rect width="512" height="512" fill="url(#k2b)"></rect>\n<circle cx="256" cy="256" r="230" fill="url(#k2g)"></circle>\n<g fill="none" stroke="url(#k2w)" stroke-linecap="round"><g stroke-width="18" opacity="1"><path d="M410.5 288.9 A158 158 0 0 1 288.9 410.5"></path><path d="M223.1 410.5 A158 158 0 0 1 101.5 288.9"></path><path d="M101.5 223.1 A158 158 0 0 1 223.1 101.5"></path><path d="M288.9 101.5 A158 158 0 0 1 410.5 223.1"></path></g><g stroke-width="15" opacity="0.6"><path d="M457.5 298.8 A206 206 0 0 1 298.8 457.5"></path><path d="M213.2 457.5 A206 206 0 0 1 54.5 298.8"></path><path d="M54.5 213.2 A206 206 0 0 1 213.2 54.5"></path><path d="M298.8 54.5 A206 206 0 0 1 457.5 213.2"></path></g></g>\n<g><animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="4s" repeatCount="indefinite"></animateTransform><defs><linearGradient id="k2s" x1="256" y1="256" x2="389" y2="73" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1" stop-opacity="0.05"></stop><stop offset="1" stop-color="#5ED6C1" stop-opacity="1"></stop></linearGradient></defs>\n<path d="M256 256 L295.2 33.4 A226 226 0 0 1 455.5 149.9 Z" fill="url(#k2s)" opacity="0.55"></path>\n<line x1="256" y1="256" x2="455.5" y2="149.9" stroke="#5ED6C1" stroke-width="6" stroke-linecap="round" opacity="0.85"></line></g><g><animate attributeName="opacity" values="1;0.12;0.12;1" keyTimes="0;0.4;0.96;1" dur="4s" repeatCount="indefinite"></animate><circle cx="418.3" cy="129.2" r="28" fill="#E9A23B" opacity="0.25"></circle><circle cx="418.3" cy="129.2" r="16" fill="#E9A23B"></circle></g><circle cx="256" cy="256" r="96" fill="#13202E" stroke="#E9A23B" stroke-width="24"></circle>\n<circle cx="256" cy="256" r="54" fill="#3B8CFF"></circle>\n<circle cx="256" cy="256" r="22" fill="#0E1621"></circle>\n<circle cx="238" cy="236" r="10" fill="#F2E3C6"></circle>\n</svg>',
     'cross': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512"><defs><radialGradient id="k3g" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3B8CFF" stop-opacity="0.55"></stop><stop offset="1" stop-color="#3B8CFF" stop-opacity="0"></stop></radialGradient>\n<linearGradient id="k3b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16243A"></stop><stop offset="1" stop-color="#0A1018"></stop></linearGradient>\n<linearGradient id="k3w" x1="60" y1="60" x2="452" y2="452" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1"></stop><stop offset="1" stop-color="#3B8CFF"></stop></linearGradient></defs>\n<rect width="512" height="512" fill="url(#k3b)"></rect>\n<circle cx="256" cy="256" r="230" fill="url(#k3g)"></circle>\n<g fill="none" stroke="url(#k3w)" stroke-linecap="round"><g stroke-width="18" opacity="1"><path d="M378.9 170.0 A150 150 0 0 1 378.9 342.0"></path><path d="M342.0 378.9 A150 150 0 0 1 170.0 378.9"></path><path d="M133.1 342.0 A150 150 0 0 1 133.1 170.0"></path><path d="M170.0 133.1 A150 150 0 0 1 342.0 133.1"></path></g><g stroke-width="15" opacity="0.6"><path d="M411.6 147.0 A190 190 0 0 1 411.6 365.0"></path><path d="M365.0 411.6 A190 190 0 0 1 147.0 411.6"></path><path d="M100.4 365.0 A190 190 0 0 1 100.4 147.0"></path><path d="M147.0 100.4 A190 190 0 0 1 365.0 100.4"></path></g><g stroke-width="12" opacity="0.32"><path d="M442.8 125.2 A228 228 0 0 1 442.8 386.8"></path><path d="M386.8 442.8 A228 228 0 0 1 125.2 442.8"></path><path d="M69.2 386.8 A228 228 0 0 1 69.2 125.2"></path><path d="M125.2 69.2 A228 228 0 0 1 386.8 69.2"></path></g></g>\n<g><animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="4s" repeatCount="indefinite"></animateTransform><defs><linearGradient id="k3s" x1="256" y1="256" x2="377" y2="58" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1" stop-opacity="0.05"></stop><stop offset="1" stop-color="#5ED6C1" stop-opacity="1"></stop></linearGradient></defs>\n<path d="M256 256 L327.7 35.4 A232 232 0 0 1 420.0 92.0 Z" fill="url(#k3s)" opacity="0.55"></path>\n<line x1="256" y1="256" x2="420.0" y2="92.0" stroke="#5ED6C1" stroke-width="6" stroke-linecap="round" opacity="0.85"></line></g><g><animate attributeName="opacity" values="1;0.12;0.12;1" keyTimes="0;0.4;0.96;1" dur="4s" repeatCount="indefinite"></animate><circle cx="405.9" cy="106.1" r="27" fill="#E9A23B" opacity="0.25"></circle><circle cx="405.9" cy="106.1" r="15" fill="#E9A23B"></circle></g><circle cx="256" cy="256" r="96" fill="#13202E" stroke="#E9A23B" stroke-width="24"></circle>\n<circle cx="256" cy="256" r="54" fill="#3B8CFF"></circle>\n<circle cx="256" cy="256" r="22" fill="#0E1621"></circle>\n<circle cx="238" cy="236" r="10" fill="#F2E3C6"></circle>\n</svg>',
@@ -40985,7 +40988,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.86")
+        self.root.title("Motion Watch 2.95.87")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -41275,7 +41278,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.86 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.87 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

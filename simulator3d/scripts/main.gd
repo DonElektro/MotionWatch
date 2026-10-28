@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.61"
+const VERSION := "3D-3.62"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -3114,16 +3114,9 @@ func _build_ui() -> void:
 	var hdr := HBoxContainer.new()
 	hdr.add_theme_constant_override("separation", 8)
 	top_box.add_child(hdr)
-	var logo := PanelContainer.new()
-	logo.add_theme_stylebox_override("panel", UI.box(UI.ORG, UI.ORG, 7, 2, 0))
-	logo.custom_minimum_size = Vector2(26, 26)
-	var ll := Label.new()
-	ll.text = "3D"
-	ll.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	ll.add_theme_font_override("font", UI.heading_font())
-	ll.add_theme_font_size_override("font_size", 11)
-	ll.add_theme_color_override("font_color", Color.WHITE)
-	logo.add_child(ll)
+	var logo: Control = load("res://scripts/mw_logo.gd").new()      # 3D-3.62: the orange Motion Watch symbol, the eye looks around
+	logo.custom_minimum_size = Vector2(30, 30)
+	logo.tooltip_text = "Motion Watch"
 	hdr.add_child(logo)
 	var title := Label.new()
 	title.text = "3D-Simulator Live"

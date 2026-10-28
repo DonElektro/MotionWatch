@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 14:55",
+ "generated": "2026-10-28 14:59",
  "versions": [
   {
-   "version": "2.95.86",
-   "file": "webcam_bewegung_2_95_86.py",
+   "version": "2.95.87",
+   "file": "webcam_bewegung_2_95_87.py",
    "url": "",
-   "sha256": "8f03304fb16707a4b33002468b71690340fa105b92b850d21953e022aba1cfcb",
-   "date": "2026-10-28 14:55",
-   "notes": "Simulation mit eigenen Einstellungen: beim Zurückschalten die Liste der Änderungen, Übernahme wählbar (abschaltbar)",
-   "sig": "524bc6443e6e00c84b8f3efed5ebb35285adccbc37f74c2da77c827423d8fb7149a4c7f39497ae7cb58761f5d5ce29378b77bdaa7d7fe670c767eec163710f07"
+   "sha256": "a86ec44ec0fa09934cdf824b93d3f4b1d45962bd67df173f7637639a7bb77cbf",
+   "date": "2026-10-28 14:59",
+   "notes": "Symbol «Klassisch (orange)»: das Auge in der Kopfzeile schaut links und rechts; Simulator 3D-3.62 mit dem orangen Symbol",
+   "sig": "d7a38c64d8cfb3b4906aba21c17165591fbda45a8509637a9afbe67a34252e02aa2348fec08bb83af2330a6b7bcd80c4e3b2db334e8bdded74ecaf26b891570c"
   },
   {
    "version": "2.94.5",

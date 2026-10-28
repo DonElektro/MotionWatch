@@ -1,12 +1,12 @@
 {
- "version": "3D-3.61",
+ "version": "3D-3.62",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30953136,
- "sha256": "af7269de56e75f3d450b29c7a995d080709e17a5bc93510f5573ea8b96514112",
- "notes": "Patrouille mit dem Mover, Spielart Patrouille, Werkzeugleiste für die Maus",
+ "size": 30955266,
+ "sha256": "accd89a9bb4f720069fee5544eca2bdd878c2971cfd4284dc78c609871c918fc",
+ "notes": "Oranges Motion-Watch-Symbol oben links, das Auge schaut links und rechts",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24073640,
-  "sha256": "5e1792d0805988adc50260accc6f64e9f297a0cb97cb92d745b20d172848a407"
+  "size": 24076810,
+  "sha256": "bafa86a841a7a5cc28081d0372e9136b597f1bfb16df86c7b966e278ebe643f2"
  }
 }
