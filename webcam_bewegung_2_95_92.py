@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_91.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_92.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.92: Simulator-Vollbild im Browser: nur noch das Bild und ✕, Steuer-Sticks und Knöpfe mit 🕹 einblendbar, der Mover-Stick
+    im Simulatorbild verschwindet; 3D-Simulator 3D-3.67
   * 2.95.91: 3D-Simulator 3D-3.66: beim Setzen der Patrouillen-Punkte bleibt die Ansicht bedienbar, «Fertig» und Esc beenden das
     Setzen
   * 2.95.90: 3D-Simulator 3D-3.65: «An Motion Watch senden» bleibt nach einem Update und Neustart so wie vorher
@@ -769,10 +771,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_91.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_92.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_91.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_91.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_92.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_92.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -789,7 +791,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.91"
+APP_VERSION = "2.95.92"
 
 
 def default_data_dir():
@@ -15094,8 +15096,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.66", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30874577,
-         "sha256": "c6d6cee47d255556dbe074afeb7e65cb31c766cdd3d40f1b706c84c3ee5c026d"}
+SIM3D = {"version": "3D-3.67", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30875010,
+         "sha256": "bdfacd0b5970236612660b0ffcd4fe292c1215bd44692ef283802b1e37f4d00b"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15234,8 +15236,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.66", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 23995720,
-           "sha256": "1bafccd3182b5266b54b3fd1902f5be2ff8765f4a9eb573d9a40647a20ef5efc", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.67", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 23996243,
+           "sha256": "d4f6ec2f48c7cd94d844888d3efa88ce79ec33095041288e510b7b69cd685146", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -19132,7 +19134,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_91.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_92.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -24464,7 +24466,7 @@ function simTouchPad(box, VB, show) {
     "background:rgba(10,14,20,.35);border:2px solid rgba(255,255,255,.45);pointer-events:auto;touch-action:none}.stp .stk.l{left:14px}.stp .stk.r{right:62px}" +
     ".stp .kn{position:absolute;left:50%;top:50%;width:42%;height:42%;margin:-21% 0 0 -21%;border-radius:50%;background:rgba(255,255,255,.75);pointer-events:none}" +
     ".stp .lb{position:absolute;left:0;right:0;bottom:-20px;text-align:center;font-size:11px;color:#fff;text-shadow:0 1px 2px #000}" +
-    ".stp .ud{position:absolute;right:14px;bottom:22%;display:flex;flex-direction:column;gap:8px;pointer-events:auto}" +
+    ".stp .ud{position:absolute;left:calc(clamp(96px,22vmin,150px) + 30px);bottom:22%;display:flex;flex-direction:column;gap:8px;pointer-events:auto}" +
     ".stp .ud button{width:42px;height:42px;border-radius:10px;border:1px solid rgba(255,255,255,.4);background:rgba(10,14,20,.55);color:#fff;font-size:18px;touch-action:none}";
     document.head.appendChild(st); }
   const P = document.createElement("div"); P.className = "stp"; P.hidden = true;
@@ -24517,7 +24519,9 @@ function simViewPoll(VI, fps) {
     const cw = (document.fullscreenElement || VI.closest(".fs")) ? window.innerWidth : Math.max(VI.clientWidth, box.clientWidth || 0) || 640;
     const w = Math.max(320, Math.min(2560, Math.round(cw * dpr * L.f / 16) * 16));
     info.w = w; info.q = L.q; info.fmt = SIM_WEBP ? "webp" : "jpg"; info.lvl = lvl;
-    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt;
+    const fs = !!(document.fullscreenElement || document.webkitFullscreenElement || VI.closest(".fs"));
+    const clean = fs && (typeof PVPAD === "undefined" || !PVPAD);      // 2.95.92: full screen: the simulator hides its rover stick
+    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt + (clean ? "&clean=1" : "");
   };
   const step = async (g) => {
     if (!on || g !== gen) return;
@@ -24705,6 +24709,10 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .pvw:fullscreen{display:flex;align-items:center;justify-content:center;border-radius:0}
 .pvbtn button{width:38px;height:38px;padding:0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(10,14,20,.65);color:#fff;font-size:18px;cursor:pointer}
 .pvbtn button.on{background:var(--acc,#3b8cff)}
+/* 2.95.92: full screen = only the picture of the simulator (the finger drives the view directly); 🕹 brings the sticks and buttons */
+.pvw.fs:not(.pad) #s-pvbtn>button:not(#s-vpad),.pvw:fullscreen:not(.pad) #s-pvbtn>button:not(#s-vpad),.pvw.fs #s-vstat,.pvw:fullscreen #s-vstat{display:none}
+.pvw.fs:not(.pad) #s-pvcam,.pvw:fullscreen:not(.pad) #s-pvcam{display:none}
+.pvw.fs .pvbtn button,.pvw:fullscreen .pvbtn button{background:rgba(10,14,20,.4);border-color:rgba(255,255,255,.18)}
 #s-prev{width:100%;height:auto;min-height:200px;object-fit:contain;background:#000;display:block;max-height:calc(100vh - var(--hdr-h,64px) - 170px)}
 .pvcam{position:absolute;right:58px;top:10px;width:28%;max-width:320px;min-width:120px;border:2px solid rgba(255,255,255,.8);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.5);background:#000;cursor:pointer;z-index:3}
 .pvcam img{display:block;width:100%;border-radius:6px}.pvcam span{position:absolute;left:5px;top:5px;font:700 10px/1 system-ui,sans-serif;color:#fff;background:rgba(200,0,0,.75);padding:3px 5px;border-radius:4px}
@@ -24777,7 +24785,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
       <div class="pvcam" id="s-pvcam" hidden title="Kamera gross zeigen"><img id="s-pvcimg" alt=""><span>📷 LIVE</span></div>
       <div class="spec" id="s-spec" hidden><div class="spec-h" id="s-spech"></div><div class="spec-p" id="s-specp"></div><div class="spec-f" id="s-specf"></div></div>
       <div class="specres" id="s-specres" hidden></div>
-      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><button type="button" id="s-vstat" title="Statistik ein / aus" hidden>📊</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vgyro" title="Handy als Fenster: das Handy drehen = umschauen" hidden>📱</button><button type="button" id="s-vcam" title="Kamerabild klein ein / aus">📷</button><button type="button" id="s-vctl" title="Bedienen mit dem Finger (sonst scrollt die Seite)">✋</button><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
+      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><button type="button" id="s-vstat" title="Statistik ein / aus" hidden>📊</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vpad" title="Steuer-Sticks und Knöpfe ein / aus">🕹</button><button type="button" id="s-vgyro" title="Handy als Fenster: das Handy drehen = umschauen" hidden>📱</button><button type="button" id="s-vcam" title="Kamerabild klein ein / aus">📷</button><button type="button" id="s-vctl" title="Bedienen mit dem Finger (sonst scrollt die Seite)">✋</button><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
     <div class="mut" id="s-prevnote"></div>
     </div>
   </details>
@@ -25441,6 +25449,7 @@ const pvView = () => PVM === "view" && !!(S && S.view);
 const PVP = simViewPoll($("#s-prev"), 10);
 $("#s-prevnote").before(simQBox(PVP));
 let PVCTL = false;
+let PVPAD = (() => { try { return localStorage.getItem("mw-sim-pvpad") === "1"; } catch (e) { return false; } })();   // 2.95.92: sticks only on request
 const pvSrc = () => "/video_feed?r=" + Date.now();
 function pvLoad() { const img = $("#s-prev"); if (!LIVE) { PVP.stop(); return; }
   if (pvView()) { img.removeAttribute("src"); PVP.start(); } else { PVP.stop(); img.src = pvSrc(); } }
@@ -25510,7 +25519,10 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) PVP.s
 { let rot = false;
   const VB = simViewBind($("#s-prev"), {rot: () => rot, active: () => pvView() && !$("#s-prev").closest("#pip"),
     ctl: () => PVCTL || !!(document.fullscreenElement || document.webkitFullscreenElement) || $("#s-pvw").classList.contains("fs")});
-  simTouchPad($("#s-pvw"), VB, () => pvView() && !$("#s-prev").closest("#pip") && (PVCTL || !!(document.fullscreenElement || document.webkitFullscreenElement) || $("#s-pvw").classList.contains("fs")));
+  simTouchPad($("#s-pvw"), VB, () => PVPAD && pvView() && !$("#s-prev").closest("#pip") && (PVCTL || !!(document.fullscreenElement || document.webkitFullscreenElement) || $("#s-pvw").classList.contains("fs")));
+  const padPaint = () => { $("#s-vpad").classList.toggle("on", PVPAD); $("#s-pvw").classList.toggle("pad", PVPAD); };
+  $("#s-vpad").onclick = e => { e.stopPropagation(); PVPAD = !PVPAD; try { localStorage.setItem("mw-sim-pvpad", PVPAD ? "1" : "0"); } catch (x) {} padPaint(); };
+  padPaint();
   $("#s-vctl").onclick = () => { PVCTL = !PVCTL; $("#s-vctl").classList.toggle("on", PVCTL); toast(PVCTL ? "✋ " + t("The finger now controls the simulator (scrolling: press ✋ again)") : "↕ " + t("The finger scrolls the page again (a tap still clicks)")); };
   $("#s-vin").onclick = () => VB.push({t: "wheel", d: 1, x: 0.5, y: 0.5}, true);
   $("#s-vout").onclick = () => VB.push({t: "wheel", d: -1, x: 0.5, y: 0.5}, true);
@@ -38198,6 +38210,8 @@ class WebStream:
                     q_.append(f"{k_}={int(v_)}")
             if request.args.get("fmt") in ("webp", "jpg"):
                 q_.append("fmt=" + request.args.get("fmt"))
+            if request.args.get("clean") == "1":
+                q_.append("clean=1")                         # 2.95.92: full screen - the simulator hides its rover stick
             try:
                 b_, h_ = _sim_get("/view.jpg" + ("?" + "&".join(q_) if q_ else ""), 3.0)
             except Exception:
@@ -41038,7 +41052,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.91")
+        self.root.title("Motion Watch 2.95.92")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -41328,7 +41342,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.91 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.92 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

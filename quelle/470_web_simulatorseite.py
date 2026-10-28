@@ -277,7 +277,7 @@ function simTouchPad(box, VB, show) {
     "background:rgba(10,14,20,.35);border:2px solid rgba(255,255,255,.45);pointer-events:auto;touch-action:none}.stp .stk.l{left:14px}.stp .stk.r{right:62px}" +
     ".stp .kn{position:absolute;left:50%;top:50%;width:42%;height:42%;margin:-21% 0 0 -21%;border-radius:50%;background:rgba(255,255,255,.75);pointer-events:none}" +
     ".stp .lb{position:absolute;left:0;right:0;bottom:-20px;text-align:center;font-size:11px;color:#fff;text-shadow:0 1px 2px #000}" +
-    ".stp .ud{position:absolute;right:14px;bottom:22%;display:flex;flex-direction:column;gap:8px;pointer-events:auto}" +
+    ".stp .ud{position:absolute;left:calc(clamp(96px,22vmin,150px) + 30px);bottom:22%;display:flex;flex-direction:column;gap:8px;pointer-events:auto}" +
     ".stp .ud button{width:42px;height:42px;border-radius:10px;border:1px solid rgba(255,255,255,.4);background:rgba(10,14,20,.55);color:#fff;font-size:18px;touch-action:none}";
     document.head.appendChild(st); }
   const P = document.createElement("div"); P.className = "stp"; P.hidden = true;
@@ -330,7 +330,9 @@ function simViewPoll(VI, fps) {
     const cw = (document.fullscreenElement || VI.closest(".fs")) ? window.innerWidth : Math.max(VI.clientWidth, box.clientWidth || 0) || 640;
     const w = Math.max(320, Math.min(2560, Math.round(cw * dpr * L.f / 16) * 16));
     info.w = w; info.q = L.q; info.fmt = SIM_WEBP ? "webp" : "jpg"; info.lvl = lvl;
-    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt;
+    const fs = !!(document.fullscreenElement || document.webkitFullscreenElement || VI.closest(".fs"));
+    const clean = fs && (typeof PVPAD === "undefined" || !PVPAD);      // 2.95.92: full screen: the simulator hides its rover stick
+    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt + (clean ? "&clean=1" : "");
   };
   const step = async (g) => {
     if (!on || g !== gen) return;
@@ -518,6 +520,10 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .pvw:fullscreen{display:flex;align-items:center;justify-content:center;border-radius:0}
 .pvbtn button{width:38px;height:38px;padding:0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(10,14,20,.65);color:#fff;font-size:18px;cursor:pointer}
 .pvbtn button.on{background:var(--acc,#3b8cff)}
+/* 2.95.92: full screen = only the picture of the simulator (the finger drives the view directly); 🕹 brings the sticks and buttons */
+.pvw.fs:not(.pad) #s-pvbtn>button:not(#s-vpad),.pvw:fullscreen:not(.pad) #s-pvbtn>button:not(#s-vpad),.pvw.fs #s-vstat,.pvw:fullscreen #s-vstat{display:none}
+.pvw.fs:not(.pad) #s-pvcam,.pvw:fullscreen:not(.pad) #s-pvcam{display:none}
+.pvw.fs .pvbtn button,.pvw:fullscreen .pvbtn button{background:rgba(10,14,20,.4);border-color:rgba(255,255,255,.18)}
 #s-prev{width:100%;height:auto;min-height:200px;object-fit:contain;background:#000;display:block;max-height:calc(100vh - var(--hdr-h,64px) - 170px)}
 .pvcam{position:absolute;right:58px;top:10px;width:28%;max-width:320px;min-width:120px;border:2px solid rgba(255,255,255,.8);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.5);background:#000;cursor:pointer;z-index:3}
 .pvcam img{display:block;width:100%;border-radius:6px}.pvcam span{position:absolute;left:5px;top:5px;font:700 10px/1 system-ui,sans-serif;color:#fff;background:rgba(200,0,0,.75);padding:3px 5px;border-radius:4px}
@@ -590,7 +596,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
       <div class="pvcam" id="s-pvcam" hidden title="Kamera gross zeigen"><img id="s-pvcimg" alt=""><span>📷 LIVE</span></div>
       <div class="spec" id="s-spec" hidden><div class="spec-h" id="s-spech"></div><div class="spec-p" id="s-specp"></div><div class="spec-f" id="s-specf"></div></div>
       <div class="specres" id="s-specres" hidden></div>
-      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><button type="button" id="s-vstat" title="Statistik ein / aus" hidden>📊</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vgyro" title="Handy als Fenster: das Handy drehen = umschauen" hidden>📱</button><button type="button" id="s-vcam" title="Kamerabild klein ein / aus">📷</button><button type="button" id="s-vctl" title="Bedienen mit dem Finger (sonst scrollt die Seite)">✋</button><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
+      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><button type="button" id="s-vstat" title="Statistik ein / aus" hidden>📊</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vpad" title="Steuer-Sticks und Knöpfe ein / aus">🕹</button><button type="button" id="s-vgyro" title="Handy als Fenster: das Handy drehen = umschauen" hidden>📱</button><button type="button" id="s-vcam" title="Kamerabild klein ein / aus">📷</button><button type="button" id="s-vctl" title="Bedienen mit dem Finger (sonst scrollt die Seite)">✋</button><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
     <div class="mut" id="s-prevnote"></div>
     </div>
   </details>
@@ -1254,6 +1260,7 @@ const pvView = () => PVM === "view" && !!(S && S.view);
 const PVP = simViewPoll($("#s-prev"), 10);
 $("#s-prevnote").before(simQBox(PVP));
 let PVCTL = false;
+let PVPAD = (() => { try { return localStorage.getItem("mw-sim-pvpad") === "1"; } catch (e) { return false; } })();   // 2.95.92: sticks only on request
 const pvSrc = () => "/video_feed?r=" + Date.now();
 function pvLoad() { const img = $("#s-prev"); if (!LIVE) { PVP.stop(); return; }
   if (pvView()) { img.removeAttribute("src"); PVP.start(); } else { PVP.stop(); img.src = pvSrc(); } }
@@ -1323,7 +1330,10 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) PVP.s
 { let rot = false;
   const VB = simViewBind($("#s-prev"), {rot: () => rot, active: () => pvView() && !$("#s-prev").closest("#pip"),
     ctl: () => PVCTL || !!(document.fullscreenElement || document.webkitFullscreenElement) || $("#s-pvw").classList.contains("fs")});
-  simTouchPad($("#s-pvw"), VB, () => pvView() && !$("#s-prev").closest("#pip") && (PVCTL || !!(document.fullscreenElement || document.webkitFullscreenElement) || $("#s-pvw").classList.contains("fs")));
+  simTouchPad($("#s-pvw"), VB, () => PVPAD && pvView() && !$("#s-prev").closest("#pip") && (PVCTL || !!(document.fullscreenElement || document.webkitFullscreenElement) || $("#s-pvw").classList.contains("fs")));
+  const padPaint = () => { $("#s-vpad").classList.toggle("on", PVPAD); $("#s-pvw").classList.toggle("pad", PVPAD); };
+  $("#s-vpad").onclick = e => { e.stopPropagation(); PVPAD = !PVPAD; try { localStorage.setItem("mw-sim-pvpad", PVPAD ? "1" : "0"); } catch (x) {} padPaint(); };
+  padPaint();
   $("#s-vctl").onclick = () => { PVCTL = !PVCTL; $("#s-vctl").classList.toggle("on", PVCTL); toast(PVCTL ? "✋ " + t("The finger now controls the simulator (scrolling: press ✋ again)") : "↕ " + t("The finger scrolls the page again (a tap still clicks)")); };
   $("#s-vin").onclick = () => VB.push({t: "wheel", d: 1, x: 0.5, y: 0.5}, true);
   $("#s-vout").onclick = () => VB.push({t: "wheel", d: -1, x: 0.5, y: 0.5}, true);

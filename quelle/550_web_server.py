@@ -986,6 +986,8 @@ class WebStream:
                     q_.append(f"{k_}={int(v_)}")
             if request.args.get("fmt") in ("webp", "jpg"):
                 q_.append("fmt=" + request.args.get("fmt"))
+            if request.args.get("clean") == "1":
+                q_.append("clean=1")                         # 2.95.92: full screen - the simulator hides its rover stick
             try:
                 b_, h_ = _sim_get("/view.jpg" + ("?" + "&".join(q_) if q_ else ""), 3.0)
             except Exception:

@@ -1,12 +1,12 @@
 {
- "version": "3D-3.66",
+ "version": "3D-3.67",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30874577,
- "sha256": "c6d6cee47d255556dbe074afeb7e65cb31c766cdd3d40f1b706c84c3ee5c026d",
- "notes": "Punkte setzen: Ziehen bewegt die Ansicht, Hinweis mit Fertig, Esc beendet",
+ "size": 30875010,
+ "sha256": "bdfacd0b5970236612660b0ffcd4fe292c1215bd44692ef283802b1e37f4d00b",
+ "notes": "Vollbild im Browser: Mover-Stick im Bild ausgeblendet",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 23995720,
-  "sha256": "1bafccd3182b5266b54b3fd1902f5be2ff8765f4a9eb573d9a40647a20ef5efc"
+  "size": 23996243,
+  "sha256": "d4f6ec2f48c7cd94d844888d3efa88ce79ec33095041288e510b7b69cd685146"
  }
 }

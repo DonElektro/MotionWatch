@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.66"
+const VERSION := "3D-3.67"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -4112,7 +4112,7 @@ var map_btn: Button
 func _over_hud(p: Vector2) -> bool:
 	"""is the mouse over the control panel or one of the boxes on the view (map, live picture, stick, bar …)?"""
 	for c in [ui_root, show_btn, view_bar, minimap, liveview, rover_pad, sel_box, karte, toolbar, cam_card]:
-		if c != null and is_instance_valid(c) and c is Control and (c as Control).is_visible_in_tree() and (c as Control).get_global_rect().has_point(p):
+		if c != null and is_instance_valid(c) and c is Control and (c as Control).is_visible_in_tree() and (c as Control).modulate.a > 0.01 and (c as Control).get_global_rect().has_point(p):
 			return true
 	return false
 
@@ -5176,6 +5176,8 @@ func view_request(q: Dictionary) -> void:
 		view_q = clampf(float(q["q"]) / 100.0, 0.3, 0.95)
 	if q.has("fmt"):
 		view_webp = str(q["fmt"]) == "webp"
+	if str(q.get("clean", "")) == "1":
+		view_clean_t = now()                    # 3D-3.67: Motion Watch shows the picture in full screen: no rover stick
 const VIEW_KEYS := {"ArrowUp": KEY_UP, "ArrowDown": KEY_DOWN, "ArrowLeft": KEY_LEFT, "ArrowRight": KEY_RIGHT, "w": KEY_W, "a": KEY_A,
 		"s": KEY_S, "d": KEY_D, "q": KEY_Q, "e": KEY_E, "r": KEY_R, "f": KEY_F, "PageUp": KEY_PAGEUP, "PageDown": KEY_PAGEDOWN,
 		"0": KEY_0, "1": KEY_1, "2": KEY_2, "3": KEY_3, "4": KEY_4, "5": KEY_5, "+": KEY_PLUS, "-": KEY_MINUS, "Shift": KEY_SHIFT, "p": KEY_P}
@@ -5289,6 +5291,7 @@ func view_input(evs: Array) -> int:
 
 var ui_layer: CanvasLayer
 var remote_vp: SubViewport = null
+var view_clean_t := -100.0              # 3D-3.67: last picture asked for «clean» (full screen in the browser)
 var _remote_back := []                 # [node, parent, index] to put back
 
 

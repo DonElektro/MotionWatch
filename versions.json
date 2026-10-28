@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 15:48",
+ "generated": "2026-10-28 16:08",
  "versions": [
   {
-   "version": "2.95.91",
-   "file": "webcam_bewegung_2_95_91.py",
+   "version": "2.95.92",
+   "file": "webcam_bewegung_2_95_92.py",
    "url": "",
-   "sha256": "ea33f502a746f9a62d3ffb8225c7943daeb89922916403b3002dbe7b5e8a1911",
-   "date": "2026-10-28 15:48",
-   "notes": "3D-Simulator 3D-3.66: beim Setzen der Patrouillen-Punkte bleibt die Ansicht bedienbar, «Fertig» und Esc beenden das Setzen",
-   "sig": "17245d91472be9d8d277da580f424294996cf050eedb15ae11600064c895d6ded1b876428e004eeec22a994ac61fc7b4bc1567af546448f8d01756eac7175c07"
+   "sha256": "575f47309ab188e834e677e84f4d5e6f0c41ece38f4f90306e0ebc38185dc4b2",
+   "date": "2026-10-28 16:08",
+   "notes": "Simulator-Vollbild im Browser: nur noch das Bild und ✕, Steuer-Sticks und Knöpfe mit 🕹 einblendbar, der Mover-Stick im Simulatorbild verschwindet; 3D-Simulator 3D-3.67",
+   "sig": "012f75c50cc8eb3463d45e0aa23a653d273dc9c6928254d82843cbdd631bdeb859ddd7017b2ac08915b5c5c1e10c62662fbcb56adface192c1c86f9368c2e708"
   },
   {
    "version": "2.94.5",
