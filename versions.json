@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 11:47",
+ "generated": "2026-10-28 12:08",
  "versions": [
   {
-   "version": "2.95.76",
-   "file": "webcam_bewegung_2_95_76.py",
+   "version": "2.95.77",
+   "file": "webcam_bewegung_2_95_77.py",
    "url": "",
-   "sha256": "8e9e37bbbb7fb2f436357bceb56bdac329b64ddbae46244205dd6cc0f271be4b",
-   "date": "2026-10-28 11:47",
-   "notes": "3D-Simulator 3D-3.54: Schleichwege nur auf ihrer eigenen Karte",
-   "sig": "8838f41aa2509726b866dcf1cf17971497258d5a5fb9827b5676bc9aefb8f26015ac28ee45b3e85c4f7342f368956c257b211e5c506ca9761717417f43d53c0f"
+   "sha256": "a81049a72793aaeedce2819b3d0f6a93dd7bf50dfe96a8ee0f7dbc796f4f63d0",
+   "date": "2026-10-28 12:08",
+   "notes": "Vollbild: Knopf 🚜 blendet den Mover-Stick ein (gegenüber dem Kamera-Stick, mit ⇆ tauschbar)",
+   "sig": "064ebc770d1d624941f45fd3159cbe534b6d7fd106d9e1a135bd291d438e8c9de3883d608d77fb6904acbae86c55434a49982331d08cb1b0c799c154b9e4df0b"
   },
   {
    "version": "2.94.5",

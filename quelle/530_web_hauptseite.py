@@ -339,6 +339,12 @@ body.videoonly #vo-side{display:flex;position:absolute;top:max(10px,env(safe-are
 .vwrap.vlost{min-height:180px}
 .vwrap.vlost::after{content:"↻";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#8b9bb0;font-size:34px;animation:vspin 1.2s linear infinite}
 @keyframes vspin{to{transform:rotate(360deg)}}
+/* 2.95.77: full screen - 🚜 shows / hides the mover stick (on the other side of the camera stick; ⇆ swaps both) */
+#vo-mv{display:none}
+body.videoonly.moveravail #vo-mv{display:flex;position:absolute;top:max(10px,env(safe-area-inset-top));right:calc(max(10px,env(safe-area-inset-right)) + 112px);z-index:60;
+  width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,.35);
+  background:rgba(0,0,0,.55);color:#fff;font-size:20px;padding:0;cursor:pointer}
+body.videoonly.moveravail.mover #vo-mv{background:rgba(63,207,107,.55);border-color:var(--grn)}
 #vo-exit{display:none}
 body.videoonly #vo-exit{display:flex;position:absolute;top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));z-index:60;
  width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,.35);
@@ -443,6 +449,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
     <div class="card" id="vcard">
       <div class="vwrap"><img id="video" src="/video_feed" alt=""><button id="vo-exit" onclick="setVideoOnly(false)" title="Exit full screen">&#x2715;</button>
         <button type="button" id="vo-side" title="⇆">⇆</button>
+        <button type="button" id="vo-mv" title="Mover" onclick="const m = document.getElementById('mv-tog'); if (m) m.click()">🚜</button>
         <div id="vo-ctl" class="idle"><div class="vbtns"><button type="button" id="vo-center" title="Centre">◎</button>
           <button type="button" id="vo-listen" title="Listen" hidden>🎧</button></div><div id="vo-slot"></div></div>
         <div id="vo-mctl" class="idle"><div id="vo-mslot"></div></div>
