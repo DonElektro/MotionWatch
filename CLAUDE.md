@@ -68,6 +68,10 @@ Push über ntfy (App «NTFY me», Server ntfy-me.com). Fernzugriff über Tailsca
 - Der Ordner `simulator/` ist ein eigenes Programm (motionwatch_simulator.py + motionwatch_sim_interface.py + Anleitung).
 - Ab 2.70.0 steckt er auch gepackt in der Motion-Watch-Datei (`SIM_ZIP_B64`, ZIP als base64). **Wer die Simulator-Dateien ändert, muss `SIM_ZIP_B64` (in `quelle/360_daten_simulator_python.py`) neu erzeugen**, sonst installiert Motion Watch die alte Fassung.
 
+- **Daten aus dem Simulator** (Wunsch Daniel): nur bildbezogene, kartenunabhängige Daten für die Erkennung sammeln (Bilder mit
+  Rahmen, Reaktionszeit nach Abstand/Haltung/Licht). Kartengebundenes (Schleichwege) immer mit Szene speichern und nur dort
+  abspielen. Später geplant: Bediener baut sein Zuhause im Simulator nach und trainiert Motion Watch darauf.
+
 ## Rückmeldungen aus den Testläufen (ab 2.95.28)
 
 - Daniel lädt Testlauf-Berichte (ZIP aus Motion Watch) nach `feedback/` hoch oder hängt sie im Chat an.

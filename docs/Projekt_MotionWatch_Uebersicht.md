@@ -75,3 +75,11 @@ Jede neue Version bekommt einen neuen Dateinamen `webcam_bewegung_X_Y_Z.py`, die
 - Vor dem Ausliefern testen (Browser Handy hoch/quer + PC, simulierte Hardware) und ehrlich sagen, was nicht getestet ist.
 - Neue Version auch auf GitHub ablegen (`--make-manifest .` aktualisiert `versions.json`).
 - Keine Passwörter / privaten ntfy-Themen in geteilte Dateien.
+
+### Leitlinie Daten aus dem Simulator (Daniel, 28.10.2026)
+
+Für die Erkennung nur **bildbezogene, kartenunabhängige** Daten sammeln: Bilder mit Rahmen, Reaktionszeit nach Abstand,
+Haltung, Licht, Wetter, Fehlalarm-Orte im Bild. Die Karten im Simulator wechseln ständig. Was an eine Karte gebunden ist
+(z. B. Schleichwege mit Koordinaten), gilt nur für genau diese Szene und wird nur dort abgespielt.
+**Später geplant:** Der Bediener baut sein Zuhause im Simulator nach und trainiert Motion Watch darauf (eigene Karte →
+eigene Testläufe und Trainingsbilder). Neue Sammel-Funktionen so bauen, dass sie dazu passen (Szene immer mitspeichern).

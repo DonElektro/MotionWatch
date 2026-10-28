@@ -82,7 +82,8 @@ var _ways_t := -100.0
 
 func ways() -> Array:
 	if now() - _ways_t > 10.0:
-		_ways = preload("res://scripts/gamelearn.gd").load_ways().slice(0, 8)
+		# 3D-3.53: a way only fits the map it was walked on (the places change) - only the ways of the scene shown now
+		_ways = preload("res://scripts/gamelearn.gd").load_ways().filter(func(w): return str(w.get("scene", "")) == str(main.scene)).slice(0, 8)
 		_ways_t = now()
 	return _ways
 

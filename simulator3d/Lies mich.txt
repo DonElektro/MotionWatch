@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.53 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.54 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -571,3 +571,6 @@ merkt sich Fehlalarme mit Ort. Schwierigkeit gilt auch für Motion Watch: leicht
 sicher, 6 s Pause, Kopf dreht langsamer), normal, schwer. Rangliste «Bester Schleicher der Woche» (am längsten sichtbar,
 aber nicht gemeldet). Die verpassten Bilder aus dem Spiel kann Motion Watch mit seiner KI prüfen (KI-Prüfung →
 «verpasste Bilder aus dem Spiel»).
+
+NEU IN 3D-3.54
+3D-3.54: Schleichwege laufen im Prüfstand nur auf der Karte, auf der sie gespielt wurden.

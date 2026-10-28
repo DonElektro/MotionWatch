@@ -1,12 +1,12 @@
 {
- "version": "3D-3.53",
+ "version": "3D-3.54",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30911385,
- "sha256": "83bcc1e3c2d5ba2137346bb084046d2a3e2ac5f8a76198fa260f66968cb6f680",
- "notes": "Spiel: genaue Zuordnung mit den Rahmen von Motion Watch, Easy-Mode, Bester Schleicher, KI-Prüfung mit Spielbildern",
+ "size": 30911554,
+ "sha256": "896791a430a8dd54d3cbc8114e1840b60b9981ca37b30b966818e01d69378f80",
+ "notes": "Schleichwege nur auf ihrer eigenen Karte",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24032803,
-  "sha256": "55f242afeb7c6f71cb16ebf4c30e316dbd9ae60071a8d0d08eb6c0fa5d3b3d23"
+  "size": 24032841,
+  "sha256": "27960224aea3d7c367a2b77c26a30c85684a9b4ff39a2abbb899e6133ec13aae"
  }
 }

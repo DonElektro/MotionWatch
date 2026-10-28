@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 11:46",
+ "generated": "2026-10-28 11:47",
  "versions": [
   {
-   "version": "2.95.75",
-   "file": "webcam_bewegung_2_95_75.py",
+   "version": "2.95.76",
+   "file": "webcam_bewegung_2_95_76.py",
    "url": "",
-   "sha256": "7a998044a574816b17192362b1da77f27942436dcf004ce201cab0d097eae142",
-   "date": "2026-10-28 11:46",
-   "notes": "Simulator: Motion Watch schickt die Rahmen der erkannten Personen (genaue Zuordnung im Spiel); KI-Prüfung mit den verpassten Bildern aus dem Spiel; Rangliste «Bester Schleicher»",
-   "sig": "9814d6d701a70e1a09717fe410b00347f6156b3380b5353273b90ed23ad57c8e4bb6809d9daaefaa05aab77ff0273f25de0e1b9b9bf45d99a5c663e37dc56108"
+   "sha256": "8e9e37bbbb7fb2f436357bceb56bdac329b64ddbae46244205dd6cc0f271be4b",
+   "date": "2026-10-28 11:47",
+   "notes": "3D-Simulator 3D-3.54: Schleichwege nur auf ihrer eigenen Karte",
+   "sig": "8838f41aa2509726b866dcf1cf17971497258d5a5fb9827b5676bc9aefb8f26015ac28ee45b3e85c4f7342f368956c257b211e5c506ca9761717417f43d53c0f"
   },
   {
    "version": "2.94.5",
