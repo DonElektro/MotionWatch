@@ -148,6 +148,7 @@ static func fold_card(parent: Control, title: String, open: bool, icon := "") ->
 	if icon != "":
 		row.add_theme_constant_override("separation", 8)
 		ic = group_icon(icon)
+		ic.set_meta("col", MUT)                       # 3D-3.50: grey until its function is on (then green)
 		row.add_child(ic)
 	var h := heading(title)
 	h.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -165,7 +166,8 @@ static func fold_card(parent: Control, title: String, open: bool, icon := "") ->
 	v.add_child(body)
 	var paint := func():
 		arrow.text = "▾" if body.visible else "▸"
-		arrow.add_theme_color_override("font_color", GRN if body.visible else MUT)
+		# 3D-3.50: the arrow is green while the function of the card is on (not when it is open), orange = to watch
+		arrow.add_theme_color_override("font_color", [MUT, GRN, ORG][clampi(int(body.get_meta("act", 0)), 0, 2)])
 	body.visible = open
 	paint.call()
 	hdr.pressed.connect(func():
@@ -178,6 +180,20 @@ static func fold_card(parent: Control, title: String, open: bool, icon := "") ->
 	if ic != null:
 		body.set_meta("icon", ic)
 	return body
+
+
+static func fold_active(body: Control, st: int) -> void:
+	"""3D-3.50: symbol and arrow of a card: 0 = grey (off), 1 = green (on), 2 = orange (something to watch)"""
+	if int(body.get_meta("act", -1)) == st:
+		return
+	body.set_meta("act", st)
+	var ic: Control = body.get_meta("icon", null)
+	if ic != null:
+		ic.set_meta("col", [MUT, GRN, ORG][clampi(st, 0, 2)])
+		ic.queue_redraw()
+	var p = body.get_meta("paint", null)
+	if p != null:
+		p.call()
 
 
 static func sub_fold(parent: Control, title: String, open: bool) -> VBoxContainer:

@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.49 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.50 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -549,3 +549,7 @@ NEU IN 3D-3.49
 3D-3.49: Prüfstand auf diesem PC: Werkzeuge → «Prüfstand: Erkennung messen». Wählen, welches Motion Watch gemessen wird
 (das verbundene oder eine Datei webcam_bewegung_X.py einlesen), Testläufe ankreuzen, «Messung starten». Am Schluss erscheint
 das Ergebnis; mit «Ergebnis senden» geht es direkt auf GitHub (mit GitHub-Schlüssel) oder als Datei auf den Schreibtisch.
+
+NEU IN 3D-3.50
+3D-3.50: Einheitliche Menüs: links das Symbol, dann der Name, rechts der Pfeil. Symbol und Pfeil werden grün, wenn die
+Funktion läuft (orange: etwas beachten), grau, wenn sie aus ist – nicht mehr nur, weil das Menü offen ist.

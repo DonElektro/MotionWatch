@@ -1,12 +1,12 @@
 {
- "version": "3D-3.49",
+ "version": "3D-3.50",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30882249,
- "sha256": "86df1887dbcb3ced06481d3abd5430365a78d23a717d3a6746b770febe489a59",
- "notes": "Prüfstand auf dem PC: Motion Watch (verbunden oder Datei) mit festen Testläufen messen, Ergebnis direkt senden",
+ "size": 30882539,
+ "sha256": "fb4061dd4e73a7890b11ee6991a0ec3863441285296d1327c8b2335eed1fe562",
+ "notes": "Einheitliche Menüs: Symbol und Pfeil grün, wenn die Funktion läuft",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24003768,
-  "sha256": "d1f713967e788ed7d5052c3db764792f2a1075c0912bcc97e23ce7641c603ce3"
+  "size": 24004157,
+  "sha256": "4ca70773a59946c9f0686b557004a4f31018f3772b7bdfd7f9ef8c28e3cd9faf"
  }
 }

@@ -1008,7 +1008,7 @@ function setVideoOnly(on) {
 let voIdleT = null;
 function voWake() { const c = $("#vo-ctl"); if (!c) return; c.classList.remove("idle"); clearTimeout(voIdleT); voIdleT = setTimeout(() => c.classList.add("idle"), 3000); }
 function voStick(on) {
-  const st = $("#stick"), slot = $("#vo-slot"), box = document.querySelector(".stickbox");
+  const st = $("#stick"), slot = $("#vo-slot"), box = document.querySelector(".ctl-stick .stickbox");   // 2.95.69: not the mover box (that one comes first)
   if (!st || !slot || !box) return;
   if (on && st.parentNode !== slot) slot.appendChild(st);
   if (!on && st.parentNode !== box) box.insertBefore(st, box.firstChild);

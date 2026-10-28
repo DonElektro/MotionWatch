@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.49"
+const VERSION := "3D-3.50"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -233,6 +233,8 @@ var status_label: Label
 var group_bodies := {}                # 3D-3.43: group name -> body of its card (the symbol shows when something is on)
 var _group_state := {}
 var conn_body: Control                # the card «Verbindung» (symbol and title show the state)
+var cam_body: Control                 # 3D-3.50: the cards «Kameras» and «Werkzeuge» (symbol + arrow green while working)
+var tools_body: Control
 var _conn_state := -1
 var stream_on := false                     # sending to Motion Watch: off at the start, the user switches it on in the window
 var stream_port := 8765
@@ -3095,6 +3097,7 @@ func _build_ui() -> void:
 	# camera pictures
 	var cm := UI.fold_card(top_box, "Kameras", true, "camera")   # always visible (also while searching); can be folded
 	fold_bodies.append(cm)
+	cam_body = cm
 	cam_card = cm.get_meta("card")
 	cam_float = VBoxContainer.new()
 	cam_float.theme = th
@@ -3136,6 +3139,7 @@ func _build_ui() -> void:
 	# tools: Motion Watch on this PC, map, phone
 	var tl := UI.fold_card(box_, "Werkzeuge", true, "tools")
 	fold_bodies.append(tl)
+	tools_body = tl
 	top_cards.append(tl.get_meta("card"))
 	mwpc_btn = Button.new()
 	mwpc_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -3875,17 +3879,11 @@ func _paint_groups() -> void:
 		if _group_state.get(g, -1) == st:
 			continue
 		_group_state[g] = st
-		var b: Control = group_bodies[g]
-		var ic: Control = b.get_meta("icon", null)
-		if ic != null:
-			ic.set_meta("col", [UI.ACC, UI.GRN, UI.ORG][st])
-			ic.queue_redraw()
-		var hd: Label = b.get_meta("head", null)
-		if hd != null:
-			if st == 0:
-				hd.add_theme_color_override("font_color", UI.TXT)
-			else:
-				hd.add_theme_color_override("font_color", [UI.TXT, UI.GRN, UI.ORG][st])
+		UI.fold_active(group_bodies[g], st)              # 3D-3.50: symbol and arrow green / orange, the name stays white
+	if cam_body != null:
+		UI.fold_active(cam_body, 1 if connected() else 0)
+	if tools_body != null:
+		UI.fold_active(tools_body, 1 if (mwpc != null and mwpc.state == "running") or (pruef != null and pruef.running) or (dataset != null and dataset.busy) else 0)
 
 
 func _update_status() -> void:
@@ -3899,14 +3897,10 @@ func _update_status() -> void:
 		var st := 2 if connected() else (1 if stream_on else 0)
 		if st != _conn_state:
 			_conn_state = st
-			var ic: Control = conn_body.get_meta("icon", null)
-			if ic != null:
-				ic.set_meta("col", [UI.MUT, UI.ORG, UI.GRN][st])
-				ic.queue_redraw()
+			UI.fold_active(conn_body, [0, 2, 1][st])          # 3D-3.50: symbol and arrow; the name stays white
 			var hd: Label = conn_body.get_meta("head", null)
 			if hd != null:
 				hd.text = ("Verbindung · " + ["aus", "wartet auf Motion Watch", "verbunden"][st]).to_upper()
-				hd.add_theme_color_override("font_color", [UI.TXT, UI.ORG, UI.GRN][st])
 	_paint_groups()
 	if stream_note != null:
 		if stream_on:

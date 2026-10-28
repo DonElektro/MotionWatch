@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_68.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_69.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.69: Simulator-Seite nach Logik geordnet (Verbindung, Status, dann Livebild und Steuerung erst wenn verbunden); Symbol
+    und Pfeil grün, wenn die Funktion läuft; Vollbild quer: Steuer-Stick wieder am richtigen Platz
   * 2.95.68: Simulator über den Tunnel: Motion Watch stellt nicht mehr auf die direkte Adresse um (schwarzes Livebild), und
     kehrt von selbst zum Tunnel zurück
   * 2.95.67: Simulator-Verbindung meldet die Version und den KI-Stand (für den Prüfstand im 3D-Simulator 3D-3.49)
@@ -734,10 +736,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_68.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_69.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_68.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_68.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_69.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_69.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -754,7 +756,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.68"
+APP_VERSION = "2.95.69"
 
 
 def default_data_dir():
@@ -15014,8 +15016,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.49", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30882249,
-         "sha256": "86df1887dbcb3ced06481d3abd5430365a78d23a717d3a6746b770febe489a59"}
+SIM3D = {"version": "3D-3.50", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30882539,
+         "sha256": "fb4061dd4e73a7890b11ee6991a0ec3863441285296d1327c8b2335eed1fe562"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15154,8 +15156,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.49", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24003768,
-           "sha256": "d1f713967e788ed7d5052c3db764792f2a1075c0912bcc97e23ce7641c603ce3", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.50", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24004157,
+           "sha256": "4ca70773a59946c9f0686b557004a4f31018f3772b7bdfd7f9ef8c28e3cd9faf", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -17512,7 +17514,7 @@ def sim_status():
             "simpy": {"version": SIMPY["version"], "size_kb": round(SIMPY["size"] / 1e3), "ready": sim3d_ready(SIMPY)},
             "view": bool(((SIM.get("info") or {}).get("view") or {}).get("input")) if CFG["sim_on"] else False,
             "versions": sim_versions() if CFG["sim_on"] and SIM["ok"] else None,
-            "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "msg": SIM["msg"], "url": sim_base(),
+            "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "tunnel": {"active": tunnel_active()}, "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "msg": SIM["msg"], "url": sim_base(),
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
 
@@ -18952,7 +18954,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_68.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_69.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -24075,9 +24077,9 @@ function scCss() {
 .sc-top{display:flex;gap:6px;margin:6px 0 10px}.sc-top input{flex:1;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--line,#1f2b3a);background:var(--field,#0c121a);color:var(--txt,#e8eef5)}
 .sc-card{background:var(--panel,#111822);border:1px solid var(--line,#1f2b3a);border-radius:12px;margin:0 0 10px;overflow:hidden}
 .sc-hd{display:flex;align-items:center;gap:9px;width:100%;padding:11px 12px;background:none;border:0;color:var(--txt,#e8eef5);cursor:pointer;font:inherit;text-align:left}
-.sc-hd svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--acc,#3b8cff);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sc-hd svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--mut,#8a9bb0);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .sc-hd .sc-t{flex:1;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
-.sc-hd .sc-ar{color:var(--mut,#8a9bb0);font-size:12px}.sc-card.open>.sc-hd .sc-ar{color:var(--grn,#3fcf6b)}
+.sc-hd .sc-ar{color:var(--mut,#8a9bb0);font-size:12px}
 .sc-bd{display:none;padding:0 12px 12px}.sc-card.open>.sc-bd{display:block}
 .sc-sub{border-top:1px solid var(--line,#1f2b3a);margin-top:8px}
 .sc-sh{display:block;width:100%;background:none;border:0;padding:8px 0 4px;color:var(--mut,#8a9bb0);font:inherit;font-size:13px;text-align:left;cursor:pointer}
@@ -24094,8 +24096,8 @@ function scCss() {
 .sc-seg{display:flex;border:1px solid var(--line,#1f2b3a);border-radius:10px;overflow:hidden;margin:4px 0}.sc-seg button{flex:1;padding:9px;border:0;background:var(--panel,#111822);color:var(--txt,#e8eef5);font:inherit;cursor:pointer}
 .sc-seg button.on{background:var(--acc,#3b8cff);color:#fff}.sc-none{margin:8px 2px}
 .sc-hide{display:none!important}
-.sc-card.sc-on1>.sc-hd svg{stroke:var(--grn,#3fcf6b)}.sc-card.sc-on1>.sc-hd .sc-t{color:var(--grn,#3fcf6b)}
-.sc-card.sc-on2>.sc-hd svg{stroke:var(--org,#f2a33a)}.sc-card.sc-on2>.sc-hd .sc-t{color:var(--org,#f2a33a)}`;
+.sc-card.sc-on1>.sc-hd svg{stroke:var(--grn,#3fcf6b)}.sc-card.sc-on1>.sc-hd .sc-ar{color:var(--grn,#3fcf6b)}
+.sc-card.sc-on2>.sc-hd svg{stroke:var(--org,#f2a33a)}.sc-card.sc-on2>.sc-hd .sc-ar{color:var(--org,#f2a33a)}`;
   document.head.appendChild(s);
 }
 function scOn(G, r) {                               // 2.95.51: the symbol of a group is green when something is on (3D-3.43 sends groups_on)
@@ -24307,10 +24309,20 @@ details.fold>summary:hover{background:var(--field)}
 details.fold>summary h2{flex:1;margin:0}
 details.fold>summary::after{content:"▾";color:var(--mut);font-size:15px;transition:transform .15s;margin-left:10px}
 details.fold:not([open])>summary::after{transform:rotate(-90deg)}
-details.fold.act>summary::after,.stfold.act{color:var(--grn,#3fb950)}
-.stfold{background:none;border:0;padding:4px 6px;color:var(--mut);font-size:15px;cursor:pointer;margin-left:2px;order:5}
-.stfold::after{content:"▾";display:inline-block;transition:transform .15s}#c-status.closed .stfold::after{transform:rotate(-90deg)}
-#c-status.closed #s-stbody{display:none}
+details.fold.act>summary::after{color:var(--grn,#3fb950)}
+/* 2.95.69: the symbol is green too while the function works (red: switched on, but it does not work) */
+details.fold.act>summary h2 svg{color:var(--grn,#3fb950)}details.fold.bad>summary h2 svg,details.fold.bad>summary::after{color:var(--red,#ff5b4b)}
+[data-need][hidden],.needhide{display:none!important}
+.hsub{font-weight:400;font-size:13px;margin-left:2px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.opt.first{border-top:0;padding-top:0}
+details.sub{border-top:1px solid var(--line);padding-top:4px}
+details.sub>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px;font-weight:600}
+details.sub>summary::-webkit-details-marker{display:none}
+details.sub>summary svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--mut);flex:none}
+details.sub>summary>span{flex:1}
+details.sub>summary::after{content:"▾";color:var(--mut);font-size:14px;transition:transform .15s}details.sub:not([open])>summary::after{transform:rotate(-90deg)}
+details.sub.act>summary svg,details.sub.act>summary::after{color:var(--grn,#3fb950)}
+details.sub>*+*{margin-top:8px}
 details.fold>.fb{padding:0 20px 18px}
 details.fold>.fb>*+*{margin-top:12px}
 details.fold>.fb>.mut:first-child{margin-top:0}
@@ -24347,9 +24359,9 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .dl a,.dl button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px;font-size:14px}
 .dl a small,.dl button small{font-weight:400;font-size:12px;opacity:.75}
 .dl .main{grid-column:1/-1}.dlic{width:26px;height:26px;border-radius:7px;vertical-align:middle;margin-right:4px}
-#c-prev{padding:12px}#c-prev>*+*{margin-top:8px}
+#c-prev>.fb>*+*{margin-top:8px}#c-prev>.fb{padding:0 12px 12px}#c-prev.full>summary{padding:10px 10px}
 /* 2.95.20: the simulator window uses the whole width of the screen (out of the page column) */
-#c-prev.full{width:calc(100vw - var(--sbw,0px));margin-left:calc(50% - (100vw - var(--sbw,0px)) / 2);border-radius:0;border-left:0;border-right:0;padding:8px 6px}
+#c-prev.full{width:calc(100vw - var(--sbw,0px));margin-left:calc(50% - (100vw - var(--sbw,0px)) / 2);border-radius:0;border-left:0;border-right:0;padding:8px 6px}#c-prev.full>.fb{padding:0}
 #c-prev.full .pvw{border-radius:6px}
 #c-prev.full .pvw.view:not(.fs) #s-prev{max-height:none}
 .pvw{position:relative;background:#000;border-radius:10px;overflow:hidden}
@@ -24408,7 +24420,6 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .pvbtn button{width:38px;height:38px;padding:0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(10,14,20,.65);color:#fff;font-size:18px;cursor:pointer}
 .pvbtn button.on{background:var(--acc,#3b8cff)}
 #s-prev{width:100%;height:auto;min-height:200px;object-fit:contain;background:#000;display:block;max-height:calc(100vh - var(--hdr-h,64px) - 170px)}
-#c-prev{padding:12px}
 .pvcam{position:absolute;right:58px;top:10px;width:28%;max-width:320px;min-width:120px;border:2px solid rgba(255,255,255,.8);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.5);background:#000;cursor:pointer;z-index:3}
 .pvcam img{display:block;width:100%;border-radius:6px}.pvcam span{position:absolute;left:5px;top:5px;font:700 10px/1 system-ui,sans-serif;color:#fff;background:rgba(200,0,0,.75);padding:3px 5px;border-radius:4px}
 .pvlive{position:absolute;left:10px;bottom:10px;font:700 11px/1 system-ui,sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px}
@@ -24429,7 +24440,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 #s-scn{display:flex;gap:8px;flex-wrap:wrap}#s-scn select{flex:1 1 220px;min-width:0}
 .howto{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
 @media(max-width:820px){main.simp{grid-template-columns:1fr;padding:12px 12px 32px}.sc{padding:14px}details.fold{padding:0}details.fold>summary{padding:14px}details.fold>.fb{padding:0 14px 14px}.dl{grid-template-columns:1fr}
-  .sttl{font-size:17px}#s-btn{flex:1 1 100%;order:6}#s-upd{flex:1 1 100%;order:6}.stfold{order:0}.tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
+  .tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
 </style></head><body>
 <header>
   <h1>Motion Watch</h1>
@@ -24440,9 +24451,12 @@ details.fold>.fb>.mut:first-child{margin-top:0}
   </span>
 </header>
 <main class="simp">
+  <!-- 2.95.69: order by logic - 1 connection, 2 status, 3 (only when connected) picture, control, test run …; every card:
+       symbol, name, arrow on the right; symbol and arrow green while its function works -->
   <details class="sc fold wide" id="c-conn" data-k="conn" open>
-    <summary><h2><svg viewBox="0 0 24 24"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><span data-i18n="Connection">Connection</span></h2></summary>
+    <summary><h2><svg viewBox="0 0 24 24"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><span data-i18n="Connection">Connection</span><span class="mut hsub" id="s-csub"></span></h2></summary>
     <div class="fb">
+    <label class="opt first"><span><b style="font-weight:600" data-i18n="Simulation">Simulation</b><br><small class="mut" id="s-onnote"></small></span><input type="checkbox" class="sw" id="s-on" onchange="simOnOff()"></label>
     <div class="mut" data-i18n="conn-note">conn-note</div>
     <div class="row2"><input type="text" id="s-url" placeholder="http://192.168.1.50:8765" autocomplete="off"><button type="button" class="sec" onclick="saveUrl()" data-i18n="Save">Save</button></div>
     <label class="opt"><span data-i18n="Find the simulator in the network by itself">Find the simulator in the network by itself</span><input type="checkbox" class="sw" id="k-sim_auto" onchange="setKey('sim_auto', this.checked)"></label>
@@ -24451,22 +24465,40 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div><b style="font-weight:600;font-size:14px" data-i18n="Simulators in the network">Simulators in the network</b><div class="mut" id="s-scan"></div></div>
     <div id="s-found"></div>
     <button type="button" class="sec" id="s-search" onclick="search()" style="width:100%" data-i18n="Search now">Search now</button>
+    <details class="sub" id="c-tunnel">
+      <summary><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span data-i18n="Simulator behind a firewall">Simulator behind a firewall</span></summary>
+      <div class="mut" data-i18n="tunnel-note">tunnel-note</div>
+      <div id="tun-box" style="margin-top:8px"></div>
+    </details>
     </div>
   </details>
-  <section class="sc wide" id="c-status">
-    <div class="sthead"><i class="sdot" id="s-dot"></i><div class="sttl" id="s-ttl">–</div><button type="button" class="sec" id="s-upd" onclick="simUpdate()" hidden>⟳ <span data-i18n="Update the simulator">Update the simulator</span></button><button type="button" id="s-btn" onclick="simOnOff()">–</button><button type="button" class="stfold" id="s-stfold" onclick="stFold()" aria-label="fold"></button></div>
+  <details class="sc fold wide" id="c-status" data-k="status" data-need="on" open>
+    <summary><h2><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6H21"/></svg><span id="s-ttl">–</span></h2></summary>
+    <div class="fb" id="s-stbody">
     <div class="supd" id="s-supd" hidden><div class="supd-t" id="s-supdt"></div><div class="mut supd-n" id="s-supdn"></div></div>
-    <div id="s-stbody">
+    <button type="button" class="sec" id="s-upd" onclick="simUpdate()" hidden>⟳ <span data-i18n="Update the simulator">Update the simulator</span></button>
     <div class="mut" id="s-msg"></div>
     <div class="mut sver" id="s-ver"></div>
     <div class="tiles" id="s-tiles"></div>
     </div>
-  </section>
-  <section class="sc wide" id="c-game" hidden>
-    <div class="gm">
+  </details>
+  <details class="sc fold wide" id="c-prev" data-k="prev" data-need="ok" open>
+    <summary><h2><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg><span data-i18n="Live picture">Live picture</span></h2></summary>
+    <div class="fb">
+    <div class="pvmode" id="s-pvmode" hidden><button type="button" data-m="view">🗺 <span data-i18n="Simulator window">Simulator window</span></button><button type="button" data-m="cam">📷 <span data-i18n="Camera picture">Camera picture</span></button></div>
+    <div class="pvw" id="s-pvw"><img id="s-prev" alt="" draggable="false" tabindex="0"><span class="pvlive" id="s-pvlive" hidden>● LIVE</span>
+      <div class="pvcam" id="s-pvcam" hidden title="Kamera gross zeigen"><img id="s-pvcimg" alt=""><span>📷 LIVE</span></div>
+      <div class="spec" id="s-spec" hidden><div class="spec-h" id="s-spech"></div><div class="spec-p" id="s-specp"></div><div class="spec-f" id="s-specf"></div></div>
+      <div class="specres" id="s-specres" hidden></div>
+      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><button type="button" id="s-vstat" title="Statistik ein / aus" hidden>📊</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vgyro" title="Handy als Fenster: das Handy drehen = umschauen" hidden>📱</button><button type="button" id="s-vcam" title="Kamerabild klein ein / aus">📷</button><button type="button" id="s-vctl" title="Bedienen mit dem Finger (sonst scrollt die Seite)">✋</button><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
+    <div class="mut" id="s-prevnote"></div>
+    </div>
+  </details>
+  <details class="sc fold wide" id="c-game" data-k="game" data-need="ok" hidden open>
+    <summary><h2><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 12.5h4M9 10.5v4"/><circle cx="15" cy="11.5" r="1"/><circle cx="17.5" cy="14" r="1"/></svg><span data-i18n="Game «Unseen to the goal»">Game «Unseen to the goal»</span></h2></summary>
+    <div class="fb"><div class="gm">
       <div class="gm-qr" id="g-qrbox" hidden><img id="g-qr" alt="QR" onclick="gameBig(true)"></div>
       <div class="gm-t">
-        <h2 style="margin:0 0 6px">🎮 <span data-i18n="Game «Unseen to the goal»">Game «Unseen to the goal»</span></h2>
         <div class="mut" id="g-txt"></div>
         <div class="gm-url" id="g-url"></div>
         <div id="g-more"></div>
@@ -24475,35 +24507,20 @@ details.fold>.fb>.mut:first-child{margin-top:0}
           <button type="button" class="sec" id="g-close" onclick="gameOpen(false)" hidden data-i18n="Close the game">Close the game</button></div>
       </div>
     </div>
-  </section>
+    </div>
+  </details>
   <div id="gw" hidden><div class="gw-box">
     <div class="gw-top"><div class="gw-steps" id="gw-steps"></div><button type="button" class="sec gw-x" onclick="gwClose()" aria-label="close">✕</button></div>
     <div class="gw-body" id="gw-body"></div>
     <div class="gw-nav"><button type="button" class="sec" id="gw-back" onclick="gwGo(-1)">‹ <span data-i18n="Back">Back</span></button><button type="button" id="gw-next" onclick="gwGo(1)"></button></div>
   </div></div>
   <div id="g-bigov" hidden onclick="gameBig(false)"><img id="g-qrbig" alt="QR"><div id="g-urlbig"></div><div class="mut" data-i18n="Tap to close">Tap to close</div></div>
-  <section class="sc wide" id="c-tunnel">
-    <h2 style="margin:0 0 6px">🔒 <span data-i18n="Simulator behind a firewall">Simulator behind a firewall</span></h2>
-    <div class="mut" data-i18n="tunnel-note">tunnel-note</div>
-    <div id="tun-box" style="margin-top:8px"></div>
-  </section>
-  <section class="sc wide" id="c-tools" hidden>
-    <h2 style="margin:0 0 6px">🧰 <span data-i18n="Simulator tools">Simulator tools</span></h2>
-    <div id="st-box"></div>
-  </section>
-  <section class="sc wide" id="c-prev">
-    <div class="pvmode" id="s-pvmode" hidden><button type="button" data-m="view">🗺 <span data-i18n="Simulator window">Simulator window</span></button><button type="button" data-m="cam">📷 <span data-i18n="Camera picture">Camera picture</span></button></div>
-    <div class="pvw" id="s-pvw"><img id="s-prev" alt="" draggable="false" tabindex="0"><span class="pvlive" id="s-pvlive" hidden>● LIVE</span>
-      <div class="pvcam" id="s-pvcam" hidden title="Kamera gross zeigen"><img id="s-pvcimg" alt=""><span>📷 LIVE</span></div>
-      <div class="spec" id="s-spec" hidden><div class="spec-h" id="s-spech"></div><div class="spec-p" id="s-specp"></div><div class="spec-f" id="s-specf"></div></div>
-      <div class="specres" id="s-specres" hidden></div>
-      <div class="pvbtn"><button type="button" id="s-vfs" title="Vollbild">⛶</button><button type="button" id="s-vstat" title="Statistik ein / aus" hidden>📊</button><span class="pvbtn" id="s-pvbtn" hidden><button type="button" id="s-vgyro" title="Handy als Fenster: das Handy drehen = umschauen" hidden>📱</button><button type="button" id="s-vcam" title="Kamerabild klein ein / aus">📷</button><button type="button" id="s-vctl" title="Bedienen mit dem Finger (sonst scrollt die Seite)">✋</button><button type="button" id="s-vrot" title="Finger: drehen statt verschieben">⟲</button><button type="button" id="s-vin">＋</button><button type="button" id="s-vout">－</button></span></div></div>
-    <div class="mut" id="s-prevnote"></div>
-  </section>
+  <details class="sc fold wide" id="c-tools" data-k="tools" data-need="ok" hidden>
+    <summary><h2><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg><span data-i18n="Simulator tools">Simulator tools</span></h2></summary>
+    <div class="fb"><div id="st-box"></div></div>
+  </details>
 
-
-
-  <details class="sc fold wide" id="c-ctl" data-k="ctl" open>
+  <details class="sc fold wide" id="c-ctl" data-k="ctl" data-need="ok" open>
     <summary><h2><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span data-i18n="Simulator control">Simulator control</span><span class="mut" id="s-cname" style="font-weight:400"></span></h2></summary>
     <div class="fb">
     <div class="mut" id="s-cst" data-i18n="ctl-note">ctl-note</div>
@@ -24513,7 +24530,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     </div>
   </details>
 
-  <details class="sc fold wide" id="c-test" data-k="test">
+  <details class="sc fold wide" id="c-test" data-k="test" data-need="ok">
     <summary><h2><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><span data-i18n="Test run and optimization">Test run and optimization</span></h2></summary>
     <div class="fb" id="tr-box">
     <div class="mut" data-i18n="tr-note">tr-note</div>
@@ -24527,7 +24544,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     </div>
   </details>
 
-  <details class="sc fold" id="c-perf" data-k="perf">
+  <details class="sc fold" id="c-perf" data-k="perf" data-need="ok">
     <summary><h2><svg viewBox="0 0 24 24"><path d="M13 3L4 14h7l-1 7 9-11h-7z"/></svg><span data-i18n="Computing power">Computing power</span></h2></summary>
     <div class="fb">
     <div class="mut" data-i18n="perf-note">perf-note</div>
@@ -24620,7 +24637,7 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "Catch fast persons": "Schnelle Personen erwischen", "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.": "{n} schnelle Personen (Jogger) verpasst: weniger Bilder bis das Gehen erkannt ist, die KI prüft jedes Bild.",
  "More sensitive by day": "Am Tag empfindlicher", "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.": "{n} Personen am Tag verpasst: empfindlicher, und die KI nimmt auch weniger sichere Personen an.",
  "React faster": "Schneller reagieren", "Motion Watch needed {n} s on average: the AI looks at every picture and walking is recognised sooner.": "Motion Watch brauchte im Mittel {n} s: die KI prüft jedes Bild und das Gehen wird früher erkannt."});
-Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
+Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
  "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
  "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
  "Load": "Laden", "Delete": "Löschen", "Computing power": "Rechenleistung", "perf-note": "Weniger Bilder pro Sekunde entlasten den Pi und den PC.",
@@ -24653,25 +24670,26 @@ async function load() {
   if (r) { S = r; paint(); }
   clearTimeout(load.t); load.t = setTimeout(load, S && S.scan && S.scan.running ? 1000 : 3000);
 }
-function stFold(set) {
-  const c = $("#c-status"); let closed = set === undefined ? !c.classList.contains("closed") : set;
-  c.classList.toggle("closed", closed); if (set === undefined) { try { localStorage.setItem("mw-sim-stfold", closed ? "1" : "0"); } catch (e) {} }
-}
-try { stFold(localStorage.getItem("mw-sim-stfold") === "1"); } catch (e) {}
-function foldAct() {                       // the arrows turn green when what is inside is switched on / works
-  const ok = !!(S && S.on && S.ok);
-  const on = {conn: ok, ctl: ok, perf: !!(S && S.eco), test: !!(TR && (TR.busy || (TR.sim && TR.sim.running)))};
-  document.querySelectorAll("details.fold[data-k]").forEach(d => d.classList.toggle("act", !!on[d.dataset.k]));
-  $("#s-stfold").classList.toggle("act", ok);
-  $("#s-stfold").hidden = !(S && S.on);      // simulation off: nothing to fold
+function foldAct() {                       // 2.95.69: symbol + arrow green while the function of the card works
+  const on = !!(S && S.on), ok = !!(on && S.ok), T = (S && S.stats) || {};
+  const act = {conn: ok, status: ok, prev: ok && T.cam_fps != null && T.cam_fps > 0, ctl: ok, perf: !!(S && S.eco),
+               test: !!(TR && (TR.busy || (TR.sim && TR.sim.running))), tools: ok, game: !!(GWR && GWR.game && GWR.game.open)};
+  document.querySelectorAll("details.fold[data-k]").forEach(d => { const k = d.dataset.k;
+    d.classList.toggle("act", !!act[k]); d.classList.toggle("bad", (k === "conn" || k === "status") && on && !ok); });
+  const tu = $("#c-tunnel"); if (tu) tu.classList.toggle("act", !!(S && S.tunnel && S.tunnel.active));
+  // order by logic: the status only with the simulation on, the rest only when the simulator answers
+  document.querySelectorAll("[data-need]").forEach(d => d.classList.toggle("needhide", d.dataset.need === "on" ? !on : !ok));
+  if (ok && !foldAct.was) { const c = $("#c-conn"); if (c) c.open = false; }   // connected: the connection folds away
+  if (!ok && foldAct.was !== false) { const c = $("#c-conn"); if (c) c.open = true; }
+  foldAct.was = ok;
 }
 function paint() {
   foldAct();
   const T = S.stats || {};
-  $("#s-dot").className = "sdot" + (S.on ? (S.ok ? " ok" : " bad") : "");
-  $("#s-ttl").textContent = !S.on ? t("Simulation off") : S.ok ? (T.name || t("connected")) : t("Simulator not reachable");
-  $("#s-btn").textContent = S.on ? t("Switch the simulation off") : t("Switch the simulation on");
-  $("#s-btn").className = S.on ? "sec" : "";
+  $("#s-ttl").textContent = "Status · " + (!S.on ? t("Simulation off") : S.ok ? (T.name || t("connected")) : t("Simulator not reachable"));
+  const so = $("#s-on"); if (so && document.activeElement !== so) so.checked = !!S.on;
+  $("#s-onnote").textContent = !S.on ? t("off - the real cameras and sensors are used") : S.ok ? t("connected") + (T.name ? ": " + T.name : "") : t("Simulator not reachable");
+  $("#s-csub").textContent = S.on && S.ok ? "· " + t("connected") : "";
   $("#s-msg").textContent = (S.msg ? t(S.msg) + " · " : "") + (S.url || "");
   const tile = (k, v) => '<div class="tile"><div class="mut">' + k + '</div><b>' + v + '</b></div>';
   $("#s-tiles").hidden = !S.on;
@@ -24919,7 +24937,7 @@ async function simUpdate() {
   toast(r.ok ? "⟳ " + t("The simulator looks for a new version and installs it (about a minute, it starts again by itself).") : "⚠ " + (r.error || t("not possible")));
   setTimeout(() => { b.disabled = false; }, 20000);
 }
-async function simOnOff() { const b = $("#s-btn"); b.disabled = true; await post("/api/sim", {on: !(S && S.on), lang: LANG}); b.disabled = false; CS = ""; load(); }
+async function simOnOff() { const b = $("#s-on"); b.disabled = true; await post("/api/sim", {on: b.checked, lang: LANG}); b.disabled = false; CS = ""; load(); }
 async function saveUrl() { URLEDIT = false; const r = await post("/api/sim", {url: $("#s-url").value.trim(), lang: LANG}); toast(r.ok === false ? (r.error || t("not possible")) : t("Saved")); load(); }
 $("#s-url").addEventListener("input", () => URLEDIT = true);
 async function setKey(k, v) { const r = await post("/api/set", {key: k, value: v}); if (!r.ok) toast(r.error || t("not possible")); load(); }
@@ -32080,7 +32098,7 @@ function setVideoOnly(on) {
 let voIdleT = null;
 function voWake() { const c = $("#vo-ctl"); if (!c) return; c.classList.remove("idle"); clearTimeout(voIdleT); voIdleT = setTimeout(() => c.classList.add("idle"), 3000); }
 function voStick(on) {
-  const st = $("#stick"), slot = $("#vo-slot"), box = document.querySelector(".stickbox");
+  const st = $("#stick"), slot = $("#vo-slot"), box = document.querySelector(".ctl-stick .stickbox");   // 2.95.69: not the mover box (that one comes first)
   if (!st || !slot || !box) return;
   if (on && st.parentNode !== slot) slot.appendChild(st);
   if (!on && st.parentNode !== box) box.insertBefore(st, box.firstChild);
@@ -40488,7 +40506,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.68")
+        self.root.title("Motion Watch 2.95.69")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40778,7 +40796,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.68 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.69 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

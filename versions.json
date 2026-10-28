@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 09:28",
+ "generated": "2026-10-28 09:51",
  "versions": [
   {
-   "version": "2.95.68",
-   "file": "webcam_bewegung_2_95_68.py",
+   "version": "2.95.69",
+   "file": "webcam_bewegung_2_95_69.py",
    "url": "",
-   "sha256": "9855e9d911a9d82d089799234b2dc44c8d3f6334b623e993eb82d2a96741f69f",
-   "date": "2026-10-28 09:28",
-   "notes": "Simulator über den Tunnel: Motion Watch stellt nicht mehr auf die direkte Adresse um (schwarzes Livebild), und kehrt von selbst zum Tunnel zurück",
-   "sig": "8a48c83eb227c53937575eb9e0ee7501ffb98f5fa066ca55a5aab6348c523cbdc40ca704baec8b2679714cb1b96e396acc5795697941adc8d0463c200df6080d"
+   "sha256": "ffb847940f1b6ec2268dc3f501c01bb3eb372274baefc06cd9c372b926ecac70",
+   "date": "2026-10-28 09:51",
+   "notes": "Simulator-Seite nach Logik geordnet (Verbindung, Status, dann Livebild und Steuerung erst wenn verbunden); Symbol und Pfeil grün, wenn die Funktion läuft; Vollbild quer: Steuer-Stick wieder am richtigen Platz",
+   "sig": "9199cc323fac784996bf9f9afdab19f6143a73ba43384634cd62ab1863642a8f313bc3e836085591f39b651a74cbb581a6d40b99c9e4fd94fcfa2ab5a2b00c0c"
   },
   {
    "version": "2.94.5",
