@@ -25,8 +25,14 @@ const Pics = preload("res://scripts/wizpics.gd")
 var _tex := {}
 const KEYS := ["game_mode", "game_goal", "game_level", "game_lives", "game_minutes", "game_items", "game_teams", "game_rescue", "game_stones",
 		"game_cones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints",
-		"game_autohandicap", "game_tasks"]
-const STEPS := ["Spielart", "Ziel", "Schwierigkeit", "Start"]
+		"game_autohandicap", "game_tasks", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart"]
+const STEPS := ["Spielart", "Ziel", "Schwierigkeit", "Mitspieler & Start"]
+# 3D-3.77: on the last step - who plays along
+const PLAYER_OPTS := [["game_bots", "Computer-Spieler (Bots)", "select", 0, 0, "", false, [["0", "keine"], ["1", "1 Bot"], ["2", "2 Bots"], ["3", "3 Bots"]]],
+		["game_tutorial", "Übungsrunde: Schritt für Schritt erklärt, niemand wird erwischt", "toggle", 0, 0, "", false],
+		["game_daily", "Tagesaufgabe: heute für alle dieselbe Szene, dasselbe Ziel, dieselben Startpunkte", "toggle", 0, 0, "", false],
+		["game_ghost", "Geisterläufer: der eigene beste Weg läuft als Geist mit", "toggle", 0, 0, "", false],
+		["game_heart", "Herzschlag, wenn die Kamera dich gleich sieht", "toggle", 0, 0, "", false]]
 const MODES := [["camera", "🎥", "Alle gegen die Kamera", "Alle schleichen zum Ziel. Der Kopf von Motion Watch dreht sich und sucht euch. Wer zu lange gesehen wird, ist erwischt."],
 		["guard", "👮", "Ein Spieler ist Wächter", "Ein Spieler ist Wächter: Er dreht mit dem Handy den Kopf, schaltet das Licht ein und ruft «Erwischt!», wenn er jemanden sieht."],
 		["teamguard", "🔴🔵", "Team gegen Team", "Räuber und Wächter: Rot gegen Blau. Ein Team schleicht, das andere bewacht mit dem Kopf und ruft «Erwischt!»."],
@@ -167,8 +173,8 @@ func model() -> Dictionary:
 		var on: bool = (lvl == c[0]) if key == "_lvl" else str(W.get(key, "")) == c[0]
 		cards.append({"v": c[0], "icon": c[1], "title": c[2], "text": c[3], "on": on, "pic": Pics.PICS.get(c[0], "")})
 	var opts := []
-	if step == 2:
-		for o in OPTIONS:
+	if step == 2 or step == 3:
+		for o in (OPTIONS if step == 2 else PLAYER_OPTS):
 			if not W.has(o[0]):
 				continue
 			var d := {"id": o[0], "label": o[1], "type": o[2], "value": W[o[0]], "extra": o[6]}
@@ -177,7 +183,7 @@ func model() -> Dictionary:
 				d["max"] = o[4]
 				d["unit"] = o[5]
 			elif o[2] == "select":
-				d["options"] = LIVES
+				d["options"] = o[7] if o.size() > 7 else LIVES
 			opts.append(d)
 	var summary := []
 	if step == 3:
@@ -289,7 +295,18 @@ func _next() -> void:
 	_changed()
 
 
-# ---- in this window ---------------------------------------------------------------------------------------------------
+# ---- in this window (3D-3.77: clearer and animated) ------------------------------------------------------------------
+var prog: Control                 # the steps: dots on a line, the line fills up
+var _prog_f := 0.0                # 0 .. 3, animated
+var _pulse := 0.0
+var _last_step := -1
+var _slide: MarginContainer
+var _hover_tw := {}
+const ACC := Color(0.23, 0.55, 1.0)
+const GRN := Color(0.3, 0.85, 0.45)
+const ORG := Color(1.0, 0.62, 0.26)
+
+
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	offset_left = 60
@@ -297,49 +314,67 @@ func _ready() -> void:
 	offset_right = -440
 	offset_bottom = -40
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.07, 0.08, 0.1, 0.97)
-	sb.set_corner_radius_all(14)
-	sb.set_content_margin_all(14)
+	sb.bg_color = Color(0.06, 0.075, 0.095, 0.97)
+	sb.set_corner_radius_all(16)
+	sb.set_content_margin_all(16)
 	sb.border_color = Color(0.2, 0.27, 0.35)
 	sb.set_border_width_all(1)
+	sb.shadow_color = Color(0, 0, 0, 0.45)
+	sb.shadow_size = 18
 	add_theme_stylebox_override("panel", sb)
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 10)
+	v.add_theme_constant_override("separation", 12)
 	add_child(v)
 	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 10)
 	v.add_child(top)
+	var logo: Control = load("res://scripts/mw_logo.gd").new()
+	logo.custom_minimum_size = Vector2(30, 30)
+	top.add_child(logo)
 	var t := Label.new()
 	t.text = "Spiel-Assistent"
-	t.add_theme_font_size_override("font_size", 17)
+	t.add_theme_font_size_override("font_size", 19)
+	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(t)
-	steps_box = HBoxContainer.new()
-	steps_box.add_theme_constant_override("separation", 6)
-	steps_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	steps_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	top.add_child(steps_box)
 	var x := Button.new()
-	x.text = "×"
+	x.text = "✕"
+	x.flat = true
 	x.tooltip_text = "Schliessen (Esc)"
 	x.pressed.connect(close_wiz)
 	top.add_child(x)
+	prog = Control.new()
+	prog.custom_minimum_size = Vector2(0, 54)
+	prog.draw.connect(_draw_prog)
+	prog.mouse_filter = Control.MOUSE_FILTER_STOP
+	prog.gui_input.connect(_prog_input)
+	v.add_child(prog)
+	steps_box = HBoxContainer.new()                  # kept for compatibility (not shown)
+	steps_box.visible = false
+	v.add_child(steps_box)
 	var sc := ScrollContainer.new()
 	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	v.add_child(sc)
+	_slide = MarginContainer.new()
+	_slide.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sc.add_child(_slide)
 	body = VBoxContainer.new()
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	body.add_theme_constant_override("separation", 8)
-	sc.add_child(body)
+	body.add_theme_constant_override("separation", 10)
+	_slide.add_child(body)
 	var nav := HBoxContainer.new()
+	nav.add_theme_constant_override("separation", 8)
 	v.add_child(nav)
 	back_btn = Button.new()
 	back_btn.text = "‹ Zurück"
+	back_btn.custom_minimum_size = Vector2(110, 40)
 	back_btn.pressed.connect(func(): op({"op": "back"}))
 	nav.add_child(back_btn)
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	nav.add_child(sp)
 	next_btn = Button.new()
+	next_btn.custom_minimum_size = Vector2(200, 40)
 	next_btn.pressed.connect(func(): op({"op": "next"}))
 	if main.UI.has_method("primary"):
 		main.UI.primary(next_btn)
@@ -353,16 +388,60 @@ func _unhandled_key_input(ev: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-func _process(_dt: float) -> void:
+func _process(dt: float) -> void:
 	if visible != shown:
 		visible = shown
+		if shown:                                         # a little pop when it opens
+			pivot_offset = size / 2.0
+			scale = Vector2(0.96, 0.96)
+			modulate.a = 0.0
+			var tw := create_tween().set_parallel(true)
+			tw.tween_property(self, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tw.tween_property(self, "modulate:a", 1.0, 0.18)
 	if not visible:
 		return
+	_pulse += dt
+	_prog_f = move_toward(_prog_f, float(step), dt * 4.0)
+	prog.queue_redraw()
 	var g = main.game
 	var sig: int = seq * 100 + (1 if g.open else 0) * 10 + mini(9, g.count())
 	if sig != _painted:
 		_painted = sig
 		_paint()
+
+
+func _draw_prog() -> void:
+	"""the steps as dots on a line: done = green tick, now = blue and pulsing, later = grey"""
+	var w := prog.size.x
+	var n := STEPS.size()
+	var x0 := 40.0
+	var x1 := w - 40.0
+	var y := 16.0
+	prog.draw_line(Vector2(x0, y), Vector2(x1, y), Color(0.2, 0.25, 0.32), 4.0, true)
+	var xf := lerpf(x0, x1, _prog_f / float(n - 1))
+	prog.draw_line(Vector2(x0, y), Vector2(xf, y), ACC, 4.0, true)
+	var font := get_theme_default_font()
+	for i in range(n):
+		var x := lerpf(x0, x1, float(i) / float(n - 1))
+		var c := GRN if i < step else (ACC if i == step else Color(0.25, 0.3, 0.37))
+		if i == step:
+			var r := 13.0 + 3.0 * (0.5 + 0.5 * sin(_pulse * 4.0))
+			prog.draw_circle(Vector2(x, y), r, Color(ACC, 0.25))
+		prog.draw_circle(Vector2(x, y), 11.0, c)
+		var mark := "✓" if i < step else str(i + 1)
+		prog.draw_string(font, Vector2(x - 12, y + 5), mark, HORIZONTAL_ALIGNMENT_CENTER, 24, 13, Color.WHITE)
+		prog.draw_string(font, Vector2(x - 70, y + 32), STEPS[i], HORIZONTAL_ALIGNMENT_CENTER, 140, 12, Color.WHITE if i == step else Color(0.62, 0.68, 0.76))
+
+
+func _prog_input(ev: InputEvent) -> void:
+	"""click on a step that is done: back to it"""
+	if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+		var n := STEPS.size()
+		var i := clampi(int(round((ev.position.x - 40.0) / max(1.0, prog.size.x - 80.0) * (n - 1))), 0, n - 1)
+		if i < step:
+			step = i
+			error = ""
+			_changed()
 
 
 static func plain(t: String) -> String:
@@ -385,149 +464,226 @@ func _lab(t: String, sz := 14, col := Color(0.85, 0.88, 0.92), wrap := true) -> 
 	return l
 
 
+func _box(bg: Color, border: Color, bw := 1, r := 12, pad := 12) -> StyleBoxFlat:
+	var b := StyleBoxFlat.new()
+	b.bg_color = bg
+	b.border_color = border
+	b.set_border_width_all(bw)
+	b.set_corner_radius_all(r)
+	b.set_content_margin_all(pad)
+	return b
+
+
+func _card(c: Dictionary, k: String) -> PanelContainer:
+	"""a choice: picture, title, text; chosen = blue frame and «✓ gewählt»; the mouse over it: a little bigger"""
+	var pc := PanelContainer.new()
+	pc.custom_minimum_size = Vector2(190, 0)
+	pc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var on: bool = c["on"]
+	pc.add_theme_stylebox_override("panel", _box(Color(0.1, 0.16, 0.26) if on else Color(0.1, 0.12, 0.15), ACC if on else Color(0.2, 0.25, 0.32), 2 if on else 1, 14, 12))
+	pc.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 6)
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pc.add_child(v)
+	if not _tex.has(c["v"]):
+		_tex[c["v"]] = Pics.texture(c["v"], 0.8)
+	if _tex[c["v"]] != null:
+		var tr := TextureRect.new()
+		tr.texture = _tex[c["v"]]
+		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tr.custom_minimum_size = Vector2(0, 96)
+		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.add_child(tr)
+	var tl := _lab(c["title"], 16, Color.WHITE)
+	tl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(tl)
+	var tx := _lab(c["text"], 12, Color(0.65, 0.7, 0.78))
+	tx.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(tx)
+	if on:
+		var ok := _lab("✓ gewählt", 12, GRN, false)
+		ok.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.add_child(ok)
+	var vv: String = c["v"]
+	pc.gui_input.connect(func(ev):
+		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+			var tw := pc.create_tween()
+			pc.pivot_offset = pc.size / 2.0
+			tw.tween_property(pc, "scale", Vector2(0.96, 0.96), 0.06)
+			tw.tween_property(pc, "scale", Vector2.ONE, 0.1)
+			tw.tween_callback(func(): op({"op": "pick", "key": k, "value": vv})))
+	pc.mouse_entered.connect(func():
+		pc.pivot_offset = pc.size / 2.0
+		pc.create_tween().tween_property(pc, "scale", Vector2(1.03, 1.03), 0.12))
+	pc.mouse_exited.connect(func(): pc.create_tween().tween_property(pc, "scale", Vector2.ONE, 0.12))
+	return pc
+
+
+func _group(title: String) -> VBoxContainer:
+	var pc := PanelContainer.new()
+	pc.add_theme_stylebox_override("panel", _box(Color(0.09, 0.11, 0.14), Color(0.18, 0.22, 0.28), 1, 12, 12))
+	body.add_child(pc)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 8)
+	pc.add_child(v)
+	if title != "":
+		v.add_child(_lab(title, 14, Color(0.62, 0.68, 0.76), false))
+	return v
+
+
+func _option_row(o: Dictionary, parent: Control) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	parent.add_child(row)
+	var l := _lab(o["label"], 14)
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(l)
+	var id: String = o["id"]
+	match o["type"]:
+		"range":
+			var s := HSlider.new()
+			s.min_value = o["min"]
+			s.max_value = o["max"]
+			s.step = 1
+			s.value = float(o["value"])
+			s.custom_minimum_size = Vector2(160, 0)
+			var vl := _lab("%d%s" % [int(o["value"]), o["unit"]], 14, Color(1, 1, 1))
+			vl.custom_minimum_size = Vector2(54, 0)
+			var unit: String = o["unit"]
+			s.value_changed.connect(func(x): vl.text = "%d%s" % [int(x), unit]; W[id] = int(x) if typeof(W[id]) == TYPE_INT else float(x); seq += 1; _painted = seq * 100 + (1 if main.game.open else 0) * 10 + mini(9, main.game.count()))
+			row.add_child(s)
+			row.add_child(vl)
+		"toggle":
+			var cb := CheckButton.new()
+			cb.button_pressed = bool(o["value"])
+			cb.toggled.connect(func(x): W[id] = x; seq += 1; _painted = seq * 100 + (1 if main.game.open else 0) * 10 + mini(9, main.game.count()))
+			row.add_child(cb)
+		"select":
+			var ob := OptionButton.new()
+			var opts: Array = o.get("options", LIVES)
+			for i in range(opts.size()):
+				ob.add_item(opts[i][1])
+				if str(opts[i][0]) == str(o["value"]):
+					ob.select(i)
+			ob.item_selected.connect(func(i): W[id] = (int(opts[i][0]) if typeof(W[id]) == TYPE_INT else str(opts[i][0])); seq += 1; _painted = seq * 100 + (1 if main.game.open else 0) * 10 + mini(9, main.game.count()))
+			row.add_child(ob)
+
+
 func _paint() -> void:
 	var M := model()
-	for c in steps_box.get_children():
-		c.queue_free()
-	for i in range(STEPS.size()):
-		var s := _lab("%d %s" % [i + 1, STEPS[i]], 12, Color(1, 1, 1) if i == step else (Color(0.85, 0.88, 0.92) if i < step else Color(0.55, 0.6, 0.68)), false)
-		var pc := PanelContainer.new()
-		var sb := StyleBoxFlat.new()
-		sb.bg_color = Color(0.23, 0.55, 1.0) if i == step else Color(0, 0, 0, 0)
-		sb.border_color = Color(0.23, 0.55, 1.0) if i == step else Color(0.2, 0.27, 0.35)
-		sb.set_border_width_all(1)
-		sb.set_corner_radius_all(10)
-		sb.content_margin_left = 8
-		sb.content_margin_right = 8
-		pc.add_theme_stylebox_override("panel", sb)
-		pc.add_child(s)
-		steps_box.add_child(pc)
 	for c in body.get_children():
 		c.queue_free()
 	if error != "":
 		body.add_child(_lab(error, 13, Color(1.0, 0.55, 0.45)))
-	body.add_child(_lab(M["title"], 20, Color(1, 1, 1)))
+	body.add_child(_lab(M["title"], 22, Color(1, 1, 1)))
 	if M["lead"] != "":
 		body.add_child(_lab(M["lead"], 13, Color(0.6, 0.66, 0.74)))
-	if not M["cards"].is_empty():
-		var grid := GridContainer.new()
-		grid.columns = 3 if M["cards"].size() >= 3 else 2
-		grid.add_theme_constant_override("h_separation", 8)
-		grid.add_theme_constant_override("v_separation", 8)
-		body.add_child(grid)
-		for c in M["cards"]:
-			var b := Button.new()
-			b.toggle_mode = true
-			b.button_pressed = c["on"]
-			b.custom_minimum_size = Vector2(190, 230)
-			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			b.text = plain("%s\n%s" % [c["title"], c["text"]])
-			b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-			b.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
-			b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			b.expand_icon = false
-			b.add_theme_font_size_override("font_size", 13)
-			if not _tex.has(c["v"]):
-				_tex[c["v"]] = Pics.texture(c["v"], 0.8)
-			if _tex[c["v"]] != null:
-				b.icon = _tex[c["v"]]
-			var k: String = M["key"]
-			var vv: String = c["v"]
-			b.pressed.connect(func(): op({"op": "pick", "key": k, "value": vv}))
-			grid.add_child(b)
 	if M["last"] != "":
 		var lb := Button.new()
-		lb.text = "Wie letztes Mal: " + M["last"]
+		lb.text = plain("Wie letztes Mal: " + M["last"])
 		lb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		lb.pressed.connect(func(): op({"op": "last"}))
 		body.add_child(lb)
-	var ex_box: VBoxContainer = null
+	if not M["cards"].is_empty():
+		var grid := GridContainer.new()
+		grid.columns = 4 if M["cards"].size() >= 7 else (3 if M["cards"].size() >= 3 else 2)
+		grid.add_theme_constant_override("h_separation", 10)
+		grid.add_theme_constant_override("v_separation", 10)
+		body.add_child(grid)
+		var i := 0
+		for c in M["cards"]:
+			var cd := _card(c, M["key"])
+			grid.add_child(cd)
+			if step != _last_step:                         # the cards come in one after the other
+				cd.modulate.a = 0.0
+				cd.create_tween().tween_property(cd, "modulate:a", 1.0, 0.25).set_delay(0.04 * i)
+			i += 1
+	var basic: VBoxContainer = null
+	var extra: VBoxContainer = null
 	for o in M["options"]:
-		var parent: Control = body
 		if o["extra"]:
-			if ex_box == null:
+			if extra == null:
 				var eb := Button.new()
 				eb.text = ("▾ " if extras_open else "▸ ") + "Extras – Fotos, Verstecke, Lockvogel, Nacht, Ereignisse, Checkpoints, Handicap"
 				eb.flat = true
 				eb.alignment = HORIZONTAL_ALIGNMENT_LEFT
 				eb.pressed.connect(func(): op({"op": "extras", "value": not extras_open}))
 				body.add_child(eb)
-				ex_box = VBoxContainer.new()
-				ex_box.visible = extras_open
-				body.add_child(ex_box)
-			parent = ex_box
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 10)
-		parent.add_child(row)
-		var l := _lab(o["label"], 14)
-		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(l)
-		var id: String = o["id"]
-		match o["type"]:
-			"range":
-				var s := HSlider.new()
-				s.min_value = o["min"]
-				s.max_value = o["max"]
-				s.step = 1
-				s.value = float(o["value"])
-				s.custom_minimum_size = Vector2(160, 0)
-				var vl := _lab("%d%s" % [int(o["value"]), o["unit"]], 14, Color(1, 1, 1))
-				vl.custom_minimum_size = Vector2(54, 0)
-				var unit: String = o["unit"]
-				s.value_changed.connect(func(x): vl.text = "%d%s" % [int(x), unit]; W[id] = int(x) if typeof(W[id]) == TYPE_INT else float(x); seq += 1)
-				row.add_child(s)
-				row.add_child(vl)
-			"toggle":
-				var cb := CheckButton.new()
-				cb.button_pressed = bool(o["value"])
-				cb.toggled.connect(func(x): W[id] = x; seq += 1)
-				row.add_child(cb)
-			"select":
-				var ob := OptionButton.new()
-				for i in range(LIVES.size()):
-					ob.add_item(LIVES[i][1])
-					if LIVES[i][0] == str(o["value"]):
-						ob.select(i)
-				ob.item_selected.connect(func(i): W[id] = LIVES[i][0]; seq += 1)
-				row.add_child(ob)
-		if id in ["game_minutes", "game_items", "game_hides", "game_checkpoints"] or o["type"] != "range":
-			pass
-	if step == 3:                                      # the pictures of the chosen game and goal
-		var pr := HBoxContainer.new()
-		pr.add_theme_constant_override("separation", 10)
-		body.add_child(pr)
-		for k2 in [str(W.get("game_mode")), str(W.get("game_goal"))]:
-			if not _tex.has(k2):
-				_tex[k2] = Pics.texture(k2, 0.8)
-			if _tex[k2] != null:
-				var tr := TextureRect.new()
-				tr.texture = _tex[k2]
-				pr.add_child(tr)
-	if not M["summary"].is_empty():
-		var gs := GridContainer.new()
-		gs.columns = 2
-		gs.add_theme_constant_override("h_separation", 16)
-		body.add_child(gs)
-		for p in M["summary"]:
-			gs.add_child(_lab(p[0], 14, Color(0.6, 0.66, 0.74), false))
-			gs.add_child(_lab(p[1], 14, Color(1, 1, 1), false))
-		for r in M["rules"]:
-			body.add_child(_lab("• " + r, 13))
+				extra = _group("")
+				extra.get_parent().visible = extras_open
+			_option_row(o, extra)
+		else:
+			if basic == null:
+				basic = _group("Wer spielt mit?" if step == 3 else "Einstellungen")
+			_option_row(o, basic)
+	if step == 3:
 		var G: Dictionary = M["game"]
+		var pv := _group("Mitspielen")
+		var pr := HBoxContainer.new()                      # the players: phones (QR) or here at the PC
+		pr.add_theme_constant_override("separation", 14)
+		pv.add_child(pr)
 		if G["open"]:
-			var row2 := HBoxContainer.new()
-			row2.add_theme_constant_override("separation", 14)
-			body.add_child(row2)
 			var qr := TextureRect.new()
-			qr.custom_minimum_size = Vector2(180, 180)
+			qr.custom_minimum_size = Vector2(150, 150)
 			qr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			qr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
 			qr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 			qr.texture = main.game.Qr.texture(G["url"], 4)
-			row2.add_child(qr)
-			var tx := _lab("Die Spieler scannen den QR-Code mit dem Handy (gleiches WLAN) oder öffnen:\n%s\n\nSpieler: %d / 4" % [G["url"], G["players"]], 14)
-			tx.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			row2.add_child(tx)
+			pr.add_child(qr)
+		var pt := VBoxContainer.new()
+		pt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		pt.add_theme_constant_override("separation", 8)
+		pr.add_child(pt)
+		pt.add_child(_lab(("Handys: QR-Code scannen (gleiches WLAN) oder %s öffnen" % G["url"]) if G["open"] else "Handys: nach «Spiel öffnen» erscheint hier der QR-Code.", 13))
+		pt.add_child(_lab("Dabei: %d / 4" % G["players"], 15, Color.WHITE, false))
+		var lr := HBoxContainer.new()
+		lr.add_theme_constant_override("separation", 8)
+		pt.add_child(lr)
+		var lb1 := Button.new()
+		lb1.text = "Hier am PC mitspielen"
+		lb1.pressed.connect(func(): _apply_and_open(); main.localplay.start("runner"))
+		lr.add_child(lb1)
+		if str(W.get("game_mode")) in ["guard", "teamguard", "seek"]:
+			var lb2 := Button.new()
+			lb2.text = "Fänger am PC" if str(W.get("game_mode")) == "seek" else "Wächter am PC"
+			lb2.pressed.connect(func(): _apply_and_open(); main.localplay.start("guard"))
+			lr.add_child(lb2)
+		var sg := _group("Zusammenfassung")
+		var gs := GridContainer.new()
+		gs.columns = 2
+		gs.add_theme_constant_override("h_separation", 16)
+		gs.add_theme_constant_override("v_separation", 4)
+		sg.add_child(gs)
+		for p in M["summary"]:
+			gs.add_child(_lab(p[0], 13, Color(0.6, 0.66, 0.74), false))
+			gs.add_child(_lab(p[1], 13, Color(1, 1, 1), false))
+		var rb := Button.new()
+		rb.flat = true
+		rb.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		rb.text = "▸ Regeln (%d)" % M["rules"].size()
+		sg.add_child(rb)
+		var rbox := VBoxContainer.new()
+		rbox.visible = false
+		sg.add_child(rbox)
+		for r in M["rules"]:
+			rbox.add_child(_lab("• " + r, 13))
+		rb.pressed.connect(func(): rbox.visible = not rbox.visible; rb.text = ("▾" if rbox.visible else "▸") + " Regeln (%d)" % M["rules"].size())
 	back_btn.visible = M["back"]
 	next_btn.text = plain(M["next"])
+	if step != _last_step:                               # the new step slides in from the side
+		var dir := 1.0 if step > _last_step else -1.0
+		_last_step = step
+		_slide.add_theme_constant_override("margin_left", int(40 * dir))
+		_slide.add_theme_constant_override("margin_right", int(-40 * dir))
+		body.modulate.a = 0.0
+		var tw := create_tween().set_parallel(true)
+		tw.tween_method(func(m): _slide.add_theme_constant_override("margin_left", int(m)); _slide.add_theme_constant_override("margin_right", int(-m)), 40.0 * dir, 0.0, 0.25).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tw.tween_property(body, "modulate:a", 1.0, 0.2)
+
+
+func _apply_and_open() -> void:
+	"""«Hier am PC mitspielen» on the last step: take over the settings and open the game first"""
+	if not main.game.open:
+		_next()

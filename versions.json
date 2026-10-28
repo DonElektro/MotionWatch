@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 19:54",
+ "generated": "2026-10-28 20:00",
  "versions": [
   {
-   "version": "2.95.103",
-   "file": "webcam_bewegung_2_95_103.py",
+   "version": "2.95.104",
+   "file": "webcam_bewegung_2_95_104.py",
    "url": "",
-   "sha256": "2bbc4269eb8fbe79b0a2363058ab788fe37eb540ef8ecaed789257ebbe8cbe61",
-   "date": "2026-10-28 19:54",
-   "notes": "Simulator: Kopf steuern und Licht aus dem Simulator-Fenster; Disco-Licht in einem kleinen Untermenü; passt zum Simulator 3D-3.77 (am PC mitspielen, Verstecken mit dem Rover, Bots, Wiederholung u. a.)",
-   "sig": "594dde6071a4684d5ad3e5088caedaa0712b5972c010a1e99dd5899147e1f48b6a406df1fb4338dd180566434940778d35776ed16a82634d56173d71fed74e0e"
+   "sha256": "6d76546bb12b6eb7be5c0428c526d8f93087d9486a8c490dfa77cfd19e1e86dd",
+   "date": "2026-10-28 20:00",
+   "notes": "Passt zum Simulator 3D-3.78 (Spiel-Assistent neu, übersichtlich und animiert)",
+   "sig": "1ae52c7ee06b40d21dd49af29ebb6e5907f96316bef1b348db69665412b8d98809ad79dee41ea64f36976252381b6964998f9f8b51f776a3c52fe1304ce8510b"
   },
   {
    "version": "2.94.5",
