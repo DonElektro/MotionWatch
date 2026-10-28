@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.56 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.57 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -585,3 +585,7 @@ A schneller, Y Ansicht, B beenden. Oben zeigt ein Symbol, womit gerade gesteuert
 NEU IN 3D-3.56
 3D-3.56: Erkunden: steht ein Wohnwagen, Zelt oder Haus zwischen dem Rover und der Ansicht «hinterher», schaut die
 Ansicht von selbst von oben und kehrt zurück, sobald die Sicht wieder frei ist.
+
+NEU IN 3D-3.57
+3D-3.57: Stangenlänge (Höhe des Kamerakopfs, 0.4 bis 4 m) unter Mover einstellbar, beim Erkunden mit Bild auf / Bild ab
+oder dem Steuerkreuz des Controllers.

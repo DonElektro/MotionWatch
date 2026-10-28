@@ -1,12 +1,12 @@
 {
- "version": "3D-3.56",
+ "version": "3D-3.57",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30922309,
- "sha256": "2b874dfa21a7cebf15cdda731cb876af2867259d324dca9fc9368a672fd93c27",
- "notes": "Erkunden: Ansicht wechselt von selbst nach oben, wenn etwas im Weg steht",
+ "size": 30923313,
+ "sha256": "79eaff3eaa2b85747b403747307824b7b6051fd40c717f8d798d23010fb9a11a",
+ "notes": "Stangenlänge einstellbar (Mover, Erkunden)",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24043890,
-  "sha256": "154a26cc7a785080d7095db39e84ac7c2623f11718a883c0d4653a3cb3859a02"
+  "size": 24044788,
+  "sha256": "78314e09e50dd576b933da992a0db0108f4ee5adc43d4a7437fb929b15c8a38c"
  }
 }

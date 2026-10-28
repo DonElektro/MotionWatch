@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 12:54",
+ "generated": "2026-10-28 12:58",
  "versions": [
   {
-   "version": "2.95.79",
-   "file": "webcam_bewegung_2_95_79.py",
+   "version": "2.95.80",
+   "file": "webcam_bewegung_2_95_80.py",
    "url": "",
-   "sha256": "10639fa11087ed908c20e52c6246e1eb7cd5ae549d08211f88b6ff16f23766d5",
-   "date": "2026-10-28 12:54",
-   "notes": "3D-Simulator 3D-3.56: Erkunden – Ansicht wechselt von selbst nach oben, wenn etwas im Weg steht",
-   "sig": "3b8f25f9f60a00af4ae87c0723ca1344379e1b2d682d73992c0542330936f63d81d8f6d9c06516b9df2b9e46ea8f96cae8081e76d38c16fb0d7108d2261d580b"
+   "sha256": "b0e55d8b8206d1c40875f8ddb54a8ef6e7ae9861c32582a1388af83edb1272ed",
+   "date": "2026-10-28 12:58",
+   "notes": "3D-Simulator 3D-3.57: Stangenlänge des Kamerakopfs einstellbar (Mover, Erkunden)",
+   "sig": "46b174cbb262f1129009916b6224ae2a337144b16720cb39e6f3ffeb0b9d04a3307fedd39902694a519e389333ccd55e7eac55cff86e53dd8f5476c1ba61070d"
   },
   {
    "version": "2.94.5",

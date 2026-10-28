@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.56"
+const VERSION := "3D-3.57"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -175,6 +175,8 @@ var detail_nrm: NoiseTexture2D
 var head: Node3D
 var rig: Node3D                       # from 3D-3.11: the base of Motion Watch - stands still, or drives as the mover
 var chassis: Node3D
+var mast_h := HEAD_H                  # 3D-3.57: length of the pole with the camera head (m), adjustable (Mover, Erkunden)
+var mast_pole: MeshInstance3D
 var mover_on := false                 # «Mover simulieren»: a tracked vehicle under Motion Watch, driven by its second stick
 var mover_max := 0.8                  # top speed (m/s)
 var mover_wheels: Array = []
@@ -830,7 +832,7 @@ func _build_head() -> void:
 	rig = Node3D.new()
 	add_child(rig)
 	head = Node3D.new()
-	head.position = Vector3(0, HEAD_H, 0)
+	head.position = Vector3(0, mast_h, 0)
 	rig.add_child(head)
 	_build_chassis()
 	head_pitch = Node3D.new()
@@ -855,10 +857,21 @@ func _build_head() -> void:
 	hmi.layers = 1
 	head_pitch.add_child(hmi)
 	var pole := MeshInstance3D.new()
-	pole.mesh = box(0.06, HEAD_H, 0.06)
-	pole.position = Vector3(0, -HEAD_H / 2.0, 0)
+	pole.mesh = box(0.06, 1.0, 0.06)
 	pole.material_override = mat(Color(0.2, 0.2, 0.2))
 	head.add_child(pole)
+	mast_pole = pole
+	set_mast(mast_h)
+
+
+func set_mast(h: float) -> void:
+	"""3D-3.57: the length of the pole (height of the camera head above the ground / the rover)"""
+	mast_h = clampf(h, 0.4, 4.0)
+	if head != null:
+		head.position.y = mast_h
+	if mast_pole != null:
+		mast_pole.scale = Vector3(1, mast_h, 1)
+		mast_pole.position = Vector3(0, -mast_h / 2.0, 0)
 
 
 func _build_chassis() -> void:
@@ -2414,6 +2427,7 @@ func _register_controls() -> void:
 	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
 			{"options": [["opposite", "gegenüber (30 m)"], ["left", "links"], ["right", "rechts"]]})
 	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – fahren mit dem grünen Stick unten rechts, den Pfeiltasten oder dem zweiten Stick in Motion Watch", func(): return mover_on, func(v): set_mover(v), "Mover")
+	add_control("slider", "mast_h", "Stangenlänge (Höhe des Kamerakopfs; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": 0.4, "max": 4.0, "step": 0.1, "unit": "m"})
 	add_control("slider", "explore_speed", "Tempo beim Erkunden (Shift / A = schneller)", func(): return explore.speed if explore != null else 1.6, func(v): if explore != null: explore.speed = v, "Mover", {"min": 0.5, "max": 6.0, "step": 0.1, "unit": "m/s"})
 	add_control("slider", "mover_max", "Höchstgeschwindigkeit des Movers", func(): return mover_max, func(v): mover_max = v, "Mover", {"min": 0.2, "max": 2.0, "step": 0.1, "unit": "m/s"})
 	add_control("button", "mover_home", "Mover zurück an den Startplatz", null, func(): mover_home(), "Mover")
@@ -3660,7 +3674,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
+		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
 

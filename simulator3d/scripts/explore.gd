@@ -29,16 +29,16 @@ const DEAD := 0.18                    # dead zone of the sticks
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_CENTER_TOP)
-	custom_minimum_size = Vector2(520, 62)
+	custom_minimum_size = Vector2(640, 62)
 	size = custom_minimum_size
-	offset_left = -260
-	offset_right = 260
+	offset_left = -320
+	offset_right = 320
 	offset_top = 44                                       # under the CPU line at the top
 	offset_bottom = 106
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_info = Label.new()
 	_info.position = Vector2(62, 6)
-	_info.size = Vector2(450, 52)
+	_info.size = Vector2(570, 52)
 	_info.add_theme_font_size_override("font_size", 13)
 	_info.add_theme_color_override("font_color", Color(1, 1, 1))
 	_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -69,7 +69,7 @@ func set_on(v: bool) -> void:
 
 func state() -> Dictionary:
 	var r: Node3D = main.rig
-	return {"ok": true, "on": on, "view": view, "auto_top": auto_top, "device": device, "speed": speed, "turbo": turbo,
+	return {"ok": true, "mast": main.mast_h, "on": on, "view": view, "auto_top": auto_top, "device": device, "speed": speed, "turbo": turbo,
 			"x": snappedf(r.position.x, 0.01), "z": snappedf(r.position.z, 0.01), "pads": Input.get_connected_joypads().size(),
 			"pad_name": Input.get_joy_name(Input.get_connected_joypads()[0]) if not Input.get_connected_joypads().is_empty() else ""}
 
@@ -98,6 +98,10 @@ func _input(ev: InputEvent) -> void:
 				next_view()
 			JOY_BUTTON_BACK:
 				main.show_panel(not main.ui_root.visible)
+			JOY_BUTTON_DPAD_UP:
+				main.set_mast(main.mast_h + 0.1)        # 3D-3.57: the pole longer / shorter
+			JOY_BUTTON_DPAD_DOWN:
+				main.set_mast(main.mast_h - 0.1)
 		get_viewport().set_input_as_handled()
 		return
 	if not on:
@@ -132,6 +136,12 @@ func _input(ev: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 			KEY_HOME:
 				orbit = 0.0
+				get_viewport().set_input_as_handled()
+			KEY_PAGEUP:
+				main.set_mast(main.mast_h + 0.1)
+				get_viewport().set_input_as_handled()
+			KEY_PAGEDOWN:
+				main.set_mast(main.mast_h - 0.1)
 				get_viewport().set_input_as_handled()
 
 
@@ -234,8 +244,8 @@ func _process(dt: float) -> void:
 		cam.global_position = cam.global_position.lerp(want2, clampf(dt * (2.5 if auto_top else 4.0), 0.0, 1.0))
 		cam.look_at(tp + fwd * (0.5 if auto_top else 2.0), Vector3.UP)
 	var kmh: float = main.mover_max * 3.6 * max(abs(main._pad_l), abs(main._pad_r))
-	_info.text = "Erkunden · %s · %s · %.1f km/h%s\n%s" % [{"keyboard": "Tastatur", "mouse": "Maus", "touch": "Touch", "pad": "Controller"}[device],
-			VIEW_NAMES[view] + (" (automatisch von oben)" if auto_top and view == "chase" else ""), kmh, " · schnell" if turbo else "", _help()]
+	_info.text = "Erkunden · %s · %s · %.1f km/h · Stange %.1f m%s\n%s" % [{"keyboard": "Tastatur", "mouse": "Maus", "touch": "Touch", "pad": "Controller"}[device],
+			VIEW_NAMES[view] + (" (automatisch von oben)" if auto_top and view == "chase" else ""), kmh, main.mast_h, " · schnell" if turbo else "", _help()]
 
 
 func _blocked(a: Vector3, b: Vector3) -> bool:
@@ -259,12 +269,12 @@ func _blocked(a: Vector3, b: Vector3) -> bool:
 func _help() -> String:
 	match device:
 		"pad":
-			return "Linker Stick fahren · rechter Stick umschauen · A schnell · Y Ansicht · B beenden"
+			return "Linker Stick fahren · rechter Stick umschauen · A schnell · Y Ansicht · Steuerkreuz ↑↓ Stange · B beenden"
 		"touch":
 			return "Grüner Stick unten rechts fahren · Ansicht und Ende oben im Feld"
 		"mouse":
-			return "Grünen Stick ziehen · rechte Taste ziehen = umschauen · Rad = Abstand · V Ansicht · Esc beenden"
-	return "W A S D oder Pfeile fahren · Shift schnell · V Ansicht · Esc beenden"
+			return "Grünen Stick ziehen · rechte Taste ziehen = umschauen · Rad = Abstand · Bild ↑↓ Stange · Esc beenden"
+	return "W A S D oder Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Stange · Esc beenden"
 
 
 func _draw() -> void:
