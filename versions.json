@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 21:41",
+ "generated": "2026-10-28 22:14",
  "versions": [
   {
-   "version": "2.96.8",
-   "file": "webcam_bewegung_2_96_8.py",
+   "version": "2.96.9",
+   "file": "webcam_bewegung_2_96_9.py",
    "url": "",
-   "sha256": "9079eedb6d7307cbc687bd2ccd12469239b615c1ae2ba4ae4da969aa9add5f6f",
-   "date": "2026-10-28 21:41",
-   "notes": "Makeover 21–25 (Simulator-Zentrale): Fehlalarm-Lernen (nach 👎 stellt der Simulator die Ursache 60 s nach, Bilder als «keine Person» fürs Training); Karte der blinden Flecken mit Tipp; Nacht-Generalprobe («heute Nacht erkennst du Personen bis … m», auf Wunsch beim Scharfschalten); Schwellen automatisch (Tag + Nacht); Erkennungs-Check jede Woche mit Warnung; passt zum Simulator 3D-3.85",
-   "sig": "9e6379fea1b589f92ea6fdb17689f7141b8830a36d178a896dee39adba43538d4c102274c0d7bd889e3de5ec5c5cddea657b049758bffae7ef5f75146ae3cf02"
+   "sha256": "c1c0b887d6958e0cf50ea7d4b8fb41a3032333eb0134ebe6c5dd058eb4c16b33",
+   "date": "2026-10-28 22:14",
+   "notes": "Reiter Simulator: die Zentrale steht jetzt unter dem Livebild; Schiessen-Knopf im Livebild: ausgeschaltet nur noch ein kleiner runder Knopf am Rand und nur, solange das Livebild sichtbar ist; passt zum Simulator 3D-3.86 (aufgeräumte Menüs, Inventar mit allen 80 Dingen der KI)",
+   "sig": "2c9e38a474d69761f70a0a31b9569a229e61610b685113a9598684f2e788b3ba03c03f7a6d15717ad9d942e687b4d7d1da51dd83000e2bc9b00768636c8b5004"
   },
   {
    "version": "2.95.105",

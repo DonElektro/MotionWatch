@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_8.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_9.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.96.9: Reiter Simulator: die Zentrale steht jetzt unter dem Livebild; Schiessen-Knopf im Livebild: ausgeschaltet nur noch
+    ein kleiner runder Knopf am Rand und nur, solange das Livebild sichtbar ist; passt zum Simulator 3D-3.86 (aufgeräumte Menüs,
+    Inventar mit allen 80 Dingen der KI)
   * 2.96.8: Makeover 21–25 (Simulator-Zentrale): Fehlalarm-Lernen (nach 👎 stellt der Simulator die Ursache 60 s nach, Bilder als
     «keine Person» fürs Training); Karte der blinden Flecken mit Tipp; Nacht-Generalprobe («heute Nacht erkennst du Personen bis
     … m», auf Wunsch beim Scharfschalten); Schwellen automatisch (Tag + Nacht); Erkennungs-Check jede Woche mit Warnung; passt
@@ -827,10 +830,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_96_8.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_96_9.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_96_8.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_96_8.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_96_9.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_96_9.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -847,7 +850,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.96.8"
+APP_VERSION = "2.96.9"
 
 
 def default_data_dir():
@@ -16846,8 +16849,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.85", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31150575,
-         "sha256": "e37b79ef72d9f66a2360128533a885d18f384cbc46372363bdbfe59c3255bf3a"}
+SIM3D = {"version": "3D-3.86", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31190288,
+         "sha256": "34cac9295c093980919ec38deae3b866e6b0e730c4214c6c3438fbcfb7401d54"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -16986,8 +16989,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.85", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24272157,
-           "sha256": "8dfd94496c7d85339ca8f55b89558b68860f645568a584caa8f5ed38974bf5c4", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.86", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24311966,
+           "sha256": "2107c7e5d8f7a6955e589c29ddf3945acc811e4fc99c0cb80a65f02fe910e3a1", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -21659,7 +21662,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_8.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_9.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -27520,7 +27523,6 @@ details.fold>.fb>.mut:first-child{margin-top:0}
   </span>
 </header>
 <main class="simp">
-  <section class="sc wide" id="c-hub" style="padding:12px 14px"><h2 style="margin:0 0 8px;font-size:15px">🎛 <span data-i18n="Simulator centre">Simulator centre</span></h2><div id="simhub" data-simhub="full" hidden></div></section>
   <!-- 2.95.69: order by logic - 1 connection, 2 status, 3 (only when connected) picture, control, test run …; every card:
        symbol, name, arrow on the right; symbol and arrow green while its function works -->
   <details class="sc fold wide" id="c-conn" data-k="conn" open>
@@ -27564,6 +27566,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="mut" id="s-prevnote"></div>
     </div>
   </details>
+  <section class="sc wide" id="c-hub" data-need="ok" style="padding:12px 14px"><h2 style="margin:0 0 8px;font-size:15px">🎛 <span data-i18n="Simulator centre">Simulator centre</span></h2><div id="simhub" data-simhub="full" hidden></div></section>
   <details class="sc fold wide" id="c-game" data-k="game" data-need="ok" hidden open>
     <summary><h2><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 12.5h4M9 10.5v4"/><circle cx="15" cy="11.5" r="1"/><circle cx="17.5" cy="14" r="1"/></svg><span data-i18n="Game «Unseen to the goal»">Game «Unseen to the goal»</span></h2></summary>
     <div class="fb"><div class="gm">
@@ -37908,17 +37911,19 @@ function mwgPaint(s) {
   $("#mwg-b").disabled = G.round !== "play" || w > 0; $("#mwg-b span").textContent = w > 0 ? w + " s" : t("Caught!");
 }
 // ---- 2.95.96: shoot / trigger into the simulation from the live picture (outside «Team gegen MoveEye» too) ----
-const SHOOT = {on: false, hits: 0, miss: 0};
+const SHOOT = {on: false, hits: 0, miss: 0, vis: null, io: null};
 function simShootPaint(s) {
   const S_ = s.sim || {}, G = S_.game, mwhand = !!(G && G.mode === "mwhand" && (G.round === "play" || G.round === "countdown"));
   const live = !!(S_.on && S_.ok && S_.pic !== false) && String(((QSJ && QSJ.cfg) || {}).source || "sim:").startsWith("sim:");
   let b = $("#mws");
-  if (!live || mwhand) { if (b) b.hidden = true; return; }
+  // 2.96.9: only while the live picture can be seen, and «off» is just a small round button at the side (it covered the settings)
+  if (!SHOOT.io && $("#video") && window.IntersectionObserver) { SHOOT.io = new IntersectionObserver(es => { SHOOT.vis = es[0].isIntersecting; simShootPaint(QSJ ? QSJ.state : s); }, {threshold: 0.25}); SHOOT.io.observe($("#video")); }
+  if (!live || mwhand || (!SHOOT.on && SHOOT.vis === false)) { if (b) b.hidden = true; return; }
   if (!b) {
     b = el("div"); b.id = "mws"; b.innerHTML = '<button type="button" id="mws-b">🎯 <span></span></button><span id="mws-t"></span>'; document.body.appendChild(b);
     const st = document.createElement("style");
     st.textContent = "#mws{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:79;display:flex;align-items:center;gap:10px;background:rgba(10,14,20,.88);border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 6px;box-shadow:0 4px 18px rgba(0,0,0,.45);color:#fff;font-size:13px;max-width:calc(100vw - 24px)}"
-      + "#mws[hidden]{display:none}#mws button{border-radius:999px;padding:8px 14px;font-weight:700;background:var(--panel2,#1a2433);color:#fff;border:1px solid var(--line)}#mws.on button{background:#ff3b30;border-color:#ff3b30}#mws:not(.on) #mws-t{display:none}"
+      + "#mws[hidden]{display:none}#mws:not(.on){left:auto;right:12px;transform:none;padding:4px;bottom:calc(84px + env(safe-area-inset-bottom,0px))}#mws:not(.on) #mws-b span{display:none}#mws button{border-radius:999px;padding:8px 14px;font-weight:700;background:var(--panel2,#1a2433);color:#fff;border:1px solid var(--line)}#mws.on button{background:#ff3b30;border-color:#ff3b30}#mws:not(.on) #mws-t{display:none}"
       + ".mwg-shot{position:fixed;z-index:85;width:64px;height:64px;margin:-32px 0 0 -32px;border:3px solid #ff3b30;border-radius:50%;pointer-events:none;animation:mwgs .5s ease-in forwards}"
       + ".mwg-shot::before,.mwg-shot::after{content:'';position:absolute;left:50%;top:-10px;width:2px;height:80px;margin-left:-1px;background:#ff3b30}.mwg-shot::after{transform:rotate(90deg)}"
       + ".mwg-shot.hit{border-color:#3fcf6b;box-shadow:0 0 16px #3fcf6b}.mwg-shot.miss{opacity:.4}@keyframes mwgs{0%{transform:scale(1.8);opacity:0}100%{transform:scale(.6);opacity:1}}";
@@ -37944,7 +37949,8 @@ function simShootPaint(s) {
     });
   }
   b.hidden = false; b.classList.toggle("on", SHOOT.on);
-  $("#mws-b span").textContent = SHOOT.on ? t("Shooting on") : t("Shoot");
+  $("#mws-b span").textContent = SHOOT.on ? t("Shooting on") + " · ✕" : t("Shoot");
+  $("#mws-b").title = SHOOT.on ? t("Shooting off") : t("Shoot");
   $("#mws-t").textContent = t("Tap the picture") + " · " + SHOOT.hits + "× ✓ · " + SHOOT.miss + "× ✗ " + t("false alarm");
 }
 Object.assign(I18N.de, {"Training set for an own AI model (YOLO)": "Trainingspaket für ein eigenes KI-Modell (YOLO)", "pictures": "Bilder", "The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).": "Der Simulator macht die Bilder und legt ein ZIP auf den Schreibtisch seines PCs (etwa 2 s pro Bild)."});
@@ -44282,7 +44288,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.8")
+        self.root.title("MoveEye 2.96.9")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -44599,7 +44605,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.8 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.9 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

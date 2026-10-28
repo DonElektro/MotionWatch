@@ -1,7 +1,7 @@
 extends PanelContainer
 ## 3D-3.61: the tool bar at the bottom of the simulator window - everything of «Erkunden», «Patrouille» and the view
 ## with the mouse only (also on a PC with a keyboard). Green = on. «▾» folds it to one small button.
-## Row 1 (drive): Erkunden, Patrouille, Punkte, Bereich, Zufall, Löschen, Kopf folgt, Versetzen, Stange − / +
+## 3D-3.86: one row: Erkunden, Patrouille ▾, Kopf steuern, Versetzen, Stange ▾, Inventar, Vorlagen, Mitspieler, Ansicht ▾, Menü (ROW1 / ROW2 = the names)
 ## Row 2 (show):  Ansicht, Beobachter, Mitspieler, Route, Karte, Kameras, Info, Vorlagen, Menü
 
 var main
@@ -12,6 +12,12 @@ var _btn := {}                         # id -> Button
 var _t := 0.0
 var _hint: HBoxContainer               # 3D-3.66: while setting points / the area: what to do and «Fertig»
 var _hint_l: Label
+var _menus := {}                       # 3D-3.86: title -> [MenuButton, ids]
+
+# 3D-3.86: the one row - a string is a button, an array a menu [title, tooltip, ids]
+const MAIN_ROW := ["explore", ["Patrouille", "Route für den Mover", ["patrol", "points", "area", "random", "clear", "follow", "route"]],
+		"head", "place", ["Stange", "Höhe des Kamerakopfs", ["mast_up", "mast_dn"]], "inventar", "templates", "invite",
+		["Ansicht", "Was angezeigt wird", ["view", "spectate", "map", "cams", "info"]], "panel"]
 
 const ROW1 := [["explore", "Erkunden", "Mit dem Rover herumfahren (Tastatur, Maus, Touch, Controller)"],
 		["patrol", "Patrouille", "Der Mover fährt MoveEye die Route ab, MoveEye passt die ganze Zeit auf"],
@@ -31,6 +37,7 @@ const ROW2 := [["view", "Ansicht", "Hinterher, Fahrersicht, von oben"],
 		["cams", "Kameras", "Kamerabilder (was MoveEye sieht)"],
 		["info", "Info", "Anzeige oben (Steuerung, Tempo, Stange)"],
 		["templates", "Vorlagen", "Fertige Szenen, echte Orte, 3D-Bausätze, eigene 3D-Datei (.glb) laden"],
+		["inventar", "Inventar", "Alle Menschen, Tiere, Fahrzeuge und Dinge, die die KI kennt – in die Welt ziehen"],
 		["panel", "Menü", "Bedienfeld rechts"]]
 
 
@@ -71,11 +78,34 @@ func _ready() -> void:
 	_hint.add_child(done)
 	_hint.visible = false
 	_rows.add_child(_hint)
-	for row in [ROW1, ROW2]:
-		var r := HBoxContainer.new()
-		r.add_theme_constant_override("separation", 4)
-		_rows.add_child(r)
-		for d in row:
+	# 3D-3.86: one row - the main buttons, the rest in small menus (▾)
+	var r := HBoxContainer.new()
+	r.add_theme_constant_override("separation", 4)
+	_rows.add_child(r)
+	var all := {}
+	for d in ROW1 + ROW2:
+		all[d[0]] = d
+	for item in MAIN_ROW:
+		if typeof(item) == TYPE_ARRAY:                  # a menu: [title, tooltip, [ids]]
+			var mb := MenuButton.new()
+			mb.text = item[0] + " ▾"
+			mb.tooltip_text = item[1]
+			mb.flat = false
+			mb.focus_mode = Control.FOCUS_NONE
+			mb.add_theme_font_size_override("font_size", 12)
+			mb.custom_minimum_size = Vector2(0, 28)
+			var pm := mb.get_popup()
+			for i in range(item[2].size()):
+				var id_: String = item[2][i]
+				pm.add_check_item(all[id_][1], i)
+				pm.set_item_tooltip(i, all[id_][2])
+			var ids: Array = item[2]
+			pm.id_pressed.connect(func(i): _press(ids[i]))
+			pm.about_to_popup.connect(func(): _paint_menu(pm, ids))
+			r.add_child(mb)
+			_menus[item[0]] = [mb, ids]
+		else:
+			var d = all[item]
 			var b := Button.new()
 			b.text = d[1]
 			b.tooltip_text = d[2]
@@ -149,6 +179,8 @@ func _press(id: String) -> void:
 			main.show_panel(not main.ui_root.visible)
 		"templates":
 			main.templates.toggle()
+		"inventar":
+			main.inventar.toggle()
 	main._settings_dirty = true
 	_paint()
 
@@ -160,7 +192,11 @@ func _paint() -> void:
 			"follow": pt.follow, "place": main.place_kind == "rover", "spectate": main.spectate, "invite": ex.invite != null and ex.invite.visible,
 			"route": pt.show_route, "map": main.map_on, "cams": main.cam_card != null and main.cam_card.visible, "info": not ex.info_hidden,
 			"panel": main.ui_root.visible, "view": ex.on, "head": main.headpad != null and main.headpad.visible,
-			"templates": main.templates != null and main.templates.visible}
+			"templates": main.templates != null and main.templates.visible, "inventar": main.inventar != null and main.inventar.visible}
+	_st = st
+	for t in _menus:
+		var any := bool(st.get(_menus[t][1][0], false))      # the first entry says it (patrol drives, view of the rover)
+		(_menus[t][0] as MenuButton).add_theme_color_override("font_color", Color(0.45, 0.95, 0.55) if any else Color(0.85, 0.88, 0.92))
 	for k in _btn:
 		var b: Button = _btn[k]
 		var on: bool = st.get(k, false)
@@ -195,3 +231,15 @@ func _process(dt: float) -> void:
 	if _t <= 0.0:
 		_t = 0.3
 		_paint()
+
+
+
+var _st := {}
+
+
+func _paint_menu(pm: PopupMenu, ids: Array) -> void:
+	_paint()
+	for i in range(ids.size()):
+		pm.set_item_checked(i, bool(_st.get(ids[i], false)))
+		if ids[i] == "patrol":
+			pm.set_item_text(i, "Patrouille stoppen" if main.patrol.active else "Patrouille starten")

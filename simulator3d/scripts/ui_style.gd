@@ -336,6 +336,44 @@ static func _draw_group_icon(d: Control, kind: String) -> void:
 			for x in [-5, -1, 3]:
 				d.draw_rect(Rect2(c + Vector2(x, -2), Vector2(2, 2)), col, true)
 			d.draw_line(c + Vector2(-4, 3), c + Vector2(4, 3), col, w, true)
+		"clock":                                      # 3D-3.86: more symbols for the quick tiles
+			d.draw_arc(c, 8, 0, TAU, 24, col, w, true)
+			d.draw_line(c, c + Vector2(0, -5), col, w, true)
+			d.draw_line(c, c + Vector2(4, 2), col, w, true)
+		"box":
+			d.draw_rect(Rect2(c + Vector2(-8, -3), Vector2(16, 11)), col, false, w)
+			d.draw_polyline(P.call([Vector2(-8, -3), Vector2(-5, -8), Vector2(5, -8), Vector2(8, -3)]), col, w, true)
+			d.draw_line(c + Vector2(-3, 1), c + Vector2(3, 1), col, w, true)
+		"map":
+			d.draw_polyline(P.call([Vector2(-9, -6), Vector2(-3, -8), Vector2(3, -6), Vector2(9, -8), Vector2(9, 7), Vector2(3, 9), Vector2(-3, 7), Vector2(-9, 9), Vector2(-9, -6)]), col, w, true)
+			d.draw_line(c + Vector2(-3, -8), c + Vector2(-3, 7), col, 1.2, true)
+			d.draw_line(c + Vector2(3, -6), c + Vector2(3, 9), col, 1.2, true)
+		"head":                                       # the camera head on its pole
+			d.draw_rect(Rect2(c + Vector2(-6, -8), Vector2(12, 8)), col, false, w)
+			d.draw_arc(c + Vector2(0, -4), 2.2, 0, TAU, 10, col, w, true)
+			d.draw_line(c + Vector2(0, 0), c + Vector2(0, 9), col, w, true)
+			d.draw_line(c + Vector2(-5, 9), c + Vector2(5, 9), col, w, true)
+		"puzzle":
+			d.draw_rect(Rect2(c + Vector2(-8, -8), Vector2(16, 16)), col, false, w)
+			d.draw_line(c + Vector2(0, -8), c + Vector2(0, 8), col, 1.2, true)
+			d.draw_line(c + Vector2(-8, 0), c + Vector2(8, 0), col, 1.2, true)
+			d.draw_circle(c + Vector2(0, -4), 1.8, col)
+			d.draw_circle(c + Vector2(4, 0), 1.8, col)
+		"phone":
+			d.draw_rect(Rect2(c + Vector2(-5, -9), Vector2(10, 18)), col, false, w)
+			d.draw_circle(c + Vector2(0, 6), 1.2, col)
+		"meter":
+			d.draw_arc(c + Vector2(0, 4), 9, PI, TAU, 20, col, w, true)
+			d.draw_line(c + Vector2(0, 4), c + Vector2(5, -3), col, w, true)
+			d.draw_circle(c + Vector2(0, 4), 1.6, col)
+		"route":
+			d.draw_polyline(P.call([Vector2(-8, 7), Vector2(-4, -2), Vector2(2, 3), Vector2(8, -7)]), col, w, true)
+			for q in [Vector2(-8, 7), Vector2(-4, -2), Vector2(2, 3), Vector2(8, -7)]:
+				d.draw_circle(c + q, 2.0, col)
+		"plan":
+			d.draw_arc(c + Vector2(0, -3), 5.5, PI * 0.85, PI * 2.15, 16, col, w, true)
+			d.draw_polyline(P.call([Vector2(-5, -1), Vector2(0, 9), Vector2(5, -1)]), col, w, true)
+			d.draw_circle(c + Vector2(0, -3), 1.8, col)
 		_:
 			d.draw_circle(c, 4, col)
 

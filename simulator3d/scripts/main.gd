@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.85"
+const VERSION := "3D-3.86"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -126,6 +126,7 @@ var update_btn: Button
 var show_zones3d := true               # 3D-3.83: makeover 10 - the zones of MoveEye on the ground (overlay3d.gd)
 var show_det3d := true                 # 3D-3.83: makeover 11 - the detections of MoveEye over the figures
 var overlay                            # overlay3d.gd
+var inventar                           # 3D-3.86: inventar.gd - everything the AI knows, to place in the world
 var blindmap                           # 3D-3.85: blindmap.gd - blind spots / night rehearsal (makeover 22, 23)
 var _fa_saved := {}                    # 3D-3.85: makeover 21 - what farecreate changed
 var twin := {}                         # 3D-3.83: makeover 9 - the twin of the real place {name, lat, lon, t}
@@ -929,6 +930,8 @@ func set_scene(id: String) -> bool:
 	for c in scene_parent.get_children():
 		c.queue_free()
 	_build_scene()
+	if inventar != null:
+		inventar.rebuild()                         # 3D-3.86: the objects of this scene from the inventory
 	if dev2 != null and dev2.rig != null:
 		dev2._put()                                # 3D-3.84: a second device guarding a thing moves with it
 	if game != null:
@@ -3317,6 +3320,19 @@ func control(d: Dictionary) -> Dictionary:
 			explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
 			explore.test_until = explore.main.now() + (float(dv[2]) if dv.size() > 2 else 2.0)
 		return explore.state()
+	elif a == "inventar":                              # 3D-3.86: {do: info | open | close | add (kind, x, z, r) | clear}
+		var iv := str(d.get("do", "info"))
+		if iv == "open":
+			inventar.open()
+			if d.has("tab"):
+				inventar.tabs.current_tab = int(d["tab"])
+		elif iv == "close":
+			inventar.close()
+		elif iv == "add":
+			inventar.add_object(str(d.get("kind", "")), Vector3(float(d.get("x", 0)), 0, float(d.get("z", -8))), float(d.get("r", 0)))
+		elif iv == "clear":
+			inventar.clear_scene()
+		return {"ok": true, "inventar": inventar.info()}
 	elif a == "blindmap":                              # 3D-3.85: makeover 22 / 23 {do: start (az, dist, hour, walk) | info | stop}
 		var bd := str(d.get("do", "info"))
 		if bd == "start":
@@ -3688,6 +3704,10 @@ func _build_ui() -> void:
 	search_none = UI.small("Kein Treffer")
 	search_none.visible = false
 	box_.add_child(search_none)
+	quick = preload("res://scripts/quick.gd").new()            # 3D-3.86: the quick tiles, at the very top
+	quick.main = self
+	box_.add_child(quick)
+	top_cards.append(quick)
 	# connection to MoveEye
 	var cn := UI.fold_card(box_, "Verbindung", true, "link")     # from 3D-3.37 it folds; the symbol is green when connected
 	fold_bodies.append(cn)
@@ -3798,11 +3818,10 @@ func _build_ui() -> void:
 	tl.add_child(mwpc_btn)
 	mwpc_label = UI.small("")
 	tl.add_child(mwpc_label)
-	var kb := Button.new()
-	kb.text = "Karte: echten Ort in der Schweiz wählen (K)"
-	kb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	kb.pressed.connect(open_map)
-	tl.add_child(kb)
+	var tl_main := tl                                # 3D-3.86: the rest in folds - tests for MoveEye, training pictures, more
+	tl = UI.sub_fold(tl_main, "Tests für MoveEye (Referenz-Scan, Sabotage, Überraschung)", false)
+	tl.set_meta("always", true)
+	sub_bodies.append(tl)
 	# 3D-3.71: the reference scan of MoveEye, started from here
 	var rsh := HBoxContainer.new()
 	rsh.add_theme_constant_override("separation", 6)
@@ -3863,6 +3882,9 @@ func _build_ui() -> void:
 		sug.add_child(ub)
 	surprise_label = UI.small("")
 	tl.add_child(surprise_label)
+	tl = UI.sub_fold(tl_main, "Trainingsbilder für eine eigene KI", false)
+	tl.set_meta("always", true)
+	sub_bodies.append(tl)
 	var dsr := HBoxContainer.new()                   # 3D-3.74: a training set for an own AI model
 	dsr.add_theme_constant_override("separation", 6)
 	tl.add_child(dsr)
@@ -3883,6 +3905,9 @@ func _build_ui() -> void:
 	dsr.add_child(dsb)
 	ds_label = UI.small("")
 	tl.add_child(ds_label)
+	tl = UI.sub_fold(tl_main, "Mehr: Erkunden, Handy-Simulator", false)
+	tl.set_meta("always", true)
+	sub_bodies.append(tl)
 	var plb := Button.new()
 	plb.text = "Aufstell-Planer: Wo soll MoveEye hin?"
 	plb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -3924,17 +3949,13 @@ func _build_ui() -> void:
 			vs.set_meta("always", true)
 			sub_bodies.append(vs)
 			subs["Besuch/Besucher hinsetzen"] = vs
+			var ivb := Button.new()                  # 3D-3.86: all people, animals and things in the inventory
+			ivb.text = "Inventar öffnen: Menschen, Tiere, Fahrzeuge und alle 80 Dinge der KI"
+			ivb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			UI.primary(ivb)
+			ivb.pressed.connect(func(): inventar.toggle())
+			vs.add_child(ivb)
 			vs.add_child(UI.small("Bild in die Welt ziehen – oder anklicken und dann in die Welt klicken. Die Knöpfe weiter unten schicken Besuch, der von selbst daherkommt."))
-			for part in [["Menschen", true], ["Tiere", false]]:
-				vs.add_child(UI.small(part[0], UI.TXT))
-				var grid := GridContainer.new()
-				grid.columns = 4
-				grid.add_theme_constant_override("h_separation", 6)
-				grid.add_theme_constant_override("v_separation", 6)
-				vs.add_child(grid)
-				for k in VISITOR_LIST:
-					if (k[0] in PEOPLE_KINDS) == part[1]:
-						grid.add_child(_palette_item(k[0], k[1]))
 		var card_body: VBoxContainer = groups[c.group]
 		var target: VBoxContainer = card_body
 		var sub := str(c.extra.get("sub", ""))
@@ -4003,6 +4024,7 @@ var ui_tb: Control
 var fold_bodies: Array = []           # every card that opens / closes
 var setting_bodies: Array = []        # the cards of the settings groups
 var top_cards: Array = []             # connection, cameras, visitors, tools (hidden while searching)
+var quick                             # 3D-3.86: quick.gd
 var expert_cards: Array = []
 var ui_items: Array = []              # [widget, label, expert, card body, part body] of every setting
 var sub_bodies: Array = []            # the parts inside the cards (3D-3.5)
@@ -5339,6 +5361,11 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	layer.add_child(templates)
 	if scene == "vorlage":
 		set_scene("vorlage")                                   # built before the window existed: once more with the files
+	inventar = preload("res://scripts/inventar.gd").new()     # 3D-3.86: the inventory (all 80 things of the AI)
+	inventar.main = self
+	inventar.theme = th
+	layer.add_child(inventar)
+	inventar.rebuild()
 	blindmap = preload("res://scripts/blindmap.gd").new()     # 3D-3.85: blind spots / night rehearsal
 	blindmap.main = self
 	add_child(blindmap)
@@ -5502,6 +5529,10 @@ func place_rover_at(p: Vector2) -> bool:
 
 func _place_at(k: String, p: Vector2) -> void:
 	"""a visitor where the mouse points (on the ground, never inside an object); it then walks off in some direction"""
+	if k.begins_with("obj:"):                         # 3D-3.86: an object of the inventory stays where it is put
+		if inventar != null:
+			inventar.place_at_screen(k, p)
+		return
 	var from := view_cam.project_ray_origin(p)
 	var d := view_cam.project_ray_normal(p)
 	var hit = ground_hit(from, d)

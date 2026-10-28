@@ -557,7 +557,6 @@ details.fold>.fb>.mut:first-child{margin-top:0}
   </span>
 </header>
 <main class="simp">
-  <section class="sc wide" id="c-hub" style="padding:12px 14px"><h2 style="margin:0 0 8px;font-size:15px">🎛 <span data-i18n="Simulator centre">Simulator centre</span></h2><div id="simhub" data-simhub="full" hidden></div></section>
   <!-- 2.95.69: order by logic - 1 connection, 2 status, 3 (only when connected) picture, control, test run …; every card:
        symbol, name, arrow on the right; symbol and arrow green while its function works -->
   <details class="sc fold wide" id="c-conn" data-k="conn" open>
@@ -601,6 +600,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="mut" id="s-prevnote"></div>
     </div>
   </details>
+  <section class="sc wide" id="c-hub" data-need="ok" style="padding:12px 14px"><h2 style="margin:0 0 8px;font-size:15px">🎛 <span data-i18n="Simulator centre">Simulator centre</span></h2><div id="simhub" data-simhub="full" hidden></div></section>
   <details class="sc fold wide" id="c-game" data-k="game" data-need="ok" hidden open>
     <summary><h2><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 12.5h4M9 10.5v4"/><circle cx="15" cy="11.5" r="1"/><circle cx="17.5" cy="14" r="1"/></svg><span data-i18n="Game «Unseen to the goal»">Game «Unseen to the goal»</span></h2></summary>
     <div class="fb"><div class="gm">

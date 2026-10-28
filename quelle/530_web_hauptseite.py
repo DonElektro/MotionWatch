@@ -3706,17 +3706,19 @@ function mwgPaint(s) {
   $("#mwg-b").disabled = G.round !== "play" || w > 0; $("#mwg-b span").textContent = w > 0 ? w + " s" : t("Caught!");
 }
 // ---- 2.95.96: shoot / trigger into the simulation from the live picture (outside «Team gegen MoveEye» too) ----
-const SHOOT = {on: false, hits: 0, miss: 0};
+const SHOOT = {on: false, hits: 0, miss: 0, vis: null, io: null};
 function simShootPaint(s) {
   const S_ = s.sim || {}, G = S_.game, mwhand = !!(G && G.mode === "mwhand" && (G.round === "play" || G.round === "countdown"));
   const live = !!(S_.on && S_.ok && S_.pic !== false) && String(((QSJ && QSJ.cfg) || {}).source || "sim:").startsWith("sim:");
   let b = $("#mws");
-  if (!live || mwhand) { if (b) b.hidden = true; return; }
+  // 2.96.9: only while the live picture can be seen, and «off» is just a small round button at the side (it covered the settings)
+  if (!SHOOT.io && $("#video") && window.IntersectionObserver) { SHOOT.io = new IntersectionObserver(es => { SHOOT.vis = es[0].isIntersecting; simShootPaint(QSJ ? QSJ.state : s); }, {threshold: 0.25}); SHOOT.io.observe($("#video")); }
+  if (!live || mwhand || (!SHOOT.on && SHOOT.vis === false)) { if (b) b.hidden = true; return; }
   if (!b) {
     b = el("div"); b.id = "mws"; b.innerHTML = '<button type="button" id="mws-b">🎯 <span></span></button><span id="mws-t"></span>'; document.body.appendChild(b);
     const st = document.createElement("style");
     st.textContent = "#mws{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:79;display:flex;align-items:center;gap:10px;background:rgba(10,14,20,.88);border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 6px;box-shadow:0 4px 18px rgba(0,0,0,.45);color:#fff;font-size:13px;max-width:calc(100vw - 24px)}"
-      + "#mws[hidden]{display:none}#mws button{border-radius:999px;padding:8px 14px;font-weight:700;background:var(--panel2,#1a2433);color:#fff;border:1px solid var(--line)}#mws.on button{background:#ff3b30;border-color:#ff3b30}#mws:not(.on) #mws-t{display:none}"
+      + "#mws[hidden]{display:none}#mws:not(.on){left:auto;right:12px;transform:none;padding:4px;bottom:calc(84px + env(safe-area-inset-bottom,0px))}#mws:not(.on) #mws-b span{display:none}#mws button{border-radius:999px;padding:8px 14px;font-weight:700;background:var(--panel2,#1a2433);color:#fff;border:1px solid var(--line)}#mws.on button{background:#ff3b30;border-color:#ff3b30}#mws:not(.on) #mws-t{display:none}"
       + ".mwg-shot{position:fixed;z-index:85;width:64px;height:64px;margin:-32px 0 0 -32px;border:3px solid #ff3b30;border-radius:50%;pointer-events:none;animation:mwgs .5s ease-in forwards}"
       + ".mwg-shot::before,.mwg-shot::after{content:'';position:absolute;left:50%;top:-10px;width:2px;height:80px;margin-left:-1px;background:#ff3b30}.mwg-shot::after{transform:rotate(90deg)}"
       + ".mwg-shot.hit{border-color:#3fcf6b;box-shadow:0 0 16px #3fcf6b}.mwg-shot.miss{opacity:.4}@keyframes mwgs{0%{transform:scale(1.8);opacity:0}100%{transform:scale(.6);opacity:1}}";
@@ -3742,7 +3744,8 @@ function simShootPaint(s) {
     });
   }
   b.hidden = false; b.classList.toggle("on", SHOOT.on);
-  $("#mws-b span").textContent = SHOOT.on ? t("Shooting on") : t("Shoot");
+  $("#mws-b span").textContent = SHOOT.on ? t("Shooting on") + " · ✕" : t("Shoot");
+  $("#mws-b").title = SHOOT.on ? t("Shooting off") : t("Shoot");
   $("#mws-t").textContent = t("Tap the picture") + " · " + SHOOT.hits + "× ✓ · " + SHOOT.miss + "× ✗ " + t("false alarm");
 }
 Object.assign(I18N.de, {"Training set for an own AI model (YOLO)": "Trainingspaket für ein eigenes KI-Modell (YOLO)", "pictures": "Bilder", "The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).": "Der Simulator macht die Bilder und legt ein ZIP auf den Schreibtisch seines PCs (etwa 2 s pro Bild)."});

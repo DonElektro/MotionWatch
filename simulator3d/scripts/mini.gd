@@ -138,11 +138,9 @@ func _ready() -> void:
 	iv.alignment = BoxContainer.ALIGNMENT_CENTER
 	iv.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	icon_box.add_child(iv)
-	var il := Label.new()
-	il.text = "3D"
-	il.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	il.add_theme_font_size_override("font_size", 20)
-	il.add_theme_color_override("font_color", Color(0.96, 0.6, 0.29))
+	var il: Control = load("res://scripts/mw_logo.gd").new()   # 3D-3.86: the MoveEye eye instead of «3D»
+	il.custom_minimum_size = Vector2(40, 40)
+	il.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	il.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	iv.add_child(il)
 	icon_dot = Label.new()
