@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3D-3.84 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3D-3.85 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,6 +607,12 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.85
+3D-3.85: Makeover 21–25 – das grosse Makeover ist fertig. Fehlalarm-Lernen: MoveEye schickt die Ursache eines markierten
+Fehlalarms (Tier, Wind, Licht, Regen, Auto), der Simulator stellt sie 60 s nach. Blinde Flecken: eine Person steht
+nacheinander an 35 Stellen rund um MoveEye – MoveEye zeichnet daraus eine Karte mit Tipp. Nacht-Generalprobe: dasselbe
+geradeaus bis 30 m zur Uhrzeit von heute Nacht («heute Nacht erkennst du Personen bis 18 m»).
 
 NEU IN 3D-3.84
 3D-3.84: Makeover 16–20. Das zweite MoveEye-Gerät kann jetzt ein Ding bewachen (Zelt / Tür, Velo, Auto) und zieht bei einem

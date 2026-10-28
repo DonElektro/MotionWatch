@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 21:30",
+ "generated": "2026-10-28 21:41",
  "versions": [
   {
-   "version": "2.96.7",
-   "file": "webcam_bewegung_2_96_7.py",
+   "version": "2.96.8",
+   "file": "webcam_bewegung_2_96_8.py",
    "url": "",
-   "sha256": "1779456bdc18df156ce1eb6da6158135995e0f3403ae437f751cb08cd45ca2c6",
-   "date": "2026-10-28 21:30",
-   "notes": "Makeover 16–20: mehrere Geräte (zweites Gerät bewacht Zelt / Velo / Auto, Übergabe einer Person zwischen Geräten im Protokoll); Rover (Patrouille, Ladestation mit Akku, zum Alarm fahren – auch von selbst bei Personen-Alarm); Statistik aus dem Simulator (4 Wochen, Arten, Erkennungsrate, Wochenbericht als Push); Versionen vergleichen (Erkennungsrate und Testlauf-Punkte pro Version); Ein-Klick-Demo (3 Minuten im Kino-Modus); passt zum Simulator 3D-3.84",
-   "sig": "1611df5c10f626f9fcfc10379ec9dffea79308bba74b5e6d8ee5c63806a57115b9d70656db901414aa2259fc45215000e15f1f7fa8d9f63e7e0a007a9348390b"
+   "sha256": "9079eedb6d7307cbc687bd2ccd12469239b615c1ae2ba4ae4da969aa9add5f6f",
+   "date": "2026-10-28 21:41",
+   "notes": "Makeover 21–25 (Simulator-Zentrale): Fehlalarm-Lernen (nach 👎 stellt der Simulator die Ursache 60 s nach, Bilder als «keine Person» fürs Training); Karte der blinden Flecken mit Tipp; Nacht-Generalprobe («heute Nacht erkennst du Personen bis … m», auf Wunsch beim Scharfschalten); Schwellen automatisch (Tag + Nacht); Erkennungs-Check jede Woche mit Warnung; passt zum Simulator 3D-3.85",
+   "sig": "9e6379fea1b589f92ea6fdb17689f7141b8830a36d178a896dee39adba43538d4c102274c0d7bd889e3de5ec5c5cddea657b049758bffae7ef5f75146ae3cf02"
   },
   {
    "version": "2.95.105",

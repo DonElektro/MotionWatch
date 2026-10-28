@@ -115,7 +115,14 @@ SIMHUB_JS = r"""
     "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
     "Tap = control": "Antippen = steuern", "person": "Person", "burglar": "Dieb", "child": "Kind", "dogwalk": "Hund", "fox": "Fuchs", "deer": "Reh", "cat": "Katze",
     "boar": "Wildschwein", "hedgehog": "Igel", "cyclist": "Velo", "courier": "Kurier", "car": "Auto", "sent": "geschickt", "Test run, test bench": "Testlauf, Prüfstand",
-    "Play on the phone": "Mitspielen mit dem Handy", "Several devices": "Mehrere Geräte", "2nd device": "2. Gerät", "P_opposite": "gegenüber", "P_door": "bewacht Zelt / Tür", "P_bike": "bewacht Velo",
+    "Play on the phone": "Mitspielen mit dem Handy", "Several devices": "Mehrere Geräte", "Blind spots": "Blinde Flecken", "recognised": "erkannt", "find them": "finden", "Night rehearsal": "Nacht-Generalprobe", "up to": "bis",
+    "before arming": "vor dem Scharfschalten", "Thresholds automatic": "Schwellen automatisch", "day and night": "Tag und Nacht", "False alarm learning": "Fehlalarm-Lernen",
+    "Weekly check": "Wochen-Check", "Find the blind spots (about 5 min)": "Blinde Flecken suchen (etwa 5 Min.)", "in the picture, not recognised": "im Bild, nicht erkannt",
+    "outside the picture": "ausserhalb des Bildes", "Rehearsal now (2 min)": "Generalprobe jetzt (2 Min.)", "By itself when arming": "Von selbst beim Scharfschalten",
+    "Set the thresholds now (day + night)": "Schwellen jetzt einstellen (Tag + Nacht)", "autoth-note": "Die automatische Optimierung probiert Empfindlichkeit, Mindestgrösse, KI-Schwelle, Nacht- und Regen-Einstellungen aus – zuerst am Tag, dann in der Nacht. Eine Änderung bleibt nur, wenn sie klar besser ist.",
+    "Re-enact every 👎 in the simulator": "Jedes 👎 im Simulator nachstellen", "fa-note": "Markierst du eine Aufnahme als Fehlalarm (mit Ursache), stellt der Simulator die Ursache nach und schaut 60 s zu. Meldet MoveEye wieder, kommen die Bilder als «keine Person» ins Training.",
+    "stays quiet": "bleibt ruhig", "alarm(s) – pictures kept for the training": "Alarm(e) – Bilder fürs Training behalten", "Every Sunday night": "Jeden Sonntag in der Nacht",
+    "week-note": "Sonntags zur Stunde des Nacht-Tests ein Testlauf «standard». Ist er klar schlechter als letzte Woche, kommt ein Push.", "2nd device": "2. Gerät", "P_opposite": "gegenüber", "P_door": "bewacht Zelt / Tür", "P_bike": "bewacht Velo",
     "P_car": "bewacht Auto", "P_left": "links", "P_right": "rechts", "Rover": "Rover", "M_alarm": "fährt zum Alarm", "M_dock": "fährt zur Ladestation", "M_goto": "fährt hin",
     "patrols": "patrouilliert", "charging": "lädt", "ready": "bereit", "Statistics & versions": "Statistik & Versionen", "4 weeks, per version": "4 Wochen, pro Version",
     "Second device in the simulator": "Zweites Gerät im Simulator", "dev-note": "Ein zweites MoveEye verbindet sich mit Port 8785 des Simulators (z. B. eine zweite Kopie auf dem PC). Unter Kameras → Geräte hinzufügen: dann meldet MoveEye die Übergabe, wenn eine Person von einem Gerät zum anderen geht.",
@@ -162,9 +169,34 @@ SIMHUB_JS = r"""
       s.appendChild(E("div", "mut", "🔋 " + (R.batt != null ? R.batt + " %" : "–") + (R.charging ? " · " + tt("charging") : "") + " · " + tt("rover-note")));
     }
     if (kind === "stats") statsSheet(s);
+    if (["blind", "rehearsal", "autoth", "falearn", "week"].includes(kind)) learnSheet(s, kind);
     box.appendChild(s);
   }
-  let LB = null, ST = null;
+  let LB = null, ST = null, LN = null;
+  const learn = async (d) => { try { const r = d ? await (await fetch("/api/learn", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, d))})).json()
+      : await (await fetch("/api/learn")).json(); if (r && r.blind) LN = r; if (r && r.ok === false && r.error) say("⚠ " + r.error); paintAll(); return r; } catch (e) {} };
+  function blindSvg(res) {
+    const W = 300, Hh = 170, cx = W / 2, by = Hh - 10, k = (Hh - 20) / 30;
+    let g = '<svg viewBox="0 0 ' + W + ' ' + Hh + '" style="width:100%;max-width:420px">';
+    [10, 20, 30].forEach(r => { g += '<path d="M' + (cx - r * k) + ' ' + by + ' A' + r * k + ' ' + r * k + ' 0 0 1 ' + (cx + r * k) + ' ' + by + '" fill="none" stroke="#1f2b3a"/><text x="' + (cx + r * k - 2) + '" y="' + (by - 2) + '" font-size="8" fill="#8a9bb0" text-anchor="end">' + r + ' m</text>'; });
+    (res.points || []).forEach(p => { const a = p.az * Math.PI / 180, x = cx + Math.sin(a) * p.d * k, y = by - Math.cos(a) * p.d * k;
+      g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="5" fill="' + (!p.inview ? "#5a6b80" : p.found ? "#3fcf6b" : "#ff4d4d") + '"/>'; });
+    return g + '<circle cx="' + cx + '" cy="' + by + '" r="6" fill="#f59a4a"/></svg>';
+  }
+  function learnSheet(s, kind) {
+    if (!LN) { s.appendChild(E("div", "mut", "…")); learn(); return; }
+    const bl = LN.blind;
+    if (kind === "blind") { s.appendChild(B("▶ " + tt("Find the blind spots (about 5 min)"), () => learn({do: "blind"})));
+      if (bl.last) { const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.last); s.append(c, E("div", "mut", "🟢 " + tt("recognised") + " · 🔴 " + tt("in the picture, not recognised") + " · ⚪ " + tt("outside the picture")), E("b", "", "💡 " + (bl.last.tip || ""))); } }
+    if (kind === "rehearsal") { s.append(B("▶ " + tt("Rehearsal now (2 min)"), () => learn({do: "rehearsal"})), B((LN.rehearsal_on_arm ? "✓ " : "") + tt("By itself when arming"), () => learn({do: "set", key: "rehearsal_on_arm", on: !LN.rehearsal_on_arm}), LN.rehearsal_on_arm ? "" : "sec"));
+      if (bl.rehearsal) { s.appendChild(E("b", "", "🌙 " + (bl.rehearsal.text || ""))); const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.rehearsal); s.appendChild(c); } }
+    if (kind === "autoth") { s.append(B("▶ " + tt("Set the thresholds now (day + night)"), () => learn({do: "autoth"})), E("div", "mut", tt("autoth-note")));
+      const l = LN.autoth.last; if (l) l.res.forEach(r => s.appendChild(E("div", "mut", (r.plan === "night" ? "🌙 " : "☀ ") + (r.base != null ? r.base : "–") + " → " + (r.best != null ? r.best : "–") + " · " + tt("kept") + ": " + (r.kept.join(", ") || "–")))); }
+    if (kind === "falearn") { s.append(B((LN.fa_learn_auto ? "✓ " : "") + tt("Re-enact every 👎 in the simulator"), () => learn({do: "set", key: "fa_learn_auto", on: !LN.fa_learn_auto}), LN.fa_learn_auto ? "" : "sec"), E("div", "mut", tt("fa-note")));
+      (LN.falearn.last || []).forEach(r => s.appendChild(E("div", "mut", (r.ok ? "✅ " + tt("stays quiet") : "⚠ " + r.alarms + " " + tt("alarm(s) – pictures kept for the training") + " (" + r.pics + ")") + " · " + r.cause + " · " + r.name))); }
+    if (kind === "week") { s.append(B((LN.week.on ? "✓ " : "") + tt("Every Sunday night"), () => learn({do: "set", key: "weekcheck_on", on: !LN.week.on}), LN.week.on ? "" : "sec"), E("div", "mut", tt("week-note")));
+      (LN.week.runs || []).forEach(r => s.appendChild(E("div", "mut", new Date(r.t * 1000).toLocaleDateString() + " · " + r.score + " · v" + r.mw))); }
+  }
   async function statsSheet(s) {
     if (!ST) { s.appendChild(E("div", "mut", "…")); try { ST = await (await fetch("/api/simstats")).json(); } catch (e) { return; } setTimeout(() => { ST = null; }, 60000); paintAll(); return; }
     const W = 320, Hh = 90, days = ST.days, bw = W / days.length;
@@ -235,6 +267,12 @@ SIMHUB_JS = r"""
       T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
         ["rover", "🚜", tt("Rover"), H.rover ? (R.mission ? "⏳ " + tt("M_" + R.mission) : R.active ? tt("patrols") : R.charging ? "⚡ " + tt("charging") : tt("ready")) + " · 🔋 " + R.batt + " %" : "–"],
         ["stats", "📈", tt("Statistics & versions"), tt("4 weeks, per version")]); }
+    if (full) { const N = LN || {}; const bl = N.blind || {}, au = N.autoth || {}, re = bl.rehearsal;
+      T.push(["blind", "🗺", tt("Blind spots"), bl.busy && bl.kind === "map" ? "⏳ " + (bl.prog || "") : bl.last ? bl.last.found + "/" + bl.last.inview + " " + tt("recognised") : tt("find them")],
+        ["rehearsal", "🌙", tt("Night rehearsal"), bl.busy && bl.kind === "rehearsal" ? "⏳ " + (bl.prog || "") : re ? (re.max_found ? tt("up to") + " " + re.max_found + " m" : "–") : tt("before arming")],
+        ["autoth", "🎚", tt("Thresholds automatic"), au.busy ? "⏳ " + au.step : au.last ? "✓" : tt("day and night")],
+        ["falearn", "👎", tt("False alarm learning"), N.fa_learn_auto ? tt("on") : tt("off")],
+        ["week", "📅", tt("Weekly check"), N.week && N.week.on ? tt("on") : tt("off")]); }
     if (full) T.push(["inbox", "📨", tt("Test inbox"), LB ? (LB.sandbox ? tt("on") : tt("off")) + " · " + (LB.inbox || []).length : ""],
       ["drill", "⚡", tt("Drills"), LB && LB.drill.busy ? "⏳ " + LB.drill.left + " s" : tt("Battery, Wi-Fi, heat, cold")],
       ["train", "🌙", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
@@ -266,7 +304,7 @@ SIMHUB_JS = r"""
     if (!H.ok) { el_.appendChild(E("div", "mut", "⚠ " + tt("Simulator not reachable") + (H.msg ? " (" + H.msg + ")" : ""))); return; } tiles(el_, true); }
   function paintAll() { document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : paintTile(x)); }
   async function load() { if (!document.querySelector("[data-simhub]")) return; try { H = await (await fetch("/api/simhub")).json(); } catch (e) { return; }
-    if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); } catch (e) {} }
+    if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); LN = await (await fetch("/api/learn")).json(); } catch (e) {} }
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
     if (!document.activeElement || document.activeElement.type !== "range") paintAll(); }
   document.addEventListener("DOMContentLoaded", () => { load(); setInterval(load, 6000); });

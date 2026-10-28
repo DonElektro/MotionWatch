@@ -1629,6 +1629,26 @@ class WebStream:
             ok, err = demo_start()
             return reply({"ok": ok, "error": tr_err(err, lang) if err else ""}, 200 if ok else 400)
 
+        @app.route("/api/learn", methods=["GET", "POST"])
+        def api_learn():                                     # 2.96.8: makeover 21-25 (143_makeover_lernen)
+            if request.method == "GET":
+                return reply(dict(learn_state(), ok=True))
+            d = body(); lang = norm_lang(d.get("lang")); a = str(d.get("do") or "")
+            ok, err = True, ""
+            if a == "falearn":
+                ok, err = falearn_start(str(d.get("name") or ""), str(d.get("cause") or "other"))
+            elif a == "blind":
+                ok, err = blind_start("map")
+            elif a == "rehearsal":
+                ok, err = blind_start("rehearsal")
+            elif a == "autoth":
+                ok, err = autoth_start()
+            elif a == "set" and d.get("key") in ("fa_learn_auto", "rehearsal_on_arm", "weekcheck_on"):
+                CFG[d["key"]] = bool(d.get("on")); save_settings()
+            else:
+                ok, err = False, "unknown action"
+            return reply(dict(learn_state(), ok=ok, error=tr_err(err, lang) if err else ""))
+
         @app.route("/api/simbar")
         def api_simbar():                                    # 2.96.4: the stripe «SIMULATION» on every page
             return reply({"ok": True, "on": bool(CFG.get("sim_on"))})

@@ -1,12 +1,12 @@
 {
- "version": "3D-3.84",
+ "version": "3D-3.85",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31144794,
- "sha256": "f03d40c7e6a4ba2995137939bd5b5948ea524c15f7c2a2b03e2ad69c381469a9",
- "notes": "Makeover 16-20: zweites Gerät bewacht Dinge, Rover mit Ladestation und Alarmfahrt",
+ "size": 31150575,
+ "sha256": "e37b79ef72d9f66a2360128533a885d18f384cbc46372363bdbfe59c3255bf3a",
+ "notes": "Makeover 21-25: Fehlalarm-Lernen, blinde Flecken, Nacht-Generalprobe",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24265920,
-  "sha256": "46b131e0f7a14c0e6dbe167979f7e809b250d6c9d5b00da5cd994360d3e7cf00"
+  "size": 24272157,
+  "sha256": "8dfd94496c7d85339ca8f55b89558b68860f645568a584caa8f5ed38974bf5c4"
  }
 }

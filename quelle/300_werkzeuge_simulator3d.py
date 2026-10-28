@@ -665,8 +665,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.84", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31144794,
-         "sha256": "f03d40c7e6a4ba2995137939bd5b5948ea524c15f7c2a2b03e2ad69c381469a9"}
+SIM3D = {"version": "3D-3.85", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31150575,
+         "sha256": "e37b79ef72d9f66a2360128533a885d18f384cbc46372363bdbfe59c3255bf3a"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -805,8 +805,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.84", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24265920,
-           "sha256": "46b131e0f7a14c0e6dbe167979f7e809b250d6c9d5b00da5cd994360d3e7cf00", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.85", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24272157,
+           "sha256": "8dfd94496c7d85339ca8f55b89558b68860f645568a584caa8f5ed38974bf5c4", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 

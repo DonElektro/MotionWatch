@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_7.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_8.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,10 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.96.8: Makeover 21–25 (Simulator-Zentrale): Fehlalarm-Lernen (nach 👎 stellt der Simulator die Ursache 60 s nach, Bilder als
+    «keine Person» fürs Training); Karte der blinden Flecken mit Tipp; Nacht-Generalprobe («heute Nacht erkennst du Personen bis
+    … m», auf Wunsch beim Scharfschalten); Schwellen automatisch (Tag + Nacht); Erkennungs-Check jede Woche mit Warnung; passt
+    zum Simulator 3D-3.85
   * 2.96.7: Makeover 16–20: mehrere Geräte (zweites Gerät bewacht Zelt / Velo / Auto, Übergabe einer Person zwischen Geräten im
     Protokoll); Rover (Patrouille, Ladestation mit Akku, zum Alarm fahren – auch von selbst bei Personen-Alarm); Statistik aus
     dem Simulator (4 Wochen, Arten, Erkennungsrate, Wochenbericht als Push); Versionen vergleichen (Erkennungsrate und
@@ -823,10 +827,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_96_7.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_96_8.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_96_7.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_96_7.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_96_8.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_96_8.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -843,7 +847,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.96.7"
+APP_VERSION = "2.96.8"
 
 
 def default_data_dir():
@@ -1167,7 +1171,7 @@ CFG = {
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
@@ -7327,6 +7331,10 @@ def arm_tick():
         log_event("sys", "Armed now - alarms are active")
         push_alert("armed", "armed")
         try:
+            rehearsal_on_arm()                             # 2.96.8: night rehearsal in the simulation (makeover 23)
+        except Exception:
+            pass
+        try:
             refscan_on_armed()                         # 2.95.97: compare with the reference scan (if wanted)
         except Exception:
             pass
@@ -7945,7 +7953,7 @@ MAKEOVER_ALL = [
     (21, "Fehlalarm-Lernen"), (22, "Karte der blinden Flecken"), (23, "Nacht-Generalprobe vor dem Scharfschalten"),
     (24, "Schwellen automatisch einstellen"), (25, "Erkennungs-Check jede Woche"),
 ]
-MAKEOVER_DONE = set(range(1, 21))                                # numbers already delivered (nachführen)
+MAKEOVER_DONE = set(range(1, 26))                                # numbers already delivered (nachführen)
 
 
 def _news_vt(v):
@@ -8150,7 +8158,14 @@ SIMHUB_JS = r"""
     "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
     "Tap = control": "Antippen = steuern", "person": "Person", "burglar": "Dieb", "child": "Kind", "dogwalk": "Hund", "fox": "Fuchs", "deer": "Reh", "cat": "Katze",
     "boar": "Wildschwein", "hedgehog": "Igel", "cyclist": "Velo", "courier": "Kurier", "car": "Auto", "sent": "geschickt", "Test run, test bench": "Testlauf, Prüfstand",
-    "Play on the phone": "Mitspielen mit dem Handy", "Several devices": "Mehrere Geräte", "2nd device": "2. Gerät", "P_opposite": "gegenüber", "P_door": "bewacht Zelt / Tür", "P_bike": "bewacht Velo",
+    "Play on the phone": "Mitspielen mit dem Handy", "Several devices": "Mehrere Geräte", "Blind spots": "Blinde Flecken", "recognised": "erkannt", "find them": "finden", "Night rehearsal": "Nacht-Generalprobe", "up to": "bis",
+    "before arming": "vor dem Scharfschalten", "Thresholds automatic": "Schwellen automatisch", "day and night": "Tag und Nacht", "False alarm learning": "Fehlalarm-Lernen",
+    "Weekly check": "Wochen-Check", "Find the blind spots (about 5 min)": "Blinde Flecken suchen (etwa 5 Min.)", "in the picture, not recognised": "im Bild, nicht erkannt",
+    "outside the picture": "ausserhalb des Bildes", "Rehearsal now (2 min)": "Generalprobe jetzt (2 Min.)", "By itself when arming": "Von selbst beim Scharfschalten",
+    "Set the thresholds now (day + night)": "Schwellen jetzt einstellen (Tag + Nacht)", "autoth-note": "Die automatische Optimierung probiert Empfindlichkeit, Mindestgrösse, KI-Schwelle, Nacht- und Regen-Einstellungen aus – zuerst am Tag, dann in der Nacht. Eine Änderung bleibt nur, wenn sie klar besser ist.",
+    "Re-enact every 👎 in the simulator": "Jedes 👎 im Simulator nachstellen", "fa-note": "Markierst du eine Aufnahme als Fehlalarm (mit Ursache), stellt der Simulator die Ursache nach und schaut 60 s zu. Meldet MoveEye wieder, kommen die Bilder als «keine Person» ins Training.",
+    "stays quiet": "bleibt ruhig", "alarm(s) – pictures kept for the training": "Alarm(e) – Bilder fürs Training behalten", "Every Sunday night": "Jeden Sonntag in der Nacht",
+    "week-note": "Sonntags zur Stunde des Nacht-Tests ein Testlauf «standard». Ist er klar schlechter als letzte Woche, kommt ein Push.", "2nd device": "2. Gerät", "P_opposite": "gegenüber", "P_door": "bewacht Zelt / Tür", "P_bike": "bewacht Velo",
     "P_car": "bewacht Auto", "P_left": "links", "P_right": "rechts", "Rover": "Rover", "M_alarm": "fährt zum Alarm", "M_dock": "fährt zur Ladestation", "M_goto": "fährt hin",
     "patrols": "patrouilliert", "charging": "lädt", "ready": "bereit", "Statistics & versions": "Statistik & Versionen", "4 weeks, per version": "4 Wochen, pro Version",
     "Second device in the simulator": "Zweites Gerät im Simulator", "dev-note": "Ein zweites MoveEye verbindet sich mit Port 8785 des Simulators (z. B. eine zweite Kopie auf dem PC). Unter Kameras → Geräte hinzufügen: dann meldet MoveEye die Übergabe, wenn eine Person von einem Gerät zum anderen geht.",
@@ -8197,9 +8212,34 @@ SIMHUB_JS = r"""
       s.appendChild(E("div", "mut", "🔋 " + (R.batt != null ? R.batt + " %" : "–") + (R.charging ? " · " + tt("charging") : "") + " · " + tt("rover-note")));
     }
     if (kind === "stats") statsSheet(s);
+    if (["blind", "rehearsal", "autoth", "falearn", "week"].includes(kind)) learnSheet(s, kind);
     box.appendChild(s);
   }
-  let LB = null, ST = null;
+  let LB = null, ST = null, LN = null;
+  const learn = async (d) => { try { const r = d ? await (await fetch("/api/learn", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, d))})).json()
+      : await (await fetch("/api/learn")).json(); if (r && r.blind) LN = r; if (r && r.ok === false && r.error) say("⚠ " + r.error); paintAll(); return r; } catch (e) {} };
+  function blindSvg(res) {
+    const W = 300, Hh = 170, cx = W / 2, by = Hh - 10, k = (Hh - 20) / 30;
+    let g = '<svg viewBox="0 0 ' + W + ' ' + Hh + '" style="width:100%;max-width:420px">';
+    [10, 20, 30].forEach(r => { g += '<path d="M' + (cx - r * k) + ' ' + by + ' A' + r * k + ' ' + r * k + ' 0 0 1 ' + (cx + r * k) + ' ' + by + '" fill="none" stroke="#1f2b3a"/><text x="' + (cx + r * k - 2) + '" y="' + (by - 2) + '" font-size="8" fill="#8a9bb0" text-anchor="end">' + r + ' m</text>'; });
+    (res.points || []).forEach(p => { const a = p.az * Math.PI / 180, x = cx + Math.sin(a) * p.d * k, y = by - Math.cos(a) * p.d * k;
+      g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="5" fill="' + (!p.inview ? "#5a6b80" : p.found ? "#3fcf6b" : "#ff4d4d") + '"/>'; });
+    return g + '<circle cx="' + cx + '" cy="' + by + '" r="6" fill="#f59a4a"/></svg>';
+  }
+  function learnSheet(s, kind) {
+    if (!LN) { s.appendChild(E("div", "mut", "…")); learn(); return; }
+    const bl = LN.blind;
+    if (kind === "blind") { s.appendChild(B("▶ " + tt("Find the blind spots (about 5 min)"), () => learn({do: "blind"})));
+      if (bl.last) { const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.last); s.append(c, E("div", "mut", "🟢 " + tt("recognised") + " · 🔴 " + tt("in the picture, not recognised") + " · ⚪ " + tt("outside the picture")), E("b", "", "💡 " + (bl.last.tip || ""))); } }
+    if (kind === "rehearsal") { s.append(B("▶ " + tt("Rehearsal now (2 min)"), () => learn({do: "rehearsal"})), B((LN.rehearsal_on_arm ? "✓ " : "") + tt("By itself when arming"), () => learn({do: "set", key: "rehearsal_on_arm", on: !LN.rehearsal_on_arm}), LN.rehearsal_on_arm ? "" : "sec"));
+      if (bl.rehearsal) { s.appendChild(E("b", "", "🌙 " + (bl.rehearsal.text || ""))); const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.rehearsal); s.appendChild(c); } }
+    if (kind === "autoth") { s.append(B("▶ " + tt("Set the thresholds now (day + night)"), () => learn({do: "autoth"})), E("div", "mut", tt("autoth-note")));
+      const l = LN.autoth.last; if (l) l.res.forEach(r => s.appendChild(E("div", "mut", (r.plan === "night" ? "🌙 " : "☀ ") + (r.base != null ? r.base : "–") + " → " + (r.best != null ? r.best : "–") + " · " + tt("kept") + ": " + (r.kept.join(", ") || "–")))); }
+    if (kind === "falearn") { s.append(B((LN.fa_learn_auto ? "✓ " : "") + tt("Re-enact every 👎 in the simulator"), () => learn({do: "set", key: "fa_learn_auto", on: !LN.fa_learn_auto}), LN.fa_learn_auto ? "" : "sec"), E("div", "mut", tt("fa-note")));
+      (LN.falearn.last || []).forEach(r => s.appendChild(E("div", "mut", (r.ok ? "✅ " + tt("stays quiet") : "⚠ " + r.alarms + " " + tt("alarm(s) – pictures kept for the training") + " (" + r.pics + ")") + " · " + r.cause + " · " + r.name))); }
+    if (kind === "week") { s.append(B((LN.week.on ? "✓ " : "") + tt("Every Sunday night"), () => learn({do: "set", key: "weekcheck_on", on: !LN.week.on}), LN.week.on ? "" : "sec"), E("div", "mut", tt("week-note")));
+      (LN.week.runs || []).forEach(r => s.appendChild(E("div", "mut", new Date(r.t * 1000).toLocaleDateString() + " · " + r.score + " · v" + r.mw))); }
+  }
   async function statsSheet(s) {
     if (!ST) { s.appendChild(E("div", "mut", "…")); try { ST = await (await fetch("/api/simstats")).json(); } catch (e) { return; } setTimeout(() => { ST = null; }, 60000); paintAll(); return; }
     const W = 320, Hh = 90, days = ST.days, bw = W / days.length;
@@ -8270,6 +8310,12 @@ SIMHUB_JS = r"""
       T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
         ["rover", "🚜", tt("Rover"), H.rover ? (R.mission ? "⏳ " + tt("M_" + R.mission) : R.active ? tt("patrols") : R.charging ? "⚡ " + tt("charging") : tt("ready")) + " · 🔋 " + R.batt + " %" : "–"],
         ["stats", "📈", tt("Statistics & versions"), tt("4 weeks, per version")]); }
+    if (full) { const N = LN || {}; const bl = N.blind || {}, au = N.autoth || {}, re = bl.rehearsal;
+      T.push(["blind", "🗺", tt("Blind spots"), bl.busy && bl.kind === "map" ? "⏳ " + (bl.prog || "") : bl.last ? bl.last.found + "/" + bl.last.inview + " " + tt("recognised") : tt("find them")],
+        ["rehearsal", "🌙", tt("Night rehearsal"), bl.busy && bl.kind === "rehearsal" ? "⏳ " + (bl.prog || "") : re ? (re.max_found ? tt("up to") + " " + re.max_found + " m" : "–") : tt("before arming")],
+        ["autoth", "🎚", tt("Thresholds automatic"), au.busy ? "⏳ " + au.step : au.last ? "✓" : tt("day and night")],
+        ["falearn", "👎", tt("False alarm learning"), N.fa_learn_auto ? tt("on") : tt("off")],
+        ["week", "📅", tt("Weekly check"), N.week && N.week.on ? tt("on") : tt("off")]); }
     if (full) T.push(["inbox", "📨", tt("Test inbox"), LB ? (LB.sandbox ? tt("on") : tt("off")) + " · " + (LB.inbox || []).length : ""],
       ["drill", "⚡", tt("Drills"), LB && LB.drill.busy ? "⏳ " + LB.drill.left + " s" : tt("Battery, Wi-Fi, heat, cold")],
       ["train", "🌙", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
@@ -8301,7 +8347,7 @@ SIMHUB_JS = r"""
     if (!H.ok) { el_.appendChild(E("div", "mut", "⚠ " + tt("Simulator not reachable") + (H.msg ? " (" + H.msg + ")" : ""))); return; } tiles(el_, true); }
   function paintAll() { document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : paintTile(x)); }
   async function load() { if (!document.querySelector("[data-simhub]")) return; try { H = await (await fetch("/api/simhub")).json(); } catch (e) { return; }
-    if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); } catch (e) {} }
+    if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); LN = await (await fetch("/api/learn")).json(); } catch (e) {} }
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
     if (!document.activeElement || document.activeElement.type !== "range") paintAll(); }
   document.addEventListener("DOMContentLoaded", () => { load(); setInterval(load, 6000); });
@@ -9387,6 +9433,237 @@ def _demo_thread():
         SANDBOX["force"] = max(0, SANDBOX["force"] - 1)
         DEMO_RUN.update(busy=False, step="", i=0)
         log_event("sys", "Demo finished")
+# ----------------------------------------------------------------------------
+# 2.96.8 (Makeover-Punkte 21–25), für die echte Überwachung, mit dem Simulator:
+#  21  Fehlalarm-Lernen: eine Aufnahme mit 👎 (und Ursache) wird im Simulator nachgestellt (Tier, Wind, Licht, Regen, Auto)
+#      und 60 s beobachtet. Meldet MoveEye dabei wieder eine Person, kommen die Bilder als «keine Person»-Beispiele nach
+#      fa_learn/ (für das Training) und die passenden Vorschläge (Fehlalarme) werden gezeigt; sonst: «gelernt, bleibt ruhig».
+#  22  Blinde Flecken: der Simulator stellt eine Person nacheinander an Punkte rund um MoveEye (Richtungen × Abstände) und
+#      schaut, ob MoveEye sie erkennt - Karte grün / rot / grau (ausser Sicht) und ein Tipp.
+#  23  Nacht-Generalprobe: wie 22, aber nur geradeaus, zur Uhrzeit von heute Nacht: «Heute Nacht erkennst du Personen bis
+#      18 m». Auf Wunsch von selbst beim Scharfschalten in der Simulation.
+#  24  Schwellen automatisch: die automatische Optimierung für Tag (quick) und Nacht (night) nacheinander.
+#  25  Erkennungs-Check jede Woche: sonntags zur Stunde des Nacht-Tests der Plan «standard»; Push, wenn es schlechter wurde.
+# ----------------------------------------------------------------------------
+FALEARN = {"busy": False, "last": [], "cur": ""}
+BLIND = {"busy": False, "kind": "", "last": None, "rehearsal": None}
+AUTOTH = {"busy": False, "step": "", "last": None}
+
+
+# ---- 21 -------------------------------------------------------------------------------------------------------------------
+def falearn_start(name, cause):
+    if FALEARN["busy"]:
+        return False, "already running"
+    if not sim_ready():
+        return False, "only with the simulator"
+    if not rec_path(name):
+        return False, "not found"
+    FALEARN.update(busy=True, cur=name)
+    threading.Thread(target=_falearn_thread, args=(name, str(cause or "other")), daemon=True, name="falearn").start()
+    return True, ""
+
+
+def _falearn_thread(name, cause):
+    res = {"name": name, "cause": cause, "t": time.time(), "alarms": 0, "pics": 0, "ok": False}
+    try:
+        meta = _read_sidecar(name)
+        situ = meta.get("situ") or {}
+        try:
+            dt = datetime.fromisoformat(meta["start"]) if meta.get("start") else (parse_stamp(os.path.basename(name)) or datetime.now())
+        except ValueError:
+            dt = datetime.now()
+        sim_control({"action": "farecreate", "cause": cause, "hour": round(dt.hour + dt.minute / 60.0, 2),
+                     "pan_deg": float(situ.get("pan_deg") or 0.0), "rain": bool(situ.get("rain"))})
+        d = os.path.join(DATA_DIR, "fa_learn", datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + re.sub(r"[^a-z]", "", cause))
+        was = 0
+        t_end = time.time() + 60
+        w0 = WATCH_REF.get("w")
+        if w0 is not None:
+            w0.raw_until = t_end + 1                        # the picture without marks, for the training
+        last_pic = 0.0
+        while time.time() < t_end:
+            p = int(STATE.get("persons") or 0)
+            if p > 0 and was == 0:
+                res["alarms"] += 1
+            if p > 0 and time.time() - last_pic > 2.0 and res["pics"] < 10:
+                w = WATCH_REF.get("w")
+                f = getattr(w, "frame_raw", None) if w is not None else None
+                if f is not None:
+                    os.makedirs(d, exist_ok=True)
+                    cv2.imwrite(os.path.join(d, "%02d.jpg" % res["pics"]), f, [cv2.IMWRITE_JPEG_QUALITY, 85])
+                    res["pics"] += 1
+                    last_pic = time.time()
+            was = p
+            time.sleep(0.5)
+        res["ok"] = res["alarms"] == 0
+        if res["pics"]:
+            with open(os.path.join(d, "info.json"), "w") as f_:
+                json.dump({"label": "no_person", "cause": cause, "from": name}, f_)
+        sim_control({"action": "farecreate", "cause": "end"})
+    except Exception as e:
+        res["error"] = str(e)[:100]
+    FALEARN["last"].insert(0, res)
+    del FALEARN["last"][10:]
+    FALEARN.update(busy=False, cur="")
+    log_event("sys", f"False alarm learning ({cause}): {res['alarms']} alarm(s) in 60 s, {res['pics']} picture(s) kept as «no person»")
+
+
+# ---- 22 / 23 --------------------------------------------------------------------------------------------------------------
+def blind_start(kind="map", hour=None):
+    if BLIND["busy"]:
+        return False, "already running"
+    if not sim_ready():
+        return False, "only with the simulator"
+    q = {"action": "blindmap", "do": "start"}
+    if kind == "rehearsal":
+        q.update(az=[0], dist=[6, 10, 14, 18, 22, 26, 30], hour=hour if hour is not None else 22.5, walk=True)
+    else:
+        q.update(az=[-60, -40, -20, 0, 20, 40, 60], dist=[5, 10, 15, 20, 25])
+    try:
+        r = sim_control(q)
+    except Exception:
+        return False, "simulator not reachable"
+    if not r.get("ok"):
+        return False, str(r.get("error") or "not supported - update the simulator")
+    BLIND.update(busy=True, kind=kind)
+    threading.Thread(target=_blind_wait, daemon=True, name="blindmap").start()
+    return True, ""
+
+
+def _blind_wait():
+    t_end = time.time() + 900
+    res = None
+    while time.time() < t_end:
+        time.sleep(3)
+        try:
+            r = sim_control({"action": "blindmap", "do": "info"})
+        except Exception:
+            continue
+        BLIND["prog"] = r.get("prog")
+        if not r.get("busy"):
+            res = r.get("result")
+            break
+    kind = BLIND["kind"]
+    if res:
+        res["tip"] = blind_tip(res)
+        if kind == "rehearsal":
+            BLIND["rehearsal"] = res
+            far = res.get("max_found")
+            txt = trf("Night rehearsal: tonight persons are recognised up to {d} m", d=far) if far else tr("Night rehearsal: no person recognised - check the night settings (IR light, night mode)")
+            log_event("sys", txt)
+            res["text"] = txt
+        else:
+            BLIND["last"] = res
+            log_event("sys", f"Blind spots: {res.get('found', 0)} of {res.get('inview', 0)} places recognised")
+    BLIND.update(busy=False, kind="")
+
+
+def blind_tip(res):
+    """a short tip from the map: where are the blind spots?"""
+    pts = res.get("points") or []
+    miss = [p for p in pts if p.get("inview") and not p.get("found")]
+    if not pts:
+        return ""
+    if not any(p.get("inview") for p in pts):
+        return tr("The person was never in the picture – check where the head looks (patrol, pan).")
+    if not miss:
+        return tr("No blind spot in view - well placed.")
+    far = [p for p in miss if p["d"] >= 15]
+    left = [p for p in miss if p["az"] < -10]
+    right = [p for p in miss if p["az"] > 10]
+    out = ""
+    if len(far) >= len(miss) * 0.6:
+        out = tr("Mostly far away: put MoveEye higher or tilt it a little up; at night more IR light helps.")
+    elif len(left) > len(right) * 2:
+        out = tr("Mostly on the left: turn MoveEye a little to the left or add a patrol point there.")
+    elif len(right) > len(left) * 2:
+        out = tr("Mostly on the right: turn MoveEye a little to the right or add a patrol point there.")
+    else:
+        out = tr("Spread over the picture: check the sensitivity (A/B comparison) and the zones.")
+    nv = [p for p in pts if not p.get("inview")]
+    if len(nv) > len(pts) * 0.3:
+        out += " " + tr("Many places are outside the picture: a patrol or a second device covers them.")
+    return out
+
+
+def rehearsal_on_arm():
+    """armed in the simulation: the night rehearsal by itself (when switched on)"""
+    if CFG.get("rehearsal_on_arm") and sim_ready() and not BLIND["busy"]:
+        now = datetime.now()
+        h = now.hour + now.minute / 60.0
+        blind_start("rehearsal", h if (h >= 20 or h < 6) else 22.5)
+
+
+# ---- 24 --------------------------------------------------------------------------------------------------------------------
+def autoth_start():
+    if AUTOTH["busy"] or TESTOPT["busy"] or TRAIN["busy"]:
+        return False, "already running"
+    if not sim_ready():
+        return False, "only with the simulator"
+    AUTOTH.update(busy=True, step="day")
+    threading.Thread(target=_autoth_thread, daemon=True, name="autoth").start()
+    return True, ""
+
+
+def _autoth_thread():
+    res = []
+    try:
+        for plan in ("quick", "night"):
+            AUTOTH["step"] = plan
+            _sim_free()
+            _testopt_thread("auto", plan, 4)
+            A = TESTOPT.get("auto") or {}
+            res.append({"plan": plan, "base": A.get("base"), "best": A.get("best"), "kept": list(A.get("kept") or [])})
+    finally:
+        AUTOTH.update(busy=False, step="", last={"t": time.time(), "res": res})
+        log_event("sys", "Automatic thresholds: " + "; ".join(f"{r['plan']} {r['base']} -> {r['best']}" for r in res))
+
+
+# ---- 25 --------------------------------------------------------------------------------------------------------------------
+def weekcheck_loop():
+    while True:
+        time.sleep(120)
+        try:
+            if not CFG.get("weekcheck_on"):
+                continue
+            now = datetime.now()
+            wk = now.strftime("%G-W%V")
+            if now.weekday() != 6 or now.hour != int(CFG.get("testopt_hour", 3)) or CFG.get("weekcheck_last") == wk:
+                continue
+            if not sim_ready() or TESTOPT["busy"] or TRAIN["busy"] or is_armed():
+                continue
+            CFG["weekcheck_last"] = wk
+            save_settings()
+            prev = next((r for r in reversed(TESTOPT["runs"]) if r.get("week")), None)
+            TESTOPT["busy"] = "week"
+            try:
+                _sim_free()
+                run = testopt_run("standard")
+            finally:
+                TESTOPT["busy"] = ""
+            if run is None:
+                continue
+            run["week"] = True
+            testopt_save()
+            log_event("sys", f"Weekly recognition check: score {run['score']}")
+            if prev and prev.get("score") is not None and run.get("score") is not None and run["score"] <= prev["score"] - 8:
+                w = WATCH_REF.get("w")
+                if w is not None:
+                    w.notifier.info(trf("Weekly check: score {a} instead of {b} – the recognition got worse. Details: tab Simulator.",
+                                        a=run["score"], b=prev["score"]), title="{name}: " + tr("Weekly check"))
+        except Exception as e:
+            log_event("sys", f"Weekly check: {e}"[:150])
+
+
+threading.Thread(target=weekcheck_loop, daemon=True, name="weekcheck").start()
+
+
+def learn_state():
+    return {"falearn": {"busy": FALEARN["busy"], "cur": FALEARN["cur"], "last": FALEARN["last"][:5]},
+            "blind": {"busy": BLIND["busy"], "kind": BLIND["kind"], "prog": BLIND.get("prog"), "last": BLIND["last"], "rehearsal": BLIND["rehearsal"]},
+            "autoth": {"busy": AUTOTH["busy"], "step": AUTOTH["step"], "last": AUTOTH["last"]},
+            "week": {"on": bool(CFG.get("weekcheck_on")), "runs": [{"t": r["t"], "score": r["score"], "mw": r.get("mw")} for r in TESTOPT["runs"] if r.get("week")][-8:]},
+            "rehearsal_on_arm": bool(CFG.get("rehearsal_on_arm")), "fa_learn_auto": bool(CFG.get("fa_learn_auto"))}
 # ----------------------------------------------------------------------------
 # Second Wi-Fi adapter (USB stick): one adapter makes the own Wi-Fi, the other one joins a known network (campsite, phone)
 # -> repeater: the devices in the own Wi-Fi have internet (NetworkManager "shared" does the routing). Also: automatic change
@@ -16569,8 +16846,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.84", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31144794,
-         "sha256": "f03d40c7e6a4ba2995137939bd5b5948ea524c15f7c2a2b03e2ad69c381469a9"}
+SIM3D = {"version": "3D-3.85", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31150575,
+         "sha256": "e37b79ef72d9f66a2360128533a885d18f384cbc46372363bdbfe59c3255bf3a"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -16709,8 +16986,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.84", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24265920,
-           "sha256": "46b131e0f7a14c0e6dbe167979f7e809b250d6c9d5b00da5cd994360d3e7cf00", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.85", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24272157,
+           "sha256": "8dfd94496c7d85339ca8f55b89558b68860f645568a584caa8f5ed38974bf5c4", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -21382,7 +21659,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_7.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_8.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -39698,7 +39975,7 @@ $("#f-place").onchange = () => { F.place = $("#f-place").value; load(true); };
 // ---- false alarms: «was nothing» + suggestions ----
 Object.assign(I18N.de, {"Continuous recording (all the time, few pictures per second) with a timeline": "Daueraufnahme (immer, wenige Bilder pro Sekunde) mit Zeitleiste", "Continuous recording: keep (hours)": "Daueraufnahme: behalten (Stunden)", "Continuous recording: pictures per second": "Daueraufnahme: Bilder pro Sekunde", "🎞 Continuous recording": "🎞 Daueraufnahme", "Continuous recording": "Daueraufnahme", "recording now": "wird gerade aufgenommen", "alarms": "Alarme", "Tap a blue piece to watch it. Red lines: alarms.": "Ein blaues Stück antippen zum Ansehen. Rote Striche: Alarme.", "Continuous recording is off (Settings → Recording).": "Daueraufnahme ist aus (Einstellungen → Aufnahme)."});
 Object.assign(I18N.de, {"Event report (PDF) for the police / insurance": "Ereignisbericht (PDF) für Polizei / Versicherung"});
-Object.assign(I18N.de, {"What if …? Re-enact it in the simulator": "Was wäre wenn …? Im Simulator nachstellen", "Re-enacted in the simulator": "Im Simulator nachgestellt", "False alarms": "Fehlalarme", "Animal": "Tier", "Wind / branches": "Wind / Äste", "Light / shadow": "Licht / Schatten", "Rain": "Regen", "Car": "Auto", "Other": "Anderes", "Was nothing (false alarm)": "War nichts (Fehlalarm)", "Was nothing - what was it?": "War nichts – was war es?", "Was real after all": "War doch echt", "false alarms marked in the last": "Fehlalarme markiert in den letzten", "days": "Tagen", "of": "von", "suggestions:": "Vorschläge:", "Open": "Öffnen", "Take over": "Übernehmen", "Switch on the automatic wind detection": "Automatische Wind-Erkennung einschalten", "Less sensitive to light changes": "Weniger empfindlich auf Lichtwechsel", "Switch on the automatic rain detection": "Automatische Regen-Erkennung einschalten", "Detect rain earlier": "Regen früher erkennen", "Switch on the vehicle filter": "Fahrzeug-Filter einschalten", "Somewhat less sensitive overall": "Insgesamt etwas weniger empfindlich"});
+Object.assign(I18N.de, {"The simulator re-enacts it – 60 s, then MoveEye knows it": "Der Simulator stellt es nach – 60 s, dann kennt MoveEye das", "What if …? Re-enact it in the simulator": "Was wäre wenn …? Im Simulator nachstellen", "Re-enacted in the simulator": "Im Simulator nachgestellt", "False alarms": "Fehlalarme", "Animal": "Tier", "Wind / branches": "Wind / Äste", "Light / shadow": "Licht / Schatten", "Rain": "Regen", "Car": "Auto", "Other": "Anderes", "Was nothing (false alarm)": "War nichts (Fehlalarm)", "Was nothing - what was it?": "War nichts – was war es?", "Was real after all": "War doch echt", "false alarms marked in the last": "Fehlalarme markiert in den letzten", "days": "Tagen", "of": "von", "suggestions:": "Vorschläge:", "Open": "Öffnen", "Take over": "Übernehmen", "Switch on the automatic wind detection": "Automatische Wind-Erkennung einschalten", "Less sensitive to light changes": "Weniger empfindlich auf Lichtwechsel", "Switch on the automatic rain detection": "Automatische Regen-Erkennung einschalten", "Detect rain earlier": "Regen früher erkennen", "Switch on the vehicle filter": "Fahrzeug-Filter einschalten", "Somewhat less sensitive overall": "Insgesamt etwas weniger empfindlich"});
 const FA_TXT = () => ({animal: "🐾 " + t("Animal"), wind: "🌿 " + t("Wind / branches"), light: "💡 " + t("Light / shadow"), rain: "🌧 " + t("Rain"), car: "🚗 " + t("Car"), other: "❓ " + t("Other")});
 function faRow(it) {
   const r = $("#m-farow"); r.textContent = ""; r.hidden = true;
@@ -39717,6 +39994,9 @@ async function faSet(it, cause) {
   await post("/api/rec/false", {names: [it.name], cause: cause}); it.false = cause || null; faRow(it);
   const c = document.querySelector('.rc[data-name="' + CSS.escape(it.name) + '"]'); if (c) { const n = card(it); c.replaceWith(n); }
   toast(cause ? "👎 " + FA_TXT()[cause] : "↩ " + t("Was real after all")); faLoad();
+  if (cause) { try { const L_ = await (await fetch("/api/learn")).json();             // 2.96.8: makeover 21 - learn from it in the simulator
+    if (L_.fa_learn_auto) { const q = await post("/api/learn", {do: "falearn", name: it.name, cause: cause, lang: LANG});
+      if (q.ok) toast("🧪 " + t("The simulator re-enacts it – 60 s, then MoveEye knows it")); } } catch (e) {} }
 }
 async function faLoad() {
   let j; try { j = await (await fetch("/api/fa?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
@@ -41559,6 +41839,26 @@ class WebStream:
             ok, err = demo_start()
             return reply({"ok": ok, "error": tr_err(err, lang) if err else ""}, 200 if ok else 400)
 
+        @app.route("/api/learn", methods=["GET", "POST"])
+        def api_learn():                                     # 2.96.8: makeover 21-25 (143_makeover_lernen)
+            if request.method == "GET":
+                return reply(dict(learn_state(), ok=True))
+            d = body(); lang = norm_lang(d.get("lang")); a = str(d.get("do") or "")
+            ok, err = True, ""
+            if a == "falearn":
+                ok, err = falearn_start(str(d.get("name") or ""), str(d.get("cause") or "other"))
+            elif a == "blind":
+                ok, err = blind_start("map")
+            elif a == "rehearsal":
+                ok, err = blind_start("rehearsal")
+            elif a == "autoth":
+                ok, err = autoth_start()
+            elif a == "set" and d.get("key") in ("fa_learn_auto", "rehearsal_on_arm", "weekcheck_on"):
+                CFG[d["key"]] = bool(d.get("on")); save_settings()
+            else:
+                ok, err = False, "unknown action"
+            return reply(dict(learn_state(), ok=ok, error=tr_err(err, lang) if err else ""))
+
         @app.route("/api/simbar")
         def api_simbar():                                    # 2.96.4: the stripe «SIMULATION» on every page
             return reply({"ok": True, "on": bool(CFG.get("sim_on"))})
@@ -43383,6 +43683,9 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
     ("Simulator", "rover_alarm", "Rover: at a person alarm drive there by itself (simulator)"),
     ("Simulator", "simweek_on", "Week report of the simulator diary as a push (Monday morning)"),
+    ("Simulator", "fa_learn_auto", "False alarm marked: re-enact it in the simulator and learn from it"),
+    ("Simulator", "rehearsal_on_arm", "Night rehearsal by itself when arming in the simulation"),
+    ("Simulator", "weekcheck_on", "Recognition check every week (Sunday night) with a warning when it got worse"),
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself when a newer version is there"),
@@ -43979,7 +44282,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.7")
+        self.root.title("MoveEye 2.96.8")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -44296,7 +44599,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.7 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.8 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -51528,6 +51831,32 @@ _HX115 = {  # 2.96.7: makeover 16-20
     'That was MoveEye. Thank you!': ('Das war MoveEye. Danke!', 'C’était MoveEye. Merci !', 'Questo era MoveEye. Grazie!', 'Quai era MoveEye. Grazia!'),
 }
 for _k, _v in _HX115.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX116 = {  # 2.96.8: makeover 21-25
+    'False alarm marked: re-enact it in the simulator and learn from it': ('Fehlalarm markiert: im Simulator nachstellen und daraus lernen', 'Fausse alarme marquée : la reconstituer dans le simulateur et en apprendre', 'Falso allarme segnato: ricostruirlo nel simulatore e imparare', 'Alarm fallà marcà: reconstruir en il simulatur ed emprender'),
+    'Night rehearsal by itself when arming in the simulation': ('Nacht-Generalprobe von selbst beim Scharfschalten in der Simulation', 'Répétition de nuit automatique à l’armement en simulation', 'Prova notturna automatica all’attivazione in simulazione', 'Prova da notg da sez cun activar en la simulaziun'),
+    'Recognition check every week (Sunday night) with a warning when it got worse': ('Erkennungs-Check jede Woche (Sonntagnacht) mit Warnung, wenn es schlechter wurde', 'Contrôle de reconnaissance chaque semaine (dimanche soir) avec alerte si moins bon', 'Controllo del riconoscimento ogni settimana (domenica notte) con avviso se peggiora', 'Controlla da renconuschientscha mintga emna (dumengia notg) cun avertiment sch’i è vegnì mender'),
+    'Night rehearsal: tonight persons are recognised up to {d} m': ('Nacht-Generalprobe: heute Nacht erkennst du Personen bis {d} m', 'Répétition de nuit : cette nuit les personnes sont reconnues jusqu’à {d} m', 'Prova notturna: stanotte le persone vengono riconosciute fino a {d} m', 'Prova da notg: questa notg vegnan persunas renconuschidas fin {d} m'),
+    'Night rehearsal: no person recognised - check the night settings (IR light, night mode)': ('Nacht-Generalprobe: keine Person erkannt – Nacht-Einstellungen prüfen (IR-Licht, Nachtmodus)', 'Répétition de nuit : aucune personne reconnue – vérifier les réglages de nuit (lumière IR, mode nuit)', 'Prova notturna: nessuna persona riconosciuta – controllare le impostazioni notturne (luce IR, modalità notte)', 'Prova da notg: nagina persuna renconuschida – controllar ils parameters da notg (glisch IR, modus da notg)'),
+    'No blind spot in view - well placed.': ('Kein blinder Fleck im Bild – gut aufgestellt.', 'Aucun angle mort dans l’image – bien placé.', 'Nessun punto cieco nell’immagine – ben posizionato.', 'Nagin fleck tschorv en il maletg – bain plazzà.'),
+    'Mostly far away: put MoveEye higher or tilt it a little up; at night more IR light helps.': ('Vor allem weit weg: MoveEye höher stellen oder etwas nach oben neigen; nachts hilft mehr IR-Licht.', 'Surtout loin : placer MoveEye plus haut ou l’incliner un peu vers le haut ; la nuit, plus de lumière IR aide.', 'Soprattutto lontano: mettere MoveEye più in alto o inclinarlo un po’ verso l’alto; di notte aiuta più luce IR.', 'Cunzunt lontan: metter MoveEye pli aut u al pender in pau ensi; la notg gida dapli glisch IR.'),
+    'Mostly on the left: turn MoveEye a little to the left or add a patrol point there.': ('Vor allem links: MoveEye etwas nach links drehen oder dort einen Patrouillen-Punkt setzen.', 'Surtout à gauche : tourner MoveEye un peu vers la gauche ou y ajouter un point de patrouille.', 'Soprattutto a sinistra: girare MoveEye un po’ a sinistra o aggiungere lì un punto di pattuglia.', 'Cunzunt a sanestra: volver MoveEye in pau a sanestra u metter là in punct da patrulla.'),
+    'Mostly on the right: turn MoveEye a little to the right or add a patrol point there.': ('Vor allem rechts: MoveEye etwas nach rechts drehen oder dort einen Patrouillen-Punkt setzen.', 'Surtout à droite : tourner MoveEye un peu vers la droite ou y ajouter un point de patrouille.', 'Soprattutto a destra: girare MoveEye un po’ a destra o aggiungere lì un punto di pattuglia.', 'Cunzunt a dretga: volver MoveEye in pau a dretga u metter là in punct da patrulla.'),
+    'Spread over the picture: check the sensitivity (A/B comparison) and the zones.': ('Über das ganze Bild verteilt: Empfindlichkeit (A/B-Vergleich) und Zonen prüfen.', 'Répartis sur l’image : vérifier la sensibilité (comparaison A/B) et les zones.', 'Distribuiti sull’immagine: controllare la sensibilità (confronto A/B) e le zone.', 'Repartids sur il maletg: controllar la sensibilitad (cumparegliaziun A/B) e las zonas.'),
+    'Many places are outside the picture: a patrol or a second device covers them.': ('Viele Stellen liegen ausserhalb des Bildes: eine Patrouille oder ein zweites Gerät deckt sie ab.', 'Beaucoup d’endroits sont hors de l’image : une patrouille ou un second appareil les couvre.', 'Molti punti sono fuori dall’immagine: una pattuglia o un secondo dispositivo li copre.', 'Blers lieus èn ordaifer il maletg: ina patrulla u in segund apparat als cuvra.'),
+    'Weekly check': ('Wochen-Check', 'Contrôle hebdomadaire', 'Controllo settimanale', 'Controlla d’emna'),
+    'Weekly check: score {a} instead of {b} – the recognition got worse. Details: tab Simulator.': ('Wochen-Check: {a} statt {b} Punkte – die Erkennung ist schlechter geworden. Details: Reiter Simulator.', 'Contrôle hebdomadaire : {a} au lieu de {b} points – la reconnaissance s’est dégradée. Détails : onglet Simulateur.', 'Controllo settimanale: {a} invece di {b} punti – il riconoscimento è peggiorato. Dettagli: scheda Simulatore.', 'Controlla d’emna: {a} empè da {b} puncts – la renconuschientscha è vegnida mendra. Detagls: tab Simulatur.'),
+}
+for _k, _v in _HX116.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX117 = {  # 2.96.8
+    'The person was never in the picture – check where the head looks (patrol, pan).': ('Die Person war nie im Bild – prüfen, wohin der Kopf schaut (Patrouille, Schwenk).', 'La personne n’a jamais été dans l’image – vérifier où regarde la tête (patrouille, panoramique).', 'La persona non è mai stata nell’immagine – controllare dove guarda la testa (pattuglia, brandeggio).', 'La persuna n’era mai en il maletg – controllar nua che il chau guarda (patrulla, sviament).'),
+}
+for _k, _v in _HX117.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

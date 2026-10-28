@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.84"
+const VERSION := "3D-3.85"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -126,6 +126,8 @@ var update_btn: Button
 var show_zones3d := true               # 3D-3.83: makeover 10 - the zones of MoveEye on the ground (overlay3d.gd)
 var show_det3d := true                 # 3D-3.83: makeover 11 - the detections of MoveEye over the figures
 var overlay                            # overlay3d.gd
+var blindmap                           # 3D-3.85: blindmap.gd - blind spots / night rehearsal (makeover 22, 23)
+var _fa_saved := {}                    # 3D-3.85: makeover 21 - what farecreate changed
 var twin := {}                         # 3D-3.83: makeover 9 - the twin of the real place {name, lat, lon, t}
 var news_seen := ""                   # 3D-3.82: «Neu in dieser Version» - the version whose news was seen
 var news_popup := true
@@ -3315,6 +3317,15 @@ func control(d: Dictionary) -> Dictionary:
 			explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
 			explore.test_until = explore.main.now() + (float(dv[2]) if dv.size() > 2 else 2.0)
 		return explore.state()
+	elif a == "blindmap":                              # 3D-3.85: makeover 22 / 23 {do: start (az, dist, hour, walk) | info | stop}
+		var bd := str(d.get("do", "info"))
+		if bd == "start":
+			return blindmap.start(d)
+		if bd == "stop":
+			blindmap.stop()
+		return blindmap.info()
+	elif a == "farecreate":                            # 3D-3.85: makeover 21 - re-enact the cause of a false alarm
+		return farecreate(d)
 	elif a == "rover":                                 # 3D-3.84: makeover 17 {do: info | patrol (on) | alarm | dock | goto (x, z)}
 		var rd := str(d.get("do", "info"))
 		if rd == "patrol":
@@ -5328,6 +5339,9 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	layer.add_child(templates)
 	if scene == "vorlage":
 		set_scene("vorlage")                                   # built before the window existed: once more with the files
+	blindmap = preload("res://scripts/blindmap.gd").new()     # 3D-3.85: blind spots / night rehearsal
+	blindmap.main = self
+	add_child(blindmap)
 	overlay = preload("res://scripts/overlay3d.gd").new()     # 3D-3.83: zones and detections of MoveEye in 3D
 	overlay.main = self
 	add_child(overlay)
@@ -6790,3 +6804,50 @@ func twin_info() -> Dictionary:
 	return {"name": str(twin.get("name", "")), "place": place_label() if scene == "ort" else Scenes.name_of(scene), "scene": scene,
 			"mast": snappedf(mast_h, 0.01), "zones": zs.size() if typeof(zs) == TYPE_ARRAY else 0, "waypoints": wp.size() if typeof(wp) == TYPE_ARRAY else 0,
 			"lat": twin.get("lat", null), "lon": twin.get("lon", null)}
+
+
+
+# ---- 3D-3.85: makeover 21 - the cause of a false alarm, re-enacted ------------------------------------------------------
+func farecreate(d: Dictionary) -> Dictionary:
+	var cause := str(d.get("cause", "other"))
+	if cause == "end":
+		if _fa_saved.has("wind"):
+			wind = float(_fa_saved["wind"])
+			gusts = bool(_fa_saved["gusts"])
+		if _fa_saved.has("weather"):
+			weather = str(_fa_saved["weather"])
+			_update_sky()
+		_fa_saved = {}
+		start_info = "Fehlalarm-Lernen fertig"
+		return {"ok": true}
+	_fa_saved = {"wind": wind, "gusts": gusts, "weather": weather}
+	if d.has("hour"):
+		set_hour(clampf(float(d["hour"]), 0.0, 23.75))
+	if bool(d.get("rain", false)):
+		weather = "rain"
+		_update_sky()
+	var az := -rad_to_deg(rig.rotation.y) + float(d.get("pan_deg", 0.0))
+	var base: Vector3 = rig.global_position
+	var a: Vector3 = base + pos_of(az - 30.0, 9.0)
+	var b: Vector3 = base + pos_of(az + 30.0, 9.0)
+	match cause:
+		"animal":
+			spawn("fox", Vector3(a.x, 0, a.z), Vector3(b.x, 0, b.z))
+			get_tree().create_timer(20.0).timeout.connect(func(): spawn("cat", Vector3(b.x, 0, b.z), Vector3(a.x, 0, a.z)))
+			get_tree().create_timer(38.0).timeout.connect(func(): spawn("deer", Vector3(a.x, 0, a.z), Vector3(b.x, 0, b.z)))
+		"wind":
+			wind = 75.0
+			gusts = true
+		"light":
+			car()
+			get_tree().create_timer(25.0).timeout.connect(func(): car())
+			if surprise != null:
+				surprise.start("glare")
+		"rain":
+			weather = "rain"
+			_update_sky()
+		"car":
+			car()
+			get_tree().create_timer(20.0).timeout.connect(func(): car())
+	start_info = "Fehlalarm-Lernen: Ursache «%s» nachgestellt (60 s)" % cause
+	return {"ok": true, "cause": cause}

@@ -38,6 +38,10 @@ def arm_tick():
         log_event("sys", "Armed now - alarms are active")
         push_alert("armed", "armed")
         try:
+            rehearsal_on_arm()                             # 2.96.8: night rehearsal in the simulation (makeover 23)
+        except Exception:
+            pass
+        try:
             refscan_on_armed()                         # 2.95.97: compare with the reference scan (if wanted)
         except Exception:
             pass
