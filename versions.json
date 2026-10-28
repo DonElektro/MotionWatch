@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 21:09",
+ "generated": "2026-10-28 21:23",
  "versions": [
   {
-   "version": "2.96.5",
-   "file": "webcam_bewegung_2_96_5.py",
+   "version": "2.96.6",
+   "file": "webcam_bewegung_2_96_6.py",
    "url": "",
-   "sha256": "40a6c1e56a7ee21dc598e7a695a84667cc8434400c620fcb3be3a63658d96c09",
-   "date": "2026-10-28 21:09",
-   "notes": "Makeover 8–11: «Was wäre wenn …?» – jede Aufnahme mit 🧪 im Simulator nachstellen (Uhrzeit, Regen, Richtung, Anzahl Personen; neue Aufnahmen merken sich die Situation); Zwilling deines Platzes (Ort, Zonen, Patrouillen-Punkte an den Simulator, zurück Ort und Stangenhöhe); Zonen und Erkennung live in der 3D-Ansicht (Kacheln in der Simulator-Zentrale); passt zum Simulator 3D-3.83",
-   "sig": "d8d06fe6b690c49253867acbcf3cdda0465eff2f01661c5eb0773ab68d868f56aab050419cb843775b891576ad14f6a2c44dd0c83a818685f8d07f6fdfb6c208"
+   "sha256": "2827559aa52ed655d7d10ac5aea14ae3fe4de67e6618b41a4c443b40c889c9be",
+   "date": "2026-10-28 21:23",
+   "notes": "Makeover 12–15 (Simulator-Zentrale): Trainings-Nacht (Testläufe in 5 Szenen, Optimierung, Trainingsbilder, Bericht); A/B-Vergleich von Einstellungen; Test-Posteingang (Meldungen in der Simulation hierhin statt aufs Handy) und «Alarm-Kette testen» (Push, Licht, Sirene); Störfall-Übungen Akku leer, WLAN weg, Hitze, Kälte mit Bericht, wie MoveEye reagiert hat",
+   "sig": "6685871fc57b079ac478332ef50e3fc11b660476f324d6834ddd9807bd263939f9374e4a82b7b673a5f82842103f9c61d6a84303673c99ce2f2f588dad4ac405"
   },
   {
    "version": "2.95.105",

@@ -158,6 +158,11 @@ class NetMonitor:
                     break
                 except Exception:                      # 2.95.33: also UnicodeError (mistyped push address) - must not end the loop
                     pass
+            try:
+                if drill_active("net"):                  # 2.96.6: drill «Wi-Fi / internet gone» (141)
+                    res = {"online": False, "ms": None, "drill": True}
+            except NameError:
+                pass
             if STATE["net"].get("online") is not None and res["online"] != STATE["net"]["online"]:
                 log_event("sys", "Internet reachable again" if res["online"] else "Internet not reachable (push messages cannot be sent)")
             res["t"] = time.time()

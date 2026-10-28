@@ -199,6 +199,8 @@ class BatteryMonitor:
 
     def tick(self):
         now = time.time(); dt = min(60.0, now - self._t); self._t = now
+        if drill_active("battery"):                      # 2.96.6: drill «battery empty» (141) - never the real shutdown
+            return drill_battery_tick(self)
         if CFG["ups_on"] and self.ups_tick():
             return
         cap_wh = float(CFG["batt_mah"]) * 3.7 / 1000.0 * 0.85

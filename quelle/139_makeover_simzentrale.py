@@ -97,7 +97,16 @@ SIMHUB_JS = r"""
     "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
     "Tap = control": "Antippen = steuern", "person": "Person", "burglar": "Dieb", "child": "Kind", "dogwalk": "Hund", "fox": "Fuchs", "deer": "Reh", "cat": "Katze",
     "boar": "Wildschwein", "hedgehog": "Igel", "cyclist": "Velo", "courier": "Kurier", "car": "Auto", "sent": "geschickt", "Test run, test bench": "Testlauf, Prüfstand",
-    "Play on the phone": "Mitspielen mit dem Handy", "Twin of your place": "Zwilling deines Platzes", "Place, zones, patrol": "Ort, Zonen, Patrouille",
+    "Play on the phone": "Mitspielen mit dem Handy", "Twin of your place": "Zwilling deines Platzes", "Test inbox": "Test-Posteingang", "Drills": "Störfall-Übungen", "Battery, Wi-Fi, heat, cold": "Akku, WLAN, Hitze, Kälte",
+    "Training night": "Trainings-Nacht", "A/B comparison": "A/B-Vergleich", "Which setting is better?": "Welche Einstellung ist besser?", "Messages here instead of the phone": "Meldungen hierhin statt aufs Handy",
+    "Test the alarm chain": "Alarm-Kette testen", "Empty – nothing arrived yet": "Leer – noch nichts angekommen", "held back (offline), sent later": "zurückgehalten (offline), wird später gesendet",
+    "Battery empty": "Akku leer", "Wi-Fi / internet gone": "WLAN / Internet weg", "Heat": "Hitze", "Cold": "Kälte", "Drill runs": "Übung läuft", "Last drill": "Letzte Übung",
+    "how MoveEye reacted": "so hat MoveEye reagiert", "no reaction": "keine Reaktion", "Every night": "Jede Nacht", "Stop": "Stopp", "Start now": "Jetzt starten",
+    "train-note": "Testläufe in 5 Szenen (Tag- und Nacht-Plan), dann die automatische Optimierung am schwächsten Plan, dann 300 Trainingsbilder auf dem PC des Simulators. Läuft nur, wenn nicht scharf geschaltet. Bericht als Push am Schluss.",
+    "Last training": "Letztes Training", "before": "vorher", "false alarms": "Fehlalarme", "kept": "übernommen", "training pictures": "Trainingsbilder",
+    "ab-note": "Zweimal derselbe Testlauf: A mit den jetzigen Einstellungen, B mit der Änderung. B bleibt nur, wenn es klar besser ist (+3 Punkte).",
+    "More sensitive": "Empfindlicher", "Less sensitive": "Weniger empfindlich", "AI stricter": "KI strenger", "AI more generous": "KI grosszügiger", "Also small objects": "Auch kleine Objekte",
+    "Faster decision": "Schneller entscheiden", "B is better – kept": "B ist besser – übernommen", "A stays": "A bleibt", "Place, zones, patrol": "Ort, Zonen, Patrouille",
     "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"};
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
   const WX = [["clear", "☀"], ["cloudy", "☁"], ["rain", "🌧"], ["fog", "🌫"], ["snow", "❄"]];
@@ -116,7 +125,49 @@ SIMHUB_JS = r"""
       i.oninput = () => { o.textContent = String(Math.floor(i.value)).padStart(2, "0") + ":" + String(Math.round(i.value % 1 * 60)).padStart(2, "0"); }; i.onchange = () => act("hour", +i.value); r.append(i, o); s.appendChild(r); }
     if (kind === "weather") WX.forEach(([k, ic]) => { const b = E("button", k === H.weather ? "" : "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = () => act("weather", k); s.appendChild(b); });
     if (kind === "visit") VIS.forEach(([k, ic]) => { const b = E("button", "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = async () => { const r = await act("visit", k); if (r && r.ok) say(ic + " " + tt("sent")); }; s.appendChild(b); });
+    if (["inbox", "drill", "train", "ab"].includes(kind)) labSheet(s, kind);
     box.appendChild(s);
+  }
+  let LB = null;
+  const lab = async (d) => { try { const r = d ? await (await fetch("/api/lab", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, d))})).json()
+      : await (await fetch("/api/lab")).json(); if (r && r.inbox) LB = r; if (r && r.ok === false && r.error) say("⚠ " + r.error); paintAll(); return r; } catch (e) {} };
+  const B = (txt, fn, cls) => { const b = E("button", cls || "sec", txt); b.type = "button"; b.onclick = fn; return b; };
+  const row = (...xs) => { const r = E("div", "shrow"); r.style.flexWrap = "wrap"; xs.forEach(x => r.appendChild(x)); return r; };
+  const NM = {"Push message": "Push", "Light": "Licht", "Siren": "Sirene", "Siren after a while (escalation)": "Sirene nach einer Weile"};
+  function labSheet(s, kind) {
+    if (!LB) { s.appendChild(E("div", "mut", "…")); lab(); return; }
+    if (kind === "inbox") {
+      s.appendChild(row(B((LB.sandbox ? "✓ " : "") + tt("Messages here instead of the phone"), () => lab({do: "sandbox", on: !LB.sandbox}), LB.sandbox ? "" : "sec"),
+        B("🔔 " + tt("Test the alarm chain"), async () => { const r = await lab({do: "chain"}); if (r && r.chain) { open = "inbox"; window._chain = r.chain; paintAll(); } }), B("🗑", () => lab({do: "clear"}))));
+      if (window._chain) s.appendChild(row(...window._chain.map(x => E("span", "", (x.ok ? "✅ " : "❌ ") + (L() === "en" ? x.name : (NM[x.name] || x.name)) + (x.text ? " (" + x.text + ")" : "")))));
+      const ph = E("div"); ph.style.cssText = "width:100%;display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto";
+      (LB.inbox.length ? LB.inbox : [{t: "", title: tt("Empty – nothing arrived yet"), text: ""}]).forEach(m => { const c = E("div"); c.style.cssText = "display:flex;gap:8px;padding:8px;border-radius:12px;background:var(--panel2,#151e2b)";
+        if (m.img) { const im = E("img"); im.src = "/api/lab/img/" + m.img; im.style.cssText = "width:64px;height:40px;object-fit:cover;border-radius:6px"; c.appendChild(im); }
+        const tx = E("div"); tx.append(E("b", "", (m.held ? "⏸ " : "") + m.title), E("div", "mut", (m.t ? m.t + " · " : "") + m.text + (m.held ? " · " + tt("held back (offline), sent later") : ""))); tx.style.fontSize = "13px"; c.appendChild(tx); ph.appendChild(c); });
+      s.appendChild(ph);
+    }
+    if (kind === "drill") {
+      s.appendChild(row(B("🔋 " + tt("Battery empty"), () => lab({do: "drill", kind: "battery"})), B("📶 " + tt("Wi-Fi / internet gone"), () => lab({do: "drill", kind: "net"})),
+        B("🔥 " + tt("Heat"), () => lab({do: "drill", kind: "heat"})), B("❄ " + tt("Cold"), () => lab({do: "drill", kind: "cold"}))));
+      if (LB.drill.busy) s.appendChild(E("div", "mut", "⏳ " + tt("Drill runs") + " · " + LB.drill.left + " s"));
+      const l = LB.drill.last; if (l) { s.appendChild(E("b", "", tt("Last drill") + ": " + l.kind + " – " + tt("how MoveEye reacted") + ":"));
+        (l.reactions.length ? l.reactions : [{t: "", text: tt("no reaction")}]).forEach(x => s.appendChild(E("div", "mut", (x.t ? x.t + " · " : "") + x.text))); }
+    }
+    if (kind === "train") {
+      const h = E("select"); for (let i = 0; i < 24; i++) { const o = E("option", "", String(i).padStart(2, "0") + ":00"); o.value = i; if (i === LB.train.hour) o.selected = true; h.appendChild(o); }
+      h.onchange = () => lab({do: "train", hour: +h.value});
+      s.appendChild(row(B((LB.train.on ? "✓ " : "") + tt("Every night"), () => lab({do: "train", on: !LB.train.on}), LB.train.on ? "" : "sec"), h,
+        LB.train.busy ? B("⏹ " + tt("Stop"), () => lab({do: "train", stop: true})) : B("▶ " + tt("Start now"), () => lab({do: "train", start: true}))));
+      s.appendChild(E("div", "mut", tt("train-note")));
+      const l = LB.train.last; if (l) { s.appendChild(E("b", "", tt("Last training") + " (" + l.min + " min)"));
+        l.results.forEach(r => s.appendChild(E("div", "mut", r.scene + " · " + r.plan + ": " + (r.score != null ? r.score : "–") + (r.base != null ? " (" + tt("before") + " " + r.base + ")" : "") + (r.persons != null ? " · " + r.found + "/" + r.persons + " · " + tt("false alarms") + " " + r.fa : ""))));
+        s.appendChild(E("div", "mut", tt("kept") + ": " + (l.kept.join(", ") || "–") + (l.pics ? " · " + l.pics + " " + tt("training pictures") : ""))); }
+    }
+    if (kind === "ab") {
+      s.appendChild(row(...LB.ab.presets.map(([k, n]) => B(tt(n), () => lab({do: "ab", preset: k})))));
+      s.appendChild(E("div", "mut", tt("ab-note")));
+      const l = LB.ab.last; if (l) s.appendChild(E("b", "", tt(l.title) + ": A " + (l.a != null ? l.a : "–") + " · B " + (l.b != null ? l.b : "–") + " → " + (l.winner === "B" ? tt("B is better – kept") : tt("A stays"))));
+    }
   }
   function tiles(box, full) {
     const g = E("div", "shub");
@@ -127,6 +178,10 @@ SIMHUB_JS = r"""
       ["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]];
     if (full && H.twin_ok) T.push(["twin", "🪞", tt("Twin of your place"), tt("Place, zones, patrol")], ["zones3d", "▱", tt("Zones in 3D"), H.zones3d ? tt("on") : tt("off")],
       ["det3d", "🎯", tt("Detection in 3D"), H.det3d ? tt("on") : tt("off")]);
+    if (full) T.push(["inbox", "📨", tt("Test inbox"), LB ? (LB.sandbox ? tt("on") : tt("off")) + " · " + (LB.inbox || []).length : ""],
+      ["drill", "⚡", tt("Drills"), LB && LB.drill.busy ? "⏳ " + LB.drill.left + " s" : tt("Battery, Wi-Fi, heat, cold")],
+      ["train", "🌙", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
+      ["ab", "⚖", tt("A/B comparison"), LB && LB.ab.busy ? "⏳ " + LB.ab.step : tt("Which setting is better?")]);
     if (full) T.push(["templates", "🧩", tt("Templates"), tt("Opens on the PC")], ["game", "🎮", tt("Game"), tt("Play on the phone")],
       ["tests", "🧪", tt("Tests"), tt("Test run, test bench")], ["diary", "📔", tt("Diary"), tt("Visits and detection")]);
     T.forEach(([k, ic, n, sub]) => { const b = E("button", "st" + (open === k || (k === "surprise" && H.surprise) ? " on" : "")); b.type = "button";
@@ -153,6 +208,7 @@ SIMHUB_JS = r"""
     if (!H.ok) { el_.appendChild(E("div", "mut", "⚠ " + tt("Simulator not reachable") + (H.msg ? " (" + H.msg + ")" : ""))); return; } tiles(el_, true); }
   function paintAll() { document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : paintTile(x)); }
   async function load() { if (!document.querySelector("[data-simhub]")) return; try { H = await (await fetch("/api/simhub")).json(); } catch (e) { return; }
+    if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); } catch (e) {} }
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
     if (!document.activeElement || document.activeElement.type !== "range") paintAll(); }
   document.addEventListener("DOMContentLoaded", () => { load(); setInterval(load, 6000); });

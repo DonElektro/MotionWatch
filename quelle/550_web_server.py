@@ -1574,6 +1574,48 @@ class WebStream:
         def api_kino():
             return reply(kino_state())
 
+        @app.route("/api/lab", methods=["GET", "POST"])
+        def api_lab():                                       # 2.96.6: makeover 12-15 (141_makeover_uebungen)
+            if request.method == "GET":
+                return reply(dict(lab_state(), ok=True))
+            d = body(); lang = norm_lang(d.get("lang")); a = str(d.get("do") or "")
+            ok, err, extra = True, "", {}
+            if a == "sandbox":
+                CFG["notify_sandbox"] = bool(d.get("on")); save_settings()
+            elif a == "clear":
+                SANDBOX["items"].clear()
+            elif a == "chain":
+                if not sim_ready():
+                    ok, err = False, "only with the simulator"
+                else:
+                    extra["chain"] = [dict(x, text=tr(x["text"], lang) if x.get("text") else "") for x in alarmchain_test()]
+            elif a == "drill":
+                ok, err = drill_start(str(d.get("kind") or ""))
+            elif a == "train":
+                if d.get("start"):
+                    ok, err = train_run(True)
+                elif d.get("stop"):
+                    TRAIN["stop"] = True; TESTOPT["stop"] = True
+                if "on" in d:
+                    CFG["train_night_on"] = bool(d.get("on")); save_settings()
+                if "hour" in d:
+                    CFG["train_hour"] = max(0, min(23, int(d.get("hour") or 1))); save_settings()
+            elif a == "ab":
+                ok, err = ab_run(str(d.get("preset") or ""), "night" if d.get("plan") == "night" else "quick")
+            else:
+                ok, err = False, "unknown action"
+            return reply(dict(lab_state(), ok=ok, error=tr_err(err, lang) if err else "", **extra))
+
+        @app.route("/api/lab/img/<name>")
+        def api_lab_img(name):
+            if not re.match(r"^\d+\.jpg$", name):
+                return reply({"ok": False}, 404)
+            p = os.path.join(DATA_DIR, "testinbox", name)
+            if not os.path.isfile(p):
+                return reply({"ok": False}, 404)
+            with open(p, "rb") as f:
+                return Response(f.read(), mimetype="image/jpeg")
+
         @app.route("/api/simbar")
         def api_simbar():                                    # 2.96.4: the stripe «SIMULATION» on every page
             return reply({"ok": True, "on": bool(CFG.get("sim_on"))})

@@ -894,6 +894,11 @@ class Notifier:
 
     @staticmethod
     def configured():
+        try:
+            if sandbox_active():                         # 2.96.6: the test inbox counts as a channel (141)
+                return True
+        except NameError:
+            pass
         return (Notifier.main_configured() or bool(CFG["webpush_on"] and webpush_subs()) or bool(CFG["sms_on"] and sms_numbers())
                 or pushover_ready() or email_ready())
 
@@ -1043,6 +1048,9 @@ class Notifier:
         return render_msg(msg_template(ev, 1), p)
 
     def _dispatch(self, p, jpg, fname):
+        if sandbox_active():                             # 2.96.6: simulator test inbox - nobody is disturbed (141)
+            sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
+            return
         if CFG["webpush_on"] and webpush_subs():
             threading.Thread(target=self._webpush, args=(p,), daemon=True).start()
         if pushover_ready():

@@ -1980,3 +1980,25 @@ for _k, _v in _HX112.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX113 = {  # 2.96.6: makeover 12-15
+    'Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)': ('Simulation: Meldungen in den Test-Posteingang statt aufs Handy (niemand wird gestört)', 'Simulation : messages dans la boîte de test au lieu du téléphone (personne n’est dérangé)', 'Simulazione: messaggi nella casella di prova invece che sul telefono (nessuno viene disturbato)', 'Simulaziun: messadis en la chascha da test empè dal telefon (nagin vegn disturbà)'),
+    'Training night: every night test runs in several scenes, optimization, training pictures': ('Trainings-Nacht: jede Nacht Testläufe in mehreren Szenen, Optimierung, Trainingsbilder', 'Nuit d’entraînement : chaque nuit des tests dans plusieurs scènes, optimisation, images d’entraînement', 'Notte di allenamento: ogni notte test in più scene, ottimizzazione, immagini di addestramento', 'Notg da trenament: mintga notg tests en plirs scenaris, optimaziun, maletgs da trenament'),
+    'Training night': ('Trainings-Nacht', 'Nuit d’entraînement', 'Notte di allenamento', 'Notg da trenament'),
+    'Training night: {n} test runs, average score {s}, kept changes: {k}': ('Trainings-Nacht: {n} Testläufe, Punkte im Schnitt {s}, übernommene Änderungen: {k}', 'Nuit d’entraînement : {n} tests, score moyen {s}, changements gardés : {k}', 'Notte di allenamento: {n} test, punteggio medio {s}, modifiche mantenute: {k}', 'Notg da trenament: {n} tests, puncts en media {s}, midadas mantegnidas: {k}'),
+    'none': ('keine', 'aucun', 'nessuna', 'nagina'),
+    'only with the simulator': ('nur mit dem Simulator', 'seulement avec le simulateur', 'solo con il simulatore', 'mo cun il simulatur'),
+    'a drill is already running': ('es läuft schon eine Übung', 'un exercice est déjà en cours', 'un’esercitazione è già in corso', 'in exercizi è gia en lavur'),
+    'after {s} s': ('nach {s} s', 'après {s} s', 'dopo {s} s', 'suenter {s} s'),
+}
+for _k, _v in _HX113.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX114 = {  # 2.96.6: alarm chain texts
+    'the white light is not set to «on alarm» (Light & sound)': ('das weisse Licht ist nicht auf «bei Alarm» gestellt (Licht & Ton)', 'la lumière blanche n’est pas réglée sur « en cas d’alarme » (Lumière & son)', 'la luce bianca non è impostata su «in caso di allarme» (Luce & suono)', 'la glisch alva n’è betg messa sin «tar alarm» (Glisch & tun)'),
+    'no message': ('keine Meldung', 'aucun message', 'nessun messaggio', 'nagin messadi'),
+}
+for _k, _v in _HX114.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])

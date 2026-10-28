@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_5.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_6.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.96.6: Makeover 12–15 (Simulator-Zentrale): Trainings-Nacht (Testläufe in 5 Szenen, Optimierung, Trainingsbilder, Bericht);
+    A/B-Vergleich von Einstellungen; Test-Posteingang (Meldungen in der Simulation hierhin statt aufs Handy) und «Alarm-Kette
+    testen» (Push, Licht, Sirene); Störfall-Übungen Akku leer, WLAN weg, Hitze, Kälte mit Bericht, wie MoveEye reagiert hat
   * 2.96.5: Makeover 8–11: «Was wäre wenn …?» – jede Aufnahme mit 🧪 im Simulator nachstellen (Uhrzeit, Regen, Richtung, Anzahl
     Personen; neue Aufnahmen merken sich die Situation); Zwilling deines Platzes (Ort, Zonen, Patrouillen-Punkte an den
     Simulator, zurück Ort und Stangenhöhe); Zonen und Erkennung live in der 3D-Ansicht (Kacheln in der Simulator-Zentrale);
@@ -816,10 +819,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_96_5.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_96_6.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_96_5.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_96_5.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_96_6.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_96_6.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -836,7 +839,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.96.5"
+APP_VERSION = "2.96.6"
 
 
 def default_data_dir():
@@ -1160,7 +1163,7 @@ CFG = {
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
@@ -1379,6 +1382,10 @@ def log_event(kind, text):
             log_rotate()
         except Exception:
             pass
+    try:
+        drill_note(kind, text)                           # 2.96.6: what MoveEye does during a drill (141)
+    except NameError:
+        pass
     with LOCK:
         STATE["events"].insert(0, {"t": datetime.now().strftime("%H:%M:%S"), "kind": kind, "text": text,
                                    "imp": log_important(kind, text)})
@@ -3842,6 +3849,11 @@ class Notifier:
 
     @staticmethod
     def configured():
+        try:
+            if sandbox_active():                         # 2.96.6: the test inbox counts as a channel (141)
+                return True
+        except NameError:
+            pass
         return (Notifier.main_configured() or bool(CFG["webpush_on"] and webpush_subs()) or bool(CFG["sms_on"] and sms_numbers())
                 or pushover_ready() or email_ready())
 
@@ -3991,6 +4003,9 @@ class Notifier:
         return render_msg(msg_template(ev, 1), p)
 
     def _dispatch(self, p, jpg, fname):
+        if sandbox_active():                             # 2.96.6: simulator test inbox - nobody is disturbed (141)
+            sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
+            return
         if CFG["webpush_on"] and webpush_subs():
             threading.Thread(target=self._webpush, args=(p,), daemon=True).start()
         if pushover_ready():
@@ -5514,6 +5529,8 @@ class BatteryMonitor:
 
     def tick(self):
         now = time.time(); dt = min(60.0, now - self._t); self._t = now
+        if drill_active("battery"):                      # 2.96.6: drill «battery empty» (141) - never the real shutdown
+            return drill_battery_tick(self)
         if CFG["ups_on"] and self.ups_tick():
             return
         cap_wh = float(CFG["batt_mah"]) * 3.7 / 1000.0 * 0.85
@@ -5889,6 +5906,11 @@ class NetMonitor:
                     break
                 except Exception:                      # 2.95.33: also UnicodeError (mistyped push address) - must not end the loop
                     pass
+            try:
+                if drill_active("net"):                  # 2.96.6: drill «Wi-Fi / internet gone» (141)
+                    res = {"online": False, "ms": None, "drill": True}
+            except NameError:
+                pass
             if STATE["net"].get("online") is not None and res["online"] != STATE["net"]["online"]:
                 log_event("sys", "Internet reachable again" if res["online"] else "Internet not reachable (push messages cannot be sent)")
             res["t"] = time.time()
@@ -7918,7 +7940,7 @@ MAKEOVER_ALL = [
     (21, "Fehlalarm-Lernen"), (22, "Karte der blinden Flecken"), (23, "Nacht-Generalprobe vor dem Scharfschalten"),
     (24, "Schwellen automatisch einstellen"), (25, "Erkennungs-Check jede Woche"),
 ]
-MAKEOVER_DONE = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}                                # numbers already delivered (nachführen)
+MAKEOVER_DONE = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}                                # numbers already delivered (nachführen)
 
 
 def _news_vt(v):
@@ -8105,7 +8127,16 @@ SIMHUB_JS = r"""
     "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
     "Tap = control": "Antippen = steuern", "person": "Person", "burglar": "Dieb", "child": "Kind", "dogwalk": "Hund", "fox": "Fuchs", "deer": "Reh", "cat": "Katze",
     "boar": "Wildschwein", "hedgehog": "Igel", "cyclist": "Velo", "courier": "Kurier", "car": "Auto", "sent": "geschickt", "Test run, test bench": "Testlauf, Prüfstand",
-    "Play on the phone": "Mitspielen mit dem Handy", "Twin of your place": "Zwilling deines Platzes", "Place, zones, patrol": "Ort, Zonen, Patrouille",
+    "Play on the phone": "Mitspielen mit dem Handy", "Twin of your place": "Zwilling deines Platzes", "Test inbox": "Test-Posteingang", "Drills": "Störfall-Übungen", "Battery, Wi-Fi, heat, cold": "Akku, WLAN, Hitze, Kälte",
+    "Training night": "Trainings-Nacht", "A/B comparison": "A/B-Vergleich", "Which setting is better?": "Welche Einstellung ist besser?", "Messages here instead of the phone": "Meldungen hierhin statt aufs Handy",
+    "Test the alarm chain": "Alarm-Kette testen", "Empty – nothing arrived yet": "Leer – noch nichts angekommen", "held back (offline), sent later": "zurückgehalten (offline), wird später gesendet",
+    "Battery empty": "Akku leer", "Wi-Fi / internet gone": "WLAN / Internet weg", "Heat": "Hitze", "Cold": "Kälte", "Drill runs": "Übung läuft", "Last drill": "Letzte Übung",
+    "how MoveEye reacted": "so hat MoveEye reagiert", "no reaction": "keine Reaktion", "Every night": "Jede Nacht", "Stop": "Stopp", "Start now": "Jetzt starten",
+    "train-note": "Testläufe in 5 Szenen (Tag- und Nacht-Plan), dann die automatische Optimierung am schwächsten Plan, dann 300 Trainingsbilder auf dem PC des Simulators. Läuft nur, wenn nicht scharf geschaltet. Bericht als Push am Schluss.",
+    "Last training": "Letztes Training", "before": "vorher", "false alarms": "Fehlalarme", "kept": "übernommen", "training pictures": "Trainingsbilder",
+    "ab-note": "Zweimal derselbe Testlauf: A mit den jetzigen Einstellungen, B mit der Änderung. B bleibt nur, wenn es klar besser ist (+3 Punkte).",
+    "More sensitive": "Empfindlicher", "Less sensitive": "Weniger empfindlich", "AI stricter": "KI strenger", "AI more generous": "KI grosszügiger", "Also small objects": "Auch kleine Objekte",
+    "Faster decision": "Schneller entscheiden", "B is better – kept": "B ist besser – übernommen", "A stays": "A bleibt", "Place, zones, patrol": "Ort, Zonen, Patrouille",
     "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"};
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
   const WX = [["clear", "☀"], ["cloudy", "☁"], ["rain", "🌧"], ["fog", "🌫"], ["snow", "❄"]];
@@ -8124,7 +8155,49 @@ SIMHUB_JS = r"""
       i.oninput = () => { o.textContent = String(Math.floor(i.value)).padStart(2, "0") + ":" + String(Math.round(i.value % 1 * 60)).padStart(2, "0"); }; i.onchange = () => act("hour", +i.value); r.append(i, o); s.appendChild(r); }
     if (kind === "weather") WX.forEach(([k, ic]) => { const b = E("button", k === H.weather ? "" : "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = () => act("weather", k); s.appendChild(b); });
     if (kind === "visit") VIS.forEach(([k, ic]) => { const b = E("button", "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = async () => { const r = await act("visit", k); if (r && r.ok) say(ic + " " + tt("sent")); }; s.appendChild(b); });
+    if (["inbox", "drill", "train", "ab"].includes(kind)) labSheet(s, kind);
     box.appendChild(s);
+  }
+  let LB = null;
+  const lab = async (d) => { try { const r = d ? await (await fetch("/api/lab", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, d))})).json()
+      : await (await fetch("/api/lab")).json(); if (r && r.inbox) LB = r; if (r && r.ok === false && r.error) say("⚠ " + r.error); paintAll(); return r; } catch (e) {} };
+  const B = (txt, fn, cls) => { const b = E("button", cls || "sec", txt); b.type = "button"; b.onclick = fn; return b; };
+  const row = (...xs) => { const r = E("div", "shrow"); r.style.flexWrap = "wrap"; xs.forEach(x => r.appendChild(x)); return r; };
+  const NM = {"Push message": "Push", "Light": "Licht", "Siren": "Sirene", "Siren after a while (escalation)": "Sirene nach einer Weile"};
+  function labSheet(s, kind) {
+    if (!LB) { s.appendChild(E("div", "mut", "…")); lab(); return; }
+    if (kind === "inbox") {
+      s.appendChild(row(B((LB.sandbox ? "✓ " : "") + tt("Messages here instead of the phone"), () => lab({do: "sandbox", on: !LB.sandbox}), LB.sandbox ? "" : "sec"),
+        B("🔔 " + tt("Test the alarm chain"), async () => { const r = await lab({do: "chain"}); if (r && r.chain) { open = "inbox"; window._chain = r.chain; paintAll(); } }), B("🗑", () => lab({do: "clear"}))));
+      if (window._chain) s.appendChild(row(...window._chain.map(x => E("span", "", (x.ok ? "✅ " : "❌ ") + (L() === "en" ? x.name : (NM[x.name] || x.name)) + (x.text ? " (" + x.text + ")" : "")))));
+      const ph = E("div"); ph.style.cssText = "width:100%;display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto";
+      (LB.inbox.length ? LB.inbox : [{t: "", title: tt("Empty – nothing arrived yet"), text: ""}]).forEach(m => { const c = E("div"); c.style.cssText = "display:flex;gap:8px;padding:8px;border-radius:12px;background:var(--panel2,#151e2b)";
+        if (m.img) { const im = E("img"); im.src = "/api/lab/img/" + m.img; im.style.cssText = "width:64px;height:40px;object-fit:cover;border-radius:6px"; c.appendChild(im); }
+        const tx = E("div"); tx.append(E("b", "", (m.held ? "⏸ " : "") + m.title), E("div", "mut", (m.t ? m.t + " · " : "") + m.text + (m.held ? " · " + tt("held back (offline), sent later") : ""))); tx.style.fontSize = "13px"; c.appendChild(tx); ph.appendChild(c); });
+      s.appendChild(ph);
+    }
+    if (kind === "drill") {
+      s.appendChild(row(B("🔋 " + tt("Battery empty"), () => lab({do: "drill", kind: "battery"})), B("📶 " + tt("Wi-Fi / internet gone"), () => lab({do: "drill", kind: "net"})),
+        B("🔥 " + tt("Heat"), () => lab({do: "drill", kind: "heat"})), B("❄ " + tt("Cold"), () => lab({do: "drill", kind: "cold"}))));
+      if (LB.drill.busy) s.appendChild(E("div", "mut", "⏳ " + tt("Drill runs") + " · " + LB.drill.left + " s"));
+      const l = LB.drill.last; if (l) { s.appendChild(E("b", "", tt("Last drill") + ": " + l.kind + " – " + tt("how MoveEye reacted") + ":"));
+        (l.reactions.length ? l.reactions : [{t: "", text: tt("no reaction")}]).forEach(x => s.appendChild(E("div", "mut", (x.t ? x.t + " · " : "") + x.text))); }
+    }
+    if (kind === "train") {
+      const h = E("select"); for (let i = 0; i < 24; i++) { const o = E("option", "", String(i).padStart(2, "0") + ":00"); o.value = i; if (i === LB.train.hour) o.selected = true; h.appendChild(o); }
+      h.onchange = () => lab({do: "train", hour: +h.value});
+      s.appendChild(row(B((LB.train.on ? "✓ " : "") + tt("Every night"), () => lab({do: "train", on: !LB.train.on}), LB.train.on ? "" : "sec"), h,
+        LB.train.busy ? B("⏹ " + tt("Stop"), () => lab({do: "train", stop: true})) : B("▶ " + tt("Start now"), () => lab({do: "train", start: true}))));
+      s.appendChild(E("div", "mut", tt("train-note")));
+      const l = LB.train.last; if (l) { s.appendChild(E("b", "", tt("Last training") + " (" + l.min + " min)"));
+        l.results.forEach(r => s.appendChild(E("div", "mut", r.scene + " · " + r.plan + ": " + (r.score != null ? r.score : "–") + (r.base != null ? " (" + tt("before") + " " + r.base + ")" : "") + (r.persons != null ? " · " + r.found + "/" + r.persons + " · " + tt("false alarms") + " " + r.fa : ""))));
+        s.appendChild(E("div", "mut", tt("kept") + ": " + (l.kept.join(", ") || "–") + (l.pics ? " · " + l.pics + " " + tt("training pictures") : ""))); }
+    }
+    if (kind === "ab") {
+      s.appendChild(row(...LB.ab.presets.map(([k, n]) => B(tt(n), () => lab({do: "ab", preset: k})))));
+      s.appendChild(E("div", "mut", tt("ab-note")));
+      const l = LB.ab.last; if (l) s.appendChild(E("b", "", tt(l.title) + ": A " + (l.a != null ? l.a : "–") + " · B " + (l.b != null ? l.b : "–") + " → " + (l.winner === "B" ? tt("B is better – kept") : tt("A stays"))));
+    }
   }
   function tiles(box, full) {
     const g = E("div", "shub");
@@ -8135,6 +8208,10 @@ SIMHUB_JS = r"""
       ["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]];
     if (full && H.twin_ok) T.push(["twin", "🪞", tt("Twin of your place"), tt("Place, zones, patrol")], ["zones3d", "▱", tt("Zones in 3D"), H.zones3d ? tt("on") : tt("off")],
       ["det3d", "🎯", tt("Detection in 3D"), H.det3d ? tt("on") : tt("off")]);
+    if (full) T.push(["inbox", "📨", tt("Test inbox"), LB ? (LB.sandbox ? tt("on") : tt("off")) + " · " + (LB.inbox || []).length : ""],
+      ["drill", "⚡", tt("Drills"), LB && LB.drill.busy ? "⏳ " + LB.drill.left + " s" : tt("Battery, Wi-Fi, heat, cold")],
+      ["train", "🌙", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
+      ["ab", "⚖", tt("A/B comparison"), LB && LB.ab.busy ? "⏳ " + LB.ab.step : tt("Which setting is better?")]);
     if (full) T.push(["templates", "🧩", tt("Templates"), tt("Opens on the PC")], ["game", "🎮", tt("Game"), tt("Play on the phone")],
       ["tests", "🧪", tt("Tests"), tt("Test run, test bench")], ["diary", "📔", tt("Diary"), tt("Visits and detection")]);
     T.forEach(([k, ic, n, sub]) => { const b = E("button", "st" + (open === k || (k === "surprise" && H.surprise) ? " on" : "")); b.type = "button";
@@ -8161,6 +8238,7 @@ SIMHUB_JS = r"""
     if (!H.ok) { el_.appendChild(E("div", "mut", "⚠ " + tt("Simulator not reachable") + (H.msg ? " (" + H.msg + ")" : ""))); return; } tiles(el_, true); }
   function paintAll() { document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : paintTile(x)); }
   async function load() { if (!document.querySelector("[data-simhub]")) return; try { H = await (await fetch("/api/simhub")).json(); } catch (e) { return; }
+    if (document.querySelector('[data-simhub="full"]')) { try { LB = await (await fetch("/api/lab")).json(); } catch (e) {} }
     const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
     if (!document.activeElement || document.activeElement.type !== "range") paintAll(); }
   document.addEventListener("DOMContentLoaded", () => { load(); setInterval(load, 6000); });
@@ -8700,6 +8778,368 @@ def boot_hotspot():
     threading.Thread(target=work, daemon=True).start()
 
 
+# ----------------------------------------------------------------------------
+# 2.96.6 (Makeover-Punkte 12–15), alles mit dem Simulator:
+#  12  Trainings-Nacht: zur eingestellten Stunde mehrere Testläufe in verschiedenen Szenen (Tag- und Nacht-Plan), dann die
+#      automatische Optimierung am schwächsten Plan, dann Trainingsbilder (YOLO-Paket auf dem PC des Simulators); am
+#      Schluss ein Bericht als Push und unter «Simulator-Zentrale». Nur wenn nicht scharf geschaltet und kein Spiel läuft.
+#  13  A/B-Vergleich: zweimal derselbe Testlauf - A mit den jetzigen Einstellungen, B mit einer Änderung. B bleibt nur,
+#      wenn es klar besser ist (Punktzahl +3), sonst kommt A zurück.
+#  14  Test-Posteingang: im Simulator landen die Meldungen auf Wunsch hier statt auf dem Handy (niemand wird gestört);
+#      «Alarm-Kette testen» spielt Push, Licht und Sirene durch und sagt, was ging.
+#  15  Störfall-Übungen: Akku leer, WLAN / Internet weg, Hitze, Kälte - MoveEye erlebt es wie echt (nur ohne echtes
+#      Herunterfahren) und am Schluss steht, wie es reagiert hat.
+# ----------------------------------------------------------------------------
+SANDBOX = {"items": [], "force": 0}
+DRILL = {"kind": "", "t0": 0.0, "until": 0.0, "seen": [], "busy": False, "last": None, "restore": {}}
+TRAIN = {"busy": False, "step": "", "last": None, "stop": False, "day": ""}
+ABT = {"busy": False, "step": "", "last": None}
+DRILL_KINDS = {"battery": 90, "net": 100, "heat": 70, "cold": 70}
+AB_PRESETS = {
+    "more_sens": ("More sensitive", {"sensitivity": +10}), "less_sens": ("Less sensitive", {"sensitivity": -10}),
+    "ai_strict": ("AI stricter", {"ai_conf": +0.1}), "ai_loose": ("AI more generous", {"ai_conf": -0.1}),
+    "small": ("Also small objects", {"min_area": -0.3}), "walk": ("Faster decision", {"walk_frames": -2}),
+}
+
+
+def sim_ready():
+    return bool(CFG.get("sim_on")) and SIM.get("ok") and time.time() - SIM.get("t", 0) < 6
+
+
+# ---- 14: the test inbox ---------------------------------------------------------------------------------------------
+def sandbox_active():
+    return SANDBOX["force"] > 0 or (bool(CFG.get("notify_sandbox")) and bool(CFG.get("sim_on")))
+
+
+def sandbox_add(title, text, jpg=None, ev=""):
+    it = {"t": datetime.now().strftime("%H:%M:%S"), "title": title, "text": text, "ev": ev, "icon": ev_icon(ev),
+          "held": bool(DRILL["kind"] == "net" and time.time() < DRILL["until"])}
+    if jpg:
+        try:
+            d = os.path.join(DATA_DIR, "testinbox")
+            os.makedirs(d, exist_ok=True)
+            n = "%d.jpg" % int(time.time() * 1000)
+            with open(os.path.join(d, n), "wb") as f:
+                f.write(jpg)
+            it["img"] = n
+            fs = sorted(os.listdir(d))
+            for x in fs[:-20]:
+                os.remove(os.path.join(d, x))
+        except OSError:
+            pass
+    SANDBOX["items"].insert(0, it)
+    del SANDBOX["items"][30:]
+    if DRILL["kind"] and time.time() < DRILL["until"]:
+        DRILL["seen"].append({"t": it["t"], "kind": "push", "text": title + ": " + text})
+    log_event("web", f"Test inbox: {title}"[:160])
+
+
+def alarmchain_test():
+    """Push, light, siren - one after the other, into the test inbox (nobody is disturbed)"""
+    out = []
+    SANDBOX["force"] += 1
+    try:
+        w = WATCH_REF.get("w")
+        n0 = len(SANDBOX["items"])
+        if w is not None:
+            p = {"event": "person", "persons": 1, "time": datetime.now().isoformat(timespec="seconds"), "snapshot": None, "rain": False,
+                 "wind": "", "source": STATE.get("source_label", ""), "link": "", "more": 0}
+            jpg = None
+            f = getattr(w, "frame_out", None)
+            if f is not None:
+                ok_, buf = cv2.imencode(".jpg", f, [cv2.IMWRITE_JPEG_QUALITY, 70])
+                jpg = buf.tobytes() if ok_ else None
+            w.notifier._dispatch(p, jpg, "test.jpg")
+        got = len(SANDBOX["items"]) > n0
+        out.append({"name": "Push message", "ok": got, "text": SANDBOX["items"][0]["title"] if got else "no message"})
+        was = bool((STATE.get("lights") or {}).get("white"))
+        light_alarm()
+        lit = False
+        for _ in range(12):
+            time.sleep(0.25)
+            if (STATE.get("lights") or {}).get("white"):
+                lit = True
+                break
+        out.append({"name": "Light", "ok": lit or was, "text": "" if lit or was else "the white light is not set to «on alarm» (Light & sound)"})
+        ok_s, err_s = sound_play(None, 3, None, reason="test")
+        time.sleep(0.6)
+        out.append({"name": "Siren", "ok": bool(ok_s and SOUND.get("playing")), "text": err_s or ""})
+        time.sleep(2.5)
+        try:
+            sound_stop()
+        except Exception:
+            pass
+        esc = bool(CFG.get("escalate_on"))
+        out.append({"name": "Siren after a while (escalation)", "ok": esc, "text": trf("after {s} s", s=int(CFG.get("escalate_siren_s", 30))) if esc else "off"})
+    finally:
+        SANDBOX["force"] = max(0, SANDBOX["force"] - 1)
+    log_event("sys", "Alarm chain test: " + ", ".join(f"{x['name']} {'ok' if x['ok'] else 'no'}" for x in out))
+    return out
+
+
+# ---- 15: drills ------------------------------------------------------------------------------------------------------
+def drill_active(kind):
+    return DRILL["kind"] == kind and time.time() < DRILL["until"]
+
+
+def drill_note(kind, text):
+    """called from log_event: what MoveEye did during a drill"""
+    if DRILL["kind"] and time.time() < DRILL["until"] + 3 and len(DRILL["seen"]) < 40:
+        DRILL["seen"].append({"t": datetime.now().strftime("%H:%M:%S"), "kind": kind, "text": str(text)[:160]})
+
+
+def drill_start(kind):
+    if kind not in DRILL_KINDS:
+        return False, "unknown drill"
+    if DRILL["busy"]:
+        return False, "a drill is already running"
+    if not sim_ready():
+        return False, "only with the simulator"
+    DRILL.update(kind=kind, t0=time.time(), until=time.time() + DRILL_KINDS[kind], seen=[], busy=True, restore={})
+    SANDBOX["force"] += 1
+    if kind in ("heat", "cold"):
+        DRILL["restore"] = {"temp_alarm_on": CFG.get("temp_alarm_on")}
+        CFG["temp_alarm_on"] = True                        # for the drill: the temperature alarm listens
+        try:
+            DRILL["restore"]["ambient"] = float(SIM.get("ambient", 15.0))
+            sim_control({"action": "set", "id": "ambient", "value": 38.0 if kind == "heat" else -12.0})
+        except Exception:
+            pass
+    if kind == "battery":
+        DRILL["restore"] = {"batt_warned": CFG.get("batt_warned")}
+        CFG["batt_warned"] = False
+        bm = getattr(WATCH_REF.get("w"), "battmon", None)
+        if bm is not None:
+            bm._on_batt = False                            # so the first drill tick tells «power cut»
+    if kind == "net":
+        w = WATCH_REF.get("w")
+        try:
+            w.netmon.recheck = True
+        except Exception:
+            pass
+    log_event("sys", f"Drill started: {kind}")
+    threading.Thread(target=_drill_end_later, daemon=True, name="drill").start()
+    return True, ""
+
+
+def _drill_end_later():
+    while time.time() < DRILL["until"]:
+        time.sleep(1)
+    kind = DRILL["kind"]
+    try:
+        rs = DRILL.get("restore") or {}
+        if "temp_alarm_on" in rs:
+            CFG["temp_alarm_on"] = rs["temp_alarm_on"]
+        if "ambient" in rs:
+            sim_control({"action": "set", "id": "ambient", "value": rs["ambient"]})
+        if "batt_warned" in rs:
+            CFG["batt_warned"] = bool(rs["batt_warned"])
+            bm = getattr(WATCH_REF.get("w"), "battmon", None)
+            if bm is not None and getattr(bm, "_on_batt", None):
+                bm.ups_events(7.6, 60, None, False, False)  # the «mains power back» of the drill
+                bm._on_batt = None
+        if kind == "net":
+            w = WATCH_REF.get("w")
+            try:
+                w.netmon.recheck = True
+            except Exception:
+                pass
+            time.sleep(4)
+    except Exception as e:
+        DRILL["seen"].append({"t": "", "kind": "sys", "text": str(e)[:100]})
+    time.sleep(2)
+    seen = [x for x in DRILL["seen"] if x.get("kind") not in ("auto", "servo", "patrol", "relay")
+            and not str(x["text"]).startswith(("Drill started", "Test inbox"))]
+    DRILL["last"] = {"kind": kind, "t": DRILL["t0"], "s": DRILL_KINDS.get(kind, 0), "reactions": seen[:30]}
+    DRILL.update(kind="", busy=False)
+    SANDBOX["force"] = max(0, SANDBOX["force"] - 1)
+    log_event("sys", f"Drill finished: {kind}, {len(seen)} reactions")
+
+
+def drill_battery_tick(bm):
+    """BatteryMonitor.tick during the battery drill: the charge falls from 60 to 4 % - like real, but never shuts down"""
+    el = time.time() - DRILL["t0"]
+    pct = max(4, int(60 - el / DRILL_KINDS["battery"] * 60))
+    hours = round(pct / 100.0 * 4.0, 1)
+    STATE["battery"] = {"on": True, "src": "drill", "pct": pct, "hours": hours, "on_battery": True, "charging": False, "watts": 4.2,
+                        "use_w": 4.2, "volt": round(6.0 + pct / 100.0 * 2.4, 2), "drill": True}
+    bm.ups_events(6.0 + pct / 100.0 * 2.4, pct, hours, True, False)   # volt_ok False: never the real shutdown
+
+
+# ---- 12: the training night ------------------------------------------------------------------------------------------
+TRAIN_SCENES = ["camping", "wald", "garten", "parkplatz", "stellplatz"]
+
+
+def train_run(manual=False):
+    if TRAIN["busy"] or TESTOPT["busy"]:
+        return False, "already running"
+    if not sim_ready():
+        return False, "only with the simulator"
+    TRAIN.update(busy=True, stop=False, step="")
+    threading.Thread(target=_train_thread, args=(manual,), daemon=True, name="training").start()
+    return True, ""
+
+
+def _train_thread(manual):
+    t0 = time.time()
+    res, kept, export = [], [], None
+    scenes = [s for s in (CFG.get("train_scenes") or TRAIN_SCENES) if isinstance(s, str)][:5] or TRAIN_SCENES
+    try:
+        TESTOPT["busy"] = "training"
+        for sc in scenes:
+            for plan in ("quick", "night"):
+                if TRAIN["stop"]:
+                    break
+                TRAIN["step"] = f"{sc} · {plan}"
+                try:
+                    sim_control({"action": "scenario", "id": sc})
+                except Exception:
+                    pass
+                time.sleep(4)
+                run = _run_free(plan)
+                if run is not None:
+                    rp = run["report"]
+                    res.append({"scene": sc, "plan": plan, "score": run["score"], "rate": rp.get("rate"), "fa": rp.get("false_alarms"),
+                                "persons": rp.get("persons"), "found": rp.get("persons_detected")})
+        TESTOPT["busy"] = ""
+        if CFG.get("train_optimize", True) and res and not TRAIN["stop"]:
+            worst = min(res, key=lambda x: x["score"] if x["score"] is not None else 999)
+            TRAIN["step"] = "optimizing: " + worst["scene"] + " · " + worst["plan"]
+            try:
+                sim_control({"action": "scenario", "id": worst["scene"]})
+            except Exception:
+                pass
+            time.sleep(4)
+            _testopt_thread("auto", worst["plan"], 3)
+            A = TESTOPT.get("auto") or {}
+            kept = list(A.get("kept") or [])
+            res.append({"scene": worst["scene"], "plan": "optimized", "score": A.get("best"), "base": A.get("base")})
+        if CFG.get("train_pics", True) and not TRAIN["stop"]:
+            TRAIN["step"] = "training pictures"
+            try:
+                export = sim_control({"action": "dataset", "op": "export", "n": 300})
+            except Exception:
+                export = None
+    except Exception as e:
+        log_event("sys", f"Training night: {e}"[:150])
+    finally:
+        TESTOPT["busy"] = ""
+    rep = {"t": t0, "min": round((time.time() - t0) / 60.0, 1), "results": res, "kept": kept, "manual": manual, "stopped": TRAIN["stop"],
+           "pics": (export or {}).get("n") if isinstance(export, dict) else None, "path": (export or {}).get("zip") if isinstance(export, dict) else None}
+    TRAIN.update(busy=False, step="", last=rep)
+    try:
+        d = os.path.join(DATA_DIR, "training")
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, datetime.now().strftime("%Y%m%d_%H%M") + ".json"), "w", encoding="utf-8") as f:
+            json.dump(rep, f)
+    except OSError:
+        pass
+    sc = [r["score"] for r in res if r.get("score") is not None and r["plan"] != "optimized"]
+    txt = trf("Training night: {n} test runs, average score {s}, kept changes: {k}", n=len(sc), s=round(sum(sc) / len(sc)) if sc else "–",
+              k=", ".join(kept) or tr("none"))
+    log_event("sys", txt)
+    w = WATCH_REF.get("w")
+    if w is not None and not manual:
+        w.notifier.info(txt, title="{name}: " + tr("Training night"))
+
+
+def train_loop():
+    while True:
+        time.sleep(60)
+        try:
+            if not CFG.get("train_night_on") or TRAIN["busy"]:
+                continue
+            now = datetime.now(); day = now.strftime("%Y-%m-%d")
+            if now.hour != int(CFG.get("train_hour", 1)) or TRAIN["day"] == day or CFG.get("train_day") == day:
+                continue
+            if not sim_ready() or is_armed() or (SIMGAME.get("g") or {}).get("round") in ("play", "countdown"):
+                continue
+            TRAIN["day"] = day
+            CFG["train_day"] = day
+            save_settings()
+            train_run(False)
+        except Exception as e:
+            log_event("sys", f"Training night: {e}"[:150])
+
+
+threading.Thread(target=train_loop, daemon=True, name="training-night").start()
+
+
+# ---- 13: A/B -----------------------------------------------------------------------------------------------------------
+def ab_run(preset, plan="quick"):
+    if ABT["busy"] or TESTOPT["busy"] or TRAIN["busy"]:
+        return False, "already running"
+    if preset not in AB_PRESETS:
+        return False, "unknown"
+    if not sim_ready():
+        return False, "only with the simulator"
+    ABT.update(busy=True, step="A")
+    threading.Thread(target=_ab_thread, args=(preset, plan), daemon=True, name="ab").start()
+    return True, ""
+
+
+def _sim_free(max_s=420):
+    """wait until no test run is going on in the simulator (its test bench may have started one by itself)"""
+    t_end = time.time() + max_s
+    while time.time() < t_end and not TRAIN["stop"]:
+        st = _simtest("test_report")
+        if not st.get("running"):
+            return True
+        time.sleep(5)
+    return False
+
+
+def _run_free(plan):
+    _sim_free()
+    return testopt_run(plan)
+
+
+def _ab_changes(preset):
+    out = []
+    for k, d in AB_PRESETS[preset][1].items():
+        if k not in CFG:
+            continue
+        v = CFG[k]
+        nv = v * (1 + d) if k == "min_area" else v + d
+        out.append([k, v, _clampv(k, nv)])
+    return out
+
+
+def _ab_thread(preset, plan):
+    res = {"preset": preset, "title": AB_PRESETS[preset][0], "plan": plan, "a": None, "b": None, "winner": "", "changes": {}}
+    try:
+        TESTOPT["busy"] = "ab"
+        a = _run_free(plan)
+        res["a"] = a["score"] if a else None
+        ch = _ab_changes(preset)
+        res["changes"] = {k: n for k, _o, n in ch}
+        if res["a"] is None:
+            raise RuntimeError(TESTOPT.get("msg") or "test run A failed")
+        ABT["step"] = "B"
+        before = opt_apply(ch, "A/B test " + preset)
+        b = _run_free(plan)
+        res["b"] = b["score"] if b else None
+        if res["a"] is not None and res["b"] is not None and res["b"] >= res["a"] + 3.0:
+            res["winner"] = "B"
+            TESTOPT["undo"] = {"cfg": before, "t": time.time(), "what": "ab"}
+            testopt_save()
+        else:
+            res["winner"] = "A"
+            opt_restore(before, "A/B test: A stays")
+    except Exception as e:
+        res["error"] = str(e)[:100]
+    finally:
+        TESTOPT["busy"] = ""
+        ABT.update(busy=False, step="", last=res)
+        log_event("sys", f"A/B test {preset}: A {res['a']} / B {res['b']} -> {res['winner'] or '?'}")
+
+
+def lab_state():
+    return {"sandbox": bool(CFG.get("notify_sandbox")), "inbox": SANDBOX["items"][:12], "drill": {"kind": DRILL["kind"], "busy": DRILL["busy"],
+            "left": max(0, int(DRILL["until"] - time.time())) if DRILL["busy"] else 0, "last": DRILL["last"]},
+            "train": {"on": bool(CFG.get("train_night_on")), "hour": int(CFG.get("train_hour", 1)), "busy": TRAIN["busy"], "step": TRAIN["step"],
+                      "last": TRAIN["last"]}, "ab": {"busy": ABT["busy"], "step": ABT["step"], "last": ABT["last"],
+                      "presets": [[k, v[0]] for k, v in AB_PRESETS.items()]}, "ready": bool(sim_ready())}
 # ----------------------------------------------------------------------------
 # Second Wi-Fi adapter (USB stick): one adapter makes the own Wi-Fi, the other one joins a known network (campsite, phone)
 # -> repeater: the devices in the own Wi-Fi have internet (NetworkManager "shared" does the routing). Also: automatic change
@@ -20656,7 +21096,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_5.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_6.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -40774,6 +41214,48 @@ class WebStream:
         def api_kino():
             return reply(kino_state())
 
+        @app.route("/api/lab", methods=["GET", "POST"])
+        def api_lab():                                       # 2.96.6: makeover 12-15 (141_makeover_uebungen)
+            if request.method == "GET":
+                return reply(dict(lab_state(), ok=True))
+            d = body(); lang = norm_lang(d.get("lang")); a = str(d.get("do") or "")
+            ok, err, extra = True, "", {}
+            if a == "sandbox":
+                CFG["notify_sandbox"] = bool(d.get("on")); save_settings()
+            elif a == "clear":
+                SANDBOX["items"].clear()
+            elif a == "chain":
+                if not sim_ready():
+                    ok, err = False, "only with the simulator"
+                else:
+                    extra["chain"] = [dict(x, text=tr(x["text"], lang) if x.get("text") else "") for x in alarmchain_test()]
+            elif a == "drill":
+                ok, err = drill_start(str(d.get("kind") or ""))
+            elif a == "train":
+                if d.get("start"):
+                    ok, err = train_run(True)
+                elif d.get("stop"):
+                    TRAIN["stop"] = True; TESTOPT["stop"] = True
+                if "on" in d:
+                    CFG["train_night_on"] = bool(d.get("on")); save_settings()
+                if "hour" in d:
+                    CFG["train_hour"] = max(0, min(23, int(d.get("hour") or 1))); save_settings()
+            elif a == "ab":
+                ok, err = ab_run(str(d.get("preset") or ""), "night" if d.get("plan") == "night" else "quick")
+            else:
+                ok, err = False, "unknown action"
+            return reply(dict(lab_state(), ok=ok, error=tr_err(err, lang) if err else "", **extra))
+
+        @app.route("/api/lab/img/<name>")
+        def api_lab_img(name):
+            if not re.match(r"^\d+\.jpg$", name):
+                return reply({"ok": False}, 404)
+            p = os.path.join(DATA_DIR, "testinbox", name)
+            if not os.path.isfile(p):
+                return reply({"ok": False}, 404)
+            with open(p, "rb") as f:
+                return Response(f.read(), mimetype="image/jpeg")
+
         @app.route("/api/simbar")
         def api_simbar():                                    # 2.96.4: the stripe «SIMULATION» on every page
             return reply({"ok": True, "on": bool(CFG.get("sim_on"))})
@@ -42594,6 +43076,8 @@ TOGGLES = [  # (section, key, label)
     ("Mover", "mover_swap", "Left and right tracks swapped"),
     ("Mover", "mover_sim_show", "Simulation: show the stick even without a mover or motor driver (to try it out)"),
     ("Simulator", "sim_eco", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)"),
+    ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
+    ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself when a newer version is there"),
@@ -43190,7 +43674,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.5")
+        self.root.title("MoveEye 2.96.6")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -43507,7 +43991,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.5 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.6 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -50696,6 +51180,28 @@ _HX112 = {  # 2.96.5: what if
     'the simulator is not switched on (tab Simulator)': ('Der Simulator ist nicht eingeschaltet (Reiter Simulator)', 'Le simulateur n’est pas activé (onglet Simulateur)', 'Il simulatore non è attivo (scheda Simulatore)', 'Il simulatur n’è betg activà (tab Simulatur)'),
 }
 for _k, _v in _HX112.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX113 = {  # 2.96.6: makeover 12-15
+    'Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)': ('Simulation: Meldungen in den Test-Posteingang statt aufs Handy (niemand wird gestört)', 'Simulation : messages dans la boîte de test au lieu du téléphone (personne n’est dérangé)', 'Simulazione: messaggi nella casella di prova invece che sul telefono (nessuno viene disturbato)', 'Simulaziun: messadis en la chascha da test empè dal telefon (nagin vegn disturbà)'),
+    'Training night: every night test runs in several scenes, optimization, training pictures': ('Trainings-Nacht: jede Nacht Testläufe in mehreren Szenen, Optimierung, Trainingsbilder', 'Nuit d’entraînement : chaque nuit des tests dans plusieurs scènes, optimisation, images d’entraînement', 'Notte di allenamento: ogni notte test in più scene, ottimizzazione, immagini di addestramento', 'Notg da trenament: mintga notg tests en plirs scenaris, optimaziun, maletgs da trenament'),
+    'Training night': ('Trainings-Nacht', 'Nuit d’entraînement', 'Notte di allenamento', 'Notg da trenament'),
+    'Training night: {n} test runs, average score {s}, kept changes: {k}': ('Trainings-Nacht: {n} Testläufe, Punkte im Schnitt {s}, übernommene Änderungen: {k}', 'Nuit d’entraînement : {n} tests, score moyen {s}, changements gardés : {k}', 'Notte di allenamento: {n} test, punteggio medio {s}, modifiche mantenute: {k}', 'Notg da trenament: {n} tests, puncts en media {s}, midadas mantegnidas: {k}'),
+    'none': ('keine', 'aucun', 'nessuna', 'nagina'),
+    'only with the simulator': ('nur mit dem Simulator', 'seulement avec le simulateur', 'solo con il simulatore', 'mo cun il simulatur'),
+    'a drill is already running': ('es läuft schon eine Übung', 'un exercice est déjà en cours', 'un’esercitazione è già in corso', 'in exercizi è gia en lavur'),
+    'after {s} s': ('nach {s} s', 'après {s} s', 'dopo {s} s', 'suenter {s} s'),
+}
+for _k, _v in _HX113.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX114 = {  # 2.96.6: alarm chain texts
+    'the white light is not set to «on alarm» (Light & sound)': ('das weisse Licht ist nicht auf «bei Alarm» gestellt (Licht & Ton)', 'la lumière blanche n’est pas réglée sur « en cas d’alarme » (Lumière & son)', 'la luce bianca non è impostata su «in caso di allarme» (Luce & suono)', 'la glisch alva n’è betg messa sin «tar alarm» (Glisch & tun)'),
+    'no message': ('keine Meldung', 'aucun message', 'nessun messaggio', 'nagin messadi'),
+}
+for _k, _v in _HX114.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
