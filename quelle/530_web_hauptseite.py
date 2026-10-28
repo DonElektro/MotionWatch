@@ -305,6 +305,10 @@ body.videoonly.mover.swapside #vo-mctl{left:auto;right:max(18px,env(safe-area-in
 @media (orientation:landscape) and (max-height:520px){body.videoonly.mover #vo-mctl{bottom:calc(env(safe-area-inset-bottom) + 64px);left:calc(env(safe-area-inset-left) + 24px)}
   body.videoonly.mover.swapside #vo-mctl{left:auto;right:calc(env(safe-area-inset-right) + 24px)}}
 #vo-mctl.idle{opacity:.38}
+/* 2.95.82: the mover stick can be moved anywhere on the picture (✥ drag; double tap = back), one place per side (⇆) */
+#vo-mctl .vo-grip{position:absolute;left:-12px;top:-12px;width:34px;height:34px;border-radius:50%;padding:0;z-index:2;
+  border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.55);color:#fff;font-size:17px;line-height:1;touch-action:none;cursor:grab}
+#vo-mctl.drag{opacity:1!important;outline:2px dashed rgba(255,255,255,.6);outline-offset:6px;border-radius:50%}
 #vo-mctl .stick{width:clamp(118px,24vmin,168px);height:clamp(118px,24vmin,168px);background:rgba(8,12,20,.22);border:2px solid rgba(255,255,255,.72);
   box-shadow:0 2px 14px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
 #vo-mctl .stick::before,#vo-mctl .stick::after{background:rgba(255,255,255,.3)}
@@ -452,7 +456,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
         <button type="button" id="vo-mv" title="Mover" onclick="const m = document.getElementById('mv-tog'); if (m) m.click()">🚜</button>
         <div id="vo-ctl" class="idle"><div class="vbtns"><button type="button" id="vo-center" title="Centre">◎</button>
           <button type="button" id="vo-listen" title="Listen" hidden>🎧</button></div><div id="vo-slot"></div></div>
-        <div id="vo-mctl" class="idle"><div id="vo-mslot"></div></div>
+        <div id="vo-mctl" class="idle"><button type="button" class="vo-grip" id="vo-mgrip" title="Move (double tap: back to its place)">✥</button><div id="vo-mslot"></div></div>
         <div class="vtag"><span class="live">LIVE</span><span class="rec" id="v-rec" hidden>● REC</span><span id="v-src" hidden></span></div></div>
       <div id="mctl"></div>
     </div>
@@ -3883,7 +3887,7 @@ function simpleBar(on) {
   return w;
 }
 // ---- self-check: one traffic light per part ----
-Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with Motion Watch first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit Motion Watch spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
+Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with Motion Watch first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit Motion Watch spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick back in its place": "Mover-Stick wieder an seinem Platz", "Move (double tap: back to its place)": "Verschieben (doppelt tippen: zurück an den Platz)", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
   let j; try { j = await (await fetch("/api/health?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
   const L = $("#h-list"); if (!L) return; L.textContent = "";
@@ -4150,6 +4154,34 @@ document.querySelectorAll("button.dp").forEach(b => {
   pad.addEventListener("pointermove", e => { if (e.pointerId === id) { e.preventDefault(); track(e); mvWake(); } });
   ["pointerup", "pointercancel", "lostpointercapture"].forEach(ev => pad.addEventListener(ev, e => { if (e.pointerId === id) release(); }));
   window.addEventListener("blur", release); document.addEventListener("visibilitychange", () => { if (document.hidden) release(); });
+})();
+// 2.95.82: move the mover stick in full screen
+(function () {
+  const box = $("#vo-mctl"), g = $("#vo-mgrip"); if (!box || !g) return;
+  const key = () => "mw-mvpos-" + (document.body.classList.contains("swapside") ? "l" : "r");
+  const place = () => { let p = null; try { p = JSON.parse(localStorage.getItem(key()) || "null"); } catch (e) {}
+    const W = box.offsetParent;
+    if (!p || !W) { box.style.left = box.style.top = box.style.right = box.style.bottom = ""; return; }
+    const w = W.clientWidth, h = W.clientHeight, bw = box.offsetWidth, bh = box.offsetHeight;
+    box.style.left = Math.max(4, Math.min(w - bw - 4, p.x * w)) + "px"; box.style.top = Math.max(4, Math.min(h - bh - 4, p.y * h)) + "px";
+    box.style.right = "auto"; box.style.bottom = "auto"; };
+  let drag = null, lastTap = 0;
+  g.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation();
+    if (Date.now() - lastTap < 350) { try { localStorage.removeItem(key()); } catch (x) {} place(); lastTap = 0; toast("✥ " + t("Mover stick back in its place")); return; }
+    lastTap = Date.now();
+    const W = box.offsetParent; if (!W) return; const r = box.getBoundingClientRect();
+    drag = {id: e.pointerId, dx: e.clientX - r.left, dy: e.clientY - r.top}; try { g.setPointerCapture(e.pointerId); } catch (x) {}
+    box.classList.add("drag"); mvWake(); });
+  g.addEventListener("pointermove", e => { if (!drag || e.pointerId !== drag.id) return; e.preventDefault();
+    const W = box.offsetParent, wr = W.getBoundingClientRect();
+    const x = Math.max(4, Math.min(wr.width - box.offsetWidth - 4, e.clientX - wr.left - drag.dx)), y = Math.max(4, Math.min(wr.height - box.offsetHeight - 4, e.clientY - wr.top - drag.dy));
+    box.style.left = x + "px"; box.style.top = y + "px"; box.style.right = "auto"; box.style.bottom = "auto"; mvWake(); });
+  const end = e => { if (!drag || (e && e.pointerId !== drag.id)) return; drag = null; box.classList.remove("drag");
+    const W = box.offsetParent; if (!W) return;
+    try { localStorage.setItem(key(), JSON.stringify({x: box.offsetLeft / W.clientWidth, y: box.offsetTop / W.clientHeight})); } catch (x) {} };
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach(n => g.addEventListener(n, end));
+  addEventListener("resize", () => setTimeout(place, 120));
+  new MutationObserver(() => setTimeout(place, 60)).observe(document.body, {attributes: true, attributeFilter: ["class"]});   // full screen on, ⇆ side
 })();
 let mvIdleT = null;
 function mvWake() { const c = $("#vo-mctl"); if (!c) return; c.classList.remove("idle"); clearTimeout(mvIdleT); mvIdleT = setTimeout(() => c.classList.add("idle"), 3000); }

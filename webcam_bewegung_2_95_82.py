@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_81.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_82.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,7 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.82: Vollbild: Mover-Stick mit ✥ frei auf dem Bild verschiebbar (doppelt tippen = zurück), Platz je Seite gemerkt
   * 2.95.81: Simulator-Fenster im Browser schärfer: Bildgrösse passend zum Bildschirm, Wahl «Bildqualität» (automatisch, sehr
     hoch, hoch, mittel, niedrig), WebP; 3D-Simulator 3D-3.58
   * 2.95.80: 3D-Simulator 3D-3.57: Stangenlänge des Kamerakopfs einstellbar (Mover, Erkunden)
@@ -754,10 +755,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_81.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_82.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_81.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_81.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_82.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_82.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -774,7 +775,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.81"
+APP_VERSION = "2.95.82"
 
 
 def default_data_dir():
@@ -18981,7 +18982,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_81.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_82.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -31518,6 +31519,10 @@ body.videoonly.mover.swapside #vo-mctl{left:auto;right:max(18px,env(safe-area-in
 @media (orientation:landscape) and (max-height:520px){body.videoonly.mover #vo-mctl{bottom:calc(env(safe-area-inset-bottom) + 64px);left:calc(env(safe-area-inset-left) + 24px)}
   body.videoonly.mover.swapside #vo-mctl{left:auto;right:calc(env(safe-area-inset-right) + 24px)}}
 #vo-mctl.idle{opacity:.38}
+/* 2.95.82: the mover stick can be moved anywhere on the picture (✥ drag; double tap = back), one place per side (⇆) */
+#vo-mctl .vo-grip{position:absolute;left:-12px;top:-12px;width:34px;height:34px;border-radius:50%;padding:0;z-index:2;
+  border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.55);color:#fff;font-size:17px;line-height:1;touch-action:none;cursor:grab}
+#vo-mctl.drag{opacity:1!important;outline:2px dashed rgba(255,255,255,.6);outline-offset:6px;border-radius:50%}
 #vo-mctl .stick{width:clamp(118px,24vmin,168px);height:clamp(118px,24vmin,168px);background:rgba(8,12,20,.22);border:2px solid rgba(255,255,255,.72);
   box-shadow:0 2px 14px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
 #vo-mctl .stick::before,#vo-mctl .stick::after{background:rgba(255,255,255,.3)}
@@ -31665,7 +31670,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
         <button type="button" id="vo-mv" title="Mover" onclick="const m = document.getElementById('mv-tog'); if (m) m.click()">🚜</button>
         <div id="vo-ctl" class="idle"><div class="vbtns"><button type="button" id="vo-center" title="Centre">◎</button>
           <button type="button" id="vo-listen" title="Listen" hidden>🎧</button></div><div id="vo-slot"></div></div>
-        <div id="vo-mctl" class="idle"><div id="vo-mslot"></div></div>
+        <div id="vo-mctl" class="idle"><button type="button" class="vo-grip" id="vo-mgrip" title="Move (double tap: back to its place)">✥</button><div id="vo-mslot"></div></div>
         <div class="vtag"><span class="live">LIVE</span><span class="rec" id="v-rec" hidden>● REC</span><span id="v-src" hidden></span></div></div>
       <div id="mctl"></div>
     </div>
@@ -35096,7 +35101,7 @@ function simpleBar(on) {
   return w;
 }
 // ---- self-check: one traffic light per part ----
-Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with Motion Watch first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit Motion Watch spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
+Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with Motion Watch first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit Motion Watch spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick back in its place": "Mover-Stick wieder an seinem Platz", "Move (double tap: back to its place)": "Verschieben (doppelt tippen: zurück an den Platz)", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
   let j; try { j = await (await fetch("/api/health?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
   const L = $("#h-list"); if (!L) return; L.textContent = "";
@@ -35363,6 +35368,34 @@ document.querySelectorAll("button.dp").forEach(b => {
   pad.addEventListener("pointermove", e => { if (e.pointerId === id) { e.preventDefault(); track(e); mvWake(); } });
   ["pointerup", "pointercancel", "lostpointercapture"].forEach(ev => pad.addEventListener(ev, e => { if (e.pointerId === id) release(); }));
   window.addEventListener("blur", release); document.addEventListener("visibilitychange", () => { if (document.hidden) release(); });
+})();
+// 2.95.82: move the mover stick in full screen
+(function () {
+  const box = $("#vo-mctl"), g = $("#vo-mgrip"); if (!box || !g) return;
+  const key = () => "mw-mvpos-" + (document.body.classList.contains("swapside") ? "l" : "r");
+  const place = () => { let p = null; try { p = JSON.parse(localStorage.getItem(key()) || "null"); } catch (e) {}
+    const W = box.offsetParent;
+    if (!p || !W) { box.style.left = box.style.top = box.style.right = box.style.bottom = ""; return; }
+    const w = W.clientWidth, h = W.clientHeight, bw = box.offsetWidth, bh = box.offsetHeight;
+    box.style.left = Math.max(4, Math.min(w - bw - 4, p.x * w)) + "px"; box.style.top = Math.max(4, Math.min(h - bh - 4, p.y * h)) + "px";
+    box.style.right = "auto"; box.style.bottom = "auto"; };
+  let drag = null, lastTap = 0;
+  g.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation();
+    if (Date.now() - lastTap < 350) { try { localStorage.removeItem(key()); } catch (x) {} place(); lastTap = 0; toast("✥ " + t("Mover stick back in its place")); return; }
+    lastTap = Date.now();
+    const W = box.offsetParent; if (!W) return; const r = box.getBoundingClientRect();
+    drag = {id: e.pointerId, dx: e.clientX - r.left, dy: e.clientY - r.top}; try { g.setPointerCapture(e.pointerId); } catch (x) {}
+    box.classList.add("drag"); mvWake(); });
+  g.addEventListener("pointermove", e => { if (!drag || e.pointerId !== drag.id) return; e.preventDefault();
+    const W = box.offsetParent, wr = W.getBoundingClientRect();
+    const x = Math.max(4, Math.min(wr.width - box.offsetWidth - 4, e.clientX - wr.left - drag.dx)), y = Math.max(4, Math.min(wr.height - box.offsetHeight - 4, e.clientY - wr.top - drag.dy));
+    box.style.left = x + "px"; box.style.top = y + "px"; box.style.right = "auto"; box.style.bottom = "auto"; mvWake(); });
+  const end = e => { if (!drag || (e && e.pointerId !== drag.id)) return; drag = null; box.classList.remove("drag");
+    const W = box.offsetParent; if (!W) return;
+    try { localStorage.setItem(key(), JSON.stringify({x: box.offsetLeft / W.clientWidth, y: box.offsetTop / W.clientHeight})); } catch (x) {} };
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach(n => g.addEventListener(n, end));
+  addEventListener("resize", () => setTimeout(place, 120));
+  new MutationObserver(() => setTimeout(place, 60)).observe(document.body, {attributes: true, attributeFilter: ["class"]});   // full screen on, ⇆ side
 })();
 let mvIdleT = null;
 function mvWake() { const c = $("#vo-mctl"); if (!c) return; c.classList.remove("idle"); clearTimeout(mvIdleT); mvIdleT = setTimeout(() => c.classList.add("idle"), 3000); }
@@ -40762,7 +40795,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.81")
+        self.root.title("Motion Watch 2.95.82")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -41052,7 +41085,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.81 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.82 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
