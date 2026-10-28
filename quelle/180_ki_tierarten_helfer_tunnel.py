@@ -387,11 +387,18 @@ def dset_run(n):
 
     def work():
         try:
-            r = sim_control({"action": "dataset", "op": "start", "n": int(n)})
+            if n == "game":                                  # 2.95.75: the pictures the game collected (Motion Watch missed the player)
+                r = sim_control({"action": "dataset", "op": "game"})
+                if not isinstance(r, dict) or not r.get("ok"):
+                    raise ValueError("not supported - update the simulator")
+                if int(r.get("total") or 0) <= 0:
+                    raise ValueError("no missed pictures from the game yet - play a round with Motion Watch first")
+            else:
+                r = sim_control({"action": "dataset", "op": "start", "n": int(n)})
             if not isinstance(r, dict) or not r.get("ok"):
                 raise ValueError("not supported - update the simulator")
             t0 = time.time()
-            while time.time() - t0 < 900:
+            while n != "game" and time.time() - t0 < 900:
                 time.sleep(2.0)
                 g = sim_control({"action": "dataset", "op": "get"})
                 DSET["pct"] = int(60 * int(g.get("done", 0)) / max(1, int(g.get("total", n))))

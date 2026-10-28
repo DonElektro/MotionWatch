@@ -1395,21 +1395,49 @@ func mw_decides() -> bool:
 	return main.game_mode == "mw" and main.now() - main.mw_det_t < 3.0
 
 
+# 3D-3.53: the difficulty also for Motion Watch as the hunter (Spiel → Regeln → «Schwierigkeit»):
+# how long Motion Watch must report a player before he is caught, the pause after a catch, crawling players safe in easy
+const MW_HOLD := {"easy": 2.5, "normal": 1.0, "hard": 0.2}
+const MW_PAUSE := {"easy": 6.0, "normal": 3.0, "hard": 2.0}
+var _mw_hold := {}                       # slot (or -1 = any person) -> seconds reported without a break
+var _mw_ref_t := 0.0
+
+
 func _mw_referee() -> void:
-	"""the real detection of Motion Watch decides: it reports a person -> the player the cameras see best is caught"""
-	if int(main.mw_det.get("persons", 0)) <= 0 or now() < _mw_catch_t:
+	"""the real detection of Motion Watch decides: it reports a person -> the player it means (its boxes, from Motion Watch
+	2.95.75) or else the player the cameras see best is caught - after it was reported long enough (difficulty)"""
+	var t := now()
+	var dt: float = clampf(t - _mw_ref_t, 0.0, 0.5)
+	_mw_ref_t = t
+	var lvl: String = main.game_level
+	var need: float = MW_HOLD.get(lvl, 1.0)
+	if t < _mw_catch_t:
 		return
+	var boxes: bool = learn.has_boxes()
+	var any: bool = int(main.mw_det.get("persons", 0)) > 0
+	if not boxes:
+		_mw_hold[-1] = (float(_mw_hold.get(-1, 0.0)) + dt) if any else 0.0
 	var best = null
 	var top := 0.02
 	for p in players:
-		if p == null or p["role"] != "runner" or p["state"] != "play" or now() < float(p["safe_until"]):
+		if p == null or p["role"] != "runner" or p["state"] != "play" or t < float(p["safe_until"]):
 			continue
+		var s_ := int(p["slot"])
+		if boxes:
+			_mw_hold[s_] = (float(_mw_hold.get(s_, 0.0)) + dt) if learn.reported_for(p) else 0.0
+			if float(_mw_hold[s_]) < need:
+				continue
+		elif float(_mw_hold.get(-1, 0.0)) < need:
+			continue
+		if lvl == "easy" and int(p["actor"].ctl_posture) == 2:
+			continue                                       # easy: crawling players are safe from Motion Watch
 		var f: float = max(cam_sees(p, 0), cam_sees(p, 1))
 		if f > top:
 			top = f
 			best = p
 	if best != null:
-		_mw_catch_t = now() + 3.0
+		_mw_catch_t = t + float(MW_PAUSE.get(lvl, 3.0))
+		_mw_hold.clear()
 		_caught(best, null)
 		_say(best, "Motion Watch hat dich erkannt!", 3.0)
 
@@ -1861,7 +1889,7 @@ func mw_catch(who: String, x := -1.0, y := -1.0) -> Dictionary:
 				if f > best:
 					best = f
 					hit = p
-	learn.on_shot(hit, rep_mw)
+	learn.on_shot(hit, learn.reported_recently(hit) if hit != null else rep_mw)
 	if hit == null:
 		mwg["false"] = int(mwg["false"]) + 1
 		mwg["t"] = now() + 4.0
@@ -1915,7 +1943,7 @@ func _guard(dt: float) -> void:
 			top = float(p["susp"])
 			var d: Vector3 = p["actor"].position
 			want = atan2(-d.x, -d.z)
-	guard_yaw = lerp_angle(guard_yaw, want, clamp(dt * 3.0, 0.0, 1.0))
+	guard_yaw = lerp_angle(guard_yaw, want, clamp(dt * {"easy": 1.6, "normal": 3.0, "hard": 4.5}.get(main.game_level, 3.0), 0.0, 1.0))   # 3D-3.53: easy turns slower
 
 
 # ---- what the phone shows --------------------------------------------------------------------------------------------
@@ -2331,7 +2359,7 @@ func spectator_info() -> Dictionary:
 			"goal": goal_name, "players": ps, "items_left": left_items, "items_all": items.size(), "feed": fd, "last_minute": last_minute,
 			"teams": main.game_teams, "caps": captures, "shot": main.spec_label if main.spectate else "", "spectate": main.spectate,
 			"lives": int(main.game_lives), "ev": ev_kind, "cps_all": checkpoints.size(), "board": board_list(), "records": records,
-			"week": week_list(), "week_id": week_id, "task": task.get("text", ""), "task_bonus": int(task.get("bonus", 0)),
+			"week": week_list(), "sneak": sneak_list(), "week_id": week_id, "task": task.get("text", ""), "task_bonus": int(task.get("bonus", 0)),
 			"mwg": {"catches": mwg["catches"], "false": mwg["false"], "wait": int(max(0.0, float(mwg["t"]) - now()))},
 			"pics": gallery.map(func(g): return {"n": g["n"], "c": g["c"]}), "night": night_saved >= 0.0}
 	if round_state == "countdown":
@@ -2585,6 +2613,11 @@ func _board_add() -> void:
 			records["items"] = [p["name"], int(p["items"])]
 		if p["role"] == "guard" and int(p["catches"]) > 0 and (not records.has("catches") or int(p["catches"]) > int(records["catches"][1])):
 			records["catches"] = [p["name"], int(p["catches"])]
+		var bl: int = learn.blind_s(p) if p["role"] == "runner" else 0   # 3D-3.53: «Bester Schleicher» - blind spots found
+		if bl > 0:
+			b["blind"] = int(b.get("blind", 0)) + bl
+			if not records.has("blind") or bl > int(records["blind"][1]):
+				records["blind"] = [p["name"], bl]
 		board[key] = b
 		var w: Dictionary = week.get(key, {"n": p["name"], "c": b["c"], "score": 0, "rounds": 0, "wins": 0, "tasks": 0})
 		w["n"] = p["name"]
@@ -2596,6 +2629,8 @@ func _board_add() -> void:
 		if bool(p.get("task_ok", false)):
 			w["tasks"] = int(w["tasks"]) + 1
 			b["tasks"] = int(b.get("tasks", 0)) + 1
+		if bl > 0:
+			w["blind"] = int(w.get("blind", 0)) + bl
 		week[key] = w
 	_board_save()
 
@@ -2605,6 +2640,14 @@ func board_list() -> Array:
 	var out: Array = board.values()
 	out.sort_custom(func(x, y): return int(x["score"]) > int(y["score"]))
 	return out.slice(0, 10)
+
+
+func sneak_list() -> Array:
+	"""3D-3.53: «Bester Schleicher der Woche»: who was longest visible but not reported by Motion Watch"""
+	_board_load()
+	var out: Array = week.values().filter(func(x): return int(x.get("blind", 0)) > 0)
+	out.sort_custom(func(x, y): return int(x.get("blind", 0)) > int(y.get("blind", 0)))
+	return out.slice(0, 5)
 
 
 func week_list() -> Array:

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_74.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_75.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.75: Simulator: Motion Watch schickt die Rahmen der erkannten Personen (genaue Zuordnung im Spiel); KI-Prüfung mit den
+    verpassten Bildern aus dem Spiel; Rangliste «Bester Schleicher»
   * 2.95.74: Spiel «Team gegen Motion Watch»: der Jäger zielt durch Antippen der Spieler im Livebild (oder Knopf); 3D-Simulator
     3D-3.52: Treffer-Effekte und Erkennung lernen aus dem Spiel
   * 2.95.73: Handy: Einstellungen als Knopf unten bei der Bedienung statt am rechten Rand; Mover-Stick standardmässig
@@ -745,10 +747,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_74.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_75.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_74.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_74.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_75.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_75.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -765,7 +767,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.74"
+APP_VERSION = "2.95.75"
 
 
 def default_data_dir():
@@ -9669,11 +9671,18 @@ def dset_run(n):
 
     def work():
         try:
-            r = sim_control({"action": "dataset", "op": "start", "n": int(n)})
+            if n == "game":                                  # 2.95.75: the pictures the game collected (Motion Watch missed the player)
+                r = sim_control({"action": "dataset", "op": "game"})
+                if not isinstance(r, dict) or not r.get("ok"):
+                    raise ValueError("not supported - update the simulator")
+                if int(r.get("total") or 0) <= 0:
+                    raise ValueError("no missed pictures from the game yet - play a round with Motion Watch first")
+            else:
+                r = sim_control({"action": "dataset", "op": "start", "n": int(n)})
             if not isinstance(r, dict) or not r.get("ok"):
                 raise ValueError("not supported - update the simulator")
             t0 = time.time()
-            while time.time() - t0 < 900:
+            while n != "game" and time.time() - t0 < 900:
                 time.sleep(2.0)
                 g = sim_control({"action": "dataset", "op": "get"})
                 DSET["pct"] = int(60 * int(g.get("done", 0)) / max(1, int(g.get("total", n))))
@@ -14108,6 +14117,7 @@ def sim_state():
             "cpu": {"total": STATE.get("cpu"), "mw": STATE.get("cpu_mw"), "sim": STATE.get("cpu_sim")},
             # what Motion Watch detects right now: the simulator compares it with the truth (test run, game «Motion Watch decides»)
             "det": {"persons": int(STATE.get("persons") or 0), "present": list(STATE.get("present") or []), "armed": is_armed(),
+                    "boxes": list(STATE.get("person_boxes") or []) if STATE.get("persons") else [],   # 2.95.75: 0..1 of the head camera
                     "noise": bool(AUDIO is not None and AUDIO.noisy())},
             # the tracks of the mover: -1 … 1 each (from 2.94.0)
             "drive": {"l": MOVER["l"], "r": MOVER["r"]}}
@@ -15026,8 +15036,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.52", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30905413,
-         "sha256": "5349f736a279bef2cfedcb0ffb61ebc56fa404bf7a7945c0ec437a0620821219"}
+SIM3D = {"version": "3D-3.53", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30911385,
+         "sha256": "83bcc1e3c2d5ba2137346bb084046d2a3e2ac5f8a76198fa260f66968cb6f680"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15166,8 +15176,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.52", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24026967,
-           "sha256": "b7a1827c40f95a6e7ad68f84e81c7243c10409edee072f2b2d9ff5cbbc816edb", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.53", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24032803,
+           "sha256": "55f242afeb7c6f71cb16ebf4c30e316dbd9ae60071a8d0d08eb6c0fa5d3b3d23", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -18964,7 +18974,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_74.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_75.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -21297,6 +21307,8 @@ class MotionWatch:
             proc_fps = 1.0 / max(1e-3, np.mean(self.frame_times))
             real_fps = (len(self.seen_t) - 1) / span if span > 0.2 else proc_fps
             with LOCK:
+                # 2.95.75: where the persons are (0..1 of the picture) - the 3D simulator knows which player was detected
+                STATE["person_boxes"] = [[round(b[0] / pw, 3), round(b[1] / ph, 3), round(b[2] / pw, 3), round(b[3] / ph, 3)] for b in person_boxes[:8]]
                 STATE.update(rain_score=round(rain_score, 2), rain_mode=rain_mode, persons=len(person_boxes),
                              candidates=len(candidates), fps=round(min(real_fps, proc_fps), 1), proc_fps=round(proc_fps, 1),
                              frames=STATE["frames"] + 1, uptime=int(time.time() - START))
@@ -24692,7 +24704,7 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "Catch fast persons": "Schnelle Personen erwischen", "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.": "{n} schnelle Personen (Jogger) verpasst: weniger Bilder bis das Gehen erkannt ist, die KI prüft jedes Bild.",
  "More sensitive by day": "Am Tag empfindlicher", "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.": "{n} Personen am Tag verpasst: empfindlicher, und die KI nimmt auch weniger sichere Personen an.",
  "React faster": "Schneller reagieren", "Motion Watch needed {n} s on average: the AI looks at every picture and walking is recognised sooner.": "Motion Watch brauchte im Mittel {n} s: die KI prüft jedes Bild und das Gehen wird früher erkannt."});
-Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
+Object.assign(I18N.de, {"best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by Motion Watch": "sichtbar, aber von Motion Watch nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
  "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
  "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
  "Load": "Laden", "Delete": "Löschen", "Computing power": "Rechenleistung", "perf-note": "Weniger Bilder pro Sekunde entlasten den Pi und den PC.",
@@ -24916,7 +24928,7 @@ const mmss = n => Math.floor(n / 60) + ":" + ("0" + (n % 60)).slice(-2);
 function gMorePaint() {                            // game card: players with handicap, the ranking of the evening (3D-3.25)
   const box = $("#g-more"), G = SPEC; if (!box) return;
   if (!G || !G.open) { box.innerHTML = ""; box.dataset.sig = ""; return; }
-  const sig = JSON.stringify([(G.players || []).map(p => [p.n, p.hc, p.slot, p.dc]), G.board, G.records, G.week, G.task]);
+  const sig = JSON.stringify([(G.players || []).map(p => [p.n, p.hc, p.slot, p.dc]), G.board, G.records, G.week, G.sneak, G.task]);
   if (box.dataset.sig === sig) return; box.dataset.sig = sig; box.innerHTML = "";
   if (G.task) { const tk = el("div", "", "🎯 " + t("Task of this round") + ": " + G.task + " (+" + G.task_bonus + ")"); tk.style.cssText = "margin-top:8px;font-weight:600"; box.appendChild(tk); }
   if ((G.players || []).length && (G.players[0].hc !== undefined)) {
@@ -24936,6 +24948,7 @@ function gMorePaint() {                            // game card: players with ha
     const R = G.records || {}, rec = [];
     if (R.fast) rec.push("⚡ " + t("fastest") + ": " + R.fast[0] + " " + mmss(R.fast[1])); if (R.items) rec.push("💎 " + t("most crystals") + ": " + R.items[0] + " " + R.items[1]);
     if (R.catches) rec.push("👮 " + t("best guard") + ": " + R.catches[0] + " " + R.catches[1] + "×");
+    if (R.blind) rec.push("🙈 " + t("best sneaker") + ": " + R.blind[0] + " " + R.blind[1] + " s " + t("unreported"));
     if (rec.length) box.appendChild(el("div", "mut", t("Records") + ": " + rec.join(" · ")));
     const rb = el("button", "sec", t("Reset the ranking")); rb.type = "button"; rb.style.marginTop = "6px";
     rb.onclick = async () => { if (confirm(t("Reset the ranking of the evening?"))) { await ctl({ctl: "press", id: "game_board_reset"}); specPoll(); } }; box.appendChild(rb); }
@@ -24943,7 +24956,13 @@ function gMorePaint() {                            // game card: players with ha
     const h = el("div", "", "📅 " + t("Ranking of the week") + (G.week_id ? " (" + G.week_id.replace("-W", " · " + t("week") + " ") + ")" : "")); h.style.cssText = "margin-top:10px;font-weight:600"; box.appendChild(h);
     const tb = el("table", "gw-board");
     G.week.forEach((b, i) => { const tr = el("tr"); const n = el("td", "", (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + " " + b.n); n.style.color = b.c;
-      tr.append(n, el("td", "", String(b.score)), el("td", "mut", b.rounds + " " + t("rounds") + (b.wins ? " · " + b.wins + "× " + t("won") : "") + (b.tasks ? " · " + b.tasks + "× " + t("task done") : ""))); tb.appendChild(tr); });
+      tr.append(n, el("td", "", String(b.score)), el("td", "mut", b.rounds + " " + t("rounds") + (b.wins ? " · " + b.wins + "× " + t("won") : "") + (b.tasks ? " · " + b.tasks + "× " + t("task done") : "") + (b.blind ? " · 🙈 " + b.blind + " s" : ""))); tb.appendChild(tr); });
+    box.appendChild(tb); }
+  if ((G.sneak || []).length) {                    // 3D-3.53: who found the most blind spots of Motion Watch this week
+    const h = el("div", "", "🙈 " + t("Best sneaker of the week") + " – " + t("visible, but not reported by Motion Watch")); h.style.cssText = "margin-top:10px;font-weight:600"; box.appendChild(h);
+    const tb = el("table", "gw-board");
+    G.sneak.forEach((b, i) => { const tr = el("tr"); const n = el("td", "", (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + " " + b.n); n.style.color = b.c;
+      tr.append(n, el("td", "", b.blind + " s")); tb.appendChild(tr); });
     box.appendChild(tb); }
 }
 function specPaint() {
@@ -34025,7 +34044,7 @@ function simExtras(d) {
   const dsb = el("div", ""); dsb.style.marginTop = "12px";                // 2.95.53: KI-Prüfung mit Simulator-Bildern
   dsb.append(el("b", "", "🧪 " + t("AI test with simulator pictures")), el("div", "mut", t("dset-note")));
   const dr = el("div", "trow"); dr.style.marginTop = "6px";
-  const dn = document.createElement("select"); [12, 24, 48].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + " " + t("pictures"); dn.appendChild(o); }); dn.value = "24"; dn.style.flex = "0 0 auto";
+  const dn = document.createElement("select"); [12, 24, 48].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + " " + t("pictures"); dn.appendChild(o); }); { const og = document.createElement("option"); og.value = "game"; og.textContent = "🎮 " + t("missed pictures from the game (hard cases)"); dn.appendChild(og); } dn.value = "24"; dn.style.flex = "0 0 auto";
   const dgo = el("button", "", "▶ " + t("Start the test")); dgo.type = "button";
   const dout = el("div", ""); dout.id = "dset-out";
   const dpaint = j => { const D = j.dataset || j; dout.textContent = "";
@@ -34040,7 +34059,7 @@ function simExtras(d) {
     row(t("near (under 8 m)"), S.near + " %"); row(t("far (8 m and more)"), S.far + " %"); row(t("AI time per picture"), S.ms + " ms (" + S.where + ")");
     dout.appendChild(tb);
     const z = document.createElement("a"); z.className = "btn sec"; z.href = "/api/dataset.zip"; z.textContent = "⬇ " + t("Training pictures (ZIP)"); z.style.display = "inline-block"; z.style.marginTop = "6px"; dout.appendChild(z); };
-  dgo.onclick = async () => { const r = await post("/api/sim", {action: "dataset", start: true, n: +dn.value, lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
+  dgo.onclick = async () => { const r = await post("/api/sim", {action: "dataset", start: true, n: dn.value === "game" ? "game" : +dn.value, lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
   dr.append(dn, dgo); dsb.append(dr, dout); rb.appendChild(dsb);
   (async () => { const r = await post("/api/sim", {action: "dataset"}); if (r && r.ok) dpaint(r); })();
   nb.append(nh, sl, fnd, srch, pi, pl, rb, d3, d3n, dpy, all);
@@ -35021,7 +35040,7 @@ function simpleBar(on) {
   return w;
 }
 // ---- self-check: one traffic light per part ----
-Object.assign(I18N.de, {"You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
+Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with Motion Watch first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit Motion Watch spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
   let j; try { j = await (await fetch("/api/health?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
   const L = $("#h-list"); if (!L) return; L.textContent = "";
@@ -35629,7 +35648,7 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D
   const rst = el("button", "sec", "⏹"); rst.type = "button"; rst.onclick = () => P({action: "replay", stop: true});
   rr.append(rgo, rsp, rst); rb.append(rs, rr, el("div", "mut", t("replay-note")));
   const db = el("div", ""); db.style.marginTop = "14px"; db.append(el("b", "", "🧪 " + t("AI test with simulator pictures")), el("div", "mut", t("dset-note")));
-  const dr = el("div", "btns"); const dn = document.createElement("select"); [12, 24, 48].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + " " + t("pictures"); dn.appendChild(o); }); dn.value = "24";
+  const dr = el("div", "btns"); const dn = document.createElement("select"); [12, 24, 48].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + " " + t("pictures"); dn.appendChild(o); }); { const og = document.createElement("option"); og.value = "game"; og.textContent = "🎮 " + t("missed pictures from the game (hard cases)"); dn.appendChild(og); } dn.value = "24";
   const dgo = el("button", "", "▶ " + t("Start the test")); dgo.type = "button"; const dout = el("div", "");
   const dpaint = j => { const D = (j && j.dataset) || {}; dout.textContent = "";
     if (D.busy) { dout.appendChild(el("div", "mut", "⏳ " + D.pct + " % · " + t(D.msg))); setTimeout(async () => dpaint(await P({action: "dataset"})), 2000); return; }
@@ -35641,7 +35660,7 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D
     Object.entries(S.by_kind).forEach(([k, v]) => row(t(k), v.found + "/" + v.n + " · " + v.pct + " %"));
     row(t("near (under 8 m)"), S.near + " %"); row(t("far (8 m and more)"), S.far + " %"); row(t("AI time per picture"), S.ms + " ms (" + S.where + ")"); dout.appendChild(tb);
     const z = document.createElement("a"); z.className = "btn sec"; z.href = "/api/dataset.zip"; z.textContent = "⬇ " + t("Training pictures (ZIP)"); dout.appendChild(z); };
-  dgo.onclick = async () => { const r = await P({action: "dataset", start: true, n: +dn.value}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
+  dgo.onclick = async () => { const r = await P({action: "dataset", start: true, n: dn.value === "game" ? "game" : +dn.value}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
   dr.append(dn, dgo); db.append(dr, dout);
   box.append(pl, rb, db);
   let K = "";
@@ -37169,7 +37188,7 @@ class WebStream:
                     return reply(dict(r, ok=True))
                 if act_ == "dataset":                            # 2.95.53: KI-Prüfung mit Simulator-Bildern
                     if d.get("start"):
-                        ok_, err_ = dset_run(int(d.get("n") or 24) if str(d.get("n") or "24").isdigit() else 24)
+                        ok_, err_ = dset_run("game" if str(d.get("n")) == "game" else (int(d.get("n") or 24) if str(d.get("n") or "24").isdigit() else 24))
                         if not ok_:
                             return reply({"ok": False, "error": tr_err(err_, lang)}, 400)
                     return reply({"ok": True, "dataset": dset_state()})
@@ -40678,7 +40697,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.74")
+        self.root.title("Motion Watch 2.95.75")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40968,7 +40987,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.74 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.75 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -47520,9 +47539,9 @@ TRX['rm'].update({'Night vision look: green picture, thermal outlines and temper
 TRX['fr'].update({"Search a place (e.g. Zermatt)": "Chercher un lieu (p. ex. Zermatt)", "Aerial picture": "Photo aérienne", "Map": "Carte", "Load this place": "Charger ce lieu", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Touchez la carte là où se trouve Motion Watch. Glisser = déplacer, deux doigts ou molette = zoomer.", "Search not possible – tap the place on the map": "Recherche impossible – touchez le lieu sur la carte", "Nothing found": "Rien trouvé", "Only in Switzerland": "Seulement en Suisse", "The simulator loads the place (about a minute the first time).": "Le simulateur charge le lieu (environ une minute la première fois)."})
 TRX['it'].update({"Search a place (e.g. Zermatt)": "Cerca un luogo (p. es. Zermatt)", "Aerial picture": "Foto aerea", "Map": "Carta", "Load this place": "Carica questo luogo", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Tocca la carta dove si trova Motion Watch. Trascinare = spostare, due dita o rotellina = zoom.", "Search not possible – tap the place on the map": "Ricerca non possibile – tocca il luogo sulla carta", "Nothing found": "Nessun risultato", "Only in Switzerland": "Solo in Svizzera", "The simulator loads the place (about a minute the first time).": "Il simulatore carica il luogo (circa un minuto la prima volta)."})
 TRX['rm'].update({"Search a place (e.g. Zermatt)": "Tschertgar in lieu (p.ex. Zermatt)", "Aerial picture": "Fotografia aviatica", "Map": "Charta", "Load this place": "Chargiar quest lieu", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Tutgar la charta nua che Motion Watch stat. Trair = spustar, dus dets u rodella = zoom.", "Search not possible – tap the place on the map": "Tschertga betg pussaivla – tutgar il lieu sin la charta", "Nothing found": "Nagut chattà", "Only in Switzerland": "Mo en Svizra", "The simulator loads the place (about a minute the first time).": "Il simulatur chargia il lieu (la emprima giada var ina minuta)."})
-TRX['fr'].update({"You are the guard: turn the camera and tap the players in the picture": "Tu es le chasseur : tourne la caméra et touche les joueurs dans l'image", "Mover stick shown": "Joystick du mover affiché", "Mover stick hidden": "Joystick du mover masqué", "Coloured symbols": "Symboles en couleur", "Plain symbols": "Symboles simples", "Symbols: green dot or green symbol = switched on": "Symboles : point vert ou symbole vert = activé", "Live picture": "Image en direct", "Search a setting …": "Chercher un réglage …", "Simple": "Simple", "Expert": "Expert", "Simple: only the important settings. «Expert» shows all.": "Simple : seulement les réglages importants. «Expert» les montre tous."})
-TRX['it'].update({"You are the guard: turn the camera and tap the players in the picture": "Sei il cacciatore: gira la telecamera e tocca i giocatori nell'immagine", "Mover stick shown": "Joystick del mover visibile", "Mover stick hidden": "Joystick del mover nascosto", "Coloured symbols": "Simboli a colori", "Plain symbols": "Simboli semplici", "Symbols: green dot or green symbol = switched on": "Simboli: punto verde o simbolo verde = acceso", "Live picture": "Immagine dal vivo", "Search a setting …": "Cerca un'impostazione …", "Simple": "Semplice", "Expert": "Esperto", "Simple: only the important settings. «Expert» shows all.": "Semplice: solo le impostazioni importanti. «Esperto» le mostra tutte."})
-TRX['rm'].update({"You are the guard: turn the camera and tap the players in the picture": "Ti es il chatschader: volva la camera e tutga ils giugaders en il maletg", "Mover stick shown": "Joystick dal mover mussà", "Mover stick hidden": "Joystick dal mover zuppà", "Coloured symbols": "Simbols colurads", "Plain symbols": "Simbols simpels", "Symbols: green dot or green symbol = switched on": "Simbols: punct verd u simbol verd = activà", "Live picture": "Maletg live", "Search a setting …": "Tschertgar ina configuraziun …", "Simple": "Simpel", "Expert": "Expert", "Simple: only the important settings. «Expert» shows all.": "Simpel: mo las configuraziuns impurtantas. «Expert» mussa tuttas."})
+TRX['fr'].update({"missed pictures from the game (hard cases)": "images manquées du jeu (cas difficiles)", "You are the guard: turn the camera and tap the players in the picture": "Tu es le chasseur : tourne la caméra et touche les joueurs dans l'image", "Mover stick shown": "Joystick du mover affiché", "Mover stick hidden": "Joystick du mover masqué", "Coloured symbols": "Symboles en couleur", "Plain symbols": "Symboles simples", "Symbols: green dot or green symbol = switched on": "Symboles : point vert ou symbole vert = activé", "Live picture": "Image en direct", "Search a setting …": "Chercher un réglage …", "Simple": "Simple", "Expert": "Expert", "Simple: only the important settings. «Expert» shows all.": "Simple : seulement les réglages importants. «Expert» les montre tous."})
+TRX['it'].update({"missed pictures from the game (hard cases)": "immagini mancate dal gioco (casi difficili)", "You are the guard: turn the camera and tap the players in the picture": "Sei il cacciatore: gira la telecamera e tocca i giocatori nell'immagine", "Mover stick shown": "Joystick del mover visibile", "Mover stick hidden": "Joystick del mover nascosto", "Coloured symbols": "Simboli a colori", "Plain symbols": "Simboli semplici", "Symbols: green dot or green symbol = switched on": "Simboli: punto verde o simbolo verde = acceso", "Live picture": "Immagine dal vivo", "Search a setting …": "Cerca un'impostazione …", "Simple": "Semplice", "Expert": "Esperto", "Simple: only the important settings. «Expert» shows all.": "Semplice: solo le impostazioni importanti. «Esperto» le mostra tutte."})
+TRX['rm'].update({"missed pictures from the game (hard cases)": "maletgs manchentads dal gieu (cas difficils)", "You are the guard: turn the camera and tap the players in the picture": "Ti es il chatschader: volva la camera e tutga ils giugaders en il maletg", "Mover stick shown": "Joystick dal mover mussà", "Mover stick hidden": "Joystick dal mover zuppà", "Coloured symbols": "Simbols colurads", "Plain symbols": "Simbols simpels", "Symbols: green dot or green symbol = switched on": "Simbols: punct verd u simbol verd = activà", "Live picture": "Maletg live", "Search a setting …": "Tschertgar ina configuraziun …", "Simple": "Simpel", "Expert": "Expert", "Simple: only the important settings. «Expert» shows all.": "Simpel: mo las configuraziuns impurtantas. «Expert» mussa tuttas."})
 TRX['fr'].update({"Mover": "Mover", "test only - nothing moves": "test seulement – rien ne bouge", "Simulation: show the stick even without a mover or motor driver (to try it out)": "Simulation : afficher le joystick même sans mover ni pilote des moteurs (pour essayer)", "stick shown for testing (the simulator has no mover)": "joystick affiché pour tester (le simulateur n'a pas de mover)", "Mover (tracked vehicle)": "Mover (véhicule à chenilles)", "Motor driver": "Pilote des moteurs", "Motor driver: address (I2C)": "Pilote des moteurs : adresse (I2C)", "Top speed (%)": "Vitesse maximale (%)", "Turning speed (%)": "Vitesse de rotation (%)", "Gentle start and stop (seconds)": "Démarrage et arrêt en douceur (secondes)", "Left track runs the wrong way (turn round)": "La chenille gauche tourne à l'envers (inverser)", "Right track runs the wrong way (turn round)": "La chenille droite tourne à l'envers (inverser)", "Left and right tracks swapped": "Chenilles gauche et droite inversées", "automatic: on when the motor driver is found": "automatique : actif si le pilote des moteurs est trouvé", "Motor HAT (Adafruit or compatible): M1 left, M2 right": "Motor HAT (Adafruit ou compatible) : M1 gauche, M2 droite", "Waveshare Motor Driver HAT: A left, B right": "Waveshare Motor Driver HAT : A gauche, B droite", "the address is the one of the servo driver": "l'adresse est celle du pilote des servos", "no motor driver found": "aucun pilote des moteurs trouvé", "motor driver found": "pilote des moteurs trouvé", "simulated": "simulé", "the simulator has no mover": "le simulateur n'a pas de mover", "A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "Un véhicule à chenilles sous Motion Watch : le deuxième joystick le conduit (haut = avant, bas = arrière, côté = tourner sur place). Le pilote des moteurs (Motor HAT avec PCA9685 + TB6612 en I2C) est trouvé tout seul – sans lui le joystick reste caché. Sans nouvel ordre pendant 0,6 s, les deux chenilles s'arrêtent."})
 TRX['it'].update({"Mover": "Mover", "test only - nothing moves": "solo prova – non si muove nulla", "Simulation: show the stick even without a mover or motor driver (to try it out)": "Simulazione: mostrare il joystick anche senza mover né driver dei motori (per provare)", "stick shown for testing (the simulator has no mover)": "joystick mostrato per provare (il simulatore non ha un mover)", "Mover (tracked vehicle)": "Mover (veicolo cingolato)", "Motor driver": "Driver dei motori", "Motor driver: address (I2C)": "Driver dei motori: indirizzo (I2C)", "Top speed (%)": "Velocità massima (%)", "Turning speed (%)": "Velocità di rotazione (%)", "Gentle start and stop (seconds)": "Partenza e frenata dolci (secondi)", "Left track runs the wrong way (turn round)": "Il cingolo sinistro gira al contrario (invertire)", "Right track runs the wrong way (turn round)": "Il cingolo destro gira al contrario (invertire)", "Left and right tracks swapped": "Cingoli sinistro e destro scambiati", "automatic: on when the motor driver is found": "automatico: attivo se il driver dei motori viene trovato", "Motor HAT (Adafruit or compatible): M1 left, M2 right": "Motor HAT (Adafruit o compatibile): M1 sinistra, M2 destra", "Waveshare Motor Driver HAT: A left, B right": "Waveshare Motor Driver HAT: A sinistra, B destra", "the address is the one of the servo driver": "l'indirizzo è quello del driver dei servo", "no motor driver found": "nessun driver dei motori trovato", "motor driver found": "driver dei motori trovato", "simulated": "simulato", "the simulator has no mover": "il simulatore non ha un mover", "A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "Un veicolo cingolato sotto Motion Watch: il secondo joystick lo guida (su = avanti, giù = indietro, di lato = girare sul posto). Il driver dei motori (Motor HAT con PCA9685 + TB6612 su I2C) viene trovato da solo – senza di esso il joystick resta nascosto. Senza un nuovo comando per 0,6 s entrambi i cingoli si fermano."})
 TRX['rm'].update({"Mover": "Mover", "test only - nothing moves": "mo test – nagut na sa mova", "Simulation: show the stick even without a mover or motor driver (to try it out)": "Simulaziun: mussar il stick era senza mover u manischunz dals motors (per empruvar)", "stick shown for testing (the simulator has no mover)": "stick mussà per empruvar (il simulatur n'ha nagin mover)", "Mover (tracked vehicle)": "Mover (vehichel cun chadainas)", "Motor driver": "Manischunz dals motors", "Motor driver: address (I2C)": "Manischunz dals motors: adressa (I2C)", "Top speed (%)": "Sveltezza maximala (%)", "Turning speed (%)": "Sveltezza da sa volver (%)", "Gentle start and stop (seconds)": "Partir e franar plaun (secundas)", "Left track runs the wrong way (turn round)": "La chadaina sanestra gira dal fauss vers (volver)", "Right track runs the wrong way (turn round)": "La chadaina dretga gira dal fauss vers (volver)", "Left and right tracks swapped": "Chadainas sanestra e dretga barattadas", "automatic: on when the motor driver is found": "automatic: activ sch'il manischunz dals motors vegn chattà", "Motor HAT (Adafruit or compatible): M1 left, M2 right": "Motor HAT (Adafruit u cumpatibel): M1 sanester, M2 dretg", "Waveshare Motor Driver HAT: A left, B right": "Waveshare Motor Driver HAT: A sanester, B dretg", "the address is the one of the servo driver": "l'adressa è quella dal manischunz dals servos", "no motor driver found": "nagin manischunz dals motors chattà", "motor driver found": "manischunz dals motors chattà", "simulated": "simulà", "the simulator has no mover": "il simulatur n'ha nagin mover", "A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "In vehichel cun chadainas sut Motion Watch: il segund stick al maina (si = enavant, giu = enavos, da la vart = sa volver sin il lieu). Il manischunz dals motors (Motor HAT cun PCA9685 + TB6612 sin I2C) vegn chattà sez – senza el resta il stick zuppà. Sche 0,6 s vegn nagin nov cumond, stattan omaduas chadainas."})

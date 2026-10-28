@@ -29,6 +29,36 @@ func start(n: int, conds := []) -> Dictionary:
 	return state()
 
 
+func load_game() -> Dictionary:
+	"""3D-3.53: the «missed» pictures of the game (players Motion Watch did not report) as the test pictures: the hard cases"""
+	if busy:
+		return state()
+	items = []
+	var base := "user://spiel"
+	var d := DirAccess.open(base)
+	if d != null:
+		var rounds: Array = d.get_directories()
+		rounds.sort()
+		rounds.reverse()
+		for r in rounds:
+			var rep = JSON.parse_string(FileAccess.get_file_as_string(base + "/" + r + "/spielbericht.json"))
+			if typeof(rep) != TYPE_DICTIONARY:
+				continue
+			for m in rep.get("verpasst", []):
+				if items.size() >= 80 or typeof(m) != TYPE_DICTIONARY or not m.has("file"):
+					continue
+				var j := FileAccess.get_file_as_bytes(base + "/" + r + "/" + str(m["file"]))
+				var img := Image.new()
+				if j.size() < 100 or img.load_jpg_from_buffer(j) != OK:
+					continue
+				var cond: String = "Spiel: " + ("Nacht" if bool(m.get("dark", false)) else "Tag") + ", " + ["stehend", "geduckt", "kriechend"][clampi(int(m.get("post", 0)), 0, 2)]
+				items.append({"i": items.size(), "kind": "person", "cond": cond, "dist": float(m.get("dist", 10.0)), "box": m["box"], "jpg": j,
+						"w": img.get_width(), "h": img.get_height()})
+	total = items.size()
+	msg = "%d Bilder aus dem Spiel" % total if total > 0 else "Noch keine verpassten Bilder aus dem Spiel."
+	return state()
+
+
 func state() -> Dictionary:
 	var by := {}
 	for it in items:

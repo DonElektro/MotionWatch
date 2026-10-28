@@ -366,6 +366,10 @@ def main():
     ap.add_argument("--nur-verlauf", action="store_true", help="nur VERLAUF.md aus den gespeicherten Ergebnissen schreiben")
     a = ap.parse_args()
     a.plaene = [p.strip() for p in a.plaene.split(",") if p.strip()]
+    # the sneaking ways of the game (simulator3d/spielwege/schleichweg_*.json, from 3D-3.53) always run along: did a change
+    # close a known blind spot?
+    if glob.glob(os.path.join(REPO, "simulator3d", "spielwege", "schleichweg_*.json")) and "spielwege" not in a.plaene and not a.nur_verlauf:
+        a.plaene.append("spielwege")
     a.kameras = [0] if a.kameras == "kopf" else [0, 1]
     if a.nur_verlauf:
         verlauf_schreiben()

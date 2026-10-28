@@ -287,7 +287,7 @@ class WebStream:
                     return reply(dict(r, ok=True))
                 if act_ == "dataset":                            # 2.95.53: KI-Prüfung mit Simulator-Bildern
                     if d.get("start"):
-                        ok_, err_ = dset_run(int(d.get("n") or 24) if str(d.get("n") or "24").isdigit() else 24)
+                        ok_, err_ = dset_run("game" if str(d.get("n")) == "game" else (int(d.get("n") or 24) if str(d.get("n") or "24").isdigit() else 24))
                         if not ok_:
                             return reply({"ok": False, "error": tr_err(err_, lang)}, 400)
                     return reply({"ok": True, "dataset": dset_state()})

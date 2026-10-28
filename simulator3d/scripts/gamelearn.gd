@@ -25,6 +25,9 @@ var blind := {}                           # slot -> seconds visible but not repo
 var hunter := {"shots": 0, "hits": 0, "miss_mw": 0}
 var _path_t := 0.0
 var _last_report := -100.0
+var _rep_by := {}                         # 3D-3.53: slot -> last time Motion Watch reported exactly this player (its boxes)
+var mw_false: Array = []                  # boxes Motion Watch reported where no player was {"t", "box"}
+var _false_t := 0.0
 var info := ""
 var http: HTTPRequest
 
@@ -52,6 +55,8 @@ func round_start() -> void:
 	open_ep.clear()
 	misses.clear()
 	paths.clear()
+	_rep_by.clear()
+	mw_false.clear()
 	blind.clear()
 	hunter = {"shots": 0, "hits": 0, "miss_mw": 0}
 	_path_t = 0.0
@@ -64,7 +69,22 @@ func tick(dt: float) -> void:
 	var t := now()
 	if int(main.mw_det.get("persons", 0)) > 0:
 		_last_report = t
-	var reported: bool = t - _last_report < REPORT_GRACE
+	var mwb: Array = mw_boxes()
+	if not mwb.is_empty():                                # 3D-3.53: which player is meant (Motion Watch 2.95.75 sends boxes)
+		var used := {}
+		for p in game.players:
+			if p == null or p["role"] != "runner" or p["state"] != "play":
+				continue
+			var pb := box(p)
+			for i in range(mwb.size()):
+				if not pb.is_empty() and overlap(pb, mwb[i]):
+					_rep_by[int(p["slot"])] = t
+					used[i] = true
+		if t - _false_t > 2.0:
+			for i in range(mwb.size()):
+				if not used.has(i) and not _visitor_at(mwb[i]) and mw_false.size() < 20:
+					mw_false.append({"t": snappedf(t - game.t_start, 0.1), "box": mwb[i]})
+					_false_t = t
 	_path_t -= dt
 	var rec_path: bool = _path_t <= 0.0
 	if rec_path:
@@ -80,6 +100,7 @@ func tick(dt: float) -> void:
 			paths[s].append([snappedf(t - game.t_start, 0.1), snappedf(a.position.x, 0.01), snappedf(a.position.z, 0.01), int(a.ctl_posture), snappedf(float(a.cur_speed), 0.01)])
 		var f: float = game.cam_sees(p, 0)
 		var vis: bool = f >= VIS
+		var reported: bool = reported_for(p)
 		if vis and not reported:
 			blind[s] = float(blind.get(s, 0.0)) + dt
 		if vis:
@@ -155,8 +176,59 @@ func on_shot(hit, reported_recently: bool) -> void:
 			_miss_pic(hit, "vom Jäger getroffen, nicht gemeldet")
 
 
-func reported_recently() -> bool:
+func reported_recently(p = null) -> bool:
+	if p != null:
+		return reported_for(p)
 	return now() - _last_report < REPORT_GRACE or int(main.mw_det.get("persons", 0)) > 0
+
+
+func has_boxes() -> bool:
+	"""Motion Watch 2.95.75 or newer: it sends where the persons are"""
+	return main.mw_det.has("boxes")
+
+
+func mw_boxes() -> Array:
+	var out: Array = []
+	var b = main.mw_det.get("boxes", [])
+	if typeof(b) == TYPE_ARRAY:
+		for x in b:
+			if typeof(x) == TYPE_ARRAY and x.size() == 4:
+				out.append([float(x[0]), float(x[1]), float(x[2]), float(x[3])])
+	return out
+
+
+func overlap(a: Array, b: Array) -> bool:
+	"""the same figure? the boxes overlap clearly, or the centre of one lies in the other"""
+	var ix: float = max(0.0, min(a[0] + a[2], b[0] + b[2]) - max(a[0], b[0]))
+	var iy: float = max(0.0, min(a[1] + a[3], b[1] + b[3]) - max(a[1], b[1]))
+	var inter: float = ix * iy
+	var uni: float = a[2] * a[3] + b[2] * b[3] - inter
+	if uni > 0.0 and inter / uni > 0.1:
+		return true
+	var cx: float = b[0] + b[2] / 2.0
+	var cy: float = b[1] + b[3] / 2.0
+	return cx >= a[0] and cx <= a[0] + a[2] and cy >= a[1] and cy <= a[1] + a[3]
+
+
+func reported_for(p: Dictionary) -> bool:
+	"""did Motion Watch report this player just now? With boxes exactly him, otherwise any person"""
+	if has_boxes():
+		return now() - float(_rep_by.get(int(p["slot"]), -100.0)) < REPORT_GRACE
+	return now() - _last_report < REPORT_GRACE
+
+
+func _visitor_at(b: Array) -> bool:
+	"""a visitor of the simulation (person or animal) is there: not a false alarm of the game"""
+	var cam: Camera3D = main.cams[0]
+	var vs: Vector2 = Vector2(main.vps[0].size)
+	for v in main.visitors.get_children():
+		if cam.is_position_behind(v.position):
+			continue
+		var q: Vector2 = cam.unproject_position(v.position + Vector3(0, 0.5, 0)) / vs
+		if q.x >= b[0] - 0.05 and q.x <= b[0] + b[2] + 0.05 and q.y >= b[1] - 0.1 and q.y <= b[1] + b[3] + 0.1:
+			return true
+	return false
+
 
 
 func _miss_pic(p: Dictionary, why: String) -> void:
@@ -272,7 +344,8 @@ func report_dict() -> Dictionary:
 			"spielart": main.game_mode, "szene": main.scene, "wetter": str(main.weather), "dunkel": main.is_dark(),
 			"sichtbar": n, "gemeldet": found, "rate": (round(100.0 * found / n) if n > 0 else -1),
 			"reaktion_median_s": (lats[lats.size() / 2] if not lats.is_empty() else -1), "baender": bands,
-			"jaeger": hunter, "verpasst": misses, "episoden": eps}
+			"jaeger": hunter, "verpasst": misses, "episoden": eps, "zuordnung": "rahmen" if has_boxes() else "anzahl",
+			"fehlalarme_mw": mw_false}
 
 
 # ---- sending (same way as the test bench: GitHub key, otherwise the desktop) -----------------------------------------

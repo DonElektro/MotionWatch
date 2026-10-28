@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.52 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.53 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -564,3 +564,10 @@ durch Antippen der Spieler im Livebild von Motion Watch (oder Knopf «Erwischt!�
 Spielern, die Motion Watch nicht gemeldet hat, Spielbericht (wie schnell gemeldet), unerkannte Schleichwege als Testlauf
 (Prüfstand-Plan «Schleichwege aus dem Spiel»), Bonus für blinde Flecken. «Spielberichte senden» schickt alles an die
 Entwicklung (mit dem GitHub-Schlüssel des Prüfstands) oder legt die Datei auf den Schreibtisch.
+
+NEU IN 3D-3.53
+3D-3.53: Motion Watch (ab 2.95.75) sagt, wo es Personen sieht: das Spiel weiss jetzt, welcher Spieler gemeldet wurde, und
+merkt sich Fehlalarme mit Ort. Schwierigkeit gilt auch für Motion Watch: leicht (Easy-Mode: 2.5 s melden, Kriechen ist
+sicher, 6 s Pause, Kopf dreht langsamer), normal, schwer. Rangliste «Bester Schleicher der Woche» (am längsten sichtbar,
+aber nicht gemeldet). Die verpassten Bilder aus dem Spiel kann Motion Watch mit seiner KI prüfen (KI-Prüfung →
+«verpasste Bilder aus dem Spiel»).

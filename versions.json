@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 11:36",
+ "generated": "2026-10-28 11:46",
  "versions": [
   {
-   "version": "2.95.74",
-   "file": "webcam_bewegung_2_95_74.py",
+   "version": "2.95.75",
+   "file": "webcam_bewegung_2_95_75.py",
    "url": "",
-   "sha256": "66742568a7efe3f4f239c424546f3885a95b7662c8d407bba833d7afb6f2a178",
-   "date": "2026-10-28 11:36",
-   "notes": "Spiel «Team gegen Motion Watch»: der Jäger zielt durch Antippen der Spieler im Livebild (oder Knopf); 3D-Simulator 3D-3.52: Treffer-Effekte und Erkennung lernen aus dem Spiel",
-   "sig": "95fac1d35369a916b26cd0c53b74faf4a6f12f42be7d690ebb43131f1bc0f4046889d3f86c583cc1c0cca1a06091d41e6a841e6d6ef7db39a435fbc39ca05a0b"
+   "sha256": "7a998044a574816b17192362b1da77f27942436dcf004ce201cab0d097eae142",
+   "date": "2026-10-28 11:46",
+   "notes": "Simulator: Motion Watch schickt die Rahmen der erkannten Personen (genaue Zuordnung im Spiel); KI-Prüfung mit den verpassten Bildern aus dem Spiel; Rangliste «Bester Schleicher»",
+   "sig": "9814d6d701a70e1a09717fe410b00347f6156b3380b5353273b90ed23ad57c8e4bb6809d9daaefaa05aab77ff0273f25de0e1b9b9bf45d99a5c663e37dc56108"
   },
   {
    "version": "2.94.5",

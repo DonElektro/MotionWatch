@@ -962,6 +962,8 @@ class MotionWatch:
             proc_fps = 1.0 / max(1e-3, np.mean(self.frame_times))
             real_fps = (len(self.seen_t) - 1) / span if span > 0.2 else proc_fps
             with LOCK:
+                # 2.95.75: where the persons are (0..1 of the picture) - the 3D simulator knows which player was detected
+                STATE["person_boxes"] = [[round(b[0] / pw, 3), round(b[1] / ph, 3), round(b[2] / pw, 3), round(b[3] / ph, 3)] for b in person_boxes[:8]]
                 STATE.update(rain_score=round(rain_score, 2), rain_mode=rain_mode, persons=len(person_boxes),
                              candidates=len(candidates), fps=round(min(real_fps, proc_fps), 1), proc_fps=round(proc_fps, 1),
                              frames=STATE["frames"] + 1, uptime=int(time.time() - START))

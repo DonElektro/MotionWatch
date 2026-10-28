@@ -675,7 +675,7 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "Catch fast persons": "Schnelle Personen erwischen", "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.": "{n} schnelle Personen (Jogger) verpasst: weniger Bilder bis das Gehen erkannt ist, die KI prüft jedes Bild.",
  "More sensitive by day": "Am Tag empfindlicher", "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.": "{n} Personen am Tag verpasst: empfindlicher, und die KI nimmt auch weniger sichere Personen an.",
  "React faster": "Schneller reagieren", "Motion Watch needed {n} s on average: the AI looks at every picture and walking is recognised sooner.": "Motion Watch brauchte im Mittel {n} s: die KI prüft jedes Bild und das Gehen wird früher erkannt."});
-Object.assign(I18N.de, {"Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
+Object.assign(I18N.de, {"best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by Motion Watch": "sichtbar, aber von Motion Watch nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
  "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
  "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
  "Load": "Laden", "Delete": "Löschen", "Computing power": "Rechenleistung", "perf-note": "Weniger Bilder pro Sekunde entlasten den Pi und den PC.",
@@ -899,7 +899,7 @@ const mmss = n => Math.floor(n / 60) + ":" + ("0" + (n % 60)).slice(-2);
 function gMorePaint() {                            // game card: players with handicap, the ranking of the evening (3D-3.25)
   const box = $("#g-more"), G = SPEC; if (!box) return;
   if (!G || !G.open) { box.innerHTML = ""; box.dataset.sig = ""; return; }
-  const sig = JSON.stringify([(G.players || []).map(p => [p.n, p.hc, p.slot, p.dc]), G.board, G.records, G.week, G.task]);
+  const sig = JSON.stringify([(G.players || []).map(p => [p.n, p.hc, p.slot, p.dc]), G.board, G.records, G.week, G.sneak, G.task]);
   if (box.dataset.sig === sig) return; box.dataset.sig = sig; box.innerHTML = "";
   if (G.task) { const tk = el("div", "", "🎯 " + t("Task of this round") + ": " + G.task + " (+" + G.task_bonus + ")"); tk.style.cssText = "margin-top:8px;font-weight:600"; box.appendChild(tk); }
   if ((G.players || []).length && (G.players[0].hc !== undefined)) {
@@ -919,6 +919,7 @@ function gMorePaint() {                            // game card: players with ha
     const R = G.records || {}, rec = [];
     if (R.fast) rec.push("⚡ " + t("fastest") + ": " + R.fast[0] + " " + mmss(R.fast[1])); if (R.items) rec.push("💎 " + t("most crystals") + ": " + R.items[0] + " " + R.items[1]);
     if (R.catches) rec.push("👮 " + t("best guard") + ": " + R.catches[0] + " " + R.catches[1] + "×");
+    if (R.blind) rec.push("🙈 " + t("best sneaker") + ": " + R.blind[0] + " " + R.blind[1] + " s " + t("unreported"));
     if (rec.length) box.appendChild(el("div", "mut", t("Records") + ": " + rec.join(" · ")));
     const rb = el("button", "sec", t("Reset the ranking")); rb.type = "button"; rb.style.marginTop = "6px";
     rb.onclick = async () => { if (confirm(t("Reset the ranking of the evening?"))) { await ctl({ctl: "press", id: "game_board_reset"}); specPoll(); } }; box.appendChild(rb); }
@@ -926,7 +927,13 @@ function gMorePaint() {                            // game card: players with ha
     const h = el("div", "", "📅 " + t("Ranking of the week") + (G.week_id ? " (" + G.week_id.replace("-W", " · " + t("week") + " ") + ")" : "")); h.style.cssText = "margin-top:10px;font-weight:600"; box.appendChild(h);
     const tb = el("table", "gw-board");
     G.week.forEach((b, i) => { const tr = el("tr"); const n = el("td", "", (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + " " + b.n); n.style.color = b.c;
-      tr.append(n, el("td", "", String(b.score)), el("td", "mut", b.rounds + " " + t("rounds") + (b.wins ? " · " + b.wins + "× " + t("won") : "") + (b.tasks ? " · " + b.tasks + "× " + t("task done") : ""))); tb.appendChild(tr); });
+      tr.append(n, el("td", "", String(b.score)), el("td", "mut", b.rounds + " " + t("rounds") + (b.wins ? " · " + b.wins + "× " + t("won") : "") + (b.tasks ? " · " + b.tasks + "× " + t("task done") : "") + (b.blind ? " · 🙈 " + b.blind + " s" : ""))); tb.appendChild(tr); });
+    box.appendChild(tb); }
+  if ((G.sneak || []).length) {                    // 3D-3.53: who found the most blind spots of Motion Watch this week
+    const h = el("div", "", "🙈 " + t("Best sneaker of the week") + " – " + t("visible, but not reported by Motion Watch")); h.style.cssText = "margin-top:10px;font-weight:600"; box.appendChild(h);
+    const tb = el("table", "gw-board");
+    G.sneak.forEach((b, i) => { const tr = el("tr"); const n = el("td", "", (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + " " + b.n); n.style.color = b.c;
+      tr.append(n, el("td", "", b.blind + " s")); tb.appendChild(tr); });
     box.appendChild(tb); }
 }
 function specPaint() {

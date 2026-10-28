@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.52"
+const VERSION := "3D-3.53"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2445,8 +2445,8 @@ func _register_controls() -> void:
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
 			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "Motion Watch entscheidet (echte Erkennung)"], ["mwhand", "Team gegen Motion Watch (Wächter steuern Motion Watch)"]]})
-	add_control("select", "game_level", "Wächter", func(): return game_level, func(v): game_level = v, "Spiel",
-			{"options": [["easy", "leicht"], ["normal", "normal"], ["hard", "schwer"]]})
+	add_control("select", "game_level", "Schwierigkeit (Wächter und Motion Watch)", func(): return game_level, func(v): game_level = v, "Spiel",
+			{"options": [["easy", "leicht – Easy-Mode: Motion Watch muss 2.5 s melden, Kriechen ist sicher, 6 s Pause"], ["normal", "normal – 1 s melden, 3 s Pause"], ["hard", "schwer – sofort, 2 s Pause"]]})
 	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
 			{"options": [["0", "unbegrenzt"], ["3", "3 Leben"], ["1", "1 Leben"]]})
 	add_control("slider", "game_items", "Kristalle zum Sammeln", func(): return game_items, func(v): game_items = int(v), "Spiel", {"min": 0, "max": 6, "step": 1})
@@ -2691,6 +2691,8 @@ func control(d: Dictionary) -> Dictionary:
 		var op2 := str(d.get("op", "get"))
 		if op2 == "start":
 			return dataset.start(int(d.get("n", 40)), d.get("conds", []) if typeof(d.get("conds", [])) == TYPE_ARRAY else [])
+		if op2 == "game":                                # 3D-3.53: the «missed» pictures of the game
+			return dataset.load_game()
 		if op2 == "stop":
 			dataset.stop()
 		var st2: Dictionary = dataset.state()

@@ -56,3 +56,9 @@ Im 3D-Simulator: Werkzeuge → «Prüfstand: Erkennung messen». Motion Watch w�
 «Ergebnis senden» legt die Datei mit einem GitHub-Schlüssel (fein abgestuft, nur dieses Repository, «Contents: Read and write»)
 direkt in `pruefstand/ergebnisse/`; der Ablauf «Prüfstand-Verlauf» schreibt dann `VERLAUF.md` neu. Ohne Schlüssel landet die
 Datei auf dem Schreibtisch und kann im Chat angehängt werden.
+
+## Schleichwege aus dem Spiel (ab Simulator 3D-3.53)
+
+Liegen in `simulator3d/spielwege/` Dateien `schleichweg_*.json` (aus den Spielberichten in `feedback/spiel/`), läuft
+der Plan «spielwege» bei jedem Prüfstand automatisch mit: eine Figur geht genau die Wege, auf denen Spieler unerkannt
+ins Ziel kamen.

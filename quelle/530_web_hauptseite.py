@@ -2879,7 +2879,7 @@ function simExtras(d) {
   const dsb = el("div", ""); dsb.style.marginTop = "12px";                // 2.95.53: KI-Prüfung mit Simulator-Bildern
   dsb.append(el("b", "", "🧪 " + t("AI test with simulator pictures")), el("div", "mut", t("dset-note")));
   const dr = el("div", "trow"); dr.style.marginTop = "6px";
-  const dn = document.createElement("select"); [12, 24, 48].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + " " + t("pictures"); dn.appendChild(o); }); dn.value = "24"; dn.style.flex = "0 0 auto";
+  const dn = document.createElement("select"); [12, 24, 48].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + " " + t("pictures"); dn.appendChild(o); }); { const og = document.createElement("option"); og.value = "game"; og.textContent = "🎮 " + t("missed pictures from the game (hard cases)"); dn.appendChild(og); } dn.value = "24"; dn.style.flex = "0 0 auto";
   const dgo = el("button", "", "▶ " + t("Start the test")); dgo.type = "button";
   const dout = el("div", ""); dout.id = "dset-out";
   const dpaint = j => { const D = j.dataset || j; dout.textContent = "";
@@ -2894,7 +2894,7 @@ function simExtras(d) {
     row(t("near (under 8 m)"), S.near + " %"); row(t("far (8 m and more)"), S.far + " %"); row(t("AI time per picture"), S.ms + " ms (" + S.where + ")");
     dout.appendChild(tb);
     const z = document.createElement("a"); z.className = "btn sec"; z.href = "/api/dataset.zip"; z.textContent = "⬇ " + t("Training pictures (ZIP)"); z.style.display = "inline-block"; z.style.marginTop = "6px"; dout.appendChild(z); };
-  dgo.onclick = async () => { const r = await post("/api/sim", {action: "dataset", start: true, n: +dn.value, lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
+  dgo.onclick = async () => { const r = await post("/api/sim", {action: "dataset", start: true, n: dn.value === "game" ? "game" : +dn.value, lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
   dr.append(dn, dgo); dsb.append(dr, dout); rb.appendChild(dsb);
   (async () => { const r = await post("/api/sim", {action: "dataset"}); if (r && r.ok) dpaint(r); })();
   nb.append(nh, sl, fnd, srch, pi, pl, rb, d3, d3n, dpy, all);
@@ -3875,7 +3875,7 @@ function simpleBar(on) {
   return w;
 }
 // ---- self-check: one traffic light per part ----
-Object.assign(I18N.de, {"You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
+Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with Motion Watch first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit Motion Watch spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
   let j; try { j = await (await fetch("/api/health?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
   const L = $("#h-list"); if (!L) return; L.textContent = "";
@@ -4483,7 +4483,7 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D
   const rst = el("button", "sec", "⏹"); rst.type = "button"; rst.onclick = () => P({action: "replay", stop: true});
   rr.append(rgo, rsp, rst); rb.append(rs, rr, el("div", "mut", t("replay-note")));
   const db = el("div", ""); db.style.marginTop = "14px"; db.append(el("b", "", "🧪 " + t("AI test with simulator pictures")), el("div", "mut", t("dset-note")));
-  const dr = el("div", "btns"); const dn = document.createElement("select"); [12, 24, 48].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + " " + t("pictures"); dn.appendChild(o); }); dn.value = "24";
+  const dr = el("div", "btns"); const dn = document.createElement("select"); [12, 24, 48].forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v + " " + t("pictures"); dn.appendChild(o); }); { const og = document.createElement("option"); og.value = "game"; og.textContent = "🎮 " + t("missed pictures from the game (hard cases)"); dn.appendChild(og); } dn.value = "24";
   const dgo = el("button", "", "▶ " + t("Start the test")); dgo.type = "button"; const dout = el("div", "");
   const dpaint = j => { const D = (j && j.dataset) || {}; dout.textContent = "";
     if (D.busy) { dout.appendChild(el("div", "mut", "⏳ " + D.pct + " % · " + t(D.msg))); setTimeout(async () => dpaint(await P({action: "dataset"})), 2000); return; }
@@ -4495,7 +4495,7 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D
     Object.entries(S.by_kind).forEach(([k, v]) => row(t(k), v.found + "/" + v.n + " · " + v.pct + " %"));
     row(t("near (under 8 m)"), S.near + " %"); row(t("far (8 m and more)"), S.far + " %"); row(t("AI time per picture"), S.ms + " ms (" + S.where + ")"); dout.appendChild(tb);
     const z = document.createElement("a"); z.className = "btn sec"; z.href = "/api/dataset.zip"; z.textContent = "⬇ " + t("Training pictures (ZIP)"); dout.appendChild(z); };
-  dgo.onclick = async () => { const r = await P({action: "dataset", start: true, n: +dn.value}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
+  dgo.onclick = async () => { const r = await P({action: "dataset", start: true, n: dn.value === "game" ? "game" : +dn.value}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
   dr.append(dn, dgo); db.append(dr, dout);
   box.append(pl, rb, db);
   let K = "";
