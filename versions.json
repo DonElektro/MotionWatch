@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 16:08",
+ "generated": "2026-10-28 16:25",
  "versions": [
   {
-   "version": "2.95.92",
-   "file": "webcam_bewegung_2_95_92.py",
+   "version": "2.95.93",
+   "file": "webcam_bewegung_2_95_93.py",
    "url": "",
-   "sha256": "575f47309ab188e834e677e84f4d5e6f0c41ece38f4f90306e0ebc38185dc4b2",
-   "date": "2026-10-28 16:08",
-   "notes": "Simulator-Vollbild im Browser: nur noch das Bild und ✕, Steuer-Sticks und Knöpfe mit 🕹 einblendbar, der Mover-Stick im Simulatorbild verschwindet; 3D-Simulator 3D-3.67",
-   "sig": "012f75c50cc8eb3463d45e0aa23a653d273dc9c6928254d82843cbdd631bdeb859ddd7017b2ac08915b5c5c1e10c62662fbcb56adface192c1c86f9368c2e708"
+   "sha256": "ec55ea0dbfe15a4329c219e1971f5b6c124c962c27d328202695b03f75707bdc",
+   "date": "2026-10-28 16:25",
+   "notes": "Simulator: «verbunden» und grün nur, wenn der Simulator antwortet UND Bilder ankommen (vorher immer «verbunden», sobald die Simulation an war) – auch in den Menüs und im Fenster; Einstellungen aus der Simulation: nur noch fragen, was während dieser Simulation geändert wurde, ohne Wärmekamera-Quelle und Werte der Selbstoptimierung",
+   "sig": "e43ae4ea8b4de2d75044a9c4c1b074c4dce69cdd16f0a0d5c670e4dc2318d2a7232a0ff8cc4cc7c4dc367a7c3c22fdb629eef3f099efa98b2b0b395a33cbe60e"
   },
   {
    "version": "2.94.5",

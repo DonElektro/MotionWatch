@@ -1774,3 +1774,7 @@ for _k, _v in _HX38.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
+
+_HX93 = {"answers, but no picture arrives yet": ("répond, mais aucune image n'arrive encore", "risponde, ma non arriva ancora nessuna immagine", "respunda, ma i na arriva anc nagin maletg")}
+for _k, (_fr, _it, _rm) in _HX93.items():
+    TRX["fr"].setdefault(_k, _fr); TRX["it"].setdefault(_k, _it); TRX["rm"].setdefault(_k, _rm)

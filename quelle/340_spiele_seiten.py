@@ -603,19 +603,38 @@ def sim_game():
     return SIMGAME["g"]
 
 
+def sim_picture_ok():
+    """2.95.93: the pictures of the simulator really arrive (not only its answers): a picture of the simulator camera was
+    processed in the last 6 s. «connected» is only shown when this is true as well."""
+    if not str(CFG["source"]).startswith("sim:"):
+        return True
+    w = WATCH_REF.get("w")
+    try:
+        return w is not None and STATE.get("source_status") == "connected" and time.time() - float(getattr(w, "_last_t0", 0) or 0) < 6.0
+    except (TypeError, ValueError):
+        return False
+
+
+def sim_live():
+    """2.95.93: the simulation is on AND really connected (answers and pictures) - only then the menus show it green"""
+    return bool(CFG["sim_on"] and SIM["ok"] and time.time() - SIM["t"] < 5 and sim_picture_ok())
+
+
 def sim_status():
     return {"game": sim_game(), "found": sim_found(), "auto": bool(CFG.get("sim_auto")), "autostart": bool(CFG.get("sim_autostart")), "auto_on": bool(CFG.get("sim_auto_on")), "autoupd": bool(CFG.get("sim_autoupd", True)), "stats": sim_stats(), "eco": bool(CFG.get("sim_eco")), "fps": int(CFG.get("sim_fps") or 6),
             "sim3d": {"version": SIM3D["version"], "size_mb": round(SIM3D["size"] / 1e6), "ready": sim3d_ready()},
             "simpy": {"version": SIMPY["version"], "size_kb": round(SIMPY["size"] / 1e3), "ready": sim3d_ready(SIMPY)},
             "view": bool(((SIM.get("info") or {}).get("view") or {}).get("input")) if CFG["sim_on"] else False,
             "versions": sim_versions() if CFG["sim_on"] and SIM["ok"] else None,
-            "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "tunnel": {"active": tunnel_active()}, "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "msg": SIM["msg"], "url": sim_base(),
+            "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "tunnel": {"active": tunnel_active()}, "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "pic": sim_picture_ok(), "msg": SIM["msg"], "url": sim_base(),
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
 
 # ---- 2.95.86: the simulation has its own settings. Switching it on puts the real settings aside (and brings back the ones
 # of the last simulation); switching back restores the real ones and asks which changes of the simulation to take over.
-SIMPROF = {"q": None}                               # the open question: {"t", "changes": [{key, label, real, sim}]}
+SIMPROF = {"q": None, "start": None}                               # the open question: {"t", "changes": [{key, label, real, sim}]}
+_SIMPROF_SKIP_KEYS = {"source", "thermal_source"}          # 2.95.93: switched by the simulation itself (sim_set), never asked
+_SIMPROF_AUTO_KEYS = {"min_area", "sensitivity", "speed_consistency", "walk_frames"}   # the auto-tuner sets them: kept apart, not asked
 _SIMPROF_SKIP_SECTIONS = {"Simulator", "Updates", "Wi-Fi / hotspot", "Setup", "Web stream", "Guest access", "MQTT / Home Assistant", "Backup", "SMS (LTE stick)"}
 
 
@@ -626,7 +645,7 @@ def simprof_keys():
     for lst in (TOGGLES, SLIDERS, TEXTS):
         for t_ in lst:
             sec, key, label = t_[0], t_[1], t_[2]
-            if sec in _SIMPROF_SKIP_SECTIONS or key not in CFG or key.startswith("sim_"):
+            if sec in _SIMPROF_SKIP_SECTIONS or key not in CFG or key.startswith("sim_") or key in _SIMPROF_SKIP_KEYS:
                 continue
             if len(t_) > 3 and t_[3] == "secret" or any(w in key for w in ("password", "token", "secret", "topic", "_key", "user", "pin")):
                 continue
@@ -665,6 +684,8 @@ def simprof_on():
     for k, v in _simprof_load("sim").items():
         if k in keys and type(v) == type(CFG[k]):
             CFG[k] = v
+    SIMPROF["start"] = {k: CFG[k] for k in keys}             # 2.95.93: only changes of this simulation are asked about
+    _simprof_save("start", SIMPROF["start"])                  # also after a restart of Motion Watch during the simulation
 
 
 def simprof_off():
@@ -678,9 +699,12 @@ def simprof_off():
     simv = {k: CFG[k] for k in keys}
     _simprof_save("sim", simv)
     ch = []
+    start = SIMPROF.get("start") or _simprof_load("start")
     for k, label in keys.items():
         if k in real and real[k] != simv[k]:
-            ch.append({"key": k, "label": label, "real": real[k], "sim": simv[k]})
+            # 2.95.93: asked only when changed during this simulation (not by the auto-tuner, not already at its start)
+            if k not in _SIMPROF_AUTO_KEYS and (k not in start or start[k] != simv[k]):
+                ch.append({"key": k, "label": label, "real": real[k], "sim": simv[k]})
             CFG[k] = real[k]
     SIMPROF["q"] = {"t": time.time(), "changes": ch[:80]} if ch else None
     if ch:

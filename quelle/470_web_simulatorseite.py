@@ -757,7 +757,7 @@ Object.assign(I18N.de, {"Picture quality": "Bildqualität", "automatic": "automa
  "how-2": "Im Simulator-Fenster oben rechts den Schalter «An Motion Watch senden» einschalten.",
  "how-3": "Der Simulator erscheint hier unter «Simulatoren im Netz» – bei Bedarf «Verwenden» antippen.",
  "how-4": "«Simulation einschalten»: Motion Watch arbeitet jetzt mit den Bildern und Sensoren des Simulators statt mit der echten Hardware. Ausschalten = zurück zur echten Hardware.",
- "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "connected": "verbunden",
+ "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "connected": "verbunden", "answers, but no picture arrives yet": "antwortet, aber es kommt noch kein Bild an",
  "Switch the simulation on": "Simulation einschalten", "Switch the simulation off": "Simulation ausschalten",
  "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet",
  "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in",
@@ -773,15 +773,15 @@ let S = null, CS = "", URLEDIT = false;
 const dur = n => n == null ? "–" : n < 60 ? n + " s" : n < 3600 ? Math.floor(n / 60) + " min" : Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min";
 async function load() {
   const r = await fetch("/api/sim").then(x => x.ok ? x.json() : null).catch(() => null);
-  if (r) { S = r; paint(); }
+  if (r) { if ("connected" in r) r.ok = !!r.connected; S = r; paint(); }   // 2.95.93: «ok» of the answer is the request, «connected» the simulator
   clearTimeout(load.t); load.t = setTimeout(load, S && S.scan && S.scan.running ? 1000 : 3000);
 }
 function foldAct() {                       // 2.95.69: symbol + arrow green while the function of the card works
-  const on = !!(S && S.on), ok = !!(on && S.ok), T = (S && S.stats) || {};
-  const act = {conn: ok, status: ok, prev: ok && T.cam_fps != null && T.cam_fps > 0, ctl: ok, perf: !!(S && S.eco),
+  const on = !!(S && S.on), ok = !!(on && S.ok), T = (S && S.stats) || {}, full = ok && S.pic !== false;   // 2.95.93: green only with pictures
+  const act = {conn: full, status: full, prev: ok && T.cam_fps != null && T.cam_fps > 0, ctl: ok, perf: !!(S && S.eco),
                test: !!(TR && (TR.busy || (TR.sim && TR.sim.running))), tools: ok, game: !!(GWR && GWR.game && GWR.game.open)};
   document.querySelectorAll("details.fold[data-k]").forEach(d => { const k = d.dataset.k;
-    d.classList.toggle("act", !!act[k]); d.classList.toggle("bad", (k === "conn" || k === "status") && on && !ok); });
+    d.classList.toggle("act", !!act[k]); d.classList.toggle("bad", (k === "conn" || k === "status") && on && !full); });
   const tu = $("#c-tunnel"); if (tu) tu.classList.toggle("act", !!(S && S.tunnel && S.tunnel.active));
   // order by logic: the status only with the simulation on, the rest only when the simulator answers
   document.querySelectorAll("[data-need]").forEach(d => d.classList.toggle("needhide", d.dataset.need === "on" ? !on : !ok));
@@ -792,10 +792,11 @@ function foldAct() {                       // 2.95.69: symbol + arrow green whil
 function paint() {
   foldAct();
   const T = S.stats || {};
-  $("#s-ttl").textContent = "Status · " + (!S.on ? t("Simulation off") : S.ok ? (T.name || t("connected")) : t("Simulator not reachable"));
+  const nopic = S.on && S.ok && S.pic === false, NP = t("answers, but no picture arrives yet");   // 2.95.93
+  $("#s-ttl").textContent = "Status · " + (!S.on ? t("Simulation off") : nopic ? NP : S.ok ? (T.name || t("connected")) : t("Simulator not reachable"));
   const so = $("#s-on"); if (so && document.activeElement !== so) so.checked = !!S.on;
-  $("#s-onnote").textContent = !S.on ? t("off - the real cameras and sensors are used") : S.ok ? t("connected") + (T.name ? ": " + T.name : "") : t("Simulator not reachable");
-  $("#s-csub").textContent = S.on && S.ok ? "· " + t("connected") : "";
+  $("#s-onnote").textContent = !S.on ? t("off - the real cameras and sensors are used") : nopic ? NP : S.ok ? t("connected") + (T.name ? ": " + T.name : "") : t("Simulator not reachable");
+  $("#s-csub").textContent = nopic ? "· " + NP : S.on && S.ok ? "· " + t("connected") : "";
   $("#s-msg").textContent = (S.msg ? t(S.msg) + " · " : "") + (S.url || "");
   const tile = (k, v) => '<div class="tile"><div class="mut">' + k + '</div><b>' + v + '</b></div>';
   $("#s-tiles").hidden = !S.on;

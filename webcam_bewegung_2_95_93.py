@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_92.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_93.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.93: Simulator: «verbunden» und grün nur, wenn der Simulator antwortet UND Bilder ankommen (vorher immer «verbunden»,
+    sobald die Simulation an war) – auch in den Menüs und im Fenster; Einstellungen aus der Simulation: nur noch fragen, was
+    während dieser Simulation geändert wurde, ohne Wärmekamera-Quelle und Werte der Selbstoptimierung
   * 2.95.92: Simulator-Vollbild im Browser: nur noch das Bild und ✕, Steuer-Sticks und Knöpfe mit 🕹 einblendbar, der Mover-Stick
     im Simulatorbild verschwindet; 3D-Simulator 3D-3.67
   * 2.95.91: 3D-Simulator 3D-3.66: beim Setzen der Patrouillen-Punkte bleibt die Ansicht bedienbar, «Fertig» und Esc beenden das
@@ -771,10 +774,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_92.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_93.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_92.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_92.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_93.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_93.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -791,7 +794,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.92"
+APP_VERSION = "2.95.93"
 
 
 def default_data_dir():
@@ -17588,19 +17591,38 @@ def sim_game():
     return SIMGAME["g"]
 
 
+def sim_picture_ok():
+    """2.95.93: the pictures of the simulator really arrive (not only its answers): a picture of the simulator camera was
+    processed in the last 6 s. «connected» is only shown when this is true as well."""
+    if not str(CFG["source"]).startswith("sim:"):
+        return True
+    w = WATCH_REF.get("w")
+    try:
+        return w is not None and STATE.get("source_status") == "connected" and time.time() - float(getattr(w, "_last_t0", 0) or 0) < 6.0
+    except (TypeError, ValueError):
+        return False
+
+
+def sim_live():
+    """2.95.93: the simulation is on AND really connected (answers and pictures) - only then the menus show it green"""
+    return bool(CFG["sim_on"] and SIM["ok"] and time.time() - SIM["t"] < 5 and sim_picture_ok())
+
+
 def sim_status():
     return {"game": sim_game(), "found": sim_found(), "auto": bool(CFG.get("sim_auto")), "autostart": bool(CFG.get("sim_autostart")), "auto_on": bool(CFG.get("sim_auto_on")), "autoupd": bool(CFG.get("sim_autoupd", True)), "stats": sim_stats(), "eco": bool(CFG.get("sim_eco")), "fps": int(CFG.get("sim_fps") or 6),
             "sim3d": {"version": SIM3D["version"], "size_mb": round(SIM3D["size"] / 1e6), "ready": sim3d_ready()},
             "simpy": {"version": SIMPY["version"], "size_kb": round(SIMPY["size"] / 1e3), "ready": sim3d_ready(SIMPY)},
             "view": bool(((SIM.get("info") or {}).get("view") or {}).get("input")) if CFG["sim_on"] else False,
             "versions": sim_versions() if CFG["sim_on"] and SIM["ok"] else None,
-            "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "tunnel": {"active": tunnel_active()}, "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "msg": SIM["msg"], "url": sim_base(),
+            "scan": {k: v for k, v in SIMSCAN.items()}, "installed": os.path.isfile(os.path.join(sim_dir(), "motionwatch_simulator.py")), "running": sim_running(), "on": bool(CFG["sim_on"]), "tunnel": {"active": tunnel_active()}, "ok": SIM["ok"] and time.time() - SIM["t"] < 5, "pic": sim_picture_ok(), "msg": SIM["msg"], "url": sim_base(),
             "dark": SIM["dark"], "ambient": SIM["ambient"], "sent": SIM["sent"]}
 
 
 # ---- 2.95.86: the simulation has its own settings. Switching it on puts the real settings aside (and brings back the ones
 # of the last simulation); switching back restores the real ones and asks which changes of the simulation to take over.
-SIMPROF = {"q": None}                               # the open question: {"t", "changes": [{key, label, real, sim}]}
+SIMPROF = {"q": None, "start": None}                               # the open question: {"t", "changes": [{key, label, real, sim}]}
+_SIMPROF_SKIP_KEYS = {"source", "thermal_source"}          # 2.95.93: switched by the simulation itself (sim_set), never asked
+_SIMPROF_AUTO_KEYS = {"min_area", "sensitivity", "speed_consistency", "walk_frames"}   # the auto-tuner sets them: kept apart, not asked
 _SIMPROF_SKIP_SECTIONS = {"Simulator", "Updates", "Wi-Fi / hotspot", "Setup", "Web stream", "Guest access", "MQTT / Home Assistant", "Backup", "SMS (LTE stick)"}
 
 
@@ -17611,7 +17633,7 @@ def simprof_keys():
     for lst in (TOGGLES, SLIDERS, TEXTS):
         for t_ in lst:
             sec, key, label = t_[0], t_[1], t_[2]
-            if sec in _SIMPROF_SKIP_SECTIONS or key not in CFG or key.startswith("sim_"):
+            if sec in _SIMPROF_SKIP_SECTIONS or key not in CFG or key.startswith("sim_") or key in _SIMPROF_SKIP_KEYS:
                 continue
             if len(t_) > 3 and t_[3] == "secret" or any(w in key for w in ("password", "token", "secret", "topic", "_key", "user", "pin")):
                 continue
@@ -17650,6 +17672,8 @@ def simprof_on():
     for k, v in _simprof_load("sim").items():
         if k in keys and type(v) == type(CFG[k]):
             CFG[k] = v
+    SIMPROF["start"] = {k: CFG[k] for k in keys}             # 2.95.93: only changes of this simulation are asked about
+    _simprof_save("start", SIMPROF["start"])                  # also after a restart of Motion Watch during the simulation
 
 
 def simprof_off():
@@ -17663,9 +17687,12 @@ def simprof_off():
     simv = {k: CFG[k] for k in keys}
     _simprof_save("sim", simv)
     ch = []
+    start = SIMPROF.get("start") or _simprof_load("start")
     for k, label in keys.items():
         if k in real and real[k] != simv[k]:
-            ch.append({"key": k, "label": label, "real": real[k], "sim": simv[k]})
+            # 2.95.93: asked only when changed during this simulation (not by the auto-tuner, not already at its start)
+            if k not in _SIMPROF_AUTO_KEYS and (k not in start or start[k] != simv[k]):
+                ch.append({"key": k, "label": label, "real": real[k], "sim": simv[k]})
             CFG[k] = real[k]
     SIMPROF["q"] = {"t": time.time(), "changes": ch[:80]} if ch else None
     if ch:
@@ -19134,7 +19161,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_92.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_93.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -24946,7 +24973,7 @@ Object.assign(I18N.de, {"Picture quality": "Bildqualität", "automatic": "automa
  "how-2": "Im Simulator-Fenster oben rechts den Schalter «An Motion Watch senden» einschalten.",
  "how-3": "Der Simulator erscheint hier unter «Simulatoren im Netz» – bei Bedarf «Verwenden» antippen.",
  "how-4": "«Simulation einschalten»: Motion Watch arbeitet jetzt mit den Bildern und Sensoren des Simulators statt mit der echten Hardware. Ausschalten = zurück zur echten Hardware.",
- "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "connected": "verbunden",
+ "Simulation off": "Simulation aus", "Simulator not reachable": "Simulator nicht erreichbar", "connected": "verbunden", "answers, but no picture arrives yet": "antwortet, aber es kommt noch kein Bild an",
  "Switch the simulation on": "Simulation einschalten", "Switch the simulation off": "Simulation ausschalten",
  "Connected for": "Verbunden seit", "Response time": "Antwortzeit", "Camera pictures/s": "Kamera Bilder/s", "Thermal pictures/s": "Wärmebilder/s", "Messages sent": "Meldungen gesendet",
  "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in",
@@ -24962,15 +24989,15 @@ let S = null, CS = "", URLEDIT = false;
 const dur = n => n == null ? "–" : n < 60 ? n + " s" : n < 3600 ? Math.floor(n / 60) + " min" : Math.floor(n / 3600) + " h " + Math.floor(n % 3600 / 60) + " min";
 async function load() {
   const r = await fetch("/api/sim").then(x => x.ok ? x.json() : null).catch(() => null);
-  if (r) { S = r; paint(); }
+  if (r) { if ("connected" in r) r.ok = !!r.connected; S = r; paint(); }   // 2.95.93: «ok» of the answer is the request, «connected» the simulator
   clearTimeout(load.t); load.t = setTimeout(load, S && S.scan && S.scan.running ? 1000 : 3000);
 }
 function foldAct() {                       // 2.95.69: symbol + arrow green while the function of the card works
-  const on = !!(S && S.on), ok = !!(on && S.ok), T = (S && S.stats) || {};
-  const act = {conn: ok, status: ok, prev: ok && T.cam_fps != null && T.cam_fps > 0, ctl: ok, perf: !!(S && S.eco),
+  const on = !!(S && S.on), ok = !!(on && S.ok), T = (S && S.stats) || {}, full = ok && S.pic !== false;   // 2.95.93: green only with pictures
+  const act = {conn: full, status: full, prev: ok && T.cam_fps != null && T.cam_fps > 0, ctl: ok, perf: !!(S && S.eco),
                test: !!(TR && (TR.busy || (TR.sim && TR.sim.running))), tools: ok, game: !!(GWR && GWR.game && GWR.game.open)};
   document.querySelectorAll("details.fold[data-k]").forEach(d => { const k = d.dataset.k;
-    d.classList.toggle("act", !!act[k]); d.classList.toggle("bad", (k === "conn" || k === "status") && on && !ok); });
+    d.classList.toggle("act", !!act[k]); d.classList.toggle("bad", (k === "conn" || k === "status") && on && !full); });
   const tu = $("#c-tunnel"); if (tu) tu.classList.toggle("act", !!(S && S.tunnel && S.tunnel.active));
   // order by logic: the status only with the simulation on, the rest only when the simulator answers
   document.querySelectorAll("[data-need]").forEach(d => d.classList.toggle("needhide", d.dataset.need === "on" ? !on : !ok));
@@ -24981,10 +25008,11 @@ function foldAct() {                       // 2.95.69: symbol + arrow green whil
 function paint() {
   foldAct();
   const T = S.stats || {};
-  $("#s-ttl").textContent = "Status · " + (!S.on ? t("Simulation off") : S.ok ? (T.name || t("connected")) : t("Simulator not reachable"));
+  const nopic = S.on && S.ok && S.pic === false, NP = t("answers, but no picture arrives yet");   // 2.95.93
+  $("#s-ttl").textContent = "Status · " + (!S.on ? t("Simulation off") : nopic ? NP : S.ok ? (T.name || t("connected")) : t("Simulator not reachable"));
   const so = $("#s-on"); if (so && document.activeElement !== so) so.checked = !!S.on;
-  $("#s-onnote").textContent = !S.on ? t("off - the real cameras and sensors are used") : S.ok ? t("connected") + (T.name ? ": " + T.name : "") : t("Simulator not reachable");
-  $("#s-csub").textContent = S.on && S.ok ? "· " + t("connected") : "";
+  $("#s-onnote").textContent = !S.on ? t("off - the real cameras and sensors are used") : nopic ? NP : S.ok ? t("connected") + (T.name ? ": " + T.name : "") : t("Simulator not reachable");
+  $("#s-csub").textContent = nopic ? "· " + NP : S.on && S.ok ? "· " + t("connected") : "";
   $("#s-msg").textContent = (S.msg ? t(S.msg) + " · " : "") + (S.url || "");
   const tile = (k, v) => '<div class="tile"><div class="mut">' + k + '</div><b>' + v + '</b></div>';
   $("#s-tiles").hidden = !S.on;
@@ -33381,7 +33409,7 @@ const QS = [
    go: () => { listenToggle(); return Promise.resolve({ok: true}); }},
   {id: "talk", ic: "🎙", lb: "Talk", tip: "Talk through the loudspeaker: tap once to unlock, then hold the button while you talk",
    on: () => false, ok: (c, s) => !!(s.audio && s.audio.spk) || TK.on, talk: true},
-  {id: "sim", ic: "🧪", lb: "Simulation", tip: "Simulation on / off: cameras, thermal camera and sensors from the simulation program", on: (c, s) => !!(s.sim && s.sim.on),
+  {id: "sim", ic: "🧪", lb: "Simulation", tip: "Simulation on / off: cameras, thermal camera and sensors from the simulation program", on: (c, s) => !!(s.sim && s.sim.on && s.sim.ok && s.sim.pic !== false),   /* 2.95.93: lit only with a real connection */
    go: (c, s) => post("/api/sim", {on: !(s.sim && s.sim.on), lang: LANG})},
   {id: "track", ic: "🎯", lb: "Follow", tip: "Follow a detected person", on: c => c.track_person, go: c => post("/api/set", {key: "track_person", value: !c.track_person})},
   {id: "patrol", ic: "🔄", lb: "Patrol", tip: "Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off", on: c => c.patrol,
@@ -33491,7 +33519,7 @@ function qsPaint(j) {
 // ---- overview: green arrow = main function of this topic is on ----
 const MAINSW = {
   "protect": (c, s) => s.arm_state === "armed" || s.arm_state === "arming", "sec:Camping / protection": (c, s) => !!s.camping,
-  "sec:Power saving": c => c.eco_on, "sec:Extra sensors": c => c.sens_on && (c.sensors || []).length > 0, "sec:Storm warning": c => c.storm_on, "sec:GPS module": c => c.gpsmod_on, "sec:Simulator": (c, s) => !!(s.sim && s.sim.on), "sec:Solar panel": c => c.solar_on, "batt": (c, s) => !!(s.battery && s.battery.on), "sec:Theft protection": c => c.tamper_on || c.tamper_motion || c.tamper_power,
+  "sec:Power saving": c => c.eco_on, "sec:Extra sensors": c => c.sens_on && (c.sensors || []).length > 0, "sec:Storm warning": c => c.storm_on, "sec:GPS module": c => c.gpsmod_on, "sec:Simulator": (c, s) => !!(s.sim && s.sim.on && s.sim.ok && s.sim.pic !== false), "sec:Solar panel": c => c.solar_on, "batt": (c, s) => !!(s.battery && s.battery.on), "sec:Theft protection": c => c.tamper_on || c.tamper_motion || c.tamper_power,
   "sec:Notifications": c => c.notify_on, "report": c => c.report_on, "sec:SMS (LTE stick)": c => c.sms_on,
   "sec:Detection": c => c.detection_on, "sec:AI detection": c => c.ai_enabled, "sec:Vehicle filter": c => c.car_filter, "sec:Rain": c => c.rain_auto,
   "sec:Wind": c => c.wind_auto, "sec:Low light": c => c.lowlight_auto || c.nightvision || c.nightvision_auto, "sec:Auto-tune": c => c.auto_tune,
@@ -40767,7 +40795,7 @@ def tk_main_on(sec):
             "Microphone": lambda: g("audio_in"), "Loudspeaker": lambda: g("siren_on") and g("siren_on") != "off", "Recording": lambda: g("record"),
             "Timelapse": lambda: g("timelapse_on"), "Backup": lambda: g("backup_type") and g("backup_type") != "off", "Relays": lambda: g("relays_on"),
             "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_auto") or g("update_fast"),
-            "Simulator": lambda: g("sim_on"), "Mover": lambda: g("mover_on"), "Guest access": lambda: g("guest_on")}.get(sec, lambda: False)())
+            "Simulator": lambda: sim_live(), "Mover": lambda: g("mover_on"), "Guest access": lambda: g("guest_on")}.get(sec, lambda: False)())
     except Exception:
         return False
 
@@ -41052,7 +41080,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.92")
+        self.root.title("Motion Watch 2.95.93")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -41342,7 +41370,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.92 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.93 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -41758,7 +41786,7 @@ class App:
             dict(id="ir", ic="◉", lb=tr("IR light"), tip=tr("Infrared light on / off"), on=lambda: bool((STATE.get("lights") or {}).get("ir")),
                  ok=lambda: bool(CFG["light_ir_out"]) or CFG["sim_on"], go=lambda: light_set("ir", "off" if (STATE.get("lights") or {}).get("ir") else "on")),
             dict(id="sim", ic="⚗", lb=tr("Simulation"), tip=tr("Simulation on / off: cameras, thermal camera and sensors from the simulation program") + " (F9)",
-                 on=lambda: CFG["sim_on"], go=lambda: sim_set(not CFG["sim_on"], "window")),
+                 on=lambda: sim_live(), go=lambda: sim_set(not CFG["sim_on"], "window")),
             dict(id="track", ic="◎", lb=tr("Follow"), tip=tr("Follow a detected person"), on=lambda: CFG["track_person"],
                  go=lambda: self._set("track_person", not CFG["track_person"])),
             dict(id="patrol", ic="⇄", lb=tr("Patrol"), tip=tr("Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off"),
@@ -42631,7 +42659,7 @@ class App:
                 "Timelapse": lambda: CFG["timelapse_on"], "Backup": lambda: CFG["backup_type"] != "off", "Relays": lambda: CFG["relays_on"],
                 "Schedule": lambda: any(x.get("enabled") for x in SCHEDULES), "Wi-Fi / hotspot": lambda: CFG["hotspot_on"],
                 "Web stream": lambda: CFG["web_stream"], "MQTT / Home Assistant": lambda: CFG["mqtt_on"], "Updates": lambda: CFG["update_auto"],
-                "Extra sensors": lambda: CFG["sens_on"] and bool(CFG["sensors"]), "Storm warning": lambda: CFG["storm_on"], "GPS module": lambda: CFG["gpsmod_on"], "Mover": lambda: MOVER["avail"], "Simulator": lambda: CFG["sim_on"], "Solar panel": lambda: CFG["solar_on"]}
+                "Extra sensors": lambda: CFG["sens_on"] and bool(CFG["sensors"]), "Storm warning": lambda: CFG["storm_on"], "GPS module": lambda: CFG["gpsmod_on"], "Mover": lambda: MOVER["avail"], "Simulator": lambda: sim_live(), "Solar panel": lambda: CFG["solar_on"]}
         for key, (arr, secs, _c, _w) in list(getattr(self, "grp_meta", {}).items()):
             try:
                 if arr.winfo_exists():
@@ -48291,6 +48319,10 @@ for _k, _v in _HX38.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(("fr", "it", "rm")):
         TRX[_L].setdefault(_k, _v[_i + 1])
+
+_HX93 = {"answers, but no picture arrives yet": ("répond, mais aucune image n'arrive encore", "risponde, ma non arriva ancora nessuna immagine", "respunda, ma i na arriva anc nagin maletg")}
+for _k, (_fr, _it, _rm) in _HX93.items():
+    TRX["fr"].setdefault(_k, _fr); TRX["it"].setdefault(_k, _it); TRX["rm"].setdefault(_k, _rm)
 # ---- guide: the parts added in 2.53 - 2.65 (inserted into the existing chapters of every language) ----
 _HELP_NEW = {
  "de": {
