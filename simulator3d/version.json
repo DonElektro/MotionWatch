@@ -1,12 +1,12 @@
 {
- "version": "3D-3.92",
+ "version": "3D-3.93",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31207277,
- "sha256": "4014de6916a2c031c805b8c653d3452a5e53f75c6356a0ee27a2dfa8c12ab57f",
- "notes": "Abzeichen bleiben, Lueckenfinder, Fehlalarme aus Spielen, Tunnel sofort gespeichert, Firewall-Knopf",
+ "size": 31207479,
+ "sha256": "feb9034b861c28ea0cb38e23fe1a4ccb20b9d4ee207f2df35024baac736b6a7f",
+ "notes": "Zonen und Erkennung in 3D unter Ansicht",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24328776,
-  "sha256": "54e06831aee2ea1d664a52ea1a68b3e810f71d59ccd37045bf0108e0f5788c4a"
+  "size": 24329017,
+  "sha256": "0e28c6a181ad88cade67ff015192f21b6e17f3fc44d4028c76ccb68a09dc98d0"
  }
 }

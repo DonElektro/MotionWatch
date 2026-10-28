@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 00:16",
+ "generated": "2026-10-29 00:18",
  "versions": [
   {
-   "version": "2.98.4",
-   "file": "webcam_bewegung_2_98_4.py",
+   "version": "2.98.5",
+   "file": "webcam_bewegung_2_98_5.py",
    "url": "",
-   "sha256": "6519ff8874abd6ea9114e164affbc7c70d1ab0f667a94817f1255fd638673500",
-   "date": "2026-10-29 00:16",
-   "notes": "Simulator-Zentrale in zwei Gruppen: «Ausprobieren» und «Lernen & Testen»",
-   "sig": "687d1db88732f3e0dafcc7b66c16e86a7bc38826c821551fe25bc486f664e0f14af22f433e30ec570c4553881ba3368c644d908160f6714d7cefe84d1953d006"
+   "sha256": "a3405b107c835a172dee532ac1f0df75e7a39bab702e6d96c1eefc7e473103a0",
+   "date": "2026-10-29 00:18",
+   "notes": "Simulator-Zentrale: «Zonen in 3D» und «Erkennung in 3D» sind jetzt im Simulator unter «Ansicht»",
+   "sig": "267be93e0ec4b5e6590bc5dbfd3ae4924c70d382c5bdf466c2a7febe5e8ff10436941e9965dac5a4ba443132f8efc55ac23afeaa3fe2de282066076bb95bc605"
   },
   {
    "version": "2.97.1",
