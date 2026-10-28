@@ -18,12 +18,17 @@ var msg := "aus"
 var ok_t := 0.0                     # last time Motion Watch accepted the code
 var bytes := 0
 var _next := 0.0
+var _fails := 0                     # 3D-3.75: failed tries in a row - wait longer each time (3 s … 15 s)
+const RECYCLE := 40.0               # 3D-3.75: an idle connection is renewed after 40-55 s (routers forget quiet connections)
+const PIPE_IDLE := 180.0            # 3D-3.75: a pipe without any byte for 3 minutes is closed
 
 
 func set_on(v: bool) -> void:
 	on = v and host != "" and code.length() == 6
 	if on and main.has_method("set_stream") and not main.stream_on:
-		main.set_stream.call_deferred(true)             # Motion Watch reaches the simulator only while it «sends»
+		main.set_stream.call_deferred(true, true)       # 3D-3.75: busy after an update -> a spare port (main._stream_watch keeps trying)             # Motion Watch reaches the simulator only while it «sends»
+	_fails = 0
+	_next = 0.0
 	if not on:
 		for c in conns:
 			_close(c)
@@ -33,6 +38,12 @@ func set_on(v: bool) -> void:
 
 func state() -> Dictionary:
 	return {"on": on, "host": host, "ok": Time.get_ticks_msec() / 1000.0 - ok_t < 30.0, "msg": msg, "pipes": conns.filter(func(c): return c["st"] == "pipe").size(), "mb": snappedf(bytes / 1e6, 0.1)}
+
+
+func _fail(now: float, text: String) -> void:
+	msg = text
+	_fails += 1
+	_next = now + minf(15.0, 3.0 * pow(1.5, mini(_fails - 1, 6)))
 
 
 func _close(c: Dictionary) -> void:
@@ -61,8 +72,7 @@ func _process(_dt: float) -> void:
 			if o.connect_to_host(host, PORT) == OK:
 				conns.append({"o": o, "st": "connect", "l": null, "buf": PackedByteArray(), "t": now})
 			else:
-				msg = "Adresse ungültig"
-				_next = now + 3.0
+				_fail(now, "Adresse ungültig")
 				break
 
 
@@ -84,8 +94,7 @@ func _step(c: Dictionary, now: float) -> void:
 				c["st"] = "hello"
 				c["t"] = now
 			elif now - float(c["t"]) > 6.0:
-				msg = "Motion Watch antwortet nicht (%s:%d)" % [host, PORT]
-				_next = now + 3.0
+				_fail(now, "Motion Watch antwortet nicht (%s:%d)" % [host, PORT])
 				_close(c)
 		"hello", "idle":
 			var n := o.get_available_bytes()
@@ -100,11 +109,13 @@ func _step(c: Dictionary, now: float) -> void:
 				if c["st"] == "hello":
 					if line == "OK":
 						c["st"] = "idle"
+						c["t"] = now
+						c["life"] = RECYCLE + randf() * 15.0
 						ok_t = now
+						_fails = 0
 						msg = "verbunden mit Motion Watch (%s:%d)" % [host, PORT]
 					else:
-						msg = "Code falsch – auf der Seite von Motion Watch nachsehen"
-						_next = now + 5.0
+						_fail(now, "Code falsch – auf der Seite von Motion Watch nachsehen")
 						_close(c)
 						return
 				elif line.begins_with("GO "):
@@ -127,6 +138,8 @@ func _step(c: Dictionary, now: float) -> void:
 					return
 			if c["st"] == "hello" and now - float(c["t"]) > 8.0:
 				_close(c)
+			elif c["st"] == "idle" and now - float(c["t"]) > float(c.get("life", RECYCLE)) and (c["buf"] as PackedByteArray).is_empty():
+				_close(c)                               # renewed by _process (a fresh one is opened at once)
 		"pipe":
 			var l: StreamPeerTCP = c["l"]
 			l.poll()
@@ -143,19 +156,24 @@ func _step(c: Dictionary, now: float) -> void:
 				l.put_data(c["buf"])
 				bytes += (c["buf"] as PackedByteArray).size()
 				c["buf"] = PackedByteArray()
-			_flush(o, l)
-			_flush(l, o)
+			if _flush(o, l) + _flush(l, o) > 0:
+				c["t"] = now
+			elif now - float(c["t"]) > PIPE_IDLE:
+				_close(c)
 
 
-func _flush(a: StreamPeerTCP, b: StreamPeerTCP) -> void:
-	"""everything that has arrived on a goes out on b (several chunks per frame)"""
+func _flush(a: StreamPeerTCP, b: StreamPeerTCP) -> int:
+	"""everything that has arrived on a goes out on b (several chunks per frame); returns the bytes passed on"""
+	var got := 0
 	for _i in 32:
 		var n := a.get_available_bytes()
 		if n <= 0:
-			return
+			break
 		var r: Array = a.get_partial_data(min(n, CHUNK))
 		var data: PackedByteArray = r[1]
 		if data.is_empty():
-			return
+			break
 		b.put_data(data)
 		bytes += data.size()
+		got += data.size()
+	return got

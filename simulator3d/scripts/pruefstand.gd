@@ -39,6 +39,16 @@ var result := {}
 var result_path := ""
 var _wait_mw := 0.0
 var http: HTTPRequest
+# 3D-3.75: automatically after every update of Motion Watch: when the connected Motion Watch has a new version and nobody
+# uses the simulator (no click for 3 minutes, no game, no test run), the short test runs once; the result is sent when a
+# GitHub key is there, else it stays in the folder (and on the list of results here).
+var auto_cb: CheckBox
+var auto := false
+var auto_run := false
+var _touch_t := 0.0
+var _ver_t := 0.0
+var _ver_seen := ""
+const AUTO_FILE := "user://pruefstand/auto.json"
 
 
 func _ready() -> void:
@@ -122,6 +132,13 @@ func _ready() -> void:
 	token_le.text = _token()
 	token_le.text_changed.connect(func(s): _save_token(s.strip_edges()))
 	tk.add_child(token_le)
+	auto_cb = CheckBox.new()
+	auto_cb.text = "Nach jedem Update von Motion Watch automatisch messen (Kurz, 1×, wenn 3 Minuten niemand den Simulator bedient; mit Schlüssel wird das Ergebnis gesendet)"
+	auto_cb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	auto = bool(_auto_data().get("on", false))
+	auto_cb.button_pressed = auto
+	auto_cb.toggled.connect(func(on_): set_auto(on_))
+	v.add_child(auto_cb)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	v.add_child(row)
@@ -169,6 +186,57 @@ func _ready() -> void:
 	_paint()
 
 
+func _auto_data() -> Dictionary:
+	var f := FileAccess.open(AUTO_FILE, FileAccess.READ)
+	if f == null:
+		return {}
+	var d = JSON.parse_string(f.get_as_text())
+	return d if typeof(d) == TYPE_DICTIONARY else {}
+
+
+func _auto_save(d: Dictionary) -> void:
+	DirAccess.make_dir_recursive_absolute("user://pruefstand")
+	var f := FileAccess.open(AUTO_FILE, FileAccess.WRITE)
+	if f != null:
+		f.store_string(JSON.stringify(d))
+
+
+func set_auto(on_: bool) -> void:
+	auto = on_
+	var d := _auto_data()
+	d["on"] = on_
+	_auto_save(d)
+	if auto_cb != null and auto_cb.button_pressed != on_:
+		auto_cb.set_pressed_no_signal(on_)
+
+
+func _input(ev: InputEvent) -> void:
+	if ev is InputEventMouseButton or ev is InputEventKey or ev is InputEventScreenTouch:
+		_touch_t = main.now()
+
+
+func _auto_tick(now: float) -> void:
+	"""a new version of Motion Watch is connected: measure once when the simulator is quiet"""
+	if not auto or running or now - main.mw_t > 3.0:
+		_ver_seen = ""
+		return
+	var ver := str(main.mw.get("mw_version", ""))
+	if ver == "" or ver == str(_auto_data().get("last", "")):
+		return
+	if ver != _ver_seen:
+		_ver_seen = ver
+		_ver_t = now                                     # Motion Watch just came back after its update: let it settle
+		return
+	var busy: bool = (main.game != null and main.game.busy()) or main.testrun.running or (main.surprise != null and not main.surprise.cur.is_empty())
+	if busy or now - _ver_t < 90.0 or now - _touch_t < 180.0:
+		return
+	auto_run = true
+	start(["quick"], 1)
+	var d := _auto_data()
+	d["last"] = ver                                      # also when it fails: no endless tries with the same version
+	_auto_save(d)
+
+
 func open(on: bool) -> void:
 	visible = on
 	if on:
@@ -176,7 +244,7 @@ func open(on: bool) -> void:
 
 
 func state() -> Dictionary:
-	return {"ok": true, "running": running, "current": current, "left": queue.size(), "done": done.size(), "info": info.text if info else "",
+	return {"ok": true, "auto": auto, "auto_run": auto_run, "auto_last": str(_auto_data().get("last", "")), "running": running, "current": current, "left": queue.size(), "done": done.size(), "info": info.text if info else "",
 			"result": result, "file": result_path}
 
 
@@ -221,18 +289,24 @@ func _paint() -> void:
 		info.text = ("Verbunden: %s" % str(main.mw.get("device", "Motion Watch"))) if con else "Noch kein Motion Watch verbunden."
 
 
-func start() -> void:
+func start(plans_: Array = [], reps_ := 0) -> void:
 	if running:
 		return
 	queue = []
+	if not plans_.is_empty():                            # 3D-3.75: the automatic run (the connected Motion Watch)
+		for p_ in plans_:
+			for i in range(max(1, reps_)):
+				queue.append(p_)
+	else:
+		auto_run = false
 	for p in PLANS:
-		if (plan_cbs[p[0]] as CheckBox).button_pressed:
+		if plans_.is_empty() and (plan_cbs[p[0]] as CheckBox).button_pressed:
 			for i in int(reps.value):
 				queue.append(p[0])
 	if queue.is_empty():
 		info.text = "Bitte mindestens einen Testlauf wählen."
 		return
-	if src_seg.selected == 1:
+	if src_seg.selected == 1 and not auto_run:
 		if mw_file == "" or not FileAccess.file_exists(mw_file):
 			info.text = "Bitte zuerst die Datei wählen (webcam_bewegung_X.py)."
 			return
@@ -256,6 +330,7 @@ func stop(why := "") -> void:
 	if not running:
 		return
 	running = false
+	auto_run = false
 	if main.testrun.running:
 		main.testrun.stop(false)
 	current = ""
@@ -265,14 +340,17 @@ func stop(why := "") -> void:
 
 func _process(_dt: float) -> void:
 	if not running:
+		if main != null:
+			_auto_tick(main.now())
 		return
 	var now: float = main.now()
 	var con: bool = now - main.mw_t < 3.0
+	var file_mode: bool = src_seg.selected == 1 and not auto_run
 	if current == "":
 		if not con:                                       # Motion Watch not (yet) connected
 			var waited := now - _wait_mw
-			info.text = "Warte auf Motion Watch … %d s%s" % [int(waited), (" · " + main.mwpc.text) if src_seg.selected == 1 else ""]
-			if waited > (900.0 if src_seg.selected == 1 else 120.0):   # the first start on this PC loads Python (minutes)
+			info.text = "Warte auf Motion Watch … %d s%s" % [int(waited), (" · " + main.mwpc.text) if file_mode else ""]
+			if waited > (900.0 if file_mode else 120.0):   # the first start on this PC loads Python (minutes)
 				stop("abgebrochen: Motion Watch hat sich nicht verbunden")
 			return
 		if queue.is_empty():
@@ -329,7 +407,8 @@ func _finish() -> void:
 	result = {"datum": stamp, "mw_version": str(main.mw.get("mw_version", "?")), "sim_version": main.VERSION,
 			"ki": str(main.mw.get("ai_status", "?")), "rechner": "PC %s (%s)" % [main.host_name(), gpu],
 			"qualitaet": main.quality, "szene": main.scene, "kameras": "Kopfkamera", "quelle": "Simulator-Prüfstand",
-			"motion_watch": "Datei " + mw_file.get_file() if src_seg.selected == 1 else str(main.mw.get("device", "verbunden")),
+			"motion_watch": "Datei " + mw_file.get_file() if src_seg.selected == 1 and not auto_run else str(main.mw.get("device", "verbunden")),
+			"automatisch": auto_run,
 			"plaene": plans}
 	DirAccess.make_dir_recursive_absolute("user://pruefstand")
 	var fn := "%04d-%02d-%02d_%02d%02d_%s.json" % [dt.year, dt.month, dt.day, dt.hour, dt.minute, str(result["mw_version"]).replace("?", "unbekannt")]
@@ -359,9 +438,17 @@ func _finish() -> void:
 			result["mw_version"], result["rechner"], td, tp, int(round(100.0 * td / max(1, tp))), fa, int((main.now() - t_all) / 60.0), "\n".join(PackedStringArray(lines))]
 	result_box.visible = true
 	send_lbl.text = "Gespeichert: " + ProjectSettings.globalize_path(result_path)
-	info.text = "Fertig."
-	visible = true
-	DisplayServer.window_request_attention()
+	info.text = "Fertig." + (" (automatisch nach dem Update von Motion Watch)" if auto_run else "")
+	main.start_info = "Prüfstand fertig: Motion Watch %s – Personen %d von %d, Fehlalarme %d" % [result["mw_version"], td, tp, fa]
+	if auto_run:
+		if token_le.text.strip_edges() != "":
+			send()                                       # with a key: straight to GitHub
+		else:
+			send_lbl.text = "Gespeichert: " + ProjectSettings.globalize_path(result_path) + " – «Ergebnis senden» legt es auf den Schreibtisch."
+	else:
+		visible = true
+		DisplayServer.window_request_attention()
+	auto_run = false
 	_paint()
 
 

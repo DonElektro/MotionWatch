@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.74"
+const VERSION := "3D-3.75"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -54,6 +54,9 @@ var dev2                              # device.gd: a second Motion Watch device 
 var game_tasks := true                # a task for every round of the game (bonus) - 3D-3.27
 var daily_life := true                # visitors at their own times, the postman and the neighbour every day
 var real_weather := false             # the weather of the place from open-meteo.com
+var surprise_on := false             # 3D-3.75: «Überraschungsnacht» (surprise.gd)
+var power_off := false               # 3D-3.75: power cut - the lamps of the place are out
+var surprise
 var night_weather := false            # 3D-3.74: the weather runs through the night (dusk, showers, dew, morning fog)
 var _nw := {"day": -1, "plan": [], "last": "", "fog_lens": false}
 var real_time := false                # the clock of the PC
@@ -156,6 +159,11 @@ var next_auto := 0.0
 var door_open := false
 var gas_on := false
 var quality := "nice"
+var view_scale := 1.0                 # 3D-3.75: sharpness of the big view on the screen (the pictures for Motion Watch stay sharp)
+var win_fps := 0                     # 3D-3.75: frames per second of the big view (0 = as fast as it goes)
+var auto_perf := true                 # 3D-3.75: too slow? the graphics get lighter by themselves
+var _slow_n := 0
+var _perf_t := 0.0
 var cam1_yaw := -12.0
 
 # ---- what Motion Watch sends -----------------------------------------------------------------------------------
@@ -347,6 +355,9 @@ func _ready() -> void:
 	stories = preload("res://scripts/events.gd").new()    # little stories (3D-3.40)
 	stories.main = self
 	add_child(stories)
+	surprise = preload("res://scripts/surprise.gd").new()   # 3D-3.75
+	surprise.main = self
+	add_child(surprise)
 	recorder = Recorder.new()
 	recorder.main = self
 	add_child(recorder)
@@ -388,6 +399,8 @@ func _ready() -> void:
 		quality = auto_quality()
 		print("graphics card: %s -> quality %s" % [RenderingServer.get_video_adapter_name(), quality])
 	_apply_quality()
+	if view_scale < 1.0:
+		set_view_scale(view_scale)
 	_calibrate_thermal()
 	next_auto = now() + 20.0
 	for i in range(args.size()):
@@ -457,6 +470,37 @@ func _stream_retry(left: int, tries := 0) -> void:
 		_stream_retry(left - 1, tries + 1)
 	else:
 		print("sending to Motion Watch: port %d" % net.port)
+
+
+var _sw_t := 0.0
+var _sw_tries := 0
+var _old_killed := false
+
+
+func _stream_watch() -> void:
+	"""3D-3.75: sending should be on (switched on the last time, the tunnel is on, or --stream) but the port is busy -
+	after an update the old simulator (or a program it started, e.g. Motion Watch on this PC) may still hold port 8765.
+	Try again every 3 s; after 5 s stop the old simulator (--old-pid), after the 3rd try take a spare port (8775 …).
+	Never gives up (before 3D-3.75 the tunnel switched sending on only once)."""
+	var want: bool = stream_last or tunnel_on or "--stream" in OS.get_cmdline_user_args()
+	if stream_on or not want or net == null:
+		_sw_tries = 0
+		return
+	if now() - _sw_t < 3.0:
+		return
+	_sw_t = now()
+	_sw_tries += 1
+	var oi := OS.get_cmdline_user_args().find("--old-pid")
+	if not _old_killed and _sw_tries >= 2 and oi >= 0 and oi + 1 < OS.get_cmdline_user_args().size():
+		var op := int(OS.get_cmdline_user_args()[oi + 1])
+		if op > 0 and op != OS.get_process_id():
+			_old_killed = true
+			OS.kill(op)                                   # the old simulator hangs while closing: stop it
+			print("old simulator %d stopped (port still busy)" % op)
+	set_stream(true, _sw_tries >= 3)
+	if stream_on:
+		print("sending to Motion Watch: port %d (try %d)" % [net.port, _sw_tries])
+		_sw_tries = 0
 
 
 func release_ports() -> void:
@@ -1612,13 +1656,14 @@ func _update_sky() -> void:
 	if fireflies != null:
 		fireflies.emitting = world_fireflies and is_dark() and ambient >= 12.0 and weather in ["clear", "cloudy"] and wind < 30.0
 	var dark := is_dark()
-	window_mat.emission_energy_multiplier = 2.5 if dark else 0.0
+	var lit := dark and not power_off                  # 3D-3.75: a power cut - all lamps of the place are out
+	window_mat.emission_energy_multiplier = 2.5 if lit else 0.0
 	door_node.rotation.y = -1.3 if door_open else 0.0
-	door_light.light_energy = 2.5 if door_open and dark else 0.0
+	door_light.light_energy = 2.5 if door_open and lit else 0.0
 	for l in lamps:
-		l.light_energy = 2.2 if dark else 0.0
+		l.light_energy = 2.2 if lit else 0.0
 	for lm in lamp_mats:
-		lm.emission_energy_multiplier = 3.0 if dark else 0.0
+		lm.emission_energy_multiplier = 3.0 if lit else 0.0
 	for v in visitors.get_children():
 		if v.has_method("set_night"):
 			v.set_night(dark)
@@ -1698,6 +1743,8 @@ func _process(dt: float) -> void:
 			_life()
 		_update_status()
 		_night_weather_tick()
+		_perf_tick()
+		_stream_watch()
 		if _settings_dirty:
 			_save_settings()
 		if auto_update and not update_busy and now() > next_update_check:
@@ -1795,7 +1842,7 @@ func _check_active() -> void:
 	get_viewport().disable_3d = not win_open      # the big 3D view only when it can be seen
 	# 3D-3.30: Motion Watch saves power (nothing happens there): the simulator calculates slower too (window closed)
 	var mw_saving: bool = conn and str(mw.get("eco", "")) == "saving" and not playing and not (testrun != null and testrun.running)
-	Engine.max_fps = _fps0 if win_open else (60 if playing else ((12 if mw_saving else 30) if sim_active else 5))
+	Engine.max_fps = (win_fps if win_fps > 0 else _fps0) if win_open else (60 if playing else ((12 if mw_saving else 30) if sim_active else 5))
 
 
 # ---- pictures for Motion Watch -------------------------------------------------------------------------------------
@@ -2043,6 +2090,7 @@ func world_reply() -> Dictionary:
 var mw_cmd := {}                       # 3D-3.71: a request to Motion Watch (button here): {"id": unix ms, "op": refscan | refcompare | refstop}
 var bike_node: Node3D = null
 var refscan_label: Label
+var surprise_label: Label              # 3D-3.75
 var ds_label: Label
 
 
@@ -2550,7 +2598,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
 		"game_board_reset": ["Spiel", "Extras"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"],
-		"quality": ["System", "Grafik"], "map_on": ["System", "Ansicht"], "live_on": ["System", "Ansicht"], "live_cam": ["System", "Ansicht"], "live_size": ["System", "Ansicht"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
+		"quality": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Ansicht"], "live_on": ["System", "Ansicht"], "live_cam": ["System", "Ansicht"], "live_size": ["System", "Ansicht"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
@@ -2615,6 +2663,7 @@ func _register_controls() -> void:
 	add_control("toggle", "look_at_light", "Menschen schauen zum Licht, wenn es angeht", func(): return look_at_light, func(v): look_at_light = v, "Besuch", ex)
 	add_control("slider", "wind", "Wind", func(): return wind, func(v): wind = v, "Wetter", {"min": 0, "max": 120, "step": 1, "unit": "km/h"})
 	add_control("toggle", "real_weather", "Echtes Wetter vom Ort (alle 10 Minuten, braucht Internet)", func(): return real_weather, func(v): real_weather = v; life._wx_t = -10000.0, "Wetter")
+	add_control("toggle", "surprise_on", "Überraschungsnacht: nachts ab und zu Stromausfall, Nebelbank, Ablenkung, Scheinwerfer, ein Tier steht still – am Morgen die Bewertung von Motion Watch", func(): return surprise_on, func(v): surprise.set_on(bool(v)), "Wetter")
 	add_control("toggle", "night_weather", "Wetterverlauf über die Nacht (Dämmerung, Regenschauer, Tau auf der Linse, Morgennebel)", func(): return night_weather, func(v): night_weather = v; _nw["day"] = -1, "Wetter")
 	add_control("toggle", "real_time", "Echte Uhrzeit (die Uhr des PCs)", func(): return real_time, func(v): real_time = v, "Szene")
 	add_control("slider", "ambient", "Temperatur", func(): return ambient, func(v): ambient = v, "Wetter", {"min": -15, "max": 40, "step": 0.5, "unit": "°C"})
@@ -2789,6 +2838,10 @@ func _register_controls() -> void:
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
 			{"options": [["simple", "einfach (schnell)"], ["medium", "mittel"], ["nice", "schön (Schatten, Leuchten, Wolken)"],
 						 ["ultra", "ultra (für starke Grafikkarten; mit Vulkan noch mehr Effekte)"]]})
+	add_control("slider", "view_scale", "Schärfe der Ansicht im Fenster (weniger = schneller; die Bilder für Motion Watch bleiben scharf)", func(): return view_scale, func(v): set_view_scale(float(v)), "Grafik", {"min": 0.4, "max": 1.0, "step": 0.05, "unit": "×"})
+	add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(win_fps), func(v): win_fps = int(v); _settings_dirty = true, "Grafik",
+			{"options": [["0", "so viele wie möglich"], ["60", "60"], ["30", "30 (spart Strom)"], ["20", "20 (schwacher PC)"]]})
+	add_control("toggle", "auto_perf", "Automatisch leichter, wenn der PC zu langsam ist", func(): return auto_perf, func(v): auto_perf = v; _slow_n = 0, "Grafik")
 	add_control("toggle", "eco_idle", "Strom sparen: nur rechnen, wenn das Fenster offen ist oder Motion Watch verbunden ist", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
 	add_control("toggle", "meadow", "Gras und Blumen auf der Wiese", func(): return meadow_on, func(v): set_meadow(v), "Grafik", ex)
 	add_control("toggle", "map_on", "Übersichtskarte oben links (M)", func(): return map_on, func(v): set_map(v), "Grafik")
@@ -2822,6 +2875,49 @@ func clear_visitors() -> void:
 func _set_speed(v: float) -> void:
 	set_hour(hour())
 	speed = v
+
+
+func set_view_scale(v: float) -> void:
+	view_scale = clampf(v, 0.4, 1.0)
+	get_viewport().scaling_3d_mode = Viewport.SCALING_3D_MODE_BILINEAR
+	get_viewport().scaling_3d_scale = view_scale
+	_settings_dirty = true
+
+
+func _perf_tick() -> void:
+	"""3D-3.75: the window draws fewer than 14 pictures per second for 20 s: one step lighter (quality, then sharpness of the
+	view, then the grass). The pictures for Motion Watch are not touched."""
+	if not auto_perf or not win_open or not sim_active or now() - _perf_t < 30.0:
+		_slow_n = 0 if not auto_perf else _slow_n
+		return
+	var lim: int = win_fps if win_fps > 0 else 60
+	if Engine.get_frames_per_second() < min(14.0, lim * 0.7):
+		_slow_n += 1
+	else:
+		_slow_n = max(0, _slow_n - 2)
+	if _slow_n < 40:
+		return
+	_slow_n = 0
+	_perf_t = now()
+	var lvl: int = ["simple", "medium", "nice", "ultra"].find(quality)
+	var what := ""
+	if lvl > 0:
+		_set_quality(["simple", "medium", "nice", "ultra"][lvl - 1])
+		what = "Grafik «%s»" % ["einfach", "mittel", "schön"][lvl - 1]
+	elif view_scale > 0.75:
+		set_view_scale(0.75)
+		what = "Ansicht 75 % scharf"
+	elif meadow_on:
+		set_meadow(false)
+		what = "ohne Gras und Blumen"
+	elif view_scale > 0.55:
+		set_view_scale(0.55)
+		what = "Ansicht 55 % scharf"
+	else:
+		return
+	_settings_dirty = true
+	start_info = "Der PC ist langsam – leichter gemacht: %s (Bilder für Motion Watch unverändert)" % what
+	print("auto graphics: " + what)
 
 
 func _set_quality(v: String) -> void:
@@ -3018,6 +3114,14 @@ func control(d: Dictionary) -> Dictionary:
 			pruef.start()
 		elif w_ == "send":
 			pruef.send()
+		elif w_ == "auto":                             # 3D-3.75: {on} - automatically after every update of Motion Watch
+			pruef.set_auto(bool(d.get("on", true)))
+			if d.has("last"):
+				var ad: Dictionary = pruef._auto_data()
+				ad["last"] = str(d["last"])
+				pruef._auto_save(ad)
+			if d.has("touch_ago"):
+				pruef._touch_t = now() - float(d["touch_ago"])
 		return pruef.state()
 	elif a == "planner":                               # Aufstell-Planer (3D-3.44): get / open / close / best / put
 		var op := str(d.get("op", "get"))
@@ -3152,6 +3256,15 @@ func control(d: Dictionary) -> Dictionary:
 			explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
 			explore.test_until = explore.main.now() + (float(dv[2]) if dv.size() > 2 else 2.0)
 		return explore.state()
+	elif a == "surprise":                              # 3D-3.75: {op: get | on | off | start (kind) | morning}
+		var op_ := str(d.get("op", "get"))
+		if op_ == "on" or op_ == "off":
+			surprise.set_on(op_ == "on")
+		elif op_ == "start":
+			surprise.start(str(d.get("kind", "power")))
+		elif op_ == "morning":
+			surprise.morning()
+		return {"ok": true, "surprise": surprise.info()}
 	elif a == "mw_request":                            # 3D-3.71: like the buttons «Referenz-Scan» / «Vergleichen» (tests, remote)
 		mw_request(str(d.get("op", "")))
 		return {"ok": true, "cmd": mw_cmd}
@@ -3448,7 +3561,7 @@ func _build_ui() -> void:
 	stream_cb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	stream_cb.add_theme_font_size_override("font_size", 15)
 	stream_cb.button_pressed = stream_on
-	stream_cb.toggled.connect(func(on): set_stream(on); stream_last = on; _settings_dirty = true)
+	stream_cb.toggled.connect(func(on): set_stream(on, true); stream_last = on; _settings_dirty = true)   # 3D-3.75: busy -> spare port
 	cn.add_child(stream_cb)
 	stream_note = UI.small("")
 	cn.add_child(stream_note)
@@ -3597,6 +3710,22 @@ func _build_ui() -> void:
 		sg.add_child(sb_)
 	refscan_label = UI.small("")
 	tl.add_child(refscan_label)
+	tl.add_child(UI.small("Überraschung jetzt auslösen (bewertet Motion Watch; nachts von selbst: Wetter → Überraschungsnacht):"))
+	var sug := GridContainer.new()                   # 3D-3.75
+	sug.columns = 3
+	sug.add_theme_constant_override("h_separation", 6)
+	sug.add_theme_constant_override("v_separation", 6)
+	tl.add_child(sug)
+	for kk in surprise.KINDS + [["morning", "Bewertung jetzt"]]:
+		var ub := Button.new()
+		ub.text = kk[1]
+		ub.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		ub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		var key_: String = kk[0]
+		ub.pressed.connect(func(): surprise.morning() if key_ == "morning" else surprise.start(key_))
+		sug.add_child(ub)
+	surprise_label = UI.small("")
+	tl.add_child(surprise_label)
 	var dsr := HBoxContainer.new()                   # 3D-3.74: a training set for an own AI model
 	dsr.add_theme_constant_override("separation", 6)
 	tl.add_child(dsr)
@@ -4172,7 +4301,7 @@ func restart_args() -> PackedStringArray:
 			continue
 		if x in ["--stream", "--updated", "--mwpc"] or (not early and x in ["--mini", "--mini-tiny", "--maximized"]):
 			continue
-		if x == "--scene" or (x == "--win" and not early):
+		if x == "--scene" or x == "--old-pid" or (x == "--win" and not early):
 			skip = true
 			continue
 		out.append(x)
@@ -4195,13 +4324,15 @@ func restart_args() -> PackedStringArray:
 			out.append("%d,%d,%d,%d" % [w.position.x, w.position.y, w.size.x, w.size.y])
 	out.append("--scene")
 	out.append(scene)
+	out.append("--old-pid")                       # 3D-3.75: the new simulator may stop this one if it still holds the port
+	out.append(str(OS.get_process_id()))
 	if mwpc != null and mwpc.state == "running":
 		out.append("--mwpc")
 	return out
 
 
-const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "kids_on", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
+const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "kids_on", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
 var _settings_dirty := false
 
 
@@ -4493,6 +4624,8 @@ func _update_status() -> void:
 	_night_test_tick()
 	if refscan_label != null:
 		refscan_label.text = refscan_text()
+	if surprise_label != null:
+		surprise_label.text = surprise.status_text()
 	if ds_label != null and dataset != null:
 		ds_label.text = ("Trainingspaket: " + dataset.msg) if dataset.msg != "" else ""
 	if not mw_cmd.is_empty() and start_info.begins_with("Motion Watch: "):
@@ -4516,10 +4649,10 @@ func _update_status() -> void:
 	_paint_groups()
 	if stream_note != null:
 		if stream_on:
-			stream_note.text = "Sendet: Motion Watch findet den Simulator im Netz und bekommt die Bilder."
+			stream_note.text = "Sendet: Motion Watch findet den Simulator im Netz und bekommt die Bilder." + ("" if net.port == stream_port else " (Port %d war besetzt – sendet auf Port %d; Motion Watch findet ihn von selbst, der Tunnel auch.)" % [stream_port, net.port])
 			stream_note.add_theme_color_override("font_color", UI.GRN)
 		elif net != null and net.error_text != "":
-			stream_note.text = "⚠ " + net.error_text
+			stream_note.text = "⚠ " + net.error_text + (" – versucht es weiter (gleich auf einem freien Port)" if (stream_last or tunnel_on) else "")
 			stream_note.add_theme_color_override("font_color", UI.ORG)
 		else:
 			stream_note.text = "Senden aus – zum Ausprobieren. Motion Watch sieht den Simulator erst, wenn der Schalter eingeschaltet ist."

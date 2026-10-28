@@ -1,12 +1,12 @@
 {
- "version": "3D-3.74",
+ "version": "3D-3.75",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30932583,
- "sha256": "e941c088f52c6414322382adbbbe1f7d19dc1d2ee05095f76786322ec5696f1f",
- "notes": "Kamerafehler, vorsichtiger Schleicher, Wetter über die Nacht, Kinder-Missionen, oranges Logo",
+ "size": 30947317,
+ "sha256": "0601eda24f620fb9062ea2689bb418204ee2c02f9593ee77130fd5df5794e3f7",
+ "notes": "Verbindung nach Updates repariert, Überraschungsnacht, leichtere Grafik für schwache PCs, Tunnel stabiler, Prüfstand automatisch nach MW-Updates",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24054105,
-  "sha256": "12136ddfc6ee44f0b65997c14d1c0d5307ac44854ac1582b7952b25700ac7698"
+  "size": 24069669,
+  "sha256": "d806e6b11b769eb0b64018e1f50629c359b1d4937d1af2dc80c77b972f057cb3"
  }
 }

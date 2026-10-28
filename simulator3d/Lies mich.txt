@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.74 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.75 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,6 +607,18 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 Motion Watch); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.75
+3D-3.75: «Überraschungsnacht» (Wetter): nachts passiert ab und zu etwas Unerwartetes – Stromausfall (alle Lampen aus),
+Nebelbank, Ablenkung (ein Tier auf der einen Seite, ein Schleicher auf der anderen), ein Auto blendet mit den Scheinwerfern,
+ein Tier steht minutenlang still vor der Kamera. Am Morgen gibt es die Bewertung von Motion Watch (ruhig geblieben? Mensch
+erkannt?), gespeichert im Ordner «ueberraschung». Einzeln auslösen: Werkzeuge → Überraschung jetzt auslösen.
+Schwacher PC / virtuelle Maschine (Grafik): «Schärfe der Ansicht» (weniger = schneller), «Bilder pro Sekunde im Fenster»
+und «Automatisch leichter, wenn der PC zu langsam ist» – die Bilder für Motion Watch bleiben dabei unverändert.
+Tunnel stabiler: die Leitungen zu Motion Watch werden regelmässig erneuert (Router vergessen ruhige Verbindungen), nach
+Fehlern wartet er etwas länger, hängende Leitungen werden geschlossen.
+Prüfstand: «Nach jedem Update von Motion Watch automatisch messen» – misst kurz, sobald eine neue Motion-Watch-Version
+verbunden ist und 3 Minuten niemand den Simulator bedient; mit GitHub-Schlüssel wird das Ergebnis gleich gesendet.
 
 NEU IN 3D-3.74
 3D-3.74: Kamerafehler zum Testen (Kamera-Fehler): beschlagene Linse, schmutzige Linse, wackelnder Mast im Wind,

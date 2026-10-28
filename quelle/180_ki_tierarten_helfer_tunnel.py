@@ -530,15 +530,26 @@ def _tun_pipe(a, b):
     threading.Thread(target=done, daemon=True).start()
 
 
+TUN_MAX_AGE = 100.0               # 2.95.101: an idle connection older than this is dead (a router forgot it); the simulator renews its own
+
+
 def _tun_take():
-    """an idle connection of the simulator (dead ones are dropped)"""
+    """an idle connection of the simulator (dead ones are dropped). 2.95.101: the newest first - the old ones are the ones a
+    router may have forgotten, and the simulator (3D-3.75) renews them after 40-55 s anyway"""
     import select
     t0 = time.time()
     while time.time() - t0 < 4.0:
         with TUN["lock"]:
-            c = TUN["pool"].popleft() if TUN["pool"] else None
-        if c is None:
+            ct = TUN["pool"].pop() if TUN["pool"] else None
+        if ct is None:
             time.sleep(0.1); continue
+        c, born = ct
+        if time.time() - born > TUN_MAX_AGE:
+            try:
+                c.close()
+            except OSError:
+                pass
+            continue
         try:
             r, _w, _x = select.select([c], [], [], 0)
             if r and not c.recv(1, _socket.MSG_PEEK):
@@ -582,10 +593,10 @@ def tunnel_start():
                 c.sendall(b"OK\n"); c.settimeout(None)
                 c.setsockopt(_socket.SOL_SOCKET, _socket.SO_KEEPALIVE, 1)
                 with TUN["lock"]:
-                    TUN["pool"].append(c)
-                    while len(TUN["pool"]) > 12:
+                    TUN["pool"].append((c, time.time()))
+                    while len(TUN["pool"]) > 12 or (TUN["pool"] and time.time() - TUN["pool"][0][1] > TUN_MAX_AGE):
                         try:
-                            TUN["pool"].popleft().close()
+                            TUN["pool"].popleft()[0].close()
                         except OSError:
                             pass
                 was = tunnel_active()
