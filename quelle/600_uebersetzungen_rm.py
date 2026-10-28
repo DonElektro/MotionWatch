@@ -2149,3 +2149,12 @@ for _k, _v in _HX122.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+
+_HX123 = {  # 2.98.3
+    'Symbols coloured': ('Symbole farbig', 'Symboles en couleur', 'Simboli a colori', 'Simbols colurads'),
+    'plain': ('schlicht', 'simples', 'semplici', 'simpels'),
+}
+for _k, _v in _HX123.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])

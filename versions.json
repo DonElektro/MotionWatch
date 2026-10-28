@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 00:09",
+ "generated": "2026-10-29 00:12",
  "versions": [
   {
-   "version": "2.98.2",
-   "file": "webcam_bewegung_2_98_2.py",
+   "version": "2.98.3",
+   "file": "webcam_bewegung_2_98_3.py",
    "url": "",
-   "sha256": "26b0e9c6e8357446aefa93e8f63db6b1a4dcd651e679aa31ed2c570a19ec445a",
-   "date": "2026-10-29 00:09",
-   "notes": "MoveEye-Punkte (Spiel und echter Betrieb, mit Abzeichen der Spieler), ein Morgen-Push (Panorama und Simulator-Woche im Nachtbericht), Fehlalarme aus den Spielen ins Fehlalarm-Lernen",
-   "sig": "5eb7000012c5e12bae120118c98ec157feb1041857dd2de915f1ffe4b3e43d15314c9dd5673c3c7406de2b2ca5b62f88f63e7c7bb6495f9e425079b1e11f7c05"
+   "sha256": "63a08f634785ba65f83c12c8836a25b1ef206440bc04a532a901974ed0258fd1",
+   "date": "2026-10-29 00:12",
+   "notes": "Kopf der Einstellungen aufgeräumt: Suche über die ganze Breite, darunter Einfach/Experte und Symbole kompakt, Erklärungen als Hinweis beim Darüberfahren",
+   "sig": "6ead2821761df0477a1d2aca8bf3adb78226df612c83d67aeaa55f87a1a97d3f2e2b15d614ae8b43066846b224f5b59c295ff25665b5cc38be51550e1de5d809"
   },
   {
    "version": "2.97.1",

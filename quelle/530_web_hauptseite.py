@@ -404,6 +404,14 @@ body[data-tab="protect"] main,body[data-tab="settings"] main{grid-template-colum
 body[data-tab="protect"] main>aside,body[data-tab="settings"] main>aside{display:block!important}
 body[data-tab="protect"] [data-tab-of="settings"],body[data-tab="settings"] [data-tab-of="protect"],body[data-tab="settings"] #alarm-chain{display:none!important}
 body[data-tab="live"] #set-foot{display:block!important}
+/* 2.98.3: the head of the settings tidy - search with its 3 buttons over the full width, below one small line
+   «Einfach | Experte» and «Symbole farbig | schlicht» side by side; the explanations as tooltips */
+body[data-tab] #srch{padding-left:0!important}body[data-tab] #srch .ic{left:12px!important}
+body[data-tab] .simplebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 14px}
+body[data-tab] .simplebar>.mut,body[data-tab] .simplebar .icseg>.mut{display:none}
+body[data-tab] .simplebar .seg{display:inline-flex;flex:1 1 160px}
+body[data-tab] .simplebar .seg button{flex:1;padding:7px 8px;font-size:12.5px;white-space:nowrap}
+body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
 #alarm-chain .chain{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:4px 0}
 #alarm-chain .chain button{padding:6px 9px;font-size:13px}#alarm-chain .chain button.off{opacity:.45;text-decoration:line-through}
 #alarm-chain .chain em{color:var(--mut);font-style:normal}
@@ -1936,6 +1944,9 @@ function tabsArrange() {
   const box = $("#settings");
   if (box && !$("#alarm-chain")) { const c = el("div", "card"); c.id = "alarm-chain"; box.parentNode.insertBefore(c, box); }
   const sbar = $("#simplebar"); if (sbar && box) box.parentNode.insertBefore(sbar, box);     // Simple / Expert on top, not 3800 px down
+  setTimeout(() => { const sb = $("#srch"), bar = $("#simplebar"); if (sb && bar) sb.after(bar);      // 2.98.3: search first, then the small line
+    if (bar) { const sg = bar.querySelector(":scope > .seg"); if (sg) sg.title = t("Simple: only the important settings. «Expert» shows all of them.");
+      const ic = bar.querySelector(".icseg .seg"); if (ic) ic.title = t("Symbols: green dot or green symbol = switched on"); } }, 0);
   const tile = $("#simtile"), sec = document.querySelector("main>section");
   if (tile && sec) sec.appendChild(tile);
 }
@@ -4182,7 +4193,7 @@ function simpleBar(on) {
   w.appendChild(seg); if (on) w.appendChild(el("div", "mut", t("Simple: only the important settings. «Expert» shows all of them.")));
   // 2.95.70: symbols coloured (with a green dot while on) or plain (turn green) - per device
   let pl = false; try { pl = localStorage.getItem("mw-icons") === "plain"; } catch (e) {}
-  const iw = el("div", "icseg"), is = el("div", "seg lseg"), ic = el("button", pl ? "" : "sel-auto", t("Coloured symbols")), ip = el("button", pl ? "sel-auto" : "", t("Plain symbols"));
+  const iw = el("div", "icseg"), is = el("div", "seg lseg"), ic = el("button", pl ? "" : "sel-auto", document.body.dataset.tab ? "🎨 " + t("Symbols coloured") : t("Coloured symbols")), ip = el("button", pl ? "sel-auto" : "", document.body.dataset.tab ? "◯ " + t("plain") : t("Plain symbols"));
   ic.type = ip.type = "button"; is.append(ic, ip);
   const iset = v => { try { localStorage.setItem("mw-icons", v ? "plain" : "color"); } catch (e) {} document.body.classList.toggle("icplain", v);
     ic.className = v ? "" : "sel-auto"; ip.className = v ? "sel-auto" : ""; };
@@ -4191,7 +4202,7 @@ function simpleBar(on) {
   return w;
 }
 // ---- self-check: one traffic light per part ----
-Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with MoveEye first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit MoveEye spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick back in its place": "Mover-Stick wieder an seinem Platz", "Move (double tap: back to its place)": "Verschieben (doppelt tippen: zurück an den Platz)", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
+Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with MoveEye first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit MoveEye spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick back in its place": "Mover-Stick wieder an seinem Platz", "Move (double tap: back to its place)": "Verschieben (doppelt tippen: zurück an den Platz)", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Symbols coloured": "Symbole farbig", "plain": "schlicht", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
   let j; try { j = await (await fetch("/api/health?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
   const L = $("#h-list"); if (!L) return; L.textContent = "";

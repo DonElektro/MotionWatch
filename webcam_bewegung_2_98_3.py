@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_2.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_3.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.3: Kopf der Einstellungen aufgeräumt: Suche über die ganze Breite, darunter Einfach/Experte und Symbole kompakt,
+    Erklärungen als Hinweis beim Darüberfahren
   * 2.98.2: MoveEye-Punkte (Spiel und echter Betrieb, mit Abzeichen der Spieler), ein Morgen-Push (Panorama und Simulator-Woche
     im Nachtbericht), Fehlalarme aus den Spielen ins Fehlalarm-Lernen
   * 2.98.1: Ein «Folgen» für Personen, Tiere und Bewegtes: die Kamera zielt auf das Objekt (Winkel aus dem Sichtfeld) statt in
@@ -849,10 +851,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_3.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_2.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_3.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_3.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -869,7 +871,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.2"
+APP_VERSION = "2.98.3"
 
 
 def default_data_dir():
@@ -22144,7 +22146,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_2.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_3.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -35219,6 +35221,14 @@ body[data-tab="protect"] main,body[data-tab="settings"] main{grid-template-colum
 body[data-tab="protect"] main>aside,body[data-tab="settings"] main>aside{display:block!important}
 body[data-tab="protect"] [data-tab-of="settings"],body[data-tab="settings"] [data-tab-of="protect"],body[data-tab="settings"] #alarm-chain{display:none!important}
 body[data-tab="live"] #set-foot{display:block!important}
+/* 2.98.3: the head of the settings tidy - search with its 3 buttons over the full width, below one small line
+   «Einfach | Experte» and «Symbole farbig | schlicht» side by side; the explanations as tooltips */
+body[data-tab] #srch{padding-left:0!important}body[data-tab] #srch .ic{left:12px!important}
+body[data-tab] .simplebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 14px}
+body[data-tab] .simplebar>.mut,body[data-tab] .simplebar .icseg>.mut{display:none}
+body[data-tab] .simplebar .seg{display:inline-flex;flex:1 1 160px}
+body[data-tab] .simplebar .seg button{flex:1;padding:7px 8px;font-size:12.5px;white-space:nowrap}
+body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
 #alarm-chain .chain{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:4px 0}
 #alarm-chain .chain button{padding:6px 9px;font-size:13px}#alarm-chain .chain button.off{opacity:.45;text-decoration:line-through}
 #alarm-chain .chain em{color:var(--mut);font-style:normal}
@@ -36751,6 +36761,9 @@ function tabsArrange() {
   const box = $("#settings");
   if (box && !$("#alarm-chain")) { const c = el("div", "card"); c.id = "alarm-chain"; box.parentNode.insertBefore(c, box); }
   const sbar = $("#simplebar"); if (sbar && box) box.parentNode.insertBefore(sbar, box);     // Simple / Expert on top, not 3800 px down
+  setTimeout(() => { const sb = $("#srch"), bar = $("#simplebar"); if (sb && bar) sb.after(bar);      // 2.98.3: search first, then the small line
+    if (bar) { const sg = bar.querySelector(":scope > .seg"); if (sg) sg.title = t("Simple: only the important settings. «Expert» shows all of them.");
+      const ic = bar.querySelector(".icseg .seg"); if (ic) ic.title = t("Symbols: green dot or green symbol = switched on"); } }, 0);
   const tile = $("#simtile"), sec = document.querySelector("main>section");
   if (tile && sec) sec.appendChild(tile);
 }
@@ -38997,7 +39010,7 @@ function simpleBar(on) {
   w.appendChild(seg); if (on) w.appendChild(el("div", "mut", t("Simple: only the important settings. «Expert» shows all of them.")));
   // 2.95.70: symbols coloured (with a green dot while on) or plain (turn green) - per device
   let pl = false; try { pl = localStorage.getItem("mw-icons") === "plain"; } catch (e) {}
-  const iw = el("div", "icseg"), is = el("div", "seg lseg"), ic = el("button", pl ? "" : "sel-auto", t("Coloured symbols")), ip = el("button", pl ? "sel-auto" : "", t("Plain symbols"));
+  const iw = el("div", "icseg"), is = el("div", "seg lseg"), ic = el("button", pl ? "" : "sel-auto", document.body.dataset.tab ? "🎨 " + t("Symbols coloured") : t("Coloured symbols")), ip = el("button", pl ? "sel-auto" : "", document.body.dataset.tab ? "◯ " + t("plain") : t("Plain symbols"));
   ic.type = ip.type = "button"; is.append(ic, ip);
   const iset = v => { try { localStorage.setItem("mw-icons", v ? "plain" : "color"); } catch (e) {} document.body.classList.toggle("icplain", v);
     ic.className = v ? "" : "sel-auto"; ip.className = v ? "sel-auto" : ""; };
@@ -39006,7 +39019,7 @@ function simpleBar(on) {
   return w;
 }
 // ---- self-check: one traffic light per part ----
-Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with MoveEye first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit MoveEye spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick back in its place": "Mover-Stick wieder an seinem Platz", "Move (double tap: back to its place)": "Verschieben (doppelt tippen: zurück an den Platz)", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
+Object.assign(I18N.de, {"missed pictures from the game (hard cases)": "verpasste Bilder aus dem Spiel (schwierige Fälle)", "no missed pictures from the game yet - play a round with MoveEye first": "noch keine verpassten Bilder aus dem Spiel – zuerst eine Runde mit MoveEye spielen", "You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick back in its place": "Mover-Stick wieder an seinem Platz", "Move (double tap: back to its place)": "Verschieben (doppelt tippen: zurück an den Platz)", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Symbols coloured": "Symbole farbig", "plain": "schlicht", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
   let j; try { j = await (await fetch("/api/health?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
   const L = $("#h-list"); if (!L) return; L.textContent = "";
@@ -45001,7 +45014,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.2")
+        self.root.title("MoveEye 2.98.3")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -45318,7 +45331,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.3 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -52687,6 +52700,15 @@ _HX122 = {  # 2.98.1: one «Folgen»
     'Keep what is detected in the middle: persons, animals, moving things': ('Hält Erkanntes in der Bildmitte: Personen, Tiere, Bewegtes', 'Garde au centre ce qui est détecté : personnes, animaux, objets en mouvement', 'Tiene al centro ciò che viene rilevato: persone, animali, oggetti in movimento', 'Tegna en il center tge ch’è vegnì identifitgà: persunas, animals, chaussas en moviment'),
 }
 for _k, _v in _HX122.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+_HX123 = {  # 2.98.3
+    'Symbols coloured': ('Symbole farbig', 'Symboles en couleur', 'Simboli a colori', 'Simbols colurads'),
+    'plain': ('schlicht', 'simples', 'semplici', 'simpels'),
+}
+for _k, _v in _HX123.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
