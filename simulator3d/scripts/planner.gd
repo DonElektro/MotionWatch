@@ -75,6 +75,13 @@ func _ready() -> void:
 	put_b.text = "Motion Watch hierhin stellen"
 	put_b.pressed.connect(place_here)
 	row.add_child(put_b)
+	var put_rs := Button.new()                       # 3D-3.72: place it and let Motion Watch take the reference scan there
+	put_rs.text = "Hierhin stellen + Referenz-Scan"
+	put_rs.tooltip_text = "Motion Watch an diesen Platz stellen und gleich die Referenz-Fotos aufnehmen lassen"
+	put_rs.pressed.connect(func():
+		place_here()
+		main.mw_request("refscan"))
+	row.add_child(put_rs)
 	var back := Button.new()
 	back.text = "Zurück an den Anfang"
 	back.pressed.connect(func():

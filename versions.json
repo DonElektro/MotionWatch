@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 17:19",
+ "generated": "2026-10-28 17:39",
  "versions": [
   {
-   "version": "2.95.97",
-   "file": "webcam_bewegung_2_95_97.py",
+   "version": "2.95.98",
+   "file": "webcam_bewegung_2_95_98.py",
    "url": "",
-   "sha256": "0c24a841eba7b917734bd6ae7fe0a48b8fa5519bc2e8af03a9545065d48be1ed",
-   "date": "2026-10-28 17:19",
-   "notes": "Referenz-Scan: Assistent (Werkzeuge) – der Kopf fährt alle Richtungen ab und speichert Referenz-Fotos; Vergleich von Hand, beim Scharfschalten oder alle N Minuten, Bericht mit fehlt / neu / verändert, Push-Meldung; auch vom 3D-Simulator aus startbar (3D-3.71)",
-   "sig": "39aacffdc0f6b0845f3a1483ef6aa102d5486874f2a0eaad1dc712a6f3b82a3105514dfca4ab105410cb9177b2092b6d33e63cc952b6fc9b3313c5386504910b"
+   "sha256": "5408bfc2ce33626939d989bd44b05dad868b07968e884f8958c7582cfc33d899",
+   "date": "2026-10-28 17:39",
+   "notes": "Referenz-Scan: Gegenstände bewachen (Rechteck im Referenz-Foto, fehlt er beim Vergleich = sofort Alarm), eigene Nacht-Referenz; 3D-Simulator 3D-3.72: Nacht-Test, Testhilfen, Sabotage-Test, Planer + Referenz-Scan",
+   "sig": "c24b8e63b403fc58b76b5a23bb8753472e12827dbef18b695bfbb416d36e6679d695b28c4fe311990ebfb60ee7f9f347f6f4075dc159dc2695191c1aac37a104"
   },
   {
    "version": "2.94.5",

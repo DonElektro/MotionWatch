@@ -1,12 +1,12 @@
 {
- "version": "3D-3.71",
+ "version": "3D-3.72",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30898925,
- "sha256": "da56e68e29cad32d13ac4204970e89b7886a154b8577c48e541ba95f20ce3f94",
- "notes": "Knöpfe für den Referenz-Scan von Motion Watch, Testhilfe Velo",
+ "size": 30903405,
+ "sha256": "5185ec5b4cc43fa9807f3b656dca531028b55d5371e9a17cbbfd24c307e7c288",
+ "notes": "Nacht-Test, Testhilfen (Velo, Zelt, Tisch, Kühlboxen, Grill), Sabotage-Test, Planer + Referenz-Scan",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24020372,
-  "sha256": "95770a83082816c6ebc8fda22b9b689cadadd1be2b6c2f38512c9c7abe7a7da1"
+  "size": 24024213,
+  "sha256": "89a05eac1dee316101911bd3f82f864c9004244a40efab04a3f6a762141066fe"
  }
 }

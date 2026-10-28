@@ -52,7 +52,12 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
 .rs-rep{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:center}
 .rs-rep.sel{border-color:var(--acc,#3b8cff)}.rs-rep b{font-weight:600}
 .rs-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.rs-pair img{width:100%;border-radius:8px;display:block}.rs-pair div{font-size:11px;color:var(--mut)}
-.rs-ch{font-size:13px;margin:2px 0}.rs-ch.missing{color:#ff6b6b}.rs-ch.new{color:#4fa3ff}.rs-ch.changed{color:#f5a623}
+.rs-ch{font-size:13px;margin:2px 0}.rs-ch.gone{color:#ff3b30;font-weight:700}.rs-ch.ok{color:var(--grn)}
+.rs-grid figure{cursor:pointer;position:relative}.rs-grid figure i{position:absolute;right:4px;top:4px;font-style:normal;font-size:11px;background:rgba(10,14,20,.8);border-radius:6px;padding:1px 5px}
+#rs-ed{position:fixed;inset:0;z-index:90;background:rgba(5,8,12,.94);display:flex;flex-direction:column;padding:12px;gap:10px;overflow:auto}
+#rs-ed .cv{position:relative;align-self:center;max-width:min(100%,1100px);width:100%;touch-action:none;user-select:none}#rs-ed .cv img{width:100%;display:block;border-radius:8px;pointer-events:none}
+#rs-ed .bx{position:absolute;border:2px dashed #3fcf6b;background:rgba(63,207,107,.12)}#rs-ed .bx span{position:absolute;left:0;top:-20px;font-size:12px;background:#3fcf6b;color:#000;border-radius:4px;padding:0 4px;white-space:nowrap}
+#rs-ed .bx.drag{border-color:#ffd166}.rs-ch.missing{color:#ff6b6b}.rs-ch.new{color:#4fa3ff}.rs-ch.changed{color:#f5a623}
 .opt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:14px;cursor:pointer}
 .opt+.opt{margin-top:0}
 .tbd .opt + :not(.opt){margin-top:12px}
@@ -165,7 +170,7 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
       <div class="mut" data-i18n="rs-scan">rs-scan</div>
       <div class="trow"><button type="button" id="rs-scan" onclick="rsGo('scan')">📸 <span data-i18n="Take the reference now">Take the reference now</span></button><button type="button" class="sec" id="rs-stop" onclick="rsGo('stop')" hidden data-i18n="Stop">Stop</button></div>
       <div class="rs-prog" id="rs-prog" hidden><i></i></div><div class="mut" id="rs-msg"></div>
-      <div id="rs-ref" class="rs-grid"></div>
+      <div id="rs-ref"></div>
       <div class="trow"><button type="button" class="sec" onclick="rsStep(2)">‹ <span data-i18n="Back">Back</span></button><button type="button" id="rs-to4" onclick="rsStep(4)"><span data-i18n="Next">Next</span> ›</button></div>
     </div>
     <div class="rs-pane" data-p="4" hidden>
@@ -839,11 +844,17 @@ function rsPaint() {
     $(pg).hidden = R.busy !== op; $(pg).firstChild.style.width = pr + "%";
     $(mg).textContent = R.busy === op ? (op === "scan" ? t("Scanning") : t("Comparing")) + ": " + t("direction") + " " + R.step + " / " + R.n + " …" : (R.msg ? t(R.msg) : ""); });
   $("#rs-scan").disabled = !!R.busy; $("#rs-cmp").disabled = !!R.busy || !R.ref; $("#rs-stop").hidden = !R.busy;
-  const rb = $("#rs-ref"), key = R.ref ? R.ref.t + ":" + R.ref.n : "";
+  const rb = $("#rs-ref"), RF = R.refs || {}, key = JSON.stringify(["day", "night"].map(k => RF[k] ? [RF[k].t, RF[k].n, (RF[k].watch || []).length] : 0));
   if (rb.dataset.k !== key) { rb.dataset.k = key; rb.textContent = "";
-    if (R.ref) (R.ref.positions || []).forEach(p => { const f = el("figure"); const im = document.createElement("img"); im.loading = "lazy"; im.src = "/refscan/file/ref/" + p.file + "?t=" + R.ref.t;
-      f.append(im, el("figcaption", "", t("Pan") + " " + p.pan + " % · " + t("Tilt") + " " + p.tilt + " %")); rb.appendChild(f); }); }
-  if (R.ref) $("#rs-msg").textContent = R.busy === "scan" ? $("#rs-msg").textContent : "✓ " + t("Reference") + ": " + R.ref.n + " " + t("directions") + " · " + rsWhen(R.ref.t);
+    ["day", "night"].forEach(k => { const F = RF[k]; if (!F) return;
+      rb.appendChild(el("div", "mut", (k === "day" ? "☀️ " + t("Day reference") : "🌙 " + t("Night reference")) + " · " + rsWhen(F.t) + " · " + t("tap a photo to guard a thing")));
+      const g_ = el("div", "rs-grid");
+      (F.positions || []).forEach(p => { const f = el("figure"); const im = document.createElement("img"); im.loading = "lazy"; im.src = "/refscan/file/" + F.dir + "/" + p.file + "?t=" + F.t;
+        const nw = (F.watch || []).filter(w => w.pos === p.i); f.append(im, el("figcaption", "", t("Pan") + " " + p.pan + " % · " + t("Tilt") + " " + p.tilt + " %"));
+        if (nw.length) f.appendChild(el("i", "", "🛡 " + nw.map(w => w.name).join(", ")));
+        f.onclick = () => rsEdit(k, p.i); g_.appendChild(f); });
+      rb.appendChild(g_); }); }
+  if (R.ref && R.busy !== "scan") $("#rs-msg").textContent = (R.msg ? t(R.msg) + " · " : "") + (R.dark ? "🌙 " + t("It is dark now: the scan saves the night reference.") : "☀️ " + t("It is light now: the scan saves the day reference."));
   rsOptsPaint();
   const rl = $("#rs-reps"), rk = JSON.stringify((R.reports || []).map(x => x.id));
   if (rl.dataset.k !== rk) { rl.dataset.k = rk; rl.textContent = "";
@@ -858,7 +869,9 @@ async function rsReport(id) {
   const r = await rsPost({op: "report", id: id}); const box = $("#rs-rep"); box.textContent = ""; if (!r || !r.report) return;
   const P = r.report.positions || [];
   box.appendChild(el("h3", "", t("Report") + " " + rsWhen(r.report.t)));
-  box.appendChild(el("div", "mut", r.report.missing + " " + t("missing") + " · " + r.report.new + " " + t("new") + " · " + r.report.changed + " " + t("changed") + " · " + P.length + " " + t("directions")));
+  box.appendChild(el("div", "mut", r.report.missing + " " + t("missing") + " · " + r.report.new + " " + t("new") + " · " + r.report.changed + " " + t("changed") + " · " + P.length + " " + t("directions")
+    + " · " + (r.report.ref_kind === "night" ? "🌙 " + t("night reference") : "☀️ " + t("day reference")) + (!!r.report.dark_now !== (r.report.ref_kind === "night") ? " (" + t("other light now - take a reference for this light too") + ")" : "")));
+  (r.report.watch || []).forEach(w => box.appendChild(el("div", "rs-ch " + (w.gone ? "gone" : "ok"), (w.gone ? "🚨 " + t("Guarded thing missing") + ": " : "🛡 " + t("guarded, still there") + ": ") + w.name)));
   const lab = {missing: "missing", new: "new", changed: "changed"};
   P.filter(p => (p.changes || []).length).concat(P.filter(p => !(p.changes || []).length)).forEach(p => {
     const w = el("div", "");
@@ -872,6 +885,40 @@ async function rsReport(id) {
     box.appendChild(w); });
 }
 document.querySelectorAll("#c-refscan .rs-steps>span").forEach(x => x.onclick = () => rsStep(+x.dataset.n));
+// 2.95.98: guard things - drag a box over the thing on a reference photo and name it
+function rsEdit(kind, pos) {
+  const F = ((RS || {}).refs || {})[kind]; if (!F) return;
+  const p = (F.positions || []).find(x => x.i === pos); let items = JSON.parse(JSON.stringify(F.watch || []));
+  const ov = el("div"); ov.id = "rs-ed"; document.body.appendChild(ov);
+  const hd = el("div", "trow"); hd.append(el("b", "", "🛡 " + t("Guard things") + " · " + t("Pan") + " " + p.pan + " %"));
+  const cv = el("div", "cv"); const im = document.createElement("img"); im.src = "/refscan/file/" + F.dir + "/" + p.file + "?t=" + F.t; cv.appendChild(im);
+  const help = el("div", "mut", t("Drag a box over the thing (bike, grill, tent …) and give it a name. If it is missing at a comparison, Motion Watch gives an alarm at once."));
+  const list = el("div", ""); const bar = el("div", "trow");
+  const save = el("button", "", "✓ " + t("Save")), cancel = el("button", "sec", t("Cancel")); bar.append(save, cancel);
+  ov.append(hd, help, cv, list, bar);
+  const paint = () => { cv.querySelectorAll(".bx").forEach(b => b.remove()); list.textContent = "";
+    items.forEach((w, n) => { if (w.pos !== pos) return; const b = el("div", "bx"); Object.assign(b.style, {left: w.x * 100 + "%", top: w.y * 100 + "%", width: w.w * 100 + "%", height: w.h * 100 + "%"});
+      b.appendChild(el("span", "", w.name)); cv.appendChild(b);
+      const r_ = el("div", "trow"); const del = el("button", "sec", "✕"); del.onclick = () => { items.splice(n, 1); paint(); }; r_.append(el("span", "", "🛡 " + w.name), del); list.appendChild(r_); }); };
+  let st = null, dr = null;
+  const at = e => { const b = cv.getBoundingClientRect(); return [Math.max(0, Math.min(1, (e.clientX - b.left) / b.width)), Math.max(0, Math.min(1, (e.clientY - b.top) / b.height))]; };
+  cv.addEventListener("pointerdown", e => { e.preventDefault(); st = at(e); dr = el("div", "bx drag"); cv.appendChild(dr); try { cv.setPointerCapture(e.pointerId); } catch (x) {} });
+  cv.addEventListener("pointermove", e => { if (!st) return; const q = at(e);
+    Object.assign(dr.style, {left: Math.min(st[0], q[0]) * 100 + "%", top: Math.min(st[1], q[1]) * 100 + "%", width: Math.abs(q[0] - st[0]) * 100 + "%", height: Math.abs(q[1] - st[1]) * 100 + "%"}); });
+  cv.addEventListener("pointerup", e => { if (!st) return; const q = at(e), a = st; st = null; dr.remove();
+    const w = Math.abs(q[0] - a[0]), h = Math.abs(q[1] - a[1]); if (w < 0.02 || h < 0.02) return;
+    const name = prompt(t("Name of the thing (e.g. bike)"), t("Thing")); if (name === null) return;
+    items.push({pos: pos, x: Math.min(a[0], q[0]), y: Math.min(a[1], q[1]), w: w, h: h, name: name.slice(0, 40) || t("Thing")}); paint(); });
+  cancel.onclick = () => ov.remove();
+  save.onclick = async () => { const r = await rsPost({op: "watch", kind: kind, items: items}); if (r && r.ok) { ov.remove(); $("#rs-ref").dataset.k = ""; rsLoad(); } else alert((r && r.error) || t("error")); };
+  paint();
+}
+Object.assign(I18N.de, {"Day reference": "Tag-Referenz", "Night reference": "Nacht-Referenz", "day reference": "Tag-Referenz", "night reference": "Nacht-Referenz",
+  "tap a photo to guard a thing": "Foto antippen, um einen Gegenstand zu bewachen", "It is dark now: the scan saves the night reference.": "Jetzt ist es dunkel: der Scan speichert die Nacht-Referenz.",
+  "It is light now: the scan saves the day reference.": "Jetzt ist es hell: der Scan speichert die Tag-Referenz.", "other light now - take a reference for this light too": "jetzt anderes Licht – auch für dieses Licht eine Referenz aufnehmen",
+  "Guarded thing missing": "Bewachter Gegenstand fehlt", "guarded, still there": "bewacht, noch da", "Guard things": "Gegenstände bewachen", "Save": "Speichern", "Cancel": "Abbrechen",
+  "Drag a box over the thing (bike, grill, tent …) and give it a name. If it is missing at a comparison, Motion Watch gives an alarm at once.": "Ein Rechteck über den Gegenstand ziehen (Velo, Grill, Zelt …) und ihm einen Namen geben. Fehlt er bei einem Vergleich, gibt Motion Watch sofort Alarm.",
+  "Name of the thing (e.g. bike)": "Name des Gegenstands (z. B. Velo)", "Thing": "Gegenstand", "night reference saved": "Nacht-Referenz gespeichert"});
 (async () => { for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100)); rsLoad(); })();
 Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Set up": "Aufstellen", "Settings": "Einstellungen", "Scan": "Scannen", "Compare": "Vergleichen", "Middle": "Mitte", "Next": "Weiter", "Back": "Zurück",
   "refscan-note": "Motion Watch fährt mit dem Kopf ein Raster von Richtungen ab und speichert Fotos als Referenz. Später fährt es dieselben Richtungen wieder ab und zeigt im Bericht, was fehlt, was neu ist und was sich verändert hat – z. B. ob das Velo, der Grill oder das Zelt noch da ist.",
@@ -888,7 +935,7 @@ Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Set up": "Aufstellen
   "Push message also for new or changed things": "Push-Meldung auch bei Neuem oder Verändertem", "Compare every (minutes while armed, 0 = off)": "Vergleichen alle (Minuten, wenn scharf; 0 = aus)",
   "directions": "Richtungen", "direction": "Richtung", "about": "etwa", "Scanning": "Scannen", "Comparing": "Vergleichen", "No reference yet": "Noch keine Referenz", "missing": "fehlt", "new": "neu", "changed": "verändert",
   "nothing missing": "nichts fehlt", "Reference": "Referenz", "Now": "Jetzt", "Pan": "Schwenk", "Tilt": "Neigung", "no change": "keine Veränderung", "of the picture": "des Bildes",
-  "No report yet - press «Compare now».": "Noch kein Bericht – «Jetzt vergleichen» drücken.", "by hand": "von Hand", "armed": "beim Scharfschalten", "simulator": "vom Simulator", "window": "im Fenster",
+  "No report yet - press «Compare now».": "Noch kein Bericht – «Jetzt vergleichen» drücken.", "by hand": "von Hand", "night test": "Nacht-Test", "armed": "beim Scharfschalten", "simulator": "vom Simulator", "window": "im Fenster",
   "reference saved": "Referenz gespeichert", "report ready": "Bericht fertig", "stopped": "abgebrochen", "no picture from the camera": "kein Bild von der Kamera",
   "a scan is already running": "es läuft schon ein Scan", "no camera": "keine Kamera", "no reference yet - scan first": "noch keine Referenz – zuerst scannen"});
 function pick(k, push) {

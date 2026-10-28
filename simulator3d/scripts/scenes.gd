@@ -35,6 +35,8 @@ func build(id: String, parent: Node3D) -> void:
 	parent.add_child(root)
 	rng.seed = 7
 	data = {}
+	m.test_props = {}                            # 3D-3.72: things the test aids can take away (name -> node)
+	m.bike_node = null
 	match id:
 		"wald":
 			_wald()
@@ -338,6 +340,7 @@ func bike(p: Vector3, rot_y: float) -> void:
 	put(bk, cyl(0.09, 0.09, 0.02, 12), Vector3(0.03, 0.3, 0.0), Color(0.6, 0.6, 0.62), "stone", Vector3(0, 0, PI / 2))   # chain ring
 	m.obj["bike"] = p
 	m.bike_node = bk                             # 3D-3.71: the test aid «Velo wegnehmen» hides it
+	m.test_props["Velo"] = bk
 	m.add_obstacle(p, 0.5)
 	m.set_obstacle_height(1.0)
 
@@ -497,16 +500,30 @@ func _camping() -> void:
 		put(tn, cyl(0.015, 0.015, 1.65, 5), Vector3(0, 0.82, 1.15 * s2), Color(0.6, 0.6, 0.62), "stone")
 		put(tn, m.box(0.01, 0.01, 1.4), Vector3(0, 0.8, 1.75 * s2), Color(0.85, 0.85, 0.8), "stone", Vector3(0.62 * s2, 0, 0))
 	m.obj["pir"] = m.pos_of(14.0, 7.0)
+	m.test_props["Zelt"] = tn
 	m.add_obstacle_node(tn, Vector3.ZERO, 3.0, 2.8)
 	m.set_obstacle_height(1.4)
 	bike(m.pos_of(32.0, 6.0), deg_to_rad(-32.0) + PI / 2)
-	put(root, m.box(1.2, 0.05, 0.8), m.pos_of(-62, 5.5, 0.72), Color(0.8, 0.8, 0.78), "stone")
+	var tbl := node(root, Vector3.ZERO)                                              # 3D-3.72: in their own nodes (test aids)
+	var cbx := node(root, Vector3.ZERO)
+	m.test_props["Tisch"] = tbl
+	m.test_props["Kühlboxen"] = cbx
+	put(tbl, m.box(1.2, 0.05, 0.8), m.pos_of(-62, 5.5, 0.72), Color(0.8, 0.8, 0.78), "stone")
 	for s in [-1, 1]:
-		put(root, m.box(0.45, 0.45, 0.45), m.pos_of(-62 + 9 * s, 5.6, 0.23), Color(0.15, 0.3, 0.6), "tent")
+		put(cbx, m.box(0.45, 0.45, 0.45), m.pos_of(-62 + 9 * s, 5.6, 0.23), Color(0.15, 0.3, 0.6), "tent")
 		m.add_obstacle(m.pos_of(-62 + 9 * s, 5.6), 0.35)
 	for x in [-0.5, 0.5]:
 		for z in [-0.3, 0.3]:
-			put(root, cyl(0.015, 0.015, 0.7, 5), m.pos_of(-62, 5.5) + Vector3(x, 0.36, z), Color(0.6, 0.6, 0.62), "stone")
+			put(tbl, cyl(0.015, 0.015, 0.7, 5), m.pos_of(-62, 5.5) + Vector3(x, 0.36, z), Color(0.6, 0.6, 0.62), "stone")
+	var gr := node(root, m.pos_of(-2.0, 5.2))                                         # 3D-3.72: a kettle grill (warm in the thermal picture)
+	m.test_props["Grill"] = gr
+	for k in range(3):
+		var a_ := TAU * k / 3.0
+		put(gr, cyl(0.015, 0.015, 0.75, 5), Vector3(cos(a_) * 0.2, 0.36, sin(a_) * 0.2), Color(0.2, 0.2, 0.2), "stone", Vector3(sin(a_) * 0.25, 0, -cos(a_) * 0.25))
+	put(gr, sph(0.3, 0.3), Vector3(0, 0.78, 0), Color(0.08, 0.08, 0.08), 45.0)
+	put(gr, sph(0.3, 0.3), Vector3(0, 0.82, 0), Color(0.1, 0.1, 0.1), 40.0, Vector3(PI, 0, 0))
+	put(gr, cyl(0.02, 0.02, 0.06, 6), Vector3(0, 1.0, 0), Color(0.3, 0.3, 0.3), "stone")
+	m.add_obstacle(m.pos_of(-2.0, 5.2), 0.4)
 	m.add_obstacle(m.pos_of(-62, 5.5), 0.7)
 	m.set_obstacle_height(0.5)
 	flag(m.pos_of(-42.0, 13.0), Color(0.8, 0.12, 0.12))

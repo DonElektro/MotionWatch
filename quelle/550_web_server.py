@@ -626,6 +626,9 @@ class WebStream:
                         return reply({"ok": False, "error": tr(err_, lang)}, 400)
                 elif op == "stop":
                     refscan_stop()
+                elif op == "watch":                          # 2.95.98: things to guard
+                    if not refscan_set_watch(str(d.get("kind") or "day"), d.get("items") or []):
+                        return reply({"ok": False, "error": tr("no reference yet - scan first", lang)}, 400)
                 else:
                     return reply({"ok": False, "error": "unknown"}, 400)
             st_ = refscan_state()
@@ -638,7 +641,7 @@ class WebStream:
 
         @app.route("/refscan/file/<path:fp>")
         def refscan_file(fp):
-            if not re.fullmatch(r"(ref/pos_\d{2}\.jpg|reports/\d{8}_\d{6}/(cur|ref)_\d{2}\.jpg)", fp):
+            if not re.fullmatch(r"(ref(_night)?/pos_\d{2}\.jpg|reports/\d{8}_\d{6}/(cur|ref)_\d{2}\.jpg)", fp):
                 return Response("not found", 404)
             p_ = refscan_dir(*fp.split("/"))
             return send_file(p_, max_age=60) if os.path.isfile(p_) else Response("not found", 404)

@@ -65,8 +65,9 @@ class SimLink:
             SIM["cmd_seen"] = int(mc_.get("id") or 0)
             if not first:                                   # an old request of before the connection does not count
                 op_ = str(mc_.get("op") or "")
-                if op_ in ("refscan", "refcompare"):
-                    refscan_start("scan" if op_ == "refscan" else "compare", "simulator")
+                if op_ in ("refscan", "refcompare", "refcompare_day"):
+                    refscan_start("scan" if op_ == "refscan" else "compare", "simulator" if op_ != "refcompare_day" else "night test",
+                                  "day" if op_ == "refcompare_day" else None)
                 elif op_ == "refstop":
                     refscan_stop()
         le = int(rep_.get("last_event") or 0)

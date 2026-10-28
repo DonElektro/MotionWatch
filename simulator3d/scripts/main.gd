@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.71"
+const VERSION := "3D-3.72"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -1689,10 +1689,12 @@ func _process(dt: float) -> void:
 	if dataset != null and dataset.servo != null:
 		step *= 8.0                                      # the pictures: no need to wait for the slow servo
 	_drive(dt)
-	head.rotation.y = move_toward(head.rotation.y, want_pan, step)
+	head.rotation.y = move_toward(head.rotation.y, want_pan + sabotage_turn, step * (6.0 if absf(sabotage_turn) > 0.0 else 1.0))
 	head_pitch.rotation.x = move_toward(head_pitch.rotation.x, want_tilt, step)
 	cams[0].global_transform = head_pitch.global_transform.translated_local(Vector3(0, 0.0, -0.13))
 	cams[2].global_transform = head_pitch.global_transform.translated_local(Vector3(0.12, 0.0, -0.12))
+	if _cover_mesh != null and sabotage_cover:           # 3D-3.72: the cloth hangs right in front of the lenses
+		_cover_mesh.global_transform = head_pitch.global_transform.translated_local(Vector3(0.05, 0.0, -0.36))   # beyond the near plane of the cameras (0.1 m)
 	var c1 := Transform3D(Basis.from_euler(Vector3(deg_to_rad(-10.0), -deg_to_rad(cam1_yaw), 0)), Vector3(-3.0, 2.4, 3.0))
 	cams[1].global_transform = c1
 	var L: Dictionary = mw.get("lights", {})
@@ -1995,13 +1997,96 @@ var refscan_label: Label
 func mw_request(op: String) -> void:
 	"""a button here asks Motion Watch for something; it fetches the request with its next state (about 10 times a second)"""
 	mw_cmd = {"id": int(Time.get_unix_time_from_system() * 1000.0), "op": op}
-	start_info = {"refscan": "Motion Watch: Referenz-Scan angefordert …", "refcompare": "Motion Watch: Vergleich angefordert …", "refstop": "Motion Watch: Scan abbrechen …"}.get(op, op)
+	start_info = {"refscan": "Motion Watch: Referenz-Scan angefordert …", "refcompare": "Motion Watch: Vergleich angefordert …", "refcompare_day": "Motion Watch: Vergleich mit der Tag-Referenz …", "refstop": "Motion Watch: Scan abbrechen …"}.get(op, op)
 
 
 func set_bike(on: bool) -> void:
 	"""test aid for the reference scan: the bike is gone / back"""
-	if bike_node != null and is_instance_valid(bike_node):
-		bike_node.visible = on
+	set_prop("Velo", on)
+
+
+var test_props := {}                   # 3D-3.72: name -> node the test aids take away (set by scenes.gd)
+var sabotage_cover := false            # the head camera is covered (cloth over the lens)
+var sabotage_turn := 0.0               # somebody turned the head by hand (radians, on top of the servo)
+var _cover_mesh: MeshInstance3D = null
+
+
+func set_prop(name_: String, on: bool) -> void:
+	var n = test_props.get(name_, null)
+	if n != null and is_instance_valid(n):
+		n.visible = on
+		start_info = "Testhilfe: %s %s" % [name_, "wieder da" if on else "weggenommen"]
+
+
+func _sabotage_btn(k: String) -> void:
+	if k == "cover":
+		set_sabotage(not sabotage_cover, null)
+	elif k == "turn":
+		set_sabotage(null, 0.0 if sabotage_turn != 0.0 else 90.0)
+	else:
+		set_sabotage(false, 0.0)
+
+
+func set_sabotage(cover, turn) -> void:
+	"""3D-3.72: sabotage test - the head camera covered, or the head turned away by hand (Motion Watch does not know)"""
+	if cover != null:
+		sabotage_cover = bool(cover)
+		if _cover_mesh == null:
+			_cover_mesh = MeshInstance3D.new()
+			var q := QuadMesh.new()
+			q.size = Vector2(0.9, 0.7)
+			_cover_mesh.mesh = q
+			var mt := StandardMaterial3D.new()
+			mt.albedo_color = Color(0.06, 0.05, 0.05)
+			mt.cull_mode = BaseMaterial3D.CULL_DISABLED
+			_cover_mesh.material_override = mt
+			_cover_mesh.layers = 1 | 2
+			add_child(_cover_mesh)
+		_cover_mesh.visible = sabotage_cover
+	if turn != null:
+		sabotage_turn = deg_to_rad(float(turn))
+	start_info = "Sabotage-Test: " + ("Kamera abgedeckt" if sabotage_cover else ("Kopf um %d° weggedreht" % int(rad_to_deg(sabotage_turn)) if sabotage_turn != 0.0 else "aus"))
+
+
+var _night_test := {"step": "", "t": 0.0, "hour": 12.0}
+
+
+func ref_night_test() -> void:
+	"""3D-3.72: the reference by day, the comparison at night with infrared - how well does it work in the dark?"""
+	_night_test = {"step": "day0", "t": now(), "hour": hour()}
+	set_hour(12.0)
+	start_info = "Nacht-Test: es wird Tag …"
+
+
+func _night_test_tick() -> void:
+	if str(_night_test["step"]) == "":
+		return
+	var r = mw.get("refscan", null)
+	if typeof(r) != TYPE_DICTIONARY or now() - float(_night_test["t"]) < 4.0:
+		return
+	var idle: bool = str(r.get("busy", "")) == "" and int(r.get("cmd_seen", 0)) >= int(mw_cmd.get("id", 0))
+	if not idle:
+		return
+	if _night_test["step"] == "day0":                  # Motion Watch has seen the day (a few states later): the reference
+		_night_test["step"] = "day"
+		_night_test["t"] = now()
+		mw_request("refscan")
+		start_info = "Nacht-Test: Referenz am Tag wird aufgenommen …"
+		return
+	if _night_test["step"] == "day":
+		_night_test["step"] = "night"
+		_night_test["t"] = now()
+		set_hour(23.0)
+		_night_test["step"] = "night0"
+		start_info = "Nacht-Test: es wird Nacht …"
+	elif _night_test["step"] == "night0":
+		_night_test["step"] = "night"
+		_night_test["t"] = now()
+		mw_request("refcompare_day")                   # the night picture against the day reference
+		start_info = "Nacht-Test: Vergleich in der Nacht …"
+	elif _night_test["step"] == "night":
+		_night_test["step"] = ""
+		start_info = "Nacht-Test fertig – Bericht in Motion Watch (Werkzeuge → Referenz-Scan)"
 
 
 func refscan_text() -> String:
@@ -2015,6 +2100,9 @@ func refscan_text() -> String:
 	var l = r.get("last", null)
 	if typeof(l) == TYPE_DICTIONARY:
 		s += " · letzter Vergleich: %d fehlt, %d neu, %d verändert" % [int(l.get("missing", 0)), int(l.get("new", 0)), int(l.get("changed", 0))]
+		var gone: Array = l.get("gone", [])
+		if not gone.is_empty():
+			s += "\n🚨 Bewacht und weg: " + ", ".join(PackedStringArray(gone.map(func(x): return str(x))))
 	return s
 
 
@@ -2976,6 +3064,15 @@ func control(d: Dictionary) -> Dictionary:
 	elif a == "bike":
 		set_bike(bool(d.get("on", true)))
 		return {"ok": true}
+	elif a == "prop":                                  # 3D-3.72: test aids {name: Velo | Zelt | Tisch | Kühlboxen | Grill, on}
+		set_prop(str(d.get("name", "")), bool(d.get("on", true)))
+		return {"ok": true, "props": test_props.keys()}
+	elif a == "sabotage":                              # {cover: bool, turn: degrees}
+		set_sabotage(d.get("cover", null), d.get("turn", null))
+		return {"ok": true, "cover": sabotage_cover, "turn": rad_to_deg(sabotage_turn)}
+	elif a == "ref_night_test":
+		ref_night_test()
+		return {"ok": true}
 	elif a == "shoot":                                 # 3D-3.70: a shot / trigger from Motion Watch at a spot of the head camera picture
 		return mw_shot(float(d.get("x", 0.5)), float(d.get("y", 0.5)), str(d.get("who", "")).left(30))
 	elif a == "game_mwcatch":                          # «Team gegen Motion Watch»: «Erwischt!» pressed at Motion Watch (3D-3.27)
@@ -3365,11 +3462,36 @@ func _build_ui() -> void:
 		rb.tooltip_text = "Motion Watch fährt mit dem Kopf alle Richtungen ab: Referenz-Fotos aufnehmen bzw. vergleichen (Bericht in Motion Watch unter Werkzeuge → Referenz-Scan)"
 		rb.pressed.connect(mw_request.bind(b_[1]))
 		rsh.add_child(rb)
-	var vb_ := Button.new()
-	vb_.text = "Testhilfe: Velo wegnehmen / zurückstellen"
-	vb_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	vb_.pressed.connect(func(): set_bike(bike_node == null or not bike_node.visible))
-	tl.add_child(vb_)
+	var ntb := Button.new()                          # 3D-3.72
+	ntb.text = "Nacht-Test: Referenz am Tag, Vergleich in der Nacht"
+	ntb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	ntb.pressed.connect(ref_night_test)
+	tl.add_child(ntb)
+	tl.add_child(UI.small("Testhilfen: wegnehmen / zurückstellen (nur Camping-Platz)"))
+	var pg := GridContainer.new()
+	pg.columns = 3
+	pg.add_theme_constant_override("h_separation", 6)
+	pg.add_theme_constant_override("v_separation", 6)
+	tl.add_child(pg)
+	for nm in ["Velo", "Zelt", "Tisch", "Kühlboxen", "Grill"]:
+		var pb := Button.new()
+		pb.text = nm
+		pb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		pb.pressed.connect(func():
+			var n = test_props.get(nm, null)
+			set_prop(nm, n == null or not is_instance_valid(n) or not n.visible))
+		pg.add_child(pb)
+	tl.add_child(UI.small("Sabotage-Test für den Diebstahlschutz von Motion Watch (scharf schalten):"))
+	var sg := HBoxContainer.new()
+	sg.add_theme_constant_override("separation", 6)
+	tl.add_child(sg)
+	for b2 in [["Kamera abdecken", "cover"], ["Kopf wegdrehen", "turn"], ["Alles normal", "off"]]:
+		var sb_ := Button.new()
+		sb_.text = b2[0]
+		sb_.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		sb_.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		sb_.pressed.connect(_sabotage_btn.bind(str(b2[1])))
+		sg.add_child(sb_)
 	refscan_label = UI.small("")
 	tl.add_child(refscan_label)
 	var plb := Button.new()
@@ -4244,6 +4366,7 @@ func _paint_groups() -> void:
 
 
 func _update_status() -> void:
+	_night_test_tick()
 	if refscan_label != null:
 		refscan_label.text = refscan_text()
 	if not mw_cmd.is_empty() and start_info.begins_with("Motion Watch: "):

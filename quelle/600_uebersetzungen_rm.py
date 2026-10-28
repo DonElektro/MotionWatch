@@ -1817,6 +1817,10 @@ _HX97 = {  # 2.95.97: reference scan
     'a scan is already running': ('es läuft schon ein Scan', 'un scan est déjà en cours', 'una scansione è già in corso', 'in scan è gia en lavur'),
     'no camera': ('keine Kamera', 'pas de caméra', 'nessuna telecamera', 'nagina camera'),
     'no reference yet - scan first': ('noch keine Referenz – zuerst scannen', 'pas encore de référence – scanner d’abord', 'ancora nessun riferimento – prima scansionare', 'anc nagina referenza – l’emprim scannar'),
+    'Thing': ('Gegenstand', 'Objet', 'Oggetto', 'Object'),
+    'Guarded thing missing: {names}': ('Bewachter Gegenstand fehlt: {names}', 'Objet surveillé manquant : {names}', 'Oggetto sorvegliato mancante: {names}', 'Object surveglià manca: {names}'),
+    'Guarded thing missing': ('Bewachter Gegenstand fehlt', 'Objet surveillé manquant', 'Oggetto sorvegliato mancante', 'Object surveglià manca'),
+    'night reference saved': ('Nacht-Referenz gespeichert', 'Référence de nuit enregistrée', 'Riferimento notturno salvato', 'Referenza da notg memorisada'),
     'Open the assistant': ('Assistent öffnen', 'Ouvrir l’assistant', 'Apri l’assistente', 'Avrir l’assistent'),
     'Motion Watch: reference scan': ('Motion Watch: Referenz-Scan', 'Motion Watch : scan de référence', 'Motion Watch: scansione di riferimento', 'Motion Watch: scan da referenza'),
 }

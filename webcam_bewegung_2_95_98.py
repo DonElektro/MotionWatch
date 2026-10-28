@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_97.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_98.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.98: Referenz-Scan: Gegenstände bewachen (Rechteck im Referenz-Foto, fehlt er beim Vergleich = sofort Alarm), eigene
+    Nacht-Referenz; 3D-Simulator 3D-3.72: Nacht-Test, Testhilfen, Sabotage-Test, Planer + Referenz-Scan
   * 2.95.97: Referenz-Scan: Assistent (Werkzeuge) – der Kopf fährt alle Richtungen ab und speichert Referenz-Fotos; Vergleich
     von Hand, beim Scharfschalten oder alle N Minuten, Bericht mit fehlt / neu / verändert, Push-Meldung; auch vom 3D-Simulator
     aus startbar (3D-3.71)
@@ -784,10 +786,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_97.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_98.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_97.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_97.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_98.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_98.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -804,7 +806,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.97"
+APP_VERSION = "2.95.98"
 
 
 def default_data_dir():
@@ -14181,7 +14183,8 @@ def _sim_refscan_info():
         st = refscan_state()
         r = st["reports"][0] if st["reports"] else None
         return {"busy": st["busy"], "step": st["step"], "n": st["n"], "ref": bool(st["ref"]), "ref_n": (st["ref"] or {}).get("n", 0),
-                "last": {"missing": r["missing"], "new": r["new"], "changed": r["changed"], "t": r["t"]} if r else None,
+                "last": {"missing": r["missing"], "new": r["new"], "changed": r["changed"], "t": r["t"], "gone": r.get("gone") or []} if r else None,
+                "night_ref": bool((st.get("refs") or {}).get("night")),
                 "cmd_seen": int(SIM.get("cmd_seen") or 0)}
     except Exception:
         return None
@@ -15128,8 +15131,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.71", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30898925,
-         "sha256": "da56e68e29cad32d13ac4204970e89b7886a154b8577c48e541ba95f20ce3f94"}
+SIM3D = {"version": "3D-3.72", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30903405,
+         "sha256": "5185ec5b4cc43fa9807f3b656dca531028b55d5371e9a17cbbfd24c307e7c288"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15268,8 +15271,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.71", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24020372,
-           "sha256": "95770a83082816c6ebc8fda22b9b689cadadd1be2b6c2f38512c9c7abe7a7da1", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.72", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24024213,
+           "sha256": "89a05eac1dee316101911bd3f82f864c9004244a40efab04a3f6a762141066fe", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -16132,13 +16135,55 @@ def refscan_positions():
     return out
 
 
-def refscan_meta():
-    try:
-        with open(refscan_dir("ref", "meta.json"), encoding="utf-8") as f:
-            d = json.load(f)
-        return d if isinstance(d, dict) else None
-    except (OSError, ValueError):
-        return None
+def refscan_is_dark():
+    if CFG.get("sim_on") and SIM.get("ok"):
+        return bool(SIM.get("dark"))                     # the simulation knows its own night
+    return bool(LIGHTS.get("dark"))
+
+
+REFSCAN_KINDS = {"day": "ref", "night": "ref_night"}  # 2.95.98: an own reference for the night (infrared picture)
+
+
+def refscan_meta(kind=None):
+    """the reference: of this kind (day | night), or the one that fits the light now - the other one if it is missing"""
+    order = [kind] if kind else (["night", "day"] if refscan_is_dark() else ["day", "night"])
+    for k in order:
+        try:
+            with open(refscan_dir(REFSCAN_KINDS[k], "meta.json"), encoding="utf-8") as f:
+                d = json.load(f)
+            if isinstance(d, dict):
+                d["_kind"] = k
+                return d
+        except (OSError, ValueError, KeyError):
+            continue
+    return None
+
+
+def refscan_save_meta(meta):
+    m = {k: v for k, v in meta.items() if not k.startswith("_")}
+    with open(refscan_dir(REFSCAN_KINDS[meta["_kind"]], "meta.json"), "w", encoding="utf-8") as f:
+        json.dump(m, f)
+
+
+def refscan_set_watch(kind, items):
+    """2.95.98: things to guard (a box drawn on a reference photo): when one is missing -> alarm at once"""
+    meta = refscan_meta(kind)
+    if not meta:
+        return False
+    out = []
+    np_ = len(meta.get("positions") or [])
+    for it in (items or [])[:30]:
+        try:
+            i = int(it.get("pos")); x, y, w_, h_ = (max(0.0, min(1.0, float(it.get(k)))) for k in ("x", "y", "w", "h"))
+        except (TypeError, ValueError):
+            continue
+        if 0 <= i < np_ and w_ > 0.005 and h_ > 0.005:
+            out.append({"pos": i, "x": round(x, 4), "y": round(y, 4), "w": round(w_, 4), "h": round(h_, 4),
+                        "name": re.sub(r"[\x00-\x1f<>]", "", str(it.get("name") or ""))[:40] or tr("Thing")})
+    meta["watch"] = out
+    refscan_save_meta(meta)
+    log_event("sys", f"Reference scan: {len(out)} things to guard")
+    return True
 
 
 def _refscan_move(pan, tilt):
@@ -16196,18 +16241,18 @@ def _refscan_settle():
     return max(0.3, float(CFG.get("refscan_settle", 1.5))) + (1.5 if CFG.get("sim_on") else 0.0)   # the simulator answers later
 
 
-def refscan_start(op, reason="by hand"):
+def refscan_start(op, reason="by hand", kind=None):
     """op: scan | compare. Runs in the background; False when something else runs or there is no reference."""
     with _REFSCAN_LOCK:
         if REFSCAN["busy"]:
             return False, "a scan is already running"
         if WATCH_REF.get("w") is None:
             return False, "no camera"
-        if op == "compare" and not refscan_meta():
+        if op == "compare" and not refscan_meta(kind):
             return False, "no reference yet - scan first"
-        REFSCAN.update(busy=op, step=0, n=len(refscan_positions()) if op == "scan" else len((refscan_meta() or {}).get("positions") or []),
+        REFSCAN.update(busy=op, step=0, n=len(refscan_positions()) if op == "scan" else len((refscan_meta(kind) or {}).get("positions") or []),
                        msg="", stop=False, t=time.time())
-    threading.Thread(target=_refscan_run, args=(op, reason), daemon=True, name="refscan").start()
+    threading.Thread(target=_refscan_run, args=(op, reason, kind), daemon=True, name="refscan").start()
     log_event("sys", f"Reference scan: {'scan' if op == 'scan' else 'compare'} started ({reason})")
     return True, ""
 
@@ -16216,14 +16261,14 @@ def refscan_stop():
     REFSCAN["stop"] = True
 
 
-def _refscan_run(op, reason):
+def _refscan_run(op, reason, kind=None):
     w = WATCH_REF.get("w")
     old = (CFG["pan"], CFG["tilt"])
     try:
         if op == "scan":
             _refscan_do_scan(w)
         else:
-            _refscan_do_compare(w, reason)
+            _refscan_do_compare(w, reason, kind)
     except Exception as e:                               # never leave the head in a strange place
         REFSCAN["msg"] = "error: " + str(e)[:120]
         log_event("sys", f"Reference scan failed: {e}")
@@ -16237,8 +16282,11 @@ def _refscan_do_scan(w):
     pos = refscan_positions()
     tmp = refscan_dir("ref_new")
     shutil.rmtree(tmp, ignore_errors=True); os.makedirs(tmp, exist_ok=True)
+    kind = "night" if refscan_is_dark() else "day"
+    old = refscan_meta(kind) or {}
     meta = {"t": time.time(), "positions": [], "source": STATE.get("source_label", ""), "sim": bool(CFG.get("sim_on")),
-            "dark": bool(LIGHTS.get("dark")), "photos": int(CFG.get("refscan_photos", 2))}
+            "dark": kind == "night", "photos": int(CFG.get("refscan_photos", 2)), "kind": kind,
+            "watch": old.get("watch") if len(old.get("positions") or []) == len(refscan_positions()) else []}   # same grid: keep the guarded things
     for i, (p, t) in enumerate(pos):
         if REFSCAN["stop"]:
             REFSCAN["msg"] = "stopped"; shutil.rmtree(tmp, ignore_errors=True); return
@@ -16252,9 +16300,9 @@ def _refscan_do_scan(w):
         meta["positions"].append({"i": i, "pan": p, "tilt": t, "file": fn})
     with open(os.path.join(tmp, "meta.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f)
-    shutil.rmtree(refscan_dir("ref"), ignore_errors=True)
-    os.replace(tmp, refscan_dir("ref"))
-    REFSCAN["msg"] = "reference saved"
+    shutil.rmtree(refscan_dir(REFSCAN_KINDS[kind]), ignore_errors=True)
+    os.replace(tmp, refscan_dir(REFSCAN_KINDS[kind]))
+    REFSCAN["msg"] = "night reference saved" if kind == "night" else "reference saved"
     log_event("sys", f"Reference scan: {len(pos)} directions saved as the reference")
 
 
@@ -16307,7 +16355,31 @@ def refscan_compare_images(ref, cur):
         out.append({"x": round(x / W, 4), "y": round(y / H, 4), "w": round(w_ / W, 4), "h": round(h_ / H, 4), "kind": kind,
                     "score": round(float(d[y:y + h_, x:x + w_].mean()), 1)})
     out.sort(key=lambda r: -r["w"] * r["h"])
-    return out[:12], (round(float(dx), 1), round(float(dy), 1))
+    return out[:12], (round(float(dx), 1), round(float(dy), 1)), (d, thr)
+
+
+def _refscan_watch_check(it, dmap, changes):
+    """is a guarded thing still there? changed pixels inside its box, or a change box over it"""
+    d, thr = dmap
+    H, W = d.shape
+    x0, y0 = int(it["x"] * W), int(it["y"] * H)
+    x1, y1 = max(x0 + 2, int((it["x"] + it["w"]) * W)), max(y0 + 2, int((it["y"] + it["h"]) * H))
+    part = d[y0:y1, x0:x1]
+    frac = float(np.mean(part > thr * 0.8)) if part.size else 0.0
+    over = 0.0
+    for c in changes:
+        ix = max(0.0, min(it["x"] + it["w"], c["x"] + c["w"]) - max(it["x"], c["x"]))
+        iy = max(0.0, min(it["y"] + it["h"], c["y"] + c["h"]) - max(it["y"], c["y"]))
+        if c["kind"] != "new":
+            over = max(over, ix * iy / max(1e-6, it["w"] * it["h"]))
+    return frac > 0.22 or over > 0.35, round(max(frac, over), 2)
+
+
+def _ascii(t):
+    """OpenCV writes only ASCII: ä -> ae ..."""
+    for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("Ä", "Ae"), ("Ö", "Oe"), ("Ü", "Ue"), ("é", "e"), ("è", "e"), ("à", "a"), ("ç", "c")):
+        t = t.replace(a, b)
+    return t.encode("ascii", "replace").decode()
 
 
 REFSCAN_COLORS = {"missing": (60, 60, 255), "new": (255, 160, 60), "changed": (40, 170, 255)}
@@ -16320,32 +16392,51 @@ def _refscan_mark(img, changes):
         x, y, w_, h_ = int(c["x"] * W), int(c["y"] * H), int(c["w"] * W), int(c["h"] * H)
         col = REFSCAN_COLORS.get(c["kind"], (255, 255, 255))
         cv2.rectangle(out, (x, y), (x + w_, y + h_), col, max(2, W // 320))
-        txt = lab.get(c["kind"], c["kind"]).encode("ascii", "replace").decode()
+        txt = _ascii(lab.get(c["kind"], c["kind"]))
         cv2.putText(out, txt, (x + 4, max(18, y - 6)), cv2.FONT_HERSHEY_SIMPLEX, max(0.5, W / 1400), col, 2, cv2.LINE_AA)
     return out
 
 
-def _refscan_do_compare(w, reason):
-    meta = refscan_meta() or {}
+def _refscan_mark_watch(img, items):
+    H, W = img.shape[:2]
+    for it in items:
+        x, y, w_, h_ = int(it["x"] * W), int(it["y"] * H), int(it["w"] * W), int(it["h"] * H)
+        col = (40, 40, 255) if it["gone"] else (80, 210, 80)
+        for k in range(0, w_, 12):                          # dashed: a guarded thing
+            cv2.line(img, (x + k, y), (x + min(w_, k + 6), y), col, 2); cv2.line(img, (x + k, y + h_), (x + min(w_, k + 6), y + h_), col, 2)
+        for k in range(0, h_, 12):
+            cv2.line(img, (x, y + k), (x, y + min(h_, k + 6)), col, 2); cv2.line(img, (x + w_, y + k), (x + w_, y + min(h_, k + 6)), col, 2)
+        txt = _ascii(str(it["name"]) + (" !" if it["gone"] else " ok"))
+        cv2.putText(img, txt, (x + 4, y + h_ - 6), cv2.FONT_HERSHEY_SIMPLEX, max(0.5, W / 1400), col, 2, cv2.LINE_AA)
+    return img
+
+
+def _refscan_do_compare(w, reason, kind=None):
+    meta = refscan_meta(kind) or {}
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rd = refscan_dir("reports", stamp)
     os.makedirs(rd, exist_ok=True)
-    rep = {"id": stamp, "t": time.time(), "reason": reason, "ref_t": meta.get("t"), "positions": [], "missing": 0, "new": 0, "changed": 0}
+    rep = {"id": stamp, "t": time.time(), "reason": reason, "ref_t": meta.get("t"), "positions": [], "missing": 0, "new": 0, "changed": 0,
+           "ref_kind": meta.get("_kind", "day"), "dark_now": refscan_is_dark(), "watch": []}
     for k, p in enumerate(meta.get("positions") or []):
         if REFSCAN["stop"]:
             REFSCAN["msg"] = "stopped"; break
         REFSCAN["step"] = k + 1
-        ref = cv2.imread(refscan_dir("ref", p["file"]))
+        ref = cv2.imread(refscan_dir(REFSCAN_KINDS[meta.get("_kind", "day")], p["file"]))
         _refscan_move(p["pan"], p["tilt"])
         cur = _refscan_grab(w, _refscan_settle() if k else _refscan_settle() + 1.0, max(1, min(5, int(CFG.get("refscan_photos", 2)))))
         if ref is None or cur is None:
             continue
         if cur.shape != ref.shape:
             cur = cv2.resize(cur, (ref.shape[1], ref.shape[0]))
-        ch, sh = refscan_compare_images(ref, cur)
+        ch, sh, dmap = refscan_compare_images(ref, cur)
         for c in ch:
             rep[c["kind"]] += 1
-        cv2.imwrite(os.path.join(rd, f"cur_{p['i']:02d}.jpg"), _refscan_mark(cur, ch), [cv2.IMWRITE_JPEG_QUALITY, 82])
+        for it in [x for x in (meta.get("watch") or []) if int(x.get("pos", -1)) == int(p["i"])]:
+            gone, sc = _refscan_watch_check(it, dmap, ch)
+            rep["watch"].append({"name": it["name"], "pos": p["i"], "gone": gone, "score": sc, "x": it["x"], "y": it["y"], "w": it["w"], "h": it["h"]})
+        wl = [x for x in rep["watch"] if x["pos"] == p["i"]]
+        cv2.imwrite(os.path.join(rd, f"cur_{p['i']:02d}.jpg"), _refscan_mark_watch(_refscan_mark(cur, ch), wl), [cv2.IMWRITE_JPEG_QUALITY, 82])
         cv2.imwrite(os.path.join(rd, f"ref_{p['i']:02d}.jpg"), _refscan_mark(ref, [c for c in ch if c["kind"] != "new"]), [cv2.IMWRITE_JPEG_QUALITY, 82])
         rep["positions"].append({"i": p["i"], "pan": p["pan"], "tilt": p["tilt"], "changes": ch, "shift": sh})
     with open(os.path.join(rd, "report.json"), "w", encoding="utf-8") as f:
@@ -16355,6 +16446,16 @@ def _refscan_do_compare(w, reason):
     REFSCAN["msg"] = "report ready"
     n = rep["missing"] + rep["new"] + rep["changed"]
     log_event("sys", f"Reference scan compared ({reason}): {rep['missing']} missing, {rep['new']} new, {rep['changed']} changed")
+    gone = [x["name"] for x in rep["watch"] if x["gone"]]
+    if gone:                                             # 2.95.98: a guarded thing is missing -> alarm at once
+        txt = trf("Guarded thing missing: {names}", names=", ".join(gone))
+        log_event("alarm", "Reference scan: guarded thing missing: " + ", ".join(gone))
+        push_alert("refscan", txt)
+        try:
+            img = cv2.imread(os.path.join(rd, f"cur_{int([x for x in rep['watch'] if x['gone']][0]['pos']):02d}.jpg"))
+            w.notifier.alert("{name}: " + tr("Reference scan"), txt, img)
+        except Exception:
+            pass
     if n and CFG.get("refscan_push", True) and (rep["missing"] or CFG.get("refscan_push_all", False)) and w is not None:
         try:
             w.notifier.info(trf("Reference scan: {m} missing, {n} new, {c} changed - see the report", m=rep["missing"], n=rep["new"], c=rep["changed"]),
@@ -16384,7 +16485,8 @@ def refscan_report(rid):
 
 def refscan_summary(rep):
     return {"id": rep["id"], "t": rep["t"], "reason": rep.get("reason", ""), "missing": rep["missing"], "new": rep["new"], "changed": rep["changed"],
-            "positions": len(rep.get("positions") or [])}
+            "positions": len(rep.get("positions") or []), "ref_kind": rep.get("ref_kind", "day"), "dark_now": rep.get("dark_now", False),
+            "gone": [x["name"] for x in rep.get("watch") or [] if x.get("gone")], "watched": len(rep.get("watch") or [])}
 
 
 def refscan_reports():
@@ -16401,9 +16503,10 @@ def refscan_reports():
 
 def refscan_state():
     meta = refscan_meta()
-    return {"busy": REFSCAN["busy"], "step": REFSCAN["step"], "n": REFSCAN["n"], "msg": REFSCAN["msg"],
-            "ref": {"t": meta.get("t"), "n": len(meta.get("positions") or []), "sim": meta.get("sim"),
-                    "positions": meta.get("positions")} if meta else None,
+    one = lambda m: {"t": m.get("t"), "n": len(m.get("positions") or []), "sim": m.get("sim"), "kind": m.get("_kind"),
+                     "dir": REFSCAN_KINDS[m.get("_kind", "day")], "positions": m.get("positions"), "watch": m.get("watch") or []} if m else None
+    return {"busy": REFSCAN["busy"], "step": REFSCAN["step"], "n": REFSCAN["n"], "msg": REFSCAN["msg"], "dark": refscan_is_dark(),
+            "ref": one(meta), "refs": {"day": one(refscan_meta("day")), "night": one(refscan_meta("night"))},
             "plan": len(refscan_positions()), "reports": refscan_reports(), "next_t": REFSCAN["next_t"] or None}
 
 
@@ -18206,8 +18309,9 @@ class SimLink:
             SIM["cmd_seen"] = int(mc_.get("id") or 0)
             if not first:                                   # an old request of before the connection does not count
                 op_ = str(mc_.get("op") or "")
-                if op_ in ("refscan", "refcompare"):
-                    refscan_start("scan" if op_ == "refscan" else "compare", "simulator")
+                if op_ in ("refscan", "refcompare", "refcompare_day"):
+                    refscan_start("scan" if op_ == "refscan" else "compare", "simulator" if op_ != "refcompare_day" else "night test",
+                                  "day" if op_ == "refcompare_day" else None)
                 elif op_ == "refstop":
                     refscan_stop()
         le = int(rep_.get("last_event") or 0)
@@ -19545,7 +19649,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_97.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_98.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -23793,7 +23897,12 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
 .rs-rep{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:center}
 .rs-rep.sel{border-color:var(--acc,#3b8cff)}.rs-rep b{font-weight:600}
 .rs-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.rs-pair img{width:100%;border-radius:8px;display:block}.rs-pair div{font-size:11px;color:var(--mut)}
-.rs-ch{font-size:13px;margin:2px 0}.rs-ch.missing{color:#ff6b6b}.rs-ch.new{color:#4fa3ff}.rs-ch.changed{color:#f5a623}
+.rs-ch{font-size:13px;margin:2px 0}.rs-ch.gone{color:#ff3b30;font-weight:700}.rs-ch.ok{color:var(--grn)}
+.rs-grid figure{cursor:pointer;position:relative}.rs-grid figure i{position:absolute;right:4px;top:4px;font-style:normal;font-size:11px;background:rgba(10,14,20,.8);border-radius:6px;padding:1px 5px}
+#rs-ed{position:fixed;inset:0;z-index:90;background:rgba(5,8,12,.94);display:flex;flex-direction:column;padding:12px;gap:10px;overflow:auto}
+#rs-ed .cv{position:relative;align-self:center;max-width:min(100%,1100px);width:100%;touch-action:none;user-select:none}#rs-ed .cv img{width:100%;display:block;border-radius:8px;pointer-events:none}
+#rs-ed .bx{position:absolute;border:2px dashed #3fcf6b;background:rgba(63,207,107,.12)}#rs-ed .bx span{position:absolute;left:0;top:-20px;font-size:12px;background:#3fcf6b;color:#000;border-radius:4px;padding:0 4px;white-space:nowrap}
+#rs-ed .bx.drag{border-color:#ffd166}.rs-ch.missing{color:#ff6b6b}.rs-ch.new{color:#4fa3ff}.rs-ch.changed{color:#f5a623}
 .opt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:14px;cursor:pointer}
 .opt+.opt{margin-top:0}
 .tbd .opt + :not(.opt){margin-top:12px}
@@ -23906,7 +24015,7 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
       <div class="mut" data-i18n="rs-scan">rs-scan</div>
       <div class="trow"><button type="button" id="rs-scan" onclick="rsGo('scan')">📸 <span data-i18n="Take the reference now">Take the reference now</span></button><button type="button" class="sec" id="rs-stop" onclick="rsGo('stop')" hidden data-i18n="Stop">Stop</button></div>
       <div class="rs-prog" id="rs-prog" hidden><i></i></div><div class="mut" id="rs-msg"></div>
-      <div id="rs-ref" class="rs-grid"></div>
+      <div id="rs-ref"></div>
       <div class="trow"><button type="button" class="sec" onclick="rsStep(2)">‹ <span data-i18n="Back">Back</span></button><button type="button" id="rs-to4" onclick="rsStep(4)"><span data-i18n="Next">Next</span> ›</button></div>
     </div>
     <div class="rs-pane" data-p="4" hidden>
@@ -24580,11 +24689,17 @@ function rsPaint() {
     $(pg).hidden = R.busy !== op; $(pg).firstChild.style.width = pr + "%";
     $(mg).textContent = R.busy === op ? (op === "scan" ? t("Scanning") : t("Comparing")) + ": " + t("direction") + " " + R.step + " / " + R.n + " …" : (R.msg ? t(R.msg) : ""); });
   $("#rs-scan").disabled = !!R.busy; $("#rs-cmp").disabled = !!R.busy || !R.ref; $("#rs-stop").hidden = !R.busy;
-  const rb = $("#rs-ref"), key = R.ref ? R.ref.t + ":" + R.ref.n : "";
+  const rb = $("#rs-ref"), RF = R.refs || {}, key = JSON.stringify(["day", "night"].map(k => RF[k] ? [RF[k].t, RF[k].n, (RF[k].watch || []).length] : 0));
   if (rb.dataset.k !== key) { rb.dataset.k = key; rb.textContent = "";
-    if (R.ref) (R.ref.positions || []).forEach(p => { const f = el("figure"); const im = document.createElement("img"); im.loading = "lazy"; im.src = "/refscan/file/ref/" + p.file + "?t=" + R.ref.t;
-      f.append(im, el("figcaption", "", t("Pan") + " " + p.pan + " % · " + t("Tilt") + " " + p.tilt + " %")); rb.appendChild(f); }); }
-  if (R.ref) $("#rs-msg").textContent = R.busy === "scan" ? $("#rs-msg").textContent : "✓ " + t("Reference") + ": " + R.ref.n + " " + t("directions") + " · " + rsWhen(R.ref.t);
+    ["day", "night"].forEach(k => { const F = RF[k]; if (!F) return;
+      rb.appendChild(el("div", "mut", (k === "day" ? "☀️ " + t("Day reference") : "🌙 " + t("Night reference")) + " · " + rsWhen(F.t) + " · " + t("tap a photo to guard a thing")));
+      const g_ = el("div", "rs-grid");
+      (F.positions || []).forEach(p => { const f = el("figure"); const im = document.createElement("img"); im.loading = "lazy"; im.src = "/refscan/file/" + F.dir + "/" + p.file + "?t=" + F.t;
+        const nw = (F.watch || []).filter(w => w.pos === p.i); f.append(im, el("figcaption", "", t("Pan") + " " + p.pan + " % · " + t("Tilt") + " " + p.tilt + " %"));
+        if (nw.length) f.appendChild(el("i", "", "🛡 " + nw.map(w => w.name).join(", ")));
+        f.onclick = () => rsEdit(k, p.i); g_.appendChild(f); });
+      rb.appendChild(g_); }); }
+  if (R.ref && R.busy !== "scan") $("#rs-msg").textContent = (R.msg ? t(R.msg) + " · " : "") + (R.dark ? "🌙 " + t("It is dark now: the scan saves the night reference.") : "☀️ " + t("It is light now: the scan saves the day reference."));
   rsOptsPaint();
   const rl = $("#rs-reps"), rk = JSON.stringify((R.reports || []).map(x => x.id));
   if (rl.dataset.k !== rk) { rl.dataset.k = rk; rl.textContent = "";
@@ -24599,7 +24714,9 @@ async function rsReport(id) {
   const r = await rsPost({op: "report", id: id}); const box = $("#rs-rep"); box.textContent = ""; if (!r || !r.report) return;
   const P = r.report.positions || [];
   box.appendChild(el("h3", "", t("Report") + " " + rsWhen(r.report.t)));
-  box.appendChild(el("div", "mut", r.report.missing + " " + t("missing") + " · " + r.report.new + " " + t("new") + " · " + r.report.changed + " " + t("changed") + " · " + P.length + " " + t("directions")));
+  box.appendChild(el("div", "mut", r.report.missing + " " + t("missing") + " · " + r.report.new + " " + t("new") + " · " + r.report.changed + " " + t("changed") + " · " + P.length + " " + t("directions")
+    + " · " + (r.report.ref_kind === "night" ? "🌙 " + t("night reference") : "☀️ " + t("day reference")) + (!!r.report.dark_now !== (r.report.ref_kind === "night") ? " (" + t("other light now - take a reference for this light too") + ")" : "")));
+  (r.report.watch || []).forEach(w => box.appendChild(el("div", "rs-ch " + (w.gone ? "gone" : "ok"), (w.gone ? "🚨 " + t("Guarded thing missing") + ": " : "🛡 " + t("guarded, still there") + ": ") + w.name)));
   const lab = {missing: "missing", new: "new", changed: "changed"};
   P.filter(p => (p.changes || []).length).concat(P.filter(p => !(p.changes || []).length)).forEach(p => {
     const w = el("div", "");
@@ -24613,6 +24730,40 @@ async function rsReport(id) {
     box.appendChild(w); });
 }
 document.querySelectorAll("#c-refscan .rs-steps>span").forEach(x => x.onclick = () => rsStep(+x.dataset.n));
+// 2.95.98: guard things - drag a box over the thing on a reference photo and name it
+function rsEdit(kind, pos) {
+  const F = ((RS || {}).refs || {})[kind]; if (!F) return;
+  const p = (F.positions || []).find(x => x.i === pos); let items = JSON.parse(JSON.stringify(F.watch || []));
+  const ov = el("div"); ov.id = "rs-ed"; document.body.appendChild(ov);
+  const hd = el("div", "trow"); hd.append(el("b", "", "🛡 " + t("Guard things") + " · " + t("Pan") + " " + p.pan + " %"));
+  const cv = el("div", "cv"); const im = document.createElement("img"); im.src = "/refscan/file/" + F.dir + "/" + p.file + "?t=" + F.t; cv.appendChild(im);
+  const help = el("div", "mut", t("Drag a box over the thing (bike, grill, tent …) and give it a name. If it is missing at a comparison, Motion Watch gives an alarm at once."));
+  const list = el("div", ""); const bar = el("div", "trow");
+  const save = el("button", "", "✓ " + t("Save")), cancel = el("button", "sec", t("Cancel")); bar.append(save, cancel);
+  ov.append(hd, help, cv, list, bar);
+  const paint = () => { cv.querySelectorAll(".bx").forEach(b => b.remove()); list.textContent = "";
+    items.forEach((w, n) => { if (w.pos !== pos) return; const b = el("div", "bx"); Object.assign(b.style, {left: w.x * 100 + "%", top: w.y * 100 + "%", width: w.w * 100 + "%", height: w.h * 100 + "%"});
+      b.appendChild(el("span", "", w.name)); cv.appendChild(b);
+      const r_ = el("div", "trow"); const del = el("button", "sec", "✕"); del.onclick = () => { items.splice(n, 1); paint(); }; r_.append(el("span", "", "🛡 " + w.name), del); list.appendChild(r_); }); };
+  let st = null, dr = null;
+  const at = e => { const b = cv.getBoundingClientRect(); return [Math.max(0, Math.min(1, (e.clientX - b.left) / b.width)), Math.max(0, Math.min(1, (e.clientY - b.top) / b.height))]; };
+  cv.addEventListener("pointerdown", e => { e.preventDefault(); st = at(e); dr = el("div", "bx drag"); cv.appendChild(dr); try { cv.setPointerCapture(e.pointerId); } catch (x) {} });
+  cv.addEventListener("pointermove", e => { if (!st) return; const q = at(e);
+    Object.assign(dr.style, {left: Math.min(st[0], q[0]) * 100 + "%", top: Math.min(st[1], q[1]) * 100 + "%", width: Math.abs(q[0] - st[0]) * 100 + "%", height: Math.abs(q[1] - st[1]) * 100 + "%"}); });
+  cv.addEventListener("pointerup", e => { if (!st) return; const q = at(e), a = st; st = null; dr.remove();
+    const w = Math.abs(q[0] - a[0]), h = Math.abs(q[1] - a[1]); if (w < 0.02 || h < 0.02) return;
+    const name = prompt(t("Name of the thing (e.g. bike)"), t("Thing")); if (name === null) return;
+    items.push({pos: pos, x: Math.min(a[0], q[0]), y: Math.min(a[1], q[1]), w: w, h: h, name: name.slice(0, 40) || t("Thing")}); paint(); });
+  cancel.onclick = () => ov.remove();
+  save.onclick = async () => { const r = await rsPost({op: "watch", kind: kind, items: items}); if (r && r.ok) { ov.remove(); $("#rs-ref").dataset.k = ""; rsLoad(); } else alert((r && r.error) || t("error")); };
+  paint();
+}
+Object.assign(I18N.de, {"Day reference": "Tag-Referenz", "Night reference": "Nacht-Referenz", "day reference": "Tag-Referenz", "night reference": "Nacht-Referenz",
+  "tap a photo to guard a thing": "Foto antippen, um einen Gegenstand zu bewachen", "It is dark now: the scan saves the night reference.": "Jetzt ist es dunkel: der Scan speichert die Nacht-Referenz.",
+  "It is light now: the scan saves the day reference.": "Jetzt ist es hell: der Scan speichert die Tag-Referenz.", "other light now - take a reference for this light too": "jetzt anderes Licht – auch für dieses Licht eine Referenz aufnehmen",
+  "Guarded thing missing": "Bewachter Gegenstand fehlt", "guarded, still there": "bewacht, noch da", "Guard things": "Gegenstände bewachen", "Save": "Speichern", "Cancel": "Abbrechen",
+  "Drag a box over the thing (bike, grill, tent …) and give it a name. If it is missing at a comparison, Motion Watch gives an alarm at once.": "Ein Rechteck über den Gegenstand ziehen (Velo, Grill, Zelt …) und ihm einen Namen geben. Fehlt er bei einem Vergleich, gibt Motion Watch sofort Alarm.",
+  "Name of the thing (e.g. bike)": "Name des Gegenstands (z. B. Velo)", "Thing": "Gegenstand", "night reference saved": "Nacht-Referenz gespeichert"});
 (async () => { for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100)); rsLoad(); })();
 Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Set up": "Aufstellen", "Settings": "Einstellungen", "Scan": "Scannen", "Compare": "Vergleichen", "Middle": "Mitte", "Next": "Weiter", "Back": "Zurück",
   "refscan-note": "Motion Watch fährt mit dem Kopf ein Raster von Richtungen ab und speichert Fotos als Referenz. Später fährt es dieselben Richtungen wieder ab und zeigt im Bericht, was fehlt, was neu ist und was sich verändert hat – z. B. ob das Velo, der Grill oder das Zelt noch da ist.",
@@ -24629,7 +24780,7 @@ Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Set up": "Aufstellen
   "Push message also for new or changed things": "Push-Meldung auch bei Neuem oder Verändertem", "Compare every (minutes while armed, 0 = off)": "Vergleichen alle (Minuten, wenn scharf; 0 = aus)",
   "directions": "Richtungen", "direction": "Richtung", "about": "etwa", "Scanning": "Scannen", "Comparing": "Vergleichen", "No reference yet": "Noch keine Referenz", "missing": "fehlt", "new": "neu", "changed": "verändert",
   "nothing missing": "nichts fehlt", "Reference": "Referenz", "Now": "Jetzt", "Pan": "Schwenk", "Tilt": "Neigung", "no change": "keine Veränderung", "of the picture": "des Bildes",
-  "No report yet - press «Compare now».": "Noch kein Bericht – «Jetzt vergleichen» drücken.", "by hand": "von Hand", "armed": "beim Scharfschalten", "simulator": "vom Simulator", "window": "im Fenster",
+  "No report yet - press «Compare now».": "Noch kein Bericht – «Jetzt vergleichen» drücken.", "by hand": "von Hand", "night test": "Nacht-Test", "armed": "beim Scharfschalten", "simulator": "vom Simulator", "window": "im Fenster",
   "reference saved": "Referenz gespeichert", "report ready": "Bericht fertig", "stopped": "abgebrochen", "no picture from the camera": "kein Bild von der Kamera",
   "a scan is already running": "es läuft schon ein Scan", "no camera": "keine Kamera", "no reference yet - scan first": "noch keine Referenz – zuerst scannen"});
 function pick(k, push) {
@@ -36751,7 +36902,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>🔋 USV-Akku (Waveshare UPS HAT, 2 × 18650):</b> wird selbst erkannt (I2C 0x42). Oben steht 🔌 bei Netzstrom bzw. 🔋 % und Restzeit im Akkubetrieb. Bei Stromausfall und wenn der Strom zurück ist kommt eine Push-Nachricht, bei 20 % eine Warnung, bei 8 % (einstellbar) schaltet sich der Pi sauber aus. Unter Akku die Kapazität einer Zelle eintragen (z. B. 3450 mAh).</li>
 <li><b>🔋 Akku:</b> Kapazität der Powerbank eintragen (mAh, wie aufgedruckt), nach dem Laden «Akku ist jetzt voll» drücken. Oben steht dann z. B. «🔋 62 % · 14 h». Bei 15 % kommt eine Push-Nachricht. Es ist eine Schätzung aus dem Verbrauch des Pi (Powerbanks melden ihren Ladestand nicht).</li>
 <li><b>Uhrzeit vom Handy:</b> ohne Internet holt sich der Pi die Uhrzeit vom Handy, damit Aufnahmen die richtige Zeit haben.</li></ul>
-<p><b>🧭 Referenz-Scan (ab 2.95.97):</b> Werkzeuge → «Referenz-Scan» führt in vier Schritten: Kamera aufstellen und ausrichten, Raster einstellen (Richtungen, Höhen, Fotos pro Richtung), Referenz aufnehmen, vergleichen. Motion Watch fährt dabei mit dem Kopf alle Richtungen ab. Der Bericht zeigt pro Richtung Referenz und jetzt nebeneinander: rot = fehlt, blau = neu, orange = verändert. Vergleichen geht von Hand, beim Scharfschalten oder alle N Minuten (Einstellungen → Alarm &amp; Camping → Referenz-Scan), auf Wunsch mit Push-Meldung. Im 3D-Simulator starten die Knöpfe «Motion Watch: Referenz-Scan» und «Mit Referenz vergleichen» dasselbe; «Testhilfe: Velo wegnehmen» zeigt, wie ein fehlender Gegenstand gemeldet wird.</p></section>
+<p><b>🧭 Referenz-Scan (ab 2.95.97):</b> Werkzeuge → «Referenz-Scan» führt in vier Schritten: Kamera aufstellen und ausrichten, Raster einstellen (Richtungen, Höhen, Fotos pro Richtung), Referenz aufnehmen, vergleichen. Motion Watch fährt dabei mit dem Kopf alle Richtungen ab. Der Bericht zeigt pro Richtung Referenz und jetzt nebeneinander: rot = fehlt, blau = neu, orange = verändert. Vergleichen geht von Hand, beim Scharfschalten oder alle N Minuten (Einstellungen → Alarm &amp; Camping → Referenz-Scan), auf Wunsch mit Push-Meldung. Im 3D-Simulator starten die Knöpfe «Motion Watch: Referenz-Scan» und «Mit Referenz vergleichen» dasselbe; «Testhilfe: Velo wegnehmen» zeigt, wie ein fehlender Gegenstand gemeldet wird.</p><p><b>🛡 Gegenstände bewachen, Tag und Nacht (ab 2.95.98):</b> Ein Referenz-Foto antippen und ein Rechteck über einen Gegenstand ziehen (Velo, Grill …), dann einen Namen geben. Fehlt er beim Vergleich, kommt sofort ein Alarm. Bei Dunkelheit speichert der Scan eine eigene Nacht-Referenz (Infrarot-Bild); verglichen wird immer mit der passenden. Im Simulator: «Nacht-Test» (Referenz am Tag, Vergleich in der Nacht), Testhilfen für Velo, Zelt, Tisch, Kühlboxen und Grill, Sabotage-Test (Kamera abdecken, Kopf wegdrehen), und im Aufstell-Planer «Hierhin stellen + Referenz-Scan».</p></section>
 
 <section id="notify" data-icon="🔔"><h2>Benachrichtigungen</h2>
 <ul><li><b>📲 Web-Push (ohne App):</b> Benachrichtigungen → «Auf diesem Gerät einschalten». Braucht https: unter Benachrichtigungen «https über Tailscale einschalten» (in der Tailscale-Verwaltung einmal «HTTPS Certificates» erlauben), dann die Seite über <code>https://NAME.….ts.net/</code> öffnen. iPhone / iPad: diese https-Seite zum Home-Bildschirm hinzufügen und von dort einschalten. Funktioniert neben ntfy / Telegram.</li>
@@ -36962,7 +37113,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>🔋 UPS HAT (Waveshare, 2 × 18650):</b> found by itself (I2C 0x42). The header shows 🔌 on mains power or 🔋 % and time left on battery. A push message at a power cut and when power is back, a warning at 20 %, a clean shutdown at 8 % (adjustable). Under Battery enter the capacity of one cell (e.g. 3450 mAh).</li>
 <li><b>🔋 Battery:</b> enter the capacity of the powerbank (mAh, as on the label), press «Battery is full now» after charging. The header then shows e.g. «🔋 62 % · 14 h». At 15 % a push message comes. It is an estimate from what the Pi uses (powerbanks do not report their charge).</li>
 <li><b>Clock from the phone:</b> without internet the Pi takes the time from the phone, so recordings have the right time.</li></ul>
-<p><b>🧭 Reference scan (from 2.95.97):</b> Tools → «Reference scan» guides you in four steps: set up and align the camera, set the grid (directions, heights, photos per direction), take the reference, compare. Motion Watch drives the head through all directions. The report shows reference and now side by side for every direction: red = missing, blue = new, orange = changed. Compare by hand, when armed or every N minutes (Settings → Alarm &amp; camping → Reference scan), with a push message if you like. In the 3D simulator the buttons «Motion Watch: Referenz-Scan» and «Mit Referenz vergleichen» start the same; «Testhilfe: Velo wegnehmen» shows how a missing thing is reported.</p></section>
+<p><b>🧭 Reference scan (from 2.95.97):</b> Tools → «Reference scan» guides you in four steps: set up and align the camera, set the grid (directions, heights, photos per direction), take the reference, compare. Motion Watch drives the head through all directions. The report shows reference and now side by side for every direction: red = missing, blue = new, orange = changed. Compare by hand, when armed or every N minutes (Settings → Alarm &amp; camping → Reference scan), with a push message if you like. In the 3D simulator the buttons «Motion Watch: Referenz-Scan» and «Mit Referenz vergleichen» start the same; «Testhilfe: Velo wegnehmen» shows how a missing thing is reported.</p><p><b>🛡 Guard things, day and night (from 2.95.98):</b> Tap a reference photo, drag a box over a thing (bike, grill …) and name it. If it is missing at a comparison, the alarm comes at once. In the dark the scan saves its own night reference (infrared picture); the comparison always uses the fitting one. In the simulator: «Nacht-Test» (reference by day, comparison at night), test aids for bike, tent, table, cool boxes and grill, sabotage test (cover the camera, turn the head away), and in the Aufstell-Planer «Hierhin stellen + Referenz-Scan».</p></section>
 
 <section id="notify" data-icon="🔔"><h2>Notifications</h2>
 <ul><li><b>📲 Web push (no app):</b> Notifications → «Switch on on this device». Needs https: under Notifications «Switch on https over Tailscale» (allow «HTTPS Certificates» once in the Tailscale admin page), then open the page via <code>https://NAME.….ts.net/</code>. iPhone / iPad: add this https page to the home screen and switch it on from there. Works besides ntfy / Telegram.</li>
@@ -38479,6 +38630,9 @@ class WebStream:
                         return reply({"ok": False, "error": tr(err_, lang)}, 400)
                 elif op == "stop":
                     refscan_stop()
+                elif op == "watch":                          # 2.95.98: things to guard
+                    if not refscan_set_watch(str(d.get("kind") or "day"), d.get("items") or []):
+                        return reply({"ok": False, "error": tr("no reference yet - scan first", lang)}, 400)
                 else:
                     return reply({"ok": False, "error": "unknown"}, 400)
             st_ = refscan_state()
@@ -38491,7 +38645,7 @@ class WebStream:
 
         @app.route("/refscan/file/<path:fp>")
         def refscan_file(fp):
-            if not re.fullmatch(r"(ref/pos_\d{2}\.jpg|reports/\d{8}_\d{6}/(cur|ref)_\d{2}\.jpg)", fp):
+            if not re.fullmatch(r"(ref(_night)?/pos_\d{2}\.jpg|reports/\d{8}_\d{6}/(cur|ref)_\d{2}\.jpg)", fp):
                 return Response("not found", 404)
             p_ = refscan_dir(*fp.split("/"))
             return send_file(p_, max_age=60) if os.path.isfile(p_) else Response("not found", 404)
@@ -41741,7 +41895,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.97")
+        self.root.title("Motion Watch 2.95.98")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -42031,7 +42185,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.97 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.98 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -49041,6 +49195,10 @@ _HX97 = {  # 2.95.97: reference scan
     'a scan is already running': ('es läuft schon ein Scan', 'un scan est déjà en cours', 'una scansione è già in corso', 'in scan è gia en lavur'),
     'no camera': ('keine Kamera', 'pas de caméra', 'nessuna telecamera', 'nagina camera'),
     'no reference yet - scan first': ('noch keine Referenz – zuerst scannen', 'pas encore de référence – scanner d’abord', 'ancora nessun riferimento – prima scansionare', 'anc nagina referenza – l’emprim scannar'),
+    'Thing': ('Gegenstand', 'Objet', 'Oggetto', 'Object'),
+    'Guarded thing missing: {names}': ('Bewachter Gegenstand fehlt: {names}', 'Objet surveillé manquant : {names}', 'Oggetto sorvegliato mancante: {names}', 'Object surveglià manca: {names}'),
+    'Guarded thing missing': ('Bewachter Gegenstand fehlt', 'Objet surveillé manquant', 'Oggetto sorvegliato mancante', 'Object surveglià manca'),
+    'night reference saved': ('Nacht-Referenz gespeichert', 'Référence de nuit enregistrée', 'Riferimento notturno salvato', 'Referenza da notg memorisada'),
     'Open the assistant': ('Assistent öffnen', 'Ouvrir l’assistant', 'Apri l’assistente', 'Avrir l’assistent'),
     'Motion Watch: reference scan': ('Motion Watch: Referenz-Scan', 'Motion Watch : scan de référence', 'Motion Watch: scansione di riferimento', 'Motion Watch: scan da referenza'),
 }

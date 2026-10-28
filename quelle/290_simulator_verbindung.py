@@ -64,7 +64,8 @@ def _sim_refscan_info():
         st = refscan_state()
         r = st["reports"][0] if st["reports"] else None
         return {"busy": st["busy"], "step": st["step"], "n": st["n"], "ref": bool(st["ref"]), "ref_n": (st["ref"] or {}).get("n", 0),
-                "last": {"missing": r["missing"], "new": r["new"], "changed": r["changed"], "t": r["t"]} if r else None,
+                "last": {"missing": r["missing"], "new": r["new"], "changed": r["changed"], "t": r["t"], "gone": r.get("gone") or []} if r else None,
+                "night_ref": bool((st.get("refs") or {}).get("night")),
                 "cmd_seen": int(SIM.get("cmd_seen") or 0)}
     except Exception:
         return None
