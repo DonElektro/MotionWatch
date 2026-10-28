@@ -273,13 +273,19 @@ def alle_ergebnisse():
     return out
 
 
+def ki_art(d):
+    """«mit KI» / «ohne KI» - the status text also has the time per picture, that must not prevent a comparison"""
+    k = str(d.get("ki", ""))
+    return "mit KI" if k.startswith(("running", "ready")) else ("ohne KI" if k else "?")
+
+
 def vergleich(info):
     """this run against the last comparable one (same plan, same computer, AI the same): lines of text, worse?"""
     zeilen, schlechter = [], False
     alte = [d for d in alle_ergebnisse() if d.get("_datei") and d.get("datum") != info.get("datum")]
     for plan, reps in info["plaene"].items():
         k = kennzahlen(reps)
-        vor = [d for d in alte if plan in d.get("plaene", {}) and d.get("rechner") == info.get("rechner") and d.get("ki") == info.get("ki")]
+        vor = [d for d in alte if plan in d.get("plaene", {}) and d.get("rechner") == info.get("rechner") and ki_art(d) == ki_art(info)]
         if not vor:
             zeilen.append("%s: erster Lauf auf diesem Rechner – noch kein Vergleich." % PLAN_NAME.get(plan, plan))
             continue
@@ -313,9 +319,10 @@ def verlauf_schreiben():
             gt = " / ".join(("%d/%d" % (gb[b][1], gb[b][0])) if b in gb else "–" for b in ("nah", "mittel", "weit")) if gb else "–"
             L.append("| %s | %s | %s | %s%s | %d / %d (**%.0f %%**) | %s | %s | %d / %d | %d | %s | %s | %s |" % (
                 d.get("datum", "?"), d.get("mw_version", "?"), d.get("sim_version", "?"), PLAN_NAME.get(plan, plan),
-                " ×%d" % k["laeufe"] if k["laeufe"] > 1 else "", k["erkannt"], k["personen"], k["quote"], gt,
+                (" ×%d" % k["laeufe"] if k["laeufe"] > 1 else "") + (" – *%s*" % d["bemerkung"] if d.get("bemerkung") else ""),
+                k["erkannt"], k["personen"], k["quote"], gt,
                 ("%.1f s" % k["reaktion"]) if k["reaktion"] is not None else "–", k["tiere_gemeldet"], k["tiere"], k["fehlalarme"],
-                k["fps"], d.get("ki", "?"), d.get("rechner", "?")))
+                k["fps"], ki_art(d), d.get("rechner", "?")))
     if not rows:
         L.append("| – | noch kein Lauf | | | | | | | | | | |")
     L += ["", "## Einzelheiten pro Phase (letzter Lauf)", ""]

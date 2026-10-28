@@ -10,10 +10,10 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Personen erkannt | nah / mittel / weit | Reaktion | Tiere gemeldet | Fehlalarme | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 2026-10-28 00:54 | 2.95.64 | 3D-3.48 | Kurz (Tag + Nacht) | 2 / 3 (**67 %**) | – / 1/2 / 1/1 | 4.2 s | 0 / 1 | 0 | 1.9 | running · 62 ms | GitHub (ubuntu, 4 Kerne) |
-| 2026-10-28 00:54 | 2.95.64 | 3D-3.48 | Nacht | 1 / 1 (**100 %**) | 1/1 / – / – | 0.0 s | 0 / 0 | 0 | 2.0 | running · 62 ms | GitHub (ubuntu, 4 Kerne) |
-| 2026-10-28 00:54 | 2.95.64 | 3D-3.48 | Standard (Tag, Wind, Nacht, Regen) | 4 / 5 (**80 %**) | 2/2 / 2/2 / 0/1 | 2.6 s | 2 / 2 | 0 | 2.0 | running · 62 ms | GitHub (ubuntu, 4 Kerne) |
-| 2026-10-28 00:07 | 2.95.63 | 3D-3.47 | Kurz (Tag + Nacht) | 0 / 4 (**0 %**) | – | – | 0 / 1 | 0 | 29.0 | running · 77 ms | GitHub (ubuntu, 4 Kerne) |
+| 2026-10-28 00:54 | 2.95.64 | 3D-3.48 | Kurz (Tag + Nacht) | 2 / 3 (**67 %**) | – / 1/2 / 1/1 | 4.2 s | 0 / 1 | 0 | 1.9 | mit KI | GitHub (ubuntu, 4 Kerne) |
+| 2026-10-28 00:54 | 2.95.64 | 3D-3.48 | Nacht | 1 / 1 (**100 %**) | 1/1 / – / – | 0.0 s | 0 / 0 | 0 | 2.0 | mit KI | GitHub (ubuntu, 4 Kerne) |
+| 2026-10-28 00:54 | 2.95.64 | 3D-3.48 | Standard (Tag, Wind, Nacht, Regen) | 4 / 5 (**80 %**) | 2/2 / 2/2 / 0/1 | 2.6 s | 2 / 2 | 0 | 2.0 | mit KI | GitHub (ubuntu, 4 Kerne) |
+| 2026-10-28 00:07 | 2.95.63 | 3D-3.47 | Kurz (Tag + Nacht) – *vor der Korrektur der Bildrate (Bilder/s falsch gemessen), Wahrheit: Kopf- und feste Kamera* | 0 / 4 (**0 %**) | – | – | 0 / 1 | 0 | 29.0 | mit KI | GitHub (ubuntu, 4 Kerne) |
 
 ## Einzelheiten pro Phase (letzter Lauf)
 

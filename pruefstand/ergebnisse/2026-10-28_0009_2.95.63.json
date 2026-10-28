@@ -116,5 +116,6 @@
    }
   ]
  },
- "sim_version": "3D-3.47"
+ "sim_version": "3D-3.47",
+ "bemerkung": "vor der Korrektur der Bildrate (Bilder/s falsch gemessen), Wahrheit: Kopf- und feste Kamera"
 }
