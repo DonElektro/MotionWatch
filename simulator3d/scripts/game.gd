@@ -1691,7 +1691,7 @@ func _fx_keep(n: Node3D, secs: float) -> void:
 
 func hit_fx(p: Dictionary) -> Array:
 	var on: Array = []
-	if main.game_fx_laser:
+	if main.game_fx_laser and (not main.kids_on or main.kids_laser):     # 3D-3.69: Kinder-Modus without laser if so set
 		on.append("laser")
 	if main.game_fx_paint:
 		on.append("paint")

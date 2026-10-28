@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 16:28",
+ "generated": "2026-10-28 16:43",
  "versions": [
   {
-   "version": "2.95.94",
-   "file": "webcam_bewegung_2_95_94.py",
+   "version": "2.95.95",
+   "file": "webcam_bewegung_2_95_95.py",
    "url": "",
-   "sha256": "58b82f4c4a41f04e7ab966b67935d040dc68f9a67f9af9b44ba11db99597e0b6",
-   "date": "2026-10-28 16:28",
-   "notes": "3D-Simulator 3D-3.68: nach einem Update verbindet sich der Simulator wieder von selbst (kein «Port 8765 is busy» mehr)",
-   "sig": "66e3b682ce085b18330b333e46827e76af9d04e19a68cccb14bd6f2aedd29914f197a2dcf3525c1da1509d4c752321ec22e37f60bb4aaa673890e91ba5ed940a"
+   "sha256": "e5ca29ecb9c1f1f8c0f05b49f8855a287b79f2250ca34bbd5dfd875dfd3def5b",
+   "date": "2026-10-28 16:43",
+   "notes": "3D-Simulator 3D-3.69: Kinder-Modus (grosse Bild-Knöpfe, Murmli, Töne, Konfetti; zurück zu Erwachsene mit Rechenaufgabe)",
+   "sig": "3d7797a32770a03ff9bb42f5ed17bfda3b820e18f82d6007c544579e7ec31cff7d816977b8bbc871ae22a5cce08ae7e1e9468b0d469353ac7a314e16d81ee701"
   },
   {
    "version": "2.94.5",

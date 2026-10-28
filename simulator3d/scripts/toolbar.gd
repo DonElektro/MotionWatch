@@ -169,6 +169,9 @@ func _paint() -> void:
 
 
 func _process(dt: float) -> void:
+	visible = not main.kids_on                 # 3D-3.69: no tool bar in the «Kinder» mode
+	if not visible:
+		return
 	# at the bottom in the middle of the view (left of the panel when it is shown), above the view buttons
 	var vs: Vector2 = get_viewport_rect().size
 	var right: float = vs.x

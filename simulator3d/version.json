@@ -1,12 +1,12 @@
 {
- "version": "3D-3.68",
+ "version": "3D-3.69",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30876214,
- "sha256": "647dc2d653dd5016133bc76194e3b8cd78244500c165823fcddd565e9c8755c6",
- "notes": "Nach dem Update verbindet sich der Simulator wieder von selbst (Port nicht mehr blockiert, sonst Ausweichport)",
+ "size": 30893330,
+ "sha256": "c938c96ac4526e4593b85e40b67804fdecc07d9f8f360b35e5638981f98636c1",
+ "notes": "Kinder-Modus: grosse Bild-Knöpfe, Murmli erklärt, Töne und Konfetti; zurück zu Erwachsene mit Rechenaufgabe",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 23997459,
-  "sha256": "9b7425bcbb80747539c2c5bf9abdb259cc397193d415bb7b4de85c918ff07d44"
+  "size": 24015085,
+  "sha256": "630e88e9f7381159790f7285bdfb7987356ba2ca010653b83c53c7f8deb1ea50"
  }
 }

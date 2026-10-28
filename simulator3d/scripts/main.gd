@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.68"
+const VERSION := "3D-3.69"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2018,6 +2018,10 @@ func time_scale_visitors() -> float:
 
 
 func spawn(kind: String, from = null, to = null) -> Node3D:
+	if kids_on and not kids_scary and kind in ["wolf", "lynx", "boar"]:
+		kind = "hare"                             # 3D-3.69: Kinder-Modus without wild animals if so set
+	if kids_on and not kids_thief and kind in ["thief", "burglar", "drunk"]:
+		kind = "person"
 	var depth := randf_range(6.0, 22.0)
 	var side := 1.0 if randf() < 0.5 else -1.0
 	var a: Vector3 = from if from != null else Vector3(-side * (depth * 1.6 + 6.0), 0, -depth)
@@ -2313,7 +2317,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
 		["Spiel", "pad", "🎮", ["Runde", "Regeln", "Anzeige"]],
 		["Wildbeobachtung", "target", "🎯", [""]],
 		["Testlauf", "check", "✅", [""]],
-		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates"]]]
+		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates", "Kinder-Modus"]]]
 # id -> [group, part]; not listed: the group given in add_control, no part
 const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "Patrouille"], "patrol_points": ["Mover", "Patrouille"], "patrol_area": ["Mover", "Patrouille"],
 		"patrol_random": ["Mover", "Patrouille"], "patrol_clear": ["Mover", "Patrouille"], "patrol_speed": ["Mover", "Patrouille"], "patrol_dwell": ["Mover", "Patrouille"],
@@ -2345,7 +2349,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_web": ["Kamerabild", "Schwierige Bedingungen"], "cond_headlights": ["Kamerabild", "Schwierige Bedingungen"],
 		"cond_shadows": ["Kamerabild", "Schwierige Bedingungen"], "cond_ir": ["Kamerabild", "Schwierige Bedingungen"],
-		"autologon": ["System", "Start mit dem PC"], "auto_update": ["System", "Updates"], "update_now": ["System", "Updates"]}
+		"autologon": ["System", "Start mit dem PC"], "kids_scary": ["System", "Kinder-Modus"], "kids_thief": ["System", "Kinder-Modus"], "kids_laser": ["System", "Kinder-Modus"], "kids_sound": ["System", "Kinder-Modus"], "auto_update": ["System", "Updates"], "update_now": ["System", "Updates"]}
 
 
 func _order_controls() -> void:
@@ -2566,6 +2570,11 @@ func _register_controls() -> void:
 	if OS.get_name() == "Windows":
 		add_control("toggle", "autostart_lock", "Danach den Bildschirm sperren", func(): return autostart_lock, func(v): autostart_lock = v, "Start mit dem PC")
 		add_control("button", "autologon", "Ohne Anmelden: automatische Anmeldung von Windows einrichten …", null, func(): setup_autologon(), "Start mit dem PC", {"expert": true})
+	# 3D-3.69: what the «Kinder» mode shows (only the adults can change it - in the Kinder mode these settings are hidden)
+	add_control("toggle", "kids_scary", "Kinder-Modus: Wildschwein, Wolf und Luchs", func(): return kids_scary, func(v): kids_scary = v, "Kinder-Modus")
+	add_control("toggle", "kids_thief", "Kinder-Modus: Schleicher (Dieb) und Einbrecher", func(): return kids_thief, func(v): kids_thief = v, "Kinder-Modus")
+	add_control("toggle", "kids_laser", "Kinder-Modus: Laser-Treffer im Spiel", func(): return kids_laser, func(v): kids_laser = v, "Kinder-Modus")
+	add_control("toggle", "kids_sound", "Kinder-Modus: Töne bei den Knöpfen", func(): return kids_sound, func(v): kids_sound = v, "Kinder-Modus")
 	add_control("select", "quality", "Grafik", func(): return quality, func(v): _set_quality(v), "Grafik",
 			{"options": [["simple", "einfach (schnell)"], ["medium", "mittel"], ["nice", "schön (Schatten, Leuchten, Wolken)"],
 						 ["ultra", "ultra (für starke Grafikkarten; mit Vulkan noch mehr Effekte)"]]})
@@ -3169,6 +3178,7 @@ func _build_ui() -> void:
 	hdr.add_child(ver)
 	# toolbar like above the settings of Motion Watch
 	var tb := HBoxContainer.new()
+	ui_tb = tb
 	tb.add_theme_constant_override("separation", 6)
 	top_box.add_child(tb)
 	var hide_b := UI.icon_button("hide", "Bedienfeld ausblenden (H)")
@@ -3388,13 +3398,21 @@ func _build_ui() -> void:
 	expert_cards.append(keys.get_meta("card"))
 	top_cards.append(keys.get_meta("card"))
 	# Simple | Expert at the very bottom (like on the page of Motion Watch)
+	kids_seg = UI.segment("Kinder", "Erwachsene", not kids_on, func(adult): _kids_switch(adult))   # 3D-3.69
+	box_.add_child(kids_seg)
 	var se := UI.segment("Einfach", "Experte", not ui_simple, func(expert): set_simple(not expert))
+	simple_seg = se
 	box_.add_child(se)
 	simple_note = UI.small("Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.")
 	box_.add_child(simple_note)
 	_apply_simple()
 	_sync_ui()
-	_make_thumbs()
+	await _make_thumbs()
+	kids = preload("res://scripts/kids.gd").new()       # 3D-3.69: the panel of the «Kinder» mode (after the pictures)
+	kids.main = self
+	box_.add_child(kids)
+	box_.move_child(kids, 0)
+	_apply_kids()
 
 
 # ---- toolbar, search, Simple / Expert --------------------------------------------------------------------------------
@@ -3403,6 +3421,15 @@ var search_in: LineEdit
 var search_none: Label
 var simple_note: Label
 var ui_simple := true                 # «Einfach»: only the important settings (saved)
+var kids_on := false                  # 3D-3.69: «Kinder»: a panel with big picture buttons instead of the settings (saved)
+var kids_thief := true                # what children may see (set by the adults; everything allowed at first)
+var kids_scary := true
+var kids_laser := true
+var kids_sound := true
+var kids: Control
+var kids_seg: Control
+var simple_seg: Control
+var ui_tb: Control
 var fold_bodies: Array = []           # every card that opens / closes
 var setting_bodies: Array = []        # the cards of the settings groups
 var top_cards: Array = []             # connection, cameras, visitors, tools (hidden while searching)
@@ -3494,6 +3521,111 @@ func _search(q: String) -> void:
 		_apply_simple()
 
 
+func _kids_switch(adult: bool) -> void:
+	"""the switch «Kinder | Erwachsene»: to the children at once, back to the adults only with a little sum"""
+	if not adult:
+		kids_on = true
+		_settings_dirty = true
+		_apply_kids()
+		return
+	if not kids_on:
+		return
+	ask_adult(func(ok):
+		if ok:
+			kids_on = false
+			_settings_dirty = true
+			_apply_kids()
+		else:
+			kids_seg.get_meta("paint").call(false))
+
+
+func _apply_kids() -> void:
+	"""Kinder: only the panel with the picture buttons and the switch; no search, no tool bar. Erwachsene: as before."""
+	if ui_box == null or kids == null:
+		return
+	if kids_on:
+		for c in ui_box.get_children():
+			c.visible = c == kids or c == kids_seg
+		kids._build()
+		var sc := ui_box.get_parent()
+		if sc is ScrollContainer:
+			(sc as ScrollContainer).scroll_vertical = 0      # start at the top with the marmot
+	else:
+		kids.visible = false
+		for c in ui_box.get_children():
+			if c != kids and c != search_none:
+				c.visible = true
+		var keep := kids_on
+		kids_on = false
+		_apply_simple()
+		kids_on = keep
+	if ui_tb != null:
+		ui_tb.visible = not kids_on
+	if toolbar != null:
+		toolbar.visible = not kids_on
+	if kids_seg != null and kids_seg.has_meta("paint"):
+		kids_seg.get_meta("paint").call(not kids_on)
+
+
+var _adult_box: Control = null
+
+
+func ask_adult(done: Callable) -> void:
+	"""a little sum for the adults (7 × 8 = ?) before leaving the «Kinder» mode"""
+	if _adult_box != null and is_instance_valid(_adult_box):
+		_adult_box.queue_free()
+	var a := randi_range(6, 9)
+	var b := randi_range(6, 9)
+	var pc := PanelContainer.new()
+	pc.theme = ui_root.theme
+	pc.add_theme_stylebox_override("panel", UI.box(UI.PANEL, UI.ACC, 14, 16, 2))
+	ui_layer.add_child(pc)
+	_adult_box = pc
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 10)
+	pc.add_child(v)
+	v.add_child(UI.heading("Frage für Erwachsene"))
+	var q := Label.new()
+	q.text = "Wie viel ist %d × %d?" % [a, b]
+	q.add_theme_font_size_override("font_size", 22)
+	v.add_child(q)
+	var le := LineEdit.new()
+	le.placeholder_text = "Antwort"
+	le.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER
+	v.add_child(le)
+	var msg := UI.small("")
+	v.add_child(msg)
+	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", 8)
+	v.add_child(h)
+	var ok_b := Button.new()
+	ok_b.text = "Weiter"
+	UI.primary(ok_b)
+	var no_b := Button.new()
+	no_b.text = "Abbrechen"
+	for x in [ok_b, no_b]:
+		x.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		x.custom_minimum_size = Vector2(0, 40)
+		h.add_child(x)
+	var check := func(_t = null):
+		if le.text.strip_edges() == str(a * b):
+			pc.queue_free()
+			done.call(true)
+		else:
+			msg.text = "Leider falsch – noch einmal."
+			le.text = ""
+	ok_b.pressed.connect(check)
+	le.text_submitted.connect(check)
+	no_b.pressed.connect(func():
+		pc.queue_free()
+		done.call(false))
+	pc.custom_minimum_size = Vector2(320, 0)
+	await get_tree().process_frame
+	var vs := get_viewport().get_visible_rect().size
+	pc.position = (vs - pc.size) / 2.0
+	le.grab_focus()
+
+
 func set_simple(on: bool) -> void:
 	ui_simple = on
 	_settings_dirty = true
@@ -3520,6 +3652,8 @@ func _apply_simple() -> void:
 		c.visible = not ui_simple
 	if simple_note != null:
 		simple_note.visible = ui_simple
+	if kids_on and kids != null:
+		_apply_kids()
 
 
 # ---- the pictures of the visitors: click to choose, drag into the world ------------------------------------------------
@@ -3763,7 +3897,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last"]
+		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "kids_on", "kids_thief", "kids_scary", "kids_laser", "kids_sound"]
 var _settings_dirty := false
 
 

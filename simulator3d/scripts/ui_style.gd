@@ -436,6 +436,7 @@ static func segment(left: String, right: String, right_on: bool, on_change: Call
 		a.add_theme_color_override("font_hover_color", Color.WHITE)
 		b.add_theme_color_override("font_hover_color", Color.WHITE)
 	paint.call(right_on)
+	h.set_meta("paint", paint)              # 3D-3.69: to show the other side again from outside
 	a.pressed.connect(func():
 		paint.call(false)
 		on_change.call(false))

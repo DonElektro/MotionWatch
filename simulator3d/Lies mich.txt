@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.68 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.69 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,6 +607,15 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 Motion Watch); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.69
+3D-3.69: Kinder-Modus. Ganz unten im Bedienfeld «Kinder | Erwachsene» (zusätzlich zu «Einfach | Experte»). Bei den Kindern
+gibt es statt der Einstellungen grosse bunte Bild-Knöpfe: wer zu Besuch kommt, Wetter und Tageszeit, Rover fahren,
+Versteckspiel, andere Welt, was die Kamera sieht. Murmli (das Murmeltier) erklärt in einer Sprechblase, was passiert,
+dazu kleine Töne und Konfetti. Technisches (Verbindung, Tunnel, Updates, Prüfstand, Werkzeugleiste) ist ausgeblendet.
+Zurück zu «Erwachsene» geht nur mit einer kleinen Rechenaufgabe. Was Kinder sehen, stellen die Erwachsenen unter
+System → Kinder-Modus ein (Wildschwein / Wolf / Luchs, Schleicher und Einbrecher, Laser-Treffer, Töne) – am Anfang ist
+alles eingeschaltet.
 
 NEU IN 3D-3.68
 3D-3.68: Nach einem Update verbindet sich der Simulator wieder von selbst: der alte Simulator schliesst seinen Port, bevor
