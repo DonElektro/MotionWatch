@@ -70,9 +70,11 @@ func command() -> Vector2:
 			k.y += 1.0
 		if Input.is_key_pressed(KEY_LEFT):
 			k.y -= 1.0
+	if main.explore != null and main.explore.on:          # 3D-3.55: exploring - also W A S D and the game controller
+		k += main.explore.command()
 	if dragging:
 		k = Vector2(-knob.y, knob.x)
-	return k
+	return k.limit_length(1.0)
 
 
 func _process(dt: float) -> void:
@@ -103,7 +105,7 @@ func _process(dt: float) -> void:
 	elif knob != Vector2.ZERO and not dragging:
 		knob = Vector2.ZERO
 		queue_redraw()
-	if chase and main.view_mode == 0:
+	if chase and main.view_mode == 0 and not (main.explore != null and main.explore.on):
 		var rig: Node3D = main.rig
 		var fwd := Vector3(-sin(rig.rotation.y), 0, -cos(rig.rotation.y))
 		var tp := rig.global_position + Vector3(0, 0.8, 0)

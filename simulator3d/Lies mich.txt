@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.54 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.55 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -574,3 +574,10 @@ aber nicht gemeldet). Die verpassten Bilder aus dem Spiel kann Motion Watch mit 
 
 NEU IN 3D-3.54
 3D-3.54: Schleichwege laufen im Prüfstand nur auf der Karte, auf der sie gespielt wurden.
+
+NEU IN 3D-3.55
+3D-3.55: Erkunden mit dem Rover (Werkzeuge → «Erkunden mit dem Rover», oder Start auf dem Game-Controller): mit dem Rover
+durch die Gegend fahren. Tastatur: W A S D oder Pfeile, Shift = schneller, V = Ansicht (hinterher, Fahrersicht, von oben),
+Esc = beenden. Maus / Touch: grüner Stick, rechte Maustaste ziehen = umschauen, Rad = Abstand. Game-Controller (auch
+Bluetooth, zuerst in Windows koppeln): linker Stick fahren, rechter Stick umschauen, RT / LT Gas und rückwärts,
+A schneller, Y Ansicht, B beenden. Oben zeigt ein Symbol, womit gerade gesteuert wird. Tempo unter Mover einstellbar.

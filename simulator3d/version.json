@@ -1,12 +1,12 @@
 {
- "version": "3D-3.54",
+ "version": "3D-3.55",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30911554,
- "sha256": "896791a430a8dd54d3cbc8114e1840b60b9981ca37b30b966818e01d69378f80",
- "notes": "Schleichwege nur auf ihrer eigenen Karte",
+ "size": 30921161,
+ "sha256": "c8b4792abc43162f31877b8c742b456efdd5a64be27aed4267b07f126569f592",
+ "notes": "Erkunden mit dem Rover: Tastatur, Maus, Touch, Game-Controller (auch Bluetooth)",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24032841,
-  "sha256": "27960224aea3d7c367a2b77c26a30c85684a9b4ff39a2abbb899e6133ec13aae"
+  "size": 24042831,
+  "sha256": "31082680c7c8f1d7b3bc1ccca7974f2a962d010339b13eb151e55f0d9547226d"
  }
 }

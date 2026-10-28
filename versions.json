@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 12:08",
+ "generated": "2026-10-28 12:48",
  "versions": [
   {
-   "version": "2.95.77",
-   "file": "webcam_bewegung_2_95_77.py",
+   "version": "2.95.78",
+   "file": "webcam_bewegung_2_95_78.py",
    "url": "",
-   "sha256": "a81049a72793aaeedce2819b3d0f6a93dd7bf50dfe96a8ee0f7dbc796f4f63d0",
-   "date": "2026-10-28 12:08",
-   "notes": "Vollbild: Knopf 🚜 blendet den Mover-Stick ein (gegenüber dem Kamera-Stick, mit ⇆ tauschbar)",
-   "sig": "064ebc770d1d624941f45fd3159cbe534b6d7fd106d9e1a135bd291d438e8c9de3883d608d77fb6904acbae86c55434a49982331d08cb1b0c799c154b9e4df0b"
+   "sha256": "eac6685eac79ef439452a17b687cc2862e4fd3a42605212d627f52428bf5671e",
+   "date": "2026-10-28 12:48",
+   "notes": "3D-Simulator 3D-3.55: Erkunden mit dem Rover (Tastatur, Maus, Touch, Game-Controller)",
+   "sig": "88304aa93bb566a8e34b2ca6240ce3e2a9702f8d69b4128013621c740a0e775e7e7f422840437dd203377a5b7a615f18008cd13f099c314b9277b658336d670e"
   },
   {
    "version": "2.94.5",

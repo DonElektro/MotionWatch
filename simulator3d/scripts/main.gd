@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.54"
+const VERSION := "3D-3.55"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2414,6 +2414,7 @@ func _register_controls() -> void:
 	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
 			{"options": [["opposite", "gegenüber (30 m)"], ["left", "links"], ["right", "rechts"]]})
 	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – fahren mit dem grünen Stick unten rechts, den Pfeiltasten oder dem zweiten Stick in Motion Watch", func(): return mover_on, func(v): set_mover(v), "Mover")
+	add_control("slider", "explore_speed", "Tempo beim Erkunden (Shift / A = schneller)", func(): return explore.speed if explore != null else 1.6, func(v): if explore != null: explore.speed = v, "Mover", {"min": 0.5, "max": 6.0, "step": 0.1, "unit": "m/s"})
 	add_control("slider", "mover_max", "Höchstgeschwindigkeit des Movers", func(): return mover_max, func(v): mover_max = v, "Mover", {"min": 0.2, "max": 2.0, "step": 0.1, "unit": "m/s"})
 	add_control("button", "mover_home", "Mover zurück an den Startplatz", null, func(): mover_home(), "Mover")
 	add_control("toggle", "door", "Wohnwagentür offen", func(): return door_open, func(v): set_door(v), "Sensoren")
@@ -2807,6 +2808,18 @@ func control(d: Dictionary) -> Dictionary:
 		var ap: Vector3 = gp["actor"].position
 		return {"ok": true, "box": game.learn.box(gp), "sees": game.cam_sees(gp, 0), "state": gp["state"], "fx": game.fx_nodes.size(),
 				"head": [hp.x, hp.y, hp.z], "pos": [ap.x, ap.y, ap.z], "goal": [game.goal.x, game.goal.z], "report": game.learn.report_dict() if d.get("report", false) else {}}
+	elif a == "explore":                               # 3D-3.55: explore with the rover (for tests and remote)
+		if explore == null:
+			return {"ok": false, "error": "no explore"}
+		if d.has("on"):
+			explore.set_on(bool(d["on"]))
+		if d.has("view") and str(d["view"]) in explore.VIEWS:
+			explore.view = str(d["view"])
+		if d.has("drive"):                             # [forward, turn, seconds] for a test drive
+			var dv: Array = d["drive"]
+			explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
+			explore.test_until = explore.main.now() + (float(dv[2]) if dv.size() > 2 else 2.0)
+		return explore.state()
 	elif a == "game_mwcatch":                          # «Team gegen Motion Watch»: «Erwischt!» pressed at Motion Watch (3D-3.27)
 		if game == null:
 			return {"ok": false, "error": "no game"}
@@ -3193,6 +3206,12 @@ func _build_ui() -> void:
 	plb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	plb.pressed.connect(func(): planner.open(not planner.visible))
 	tl.add_child(plb)
+	var exb := Button.new()                         # 3D-3.55: explore with the rover
+	exb.text = "Erkunden mit dem Rover (Tastatur, Maus, Touch, Controller)"
+	exb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	exb.tooltip_text = "Mit dem Rover durch die Gegend fahren: W A S D / Pfeile, grüner Stick, oder ein Game-Controller (auch Bluetooth; Start = ein / aus). Esc beendet."
+	exb.pressed.connect(func(): explore.set_on(not explore.on))
+	tl.add_child(exb)
 	var psb := Button.new()
 	psb.text = "Prüfstand: Erkennung messen (auf diesem PC)"
 	psb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -3988,6 +4007,7 @@ var thermal_full: TextureRect
 var view_btns := {}
 var sel_ring: Control
 var rover_pad                         # rover_pad.gd: drive the mover here (from 3D-3.15)
+var explore                           # explore.gd: «Erkunden» with the rover - keyboard, mouse, touch, game controller (3D-3.55)
 var pad_drive := Vector2.ZERO         # (forward, turn right) from rover_pad, -1 … 1
 var pad_t := -10.0
 var pad_on := false                   # rover_pad is used right now
@@ -4428,6 +4448,9 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	rover_pad = preload("res://scripts/rover_pad.gd").new()
 	rover_pad.main = self
 	layer.add_child(rover_pad)
+	explore = preload("res://scripts/explore.gd").new()       # 3D-3.55: explore with the rover
+	explore.main = self
+	layer.add_child(explore)
 	# the chosen visitor
 	sel_box = PanelContainer.new()
 	sel_box.theme = th
@@ -4517,6 +4540,8 @@ func _fly(dt: float) -> void:
 	view_cam.far = 7000.0 if terrain else 2000.0
 	if phone != null and phone.visible and phone.screen.has_focus():
 		return                                   # keys go to the phone
+	if explore != null and explore.on:
+		return                                   # exploring: W A S D drive the rover
 	var mv := Vector3.ZERO
 	if Input.is_key_pressed(KEY_W):
 		mv.z -= 1
