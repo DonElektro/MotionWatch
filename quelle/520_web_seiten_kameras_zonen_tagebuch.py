@@ -425,6 +425,9 @@ main{padding:16px;max-width:1500px;margin:0 auto}
 .dbest img{width:150px;height:112px;object-fit:cover;border-radius:10px;display:block;cursor:zoom-in;background:#000}
 .dbest figcaption{font-size:12px;color:var(--mut);margin-top:3px}
 #d-rep{white-space:pre-wrap;line-height:1.5;margin-top:6px}
+.sdt{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}.sdt th,.sdt td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}.sdt th{color:var(--mut);font-weight:600}
+.sdv{border-bottom:1px solid var(--line);padding:6px 0;font-size:14px}.sdv summary{cursor:pointer}.sdr{display:inline-block;min-width:92px;font-weight:700}.sdr.ok{color:var(--grn,#3fcf6b)}.sdr.miss{color:#ff6b6b}.sdr.none{color:var(--mut)}
+.sdi{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:6px 0 4px 8px;font-size:13px}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -446,6 +449,14 @@ main{padding:16px;max-width:1500px;margin:0 auto}
     <div id="rep" class="mut">…</div>
     <div class="btns"><button class="sec" onclick="sendReport()" data-i18n="Send now">Send now</button></div>
     <div class="mut" id="rep-note" style="margin-top:6px"></div>
+  </details>
+  <details class="card" id="simcard" hidden open>
+    <summary>🎮 <span data-i18n="Simulator diary">Simulator diary</span> <span class="mut" id="sd-sum"></span></summary>
+    <div class="mut" data-i18n="sd-note">sd-note</div>
+    <div class="dtiles" id="sd-tiles"></div>
+    <div id="sd-tables"></div>
+    <div class="chips" id="sd-chips"></div>
+    <div id="sd-list"></div>
   </details>
   <div class="card">
     <h3 style="margin:0 0 6px" data-i18n="Animal diary">Animal diary</h3>
@@ -591,6 +602,57 @@ function renderDay(j) {
 }
 $("#d-prev").onclick = () => dShift(-1); $("#d-next").onclick = () => dShift(1);
 $("#d-date").onchange = e => { if (e.target.value) { DAY = e.target.value; loadDay(); } };
+// ---- 2.96.1: the diary of the simulator - every visit in the simulated world, with what MoveEye made of it ----
+const SDK = {person: "🚶", car: "🚗", fox: "🦊", deer: "🦌", boar: "🐗", cat: "🐈", dog: "🐕", badger: "🦡", hare: "🐇", hedgehog: "🦔", wolf: "🐺", marten: "🦦", squirrel: "🐿",
+  cow: "🐄", sheep: "🐑", horse: "🐎", chamois: "🐐", ibex: "🐐", lynx: "🐆"};
+let SD = {items: [], filt: "all", day: ""};
+async function sdLoad() {
+  let r; try { r = await (await fetch("/api/sim_diary?day=" + DAY, {cache: "no-store"})).json(); } catch (e) { return; }
+  const card = $("#simcard"); card.hidden = !Object.keys(r.days || {}).length; if (card.hidden) return;
+  SD.items = (r.items || []).slice().reverse(); SD.day = DAY; sdPaint();
+}
+function sdRes(v) { return v.detected ? "ok" : (v.vis_s >= 2 ? "miss" : "none"); }
+function sdPaint() {
+  const I = SD.items, pct = (a, b) => b ? Math.round(100 * a / b) + " %" : "–";
+  const vis = I.filter(v => v.vis_s >= 2 && v.kind !== "car"), det = vis.filter(v => v.detected), times = det.map(v => v.detect_s).filter(x => x >= 0);
+  const avg = times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) + " s" : "–";
+  $("#sd-sum").textContent = "· " + I.length + " " + t("visits");
+  const T = $("#sd-tiles"); T.textContent = "";
+  [[I.length, t("visits")], [pct(det.length, vis.length), t("recognised")], [avg, t("until recognised")], [vis.length - det.length, t("missed")], [I.filter(v => v.vis_s < 2).length, t("never well in the picture")]]
+    .forEach(([n, l]) => { const d = el("div", "dtile"); d.append(el("b", "", String(n)), el("span", "", l)); T.appendChild(d); });
+  const tab = (title, keyf, namef) => { const g = {}; vis.forEach(v => { const k = keyf(v); (g[k] = g[k] || []).push(v); });
+    const ks = Object.keys(g); if (!ks.length) return null; const tb = document.createElement("table"); tb.className = "sdt";
+    tb.innerHTML = "<tr><th>" + title + "</th><th>" + t("visits") + "</th><th>" + t("recognised") + "</th><th>Ø s</th></tr>" + ks.sort((a, b) => g[b].length - g[a].length).map(k => {
+      const d = g[k].filter(v => v.detected), ts = d.map(v => v.detect_s).filter(x => x >= 0);
+      return "<tr><td>" + namef(k) + "</td><td>" + g[k].length + "</td><td>" + pct(d.length, g[k].length) + "</td><td>" + (ts.length ? (ts.reduce((a, b) => a + b, 0) / ts.length).toFixed(1) : "–") + "</td></tr>"; }).join("");
+    return tb; };
+  const TB = $("#sd-tables"); TB.textContent = "";
+  [tab(t("Kind"), v => v.kind, k => (SDK[k] || "•") + " " + t(k)), tab(t("Light"), v => v.dark ? "n" : "d", k => k === "n" ? "🌙 " + t("night") : "☀️ " + t("day")),
+   tab(t("Posture"), v => String(v.post || 0), k => ["🧍 " + t("standing"), "🧎 " + t("crouching"), "🐍 " + t("crawling")][+k] || k)].forEach(x => { if (x) TB.appendChild(x); });
+  const C = $("#sd-chips"); C.textContent = "";
+  [["all", t("All")], ["person", t("Persons")], ["animal", t("Animals")], ["miss", t("missed")]].forEach(([k, n]) => { const b = el("button", "chip" + (SD.filt === k ? " on" : ""), n); b.type = "button";
+    b.onclick = () => { SD.filt = k; sdPaint(); }; C.appendChild(b); });
+  const L = $("#sd-list"); L.textContent = "";
+  const F = I.filter(v => SD.filt === "all" || (SD.filt === "person" && v.kind === "person") || (SD.filt === "animal" && v.kind !== "person" && v.kind !== "car") || (SD.filt === "miss" && sdRes(v) === "miss"));
+  if (!F.length) L.appendChild(el("div", "mut", t("No visits on this day.")));
+  F.slice(0, 150).forEach(v => { const d = document.createElement("details"); d.className = "sdv"; const sm = document.createElement("summary"); const r = sdRes(v);
+    const tm = new Date(v.t_in * 1000).toLocaleTimeString(LANG === "en" ? "en-GB" : "de-CH", {hour: "2-digit", minute: "2-digit"});
+    sm.innerHTML = '<span class="sdr ' + r + '">' + (r === "ok" ? "✓ " + (v.detect_s >= 0 ? v.detect_s + " s" : "") : r === "miss" ? "✗ " + t("missed") : "– " + t("not seen")) + "</span> " + tm + " · " + (SDK[v.kind] || "•") + " " + esc(t(v.kind)) + (v.var ? " (" + esc(t(v.var)) + ")" : "") + " · " + (v.dark ? "🌙" : "☀️");
+    const info = [[t("Scene"), v.scene], [t("Weather"), t(v.weather)], [t("closest"), v.min_d + " m"], [t("well in the picture"), v.vis_s + " s"], [t("Posture"), ["standing", "crouching", "crawling"].map(t)[v.post || 0]],
+      [t("scared away"), v.fled ? "✓" : "–"], [t("Duration"), Math.round((v.t_out - v.t_in)) + " s"], ["MoveEye", v.mw ? (v.mw_version || "✓") : t("not connected")]];
+    const g = el("div", "sdi"); info.forEach(([a, b]) => g.append(el("span", "mut", a), el("span", "", String(b)))); d.append(sm, g); L.appendChild(d); });
+}
+function esc(x) { return String(x).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c])); }
+const _ld = loadDay; loadDay = async function (r) { await _ld(r); sdLoad(); };
+setInterval(() => { if (!document.hidden && $("#simcard") && !$("#simcard").hidden) sdLoad(); }, 30000);
+Object.assign(I18N.de, {"Simulator diary": "Simulator-Tagebuch", "sd-note": "Jeder Besuch in der Simulation (Menschen, Tiere, Autos) – und was MoveEye daraus gemacht hat. «Verpasst» = mindestens 2 s gut im Bild der Kopfkamera, aber nicht erkannt.",
+  "visits": "Besuche", "recognised": "erkannt", "until recognised": "bis erkannt", "missed": "verpasst", "never well in the picture": "nie gut im Bild", "Kind": "Art", "Light": "Licht", "night": "Nacht", "day": "Tag",
+  "Posture": "Haltung", "standing": "stehend", "crouching": "geduckt", "crawling": "kriechend", "All": "Alle", "Persons": "Personen", "Animals": "Tiere", "No visits on this day.": "Keine Besuche an diesem Tag.",
+  "not seen": "nicht im Bild", "Scene": "Szene", "Weather": "Wetter", "closest": "am nächsten", "well in the picture": "gut im Bild", "scared away": "verscheucht", "Duration": "Dauer", "not connected": "nicht verbunden",
+  "person": "Person", "car": "Auto", "fox": "Fuchs", "deer": "Reh", "boar": "Wildschwein", "cat": "Katze", "dog": "Hund", "badger": "Dachs", "hare": "Hase", "hedgehog": "Igel", "wolf": "Wolf", "marten": "Marder",
+  "squirrel": "Eichhörnchen", "cow": "Kuh", "sheep": "Schaf", "horse": "Pferd", "chamois": "Gämse", "ibex": "Steinbock", "lynx": "Luchs", "child": "Kind", "jogger": "Jogger", "burglar": "Einbrecher", "thief": "Dieb",
+  "clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee", "storm": "Sturm"});
+Object.assign(I18N.en || (I18N.en = {}), {"sd-note": "Every visit in the simulation (persons, animals, cars) – and what MoveEye made of it. «Missed» = at least 2 s well in the picture of the head camera, but not recognised."});
 (async () => { await initAppearance(); loadDay(); load(); loadReport(); })();
 /*ALERTS*/
 </script></body></html>

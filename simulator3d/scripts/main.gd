@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.79"
+const VERSION := "3D-3.80"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -64,6 +64,7 @@ var real_weather := false             # the weather of the place from open-meteo
 var surprise_on := false             # 3D-3.75: «Überraschungsnacht» (surprise.gd)
 var power_off := false               # 3D-3.75: power cut - the lamps of the place are out
 var surprise
+var visitlog                          # 3D-3.80: visitlog.gd
 var night_weather := false            # 3D-3.74: the weather runs through the night (dusk, showers, dew, morning fog)
 var _nw := {"day": -1, "plan": [], "last": "", "fog_lens": false}
 var real_time := false                # the clock of the PC
@@ -362,6 +363,9 @@ func _ready() -> void:
 	stories = preload("res://scripts/events.gd").new()    # little stories (3D-3.40)
 	stories.main = self
 	add_child(stories)
+	visitlog = preload("res://scripts/visitlog.gd").new()   # 3D-3.80
+	visitlog.main = self
+	add_child(visitlog)
 	surprise = preload("res://scripts/surprise.gd").new()   # 3D-3.75
 	surprise.main = self
 	add_child(surprise)
@@ -2304,6 +2308,8 @@ func spawn(kind: String, from = null, to = null) -> Node3D:
 	if sd >= 0:
 		recorder.note_spawn(v, sd)
 		randomize()
+	if visitlog != null:
+		visitlog.add(v)                           # 3D-3.80: the diary of the simulator
 	return v
 
 
@@ -3290,6 +3296,8 @@ func control(d: Dictionary) -> Dictionary:
 			explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
 			explore.test_until = explore.main.now() + (float(dv[2]) if dv.size() > 2 else 2.0)
 		return explore.state()
+	elif a == "visits":                                # 3D-3.80: finished visits for the diary of MoveEye {since: id}
+		return {"ok": true, "visits": visitlog.since(int(d.get("since", 0))), "seq": visitlog.seq, "live": visitlog.live.size(), "sim": VERSION}
 	elif a == "localplay":                             # 3D-3.77: play here at the PC (tests): {do: start | stop | get, role}
 		var dl := str(d.get("do", "get"))
 		if dl == "start":

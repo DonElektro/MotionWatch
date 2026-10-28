@@ -1903,3 +1903,38 @@ for _k, _v in _HX105b.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX106 = {  # 2.96.1: panorama report «Missing things»
+    'Missing things': ('Fehlende Gegenstände', 'Objets manquants', 'Oggetti mancanti', 'Objects che mancan'),
+    'gone': ('weg', 'disparu', 'sparito', 'davent'), 'back': ('wieder da', 'de retour', 'di nuovo lì', 'puspè qua'),
+    '{n} checks in this time, {m} changes': ('{n} Vergleiche in dieser Zeit, {m} Veränderungen', '{n} contrôles pendant ce temps, {m} changements', '{n} controlli in questo periodo, {m} cambiamenti', '{n} cumparegliaziuns en quest temp, {m} midadas'),
+    'no comparison in this time': ('kein Vergleich in dieser Zeit', 'aucune comparaison pendant ce temps', 'nessun confronto in questo periodo', 'nagina cumparegliaziun en quest temp'),
+    'Missing things: {g} gone, {n} new, {c} changes in all': ('Fehlende Gegenstände: {g} weg, {n} neu, {c} Veränderungen insgesamt', 'Objets manquants : {g} disparus, {n} nouveaux, {c} changements en tout', 'Oggetti mancanti: {g} spariti, {n} nuovi, {c} cambiamenti in tutto', 'Objects che mancan: {g} davent, {n} novs, {c} midadas en tut'),
+    'Panorama report «Missing things» every morning (separate from the night report)': ('Panorama-Bericht «Fehlende Gegenstände» jeden Morgen (getrennt vom Nachtbericht)', 'Rapport panoramique «Objets manquants» chaque matin (séparé du rapport de nuit)', 'Rapporto panoramico «Oggetti mancanti» ogni mattina (separato dal rapporto notturno)', 'Rapport panoramic «Objects che mancan» mintga damaun (separà dal rapport da notg)'),
+    'Panorama report «Missing things»': ('Panorama-Bericht «Fehlende Gegenstände»', 'Rapport panoramique «Objets manquants»', 'Rapporto panoramico «Oggetti mancanti»', 'Rapport panoramic «Objects che mancan»'),
+    'pano-desc': ('Ein Bild aus allen Richtungen des Referenz-Scans; darauf markiert, was verschwunden (rot), dazugekommen (grün) oder verändert (orange) ist – mit der Uhrzeit. Kommt jeden Morgen mit dem Nachtbericht, wenn oben eingeschaltet.', 'Une image de toutes les directions du scan de référence ; dessus, ce qui a disparu (rouge), est apparu (vert) ou a changé (orange) – avec l’heure. Arrive chaque matin avec le rapport de nuit si activé ci-dessus.', 'Un’immagine di tutte le direzioni della scansione di riferimento; vi è segnato cosa è sparito (rosso), comparso (verde) o cambiato (arancione) – con l’ora. Arriva ogni mattina con il rapporto notturno se attivato sopra.', 'In maletg da tut las direcziuns dal scan da referenza; marcà tge ch’è svanì (cotschen), vegnì natiers (verd) u midà (oransch) – cun l’ura. Arriva mintga damaun cun il rapport da notg, sch’activà survart.'),
+    'Make it now (last 24 h)': ('Jetzt erstellen (letzte 24 h)', 'Créer maintenant (dernières 24 h)', 'Creare ora (ultime 24 h)', 'Crear ussa (ultimas 24 h)'),
+    'Make and send': ('Erstellen und senden', 'Créer et envoyer', 'Creare e inviare', 'Crear e trametter'),
+    'No panorama yet.': ('Noch kein Panorama.', 'Pas encore de panorama.', 'Ancora nessun panorama.', 'Anc nagin panorama.'),
+    'checks': ('Vergleiche', 'contrôles', 'controlli', 'cumparegliaziuns'),
+}
+for _k, _v in _HX106.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX107 = {  # 2.96.1: simulator diary
+    'Simulator diary': ('Simulator-Tagebuch', 'Journal du simulateur', 'Diario del simulatore', 'Diari dal simulatur'),
+    'sd-note': ('Jeder Besuch in der Simulation (Menschen, Tiere, Autos) – und was MoveEye daraus gemacht hat. «Verpasst» = mindestens 2 s gut im Bild der Kopfkamera, aber nicht erkannt.', 'Chaque visite dans la simulation (personnes, animaux, voitures) – et ce que MoveEye en a fait. «Manqué» = au moins 2 s bien visible pour la caméra, mais pas reconnu.', 'Ogni visita nella simulazione (persone, animali, auto) – e cosa ne ha fatto MoveEye. «Mancato» = almeno 2 s ben visibile per la telecamera, ma non riconosciuto.', 'Mintga visita en la simulaziun (persunas, animals, autos) – e tge che MoveEye ha fatg. «Manchentà» = almain 2 s bain en il maletg, ma betg renconuschì.'),
+    'visits': ('Besuche', 'visites', 'visite', 'visitas'), 'recognised': ('erkannt', 'reconnu', 'riconosciuto', 'renconuschì'),
+    'until recognised': ('bis erkannt', 'jusqu’à la reconnaissance', 'fino al riconoscimento', 'fin renconuschì'), 'missed': ('verpasst', 'manqué', 'mancato', 'manchentà'),
+    'never well in the picture': ('nie gut im Bild', 'jamais bien visible', 'mai ben visibile', 'mai bain en il maletg'), 'Kind': ('Art', 'Type', 'Tipo', 'Gener'),
+    'Light': ('Licht', 'Lumière', 'Luce', 'Glisch'), 'Posture': ('Haltung', 'Posture', 'Postura', 'Posiziun'), 'standing': ('stehend', 'debout', 'in piedi', 'en pe'),
+    'crouching': ('geduckt', 'accroupi', 'accovacciato', 'sbassà'), 'crawling': ('kriechend', 'rampant', 'strisciando', 'rampignond'),
+    'No visits on this day.': ('Keine Besuche an diesem Tag.', 'Aucune visite ce jour-là.', 'Nessuna visita in questo giorno.', 'Naginas visitas quel di.'),
+    'not seen': ('nicht im Bild', 'pas visible', 'non visibile', 'betg en il maletg'), 'closest': ('am nächsten', 'au plus près', 'più vicino', 'il pli datiers'),
+    'well in the picture': ('gut im Bild', 'bien visible', 'ben visibile', 'bain en il maletg'), 'scared away': ('verscheucht', 'effrayé', 'spaventato', 'stgatschà'),
+    'Duration': ('Dauer', 'Durée', 'Durata', 'Durada'), 'not connected': ('nicht verbunden', 'non connecté', 'non connesso', 'betg collià'),
+}
+for _k, _v in _HX107.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])

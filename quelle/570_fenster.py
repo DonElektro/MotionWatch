@@ -225,6 +225,7 @@ TOGGLES = [  # (section, key, label)
     ("Reference scan", "refscan_on_arm", "Compare with the reference when armed"),
     ("Reference scan", "refscan_push", "Push message when something is missing"),
     ("Reference scan", "refscan_push_all", "Push message also for new or changed things"),
+    ("Reference scan", "refscan_pano_on", "Panorama report «Missing things» every morning (separate from the night report)"),
     ("Theft protection", "tamper_motion", "Motion sensor (MPU-6050, if fitted): alarm when the device is moved or knocked over"),
     ("Theft protection", "tamper_power", "Power cut while armed = alarm (needs the UPS HAT)"),
     ("Backup", "backup_all", "Copy all recordings (otherwise only alarm recordings: armed or with a person)"),
@@ -744,7 +745,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.0")
+        self.root.title("MoveEye 2.96.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1034,7 +1035,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

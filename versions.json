@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 20:22",
+ "generated": "2026-10-28 20:34",
  "versions": [
   {
-   "version": "2.96.0",
-   "file": "webcam_bewegung_2_96_0.py",
+   "version": "2.96.1",
+   "file": "webcam_bewegung_2_96_1.py",
    "url": "",
-   "sha256": "20da12769479ad24ee7e692eeb135d60ee6a74eb82a141a569c8273cc295fa90",
-   "date": "2026-10-28 20:22",
-   "notes": "Neuer Name: MoveEye (früher Motion Watch) mit neuem Logo (Sichtfeld, gehende Person in Erkennungs-Ecken, bewegt sich in der Kopfzeile); einmalige Umstellung des App-Symbols; passt zum Simulator 3D-3.79",
-   "sig": "830e068f5530e1fcbdf5b1e7b595ef303b85fc2fa24b0364b40f68321734d233974de4cce8eefe9b53ef6b4c44796a939ca11804865bfce00fd86b55a786bc06"
+   "sha256": "6440d88107ea52a7203ee1c2b48105273edb887a5317f77a0484da86167664ac",
+   "date": "2026-10-28 20:34",
+   "notes": "Panorama-Bericht «Fehlende Gegenstände» (separat einschaltbar, jeden Morgen mit Bild und Uhrzeiten); Simulator-Tagebuch im Tagebuch (alle Besuche mit Auswertung); passt zum Simulator 3D-3.80",
+   "sig": "f13c6eff82134ee4ee4a00812d11a035dfbd085440a1e21f3dbf0011f3d713c9d6ebd2428f316fa3e34bdafbd4ccc444501aea6e6b640c6096e34bc7a6e59b0a"
   },
   {
    "version": "2.95.105",

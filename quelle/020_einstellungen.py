@@ -200,7 +200,7 @@ CFG = {
     "sens_on": False, "sensors": [], "rf433_on": False, "zigbee_on": False, "ble_on": False, "tag_missing": 5, "eco_pir": True,
     "refscan_pan_steps": 6, "refscan_pan_from": 10, "refscan_pan_to": 90, "refscan_tilt_steps": 1, "refscan_tilt_span": 16, "refscan_tilt_mid": 50,
     "refscan_photos": 2, "refscan_settle": 1.5, "refscan_sens": 50, "refscan_min_area": 0.6,   # reference scan (2.95.97)
-    "refscan_on_arm": False, "refscan_every": 0, "refscan_push": True, "refscan_push_all": False,
+    "refscan_on_arm": False, "refscan_every": 0, "refscan_push": True, "refscan_push_all": False, "refscan_pano_on": False, "refscan_pano_day": "",
     "protect_level": "off", "protect_pin": "", "escalate_on": False, "escalate_siren_s": 30,   # 2.95.105: protection (135)
     "tamper_on": True,           # sabotage: camera covered or turned away (picture check)
     "tamper_motion": True,       # motion sensor MPU-6050 (I2C 0x68), if fitted: device moved / knocked over

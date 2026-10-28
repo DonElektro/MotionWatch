@@ -1,12 +1,12 @@
 {
- "version": "3D-3.79",
+ "version": "3D-3.80",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31085685,
- "sha256": "5b977160a5fe1843413e7ac5e4f2c6774168b851eb55b391c4bd28801657e3e8",
- "notes": "Neuer Name MoveEye und neues Logo",
+ "size": 31089977,
+ "sha256": "dea5191cd72a35014644671a8640ca7f352c98877430ebcc09589547d43ba71c",
+ "notes": "Besuchs-Tagebuch für MoveEye",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24208277,
-  "sha256": "4db45165970c36380d492bf72a671ff2328669fd9f6e542f8c77a1ffa4c988a4"
+  "size": 24211514,
+  "sha256": "d13c7e8d48c13915ca2a5e20eaa9a2c719af0906d4ff62fcb027237e5ef3be01"
  }
 }

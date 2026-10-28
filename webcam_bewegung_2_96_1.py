@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_1.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.96.1: Panorama-Bericht «Fehlende Gegenstände» (separat einschaltbar, jeden Morgen mit Bild und Uhrzeiten);
+    Simulator-Tagebuch im Tagebuch (alle Besuche mit Auswertung); passt zum Simulator 3D-3.80
   * 2.96.0: Neuer Name: MoveEye (früher Motion Watch) mit neuem Logo (Sichtfeld, gehende Person in Erkennungs-Ecken, bewegt sich
     in der Kopfzeile); einmalige Umstellung des App-Symbols; passt zum Simulator 3D-3.79
   * 2.95.105: Schutz: Stufen Aus / Wachsam / Voller Schutz, Schutz-Assistent, Ampel mit «Beheben», Diebstahlschutz-Zeile,
@@ -801,10 +803,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_96_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_96_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_96_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_96_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_96_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_96_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -821,7 +823,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.96.0"
+APP_VERSION = "2.96.1"
 
 
 def default_data_dir():
@@ -1132,7 +1134,7 @@ CFG = {
     "sens_on": False, "sensors": [], "rf433_on": False, "zigbee_on": False, "ble_on": False, "tag_missing": 5, "eco_pir": True,
     "refscan_pan_steps": 6, "refscan_pan_from": 10, "refscan_pan_to": 90, "refscan_tilt_steps": 1, "refscan_tilt_span": 16, "refscan_tilt_mid": 50,
     "refscan_photos": 2, "refscan_settle": 1.5, "refscan_sens": 50, "refscan_min_area": 0.6,   # reference scan (2.95.97)
-    "refscan_on_arm": False, "refscan_every": 0, "refscan_push": True, "refscan_push_all": False,
+    "refscan_on_arm": False, "refscan_every": 0, "refscan_push": True, "refscan_push_all": False, "refscan_pano_on": False, "refscan_pano_day": "",
     "protect_level": "off", "protect_pin": "", "escalate_on": False, "escalate_siren_s": 30,   # 2.95.105: protection (135)
     "tamper_on": True,           # sabotage: camera covered or turned away (picture check)
     "tamper_motion": True,       # motion sensor MPU-6050 (I2C 0x68), if fitted: device moved / knocked over
@@ -15438,8 +15440,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.79", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31085685,
-         "sha256": "5b977160a5fe1843413e7ac5e4f2c6774168b851eb55b391c4bd28801657e3e8"}
+SIM3D = {"version": "3D-3.80", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31089977,
+         "sha256": "dea5191cd72a35014644671a8640ca7f352c98877430ebcc09589547d43ba71c"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15578,8 +15580,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.79", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24208277,
-           "sha256": "4db45165970c36380d492bf72a671ff2328669fd9f6e542f8c77a1ffa4c988a4", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.80", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24211514,
+           "sha256": "d13c7e8d48c13915ca2a5e20eaa9a2c719af0906d4ff62fcb027237e5ef3be01", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -16859,6 +16861,209 @@ def _refscan_loop():
 
 
 threading.Thread(target=_refscan_loop, daemon=True, name="refscantick").start()
+# ----------------------------------------------------------------------------
+# 2.96.1: a separate report next to the night report (switch «refscan_pano_on»): one panorama picture made of the reference
+# photos (all directions of the scan side by side, rows by tilt), on it every change of the night marked - red = gone,
+# green = new (put there), orange = changed - with the time it was first noticed (and when it was back again, if so).
+# Comes in the morning with the night report (report_hour) as push with the picture; kept in refscan/panorama/ (14 days).
+# ----------------------------------------------------------------------------
+PANO = {"busy": False, "day": "", "msg": ""}
+PANO_COL = {"missing": (60, 60, 230), "new": (80, 200, 60), "changed": (40, 160, 245)}
+
+
+def pano_dir(*p):
+    return refscan_dir("panorama", *p)
+
+
+def _pano_reports(since, until):
+    out = []
+    try:
+        for x in sorted(os.listdir(refscan_dir("reports"))):
+            r = refscan_report(x)
+            if r and since <= float(r.get("t", 0)) <= until:
+                out.append(r)
+    except OSError:
+        pass
+    return out
+
+
+def _pano_track(reps):
+    """the same change in several reports = one mark: first seen, last seen, back again (not in a later report)"""
+    marks = []
+    for r in reps:
+        seen_now = set()
+        for p in r.get("positions") or []:
+            for c in p.get("changes") or []:
+                if c["w"] * c["h"] > 0.45:
+                    continue                               # nearly the whole picture: the light changed, not a thing
+                cx, cy = c["x"] + c["w"] / 2.0, c["y"] + c["h"] / 2.0
+                hit = None
+                for m in marks:
+                    if m["pos"] == p["i"] and m["kind"] == c["kind"] and abs(m["cx"] - cx) < 0.08 and abs(m["cy"] - cy) < 0.08:
+                        hit = m
+                        break
+                if hit is None:
+                    hit = {"pos": p["i"], "kind": c["kind"], "cx": cx, "cy": cy, "box": [c["x"], c["y"], c["w"], c["h"]], "first": r["t"], "last": r["t"],
+                           "back": None, "name": ""}
+                    marks.append(hit)
+                hit["last"] = r["t"]
+                hit["back"] = None
+                seen_now.add(id(hit))
+        for w_ in r.get("watch") or []:                    # the guarded things: their names
+            if w_.get("gone"):
+                for m in marks:
+                    if m["pos"] == w_["pos"] and abs(m["cx"] - (w_["x"] + w_["w"] / 2)) < 0.12 and abs(m["cy"] - (w_["y"] + w_["h"] / 2)) < 0.12:
+                        m["name"] = w_["name"]
+        for m in marks:
+            if id(m) not in seen_now and m["back"] is None and m["last"] < r["t"]:
+                m["back"] = r["t"]                         # in this report it was not there any more
+    return marks
+
+
+def pano_build(since=None, until=None, label=""):
+    """the panorama with the marks; returns (path, marks) or (None, error)"""
+    now = time.time()
+    until = until or now
+    if since is None:
+        y = datetime.now() - timedelta(days=1)
+        since = y.replace(hour=18, minute=0, second=0, microsecond=0).timestamp()
+    reps = _pano_reports(since, until)
+    kind = reps[-1].get("ref_kind") if reps else None
+    meta = refscan_meta("day") or refscan_meta(kind)       # the day reference is easier to read
+    if not meta or not meta.get("positions"):
+        return None, "no reference yet - scan first"
+    pos = meta["positions"]
+    pans = sorted({p["pan"] for p in pos})
+    tilts = sorted({p["tilt"] for p in pos}, reverse=True)  # looking up = the upper row
+    tw = 320
+    th = None
+    tiles = {}
+    for p in pos:
+        im = cv2.imread(refscan_dir(REFSCAN_KINDS[meta["_kind"]], p["file"]))
+        if im is None:
+            continue
+        h = int(round(im.shape[0] * tw / im.shape[1]))
+        th = th or h
+        tiles[p["i"]] = (cv2.resize(im, (tw, th)), pans.index(p["pan"]), tilts.index(p["tilt"]))
+    if not tiles:
+        return None, "no reference yet - scan first"
+    head = 54
+    W, H = tw * len(pans), th * len(tilts) + head + 30
+    can = np.full((H, W, 3), 22, np.uint8)
+    for i, (im, cx, cy) in tiles.items():
+        can[head + cy * th: head + (cy + 1) * th, cx * tw: (cx + 1) * tw] = im
+    marks = _pano_track(reps)
+    fmt = lambda t: datetime.fromtimestamp(t).strftime("%H:%M")
+    for m in marks:
+        if m["pos"] not in tiles:
+            continue
+        _im, cx, cy = tiles[m["pos"]]
+        x0 = cx * tw + int(m["box"][0] * tw); y0 = head + cy * th + int(m["box"][1] * th)
+        x1 = x0 + max(6, int(m["box"][2] * tw)); y1 = y0 + max(6, int(m["box"][3] * th))
+        col = PANO_COL.get(m["kind"], (200, 200, 200))
+        cv2.rectangle(can, (x0, y0), (x1, y1), col, 3 if m["back"] is None else 1, cv2.LINE_AA)
+        txt = {"missing": tr("gone"), "new": tr("new"), "changed": tr("changed")}.get(m["kind"], "")
+        txt = (m["name"] + " " if m["name"] else "") + txt + " " + fmt(m["first"]) + (" - " + tr("back") + " " + fmt(m["back"]) if m["back"] else "")
+        txt = _ascii(txt)
+        (tw_, th_), _b = cv2.getTextSize(txt, cv2.FONT_HERSHEY_SIMPLEX, 0.42, 1)
+        ty = y0 - 4 if y0 - 4 - th_ > head else y1 + th_ + 4
+        cv2.rectangle(can, (x0, ty - th_ - 3), (x0 + tw_ + 4, ty + 3), col, -1)
+        cv2.putText(can, txt, (x0 + 2, ty), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (255, 255, 255), 1, cv2.LINE_AA)
+    # head line and legend
+    title = _ascii("%s - %s %s - %s" % (CFG.get("device_name") or "MoveEye", tr("Missing things"), datetime.fromtimestamp(since).strftime("%d.%m. %H:%M"),
+                                         datetime.fromtimestamp(until).strftime("%d.%m. %H:%M")))
+    cv2.putText(can, title, (10, 24), cv2.FONT_HERSHEY_SIMPLEX, 0.62, (255, 255, 255), 1, cv2.LINE_AA)
+    lx = 10
+    for k, n in (("missing", tr("gone")), ("new", tr("new")), ("changed", tr("changed"))):
+        cv2.rectangle(can, (lx, 34), (lx + 14, 46), PANO_COL[k], -1)
+        cv2.putText(can, _ascii(n), (lx + 20, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (230, 230, 230), 1, cv2.LINE_AA)
+        lx += 110
+    foot = _ascii(trf("{n} checks in this time, {m} changes", n=len(reps), m=len(marks)) if reps else tr("no comparison in this time"))
+    cv2.putText(can, foot, (10, H - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (200, 200, 200), 1, cv2.LINE_AA)
+    os.makedirs(pano_dir(), exist_ok=True)
+    name = datetime.fromtimestamp(until).strftime("%Y%m%d_%H%M") + ".jpg"
+    path = pano_dir(name)
+    cv2.imwrite(path, can, [cv2.IMWRITE_JPEG_QUALITY, 85])
+    js = [{"kind": m["kind"], "name": m["name"], "pos": m["pos"], "first": m["first"], "back": m["back"]} for m in marks]
+    with open(path[:-4] + ".json", "w", encoding="utf-8") as f:
+        json.dump({"since": since, "until": until, "checks": len(reps), "marks": js}, f)
+    try:                                                   # keep 14
+        fs = sorted(x for x in os.listdir(pano_dir()) if x.endswith(".jpg"))
+        for x in fs[:-14]:
+            for e in (x, x[:-4] + ".json"):
+                try:
+                    os.remove(pano_dir(e))
+                except OSError:
+                    pass
+    except OSError:
+        pass
+    log_event("sys", f"Panorama report: {len(marks)} changes from {len(reps)} checks")
+    return path, js
+
+
+def pano_list():
+    out = []
+    try:
+        for x in sorted((x for x in os.listdir(pano_dir()) if x.endswith(".jpg")), reverse=True)[:14]:
+            d = {}
+            try:
+                with open(pano_dir(x[:-4] + ".json"), encoding="utf-8") as f:
+                    d = json.load(f)
+            except (OSError, ValueError):
+                pass
+            out.append({"file": x, "checks": d.get("checks", 0), "marks": d.get("marks", []), "since": d.get("since"), "until": d.get("until")})
+    except OSError:
+        pass
+    return out
+
+
+def pano_send(path, js):
+    w = WATCH_REF.get("w")
+    if w is None or not path:
+        return
+    gone = [m for m in js if m["kind"] == "missing" and not m["back"]]
+    new = [m for m in js if m["kind"] == "new" and not m["back"]]
+    txt = trf("Missing things: {g} gone, {n} new, {c} changes in all", g=len(gone), n=len(new), c=len(js))
+    try:
+        with open(path, "rb") as f:
+            jpg = f.read()
+        w.notifier.info(txt, title="{name}: " + tr("Missing things"), jpg=jpg, fname="panorama.jpg")
+    except Exception:
+        pass
+
+
+def pano_tick():
+    """once a morning at the hour of the night report (when switched on)"""
+    if not CFG.get("refscan_pano_on") or PANO["busy"]:
+        return
+    d = datetime.now()
+    day = d.strftime("%Y-%m-%d")
+    if d.hour < int(CFG.get("report_hour", 7)) or PANO["day"] == day or CFG.get("refscan_pano_day") == day:
+        return
+    PANO["day"] = day
+    CFG["refscan_pano_day"] = day
+    save_settings()
+    PANO["busy"] = True
+    try:
+        path, js = pano_build()
+        if path:
+            pano_send(path, js)
+        else:
+            PANO["msg"] = js
+    finally:
+        PANO["busy"] = False
+
+
+def _pano_loop():
+    while True:
+        time.sleep(60)
+        try:
+            pano_tick()
+        except Exception as e:
+            PANO["msg"] = str(e)[:100]
+
+
+threading.Thread(target=_pano_loop, daemon=True, name="panorama").start()
 # ---- game corner (2.95.29): party games for the phones in the own Wi-Fi - quiz with buzzer, werewolf narrator,
 # drawing and guessing, connect four, dice / timer / scores - and a collection of free browser games (from GitHub).
 # The phones join with a QR code (a room key in the address, no password); the room closes by itself after some hours.
@@ -18605,6 +18810,9 @@ class SimLink:
                    mover=bool(rep_.get("mover")),                # the simulator has a mover (3D-3.11): second stick
                    mover_pose=_mover_pose(rep_.get("mover_pose")) if rep_.get("mover") else None,   # where it is (2.95.43, optional)
                    pc_cpu=rep_.get("pc_cpu"), cores=rep_.get("cores"))   # CPU of the PC the simulator runs on (3D-3.24)
+        if time.time() - SIMDIARY["t"] >= 30:                # 2.96.1: the diary of the simulator (visits)
+            threading.Thread(target=simdiary_poll, daemon=True, name="simdiary").start()
+            SIMDIARY["t"] = time.time() - 25                # (the thread sets it again)
         if CFG.get("sim_autoupd", True) and time.time() - SIM.get("upd_check", 0.0) > 60:
             SIM["upd_check"] = time.time()
             threading.Thread(target=sim_auto_update_check, daemon=True, name="simautoupd").start()
@@ -18657,6 +18865,91 @@ SIMLINK = None
 
 # The simulation program itself (motionwatch_simulator.py + motionwatch_sim_interface.py + guide), packed (ZIP, base64):
 #   it is signed together with MoveEye and can be installed without internet.
+# ----------------------------------------------------------------------------
+# 2.96.1: the simulator (3D-3.80) logs every visitor from coming to going; MoveEye fetches the finished visits every 30 s
+# (control action «visits») and keeps them in sim_diary.jsonl (the last 5000). The diary page has a tab «Simulator»:
+# visits, recognised in %, time until recognised, missed ones - by kind, light, posture.
+# ----------------------------------------------------------------------------
+SIMDIARY = {"seen": 0, "t": 0.0, "lock": threading.Lock(), "n": 0}
+def simdiary_file():
+    return os.path.join(DATA_DIR, "sim_diary.jsonl")     # DATA_DIR may change at the start (--config)
+
+
+def simdiary_poll():
+    """called by the simulator link loop; quietly does nothing with an older simulator"""
+    if not SIM.get("ok"):
+        return
+    SIMDIARY["t"] = time.time()
+    try:
+        r = sim_control({"action": "visits", "since": SIMDIARY["seen"]})
+    except Exception:
+        return
+    if not isinstance(r, dict) or "visits" not in r:
+        return
+    if int(r.get("seq") or 0) < SIMDIARY["seen"]:          # the simulator started again: its numbers start at 1
+        SIMDIARY["seen"] = 0
+        return
+    vs = [v for v in (r.get("visits") or []) if isinstance(v, dict)]
+    if not vs:
+        return
+    with SIMDIARY["lock"]:
+        with open(simdiary_file(), "a", encoding="utf-8") as f:
+            for v in vs:
+                v["mw_version"] = APP_VERSION
+                f.write(json.dumps(v, ensure_ascii=False) + "\n")
+        SIMDIARY["seen"] = max(int(v.get("id", 0)) for v in vs)
+        SIMDIARY["n"] += len(vs)
+        if SIMDIARY["n"] > 500:                            # now and then: keep the last 5000
+            SIMDIARY["n"] = 0
+            try:
+                with open(simdiary_file(), encoding="utf-8") as f:
+                    lines = f.readlines()
+                if len(lines) > 5000:
+                    with open(simdiary_file(), "w", encoding="utf-8") as f:
+                        f.writelines(lines[-5000:])
+            except OSError:
+                pass
+
+
+def simdiary_read(day=None, days=1):
+    """the visits of a day (YYYY-MM-DD, local time) and the days before it"""
+    out = []
+    try:
+        end = datetime.strptime(day, "%Y-%m-%d") + timedelta(days=1) if day else datetime.now() + timedelta(days=1)
+    except ValueError:
+        end = datetime.now() + timedelta(days=1)
+    end = end.replace(hour=0, minute=0, second=0, microsecond=0)
+    start = end - timedelta(days=max(1, min(31, int(days))))
+    a, b = start.timestamp(), end.timestamp()
+    try:
+        with SIMDIARY["lock"], open(simdiary_file(), encoding="utf-8") as f:
+            for line in f:
+                try:
+                    v = json.loads(line)
+                except ValueError:
+                    continue
+                if a <= float(v.get("t_in", 0)) < b:
+                    out.append(v)
+    except OSError:
+        pass
+    return out
+
+
+def simdiary_days():
+    """the days with visits (for the date picker): {day: count}"""
+    d = {}
+    try:
+        with open(simdiary_file(), encoding="utf-8") as f:
+            for line in f:
+                try:
+                    t = float(json.loads(line).get("t_in", 0))
+                except (ValueError, AttributeError):
+                    continue
+                k = datetime.fromtimestamp(t).strftime("%Y-%m-%d")
+                d[k] = d.get(k, 0) + 1
+    except OSError:
+        pass
+    return d
 SIM_ZIP_B64 = """
 UEsDBBQAAAAIAAAAIVxbSCJ6XCcAALF7AAAcAAAAbW90aW9ud2F0Y2hfc2ltX2ludGVyZmFjZS5wec193XrbSJbYvZ6iFvomDdgQREqWu5s2PWvLassbt6XI8ngmWn1o
 iCyKaIEADICUNGrtt1d5gCTPkJvczF0ukqvOm8yT5PxUAVUgSMszm6+X3abIQv2cOnX+61Rx8x+252WxfRGn2zJdiPy2mmbp7objOBs/ZlWcpeJTVI2m4q//+t9EGc/m
@@ -19960,7 +20253,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -24337,6 +24630,10 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
       <h3 data-i18n="Reports">Reports</h3>
       <div id="rs-reps"></div>
       <div id="rs-rep"></div>
+      <h3>🖼 <span data-i18n="Panorama report «Missing things»">Panorama report «Missing things»</span></h3>
+      <div class="mut" data-i18n="pano-desc">pano-desc</div>
+      <div class="trow"><button type="button" class="sec" onclick="rsPano(false)">🖼 <span data-i18n="Make it now (last 24 h)">Make it now (last 24 h)</span></button><button type="button" class="sec" onclick="rsPano(true)">📲 <span data-i18n="Make and send">Make and send</span></button></div>
+      <div id="rs-pano"></div>
     </div>
     </div>
   </section>
@@ -24952,7 +25249,7 @@ const RSSET = [["refscan_pan_steps", "Directions side by side", 1, 12, 1], ["ref
   ["refscan_tilt_steps", "Heights (rows)", 1, 3, 1], ["refscan_tilt_mid", "Middle height (tilt %)", 20, 80, 1], ["refscan_tilt_span", "Distance between the rows (tilt %)", 4, 40, 1],
   ["refscan_photos", "Photos per direction (more = less noise)", 1, 5, 1], ["refscan_settle", "Wait after turning (seconds)", 0.5, 5, 0.5], ["refscan_sens", "Sensitivity of the comparison (%)", 10, 100, 5],
   ["refscan_min_area", "Smallest change (% of the picture)", 0.1, 5, 0.1]];
-const RSOPT = [["refscan_on_arm", "Compare with the reference when armed"], ["refscan_push", "Push message when something is missing"], ["refscan_push_all", "Push message also for new or changed things"]];
+const RSOPT = [["refscan_on_arm", "Compare with the reference when armed"], ["refscan_push", "Push message when something is missing"], ["refscan_push_all", "Push message also for new or changed things"], ["refscan_pano_on", "Panorama report «Missing things» every morning (separate from the night report)"]];
 async function rsPost(d) { return await fetch("/api/refscan", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: LANG}, d))}).then(x => x.json()).catch(() => null); }
 async function rsSet(k, v) { await fetch("/api/set", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({key: k, value: v})}).catch(() => null); rsLoad(); }
 async function rsMove(dir) { await fetch("/api/move", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({dir: dir, step: 4})}).catch(() => null); }
@@ -25019,6 +25316,25 @@ function rsPaint() {
       d.append(el("span", "", rsWhen(x.t) + " · " + t(x.reason || "")), el("b", "", (x.missing ? "⚠ " + x.missing + " " + t("missing") + " · " : "") + x.new + " " + t("new") + " · " + x.changed + " " + t("changed")));
       d.onclick = () => rsReport(x.id); rl.appendChild(d); });
     if ((R.reports || []).length && !RSREP) rsReport(R.reports[0].id); }
+  rsPanoPaint();
+}
+async function rsPano(send) {                  // 2.96.1: the panorama with the marks of the last 24 hours
+  $("#rs-pano").textContent = "⏳ …";
+  const r = await post("/api/refscan", {op: "panorama", send: send, lang: LANG});
+  if (!r.ok) { $("#rs-pano").textContent = "⚠ " + (r.error || t("error")); return; }
+  RS = r; $("#rs-pano").dataset.k = ""; rsPanoPaint();
+}
+function rsPanoPaint() {
+  const box = $("#rs-pano"); if (!box || !RS) return; const L = RS.panoramas || [], k = JSON.stringify(L.map(x => x.file));
+  if (box.dataset.k === k) return; box.dataset.k = k; box.textContent = "";
+  if (!L.length) { box.appendChild(el("div", "mut", t("No panorama yet."))); return; }
+  L.forEach((x, i) => { const d = document.createElement("details"); d.open = i === 0; const sm = document.createElement("summary");
+    const g = x.marks.filter(m => m.kind === "missing" && !m.back).length, n = x.marks.filter(m => m.kind === "new" && !m.back).length;
+    sm.textContent = x.file.slice(6, 8) + "." + x.file.slice(4, 6) + ". " + x.file.slice(9, 11) + ":" + x.file.slice(11, 13) + " · " + (g ? "⚠ " + g + " " + t("gone") + " · " : "") + n + " " + t("new") + " · " + x.checks + " " + t("checks");
+    const a = document.createElement("a"); a.href = "/refscan/file/panorama/" + x.file; a.target = "_blank";
+    const im = document.createElement("img"); im.src = a.href; im.loading = "lazy"; im.style.cssText = "width:100%;border-radius:8px;margin-top:6px"; a.appendChild(im);
+    const ul = el("div", "mut"); x.marks.slice(0, 30).forEach(m => ul.appendChild(el("div", "", ({missing: "🔴 ", new: "🟢 ", changed: "🟠 "}[m.kind] || "") + (m.name ? m.name + " · " : "") + t({missing: "gone", new: "new", changed: "changed"}[m.kind]) + " " + rsWhen(m.first).split(" ").pop() + (m.back ? " · " + t("back") + " " + rsWhen(m.back).split(" ").pop() : ""))));
+    d.append(sm, a, ul); box.appendChild(d); });
 }
 async function rsReport(id) {
   RSREP = id; document.querySelectorAll(".rs-rep").forEach(x => x.classList.toggle("sel", x.dataset.id === id));
@@ -25082,6 +25398,9 @@ Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Set up": "Aufstellen
   "rs-settings": "Wie viele Richtungen und Höhen der Kopf abfährt. Mehr Richtungen = genauer, dauert länger.",
   "rs-scan": "Jetzt bitte nichts mehr verändern und aus dem Bild gehen. MoveEye fährt alle Richtungen ab und speichert die Fotos als Referenz.",
   "rs-compare": "Fährt dieselben Richtungen ab und vergleicht mit der Referenz. Rot = fehlt, blau = neu, orange = verändert.",
+  "Panorama report «Missing things»": "Panorama-Bericht «Fehlende Gegenstände»", "pano-desc": "Ein Bild aus allen Richtungen des Referenz-Scans; darauf markiert, was verschwunden (rot), dazugekommen (grün) oder verändert (orange) ist – mit der Uhrzeit. Kommt jeden Morgen mit dem Nachtbericht, wenn oben eingeschaltet.",
+  "Make it now (last 24 h)": "Jetzt erstellen (letzte 24 h)", "Make and send": "Erstellen und senden", "No panorama yet.": "Noch kein Panorama.", "gone": "weg", "back": "wieder da", "checks": "Vergleiche",
+  "Panorama report «Missing things» every morning (separate from the night report)": "Panorama-Bericht «Fehlende Gegenstände» jeden Morgen (getrennt vom Nachtbericht)",
   "Take the reference now": "Referenz jetzt aufnehmen", "Compare now": "Jetzt vergleichen", "New reference": "Neue Referenz", "Reports": "Berichte", "Report": "Bericht",
   "Directions side by side": "Richtungen nebeneinander", "Turn from (% of the pan range)": "Drehen von (% des Schwenkbereichs)", "Turn to (% of the pan range)": "Drehen bis (% des Schwenkbereichs)",
   "Heights (rows)": "Höhen (Reihen)", "Middle height (tilt %)": "Mittlere Höhe (Neigung %)", "Distance between the rows (tilt %)": "Abstand der Reihen (Neigung %)",
@@ -32105,6 +32424,9 @@ main{padding:16px;max-width:1500px;margin:0 auto}
 .dbest img{width:150px;height:112px;object-fit:cover;border-radius:10px;display:block;cursor:zoom-in;background:#000}
 .dbest figcaption{font-size:12px;color:var(--mut);margin-top:3px}
 #d-rep{white-space:pre-wrap;line-height:1.5;margin-top:6px}
+.sdt{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}.sdt th,.sdt td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}.sdt th{color:var(--mut);font-weight:600}
+.sdv{border-bottom:1px solid var(--line);padding:6px 0;font-size:14px}.sdv summary{cursor:pointer}.sdr{display:inline-block;min-width:92px;font-weight:700}.sdr.ok{color:var(--grn,#3fcf6b)}.sdr.miss{color:#ff6b6b}.sdr.none{color:var(--mut)}
+.sdi{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:6px 0 4px 8px;font-size:13px}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -32126,6 +32448,14 @@ main{padding:16px;max-width:1500px;margin:0 auto}
     <div id="rep" class="mut">…</div>
     <div class="btns"><button class="sec" onclick="sendReport()" data-i18n="Send now">Send now</button></div>
     <div class="mut" id="rep-note" style="margin-top:6px"></div>
+  </details>
+  <details class="card" id="simcard" hidden open>
+    <summary>🎮 <span data-i18n="Simulator diary">Simulator diary</span> <span class="mut" id="sd-sum"></span></summary>
+    <div class="mut" data-i18n="sd-note">sd-note</div>
+    <div class="dtiles" id="sd-tiles"></div>
+    <div id="sd-tables"></div>
+    <div class="chips" id="sd-chips"></div>
+    <div id="sd-list"></div>
   </details>
   <div class="card">
     <h3 style="margin:0 0 6px" data-i18n="Animal diary">Animal diary</h3>
@@ -32271,6 +32601,57 @@ function renderDay(j) {
 }
 $("#d-prev").onclick = () => dShift(-1); $("#d-next").onclick = () => dShift(1);
 $("#d-date").onchange = e => { if (e.target.value) { DAY = e.target.value; loadDay(); } };
+// ---- 2.96.1: the diary of the simulator - every visit in the simulated world, with what MoveEye made of it ----
+const SDK = {person: "🚶", car: "🚗", fox: "🦊", deer: "🦌", boar: "🐗", cat: "🐈", dog: "🐕", badger: "🦡", hare: "🐇", hedgehog: "🦔", wolf: "🐺", marten: "🦦", squirrel: "🐿",
+  cow: "🐄", sheep: "🐑", horse: "🐎", chamois: "🐐", ibex: "🐐", lynx: "🐆"};
+let SD = {items: [], filt: "all", day: ""};
+async function sdLoad() {
+  let r; try { r = await (await fetch("/api/sim_diary?day=" + DAY, {cache: "no-store"})).json(); } catch (e) { return; }
+  const card = $("#simcard"); card.hidden = !Object.keys(r.days || {}).length; if (card.hidden) return;
+  SD.items = (r.items || []).slice().reverse(); SD.day = DAY; sdPaint();
+}
+function sdRes(v) { return v.detected ? "ok" : (v.vis_s >= 2 ? "miss" : "none"); }
+function sdPaint() {
+  const I = SD.items, pct = (a, b) => b ? Math.round(100 * a / b) + " %" : "–";
+  const vis = I.filter(v => v.vis_s >= 2 && v.kind !== "car"), det = vis.filter(v => v.detected), times = det.map(v => v.detect_s).filter(x => x >= 0);
+  const avg = times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) + " s" : "–";
+  $("#sd-sum").textContent = "· " + I.length + " " + t("visits");
+  const T = $("#sd-tiles"); T.textContent = "";
+  [[I.length, t("visits")], [pct(det.length, vis.length), t("recognised")], [avg, t("until recognised")], [vis.length - det.length, t("missed")], [I.filter(v => v.vis_s < 2).length, t("never well in the picture")]]
+    .forEach(([n, l]) => { const d = el("div", "dtile"); d.append(el("b", "", String(n)), el("span", "", l)); T.appendChild(d); });
+  const tab = (title, keyf, namef) => { const g = {}; vis.forEach(v => { const k = keyf(v); (g[k] = g[k] || []).push(v); });
+    const ks = Object.keys(g); if (!ks.length) return null; const tb = document.createElement("table"); tb.className = "sdt";
+    tb.innerHTML = "<tr><th>" + title + "</th><th>" + t("visits") + "</th><th>" + t("recognised") + "</th><th>Ø s</th></tr>" + ks.sort((a, b) => g[b].length - g[a].length).map(k => {
+      const d = g[k].filter(v => v.detected), ts = d.map(v => v.detect_s).filter(x => x >= 0);
+      return "<tr><td>" + namef(k) + "</td><td>" + g[k].length + "</td><td>" + pct(d.length, g[k].length) + "</td><td>" + (ts.length ? (ts.reduce((a, b) => a + b, 0) / ts.length).toFixed(1) : "–") + "</td></tr>"; }).join("");
+    return tb; };
+  const TB = $("#sd-tables"); TB.textContent = "";
+  [tab(t("Kind"), v => v.kind, k => (SDK[k] || "•") + " " + t(k)), tab(t("Light"), v => v.dark ? "n" : "d", k => k === "n" ? "🌙 " + t("night") : "☀️ " + t("day")),
+   tab(t("Posture"), v => String(v.post || 0), k => ["🧍 " + t("standing"), "🧎 " + t("crouching"), "🐍 " + t("crawling")][+k] || k)].forEach(x => { if (x) TB.appendChild(x); });
+  const C = $("#sd-chips"); C.textContent = "";
+  [["all", t("All")], ["person", t("Persons")], ["animal", t("Animals")], ["miss", t("missed")]].forEach(([k, n]) => { const b = el("button", "chip" + (SD.filt === k ? " on" : ""), n); b.type = "button";
+    b.onclick = () => { SD.filt = k; sdPaint(); }; C.appendChild(b); });
+  const L = $("#sd-list"); L.textContent = "";
+  const F = I.filter(v => SD.filt === "all" || (SD.filt === "person" && v.kind === "person") || (SD.filt === "animal" && v.kind !== "person" && v.kind !== "car") || (SD.filt === "miss" && sdRes(v) === "miss"));
+  if (!F.length) L.appendChild(el("div", "mut", t("No visits on this day.")));
+  F.slice(0, 150).forEach(v => { const d = document.createElement("details"); d.className = "sdv"; const sm = document.createElement("summary"); const r = sdRes(v);
+    const tm = new Date(v.t_in * 1000).toLocaleTimeString(LANG === "en" ? "en-GB" : "de-CH", {hour: "2-digit", minute: "2-digit"});
+    sm.innerHTML = '<span class="sdr ' + r + '">' + (r === "ok" ? "✓ " + (v.detect_s >= 0 ? v.detect_s + " s" : "") : r === "miss" ? "✗ " + t("missed") : "– " + t("not seen")) + "</span> " + tm + " · " + (SDK[v.kind] || "•") + " " + esc(t(v.kind)) + (v.var ? " (" + esc(t(v.var)) + ")" : "") + " · " + (v.dark ? "🌙" : "☀️");
+    const info = [[t("Scene"), v.scene], [t("Weather"), t(v.weather)], [t("closest"), v.min_d + " m"], [t("well in the picture"), v.vis_s + " s"], [t("Posture"), ["standing", "crouching", "crawling"].map(t)[v.post || 0]],
+      [t("scared away"), v.fled ? "✓" : "–"], [t("Duration"), Math.round((v.t_out - v.t_in)) + " s"], ["MoveEye", v.mw ? (v.mw_version || "✓") : t("not connected")]];
+    const g = el("div", "sdi"); info.forEach(([a, b]) => g.append(el("span", "mut", a), el("span", "", String(b)))); d.append(sm, g); L.appendChild(d); });
+}
+function esc(x) { return String(x).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c])); }
+const _ld = loadDay; loadDay = async function (r) { await _ld(r); sdLoad(); };
+setInterval(() => { if (!document.hidden && $("#simcard") && !$("#simcard").hidden) sdLoad(); }, 30000);
+Object.assign(I18N.de, {"Simulator diary": "Simulator-Tagebuch", "sd-note": "Jeder Besuch in der Simulation (Menschen, Tiere, Autos) – und was MoveEye daraus gemacht hat. «Verpasst» = mindestens 2 s gut im Bild der Kopfkamera, aber nicht erkannt.",
+  "visits": "Besuche", "recognised": "erkannt", "until recognised": "bis erkannt", "missed": "verpasst", "never well in the picture": "nie gut im Bild", "Kind": "Art", "Light": "Licht", "night": "Nacht", "day": "Tag",
+  "Posture": "Haltung", "standing": "stehend", "crouching": "geduckt", "crawling": "kriechend", "All": "Alle", "Persons": "Personen", "Animals": "Tiere", "No visits on this day.": "Keine Besuche an diesem Tag.",
+  "not seen": "nicht im Bild", "Scene": "Szene", "Weather": "Wetter", "closest": "am nächsten", "well in the picture": "gut im Bild", "scared away": "verscheucht", "Duration": "Dauer", "not connected": "nicht verbunden",
+  "person": "Person", "car": "Auto", "fox": "Fuchs", "deer": "Reh", "boar": "Wildschwein", "cat": "Katze", "dog": "Hund", "badger": "Dachs", "hare": "Hase", "hedgehog": "Igel", "wolf": "Wolf", "marten": "Marder",
+  "squirrel": "Eichhörnchen", "cow": "Kuh", "sheep": "Schaf", "horse": "Pferd", "chamois": "Gämse", "ibex": "Steinbock", "lynx": "Luchs", "child": "Kind", "jogger": "Jogger", "burglar": "Einbrecher", "thief": "Dieb",
+  "clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee", "storm": "Sturm"});
+Object.assign(I18N.en || (I18N.en = {}), {"sd-note": "Every visit in the simulation (persons, animals, cars) – and what MoveEye made of it. «Missed» = at least 2 s well in the picture of the head camera, but not recognised."});
 (async () => { await initAppearance(); loadDay(); load(); loadReport(); })();
 /*ALERTS*/
 </script></body></html>
@@ -37343,7 +37724,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>Zeitraffer:</b> alle N Minuten ein Foto von einer festen Position, daraus ein Video («Video erstellen»). Ein Alarm hat immer Vorrang. Die Zeitraffer-Videos erscheinen auch unter <i>Aufzeichnungen</i> (mit ⏱); der Typ «Zeitraffer» zeigt dort zusätzlich alle Einzelfotos.</li></ul>
 </section>
 
-<section id="diary" data-icon="🦊"><h2>Tagebuch, Nachtbericht &amp; Gäste</h2>
+<section id="diary" data-icon="🦊"><h2>Tagebuch, Nachtbericht &amp; Gäste</h2><p><b>🖼 Panorama-Bericht «Fehlende Gegenstände» (ab 2.96.1):</b> Werkzeuge → Referenz-Scan, unten einschalten. Jeden Morgen (zur Zeit des Nachtberichts) ein Bild aus allen Richtungen des Referenz-Scans; darauf markiert, was in der Nacht verschwunden (rot), dazugekommen (grün) oder verändert (orange) ist – mit der Uhrzeit und «wieder da». Kommt als Push mit dem Bild, die letzten 14 bleiben unter Werkzeuge → Referenz-Scan. <b>🎮 Simulator-Tagebuch:</b> Im Tagebuch erscheint bei Simulation ein eigener Bereich: jeder Besuch (Menschen, Tiere, Autos) mit Uhrzeit, Licht, Wetter, Abstand, wie lange gut im Bild – und ob und wie schnell MoveEye erkannt hat; oben die Auswertung nach Art, Licht und Haltung.</p>
 <ul><li><b>Tier-Tagebuch</b> (Reiter <i>Tagebuch</i>): von jedem Tier-Besuch wird das beste Bild automatisch gespeichert, mit Tierart, Datum und Dauer. Filtern nach Tierart, ★ = behalten, ⤴ teilen (z. B. WhatsApp), ⤓ herunterladen. Ältere Einträge werden nach der eingestellten Zeit gelöscht (★ nie).</li>
 <li>Die KI kennt Vogel, Katze, Hund, Pferd, Schaf, Kuh, Bär (und ein paar exotische). Ein Fuchs erscheint meist als «Hund» oder «Katze», ein Wildschwein oft als «Schaf» oder «Bär».</li>
 <li><b>Nachtbericht:</b> jeden Morgen (einstellbar, Standard 7 Uhr) eine Push-Nachricht: was in der Nacht (ab 20 Uhr) los war – Personen, Tiere, Geräusche, Wärmebild – mit dem besten Bild. «Jetzt senden» zum Ausprobieren. Einstellungen unter <i>Benachrichtigungen → Nachtbericht</i>.</li>
@@ -37554,7 +37935,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>Timelapse:</b> a photo every N minutes from a fixed position, then a video («Create video»). An alarm always has priority. Timelapse videos also appear under <i>Recordings</i> (marked ⏱); the type «Timelapse» there also shows all single photos.</li></ul>
 </section>
 
-<section id="diary" data-icon="🦊"><h2>Diary, night report &amp; guests</h2>
+<section id="diary" data-icon="🦊"><h2>Diary, night report &amp; guests</h2><p><b>🖼 Panorama report «Missing things» (from 2.96.1):</b> Tools → Reference scan, switch it on at the bottom. Every morning (at the time of the night report) one picture of all directions of the reference scan; marked on it what disappeared (red), was added (green) or changed (orange) during the night – with the time and «back». Comes as push with the picture, the last 14 stay under Tools → Reference scan. <b>🎮 Simulator diary:</b> with the simulation the diary has its own part: every visit (persons, animals, cars) with time, light, weather, distance, how long well in the picture – and whether and how fast MoveEye recognised it; at the top the evaluation by kind, light and posture.</p>
 <ul><li><b>Animal diary</b> (tab <i>Diary</i>): the best picture of every animal visit is saved automatically, with species, date and duration. Filter by species, ★ = keep, ⤴ share (e.g. WhatsApp), ⤓ download. Older entries are deleted after the set time (★ never).</li>
 <li>The AI knows bird, cat, dog, horse, sheep, cow, bear (and a few exotic ones). A fox usually shows up as «dog» or «cat», a wild boar often as «sheep» or «bear».</li>
 <li><b>Night report:</b> every morning (adjustable, default 7 o'clock) a push message: what happened in the night (from 20 o'clock) – persons, animals, noises, thermal – with the best picture. «Send now» to try it. Settings under <i>Notifications → Night report</i>.</li>
@@ -39020,10 +39401,19 @@ class WebStream:
                 elif op == "watch":                          # 2.95.98: things to guard
                     if not refscan_set_watch(str(d.get("kind") or "day"), d.get("items") or []):
                         return reply({"ok": False, "error": tr("no reference yet - scan first", lang)}, 400)
+                elif op == "panorama":                       # 2.96.1: the panorama report now (the last 24 h)
+                    path_, js_ = pano_build(time.time() - 86400, None)
+                    if not path_:
+                        return reply({"ok": False, "error": tr(js_, lang)}, 400)
+                    if d.get("send"):
+                        pano_send(path_, js_)
+                elif op == "pano_on":
+                    CFG["refscan_pano_on"] = bool(d.get("on")); save_settings()
                 else:
                     return reply({"ok": False, "error": "unknown"}, 400)
             st_ = refscan_state()
             st_["cfg"] = {k: v for k, v in CFG.items() if k.startswith("refscan_")}
+            st_["panoramas"] = pano_list()
             return reply(dict(st_, ok=True))
 
         @app.route("/refscan")
@@ -39032,7 +39422,7 @@ class WebStream:
 
         @app.route("/refscan/file/<path:fp>")
         def refscan_file(fp):
-            if not re.fullmatch(r"(ref(_night)?/pos_\d{2}\.jpg|reports/\d{8}_\d{6}/(cur|ref)_\d{2}\.jpg)", fp):
+            if not re.fullmatch(r"(ref(_night)?/pos_\d{2}\.jpg|reports/\d{8}_\d{6}/(cur|ref)_\d{2}\.jpg|panorama/\d{8}_\d{4}\.jpg)", fp):
                 return Response("not found", 404)
             p_ = refscan_dir(*fp.split("/"))
             return send_file(p_, max_age=60) if os.path.isfile(p_) else Response("not found", 404)
@@ -39927,6 +40317,11 @@ class WebStream:
             else:
                 return reply({"ok": False, "error": "unknown action"}, 400)
             return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"]})
+
+        @app.route("/api/sim_diary")
+        def api_sim_diary():                                 # 2.96.1: the diary of the simulator
+            day = str(request.args.get("day") or "")[:10]
+            return reply({"ok": True, "items": simdiary_read(day or None, int(request.args.get("days") or 1)), "days": simdiary_days()})
 
         @app.route("/api/protect", methods=["GET", "POST"])
         def api_protect():
@@ -41803,6 +42198,7 @@ TOGGLES = [  # (section, key, label)
     ("Reference scan", "refscan_on_arm", "Compare with the reference when armed"),
     ("Reference scan", "refscan_push", "Push message when something is missing"),
     ("Reference scan", "refscan_push_all", "Push message also for new or changed things"),
+    ("Reference scan", "refscan_pano_on", "Panorama report «Missing things» every morning (separate from the night report)"),
     ("Theft protection", "tamper_motion", "Motion sensor (MPU-6050, if fitted): alarm when the device is moved or knocked over"),
     ("Theft protection", "tamper_power", "Power cut while armed = alarm (needs the UPS HAT)"),
     ("Backup", "backup_all", "Copy all recordings (otherwise only alarm recordings: armed or with a person)"),
@@ -42322,7 +42718,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.0")
+        self.root.title("MoveEye 2.96.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -42612,7 +43008,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -49723,6 +50119,41 @@ _HX105b = {  # 2.95.105: protection (135, main page, window)
     'unknown level': ('unbekannte Stufe', 'niveau inconnu', 'livello sconosciuto', 'nivel nunenconuschent'),
 }
 for _k, _v in _HX105b.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX106 = {  # 2.96.1: panorama report «Missing things»
+    'Missing things': ('Fehlende Gegenstände', 'Objets manquants', 'Oggetti mancanti', 'Objects che mancan'),
+    'gone': ('weg', 'disparu', 'sparito', 'davent'), 'back': ('wieder da', 'de retour', 'di nuovo lì', 'puspè qua'),
+    '{n} checks in this time, {m} changes': ('{n} Vergleiche in dieser Zeit, {m} Veränderungen', '{n} contrôles pendant ce temps, {m} changements', '{n} controlli in questo periodo, {m} cambiamenti', '{n} cumparegliaziuns en quest temp, {m} midadas'),
+    'no comparison in this time': ('kein Vergleich in dieser Zeit', 'aucune comparaison pendant ce temps', 'nessun confronto in questo periodo', 'nagina cumparegliaziun en quest temp'),
+    'Missing things: {g} gone, {n} new, {c} changes in all': ('Fehlende Gegenstände: {g} weg, {n} neu, {c} Veränderungen insgesamt', 'Objets manquants : {g} disparus, {n} nouveaux, {c} changements en tout', 'Oggetti mancanti: {g} spariti, {n} nuovi, {c} cambiamenti in tutto', 'Objects che mancan: {g} davent, {n} novs, {c} midadas en tut'),
+    'Panorama report «Missing things» every morning (separate from the night report)': ('Panorama-Bericht «Fehlende Gegenstände» jeden Morgen (getrennt vom Nachtbericht)', 'Rapport panoramique «Objets manquants» chaque matin (séparé du rapport de nuit)', 'Rapporto panoramico «Oggetti mancanti» ogni mattina (separato dal rapporto notturno)', 'Rapport panoramic «Objects che mancan» mintga damaun (separà dal rapport da notg)'),
+    'Panorama report «Missing things»': ('Panorama-Bericht «Fehlende Gegenstände»', 'Rapport panoramique «Objets manquants»', 'Rapporto panoramico «Oggetti mancanti»', 'Rapport panoramic «Objects che mancan»'),
+    'pano-desc': ('Ein Bild aus allen Richtungen des Referenz-Scans; darauf markiert, was verschwunden (rot), dazugekommen (grün) oder verändert (orange) ist – mit der Uhrzeit. Kommt jeden Morgen mit dem Nachtbericht, wenn oben eingeschaltet.', 'Une image de toutes les directions du scan de référence ; dessus, ce qui a disparu (rouge), est apparu (vert) ou a changé (orange) – avec l’heure. Arrive chaque matin avec le rapport de nuit si activé ci-dessus.', 'Un’immagine di tutte le direzioni della scansione di riferimento; vi è segnato cosa è sparito (rosso), comparso (verde) o cambiato (arancione) – con l’ora. Arriva ogni mattina con il rapporto notturno se attivato sopra.', 'In maletg da tut las direcziuns dal scan da referenza; marcà tge ch’è svanì (cotschen), vegnì natiers (verd) u midà (oransch) – cun l’ura. Arriva mintga damaun cun il rapport da notg, sch’activà survart.'),
+    'Make it now (last 24 h)': ('Jetzt erstellen (letzte 24 h)', 'Créer maintenant (dernières 24 h)', 'Creare ora (ultime 24 h)', 'Crear ussa (ultimas 24 h)'),
+    'Make and send': ('Erstellen und senden', 'Créer et envoyer', 'Creare e inviare', 'Crear e trametter'),
+    'No panorama yet.': ('Noch kein Panorama.', 'Pas encore de panorama.', 'Ancora nessun panorama.', 'Anc nagin panorama.'),
+    'checks': ('Vergleiche', 'contrôles', 'controlli', 'cumparegliaziuns'),
+}
+for _k, _v in _HX106.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX107 = {  # 2.96.1: simulator diary
+    'Simulator diary': ('Simulator-Tagebuch', 'Journal du simulateur', 'Diario del simulatore', 'Diari dal simulatur'),
+    'sd-note': ('Jeder Besuch in der Simulation (Menschen, Tiere, Autos) – und was MoveEye daraus gemacht hat. «Verpasst» = mindestens 2 s gut im Bild der Kopfkamera, aber nicht erkannt.', 'Chaque visite dans la simulation (personnes, animaux, voitures) – et ce que MoveEye en a fait. «Manqué» = au moins 2 s bien visible pour la caméra, mais pas reconnu.', 'Ogni visita nella simulazione (persone, animali, auto) – e cosa ne ha fatto MoveEye. «Mancato» = almeno 2 s ben visibile per la telecamera, ma non riconosciuto.', 'Mintga visita en la simulaziun (persunas, animals, autos) – e tge che MoveEye ha fatg. «Manchentà» = almain 2 s bain en il maletg, ma betg renconuschì.'),
+    'visits': ('Besuche', 'visites', 'visite', 'visitas'), 'recognised': ('erkannt', 'reconnu', 'riconosciuto', 'renconuschì'),
+    'until recognised': ('bis erkannt', 'jusqu’à la reconnaissance', 'fino al riconoscimento', 'fin renconuschì'), 'missed': ('verpasst', 'manqué', 'mancato', 'manchentà'),
+    'never well in the picture': ('nie gut im Bild', 'jamais bien visible', 'mai ben visibile', 'mai bain en il maletg'), 'Kind': ('Art', 'Type', 'Tipo', 'Gener'),
+    'Light': ('Licht', 'Lumière', 'Luce', 'Glisch'), 'Posture': ('Haltung', 'Posture', 'Postura', 'Posiziun'), 'standing': ('stehend', 'debout', 'in piedi', 'en pe'),
+    'crouching': ('geduckt', 'accroupi', 'accovacciato', 'sbassà'), 'crawling': ('kriechend', 'rampant', 'strisciando', 'rampignond'),
+    'No visits on this day.': ('Keine Besuche an diesem Tag.', 'Aucune visite ce jour-là.', 'Nessuna visita in questo giorno.', 'Naginas visitas quel di.'),
+    'not seen': ('nicht im Bild', 'pas visible', 'non visibile', 'betg en il maletg'), 'closest': ('am nächsten', 'au plus près', 'più vicino', 'il pli datiers'),
+    'well in the picture': ('gut im Bild', 'bien visible', 'ben visibile', 'bain en il maletg'), 'scared away': ('verscheucht', 'effrayé', 'spaventato', 'stgatschà'),
+    'Duration': ('Dauer', 'Durée', 'Durata', 'Durada'), 'not connected': ('nicht verbunden', 'non connecté', 'non connesso', 'betg collià'),
+}
+for _k, _v in _HX107.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

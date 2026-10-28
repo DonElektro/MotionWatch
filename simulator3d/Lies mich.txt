@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3D-3.79 (der 3D-Simulator von MoveEye: 7 Szenen, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3D-3.80 (der 3D-Simulator von MoveEye: 7 Szenen, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,6 +607,11 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.80
+3D-3.80: Besuchs-Tagebuch: der Simulator merkt sich jeden Besucher (Mensch, Tier, Auto) vom Kommen bis zum Gehen – Zeit,
+Szene, Licht, Wetter, Abstand, wie lange gut im Bild, ob und wie schnell MoveEye ihn erkannt hat. MoveEye (ab 2.96.1)
+zeigt das im Tagebuch unter «Simulator-Tagebuch» mit Auswertung.
 
 NEU IN 3D-3.79
 3D-3.79: Neuer Name: aus «Motion Watch» wird «MoveEye». Neues Logo (Sichtfeld, Auge unten, eine gehende Person in

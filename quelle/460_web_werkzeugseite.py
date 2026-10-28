@@ -181,6 +181,10 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
       <h3 data-i18n="Reports">Reports</h3>
       <div id="rs-reps"></div>
       <div id="rs-rep"></div>
+      <h3>🖼 <span data-i18n="Panorama report «Missing things»">Panorama report «Missing things»</span></h3>
+      <div class="mut" data-i18n="pano-desc">pano-desc</div>
+      <div class="trow"><button type="button" class="sec" onclick="rsPano(false)">🖼 <span data-i18n="Make it now (last 24 h)">Make it now (last 24 h)</span></button><button type="button" class="sec" onclick="rsPano(true)">📲 <span data-i18n="Make and send">Make and send</span></button></div>
+      <div id="rs-pano"></div>
     </div>
     </div>
   </section>
@@ -796,7 +800,7 @@ const RSSET = [["refscan_pan_steps", "Directions side by side", 1, 12, 1], ["ref
   ["refscan_tilt_steps", "Heights (rows)", 1, 3, 1], ["refscan_tilt_mid", "Middle height (tilt %)", 20, 80, 1], ["refscan_tilt_span", "Distance between the rows (tilt %)", 4, 40, 1],
   ["refscan_photos", "Photos per direction (more = less noise)", 1, 5, 1], ["refscan_settle", "Wait after turning (seconds)", 0.5, 5, 0.5], ["refscan_sens", "Sensitivity of the comparison (%)", 10, 100, 5],
   ["refscan_min_area", "Smallest change (% of the picture)", 0.1, 5, 0.1]];
-const RSOPT = [["refscan_on_arm", "Compare with the reference when armed"], ["refscan_push", "Push message when something is missing"], ["refscan_push_all", "Push message also for new or changed things"]];
+const RSOPT = [["refscan_on_arm", "Compare with the reference when armed"], ["refscan_push", "Push message when something is missing"], ["refscan_push_all", "Push message also for new or changed things"], ["refscan_pano_on", "Panorama report «Missing things» every morning (separate from the night report)"]];
 async function rsPost(d) { return await fetch("/api/refscan", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: LANG}, d))}).then(x => x.json()).catch(() => null); }
 async function rsSet(k, v) { await fetch("/api/set", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({key: k, value: v})}).catch(() => null); rsLoad(); }
 async function rsMove(dir) { await fetch("/api/move", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({dir: dir, step: 4})}).catch(() => null); }
@@ -863,6 +867,25 @@ function rsPaint() {
       d.append(el("span", "", rsWhen(x.t) + " · " + t(x.reason || "")), el("b", "", (x.missing ? "⚠ " + x.missing + " " + t("missing") + " · " : "") + x.new + " " + t("new") + " · " + x.changed + " " + t("changed")));
       d.onclick = () => rsReport(x.id); rl.appendChild(d); });
     if ((R.reports || []).length && !RSREP) rsReport(R.reports[0].id); }
+  rsPanoPaint();
+}
+async function rsPano(send) {                  // 2.96.1: the panorama with the marks of the last 24 hours
+  $("#rs-pano").textContent = "⏳ …";
+  const r = await post("/api/refscan", {op: "panorama", send: send, lang: LANG});
+  if (!r.ok) { $("#rs-pano").textContent = "⚠ " + (r.error || t("error")); return; }
+  RS = r; $("#rs-pano").dataset.k = ""; rsPanoPaint();
+}
+function rsPanoPaint() {
+  const box = $("#rs-pano"); if (!box || !RS) return; const L = RS.panoramas || [], k = JSON.stringify(L.map(x => x.file));
+  if (box.dataset.k === k) return; box.dataset.k = k; box.textContent = "";
+  if (!L.length) { box.appendChild(el("div", "mut", t("No panorama yet."))); return; }
+  L.forEach((x, i) => { const d = document.createElement("details"); d.open = i === 0; const sm = document.createElement("summary");
+    const g = x.marks.filter(m => m.kind === "missing" && !m.back).length, n = x.marks.filter(m => m.kind === "new" && !m.back).length;
+    sm.textContent = x.file.slice(6, 8) + "." + x.file.slice(4, 6) + ". " + x.file.slice(9, 11) + ":" + x.file.slice(11, 13) + " · " + (g ? "⚠ " + g + " " + t("gone") + " · " : "") + n + " " + t("new") + " · " + x.checks + " " + t("checks");
+    const a = document.createElement("a"); a.href = "/refscan/file/panorama/" + x.file; a.target = "_blank";
+    const im = document.createElement("img"); im.src = a.href; im.loading = "lazy"; im.style.cssText = "width:100%;border-radius:8px;margin-top:6px"; a.appendChild(im);
+    const ul = el("div", "mut"); x.marks.slice(0, 30).forEach(m => ul.appendChild(el("div", "", ({missing: "🔴 ", new: "🟢 ", changed: "🟠 "}[m.kind] || "") + (m.name ? m.name + " · " : "") + t({missing: "gone", new: "new", changed: "changed"}[m.kind]) + " " + rsWhen(m.first).split(" ").pop() + (m.back ? " · " + t("back") + " " + rsWhen(m.back).split(" ").pop() : ""))));
+    d.append(sm, a, ul); box.appendChild(d); });
 }
 async function rsReport(id) {
   RSREP = id; document.querySelectorAll(".rs-rep").forEach(x => x.classList.toggle("sel", x.dataset.id === id));
@@ -926,6 +949,9 @@ Object.assign(I18N.de, {"Reference scan": "Referenz-Scan", "Set up": "Aufstellen
   "rs-settings": "Wie viele Richtungen und Höhen der Kopf abfährt. Mehr Richtungen = genauer, dauert länger.",
   "rs-scan": "Jetzt bitte nichts mehr verändern und aus dem Bild gehen. MoveEye fährt alle Richtungen ab und speichert die Fotos als Referenz.",
   "rs-compare": "Fährt dieselben Richtungen ab und vergleicht mit der Referenz. Rot = fehlt, blau = neu, orange = verändert.",
+  "Panorama report «Missing things»": "Panorama-Bericht «Fehlende Gegenstände»", "pano-desc": "Ein Bild aus allen Richtungen des Referenz-Scans; darauf markiert, was verschwunden (rot), dazugekommen (grün) oder verändert (orange) ist – mit der Uhrzeit. Kommt jeden Morgen mit dem Nachtbericht, wenn oben eingeschaltet.",
+  "Make it now (last 24 h)": "Jetzt erstellen (letzte 24 h)", "Make and send": "Erstellen und senden", "No panorama yet.": "Noch kein Panorama.", "gone": "weg", "back": "wieder da", "checks": "Vergleiche",
+  "Panorama report «Missing things» every morning (separate from the night report)": "Panorama-Bericht «Fehlende Gegenstände» jeden Morgen (getrennt vom Nachtbericht)",
   "Take the reference now": "Referenz jetzt aufnehmen", "Compare now": "Jetzt vergleichen", "New reference": "Neue Referenz", "Reports": "Berichte", "Report": "Bericht",
   "Directions side by side": "Richtungen nebeneinander", "Turn from (% of the pan range)": "Drehen von (% des Schwenkbereichs)", "Turn to (% of the pan range)": "Drehen bis (% des Schwenkbereichs)",
   "Heights (rows)": "Höhen (Reihen)", "Middle height (tilt %)": "Mittlere Höhe (Neigung %)", "Distance between the rows (tilt %)": "Abstand der Reihen (Neigung %)",

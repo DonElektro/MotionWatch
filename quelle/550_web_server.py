@@ -635,10 +635,19 @@ class WebStream:
                 elif op == "watch":                          # 2.95.98: things to guard
                     if not refscan_set_watch(str(d.get("kind") or "day"), d.get("items") or []):
                         return reply({"ok": False, "error": tr("no reference yet - scan first", lang)}, 400)
+                elif op == "panorama":                       # 2.96.1: the panorama report now (the last 24 h)
+                    path_, js_ = pano_build(time.time() - 86400, None)
+                    if not path_:
+                        return reply({"ok": False, "error": tr(js_, lang)}, 400)
+                    if d.get("send"):
+                        pano_send(path_, js_)
+                elif op == "pano_on":
+                    CFG["refscan_pano_on"] = bool(d.get("on")); save_settings()
                 else:
                     return reply({"ok": False, "error": "unknown"}, 400)
             st_ = refscan_state()
             st_["cfg"] = {k: v for k, v in CFG.items() if k.startswith("refscan_")}
+            st_["panoramas"] = pano_list()
             return reply(dict(st_, ok=True))
 
         @app.route("/refscan")
@@ -647,7 +656,7 @@ class WebStream:
 
         @app.route("/refscan/file/<path:fp>")
         def refscan_file(fp):
-            if not re.fullmatch(r"(ref(_night)?/pos_\d{2}\.jpg|reports/\d{8}_\d{6}/(cur|ref)_\d{2}\.jpg)", fp):
+            if not re.fullmatch(r"(ref(_night)?/pos_\d{2}\.jpg|reports/\d{8}_\d{6}/(cur|ref)_\d{2}\.jpg|panorama/\d{8}_\d{4}\.jpg)", fp):
                 return Response("not found", 404)
             p_ = refscan_dir(*fp.split("/"))
             return send_file(p_, max_age=60) if os.path.isfile(p_) else Response("not found", 404)
@@ -1542,6 +1551,11 @@ class WebStream:
             else:
                 return reply({"ok": False, "error": "unknown action"}, 400)
             return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"]})
+
+        @app.route("/api/sim_diary")
+        def api_sim_diary():                                 # 2.96.1: the diary of the simulator
+            day = str(request.args.get("day") or "")[:10]
+            return reply({"ok": True, "items": simdiary_read(day or None, int(request.args.get("days") or 1)), "days": simdiary_days()})
 
         @app.route("/api/protect", methods=["GET", "POST"])
         def api_protect():
