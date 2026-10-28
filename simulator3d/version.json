@@ -1,12 +1,12 @@
 {
- "version": "3D-3.59",
+ "version": "3D-3.60",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30925390,
- "sha256": "2ba1f11cf1c8e0357bd43a7a6bcb3786a9932340bb373f17554cc8c326b81813",
- "notes": "Game-Controller am Browser steuert den Rover (auch bei Simulator in einer VM)",
+ "size": 30934489,
+ "sha256": "c13a87a5165d99637e12b5c7757d82fd40732c704ab925d02f25a9f77e1d3d21",
+ "notes": "Rover versetzen, Mitspieler beim Erkunden (frei bewegen), besserer Beobachter",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24047397,
-  "sha256": "71f30440acfa7bf55b0747095d01d793e449f3177b701cfe541b6ce40d347fcf"
+  "size": 24056126,
+  "sha256": "f3d4a26ee7ba2c74887aed0973fd5404ade6c6075672abbfdf7601d71349ad40"
  }
 }

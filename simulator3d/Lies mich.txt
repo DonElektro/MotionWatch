@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.59 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.60 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -599,3 +599,11 @@ NEU IN 3D-3.59
 3D-3.59: Game-Controller am Browser: Ein Controller (z. B. PS5), der am normalen PC oder am Handy gekoppelt ist, steuert
 den Rover über die Seite von Motion Watch (Simulator-Seite oder Simulator-Steuerung offen lassen). So geht es auch, wenn
 der Simulator in einer virtuellen Maschine läuft, die den Controller nicht sieht. Start = Erkunden ein / aus.
+
+NEU IN 3D-3.60
+3D-3.60: Rover versetzen (Mover → «Rover versetzen», dann in die Welt klicken; beim Erkunden Strg + Klick). Beim Erkunden
+Mitspieler einladen (J oder Steuerkreuz →): QR-Code für die Handys, die Spieler bewegen sich frei (gehen, rennen, ducken,
+kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen der Erkennung. Beobachter (C oder Controller X):
+wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
+Motion Watch); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
+Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.

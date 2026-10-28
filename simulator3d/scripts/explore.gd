@@ -20,6 +20,10 @@ var _dev_t := 0.0
 var auto_top := false                # 3D-3.56: something stands between the rover and the view: from above for now
 var _blk_t := 0.0                     # blocked since … / free since …
 var _free_t := 0.0
+var invite: Control = null           # 3D-3.60: «Mitspieler einladen»: QR code + address, players move freely (game mode «free»)
+var _inv_qr: TextureRect
+var _inv_lbl: Label
+var _inv_for := ""
 var rp_ax: Array = []                 # 3D-3.59: the controller at the browser (standard mapping): axes, buttons, when, its name
 var rp_bt: Array = []
 var rp_t := -100.0
@@ -49,6 +53,46 @@ func _ready() -> void:
 	_info.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_info)
 	visible = false
+	invite = PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.05, 0.07, 0.09, 0.85)
+	sb.set_corner_radius_all(10)
+	sb.set_content_margin_all(10)
+	invite.add_theme_stylebox_override("panel", sb)
+	var vb := VBoxContainer.new()
+	invite.add_child(vb)
+	_inv_lbl = Label.new()
+	_inv_lbl.add_theme_font_size_override("font_size", 13)
+	_inv_lbl.custom_minimum_size = Vector2(190, 0)
+	_inv_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vb.add_child(_inv_lbl)
+	_inv_qr = TextureRect.new()
+	_inv_qr.custom_minimum_size = Vector2(170, 170)
+	_inv_qr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_inv_qr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_inv_qr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	vb.add_child(_inv_qr)
+	invite.visible = false
+	invite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	invite.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	invite.position = Vector2(14, 236)                     # under the small map, above the view buttons
+	call_deferred("_add_invite")
+
+
+func _add_invite() -> void:
+	get_parent().add_child(invite)
+
+
+func set_invite(v: bool) -> void:
+	"""players with their phone move freely in the world (walk, run, crouch, crawl) - to test the detection"""
+	var g = main.game
+	if g == null:
+		return
+	if v:
+		main.game_mode = "free"
+		g.set_open(true)
+	invite.visible = v
+	_inv_for = ""
 
 
 func set_on(v: bool) -> void:
@@ -67,6 +111,10 @@ func set_on(v: bool) -> void:
 			main.set_mover(false)
 		if bool(_saved.get("panel", true)):
 			main.show_panel(true)
+		if invite != null:
+			invite.visible = false
+		if main.spectate:
+			main.spectate_stop()
 	visible = on
 	queue_redraw()
 
@@ -96,6 +144,10 @@ func _input(ev: InputEvent) -> void:
 			return
 		_set_device("pad")
 		match ev.button_index:
+			JOY_BUTTON_X:
+				spectator(not main.spectate)
+			JOY_BUTTON_DPAD_RIGHT:
+				set_invite(not invite.visible)
 			JOY_BUTTON_B:
 				set_on(false)
 			JOY_BUTTON_Y:
@@ -115,8 +167,14 @@ func _input(ev: InputEvent) -> void:
 	elif ev is InputEventScreenTouch or ev is InputEventScreenDrag:
 		_set_device("touch")
 	elif ev is InputEventMouseButton and ev.pressed:
+		if main._over_hud(ev.position):
+			return                                       # 3D-3.60: over the panel / a box: scrolling and clicks are theirs
 		if not (device == "touch" and main.now() - _dev_t < 0.6):   # a tap also sends a mouse click: keep «touch»
 			_set_device("mouse")
+		if ev.button_index == MOUSE_BUTTON_LEFT and ev.ctrl_pressed:   # Ctrl + click: the rover there
+			main.place_rover_at(ev.position)
+			get_viewport().set_input_as_handled()
+			return
 		if ev.button_index == MOUSE_BUTTON_WHEEL_UP:
 			dist = clampf(dist - 0.8, 2.5, 30.0)
 			get_viewport().set_input_as_handled()
@@ -138,6 +196,12 @@ func _input(ev: InputEvent) -> void:
 			KEY_V:
 				next_view()
 				get_viewport().set_input_as_handled()
+			KEY_C:
+				spectator(not main.spectate)
+				get_viewport().set_input_as_handled()
+			KEY_J:
+				set_invite(not invite.visible)
+				get_viewport().set_input_as_handled()
 			KEY_HOME:
 				orbit = 0.0
 				get_viewport().set_input_as_handled()
@@ -147,6 +211,15 @@ func _input(ev: InputEvent) -> void:
 			KEY_PAGEDOWN:
 				main.set_mast(main.mast_h - 0.1)
 				get_viewport().set_input_as_handled()
+
+
+func spectator(v: bool) -> void:
+	"""3D-3.60: the spectator: changing camera shots of the rover and the players (C / controller X)"""
+	if v:
+		main.spectate_start()
+	else:
+		main.spectate_stop()
+	queue_redraw()
 
 
 func next_view() -> void:
@@ -255,6 +328,10 @@ func _process(dt: float) -> void:
 	elif not Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) and main.pad_on and view == "chase":
 		orbit = lerp_angle(orbit, 0.0, clampf(dt * 0.8, 0.0, 1.0))   # driving: the view swings back behind the rover
 	main.view_mode = 0
+	_invite_tick()
+	if main.spectate:                                    # the spectator moves the view
+		_info.text = "Erkunden · Beobachter: %s\nC / X = zurück zur eigenen Ansicht · J / Steuerkreuz → = Mitspieler einladen" % main.spec_label
+		return
 	var rig: Node3D = main.rig
 	var yaw: float = rig.rotation.y
 	var fwd := Vector3(-sin(yaw), 0, -cos(yaw))
@@ -298,6 +375,21 @@ func _process(dt: float) -> void:
 			VIEW_NAMES[view] + (" (automatisch von oben)" if auto_top and view == "chase" else ""), kmh, main.mast_h, " · schnell" if turbo else "", _help()]
 
 
+func _invite_tick() -> void:
+	if invite == null or not invite.visible:
+		return
+	var g = main.game
+	if g == null or not g.open:
+		invite.visible = false
+		return
+	var url: String = g.address()
+	if url != _inv_for:
+		_inv_for = url
+		_inv_qr.texture = g.Qr.texture(url, 6)
+	var n: int = g.count()
+	_inv_lbl.text = "Mitspieler: mit dem Handy scannen (gleiches WLAN)\n%s\n%s" % [url, ("%d dabei · frei bewegen, niemand wird erwischt" % n) if n > 0 else "noch niemand dabei"]
+
+
 func _blocked(a: Vector3, b: Vector3) -> bool:
 	"""is something higher than the rover close to the line between the rover (a) and the view (b)?"""
 	var a2 := Vector2(a.x, a.z)
@@ -319,12 +411,12 @@ func _blocked(a: Vector3, b: Vector3) -> bool:
 func _help() -> String:
 	match device:
 		"pad":
-			return "Linker Stick fahren · rechter Stick umschauen · A schnell · Y Ansicht · Steuerkreuz ↑↓ Stange · B beenden"
+			return "Linker Stick fahren · rechter Stick umschauen · A schnell · Y Ansicht · X Beobachter · Steuerkreuz ↑↓ Stange, → Mitspieler · B Ende"
 		"touch":
 			return "Grüner Stick unten rechts fahren · Ansicht und Ende oben im Feld"
 		"mouse":
-			return "Grünen Stick ziehen · rechte Taste ziehen = umschauen · Rad = Abstand · Bild ↑↓ Stange · Esc beenden"
-	return "W A S D oder Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Stange · Esc beenden"
+			return "Grünen Stick ziehen · rechte Taste = umschauen · Rad = Abstand · Strg+Klick = Rover hierhin · C Beobachter · Esc"
+	return "W A S D / Pfeile fahren · Shift schnell · V Ansicht · Bild ↑↓ Stange · C Beobachter · J Mitspieler · Esc"
 
 
 func _draw() -> void:

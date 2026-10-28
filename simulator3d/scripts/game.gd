@@ -448,6 +448,8 @@ func _process(dt: float) -> void:
 		return
 	_net()
 	var t := now()
+	if main.game_mode == "free" and round_state not in ["countdown", "play"] and count() > 0:
+		start_round()                                      # 3D-3.60: free moving starts as soon as somebody is there
 	for p in players:
 		if p != null:
 			_steer(p, dt)
@@ -458,7 +460,8 @@ func _process(dt: float) -> void:
 				p["actor"].frozen = false
 	if round_state == "play":
 		_powers_tick(t, dt)
-		_events_tick(t)
+		if main.game_mode != "free":
+			_events_tick(t)
 		if not last_minute and t_end - t <= 60.0 and t_end - t > 5.0 and main.game_minutes > 1:
 			last_minute = true                              # the last minute: more tension
 			news("⏰ Letzte Minute!")
@@ -963,6 +966,8 @@ func start_round() -> void:
 	round_state = "countdown"
 	t_start = now() + 4.0
 	t_end = t_start + float(main.game_minutes) * 60.0
+	if main.game_mode == "free":                           # 3D-3.60: free moving - until it is stopped (6 h at most)
+		t_end = t_start + 6.0 * 3600.0
 	results.clear()
 	light_ready = 0.0
 	for p in players:
@@ -1271,6 +1276,8 @@ func end_round() -> void:
 
 
 func _all_done() -> bool:
+	if main.game_mode == "free":
+		return false
 	for p in players:
 		if p != null and p["role"] == "runner" and p["state"] == "play":
 			return false
@@ -1468,6 +1475,8 @@ func _referee(dt: float) -> void:
 	if mw:
 		_mw_referee()
 	learn.tick(dt)
+	if main.game_mode == "free":                           # 3D-3.60: free moving: nobody is caught, no goal - Motion Watch is only watched
+		return
 	for p in players:
 		if p == null or p["state"] != "play" or p["role"] != "runner":
 			continue

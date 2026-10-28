@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.59"
+const VERSION := "3D-3.60"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2427,6 +2427,7 @@ func _register_controls() -> void:
 	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
 			{"options": [["opposite", "gegenüber (30 m)"], ["left", "links"], ["right", "rechts"]]})
 	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – fahren mit dem grünen Stick unten rechts, den Pfeiltasten oder dem zweiten Stick in Motion Watch", func(): return mover_on, func(v): set_mover(v), "Mover")
+	add_control("button", "rover_place", "📍 Rover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)", null, func(): place_kind = "rover", "Mover")
 	add_control("slider", "mast_h", "Stangenlänge (Höhe des Kamerakopfs; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": 0.4, "max": 4.0, "step": 0.1, "unit": "m"})
 	add_control("slider", "explore_speed", "Tempo beim Erkunden (Shift / A = schneller)", func(): return explore.speed if explore != null else 1.6, func(v): if explore != null: explore.speed = v, "Mover", {"min": 0.5, "max": 6.0, "step": 0.1, "unit": "m/s"})
 	add_control("slider", "mover_max", "Höchstgeschwindigkeit des Movers", func(): return mover_max, func(v): mover_max = v, "Mover", {"min": 0.2, "max": 2.0, "step": 0.1, "unit": "m/s"})
@@ -2459,7 +2460,7 @@ func _register_controls() -> void:
 	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
-			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "Motion Watch entscheidet (echte Erkennung)"], ["mwhand", "Team gegen Motion Watch (Wächter steuern Motion Watch)"]]})
+			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "Motion Watch entscheidet (echte Erkennung)"], ["mwhand", "Team gegen Motion Watch (Wächter steuern Motion Watch)"], ["free", "Frei bewegen – ohne Regeln (zum Testen der Erkennung)"]]})
 	add_control("select", "game_level", "Schwierigkeit (Wächter und Motion Watch)", func(): return game_level, func(v): game_level = v, "Spiel",
 			{"options": [["easy", "leicht – Easy-Mode: Motion Watch muss 2.5 s melden, Kriechen ist sicher, 6 s Pause"], ["normal", "normal – 1 s melden, 3 s Pause"], ["hard", "schwer – sofort, 2 s Pause"]]})
 	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
@@ -2834,6 +2835,17 @@ func control(d: Dictionary) -> Dictionary:
 			explore.set_on(bool(d["on"]))
 		if d.has("view") and str(d["view"]) in explore.VIEWS:
 			explore.view = str(d["view"])
+		if d.has("invite"):
+			explore.set_invite(bool(d["invite"]))
+		if d.has("spectate"):
+			explore.spectator(bool(d["spectate"]))
+		if d.has("place"):                               # [x, z]: the rover there (3D-3.60)
+			var pl: Array = d["place"]
+			if mover_on:
+				rig.position = Vector3(float(pl[0]), ground_y(float(pl[0]), float(pl[1])), float(pl[1]))
+			else:
+				home_pos = Vector3(float(pl[0]), 0, float(pl[1]))
+				mover_home()
 		if d.has("drive"):                             # [forward, turn, seconds] for a test drive
 			var dv: Array = d["drive"]
 			explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
@@ -4584,8 +4596,28 @@ var place_kind := ""                  # chosen in the pictures of the visitors: 
 
 
 func _place(p: Vector2) -> void:
+	if place_kind == "rover":                          # 3D-3.60: «Rover versetzen» - the next click puts it there
+		place_rover_at(p)
+		place_kind = ""
+		_paint_palette()
+		return
 	if place_kind != "":
 		_place_at(place_kind, p)
+
+
+func place_rover_at(p: Vector2) -> bool:
+	"""the rover (or Motion Watch standing still) to the spot under the mouse, never inside an object"""
+	var from := view_cam.project_ray_origin(p)
+	var hit = ground_hit(from, view_cam.project_ray_normal(p))
+	if hit == null or from.distance_to(hit) > 400.0:
+		return false
+	var a: Vector3 = free_spot(hit, 0.6, false)
+	if mover_on:
+		rig.position = Vector3(a.x, ground_y(a.x, a.z), a.z)
+	else:
+		home_pos = Vector3(a.x, 0, a.z)
+		mover_home()
+	return true
 
 
 func _place_at(k: String, p: Vector2) -> void:
@@ -5319,7 +5351,11 @@ func _spec_choose(t: float) -> void:
 		spec_who = int(near["slot"])
 		spec_label = "%s ist kurz vor dem Ziel" % near["name"]
 		return
-	spec_order = (spec_order + 1) % 4
+	spec_order = (spec_order + 1) % 5
+	if rs.size() >= 2 and spec_order == 4:              # 3D-3.60: all players in the picture
+		spec_shot = "group"
+		spec_label = "Alle Spieler im Bild"
+		return
 	if rs.is_empty() or spec_order == 1:
 		spec_shot = "field"
 		spec_label = "Übersicht über das Spielfeld"
@@ -5339,6 +5375,9 @@ func _spec_choose(t: float) -> void:
 
 
 func _spectate(dt: float) -> void:
+	if explore != null and explore.on and not (game != null and game.open and game.round_state in ["countdown", "play"] and game_mode != "free"):
+		_spectate_explore(dt)                           # 3D-3.60: exploring (also with players moving freely)
+		return
 	if game == null or not game.open:
 		spectate_stop()
 		return
@@ -5393,6 +5432,7 @@ func _spectate(dt: float) -> void:
 				pos2 = c2 + Vector3(sin(spec_orbit) * r, 1.4, cos(spec_orbit) * r)
 				view_cam.fov = 44.0 + 6.0 * sin(t * 2.0)       # a little zoom pulse
 		pos2.y = max(pos2.y, ground_y(pos2.x, pos2.z) + 0.35)
+		pos2 = _spec_free(pos2, look2)                 # 3D-3.60: the player stays visible
 		want = Transform3D(Basis(), pos2).looking_at(look2, Vector3.UP)
 		var k2: float = 1.0 - exp(-dt * (4.5 if spec_shot in ["caught", "cheer"] else 2.6))
 		view_cam.global_transform = view_cam.global_transform.interpolate_with(want, k2)
@@ -5408,6 +5448,7 @@ func _spectate(dt: float) -> void:
 		var back := Vector3(sin(a.heading), 0, cos(a.heading))
 		var pos: Vector3 = a.position + back * 4.5 + Vector3(0, 2.6, 0)
 		pos.y = max(pos.y, ground_y(pos.x, pos.z) + 1.5)
+		pos = _spec_free(pos, a.position + Vector3(0, 0.9, 0))
 		want = Transform3D(Basis(), pos).looking_at(a.position + Vector3(0, 0.9, 0) - back * 1.5, Vector3.UP)
 	elif spec_shot == "goal":
 		var to := Vector3(0, 0, 8)
@@ -5422,6 +5463,20 @@ func _spectate(dt: float) -> void:
 	elif spec_shot == "mw":
 		want = cams[0].global_transform
 		view_cam.fov = 41.0
+	elif spec_shot == "group":                           # 3D-3.60: middle and spread of all players, slowly round
+		var mid := Vector3.ZERO
+		for p in rs:
+			mid += p["actor"].position
+		mid = (mid / rs.size()) if not rs.is_empty() else game.goal * 0.5
+		var spread := 2.0
+		for p in rs:
+			spread = max(spread, mid.distance_to(p["actor"].position))
+		spec_orbit += dt * 0.07
+		var dd: float = spread * 1.6 + 6.0
+		var pos := mid + Vector3(sin(spec_orbit) * dd, dd * 0.55 + 2.0, cos(spec_orbit) * dd)
+		pos.y = max(pos.y, ground_y(pos.x, pos.z) + 1.5)
+		pos = _spec_free(pos, mid + Vector3(0, 0.6, 0))
+		want = Transform3D(Basis(), pos).looking_at(mid + Vector3(0, 0.6, 0), Vector3.UP)
 	else:                                                # the whole field: slowly round from above
 		var c := Vector3.ZERO
 		for p in rs:
@@ -5435,6 +5490,105 @@ func _spectate(dt: float) -> void:
 		want = Transform3D(Basis(), pos).looking_at(c + Vector3(0, 0.5, 0), Vector3.UP)
 	var k: float = 1.0 - exp(-dt * (6.0 if spec_shot == "mw" else 2.2))
 	view_cam.global_transform = view_cam.global_transform.interpolate_with(want, k)
+
+
+# ---- 3D-3.60: the spectator also for «Erkunden» (the rover and the players moving freely), and a free line of sight:
+# a shot whose view is blocked by a caravan, a tent, a house turns round the target until it is free (or looks from above)
+func _spec_free(pos: Vector3, at: Vector3) -> Vector3:
+	if line_free(pos, at):
+		return pos
+	var off := pos - at
+	var r := Vector2(off.x, off.z).length()
+	var base := atan2(off.x, off.z)
+	for k in [1, -1, 2, -2, 3, -3, 4]:
+		var a: float = base + float(k) * PI / 4.0
+		var q := at + Vector3(sin(a) * r, off.y, cos(a) * r)
+		q.y = max(q.y, ground_y(q.x, q.z) + 0.4)
+		if line_free(q, at):
+			return q
+	return at + Vector3(off.x * 0.3, max(off.y, 7.0), off.z * 0.3)      # nothing free: from above
+
+
+func _spec_targets() -> Array:
+	"""what the spectator can show while exploring: the rover and the players moving freely - [name, node, moving]"""
+	var out := [["Rover", rig, abs(_pad_l) + abs(_pad_r) > 0.05]]
+	if game != null:
+		for p in game.players:
+			if p != null and p["state"] == "play":
+				out.append([str(p["name"]), p["actor"], float(p["actor"].cur_speed) > 0.2])
+	return out
+
+
+var _spx_who := 0
+
+
+func _spectate_explore(dt: float) -> void:
+	var t := now()
+	var tg := _spec_targets()
+	if t >= spec_until or _spx_who >= tg.size():
+		spec_switch_t = t
+		spec_until = t + randf_range(6.0, 9.0)
+		var moving := []
+		for i in range(tg.size()):
+			if tg[i][2]:
+				moving.append(i)
+		_spx_who = moving[randi() % moving.size()] if not moving.is_empty() and randf() < 0.75 else randi() % tg.size()
+		var kinds := ["chase", "side", "low", "orbit", "crane", "chase"]
+		if tg.size() >= 2:
+			kinds.append("group")
+			kinds.append("group")
+		if randf() < 0.12:
+			kinds = ["mw"]
+		spec_shot = kinds[randi() % kinds.size()]
+		spec_orbit = randf() * TAU
+		var nm: String = tg[_spx_who][0]
+		spec_label = {"chase": "Wir folgen: %s", "side": "%s von der Seite", "low": "%s kommt näher …", "orbit": "Rund um %s",
+				"crane": "%s von oben", "group": "Alle im Bild", "mw": "So sieht Motion Watch das"}[spec_shot] % ([nm] if spec_shot not in ["group", "mw"] else [])
+	view_cam.fov = 60.0
+	var n: Node3D = tg[_spx_who][1]
+	var c: Vector3 = n.global_position
+	var hd: float = n.rotation.y if n == rig else float(n.heading)
+	var fw := Vector3(-sin(hd), 0, -cos(hd))
+	var rt := Vector3(cos(hd), 0, -sin(hd))
+	var look := c + Vector3(0, 0.8, 0)
+	var pos: Vector3
+	match spec_shot:
+		"mw":
+			view_cam.global_transform = view_cam.global_transform.interpolate_with(cams[0].global_transform, 1.0 - exp(-dt * 6.0))
+			view_cam.fov = 41.0
+			return
+		"side":
+			pos = c + rt * 4.5 + Vector3(0, 1.3, 0)
+			look = c + fw * 1.5 + Vector3(0, 0.7, 0)
+			view_cam.fov = 52.0
+		"low":
+			pos = c + fw * 6.0 + Vector3(0, 0.45, 0)
+			view_cam.fov = 46.0
+		"orbit":
+			spec_orbit += dt * 0.4
+			pos = c + Vector3(sin(spec_orbit) * 4.5, 2.2, cos(spec_orbit) * 4.5)
+		"crane":                                          # high and slowly round: where it goes
+			spec_orbit += dt * 0.12
+			pos = c + Vector3(sin(spec_orbit) * 9.0, 11.0, cos(spec_orbit) * 9.0)
+		"group":                                          # everybody in the picture: middle and spread of all
+			var mid := Vector3.ZERO
+			for x in tg:
+				mid += (x[1] as Node3D).global_position
+			mid /= float(tg.size())
+			var spread := 2.0
+			for x in tg:
+				spread = max(spread, mid.distance_to((x[1] as Node3D).global_position))
+			spec_orbit += dt * 0.06
+			var d: float = spread * 1.6 + 6.0
+			pos = mid + Vector3(sin(spec_orbit) * d, d * 0.55 + 2.0, cos(spec_orbit) * d)
+			look = mid + Vector3(0, 0.6, 0)
+		_:
+			pos = c - fw * 5.0 + Vector3(0, 2.6, 0)
+			look = c + fw * 1.5 + Vector3(0, 0.6, 0)
+	pos.y = max(pos.y, ground_y(pos.x, pos.z) + 0.4)
+	pos = _spec_free(pos, look)
+	var want := Transform3D(Basis(), pos).looking_at(look, Vector3.UP)
+	view_cam.global_transform = view_cam.global_transform.interpolate_with(want, 1.0 - exp(-dt * 2.4))
 
 
 # ---- with the phone simulator open (left), the map and the compass move to the right, the buttons are centred (3D-3.26) ----
