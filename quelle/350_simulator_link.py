@@ -74,6 +74,9 @@ class SimLink:
         if first:
             SIM["since"] = time.time()
             self.hello()
+        g_ = SIMGAME.get("g") or {}
+        if g_.get("round") == "play" and WATCH_REF.get("w") is not None:   # 2.98.2: keep the clean picture during a game round
+            WATCH_REF["w"].raw_until = max(WATCH_REF["w"].raw_until, time.time() + 3.0)      # (false alarms -> fa_learn)
         mc_ = rep_.get("mw_cmd")                            # 2.95.97: the simulator asks MoveEye for something (button there)
         if isinstance(mc_, dict) and int(mc_.get("id") or 0) > int(SIM.get("cmd_seen") or 0):
             SIM["cmd_seen"] = int(mc_.get("id") or 0)
@@ -86,6 +89,8 @@ class SimLink:
                     refscan_stop()
                 elif op_ == "look":                         # 2.95.103: «Kopf steuern» in the simulator window
                     move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3))
+                elif op_ == "fa_box":                       # 2.98.2: a box of a game without a player: a false alarm to learn from
+                    fa_game_box(mc_.get("box"))
                 elif op_ == "track":                        # 2.98.1: «Verfolgen» in the simulator = «Folgen» of MoveEye
                     follow_set(bool(mc_.get("on")), "simulator")
                 elif op_ == "light":                        # 2.95.103: the white light from the simulator (on / off)

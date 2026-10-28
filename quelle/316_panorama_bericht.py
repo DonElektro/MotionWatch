@@ -165,6 +165,8 @@ def pano_send(path, js):
     try:
         with open(path, "rb") as f:
             jpg = f.read()
+        if morning_add("🧭 " + txt, jpg):                 # 2.98.1: with the night report (one push in the morning)
+            return
         w.notifier.info(txt, title="{name}: " + tr("Missing things"), jpg=jpg, fname="panorama.jpg")
     except Exception:
         pass

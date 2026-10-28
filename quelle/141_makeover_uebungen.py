@@ -239,6 +239,11 @@ def _drill_end_later():
     DRILL.update(kind="", busy=False)
     SANDBOX["force"] = max(0, SANDBOX["force"] - 1)
     log_event("sys", f"Drill finished: {kind}, {len(seen)} reactions")
+    try:
+        if seen:
+            points_add(50, f"Drill done: {kind}")
+    except NameError:
+        pass
 
 
 def drill_battery_tick(bm):

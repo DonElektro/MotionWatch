@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.91"
+const VERSION := "3D-3.92"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -526,6 +526,15 @@ func _stream_watch() -> void:
 	if stream_on:
 		print("sending to MoveEye: port %d (try %d)" % [net.port, _sw_tries])
 		_sw_tries = 0
+
+
+func _firewall_allow() -> void:
+	"""3D-3.92: Windows asks for admin rights once (UAC) and adds an inbound rule for this simulator (private networks)"""
+	var exe := OS.get_executable_path().replace("/", "\\")
+	var rule := "advfirewall firewall add rule name=\"MoveEye Simulator\" dir=in action=allow program=\"%s\" enable=yes profile=private,domain" % exe
+	var ps := "Start-Process netsh -Verb RunAs -WindowStyle Hidden -ArgumentList '%s'" % rule.replace("'", "''")
+	var pid := OS.create_process("powershell.exe", ["-NoProfile", "-WindowStyle", "Hidden", "-Command", ps])
+	start_info = "Windows fragt jetzt nach Adminrechten – «Ja» wählen. Danach findet MoveEye den Simulator ohne Tunnel." if pid > 0 else "Konnte die Firewall-Freigabe nicht starten."
 
 
 func release_ports() -> void:
@@ -3439,7 +3448,8 @@ func control(d: Dictionary) -> Dictionary:
 	elif a == "blindmap":                              # 3D-3.85: makeover 22 / 23 {do: start (az, dist, hour, walk) | info | stop}
 		var bd := str(d.get("do", "info"))
 		if bd == "game":                               # 3D-3.90: the blind spots the players found (az°, m), for MoveEye's map
-			return {"ok": true, "pts": game.learn.blind_pts if game != null and game.learn != null else []}
+			return {"ok": true, "pts": game.learn.blind_pts if game != null and game.learn != null else [],
+					"badges": game.badges_all() if game != null else {}}                       # 3D-3.92: the badges of the players
 		if bd == "start":
 			return blindmap.start(d)
 		if bd == "stop":
@@ -3845,6 +3855,13 @@ func _build_ui() -> void:
 	status_label.add_theme_font_size_override("font_size", 13)
 	cn.add_child(status_label)
 	# 3D-3.45: tunnel - when the firewall of this PC lets nothing in (no admin rights)
+	if OS.get_name() == "Windows":                 # 3D-3.92: the real fix for «MoveEye findet den Simulator nicht»: one firewall rule
+		var fwb := Button.new()
+		fwb.text = "Windows-Firewall: Simulator freigeben (einmal, fragt nach Adminrechten)"
+		fwb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		fwb.tooltip_text = "Erlaubt dem Simulator eingehende Verbindungen im privaten Netz. Danach braucht es keinen Tunnel und keinen Code mehr."
+		fwb.pressed.connect(_firewall_allow)
+		cn.add_child(fwb)
 	var tn := UI.sub_fold(cn, "Tunnel zu MoveEye (Firewall ohne Adminrechte)", tunnel_on)
 	tn.set_meta("always", true)                     # 3D-3.46: it has no settings of the list - without this it was always hidden
 	sub_bodies.append(tn)
@@ -3880,6 +3897,13 @@ func _build_ui() -> void:
 	th_.focus_exited.connect(apply_t)
 	tc_.text_submitted.connect(func(_t): apply_t.call())
 	tc_.focus_exited.connect(apply_t)
+	# 3D-3.92: saved at once while typing (an update a minute later restarted the simulator before the field was left)
+	var keep_t := func(_t):
+		tunnel_host = th_.text.strip_edges().trim_prefix("http://").trim_prefix("https://").get_slice("/", 0).get_slice(":", 0)
+		tunnel_code = tc_.text.strip_edges()
+		_save_settings()
+	th_.text_changed.connect(keep_t)
+	tc_.text_changed.connect(keep_t)
 	tcb.toggled.connect(func(_v): apply_t.call())
 	# camera pictures
 	# 3D-3.50: order by logic - first the connection, then the cameras (still visible while searching: not in top_cards)

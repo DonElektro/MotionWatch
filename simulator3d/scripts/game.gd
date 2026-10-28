@@ -1304,6 +1304,9 @@ func end_round() -> void:
 		var bd := _badges_of(p)                            # 3D-3.77: badges
 		if not bd.is_empty():
 			info += " · " + " ".join(PackedStringArray(bd.map(func(b): return BADGES[b][0] + " " + BADGES[b][1])))
+			var nb := _badges_save(str(p["name"]), bd)
+			if not nb.is_empty():
+				info += " · NEU: " + ", ".join(PackedStringArray(nb.map(func(b): return BADGES[b][1])))
 		results.append({"n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "info": info, "score": sc, "badges": bd})
 		if p["role"] == "runner":
 			p["state"] = "lobby"
@@ -2955,7 +2958,9 @@ func _auto_handicap() -> void:
 
 # ==== 3D-3.77: play on this PC, computer players, practice round, replay, badges, challenge of the day, ghosts ==========
 const BADGES := {"ghost": ["👻", "Unsichtbar"], "fast": ["⚡", "Blitz"], "snake": ["🐍", "Kriech-Profi"], "hero": ["🦸", "Retter"],
-		"gems": ["💎", "Sammler"], "eagle": ["🦅", "Adlerauge"], "bush": ["🌳", "Busch-Meister"], "first": ["🥇", "Sieger"]}
+		"gems": ["💎", "Sammler"], "eagle": ["🦅", "Adlerauge"], "bush": ["🌳", "Busch-Meister"], "first": ["🥇", "Sieger"],
+		"spotter": ["🔍", "Lückenfinder"]}            # 3D-3.92: found a blind spot of MoveEye (10 s visible, not reported)
+const BADGE_FILE := "user://spiel/abzeichen.json"     # 3D-3.92: the badges stay (per name, how often)
 const BOT_NAMES := ["Bot Fuchs", "Bot Dachs", "Bot Luchs", "Bot Marder"]
 var rec: Array = []                      # [t, [[slot, x, z, posture, seen], …]] every 0.5 s of the round
 var rec_ev: Array = []                   # [t, slot, "caught" | "goal"]
@@ -3184,7 +3189,35 @@ func _badges_of(p: Dictionary) -> Array:
 		b.append("gems")
 	if float(p.get("hide_s", 0.0)) > 15.0:
 		b.append("bush")
+	if learn != null and learn.blind_s(p) >= 10:
+		b.append("spotter")
 	return b
+
+
+func badges_all() -> Dictionary:
+	var d = JSON.parse_string(FileAccess.get_file_as_string(BADGE_FILE)) if FileAccess.file_exists(BADGE_FILE) else null
+	return d if typeof(d) == TYPE_DICTIONARY else {}
+
+
+func _badges_save(name_: String, bd: Array) -> Array:
+	"""3D-3.92: add the badges of this round to the collection of the player; returns the ones that are new for him"""
+	if bd.is_empty() or str(name_).begins_with("Bot "):
+		return []
+	var all := badges_all()
+	var key := str(name_).strip_edges().to_lower()
+	var mine: Dictionary = all.get(key, {})
+	var fresh := []
+	for b in bd:
+		if int(mine.get(b, 0)) == 0:
+			fresh.append(b)
+		mine[b] = int(mine.get(b, 0)) + 1
+	all[key] = mine
+	DirAccess.make_dir_recursive_absolute("user://spiel")
+	var f := FileAccess.open(BADGE_FILE, FileAccess.WRITE)
+	if f != null:
+		f.store_string(JSON.stringify(all))
+		f.close()
+	return fresh
 
 
 # ---- ghosts: the best way of a player (per scene and goal) goes along, only the players see it ---------------------------

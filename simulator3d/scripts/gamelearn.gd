@@ -92,6 +92,8 @@ func tick(dt: float) -> void:
 				if not used.has(i) and not _visitor_at(mwb[i]) and mw_false.size() < 20:
 					mw_false.append({"t": snappedf(t - game.t_start, 0.1), "box": mwb[i]})
 					_false_t = t
+					# 3D-3.92: MoveEye keeps this spot of its picture as a «no person» example (false alarm learning)
+					main.mw_cmd = {"id": max(int(Time.get_unix_time_from_system() * 1000.0), int(main.mw_cmd.get("id", 0)) + 1), "op": "fa_box", "box": mwb[i]}
 	_path_t -= dt
 	var rec_path: bool = _path_t <= 0.0
 	if rec_path:

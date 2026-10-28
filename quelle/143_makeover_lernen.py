@@ -76,6 +76,100 @@ def _falearn_thread(name, cause):
     log_event("sys", f"False alarm learning ({cause}): {res['alarms']} alarm(s) in 60 s, {res['pics']} picture(s) kept as «no person»")
 
 
+# ---- 2.98.2: MoveEye points - one account for the games and the real use -------------------------------------------------
+# Games: a blind spot found (+5 a point, at most 100 a day), a false alarm unmasked (+30). Real use: a calm week without a
+# false alarm (+100), a drill done (+50), «Entdecker»: the blind spot map shows more recognised places than last time (+50 each).
+def points_add(n, why):
+    P = CFG.get("me_points") if isinstance(CFG.get("me_points"), dict) else {"total": 0, "log": [], "week": ""}
+    P["total"] = int(P.get("total", 0)) + int(n)
+    log_ = [x for x in (P.get("log") or []) if isinstance(x, dict)]
+    log_.insert(0, {"t": int(time.time()), "n": int(n), "why": str(why)[:80]})
+    P["log"] = log_[:40]
+    CFG["me_points"] = P
+    save_settings()
+
+
+def points_state():
+    P = CFG.get("me_points") if isinstance(CFG.get("me_points"), dict) else {}
+    return {"total": int(P.get("total", 0)), "log": (P.get("log") or [])[:12], "badges": BLIND.get("badges") or {}}
+
+
+def fa_count(days=7):
+    """recordings marked «false alarm» in the last days"""
+    since = datetime.now() - timedelta(days=days)
+    n = 0
+    try:
+        for f in os.listdir(rec_dir()):
+            if f.endswith(".json"):
+                dt = parse_stamp(f)
+                if dt is not None and dt >= since and _read_sidecar(f[:-5] + ".mp4").get("false"):
+                    n += 1
+    except OSError:
+        pass
+    return n
+
+
+def points_week_loop():
+    while True:
+        time.sleep(300)
+        try:
+            now = datetime.now()
+            wk = now.strftime("%G-W%V")
+            P = CFG.get("me_points") or {}
+            if now.weekday() != 0 or P.get("week") == wk or not CFG.get("detection_on", True):
+                continue
+            P["week"] = wk
+            CFG["me_points"] = P
+            if fa_count(7) == 0:
+                points_add(100, "Calm week: no false alarm")
+            else:
+                save_settings()
+        except Exception as e:
+            log_event("sys", f"Points: {e}"[:120])
+
+
+threading.Thread(target=points_week_loop, daemon=True, name="points").start()
+
+
+# ---- 2.98.2: false alarms from the games of the simulator ---------------------------------------------------------------
+FA_GAME = {"day": "", "n": 0}
+
+
+def fa_game_box(box):
+    """the simulator says: MoveEye reported a person here, but no player and no visitor was there -> this part of the
+    picture (with some margin) goes to fa_learn/ as a «no person» example, like the false alarm learning (21). At most 40 a day."""
+    try:
+        x, y, w_, h_ = [float(v) for v in (box or [])[:4]]
+    except (TypeError, ValueError):
+        return
+    day = datetime.now().strftime("%Y%m%d")
+    if FA_GAME["day"] != day:
+        FA_GAME.update(day=day, n=0)
+    if FA_GAME["n"] >= 40 or not CFG.get("fa_learn_auto", True):
+        return
+    w = WATCH_REF.get("w")
+    f = getattr(w, "frame_raw", None) if w is not None else None
+    if f is None:
+        return
+    H, W = f.shape[:2]
+    mx, my = w_ * 0.25, h_ * 0.25
+    x0, y0 = max(0, int((x - mx) * W)), max(0, int((y - my) * H))
+    x1, y1 = min(W, int((x + w_ + mx) * W)), min(H, int((y + h_ + my) * H))
+    if x1 - x0 < 16 or y1 - y0 < 16:
+        return
+    d = os.path.join(DATA_DIR, "fa_learn", day + "_spiel")
+    os.makedirs(d, exist_ok=True)
+    FA_GAME["n"] += 1
+    cv2.imwrite(os.path.join(d, "%02d.jpg" % FA_GAME["n"]), f[y0:y1, x0:x1], [cv2.IMWRITE_JPEG_QUALITY, 88])
+    try:
+        with open(os.path.join(d, "info.json"), "w") as fo:
+            json.dump({"label": "no_person", "cause": "game", "from": "simulator game", "crop": True, "n": FA_GAME["n"]}, fo)
+    except OSError:
+        pass
+    log_event("sys", f"False alarm in a game: picture part kept as «no person» ({FA_GAME['n']} today)")
+    points_add(30, "False alarm unmasked in a game")
+
+
 # ---- 22 / 23 --------------------------------------------------------------------------------------------------------------
 def blind_start(kind="map", hour=None):
     if BLIND["busy"]:
@@ -123,8 +217,12 @@ def _blind_wait():
             log_event("sys", txt)
             res["text"] = txt
         else:
+            prev_ = BLIND.get("last") or {}
             BLIND["last"] = res
             log_event("sys", f"Blind spots: {res.get('found', 0)} of {res.get('inview', 0)} places recognised")
+            gain_ = int(res.get("found", 0)) - int(prev_.get("found", res.get("found", 0)))
+            if prev_ and gain_ > 0:                         # 2.98.2: «Entdecker» - blind spots of before are recognised now
+                points_add(50 * gain_, f"Explorer: {gain_} blind spot(s) fixed")
     BLIND.update(busy=False, kind="")
 
 
@@ -234,7 +332,14 @@ def blind_game_pts():
         BLIND["game_t"] = time.time()
         try:
             r = sim_control({"action": "blindmap", "do": "game"})
-            BLIND["game"] = [p for p in (r.get("pts") or []) if isinstance(p, dict)][-400:] if r.get("ok") else BLIND.get("game", [])
+            if r.get("ok"):
+                old_n = len(BLIND.get("game") or [])
+                BLIND["game"] = [p for p in (r.get("pts") or []) if isinstance(p, dict)][-400:]
+                BLIND["badges"] = r.get("badges") if isinstance(r.get("badges"), dict) else {}
+                new_n = len(BLIND["game"]) - old_n
+                if BLIND.get("game_known") and new_n > 0:          # not at the first fetch (those are old)
+                    points_add(min(100, 5 * new_n), f"{new_n} blind spot(s) found in games")
+                BLIND["game_known"] = True
         except Exception:
             pass
     return BLIND.get("game") or []
@@ -246,4 +351,5 @@ def learn_state():
                       "game": blind_game_pts()},
             "autoth": {"busy": AUTOTH["busy"], "step": AUTOTH["step"], "last": AUTOTH["last"]},
             "week": {"on": bool(CFG.get("weekcheck_on")), "runs": [{"t": r["t"], "score": r["score"], "mw": r.get("mw")} for r in TESTOPT["runs"] if r.get("week")][-8:]},
-            "rehearsal_on_arm": bool(CFG.get("rehearsal_on_arm")), "fa_learn_auto": bool(CFG.get("fa_learn_auto"))}
+            "rehearsal_on_arm": bool(CFG.get("rehearsal_on_arm")), "fa_learn_auto": bool(CFG.get("fa_learn_auto")),
+            "points": points_state()}

@@ -1,12 +1,12 @@
 {
- "version": "3D-3.91",
+ "version": "3D-3.92",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31204893,
- "sha256": "5f12149952b98a46ff01346e29107837ca03be9df2c468e4c304531ea2d72db2",
- "notes": "Verfolgen = Folgen von MoveEye, Kopf folgt MoveEye statt Patrouille",
+ "size": 31207277,
+ "sha256": "4014de6916a2c031c805b8c653d3452a5e53f75c6356a0ee27a2dfa8c12ab57f",
+ "notes": "Abzeichen bleiben, Lueckenfinder, Fehlalarme aus Spielen, Tunnel sofort gespeichert, Firewall-Knopf",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24326331,
-  "sha256": "2756f4454741c01e5dbc59a83daabad851ca8e9e411c2948fc43e78845e9170a"
+  "size": 24328776,
+  "sha256": "54e06831aee2ea1d664a52ea1a68b3e810f71d59ccd37045bf0108e0f5788c4a"
  }
 }

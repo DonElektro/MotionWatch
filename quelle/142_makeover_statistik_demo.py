@@ -93,7 +93,7 @@ def simdiary_stats(days=28):
 def simweek_loop():
     """Monday, at the hour of the night report: the week in the simulator as a push (when switched on)"""
     while True:
-        time.sleep(300)
+        time.sleep(60)                                     # 2.98.1: every minute (it must be ready before the night report)
         try:
             if not CFG.get("simweek_on"):
                 continue
@@ -112,7 +112,7 @@ def simweek_loop():
             txt = trf("Week in the simulator: {v} visits, persons recognised {r} % ({a} of {b}). Animals: {an}",
                       v=vis, r=round(100 * rec / seen) if seen else "–", a=rec, b=seen, an=an or "–")
             w = WATCH_REF.get("w")
-            if w is not None:
+            if w is not None and not morning_add("🧪 " + txt):   # 2.98.1: with the night report when it is on
                 w.notifier.info(txt, title="{name}: " + tr("Simulator diary"))
         except Exception as e:
             log_event("sys", f"Week report: {e}"[:120])

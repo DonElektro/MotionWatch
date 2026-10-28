@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 23:59",
+ "generated": "2026-10-29 00:09",
  "versions": [
   {
-   "version": "2.98.1",
-   "file": "webcam_bewegung_2_98_1.py",
+   "version": "2.98.2",
+   "file": "webcam_bewegung_2_98_2.py",
    "url": "",
-   "sha256": "5270d3e20d1ee7a8cd4e5ac787317347fadd51d427371a6e0773d4b11920e70a",
-   "date": "2026-10-28 23:59",
-   "notes": "Ein «Folgen» für Personen, Tiere und Bewegtes: die Kamera zielt auf das Objekt (Winkel aus dem Sichtfeld) statt in kleinen Schritten, gleich wie «Verfolgen» im Simulator",
-   "sig": "9754a227ad6bd5c5e14669e393a5180193c12035cf4b2816adfb714a54c129d03e2ec313bd6defcd84faf5aa578a87b3869064a4c14a74f960f20fa7bb15e601"
+   "sha256": "26b0e9c6e8357446aefa93e8f63db6b1a4dcd651e679aa31ed2c570a19ec445a",
+   "date": "2026-10-29 00:09",
+   "notes": "MoveEye-Punkte (Spiel und echter Betrieb, mit Abzeichen der Spieler), ein Morgen-Push (Panorama und Simulator-Woche im Nachtbericht), Fehlalarme aus den Spielen ins Fehlalarm-Lernen",
+   "sig": "5eb7000012c5e12bae120118c98ec157feb1041857dd2de915f1ffe4b3e43d15314c9dd5673c3c7406de2b2ca5b62f88f63e7c7bb6495f9e425079b1e11f7c05"
   },
   {
    "version": "2.97.1",

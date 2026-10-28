@@ -359,8 +359,42 @@ def report_build(lang=None, start=None, end=None):
     return {"text": text, "img": best[0]["img"] if best else "", "count": len(ev), "from": a, "to": b}
 
 
+MORNING_EXTRA = {"day": "", "lines": [], "jpg": None}    # 2.98.1: one morning push - panorama and simulator week go into the night report
+
+
+def morning_add(text, jpg=None):
+    """2.98.1: something for this morning's push. True = it comes with the night report; False = send it yourself
+    (night report off, or already sent today)."""
+    day = datetime.now().strftime("%Y-%m-%d")
+    if not CFG.get("report_on") or CFG.get("report_last_day") == day:
+        return False
+    if MORNING_EXTRA["day"] != day:
+        MORNING_EXTRA.update(day=day, lines=[], jpg=None)
+    MORNING_EXTRA["lines"].append(str(text))
+    if jpg and MORNING_EXTRA["jpg"] is None:
+        MORNING_EXTRA["jpg"] = jpg
+    return True
+
+
+def morning_wait(now):
+    """2.98.1: in the first 10 minutes wait for the panorama / the simulator week, so they come in the same push"""
+    if now.minute >= 10:
+        return False
+    day = now.strftime("%Y-%m-%d")
+    try:
+        if CFG.get("refscan_pano_on") and (PANO.get("busy") or (PANO.get("day") != day and CFG.get("refscan_pano_day") != day)):
+            return True
+        if now.weekday() == 0 and CFG.get("simweek_on") and CFG.get("sim_on") and CFG.get("simweek_last") != now.strftime("%G-W%V"):
+            return True
+    except NameError:
+        pass
+    return False
+
+
 def report_send(w, manual=False):
     r = report_build()
+    if MORNING_EXTRA["day"] == datetime.now().strftime("%Y-%m-%d") and MORNING_EXTRA["lines"]:
+        r["text"] = r["text"] + "\n" + "\n".join(MORNING_EXTRA["lines"])
     STATE["report_last"] = {"t": datetime.now().isoformat(timespec="seconds"), "text": r["text"], "img": r["img"], "sent": False}
     if w is None or not Notifier.configured() or not CFG["notify_on"]:
         return r, False
@@ -379,6 +413,10 @@ def report_send(w, manual=False):
                 jpg = buf.tobytes() if ok else None
         except (OSError, cv2.error):
             jpg = None
+    if jpg is None and MORNING_EXTRA["jpg"]:
+        jpg = MORNING_EXTRA["jpg"]                         # 2.98.1: no picture of an animal: the panorama
+    if not manual:
+        MORNING_EXTRA.update(lines=[], jpg=None)
     de = CFG["lang"] == "de"
     pub = CFG["public_url"].strip().rstrip("/")
     ok = w.notifier.info(r["text"], pub + "/diary" if pub else "", title="{name}: " + tr("night report"),
@@ -399,7 +437,7 @@ class ReportScheduler:
             try:
                 now = datetime.now(); hr = int(CFG["report_hour"]) % 24
                 day = now.strftime("%Y-%m-%d")
-                if CFG["report_on"] and CFG["report_last_day"] != day and hr <= now.hour < hr + 3:
+                if CFG["report_on"] and CFG["report_last_day"] != day and hr <= now.hour < hr + 3 and not morning_wait(now):
                     CFG["report_last_day"] = day; save_settings()
                     report_send(WATCH_REF["w"])
             except Exception as e:

@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3D-3.91 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3D-3.92 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,6 +607,15 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.92
+3D-3.92: Abzeichen bleiben: Jeder Spieler sammelt seine Abzeichen über alle Runden, am Rundenende steht «NEU», wenn er
+eines zum ersten Mal hat. Neues Abzeichen «🔍 Lückenfinder»: 10 Sekunden gut im Bild, aber von MoveEye nicht gemeldet.
+Meldet MoveEye im Spiel eine Person, wo keiner ist, behält MoveEye diesen Bildausschnitt als «keine Person»-Beispiel
+für das Fehlalarm-Lernen. MoveEye zeigt die Abzeichen bei den «MoveEye-Punkten». Tunnel: Adresse und Code werden schon beim
+Tippen gespeichert (vorher erst beim Verlassen des Felds – ein Update kurz danach verlor sie). Unter Windows neu in der Karte
+«Verbindung»: «Windows-Firewall: Simulator freigeben» – einmal mit Adminrechten bestätigen, dann findet MoveEye den
+Simulator direkt und es braucht keinen Tunnel mehr.
 
 NEU IN 3D-3.91
 3D-3.91: «Verfolgen» ist jetzt ein eigener Knopf in der Leiste unten (vorher «Kopf folgt», versteckt im Menü Patrouille)

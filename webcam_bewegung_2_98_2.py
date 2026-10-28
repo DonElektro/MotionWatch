@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_1.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_2.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.2: MoveEye-Punkte (Spiel und echter Betrieb, mit Abzeichen der Spieler), ein Morgen-Push (Panorama und Simulator-Woche
+    im Nachtbericht), Fehlalarme aus den Spielen ins Fehlalarm-Lernen
   * 2.98.1: Ein «Folgen» für Personen, Tiere und Bewegtes: die Kamera zielt auf das Objekt (Winkel aus dem Sichtfeld) statt in
     kleinen Schritten, gleich wie «Verfolgen» im Simulator
   * 2.98.0: Menüs nach Ziel: 6 Reiter (Live, Schutz, Verlauf, Einstellungen, Simulator, Mehr), Schutz-Seite mit Alarm-Kette,
@@ -847,10 +849,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_2.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_1.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_2.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_2.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -867,7 +869,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.1"
+APP_VERSION = "2.98.2"
 
 
 def default_data_dir():
@@ -1191,7 +1193,7 @@ CFG = {
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
@@ -5279,8 +5281,42 @@ def report_build(lang=None, start=None, end=None):
     return {"text": text, "img": best[0]["img"] if best else "", "count": len(ev), "from": a, "to": b}
 
 
+MORNING_EXTRA = {"day": "", "lines": [], "jpg": None}    # 2.98.1: one morning push - panorama and simulator week go into the night report
+
+
+def morning_add(text, jpg=None):
+    """2.98.1: something for this morning's push. True = it comes with the night report; False = send it yourself
+    (night report off, or already sent today)."""
+    day = datetime.now().strftime("%Y-%m-%d")
+    if not CFG.get("report_on") or CFG.get("report_last_day") == day:
+        return False
+    if MORNING_EXTRA["day"] != day:
+        MORNING_EXTRA.update(day=day, lines=[], jpg=None)
+    MORNING_EXTRA["lines"].append(str(text))
+    if jpg and MORNING_EXTRA["jpg"] is None:
+        MORNING_EXTRA["jpg"] = jpg
+    return True
+
+
+def morning_wait(now):
+    """2.98.1: in the first 10 minutes wait for the panorama / the simulator week, so they come in the same push"""
+    if now.minute >= 10:
+        return False
+    day = now.strftime("%Y-%m-%d")
+    try:
+        if CFG.get("refscan_pano_on") and (PANO.get("busy") or (PANO.get("day") != day and CFG.get("refscan_pano_day") != day)):
+            return True
+        if now.weekday() == 0 and CFG.get("simweek_on") and CFG.get("sim_on") and CFG.get("simweek_last") != now.strftime("%G-W%V"):
+            return True
+    except NameError:
+        pass
+    return False
+
+
 def report_send(w, manual=False):
     r = report_build()
+    if MORNING_EXTRA["day"] == datetime.now().strftime("%Y-%m-%d") and MORNING_EXTRA["lines"]:
+        r["text"] = r["text"] + "\n" + "\n".join(MORNING_EXTRA["lines"])
     STATE["report_last"] = {"t": datetime.now().isoformat(timespec="seconds"), "text": r["text"], "img": r["img"], "sent": False}
     if w is None or not Notifier.configured() or not CFG["notify_on"]:
         return r, False
@@ -5299,6 +5335,10 @@ def report_send(w, manual=False):
                 jpg = buf.tobytes() if ok else None
         except (OSError, cv2.error):
             jpg = None
+    if jpg is None and MORNING_EXTRA["jpg"]:
+        jpg = MORNING_EXTRA["jpg"]                         # 2.98.1: no picture of an animal: the panorama
+    if not manual:
+        MORNING_EXTRA.update(lines=[], jpg=None)
     de = CFG["lang"] == "de"
     pub = CFG["public_url"].strip().rstrip("/")
     ok = w.notifier.info(r["text"], pub + "/diary" if pub else "", title="{name}: " + tr("night report"),
@@ -5319,7 +5359,7 @@ class ReportScheduler:
             try:
                 now = datetime.now(); hr = int(CFG["report_hour"]) % 24
                 day = now.strftime("%Y-%m-%d")
-                if CFG["report_on"] and CFG["report_last_day"] != day and hr <= now.hour < hr + 3:
+                if CFG["report_on"] and CFG["report_last_day"] != day and hr <= now.hour < hr + 3 and not morning_wait(now):
                     CFG["report_last_day"] = day; save_settings()
                     report_send(WATCH_REF["w"])
             except Exception as e:
@@ -8282,7 +8322,7 @@ SIMHUB_CSS = r"""
 SIMHUB_JS = r"""
 (function () {
   const L = () => { try { return (typeof LANG !== "undefined" && LANG) || "de"; } catch (e) { return "de"; } };
-  const DE = {"Simulation": "Simulation", "Scene": "Szene", "Time of day": "Tageszeit", "Weather": "Wetter", "Send a visitor": "Besuch schicken",
+  const DE = Object.assign({"MoveEye points": "MoveEye-Punkte", "points": "Punkte", "points-note": "Ein Konto für Spiel und echten Betrieb: blinde Flecken in Spielen gefunden (+5), Fehlalarm im Spiel entlarvt (+30), Übung gemacht (+50), Woche ohne Fehlalarm (+100), «Entdecker»: früher blinde Stellen werden jetzt erkannt (+50 je Stelle).", "Badges of the players": "Abzeichen der Spieler", "Calm week: no false alarm": "Ruhige Woche: kein Fehlalarm", "False alarm unmasked in a game": "Fehlalarm im Spiel entlarvt", "{n} blind spot(s) found in games": "{n} blinde Flecken in Spielen gefunden", "Explorer: {n} blind spot(s) fixed": "Entdecker: {n} blinde Flecken behoben", "Drill done: battery": "Übung gemacht: Akku", "Drill done: net": "Übung gemacht: WLAN", "Drill done: heat": "Übung gemacht: Hitze", "Drill done: cold": "Übung gemacht: Kälte"}, {"Simulation": "Simulation", "Scene": "Szene", "Time of day": "Tageszeit", "Weather": "Wetter", "Send a visitor": "Besuch schicken",
     "Surprise night": "Überraschungsnacht", "Templates": "Vorlagen", "Game": "Spiel", "Tests": "Tests", "Diary": "Tagebuch", "on": "an", "off": "aus",
     "Morning": "Morgen", "Noon": "Mittag", "Evening": "Abend", "Night": "Nacht", "clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee",
     "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
@@ -8312,7 +8352,7 @@ SIMHUB_JS = r"""
     "ab-note": "Zweimal derselbe Testlauf: A mit den jetzigen Einstellungen, B mit der Änderung. B bleibt nur, wenn es klar besser ist (+3 Punkte).",
     "More sensitive": "Empfindlicher", "Less sensitive": "Weniger empfindlich", "AI stricter": "KI strenger", "AI more generous": "KI grosszügiger", "Also small objects": "Auch kleine Objekte",
     "Faster decision": "Schneller entscheiden", "B is better – kept": "B ist besser – übernommen", "A stays": "A bleibt", "Place, zones, patrol": "Ort, Zonen, Patrouille",
-    "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"};
+    "Zones in 3D": "Zonen in 3D", "mast": "Stange", "zones": "Zonen", "patrol points": "Patrouillen-Punkte", "Detection in 3D": "Erkennung in 3D", "The map opens at your place on the PC – confirm «Load this place»": "Am PC öffnet sich die Karte an deinem Ort – «Diesen Ort laden» bestätigen", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"});
   const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
   const WX = [["clear", "☀"], ["cloudy", "☁"], ["rain", "🌧"], ["fog", "🌫"], ["snow", "❄"]];
   const VIS = __VIS__;
@@ -8342,7 +8382,7 @@ SIMHUB_JS = r"""
       s.appendChild(E("div", "mut", "🔋 " + (R.batt != null ? R.batt + " %" : "–") + (R.charging ? " · " + tt("charging") : "") + " · " + tt("rover-note")));
     }
     if (kind === "stats") statsSheet(s);
-    if (["blind", "rehearsal", "autoth", "falearn", "week"].includes(kind)) learnSheet(s, kind);
+    if (["blind", "rehearsal", "autoth", "falearn", "week", "points"].includes(kind)) learnSheet(s, kind);
     box.appendChild(s);
   }
   let LB = null, ST = null, LN = null;
@@ -8370,6 +8410,13 @@ SIMHUB_JS = r"""
       const l = LN.autoth.last; if (l) l.res.forEach(r => s.appendChild(E("div", "mut", (r.plan === "night" ? "🌙 " : "☀ ") + (r.base != null ? r.base : "–") + " → " + (r.best != null ? r.best : "–") + " · " + tt("kept") + ": " + (r.kept.join(", ") || "–")))); }
     if (kind === "falearn") { s.append(B((LN.fa_learn_auto ? "✓ " : "") + tt("Re-enact every 👎 in the simulator"), () => learn({do: "set", key: "fa_learn_auto", on: !LN.fa_learn_auto}), LN.fa_learn_auto ? "" : "sec"), E("div", "mut", tt("fa-note")));
       (LN.falearn.last || []).forEach(r => s.appendChild(E("div", "mut", (r.ok ? "✅ " + tt("stays quiet") : "⚠ " + r.alarms + " " + tt("alarm(s) – pictures kept for the training") + " (" + r.pics + ")") + " · " + r.cause + " · " + r.name))); }
+    if (kind === "points") { const P = LN.points || {};               // 2.98.2: one account for games and real use
+      s.append(E("b", "", "🏅 " + (P.total || 0) + " " + tt("points")), E("div", "mut", tt("points-note")));
+      (P.log || []).forEach(x => s.appendChild(E("div", "mut", new Date(x.t * 1000).toLocaleDateString() + " · +" + x.n + " · " + tt(x.why.replace(/\d+/, "{n}")).replace("{n}", (x.why.match(/\d+/) || [""])[0]))));
+      const B_ = P.badges || {}, names = Object.keys(B_);
+      if (names.length) { s.appendChild(E("b", "", "🎖 " + tt("Badges of the players")));
+        const BI = {ghost: "👻", fast: "⚡", snake: "🐍", hero: "🦸", gems: "💎", eagle: "🦅", bush: "🌳", first: "🥇", spotter: "🔍"};
+        names.forEach(n => s.appendChild(E("div", "mut", n + ": " + Object.entries(B_[n]).map(([k, c]) => (BI[k] || k) + "×" + c).join("  ")))); } }
     if (kind === "week") { s.append(B((LN.week.on ? "✓ " : "") + tt("Every Sunday night"), () => learn({do: "set", key: "weekcheck_on", on: !LN.week.on}), LN.week.on ? "" : "sec"), E("div", "mut", tt("week-note")));
       (LN.week.runs || []).forEach(r => s.appendChild(E("div", "mut", new Date(r.t * 1000).toLocaleDateString() + " · " + r.score + " · v" + r.mw))); }
   }
@@ -8448,7 +8495,8 @@ SIMHUB_JS = r"""
         ["rehearsal", "🌙", tt("Night rehearsal"), bl.busy && bl.kind === "rehearsal" ? "⏳ " + (bl.prog || "") : re ? (re.max_found ? tt("up to") + " " + re.max_found + " m" : "–") : tt("before arming")],
         ["autoth", "🎚", tt("Thresholds automatic"), au.busy ? "⏳ " + au.step : au.last ? "✓" : tt("day and night")],
         ["falearn", "👎", tt("False alarm learning"), N.fa_learn_auto ? tt("on") : tt("off")],
-        ["week", "📅", tt("Weekly check"), N.week && N.week.on ? tt("on") : tt("off")]); }
+        ["week", "📅", tt("Weekly check"), N.week && N.week.on ? tt("on") : tt("off")],
+        ["points", "🏅", tt("MoveEye points"), N.points ? String(N.points.total) : "–"]); }
     if (full) T.push(["inbox", "📨", tt("Test inbox"), LB ? (LB.sandbox ? tt("on") : tt("off")) + " · " + (LB.inbox || []).length : ""],
       ["drill", "⚡", tt("Drills"), LB && LB.drill.busy ? "⏳ " + LB.drill.left + " s" : tt("Battery, Wi-Fi, heat, cold")],
       ["train", "🌙", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
@@ -9265,6 +9313,11 @@ def _drill_end_later():
     DRILL.update(kind="", busy=False)
     SANDBOX["force"] = max(0, SANDBOX["force"] - 1)
     log_event("sys", f"Drill finished: {kind}, {len(seen)} reactions")
+    try:
+        if seen:
+            points_add(50, f"Drill done: {kind}")
+    except NameError:
+        pass
 
 
 def drill_battery_tick(bm):
@@ -9545,7 +9598,7 @@ def simdiary_stats(days=28):
 def simweek_loop():
     """Monday, at the hour of the night report: the week in the simulator as a push (when switched on)"""
     while True:
-        time.sleep(300)
+        time.sleep(60)                                     # 2.98.1: every minute (it must be ready before the night report)
         try:
             if not CFG.get("simweek_on"):
                 continue
@@ -9564,7 +9617,7 @@ def simweek_loop():
             txt = trf("Week in the simulator: {v} visits, persons recognised {r} % ({a} of {b}). Animals: {an}",
                       v=vis, r=round(100 * rec / seen) if seen else "–", a=rec, b=seen, an=an or "–")
             w = WATCH_REF.get("w")
-            if w is not None:
+            if w is not None and not morning_add("🧪 " + txt):   # 2.98.1: with the night report when it is on
                 w.notifier.info(txt, title="{name}: " + tr("Simulator diary"))
         except Exception as e:
             log_event("sys", f"Week report: {e}"[:120])
@@ -9711,6 +9764,100 @@ def _falearn_thread(name, cause):
     log_event("sys", f"False alarm learning ({cause}): {res['alarms']} alarm(s) in 60 s, {res['pics']} picture(s) kept as «no person»")
 
 
+# ---- 2.98.2: MoveEye points - one account for the games and the real use -------------------------------------------------
+# Games: a blind spot found (+5 a point, at most 100 a day), a false alarm unmasked (+30). Real use: a calm week without a
+# false alarm (+100), a drill done (+50), «Entdecker»: the blind spot map shows more recognised places than last time (+50 each).
+def points_add(n, why):
+    P = CFG.get("me_points") if isinstance(CFG.get("me_points"), dict) else {"total": 0, "log": [], "week": ""}
+    P["total"] = int(P.get("total", 0)) + int(n)
+    log_ = [x for x in (P.get("log") or []) if isinstance(x, dict)]
+    log_.insert(0, {"t": int(time.time()), "n": int(n), "why": str(why)[:80]})
+    P["log"] = log_[:40]
+    CFG["me_points"] = P
+    save_settings()
+
+
+def points_state():
+    P = CFG.get("me_points") if isinstance(CFG.get("me_points"), dict) else {}
+    return {"total": int(P.get("total", 0)), "log": (P.get("log") or [])[:12], "badges": BLIND.get("badges") or {}}
+
+
+def fa_count(days=7):
+    """recordings marked «false alarm» in the last days"""
+    since = datetime.now() - timedelta(days=days)
+    n = 0
+    try:
+        for f in os.listdir(rec_dir()):
+            if f.endswith(".json"):
+                dt = parse_stamp(f)
+                if dt is not None and dt >= since and _read_sidecar(f[:-5] + ".mp4").get("false"):
+                    n += 1
+    except OSError:
+        pass
+    return n
+
+
+def points_week_loop():
+    while True:
+        time.sleep(300)
+        try:
+            now = datetime.now()
+            wk = now.strftime("%G-W%V")
+            P = CFG.get("me_points") or {}
+            if now.weekday() != 0 or P.get("week") == wk or not CFG.get("detection_on", True):
+                continue
+            P["week"] = wk
+            CFG["me_points"] = P
+            if fa_count(7) == 0:
+                points_add(100, "Calm week: no false alarm")
+            else:
+                save_settings()
+        except Exception as e:
+            log_event("sys", f"Points: {e}"[:120])
+
+
+threading.Thread(target=points_week_loop, daemon=True, name="points").start()
+
+
+# ---- 2.98.2: false alarms from the games of the simulator ---------------------------------------------------------------
+FA_GAME = {"day": "", "n": 0}
+
+
+def fa_game_box(box):
+    """the simulator says: MoveEye reported a person here, but no player and no visitor was there -> this part of the
+    picture (with some margin) goes to fa_learn/ as a «no person» example, like the false alarm learning (21). At most 40 a day."""
+    try:
+        x, y, w_, h_ = [float(v) for v in (box or [])[:4]]
+    except (TypeError, ValueError):
+        return
+    day = datetime.now().strftime("%Y%m%d")
+    if FA_GAME["day"] != day:
+        FA_GAME.update(day=day, n=0)
+    if FA_GAME["n"] >= 40 or not CFG.get("fa_learn_auto", True):
+        return
+    w = WATCH_REF.get("w")
+    f = getattr(w, "frame_raw", None) if w is not None else None
+    if f is None:
+        return
+    H, W = f.shape[:2]
+    mx, my = w_ * 0.25, h_ * 0.25
+    x0, y0 = max(0, int((x - mx) * W)), max(0, int((y - my) * H))
+    x1, y1 = min(W, int((x + w_ + mx) * W)), min(H, int((y + h_ + my) * H))
+    if x1 - x0 < 16 or y1 - y0 < 16:
+        return
+    d = os.path.join(DATA_DIR, "fa_learn", day + "_spiel")
+    os.makedirs(d, exist_ok=True)
+    FA_GAME["n"] += 1
+    cv2.imwrite(os.path.join(d, "%02d.jpg" % FA_GAME["n"]), f[y0:y1, x0:x1], [cv2.IMWRITE_JPEG_QUALITY, 88])
+    try:
+        with open(os.path.join(d, "info.json"), "w") as fo:
+            json.dump({"label": "no_person", "cause": "game", "from": "simulator game", "crop": True, "n": FA_GAME["n"]}, fo)
+    except OSError:
+        pass
+    log_event("sys", f"False alarm in a game: picture part kept as «no person» ({FA_GAME['n']} today)")
+    points_add(30, "False alarm unmasked in a game")
+
+
 # ---- 22 / 23 --------------------------------------------------------------------------------------------------------------
 def blind_start(kind="map", hour=None):
     if BLIND["busy"]:
@@ -9758,8 +9905,12 @@ def _blind_wait():
             log_event("sys", txt)
             res["text"] = txt
         else:
+            prev_ = BLIND.get("last") or {}
             BLIND["last"] = res
             log_event("sys", f"Blind spots: {res.get('found', 0)} of {res.get('inview', 0)} places recognised")
+            gain_ = int(res.get("found", 0)) - int(prev_.get("found", res.get("found", 0)))
+            if prev_ and gain_ > 0:                         # 2.98.2: «Entdecker» - blind spots of before are recognised now
+                points_add(50 * gain_, f"Explorer: {gain_} blind spot(s) fixed")
     BLIND.update(busy=False, kind="")
 
 
@@ -9869,7 +10020,14 @@ def blind_game_pts():
         BLIND["game_t"] = time.time()
         try:
             r = sim_control({"action": "blindmap", "do": "game"})
-            BLIND["game"] = [p for p in (r.get("pts") or []) if isinstance(p, dict)][-400:] if r.get("ok") else BLIND.get("game", [])
+            if r.get("ok"):
+                old_n = len(BLIND.get("game") or [])
+                BLIND["game"] = [p for p in (r.get("pts") or []) if isinstance(p, dict)][-400:]
+                BLIND["badges"] = r.get("badges") if isinstance(r.get("badges"), dict) else {}
+                new_n = len(BLIND["game"]) - old_n
+                if BLIND.get("game_known") and new_n > 0:          # not at the first fetch (those are old)
+                    points_add(min(100, 5 * new_n), f"{new_n} blind spot(s) found in games")
+                BLIND["game_known"] = True
         except Exception:
             pass
     return BLIND.get("game") or []
@@ -9881,7 +10039,8 @@ def learn_state():
                       "game": blind_game_pts()},
             "autoth": {"busy": AUTOTH["busy"], "step": AUTOTH["step"], "last": AUTOTH["last"]},
             "week": {"on": bool(CFG.get("weekcheck_on")), "runs": [{"t": r["t"], "score": r["score"], "mw": r.get("mw")} for r in TESTOPT["runs"] if r.get("week")][-8:]},
-            "rehearsal_on_arm": bool(CFG.get("rehearsal_on_arm")), "fa_learn_auto": bool(CFG.get("fa_learn_auto"))}
+            "rehearsal_on_arm": bool(CFG.get("rehearsal_on_arm")), "fa_learn_auto": bool(CFG.get("fa_learn_auto")),
+            "points": points_state()}
 # ----------------------------------------------------------------------------
 # 2.96.11 (Wunsch Daniel): in der Kopfzeile statt App-Symbol + «MoveEye» der Schriftzug - breit W6 (eine Zeile, «Move» hell,
 # «Eye» orange, das «o» ist das Auge, darüber der Sichtfächer mit der erkannten Person), schmal (Handy) W1 (untereinander,
@@ -17122,8 +17281,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.91", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31204893,
-         "sha256": "5f12149952b98a46ff01346e29107837ca03be9df2c468e4c304531ea2d72db2"}
+SIM3D = {"version": "3D-3.92", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31207277,
+         "sha256": "4014de6916a2c031c805b8c653d3452a5e53f75c6356a0ee27a2dfa8c12ab57f"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -17262,8 +17421,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.91", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24326331,
-           "sha256": "2756f4454741c01e5dbc59a83daabad851ca8e9e411c2948fc43e78845e9170a", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.92", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24328776,
+           "sha256": "54e06831aee2ea1d664a52ea1a68b3e810f71d59ccd37045bf0108e0f5788c4a", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -18718,6 +18877,8 @@ def pano_send(path, js):
     try:
         with open(path, "rb") as f:
             jpg = f.read()
+        if morning_add("🧭 " + txt, jpg):                 # 2.98.1: with the night report (one push in the morning)
+            return
         w.notifier.info(txt, title="{name}: " + tr("Missing things"), jpg=jpg, fname="panorama.jpg")
     except Exception:
         pass
@@ -20542,6 +20703,9 @@ class SimLink:
         if first:
             SIM["since"] = time.time()
             self.hello()
+        g_ = SIMGAME.get("g") or {}
+        if g_.get("round") == "play" and WATCH_REF.get("w") is not None:   # 2.98.2: keep the clean picture during a game round
+            WATCH_REF["w"].raw_until = max(WATCH_REF["w"].raw_until, time.time() + 3.0)      # (false alarms -> fa_learn)
         mc_ = rep_.get("mw_cmd")                            # 2.95.97: the simulator asks MoveEye for something (button there)
         if isinstance(mc_, dict) and int(mc_.get("id") or 0) > int(SIM.get("cmd_seen") or 0):
             SIM["cmd_seen"] = int(mc_.get("id") or 0)
@@ -20554,6 +20718,8 @@ class SimLink:
                     refscan_stop()
                 elif op_ == "look":                         # 2.95.103: «Kopf steuern» in the simulator window
                     move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3))
+                elif op_ == "fa_box":                       # 2.98.2: a box of a game without a player: a false alarm to learn from
+                    fa_game_box(mc_.get("box"))
                 elif op_ == "track":                        # 2.98.1: «Verfolgen» in the simulator = «Folgen» of MoveEye
                     follow_set(bool(mc_.get("on")), "simulator")
                 elif op_ == "light":                        # 2.95.103: the white light from the simulator (on / off)
@@ -21978,7 +22144,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_1.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_2.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -44835,7 +45001,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.1")
+        self.root.title("MoveEye 2.98.2")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -45152,7 +45318,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.2 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
