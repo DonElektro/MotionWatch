@@ -69,7 +69,13 @@ body.mobland #srch{top:0}
 #side-open{display:none;position:fixed;right:0;top:calc(var(--hdr-h,64px) + 14px);z-index:40;border-radius:12px 0 0 12px;padding:10px 8px;
   flex-direction:column;align-items:center;gap:6px;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-right:0;box-shadow:var(--shadow)}
 #side-open span{font-size:20px}#side-open b{writing-mode:vertical-rl;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-body.noside #side-open{display:flex}body.videoonly #side-open,body.locked #side-close{display:none!important}
+body.noside #side-open{display:flex}
+/* 2.95.73: phone / tablet - the settings button is at the bottom of the controls instead of the tab at the right edge */
+#set-foot{display:none;width:100%;margin-top:6px;padding:11px;font-size:15px;grid-column:1/-1;justify-self:stretch}
+@media(max-width:960px){body.noside #side-open{display:none}body.noside #set-foot{display:block}}
+body.videoonly #set-foot{display:none!important}
+/* 2.95.73: the mover stick only when switched on with 🚜 (per device) */
+#mv-tog{display:none;flex:none;width:38px;padding:7px 0;font-size:15px}body.moveravail #mv-tog{display:inline-block}#mv-tog.on{background:var(--btn2);border-color:var(--grn)}body.videoonly #side-open,body.locked #side-close{display:none!important}
 #lock-bar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:0 0 12px;padding:12px 14px;border-radius:12px;
   border:1px solid var(--yel);background:var(--panel)}
 #lock-bar[hidden]{display:none}
@@ -472,7 +478,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
             <div class="mut" id="patrol-st"></div>
           </div>
           <div class="ctl-side" id="ctl-side">
-            <div class="sr spd"><select id="stick-speed" title="Speed"><option value="12" data-i18n="Slow">Slow</option><option value="30" selected data-i18n="Medium">Medium</option><option value="60" data-i18n="Fast">Fast</option></select><button class="sec" type="button" id="swap-side" title="Swap stick and buttons (left- / right-handed)" aria-label="swap sides">⇆</button></div>
+            <div class="sr spd"><select id="stick-speed" title="Speed"><option value="12" data-i18n="Slow">Slow</option><option value="30" selected data-i18n="Medium">Medium</option><option value="60" data-i18n="Fast">Fast</option></select><button class="sec" type="button" id="swap-side" title="Swap stick and buttons (left- / right-handed)" aria-label="swap sides">⇆</button><button class="sec" type="button" id="mv-tog" title="Show / hide the mover stick" aria-label="mover stick">🚜</button></div>
             <div class="row padbox"><span class="mut" data-i18n="Step">Step</span>
               <select id="step"><option>1</option><option selected>3</option><option>5</option><option>10</option><option>20</option></select></div>
             <div class="sr"><button class="sec" type="button" data-dir="center" id="stick-center" data-i18n="◎ Centre">◎ Centre</button>
@@ -482,6 +488,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
             <span id="talk-slot" hidden></span>
           </div>
           <div id="mbtns"></div>
+          <button type="button" class="sec" id="set-foot" onclick="toggleHidden('sidebar'); setTimeout(() => { const a = document.querySelector('aside[data-view=sidebar]') || $('#settings'); if (a) a.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 60)">⚙ <span data-i18n="Settings">Settings</span></button>
         </div>
         <div id="ctl-more" hidden>
           <span id="v-pan"></span><span id="v-tilt"></span>
@@ -3846,7 +3853,7 @@ function simpleBar(on) {
   return w;
 }
 // ---- self-check: one traffic light per part ----
-Object.assign(I18N.de, {"Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
+Object.assign(I18N.de, {"Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
   let j; try { j = await (await fetch("/api/health?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
   const L = $("#h-list"); if (!L) return; L.textContent = "";
@@ -4121,7 +4128,13 @@ function moverBars(l, r) {
   f($("#mtl"), l); f($("#mtr"), r);
 }
 function moverPaint(s) {
-  const m = s.mover || {}, on = !!m.avail;
+  const m = s.mover || {}, av = !!m.avail;
+  let show = false; try { show = localStorage.getItem("mw-mover-show") === "1"; } catch (e) {}   // 2.95.73: hidden unless switched on
+  const on = av && show;
+  if (document.body.classList.contains("moveravail") !== av) document.body.classList.toggle("moveravail", av);
+  const mt = $("#mv-tog"); if (mt) { mt.classList.toggle("on", show); if (!mt.onclick) mt.onclick = () => {
+    let v = false; try { v = localStorage.getItem("mw-mover-show") !== "1"; localStorage.setItem("mw-mover-show", v ? "1" : "0"); } catch (e) {}
+    toast("🚜 " + t(v ? "Mover stick shown" : "Mover stick hidden")); moverPaint(s); }; }
   if (document.body.classList.contains("mover") !== on) document.body.classList.toggle("mover", on);
   const tx = $("#mstick-txt");
   if (tx && on) tx.textContent = "🚜 " + ((Math.abs(m.l) > 0.02 || Math.abs(m.r) > 0.02) ? "L " + Math.round(m.l * 100) + " % · R " + Math.round(m.r * 100) + " %" : t("Mover") + (m.test ? " (" + t("test only - nothing moves") + ")" : m.sim ? " (" + t("simulated") + ")" : ""));

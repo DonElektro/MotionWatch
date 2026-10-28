@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 10:25",
+ "generated": "2026-10-28 10:33",
  "versions": [
   {
-   "version": "2.95.72",
-   "file": "webcam_bewegung_2_95_72.py",
+   "version": "2.95.73",
+   "file": "webcam_bewegung_2_95_73.py",
    "url": "",
-   "sha256": "b6c34d19c7bd0207fdd437def3f2df253dc5b4f0c5737b42aac73c6d81106aa8",
-   "date": "2026-10-28 10:25",
-   "notes": "Live-Ansicht: beim Wechsel der Videoquelle (z. B. Simulation aus → Webcam) holt die Seite das Livebild von selbst neu",
-   "sig": "9e489441b889103565c90c6085004b911f0b4d76afef0aba4e2a77958cfa1b7c9180a772787fe64448c888b0366b8bd7b192ea5fae3a33caf1137734bcef0e03"
+   "sha256": "6e43f5abd3753256a6c053b8442123d64763b119f97457a42c156deb713377ce",
+   "date": "2026-10-28 10:33",
+   "notes": "Handy: Einstellungen als Knopf unten bei der Bedienung statt am rechten Rand; Mover-Stick standardmässig ausgeblendet, mit 🚜 einblendbar",
+   "sig": "f8c514e767b0b414ab1b7afc458fdcc83aeeb06900c8ddb17a3e057c1734846c9c8974ff5dfdb88d77c7e9989807f60b5c242f311c0c5dd31cef9347e615f30c"
   },
   {
    "version": "2.94.5",
