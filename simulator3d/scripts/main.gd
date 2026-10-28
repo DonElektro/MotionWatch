@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.51"
+const VERSION := "3D-3.52"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -68,6 +68,14 @@ var game_stones := true               # stones to throw (distract the guard)
 var game_powers := true               # power-ups: cloak and turbo (3D-3.21)
 var game_spectate := true             # spectator camera: flies over the field by itself while a round runs (3D-3.22)
 var game_photos := true               # «caught» photos (3D-3.25)
+var game_fx_laser := true             # 3D-3.52: hit sequence - red laser from the camera head
+var game_fx_paint := false            # ... paint ball with a splash on the ground
+var game_fx_flash := true             # ... flash like a speed camera
+var game_tap := true                  # the hunter at Motion Watch aims by tapping the live picture
+var game_learn_miss := true           # the game teaches Motion Watch: pictures of players it did not report
+var game_learn_report := true         # ... game report (how long until reported, distance, posture, light)
+var game_learn_paths := true          # ... ways of players who reached the goal unreported (test run for the bench)
+var game_blind_bonus := true          # ... points for seconds visible but not reported
 var game_hides := 3                   # hiding places (bushes)
 var game_decoy := true                # a player may be the decoy
 var game_night := false               # night round with torches
@@ -2268,7 +2276,8 @@ const PLACE := {"ort_map": ["Szene", "Ort von der Karte"], "ort": ["Szene", "Ort
 		"sound_on": ["Kamerabild", "Feineinstellungen"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", "Runde"],
 		"game_stop": ["Spiel", "Runde"], "game_wizard": ["Spiel", "Runde"], "tv_mode": ["Spiel", "Anzeige"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
 		"game_level": ["Spiel", "Regeln"], "game_lives": ["Spiel", "Regeln"], "game_items": ["Spiel", "Regeln"], "game_teams": ["Spiel", "Regeln"],
-		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_powers": ["Spiel", "Regeln"], "game_spectate": ["Spiel", "Anzeige"], "game_photos": ["Spiel", "Extras"], "game_hides": ["Spiel", "Extras"], "game_decoy": ["Spiel", "Extras"],
+		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_powers": ["Spiel", "Regeln"], "game_spectate": ["Spiel", "Anzeige"], "game_photos": ["Spiel", "Extras"], "game_fx_laser": ["Spiel", "Treffer"], "game_fx_paint": ["Spiel", "Treffer"], "game_fx_flash": ["Spiel", "Treffer"], "game_tap": ["Spiel", "Treffer"],
+		"game_learn_miss": ["Spiel", "Erkennung lernen"], "game_learn_report": ["Spiel", "Erkennung lernen"], "game_learn_paths": ["Spiel", "Erkennung lernen"], "game_blind_bonus": ["Spiel", "Erkennung lernen"], "game_report_send": ["Spiel", "Erkennung lernen"], "game_hides": ["Spiel", "Extras"], "game_decoy": ["Spiel", "Extras"],
 		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
 		"game_board_reset": ["Spiel", "Extras"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
 		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"],
@@ -2449,6 +2458,16 @@ func _register_controls() -> void:
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
 	add_control("toggle", "game_powers", "Power-ups: Tarnkappe (lila) und Turbo (gelb)", func(): return game_powers, func(v): game_powers = v, "Spiel")
 	add_control("toggle", "game_photos", "Erwischt-Fotos (Bild der Kamera beim Erwischen, Galerie am Schluss)", func(): return game_photos, func(v): game_photos = v, "Spiel")
+	# 3D-3.52: the hit sequence (each on its own) and what the game teaches Motion Watch
+	add_control("toggle", "game_fx_laser", "Treffer: roter Laser vom Kamerakopf (Handy: Fadenkreuz)", func(): return game_fx_laser, func(v): game_fx_laser = v, "Spiel")
+	add_control("toggle", "game_fx_paint", "Treffer: Farbklecks (Handy: Klecks auf dem Bildschirm)", func(): return game_fx_paint, func(v): game_fx_paint = v, "Spiel")
+	add_control("toggle", "game_fx_flash", "Treffer: Blitz wie ein Radarfoto (Handy: weisser Blitz)", func(): return game_fx_flash, func(v): game_fx_flash = v, "Spiel")
+	add_control("toggle", "game_tap", "Jäger an Motion Watch zielt durch Antippen im Livebild", func(): return game_tap, func(v): game_tap = v, "Spiel")
+	add_control("toggle", "game_learn_miss", "Erkennung lernen: Bilder von Spielern, die Motion Watch nicht gemeldet hat", func(): return game_learn_miss, func(v): game_learn_miss = v, "Spiel")
+	add_control("toggle", "game_learn_report", "Erkennung lernen: Spielbericht (wie schnell gemeldet, Abstand, Haltung, Licht)", func(): return game_learn_report, func(v): game_learn_report = v, "Spiel")
+	add_control("toggle", "game_learn_paths", "Erkennung lernen: unerkannte Schleichwege als Testlauf speichern", func(): return game_learn_paths, func(v): game_learn_paths = v, "Spiel")
+	add_control("toggle", "game_blind_bonus", "Bonus für blinde Flecken (+20 Punkte pro Sekunde sichtbar, aber nicht gemeldet)", func(): return game_blind_bonus, func(v): game_blind_bonus = v, "Spiel")
+	add_control("button", "game_report_send", "📊 Spielberichte senden (GitHub-Schlüssel vom Prüfstand, sonst Schreibtisch)", null, func(): _game_report_send(), "Spiel")
 	add_control("slider", "game_hides", "Verstecke (Büsche: 8 s unsichtbar)", func(): return game_hides, func(v): game_hides = int(v), "Spiel", {"min": 0, "max": 6, "step": 1})
 	add_control("toggle", "game_decoy", "Lockvogel erlaubt (lockt die Kamera weg, Teampunkte)", func(): return game_decoy, func(v): game_decoy = v, "Spiel")
 	add_control("toggle", "game_night", "Nacht-Runde mit Taschenlampen", func(): return game_night, func(v): game_night = v, "Spiel")
@@ -2774,10 +2793,22 @@ func control(d: Dictionary) -> Dictionary:
 		view_cam.rotation = Vector3(pt, yw, 0)
 		view_want_t = now()
 		return {"ok": true}
+	elif a == "game_test":                             # 3D-3.52: for tests - where a player is in the head camera / move him there
+		if game == null or not d.has("slot") or int(d["slot"]) < 0 or int(d["slot"]) >= game.players.size() or game.players[int(d["slot"])] == null:
+			return {"ok": false, "error": "no player"}
+		var gp: Dictionary = game.players[int(d["slot"])]
+		if d.has("x") and d.has("z"):
+			gp["actor"].position = Vector3(float(d["x"]), ground_y(float(d["x"]), float(d["z"])), float(d["z"]))
+		if d.get("hit", false):
+			game._caught(gp, null)
+		var hp: Vector3 = cams[0].global_position
+		var ap: Vector3 = gp["actor"].position
+		return {"ok": true, "box": game.learn.box(gp), "sees": game.cam_sees(gp, 0), "state": gp["state"], "fx": game.fx_nodes.size(),
+				"head": [hp.x, hp.y, hp.z], "pos": [ap.x, ap.y, ap.z], "goal": [game.goal.x, game.goal.z], "report": game.learn.report_dict() if d.get("report", false) else {}}
 	elif a == "game_mwcatch":                          # «Team gegen Motion Watch»: «Erwischt!» pressed at Motion Watch (3D-3.27)
 		if game == null:
 			return {"ok": false, "error": "no game"}
-		return game.mw_catch(str(d.get("who", "")).left(30))
+		return game.mw_catch(str(d.get("who", "")).left(30), float(d.get("x", -1.0)), float(d.get("y", -1.0)))
 	elif a == "game_info":                             # the spectators in Motion Watch: the game in numbers (3D-3.22)
 		if game == null:
 			return {"ok": false, "error": "no game"}
@@ -3607,7 +3638,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
 var _settings_dirty := false
 
@@ -3862,6 +3893,14 @@ func group_active(g: String) -> int:
 		"Testlauf":
 			return 1 if testrun != null and testrun.running else 0
 	return 0
+
+
+func _game_report_send() -> void:
+	if game == null:
+		return
+	var m: String = game.learn.send()
+	game.learn.info = m
+	game.news("📊 " + m)
 
 
 func _groups_on() -> Dictionary:

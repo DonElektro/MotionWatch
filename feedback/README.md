@@ -15,3 +15,11 @@ Oder einfach im Chat mit Claude anhängen.
 **Für Claude:** Vor Änderungen an der Erkennung die neuesten Berichte hier lesen (`git pull`), die Bilder ansehen und
 die Vorschläge in `opt_suggest()` bzw. die Filter danach ausrichten. Erledigte Berichte nach `feedback/erledigt/`
 verschieben und in der Commit-Nachricht kurz sagen, was daraus geworden ist.
+
+## Spielberichte aus dem 3D-Simulator (ab 3D-3.52)
+
+`feedback/spiel/spielbericht_*.zip` kommt aus dem Simulator (Spiel → Erkennung lernen → «Spielberichte senden»).
+Pro Runde ein Ordner mit `spielbericht.json` (wie lange ein sichtbarer Spieler bis zur Meldung brauchte: Abstand,
+Haltung, Licht; Treffer und Fehlschüsse des Jägers), `verpasst_NN.jpg` (Bild der Kopfkamera, Rahmen des Spielers in
+`verpasst[].box` als 0..1) und `schleichweg_*.json` (Weg eines unerkannten Spielers). Gute Schleichwege nach
+`simulator3d/spielwege/` kopieren: dann laufen sie im Prüfstand (Plan «spielwege») bei allen mit.

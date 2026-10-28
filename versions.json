@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 10:33",
+ "generated": "2026-10-28 11:36",
  "versions": [
   {
-   "version": "2.95.73",
-   "file": "webcam_bewegung_2_95_73.py",
+   "version": "2.95.74",
+   "file": "webcam_bewegung_2_95_74.py",
    "url": "",
-   "sha256": "6e43f5abd3753256a6c053b8442123d64763b119f97457a42c156deb713377ce",
-   "date": "2026-10-28 10:33",
-   "notes": "Handy: Einstellungen als Knopf unten bei der Bedienung statt am rechten Rand; Mover-Stick standardmässig ausgeblendet, mit 🚜 einblendbar",
-   "sig": "f8c514e767b0b414ab1b7afc458fdcc83aeeb06900c8ddb17a3e057c1734846c9c8974ff5dfdb88d77c7e9989807f60b5c242f311c0c5dd31cef9347e615f30c"
+   "sha256": "66742568a7efe3f4f239c424546f3885a95b7662c8d407bba833d7afb6f2a178",
+   "date": "2026-10-28 11:36",
+   "notes": "Spiel «Team gegen Motion Watch»: der Jäger zielt durch Antippen der Spieler im Livebild (oder Knopf); 3D-Simulator 3D-3.52: Treffer-Effekte und Erkennung lernen aus dem Spiel",
+   "sig": "95fac1d35369a916b26cd0c53b74faf4a6f12f42be7d690ebb43131f1bc0f4046889d3f86c583cc1c0cca1a06091d41e6a841e6d6ef7db39a435fbc39ca05a0b"
   },
   {
    "version": "2.94.5",

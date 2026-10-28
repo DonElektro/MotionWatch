@@ -1,12 +1,12 @@
 {
- "version": "3D-3.51",
+ "version": "3D-3.52",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30882436,
- "sha256": "28df56f3c844ee97ce196c84d73c0793a7cf0efcb74e112f3a39ec4112750458",
- "notes": "Reihenfolge nach Logik: Verbindung vor Kameras",
+ "size": 30905413,
+ "sha256": "5349f736a279bef2cfedcb0ffb61ebc56fa404bf7a7945c0ec437a0620821219",
+ "notes": "Spiel: Treffer-Effekte (Laser, Farbe, Blitz), Jäger zielt im Livebild, Erkennung lernen aus dem Spiel",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24004180,
-  "sha256": "2b7b649358ecc515a03fdc26cf49bb0016f876c1efa428acd998079667114514"
+  "size": 24026967,
+  "sha256": "b7a1827c40f95a6e7ad68f84e81c7243c10409edee072f2b2d9ff5cbbc816edb"
  }
 }

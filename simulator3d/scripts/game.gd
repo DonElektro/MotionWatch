@@ -112,6 +112,8 @@ var addr_label: Label
 var qr_rect: TextureRect
 var _qr_for := ""
 var _rng := RandomNumberGenerator.new()
+var learn                                # gamelearn.gd (3D-3.52)
+var fx_nodes: Array = []                 # [node, until] of the hit sequence (laser, paint, flash)
 
 
 func _ready() -> void:
@@ -124,6 +126,10 @@ func _ready() -> void:
 	_rng.randomize()
 	_build_cones()
 	on_scene()
+	learn = preload("res://scripts/gamelearn.gd").new()     # 3D-3.52: the game teaches Motion Watch
+	learn.main = main
+	learn.game = self
+	add_child(learn)
 
 
 func now() -> float:
@@ -467,6 +473,8 @@ func _process(dt: float) -> void:
 		if t >= t_end or _all_done():
 			end_round()
 	_guard(dt)
+	if not fx_nodes.is_empty():
+		_fx_tick()
 	_flags_follow()
 	_update_cones()
 	for it in items:
@@ -1001,6 +1009,7 @@ func start_round() -> void:
 				_to_start(p)
 	_build_jail()
 	_paint_goal()
+	learn.round_start()
 	paint()
 
 
@@ -1163,6 +1172,7 @@ func end_round() -> void:
 	if round_state not in ["countdown", "play"]:
 		return
 	round_state = "end"
+	learn.round_end()                                      # 3D-3.52: before the players go back to the lobby
 	news("🏁 Die Runde ist vorbei")
 	results.clear()
 	var missed := 0
@@ -1201,7 +1211,10 @@ func end_round() -> void:
 				p["task_ok"] = true
 				p["bonus"] = int(p.get("bonus", 0)) + int(task["bonus"])
 				info += " · ✅ Aufgabe (+%d)" % int(task["bonus"])
-			sc = max(0, sc - 150 * int(p["caught"]) + 100 * int(p["items"]) + int(p.get("bonus", 0)))
+			var bb: int = learn.bonus(p)                    # 3D-3.52: the blind spots of Motion Watch
+			if bb > 0:
+				info += " · 🙈 %d s unerkannt (+%d)" % [learn.blind_s(p), bb]
+			sc = max(0, sc - 150 * int(p["caught"]) + 100 * int(p["items"]) + int(p.get("bonus", 0)) + bb)
 			info += " · %d× erwischt" % p["caught"] + (" · 💎 %d" % p["items"] if int(p["items"]) > 0 else "")
 			if int(p.get("rescues", 0)) > 0:
 				info += " · %d× befreit" % p["rescues"]
@@ -1426,6 +1439,7 @@ func _referee(dt: float) -> void:
 	var mw: bool = mw_decides() or main.game_mode == "mwhand"     # 3D-3.27: a person at Motion Watch decides «Erwischt!»
 	if mw:
 		_mw_referee()
+	learn.tick(dt)
 	for p in players:
 		if p == null or p["state"] != "play" or p["role"] != "runner":
 			continue
@@ -1554,6 +1568,7 @@ func _referee(dt: float) -> void:
 
 func _caught(p: Dictionary, by) -> void:
 	p["caught"] = int(p["caught"]) + 1
+	var fx := hit_fx(p)                                   # 3D-3.52: laser / paint / flash (each can be switched)
 	if main.game_photos:                               # the «caught» photo: what the camera saw (3D-3.25)
 		main.want_snapshot(0)
 		get_tree().create_timer(0.35).timeout.connect(func(): _grab_pic(p))
@@ -1568,7 +1583,7 @@ func _caught(p: Dictionary, by) -> void:
 	var g = by if by != null else guard_player()
 	if g != null:
 		g["catches"] = int(g["catches"]) + 1
-	_event(p, "caught")
+	_event(p, "caught", {"fx": fx})
 	p["actor"].play_emote("caught", 1.5)
 	var lives := int(main.game_lives)
 	if lives > 0 and int(p["caught"]) >= lives:
@@ -1585,8 +1600,17 @@ func _caught(p: Dictionary, by) -> void:
 		_say(p, "🔒 In der Zelle – ein Teamkollege muss dich befreien", 4.0)
 	else:
 		_say(p, "Erwischt! Zurück zum Start", 3.0)
-		_to_start(p)
 		p["safe_until"] = now() + 3.0
+		if fx.is_empty():
+			_to_start(p)
+		else:                                              # the sequence is seen where it happened, then back to the start
+			p["safe_until"] = now() + 3.9
+			p["actor"].frozen = true
+			get_tree().create_timer(0.9).timeout.connect(func():
+				if p["state"] == "play":
+					_to_start(p)
+					p["actor"].frozen = round_state != "play"
+				)
 	paint()
 
 
@@ -1597,9 +1621,124 @@ func _others_can_rescue(p: Dictionary) -> bool:
 	return false
 
 
-func _event(p: Dictionary, k: String) -> void:
+func _event(p: Dictionary, k: String, extra := {}) -> void:
 	if p["sock"] != null:
-		p["sock"]["ws"].send_text(JSON.stringify({"t": "ev", "k": k}))
+		var m := {"t": "ev", "k": k}
+		m.merge(extra)
+		p["sock"]["ws"].send_text(JSON.stringify(m))
+
+
+# ---- 3D-3.52: the hit sequence - not a real shot, but the player feels hit: a red laser from the camera head, a
+# paint ball with a splash, a flash like a speed camera. Each can be switched on its own (Spiel → Treffer).
+func _mat(c: Color, glow: float) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_color = c
+	m.emission_enabled = glow > 0.0
+	m.emission = Color(c, 1.0)
+	m.emission_energy_multiplier = glow
+	if glow > 0.0:
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	if c.a < 1.0:
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	return m
+
+
+func _fx_keep(n: Node3D, secs: float) -> void:
+	root.add_child(n)
+	fx_nodes.append([n, now() + secs])
+
+
+func hit_fx(p: Dictionary) -> Array:
+	var on: Array = []
+	if main.game_fx_laser:
+		on.append("laser")
+	if main.game_fx_paint:
+		on.append("paint")
+	if main.game_fx_flash:
+		on.append("flash")
+	if on.is_empty():
+		return on
+	var a = p["actor"]
+	var src: Vector3 = main.cams[0].global_position
+	var tgt: Vector3 = a.position + Vector3(0, HEIGHT[int(a.ctl_posture)] * 0.62, 0)
+	if "laser" in on:                                      # a thin red beam for half a second, a red glow on the player
+		var d := src.distance_to(tgt)
+		var beam := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = 0.025
+		cm.bottom_radius = 0.025
+		cm.height = d
+		cm.radial_segments = 6
+		cm.rings = 1
+		beam.mesh = cm
+		beam.material_override = _mat(Color(1.0, 0.1, 0.08, 0.85), 6.0)
+		beam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		_fx_keep(beam, 0.8)
+		var dirv := (tgt - src).normalized()
+		var bx := Basis()
+		bx.y = dirv                                       # the cylinder stands along y: turn y onto the beam
+		bx.x = dirv.cross(Vector3.FORWARD if abs(dirv.dot(Vector3.FORWARD)) < 0.95 else Vector3.RIGHT).normalized()
+		bx.z = bx.x.cross(bx.y).normalized()
+		beam.global_transform = Transform3D(bx, (src + tgt) * 0.5)
+		var gl := OmniLight3D.new()
+		gl.light_color = Color(1.0, 0.15, 0.1)
+		gl.light_energy = 3.0
+		gl.omni_range = 2.2
+		_fx_keep(gl, 0.8)
+		gl.global_position = tgt
+		var dot := MeshInstance3D.new()                   # the red dot on the jacket
+		var sm := SphereMesh.new()
+		sm.radius = 0.07
+		sm.height = 0.14
+		dot.mesh = sm
+		dot.material_override = _mat(Color(1.0, 0.1, 0.08), 8.0)
+		_fx_keep(dot, 1.0)
+		dot.global_position = tgt
+	if "paint" in on:                                      # a paint ball flies, a splash stays on the ground
+		var pc := Color.from_hsv(_rng.randf(), 0.85, 1.0)
+		var ball := MeshInstance3D.new()
+		var bm := SphereMesh.new()
+		bm.radius = 0.07
+		bm.height = 0.14
+		ball.mesh = bm
+		ball.material_override = _mat(pc, 1.5)
+		_fx_keep(ball, 0.4)
+		ball.global_position = src
+		create_tween().tween_property(ball, "global_position", tgt, 0.32)
+		var gp := Vector3(tgt.x, main.ground_y(tgt.x, tgt.z) + 0.02, tgt.z)
+		get_tree().create_timer(0.32).timeout.connect(func():
+			var splat := MeshInstance3D.new()
+			var dm := CylinderMesh.new()
+			dm.top_radius = 0.45
+			dm.bottom_radius = 0.45
+			dm.height = 0.01
+			dm.radial_segments = 14
+			dm.rings = 1
+			splat.mesh = dm
+			splat.material_override = _mat(Color(pc, 0.85), 0.0)
+			splat.scale = Vector3(0.05, 1, 0.05)
+			_fx_keep(splat, 25.0)
+			splat.global_position = gp
+			splat.rotation.y = _rng.randf() * TAU
+			create_tween().tween_property(splat, "scale", Vector3(1.0, 1, 0.75 + _rng.randf() * 0.5), 0.15))
+	if "flash" in on:                                      # a bright flash at the camera, like a speed camera
+		var fl := OmniLight3D.new()
+		fl.light_color = Color(1, 1, 1)
+		fl.light_energy = 12.0
+		fl.omni_range = 30.0
+		_fx_keep(fl, 0.18)
+		fl.global_position = src
+	return on
+
+
+func _fx_tick() -> void:
+	var t := now()
+	for e in fx_nodes.duplicate():
+		if t > float(e[1]):
+			if is_instance_valid(e[0]):
+				e[0].queue_free()
+			fx_nodes.erase(e)
+
 
 
 func _say(p: Dictionary, txt: String, secs: float) -> void:
@@ -1689,7 +1828,8 @@ func _guard_light(g: Dictionary) -> void:
 var mwg := {"catches": 0, "false": 0, "t": 0.0, "names": []}
 
 
-func mw_catch(who: String) -> Dictionary:
+func mw_catch(who: String, x := -1.0, y := -1.0) -> Dictionary:
+	"""3D-3.52: x, y (0..1) = the hunter tapped this spot of the live picture (head camera): hit only who is there"""
 	if main.game_mode != "mwhand" or round_state != "play":
 		return {"ok": false, "error": "Gerade läuft keine Runde «Team gegen Motion Watch»."}
 	if now() < float(mwg["t"]):
@@ -1698,12 +1838,30 @@ func mw_catch(who: String) -> Dictionary:
 		mwg["names"].append(who)
 	var hit = null
 	var best := 0.02
-	for p in players:
-		if p != null and p["role"] == "runner" and p["state"] == "play" and now() >= float(p["safe_until"]) and float(p["susp"]) >= 30.0:
-			var f: float = cam_sees(p, 0)
-			if f > best:
-				best = f
-				hit = p
+	var rep_mw: bool = learn.reported_recently()
+	if x >= 0.0 and y >= 0.0 and main.game_tap:
+		var near := 9.0
+		for p in players:
+			if p == null or p["role"] != "runner" or p["state"] != "play" or now() < float(p["safe_until"]) or cam_sees(p, 0) <= 0.0:
+				continue
+			var b: Array = learn.box(p)
+			if b.is_empty():
+				continue
+			var mx: float = max(0.03, b[2] * 0.35)          # a little room around the figure
+			var my: float = max(0.03, b[3] * 0.15)
+			if x >= b[0] - mx and x <= b[0] + b[2] + mx and y >= b[1] - my and y <= b[1] + b[3] + my:
+				var dd: float = Vector2(x - (b[0] + b[2] / 2.0), y - (b[1] + b[3] / 2.0)).length()
+				if dd < near:
+					near = dd
+					hit = p
+	else:
+		for p in players:
+			if p != null and p["role"] == "runner" and p["state"] == "play" and now() >= float(p["safe_until"]) and float(p["susp"]) >= 30.0:
+				var f: float = cam_sees(p, 0)
+				if f > best:
+					best = f
+					hit = p
+	learn.on_shot(hit, rep_mw)
 	if hit == null:
 		mwg["false"] = int(mwg["false"]) + 1
 		mwg["t"] = now() + 4.0
@@ -1920,6 +2078,17 @@ table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px
 #rot{display:none;position:fixed;inset:0;background:#0a0e14f2;align-items:center;justify-content:center;text-align:center;padding:30px;font-size:18px}
 @media (orientation:portrait){#rot.ask{display:flex}}
 .redfl{animation:fl .4s 3}@keyframes fl{50%{background:#ff453a88}}
+#hitfx{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
+#hitfx .xh{position:absolute;left:50%;top:50%;width:70vmin;height:70vmin;margin:-35vmin 0 0 -35vmin;border:3px solid #ff3b30;border-radius:50%;animation:xh .45s ease-in forwards;box-shadow:0 0 18px #ff3b30}
+#hitfx .xh::before,#hitfx .xh::after{content:"";position:absolute;background:#ff3b30;left:50%;top:-12%;width:3px;height:124%;margin-left:-1.5px}#hitfx .xh::after{transform:rotate(90deg)}
+@keyframes xh{0%{transform:scale(1.4);opacity:0}60%{opacity:1}100%{transform:scale(.12);opacity:1}}
+#hitfx .rd{position:absolute;inset:0;background:radial-gradient(circle,#ff3b30cc 0,#ff3b3000 60%);animation:rd .7s .4s ease-out forwards;opacity:0}
+@keyframes rd{0%{opacity:1}100%{opacity:0}}
+#hitfx svg.sp{position:absolute;width:62vmin;height:62vmin;animation:sp 2.6s ease-out forwards}
+@keyframes sp{0%{transform:scale(.2)}12%{transform:scale(1.05)}20%{transform:scale(1)}75%{opacity:1}100%{opacity:0}}
+#hitfx .wf{position:absolute;inset:0;background:#fff;animation:wf .5s ease-out forwards}
+@keyframes wf{0%{opacity:1}100%{opacity:0}}
+#hitfx .ph{position:absolute;left:8%;right:8%;top:30%;border:4px solid #fff;padding:10px;color:#fff;font:700 22px system-ui;text-align:center;background:#0008;animation:rd 1.8s .5s ease-out forwards;opacity:1}
 .cnt{position:absolute;top:-6px;right:-6px;background:#000c;border-radius:999px;font-size:11px;padding:1px 6px}
 #sig{position:fixed;left:max(10px,env(safe-area-inset-left));top:50%;transform:translateY(-38%);display:flex;flex-direction:column;gap:6px;z-index:5}
 #tip{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(88vw,460px);background:#111822f2;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.4;text-align:center;z-index:20}
@@ -2002,6 +2171,17 @@ function joinForm() {
   bindLook();
   $("#go").onclick = () => { name = $("#nmi").value.trim(); try { localStorage.setItem("mw3d-name", name); } catch (e) {} goFull(); tone(660, 0.05, "sine", 0.01); connect(); };
 }
+function hitFx(fx) {                     // 3D-3.52: the player feels hit - crosshair (laser), paint splash, flash
+  let o = document.getElementById("hitfx"); if (o) o.remove(); if (!fx.length) return;
+  o = document.createElement("div"); o.id = "hitfx"; document.body.appendChild(o);
+  if (fx.includes("flash")) { o.insertAdjacentHTML("beforeend", '<div class="wf"></div><div class="ph">📸 GEBLITZT</div>'); }
+  if (fx.includes("laser")) { o.insertAdjacentHTML("beforeend", '<div class="xh"></div><div class="rd"></div>'); }
+  if (fx.includes("paint")) { const h = Math.floor(Math.random() * 360), x = 10 + Math.random() * 40, y = 15 + Math.random() * 40;
+    let d = "M50 18"; for (let k = 1; k <= 14; k++) { const a = k / 14 * 6.283, r = 26 + Math.random() * 12; d += " L" + (50 + Math.cos(a) * r).toFixed(1) + " " + (50 + Math.sin(a) * r).toFixed(1); }
+    o.insertAdjacentHTML("beforeend", '<svg class="sp" viewBox="0 0 100 100" style="left:' + x + '%;top:' + y + '%"><path d="' + d + 'Z" fill="hsl(' + h + ',90%,55%)"/><circle cx="20" cy="22" r="5" fill="hsl(' + h + ',90%,55%)"/><circle cx="84" cy="70" r="4" fill="hsl(' + h + ',90%,55%)"/></svg>'); }
+  if (navigator.vibrate) navigator.vibrate(fx.includes("laser") ? [80, 40, 80, 40, 260] : [300, 100, 300]);
+  setTimeout(() => { if (o.isConnected) o.remove(); }, 3000);
+}
 function connect() {
   ov('<h1>Verbinde …</h1>');
   ws = new WebSocket("ws://" + location.hostname + ":" + WSP); ws.binaryType = "blob";
@@ -2017,7 +2197,7 @@ function connect() {
     else if (m.t === "gal") { GAL = m.pics || []; lastOv = null; if (st && st.rs) paint(st); }
     else if (m.t === "sig") { const t = $("#sigt"); t.innerHTML = '<span style="color:' + m.c + '">●</span> ' + esc(m.n) + ': ' + esc(m.txt) + ' <span class="ar" style="transform:rotate(' + (-m.ga) + 'deg)">⬆</span> ' + m.d + ' m';
       t.style.opacity = 1; clearTimeout(window.__sigT); window.__sigT = setTimeout(() => t.style.opacity = 0, 3000); tone(880, 0.08, "triangle", 0.12); tone(1175, 0.1, "triangle", 0.12, 0.09); if (navigator.vibrate) navigator.vibrate(60); }
-    else if (m.t === "ev") { if (m.k === "caught") { if (navigator.vibrate) navigator.vibrate([300, 100, 300]); document.body.classList.remove("redfl"); void document.body.offsetWidth; document.body.classList.add("redfl"); }
+    else if (m.t === "ev") { if (m.k === "caught") { hitFx(m.fx || []); if (navigator.vibrate) navigator.vibrate([300, 100, 300]); document.body.classList.remove("redfl"); void document.body.offsetWidth; document.body.classList.add("redfl"); }
       if (sfx[m.k]) sfx[m.k](); }
   };
   ws.onclose = () => { me = null; ov('<h1>Verbindung weg</h1><p>Neuer Versuch …</p>'); setTimeout(connect, 1500); };

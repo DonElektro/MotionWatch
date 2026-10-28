@@ -1,0 +1,1 @@
+Schleichwege aus Spielrunden (schleichweg_*.json), die als Testlauf «spielwege» im Prüfstand mitlaufen.

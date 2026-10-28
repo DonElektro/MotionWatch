@@ -332,7 +332,10 @@ class WebStream:
                     return reply({"ok": ok_, "error": tr(err_, lang) if err_ else None, "pi": simpi_state()}, 200 if ok_ else 400)
                 if act_ == "game_mwcatch":                   # «Team gegen Motion Watch»: «Erwischt!» from this page (3D-3.27)
                     try:
-                        r = sim_control({"action": "game_mwcatch", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30]})
+                        q_ = {"action": "game_mwcatch", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30]}
+                        if d.get("x") is not None and d.get("y") is not None:      # 2.95.74: the hunter tapped this spot of the live picture
+                            q_["x"] = max(0.0, min(1.0, float(d["x"]))); q_["y"] = max(0.0, min(1.0, float(d["y"])))
+                        r = sim_control(q_)
                     except Exception:
                         return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
                     SIMGAME["t"] = 0.0

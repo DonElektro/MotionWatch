@@ -70,7 +70,33 @@ func plan_options() -> Array:
 	var o := []
 	for k in PLANS:
 		o.append([k, PLANS[k]["name"]])
+	var n: int = ways().size()
+	if n > 0:                                             # 3D-3.52: sneaking ways from the game, where Motion Watch saw nobody
+		o.append(["spielwege", "Schleichwege aus dem Spiel (%d unerkannte Wege nachgehen)" % n])
 	return o
+
+
+var _ways: Array = []
+var _ways_t := -100.0
+
+
+func ways() -> Array:
+	if now() - _ways_t > 10.0:
+		_ways = preload("res://scripts/gamelearn.gd").load_ways().slice(0, 8)
+		_ways_t = now()
+	return _ways
+
+
+func _way_phases() -> Array:
+	"""one phase per sneaking way: its hour and weather, the way walked by a person (as the player did, also crouching)"""
+	var out: Array = []
+	for i in range(ways().size()):
+		var w: Dictionary = ways()[i]
+		var pts: Array = w["points"]
+		var dur: float = float(pts[-1][0]) - float(pts[0][0])
+		out.append({"name": "Schleichweg von %s (%s)" % [str(w.get("name", "?")), str(w.get("date", "")).left(10)], "hour": float(w.get("hour", 12.0)),
+				"weather": str(w.get("weather", "clear")), "wind": float(w.get("wind", 10.0)), "visits": ["way:%d" % i], "way_s": dur})
+	return out
 
 
 func state() -> Dictionary:
@@ -86,8 +112,30 @@ func state() -> Dictionary:
 func duration() -> float:
 	var s := 0.0
 	for ph in PHASES:
-		s += SETTLE + EVERY * ph["visits"].size() + 6.0
+		s += SETTLE + max(EVERY * ph["visits"].size(), float(ph.get("way_s", 0.0)) + 2.0) + 6.0
 	return s
+
+
+func _spawn_way(i: int):
+	"""a person walks the saved way of a player: the points every 0.5 s, crouching where the player crouched"""
+	var w: Dictionary = ways()[i]
+	var pts: Array = w["points"]
+	var p0 := Vector3(float(pts[0][1]), 0, float(pts[0][2]))
+	var p1 := Vector3(float(pts[1][1]), 0, float(pts[1][2]))
+	var v = main.spawn("person", p0, p1)
+	var r: Array = []
+	var sp := 0.0
+	var n := 0
+	for k in range(2, pts.size()):
+		var q: Array = pts[k]
+		r.append([Vector3(float(q[1]), 0, float(q[2])), 0.0, 1.0 if int(q[3]) > 0 else 0.0])
+		if float(q[4]) > 0.1:
+			sp += float(q[4])
+			n += 1
+	v.route = r
+	if n > 0:
+		v.speed = clampf(sp / n, 0.4, 4.0)
+	return v
 
 
 func start(which := "", cams: Array = []) -> String:
@@ -100,10 +148,16 @@ func start(which := "", cams: Array = []) -> String:
 			if int(c) in [0, 1] and not int(c) in truth_cams:
 				truth_cams.append(int(c))
 	if which != "":
-		if not PLANS.has(which):
+		if not PLANS.has(which) and which != "spielwege":
 			return "unbekannter Testlauf"
 		plan = which
-	PHASES = PLANS[plan]["phases"]
+	if plan == "spielwege":
+		PHASES = _way_phases()
+		if PHASES.is_empty():
+			plan = "standard"
+			return "Noch keine Schleichwege – zuerst eine Spielrunde mit Motion Watch spielen."
+	else:
+		PHASES = PLANS[plan]["phases"]
 	if not main.stream_on or main.now() - main.mw_t > 3.0:
 		info = "Motion Watch ist nicht verbunden. Zuerst «An Motion Watch senden» einschalten und Motion Watch verbinden (oder «Motion Watch auf diesem PC» starten)."
 		paint()
@@ -173,11 +227,13 @@ func _process(dt: float) -> void:
 	var ph: Dictionary = PHASES[phase]
 	if visit_i < ph["visits"].size() and t >= next_visit:
 		var k: String = ph["visits"][visit_i]
-		var v = main.spawn(k)
+		var v = _spawn_way(int(k.substr(4))) if k.begins_with("way:") else main.spawn(k)
+		if k.begins_with("way:"):
+			k = "person"
 		truth[v.get_instance_id()] = {"kind": k, "person": v.kind == "person", "phase": phase, "first": -1.0, "last": -100.0,
 				"vis": 0.0, "det": -1.0, "rep": false, "as_person": false, "seen_ever": false, "px": 0.0, "light": 1.0, "crouch": false}
 		visit_i += 1
-		next_visit = t + EVERY
+		next_visit = t + max(EVERY, float(ph.get("way_s", 0.0)) + 2.0)
 	elif visit_i >= ph["visits"].size() and t >= next_visit + 6.0:
 		if phase + 1 < PHASES.size():
 			_start_phase(phase + 1)

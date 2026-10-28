@@ -3648,12 +3648,34 @@ function mwgPaint(s) {
   let b = $("#mwg");
   if (!on) { if (b) b.hidden = true; return; }
   if (!b) { b = el("div"); b.id = "mwg"; b.innerHTML = '<div id="mwg-t"></div><button type="button" id="mwg-b">🚨 <span></span></button>'; document.body.appendChild(b);
-    const st = document.createElement("style"); st.textContent = "#mwg{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:10px;background:rgba(10,14,20,.88);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 14px;box-shadow:0 4px 18px rgba(0,0,0,.45);color:#fff;font-size:13px;max-width:calc(100vw - 24px)}#mwg-b{background:#e5383b;border:0;color:#fff;font-weight:700;font-size:16px;padding:10px 18px;border-radius:999px}#mwg-b:disabled{opacity:.5}";
+    const st = document.createElement("style"); st.textContent = "#mwg{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:10px;background:rgba(10,14,20,.88);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 14px;box-shadow:0 4px 18px rgba(0,0,0,.45);color:#fff;font-size:13px;max-width:calc(100vw - 24px);width:max-content}#mwg-t{flex:1;min-width:0;line-height:1.3}@media(max-width:520px){#mwg{width:calc(100vw - 24px);border-radius:16px}}#mwg-b{flex:none;background:#e5383b;border:0;color:#fff;font-weight:700;font-size:16px;padding:10px 18px;border-radius:999px}#mwg-b:disabled{opacity:.5}";
     document.head.appendChild(st);
-    $("#mwg-b").onclick = async () => { const r = await post("/api/sim", {action: "game_mwcatch", lang: LANG}); toast(r.ok ? (r.text || "") : "⚠ " + (r.error || t("error"))); }; }
+    $("#mwg-b").onclick = async () => { const r = await post("/api/sim", {action: "game_mwcatch", lang: LANG}); toast(r.ok ? (r.text || "") : "⚠ " + (r.error || t("error"))); };
+    // 2.95.74: the hunter aims - a tap on a player in the live picture (the head camera) is a shot at exactly this spot
+    const v = $("#video"); let down = null;
+    v.addEventListener("pointerdown", e => { down = [e.clientX, e.clientY, Date.now()]; });
+    v.addEventListener("pointerup", async e => {
+      const b_ = $("#mwg"); if (!b_ || b_.hidden || !down || $("#mwg-b").disabled) return;
+      const [x0, y0, t0] = down; down = null;
+      if (Math.hypot(e.clientX - x0, e.clientY - y0) > 12 || Date.now() - t0 > 600) return;      // a drag, not a tap
+      const r_ = v.getBoundingClientRect(), nw = v.naturalWidth || 16, nh = v.naturalHeight || 9;
+      const sc = Math.min(r_.width / nw, r_.height / nh), w = nw * sc, h = nh * sc;
+      const x = (e.clientX - r_.left - (r_.width - w) / 2) / w, y = (e.clientY - r_.top - (r_.height - h) / 2) / h;
+      if (x < 0 || x > 1 || y < 0 || y > 1) return;
+      const m = el("div", "mwg-shot"); m.style.left = e.clientX + "px"; m.style.top = e.clientY + "px"; document.body.appendChild(m);
+      setTimeout(() => m.remove(), 900);
+      const q = await post("/api/sim", {action: "game_mwcatch", x: x, y: y, lang: LANG});
+      m.classList.add(q.hit ? "hit" : "miss");
+      toast(q.ok ? (q.text || "") : "⚠ " + (q.error || t("error")));
+    });
+    const st2 = document.createElement("style");
+    st2.textContent = ".mwg-shot{position:fixed;z-index:85;width:64px;height:64px;margin:-32px 0 0 -32px;border:3px solid #ff3b30;border-radius:50%;pointer-events:none;animation:mwgs .5s ease-in forwards}"
+      + ".mwg-shot::before,.mwg-shot::after{content:'';position:absolute;left:50%;top:-10px;width:2px;height:80px;margin-left:-1px;background:#ff3b30}.mwg-shot::after{transform:rotate(90deg)}"
+      + ".mwg-shot.hit{border-color:#3fcf6b;box-shadow:0 0 16px #3fcf6b}.mwg-shot.miss{opacity:.4}@keyframes mwgs{0%{transform:scale(1.8);opacity:0}100%{transform:scale(.6);opacity:1}}";
+    document.head.appendChild(st2); }
   b.hidden = false;
   const w = (G.mwg || {}).wait || 0;
-  $("#mwg-t").textContent = "🕹 " + (G.round === "countdown" ? t("Get ready") + " " + (G.cd || "") : t("You are the guard: turn the camera and catch them")) + " · " + ((G.mwg || {}).catches || 0) + "× ✓ · " + ((G.mwg || {}).false || 0) + "× ✗";
+  $("#mwg-t").textContent = "🕹 " + (G.round === "countdown" ? t("Get ready") + " " + (G.cd || "") : t("You are the guard: turn the camera and tap the players in the picture")) + " · " + ((G.mwg || {}).catches || 0) + "× ✓ · " + ((G.mwg || {}).false || 0) + "× ✗";
   $("#mwg-b").disabled = G.round !== "play" || w > 0; $("#mwg-b span").textContent = w > 0 ? w + " s" : t("Caught!");
 }
 // ---- modes (2.95.47): camping guard, campfire games, gamer, home, wildlife, night guard, transport ----
@@ -3853,7 +3875,7 @@ function simpleBar(on) {
   return w;
 }
 // ---- self-check: one traffic light per part ----
-Object.assign(I18N.de, {"Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
+Object.assign(I18N.de, {"You are the guard: turn the camera and tap the players in the picture": "Du bist Jäger: Kamera drehen und die Spieler im Bild antippen", "Mover stick shown": "Mover-Stick eingeblendet", "Mover stick hidden": "Mover-Stick ausgeblendet", "Show / hide the mover stick": "Mover-Stick ein- / ausblenden", "Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
   let j; try { j = await (await fetch("/api/health?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
   const L = $("#h-list"); if (!L) return; L.textContent = "";
