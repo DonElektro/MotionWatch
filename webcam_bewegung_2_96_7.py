@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_6.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_7.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,10 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.96.7: Makeover 16–20: mehrere Geräte (zweites Gerät bewacht Zelt / Velo / Auto, Übergabe einer Person zwischen Geräten im
+    Protokoll); Rover (Patrouille, Ladestation mit Akku, zum Alarm fahren – auch von selbst bei Personen-Alarm); Statistik aus
+    dem Simulator (4 Wochen, Arten, Erkennungsrate, Wochenbericht als Push); Versionen vergleichen (Erkennungsrate und
+    Testlauf-Punkte pro Version); Ein-Klick-Demo (3 Minuten im Kino-Modus); passt zum Simulator 3D-3.84
   * 2.96.6: Makeover 12–15 (Simulator-Zentrale): Trainings-Nacht (Testläufe in 5 Szenen, Optimierung, Trainingsbilder, Bericht);
     A/B-Vergleich von Einstellungen; Test-Posteingang (Meldungen in der Simulation hierhin statt aufs Handy) und «Alarm-Kette
     testen» (Push, Licht, Sirene); Störfall-Übungen Akku leer, WLAN weg, Hitze, Kälte mit Bericht, wie MoveEye reagiert hat
@@ -819,10 +823,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_96_6.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_96_7.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_96_6.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_96_6.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_96_7.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_96_7.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -839,7 +843,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.96.6"
+APP_VERSION = "2.96.7"
 
 
 def default_data_dir():
@@ -1163,7 +1167,7 @@ CFG = {
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
@@ -1341,6 +1345,7 @@ ALERTS_COND = threading.Condition()
 def push_alert(kind, text="", **extra):
     try:
         protect_on_alert(kind)                         # 2.95.105: escalation (light, then the siren unless disarmed)
+        rover_on_alarm(kind)                           # 2.96.7: the rover drives to the alarm (simulator, makeover 17)
     except NameError:
         pass
     if not CFG.get("browser_alarm", True):
@@ -7940,7 +7945,7 @@ MAKEOVER_ALL = [
     (21, "Fehlalarm-Lernen"), (22, "Karte der blinden Flecken"), (23, "Nacht-Generalprobe vor dem Scharfschalten"),
     (24, "Schwellen automatisch einstellen"), (25, "Erkennungs-Check jede Woche"),
 ]
-MAKEOVER_DONE = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}                                # numbers already delivered (nachführen)
+MAKEOVER_DONE = set(range(1, 21))                                # numbers already delivered (nachführen)
 
 
 def _news_vt(v):
@@ -8062,11 +8067,20 @@ def sim_hub(force=False):
         d.update(ok=True, name=str(r.get("name") or ""), scene=str(r.get("scenario") or ""), status=st,
                  scenes=[{"id": s.get("id"), "name": str(s.get("name") or "").replace(" (3D)", "")} for s in r.get("scenarios") or []][:40],
                  hour=h, clock="%02d:%02d" % (int(h), int(round((h % 1) * 60)) % 60), dark=" Nacht " in st or st.find("· Nacht ·") >= 0,
-                 weather=wx, ambient=vals.get("ambient"), visitors=int(m.group(1)) if m else None, surprise=bool(vals.get("surprise_on")), zones3d=bool(vals.get("show_zones3d")), det3d=bool(vals.get("show_det3d")),
+                 weather=wx, ambient=vals.get("ambient"), visitors=int(m.group(1)) if m else None, surprise=bool(vals.get("surprise_on")), dev2=bool(vals.get("dev2_on")), dev2_place=str(vals.get("dev2_place") or ""), zones3d=bool(vals.get("show_zones3d")), det3d=bool(vals.get("show_det3d")),
                  twin_ok="show_zones3d" in vals,
                  game=r.get("game") or {}, has={k: k in vals for k in ("surprise_on", "weather", "hour", "spawn_person", "thief")})
     except Exception as e:
         d["msg"] = str(e)[:80]
+    d["handover"] = list(FLEET.get("handover") or [])[:3]   # 2.96.7: makeover 16
+    if d.get("ok"):
+        try:
+            d["rover"] = (sim_control({"action": "rover"}) or {}).get("rover")
+        except Exception:
+            d["rover"] = None
+        d["rover_alarm"] = bool(CFG.get("rover_alarm"))
+    d["demo"] = {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"]}
+    d["devices"] = len(CFG.get("fleet") or [])
     if d.get("ok"):                                         # the twin, back from the simulator (place, mast)
         try:
             d["twin"] = sim_twin_info() if d.get("twin_ok") else {}
@@ -8092,6 +8106,15 @@ def sim_hub_do(a, v=None):
             r = sim_control({"action": "set", "id": "surprise_on", "value": bool(v)})
         elif a == "templates":
             r = sim_control({"action": "templates", "do": "open", "tab": 0})
+        elif a == "dev2":
+            r = sim_control({"action": "set", "id": "dev2_on", "value": bool(v)})
+        elif a == "dev2_place":
+            r = sim_control({"action": "set", "id": "dev2_place", "value": str(v)[:12]})
+        elif a == "rover":
+            if v == "auto_on" or v == "auto_off":
+                CFG["rover_alarm"] = v == "auto_on"; save_settings(); r = {"ok": True}
+            else:
+                r = sim_control({"action": "rover", "do": str(v)[:10], "on": True}) if v != "patrol_off" else sim_control({"action": "rover", "do": "patrol", "on": False})
         elif a == "twin":
             r = sim_twin()
         elif a == "overlay":
@@ -8127,7 +8150,14 @@ SIMHUB_JS = r"""
     "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
     "Tap = control": "Antippen = steuern", "person": "Person", "burglar": "Dieb", "child": "Kind", "dogwalk": "Hund", "fox": "Fuchs", "deer": "Reh", "cat": "Katze",
     "boar": "Wildschwein", "hedgehog": "Igel", "cyclist": "Velo", "courier": "Kurier", "car": "Auto", "sent": "geschickt", "Test run, test bench": "Testlauf, Prüfstand",
-    "Play on the phone": "Mitspielen mit dem Handy", "Twin of your place": "Zwilling deines Platzes", "Test inbox": "Test-Posteingang", "Drills": "Störfall-Übungen", "Battery, Wi-Fi, heat, cold": "Akku, WLAN, Hitze, Kälte",
+    "Play on the phone": "Mitspielen mit dem Handy", "Several devices": "Mehrere Geräte", "2nd device": "2. Gerät", "P_opposite": "gegenüber", "P_door": "bewacht Zelt / Tür", "P_bike": "bewacht Velo",
+    "P_car": "bewacht Auto", "P_left": "links", "P_right": "rechts", "Rover": "Rover", "M_alarm": "fährt zum Alarm", "M_dock": "fährt zur Ladestation", "M_goto": "fährt hin",
+    "patrols": "patrouilliert", "charging": "lädt", "ready": "bereit", "Statistics & versions": "Statistik & Versionen", "4 weeks, per version": "4 Wochen, pro Version",
+    "Second device in the simulator": "Zweites Gerät im Simulator", "dev-note": "Ein zweites MoveEye verbindet sich mit Port 8785 des Simulators (z. B. eine zweite Kopie auf dem PC). Unter Kameras → Geräte hinzufügen: dann meldet MoveEye die Übergabe, wenn eine Person von einem Gerät zum anderen geht.",
+    "Patrol": "Patrouille", "Drive to the alarm": "Zum Alarm fahren", "To the charger": "Zur Ladestation", "At a person alarm: drive there by itself": "Bei Personen-Alarm von selbst hinfahren",
+    "rover-note": "Akku hält etwa 30 Minuten Fahrt; unter 20 % fährt der Rover von selbst zur Ladestation.",
+    "Visits (blue) and persons recognised in % (green), 4 weeks": "Besuche (blau) und erkannte Personen in % (grün), 4 Wochen", "Per MoveEye version": "Pro MoveEye-Version", "test": "Test",
+    "Twin of your place": "Zwilling deines Platzes", "Test inbox": "Test-Posteingang", "Drills": "Störfall-Übungen", "Battery, Wi-Fi, heat, cold": "Akku, WLAN, Hitze, Kälte",
     "Training night": "Trainings-Nacht", "A/B comparison": "A/B-Vergleich", "Which setting is better?": "Welche Einstellung ist besser?", "Messages here instead of the phone": "Meldungen hierhin statt aufs Handy",
     "Test the alarm chain": "Alarm-Kette testen", "Empty – nothing arrived yet": "Leer – noch nichts angekommen", "held back (offline), sent later": "zurückgehalten (offline), wird später gesendet",
     "Battery empty": "Akku leer", "Wi-Fi / internet gone": "WLAN / Internet weg", "Heat": "Hitze", "Cold": "Kälte", "Drill runs": "Übung läuft", "Last drill": "Letzte Übung",
@@ -8156,9 +8186,37 @@ SIMHUB_JS = r"""
     if (kind === "weather") WX.forEach(([k, ic]) => { const b = E("button", k === H.weather ? "" : "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = () => act("weather", k); s.appendChild(b); });
     if (kind === "visit") VIS.forEach(([k, ic]) => { const b = E("button", "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = async () => { const r = await act("visit", k); if (r && r.ok) say(ic + " " + tt("sent")); }; s.appendChild(b); });
     if (["inbox", "drill", "train", "ab"].includes(kind)) labSheet(s, kind);
+    if (kind === "devices") {
+      s.appendChild(B((H.dev2 ? "✓ " : "") + tt("Second device in the simulator"), () => act("dev2", !H.dev2), H.dev2 ? "" : "sec"));
+      ["opposite", "door", "bike", "car", "left", "right"].forEach(p => s.appendChild(B(tt("P_" + p), () => act("dev2_place", p), H.dev2_place === p ? "" : "sec")));
+      s.appendChild(E("div", "mut", tt("dev-note")));
+    }
+    if (kind === "rover") { const R = H.rover || {};
+      s.append(B("▶ " + tt("Patrol"), () => act("rover", "patrol")), B("⏹ " + tt("Stop"), () => act("rover", "patrol_off")), B("🚨 " + tt("Drive to the alarm"), () => act("rover", "alarm")),
+        B("⚡ " + tt("To the charger"), () => act("rover", "dock")), B((H.rover_alarm ? "✓ " : "") + tt("At a person alarm: drive there by itself"), () => act("rover", H.rover_alarm ? "auto_off" : "auto_on"), H.rover_alarm ? "" : "sec"));
+      s.appendChild(E("div", "mut", "🔋 " + (R.batt != null ? R.batt + " %" : "–") + (R.charging ? " · " + tt("charging") : "") + " · " + tt("rover-note")));
+    }
+    if (kind === "stats") statsSheet(s);
     box.appendChild(s);
   }
-  let LB = null;
+  let LB = null, ST = null;
+  async function statsSheet(s) {
+    if (!ST) { s.appendChild(E("div", "mut", "…")); try { ST = await (await fetch("/api/simstats")).json(); } catch (e) { return; } setTimeout(() => { ST = null; }, 60000); paintAll(); return; }
+    const W = 320, Hh = 90, days = ST.days, bw = W / days.length;
+    const svg = '<svg viewBox="0 0 ' + W + ' ' + (Hh + 14) + '" style="width:100%;max-width:560px">' + days.map((d, i) => { const h = d.rate == null ? 0 : d.rate / 100 * Hh;
+      const v = Math.min(Hh, d.visits * 3); return '<rect x="' + (i * bw + 1) + '" y="' + (Hh - v) + '" width="' + (bw - 2) + '" height="' + v + '" fill="#3b8cff" opacity=".25"/>'
+        + (d.rate == null ? "" : '<rect x="' + (i * bw + bw * .25) + '" y="' + (Hh - h) + '" width="' + (bw * .5) + '" height="' + h + '" fill="#3fcf6b"/>'); }).join("")
+      + '<text x="0" y="' + (Hh + 12) + '" font-size="9" fill="#8a9bb0">' + days[0].d.slice(5) + '</text><text x="' + W + '" y="' + (Hh + 12) + '" font-size="9" fill="#8a9bb0" text-anchor="end">' + days[days.length - 1].d.slice(5) + '</text></svg>';
+    const c = E("div"); c.style.width = "100%"; c.innerHTML = svg; s.append(E("b", "", tt("Visits (blue) and persons recognised in % (green), 4 weeks")), c);
+    s.appendChild(E("div", "mut", ST.kinds.map(k => ((window.EVI || {})[k.person ? "person" : k.animal ? "animal" : "vehicle"] || "") + " " + k.k + " " + k.n).join(" · ") || "–"));
+    s.appendChild(E("b", "", tt("Per MoveEye version")));
+    const tb = E("div"); tb.style.cssText = "width:100%;display:flex;flex-direction:column;gap:4px";
+    (ST.versions.length ? ST.versions : [{v: "–"}]).forEach(v => { const r = E("div"); r.style.cssText = "display:flex;align-items:center;gap:8px;font-size:12px";
+      const bar = E("div"); bar.style.cssText = "flex:1;height:10px;background:var(--line,#1f2b3a);border-radius:5px;overflow:hidden";
+      const f = E("div"); f.style.cssText = "height:100%;background:#3fcf6b;width:" + (v.rate || 0) + "%"; bar.appendChild(f);
+      r.append(E("b", "", v.v), bar, E("span", "", (v.rate != null ? v.rate + " %" : "–") + (v.lat != null ? " · " + v.lat + " s" : "") + (v.score != null ? " · " + tt("test") + " " + v.score : "")));
+      tb.appendChild(r); }); s.appendChild(tb);
+  }
   const lab = async (d) => { try { const r = d ? await (await fetch("/api/lab", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, d))})).json()
       : await (await fetch("/api/lab")).json(); if (r && r.inbox) LB = r; if (r && r.ok === false && r.error) say("⚠ " + r.error); paintAll(); return r; } catch (e) {} };
   const B = (txt, fn, cls) => { const b = E("button", cls || "sec", txt); b.type = "button"; b.onclick = fn; return b; };
@@ -8208,6 +8266,10 @@ SIMHUB_JS = r"""
       ["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]];
     if (full && H.twin_ok) T.push(["twin", "🪞", tt("Twin of your place"), tt("Place, zones, patrol")], ["zones3d", "▱", tt("Zones in 3D"), H.zones3d ? tt("on") : tt("off")],
       ["det3d", "🎯", tt("Detection in 3D"), H.det3d ? tt("on") : tt("off")]);
+    if (full) { const R = H.rover || {};
+      T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
+        ["rover", "🚜", tt("Rover"), H.rover ? (R.mission ? "⏳ " + tt("M_" + R.mission) : R.active ? tt("patrols") : R.charging ? "⚡ " + tt("charging") : tt("ready")) + " · 🔋 " + R.batt + " %" : "–"],
+        ["stats", "📈", tt("Statistics & versions"), tt("4 weeks, per version")]); }
     if (full) T.push(["inbox", "📨", tt("Test inbox"), LB ? (LB.sandbox ? tt("on") : tt("off")) + " · " + (LB.inbox || []).length : ""],
       ["drill", "⚡", tt("Drills"), LB && LB.drill.busy ? "⏳ " + LB.drill.left + " s" : tt("Battery, Wi-Fi, heat, cold")],
       ["train", "🌙", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
@@ -8223,6 +8285,7 @@ SIMHUB_JS = r"""
         open = open === k ? "" : k; paintAll(); };
       g.appendChild(b); });
     box.appendChild(g); if (open) sheet(box, open);
+    if (full && H.handover && H.handover.length) { const w = E("div", "mut", "🔁 " + H.handover.map(x => x.t + " " + x.from + " → " + x.to).join(" · ")); w.style.cssText = "margin-top:6px;font-size:12px"; box.appendChild(w); }
     if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Twin of your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
       + (H.twin.zones != null ? " · " + H.twin.zones + " " + tt("zones") : "") + (H.twin.waypoints != null ? " · " + H.twin.waypoints + " " + tt("patrol points") : "")); w.style.cssText = "margin-top:8px;font-size:12px"; box.appendChild(w); }
   }
@@ -8257,7 +8320,8 @@ def kino_state():
         evs = [e for e in STATE.get("events", []) if e.get("imp") or e.get("kind") in ("person", "ai", "car")][:8]
     return {"name": CFG.get("device_name") or "MoveEye", "version": APP_VERSION, "persons": STATE.get("persons", 0),
             "armed": bool(is_armed()), "rec": bool(STATE.get("recording")), "sim": bool(CFG.get("sim_on")),
-            "events": [{"t": e["t"][:5], "i": LOG_ICON.get(e["kind"], "·"), "x": tr(e["text"]) if isinstance(e.get("text"), str) else ""} for e in evs]}
+            "events": [{"t": e["t"][:5], "i": LOG_ICON.get(e["kind"], "·"), "x": tr(e["text"]) if isinstance(e.get("text"), str) else ""} for e in evs],
+            "demo": {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"], "text": tr(DEMO_RUN["step"]) if DEMO_RUN["step"] else ""}}
 
 
 KINO_PAGE = r"""<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -8274,10 +8338,12 @@ html,body{margin:0;height:100%;background:#000;color:#e8eef5;font-family:system-
 .tick div{display:inline-block;padding-left:100%;animation:run 40s linear infinite}.tick span{margin-right:48px}
 @keyframes run{to{transform:translateX(-100%)}}
 .hint{position:fixed;right:16px;bottom:56px;font-size:12px;opacity:.5}
+#demo{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);max-width:80vw;padding:14px 26px;border-radius:18px;background:#0a0e14dd;border:2px solid #f59a4a;
+  font-size:clamp(18px,2.6vw,38px);font-weight:600;text-align:center;transition:opacity .4s}#demo small{display:block;font-size:.45em;color:#f59a4a;letter-spacing:.12em}
 </style></head><body>
 <img id="v" src="/video_feed" alt="">
 <div class="top"><div><b id="nm">MoveEye</b><span id="st"></span></div><div id="clock"></div></div>
-<div class="tick"><div id="tk"></div></div><div class="hint">F = Vollbild · Esc = zurück</div>
+<div id="demo" hidden></div><div class="tick"><div id="tk"></div></div><div class="hint">F = Vollbild · Esc = zurück</div>
 <script>
 const $ = s => document.querySelector(s);
 const pad = n => String(n).padStart(2, "0");
@@ -8286,6 +8352,8 @@ async function load() { try { const r = await (await fetch("/api/kino")).json();
   $("#nm").textContent = r.name; const st = $("#st"); st.textContent = "";
   const P = (txt, cls) => { const s = document.createElement("span"); s.className = "pill " + (cls || ""); s.textContent = txt; st.appendChild(s); };
   if (r.sim) P("🧪 SIMULATION", "org"); P(r.armed ? "🛡 Schutz an" : "Schutz aus"); if (r.persons) P("🚶 " + r.persons, "red"); if (r.rec) P("● REC", "red");
+  const dm = $("#demo"); dm.hidden = !(r.demo && r.demo.busy && r.demo.text);
+  if (!dm.hidden && dm.dataset.s !== r.demo.text) { dm.dataset.s = r.demo.text; dm.textContent = ""; const sm = document.createElement("small"); sm.textContent = "DEMO " + r.demo.i + " / " + r.demo.n; dm.append(sm, document.createTextNode(r.demo.text)); }
   const tk = $("#tk"), txt = r.events.map(e => e.t + " " + e.i + " " + e.x).join("|");
   if (tk.dataset.s !== txt) { tk.dataset.s = txt; tk.textContent = ""; (r.events.length ? r.events : [{t: "", i: "", x: "–"}]).forEach(e => { const s = document.createElement("span"); s.textContent = (e.t ? e.t + "  " : "") + e.i + " " + e.x; tk.appendChild(s); }); }
   } catch (e) {} }
@@ -9140,6 +9208,185 @@ def lab_state():
             "train": {"on": bool(CFG.get("train_night_on")), "hour": int(CFG.get("train_hour", 1)), "busy": TRAIN["busy"], "step": TRAIN["step"],
                       "last": TRAIN["last"]}, "ab": {"busy": ABT["busy"], "step": ABT["step"], "last": ABT["last"],
                       "presets": [[k, v[0]] for k, v in AB_PRESETS.items()]}, "ready": bool(sim_ready())}
+# ----------------------------------------------------------------------------
+# 2.96.7 (Makeover-Punkte 16–20):
+#  16  Mehrere Geräte: das zweite Gerät im Simulator bewacht Zelt / Velo / Auto; Übergabe zwischen Geräten (260).
+#  17  Rover: Patrouille, Ladestation mit Akku, «zum Alarm fahren» - von Hand oder von selbst bei einem Personen-Alarm.
+#  18  Statistik: die Besuche im Simulator über 4 Wochen - pro Tag, pro Art, Erkennungsrate; Wochenbericht als Push.
+#  19  Versionen vergleichen: Erkennungsrate (Simulator-Tagebuch) und Testlauf-Punkte pro MoveEye-Version als Kurve.
+#  20  Ein-Klick-Demo: «Zeig mir MoveEye» - 3 Minuten Vorführung im Kino-Modus (Tag, Person, Nacht, Fuchs, Dieb, Alarm).
+# ----------------------------------------------------------------------------
+SIM_PERSON_KINDS = {"person", "child", "jogger", "burglar", "thief", "drunk", "courier", "police", "cyclist", "couple", "dogwalk",
+                    "sneaker", "stroller", "garden_person", "homecoming", "parcel", "bbq", "kids_tag"}
+SIM_ANIMAL_KINDS = {"fox", "deer", "boar", "cat", "dog", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel", "cow", "sheep",
+                    "horse", "chamois", "ibex", "lynx", "herd", "owl", "bats", "cows", "sheep_flock", "horse_walk", "boar_group"}
+
+
+# ---- 17: the rover ---------------------------------------------------------------------------------------------------
+_ROVER = {"t": 0.0}
+
+
+def rover_on_alarm(kind):
+    """a person alarm (armed, simulator): the rover drives there by itself (when switched on)"""
+    if kind != "person" or not CFG.get("rover_alarm") or not CFG.get("sim_on") or not is_armed():
+        return
+    if time.time() - _ROVER["t"] < 60:
+        return
+    _ROVER["t"] = time.time()
+    def go():
+        try:
+            sim_control({"action": "rover", "do": "alarm"})
+            log_event("sys", "Rover drives to the alarm")
+        except Exception:
+            pass
+    threading.Thread(target=go, daemon=True).start()
+
+
+# ---- 18 / 19: statistics -----------------------------------------------------------------------------------------------
+def simdiary_stats(days=28):
+    vs = simdiary_read(None, days)
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    D = {}
+    for i in range(days):
+        d = (today - timedelta(days=days - 1 - i)).strftime("%Y-%m-%d")
+        D[d] = {"d": d, "visits": 0, "persons": 0, "seen": 0, "rec": 0, "animals": 0}
+    kinds, vers = {}, {}
+    for v in vs:
+        try:
+            d = datetime.fromtimestamp(float(v.get("t_in") or 0)).strftime("%Y-%m-%d")
+        except (TypeError, ValueError, OSError):
+            continue
+        k = str(v.get("kind") or "?")
+        x = D.get(d)
+        if x is None:
+            continue
+        x["visits"] += 1
+        kinds[k] = kinds.get(k, 0) + 1
+        if k in SIM_ANIMAL_KINDS:
+            x["animals"] += 1
+        if k in SIM_PERSON_KINDS:
+            x["persons"] += 1
+            good = float(v.get("vis_s") or 0) >= 2.0
+            if good:
+                x["seen"] += 1
+                if v.get("detected"):
+                    x["rec"] += 1
+                ver = str(v.get("mw_version") or "?")
+                y = vers.setdefault(ver, {"v": ver, "seen": 0, "rec": 0, "lat": []})
+                y["seen"] += 1
+                if v.get("detected"):
+                    y["rec"] += 1
+                    if float(v.get("detect_s") or -1) >= 0:
+                        y["lat"].append(float(v["detect_s"]))
+    for x in D.values():
+        x["rate"] = round(100.0 * x["rec"] / x["seen"]) if x["seen"] else None
+    tests = {}
+    for r in TESTOPT.get("runs") or []:
+        if r.get("score") is None:
+            continue
+        t_ = tests.setdefault(str(r.get("mw") or "?"), {"sum": 0.0, "n": 0})
+        t_["sum"] += float(r["score"]); t_["n"] += 1
+    allv = set(vers) | set(tests)
+    out_v = []
+    for ver in sorted(allv, key=lambda s: tuple(int(p) if p.isdigit() else 0 for p in s.split("."))):
+        y = vers.get(ver, {"seen": 0, "rec": 0, "lat": []})
+        t_ = tests.get(ver)
+        out_v.append({"v": ver, "seen": y["seen"], "rate": round(100.0 * y["rec"] / y["seen"]) if y["seen"] else None,
+                      "lat": round(sum(y["lat"]) / len(y["lat"]), 1) if y["lat"] else None,
+                      "score": round(t_["sum"] / t_["n"]) if t_ else None, "tests": t_["n"] if t_ else 0})
+    top = sorted(kinds.items(), key=lambda kv: -kv[1])[:12]
+    return {"days": list(D.values()), "kinds": [{"k": k, "n": n, "animal": k in SIM_ANIMAL_KINDS, "person": k in SIM_PERSON_KINDS} for k, n in top],
+            "versions": out_v[-10:], "total": len(vs)}
+
+
+def simweek_loop():
+    """Monday, at the hour of the night report: the week in the simulator as a push (when switched on)"""
+    while True:
+        time.sleep(300)
+        try:
+            if not CFG.get("simweek_on"):
+                continue
+            now = datetime.now()
+            wk = now.strftime("%G-W%V")
+            if now.weekday() != 0 or now.hour < int(CFG.get("report_hour", 7)) or CFG.get("simweek_last") == wk:
+                continue
+            CFG["simweek_last"] = wk
+            save_settings()
+            st = simdiary_stats(7)
+            vis = sum(x["visits"] for x in st["days"])
+            if not vis:
+                continue
+            seen = sum(x["seen"] for x in st["days"]); rec = sum(x["rec"] for x in st["days"])
+            an = ", ".join(f"{k['k']} {k['n']}" for k in st["kinds"] if k["animal"])[:120]
+            txt = trf("Week in the simulator: {v} visits, persons recognised {r} % ({a} of {b}). Animals: {an}",
+                      v=vis, r=round(100 * rec / seen) if seen else "–", a=rec, b=seen, an=an or "–")
+            w = WATCH_REF.get("w")
+            if w is not None:
+                w.notifier.info(txt, title="{name}: " + tr("Simulator diary"))
+        except Exception as e:
+            log_event("sys", f"Week report: {e}"[:120])
+
+
+threading.Thread(target=simweek_loop, daemon=True, name="simweek").start()
+
+
+# ---- 20: the one-click demo ------------------------------------------------------------------------------------------
+DEMO_RUN = {"busy": False, "step": "", "i": 0, "n": 0, "t": 0.0, "stop": False}
+DEMO_STEPS = [
+    (12, "Welcome to MoveEye – a camera that watches and thinks", [{"action": "scenario", "id": "camping"}, {"action": "set", "id": "hour", "value": 15}, {"action": "set", "id": "weather", "value": "clear"}]),
+    (18, "Day: a person walks past – MoveEye notices it", [{"action": "press", "id": "spawn_person"}]),
+    (25, "Animals are not a person: a fox comes by", [{"action": "press", "id": "spawn_fox"}]),
+    (25, "Evening falls – MoveEye switches to night vision", [{"action": "set", "id": "hour", "value": 21.5}]),
+    (20, "At night: somebody creeps to the bike", [{"action": "press", "id": "thief"}]),
+    (30, "Alarm: light, push message – and the siren if nobody switches off", []),
+    (25, "Rain: the filters keep false alarms away", [{"action": "set", "id": "weather", "value": "rain"}, {"action": "press", "id": "spawn_deer"}]),
+    (25, "Morning: the night report and the diary say what happened", [{"action": "set", "id": "hour", "value": 7}, {"action": "set", "id": "weather", "value": "clear"}]),
+    (12, "That was MoveEye. Thank you!", []),
+]
+
+
+def demo_start():
+    if DEMO_RUN["busy"]:
+        return False, "the demo is already running"
+    if not CFG.get("sim_on") or not SIM.get("ok"):
+        try:
+            if not SIM.get("ok") and simpi_possible() and sim3d_ready("pi"):
+                simpi_start("demo")                        # on the Pi: start the simulator first
+                sim_set(True, "demo")
+        except Exception:
+            pass
+        if not CFG.get("sim_on"):
+            return False, "start the simulator first (tab Simulator)"
+    DEMO_RUN.update(busy=True, step="", i=0, n=len(DEMO_STEPS), t=time.time(), stop=False)
+    threading.Thread(target=_demo_thread, daemon=True, name="demo").start()
+    return True, ""
+
+
+def _demo_thread():
+    SANDBOX["force"] += 1                                # nobody's phone rings during the demo
+    try:
+        for _ in range(60):                               # the simulator must answer (it may just have started)
+            if SIM.get("ok") or DEMO_RUN["stop"]:
+                break
+            time.sleep(1)
+        for i, (wait, text, acts) in enumerate(DEMO_STEPS):
+            if DEMO_RUN["stop"]:
+                break
+            DEMO_RUN.update(i=i + 1, step=text)
+            for a in acts:
+                try:
+                    sim_control(a)
+                except Exception:
+                    pass
+            if i == 5:
+                light_alarm()
+            t_end = time.time() + wait
+            while time.time() < t_end and not DEMO_RUN["stop"]:
+                time.sleep(0.5)
+    finally:
+        SANDBOX["force"] = max(0, SANDBOX["force"] - 1)
+        DEMO_RUN.update(busy=False, step="", i=0)
+        log_event("sys", "Demo finished")
 # ----------------------------------------------------------------------------
 # Second Wi-Fi adapter (USB stick): one adapter makes the own Wi-Fi, the other one joins a known network (campsite, phone)
 # -> repeater: the devices in the own Wi-Fi have internet (NetworkManager "shared" does the routing). Also: automatic change
@@ -14040,6 +14287,10 @@ def fleet_poll_one(dev):
     except Exception as e:
         st = {"ok": False, "err": "not reachable"}
     st["checked"] = time.time()
+    try:
+        fleet_handover(dev, st)                          # 2.96.7 (makeover 16): a person goes from one device to the next
+    except Exception:
+        pass
     with FLEET["lock"]:
         old = FLEET["state"].get(dev["id"], {})
         if old.get("ok") and not st["ok"] and is_armed():
@@ -14054,7 +14305,7 @@ def fleet_loop():
         devs = list(CFG["fleet"])
         if not devs:
             continue
-        busy = time.time() - FLEET["seen"] < 60
+        busy = time.time() - FLEET["seen"] < 60 or is_armed()     # 2.96.7: armed - often, for the handover
         for d in devs:
             last = FLEET["state"].get(d["id"], {}).get("checked", 0)
             if time.time() - last > (4 if busy else 60):
@@ -14148,6 +14399,41 @@ def fleet_snap(dev_id):
     FLEET["snaps"][dev_id] = (time.time(), data)
     return data
 
+
+
+# ---- 2.96.7 (Makeover-Punkt 16): Übergabe zwischen Geräten - eine Person verschwindet bei einem Gerät und taucht innert
+# 40 s beim nächsten auf: «Übergabe A → B» im Protokoll (wichtig) und in der Liste FLEET["handover"] (Kameras-Seite / Zentrale).
+FLEET.setdefault("seen_p", {})        # device -> time persons were last > 0 ("" = this device)
+FLEET.setdefault("handover", [])
+
+
+def fleet_handover(dev, st):
+    now = time.time()
+    me = CFG.get("device_name") or "MoveEye"
+    if int(STATE.get("persons") or 0) > 0:
+        if now - FLEET["seen_p"].get("", 0.0) > 15:       # new here: did another device see the person just before?
+            for k, t in FLEET["seen_p"].items():
+                if k and 2 < now - t < 40:
+                    src = next((d.get("name") or d.get("url") for d in CFG["fleet"] if d["id"] == k), k)
+                    log_event("person", f"Handover: person from {src} to {me}")
+                    FLEET["handover"].insert(0, {"t": datetime.now().strftime("%H:%M:%S"), "from": src, "to": me})
+                    del FLEET["handover"][20:]
+                    break
+        FLEET["seen_p"][""] = now
+    name = dev.get("name") or dev.get("url", "?")
+    had = FLEET["seen_p"].get(dev["id"], 0.0)
+    if st.get("ok") and int(st.get("persons") or 0) > 0:
+        if now - had > 15:                                  # new at this device: where was the person before?
+            src = None
+            for k, t in FLEET["seen_p"].items():
+                if k != dev["id"] and 2 < now - t < 40:
+                    src = me if k == "" else next((d.get("name") or d.get("url") for d in CFG["fleet"] if d["id"] == k), k)
+            if src:
+                txt = f"Handover: person from {src} to {name}"
+                log_event("person", txt)
+                FLEET["handover"].insert(0, {"t": datetime.now().strftime("%H:%M:%S"), "from": src, "to": name})
+                del FLEET["handover"][20:]
+        FLEET["seen_p"][dev["id"]] = now
 # ----------------------------------------------------------------------------
 # MQTT / Home Assistant: state (armed, person, motion, animal, recording, battery, temperature), events and the alarm picture
 #   go to an MQTT broker (e.g. the Mosquitto add-on of Home Assistant); commands come back (arm / disarm, lights).
@@ -16283,8 +16569,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.83", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31140452,
-         "sha256": "d6942aa3bf75ee49820f23824f4302e01a5102765ca5a1a7cb6ba9f77782e8d4"}
+SIM3D = {"version": "3D-3.84", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31144794,
+         "sha256": "f03d40c7e6a4ba2995137939bd5b5948ea524c15f7c2a2b03e2ad69c381469a9"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -16423,8 +16709,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.83", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24261898,
-           "sha256": "7e9bc11db898df06f24876384fecad634733805e95864541da31d9a3aa396921", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.84", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24265920,
+           "sha256": "46b131e0f7a14c0e6dbe167979f7e809b250d6c9d5b00da5cd994360d3e7cf00", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -21096,7 +21382,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_6.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_7.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -34179,6 +34465,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       <button class="sec" id="all-groups" onclick="allGroups()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v5H4zM4 14h16v5H4z"/></svg><span data-i18n="Groups only">Groups only</span></button>
       <button class="sec" id="all-open" onclick="allSections(true)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg><span data-i18n="Expand all">Expand all</span></button>
       <button class="sec" id="all-close" onclick="allSections(false)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l5 5 5-5M7 20l5-5 5 5"/></svg><span data-i18n="Collapse all">Collapse all</span></button>
+      <button class="sec" id="demo-btn" onclick="demoGo()" title="3 Minuten Vorführung mit dem Simulator"><span>▶</span><span data-i18n="One-click demo">One-click demo</span></button>
       <button class="sec" id="kino-btn" onclick="location.href='/kino'" title="Vollbild für TV / Beamer"><span>🎬</span><span data-i18n="Cinema mode">Cinema mode</span></button>
     </div>
     <div id="simtile" data-simhub="tile" hidden style="margin-bottom:12px"></div>
@@ -37556,8 +37843,11 @@ async function newsCheck(force) {                    // 2.96.3: after an update 
   c.append(ok, off);
 }
 setTimeout(newsCheck, 2500);
+async function demoGo() {                             // 2.96.7: makeover 20
+  const r = await post("/api/demo", {lang: LANG}); if (r.ok) location.href = "/kino"; else toast("⚠ " + (r.error || t("error")));
+}
 Object.assign(I18N.de, {"New in this version": "Neu in dieser Version", "Next in the makeover": "Als Nächstes im Makeover", "No changes noted.": "Keine Änderungen notiert.",
-  "Do not show any more": "Nicht mehr anzeigen", "What is new?": "Was ist neu?", "Cinema mode": "Kino-Modus"});
+  "Do not show any more": "Nicht mehr anzeigen", "What is new?": "Was ist neu?", "Cinema mode": "Kino-Modus", "One-click demo": "Ein-Klick-Demo"});
 
 function protectWizard() {                       // three questions, then everything is set
   const A = {what: "place", when: "now", react: "push"};
@@ -41256,6 +41546,19 @@ class WebStream:
             with open(p, "rb") as f:
                 return Response(f.read(), mimetype="image/jpeg")
 
+        @app.route("/api/simstats")
+        def api_simstats():                                  # 2.96.7: makeover 18 / 19
+            return reply(dict(simdiary_stats(28), ok=True))
+
+        @app.route("/api/demo", methods=["POST"])
+        def api_demo():                                      # 2.96.7: makeover 20 - the one-click demo
+            d = body(); lang = norm_lang(d.get("lang"))
+            if d.get("stop"):
+                DEMO_RUN["stop"] = True
+                return reply({"ok": True})
+            ok, err = demo_start()
+            return reply({"ok": ok, "error": tr_err(err, lang) if err else ""}, 200 if ok else 400)
+
         @app.route("/api/simbar")
         def api_simbar():                                    # 2.96.4: the stripe «SIMULATION» on every page
             return reply({"ok": True, "on": bool(CFG.get("sim_on"))})
@@ -43078,6 +43381,8 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_eco", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)"),
     ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
+    ("Simulator", "rover_alarm", "Rover: at a person alarm drive there by itself (simulator)"),
+    ("Simulator", "simweek_on", "Week report of the simulator diary as a push (Monday morning)"),
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself when a newer version is there"),
@@ -43674,7 +43979,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.6")
+        self.root.title("MoveEye 2.96.7")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -43991,7 +44296,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.6 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.7 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -51202,6 +51507,27 @@ _HX114 = {  # 2.96.6: alarm chain texts
     'no message': ('keine Meldung', 'aucun message', 'nessun messaggio', 'nagin messadi'),
 }
 for _k, _v in _HX114.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX115 = {  # 2.96.7: makeover 16-20
+    'Rover: at a person alarm drive there by itself (simulator)': ('Rover: bei Personen-Alarm von selbst hinfahren (Simulator)', 'Rover : en cas d’alarme personne, y aller tout seul (simulateur)', 'Rover: in caso di allarme persona andarci da solo (simulatore)', 'Rover: tar alarm da persuna ir da sez (simulatur)'),
+    'Week report of the simulator diary as a push (Monday morning)': ('Wochenbericht des Simulator-Tagebuchs als Push (Montagmorgen)', 'Rapport hebdomadaire du journal du simulateur par push (lundi matin)', 'Rapporto settimanale del diario del simulatore via push (lunedì mattina)', 'Rapport d’emna dal diari dal simulatur sco push (glindesdi damaun)'),
+    'Week in the simulator: {v} visits, persons recognised {r} % ({a} of {b}). Animals: {an}': ('Woche im Simulator: {v} Besuche, Personen erkannt {r} % ({a} von {b}). Tiere: {an}', 'Semaine dans le simulateur : {v} visites, personnes reconnues {r} % ({a} sur {b}). Animaux : {an}', 'Settimana nel simulatore: {v} visite, persone riconosciute {r} % ({a} su {b}). Animali: {an}', 'Emna en il simulatur: {v} visitas, persunas renconuschidas {r} % ({a} da {b}). Animals: {an}'),
+    'One-click demo': ('Ein-Klick-Demo', 'Démo en un clic', 'Demo con un clic', 'Demo cun in clic'),
+    'the demo is already running': ('die Demo läuft schon', 'la démo est déjà en cours', 'la demo è già in corso', 'la demo è gia en lavur'),
+    'start the simulator first (tab Simulator)': ('zuerst den Simulator starten (Reiter Simulator)', 'démarrez d’abord le simulateur (onglet Simulateur)', 'avviare prima il simulatore (scheda Simulatore)', 'l’emprim aviar il simulatur (tab Simulatur)'),
+    'Welcome to MoveEye – a camera that watches and thinks': ('Willkommen bei MoveEye – eine Kamera, die aufpasst und mitdenkt', 'Bienvenue chez MoveEye – une caméra qui surveille et réfléchit', 'Benvenuti in MoveEye – una telecamera che sorveglia e pensa', 'Bainvegni tar MoveEye – ina camera che fa attenziun e patratga'),
+    'Day: a person walks past – MoveEye notices it': ('Tag: eine Person geht vorbei – MoveEye bemerkt sie', 'Jour : une personne passe – MoveEye la remarque', 'Giorno: una persona passa – MoveEye la nota', 'Di: ina persuna passa – MoveEye la remarca'),
+    'Animals are not a person: a fox comes by': ('Tiere sind keine Personen: ein Fuchs kommt vorbei', 'Les animaux ne sont pas des personnes : un renard passe', 'Gli animali non sono persone: passa una volpe', 'Animals n’èn naginas persunas: ina vulp passa'),
+    'Evening falls – MoveEye switches to night vision': ('Es wird Abend – MoveEye schaltet auf Nachtsicht', 'Le soir tombe – MoveEye passe en vision nocturne', 'Scende la sera – MoveEye passa alla visione notturna', 'I vegn saira – MoveEye mida sin vesida da notg'),
+    'At night: somebody creeps to the bike': ('Nachts: jemand schleicht zum Velo', 'La nuit : quelqu’un se faufile vers le vélo', 'Di notte: qualcuno si avvicina alla bici', 'La notg: insatgi va plaun tar il velo'),
+    'Alarm: light, push message – and the siren if nobody switches off': ('Alarm: Licht, Push-Meldung – und die Sirene, wenn niemand ausschaltet', 'Alarme : lumière, message push – et la sirène si personne ne coupe', 'Allarme: luce, notifica – e la sirena se nessuno spegne', 'Alarm: glisch, messadi push – e la sirena, sche nagin na stizza'),
+    'Rain: the filters keep false alarms away': ('Regen: die Filter halten Fehlalarme fern', 'Pluie : les filtres évitent les fausses alarmes', 'Pioggia: i filtri tengono lontani i falsi allarmi', 'Plievgia: ils filters tegnan davent alarms fallads'),
+    'Morning: the night report and the diary say what happened': ('Morgen: Nachtbericht und Tagebuch sagen, was passiert ist', 'Matin : le rapport de nuit et le journal disent ce qui s’est passé', 'Mattina: il rapporto notturno e il diario dicono cosa è successo', 'Damaun: il rapport da notg ed il diari din tge ch’è capità'),
+    'That was MoveEye. Thank you!': ('Das war MoveEye. Danke!', 'C’était MoveEye. Merci !', 'Questo era MoveEye. Grazie!', 'Quai era MoveEye. Grazia!'),
+}
+for _k, _v in _HX115.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

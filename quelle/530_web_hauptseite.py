@@ -540,6 +540,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       <button class="sec" id="all-groups" onclick="allGroups()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v5H4zM4 14h16v5H4z"/></svg><span data-i18n="Groups only">Groups only</span></button>
       <button class="sec" id="all-open" onclick="allSections(true)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg><span data-i18n="Expand all">Expand all</span></button>
       <button class="sec" id="all-close" onclick="allSections(false)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l5 5 5-5M7 20l5-5 5 5"/></svg><span data-i18n="Collapse all">Collapse all</span></button>
+      <button class="sec" id="demo-btn" onclick="demoGo()" title="3 Minuten Vorführung mit dem Simulator"><span>▶</span><span data-i18n="One-click demo">One-click demo</span></button>
       <button class="sec" id="kino-btn" onclick="location.href='/kino'" title="Vollbild für TV / Beamer"><span>🎬</span><span data-i18n="Cinema mode">Cinema mode</span></button>
     </div>
     <div id="simtile" data-simhub="tile" hidden style="margin-bottom:12px"></div>
@@ -3917,8 +3918,11 @@ async function newsCheck(force) {                    // 2.96.3: after an update 
   c.append(ok, off);
 }
 setTimeout(newsCheck, 2500);
+async function demoGo() {                             // 2.96.7: makeover 20
+  const r = await post("/api/demo", {lang: LANG}); if (r.ok) location.href = "/kino"; else toast("⚠ " + (r.error || t("error")));
+}
 Object.assign(I18N.de, {"New in this version": "Neu in dieser Version", "Next in the makeover": "Als Nächstes im Makeover", "No changes noted.": "Keine Änderungen notiert.",
-  "Do not show any more": "Nicht mehr anzeigen", "What is new?": "Was ist neu?", "Cinema mode": "Kino-Modus"});
+  "Do not show any more": "Nicht mehr anzeigen", "What is new?": "Was ist neu?", "Cinema mode": "Kino-Modus", "One-click demo": "Ein-Klick-Demo"});
 
 function protectWizard() {                       // three questions, then everything is set
   const A = {what: "place", when: "now", react: "push"};

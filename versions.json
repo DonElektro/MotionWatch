@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 21:23",
+ "generated": "2026-10-28 21:30",
  "versions": [
   {
-   "version": "2.96.6",
-   "file": "webcam_bewegung_2_96_6.py",
+   "version": "2.96.7",
+   "file": "webcam_bewegung_2_96_7.py",
    "url": "",
-   "sha256": "2827559aa52ed655d7d10ac5aea14ae3fe4de67e6618b41a4c443b40c889c9be",
-   "date": "2026-10-28 21:23",
-   "notes": "Makeover 12–15 (Simulator-Zentrale): Trainings-Nacht (Testläufe in 5 Szenen, Optimierung, Trainingsbilder, Bericht); A/B-Vergleich von Einstellungen; Test-Posteingang (Meldungen in der Simulation hierhin statt aufs Handy) und «Alarm-Kette testen» (Push, Licht, Sirene); Störfall-Übungen Akku leer, WLAN weg, Hitze, Kälte mit Bericht, wie MoveEye reagiert hat",
-   "sig": "6685871fc57b079ac478332ef50e3fc11b660476f324d6834ddd9807bd263939f9374e4a82b7b673a5f82842103f9c61d6a84303673c99ce2f2f588dad4ac405"
+   "sha256": "1779456bdc18df156ce1eb6da6158135995e0f3403ae437f751cb08cd45ca2c6",
+   "date": "2026-10-28 21:30",
+   "notes": "Makeover 16–20: mehrere Geräte (zweites Gerät bewacht Zelt / Velo / Auto, Übergabe einer Person zwischen Geräten im Protokoll); Rover (Patrouille, Ladestation mit Akku, zum Alarm fahren – auch von selbst bei Personen-Alarm); Statistik aus dem Simulator (4 Wochen, Arten, Erkennungsrate, Wochenbericht als Push); Versionen vergleichen (Erkennungsrate und Testlauf-Punkte pro Version); Ein-Klick-Demo (3 Minuten im Kino-Modus); passt zum Simulator 3D-3.84",
+   "sig": "1611df5c10f626f9fcfc10379ec9dffea79308bba74b5e6d8ee5c63806a57115b9d70656db901414aa2259fc45215000e15f1f7fa8d9f63e7e0a007a9348390b"
   },
   {
    "version": "2.95.105",

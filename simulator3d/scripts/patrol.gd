@@ -36,6 +36,11 @@ var _tries := 0
 # 3D-3.76: «Überwachen»: first the question which place is guarded; the mover plans its own route round it (around the
 # objects) and MoveEye keeps looking towards the place while it drives.
 var guard := {}                        # {"c": Vector2, "r": float, "name": String} - empty = a route set by hand
+# 3D-3.84 (makeover 17): the rover fully in MoveEye - a one-way trip («to the alarm», «to the charger»), its battery, the dock
+var mission := ""                      # "" | alarm | dock | goto
+var batt := 100.0
+var _saved := {}
+var _dock: Node3D
 var _ask: PanelContainer
 var _ask_r := 10.0
 
@@ -246,7 +251,46 @@ func clear_route() -> void:
 	_dirty = true
 
 
+func goto_point(p: Vector2, why := "goto") -> void:
+	"""drive to p, look round, back to the charger, stop - then the old route again"""
+	if mission == "":
+		_saved = {"points": points.duplicate(), "mode": mode, "guard": guard.duplicate(), "active": active}
+	var home := Vector2(main.home_pos.x, main.home_pos.z)
+	points = [p, home] if why != "dock" else [home]
+	mode = "points"
+	guard = {}
+	mission = why
+	idx = -1
+	_dirty = true
+	if active:
+		_next()
+	else:
+		set_active(true)
+	main.start_info = {"alarm": "Rover fährt zum Alarm", "dock": "Rover fährt zur Ladestation", "goto": "Rover fährt hin"}.get(why, why)
+
+
+func _mission_end() -> void:
+	var was := mission
+	mission = ""
+	var keep_on: bool = bool(_saved.get("active", false)) and was != "dock"
+	if not _saved.is_empty():
+		points = _saved["points"]
+		mode = _saved["mode"]
+		guard = _saved["guard"]
+	_saved = {}
+	_dirty = true
+	if not keep_on:
+		set_active(false)
+	else:
+		idx = -1
+		_next()
+	main.start_info = "Rover zurück an der Ladestation" if not keep_on else "Rover: weiter mit der Patrouille"
+
+
 func _next() -> void:
+	if mission != "" and idx >= points.size() - 1:
+		_mission_end()
+		return
 	state = "drive"
 	if mode == "area":
 		var p := Vector3(randf_range(area.position.x, area.end.x), 0, randf_range(area.position.y, area.end.y))
@@ -290,9 +334,16 @@ func _process(dt: float) -> void:
 		_draw_route()
 		save_route()
 	_mk.visible = show_route and (active or edit != "" or main.explore.on)
+	_dock_tick()
 	if not active:
+		var rr: Node3D = main.rig
+		if Vector2(rr.position.x - main.home_pos.x, rr.position.z - main.home_pos.z).length() < 1.5:
+			batt = minf(100.0, batt + dt * 1.0)               # on the charger
 		return
 	main.mover_max = speed
+	batt = maxf(0.0, batt - dt * 0.05)                      # about 30 minutes of driving
+	if batt < 20.0 and mission == "":
+		goto_point(Vector2(main.home_pos.x, main.home_pos.z), "dock")
 	var t := now()
 	var rig: Node3D = main.rig
 	var me := Vector2(rig.position.x, rig.position.z)
@@ -511,3 +562,57 @@ func state_dict() -> Dictionary:
 			"head": snappedf(head_yaw, 0.01), "suspect": suspect, "follow": follow,
 			"guard": {} if guard.is_empty() else {"x": snappedf(guard["c"].x, 0.1), "z": snappedf(guard["c"].y, 0.1), "r": guard["r"], "name": guard["name"]},
 			"blocked_points": points.filter(func(p): return main.blocked(p, 1.0)).size()}
+
+
+
+func _dock_tick() -> void:
+	"""the charging station at the place of MoveEye: a flat plate with a green lamp (a real object, the cameras see it)"""
+	if _dock != null and is_instance_valid(_dock) and _dock.is_inside_tree():
+		return
+	_dock = Node3D.new()
+	main.scene_parent.add_child(_dock)
+	_dock.position = Vector3(main.home_pos.x, 0, main.home_pos.z) + Vector3(0, 0.02, 0)
+	var pl := MeshInstance3D.new()
+	var b := BoxMesh.new()
+	b.size = Vector3(1.2, 0.04, 1.4)
+	pl.mesh = b
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(0.2, 0.22, 0.25)
+	pl.material_override = m
+	_dock.add_child(pl)
+	var lp := MeshInstance3D.new()
+	var s := SphereMesh.new()
+	s.radius = 0.05
+	s.height = 0.1
+	lp.mesh = s
+	var lm := StandardMaterial3D.new()
+	lm.albedo_color = Color(0.3, 1.0, 0.4)
+	lm.emission_enabled = true
+	lm.emission = Color(0.3, 1.0, 0.4)
+	lp.material_override = lm
+	lp.position = Vector3(0.5, 0.08, -0.6)
+	_dock.add_child(lp)
+
+
+func alarm_point():
+	"""where MoveEye saw the person: the first box of MoveEye on the ground, else 8 m in the direction of the head"""
+	var cam: Camera3D = main.cams[0]
+	var vs := Vector2(main.vps[0].size)
+	var b = main.mw_det.get("boxes", [])
+	if typeof(b) == TYPE_ARRAY and not b.is_empty() and typeof(b[0]) == TYPE_ARRAY and b[0].size() == 4:
+		var px := Vector2(float(b[0][0]) + float(b[0][2]) / 2.0, float(b[0][1]) + float(b[0][3])) * vs
+		var o := cam.project_ray_origin(px)
+		var d := cam.project_ray_normal(px)
+		if d.y < -0.01:
+			var hit := o + d * (-o.y / d.y)
+			return Vector2(hit.x, hit.z)
+	var f := -cam.global_transform.basis.z
+	f.y = 0
+	f = f.normalized() * 8.0
+	return Vector2(cam.global_position.x + f.x, cam.global_position.z + f.z)
+
+
+func rover_info() -> Dictionary:
+	return {"active": active, "mission": mission, "batt": int(round(batt)), "state": state, "guard": guard.get("name", ""),
+			"charging": not active and Vector2(main.rig.position.x - main.home_pos.x, main.rig.position.z - main.home_pos.z).length() < 1.5 and batt < 100.0,
+			"mover": main.mover_on}

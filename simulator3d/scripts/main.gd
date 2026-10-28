@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.83"
+const VERSION := "3D-3.84"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -927,6 +927,8 @@ func set_scene(id: String) -> bool:
 	for c in scene_parent.get_children():
 		c.queue_free()
 	_build_scene()
+	if dev2 != null and dev2.rig != null:
+		dev2._put()                                # 3D-3.84: a second device guarding a thing moves with it
 	if game != null:
 		game.on_scene()                            # the game: new goal, players back to the start
 	next_auto = now() + 8.0
@@ -2776,7 +2778,7 @@ func _register_controls() -> void:
 		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
 	add_control("toggle", "dev2_on", "Zweites Motion-Watch-Gerät in der Welt (eigene Adresse: Port des Simulators + 20, meist 8785)", func(): return dev2.on, func(v): dev2.set_on(v), "Mover")
 	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
-			{"options": [["opposite", "gegenüber (30 m)"], ["left", "links"], ["right", "rechts"]]})
+			{"options": [["opposite", "gegenüber (30 m)"], ["left", "links"], ["right", "rechts"], ["door", "bewacht Zelt / Tür"], ["bike", "bewacht das Velo"], ["car", "bewacht das Auto (Strasse)"]]})
 	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – fahren mit dem grünen Stick unten rechts, den Pfeiltasten oder dem zweiten Stick in MoveEye", func(): return mover_on, func(v): set_mover(v), "Mover")
 	# 3D-3.61: «Patrouille»
 	add_control("toggle", "patrol_on", "Patrouille: der Mover fährt MoveEye die Route ab", func(): return patrol != null and patrol.active, func(v): if patrol != null: patrol.set_active(bool(v)), "Mover")
@@ -3313,6 +3315,18 @@ func control(d: Dictionary) -> Dictionary:
 			explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
 			explore.test_until = explore.main.now() + (float(dv[2]) if dv.size() > 2 else 2.0)
 		return explore.state()
+	elif a == "rover":                                 # 3D-3.84: makeover 17 {do: info | patrol (on) | alarm | dock | goto (x, z)}
+		var rd := str(d.get("do", "info"))
+		if rd == "patrol":
+			patrol.set_active(bool(d.get("on", true)))
+		elif rd == "alarm":
+			var ap = patrol.alarm_point()
+			patrol.goto_point(ap, "alarm")
+		elif rd == "dock":
+			patrol.goto_point(Vector2(home_pos.x, home_pos.z), "dock")
+		elif rd == "goto":
+			patrol.goto_point(Vector2(float(d.get("x", 0)), float(d.get("z", -8))), "goto")
+		return {"ok": true, "rover": patrol.rover_info()}
 	elif a == "overlay":
 		return {"ok": true, "overlay": overlay.info()}
 	elif a == "whatif":                                # 3D-3.83: makeover 8 - MoveEye re-enacts a real recording

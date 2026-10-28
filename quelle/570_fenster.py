@@ -153,6 +153,8 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "sim_eco", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)"),
     ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
+    ("Simulator", "rover_alarm", "Rover: at a person alarm drive there by itself (simulator)"),
+    ("Simulator", "simweek_on", "Week report of the simulator diary as a push (Monday morning)"),
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
     ("Simulator", "sim_autoupd", "Update the simulator by itself when a newer version is there"),
@@ -749,7 +751,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.6")
+        self.root.title("MoveEye 2.96.7")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1066,7 +1068,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.6 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.7 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

@@ -1,12 +1,12 @@
 {
- "version": "3D-3.83",
+ "version": "3D-3.84",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31140452,
- "sha256": "d6942aa3bf75ee49820f23824f4302e01a5102765ca5a1a7cb6ba9f77782e8d4",
- "notes": "Makeover 8-11: Was wäre wenn, Zwilling, Zonen und Erkennung in 3D",
+ "size": 31144794,
+ "sha256": "f03d40c7e6a4ba2995137939bd5b5948ea524c15f7c2a2b03e2ad69c381469a9",
+ "notes": "Makeover 16-20: zweites Gerät bewacht Dinge, Rover mit Ladestation und Alarmfahrt",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24261898,
-  "sha256": "7e9bc11db898df06f24876384fecad634733805e95864541da31d9a3aa396921"
+  "size": 24265920,
+  "sha256": "46b131e0f7a14c0e6dbe167979f7e809b250d6c9d5b00da5cd994360d3e7cf00"
  }
 }

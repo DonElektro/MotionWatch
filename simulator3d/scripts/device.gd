@@ -90,18 +90,43 @@ func status() -> String:
 	return "Gerät 2: Port %d, %s" % [port, c] + ("" if net == null or net.listening else " (Port belegt!)")
 
 
+const NAMED := ["door", "bike", "car"]                 # 3D-3.84 (makeover 16): guards a thing of the scene
+
+
 func set_place(p: String) -> void:
-	place = p if PLACES.has(p) else "opposite"
+	place = p if (PLACES.has(p) or p in NAMED) else "opposite"
 	if rig != null:
 		_put()
 
 
+func _named_target() -> Vector3:
+	var o: Dictionary = main.obj
+	match place:
+		"door":
+			return o.get("door", Vector3(0, 0, -10))
+		"bike":
+			return o.get("bike", Vector3(4, 0, -9))
+		_:
+			var rz: float = float(main.scenes.data.get("road_z", -30.0)) - 1.2
+			return Vector3(6, 0, rz + 3.0)
+
+
 func _put() -> void:
-	var p: Vector3 = PLACES[place]
+	var p: Vector3
+	var to: Vector3
+	if place in NAMED:                                      # 6 m away from the thing, looking at it (from the side of MoveEye 1)
+		var tg := _named_target()
+		var side := Vector3(tg.x, 0, tg.z).normalized()
+		if side.length() < 0.1:
+			side = Vector3(0, 0, -1)
+		p = tg + side.rotated(Vector3.UP, 0.9) * 6.0
+		to = tg - p
+	else:
+		p = PLACES[place]
+		to = -p
 	p.y = main.ground_y(p.x, p.z)
 	rig.position = p
-	var to := -p
-	rig.rotation.y = atan2(-to.x, -to.z)                  # it looks towards the first device
+	rig.rotation.y = atan2(-to.x, -to.z)                  # it looks towards the first device / the guarded thing
 
 
 func _build() -> void:

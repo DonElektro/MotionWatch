@@ -32,11 +32,20 @@ def sim_hub(force=False):
         d.update(ok=True, name=str(r.get("name") or ""), scene=str(r.get("scenario") or ""), status=st,
                  scenes=[{"id": s.get("id"), "name": str(s.get("name") or "").replace(" (3D)", "")} for s in r.get("scenarios") or []][:40],
                  hour=h, clock="%02d:%02d" % (int(h), int(round((h % 1) * 60)) % 60), dark=" Nacht " in st or st.find("· Nacht ·") >= 0,
-                 weather=wx, ambient=vals.get("ambient"), visitors=int(m.group(1)) if m else None, surprise=bool(vals.get("surprise_on")), zones3d=bool(vals.get("show_zones3d")), det3d=bool(vals.get("show_det3d")),
+                 weather=wx, ambient=vals.get("ambient"), visitors=int(m.group(1)) if m else None, surprise=bool(vals.get("surprise_on")), dev2=bool(vals.get("dev2_on")), dev2_place=str(vals.get("dev2_place") or ""), zones3d=bool(vals.get("show_zones3d")), det3d=bool(vals.get("show_det3d")),
                  twin_ok="show_zones3d" in vals,
                  game=r.get("game") or {}, has={k: k in vals for k in ("surprise_on", "weather", "hour", "spawn_person", "thief")})
     except Exception as e:
         d["msg"] = str(e)[:80]
+    d["handover"] = list(FLEET.get("handover") or [])[:3]   # 2.96.7: makeover 16
+    if d.get("ok"):
+        try:
+            d["rover"] = (sim_control({"action": "rover"}) or {}).get("rover")
+        except Exception:
+            d["rover"] = None
+        d["rover_alarm"] = bool(CFG.get("rover_alarm"))
+    d["demo"] = {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"]}
+    d["devices"] = len(CFG.get("fleet") or [])
     if d.get("ok"):                                         # the twin, back from the simulator (place, mast)
         try:
             d["twin"] = sim_twin_info() if d.get("twin_ok") else {}
@@ -62,6 +71,15 @@ def sim_hub_do(a, v=None):
             r = sim_control({"action": "set", "id": "surprise_on", "value": bool(v)})
         elif a == "templates":
             r = sim_control({"action": "templates", "do": "open", "tab": 0})
+        elif a == "dev2":
+            r = sim_control({"action": "set", "id": "dev2_on", "value": bool(v)})
+        elif a == "dev2_place":
+            r = sim_control({"action": "set", "id": "dev2_place", "value": str(v)[:12]})
+        elif a == "rover":
+            if v == "auto_on" or v == "auto_off":
+                CFG["rover_alarm"] = v == "auto_on"; save_settings(); r = {"ok": True}
+            else:
+                r = sim_control({"action": "rover", "do": str(v)[:10], "on": True}) if v != "patrol_off" else sim_control({"action": "rover", "do": "patrol", "on": False})
         elif a == "twin":
             r = sim_twin()
         elif a == "overlay":
@@ -97,7 +115,14 @@ SIMHUB_JS = r"""
     "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
     "Tap = control": "Antippen = steuern", "person": "Person", "burglar": "Dieb", "child": "Kind", "dogwalk": "Hund", "fox": "Fuchs", "deer": "Reh", "cat": "Katze",
     "boar": "Wildschwein", "hedgehog": "Igel", "cyclist": "Velo", "courier": "Kurier", "car": "Auto", "sent": "geschickt", "Test run, test bench": "Testlauf, Prüfstand",
-    "Play on the phone": "Mitspielen mit dem Handy", "Twin of your place": "Zwilling deines Platzes", "Test inbox": "Test-Posteingang", "Drills": "Störfall-Übungen", "Battery, Wi-Fi, heat, cold": "Akku, WLAN, Hitze, Kälte",
+    "Play on the phone": "Mitspielen mit dem Handy", "Several devices": "Mehrere Geräte", "2nd device": "2. Gerät", "P_opposite": "gegenüber", "P_door": "bewacht Zelt / Tür", "P_bike": "bewacht Velo",
+    "P_car": "bewacht Auto", "P_left": "links", "P_right": "rechts", "Rover": "Rover", "M_alarm": "fährt zum Alarm", "M_dock": "fährt zur Ladestation", "M_goto": "fährt hin",
+    "patrols": "patrouilliert", "charging": "lädt", "ready": "bereit", "Statistics & versions": "Statistik & Versionen", "4 weeks, per version": "4 Wochen, pro Version",
+    "Second device in the simulator": "Zweites Gerät im Simulator", "dev-note": "Ein zweites MoveEye verbindet sich mit Port 8785 des Simulators (z. B. eine zweite Kopie auf dem PC). Unter Kameras → Geräte hinzufügen: dann meldet MoveEye die Übergabe, wenn eine Person von einem Gerät zum anderen geht.",
+    "Patrol": "Patrouille", "Drive to the alarm": "Zum Alarm fahren", "To the charger": "Zur Ladestation", "At a person alarm: drive there by itself": "Bei Personen-Alarm von selbst hinfahren",
+    "rover-note": "Akku hält etwa 30 Minuten Fahrt; unter 20 % fährt der Rover von selbst zur Ladestation.",
+    "Visits (blue) and persons recognised in % (green), 4 weeks": "Besuche (blau) und erkannte Personen in % (grün), 4 Wochen", "Per MoveEye version": "Pro MoveEye-Version", "test": "Test",
+    "Twin of your place": "Zwilling deines Platzes", "Test inbox": "Test-Posteingang", "Drills": "Störfall-Übungen", "Battery, Wi-Fi, heat, cold": "Akku, WLAN, Hitze, Kälte",
     "Training night": "Trainings-Nacht", "A/B comparison": "A/B-Vergleich", "Which setting is better?": "Welche Einstellung ist besser?", "Messages here instead of the phone": "Meldungen hierhin statt aufs Handy",
     "Test the alarm chain": "Alarm-Kette testen", "Empty – nothing arrived yet": "Leer – noch nichts angekommen", "held back (offline), sent later": "zurückgehalten (offline), wird später gesendet",
     "Battery empty": "Akku leer", "Wi-Fi / internet gone": "WLAN / Internet weg", "Heat": "Hitze", "Cold": "Kälte", "Drill runs": "Übung läuft", "Last drill": "Letzte Übung",
@@ -126,9 +151,37 @@ SIMHUB_JS = r"""
     if (kind === "weather") WX.forEach(([k, ic]) => { const b = E("button", k === H.weather ? "" : "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = () => act("weather", k); s.appendChild(b); });
     if (kind === "visit") VIS.forEach(([k, ic]) => { const b = E("button", "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = async () => { const r = await act("visit", k); if (r && r.ok) say(ic + " " + tt("sent")); }; s.appendChild(b); });
     if (["inbox", "drill", "train", "ab"].includes(kind)) labSheet(s, kind);
+    if (kind === "devices") {
+      s.appendChild(B((H.dev2 ? "✓ " : "") + tt("Second device in the simulator"), () => act("dev2", !H.dev2), H.dev2 ? "" : "sec"));
+      ["opposite", "door", "bike", "car", "left", "right"].forEach(p => s.appendChild(B(tt("P_" + p), () => act("dev2_place", p), H.dev2_place === p ? "" : "sec")));
+      s.appendChild(E("div", "mut", tt("dev-note")));
+    }
+    if (kind === "rover") { const R = H.rover || {};
+      s.append(B("▶ " + tt("Patrol"), () => act("rover", "patrol")), B("⏹ " + tt("Stop"), () => act("rover", "patrol_off")), B("🚨 " + tt("Drive to the alarm"), () => act("rover", "alarm")),
+        B("⚡ " + tt("To the charger"), () => act("rover", "dock")), B((H.rover_alarm ? "✓ " : "") + tt("At a person alarm: drive there by itself"), () => act("rover", H.rover_alarm ? "auto_off" : "auto_on"), H.rover_alarm ? "" : "sec"));
+      s.appendChild(E("div", "mut", "🔋 " + (R.batt != null ? R.batt + " %" : "–") + (R.charging ? " · " + tt("charging") : "") + " · " + tt("rover-note")));
+    }
+    if (kind === "stats") statsSheet(s);
     box.appendChild(s);
   }
-  let LB = null;
+  let LB = null, ST = null;
+  async function statsSheet(s) {
+    if (!ST) { s.appendChild(E("div", "mut", "…")); try { ST = await (await fetch("/api/simstats")).json(); } catch (e) { return; } setTimeout(() => { ST = null; }, 60000); paintAll(); return; }
+    const W = 320, Hh = 90, days = ST.days, bw = W / days.length;
+    const svg = '<svg viewBox="0 0 ' + W + ' ' + (Hh + 14) + '" style="width:100%;max-width:560px">' + days.map((d, i) => { const h = d.rate == null ? 0 : d.rate / 100 * Hh;
+      const v = Math.min(Hh, d.visits * 3); return '<rect x="' + (i * bw + 1) + '" y="' + (Hh - v) + '" width="' + (bw - 2) + '" height="' + v + '" fill="#3b8cff" opacity=".25"/>'
+        + (d.rate == null ? "" : '<rect x="' + (i * bw + bw * .25) + '" y="' + (Hh - h) + '" width="' + (bw * .5) + '" height="' + h + '" fill="#3fcf6b"/>'); }).join("")
+      + '<text x="0" y="' + (Hh + 12) + '" font-size="9" fill="#8a9bb0">' + days[0].d.slice(5) + '</text><text x="' + W + '" y="' + (Hh + 12) + '" font-size="9" fill="#8a9bb0" text-anchor="end">' + days[days.length - 1].d.slice(5) + '</text></svg>';
+    const c = E("div"); c.style.width = "100%"; c.innerHTML = svg; s.append(E("b", "", tt("Visits (blue) and persons recognised in % (green), 4 weeks")), c);
+    s.appendChild(E("div", "mut", ST.kinds.map(k => ((window.EVI || {})[k.person ? "person" : k.animal ? "animal" : "vehicle"] || "") + " " + k.k + " " + k.n).join(" · ") || "–"));
+    s.appendChild(E("b", "", tt("Per MoveEye version")));
+    const tb = E("div"); tb.style.cssText = "width:100%;display:flex;flex-direction:column;gap:4px";
+    (ST.versions.length ? ST.versions : [{v: "–"}]).forEach(v => { const r = E("div"); r.style.cssText = "display:flex;align-items:center;gap:8px;font-size:12px";
+      const bar = E("div"); bar.style.cssText = "flex:1;height:10px;background:var(--line,#1f2b3a);border-radius:5px;overflow:hidden";
+      const f = E("div"); f.style.cssText = "height:100%;background:#3fcf6b;width:" + (v.rate || 0) + "%"; bar.appendChild(f);
+      r.append(E("b", "", v.v), bar, E("span", "", (v.rate != null ? v.rate + " %" : "–") + (v.lat != null ? " · " + v.lat + " s" : "") + (v.score != null ? " · " + tt("test") + " " + v.score : "")));
+      tb.appendChild(r); }); s.appendChild(tb);
+  }
   const lab = async (d) => { try { const r = d ? await (await fetch("/api/lab", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, d))})).json()
       : await (await fetch("/api/lab")).json(); if (r && r.inbox) LB = r; if (r && r.ok === false && r.error) say("⚠ " + r.error); paintAll(); return r; } catch (e) {} };
   const B = (txt, fn, cls) => { const b = E("button", cls || "sec", txt); b.type = "button"; b.onclick = fn; return b; };
@@ -178,6 +231,10 @@ SIMHUB_JS = r"""
       ["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]];
     if (full && H.twin_ok) T.push(["twin", "🪞", tt("Twin of your place"), tt("Place, zones, patrol")], ["zones3d", "▱", tt("Zones in 3D"), H.zones3d ? tt("on") : tt("off")],
       ["det3d", "🎯", tt("Detection in 3D"), H.det3d ? tt("on") : tt("off")]);
+    if (full) { const R = H.rover || {};
+      T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
+        ["rover", "🚜", tt("Rover"), H.rover ? (R.mission ? "⏳ " + tt("M_" + R.mission) : R.active ? tt("patrols") : R.charging ? "⚡ " + tt("charging") : tt("ready")) + " · 🔋 " + R.batt + " %" : "–"],
+        ["stats", "📈", tt("Statistics & versions"), tt("4 weeks, per version")]); }
     if (full) T.push(["inbox", "📨", tt("Test inbox"), LB ? (LB.sandbox ? tt("on") : tt("off")) + " · " + (LB.inbox || []).length : ""],
       ["drill", "⚡", tt("Drills"), LB && LB.drill.busy ? "⏳ " + LB.drill.left + " s" : tt("Battery, Wi-Fi, heat, cold")],
       ["train", "🌙", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
@@ -193,6 +250,7 @@ SIMHUB_JS = r"""
         open = open === k ? "" : k; paintAll(); };
       g.appendChild(b); });
     box.appendChild(g); if (open) sheet(box, open);
+    if (full && H.handover && H.handover.length) { const w = E("div", "mut", "🔁 " + H.handover.map(x => x.t + " " + x.from + " → " + x.to).join(" · ")); w.style.cssText = "margin-top:6px;font-size:12px"; box.appendChild(w); }
     if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Twin of your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
       + (H.twin.zones != null ? " · " + H.twin.zones + " " + tt("zones") : "") + (H.twin.waypoints != null ? " · " + H.twin.waypoints + " " + tt("patrol points") : "")); w.style.cssText = "margin-top:8px;font-size:12px"; box.appendChild(w); }
   }
@@ -227,7 +285,8 @@ def kino_state():
         evs = [e for e in STATE.get("events", []) if e.get("imp") or e.get("kind") in ("person", "ai", "car")][:8]
     return {"name": CFG.get("device_name") or "MoveEye", "version": APP_VERSION, "persons": STATE.get("persons", 0),
             "armed": bool(is_armed()), "rec": bool(STATE.get("recording")), "sim": bool(CFG.get("sim_on")),
-            "events": [{"t": e["t"][:5], "i": LOG_ICON.get(e["kind"], "·"), "x": tr(e["text"]) if isinstance(e.get("text"), str) else ""} for e in evs]}
+            "events": [{"t": e["t"][:5], "i": LOG_ICON.get(e["kind"], "·"), "x": tr(e["text"]) if isinstance(e.get("text"), str) else ""} for e in evs],
+            "demo": {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"], "text": tr(DEMO_RUN["step"]) if DEMO_RUN["step"] else ""}}
 
 
 KINO_PAGE = r"""<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -244,10 +303,12 @@ html,body{margin:0;height:100%;background:#000;color:#e8eef5;font-family:system-
 .tick div{display:inline-block;padding-left:100%;animation:run 40s linear infinite}.tick span{margin-right:48px}
 @keyframes run{to{transform:translateX(-100%)}}
 .hint{position:fixed;right:16px;bottom:56px;font-size:12px;opacity:.5}
+#demo{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);max-width:80vw;padding:14px 26px;border-radius:18px;background:#0a0e14dd;border:2px solid #f59a4a;
+  font-size:clamp(18px,2.6vw,38px);font-weight:600;text-align:center;transition:opacity .4s}#demo small{display:block;font-size:.45em;color:#f59a4a;letter-spacing:.12em}
 </style></head><body>
 <img id="v" src="/video_feed" alt="">
 <div class="top"><div><b id="nm">MoveEye</b><span id="st"></span></div><div id="clock"></div></div>
-<div class="tick"><div id="tk"></div></div><div class="hint">F = Vollbild · Esc = zurück</div>
+<div id="demo" hidden></div><div class="tick"><div id="tk"></div></div><div class="hint">F = Vollbild · Esc = zurück</div>
 <script>
 const $ = s => document.querySelector(s);
 const pad = n => String(n).padStart(2, "0");
@@ -256,6 +317,8 @@ async function load() { try { const r = await (await fetch("/api/kino")).json();
   $("#nm").textContent = r.name; const st = $("#st"); st.textContent = "";
   const P = (txt, cls) => { const s = document.createElement("span"); s.className = "pill " + (cls || ""); s.textContent = txt; st.appendChild(s); };
   if (r.sim) P("🧪 SIMULATION", "org"); P(r.armed ? "🛡 Schutz an" : "Schutz aus"); if (r.persons) P("🚶 " + r.persons, "red"); if (r.rec) P("● REC", "red");
+  const dm = $("#demo"); dm.hidden = !(r.demo && r.demo.busy && r.demo.text);
+  if (!dm.hidden && dm.dataset.s !== r.demo.text) { dm.dataset.s = r.demo.text; dm.textContent = ""; const sm = document.createElement("small"); sm.textContent = "DEMO " + r.demo.i + " / " + r.demo.n; dm.append(sm, document.createTextNode(r.demo.text)); }
   const tk = $("#tk"), txt = r.events.map(e => e.t + " " + e.i + " " + e.x).join("|");
   if (tk.dataset.s !== txt) { tk.dataset.s = txt; tk.textContent = ""; (r.events.length ? r.events : [{t: "", i: "", x: "–"}]).forEach(e => { const s = document.createElement("span"); s.textContent = (e.t ? e.t + "  " : "") + e.i + " " + e.x; tk.appendChild(s); }); }
   } catch (e) {} }

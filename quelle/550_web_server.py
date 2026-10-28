@@ -1616,6 +1616,19 @@ class WebStream:
             with open(p, "rb") as f:
                 return Response(f.read(), mimetype="image/jpeg")
 
+        @app.route("/api/simstats")
+        def api_simstats():                                  # 2.96.7: makeover 18 / 19
+            return reply(dict(simdiary_stats(28), ok=True))
+
+        @app.route("/api/demo", methods=["POST"])
+        def api_demo():                                      # 2.96.7: makeover 20 - the one-click demo
+            d = body(); lang = norm_lang(d.get("lang"))
+            if d.get("stop"):
+                DEMO_RUN["stop"] = True
+                return reply({"ok": True})
+            ok, err = demo_start()
+            return reply({"ok": ok, "error": tr_err(err, lang) if err else ""}, 200 if ok else 400)
+
         @app.route("/api/simbar")
         def api_simbar():                                    # 2.96.4: the stripe «SIMULATION» on every page
             return reply({"ok": True, "on": bool(CFG.get("sim_on"))})

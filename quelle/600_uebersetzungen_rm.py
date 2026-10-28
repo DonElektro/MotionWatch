@@ -2002,3 +2002,24 @@ for _k, _v in _HX114.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX115 = {  # 2.96.7: makeover 16-20
+    'Rover: at a person alarm drive there by itself (simulator)': ('Rover: bei Personen-Alarm von selbst hinfahren (Simulator)', 'Rover : en cas d’alarme personne, y aller tout seul (simulateur)', 'Rover: in caso di allarme persona andarci da solo (simulatore)', 'Rover: tar alarm da persuna ir da sez (simulatur)'),
+    'Week report of the simulator diary as a push (Monday morning)': ('Wochenbericht des Simulator-Tagebuchs als Push (Montagmorgen)', 'Rapport hebdomadaire du journal du simulateur par push (lundi matin)', 'Rapporto settimanale del diario del simulatore via push (lunedì mattina)', 'Rapport d’emna dal diari dal simulatur sco push (glindesdi damaun)'),
+    'Week in the simulator: {v} visits, persons recognised {r} % ({a} of {b}). Animals: {an}': ('Woche im Simulator: {v} Besuche, Personen erkannt {r} % ({a} von {b}). Tiere: {an}', 'Semaine dans le simulateur : {v} visites, personnes reconnues {r} % ({a} sur {b}). Animaux : {an}', 'Settimana nel simulatore: {v} visite, persone riconosciute {r} % ({a} su {b}). Animali: {an}', 'Emna en il simulatur: {v} visitas, persunas renconuschidas {r} % ({a} da {b}). Animals: {an}'),
+    'One-click demo': ('Ein-Klick-Demo', 'Démo en un clic', 'Demo con un clic', 'Demo cun in clic'),
+    'the demo is already running': ('die Demo läuft schon', 'la démo est déjà en cours', 'la demo è già in corso', 'la demo è gia en lavur'),
+    'start the simulator first (tab Simulator)': ('zuerst den Simulator starten (Reiter Simulator)', 'démarrez d’abord le simulateur (onglet Simulateur)', 'avviare prima il simulatore (scheda Simulatore)', 'l’emprim aviar il simulatur (tab Simulatur)'),
+    'Welcome to MoveEye – a camera that watches and thinks': ('Willkommen bei MoveEye – eine Kamera, die aufpasst und mitdenkt', 'Bienvenue chez MoveEye – une caméra qui surveille et réfléchit', 'Benvenuti in MoveEye – una telecamera che sorveglia e pensa', 'Bainvegni tar MoveEye – ina camera che fa attenziun e patratga'),
+    'Day: a person walks past – MoveEye notices it': ('Tag: eine Person geht vorbei – MoveEye bemerkt sie', 'Jour : une personne passe – MoveEye la remarque', 'Giorno: una persona passa – MoveEye la nota', 'Di: ina persuna passa – MoveEye la remarca'),
+    'Animals are not a person: a fox comes by': ('Tiere sind keine Personen: ein Fuchs kommt vorbei', 'Les animaux ne sont pas des personnes : un renard passe', 'Gli animali non sono persone: passa una volpe', 'Animals n’èn naginas persunas: ina vulp passa'),
+    'Evening falls – MoveEye switches to night vision': ('Es wird Abend – MoveEye schaltet auf Nachtsicht', 'Le soir tombe – MoveEye passe en vision nocturne', 'Scende la sera – MoveEye passa alla visione notturna', 'I vegn saira – MoveEye mida sin vesida da notg'),
+    'At night: somebody creeps to the bike': ('Nachts: jemand schleicht zum Velo', 'La nuit : quelqu’un se faufile vers le vélo', 'Di notte: qualcuno si avvicina alla bici', 'La notg: insatgi va plaun tar il velo'),
+    'Alarm: light, push message – and the siren if nobody switches off': ('Alarm: Licht, Push-Meldung – und die Sirene, wenn niemand ausschaltet', 'Alarme : lumière, message push – et la sirène si personne ne coupe', 'Allarme: luce, notifica – e la sirena se nessuno spegne', 'Alarm: glisch, messadi push – e la sirena, sche nagin na stizza'),
+    'Rain: the filters keep false alarms away': ('Regen: die Filter halten Fehlalarme fern', 'Pluie : les filtres évitent les fausses alarmes', 'Pioggia: i filtri tengono lontani i falsi allarmi', 'Plievgia: ils filters tegnan davent alarms fallads'),
+    'Morning: the night report and the diary say what happened': ('Morgen: Nachtbericht und Tagebuch sagen, was passiert ist', 'Matin : le rapport de nuit et le journal disent ce qui s’est passé', 'Mattina: il rapporto notturno e il diario dicono cosa è successo', 'Damaun: il rapport da notg ed il diari din tge ch’è capità'),
+    'That was MoveEye. Thank you!': ('Das war MoveEye. Danke!', 'C’était MoveEye. Merci !', 'Questo era MoveEye. Grazie!', 'Quai era MoveEye. Grazia!'),
+}
+for _k, _v in _HX115.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])

@@ -54,6 +54,10 @@ def fleet_poll_one(dev):
     except Exception as e:
         st = {"ok": False, "err": "not reachable"}
     st["checked"] = time.time()
+    try:
+        fleet_handover(dev, st)                          # 2.96.7 (makeover 16): a person goes from one device to the next
+    except Exception:
+        pass
     with FLEET["lock"]:
         old = FLEET["state"].get(dev["id"], {})
         if old.get("ok") and not st["ok"] and is_armed():
@@ -68,7 +72,7 @@ def fleet_loop():
         devs = list(CFG["fleet"])
         if not devs:
             continue
-        busy = time.time() - FLEET["seen"] < 60
+        busy = time.time() - FLEET["seen"] < 60 or is_armed()     # 2.96.7: armed - often, for the handover
         for d in devs:
             last = FLEET["state"].get(d["id"], {}).get("checked", 0)
             if time.time() - last > (4 if busy else 60):
@@ -162,3 +166,38 @@ def fleet_snap(dev_id):
     FLEET["snaps"][dev_id] = (time.time(), data)
     return data
 
+
+
+# ---- 2.96.7 (Makeover-Punkt 16): Übergabe zwischen Geräten - eine Person verschwindet bei einem Gerät und taucht innert
+# 40 s beim nächsten auf: «Übergabe A → B» im Protokoll (wichtig) und in der Liste FLEET["handover"] (Kameras-Seite / Zentrale).
+FLEET.setdefault("seen_p", {})        # device -> time persons were last > 0 ("" = this device)
+FLEET.setdefault("handover", [])
+
+
+def fleet_handover(dev, st):
+    now = time.time()
+    me = CFG.get("device_name") or "MoveEye"
+    if int(STATE.get("persons") or 0) > 0:
+        if now - FLEET["seen_p"].get("", 0.0) > 15:       # new here: did another device see the person just before?
+            for k, t in FLEET["seen_p"].items():
+                if k and 2 < now - t < 40:
+                    src = next((d.get("name") or d.get("url") for d in CFG["fleet"] if d["id"] == k), k)
+                    log_event("person", f"Handover: person from {src} to {me}")
+                    FLEET["handover"].insert(0, {"t": datetime.now().strftime("%H:%M:%S"), "from": src, "to": me})
+                    del FLEET["handover"][20:]
+                    break
+        FLEET["seen_p"][""] = now
+    name = dev.get("name") or dev.get("url", "?")
+    had = FLEET["seen_p"].get(dev["id"], 0.0)
+    if st.get("ok") and int(st.get("persons") or 0) > 0:
+        if now - had > 15:                                  # new at this device: where was the person before?
+            src = None
+            for k, t in FLEET["seen_p"].items():
+                if k != dev["id"] and 2 < now - t < 40:
+                    src = me if k == "" else next((d.get("name") or d.get("url") for d in CFG["fleet"] if d["id"] == k), k)
+            if src:
+                txt = f"Handover: person from {src} to {name}"
+                log_event("person", txt)
+                FLEET["handover"].insert(0, {"t": datetime.now().strftime("%H:%M:%S"), "from": src, "to": name})
+                del FLEET["handover"][20:]
+        FLEET["seen_p"][dev["id"]] = now
