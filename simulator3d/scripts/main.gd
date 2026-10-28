@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.64"
+const VERSION := "3D-3.65"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -248,6 +248,7 @@ var cam_body: Control                 # 3D-3.50: the cards «Kameras» and «Wer
 var tools_body: Control
 var _conn_state := -1
 var stream_on := false                     # sending to Motion Watch: off at the start, the user switches it on in the window
+var stream_last := false                   # 3D-3.65: was sending switched on the last time? then on again at the start (also after an update)
 var stream_port := 8765
 var stream_cb: CheckButton
 var stream_note: Label
@@ -365,8 +366,10 @@ func _ready() -> void:
 	net = Net.new()
 	net.main = self
 	add_child(net)
-	if "--stream" in args or at_boot:          # start sending at once (old behaviour; always at the autostart)
+	if "--stream" in args or at_boot or stream_last:   # start sending at once (autostart, update, or it was on the last time)
 		set_stream(true)
+		if not stream_on:
+			_stream_retry(30)                     # 3D-3.65: after an update the old simulator still holds the port for a moment
 	autostart_on = Autostart.is_on()
 	if autostart_on:
 		Autostart.repair()                         # the folder of the program was moved: the autostart follows it
@@ -431,6 +434,20 @@ func _vm_needs_angle(args: Array) -> bool:
 	OS.create_process(OS.get_executable_path(), a)
 	get_tree().quit()
 	return true
+
+
+func _stream_retry(left: int) -> void:
+	"""the port is still busy (the old simulator closes after an update): try again every second, at most `left` times"""
+	if stream_on or left <= 0 or (stream_cb != null and not stream_last and not "--stream" in OS.get_cmdline_user_args()):
+		return
+	await get_tree().create_timer(1.0).timeout
+	if stream_on:
+		return
+	set_stream(true)
+	if not stream_on:
+		_stream_retry(left - 1)
+	else:
+		print("sending to Motion Watch: port free again")
 
 
 func set_stream(on: bool) -> void:
@@ -3162,7 +3179,7 @@ func _build_ui() -> void:
 	stream_cb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	stream_cb.add_theme_font_size_override("font_size", 15)
 	stream_cb.button_pressed = stream_on
-	stream_cb.toggled.connect(func(on): set_stream(on))
+	stream_cb.toggled.connect(func(on): set_stream(on); stream_last = on; _settings_dirty = true)
 	cn.add_child(stream_cb)
 	stream_note = UI.small("")
 	cn.add_child(stream_note)
@@ -3726,7 +3743,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw"]
+		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last"]
 var _settings_dirty := false
 
 

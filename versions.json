@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 15:32",
+ "generated": "2026-10-28 15:40",
  "versions": [
   {
-   "version": "2.95.89",
-   "file": "webcam_bewegung_2_95_89.py",
+   "version": "2.95.90",
+   "file": "webcam_bewegung_2_95_90.py",
    "url": "",
-   "sha256": "3de87bd2989e164c08a4f41e6dd5eecf424044dfbe8902d465a84e88f0e3e6d9",
-   "date": "2026-10-28 15:32",
-   "notes": "3D-Simulator 3D-3.64: die Pfosten der Patrouillen-Route stören die Bildauswertung nicht mehr (nur der Bediener sieht sie)",
-   "sig": "5f07c5420f9664005aa7e203cf0e5f9e480884979ca751bed62d13bb9848f92fb90e687591c8ebccaf82dbb0f13cddf861117f4b30e9059073c2524c4c73d201"
+   "sha256": "364f25d5a953d40147c507bc027f9d7ba53fa54b06c97f2544a8d89eb63bc8a9",
+   "date": "2026-10-28 15:40",
+   "notes": "3D-Simulator 3D-3.65: «An Motion Watch senden» bleibt nach einem Update und Neustart so wie vorher",
+   "sig": "420bb9f98fdef288ed208d6175e597cb6778cfdbdd5882f6ef23d10046fdf81f034166c98d58d201a5519de463d4bafeb86d00c960f831b5f43845b8ff21820f"
   },
   {
    "version": "2.94.5",
