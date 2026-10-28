@@ -330,6 +330,19 @@ class WebStream:
                 if act_ in ("pi_start", "pi_stop"):           # 2.95.51: the 3D simulator on the Pi itself (HDMI)
                     ok_, err_ = (simpi_start if act_ == "pi_start" else simpi_stop)("web " + (request.remote_addr or "?"))
                     return reply({"ok": ok_, "error": tr(err_, lang) if err_ else None, "pi": simpi_state()}, 200 if ok_ else 400)
+                if act_ == "shoot":                          # 2.95.96: a shot / trigger into the simulation (tap on the live picture)
+                    try:
+                        q_ = {"action": "shoot", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30],
+                              "x": max(0.0, min(1.0, float(d.get("x", 0.5)))), "y": max(0.0, min(1.0, float(d.get("y", 0.5))))}
+                        r = sim_control(q_)
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    if not isinstance(r, dict):
+                        return reply({"ok": False, "error": tr_err("not supported - update the simulator", lang)}, 400)
+                    if r.get("ok") and not r.get("hit"):
+                        log_event("sim", f"False alarm marked: a shot of {q_['who'] or 'Motion Watch'} into the simulation missed")
+                    SIMGAME["t"] = 0.0
+                    return reply(r)
                 if act_ == "game_mwcatch":                   # «Team gegen Motion Watch»: «Erwischt!» from this page (3D-3.27)
                     try:
                         q_ = {"action": "game_mwcatch", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30]}

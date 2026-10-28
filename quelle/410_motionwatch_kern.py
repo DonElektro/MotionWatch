@@ -249,13 +249,31 @@ class MotionWatch:
         sens = CFG["sensitivity"] / 100.0
         self.bg.setVarThreshold(16 + (1 - sens) * 40 + (12 if rain_mode else 0))
         lr = 0.004 if rain_mode else 0.002
-        mv = self.mt["moved"]
+        now_ = time.time()
+        pt_ = (round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1))
+        if pt_ != self.mt.get("pt"):                             # 2.95.96: also a turn by hand (stick, buttons, patrol)
+            if self.mt.get("pt") is not None and not CFG.get("patrol") and now_ - self.mt["moved"] > 0.6:
+                self.mt["hand"] = now_                           # (patrol and following keep looking while they turn)
+            self.mt["pt"] = pt_
+        hand_ = self.mt.get("hand", 0.0)
+        mv = max(self.mt["moved"], hand_)
+        calm_ = 0.7 if CFG.get("sim_on") else 0.35               # the head of the simulator still turns a moment after the order
+        if now_ - hand_ < calm_:                                    # the camera turns: everything "moves" - no outlines, no alarm;
+            self.bg.apply(gray, learningRate=1.0)                # the picture of now is the background
+            self.mt["bg_reset"] = now_
+            return np.zeros_like(gray)
         if mv > self.mt.get("bg_reset", 0.0) and time.time() - mv > 0.3:
             lr = 1.0; self.mt["bg_reset"] = time.time()          # the camera turned to follow movement and stands again: new background at once
         elif time.time() - self.mt.get("bg_reset", 0.0) < 1.5:
             lr = 0.08                                            # ... and the "ghost" of the animal in it fades quickly
         fg = self.bg.apply(gray, learningRate=lr)
         _, fg = cv2.threshold(fg, 200, 255, cv2.THRESH_BINARY)
+        # 2.95.96: the picture arrives late after a turn (simulator, tunnel, slow camera): when soon after a turn a big part
+        # of the picture "moves" at once, it is the turn itself - take the picture as the new background, no outlines
+        if now_ - max(mv, float(SERVO_MOVE.get("t") or 0.0)) < 5.0 and np.count_nonzero(fg) > fg.size * 0.18:
+            self.bg.apply(gray, learningRate=1.0)
+            self.mt["bg_reset"] = now_
+            return np.zeros_like(gray)
         fg = self.remove_shadows(fg, small)                      # colour based shadow removal
         k = 5 if rain_mode or wind_boost > 1.5 else 3
         fg = cv2.morphologyEx(fg, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k)))

@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.69"
+const VERSION := "3D-3.70"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2939,6 +2939,8 @@ func control(d: Dictionary) -> Dictionary:
 			explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
 			explore.test_until = explore.main.now() + (float(dv[2]) if dv.size() > 2 else 2.0)
 		return explore.state()
+	elif a == "shoot":                                 # 3D-3.70: a shot / trigger from Motion Watch at a spot of the head camera picture
+		return mw_shot(float(d.get("x", 0.5)), float(d.get("y", 0.5)), str(d.get("who", "")).left(30))
 	elif a == "game_mwcatch":                          # «Team gegen Motion Watch»: «Erwischt!» pressed at Motion Watch (3D-3.27)
 		if game == null:
 			return {"ok": false, "error": "no game"}
@@ -4962,6 +4964,57 @@ func shoot(from: Vector3, d: Vector3) -> void:
 		else:
 			_say("Daneben", from + d * 20.0, Color(0.85, 0.85, 0.85))
 	_update_status()
+
+
+var mw_shots := {"hits": 0, "false": 0}   # 3D-3.70: shots of Motion Watch into the world (outside a game round)
+
+
+func mw_shot(x: float, y: float, who: String) -> Dictionary:
+	"""a shot from Motion Watch: x, y (0..1) in the picture of the head camera. In a round: catch a runner (a miss is a false
+	alarm). Otherwise into the world: a person is caught (runs away), an animal sees stars - a miss is a false alarm."""
+	if game != null and game.round_state == "play":
+		if game_mode == "mwhand":
+			return game.mw_catch(who, x, y)
+		return game.shot_at(who, x, y)
+	var vs := Vector2(vps[0].size)
+	var at := Vector2(clampf(x, 0.0, 1.0), clampf(y, 0.0, 1.0)) * vs
+	var cam: Camera3D = cams[0]
+	var from := cam.project_ray_origin(at)
+	var d := cam.project_ray_normal(at).normalized()
+	if shot_sound != null:
+		shot_sound.play()
+	var best = null
+	var best_t := 1e9
+	for v in visitors.get_children():
+		if v.done:
+			continue
+		for sp in v.hit_spheres():
+			var c: Vector3 = v.global_position + Vector3(0, sp[0], 0)
+			var t := (c - from).dot(d)
+			if t < 0.3 or t > 300.0 or (from + d * t).distance_to(c) > float(sp[1]) * 1.35:
+				continue
+			if t < best_t:
+				best_t = t
+				best = v
+	if best != null:
+		mw_shots["hits"] = int(mw_shots["hits"]) + 1
+		var above: Vector3 = best.global_position + Vector3(0, best.body_h + 0.9, 0)
+		var nm: String = "Person" if best.kind == "person" else ("Auto" if best.kind == "car" else _animal_name(best.kind))
+		if best.kind in ["person", "child", "jogger", "thief", "burglar", "car"] or best.kind in PEOPLE_KINDS:
+			if best.has_method("scare"):
+				best.scare()
+		else:
+			best.hit()
+		if hit_sound != null:
+			hit_sound.play()
+		_say("Erwischt! %s" % nm, above, Color(0.45, 1.0, 0.55))
+		return {"ok": true, "hit": true, "kind": best.kind, "text": "✓ %s erwischt!" % nm, "stats": mw_shots}
+	mw_shots["false"] = int(mw_shots["false"]) + 1
+	var g = Plane(Vector3.UP, 0).intersects_ray(from, d)
+	if g != null and from.distance_to(g) < 300.0:
+		_puff(g)
+		_say("Daneben – Fehlalarm", g + Vector3(0, 1.0, 0), Color(1.0, 0.45, 0.35))
+	return {"ok": true, "hit": false, "text": "✗ Daneben – als Fehlalarm markiert", "stats": mw_shots}
 
 
 func _animal_name(k: String) -> String:

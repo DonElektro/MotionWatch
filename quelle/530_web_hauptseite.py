@@ -3690,6 +3690,48 @@ function mwgPaint(s) {
   $("#mwg-t").textContent = "🕹 " + (G.round === "countdown" ? t("Get ready") + " " + (G.cd || "") : t("You are the guard: turn the camera and tap the players in the picture")) + " · " + ((G.mwg || {}).catches || 0) + "× ✓ · " + ((G.mwg || {}).false || 0) + "× ✗";
   $("#mwg-b").disabled = G.round !== "play" || w > 0; $("#mwg-b span").textContent = w > 0 ? w + " s" : t("Caught!");
 }
+// ---- 2.95.96: shoot / trigger into the simulation from the live picture (outside «Team gegen Motion Watch» too) ----
+const SHOOT = {on: false, hits: 0, miss: 0};
+function simShootPaint(s) {
+  const S_ = s.sim || {}, G = S_.game, mwhand = !!(G && G.mode === "mwhand" && (G.round === "play" || G.round === "countdown"));
+  const live = !!(S_.on && S_.ok && S_.pic !== false) && String(((QSJ && QSJ.cfg) || {}).source || "sim:").startsWith("sim:");
+  let b = $("#mws");
+  if (!live || mwhand) { if (b) b.hidden = true; return; }
+  if (!b) {
+    b = el("div"); b.id = "mws"; b.innerHTML = '<button type="button" id="mws-b">🎯 <span></span></button><span id="mws-t"></span>'; document.body.appendChild(b);
+    const st = document.createElement("style");
+    st.textContent = "#mws{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:79;display:flex;align-items:center;gap:10px;background:rgba(10,14,20,.88);border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 6px;box-shadow:0 4px 18px rgba(0,0,0,.45);color:#fff;font-size:13px;max-width:calc(100vw - 24px)}"
+      + "#mws[hidden]{display:none}#mws button{border-radius:999px;padding:8px 14px;font-weight:700;background:var(--panel2,#1a2433);color:#fff;border:1px solid var(--line)}#mws.on button{background:#ff3b30;border-color:#ff3b30}#mws:not(.on) #mws-t{display:none}"
+      + ".mwg-shot{position:fixed;z-index:85;width:64px;height:64px;margin:-32px 0 0 -32px;border:3px solid #ff3b30;border-radius:50%;pointer-events:none;animation:mwgs .5s ease-in forwards}"
+      + ".mwg-shot::before,.mwg-shot::after{content:'';position:absolute;left:50%;top:-10px;width:2px;height:80px;margin-left:-1px;background:#ff3b30}.mwg-shot::after{transform:rotate(90deg)}"
+      + ".mwg-shot.hit{border-color:#3fcf6b;box-shadow:0 0 16px #3fcf6b}.mwg-shot.miss{opacity:.4}@keyframes mwgs{0%{transform:scale(1.8);opacity:0}100%{transform:scale(.6);opacity:1}}";
+    document.head.appendChild(st);
+    $("#mws-b").onclick = () => { SHOOT.on = !SHOOT.on; simShootPaint(QSJ ? QSJ.state : s); toast(SHOOT.on ? "🎯 " + t("Tap into the live picture to shoot - a miss is marked as a false alarm") : t("Shooting off")); };
+    const v = $("#video"); let down = null;
+    v.addEventListener("pointerdown", e => { down = [e.clientX, e.clientY, Date.now()]; });
+    v.addEventListener("pointerup", async e => {
+      const b_ = $("#mws"); if (!SHOOT.on || !b_ || b_.hidden || !down) return;
+      const [x0, y0, t0] = down; down = null;
+      if (Math.hypot(e.clientX - x0, e.clientY - y0) > 12 || Date.now() - t0 > 600) return;      // a drag, not a tap
+      const r_ = v.getBoundingClientRect(), nw = v.naturalWidth || 16, nh = v.naturalHeight || 9;
+      const sc = Math.min(r_.width / nw, r_.height / nh), w = nw * sc, h = nh * sc;
+      const x = (e.clientX - r_.left - (r_.width - w) / 2) / w, y = (e.clientY - r_.top - (r_.height - h) / 2) / h;
+      if (x < 0 || x > 1 || y < 0 || y > 1) return;
+      const m = el("div", "mwg-shot"); m.style.left = e.clientX + "px"; m.style.top = e.clientY + "px"; document.body.appendChild(m);
+      setTimeout(() => m.remove(), 900);
+      const q = await post("/api/sim", {action: "shoot", x: x, y: y, lang: LANG});
+      m.classList.add(q.hit ? "hit" : "miss");
+      if (q.ok) { q.hit ? SHOOT.hits++ : SHOOT.miss++; }
+      toast(q.ok ? (q.text || "") : "⚠ " + (q.error || t("error")));
+      simShootPaint(QSJ ? QSJ.state : s);
+    });
+  }
+  b.hidden = false; b.classList.toggle("on", SHOOT.on);
+  $("#mws-b span").textContent = SHOOT.on ? t("Shooting on") : t("Shoot");
+  $("#mws-t").textContent = t("Tap the picture") + " · " + SHOOT.hits + "× ✓ · " + SHOOT.miss + "× ✗ " + t("false alarm");
+}
+Object.assign(I18N.de, {"Shoot": "Schiessen", "Shooting on": "Schiessen an", "Shooting off": "Schiessen aus", "Tap the picture": "Ins Bild tippen", "false alarm": "Fehlalarm",
+  "Tap into the live picture to shoot - a miss is marked as a false alarm": "Ins Livebild tippen zum Schiessen – daneben wird als Fehlalarm markiert"});
 // ---- modes (2.95.47): camping guard, campfire games, gamer, home, wildlife, night guard, transport ----
 Object.assign(I18N.de, {"Stop the TV mode of the simulator": "TV-Modus des Simulators beenden", "TV mode in the 3D simulator": "TV-Modus im 3D-Simulator"});
 Object.assign(I18N.de, {"Aufstell-Planer in the simulator": "Aufstell-Planer im Simulator", "open in the window of the simulator": "im Fenster des Simulators geöffnet", "Take over the patrol of the planner": "Patrouille vom Planer übernehmen", "Patrol set": "Patrouille gesetzt", "of the area in view": "des Bereichs im Blick"});
@@ -3816,7 +3858,7 @@ function updateProtect(s) {
   const hs = s.hotspot || {}, hc = s.hotspot_cfg || {};
   if (Date.now() > PR.campUntil) $("#pr-camp").checked = !!s.camping;
   if (!(Date.now() < (PR.ecoUntil || 0))) $("#pr-eco").checked = s.eco !== "off";
-  mwgPaint(s); iconPick(); scPick(); modePaint(s);
+  mwgPaint(s); simShootPaint(s); iconPick(); scPick(); modePaint(s);
   const TT = s.tether || {}, te = $("#pr-teth");
   if (te) te.textContent = TT.on ? (TT.ready ? "✓ " + t("connected") + " · " + TT.kind + " · " + TT.iface + " · " + t("the own Wi-Fi gets this internet too")
       : "⏳ " + t("phone found, connecting …") + " (" + TT.iface + ")")

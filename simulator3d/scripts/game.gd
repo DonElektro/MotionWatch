@@ -1914,6 +1914,34 @@ func mw_catch(who: String, x := -1.0, y := -1.0) -> Dictionary:
 	return {"ok": true, "hit": true, "text": "✓ %s erwischt!" % hit["name"]}
 
 
+func shot_at(who: String, x: float, y: float) -> Dictionary:
+	"""3D-3.70: a shot / trigger from Motion Watch in any kind of round: hit = the runner on this spot of the head camera picture
+	is caught; a miss counts as a false alarm of Motion Watch"""
+	var hit = null
+	var near := 9.0
+	for p in players:
+		if p == null or p["role"] != "runner" or p["state"] != "play" or now() < float(p["safe_until"]) or cam_sees(p, 0) <= 0.0:
+			continue
+		var b: Array = learn.box(p)
+		if b.is_empty():
+			continue
+		var mx: float = max(0.03, b[2] * 0.35)
+		var my: float = max(0.03, b[3] * 0.15)
+		if x >= b[0] - mx and x <= b[0] + b[2] + mx and y >= b[1] - my and y <= b[1] + b[3] + my:
+			var dd: float = Vector2(x - (b[0] + b[2] / 2.0), y - (b[1] + b[3] / 2.0)).length()
+			if dd < near:
+				near = dd
+				hit = p
+	if hit == null:
+		mwg["false"] = int(mwg["false"]) + 1
+		news("❌ Fehlschuss von Motion Watch – Fehlalarm" + ((" (%s)" % who) if who != "" else ""))
+		return {"ok": true, "hit": false, "text": "✗ Daneben – als Fehlalarm gezählt"}
+	mwg["catches"] = int(mwg["catches"]) + 1
+	_say(hit, "🎯 Motion Watch hat dich erwischt!", 3.0)
+	_caught(hit, {"name": who if who != "" else "Motion Watch"})
+	return {"ok": true, "hit": true, "text": "✓ %s erwischt!" % hit["name"]}
+
+
 func _guard_catch(g: Dictionary) -> void:
 	"""the guard calls «Erwischt!»: right if the head camera sees somebody (meter at least 30 %)"""
 	if g["role"] != "guard" or round_state != "play" or now() < float(g["catch_t"]):

@@ -1778,3 +1778,9 @@ for _k, _v in _HX38.items():
 _HX93 = {"answers, but no picture arrives yet": ("répond, mais aucune image n'arrive encore", "risponde, ma non arriva ancora nessuna immagine", "respunda, ma i na arriva anc nagin maletg")}
 for _k, (_fr, _it, _rm) in _HX93.items():
     TRX["fr"].setdefault(_k, _fr); TRX["it"].setdefault(_k, _it); TRX["rm"].setdefault(_k, _rm)
+
+_HX96 = {"Shoot": ("Tirer", "Sparare", "Sajettar"), "Shooting on": ("Tir activé", "Sparo attivo", "Sajettar activà"), "Shooting off": ("Tir désactivé", "Sparo disattivato", "Sajettar deactivà"),
+         "Tap the picture": ("Touchez l'image", "Tocca l'immagine", "Tutga il maletg"), "false alarm": ("fausse alarme", "falso allarme", "fals alarm"),
+         "Tap into the live picture to shoot - a miss is marked as a false alarm": ("Touchez l'image en direct pour tirer – un tir manqué compte comme fausse alarme", "Tocca l'immagine dal vivo per sparare – un colpo mancato conta come falso allarme", "Tutga il maletg live per sajettar – sch'ins fala, vala quai sco fals alarm")}
+for _k, (_fr, _it, _rm) in _HX96.items():
+    TRX["fr"].setdefault(_k, _fr); TRX["it"].setdefault(_k, _it); TRX["rm"].setdefault(_k, _rm)

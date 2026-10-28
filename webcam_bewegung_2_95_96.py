@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_95.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_96.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.96: Simulation: 🎯 Schiessen im Livebild (Schuss / Auslöser an die angetippte Stelle, in jedem Spiel und in der freien
+    Welt; daneben = Fehlalarm, wird markiert); nach dem Schwenken von Hand keine weissen Bewegungs-Umrisse mehr (Hintergrund
+    wird sofort neu gelernt); 3D-Simulator 3D-3.70
   * 2.95.95: 3D-Simulator 3D-3.69: Kinder-Modus (grosse Bild-Knöpfe, Murmli, Töne, Konfetti; zurück zu Erwachsene mit
     Rechenaufgabe)
   * 2.95.94: 3D-Simulator 3D-3.68: nach einem Update verbindet sich der Simulator wieder von selbst (kein «Port 8765 is busy»
@@ -778,10 +781,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_95.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_96.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_95.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_95.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_96.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_96.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -798,7 +801,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.95"
+APP_VERSION = "2.95.96"
 
 
 def default_data_dir():
@@ -15103,8 +15106,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.69", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30893330,
-         "sha256": "c938c96ac4526e4593b85e40b67804fdecc07d9f8f360b35e5638981f98636c1"}
+SIM3D = {"version": "3D-3.70", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30896042,
+         "sha256": "96b27c01ca093d173b0bda1b1af3d8851f6c144d882115a2427d4fd10eda7da5"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15243,8 +15246,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.69", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24015085,
-           "sha256": "630e88e9f7381159790f7285bdfb7987356ba2ca010653b83c53c7f8deb1ea50", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.70", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24017765,
+           "sha256": "76b68548288b1cee82493a6d38d3a20f2735eb67f79dcb4f0b940c4af786b6ce", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -19165,7 +19168,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_95.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_96.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -20785,13 +20788,31 @@ class MotionWatch:
         sens = CFG["sensitivity"] / 100.0
         self.bg.setVarThreshold(16 + (1 - sens) * 40 + (12 if rain_mode else 0))
         lr = 0.004 if rain_mode else 0.002
-        mv = self.mt["moved"]
+        now_ = time.time()
+        pt_ = (round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1))
+        if pt_ != self.mt.get("pt"):                             # 2.95.96: also a turn by hand (stick, buttons, patrol)
+            if self.mt.get("pt") is not None and not CFG.get("patrol") and now_ - self.mt["moved"] > 0.6:
+                self.mt["hand"] = now_                           # (patrol and following keep looking while they turn)
+            self.mt["pt"] = pt_
+        hand_ = self.mt.get("hand", 0.0)
+        mv = max(self.mt["moved"], hand_)
+        calm_ = 0.7 if CFG.get("sim_on") else 0.35               # the head of the simulator still turns a moment after the order
+        if now_ - hand_ < calm_:                                    # the camera turns: everything "moves" - no outlines, no alarm;
+            self.bg.apply(gray, learningRate=1.0)                # the picture of now is the background
+            self.mt["bg_reset"] = now_
+            return np.zeros_like(gray)
         if mv > self.mt.get("bg_reset", 0.0) and time.time() - mv > 0.3:
             lr = 1.0; self.mt["bg_reset"] = time.time()          # the camera turned to follow movement and stands again: new background at once
         elif time.time() - self.mt.get("bg_reset", 0.0) < 1.5:
             lr = 0.08                                            # ... and the "ghost" of the animal in it fades quickly
         fg = self.bg.apply(gray, learningRate=lr)
         _, fg = cv2.threshold(fg, 200, 255, cv2.THRESH_BINARY)
+        # 2.95.96: the picture arrives late after a turn (simulator, tunnel, slow camera): when soon after a turn a big part
+        # of the picture "moves" at once, it is the turn itself - take the picture as the new background, no outlines
+        if now_ - max(mv, float(SERVO_MOVE.get("t") or 0.0)) < 5.0 and np.count_nonzero(fg) > fg.size * 0.18:
+            self.bg.apply(gray, learningRate=1.0)
+            self.mt["bg_reset"] = now_
+            return np.zeros_like(gray)
         fg = self.remove_shadows(fg, small)                      # colour based shadow removal
         k = 5 if rain_mode or wind_boost > 1.5 else 3
         fg = cv2.morphologyEx(fg, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k)))
@@ -35170,6 +35191,48 @@ function mwgPaint(s) {
   $("#mwg-t").textContent = "🕹 " + (G.round === "countdown" ? t("Get ready") + " " + (G.cd || "") : t("You are the guard: turn the camera and tap the players in the picture")) + " · " + ((G.mwg || {}).catches || 0) + "× ✓ · " + ((G.mwg || {}).false || 0) + "× ✗";
   $("#mwg-b").disabled = G.round !== "play" || w > 0; $("#mwg-b span").textContent = w > 0 ? w + " s" : t("Caught!");
 }
+// ---- 2.95.96: shoot / trigger into the simulation from the live picture (outside «Team gegen Motion Watch» too) ----
+const SHOOT = {on: false, hits: 0, miss: 0};
+function simShootPaint(s) {
+  const S_ = s.sim || {}, G = S_.game, mwhand = !!(G && G.mode === "mwhand" && (G.round === "play" || G.round === "countdown"));
+  const live = !!(S_.on && S_.ok && S_.pic !== false) && String(((QSJ && QSJ.cfg) || {}).source || "sim:").startsWith("sim:");
+  let b = $("#mws");
+  if (!live || mwhand) { if (b) b.hidden = true; return; }
+  if (!b) {
+    b = el("div"); b.id = "mws"; b.innerHTML = '<button type="button" id="mws-b">🎯 <span></span></button><span id="mws-t"></span>'; document.body.appendChild(b);
+    const st = document.createElement("style");
+    st.textContent = "#mws{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:79;display:flex;align-items:center;gap:10px;background:rgba(10,14,20,.88);border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 6px;box-shadow:0 4px 18px rgba(0,0,0,.45);color:#fff;font-size:13px;max-width:calc(100vw - 24px)}"
+      + "#mws[hidden]{display:none}#mws button{border-radius:999px;padding:8px 14px;font-weight:700;background:var(--panel2,#1a2433);color:#fff;border:1px solid var(--line)}#mws.on button{background:#ff3b30;border-color:#ff3b30}#mws:not(.on) #mws-t{display:none}"
+      + ".mwg-shot{position:fixed;z-index:85;width:64px;height:64px;margin:-32px 0 0 -32px;border:3px solid #ff3b30;border-radius:50%;pointer-events:none;animation:mwgs .5s ease-in forwards}"
+      + ".mwg-shot::before,.mwg-shot::after{content:'';position:absolute;left:50%;top:-10px;width:2px;height:80px;margin-left:-1px;background:#ff3b30}.mwg-shot::after{transform:rotate(90deg)}"
+      + ".mwg-shot.hit{border-color:#3fcf6b;box-shadow:0 0 16px #3fcf6b}.mwg-shot.miss{opacity:.4}@keyframes mwgs{0%{transform:scale(1.8);opacity:0}100%{transform:scale(.6);opacity:1}}";
+    document.head.appendChild(st);
+    $("#mws-b").onclick = () => { SHOOT.on = !SHOOT.on; simShootPaint(QSJ ? QSJ.state : s); toast(SHOOT.on ? "🎯 " + t("Tap into the live picture to shoot - a miss is marked as a false alarm") : t("Shooting off")); };
+    const v = $("#video"); let down = null;
+    v.addEventListener("pointerdown", e => { down = [e.clientX, e.clientY, Date.now()]; });
+    v.addEventListener("pointerup", async e => {
+      const b_ = $("#mws"); if (!SHOOT.on || !b_ || b_.hidden || !down) return;
+      const [x0, y0, t0] = down; down = null;
+      if (Math.hypot(e.clientX - x0, e.clientY - y0) > 12 || Date.now() - t0 > 600) return;      // a drag, not a tap
+      const r_ = v.getBoundingClientRect(), nw = v.naturalWidth || 16, nh = v.naturalHeight || 9;
+      const sc = Math.min(r_.width / nw, r_.height / nh), w = nw * sc, h = nh * sc;
+      const x = (e.clientX - r_.left - (r_.width - w) / 2) / w, y = (e.clientY - r_.top - (r_.height - h) / 2) / h;
+      if (x < 0 || x > 1 || y < 0 || y > 1) return;
+      const m = el("div", "mwg-shot"); m.style.left = e.clientX + "px"; m.style.top = e.clientY + "px"; document.body.appendChild(m);
+      setTimeout(() => m.remove(), 900);
+      const q = await post("/api/sim", {action: "shoot", x: x, y: y, lang: LANG});
+      m.classList.add(q.hit ? "hit" : "miss");
+      if (q.ok) { q.hit ? SHOOT.hits++ : SHOOT.miss++; }
+      toast(q.ok ? (q.text || "") : "⚠ " + (q.error || t("error")));
+      simShootPaint(QSJ ? QSJ.state : s);
+    });
+  }
+  b.hidden = false; b.classList.toggle("on", SHOOT.on);
+  $("#mws-b span").textContent = SHOOT.on ? t("Shooting on") : t("Shoot");
+  $("#mws-t").textContent = t("Tap the picture") + " · " + SHOOT.hits + "× ✓ · " + SHOOT.miss + "× ✗ " + t("false alarm");
+}
+Object.assign(I18N.de, {"Shoot": "Schiessen", "Shooting on": "Schiessen an", "Shooting off": "Schiessen aus", "Tap the picture": "Ins Bild tippen", "false alarm": "Fehlalarm",
+  "Tap into the live picture to shoot - a miss is marked as a false alarm": "Ins Livebild tippen zum Schiessen – daneben wird als Fehlalarm markiert"});
 // ---- modes (2.95.47): camping guard, campfire games, gamer, home, wildlife, night guard, transport ----
 Object.assign(I18N.de, {"Stop the TV mode of the simulator": "TV-Modus des Simulators beenden", "TV mode in the 3D simulator": "TV-Modus im 3D-Simulator"});
 Object.assign(I18N.de, {"Aufstell-Planer in the simulator": "Aufstell-Planer im Simulator", "open in the window of the simulator": "im Fenster des Simulators geöffnet", "Take over the patrol of the planner": "Patrouille vom Planer übernehmen", "Patrol set": "Patrouille gesetzt", "of the area in view": "des Bereichs im Blick"});
@@ -35296,7 +35359,7 @@ function updateProtect(s) {
   const hs = s.hotspot || {}, hc = s.hotspot_cfg || {};
   if (Date.now() > PR.campUntil) $("#pr-camp").checked = !!s.camping;
   if (!(Date.now() < (PR.ecoUntil || 0))) $("#pr-eco").checked = s.eco !== "off";
-  mwgPaint(s); iconPick(); scPick(); modePaint(s);
+  mwgPaint(s); simShootPaint(s); iconPick(); scPick(); modePaint(s);
   const TT = s.tether || {}, te = $("#pr-teth");
   if (te) te.textContent = TT.on ? (TT.ready ? "✓ " + t("connected") + " · " + TT.kind + " · " + TT.iface + " · " + t("the own Wi-Fi gets this internet too")
       : "⏳ " + t("phone found, connecting …") + " (" + TT.iface + ")")
@@ -37586,6 +37649,19 @@ class WebStream:
                 if act_ in ("pi_start", "pi_stop"):           # 2.95.51: the 3D simulator on the Pi itself (HDMI)
                     ok_, err_ = (simpi_start if act_ == "pi_start" else simpi_stop)("web " + (request.remote_addr or "?"))
                     return reply({"ok": ok_, "error": tr(err_, lang) if err_ else None, "pi": simpi_state()}, 200 if ok_ else 400)
+                if act_ == "shoot":                          # 2.95.96: a shot / trigger into the simulation (tap on the live picture)
+                    try:
+                        q_ = {"action": "shoot", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30],
+                              "x": max(0.0, min(1.0, float(d.get("x", 0.5)))), "y": max(0.0, min(1.0, float(d.get("y", 0.5))))}
+                        r = sim_control(q_)
+                    except Exception:
+                        return reply({"ok": False, "error": tr_err("simulator not reachable", lang)}, 400)
+                    if not isinstance(r, dict):
+                        return reply({"ok": False, "error": tr_err("not supported - update the simulator", lang)}, 400)
+                    if r.get("ok") and not r.get("hit"):
+                        log_event("sim", f"False alarm marked: a shot of {q_['who'] or 'Motion Watch'} into the simulation missed")
+                    SIMGAME["t"] = 0.0
+                    return reply(r)
                 if act_ == "game_mwcatch":                   # «Team gegen Motion Watch»: «Erwischt!» from this page (3D-3.27)
                     try:
                         q_ = {"action": "game_mwcatch", "who": str(d.get("who") or getattr(g, "user", "") or "")[:30]}
@@ -41084,7 +41160,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.95")
+        self.root.title("Motion Watch 2.95.96")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -41374,7 +41450,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.95 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.96 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -48326,6 +48402,12 @@ for _k, _v in _HX38.items():
 
 _HX93 = {"answers, but no picture arrives yet": ("répond, mais aucune image n'arrive encore", "risponde, ma non arriva ancora nessuna immagine", "respunda, ma i na arriva anc nagin maletg")}
 for _k, (_fr, _it, _rm) in _HX93.items():
+    TRX["fr"].setdefault(_k, _fr); TRX["it"].setdefault(_k, _it); TRX["rm"].setdefault(_k, _rm)
+
+_HX96 = {"Shoot": ("Tirer", "Sparare", "Sajettar"), "Shooting on": ("Tir activé", "Sparo attivo", "Sajettar activà"), "Shooting off": ("Tir désactivé", "Sparo disattivato", "Sajettar deactivà"),
+         "Tap the picture": ("Touchez l'image", "Tocca l'immagine", "Tutga il maletg"), "false alarm": ("fausse alarme", "falso allarme", "fals alarm"),
+         "Tap into the live picture to shoot - a miss is marked as a false alarm": ("Touchez l'image en direct pour tirer – un tir manqué compte comme fausse alarme", "Tocca l'immagine dal vivo per sparare – un colpo mancato conta come falso allarme", "Tutga il maletg live per sajettar – sch'ins fala, vala quai sco fals alarm")}
+for _k, (_fr, _it, _rm) in _HX96.items():
     TRX["fr"].setdefault(_k, _fr); TRX["it"].setdefault(_k, _it); TRX["rm"].setdefault(_k, _rm)
 # ---- guide: the parts added in 2.53 - 2.65 (inserted into the existing chapters of every language) ----
 _HELP_NEW = {

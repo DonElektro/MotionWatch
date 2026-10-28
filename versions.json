@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 16:43",
+ "generated": "2026-10-28 16:50",
  "versions": [
   {
-   "version": "2.95.95",
-   "file": "webcam_bewegung_2_95_95.py",
+   "version": "2.95.96",
+   "file": "webcam_bewegung_2_95_96.py",
    "url": "",
-   "sha256": "e5ca29ecb9c1f1f8c0f05b49f8855a287b79f2250ca34bbd5dfd875dfd3def5b",
-   "date": "2026-10-28 16:43",
-   "notes": "3D-Simulator 3D-3.69: Kinder-Modus (grosse Bild-Knöpfe, Murmli, Töne, Konfetti; zurück zu Erwachsene mit Rechenaufgabe)",
-   "sig": "3d7797a32770a03ff9bb42f5ed17bfda3b820e18f82d6007c544579e7ec31cff7d816977b8bbc871ae22a5cce08ae7e1e9468b0d469353ac7a314e16d81ee701"
+   "sha256": "fa9ee54338aa5f9a517e81e3abd3f7138d88bd4dbe00c6702c83565caad4a8b5",
+   "date": "2026-10-28 16:50",
+   "notes": "Simulation: 🎯 Schiessen im Livebild (Schuss / Auslöser an die angetippte Stelle, in jedem Spiel und in der freien Welt; daneben = Fehlalarm, wird markiert); nach dem Schwenken von Hand keine weissen Bewegungs-Umrisse mehr (Hintergrund wird sofort neu gelernt); 3D-Simulator 3D-3.70",
+   "sig": "56cc4ce4c4afb7a2d024c577a8bc7a69a805beaeffff3875b89edb2a076cda2be5b85ca7bebdb721209276baf7a7cf53bc294a7b1148a068ff52e88f442e040a"
   },
   {
    "version": "2.94.5",

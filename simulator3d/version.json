@@ -1,12 +1,12 @@
 {
- "version": "3D-3.69",
+ "version": "3D-3.70",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30893330,
- "sha256": "c938c96ac4526e4593b85e40b67804fdecc07d9f8f360b35e5638981f98636c1",
- "notes": "Kinder-Modus: grosse Bild-Knöpfe, Murmli erklärt, Töne und Konfetti; zurück zu Erwachsene mit Rechenaufgabe",
+ "size": 30896042,
+ "sha256": "96b27c01ca093d173b0bda1b1af3d8851f6c144d882115a2427d4fd10eda7da5",
+ "notes": "Motion Watch spielt mit: Schuss / Auslöser aus dem Livebild, daneben = Fehlalarm",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24015085,
-  "sha256": "630e88e9f7381159790f7285bdfb7987356ba2ca010653b83c53c7f8deb1ea50"
+  "size": 24017765,
+  "sha256": "76b68548288b1cee82493a6d38d3a20f2735eb67f79dcb4f0b940c4af786b6ce"
  }
 }
