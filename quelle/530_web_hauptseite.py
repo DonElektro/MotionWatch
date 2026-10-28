@@ -33,6 +33,14 @@ main>section,main>aside{min-width:0}
 details.grp>summary{font-size:12px;letter-spacing:.07em}
 details.grp>summary .gi{font-size:16px;margin-right:9px;letter-spacing:0;filter:saturate(.9)}
 details.grp>summary .gn{flex:1}
+/* 2.95.70: symbols of the settings - coloured emoji with a green dot while on, or plain line symbols that turn green (switch «Symbols») */
+.gi{display:inline-flex;align-items:center;justify-content:center;position:relative;flex:none}
+.gi .is{display:none;width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--mut)}
+body.icplain .gi .ie{display:none}body.icplain .gi .is{display:inline-block}
+.gi .gdot{display:none;position:absolute;right:-4px;bottom:-2px;width:8px;height:8px;border-radius:50%;background:var(--grn);box-shadow:0 0 0 2px var(--panel),0 0 7px var(--grn)}
+body:not(.icplain) .mon>summary>.gi .gdot{display:block}body.icplain .mon>summary>.gi .is{color:var(--grn)}
+details.sub>summary>.gi{margin-right:8px;font-size:13px;letter-spacing:0}details.sub>summary>.sn{flex:1}
+.icseg{margin-top:8px}.icseg .mut{font-size:12px;margin:0 0 4px}
 details.sub{border-top:1px solid var(--line);margin-top:12px;padding-top:9px}
 details.sub>summary{font-size:10.5px;letter-spacing:.09em;color:var(--mut);font-weight:700;text-transform:uppercase;cursor:pointer;list-style:none;
   display:flex;justify-content:space-between;align-items:center;user-select:none}
@@ -1758,6 +1766,39 @@ function renderSchedules(list, st) {
 
 // ---- settings in 9 groups. Rule: inside a group every topic is a sub-section that opens / closes the same way
 //      (the first one is open). Fine-tuning comes last, under a small "Fine-tuning" line. A group with one topic shows it directly.
+const MWIC = {   // 2.95.70: plain line symbols for the emoji of the settings (key: the emoji without U+FE0F)
+  "🛡": '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>', "🔘": '<rect x="2" y="7" width="20" height="10" rx="5"/><circle cx="16" cy="12" r="3"/>',
+  "🏕": '<path d="M3 20L12 5l9 15zM9 20l3-5 3 5"/>', "🍃": '<path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14z"/><path d="M5 19l8-8"/>',
+  "🔋": '<rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 10v4M6 10v4M10 10v4"/>', "🔒": '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  "🔔": '<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>', "📲": '<rect x="9" y="2" width="10" height="20" rx="2"/><path d="M13 18h2M2 9h5M5 7l2 2-2 2"/>',
+  "🌙": '<path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z"/>', "💬": '<path d="M4 5h16v11H9l-5 4z"/>', "📱": '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+  "🎯": '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>', "👁": '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  "🤖": '<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 17h6"/>', "🚶": '<circle cx="13" cy="4" r="2"/><path d="M11 21l2-6-3-3 1-5 3 3 3 1M10 12l-2 3"/>',
+  "🚗": '<path d="M3 16v-4l2-5h14l2 5v4z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>', "🌧": '<path d="M6 14a4 4 0 0 1 1-8 6 6 0 0 1 11 2 3 3 0 0 1 0 6z"/><path d="M8 18v2M12 18v3M16 18v2"/>',
+  "🌬": '<path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/>', "🌘": '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/>',
+  "🎚": '<path d="M6 4v16M12 4v16M18 4v16M4 8h4M10 15h4M16 10h4"/>', "📷": '<path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="4"/>',
+  "🕹": '<circle cx="12" cy="6" r="3"/><path d="M12 9v7M5 16h14v4H5z"/>', "🔄": '<path d="M20 12a8 8 0 1 1-2.3-5.7L20 8M20 3v5h-5"/>',
+  "🎥": '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/>', "🚜": '<rect x="2" y="13" width="20" height="7" rx="3.5"/><circle cx="7" cy="16.5" r="1.5"/><circle cx="12" cy="16.5" r="1.5"/><circle cx="17" cy="16.5" r="1.5"/><path d="M7 13V8h9v5"/>',
+  "🔌": '<path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5"/>', "🌡": '<path d="M10 14V5a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0z"/>',
+  "📡": '<path d="M4 10a8 8 0 0 1 16 0M7 10a5 5 0 0 1 10 0"/><circle cx="12" cy="10" r="1.5"/><path d="M12 12v9M8 21h8"/>', "⛈": '<path d="M6 14a4 4 0 0 1 1-8 6 6 0 0 1 11 2 3 3 0 0 1 0 6"/><path d="M13 12l-3 5h4l-2 4"/>',
+  "🛰": '<path d="M12 7l5 5-5 5-5-5z"/><path d="M4 4l4.5 4.5M15.5 15.5L20 20M3 14a7 7 0 0 0 7 7"/>', "☀": '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>',
+  "💡": '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/>', "📢": '<path d="M3 10v4h4l9 5V5L7 10z"/><path d="M19 9a4 4 0 0 1 0 6"/>',
+  "🎤": '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/>', "🔊": '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/>',
+  "👏": '<path d="M7 11l4-4a2 2 0 0 1 3 3l-1 1M10 14l5-5a2 2 0 0 1 3 3l-6 6a5 5 0 0 1-7-7l2-2M17 3l1-1M20 6l1-1"/>', "🤧": '<circle cx="12" cy="12" r="9"/><path d="M8 10h2M14 10h2M9 15a4 4 0 0 0 6 0"/>',
+  "🎬": '<rect x="3" y="9" width="18" height="11" rx="1"/><path d="M3 9l2-5h16l-2 5M8 4l-2 5M13 4l-2 5M18 4l-2 5"/>', "⏺": '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor"/>',
+  "⏱": '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M10 2h4M12 2v3"/>', "☁": '<path d="M6 18a4 4 0 0 1 1-8 6 6 0 0 1 11 2 3 3 0 0 1 0 6z"/>',
+  "⚡": '<path d="M13 3L4 14h7l-1 7 9-11h-7z"/>', "🗓": '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  "⚙": '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+  "🖥": '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>', "📶": '<path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/>',
+  "👥": '<circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0 1 14 0M16 4.5a3.5 3.5 0 0 1 0 7M18 13a6 6 0 0 1 4 7"/>', "📍": '<path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
+  "🏠": '<path d="M3 11l9-7 9 7v10H3z"/><path d="M10 21v-6h4v6"/>', "🧪": '<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3M7.5 15h9"/>',
+  "⬆": '<path d="M12 20V5M6 11l6-6 6 6"/>', "📜": '<path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6M9 16h4"/>'};
+function icSpan(e) {                                         // symbol of a settings topic: emoji + plain symbol + green dot (CSS picks)
+  const s = el("span", "gi"); if (!e) return s; s.appendChild(el("span", "ie", e));
+  const k = String(e).replace(/\uFE0F/g, ""); if (MWIC[k]) s.insertAdjacentHTML("beforeend", '<svg class="is" viewBox="0 0 24 24" aria-hidden="true">' + MWIC[k] + "</svg>");
+  s.appendChild(el("i", "gdot")); return s;
+}
+try { document.body.classList.toggle("icplain", localStorage.getItem("mw-icons") === "plain"); } catch (e) {}
 const GROUPS = [
   {id: "alarm", icon: "🛡", name: "Alarm & camping", open: true,
    items: [{card: "protect", title: "Switches", ic: "🔘"}, {sec: "Camping / protection", title: "Protection & network", ic: "🏕️"}, {sec: "Power saving", ic: "🍃"},
@@ -1794,7 +1835,7 @@ function regroup() {
     const S = el("details", "sub"); S.dataset.view = card ? card.dataset.view : "sec:" + it.sec;
     S.dataset.vgroup = "Panels"; S.dataset.vlabel = title;
     if (card && card.id) { S.id = card.id; card.removeAttribute("id"); }
-    S.appendChild(el("summary", "", (it.ic ? it.ic + " " : "") + title));
+    const sum = el("summary"); if (it.ic) sum.appendChild(icSpan(it.ic)); sum.appendChild(el("span", "sn", title)); S.appendChild(sum);
     if (card) { [...card.children].filter(c => c.tagName !== "SUMMARY").forEach(k => S.appendChild(k)); card.remove(); }
     if (sd) { const b = toBlock(sd); if (b) S.appendChild(b); }
     return S.children.length > 1 ? S : null;
@@ -1802,7 +1843,7 @@ function regroup() {
   GROUPS.forEach(g => {
     const G = el("details", "card grp"); G.dataset.view = "grp:" + g.id; G.dataset.vgroup = "Panels"; G.dataset.vlabel = g.name;
     if (g.open) G.open = true;
-    const sm = el("summary"); sm.append(el("span", "gi", g.icon), el("span", "gn", t(g.name))); G.appendChild(sm);
+    const sm = el("summary"); sm.append(icSpan(g.icon), el("span", "gn", t(g.name))); G.appendChild(sm);
     const subs = [];
     g.items.forEach(it => { if (it.fine) subs.push("fine"); else { const S = make(g, it); if (S) subs.push(S); } });
     const real = subs.filter(x => x !== "fine");
@@ -3793,10 +3834,18 @@ function simpleBar(on) {
   const set = v => post("/api/ui_simple", {on: v}).then(() => location.reload());
   a.onclick = () => { if (!on) set(true); }; e.onclick = () => { if (on) set(false); };
   w.appendChild(seg); if (on) w.appendChild(el("div", "mut", t("Simple: only the important settings. «Expert» shows all of them.")));
+  // 2.95.70: symbols coloured (with a green dot while on) or plain (turn green) - per device
+  let pl = false; try { pl = localStorage.getItem("mw-icons") === "plain"; } catch (e) {}
+  const iw = el("div", "icseg"), is = el("div", "seg lseg"), ic = el("button", pl ? "" : "sel-auto", t("Coloured symbols")), ip = el("button", pl ? "sel-auto" : "", t("Plain symbols"));
+  ic.type = ip.type = "button"; is.append(ic, ip);
+  const iset = v => { try { localStorage.setItem("mw-icons", v ? "plain" : "color"); } catch (e) {} document.body.classList.toggle("icplain", v);
+    ic.className = v ? "" : "sel-auto"; ip.className = v ? "sel-auto" : ""; };
+  ic.onclick = () => iset(false); ip.onclick = () => iset(true);
+  iw.append(el("div", "mut", t("Symbols: green dot or green symbol = switched on")), is); w.appendChild(iw);
   return w;
 }
 // ---- self-check: one traffic light per part ----
-Object.assign(I18N.de, {"Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
+Object.assign(I18N.de, {"Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
   let j; try { j = await (await fetch("/api/health?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
   const L = $("#h-list"); if (!L) return; L.textContent = "";

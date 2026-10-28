@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.50 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.51 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -553,3 +553,6 @@ das Ergebnis; mit «Ergebnis senden» geht es direkt auf GitHub (mit GitHub-Schl
 NEU IN 3D-3.50
 3D-3.50: Einheitliche Menüs: links das Symbol, dann der Name, rechts der Pfeil. Symbol und Pfeil werden grün, wenn die
 Funktion läuft (orange: etwas beachten), grau, wenn sie aus ist – nicht mehr nur, weil das Menü offen ist.
+
+NEU IN 3D-3.51
+3D-3.51: Reihenfolge nach Logik: zuerst «Verbindung», darunter «Kameras», dann Werkzeuge und die Einstellungen.

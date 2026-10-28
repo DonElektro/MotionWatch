@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 09:51",
+ "generated": "2026-10-28 09:59",
  "versions": [
   {
-   "version": "2.95.69",
-   "file": "webcam_bewegung_2_95_69.py",
+   "version": "2.95.70",
+   "file": "webcam_bewegung_2_95_70.py",
    "url": "",
-   "sha256": "ffb847940f1b6ec2268dc3f501c01bb3eb372274baefc06cd9c372b926ecac70",
-   "date": "2026-10-28 09:51",
-   "notes": "Simulator-Seite nach Logik geordnet (Verbindung, Status, dann Livebild und Steuerung erst wenn verbunden); Symbol und Pfeil grün, wenn die Funktion läuft; Vollbild quer: Steuer-Stick wieder am richtigen Platz",
-   "sig": "9199cc323fac784996bf9f9afdab19f6143a73ba43384634cd62ab1863642a8f313bc3e836085591f39b651a74cbb581a6d40b99c9e4fd94fcfa2ab5a2b00c0c"
+   "sha256": "fe47431faf9069498e6d6c34bc159cd7a8defde1cd1a75147dfd21294d74f5e3",
+   "date": "2026-10-28 09:59",
+   "notes": "Einstellungen: Umschalter «Symbole» – farbige Emoji mit grünem Punkt oder schlichte Symbole, die grün werden; 3D-Simulator 3D-3.51: Verbindung vor Kameras",
+   "sig": "db7be77b9f6dd773a8437e72f2a12017f5313e863d6675568c389fca24d3ec68d62f7c5c2c82dc391218e30f3924bdd6294cad1b1772c7318484121956a15202"
   },
   {
    "version": "2.94.5",

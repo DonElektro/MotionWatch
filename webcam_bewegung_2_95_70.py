@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_69.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_70.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.70: Einstellungen: Umschalter «Symbole» – farbige Emoji mit grünem Punkt oder schlichte Symbole, die grün werden;
+    3D-Simulator 3D-3.51: Verbindung vor Kameras
   * 2.95.69: Simulator-Seite nach Logik geordnet (Verbindung, Status, dann Livebild und Steuerung erst wenn verbunden); Symbol
     und Pfeil grün, wenn die Funktion läuft; Vollbild quer: Steuer-Stick wieder am richtigen Platz
   * 2.95.68: Simulator über den Tunnel: Motion Watch stellt nicht mehr auf die direkte Adresse um (schwarzes Livebild), und
@@ -736,10 +738,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_69.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_70.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_69.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_69.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_70.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_70.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -756,7 +758,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.69"
+APP_VERSION = "2.95.70"
 
 
 def default_data_dir():
@@ -15016,8 +15018,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.50", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30882539,
-         "sha256": "fb4061dd4e73a7890b11ee6991a0ec3863441285296d1327c8b2335eed1fe562"}
+SIM3D = {"version": "3D-3.51", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30882436,
+         "sha256": "28df56f3c844ee97ce196c84d73c0793a7cf0efcb74e112f3a39ec4112750458"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15156,8 +15158,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.50", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24004157,
-           "sha256": "4ca70773a59946c9f0686b557004a4f31018f3772b7bdfd7f9ef8c28e3cd9faf", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.51", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24004180,
+           "sha256": "2b7b649358ecc515a03fdc26cf49bb0016f876c1efa428acd998079667114514", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -18954,7 +18956,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_69.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_70.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -31123,6 +31125,14 @@ main>section,main>aside{min-width:0}
 details.grp>summary{font-size:12px;letter-spacing:.07em}
 details.grp>summary .gi{font-size:16px;margin-right:9px;letter-spacing:0;filter:saturate(.9)}
 details.grp>summary .gn{flex:1}
+/* 2.95.70: symbols of the settings - coloured emoji with a green dot while on, or plain line symbols that turn green (switch «Symbols») */
+.gi{display:inline-flex;align-items:center;justify-content:center;position:relative;flex:none}
+.gi .is{display:none;width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--mut)}
+body.icplain .gi .ie{display:none}body.icplain .gi .is{display:inline-block}
+.gi .gdot{display:none;position:absolute;right:-4px;bottom:-2px;width:8px;height:8px;border-radius:50%;background:var(--grn);box-shadow:0 0 0 2px var(--panel),0 0 7px var(--grn)}
+body:not(.icplain) .mon>summary>.gi .gdot{display:block}body.icplain .mon>summary>.gi .is{color:var(--grn)}
+details.sub>summary>.gi{margin-right:8px;font-size:13px;letter-spacing:0}details.sub>summary>.sn{flex:1}
+.icseg{margin-top:8px}.icseg .mut{font-size:12px;margin:0 0 4px}
 details.sub{border-top:1px solid var(--line);margin-top:12px;padding-top:9px}
 details.sub>summary{font-size:10.5px;letter-spacing:.09em;color:var(--mut);font-weight:700;text-transform:uppercase;cursor:pointer;list-style:none;
   display:flex;justify-content:space-between;align-items:center;user-select:none}
@@ -32848,6 +32858,39 @@ function renderSchedules(list, st) {
 
 // ---- settings in 9 groups. Rule: inside a group every topic is a sub-section that opens / closes the same way
 //      (the first one is open). Fine-tuning comes last, under a small "Fine-tuning" line. A group with one topic shows it directly.
+const MWIC = {   // 2.95.70: plain line symbols for the emoji of the settings (key: the emoji without U+FE0F)
+  "🛡": '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>', "🔘": '<rect x="2" y="7" width="20" height="10" rx="5"/><circle cx="16" cy="12" r="3"/>',
+  "🏕": '<path d="M3 20L12 5l9 15zM9 20l3-5 3 5"/>', "🍃": '<path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14z"/><path d="M5 19l8-8"/>',
+  "🔋": '<rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 10v4M6 10v4M10 10v4"/>', "🔒": '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  "🔔": '<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>', "📲": '<rect x="9" y="2" width="10" height="20" rx="2"/><path d="M13 18h2M2 9h5M5 7l2 2-2 2"/>',
+  "🌙": '<path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z"/>', "💬": '<path d="M4 5h16v11H9l-5 4z"/>', "📱": '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+  "🎯": '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>', "👁": '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  "🤖": '<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 17h6"/>', "🚶": '<circle cx="13" cy="4" r="2"/><path d="M11 21l2-6-3-3 1-5 3 3 3 1M10 12l-2 3"/>',
+  "🚗": '<path d="M3 16v-4l2-5h14l2 5v4z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>', "🌧": '<path d="M6 14a4 4 0 0 1 1-8 6 6 0 0 1 11 2 3 3 0 0 1 0 6z"/><path d="M8 18v2M12 18v3M16 18v2"/>',
+  "🌬": '<path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/>', "🌘": '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/>',
+  "🎚": '<path d="M6 4v16M12 4v16M18 4v16M4 8h4M10 15h4M16 10h4"/>', "📷": '<path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="4"/>',
+  "🕹": '<circle cx="12" cy="6" r="3"/><path d="M12 9v7M5 16h14v4H5z"/>', "🔄": '<path d="M20 12a8 8 0 1 1-2.3-5.7L20 8M20 3v5h-5"/>',
+  "🎥": '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/>', "🚜": '<rect x="2" y="13" width="20" height="7" rx="3.5"/><circle cx="7" cy="16.5" r="1.5"/><circle cx="12" cy="16.5" r="1.5"/><circle cx="17" cy="16.5" r="1.5"/><path d="M7 13V8h9v5"/>',
+  "🔌": '<path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5"/>', "🌡": '<path d="M10 14V5a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0z"/>',
+  "📡": '<path d="M4 10a8 8 0 0 1 16 0M7 10a5 5 0 0 1 10 0"/><circle cx="12" cy="10" r="1.5"/><path d="M12 12v9M8 21h8"/>', "⛈": '<path d="M6 14a4 4 0 0 1 1-8 6 6 0 0 1 11 2 3 3 0 0 1 0 6"/><path d="M13 12l-3 5h4l-2 4"/>',
+  "🛰": '<path d="M12 7l5 5-5 5-5-5z"/><path d="M4 4l4.5 4.5M15.5 15.5L20 20M3 14a7 7 0 0 0 7 7"/>', "☀": '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>',
+  "💡": '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/>', "📢": '<path d="M3 10v4h4l9 5V5L7 10z"/><path d="M19 9a4 4 0 0 1 0 6"/>',
+  "🎤": '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/>', "🔊": '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/>',
+  "👏": '<path d="M7 11l4-4a2 2 0 0 1 3 3l-1 1M10 14l5-5a2 2 0 0 1 3 3l-6 6a5 5 0 0 1-7-7l2-2M17 3l1-1M20 6l1-1"/>', "🤧": '<circle cx="12" cy="12" r="9"/><path d="M8 10h2M14 10h2M9 15a4 4 0 0 0 6 0"/>',
+  "🎬": '<rect x="3" y="9" width="18" height="11" rx="1"/><path d="M3 9l2-5h16l-2 5M8 4l-2 5M13 4l-2 5M18 4l-2 5"/>', "⏺": '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor"/>',
+  "⏱": '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M10 2h4M12 2v3"/>', "☁": '<path d="M6 18a4 4 0 0 1 1-8 6 6 0 0 1 11 2 3 3 0 0 1 0 6z"/>',
+  "⚡": '<path d="M13 3L4 14h7l-1 7 9-11h-7z"/>', "🗓": '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  "⚙": '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+  "🖥": '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>', "📶": '<path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/>',
+  "👥": '<circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0 1 14 0M16 4.5a3.5 3.5 0 0 1 0 7M18 13a6 6 0 0 1 4 7"/>', "📍": '<path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
+  "🏠": '<path d="M3 11l9-7 9 7v10H3z"/><path d="M10 21v-6h4v6"/>', "🧪": '<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3M7.5 15h9"/>',
+  "⬆": '<path d="M12 20V5M6 11l6-6 6 6"/>', "📜": '<path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6M9 16h4"/>'};
+function icSpan(e) {                                         // symbol of a settings topic: emoji + plain symbol + green dot (CSS picks)
+  const s = el("span", "gi"); if (!e) return s; s.appendChild(el("span", "ie", e));
+  const k = String(e).replace(/\uFE0F/g, ""); if (MWIC[k]) s.insertAdjacentHTML("beforeend", '<svg class="is" viewBox="0 0 24 24" aria-hidden="true">' + MWIC[k] + "</svg>");
+  s.appendChild(el("i", "gdot")); return s;
+}
+try { document.body.classList.toggle("icplain", localStorage.getItem("mw-icons") === "plain"); } catch (e) {}
 const GROUPS = [
   {id: "alarm", icon: "🛡", name: "Alarm & camping", open: true,
    items: [{card: "protect", title: "Switches", ic: "🔘"}, {sec: "Camping / protection", title: "Protection & network", ic: "🏕️"}, {sec: "Power saving", ic: "🍃"},
@@ -32884,7 +32927,7 @@ function regroup() {
     const S = el("details", "sub"); S.dataset.view = card ? card.dataset.view : "sec:" + it.sec;
     S.dataset.vgroup = "Panels"; S.dataset.vlabel = title;
     if (card && card.id) { S.id = card.id; card.removeAttribute("id"); }
-    S.appendChild(el("summary", "", (it.ic ? it.ic + " " : "") + title));
+    const sum = el("summary"); if (it.ic) sum.appendChild(icSpan(it.ic)); sum.appendChild(el("span", "sn", title)); S.appendChild(sum);
     if (card) { [...card.children].filter(c => c.tagName !== "SUMMARY").forEach(k => S.appendChild(k)); card.remove(); }
     if (sd) { const b = toBlock(sd); if (b) S.appendChild(b); }
     return S.children.length > 1 ? S : null;
@@ -32892,7 +32935,7 @@ function regroup() {
   GROUPS.forEach(g => {
     const G = el("details", "card grp"); G.dataset.view = "grp:" + g.id; G.dataset.vgroup = "Panels"; G.dataset.vlabel = g.name;
     if (g.open) G.open = true;
-    const sm = el("summary"); sm.append(el("span", "gi", g.icon), el("span", "gn", t(g.name))); G.appendChild(sm);
+    const sm = el("summary"); sm.append(icSpan(g.icon), el("span", "gn", t(g.name))); G.appendChild(sm);
     const subs = [];
     g.items.forEach(it => { if (it.fine) subs.push("fine"); else { const S = make(g, it); if (S) subs.push(S); } });
     const real = subs.filter(x => x !== "fine");
@@ -34883,10 +34926,18 @@ function simpleBar(on) {
   const set = v => post("/api/ui_simple", {on: v}).then(() => location.reload());
   a.onclick = () => { if (!on) set(true); }; e.onclick = () => { if (on) set(false); };
   w.appendChild(seg); if (on) w.appendChild(el("div", "mut", t("Simple: only the important settings. «Expert» shows all of them.")));
+  // 2.95.70: symbols coloured (with a green dot while on) or plain (turn green) - per device
+  let pl = false; try { pl = localStorage.getItem("mw-icons") === "plain"; } catch (e) {}
+  const iw = el("div", "icseg"), is = el("div", "seg lseg"), ic = el("button", pl ? "" : "sel-auto", t("Coloured symbols")), ip = el("button", pl ? "sel-auto" : "", t("Plain symbols"));
+  ic.type = ip.type = "button"; is.append(ic, ip);
+  const iset = v => { try { localStorage.setItem("mw-icons", v ? "plain" : "color"); } catch (e) {} document.body.classList.toggle("icplain", v);
+    ic.className = v ? "" : "sel-auto"; ip.className = v ? "sel-auto" : ""; };
+  ic.onclick = () => iset(false); ip.onclick = () => iset(true);
+  iw.append(el("div", "mut", t("Symbols: green dot or green symbol = switched on")), is); w.appendChild(iw);
   return w;
 }
 // ---- self-check: one traffic light per part ----
-Object.assign(I18N.de, {"Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
+Object.assign(I18N.de, {"Coloured symbols": "Farbige Symbole", "Plain symbols": "Schlichte Symbole", "Symbols: green dot or green symbol = switched on": "Symbole: grüner Punkt bzw. grünes Symbol = eingeschaltet", "Download AI model": "KI-Modell herunterladen", "AI ready": "KI bereit", "downloading the AI model …": "KI-Modell wird geladen …", "🩺 Self-check": "🩺 Selbstdiagnose", "Check again": "Nochmals prüfen", "problems": "Probleme", "notes": "Hinweise"});
 async function healthLoad() {
   let j; try { j = await (await fetch("/api/health?lang=" + LANG, {cache: "no-store"})).json(); } catch (e) { return; }
   const L = $("#h-list"); if (!L) return; L.textContent = "";
@@ -40506,7 +40557,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.69")
+        self.root.title("Motion Watch 2.95.70")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40796,7 +40847,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.69 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.70 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -47310,9 +47361,9 @@ TRX['rm'].update({'Night vision look: green picture, thermal outlines and temper
 TRX['fr'].update({"Search a place (e.g. Zermatt)": "Chercher un lieu (p. ex. Zermatt)", "Aerial picture": "Photo aérienne", "Map": "Carte", "Load this place": "Charger ce lieu", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Touchez la carte là où se trouve Motion Watch. Glisser = déplacer, deux doigts ou molette = zoomer.", "Search not possible – tap the place on the map": "Recherche impossible – touchez le lieu sur la carte", "Nothing found": "Rien trouvé", "Only in Switzerland": "Seulement en Suisse", "The simulator loads the place (about a minute the first time).": "Le simulateur charge le lieu (environ une minute la première fois)."})
 TRX['it'].update({"Search a place (e.g. Zermatt)": "Cerca un luogo (p. es. Zermatt)", "Aerial picture": "Foto aerea", "Map": "Carta", "Load this place": "Carica questo luogo", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Tocca la carta dove si trova Motion Watch. Trascinare = spostare, due dita o rotellina = zoom.", "Search not possible – tap the place on the map": "Ricerca non possibile – tocca il luogo sulla carta", "Nothing found": "Nessun risultato", "Only in Switzerland": "Solo in Svizzera", "The simulator loads the place (about a minute the first time).": "Il simulatore carica il luogo (circa un minuto la prima volta)."})
 TRX['rm'].update({"Search a place (e.g. Zermatt)": "Tschertgar in lieu (p.ex. Zermatt)", "Aerial picture": "Fotografia aviatica", "Map": "Charta", "Load this place": "Chargiar quest lieu", "Tap on the map where Motion Watch stands. Drag = move, two fingers or wheel = zoom.": "Tutgar la charta nua che Motion Watch stat. Trair = spustar, dus dets u rodella = zoom.", "Search not possible – tap the place on the map": "Tschertga betg pussaivla – tutgar il lieu sin la charta", "Nothing found": "Nagut chattà", "Only in Switzerland": "Mo en Svizra", "The simulator loads the place (about a minute the first time).": "Il simulatur chargia il lieu (la emprima giada var ina minuta)."})
-TRX['fr'].update({"Search a setting …": "Chercher un réglage …", "Simple": "Simple", "Expert": "Expert", "Simple: only the important settings. «Expert» shows all.": "Simple : seulement les réglages importants. «Expert» les montre tous."})
-TRX['it'].update({"Search a setting …": "Cerca un'impostazione …", "Simple": "Semplice", "Expert": "Esperto", "Simple: only the important settings. «Expert» shows all.": "Semplice: solo le impostazioni importanti. «Esperto» le mostra tutte."})
-TRX['rm'].update({"Search a setting …": "Tschertgar ina configuraziun …", "Simple": "Simpel", "Expert": "Expert", "Simple: only the important settings. «Expert» shows all.": "Simpel: mo las configuraziuns impurtantas. «Expert» mussa tuttas."})
+TRX['fr'].update({"Coloured symbols": "Symboles en couleur", "Plain symbols": "Symboles simples", "Symbols: green dot or green symbol = switched on": "Symboles : point vert ou symbole vert = activé", "Live picture": "Image en direct", "Search a setting …": "Chercher un réglage …", "Simple": "Simple", "Expert": "Expert", "Simple: only the important settings. «Expert» shows all.": "Simple : seulement les réglages importants. «Expert» les montre tous."})
+TRX['it'].update({"Coloured symbols": "Simboli a colori", "Plain symbols": "Simboli semplici", "Symbols: green dot or green symbol = switched on": "Simboli: punto verde o simbolo verde = acceso", "Live picture": "Immagine dal vivo", "Search a setting …": "Cerca un'impostazione …", "Simple": "Semplice", "Expert": "Esperto", "Simple: only the important settings. «Expert» shows all.": "Semplice: solo le impostazioni importanti. «Esperto» le mostra tutte."})
+TRX['rm'].update({"Coloured symbols": "Simbols colurads", "Plain symbols": "Simbols simpels", "Symbols: green dot or green symbol = switched on": "Simbols: punct verd u simbol verd = activà", "Live picture": "Maletg live", "Search a setting …": "Tschertgar ina configuraziun …", "Simple": "Simpel", "Expert": "Expert", "Simple: only the important settings. «Expert» shows all.": "Simpel: mo las configuraziuns impurtantas. «Expert» mussa tuttas."})
 TRX['fr'].update({"Mover": "Mover", "test only - nothing moves": "test seulement – rien ne bouge", "Simulation: show the stick even without a mover or motor driver (to try it out)": "Simulation : afficher le joystick même sans mover ni pilote des moteurs (pour essayer)", "stick shown for testing (the simulator has no mover)": "joystick affiché pour tester (le simulateur n'a pas de mover)", "Mover (tracked vehicle)": "Mover (véhicule à chenilles)", "Motor driver": "Pilote des moteurs", "Motor driver: address (I2C)": "Pilote des moteurs : adresse (I2C)", "Top speed (%)": "Vitesse maximale (%)", "Turning speed (%)": "Vitesse de rotation (%)", "Gentle start and stop (seconds)": "Démarrage et arrêt en douceur (secondes)", "Left track runs the wrong way (turn round)": "La chenille gauche tourne à l'envers (inverser)", "Right track runs the wrong way (turn round)": "La chenille droite tourne à l'envers (inverser)", "Left and right tracks swapped": "Chenilles gauche et droite inversées", "automatic: on when the motor driver is found": "automatique : actif si le pilote des moteurs est trouvé", "Motor HAT (Adafruit or compatible): M1 left, M2 right": "Motor HAT (Adafruit ou compatible) : M1 gauche, M2 droite", "Waveshare Motor Driver HAT: A left, B right": "Waveshare Motor Driver HAT : A gauche, B droite", "the address is the one of the servo driver": "l'adresse est celle du pilote des servos", "no motor driver found": "aucun pilote des moteurs trouvé", "motor driver found": "pilote des moteurs trouvé", "simulated": "simulé", "the simulator has no mover": "le simulateur n'a pas de mover", "A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "Un véhicule à chenilles sous Motion Watch : le deuxième joystick le conduit (haut = avant, bas = arrière, côté = tourner sur place). Le pilote des moteurs (Motor HAT avec PCA9685 + TB6612 en I2C) est trouvé tout seul – sans lui le joystick reste caché. Sans nouvel ordre pendant 0,6 s, les deux chenilles s'arrêtent."})
 TRX['it'].update({"Mover": "Mover", "test only - nothing moves": "solo prova – non si muove nulla", "Simulation: show the stick even without a mover or motor driver (to try it out)": "Simulazione: mostrare il joystick anche senza mover né driver dei motori (per provare)", "stick shown for testing (the simulator has no mover)": "joystick mostrato per provare (il simulatore non ha un mover)", "Mover (tracked vehicle)": "Mover (veicolo cingolato)", "Motor driver": "Driver dei motori", "Motor driver: address (I2C)": "Driver dei motori: indirizzo (I2C)", "Top speed (%)": "Velocità massima (%)", "Turning speed (%)": "Velocità di rotazione (%)", "Gentle start and stop (seconds)": "Partenza e frenata dolci (secondi)", "Left track runs the wrong way (turn round)": "Il cingolo sinistro gira al contrario (invertire)", "Right track runs the wrong way (turn round)": "Il cingolo destro gira al contrario (invertire)", "Left and right tracks swapped": "Cingoli sinistro e destro scambiati", "automatic: on when the motor driver is found": "automatico: attivo se il driver dei motori viene trovato", "Motor HAT (Adafruit or compatible): M1 left, M2 right": "Motor HAT (Adafruit o compatibile): M1 sinistra, M2 destra", "Waveshare Motor Driver HAT: A left, B right": "Waveshare Motor Driver HAT: A sinistra, B destra", "the address is the one of the servo driver": "l'indirizzo è quello del driver dei servo", "no motor driver found": "nessun driver dei motori trovato", "motor driver found": "driver dei motori trovato", "simulated": "simulato", "the simulator has no mover": "il simulatore non ha un mover", "A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "Un veicolo cingolato sotto Motion Watch: il secondo joystick lo guida (su = avanti, giù = indietro, di lato = girare sul posto). Il driver dei motori (Motor HAT con PCA9685 + TB6612 su I2C) viene trovato da solo – senza di esso il joystick resta nascosto. Senza un nuovo comando per 0,6 s entrambi i cingoli si fermano."})
 TRX['rm'].update({"Mover": "Mover", "test only - nothing moves": "mo test – nagut na sa mova", "Simulation: show the stick even without a mover or motor driver (to try it out)": "Simulaziun: mussar il stick era senza mover u manischunz dals motors (per empruvar)", "stick shown for testing (the simulator has no mover)": "stick mussà per empruvar (il simulatur n'ha nagin mover)", "Mover (tracked vehicle)": "Mover (vehichel cun chadainas)", "Motor driver": "Manischunz dals motors", "Motor driver: address (I2C)": "Manischunz dals motors: adressa (I2C)", "Top speed (%)": "Sveltezza maximala (%)", "Turning speed (%)": "Sveltezza da sa volver (%)", "Gentle start and stop (seconds)": "Partir e franar plaun (secundas)", "Left track runs the wrong way (turn round)": "La chadaina sanestra gira dal fauss vers (volver)", "Right track runs the wrong way (turn round)": "La chadaina dretga gira dal fauss vers (volver)", "Left and right tracks swapped": "Chadainas sanestra e dretga barattadas", "automatic: on when the motor driver is found": "automatic: activ sch'il manischunz dals motors vegn chattà", "Motor HAT (Adafruit or compatible): M1 left, M2 right": "Motor HAT (Adafruit u cumpatibel): M1 sanester, M2 dretg", "Waveshare Motor Driver HAT: A left, B right": "Waveshare Motor Driver HAT: A sanester, B dretg", "the address is the one of the servo driver": "l'adressa è quella dal manischunz dals servos", "no motor driver found": "nagin manischunz dals motors chattà", "motor driver found": "manischunz dals motors chattà", "simulated": "simulà", "the simulator has no mover": "il simulatur n'ha nagin mover", "A tracked vehicle under Motion Watch: the second stick drives it (up = forward, down = back, sideways = turn on the spot). The motor driver (Motor HAT with PCA9685 + TB6612 on I2C) is found by itself - without it the stick stays hidden. Without a new command for 0.6 s both tracks stop.": "In vehichel cun chadainas sut Motion Watch: il segund stick al maina (si = enavant, giu = enavos, da la vart = sa volver sin il lieu). Il manischunz dals motors (Motor HAT cun PCA9685 + TB6612 sin I2C) vegn chattà sez – senza el resta il stick zuppà. Sche 0,6 s vegn nagin nov cumond, stattan omaduas chadainas."})
