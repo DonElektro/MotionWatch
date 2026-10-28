@@ -231,11 +231,18 @@ HEADER_JS = r"""
           // fixed on the screen, exactly on whole screen pixels (inside the moving marmot it would get blurred)
           const hr = bl.getBoundingClientRect(), dp = window.devicePixelRatio || 1, w = q.width / dp;
           q.style.left = Math.round(hr.left + hr.width / 2 - w / 2) + "px"; q.style.top = Math.round(hr.top + hr.height / 2 - 6 - w / 2) + "px";
-          document.body.appendChild(q);                          // no fading: a see-through layer gets blurred on some screens
-          const done = () => { removeEventListener("scroll", done, true); q.remove(); setTimeout(() => { qr = false; leave(); }, 100); };
+          // 2.95.88: first 3 s a tiny target where the code comes (time to put the phone under the microscope), then 3 s the code
+          const tg = document.createElement("div"), cx = Math.round(hr.left + hr.width / 2), cy = Math.round(hr.top + hr.height / 2 - 6);
+          tg.style.cssText = "position:fixed;z-index:99999;pointer-events:none;width:9px;height:9px;left:" + (cx - 4) + "px;top:" + (cy - 4) + "px";
+          tg.innerHTML = '<svg width="9" height="9" viewBox="0 0 9 9"><circle cx="4.5" cy="4.5" r="4" fill="#fff" stroke="#e8436a"/><circle cx="4.5" cy="4.5" r="2.4" fill="none" stroke="#e8436a"/><circle cx="4.5" cy="4.5" r=".9" fill="#e8436a"/></svg>';
+          document.body.appendChild(tg);
+          let t2 = null;
+          const t1 = setTimeout(() => { tg.remove(); document.body.appendChild(q);   // no fading: a see-through layer gets blurred on some screens
+            t2 = setTimeout(done, 3000); }, 3000);
+          const done = () => { removeEventListener("scroll", done, true); clearTimeout(t1); clearTimeout(t2); tg.remove(); q.remove(); setTimeout(() => { qr = false; leave(); }, 100); };
           addEventListener("scroll", done, {capture: true, once: true});
-          const t_ = setTimeout(done, 20000); bl.style.visibility = "visible"; bl.style.opacity = "0";
-          bl.addEventListener("pointerdown", () => { clearTimeout(t_); done(); }, {once: true}); }, 650);
+          bl.style.visibility = "visible"; bl.style.opacity = "0";
+          bl.addEventListener("pointerdown", () => done(), {once: true}); }, 650);
       } else setTimeout(leave, 700); };
     bl.addEventListener("pointerup", end); bl.addEventListener("pointercancel", end);
     bl.addEventListener("click", e => e.stopPropagation());

@@ -1,12 +1,12 @@
 {
- "version": "3D-3.62",
+ "version": "3D-3.63",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30955266,
- "sha256": "accd89a9bb4f720069fee5544eca2bdd878c2971cfd4284dc78c609871c918fc",
- "notes": "Oranges Motion-Watch-Symbol oben links, das Auge schaut links und rechts",
+ "size": 30872266,
+ "sha256": "fb5c41cfb2927f71c9b009caff0c2c5d2093477a61ad2fda16f7b8854a6d57e0",
+ "notes": "Oranges Motion-Watch-Symbol auch als Fenster-Symbol; nur die Pupille schaut links und rechts",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24076810,
-  "sha256": "bafa86a841a7a5cc28081d0372e9136b597f1bfb16df86c7b966e278ebe643f2"
+  "size": 23993582,
+  "sha256": "fb4e822cec6985c8de868d41647afa485b2f81d1d2e303fb86e888a53b00d6c3"
  }
 }

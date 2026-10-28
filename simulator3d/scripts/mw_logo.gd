@@ -1,6 +1,6 @@
 extends Control
 ## 3D-3.62: the orange Motion Watch symbol (like «Classic» in Motion Watch) at the top left of the panel.
-## The eye in the middle looks around: slowly to the left, short stop, to the right, short stop.
+## The pupil in the eye looks around: slowly to the left, short stop, to the right, short stop.
 
 var t := 0.0
 const TOP := Color(1.0, 0.624, 0.263)      # #ff9f43
@@ -65,7 +65,7 @@ func _draw() -> void:
 		draw_circle(q, w / 2.0, Color.WHITE)
 	# camera head with the moving eye
 	draw_circle(P.call(0, 0), 19.0 * k, Color.WHITE)
-	var dx: float = look() * 6.0
-	draw_circle(P.call(dx, 0), 11.0 * k, DARK)
-	draw_circle(P.call(dx * 1.1, 0), 6.0 * k, BOT)
+	draw_circle(P.call(0, 0), 11.0 * k, DARK)                # the eye stays, only the pupil moves (3D-3.63)
+	var dx: float = look() * 4.5
+	draw_circle(P.call(dx, 0), 6.0 * k, BOT)
 	draw_circle(P.call(dx - 3.5, -3.5), 2.6 * k, Color.WHITE)

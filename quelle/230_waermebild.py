@@ -78,6 +78,9 @@ class ThermalCam:
     @classmethod
     def crop(cls, fr):
         """The part of the (wider) thermal picture that the normal camera sees: zoom + shift (thermal camera settings)."""
+        g = cls.sim_geom()
+        if g is not None:                            # 2.95.88: simulator - fit by the field of view of both cameras
+            return cls.fit(fr, *g)
         z = max(0.3, min(1.0, float(CFG["thermal_zoom"]) / 100.0))
         dx, dy = float(CFG["thermal_dx"]) / 100.0, float(CFG["thermal_dy"]) / 100.0
         if z >= 0.999 and not dx and not dy:
@@ -87,6 +90,39 @@ class ThermalCam:
         x0 = max(0.0, min(W - w, W * (0.5 + dx) - w / 2)); y0 = max(0.0, min(H - h, H * (0.5 - dy) - h / 2))
         out = fr[int(round(y0)):int(round(y0 + h)), int(round(x0)):int(round(x0 + w))]
         return out if out.size else fr
+
+    @staticmethod
+    def sim_geom():
+        """In the simulation the field of view of the head camera and of the thermal camera is known (/info): which part
+        of the main picture the thermal picture covers (fx, fy; < 1 = it covers less, it is put in the middle). None outside."""
+        try:
+            if not (CFG.get("sim_on") and str(CFG["thermal_source"]) == "sim:thermal" and str(CFG["source"]).startswith("sim:")):
+                return None
+            info = SIM.get("info") or {}
+            th = info.get("thermal") or {}
+            cam = next((c for c in info.get("cameras") or [] if str(c.get("id")) == str(CFG["source"])[4:]), None)
+            if not th or not cam or not (th.get("on_head") and cam.get("on_head")):
+                return None
+            fx = math.tan(math.radians(float(th["fov_h"])) / 2) / math.tan(math.radians(float(cam["fov_h"])) / 2)
+            fy = fx * (float(th["h"]) / float(th["w"])) / (float(cam["h"]) / float(cam["w"]))
+            return fx, fy
+        except (KeyError, ValueError, TypeError, ZeroDivisionError):
+            return None
+
+    @staticmethod
+    def fit(fr, fx, fy):
+        """The thermal picture as the field of the main picture: bigger field = cut out the middle, smaller = put it in the middle
+        and fill the rest with the median (no picture there, so no warm edges)."""
+        H, W = fr.shape[:2]
+        oW, oH = max(2, int(round(W / fx))), max(2, int(round(H / fy)))
+        x0, y0 = (oW - W) // 2, (oH - H) // 2
+        fill = np.median(fr.reshape(H * W, -1), axis=0).astype(fr.dtype)
+        out = np.empty((oH, oW) + fr.shape[2:], fr.dtype); out[...] = fill
+        sx0, sy0 = max(0, -x0), max(0, -y0)
+        dx0, dy0 = max(0, x0), max(0, y0)
+        w, h = min(W - sx0, oW - dx0), min(H - sy0, oH - dy0)
+        out[dy0:dy0 + h, dx0:dx0 + w] = fr[sy0:sy0 + h, sx0:sx0 + w]
+        return out
 
     @staticmethod
     def to_gray8(fr):

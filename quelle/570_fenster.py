@@ -729,7 +729,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.87")
+        self.root.title("Motion Watch 2.95.88")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1019,7 +1019,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.87 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.88 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1115,7 +1115,7 @@ class App:
         if ccw_heart(self._egg_pts):                                   # 2.95.61: a big heart, counter-clockwise
             xs = [p[0] for p in self._egg_pts]; ys = [p[1] for p in self._egg_pts]
             self._egg_burst = (now, (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (max(xs) - min(xs)) / 2)
-            self._egg_qr_from = now + 0.7; self._egg_qr = now + 20.7; self._egg_leave = now + 20.9
+            self._egg_qr_from = now + 3.7; self._egg_qr = now + 6.7; self._egg_leave = now + 6.9   # 2.95.88: 3 s target, then 3 s code
         else:
             self._egg_leave = max(self._egg_leave, now + 0.7)
         self._egg_pts = []
@@ -1171,6 +1171,10 @@ class App:
                 poly = [(bu[1] + dx_, bu[2] + dy_)] + [(p[0] + dx_, p[1] + dy_) for p in seg_]
                 if len(poly) >= 3:
                     d.polygon(poly, fill="#e8436a" if i % 2 else "#ff7aa2")
+        if getattr(self, "_egg_burst", None) and getattr(self, "_egg_qr_from", 0) - 3.0 <= now < getattr(self, "_egg_qr_from", 0):
+            tcx, tcy = bx0 + S / 2, by0 + S / 2                          # 2.95.88: a tiny target where the code comes
+            for rr, col in ((4, "#ffffff"), (4, None), (2.4, None), (0.9, "#e8436a")):
+                d.ellipse([tcx - rr, tcy - rr, tcx + rr, tcy + rr], fill=col, outline="#e8436a" if col is None else None)
         for r_, row in (enumerate(bm) if getattr(self, "_egg_qr_from", 0) <= now < getattr(self, "_egg_qr", 0) else ()):
             if r_ == 0:
                 d.rectangle([bx0, by0, bx0 + S - 1, by0 + S - 1], fill="#c99d6e")

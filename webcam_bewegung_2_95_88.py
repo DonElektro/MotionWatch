@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_87.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_88.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.88: Wärmebild in der Simulation passend über dem Videobild (Blickwinkel beider Kameras, vorher nach aussen verschoben);
+    Symbol «Klassisch»: nur die Pupille bewegt sich; kleines Extra: 3 s Zielscheibe, dann 3 s das Geheimnis; Simulator 3D-3.63
   * 2.95.87: Symbol «Klassisch (orange)»: das Auge in der Kopfzeile schaut links und rechts; Simulator 3D-3.62 mit dem orangen
     Symbol
   * 2.95.86: Simulation mit eigenen Einstellungen: beim Zurückschalten die Liste der Änderungen, Übernahme wählbar (abschaltbar)
@@ -762,10 +764,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_87.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_88.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_87.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_87.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_88.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_88.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -782,7 +784,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.87"
+APP_VERSION = "2.95.88"
 
 
 def default_data_dir():
@@ -11291,6 +11293,9 @@ class ThermalCam:
     @classmethod
     def crop(cls, fr):
         """The part of the (wider) thermal picture that the normal camera sees: zoom + shift (thermal camera settings)."""
+        g = cls.sim_geom()
+        if g is not None:                            # 2.95.88: simulator - fit by the field of view of both cameras
+            return cls.fit(fr, *g)
         z = max(0.3, min(1.0, float(CFG["thermal_zoom"]) / 100.0))
         dx, dy = float(CFG["thermal_dx"]) / 100.0, float(CFG["thermal_dy"]) / 100.0
         if z >= 0.999 and not dx and not dy:
@@ -11300,6 +11305,39 @@ class ThermalCam:
         x0 = max(0.0, min(W - w, W * (0.5 + dx) - w / 2)); y0 = max(0.0, min(H - h, H * (0.5 - dy) - h / 2))
         out = fr[int(round(y0)):int(round(y0 + h)), int(round(x0)):int(round(x0 + w))]
         return out if out.size else fr
+
+    @staticmethod
+    def sim_geom():
+        """In the simulation the field of view of the head camera and of the thermal camera is known (/info): which part
+        of the main picture the thermal picture covers (fx, fy; < 1 = it covers less, it is put in the middle). None outside."""
+        try:
+            if not (CFG.get("sim_on") and str(CFG["thermal_source"]) == "sim:thermal" and str(CFG["source"]).startswith("sim:")):
+                return None
+            info = SIM.get("info") or {}
+            th = info.get("thermal") or {}
+            cam = next((c for c in info.get("cameras") or [] if str(c.get("id")) == str(CFG["source"])[4:]), None)
+            if not th or not cam or not (th.get("on_head") and cam.get("on_head")):
+                return None
+            fx = math.tan(math.radians(float(th["fov_h"])) / 2) / math.tan(math.radians(float(cam["fov_h"])) / 2)
+            fy = fx * (float(th["h"]) / float(th["w"])) / (float(cam["h"]) / float(cam["w"]))
+            return fx, fy
+        except (KeyError, ValueError, TypeError, ZeroDivisionError):
+            return None
+
+    @staticmethod
+    def fit(fr, fx, fy):
+        """The thermal picture as the field of the main picture: bigger field = cut out the middle, smaller = put it in the middle
+        and fill the rest with the median (no picture there, so no warm edges)."""
+        H, W = fr.shape[:2]
+        oW, oH = max(2, int(round(W / fx))), max(2, int(round(H / fy)))
+        x0, y0 = (oW - W) // 2, (oH - H) // 2
+        fill = np.median(fr.reshape(H * W, -1), axis=0).astype(fr.dtype)
+        out = np.empty((oH, oW) + fr.shape[2:], fr.dtype); out[...] = fill
+        sx0, sy0 = max(0, -x0), max(0, -y0)
+        dx0, dy0 = max(0, x0), max(0, y0)
+        w, h = min(W - sx0, oW - dx0), min(H - sy0, oH - dy0)
+        out[dy0:dy0 + h, dx0:dx0 + w] = fr[sy0:sy0 + h, sx0:sx0 + w]
+        return out
 
     @staticmethod
     def to_gray8(fr):
@@ -15051,8 +15089,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.62", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30955266,
-         "sha256": "accd89a9bb4f720069fee5544eca2bdd878c2971cfd4284dc78c609871c918fc"}
+SIM3D = {"version": "3D-3.63", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30872266,
+         "sha256": "fb5c41cfb2927f71c9b009caff0c2c5d2093477a61ad2fda16f7b8854a6d57e0"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15191,8 +15229,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.62", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24076810,
-           "sha256": "bafa86a841a7a5cc28081d0372e9136b597f1bfb16df86c7b966e278ebe643f2", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.63", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24076912,
+           "sha256": "0681173c7c34c18fc6c00d8419ec0e8d94f18eeb6a3fa164ebefcdff48ded826", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -19089,7 +19127,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_87.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_88.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -30035,7 +30073,7 @@ SIM_ICONS_PNG = {          # the symbols of the three simulators (2.95.23), 96 p
         "lWtxdAAAAABJRU5ErkJggg=="),
 }
 APP_ICONS_ANIM = {
-    'classic': '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100"><defs><linearGradient id="kcg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9f43"/><stop offset="1" stop-color="#e8590c"/></linearGradient></defs><rect width="100" height="100" fill="url(#kcg)"/><g fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 40V56Q24 66 34 66H66Q76 66 76 56V40"/><path d="M50 66V76M36 78H64"/></g><circle cx="50" cy="46" r="19" fill="#fff"/><g><animateTransform attributeName="transform" type="translate" dur="6s" repeatCount="indefinite" calcMode="spline" values="0 0;-6 0;-6 0;6 0;6 0;0 0" keyTimes="0;0.12;0.38;0.62;0.88;1" keySplines=".45 0 .55 1;0 0 1 1;.45 0 .55 1;0 0 1 1;.45 0 .55 1"/><circle cx="50" cy="46" r="11" fill="#0a0e14"/><circle cx="50" cy="46" r="6" fill="#e8590c"/><circle cx="46.5" cy="42.5" r="2.6" fill="#fff"/></g></svg>',      # 2.95.87: the orange tile, the eye looks left and right        # the radar icons with a turning sweep (2.95.25): only in the page header, a home-screen icon cannot move
+    'classic': '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100"><defs><linearGradient id="kcg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9f43"/><stop offset="1" stop-color="#e8590c"/></linearGradient></defs><rect width="100" height="100" fill="url(#kcg)"/><g fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 40V56Q24 66 34 66H66Q76 66 76 56V40"/><path d="M50 66V76M36 78H64"/></g><circle cx="50" cy="46" r="19" fill="#fff"/><circle cx="50" cy="46" r="11" fill="#0a0e14"/><g><animateTransform attributeName="transform" type="translate" dur="6s" repeatCount="indefinite" calcMode="spline" values="0 0;-4.5 0;-4.5 0;4.5 0;4.5 0;0 0" keyTimes="0;0.12;0.38;0.62;0.88;1" keySplines=".45 0 .55 1;0 0 1 1;.45 0 .55 1;0 0 1 1;.45 0 .55 1"/><circle cx="50" cy="46" r="6" fill="#e8590c"/><circle cx="46.5" cy="42.5" r="2.6" fill="#fff"/></g></svg>',      # 2.95.87: the orange tile; 2.95.88: only the pupil moves, the eye stays        # the radar icons with a turning sweep (2.95.25): only in the page header, a home-screen icon cannot move
     'radar': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512"><defs><radialGradient id="k1g" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3B8CFF" stop-opacity="0.55"></stop><stop offset="1" stop-color="#3B8CFF" stop-opacity="0"></stop></radialGradient>\n<linearGradient id="k1b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16243A"></stop><stop offset="1" stop-color="#0A1018"></stop></linearGradient>\n<linearGradient id="k1w" x1="60" y1="60" x2="452" y2="452" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1"></stop><stop offset="1" stop-color="#3B8CFF"></stop></linearGradient></defs>\n<rect width="512" height="512" fill="url(#k1b)"></rect>\n<circle cx="256" cy="256" r="230" fill="url(#k1g)"></circle>\n<g fill="none" stroke="url(#k1w)" stroke-linecap="round"><g stroke-width="18" opacity="1"><path d="M402.7 287.2 A150 150 0 0 1 287.2 402.7"></path><path d="M224.8 402.7 A150 150 0 0 1 109.3 287.2"></path><path d="M109.3 224.8 A150 150 0 0 1 224.8 109.3"></path><path d="M287.2 109.3 A150 150 0 0 1 402.7 224.8"></path></g><g stroke-width="15" opacity="0.6"><path d="M441.8 295.5 A190 190 0 0 1 295.5 441.8"></path><path d="M216.5 441.8 A190 190 0 0 1 70.2 295.5"></path><path d="M70.2 216.5 A190 190 0 0 1 216.5 70.2"></path><path d="M295.5 70.2 A190 190 0 0 1 441.8 216.5"></path></g><g stroke-width="12" opacity="0.32"><path d="M479.0 303.4 A228 228 0 0 1 303.4 479.0"></path><path d="M208.6 479.0 A228 228 0 0 1 33.0 303.4"></path><path d="M33.0 208.6 A228 228 0 0 1 208.6 33.0"></path><path d="M303.4 33.0 A228 228 0 0 1 479.0 208.6"></path></g></g>\n<g><animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="4s" repeatCount="indefinite"></animateTransform><defs><linearGradient id="k1s" x1="256" y1="256" x2="392" y2="68" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1" stop-opacity="0.05"></stop><stop offset="1" stop-color="#5ED6C1" stop-opacity="1"></stop></linearGradient></defs>\n<path d="M256 256 L296.3 27.5 A232 232 0 0 1 460.8 147.1 Z" fill="url(#k1s)" opacity="0.55"></path>\n<line x1="256" y1="256" x2="460.8" y2="147.1" stroke="#5ED6C1" stroke-width="6" stroke-linecap="round" opacity="0.85"></line></g><g><animate attributeName="opacity" values="1;0.12;0.12;1" keyTimes="0;0.4;0.96;1" dur="4s" repeatCount="indefinite"></animate><circle cx="409.7" cy="144.3" r="28" fill="#E9A23B" opacity="0.25"></circle><circle cx="409.7" cy="144.3" r="16" fill="#E9A23B"></circle></g><circle cx="256" cy="256" r="96" fill="#13202E" stroke="#E9A23B" stroke-width="24"></circle>\n<circle cx="256" cy="256" r="54" fill="#3B8CFF"></circle>\n<circle cx="256" cy="256" r="22" fill="#0E1621"></circle>\n<circle cx="238" cy="236" r="10" fill="#F2E3C6"></circle>\n</svg>',
     'radar2': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512"><defs><radialGradient id="k2g" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3B8CFF" stop-opacity="0.55"></stop><stop offset="1" stop-color="#3B8CFF" stop-opacity="0"></stop></radialGradient>\n<linearGradient id="k2b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16243A"></stop><stop offset="1" stop-color="#0A1018"></stop></linearGradient>\n<linearGradient id="k2w" x1="60" y1="60" x2="452" y2="452" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1"></stop><stop offset="1" stop-color="#3B8CFF"></stop></linearGradient></defs>\n<rect width="512" height="512" fill="url(#k2b)"></rect>\n<circle cx="256" cy="256" r="230" fill="url(#k2g)"></circle>\n<g fill="none" stroke="url(#k2w)" stroke-linecap="round"><g stroke-width="18" opacity="1"><path d="M410.5 288.9 A158 158 0 0 1 288.9 410.5"></path><path d="M223.1 410.5 A158 158 0 0 1 101.5 288.9"></path><path d="M101.5 223.1 A158 158 0 0 1 223.1 101.5"></path><path d="M288.9 101.5 A158 158 0 0 1 410.5 223.1"></path></g><g stroke-width="15" opacity="0.6"><path d="M457.5 298.8 A206 206 0 0 1 298.8 457.5"></path><path d="M213.2 457.5 A206 206 0 0 1 54.5 298.8"></path><path d="M54.5 213.2 A206 206 0 0 1 213.2 54.5"></path><path d="M298.8 54.5 A206 206 0 0 1 457.5 213.2"></path></g></g>\n<g><animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="4s" repeatCount="indefinite"></animateTransform><defs><linearGradient id="k2s" x1="256" y1="256" x2="389" y2="73" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1" stop-opacity="0.05"></stop><stop offset="1" stop-color="#5ED6C1" stop-opacity="1"></stop></linearGradient></defs>\n<path d="M256 256 L295.2 33.4 A226 226 0 0 1 455.5 149.9 Z" fill="url(#k2s)" opacity="0.55"></path>\n<line x1="256" y1="256" x2="455.5" y2="149.9" stroke="#5ED6C1" stroke-width="6" stroke-linecap="round" opacity="0.85"></line></g><g><animate attributeName="opacity" values="1;0.12;0.12;1" keyTimes="0;0.4;0.96;1" dur="4s" repeatCount="indefinite"></animate><circle cx="418.3" cy="129.2" r="28" fill="#E9A23B" opacity="0.25"></circle><circle cx="418.3" cy="129.2" r="16" fill="#E9A23B"></circle></g><circle cx="256" cy="256" r="96" fill="#13202E" stroke="#E9A23B" stroke-width="24"></circle>\n<circle cx="256" cy="256" r="54" fill="#3B8CFF"></circle>\n<circle cx="256" cy="256" r="22" fill="#0E1621"></circle>\n<circle cx="238" cy="236" r="10" fill="#F2E3C6"></circle>\n</svg>',
     'cross': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512"><defs><radialGradient id="k3g" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#3B8CFF" stop-opacity="0.55"></stop><stop offset="1" stop-color="#3B8CFF" stop-opacity="0"></stop></radialGradient>\n<linearGradient id="k3b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16243A"></stop><stop offset="1" stop-color="#0A1018"></stop></linearGradient>\n<linearGradient id="k3w" x1="60" y1="60" x2="452" y2="452" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1"></stop><stop offset="1" stop-color="#3B8CFF"></stop></linearGradient></defs>\n<rect width="512" height="512" fill="url(#k3b)"></rect>\n<circle cx="256" cy="256" r="230" fill="url(#k3g)"></circle>\n<g fill="none" stroke="url(#k3w)" stroke-linecap="round"><g stroke-width="18" opacity="1"><path d="M378.9 170.0 A150 150 0 0 1 378.9 342.0"></path><path d="M342.0 378.9 A150 150 0 0 1 170.0 378.9"></path><path d="M133.1 342.0 A150 150 0 0 1 133.1 170.0"></path><path d="M170.0 133.1 A150 150 0 0 1 342.0 133.1"></path></g><g stroke-width="15" opacity="0.6"><path d="M411.6 147.0 A190 190 0 0 1 411.6 365.0"></path><path d="M365.0 411.6 A190 190 0 0 1 147.0 411.6"></path><path d="M100.4 365.0 A190 190 0 0 1 100.4 147.0"></path><path d="M147.0 100.4 A190 190 0 0 1 365.0 100.4"></path></g><g stroke-width="12" opacity="0.32"><path d="M442.8 125.2 A228 228 0 0 1 442.8 386.8"></path><path d="M386.8 442.8 A228 228 0 0 1 125.2 442.8"></path><path d="M69.2 386.8 A228 228 0 0 1 69.2 125.2"></path><path d="M125.2 69.2 A228 228 0 0 1 386.8 69.2"></path></g></g>\n<g><animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="4s" repeatCount="indefinite"></animateTransform><defs><linearGradient id="k3s" x1="256" y1="256" x2="377" y2="58" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5ED6C1" stop-opacity="0.05"></stop><stop offset="1" stop-color="#5ED6C1" stop-opacity="1"></stop></linearGradient></defs>\n<path d="M256 256 L327.7 35.4 A232 232 0 0 1 420.0 92.0 Z" fill="url(#k3s)" opacity="0.55"></path>\n<line x1="256" y1="256" x2="420.0" y2="92.0" stroke="#5ED6C1" stroke-width="6" stroke-linecap="round" opacity="0.85"></line></g><g><animate attributeName="opacity" values="1;0.12;0.12;1" keyTimes="0;0.4;0.96;1" dur="4s" repeatCount="indefinite"></animate><circle cx="405.9" cy="106.1" r="27" fill="#E9A23B" opacity="0.25"></circle><circle cx="405.9" cy="106.1" r="15" fill="#E9A23B"></circle></g><circle cx="256" cy="256" r="96" fill="#13202E" stroke="#E9A23B" stroke-width="24"></circle>\n<circle cx="256" cy="256" r="54" fill="#3B8CFF"></circle>\n<circle cx="256" cy="256" r="22" fill="#0E1621"></circle>\n<circle cx="238" cy="236" r="10" fill="#F2E3C6"></circle>\n</svg>',
@@ -30352,11 +30390,18 @@ HEADER_JS = r"""
           // fixed on the screen, exactly on whole screen pixels (inside the moving marmot it would get blurred)
           const hr = bl.getBoundingClientRect(), dp = window.devicePixelRatio || 1, w = q.width / dp;
           q.style.left = Math.round(hr.left + hr.width / 2 - w / 2) + "px"; q.style.top = Math.round(hr.top + hr.height / 2 - 6 - w / 2) + "px";
-          document.body.appendChild(q);                          // no fading: a see-through layer gets blurred on some screens
-          const done = () => { removeEventListener("scroll", done, true); q.remove(); setTimeout(() => { qr = false; leave(); }, 100); };
+          // 2.95.88: first 3 s a tiny target where the code comes (time to put the phone under the microscope), then 3 s the code
+          const tg = document.createElement("div"), cx = Math.round(hr.left + hr.width / 2), cy = Math.round(hr.top + hr.height / 2 - 6);
+          tg.style.cssText = "position:fixed;z-index:99999;pointer-events:none;width:9px;height:9px;left:" + (cx - 4) + "px;top:" + (cy - 4) + "px";
+          tg.innerHTML = '<svg width="9" height="9" viewBox="0 0 9 9"><circle cx="4.5" cy="4.5" r="4" fill="#fff" stroke="#e8436a"/><circle cx="4.5" cy="4.5" r="2.4" fill="none" stroke="#e8436a"/><circle cx="4.5" cy="4.5" r=".9" fill="#e8436a"/></svg>';
+          document.body.appendChild(tg);
+          let t2 = null;
+          const t1 = setTimeout(() => { tg.remove(); document.body.appendChild(q);   // no fading: a see-through layer gets blurred on some screens
+            t2 = setTimeout(done, 3000); }, 3000);
+          const done = () => { removeEventListener("scroll", done, true); clearTimeout(t1); clearTimeout(t2); tg.remove(); q.remove(); setTimeout(() => { qr = false; leave(); }, 100); };
           addEventListener("scroll", done, {capture: true, once: true});
-          const t_ = setTimeout(done, 20000); bl.style.visibility = "visible"; bl.style.opacity = "0";
-          bl.addEventListener("pointerdown", () => { clearTimeout(t_); done(); }, {once: true}); }, 650);
+          bl.style.visibility = "visible"; bl.style.opacity = "0";
+          bl.addEventListener("pointerdown", () => done(), {once: true}); }, 650);
       } else setTimeout(leave, 700); };
     bl.addEventListener("pointerup", end); bl.addEventListener("pointercancel", end);
     bl.addEventListener("click", e => e.stopPropagation());
@@ -40988,7 +41033,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.87")
+        self.root.title("Motion Watch 2.95.88")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -41278,7 +41323,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.87 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.88 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -41374,7 +41419,7 @@ class App:
         if ccw_heart(self._egg_pts):                                   # 2.95.61: a big heart, counter-clockwise
             xs = [p[0] for p in self._egg_pts]; ys = [p[1] for p in self._egg_pts]
             self._egg_burst = (now, (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, (max(xs) - min(xs)) / 2)
-            self._egg_qr_from = now + 0.7; self._egg_qr = now + 20.7; self._egg_leave = now + 20.9
+            self._egg_qr_from = now + 3.7; self._egg_qr = now + 6.7; self._egg_leave = now + 6.9   # 2.95.88: 3 s target, then 3 s code
         else:
             self._egg_leave = max(self._egg_leave, now + 0.7)
         self._egg_pts = []
@@ -41430,6 +41475,10 @@ class App:
                 poly = [(bu[1] + dx_, bu[2] + dy_)] + [(p[0] + dx_, p[1] + dy_) for p in seg_]
                 if len(poly) >= 3:
                     d.polygon(poly, fill="#e8436a" if i % 2 else "#ff7aa2")
+        if getattr(self, "_egg_burst", None) and getattr(self, "_egg_qr_from", 0) - 3.0 <= now < getattr(self, "_egg_qr_from", 0):
+            tcx, tcy = bx0 + S / 2, by0 + S / 2                          # 2.95.88: a tiny target where the code comes
+            for rr, col in ((4, "#ffffff"), (4, None), (2.4, None), (0.9, "#e8436a")):
+                d.ellipse([tcx - rr, tcy - rr, tcx + rr, tcy + rr], fill=col, outline="#e8436a" if col is None else None)
         for r_, row in (enumerate(bm) if getattr(self, "_egg_qr_from", 0) <= now < getattr(self, "_egg_qr", 0) else ()):
             if r_ == 0:
                 d.rectangle([bx0, by0, bx0 + S - 1, by0 + S - 1], fill="#c99d6e")

@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.62"
+const VERSION := "3D-3.63"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -287,7 +287,7 @@ func _ready() -> void:
 	if in_vm and not "--quality" in args:
 		quality = "simple"                      # virtual machine: no real graphics card - the light graphics by default
 	DisplayServer.window_set_title("3D-Simulator Live · %s" % VERSION)
-	var ic := load("res://icon_sim3d.png")              # the window icon (3D-3.28): the radar eye with the 3D cube
+	var ic := load("res://icon_sim3d.png")              # the window icon (3D-3.28; 3D-3.63: the orange Motion Watch symbol)
 	if ic is Texture2D:
 		DisplayServer.set_icon((ic as Texture2D).get_image())
 	var k := args.find("--update-url")

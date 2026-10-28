@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 14:59",
+ "generated": "2026-10-28 15:28",
  "versions": [
   {
-   "version": "2.95.87",
-   "file": "webcam_bewegung_2_95_87.py",
+   "version": "2.95.88",
+   "file": "webcam_bewegung_2_95_88.py",
    "url": "",
-   "sha256": "a86ec44ec0fa09934cdf824b93d3f4b1d45962bd67df173f7637639a7bb77cbf",
-   "date": "2026-10-28 14:59",
-   "notes": "Symbol «Klassisch (orange)»: das Auge in der Kopfzeile schaut links und rechts; Simulator 3D-3.62 mit dem orangen Symbol",
-   "sig": "d7a38c64d8cfb3b4906aba21c17165591fbda45a8509637a9afbe67a34252e02aa2348fec08bb83af2330a6b7bcd80c4e3b2db334e8bdded74ecaf26b891570c"
+   "sha256": "7a86f58f43168cfb06924d7aa131f9d16b8871fb20086593a8edb8cff4a35a56",
+   "date": "2026-10-28 15:28",
+   "notes": "Wärmebild in der Simulation passend über dem Videobild (Blickwinkel beider Kameras, vorher nach aussen verschoben); Symbol «Klassisch»: nur die Pupille bewegt sich; kleines Extra: 3 s Zielscheibe, dann 3 s das Geheimnis; Simulator 3D-3.63",
+   "sig": "b6913f52e924fd2674fcf30329c01a93ad3f7a4934305b30423936b5f9d93229f149b86cbea50da3699efdad254df4c820a1b6a859adbb24d77d46578137bd06"
   },
   {
    "version": "2.94.5",

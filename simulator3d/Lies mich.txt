@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.62 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.63 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,6 +607,9 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 Motion Watch); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.63
+3D-3.63: Im orangen Symbol oben links bleibt das Auge stehen, nur die Pupille schaut nach links und rechts.
 
 NEU IN 3D-3.62
 3D-3.62: Oben links im Bedienfeld steht jetzt das orange Motion-Watch-Symbol; das Auge darin schaut langsam nach links
