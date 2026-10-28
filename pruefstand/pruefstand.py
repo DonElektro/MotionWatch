@@ -35,9 +35,9 @@ PLAN_DAUER = {"quick": 150, "standard": 300, "night": 230, "hard": 520}     # Se
 PLAN_NAME = {"quick": "Kurz (Tag + Nacht)", "standard": "Standard (Tag, Wind, Nacht, Regen)", "night": "Nacht", "hard": "Schwierige Bedingungen"}
 
 
-def log(*a):
+def log(*a, wichtig=False):
     print("[pruefstand]", *a, flush=True)
-    if os.environ.get("GITHUB_ACTIONS"):                       # on GitHub: also as a note on the page of the run
+    if wichtig and os.environ.get("GITHUB_ACTIONS"):                       # on GitHub: also as a note on the page of the run
         print("::notice title=Prüfstand::" + " ".join(str(x) for x in a).replace("%", "%25").replace("\n", "%0A"), flush=True)
 
 
@@ -158,7 +158,7 @@ def run(a):
                 pass
             time.sleep(2)
         if not ok:
-            log("Simulator und Motion Watch kamen nicht zusammen. Protokolle:", tmp)
+            log("Simulator und Motion Watch kamen nicht zusammen. Protokolle:", tmp, wichtig=True)
             try:
                 s = http_json(web + "/api/state", timeout=4)["state"]
                 log("Motion Watch: Quelle «%s», %s Bilder/s, KI: %s" % (s.get("source_status"), s.get("fps"), s.get("ai_status")))
@@ -203,8 +203,9 @@ def run(a):
                     if not r.get("running"):
                         rep_ = r.get("report") or None
                         break
-                if not rep_ or not rep_.get("persons"):
-                    log("  kein Bericht (Zeit abgelaufen?)")
+                if not rep_ or not rep_.get("phases") or rep_.get("plan") != plan:      # (0 visible persons is a valid result)
+                    log("%s: kein Bericht – %s" % (PLAN_NAME.get(plan, plan), (r.get("info") if isinstance(r, dict) else "") or "Zeit abgelaufen"), wichtig=True)
+                    rep_ = None
                     rc = 2
                     try:
                         http_json(sim + "/control", {"action": "test_stop"}, timeout=6)
@@ -217,10 +218,10 @@ def run(a):
                 gb = kennzahlen([rep_])["groessen"]
                 if gb:
                     log("  nach Grösse: " + ", ".join("%s %d/%d" % (b, gb[b][1], gb[b][0]) for b in ("nah", "mittel", "weit") if b in gb))
-                log("  Personen %d/%d (%.0f %%), Reaktion %s s, Tiere %d/%d, Fehlalarme %d" % (
+                log("%s: Personen %d/%d (%.0f %%), Reaktion %s s, Tiere %d/%d, Fehlalarme %d, %.1f Bilder/s" % (PLAN_NAME.get(plan, plan),
                     rep_["persons_detected"], rep_["persons"], rep_["rate"], rep_.get("latency_s", "–"),
                     sum(p.get("animals_reported", 0) for p in rep_.get("phases", [])), sum(p.get("animals", 0) for p in rep_.get("phases", [])),
-                    rep_["false_alarms"]))
+                    rep_["false_alarms"], rep_["mw_fps"]), wichtig=True)
         if not info["plaene"]:
             return 2, None
         os.makedirs(ERGEBNISSE, exist_ok=True)
@@ -367,7 +368,7 @@ def main():
     if info:
         zeilen, schlechter = vergleich(info)
         for z in zeilen:
-            log(z)
+            log(z, wichtig=True)
         tab = verlauf_schreiben()
         summ = os.environ.get("GITHUB_STEP_SUMMARY")
         if summ:                                                  # the page of the run on GitHub

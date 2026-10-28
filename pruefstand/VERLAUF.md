@@ -10,14 +10,16 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Personen erkannt | nah / mittel / weit | Reaktion | Tiere gemeldet | Fehlalarme | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-28 01:49 | 2.95.64 | 3D-3.48 | Nacht | 0 / 1 (**0 %**) | 0/1 / – / – | – | 0 / 0 | 0 | 1.8 | no model files | Testumgebung Claude (2 Kerne) |
 | 2026-10-28 00:07 | 2.95.63 | 3D-3.47 | Kurz (Tag + Nacht) | 0 / 4 (**0 %**) | – | – | 0 / 1 | 0 | 29.0 | running · 77 ms | GitHub (ubuntu, 4 Kerne) |
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Kurz (Tag + Nacht)** – 2026-10-28 00:07, Motion Watch 2.95.63
+**Nacht** – 2026-10-28 01:49, Motion Watch 2.95.64
 
 | Phase | Personen | Reaktion | Tiere | Fehlalarme | verpasst, weil … |
 |---|---|---|---|---|---|
-| Tag, Wind | 0 / 3 | – | 0 / 1 | 0 | 1× zu schnell, 1× zu klein / weit weg |
-| Nacht mit Infrarot | 0 / 1 | – | 0 / 0 | 0 | 1× zu dunkel |
+| Nacht, ohne Licht | 0 / 0 | – | 0 / 0 | 0 | – |
+| Nacht, Infrarot an | 0 / 1 | – | 0 / 0 | 0 | 1× zu dunkel |
+| Nacht, Regen | 0 / 0 | – | 0 / 0 | 0 | – |
 

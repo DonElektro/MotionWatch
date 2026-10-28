@@ -61,6 +61,7 @@ jobs:
             pruefstand/VERLAUF.md
             /tmp/mw_pruefstand_*/*.log
       - name: Ergebnis ins Repository
+        if: always()
         run: |
           git config user.name "Prüfstand"
           git config user.email "pruefstand@users.noreply.github.com"

@@ -2,6 +2,13 @@
 
 *Stand 23.10.2026, Software-Version 2.0.5. Dieses Dokument beschreibt den ganzen Stand des Projekts.*
 
+> **Nachtrag 28.10.2026 (Version 2.95.64):** Das Programm hat inzwischen rund 51'000 Zeilen. Bearbeitet wird es in
+> **`quelle/`** (65 Teile nach Thema, Übersicht in `quelle/LIESMICH.md`); `werkzeuge/bauen.py` setzt daraus die eine Datei
+> `webcam_bewegung_X_Y_Z.py` zusammen, die der Pi lädt. Die Erkennung wird mit dem **Prüfstand** gemessen (`pruefstand/`,
+> Verlauf in `pruefstand/VERLAUF.md`, auf GitHub unter Actions → «Prüfstand»). Die Abschnitte unten beschreiben den Stand
+> von 2.0.5 und sind in den Einzelheiten veraltet; aktuell sind die Änderungsliste oben in `quelle/000_kopf_aenderungen.py`
+> und die Anleitung im Programm.
+
 ## 1. Ziel
 
 Ein Raspberry Pi 5 mit Schwenk-/Neigekopf (3D-gedruckt), normaler Kamera (NoIR) und Wärmebildkamera überwacht beim Camping
