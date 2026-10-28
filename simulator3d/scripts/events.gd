@@ -71,6 +71,28 @@ func burglar() -> void:
 			[main.free_spot(tent + Vector3(1.6, 0, 1.2), 0.5, true), 4.0, 0.7, tent], Vector3(-side * 40.0, 0, randf_range(-8.0, 6.0))]
 
 
+# ---- 3D-3.74: a careful sneaker: comes from far, from cover to cover, crouching, the last metres crawling; when the light
+# goes on it freezes and switches its torch off; the siren drives it away. Waits behind things like a real one.
+func sneaker() -> void:
+	var goal: Vector3 = main.obj["bike"] if randf() < 0.5 else main.obj["door"]
+	var side := 1.0 if randf() < 0.5 else -1.0
+	var start := Vector3(side * 42.0, 0, randf_range(-30.0, 10.0))
+	var v = main.spawn("burglar", start, start.lerp(goal, 0.3))
+	v.speed = 1.1
+	v.set_meta("sneak", true)
+	if main.is_dark():
+		v.add_torch()
+	var r := []
+	for f in [0.45, 0.62, 0.76]:                          # cover to cover: stops, crouches, looks at the camera
+		var p: Vector3 = main.free_spot(start.lerp(goal, f) + Vector3(randf_range(-3, 3), 0, randf_range(-3, 3)), 0.6, true)
+		r.append([p, randf_range(4.0, 12.0), 0.8 if f < 0.7 else 1.0, main.head.global_position])
+	var near: Vector3 = main.free_spot(start.lerp(goal, 0.9), 0.6, true)
+	r.append([near, randf_range(3.0, 7.0), 2.0, goal])     # crawling
+	r.append([main.free_spot(goal + Vector3(0.7, 0, 0.6), 0.5, true), randf_range(6.0, 10.0), 1.0, goal])
+	r.append(Vector3(-side * 45.0, 0, randf_range(-25.0, 5.0)))
+	v.route = r
+
+
 # ---- a barbecue evening: a grill, smoke, a warm glow at night, friends come one by one and stand round it --------------
 func bbq() -> void:
 	var c: Vector3 = main.free_spot(Vector3(randf_range(-7.0, 7.0), 0, randf_range(-13.0, -8.0)), 2.2, true)

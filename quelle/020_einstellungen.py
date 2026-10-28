@@ -66,7 +66,7 @@ CFG = {
     "helper_use": True, "helper_url": "", "helper_code": "",   # 2.95.53: let a PC do the AI (address + pairing code; empty = found by itself)
     "helper_serve": False, "helper_my_code": "",                # 2.95.53: this Motion Watch works as AI helper for others (port 5057)
     "info_page": True, "info_mail": "",   # 2.95.52: the product page for guests in the same Wi-Fi (/info/), own e-mail address on it
-    "app_icon": "radar",         # the app icon (2.95.23): radar | radar2 | cross | trail | rings4 | waves | classic (+ 2.95.46: light, night, forest, thermal, fov, camp, shield, hits)
+    "app_icon": "classic", "app_icon_orange_done": False,         # the app icon (2.95.23): radar | radar2 | cross | trail | rings4 | waves | classic (+ 2.95.46: light, night, forest, thermal, fov, camp, shield, hits)
     "app_icon_anim": True,       # 2.95.25: the radar sweep turns in the page header
     "ui_hidden": [],             # desktop fields the user has hidden (View menu)
     # web stream

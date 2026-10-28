@@ -92,6 +92,17 @@ func _build() -> void:
 	_tile(p, "Versteckspiel", C_PLAY, "", "game", "Spielt mit dem Handy gegen die Kamera! Wer schafft es ungesehen ans Ziel?", func(): main.gamewiz.open_wiz())
 	_tile(p, "Andere Welt", Color("#2bb3a3"), "", "world", "", func(): _next_world())
 	_tile(p, "Was sieht die Kamera?", Color("#e0613f"), "", "camera", "So sieht Motion Watch die Welt.", func(): main.set_live(not main.live_on))
+	# 3D-3.74: missions with stars
+	_title("Missionen  ⭐ %d" % main.kids_stars)
+	_mtitle = get_child(get_child_count() - 1)
+	var mg := _grid()
+	_tile(mg, "Finde den Fuchs", Color("#ff8a3d"), "fox", "", "Ein Fuchs hat sich versteckt! Fahr mit dem Rover zu ihm.", func(): _mission("fox"))
+	_tile(mg, "Rover zum Velo", Color("#2fa8ff"), "", "rover", "Fahr den Rover ganz nah ans Velo!", func(): _mission("bike"))
+	_tile(mg, "Tiere zählen", Color("#3fbf6b"), "", "star", "Wie viele Tiere siehst du? Schau gut hin!", func(): _mission("count"))
+	_count_row = HBoxContainer.new()
+	_count_row.add_theme_constant_override("separation", 6)
+	_count_row.visible = false
+	add_child(_count_row)
 
 
 func _title(t: String) -> void:
@@ -237,6 +248,88 @@ func _process(dt: float) -> void:
 	if is_visible_in_tree() and marmot != null:
 		_t += dt
 		marmot.queue_redraw()
+	if _m != "":
+		_mission_check()                                  # also while exploring (the panel is hidden then)
+
+
+# ---- 3D-3.74: missions ----------------------------------------------------------------------------------------------------
+var _m := ""
+var _m_fox = null
+var _m_n := 0
+var _count_row: HBoxContainer
+var _mtitle: Label
+
+
+func _mission(k: String) -> void:
+	_m = k
+	_count_row.visible = false
+	var rig: Vector3 = main.rig.global_position
+	if k == "fox":
+		var a := randf() * TAU
+		var p: Vector3 = main.free_spot(rig + Vector3(cos(a), 0, sin(a)) * randf_range(12.0, 20.0), 0.6, true)
+		if _m_fox != null and is_instance_valid(_m_fox):
+			_m_fox.queue_free()
+		_m_fox = main.spawn("fox", p, p + Vector3(randf_range(-3, 3), 0, randf_range(-3, 3)))
+		_m_fox.speed = 0.3
+		main.explore.set_on(true)
+	elif k == "bike":
+		main.explore.set_on(true)
+	elif k == "count":
+		_m_n = randi_range(2, 5)
+		if main.is_dark():
+			main.set_hour(12.0)                                  # counting in the dark is no fun
+		var cam: Camera3D = main.cams[0]
+		var fwd := -cam.global_transform.basis.z
+		fwd.y = 0
+		fwd = fwd.normalized()
+		for i in range(_m_n):
+			var side := fwd.rotated(Vector3.UP, randf_range(-0.45, 0.45))
+			var p2: Vector3 = main.free_spot(rig + side * randf_range(6.0, 14.0), 0.6, true)
+			var an = main.spawn(["hare", "fox", "deer", "sheep", "cat", "hedgehog"][randi() % 6], p2, p2 + Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)))
+			an.speed = 0.05
+		main.set_live(true)
+		for c in _count_row.get_children():
+			c.queue_free()
+		for n in range(1, 7):
+			var b := Button.new()
+			b.text = str(n)
+			b.custom_minimum_size = Vector2(44, 44)
+			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			b.add_theme_font_size_override("font_size", 20)
+			b.pressed.connect(func():
+				if n == _m_n:
+					_won("Richtig, %d Tiere! Super gezählt!" % n, b)
+				else:
+					say("Hmm, nicht ganz. Schau nochmals genau hin!"))
+			_count_row.add_child(b)
+		_count_row.visible = true
+
+
+func _mission_check() -> void:
+	var rig: Vector3 = main.rig.global_position
+	if _m == "fox" and _m_fox != null and is_instance_valid(_m_fox):
+		var d := Vector2(rig.x - _m_fox.position.x, rig.z - _m_fox.position.z).length()
+		if d < 4.0:
+			_won("Gefunden! Der Fuchs staunt.", self)
+	elif _m == "bike":
+		var bk: Vector3 = main.obj.get("bike", Vector3.ZERO)
+		if Vector2(rig.x - bk.x, rig.z - bk.z).length() < 3.0:
+			_won("Geschafft! Der Rover steht beim Velo.", self)
+
+
+func _won(text: String, at: Control) -> void:
+	_m = ""
+	main.kids_stars += 1
+	main._settings_dirty = true
+	_count_row.visible = false
+	say("⭐ " + text + " Du hast jetzt %d Sterne." % main.kids_stars)
+	if not is_visible_in_tree():                          # exploring: the panel is hidden, so say it in the world
+		main._say("⭐ " + text, main.rig.global_position + Vector3(0, 1.5, 0), Color("#ffd166"), main.HELPER_LAYER)
+	if _mtitle != null and is_instance_valid(_mtitle):
+		_mtitle.text = "Missionen  ⭐ %d" % main.kids_stars
+	for i in range(3):
+		_fun(at if at != self else marmot, Color("#ffd166"))
+		await get_tree().create_timer(0.25).timeout
 
 
 # ---- drawings ----------------------------------------------------------------------------------------------------------

@@ -7,8 +7,8 @@ APP_ICON_LIST = [("radar", "Radar"), ("radar2", "Radar, two rings"), ("cross", "
 
 
 def app_icon_id():
-    ic = str(CFG.get("app_icon") or "radar")
-    return ic if ic in dict(APP_ICON_LIST) else "radar"
+    ic = str(CFG.get("app_icon") or "classic")
+    return ic if ic in dict(APP_ICON_LIST) else "classic"
 
 
 def host_variant():

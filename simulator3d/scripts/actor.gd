@@ -821,7 +821,7 @@ func _step(dt: float) -> void:
 				side_until = now + 2.5                   # keep going round on this side
 		if avoid_dir != Vector2.ZERO:
 			dir = Vector3(avoid_dir.x, 0, avoid_dir.y)
-	var want: float = speed * main.time_scale_visitors()
+	var want: float = speed * main.time_scale_visitors() * (0.3 if prone > 0.5 else (0.6 if crouch > 0.5 else 1.0))
 	if route.size() > 0 and typeof(route[0]) == TYPE_ARRAY and dist < 2.0:
 		want *= max(0.35, dist / 2.0)                    # slows down before a stop
 	cur_speed = move_toward(cur_speed, want, dt * (2.0 if kind != "car" else 3.0) * max(1.0, want))
@@ -894,10 +894,14 @@ func _next_point(now: float) -> void:
 			target = nxt[0]
 			wait_until = now + float(nxt[1])
 			crouch = float(nxt[2]) if nxt.size() > 2 else 0.0
+			prone = 1.0 if crouch >= 1.5 else 0.0          # 3D-3.74: crouch 2 = crawling (a sneaking person)
+			if crouch >= 1.5:
+				crouch = 1.0
 			_face(nxt[3] if nxt.size() > 3 else target)
 		else:
 			target = nxt
 			crouch = 0.0
+			prone = 0.0
 			_face(target)
 	else:
 		done = true

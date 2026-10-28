@@ -1,12 +1,12 @@
 {
- "version": "3D-3.73",
+ "version": "3D-3.74",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30925291,
- "sha256": "67f63c77a77cf728d4bf62f03fb74c6cbb9a9fbc8569ef43ffe6a715bde5fd5b",
- "notes": "Mein Zuhause bauen (Baukasten), Trainingspaket YOLO für ein eigenes KI-Modell",
+ "size": 30932583,
+ "sha256": "e941c088f52c6414322382adbbbe1f7d19dc1d2ee05095f76786322ec5696f1f",
+ "notes": "Kamerafehler, vorsichtiger Schleicher, Wetter über die Nacht, Kinder-Missionen, oranges Logo",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24046728,
-  "sha256": "0ee922fd72fc422873e722e8604ebd105cb705ed27978c504ceab828e8738707"
+  "size": 24054105,
+  "sha256": "12136ddfc6ee44f0b65997c14d1c0d5307ac44854ac1582b7952b25700ac7698"
  }
 }

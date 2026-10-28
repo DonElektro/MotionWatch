@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.73"
+const VERSION := "3D-3.74"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -54,6 +54,8 @@ var dev2                              # device.gd: a second Motion Watch device 
 var game_tasks := true                # a task for every round of the game (bonus) - 3D-3.27
 var daily_life := true                # visitors at their own times, the postman and the neighbour every day
 var real_weather := false             # the weather of the place from open-meteo.com
+var night_weather := false            # 3D-3.74: the weather runs through the night (dusk, showers, dew, morning fog)
+var _nw := {"day": -1, "plan": [], "last": "", "fog_lens": false}
 var real_time := false                # the clock of the PC
 var game                              # game.gd: «Unentdeckt ans Ziel» with up to 4 phones (from 3D-2.4)
 var game_minutes := 5.0
@@ -221,7 +223,8 @@ var lens_vignette := 0.3              # dark corners
 var lens_drops := true                # raindrops on the lens when it rains
 var insects_on := true                # insects fly round the light at night (false alarms, as in reality)
 # difficult conditions (3D-3.27): each can be switched on by hand or by the test run «Schwierige Bedingungen»
-var cond := {"glare": false, "drops": false, "web": false, "headlights": false, "shadows": false, "ir": false}
+var cond := {"glare": false, "drops": false, "web": false, "headlights": false, "shadows": false, "ir": false, "fogged": false, "dirt": false, "shake": false, "net": false}
+var _net_hold := 0.0                  # 3D-3.74: bad Wi-Fi - the picture stands still until then
 var _next_headlight := 0.0
 var night_gain := 2.5                 # how much a camera may amplify at night (real cameras: limited -> dark, grainy)
 var ir_range := 14.0                  # reach of the infrared light (m)
@@ -1420,6 +1423,8 @@ func _update_lens() -> void:
 		var lit_now: bool = dark and (ir_on() or white_light.light_energy > 0.0)
 		m.set_shader_parameter("web_lit", 1.0 if lit_now else 0.0)
 		m.set_shader_parameter("sway", clamp(wind * gust() / 60.0, 0.0, 1.0))
+		m.set_shader_parameter("fogged", (0.8 if i == 0 else 0.5) if cond["fogged"] else 0.0)
+		m.set_shader_parameter("dirt", 1.0 if cond["dirt"] and i == 0 else 0.0)
 	var L: Dictionary = mw.get("lights", {})
 	var lit: bool = L.get("white", false) or L.get("ir", false) or (game != null and game.guard_auto)
 	insects.emitting = insects_on and dark and lit and weather != "rain" and weather != "snow" and ambient > 6.0
@@ -1437,6 +1442,35 @@ func _build_view_camera() -> void:
 
 
 # ---- time, light, weather ------------------------------------------------------------------------------------------
+func _night_weather_tick() -> void:
+	"""3D-3.74: every night a little different - evening clear, maybe a shower before midnight, a clear cold night, dew on the
+	lens towards morning and fog at dawn; the day clears up again"""
+	if not night_weather or real_weather:
+		return
+	var h := hour()
+	var day := int((now() - clock0) * speed / 86400.0 + hour0 / 24.0 + 0.5)
+	if day != int(_nw["day"]):
+		_nw["day"] = day
+		var r := RandomNumberGenerator.new()
+		r.seed = day * 7919 + 13
+		var shower := r.randf() < 0.55
+		var sh0 := r.randf_range(21.0, 23.5)
+		_nw["plan"] = [[7.5, 18.5, "clear" if r.randf() < 0.6 else "cloudy"], [18.5, 21.0, "clear"], [sh0, sh0 + r.randf_range(0.6, 1.6), "rain" if shower else "cloudy"],
+				[0.0, 4.0, "clear"], [4.0, 5.0, "cloudy"], [5.0, 7.5, "fog" if r.randf() < 0.7 else "cloudy"]]
+	var want := "clear"
+	for e in _nw["plan"]:
+		if h >= float(e[0]) and h < float(e[1]):
+			want = str(e[2])
+	if want != weather and want != str(_nw["last"]) or (want != weather and str(_nw["last"]) == want and randf() < 0.02):
+		weather = want
+		_nw["last"] = want
+	var dew := h >= 4.0 and h < 8.0                    # dew on the lens towards morning, gone when the sun warms it
+	if dew != bool(_nw["fog_lens"]):
+		_nw["fog_lens"] = dew
+		cond["fogged"] = dew
+	humidity = 92.0 if dew or weather in ["fog", "rain"] else (78.0 if h > 20.0 or h < 7.0 else 60.0)
+
+
 func hour() -> float:
 	return fposmod(hour0 + (now() - clock0) * speed / 3600.0, 24.0)
 
@@ -1663,6 +1697,7 @@ func _process(dt: float) -> void:
 			_update_temps()
 			_life()
 		_update_status()
+		_night_weather_tick()
 		if _settings_dirty:
 			_save_settings()
 		if auto_update and not update_busy and now() > next_update_check:
@@ -1693,6 +1728,11 @@ func _process(dt: float) -> void:
 	head.rotation.y = move_toward(head.rotation.y, want_pan + sabotage_turn, step * (6.0 if absf(sabotage_turn) > 0.0 else 1.0))
 	head_pitch.rotation.x = move_toward(head_pitch.rotation.x, want_tilt, step)
 	cams[0].global_transform = head_pitch.global_transform.translated_local(Vector3(0, 0.0, -0.13))
+	if cond["shake"]:                                    # 3D-3.74: the mast sways in the wind - the whole picture moves
+		var amp: float = deg_to_rad(0.35 + 0.9 * clampf(wind * gust() / 40.0, 0.0, 1.0))
+		var tt := now()
+		cams[0].rotate_object_local(Vector3.UP, sin(tt * 7.3) * amp + sin(tt * 13.1) * amp * 0.4)
+		cams[0].rotate_object_local(Vector3.RIGHT, sin(tt * 5.7 + 1.0) * amp * 0.6)
 	cams[2].global_transform = head_pitch.global_transform.translated_local(Vector3(0.12, 0.0, -0.12))
 	if _cover_mesh != null and sabotage_cover:           # 3D-3.72: the cloth hangs right in front of the lenses
 		_cover_mesh.global_transform = head_pitch.global_transform.translated_local(Vector3(0.05, 0.0, -0.36))   # beyond the near plane of the cameras (0.1 m)
@@ -1820,8 +1860,18 @@ func _capture(i: int) -> void:
 	if img != null and not img.is_empty():
 		if i < 2:
 			_auto_exposure(i, img)
-			jpgs[i] = img.save_jpg_to_buffer(0.8)
-			frame_no[i] += 1
+			var hold := false
+			if cond["net"] and i == 0:                   # 3D-3.74: bad Wi-Fi - pictures get lost, sometimes it stands still
+				if now() < _net_hold:
+					hold = true
+				elif randf() < 0.05:
+					_net_hold = now() + randf_range(0.8, 2.5)
+					hold = true
+				elif randf() < 0.3:
+					hold = true
+			if not hold:
+				jpgs[i] = img.save_jpg_to_buffer(0.8)
+				frame_no[i] += 1
 		else:
 			_decode_thermal(img)
 	capturing = false
@@ -2289,7 +2339,7 @@ func visit(k: String) -> void:
 			c4.route.append(Vector3(-sd2 * 30.0 + sd2 * i * 7.0, 0, dz + (2.5 if i % 2 == 0 else -2.5) + randf_range(-1.0, 1.0)))
 		if randf() < 0.5:
 			c4.route.insert(3, [c4.route[2], 6.0, 0.0])               # stops, sways
-	elif k in ["burglar", "bbq", "homecoming", "parcel", "fox_trash", "boar_group", "kids_tag", "mowing"]:
+	elif k in ["burglar", "sneaker", "bbq", "homecoming", "parcel", "fox_trash", "boar_group", "kids_tag", "mowing"]:
 		if k == "parcel":
 			stories.homecoming(true)
 		else:
@@ -2342,6 +2392,18 @@ func _life() -> void:
 			v.pir_done = true
 			add_event("PIR Zelt", "pir")
 		var lit: bool = bool(L.get("white", false)) and is_dark() and v.position.distance_to(head.global_position) < 18.0
+		if v.has_meta("sneak") and not v.has_meta("fled"):       # 3D-3.74: the sneaker - light: freeze and torch off; siren: away
+			if str(mw.get("sound", "")) != "":
+				v.set_meta("shy", true)
+			elif lit and not v.has_meta("froze"):
+				v.set_meta("froze", true)
+				if v.torch != null:
+					v.torch.light_energy = 0.0
+					v.torch.visible = false
+				v.route.push_front([v.position, randf_range(8.0, 15.0), 2.0, head.global_position])
+				v.target = v.position
+				v.wait_until = now() + randf_range(8.0, 15.0)
+				v.prone = 1.0
 		if v.has_meta("shy") and not v.has_meta("fled") and (lit or str(mw.get("sound", "")) != ""):
 			v.set_meta("fled", true)                                     # the burglar: light or siren - and away (3D-3.40)
 			v.startle()
@@ -2364,11 +2426,11 @@ const VISIT_EMOJI := {"person": "🚶", "child": "🧒", "jogger": "🏃", "fox"
 		"dogwalk": "🦮", "herd": "🦌", "car_park": "🅿", "bench": "🪑", "feed": "🌾", "garden_person": "🚪", "clear": "🧹",
 		"cyclist": "🚴", "stroller": "👶", "courier": "🍕", "police": "👮", "drunk": "🥴", "couple": "👫", "horse_walk": "🐎",
 		"cow": "🐄", "sheep": "🐑", "horse": "🐎", "chamois": "🐐", "ibex": "🐐", "lynx": "🐆", "cows": "🐄", "sheep_flock": "🐑",
-		"bats": "🦇", "owl": "🦉", "tractor": "🚜", "moto": "🏍", "van": "🚐", "burglar": "🥷", "bbq": "🍖", "homecoming": "🏠",
+		"bats": "🦇", "owl": "🦉", "tractor": "🚜", "moto": "🏍", "van": "🚐", "burglar": "🥷", "sneaker": "🕵", "bbq": "🍖", "homecoming": "🏠",
 		"parcel": "📦", "fox_trash": "🗑", "boar_group": "🐗", "kids_tag": "🏃", "mowing": "🌾", "night_lapse": "🌙"}
 # presets of «Besuch» (3D-3.38): [id, name, auto, daily life, who comes, how often, at most]
 const VISIT_PRESETS := [["calm", "Ruhige Nacht – selten jemand", true, false, "mixed", 0.4, 4],
-		["burglary", "Einbruch-Nacht – Einbrecher, Diebe, Polizei", true, false, "mixed", 1.2, 6, ["burglar", "burglar", "thief", "police", "drunk", "cat", "fox", "bats"]],
+		["burglary", "Einbruch-Nacht – Einbrecher, Diebe, Polizei", true, false, "mixed", 1.2, 6, ["burglar", "sneaker", "thief", "police", "drunk", "cat", "fox", "bats"]],
 		["grill", "Grillabend – Gäste, Grill, Kinder", true, false, "mixed", 1.5, 16, ["bbq", "couple", "person", "child", "kids_tag", "dogwalk", "stroller", "bats", "homecoming"]],
 		["farm", "Bauernhof – Kühe, Schafe, Traktor", true, false, "mixed", 1.2, 16, ["cows", "sheep_flock", "tractor", "mowing", "horse_walk", "cat", "dog", "person", "fox"]],
 		["wildlife", "Wildtiere – Fuchs am Abfall, Wildschweine, Luchs", true, false, "mixed", 1.5, 12, ["fox_trash", "boar_group", "lynx", "deer", "herd", "badger", "hedgehog", "owl"]],
@@ -2470,7 +2532,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"cam1_yaw": ["Kamerabild", "Feineinstellungen"], "humidity": ["Wetter", "Mehr Wetter"], "pressure": ["Wetter", "Mehr Wetter"],
 		"storm": ["Wetter", "Mehr Wetter"], "thunder": ["Wetter", "Mehr Wetter"], "cloud_shadows": ["Wetter", "Mehr Wetter"], "gusts": ["Wetter", "Natur und Wind"],
 		"world_cloth": ["Wetter", "Natur und Wind"], "world_smoke": ["Wetter", "Natur und Wind"], "world_fireflies": ["Wetter", "Natur und Wind"],
-		"meadow": ["Wetter", "Natur und Wind"], "car": ["Besuch", "Fahrzeuge"], "thief": ["Besuch", "Abläufe"], "burglar": ["Besuch", "Abläufe"], "bbq": ["Besuch", "Abläufe"], "homecoming": ["Besuch", "Abläufe"], "parcel": ["Besuch", "Abläufe"], "fox_trash": ["Besuch", "Abläufe"], "boar_group": ["Besuch", "Abläufe"], "kids_tag": ["Besuch", "Abläufe"], "mowing": ["Besuch", "Abläufe"], "night_lapse": ["Besuch", "Von selbst"], "calendar": ["Besuch", "Von selbst"],
+		"meadow": ["Wetter", "Natur und Wind"], "car": ["Besuch", "Fahrzeuge"], "thief": ["Besuch", "Abläufe"], "burglar": ["Besuch", "Abläufe"], "sneaker": ["Besuch", "Abläufe"], "bbq": ["Besuch", "Abläufe"], "homecoming": ["Besuch", "Abläufe"], "parcel": ["Besuch", "Abläufe"], "fox_trash": ["Besuch", "Abläufe"], "boar_group": ["Besuch", "Abläufe"], "kids_tag": ["Besuch", "Abläufe"], "mowing": ["Besuch", "Abläufe"], "night_lapse": ["Besuch", "Von selbst"], "calendar": ["Besuch", "Von selbst"],
 		"dogwalk": ["Besuch", "Menschen schicken"], "herd": ["Besuch", "Tiere schicken"], "clear": ["Besuch", "Vorlagen"], "visit_preset": ["Besuch", "Vorlagen"],
 		"car_park": ["Besuch", "Fahrzeuge"], "bench": ["Besuch", "Menschen schicken"], "feed": ["Besuch", "Tiere schicken"],
 		"garden_person": ["Besuch", "Menschen schicken"], "couple": ["Besuch", "Menschen schicken"], "horse_walk": ["Besuch", "Menschen schicken"],
@@ -2553,6 +2615,7 @@ func _register_controls() -> void:
 	add_control("toggle", "look_at_light", "Menschen schauen zum Licht, wenn es angeht", func(): return look_at_light, func(v): look_at_light = v, "Besuch", ex)
 	add_control("slider", "wind", "Wind", func(): return wind, func(v): wind = v, "Wetter", {"min": 0, "max": 120, "step": 1, "unit": "km/h"})
 	add_control("toggle", "real_weather", "Echtes Wetter vom Ort (alle 10 Minuten, braucht Internet)", func(): return real_weather, func(v): real_weather = v; life._wx_t = -10000.0, "Wetter")
+	add_control("toggle", "night_weather", "Wetterverlauf über die Nacht (Dämmerung, Regenschauer, Tau auf der Linse, Morgennebel)", func(): return night_weather, func(v): night_weather = v; _nw["day"] = -1, "Wetter")
 	add_control("toggle", "real_time", "Echte Uhrzeit (die Uhr des PCs)", func(): return real_time, func(v): real_time = v, "Szene")
 	add_control("slider", "ambient", "Temperatur", func(): return ambient, func(v): ambient = v, "Wetter", {"min": -15, "max": 40, "step": 0.5, "unit": "°C"})
 	add_control("slider", "humidity", "Luftfeuchtigkeit", func(): return humidity, func(v): humidity = v, "Wetter", {"min": 10, "max": 100, "step": 1, "unit": "%", "expert": true})
@@ -2574,6 +2637,7 @@ func _register_controls() -> void:
 	add_control("button", "bats", "Fledermäuse am Licht (nachts)", null, func(): visit("bats"), "Besuch")
 	add_control("button", "owl", "Eule fliegt vorbei", null, func(): visit("owl"), "Besuch")
 	add_control("button", "burglar", "Einbruchsversuch (schleicht, prüft die Tür – flieht vor Licht und Sirene)", null, func(): visit("burglar"), "Besuch")
+	add_control("button", "sneaker", "Vorsichtiger Schleicher (von Deckung zu Deckung, kriecht, erstarrt bei Licht, Lampe aus)", null, func(): visit("sneaker"), "Besuch")
 	add_control("button", "bbq", "Grillabend (Grill, Rauch, Freunde kommen)", null, func(): visit("bbq"), "Besuch")
 	add_control("button", "homecoming", "Spät heimkommen (Auto hält, Tür auf und zu)", null, func(): visit("homecoming"), "Besuch")
 	add_control("button", "parcel", "Paket wird gebracht", null, func(): visit("parcel"), "Besuch")
@@ -2615,7 +2679,9 @@ func _register_controls() -> void:
 	add_control("toggle", "insects", "Insekten am Licht (nachts, lösen wie echt Bewegung aus)", func(): return insects_on, func(v): insects_on = v, "Kamerabild")
 	for cd in [["glare", "Gegenlicht (tiefe Sonne in der Linse, Äste lassen sie flackern)"], ["drops", "Tropfen auf der Linse (auch ohne Regen)"],
 			["web", "Spinnennetz vor der Kopfkamera (nachts im Licht hell)"], ["headlights", "Scheinwerfer: nachts fahren immer wieder Autos vorbei"],
-			["shadows", "Wolkenschatten: schnelle, tiefe Schatten"], ["ir", "Infrarot-Licht immer an (auch ohne Motion Watch)"]]:
+			["shadows", "Wolkenschatten: schnelle, tiefe Schatten"], ["ir", "Infrarot-Licht immer an (auch ohne Motion Watch)"],
+			["fogged", "Beschlagene Linse (Tau am Morgen, milchiger Schleier)"], ["dirt", "Schmutz und Pollen auf der Linse"],
+			["shake", "Kamera wackelt im Wind (Mast, Stange)"], ["net", "Schlechtes WLAN: das Bild ruckelt und bleibt hängen"]]:
 		var key: String = cd[0]
 		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
 	add_control("toggle", "dev2_on", "Zweites Motion-Watch-Gerät in der Welt (eigene Adresse: Port des Simulators + 20, meist 8785)", func(): return dev2.on, func(v): dev2.set_on(v), "Mover")
@@ -3663,6 +3729,7 @@ var kids_thief := true                # what children may see (set by the adults
 var kids_scary := true
 var kids_laser := true
 var kids_sound := true
+var kids_stars := 0                   # 3D-3.74: stars of the missions
 var kids: Control
 var kids_seg: Control
 var simple_seg: Control
@@ -4133,8 +4200,8 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "kids_on", "kids_thief", "kids_scary", "kids_laser", "kids_sound"]
+const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+		"avoid_on", "quality", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "kids_on", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
 var _settings_dirty := false
 
 
@@ -5273,7 +5340,7 @@ func _animal_name(k: String) -> String:
 			"squirrel": "Eichhörnchen", "hare": "Hase", "hedgehog": "Igel", "chamois": "Gämse", "ibex": "Steinbock", "lynx": "Luchs"}.get(k, k)
 
 
-func _say(text: String, p: Vector3, col: Color) -> void:
+func _say(text: String, p: Vector3, col: Color, lay := 1) -> void:
 	"""a word that floats up in the world (and on the screen at the top left)"""
 	shot_msg = text
 	shot_msg_t = now()
@@ -5286,7 +5353,7 @@ func _say(text: String, p: Vector3, col: Color) -> void:
 	l.modulate = col
 	l.outline_size = 12
 	l.outline_modulate = Color(0, 0, 0, 0.8)
-	l.layers = 1
+	l.layers = lay
 	l.position = p
 	add_child(l)
 	var tw := create_tween()

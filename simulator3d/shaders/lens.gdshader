@@ -14,7 +14,9 @@ uniform float glare = 0.0;          // 0..1 low sun shining into the lens
 uniform vec2 glare_pos = vec2(0.82, 0.18);
 uniform float web = 0.0;            // 0..1 a spider web in the upper left corner
 uniform float web_lit = 0.0;        // 0..1 at night the lamp / infrared light makes it shine
-uniform float sway = 0.0;           // 0..1 the wind moves the web and the branches in front of the sun
+uniform float sway = 0.0;
+uniform float fogged = 0.0;         // 3D-3.75: 0..1 the lens is fogged up (dew): a milky veil, stronger at the edges
+uniform float dirt = 0.0;           // 3D-3.75: 0..1 dirt / pollen spots on the lens           // 0..1 the wind moves the web and the branches in front of the sun
 
 float seg(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a, ba = b - a; float t = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); return length(pa - ba * t); }
 
@@ -96,6 +98,25 @@ void fragment() {
 		float na4 = ga2 + al * (1.0 - ga2);
 		c = (gc2 * ga2 + c * al * (1.0 - ga2)) / max(na4, 0.0001);
 		al = na4;
+	}
+	if (fogged > 0.0) {
+		float fv = fogged * (0.32 + 0.38 * smoothstep(0.1, 0.75, d)) * (0.9 + 0.1 * sin(TIME * 0.3));
+		vec3 fc = vec3(0.86, 0.88, 0.9) * max(0.25, expo);
+		float na5 = fv + al * (1.0 - fv);
+		c = (fc * fv + c * al * (1.0 - fv)) / max(na5, 0.0001);
+		al = na5;
+	}
+	if (dirt > 0.0) {
+		vec2 grid2 = uv * vec2(14.0, 8.0);
+		vec2 id2 = floor(grid2);
+		vec2 f2 = fract(grid2) - 0.5;
+		float r2 = h(id2 + 11.0);
+		float on2 = step(r2, dirt * 0.16);
+		float da2 = smoothstep(0.32 * (0.5 + h(id2 + 2.0)), 0.05, length(f2 - (vec2(h(id2 + 4.0), h(id2 + 6.0)) - 0.5) * 0.4)) * on2 * 0.55;
+		vec3 dc2 = vec3(0.32, 0.27, 0.2);
+		float na6 = da2 + al * (1.0 - da2);
+		c = (dc2 * da2 + c * al * (1.0 - da2)) / max(na6, 0.0001);
+		al = na6;
 	}
 	ALBEDO = c;
 	ALPHA = clamp(al, 0.0, 1.0);
