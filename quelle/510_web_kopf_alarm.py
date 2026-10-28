@@ -375,7 +375,7 @@ ALERT_JS = r"""
 // ---- alarm sound in the browser (every page): the server sends alarms over a live connection (/api/alerts) ----
 (function () {
   const ALT = {"Alarm sound": "Alarmton", "Sound on": "Ton ein", "Pre-alarm (first movement)": "Voralarm (erste Bewegung)",
-    "Person detected": "Person erkannt", "Warm body (thermal camera)": "Wärme erkannt (Wärmebild)", "Armed - alarms are active": "Scharf - Alarme aktiv",
+    "Person detected": "Person erkannt", "Warm body (thermal camera)": "Wärme erkannt (Wärmebild)", "Armed - alarms are active": "Schutz an – Alarme aktiv",
     "Person / warm body / noise": "Person / Wärme / Geräusch", "Noise (microphone)": "Geräusch (Mikrofon)", "Volume": "Lautstärke", "Test": "Test", "Vibrate (phones)": "Vibrieren (Handy)",
     "Pre-alarm: movement": "Voralarm: Bewegung", "Tap anywhere on the page to allow the sound": "Irgendwo auf die Seite tippen, um den Ton zu erlauben",
     "Mute 30 min": "30 Min. stumm", "Muted until": "Stumm bis", "Unmute": "Ton wieder an", "Pre-alarm": "Voralarm", "Person": "Person",
@@ -533,6 +533,7 @@ function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.
 let LANG = "", THEME = "";
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
 const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Tools": "Werkzeuge", "Simulator": "Simulator", "Game corner": "Spielecke"}};
+Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
 const t = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));

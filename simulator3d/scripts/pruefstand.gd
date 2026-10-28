@@ -9,9 +9,9 @@ extends PanelContainer
 ## Das Ergebnis hat dasselbe Format wie pruefstand/pruefstand.py im Repository (VERLAUF.md liest beide).
 
 const UI = preload("res://scripts/ui_style.gd")
-const PLANS := [["quick", "Kurz (Tag + Nacht, ~2½ Min.)", true], ["night", "Nacht (~4 Min.)", true],
-		["standard", "Standard (Tag, Wind, Nacht, Regen, ~5 Min.)", true], ["hard", "Schwierig (Gegenlicht, Nebel, Schnee …, ~9 Min.)", false]]
-const PLAN_DAUER := {"quick": 150, "night": 230, "standard": 300, "hard": 520}
+const TR := preload("res://scripts/testrun.gd")         # 3D-3.90: names and times of the plans only there
+const PLANS := [["quick", "", true], ["night", "", true], ["standard", "", true], ["hard", "", false]]
+const PLAN_DAUER := TR.DAUER
 const REPO_API := "https://api.github.com/repos/DonElektro/MotionWatch/contents/pruefstand/ergebnisse/"
 
 var main
@@ -106,7 +106,7 @@ func _ready() -> void:
 	setup_box.add_child(UI.small("2. Welche Testläufe?", UI.TXT))
 	for p in PLANS:
 		var cb := CheckBox.new()
-		cb.text = p[1]
+		cb.text = str(TR.PLANS[p[0]]["name"])
 		cb.button_pressed = p[2]
 		setup_box.add_child(cb)
 		plan_cbs[p[0]] = cb
@@ -388,9 +388,8 @@ func _process(_dt: float) -> void:
 
 
 func _name(p: String) -> String:
-	for x in PLANS:
-		if x[0] == p:
-			return str(x[1]).get_slice(" (", 0)
+	if TR.PLANS.has(p):
+		return str(TR.PLANS[p]["name"]).get_slice(" (", 0)
 	return p
 
 

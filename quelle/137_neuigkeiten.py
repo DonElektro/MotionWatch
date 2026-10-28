@@ -14,7 +14,7 @@ MAKEOVER_ALL = [
     (12, "Automatische Trainings-Nacht"), (13, "Einstellungs-Vergleich A/B"), (14, "Benachrichtigungen testen (Test-Kanal)"),
     (15, "Akku-, Wetter- und WLAN-Ausfall üben"), (16, "Mehrere MoveEye-Geräte im Simulator"), (17, "Rover voll integriert"),
     (18, "Tagebuch-Statistik aus dem Simulator"), (19, "Versionen vergleichen (Kurve)"), (20, "Ein-Klick-Demo"),
-    (21, "Fehlalarm-Lernen"), (22, "Karte der blinden Flecken"), (23, "Nacht-Generalprobe vor dem Scharfschalten"),
+    (21, "Fehlalarm-Lernen"), (22, "Karte der blinden Flecken"), (23, "Nacht-Generalprobe vor dem Einschalten des Schutzes"),
     (24, "Schwellen automatisch einstellen"), (25, "Erkennungs-Check jede Woche"),
 ]
 MAKEOVER_DONE = set(range(1, 26))                                # numbers already delivered (nachführen)

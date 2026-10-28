@@ -12,8 +12,8 @@ const UI = preload("res://scripts/ui_style.gd")
 
 # [id, symbol, name]
 const TILES := [["scene", "globe", "Szene"], ["time", "clock", "Tageszeit"], ["weather", "cloud", "Wetter"], ["visit", "person", "Besuch"],
-		["inventar", "box", "Inventar"], ["templates", "puzzle", "Vorlagen"], ["game", "pad", "Spiel"], ["patrol", "route", "Patrouille"],
-		["head", "head", "Kopf steuern"], ["map", "map", "Karte"], ["planner", "plan", "Aufstellen"], ["pruef", "meter", "Prüfstand"]]
+		["inventar", "box", "Inventar"], ["test", "check", "Testlauf"], ["game", "pad", "Spiel"], ["patrol", "route", "Patrouille"],
+		["head", "head", "Kopf steuern"], ["map", "map", "Echter Ort"], ["planner", "plan", "Aufstellen"], ["pruef", "meter", "Prüfstand"]]
 const TIMES := [["Morgen 07:00", 7.0], ["Mittag 13:00", 13.0], ["Abend 19:30", 19.5], ["Dämmerung 21:00", 21.0], ["Nacht 23:00", 23.0], ["Tiefe Nacht 03:00", 3.0]]
 const WEATHER := [["Klar", "clear"], ["Bewölkt", "cloudy"], ["Regen", "rain"], ["Nebel", "fog"], ["Schnee", "snow"]]
 const VISITS := [["Person", "person"], ["Dieb (Velo, Tür)", "thief"], ["Kind", "child"], ["Spaziergang mit Hund", "dogwalk"], ["Velofahrer", "cyclist"],
@@ -100,8 +100,13 @@ func _press(id: String, b: Button) -> void:
 					main.visit(str(k)))
 		"inventar":
 			main.inventar.toggle()
-		"templates":
-			main.templates.toggle(3)
+		"test":                                      # 3D-3.90: «Szene» already opens the templates - here the quick test run
+			if main.testrun.running:
+				main.testrun.stop(false)
+			else:
+				var r_: String = main.testrun.start("quick")
+				if r_ != "":
+					main.start_info = r_
 		"game":
 			main.gamewiz.open_wiz()
 		"patrol":
@@ -130,19 +135,19 @@ func _process(dt: float) -> void:
 
 func _paint() -> void:
 	var h: float = main.hour()
-	_subs["scene"].text = main.Scenes.name_of(main.scene)
+	_subs["scene"].text = main.Scenes.name_of(main.scene) + " · Vorlagen"
 	_subs["time"].text = "%02d:%02d %s" % [int(h), int(fmod(h, 1.0) * 60), "Nacht" if main.is_dark() else "Tag"]
 	_subs["weather"].text = {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(main.weather, main.weather)
 	_subs["visit"].text = "%d da" % main.visitors.get_child_count()
 	_subs["inventar"].text = "80 KI-Dinge"
-	_subs["templates"].text = ".glb laden"
+	_subs["test"].text = "läuft" if main.testrun.running else "Kurz, 2½ Min."
 	_subs["game"].text = (main.game.status() if main.game != null and main.game.status() != "" else "Assistent")
 	_subs["patrol"].text = "fährt" if main.patrol.active else "aus"
 	_subs["head"].text = "Pfeile, Licht"
-	_subs["map"].text = "echter Ort"
+	_subs["map"].text = "Karte der Welt"
 	_subs["planner"].text = "wohin?"
 	_subs["pruef"].text = "Erkennung"
-	var on := {"inventar": main.inventar != null and main.inventar.visible, "templates": main.templates != null and main.templates.visible,
+	var on := {"inventar": main.inventar != null and main.inventar.visible, "test": main.testrun.running,
 			"patrol": main.patrol.active, "head": main.headpad != null and main.headpad.visible, "map": main.karte.visible,
 			"planner": main.planner.visible, "pruef": main.pruef.visible, "game": main.gamewiz.visible}
 	for k in _tiles:

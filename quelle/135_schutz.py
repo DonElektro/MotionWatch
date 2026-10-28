@@ -19,6 +19,16 @@ def protect_level():
     return lv if lv in PROTECT_LEVELS and lv != "off" else "watch"
 
 
+def protect_label(arm_state, left=0, lang=None):
+    """2.98.0: one name for the state everywhere (web, window, alarm window): Aus / Wachsam / Voll"""
+    lv = tr("Full protection", lang) if (CFG.get("protect_level") == "full") else tr("Watchful", lang)
+    if arm_state == "armed":
+        return lv
+    if arm_state == "arming":
+        return f"{lv} {tr('in', lang)} {int(left)} s"
+    return tr("Off", lang)
+
+
 def protect_set(level, who="web", answers=None):
     """switch the level; answers of the assistant (what, when, how) adjust what is switched on"""
     if level not in PROTECT_LEVELS:

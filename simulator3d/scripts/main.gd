@@ -3,7 +3,8 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.89"
+const VERSION := "3D-3.90"
+const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2702,6 +2703,22 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"autologon": ["System", "Start mit dem PC"], "kids_scary": ["System", "Kinder-Modus"], "kids_thief": ["System", "Kinder-Modus"], "kids_laser": ["System", "Kinder-Modus"], "kids_sound": ["System", "Kinder-Modus"], "auto_update": ["System", "Updates"], "dev_updates": ["System", "Updates"], "news_popup": ["System", "Updates"], "news_show": ["System", "Updates"], "update_now": ["System", "Updates"]}
 
 
+const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testlauf", "Spiel"]
+const SIMPLE_HIDE_SUBS := ["Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Verhalten", "Mehr Wetter", "Natur und Wind"]
+
+
+func _simple_ok(c: Dictionary) -> bool:
+	"""3D-3.90: what «Einfach» shows - scene, time, weather, visitors (the inventory picks the single ones), the test run and
+	the game assistant; everything else is «Experte»"""
+	if c.group == "Spiel":
+		return c.id in ["game_wizard", "game_stop"]
+	if c.group == "System":
+		return c.id in ["update_mode"]
+	if not c.group in SIMPLE_GROUPS:
+		return false
+	return not str(c.extra.get("sub", "")) in SIMPLE_HIDE_SUBS
+
+
 func _order_controls() -> void:
 	"""every setting into its group and part, sorted like GROUPS (the window and the page of MoveEye show this order)"""
 	var gi := {}
@@ -2719,6 +2736,8 @@ func _order_controls() -> void:
 		if pl != null:
 			c.group = pl[0]
 			c.extra["sub"] = pl[1]
+		if not _simple_ok(c):
+			c.extra["expert"] = true                      # 3D-3.90: «Einfach» = about 60 settings (the web page shows all)
 		var g: int = gi.get(c.group, GROUPS.size())
 		var sub := str(c.extra.get("sub", ""))
 		c.extra["icon"] = GROUPS[g][2] if g < GROUPS.size() else ""
@@ -2857,16 +2876,19 @@ func _register_controls() -> void:
 	add_control("toggle", "door", "Wohnwagentür offen", func(): return door_open, func(v): set_door(v), "Sensoren")
 	add_control("toggle", "gas", "Gas / Rauch", func(): return gas_on, func(v): set_gas(v), "Sensoren")
 	add_control("button", "pir", "PIR Zelt auslösen", null, func(): add_event("PIR Zelt", "pir"), "Sensoren")
-	add_control("button", "bike", "Velo bewegen", null, func(): add_event("Velo", "tag"), "Sensoren")
-	add_control("button", "nighttest", "Nacht-Test starten (2 Min.)", null, func(): night_test(), "Sensoren")
+	add_control("button", "bike", "Velo-Sensor auslösen (jemand rüttelt am Velo)", null, func(): add_event("Velo", "tag"), "Sensoren")
 	add_control("toggle", "rifle", "Gewehr (unblutig, nur Tiere)", func(): return rifle_on, func(v): rifle_on = v, "Wildbeobachtung")
 	add_control("button", "shoot_head", "Schuss aus der Kopfkamera", null, func(): shoot_head(), "Wildbeobachtung")
 	add_control("button", "score0", "Punkte auf 0", null, func(): reset_score(), "Wildbeobachtung")
 	add_control("toggle", "news_popup", "Nach einem Update kurz zeigen, was neu ist (und was als Nächstes kommt)", func(): return news_popup, func(v): news_popup = v; _settings_dirty = true, "Updates")
 	add_control("button", "news_show", "Was ist neu?", null, func(): news.show_news(), "Updates")
-	add_control("toggle", "dev_updates", "Entwicklungsphase: jede Minute nach neuen Versionen schauen und sofort installieren", func(): return dev_updates, func(v): dev_updates = v; _settings_dirty = true, "Updates")
-	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates")
-	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates")
+	# 3D-3.90: one choice instead of two switches (the old ids stay for MoveEye, hidden in the window)
+	add_control("select", "update_mode", "Neue Versionen", func(): return "dev" if dev_updates else ("auto" if auto_update else "off"),
+			func(v): dev_updates = str(v) == "dev"; set_auto_update(str(v) != "off"), "Updates",
+			{"options": [["off", "nur von Hand (Knopf oben)"], ["auto", "automatisch installieren"], ["dev", "Entwicklungsphase: jede Minute, sofort"]]})
+	add_control("toggle", "dev_updates", "Entwicklungsphase: jede Minute nach neuen Versionen schauen und sofort installieren", func(): return dev_updates, func(v): dev_updates = v; _settings_dirty = true, "Updates", {"expert": true, "hide": true})
+	add_control("toggle", "auto_update", "Neue Versionen automatisch installieren", func(): return auto_update, func(v): set_auto_update(v), "Updates", {"expert": true, "hide": true})
+	add_control("button", "update_now", "Jetzt nach Updates suchen und installieren", null, func(): run_update(true, false), "Updates", {"expert": true, "hide": true})
 	add_control("select", "testrun_plan", "Welcher Testlauf", func(): return testrun.plan, func(v): testrun.plan = v, "Testlauf",
 			{"options": testrun.plan_options()})
 	add_control("button", "testrun_start", "Testlauf starten (MoveEye muss verbunden sein)", null, func(): testrun.start(), "Testlauf")
@@ -3400,6 +3422,8 @@ func control(d: Dictionary) -> Dictionary:
 		return {"ok": true, "inventar": inventar.info()}
 	elif a == "blindmap":                              # 3D-3.85: makeover 22 / 23 {do: start (az, dist, hour, walk) | info | stop}
 		var bd := str(d.get("do", "info"))
+		if bd == "game":                               # 3D-3.90: the blind spots the players found (az°, m), for MoveEye's map
+			return {"ok": true, "pts": game.learn.blind_pts if game != null and game.learn != null else []}
 		if bd == "start":
 			return blindmap.start(d)
 		if bd == "stop":
@@ -3779,6 +3803,10 @@ func _build_ui() -> void:
 	search_none = UI.small("Kein Treffer")
 	search_none.visible = false
 	box_.add_child(search_none)
+	_mode_row = VBoxContainer.new()                 # 3D-3.90: Einfach | Experte and Kinder | Erwachsene on top (were at the very bottom)
+	_mode_row.add_theme_constant_override("separation", 6)
+	box_.add_child(_mode_row)
+	top_cards.append(_mode_row)
 	quick = preload("res://scripts/quick.gd").new()            # 3D-3.86: the quick tiles, at the very top
 	quick.main = self
 	box_.add_child(quick)
@@ -3882,7 +3910,7 @@ func _build_ui() -> void:
 	prevt.custom_minimum_size = Vector2(146, 112)
 	row.add_child(prevt)
 	# tools: MoveEye on this PC, map, phone
-	var tl := UI.fold_card(box_, "Werkzeuge", true, "tools")
+	var tl := UI.fold_card(box_, "Testen", true, "tools")      # 3D-3.90: everything that measures or tests MoveEye in one card
 	fold_bodies.append(tl)
 	tools_body = tl
 	top_cards.append(tl.get_meta("card"))
@@ -3894,7 +3922,39 @@ func _build_ui() -> void:
 	mwpc_label = UI.small("")
 	tl.add_child(mwpc_label)
 	var tl_main := tl                                # 3D-3.86: the rest in folds - tests for MoveEye, training pictures, more
-	tl = UI.sub_fold(tl_main, "Tests für MoveEye (Referenz-Scan, Sabotage, Überraschung)", false)
+	tl = UI.sub_fold(tl_main, "Erkennung messen (Testlauf, Prüfstand, blinde Flecken)", true)
+	tl.set_meta("always", true)
+	sub_bodies.append(tl)
+	var trh := HBoxContainer.new()
+	trh.add_theme_constant_override("separation", 6)
+	tl.add_child(trh)
+	var trp := OptionButton.new()
+	for p_ in ["quick", "standard", "night", "hard"]:
+		trp.add_item(str(TestrunS.PLANS[p_]["name"]).get_slice(" (", 0) + " · " + str(int(round(TestrunS.DAUER[p_] / 30.0)) / 2.0).trim_suffix(".0") + " Min.")
+	trp.select(0)
+	trh.add_child(trp)
+	var trb := Button.new()
+	trb.text = "Testlauf starten"
+	trb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	trb.pressed.connect(func():
+		var r_: String = testrun.start(["quick", "standard", "night", "hard"][trp.selected])
+		if r_ != "":
+			start_info = r_)
+	trh.add_child(trb)
+	var bmb := Button.new()
+	bmb.text = "Blinde Flecken: Person rund um MoveEye aufstellen"
+	bmb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	bmb.pressed.connect(func():
+		var r2: Dictionary = blindmap.start({})
+		if not bool(r2.get("ok", true)):
+			start_info = "Blinde Flecken: " + str(r2.get("error", "")))
+	tl.add_child(bmb)
+	var psb := Button.new()
+	psb.text = "Prüfstand: mehrere Testläufe, Ergebnis für GitHub"
+	psb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	psb.pressed.connect(func(): pruef.open(not pruef.visible))
+	tl.add_child(psb)
+	tl = UI.sub_fold(tl_main, "Schutz testen (Referenz-Scan, Sabotage, Überraschung)", false)
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)
 	# 3D-3.71: the reference scan of MoveEye, started from here
@@ -3910,11 +3970,11 @@ func _build_ui() -> void:
 		rb.pressed.connect(mw_request.bind(b_[1]))
 		rsh.add_child(rb)
 	var ntb := Button.new()                          # 3D-3.72
-	ntb.text = "Nacht-Test: Referenz am Tag, Vergleich in der Nacht"
+	ntb.text = "Referenz-Scan: am Tag aufnehmen, in der Nacht vergleichen"
 	ntb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ntb.pressed.connect(ref_night_test)
 	tl.add_child(ntb)
-	tl.add_child(UI.small("Testhilfen: wegnehmen / zurückstellen (nur Camping-Platz)"))
+	tl.add_child(UI.small("Dinge wegnehmen / zurückstellen (nur in der Szene Camping-Platz) – merkt MoveEye, dass etwas fehlt?"))
 	var pg := GridContainer.new()
 	pg.columns = 3
 	pg.add_theme_constant_override("h_separation", 6)
@@ -3980,7 +4040,7 @@ func _build_ui() -> void:
 	dsr.add_child(dsb)
 	ds_label = UI.small("")
 	tl.add_child(ds_label)
-	tl = UI.sub_fold(tl_main, "Mehr: Erkunden, Handy-Simulator", false)
+	tl = UI.sub_fold(tl_main, "Mehr: Aufstellen, Erkunden, Handy-Simulator", false)
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)
 	var plb := Button.new()
@@ -3994,11 +4054,6 @@ func _build_ui() -> void:
 	exb.tooltip_text = "Mit dem Rover durch die Gegend fahren: W A S D / Pfeile, grüner Stick, oder ein Game-Controller (auch Bluetooth; Start = ein / aus). Esc beendet."
 	exb.pressed.connect(func(): explore.set_on(not explore.on))
 	tl.add_child(exb)
-	var psb := Button.new()
-	psb.text = "Prüfstand: Erkennung messen (auf diesem PC)"
-	psb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	psb.pressed.connect(func(): pruef.open(not pruef.visible))
-	tl.add_child(psb)
 	var pv := Button.new()
 	pv.text = "Handy- / Tablet-Simulator (P)"
 	pv.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -4009,6 +4064,8 @@ func _build_ui() -> void:
 	var groups := {}
 	var subs := {}
 	for c in controls:
+		if c.extra.get("hide", false):
+			continue                                     # 3D-3.90: only for MoveEye (the web page), not in the window
 		if not groups.has(c.group):
 			var ic := ""
 			for g in GROUPS:
@@ -4062,14 +4119,17 @@ func _build_ui() -> void:
 	keys.add_child(info_label)
 	expert_cards.append(keys.get_meta("card"))
 	top_cards.append(keys.get_meta("card"))
-	# Simple | Expert at the very bottom (like on the page of MoveEye)
-	kids_seg = UI.segment("Kinder", "Erwachsene", not kids_on, func(adult): _kids_switch(adult))   # 3D-3.69
-	box_.add_child(kids_seg)
+	# Simple | Expert and Kinder | Erwachsene: on top, next to the search (3D-3.90)
 	var se := UI.segment("Einfach", "Experte", not ui_simple, func(expert): set_simple(not expert))
 	simple_seg = se
-	box_.add_child(se)
-	simple_note = UI.small("Einfach: nur die wichtigen Einstellungen. «Experte» zeigt alle.")
+	se.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_mode_row.add_child(se)
+	kids_seg = UI.segment("Kinder", "Erwachsene", not kids_on, func(adult): _kids_switch(adult))   # 3D-3.69
+	kids_seg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_mode_row.add_child(kids_seg)
+	simple_note = UI.small("Einfach: das Wichtigste (Szene, Zeit, Wetter, Besuch, Testen, Spiel-Assistent). «Experte» zeigt alle.")
 	box_.add_child(simple_note)
+	box_.move_child(simple_note, _mode_row.get_index() + 1)
 	_apply_simple()
 	_sync_ui()
 	await _make_thumbs()
@@ -4094,6 +4154,7 @@ var kids_sound := true
 var kids_stars := 0                   # 3D-3.74: stars of the missions
 var kids: Control
 var kids_seg: Control
+var _mode_row: VBoxContainer
 var simple_seg: Control
 var ui_tb: Control
 var fold_bodies: Array = []           # every card that opens / closes
@@ -4212,7 +4273,9 @@ func _apply_kids() -> void:
 		return
 	if kids_on:
 		for c in ui_box.get_children():
-			c.visible = c == kids or c == kids_seg
+			c.visible = c == kids or c == kids_seg or c == _mode_row
+		if simple_seg != null:
+			simple_seg.visible = false
 		kids._build()
 		var sc := ui_box.get_parent()
 		if sc is ScrollContainer:
@@ -4222,6 +4285,8 @@ func _apply_kids() -> void:
 		for c in ui_box.get_children():
 			if c != kids and c != search_none:
 				c.visible = true
+		if simple_seg != null:
+			simple_seg.visible = true
 		var keep := kids_on
 		kids_on = false
 		_apply_simple()
@@ -4446,6 +4511,9 @@ var thumb_vps := {}                    # kind -> [SubViewport, actor walking on 
 var _thumb_t := 0.0
 
 
+var _thumb_drawn := {}
+
+
 func _thumbs_tick(dt: float) -> void:
 	_thumb_t += dt
 	if _thumb_t < 0.08 or not win_open:
@@ -4453,10 +4521,22 @@ func _thumbs_tick(dt: float) -> void:
 	var step := _thumb_t
 	_thumb_t = 0.0
 	var t_ := Time.get_ticks_msec() / 1000.0
+	var mp := get_viewport().get_mouse_position()
 	for kd in thumb_vps:
 		var r = thumb_rects.get(kd)
 		if r == null or not is_instance_valid(r) or not r.is_visible_in_tree():
 			continue
+		# 3D-3.90: only what is really in view (not scrolled away) and only the picture under the mouse moves -
+		# the others are drawn once (before: up to 300 small pictures per second on an older PC)
+		var rr: Rect2 = r.get_global_rect()
+		var sc_ = r.get_parent()
+		while sc_ != null and not (sc_ is ScrollContainer):
+			sc_ = sc_.get_parent()
+		if sc_ != null and not (sc_ as Control).get_global_rect().intersects(rr):
+			continue
+		if not rr.has_point(mp) and _thumb_drawn.has(kd):
+			continue
+		_thumb_drawn[kd] = true
 		var vp: SubViewport = thumb_vps[kd][0]
 		var a = thumb_vps[kd][1]
 		a._animate(step, a.speed, t_)

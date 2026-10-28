@@ -1,4 +1,4 @@
-MoveEye Sim · 3D – 3D-3.89 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
+MoveEye Sim · 3D – 3D-3.90 (der 3D-Simulator von MoveEye: 13 Szenen + eigene 3D-Dateien, Wildbeobachtung, MoveEye auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,6 +607,18 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.90
+3D-3.90: Aufgeräumt nach der Komplettanalyse. «Einfach» und «Experte» sowie «Kinder» und «Erwachsene» stehen oben
+unter der Suche. «Einfach» zeigt nur das Wichtigste: Szene, Zeit, Wetter, Besuch, Testen und den Spiel-Assistenten.
+Die Karte «Werkzeuge» heisst jetzt «Testen»: Testlauf, blinde Flecken und Prüfstand an einer Stelle; der alte
+«Nacht-Test» ist weg (der Testlauf «Nacht» macht es richtig). Namen und Dauer der Testläufe stimmen überall. Updates:
+eine Auswahl (von Hand / automatisch / Entwicklungsphase) statt zwei Schalter. Die Besucher-Bildchen werden nur noch
+gezeichnet, wenn sie sichtbar sind (weniger Last). Spiele: vier Spielarten mit Nutzen – «Gegen MoveEye», «Wächter»,
+«Verstecken mit dem Rover» und neu «Zonen-Check» (das Handy sagt laufend, ob MoveEye dich sieht); die alten
+Spielarten gibt es unter «Experte». Stellen, wo MoveEye Spieler nicht meldet, kommen auf die Karte der blinden Flecken
+in MoveEye; verpasste Bilder kommen ins Trainingspaket. Beim Wächter-Spiel sagt der Simulator am Schluss, wie oft
+MoveEye gemeldet hätte. Kinder: «Versteckspiel» startet eine einfache Übungsrunde mit zwei Computer-Kindern.
 
 NEU IN 3D-3.89
 3D-3.89: Wer Kopf und Rover steuert, ist klar geregelt. Während eines Tests wartet die Patrouille und der Kopf bleibt

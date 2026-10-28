@@ -75,6 +75,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `500_web_seitenbau.py` | Web: App-Symbol, Seiten zusammensetzen | 80 |
 | `510_web_kopf_alarm.py` | Web: Service Worker, Kopf, Alarm, gemeinsames JavaScript | 494 |
 | `520_web_seiten_kameras_zonen_tagebuch.py` | Web: Kameras, Zonen, Tagebuch, Gast, Protokoll | 730 |
+| `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |

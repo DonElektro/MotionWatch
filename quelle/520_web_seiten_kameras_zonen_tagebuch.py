@@ -134,10 +134,10 @@ async function addIp() {
 }
 // ---- other MoveEye devices ----
 Object.assign(I18N.de, {"Other MoveEye devices": "Weitere Motion-Watch-Geräte",
-  "Several devices around the tent or camper: see them all here and arm / disarm them together.": "Mehrere Geräte rund ums Zelt oder Wohnmobil: hier alle sehen und gemeinsam scharf / unscharf schalten.",
-  "🛡 Arm all": "🛡 Alle scharf", "Disarm all": "Alle unscharf", "Add a device": "Gerät hinzufügen", "Password": "Passwort",
+  "Several devices around the tent or camper: see them all here and arm / disarm them together.": "Mehrere Geräte rund ums Zelt oder Wohnmobil: hier alle sehen und gemeinsam den Schutz ein- und ausschalten.",
+  "🛡 Arm all": "🛡 Schutz bei allen an", "Disarm all": "Schutz bei allen aus", "Add a device": "Gerät hinzufügen", "Password": "Passwort",
   "🔍 Search in the network": "🔍 Im Netzwerk suchen", "This device": "Dieses Gerät", "armed": "Schutz an", "disarmed": "Schutz aus", "arming": "Schutz startet",
-  "ALARM": "ALARM", "not reachable": "nicht erreichbar", "password wrong": "Passwort falsch", "Open": "Öffnen", "Arm": "Scharf", "Disarm": "Schutz aus",
+  "ALARM": "ALARM", "not reachable": "nicht erreichbar", "password wrong": "Passwort falsch", "Open": "Öffnen", "Arm": "Schutz an", "Disarm": "Schutz aus",
   "Remove this device from the list?": "Dieses Gerät aus der Liste entfernen?", "needs a password": "braucht ein Passwort", "Nothing found.": "Nichts gefunden.",
   "searching (about 10 s) …": "suche (ca. 10 s) …", "mains": "Netz", "battery": "Akku", "Set password": "Passwort setzen", "recording": "Aufnahme"});
 let FLSIG = "";
@@ -693,7 +693,7 @@ async function st() {
     const r = await fetch("__BASE__/state", {cache: "no-store"});
     if (r.status === 403 || r.status === 404) { $("#st").textContent = g_("access expired", "Zugang abgelaufen", "access expired"); $("#v").remove(); return; }
     const j = await r.json();
-    $("#st").textContent = (j.armed ? g_("Armed", "Scharf", "Armed") : g_("Disarmed", "Unscharf", "Disarmed")) + " · " + (j.persons ? g_("person in view", "Person im Bild", "person in view") : g_("quiet", "ruhig", "quiet"))
+    $("#st").textContent = (j.armed ? g_("Armed", "Schutz an", "Armed") : g_("Disarmed", "Schutz aus", "Disarmed")) + " · " + (j.persons ? g_("person in view", "Person im Bild", "person in view") : g_("quiet", "ruhig", "quiet"))
       + (j.until ? " · " + g_("until", "bis", "until") + " " + new Date(j.until * 1000).toLocaleString(({de: "de-CH", fr: "fr-CH", it: "it-CH"})[GL] || "en-GB", {weekday: "short", hour: "2-digit", minute: "2-digit"}) : "");
   } catch (e) {}
   setTimeout(st, 3000);

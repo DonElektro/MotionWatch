@@ -3,7 +3,7 @@
 # 2.96.6 (Makeover-Punkte 12–15), alles mit dem Simulator:
 #  12  Trainings-Nacht: zur eingestellten Stunde mehrere Testläufe in verschiedenen Szenen (Tag- und Nacht-Plan), dann die
 #      automatische Optimierung am schwächsten Plan, dann Trainingsbilder (YOLO-Paket auf dem PC des Simulators); am
-#      Schluss ein Bericht als Push und unter «Simulator-Zentrale». Nur wenn nicht scharf geschaltet und kein Spiel läuft.
+#      Schluss ein Bericht als Push und unter «Simulator-Zentrale». Nur wenn nicht Schutz eingeschaltet und kein Spiel läuft.
 #  13  A/B-Vergleich: zweimal derselbe Testlauf - A mit den jetzigen Einstellungen, B mit einer Änderung. B bleibt nur,
 #      wenn es klar besser ist (Punktzahl +3), sonst kommt A zurück.
 #  14  Test-Posteingang: im Simulator landen die Meldungen auf Wunsch hier statt auf dem Handy (niemand wird gestört);

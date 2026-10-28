@@ -313,7 +313,7 @@ class TamperGuard:
         de = CFG["lang"] == "de"
         txt = {"covered": ("Kamera abgedeckt", "camera covered"), "turned": ("Kamera verdreht / Bild verändert", "camera turned / picture changed"),
                "moved": ("Gerät bewegt", "device moved"), "knocked": ("Gerät umgeworfen", "device knocked over"),
-               "power": ("Strom getrennt (scharf)", "power cut while armed")}[what]
+               "power": ("Strom getrennt (Schutz an)", "power cut while armed")}[what]
         STATE["tamper"]["last"] = datetime.now().strftime("%H:%M") + " " + tr(txt[1])
         log_event("sys", f"SABOTAGE: {txt[1]}" + ("" if is_armed() else " (disarmed - no alarm)"))
         if not is_armed() or now - self.cool < 120:

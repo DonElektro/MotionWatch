@@ -89,7 +89,7 @@ func _build() -> void:
 	_title("Spielen")
 	var p := _grid()
 	_tile(p, "Rover fahren", C_PLAY, "", "rover", "Du fährst den Rover! Pfeiltasten, Maus oder Controller.", func(): main.explore.set_on(not main.explore.on))
-	_tile(p, "Versteckspiel", C_PLAY, "", "game", "Spielt mit dem Handy gegen die Kamera! Wer schafft es ungesehen ans Ziel?", func(): main.gamewiz.open_wiz())
+	_tile(p, "Versteckspiel", C_PLAY, "", "game", "Schleich ungesehen ans Ziel – zwei Computer-Kinder spielen mit!", func(): _kids_game())
 	_tile(p, "Andere Welt", Color("#2bb3a3"), "", "world", "", func(): _next_world())
 	_tile(p, "Was sieht die Kamera?", Color("#e0613f"), "", "camera", "So sieht MoveEye die Welt.", func(): main.set_live(not main.live_on))
 	# 3D-3.74: missions with stars
@@ -181,6 +181,16 @@ func _tile(parent: Control, text: String, col: Color, thumb: String, icon: Strin
 func say(t: String) -> void:
 	if bubble != null:
 		bubble.text = t
+
+
+func _kids_game() -> void:
+	"""3D-3.90: a simple practice round at the PC with two bots - not the full assistant of the adults"""
+	main.game_mode = "camera"
+	main.game_level = "easy"
+	main.game_tutorial = true
+	main.game.set_open(true)
+	main.game.set_bots(2)
+	main.localplay.start("runner")
 
 
 func _next_world() -> void:

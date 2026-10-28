@@ -956,7 +956,8 @@ async function gwGo(d) {
 // ---- spectators (2.95.14): time, players with their meter, what happened, the result - over the picture ----
 let SPEC = null, SPECON = true, SPECRES = "", specT = null;
 try { SPECON = localStorage.getItem("mw-sim-spec") !== "0"; } catch (e) {}
-const MODE_TXT = {camera: "Alle gegen die Kamera", guard: "Ein Spieler ist Wächter", teamguard: "Team gegen Team", mw: "MoveEye entscheidet", mwhand: "Team gegen MoveEye"};
+const MODE_TXT = {camera: "Alle gegen die Kamera", guard: "Wächter", teamguard: "Team gegen Team", mw: "Gegen MoveEye", mwhand: "Team gegen MoveEye",
+  patrol: "Patrouille", seek: "Verstecken mit dem Rover", free: "Zonen-Check"};     // 2.98.0: all game types
 const ST_IC = {play: "🏃", goal: "🎉", jail: "🔒", out: "👀", lobby: "⏳"};
 async function specPoll() {
   clearTimeout(specT);
@@ -1405,17 +1406,29 @@ $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin
 """
 
 
-NAV_ITEMS = [("live", "/", "Live"), ("cams", "/cams", "Cameras"), ("rec", "/recordings", "Recordings"), ("zones", "/zones", "Zones"),
-             ("diary", "/diary", "Diary"), ("tools", "/tools", "Tools"), ("party", "/party", "Game corner"), ("sim", "/sim", "Simulator"),
-             ("help", "/help", "Manual")]
+# 2.98.0: six tabs by goal (Live · Schutz · Verlauf · Einstellungen · Simulator · Mehr) instead of nine by technique.
+# The pages of a tab have a second line (sub tabs). [key, address, name, short name for the phone]
+NAV_ITEMS = [("live", "/", "Live", "Live"), ("protect", "/protect", "Protection", "Protection"), ("history", "/recordings", "History", "History"),
+             ("settings", "/settings", "Settings", "Sett."), ("sim", "/sim", "Simulator", "Sim"), ("more", "/more", "More", "More")]
+NAV_SUB = {"protect": [("protect", "/protect", "Protection"), ("zones", "/zones", "Zones")],
+           "history": [("rec", "/recordings", "Recordings"), ("diary", "/diary", "Diary"), ("log", "/log", "Log")],
+           "settings": [("settings", "/settings", "Settings"), ("cams", "/cams", "Cameras")],
+           "more": [("more", "/more", "Overview"), ("help", "/help", "Manual"), ("party", "/party", "Game corner"), ("tools", "/tools", "Tools")]}
+NAV_OF = {"zones": "protect", "rec": "history", "diary": "history", "log": "history", "cams": "settings", "help": "more",
+          "party": "more", "tools": "more"}
 
 
 def nav_html(active):
+    top = NAV_OF.get(active, active)
     out = []
-    for key, href, label in NAV_ITEMS:
-        cls = ' class="on"' if key == active else ""
-        out.append(f'<a href="{href}"{cls} data-i18n="{label}">{label}</a>')
-    return '<nav class="nav">' + "".join(out) + "</nav>"
+    for key, href, label, short in NAV_ITEMS:
+        cls = ' class="on"' if key == top else ""
+        out.append(f'<a href="{href}"{cls}><span class="nl" data-i18n="{label}">{label}</span><span class="ns" data-i18n="{short}">{short}</span></a>')
+    sub = ""
+    if top in NAV_SUB:
+        sub = '<nav class="subnav">' + "".join(
+            f'<a href="{h}"{" class=on" if k == active else ""} data-i18n="{lb}">{lb}</a>' for k, h, lb in NAV_SUB[top]) + "</nav>"
+    return '<nav class="nav">' + "".join(out) + "</nav>" + sub
 
 
 def ui_seed_script():

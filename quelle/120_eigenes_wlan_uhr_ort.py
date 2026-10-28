@@ -250,7 +250,7 @@ QUICK_GUIDE = {
   ("📱", "Verbinden", ["Handy-Hotspot einschalten – der Pi verbindet sich selbst. Oder mit dem WLAN «MotionWatch» des Pi verbinden.", "Seite öffnen: im WLAN des Pi <b>http://10.42.0.1:5000</b>. Für Standort und Mikrofon die https-Seite nehmen.", "«🖨 QR-Codes zum Verbinden» (unter System) druckt die Codes zum Verbinden."]),
   ("🌙", "Am Abend", ["<b>«🌙 Heute Nacht bewachen»</b> antippen.", "Was unter «Fehlt noch» steht, erledigen.", "Während des Countdowns den Bereich verlassen."]),
   ("🚨", "Bei Alarm", ["Push-Nachricht antippen → Live-Bild ansehen.", "Sirene oder Licht über die Schnellschalter.", "War es nichts? In den Aufnahmen <b>👎 «War nichts»</b> antippen – das Programm schlägt dann bessere Einstellungen vor."]),
-  ("☀", "Am Morgen", ["Nachtbericht lesen (Push-Nachricht, Standard 7 Uhr).", "Unscharf schalten, Powerbank laden.", "Im Tagebuch die Tiere der Nacht ansehen."]),
+  ("☀", "Am Morgen", ["Nachtbericht lesen (Push-Nachricht, Standard 7 Uhr).", "Schutz ausschalten, Powerbank laden.", "Im Tagebuch die Tiere der Nacht ansehen."]),
   ("🩺", "Wenn etwas nicht geht", ["Rote <b>🩺</b>-Anzeige oben antippen: jede Ampel sagt, was zu tun ist.", "Kein Bild → Kabel und Videoquelle prüfen. Keine Push-Nachricht → Internet / Hotspot prüfen.", "Alles Weitere: Reiter «Anleitung»."]),
 ]),
 "en": ("Quick guide", [

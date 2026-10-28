@@ -268,6 +268,10 @@ func _export(n: int, scenes_too: bool) -> void:
 				e2[0].queue_free()
 		await main.get_tree().process_frame
 	servo = null
+	var gm := _add_game_misses()                         # 3D-3.90: the hard cases from the games (players MoveEye missed)
+	if gm > 0:
+		counts["person (Spiel)"] = gm
+		made += gm
 	var yaml := "# Trainingsbilder aus dem MW Sim · 3D (%s) - YOLO-Format\npath: .\ntrain: images/train\nval: images/val\nnames:\n" % main.VERSION
 	for i in range(EXPORT_CLASSES.size()):
 		yaml += "  %d: %s\n" % [i, EXPORT_CLASSES[i]]
@@ -291,6 +295,41 @@ func _export(n: int, scenes_too: bool) -> void:
 	main.auto_visitors = bool(keep["auto"])
 	msg = "fertig: %d Bilder · %s" % [made, export_zip if export_zip != "" else export_dir]
 	busy = false
+
+
+func _add_game_misses() -> int:
+	"""3D-3.90: every «verpasst» picture of the game rounds (with the box of the player) goes into the pack as a person -
+	exactly the cases the AI did not see. Only picture data, no map data."""
+	var base := "user://spiel"
+	var d := DirAccess.open(base)
+	if d == null:
+		return 0
+	var n := 0
+	for r in d.get_directories():
+		var fn := base + "/" + r + "/spielbericht.json"
+		if not FileAccess.file_exists(fn):
+			continue
+		var rep = JSON.parse_string(FileAccess.get_file_as_string(fn))
+		if typeof(rep) != TYPE_DICTIONARY:
+			continue
+		for m in rep.get("verpasst", []):
+			var b: Array = m.get("box", [])
+			var img := base + "/" + r + "/" + str(m.get("file", ""))
+			if b.size() < 4 or not FileAccess.file_exists(img):
+				continue
+			var nm := "spiel_%s_%s" % [r, str(m["file"]).get_basename()]
+			var j := FileAccess.get_file_as_bytes(img)
+			var f := FileAccess.open(export_dir.path_join("images/train/%s.jpg" % nm), FileAccess.WRITE)
+			if f == null:
+				continue
+			f.store_buffer(j)
+			f.close()
+			var fl := FileAccess.open(export_dir.path_join("labels/train/%s.txt" % nm), FileAccess.WRITE)
+			if fl != null:
+				fl.store_string("%d %.5f %.5f %.5f %.5f\n" % [EXPORT_CLASSES.find("person"), float(b[0]) + float(b[2]) / 2.0, float(b[1]) + float(b[3]) / 2.0, float(b[2]), float(b[3])])
+				fl.close()
+			n += 1
+	return n
 
 
 func _zip_dir(dir: String) -> String:

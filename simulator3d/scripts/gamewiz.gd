@@ -33,14 +33,15 @@ const PLAYER_OPTS := [["game_bots", "Computer-Spieler (Bots)", "select", 0, 0, "
 		["game_daily", "Tagesaufgabe: heute für alle dieselbe Szene, dasselbe Ziel, dieselben Startpunkte", "toggle", 0, 0, "", false],
 		["game_ghost", "Geisterläufer: der eigene beste Weg läuft als Geist mit", "toggle", 0, 0, "", false],
 		["game_heart", "Herzschlag, wenn die Kamera dich gleich sieht", "toggle", 0, 0, "", false]]
-const MODES := [["camera", "🎥", "Alle gegen die Kamera", "Alle schleichen zum Ziel. Der Kopf von MoveEye dreht sich und sucht euch. Wer zu lange gesehen wird, ist erwischt."],
-		["guard", "👮", "Ein Spieler ist Wächter", "Ein Spieler ist Wächter: Er dreht mit dem Handy den Kopf, schaltet das Licht ein und ruft «Erwischt!», wenn er jemanden sieht."],
-		["teamguard", "🔴🔵", "Team gegen Team", "Räuber und Wächter: Rot gegen Blau. Ein Team schleicht, das andere bewacht mit dem Kopf und ruft «Erwischt!»."],
-		["mw", "🛡", "MoveEye entscheidet", "Die echte Erkennung von MoveEye passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht."],
-		["mwhand", "🕹", "Team gegen MoveEye", "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an MoveEye: Sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken «Erwischt!»."],
-		["patrol", "🚜", "Patrouille", "MoveEye fährt auf dem Mover eine Route ab und schaut sich an jedem Punkt um. Die Spieler schleichen zum Ziel, während die Patrouille unterwegs ist. Wer erwischt: unter Mover → Patrouille wählbar (MoveEye oder Simulator)."],
-		["seek", "🙈", "Verstecken mit dem Rover", "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Rover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Am besten in der Szene «Versteckspiel»."],
-		["free", "🧪", "Frei bewegen", "Ohne Regeln: alle bewegen sich frei (gehen, rennen, ducken, kriechen), niemand wird erwischt. Zum Testen der Erkennung."]]
+# 3D-3.90: four game types with a use for MoveEye first; the others (true = old) only with «Experte»
+const MODES := [["mw", "🛡", "Gegen MoveEye", "Die echte Erkennung von MoveEye passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht. Was MoveEye verpasst, kommt ins Training und auf die Karte der blinden Flecken."],
+		["guard", "👮", "Wächter", "Ein Spieler ist Wächter – am Handy oder am PC: Er dreht den Kopf, schaltet das Licht ein und ruft «Erwischt!». Mit «Zwei Teams» wechseln Rot und Blau die Rollen. Am Schluss: wer hat mehr erwischt, du oder MoveEye?"],
+		["seek", "🙈", "Verstecken mit dem Rover", "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Rover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Danach steht MoveEye wieder am alten Ort."],
+		["free", "🧪", "Zonen-Check", "Ohne Erwischen: geh die Grenzen deiner Zonen und die Wege ums Zelt ab. Das Handy sagt laufend, ob MoveEye dich sieht – jede Stelle, wo es dich nicht meldet, kommt auf die Karte der blinden Flecken."],
+		["camera", "🎥", "Alle gegen die Kamera", "Alle schleichen zum Ziel. Der Kopf von MoveEye dreht sich und sucht euch. Wer zu lange gesehen wird, ist erwischt (der Simulator schätzt das).", true],
+		["teamguard", "🔴🔵", "Team gegen Team", "Räuber und Wächter: Rot gegen Blau. Ein Team schleicht, das andere bewacht mit dem Kopf und ruft «Erwischt!».", true],
+		["mwhand", "🕹", "Team gegen MoveEye", "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an MoveEye: Sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken «Erwischt!».", true],
+		["patrol", "🚜", "Patrouille", "MoveEye fährt auf dem Mover eine Route ab und schaut sich an jedem Punkt um. Die Spieler schleichen zum Ziel, während die Patrouille unterwegs ist.", true]]
 const GOALS := [["reach", "🟢", "Zum Ziel schleichen", "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg."],
 		["return", "💰", "Beute holen und zurückbringen", "Ziel: die Beute beim grünen Licht holen und zurück zum Start bringen."],
 		["flag", "🚩", "Fahne erobern (zwei Teams)", "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie."]]
@@ -171,6 +172,8 @@ func model() -> Dictionary:
 			title = "Bereit!"
 	for c in src:
 		var on: bool = (lvl == c[0]) if key == "_lvl" else str(W.get(key, "")) == c[0]
+		if key == "game_mode" and c.size() > 4 and bool(c[4]) and main.ui_simple and not on:
+			continue                                       # 3D-3.90: the old game types only with «Experte»
 		cards.append({"v": c[0], "icon": c[1], "title": c[2], "text": c[3], "on": on, "pic": Pics.PICS.get(c[0], "")})
 	var opts := []
 	if step == 2 or step == 3:

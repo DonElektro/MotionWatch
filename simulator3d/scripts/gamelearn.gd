@@ -22,6 +22,10 @@ var open_ep := {}                         # slot -> running episode
 var misses: Array = []                    # {"file", "n", "box": [x, y, w, h] (0..1), "why", "dist", "post", "dark", "t"}
 var paths := {}                           # slot -> [[t, x, z, posture, speed], …]
 var blind := {}                           # slot -> seconds visible but not reported
+var blind_pts: Array = []                 # 3D-3.90: where (az° to the head, m) players were visible but not reported - all rounds
+var _bp_t := {}
+var _zc_t := {}
+const BLIND_FILE := "user://spiel/blinde_flecken.json"
 var hunter := {"shots": 0, "hits": 0, "miss_mw": 0}
 var _path_t := 0.0
 var _last_report := -100.0
@@ -35,6 +39,9 @@ var http: HTTPRequest
 func _ready() -> void:
 	http = HTTPRequest.new()
 	add_child(http)
+	var bp = JSON.parse_string(FileAccess.get_file_as_string(BLIND_FILE)) if FileAccess.file_exists(BLIND_FILE) else null
+	if typeof(bp) == TYPE_ARRAY:
+		blind_pts = bp
 
 
 func now() -> float:
@@ -103,6 +110,18 @@ func tick(dt: float) -> void:
 		var reported: bool = reported_for(p)
 		if vis and not reported:
 			blind[s] = float(blind.get(s, 0.0)) + dt
+			if t > float(_bp_t.get(s, 0.0)):              # 3D-3.90: one point per second for MoveEye's map of blind spots
+				_bp_t[s] = t + 1.0
+				var hp: Vector3 = main.head.global_position
+				var off: Vector3 = a.position - hp
+				var fw3: Vector3 = -(main.cams[0] as Camera3D).global_transform.basis.z      # like blindmap.gd: az relative to the head
+				var az := rad_to_deg(wrapf(atan2(off.x, -off.z) - atan2(fw3.x, -fw3.z), -PI, PI))
+				blind_pts.append({"az": snappedf(az, 1.0), "d": snappedf(Vector2(off.x, off.z).length(), 0.1), "dark": main.is_dark(), "scene": str(main.scene)})
+				if blind_pts.size() > 400:
+					blind_pts.pop_front()
+		if main.game_mode == "free" and t > float(_zc_t.get(s, 0.0)):   # 3D-3.90: «Zonen-Check» - the player hears what MoveEye sees
+			_zc_t[s] = t + 0.6
+			game._say(p, "👁 MoveEye sieht dich" if reported else ("🙈 Im Bild – MoveEye meldet dich NICHT" if vis else "· ausser Sicht der Kamera"), 0.8)
 		if vis:
 			if not open_ep.has(s):
 				open_ep[s] = {"n": p["name"], "t": t, "lat": -1.0, "dist": snappedf(_dist(a), 0.1), "post": int(a.ctl_posture),
@@ -277,6 +296,12 @@ func blind_s(p: Dictionary) -> int:
 
 func round_end() -> void:
 	"""end of the round: close the episodes, save the report and the sneaking ways"""
+	if not blind_pts.is_empty():                           # 3D-3.90: the blind spots of all rounds stay
+		DirAccess.make_dir_recursive_absolute("user://spiel")
+		var fb := FileAccess.open(BLIND_FILE, FileAccess.WRITE)
+		if fb != null:
+			fb.store_string(JSON.stringify(blind_pts))
+			fb.close()
 	if round_id == "" or not any_on():
 		return
 	var t := now()

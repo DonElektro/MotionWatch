@@ -1235,7 +1235,19 @@ class WebStream:
 
         @app.route("/")
         def index():
-            return Response(render_page(WEB_PAGE, "live"), mimetype="text/html")
+            return Response(main_tab_page("live"), mimetype="text/html")
+
+        @app.route("/protect")                             # 2.98.0: the tabs «Schutz» and «Einstellungen» = the main page, other part shown
+        def protect_page():
+            return Response(main_tab_page("protect"), mimetype="text/html")
+
+        @app.route("/settings")
+        def settings_page():
+            return Response(main_tab_page("settings"), mimetype="text/html")
+
+        @app.route("/more")
+        def more_page_():
+            return Response(more_page(), mimetype="text/html")
 
         @app.route("/cams")
         def cams_page():
@@ -2728,7 +2740,7 @@ class WebStream:
                 cards.append((t_, qr_svg(a["url"]), html_escape(a["url"])))
             items = "".join(f'<div class="c"><h3>{h}</h3>{svg}<p>{txt}</p></div>' for h, svg, txt in cards)
             steps = T("<li>QR-Code mit der Handy-Kamera scannen.</li><li>Seite öffnen, beim ersten Mal führt der Einrichtungs-Assistent durch Passwort und Push-Nachrichten.</li>"
-                      "<li>Teilen → «Zum Home-Bildschirm»: MoveEye wie eine App starten.</li><li>Schutz scharf schalten: grosse Taste «Scharf» oben.</li>",
+                      "<li>Teilen → «Zum Home-Bildschirm»: MoveEye wie eine App starten.</li><li>Schutz Schutz einschalten: grosse Taste «Schutz» oben.</li>",
                       "<li>Scan the QR code with the phone camera.</li><li>Open the page; the first time the setup assistant guides you through password and push messages.</li>"
                       "<li>Share → «Add to Home Screen»: start MoveEye like an app.</li><li>Arm the protection: big «Armed» button at the top.</li>")
             page = (f'<!doctype html><html lang="{L}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'

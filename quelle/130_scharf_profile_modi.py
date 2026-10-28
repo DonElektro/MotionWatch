@@ -1,4 +1,4 @@
-#@ Motion Watch – Teil 130: Scharf / unscharf, Camping-Profil, einfache Einstellungen, Modi. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ Motion Watch – Teil 130: Schutz ein / aus, Camping-Profil, einfache Einstellungen, Modi. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # Armed / disarmed: alarms (push, browser sound, relays, recordings) only while armed. Arming waits a moment first,
 # so you can walk away without alarming yourself.
@@ -80,8 +80,13 @@ CAMPING_SET = {"detection_on": True, "record": True, "snapshot_on_person": True,
 
 # ---- simple settings: what most people need; Expert shows everything ----
 SIMPLE_SECTIONS = {"Camera / Servos", "Patrol", "AI detection", "Detection", "Recording", "Low light", "Setup", "Notifications",
-                   "Camping / protection", "Thermal camera", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Night report", "Battery",
-                   "Power saving", "Messages", "Updates", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Mover"}
+                   "Camping / protection", "Thermal camera", "Microphone", "Loudspeaker", "Lights", "Night report", "Battery",
+                   "Power saving", "Messages", "Updates", "Theft protection", "Backup", "Deterrence"}
+# 2.98.0: extra hardware and gimmicks only in «Simple» when they are in use (otherwise Expert)
+SIMPLE_IN_USE = {"Extra sensors": lambda: bool(CFG.get("sens_on") or CFG.get("sensors")), "Storm warning": lambda: bool(CFG.get("sensors")),
+                 "GPS module": lambda: bool(CFG.get("gpsmod_on")), "Solar panel": lambda: bool(CFG.get("solar_on")),
+                 "Clap switch": lambda: bool(CFG.get("clap_on")), "Bless you": lambda: bool(CFG.get("sneeze_on")),
+                 "Mover": lambda: bool(MOVER.get("avail") or MOVER.get("hw") or MOVER.get("sim"))}
 SIMPLE_KEYS = {"track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
@@ -89,14 +94,22 @@ SIMPLE_KEYS = {"track_person", "track_motion", "patrol", "ai_enabled", "detectio
                "arm_delay", "net_mode", "hotspot_ssid", "hotspot_password", "thermal_on", "thermal_alarm", "noise_alarm", "audio_in",
                "audio_out", "siren_on", "siren_volume", "siren_sound", "light_white_auto", "light_ir_auto", "report_on", "report_hour",
                "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_auto", "loop_on", "loop_hours",
-               "cam_rotate", "cam_mirror", "sens_on", "rf433_on", "zigbee_on", "ble_on", "tag_missing", "eco_pir", "storm_on", "storm_drop", "storm_wind", "mover_mode", "mover_speed", "gpsmod_on", "gps_theft", "lens_check", "temp_alarm_on", "temp_hot", "temp_cold", "solar_on", "night_warn"}
+               "cam_rotate", "cam_mirror", "sens_on", "rf433_on", "zigbee_on", "ble_on", "tag_missing", "eco_pir", "storm_on", "storm_drop", "storm_wind", "mover_mode", "mover_speed", "gpsmod_on", "gps_theft", "lens_check", "temp_alarm_on", "temp_hot", "temp_cold", "solar_on", "night_warn",
+               "tamper_on", "tamper_motion", "tamper_power", "backup_type", "deter_person_act", "deter_person_sound", "clap_on", "sneeze_on"}
 
 
 def simple_hidden(key, sec=None):
     """True when Simple is on and this setting (or section) belongs to Expert only."""
     if not CFG.get("ui_simple"):
         return False
-    return (sec is not None and sec not in SIMPLE_SECTIONS) or (key is not None and key not in SIMPLE_KEYS)
+    if sec is not None and sec not in SIMPLE_SECTIONS:
+        f = SIMPLE_IN_USE.get(sec)
+        try:
+            if not (f and f()):
+                return True
+        except Exception:
+            return True
+    return key is not None and key not in SIMPLE_KEYS
 
 
 NIGHT_SET = {"detection_on": True, "ai_enabled": True, "record": True, "snapshot_on_person": True, "notify_on": True,

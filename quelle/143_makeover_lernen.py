@@ -7,7 +7,7 @@
 #  22  Blinde Flecken: der Simulator stellt eine Person nacheinander an Punkte rund um MoveEye (Richtungen × Abstände) und
 #      schaut, ob MoveEye sie erkennt - Karte grün / rot / grau (ausser Sicht) und ein Tipp.
 #  23  Nacht-Generalprobe: wie 22, aber nur geradeaus, zur Uhrzeit von heute Nacht: «Heute Nacht erkennst du Personen bis
-#      18 m». Auf Wunsch von selbst beim Scharfschalten in der Simulation.
+#      18 m». Auf Wunsch von selbst beim Einschalten des Schutzes in der Simulation.
 #  24  Schwellen automatisch: die automatische Optimierung für Tag (quick) und Nacht (night) nacheinander.
 #  25  Erkennungs-Check jede Woche: sonntags zur Stunde des Nacht-Tests der Plan «standard»; Push, wenn es schlechter wurde.
 # ----------------------------------------------------------------------------
@@ -228,9 +228,22 @@ def weekcheck_loop():
 threading.Thread(target=weekcheck_loop, daemon=True, name="weekcheck").start()
 
 
+def blind_game_pts():
+    """2.98.0: where players in the simulator games were visible but not reported - a layer of the blind spot map (30 s cache)"""
+    if time.time() - BLIND.get("game_t", 0) > 30 and sim_ready():
+        BLIND["game_t"] = time.time()
+        try:
+            r = sim_control({"action": "blindmap", "do": "game"})
+            BLIND["game"] = [p for p in (r.get("pts") or []) if isinstance(p, dict)][-400:] if r.get("ok") else BLIND.get("game", [])
+        except Exception:
+            pass
+    return BLIND.get("game") or []
+
+
 def learn_state():
     return {"falearn": {"busy": FALEARN["busy"], "cur": FALEARN["cur"], "last": FALEARN["last"][:5]},
-            "blind": {"busy": BLIND["busy"], "kind": BLIND["kind"], "prog": BLIND.get("prog"), "last": BLIND["last"], "rehearsal": BLIND["rehearsal"]},
+            "blind": {"busy": BLIND["busy"], "kind": BLIND["kind"], "prog": BLIND.get("prog"), "last": BLIND["last"], "rehearsal": BLIND["rehearsal"],
+                      "game": blind_game_pts()},
             "autoth": {"busy": AUTOTH["busy"], "step": AUTOTH["step"], "last": AUTOTH["last"]},
             "week": {"on": bool(CFG.get("weekcheck_on")), "runs": [{"t": r["t"], "score": r["score"], "mw": r.get("mw")} for r in TESTOPT["runs"] if r.get("week")][-8:]},
             "rehearsal_on_arm": bool(CFG.get("rehearsal_on_arm")), "fa_learn_auto": bool(CFG.get("fa_learn_auto"))}

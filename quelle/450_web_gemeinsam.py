@@ -122,6 +122,10 @@ header h1::before{content:"";flex:none;width:28px;height:28px;border-radius:8px;
 .nav::-webkit-scrollbar{display:none}
 .nav a{padding:5px 13px;border-radius:8px;color:var(--mut);text-decoration:none;font-weight:600;font-size:13px;white-space:nowrap}
 .nav a:hover{color:var(--txt)}.nav a.on{background:var(--acc);color:#fff;box-shadow:0 2px 10px var(--glow)}
+.nav .ns{display:none}
+.subnav{flex-basis:100%;order:50;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.subnav::-webkit-scrollbar{display:none}
+.subnav a{padding:4px 12px;border:1px solid var(--line);border-radius:99px;color:var(--mut);text-decoration:none;font-size:12.5px;font-weight:600;white-space:nowrap}
+.subnav a.on{color:var(--txt);border-color:var(--acc);background:var(--field)}
 .badge{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border:1px solid var(--line);border-radius:99px;font-size:12px;font-weight:600;color:var(--mut);background:var(--field);white-space:nowrap}
 .badge.red{color:var(--red);border-color:var(--red)}.badge.blu{color:var(--blu);border-color:var(--blu)}
 .badge.yel{color:var(--yel);border-color:var(--yel)}.badge.grn{color:var(--grn);border-color:var(--grn)}
@@ -142,6 +146,7 @@ header .badge{min-height:30px}
   header:has(.chips)>h1{grid-column:1;grid-row:1;margin:0}
   header:has(.chips)>.nav{grid-column:2;grid-row:1;justify-self:start;margin:0;max-width:100%}
   header:has(.chips)>.hdr-ctl{grid-column:3;grid-row:1;margin-left:0}
+  header:has(.chips)>.subnav{grid-column:2/4;grid-row:3}
   .chips{grid-column:2/4;grid-row:2;display:flex;flex-wrap:nowrap;align-items:center;gap:8px;min-width:0;overflow-x:auto;scrollbar-width:none}
   .chips::-webkit-scrollbar{display:none}.chips>.badge{flex:none}
   body.hdr-small header:has(.chips){row-gap:4px}
@@ -233,6 +238,7 @@ body.hdrhidden .sndpop{top:44px}
 @keyframes alarmflash{0%,60%{box-shadow:inset 0 0 0 4px var(--red)}100%{box-shadow:inset 0 0 0 0 transparent}}
 body.alarmflash{animation:alarmflash 1.6s ease-out 2}
 @media(max-width:430px){.nav a{padding:5px 7px;font-size:12.5px}}
+@media(max-width:520px){.nav{flex:1 1 100%}.nav a{flex:1 1 auto;text-align:center;padding:5px 4px!important}.nav .nl{display:none}.nav .ns{display:inline}}
 @media(max-width:700px){header{padding:8px 10px;gap:5px 6px}.nav a{padding:5px 9px}
   header h1{font-size:15px}.badge{font-size:11px;padding:2px 8px}header .badge{min-height:26px}.hdr-ctl button,.hdr-ctl .btn{padding:4px 9px;font-size:12px}
   .hdr-ctl button.ic{width:34px;height:30px}.hdr-ctl button.ic svg{width:17px;height:17px}}

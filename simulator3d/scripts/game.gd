@@ -1236,6 +1236,12 @@ func end_round() -> void:
 	if round_state not in ["countdown", "play"]:
 		return
 	round_state = "end"
+	if main.game_mode in ["guard", "teamguard"] and learn.mw_on() and not learn.eps.is_empty():
+		var seen_ := 0                                     # 3D-3.90: the human guard against MoveEye
+		for e_ in learn.eps:
+			if float(e_["lat"]) >= 0.0:
+				seen_ += 1
+		news("🛡 MoveEye hätte %d von %d Mal gemeldet, als ein Spieler gut im Bild war" % [seen_, learn.eps.size()])
 	learn.round_end()                                      # 3D-3.52: before the players go back to the lobby
 	if main.game_mode == "patrol" and main.patrol != null:
 		main.patrol.set_active(_patrol_was)

@@ -116,9 +116,9 @@ SIMHUB_JS = r"""
     "Tap = control": "Antippen = steuern", "person": "Person", "burglar": "Dieb", "child": "Kind", "dogwalk": "Hund", "fox": "Fuchs", "deer": "Reh", "cat": "Katze",
     "boar": "Wildschwein", "hedgehog": "Igel", "cyclist": "Velo", "courier": "Kurier", "car": "Auto", "sent": "geschickt", "Test run, test bench": "Testlauf, Prüfstand",
     "Play on the phone": "Mitspielen mit dem Handy", "Several devices": "Mehrere Geräte", "Blind spots": "Blinde Flecken", "recognised": "erkannt", "find them": "finden", "Night rehearsal": "Nacht-Generalprobe", "up to": "bis",
-    "before arming": "vor dem Scharfschalten", "Thresholds automatic": "Schwellen automatisch", "day and night": "Tag und Nacht", "False alarm learning": "Fehlalarm-Lernen",
-    "Weekly check": "Wochen-Check", "Find the blind spots (about 5 min)": "Blinde Flecken suchen (etwa 5 Min.)", "in the picture, not recognised": "im Bild, nicht erkannt",
-    "outside the picture": "ausserhalb des Bildes", "Rehearsal now (2 min)": "Generalprobe jetzt (2 Min.)", "By itself when arming": "Von selbst beim Scharfschalten",
+    "before arming": "vor dem Einschalten des Schutzes", "Thresholds automatic": "Schwellen automatisch", "day and night": "Tag und Nacht", "False alarm learning": "Fehlalarm-Lernen",
+    "Weekly check": "Wochen-Check", "Find the blind spots (about 5 min)": "Blinde Flecken suchen (etwa 5 Min.)", "in the picture, not recognised": "im Bild, nicht erkannt", "found by players in the games": "von Spielern in den Spielen gefunden",
+    "outside the picture": "ausserhalb des Bildes", "Rehearsal now (2 min)": "Generalprobe jetzt (2 Min.)", "By itself when arming": "Von selbst beim Einschalten des Schutzes",
     "Set the thresholds now (day + night)": "Schwellen jetzt einstellen (Tag + Nacht)", "autoth-note": "Die automatische Optimierung probiert Empfindlichkeit, Mindestgrösse, KI-Schwelle, Nacht- und Regen-Einstellungen aus – zuerst am Tag, dann in der Nacht. Eine Änderung bleibt nur, wenn sie klar besser ist.",
     "Re-enact every 👎 in the simulator": "Jedes 👎 im Simulator nachstellen", "fa-note": "Markierst du eine Aufnahme als Fehlalarm (mit Ursache), stellt der Simulator die Ursache nach und schaut 60 s zu. Meldet MoveEye wieder, kommen die Bilder als «keine Person» ins Training.",
     "stays quiet": "bleibt ruhig", "alarm(s) – pictures kept for the training": "Alarm(e) – Bilder fürs Training behalten", "Every Sunday night": "Jeden Sonntag in der Nacht",
@@ -134,7 +134,7 @@ SIMHUB_JS = r"""
     "Test the alarm chain": "Alarm-Kette testen", "Empty – nothing arrived yet": "Leer – noch nichts angekommen", "held back (offline), sent later": "zurückgehalten (offline), wird später gesendet",
     "Battery empty": "Akku leer", "Wi-Fi / internet gone": "WLAN / Internet weg", "Heat": "Hitze", "Cold": "Kälte", "Drill runs": "Übung läuft", "Last drill": "Letzte Übung",
     "how MoveEye reacted": "so hat MoveEye reagiert", "no reaction": "keine Reaktion", "Every night": "Jede Nacht", "Stop": "Stopp", "Start now": "Jetzt starten",
-    "train-note": "Testläufe in 5 Szenen (Tag- und Nacht-Plan), dann die automatische Optimierung am schwächsten Plan, dann 300 Trainingsbilder auf dem PC des Simulators. Läuft nur, wenn nicht scharf geschaltet. Bericht als Push am Schluss.",
+    "train-note": "Testläufe in 5 Szenen (Tag- und Nacht-Plan), dann die automatische Optimierung am schwächsten Plan, dann 300 Trainingsbilder auf dem PC des Simulators. Läuft nur, wenn nicht Schutz eingeschaltet. Bericht als Push am Schluss.",
     "Last training": "Letztes Training", "before": "vorher", "false alarms": "Fehlalarme", "kept": "übernommen", "training pictures": "Trainingsbilder",
     "ab-note": "Zweimal derselbe Testlauf: A mit den jetzigen Einstellungen, B mit der Änderung. B bleibt nur, wenn es klar besser ist (+3 Punkte).",
     "More sensitive": "Empfindlicher", "Less sensitive": "Weniger empfindlich", "AI stricter": "KI strenger", "AI more generous": "KI grosszügiger", "Also small objects": "Auch kleine Objekte",
@@ -175,19 +175,22 @@ SIMHUB_JS = r"""
   let LB = null, ST = null, LN = null;
   const learn = async (d) => { try { const r = d ? await (await fetch("/api/learn", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, d))})).json()
       : await (await fetch("/api/learn")).json(); if (r && r.blind) LN = r; if (r && r.ok === false && r.error) say("⚠ " + r.error); paintAll(); return r; } catch (e) {} };
-  function blindSvg(res) {
+  function blindSvg(res, game) {
     const W = 300, Hh = 170, cx = W / 2, by = Hh - 10, k = (Hh - 20) / 30;
     let g = '<svg viewBox="0 0 ' + W + ' ' + Hh + '" style="width:100%;max-width:420px">';
     [10, 20, 30].forEach(r => { g += '<path d="M' + (cx - r * k) + ' ' + by + ' A' + r * k + ' ' + r * k + ' 0 0 1 ' + (cx + r * k) + ' ' + by + '" fill="none" stroke="#1f2b3a"/><text x="' + (cx + r * k - 2) + '" y="' + (by - 2) + '" font-size="8" fill="#8a9bb0" text-anchor="end">' + r + ' m</text>'; });
     (res.points || []).forEach(p => { const a = p.az * Math.PI / 180, x = cx + Math.sin(a) * p.d * k, y = by - Math.cos(a) * p.d * k;
       g += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="5" fill="' + (!p.inview ? "#5a6b80" : p.found ? "#3fcf6b" : "#ff4d4d") + '"/>'; });
+    (game || []).forEach(p => { if (p.d > 30) return; const a = p.az * Math.PI / 180, x = cx + Math.sin(a) * p.d * k, y = by - Math.cos(a) * p.d * k;
+      g += '<rect x="' + (x - 2.5).toFixed(1) + '" y="' + (y - 2.5).toFixed(1) + '" width="5" height="5" transform="rotate(45 ' + x.toFixed(1) + ' ' + y.toFixed(1) + ')" fill="#b46cff" opacity=".8"/>'; });
     return g + '<circle cx="' + cx + '" cy="' + by + '" r="6" fill="#f59a4a"/></svg>';
   }
   function learnSheet(s, kind) {
     if (!LN) { s.appendChild(E("div", "mut", "…")); learn(); return; }
     const bl = LN.blind;
     if (kind === "blind") { s.appendChild(B("▶ " + tt("Find the blind spots (about 5 min)"), () => learn({do: "blind"})));
-      if (bl.last) { const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.last); s.append(c, E("div", "mut", "🟢 " + tt("recognised") + " · 🔴 " + tt("in the picture, not recognised") + " · ⚪ " + tt("outside the picture")), E("b", "", "💡 " + (bl.last.tip || ""))); } }
+      if (bl.last) { const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.last, bl.game); s.append(c, E("div", "mut", "🟢 " + tt("recognised") + " · 🔴 " + tt("in the picture, not recognised") + " · ⚪ " + tt("outside the picture") + ((bl.game || []).length ? " · 🟣 " + tt("found by players in the games") : "")), E("b", "", "💡 " + (bl.last.tip || ""))); }
+      else if ((bl.game || []).length) { const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg({points: []}, bl.game); s.append(c, E("div", "mut", "🟣 " + tt("found by players in the games"))); } }
     if (kind === "rehearsal") { s.append(B("▶ " + tt("Rehearsal now (2 min)"), () => learn({do: "rehearsal"})), B((LN.rehearsal_on_arm ? "✓ " : "") + tt("By itself when arming"), () => learn({do: "set", key: "rehearsal_on_arm", on: !LN.rehearsal_on_arm}), LN.rehearsal_on_arm ? "" : "sec"));
       if (bl.rehearsal) { s.appendChild(E("b", "", "🌙 " + (bl.rehearsal.text || ""))); const c = E("div"); c.style.width = "100%"; c.innerHTML = blindSvg(bl.rehearsal); s.appendChild(c); } }
     if (kind === "autoth") { s.append(B("▶ " + tt("Set the thresholds now (day + night)"), () => learn({do: "autoth"})), E("div", "mut", tt("autoth-note")));

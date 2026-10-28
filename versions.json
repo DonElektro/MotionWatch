@@ -1,15 +1,24 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 23:18",
+ "generated": "2026-10-28 23:42",
  "versions": [
+  {
+   "version": "2.98.0",
+   "file": "webcam_bewegung_2_98_0.py",
+   "url": "",
+   "sha256": "4808ba544e1a0f4bfb12250f3435637c32c06b130344510f7dec5f65172e01fd",
+   "date": "2026-10-28 23:42",
+   "notes": "Menüs nach Ziel: 6 Reiter (Live, Schutz, Verlauf, Einstellungen, Simulator, Mehr), Schutz-Seite mit Alarm-Kette, Seite «Mehr», Aus / Wachsam / Voll überall, «Einfach» neu gewichtet, Spiele mit Nutzen (blinde Flecken aus den Spielen auf der Karte, Schleichwege als Testplan)",
+   "sig": "c84d885facc08cab671a855acfb276f8b9c936a6b6cd0f7d8e284a3901b286bc34ecbb99238c626a73be681de3132c0d289d8f28443d9c82187504c3ca56fb09"
+  },
   {
    "version": "2.97.1",
    "file": "webcam_bewegung_2_97_1.py",
    "url": "",
-   "sha256": "5ff15f79d534f5ba0564034763e3468406ba7fd1e9c6d522cddb61b65e0f9393",
-   "date": "2026-10-28 23:18",
+   "sha256": "8506f66c4e0586e4223100b845ca3e8fbecf8e5af347e71b5ed28f79afaba065",
+   "date": "2026-10-28 23:31",
    "notes": "Ordnung im Hintergrund: eine Sperre für alle Simulator-Aufgaben, Zeitplan schaltet über die Scharf-Logik, Modi stellen in jeder Reihenfolge richtig zurück, Optimierung fragt «auch echt übernehmen?», AutoTuner pausiert bei Tests, Anwesenheit aus beiden Quellen, Updates warten auf Tests",
-   "sig": "6ef023224ca0241fe8d4ab33deedd9ff09d7d8d63e64186530e4dfda222dec24ec76104f81afa9ab203a7e303ef18f3c193f3dd8784b24dad5273fafa0ce9000"
+   "sig": "84926a7055dfba236402aa19df4d3034272e1e097a836baf16f4afa634f1589bd9dff0461b1dd9d3cbd1049f2c86ff7f6db10256cbbe55899aec27ad6b689308"
   },
   {
    "version": "2.96.13",
@@ -82,15 +91,6 @@
    "date": "2026-10-26 08:49",
    "notes": "Tools: «Full power for the tools» - Motion Watch rests for 10 to 120 minutes (camera, detection, AI, extra cameras; a recording is finished first), the web page and the tools keep running; it comes back by itself or with «Resume now».",
    "sig": "85db0606fc0a8c02329d6165176d8d453de8e1b3eafec2e560efb87e820bb5c8a9467bbe20e4d724f893b0760253c327e9260b370ee9d368887322bb502f220a"
-  },
-  {
-   "version": "2.88.0",
-   "file": "webcam_bewegung_2_88_0.py",
-   "url": "",
-   "sha256": "96186b25d76326941becc62d434370db457976f84721ed374917d4b3c434909f",
-   "date": "2026-10-26 08:49",
-   "notes": "Download of the 3D simulator 3D-1.4: it starts without sending; the switch «An Motion Watch senden» in its window turns sending on.",
-   "sig": "8132b3cc4f9f323cc2640decb72fc9fcfe0cfc399a6c6d5df7ead6ef9c2a6137fe01e7b50212b03d67e0000ea6d0b692b62e3ab758d64f5ab8198cdeb960790e"
   }
  ]
 }

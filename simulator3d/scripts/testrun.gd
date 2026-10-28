@@ -14,12 +14,13 @@ const STANDARD := [
 	{"name": "Nacht, Regen", "hour": 23.5, "weather": "rain", "wind": 20.0, "visits": ["person", "cat", "person"]},
 ]
 # 3D-3.27: more test runs. «cond» = difficult conditions of main.gd (switched on only during the phase)
+const DAUER := {"quick": 150, "night": 230, "standard": 300, "hard": 520}   # 3D-3.90: the one place for names and times (also the test bench)
 const PLANS := {
-	"standard": {"name": "Standard (Tag, Wind, Nacht, Regen · etwa 4 Min.)", "phases": STANDARD},
-	"quick": {"name": "Kurz (Tag und Nacht · etwa 2 Min., für die automatische Optimierung)", "phases": [
+	"standard": {"name": "Standard (Tag, Wind, Nacht, Regen · etwa 5 Min.)", "phases": STANDARD},
+	"quick": {"name": "Kurz (Tag und Nacht · etwa 2½ Min., für die automatische Optimierung)", "phases": [
 		{"name": "Tag, Wind", "hour": 13.0, "weather": "cloudy", "wind": 45.0, "visits": ["person", "fox", "jogger", "person"]},
 		{"name": "Nacht mit Infrarot", "hour": 22.5, "weather": "clear", "wind": 10.0, "cond": ["ir"], "visits": ["person", "cat", "person"]}]},
-	"hard": {"name": "Schwierige Bedingungen (Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer, Wolkenschatten · etwa 7 Min.)", "phases": [
+	"hard": {"name": "Schwierige Bedingungen (Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer, Wolkenschatten · etwa 9 Min.)", "phases": [
 		{"name": "Gegenlicht am Morgen", "hour": 7.3, "weather": "clear", "wind": 35.0, "cond": ["glare"], "visits": ["person", "deer", "person"]},
 		{"name": "Nebel", "hour": 9.0, "weather": "fog", "wind": 5.0, "visits": ["person", "fox", "person"]},
 		{"name": "Schnee", "hour": 15.0, "weather": "snow", "wind": 25.0, "visits": ["person", "hare", "child"]},
@@ -27,7 +28,7 @@ const PLANS := {
 		{"name": "Spinnennetz, Nacht mit Infrarot", "hour": 23.0, "weather": "clear", "wind": 30.0, "cond": ["web", "ir"], "visits": ["person", "fox", "person"]},
 		{"name": "Scheinwerfer in der Nacht", "hour": 22.0, "weather": "clear", "wind": 5.0, "cond": ["headlights"], "visits": ["person", "badger", "person"]},
 		{"name": "Wolkenschatten und Wind", "hour": 14.0, "weather": "cloudy", "wind": 55.0, "cond": ["shadows"], "visits": ["person", "cat", "jogger"]}]},
-	"night": {"name": "Nacht (dunkel, Infrarot, Tiere · etwa 3 Min.)", "phases": [
+	"night": {"name": "Nacht (dunkel, Infrarot, Tiere · etwa 4 Min.)", "phases": [
 		{"name": "Nacht, ohne Licht", "hour": 1.0, "weather": "clear", "wind": 5.0, "visits": ["person", "fox", "person", "hedgehog"]},
 		{"name": "Nacht, Infrarot an", "hour": 2.0, "weather": "clear", "wind": 10.0, "cond": ["ir"], "visits": ["person", "boar", "child", "badger"]},
 		{"name": "Nacht, Regen", "hour": 3.0, "weather": "rain", "wind": 25.0, "visits": ["person", "cat", "person"]}]},

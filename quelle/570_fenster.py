@@ -323,7 +323,7 @@ DE.update({    # texts that were written twice in the code (German / English) - 
     "camera turned / picture changed": "Kamera verdreht / Bild verändert",
     "device moved": "Gerät bewegt",
     "device knocked over": "Gerät umgeworfen",
-    "power cut while armed": "Strom getrennt (scharf)",
+    "power cut while armed": "Strom getrennt (Schutz an)",
     "TAMPER ALARM": "SABOTAGE",
     "network": "Netzwerk",
     "Remote access: {who} is watching": "Fernzugriff: {who} schaut gerade zu",
@@ -364,7 +364,7 @@ DE.update({    # texts that were written twice in the code (German / English) - 
     "2 · Open the page (own Wi-Fi)": "2 · Seite öffnen (eigenes WLAN)",
     "Open the page (home network)": "Seite öffnen (Heimnetz)",
     "On the road (Tailscale)": "Von unterwegs (Tailscale)",
-    "<li>Scan the QR code with the phone camera.</li><li>Open the page; the first time the setup assistant guides you through password and push messages.</li><li>Share → «Add to Home Screen»: start MoveEye like an app.</li><li>Arm the protection: big «Armed» button at the top.</li>": "<li>QR-Code mit der Handy-Kamera scannen.</li><li>Seite öffnen, beim ersten Mal führt der Einrichtungs-Assistent durch Passwort und Push-Nachrichten.</li><li>Teilen → «Zum Home-Bildschirm»: MoveEye wie eine App starten.</li><li>Schutz scharf schalten: grosse Taste «Scharf» oben.</li>",
+    "<li>Scan the QR code with the phone camera.</li><li>Open the page; the first time the setup assistant guides you through password and push messages.</li><li>Share → «Add to Home Screen»: start MoveEye like an app.</li><li>Arm the protection: big «Armed» button at the top.</li>": "<li>QR-Code mit der Handy-Kamera scannen.</li><li>Seite öffnen, beim ersten Mal führt der Einrichtungs-Assistent durch Passwort und Push-Nachrichten.</li><li>Teilen → «Zum Home-Bildschirm»: MoveEye wie eine App starten.</li><li>Schutz Schutz einschalten: grosse Taste «Schutz» oben.</li>",
     "Quick start": "Kurzanleitung",
     "Quick start – print it and keep it with the device": "Kurzanleitung – zum Ausdrucken und ins Gehäuse legen",
     "No address found (network?)": "Keine Adresse gefunden (Netzwerk?)",
@@ -474,7 +474,8 @@ def tk_main_on(sec):
         return False
 
 
-TK_GROUP_ICONS = {"alarm": "⚠", "notify": "✉", "detect": "◎", "camera": "▣", "thermal": "♨", "lightsound": "☀", "rec": "●", "relay": "⚡", "sys": "⚙", "sensors": "◉"}
+TK_GROUP_ICONS = {"alarm": "🛡", "notify": "⚠", "sched": "🗓", "detect": "◎", "camera": "▣", "sensors": "◉", "power": "⚡", "net": "📶", "sys": "⚙"}
+TK_TAB_HEAD = {"alarm": "Protection", "detect": "Settings"}     # 2.98.0: the tabs of the web page as headings
 
 TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery": "▮", "Theft protection": "⚷", "Reference scan": "◎", "Notifications": "✉",
                 "Night report": "☾", "Messages": "✎", "SMS (LTE stick)": "☏", "Detection": "◎", "AI detection": "⌬",
@@ -484,17 +485,16 @@ TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery":
                 "Schedule": "▦", "Setup": "⊕", "Wi-Fi / hotspot": "⌁", "Web stream": "⇅", "Guest access": "⚇",
                 "MQTT / Home Assistant": "⇆", "Updates": "⬆", "Extra sensors": "◉", "Simulator": "⚗", "Storm warning": "≈", "GPS module": "✈", "Solar panel": "☼", "Mover": "⇕"}
 
-TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - the same 9 groups as the web page
-    ("alarm", "Alarm & camping", ["Camping / protection", "Power saving", "Battery", "Theft protection", "Reference scan"]),
-    ("notify", "Notifications", ["Notifications", "Night report", "Messages", "SMS (LTE stick)"]),
-    ("detect", "Detection", ["Detection", "AI detection", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
-    ("camera", "Camera & servos", ["Camera / Servos", "Patrol", "Video source", "Mover", None, "Servo driver"]),
-    ("thermal", "Thermal camera", ["Thermal camera"]),
-    ("sensors", "Sensors", ["Extra sensors", "Storm warning", "GPS module", "Solar panel"]),
-    ("lightsound", "Light & sound", ["Lights", "Deterrence", "Microphone", "Loudspeaker", "Clap switch", "Bless you"]),
-    ("rec", "Recordings & timelapse", ["Recording", "Timelapse", "Backup"]),
-    ("relay", "Relays & schedule", ["Relays", "Schedule"]),
-    ("sys", "System & network", ["Setup", "Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant", "Updates", "Simulator"]),
+TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - 2.98.0: the same groups as the web page, «Schutz» first, then «Einstellungen»
+    ("alarm", "Protection", ["Camping / protection", "Theft protection", "Reference scan", "Backup"]),
+    ("notify", "What happens at an alarm?", ["Notifications", "Deterrence", "Recording", "Messages", "SMS (LTE stick)", "Night report"]),
+    ("sched", "Zones, schedule, presence", ["Schedule"]),
+    ("detect", "Detection", ["Detection", "AI detection", "Thermal camera", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
+    ("camera", "Cameras & head", ["Camera / Servos", "Patrol", "Video source", "Timelapse", "Mover", None, "Servo driver"]),
+    ("sensors", "Devices & sensors", ["Lights", "Microphone", "Loudspeaker", "Relays", "Extra sensors", "Clap switch", "Bless you", "Storm warning", "GPS module"]),
+    ("power", "Power supply", ["Battery", "Power saving", "Solar panel"]),
+    ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant"]),
+    ("sys", "System", ["Setup", "Updates", "Simulator"]),
 ]
 SECTIONS = ["Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
@@ -754,7 +754,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.97.1")
+        self.root.title("MoveEye 2.98.0")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1071,7 +1071,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.97.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1701,6 +1701,9 @@ class App:
             if not real:
                 continue
             key = "grp:" + gid
+            if gid in TK_TAB_HEAD:
+                tk.Label(inner, text=tr(TK_TAB_HEAD[gid]).upper(), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"),
+                         anchor="w").pack(fill="x", pady=(6, 2))
             card = self._panel(inner); card.pack(fill="x", pady=(0, 8))
             hr = tk.Frame(card, bg=C["panel"], cursor="hand2"); hr.pack(fill="x")
             gic = tk.Label(hr, text=TK_GROUP_ICONS.get(gid, ""), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11), width=2, anchor="w", cursor="hand2")
@@ -2658,7 +2661,7 @@ class App:
 
     def _relay_add(self):
         ok, err = relay_add(); self._relay_msg("" if ok else err)
-        self.open_secs.add("grp:relay"); self._schedule_rebuild()
+        self.open_secs.add("grp:sensors"); self._schedule_rebuild()
 
     def _relay_remove(self, i):
         if not 0 <= i < len(RELAYS):
@@ -3196,7 +3199,7 @@ class App:
         self._sb("b_fps", ("💤 " if st.get("eco") == "saving" else "") + f"{fps:.0f} FPS",     # 2.95.64: real pictures per second
                  C["blu"] if st.get("eco") == "saving" else (C["grn"] if fps >= 12 else (C["yel"] if fps >= 6 else C["red"])))
         a_st = st["arm_state"]
-        self._sb("b_arm", "🛡 " + (tr("Armed") if a_st == "armed" else (f"{tr('Armed in')} {st['arm_left']} s" if a_st == "arming" else tr("Disarmed"))),
+        self._sb("b_arm", "🛡 " + protect_label(a_st, st.get("arm_left", 0)),
                  C["grn"] if a_st == "armed" else (C["yel"] if a_st == "arming" else None))
         # header: only what is not in its normal state (no rain, calm, light ok ... are not shown)
         L, hs = st.get("lights") or {}, st["hotspot"] or {}
@@ -3306,7 +3309,7 @@ class App:
         self._status("Notifications", f"{tr('status')}: {st['notify_status']}")
         hs = st["hotspot"] or {}
         a_st = st["arm_state"]
-        self._status("Camping / protection", "🛡 " + (tr("Armed") if a_st == "armed" else (f"{tr('Armed in')} {st['arm_left']} s" if a_st == "arming" else tr("Disarmed")))
+        self._status("Camping / protection", "🛡 " + protect_label(a_st, st.get("arm_left", 0))
                      + (" · ⛺ " + tr("Camping profile") if CFG["camping"] else "")
                      + (f" · 📡 «{hs.get('ssid')}» {hs.get('clients', 0)} {tr('devices')} · {page_address('10.42.0.1')}" if hs.get("on") else
                         f" · 📡 «{CFG['hotspot_ssid']}» / {CFG['hotspot_password'] or '–'}")
