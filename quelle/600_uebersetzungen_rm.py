@@ -2141,3 +2141,11 @@ _HX121 = {  # 2.98.0: page «Mehr»
 for _k, _v in _HX121.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i])
+
+_HX122 = {  # 2.98.1: one «Folgen»
+    'Keep what is detected in the middle: persons, animals, moving things': ('Hält Erkanntes in der Bildmitte: Personen, Tiere, Bewegtes', 'Garde au centre ce qui est détecté : personnes, animaux, objets en mouvement', 'Tiene al centro ciò che viene rilevato: persone, animali, oggetti in movimento', 'Tegna en il center tge ch’è vegnì identifitgà: persunas, animals, chaussas en moviment'),
+}
+for _k, _v in _HX122.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])

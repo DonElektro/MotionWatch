@@ -1,4 +1,15 @@
 #@ Motion Watch – Teil 350: Verbindung zum Simulator (Schleife). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+def follow_set(on, who="web"):
+    """2.98.1: one «Folgen»: the camera keeps what it detects in the middle of the picture - a person first, otherwise an
+    animal the AI knows or something that really goes somewhere. (Before, «Folgen» only followed persons; «Bewegung folgen»
+    was a separate switch.)"""
+    on = bool(on)
+    CFG["track_person"] = on; CFG["track_motion"] = on
+    sched_user_changed("track_person"); sched_user_changed("track_motion")
+    save_settings()
+    log_event("servo", f"Following {'ON' if on else 'OFF'} ({who}): persons, animals and moving things are kept in the middle")
+
+
 class SimLink:
     def __init__(self):
         threading.Thread(target=self.loop, daemon=True, name="simulator").start()
@@ -75,6 +86,8 @@ class SimLink:
                     refscan_stop()
                 elif op_ == "look":                         # 2.95.103: «Kopf steuern» in the simulator window
                     move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3))
+                elif op_ == "track":                        # 2.98.1: «Verfolgen» in the simulator = «Folgen» of MoveEye
+                    follow_set(bool(mc_.get("on")), "simulator")
                 elif op_ == "light":                        # 2.95.103: the white light from the simulator (on / off)
                     light_set("white", "on" if mc_.get("on") else "auto")
         le = int(rep_.get("last_event") or 0)

@@ -50,6 +50,22 @@ class SimThermalSource:
         pass
 
 
+def cam_fov():
+    """2.98.1: field of view (horizontal, vertical in degrees) of the main camera - known in the simulation (/info),
+    otherwise the Camera Module 3 (66° x 41°) or what is set"""
+    try:
+        if CFG.get("sim_on") and str(CFG["source"]).startswith("sim:"):
+            info = SIM.get("info") or {}
+            cam = next((c for c in info.get("cameras") or [] if str(c.get("id")) == str(CFG["source"])[4:]), None)
+            if cam and cam.get("fov_h"):
+                hf = float(cam["fov_h"])
+                vf = math.degrees(2 * math.atan(math.tan(math.radians(hf) / 2) * float(cam.get("h") or 9) / float(cam.get("w") or 16)))
+                return hf, vf
+    except (TypeError, ValueError, KeyError):
+        pass
+    return float(CFG.get("cam_hfov") or 66.0), float(CFG.get("cam_vfov") or 41.0)
+
+
 def servo_half(axis):
     """half the turning range of a servo in degrees: 0 … 100 % = -half … +half (the pan servo may turn 270° or 360°)"""
     try:
@@ -82,7 +98,10 @@ def sim_state():
             "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * hp, 2),
                       "tilt_deg": round((CFG["tilt"] - 50) / 50 * ht, 2), "pan_limit": pl, "tilt_limit": tl,
                       "pan_range": round(2 * hp, 1),             # the whole turning range of the pan servo (2.95.24, for the Python simulator)
-                      "moving": time.time() - SERVO_MOVE["t"] < 0.5},
+                      "moving": time.time() - SERVO_MOVE["t"] < 0.5,
+                      # 2.98.1: «Folgen» on, and following something right now - the simulator lets the head follow then (not the patrol)
+                      "track": bool(CFG["track_person"] or CFG["track_motion"]), "tracking": bool(STATE.get("tracking")),
+                      "track_what": str(STATE.get("track_what") or "")},
             "lights": {"white": bool(L.get("white")), "ir": bool(L.get("ir")), "white_level": 1.0, "ir_level": 1.0},
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),

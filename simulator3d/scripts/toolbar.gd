@@ -15,8 +15,10 @@ var _hint_l: Label
 var _menus := {}                       # 3D-3.86: title -> [MenuButton, ids]
 
 # 3D-3.86: the one row - a string is a button, an array a menu [title, tooltip, ids]
-const MAIN_ROW := ["explore", ["Patrouille", "Route für den Mover", ["patrol", "points", "area", "random", "clear", "follow", "route"]],
-		"head", "place", ["Stange", "Höhe des Kamerakopfs", ["mast_up", "mast_dn"]], "inventar", "templates", "invite",
+# 3D-3.91: the bar is for moving and the view (concept); Inventar / Vorlagen are tiles of «Schnellzugriff» - not twice here.
+# «Verfolgen» on its own (it is not only for the patrol).
+const MAIN_ROW := ["explore", ["Patrouille", "Route für den Mover", ["patrol", "points", "area", "random", "clear", "route"]],
+		"follow", "head", "place", ["Stange", "Höhe des Kamerakopfs", ["mast_up", "mast_dn"]], "invite",
 		["Ansicht", "Was angezeigt wird", ["view", "spectate", "map", "cams", "info"]], "panel"]
 
 const ROW1 := [["explore", "Erkunden", "Mit dem Rover herumfahren (Tastatur, Maus, Touch, Controller)"],
@@ -25,7 +27,7 @@ const ROW1 := [["explore", "Erkunden", "Mit dem Rover herumfahren (Tastatur, Mau
 		["area", "Bereich", "Bereich aufziehen: der Mover fährt zufällige Punkte darin ab"],
 		["random", "Zufall", "Zufällige Route rund um MoveEye"],
 		["clear", "Löschen", "Route und Bereich löschen"],
-		["follow", "Kopf folgt", "Der Kopf dreht zu Verdächtigem, der Mover fährt dann langsamer"],
+		["follow", "Verfolgen", "Der Kopf hält Personen, Tiere und Bewegtes in der Bildmitte (= «Folgen» in MoveEye); auf Patrouille fährt der Mover dann langsamer"],
 		["place", "Versetzen", "Rover versetzen: danach in die Welt klicken"],
 		["head", "Kopf steuern", "Den Kopf von MoveEye mit Pfeilen drehen, Licht ein / aus"],
 		["mast_dn", "Stange −", "Kamerakopf tiefer"], ["mast_up", "Stange +", "Kamerakopf höher"]]
@@ -148,8 +150,13 @@ func _press(id: String) -> void:
 			pt.random_route()
 		"clear":
 			pt.clear_route()
-		"follow":
-			pt.follow = not pt.follow
+		"follow":                                    # 3D-3.91: one mode with «Folgen» of MoveEye
+			var on_: bool = not (main.mw_follow_on() if main.now() - main.mw_t < 3.0 else pt.follow)
+			pt.follow = on_
+			if main.now() - main.mw_t < 3.0:
+				main.mw_track(on_)
+			else:
+				main.start_info = "Verfolgen braucht MoveEye – zuerst verbinden (bis dahin dreht nur die Patrouille zu Verdächtigem)"
 		"place":
 			main.place_kind = "" if main.place_kind == "rover" else "rover"
 		"head":
@@ -189,7 +196,7 @@ func _paint() -> void:
 	var ex = main.explore
 	var pt = main.patrol
 	var st := {"explore": ex.on, "patrol": pt.active, "points": pt.edit == "points", "area": pt.edit == "area" or (pt.mode == "area" and pt.area.size.x > 0.5),
-			"follow": pt.follow, "place": main.place_kind == "rover", "spectate": main.spectate, "invite": ex.invite != null and ex.invite.visible,
+			"follow": main.mw_follow_on() if main.now() - main.mw_t < 3.0 else pt.follow, "place": main.place_kind == "rover", "spectate": main.spectate, "invite": ex.invite != null and ex.invite.visible,
 			"route": pt.show_route, "map": main.map_on, "cams": main.cam_card != null and main.cam_card.visible, "info": not ex.info_hidden,
 			"panel": main.ui_root.visible, "view": ex.on, "head": main.headpad != null and main.headpad.visible,
 			"templates": main.templates != null and main.templates.visible, "inventar": main.inventar != null and main.inventar.visible}

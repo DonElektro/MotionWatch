@@ -1,12 +1,12 @@
 {
- "version": "3D-3.90",
+ "version": "3D-3.91",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31203846,
- "sha256": "c927d592d76a6c597b5202e6bc229508436388ab2ad11acf9103a4c0c6e60742",
- "notes": "Einfach ca. 60 Einstellungen, Karte Testen, 4 Spielarten, Zonen-Check, blinde Flecken aus Spielen",
+ "size": 31204893,
+ "sha256": "5f12149952b98a46ff01346e29107837ca03be9df2c468e4c304531ea2d72db2",
+ "notes": "Verfolgen = Folgen von MoveEye, Kopf folgt MoveEye statt Patrouille",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24325362,
-  "sha256": "386f4bdaff39c5cc2be975b9ebe7821ab023e02d870b94436ffee39c36004df8"
+  "size": 24326331,
+  "sha256": "2756f4454741c01e5dbc59a83daabad851ca8e9e411c2948fc43e78845e9170a"
  }
 }

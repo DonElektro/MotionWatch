@@ -754,7 +754,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.0")
+        self.root.title("MoveEye 2.98.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1071,7 +1071,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1488,8 +1488,9 @@ class App:
                  ok=lambda: bool(CFG["light_ir_out"]) or CFG["sim_on"], go=lambda: light_set("ir", "off" if (STATE.get("lights") or {}).get("ir") else "on")),
             dict(id="sim", ic="⚗", lb=tr("Simulation"), tip=tr("Simulation on / off: cameras, thermal camera and sensors from the simulation program") + " (F9)",
                  on=lambda: sim_live(), go=lambda: self._sim_toggle("window")),
-            dict(id="track", ic="◎", lb=tr("Follow"), tip=tr("Follow a detected person"), on=lambda: CFG["track_person"],
-                 go=lambda: self._set("track_person", not CFG["track_person"])),
+            dict(id="track", ic="◎", lb=tr("Follow"), tip=tr("Keep what is detected in the middle: persons, animals, moving things"),
+                 on=lambda: CFG["track_person"] or CFG["track_motion"],
+                 go=lambda: follow_set(not (CFG["track_person"] or CFG["track_motion"]), "window")),
             dict(id="patrol", ic="⇄", lb=tr("Patrol"), tip=tr("Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off"),
                  on=lambda: CFG["patrol"], go=lambda: quick_patrol("window")),
             dict(id="rec", ic="●", lb=tr("Record"), tip=tr("Record now (max. 10 min) / stop"), on=lambda: time.time() < QUICK["rec_until"],

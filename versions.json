@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 23:42",
+ "generated": "2026-10-28 23:59",
  "versions": [
   {
-   "version": "2.98.0",
-   "file": "webcam_bewegung_2_98_0.py",
+   "version": "2.98.1",
+   "file": "webcam_bewegung_2_98_1.py",
    "url": "",
-   "sha256": "4808ba544e1a0f4bfb12250f3435637c32c06b130344510f7dec5f65172e01fd",
-   "date": "2026-10-28 23:42",
-   "notes": "Menüs nach Ziel: 6 Reiter (Live, Schutz, Verlauf, Einstellungen, Simulator, Mehr), Schutz-Seite mit Alarm-Kette, Seite «Mehr», Aus / Wachsam / Voll überall, «Einfach» neu gewichtet, Spiele mit Nutzen (blinde Flecken aus den Spielen auf der Karte, Schleichwege als Testplan)",
-   "sig": "c84d885facc08cab671a855acfb276f8b9c936a6b6cd0f7d8e284a3901b286bc34ecbb99238c626a73be681de3132c0d289d8f28443d9c82187504c3ca56fb09"
+   "sha256": "5270d3e20d1ee7a8cd4e5ac787317347fadd51d427371a6e0773d4b11920e70a",
+   "date": "2026-10-28 23:59",
+   "notes": "Ein «Folgen» für Personen, Tiere und Bewegtes: die Kamera zielt auf das Objekt (Winkel aus dem Sichtfeld) statt in kleinen Schritten, gleich wie «Verfolgen» im Simulator",
+   "sig": "9754a227ad6bd5c5e14669e393a5180193c12035cf4b2816adfb714a54c129d03e2ec313bd6defcd84faf5aa578a87b3869064a4c14a74f960f20fa7bb15e601"
   },
   {
    "version": "2.97.1",

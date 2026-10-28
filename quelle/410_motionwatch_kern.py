@@ -409,15 +409,27 @@ class MotionWatch:
         return (x, y, w, h)
 
     def track(self, target_box, pw, ph, gain=1.0):
+        """2.98.1: aim at the object - turn by the angle it has from the middle of the picture (field of view of the camera),
+        a part of the way (no overshoot), then wait until the picture shows the new direction. Before, it moved a fixed
+        bit per picture: slow at a low frame rate and swinging past the object when the picture came late."""
         x, y, w, h = target_box[:4]
         ex = (x + w / 2.0) / pw - 0.5          # -0.5 .. 0.5  (right = positive)
         ey = (y + h / 2.0) / ph - 0.5          # down  = positive
         dz = CFG["track_deadzone"]
-        g = CFG["track_gain"] * 10.0 * gain
+        now = time.time()
+        fps = float(STATE.get("fps") or 0.0)
+        settle = max(0.25, min(1.2, 1.6 / fps)) if fps > 0 else 0.6
+        if now - getattr(self, "_trk_t", 0.0) < settle:
+            return
+        hf, vf = cam_fov()
+        k = max(0.2, min(1.0, 0.75 * float(CFG["track_gain"]) / 0.6 * gain))
+        moved = False
         if abs(ex) > dz:
-            CFG["pan"] = max(0.0, min(100.0, CFG["pan"] + ex * g))
+            CFG["pan"] = max(0.0, min(100.0, CFG["pan"] + ex * hf / (2.0 * servo_half("pan")) * 100.0 * k)); moved = True
         if abs(ey) > dz:
-            CFG["tilt"] = max(0.0, min(100.0, CFG["tilt"] - ey * g))
+            CFG["tilt"] = max(0.0, min(100.0, CFG["tilt"] - ey * vf / (2.0 * servo_half("tilt")) * 100.0 * k)); moved = True
+        if moved:
+            self._trk_t = now
 
     # ---- recording ----------------------------------------------
     def handle_recording(self, frame, persons):

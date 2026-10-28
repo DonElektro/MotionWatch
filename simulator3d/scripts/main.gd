@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.90"
+const VERSION := "3D-3.91"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -1562,7 +1562,7 @@ func head_owner() -> String:
 		return "Trainingsbilder"
 	if replay != null and replay.on:
 		return "Alarm-Rückblick"
-	if patrol != null and patrol.active and not measuring():
+	if patrol != null and patrol.active and not measuring() and not mw_following():
 		return "Patrouille"
 	if game != null and game.guard_auto:
 		return "Spiel (Wächter)"
@@ -1840,7 +1840,7 @@ func _process(dt: float) -> void:
 	if game != null and game.guard_auto:                 # the game: automatic guard or a player as guard turns the head
 		want_pan = game.guard_yaw
 		want_tilt = game.guard_tilt
-	if patrol != null and patrol.active and not measuring():   # 3D-3.61: on patrol the head swings (3D-3.88: not while measuring)
+	if patrol != null and patrol.active and not measuring() and not mw_following():   # 3D-3.61: on patrol the head swings (3D-3.88: not while measuring; 3D-3.91: MoveEye follows something -> its angles)
 		want_pan = patrol.head_yaw
 		want_tilt = deg_to_rad(-8.0)
 	if dataset != null and dataset.servo != null:         # Trainingsbilder: the head looks where the picture needs it
@@ -2184,6 +2184,22 @@ func mw_look(dir: String, step := 3.0) -> void:
 
 func mw_light(on: bool) -> void:
 	mw_cmd = {"id": max(int(Time.get_unix_time_from_system() * 1000.0), int(mw_cmd.get("id", 0)) + 1), "op": "light", "on": on}
+
+
+func mw_follow_on() -> bool:
+	"""3D-3.91: «Folgen» of MoveEye is switched on (MoveEye 2.98.1 sends it with the servo)"""
+	return now() - mw_t < 3.0 and bool(mw.get("servo", {}).get("track", false))
+
+
+func mw_following() -> bool:
+	"""MoveEye follows something right now - then its head angles win over the patrol"""
+	return now() - mw_t < 3.0 and bool(mw.get("servo", {}).get("tracking", false))
+
+
+func mw_track(on: bool) -> void:
+	"""3D-3.91: «Verfolgen» here switches «Folgen» of MoveEye (one mode in both)"""
+	mw_cmd = {"id": max(int(Time.get_unix_time_from_system() * 1000.0), int(mw_cmd.get("id", 0)) + 1), "op": "track", "on": on}
+	start_info = "Verfolgen %s: der Kopf hält Personen, Tiere und Bewegtes in der Bildmitte" % ("ein" if on else "aus")
 
 
 func mw_request(op: String) -> void:

@@ -44,10 +44,10 @@ def pw_check(pw, stored=None):
 USER_ROLES = ("operate", "view")
 _USER_RE = re.compile(r"^[A-Za-z0-9ÄÖÜäöüéèàç][A-Za-z0-9ÄÖÜäöüéèàç ._\-]{0,23}$")
 # what an "operate" user may change (everything else is read-only); "view" may only look
-OPERATE_POST = {"/api/tunnel", "/api/disco", "/api/helper", "/api/info", "/api/nettest", "/api/tv", "/api/mode", "/api/mover", "/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/light", "/api/move", "/api/stick", "/api/talk",
+OPERATE_POST = {"/api/follow", "/api/tunnel", "/api/disco", "/api/helper", "/api/info", "/api/nettest", "/api/tv", "/api/mode", "/api/mover", "/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/light", "/api/move", "/api/stick", "/api/talk",
                 "/api/talk/stop", "/api/tts", "/api/rec/fav", "/api/rec/false", "/api/action"}
 VIEW_POST = {"/api/webpush", "/api/time", "/api/gps", "/api/rec/prepare", "/rec/zip"}
-OPERATE_SET_KEYS = {"thermal_on", "nightvision", "show_objects", "show_mask", "track_person"}
+OPERATE_SET_KEYS = {"thermal_on", "nightvision", "show_objects", "show_mask", "track_person", "track_motion"}
 ADMIN_GET = ("/api/settings/export", "/api/ext", "/api/wifi", "/api/qr", "/setup-card", "/api/update", "/api/guest", "/api/fleet",
              "/api/users", "/api/setup", "/api/log/file/", "/api/tools", "/tools/diag.zip", "/api/usb")
 

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_0.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_1.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.1: Ein «Folgen» für Personen, Tiere und Bewegtes: die Kamera zielt auf das Objekt (Winkel aus dem Sichtfeld) statt in
+    kleinen Schritten, gleich wie «Verfolgen» im Simulator
   * 2.98.0: Menüs nach Ziel: 6 Reiter (Live, Schutz, Verlauf, Einstellungen, Simulator, Mehr), Schutz-Seite mit Alarm-Kette,
     Seite «Mehr», Aus / Wachsam / Voll überall, «Einfach» neu gewichtet, Spiele mit Nutzen (blinde Flecken aus den Spielen auf
     der Karte, Schleichwege als Testplan)
@@ -845,10 +847,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_0.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_1.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_0.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_0.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_1.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_1.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -865,7 +867,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.0"
+APP_VERSION = "2.98.1"
 
 
 def default_data_dir():
@@ -2310,10 +2312,10 @@ def pw_check(pw, stored=None):
 USER_ROLES = ("operate", "view")
 _USER_RE = re.compile(r"^[A-Za-z0-9ÄÖÜäöüéèàç][A-Za-z0-9ÄÖÜäöüéèàç ._\-]{0,23}$")
 # what an "operate" user may change (everything else is read-only); "view" may only look
-OPERATE_POST = {"/api/tunnel", "/api/disco", "/api/helper", "/api/info", "/api/nettest", "/api/tv", "/api/mode", "/api/mover", "/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/light", "/api/move", "/api/stick", "/api/talk",
+OPERATE_POST = {"/api/follow", "/api/tunnel", "/api/disco", "/api/helper", "/api/info", "/api/nettest", "/api/tv", "/api/mode", "/api/mover", "/api/arm", "/api/night", "/api/camping", "/api/quick", "/api/light", "/api/move", "/api/stick", "/api/talk",
                 "/api/talk/stop", "/api/tts", "/api/rec/fav", "/api/rec/false", "/api/action"}
 VIEW_POST = {"/api/webpush", "/api/time", "/api/gps", "/api/rec/prepare", "/rec/zip"}
-OPERATE_SET_KEYS = {"thermal_on", "nightvision", "show_objects", "show_mask", "track_person"}
+OPERATE_SET_KEYS = {"thermal_on", "nightvision", "show_objects", "show_mask", "track_person", "track_motion"}
 ADMIN_GET = ("/api/settings/export", "/api/ext", "/api/wifi", "/api/qr", "/setup-card", "/api/update", "/api/guest", "/api/fleet",
              "/api/users", "/api/setup", "/api/log/file/", "/api/tools", "/tools/diag.zip", "/api/usb")
 
@@ -16135,6 +16137,22 @@ class SimThermalSource:
         pass
 
 
+def cam_fov():
+    """2.98.1: field of view (horizontal, vertical in degrees) of the main camera - known in the simulation (/info),
+    otherwise the Camera Module 3 (66° x 41°) or what is set"""
+    try:
+        if CFG.get("sim_on") and str(CFG["source"]).startswith("sim:"):
+            info = SIM.get("info") or {}
+            cam = next((c for c in info.get("cameras") or [] if str(c.get("id")) == str(CFG["source"])[4:]), None)
+            if cam and cam.get("fov_h"):
+                hf = float(cam["fov_h"])
+                vf = math.degrees(2 * math.atan(math.tan(math.radians(hf) / 2) * float(cam.get("h") or 9) / float(cam.get("w") or 16)))
+                return hf, vf
+    except (TypeError, ValueError, KeyError):
+        pass
+    return float(CFG.get("cam_hfov") or 66.0), float(CFG.get("cam_vfov") or 41.0)
+
+
 def servo_half(axis):
     """half the turning range of a servo in degrees: 0 … 100 % = -half … +half (the pan servo may turn 270° or 360°)"""
     try:
@@ -16167,7 +16185,10 @@ def sim_state():
             "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * hp, 2),
                       "tilt_deg": round((CFG["tilt"] - 50) / 50 * ht, 2), "pan_limit": pl, "tilt_limit": tl,
                       "pan_range": round(2 * hp, 1),             # the whole turning range of the pan servo (2.95.24, for the Python simulator)
-                      "moving": time.time() - SERVO_MOVE["t"] < 0.5},
+                      "moving": time.time() - SERVO_MOVE["t"] < 0.5,
+                      # 2.98.1: «Folgen» on, and following something right now - the simulator lets the head follow then (not the patrol)
+                      "track": bool(CFG["track_person"] or CFG["track_motion"]), "tracking": bool(STATE.get("tracking")),
+                      "track_what": str(STATE.get("track_what") or "")},
             "lights": {"white": bool(L.get("white")), "ir": bool(L.get("ir")), "white_level": 1.0, "ir_level": 1.0},
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
@@ -17101,8 +17122,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.90", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31203846,
-         "sha256": "c927d592d76a6c597b5202e6bc229508436388ab2ad11acf9103a4c0c6e60742"}
+SIM3D = {"version": "3D-3.91", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31204893,
+         "sha256": "5f12149952b98a46ff01346e29107837ca03be9df2c468e4c304531ea2d72db2"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -17241,8 +17262,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.90", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24325362,
-           "sha256": "386f4bdaff39c5cc2be975b9ebe7821ab023e02d870b94436ffee39c36004df8", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.91", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24326331,
+           "sha256": "2756f4454741c01e5dbc59a83daabad851ca8e9e411c2948fc43e78845e9170a", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -20446,6 +20467,17 @@ def sim_set(on, who="web", confirm=False):
     return True, ""
 
 
+def follow_set(on, who="web"):
+    """2.98.1: one «Folgen»: the camera keeps what it detects in the middle of the picture - a person first, otherwise an
+    animal the AI knows or something that really goes somewhere. (Before, «Folgen» only followed persons; «Bewegung folgen»
+    was a separate switch.)"""
+    on = bool(on)
+    CFG["track_person"] = on; CFG["track_motion"] = on
+    sched_user_changed("track_person"); sched_user_changed("track_motion")
+    save_settings()
+    log_event("servo", f"Following {'ON' if on else 'OFF'} ({who}): persons, animals and moving things are kept in the middle")
+
+
 class SimLink:
     def __init__(self):
         threading.Thread(target=self.loop, daemon=True, name="simulator").start()
@@ -20522,6 +20554,8 @@ class SimLink:
                     refscan_stop()
                 elif op_ == "look":                         # 2.95.103: «Kopf steuern» in the simulator window
                     move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3))
+                elif op_ == "track":                        # 2.98.1: «Verfolgen» in the simulator = «Folgen» of MoveEye
+                    follow_set(bool(mc_.get("on")), "simulator")
                 elif op_ == "light":                        # 2.95.103: the white light from the simulator (on / off)
                     light_set("white", "on" if mc_.get("on") else "auto")
         le = int(rep_.get("last_event") or 0)
@@ -21944,7 +21978,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_0.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_1.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -23729,15 +23763,27 @@ class MotionWatch:
         return (x, y, w, h)
 
     def track(self, target_box, pw, ph, gain=1.0):
+        """2.98.1: aim at the object - turn by the angle it has from the middle of the picture (field of view of the camera),
+        a part of the way (no overshoot), then wait until the picture shows the new direction. Before, it moved a fixed
+        bit per picture: slow at a low frame rate and swinging past the object when the picture came late."""
         x, y, w, h = target_box[:4]
         ex = (x + w / 2.0) / pw - 0.5          # -0.5 .. 0.5  (right = positive)
         ey = (y + h / 2.0) / ph - 0.5          # down  = positive
         dz = CFG["track_deadzone"]
-        g = CFG["track_gain"] * 10.0 * gain
+        now = time.time()
+        fps = float(STATE.get("fps") or 0.0)
+        settle = max(0.25, min(1.2, 1.6 / fps)) if fps > 0 else 0.6
+        if now - getattr(self, "_trk_t", 0.0) < settle:
+            return
+        hf, vf = cam_fov()
+        k = max(0.2, min(1.0, 0.75 * float(CFG["track_gain"]) / 0.6 * gain))
+        moved = False
         if abs(ex) > dz:
-            CFG["pan"] = max(0.0, min(100.0, CFG["pan"] + ex * g))
+            CFG["pan"] = max(0.0, min(100.0, CFG["pan"] + ex * hf / (2.0 * servo_half("pan")) * 100.0 * k)); moved = True
         if abs(ey) > dz:
-            CFG["tilt"] = max(0.0, min(100.0, CFG["tilt"] - ey * g))
+            CFG["tilt"] = max(0.0, min(100.0, CFG["tilt"] - ey * vf / (2.0 * servo_half("tilt")) * 100.0 * k)); moved = True
+        if moved:
+            self._trk_t = now
 
     # ---- recording ----------------------------------------------
     def handle_recording(self, frame, persons):
@@ -35607,6 +35653,7 @@ Object.assign(I18N.de, {"Person alarms at the campfire (off: only animals - the 
 Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
 Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Protection level": "Schutzstufe", "Arming and own Wi-Fi": "Einschalten und eigenes WLAN", "What happens at an alarm?": "Was passiert bei Alarm?", "Theft protection": "Diebstahlschutz", "Device": "Gerät", "Guarded things (reference scan)": "Bewachte Dinge (Referenz-Scan)", "Backup (pictures off the device)": "Sicherung (Bilder weg vom Gerät)", "Zones, schedule, presence": "Zonen, Zeitplan, Anwesenheit", "Cameras & head": "Kameras & Kopf", "Devices & sensors": "Geräte & Sensoren", "Power supply": "Strom", "Network & access": "Netz & Zugang", "System": "System", "Draw the zones": "Zonen zeichnen", "Person": "Person", "Push": "Push", "Light": "Licht", "Siren": "Sirene", "Siren after {s} s": "Sirene nach {s} s", "Crossed out = off. Tap a step to change it. «Test protection» plays the chain.": "Durchgestrichen = aus. Ein Glied antippen = einstellen. «Schutz testen» spielt die Kette durch.", "Protection is off - nothing happens. Choose «Wachsam» or «Voll» above.": "Der Schutz ist aus – es passiert nichts. Oben «Wachsam» oder «Voll» wählen.", "Watchful": "Wachsam", "Full protection": "Voll", "in": "in", "Off": "Aus", "Settings": "Einstellungen"});  // 2.98.0: tabs, groups, alarm chain
+Object.assign(I18N.de, {"Keep what is detected in the middle: persons, animals, moving things": "Hält Erkanntes in der Bildmitte: Personen, Tiere, Bewegtes"});  // 2.98.1
 function t(s) { return (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s; }
 let toastTimer = null;
 function toast(msg) { let e = $("#toast"); if (!e) { e = el("div"); e.id = "toast"; document.body.appendChild(e); } e.textContent = msg; e.classList.add("on");
@@ -36608,7 +36655,8 @@ const QS = [
    on: () => false, ok: (c, s) => !!(s.audio && s.audio.spk) || TK.on, talk: true},
   {id: "sim", ic: "🧪", lb: "Simulation", tip: "Simulation on / off: cameras, thermal camera and sensors from the simulation program", on: (c, s) => !!(s.sim && s.sim.on && s.sim.ok && s.sim.pic !== false),   /* 2.95.93: lit only with a real connection */
    go: (c, s) => mwSimSet(!(s.sim && s.sim.on), LANG)},
-  {id: "track", ic: "🎯", lb: "Follow", tip: "Follow a detected person", on: c => c.track_person, go: c => post("/api/set", {key: "track_person", value: !c.track_person})},
+  {id: "track", ic: "🎯", lb: "Follow", tip: "Keep what is detected in the middle: persons, animals, moving things", on: c => c.track_person || c.track_motion,
+   go: c => post("/api/follow", {on: !(c.track_person || c.track_motion)})},
   {id: "patrol", ic: "🔄", lb: "Patrol", tip: "Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off", on: c => c.patrol,
    lbf: c => !c.patrol ? "Patrol" : c.patrol_mode === "loop" ? "↻ Round" : "⇄ Pendulum",
    icf: c => c.patrol && c.patrol_mode === "loop" ? "🔁" : "🔄", go: c => post("/api/quick", {action: "patrol"})},
@@ -39552,7 +39600,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <div class="tip">💡 <b>Tipp:</b> Lege die Seite als Lesezeichen oder als Symbol auf den Startbildschirm des Handys («Zum Home-Bildschirm»). Dann ist sie mit einem Tipp offen.</div>
 </section>
 
-<section id="live" data-icon="📺"><h2>Die Live-Seite</h2><p><b>Die 6 Reiter (ab 2.98.0):</b> <b>Live</b> (Bild, Joystick, Schnellschalter) · <b>Schutz</b> (Aus / Wachsam / Voll, «Heute Nacht bewachen», was bei Alarm passiert, Diebstahlschutz, Zeitplan, darunter «Zonen») · <b>Verlauf</b> (Aufnahmen, Tagebuch, Protokoll) · <b>Einstellungen</b> (Erkennung, Kameras &amp; Kopf, Geräte &amp; Sensoren, Strom, Netz &amp; Zugang, System; darunter «Kameras») · <b>Simulator</b> · <b>Mehr</b> (Anleitung, Spielecke, Werkzeuge, Infoseite, Almanach, Rückmeldung). Oben im Schutz zeigt die Kette «Person → Push → Licht → Aufnahme → Sirene», was eingeschaltet ist; antippen öffnet die Einstellung. «Einfach / Experte» steht oben in den Einstellungen.</p>
+<section id="live" data-icon="📺"><h2>Die Live-Seite</h2><p><b>Die 6 Reiter (ab 2.98.0):</b> <b>Live</b> (Bild, Joystick, Schnellschalter) · <b>Schutz</b> (Aus / Wachsam / Voll, «Heute Nacht bewachen», was bei Alarm passiert, Diebstahlschutz, Zeitplan, darunter «Zonen») · <b>Verlauf</b> (Aufnahmen, Tagebuch, Protokoll) · <b>Einstellungen</b> (Erkennung, Kameras &amp; Kopf, Geräte &amp; Sensoren, Strom, Netz &amp; Zugang, System; darunter «Kameras») · <b>Simulator</b> · <b>Mehr</b> (Anleitung, Spielecke, Werkzeuge, Infoseite, Almanach, Rückmeldung). Oben im Schutz zeigt die Kette «Person → Push → Licht → Aufnahme → Sirene», was eingeschaltet ist; antippen öffnet die Einstellung. «Einfach / Experte» steht oben in den Einstellungen.</p><p><b>🎯 Folgen (ab 2.98.1):</b> ein Schalter für alles: Die Kamera hält, was erkannt wird, in der Bildmitte – Personen zuerst, sonst Tiere und was sich wirklich bewegt. Sie dreht um den Winkel, den das Objekt von der Mitte hat, und wartet kurz auf das neue Bild (kein Hin- und Herpendeln). Im Simulator heisst derselbe Schalter «Verfolgen». Von Hand steuern pausiert das Folgen kurz.</p>
 <h3>Kopfzeile</h3>
 <p>Oben links stehen Name und <b>Version</b>. Daneben zeigen kleine Anzeigen nur, was gerade wichtig ist. Was im Normalzustand ist (kein Regen, Licht ok …), wird nicht angezeigt.</p>
 <table><tr><td>🛡 Schutz ein / aus</td><td>Alarme an oder aus. Antippen schaltet um.</td></tr>
@@ -39763,7 +39811,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <div class="tip">💡 <b>Tip:</b> save the page as a bookmark or as an icon on the home screen of the phone («Add to Home Screen»).</div>
 </section>
 
-<section id="live" data-icon="📺"><h2>The live page</h2><p><b>The 6 tabs (from 2.98.0):</b> <b>Live</b> (picture, joystick, quick switches) · <b>Protection</b> (Off / Watchful / Full, «Guard tonight», what happens at an alarm, theft protection, schedule, below it «Zones») · <b>History</b> (recordings, diary, log) · <b>Settings</b> (detection, cameras &amp; head, devices &amp; sensors, power, network &amp; access, system; below it «Cameras») · <b>Simulator</b> · <b>More</b> (manual, game corner, tools, info page, almanac, feedback). On top of Protection the chain «person → push → light → recording → siren» shows what is switched on; tap a step to change it. «Simple / Expert» is at the top of the settings.</p>
+<section id="live" data-icon="📺"><h2>The live page</h2><p><b>The 6 tabs (from 2.98.0):</b> <b>Live</b> (picture, joystick, quick switches) · <b>Protection</b> (Off / Watchful / Full, «Guard tonight», what happens at an alarm, theft protection, schedule, below it «Zones») · <b>History</b> (recordings, diary, log) · <b>Settings</b> (detection, cameras &amp; head, devices &amp; sensors, power, network &amp; access, system; below it «Cameras») · <b>Simulator</b> · <b>More</b> (manual, game corner, tools, info page, almanac, feedback). On top of Protection the chain «person → push → light → recording → siren» shows what is switched on; tap a step to change it. «Simple / Expert» is at the top of the settings.</p><p><b>🎯 Follow (from 2.98.1):</b> one switch for everything: the camera keeps what is detected in the middle of the picture – persons first, otherwise animals and things that really go somewhere. It turns by the angle the object has from the middle and waits for the new picture (no swinging). In the simulator the same switch is called «Verfolgen». Steering by hand pauses following for a moment.</p>
 <h3>Header</h3>
 <p>Top left: name and <b>version</b>. Small badges show only what matters right now; things in their normal state (no rain, light ok …) are not shown.</p>
 <table><tr><td>🛡 Armed / disarmed</td><td>Alarms on or off. Tap to switch.</td></tr>
@@ -42432,6 +42480,11 @@ class WebStream:
                 save_settings()
             return reply({"ok": ok, "error": tr(err, lang) if err else None, "mode": mode_state()}, 200 if ok else 400)
 
+        @app.route("/api/follow", methods=["POST"])           # 2.98.1: one «Folgen» for persons, animals and moving things
+        def api_follow():
+            follow_set(bool(body().get("on")), "web " + (request.remote_addr or "?"))
+            return reply({"ok": True, "on": bool(CFG["track_person"] or CFG["track_motion"])})
+
         @app.route("/api/turbo", methods=["POST"])
         def api_turbo():
             d = body()
@@ -44782,7 +44835,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.0")
+        self.root.title("MoveEye 2.98.1")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -45099,7 +45152,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.0 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.1 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -45516,8 +45569,9 @@ class App:
                  ok=lambda: bool(CFG["light_ir_out"]) or CFG["sim_on"], go=lambda: light_set("ir", "off" if (STATE.get("lights") or {}).get("ir") else "on")),
             dict(id="sim", ic="⚗", lb=tr("Simulation"), tip=tr("Simulation on / off: cameras, thermal camera and sensors from the simulation program") + " (F9)",
                  on=lambda: sim_live(), go=lambda: self._sim_toggle("window")),
-            dict(id="track", ic="◎", lb=tr("Follow"), tip=tr("Follow a detected person"), on=lambda: CFG["track_person"],
-                 go=lambda: self._set("track_person", not CFG["track_person"])),
+            dict(id="track", ic="◎", lb=tr("Follow"), tip=tr("Keep what is detected in the middle: persons, animals, moving things"),
+                 on=lambda: CFG["track_person"] or CFG["track_motion"],
+                 go=lambda: follow_set(not (CFG["track_person"] or CFG["track_motion"]), "window")),
             dict(id="patrol", ic="⇄", lb=tr("Patrol"), tip=tr("Patrol: tap = off → back and forth (1-2-3-2-1) → round trip (1-2-3-1) → off"),
                  on=lambda: CFG["patrol"], go=lambda: quick_patrol("window")),
             dict(id="rec", ic="●", lb=tr("Record"), tip=tr("Record now (max. 10 min) / stop"), on=lambda: time.time() < QUICK["rec_until"],
@@ -52462,6 +52516,14 @@ _HX121 = {  # 2.98.0: page «Mehr»
 for _k, _v in _HX121.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i])
+
+_HX122 = {  # 2.98.1: one «Folgen»
+    'Keep what is detected in the middle: persons, animals, moving things': ('Hält Erkanntes in der Bildmitte: Personen, Tiere, Bewegtes', 'Garde au centre ce qui est détecté : personnes, animaux, objets en mouvement', 'Tiene al centro ciò che viene rilevato: persone, animali, oggetti in movimento', 'Tegna en il center tge ch’è vegnì identifitgà: persunas, animals, chaussas en moviment'),
+}
+for _k, _v in _HX122.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 # ---- guide: the parts added in 2.53 - 2.65 (inserted into the existing chapters of every language) ----
 _HELP_NEW = {
  "de": {

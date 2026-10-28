@@ -1743,6 +1743,11 @@ class WebStream:
                 save_settings()
             return reply({"ok": ok, "error": tr(err, lang) if err else None, "mode": mode_state()}, 200 if ok else 400)
 
+        @app.route("/api/follow", methods=["POST"])           # 2.98.1: one «Folgen» for persons, animals and moving things
+        def api_follow():
+            follow_set(bool(body().get("on")), "web " + (request.remote_addr or "?"))
+            return reply({"ok": True, "on": bool(CFG["track_person"] or CFG["track_motion"])})
+
         @app.route("/api/turbo", methods=["POST"])
         def api_turbo():
             d = body()
