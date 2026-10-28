@@ -283,7 +283,24 @@ func start_point(i: int) -> Vector3:
 		p = _starts[i]
 	else:
 		p = Vector3(-9.0 + 6.0 * i, 0, -46.0)
-	return _g(main.free_spot(p, 0.6, true))
+	return _g(clear_start(main.free_spot(p, 0.6, true)))
+
+
+func clear_start(p: Vector3) -> Vector3:
+	"""3D-3.76: a start where the camera behind the player (towards the start, away from the goal) sees him - not inside a
+	tree or behind an object. Looks in rings round p for the nearest such place."""
+	for k in range(0, 40):
+		var q := p
+		if k > 0:
+			var ring := 1 + (k - 1) / 8
+			q = p + Vector3.FORWARD.rotated(Vector3.UP, TAU * ((k - 1) % 8) / 8.0) * (1.2 * ring)
+			q = main.free_spot(q, 0.6, true)
+		var to_goal: Vector3 = goal - q
+		var yaw := atan2(-to_goal.x, -to_goal.z)
+		var cam2 := Vector2(q.x + sin(yaw) * 3.2, q.z + cos(yaw) * 3.2)
+		if main.view_free(Vector2(q.x, q.z), cam2, 1.95, 0.5) and not main.blocked(Vector2(q.x, q.z), 0.6, true):
+			return q
+	return p
 
 
 func _g(p: Vector3) -> Vector3:
@@ -539,19 +556,19 @@ func _net() -> void:
 		var w: WebSocketPeer = s["ws"]
 		w.poll()
 		var st := w.get_ready_state()
-		if st == WebSocketPeer.STATE_CLOSED or (st == WebSocketPeer.STATE_CONNECTING and now() - float(s["t"]) > 5.0):
-			socks.erase(s)
-			if int(s["slot"]) >= 0 and players[s["slot"]] != null and players[s["slot"]]["sock"] == s:
-				players[s["slot"]]["sock"] = null
-				players[s["slot"]]["gone_t"] = now()
-			continue
-		while w.get_available_packet_count() > 0:
+		while w.get_available_packet_count() > 0:          # 3D-3.76: first what came (a «leave» right before closing)
 			var pkt := w.get_packet()
 			if not w.was_string_packet():
 				continue
 			var m = JSON.parse_string(pkt.get_string_from_utf8())
 			if typeof(m) == TYPE_DICTIONARY:
 				_message(s, m)
+		if st == WebSocketPeer.STATE_CLOSED or (st == WebSocketPeer.STATE_CONNECTING and now() - float(s["t"]) > 5.0):
+			socks.erase(s)
+			if int(s["slot"]) >= 0 and players[s["slot"]] != null and players[s["slot"]]["sock"] == s:
+				players[s["slot"]]["sock"] = null
+				players[s["slot"]]["gone_t"] = now()
+			continue
 	for i in range(MAX_P):                                 # gone for 30 s: the place is free again
 		var p = players[i]
 		if p != null and p["sock"] == null and now() - float(p["gone_t"]) > 30.0:
@@ -647,6 +664,11 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 			_guard_light(p2)
 		"catch":
 			_guard_catch(p2)
+		"leave":                                       # 3D-3.76: the player stops early (button on the phone)
+			main.start_info = "%s hat das Spiel verlassen" % p2["name"]
+			_remove(slot2)
+			s["slot"] = -1
+			paint()
 
 
 func _assign(p: Dictionary, r: String) -> void:
@@ -829,6 +851,10 @@ func _steer(p: Dictionary, dt: float) -> void:
 	var post: int = a.ctl_posture
 	var back: float = [3.2, 2.7, 2.3][post]
 	var up: float = [1.95, 1.45, 0.95][post]
+	var me2 := Vector2(a.position.x, a.position.z)            # 3D-3.76: a tree or a wall behind: the camera comes closer
+	while back > 0.9 and not main.view_free(me2, me2 + Vector2(sin(yaw), cos(yaw)) * back, up):
+		back -= 0.3
+		up = maxf(up - 0.08, 0.9)
 	var pos: Vector3 = a.position + Vector3(sin(yaw) * back, up, cos(yaw) * back)
 	var q2: Vector2 = main.keep_out(Vector2(pos.x, pos.z), 0.25, true)
 	pos.x = q2.x
@@ -2132,6 +2158,8 @@ body.guard #v{object-fit:contain}
 #side{position:fixed;right:max(10px,env(safe-area-inset-right));top:calc(max(8px,env(safe-area-inset-top)) + 40px);display:flex;flex-direction:column;gap:8px}
 #side button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#0a0e14aa;color:#fff;font-size:17px}
 .ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#lvbox{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:#000a}
+.card button.lv{padding:12px 18px;border-radius:12px;border:1px solid var(--line);background:#1d2633;color:#fff;font-size:16px;margin:4px}
 .card{background:#111822ee;border:1px solid var(--line);border-radius:16px;padding:18px 20px;max-width:min(92vw,560px);max-height:92vh;overflow:auto;text-align:center;pointer-events:auto}
 .card h1{font-size:20px;margin:0 0 8px}.card p{margin:6px 0;color:var(--mut)}
 button.pr{background:var(--acc);color:#fff;border:0;border-radius:12px;padding:12px 18px;font-size:16px;font-weight:600;margin-top:10px}
@@ -2199,7 +2227,7 @@ table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px
 <div class="btns" id="gb" style="display:none"><div class="b" id="b-light"><i>💡</i>Licht</div><div class="b big red" id="b-catch"><i>🚨</i>Erwischt!</div></div>
 <div id="tip" hidden></div>
 <div id="pic" hidden><img id="picimg" alt=""><div id="pictxt"></div></div>
-<div id="side"><button id="full" title="Vollbild">⛶</button><button id="snd" title="Ton">🔊</button></div>
+<div id="side"><button id="full" title="Vollbild">⛶</button><button id="snd" title="Ton">🔊</button><button id="leave" title="Spiel verlassen">🚪</button></div>
 <div id="msg"></div>
 <div id="sig" hidden><button data-k="wait" title="Warte">✋</button><button data-k="go" title="Los">▶</button><button data-k="cam" title="Kamera schaut her">👁</button><button data-k="here" title="Hier">📍</button></div>
 <div id="sigt"></div>
@@ -2231,6 +2259,14 @@ const sfx = {caught: () => { tone(220, 0.25, "sawtooth", 0.2); tone(160, 0.4, "s
   item: () => { tone(880, 0.12, "triangle", 0.15); tone(1320, 0.18, "triangle", 0.15, 0.1); }, tick: (s) => tone(400 + s * 6, 0.05, "square", 0.05), beat: () => { tone(70, 0.12, "sine", 0.35); tone(60, 0.12, "sine", 0.3, 0.16); }};
 $("#snd").onclick = () => { sound = !sound; $("#snd").textContent = sound ? "🔊" : "🔇"; try { localStorage.setItem("mw3d-sound", sound ? "1" : "0"); } catch (e) {} if (sound) tone(660, 0.1); };
 $("#snd").textContent = sound ? "🔊" : "🔇";
+let left = false;                        // 3D-3.76: left the game on purpose - no new connection
+const lvBox = (html) => { let b = document.getElementById("lvbox"); if (!html) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement("div"); b.id = "lvbox"; document.body.appendChild(b); } b.innerHTML = '<div class="card">' + html + '</div>'; };
+$("#leave").onclick = () => { if (!me) return; lvBox('<h1>Spiel verlassen?</h1><p>Du hörst jetzt auf. Die anderen spielen weiter.</p><p><button class="lv" onclick="leaveNow()">🚪 Ja, verlassen</button> <button class="lv" onclick="lvBox(\'\')">Weiterspielen</button></p>'); };
+window.leaveNow = () => { left = true; try { ws.send(JSON.stringify({t: "leave"})); } catch (e) {} setTimeout(() => { try { ws.close(); } catch (e) {} }, 1500);
+  me = null; lvBox('<h1>Du hast das Spiel verlassen</h1><p>Danke fürs Mitspielen!</p><p><button class="lv" onclick="rejoin()">Wieder mitspielen</button></p>'); };
+window.rejoin = () => { left = false; lvBox(""); lastOv = null; connect(); };
+window.lvBox = lvBox;
 let tickT = 0, beatT = 0;
 setInterval(() => { if (!me || st.rs !== "play" || st.ps !== "play" || role !== "runner") return; const n = Date.now();
   if (st.seen && n - tickT > 450) { tickT = n; sfx.tick(st.susp); } if (st.susp > 60 && n - beatT > (st.susp > 85 ? 500 : 800)) { beatT = n; sfx.beat(); } }, 100);
@@ -2269,7 +2305,7 @@ function connect() {
     else if (m.t === "ev") { if (m.k === "caught") { hitFx(m.fx || []); if (navigator.vibrate) navigator.vibrate([300, 100, 300]); document.body.classList.remove("redfl"); void document.body.offsetWidth; document.body.classList.add("redfl"); }
       if (sfx[m.k]) sfx[m.k](); }
   };
-  ws.onclose = () => { me = null; ov('<h1>Verbindung weg</h1><p>Neuer Versuch …</p>'); setTimeout(connect, 1500); };
+  ws.onclose = () => { if (left) return; me = null; ov('<h1>Verbindung weg</h1><p>Neuer Versuch …</p>'); setTimeout(connect, 1500); };
 }
 function setRole() { const g = role === "guard"; document.body.classList.toggle("guard", g); $("#rb").style.display = g ? "none" : "flex"; $("#gb").style.display = g ? "flex" : "none";
   $("#meter").style.visibility = g ? "hidden" : "visible"; $("#goal").style.visibility = g ? "hidden" : "visible"; $("#hint").textContent = g ? "links: Kopf drehen · rechts wischen: fein drehen" : "links: gehen · rechts wischen: umschauen"; }

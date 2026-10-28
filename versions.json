@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 19:06",
+ "generated": "2026-10-28 19:20",
  "versions": [
   {
-   "version": "2.95.101",
-   "file": "webcam_bewegung_2_95_101.py",
+   "version": "2.95.102",
+   "file": "webcam_bewegung_2_95_102.py",
    "url": "",
-   "sha256": "a71e88d1ce27694441d0752b70a87ef23566dbcc85a700552c6634af7e6f37f2",
-   "date": "2026-10-28 19:06",
-   "notes": "Simulator-Tunnel stabiler (neuste Leitung zuerst, alte Leitungen verworfen); passt zum Simulator 3D-3.75 (Überraschungsnacht, Verbindung nach Updates, leichtere Grafik, Prüfstand automatisch)",
-   "sig": "2abe511bfd4f4aee99f0c32ddb865c3529769f2e5641a55c7c55ad85c7181e14b99d45fbefa8b7b0534f93d01f3141230fb3931346e4de2ad2987116af7ef206"
+   "sha256": "10466abc7ee90c6ed6e462987396428d51efe783dcf5852ca904384c8694d1da",
+   "date": "2026-10-28 19:20",
+   "notes": "Passt zum Simulator 3D-3.76 (Überwachen mit Ort-Frage, Uhrzeit bleibt, Spiel verlassen, Startkamera frei)",
+   "sig": "4dd964f0bb1605859fcafebb4639d92273497026109a429e99c778a6a678d26155200b04b15104833cc2bddb4a622335446845bdb0e486e86f4d76bfbee18402"
   },
   {
    "version": "2.94.5",

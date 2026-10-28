@@ -33,6 +33,11 @@ var _stuck_pos := Vector2.ZERO
 var _back_until := 0.0                 # stuck at an object: back a little and turn, then on
 var _back_turn := 1.0
 var _tries := 0
+# 3D-3.76: «Überwachen»: first the question which place is guarded; the mover plans its own route round it (around the
+# objects) and Motion Watch keeps looking towards the place while it drives.
+var guard := {}                        # {"c": Vector2, "r": float, "name": String} - empty = a route set by hand
+var _ask: PanelContainer
+var _ask_r := 10.0
 
 
 func _ready() -> void:
@@ -65,6 +70,159 @@ func set_active(v: bool) -> String:
 		head_yaw = 0.0
 	_dirty = true
 	return ""
+
+
+func ask() -> void:
+	"""the question at the start: what shall be guarded? (things of the scene, Motion Watch itself, or a click into the world)"""
+	if _ask != null and is_instance_valid(_ask):
+		_ask.queue_free()
+	var UI = preload("res://scripts/ui_style.gd")
+	var pc := PanelContainer.new()
+	pc.theme = main.ui_root.theme
+	pc.add_theme_stylebox_override("panel", UI.box(UI.PANEL, UI.ACC, 14, 16, 2))
+	main.ui_layer.add_child(pc)
+	_ask = pc
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 10)
+	pc.add_child(v)
+	v.add_child(UI.heading("Was soll überwacht werden?"))
+	var tip := UI.small("Der Mover fährt selbst eine Runde um diesen Ort – um Hindernisse herum – und Motion Watch schaut dabei immer wieder hin.")
+	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tip.custom_minimum_size = Vector2(380, 0)
+	v.add_child(tip)
+	var g := GridContainer.new()
+	g.columns = 3
+	g.add_theme_constant_override("h_separation", 6)
+	g.add_theme_constant_override("v_separation", 6)
+	v.add_child(g)
+	for pl in places():
+		var b := Button.new()
+		b.text = pl[0]
+		b.custom_minimum_size = Vector2(122, 40)
+		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		var c: Vector2 = pl[1]
+		var nm: String = pl[0]
+		b.pressed.connect(func():
+			pc.queue_free()
+			guard_start(c, _ask_r, nm))
+		g.add_child(b)
+	var pick := Button.new()
+	pick.text = "📍 Ort in der Welt anklicken"
+	pick.pressed.connect(func():
+		pc.queue_free()
+		edit = "pick"
+		main.start_info = "Überwachen: den Ort in der Welt anklicken (Esc = abbrechen)")
+	g.add_child(pick)
+	if points.size() >= 2 or area.size.x > 2.0:
+		var own := Button.new()
+		own.text = "Eigene Route (wie gesetzt)"
+		own.pressed.connect(func():
+			pc.queue_free()
+			guard = {}
+			set_active(true))
+		g.add_child(own)
+	var rr := HBoxContainer.new()
+	rr.add_theme_constant_override("separation", 6)
+	v.add_child(rr)
+	var rl := UI.small("Runde:", UI.TXT)
+	rl.autowrap_mode = TextServer.AUTOWRAP_OFF
+	rr.add_child(rl)
+	var rbs := []
+	for o in [[6.0, "eng (6 m)"], [10.0, "mittel (10 m)"], [16.0, "weit (16 m)"]]:
+		var rb := Button.new()
+		rb.text = o[1]
+		rb.toggle_mode = true
+		rb.button_pressed = absf(float(o[0]) - _ask_r) < 0.1
+		rb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		rr.add_child(rb)
+		rbs.append(rb)
+		var val: float = o[0]
+		rb.pressed.connect(func():
+			_ask_r = val
+			for x in rbs:
+				x.set_pressed_no_signal(x == rb))
+	var cancel := Button.new()
+	cancel.text = "Abbrechen"
+	cancel.pressed.connect(func(): pc.queue_free())
+	v.add_child(cancel)
+	await get_tree().process_frame
+	if is_instance_valid(pc):
+		pc.position = (pc.get_viewport().get_visible_rect().size - pc.size) / 2.0
+		pc.modulate.a = 0.0                               # a small fade in
+		pc.create_tween().tween_property(pc, "modulate:a", 1.0, 0.25)
+
+
+func places() -> Array:
+	"""[name, Vector2] of the things worth guarding in this scene"""
+	var out := [["Motion Watch (Standort)", Vector2(main.home_pos.x, main.home_pos.z)]]
+	for k in ["door", "bike"]:
+		var p: Vector3 = main.obj.get(k, Vector3.ZERO)
+		if p != Vector3.ZERO:
+			out.append([{"door": "Tür / Haus", "bike": "Velo-Platz"}[k], Vector2(p.x, p.z)])
+	for nm in main.test_props:
+		var n = main.test_props[nm]
+		if n != null and is_instance_valid(n) and n.visible:
+			out.append([nm, Vector2(n.global_position.x, n.global_position.z)])
+	return out
+
+
+func guard_start(c: Vector2, r: float, nm: String) -> void:
+	if _ask != null and is_instance_valid(_ask):
+		_ask.queue_free()
+	guard = {"c": c, "r": r, "name": nm}
+	plan_round(c, r)
+	if active:
+		idx = -1
+		_next()
+	else:
+		set_active(true)
+	main.start_info = "Überwachen: %s – Runde %d m, %d Punkte" % [nm, int(r), points.size()]
+
+
+func plan_round(c: Vector2, r: float) -> void:
+	"""a round of points about r metres round c; every point at least 1.2 m from any object (pushed outwards, else
+	inwards); where the way between two points touches an object, a point further out is put in between"""
+	points.clear()
+	var n := clampi(int(TAU * r / 5.0), 6, 14)
+	var a0 := randf() * TAU
+	for i in range(n):
+		var dir := Vector2.from_angle(a0 + TAU * i / n)
+		var got = null
+		for k in range(0, 24):                              # 0, +0.5, -0.5, +1, -1 … metres
+			var rr: float = r + (0.5 * ((k + 1) / 2)) * (1.0 if k % 2 == 1 else -1.0)
+			if rr < 2.5:
+				continue
+			var q := c + dir * rr
+			if not main.blocked(q, 1.2):
+				got = q
+				break
+		if got != null:
+			points.append(got)
+	for _pass in range(2):
+		var out := []
+		for i in range(points.size()):
+			var a: Vector2 = points[i]
+			var b: Vector2 = points[(i + 1) % points.size()]
+			out.append(a)
+			if _way_blocked(a, b):
+				var m := (a + b) / 2.0
+				var away := (m - c).normalized() if (m - c).length() > 0.1 else Vector2.RIGHT
+				for k in range(1, 20):
+					var q := m + away * 0.6 * k
+					if not main.blocked(q, 1.2) and not _way_blocked(a, q) and not _way_blocked(q, b):
+						out.append(q)
+						break
+		points = out
+	mode = "points"
+	_dirty = true
+
+
+func _way_blocked(a: Vector2, b: Vector2) -> bool:
+	var n := maxi(1, int(a.distance_to(b) / 0.5))
+	for k in range(1, n):
+		if main.blocked(a.lerp(b, float(k) / n), 0.9):
+			return true
+	return false
 
 
 func random_route() -> void:
@@ -160,6 +318,9 @@ func _process(dt: float) -> void:
 			_next()
 	else:
 		want_h = deg_to_rad(sweep * 0.5) * sin(t * 0.7)
+		if not guard.is_empty():                           # 3D-3.76: towards the guarded place, swinging a little round it
+			var dc: Vector2 = guard["c"] - me
+			want_h = wrapf(atan2(-dc.x, -dc.y) - rig.rotation.y, -PI, PI) + deg_to_rad(sweep * 0.3) * sin(t * 0.7)
 	suspect = false
 	if follow:
 		var s = _suspect_angle()
@@ -198,6 +359,14 @@ func handle_input(ev: InputEvent) -> bool:
 	if ev is InputEventMouseButton and main._over_hud(ev.position):
 		return false
 	var hit = _ground(ev.position)
+	if edit == "pick" and ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT:
+		if ev.pressed:
+			_click_at = ev.position
+		elif _click_at != null and (ev.position as Vector2).distance_to(_click_at) < 8.0 and hit != null:
+			edit = ""
+			_click_at = null
+			guard_start(Vector2(hit.x, hit.z), _ask_r, "gewählter Ort")
+		return false
 	if edit == "points" and ev is InputEventMouseButton:
 		# 3D-3.66: only a short click sets a point - dragging still moves / turns the view; right click only on a point removes it
 		if ev.button_index == MOUSE_BUTTON_LEFT:
@@ -339,4 +508,6 @@ func state_dict() -> Dictionary:
 	return {"ok": true, "active": active, "mode": mode, "points": points.map(func(p): return [snappedf(p.x, 0.1), snappedf(p.y, 0.1)]),
 			"area": [area.position.x, area.position.y, area.size.x, area.size.y], "state": state, "idx": idx, "edit": edit,
 			"target": [snappedf(target.x, 0.1), snappedf(target.y, 0.1)], "x": snappedf(r.position.x, 0.1), "z": snappedf(r.position.z, 0.1),
-			"head": snappedf(head_yaw, 0.01), "suspect": suspect, "follow": follow}
+			"head": snappedf(head_yaw, 0.01), "suspect": suspect, "follow": follow,
+			"guard": {} if guard.is_empty() else {"x": snappedf(guard["c"].x, 0.1), "z": snappedf(guard["c"].y, 0.1), "r": guard["r"], "name": guard["name"]},
+			"blocked_points": points.filter(func(p): return main.blocked(p, 1.0)).size()}

@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.75"
+const VERSION := "3D-3.76"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -506,6 +506,7 @@ func _stream_watch() -> void:
 func release_ports() -> void:
 	"""3D-3.68: before starting a new simulator (update, graphics restart): close every listening port. On Windows the
 	new process would otherwise get them too and its own «An Motion Watch senden» stays «Port 8765 is busy»."""
+	_save_settings()                                  # 3D-3.76: the time of the scene for the new simulator
 	if net != null:
 		net.stop()
 	if game != null and game.open:
@@ -1745,6 +1746,8 @@ func _process(dt: float) -> void:
 		_night_weather_tick()
 		_perf_tick()
 		_stream_watch()
+		if now() - _hour_saved_t > 20.0:
+			_settings_dirty = true                         # 3D-3.76: the time of the scene is saved now and then
 		if _settings_dirty:
 			_save_settings()
 		if auto_update and not update_busy and now() > next_update_check:
@@ -3230,6 +3233,11 @@ func control(d: Dictionary) -> Dictionary:
 			patrol._dirty = true
 		if d.has("mode"):
 			patrol.mode = str(d["mode"])
+		if d.has("guard"):                             # 3D-3.76: {guard: [x, z, radius, name]} - plan the route round it and start
+			var gd: Array = d["guard"]
+			patrol.guard_start(Vector2(float(gd[0]), float(gd[1])), float(gd[2]) if gd.size() > 2 else 10.0, str(gd[3]) if gd.size() > 3 else "Ort")
+		if d.has("ask"):
+			patrol.ask()
 		if d.has("on"):
 			patrol.set_active(bool(d["on"]))
 		return patrol.state_dict()
@@ -4357,12 +4365,24 @@ func _load_settings() -> void:
 			else:
 				v = str(v)
 			set(k, v)
+	if d.has("hour_now") and not "--hour" in OS.get_cmdline_user_args() and not "--hour" in OS.get_cmdline_args() and not real_time:
+		# 3D-3.76: the time as it was set; a short break (update, restart) - the clock went on meanwhile, like outside
+		speed = clampf(float(d.get("speed_now", 1.0)), 1.0, 120.0)
+		var gap: float = Time.get_unix_time_from_system() - float(d.get("hour_at", 0))
+		set_hour(float(d["hour_now"]) + (gap * speed / 3600.0 if gap >= 0.0 and gap < 1800.0 else 0.0))
+
+
+var _hour_saved_t := 0.0
 
 
 func _save_settings() -> void:
 	var d := {}
 	for k in KEEP:
 		d[k] = get(k)
+	d["hour_now"] = snappedf(hour(), 0.001)               # 3D-3.76: the time of the scene stays after a restart
+	d["hour_at"] = int(Time.get_unix_time_from_system())
+	d["speed_now"] = speed
+	_hour_saved_t = now()
 	var f := FileAccess.open(SETTINGS_FILE, FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify(d, " "))
@@ -5527,7 +5547,11 @@ var ob_grid := {}
 const OB_CELL := 4.0
 
 
+var tree_spots: Array = []             # 3D-3.76: [Vector2 trunk, crown radius, crown bottom] - the camera of a player keeps out
+
+
 func clear_obstacles() -> void:
+	tree_spots.clear()
 	obstacles.clear()
 	ob_grid.clear()
 
@@ -5734,6 +5758,29 @@ func _seg_hits(o: Dictionary, a: Vector2, b: Vector2) -> float:
 			if t0 > t1:
 				return -1.0
 	return t0
+
+
+func view_free(a: Vector2, b: Vector2, h: float, margin := 0.3) -> bool:
+	"""3D-3.76: does the way from a (the player) to b (his camera, h metres high) pass through a tree crown or an object?"""
+	var n := maxi(1, int(a.distance_to(b) / 0.3))
+	for k in range(1, n + 1):
+		var q := a.lerp(b, float(k) / n)
+		for t in tree_spots:
+			if h > float(t[2]) - 0.3 and q.distance_to(t[0]) < float(t[1]) + margin:
+				return false
+		if k == n and blocked(q, 0.35, true):
+			return false
+	return true
+
+
+func blocked(p: Vector2, rad: float, person := false) -> bool:
+	"""3D-3.76: is p closer than rad to an object (for the mover: person = false, things only for people do not count)"""
+	for o in _ob_near(p):
+		if o["po"] and not person:
+			continue
+		if float(_ob_closest(o, p)[1]) < rad:
+			return true
+	return false
 
 
 func free_spot(p: Vector3, rad := 0.4, person := true) -> Vector3:

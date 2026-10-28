@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.75 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.76 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,6 +607,15 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 Motion Watch); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.76
+3D-3.76: Patrouille / Überwachen: beim Start fragt der Simulator, was überwacht werden soll (Motion Watch selbst, Tür,
+Velo, Zelt, Tisch, Kühlboxen, Grill oder ein Ort, den man anklickt) und wie weit die Runde ist (6, 10 oder 16 m). Der Mover
+plant die Strecke selbst um die Hindernisse herum, Motion Watch schaut beim Fahren immer wieder zum bewachten Ort.
+Die Uhrzeit der Szene bleibt nach einem Neustart oder Update eingestellt (die Uhr läuft in einer kurzen Pause weiter).
+Spiel auf dem Handy: Knopf 🚪 «Spiel verlassen» (mit Rückfrage), danach «Wieder mitspielen».
+Startpunkte im Spiel: die Kamera hinter der Figur steht nicht mehr in einem Baum; im Spiel rückt die Kamera näher, wenn
+ein Baum oder eine Wand dazwischen ist.
 
 NEU IN 3D-3.75
 3D-3.75: «Überraschungsnacht» (Wetter): nachts passiert ab und zu etwas Unerwartetes – Stromausfall (alle Lampen aus),

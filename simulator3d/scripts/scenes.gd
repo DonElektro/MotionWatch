@@ -169,6 +169,8 @@ func tree(parent: Node3D, p: Vector3, sc: float, conifer := -1) -> void:
 			put(tr, sph(r, r * 1.7), Vector3(rng.randf_range(-0.9, 0.9), 4.1 + rng.randf_range(-0.4, 0.9), rng.randf_range(-0.9, 0.9)), fm2, "tree")
 	if parent == root or parent.get_parent() == root:
 		m.add_obstacle(p, 0.32 * sc)
+	var gp: Vector3 = tr.global_position if tr.is_inside_tree() else p
+	m.tree_spots.append([Vector2(gp.x, gp.z), (1.75 if con else 1.5) * sc, (1.9 if con else 3.0) * sc])   # 3D-3.76: crowns (camera of the players)
 
 
 func trees(n: int, dmin: float, dmax: float, keep_clear: Callable) -> void:

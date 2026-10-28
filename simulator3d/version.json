@@ -1,12 +1,12 @@
 {
- "version": "3D-3.75",
+ "version": "3D-3.76",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30947317,
- "sha256": "0601eda24f620fb9062ea2689bb418204ee2c02f9593ee77130fd5df5794e3f7",
- "notes": "Verbindung nach Updates repariert, Überraschungsnacht, leichtere Grafik für schwache PCs, Tunnel stabiler, Prüfstand automatisch nach MW-Updates",
+ "size": 30958467,
+ "sha256": "1600e52c7ac4a58a3765b1a2ea4f22d2c1e3f975f3e3d8eb6306456e469c0f88",
+ "notes": "Überwachen mit Ort-Frage und eigener Route, Uhrzeit bleibt, Spiel verlassen, Startkamera frei",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24069669,
-  "sha256": "d806e6b11b769eb0b64018e1f50629c359b1d4937d1af2dc80c77b972f057cb3"
+  "size": 24080058,
+  "sha256": "cb3d7a176a6e05fc8ac68c4642bc021985205a7bbc90c886d453bbcfad9cd7e0"
  }
 }

@@ -96,11 +96,16 @@ func set_folded(v: bool) -> void:
 func _press(id: String) -> void:
 	var ex = main.explore
 	var pt = main.patrol
+	if id in ["points", "area", "random", "clear"]:
+		pt.guard = {}                                   # 3D-3.76: a route by hand - no guarded place
 	match id:
 		"explore":
 			ex.set_on(not ex.on)
 		"patrol":
-			pt.set_active(not pt.active)
+			if pt.active:
+				pt.set_active(false)
+			else:
+				pt.ask()                                     # 3D-3.76: first: what shall be guarded?
 		"points":
 			pt.edit = "" if pt.edit == "points" else "points"
 			pt.mode = "points"
