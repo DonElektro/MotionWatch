@@ -2487,7 +2487,8 @@ function tidyHeader(s, c) {
      + (ups && bt.charging ? " · " + t("charging") : ""), ups && !bt.on_battery ? "grn" : (bt.pct <= 15 ? "red" : (bt.pct <= 30 ? "yel" : "grn")));
   const rem = s.remote || [];
   hb("#b-remote", rem.length > 0, "🌐 " + t("Remote") + ": " + rem.join(", ").slice(0, 30), "org");
-  if (typeof s.fps === "number") badge("#b-fps", Math.round(s.fps) + " FPS", s.fps >= 12 ? "grn" : (s.fps >= 6 ? "yel" : "red"));
+  if (typeof s.fps === "number") badge("#b-fps", (s.eco === "saving" ? "💤 " : "") + Math.round(s.fps) + " FPS",   // 2.95.64: real pictures per second; power saving is slow on purpose
+    s.eco === "saving" ? "" : (s.fps >= 12 ? "grn" : (s.fps >= 6 ? "yel" : "red")));
   document.querySelectorAll("header .badge").forEach(b => { if (HIDDEN.has(b.dataset.view)) b.hidden = true; });
   compactHeader(s, c);                                    // right away (same frame): no flash of the long texts
 }

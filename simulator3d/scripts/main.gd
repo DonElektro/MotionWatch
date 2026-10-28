@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.47"
+const VERSION := "3D-3.48"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -2604,7 +2604,7 @@ func control(d: Dictionary) -> Dictionary:
 	elif a == "test_report":                           # the test run: progress and the last report
 		return testrun.state()
 	elif a == "test_start":                            # Motion Watch starts a test run (3D-3.27): {"plan": "standard" | "quick" | "hard" | "night"}
-		var err: String = testrun.start(str(d.get("plan", testrun.plan)))
+		var err: String = testrun.start(str(d.get("plan", testrun.plan)), d.get("cams", []) if typeof(d.get("cams", [])) == TYPE_ARRAY else [])
 		var st: Dictionary = testrun.state()
 		st["ok"] = err == ""
 		if err != "":

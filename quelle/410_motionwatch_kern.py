@@ -16,6 +16,7 @@ class MotionWatch:
         self.rec_name = ""; self.rec_info = None; self.rec_size = None; self._rec_retry = 0.0
         self.preroll = deque()
         self.frame_times = deque(maxlen=30)
+        self.seen_t = deque(maxlen=40)           # 2.95.64: when each picture was analysed -> the REAL frame rate
         self.mt = {"id": None, "t": 0.0, "moved": 0.0, "tpl": None, "box": None}  # follow movement: target, its look, last own move
         self.frame_gaps = deque(maxlen=60); self._last_t0 = 0.0     # time between camera frames -> real frame rate of a recording
         self.eco_wake_t = 0.0; self.eco_slow = False; self._eco_src = None
@@ -950,9 +951,16 @@ class MotionWatch:
                     cv2.circle(frame, (W - 24, 17), 8, (0, 0, 255), -1)
 
             self.frame_times.append(time.time() - t0)
+            self.seen_t.append(t0)
+            # 2.95.64: «fps» is the real number of pictures per second that are analysed (camera, simulator, power saving).
+            # Before it was 1 / processing time - far too high with a slow source (simulator: 100 instead of 2.5), and the
+            # auto-tuner then asked for up to 24 pictures of walking before a person counted: at low frame rates nobody did.
+            span = self.seen_t[-1] - self.seen_t[0] if len(self.seen_t) >= 5 else 0.0
+            proc_fps = 1.0 / max(1e-3, np.mean(self.frame_times))
+            real_fps = (len(self.seen_t) - 1) / span if span > 0.2 else proc_fps
             with LOCK:
                 STATE.update(rain_score=round(rain_score, 2), rain_mode=rain_mode, persons=len(person_boxes),
-                             candidates=len(candidates), fps=round(1.0 / max(1e-3, np.mean(self.frame_times)), 1),
+                             candidates=len(candidates), fps=round(min(real_fps, proc_fps), 1), proc_fps=round(proc_fps, 1),
                              frames=STATE["frames"] + 1, uptime=int(time.time() - START))
             frame = apply_privacy(frame)
             self.frame_out = frame

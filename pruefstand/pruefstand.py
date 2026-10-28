@@ -176,7 +176,7 @@ def run(a):
         s = http_json(web + "/api/state", timeout=4)["state"]
         info = {"datum": time.strftime("%Y-%m-%d %H:%M"), "mw_version": mw_version(mw), "ki": s.get("ai_status", "?"),
                 "rechner": a.rechner or ("%s %s, %d Kerne" % (platform.system(), platform.machine(), os.cpu_count() or 0)),
-                "qualitaet": a.qualitaet, "szene": a.szene, "plaene": {}}
+                "qualitaet": a.qualitaet, "szene": a.szene, "kameras": "Kopfkamera" if a.kameras == [0] else "Kopf- und feste Kamera", "plaene": {}}
         try:
             info["sim_version"] = str(http_json(sim + "/info", timeout=4).get("name", "?")).split()[-1]
         except Exception:
@@ -185,7 +185,7 @@ def run(a):
         for plan in a.plaene:
             for rep in range(a.wiederholungen):
                 log("Testlauf «%s» (%d/%d) …" % (PLAN_NAME.get(plan, plan), rep + 1, a.wiederholungen))
-                r = http_json(sim + "/control", {"action": "test_start", "plan": plan}, timeout=10)
+                r = http_json(sim + "/control", {"action": "test_start", "plan": plan, "cams": a.kameras}, timeout=10)
                 if not r.get("ok"):
                     log("  startet nicht:", r.get("error") or r.get("info"))
                     rc = 2
@@ -214,6 +214,9 @@ def run(a):
                 rep_["dauer_s"] = round(time.time() - t0)
                 rep_["mw_fps"] = round(sum(fps) / len(fps), 1) if fps else 0
                 info["plaene"].setdefault(plan, []).append(rep_)
+                gb = kennzahlen([rep_])["groessen"]
+                if gb:
+                    log("  nach Grösse: " + ", ".join("%s %d/%d" % (b, gb[b][1], gb[b][0]) for b in ("nah", "mittel", "weit") if b in gb))
                 log("  Personen %d/%d (%.0f %%), Reaktion %s s, Tiere %d/%d, Fehlalarme %d" % (
                     rep_["persons_detected"], rep_["persons"], rep_["rate"], rep_.get("latency_s", "–"),
                     sum(p.get("animals_reported", 0) for p in rep_.get("phases", [])), sum(p.get("animals", 0) for p in rep_.get("phases", [])),
@@ -243,7 +246,15 @@ def kennzahlen(reps):
     AR = sum(p.get("animals_reported", 0) for r in reps for p in r.get("phases", []))
     F = sum(r["false_alarms"] for r in reps)
     lat = [r["latency_s"] for r in reps if float(r.get("latency_s", -1)) >= 0]
-    return {"personen": P, "erkannt": D, "quote": round(100.0 * D / max(1, P), 1), "reaktion": round(sum(lat) / len(lat), 1) if lat else None,
+    bands = {}                                                  # by size in the picture (simulator 3D-3.48 and newer)
+    for r in reps:
+        for v in r.get("visitors", []):
+            if not v.get("person"):
+                continue
+            b = "nah" if v["px"] >= 100 else ("mittel" if v["px"] >= 60 else "weit")
+            n, d = bands.get(b, (0, 0))
+            bands[b] = (n + 1, d + (1 if float(v.get("det_s", -1)) >= 0 else 0))
+    return {"groessen": bands, "personen": P, "erkannt": D, "quote": round(100.0 * D / max(1, P), 1), "reaktion": round(sum(lat) / len(lat), 1) if lat else None,
             "tiere": A, "tiere_gemeldet": AR, "fehlalarme": F, "fehlalarme_pro_lauf": round(F / max(1, len(reps)), 2), "laeufe": len(reps),
             "fps": round(sum(r.get("mw_fps", 0) for r in reps) / max(1, len(reps)), 1)}
 
@@ -291,18 +302,21 @@ def verlauf_schreiben():
          "Jeder Testlauf schickt immer dieselben Besucher auf denselben Wegen durch den 3D-Simulator. Der Simulator weiss, wer wann",
          "für eine Kamera sichtbar war, und vergleicht das mit den Meldungen von Motion Watch. Vergleichbar sind nur Zeilen vom",
          "gleichen Rechner und mit gleichem KI-Stand (ein langsamer Rechner liefert weniger Bilder pro Sekunde).", "",
-         "| Datum | Motion Watch | Simulator | Testlauf | Personen erkannt | Reaktion | Tiere gemeldet | Fehlalarme | Bilder/s | KI | Rechner |",
-         "|---|---|---|---|---|---|---|---|---|---|---|"]
+         "Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpunkte ≈ näher als 6 m, 60–100, 30–60 bei 540 Zeilen).", "",
+         "| Datum | Motion Watch | Simulator | Testlauf | Personen erkannt | nah / mittel / weit | Reaktion | Tiere gemeldet | Fehlalarme | Bilder/s | KI | Rechner |",
+         "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for d in reversed(rows):
         for plan, reps in d.get("plaene", {}).items():
             k = kennzahlen(reps)
-            L.append("| %s | %s | %s | %s%s | %d / %d (**%.0f %%**) | %s | %d / %d | %d | %s | %s | %s |" % (
+            gb = k["groessen"]
+            gt = " / ".join(("%d/%d" % (gb[b][1], gb[b][0])) if b in gb else "–" for b in ("nah", "mittel", "weit")) if gb else "–"
+            L.append("| %s | %s | %s | %s%s | %d / %d (**%.0f %%**) | %s | %s | %d / %d | %d | %s | %s | %s |" % (
                 d.get("datum", "?"), d.get("mw_version", "?"), d.get("sim_version", "?"), PLAN_NAME.get(plan, plan),
-                " ×%d" % k["laeufe"] if k["laeufe"] > 1 else "", k["erkannt"], k["personen"], k["quote"],
+                " ×%d" % k["laeufe"] if k["laeufe"] > 1 else "", k["erkannt"], k["personen"], k["quote"], gt,
                 ("%.1f s" % k["reaktion"]) if k["reaktion"] is not None else "–", k["tiere_gemeldet"], k["tiere"], k["fehlalarme"],
                 k["fps"], d.get("ki", "?"), d.get("rechner", "?")))
     if not rows:
-        L.append("| – | noch kein Lauf | | | | | | | | | |")
+        L.append("| – | noch kein Lauf | | | | | | | | | | |")
     L += ["", "## Einzelheiten pro Phase (letzter Lauf)", ""]
     if rows:
         d = rows[-1]
@@ -335,6 +349,7 @@ def main():
     ap.add_argument("--mw-port", type=int, default=5095)
     ap.add_argument("--start-zeit", type=int, default=240, help="so lange auf die Verbindung warten (s)")
     ap.add_argument("--eingewoehnen", type=int, default=25, help="Zeit für Motion Watch, sich auf das Bild einzustellen (s)")
+    ap.add_argument("--kameras", default="kopf", help="welche Kameras für die Wahrheit zählen: kopf (nur sie erkennt Personen) oder beide")
     ap.add_argument("--ki-ordner", default="", help="Ordner mit dem KI-Modell (frozen_inference_graph.pb + .pbtxt)")
     ap.add_argument("--rechner", default="", help="Name des Rechners in der Tabelle (Standard: System, Kerne)")
     ap.add_argument("--ohne-xvfb", action="store_true", help="keinen virtuellen Bildschirm starten")
@@ -343,6 +358,7 @@ def main():
     ap.add_argument("--nur-verlauf", action="store_true", help="nur VERLAUF.md aus den gespeicherten Ergebnissen schreiben")
     a = ap.parse_args()
     a.plaene = [p.strip() for p in a.plaene.split(",") if p.strip()]
+    a.kameras = [0] if a.kameras == "kopf" else [0, 1]
     if a.nur_verlauf:
         verlauf_schreiben()
         log("VERLAUF.md geschrieben")

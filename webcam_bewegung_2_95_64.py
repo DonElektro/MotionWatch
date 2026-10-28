@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_63.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_64.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.64: detection: the frame rate is now the real number of pictures per second (before 1 / processing time, far too high
+    with a slow camera, power saving or the simulator - the auto-tuner then wanted up to 24 pictures of walking before a person
+    counted); FPS badge shows the power saving; 3D simulator 3D-3.48 (test bench: head camera as truth, visitors by size)
   * 2.95.63: program split into parts by topic (folder quelle/, put together by werkzeuge/bauen.py into this one file - nothing
     changes for the Pi); test bench pruefstand/ measures the detection with the 3D simulator
   * 2.95.62: the little extra: the secret is drawn tiny (one screen pixel per square, about 2 mm on a phone) - only readable
@@ -722,10 +725,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_63.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_64.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_63.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_63.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_64.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_64.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -742,7 +745,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.63"
+APP_VERSION = "2.95.64"
 
 
 def default_data_dir():
@@ -14968,8 +14971,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.47", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30866348,
-         "sha256": "8a953cf68b85a1a37800938b540bab5d813841abdd35a8cbd94d52f83fe11c2b"}
+SIM3D = {"version": "3D-3.48", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30867227,
+         "sha256": "17ef0e1c5a5369d30583e134041549fcc06bee540227e58d4f971ca2ece8567e"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15108,8 +15111,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.47", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 23987810,
-           "sha256": "6d516af03fa1871208fe6630021943ac1e614c0d44089f89643a6eef069fb67b", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.48", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 23988768,
+           "sha256": "815be824899d98650c37f752060464da42cac38cba7950bf566bb8d5a0175862", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -18896,7 +18899,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_63.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_64.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -20241,6 +20244,7 @@ class MotionWatch:
         self.rec_name = ""; self.rec_info = None; self.rec_size = None; self._rec_retry = 0.0
         self.preroll = deque()
         self.frame_times = deque(maxlen=30)
+        self.seen_t = deque(maxlen=40)           # 2.95.64: when each picture was analysed -> the REAL frame rate
         self.mt = {"id": None, "t": 0.0, "moved": 0.0, "tpl": None, "box": None}  # follow movement: target, its look, last own move
         self.frame_gaps = deque(maxlen=60); self._last_t0 = 0.0     # time between camera frames -> real frame rate of a recording
         self.eco_wake_t = 0.0; self.eco_slow = False; self._eco_src = None
@@ -21175,9 +21179,16 @@ class MotionWatch:
                     cv2.circle(frame, (W - 24, 17), 8, (0, 0, 255), -1)
 
             self.frame_times.append(time.time() - t0)
+            self.seen_t.append(t0)
+            # 2.95.64: «fps» is the real number of pictures per second that are analysed (camera, simulator, power saving).
+            # Before it was 1 / processing time - far too high with a slow source (simulator: 100 instead of 2.5), and the
+            # auto-tuner then asked for up to 24 pictures of walking before a person counted: at low frame rates nobody did.
+            span = self.seen_t[-1] - self.seen_t[0] if len(self.seen_t) >= 5 else 0.0
+            proc_fps = 1.0 / max(1e-3, np.mean(self.frame_times))
+            real_fps = (len(self.seen_t) - 1) / span if span > 0.2 else proc_fps
             with LOCK:
                 STATE.update(rain_score=round(rain_score, 2), rain_mode=rain_mode, persons=len(person_boxes),
-                             candidates=len(candidates), fps=round(1.0 / max(1e-3, np.mean(self.frame_times)), 1),
+                             candidates=len(candidates), fps=round(min(real_fps, proc_fps), 1), proc_fps=round(proc_fps, 1),
                              frames=STATE["frames"] + 1, uptime=int(time.time() - START))
             frame = apply_privacy(frame)
             self.frame_out = frame
@@ -33492,7 +33503,8 @@ function tidyHeader(s, c) {
      + (ups && bt.charging ? " · " + t("charging") : ""), ups && !bt.on_battery ? "grn" : (bt.pct <= 15 ? "red" : (bt.pct <= 30 ? "yel" : "grn")));
   const rem = s.remote || [];
   hb("#b-remote", rem.length > 0, "🌐 " + t("Remote") + ": " + rem.join(", ").slice(0, 30), "org");
-  if (typeof s.fps === "number") badge("#b-fps", Math.round(s.fps) + " FPS", s.fps >= 12 ? "grn" : (s.fps >= 6 ? "yel" : "red"));
+  if (typeof s.fps === "number") badge("#b-fps", (s.eco === "saving" ? "💤 " : "") + Math.round(s.fps) + " FPS",   // 2.95.64: real pictures per second; power saving is slow on purpose
+    s.eco === "saving" ? "" : (s.fps >= 12 ? "grn" : (s.fps >= 6 ? "yel" : "red")));
   document.querySelectorAll("header .badge").forEach(b => { if (HIDDEN.has(b.dataset.view)) b.hidden = true; });
   compactHeader(s, c);                                    // right away (same frame): no flash of the long texts
 }
@@ -40413,7 +40425,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.63")
+        self.root.title("Motion Watch 2.95.64")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40703,7 +40715,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.63 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.64 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -42721,7 +42733,8 @@ class App:
         self._sb("b_auto", f"{tr('Auto')}: {st['auto_status']}", C["org"])
         self._sb("b_light", tr("LOW LIGHT") if st["lowlight"] else tr("Light ok"), C["yel"] if st["lowlight"] else None)
         fps = float(st["fps"] or 0)
-        self._sb("b_fps", f"{fps:.0f} FPS", C["grn"] if fps >= 12 else (C["yel"] if fps >= 6 else C["red"]))
+        self._sb("b_fps", ("💤 " if st.get("eco") == "saving" else "") + f"{fps:.0f} FPS",     # 2.95.64: real pictures per second
+                 C["blu"] if st.get("eco") == "saving" else (C["grn"] if fps >= 12 else (C["yel"] if fps >= 6 else C["red"])))
         a_st = st["arm_state"]
         self._sb("b_arm", "🛡 " + (tr("Armed") if a_st == "armed" else (f"{tr('Armed in')} {st['arm_left']} s" if a_st == "arming" else tr("Disarmed"))),
                  C["grn"] if a_st == "armed" else (C["yel"] if a_st == "arming" else None))

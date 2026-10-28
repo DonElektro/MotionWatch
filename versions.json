@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 00:58",
+ "generated": "2026-10-28 01:36",
  "versions": [
   {
-   "version": "2.95.63",
-   "file": "webcam_bewegung_2_95_63.py",
+   "version": "2.95.64",
+   "file": "webcam_bewegung_2_95_64.py",
    "url": "",
-   "sha256": "cd24fb1e277369fff24c6c0adbfea3aa9d46fbebdaecfb99d0367545979153dc",
-   "date": "2026-10-28 00:57",
-   "notes": "program split into parts by topic (folder quelle/, put together by werkzeuge/bauen.py into this one file - nothing changes for the Pi); test bench pruefstand/ measures the detection with the 3D simulator",
-   "sig": "3a98915b20b508ccd3570fd7b566393a6cecc249e6649d81f2c44cd28bdf54b093a6b682db64d45eb89fa11a2bf1d780c33d51d97880abdd24a5f2e372db2001"
+   "sha256": "e19f961a77a0338cd98ab1f8682262669cdc2deef7dfacdaf1232227003f121c",
+   "date": "2026-10-28 01:36",
+   "notes": "detection: the frame rate is now the real number of pictures per second (before 1 / processing time, far too high with a slow camera, power saving or the simulator - the auto-tuner then wanted up to 24 pictures of walking before a person counted); FPS badge shows the power saving; 3D simulator 3D-3.48 (test bench: head camera as truth, visitors by size)",
+   "sig": "9d92ee35100fe22f83d8416439c91720057e6692a55c61bc7fb1b20c2aa44e5f85f1bf2d112e81873cf8e314e6f835ea976cff776213b954b8bda9a2a6e2d80b"
   },
   {
    "version": "2.94.5",

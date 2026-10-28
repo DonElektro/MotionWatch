@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.47 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.48 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -540,3 +540,7 @@ bleiben für das Bild stehen). Disco-Licht von Motion Watch: die Lampe blitzt mi
 NEU IN 3D-3.47
 3D-3.47: Das Feld «Tunnel zu Motion Watch» (unter Verbindung) war versteckt und ist jetzt zu sehen. Darunter steht das Ziel
 mit Port (Adresse:8766), zum Vergleichen mit der Seite von Motion Watch.
+
+NEU IN 3D-3.48
+3D-3.48: Testlauf für den Prüfstand von Motion Watch: wählbar, welche Kameras für die Wahrheit zählen (nur die Kopfkamera
+erkennt Personen), und im Bericht jeder Besucher mit seiner Grösse im Bild (nah / mittel / weit).

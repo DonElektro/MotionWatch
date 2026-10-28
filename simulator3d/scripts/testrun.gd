@@ -35,6 +35,7 @@ const PLANS := {
 const COND_NAMES := {"glare": "Gegenlicht", "drops": "Tropfen auf der Linse", "web": "Spinnennetz", "headlights": "Scheinwerfer",
 		"shadows": "Wolkenschatten", "ir": "Infrarot"}
 var plan := "standard"
+var truth_cams := [0, 1]                # 3D-3.48: which cameras count for the truth (the test bench: only the head camera, 0)
 var PHASES: Array = STANDARD
 var _cond_saved := {}
 const EVERY := 13.0                     # a new visitor every ... seconds
@@ -89,9 +90,15 @@ func duration() -> float:
 	return s
 
 
-func start(which := "") -> String:
+func start(which := "", cams: Array = []) -> String:
 	if running:
 		return "Es läuft schon ein Testlauf."
+	truth_cams = [0, 1]
+	if not cams.is_empty():
+		truth_cams = []
+		for c in cams:
+			if int(c) in [0, 1] and not int(c) in truth_cams:
+				truth_cams.append(int(c))
 	if which != "":
 		if not PLANS.has(which):
 			return "unbekannter Testlauf"
@@ -203,7 +210,7 @@ func visible(v) -> bool:
 	(3D-3.27: also notes how big (_vis_px) and how well lit (_vis_light) it was, for the reasons of a miss)"""
 	var h: float = 1.7 * v.body_root.scale.y if v.kind == "person" else max(0.4, float(v.body_h) * 1.5)
 	var pos: Vector3 = v.position
-	for i in range(2):
+	for i in truth_cams:
 		var cam: Camera3D = main.cams[i]
 		var cp := cam.global_position
 		var d: float = max(0.5, cp.distance_to(pos))
@@ -309,6 +316,12 @@ func _make_report() -> void:
 	var tp := 0
 	var td := 0
 	var lat_all := []
+	var each := []                                         # 3D-3.48: every visitor that was well visible (for the test bench: by size)
+	for r0 in truth.values():
+		if float(r0["first"]) >= 0.0:
+			each.append({"kind": r0["kind"], "person": r0["person"], "phase": int(r0["phase"]), "px": int(float(r0["px"])),
+					"light": snappedf(float(r0["light"]), 0.01), "vis_s": snappedf(float(r0["vis"]), 0.1), "crouch": r0["crouch"],
+					"det_s": snappedf(float(r0["det"]) - float(r0["first"]), 0.1) if float(r0["det"]) >= 0.0 else -1.0, "reported": r0["rep"]})
 	for i in range(PHASES.size()):
 		var pn := 0
 		var pd := 0
@@ -382,7 +395,8 @@ func _make_report() -> void:
 	report = {"v": 2, "plan": plan, "plan_name": PLANS[plan]["name"], "date": Time.get_datetime_string_from_system(false, true), "simulator": main.version(), "scene": main.scene,
 			"device": dev, "persons": tp, "persons_detected": td, "rate": snappedf(100.0 * td / max(1, tp), 1),
 			"latency_s": snappedf(lat_avg, 0.1), "false_alarms": falses.size(), "false_list": falses, "missed_list": all_missed, "noise_alarms": noises,
-			"phases": phs, "note": "Wahrheit: sichtbar für Kopf- oder feste Kamera (frei, gross genug, genug Licht)."}
+			"phases": phs, "truth_cams": truth_cams, "visitors": each,
+			"note": ("Wahrheit: sichtbar für Kopf- oder feste Kamera" if truth_cams.size() > 1 else "Wahrheit: sichtbar für die Kopfkamera") + " (frei, gross genug, genug Licht)."}
 	info = "Testlauf fertig: Personen erkannt %d von %d (%d %%), Reaktionszeit %s, Fehlalarme %d, Geräuschalarme %d." % [
 			td, tp, int(report["rate"]), ("%.1f s" % lat_avg) if lat_avg >= 0.0 else "–", falses.size(), noises.size()]
 	_save()

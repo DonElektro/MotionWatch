@@ -706,7 +706,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.63")
+        self.root.title("Motion Watch 2.95.64")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -996,7 +996,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.63 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.64 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -3014,7 +3014,8 @@ class App:
         self._sb("b_auto", f"{tr('Auto')}: {st['auto_status']}", C["org"])
         self._sb("b_light", tr("LOW LIGHT") if st["lowlight"] else tr("Light ok"), C["yel"] if st["lowlight"] else None)
         fps = float(st["fps"] or 0)
-        self._sb("b_fps", f"{fps:.0f} FPS", C["grn"] if fps >= 12 else (C["yel"] if fps >= 6 else C["red"]))
+        self._sb("b_fps", ("💤 " if st.get("eco") == "saving" else "") + f"{fps:.0f} FPS",     # 2.95.64: real pictures per second
+                 C["blu"] if st.get("eco") == "saving" else (C["grn"] if fps >= 12 else (C["yel"] if fps >= 6 else C["red"])))
         a_st = st["arm_state"]
         self._sb("b_arm", "🛡 " + (tr("Armed") if a_st == "armed" else (f"{tr('Armed in')} {st['arm_left']} s" if a_st == "arming" else tr("Disarmed"))),
                  C["grn"] if a_st == "armed" else (C["yel"] if a_st == "arming" else None))
