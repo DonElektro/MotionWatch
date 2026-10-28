@@ -61,6 +61,11 @@ func _set_knob(p: Vector2) -> void:
 func command() -> Vector2:
 	"""(forward, turn right) of the stick or the arrow keys; ZERO when nobody drives here"""
 	var k := Vector2.ZERO
+	var g = main.game
+	if g != null and g.round_state == "play" and g.seek_drive != Vector2.ZERO:
+		return g.seek_drive.limit_length(1.0)               # 3D-3.78: the seeker of «Verstecken» drives
+	if main.localplay != null and main.localplay.active:
+		return Vector2.ZERO                                  # 3D-3.77: the keys belong to the player at the PC
 	if not main.karte.visible:
 		if Input.is_key_pressed(KEY_UP):
 			k.x += 1.0

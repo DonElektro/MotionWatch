@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_102.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_103.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.103: Simulator: Kopf steuern und Licht aus dem Simulator-Fenster; Disco-Licht in einem kleinen Untermenü; passt zum
+    Simulator 3D-3.77 (am PC mitspielen, Verstecken mit dem Rover, Bots, Wiederholung u. a.)
   * 2.95.102: Passt zum Simulator 3D-3.76 (Überwachen mit Ort-Frage, Uhrzeit bleibt, Spiel verlassen, Startkamera frei)
   * 2.95.101: Simulator-Tunnel stabiler (neuste Leitung zuerst, alte Leitungen verworfen); passt zum Simulator 3D-3.75
     (Überraschungsnacht, Verbindung nach Updates, leichtere Grafik, Prüfstand automatisch)
@@ -793,10 +795,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_102.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_103.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_102.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_102.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_103.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_103.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -813,7 +815,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.102"
+APP_VERSION = "2.95.103"
 
 
 def default_data_dir():
@@ -15153,8 +15155,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.76", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30958467,
-         "sha256": "1600e52c7ac4a58a3765b1a2ea4f22d2c1e3f975f3e3d8eb6306456e469c0f88"}
+SIM3D = {"version": "3D-3.77", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31006577,
+         "sha256": "d17eb4f98e7cb96bd62eb7f3ec971ea0820073ccf443f1fa2c6985cdd6b8d59c"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15293,8 +15295,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.76", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24080058,
-           "sha256": "cb3d7a176a6e05fc8ac68c4642bc021985205a7bbc90c886d453bbcfad9cd7e0", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.77", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24127180,
+           "sha256": "c577ef008c4e15b44331630ae1194a69f984c76dbba6f29a876db19f0a5c1cb7", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -18336,6 +18338,10 @@ class SimLink:
                                   "day" if op_ == "refcompare_day" else None)
                 elif op_ == "refstop":
                     refscan_stop()
+                elif op_ == "look":                         # 2.95.103: «Kopf steuern» in the simulator window
+                    move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3))
+                elif op_ == "light":                        # 2.95.103: the white light from the simulator (on / off)
+                    light_set("white", "on" if mc_.get("on") else "auto")
         le = int(rep_.get("last_event") or 0)
         if le > SIM["seen_event"]:
             data, _ = _sim_get(f"/events?since={SIM['seen_event']}")
@@ -19671,7 +19677,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_102.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_103.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -32662,7 +32668,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
     <details class="card" open data-view="protect" data-vgroup="Panels" data-vlabel="Camping / protection" id="pr-card">
       <summary data-i18n="Camping / protection">Camping / protection</summary>
       <div id="mode-box" style="margin:2px 0 12px"><div class="row" style="justify-content:space-between"><b data-i18n="Mode">Mode</b><span class="mut" id="mode-cur"></span></div>
-        <div id="mode-grid" class="mode-grid"></div><div class="mut" id="mode-info" style="margin-top:6px"></div><div id="mode-opts"></div><div class="err" id="mode-err"></div><div id="mode-tv"></div><div id="mode-disco"></div></div>
+        <div id="mode-grid" class="mode-grid"></div><div class="mut" id="mode-info" style="margin-top:6px"></div><div id="mode-opts"></div><div class="err" id="mode-err"></div><div id="mode-tv"></div><details id="disco-more" class="more" style="margin-top:8px"><summary id="disco-sum" style="cursor:pointer;color:var(--mut,#8a96a6);font-size:14px">🪩 <span>Disco light</span></summary><div id="mode-disco"></div></details></div>
       <div class="row"><b id="pr-state" style="font-size:18px">–</b><span class="mut" id="pr-left"></span></div>
       <button type="button" class="night-btn" id="pr-night" onclick="nightGuard()"><span data-i18n="🌙 Guard tonight">🌙 Guard tonight</span><small data-i18n="night-desc">switches on what a night needs, arms with the countdown and tells what is missing</small></button>
       <div id="night-res" hidden></div>
@@ -35934,7 +35940,7 @@ function discoPaint(D) {                            // 2.95.54: the white light 
   const b = $("#mode-disco"); if (!b || !D) return;
   const key = [D.on, D.mode, D.bpm, D.mic, D.white, D.on ? Math.floor(D.left / 60) : 0].join("|"); if (b.dataset.k === key) return; b.dataset.k = key; b.textContent = "";
   const r = el("div", "row"); r.style.cssText = "margin-top:8px;flex-wrap:wrap;gap:6px";
-  r.append(el("b", "", "🪩 " + t("Disco light")));
+  const sm = $("#disco-sum"); if (sm) sm.textContent = "🪩 " + t("Disco light") + (D.on ? " · " + t("on") : "");   // 2.95.103: in a small sub-menu
   const go = el("button", D.on ? "" : "sec", D.on ? t("Stop") + " (" + Math.ceil(D.left / 60) + " min)" : t("Start")); go.type = "button"; go.disabled = !D.white;
   const md = document.createElement("select"); [["music", t("with the music (microphone)")], ["tempo", t("fixed tempo")]].forEach(([v, n]) => { const o = document.createElement("option"); o.value = v; o.textContent = n; md.appendChild(o); });
   md.value = D.mode; md.style.flex = "1 1 160px";
@@ -41845,7 +41851,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.102")
+        self.root.title("Motion Watch 2.95.103")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -42135,7 +42141,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.102 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.103 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

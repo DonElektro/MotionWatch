@@ -544,7 +544,7 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
     <details class="card" open data-view="protect" data-vgroup="Panels" data-vlabel="Camping / protection" id="pr-card">
       <summary data-i18n="Camping / protection">Camping / protection</summary>
       <div id="mode-box" style="margin:2px 0 12px"><div class="row" style="justify-content:space-between"><b data-i18n="Mode">Mode</b><span class="mut" id="mode-cur"></span></div>
-        <div id="mode-grid" class="mode-grid"></div><div class="mut" id="mode-info" style="margin-top:6px"></div><div id="mode-opts"></div><div class="err" id="mode-err"></div><div id="mode-tv"></div><div id="mode-disco"></div></div>
+        <div id="mode-grid" class="mode-grid"></div><div class="mut" id="mode-info" style="margin-top:6px"></div><div id="mode-opts"></div><div class="err" id="mode-err"></div><div id="mode-tv"></div><details id="disco-more" class="more" style="margin-top:8px"><summary id="disco-sum" style="cursor:pointer;color:var(--mut,#8a96a6);font-size:14px">🪩 <span>Disco light</span></summary><div id="mode-disco"></div></details></div>
       <div class="row"><b id="pr-state" style="font-size:18px">–</b><span class="mut" id="pr-left"></span></div>
       <button type="button" class="night-btn" id="pr-night" onclick="nightGuard()"><span data-i18n="🌙 Guard tonight">🌙 Guard tonight</span><small data-i18n="night-desc">switches on what a night needs, arms with the countdown and tells what is missing</small></button>
       <div id="night-res" hidden></div>
@@ -3816,7 +3816,7 @@ function discoPaint(D) {                            // 2.95.54: the white light 
   const b = $("#mode-disco"); if (!b || !D) return;
   const key = [D.on, D.mode, D.bpm, D.mic, D.white, D.on ? Math.floor(D.left / 60) : 0].join("|"); if (b.dataset.k === key) return; b.dataset.k = key; b.textContent = "";
   const r = el("div", "row"); r.style.cssText = "margin-top:8px;flex-wrap:wrap;gap:6px";
-  r.append(el("b", "", "🪩 " + t("Disco light")));
+  const sm = $("#disco-sum"); if (sm) sm.textContent = "🪩 " + t("Disco light") + (D.on ? " · " + t("on") : "");   // 2.95.103: in a small sub-menu
   const go = el("button", D.on ? "" : "sec", D.on ? t("Stop") + " (" + Math.ceil(D.left / 60) + " min)" : t("Start")); go.type = "button"; go.disabled = !D.white;
   const md = document.createElement("select"); [["music", t("with the music (microphone)")], ["tempo", t("fixed tempo")]].forEach(([v, n]) => { const o = document.createElement("option"); o.value = v; o.textContent = n; md.appendChild(o); });
   md.value = D.mode; md.style.flex = "1 1 160px";

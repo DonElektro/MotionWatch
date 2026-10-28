@@ -1,12 +1,12 @@
 {
- "version": "3D-3.76",
+ "version": "3D-3.77",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30958467,
- "sha256": "1600e52c7ac4a58a3765b1a2ea4f22d2c1e3f975f3e3d8eb6306456e469c0f88",
- "notes": "Überwachen mit Ort-Frage und eigener Route, Uhrzeit bleibt, Spiel verlassen, Startkamera frei",
+ "size": 31006577,
+ "sha256": "d17eb4f98e7cb96bd62eb7f3ec971ea0820073ccf443f1fa2c6985cdd6b8d59c",
+ "notes": "Am PC mitspielen, Verstecken mit dem Rover, Bots, Übungsrunde, Wiederholung, Abzeichen, Tagesaufgabe, Geisterläufer, Kopf steuern, kompaktes Kästchen",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24080058,
-  "sha256": "cb3d7a176a6e05fc8ac68c4642bc021985205a7bbc90c886d453bbcfad9cd7e0"
+  "size": 24127180,
+  "sha256": "c577ef008c4e15b44331630ae1194a69f984c76dbba6f29a876db19f0a5c1cb7"
  }
 }

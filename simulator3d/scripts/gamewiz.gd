@@ -33,6 +33,7 @@ const MODES := [["camera", "🎥", "Alle gegen die Kamera", "Alle schleichen zum
 		["mw", "🛡", "Motion Watch entscheidet", "Die echte Erkennung von Motion Watch passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht."],
 		["mwhand", "🕹", "Team gegen Motion Watch", "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an Motion Watch: Sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken «Erwischt!»."],
 		["patrol", "🚜", "Patrouille", "Motion Watch fährt auf dem Mover eine Route ab und schaut sich an jedem Punkt um. Die Spieler schleichen zum Ziel, während die Patrouille unterwegs ist. Wer erwischt: unter Mover → Patrouille wählbar (Motion Watch oder Simulator)."],
+		["seek", "🙈", "Verstecken mit dem Rover", "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Rover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Am besten in der Szene «Versteckspiel»."],
 		["free", "🧪", "Frei bewegen", "Ohne Regeln: alle bewegen sich frei (gehen, rennen, ducken, kriechen), niemand wird erwischt. Zum Testen der Erkennung."]]
 const GOALS := [["reach", "🟢", "Zum Ziel schleichen", "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg."],
 		["return", "💰", "Beute holen und zurückbringen", "Ziel: die Beute beim grünen Licht holen und zurück zum Start bringen."],

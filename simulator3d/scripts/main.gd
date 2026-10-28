@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.76"
+const VERSION := "3D-3.77"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -51,6 +51,13 @@ var testrun                           # testrun.gd: test run with evaluation (fr
 var life                              # life.gd: daily life, real weather and time (3D-3.27)
 var recorder                          # recorder.gd: recording and replay of situations (3D-3.27)
 var dev2                              # device.gd: a second Motion Watch device in the world (3D-3.27)
+var game_bots := 0                    # 3D-3.77: computer players
+var game_tutorial := false            # 3D-3.77: practice round with explanations, nobody is caught
+var game_daily := false               # 3D-3.77: the challenge of the day
+var game_ghost := true                # 3D-3.77: the ghost of the own best way
+var game_heart := true                # 3D-3.77: heartbeat when the camera nearly sees you
+var localplay                         # 3D-3.77: localplay.gd - play here at the PC
+var headpad                           # 3D-3.77: headpad.gd - steer the head of Motion Watch
 var game_tasks := true                # a task for every round of the game (bonus) - 3D-3.27
 var daily_life := true                # visitors at their own times, the postman and the neighbour every day
 var real_weather := false             # the weather of the place from open-meteo.com
@@ -1854,6 +1861,8 @@ func _wanted_fps(i: int) -> float:
 	var f: float = float(d.get(i, 0.0))
 	if i < 2 and now() - snap_want[i] < 3.0:
 		f = max(f, 2.0)
+	if i == 0 and headpad != null and headpad.visible:
+		f = max(f, 8.0)                                  # 3D-3.77: «Kopf steuern» shows the head camera
 	if i == 0 and game != null and game.guard_watching():
 		f = max(f, 8.0)                                  # a player guards: he sees through the head camera
 	if i == 1 and game != null and game.guard2_watching():
@@ -2095,6 +2104,15 @@ var bike_node: Node3D = null
 var refscan_label: Label
 var surprise_label: Label              # 3D-3.75
 var ds_label: Label
+
+
+func mw_look(dir: String, step := 3.0) -> void:
+	"""3D-3.77: turn the head of Motion Watch from here (Motion Watch 2.95.103: op «look»)"""
+	mw_cmd = {"id": max(int(Time.get_unix_time_from_system() * 1000.0), int(mw_cmd.get("id", 0)) + 1), "op": "look", "dir": dir, "step": step}
+
+
+func mw_light(on: bool) -> void:
+	mw_cmd = {"id": max(int(Time.get_unix_time_from_system() * 1000.0), int(mw_cmd.get("id", 0)) + 1), "op": "light", "on": on}
 
 
 func mw_request(op: String) -> void:
@@ -2787,7 +2805,7 @@ func _register_controls() -> void:
 	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
-			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "Motion Watch entscheidet (echte Erkennung)"], ["mwhand", "Team gegen Motion Watch (Wächter steuern Motion Watch)"], ["free", "Frei bewegen – ohne Regeln (zum Testen der Erkennung)"], ["patrol", "Patrouille: Motion Watch fährt mit dem Mover die Route ab"]]})
+			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "Motion Watch entscheidet (echte Erkennung)"], ["mwhand", "Team gegen Motion Watch (Wächter steuern Motion Watch)"], ["free", "Frei bewegen – ohne Regeln (zum Testen der Erkennung)"], ["patrol", "Patrouille: Motion Watch fährt mit dem Mover die Route ab"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"]]})
 	add_control("select", "game_level", "Schwierigkeit (Wächter und Motion Watch)", func(): return game_level, func(v): game_level = v, "Spiel",
 			{"options": [["easy", "leicht – Easy-Mode: Motion Watch muss 2.5 s melden, Kriechen ist sicher, 6 s Pause"], ["normal", "normal – 1 s melden, 3 s Pause"], ["hard", "schwer – sofort, 2 s Pause"]]})
 	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
@@ -2816,6 +2834,14 @@ func _register_controls() -> void:
 	add_control("toggle", "game_night", "Nacht-Runde mit Taschenlampen", func(): return game_night, func(v): game_night = v, "Spiel")
 	add_control("toggle", "game_events", "Zufallsereignisse (Gewitter, Hund, Auto)", func(): return game_events, func(v): game_events = v, "Spiel")
 	add_control("slider", "game_checkpoints", "Checkpoints (+150 Punkte)", func(): return game_checkpoints, func(v): game_checkpoints = int(v), "Spiel", {"min": 0, "max": 3, "step": 1})
+	add_control("select", "game_bots", "Computer-Spieler (Bots), die mitschleichen", func(): return str(game_bots), func(v): game_bots = int(v); game.set_bots(game_bots), "Spiel",
+			{"options": [["0", "keine"], ["1", "1 Bot"], ["2", "2 Bots"], ["3", "3 Bots"]]})
+	add_control("toggle", "game_tutorial", "Übungsrunde: Schritt für Schritt erklärt, niemand wird erwischt", func(): return game_tutorial, func(v): game_tutorial = v, "Spiel")
+	add_control("toggle", "game_daily", "Tagesaufgabe: heute für alle dieselbe Szene, dasselbe Ziel und dieselben Startpunkte", func(): return game_daily, func(v): game_daily = v, "Spiel")
+	add_control("toggle", "game_ghost", "Geisterläufer: der eigene beste Weg läuft als Geist mit (nur die Spieler sehen ihn)", func(): return game_ghost, func(v): game_ghost = v, "Spiel")
+	add_control("toggle", "game_heart", "Herzschlag, wenn die Kamera dich gleich sieht (Handy vibriert)", func(): return game_heart, func(v): game_heart = v, "Spiel")
+	add_control("button", "game_local", "Hier am PC mitspielen (Tastatur und Maus)", null, func(): localplay.start("runner"), "Spiel")
+	add_control("button", "game_local_guard", "Hier am PC Wächter sein (Kopf drehen, «Erwischt!»)", null, func(): localplay.start("guard"), "Spiel")
 	add_control("toggle", "game_tasks", "Aufgabe für jede Runde (z. B. nur kriechend ins Ziel, Bonus)", func(): return game_tasks, func(v): game_tasks = v, "Spiel")
 	add_control("toggle", "game_autohandicap", "Handicap für den Ersten der Rangliste", func(): return game_autohandicap, func(v): game_autohandicap = v, "Spiel")
 	add_control("button", "game_board_reset", "Rangliste des Abends zurücksetzen", null, func(): game.board_reset(), "Spiel")
@@ -3264,6 +3290,18 @@ func control(d: Dictionary) -> Dictionary:
 			explore.test_drive = Vector2(float(dv[0]), float(dv[1]))
 			explore.test_until = explore.main.now() + (float(dv[2]) if dv.size() > 2 else 2.0)
 		return explore.state()
+	elif a == "localplay":                             # 3D-3.77: play here at the PC (tests): {do: start | stop | get, role}
+		var dl := str(d.get("do", "get"))
+		if dl == "start":
+			localplay.start(str(d.get("role", "runner")))
+		elif dl == "stop":
+			localplay.stop()
+		elif dl == "key":
+			var ke := InputEventKey.new()
+			ke.keycode = int(d.get("key", KEY_ENTER))
+			ke.pressed = true
+			localplay._input(ke)
+		return localplay.debug()
 	elif a == "surprise":                              # 3D-3.75: {op: get | on | off | start (kind) | morning}
 		var op_ := str(d.get("op", "get"))
 		if op_ == "on" or op_ == "off":
@@ -4340,7 +4378,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "kids_on", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
+		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "kids_on", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
 var _settings_dirty := false
 
 
@@ -5170,6 +5208,17 @@ func _build_view_bar(layer: CanvasLayer, th: Theme) -> void:
 	toolbar = preload("res://scripts/toolbar.gd").new()       # 3D-3.61: everything with the mouse
 	toolbar.main = self
 	layer.add_child(toolbar)
+	headpad = preload("res://scripts/headpad.gd").new()       # 3D-3.77: steer the head of Motion Watch
+	headpad.main = self
+	headpad.theme = th
+	layer.add_child(headpad)
+	localplay = preload("res://scripts/localplay.gd").new()   # 3D-3.77: play here at the PC
+	localplay.main = self
+	localplay.theme = th
+	var lp_layer := CanvasLayer.new()                         # above everything of the window
+	lp_layer.layer = 30
+	add_child(lp_layer)
+	lp_layer.add_child(localplay)
 	home_editor = preload("res://scripts/home_editor.gd").new()   # 3D-3.73: «Mein Zuhause bauen»
 	home_editor.main = self
 	home_editor.theme = th

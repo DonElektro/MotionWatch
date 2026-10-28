@@ -26,7 +26,7 @@ var drag_win := Vector2i.ZERO
 var dragging := false
 var moved := false
 
-const MINI_SIZE := Vector2i(380, 156)
+const MINI_SIZE := Vector2i(330, 84)                # 3D-3.77: compact
 const ICON_SIZE := Vector2i(64, 64)
 var tiny := false                          # folded into the small icon
 var icon_box: PanelContainer
@@ -40,6 +40,7 @@ var _lin_prev := []
 
 
 func _ready() -> void:
+	"""3D-3.77: compact - logo, version, state at the top; pictures, CPU and Motion Watch in one line; a note only when needed"""
 	layer = 120
 	panel = PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -48,70 +49,75 @@ func _ready() -> void:
 	sb.border_color = Color(0.25, 0.32, 0.42)
 	sb.set_border_width_all(1)
 	sb.set_corner_radius_all(10)
-	sb.content_margin_left = 14
-	sb.content_margin_right = 12
-	sb.content_margin_top = 10
-	sb.content_margin_bottom = 10
+	sb.content_margin_left = 10
+	sb.content_margin_right = 6
+	sb.content_margin_top = 6
+	sb.content_margin_bottom = 6
 	panel.add_theme_stylebox_override("panel", sb)
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	panel.mouse_default_cursor_shape = Control.CURSOR_MOVE
-	panel.tooltip_text = "«Gross»: wieder normal · Ziehen: verschieben"
+	panel.tooltip_text = "Ziehen: verschieben · ▢: wieder gross · ▁: nur ein Symbol"
 	panel.gui_input.connect(_on_input)
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 2)
+	v.add_theme_constant_override("separation", 1)
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(v)
-	var h := HBoxContainer.new()
+	var h := HBoxContainer.new()                     # logo · name and version · state · buttons
+	h.add_theme_constant_override("separation", 6)
 	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(h)
+	var logo: Control = load("res://scripts/mw_logo.gd").new()
+	logo.custom_minimum_size = Vector2(22, 22)
+	h.add_child(logo)
+	line1 = Label.new()
+	line1.add_theme_font_size_override("font_size", 14)
+	line1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	line1.clip_text = true
+	h.add_child(line1)
 	dot = Label.new()
 	dot.text = "●"
-	dot.add_theme_font_size_override("font_size", 18)
+	dot.add_theme_font_size_override("font_size", 13)
 	h.add_child(dot)
-	line1 = Label.new()
-	line1.add_theme_font_size_override("font_size", 16)
-	h.add_child(line1)
-	line2 = Label.new()
-	line2.add_theme_font_size_override("font_size", 13)
-	line2.add_theme_color_override("font_color", Color(0.75, 0.8, 0.86))
-	line2.clip_text = true
-	v.add_child(line2)
-	line_cpu = Label.new()
-	line_cpu.add_theme_font_size_override("font_size", 13)
-	line_cpu.add_theme_color_override("font_color", Color(0.75, 0.8, 0.86))
-	line_cpu.clip_text = true
-	line_cpu.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(line_cpu)
-	line_own = Label.new()
-	line_own.add_theme_font_size_override("font_size", 13)
-	line_own.add_theme_color_override("font_color", Color(0.75, 0.8, 0.86))
-	line_own.clip_text = true
-	line_own.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(line_own)
-	var h2 := HBoxContainer.new()
-	h2.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(h2)
-	line3 = Label.new()
+	line3 = Label.new()                               # the state in a word
 	line3.add_theme_font_size_override("font_size", 12)
-	line3.add_theme_color_override("font_color", Color(0.55, 0.6, 0.66))
-	line3.text = "ziehen = verschieben"
-	line3.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	h2.add_child(line3)
+	h.add_child(line3)
 	var fold := Button.new()
 	fold.text = "▁"
+	fold.flat = true
 	fold.tooltip_text = "Einklappen: nur noch ein kleines Symbol"
-	fold.add_theme_font_size_override("font_size", 13)
+	fold.add_theme_font_size_override("font_size", 12)
+	fold.custom_minimum_size = Vector2(24, 22)
 	fold.focus_mode = Control.FOCUS_NONE
 	fold.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
 	fold.pressed.connect(func(): set_tiny(true))
-	h2.add_child(fold)
+	h.add_child(fold)
 	var big := Button.new()
-	big.text = "▢ Gross"
+	big.text = "▢"
+	big.flat = true
+	big.tooltip_text = "Wieder gross"
 	big.add_theme_font_size_override("font_size", 13)
+	big.custom_minimum_size = Vector2(24, 22)
 	big.focus_mode = Control.FOCUS_NONE
 	big.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS      # react at once (some systems lose the release here)
 	big.pressed.connect(leave)
-	h2.add_child(big)
+	h.add_child(big)
+	line2 = Label.new()                               # pictures/s · CPU of this PC · simulator
+	line2.add_theme_font_size_override("font_size", 12)
+	line2.add_theme_color_override("font_color", Color(0.82, 0.86, 0.9))
+	line2.clip_text = true
+	v.add_child(line2)
+	line_cpu = Label.new()                            # Motion Watch: device, version, its CPU
+	line_cpu.add_theme_font_size_override("font_size", 12)
+	line_cpu.add_theme_color_override("font_color", Color(0.65, 0.7, 0.77))
+	line_cpu.clip_text = true
+	line_cpu.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(line_cpu)
+	line_own = Label.new()                            # a note only when something needs attention
+	line_own.add_theme_font_size_override("font_size", 11)
+	line_own.add_theme_color_override("font_color", Color(0.95, 0.7, 0.3))
+	line_own.clip_text = true
+	line_own.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(line_own)
 	for c in [dot, line1, line2, line3]:
 		c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.visible = false
@@ -185,22 +191,47 @@ func _process(dt: float) -> void:
 func _paint() -> void:
 	var sending: bool = main.stream_on
 	var connected: bool = sending and main.now() - main.mw_t < 3.0
-	dot.add_theme_color_override("font_color", Color(0.25, 0.85, 0.45) if connected else (Color(0.95, 0.7, 0.2) if sending else Color(0.55, 0.6, 0.66)))
-	line1.text = ("Sendet an Motion Watch" if sending else "Senden aus") + ("  ·  %.0f Bilder/s" % fps if sending else "")
+	var col := Color(0.25, 0.85, 0.45) if connected else (Color(0.95, 0.7, 0.2) if sending else Color(0.55, 0.6, 0.66))
+	dot.add_theme_color_override("font_color", col)
+	line3.add_theme_color_override("font_color", col)
+	line3.text = "verbunden" if connected else ("wartet" if sending else "aus")
+	line1.text = "MW Sim 3D  %s" % main.VERSION
+	var parts := PackedStringArray()
+	parts.append(("%.0f Bilder/s" % fps) if sending else "sendet nicht")
+	if own["pc"] >= 0:
+		parts.append("PC %d %%" % roundi(own["pc"]))
+	if own["sim"] >= 0:
+		parts.append("Sim %d %%" % roundi(own["sim"]))
+	if sending and main.net != null and main.net.port != main.stream_port:
+		parts.append("Port %d" % main.net.port)
+	line2.text = "  ·  ".join(parts)
 	if connected:
-		line2.text = "verbunden mit %s" % str(main.mw.get("device", "Motion Watch"))
-	elif sending:
-		line2.text = "wartet auf Motion Watch …"
+		var c: Dictionary = main.cpu_info
+		var mwp := PackedStringArray([(str(main.mw.get("device", "Motion Watch")) + " " + str(main.mw.get("mw_version", ""))).strip_edges()])
+		if c.get("total", null) != null and c.get("sim", null) == null:
+			mwp.append("Gerät-CPU %d %%" % roundi(float(c["total"])))
+		elif c.get("mw", null) != null:
+			mwp.append("MW %d %%" % roundi(float(c["mw"])))
+		line_cpu.text = "  ·  ".join(mwp).strip_edges()
 	else:
-		line2.text = "Motion Watch sieht den Simulator nicht"
+		line_cpu.text = "Motion Watch: –" if sending else "Motion Watch sieht den Simulator nicht"
+	var note := ""
 	if not main.sim_active:
-		line2.text += "  ·  Pause (spart Strom)"
-	line_cpu.text = cpu_text(main.cpu_info if connected else {})
-	var same_pc: bool = connected and main.cpu_info.get("sim", null) != null      # Motion Watch runs on this PC: its line says it all
-	line_own.visible = not same_pc
-	line_own.text = "Dieser PC: CPU %s  ·  Simulator %s" % ["–" if own["pc"] < 0 else "%d %%" % roundi(own["pc"]), "–" if own["sim"] < 0 else "%d %%" % roundi(own["sim"])]
-	icon_dot.add_theme_color_override("font_color", dot.get_theme_color("font_color"))
-	icon_box.tooltip_text = "%s\n%s\nAnklicken: Kästchen wieder gross · Ziehen: verschieben" % [line1.text, line_own.text if line_own.visible else line_cpu.text]
+		note = "Pause – spart Strom, bis Motion Watch fragt"
+	elif sending and not connected:
+		note = "wartet auf Motion Watch …"
+	if net_err() != "":
+		note = net_err()
+	line_own.text = note
+	line_own.visible = note != ""
+	icon_dot.add_theme_color_override("font_color", col)
+	icon_box.tooltip_text = "%s · %s\n%s\n%s\nAnklicken: Kästchen wieder gross · Ziehen: verschieben" % [line1.text, line3.text, line2.text, line_cpu.text]
+
+
+func net_err() -> String:
+	if main.net != null and not main.stream_on and str(main.net.error_text) != "":
+		return str(main.net.error_text)
+	return ""
 
 
 static func cpu_text(c: Dictionary) -> String:

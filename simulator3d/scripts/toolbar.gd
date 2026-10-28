@@ -21,6 +21,7 @@ const ROW1 := [["explore", "Erkunden", "Mit dem Rover herumfahren (Tastatur, Mau
 		["clear", "Löschen", "Route und Bereich löschen"],
 		["follow", "Kopf folgt", "Der Kopf dreht zu Verdächtigem, der Mover fährt dann langsamer"],
 		["place", "Versetzen", "Rover versetzen: danach in die Welt klicken"],
+		["head", "Kopf steuern", "Den Kopf von Motion Watch mit Pfeilen drehen, Licht ein / aus"],
 		["mast_dn", "Stange −", "Kamerakopf tiefer"], ["mast_up", "Stange +", "Kamerakopf höher"]]
 const ROW2 := [["view", "Ansicht", "Hinterher, Fahrersicht, von oben"],
 		["spectate", "Beobachter", "Wechselnde Kamera-Einstellungen von Rover und Spielern"],
@@ -120,6 +121,8 @@ func _press(id: String) -> void:
 			pt.follow = not pt.follow
 		"place":
 			main.place_kind = "" if main.place_kind == "rover" else "rover"
+		"head":
+			main.headpad.toggle()
 		"mast_dn":
 			main.set_mast(main.mast_h - 0.1)
 		"mast_up":
@@ -153,7 +156,7 @@ func _paint() -> void:
 	var st := {"explore": ex.on, "patrol": pt.active, "points": pt.edit == "points", "area": pt.edit == "area" or (pt.mode == "area" and pt.area.size.x > 0.5),
 			"follow": pt.follow, "place": main.place_kind == "rover", "spectate": main.spectate, "invite": ex.invite != null and ex.invite.visible,
 			"route": pt.show_route, "map": main.map_on, "cams": main.cam_card != null and main.cam_card.visible, "info": not ex.info_hidden,
-			"panel": main.ui_root.visible, "view": ex.on}
+			"panel": main.ui_root.visible, "view": ex.on, "head": main.headpad != null and main.headpad.visible}
 	for k in _btn:
 		var b: Button = _btn[k]
 		var on: bool = st.get(k, false)
@@ -174,7 +177,7 @@ func _paint() -> void:
 
 
 func _process(dt: float) -> void:
-	visible = not main.kids_on and not (main.home_editor != null and main.home_editor.visible)   # 3D-3.69 / 3.73
+	visible = not main.kids_on and not (main.home_editor != null and main.home_editor.visible) and not (main.localplay != null and main.localplay.active)   # 3D-3.69 / 3.73
 	if not visible:
 		return
 	# at the bottom in the middle of the view (left of the panel when it is shown), above the view buttons

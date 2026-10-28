@@ -151,6 +151,7 @@ func set_open(on: bool) -> void:
 			main.start_info = "Spiel: Port %d / %d belegt" % [http_port, ws_port]
 			return
 		open = true
+		set_bots.call_deferred(main.game_bots)          # 3D-3.77: the computer players come along
 	else:
 		end_round()
 		for s in socks:
@@ -215,7 +216,7 @@ func busy() -> bool:
 func guard_watching() -> bool:
 	"""a player guards: the head camera must deliver pictures often (main._wanted_fps)"""
 	var g = guard_player()
-	return g != null and g["sock"] != null
+	return g != null and (g["sock"] != null or str(g.get("kind", "phone")) == "local")
 
 
 # ---- the scene: goal, starts, things to collect ----------------------------------------------------------------------
@@ -275,6 +276,8 @@ var _starts: Array = []
 
 
 func start_point(i: int) -> Vector3:
+	if main.game_mode == "seek" and seek_set:          # 3D-3.78: everybody starts at the base
+		return _g(main.free_spot(seek_base + Vector3(cos(i * 1.57 + 0.4), 0, sin(i * 1.57 + 0.4)) * 2.6, 0.6, true))
 	if flag_mode() and bases.size() == 2 and players[i] != null:   # «Fahne erobern»: start at the own base
 		var b: Vector3 = bases[int(players[i]["team"])]
 		return _g(main.free_spot(b + Vector3((i - 1.5) * 1.3, 0, -3.0), 0.6, true))
@@ -467,9 +470,17 @@ func _process(dt: float) -> void:
 	var t := now()
 	if main.game_mode == "free" and round_state not in ["countdown", "play"] and count() > 0:
 		start_round()                                      # 3D-3.60: free moving starts as soon as somebody is there
+	_bots_tick(dt)                                         # 3D-3.77: computer players
 	for p in players:
 		if p != null:
 			_steer(p, dt)
+			if p["state"] == "play" and p["actor"].ctl_posture == 2:
+				p["crawl_s"] = float(p.get("crawl_s", 0.0)) + dt
+	if round_state == "play":
+		_rec_tick(t)                                       # 3D-3.77: replay, ghosts, practice round
+		_ghost_tick(t)
+		if main.game_tutorial:
+			_tut_tick(t)
 	if round_state == "countdown" and t >= t_start:
 		round_state = "play"
 		for p in players:
@@ -571,7 +582,7 @@ func _net() -> void:
 			continue
 	for i in range(MAX_P):                                 # gone for 30 s: the place is free again
 		var p = players[i]
-		if p != null and p["sock"] == null and now() - float(p["gone_t"]) > 30.0:
+		if p != null and p["sock"] == null and str(p.get("kind", "phone")) == "phone" and now() - float(p["gone_t"]) > 30.0:
 			_remove(i)
 			paint()
 
@@ -664,6 +675,8 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 			_guard_light(p2)
 		"catch":
 			_guard_catch(p2)
+		"replay":                                      # 3D-3.77: the replay of the last round
+			send_replay(p2)
 		"leave":                                       # 3D-3.76: the player stops early (button on the phone)
 			main.start_info = "%s hat das Spiel verlassen" % p2["name"]
 			_remove(slot2)
@@ -685,7 +698,7 @@ func _set_role(p: Dictionary, r: String) -> void:
 	if round_state in ["countdown", "play"] or team_mode():
 		return
 	if r == "guard":
-		if main.game_mode != "guard":
+		if not main.game_mode in ["guard", "seek"]:
 			return
 		var g = guard_player()
 		if g != null and g != p:
@@ -811,7 +824,8 @@ func _new_player(slot: int, token: String, name: String, lk := {}) -> Dictionary
 			"state": "play" if round_state == "play" else "lobby", "t_goal": 0.0, "safe_until": 0.0, "msg": "", "msg_until": 0.0,
 			"role": "runner", "items": 0, "stone_t": 0.0, "catches": 0, "false": 0, "catch_t": 0.0, "sent_no": -1,
 			"loot": loot, "carry": false, "cone": cone, "look": lk, "team": 0, "sig_t": 0.0,
-			"decoy": false, "watched": 0.0, "hc": 0, "lamp": false, "hide_i": -1, "hide_t0": 0.0, "hide_cd": {}, "cps": []}
+			"decoy": false, "watched": 0.0, "hc": 0, "lamp": false, "hide_i": -1, "hide_t0": 0.0, "hide_cd": {}, "cps": [],
+			"kind": "phone", "crawl_s": 0.0}
 	return p
 
 
@@ -964,12 +978,13 @@ func start_round() -> void:
 		for p in players:
 			if p != null:
 				_assign(p, "guard" if int(p["team"]) == guard_team else "runner")
-	elif main.game_mode != "guard":                        # no player as guard in this mode
+	elif not main.game_mode in ["guard", "seek"]:          # no player as guard in this mode
 		for p in players:
 			if p != null and p["role"] == "guard":
 				_assign(p, "runner")
-	_new_starts(main.game_random)
-	_pick_goal(main.game_random)
+	_daily_setup()                                         # 3D-3.77: the challenge of the day (same scene, goal, starts for all)
+	_new_starts(main.game_random or main.game_daily)
+	_pick_goal(main.game_random or main.game_daily)
 	_place_items(int(main.game_items))
 	_place_powers(main.game_powers)
 	_place_hides(int(main.game_hides))
@@ -1018,6 +1033,9 @@ func start_round() -> void:
 		p["max_susp"] = 0.0
 		p["hide_s"] = 0.0
 		p["task_ok"] = false
+		p["crawl_s"] = 0.0
+		p["tut"] = 0
+		p["tut_msg"] = ""
 		p["actor"].handicap = int(p.get("hc", 0))
 		if p["role"] == "guard":
 			p["state"] = "play"
@@ -1043,6 +1061,10 @@ func start_round() -> void:
 	learn.round_start()
 	if main.game_mode == "patrol" and main.patrol != null:  # 3D-3.61: the patrol drives during the round
 		main.patrol.set_active(true)
+	_rec_start()
+	_ghosts_start()
+	if main.game_mode == "seek":
+		_seek_start()
 	paint()
 
 
@@ -1219,9 +1241,15 @@ func end_round() -> void:
 			continue
 		var sc: int
 		var info := ""
-		if p["role"] == "guard":
+		if p["role"] == "guard" and main.game_mode == "seek":
+			sc = max(0, 200 * int(p["catches"]) - 50 * int(p["false"]) + (300 if seek_winner == "seeker" else 0))
+			info = "Fänger · %d gefunden, %d× daneben%s" % [p["catches"], p["false"], " · 🏆 alle gefunden" if seek_winner == "seeker" else ""]
+		elif p["role"] == "guard":
 			sc = max(0, 150 * int(p["catches"]) - 50 * int(p["false"]) + 100 * missed)
 			info = "Wächter · %d× erwischt, %d× Fehlalarm" % [p["catches"], p["false"]]
+		elif main.game_mode == "seek":
+			sc = {"goal": 800, "found": 0}.get(p["state"], 300)
+			info = {"goal": "🏠 Basis berührt!", "found": "🙈 gefunden"}.get(p["state"], "🌳 nicht gefunden")
 		else:
 			var d: float = p["actor"].position.distance_to(goal)
 			if flag_mode():
@@ -1253,7 +1281,10 @@ func end_round() -> void:
 			info += " · %d× erwischt" % p["caught"] + (" · 💎 %d" % p["items"] if int(p["items"]) > 0 else "")
 			if int(p.get("rescues", 0)) > 0:
 				info += " · %d× befreit" % p["rescues"]
-		results.append({"n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "info": info, "score": sc})
+		var bd := _badges_of(p)                            # 3D-3.77: badges
+		if not bd.is_empty():
+			info += " · " + " ".join(PackedStringArray(bd.map(func(b): return BADGES[b][0] + " " + BADGES[b][1])))
+		results.append({"n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "info": info, "score": sc, "badges": bd})
 		if p["role"] == "runner":
 			p["state"] = "lobby"
 			p["actor"].frozen = false
@@ -1266,6 +1297,7 @@ func end_round() -> void:
 		results.append({"n": "🛡 " + mn, "c": "#3b8cff", "info": "Wächter an Motion Watch · %d× erwischt, %d× Fehlalarm" % [mwg["catches"], mwg["false"]],
 				"score": max(0, 150 * int(mwg["catches"]) - 50 * int(mwg["false"]) + 100 * missed)})
 	results.sort_custom(func(x, y): return x["score"] > y["score"])
+	_rec_end()                                             # 3D-3.77: replay, ghosts, challenge of the day
 	_board_add()
 	_event_end()
 	_place_hides(0)
@@ -1564,6 +1596,11 @@ func _referee(dt: float) -> void:
 			main.spectate_cut("cheer", int(p["slot"]), "🎉 %s ist im Ziel!" % p["name"])
 			a.play_emote("goal", 5.0)
 			_event(p, "goal")
+			if main.game_mode == "seek":                   # 3D-3.78: the base is touched - the hiders win
+				seek_winner = "hiders"
+				news("🏠 %s hat die Basis berührt – die Verstecker gewinnen!" % p["name"])
+				end_round()
+				return
 			paint()
 			continue
 		for ci in range(checkpoints.size()):               # checkpoints: bonus on the first visit
@@ -1627,13 +1664,34 @@ func _referee(dt: float) -> void:
 			p["susp"] = max(0.0, float(p["susp"]) - 8.0 * dt)
 		p["max_susp"] = max(float(p.get("max_susp", 0.0)), float(p["susp"]))
 		if float(p["susp"]) >= 100.0:
-			if mw:
-				p["susp"] = 99.0                           # the meter only hints: Motion Watch itself decides
+			if mw or main.game_mode == "seek":
+				p["susp"] = 99.0                           # the meter only hints: Motion Watch itself (or the seeker) decides
 			else:
 				_caught(p, null)
 
 
 func _caught(p: Dictionary, by) -> void:
+	if main.game_mode == "seek":                           # 3D-3.78: found - stays where he is
+		p["state"] = "found"
+		p["caught"] = 1
+		p["actor"].frozen = true
+		p["actor"].play_emote("caught", 2.0)
+		var g2 = by if by is Dictionary else guard_player()
+		if g2 != null and g2.has("catches"):
+			g2["catches"] = int(g2["catches"]) + 1
+		_say(p, "🙈 Gefunden! Du schaust jetzt zu.", 4.0)
+		news("🙈 %s gefunden" % p["name"])
+		_event(p, "caught", {"fx": []})
+		if _all_done():
+			seek_winner = "seeker"
+		paint()
+		return
+	if main.game_tutorial:                                 # 3D-3.77: practice round - nobody is really caught
+		_say(p, "👀 Jetzt hätte dich die Kamera erwischt! Duck dich oder geh in Deckung.", 4.0)
+		p["susp"] = 0.0
+		p["safe_until"] = now() + 3.0
+		_event(p, "seen")
+		return
 	p["caught"] = int(p["caught"]) + 1
 	var fx := hit_fx(p)                                   # 3D-3.52: laser / paint / flash (each can be switched)
 	if main.game_photos:                               # the «caught» photo: what the camera saw (3D-3.25)
@@ -1689,6 +1747,10 @@ func _others_can_rescue(p: Dictionary) -> bool:
 
 
 func _event(p: Dictionary, k: String, extra := {}) -> void:
+	if k in ["caught", "goal"] and round_state == "play":
+		rec_ev.append([snappedf(now() - t_start, 0.1), int(p["slot"]), k])
+	if str(p.get("kind", "phone")) == "local" and main.localplay != null:
+		main.localplay.on_event(k)
 	if p["sock"] != null:
 		var m := {"t": "ev", "k": k}
 		m.merge(extra)
@@ -1897,8 +1959,8 @@ var mwg := {"catches": 0, "false": 0, "t": 0.0, "names": []}
 
 func mw_catch(who: String, x := -1.0, y := -1.0) -> Dictionary:
 	"""3D-3.52: x, y (0..1) = the hunter tapped this spot of the live picture (head camera): hit only who is there"""
-	if main.game_mode != "mwhand" or round_state != "play":
-		return {"ok": false, "error": "Gerade läuft keine Runde «Team gegen Motion Watch»."}
+	if not main.game_mode in ["mwhand", "seek"] or round_state != "play":
+		return {"ok": false, "error": "Gerade läuft keine Runde «Team gegen Motion Watch» oder «Verstecken»."}
 	if now() < float(mwg["t"]):
 		return {"ok": false, "error": "Noch %d s warten (Fehlalarm)." % int(ceil(float(mwg["t"]) - now()))}
 	if who != "" and not (who in mwg["names"]):
@@ -1989,6 +2051,12 @@ func _guard(dt: float) -> void:
 	"""the head: a player as guard turns it with the joystick; without Motion Watch it guards by itself
 	(swings to and fro, turns towards noises and suspects)"""
 	var g = guard_player()
+	seek_drive = Vector2.ZERO
+	if main.game_mode == "seek":                       # 3D-3.78: the seeker drives the rover, the head turns with the drag
+		guard_auto = g != null
+		if g != null and round_state == "play":
+			seek_drive = Vector2(-float(g["my"]), float(g["mx"]))
+		return
 	if g != null and main.game_mode in ["guard", "teamguard"]:
 		guard_auto = true
 		guard_yaw = wrapf(guard_yaw - float(g["mx"]) * 1.3 * dt, -PI, PI)
@@ -2021,6 +2089,11 @@ func _send_state(i: int) -> void:
 	var w: WebSocketPeer = p["sock"]["ws"]
 	if w.get_ready_state() != WebSocketPeer.STATE_OPEN:
 		return
+	w.send_text(JSON.stringify(state_for(p)))
+
+
+func state_for(p: Dictionary) -> Dictionary:
+	"""what a player sees on his screen (phone, or the PC player of 3D-3.77)"""
 	var a = p["actor"]
 	var target: Vector3 = start_point(p["slot"]) if p["carry"] else goal
 	if flag_mode() and flags.size() == 2 and p["role"] == "runner":
@@ -2036,7 +2109,7 @@ func _send_state(i: int) -> void:
 	var lst := []
 	for q in players:
 		if q != null:
-			lst.append({"n": q["name"], "c": "#" + COLORS[q["slot"]].to_html(false), "s": q["state"], "k": q["caught"], "on": q["sock"] != null,
+			lst.append({"n": q["name"], "c": "#" + COLORS[q["slot"]].to_html(false), "s": q["state"], "k": q["caught"], "on": q["sock"] != null or str(q.get("kind", "phone")) != "phone",
 					"r": q["role"], "i": q["items"], "tm": int(q["team"]), "dc": bool(q.get("decoy", false))})
 	var left_items := 0
 	for it in items:
@@ -2067,7 +2140,11 @@ func _send_state(i: int) -> void:
 		d["left"] = int(max(0.0, t_end - now()))
 	if round_state == "end":
 		d["res"] = results
-	w.send_text(JSON.stringify(d))
+		d["replay"] = not replay.is_empty()
+	d["daily"] = daily_info()
+	d["heart"] = main.game_heart
+	d["tut"] = str(p.get("tut_msg", "")) if main.game_tutorial else ""
+	return d
 
 
 # ---- in the window: address, QR code, players ------------------------------------------------------------------------
@@ -2110,7 +2187,7 @@ func paint() -> void:
 			if p != null:
 				var st: String = {"goal": " – im Ziel", "out": " – ausgeschieden"}.get(p["state"], "")
 				lines.append("● %s (%s)%s%s%s · erwischt %d%s" % [p["name"], CNAMES[p["slot"]], (" · " + TEAM_NAMES[int(p["team"])]) if main.game_teams else "", " – Wächter" if p["role"] == "guard" else "", st,
-						p["caught"] if p["role"] == "runner" else p["catches"], "" if p["sock"] != null else " · getrennt"])
+						p["caught"] if p["role"] == "runner" else p["catches"], "" if p["sock"] != null or str(p.get("kind", "phone")) != "phone" else " · getrennt"])
 		if count() == 0:
 			lines.append("Noch niemand dabei.")
 		if round_state == "end" and not results.is_empty():
@@ -2158,6 +2235,9 @@ body.guard #v{object-fit:contain}
 #side{position:fixed;right:max(10px,env(safe-area-inset-right));top:calc(max(8px,env(safe-area-inset-top)) + 40px);display:flex;flex-direction:column;gap:8px}
 #side button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#0a0e14aa;color:#fff;font-size:17px}
 .ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#rpbox{position:fixed;inset:0;z-index:60;background:#0b1016;display:flex;flex-direction:column;align-items:center}#rpbox canvas{width:100vw;height:calc(100vh - 50px)}
+#rpbox #rpi{position:absolute;left:12px;top:10px;color:#dfe6ee;font-size:14px}#rpbox button{position:absolute;right:12px;top:6px}
+#tut{position:fixed;left:50%;bottom:118px;transform:translateX(-50%);max-width:80vw;text-align:center;color:#ffd966;font-weight:600;text-shadow:0 1px 3px #000;font-size:15px;pointer-events:none}
 #lvbox{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:#000a}
 .card button.lv{padding:12px 18px;border-radius:12px;border:1px solid var(--line);background:#1d2633;color:#fff;font-size:16px;margin:4px}
 .card{background:#111822ee;border:1px solid var(--line);border-radius:16px;padding:18px 20px;max-width:min(92vw,560px);max-height:92vh;overflow:auto;text-align:center;pointer-events:auto}
@@ -2227,7 +2307,7 @@ table{border-collapse:collapse;margin:8px auto;font-size:14px}td{padding:4px 8px
 <div class="btns" id="gb" style="display:none"><div class="b" id="b-light"><i>💡</i>Licht</div><div class="b big red" id="b-catch"><i>🚨</i>Erwischt!</div></div>
 <div id="tip" hidden></div>
 <div id="pic" hidden><img id="picimg" alt=""><div id="pictxt"></div></div>
-<div id="side"><button id="full" title="Vollbild">⛶</button><button id="snd" title="Ton">🔊</button><button id="leave" title="Spiel verlassen">🚪</button></div>
+<div id="tut"></div><div id="side"><button id="full" title="Vollbild">⛶</button><button id="snd" title="Ton">🔊</button><button id="leave" title="Spiel verlassen">🚪</button></div>
 <div id="msg"></div>
 <div id="sig" hidden><button data-k="wait" title="Warte">✋</button><button data-k="go" title="Los">▶</button><button data-k="cam" title="Kamera schaut her">👁</button><button data-k="here" title="Hier">📍</button></div>
 <div id="sigt"></div>
@@ -2269,7 +2349,7 @@ window.rejoin = () => { left = false; lvBox(""); lastOv = null; connect(); };
 window.lvBox = lvBox;
 let tickT = 0, beatT = 0;
 setInterval(() => { if (!me || st.rs !== "play" || st.ps !== "play" || role !== "runner") return; const n = Date.now();
-  if (st.seen && n - tickT > 450) { tickT = n; sfx.tick(st.susp); } if (st.susp > 60 && n - beatT > (st.susp > 85 ? 500 : 800)) { beatT = n; sfx.beat(); } }, 100);
+  if (st.seen && n - tickT > 450) { tickT = n; sfx.tick(st.susp); } if (st.heart !== false && st.susp > 60 && n - beatT > (st.susp > 85 ? 500 : 800)) { beatT = n; sfx.beat(); } }, 100);
 function joinForm() {
   ov('<h1>🕵️ Unentdeckt ans Ziel</h1><p>Schleiche zum grünen Licht, ohne dass dich die Kameras entdecken. Ducken und Kriechen hilft, im Dunkeln und hinter Dingen sieht man dich schlechter. Rennen hört man.</p>' +
      '<input id="nmi" maxlength="16" placeholder="Dein Name" value="' + name.replace(/"/g, "") + '">' + lookHtml() + '<button class="pr" id="go">Mitspielen</button>');
@@ -2299,6 +2379,7 @@ function connect() {
     else if (m.t === "st") paint(m);
     else if (m.t === "pic") { $("#picimg").src = "data:image/jpeg;base64," + m.b64; $("#pictxt").textContent = m.txt || ""; $("#pic").hidden = false;
       clearTimeout(window.__picT); window.__picT = setTimeout(() => $("#pic").hidden = true, 3500); }
+    else if (m.t === "rp") showReplay(m);
     else if (m.t === "gal") { GAL = m.pics || []; lastOv = null; if (st && st.rs) paint(st); }
     else if (m.t === "sig") { const t = $("#sigt"); t.innerHTML = '<span style="color:' + m.c + '">●</span> ' + esc(m.n) + ': ' + esc(m.txt) + ' <span class="ar" style="transform:rotate(' + (-m.ga) + 'deg)">⬆</span> ' + m.d + ' m';
       t.style.opacity = 1; clearTimeout(window.__sigT); window.__sigT = setTimeout(() => t.style.opacity = 0, 3000); tone(880, 0.08, "triangle", 0.12); tone(1175, 0.1, "triangle", 0.12, 0.09); if (navigator.vibrate) navigator.vibrate(60); }
@@ -2327,17 +2408,21 @@ function paint(m) {
   if (m.cps_all && role === "runner") $("#extra").textContent = "🚩 " + m.cps + "/" + m.cps_all + " · " + $("#extra").textContent;
   if (m.decoy && role === "runner") $("#extra").textContent = "🦆 Lockvogel – lass dich sehen! · " + $("#extra").textContent;
   $("#msg").textContent = m.msg || "";
+  heart(m);                                                      // 3D-3.77: heartbeat when the camera nearly sees you
+  $("#tut").textContent = m.tut || "";
   $("#sig").hidden = !(m.rs === "play" && role === "runner" && m.ps === "play");
   if (m.stone < 0) $("#b-stone").style.display = "none"; else { $("#b-stone").style.display = "flex"; cool($("#b-stone"), m.stone); }
   $("#b-lamp").style.display = m.dark && role === "runner" ? "flex" : "none"; $("#b-lamp").classList.toggle("on", !!m.lamp);
   if (role === "guard") { cool($("#b-light"), m.light); cool($("#b-catch"), m.catch); $("#gd").textContent = m.gcam === 1 ? "feste Kamera" : (m.pan > 0 ? "◀ " : "▶ ") + Math.abs(m.pan) + "°"; }
-  if (m.rs === "countdown") { GAL = []; ov('<div id="big">' + Math.max(1, m.cd) + '</div>'); }
+  if (m.rs === "countdown" && m.mode === "seek") { GAL = []; ov(role === "guard" ? '<h1>🙈 Augen zu!</h1><div id="big">' + Math.max(1, m.cd) + '</div><p>Die anderen verstecken sich.</p>' : ''); if (role !== "guard") $("#msg").textContent = "🙈 Verstecken! Noch " + m.cd + " s"; }
+  else if (m.rs === "countdown") { GAL = []; ov('<div id="big">' + Math.max(1, m.cd) + '</div>'); }
   else if ((m.rs === "lobby" || m.rs === "end") && editing) { /* the player changes the look */ }
   else if (m.rs === "lobby" || m.rs === "end") {
     let h = m.rs === "end" ? (m.tres && m.tres.length ? '<h1>' + (m.tres[0].lead ? 'Runde 1 von 2: ' + esc(m.tres[0].n) + ' führt' : esc(m.tres[0].n) + ' gewinnt!') + '</h1><p>' + m.tres.map(t => '<span style="color:' + t.c + '">●</span> ' + esc(t.n) + ' <b>' + t.score + '</b>' + (t.round !== undefined ? ' <small>(diese Runde ' + t.round + ')</small>' : '')).join(" · ") + '</p>' : '') + '<h1>Rangliste</h1><table>' + (m.res || []).map((r, i) => '<tr><td>' + (i + 1) + '.</td><td><span style="color:' + r.c + '">●</span> ' + esc(r.n) + '</td><td>' + esc(r.info) + '</td><td><b>' + r.score + '</b></td></tr>').join("") + '</table>'
       : '<h1>Bereit?</h1><p>Ziel: <b>' + esc(m.goal) + '</b> – folge dem Pfeil oben rechts zum grünen Licht.</p><p>Links ziehen = gehen · rechts wischen = umschauen</p>';
     if (m.goal_mode === "flag") h += '<p>🚩 <b>Fahne erobern</b>: hol die Fahne der anderen bei ihrer Basis und bring sie zu deiner Basis (+500). Berührst du jemanden, der eure Fahne trägt, geht sie zurück (+100). Die Kamera passt auf alle auf.</p>';
     if (m.mode === "teamguard") h += '<p>⚔️ Team gegen Team · Runde ' + (m.mround + 1) + ' von 2: <b style="color:' + ["#eb2e1f", "#1f6bfa"][m.tg] + '">' + ["Team Rot", "Team Blau"][m.tg] + '</b> bewacht (Kopfkamera und feste Kamera), das andere Team schleicht. Danach wird getauscht.</p>';
+    if (m.mode === "seek") h += '<p>🙈 <b>Verstecken mit dem Rover:</b> Alle starten bei der Basis. ' + (role === "guard" ? 'Du bist der <b>Fänger</b>: 30 s Augen zu, dann fährst du den Rover (Joystick links), drehst den Kopf (rechts wischen) und drückst «Erwischt!», wenn du jemanden im Bild hast.' : 'Du hast 30 s zum Verstecken. Der Fänger sieht nur die Kamera des Rovers. Berühre die Basis (Pfeil), ohne gefunden zu werden – dann gewinnen alle Verstecker!') + '</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🌳 Verstecker</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">🔎 Fänger</button>';
     if (m.mode === "mwhand") h += '<p>🕹 <b>Team gegen Motion Watch:</b> Die Wächter sitzen an Motion Watch, drehen die echte Kamera mit dem Joystick und drücken dort «Erwischt!». Der Balken zeigt nur, wie gut man dich sieht.</p>';
     if (m.mode === "mw") h += '<p>' + (m.mwd ? '🛡 Diesmal entscheidet die <b>echte Erkennung von Motion Watch</b>: meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht.' : '⚠ Motion Watch ist nicht verbunden – der Simulator entscheidet.') + '</p>';
     if (m.mode === "guard") h += '<p>Ein Spieler kann Wächter sein: er sieht durch die Kamera, dreht den Kopf und ruft «Erwischt!».</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🕵️ Schleicher</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">👁 Wächter</button><br>';
@@ -2349,19 +2434,59 @@ function paint(m) {
     if (m.board && m.board.length) h += '<h1>🏆 Rangliste des Abends</h1><table class="brd">' + m.board.map((b, i) => '<tr><td>' + (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + '</td><td class="n" style="color:' + b.c + '">' + esc(b.n) + '</td><td><b>' + b.score + '</b></td><td class="rec">' + b.rounds + ' Runden' + (b.wins ? ' · ' + b.wins + '× Sieg' : '') + (b.best ? ' · Bestzeit ' + fmtT(b.best) : '') + (b.clean ? ' · ' + b.clean + '× nie erwischt' : '') + '</td></tr>').join("") + '</table>';
     if (m.week && m.week.length) h += '<h1>📅 Rangliste der Woche</h1><table class="brd">' + m.week.map((b, i) => '<tr><td>' + (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + '</td><td class="n" style="color:' + b.c + '">' + esc(b.n) + '</td><td><b>' + b.score + '</b></td><td class="rec">' + b.rounds + ' Runden' + (b.wins ? ' · ' + b.wins + '× Sieg' : '') + (b.tasks ? ' · ' + b.tasks + '× Aufgabe' : '') + '</td></tr>').join("") + '</table>';
     if (m.task && m.rs !== "end") h += '<p>🎯 <b>Aufgabe:</b> ' + esc(m.task) + ' (+' + m.task_bonus + ')</p>';
+    if (m.daily && m.daily.text) h += '<p><b>' + esc(m.daily.text) + '</b>' + ((m.daily.best || []).length ? '<br>Heute vorne: ' + m.daily.best.map(b => '<span style="color:' + b.c + '">' + esc(b.n) + '</span> ' + b.score).join(" · ") : "") + '</p>';
+    if (m.rs === "end" && m.replay) h += '<button class="sec" id="rpb">🎬 Wiederholung</button>';
     h += '<button class="sec" id="lk">👕 Aussehen ändern</button><br><button class="pr" id="st">' + (m.rs === "end" ? "Nochmal" : "Runde starten") + '</button>';
     ov(h);
     document.querySelectorAll("[data-team]").forEach(b => b.onclick = () => ws.send(JSON.stringify({t: "team", k: +b.dataset.team})));
     const lkb = $("#lk"); if (lkb) lkb.onclick = () => { editing = true; ov('<h1>Aussehen</h1>' + lookHtml() + '<button class="pr" id="lkok">Fertig</button>'); bindLook();
       $("#lkok").onclick = () => { ws.send(JSON.stringify(Object.assign({t: "look"}, outfit))); editing = false; lastOv = null; paint(st); }; };
+    const rpb = $("#rpb"); if (rpb) rpb.onclick = () => send({t: "replay"});
     const rd = $("#r-decoy"); if (rd) rd.onclick = () => ws.send(JSON.stringify({t: "decoy", v: !m.decoy}));
     const rr = $("#r-run"), rg = $("#r-guard"); if (rr) rr.onclick = () => ws.send('{"t":"role","r":"runner"}'); if (rg) rg.onclick = () => ws.send('{"t":"role","r":"guard"}');
   }
   else if (m.ps === "goal") ov('<h1>🏁 Im Ziel!</h1><p>Warte auf die anderen.</p>');
+  else if (m.ps === "found") ov('<h1>🙈 Gefunden!</h1><p>Du schaust zu, bis die Runde fertig ist.</p>');
+  else if (m.mode === "seek" && m.rs === "countdown" && role === "guard") ov('<h1>🙈 Augen zu!</h1><div id="big">' + Math.max(1, m.cd) + '</div><p>Die anderen verstecken sich.</p>');
   else if (m.ps === "jail") ov('<h1>🔒 In der Zelle</h1><p>Ein Teamkollege muss zu dir kommen und dich berühren – dann bist du frei.</p>');
   else if (m.ps === "out") ov('');
   else ov("");
   const b = $("#st"); if (b) b.onclick = () => ws.send('{"t":"start"}');
+}
+let hbT = 0;
+function heart(m) {                      // 3D-3.77: the phone vibrates like a heartbeat (the sound comes from sfx.beat)
+  if (!m.heart || role !== "runner" || m.rs !== "play" || m.susp < 35) return;
+  const now = Date.now(), gap = 950 - (Math.min(100, m.susp) - 35) / 65 * 570;
+  if (now - hbT < gap) return; hbT = now;
+  if (m.susp <= 60 && sound) { tone(55, 0.12, "sine", 0.3); tone(50, 0.1, "sine", 0.2, 0.17); }
+  if (navigator.vibrate) navigator.vibrate([40, 120, 30]);
+}
+function showReplay(R) {                 // 3D-3.77: the ways of the round on a map, the camera, who was seen when
+  let box = document.getElementById("rpbox"); if (box) box.remove();
+  box = document.createElement("div"); box.id = "rpbox"; box.innerHTML = '<canvas id="rpc"></canvas><div id="rpi"></div><button class="lv" id="rpx">✕ Schliessen</button>';
+  document.body.appendChild(box); $("#rpx").onclick = () => { box.remove(); cancelAnimationFrame(box.__raf); };
+  const cv = $("#rpc"), W = cv.width = innerWidth * devicePixelRatio, H = cv.height = (innerHeight - 50) * devicePixelRatio, c = cv.getContext("2d");
+  const P = R.pts || []; let lo = [R.goal[0], R.goal[1]], hi = [R.goal[0], R.goal[1]];
+  const grow = (x, z) => { lo = [Math.min(lo[0], x), Math.min(lo[1], z)]; hi = [Math.max(hi[0], x), Math.max(hi[1], z)]; };
+  grow(R.mw[0], R.mw[1]); P.forEach(r => r[1].forEach(e => grow(e[1], e[2]))); lo = [lo[0] - 8, lo[1] - 8]; hi = [hi[0] + 8, hi[1] + 8];
+  const sc = Math.min(W / (hi[0] - lo[0]), H / (hi[1] - lo[1])), ox = (W - (hi[0] - lo[0]) * sc) / 2, oy = (H - (hi[1] - lo[1]) * sc) / 2;
+  const X = x => ox + (x - lo[0]) * sc, Y = z => oy + (z - lo[1]) * sc, col = {}; (R.who || []).forEach(w => col[w[0]] = [w[2], w[1]]);
+  const tMax = P.length ? P[P.length - 1][0] : 1, t0 = performance.now();
+  const frame = () => {
+    const t = ((performance.now() - t0) / 1000 * 2) % (tMax + 3); c.fillStyle = "#0b1016"; c.fillRect(0, 0, W, H);
+    c.fillStyle = "#4a5058"; (R.obst || []).forEach(o => { c.beginPath(); c.arc(X(o[0]), Y(o[1]), Math.max(2, o[2] * sc), 0, 7); c.fill(); });
+    let k = 0; while (k < P.length - 1 && P[k][0] < t) k++;
+    if (P.length) { const yaw = P[k][2] * Math.PI / 180, half = R.fov / 2 * Math.PI / 180, r = 30 * sc; c.fillStyle = "rgba(255,215,80,.18)"; c.beginPath(); c.moveTo(X(R.mw[0]), Y(R.mw[1]));
+      for (let i = 0; i <= 8; i++) { const a = yaw - half + 2 * half * i / 8; c.lineTo(X(R.mw[0]) - Math.sin(a) * r, Y(R.mw[1]) - Math.cos(a) * r); } c.fill(); }
+    c.fillStyle = "#ff8c26"; c.beginPath(); c.arc(X(R.mw[0]), Y(R.mw[1]), 9 * devicePixelRatio, 0, 7); c.fill();
+    c.fillStyle = "rgba(80,255,120,.8)"; c.beginPath(); c.arc(X(R.goal[0]), Y(R.goal[1]), 10 * devicePixelRatio, 0, 7); c.fill();
+    const last = {}; c.lineWidth = 2 * devicePixelRatio;
+    for (let i = 0; i <= k && i < P.length; i++) P[i][1].forEach(e => { const q = [X(e[1]), Y(e[2])]; if (last[e[0]]) { c.strokeStyle = e[4] ? "#ff4a3d" : (col[e[0]] || ["#fff"])[0]; c.beginPath(); c.moveTo(...last[e[0]]); c.lineTo(...q); c.stroke(); } last[e[0]] = q; });
+    c.font = (14 * devicePixelRatio) + "px sans-serif"; Object.keys(last).forEach(s => { c.fillStyle = (col[s] || ["#fff"])[0]; c.beginPath(); c.arc(...last[s], 7 * devicePixelRatio, 0, 7); c.fill(); c.fillStyle = "#fff"; c.fillText((col[s] || ["", "?"])[1], last[s][0] + 10, last[s][1] - 6); });
+    (R.ev || []).filter(e => e[0] <= t).forEach(e => { const r = P.find(r => r[0] >= e[0]); const p = r && r[1].find(x => x[0] === e[1]); if (p) c.fillText(e[2] === "caught" ? "🚨" : "🏁", X(p[1]) - 8, Y(p[2]) + 6); });
+    $("#rpi").textContent = "🎬 " + fmtT(Math.floor(t)) + " / " + fmtT(Math.floor(tMax)) + " · rot = gesehen";
+    box.__raf = requestAnimationFrame(frame); };
+  frame();
 }
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c])); }
 // joystick (left), looking round (right)
@@ -2802,3 +2927,489 @@ func _auto_handicap() -> void:
 			p["hc"] = 1 if on else 0
 			if on:
 				news("🎯 Handicap für %s (führt die Rangliste an)" % p["name"])
+
+
+# ==== 3D-3.77: play on this PC, computer players, practice round, replay, badges, challenge of the day, ghosts ==========
+const BADGES := {"ghost": ["👻", "Unsichtbar"], "fast": ["⚡", "Blitz"], "snake": ["🐍", "Kriech-Profi"], "hero": ["🦸", "Retter"],
+		"gems": ["💎", "Sammler"], "eagle": ["🦅", "Adlerauge"], "bush": ["🌳", "Busch-Meister"], "first": ["🥇", "Sieger"]}
+const BOT_NAMES := ["Bot Fuchs", "Bot Dachs", "Bot Luchs", "Bot Marder"]
+var rec: Array = []                      # [t, [[slot, x, z, posture, seen], …]] every 0.5 s of the round
+var rec_ev: Array = []                   # [t, slot, "caught" | "goal"]
+var _rec_t := 0.0
+var replay := {}                         # the last round, for the replay on the phones and here
+var ghosts: Array = []                   # {"node", "pts", "slot"}
+const GHOST_FILE := "user://spiel/geister.json"
+const DAILY_FILE := "user://spiel/tagesaufgabe.json"
+const DAILY_SCENES := ["camping", "wald", "parkplatz", "garten", "wild"]
+
+
+func add_local(role := "runner", nm := "Ich (PC)") -> Dictionary:
+	"""a player at this PC: keyboard and mouse in the simulator window (localplay.gd)"""
+	for q in players:
+		if q != null and str(q.get("kind", "")) == "local":
+			return q
+	if not open:
+		set_open(true)
+	var slot := players.find(null)
+	if slot < 0:
+		return {}
+	var p := _new_player(slot, "pc-local", nm)
+	p["kind"] = "local"
+	p["team"] = _smaller_team(slot)
+	players[slot] = p
+	_paint_cone(p)
+	if role == "guard" and main.game_mode in ["guard", "teamguard", "seek"]:
+		_set_role(p, "guard")
+	(p["vp"] as SubViewport).render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	set_bots(main.game_bots)
+	paint()
+	return p
+
+
+func remove_local() -> void:
+	for i in range(MAX_P):
+		if players[i] != null and str(players[i].get("kind", "")) == "local":
+			_remove(i)
+	paint()
+
+
+func local_player():
+	for q in players:
+		if q != null and str(q.get("kind", "")) == "local":
+			return q
+	return null
+
+
+func set_bots(n: int) -> void:
+	"""computer players that sneak along (when somebody is alone)"""
+	n = clampi(n, 0, 3)
+	if not open:
+		return
+	var have := []
+	for i in range(MAX_P):
+		if players[i] != null and str(players[i].get("kind", "")) == "bot":
+			have.append(i)
+	while have.size() > n:
+		_remove(have.pop_back())
+	while have.size() < n:
+		var slot := players.find(null)
+		if slot < 0:
+			break
+		var p := _new_player(slot, "bot-%d" % slot, BOT_NAMES[slot % BOT_NAMES.size()])
+		p["kind"] = "bot"
+		p["team"] = _smaller_team(slot)
+		p["bot"] = {"hold": 0.0, "turn": 0.0, "turn_t": 0.0, "skill": {"easy": 0.5, "normal": 0.75, "hard": 0.95}.get(main.game_level, 0.75)}
+		players[slot] = p
+		_paint_cone(p)
+		have.append(slot)
+	paint()
+
+
+func _target_of(p: Dictionary) -> Vector3:
+	var target: Vector3 = start_point(p["slot"]) if p["carry"] else goal
+	if flag_mode() and flags.size() == 2:
+		var my := int(p["team"])
+		if int(p.get("flag", -1)) >= 0:
+			target = bases[my]
+		elif flags[my]["by"] != null:
+			target = flags[my]["by"]["actor"].position
+		else:
+			target = bases[1 - my]
+	return target
+
+
+func _bots_tick(dt: float) -> void:
+	"""a simple sneaker: walks to the goal, crouches near the camera, freezes and crawls when it is being seen"""
+	for p in players:
+		if p == null or str(p.get("kind", "")) != "bot":
+			continue
+		var a = p["actor"]
+		var hiding: bool = seek_hiding() and p["state"] == "play"
+		if p["role"] != "runner" or p["state"] != "play" or (round_state != "play" and not hiding):
+			p["mx"] = 0.0
+			p["my"] = 0.0
+			continue
+		var B: Dictionary = p["bot"]
+		var sk: float = B["skill"]
+		var tgt: Vector3 = _target_of(p)
+		if main.game_mode == "seek":                       # 3D-3.78: first hide somewhere, wait, then sneak to the base
+			if not B.has("hide"):
+				var ang := randf() * TAU
+				B["hide"] = main.free_spot(seek_base + Vector3(cos(ang), 0, sin(ang)) * randf_range(14.0, 26.0), 0.6, true)
+				B["go_t"] = t_start + randf_range(25.0, 90.0)
+			if hiding or now() < float(B["go_t"]):
+				tgt = B["hide"]
+				if a.position.distance_to(tgt) < 1.5:
+					p["my"] = 0.0
+					a.ctl_posture = 1 if hiding else 2
+					continue
+		var to: Vector3 = tgt - a.position
+		var want := atan2(-to.x, -to.z)
+		var t := now()
+		var ahead := Vector2(a.position.x, a.position.z) + Vector2(-sin(float(p["yaw"])), -cos(float(p["yaw"]))) * 1.6
+		if main.blocked(ahead, 0.5, true) and t > float(B["turn_t"]):
+			B["turn"] = deg_to_rad(55.0) * (1.0 if randf() < 0.5 else -1.0)      # an object in the way: round it
+			B["turn_t"] = t + 1.6
+		if t < float(B["turn_t"]):
+			want += float(B["turn"])
+		p["yaw"] = lerp_angle(float(p["yaw"]), want, clampf(dt * 3.0, 0.0, 1.0))
+		if hiding:                                         # 3D-3.78: hiding time - run to the hiding place
+			a.ctl_posture = 0
+			a.ctl_run = true
+			p["my"] = -1.0
+			p["mx"] = 0.0
+			continue
+		var vis := visibility(p)
+		var d_head: float = a.position.distance_to(main.cams[0].global_position)
+		var susp: float = float(p["susp"])
+		if t < float(B["hold"]):                               # frozen: wait until the camera looks away
+			p["my"] = 0.0
+			a.ctl_posture = 2
+			continue
+		if (susp > 55.0 * sk or vis > 0.6) and randf() < sk:
+			B["hold"] = t + randf_range(1.0, 3.5) * sk
+			p["my"] = 0.0
+			a.ctl_posture = 2
+			continue
+		if susp > 25.0 or (vis > 0.25 and d_head < 25.0):
+			a.ctl_posture = 2 if susp > 40.0 else 1
+			p["my"] = -0.8
+		elif d_head < 14.0 * sk:
+			a.ctl_posture = 1
+			p["my"] = -0.9
+		else:
+			a.ctl_posture = 0
+			p["my"] = -1.0
+		a.ctl_run = a.ctl_posture == 0 and d_head > 28.0 and vis < 0.05 and randf() < 0.3
+		p["mx"] = 0.0
+
+
+# ---- replay -------------------------------------------------------------------------------------------------------------
+func _rec_start() -> void:
+	rec.clear()
+	rec_ev.clear()
+	_rec_t = 0.0
+
+
+func _rec_tick(t: float) -> void:
+	if t - _rec_t < 0.5:
+		return
+	_rec_t = t
+	var row := []
+	for p in players:
+		if p != null and p["role"] == "runner" and p["state"] in ["play", "goal", "jail"]:
+			var a = p["actor"]
+			row.append([int(p["slot"]), snappedf(a.position.x, 0.1), snappedf(a.position.z, 0.1), int(a.ctl_posture), 1 if bool(p["seen"]) else 0])
+	rec.append([snappedf(t - t_start, 0.1), row, snappedf(rad_to_deg(main.head.global_rotation.y), 1.0)])
+	if rec.size() > 2400:
+		rec.pop_front()
+
+
+func _rec_end() -> void:
+	"""after the round: the replay (paths, who was seen when, caught, goal) and the ghosts of the best ways"""
+	var obst := []
+	for o in main.obstacles:
+		if obst.size() > 260:
+			break
+		var c: Vector2 = o["c"]
+		if c.distance_to(Vector2(goal.x, goal.z)) > 90.0:
+			continue
+		if o.has("r"):
+			if float(o["r"]) > 0.25:
+				obst.append([snappedf(c.x, 0.1), snappedf(c.y, 0.1), snappedf(float(o["r"]), 0.1)])
+		else:
+			obst.append([snappedf(c.x, 0.1), snappedf(c.y, 0.1), snappedf((o["h"] as Vector2).length(), 0.1)])
+	var who := []
+	for p in players:
+		if p != null and p["role"] == "runner":
+			who.append([int(p["slot"]), p["name"], "#" + COLORS[p["slot"]].to_html(false)])
+	var hp: Vector3 = main.head.global_position
+	replay = {"t": "rp", "pts": rec.duplicate(), "ev": rec_ev.duplicate(), "goal": [snappedf(goal.x, 0.1), snappedf(goal.z, 0.1)],
+			"mw": [snappedf(hp.x, 0.1), snappedf(hp.z, 0.1)], "obst": obst, "who": who, "fov": main.cams[0].fov * 16.0 / 9.0}
+	_ghosts_save()
+	_daily_save()
+	_ghosts_clear()
+
+
+func send_replay(p: Dictionary) -> void:
+	if p["sock"] != null and not replay.is_empty():
+		p["sock"]["ws"].send_text(JSON.stringify(replay))
+
+
+# ---- badges -------------------------------------------------------------------------------------------------------------
+func _badges_of(p: Dictionary) -> Array:
+	var b := []
+	if p["role"] == "guard":
+		if int(p["catches"]) >= 2 and int(p["false"]) == 0:
+			b.append("eagle")
+		return b
+	if p["state"] == "goal" or float(p["t_goal"]) > 0.0:
+		if float(p.get("max_susp", 100.0)) < 20.0 and int(p["caught"]) == 0:
+			b.append("ghost")
+		var best := true
+		for q in players:
+			if q != null and q != p and float(q["t_goal"]) > 0.0 and float(q["t_goal"]) < float(p["t_goal"]):
+				best = false
+		if best:
+			b.append("fast")
+	if float(p.get("crawl_s", 0.0)) > 30.0:
+		b.append("snake")
+	if int(p.get("rescues", 0)) > 0:
+		b.append("hero")
+	if int(p["items"]) >= 3:
+		b.append("gems")
+	if float(p.get("hide_s", 0.0)) > 15.0:
+		b.append("bush")
+	return b
+
+
+# ---- ghosts: the best way of a player (per scene and goal) goes along, only the players see it ---------------------------
+func _ghost_key(p: Dictionary) -> String:
+	return "%s|%s|%s" % [main.scene, goal_name, str(p["name"]).to_lower()]
+
+
+func _ghost_db() -> Dictionary:
+	var d = JSON.parse_string(FileAccess.get_file_as_string(GHOST_FILE)) if FileAccess.file_exists(GHOST_FILE) else null
+	return d if typeof(d) == TYPE_DICTIONARY else {}
+
+
+func _ghosts_start() -> void:
+	_ghosts_clear()
+	if not main.game_ghost or flag_mode():
+		return
+	var db := _ghost_db()
+	for p in players:
+		if p == null or p["role"] != "runner" or str(p.get("kind", "")) == "bot":
+			continue
+		var g = db.get(_ghost_key(p), null)
+		if typeof(g) != TYPE_DICTIONARY or (g.get("pts", []) as Array).size() < 2:
+			continue
+		var n := Node3D.new()
+		root.add_child(n)
+		var body := MeshInstance3D.new()
+		var cm := CapsuleMesh.new()
+		cm.radius = 0.28
+		cm.height = 1.7
+		body.mesh = cm
+		body.position.y = 0.85
+		var mt := StandardMaterial3D.new()
+		mt.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mt.albedo_color = Color(COLORS[p["slot"]], 0.35)
+		mt.emission_enabled = true
+		mt.emission = COLORS[p["slot"]]
+		mt.emission_energy_multiplier = 0.6
+		mt.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		body.material_override = mt
+		body.layers = 16                                   # only the players see the ghost - never Motion Watch
+		n.add_child(body)
+		var lb := Label3D.new()
+		lb.text = "👻 %s %d:%02d" % [p["name"], int(g["t"]) / 60, int(g["t"]) % 60]
+		lb.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		lb.font_size = 48
+		lb.pixel_size = 0.006
+		lb.position.y = 2.1
+		lb.layers = 16
+		lb.modulate = Color(1, 1, 1, 0.8)
+		n.add_child(lb)
+		n.position = Vector3(float(g["pts"][0][1]), 0, float(g["pts"][0][2]))
+		ghosts.append({"node": n, "pts": g["pts"], "slot": int(p["slot"])})
+
+
+func _ghost_tick(t: float) -> void:
+	var rt := t - t_start
+	for gh in ghosts:
+		var pts: Array = gh["pts"]
+		var n: Node3D = gh["node"]
+		if not is_instance_valid(n):
+			continue
+		var k := 0
+		while k < pts.size() - 2 and float(pts[k + 1][0]) < rt:
+			k += 1
+		var a: Array = pts[k]
+		var b: Array = pts[mini(k + 1, pts.size() - 1)]
+		var f := clampf((rt - float(a[0])) / maxf(0.01, float(b[0]) - float(a[0])), 0.0, 1.0)
+		var x := lerpf(float(a[1]), float(b[1]), f)
+		var z := lerpf(float(a[2]), float(b[2]), f)
+		n.position = Vector3(x, main.ground_y(x, z), z)
+		n.scale = Vector3(1, [1.0, 0.65, 0.3][clampi(int(a[3]), 0, 2)], 1)
+
+
+func _ghosts_clear() -> void:
+	for gh in ghosts:
+		if is_instance_valid(gh["node"]):
+			gh["node"].queue_free()
+	ghosts.clear()
+
+
+func _ghosts_save() -> void:
+	"""somebody reached the goal faster than his ghost: his way of this round becomes the new ghost"""
+	var db := _ghost_db()
+	var changed := false
+	for p in players:
+		if p == null or p["role"] != "runner" or float(p["t_goal"]) <= 0.0 or str(p.get("kind", "")) == "bot":
+			continue
+		var secs := float(p["t_goal"]) - t_start
+		var key := _ghost_key(p)
+		var old = db.get(key, null)
+		if typeof(old) == TYPE_DICTIONARY and float(old.get("t", 1e9)) <= secs:
+			continue
+		var pts := []
+		for r in rec:
+			for e in r[1]:
+				if int(e[0]) == int(p["slot"]) and float(r[0]) <= secs + 0.5:
+					pts.append([r[0], e[1], e[2], e[3]])
+		if pts.size() >= 2:
+			db[key] = {"t": snappedf(secs, 0.1), "pts": pts}
+			changed = true
+			_say(p, "👻 Neue Bestzeit – dein Geist läuft nächstes Mal mit!", 5.0)
+	if changed:
+		DirAccess.make_dir_recursive_absolute("user://spiel")
+		var f := FileAccess.open(GHOST_FILE, FileAccess.WRITE)
+		if f != null:
+			f.store_string(JSON.stringify(db))
+
+
+# ---- the challenge of the day: the same scene, goal, starts and light for everybody on this day ---------------------------
+func daily_id() -> String:
+	var d := Time.get_date_dict_from_system()
+	return "%04d-%02d-%02d" % [d.year, d.month, d.day]
+
+
+func daily_plan() -> Dictionary:
+	var d := Time.get_date_dict_from_system()
+	var r := RandomNumberGenerator.new()
+	r.seed = int(d.year) * 10000 + int(d.month) * 100 + int(d.day)
+	var sc: String = DAILY_SCENES[r.randi() % DAILY_SCENES.size()]
+	var hr: float = [12.0, 19.8, 23.0][r.randi() % 3]
+	return {"scene": sc, "hour": hr, "seed": r.randi()}
+
+
+func _daily_setup() -> void:
+	if not main.game_daily:
+		return
+	var pl := daily_plan()
+	if main.scene != str(pl["scene"]):
+		main.set_scene(str(pl["scene"]))
+	_rng.seed = int(pl["seed"])
+	if night_saved < 0.0:
+		night_saved = main.hour()
+	main.set_hour(float(pl["hour"]))
+
+
+func _daily_db() -> Dictionary:
+	var d = JSON.parse_string(FileAccess.get_file_as_string(DAILY_FILE)) if FileAccess.file_exists(DAILY_FILE) else null
+	return d if typeof(d) == TYPE_DICTIONARY else {}
+
+
+func _daily_save() -> void:
+	if not main.game_daily:
+		return
+	var db := _daily_db()
+	var day := daily_id()
+	var L: Array = db.get(day, [])
+	for r in results:
+		if int(r.get("score", 0)) > 0 and not str(r["n"]).begins_with("🛡"):
+			L.append({"n": r["n"], "c": r["c"], "score": int(r["score"])})
+	L.sort_custom(func(x, y): return int(x["score"]) > int(y["score"]))
+	db = {day: L.slice(0, 10)}                              # only today counts
+	DirAccess.make_dir_recursive_absolute("user://spiel")
+	var f := FileAccess.open(DAILY_FILE, FileAccess.WRITE)
+	if f != null:
+		f.store_string(JSON.stringify(db))
+
+
+func daily_info() -> Dictionary:
+	if not main.game_daily:
+		return {}
+	var pl := daily_plan()
+	var nm := ""
+	for s in main.Scenes.LIST:
+		if s[0] == pl["scene"]:
+			nm = s[1]
+	var light: String = {12.0: "Tag", 19.8: "Dämmerung", 23.0: "Nacht"}.get(float(pl["hour"]), "")
+	return {"text": "📅 Tagesaufgabe %s: %s · %s" % [daily_id(), nm, light], "best": (_daily_db().get(daily_id(), []) as Array).slice(0, 5)}
+
+
+# ---- practice round: step by step, nobody is really caught ----------------------------------------------------------------
+const TUT := [["🚶 Geh los! (Handy: links ziehen · PC: W A S D)", "move"], ["🧎 Duck dich: «Ducken» (PC: C) – so sieht dich die Kamera schlechter", "crouch"],
+		["🐍 Jetzt kriechen: «Kriechen» (PC: X) – am besten versteckt, aber langsam", "crawl"],
+		["👁 Der Balken oben zeigt, wie gut dich die Kamera sieht. Bleib 6 s unter 30 %, während du gehst", "low"],
+		["🌳 Hinter Dingen und im Dunkeln bist du schwer zu sehen. Jetzt: ab zum Ziel – folge dem Pfeil!", "goal"]]
+
+
+func _tut_tick(t: float) -> void:
+	for p in players:
+		if p == null or p["role"] != "runner" or p["state"] != "play" or str(p.get("kind", "")) == "bot":
+			continue
+		var i := int(p.get("tut", 0))
+		if i >= TUT.size():
+			continue
+		var a = p["actor"]
+		if not p.has("tut_t0"):
+			p["tut_t0"] = t
+			p["tut_pos"] = a.position
+		var ok := false
+		match TUT[i][1]:
+			"move":
+				ok = a.position.distance_to(p["tut_pos"]) > 3.0
+			"crouch":
+				ok = a.ctl_posture == 1 and t - float(p["tut_t0"]) > 1.0
+			"crawl":
+				ok = a.ctl_posture == 2 and t - float(p["tut_t0"]) > 1.0
+			"low":
+				if float(p["susp"]) > 30.0 or a.cur_speed < 0.2:
+					p["tut_t0"] = t
+				ok = t - float(p["tut_t0"]) > 6.0
+			"goal":
+				ok = false
+		p["tut_msg"] = "Übung %d/%d: %s" % [i + 1, TUT.size(), TUT[i][0]]
+		if float(p["msg_until"]) < t:
+			_say(p, p["tut_msg"], 2.0)
+		if ok:
+			p["tut"] = i + 1
+			p["tut_t0"] = t
+			p["tut_pos"] = a.position
+			_event(p, "item")
+			_say(p, "✅ Gut gemacht!", 1.5)
+
+
+
+# ==== 3D-3.78: «Verstecken mit dem Rover» - all start at the base (the rover), 30 s to hide; the seeker sees only the
+# cameras, drives the rover and calls «Gefunden!». Over when all are found (the seeker wins) or a hider touches the base.
+const SEEK_HIDE := 30.0
+var seek_base := Vector3.ZERO
+var seek_set := false
+var seek_drive := Vector2.ZERO          # (forward, turn) for the rover from the seeker (rover_pad.command)
+var seek_winner := ""
+
+
+func _seek_start() -> void:
+	seek_winner = ""
+	for q in players:
+		if q != null and q.has("bot"):
+			q["bot"].erase("hide")
+	main.set_mover(true)
+	var r: Vector3 = main.rig.global_position
+	seek_base = Vector3(r.x, 0, r.z)
+	seek_set = true
+	goal = _g(main.free_spot(seek_base + Vector3(0, 0, 2.2), 0.5, true))
+	goal_name = "die Basis"
+	if goal_node != null:
+		goal_node.position = goal
+	t_start = now() + SEEK_HIDE                         # the hiding time: the hiders move, the seeker waits
+	t_end = t_start + float(main.game_minutes) * 60.0
+	for p in players:
+		if p == null:
+			continue
+		if p["role"] == "runner":
+			_to_start(p)
+			p["actor"].frozen = false
+			_say(p, "🙈 Schnell verstecken! %d s – dann sucht der Fänger mit dem Rover." % int(SEEK_HIDE), 5.0)
+		else:
+			_say(p, "🙈 Augen zu! Die anderen verstecken sich (%d s). Dann: Rover fahren und suchen." % int(SEEK_HIDE), 5.0)
+	if guard_player() == null:
+		news("🕹 Fänger an Motion Watch: Rover mit dem zweiten Stick fahren, «Erwischt!» = gefunden")
+
+
+func seek_hiding() -> bool:
+	return main.game_mode == "seek" and round_state == "countdown"

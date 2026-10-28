@@ -70,6 +70,10 @@ class SimLink:
                                   "day" if op_ == "refcompare_day" else None)
                 elif op_ == "refstop":
                     refscan_stop()
+                elif op_ == "look":                         # 2.95.103: «Kopf steuern» in the simulator window
+                    move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3))
+                elif op_ == "light":                        # 2.95.103: the white light from the simulator (on / off)
+                    light_set("white", "on" if mc_.get("on") else "auto")
         le = int(rep_.get("last_event") or 0)
         if le > SIM["seen_event"]:
             data, _ = _sim_get(f"/events?since={SIM['seen_event']}")

@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.76 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.77 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -607,6 +607,20 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 Motion Watch); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.77
+3D-3.77: Hier am PC mitspielen (Spiel → «Hier am PC mitspielen» bzw. «Hier am PC Wächter sein»): eigene Sicht hinter der Figur,
+W A S D gehen, Maus ziehen / Q E umschauen, Shift rennen, C ducken, X kriechen, F Stein, L Lampe, Esc Menü; als Wächter
+Kopf drehen, Leertaste «Erwischt!», G Licht. Enter startet die Runde.
+Neue Spielart «Verstecken mit dem Rover»: alle starten bei der Basis, 30 s verstecken; der Fänger sieht nur die Kamera,
+fährt den Rover und drückt «Gefunden!». Fertig, wenn alle gefunden sind oder jemand die Basis berührt.
+Computer-Spieler (Bots, 0–3), Übungsrunde mit Erklärungen, Herzschlag (Handy vibriert), Wiederholung nach der Runde
+(Karte mit allen Wegen, rot = gesehen; auf dem Handy und am PC mit R), Abzeichen (Unsichtbar, Blitz, Kriech-Profi, Retter,
+Sammler, Busch-Meister, Adlerauge), Tagesaufgabe (heute für alle dieselbe Szene, dasselbe Ziel, dieselben Startpunkte),
+Geisterläufer (der eigene beste Weg läuft als Geist mit – nur die Spieler sehen ihn).
+Werkzeugleiste: «Kopf steuern» – den Kopf von Motion Watch mit Pfeilen drehen, im Bild ziehen, Licht ein / aus
+(ab Motion Watch 2.95.103).
+Das kleine Kästchen (Fenster minimiert) ist kompakter: Version, Status, Bilder/s, CPU, Motion Watch mit Version.
 
 NEU IN 3D-3.76
 3D-3.76: Patrouille / Überwachen: beim Start fragt der Simulator, was überwacht werden soll (Motion Watch selbst, Tür,
