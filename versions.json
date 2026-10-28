@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 09:59",
+ "generated": "2026-10-28 10:16",
  "versions": [
   {
-   "version": "2.95.70",
-   "file": "webcam_bewegung_2_95_70.py",
+   "version": "2.95.71",
+   "file": "webcam_bewegung_2_95_71.py",
    "url": "",
-   "sha256": "fe47431faf9069498e6d6c34bc159cd7a8defde1cd1a75147dfd21294d74f5e3",
-   "date": "2026-10-28 09:59",
-   "notes": "Einstellungen: Umschalter «Symbole» – farbige Emoji mit grünem Punkt oder schlichte Symbole, die grün werden; 3D-Simulator 3D-3.51: Verbindung vor Kameras",
-   "sig": "db7be77b9f6dd773a8437e72f2a12017f5313e863d6675568c389fca24d3ec68d62f7c5c2c82dc391218e30f3924bdd6294cad1b1772c7318484121956a15202"
+   "sha256": "0473904eb73b07603584023f0b486d3c891a49035916f6597552eea98c9b9423",
+   "date": "2026-10-28 10:16",
+   "notes": "Updates: Test-Modus «neue Versionen sofort holen» (schaut jede Minute auf GitHub, installiert gleich); Werkzeuge-Seite und Fenster auf dem Pi: Symbol links, Pfeil rechts, beide grün, wenn die Funktion läuft",
+   "sig": "bbe28d124a05330b2fad36438a5a298ac237d01df2a7473e070e156456c874794eda5451e77cf9b82fa055529383480cc0d6997bdbff385af4137b831a332c01"
   },
   {
    "version": "2.94.5",

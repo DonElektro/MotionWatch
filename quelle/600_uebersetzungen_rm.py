@@ -276,6 +276,7 @@ TRX['rm'].update({
     'Inside any schedule': 'En in plan da temp',
     'Install': 'Installar',
     'Install new versions automatically': 'Installar automaticamain novas versiuns',
+    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)': "Modus da test: prender novas versiuns immediat (guarda mintga minuta sin GitHub ed installescha dalunga, er sch'armà)",
     'Internet': 'Internet',
     'Invert pan direction': 'Invertir la direcziun da panorama',
     'Invert tilt direction': "Invertir la direcziun d'inclinaziun",

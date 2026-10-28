@@ -369,7 +369,12 @@ def update_check():
     if src.startswith("https://"):
         try:
             # GitHub's file server keeps a copy for up to 5 minutes - a changing ?t= asks for the newest list
-            req = _upd_request(src + ("&" if "?" in src else "?") + "t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
+            src_ = src
+            fs_ = UPD.get("fast_sha") or ""                 # 2.95.71 test mode: the list of exactly this commit (never an old copy)
+            mg_ = re.match(r"(https://raw\.githubusercontent\.com/[^/]+/[^/]+/)[^/]+(/.+)$", src)
+            if fs_ and mg_ and CFG.get("update_fast"):
+                src_ = mg_.group(1) + fs_ + mg_.group(2)
+            req = _upd_request(src_ + ("&" if "?" in src_ else "?") + "t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
             with urllib.request.urlopen(req, timeout=15) as r:
                 data = json.loads(r.read(1024 * 1024 + 1)[:1024 * 1024].decode("utf-8"))
             UPD["list_time"] = str(data.get("generated") or "")[:16]
@@ -881,7 +886,7 @@ class UpdateWatcher:
         last = 0.0
         while True:
             try:
-                if time.time() - last > 3 * 3600 or UPD.get("recheck"):
+                if time.time() - last > 3 * 3600 or UPD.get("recheck") or self.fast_changed():
                     UPD["recheck"] = False; last = time.time()
                     self.tick()
                 self.auto_install()
@@ -889,16 +894,53 @@ class UpdateWatcher:
                 print(f"Update watcher: {e}")
             time.sleep(60)
 
+    def fast_changed(self):
+        """2.95.71 test mode: every minute ask GitHub whether versions.json has a new commit. The answer «unchanged» (304 with
+        the ETag) does not count against GitHub's limit of 60 questions per hour; a new commit -> look for versions now."""
+        if not CFG.get("update_fast") or not CFG["update_url"].strip():
+            return False
+        m = re.match(r"https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$", CFG["update_url"].strip())
+        if not m:
+            return False
+        owner, repo, branch, path = m.groups()
+        url = f"https://api.github.com/repos/{owner}/{repo}/commits?sha={branch}&path={path}&per_page=1"
+        h = {"Accept": "application/vnd.github+json", "User-Agent": "MotionWatch"}
+        if getattr(self, "_etag", ""):
+            h["If-None-Match"] = self._etag
+        tok = CFG["update_token"].strip()
+        if tok:
+            h["Authorization"] = "token " + tok
+        import urllib.error
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=h), timeout=10) as r:
+                self._etag = r.headers.get("ETag", "") or ""
+                sha = str((json.loads(r.read(200000) or b"[]") or [{}])[0].get("sha", ""))
+        except urllib.error.HTTPError as e:
+            return False                                     # 304 = unchanged (or limit reached: try again in a minute)
+        except Exception:
+            return False
+        old = getattr(self, "_fast_sha", None)
+        self._fast_sha = sha
+        if sha:
+            UPD["fast_sha"] = sha
+        if old is None or not sha or sha == old:
+            return old is None                               # first answer: look once
+        log_event("sys", "Test mode: new versions.json on GitHub - looking for versions now")
+        UPD["fast_t"] = time.time()
+        return True
+
     def auto_install(self):
         """Automatic update: in the chosen hour, when nothing is going on (disarmed unless allowed, no recording, no person),
-        install the newest version. If the new version does not start, the start guard goes back to the old one."""
-        if not CFG["update_install"] or RESTART["pending"] or UPD["busy"] or POWER.get("pending"):
+        install the newest version. If the new version does not start, the start guard goes back to the old one.
+        2.95.71 test mode (update_fast): at once, at any hour, also while armed - but never during a recording or a person."""
+        fast = bool(CFG.get("update_fast"))
+        if not (CFG["update_install"] or fast) or RESTART["pending"] or UPD["busy"] or POWER.get("pending"):
             return
         u = STATE.get("update_new") or {}
         v = u.get("version")
-        if not v or datetime.now().hour != int(CFG["update_hour"]) % 24:
+        if not v or (not fast and datetime.now().hour != int(CFG["update_hour"]) % 24):
             return
-        if (is_armed() and not CFG["update_install_armed"]) or STATE.get("recording") or STATE.get("persons") or STATE.get("arm_state") == "arming":
+        if (is_armed() and not CFG["update_install_armed"] and not fast) or STATE.get("recording") or STATE.get("persons") or STATE.get("arm_state") == "arming":
             return
         try:
             with open(os.path.join(DATA_DIR, "update_bad.json")) as f:
@@ -919,7 +961,7 @@ class UpdateWatcher:
             log_event("sys", f"Automatic update failed: {err}")
 
     def tick(self):
-        if not CFG["update_auto"] or not CFG["update_url"].strip() or RESTART["pending"]:
+        if not (CFG["update_auto"] or CFG.get("update_fast")) or not CFG["update_url"].strip() or RESTART["pending"]:
             return
         items, err = update_check()
         new = sorted((x for x in items if x.get("available") and _installable(x) and _vkey(x["version"]) > _vkey(APP_VERSION)), key=lambda x: _vkey(x["version"]))

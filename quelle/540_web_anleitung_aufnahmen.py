@@ -172,7 +172,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>Automatisches Update:</b> «Neue Versionen automatisch installieren» einschalten und die Stunde wählen (Standard 12 Uhr). Installiert wird nur, wenn nichts los ist (unscharf, keine Aufnahme, keine Person – «auch wenn scharf» erlaubt es auch scharf). Startet die neue Version dreimal nicht, kehrt Motion Watch von selbst zur vorherigen zurück.</li>
 <li><b>🔏 Signierte Updates:</b> jede Version ist mit dem geheimen Schlüssel des Entwicklers unterschrieben. Motion Watch installiert nur Versionen mit gültiger Unterschrift – selbst wer in das GitHub-Konto eindringt, kann so kein fremdes Programm auf die Geräte bringen. In der Liste steht «🔏 signiert» oder «⚠ nicht signiert». Eigene, unsignierte Versionen nur mit «Auch nicht signierte Versionen annehmen».</li>
 <li><b>Privates GitHub-Repository:</b> unter Updates zusätzlich den <b>GitHub-Schlüssel (Token)</b> eintragen – auf github.com unter Settings → Developer settings → Fine-grained tokens erstellen, nur für dieses Repository, Recht «Contents: Read-only». Der Schlüssel wird nur an GitHub gesendet und nie angezeigt.</li>
-<li><b>Updates:</b> Quelle eintragen (Internet-Adresse einer versions.json oder ein Ordner/USB-Stick), «Nach Versionen suchen», Version wählen. Ältere Versionen bleiben für den Weg zurück.</li></ul>
+<li><b>Updates:</b> Quelle eintragen (Internet-Adresse einer versions.json oder ein Ordner/USB-Stick), «Nach Versionen suchen», Version wählen. Ältere Versionen bleiben für den Weg zurück. <b>Test-Modus</b> («Neue Versionen sofort holen»): schaut jede Minute auf GitHub und installiert eine neue Version gleich (auch wenn scharf, nie während einer Aufnahme) – zum Testen, danach wieder ausschalten.</li></ul>
 </section>
 
 <section id="window" data-icon="🖥"><h2>Desktop-Fenster auf dem Pi</h2>
@@ -383,7 +383,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>Automatic update:</b> switch on «Install new versions automatically» and choose the hour (default 12 o'clock). It installs only when nothing is going on (disarmed, no recording, no person – «also while armed» allows it when armed). If the new version fails to start three times, Motion Watch goes back to the previous one by itself.</li>
 <li><b>🔏 Signed updates:</b> every version is signed with the developer&#39;s secret key. Motion Watch installs only versions with a valid signature – even somebody who breaks into the GitHub account cannot push a foreign program onto the devices. The list shows «🔏 signed» or «⚠ not signed». Own unsigned builds only with «Also accept unsigned versions».</li>
 <li><b>Private GitHub repository:</b> also enter the <b>GitHub key (token)</b> under Updates – create it on github.com under Settings → Developer settings → Fine-grained tokens, only for this repository, permission «Contents: Read-only». The key is only sent to GitHub and never shown.</li>
-<li><b>Updates:</b> enter the source (address of a versions.json or a folder / USB stick), «Search versions», pick a version. Older versions stay for going back.</li></ul>
+<li><b>Updates:</b> enter the source (address of a versions.json or a folder / USB stick), «Search versions», pick a version. Older versions stay for going back. <b>Test mode</b> («Get new versions at once»): looks on GitHub every minute and installs a new version right away (also while armed, never during a recording) - for testing, switch it off afterwards.</li></ul>
 </section>
 
 <section id="window" data-icon="🖥"><h2>Desktop window on the Pi</h2>

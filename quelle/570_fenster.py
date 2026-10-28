@@ -220,6 +220,7 @@ TOGGLES = [  # (section, key, label)
     ("Notifications", "pushover_emergency", "Pushover: alarms as emergency (critical alert, repeats until confirmed)"),
     ("Updates", "update_auto", "Look for new versions by itself (every 3 hours)"),
     ("Updates", "update_install", "Install new versions automatically"),
+    ("Updates", "update_fast", "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)"),
     ("Updates", "update_install_armed", "Automatic update also while armed (otherwise only when disarmed)"),
     ("Updates", "update_unsigned", "Also accept unsigned versions (not recommended - only for own builds)"),
     ("Battery", "ups_on", "UPS HAT (battery pack on the Pi): use it when found"),
@@ -426,6 +427,27 @@ DE.update({    # 2.37.0
 DE.update({    # 2.34.0
     "Recordings map and place names from the internet (OpenStreetMap)": "Karte und Ortsnamen bei den Aufnahmen aus dem Internet (OpenStreetMap)",
 })
+def tk_main_on(sec):
+    """2.95.71: is the main function of this settings topic on? (the same as MAINSW on the web page)"""
+    g = CFG.get
+    try:
+        return bool({
+            "Camping / protection": lambda: g("camping"), "Power saving": lambda: g("eco_on"), "Battery": lambda: g("ups_on"),
+            "Theft protection": lambda: g("tamper_on") or g("tamper_motion") or g("tamper_power"), "Notifications": lambda: g("notify_on"),
+            "Night report": lambda: g("report_on"), "SMS (LTE stick)": lambda: g("sms_on"), "Detection": lambda: g("detection_on"),
+            "AI detection": lambda: g("ai_enabled"), "Vehicle filter": lambda: g("car_filter"), "Rain": lambda: g("rain_auto"), "Wind": lambda: g("wind_auto"),
+            "Low light": lambda: g("lowlight_auto") or g("nightvision") or g("nightvision_auto"), "Auto-tune": lambda: g("auto_tune"),
+            "Camera / Servos": lambda: g("track_person"), "Patrol": lambda: g("patrol"), "Thermal camera": lambda: g("thermal_on") or g("thermal_alarm"),
+            "Extra sensors": lambda: g("sens_on") and g("sensors"), "Storm warning": lambda: g("storm_on"), "GPS module": lambda: g("gpsmod_on"),
+            "Solar panel": lambda: g("solar_on"), "Lights": lambda: g("light_white", "off") != "off" or g("light_ir", "off") != "off",
+            "Microphone": lambda: g("audio_in"), "Loudspeaker": lambda: g("siren_on") and g("siren_on") != "off", "Recording": lambda: g("record"),
+            "Timelapse": lambda: g("timelapse_on"), "Backup": lambda: g("backup_type") and g("backup_type") != "off", "Relays": lambda: g("relays_on"),
+            "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_auto") or g("update_fast"),
+            "Simulator": lambda: g("sim_on"), "Mover": lambda: g("mover_on"), "Guest access": lambda: g("guest_on")}.get(sec, lambda: False)())
+    except Exception:
+        return False
+
+
 TK_GROUP_ICONS = {"alarm": "⚠", "notify": "✉", "detect": "◎", "camera": "▣", "thermal": "♨", "lightsound": "☀", "rec": "●", "relay": "⚡", "sys": "⚙", "sensors": "◉"}
 
 TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery": "▮", "Theft protection": "⚷", "Notifications": "✉",
@@ -706,7 +728,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.70")
+        self.root.title("Motion Watch 2.95.71")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -996,7 +1018,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.70 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.71 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1593,7 +1615,7 @@ class App:
         self.no_match = tk.Label(inner, text=tr("No match"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9))
         # 9 groups (same as the web page). Inside a group every topic opens / closes the same way (the first one is open);
         # fine-tuning comes last under a small line. A group with one topic shows it directly.
-        self.group_titles = {}; self.subs = {}
+        self.group_titles = {}; self.subs = {}; self.sub_parts = {}; self.grp_icons = {}
         self._lock_seen = bool(CFG["lock_on"])
         if CFG["lock_on"]:                               # operator mode: all may be changed, unlocking puts it back
             card = self._panel(inner); card.pack(fill="x", pady=(0, 8))
@@ -1612,11 +1634,14 @@ class App:
             key = "grp:" + gid
             card = self._panel(inner); card.pack(fill="x", pady=(0, 8))
             hr = tk.Frame(card, bg=C["panel"], cursor="hand2"); hr.pack(fill="x")
+            gic = tk.Label(hr, text=TK_GROUP_ICONS.get(gid, ""), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11), width=2, anchor="w", cursor="hand2")
+            gic.pack(side="left"); self.grp_icons["grp:" + gid] = gic
+            gic.bind("<Button-1>", lambda e, k="grp:" + gid: self._toggle_section(k))
             head = tk.Label(hr, text="", bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 9, "bold"), anchor="w", cursor="hand2")
             head.pack(side="left", fill="x", expand=True)
             arr = tk.Label(hr, text="▸", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 10), cursor="hand2"); arr.pack(side="right")
             gbody = tk.Frame(card, bg=C["panel"])
-            self.sections[key] = (head, gbody); self.group_titles[key] = TK_GROUP_ICONS.get(gid, "") + "   " + tr(name)
+            self.sections[key] = (head, gbody); self.group_titles[key] = tr(name)
             for w_ in (hr, head, arr):
                 w_.bind("<Button-1>", lambda e, k=key: self._toggle_section(k))
             words = [tr(name)] + [tr(x) for x in real]
@@ -1643,17 +1668,45 @@ class App:
         """One topic of a group: thin line + title that opens / closes it (state kept in the settings)."""
         tk.Frame(parent, bg=C["line"], height=1).pack(fill="x", pady=(8, 4))
         title = {"Camping / protection": "Protection & network", "Notifications": "Push messages"}.get(sec, sec)
-        h = tk.Label(parent, text="", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), anchor="w", cursor="hand2")
-        h.pack(fill="x")
+        # 2.95.71: like every menu - symbol left, name, arrow right; symbol and arrow green while the function is on
+        h = tk.Frame(parent, bg=C["panel"], cursor="hand2"); h.pack(fill="x")
+        ic = TK_SUB_ICONS.get(sec, "")
+        il = tk.Label(h, text=ic, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 10), width=2, anchor="w", cursor="hand2"); il.pack(side="left")
+        tl = tk.Label(h, text=tr(title).upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), anchor="w", cursor="hand2")
+        tl.pack(side="left", fill="x", expand=True)
+        al = tk.Label(h, text="▸", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), cursor="hand2"); al.pack(side="right")
         body = tk.Frame(parent, bg=C["panel"])
         k = "sub:" + sec
-        ic = TK_SUB_ICONS.get(sec, "")
-        self.subs[k] = (h, body, (ic + "  " if ic else "") + tr(title).upper())
-        h.bind("<Button-1>", lambda e, kk=k: self._set_sub(kk, not self._sub_open(kk)))
+        self.subs[k] = (h, body, tr(title).upper())
+        self.sub_parts[k] = (il, tl, al, sec)
+        for w_ in (h, il, tl, al):
+            w_.bind("<Button-1>", lambda e, kk=k: self._set_sub(kk, not self._sub_open(kk)))
         self._build_section(sec, body)
         if k not in self.open_secs and ("subx:" + sec) not in self.open_secs and default_open:
             self.open_secs.add(k)
         self._set_sub(k, k in self.open_secs, save=False)
+
+    def _sub_arrow(self, k, open_):
+        p_ = self.sub_parts.get(k)
+        if p_ is not None:
+            p_[2].config(text="▾" if open_ else "▸"); p_[1].config(fg=C["txt"] if open_ else C["mut"])
+
+    def _paint_main(self):
+        """2.95.71: symbol and arrow green while the main function of a topic is on (group: one of its topics) - like the web page"""
+        meta = getattr(self, "grp_meta", {})
+        for k, (il, tl, al, sec) in getattr(self, "sub_parts", {}).items():
+            on = tk_main_on(sec)
+            col = C["grn"] if on else C["mut"]
+            if il.cget("fg") != col:
+                il.config(fg=col); al.config(fg=col)
+        for key, m in meta.items():
+            on = any(tk_main_on(x) for x in m[1])
+            col = C["grn"] if on else C["mut"]
+            if m[0].cget("fg") != col:
+                m[0].config(fg=col)
+            ic_ = getattr(self, "grp_icons", {}).get(key)
+            if ic_ is not None and ic_.cget("fg") != (C["grn"] if on else C["txt"]):
+                ic_.config(fg=C["grn"] if on else C["txt"])
 
     def _sub_open(self, k):
         return k in self.open_secs
@@ -1667,7 +1720,7 @@ class App:
             self.open_secs.discard(k); self.open_secs.add(closed)
         if save and sorted(self.open_secs) != sorted(CFG["ui_open"]):
             CFG["ui_open"] = sorted(self.open_secs); save_settings()
-        h.config(text=("▾  " if open_ else "▸  ") + title)
+        self._sub_arrow(k, open_)
         if open_:
             body.pack(fill="x", pady=(2, 0), after=h)
         else:
@@ -2653,7 +2706,7 @@ class App:
 
     def _show_sub(self, k, open_):
         h, body, title = self.subs[k]
-        h.config(text=("▾  " if open_ else "▸  ") + title)
+        self._sub_arrow(k, open_)
         if open_:
             body.pack(fill="x", pady=(2, 0), after=h)
         else:
@@ -2992,6 +3045,10 @@ class App:
     def _refresh(self):
         st = STATE
         self._sync_relays()
+        try:
+            self._paint_main()
+        except Exception:
+            pass
         for k, lbl in self.stat.items():
             lbl.config(text=str(st[k]))
         if self.p_rain is not None:

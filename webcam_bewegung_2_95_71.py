@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_70.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_71.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,7 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.71: Updates: Test-Modus «neue Versionen sofort holen» (schaut jede Minute auf GitHub, installiert gleich); Werkzeuge-Seite und Fenster auf dem Pi: Symbol links, Pfeil rechts, beide grün, wenn die Funktion läuft
   * 2.95.70: Einstellungen: Umschalter «Symbole» – farbige Emoji mit grünem Punkt oder schlichte Symbole, die grün werden;
     3D-Simulator 3D-3.51: Verbindung vor Kameras
   * 2.95.69: Simulator-Seite nach Logik geordnet (Verbindung, Status, dann Livebild und Steuerung erst wenn verbunden); Symbol
@@ -738,10 +739,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_70.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_71.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_70.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_70.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_71.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_71.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -758,7 +759,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.70"
+APP_VERSION = "2.95.71"
 
 
 def default_data_dir():
@@ -1078,6 +1079,7 @@ CFG = {
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
+    "update_fast": False,        # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
     "update_push": True,         # push message when a new version is there (once per version)
@@ -18956,7 +18958,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_70.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_71.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -19538,7 +19540,12 @@ def update_check():
     if src.startswith("https://"):
         try:
             # GitHub's file server keeps a copy for up to 5 minutes - a changing ?t= asks for the newest list
-            req = _upd_request(src + ("&" if "?" in src else "?") + "t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
+            src_ = src
+            fs_ = UPD.get("fast_sha") or ""                 # 2.95.71 test mode: the list of exactly this commit (never an old copy)
+            mg_ = re.match(r"(https://raw\.githubusercontent\.com/[^/]+/[^/]+/)[^/]+(/.+)$", src)
+            if fs_ and mg_ and CFG.get("update_fast"):
+                src_ = mg_.group(1) + fs_ + mg_.group(2)
+            req = _upd_request(src_ + ("&" if "?" in src_ else "?") + "t=" + str(int(time.time())), {"Cache-Control": "no-cache"})
             with urllib.request.urlopen(req, timeout=15) as r:
                 data = json.loads(r.read(1024 * 1024 + 1)[:1024 * 1024].decode("utf-8"))
             UPD["list_time"] = str(data.get("generated") or "")[:16]
@@ -20050,7 +20057,7 @@ class UpdateWatcher:
         last = 0.0
         while True:
             try:
-                if time.time() - last > 3 * 3600 or UPD.get("recheck"):
+                if time.time() - last > 3 * 3600 or UPD.get("recheck") or self.fast_changed():
                     UPD["recheck"] = False; last = time.time()
                     self.tick()
                 self.auto_install()
@@ -20058,16 +20065,53 @@ class UpdateWatcher:
                 print(f"Update watcher: {e}")
             time.sleep(60)
 
+    def fast_changed(self):
+        """2.95.71 test mode: every minute ask GitHub whether versions.json has a new commit. The answer «unchanged» (304 with
+        the ETag) does not count against GitHub's limit of 60 questions per hour; a new commit -> look for versions now."""
+        if not CFG.get("update_fast") or not CFG["update_url"].strip():
+            return False
+        m = re.match(r"https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$", CFG["update_url"].strip())
+        if not m:
+            return False
+        owner, repo, branch, path = m.groups()
+        url = f"https://api.github.com/repos/{owner}/{repo}/commits?sha={branch}&path={path}&per_page=1"
+        h = {"Accept": "application/vnd.github+json", "User-Agent": "MotionWatch"}
+        if getattr(self, "_etag", ""):
+            h["If-None-Match"] = self._etag
+        tok = CFG["update_token"].strip()
+        if tok:
+            h["Authorization"] = "token " + tok
+        import urllib.error
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=h), timeout=10) as r:
+                self._etag = r.headers.get("ETag", "") or ""
+                sha = str((json.loads(r.read(200000) or b"[]") or [{}])[0].get("sha", ""))
+        except urllib.error.HTTPError as e:
+            return False                                     # 304 = unchanged (or limit reached: try again in a minute)
+        except Exception:
+            return False
+        old = getattr(self, "_fast_sha", None)
+        self._fast_sha = sha
+        if sha:
+            UPD["fast_sha"] = sha
+        if old is None or not sha or sha == old:
+            return old is None                               # first answer: look once
+        log_event("sys", "Test mode: new versions.json on GitHub - looking for versions now")
+        UPD["fast_t"] = time.time()
+        return True
+
     def auto_install(self):
         """Automatic update: in the chosen hour, when nothing is going on (disarmed unless allowed, no recording, no person),
-        install the newest version. If the new version does not start, the start guard goes back to the old one."""
-        if not CFG["update_install"] or RESTART["pending"] or UPD["busy"] or POWER.get("pending"):
+        install the newest version. If the new version does not start, the start guard goes back to the old one.
+        2.95.71 test mode (update_fast): at once, at any hour, also while armed - but never during a recording or a person."""
+        fast = bool(CFG.get("update_fast"))
+        if not (CFG["update_install"] or fast) or RESTART["pending"] or UPD["busy"] or POWER.get("pending"):
             return
         u = STATE.get("update_new") or {}
         v = u.get("version")
-        if not v or datetime.now().hour != int(CFG["update_hour"]) % 24:
+        if not v or (not fast and datetime.now().hour != int(CFG["update_hour"]) % 24):
             return
-        if (is_armed() and not CFG["update_install_armed"]) or STATE.get("recording") or STATE.get("persons") or STATE.get("arm_state") == "arming":
+        if (is_armed() and not CFG["update_install_armed"] and not fast) or STATE.get("recording") or STATE.get("persons") or STATE.get("arm_state") == "arming":
             return
         try:
             with open(os.path.join(DATA_DIR, "update_bad.json")) as f:
@@ -20088,7 +20132,7 @@ class UpdateWatcher:
             log_event("sys", f"Automatic update failed: {err}")
 
     def tick(self):
-        if not CFG["update_auto"] or not CFG["update_url"].strip() or RESTART["pending"]:
+        if not (CFG["update_auto"] or CFG.get("update_fast")) or not CFG["update_url"].strip() or RESTART["pending"]:
             return
         items, err = update_check()
         new = sorted((x for x in items if x.get("available") and _installable(x) and _vkey(x["version"]) > _vkey(APP_VERSION)), key=lambda x: _vkey(x["version"]))
@@ -23114,8 +23158,11 @@ main.tools.solo .tpane{display:block!important}
 .tli .tln b{font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tsum{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:0}
 .tsum:empty{display:none}
-.tdot{flex:none;width:7px;height:7px;border-radius:50%;background:transparent}
-.tdot.ok{background:var(--grn)}.tdot.warn{background:var(--yel)}.tdot.bad{background:var(--red)}
+/* 2.95.71: like every menu - symbol left, name, arrow right; symbol and arrow green while the tool's function is on / ok
+   (yellow / red = to watch / a problem); the former dot became the arrow */
+.tdot{flex:none;font-style:normal;color:var(--mut);font-size:17px;line-height:1;opacity:.75}.tdot::after{content:"›"}
+.tdot.ok{color:var(--grn);opacity:1}.tdot.warn{color:var(--yel);opacity:1}.tdot.bad{color:var(--red);opacity:1}
+.tli:has(.tdot.ok) svg.tico{color:var(--grn)}.tli:has(.tdot.warn) svg.tico{color:var(--yel)}.tli:has(.tdot.bad) svg.tico{color:var(--red)}
 svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--mut)}
 .tli.on svg.tico{color:var(--txt)}
 .tpane{min-width:0}
@@ -23209,11 +23256,11 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <button type="button" class="tli" data-k="audio" onclick="pick('audio')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span class="tln"><b data-i18n="Speaker and microphone">Speaker and microphone</b><span class="tsum" id="s-audio"></span></span><i class="tdot" id="d-audio"></i></button>
   <button type="button" class="tli" data-k="sd" onclick="pick('sd')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"/><path d="M10 7v3M13 7v3M16 8v2"/></svg><span class="tln"><b data-i18n="Memory card test">Memory card test</b><span class="tsum" id="s-sd"></span></span><i class="tdot" id="d-sd"></i></button>
   <button type="button" class="tli" data-k="bt" onclick="pick('bt')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span class="tln"><b data-i18n="Bluetooth scanner">Bluetooth scanner</b><span class="tsum" id="s-bt"></span></span><i class="tdot" id="d-bt"></i></button>
-  <button type="button" class="tli" data-k="usb" onclick="pick('usb')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v15"/><path d="M9 5l3-3 3 3"/><path d="M12 13l-5-3V7"/><path d="M12 11l5-3V6"/><rect x="5.5" y="5" width="3" height="2.5"/><circle cx="17" cy="5" r="1.4"/><circle cx="12" cy="19" r="2.5"/></svg><span class="tln"><b data-i18n="USB devices">USB devices</b><span class="tsum" id="s-usb"></span></span></button>
-  <button type="button" class="tli" data-k="party" onclick="pick('party')" hidden><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4"/><circle cx="16" cy="8" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="8" cy="16" r="1.4"/><circle cx="16" cy="16" r="1.4"/></svg><span class="tln"><b data-i18n="Game corner">Game corner</b><span class="mut" id="s-party"></span></span></button>
+  <button type="button" class="tli" data-k="usb" onclick="pick('usb')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v15"/><path d="M9 5l3-3 3 3"/><path d="M12 13l-5-3V7"/><path d="M12 11l5-3V6"/><rect x="5.5" y="5" width="3" height="2.5"/><circle cx="17" cy="5" r="1.4"/><circle cx="12" cy="19" r="2.5"/></svg><span class="tln"><b data-i18n="USB devices">USB devices</b><span class="tsum" id="s-usb"></span></span><i class="tdot" id="d-usb"></i></button>
+  <button type="button" class="tli" data-k="party" onclick="pick('party')" hidden><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4"/><circle cx="16" cy="8" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="8" cy="16" r="1.4"/><circle cx="16" cy="16" r="1.4"/></svg><span class="tln"><b data-i18n="Game corner">Game corner</b><span class="mut" id="s-party"></span></span><i class="tdot" id="d-party"></i></button>
   <button type="button" class="tli" data-k="helper" onclick="pick('helper')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><path d="M8 10h2l1-2 2 4 1-2h2"/></svg><span class="tln"><b data-i18n="AI helper (PC)">AI helper (PC)</b><span class="tsum" id="s-helper"></span></span><i class="tdot" id="d-helper"></i></button>
   <div class="tlg" data-i18n="Power and help">Power and help</div>
-  <a class="tli" href="/almanach/" target="_blank" style="text-decoration:none;color:inherit"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7M8 11h7"/></svg><span class="tln"><b data-i18n="Survival almanac">Survival almanac</b><span class="tsum" data-i18n="tips for camping, to look up or read in the evening">tips for camping, to look up or read in the evening</span></span></a>
+  <a class="tli" href="/almanach/" target="_blank" style="text-decoration:none;color:inherit"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7M8 11h7"/></svg><span class="tln"><b data-i18n="Survival almanac">Survival almanac</b><span class="tsum" data-i18n="tips for camping, to look up or read in the evening">tips for camping, to look up or read in the evening</span></span><i class="tdot" id="d-alm"></i></a>
   <button type="button" class="tli" data-k="pow" onclick="pick('pow')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2M7 10v4M11 10v4"/></svg><span class="tln"><b data-i18n="Power calculator">Power calculator</b><span class="tsum" id="s-pow"></span></span><i class="tdot" id="d-pow"></i></button>
   <button type="button" class="tli" data-k="diag" onclick="pick('diag')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M8 14h2l1.5-3 2 5 1.5-2H16"/></svg><span class="tln"><b data-i18n="Diagnosis package">Diagnosis package</b><span class="tsum" id="s-diag"></span></span><i class="tdot" id="d-diag"></i></button>
 </nav>
@@ -35773,7 +35820,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>Automatisches Update:</b> «Neue Versionen automatisch installieren» einschalten und die Stunde wählen (Standard 12 Uhr). Installiert wird nur, wenn nichts los ist (unscharf, keine Aufnahme, keine Person – «auch wenn scharf» erlaubt es auch scharf). Startet die neue Version dreimal nicht, kehrt Motion Watch von selbst zur vorherigen zurück.</li>
 <li><b>🔏 Signierte Updates:</b> jede Version ist mit dem geheimen Schlüssel des Entwicklers unterschrieben. Motion Watch installiert nur Versionen mit gültiger Unterschrift – selbst wer in das GitHub-Konto eindringt, kann so kein fremdes Programm auf die Geräte bringen. In der Liste steht «🔏 signiert» oder «⚠ nicht signiert». Eigene, unsignierte Versionen nur mit «Auch nicht signierte Versionen annehmen».</li>
 <li><b>Privates GitHub-Repository:</b> unter Updates zusätzlich den <b>GitHub-Schlüssel (Token)</b> eintragen – auf github.com unter Settings → Developer settings → Fine-grained tokens erstellen, nur für dieses Repository, Recht «Contents: Read-only». Der Schlüssel wird nur an GitHub gesendet und nie angezeigt.</li>
-<li><b>Updates:</b> Quelle eintragen (Internet-Adresse einer versions.json oder ein Ordner/USB-Stick), «Nach Versionen suchen», Version wählen. Ältere Versionen bleiben für den Weg zurück.</li></ul>
+<li><b>Updates:</b> Quelle eintragen (Internet-Adresse einer versions.json oder ein Ordner/USB-Stick), «Nach Versionen suchen», Version wählen. Ältere Versionen bleiben für den Weg zurück. <b>Test-Modus</b> («Neue Versionen sofort holen»): schaut jede Minute auf GitHub und installiert eine neue Version gleich (auch wenn scharf, nie während einer Aufnahme) – zum Testen, danach wieder ausschalten.</li></ul>
 </section>
 
 <section id="window" data-icon="🖥"><h2>Desktop-Fenster auf dem Pi</h2>
@@ -35984,7 +36031,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>Automatic update:</b> switch on «Install new versions automatically» and choose the hour (default 12 o'clock). It installs only when nothing is going on (disarmed, no recording, no person – «also while armed» allows it when armed). If the new version fails to start three times, Motion Watch goes back to the previous one by itself.</li>
 <li><b>🔏 Signed updates:</b> every version is signed with the developer&#39;s secret key. Motion Watch installs only versions with a valid signature – even somebody who breaks into the GitHub account cannot push a foreign program onto the devices. The list shows «🔏 signed» or «⚠ not signed». Own unsigned builds only with «Also accept unsigned versions».</li>
 <li><b>Private GitHub repository:</b> also enter the <b>GitHub key (token)</b> under Updates – create it on github.com under Settings → Developer settings → Fine-grained tokens, only for this repository, permission «Contents: Read-only». The key is only sent to GitHub and never shown.</li>
-<li><b>Updates:</b> enter the source (address of a versions.json or a folder / USB stick), «Search versions», pick a version. Older versions stay for going back.</li></ul>
+<li><b>Updates:</b> enter the source (address of a versions.json or a folder / USB stick), «Search versions», pick a version. Older versions stay for going back. <b>Test mode</b> («Get new versions at once»): looks on GitHub every minute and installs a new version right away (also while armed, never during a recording) - for testing, switch it off afterwards.</li></ul>
 </section>
 
 <section id="window" data-icon="🖥"><h2>Desktop window on the Pi</h2>
@@ -39429,6 +39476,7 @@ DE = {
     "UPS HAT: address (I2C)": "USV-Akku: Adresse (I2C)",
     "New version": "Neue Version", "click to update": "zum Aktualisieren klicken",
     "Install new versions automatically": "Neue Versionen automatisch installieren",
+    "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)": "Test-Modus: neue Versionen sofort holen (schaut jede Minute auf GitHub und installiert gleich, auch wenn scharf)",
     "QR code for the phone": "QR-Code fürs Handy", "Markings in recordings and alarm pictures": "Markierungen in Aufnahmen und Alarmbildern",
     "thin corner marks (face stays free)": "dünne Eckmarken (Gesicht bleibt frei)", "none (clean picture)": "keine (sauberes Bild)",
     "like the live picture (red boxes)": "wie im Live-Bild (rote Rahmen)", "please write a few words": "bitte ein paar Worte schreiben",
@@ -40071,6 +40119,7 @@ TOGGLES = [  # (section, key, label)
     ("Notifications", "pushover_emergency", "Pushover: alarms as emergency (critical alert, repeats until confirmed)"),
     ("Updates", "update_auto", "Look for new versions by itself (every 3 hours)"),
     ("Updates", "update_install", "Install new versions automatically"),
+    ("Updates", "update_fast", "Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)"),
     ("Updates", "update_install_armed", "Automatic update also while armed (otherwise only when disarmed)"),
     ("Updates", "update_unsigned", "Also accept unsigned versions (not recommended - only for own builds)"),
     ("Battery", "ups_on", "UPS HAT (battery pack on the Pi): use it when found"),
@@ -40277,6 +40326,27 @@ DE.update({    # 2.37.0
 DE.update({    # 2.34.0
     "Recordings map and place names from the internet (OpenStreetMap)": "Karte und Ortsnamen bei den Aufnahmen aus dem Internet (OpenStreetMap)",
 })
+def tk_main_on(sec):
+    """2.95.71: is the main function of this settings topic on? (the same as MAINSW on the web page)"""
+    g = CFG.get
+    try:
+        return bool({
+            "Camping / protection": lambda: g("camping"), "Power saving": lambda: g("eco_on"), "Battery": lambda: g("ups_on"),
+            "Theft protection": lambda: g("tamper_on") or g("tamper_motion") or g("tamper_power"), "Notifications": lambda: g("notify_on"),
+            "Night report": lambda: g("report_on"), "SMS (LTE stick)": lambda: g("sms_on"), "Detection": lambda: g("detection_on"),
+            "AI detection": lambda: g("ai_enabled"), "Vehicle filter": lambda: g("car_filter"), "Rain": lambda: g("rain_auto"), "Wind": lambda: g("wind_auto"),
+            "Low light": lambda: g("lowlight_auto") or g("nightvision") or g("nightvision_auto"), "Auto-tune": lambda: g("auto_tune"),
+            "Camera / Servos": lambda: g("track_person"), "Patrol": lambda: g("patrol"), "Thermal camera": lambda: g("thermal_on") or g("thermal_alarm"),
+            "Extra sensors": lambda: g("sens_on") and g("sensors"), "Storm warning": lambda: g("storm_on"), "GPS module": lambda: g("gpsmod_on"),
+            "Solar panel": lambda: g("solar_on"), "Lights": lambda: g("light_white", "off") != "off" or g("light_ir", "off") != "off",
+            "Microphone": lambda: g("audio_in"), "Loudspeaker": lambda: g("siren_on") and g("siren_on") != "off", "Recording": lambda: g("record"),
+            "Timelapse": lambda: g("timelapse_on"), "Backup": lambda: g("backup_type") and g("backup_type") != "off", "Relays": lambda: g("relays_on"),
+            "Web stream": lambda: g("web_stream"), "MQTT / Home Assistant": lambda: g("mqtt_on"), "Updates": lambda: g("update_auto") or g("update_fast"),
+            "Simulator": lambda: g("sim_on"), "Mover": lambda: g("mover_on"), "Guest access": lambda: g("guest_on")}.get(sec, lambda: False)())
+    except Exception:
+        return False
+
+
 TK_GROUP_ICONS = {"alarm": "⚠", "notify": "✉", "detect": "◎", "camera": "▣", "thermal": "♨", "lightsound": "☀", "rec": "●", "relay": "⚡", "sys": "⚙", "sensors": "◉"}
 
 TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery": "▮", "Theft protection": "⚷", "Notifications": "✉",
@@ -40557,7 +40627,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.70")
+        self.root.title("Motion Watch 2.95.71")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40847,7 +40917,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.70 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.71 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -41444,7 +41514,7 @@ class App:
         self.no_match = tk.Label(inner, text=tr("No match"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9))
         # 9 groups (same as the web page). Inside a group every topic opens / closes the same way (the first one is open);
         # fine-tuning comes last under a small line. A group with one topic shows it directly.
-        self.group_titles = {}; self.subs = {}
+        self.group_titles = {}; self.subs = {}; self.sub_parts = {}; self.grp_icons = {}
         self._lock_seen = bool(CFG["lock_on"])
         if CFG["lock_on"]:                               # operator mode: all may be changed, unlocking puts it back
             card = self._panel(inner); card.pack(fill="x", pady=(0, 8))
@@ -41463,11 +41533,14 @@ class App:
             key = "grp:" + gid
             card = self._panel(inner); card.pack(fill="x", pady=(0, 8))
             hr = tk.Frame(card, bg=C["panel"], cursor="hand2"); hr.pack(fill="x")
+            gic = tk.Label(hr, text=TK_GROUP_ICONS.get(gid, ""), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11), width=2, anchor="w", cursor="hand2")
+            gic.pack(side="left"); self.grp_icons["grp:" + gid] = gic
+            gic.bind("<Button-1>", lambda e, k="grp:" + gid: self._toggle_section(k))
             head = tk.Label(hr, text="", bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 9, "bold"), anchor="w", cursor="hand2")
             head.pack(side="left", fill="x", expand=True)
             arr = tk.Label(hr, text="▸", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 10), cursor="hand2"); arr.pack(side="right")
             gbody = tk.Frame(card, bg=C["panel"])
-            self.sections[key] = (head, gbody); self.group_titles[key] = TK_GROUP_ICONS.get(gid, "") + "   " + tr(name)
+            self.sections[key] = (head, gbody); self.group_titles[key] = tr(name)
             for w_ in (hr, head, arr):
                 w_.bind("<Button-1>", lambda e, k=key: self._toggle_section(k))
             words = [tr(name)] + [tr(x) for x in real]
@@ -41494,17 +41567,45 @@ class App:
         """One topic of a group: thin line + title that opens / closes it (state kept in the settings)."""
         tk.Frame(parent, bg=C["line"], height=1).pack(fill="x", pady=(8, 4))
         title = {"Camping / protection": "Protection & network", "Notifications": "Push messages"}.get(sec, sec)
-        h = tk.Label(parent, text="", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), anchor="w", cursor="hand2")
-        h.pack(fill="x")
+        # 2.95.71: like every menu - symbol left, name, arrow right; symbol and arrow green while the function is on
+        h = tk.Frame(parent, bg=C["panel"], cursor="hand2"); h.pack(fill="x")
+        ic = TK_SUB_ICONS.get(sec, "")
+        il = tk.Label(h, text=ic, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 10), width=2, anchor="w", cursor="hand2"); il.pack(side="left")
+        tl = tk.Label(h, text=tr(title).upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), anchor="w", cursor="hand2")
+        tl.pack(side="left", fill="x", expand=True)
+        al = tk.Label(h, text="▸", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 9), cursor="hand2"); al.pack(side="right")
         body = tk.Frame(parent, bg=C["panel"])
         k = "sub:" + sec
-        ic = TK_SUB_ICONS.get(sec, "")
-        self.subs[k] = (h, body, (ic + "  " if ic else "") + tr(title).upper())
-        h.bind("<Button-1>", lambda e, kk=k: self._set_sub(kk, not self._sub_open(kk)))
+        self.subs[k] = (h, body, tr(title).upper())
+        self.sub_parts[k] = (il, tl, al, sec)
+        for w_ in (h, il, tl, al):
+            w_.bind("<Button-1>", lambda e, kk=k: self._set_sub(kk, not self._sub_open(kk)))
         self._build_section(sec, body)
         if k not in self.open_secs and ("subx:" + sec) not in self.open_secs and default_open:
             self.open_secs.add(k)
         self._set_sub(k, k in self.open_secs, save=False)
+
+    def _sub_arrow(self, k, open_):
+        p_ = self.sub_parts.get(k)
+        if p_ is not None:
+            p_[2].config(text="▾" if open_ else "▸"); p_[1].config(fg=C["txt"] if open_ else C["mut"])
+
+    def _paint_main(self):
+        """2.95.71: symbol and arrow green while the main function of a topic is on (group: one of its topics) - like the web page"""
+        meta = getattr(self, "grp_meta", {})
+        for k, (il, tl, al, sec) in getattr(self, "sub_parts", {}).items():
+            on = tk_main_on(sec)
+            col = C["grn"] if on else C["mut"]
+            if il.cget("fg") != col:
+                il.config(fg=col); al.config(fg=col)
+        for key, m in meta.items():
+            on = any(tk_main_on(x) for x in m[1])
+            col = C["grn"] if on else C["mut"]
+            if m[0].cget("fg") != col:
+                m[0].config(fg=col)
+            ic_ = getattr(self, "grp_icons", {}).get(key)
+            if ic_ is not None and ic_.cget("fg") != (C["grn"] if on else C["txt"]):
+                ic_.config(fg=C["grn"] if on else C["txt"])
 
     def _sub_open(self, k):
         return k in self.open_secs
@@ -41518,7 +41619,7 @@ class App:
             self.open_secs.discard(k); self.open_secs.add(closed)
         if save and sorted(self.open_secs) != sorted(CFG["ui_open"]):
             CFG["ui_open"] = sorted(self.open_secs); save_settings()
-        h.config(text=("▾  " if open_ else "▸  ") + title)
+        self._sub_arrow(k, open_)
         if open_:
             body.pack(fill="x", pady=(2, 0), after=h)
         else:
@@ -42504,7 +42605,7 @@ class App:
 
     def _show_sub(self, k, open_):
         h, body, title = self.subs[k]
-        h.config(text=("▾  " if open_ else "▸  ") + title)
+        self._sub_arrow(k, open_)
         if open_:
             body.pack(fill="x", pady=(2, 0), after=h)
         else:
@@ -42843,6 +42944,10 @@ class App:
     def _refresh(self):
         st = STATE
         self._sync_relays()
+        try:
+            self._paint_main()
+        except Exception:
+            pass
         for k, lbl in self.stat.items():
             lbl.config(text=str(st[k]))
         if self.p_rain is not None:
@@ -43453,6 +43558,7 @@ TRX['fr'].update({
     'Inside any schedule': 'Dans un programme horaire',
     'Install': 'Installer',
     'Install new versions automatically': 'Installer automatiquement les nouvelles versions',
+    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)': 'Mode test : prendre les nouvelles versions tout de suite (regarde GitHub chaque minute et installe aussitôt, même armé)',
     'Internet': 'Internet',
     'Invert pan direction': 'Inverser le sens du panoramique',
     'Invert tilt direction': "Inverser le sens d'inclinaison",
@@ -44844,6 +44950,7 @@ TRX['it'].update({
     'Inside any schedule': 'In una pianificazione',
     'Install': 'Installa',
     'Install new versions automatically': 'Installare automaticamente le nuove versioni',
+    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)': 'Modalità test: prendere subito le nuove versioni (guarda GitHub ogni minuto e installa subito, anche se armato)',
     'Internet': 'Internet',
     'Invert pan direction': 'Invertire direzione brandeggio',
     'Invert tilt direction': 'Invertire direzione inclinazione',
@@ -46235,6 +46342,7 @@ TRX['rm'].update({
     'Inside any schedule': 'En in plan da temp',
     'Install': 'Installar',
     'Install new versions automatically': 'Installar automaticamain novas versiuns',
+    'Test mode: get new versions at once (looks on GitHub every minute and installs right away, also while armed)': "Modus da test: prender novas versiuns immediat (guarda mintga minuta sin GitHub ed installescha dalunga, er sch'armà)",
     'Internet': 'Internet',
     'Invert pan direction': 'Invertir la direcziun da panorama',
     'Invert tilt direction': "Invertir la direcziun d'inclinaziun",
