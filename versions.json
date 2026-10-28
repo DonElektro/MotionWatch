@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 15:28",
+ "generated": "2026-10-28 15:29",
  "versions": [
   {
    "version": "2.95.88",
    "file": "webcam_bewegung_2_95_88.py",
    "url": "",
-   "sha256": "7a86f58f43168cfb06924d7aa131f9d16b8871fb20086593a8edb8cff4a35a56",
-   "date": "2026-10-28 15:28",
+   "sha256": "5d68f4c583523c99ff8823afb7e0fdfce93861633c3fef0ae8d5185c6bed74f3",
+   "date": "2026-10-28 15:29",
    "notes": "Wärmebild in der Simulation passend über dem Videobild (Blickwinkel beider Kameras, vorher nach aussen verschoben); Symbol «Klassisch»: nur die Pupille bewegt sich; kleines Extra: 3 s Zielscheibe, dann 3 s das Geheimnis; Simulator 3D-3.63",
-   "sig": "b6913f52e924fd2674fcf30329c01a93ad3f7a4934305b30423936b5f9d93229f149b86cbea50da3699efdad254df4c820a1b6a859adbb24d77d46578137bd06"
+   "sig": "0f7a81bbce54037cdd8f82bdd2840cba91db18f413fd09a302d5f8ed8cd619ecc06d282bebf83eba619449b6ef81fbf47686374f37b0313cd9bb729cb67fb503"
   },
   {
    "version": "2.94.5",

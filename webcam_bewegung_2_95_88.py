@@ -15229,8 +15229,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.63", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24076912,
-           "sha256": "0681173c7c34c18fc6c00d8419ec0e8d94f18eeb6a3fa164ebefcdff48ded826", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.63", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 23993582,
+           "sha256": "fb4e822cec6985c8de868d41647afa485b2f81d1d2e303fb86e888a53b00d6c3", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
