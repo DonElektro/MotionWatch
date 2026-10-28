@@ -43,4 +43,8 @@ python3 pruefstand/pruefstand.py --nur-verlauf          # nur VERLAUF.md neu sch
 - Der Simulator ist nicht die Wirklichkeit: Die Zahlen zeigen, ob eine Version **besser oder schlechter als die vorherige**
   ist, nicht wie gut Motion Watch in einer echten Nacht ist. Dafür braucht es weiterhin Testnächte mit dem echten Gerät.
 - Ein langsamer Rechner liefert weniger Bilder pro Sekunde und damit schlechtere Zahlen: nur Zeilen vom gleichen Rechner vergleichen.
+- Auf GitHub (ohne Grafikkarte) liefert der Simulator nur etwa **2 Bilder pro Sekunde**; die Kamera am echten Pi 10–15.
+  Die Zahlen sind dort also eher zu streng.
+- Pro Lauf sind nur wenige Personen gut sichtbar (3–6). Für verlässlichere Zahlen `--wiederholungen 3` oder den Testlauf `standard`
+  nehmen; ein Unterschied von einer Person ist noch kein Beweis.
 - Ohne KI-Modell (z. B. ohne Internet) erkennt Motion Watch Personen nur über Bewegung und Gehmuster – die Spalte «KI» zeigt das.
