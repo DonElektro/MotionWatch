@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 12:58",
+ "generated": "2026-10-28 13:19",
  "versions": [
   {
-   "version": "2.95.80",
-   "file": "webcam_bewegung_2_95_80.py",
+   "version": "2.95.81",
+   "file": "webcam_bewegung_2_95_81.py",
    "url": "",
-   "sha256": "b0e55d8b8206d1c40875f8ddb54a8ef6e7ae9861c32582a1388af83edb1272ed",
-   "date": "2026-10-28 12:58",
-   "notes": "3D-Simulator 3D-3.57: Stangenlänge des Kamerakopfs einstellbar (Mover, Erkunden)",
-   "sig": "46b174cbb262f1129009916b6224ae2a337144b16720cb39e6f3ffeb0b9d04a3307fedd39902694a519e389333ccd55e7eac55cff86e53dd8f5476c1ba61070d"
+   "sha256": "6f2a8a1fdfb3ac8bca37b54fc4bd2ea665563410f6a0ffd42f21508f7504b409",
+   "date": "2026-10-28 13:18",
+   "notes": "Simulator-Fenster im Browser schärfer: Bildgrösse passend zum Bildschirm, Wahl «Bildqualität» (automatisch, sehr hoch, hoch, mittel, niedrig), WebP; 3D-Simulator 3D-3.58",
+   "sig": "a2ff8dc370c17f7d276c939443dac727cdadaa7176956644cf66bda9b27d9582d170ae050930791321004d53daba713317f7c8eaa94a010926e048c9b1cdba00"
   },
   {
    "version": "2.94.5",

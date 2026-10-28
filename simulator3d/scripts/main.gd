@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for Motion Watch (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.57"
+const VERSION := "3D-3.58"
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
 const CAM_FPS := [12.0, 8.0]
@@ -5058,6 +5058,21 @@ var _in_pos := Vector2.ZERO
 var _in_mask := 0
 var _rkeys := {}                       # keys held from Motion Watch -> time when they are let go by themselves
 const VIEW_MAX_W := 1024
+# 3D-3.58: the browser asks for its size (width × pixel density), quality and WebP (/view.jpg?w=&q=&fmt=)
+var view_w := VIEW_MAX_W
+var view_q := 0.72
+var view_webp := false
+var view_mime := "image/jpeg"
+var view_mjpg_t := -100.0              # a stream (/view.mjpg) is open: it needs JPEG
+
+
+func view_request(q: Dictionary) -> void:
+	if q.has("w") and str(q["w"]).is_valid_int():
+		view_w = clampi(int(q["w"]), 320, 2560)
+	if q.has("q") and str(q["q"]).is_valid_float():
+		view_q = clampf(float(q["q"]) / 100.0, 0.3, 0.95)
+	if q.has("fmt"):
+		view_webp = str(q["fmt"]) == "webp"
 const VIEW_KEYS := {"ArrowUp": KEY_UP, "ArrowDown": KEY_DOWN, "ArrowLeft": KEY_LEFT, "ArrowRight": KEY_RIGHT, "w": KEY_W, "a": KEY_A,
 		"s": KEY_S, "d": KEY_D, "q": KEY_Q, "e": KEY_E, "r": KEY_R, "f": KEY_F, "PageUp": KEY_PAGEUP, "PageDown": KEY_PAGEDOWN,
 		"0": KEY_0, "1": KEY_1, "2": KEY_2, "3": KEY_3, "4": KEY_4, "5": KEY_5, "+": KEY_PLUS, "-": KEY_MINUS, "Shift": KEY_SHIFT, "p": KEY_P}
@@ -5097,9 +5112,14 @@ func _view_capture() -> void:
 	if rr.size.x < 16 or rr.size.y < 16:
 		return
 	var sub := img.get_region(rr)
-	if sub.get_width() > VIEW_MAX_W:
-		sub.resize(VIEW_MAX_W, int(sub.get_height() * float(VIEW_MAX_W) / sub.get_width()), Image.INTERPOLATE_BILINEAR)
-	view_jpg = sub.save_jpg_to_buffer(0.72)
+	if sub.get_width() > view_w:
+		sub.resize(view_w, int(sub.get_height() * float(view_w) / sub.get_width()), Image.INTERPOLATE_BILINEAR)
+	if view_webp and t - view_mjpg_t > 3.0:            # 3D-3.58: WebP - the same sharpness with about a third less data
+		view_jpg = sub.save_webp_to_buffer(true, view_q)
+		view_mime = "image/webp"
+	else:
+		view_jpg = sub.save_jpg_to_buffer(view_q)
+		view_mime = "image/jpeg"
 	view_no += 1
 
 

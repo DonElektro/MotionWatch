@@ -1,12 +1,12 @@
 {
- "version": "3D-3.57",
+ "version": "3D-3.58",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 30923313,
- "sha256": "79eaff3eaa2b85747b403747307824b7b6051fd40c717f8d798d23010fb9a11a",
- "notes": "Stangenlänge einstellbar (Mover, Erkunden)",
+ "size": 30924527,
+ "sha256": "67bd53479c041ca8b6a026e48e278407297fbbe1fee5d99c02c8629c515ef42f",
+ "notes": "Simulator-Fenster im Browser schärfer: passende Grösse, Qualität, WebP",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24044788,
-  "sha256": "78314e09e50dd576b933da992a0db0108f4ee5adc43d4a7437fb929b15c8a38c"
+  "size": 24045911,
+  "sha256": "031abce2c9c8c0a84ce4cd5d63d2b5886080e8b7d47eb9f48b81cff3d6051c79"
  }
 }

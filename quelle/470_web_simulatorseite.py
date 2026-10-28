@@ -313,19 +313,58 @@ function simTouchPad(box, VB, show) {
 }
 
 // ---- the picture of the simulator window, fetched one by one (2.95.10): always the newest, never a growing delay ----
+// 2.95.81: the page asks for exactly its size (shown width × pixel density of the screen), a quality and WebP when the
+// browser shows it. «Bildqualität»: automatisch (measures how fast the pictures come and steps down / up), hoch, mittel, niedrig.
+const SIMQ = [{n: "low", f: 0.5, q: 55}, {n: "mid", f: 0.75, q: 70}, {n: "high", f: 1.0, q: 82}, {n: "max", f: 1.0, q: 90}];
+let SIM_WEBP = false;
+(() => { const i = new Image(); i.onload = () => { SIM_WEBP = i.width === 1; }; i.src = "data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA"; })();
+function simQMode() { try { return localStorage.getItem("mw-simq") || "auto"; } catch (e) { return "auto"; } }
 function simViewPoll(VI, fps) {
-  let on = false, gen = 0, url = "";
+  let on = false, gen = 0, url = "", lvl = 2, slow = 0, fast = 0, ema = 0;
+  const info = {w: 0, q: 0, fmt: "", kb: 0, lvl: 2, mode: "auto"};
+  const params = () => {
+    const mode = simQMode(); info.mode = mode;
+    if (mode !== "auto") lvl = {low: 0, mid: 1, high: 2, max: 3}[mode] ?? 2;
+    const L = SIMQ[lvl], dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const box = VI.closest("details, .card, section") || VI.parentElement;     // the card, not the picture (it shrinks with a small picture)
+    const cw = (document.fullscreenElement || VI.closest(".fs")) ? window.innerWidth : Math.max(VI.clientWidth, box.clientWidth || 0) || 640;
+    const w = Math.max(320, Math.min(2560, Math.round(cw * dpr * L.f / 16) * 16));
+    info.w = w; info.q = L.q; info.fmt = SIM_WEBP ? "webp" : "jpg"; info.lvl = lvl;
+    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt;
+  };
   const step = async (g) => {
     if (!on || g !== gen) return;
     const t0 = Date.now(); let wait = 1000;
     try {
-      const r = await fetch("/sim/view.jpg?r=" + t0, {cache: "no-store"});
+      const r = await fetch("/sim/view.jpg?" + params() + "&r=" + t0, {cache: "no-store"});
       if (r.ok) { const b = await r.blob(); if (on && g === gen && b.size > 0) { const u = URL.createObjectURL(b); const old = url; url = u; VI.src = u;
-        if (old) setTimeout(() => URL.revokeObjectURL(old), 1000); } wait = Math.max(0, 1000 / (fps || 8) - (Date.now() - t0)); }
+        if (old) setTimeout(() => URL.revokeObjectURL(old), 1000); info.kb = Math.round(b.size / 1024); }
+        const target = 1000 / (fps || 8), dt = Date.now() - t0;
+        ema = ema ? ema * 0.7 + dt * 0.3 : dt;
+        if (info.mode === "auto") {                    // too slow -> smaller / softer, fast for a while -> sharper
+          if (ema > target * 2.5) { slow++; fast = 0; if (slow >= 4 && lvl > 0) { lvl--; slow = 0; ema = 0; } }
+          else if (ema < target * 1.2) { fast++; slow = 0; if (fast >= 10 && lvl < 3) { lvl++; fast = 0; ema = 0; } }
+          else { slow = 0; fast = 0; } }
+        wait = Math.max(0, target - dt); }
     } catch (e) {}
     setTimeout(() => step(g), wait);
   };
-  return {start() { if (on) return; on = true; gen++; step(gen); }, stop() { on = false; gen++; }, get on() { return on; }};
+  return {start() { if (on) return; on = true; gen++; step(gen); }, stop() { on = false; gen++; }, get on() { return on; }, info};
+}
+function simQBox(VP) {                             // «Bildqualität» under the picture of the simulator window
+  try { if (I18N && I18N.de) Object.assign(I18N.de, {"Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig"}); } catch (e) {}
+  if (!document.getElementById("simq-css")) { const c = document.createElement("style"); c.id = "simq-css";
+    c.textContent = ".simq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:8px}.simq select{padding:4px 8px;font-size:13px;width:auto}"; document.head.appendChild(c); }
+  const box = document.createElement("div"); box.className = "simq";
+  const sel = document.createElement("select");
+  [["auto", "automatic"], ["max", "very high"], ["high", "high"], ["mid", "medium"], ["low", "low"]].forEach(([v, l]) => { const o = document.createElement("option"); o.value = v; o.textContent = t(l); sel.appendChild(o); });
+  sel.value = simQMode();
+  sel.onchange = () => { try { localStorage.setItem("mw-simq", sel.value); } catch (e) {} };
+  const lab = document.createElement("span"); lab.textContent = t("Picture quality") + ":";
+  const st = document.createElement("span"); st.className = "mut";
+  box.append(lab, sel, st);
+  setInterval(() => { const I = VP.info; st.textContent = I.w ? I.w + " px · " + (I.fmt === "webp" ? "WebP" : "JPEG") + " " + I.q + " % · " + I.kb + " kB" + (I.mode === "auto" ? " · " + t(["low", "medium", "high", "very high"][I.lvl]) : "") : ""; }, 1000);
+  return box;
 }
 """
 
@@ -477,6 +516,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .cgb label.cr{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
 #s-scn{display:flex;gap:8px;flex-wrap:wrap}#s-scn select{flex:1 1 220px;min-width:0}
 .howto{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
+.simq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:8px}.simq select{padding:4px 8px;font-size:13px;width:auto}
 @media(max-width:820px){main.simp{grid-template-columns:1fr;padding:12px 12px 32px}.sc{padding:14px}details.fold{padding:0}details.fold>summary{padding:14px}details.fold>.fb{padding:0 14px 14px}.dl{grid-template-columns:1fr}
   .tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
 </style></head><body>
@@ -675,7 +715,7 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "Catch fast persons": "Schnelle Personen erwischen", "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.": "{n} schnelle Personen (Jogger) verpasst: weniger Bilder bis das Gehen erkannt ist, die KI prüft jedes Bild.",
  "More sensitive by day": "Am Tag empfindlicher", "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.": "{n} Personen am Tag verpasst: empfindlicher, und die KI nimmt auch weniger sichere Personen an.",
  "React faster": "Schneller reagieren", "Motion Watch needed {n} s on average: the AI looks at every picture and walking is recognised sooner.": "Motion Watch brauchte im Mittel {n} s: die KI prüft jedes Bild und das Gehen wird früher erkannt."});
-Object.assign(I18N.de, {"best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by Motion Watch": "sichtbar, aber von Motion Watch nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
+Object.assign(I18N.de, {"Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig", "best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by Motion Watch": "sichtbar, aber von Motion Watch nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
  "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
  "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
  "Load": "Laden", "Delete": "Löschen", "Computing power": "Rechenleistung", "perf-note": "Weniger Bilder pro Sekunde entlasten den Pi und den PC.",
@@ -1190,6 +1230,7 @@ try { PVM = localStorage.getItem("mw-sim-pvmode") || "view"; } catch (e) {}
 // the picture at the top: the simulator window (map, compass, view buttons; 3D-3.18) or the camera picture of Motion Watch
 const pvView = () => PVM === "view" && !!(S && S.view);
 const PVP = simViewPoll($("#s-prev"), 10);
+$("#s-prevnote").before(simQBox(PVP));
 let PVCTL = false;
 const pvSrc = () => "/video_feed?r=" + Date.now();
 function pvLoad() { const img = $("#s-prev"); if (!LIVE) { PVP.stop(); return; }

@@ -779,7 +779,8 @@ class WebStream:
                 try:
                     b_, _h = _sim_get("/view.jpg", 3.0)
                     if b_:
-                        return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+                        ct_ = (_h.get("Content-Type") if _h is not None else "") or "image/jpeg"     # 2.95.81: may be WebP
+                        return Response(b_, mimetype="image/webp" if "webp" in ct_ else "image/jpeg", headers={"Cache-Control": "no-store"})
                 except Exception:
                     pass
             if time.time() > watch.raw_until:
@@ -968,13 +969,21 @@ class WebStream:
             """one picture of the simulator window (the page fetches them one by one: never a growing delay)"""
             if not CFG["sim_on"]:
                 return Response("simulation off", 404)
+            q_ = []                                          # 2.95.81: size (width × pixel density), quality, WebP from the page
+            for k_ in ("w", "q"):
+                v_ = str(request.args.get(k_) or "")
+                if v_.isdigit():
+                    q_.append(f"{k_}={int(v_)}")
+            if request.args.get("fmt") in ("webp", "jpg"):
+                q_.append("fmt=" + request.args.get("fmt"))
             try:
-                b_, _h = _sim_get("/view.jpg", 3.0)
+                b_, h_ = _sim_get("/view.jpg" + ("?" + "&".join(q_) if q_ else ""), 3.0)
             except Exception:
                 return Response("simulator not reachable", 502)
             if not b_:
                 return Response("no picture yet", 503, {"Retry-After": "1"})
-            return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+            ct_ = (h_.get("Content-Type") if h_ is not None else "") or "image/jpeg"
+            return Response(b_, mimetype="image/webp" if "webp" in ct_ else "image/jpeg", headers={"Cache-Control": "no-store"})
 
         @app.route("/sim/view.mjpg")
         def sim_view():

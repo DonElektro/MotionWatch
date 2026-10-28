@@ -3011,6 +3011,7 @@ function simExtras(d) {
     $("#lv-vhelp").textContent = t("sim-view-help") === "sim-view-help" ? "The simulator window: drag with the left mouse button = move, right = turn, wheel = zoom, double click = fly there. Finger: drag = move (⟲: turn), two fingers = zoom. The buttons at the bottom change the view." : t("sim-view-help");
     let rot = false, vOn = false, vctl = false;
     const VP = simViewPoll(VI, 8);
+    try { if (typeof simQBox === "function") VW.after(simQBox(VP)); } catch (e) {}      // 2.95.81: picture quality
     const VB = simViewBind(VI, {rot: () => rot, ctl: () => vctl || VW.classList.contains("big")});
     const zoom = d => () => VB.push({t: "wheel", d: d, x: 0.5, y: 0.5}, true);
     $("#lv-vin").onclick = zoom(1); $("#lv-vout").onclick = zoom(-1);

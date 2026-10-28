@@ -228,7 +228,8 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 				_send(c, 200, tq.get_image().save_png_to_buffer() if tq != null else PackedByteArray(), "image/png")
 		"/view.jpg":                                     # the simulator window (3D view with map, compass, buttons) - 3D-3.18
 			main.view_want_t = main.now()
-			_send(c, 200, main.view_jpg, "image/jpeg")
+			main.view_request(query)                     # 3D-3.58: size, quality, WebP of the next pictures
+			_send(c, 200, main.view_jpg, main.view_mime)
 		"/view.mjpg":
 			main.view_want_t = main.now()
 			var fv := float(query.get("fps", "6"))
@@ -282,6 +283,10 @@ func _stream_tick(c: Dictionary) -> void:
 		return
 	if c["out"].size() > MAX_BUFFER:
 		return                                   # slow client: skip this picture
+	if cam == 3:
+		main.view_mjpg_t = main.now()
+		if main.view_mime != "image/jpeg":
+			return                                   # the next picture comes as JPEG
 	var jpg: PackedByteArray = main.view_jpg if cam == 3 else main.latest_jpg(cam)
 	if jpg.size() == 0:
 		return

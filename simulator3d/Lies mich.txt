@@ -1,4 +1,4 @@
-MW Sim · 3D – 3D-3.57 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
+MW Sim · 3D – 3D-3.58 (der 3D-Simulator von Motion Watch: 7 Szenen, Wildbeobachtung, Motion Watch auf dem PC)
 =============================================================
 
 STARTEN
@@ -589,3 +589,8 @@ Ansicht von selbst von oben und kehrt zurück, sobald die Sicht wieder frei ist.
 NEU IN 3D-3.57
 3D-3.57: Stangenlänge (Höhe des Kamerakopfs, 0.4 bis 4 m) unter Mover einstellbar, beim Erkunden mit Bild auf / Bild ab
 oder dem Steuerkreuz des Controllers.
+
+NEU IN 3D-3.58
+3D-3.58: Das Simulator-Fenster im Browser (Motion Watch → Simulator) ist schärfer: der Simulator liefert das Bild in
+der Grösse, die der Bildschirm braucht (Handy mit feinem Display bis etwa 1200 Pixel, Vollbild bis 2560), in der
+gewählten Qualität und als WebP (rund ein Drittel weniger Daten als JPEG). Ab Motion Watch 2.95.81.

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_80.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_95_81.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.95.81: Simulator-Fenster im Browser schärfer: Bildgrösse passend zum Bildschirm, Wahl «Bildqualität» (automatisch, sehr
+    hoch, hoch, mittel, niedrig), WebP; 3D-Simulator 3D-3.58
   * 2.95.80: 3D-Simulator 3D-3.57: Stangenlänge des Kamerakopfs einstellbar (Mover, Erkunden)
   * 2.95.79: 3D-Simulator 3D-3.56: Erkunden – Ansicht wechselt von selbst nach oben, wenn etwas im Weg steht
   * 2.95.78: 3D-Simulator 3D-3.55: Erkunden mit dem Rover (Tastatur, Maus, Touch, Game-Controller)
@@ -752,10 +754,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_95_80.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_95_81.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_95_80.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_95_80.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_95_81.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_95_81.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -772,7 +774,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.95.80"
+APP_VERSION = "2.95.81"
 
 
 def default_data_dir():
@@ -15041,8 +15043,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.57", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30923313,
-         "sha256": "79eaff3eaa2b85747b403747307824b7b6051fd40c717f8d798d23010fb9a11a"}
+SIM3D = {"version": "3D-3.58", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 30924527,
+         "sha256": "67bd53479c041ca8b6a026e48e278407297fbbe1fee5d99c02c8629c515ef42f"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -15181,8 +15183,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; Motion Watch connects to it. ----
-SIM3DPI = {"version": "3D-3.57", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24044788,
-           "sha256": "78314e09e50dd576b933da992a0db0108f4ee5adc43d4a7437fb929b15c8a38c", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.58", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24045911,
+           "sha256": "031abce2c9c8c0a84ce4cd5d63d2b5886080e8b7d47eb9f48b81cff3d6051c79", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -18979,7 +18981,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_80.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_95_81.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -24347,19 +24349,58 @@ function simTouchPad(box, VB, show) {
 }
 
 // ---- the picture of the simulator window, fetched one by one (2.95.10): always the newest, never a growing delay ----
+// 2.95.81: the page asks for exactly its size (shown width × pixel density of the screen), a quality and WebP when the
+// browser shows it. «Bildqualität»: automatisch (measures how fast the pictures come and steps down / up), hoch, mittel, niedrig.
+const SIMQ = [{n: "low", f: 0.5, q: 55}, {n: "mid", f: 0.75, q: 70}, {n: "high", f: 1.0, q: 82}, {n: "max", f: 1.0, q: 90}];
+let SIM_WEBP = false;
+(() => { const i = new Image(); i.onload = () => { SIM_WEBP = i.width === 1; }; i.src = "data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA"; })();
+function simQMode() { try { return localStorage.getItem("mw-simq") || "auto"; } catch (e) { return "auto"; } }
 function simViewPoll(VI, fps) {
-  let on = false, gen = 0, url = "";
+  let on = false, gen = 0, url = "", lvl = 2, slow = 0, fast = 0, ema = 0;
+  const info = {w: 0, q: 0, fmt: "", kb: 0, lvl: 2, mode: "auto"};
+  const params = () => {
+    const mode = simQMode(); info.mode = mode;
+    if (mode !== "auto") lvl = {low: 0, mid: 1, high: 2, max: 3}[mode] ?? 2;
+    const L = SIMQ[lvl], dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const box = VI.closest("details, .card, section") || VI.parentElement;     // the card, not the picture (it shrinks with a small picture)
+    const cw = (document.fullscreenElement || VI.closest(".fs")) ? window.innerWidth : Math.max(VI.clientWidth, box.clientWidth || 0) || 640;
+    const w = Math.max(320, Math.min(2560, Math.round(cw * dpr * L.f / 16) * 16));
+    info.w = w; info.q = L.q; info.fmt = SIM_WEBP ? "webp" : "jpg"; info.lvl = lvl;
+    return "w=" + w + "&q=" + L.q + "&fmt=" + info.fmt;
+  };
   const step = async (g) => {
     if (!on || g !== gen) return;
     const t0 = Date.now(); let wait = 1000;
     try {
-      const r = await fetch("/sim/view.jpg?r=" + t0, {cache: "no-store"});
+      const r = await fetch("/sim/view.jpg?" + params() + "&r=" + t0, {cache: "no-store"});
       if (r.ok) { const b = await r.blob(); if (on && g === gen && b.size > 0) { const u = URL.createObjectURL(b); const old = url; url = u; VI.src = u;
-        if (old) setTimeout(() => URL.revokeObjectURL(old), 1000); } wait = Math.max(0, 1000 / (fps || 8) - (Date.now() - t0)); }
+        if (old) setTimeout(() => URL.revokeObjectURL(old), 1000); info.kb = Math.round(b.size / 1024); }
+        const target = 1000 / (fps || 8), dt = Date.now() - t0;
+        ema = ema ? ema * 0.7 + dt * 0.3 : dt;
+        if (info.mode === "auto") {                    // too slow -> smaller / softer, fast for a while -> sharper
+          if (ema > target * 2.5) { slow++; fast = 0; if (slow >= 4 && lvl > 0) { lvl--; slow = 0; ema = 0; } }
+          else if (ema < target * 1.2) { fast++; slow = 0; if (fast >= 10 && lvl < 3) { lvl++; fast = 0; ema = 0; } }
+          else { slow = 0; fast = 0; } }
+        wait = Math.max(0, target - dt); }
     } catch (e) {}
     setTimeout(() => step(g), wait);
   };
-  return {start() { if (on) return; on = true; gen++; step(gen); }, stop() { on = false; gen++; }, get on() { return on; }};
+  return {start() { if (on) return; on = true; gen++; step(gen); }, stop() { on = false; gen++; }, get on() { return on; }, info};
+}
+function simQBox(VP) {                             // «Bildqualität» under the picture of the simulator window
+  try { if (I18N && I18N.de) Object.assign(I18N.de, {"Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig"}); } catch (e) {}
+  if (!document.getElementById("simq-css")) { const c = document.createElement("style"); c.id = "simq-css";
+    c.textContent = ".simq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:8px}.simq select{padding:4px 8px;font-size:13px;width:auto}"; document.head.appendChild(c); }
+  const box = document.createElement("div"); box.className = "simq";
+  const sel = document.createElement("select");
+  [["auto", "automatic"], ["max", "very high"], ["high", "high"], ["mid", "medium"], ["low", "low"]].forEach(([v, l]) => { const o = document.createElement("option"); o.value = v; o.textContent = t(l); sel.appendChild(o); });
+  sel.value = simQMode();
+  sel.onchange = () => { try { localStorage.setItem("mw-simq", sel.value); } catch (e) {} };
+  const lab = document.createElement("span"); lab.textContent = t("Picture quality") + ":";
+  const st = document.createElement("span"); st.className = "mut";
+  box.append(lab, sel, st);
+  setInterval(() => { const I = VP.info; st.textContent = I.w ? I.w + " px · " + (I.fmt === "webp" ? "WebP" : "JPEG") + " " + I.q + " % · " + I.kb + " kB" + (I.mode === "auto" ? " · " + t(["low", "medium", "high", "very high"][I.lvl]) : "") : ""; }, 1000);
+  return box;
 }
 """
 
@@ -24511,6 +24552,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
 .cgb label.cr{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
 #s-scn{display:flex;gap:8px;flex-wrap:wrap}#s-scn select{flex:1 1 220px;min-width:0}
 .howto{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
+.simq{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:8px}.simq select{padding:4px 8px;font-size:13px;width:auto}
 @media(max-width:820px){main.simp{grid-template-columns:1fr;padding:12px 12px 32px}.sc{padding:14px}details.fold{padding:0}details.fold>summary{padding:14px}details.fold>.fb{padding:0 14px 14px}.dl{grid-template-columns:1fr}
   .tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
 </style></head><body>
@@ -24709,7 +24751,7 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "Catch fast persons": "Schnelle Personen erwischen", "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.": "{n} schnelle Personen (Jogger) verpasst: weniger Bilder bis das Gehen erkannt ist, die KI prüft jedes Bild.",
  "More sensitive by day": "Am Tag empfindlicher", "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.": "{n} Personen am Tag verpasst: empfindlicher, und die KI nimmt auch weniger sichere Personen an.",
  "React faster": "Schneller reagieren", "Motion Watch needed {n} s on average: the AI looks at every picture and walking is recognised sooner.": "Motion Watch brauchte im Mittel {n} s: die KI prüft jedes Bild und das Gehen wird früher erkannt."});
-Object.assign(I18N.de, {"best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by Motion Watch": "sichtbar, aber von Motion Watch nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
+Object.assign(I18N.de, {"Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig", "best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by Motion Watch": "sichtbar, aber von Motion Watch nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
  "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
  "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
  "Load": "Laden", "Delete": "Löschen", "Computing power": "Rechenleistung", "perf-note": "Weniger Bilder pro Sekunde entlasten den Pi und den PC.",
@@ -25224,6 +25266,7 @@ try { PVM = localStorage.getItem("mw-sim-pvmode") || "view"; } catch (e) {}
 // the picture at the top: the simulator window (map, compass, view buttons; 3D-3.18) or the camera picture of Motion Watch
 const pvView = () => PVM === "view" && !!(S && S.view);
 const PVP = simViewPoll($("#s-prev"), 10);
+$("#s-prevnote").before(simQBox(PVP));
 let PVCTL = false;
 const pvSrc = () => "/video_feed?r=" + Date.now();
 function pvLoad() { const img = $("#s-prev"); if (!LIVE) { PVP.stop(); return; }
@@ -34181,6 +34224,7 @@ function simExtras(d) {
     $("#lv-vhelp").textContent = t("sim-view-help") === "sim-view-help" ? "The simulator window: drag with the left mouse button = move, right = turn, wheel = zoom, double click = fly there. Finger: drag = move (⟲: turn), two fingers = zoom. The buttons at the bottom change the view." : t("sim-view-help");
     let rot = false, vOn = false, vctl = false;
     const VP = simViewPoll(VI, 8);
+    try { if (typeof simQBox === "function") VW.after(simQBox(VP)); } catch (e) {}      // 2.95.81: picture quality
     const VB = simViewBind(VI, {rot: () => rot, ctl: () => vctl || VW.classList.contains("big")});
     const zoom = d => () => VB.push({t: "wheel", d: d, x: 0.5, y: 0.5}, true);
     $("#lv-vin").onclick = zoom(1); $("#lv-vout").onclick = zoom(-1);
@@ -37692,7 +37736,8 @@ class WebStream:
                 try:
                     b_, _h = _sim_get("/view.jpg", 3.0)
                     if b_:
-                        return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+                        ct_ = (_h.get("Content-Type") if _h is not None else "") or "image/jpeg"     # 2.95.81: may be WebP
+                        return Response(b_, mimetype="image/webp" if "webp" in ct_ else "image/jpeg", headers={"Cache-Control": "no-store"})
                 except Exception:
                     pass
             if time.time() > watch.raw_until:
@@ -37881,13 +37926,21 @@ class WebStream:
             """one picture of the simulator window (the page fetches them one by one: never a growing delay)"""
             if not CFG["sim_on"]:
                 return Response("simulation off", 404)
+            q_ = []                                          # 2.95.81: size (width × pixel density), quality, WebP from the page
+            for k_ in ("w", "q"):
+                v_ = str(request.args.get(k_) or "")
+                if v_.isdigit():
+                    q_.append(f"{k_}={int(v_)}")
+            if request.args.get("fmt") in ("webp", "jpg"):
+                q_.append("fmt=" + request.args.get("fmt"))
             try:
-                b_, _h = _sim_get("/view.jpg", 3.0)
+                b_, h_ = _sim_get("/view.jpg" + ("?" + "&".join(q_) if q_ else ""), 3.0)
             except Exception:
                 return Response("simulator not reachable", 502)
             if not b_:
                 return Response("no picture yet", 503, {"Retry-After": "1"})
-            return Response(b_, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+            ct_ = (h_.get("Content-Type") if h_ is not None else "") or "image/jpeg"
+            return Response(b_, mimetype="image/webp" if "webp" in ct_ else "image/jpeg", headers={"Cache-Control": "no-store"})
 
         @app.route("/sim/view.mjpg")
         def sim_view():
@@ -40709,7 +40762,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("Motion Watch 2.95.80")
+        self.root.title("Motion Watch 2.95.81")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -40999,7 +41052,7 @@ class App:
             nm = tk.Label(tl, text="Motion Watch", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.95.80 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.95.81 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
