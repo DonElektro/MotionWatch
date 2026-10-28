@@ -43,7 +43,7 @@ def render_page(page, active):
     """Fill the shared pieces into a page template."""
     page = page.replace("<head>", "<head>" + ui_seed_script() + i18n_loader(active == "help") + PWA_HEAD.replace(
         'content="MoveEye">', 'content="' + app_title(host_variant()) + '">').replace(".png\"", ".png?i=" + app_icon_id() + "\"")
-        + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>"
+        + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>" + makeover_head()
         + ("<style>:root{--mw-icon:url(/app-icon/anim.svg?i=" + app_icon_id() + ")}</style>"
            if CFG.get("app_icon_anim", True) and app_icon_id() in APP_ICONS_ANIM else ""), 1)
     page = re.sub(r"(<h1[^>]*>)MoveEye</h1>", r'\1MoveEye <span class="ver">' + APP_VERSION + "</span>"

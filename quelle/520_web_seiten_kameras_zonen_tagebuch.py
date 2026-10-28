@@ -574,8 +574,9 @@ function renderDay(j) {
   const d = new Date(j.day + "T12:00:00");
   $("#d-title").textContent = d.toLocaleDateString(LOCALE(LANG), {weekday: "long", day: "numeric", month: "long", year: "numeric"});
   const c = j.counts, tl = el("div", "dtiles");
-  [["👤", c.persons, "Persons"], ["🦊", c.animals, "Animals"], ["🔥", c.warm, "Warm bodies"], ["🔊", c.noise, "Noises"],
-   ["🎬", c.recordings + (c.alarm_recordings ? " (" + c.alarm_recordings + " 🚨)" : ""), "recordings"], ["📷", c.photos, "Photos"]].concat(c.sneezes ? [["🤧", c.sneezes, "Sneezes"]] : []).forEach(([i, n, k]) => {
+  const E = window.EVI || {};
+  [[E.person || "🚶", c.persons, "Persons"], [E.animal || "🦊", c.animals, "Animals"], [E.warm || "🔥", c.warm, "Warm bodies"], [E.noise || "🔊", c.noise, "Noises"],
+   [E.rec || "🎬", c.recordings + (c.alarm_recordings ? " (" + c.alarm_recordings + " 🚨)" : ""), "recordings"], ["📷", c.photos, "Photos"]].concat(c.sneezes ? [["🤧", c.sneezes, "Sneezes"]] : []).forEach(([i, n, k]) => {
     const t_ = el("div", "dtile"), lb = t(k); t_.append(el("b", "", i + " " + n), el("span", "", lb.charAt(0).toUpperCase() + lb.slice(1))); tl.appendChild(t_); });
   b.appendChild(tl);
   const ln = el("div", "dline"), w = j.weather, cs = j.climate_sum || {};

@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_3.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_96_4.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,10 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.96.4: Makeover 1–7: gleiche Farben in Fenster, Webseite und Simulator; Streifen «SIMULATION – Alarme sind nicht echt» mit
+    orangem Rahmen auf allen Seiten; Simulator-Kachel auf der Startseite und Simulator-Zentrale (Szene, Tageszeit, Wetter,
+    Besuch schicken, Überraschungsnacht, Vorlagen, Spiel, Tests, Tagebuch); Kino-Modus /kino (Vollbild für TV / Beamer mit
+    Laufband); einheitliche Ereignis-Symbole in Push-Titeln, Tagebuch und Fenster-Protokoll
   * 2.96.3: Nach jedem Update erscheint einmal kurz «Neu in dieser Version» (Webseite und Fenster) mit dem, was als Nächstes im
     Makeover kommt (abschaltbar unter Updates); passt zum Simulator 3D-3.82 (Fenster «Vorlagen»: fertige Szenen, echte Orte,
     3D-Bausätze, eigene .glb-Dateien; 4 neue Szenen)
@@ -808,10 +812,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_96_3.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_96_4.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_96_3.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_96_3.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_96_4.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_96_4.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -828,7 +832,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.96.3"
+APP_VERSION = "2.96.4"
 
 
 def default_data_dir():
@@ -1152,7 +1156,7 @@ CFG = {
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
@@ -2362,13 +2366,13 @@ def users_action(d, who="admin"):
 
 # 2.95.35: ONE list of what users without admin rights may read. Everything else (also every new function) is only for
 # the administrator. Changing things (POST): VIEW_POST for everybody, OPERATE_POST (+ the keys below) for «operate».
-VIEW_GET_PAGES = {"/", "/cams", "/recordings", "/diary", "/help", "/quick", "/preview", "/zones"}
+VIEW_GET_PAGES = {"/", "/cams", "/recordings", "/diary", "/help", "/quick", "/preview", "/zones", "/kino"}
 VIEW_GET = ("/api/tunnel", "/api/dataset.zip", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version", "/api/health", "/api/cams", "/api/frame.jpg",
             "/video_feed", "/cam_feed/", "/snapshot.jpg", "/api/audio/live", "/api/recordings", "/api/places", "/rec/file/",
             "/rec/play/", "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse",
             "/timelapse/", "/api/species", "/api/loop", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/report",
             "/api/battery", "/api/sensors", "/api/qs", "/api/schedule", "/api/schema", "/api/triggers", "/api/fa", "/api/appicon",
-            "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/sim/view.jpg", "/sim/view.mjpg")
+            "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/sim/view.jpg", "/sim/view.mjpg", "/api/kino", "/api/simbar", "/api/news")
 
 
 def role_allows(role, path, method, d):
@@ -3950,6 +3954,9 @@ class Notifier:
     @staticmethod
     def _title(p):
         t_ = Notifier._title0(p)
+        if CFG.get("msg_icons", True):                    # 2.96.4: the same symbols everywhere (138_makeover_design)
+            ic = ev_icon("tamper" if Notifier._event(p) == "tamper" else Notifier._event(p))
+            t_ = (ic + " " + t_) if ic and not t_.startswith(ic) else t_
         t_ = ("[SIM] " + t_) if CFG.get("sim_on") else t_
         kw = msg_keyword(Notifier._event(p))
         return (kw + " · " + t_) if kw else t_
@@ -7907,7 +7914,7 @@ MAKEOVER_ALL = [
     (21, "Fehlalarm-Lernen"), (22, "Karte der blinden Flecken"), (23, "Nacht-Generalprobe vor dem Scharfschalten"),
     (24, "Schwellen automatisch einstellen"), (25, "Erkennungs-Check jede Woche"),
 ]
-MAKEOVER_DONE = set()                                  # numbers already delivered (nachführen)
+MAKEOVER_DONE = {1, 2, 3, 4, 5, 6, 7}                                # numbers already delivered (nachführen)
 
 
 def _news_vt(v):
@@ -7954,6 +7961,241 @@ def news_state(who="web"):
 def news_seen(who="web"):
     CFG["news_seen_" + who] = APP_VERSION
     save_settings()
+# ----------------------------------------------------------------------------
+# 2.96.4 (Makeover-Punkte 2 und 6):
+#  2  Simulation sichtbar: läuft MoveEye mit dem Simulator, hat jede Seite oben einen orange-schwarz gestreiften Balken
+#     «SIMULATION – Alarme sind nicht echt» und einen orangen Rahmen. Der Balken prüft alle 15 s (/api/simbar), ob das noch so ist.
+#  6  Ein Satz Ereignis-Symbole für alles (Push-Titel, Tagebuch, Simulator-Tagebuch, Fenster-Protokoll, Simulator):
+#     EV_ICON (Python) = window.EVI (Web). Neue Stellen immer von hier nehmen.
+# ----------------------------------------------------------------------------
+EV_ICON = {
+    "person": "🚶", "animal": "🦊", "vehicle": "🚗", "warm": "🔥", "noise": "🔊", "tamper": "🛑", "gone": "📦", "new": "➕",
+    "false": "⚪", "prealarm": "👀", "motion": "👀", "info": "ℹ️", "test": "🧪", "light": "💡", "siren": "🚨", "rec": "🎬",
+    "photo": "📷", "protect": "🛡", "sim": "🧪", "weather": "☁", "battery": "🔋", "net": "📶",
+}
+# the kinds of log_event() -> the symbol in the window's log
+LOG_ICON = {"person": "🚶", "car": "🚗", "rec": "🎬", "ai": "🦊", "rain": "☔", "wind": "💨", "web": "📶", "sys": "⚙",
+            "sched": "🕑", "servo": "↔", "patrol": "↔", "auto": "⚡"}
+
+
+def ev_icon(kind):
+    return EV_ICON.get(kind, "")
+
+
+SIMBAR_CSS = (".mwsimbar{position:relative;z-index:260;display:flex;align-items:center;justify-content:center;gap:8px;"
+              "background:repeating-linear-gradient(135deg,#f59a4a 0 16px,#1a1206 16px 32px);padding:3px 8px}"
+              ".mwsimbar span{background:#f59a4a;color:#1a1206;font:700 11px/1.5 system-ui,sans-serif;letter-spacing:.14em;"
+              "padding:1px 10px;border-radius:9px;white-space:nowrap}"
+              "html.mwsim body{box-shadow:inset 0 0 0 3px #f59a4a}")
+
+SIMBAR_TXT = {"de": "SIMULATION – Alarme sind nicht echt", "fr": "SIMULATION – alarmes non réelles",
+              "it": "SIMULAZIONE – allarmi non reali", "rm": "SIMULAZIUN – alarms betg reals", "en": "SIMULATION – alarms are not real"}
+
+
+def makeover_head():
+    """into the <head> of every page (render_page): the symbols, the stripe of the simulation"""
+    on = bool(CFG.get("sim_on"))
+    js = ("<script>window.EVI=" + json.dumps(EV_ICON, ensure_ascii=False) + ";(function(){const TX=" + json.dumps(SIMBAR_TXT, ensure_ascii=False)
+          + ";const DL=" + json.dumps(norm_lang(CFG.get("lang")) or "de") + ";let on=" + ("true" if on else "false") + ";const L=()=>{try{return (typeof LANG!=='undefined'&&LANG)||new URLSearchParams(location.search).get('lang')||DL}catch(e){return DL}};"
+          "const paint=()=>{document.documentElement.classList.toggle('mwsim',on);let b=document.querySelector('.mwsimbar');"
+          "if(on&&!b&&document.body){b=document.createElement('div');b.className='mwsimbar';b.title='MoveEye';const s=document.createElement('span');b.appendChild(s);document.body.prepend(b);}"
+          "if(b){b.hidden=!on;b.firstChild.textContent='🧪 '+(TX[L()]||TX.en);}};"
+          "document.addEventListener('DOMContentLoaded',paint);"
+          "setInterval(async()=>{try{const r=await (await fetch('/api/simbar')).json();if(r.on!==on){on=r.on;}paint();}catch(e){}},15000);setTimeout(paint,1500);})();</script>")
+    return "<style>" + SIMBAR_CSS + "</style>" + js + simhub_head()
+# ----------------------------------------------------------------------------
+# 2.96.4 (Makeover-Punkte 3, 4, 7):
+#  3  Startseite: Kachel «Simulation» (nur wenn der Simulator an ist) - kleines Livebild, Szene, Uhrzeit, Wetter, Besucher;
+#     antippen = die Kachel-Steuerung.
+#  4  Kachel-Steuerung: grosse Kacheln statt Schalterlisten - Szene · Tageszeit · Wetter · Besuch schicken · Überraschungsnacht ·
+#     Vorlagen (am PC) · Spiel · Tests · Tagebuch. Ein Tippen öffnet die Auswahl, ein zweites führt es aus.
+#  7  Simulator-Zentrale: dieselben Kacheln gross oben auf der Simulator-Seite - alles an einem Ort.
+# Der Zustand kommt von /api/simhub (zusammengefasst aus GET /control des Simulators, 3 s zwischengespeichert).
+# ----------------------------------------------------------------------------
+_SIMHUB = {"t": 0.0, "d": None}
+
+SIMHUB_VISITS = [("person", "🚶"), ("burglar", "🥷"), ("child", "🧒"), ("dogwalk", "🐕"), ("fox", "🦊"), ("deer", "🦌"), ("cat", "🐈"),
+                 ("boar", "🐗"), ("hedgehog", "🦔"), ("cyclist", "🚲"), ("courier", "🍕"), ("car", "🚗")]
+
+
+def sim_hub(force=False):
+    """a short summary of the simulator for the tiles"""
+    now = time.time()
+    if not CFG.get("sim_on"):
+        return {"on": False}
+    if not force and _SIMHUB["d"] is not None and now - _SIMHUB["t"] < 3.0:
+        return _SIMHUB["d"]
+    d = {"on": True, "ok": False}
+    try:
+        r = sim_control(None)
+        vals = {c.get("id"): c.get("value") for c in r.get("controls") or [] if isinstance(c, dict)}
+        st = str(r.get("status") or "")
+        m = re.search(r"Besucher (\d+)", st)
+        h = float(vals.get("hour") or 0)
+        wx = str(vals.get("weather") or "")
+        d.update(ok=True, name=str(r.get("name") or ""), scene=str(r.get("scenario") or ""), status=st,
+                 scenes=[{"id": s.get("id"), "name": str(s.get("name") or "").replace(" (3D)", "")} for s in r.get("scenarios") or []][:40],
+                 hour=h, clock="%02d:%02d" % (int(h), int(round((h % 1) * 60)) % 60), dark=" Nacht " in st or st.find("· Nacht ·") >= 0,
+                 weather=wx, ambient=vals.get("ambient"), visitors=int(m.group(1)) if m else None, surprise=bool(vals.get("surprise_on")),
+                 game=r.get("game") or {}, has={k: k in vals for k in ("surprise_on", "weather", "hour", "spawn_person", "thief")})
+    except Exception as e:
+        d["msg"] = str(e)[:80]
+    _SIMHUB.update(t=now, d=d)
+    return d
+
+
+def sim_hub_do(a, v=None):
+    """one tile action -> the simulator. Returns (ok, error)"""
+    try:
+        if a == "scene":
+            r = sim_control({"action": "scenario", "id": str(v)[:40]})
+        elif a == "hour":
+            r = sim_control({"action": "set", "id": "hour", "value": max(0.0, min(23.75, float(v)))})
+        elif a == "weather":
+            r = sim_control({"action": "set", "id": "weather", "value": str(v)[:12]})
+        elif a == "visit":
+            k = str(v)[:20]
+            r = sim_control({"action": "press", "id": {"car": "car", "burglar": "thief", "dogwalk": "dogwalk"}.get(k, "spawn_" + k)})
+        elif a == "surprise":
+            r = sim_control({"action": "set", "id": "surprise_on", "value": bool(v)})
+        elif a == "templates":
+            r = sim_control({"action": "templates", "do": "open", "tab": 0})
+        else:
+            return False, "unknown action"
+        _SIMHUB["t"] = 0.0
+        return bool(r.get("ok", True)), str(r.get("error") or "")
+    except Exception as e:
+        return False, "simulator not reachable"
+
+
+SIMHUB_CSS = r"""
+.shub{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.shub .st{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px;border-radius:14px;border:1px solid var(--line,#1f2b3a);
+  background:var(--panel2,#151e2b);color:var(--txt,#e8eef5);font:inherit;text-align:left;cursor:pointer;min-height:76px;transition:transform .12s,border-color .12s}
+.shub .st:hover{border-color:var(--acc,#3b8cff)}.shub .st:active{transform:scale(.97)}
+.shub .st i{font-style:normal;font-size:24px;line-height:1}.shub .st b{font-size:13px;hyphens:auto;overflow-wrap:anywhere}.shub .st small{font-size:11px;color:var(--mut,#8a9bb0)}
+.shub .st.on{border-color:#f59a4a;box-shadow:0 0 0 1px #f59a4a inset}
+.shsheet{margin-top:8px;padding:10px;border-radius:14px;background:var(--panel,#111822);border:1px solid var(--line,#1f2b3a);display:flex;flex-wrap:wrap;gap:6px}
+.shsheet button{flex:1 1 auto;min-width:84px}.shsheet .shrow{display:flex;gap:6px;width:100%;align-items:center}
+.stile{display:flex;gap:10px;align-items:stretch;padding:10px;border-radius:16px;border:1px solid #f59a4a;background:linear-gradient(135deg,rgba(245,154,74,.12),transparent 60%);cursor:pointer}
+.stile img{width:132px;height:74px;object-fit:cover;border-radius:10px;background:#000;flex:0 0 auto}
+.stile .sti{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:13px}.stile .sti b{font-size:14px}.stile .sti span{color:var(--mut,#8a9bb0)}
+"""
+
+SIMHUB_JS = r"""
+(function () {
+  const L = () => { try { return (typeof LANG !== "undefined" && LANG) || "de"; } catch (e) { return "de"; } };
+  const DE = {"Simulation": "Simulation", "Scene": "Szene", "Time of day": "Tageszeit", "Weather": "Wetter", "Send a visitor": "Besuch schicken",
+    "Surprise night": "Überraschungsnacht", "Templates": "Vorlagen", "Game": "Spiel", "Tests": "Tests", "Diary": "Tagebuch", "on": "an", "off": "aus",
+    "Morning": "Morgen", "Noon": "Mittag", "Evening": "Abend", "Night": "Nacht", "clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee",
+    "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
+    "Tap = control": "Antippen = steuern", "person": "Person", "burglar": "Dieb", "child": "Kind", "dogwalk": "Hund", "fox": "Fuchs", "deer": "Reh", "cat": "Katze",
+    "boar": "Wildschwein", "hedgehog": "Igel", "cyclist": "Velo", "courier": "Kurier", "car": "Auto", "sent": "geschickt", "Test run, test bench": "Testlauf, Prüfstand",
+    "Play on the phone": "Mitspielen mit dem Handy", "Visits and detection": "Besuche und Erkennung", "now": "jetzt"};
+  const tt = k => (typeof t === "function" && t(k) !== k) ? t(k) : (L() === "en" ? k : (DE[k] || k));
+  const WX = [["clear", "☀"], ["cloudy", "☁"], ["rain", "🌧"], ["fog", "🌫"], ["snow", "❄"]];
+  const VIS = __VIS__;
+  const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
+  const say = m => { if (typeof toast === "function") toast(m); };
+  let H = null, open = "";
+  const act = async (a, v) => { try { const r = await (await fetch("/api/simhub", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({a: a, v: v})})).json();
+      if (r.hub) H = r.hub; if (!r.ok) say("⚠ " + (r.error || tt("Simulator not reachable"))); paintAll(); return r; } catch (e) { say("⚠ " + tt("Simulator not reachable")); } };
+  const wxIcon = w => (WX.find(x => x[0] === w) || ["", "☁"])[1];
+  function sheet(box, kind) {
+    const s = E("div", "shsheet");
+    if (kind === "scene") (H.scenes || []).forEach(x => { const b = E("button", x.id === H.scene ? "" : "sec", x.name); b.type = "button"; b.onclick = () => act("scene", x.id); s.appendChild(b); });
+    if (kind === "hour") { [["Morning", 7], ["Noon", 13], ["Evening", 19.5], ["Night", 23]].forEach(([n, h]) => { const b = E("button", "sec", tt(n) + " " + String(Math.floor(h)).padStart(2, "0") + ":" + (h % 1 ? "30" : "00")); b.type = "button"; b.onclick = () => act("hour", h); s.appendChild(b); });
+      const r = E("div", "shrow"), i = E("input"); i.type = "range"; i.min = 0; i.max = 23.75; i.step = 0.25; i.value = H.hour || 12; i.style.flex = "1"; const o = E("b", "", H.clock || "");
+      i.oninput = () => { o.textContent = String(Math.floor(i.value)).padStart(2, "0") + ":" + String(Math.round(i.value % 1 * 60)).padStart(2, "0"); }; i.onchange = () => act("hour", +i.value); r.append(i, o); s.appendChild(r); }
+    if (kind === "weather") WX.forEach(([k, ic]) => { const b = E("button", k === H.weather ? "" : "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = () => act("weather", k); s.appendChild(b); });
+    if (kind === "visit") VIS.forEach(([k, ic]) => { const b = E("button", "sec", ic + " " + tt(k)); b.type = "button"; b.onclick = async () => { const r = await act("visit", k); if (r && r.ok) say(ic + " " + tt("sent")); }; s.appendChild(b); });
+    box.appendChild(s);
+  }
+  function tiles(box, full) {
+    const g = E("div", "shub");
+    const T = [["scene", "🗺", tt("Scene"), ((H.scenes || []).find(x => x.id === H.scene) || {}).name || H.scene || "–"],
+      ["hour", H.dark ? "🌙" : "☀", tt("Time of day"), H.clock || "–"],
+      ["weather", wxIcon(H.weather), tt("Weather"), tt(H.weather || "–") + (H.ambient != null ? " · " + Math.round(H.ambient) + " °C" : "")],
+      ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")],
+      ["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]];
+    if (full) T.push(["templates", "🧩", tt("Templates"), tt("Opens on the PC")], ["game", "🎮", tt("Game"), tt("Play on the phone")],
+      ["tests", "🧪", tt("Tests"), tt("Test run, test bench")], ["diary", "📔", tt("Diary"), tt("Visits and detection")]);
+    T.forEach(([k, ic, n, sub]) => { const b = E("button", "st" + (open === k || (k === "surprise" && H.surprise) ? " on" : "")); b.type = "button";
+      b.append(E("i", "", ic), E("b", "", n), E("small", "", sub));
+      b.onclick = () => { if (k === "surprise") return act("surprise", !H.surprise); if (k === "templates") return act("templates").then(r => r && r.ok && say("🧩 " + tt("Opens on the PC")));
+        if (k === "game") return location.href = "/sim#c-game"; if (k === "tests") return location.href = "/sim#c-test"; if (k === "diary") return location.href = "/diary#simcard";
+        open = open === k ? "" : k; paintAll(); };
+      g.appendChild(b); });
+    box.appendChild(g); if (open) sheet(box, open);
+  }
+  function paintTile(el_) {
+    el_.hidden = !(H && H.on); if (!H || !H.on) return; el_.textContent = "";
+    const top = E("div", "stile"), im = E("img"); im.alt = ""; im.src = "/sim/view.jpg?w=320&r=" + Date.now();
+    const i = E("div", "sti"); i.append(E("b", "", "🧪 " + tt("Simulation") + (H.ok ? "" : " ⚠")), E("div", "", H.ok ? (((H.scenes || []).find(x => x.id === H.scene) || {}).name || H.scene) : tt("Simulator not reachable")),
+      E("span", "", H.ok ? (H.dark ? "🌙 " : "☀ ") + H.clock + " · " + wxIcon(H.weather) + " " + tt(H.weather || "") + (H.visitors != null ? " · " + H.visitors + " " + tt("visitors") : "") : ""), E("span", "", tt("Tap = control")));
+    top.append(im, i); top.onclick = () => { el_.dataset.open = el_.dataset.open ? "" : "1"; paintAll(); }; el_.appendChild(top);
+    if (el_.dataset.open && H.ok) { const w = E("div"); w.style.marginTop = "8px"; tiles(w, false); el_.appendChild(w); }
+  }
+  function paintFull(el_) { el_.textContent = ""; if (!H || !H.on) { el_.hidden = true; return; } el_.hidden = false;
+    if (!H.ok) { el_.appendChild(E("div", "mut", "⚠ " + tt("Simulator not reachable") + (H.msg ? " (" + H.msg + ")" : ""))); return; } tiles(el_, true); }
+  function paintAll() { document.querySelectorAll("[data-simhub]").forEach(x => x.dataset.simhub === "full" ? paintFull(x) : paintTile(x)); }
+  async function load() { if (!document.querySelector("[data-simhub]")) return; try { H = await (await fetch("/api/simhub")).json(); } catch (e) { return; }
+    const ti = document.querySelector('[data-simhub="tile"] img'); if (ti && !document.hidden) ti.src = "/sim/view.jpg?w=320&r=" + Date.now();
+    if (!document.activeElement || document.activeElement.type !== "range") paintAll(); }
+  document.addEventListener("DOMContentLoaded", () => { load(); setInterval(load, 6000); });
+})();
+"""
+
+
+def simhub_head():
+    return "<style>" + SIMHUB_CSS + "</style><script>" + SIMHUB_JS.replace("__VIS__", json.dumps(SIMHUB_VISITS, ensure_ascii=False)) + "</script>"
+
+
+# ---- 2.96.4 (Makeover-Punkt 5): Kino-Modus /kino - Vollbild für TV / Beamer: Livebild mit den Rahmen, Uhr, Zustand und
+# ein Laufband mit den letzten Ereignissen (die gleichen Symbole wie überall). Mit Tastatur: F = Vollbild, Esc = zurück.
+def kino_state():
+    with LOCK:
+        evs = [e for e in STATE.get("events", []) if e.get("imp") or e.get("kind") in ("person", "ai", "car")][:8]
+    return {"name": CFG.get("device_name") or "MoveEye", "version": APP_VERSION, "persons": STATE.get("persons", 0),
+            "armed": bool(is_armed()), "rec": bool(STATE.get("recording")), "sim": bool(CFG.get("sim_on")),
+            "events": [{"t": e["t"][:5], "i": LOG_ICON.get(e["kind"], "·"), "x": tr(e["text"]) if isinstance(e.get("text"), str) else ""} for e in evs]}
+
+
+KINO_PAGE = r"""<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MoveEye · Kino</title><style>
+html,body{margin:0;height:100%;background:#000;color:#e8eef5;font-family:system-ui,sans-serif;overflow:hidden}
+#v{position:fixed;inset:0;width:100%;height:100%;object-fit:contain}
+.top{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:14px 22px;
+  background:linear-gradient(#000c,#0000);font-size:clamp(14px,1.6vw,24px)}
+.top b{font-weight:700;letter-spacing:.02em}.pill{padding:3px 12px;border-radius:99px;background:#111822cc;margin-left:8px}
+.pill.red{background:#ff4d4d;color:#fff;animation:bl 1s infinite}.pill.org{background:#f59a4a;color:#1a1206}
+@keyframes bl{50%{opacity:.55}}
+#clock{font-variant-numeric:tabular-nums;font-size:clamp(18px,2.4vw,36px);font-weight:600}
+.tick{position:fixed;left:0;right:0;bottom:0;padding:10px 0;background:linear-gradient(#0000,#000d);white-space:nowrap;overflow:hidden;font-size:clamp(14px,1.5vw,22px)}
+.tick div{display:inline-block;padding-left:100%;animation:run 40s linear infinite}.tick span{margin-right:48px}
+@keyframes run{to{transform:translateX(-100%)}}
+.hint{position:fixed;right:16px;bottom:56px;font-size:12px;opacity:.5}
+</style></head><body>
+<img id="v" src="/video_feed" alt="">
+<div class="top"><div><b id="nm">MoveEye</b><span id="st"></span></div><div id="clock"></div></div>
+<div class="tick"><div id="tk"></div></div><div class="hint">F = Vollbild · Esc = zurück</div>
+<script>
+const $ = s => document.querySelector(s);
+const pad = n => String(n).padStart(2, "0");
+setInterval(() => { const d = new Date(); $("#clock").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()); }, 1000);
+async function load() { try { const r = await (await fetch("/api/kino")).json();
+  $("#nm").textContent = r.name; const st = $("#st"); st.textContent = "";
+  const P = (txt, cls) => { const s = document.createElement("span"); s.className = "pill " + (cls || ""); s.textContent = txt; st.appendChild(s); };
+  if (r.sim) P("🧪 SIMULATION", "org"); P(r.armed ? "🛡 Schutz an" : "Schutz aus"); if (r.persons) P("🚶 " + r.persons, "red"); if (r.rec) P("● REC", "red");
+  const tk = $("#tk"), txt = r.events.map(e => e.t + " " + e.i + " " + e.x).join("|");
+  if (tk.dataset.s !== txt) { tk.dataset.s = txt; tk.textContent = ""; (r.events.length ? r.events : [{t: "", i: "", x: "–"}]).forEach(e => { const s = document.createElement("span"); s.textContent = (e.t ? e.t + "  " : "") + e.i + " " + e.x; tk.appendChild(s); }); }
+  } catch (e) {} }
+load(); setInterval(load, 3000);
+$("#v").onerror = () => setTimeout(() => { $("#v").src = "/video_feed?r=" + Date.now(); }, 2000);
+document.addEventListener("keydown", e => { if (e.key === "f" || e.key === "F") (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(() => {});
+  if (e.key === "Escape" && !document.fullscreenElement) location.href = "/"; });
+document.body.ondblclick = () => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(() => {});
+</script></body></html>"""
 # ----------------------------------------------------------------------------
 # Autostart: when switched on, the Pi starts MoveEye when it boots (no screen needed) and switches the own Wi-Fi on.
 # When switched off, nothing starts at boot and the Pi joins its known networks as usual (the own Wi-Fi never starts by itself).
@@ -20327,7 +20569,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_3.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_96_4.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -26184,6 +26426,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
   </span>
 </header>
 <main class="simp">
+  <section class="sc wide" id="c-hub" style="padding:12px 14px"><h2 style="margin:0 0 8px;font-size:15px">🎛 <span data-i18n="Simulator centre">Simulator centre</span></h2><div id="simhub" data-simhub="full" hidden></div></section>
   <!-- 2.95.69: order by logic - 1 connection, 2 status, 3 (only when connected) picture, control, test run …; every card:
        symbol, name, arrow on the right; symbol and arrow green while its function works -->
   <details class="sc fold wide" id="c-conn" data-k="conn" open>
@@ -26370,7 +26613,7 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "Catch fast persons": "Schnelle Personen erwischen", "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.": "{n} schnelle Personen (Jogger) verpasst: weniger Bilder bis das Gehen erkannt ist, die KI prüft jedes Bild.",
  "More sensitive by day": "Am Tag empfindlicher", "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.": "{n} Personen am Tag verpasst: empfindlicher, und die KI nimmt auch weniger sichere Personen an.",
  "React faster": "Schneller reagieren", "MoveEye needed {n} s on average: the AI looks at every picture and walking is recognised sooner.": "MoveEye brauchte im Mittel {n} s: die KI prüft jedes Bild und das Gehen wird früher erkannt."});
-Object.assign(I18N.de, {"Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig", "best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by MoveEye": "sichtbar, aber von MoveEye nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
+Object.assign(I18N.de, {"Simulator centre": "Simulator-Zentrale", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig", "best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by MoveEye": "sichtbar, aber von MoveEye nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
  "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
  "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
  "Load": "Laden", "Delete": "Löschen", "Computing power": "Rechenleistung", "perf-note": "Weniger Bilder pro Sekunde entlasten den Pi und den PC.",
@@ -31573,7 +31816,7 @@ def render_page(page, active):
     """Fill the shared pieces into a page template."""
     page = page.replace("<head>", "<head>" + ui_seed_script() + i18n_loader(active == "help") + PWA_HEAD.replace(
         'content="MoveEye">', 'content="' + app_title(host_variant()) + '">').replace(".png\"", ".png?i=" + app_icon_id() + "\"")
-        + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>"
+        + "<script>window.MW_ICON=" + json.dumps(app_icon_id()) + ";</script>" + makeover_head()
         + ("<style>:root{--mw-icon:url(/app-icon/anim.svg?i=" + app_icon_id() + ")}</style>"
            if CFG.get("app_icon_anim", True) and app_icon_id() in APP_ICONS_ANIM else ""), 1)
     page = re.sub(r"(<h1[^>]*>)MoveEye</h1>", r'\1MoveEye <span class="ver">' + APP_VERSION + "</span>"
@@ -32647,8 +32890,9 @@ function renderDay(j) {
   const d = new Date(j.day + "T12:00:00");
   $("#d-title").textContent = d.toLocaleDateString(LOCALE(LANG), {weekday: "long", day: "numeric", month: "long", year: "numeric"});
   const c = j.counts, tl = el("div", "dtiles");
-  [["👤", c.persons, "Persons"], ["🦊", c.animals, "Animals"], ["🔥", c.warm, "Warm bodies"], ["🔊", c.noise, "Noises"],
-   ["🎬", c.recordings + (c.alarm_recordings ? " (" + c.alarm_recordings + " 🚨)" : ""), "recordings"], ["📷", c.photos, "Photos"]].concat(c.sneezes ? [["🤧", c.sneezes, "Sneezes"]] : []).forEach(([i, n, k]) => {
+  const E = window.EVI || {};
+  [[E.person || "🚶", c.persons, "Persons"], [E.animal || "🦊", c.animals, "Animals"], [E.warm || "🔥", c.warm, "Warm bodies"], [E.noise || "🔊", c.noise, "Noises"],
+   [E.rec || "🎬", c.recordings + (c.alarm_recordings ? " (" + c.alarm_recordings + " 🚨)" : ""), "recordings"], ["📷", c.photos, "Photos"]].concat(c.sneezes ? [["🤧", c.sneezes, "Sneezes"]] : []).forEach(([i, n, k]) => {
     const t_ = el("div", "dtile"), lb = t(k); t_.append(el("b", "", i + " " + n), el("span", "", lb.charAt(0).toUpperCase() + lb.slice(1))); tl.appendChild(t_); });
   b.appendChild(tl);
   const ln = el("div", "dline"), w = j.weather, cs = j.climate_sum || {};
@@ -33404,7 +33648,9 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
       <button class="sec" id="all-groups" onclick="allGroups()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v5H4zM4 14h16v5H4z"/></svg><span data-i18n="Groups only">Groups only</span></button>
       <button class="sec" id="all-open" onclick="allSections(true)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg><span data-i18n="Expand all">Expand all</span></button>
       <button class="sec" id="all-close" onclick="allSections(false)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l5 5 5-5M7 20l5-5 5 5"/></svg><span data-i18n="Collapse all">Collapse all</span></button>
+      <button class="sec" id="kino-btn" onclick="location.href='/kino'" title="Vollbild für TV / Beamer"><span>🎬</span><span data-i18n="Cinema mode">Cinema mode</span></button>
     </div>
+    <div id="simtile" data-simhub="tile" hidden style="margin-bottom:12px"></div>
     <details class="card" open data-view="protect" data-vgroup="Panels" data-vlabel="Camping / protection" id="pr-card">
       <summary data-i18n="Camping / protection">Camping / protection</summary>
       <div id="protect-box"></div>
@@ -36780,7 +37026,7 @@ async function newsCheck(force) {                    // 2.96.3: after an update 
 }
 setTimeout(newsCheck, 2500);
 Object.assign(I18N.de, {"New in this version": "Neu in dieser Version", "Next in the makeover": "Als Nächstes im Makeover", "No changes noted.": "Keine Änderungen notiert.",
-  "Do not show any more": "Nicht mehr anzeigen", "What is new?": "Was ist neu?"});
+  "Do not show any more": "Nicht mehr anzeigen", "What is new?": "Was ist neu?", "Cinema mode": "Kino-Modus"});
 
 function protectWizard() {                       // three questions, then everything is set
   const A = {what: "place", when: "now", react: "push"};
@@ -40411,6 +40657,26 @@ class WebStream:
                 return reply({"ok": False, "error": "unknown action"}, 400)
             return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"]})
 
+        @app.route("/api/simhub", methods=["GET", "POST"])
+        def api_simhub():                                    # 2.96.4: the tiles of the simulator (start page, simulator centre)
+            if request.method == "POST":
+                d = body()
+                ok, err = sim_hub_do(str(d.get("a") or ""), d.get("v"))
+                return reply({"ok": ok, "error": tr_err(err, norm_lang(d.get("lang"))) if err else "", "hub": sim_hub(True)})
+            return reply(sim_hub())
+
+        @app.route("/kino")
+        def kino_page():                                     # 2.96.4: cinema mode (TV / projector)
+            return Response(KINO_PAGE, mimetype="text/html")
+
+        @app.route("/api/kino")
+        def api_kino():
+            return reply(kino_state())
+
+        @app.route("/api/simbar")
+        def api_simbar():                                    # 2.96.4: the stripe «SIMULATION» on every page
+            return reply({"ok": True, "on": bool(CFG.get("sim_on"))})
+
         @app.route("/api/news", methods=["GET", "POST"])
         def api_news():                                      # 2.96.3: «Neu in dieser Version» after an update
             who = "tk" if request.args.get("who") == "tk" else "web"
@@ -42066,12 +42332,12 @@ def tr_status(s):
 
 
 THEMES = {
-    "dark": {"bg": "#0b0f14", "panel": "#121923", "line": "#1f2a38", "txt": "#e6edf3", "mut": "#8b9bb0",
-             "acc": "#2f81f7", "red": "#ff3b3b", "grn": "#3fb950", "yel": "#d29922", "blu": "#58a6ff", "org": "#f0883e",
-             "pur": "#bc8cff", "field": "#0f151d", "knob_off": "#2a3542", "badge_red_bg": "#1a1216"},
-    "light": {"bg": "#eef1f5", "panel": "#ffffff", "line": "#d0d7e2", "txt": "#1b2430", "mut": "#5b6b7f",
-              "acc": "#1f6feb", "red": "#d1242f", "grn": "#1a7f37", "yel": "#9a6700", "blu": "#0969da", "org": "#bc4c00",
-              "pur": "#8250df", "field": "#f3f5f8", "knob_off": "#c4ccd8", "badge_red_bg": "#ffecec"},
+    "dark": {"bg": "#0a0e14", "panel": "#111822", "line": "#1f2b3a", "txt": "#e8eef5", "mut": "#8a9bb0",     # 2.96.4: = web page and simulator
+             "acc": "#3b8cff", "red": "#ff4d4d", "grn": "#3fcf6b", "yel": "#e0a526", "blu": "#5aa9ff", "org": "#f59a4a",
+             "pur": "#b794f6", "field": "#0c121a", "knob_off": "#2a3542", "badge_red_bg": "#1a1216"},
+    "light": {"bg": "#eef2f7", "panel": "#ffffff", "line": "#d7dfea", "txt": "#18212d", "mut": "#5a6b80",
+              "acc": "#1f6feb", "red": "#d1242f", "grn": "#1a8f3c", "yel": "#9a6700", "blu": "#0969da", "org": "#bc4c00",
+              "pur": "#8250df", "field": "#f2f5fa", "knob_off": "#c4ccd8", "badge_red_bg": "#ffecec"},
 }
 
 
@@ -42307,6 +42573,7 @@ TOGGLES = [  # (section, key, label)
     ("Backup", "backup_all", "Copy all recordings (otherwise only alarm recordings: armed or with a person)"),
     ("Notifications", "webpush_on", "Web push: alarm messages also to browsers that switched it on (no app needed)"),
     ("Notifications", "pushover_on", "Pushover: alarm messages also to the Pushover app (iPhone: can ring when muted)"),
+    ("Notifications", "msg_icons", "Symbols in messages and the log (🚶 person, 🦊 animal, 🛑 sabotage …)"),
     ("Notifications", "msg_keyword_on", "Keyword at the start of every message (MW-ALARM, MW-WAERME …: for iPhone shortcuts)"),
     ("Notifications", "email_on", "E-mail: messages also by e-mail (the iPhone can start a shortcut from it)"),
     ("Notifications", "pushover_emergency", "Pushover: alarms as emergency (critical alert, repeats until confirmed)"),
@@ -42822,7 +43089,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.3")
+        self.root.title("MoveEye 2.96.4")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -43139,7 +43406,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.3 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.4 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -45411,7 +45678,8 @@ class App:
                 self._last_ev = events[0]
                 self.log.config(state="normal"); self.log.delete("1.0", "end")
                 for e in events:
-                    self.log.insert("end", e["t"] + "  ", "t"); self.log.insert("end", e["text"] + "\n", e["kind"])
+                    self.log.insert("end", e["t"] + "  ", "t")
+                    self.log.insert("end", (LOG_ICON.get(e["kind"], "·") + " " if CFG.get("msg_icons", True) else "") + e["text"] + "\n", e["kind"])   # 2.96.4
                 self.log.config(state="disabled")
 
     def _update_wifi(self):
@@ -50297,6 +50565,27 @@ _HX108 = {  # 2.96.3: «Neu in dieser Version»
     'What is new?': ('Was ist neu?', 'Quoi de neuf ?', 'Cosa c’è di nuovo?', 'Tge è nov?'),
 }
 for _k, _v in _HX108.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX109 = {  # 2.96.4: makeover design
+    'Symbols in messages and the log (🚶 person, 🦊 animal, 🛑 sabotage …)': ('Symbole in Meldungen und im Protokoll (🚶 Person, 🦊 Tier, 🛑 Sabotage …)', 'Symboles dans les messages et le journal (🚶 personne, 🦊 animal, 🛑 sabotage …)', 'Simboli nei messaggi e nel registro (🚶 persona, 🦊 animale, 🛑 sabotaggio …)', 'Simbols en messadis ed en il protocol (🚶 persuna, 🦊 animal, 🛑 sabotascha …)'),
+}
+for _k, _v in _HX109.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX110 = {  # 2.96.4: simulator centre
+    'Simulator centre': ('Simulator-Zentrale', 'Centre du simulateur', 'Centro del simulatore', 'Central dal simulatur'),
+}
+for _k, _v in _HX110.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX111 = {  # 2.96.4: cinema mode
+    'Cinema mode': ('Kino-Modus', 'Mode cinéma', 'Modalità cinema', 'Modus kino'),
+}
+for _k, _v in _HX111.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

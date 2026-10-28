@@ -1010,6 +1010,9 @@ class Notifier:
     @staticmethod
     def _title(p):
         t_ = Notifier._title0(p)
+        if CFG.get("msg_icons", True):                    # 2.96.4: the same symbols everywhere (138_makeover_design)
+            ic = ev_icon("tamper" if Notifier._event(p) == "tamper" else Notifier._event(p))
+            t_ = (ic + " " + t_) if ic and not t_.startswith(ic) else t_
         t_ = ("[SIM] " + t_) if CFG.get("sim_on") else t_
         kw = msg_keyword(Notifier._event(p))
         return (kw + " · " + t_) if kw else t_

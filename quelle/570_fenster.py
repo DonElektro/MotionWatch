@@ -231,6 +231,7 @@ TOGGLES = [  # (section, key, label)
     ("Backup", "backup_all", "Copy all recordings (otherwise only alarm recordings: armed or with a person)"),
     ("Notifications", "webpush_on", "Web push: alarm messages also to browsers that switched it on (no app needed)"),
     ("Notifications", "pushover_on", "Pushover: alarm messages also to the Pushover app (iPhone: can ring when muted)"),
+    ("Notifications", "msg_icons", "Symbols in messages and the log (🚶 person, 🦊 animal, 🛑 sabotage …)"),
     ("Notifications", "msg_keyword_on", "Keyword at the start of every message (MW-ALARM, MW-WAERME …: for iPhone shortcuts)"),
     ("Notifications", "email_on", "E-mail: messages also by e-mail (the iPhone can start a shortcut from it)"),
     ("Notifications", "pushover_emergency", "Pushover: alarms as emergency (critical alert, repeats until confirmed)"),
@@ -746,7 +747,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.96.3")
+        self.root.title("MoveEye 2.96.4")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1063,7 +1064,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.96.3 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.96.4 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -3335,7 +3336,8 @@ class App:
                 self._last_ev = events[0]
                 self.log.config(state="normal"); self.log.delete("1.0", "end")
                 for e in events:
-                    self.log.insert("end", e["t"] + "  ", "t"); self.log.insert("end", e["text"] + "\n", e["kind"])
+                    self.log.insert("end", e["t"] + "  ", "t")
+                    self.log.insert("end", (LOG_ICON.get(e["kind"], "·") + " " if CFG.get("msg_icons", True) else "") + e["text"] + "\n", e["kind"])   # 2.96.4
                 self.log.config(state="disabled")
 
     def _update_wifi(self):

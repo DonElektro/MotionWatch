@@ -1950,3 +1950,24 @@ for _k, _v in _HX108.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX109 = {  # 2.96.4: makeover design
+    'Symbols in messages and the log (🚶 person, 🦊 animal, 🛑 sabotage …)': ('Symbole in Meldungen und im Protokoll (🚶 Person, 🦊 Tier, 🛑 Sabotage …)', 'Symboles dans les messages et le journal (🚶 personne, 🦊 animal, 🛑 sabotage …)', 'Simboli nei messaggi e nel registro (🚶 persona, 🦊 animale, 🛑 sabotaggio …)', 'Simbols en messadis ed en il protocol (🚶 persuna, 🦊 animal, 🛑 sabotascha …)'),
+}
+for _k, _v in _HX109.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX110 = {  # 2.96.4: simulator centre
+    'Simulator centre': ('Simulator-Zentrale', 'Centre du simulateur', 'Centro del simulatore', 'Central dal simulatur'),
+}
+for _k, _v in _HX110.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX111 = {  # 2.96.4: cinema mode
+    'Cinema mode': ('Kino-Modus', 'Mode cinéma', 'Modalità cinema', 'Modus kino'),
+}
+for _k, _v in _HX111.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])

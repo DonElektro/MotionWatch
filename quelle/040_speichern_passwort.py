@@ -163,13 +163,13 @@ def users_action(d, who="admin"):
 
 # 2.95.35: ONE list of what users without admin rights may read. Everything else (also every new function) is only for
 # the administrator. Changing things (POST): VIEW_POST for everybody, OPERATE_POST (+ the keys below) for «operate».
-VIEW_GET_PAGES = {"/", "/cams", "/recordings", "/diary", "/help", "/quick", "/preview", "/zones"}
+VIEW_GET_PAGES = {"/", "/cams", "/recordings", "/diary", "/help", "/quick", "/preview", "/zones", "/kino"}
 VIEW_GET = ("/api/tunnel", "/api/dataset.zip", "/api/helper", "/api/info", "/api/nettest", "/api/state", "/api/alerts", "/api/appearance", "/api/version", "/api/health", "/api/cams", "/api/frame.jpg",
             "/video_feed", "/cam_feed/", "/snapshot.jpg", "/api/audio/live", "/api/recordings", "/api/places", "/rec/file/",
             "/rec/play/", "/rec/thumb/", "/rec/share/", "/rec/report/", "/api/day", "/api/diary", "/diary/img/", "/api/timelapse",
             "/timelapse/", "/api/species", "/api/loop", "/api/gps", "/api/zones", "/api/webpush", "/api/ui", "/api/report",
             "/api/battery", "/api/sensors", "/api/qs", "/api/schedule", "/api/schema", "/api/triggers", "/api/fa", "/api/appicon",
-            "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/sim/view.jpg", "/sim/view.mjpg")
+            "/api/audio", "/i18n/", "/app-icon/", "/sim-icon/", "/sim/view.jpg", "/sim/view.mjpg", "/api/kino", "/api/simbar", "/api/news")
 
 
 def role_allows(role, path, method, d):

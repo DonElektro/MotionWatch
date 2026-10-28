@@ -1552,6 +1552,26 @@ class WebStream:
                 return reply({"ok": False, "error": "unknown action"}, 400)
             return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"]})
 
+        @app.route("/api/simhub", methods=["GET", "POST"])
+        def api_simhub():                                    # 2.96.4: the tiles of the simulator (start page, simulator centre)
+            if request.method == "POST":
+                d = body()
+                ok, err = sim_hub_do(str(d.get("a") or ""), d.get("v"))
+                return reply({"ok": ok, "error": tr_err(err, norm_lang(d.get("lang"))) if err else "", "hub": sim_hub(True)})
+            return reply(sim_hub())
+
+        @app.route("/kino")
+        def kino_page():                                     # 2.96.4: cinema mode (TV / projector)
+            return Response(KINO_PAGE, mimetype="text/html")
+
+        @app.route("/api/kino")
+        def api_kino():
+            return reply(kino_state())
+
+        @app.route("/api/simbar")
+        def api_simbar():                                    # 2.96.4: the stripe «SIMULATION» on every page
+            return reply({"ok": True, "on": bool(CFG.get("sim_on"))})
+
         @app.route("/api/news", methods=["GET", "POST"])
         def api_news():                                      # 2.96.3: «Neu in dieser Version» after an update
             who = "tk" if request.args.get("who") == "tk" else "web"

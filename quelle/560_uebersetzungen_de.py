@@ -490,12 +490,12 @@ def tr_status(s):
 
 
 THEMES = {
-    "dark": {"bg": "#0b0f14", "panel": "#121923", "line": "#1f2a38", "txt": "#e6edf3", "mut": "#8b9bb0",
-             "acc": "#2f81f7", "red": "#ff3b3b", "grn": "#3fb950", "yel": "#d29922", "blu": "#58a6ff", "org": "#f0883e",
-             "pur": "#bc8cff", "field": "#0f151d", "knob_off": "#2a3542", "badge_red_bg": "#1a1216"},
-    "light": {"bg": "#eef1f5", "panel": "#ffffff", "line": "#d0d7e2", "txt": "#1b2430", "mut": "#5b6b7f",
-              "acc": "#1f6feb", "red": "#d1242f", "grn": "#1a7f37", "yel": "#9a6700", "blu": "#0969da", "org": "#bc4c00",
-              "pur": "#8250df", "field": "#f3f5f8", "knob_off": "#c4ccd8", "badge_red_bg": "#ffecec"},
+    "dark": {"bg": "#0a0e14", "panel": "#111822", "line": "#1f2b3a", "txt": "#e8eef5", "mut": "#8a9bb0",     # 2.96.4: = web page and simulator
+             "acc": "#3b8cff", "red": "#ff4d4d", "grn": "#3fcf6b", "yel": "#e0a526", "blu": "#5aa9ff", "org": "#f59a4a",
+             "pur": "#b794f6", "field": "#0c121a", "knob_off": "#2a3542", "badge_red_bg": "#1a1216"},
+    "light": {"bg": "#eef2f7", "panel": "#ffffff", "line": "#d7dfea", "txt": "#18212d", "mut": "#5a6b80",
+              "acc": "#1f6feb", "red": "#d1242f", "grn": "#1a8f3c", "yel": "#9a6700", "blu": "#0969da", "org": "#bc4c00",
+              "pur": "#8250df", "field": "#f2f5fa", "knob_off": "#c4ccd8", "badge_red_bg": "#ffecec"},
 }
 
 

@@ -17,7 +17,7 @@ MAKEOVER_ALL = [
     (21, "Fehlalarm-Lernen"), (22, "Karte der blinden Flecken"), (23, "Nacht-Generalprobe vor dem Scharfschalten"),
     (24, "Schwellen automatisch einstellen"), (25, "Erkennungs-Check jede Woche"),
 ]
-MAKEOVER_DONE = set()                                  # numbers already delivered (nachführen)
+MAKEOVER_DONE = {1, 2, 3, 4, 5, 6, 7}                                # numbers already delivered (nachführen)
 
 
 def _news_vt(v):

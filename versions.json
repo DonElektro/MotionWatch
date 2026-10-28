@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-28 20:55",
+ "generated": "2026-10-28 21:02",
  "versions": [
   {
-   "version": "2.96.3",
-   "file": "webcam_bewegung_2_96_3.py",
+   "version": "2.96.4",
+   "file": "webcam_bewegung_2_96_4.py",
    "url": "",
-   "sha256": "c4e9a0ddb669c59ae38772b514ceffb00bd9ac1bff6d173ab76a761b37f98cb2",
-   "date": "2026-10-28 20:55",
-   "notes": "Nach jedem Update erscheint einmal kurz «Neu in dieser Version» (Webseite und Fenster) mit dem, was als Nächstes im Makeover kommt (abschaltbar unter Updates); passt zum Simulator 3D-3.82 (Fenster «Vorlagen»: fertige Szenen, echte Orte, 3D-Bausätze, eigene .glb-Dateien; 4 neue Szenen)",
-   "sig": "807fd25de7e356ece3176171e9fa6deb3f1359a55188ba783e8ebda9c1530e79ff0df8d4181355fada4a5944d706546eb8c72197ce9a276da2c28557947eca02"
+   "sha256": "6549a99804984803ec5faaf21cfd9a14479b6ee7339cf7484cce0a5be43b3f88",
+   "date": "2026-10-28 21:02",
+   "notes": "Makeover 1–7: gleiche Farben in Fenster, Webseite und Simulator; Streifen «SIMULATION – Alarme sind nicht echt» mit orangem Rahmen auf allen Seiten; Simulator-Kachel auf der Startseite und Simulator-Zentrale (Szene, Tageszeit, Wetter, Besuch schicken, Überraschungsnacht, Vorlagen, Spiel, Tests, Tagebuch); Kino-Modus /kino (Vollbild für TV / Beamer mit Laufband); einheitliche Ereignis-Symbole in Push-Titeln, Tagebuch und Fenster-Protokoll",
+   "sig": "4a83aeb5c9b9f878450d0a85f3578a57eeac1ee2130f961ad519607dce6ce3944a401ee53935eb095b3161d888a4a997563b4abc13b54ebcc752f6c9004a4302"
   },
   {
    "version": "2.95.105",
