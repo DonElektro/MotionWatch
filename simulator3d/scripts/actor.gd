@@ -73,6 +73,10 @@ var seed_t := randf() * 10.0  # standing: breathing and shifting the weight, not
 var power := ""               # players: «cloak» / «turbo» for a few seconds (game.gd, 3D-3.21)
 var player_lamp := false      # players: the torch is on (night round, 3D-3.25)
 var handicap := 0             # players: 0 … 2 - a little slower (game.gd, 3D-3.25)
+var gear_speed := 1.0         # players: a camouflage thing or the stolen bike makes slower (gameplus.gd, 3D-4.x)
+var gear_norun := false       # ... the cardboard box: no running
+var gear_pmin := 0            # ... the postures it allows (box: only crouching, umbrella: no crawling)
+var gear_pmax := 2
 var power_until := 0.0
 var emote := ""               # players: caught / goal / throw (game.gd)
 var emote_until := 0.0
@@ -922,6 +926,7 @@ func player_speed_now() -> float:
 
 func _player(dt: float, now: float) -> void:
 	"""moved by the phone: direction from the joystick, posture from the buttons, never inside an object"""
+	ctl_posture = clampi(ctl_posture, gear_pmin, gear_pmax)            # 3D-4.x: what the camouflage thing allows (gameplus.gd)
 	var want_c := 1.0 if ctl_posture == 1 else 0.0
 	var want_p := 1.0 if ctl_posture == 2 else 0.0
 	crouch = move_toward(crouch, want_c, dt * 2.5)
@@ -929,7 +934,7 @@ func _player(dt: float, now: float) -> void:
 	var mv := ctl_move.limit_length(1.0)
 	if frozen:
 		mv = Vector2.ZERO
-	var top: float = PLAYER_SPEED[ctl_posture] * (2.3 if ctl_run and ctl_posture == 0 else 1.0)
+	var top: float = PLAYER_SPEED[ctl_posture] * (2.3 if ctl_run and ctl_posture == 0 and not gear_norun else 1.0) * gear_speed
 	if power == "turbo" and now < power_until:
 		top *= 1.45
 	top *= 1.0 - 0.07 * handicap

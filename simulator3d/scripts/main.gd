@@ -3281,7 +3281,7 @@ func _register_controls() -> void:
 	add_control("toggle", "game_rescue", "Befreien: Erwischte kommen in die Zelle, ein Teamkollege befreit sie", func(): return game_rescue, func(v): game_rescue = v, "Spiel")
 	add_control("toggle", "game_teamgoal", "Team-Ziel: das Ziel öffnet erst, wenn alle Kristalle gefunden sind", func(): return game_teamgoal, func(v): game_teamgoal = v, "Spiel", ex)
 	add_control("select", "game_goal", "Spielziel", func(): return game_goal, func(v): game_goal = v, "Spiel",
-			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"], ["sprint", "Sprint: 90 s, fester Parcours"]]})
+			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"], ["sprint", "Sprint: 90 s, fester Parcours"], ["theft", "Diebstahl: Velo oder Kühlbox zum Ausgang tragen"]]})
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
 	add_control("toggle", "game_powers", "Power-ups: Tarnkappe (lila) und Turbo (gelb)", func(): return game_powers, func(v): game_powers = v, "Spiel")
 	add_control("toggle", "game_photos", "Erwischt-Fotos (Bild der Kamera beim Erwischen, Galerie am Schluss)", func(): return game_photos, func(v): game_photos = v, "Spiel")
@@ -4009,6 +4009,8 @@ func _control(d: Dictionary) -> Dictionary:
 		return gamewiz.op(d)
 	elif a == "game_debug":                            # 3D-4.x: for tests - results, duel, levels, bots, votes
 		return game.debug_info()
+	elif a == "gameplus":                              # 3D-4.x: weather change, camouflage things, theft (gameplus.gd, tests)
+		return game.plus.op(d)
 	elif a == "set" or a == "press":
 		var c = null
 		for x in controls:

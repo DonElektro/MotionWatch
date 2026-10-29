@@ -133,6 +133,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `609_uebersetzungen_robust.py` | Übersetzungen und Anleitung: Speicherkarte, Selbstheilung, Simulator-Sperre | 142 |
 | `610_anleitung_ergaenzungen.py` | Anleitung: Ergänzungen in allen Sprachen | 167 |
 | `613_uebersetzungen_sicher.py` | Übersetzungen und Anleitung zu 578 | 165 |
+| `616_uebersetzungen_spiel2.py` | Übersetzungen der Spiel-Extras (Wetterwechsel, Tarn-Sachen, Diebstahl, Lern-Punkte) | 8 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |
 | `640_start.py` | Start: Befehlszeile, Selbsttest, Programmstart | 152 |
