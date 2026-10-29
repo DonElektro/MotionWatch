@@ -523,6 +523,7 @@ func _process(dt: float) -> void:
 	var t := now()
 	if int(t * 2.0) != int((t - dt) * 2.0):
 		_promote_watchers()
+		sync_teams()
 	if main.game_mode == "free" and round_state not in ["countdown", "play"] and count() > 0:
 		start_round()                                      # 3D-3.60: free moving starts as soon as somebody is there
 	_bots_tick(dt)                                         # 3D-3.77: computer players
@@ -799,7 +800,7 @@ func _clean_look(m) -> Dictionary:
 		return {}
 	var h := str(m.get("hat", ""))
 	var dc := str(m.get("deco", ""))                   # 3D-4.x: unlocked with the level (gamexp.gd)
-	return {"hat": h if h in ["", "cap", "hood"] else "", "pack": bool(m.get("pack", false)), "camo": bool(m.get("camo", false)),
+	return {"hat": h if h in ["", "cap", "hood"] else "", "pack": bool(m.get("pack", false)), "camo": false,   # 3D-4.x: camouflage only as «Tarn-Sachen» (gameplus.gd)
 			"deco": dc if dc in ["", "band", "scarf", "tophat", "cape", "crown"] else "", "gold": bool(m.get("gold", false))}
 
 
@@ -809,6 +810,15 @@ func _smaller_team(me: int) -> int:
 		if q != null and q["slot"] != me:
 			n[int(q.get("team", 0))] += 1
 	return 0 if n[0] <= n[1] else 1
+
+
+func sync_teams() -> void:
+	"""3D-4.x (Aufräumen, Daniel 29.10.2026): Teams gibt es nur bei «Fahne erobern» (und in der alten Spielart «Team gegen
+	Team») - keine eigene Team-Wahl mehr. main.game_teams folgt dem Spielziel."""
+	var want: bool = main.game_goal == "flag" or team_mode()
+	if main.game_teams != want and round_state not in ["countdown", "play"]:
+		main.game_teams = want
+		on_teams()
 
 
 func on_teams() -> void:
@@ -1057,13 +1067,8 @@ func start_round() -> void:
 			runners += 1
 	if runners == 0 and not team_mode():
 		return
-	if flag_mode() and not main.game_teams:                # «Fahne erobern» needs teams
-		main.game_teams = true
-		on_teams()
+	sync_teams()                                           # 3D-4.x: teams only with «Fahne erobern» (and «Team gegen Team»)
 	if team_mode():                                        # team against team: one team guards, the other sneaks
-		if not main.game_teams:
-			main.game_teams = true
-			on_teams()
 		var n := [0, 0]
 		for p in players:
 			if p != null and p["role"] != "watch":
@@ -1674,8 +1679,6 @@ func cam_sees(p: Dictionary, i: int) -> float:
 	var hfov: float = deg_to_rad(CAM_FOV[i])
 	# person detection (AI): needs enough pixels, a recognisable shape and light
 	var ai: float = smoothstep(18.0, 70.0, px) * SHAPE[post] * smoothstep(0.08, 0.5, see)
-	if bool(a.look.get("camo", false)) and not main.is_dark() and main.scene != "parkplatz":
-		ai *= 0.8                                          # camouflage in the green: the person is a bit harder to recognise
 	ai = minf(1.0, ai * plus.ai_mul(p))                    # 3D-4.x: camouflage things (box, umbrella, camouflage clothes …)
 	# motion detection: something moves across the picture (pixels per second), big enough, visible
 	var move_px: float = spd / (2.0 * d * tan(hfov / 2.0)) * cols
@@ -2649,13 +2652,12 @@ try { token = localStorage.getItem("mw3d-token") || ""; name = localStorage.getI
 if (!token) { token = Math.random().toString(36).slice(2) + Date.now().toString(36); try { localStorage.setItem("mw3d-token", token); } catch (e) {} }
 let lastOv = null, editing = false, GAL = [], XPI = null, aim = false;
 const ov = (html) => { if (html === lastOv) return; lastOv = html; $("#ov").innerHTML = html ? '<div class="card">' + html + '</div>' : ""; };
-let outfit = {hat: "", pack: false, camo: false, deco: "", gold: false};
+let outfit = {hat: "", pack: false, deco: "", gold: false};
 try { outfit = Object.assign(outfit, JSON.parse(localStorage.getItem("mw3d-look") || "{}")); } catch (e) {}
 function lookHtml() {
   const c = (grp, v, txt) => '<button type="button" data-g="' + grp + '" data-v="' + v + '" class="' + (String(outfit[grp]) === String(v) ? "on" : "") + '">' + txt + '</button>';
   return '<div class="lab">Kopf</div><div class="chips">' + c("hat", "", "Haare") + c("hat", "cap", "Mütze") + c("hat", "hood", "Kapuze") + '</div>' +
-    '<div class="lab">Rucksack</div><div class="chips">' + c("pack", false, "ohne") + c("pack", true, "mit") + '</div>' +
-    '<div class="lab">Jacke</div><div class="chips">' + c("camo", false, "meine Farbe") + c("camo", true, "Tarnung (im Grünen schwerer zu sehen)") + '</div>' + lvLook(c);
+    '<div class="lab">Rucksack</div><div class="chips">' + c("pack", false, "ohne") + c("pack", true, "mit") + '</div>' + lvLook(c);
 }
 function lvLook(c) {                     // 3D-4.x: what the level unlocks (only for the look)
   const X = XPI; if (!X || !(X.all || []).length) return "";

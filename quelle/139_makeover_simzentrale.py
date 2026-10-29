@@ -133,7 +133,7 @@ SIMHUB_JS = r"""
     "Patrol": "Patrouille", "Drive to the alarm": "Zum Alarm fahren", "To the charger": "Zur Ladestation", "At a person alarm: drive there by itself": "Bei Personen-Alarm von selbst hinfahren",
     "rover-note": "Akku hält etwa 30 Minuten Fahrt; unter 20 % fährt der Rover von selbst zur Ladestation.",
     "Visits (blue) and persons recognised in % (green), 4 weeks": "Besuche (blau) und erkannte Personen in % (grün), 4 Wochen", "Per MoveEye version": "Pro MoveEye-Version", "test": "Test",
-    "Twin of your place": "Zwilling deines Platzes", "Test inbox": "Test-Posteingang", "Drills": "Störfall-Übungen", "Battery, Wi-Fi, heat, cold": "Akku, WLAN, Hitze, Kälte",
+    "Your place": "Dein Platz", "Test inbox": "Test-Posteingang", "Drills": "Störfall-Übungen", "Battery, Wi-Fi, heat, cold": "Akku, WLAN, Hitze, Kälte",
     "Training night": "Trainings-Nacht", "A/B comparison": "A/B-Vergleich", "Which setting is better?": "Welche Einstellung ist besser?", "Messages here instead of the phone": "Meldungen hierhin statt aufs Handy",
     "Test the alarm chain": "Alarm-Kette testen", "Empty – nothing arrived yet": "Leer – noch nichts angekommen", "held back (offline), sent later": "zurückgehalten (offline), wird später gesendet",
     "Battery empty": "Akku leer", "Wi-Fi / internet gone": "WLAN / Internet weg", "Heat": "Hitze", "Cold": "Kälte", "Drill runs": "Übung läuft", "Last drill": "Letzte Übung",
@@ -283,7 +283,7 @@ SIMHUB_JS = r"""
       ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")]
       ];
     if (full) T.push(["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]);   // 2.98.13: drills / surprise only in the Simulator tab
-    if (full && H.twin_ok) T.push(["twin", "🪞", tt("Twin of your place"), tt("Place, zones, patrol")]);   // 2.98.5: zones / detection in 3D = simulator, «Ansicht»
+    if (full && H.twin_ok) T.push(["twin", "🪞", tt("Your place"), tt("Place, zones, patrol")]);   // 2.98.5: zones / detection in 3D = simulator, «Ansicht»
     if (full) { const R = H.rover || {};
       T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
         ["rover", "🚜", tt("Rover"), H.rover ? (R.mission ? "⏳ " + tt("M_" + R.mission) : R.active ? tt("patrols") : R.charging ? "⚡ " + tt("charging") : tt("ready")) + " · 🔋 " + R.batt + " %" : "–"],
@@ -323,7 +323,7 @@ SIMHUB_JS = r"""
     if (open && full && G[GRP[open] || "world"].parentNode) { const hold = E("div"); G[GRP[open] || "world"].after(hold); sheet(hold, open); }   // the sheet right under its group
     else if (open) sheet(box, open);
     if (full && H.handover && H.handover.length) { const w = E("div", "mut", "🔁 " + H.handover.map(x => x.t + " " + x.from + " → " + x.to).join(" · ")); w.style.cssText = "margin-top:6px;font-size:12px"; box.appendChild(w); }
-    if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Twin of your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
+    if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
       + (H.twin.zones != null ? " · " + H.twin.zones + " " + tt("zones") : "") + (H.twin.waypoints != null ? " · " + H.twin.waypoints + " " + tt("patrol points") : "")); w.style.cssText = "margin-top:8px;font-size:12px"; box.appendChild(w); }
   }
   function paintTile(el_) {

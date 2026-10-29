@@ -12,7 +12,7 @@ const UI = preload("res://scripts/ui_style.gd")
 
 # [id, symbol, name]
 const TILES := [["scene", "globe", "Szene"], ["time", "clock", "Tageszeit"], ["weather", "cloud", "Wetter"], ["visit", "person", "Besuch"],
-		["inventar", "box", "Inventar"], ["test", "check", "Testen"], ["game", "pad", "Spiel"],
+		["inventar", "box", "Dein Platz"], ["test", "check", "Testen"], ["game", "pad", "Spiel"],
 		["map", "map", "Echter Ort"], ["planner", "plan", "Aufstellen"], ["pruef", "meter", "Prüfstand"]]
 # 3D-4.0 (Gesamtrunde): «Patrouille» (= Rover-Route) and «Kopf steuern» only in the bar below - the bar moves, the tiles hold content
 const TIMES := [["Morgen 07:00", 7.0], ["Mittag 13:00", 13.0], ["Abend 19:30", 19.5], ["Dämmerung 21:00", 21.0], ["Nacht 23:00", 23.0], ["Tiefe Nacht 03:00", 3.0]]
@@ -135,7 +135,7 @@ func _paint() -> void:
 	_subs["time"].text = "%02d:%02d %s" % [int(h), int(fmod(h, 1.0) * 60), "Nacht" if main.is_dark() else "Tag"]
 	_subs["weather"].text = {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(main.weather, main.weather)
 	_subs["visit"].text = "%d da" % main.visitors.get_child_count()
-	_subs["inventar"].text = "80 KI-Dinge"
+	_subs["inventar"].text = "Zelt, Velo, 80 Dinge"
 	_subs["test"].text = "Testlauf läuft" if main.testrun.running else ("Blinde Flecken" if main.blindmap != null and main.blindmap.busy else "Karte öffnen")
 	_subs["game"].text = (main.game.status() if main.game != null and main.game.status() != "" else "Assistent")
 	if _subs.has("patrol"):

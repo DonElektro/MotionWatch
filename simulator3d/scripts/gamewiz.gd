@@ -26,7 +26,7 @@ var _qr_for := ""
 const LAST := "user://gamewiz_last.json"
 const Pics = preload("res://scripts/wizpics.gd")
 var _tex := {}
-const KEYS := ["game_mode", "game_goal", "game_level", "game_lives", "game_minutes", "game_items", "game_teams", "game_rescue", "game_stones",
+const KEYS := ["game_mode", "game_goal", "game_level", "game_lives", "game_minutes", "game_items", "game_rescue", "game_stones",
 		"game_cones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints",
 		"game_autohandicap", "game_tasks", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard"]
 const STEPS := ["Spielart", "Ziel", "Schwierigkeit", "Mitspieler & Start"]
@@ -34,7 +34,7 @@ const STEPS_JG := ["Spielart", "Lockvögel", "Dauer", "Mitspieler & Start"]    #
 const JG_TIME := [["3", "⏱", "3 Minuten", "Kurz – gut für Kinder und zum Ausprobieren."], ["5", "⏱", "5 Minuten", "Eine normale Runde."],
 		["8", "⏱", "8 Minuten", "Lang – Zeit, viele Lockvögel zu testen."]]
 # everything that has no use when the players are animals and things (set on «Fehlalarm-Jäger»)
-const JG_FIXED := {"game_goal": "reach", "game_lives": "0", "game_items": 0, "game_teams": false, "game_rescue": false, "game_stones": false,
+const JG_FIXED := {"game_goal": "reach", "game_lives": "0", "game_items": 0, "game_rescue": false, "game_stones": false,
 		"game_cones": false, "game_powers": false, "game_photos": false, "game_hides": 0, "game_decoy": false, "game_events": false,
 		"game_checkpoints": 0, "game_autohandicap": false, "game_tasks": false, "game_tutorial": false, "game_daily": false, "game_ghost": false,
 		"game_heart": false, "game_botguard": false, "game_wx": false, "game_gear": false}
@@ -55,7 +55,7 @@ const MODES := [["mw", "🛡", "Gegen MoveEye", "Die echte Erkennung von MoveEye
 		["free", "🧪", "Zonen-Check", "Ohne Erwischen: geh die Grenzen deiner Zonen und die Wege ums Zelt ab. Das Handy sagt laufend, ob MoveEye dich sieht – jede Stelle, wo es dich nicht meldet, kommt auf die Karte der blinden Flecken."],
 		["jaeger", "🦊", "Fehlalarm-Jäger", "Ihr seid keine Menschen, sondern Fuchs, Katze, Ast im Wind, Lampe, Ballon … Schafft ihr es, dass MoveEye trotzdem «Person!» meldet? Jeder Fehlalarm gibt Punkte – und MoveEye lernt daraus. Nur mit MoveEye."],
 		["camera", "🎥", "Alle gegen die Kamera (ältere Spielart)", "Wie «Gegen MoveEye», aber immer schätzt der Simulator, wer gesehen wird – auch wenn MoveEye verbunden ist.", true],
-		["teamguard", "🔴🔵", "Team gegen Team (ältere Spielart)", "Wie «Wächter», aber ein ganzes Team bewacht und die Teams tauschen nach einer Runde.", true],
+		# 3D-4.x (Aufräumen, Daniel 29.10.2026): «Team gegen Team» is no longer offered - teams only with «Fahne erobern»
 		["mwhand", "🕹", "Team gegen MoveEye", "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an MoveEye: Sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken «Erwischt!».", true],
 		["patrol", "🚜", "Patrouille", "MoveEye fährt auf dem Mover eine Route ab und schaut sich an jedem Punkt um. Die Spieler schleichen zum Ziel, während die Patrouille unterwegs ist.", true]]
 const GOALS := [["reach", "🟢", "Zum Ziel schleichen", "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg."],
@@ -71,7 +71,7 @@ const LEVEL_SET := {"easy": {"game_level": "easy", "game_lives": "0", "game_minu
 		"hard": {"game_level": "hard", "game_lives": "1", "game_minutes": 4, "game_cones": false}}
 # [key, label, type, min, max, unit, extra]
 const OPTIONS := [["game_minutes", "Dauer einer Runde", "range", 1, 15, " min", true], ["game_lives", "Leben", "select", 0, 0, "", true],
-		["game_items", "Kristalle zum Sammeln", "range", 0, 6, "", true], ["game_teams", "Zwei Teams (Rot gegen Blau)", "toggle", 0, 0, "", true],
+		["game_items", "Kristalle zum Sammeln", "range", 0, 6, "", true],
 		["game_rescue", "Befreien (Erwischte warten in der Zelle)", "toggle", 0, 0, "", true], ["game_stones", "Steine werfen zum Ablenken", "toggle", 0, 0, "", true],
 		["game_cones", "Sichtfeld der Kameras zeigen", "toggle", 0, 0, "", true], ["game_powers", "Power-ups: Tarnkappe (lila) und Turbo (gelb)", "toggle", 0, 0, "", true],
 		["game_spectate", "Zuschauer-Kamera: fliegt selbst übers Spielfeld", "toggle", 0, 0, "", true],
@@ -83,7 +83,7 @@ const OPTIONS := [["game_minutes", "Dauer einer Runde", "range", 1, 15, " min", 
 		["game_wx", "⛅ Wetterwechsel mitten in der Runde (Gewitter, Nebel oder Dämmerung – 10 s vorher warnt das Handy)", "toggle", 0, 0, "", true],
 		["game_gear", "🎒 Tarn-Sachen zum Auswählen: Tarnkleidung, Wärmedecke, Karton, Regenschirm", "toggle", 0, 0, "", true]]
 const LIVES := [["0", "unbegrenzt"], ["3", "3 Leben"], ["1", "1 Leben"]]
-const EXTRAS_LABEL := ["Extras – Übungsrunde, Tagesaufgabe, Geist, Herzschlag", "Extras – Dauer, Leben, Kristalle, Teams, Steine, Fotos, Verstecke, Nacht, Ereignisse …"]
+const EXTRAS_LABEL := ["Extras – Übungsrunde, Tagesaufgabe, Geist, Herzschlag", "Extras – Dauer, Leben, Kristalle, Steine, Fotos, Verstecke, Nacht, Ereignisse …"]
 const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter Dingen sieht euch die Kamera schlechter. Rennen hört das Mikrofon.",
 		"rescue": "Befreien: Wer erwischt wird, wartet in der Zelle, bis ihn ein Teamkollege befreit.",
 		"items": "Kristalle: Wer welche einsammelt, bekommt Extrapunkte.",
@@ -111,7 +111,7 @@ const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter
 		"jg_night": "🌙 Nacht-Runde: Lampen-Strahl und Insekten am Licht wirken im Dunkeln am besten.",
 		"jg_nomw": "⚠ MoveEye ist gerade nicht verbunden. Ohne MoveEye zählt kein Fehlalarm – zuerst in MoveEye den Simulator verbinden."}
 # 3D-4.x: the quick starts and the presets for the kids mode and «Mitspieler einladen» - every key of KEYS is set
-const BASE := {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 5, "game_items": 3, "game_teams": false,
+const BASE := {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 5, "game_items": 3,
 		"game_rescue": false, "game_stones": true, "game_cones": false, "game_powers": true, "game_spectate": true, "game_photos": true, "game_hides": 3,
 		"game_decoy": true, "game_night": false, "game_events": true, "game_checkpoints": 0, "game_autohandicap": false, "game_tasks": true, "game_bots": "0",
 		"game_tutorial": false, "game_daily": false, "game_ghost": true, "game_heart": true, "game_botguard": true,
@@ -346,7 +346,7 @@ func model() -> Dictionary:
 				gl = x[1] + " " + x[2]
 		summary = [["Spielart", md], ["Ziel", gl], ["Dauer einer Runde", "%d min" % int(W.get("game_minutes", 5))],
 				["Leben", "unbegrenzt" if str(W.get("game_lives")) == "0" else str(W.get("game_lives"))], ["Kristalle", str(int(W.get("game_items", 0)))],
-				["Teams", "Rot gegen Blau" if W.get("game_teams", false) else "nein"],
+				["Teams", "Rot gegen Blau (nur bei «Fahne erobern»)" if str(W.get("game_goal")) == "flag" else "nein"],
 				["Wetterwechsel", "ja – Gewitter, Nebel oder Dämmerung" if W.get("game_wx", false) else "nein"],
 				["Tarn-Sachen", "ja – jeder wählt auf dem Handy" if W.get("game_gear", false) else "nein"]]
 		if str(W.get("game_goal")) == "theft":
@@ -443,10 +443,6 @@ func _pick(key: String, v: String) -> void:
 		W["game_minutes"] = clampi(int(v), 1, 15)
 	elif W.has(key):
 		W[key] = v
-		if key == "game_mode" and v == "teamguard":
-			W["game_teams"] = true
-		if key == "game_goal" and v == "flag":
-			W["game_teams"] = true
 	_changed()
 
 
@@ -474,6 +470,9 @@ func _apply() -> void:
 	if f != null:
 		f.store_string(JSON.stringify(save))
 	var errs := []
+	W.erase("game_teams")                                  # 3D-4.x: teams follow the goal «Fahne erobern» (game.sync_teams)
+	if str(W.get("game_mode", "")) == "teamguard":
+		W["game_mode"] = "guard"                           # an old saved wizard: «Team gegen Team» is no longer offered
 	if jg():                                               # «Fehlalarm-Jäger»: the extras of the other games off, the lures
 		W.merge(JG_FIXED, true)
 		g.jaeger.set_allowed(str(W.get("game_lures", "")))
