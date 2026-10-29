@@ -1,6 +1,6 @@
 # Prüfstand – die Erkennung messen
 
-Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt Motion Watch besser oder schlechter als vorher?**
+Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt MoveEye besser oder schlechter als vorher?**
 
 ## So funktioniert es
 
@@ -12,7 +12,20 @@ Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt Motion W
 3. Die Zahlen kommen als JSON nach `ergebnisse/` und in die Tabelle **`VERLAUF.md`**:
    Personen erkannt (%), Reaktionszeit, Tiere gemeldet, Fehlalarme, Bilder pro Sekunde, ob die KI lief.
 4. Der Lauf wird mit dem letzten **vergleichbaren** Lauf verglichen (gleicher Testlauf, gleicher Rechner, gleicher KI-Stand):
-   10 Prozentpunkte weniger Personen oder ein Fehlalarm mehr pro Lauf = «SCHLECHTER».
+   15 Prozentpunkte weniger Personen oder ein Fehlalarm mehr pro Lauf = «SCHLECHTER» – aber erst, wenn beide Läufe
+   mindestens 8 Personen hatten (vorher kippte eine einzige verpasste Person das Ergebnis von 100 % auf 0 %).
+
+## Verlässlichere Zahlen (ab MoveEye 2.98.13 / Simulator 3D-4.0)
+
+- **Besucher gehen gezielt durchs Bild der Kopfkamera** (nah / mittel / weit gemischt, quer durch das Bild). Vorher liefen
+  sie quer über den ganzen Platz: viele kamen nie ins Bild, nachts nie ins Infrarotlicht → «0 / 0».
+- Nachts nur so weit, wie das Licht reicht (Infrarot etwa 14 m). Ohne Licht sieht die Kamera niemanden – das zählt nicht.
+- **Sichtbar** heisst: Kopf **und** Körper frei (vorher reichte der Kopf über einem Zelt).
+- **Mehr Besucher**: `--mal 2` (Standard) schickt jede Besucherliste zweimal.
+- **Mit und ohne Kamera-Effekte** (`--realismus an,aus`): jede Zeile «· ohne Kamera-Effekte» zeigt, ob ein Rückgang am
+  realistischeren Bild des Simulators oder an MoveEye liegt.
+- Szene **Stellplatz** (freie Sicht wie auf einem Camping-Platz; der Camping-Platz der Simulation verdeckt sehr viel).
+- 15 s Eingewöhnen pro Phase (die Belichtung der Kamera braucht Zeit).
 
 ## Testläufe
 
