@@ -17,11 +17,33 @@ uniform vec3 tint = vec3(1.0);
 uniform float noir = 0.0;           // 0..1 pink cast by day (NoIR camera)
 uniform float cnoise = 0.0;         // 3D-3.97: colour grain in the dark (each pixel a little red / green / blue, new every picture)
 uniform float seed = 0.0;
+// 3D-4.4 (simreal.gd): the lens and sensor of the Camera Module 3
+uniform float distort = 0.0;        // barrel distortion (0.05 normal lens, ~0.16 wide lens): straight lines bend at the edges
+uniform float rshutter = 0.0;       // rolling shutter: the rows are read one after the other - turning fast skews the picture
+uniform float shot = 0.0;           // sensor noise that depends on the light: dark parts grainy, bright parts clean
+uniform float bloom = 0.0;          // near things in the infrared light blow out and glow over their edges
+uniform float haze = 0.0;           // fog / rain / snow in the camera's own light: backscatter veil in the cone, far parts fade
+uniform float flakes = 0.0;         // drops / flakes right in front of the lens lit by the camera's light (bright streaks / dots)
+uniform float flake_kind = 0.0;     // 0 rain (short slanted streaks), 1 snow (soft dots)
+uniform vec2 cone_c = vec2(0.5, 0.56);
+uniform float veil_k = 1.0;         // the veil and the flakes are lit by the same light: they follow the exposure
 
 float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 
 void fragment() {
-	vec2 uv = SCREEN_UV;
+	vec2 suv = SCREEN_UV;
+	vec2 uv = suv;
+	if (distort > 0.0) {
+		float asp = res.x / res.y;
+		vec2 q = (uv - 0.5) * vec2(asp, 1.0);
+		float r2 = dot(q, q) / (0.25 * (asp * asp + 1.0));   // 1 in the corners: the corners stay, the middle grows a little
+		q *= (1.0 + distort * r2) / (1.0 + distort);
+		uv = q / vec2(asp, 1.0) + 0.5;
+	}
+	if (rshutter != 0.0) {
+		uv.x += rshutter * (uv.y - 0.5);
+	}
+	uv = clamp(uv, vec2(0.001), vec2(0.999));
 	vec3 c;
 	if (length(pan_blur) > 0.0008) {
 		c = vec3(0.0);
@@ -39,9 +61,11 @@ void fragment() {
 	if (trail > 0.0) {
 		// 3D-4.1: the last picture is the finished one (after the lens: gain, grain) - never let it be brighter than now,
 		// otherwise it adds up from picture to picture (the infrared picture at night turned completely white)
-		vec3 pv = texture(prev_tex, uv).rgb;
+		vec3 pv = texture(prev_tex, suv).rgb;
 		float lc = dot(c, vec3(0.299, 0.587, 0.114)), lp = dot(pv, vec3(0.299, 0.587, 0.114));
-		pv *= clamp((lc + 0.04) / (lp + 0.04), 0.5, 1.0);
+		// 3D-4.4: really never brighter (before: down to half only - the last picture is after the night curve of the
+		// environment, so it was still up to 2x brighter and the infrared picture ran up to white again)
+		pv *= min(1.0, (lc + 0.02) / (lp + 0.02));
 		c = mix(c, pv, trail);
 	}
 	float l = dot(c, vec3(0.299, 0.587, 0.114));
@@ -59,6 +83,43 @@ void fragment() {
 		vec2 px = floor(uv * res) + seed;
 		vec3 n = vec3(h21(px), h21(px + 17.1), h21(px + 41.7)) - 0.5;
 		c += (n - dot(n, vec3(0.333))) * cnoise;              // only the colour moves, hardly the brightness
+	}
+	if (haze > 0.0 || flakes > 0.0) {
+		vec2 dq = (uv - cone_c) * vec2(res.x / res.y, 1.0);
+		float cone = exp(-dot(dq, dq) * 2.6);                 // the LED cone: the veil is brightest in its middle
+		if (haze > 0.0) {
+			float lum = dot(c, vec3(0.299, 0.587, 0.114));
+			c *= 1.0 - haze * (1.0 - smoothstep(0.08, 0.7, lum));         // far (dim) parts vanish in the fog, near stays
+			c = mix(c, vec3(0.5 * veil_k), haze * 0.1);                    // less contrast
+			c += vec3(haze * (0.26 * cone + 0.03) * veil_k);               // light scattered back from the droplets
+		}
+		if (flakes > 0.0) {
+			vec2 cell = flake_kind > 0.5 ? vec2(7.0, 7.0) : vec2(3.0, 18.0);
+			vec2 g = (uv * res + vec2((1.0 - uv.y) * res.y * 0.18 * (1.0 - flake_kind), 0.0)) / cell;
+			vec2 id = floor(g);
+			vec2 f = fract(g) - 0.5;
+			if (h21(id + seed * 0.37) < flakes * 0.016 * (0.3 + cone)) {
+				float a = flake_kind > 0.5 ? smoothstep(0.5, 0.1, length(f)) : smoothstep(0.5, 0.1, abs(f.x)) * smoothstep(0.5, 0.3, abs(f.y));
+				c += vec3(a * (0.35 + 0.65 * h21(id + 1.7)) * (0.15 + 0.95 * cone) * clamp(veil_k * 1.5, 0.3, 1.0));
+			}
+		}
+	}
+	if (bloom > 0.0) {
+		vec2 o = vec2(4.0) / res;
+		float hs = 0.0;
+		for (int k = 0; k < 6; k++) {
+			float an = float(k) * 1.0472;
+			vec3 sb = texture(screen_tex, uv + vec2(cos(an), sin(an)) * o).rgb;
+			vec3 sb2 = texture(screen_tex, uv + vec2(cos(an + 0.52), sin(an + 0.52)) * o * 2.6).rgb;
+			hs += max(0.0, dot(sb, vec3(0.333)) - 0.78) + 0.6 * max(0.0, dot(sb2, vec3(0.333)) - 0.8);
+		}
+		c += vec3(hs / 6.0) * bloom * 2.2;
+	}
+	if (shot > 0.0) {
+		vec2 px2 = floor(uv * res) + seed * 1.37;
+		float n2 = h21(px2 + 3.3) + h21(px2.yx + 9.1) - 1.0;
+		float lum = dot(c, vec3(0.299, 0.587, 0.114));
+		c += vec3(n2 * shot * (0.3 + 0.7 * (1.0 - lum)) * (0.35 + sqrt(max(lum, 0.0))));
 	}
 	ALBEDO = clamp(c, 0.0, 1.0);
 	ALPHA = 1.0;
