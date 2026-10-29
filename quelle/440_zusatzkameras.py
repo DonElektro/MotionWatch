@@ -21,7 +21,7 @@ class ExtraCam:
         self.status = "connecting…"; self.label = source_label(spec); self.res = ""; self.fps = 0.0
         self.motion = False; self.recording = False
         self.writer = None; self.rec_name = ""; self.rec_info = None; self.last_motion = 0.0; self.streak = 0
-        self.boxes = []; self.times = deque(maxlen=30); self.n = 0; self.last_cleanup = 0.0
+        self.boxes = []; self.times = deque(maxlen=30); self.ftimes = deque(maxlen=31); self.n = 0; self.last_cleanup = 0.0
         self.thread = threading.Thread(target=self.loop, daemon=True); self.thread.start()
 
     def info(self):
@@ -100,8 +100,9 @@ class ExtraCam:
             self.writer.write(frame); self.rec_info["frames"] += 1
         self.recording = self.writer is not None
         self.times.append(time.time() - t0)
-        if self.n % 15 == 0:
-            self.fps = 1.0 / max(1e-3, np.mean(self.times)) if self.times else 0.0
+        self.ftimes.append(t0)
+        if self.n % 15 == 0 and len(self.ftimes) >= 2:          # 2.98.24: the real picture rate (was: 1 / time of the work = 700 fps)
+            self.fps = (len(self.ftimes) - 1) / max(1e-3, self.ftimes[-1] - self.ftimes[0])
         if self.viewers > 0 and now - self._enc_t >= 0.1:        # only encode while somebody watches
             self._enc_t = now
             out = frame if W <= 640 else cv2.resize(frame, (640, int(H * 640 / W)), interpolation=cv2.INTER_AREA)

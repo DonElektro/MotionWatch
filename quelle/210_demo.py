@@ -109,11 +109,20 @@ def open_source(spec, thermal=False):
             src = _open_url(sim_base() + f"/cam/{arg}/video.mjpg" + (f"?fps={sim_cam_fps(arg)}" if sim_eco_now() else ""))
             return (src, spec, label, "") if src else (None, spec, label, "simulator not reachable - is it running?")
         if spec == "auto":
-            for idx in range(4):
+            for idx in range(10):
                 src = _open_usb(idx)
                 if src:
                     return src, f"usb:{idx}", f"USB camera {idx}", ""
-            return None, spec, label, "no working USB camera found (ls /dev/video*)"
+            pis = [n for n in _pi_cams() if f"pi:{n}" not in {c.spec for c in CAMS}]     # 2.98.24: no USB camera -> the Pi camera
+            if pis:
+                return PiCamSource(pis[0]), f"pi:{pis[0]}", source_label(f"pi:{pis[0]}"), ""
+            return None, spec, label, "no working camera found (ls /dev/video*)"
+        if kind == "usb" and not thermal and _v4l_internal(int(arg)):
+            pis = [n for n in _pi_cams() if f"pi:{n}" not in {c.spec for c in CAMS}]     # 2.98.24: an internal node was chosen
+            if pis:
+                log_event("sys", f"/dev/video{arg} is not a camera (internal node of the Raspberry Pi) - using the Pi camera {pis[0]}")
+                return PiCamSource(pis[0]), f"pi:{pis[0]}", source_label(f"pi:{pis[0]}"), ""
+            return None, spec, label, f"/dev/video{arg} is no camera (internal node of the Raspberry Pi) - choose «Raspberry Pi camera»"
         if kind == "usb":
             src = (_open_usb(int(arg), raw=True) or _open_usb(int(arg))) if thermal else _open_usb(int(arg))
             return (src, spec, label, "") if src else (None, spec, label, f"no picture from /dev/video{arg}")

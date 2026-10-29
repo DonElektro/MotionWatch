@@ -111,8 +111,29 @@ class PiCamSource:
                 pass
 
 
+def _v4l_internal(idx):
+    """2.98.24: /dev/video<idx> is an internal node of the Raspberry Pi (on a Pi 5 the CSI camera itself shows up as rp1-cfe
+    nodes video0 … video7): no USB camera - opening it with OpenCV hangs or blocks the Pi camera."""
+    try:
+        name = _v4l_name(idx).lower()
+    except NameError:
+        return False
+    return any(b in name for b in V4L_SKIP)
+
+
+def _pi_cams():
+    """numbers of the Raspberry Pi cameras (CSI) that libcamera sees, [] without picamera2"""
+    try:
+        from picamera2 import Picamera2
+        return [int(i.get("Num", n)) for n, i in enumerate(Picamera2.global_camera_info()) if "usb" not in str(i.get("Id", "")).lower()]
+    except Exception:
+        return []
+
+
 def _open_usb(idx, raw=False):
     """raw=True for thermal cameras: they have their own small resolution and formats, so nothing is forced on them."""
+    if _v4l_internal(idx):
+        return None
     for backend, name in ((cv2.CAP_V4L2, "V4L2"), (cv2.CAP_ANY, "default")):
         cap = cv2.VideoCapture(idx, backend)
         if cap.isOpened():

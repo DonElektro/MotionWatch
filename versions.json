@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 17:35",
+ "generated": "2026-10-29 17:43",
  "versions": [
   {
-   "version": "2.98.23",
-   "file": "webcam_bewegung_2_98_23.py",
+   "version": "2.98.24",
+   "file": "webcam_bewegung_2_98_24.py",
    "url": "",
-   "sha256": "5ba8414fabf42fcf1302d11075f88ceed31e2ce1d42cc9c3250b20383511e105",
-   "date": "2026-10-29 17:34",
-   "notes": "Aufräumen: «Nachtblick» heisst «Dunkle Ansicht», Testen nur noch an einer Stelle (Karte «Testen»), KI-Modell in einer Gruppe, «Dein Platz» (früher Zwilling), KI-Daten aufräumen (Vielfalt im Paket, alte Pakete weg, PC-Hilfe mit eigenem Modell), Anmelden nur verschlüsselt (Passwort von anderen Geräten nur über https).",
-   "sig": "95bda1da6e807c3b4fb7fc85fda154636627bc089beb9dcb68a2d4f3c2c987f79663f1e15563e164708b14ceaea7bfc9adf4220ff8672012dadd3076832fd10b"
+   "sha256": "28e00c33761a29ea5fd35d09d024cc7c962e368870634f1de9868299a165f2d3",
+   "date": "2026-10-29 17:43",
+   "notes": "Kamera am Pi 5: die inneren Knoten des Pi (rp1-cfe, /dev/video0 … 7) gelten nicht mehr als USB-Kamera; «Automatisch» nimmt ohne USB-Kamera die Pi-Kamera, und eine gewählte «USB camera 0», die in Wahrheit ein innerer Knoten ist, wird zur Pi-Kamera. Zusatzkameras zeigen die echte Bildrate (vorher z. B. «707 fps»), Aufnahmen haben dadurch das richtige Tempo.",
+   "sig": "30617a835a7d8dbfb4671c58695025cb78522ad7377be915554a266d60fe2e91d17e52c6f522802c786328d304dabb0f62236992eb32c14f11b007b2199a4e0f"
   },
   {
    "version": "2.97.1",

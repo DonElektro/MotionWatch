@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_23.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_24.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,10 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.24: Kamera am Pi 5: die inneren Knoten des Pi (rp1-cfe, /dev/video0 … 7) gelten nicht mehr als USB-Kamera;
+    «Automatisch» nimmt ohne USB-Kamera die Pi-Kamera, und eine gewählte «USB camera 0», die in Wahrheit ein innerer Knoten ist,
+    wird zur Pi-Kamera. Zusatzkameras zeigen die echte Bildrate (vorher z. B. «707 fps»), Aufnahmen haben dadurch das richtige
+    Tempo.
   * 2.98.23: Aufräumen: «Nachtblick» heisst «Dunkle Ansicht», Testen nur noch an einer Stelle (Karte «Testen»), KI-Modell in
     einer Gruppe, «Dein Platz» (früher Zwilling), KI-Daten aufräumen (Vielfalt im Paket, alte Pakete weg, PC-Hilfe mit eigenem
     Modell), Anmelden nur verschlüsselt (Passwort von anderen Geräten nur über https).
@@ -900,10 +904,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_23.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_24.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_23.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_23.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_24.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_24.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -920,7 +924,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.23"
+APP_VERSION = "2.98.24"
 
 
 def default_data_dir():
@@ -15706,8 +15710,29 @@ class PiCamSource:
                 pass
 
 
+def _v4l_internal(idx):
+    """2.98.24: /dev/video<idx> is an internal node of the Raspberry Pi (on a Pi 5 the CSI camera itself shows up as rp1-cfe
+    nodes video0 … video7): no USB camera - opening it with OpenCV hangs or blocks the Pi camera."""
+    try:
+        name = _v4l_name(idx).lower()
+    except NameError:
+        return False
+    return any(b in name for b in V4L_SKIP)
+
+
+def _pi_cams():
+    """numbers of the Raspberry Pi cameras (CSI) that libcamera sees, [] without picamera2"""
+    try:
+        from picamera2 import Picamera2
+        return [int(i.get("Num", n)) for n, i in enumerate(Picamera2.global_camera_info()) if "usb" not in str(i.get("Id", "")).lower()]
+    except Exception:
+        return []
+
+
 def _open_usb(idx, raw=False):
     """raw=True for thermal cameras: they have their own small resolution and formats, so nothing is forced on them."""
+    if _v4l_internal(idx):
+        return None
     for backend, name in ((cv2.CAP_V4L2, "V4L2"), (cv2.CAP_ANY, "default")):
         cap = cv2.VideoCapture(idx, backend)
         if cap.isOpened():
@@ -15869,11 +15894,20 @@ def open_source(spec, thermal=False):
             src = _open_url(sim_base() + f"/cam/{arg}/video.mjpg" + (f"?fps={sim_cam_fps(arg)}" if sim_eco_now() else ""))
             return (src, spec, label, "") if src else (None, spec, label, "simulator not reachable - is it running?")
         if spec == "auto":
-            for idx in range(4):
+            for idx in range(10):
                 src = _open_usb(idx)
                 if src:
                     return src, f"usb:{idx}", f"USB camera {idx}", ""
-            return None, spec, label, "no working USB camera found (ls /dev/video*)"
+            pis = [n for n in _pi_cams() if f"pi:{n}" not in {c.spec for c in CAMS}]     # 2.98.24: no USB camera -> the Pi camera
+            if pis:
+                return PiCamSource(pis[0]), f"pi:{pis[0]}", source_label(f"pi:{pis[0]}"), ""
+            return None, spec, label, "no working camera found (ls /dev/video*)"
+        if kind == "usb" and not thermal and _v4l_internal(int(arg)):
+            pis = [n for n in _pi_cams() if f"pi:{n}" not in {c.spec for c in CAMS}]     # 2.98.24: an internal node was chosen
+            if pis:
+                log_event("sys", f"/dev/video{arg} is not a camera (internal node of the Raspberry Pi) - using the Pi camera {pis[0]}")
+                return PiCamSource(pis[0]), f"pi:{pis[0]}", source_label(f"pi:{pis[0]}"), ""
+            return None, spec, label, f"/dev/video{arg} is no camera (internal node of the Raspberry Pi) - choose «Raspberry Pi camera»"
         if kind == "usb":
             src = (_open_usb(int(arg), raw=True) or _open_usb(int(arg))) if thermal else _open_usb(int(arg))
             return (src, spec, label, "") if src else (None, spec, label, f"no picture from /dev/video{arg}")
@@ -26752,7 +26786,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_23.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_24.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -31668,7 +31702,7 @@ class ExtraCam:
         self.status = "connecting…"; self.label = source_label(spec); self.res = ""; self.fps = 0.0
         self.motion = False; self.recording = False
         self.writer = None; self.rec_name = ""; self.rec_info = None; self.last_motion = 0.0; self.streak = 0
-        self.boxes = []; self.times = deque(maxlen=30); self.n = 0; self.last_cleanup = 0.0
+        self.boxes = []; self.times = deque(maxlen=30); self.ftimes = deque(maxlen=31); self.n = 0; self.last_cleanup = 0.0
         self.thread = threading.Thread(target=self.loop, daemon=True); self.thread.start()
 
     def info(self):
@@ -31747,8 +31781,9 @@ class ExtraCam:
             self.writer.write(frame); self.rec_info["frames"] += 1
         self.recording = self.writer is not None
         self.times.append(time.time() - t0)
-        if self.n % 15 == 0:
-            self.fps = 1.0 / max(1e-3, np.mean(self.times)) if self.times else 0.0
+        self.ftimes.append(t0)
+        if self.n % 15 == 0 and len(self.ftimes) >= 2:          # 2.98.24: the real picture rate (was: 1 / time of the work = 700 fps)
+            self.fps = (len(self.ftimes) - 1) / max(1e-3, self.ftimes[-1] - self.ftimes[0])
         if self.viewers > 0 and now - self._enc_t >= 0.1:        # only encode while somebody watches
             self._enc_t = now
             out = frame if W <= 640 else cv2.resize(frame, (640, int(H * 640 / W)), interpolation=cv2.INTER_AREA)
@@ -52072,7 +52107,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.23")
+        self.root.title("MoveEye 2.98.24")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -52425,7 +52460,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.23 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.24 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
