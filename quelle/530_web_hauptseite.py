@@ -3692,8 +3692,8 @@ function prText(s) {                                       // 2.98.0: one name f
 }
 async function prArm(action) {
   if (action === "disarm" && ((window.__lastState || {}).protect || {}).pin) { protectOff(); return; }   // 2.95.105: with the PIN
-  const r = await post("/api/arm", {action: action});
-  if (r && r.ok) toast(action === "disarm" ? t("Disarmed") : (r.left ? t("Armed in") + " " + r.left + " s" : t("Armed")));
+  const r = await post("/api/arm", {action: action, lang: LANG});
+  if (r && r.ok) toast((action === "disarm" ? t("Disarmed") : (r.left ? t("Armed in") + " " + r.left + " s" : t("Armed"))) + (r.forecast ? " · 🔋 " + r.forecast : ""));
 }
 function prHotspotMsg(r) {
   return t("The Pi now switches on its own Wi-Fi") + " «" + r.ssid + "» (" + t("password") + ": " + r.password + "). "
@@ -3967,7 +3967,7 @@ function modePaint(s) {
 const PRT = {key: "", pinFor: "", until: 0};
 function protectPaint(P) {
   const box = $("#protect-box"); if (!box || !P) return;
-  const key = JSON.stringify([P.level, P.chosen, P.arm, P.colour, P.items, P.device, P.things, P.pin, P.presence, P.escalate.on, P.escalate.s, P.test, PRT.pinFor, LANG]);
+  const key = JSON.stringify([P.level, P.chosen, P.arm, P.colour, P.items, P.device, P.things, P.pin, P.presence, P.escalate.on, P.escalate.s, P.test, PRT.pinFor, LANG, P.forecast]);
   if (key === PRT.key) { const c = $("#prt-left"); if (c) c.textContent = P.arm === "arming" ? t("starts in") + " " + P.left + " s" : (P.escalate.pending ? "🚨 " + t("siren in") + " " + P.escalate.pending + " s" : ""); return; }
   PRT.key = key; box.textContent = "";
   const head = el("div", "row"); head.style.cssText = "justify-content:space-between;align-items:center";
@@ -3978,6 +3978,7 @@ function protectPaint(P) {
     b.onclick = () => k === "off" ? protectOff() : protectLevel(k); seg.appendChild(b); });
   box.appendChild(seg);
   box.appendChild(el("div", "mut prt-what", P.level === "off" ? t("prt-off") : (P.level === "watch" ? t("prt-watch") : t("prt-full"))));
+  if (P.forecast) box.appendChild(el("div", "prt-what", "🔋 " + P.forecast));      // 2.98.13: battery forecast (066)
   if (PRT.pinFor) { const r = el("div", "row"); r.style.cssText = "gap:6px;margin-top:8px"; const i = document.createElement("input"); i.type = "password"; i.inputMode = "numeric";
     i.placeholder = "PIN"; i.style.flex = "1"; const ok = el("button", "", t("Switch off")); ok.type = "button"; const no = el("button", "sec", "✕"); no.type = "button";
     ok.onclick = async () => { const x = await post("/api/protect", {action: "level", level: "off", pin: i.value, lang: LANG}); if (x.ok) { PRT.pinFor = ""; toast("✓ " + t("Protection off")); } else toast("⚠ " + (x.error || t("error"))); PRT.key = ""; protectPaint(x.level ? x : P); };
@@ -4019,7 +4020,7 @@ function protectPaint(P) {
 }
 async function protectLevel(k, answers) {
   const r = await post("/api/protect", {action: "level", level: k, answers: answers || null, lang: LANG});
-  if (r.ok) toast("✓ " + (k === "full" ? t("Full protection") : t("Watchful")) + (r.arm === "arming" ? " – " + t("leave the area now") : "")); else toast("⚠ " + (r.error || t("error")));
+  if (r.ok) toast("✓ " + (k === "full" ? t("Full protection") : t("Watchful")) + (r.arm === "arming" ? " – " + t("leave the area now") : "") + (r.forecast && k !== "off" ? " · 🔋 " + r.forecast : "")); else toast("⚠ " + (r.error || t("error")));
   PRT.key = ""; if (r.level) protectPaint(r);
 }
 function protectOff() {

@@ -103,4 +103,5 @@ def more_page():
 def main_tab_page(tab):
     """2.98.0: one main page, three tabs - Live (picture, joystick, quick switches), Schutz (protection groups) and
     Einstellungen (all other settings). The body gets data-tab; CSS shows the part of the tab."""
-    return render_page(WEB_PAGE, tab).replace("<body>", '<body data-tab="' + tab + '">', 1)
+    return render_page(WEB_PAGE, tab).replace("<body>", '<body data-tab="' + tab + '">', 1).replace(
+        "</body>", '<script src="/alx/what.js" defer></script></body>', 1)          # 2.98.13: «What was it?» below the picture (066)

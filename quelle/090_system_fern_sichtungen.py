@@ -413,13 +413,22 @@ def report_send(w, manual=False):
                 jpg = buf.tobytes() if ok else None
         except (OSError, cv2.error):
             jpg = None
+    msg = r["text"]
+    if CFG.get("report_strip", True):                      # 2.98.13: one sentence + a picture strip of the night (066)
+        try:
+            sent, strip = alx_morning(r)
+            extra = r["text"].split("\n", 1)[1] if "\n" in r["text"] else ""
+            msg = sent + (("\n" + extra) if extra else "")
+            jpg = strip or jpg
+        except Exception as e:
+            log_event("sys", f"Night report strip: {e}"[:160])
     if jpg is None and MORNING_EXTRA["jpg"]:
         jpg = MORNING_EXTRA["jpg"]                         # 2.98.1: no picture of an animal: the panorama
     if not manual:
         MORNING_EXTRA.update(lines=[], jpg=None)
     de = CFG["lang"] == "de"
     pub = CFG["public_url"].strip().rstrip("/")
-    ok = w.notifier.info(r["text"], pub + "/diary" if pub else "", title="{name}: " + tr("night report"),
+    ok = w.notifier.info(msg, pub + "/diary" if pub else "", title="{name}: " + tr("night report"),
                          jpg=jpg, fname="nachtbericht.jpg")
     STATE["report_last"]["sent"] = bool(ok)
     log_event("web", ("Night report sent" if ok else "Night report not sent") + (" (by hand)" if manual else "") + f": {r['text'][:80]}")

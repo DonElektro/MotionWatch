@@ -1462,7 +1462,7 @@ def log_event(kind, text):
 # "only" = when at least one such zone exists, only detections inside it count.
 # ----------------------------------------------------------------------------
 MAX_ZONES = 12
-ZONES = []              # [{"id", "name", "mode": "ignore"|"only"|"privacy", "points": [[x, y], ...]}]
+ZONES = []              # [{"id", "name", "mode": "ignore"|"only"|"privacy", "points": [[x, y], ...], "kinds": "person"|"animal" (optional)}]
 # "privacy" = the area is painted black right after the camera, before anything else sees it: live picture, recordings,
 # snapshots, timelapse, detection and the zone editor never contain it (neighbour's tent, a path, a window).
 # 2.98.7: "sleep" = the sleeping place - a privacy zone that stays on the bed when the head turns: its corners are kept as
@@ -1493,6 +1493,8 @@ def _clean_zone(z, i):
            "name": str(z.get("name") or "").strip()[:40] or f"Zone {i + 1}", "mode": mode, "points": pts}
     if mode == "line":
         out["dir"] = z.get("dir") if z.get("dir") in ("ab", "ba") else "both"
+    if mode in ("ignore", "only") and z.get("kinds") in ("person", "animal"):
+        out["kinds"] = z["kinds"]                         # 2.98.13: the zone acts only on persons / only on animals (066)
     if mode == "loiter":
         try:
             out["secs"] = int(max(3, min(600, float(z.get("secs") or 20))))
@@ -1718,22 +1720,25 @@ def point_in_poly(x, y, pts):
     return inside
 
 
-def zone_allows(nx, ny):
+def zone_allows(nx, ny, kind=None):
+    """kind: "person" / "animal" / "other" or None (= every zone counts, as before 2.98.13). An ignore / only-here zone
+    with «applies to» persons or animals (z["kinds"]) acts only on that kind; the other kinds see it as if it did not exist."""
     zs = ZONES
     if not zs:
         return True
+    ap = lambda z: kind is None or z.get("kinds", "all") in ("all", kind)
     for z in zs:
-        if z["mode"] in ("ignore", "privacy", "sleep") and point_in_poly(nx, ny, z["points"]):
+        if z["mode"] in ("ignore", "privacy", "sleep") and (z["mode"] != "ignore" or ap(z)) and point_in_poly(nx, ny, z["points"]):
             return False
-    only = [z for z in zs if z["mode"] == "only"]
+    only = [z for z in zs if z["mode"] == "only" and ap(z)]
     return (not only) or any(point_in_poly(nx, ny, z["points"]) for z in only)
 
 
-def zone_box_ok(b, pw, ph):
+def zone_box_ok(b, pw, ph, kind=None):
     """Box (x, y, w, h, ...) in processing-frame pixels; the point that counts is the middle of the feet region."""
     if not ZONES:
         return True
-    return zone_allows((b[0] + b[2] / 2.0) / pw, (b[1] + b[3] * 0.85) / ph)
+    return zone_allows((b[0] + b[2] / 2.0) / pw, (b[1] + b[3] * 0.85) / ph, kind)
 
 
 def zones_set(lst):
@@ -4396,6 +4401,12 @@ class Notifier:
              "Priority": {"person": "high", "warm": "high", "noise": "high", "prealarm": "default", "tamper": "urgent"}.get(ev, "default")}
         if p["link"]:
             h["Click"] = p["link"]
+        try:
+            acts = alx_ntfy_actions(p)                   # 2.98.13: buttons «False alarm · Siren · Off» (066)
+        except Exception:
+            acts = ""
+        if acts:
+            h["Actions"] = _hdr(acts)
         text = self._text(p)
         if jpg:
             h["Filename"] = fname; h["Message"] = _hdr(text); h["Content-Type"] = "image/jpeg"
@@ -4409,17 +4420,31 @@ class Notifier:
         base = f"{TELEGRAM_API}/bot{CFG['telegram_token']}"
         body_txt = self._text(p)
         text = self._title(p) + "\n" + body_txt + (("\n" + p["link"]) if p["link"] and p["link"] not in body_txt else "")
+        try:
+            mk = None if p.get("_no_kb") else alx_telegram_markup(p)    # 2.98.13: link buttons (066)
+        except Exception:
+            mk = None
+        if mk:
+            try:
+                return self._telegram_send(base, p, jpg, fname, text, mk)
+            except urllib.error.HTTPError as e:
+                if e.code != 400:
+                    raise
+                log_event("web", "Telegram refused the buttons (address of the page?) - sent without")
+        return self._telegram_send(base, p, jpg, fname, text, None)
+
+    def _telegram_send(self, base, p, jpg, fname, text, mk):
         if jpg:
             b = uuid.uuid4().hex
             parts = []
-            for k, v in (("chat_id", CFG["telegram_chat"]), ("caption", text)):
+            for k, v in (("chat_id", CFG["telegram_chat"]), ("caption", text)) + ((("reply_markup", json.dumps(mk)),) if mk else ()):
                 parts.append(f'--{b}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode())
             parts.append((f'--{b}\r\nContent-Disposition: form-data; name="photo"; filename="{fname}"\r\n'
                           f'Content-Type: image/jpeg\r\n\r\n').encode() + jpg + b"\r\n")
             parts.append(f"--{b}--\r\n".encode())
             req = urllib.request.Request(base + "/sendPhoto", data=b"".join(parts), headers={"Content-Type": "multipart/form-data; boundary=" + b})
         else:
-            req = urllib.request.Request(base + "/sendMessage", data=json.dumps({"chat_id": CFG["telegram_chat"], "text": text}).encode(),
+            req = urllib.request.Request(base + "/sendMessage", data=json.dumps(dict({"chat_id": CFG["telegram_chat"], "text": text}, **({"reply_markup": mk} if mk else {}))).encode(),
                                          headers={"Content-Type": "application/json"})
         with urllib.request.urlopen(req, timeout=15) as r:
             return r.status
@@ -4559,6 +4584,729 @@ def ntfy_server_messages(since="24h"):
                     "prio": int(m.get("priority") or 3)})
     out.sort(key=lambda x: -x["t"])
     return out[:300], ""
+# ----------------------------------------------------------------------------
+# Wunsch Daniel (29.10.2026):
+#  1  Knöpfe in der Push-Nachricht (ntfy «Actions», Telegram: Link-Knöpfe): «Fehlalarm», «Sirene», «Aus». Jede Nachricht hat
+#     ihren eigenen Schlüssel (zufällig, 1 h gültig, jeder Knopf nur einmal) – kein Passwort in der Adresse. Adresse /na/<schlüssel>/<knopf>.
+#  2  Akku-Prognose beim Einschalten («Akku reicht bis 06:40 bei Wachsam») – Schutz-Seite, Fenster, Antwort / Meldung beim Einschalten.
+#  3  Morgen-Push: der Nachtbericht als ein Satz und ein Bildstreifen der Nacht (bis 4 Bilder aus dem Tagebuch).
+#  4  «Was war das?»: nach jedem Personen-Alarm das Bild mit Person / Tier / Nichts – gespeichert als Trainingsdaten
+#     (alarm_labels/: Bild + Rahmen + Antwort); «Nichts» zählt als Fehlalarm (Aufnahme markiert, Bild nach fa_learn/).
+#  6  Doppelte Bestätigung (aus ab Werk): ein Personen-Alarm erst, wenn KI und Wärmebild übereinstimmen oder die KI die
+#     Person zweimal nacheinander sieht – sonst nur ein Voralarm.
+#  7  Ansage beim Einschalten über den Lautsprecher: «Akku 80 Prozent, WLAN gut, Kamera frei» oder was fehlt.
+#  8  «Bist du's?»: kommt das Handy des Besitzers zurück, warten Personen-Alarme 60 s und eine Push-Nachricht fragt
+#     «Bist du's?» mit dem Knopf «Aus».
+# (5 – Zonen nach Art – steht bei den Zonen in Teil 030.)
+# ----------------------------------------------------------------------------
+_ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_ask": False, "back_hold_s": 60,
+            "report_strip": True}
+for _k, _v in _ALX_CFG.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+
+ALX = {"lock": threading.Lock(), "tok": {}, "fails": {}, "ctx": None, "hold_until": 0.0, "started": False,
+       "g": {"sig": None, "hits": 0, "ok": False, "last_p": 0.0, "pre_t": 0.0, "hold_log": 0.0}}
+ALX_TTL = 3600                       # a button of a push message works for one hour
+ALX_ACTS = ("fa", "siren", "off")
+ALX_LABELS = ("person", "animal", "nothing")
+
+
+# ---- 1: one key per message ------------------------------------------------------------------------------------------
+def alx_base():
+    """the address of this page for the buttons (the same as the «tap» link of the message); empty: no buttons"""
+    pub = str(CFG.get("public_url") or "").strip().rstrip("/")
+    return pub if pub.startswith(("http://", "https://")) else ""
+
+
+def alx_token(p):
+    """a new key for the buttons of one message (or '' when it gets none). Kept in memory only - after a restart the old
+    buttons no longer work (that is fine: they are for the next minutes)."""
+    if not CFG.get("push_actions", True) or not alx_base():
+        return ""
+    ev = p.get("event")
+    acts = tuple(p.get("alx_acts") or (ALX_ACTS if ev in ("person", "prealarm", "warm", "noise") else (("fa", "off") if ev == "tamper" else ())))
+    if not acts:
+        return ""
+    now = time.time()
+    ctx = ALX["ctx"] if ev == "person" and ALX["ctx"] and now - ALX["ctx"]["t"] < 180 else None
+    tok = secrets.token_urlsafe(18)
+    with ALX["lock"]:
+        for k in [k for k, v in ALX["tok"].items() if now - v["t"] > ALX_TTL]:
+            ALX["tok"].pop(k, None)
+        while len(ALX["tok"]) > 200:
+            ALX["tok"].pop(next(iter(ALX["tok"])))
+        ALX["tok"][tok] = {"t": now, "ev": ev, "acts": list(acts), "used": [], "ctx": ctx["id"] if ctx else ""}
+    return tok
+
+
+def alx_buttons(p, lang=None):
+    """[(label, url, clear)] of the message p (its key made once, kept in p for the retries)"""
+    if "alx_tok" not in p:
+        p["alx_tok"] = alx_token(p)
+    tok = p.get("alx_tok") or ""
+    if not tok:
+        return []
+    base = alx_base()
+    with ALX["lock"]:
+        acts = list((ALX["tok"].get(tok) or {}).get("acts") or [])
+    names = {"fa": "False alarm", "siren": "Siren", "off": "Off"}
+    return [(tr(names[a], lang), f"{base}/na/{tok}/{a}", a != "siren") for a in acts if a in names]
+
+
+def alx_ntfy_actions(p):
+    """the «Actions» header of ntfy: http buttons (the phone sends a POST in the background)"""
+    out = []
+    for lab, url, clear in alx_buttons(p):
+        lab = lab.replace(",", " ").replace(";", " ")
+        out.append(f"http, {lab}, {url}, method=POST" + (", clear=true" if clear else ""))
+    return "; ".join(out)
+
+
+def alx_telegram_markup(p):
+    """Telegram: link buttons (they open the small confirmation page of MoveEye)"""
+    b = alx_buttons(p)
+    return {"inline_keyboard": [[{"text": lab, "url": url} for lab, url, _c in b]]} if b else None
+
+
+def alx_use(tok, act):
+    """(ok, error, entry) - the key must exist, be young enough and the button not used yet"""
+    if act not in ALX_ACTS or not isinstance(tok, str) or not re.fullmatch(r"[A-Za-z0-9_\-]{20,40}", tok):
+        return False, "unknown", None
+    with ALX["lock"]:
+        e = ALX["tok"].get(tok)
+        if e is None:
+            return False, "unknown", None
+        if time.time() - e["t"] > ALX_TTL:
+            ALX["tok"].pop(tok, None)
+            return False, "expired", None
+        if act not in e["acts"]:
+            return False, "unknown", None
+        if act in e["used"]:
+            return False, "used", None
+        e["used"].append(act)
+        if act == "off":
+            ALX["tok"].pop(tok, None)                    # switched off: the other buttons of this message are done too
+        return True, "", dict(e)
+
+
+def alx_do(act, e, who="push"):
+    """carry out a button; returns (ok, text in the current language)"""
+    if act == "fa":
+        cid = e.get("ctx") or ""
+        if cid:
+            ok, err = alx_label(cid, "nothing", who)
+            return ok, tr("Thanks - marked as false alarm, MoveEye learns from it.") if ok else tr_err(err)
+        log_event("person", f"False alarm reported by {who} ({e.get('ev')})")
+        return True, tr("Thanks - noted as false alarm.")
+    if act == "siren":
+        if not out_selected():
+            return False, tr("No loudspeaker chosen")
+        SOUND["last_alarm"] = time.time()
+        ok, err = sound_play(None, None, None, reason="push button")
+        log_event("sys", f"Siren started from the push message ({who})")
+        return bool(ok), tr("Siren on") if ok else tr_err(err or "error")
+    if act == "off":
+        try:
+            protect_cancel_escalation()
+        except NameError:
+            pass
+        CFG["protect_level"] = "off"
+        disarm()
+        sound_stop()
+        ALX["hold_until"] = 0.0
+        log_event("sys", f"Protection switched off from the push message ({who})")
+        return True, tr("Protection off")
+    return False, "unknown"
+
+
+_ALX_PAGE = """<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MoveEye</title><style>body{font-family:system-ui,sans-serif;background:#0f141b;color:#e8edf3;margin:0;display:flex;min-height:100vh;
+align-items:center;justify-content:center}.c{background:#18202b;border-radius:16px;padding:24px;max-width:360px;text-align:center}
+button{font-size:18px;padding:12px 26px;border-radius:12px;border:0;background:#2f81f7;color:#fff;margin-top:14px}
+p{color:#9aa6b4}</style></head><body><div class="c"><h2>%s</h2><p>%s</p>%s</div></body></html>"""
+
+
+def alx_routes(app, watch, reply, body):
+    """the addresses of the extras (called once by the web server, 550)"""
+    from flask import Response, request, send_file
+    import html as _html
+    alx_start()
+
+    @app.route("/na/<tok>/<act>", methods=["GET", "POST"])
+    def alx_push_button(tok, act):
+        ip = request.remote_addr or "?"
+        now = time.time()
+        rec = [x for x in ALX["fails"].get(ip, []) if now - x < 600]
+        if len(rec) >= 20:
+            return Response("too many wrong keys - wait 10 minutes", 429)
+        names = {"fa": "False alarm", "siren": "Siren", "off": "Off"}
+        if request.method == "GET":                      # a browser (Telegram link): ask first - a link preview must not switch anything
+            with ALX["lock"]:
+                e = ALX["tok"].get(tok)
+            if not e or act not in e["acts"] or now - e["t"] > ALX_TTL:
+                rec.append(now); ALX["fails"][ip] = rec
+                return Response(_ALX_PAGE % ("MoveEye", _html.escape(tr("This button is no longer valid.")), ""), 404, mimetype="text/html")
+            form = ('<form method="post"><button type="submit">' + _html.escape(tr(names.get(act, act))) + "</button></form>")
+            return Response(_ALX_PAGE % ("MoveEye", _html.escape(tr("Tap to confirm.")), form), mimetype="text/html")
+        ok, err, e = alx_use(tok, act)
+        if not ok:
+            if err == "unknown":
+                rec.append(now); ALX["fails"][ip] = rec
+            msg = {"used": "This button was already used.", "expired": "This button is no longer valid."}.get(err, "This button is no longer valid.")
+            code = 409 if err == "used" else (410 if err == "expired" else 404)
+            if "text/html" in (request.headers.get("Accept") or ""):
+                return Response(_ALX_PAGE % ("MoveEye", _html.escape(tr(msg)), ""), code, mimetype="text/html")
+            return Response(tr(msg), code, mimetype="text/plain")
+        done, txt = alx_do(act, e, "push button")
+        if not done:                                     # did not work (e.g. no loudspeaker): the button may be tried again
+            with ALX["lock"]:
+                e2 = ALX["tok"].get(tok)
+                if e2 and act in e2["used"]:
+                    e2["used"].remove(act)
+        if "text/html" in (request.headers.get("Accept") or ""):
+            return Response(_ALX_PAGE % ("MoveEye", ("✓ " if done else "⚠ ") + _html.escape(txt), ""), mimetype="text/html")
+        return Response(txt, 200 if done else 500, mimetype="text/plain")
+
+    @app.route("/api/alarmlabel", methods=["GET", "POST"])
+    def api_alarmlabel():
+        if request.method == "POST":
+            d = body(); lang = norm_lang(d.get("lang") or CFG.get("lang"))
+            ok, err = alx_label(str(d.get("id") or ""), str(d.get("label") or ""), "web")
+            return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
+        lang = norm_lang(request.args.get("lang") or CFG.get("lang"))
+        try:
+            n = max(1, min(30, int(request.args.get("n", 10))))
+        except ValueError:
+            n = 10
+        return reply({"ok": True, "items": alx_label_list(n), "forecast": arm_forecast(lang), "tx": alx_web_texts(lang), "lang": lang})
+
+    @app.route("/api/alarmlabel/img/<lid>")
+    def api_alarmlabel_img(lid):
+        p = alx_label_path(lid, ".jpg")
+        if not p or not os.path.exists(p):
+            return Response("not found", 404)
+        return send_file(p, mimetype="image/jpeg", max_age=3600)
+
+    @app.route("/alx/what.js")
+    def alx_what_js():
+        return Response(ALX_WHAT_JS, mimetype="application/javascript", headers={"Cache-Control": "no-cache"})
+
+
+# ---- 4: «Was war das?» – the alarm pictures as training data -----------------------------------------------------------
+def _alx_label_dir():
+    return os.path.join(DATA_DIR, "alarm_labels")
+
+
+def alx_label_path(lid, ext):
+    if not re.fullmatch(r"\d{8}_\d{6}(_\d{1,3})?", str(lid or "")):
+        return None
+    return os.path.join(_alx_label_dir(), lid + ext)
+
+
+def alarm_ctx_note(w, stamp, snap, frame, persons):
+    """called by the camera loop (410) right before the person alarm goes out: keep the picture and the boxes"""
+    try:
+        now = time.time()
+        pw, ph = getattr(w, "_proc_size", None) or (int(CFG["proc_width"]), 0)
+        if not pw or not ph:
+            h0, w0 = frame.shape[:2]; pw, ph = int(CFG["proc_width"]), int(h0 * int(CFG["proc_width"]) / max(1, w0))
+        boxes = [[round(b[0] / pw, 4), round(b[1] / ph, 4), round(b[2] / pw, 4), round(b[3] / ph, 4)] for b in persons[:8]]
+        lid = stamp
+        n = 0
+        while alx_label_path(lid, ".json") and os.path.exists(alx_label_path(lid, ".json")) and n < 50:
+            n += 1; lid = f"{stamp}_{n}"
+        ctx = {"id": lid, "t": now, "stamp": stamp, "kind": "person", "count": len(persons), "boxes": boxes, "label": "",
+               "snap": os.path.basename(snap) if snap else "", "src": str(STATE.get("source_label") or "")[:40], "sim": bool(CFG.get("sim_on"))}
+        ALX["ctx"] = ctx
+        w.raw_until = max(getattr(w, "raw_until", 0.0), now + 2.0)    # the next picture without marks, for the training
+        old = getattr(w, "frame_raw", None)
+        pic = frame.copy()
+
+        def keep():
+            t_end = time.time() + 1.5
+            img = None
+            while time.time() < t_end:
+                f_ = getattr(w, "frame_raw", None)
+                if f_ is not None and f_ is not old:
+                    img = f_; break
+                time.sleep(0.1)
+            img = img if img is not None else pic
+            try:
+                d = _alx_label_dir(); os.makedirs(d, exist_ok=True)
+                h, wd = img.shape[:2]
+                if wd > 1280:
+                    img = cv2.resize(img, (1280, int(h * 1280 / wd)), interpolation=cv2.INTER_AREA)
+                cv2.imwrite(os.path.join(d, lid + ".jpg"), img, [cv2.IMWRITE_JPEG_QUALITY, 88])
+                ctx["w"], ctx["h"] = int(img.shape[1]), int(img.shape[0])
+                _alx_label_save(ctx)
+                _alx_label_prune()
+            except Exception as e:
+                log_event("sys", f"Alarm picture for «What was it?» not kept: {e}"[:160])
+        threading.Thread(target=keep, daemon=True, name="alx-keep").start()
+        return lid
+    except Exception as e:
+        log_event("sys", f"Alarm picture: {e}"[:160])
+        return ""
+
+
+def _alx_label_save(ctx):
+    p = alx_label_path(ctx["id"], ".json")
+    with open(p + ".tmp", "w", encoding="utf-8") as f:
+        json.dump(ctx, f, ensure_ascii=False)
+    os.replace(p + ".tmp", p)
+
+
+def _alx_label_load(lid):
+    p = alx_label_path(lid, ".json")
+    if not p:
+        return None
+    try:
+        with open(p, encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
+def _alx_label_prune(keep=300, days=14):
+    """at most 300 pictures; unanswered ones older than 14 days go (answered ones are training data and stay)"""
+    d = _alx_label_dir()
+    try:
+        js = sorted(f for f in os.listdir(d) if f.endswith(".json"))
+    except OSError:
+        return
+    old = time.time() - days * 86400
+    drop = []
+    for f in js:
+        x = _alx_label_load(f[:-5])
+        if x and not x.get("label") and float(x.get("t") or 0) < old:
+            drop.append(f[:-5])
+    rest = [f[:-5] for f in js if f[:-5] not in drop]
+    drop += rest[:max(0, len(rest) - keep)]
+    for lid in drop:
+        for ext in (".json", ".jpg"):
+            try:
+                os.remove(os.path.join(d, lid + ext))
+            except OSError:
+                pass
+
+
+def alx_label_list(n=10):
+    d = _alx_label_dir()
+    try:
+        js = sorted((f for f in os.listdir(d) if f.endswith(".json")), reverse=True)[:n]
+    except OSError:
+        return []
+    out = []
+    for f in js:
+        x = _alx_label_load(f[:-5])
+        if x and os.path.exists(os.path.join(d, x["id"] + ".jpg")):
+            out.append({"id": x["id"], "t": x.get("t"), "label": x.get("label") or "", "boxes": x.get("boxes") or [],
+                        "count": x.get("count", 0), "sim": bool(x.get("sim"))})
+    return out
+
+
+def alx_label(lid, label, who="web"):
+    """the answer to «What was it?» (also «False alarm» from the push = «nothing»)"""
+    if label not in ALX_LABELS:
+        return False, "unknown answer"
+    x = _alx_label_load(lid)
+    if x is None:
+        return False, "not found"
+    was = x.get("label") or ""
+    x["label"] = label; x["label_t"] = int(time.time()); x["label_by"] = who
+    try:
+        _alx_label_save(x)
+    except OSError as e:
+        return False, str(e)[:100]
+    names = [f"person_{x.get('stamp')}.mp4", f"person_{x.get('stamp')}.jpg"]
+    try:
+        names = [n_ for n_ in names if rec_path(n_)]
+    except NameError:
+        names = []
+    w = WATCH_REF.get("w")
+    if label == "nothing":
+        if names:
+            rec_set_false(names, "other", w)             # the false alarm list and its suggestions (430) see it
+        try:                                             # a «no person» example for the training, like the false alarm learning
+            fd = os.path.join(DATA_DIR, "fa_learn", f"{x.get('stamp')}_label")
+            os.makedirs(fd, exist_ok=True)
+            shutil.copy2(alx_label_path(lid, ".jpg"), os.path.join(fd, "00.jpg"))
+            with open(os.path.join(fd, "info.json"), "w") as f_:
+                json.dump({"label": "no_person", "cause": "other", "from": "alarm label", "boxes": x.get("boxes") or []}, f_)
+        except OSError:
+            pass
+        try:
+            if CFG.get("fa_learn_auto", True) and names and names[0].endswith(".mp4") and sim_ready():
+                falearn_start(names[0], "other")         # re-enacted in the simulator (143)
+        except Exception:
+            pass
+    elif was == "nothing" and names:
+        rec_set_false(names, "", w)                      # changed the mind: real again
+    log_event("person", f"Alarm {lid}: «what was it?» = {label} ({who})")
+    return True, ""
+
+
+def alx_web_texts(lang):
+    keys = ("What was it?", "Person", "Animal", "Nothing", "Thanks - MoveEye learns from it.", "Your answer", "Alarm",
+            "Answers are kept as training pictures (picture + boxes); «Nothing» counts as a false alarm.", "simulation")
+    return {k: tr(k, lang) for k in keys}
+
+
+# ---- 2: battery forecast -------------------------------------------------------------------------------------------------
+def arm_forecast(lang=None):
+    """{text, ok, hint, pct} - how long the battery lasts with the protection on; None without a battery"""
+    b = STATE.get("battery") or {}
+    if not b.get("on") or b.get("pct") is None:
+        return None
+    L = norm_lang(lang) if lang else cur_lang()
+    pct = int(b["pct"])
+    lv = tr("Full protection", L) if CFG.get("protect_level") == "full" else tr("Watchful", L)
+    if b.get("on_battery") is False:
+        return {"text": trf("Battery {pct} % · on mains power", L, pct=pct), "ok": True, "hint": "", "pct": pct}
+    cap, use = float(b.get("cap_wh") or 0), float(b.get("use_w") or 0)
+    if cap <= 0 or use <= 0:
+        return {"text": trf("Battery {pct} %", L, pct=pct), "ok": pct >= 30, "hint": "", "pct": pct}
+    have_h = pct / 100.0 * cap / max(0.5, use)
+    try:
+        nf = night_forecast()
+    except Exception:
+        nf = None
+    now = datetime.now()
+    until = now + timedelta(hours=have_h)
+    if have_h >= 36:
+        text = trf("Battery lasts {d} days at {level}", L, d=int(have_h // 24), level=lv)
+    else:
+        hm = until.strftime("%H:%M")
+        if until.date() != now.date():
+            hm = tr("tomorrow", L) + " " + hm
+        text = trf("Battery lasts until {t} at {level}", L, t=hm, level=lv)
+    ok = bool(nf["enough"]) if nf else have_h >= 8
+    if not ok and nf:
+        text += " · " + trf("sunrise {t}", L, t=nf["sunrise"])
+    hint = "" if ok or CFG.get("eco_on") else tr("Tip: switch on power saving (Settings → Power supply) - it lasts longer.", L)
+    return {"text": text, "ok": ok, "hint": hint, "pct": pct}
+
+
+def arm_forecast_text(lang=None):
+    f = arm_forecast(lang)
+    return "" if not f else (("" if f["ok"] else "⚠ ") + f["text"] + ((" · " + f["hint"]) if f["hint"] else ""))
+
+
+# ---- 7: what the loudspeaker says when the protection is switched on ---------------------------------------------------
+def arm_announce_text(lang=None):
+    L = norm_lang(lang) if lang else cur_lang()
+    T = lambda x: tr(x, L)
+    parts, bad = [], []
+    b = STATE.get("battery") or {}
+    if b.get("on") and b.get("pct") is not None:
+        parts.append(trf("battery {pct} percent", L, pct=int(b["pct"])))
+        f = arm_forecast(L)
+        if f and not f["ok"]:
+            bad.append(T("the battery does not last the night"))
+    wf = STATE.get("wifi") or {}
+    hs = STATE.get("hotspot") or {}
+    if hs.get("on"):
+        parts.append(T("own Wi-Fi on"))
+    elif wf.get("connected"):
+        dbm = wf.get("dbm")
+        parts.append(T("Wi-Fi weak") if isinstance(dbm, (int, float)) and dbm < -75 else T("Wi-Fi good"))
+    else:
+        bad.append(T("no Wi-Fi"))
+    if (STATE.get("net") or {}).get("online") is False and not hs.get("on"):
+        bad.append(T("no internet"))
+    fps = float(STATE.get("fps") or 0)
+    ln = STATE.get("lens") or {}
+    if fps < 1:
+        bad.append(T("the camera has no picture"))
+    elif ln.get("state") == "fogged":
+        bad.append(T("the lens is blurred"))
+    else:
+        parts.append(T("camera clear"))
+    if not Notifier.configured():
+        bad.append(T("push messages are not set up"))
+    try:
+        for x in health_check(L)["items"]:
+            if x["level"] == "bad" and x["id"] not in ("cam", "lens", "net", "push", "batt"):
+                bad.append(x["title"] + " " + T("not ok"))
+    except Exception:
+        pass
+    out = ", ".join(parts)
+    if bad:
+        out = (out + ". " if out else "") + T("Attention") + ": " + ", ".join(bad[:3])
+    return out + "."
+
+
+def _alx_announce():
+    if not CFG.get("arm_announce", True) or not out_selected():
+        return
+    try:
+        if sandbox_active():
+            return                                       # drill / game / test inbox: the loudspeaker stays quiet
+    except NameError:
+        pass
+    txt = arm_announce_text()
+    ok, err = tts_say(txt)
+    log_event("sys", f"Announcement when arming: «{txt[:80]}»" + ("" if ok else f" - not spoken: {err}")[:80])
+
+
+# ---- 6 / 8: the gate of the person alarm --------------------------------------------------------------------------------
+def alarm_gate(w, frame, persons, now):
+    """called by the camera loop (410) for every picture: returns the persons that may raise a person alarm now.
+    «Bist du's?» holds them back for a moment; the double confirmation lets them through only when the AI and the thermal
+    camera agree or when the AI saw a person in two runs one after the other - otherwise it stays a pre-alarm."""
+    alx_start()
+    G = ALX["g"]
+    ai = getattr(w, "ai", None)
+    ab = list(getattr(ai, "boxes", None) or [])
+    sig = (getattr(ai, "_last_run", None), tuple(tuple(int(v) for v in b_[:4]) for b_ in ab))
+    if sig != G["sig"]:                                  # a new result of the AI
+        G["sig"] = sig
+        G["hits"] = G["hits"] + 1 if ab else 0
+    if not persons:
+        if now - G["last_p"] > 5.0:
+            G["ok"] = False
+        return persons
+    G["last_p"] = now
+    if ALX["hold_until"] > now and is_armed():
+        if now - G["hold_log"] > 20:
+            G["hold_log"] = now
+            log_event("person", f"Person seen - held back «Is it you?» ({int(ALX['hold_until'] - now)} s left)")
+        return []
+    if not CFG.get("alarm_confirm2") or G["ok"]:
+        return persons
+    ai_on = str(STATE.get("ai_status") or "").startswith(("ready", "running", "PC", "demo"))
+    warm = now - float(getattr(w, "last_warm", 0.0) or 0.0) < 3.0
+    why = ""
+    if ab and warm:
+        why = "AI and thermal camera agree"
+    elif G["hits"] >= 2:
+        why = "the AI saw the person twice in a row"
+    elif warm and not ai_on:
+        why = "thermal camera (the AI is off)"
+    if why:
+        G["ok"] = True
+        log_event("person", f"Double confirmation: {why} - alarm")
+        return persons
+    if now - G["pre_t"] > 30:
+        G["pre_t"] = now
+        log_event("person", "Person not confirmed yet (double confirmation) - only a pre-alarm")
+    try:
+        w.notifier.prealarm(frame)                       # with its own cooldown; only when the pre-alarm push is on
+    except Exception:
+        pass
+    return []
+
+
+def _alx_back_ask():
+    """8: the phone of the owner is back - hold the person alarms and ask"""
+    hold = max(10, min(600, int(CFG.get("back_hold_s", 60) or 60)))
+    ALX["hold_until"] = time.time() + hold
+    log_event("sys", f"Presence: your device is back - person alarms wait {hold} s («Is it you?»)")
+    w = WATCH_REF.get("w")
+    if w is None or not (Notifier.configured() and CFG.get("notify_on")):
+        return
+    pub = alx_base()
+    p = {"event": "info", "persons": 0, "time": datetime.now().isoformat(timespec="seconds"),
+         "text": trf("Your phone is back. Person alarms wait {s} s. Not you? Do nothing - the alarm comes.", s=hold),
+         "info_title": "{name}: " + tr("Is it you?"), "snapshot": None, "rain": False, "wind": "", "source": STATE.get("source_label", ""),
+         "link": pub + "/" if pub else "", "alx_acts": ["off"]}
+    jpg = None
+    try:
+        f_ = w.frame_out
+        if f_ is not None:
+            ok_, buf = cv2.imencode(".jpg", f_, [cv2.IMWRITE_JPEG_QUALITY, 70]); jpg = buf.tobytes() if ok_ else None
+    except Exception:
+        jpg = None
+    threading.Thread(target=w.notifier._dispatch, args=(p, jpg, "back.jpg" if jpg else ""), daemon=True).start()
+
+
+def alx_start():
+    if ALX["started"]:
+        return
+    ALX["started"] = True
+    threading.Thread(target=_alx_loop, daemon=True, name="alarm-extras").start()
+
+
+def _alx_loop():
+    armed = bool(CFG.get("armed")); home = None; back_t = 0.0
+    try:
+        home = presence_home()
+    except Exception:
+        pass
+    while True:
+        time.sleep(1.0)
+        try:
+            a = bool(CFG.get("armed"))
+            if a and not armed:                          # switched on (by hand, schedule, presence ...)
+                STATE["arm_forecast"] = arm_forecast_text()
+                if STATE["arm_forecast"]:
+                    log_event("sys", f"Battery forecast: {arm_forecast_text('en')}")
+                threading.Thread(target=_alx_announce, daemon=True, name="arm-announce").start()
+            if not a:
+                ALX["hold_until"] = 0.0
+            armed = a
+            try:
+                h = presence_home()
+            except Exception:
+                h = None
+            if h is True and home is False and CFG.get("back_ask"):
+                back_t = time.time() + 3.0               # first let the presence switch off the protection by itself (150)
+            home = h if h is not None else home
+            if back_t and time.time() >= back_t:
+                back_t = 0.0
+                if CFG.get("armed"):
+                    _alx_back_ask()
+        except Exception as e:
+            log_event("sys", f"Alarm extras: {e}"[:160])
+
+
+# ---- 3: the morning push: one sentence and a picture strip of the night -------------------------------------------------
+def alx_morning(r, lang=None):
+    """(sentence, jpg or None) for the night report r of report_build() (090)"""
+    L = cur_lang(lang)
+    a, b = r.get("from") or "", r.get("to") or ""
+    sight_load()
+    with SIGHT_LOCK:
+        ev = [dict(e) for e in SIGHT["list"] if a <= e.get("start", "") < b]
+    animals = sum(1 for e in ev if e.get("label") in ANIMALS)
+    persons = sum(1 for e in ev if e.get("label") == "person")
+    bt = STATE.get("battery") or {}
+    parts = [trf("{n} animals" if animals != 1 else "{n} animal", L, n=animals), trf("{n} persons" if persons != 1 else "{n} person", L, n=persons)]
+    if bt.get("on") and bt.get("pct") is not None:
+        parts.append(trf("battery {pct} %", L, pct=int(bt["pct"])))
+    try:
+        st, en = datetime.fromisoformat(a), datetime.fromisoformat(b)
+        span = f"{st.strftime('%H')}–{en.strftime('%H')} " + tr("o'clock", L)
+    except ValueError:
+        span = ""
+    sent = tr("Night", L) + (f" {span}" if span else "") + ": " + ", ".join(parts) + "."
+    pics = [e for e in ev if e.get("img")]
+    pics.sort(key=lambda e: (e.get("label") == "person", float(e.get("conf") or 0)), reverse=True)
+    seen, pick = set(), []
+    for e in pics:                                       # different kinds first, then the best ones
+        if e.get("label") not in seen:
+            seen.add(e.get("label")); pick.append(e)
+    pick += [e for e in pics if e not in pick]
+    pick = sorted(pick[:4], key=lambda e: e.get("start", ""))
+    tiles = []
+    for e in pick:
+        try:
+            img = cv2.imread(os.path.join(diary_dir(), e["img"]))
+        except Exception:
+            img = None
+        if img is None:
+            continue
+        h, wd = img.shape[:2]
+        img = cv2.resize(img, (max(1, int(wd * 200 / h)), 200), interpolation=cv2.INTER_AREA)
+        if img.shape[1] > 300:                           # wide: the middle part
+            x0 = (img.shape[1] - 300) // 2; img = img[:, x0:x0 + 300]
+        lab = (e.get("start", "")[11:16] + " " + str(tr_trigger(e.get("label", ""), L)).split(" (")[0]).encode("ascii", "replace").decode()
+        cv2.rectangle(img, (0, 0), (img.shape[1], 24), (0, 0, 0), -1)     # on top: the logo (bottom right) stays free
+        cv2.putText(img, lab[:30], (6, 17), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+        tiles.append(img)
+        tiles.append(np.full((200, 4, 3), 255, np.uint8))
+    jpg = None
+    if tiles:
+        strip = cv2.hconcat(tiles[:-1])
+        try:
+            if CFG.get("share_logo"):
+                strip = brand_image(strip, tr("Night report", L) + " " + datetime.now().strftime("%d.%m.%Y"))
+        except Exception:
+            pass
+        ok, buf = cv2.imencode(".jpg", strip, [cv2.IMWRITE_JPEG_QUALITY, 78])
+        jpg = buf.tobytes() if ok else None
+    return sent, jpg
+
+
+# ---- 5: zones by kind in the window (Tk) - the web page has it in the zone editor -------------------------------------
+def alx_tk_zones(app, parent):
+    """a short list of the ignore / only-here zones with «applies to» (everything / persons / animals)"""
+    from tkinter import ttk
+    box = ttk.Frame(parent); box.pack(fill="x", pady=(8, 0))
+    ttk.Label(box, text=tr("Zones: applies to")).pack(anchor="w")
+    rows = ttk.Frame(box); rows.pack(fill="x")
+    opts = [("all", tr("everything")), ("person", tr("persons only")), ("animal", tr("animals only"))]
+
+    def fill():
+        for c in rows.winfo_children():
+            c.destroy()
+        zs = [z for z in ZONES if z["mode"] in ("ignore", "only")]
+        if not zs:
+            ttk.Label(rows, text=tr("no zones") + " · " + tr("Open zone editor (browser)"), style="Mut.TLabel").pack(anchor="w")
+            return
+        for z in zs:
+            r = ttk.Frame(rows); r.pack(fill="x", pady=1)
+            ttk.Label(r, text=f"{z['name']} ({tr('Ignore zone' if z['mode'] == 'ignore' else 'Only-here zone')})", width=28).pack(side="left")
+            cb = ttk.Combobox(r, state="readonly", values=[l for _k, l in opts], width=16)
+            cb.current([k for k, _l in opts].index(z.get("kinds", "all")) if z.get("kinds", "all") in ("all", "person", "animal") else 0)
+            cb.pack(side="left", padx=(4, 0))
+
+            def pick(_e=None, zid=z["id"], cb=cb):
+                k = opts[cb.current()][0]
+                lst = [dict(x, kinds=k) if x["id"] == zid else dict(x) for x in ZONES]
+                zones_set(lst)
+            cb.bind("<<ComboboxSelected>>", pick)
+    fill()
+    ttk.Button(box, text="↻", width=3, command=fill).pack(anchor="e")
+
+
+# ---- the web part of «Was war das?» (Live page and Verlauf → Nachrichten) ------------------------------------------------
+ALX_WHAT_JS = r"""(function () {
+  function lng() { try { return LANG; } catch (e) { return document.documentElement.lang || "en"; } }
+  var L = "", LL = "en";
+  var box = document.getElementById("alx-what"), main = !box;
+  if (main) {                                            // the Live page: below the picture
+    var vc = document.getElementById("vcard"); if (!vc) return;
+    box = document.createElement("div"); box.id = "alx-what"; vc.parentNode.insertBefore(box, vc.nextSibling);
+  }
+  var st = document.createElement("style");
+  st.textContent = "#alx-what .aw{background:var(--panel,#18202b);border:1px solid var(--line,#2a3442);border-radius:12px;padding:10px;margin:10px 0}" +
+    "#alx-what .aw-h{font-weight:700;margin-bottom:6px}#alx-what .aw-i{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-top:8px}" +
+    "#alx-what .aw-p{position:relative;width:220px;max-width:100%;flex:none}#alx-what .aw-p img{width:100%;display:block;border-radius:8px;background:#000}" +
+    "#alx-what .aw-p i{position:absolute;border:2px solid #ff453a;border-radius:3px}#alx-what .aw-b{display:flex;gap:6px;flex-wrap:wrap;align-items:center}" +
+    "#alx-what .aw-b button{padding:7px 12px}#alx-what .aw-b button.on{outline:3px solid var(--acc,#2f81f7)}#alx-what .aw-m{color:var(--mut,#8a96a6);font-size:12.5px}" +
+    "body[data-tab]:not([data-tab=live]) #alx-what{display:none}";
+  document.head.appendChild(st);
+  var TX = {};
+  function tx(k) { return TX[k] || k; }
+  function E(t, c, s) { var e = document.createElement(t); if (c) e.className = c; if (s != null) e.textContent = s; return e; }
+  async function answer(id, lab, row) {
+    var r = await fetch("/api/alarmlabel", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({id: id, label: lab, lang: L})})
+      .then(function (x) { return x.json(); }).catch(function () { return {ok: false}; });
+    if (r.ok) { if (typeof toast === "function") toast("✓ " + tx("Thanks - MoveEye learns from it.")); load(); }
+    else if (typeof toast === "function") toast("⚠ " + (r.error || "error"));
+  }
+  function item(m) {
+    var row = E("div", "aw-i"), p = E("div", "aw-p"), im = E("img"); im.loading = "lazy"; im.src = "/api/alarmlabel/img/" + m.id; im.alt = "";
+    p.appendChild(im);
+    (m.boxes || []).forEach(function (b) { var i = E("i"); i.style.left = (b[0] * 100) + "%"; i.style.top = (b[1] * 100) + "%";
+      i.style.width = (b[2] * 100) + "%"; i.style.height = (b[3] * 100) + "%"; p.appendChild(i); });
+    var bd = E("div"); var d = new Date((m.t || 0) * 1000);
+    bd.appendChild(E("div", "aw-m", "🚨 " + tx("Alarm") + " " + d.toLocaleString(LL === "de" || LL === "rm" ? "de-CH" : LL, {weekday: "short", hour: "2-digit", minute: "2-digit"}) + (m.sim ? " · " + tx("simulation") : "")));
+    var bs = E("div", "aw-b");
+    [["person", "🚶 " + tx("Person")], ["animal", "🦊 " + tx("Animal")], ["nothing", "🍃 " + tx("Nothing")]].forEach(function (x) {
+      var b = E("button", m.label === x[0] ? "on" : "sec", x[1]); b.type = "button"; b.onclick = function () { answer(m.id, x[0], row); }; bs.appendChild(b); });
+    bd.appendChild(bs); row.append(p, bd); return row;
+  }
+  async function load() {
+    L = lng();
+    var r = await fetch("/api/alarmlabel?n=" + (main ? 3 : 8) + "&lang=" + encodeURIComponent(L)).then(function (x) { return x.json(); }).catch(function () { return null; });
+    if (!r || !r.ok) return;
+    TX = r.tx || {}; LL = r.lang || L;
+    var items = (r.items || []).filter(function (m) { return main ? (!m.label && Date.now() / 1000 - m.t < 12 * 3600) : true; });
+    box.textContent = "";
+    if (!items.length) return;
+    var c = E("div", "aw"); c.appendChild(E("div", "aw-h", "❓ " + tx("What was it?")));
+    items.slice(0, main ? 1 : 8).forEach(function (m) { c.appendChild(item(m)); });
+    c.appendChild(E("div", "aw-m", tx("Answers are kept as training pictures (picture + boxes); «Nothing» counts as a false alarm.")));
+    box.appendChild(c);
+  }
+  setTimeout(load, 1200); setInterval(function () { if (!document.hidden) load(); }, 20000);
+  setInterval(function () { if (lng() !== L) load(); }, 2000);    // the language was set / switched
+})();
+"""
 # ----------------------------------------------------------------------------
 # Hardware: servos + relays  (gpiozero -> pigpio -> simulation)
 # ----------------------------------------------------------------------------
@@ -5650,13 +6398,22 @@ def report_send(w, manual=False):
                 jpg = buf.tobytes() if ok else None
         except (OSError, cv2.error):
             jpg = None
+    msg = r["text"]
+    if CFG.get("report_strip", True):                      # 2.98.13: one sentence + a picture strip of the night (066)
+        try:
+            sent, strip = alx_morning(r)
+            extra = r["text"].split("\n", 1)[1] if "\n" in r["text"] else ""
+            msg = sent + (("\n" + extra) if extra else "")
+            jpg = strip or jpg
+        except Exception as e:
+            log_event("sys", f"Night report strip: {e}"[:160])
     if jpg is None and MORNING_EXTRA["jpg"]:
         jpg = MORNING_EXTRA["jpg"]                         # 2.98.1: no picture of an animal: the panorama
     if not manual:
         MORNING_EXTRA.update(lines=[], jpg=None)
     de = CFG["lang"] == "de"
     pub = CFG["public_url"].strip().rstrip("/")
-    ok = w.notifier.info(r["text"], pub + "/diary" if pub else "", title="{name}: " + tr("night report"),
+    ok = w.notifier.info(msg, pub + "/diary" if pub else "", title="{name}: " + tr("night report"),
                          jpg=jpg, fname="nachtbericht.jpg")
     STATE["report_last"]["sent"] = bool(ok)
     log_event("web", ("Night report sent" if ok else "Night report not sent") + (" (by hand)" if manual else "") + f": {r['text'][:80]}")
@@ -8321,7 +9078,7 @@ def _protect_status(L):
             "presence": {"on": bool(CFG.get("presence_auto")), "devices": len(CFG.get("presence_macs") or []) + len(CFG.get("presence_bt") or []),
                          "here": (TOOLS.get("presence") or {}).get("here")},
             "escalate": {"on": bool(CFG.get("escalate_on")), "s": int(CFG.get("escalate_siren_s", 30)), "pending": max(0, int(PROTECT["esc_t"] - time.time())) if PROTECT["esc_t"] else 0},
-            "test": PROTECT["test"]}
+            "test": PROTECT["test"], "forecast": arm_forecast_text(L)}      # 2.98.13 (066)
 
 
 # ---- escalation: light at once, push, the siren after a while unless somebody disarms --------------------------------------
@@ -25446,6 +26203,7 @@ class MotionWatch:
             persons = []                                  # disarmed: no snapshots, no notifications, no new recordings
         elif persons and CFG.get("mode") == "fire" and not CFG.get("mode_fire_persons"):
             persons = []                                  # 2.97.0: campfire - the people at the fire are no alarm, animals still are
+        persons = alarm_gate(self, frame, persons, now)   # 2.98.13: «Is it you?» / double confirmation (066)
         settle = now - SIM.get("off_t", 0.0) < 30.0       # just back from the simulation: the camera learns its picture
         if settle:
             persons = []; self.last_person_time = 0
@@ -25457,6 +26215,7 @@ class MotionWatch:
             if CFG["snapshot_on_person"] and not CFG["sim_on"]:
                 snap = os.path.join(CFG["record_dir"], f"person_{stamp}.jpg")
                 cv2.imwrite(snap, frame, [cv2.IMWRITE_JPEG_QUALITY, 85]); gps_tag_jpg(snap)
+            alarm_ctx_note(self, stamp, snap, frame, persons)   # 2.98.13: picture + boxes for «What was it?» and the push buttons (066)
             self.notifier.person(len(persons), snap, frame)
             try:
                 alarm_track_begin("person", stamp, snap)
@@ -25785,8 +26544,8 @@ class MotionWatch:
             if CFG["detection_on"]:
                 g = self.preprocess(gray, rain_mode)
                 fg = self.foreground(g, small, rain_mode, wind_boost)
-                ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph)]
-                ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph)]
+                ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph, "person")]     # 2.98.13: zones by kind (066)
+                ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph, "animal" if COCO_LABELS.get(o[5]) in ANIMALS else "other")]
                 rec_animals = [o for o in ai_objs if COCO_LABELS.get(o[5]) in ANIMALS]
                 objects = ai_objs if (CFG["show_objects"] and CFG["ai_enabled"]) else []
                 counts = {}
@@ -25798,7 +26557,7 @@ class MotionWatch:
                 cnts, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 # following movement also sees smaller things (a cat, a fox far away) - they never count as a person / alarm
                 small_area = min(min_area, float(CFG["track_motion_min"]) / 100.0 * pw * ph) if CFG["track_motion"] else min_area
-                boxes = [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= small_area) if zone_box_ok(b, pw, ph)]
+                boxes = [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= small_area) if zone_box_ok(b, pw, ph, "person")]
                 if any(b[2] * b[3] >= min_area for b in boxes):
                     present.add("prealarm")              # pre-alarm: anything at all moves in the picture (before it is judged to be a person)
                 raw_boxes = list(boxes)
@@ -28477,7 +29236,7 @@ Object.assign(I18N.de, {"Network check of the players": "Netz-Check der Mitspiel
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"nt-tips": "Bring weak phones closer to MoveEye, put MoveEye higher (not on the ground, not behind the car), avoid bodies and walls in between. Many phones at the same time share the speed."});
 Object.assign(I18N.de, {"Product page for guests": "Infoseite für Gäste", "info-note": "Deine Homepage von MoveEye, direkt vom Pi – auch ohne Internet. Freunde am eigenen WLAN oder Nachbarn im WLAN des Campingplatzes öffnen sie über den QR-Code, ohne Login. Sie sehen nur diese Seite, nichts von deinen Kameras. Fragen aus dem Formular kommen als Push-Nachricht zu dir.", "Show the product page to guests in the same Wi-Fi (without login)": "Infoseite für Gäste im gleichen WLAN zeigen (ohne Login)", "Your e-mail address on the page (empty = not shown)": "Deine E-Mail-Adresse auf der Seite (leer = nicht zeigen)", "shared": "freigegeben", "off": "aus", "Guests scan the QR code (same Wi-Fi) or open": "Gäste scannen den QR-Code (gleiches WLAN) oder öffnen", "Open the page": "Seite öffnen", "Questions from the page": "Fragen von der Seite", "No questions yet. A new question also comes as a push message.": "Noch keine Fragen. Eine neue Frage kommt auch als Push-Nachricht."});
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"info-note": "Your MoveEye homepage, straight from the Pi - also without internet. Friends at your own Wi-Fi or neighbours in the Wi-Fi of the camping site open it with the QR code, without login. They only see this page, nothing of your cameras. Questions from the form reach you as a push message."});
-Object.assign(I18N.de, {"AI helper (PC)": "KI-Rechenhilfe (PC)", "helper-note": "Ein PC im gleichen Netz rechnet die Erkennung (Menschen, Tiere, Fahrzeuge) für den Pi: viel schneller, der Pi bleibt kühl und braucht weniger Strom. Antwortet der PC nicht mehr, rechnet der Pi sofort wieder selbst. Zum PC gehen nur kleine Bilder, gespeichert wird dort nichts.", "Let a PC do the AI when one is there": "Einen PC rechnen lassen, wenn einer da ist", "Another PC by hand": "Anderen PC von Hand eintragen", "helper-manual": "Auf dem PC MoveEye mit «--helper» starten (oder dort «Diese MoveEye rechnet für andere» einschalten). Dann hier seine Adresse und den 6-stelligen Code eintragen.", "Save": "Speichern", "This MoveEye works as AI helper for others (port 5057)": "Diese MoveEye rechnet für andere (Port 5057)", "works for others": "rechnet für andere", "no PC found": "kein PC gefunden", "The PC does the AI": "Der PC rechnet die KI", "The Pi does the AI itself": "Der Pi rechnet die KI selbst", "found through the simulator": "über den Simulator gefunden", "by hand": "von Hand", "AI": "KI", "way there and back": "Hin und zurück", "pictures": "Bilder", "helper-how": "Am einfachsten: Im 3D-Simulator auf dem PC «MoveEye auf diesem PC starten» drücken – der Pi findet die Rechenhilfe dann von selbst.", "Pairing code for the Pi": "Code für den Pi", "pairing code wrong": "Code falsch", "the PC is still loading its AI model": "der PC lädt noch sein KI-Modell", "not a MoveEye helper": "keine Motion-Watch-Rechenhilfe"});
+Object.assign(I18N.de, {"AI helper (PC)": "KI-Rechenhilfe (PC)", "helper-note": "Ein PC im gleichen Netz rechnet die Erkennung (Menschen, Tiere, Fahrzeuge) für den Pi: viel schneller, der Pi bleibt kühl und braucht weniger Strom. Antwortet der PC nicht mehr, rechnet der Pi sofort wieder selbst. Zum PC gehen nur kleine Bilder, gespeichert wird dort nichts.", "Let a PC do the AI when one is there": "Einen PC rechnen lassen, wenn einer da ist", "Another PC by hand": "Anderen PC von Hand eintragen", "helper-manual": "Auf dem PC MoveEye mit «--helper» starten (oder dort «Diese MoveEye rechnet für andere» einschalten). Dann hier seine Adresse und den 6-stelligen Code eintragen.", "Save": "Speichern", "This MoveEye works as AI helper for others (port 5057)": "Diese MoveEye rechnet für andere (Port 5057)", "works for others": "rechnet für andere", "no PC found": "kein PC gefunden", "The PC does the AI": "Der PC rechnet die KI", "The Pi does the AI itself": "Der Pi rechnet die KI selbst", "found through the simulator": "über den Simulator gefunden", "by hand": "von Hand", "AI": "KI", "way there and back": "Hin und zurück", "pictures": "Bilder", "helper-how": "Am einfachsten: Im 3D-Simulator auf dem PC «MoveEye auf diesem PC starten» drücken – der Pi findet die Rechenhilfe dann von selbst.", "Pairing code for the Pi": "Code für den Pi", "pairing code wrong": "Code falsch", "the PC is still loading its AI model": "der PC lädt noch sein KI-Modell", "not a MoveEye helper": "keine MoveEye-Rechenhilfe"});
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"helper-note": "A PC in the same network does the detection (people, animals, vehicles) for the Pi: much faster, the Pi stays cool and needs less power. If the PC stops answering, the Pi does it itself again at once. Only small pictures go to the PC, nothing is stored there.", "helper-manual": "Start MoveEye on the PC with «--helper» (or switch on «works as AI helper for others» there). Then enter its address and the 6-digit code here.", "helper-how": "Easiest: in the 3D simulator on the PC press «Start MoveEye on this PC» - the Pi then finds the helper by itself."});
 Object.assign(I18N.de, {"Survival almanac": "Überlebens-Almanach", "tips for camping, to look up or read in the evening": "Tipps fürs Camping – zum Nachschlagen oder als Abendlektüre"});
 Object.assign(I18N.de, {"Touch (phone, tablet)": "Touch (Handy, Tablet)", "With on-screen buttons": "Mit Bildschirm-Tasten"});
@@ -29754,7 +30513,7 @@ Object.assign(I18N.de, {"Simulator centre": "Simulator-Zentrale", "Picture quali
  "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in",
  "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.",
  "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An MoveEye senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "Use": "Verwenden", "in use": "in Gebrauch",
- "Version": "Version", "installed": "installiert", "newest": "neueste", "up to date": "aktuell", "newest version not known": "neueste Version unbekannt", "checking for the newest version …": "suche die neueste Version …", "New update for the simulator": "Neues Update für den Simulator", "Update it in the simulator on the PC.": "Im Simulator auf dem PC aktualisieren.", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» oben.", "The finger now controls the simulator (scrolling: press ✋ again)": "Der Finger bedient jetzt den Simulator (Scrollen: ✋ nochmals drücken)", "The finger scrolls the page again (a tap still clicks)": "Der Finger scrollt wieder die Seite (Antippen klickt trotzdem)", "Game wizard": "Spiel-Assistent", "Back": "Zurück", "Next": "Weiter", "Game type": "Spielart", "Goal": "Ziel", "Difficulty": "Schwierigkeit", "Start": "Los", "Which game?": "Welches Spiel?", "gw-intro": "Bis zu 4 Spieler machen mit dem Handy mit. Wähle die Spielart – der Assistent erklärt die Regeln und stellt alles ein.", "Like last time": "Wie letztes Mal", "What is the goal?": "Was ist das Ziel?", "How hard?": "Wie schwierig?", "Beginners": "Anfänger", "Normal": "Normal", "Pros": "Profis", "gw-easy": "Wächter leicht, unbegrenzte Leben, 8 Minuten, Sichtfeld der Kameras sichtbar.", "gw-normal": "Wächter normal, 3 Leben, 5 Minuten.", "gw-hard": "Wächter schwer, nur 1 Leben, 4 Minuten, kein Sichtfeld.", "Everybody against the camera": "Alle gegen die Kamera", "One player is the guard": "Ein Spieler ist Wächter", "Team against team": "Team gegen Team", "MoveEye decides": "MoveEye entscheidet", "gw-camera": "Alle schleichen zum Ziel. Der Kopf von MoveEye dreht sich und sucht euch. Wer zu lange gesehen wird, ist erwischt und muss zurück zum Start.", "gw-guard": "Ein Spieler ist Wächter: Er dreht mit dem Handy den Kopf, schaltet das Licht ein und ruft «Erwischt!», wenn er jemanden im Bild sieht. Ein falscher Ruf zählt als Fehlalarm.", "gw-teamguard": "Räuber und Wächter: Rot gegen Blau. Ein Team schleicht, das andere bewacht mit dem Kopf und ruft «Erwischt!».", "gw-mw": "Die echte Erkennung von MoveEye passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht. Ein guter Test für MoveEye.", "Sneak to the goal": "Zum Ziel schleichen", "Fetch the loot and bring it back": "Beute holen und zurückbringen", "Capture the flag (two teams)": "Fahne erobern (zwei Teams)", "gw-reach": "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg.", "gw-return": "Ziel: die Beute beim grünen Licht holen und zurück zum Start bringen.", "gw-flag": "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie.", "Duration of a round": "Dauer einer Runde", "Lives": "Leben", "unlimited": "unbegrenzt", "3 lives": "3 Leben", "1 life": "1 Leben", "Crystals to collect": "Kristalle zum Sammeln", "Two teams (red against blue)": "Zwei Teams (Rot gegen Blau)", "Free the caught ones (they wait in the cell)": "Befreien (Erwischte warten in der Zelle)", "Throw stones to distract": "Steine werfen zum Ablenken", "Show the field of view of the cameras": "Sichtfeld der Kameras zeigen", "Ready!": "Bereit!", "Teams": "Teams", "red against blue": "Rot gegen Blau", "no": "nein", "gw-tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter Dingen sieht euch die Kamera schlechter. Rennen hört das Mikrofon. Ein geworfener Stein lenkt die Kamera ab.", "gw-rescue": "Befreien: Wer erwischt wird, wartet in der Zelle, bis ihn ein Teamkollege befreit.", "gw-items": "Kristalle: Wer welche einsammelt, bekommt Extrapunkte.", "Power-ups: cloak (purple) and turbo (yellow)": "Power-ups: Tarnkappe (lila) und Turbo (gelb)", "gw-powers": "Power-ups: Die lila Kugel ist eine Tarnkappe (9 s fast unsichtbar), die gelbe ein Turbo (7 s schneller, aber lauter). Sie tauchen später an einem anderen Ort wieder auf.", "gw-lastmin": "Letzte Minute: Die Kamera passt dann besser auf – jetzt wird es spannend!", "Extras": "Extras", "photos, hiding places, decoy, night, events, checkpoints, handicap": "Fotos, Verstecke, Lockvogel, Nacht, Ereignisse, Checkpoints, Handicap", "Caught photos (gallery at the end)": "Erwischt-Fotos (Galerie am Schluss)", "Hiding places (bushes, 8 s invisible)": "Verstecke (Büsche, 8 s unsichtbar)", "Decoy allowed": "Lockvogel erlaubt", "Night round with torches": "Nacht-Runde mit Taschenlampen", "Random events (storm, dog, car)": "Zufallsereignisse (Gewitter, Hund, Auto)", "Checkpoints (+150 points each)": "Checkpoints (je +150 Punkte)", "Handicap for the leader of the ranking": "Handicap für den Ersten der Rangliste", "gw-photos": "📸 Erwischt-Fotos: Wer erwischt wird, sieht auf dem Handy das Bild der Kamera. Am Schluss gibt es eine Galerie.", "gw-hides": "🌳 Verstecke: In einem Busch geduckt oder kriechend sieht dich die Kamera nicht – aber nur 8 Sekunden lang.", "gw-decoy": "🦆 Lockvogel: Wer will, wählt auf dem Handy «Lockvogel». Er lässt sich absichtlich sehen, lockt die Kamera weg und bekommt Punkte für jede beobachtete Sekunde.", "gw-night": "🌙 Nacht-Runde: Es ist dunkel. Mit 🔦 siehst du mehr – aber die Kamera sieht dich auch.", "gw-events": "⛈ Zufallsereignisse: Gewitter (man hört dich kaum), ein bellender Hund, ein Auto mit Scheinwerfern.", "gw-cps": "🚩 Checkpoints: Leuchtende Ringe unterwegs geben je 150 Punkte.", "gw-hc": "🎯 Handicap: Wer in der Rangliste vorne liegt, wird leichter gesehen und ist etwas langsamer.", "Handicap (experienced players are seen more easily, are a bit slower, shorter cloak)": "Handicap (Geübte werden leichter gesehen, sind etwas langsamer, kürzere Tarnkappe)", "none": "keins", "a little": "etwas", "strong": "stark", "Ranking of the evening": "Rangliste des Abends", "rounds": "Runden", "won": "gewonnen", "best time": "Bestzeit", "never caught": "nie erwischt", "fastest": "am schnellsten", "most crystals": "meiste Kristalle", "best guard": "bester Wächter", "Records": "Rekorde", "Reset the ranking": "Rangliste zurücksetzen", "Reset the ranking of the evening?": "Rangliste des Abends zurücksetzen?", "Storm": "Gewitter", "Dog": "Hund", "Car": "Auto", "Caught!": "Erwischt!", "Result": "Ergebnis", "Close": "Schliessen", "Spectator camera: flies over the field by itself": "Zuschauer-Kamera: fliegt selbst übers Spielfeld", "Settings": "Einstellungen", "Opening the game …": "Spiel wird geöffnet …", "the simulator did not open the game": "der Simulator hat das Spiel nicht geöffnet", "Start the round": "Runde starten", "Open the game & show the QR code": "Spiel öffnen & QR-Code zeigen", "The round starts": "Die Runde startet", "Game «Unseen to the goal»": "Spiel «Unentdeckt ans Ziel»", "Show the QR code big": "QR-Code gross zeigen", "Close the game": "Spiel schliessen", "Tap to close": "Antippen zum Schliessen", "Open the game": "Spiel öffnen", "Players scan the QR code with their phone (same WLAN) or open the address:": "Mitspieler scannen den QR-Code mit dem Handy (gleiches WLAN) oder öffnen die Adresse:", "players": "Spieler", "Up to 12 players sneak unseen to the goal with their phones. Open the game, then they scan the QR code.": "Bis zu 12 Spieler schleichen mit dem Handy unentdeckt zum Ziel. Spiel öffnen, dann scannen sie den QR-Code.", "CPU of the PC": "CPU des PCs", "Update the simulator by itself when a newer version is there": "Simulator selbst aktualisieren, wenn eine neuere Version da ist", "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
+ "Version": "Version", "installed": "installiert", "newest": "neueste", "up to date": "aktuell", "newest version not known": "neueste Version unbekannt", "checking for the newest version …": "suche die neueste Version …", "New update for the simulator": "Neues Update für den Simulator", "Update it in the simulator on the PC.": "Im Simulator auf dem PC aktualisieren.", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» oben.", "The finger now controls the simulator (scrolling: press ✋ again)": "Der Finger bedient jetzt den Simulator (Scrollen: ✋ nochmals drücken)", "The finger scrolls the page again (a tap still clicks)": "Der Finger scrollt wieder die Seite (Antippen klickt trotzdem)", "Game wizard": "Spiel-Assistent", "Back": "Zurück", "Next": "Weiter", "Game type": "Spielart", "Goal": "Ziel", "Difficulty": "Schwierigkeit", "Start": "Los", "Which game?": "Welches Spiel?", "gw-intro": "Bis zu 12 Läufer (dazu Zuschauer) machen mit dem Handy mit. Wähle die Spielart – der Assistent erklärt die Regeln und stellt alles ein.", "Like last time": "Wie letztes Mal", "What is the goal?": "Was ist das Ziel?", "How hard?": "Wie schwierig?", "Beginners": "Anfänger", "Normal": "Normal", "Pros": "Profis", "gw-easy": "Wächter leicht, unbegrenzte Leben, 8 Minuten, Sichtfeld der Kameras sichtbar.", "gw-normal": "Wächter normal, 3 Leben, 5 Minuten.", "gw-hard": "Wächter schwer, nur 1 Leben, 4 Minuten, kein Sichtfeld.", "Everybody against the camera": "Alle gegen die Kamera", "One player is the guard": "Ein Spieler ist Wächter", "Team against team": "Team gegen Team", "MoveEye decides": "MoveEye entscheidet", "gw-camera": "Alle schleichen zum Ziel. Der Kopf von MoveEye dreht sich und sucht euch. Wer zu lange gesehen wird, ist erwischt und muss zurück zum Start.", "gw-guard": "Ein Spieler ist Wächter: Er dreht mit dem Handy den Kopf, schaltet das Licht ein und ruft «Erwischt!», wenn er jemanden im Bild sieht. Ein falscher Ruf zählt als Fehlalarm.", "gw-teamguard": "Räuber und Wächter: Rot gegen Blau. Ein Team schleicht, das andere bewacht mit dem Kopf und ruft «Erwischt!».", "gw-mw": "Die echte Erkennung von MoveEye passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht. Ein guter Test für MoveEye.", "Sneak to the goal": "Zum Ziel schleichen", "Fetch the loot and bring it back": "Beute holen und zurückbringen", "Capture the flag (two teams)": "Fahne erobern (zwei Teams)", "gw-reach": "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg.", "gw-return": "Ziel: die Beute beim grünen Licht holen und zurück zum Start bringen.", "gw-flag": "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie.", "Duration of a round": "Dauer einer Runde", "Lives": "Leben", "unlimited": "unbegrenzt", "3 lives": "3 Leben", "1 life": "1 Leben", "Crystals to collect": "Kristalle zum Sammeln", "Two teams (red against blue)": "Zwei Teams (Rot gegen Blau)", "Free the caught ones (they wait in the cell)": "Befreien (Erwischte warten in der Zelle)", "Throw stones to distract": "Steine werfen zum Ablenken", "Show the field of view of the cameras": "Sichtfeld der Kameras zeigen", "Ready!": "Bereit!", "Teams": "Teams", "red against blue": "Rot gegen Blau", "no": "nein", "gw-tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter Dingen sieht euch die Kamera schlechter. Rennen hört das Mikrofon. Ein geworfener Stein lenkt die Kamera ab.", "gw-rescue": "Befreien: Wer erwischt wird, wartet in der Zelle, bis ihn ein Teamkollege befreit.", "gw-items": "Kristalle: Wer welche einsammelt, bekommt Extrapunkte.", "Power-ups: cloak (purple) and turbo (yellow)": "Power-ups: Tarnkappe (lila) und Turbo (gelb)", "gw-powers": "Power-ups: Die lila Kugel ist eine Tarnkappe (9 s fast unsichtbar), die gelbe ein Turbo (7 s schneller, aber lauter). Sie tauchen später an einem anderen Ort wieder auf.", "gw-lastmin": "Letzte Minute: Die Kamera passt dann besser auf – jetzt wird es spannend!", "Extras": "Extras", "photos, hiding places, decoy, night, events, checkpoints, handicap": "Fotos, Verstecke, Lockvogel, Nacht, Ereignisse, Checkpoints, Handicap", "Caught photos (gallery at the end)": "Erwischt-Fotos (Galerie am Schluss)", "Hiding places (bushes, 8 s invisible)": "Verstecke (Büsche, 8 s unsichtbar)", "Decoy allowed": "Lockvogel erlaubt", "Night round with torches": "Nacht-Runde mit Taschenlampen", "Random events (storm, dog, car)": "Zufallsereignisse (Gewitter, Hund, Auto)", "Checkpoints (+150 points each)": "Checkpoints (je +150 Punkte)", "Handicap for the leader of the ranking": "Handicap für den Ersten der Rangliste", "gw-photos": "📸 Erwischt-Fotos: Wer erwischt wird, sieht auf dem Handy das Bild der Kamera. Am Schluss gibt es eine Galerie.", "gw-hides": "🌳 Verstecke: In einem Busch geduckt oder kriechend sieht dich die Kamera nicht – aber nur 8 Sekunden lang.", "gw-decoy": "🦆 Lockvogel: Wer will, wählt auf dem Handy «Lockvogel». Er lässt sich absichtlich sehen, lockt die Kamera weg und bekommt Punkte für jede beobachtete Sekunde.", "gw-night": "🌙 Nacht-Runde: Es ist dunkel. Mit 🔦 siehst du mehr – aber die Kamera sieht dich auch.", "gw-events": "⛈ Zufallsereignisse: Gewitter (man hört dich kaum), ein bellender Hund, ein Auto mit Scheinwerfern.", "gw-cps": "🚩 Checkpoints: Leuchtende Ringe unterwegs geben je 150 Punkte.", "gw-hc": "🎯 Handicap: Wer in der Rangliste vorne liegt, wird leichter gesehen und ist etwas langsamer.", "Handicap (experienced players are seen more easily, are a bit slower, shorter cloak)": "Handicap (Geübte werden leichter gesehen, sind etwas langsamer, kürzere Tarnkappe)", "none": "keins", "a little": "etwas", "strong": "stark", "Ranking of the evening": "Rangliste des Abends", "rounds": "Runden", "won": "gewonnen", "best time": "Bestzeit", "never caught": "nie erwischt", "fastest": "am schnellsten", "most crystals": "meiste Kristalle", "best guard": "bester Wächter", "Records": "Rekorde", "Reset the ranking": "Rangliste zurücksetzen", "Reset the ranking of the evening?": "Rangliste des Abends zurücksetzen?", "Storm": "Gewitter", "Dog": "Hund", "Car": "Auto", "Caught!": "Erwischt!", "Result": "Ergebnis", "Close": "Schliessen", "Spectator camera: flies over the field by itself": "Zuschauer-Kamera: fliegt selbst übers Spielfeld", "Settings": "Einstellungen", "Opening the game …": "Spiel wird geöffnet …", "the simulator did not open the game": "der Simulator hat das Spiel nicht geöffnet", "Start the round": "Runde starten", "Open the game & show the QR code": "Spiel öffnen & QR-Code zeigen", "The round starts": "Die Runde startet", "Game «Unseen to the goal»": "Spiel «Unentdeckt ans Ziel»", "Show the QR code big": "QR-Code gross zeigen", "Close the game": "Spiel schliessen", "Tap to close": "Antippen zum Schliessen", "Open the game": "Spiel öffnen", "Players scan the QR code with their phone (same WLAN) or open the address:": "Mitspieler scannen den QR-Code mit dem Handy (gleiches WLAN) oder öffnen die Adresse:", "players": "Spieler", "Up to 12 players sneak unseen to the goal with their phones. Open the game, then they scan the QR code.": "Bis zu 12 Spieler schleichen mit dem Handy unentdeckt zum Ziel. Spiel öffnen, dann scannen sie den QR-Code.", "CPU of the PC": "CPU des PCs", "Update the simulator by itself when a newer version is there": "Simulator selbst aktualisieren, wenn eine neuere Version da ist", "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
  "The picture appears when the simulation is on.": "Das Bild erscheint, wenn die Simulation eingeschaltet ist.",
  "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "running": "läuft", "Controls": "Bedienung",
  "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a file to the simulator": "Datei zum Simulator hochladen",
@@ -35820,7 +36579,7 @@ async function addIp() {
   const r2 = await post("/api/cams", {action: "add", id: r.id, lang: LANG}); showErr(r2.ok ? "" : r2.error); SIG = ""; poll();
 }
 // ---- other MoveEye devices ----
-Object.assign(I18N.de, {"Other MoveEye devices": "Weitere Motion-Watch-Geräte",
+Object.assign(I18N.de, {"Other MoveEye devices": "Weitere MoveEye-Geräte",
   "Several devices around the tent or camper: see them all here and arm / disarm them together.": "Mehrere Geräte rund ums Zelt oder Wohnmobil: hier alle sehen und gemeinsam den Schutz ein- und ausschalten.",
   "🛡 Arm all": "🛡 Schutz bei allen an", "Disarm all": "Schutz bei allen aus", "Add a device": "Gerät hinzufügen", "Password": "Passwort",
   "🔍 Search in the network": "🔍 Im Netzwerk suchen", "This device": "Dieses Gerät", "armed": "Schutz an", "disarmed": "Schutz aus", "arming": "Schutz startet",
@@ -35960,6 +36719,8 @@ ol{padding-left:18px;margin:6px 0}
 </main>
 <script>
 /*COMMON*/
+Object.assign(I18N.de, {"Applies to: everything": "Gilt für: alles", "Applies to: persons only": "Gilt für: nur Personen", "Applies to: animals only": "Gilt für: nur Tiere",
+  "z-kinds": "Eine Ignorier- oder Nur-hier-Zone kann nur für Personen oder nur für Tiere gelten – für die anderen gibt es sie dann nicht (z. B. Weg: Personen ignorieren, Tiere melden)."});
 Object.assign(I18N.de, {"+ Sleeping place": "+ Schlafplatz", "Sleeping place": "Schlafplatz",
   "z-sleep": "Wie eine Privatsphäre-Zone (schwarz, bleibt auf dem Bett, auch wenn sich die Kamera dreht). Der Wecker dreht die Kamera beim Wecken dorthin (Gesten). Einzeichnen, während die Kamera auf das Bett schaut."});
 Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": "+ Nur-hier-Zone", "+ Privacy zone": "+ Privatsphäre-Zone",
@@ -35976,7 +36737,7 @@ Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": 
   "z-ign": "Personen und Objekte, deren Füsse darin stehen, werden ignoriert (Strasse, Baum, Nachbars Garten).",
   "z-only": "Wenn mindestens eine solche Zone existiert, zählt nur, was darin passiert (Eingang, Einfahrt).",
   "z-how": "Eine Zone wirkt auf die Erkennung, die Aufnahme, die Alarme und die Relais. Gezählt wird der Punkt unten in der Mitte des erkannten Objekts (die Füsse)."});
-Object.assign(I18N, {en: {"z-sleep": "Like a privacy zone (black, stays on the bed when the camera turns). The wake-up alarm turns the camera there (gestures). Draw it while the camera looks at the bed.", "z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
+Object.assign(I18N, {en: {"z-kinds": "An ignore or only-here zone can apply to persons only or to animals only - for the other kinds it does not exist (e.g. a path: ignore persons, still report animals).", "z-sleep": "Like a privacy zone (black, stays on the bed when the camera turns). The wake-up alarm turns the camera there (gestures). Draw it while the camera looks at the bed.", "z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
   "z-loit": "Reports when a person stays inside longer than the time set (e.g. at the car).", "z-ign": "Persons and objects whose feet are inside are ignored (street, tree, neighbour's garden).",
   "z-only": "If at least one such zone exists, only what happens inside it counts (entrance, driveway).",
   "z-how": "A zone affects detection, recording, alarms and relays. The point that counts is the bottom middle of the detected object (the feet).",
@@ -36056,6 +36817,11 @@ function renderList() {
     if (z.mode === "line") { const d = el("select"); [["both", t("both directions")], ["ab", "→ " + t("only in the arrow direction")], ["ba", "← " + t("only against the arrow")]]
         .forEach(([v, l]) => { const o = el("option", "", l); o.value = v; d.appendChild(o); });
       d.value = z.dir || "both"; d.onchange = () => { z.dir = d.value; draw(); }; d.onclick = e => e.stopPropagation(); d.style.gridColumn = "1 / -1"; r.appendChild(d); }
+    if (z.mode === "ignore" || z.mode === "only") { const k = el("select"); k.title = tt("z-kinds");      // 2.98.13: zones by kind
+      [["all", tt("Applies to: everything")], ["person", tt("Applies to: persons only")], ["animal", tt("Applies to: animals only")]]
+        .forEach(([v, l]) => { const o = el("option", "", l); o.value = v; k.appendChild(o); });
+      k.value = z.kinds || "all"; k.onchange = () => { if (k.value === "all") delete z.kinds; else z.kinds = k.value; draw(); }; k.onclick = e => e.stopPropagation();
+      k.style.gridColumn = "1 / -1"; r.appendChild(k); }
     if (z.mode === "loiter") { const w = el("label", "mut", t("Alarm after (seconds)") + " "); const n = el("input"); n.type = "number"; n.min = 3; n.max = 600; n.value = z.secs || 20; n.style.width = "80px";
       n.onchange = () => { z.secs = Math.max(3, Math.min(600, +n.value || 20)); }; n.onclick = e => e.stopPropagation(); w.appendChild(n); w.style.gridColumn = "1 / -1"; r.appendChild(w); }
     L.appendChild(r);
@@ -36529,6 +37295,7 @@ main{padding:16px;max-width:900px;margin:0 auto}
       <button class="sec" id="reload" data-i18n="↻ Refresh">↻ Refresh</button>
       <button class="sec" id="clr" data-i18n="Clear list">Clear list</button>
     </div>
+    <div id="alx-what"></div>
     <div class="mut" id="cnt"></div>
     <div id="list"></div>
   </section>
@@ -36592,7 +37359,7 @@ document.getElementById("clr").onclick = async function () {
 load();
 setInterval(function () { if (SRC === "local" && !document.hidden) load(); }, 20000);
 /*ALERTS*/
-</script></body></html>
+</script><script src="/alx/what.js" defer></script></body></html>
 """
 # ----------------------------------------------------------------------------
 # 2.98.0: the sixth tab. Everything that is not live picture, protection, history, settings or simulator - one tap away.
@@ -36698,7 +37465,8 @@ def more_page():
 def main_tab_page(tab):
     """2.98.0: one main page, three tabs - Live (picture, joystick, quick switches), Schutz (protection groups) and
     Einstellungen (all other settings). The body gets data-tab; CSS shows the part of the tab."""
-    return render_page(WEB_PAGE, tab).replace("<body>", '<body data-tab="' + tab + '">', 1)
+    return render_page(WEB_PAGE, tab).replace("<body>", '<body data-tab="' + tab + '">', 1).replace(
+        "</body>", '<script src="/alx/what.js" defer></script></body>', 1)          # 2.98.13: «What was it?» below the picture (066)
 WEB_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -40392,8 +41160,8 @@ function prText(s) {                                       // 2.98.0: one name f
 }
 async function prArm(action) {
   if (action === "disarm" && ((window.__lastState || {}).protect || {}).pin) { protectOff(); return; }   // 2.95.105: with the PIN
-  const r = await post("/api/arm", {action: action});
-  if (r && r.ok) toast(action === "disarm" ? t("Disarmed") : (r.left ? t("Armed in") + " " + r.left + " s" : t("Armed")));
+  const r = await post("/api/arm", {action: action, lang: LANG});
+  if (r && r.ok) toast((action === "disarm" ? t("Disarmed") : (r.left ? t("Armed in") + " " + r.left + " s" : t("Armed"))) + (r.forecast ? " · 🔋 " + r.forecast : ""));
 }
 function prHotspotMsg(r) {
   return t("The Pi now switches on its own Wi-Fi") + " «" + r.ssid + "» (" + t("password") + ": " + r.password + "). "
@@ -40667,7 +41435,7 @@ function modePaint(s) {
 const PRT = {key: "", pinFor: "", until: 0};
 function protectPaint(P) {
   const box = $("#protect-box"); if (!box || !P) return;
-  const key = JSON.stringify([P.level, P.chosen, P.arm, P.colour, P.items, P.device, P.things, P.pin, P.presence, P.escalate.on, P.escalate.s, P.test, PRT.pinFor, LANG]);
+  const key = JSON.stringify([P.level, P.chosen, P.arm, P.colour, P.items, P.device, P.things, P.pin, P.presence, P.escalate.on, P.escalate.s, P.test, PRT.pinFor, LANG, P.forecast]);
   if (key === PRT.key) { const c = $("#prt-left"); if (c) c.textContent = P.arm === "arming" ? t("starts in") + " " + P.left + " s" : (P.escalate.pending ? "🚨 " + t("siren in") + " " + P.escalate.pending + " s" : ""); return; }
   PRT.key = key; box.textContent = "";
   const head = el("div", "row"); head.style.cssText = "justify-content:space-between;align-items:center";
@@ -40678,6 +41446,7 @@ function protectPaint(P) {
     b.onclick = () => k === "off" ? protectOff() : protectLevel(k); seg.appendChild(b); });
   box.appendChild(seg);
   box.appendChild(el("div", "mut prt-what", P.level === "off" ? t("prt-off") : (P.level === "watch" ? t("prt-watch") : t("prt-full"))));
+  if (P.forecast) box.appendChild(el("div", "prt-what", "🔋 " + P.forecast));      // 2.98.13: battery forecast (066)
   if (PRT.pinFor) { const r = el("div", "row"); r.style.cssText = "gap:6px;margin-top:8px"; const i = document.createElement("input"); i.type = "password"; i.inputMode = "numeric";
     i.placeholder = "PIN"; i.style.flex = "1"; const ok = el("button", "", t("Switch off")); ok.type = "button"; const no = el("button", "sec", "✕"); no.type = "button";
     ok.onclick = async () => { const x = await post("/api/protect", {action: "level", level: "off", pin: i.value, lang: LANG}); if (x.ok) { PRT.pinFor = ""; toast("✓ " + t("Protection off")); } else toast("⚠ " + (x.error || t("error"))); PRT.key = ""; protectPaint(x.level ? x : P); };
@@ -40719,7 +41488,7 @@ function protectPaint(P) {
 }
 async function protectLevel(k, answers) {
   const r = await post("/api/protect", {action: "level", level: k, answers: answers || null, lang: LANG});
-  if (r.ok) toast("✓ " + (k === "full" ? t("Full protection") : t("Watchful")) + (r.arm === "arming" ? " – " + t("leave the area now") : "")); else toast("⚠ " + (r.error || t("error")));
+  if (r.ok) toast("✓ " + (k === "full" ? t("Full protection") : t("Watchful")) + (r.arm === "arming" ? " – " + t("leave the area now") : "") + (r.forecast && k !== "off" ? " · 🔋 " + r.forecast : "")); else toast("⚠ " + (r.error || t("error")));
   PRT.key = ""; if (r.level) protectPaint(r);
 }
 function protectOff() {
@@ -41742,7 +42511,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li>Doppelklick aufs Bild: nur noch Video, nochmals doppelklicken: zurück.</li></ul>
 </section>
 
-<section id="alarm" data-icon="🛡"><h2>Alarm &amp; Camping</h2><p><b>🛡 Schutz (ab 2.95.105):</b> Oben in «Camping / Schutz» eine Stufe statt vieler Schalter: <b>Aus</b> · <b>Wachsam</b> (Personen und Sabotage aufs Handy, keine Sirene) · <b>Voller Schutz</b> (dazu bewachte Gegenstände aus dem Referenz-Scan, GPS-Ortung und die Sirene, wenn niemand ausschaltet). Der <b>Schutz-Assistent</b> fragt drei Dinge (was, wann, wie reagieren) und stellt alles ein. Die <b>Ampel</b> zeigt, was noch fehlt, mit «Beheben». <b>PIN zum Ausschalten</b>: ohne PIN kein «Schutz aus»; 3 falsche PINs lösen einen Diebstahl-Alarm aus. <b>Schutz testen</b> prüft Kamera, Push, Lautsprecher, Referenz-Scan – mit dem Simulator auch Abdecken und eine Person. Unter «Mehr»: Sirene nach 10–120 s und «automatisch an, wenn mein Handy weg ist». Die Begriffe «scharf / unscharf» heissen jetzt «Schutz an / aus». Der Bluetooth-Lautsprecher ist unter den Modi schnell erreichbar, das Disco-Licht zugeklappt darunter.</p><p><b>Modus (ab 2.95.47):</b> ein Schalter für das ganze Gerät, oben in «Camping / Schutz» (auch im Fenster): ⛺ Camping-Wache · 🔥 Lagerfeuer-Spiele (Spielecke offen im bestehenden WLAN, die Wache schaut sparsam weiter; zur eingestellten Zeit oder bei knappem Akku zurück zur Camping-Wache) · 🎮 Gamer (nur mit Netzstrom: Powermodus, alle Spiele, Wache nach Wahl; auf Akku zurück zu den Lagerfeuer-Spielen) · 🏠 Zuhause · 🦌 Wildbeobachtung (keine Sirene, kein Licht von selbst) · 🌙 Nachtwache · 🔕 Transport. «Eigene Einstellungen» stellt alles zurück, wie es vor dem ersten Modus war.</p><p><b>📺 TV-Anzeige und Internet vom Handy (ab 2.95.51):</b> Unter dem Modus zeigt «Am HDMI zeigen» eine grosse Spielseite auf dem Fernseher am Pi (Raspberry Pi OS mit Desktop und Chromium nötig): links das Bild des Simulators oder der Kamera, rechts der Spielassistent, der QR-Code zum Mitspielen, die Zeit, die Spieler und die Rangliste. Bei Lagerfeuer und Gamer geht sie von selbst an. Den Link kann auch jeder andere Bildschirm im gleichen Netz öffnen. Ein Handy am USB-Kabel (Android «USB-Tethering», iPhone «Persönlicher Hotspot») gibt MoveEye Internet – das eigene WLAN (Spiel-Netz) bekommt es dann auch.</p><p><b>📶 Netz-Check und 🛈 Infoseite (ab 2.95.52):</b> Werkzeuge → «Netz-Check der Mitspieler» misst bei allen Handys Reaktionszeit, Schwankung, Verluste, Download und Upload bis zu MoveEye; Handys in der Spielecke messen von selbst, alle anderen über den QR-Code. Ist MoveEye selbst das WLAN, kommt das Empfangssignal jedes Handys dazu, mit Tipps für schwache Verbindungen. Werkzeuge → «Infoseite für Gäste» zeigt deine Homepage von MoveEye allen im gleichen WLAN, ohne Login und ohne Internet (QR-Code, auch auf der TV-Anzeige). Fragen aus dem Formular kommen als Push-Nachricht.</p><p><b>🖥 Simulator als Helfer (ab 2.95.53):</b> <b>KI-Rechenhilfe</b> (Werkzeuge): Läuft MoveEye auch auf dem PC (im 3D-Simulator «MoveEye auf diesem PC starten»), rechnet der PC die Erkennung für den Pi – der Pi findet ihn von selbst und rechnet wieder selbst, wenn der PC weg ist. <b>TV-Modus</b>: Taste T im Simulator oder «TV-Modus im 3D-Simulator» unter dem Modus – grosses Bild mit Spiel, QR-Code und Rangliste. Im Tab Simulator: <b>Aufstell-Planer</b> (wo MoveEye hin soll, tote Winkel, Patrouille übernehmen), <b>Alarm-Rückblick in 3D</b> (ein Alarm wird nachgespielt), <b>KI-Prüfung mit Simulator-Bildern</b> (wie gut erkennt die KI bei Nacht, Regen, Nebel? mit Trainingsbildern als ZIP). Im Netz-Check: <b>Empfangs-Rundgang</b> – eine Karte, wo das WLAN gut ist.</p><p><b>📖 Almanach, 🪩 Disco-Licht, 🔒 Tunnel, 🎮 Spiele (ab 2.95.54):</b> Werkzeuge → «Überlebens-Almanach»: Tipps fürs Camping in der Schweiz zum Nachschlagen oder als Abendlektüre, offline, mit Suche, Rotlicht und Vorlesen (Adresse /almanach/, auch für Gäste). Unter dem Modus: «Disco-Licht» – das weisse Licht blitzt im Takt der Musik (Mikrofon) oder in festem Takt, höchstens 3-mal pro Sekunde, ein Alarm geht vor. Tab Simulator → «Simulator hinter einer Firewall»: Läuft der Simulator auf einem PC ohne Adminrechte, verbindet er sich mit Adresse und Code selbst zu MoveEye. Die Spielesammlung ist in Touch-Spiele und Spiele mit Bildschirm-Tasten geteilt (Tetris, Racer, Breakout, Pong, Astray).</p>
+<section id="alarm" data-icon="🛡"><h2>Alarm &amp; Camping</h2><p><b>🛡 Schutz (ab 2.95.105):</b> Oben in «Camping / Schutz» eine Stufe statt vieler Schalter: <b>Aus</b> · <b>Wachsam</b> (Personen und Sabotage aufs Handy, keine Sirene) · <b>Voll</b> (dazu bewachte Gegenstände aus dem Referenz-Scan, GPS-Ortung und die Sirene, wenn niemand ausschaltet). Der <b>Schutz-Assistent</b> fragt drei Dinge (was, wann, wie reagieren) und stellt alles ein. Die <b>Ampel</b> zeigt, was noch fehlt, mit «Beheben». <b>PIN zum Ausschalten</b>: ohne PIN kein «Schutz aus»; 3 falsche PINs lösen einen Diebstahl-Alarm aus. <b>Schutz testen</b> prüft Kamera, Push, Lautsprecher, Referenz-Scan – mit dem Simulator auch Abdecken und eine Person. Unter «Mehr»: Sirene nach 10–120 s und «automatisch an, wenn mein Handy weg ist». Die Begriffe «scharf / unscharf» heissen jetzt «Schutz an / aus». Der Bluetooth-Lautsprecher ist unter den Modi schnell erreichbar, das Disco-Licht zugeklappt darunter.</p><p><b>Modus (ab 2.95.47):</b> ein Schalter für das ganze Gerät, oben in «Camping / Schutz» (auch im Fenster): ⛺ Camping-Wache · 🔥 Lagerfeuer-Spiele (Spielecke offen im bestehenden WLAN, die Wache schaut sparsam weiter; zur eingestellten Zeit oder bei knappem Akku zurück zur Camping-Wache) · 🎮 Gamer (nur mit Netzstrom: Powermodus, alle Spiele, Wache nach Wahl; auf Akku zurück zu den Lagerfeuer-Spielen) · 🏠 Zuhause · 🦌 Wildbeobachtung (keine Sirene, kein Licht von selbst) · 🌙 Nachtwache · 🔕 Transport. «Eigene Einstellungen» stellt alles zurück, wie es vor dem ersten Modus war.</p><p><b>📺 TV-Anzeige und Internet vom Handy (ab 2.95.51):</b> Unter dem Modus zeigt «Am HDMI zeigen» eine grosse Spielseite auf dem Fernseher am Pi (Raspberry Pi OS mit Desktop und Chromium nötig): links das Bild des Simulators oder der Kamera, rechts der Spielassistent, der QR-Code zum Mitspielen, die Zeit, die Spieler und die Rangliste. Bei Lagerfeuer und Gamer geht sie von selbst an. Den Link kann auch jeder andere Bildschirm im gleichen Netz öffnen. Ein Handy am USB-Kabel (Android «USB-Tethering», iPhone «Persönlicher Hotspot») gibt MoveEye Internet – das eigene WLAN (Spiel-Netz) bekommt es dann auch.</p><p><b>📶 Netz-Check und 🛈 Infoseite (ab 2.95.52):</b> Werkzeuge → «Netz-Check der Mitspieler» misst bei allen Handys Reaktionszeit, Schwankung, Verluste, Download und Upload bis zu MoveEye; Handys in der Spielecke messen von selbst, alle anderen über den QR-Code. Ist MoveEye selbst das WLAN, kommt das Empfangssignal jedes Handys dazu, mit Tipps für schwache Verbindungen. Werkzeuge → «Infoseite für Gäste» zeigt deine Homepage von MoveEye allen im gleichen WLAN, ohne Login und ohne Internet (QR-Code, auch auf der TV-Anzeige). Fragen aus dem Formular kommen als Push-Nachricht.</p><p><b>🖥 Simulator als Helfer (ab 2.95.53):</b> <b>KI-Rechenhilfe</b> (Werkzeuge): Läuft MoveEye auch auf dem PC (im 3D-Simulator «MoveEye auf diesem PC starten»), rechnet der PC die Erkennung für den Pi – der Pi findet ihn von selbst und rechnet wieder selbst, wenn der PC weg ist. <b>TV-Modus</b>: Taste T im Simulator oder «TV-Modus im 3D-Simulator» unter dem Modus – grosses Bild mit Spiel, QR-Code und Rangliste. Im Tab Simulator: <b>Aufstell-Planer</b> (wo MoveEye hin soll, tote Winkel, Patrouille übernehmen), <b>Alarm-Rückblick in 3D</b> (ein Alarm wird nachgespielt), <b>KI-Prüfung mit Simulator-Bildern</b> (wie gut erkennt die KI bei Nacht, Regen, Nebel? mit Trainingsbildern als ZIP). Im Netz-Check: <b>Empfangs-Rundgang</b> – eine Karte, wo das WLAN gut ist.</p><p><b>📖 Almanach, 🪩 Disco-Licht, 🔒 Tunnel, 🎮 Spiele (ab 2.95.54):</b> Werkzeuge → «Überlebens-Almanach»: Tipps fürs Camping in der Schweiz zum Nachschlagen oder als Abendlektüre, offline, mit Suche, Rotlicht und Vorlesen (Adresse /almanach/, auch für Gäste). Unter dem Modus: «Disco-Licht» – das weisse Licht blitzt im Takt der Musik (Mikrofon) oder in festem Takt, höchstens 3-mal pro Sekunde, ein Alarm geht vor. Tab Simulator → «Simulator hinter einer Firewall»: Läuft der Simulator auf einem PC ohne Adminrechte, verbindet er sich mit Adresse und Code selbst zu MoveEye. Die Spielesammlung ist in Touch-Spiele und Spiele mit Bildschirm-Tasten geteilt (Tetris, Racer, Breakout, Pong, Astray).</p>
 <ul><li><b>Schutz ein / aus:</b> nur bei Schutz an gibt es Alarme, Push-Nachrichten, Sirene und Aufnahmen. Der Countdown (einstellbar) gibt dir Zeit wegzugehen. «Sofort Schutz an» überspringt ihn.</li>
 <li><b>Camping-Profil:</b> ein Schalter für alles Nötige: eigenes WLAN an, Kamera bleibt stehen (keine Patrouille/Verfolgung/Zeitraffer), Alarme, Aufnahmen und Stromsparen an, nach dem Countdown Schutz an. Ausschalten stellt deine vorherigen Einstellungen wieder her.</li>
 <li><b>Eigenes WLAN (Hotspot):</b> der Pi macht sein eigenes WLAN – funktioniert ohne Handynetz. Name und Passwort unter <i>Schutz &amp; Netzwerk</i>.</li>
@@ -41861,7 +42630,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li>📱 <b>SMS über LTE-Stick</b> (Benachrichtigungen → SMS): mit einem USB-LTE-Stick und SIM-Karte kommt der Alarm (Person, Sabotage, warmer Körper, Geräusch) als SMS – ab Werk nur, wenn kein Internet da ist. Funktioniert mit ModemManager (<code>sudo apt install modemmanager</code>), AT-Befehlen oder Huawei-HiLink-Sticks (192.168.8.1). Pause und Tageslimit schützen vor Kosten; «Test-SMS senden» prüft alles.</li>
 <li>🎬 <b>Demo-Modus:</b> <code>python3 webcam_bewegung_X.py --demo</code> (für eine Online-Demo zusätzlich <code>--headless --port 8080</code>) zeigt eine gezeichnete Camping-Szene, in der ab und zu eine Person, ein Hund oder ein Bär vorbeikommt – Alarm, Aufnahme, Tagebuch und Abschreckung reagieren wie echt. Eigene Einstellungen (im Temp-Ordner), «DEMO» im Kopf, nichts am Computer wird verändert.</li>
 <li>🏠 <b>MQTT / Home Assistant</b> (System &amp; Netz): Broker-Adresse (z. B. der Mosquitto-Add-on von Home Assistant), Benutzer und Passwort eintragen, «MQTT ein». Home Assistant zeigt MoveEye dann von selbst als Gerät: Alarmanlage (Schutz ein/aus), Person, Bewegung, Tier, Aufnahme, Akku, Temperatur und das letzte Alarmbild. Befehle auch über <code>motionwatch/&lt;id&gt;/cmd/arm</code> (ARM_AWAY / DISARM), <code>…/cmd/light_white</code> (on/off/auto).</li>
-<li>🛰 <b>Mehrere Geräte:</b> Reiter Kameras → «Weitere Motion-Watch-Geräte»: Bild, Schutz/Alarm, Akku und letztes Ereignis jedes Geräts, einzeln oder alle zusammen den Schutz ein- und ausschalten. «Im Netzwerk suchen» findet Geräte im gleichen Netz und über Tailscale; Geräte mit Passwort brauchen dieses einmal.</li>
+<li>🛰 <b>Mehrere Geräte:</b> Reiter Kameras → «Weitere MoveEye-Geräte»: Bild, Schutz/Alarm, Akku und letztes Ereignis jedes Geräts, einzeln oder alle zusammen den Schutz ein- und ausschalten. «Im Netzwerk suchen» findet Geräte im gleichen Netz und über Tailscale; Geräte mit Passwort brauchen dieses einmal.</li>
 <li>⤴ <b>Teilen mit Logo:</b> Tagebuch-Bilder, Schnappschüsse, Aufnahmen und Zeitraffer (Knopf ⤴ in der Aufnahme-Ansicht) sowie das Bild im Nachtbericht bekommen unten rechts einen dezenten Streifen «MoveEye» mit Datum. Abschaltbar unter Aufnahme.</li>
 <li>🦊 <b>Gezielte Abschreckung</b> (Licht &amp; Ton → Abschreckung): für Person, grosses Tier (Bär, Kuh, Pferd …), kleines Tier (Katze, Hund, Vogel) und warmen Körper (Wärmebild) je eine eigene Reaktion – Ton (neu: hohes Pfeifen, Knallen/Klatschen oder eigene Töne) und/oder Lichtblitze mit dem weissen Licht. Dauer und Pause einstellbar; «auch wenn der Schutz aus ist» z. B. für den Garten. Tiere brauchen die KI-Erkennung.</li>
 <li>🚨 <b>Diebstahlschutz</b> (Alarm &amp; Camping): wenn der Schutz an ist gibt es eine dringende Push-Nachricht mit Bild und die Sirene, sobald die Kamera <b>abgedeckt oder weggedreht</b> wird, das Gerät <b>bewegt oder umgeworfen</b> wird (Bewegungssensor MPU-6050 an I2C 0x68, ca. 3 Fr., optional) oder der <b>Strom getrennt</b> wird (mit USV-Akku). Während sich der Kamerakopf selbst bewegt (Patrouille, Verfolgen, Joystick), lernt die Bildprüfung neu.</li>
@@ -42997,7 +43766,7 @@ class WebStream:
                     request.get_data()                      # read the body first, else the connection is reset
                 log_event("web", f"Blocked a request from another web page ({request.headers.get('Origin', '')[:60]}) to {request.path}")
                 return Response("Forbidden: request from another web page", 403)
-            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/spiele", "/tv/", "/nt/", "/info", "/almanach")) or request.path in public:
+            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/na/", "/spiele", "/tv/", "/nt/", "/info", "/almanach")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
             g.user, g.role = "", "admin"
@@ -44016,6 +44785,8 @@ class WebStream:
             lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or CFG["lang"])
             return reply({"ok": False, "error": tr_err("locked - settings can only be changed after unlocking (PIN)", lang)}, 423)
 
+        alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
+
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
             return Response(render_page(MSG_PAGE, "msgs"), mimetype="text/html")
@@ -44453,7 +45224,7 @@ class WebStream:
                     disarm()
             else:
                 return reply({"ok": False, "error": "unknown action"}, 400)
-            return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"]})
+            return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"], "forecast": arm_forecast_text(body().get("lang")) if a != "disarm" else ""})
 
         @app.route("/api/simhub", methods=["GET", "POST"])
         def api_simhub():                                    # 2.96.4: the tiles of the simulator (start page, simulator centre)
@@ -45894,7 +46665,7 @@ DE = {
     "password wrong": "Passwort falsch", "not reachable": "nicht erreichbar",
     "announces itself but does not answer - its firewall or security software blocks MoveEye: use the tunnel":
         "meldet sich im Netz, antwortet aber nicht – die Firewall oder Sicherheitssoftware des PCs sperrt MoveEye: den Tunnel verwenden (unten)", "invalid address (e.g. http://192.168.1.20:5000)": "ungültige Adresse (z. B. http://192.168.1.20:5000)",
-    "this device is in the list already": "dieses Gerät ist schon in der Liste", "this is this device itself": "das ist dieses Gerät selbst", "at most 12 devices": "höchstens 12 Geräte", "Shared pictures and videos with a small MoveEye logo": "Geteilte Bilder und Videos mit kleinem Motion-Watch-Logo", "Backup": "Sicherung", "Theft protection": "Diebstahlschutz", "Deterrence": "Abschreckung",
+    "this device is in the list already": "dieses Gerät ist schon in der Liste", "this is this device itself": "das ist dieses Gerät selbst", "at most 12 devices": "höchstens 12 Geräte", "Shared pictures and videos with a small MoveEye logo": "Geteilte Bilder und Videos mit kleinem MoveEye-Logo", "Backup": "Sicherung", "Theft protection": "Diebstahlschutz", "Deterrence": "Abschreckung",
     "Person: sound": "Person: Ton", "Big animal (bear, cow, horse, ...)": "Grosses Tier (Bär, Kuh, Pferd, …)", "Big animal: sound": "Grosses Tier: Ton",
     "Small animal (cat, dog, bird)": "Kleines Tier (Katze, Hund, Vogel)", "Small animal: sound": "Kleines Tier: Ton",
     "Warm body (thermal camera, e.g. fox, boar)": "Warmer Körper (Wärmebild, z. B. Fuchs, Wildschwein)", "Warm body: sound": "Warmer Körper: Ton",
@@ -46141,7 +46912,7 @@ DE.update({
     "Push message when less free space than (MB)": "Push-Nachricht, wenn weniger frei ist als (MB)",
     "the password was given on the command line (--web-password) - change it there": "das Passwort wurde beim Start angegeben (--web-password) - dort ändern",
     "the password must have 6 to 64 characters (letters, digits, signs, no umlauts)": "das Passwort braucht 6 bis 64 Zeichen (Buchstaben, Ziffern, Zeichen, keine Umlaute)",
-    "not a MoveEye settings file": "keine Motion-Watch-Einstellungsdatei", "Web password": "Web-Passwort", "set": "gesetzt",
+    "not a MoveEye settings file": "keine MoveEye-Einstellungsdatei", "Web password": "Web-Passwort", "set": "gesetzt",
     "Set password": "Passwort setzen", "Remove password": "Passwort entfernen", "Save settings …": "Einstellungen sichern …",
     "Load settings …": "Einstellungen laden …", "under-voltage": "Unterspannung", "free": "frei", "Supply": "Strom",
     "awake": "wach", "Power saving": "Stromsparen", "Pictures per second while quiet": "Bilder pro Sekunde, wenn ruhig",
@@ -48266,6 +49037,7 @@ class App:
             self._build_source_box(sbody)
         if sec == "Schedule":
             self._build_schedule_box(sbody)
+            alx_tk_zones(self, sbody)                  # 2.98.13: zones by kind (066)
         if sec == "Messages":
             ttk.Label(sp, text=tr("Empty = standard text. Placeholders:") + " " + MSG_PLACEHOLDERS, style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w", pady=(2, 0))
@@ -49674,7 +50446,8 @@ class App:
         self._status("Notifications", f"{tr('status')}: {st['notify_status']}")
         hs = st["hotspot"] or {}
         a_st = st["arm_state"]
-        self._status("Camping / protection", "🛡 " + protect_label(a_st, st.get("arm_left", 0))
+        fc_ = arm_forecast_text()                      # 2.98.13: battery forecast (066)
+        self._status("Camping / protection", "🛡 " + protect_label(a_st, st.get("arm_left", 0)) + (f" · 🔋 {fc_}" if fc_ else "")
                      + (" · ⛺ " + tr("Camping profile") if CFG["camping"] else "")
                      + (f" · 📡 «{hs.get('ssid')}» {hs.get('clients', 0)} {tr('devices')} · {page_address('10.42.0.1')}" if hs.get("on") else
                         f" · 📡 «{CFG['hotspot_ssid']}» / {CFG['hotspot_password'] or '–'}")
@@ -49869,6 +50642,20 @@ class App:
 
 
 
+# ----------------------------------------------------------------------------
+# 2.98.13: die Schalter der Alarm-Extras kommen in die bestehenden Abschnitte (Web und Fenster lesen dieselben Listen).
+# Hier statt in 570, damit die grosse Liste dort unverändert bleibt.
+# ----------------------------------------------------------------------------
+TOGGLES.extend([
+    ("Notifications", "push_actions", "Buttons in the push message: False alarm · Siren · Off (needs the address of this page for links)"),
+    ("Notifications", "alarm_confirm2", "Double confirmation: a person alarm only when the AI and the thermal camera agree or the AI sees the person twice in a row (otherwise only a pre-alarm)"),
+    ("Camping / protection", "arm_announce", "Announcement when arming: the loudspeaker says battery, Wi-Fi and camera - or what is missing"),
+    ("Camping / protection", "back_ask", "«Is it you?»: when my phone comes back, person alarms wait and a push message asks (button Off)"),
+    ("Night report", "report_strip", "Morning push short: one sentence and a picture strip of the night"),
+])
+SLIDERS.extend([
+    ("Camping / protection", "back_hold_s", "«Is it you?»: person alarms wait (s)", 15, 300, 15),
+])
 # ----------------------------------------------------------------------------
 # Translations: French, Italian, Romansh (Rumantsch Grischun). Key = the English text of the program.
 #   Missing texts: Romansh shows German, French / Italian show English. HELP_X = the manual (help page).
@@ -55025,6 +55812,133 @@ _HX_GUIDE = {
     'MQTT / Home Assistant': ('MQTT / Home Assistant', 'MQTT / Home Assistant', 'MQTT / Home Assistant', 'MQTT / Home Assistant'),
 }
 for _k, _v in _HX_GUIDE.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_ALARM = {
+    # settings
+    'Buttons in the push message: False alarm · Siren · Off (needs the address of this page for links)': (
+        'Knöpfe in der Push-Nachricht: Fehlalarm · Sirene · Aus (braucht die Adresse dieser Seite für Links)',
+        'Boutons dans la notification : Fausse alarme · Sirène · Arrêt (il faut l’adresse de cette page pour les liens)',
+        'Pulsanti nella notifica: Falso allarme · Sirena · Spento (serve l’indirizzo di questa pagina per i link)',
+        'Buttuns en l’avis push: Fals alarm · Sirena · Ora (basegna l’adressa da questa pagina per colliaziuns)'),
+    'Double confirmation: a person alarm only when the AI and the thermal camera agree or the AI sees the person twice in a row (otherwise only a pre-alarm)': (
+        'Doppelte Bestätigung: ein Personen-Alarm erst, wenn KI und Wärmebild übereinstimmen oder die KI die Person zweimal nacheinander sieht (sonst nur Voralarm)',
+        'Double confirmation : alarme personne seulement si l’IA et la caméra thermique sont d’accord ou si l’IA voit la personne deux fois de suite (sinon seulement pré-alarme)',
+        'Doppia conferma: allarme persona solo se l’IA e la termocamera concordano o se l’IA vede la persona due volte di seguito (altrimenti solo preallarme)',
+        'Confirmaziun dubla: in alarm da persuna pir, sche la IA e la camera termica èn d’accord u sche la IA vesa la persuna duas giadas en ina (uschiglio mo pre-alarm)'),
+    'Announcement when arming: the loudspeaker says battery, Wi-Fi and camera - or what is missing': (
+        'Ansage beim Einschalten: der Lautsprecher sagt Akku, WLAN und Kamera – oder was fehlt',
+        'Annonce à l’activation : le haut-parleur dit batterie, Wi-Fi et caméra – ou ce qui manque',
+        'Annuncio all’attivazione: l’altoparlante dice batteria, Wi-Fi e telecamera – o cosa manca',
+        'Annunzia cun envidar: il autpledader di accu, WLAN e camera – u tge che manca'),
+    '«Is it you?»: when my phone comes back, person alarms wait and a push message asks (button Off)': (
+        '«Bist du\'s?»: kommt mein Handy zurück, warten Personen-Alarme und eine Push-Nachricht fragt (Knopf Aus)',
+        '«C’est toi ?» : quand mon téléphone revient, les alarmes personne attendent et une notification demande (bouton Arrêt)',
+        '«Sei tu?»: quando il mio telefono torna, gli allarmi persona aspettano e una notifica chiede (pulsante Spento)',
+        '«Es ti quai?»: cur che mes telefonin returna, spetgan ils alarms da persuna ed in avis push dumonda (buttun Ora)'),
+    'Morning push short: one sentence and a picture strip of the night': (
+        'Morgen-Push kurz: ein Satz und ein Bildstreifen der Nacht',
+        'Notification du matin courte : une phrase et une bande de photos de la nuit',
+        'Notifica del mattino breve: una frase e una striscia di foto della notte',
+        'Avis da la damaun curt: ina frasa ed ina strivla da fotografias da la notg'),
+    '«Is it you?»: person alarms wait (s)': ('«Bist du\'s?»: Personen-Alarme warten (s)', '«C’est toi ?» : les alarmes personne attendent (s)',
+                                             '«Sei tu?»: gli allarmi persona aspettano (s)', '«Es ti quai?»: ils alarms da persuna spetgan (s)'),
+    # push buttons
+    'False alarm': ('Fehlalarm', 'Fausse alarme', 'Falso allarme', 'Fals alarm'),
+    'Siren': ('Sirene', 'Sirène', 'Sirena', 'Sirena'),
+    'Off': ('Aus', 'Arrêt', 'Spento', 'Ora'),
+    'Thanks - marked as false alarm, MoveEye learns from it.': ('Danke – als Fehlalarm markiert, MoveEye lernt daraus.',
+        'Merci – marqué comme fausse alarme, MoveEye en tient compte.', 'Grazie – segnato come falso allarme, MoveEye impara.',
+        'Grazia – marcà sco fals alarm, MoveEye emprenda da quai.'),
+    'Thanks - noted as false alarm.': ('Danke – als Fehlalarm notiert.', 'Merci – noté comme fausse alarme.', 'Grazie – annotato come falso allarme.',
+                                       'Grazia – notà sco fals alarm.'),
+    'No loudspeaker chosen': ('Kein Lautsprecher gewählt', 'Aucun haut-parleur choisi', 'Nessun altoparlante scelto', 'Nagin autpledader tschernì'),
+    'Siren on': ('Sirene ein', 'Sirène en marche', 'Sirena accesa', 'Sirena en'),
+    'Protection off': ('Schutz aus', 'Protection désactivée', 'Protezione spenta', 'Protecziun ora'),
+    'This button is no longer valid.': ('Dieser Knopf gilt nicht mehr.', 'Ce bouton n’est plus valable.', 'Questo pulsante non è più valido.',
+                                        'Quest buttun na vala betg pli.'),
+    'This button was already used.': ('Dieser Knopf wurde schon gedrückt.', 'Ce bouton a déjà été utilisé.', 'Questo pulsante è già stato usato.',
+                                      'Quest buttun è gia vegnì smatgà.'),
+    'Tap to confirm.': ('Zum Bestätigen tippen.', 'Touche pour confirmer.', 'Tocca per confermare.', 'Tutga per confermar.'),
+    'not found': ('nicht gefunden', 'introuvable', 'non trovato', 'betg chattà'),
+    'unknown answer': ('unbekannte Antwort', 'réponse inconnue', 'risposta sconosciuta', 'resposta nunenconuschenta'),
+    # «Was war das?»
+    'What was it?': ('Was war das?', 'Qu’est-ce que c’était ?', 'Che cos’era?', 'Tge era quai?'),
+    'Person': ('Person', 'Personne', 'Persona', 'Persuna'),
+    'Animal': ('Tier', 'Animal', 'Animale', 'Animal'),
+    'Nothing': ('Nichts', 'Rien', 'Niente', 'Nagut'),
+    'Thanks - MoveEye learns from it.': ('Danke – MoveEye lernt daraus.', 'Merci – MoveEye en tient compte.', 'Grazie – MoveEye impara.',
+                                         'Grazia – MoveEye emprenda da quai.'),
+    'Your answer': ('Deine Antwort', 'Ta réponse', 'La tua risposta', 'Tia resposta'),
+    'Alarm': ('Alarm', 'Alarme', 'Allarme', 'Alarm'),
+    'simulation': ('Simulation', 'simulation', 'simulazione', 'simulaziun'),
+    'Answers are kept as training pictures (picture + boxes); «Nothing» counts as a false alarm.': (
+        'Die Antworten werden als Trainingsbilder gespeichert (Bild + Rahmen); «Nichts» zählt als Fehlalarm.',
+        'Les réponses sont gardées comme images d’entraînement (image + cadres) ; «Rien» compte comme fausse alarme.',
+        'Le risposte vengono salvate come immagini di addestramento (immagine + riquadri); «Niente» conta come falso allarme.',
+        'Las respostas vegnan memorisadas sco maletgs da trenament (maletg + rom); «Nagut» quinta sco fals alarm.'),
+    # battery forecast
+    'Battery {pct} % · on mains power': ('Akku {pct} % · am Strom', 'Batterie {pct} % · sur secteur', 'Batteria {pct} % · alla rete', 'Accu {pct} % · vi da la current'),
+    'Battery {pct} %': ('Akku {pct} %', 'Batterie {pct} %', 'Batteria {pct} %', 'Accu {pct} %'),
+    'Battery lasts {d} days at {level}': ('Akku reicht {d} Tage bei {level}', 'La batterie tient {d} jours en {level}',
+                                          'La batteria dura {d} giorni in {level}', 'L’accu tegna {d} dis cun {level}'),
+    'Battery lasts until {t} at {level}': ('Akku reicht bis {t} bei {level}', 'La batterie tient jusqu’à {t} en {level}',
+                                           'La batteria dura fino alle {t} in {level}', 'L’accu tegna fin {t} cun {level}'),
+    'tomorrow': ('morgen', 'demain', 'domani', 'damaun'),
+    'sunrise {t}': ('Sonnenaufgang {t}', 'lever du soleil {t}', 'alba {t}', 'levada dal sulegl {t}'),
+    'Tip: switch on power saving (Settings → Power supply) - it lasts longer.': (
+        'Tipp: Stromsparen einschalten (Einstellungen → Stromversorgung) – dann reicht er länger.',
+        'Astuce : active l’économie d’énergie (Réglages → Alimentation) – elle tient plus longtemps.',
+        'Consiglio: attiva il risparmio energetico (Impostazioni → Alimentazione) – dura di più.',
+        'Tip: envidar spargnar current (Parameters → Provediment da current) – lura tegna el pli ditg.'),
+    # announcement
+    'battery {pct} percent': ('Akku {pct} Prozent', 'batterie {pct} pour cent', 'batteria {pct} per cento', 'accu {pct} pertschient'),
+    'the battery does not last the night': ('der Akku reicht nicht für die Nacht', 'la batterie ne tiendra pas la nuit', 'la batteria non basta per la notte',
+                                            'l’accu na tanscha betg per la notg'),
+    'own Wi-Fi on': ('eigenes WLAN an', 'Wi-Fi propre allumé', 'Wi-Fi proprio acceso', 'agen WLAN en'),
+    'Wi-Fi weak': ('WLAN schwach', 'Wi-Fi faible', 'Wi-Fi debole', 'WLAN flaivel'),
+    'Wi-Fi good': ('WLAN gut', 'Wi-Fi bon', 'Wi-Fi buono', 'WLAN bun'),
+    'no Wi-Fi': ('kein WLAN', 'pas de Wi-Fi', 'nessun Wi-Fi', 'nagin WLAN'),
+    'no internet': ('kein Internet', 'pas d’internet', 'nessun internet', 'nagin internet'),
+    'the camera has no picture': ('die Kamera hat kein Bild', 'la caméra n’a pas d’image', 'la telecamera non ha immagine', 'la camera n’ha nagin maletg'),
+    'the lens is blurred': ('die Linse ist trüb', 'l’objectif est flou', 'l’obiettivo è appannato', 'la lentilla è tschorventada'),
+    'camera clear': ('Kamera frei', 'caméra dégagée', 'telecamera libera', 'camera libra'),
+    'push messages are not set up': ('Push-Nachrichten sind nicht eingerichtet', 'les notifications ne sont pas configurées',
+                                     'le notifiche non sono configurate', 'ils avis push n’èn betg installads'),
+    'not ok': ('nicht in Ordnung', 'pas en ordre', 'non a posto', 'betg en urden'),
+    'Attention': ('Achtung', 'Attention', 'Attenzione', 'Attenziun'),
+    # «Bist du's?»
+    'Is it you?': ('Bist du\'s?', 'C’est toi ?', 'Sei tu?', 'Es ti quai?'),
+    'Your phone is back. Person alarms wait {s} s. Not you? Do nothing - the alarm comes.': (
+        'Dein Handy ist zurück. Personen-Alarme warten {s} s. Nicht du? Nichts tun – der Alarm kommt.',
+        'Ton téléphone est de retour. Les alarmes personne attendent {s} s. Pas toi ? Ne fais rien – l’alarme viendra.',
+        'Il tuo telefono è tornato. Gli allarmi persona aspettano {s} s. Non sei tu? Non fare nulla – l’allarme arriva.',
+        'Tes telefonin è enavos. Ils alarms da persuna spetgan {s} s. Betg ti? Far nagut – l’alarm vegn.'),
+    # morning push
+    'Night': ('Nacht', 'Nuit', 'Notte', 'Notg'),
+    '{n} animals': ('{n} Tiere', '{n} animaux', '{n} animali', '{n} animals'),
+    '{n} animal': ('{n} Tier', '{n} animal', '{n} animale', '{n} animal'),
+    '{n} persons': ('{n} Personen', '{n} personnes', '{n} persone', '{n} persunas'),
+    '{n} person': ('{n} Person', '{n} personne', '{n} persona', '{n} persuna'),
+    'battery {pct} %': ('Akku {pct} %', 'batterie {pct} %', 'batteria {pct} %', 'accu {pct} %'),
+    # zones by kind
+    'Zones: applies to': ('Zonen: gilt für', 'Zones : s’applique à', 'Zone: vale per', 'Zonas: vala per'),
+    'everything': ('alles', 'tout', 'tutto', 'tut'),
+    'persons only': ('nur Personen', 'personnes seulement', 'solo persone', 'mo persunas'),
+    'animals only': ('nur Tiere', 'animaux seulement', 'solo animali', 'mo animals'),
+    'Applies to: everything': ('Gilt für: alles', 'S’applique à : tout', 'Vale per: tutto', 'Vala per: tut'),
+    'Applies to: persons only': ('Gilt für: nur Personen', 'S’applique à : personnes seulement', 'Vale per: solo persone', 'Vala per: mo persunas'),
+    'Applies to: animals only': ('Gilt für: nur Tiere', 'S’applique à : animaux seulement', 'Vale per: solo animali', 'Vala per: mo animals'),
+    'z-kinds': ('Eine Ignorier- oder Nur-hier-Zone kann nur für Personen oder nur für Tiere gelten – für die anderen gibt es sie dann nicht (z. B. Weg: Personen ignorieren, Tiere melden).',
+                'Une zone ignorée ou «seulement ici» peut ne valoir que pour les personnes ou que pour les animaux – pour les autres elle n’existe pas (p. ex. chemin : ignorer les personnes, signaler les animaux).',
+                'Una zona da ignorare o «solo qui» può valere solo per le persone o solo per gli animali – per gli altri non esiste (p. es. sentiero: ignorare le persone, segnalare gli animali).',
+                'Ina zona d’ignorar u «mo qua» po valair mo per persunas u mo per animals – per ils auters n’exista ella betg (p.ex. senda: ignorar persunas, annunziar animals).'),
+    'Ignore zone': ('Ignorier-Zone', 'Zone ignorée', 'Zona da ignorare', 'Zona d’ignorar'),
+    'Only-here zone': ('Nur-hier-Zone', 'Zone «seulement ici»', 'Zona «solo qui»', 'Zona «mo qua»'),
+    'no zones': ('keine Zonen', 'aucune zone', 'nessuna zona', 'naginas zonas'),
+}
+for _k, _v in _HX_ALARM.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

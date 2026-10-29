@@ -136,7 +136,7 @@ class WebStream:
                     request.get_data()                      # read the body first, else the connection is reset
                 log_event("web", f"Blocked a request from another web page ({request.headers.get('Origin', '')[:60]}) to {request.path}")
                 return Response("Forbidden: request from another web page", 403)
-            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/spiele", "/tv/", "/nt/", "/info", "/almanach")) or request.path in public:
+            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/na/", "/spiele", "/tv/", "/nt/", "/info", "/almanach")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
             g.user, g.role = "", "admin"
@@ -1155,6 +1155,8 @@ class WebStream:
             lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or CFG["lang"])
             return reply({"ok": False, "error": tr_err("locked - settings can only be changed after unlocking (PIN)", lang)}, 423)
 
+        alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
+
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
             return Response(render_page(MSG_PAGE, "msgs"), mimetype="text/html")
@@ -1592,7 +1594,7 @@ class WebStream:
                     disarm()
             else:
                 return reply({"ok": False, "error": "unknown action"}, 400)
-            return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"]})
+            return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"], "forecast": arm_forecast_text(body().get("lang")) if a != "disarm" else ""})
 
         @app.route("/api/simhub", methods=["GET", "POST"])
         def api_simhub():                                    # 2.96.4: the tiles of the simulator (start page, simulator centre)

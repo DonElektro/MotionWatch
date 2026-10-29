@@ -46,6 +46,7 @@ main{padding:16px;max-width:900px;margin:0 auto}
       <button class="sec" id="reload" data-i18n="↻ Refresh">↻ Refresh</button>
       <button class="sec" id="clr" data-i18n="Clear list">Clear list</button>
     </div>
+    <div id="alx-what"></div>
     <div class="mut" id="cnt"></div>
     <div id="list"></div>
   </section>
@@ -109,5 +110,5 @@ document.getElementById("clr").onclick = async function () {
 load();
 setInterval(function () { if (SRC === "local" && !document.hidden) load(); }, 20000);
 /*ALERTS*/
-</script></body></html>
+</script><script src="/alx/what.js" defer></script></body></html>
 """
