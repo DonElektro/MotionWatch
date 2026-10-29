@@ -8,12 +8,22 @@ Alle Teile zusammen sind **ein** Python-Programm (gemeinsame Namen, keine Import
 der Nummern ist die Reihenfolge in der Datei – ein Name muss weiter oben stehen als dort, wo er beim Start gebraucht wird.
 Die erste Zeile jedes Teils (`#@ …`) ist nur eine Beschreibung und fällt beim Bauen weg.
 
+**Keine Funktion / Klasse zweimal** (ab 2.98.18): definiert ein späterer Teil denselben Namen noch einmal, ersetzt er den
+früheren still (so ging 2.98.16 die Lautsprecher-Suche `bt_scan` verloren). `bauen.py` und `bauen.py --pruefen` (GitHub)
+brechen dann ab. Erlaubt ist nur ein **gewollter Wrapper**, im späteren Teil markiert mit
+`_<name>_base = <name>` über dem neuen `def` oder mit dem Kommentar `# wraps: <name>` auf der Zeile davor. Besser: die
+Logik direkt in die ursprüngliche Funktion schreiben (so wurden 2.98.18 apply_settings, health_check, set_cfg,
+text_choice_pairs, tools_state / tools_cfg und _tunea_autotune_base zusammengeführt; Gleichheit geprüft mit
+`werkzeuge/gleichheit_pruefen.py`). Einstellungs-Listen (TOGGLES, SLIDERS, TEXTS) nicht in späteren Teilen umbauen, sondern
+den Eintrag dort ändern, wo er steht.
+
 ## Ablauf
 
 ```
 python3 werkzeuge/bauen.py --neue-version "Was neu ist"            # Nummer +1, Zeile in der Änderungsliste, bauen
 python3 werkzeuge/bauen.py --signieren SCHLUESSELDATEI               # versions.json signieren + Selbsttest (Schlüssel nie ins Repository)
-python3 werkzeuge/bauen.py --pruefen                                # passt die Datei zu quelle/?
+python3 werkzeuge/bauen.py --pruefen                                # passt die Datei zu quelle/? keine Funktion doppelt?
+python3 werkzeuge/web_rauchtest.py                                  # jede Web-Adresse ohne / mit Anmeldung (auch auf GitHub)
 python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung messen (siehe pruefstand/LIESMICH.md)
 ```
 
@@ -30,6 +40,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `060_sicherung_schutz_klima.py` | Sicherung, Diebstahlschutz, Linse, Klima, Wetter, Postausgang, Notifier | 1224 |
 | `066_alarm_extras.py` | Alarm-Extras: Knöpfe in der Push-Nachricht (/na/), Akku-Prognose, Morgen-Bildstreifen, «Was war das?», doppelte Bestätigung, Ansage beim Einschalten, «Bist du's?» | 724 |
 | `067_speicherkarte.py` | Speicherkarte schonen: Schreibmenge pro Tag, Dateisystem-Fehler, Schreibschutz (Overlay) | 267 |
+| `068_pruefstand_pushes.py` | Prüfstand: die letzten Push-Nachrichten für den Simulator (echte Pushes zählen statt Flackern) | 17 |
 | `070_hardware_servos_licht.py` | Servos, PCA9685, Mover, Licht, Disco-Licht | 398 |
 | `080_waermebild_modul.py` | Treiber Wärmebild-Modul, Klasse Hardware | 281 |
 | `090_system_fern_sichtungen.py` | System, Fernzugriff, Sichtungen, Nachtbericht, Gast-Zugang | 465 |
@@ -74,6 +85,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `375_gesichter_verpixeln.py` | Gesichter verpixeln beim Teilen (nur die geteilte Kopie) | 250 |
 | `380_updates.py` | Updates | 216 |
 | `390_protokoll_bedienermodus.py` | Protokoll, Bedienermodus, Pause, Update-Wächter | 1065 |
+| `395_code_pflege.py` | Code-Pflege im Selbsttest: fehlende Übersetzungen fr / it / rm (nur Warnung), MIGRATE_ONLY (alte Schlüssel nur zum Übernehmen), SELFTEST_EXTRA | 85 |
 | `400_ausschalten.py` | Pi ausschalten / neu starten | 53 |
 | `410_motionwatch_kern.py` | KERN: die Erkennungs-Schleife (Bewegung, Personen, Alarm) | 969 |
 | `415_entfernung_gehtest.py` | Entfernung und Richtung einer Person, Gehtest beim Einrichten | 376 |
@@ -101,6 +113,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
 | `576_fenster_zeitleiste.py` | Fenster: Zeitleiste als Liste, Wochenbericht | 130 |
 | `577_nachlauf_konzept.py` | Nachlauf Konzept-Check: ein Wochenbericht, Rückkehr des Handys (ausschalten / fragen / nichts), Akku-Schwellen zusammen, Auto-Tuner ±20 %, Übernahme alter Einstellungen | 201 |
+| `578_sicher.py` | «Sicher»: «Aus» in der Push nur mit PIN, Push nach Stromausfall, Fehlerseiten in der eigenen Sprache, Nachtblick, Namen für Bildschirmleser, Aufnahmen nach N Tagen löschen / «Ferien vorbei», Push ohne Bild | 743 |
 | `571_alarm_einstellungen.py` | Schalter und Regler der Alarm-Extras (Web und Fenster) | 16 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
@@ -120,6 +133,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `605_uebersetzungen_konzept.py` | Übersetzungen der Konzept-Bereinigung (Assistent, Modi, Fenster-Reiter) | 97 |
 | `609_uebersetzungen_robust.py` | Übersetzungen und Anleitung: Speicherkarte, Selbstheilung, Simulator-Sperre | 142 |
 | `610_anleitung_ergaenzungen.py` | Anleitung: Ergänzungen in allen Sprachen | 167 |
+| `613_uebersetzungen_sicher.py` | Übersetzungen und Anleitung zu 578 | 165 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |
 | `640_start.py` | Start: Befehlszeile, Selbsttest, Programmstart | 152 |

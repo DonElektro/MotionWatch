@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.2"
+const VERSION := "3D-4.3"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -3271,7 +3271,7 @@ func _register_controls() -> void:
 	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
-			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["camera", "ältere: Alle gegen die Kamera"], ["teamguard", "ältere: Team gegen Team"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
+			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["jaeger", "Fehlalarm-Jäger – Tiere und Dinge täuschen MoveEye (nur mit MoveEye)"], ["camera", "ältere: Alle gegen die Kamera"], ["teamguard", "ältere: Team gegen Team"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
 	add_control("select", "game_level", "Schwierigkeit (Wächter und MoveEye)", func(): return game_level, func(v): game_level = v, "Spiel",
 			{"options": [["easy", "leicht – Easy-Mode: MoveEye muss 2.5 s melden, Kriechen ist sicher, 6 s Pause"], ["normal", "normal – 1 s melden, 3 s Pause"], ["hard", "schwer – sofort, 2 s Pause"]]})
 	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
@@ -3543,7 +3543,7 @@ func _control(d: Dictionary) -> Dictionary:
 	elif a == "test_report":                           # the test run: progress and the last report
 		return testrun.state()
 	elif a == "test_start":                            # MoveEye starts a test run (3D-3.27): {"plan": "standard" | "quick" | "hard" | "night"}
-		var err: String = testrun.start(str(d.get("plan", testrun.plan)), d.get("cams", []) if typeof(d.get("cams", [])) == TYPE_ARRAY else [], int(d.get("mult", 1)))
+		var err: String = testrun.start(str(d.get("plan", testrun.plan)), d.get("cams", []) if typeof(d.get("cams", [])) == TYPE_ARRAY else [], int(d.get("mult", 1)), int(d.get("seed", 1)))
 		var st: Dictionary = testrun.state()
 		st["ok"] = err == ""
 		if err != "":

@@ -603,8 +603,8 @@ def tools_state():
             "bt": {"running": T["bt"]["running"], "t": T["bt"]["t"], "devices": T["bt"]["devices"], "msg": T["bt"]["msg"],
                    "trackers": [{"addr": a, "kind": x["kind"], "min": round((x["last"] - x["first"]) / 60.0)} for a, x in T["bt"]["trackers"].items()]},
             "servo": T["servo"], "sd": T["sd"], "presence": {"here": T["presence"]["here"], "since": T["presence"]["since"], "who": T["presence"]["who"]},
-            "cfg": {k: CFG.get(k) for k in ("net_watch", "net_known", "presence_macs", "presence_auto", "presence_gone_min", "bt_tracker_warn",
-                                            "bt_tracker_min", "presence_bt")},
+            "cfg": dict({k: CFG.get(k) for k in ("net_watch", "net_known", "presence_macs", "presence_auto", "presence_gone_min", "bt_tracker_warn",
+                                                 "bt_tracker_min", "presence_bt")}, presence_back=presence_back_mode()),
             "dual": dual_state(), "toolmode": toolmode_state(), "power": power_calc(), "has": {"nmcli": bool(shutil.which("nmcli")), "ping": bool(shutil.which("ping")), "bleak": _has_bleak()}}
 
 
@@ -638,6 +638,12 @@ class ToolsWatch:
 
 
 def tools_cfg(key, value, mac=None):
+    if key == "presence_back":                                # 2.98.15 (577): off / ask / none
+        if value not in PRESENCE_BACK_KEYS:
+            return False, "invalid value"
+        CFG["presence_back"] = value
+        save_settings()
+        return True, ""
     try:
         if key in ("net_watch", "presence_auto", "bt_tracker_warn"):
             CFG[key] = bool(value)
@@ -665,8 +671,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.2", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31308479,
-         "sha256": "53c66ca1e9c16f8a0f8db3b398e483e353780a22173f60a75c759aead82a28fa"}
+SIM3D = {"version": "3D-4.3", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31356096,
+         "sha256": "16fc1ea1ae532f0f9fb63f9ddbf9e3f96d7964cbf15f3b1e5faa11a13df21742"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -807,8 +813,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-4.2", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24430183,
-           "sha256": "fd3d09597f495209849886fb29798a24e6fe83ddb24460590623b0b933c42b38", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-4.3", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24477641,
+           "sha256": "561e108c454eff7ba95353add63c6a1446a4090b1242925ab017e9e0306bcb4d", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 

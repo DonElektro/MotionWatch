@@ -1191,6 +1191,7 @@ def set_cfg(key, value):
         save_settings()
         if key == "patrol":
             log_event("patrol", "Patrol switched ON (web)" if CFG[key] else "Patrol switched OFF (web)")
+        _set_cfg_sim(key)
         return True, ""
     try:
         v = float(value)
@@ -1202,6 +1203,13 @@ def set_cfg(key, value):
     v = round(round(v / spec["step"]) * spec["step"], 2)
     CFG[key] = int(round(v)) if isinstance(CFG[key], int) else float(v)
     save_settings()
+    _set_cfg_sim(key)
     return True, ""
+
+
+def _set_cfg_sim(key):
+    """«Automatic updates» changed here: the connected simulator gets the same setting (545)"""
+    if key == "sim_autoupd" and CFG.get("sim_on") and sim_ready():
+        threading.Thread(target=simupd_push, args=(bool(CFG["sim_autoupd"]),), daemon=True, name="simupd").start()
 
 

@@ -452,6 +452,7 @@ func _upload(zp: String, tok: String, rounds: Array) -> void:
 static func load_ways() -> Array:
 	"""saved sneaking ways: shipped with the simulator (res://spielwege/) and from own rounds (user://spiel/*/), newest first"""
 	var out: Array = []
+	var seen := {}
 	for base in ["res://spielwege", "user://spiel"]:
 		var d := DirAccess.open(base)
 		if d == null:
@@ -470,7 +471,22 @@ static func load_ways() -> Array:
 		for fp in files:
 			var w = JSON.parse_string(FileAccess.get_file_as_string(fp))
 			if typeof(w) == TYPE_DICTIONARY and typeof(w.get("points")) == TYPE_ARRAY and w["points"].size() >= 6:
+				var key := way_key(w)
+				if seen.has(key):                         # Prüfstand 2: the same way (shipped and own) only once
+					continue
+				seen[key] = true
 				w["file"] = fp
+				w["key"] = key
 				out.append(w)
 	out.sort_custom(func(a, b): return str(a.get("date", "")) > str(b.get("date", "")))
 	return out
+
+
+static func way_key(w: Dictionary) -> String:
+	"""Prüfstand 2: the same sneaking way has the same key (scene + the points rounded to 10 cm) - for the file name on GitHub
+	and so the test bench walks each way once (pruefstand.py dedups with the same rule)"""
+	var t := str(w.get("scene", ""))
+	for q in w.get("points", []):
+		if typeof(q) == TYPE_ARRAY and q.size() >= 3:
+			t += ";%d,%d" % [int(round(float(q[1]) * 10.0)), int(round(float(q[2]) * 10.0))]
+	return t.md5_text().left(12)

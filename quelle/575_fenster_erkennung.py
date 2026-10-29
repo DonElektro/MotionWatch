@@ -9,7 +9,8 @@ TOGGLES += [
     ("Battery", "batt_save_on", "Battery saver: below the threshold fewer pictures and the AI less often (by itself)"),
 ]
 SLIDERS += [
-    ("Battery", "batt_save_pct", "Battery saver from (% battery; back to normal at +5 % or when charging)", 5, 60, 1),
+    ("Battery", "batt_save_pct", "🐢 Battery saver below (% battery): fewer pictures, the AI less often - normal again at +5 % or when charging", 5, 60, 1),
+    ("Battery", "mode_fire_min_pct", "🔥 Campfire games end below (% battery): back to the camping guard (0 = never)", 0, 50, 10),
     ("Battery", "batt_save_fps", "Battery saver: at most pictures per second", 1, 10, 1),
     ("Camera / Servos", "cam_vfov", "Camera: vertical field of view (°) - for the distance of a person (Camera Module 3: 41)", 20, 120, 1),
 ]

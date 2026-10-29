@@ -286,18 +286,4 @@ def selfheal_health_item(L):
             "tip": T("If it happens again: send the diagnosis package (Settings → Help).")}
 
 
-# ---- the self-check gets the two traffic lights (web and window use health_check) ----------------------------------------
-_health_check_base = health_check
-
-
-def health_check(lang=None):
-    h = _health_check_base(lang)
-    L = norm_lang(lang) if lang else cur_lang()
-    for fn in (sdcard_health_item, selfheal_health_item):
-        try:
-            h["items"].append(fn(L))
-        except Exception as e:
-            print(f"health item: {e}")
-    h["items"].sort(key=lambda x: HEALTH_ORDER.index(x["level"]))
-    h["count"] = {k: sum(1 for x in h["items"] if x["level"] == k) for k in HEALTH_ORDER}
-    return h
+# ---- the self-check shows the two traffic lights above: health_check (120) calls sdcard_health_item and selfheal_health_item

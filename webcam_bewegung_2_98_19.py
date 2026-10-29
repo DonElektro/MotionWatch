@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_18.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_19.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,10 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.19: «Aus» in der Push-Nachricht nur mit PIN, Push nach Stromausfall, Fehlerseiten übersetzt (Anmeldung «MoveEye»),
+    Nachtblick, Bildschirmleser, Aufnahmen nach Tagen löschen, Push ohne Bild; Code-Pflege (Doppelte-Funktionen-Prüfung,
+    Web-Rauchtest, Übersetzungs-Test), Echtbild-Prüfsatz, Einrichtungs-Skript; Prüfstand zählt echte Pushes; Fehlalarm-Jäger
+    lernt mit; Simulator 3D-4.3
   * 2.98.18: Nachts strenger: eine Person, die nur die Bewegung fand (ohne KI), muss in 3 Bildern aufrecht stehen – gegen
     Fehlalarme durch Tiere
   * 2.98.17: Fehler behoben: Lautsprecher-Suche (Bluetooth) startete die Tracker-Suche
@@ -885,10 +889,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_18.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_19.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_18.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_18.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_19.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_19.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -905,7 +909,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.18"
+APP_VERSION = "2.98.19"
 
 
 def default_data_dir():
@@ -1243,7 +1247,7 @@ CFG = {
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
@@ -1285,6 +1289,9 @@ STATE = {
     "disk": {"free_mb": None, "total_mb": None},
 }
 DEFAULTS = dict(CFG)
+# 2.98.18: old keys that are only READ from settings files of older versions (the migration takes them over) - never in CFG,
+# so they are not shown, saved or exported anywhere. key -> what took its place.
+MIGRATE_ONLY = {"simweek_on": "weekrep_sim (577, 2.98.15)", "back_ask": "presence_back (577, 2.98.15)"}
 WAYPOINTS = []          # [pan, tilt] positions in percent
 
 
@@ -1953,6 +1960,7 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Setup", "latitude", "Latitude (sunrise / sunset)", "float", (-66.0, 66.0)),
     ("Setup", "longitude", "Longitude (sunrise / sunset)", "float", (-180.0, 180.0)),
     ("Setup", "presence_hosts", "Phones / devices for presence (IP or name, comma separated)", "hosts", None),
+    ("Camping / protection", "presence_back", "When my phone comes back", "enum", "presence_back"),      # 2.98.15 (577)
 ]
 TEXT_SPECS = {k: (kind, extra) for s, k, l, kind, extra in TEXTS}
 
@@ -1960,6 +1968,8 @@ TEXT_SPECS = {k: (kind, extra) for s, k, l, kind, extra in TEXTS}
 def text_choice_pairs(key):
     """[(value, label)] of an enum setting. The thermal camera list changes with the camera scan, so it is computed."""
     kind, extra = TEXT_SPECS[key]
+    if extra == "presence_back":                              # 2.98.15 (577): the choice at the return of the phone
+        return [(k, tr(l)) for k, l in PRESENCE_BACK]
     if str(extra).startswith("mover_"):
         return mover_choice_pairs(extra)
     if extra == "net_modes":
@@ -2793,8 +2803,10 @@ def import_settings(data):
 
 
 def apply_settings(data):
+    """the loaded / imported settings into CFG (values checked), then the migrations of older files (131, 577)"""
     n = 0
     if not isinstance(data, dict):
+        _settings_migrations(None)
         return
     try:
         specs = web_specs()
@@ -2878,6 +2890,22 @@ def apply_settings(data):
         CFG["source"] = "auto"
     STATE["settings_status"] = f"loaded {n} settings, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules"
     log_event("sys", f"Settings loaded from {SETTINGS_FILE} ({n} values, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules)")
+    _settings_migrations(data.get("cfg"))
+
+
+def _settings_migrations(cfg_in):
+    """settings of older versions: modes / profiles (2.98.14, concept_migrate in 131), weekly report and return of the phone
+    (2.98.15, nachlauf_migrate in 577). A failing migration never stops the loading."""
+    try:
+        concept_migrate()
+    except Exception as e:
+        log_event("sys", f"Settings migration: {e}"[:150])
+    try:
+        did = nachlauf_migrate(cfg_in)
+        if did:
+            log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
+    except Exception as e:
+        log_event("sys", f"Settings migration (577): {e}"[:150])
 
 
 _SAVE_LOCK = threading.Lock()
@@ -4337,6 +4365,7 @@ class Notifier:
     def _send_main(self, p, jpg, fname):
         """the main channel (ntfy / Telegram / webhook) once; raises on failure; returns (HTTP code, where)"""
         kind = CFG["notify_type"]
+        jpg = sx_push_jpg(jpg)                           # «text only» - the picture stays in MoveEye (578)
         if kind == "telegram":
             return self._telegram(p, jpg, fname), "Telegram"
         if kind == "ntfy":
@@ -4349,6 +4378,7 @@ class Notifier:
             return r.status, _url_host(url)
 
     def _pushover(self, p, jpg, fname):
+        jpg = sx_push_jpg(jpg)                           # (578)
         ev = self._event(p)
         alarm = ev in ("person", "warm", "noise", "tamper")
         prio = 2 if alarm and CFG["pushover_emergency"] else (1 if alarm or ev == "test" else (-1 if ev == "info" else 0))
@@ -4642,7 +4672,7 @@ def ntfy_server_messages(since="24h"):
 #     «Bist du's?» mit dem Knopf «Aus».
 # (5 – Zonen nach Art – steht bei den Zonen in Teil 030.)
 # ----------------------------------------------------------------------------
-_ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_ask": False, "back_hold_s": 60,
+_ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_hold_s": 60,
             "report_strip": True}
 for _k, _v in _ALX_CFG.items():
     CFG.setdefault(_k, _v)
@@ -4702,6 +4732,9 @@ def alx_ntfy_actions(p):
     out = []
     for lab, url, clear in alx_buttons(p):
         lab = lab.replace(",", " ").replace(";", " ")
+        if url.endswith("/off"):                         # (578): «Off» opens the page with the PIN field - never in the background
+            out.append(f"view, {lab}, {url}" + (", clear=true" if clear else ""))
+            continue
         out.append(f"http, {lab}, {url}, method=POST" + (", clear=true" if clear else ""))
     return "; ".join(out)
 
@@ -4782,7 +4815,7 @@ def alx_routes(app, watch, reply, body):
         now = time.time()
         rec = [x for x in ALX["fails"].get(ip, []) if now - x < 600]
         if len(rec) >= 20:
-            return Response("too many wrong keys - wait 10 minutes", 429)
+            return sx_err(429, "keys")                   # in the own language (578)
         names = {"fa": "False alarm", "siren": "Siren", "off": "Off"}
         if request.method == "GET":                      # a browser (Telegram link): ask first - a link preview must not switch anything
             with ALX["lock"]:
@@ -4790,8 +4823,21 @@ def alx_routes(app, watch, reply, body):
             if not e or act not in e["acts"] or now - e["t"] > ALX_TTL:
                 rec.append(now); ALX["fails"][ip] = rec
                 return Response(_ALX_PAGE % ("MoveEye", _html.escape(tr("This button is no longer valid.")), ""), 404, mimetype="text/html")
+            if act == "off":                             # (578): switching off needs the protection PIN (or the web password)
+                L_ = sx_req_lang()
+                return Response(sx_page(tr("Switch the protection off?", L_), sx_off_form(L_), "⏻", L_), mimetype="text/html")
             form = ('<form method="post"><button type="submit">' + _html.escape(tr(names.get(act, act))) + "</button></form>")
             return Response(_ALX_PAGE % ("MoveEye", _html.escape(tr("Tap to confirm.")), form), mimetype="text/html")
+        if act == "off":                                 # (578): first the key (not used up), then the PIN, then switch off
+            with ALX["lock"]:
+                e0 = ALX["tok"].get(tok)
+            if e0 and act in e0["acts"] and act not in e0["used"] and now - e0["t"] <= ALX_TTL:
+                L_ = sx_req_lang()
+                ok_, err_ = sx_off_check(request.form.get("pin", ""), request.form.get("pw", ""), "push button")
+                if not ok_:
+                    if "text/html" in (request.headers.get("Accept") or "") or request.form:
+                        return Response(sx_page(tr("Switch the protection off?", L_), sx_off_form(L_, err_), "⏻", L_), 403, mimetype="text/html")
+                    return Response(tr("Off needs the protection PIN - open the message and tap «Off» there.", L_), 403, mimetype="text/plain")
         ok, err, e = alx_use(tok, act)
         if not ok:
             if err == "unknown":
@@ -5616,6 +5662,22 @@ def sdcard_health_item(L):
         tip = "The memory chip is quite worn: plan a replacement."
     return {"id": "sdwear", "icon": "🪪", "title": T("Memory card health"), "level": level, "text": " · ".join(parts), "tip": T(tip) if tip else "",
             "link": "/help#sdcard"}
+# ----------------------------------------------------------------------------
+# nach 2.98.17 (Wunsch Daniel, Prüfstand 2): der Prüfstand zählt nicht mehr jedes Aufflackern der Personen-Erkennung als Fehlalarm,
+# sondern die Push-Nachrichten, die MoveEye wirklich verschickt (im Test-Postfach der Simulation). Der Simulator bekommt dafür
+# mit jedem Zustand (290, «det») die letzten paar Nachrichten der Liste «Nachrichten» (065): Kennung, Zeit, Art – ohne Text,
+# ohne Bild, ohne Adresse. Er ordnet jede neue Nachricht dem Besucher zu, der in dem Moment sichtbar war (testrun.gd).
+# ----------------------------------------------------------------------------
+
+
+def msglog_recent(n=4):
+    """the newest n messages as [id, time, kind, status] (for the simulator / test bench) - cheap, from the cached list"""
+    try:
+        with MSGLOG["lock"]:
+            items = list(_msglog_load()[-n:])
+        return [[str(x.get("id", "")), round(float(x.get("t", 0.0)), 2), str(x.get("ev", "")), str(x.get("status", ""))] for x in items]
+    except Exception:
+        return []
 # ----------------------------------------------------------------------------
 # Hardware: servos + relays  (gpiozero -> pigpio -> simulation)
 # ----------------------------------------------------------------------------
@@ -8667,6 +8729,11 @@ def health_check(lang=None):
         add("bg", "⚙", "Background tasks", "ok", trf("{n} running", L, n=len(BEATS)))
     if STATE.get("update_new"):
         add("upd", "⬆", "Updates", "warn", T("new version available") + f": {STATE['update_new']}", "Settings → Updates.")
+    for fn in (sdcard_health_item, selfheal_health_item):     # memory card health and self-healing (145)
+        try:
+            out.append(fn(L))
+        except Exception as e:
+            print(f"health item: {e}")
     out.sort(key=lambda x: HEALTH_ORDER.index(x["level"]))
     cnt = {k: sum(1 for x in out if x["level"] == k) for k in HEALTH_ORDER}
     return {"items": out, "count": cnt}
@@ -8971,7 +9038,8 @@ SIMPLE_KEYS = {"tips_level", "use_case", "wake_on", "wake_time", "wake_days", "w
                "audio_out", "siren_on", "siren_volume", "siren_sound", "light_white_auto", "light_ir_auto", "report_on", "report_hour",
                "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_auto", "loop_on", "loop_hours",
                "cam_rotate", "cam_mirror", "sens_on", "rf433_on", "zigbee_on", "ble_on", "tag_missing", "eco_pir", "storm_on", "storm_drop", "storm_wind", "mover_mode", "mover_speed", "gpsmod_on", "gps_theft", "lens_check", "temp_alarm_on", "temp_hot", "temp_cold", "solar_on", "night_warn",
-               "tamper_on", "tamper_motion", "tamper_power", "backup_type", "deter_person_act", "deter_person_sound", "clap_on", "sneeze_on"}
+               "tamper_on", "tamper_motion", "tamper_power", "backup_type", "deter_person_act", "deter_person_sound", "clap_on", "sneeze_on",
+               "weekrep_sim", "mode_fire_min_pct", "presence_back", "presence_auto"}
 
 
 USE_HIDE = {"home": {"GPS module", "Solar panel", "Storm warning", "Wake-up alarm"},       # 2.98.9: «Simple» per use case
@@ -9402,7 +9470,7 @@ def _concept_fix_lights(d, live):
 
 
 def concept_migrate():
-    """called after loading / importing the settings (see apply_settings below); returns the list of what was changed"""
+    """called after loading / importing the settings (apply_settings in 040 calls it); returns the list of what was changed"""
     did = []
     m = str(CFG.get("mode") or "")
     if m == "night":
@@ -9428,18 +9496,6 @@ def concept_migrate():
     if did:
         log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
     return did
-
-
-_apply_settings_before_concept = apply_settings
-
-
-def apply_settings(data):                                   # 2.98.14: the same as before, then the migration above
-    r = _apply_settings_before_concept(data)
-    try:
-        concept_migrate()
-    except Exception as e:
-        log_event("sys", f"Settings migration: {e}"[:150])
-    return r
 # ----------------------------------------------------------------------------
 # 2.95.105: one place for everything that protects: a level instead of many switches
 #   off   - no alarms
@@ -11455,9 +11511,10 @@ threading.Thread(target=points_week_loop, daemon=True, name="points").start()
 FA_GAME = {"day": "", "n": 0}
 
 
-def fa_game_box(box):
+def fa_game_box(box, info=None):
     """the simulator says: MoveEye reported a person here, but no player and no visitor was there -> this part of the
-    picture (with some margin) goes to fa_learn/ as a «no person» example, like the false alarm learning (21). At most 40 a day."""
+    picture (with some margin) goes to fa_learn/ as a «no person» example, like the false alarm learning (21). At most 40 a day.
+    2.98.18: «info» = the situation from the game «Fehlalarm-Jäger» (lure, distance, light, weather) - kept next to the picture."""
     try:
         x, y, w_, h_ = [float(v) for v in (box or [])[:4]]
     except (TypeError, ValueError):
@@ -11481,9 +11538,17 @@ def fa_game_box(box):
     os.makedirs(d, exist_ok=True)
     FA_GAME["n"] += 1
     cv2.imwrite(os.path.join(d, "%02d.jpg" % FA_GAME["n"]), f[y0:y1, x0:x1], [cv2.IMWRITE_JPEG_QUALITY, 88])
+    sit = {}
+    if isinstance(info, dict):                          # only short, plain values (it comes over the network)
+        for k, v in list(info.items())[:16]:
+            if isinstance(k, str) and isinstance(v, (str, int, float, bool)) and len(k) <= 20:
+                sit[re.sub(r"[^a-z_]", "", k.lower())[:20]] = v[:40] if isinstance(v, str) else v
     try:
         with open(os.path.join(d, "info.json"), "w") as fo:
             json.dump({"label": "no_person", "cause": "game", "from": "simulator game", "crop": True, "n": FA_GAME["n"]}, fo)
+        if sit:                                         # 2.98.18: one file per case with its situation
+            with open(os.path.join(d, "%02d.json" % FA_GAME["n"]), "w") as fo:
+                json.dump({"label": "no_person", "box": [round(x, 3), round(y, 3), round(w_, 3), round(h_, 3)], "situation": sit}, fo)
     except OSError:
         pass
     log_event("sys", f"False alarm in a game: picture part kept as «no person» ({FA_GAME['n']} today)")
@@ -12016,21 +12081,7 @@ def selfheal_health_item(L):
             "tip": T("If it happens again: send the diagnosis package (Settings → Help).")}
 
 
-# ---- the self-check gets the two traffic lights (web and window use health_check) ----------------------------------------
-_health_check_base = health_check
-
-
-def health_check(lang=None):
-    h = _health_check_base(lang)
-    L = norm_lang(lang) if lang else cur_lang()
-    for fn in (sdcard_health_item, selfheal_health_item):
-        try:
-            h["items"].append(fn(L))
-        except Exception as e:
-            print(f"health item: {e}")
-    h["items"].sort(key=lambda x: HEALTH_ORDER.index(x["level"]))
-    h["count"] = {k: sum(1 for x in h["items"] if x["level"] == k) for k in HEALTH_ORDER}
-    return h
+# ---- the self-check shows the two traffic lights above: health_check (120) calls sdcard_health_item and selfheal_health_item
 # ----------------------------------------------------------------------------
 # The simulator (3D-3.94, realism.gd) makes its pictures look like the real ones of THIS MoveEye: brightness, contrast,
 # saturation, colour cast (red / blue to green), sharpness and grain - day and night separately. The real pictures are the
@@ -19925,7 +19976,8 @@ def sim_state():
             "real_look": real_look(),               # 2.98.6: the look of the real pictures (146_echt_abgleich.py, realism.gd 3D-3.94)
             "det": {"persons": int(STATE.get("persons") or 0), "present": list(STATE.get("present") or []), "armed": is_armed(),
                     "boxes": list(STATE.get("person_boxes") or []) if STATE.get("persons") else [],   # 2.95.75: 0..1 of the head camera
-                    "noise": bool(AUDIO is not None and AUDIO.noisy())},
+                    "noise": bool(AUDIO is not None and AUDIO.noisy()),
+                    "pushes": msglog_recent(4)},             # after 2.98.17: the test bench counts real pushes (068)
             # the tracks of the mover: -1 … 1 each (from 2.94.0)
             "drive": {"l": MOVER["l"], "r": MOVER["r"]},
             # 2.96.5 (makeover 9 / 10): the twin - zones (0..1 of the picture), patrol points (degrees), the place
@@ -20785,8 +20837,8 @@ def tools_state():
             "bt": {"running": T["bt"]["running"], "t": T["bt"]["t"], "devices": T["bt"]["devices"], "msg": T["bt"]["msg"],
                    "trackers": [{"addr": a, "kind": x["kind"], "min": round((x["last"] - x["first"]) / 60.0)} for a, x in T["bt"]["trackers"].items()]},
             "servo": T["servo"], "sd": T["sd"], "presence": {"here": T["presence"]["here"], "since": T["presence"]["since"], "who": T["presence"]["who"]},
-            "cfg": {k: CFG.get(k) for k in ("net_watch", "net_known", "presence_macs", "presence_auto", "presence_gone_min", "bt_tracker_warn",
-                                            "bt_tracker_min", "presence_bt")},
+            "cfg": dict({k: CFG.get(k) for k in ("net_watch", "net_known", "presence_macs", "presence_auto", "presence_gone_min", "bt_tracker_warn",
+                                                 "bt_tracker_min", "presence_bt")}, presence_back=presence_back_mode()),
             "dual": dual_state(), "toolmode": toolmode_state(), "power": power_calc(), "has": {"nmcli": bool(shutil.which("nmcli")), "ping": bool(shutil.which("ping")), "bleak": _has_bleak()}}
 
 
@@ -20820,6 +20872,12 @@ class ToolsWatch:
 
 
 def tools_cfg(key, value, mac=None):
+    if key == "presence_back":                                # 2.98.15 (577): off / ask / none
+        if value not in PRESENCE_BACK_KEYS:
+            return False, "invalid value"
+        CFG["presence_back"] = value
+        save_settings()
+        return True, ""
     try:
         if key in ("net_watch", "presence_auto", "bt_tracker_warn"):
             CFG[key] = bool(value)
@@ -20847,8 +20905,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.2", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31308479,
-         "sha256": "53c66ca1e9c16f8a0f8db3b398e483e353780a22173f60a75c759aead82a28fa"}
+SIM3D = {"version": "3D-4.3", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31356096,
+         "sha256": "16fc1ea1ae532f0f9fb63f9ddbf9e3f96d7964cbf15f3b1e5faa11a13df21742"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -20989,8 +21047,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-4.2", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24430183,
-           "sha256": "fd3d09597f495209849886fb29798a24e6fe83ddb24460590623b0b933c42b38", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-4.3", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24477641,
+           "sha256": "561e108c454eff7ba95353add63c6a1446a4090b1242925ab017e9e0306bcb4d", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -21934,6 +21992,10 @@ def _tunea_autotune_base():
             tu.calibrated = True; tu.base_min_area = float(CFG["min_area"]); tu.last_eval = time.time()
         except Exception:
             pass
+    try:                                                     # 2.98.15 (577): the measured values = the middle of the ±20 %
+        autotune_base_set("assistant")
+    except Exception as e:
+        log_event("sys", f"Auto-tune base: {e}"[:120])
 
 
 def tune_assist_stop():
@@ -24653,7 +24715,7 @@ class SimLink:
                 elif op_ == "look":                         # 2.95.103: «Kopf steuern» in the simulator window
                     move_camera(str(mc_.get("dir") or ""), mc_.get("step", 3))
                 elif op_ == "fa_box":                       # 2.98.2: a box of a game without a player: a false alarm to learn from
-                    fa_game_box(mc_.get("box"))
+                    fa_game_box(mc_.get("box"), mc_.get("info"))      # 2.98.18: with the situation («Fehlalarm-Jäger»)
                 elif op_ == "track":                        # 2.98.1: «Verfolgen» in the simulator = «Folgen» of MoveEye
                     follow_set(bool(mc_.get("on")), "simulator")
                 elif op_ == "light":                        # 2.95.103: the white light from the simulator (on / off)
@@ -26354,7 +26416,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_18.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_19.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -27245,7 +27307,7 @@ def run_paused(until, argv_rest):
                     except (ValueError, IndexError):
                         ok = False
                 if not ok:
-                    self._send(401, "Login required", "text/plain", {"WWW-Authenticate": 'Basic realm="Motion Watch"'}); return
+                    self._send(401, tr("Login required"), "text/plain", {"WWW-Authenticate": 'Basic realm="MoveEye", charset="UTF-8"'}); return
             state["go"] = True
             self._send(200, "<meta http-equiv='refresh' content='15;url=/'>" + tr("Starting …"))
 
@@ -27658,6 +27720,9 @@ def self_test(folder=""):
     chk("Web pages (render + JavaScript)", pages)
     chk("Timeline, weekly report, blur faces when sharing", verlauf_selftest)     # 2.98.14 (425, 426, 375)
     chk("One weekly report, return of the phone, auto-tuner ±20 % (migrations)", nachlauf_selftest)     # 2.98.15 (577)
+    chk("Off in the push only with the PIN, push after a power cut, recordings by age, push without picture", sicher_selftest)   # (578)
+    for _name, _fn in SELFTEST_EXTRA:                       # 2.98.18: further checks of other parts (395 …)
+        chk(_name, _fn)
 
     if folder:
         def manifest():
@@ -27710,6 +27775,81 @@ def make_manifest(folder, base_url, sign_key=""):
     return 0
 
 
+# ----------------------------------------------------------------------------
+# 2.98.18 (Wunsch Daniel, Code-Pflege):
+#   - Übersetzungen: welche sichtbaren Texte (tr() / trf() im Programm, t() und data-i18n in den Webseiten, die Beschriftungen
+#     der Einstellungen) haben auf Französisch / Italienisch / Romanisch noch keine Übersetzung? Nur eine Warnung im Selbsttest
+#     (Anzahl + die ersten 20), kein Fehler: es erscheint dann Englisch (fr / it) bzw. Deutsch (rm).
+#   - MIGRATE_ONLY (020): alte Schlüssel, die nur noch aus Dateien älterer Versionen gelesen werden, stehen nirgends sonst
+#     (nicht in CFG, nicht in den Einstellungs-Listen, nicht in der Sicherung / dem Diagnose-Paket).
+# Zusätzliche Prüfungen des Selbsttests stehen in SELFTEST_EXTRA (self_test in 390 ruft sie nach den eigenen auf).
+# ----------------------------------------------------------------------------
+SELFTEST_EXTRA = []                                         # [(name, function)] - like chk() in self_test (390)
+
+_I18N_PY = re.compile(r"""(?<![\w.])(?:tr|trf)\(\s*((?:"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'))\s*[,)]""")
+_I18N_JS = re.compile(r"""(?<![\w.$])t\(\s*((?:"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'))\s*[,)]""")
+_I18N_ATTR = re.compile(r"""data-i18n(?:-ph)?=\\?"([^"\\]+)\\?\"""")
+
+
+def i18n_used_keys(src=None):
+    """the English texts the program shows: tr() / trf() (Python), t() and data-i18n (web pages), the settings labels"""
+    import ast as _ast
+    import html as _html
+    if src is None:
+        with open(os.path.abspath(__file__), encoding="utf-8") as f:
+            src = f.read()
+    keys = set()
+    for rx in (_I18N_PY, _I18N_JS):
+        for m in rx.finditer(src):
+            try:
+                s = _ast.literal_eval(m.group(1))
+            except (ValueError, SyntaxError):
+                continue
+            if isinstance(s, str):
+                keys.add(s)
+    for m in _I18N_ATTR.finditer(src):
+        keys.add(_html.unescape(m.group(1)))
+    for lst in (TOGGLES, SLIDERS, TEXTS):
+        keys.update(x[2] for x in lst)
+    keys.update(SECTIONS)
+    return {k for k in keys if re.search(r"[A-Za-z]{2}", k) and "{" not in k[:1]}
+
+
+def i18n_missing(langs=("fr", "it", "rm"), src=None):
+    """{lang: sorted list of the used texts without a translation in TRX[lang]}"""
+    keys = i18n_used_keys(src)
+    return {L: sorted(k for k in keys if not TRX.get(L, {}).get(k)) for L in langs}
+
+
+def i18n_selftest():
+    miss = i18n_missing()
+    n = len(i18n_used_keys())
+    if not any(miss.values()):
+        return f"{n} texts, all translated"
+    out = [f"{n} texts; warning only - without translation:"]
+    for L, ks in miss.items():
+        out.append(f"   {L}: {len(ks)} – " + " · ".join(repr(k[:50]) for k in ks[:20]))
+    return "\n".join(out)
+
+
+def migrate_only_selftest():
+    """the keys only taken over from old files are nowhere else; and an old file is still taken over"""
+    lists = {x[1] for x in TOGGLES + SLIDERS + TEXTS}
+    bad = [k for k in MIGRATE_ONLY if k in CFG or k in DEFAULTS or k in lists or k in SIMPLE_KEYS]
+    assert not bad, f"MIGRATE_ONLY keys still in CFG / the settings lists: {bad}"
+    assert not any(k in settings_data()["cfg"] for k in MIGRATE_ONLY), "MIGRATE_ONLY key in the saved settings"
+    keep = {k: CFG.get(k) for k in ("weekrep_sim", "presence_back")}
+    try:
+        CFG["weekrep_sim"] = True; CFG["presence_back"] = "ask"
+        nachlauf_migrate({"simweek_on": False, "back_ask": False, "presence_auto": False})
+        assert CFG["weekrep_sim"] is False and CFG["presence_back"] == "none", "old file not taken over"
+    finally:
+        CFG.update(keep)
+    return f"{len(MIGRATE_ONLY)} old keys only for taking over: " + ", ".join(sorted(MIGRATE_ONLY))
+
+
+SELFTEST_EXTRA.append(("Old settings only for taking over (MIGRATE_ONLY)", migrate_only_selftest))
+SELFTEST_EXTRA.append(("Translations fr / it / rm (texts in use)", i18n_selftest))
 # ----------------------------------------------------------------------------
 # Power: shut down / restart the Raspberry Pi (web page + desktop window). The recording is finished and the settings are
 #   saved first. Works as root, with the polkit rule of --allow-wifi or (Raspberry Pi OS) with sudo without a password.
@@ -33684,7 +33824,7 @@ async function gwGo(d) {
 let SPEC = null, SPECON = true, SPECRES = "", specT = null;
 try { SPECON = localStorage.getItem("mw-sim-spec") !== "0"; } catch (e) {}
 const MODE_TXT = {camera: "Alle gegen die Kamera", guard: "Wächter", teamguard: "Team gegen Team", mw: "Gegen MoveEye", mwhand: "Team gegen MoveEye",
-  patrol: "Patrouille", seek: "Verstecken mit dem Rover", free: "Zonen-Check"};     // 2.98.0: all game types
+  patrol: "Patrouille", seek: "Verstecken mit dem Rover", free: "Zonen-Check", jaeger: "Fehlalarm-Jäger"};     // 2.98.0: all game types (2.98.18: Fehlalarm-Jäger)
 const ST_IC = {play: "🏃", goal: "🎉", jail: "🔒", out: "👀", lobby: "⏳"};
 async function specPoll() {
   clearTimeout(specT);
@@ -33743,7 +33883,7 @@ function specPaint() {
   if (!run) { $("#s-specres").hidden = true; SPECRES = ""; return; }
   const h = $("#s-spech"); h.innerHTML = "";
   const tm = el("span", "tm" + (G.round === "play" && G.left <= 60 ? " hot" : ""), G.round === "countdown" ? "⏳ " + (G.cd || 0) : G.round === "play" ? "⏱ " + mmss(G.left || 0) : "🏁");
-  h.append(tm, el("span", "", (MODE_TXT[G.mode] || G.mode) + " · " + (G.goal_mode === "flag" ? "🚩 " + (G.caps || [0, 0]).join(" : ") : "🎯 " + (G.goal || ""))));
+  h.append(tm, el("span", "", (MODE_TXT[G.mode] || G.mode) + " · " + (G.goal_mode === "flag" ? "🚩 " + (G.caps || [0, 0]).join(" : ") : G.mode === "jaeger" ? "🎉 " + ((G.jaeger || {}).n || 0) + ((G.jaeger || {}).mw === false ? " · ⚠ MoveEye" : "") : "🎯 " + (G.goal || ""))));
   if (G.items_all) h.appendChild(el("span", "", "💎 " + (G.items_all - G.items_left) + "/" + G.items_all));
   if (G.last_minute && G.round === "play") h.appendChild(el("span", "", "⏰"));
   if (G.night) h.appendChild(el("span", "", "🌙"));
@@ -33753,7 +33893,7 @@ function specPaint() {
   (G.players || []).forEach(p => { const c = el("span", "pl"); const d = el("span", "dot"); d.style.background = p.c;
     c.append(d, el("span", "", (ST_IC[p.s] || "") + " " + p.n + (p.r === "guard" ? " 👮" : "")));
     if (p.r !== "guard" && p.s === "play") { const mb = el("span", "mb"), i = el("i", p.susp > 70 ? "d" : p.susp > 35 ? "w" : ""); i.style.width = Math.max(4, p.susp) + "%"; mb.appendChild(i); c.appendChild(mb); }
-    const extra = (p.k ? " 🚨" + p.k : "") + (p.i ? " 💎" + p.i : "") + (p.pw === "cloak" ? " 🌫" : p.pw === "turbo" ? " ⚡" : "") + (p.carry ? " 💰" : "")
+    const extra = (p.lure ? " " + p.lure : "") + (p.fa ? " 🎉" + p.fa : "") + (p.k ? " 🚨" + p.k : "") + (p.i ? " 💎" + p.i : "") + (p.pw === "cloak" ? " 🌫" : p.pw === "turbo" ? " ⚡" : "") + (p.carry ? " 💰" : "")
       + (p.dc ? " 🦆" : "") + (p.hid ? " 🌳" : "") + (G.cps_all && p.cp ? " 🚩" + p.cp + "/" + G.cps_all : "") + (p.hc ? " 🎯" : "");
     if (extra) c.appendChild(el("span", "", extra.trim()));
     P.appendChild(c); });
@@ -33763,6 +33903,8 @@ function specPaint() {
   if (G.round === "end" && G.res && G.res.length) {
     const sig = JSON.stringify(G.res);
     if (SPECRES !== sig && SPECRES !== "closed:" + sig) { SPECRES = sig; R.innerHTML = ""; const bx = el("div", "bx"); bx.appendChild(el("h3", "", "🏆 " + t("Result")));
+      if (G.jres && G.jres.text) { const jr = el("div", "", (G.jres.n ? "🎉 " : "🛡 ") + G.jres.text); jr.style.cssText = "font-size:22px;font-weight:800;margin:4px 0 8px"; bx.appendChild(jr);   // 2.98.18: «Fehlalarm-Jäger»
+        if ((G.jres.cases || []).length) bx.appendChild(el("div", "mut", G.jres.cases.map(c => c[0] + " " + c[1] + " (" + c[2] + ", " + Math.round(c[3]) + " m)").join(" · "))); }
       if (G.fres && G.fres.text) { const fr = el("div", "", "🚩 " + G.fres.text + " – " + G.fres.title); fr.style.cssText = "font-size:26px;font-weight:800;margin:4px 0 8px"; bx.appendChild(fr); }   // 3D-4.x
       if (G.duel && G.duel.text) { const du = el("div", "", "🛡 " + t("Duel") + ": 🤖 MoveEye " + G.duel.mw + " : " + G.duel.human + " " + G.duel.who); du.style.cssText = "font-size:22px;font-weight:800;margin:4px 0 2px";
         bx.append(du, el("div", "", G.duel.text)); }
@@ -47139,6 +47281,7 @@ def set_cfg(key, value):
         save_settings()
         if key == "patrol":
             log_event("patrol", "Patrol switched ON (web)" if CFG[key] else "Patrol switched OFF (web)")
+        _set_cfg_sim(key)
         return True, ""
     try:
         v = float(value)
@@ -47150,7 +47293,14 @@ def set_cfg(key, value):
     v = round(round(v / spec["step"]) * spec["step"], 2)
     CFG[key] = int(round(v)) if isinstance(CFG[key], int) else float(v)
     save_settings()
+    _set_cfg_sim(key)
     return True, ""
+
+
+def _set_cfg_sim(key):
+    """«Automatic updates» changed here: the connected simulator gets the same setting (545)"""
+    if key == "sim_autoupd" and CFG.get("sim_on") and sim_ready():
+        threading.Thread(target=simupd_push, args=(bool(CFG["sim_autoupd"]),), daemon=True, name="simupd").start()
 
 
 # ---- 2.98.13: simulator updates have one owner - the simulator's own setting «Neue Versionen» (update_mode) -----------------
@@ -47215,15 +47365,7 @@ def simupd_sync():
 def sim_owns_updates():
     return SIMUPD.get("mode") is not None
 
-
-_set_cfg_base = set_cfg
-
-
-def set_cfg(key, value):
-    ok, msg = _set_cfg_base(key, value)
-    if ok and key == "sim_autoupd" and CFG.get("sim_on") and sim_ready():
-        threading.Thread(target=simupd_push, args=(bool(CFG["sim_autoupd"]),), daemon=True, name="simupd").start()
-    return ok, msg
+# set_cfg (540) passes «sim_autoupd» changed on the web page to the simulator (_set_cfg_sim -> simupd_push)
 class WebStream:
     def __init__(self, watch):
         self.watch = watch; self.started = False
@@ -47360,7 +47502,7 @@ class WebStream:
                 if (request.content_length or 0) < 1 << 20:
                     request.get_data()                      # read the body first, else the connection is reset
                 log_event("web", f"Blocked a request from another web page ({request.headers.get('Origin', '')[:60]}) to {request.path}")
-                return Response("Forbidden: request from another web page", 403)
+                return sx_err(403, "foreign")                  # in the own language (578)
             if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/na/", "/spiele", "/tv/", "/nt/", "/info", "/almanach")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
@@ -47380,7 +47522,7 @@ class WebStream:
             recent = [x for x in fails.get(ip, []) if now - x < 300]
             if len(recent) >= 8:
                 fails[ip] = recent
-                return Response("Too many failed logins - try again in a few minutes", 429, {"Retry-After": "300"})
+                return sx_err(429, "toomany", {"Retry-After": "300"})
             a = request.authorization
             who = user_login(a.username or "", a.password or "") if a else None
             if who:
@@ -47397,7 +47539,7 @@ class WebStream:
             if len(fails) > 500:
                 for k in [k for k, v in fails.items() if not v or now - v[-1] > 300]:
                     fails.pop(k, None)
-            return Response("Login required", 401, {"WWW-Authenticate": 'Basic realm="Motion Watch"'})
+            return sx_err(401, "login", {"WWW-Authenticate": 'Basic realm="MoveEye", charset="UTF-8"'})   # guests see the realm
 
         @app.before_request
         def role_guard():                           # users with a role: what they may do
@@ -48382,6 +48524,7 @@ class WebStream:
 
         timeline_routes(app, reply, body, request, Response)    # 2.98.14: Verlauf → Zeitleiste + weekly report (523)
         alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
+        sx_routes(app, watch, reply, body)                 # night view / screen reader script, «holiday over», error pages (578)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -49834,7 +49977,7 @@ class WebStream:
         @app.route("/g/<token>")
         def guest_page(token):
             if not guest_ok(token):
-                return Response("This guest link is not valid (any more).", 404, mimetype="text/plain")
+                return sx_err(404, "guest")
             keep = COMMON_JS[COMMON_JS.index("function keepStream"):COMMON_JS.index("\nconst post")]
             gt = {L: {k: TRX[L][k] for k in GUEST_KEYS if TRX[L].get(k)} for L in ("fr", "it", "rm")}
             return Response(GUEST_PAGE.replace("__BASE__", "/g/" + token).replace("/*KEEP*/", keep).replace("/*GT*/{}", json.dumps(gt, ensure_ascii=False)),
@@ -50859,7 +51002,6 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
     ("Simulator", "rover_alarm", "Rover: at a person alarm drive there by itself (simulator)"),
-    ("Simulator", "simweek_on", "Week report of the simulator diary as a push (Monday morning)"),
     ("Simulator", "fa_learn_auto", "False alarm marked: re-enact it in the simulator and learn from it"),
     ("Simulator", "rehearsal_on_arm", "Night rehearsal by itself when arming in the simulation"),
     ("Simulator", "weekcheck_on", "Recognition check every week (Sunday night) with a warning when it got worse"),
@@ -50964,6 +51106,7 @@ TOGGLES = [  # (section, key, label)
     ("Updates", "update_push", "Push message when a new version is there"),
     ("Night report", "report_on", "Night report: push message in the morning with what happened in the night"),
     ("Night report", "weekrep_on", "Weekly detection report: push once a week with the trend and a tip"),
+    ("Night report", "weekrep_sim", "Weekly report: with the week in the simulator (visits, animals, recognised persons)"),
     ("Night report", "weather_on", "Day overview: weather from the internet (Open-Meteo; the location is sent there)"),
     ("Night report", "diary_on", "Note animals, persons and noises (animal diary + night report)"),
     ("Power saving", "eco_on", "Power saving mode: fewer pictures while all is quiet"),
@@ -51475,7 +51618,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.18")
+        self.root.title("MoveEye 2.98.19")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -51828,7 +51971,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.18 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.19 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -54344,7 +54487,7 @@ TOGGLES.extend([
     ("Notifications", "push_actions", "Buttons in the push message: False alarm · Siren · Off (needs the address of this page for links)"),
     ("Notifications", "alarm_confirm2", "Double confirmation: a person alarm only when the AI and the thermal camera agree or the AI sees the person twice in a row (otherwise only a pre-alarm)"),
     ("Camping / protection", "arm_announce", "Announcement when arming: the loudspeaker says battery, Wi-Fi and camera - or what is missing"),
-    ("Camping / protection", "back_ask", "«Is it you?»: when my phone comes back, person alarms wait and a push message asks (button Off)"),
+    ("Camping / protection", "presence_auto", "Protection on automatically when my phone is gone (choose the phone: Tools → Am I at home?)"),
     ("Night report", "report_strip", "Morning push short: one sentence and a picture strip of the night"),
 ])
 SLIDERS.extend([
@@ -54503,7 +54646,8 @@ TOGGLES += [
     ("Battery", "batt_save_on", "Battery saver: below the threshold fewer pictures and the AI less often (by itself)"),
 ]
 SLIDERS += [
-    ("Battery", "batt_save_pct", "Battery saver from (% battery; back to normal at +5 % or when charging)", 5, 60, 1),
+    ("Battery", "batt_save_pct", "🐢 Battery saver below (% battery): fewer pictures, the AI less often - normal again at +5 % or when charging", 5, 60, 1),
+    ("Battery", "mode_fire_min_pct", "🔥 Campfire games end below (% battery): back to the camping guard (0 = never)", 0, 50, 10),
     ("Battery", "batt_save_fps", "Battery saver: at most pictures per second", 1, 10, 1),
     ("Camera / Servos", "cam_vfov", "Camera: vertical field of view (°) - for the distance of a person (Camera Module 3: 41)", 20, 120, 1),
 ]
@@ -54703,7 +54847,7 @@ def _tk_tl_open(app, index):
 #     «automatisch an, wenn mein Handy weg ist». Übernahme der alten Werte: presence_auto → off, sonst back_ask → ask, sonst none.
 #   6 Auto-Tuner (190): min_area / sensitivity / speed_consistency höchstens ±20 % um die gemessenen Werte (Kalibrierung oder
 #     Assistent «Erkennung verbessern», 312). Der Optimierer schaltet den Tuner nicht mehr (OPT_KEYS, 310).
-# Hier statt in den grossen Listen von 570, damit dort nichts verschoben wird.
+# Die Listen-Einträge stehen seit 2.98.18 direkt in 030 / 130 / 570 / 571 / 575 (keine Nachträge mehr hier).
 # ----------------------------------------------------------------------------
 for _k, _v in {"weekrep_sim": True, "presence_back": "ask", "auto_tune_base": {}}.items():
     CFG.setdefault(_k, _v)
@@ -54721,59 +54865,11 @@ def presence_back_mode():
     return v if v in PRESENCE_BACK_KEYS else "ask"
 
 
-def _nl_put_after(lst, after_key, item, idx=1):
-    """item into a settings list right after the entry with this key (else at the end); an entry with the same key is replaced"""
-    lst[:] = [x for x in lst if x[idx] != item[idx]]
-    for i, x in enumerate(lst):
-        if x[idx] == after_key:
-            lst.insert(i + 1, item)
-            return
-    lst.append(item)
+# ---- the settings lists (web and window): since 2.98.18 directly in the lists - weekrep_sim (570, after weekrep_on),
+# presence_auto (571, where back_ask was), batt_save_pct / mode_fire_min_pct (575), presence_back (TEXTS in 030), SIMPLE_KEYS (130).
+# simweek_on and back_ask are only read by nachlauf_migrate (MIGRATE_ONLY, 020).
 
-
-# ---- the settings lists (web and window) ---------------------------------------------------------------------------------
-_nl_put_after(TOGGLES, "weekrep_on", ("Night report", "weekrep_sim", "Weekly report: with the week in the simulator (visits, animals, recognised persons)"))
-_nl_put_after(TOGGLES, "back_ask", ("Camping / protection", "presence_auto", "Protection on automatically when my phone is gone (choose the phone: Tools → Am I at home?)"))
-TOGGLES[:] = [x for x in TOGGLES if x[1] not in ("simweek_on", "back_ask")]
-for _i, _x in enumerate(SLIDERS):
-    if _x[1] == "batt_save_pct":
-        SLIDERS[_i] = ("Battery", "batt_save_pct", "🐢 Battery saver below (% battery): fewer pictures, the AI less often - normal again at +5 % or when charging", _x[3], _x[4], _x[5])
-_nl_put_after(SLIDERS, "batt_save_pct", ("Battery", "mode_fire_min_pct", "🔥 Campfire games end below (% battery): back to the camping guard (0 = never)", 0, 50, 10))
-_nl_put_after(TEXTS, "", ("Camping / protection", "presence_back", "When my phone comes back", "enum", "presence_back"))
-TEXT_SPECS["presence_back"] = ("enum", "presence_back")
-SIMPLE_KEYS.update({"weekrep_sim", "mode_fire_min_pct", "presence_back", "presence_auto"})
-
-_text_choice_pairs_before_nl = text_choice_pairs
-
-
-def text_choice_pairs(key):                                 # 2.98.15: + the choice at the return of the phone
-    if TEXT_SPECS.get(key, (None, None))[1] == "presence_back":
-        return [(k, tr(l)) for k, l in PRESENCE_BACK]
-    return _text_choice_pairs_before_nl(key)
-
-
-# ---- tools page «Am I at home?» (300) ---------------------------------------------------------------------------------------
-_tools_state_before_nl = tools_state
-_tools_cfg_before_nl = tools_cfg
-
-
-def tools_state():
-    r = _tools_state_before_nl()
-    try:
-        r["cfg"]["presence_back"] = presence_back_mode()
-    except (KeyError, TypeError):
-        pass
-    return r
-
-
-def tools_cfg(key, value, mac=None):
-    if key == "presence_back":
-        if value not in PRESENCE_BACK_KEYS:
-            return False, "invalid value"
-        CFG["presence_back"] = value
-        save_settings()
-        return True, ""
-    return _tools_cfg_before_nl(key, value, mac)
+# text_choice_pairs (030) and the tools page «Am I at home?» (tools_state / tools_cfg, 300) know presence_back.
 
 
 # ---- the auto-tuner: ±20 % around the measured values -----------------------------------------------------------------------
@@ -54818,20 +54914,12 @@ def autotune_clamp(key, value):
     return v
 
 
-_tunea_autotune_base_before_nl = _tunea_autotune_base
-
-
-def _tunea_autotune_base():                                # 312: after «Erkennung verbessern» (and its «undo») = the new middle
-    _tunea_autotune_base_before_nl()
-    try:
-        autotune_base_set("assistant")
-    except Exception as e:
-        log_event("sys", f"Auto-tune base: {e}"[:120])
+# _tunea_autotune_base (312) calls autotune_base_set("assistant") after «Erkennung verbessern» (and its «undo»).
 
 
 # ---- taking over the settings of 2.98.14 and older ----------------------------------------------------------------------------
 def nachlauf_migrate(cfg_in):
-    """cfg_in = the «cfg» of the loaded / imported file; returns the list of what was taken over"""
+    """cfg_in = the «cfg» of the loaded / imported file (apply_settings in 040 calls it); returns the list of what was taken over"""
     did = []
     if not isinstance(cfg_in, dict):
         return did
@@ -54846,20 +54934,6 @@ def nachlauf_migrate(cfg_in):
     if not isinstance(CFG.get("auto_tune_base"), dict):
         CFG["auto_tune_base"] = {}
     return did
-
-
-_apply_settings_before_nl = apply_settings
-
-
-def apply_settings(data):                                   # 2.98.15: the same as before, then the migration above
-    r = _apply_settings_before_nl(data)
-    try:
-        did = nachlauf_migrate(data.get("cfg") if isinstance(data, dict) else None)
-        if did:
-            log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
-    except Exception as e:
-        log_event("sys", f"Settings migration (577): {e}"[:150])
-    return r
 
 
 def nachlauf_selftest():
@@ -54891,6 +54965,751 @@ def nachlauf_selftest():
         assert "with_sim" in wr and wr["text"]
     finally:
         CFG.update(keep); AUTOTUNE_LAST.clear()
+    return True
+# ----------------------------------------------------------------------------
+# Wunsch Daniel (29.10.2026):
+#  1  «Aus» in der Push-Nachricht nur mit PIN: der Knopf öffnet eine kleine Seite mit dem PIN-Feld (Schutz-PIN; ohne PIN das
+#     Web-Passwort; ohne beides: «Bitte zuerst eine Schutz-PIN setzen», nichts wird ausgeschaltet). Falsche PINs: dieselbe Sperre
+#     wie beim Ausschalten im Web (5 in 10 Minuten, ab 3 Diebstahl-Alarm). «Fehlalarm» und «Sirene» bleiben ohne PIN. (066)
+#  2  Nach einem unsauberen Ende (Strom weg, Absturz) eine Info-Push «MoveEye war 14 Min. aus (Strom/Absturz) – jetzt wieder
+#     Wachsam». Nicht nach einem Update / Neustart (die enden sauber, 390 run_state.json «clean»).
+#  3  Fehlermeldungen des Web-Servers in der eigenen Sprache als kleine Seite (Anmeldung, zu viele Versuche, fremde Seite,
+#     Gast-Link, unbekannte Adresse). Basic-Realm «MoveEye» (Gäste sehen ihn); das Vertrauens-Cookie bleibt gleich.
+#  4  «Nachtblick»: ganze Seite sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt (pro Browser gemerkt);
+#     im Fenster ein Knopf ◑ (Einstellung tk_night).
+#  5  Bildschirmleser: Knöpfe und Symbole bekommen aria-label / title in der eigenen Sprache (Hauptseite, Kopf, Navigation).
+#  6  «Aufnahmen nach … Tagen löschen» (0 = nie) neben der Grössen-Grenze; Knopf «Ferien vorbei: alle Aufnahmen löschen»
+#     (Bestätigung; ⭐ Favoriten bleiben, ausser man hakt es an).
+#  7  «Bilder in Push-Nachrichten: mitschicken / nur Text (Bild nur in MoveEye)» für ntfy, Telegram und Pushover (060).
+# ----------------------------------------------------------------------------
+_SX_CFG = {"rec_keep_days": 0, "push_pics": "with", "tk_night": False}
+for _k, _v in _SX_CFG.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+
+SX = {"lock": threading.Lock(), "pw_fails": [], "hk": False, "last_prune": 0.0, "pc": None}
+WEB_UI_LOCAL.add("mw-night")                         # 4: the night view is per browser (not copied to the other devices)
+
+
+# ---- settings (web and window read the same lists) -----------------------------------------------------------------------
+def _sx_put_after(lst, after_key, item, idx=1):
+    lst[:] = [x for x in lst if x[idx] != item[idx]]
+    for i, x in enumerate(lst):
+        if x[idx] == after_key:
+            lst.insert(i + 1, item)
+            return
+    lst.append(item)
+
+
+_sx_put_after(SLIDERS, "record_max_gb", ("Recording", "rec_keep_days", "Delete recordings after … days (0 = never)", 0, 365, 1))
+_sx_put_after(TEXTS, "notify_type", ("Notifications", "push_pics", "Pictures in push messages", "enum", "push_pics"))
+TEXT_SPECS["push_pics"] = ("enum", "push_pics")
+SIMPLE_KEYS.update({"rec_keep_days", "push_pics"})
+SX_PUSH_PICS = (("with", "send along"), ("text", "text only (picture only in MoveEye)"))
+
+_text_choice_pairs_before_sx = text_choice_pairs
+
+
+def text_choice_pairs(key):                                 # + 7: pictures in push messages
+    if TEXT_SPECS.get(key, (None, None))[1] == "push_pics":
+        return [(k, tr(l)) for k, l in SX_PUSH_PICS]
+    return _text_choice_pairs_before_sx(key)
+
+
+# ---- 7: push without picture ---------------------------------------------------------------------------------------------
+def sx_push_jpg(jpg):
+    """the picture for ntfy / Telegram / Pushover - None when the owner wants text only (the picture stays in MoveEye)"""
+    return None if CFG.get("push_pics") == "text" else jpg
+
+
+# ---- 1: «Off» in the push message only with the PIN ----------------------------------------------------------------------
+def sx_off_mode():
+    """how «Off» from a push message is confirmed: pin / pw (web password) / none (nothing set: not possible)"""
+    if CFG.get("protect_pin"):
+        return "pin"
+    if web_pw_active():
+        return "pw"
+    return "none"
+
+
+def sx_off_check(pin="", pw="", source="push button"):
+    """(ok, error) - the same lock as disarming on the web page: 5 wrong tries in 10 minutes, from 3 on a theft alarm"""
+    now = time.time()
+    mode = sx_off_mode()
+    if mode == "none":
+        return False, "Please set a protection PIN first"
+    if mode == "pin":
+        PROTECT["pin_fails"] = [t for t in PROTECT["pin_fails"] if now - t < 600]
+        if len(PROTECT["pin_fails"]) >= 5:
+            return False, "too many wrong PINs - try again in 10 minutes"
+        if protect_pin_ok(pin) and str(pin or "").strip():
+            PROTECT["pin_fails"] = []
+            return True, ""
+        PROTECT["pin_fails"].append(now)
+        log_event("sys", f"Protection: wrong PIN for disarming ({source})")
+        if len(PROTECT["pin_fails"]) >= 3:
+            w = WATCH_REF.get("w")
+            try:
+                if w is not None:
+                    w.notifier.tamper(tr("Somebody tries to disarm with a wrong PIN"), w.frame_out)
+            except Exception:
+                pass
+            try:
+                siren_alarm("tamper")
+            except Exception:
+                pass
+        return False, "wrong PIN"
+    with SX["lock"]:
+        SX["pw_fails"] = [t for t in SX["pw_fails"] if now - t < 600]
+        if len(SX["pw_fails"]) >= 5:
+            return False, "too many wrong passwords - try again in 10 minutes"
+    who = user_login("", str(pw or "")) if pw else None
+    if who and who[1] == "admin":
+        with SX["lock"]:
+            SX["pw_fails"] = []
+        return True, ""
+    with SX["lock"]:
+        SX["pw_fails"].append(now)
+    log_event("web", f"Wrong web password for «Off» in the push message ({source})")
+    return False, "wrong password"
+
+
+def sx_off_form(lang, err=""):
+    """the small form under «Off» (PIN or web password); without either only the note"""
+    import html as _h
+    E = lambda s: _h.escape(tr(s, lang))
+    mode = sx_off_mode()
+    if mode == "none":
+        return ('<p class="err">' + E("Please set a protection PIN first") + "</p><p>" + E("MoveEye → Protection → PIN. Until then «Off» works only on the page of MoveEye.") + "</p>")
+    if mode == "pin":
+        fld = ('<label for="pin">' + E("Protection PIN") + '</label><input id="pin" name="pin" type="password" inputmode="numeric" '
+               'pattern="[0-9]*" maxlength="8" autocomplete="one-time-code" autofocus required>')
+    else:
+        fld = ('<label for="pw">' + E("Web password") + '</label><input id="pw" name="pw" type="password" autocomplete="current-password" autofocus required>')
+    return ((('<p class="err" role="alert">⚠ ' + _h.escape(tr_err(err, lang)) + "</p>") if err else "")
+            + '<form method="post">' + fld + '<button type="submit">⏻ ' + E("Switch the protection off") + "</button></form>")
+
+
+# ---- 3: friendly error pages in the own language -------------------------------------------------------------------------
+SX_PAGE = """<!doctype html><html lang="%(lang)s"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>MoveEye</title><style>
+:root{--bg:#0a0e14;--panel:#111822;--txt:#e8eef5;--mut:#8a9bb0;--acc:#3b8cff;--red:#ff6b6b}
+@media(prefers-color-scheme:light){:root{--bg:#eef2f7;--panel:#fff;--txt:#18212d;--mut:#5a6b80;--acc:#1f6feb;--red:#d1242f}}
+html.sxnight{--bg:#000;--panel:#0a0000;--txt:#b8322a;--mut:#7d1f1a;--acc:#7a160e;--red:#c0392b}
+body{font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--txt);margin:0;display:flex;min-height:100vh;
+align-items:center;justify-content:center;padding:16px;box-sizing:border-box}
+main{background:var(--panel);border-radius:16px;padding:24px;max-width:380px;width:100%%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.ic{font-size:40px;line-height:1}h1{font-size:21px;margin:10px 0 6px}p{color:var(--mut);margin:8px 0}.err{color:var(--red);font-weight:600}
+label{display:block;text-align:left;font-size:14px;color:var(--mut);margin:14px 0 4px}
+input{width:100%%;box-sizing:border-box;font-size:20px;padding:10px 12px;border-radius:10px;border:1px solid var(--mut);background:var(--bg);color:var(--txt);letter-spacing:.15em}
+button,.btn{display:inline-block;font-size:17px;padding:12px 22px;border-radius:12px;border:0;background:var(--acc);color:#fff;margin-top:14px;text-decoration:none;cursor:pointer}
+button{width:100%%}a{color:var(--acc)}
+</style><script>try{if(localStorage.getItem("mw-night")==="1")document.documentElement.classList.add("sxnight")}catch(e){}</script></head>
+<body><main><div class="ic" aria-hidden="true">%(ic)s</div><h1>%(h)s</h1>%(body)s</main></body></html>"""
+
+SX_ERRS = {   # key: (symbol, title, text)
+    "login": ("🔒", "Login required", "This MoveEye is protected with a password. Reload the page and enter the password (any user name)."),
+    "toomany": ("⏳", "Too many wrong passwords", "For safety the login is blocked for a few minutes. Please wait 5 minutes and try again."),
+    "foreign": ("🛡", "Request blocked", "This action came from another web page and was refused for your safety. Open MoveEye directly and try again."),
+    "guest": ("⌛", "Guest link not valid", "This guest link is not valid (any more). Ask the owner for a new link."),
+    "keys": ("⏳", "Too many wrong keys", "Too many wrong keys from this device. Please wait 10 minutes."),
+    "notfound": ("🧭", "Page not found", "This address does not exist on MoveEye."),
+    "error": ("⚠", "Something went wrong", "MoveEye could not answer this request. Please try again in a moment."),
+}
+
+
+def sx_req_lang():
+    """the language of a request without a page: ?lang=, the saved page language is unknown here - so the browser
+    language (Accept-Language), else the language of the device"""
+    try:
+        from flask import request
+        q = str(request.args.get("lang") or "")[:2].lower()
+        if q in LANGS:
+            return q
+        for part in str(request.headers.get("Accept-Language") or "").split(","):
+            c = part.strip()[:2].lower()
+            if c in LANGS:
+                return c
+            if c == "gs":                                    # Swiss German (gsw)
+                return "de"
+    except Exception:
+        pass
+    return cur_lang()
+
+
+def sx_page(h, body_html, ic="🛡", lang=None):
+    import html as _h
+    L = lang or sx_req_lang()
+    return SX_PAGE % {"lang": L, "ic": ic, "h": _h.escape(h), "body": body_html}
+
+
+def sx_wants_html():
+    try:
+        from flask import request
+        return "text/html" in (request.headers.get("Accept") or "") and not request.path.startswith("/api/")
+    except Exception:
+        return False
+
+
+def sx_err(code, key, headers=None):
+    """a refused request: a small page in the own language for a browser, a short translated text for programs"""
+    from flask import Response
+    import html as _h
+    L = sx_req_lang()
+    ic, h, txt = SX_ERRS.get(key) or SX_ERRS["error"]
+    if sx_wants_html():
+        extra = ""
+        if key in ("login", "foreign", "notfound", "toomany"):
+            extra = '<a class="btn" href="/">' + _h.escape(tr("To the start page", L)) + "</a>"
+        return Response(sx_page(tr(h, L), "<p>" + _h.escape(tr(txt, L)) + "</p>" + extra, ic, L), code, headers or {}, mimetype="text/html")
+    return Response(tr(h, L) + ": " + tr(txt, L), code, headers or {}, mimetype="text/plain")
+
+
+# ---- 2: a push after an unclean end (power cut, crash) -------------------------------------------------------------------
+def sx_fmt_dur(sec, lang=None):
+    m = int(round(max(0.0, float(sec)) / 60.0))
+    if m < 1:
+        return tr("less than a minute", lang)
+    if m < 120:
+        return trf("{m} min.", lang, m=m)
+    return trf("{h} h {m} min.", lang, h=m // 60, m=m % 60)
+
+
+def sx_unclean_info(prev):
+    """from the run_state.json of the last run: None when it ended cleanly (update, restart, stop) or is unusable,
+    else {"t_end": time of the last sign of life, "ran_s": how long it ran}"""
+    if not isinstance(prev, dict) or prev.get("clean"):
+        return None
+    try:
+        start = float(prev.get("start") or 0); up = max(0, int(prev.get("up") or 0))
+    except (TypeError, ValueError):
+        return None
+    if start <= 0:
+        return None
+    return {"t_end": start + up, "ran_s": up}
+
+
+def sx_unclean_text(info, now=None, lang=None, state=None):
+    """«MoveEye war 14 Min. aus (Strom/Absturz) – jetzt wieder Wachsam»; an implausible clock (no internet time yet) -> no duration"""
+    now = time.time() if now is None else now
+    st = state if state is not None else protect_label(STATE.get("arm_state"), STATE.get("arm_left", 0), lang)
+    off = now - float(info.get("t_end") or 0)
+    if 0 <= off < 400 * 86400:
+        return trf("MoveEye was off for {dur} (power cut / crash) – now {state} again", lang, dur=sx_fmt_dur(off, lang), state=st)
+    return trf("MoveEye was off (power cut / crash) – now {state} again", lang, state=st)
+
+
+def _sx_unclean_tell(info):
+    """after the start: wait until the messages can go out and the clock is plausible (a Pi without a clock battery gets
+    the right time from the internet only after a while), then one info push"""
+    time.sleep(45)
+    t0 = time.time()
+    while time.time() - float(info["t_end"]) < 0 and time.time() - t0 < 600:
+        time.sleep(15)
+    for _i in range(30):                                   # the camera loop (and its notifier) may need a moment
+        w = WATCH_REF.get("w")
+        if w is not None and getattr(w, "notifier", None) is not None:
+            break
+        time.sleep(5)
+    w = WATCH_REF.get("w")
+    txt = sx_unclean_text(info)
+    SX["pc"] = {"text": txt, "t": time.time()}
+    log_event("sys", "Back after an unexpected end: " + sx_unclean_text(info, lang="en"))
+    if w is None:
+        return
+    try:
+        w.notifier.info(txt, title="{name}: " + tr("Back on"))
+    except Exception as e:
+        log_event("sys", f"Push after the unexpected end not sent: {e}"[:160])
+
+
+_run_guard_start_before_sx = run_guard_start
+
+
+def run_guard_start():
+    """+ 2: the last run ended without a clean stop -> one info push with how long MoveEye was off (not with the safe start:
+    that one sends its own message)"""
+    prev = None
+    if not DEMO["on"]:
+        try:
+            with open(_run_file()) as f:
+                prev = json.load(f)
+        except (OSError, ValueError):
+            prev = None
+    _run_guard_start_before_sx()
+    sx_housekeeping_start()
+    info = sx_unclean_info(prev) if not DEMO["on"] else None
+    if info and not RUNGUARD.get("safe"):
+        threading.Thread(target=_sx_unclean_tell, args=(info,), daemon=True, name="sx-back").start()
+
+
+# ---- 6: recordings older than N days; «holiday over: delete all» ---------------------------------------------------------
+_SX_REC_EXT = {".mp4", ".jpg", ".jpeg", ".json", ".wav", ".m4a", ".aac", ".avi", ".mkv", ".webm", ".png", ".gpx", ".srt", ".txt"}
+_SX_REC_MAIN = {".mp4", ".jpg", ".jpeg", ".avi", ".mkv", ".webm"}
+
+
+def _sx_rec_groups():
+    """{stem: [files]} of the recordings folder (only recordings: a video or picture belongs to every group)"""
+    groups = {}
+    try:
+        names = os.listdir(rec_dir())
+    except OSError:
+        return {}
+    for n in names:
+        p = os.path.join(rec_dir(), n)
+        stem, ext = os.path.splitext(n)
+        if n.startswith(".") or ext.lower() not in _SX_REC_EXT or not os.path.isfile(p):
+            continue
+        groups.setdefault(stem, []).append(p)
+    return {k: v for k, v in groups.items() if any(os.path.splitext(f)[1].lower() in _SX_REC_MAIN for f in v)}
+
+
+def _sx_live(fs):
+    names = {os.path.basename(f) for f in fs}
+    if names & set(LIVE_RECS):
+        return True
+    w = WATCH_REF.get("w")
+    rn = os.path.basename(str(getattr(w, "rec_name", "") or "")) if w is not None else ""
+    return bool(rn and rn in names)
+
+
+def _sx_fav(stem):
+    try:
+        return bool(_read_sidecar(stem + ".json").get("fav"))
+    except Exception:
+        return False
+
+
+def _sx_remove(stem, fs):
+    for f in fs:
+        try:
+            os.remove(f)
+        except OSError:
+            pass
+    try:
+        rec_purge_extras(stem)
+    except Exception:
+        pass
+
+
+def sx_rec_prune(days=None, now=None):
+    """delete the recordings older than «rec_keep_days» days (0 = never); favourites stay. Returns the number deleted."""
+    days = int(CFG.get("rec_keep_days") or 0) if days is None else int(days)
+    if days <= 0:
+        return 0
+    now = time.time() if now is None else now
+    limit = now - days * 86400
+    n = 0
+    for stem, fs in _sx_rec_groups().items():
+        try:
+            mt = max(os.path.getmtime(f) for f in fs)
+        except OSError:
+            continue
+        if mt >= limit or _sx_fav(stem) or _sx_live(fs):
+            continue
+        _sx_remove(stem, fs); n += 1
+    if n:
+        log_event("rec", f"Cleanup: {n} recording(s) older than {days} days deleted")
+    return n
+
+
+def sx_rec_wipe(with_favs=False, who="web"):
+    """«Holiday over»: all recordings (and the continuous recording) - favourites only when asked. Returns (deleted, kept)."""
+    n = kept = 0
+    for stem, fs in _sx_rec_groups().items():
+        if _sx_live(fs):
+            kept += 1; continue
+        if not with_favs and _sx_fav(stem):
+            kept += 1; continue
+        _sx_remove(stem, fs); n += 1
+    lr = globals().get("LOOPREC")                         # the continuous recording too (not the piece being written)
+    cur = str(getattr(lr, "cur", "") or "")
+    base = os.path.join(rec_dir(), "loop")
+    for root, _dirs, files in os.walk(base, topdown=False):
+        for fn in files:
+            rel = "loop/" + os.path.relpath(os.path.join(root, fn), base).replace(os.sep, "/")
+            if rel != cur and fn.lower().endswith((".mp4", ".jpg", ".json")):
+                try:
+                    os.remove(os.path.join(root, fn))
+                except OSError:
+                    pass
+        if root != base:
+            try:
+                os.rmdir(root)
+            except OSError:
+                pass
+    STATE["rec_dir_mb"] = 0 if not kept else STATE.get("rec_dir_mb", 0)
+    log_event("rec", f"Holiday over: {n} recording(s) deleted, {kept} kept" + (" (favourites too)" if with_favs else "") + f" ({who})")
+    return n, kept
+
+
+def sx_rec_counts():
+    g = _sx_rec_groups()
+    favs = sum(1 for s in g if _sx_fav(s))
+    return {"all": len(g), "favs": favs}
+
+
+def sx_housekeeping_start():
+    """one quiet thread: the age limit once an hour (the size limit runs before every recording, 410)"""
+    if SX["hk"] or DEMO["on"]:
+        return
+    SX["hk"] = True
+
+    def run():
+        time.sleep(300)
+        while True:
+            try:
+                if int(CFG.get("rec_keep_days") or 0) > 0:
+                    sx_rec_prune(); SX["last_prune"] = time.time()
+            except Exception as e:
+                log_event("rec", f"Cleanup by age failed: {e}"[:160])
+            time.sleep(3600)
+    threading.Thread(target=run, daemon=True, name="sx-housekeeping").start()
+
+
+# ---- the web addresses (called once by the web server, 550) --------------------------------------------------------------
+def sx_routes(app, watch, reply, body):
+    from flask import Response, request, g
+
+    @app.route("/sx/ui.js")
+    def sx_ui_js():
+        return Response(sx_ui_js_text(), mimetype="application/javascript", headers={"Cache-Control": "no-cache"})
+
+    @app.route("/api/sx/recwipe", methods=["GET", "POST"])
+    def api_sx_recwipe():
+        if request.method == "GET":
+            return reply(dict(sx_rec_counts(), ok=True, keep_days=int(CFG.get("rec_keep_days") or 0)))
+        if getattr(g, "role", "admin") != "admin":
+            return reply({"ok": False, "error": "not allowed"}, 403)
+        d = body(); lang = norm_lang(d.get("lang"))
+        if d.get("confirm") is not True:
+            return reply({"ok": False, "error": tr("please confirm", lang)}, 400)
+        n, kept = sx_rec_wipe(bool(d.get("favs")), "web")
+        return reply({"ok": True, "deleted": n, "kept": kept,
+                      "text": trf("{n} recordings deleted, {k} kept", lang, n=n, k=kept)})
+
+    @app.errorhandler(404)
+    def sx_not_found(_e):
+        if sx_wants_html():
+            return sx_err(404, "notfound")
+        return Response("not found", 404, mimetype="text/plain")
+
+
+# ---- 4 + 5: night view and screen readers (all pages through render_page) ------------------------------------------------
+SX_NIGHT_CSS = """<style id="sx-night-css">
+html.sxnight,html.sxnight body,html.sxnight body.light{--bg:#000;--panel:#070000;--panel2:#0a0101;--line:#2a0606;--txt:#c0392b;--mut:#7d1f1a;--acc:#7a160e;
+--acc2:#8e1b12;--red:#d03020;--grn:#8a2a12;--yel:#8a3a12;--blu:#7a1f2a;--org:#9a3010;--pur:#7a1f3a;--field:#050000;--btn2:#120202;--hdr:rgba(0,0,0,.94);
+--glow:transparent;--shadow:none;color-scheme:dark}
+html.sxnight body{background:#000!important;color:var(--txt)!important}
+html.sxnight img,html.sxnight video,html.sxnight canvas{filter:grayscale(1) brightness(.38) contrast(1.1)}
+html.sxnight::after{content:"";position:fixed;inset:0;background:#b81400;mix-blend-mode:multiply;pointer-events:none;z-index:2147483647}
+html.sxnight button,html.sxnight .btn,html.sxnight input,html.sxnight select,html.sxnight textarea{background-color:#0d0101!important;color:#b8322a!important;border-color:#3a0a08!important}
+html.sxnight .badge{background:#0d0101!important;color:#a52a20!important;border-color:#3a0a08!important}
+#btn-night[aria-pressed=true]{background:#5a0d08!important;color:#ff6a50!important}
+.sx-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style><script>try{if(localStorage.getItem("mw-night")==="1")document.documentElement.classList.add("sxnight")}catch(e){}</script>"""
+
+# the texts the script needs (English key -> translated by the page language)
+SX_JS_KEYS = ["Night view", "Night view: very dark and red, the live picture dimmed - for a short look in the tent", "Night view on - tap 🌑 again to switch it off",
+              "Night view off", "View", "Settings panel", "Full screen", "Light / dark", "Language", "Exit full screen", "Close", "Copy", "Standard text",
+              "Up", "Down", "Remove", "Edit", "Refresh", "Help", "Menu", "Play", "Pause", "Stop", "Delete", "Back", "Next", "Previous", "Settings",
+              "Live picture", "Main navigation", "Sub navigation", "Show settings", "Hide settings", "More", "Search", "Expand all", "Collapse all",
+              "Listen", "Centre", "Other side", "Take a photo", "Favourite", "Download", "Share", "Zoom in", "Zoom out", "Mute", "Sound on",
+              "Holiday over: delete all recordings", "Also delete the favourites ⭐", "Delete ALL recordings now? This cannot be undone.",
+              "Favourites ⭐ are kept.", "recordings", "favourites", "Deleting …", "{n} recordings deleted, {k} kept", "Simulation off",
+              "Protection state", "Persons", "Self-check", "Operator mode", "Mode", "Battery", "Recording",
+              "Operate with the finger (otherwise the page scrolls)", "Finger: rotate instead of move", "Large picture"]
+
+
+def sx_ui_tx():
+    out = {}
+    for L in ("de", "fr", "it", "rm"):
+        out[L] = {k: tr(k, L) for k in SX_JS_KEYS if tr(k, L) != k}
+    return out
+
+
+SX_UI_JS = r"""(function () {
+if (window._sxui) return; window._sxui = 1;
+const TX = /*TX*/{};
+const D = document, H = D.documentElement;
+const L = () => { try { return (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || /*DL*/"de"; } catch (e) { return /*DL*/"de"; } };
+const T = k => { const l = L(), m = TX[l] || {}; if (m[k]) return m[k];
+  try { if (typeof t === "function") { const x = t(k); if (x && x !== k) return x; } } catch (e) {}
+  if (l === "rm" && TX.de[k]) return TX.de[k]; return k; };
+const say = m => { if (typeof toast === "function") { try { toast(m); return; } catch (e) {} }
+  let e = D.getElementById("sx-toast"); if (!e) { e = D.createElement("div"); e.id = "sx-toast"; e.setAttribute("role", "status");
+    e.style.cssText = "position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;background:#111822;color:#e8eef5;padding:9px 16px;border-radius:12px;font:14px system-ui;max-width:90vw"; D.body.appendChild(e); }
+  e.textContent = m; e.hidden = false; clearTimeout(e._t); e._t = setTimeout(() => { e.hidden = true; }, 2600); };
+// German texts of this script also for the page itself (quick switch label)
+try { if (typeof I18N !== "undefined" && I18N.de) Object.keys(TX.de || {}).forEach(k => { if (!I18N.de[k]) I18N.de[k] = TX.de[k]; }); } catch (e) {}
+
+// ---- 4: night view ----
+const isN = () => H.classList.contains("sxnight");
+function paintN() { const b = D.getElementById("btn-night"); if (!b) return; b.setAttribute("aria-pressed", isN() ? "true" : "false");
+  b.title = T("Night view: very dark and red, the live picture dimmed - for a short look in the tent"); b.setAttribute("aria-label", T("Night view")); }
+function setN(on) { H.classList.toggle("sxnight", on); try { localStorage.setItem("mw-night", on ? "1" : "0"); } catch (e) {}
+  paintN(); say(on ? "🌑 " + T("Night view on - tap 🌑 again to switch it off") : T("Night view off")); }
+window.sxNight = setN;
+function addBtn() {
+  if (D.getElementById("btn-night")) return;
+  const hdr = D.querySelector("header"); if (!hdr) return;
+  const b = D.createElement("button"); b.type = "button"; b.id = "btn-night"; b.className = "sec"; b.textContent = "🌑";
+  b.onclick = () => setN(!isN());
+  const th = D.getElementById("btn-theme"), hc = hdr.querySelector(".hdr-ctl");
+  if (th && th.parentNode) th.parentNode.insertBefore(b, th); else if (hc) hc.insertBefore(b, hc.firstChild); else { b.style.marginLeft = "auto"; hdr.appendChild(b); }
+  paintN();
+}
+try { if (typeof QS !== "undefined" && Array.isArray(QS) && !QS.some(q => q.id === "night"))
+  QS.push({id: "night", ic: "🌑", lb: "Night view", tip: "Night view: very dark and red, the live picture dimmed - for a short look in the tent",
+           on: () => isN(), go: () => { setN(!isN()); return {ok: true}; }}); } catch (e) {}
+
+// ---- 5: names for screen readers ----
+const ID = {"btn-view": "View", "btn-side": "Settings panel", "btn-fs": "Full screen", "btn-theme": "Light / dark", "btn-lang": "Language",
+  "btn-night": "Night view", "vo-exit": "Exit full screen", "side-close": "Hide settings", "side-open": "Show settings", "all-open": "Expand all",
+  "all-close": "Collapse all", "b-sim": "Simulation off", "b-arm": "Protection state", "b-health": "Self-check", "b-lock": "Operator mode", "b-mode": "Mode",
+  "btn-listen": "Listen", "stick-listen": "Listen", "lv-vin": "Zoom in", "lv-vout": "Zoom out", "lv-vctl": "Operate with the finger (otherwise the page scrolls)",
+  "lv-vrot": "Finger: rotate instead of move", "lv-vbig": "Large picture"};
+const SYM = {"✕": "Close", "✖": "Close", "×": "Close", "⧉": "Copy", "↺": "Standard text", "▲": "Up", "▼": "Down", "▶": "Play", "►": "Play", "⏸": "Pause",
+  "⏹": "Stop", "■": "Stop", "🗑": "Delete", "🗑️": "Delete", "✏️": "Edit", "✏": "Edit", "🔄": "Refresh", "↻": "Refresh", "?": "Help", "☰": "Menu", "⚙": "Settings",
+  "⚙️": "Settings", "←": "Back", "‹": "Previous", "›": "Next", "→": "Next", "⋯": "More", "…": "More", "🔍": "Search", "📷": "Take a photo", "⭐": "Favourite",
+  "☆": "Favourite", "★": "Favourite", "⬇": "Download", "📤": "Share", "+": "Zoom in", "−": "Zoom out", "-": "Zoom out", "＋": "Zoom in", "－": "Zoom out", "🔇": "Mute", "🔊": "Sound on", "◀": "Back"};
+const word = s => /[A-Za-zÀ-ÖØ-öø-ÿ]{2,}/.test(s || "");
+function nameOf(e) {
+  const tx = (e.textContent || "").trim();
+  if (e.id && ID[e.id]) return T(ID[e.id]);
+  if (e.dataset && e.dataset.vlabel) return T(e.dataset.vlabel);
+  const ti = e.getAttribute("title"); if (ti) return ti;
+  if (SYM[tx]) return T(SYM[tx]);
+  return "";
+}
+function fixTitle(e) {                       // English titles written into the HTML: in the page language
+  const ti = e.getAttribute("title"); if (!ti) return;
+  if (e.dataset.sxT === ti && e.dataset.sxEn) { const n = T(e.dataset.sxEn); if (n !== ti) { e.setAttribute("title", n); e.dataset.sxT = n; } return; }
+  const n = T(ti); if (n !== ti) { e.dataset.sxEn = ti; e.setAttribute("title", n); e.dataset.sxT = n; }
+}
+function label(e) {
+  fixTitle(e);
+  const own = e.getAttribute("aria-label"); if (own && e.dataset.sxA !== own) return;     // the page named it itself
+  const tx = (e.textContent || "").trim();
+  if (word(tx) && !(e.id && ID[e.id])) { if (e.dataset.sxA) { e.removeAttribute("aria-label"); delete e.dataset.sxA; } return; }
+  const n = nameOf(e); if (!n) return;
+  const full = (e.classList.contains("badge") && tx && !SYM[tx] && !(e.id && ID[e.id] && e.id !== "b-arm")) ? n + ": " + tx : n;
+  if (own !== full) { e.setAttribute("aria-label", full); e.dataset.sxA = full; }
+  if (!e.getAttribute("title") || (e.id && ID[e.id] && e.getAttribute("title") !== n && !e.dataset.sxEn)) { e.setAttribute("title", n); e.dataset.sxT = n; }
+}
+function pass() {
+  addBtn(); paintN();
+  D.querySelectorAll("button,[role=button],a.ic,header .badge,.qsw button").forEach(e => { try { label(e); } catch (x) {} });
+  D.querySelectorAll("header .badge[onclick],header .badge[style*=pointer]").forEach(e => { if (!e.hasAttribute("role")) { e.setAttribute("role", "button"); e.tabIndex = 0;
+    e.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); e.click(); } }); } });
+  D.querySelectorAll("header .badge:not([role])").forEach(e => { if (!word(e.textContent)) e.setAttribute("role", "img"); });
+  D.querySelectorAll("#video,#lv-vimg").forEach(e => { if (!e.getAttribute("alt")) e.setAttribute("alt", T("Live picture")); });
+  const nv = D.querySelector("nav.nav"); if (nv) nv.setAttribute("aria-label", T("Main navigation"));
+  const sn = D.querySelector("nav.subnav"); if (sn) sn.setAttribute("aria-label", T("Sub navigation"));
+  D.querySelectorAll("nav.nav a.on,nav.subnav a.on").forEach(a => a.setAttribute("aria-current", "page"));
+  D.querySelectorAll("nav.nav a").forEach(a => { const s = a.querySelector(".nl"); if (s && !a.getAttribute("aria-label")) a.setAttribute("aria-label", s.textContent.trim()); });
+  recBox();
+}
+let tm = null, lastL = "";
+const soon = () => { clearTimeout(tm); tm = setTimeout(pass, 250); };
+// ---- 6: «holiday over» in the settings section «Recording» ----
+function recBox() {
+  const d = D.querySelector('#settings details[data-view="sec:Recording"]'); if (!d || d.querySelector(".sx-wipe")) return;
+  const box = D.createElement("div"); box.className = "sl sx-wipe";
+  const b = D.createElement("button"); b.type = "button"; b.className = "sec"; b.style.width = "100%"; b.textContent = "🧹 " + T("Holiday over: delete all recordings");
+  const lab = D.createElement("label"); lab.className = "row"; lab.style.cssText = "gap:8px;justify-content:flex-start;font-size:13px";
+  const cb = D.createElement("input"); cb.type = "checkbox"; lab.append(cb, D.createTextNode(" " + T("Also delete the favourites ⭐")));
+  const info = D.createElement("div"); info.className = "mut"; info.style.fontSize = "12px"; info.setAttribute("role", "status");
+  const load = () => fetch("/api/sx/recwipe").then(r => r.json()).then(j => { info.textContent = j.all + " " + T("recordings") + " · " + j.favs + " " + T("favourites"); }).catch(() => {});
+  b.onclick = async () => { if (!confirm(T("Delete ALL recordings now? This cannot be undone.") + (cb.checked ? "" : "\n" + T("Favourites ⭐ are kept.")))) return;
+    b.disabled = true; info.textContent = T("Deleting …");
+    try { const r = await (await fetch("/api/sx/recwipe", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({confirm: true, favs: cb.checked, lang: L()})})).json();
+      say(r.ok ? "✓ " + r.text : "⚠ " + (r.error || "error")); } catch (e) { say("⚠ error"); }
+    b.disabled = false; cb.checked = false; load(); };
+  box.append(b, lab, info); d.appendChild(box); load();
+}
+function start() {
+  pass();
+  try { new MutationObserver(soon).observe(D.body, {childList: true, subtree: true}); } catch (e) {}
+  setInterval(() => { if (L() !== lastL) { lastL = L(); pass(); } }, 1500);
+}
+if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", start); else start();
+})();
+"""
+
+
+def sx_ui_js_text():
+    return (SX_UI_JS.replace("/*TX*/{}", json.dumps(sx_ui_tx(), ensure_ascii=False))
+            .replace('/*DL*/"de"', json.dumps(cur_lang())).replace("</", "<\\/"))
+
+
+_render_page_before_sx = render_page
+
+
+def render_page(page, active):
+    """+ 4 / 5: the night view (before the first paint, no flash) and the script with the names for screen readers"""
+    out = _render_page_before_sx(page, active)
+    out = out.replace("</head>", SX_NIGHT_CSS + "</head>", 1)
+    i = out.rfind("</body>")
+    tag = '<script src="/sx/ui.js?v=' + APP_VERSION + '" defer></script>'
+    return out[:i] + tag + out[i:] if i >= 0 else out + tag
+
+
+# ---- window (Tkinter): night view ◑ and «holiday over» -----------------------------------------------------------------
+SX_TK_NIGHT = {"bg": "#000000", "panel": "#0a0000", "line": "#2a0606", "txt": "#c0392b", "mut": "#7d1f1a", "acc": "#6e140c", "red": "#d03020",
+               "grn": "#8a2a12", "yel": "#8a3a12", "blu": "#7a1f2a", "org": "#9a3010", "pur": "#7a1f3a", "field": "#050000", "knob_off": "#1a0402",
+               "badge_red_bg": "#100000"}
+_apply_theme_before_sx = apply_theme
+
+
+def apply_theme():
+    _apply_theme_before_sx()
+    if CFG.get("tk_night"):
+        C.update(SX_TK_NIGHT)
+
+
+def _sx_tk_build_header(self):
+    _sx_tk_build_header_before(self)
+    try:
+        b_fs = getattr(self, "b_fs", None)
+        if b_fs is not None and b_fs.winfo_exists():
+            b = self._ibtn(b_fs.master, "◑", lambda: _sx_tk_night(self), tr("Night view: very dark and red, the live picture dimmed - for a short look in the tent"),
+                           on=bool(CFG.get("tk_night")))
+            b.pack(side="right", padx=(0, 6))
+    except Exception:
+        pass
+
+
+def _sx_tk_night(app):
+    CFG["tk_night"] = not CFG.get("tk_night")
+    save_settings()
+    app._rebuild()
+
+
+def _sx_tk_update_video(self):
+    """like 570, plus the night view: the picture grey, dark and red"""
+    try:
+        frame = self.watch.frame_out
+        if frame is not None and self.video is not None and self.video.winfo_exists():
+            w = max(160, self.video.winfo_width()); h = max(90, self.video.winfo_height())
+            fh, fw = frame.shape[:2]; scale = min(w / fw, h / fh)
+            small = cv2.resize(frame, (max(1, int(fw * scale)), max(1, int(fh * scale))))
+            if CFG.get("tk_night"):
+                gy = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+                img = np.zeros((gy.shape[0], gy.shape[1], 3), dtype=np.uint8); img[:, :, 0] = (gy * 0.42).astype(np.uint8)
+            else:
+                img = cv2.cvtColor(small, cv2.COLOR_BGR2RGB)
+            pim = Image.fromarray(img)
+            if getattr(self, "_egg_t0", 0):
+                pim = self._egg_draw(pim)
+            self.photo = ImageTk.PhotoImage(pim); self.video.config(image=self.photo)
+    finally:
+        self.root.after(33, self._update_video)
+
+
+def _sx_tk_build_section(self, sec, sbody, settings_parent=None):
+    _sx_tk_build_section_before(self, sec, sbody, settings_parent)
+    if sec != "Recording":
+        return
+    try:
+        ttk.Button(sbody, text="🧹 " + tr("Holiday over: delete all recordings") + " …", command=lambda: _sx_tk_wipe(self)).pack(fill="x", pady=(8, 0))
+    except Exception:
+        pass
+
+
+def _sx_tk_wipe(app):
+    """the confirmation: how many, favourites kept unless ticked"""
+    c = sx_rec_counts()
+    win = tk.Toplevel(app.root); win.title("MoveEye"); win.configure(bg=C["panel"]); win.transient(app.root)
+    tk.Label(win, text="🧹 " + tr("Holiday over: delete all recordings"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11, "bold")).pack(anchor="w", padx=14, pady=(12, 4))
+    tk.Label(win, text=f"{c['all']} {tr('recordings')} · {c['favs']} {tr('favourites')}\n" + tr("Delete ALL recordings now? This cannot be undone."),
+             bg=C["panel"], fg=C["mut"], justify="left", wraplength=360).pack(anchor="w", padx=14)
+    fv = tk.BooleanVar(value=False)
+    tk.Checkbutton(win, text=tr("Also delete the favourites ⭐"), variable=fv, bg=C["panel"], fg=C["txt"], selectcolor=C["field"],
+                   activebackground=C["panel"], activeforeground=C["txt"]).pack(anchor="w", padx=10, pady=(6, 0))
+    bf = tk.Frame(win, bg=C["panel"]); bf.pack(fill="x", padx=14, pady=12)
+
+    def go():
+        n, k = sx_rec_wipe(bool(fv.get()), "window")
+        win.destroy()
+        try:
+            app._status("Recording", "✓ " + trf("{n} recordings deleted, {k} kept", n=n, k=k))
+        except Exception:
+            pass
+        messagebox.showinfo("MoveEye", trf("{n} recordings deleted, {k} kept", n=n, k=k))
+    ttk.Button(bf, text=tr("Cancel"), command=win.destroy).pack(side="right")
+    ttk.Button(bf, text=tr("Delete"), command=go).pack(side="right", padx=(0, 6))
+
+
+_sx_tk_build_header_before = App._build_header
+_sx_tk_build_section_before = App._build_section
+# wraps: App._build_header
+App._build_header = _sx_tk_build_header
+# wraps: App._build_section
+App._build_section = _sx_tk_build_section
+# wraps: App._update_video
+App._update_video = _sx_tk_update_video
+
+
+# ---- --self-test ---------------------------------------------------------------------------------------------------------
+def sicher_selftest():
+    """the parts that can be checked without hardware: unclean end -> text, push without picture, recordings by age,
+    «holiday over», the PIN gate, error pages, the script of the pages"""
+    import tempfile
+    keep = {k: CFG.get(k) for k in ("push_pics", "rec_keep_days", "record_dir", "protect_pin", "web_pw_hash", "web_password")}
+    fails = list(PROTECT["pin_fails"])
+    try:
+        now = 1_800_000_000.0
+        assert sx_unclean_info({"clean": True, "start": now - 100, "up": 50}) is None, "a clean end gives no push"
+        assert sx_unclean_info(None) is None and sx_unclean_info({"clean": False}) is None
+        inf = sx_unclean_info({"clean": False, "start": now - 3600, "up": 2760})
+        assert inf and abs(inf["t_end"] - (now - 840)) < 1e-6
+        tx = sx_unclean_text(inf, now, "de", "Wachsam")
+        assert "14 Min." in tx and "Wachsam" in tx and "aus" in tx, tx
+        assert "(" in sx_unclean_text(inf, now - 5000, "de", "Aus") and "Min." not in sx_unclean_text(inf, now - 5000, "de", "Aus"), "clock behind: no duration"
+        assert sx_fmt_dur(125 * 60, "en") == "2 h 5 min." and "2 Std. 5 Min." == sx_fmt_dur(125 * 60, "de")
+        CFG["push_pics"] = "text"; assert sx_push_jpg(b"x") is None
+        CFG["push_pics"] = "with"; assert sx_push_jpg(b"x") == b"x"
+        assert dict(text_choice_pairs("push_pics")).keys() == {"with", "text"}
+        assert any(x[1] == "rec_keep_days" for x in SLIDERS) and any(x[1] == "push_pics" for x in TEXTS)
+        d = tempfile.mkdtemp(prefix="mw-sx-")
+        CFG["record_dir"] = d
+        old = now - 10 * 86400
+
+        def mk(stem, t, fav=False):
+            for ext in (".mp4", ".jpg"):
+                with open(os.path.join(d, stem + ext), "wb") as f:
+                    f.write(b"x")
+                os.utime(os.path.join(d, stem + ext), (t, t))
+            with open(os.path.join(d, stem + ".json"), "w") as f:
+                json.dump({"fav": fav}, f)
+            os.utime(os.path.join(d, stem + ".json"), (t, t))
+        mk("person_a", old); mk("person_b", old, True); mk("person_c", now)
+        with open(os.path.join(d, "notes.cfg"), "w") as f:
+            f.write("keep")
+        assert sx_rec_prune(0, now) == 0
+        assert sx_rec_prune(7, now) == 1 and not os.path.exists(os.path.join(d, "person_a.mp4")), "old one gone"
+        assert os.path.exists(os.path.join(d, "person_b.mp4")) and os.path.exists(os.path.join(d, "person_c.jpg")), "favourite and new one stay"
+        os.makedirs(os.path.join(d, "loop", "2026-10-29")); open(os.path.join(d, "loop", "2026-10-29", "a.mp4"), "w").close()
+        assert sx_rec_wipe(False, "test") == (1, 1) and os.path.exists(os.path.join(d, "person_b.mp4"))
+        assert not os.path.exists(os.path.join(d, "loop", "2026-10-29")), "continuous recording deleted too"
+        assert sx_rec_wipe(True, "test") == (1, 0) and os.path.exists(os.path.join(d, "notes.cfg")), "only recordings are deleted"
+        shutil.rmtree(d, ignore_errors=True)
+        CFG.update(protect_pin="", web_pw_hash="", web_password="")
+        assert sx_off_mode() == "none" and not sx_off_check("1234")[0]
+        CFG["protect_pin"] = _pin_hash("4711"); PROTECT["pin_fails"] = []
+        assert sx_off_mode() == "pin" and sx_off_check("4711")[0] and not sx_off_check("0000")[0] and not sx_off_check("")[0]
+        PROTECT["pin_fails"] = [time.time()] * 5
+        assert sx_off_check("4711")[1].startswith("too many"), "locked after 5 wrong PINs"
+        assert "pin" in sx_off_form("de") and "inputmode" in sx_off_form("fr")
+        CFG["protect_pin"] = ""; assert "Schutz-PIN" in sx_off_form("de")
+        js = sx_ui_js_text()
+        assert "Nachtblick" in js and "/*TX*/" not in js
+        assert "sxnight" in render_page("<html><head></head><body><header></header></body></html>", "live")
+        for k, (_i, h, t_) in SX_ERRS.items():
+            assert tr(h, "de") != h and tr(t_, "fr") != t_, "error page text not translated: " + h
+    finally:
+        CFG.update(keep); PROTECT["pin_fails"] = fails
     return True
 # ----------------------------------------------------------------------------
 # Translations: French, Italian, Romansh (Rumantsch Grischun). Key = the English text of the program.
@@ -60962,6 +61781,170 @@ if _hp_en > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_298(HELP_X[_L], _L)
+_HX_SICHER = {
+    # settings
+    'Delete recordings after … days (0 = never)': ('Aufnahmen nach … Tagen löschen (0 = nie)', 'Supprimer les enregistrements après … jours (0 = jamais)', 'Eliminare le registrazioni dopo … giorni (0 = mai)', 'Stizzar las registraziuns suenter … dis (0 = mai)'),
+    'Pictures in push messages': ('Bilder in Push-Nachrichten', 'Images dans les notifications push', 'Immagini nelle notifiche push', 'Maletgs en ils avis push'),
+    'send along': ('mitschicken', 'les envoyer', 'inviarle', 'trametter cun'),
+    'text only (picture only in MoveEye)': ('nur Text (Bild nur in MoveEye)', 'texte seulement (image seulement dans MoveEye)', 'solo testo (immagine solo in MoveEye)', 'mo text (maletg mo en MoveEye)'),
+    # 1: «Off» with the PIN
+    'Please set a protection PIN first': ('Bitte zuerst eine Schutz-PIN setzen', 'Définis d’abord un PIN de protection', 'Imposta prima un PIN di protezione', 'Fixescha l’emprim in PIN da protecziun'),
+    'MoveEye → Protection → PIN. Until then «Off» works only on the page of MoveEye.': ('MoveEye → Schutz → PIN. Bis dahin geht «Aus» nur auf der Seite von MoveEye.', 'MoveEye → Protection → PIN. D’ici là, «Arrêt» ne fonctionne que sur la page de MoveEye.', 'MoveEye → Protezione → PIN. Fino ad allora «Spento» funziona solo sulla pagina di MoveEye.', 'MoveEye → Protecziun → PIN. Fin lura funcziuna «Ora» mo sin la pagina da MoveEye.'),
+    'Protection PIN': ('Schutz-PIN', 'PIN de protection', 'PIN di protezione', 'PIN da protecziun'),
+    'Switch the protection off': ('Schutz ausschalten', 'Désactiver la protection', 'Disattivare la protezione', 'Stizzar la protecziun'),
+    'Switch the protection off?': ('Schutz ausschalten?', 'Désactiver la protection ?', 'Disattivare la protezione?', 'Stizzar la protecziun?'),
+    'Off needs the protection PIN - open the message and tap «Off» there.': ('«Aus» braucht die Schutz-PIN – Nachricht öffnen und dort «Aus» antippen.', '«Arrêt» demande le PIN de protection – ouvre la notification et touche «Arrêt».', '«Spento» richiede il PIN di protezione – apri la notifica e tocca «Spento».', '«Ora» basegna il PIN da protecziun – avrir l’avis e smatgar là «Ora».'),
+    'too many wrong passwords - try again in 10 minutes': ('zu viele falsche Passwörter – in 10 Minuten nochmals', 'trop de mots de passe erronés – réessaie dans 10 minutes', 'troppe password errate – riprova tra 10 minuti', 'memia bleras pleds-clav sbagliads – empruvar danovamain en 10 minutas'),
+    'wrong password': ('falsches Passwort', 'mot de passe erroné', 'password errata', 'pled-clav sbaglià'),
+    # 2: after a power cut
+    'MoveEye was off for {dur} (power cut / crash) – now {state} again': ('MoveEye war {dur} aus (Strom/Absturz) – jetzt wieder {state}', 'MoveEye était éteint pendant {dur} (courant / plantage) – maintenant de nouveau {state}', 'MoveEye è stato spento per {dur} (corrente / arresto) – ora di nuovo {state}', 'MoveEye era {dur} stizzà (current / collaps) – ussa puspè {state}'),
+    'MoveEye was off (power cut / crash) – now {state} again': ('MoveEye war aus (Strom/Absturz) – jetzt wieder {state}', 'MoveEye était éteint (courant / plantage) – maintenant de nouveau {state}', 'MoveEye era spento (corrente / arresto) – ora di nuovo {state}', 'MoveEye era stizzà (current / collaps) – ussa puspè {state}'),
+    'Back on': ('Wieder da', 'De retour', 'Di nuovo attivo', 'Puspè cò'),
+    'less than a minute': ('weniger als eine Minute', 'moins d’une minute', 'meno di un minuto', 'main ch’ina minuta'),
+    '{m} min.': ('{m} Min.', '{m} min', '{m} min', '{m} min.'),
+    '{h} h {m} min.': ('{h} Std. {m} Min.', '{h} h {m} min', '{h} h {m} min', '{h} uras {m} min.'),
+    # 3: error pages
+    'Login required': ('Anmeldung nötig', 'Connexion nécessaire', 'Accesso richiesto', 'Annunzia necessaria'),
+    'This MoveEye is protected with a password. Reload the page and enter the password (any user name).': ('Dieses MoveEye ist mit einem Passwort geschützt. Seite neu laden und das Passwort eingeben (Benutzername beliebig).', 'Ce MoveEye est protégé par un mot de passe. Recharge la page et saisis le mot de passe (nom d’utilisateur au choix).', 'Questo MoveEye è protetto da una password. Ricarica la pagina e inserisci la password (nome utente a piacere).', 'Quest MoveEye è protegì cun in pled-clav. Chargiar danovamain la pagina ed endatar il pled-clav (num d’utilisader a piacer).'),
+    'Too many wrong passwords': ('Zu viele falsche Passwörter', 'Trop de mots de passe erronés', 'Troppe password errate', 'Memia bleras pleds-clav sbagliads'),
+    'For safety the login is blocked for a few minutes. Please wait 5 minutes and try again.': ('Zur Sicherheit ist die Anmeldung ein paar Minuten gesperrt. Bitte 5 Minuten warten und nochmals versuchen.', 'Par sécurité, la connexion est bloquée quelques minutes. Attends 5 minutes et réessaie.', 'Per sicurezza l’accesso è bloccato per qualche minuto. Attendi 5 minuti e riprova.', 'Per segirezza è l’annunzia bloccada in pèr minutas. Spetgar 5 minutas ed empruvar danovamain.'),
+    'Request blocked': ('Anfrage gesperrt', 'Requête bloquée', 'Richiesta bloccata', 'Dumonda bloccada'),
+    'This action came from another web page and was refused for your safety. Open MoveEye directly and try again.': ('Diese Aktion kam von einer anderen Webseite und wurde zu deiner Sicherheit abgelehnt. MoveEye direkt öffnen und nochmals versuchen.', 'Cette action venait d’une autre page web et a été refusée pour ta sécurité. Ouvre MoveEye directement et réessaie.', 'Questa azione proveniva da un’altra pagina web ed è stata rifiutata per la tua sicurezza. Apri MoveEye direttamente e riprova.', 'Questa acziun è vegnida d’in’autra pagina d’internet ed è vegnida refusada per tia segirezza. Avrir MoveEye directamain ed empruvar danovamain.'),
+    'Guest link not valid': ('Gast-Link nicht gültig', 'Lien d’invité non valable', 'Link ospite non valido', 'Link da giast betg valaivel'),
+    'This guest link is not valid (any more). Ask the owner for a new link.': ('Dieser Gast-Link ist nicht (mehr) gültig. Bitte beim Besitzer einen neuen Link verlangen.', 'Ce lien d’invité n’est (plus) valable. Demande un nouveau lien au propriétaire.', 'Questo link ospite non è (più) valido. Chiedi un nuovo link al proprietario.', 'Quest link da giast n’è betg (pli) valaivel. Dumandar il possessur per in nov link.'),
+    'Too many wrong keys': ('Zu viele falsche Schlüssel', 'Trop de clés erronées', 'Troppe chiavi errate', 'Memia bleras clavs sbagliadas'),
+    'Too many wrong keys from this device. Please wait 10 minutes.': ('Zu viele falsche Schlüssel von diesem Gerät. Bitte 10 Minuten warten.', 'Trop de clés erronées depuis cet appareil. Attends 10 minutes.', 'Troppe chiavi errate da questo apparecchio. Attendi 10 minuti.', 'Memia bleras clavs sbagliadas da quest apparat. Spetgar 10 minutas.'),
+    'Page not found': ('Seite nicht gefunden', 'Page introuvable', 'Pagina non trovata', 'Pagina betg chattada'),
+    'This address does not exist on MoveEye.': ('Diese Adresse gibt es bei MoveEye nicht.', 'Cette adresse n’existe pas sur MoveEye.', 'Questo indirizzo non esiste su MoveEye.', 'Questa adressa n’exista betg tar MoveEye.'),
+    'Something went wrong': ('Etwas ist schiefgegangen', 'Quelque chose n’a pas marché', 'Qualcosa è andato storto', 'Insatge n’è betg ì bain'),
+    'MoveEye could not answer this request. Please try again in a moment.': ('MoveEye konnte diese Anfrage nicht beantworten. Bitte gleich nochmals versuchen.', 'MoveEye n’a pas pu répondre à cette requête. Réessaie dans un instant.', 'MoveEye non ha potuto rispondere a questa richiesta. Riprova tra un momento.', 'MoveEye n’ha betg pudì respunder a questa dumonda. Empruvar danovamain en in mument.'),
+    'To the start page': ('Zur Startseite', 'Vers la page d’accueil', 'Alla pagina iniziale', 'A la pagina da partenza'),
+    # 4: night view
+    'Night view': ('Nachtblick', 'Vue de nuit', 'Vista notte', 'Vista da notg'),
+    'Night view: very dark and red, the live picture dimmed - for a short look in the tent': ('Nachtblick: sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt', 'Vue de nuit : très sombre et rouge, image en direct atténuée – pour un bref coup d’œil dans la tente', 'Vista notte: molto scura e rossa, immagine live attenuata – per un breve sguardo nella tenda', 'Vista da notg: fitg stgir e cotschen, maletg live stgirentà – per in curt sguard en la tenda'),
+    'Night view on - tap 🌑 again to switch it off': ('Nachtblick an – nochmals 🌑 antippen zum Ausschalten', 'Vue de nuit activée – touche encore 🌑 pour la couper', 'Vista notte attiva – tocca di nuovo 🌑 per spegnerla', 'Vista da notg activa – smatgar anc ina giada 🌑 per la stizzar'),
+    'Night view off': ('Nachtblick aus', 'Vue de nuit désactivée', 'Vista notte spenta', 'Vista da notg stizzada'),
+    # 5: names for screen readers
+    'Full screen': ('Vollbild', 'Plein écran', 'Schermo intero', 'Visur entir'),
+    'Light / dark': ('Hell / dunkel', 'Clair / sombre', 'Chiaro / scuro', 'Cler / stgir'),
+    'Exit full screen': ('Vollbild verlassen', 'Quitter le plein écran', 'Esci dallo schermo intero', 'Bandunar il visur entir'),
+    'Up': ('Nach oben', 'Vers le haut', 'Su', 'Ensi'),
+    'Down': ('Nach unten', 'Vers le bas', 'Giù', 'Engiu'),
+    'Remove': ('Entfernen', 'Supprimer', 'Rimuovi', 'Allontanar'),
+    'Refresh': ('Aktualisieren', 'Actualiser', 'Aggiorna', 'Actualisar'),
+    'Help': ('Hilfe', 'Aide', 'Aiuto', 'Agid'),
+    'Menu': ('Menü', 'Menu', 'Menu', 'Menu'),
+    'Pause': ('Pause', 'Pause', 'Pausa', 'Pausa'),
+    'Previous': ('Vorherige', 'Précédent', 'Precedente', 'Precedent'),
+    'Live picture': ('Livebild', 'Image en direct', 'Immagine live', 'Maletg live'),
+    'Main navigation': ('Hauptnavigation', 'Navigation principale', 'Navigazione principale', 'Navigaziun principala'),
+    'Sub navigation': ('Unternavigation', 'Sous-navigation', 'Sottonavigazione', 'Sutnavigaziun'),
+    'Search': ('Suchen', 'Rechercher', 'Cerca', 'Tschertgar'),
+    'Listen': ('Zuhören', 'Écouter', 'Ascolta', 'Tadlar'),
+    'Other side': ('Andere Seite', 'Autre côté', 'Altro lato', 'Autra vart'),
+    'Favourite': ('Favorit', 'Favori', 'Preferito', 'Favurit'),
+    'Download': ('Herunterladen', 'Télécharger', 'Scarica', 'Telechargiar'),
+    'Share': ('Teilen', 'Partager', 'Condividi', 'Parter'),
+    'Zoom in': ('Vergrössern', 'Agrandir', 'Ingrandisci', 'Engrondir'),
+    'Zoom out': ('Verkleinern', 'Réduire', 'Riduci', 'Empitschnir'),
+    'Mute': ('Ton aus', 'Couper le son', 'Silenzia', 'Tun ora'),
+    'Sound on': ('Ton an', 'Son activé', 'Audio attivo', 'Tun en'),
+    'Protection state': ('Schutz-Zustand', 'État de la protection', 'Stato della protezione', 'Stadi da la protecziun'),
+    'Operate with the finger (otherwise the page scrolls)': ('Bedienen mit dem Finger (sonst scrollt die Seite)', 'Utiliser avec le doigt (sinon la page défile)', 'Usare con il dito (altrimenti la pagina scorre)', 'Manar cun il det (uschiglio sa mova la pagina)'),
+    'Finger: rotate instead of move': ('Finger: drehen statt verschieben', 'Doigt : tourner au lieu de déplacer', 'Dito: ruotare invece di spostare', 'Det: volver empè da spustar'),
+    'Large picture': ('Grosses Bild', 'Grande image', 'Immagine grande', 'Maletg grond'),
+    # 6: recordings
+    'Holiday over: delete all recordings': ('Ferien vorbei: alle Aufnahmen löschen', 'Vacances finies : supprimer tous les enregistrements', 'Vacanze finite: eliminare tutte le registrazioni', 'Vacanzas finidas: stizzar tut las registraziuns'),
+    'Also delete the favourites ⭐': ('Auch die Favoriten ⭐ löschen', 'Supprimer aussi les favoris ⭐', 'Eliminare anche i preferiti ⭐', 'Stizzar er ils favurits ⭐'),
+    'Delete ALL recordings now? This cannot be undone.': ('Jetzt ALLE Aufnahmen löschen? Das lässt sich nicht rückgängig machen.', 'Supprimer TOUS les enregistrements maintenant ? Impossible d’annuler.', 'Eliminare TUTTE le registrazioni ora? Non si può annullare.', 'Stizzar ussa TUT las registraziuns? Quai na sa lascha betg revocar.'),
+    'Favourites ⭐ are kept.': ('Favoriten ⭐ bleiben.', 'Les favoris ⭐ sont conservés.', 'I preferiti ⭐ restano.', 'Ils favurits ⭐ restan.'),
+    'favourites': ('Favoriten', 'favoris', 'preferiti', 'favurits'),
+    'Deleting …': ('Löschen …', 'Suppression …', 'Eliminazione …', 'Stizzar …'),
+    '{n} recordings deleted, {k} kept': ('{n} Aufnahmen gelöscht, {k} behalten', '{n} enregistrements supprimés, {k} conservés', '{n} registrazioni eliminate, {k} conservate', '{n} registraziuns stizzadas, {k} tegnidas'),
+    'please confirm': ('bitte bestätigen', 'merci de confirmer', 'conferma per favore', 'per plaschair confermar'),
+}
+for _k, _v in _HX_SICHER.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+
+# ---- the manual: one short section in every language (before «Tipps») ----------------------------------------------------
+_HELP_SICHER = {
+    "de": '<section id="sicher" data-icon="🔐"><h2>Sicher unterwegs</h2><ul>'
+          '<li><b>«Aus» in der Push-Nachricht</b> öffnet eine kleine Seite mit dem PIN-Feld: ausgeschaltet wird erst mit der Schutz-PIN '
+          '(ohne PIN mit dem Web-Passwort). Ist beides nicht gesetzt, geht «Aus» nur auf der Seite von MoveEye. Falsche PINs sperren wie im Web '
+          '(ab 3 kommt ein Diebstahl-Alarm). «Fehlalarm» und «Sirene» gehen weiterhin mit einem Tipp.</li>'
+          '<li><b>Nach einem Stromausfall oder Absturz</b> kommt eine Push-Nachricht, wie lange MoveEye aus war und ob der Schutz wieder läuft. '
+          'Nach einem Update oder Neustart nicht.</li>'
+          '<li><b>🌑 Nachtblick</b> (oben und als Schnellschalter): die ganze Seite sehr dunkel und rot, das Livebild gedimmt – für einen kurzen Blick '
+          'im Zelt, ohne die Augen zu blenden. Jeder Browser merkt es sich selbst. Im Fenster: ◑.</li>'
+          '<li><b>Aufnahmen nach … Tagen löschen</b> (Einstellungen → Aufnahme, 0 = nie) – zusätzlich zur Grössen-Grenze. '
+          '«🧹 Ferien vorbei: alle Aufnahmen löschen» fragt nach; ⭐ Favoriten bleiben, ausser man hakt sie an.</li>'
+          '<li><b>Bilder in Push-Nachrichten</b> (Benachrichtigungen): «nur Text» schickt kein Bild an ntfy, Telegram oder Pushover – das Bild bleibt in MoveEye.</li>'
+          '</ul></section>\n\n',
+    "en": '<section id="sicher" data-icon="🔐"><h2>Safe on the road</h2><ul>'
+          '<li><b>«Off» in the push message</b> opens a small page with a PIN field: the protection goes off only with the protection PIN '
+          '(without a PIN: the web password). With neither, «Off» works only on the page of MoveEye. Wrong PINs lock as on the web page '
+          '(from 3 on a theft alarm). «False alarm» and «Siren» still work with one tap.</li>'
+          '<li><b>After a power cut or a crash</b> a push message says how long MoveEye was off and whether the protection runs again. Not after an update or restart.</li>'
+          '<li><b>🌑 Night view</b> (top and as a quick switch): the whole page very dark and red, the live picture dimmed – for a short look in the tent '
+          'without dazzling your eyes. Every browser remembers it itself. In the window: ◑.</li>'
+          '<li><b>Delete recordings after … days</b> (Settings → Recording, 0 = never) – in addition to the size limit. '
+          '«🧹 Holiday over: delete all recordings» asks first; ⭐ favourites stay unless you tick them.</li>'
+          '<li><b>Pictures in push messages</b> (Notifications): «text only» sends no picture to ntfy, Telegram or Pushover – the picture stays in MoveEye.</li>'
+          '</ul></section>\n\n',
+    "fr": '<section id="sicher" data-icon="🔐"><h2>En sécurité en route</h2><ul>'
+          '<li><b>«Arrêt» dans la notification</b> ouvre une petite page avec un champ PIN : la protection ne s’arrête qu’avec le PIN de protection '
+          '(sans PIN : le mot de passe web). Sans les deux, «Arrêt» ne marche que sur la page de MoveEye. Les PIN erronés bloquent comme sur la page web '
+          '(dès 3, alarme vol). «Fausse alarme» et «Sirène» marchent toujours d’un toucher.</li>'
+          '<li><b>Après une coupure de courant ou un plantage</b>, une notification dit combien de temps MoveEye était éteint et si la protection tourne à nouveau. Pas après une mise à jour ou un redémarrage.</li>'
+          '<li><b>🌑 Vue de nuit</b> (en haut et comme interrupteur rapide) : toute la page très sombre et rouge, l’image en direct atténuée – pour un bref coup d’œil dans la tente. '
+          'Chaque navigateur s’en souvient. Dans la fenêtre : ◑.</li>'
+          '<li><b>Supprimer les enregistrements après … jours</b> (Réglages → Enregistrement, 0 = jamais) – en plus de la limite de taille. '
+          '«🧹 Vacances finies : supprimer tous les enregistrements» demande confirmation ; les favoris ⭐ restent, sauf si tu les coches.</li>'
+          '<li><b>Images dans les notifications push</b> : «texte seulement» n’envoie aucune image à ntfy, Telegram ou Pushover – l’image reste dans MoveEye.</li>'
+          '</ul></section>\n\n',
+    "it": '<section id="sicher" data-icon="🔐"><h2>Sicuri in viaggio</h2><ul>'
+          '<li><b>«Spento» nella notifica</b> apre una piccola pagina con il campo PIN: la protezione si spegne solo con il PIN di protezione '
+          '(senza PIN: la password web). Senza entrambi, «Spento» funziona solo sulla pagina di MoveEye. I PIN errati bloccano come sulla pagina web '
+          '(da 3 allarme furto). «Falso allarme» e «Sirena» funzionano sempre con un tocco.</li>'
+          '<li><b>Dopo un’interruzione di corrente o un arresto</b> una notifica dice per quanto tempo MoveEye è stato spento e se la protezione è di nuovo attiva. Non dopo un aggiornamento o un riavvio.</li>'
+          '<li><b>🌑 Vista notte</b> (in alto e come interruttore rapido): tutta la pagina molto scura e rossa, l’immagine live attenuata – per un breve sguardo nella tenda. '
+          'Ogni browser se lo ricorda. Nella finestra: ◑.</li>'
+          '<li><b>Eliminare le registrazioni dopo … giorni</b> (Impostazioni → Registrazione, 0 = mai) – oltre al limite di dimensione. '
+          '«🧹 Vacanze finite: eliminare tutte le registrazioni» chiede conferma; i preferiti ⭐ restano, a meno di spuntarli.</li>'
+          '<li><b>Immagini nelle notifiche push</b>: «solo testo» non invia immagini a ntfy, Telegram o Pushover – l’immagine resta in MoveEye.</li>'
+          '</ul></section>\n\n',
+    "rm": '<section id="sicher" data-icon="🔐"><h2>Segir sin viadi</h2><ul>'
+          '<li><b>«Ora» en l’avis push</b> avra ina pitschna pagina cun il champ PIN: la protecziun vegn stizzada mo cun il PIN da protecziun '
+          '(senza PIN: il pled-clav web). Senza omadus funcziuna «Ora» mo sin la pagina da MoveEye. PINs sbagliads bloccan sco en il web '
+          '(a partir da 3 in alarm da ladranaria). «Fauss alarm» e «Sirena» funcziunan vinavant cun in tip.</li>'
+          '<li><b>Suenter ina interrupziun da current u in collaps</b> di in avis push quant ditg che MoveEye era stizzà e sche la protecziun funcziuna puspè. Betg suenter in update u in restart.</li>'
+          '<li><b>🌑 Vista da notg</b> (sisura e sco cumutader svelt): tut la pagina fitg stgira e cotschna, il maletg live stgirentà – per in curt sguard en la tenda. '
+          'Mintga navigatur sa regorda sez. En la fanestra: ◑.</li>'
+          '<li><b>Stizzar las registraziuns suenter … dis</b> (Parameters → Registraziun, 0 = mai) – ultra dal limit da grondezza. '
+          '«🧹 Vacanzas finidas: stizzar tut las registraziuns» dumonda l’emprim; ils favurits ⭐ restan, auter che sch’ins als marca.</li>'
+          '<li><b>Maletgs en ils avis push</b>: «mo text» na trametta nagin maletg a ntfy, Telegram u Pushover – il maletg resta en MoveEye.</li>'
+          '</ul></section>\n\n',
+}
+
+
+def _help_sicher(doc, lang):
+    if '<section id="sicher"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    if i < 0:
+        i = doc.find('<section id="privacy"')
+    return doc[:i] + _HELP_SICHER[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en = HELP_PAGE.find('<div lang="en">')
+if _hp_en > 0:
+    HELP_PAGE = _help_sicher(HELP_PAGE[:_hp_en], "de") + _help_sicher(HELP_PAGE[_hp_en:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_sicher(HELP_X[_L], _L)
 # ---- the product page (2.95.52): the homepage of MoveEye (made as an artifact), packed here (gzip + base64) so the Pi
 # can show it without internet to guests in the same Wi-Fi at /info/. Questions from the form arrive as a push message. ----
 INFO_HTML_GZ = (  # 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation

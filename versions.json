@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 14:54",
+ "generated": "2026-10-29 15:42",
  "versions": [
   {
-   "version": "2.98.18",
-   "file": "webcam_bewegung_2_98_18.py",
+   "version": "2.98.19",
+   "file": "webcam_bewegung_2_98_19.py",
    "url": "",
-   "sha256": "2744c6c7e85128e764e6615ea6c9f1828e5517459530fd07a0d93e5f325ce18b",
-   "date": "2026-10-29 14:54",
-   "notes": "Nachts strenger: eine Person, die nur die Bewegung fand (ohne KI), muss in 3 Bildern aufrecht stehen – gegen Fehlalarme durch Tiere",
-   "sig": "a95a8b5e1281e12b300cafff18e330913ec7eefff2133e55a6fe702808fe6b208bc24bee2bd6f20bdb50825518978460b020abac42ae6de386d5a1bfaa68dd07"
+   "sha256": "8590acac51bf3ead394246e09e54308026baf10fd94ddf1fa1dff509a2bb19d2",
+   "date": "2026-10-29 15:42",
+   "notes": "«Aus» in der Push-Nachricht nur mit PIN, Push nach Stromausfall, Fehlerseiten übersetzt (Anmeldung «MoveEye»), Nachtblick, Bildschirmleser, Aufnahmen nach Tagen löschen, Push ohne Bild; Code-Pflege (Doppelte-Funktionen-Prüfung, Web-Rauchtest, Übersetzungs-Test), Echtbild-Prüfsatz, Einrichtungs-Skript; Prüfstand zählt echte Pushes; Fehlalarm-Jäger lernt mit; Simulator 3D-4.3",
+   "sig": "755f2690be42d651d7e9a09f374364513b6b8fc76f2799d711096bfa92159449a183d8e92c53b070eaaab113178750367bccb71a9f6ea409a98c8db62ef2ec06"
   },
   {
    "version": "2.97.1",

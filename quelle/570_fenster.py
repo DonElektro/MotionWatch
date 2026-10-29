@@ -158,7 +158,6 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
     ("Simulator", "rover_alarm", "Rover: at a person alarm drive there by itself (simulator)"),
-    ("Simulator", "simweek_on", "Week report of the simulator diary as a push (Monday morning)"),
     ("Simulator", "fa_learn_auto", "False alarm marked: re-enact it in the simulator and learn from it"),
     ("Simulator", "rehearsal_on_arm", "Night rehearsal by itself when arming in the simulation"),
     ("Simulator", "weekcheck_on", "Recognition check every week (Sunday night) with a warning when it got worse"),
@@ -263,6 +262,7 @@ TOGGLES = [  # (section, key, label)
     ("Updates", "update_push", "Push message when a new version is there"),
     ("Night report", "report_on", "Night report: push message in the morning with what happened in the night"),
     ("Night report", "weekrep_on", "Weekly detection report: push once a week with the trend and a tip"),
+    ("Night report", "weekrep_sim", "Weekly report: with the week in the simulator (visits, animals, recognised persons)"),
     ("Night report", "weather_on", "Day overview: weather from the internet (Open-Meteo; the location is sent there)"),
     ("Night report", "diary_on", "Note animals, persons and noises (animal diary + night report)"),
     ("Power saving", "eco_on", "Power saving mode: fewer pictures while all is quiet"),
@@ -774,7 +774,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.18")
+        self.root.title("MoveEye 2.98.19")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1127,7 +1127,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.18 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.19 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

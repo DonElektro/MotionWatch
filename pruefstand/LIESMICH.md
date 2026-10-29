@@ -10,10 +10,45 @@ Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt MoveEye 
    Infrarot … und immer **dieselben Besucher auf denselben Wegen** (fester Zufallsstart). Der Simulator weiss, wer wann für eine
    Kamera sichtbar war (frei, gross genug, genug Licht) und vergleicht das mit dem, was Motion Watch meldet.
 3. Die Zahlen kommen als JSON nach `ergebnisse/` und in die Tabelle **`VERLAUF.md`**:
-   Personen erkannt (%), Reaktionszeit, Tiere gemeldet, Fehlalarme, Bilder pro Sekunde, ob die KI lief.
+   **Pushes richtig / falsch**, Personen erkannt (%), davon nur im Wärmebild, Reaktionszeit, Tiere gemeldet, Flackern,
+   Bilder pro Sekunde, ob die KI lief.
 4. Der Lauf wird mit dem letzten **vergleichbaren** Lauf verglichen (gleicher Testlauf, gleicher Rechner, gleicher KI-Stand):
-   15 Prozentpunkte weniger Personen oder ein Fehlalarm mehr pro Lauf = «SCHLECHTER» – aber erst, wenn beide Läufe
-   mindestens 8 Personen hatten (vorher kippte eine einzige verpasste Person das Ergebnis von 100 % auf 0 %).
+   15 Prozentpunkte weniger Personen oder **ein falscher Push mehr pro Lauf** = «SCHLECHTER» (bei alten Läufen ohne Pushes:
+   ein Flackern mehr pro Lauf) – Personen erst, wenn beide Läufe mindestens 8 Personen hatten.
+
+## Prüfstand 2 (Wunsch Daniel, 29.10.2026)
+
+- **Pushes statt Flackern.** Früher zählte jedes Aufflackern der Personen-Erkennung (0 → 1 Person) als Fehlalarm – ein Dachs
+  gab so 3–5 «Fehlalarme» in Sekunden. Jetzt zählt, was auf dem Handy ankäme: MoveEye läuft im Prüfstand mit dem
+  **Test-Postfach** (`notify_sandbox`), und schickt dem Simulator mit jedem Zustand die letzten Nachrichten seiner Liste
+  «Nachrichten» (Teil `quelle/068_pruefstand_pushes.py`, Feld `det.pushes`). Der Simulator ordnet jeden Alarm-Push
+  (Person, Wärme, Voralarm) zu: **richtig**, wenn bis 6 s vorher eine Person sichtbar oder wenigstens im Bild war, sonst
+  **falsch** (mit vermuteter Ursache). Derselbe Besuch nochmals innert 10 s zählt einmal (ebenso ein zweiter falscher Push
+  innert 10 s). Die alte Zahl heisst jetzt **Flackern** und steht weiter in der Tabelle. Die Pause zwischen zwei Pushes
+  (Einstellung «Pause zwischen Meldungen», 60 s) gilt auch hier – wie am echten Gerät.
+- **Nacht ohne Licht mit Wärmebild.** Die Wärmebildkamera von MoveEye ist im Prüfstand an (`--waermebild an`, Standard).
+  Nachts zählt eine Person auch als sichtbar, wenn die Wärmebildkamera (Simulator `cams[2]`, auf dem Kopf) sie frei, gross
+  genug (mindestens 8 der 62 Zeilen, bei Regen / Schnee mehr, bei Nebel noch mehr) und wärmer als die Nacht sieht. Damit
+  messen auch «Nacht, ohne Licht» und «Nacht, Regen» etwas. Spalte **Wärmebild** = Personen, die nur das Wärmebild sah
+  (erkannt / sichtbar).
+- **Ganze Nacht** (`nacht`): 20–6 Uhr im Zeitraffer in etwa 11 Minuten (die Uhr des Simulators läuft schneller), etwa
+  20 Tiere, Windböen, ein Regenschauer, ruhige Abschnitte ohne Besuch und 2 Personen. Hauptzahl: **Pushes pro Nacht**
+  (richtig / falsch). `--mal` vervielfacht diese Nacht nicht (realistische Zahlen).
+- **Zufallsstarts** (`--seeds 3`): Zufall 1 = die festen Besucher von früher (4711), 2, 3 … dieselben Besucher auf anderen
+  Wegen. In `VERLAUF.md` steht dann die Streuung (kleinster–grösster Wert pro Lauf). Mehr Personen: `--mal 1` … `--mal 5`.
+- **Schleichwege automatisch:** `pruefstand.py` übernimmt bei jedem Lauf die Schleichwege aus `feedback/` (Spielberichte als
+  ZIP oder `schleichweg_*.json`) nach `simulator3d/spielwege/` – derselbe Weg nur einmal. Im Simulator geht es auch direkt:
+  Prüfstand → **«Schleichwege an GitHub senden»** (GitHub-Schlüssel des Prüfstands; ohne Schlüssel in einen Ordner auf
+  dem Schreibtisch, die Dateien im Chat anhängen).
+- **Echte Nächte nachspielen** (`echtenaechte`): siehe unten.
+
+## Wann läuft was auf GitHub?
+
+| Anlass | Testläufe | Dauer |
+|---|---|---|
+| neue Version (versions.json) | quick, night, standard, ganze Nacht; quick auch ohne Kamera-Effekte; Zufall 1 | etwa 40 Min. |
+| jeden Sonntag in der Nacht | dazu **hard** (Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer, Wolkenschatten), 3 Zufallsstarts | etwa 2½ Std. |
+| von Hand (Run workflow) | frei wählbar: Testläufe, «hard» ankreuzen, Zufallsstarts, Besucher ×1–5, Kamera-Effekte | |
 
 ## Verlässlichere Zahlen (ab MoveEye 2.98.13 / Simulator 3D-4.0)
 
@@ -35,6 +70,9 @@ Der Prüfstand beantwortet bei jeder neuen Version die Frage: **Erkennt MoveEye 
 | `standard` | Tag, Wind und Wolken, Nacht mit Insekten, Nacht mit Regen | ca. 5 Min. |
 | `night` | Nacht ohne Licht, mit Infrarot, mit Regen | ca. 4 Min. |
 | `hard` | Gegenlicht, Nebel, Schnee, Tropfen, Spinnennetz, Scheinwerfer, Wolkenschatten | ca. 9 Min. |
+| `nacht` | Ganze Nacht 20–6 Uhr im Zeitraffer: Tiere, Wind, Regenschauer, 2 Personen | ca. 11 Min. |
+| `spielwege` | Schleichwege aus dem Spiel (läuft automatisch mit, wenn es welche gibt) | je Weg |
+| `echtenaechte` | Alarm-Spuren echter Nächte, wie aufgenommen und mit anderem Wetter (automatisch, wenn es welche gibt) | je Fall ca. 2 Min. |
 
 ## Starten
 
@@ -50,6 +88,8 @@ python3 pruefstand/pruefstand.py --nur-verlauf          # nur VERLAUF.md neu sch
 ```
 
 `--streng` gibt den Rückgabewert 3, wenn die Erkennung schlechter geworden ist (für automatische Prüfungen).
+Weitere Schalter: `--seeds 3`, `--mal 5`, `--realismus an,aus --roh-plaene quick`, `--waermebild aus`, `--ohne-extras`
+(ohne Schleichwege und echte Nächte), `--wege-einlesen`, `--fall-aus-spur DATEI`.
 
 ## Grenzen
 
@@ -75,3 +115,36 @@ Datei auf dem Schreibtisch und kann im Chat angehängt werden.
 Liegen in `simulator3d/spielwege/` Dateien `schleichweg_*.json` (aus den Spielberichten in `feedback/spiel/`), läuft
 der Plan «spielwege» bei jedem Prüfstand automatisch mit: eine Figur geht genau die Wege, auf denen Spieler unerkannt
 ins Ziel kamen.
+
+## Echte Nächte nachspielen (Prüfstand 2)
+
+MoveEye merkt sich bei jedem Alarm, wo im Bild die Personen und Tiere waren (15 s vorher bis 20 s nachher, etwa zweimal pro
+Sekunde; Teil 180 `alarm_track_sample`, Datei `alarm_tracks.json` im Einstellungs-Ordner von MoveEye; im Simulator als
+«Alarm-Rückblick in 3D»). So eine Spur wird zum **Prüfstand-Fall**:
+
+- im Simulator: den Alarm-Rückblick abspielen, dann Prüfstand → **«Letzten Alarm-Rückblick als Prüfstand-Fall»** (mit
+  GitHub-Schlüssel direkt nach `simulator3d/pruefnaechte/`, sonst nur auf diesem PC), oder
+- auf dem PC: `python3 pruefstand/pruefstand.py --fall-aus-spur alarm_tracks.json [--spur-id KENNUNG] [--spur-wetter rain]`
+  (Beispiel zum Ausprobieren: `pruefstand/beispiel_alarmspur.json`, eine simulierte Spur).
+
+Der Testlauf `echtenaechte` spielt jeden Fall (höchstens 4, die neusten) viermal: **wie aufgenommen**, **Nacht mit Regen**,
+**Nacht ohne Licht**, **Tag mit Wind**. Jede Figur der Spur geht ihren Weg nach (aus der Lage im Bild und der Grösse des
+Rahmens: Person 1,7 m, Tier 0,6 m). So zeigt sich, ob MoveEye denselben Besuch auch bei anderem Wetter gemeldet hätte.
+
+Format einer Datei in `simulator3d/pruefnaechte/` (JSON):
+
+```
+{"v": 1, "title": "Alarm 02.11. 23:41", "date": "2026-11-02 23:41", "hour": 23.7, "weather": "clear", "wind": 10,
+ "quelle": "MoveEye-Alarm 20261102_234100 (echt)",
+ "variants": [{"name": "Nebel", "hour": 2.0, "weather": "fog", "wind": 5, "cond": ["ir"]}],      ← freiwillig
+ "samples": [{"t": 1793659260.1, "pan": 12.0, "tilt": -3.0,
+              "objs": [{"k": "person", "x": 0.41, "y": 0.62, "h": 0.22}, {"k": "cat", "x": 0.7, "y": 0.8, "h": 0.05}]}, …]}
+```
+
+- `samples` = genau die Punkte der Alarm-Spur von MoveEye: Zeit (Unix-Sekunden), Schwenk / Neigung des Kopfes in Grad,
+  pro Figur Art (`k`), Mitte des Rahmens `x`, `y` und Höhe `h` (0…1 des Bildes der Kopfkamera).
+- `hour` / `weather` / `wind`: wie es in der Nacht war (ohne Angabe: klar, Wind 10).
+- `variants` (freiwillig): andere Bedingungen statt der drei Standard-Varianten; `cond` wie in den anderen Testläufen
+  (`ir`, `glare`, `drops`, `web`, `headlights`, `shadows`).
+- Kartengebunden (Wunsch Daniel): die Wege gelten nur von MoveEye aus gesehen; Hindernisse der Szene können anders stehen
+  als in der echten Nacht.

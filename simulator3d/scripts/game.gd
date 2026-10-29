@@ -127,6 +127,7 @@ var learn                                # gamelearn.gd (3D-3.52)
 var xp                                   # gamexp.gd (3D-4.x): the level of every player over all evenings
 var bots                                 # gamebots.gd (3D-4.x): smarter bots and the «Bot-Wächter»
 var watch                                # gamewatch.gd (3D-4.x): watchers guess and throw decoy stones
+var jaeger                               # gamejaeger.gd (3D-4.x): «Fehlalarm-Jäger» - animals and things fool MoveEye
 var duel := {}                           # 3D-4.x: after a round with a guard: MoveEye against the guard
 var flag_res := {}                       # 3D-4.x: «Fahne erobern» is decided by the captures: {"caps", "win", "text"}
 var round_runners := 1                   # how many ran in this round (the score of the guard is per runner)
@@ -155,6 +156,10 @@ func _ready() -> void:
 	watch = preload("res://scripts/gamewatch.gd").new()
 	watch.game = self
 	watch.main = main
+	jaeger = preload("res://scripts/gamejaeger.gd").new()
+	jaeger.game = self
+	jaeger.main = main
+	add_child(jaeger)
 
 
 func now() -> float:
@@ -660,6 +665,8 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 			if runners_n() > int(main.game_max):
 				_assign(players[slot], "watch")              # 3D-3.95: all places to run are taken - watch through the camera
 				_say(players[slot], "👀 Alle %d Plätze zum Laufen sind besetzt – du schaust durch die Kamera zu. Sobald einer frei wird, läufst du mit." % int(main.game_max), 6.0)
+			elif jaeger.on() and round_state in ["countdown", "play"]:
+				jaeger.join(players[slot])                   # «Fehlalarm-Jäger»: comes in as a lure, never as a person
 		var p: Dictionary = players[slot]
 		if name != "":
 			p["name"] = name
@@ -706,6 +713,11 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 			_set_role(p2, str(m.get("r", "runner")))
 		"stone":
 			_throw(p2)
+		"lure":                                        # «Fehlalarm-Jäger»: the player picks his lure (before the round)
+			jaeger.choose(p2, str(m.get("v", "")))
+			paint()
+		"act":                                         # «Fehlalarm-Jäger»: the button of the thing (gust, sweep, rise, drop, swarm)
+			jaeger.act(p2)
 		"decoy":                                       # the decoy (3D-3.25): attracts the camera, team points
 			if round_state not in ["countdown", "play"]:
 				p2["decoy"] = bool(m.get("v", false)) and main.game_decoy
@@ -1148,6 +1160,8 @@ func start_round() -> void:
 	_build_jail()
 	_paint_goal()
 	learn.round_start()
+	if jaeger.on():                                        # «Fehlalarm-Jäger»: every runner becomes his lure
+		jaeger.round_start()
 	if main.game_mode == "patrol" and main.patrol != null:  # 3D-3.61: the patrol drives during the round
 		_patrol_was = main.patrol.active                     # 3D-3.88: afterwards as before
 		main.patrol.set_active(true)
@@ -1172,8 +1186,8 @@ func _mark_newbies() -> bool:
 	for p in players:
 		if p == null:
 			continue
-		var new_: bool = p["role"] == "runner" and str(p.get("kind", "phone")) != "bot" and not xp.known(str(p["name"]))
-		p["tut_on"] = main.game_tutorial or new_
+		var new_: bool = p["role"] == "runner" and str(p.get("kind", "phone")) != "bot" and not xp.known(str(p["name"])) and not jaeger.on()
+		p["tut_on"] = (main.game_tutorial and not jaeger.on()) or new_
 		if new_:
 			any = true
 			news("🎓 %s spielt zum ersten Mal – mit Übungsschritten" % p["name"])
@@ -1378,6 +1392,10 @@ func end_round() -> void:
 			var gs := guard_score(p, missed)
 			sc = int(gs[0])
 			info = "Wächter · " + str(gs[1])
+		elif jaeger.on():                                  # «Fehlalarm-Jäger»: 100 per false alarm, +50 per lure that fooled MoveEye
+			var js: Array = jaeger.score(p)
+			sc = int(js[0])
+			info = str(js[1])
 		elif main.game_mode == "seek":
 			sc = {"goal": 800, "found": 0}.get(p["state"], 300)
 			info = {"goal": "🏠 Basis berührt!", "found": "🙈 gefunden"}.get(p["state"], "🌳 nicht gefunden")
@@ -1445,6 +1463,8 @@ func end_round() -> void:
 		else:
 			p["state"] = "lobby"
 		p["susp"] = 0.0
+	if jaeger.on():                                        # the cases, the text of the end screen, the person figures back
+		jaeger.round_end()
 	if main.game_mode == "mwhand":                         # the guards at MoveEye
 		var mn: String = ", ".join(PackedStringArray(mwg["names"])) if not mwg["names"].is_empty() else "MoveEye"
 		var gm := guard_score(mwg, missed)
@@ -1755,6 +1775,9 @@ func _referee(dt: float) -> void:
 	var lv: float = LEVEL.get(main.game_level, 1.0)
 	_check_distract()
 	_paint_goal()
+	if jaeger.on():                                        # «Fehlalarm-Jäger»: only the false alarms of MoveEye count
+		jaeger.tick(dt)
+		return
 	var mw: bool = mw_decides() or main.game_mode == "mwhand"     # 3D-3.27: a person at MoveEye decides «Erwischt!»
 	if mw:
 		_mw_referee()
@@ -2349,6 +2372,8 @@ func state_for(p: Dictionary) -> Dictionary:
 			target = bases[1 - my]                             # fetch the flag of the others
 	if sprint() and p["role"] == "runner" and p["cps"].size() < checkpoints.size():
 		target = checkpoints[p["cps"].size()]["pos"]          # 3D-4.x: Sprint - the next gate
+	if jaeger.on():
+		target = main.cams[0].global_position              # «Fehlalarm-Jäger»: the arrow points to the camera
 	var ti := int(p.get("tut", 0))
 	if bool(p.get("tut_on", false)) and ti < TUT.size() and TUT[ti][1] == "bush" and not hides.is_empty():
 		var bd := 1e9                                          # the practice step «bush»: the arrow shows the nearest bush
@@ -2404,6 +2429,10 @@ func state_for(p: Dictionary) -> Dictionary:
 	d["sprint"] = sprint()
 	d["w"] = watch.state_for(p)
 	d["tut"] = str(p.get("tut_msg", "")) if bool(p.get("tut_on", false)) else ""
+	if jaeger.on():
+		d["jg"] = jaeger.state_for(p)
+		if round_state == "end":
+			d["jres"] = jaeger.res
 	return d
 
 
@@ -2436,6 +2465,8 @@ func paint() -> void:
 			_qr_for = ad
 			qr_rect.texture = Qr.texture(ad, 4)
 	var lines := PackedStringArray()
+	if open and jaeger.on() and not jaeger.mw_on():
+		lines.append("⚠ «Fehlalarm-Jäger»: MoveEye ist nicht verbunden – ohne MoveEye zählt kein Fehlalarm.")
 	if open and main.game_mode == "mw" and not mw_decides():
 		lines.append("⚠ «MoveEye entscheidet»: MoveEye ist nicht verbunden (ab Version 2.93.3) – bis dahin entscheidet der Simulator.")
 	if not open:
@@ -2570,7 +2601,7 @@ body.aim #v{outline:4px dashed var(--org);outline-offset:-4px}
 <div id="list"></div><div id="extra"></div>
 <div id="stick"></div><div id="look"></div><div class="base" id="base"><div class="knob" id="knob"></div></div>
 <div class="hint" id="hint">links: gehen · rechts wischen: umschauen</div>
-<div class="btns" id="rb"><div class="b" id="b-lamp" style="display:none"><i>🔦</i>Lampe</div><div class="b" id="b-stone"><i>🪨</i>Werfen</div><div class="b" id="b-run"><i>🏃</i>Rennen</div><div class="b" id="b-crouch"><i>🧎</i>Ducken</div><div class="b" id="b-crawl"><i>🐍</i>Kriechen</div></div>
+<div class="btns" id="rb"><div class="b big" id="b-act" style="display:none"><i>💨</i>Aktion</div><div class="b" id="b-lamp" style="display:none"><i>🔦</i>Lampe</div><div class="b" id="b-stone"><i>🪨</i>Werfen</div><div class="b" id="b-run"><i>🏃</i>Rennen</div><div class="b" id="b-crouch"><i>🧎</i>Ducken</div><div class="b" id="b-crawl"><i>🐍</i>Kriechen</div></div>
 <div class="btns" id="wb" style="display:none"><div class="b" id="b-vote"><i>🔮</i>Tipp</div><div class="b" id="b-wst"><i>🪨</i>Lockstein</div></div>
 <div class="btns" id="gb" style="display:none"><div class="b" id="b-light"><i>💡</i>Licht</div><div class="b big red" id="b-catch"><i>🚨</i>Erwischt!</div></div>
 <div id="tip" hidden></div>
@@ -2701,31 +2732,43 @@ function paint(m) {
   $("#extra").textContent = (m.goal_mode === "flag" && role === "runner" ? "🚩 Rot " + m.caps[0] + " : " + m.caps[1] + " Blau · " + (m.flag >= 0 ? "Fahne dabei – zur eigenen Basis! · " : "") : "") + (m.gopen === false && role === "runner" ? "🔒 Ziel noch zu – zuerst alle Kristalle finden · " : "") + (m.carry ? "💰 Beute dabei – zurück zum Start! " : (m.goal_mode === "return" && role === "runner" ? "Ziel: Beute holen und zurückbringen · " : "")) + (m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "");
   if (m.cps_all && role === "runner") $("#extra").textContent = "🚩 " + m.cps + "/" + m.cps_all + " · " + $("#extra").textContent;
   if (m.decoy && role === "runner") $("#extra").textContent = "🦆 Lockvogel – lass dich sehen! · " + $("#extra").textContent;
+  const J = m.mode === "jaeger" ? (m.jg || {}) : null;           // 3D-4.x: «Fehlalarm-Jäger» - the player is an animal or a thing
+  ["#b-crouch", "#b-crawl"].forEach(k => $(k).style.display = J ? "none" : "flex");
+  $("#b-act").style.display = J && (J.act || []).length && role === "runner" ? "flex" : "none";
+  if (J && (J.act || []).length && $("#b-act").dataset.k !== J.act[1]) { $("#b-act").dataset.k = J.act[1]; $("#b-act").innerHTML = "<i>" + J.act[0] + "</i>" + esc(J.act[1]); }
+  if (J && role === "runner") { $("#eye").style.opacity = 1; $("#eye").textContent = !J.mw ? "⚠ MoveEye fehlt" : J.rep ? "🚨 MoveEye: Person!" : m.seen ? "📷 im Bild" : "📷 nicht im Bild";
+    $("#gd").textContent = "📷 " + Math.round(m.gd) + " m"; $("#lv").textContent = "· " + (J.li || "") + " " + (J.ln || "") + " · 🎉 " + (J.n || 0);
+    $("#extra").textContent = (J.li || "") + " " + (J.ln || "") + " · " + (J.tip || ""); }
   $("#msg").textContent = m.msg || "";
   heart(m);                                                      // 3D-3.77: heartbeat when the camera nearly sees you
   $("#tut").textContent = m.tut || "";
   $("#sig").hidden = !(m.rs === "play" && role === "runner" && m.ps === "play");
-  if (m.stone < 0) $("#b-stone").style.display = "none"; else { $("#b-stone").style.display = "flex"; cool($("#b-stone"), m.stone); }
-  $("#b-lamp").style.display = m.dark && role === "runner" ? "flex" : "none"; $("#b-lamp").classList.toggle("on", !!m.lamp);
+  if (m.stone < 0 || J) $("#b-stone").style.display = "none"; else { $("#b-stone").style.display = "flex"; cool($("#b-stone"), m.stone); }
+  $("#b-lamp").style.display = m.dark && role === "runner" && !J ? "flex" : "none"; $("#b-lamp").classList.toggle("on", !!m.lamp);
   if (role === "guard") { cool($("#b-light"), m.light); cool($("#b-catch"), m.catch); $("#gd").textContent = m.gcam === 1 ? "feste Kamera" : (m.pan > 0 ? "◀ " : "▶ ") + Math.abs(m.pan) + "°"; }
   if (m.rs === "countdown" && m.mode === "seek") { GAL = []; ov(role === "guard" ? '<h1>🙈 Augen zu!</h1><div id="big">' + Math.max(1, m.cd) + '</div><p>Die anderen verstecken sich.</p>' : ''); if (role !== "guard") $("#msg").textContent = "🙈 Verstecken! Noch " + m.cd + " s"; }
   else if (m.rs === "countdown") { GAL = []; ov('<div id="big">' + Math.max(1, m.cd) + '</div>'); }
   else if ((m.rs === "lobby" || m.rs === "end") && editing) { /* the player changes the look */ }
   else if (m.rs === "lobby" || m.rs === "end") {
     const FR = m.fres || {}, XR = m.xpr || {};
-    let h = m.rs === "end" ? (FR.text ? '<div class="big2">🚩 ' + esc(FR.text) + '</div><h1>' + esc(FR.title) + '</h1>' : '') + (m.duel && m.duel.text ? duelHtml(m.duel) : '') +
+    const JR = m.jres || {};
+    let h = m.rs === "end" ? (JR.text ? '<div class="big2">' + (JR.n ? '🎉 ' + JR.n : '🛡 0') + '</div><h1>' + esc(JR.text) + '</h1>' + ((JR.cases || []).length ? '<p>' + JR.cases.map(c => c[0] + ' ' + esc(c[1]) + ' <small>(' + esc(c[2]) + ', ' + Math.round(c[3]) + ' m)</small>').join(" · ") + '</p>' : '') : '') +
+      (FR.text ? '<div class="big2">🚩 ' + esc(FR.text) + '</div><h1>' + esc(FR.title) + '</h1>' : '') + (m.duel && m.duel.text ? duelHtml(m.duel) : '') +
       (m.tres && m.tres.length && !FR.text ? '<h1>' + (m.tres[0].lead ? 'Runde 1 von 2: ' + esc(m.tres[0].n) + ' führt' : esc(m.tres[0].n) + ' gewinnt!') + '</h1>' : '') +
       (m.tres && m.tres.length ? '<p>' + m.tres.map(t => '<span style="color:' + t.c + '">●</span> ' + esc(t.n) + (t.caps !== undefined ? ' 🚩' + t.caps : '') + ' <b>' + t.score + '</b>' + (t.round !== undefined ? ' <small>(diese Runde ' + t.round + ')</small>' : '')).join(" · ") + '</p>' : '') +
       (XR.gain ? '<p>⭐ <b>+' + XR.gain + ' XP</b>' + (XR.up ? ' · ⬆ <b>Stufe ' + XR.lv + '!</b>' : '') + ((XR.new || []).length ? '<br>Neu für deine Figur: <b>' + XR.new.map(esc).join(", ") + '</b> (👕 Aussehen ändern)' : '') + '</p>' : '') +
       ((W.votes_res || []).length ? '<p>🔮 Tipps «Wer kommt durch?»: ' + W.votes_res.map(v => '<span style="color:' + v.c + '">' + esc(v.n) + '</span> → ' + esc(v.pick) + (v.ok ? ' ✅' : ' ❌')).join(" · ") + '</p>' : '') +
       '<h1>Rangliste</h1><table>' + (m.res || []).map((r, i) => '<tr><td>' + (i + 1) + '.</td><td><span style="color:' + r.c + '">●</span> ' + esc(r.n) + (r.lv ? ' ⭐' + r.lv : '') + '</td><td>' + esc(r.info) + '</td><td><b>' + r.score + '</b></td></tr>').join("") + '</table>'
-      : '<h1>Bereit?</h1><p>Ziel: <b>' + esc(m.goal) + '</b> – folge dem Pfeil oben rechts zum grünen Licht.</p><p>Links ziehen = gehen · rechts wischen = umschauen</p>';
+      : (J ? '<h1>🦊 Fehlalarm-Jäger</h1>' : '<h1>Bereit?</h1><p>Ziel: <b>' + esc(m.goal) + '</b> – folge dem Pfeil oben rechts zum grünen Licht.</p><p>Links ziehen = gehen · rechts wischen = umschauen</p>');
     h += lvlHtml(m.xp);
     if (m.sprint) h += '<p>⏱ <b>Sprint:</b> 90 Sekunden, immer derselbe Parcours. Durch Tor 1, 2 und 3 (der Pfeil zeigt das nächste), dann ins Ziel. Je schneller, desto mehr Punkte.</p>';
     if (m.goal_mode === "flag") h += '<p>🚩 <b>Fahne erobern</b>: hol die Fahne der anderen bei ihrer Basis und bring sie zu deiner Basis (+500). Berührst du jemanden, der eure Fahne trägt, geht sie zurück (+100). Die Kamera passt auf alle auf.</p>';
     if (m.mode === "teamguard") h += '<p>⚔️ Team gegen Team · Runde ' + (m.mround + 1) + ' von 2: <b style="color:' + ["#eb2e1f", "#1f6bfa"][m.tg] + '">' + ["Team Rot", "Team Blau"][m.tg] + '</b> bewacht (Kopfkamera und feste Kamera), das andere Team schleicht. Danach wird getauscht.</p>';
     if (m.mode === "seek") h += '<p>🙈 <b>Verstecken mit dem Rover:</b> Alle starten bei der Basis. ' + (role === "guard" ? 'Du bist der <b>Fänger</b>: 30 s Augen zu, dann fährst du den Rover (Joystick links), drehst den Kopf (rechts wischen) und drückst «Erwischt!», wenn du jemanden im Bild hast.' : 'Du hast 30 s zum Verstecken. Der Fänger sieht nur die Kamera des Rovers. Berühre die Basis (Pfeil), ohne gefunden zu werden – dann gewinnen alle Verstecker!') + '</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🌳 Verstecker</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">🔎 Fänger</button>';
     if (m.mode === "mwhand") h += '<p>🕹 <b>Team gegen MoveEye:</b> Die Wächter sitzen an MoveEye, drehen die echte Kamera mit dem Joystick und drücken dort «Erwischt!». Der Balken zeigt nur, wie gut man dich sieht.</p>';
+    if (J) h += '<p>Du bist <b>kein Mensch</b>, sondern ein Tier oder ein Ding. Schaffst du es, dass MoveEye trotzdem <b>«Person!»</b> meldet? Jeder Fehlalarm gibt Punkte – und MoveEye lernt daraus. Der Pfeil zeigt zur Kamera 📷.</p>' +
+      (J.mw ? '' : '<p>⚠ <b>MoveEye ist nicht verbunden</b> – ohne MoveEye zählt kein Fehlalarm.</p>') +
+      (role === "runner" ? '<div class="lab">Dein Lockvogel</div><div class="chips">' + (J.lures || []).map(l => '<button type="button" data-lure="' + l.v + '" class="' + (l.v === J.lure ? "on" : "") + '">' + l.i + ' ' + esc(l.n) + '</button>').join("") + '</div><p><small>' + esc(J.tip || "") + '</small></p>' : '');
     if (m.mode === "mw") h += '<p>' + (m.mwd ? '🛡 Diesmal entscheidet die <b>echte Erkennung von MoveEye</b>: meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht.' : '⚠ MoveEye ist nicht verbunden – der Simulator entscheidet.') + '</p>';
     if (m.mode === "guard") h += '<p>Ein Spieler kann Wächter sein: er sieht durch die Kamera, dreht den Kopf und ruft «Erwischt!».' + (m.botg ? ' Will niemand? Dann passt der <b>🤖 Bot-Wächter</b> auf.' : '') + '</p><button class="sec' + (role === "runner" ? " on" : "") + '" id="r-run">🕵️ Schleicher</button><button class="sec' + (role === "guard" ? " on" : "") + '" id="r-guard">👁 Wächter</button><br>';
     if (m.teams) { const tm = [0, 1].map(k => '<div class="tm' + (m.team === k ? " me" : "") + '"><b style="color:' + ["#eb2e1f", "#1f6bfa"][k] + '">' + ["Team Rot", "Team Blau"][k] + '</b>' +
@@ -2741,6 +2784,7 @@ function paint(m) {
     h += '<button class="sec" id="lk">👕 Aussehen ändern</button><br><button class="pr" id="st">' + (m.rs === "end" ? "Nochmal" : "Runde starten") + '</button>';
     ov(h);
     document.querySelectorAll("[data-team]").forEach(b => b.onclick = () => ws.send(JSON.stringify({t: "team", k: +b.dataset.team})));
+    document.querySelectorAll("[data-lure]").forEach(b => b.onclick = () => send({t: "lure", v: b.dataset.lure}));
     const lkb = $("#lk"); if (lkb) lkb.onclick = () => { editing = true; ov('<h1>Aussehen</h1>' + lookHtml() + '<button class="pr" id="lkok">Fertig</button>'); bindLook();
       $("#lkok").onclick = () => { ws.send(JSON.stringify(Object.assign({t: "look"}, outfit))); editing = false; lastOv = null; paint(st); }; };
     const rpb = $("#rpb"); if (rpb) rpb.onclick = () => send({t: "replay"});
@@ -2807,6 +2851,7 @@ hold($("#b-run"), () => { run = true; posture = 0; btns(); }, () => { run = fals
 $("#b-crouch").addEventListener("pointerdown", e => { e.preventDefault(); posture = posture === 1 ? 0 : 1; btns(); });
 $("#b-crawl").addEventListener("pointerdown", e => { e.preventDefault(); posture = posture === 2 ? 0 : 2; btns(); });
 $("#b-stone").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "stone"}); });
+$("#b-act").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "act"}); });
 $("#b-lamp").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "lamp"}); });
 $("#b-light").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "light"}); });
 $("#b-catch").addEventListener("pointerdown", e => { e.preventDefault(); send({t: "catch"}); });
@@ -2825,7 +2870,7 @@ function btns() { $("#b-run").classList.toggle("on", run); $("#b-crouch").classL
 // keyboard (for a computer): W A S D / arrows, Shift = run, C = crouch, X = crawl, Q / E = look round, F = throw / light, Space = «Erwischt!»
 const keys = {};
 addEventListener("keydown", e => { if (e.target.tagName === "INPUT") return; keys[e.code] = true; if (e.code === "KeyC") { posture = posture === 1 ? 0 : 1; btns(); } if (e.code === "KeyX") { posture = posture === 2 ? 0 : 2; btns(); }
-  if (e.code === "KeyF") send({t: role === "guard" ? "light" : "stone"}); if (e.code === "Space") send({t: "catch"}); });
+  if (e.code === "KeyF") send({t: role === "guard" ? "light" : st.mode === "jaeger" ? "act" : "stone"}); if (e.code === "Space") send({t: "catch"}); });
 addEventListener("keyup", e => { keys[e.code] = false; });
 setInterval(() => {
   if (!me || !ws || ws.readyState !== 1) return;
@@ -2890,6 +2935,15 @@ func spectator_info() -> Dictionary:
 	if not bots.guard.is_empty():
 		d["botg"] = {"catches": int(bots.guard["catches"]), "false": int(bots.guard["false"])}
 	d["sprint"] = sprint()
+	if jaeger.on():                                        # «Fehlalarm-Jäger»: false alarms per player, the result
+		for i in range(ps.size()):
+			for p in players:
+				if p != null and int(p["slot"]) == int(ps[i]["slot"]):
+					ps[i]["fa"] = int(p.get("fa_n", 0))
+					ps[i]["lure"] = jaeger.lure_info(jaeger.lure_of(p))[1] if p["role"] == "runner" else ""
+		d["jaeger"] = {"mw": jaeger.mw_on(), "n": jaeger.cases.size(), "lures": jaeger.allowed_text()}
+		if round_state == "end":
+			d["jres"] = jaeger.res
 	return d
 
 
@@ -2906,7 +2960,10 @@ func debug_info() -> Dictionary:
 	return {"ok": true, "round": round_state, "res": results, "tres": team_results, "duel": duel, "fres": flag_res, "levels": lv, "bots": bs,
 			"botg": bots.guard.duplicate(), "votes": watch.votes_res, "sprint": sprint(), "cps": checkpoints.map(func(c): return [snappedf(c["pos"].x, 0.1), snappedf(c["pos"].z, 0.1)]),
 			"left": int(max(0.0, t_end - now())) if round_state == "play" else 0, "feed": feed.map(func(e): return e[1]),
-			"tut": players.filter(func(q): return q != null).map(func(q): return [q["name"], bool(q.get("tut_on", false)), int(q.get("tut", 0))])}
+			"tut": players.filter(func(q): return q != null).map(func(q): return [q["name"], bool(q.get("tut_on", false)), int(q.get("tut", 0))]),
+			"jaeger": {"on": jaeger.on(), "mw": jaeger.mw_on(), "allowed": jaeger.allowed, "cases": jaeger.cases, "res": jaeger.res, "mw_cmd": main.mw_cmd,
+				"players": players.filter(func(q): return q != null).map(func(q): return [q["name"], jaeger.lure_of(q), int(q.get("fa_n", 0)), str(q["actor"].kind),
+					jaeger.lure_box(q, false) if q["role"] == "runner" else [], [snappedf(q["actor"].position.x, 0.1), snappedf(q["actor"].position.z, 0.1)]])}}
 
 
 # ==== more game (3D-3.25): photos, hiding places, decoy, night, events, checkpoints, ranking, handicap ==============
@@ -3369,6 +3426,8 @@ func _target_of(p: Dictionary) -> Vector3:
 			target = bases[1 - my]
 	if sprint() and p["cps"].size() < checkpoints.size():
 		target = checkpoints[p["cps"].size()]["pos"]
+	if jaeger.on():
+		target = jaeger.target_of(p)                       # «Fehlalarm-Jäger»: the bots wander in front of the camera
 	return target
 
 

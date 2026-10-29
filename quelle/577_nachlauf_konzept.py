@@ -10,7 +10,7 @@
 #     «automatisch an, wenn mein Handy weg ist». Übernahme der alten Werte: presence_auto → off, sonst back_ask → ask, sonst none.
 #   6 Auto-Tuner (190): min_area / sensitivity / speed_consistency höchstens ±20 % um die gemessenen Werte (Kalibrierung oder
 #     Assistent «Erkennung verbessern», 312). Der Optimierer schaltet den Tuner nicht mehr (OPT_KEYS, 310).
-# Hier statt in den grossen Listen von 570, damit dort nichts verschoben wird.
+# Die Listen-Einträge stehen seit 2.98.18 direkt in 030 / 130 / 570 / 571 / 575 (keine Nachträge mehr hier).
 # ----------------------------------------------------------------------------
 for _k, _v in {"weekrep_sim": True, "presence_back": "ask", "auto_tune_base": {}}.items():
     CFG.setdefault(_k, _v)
@@ -28,59 +28,11 @@ def presence_back_mode():
     return v if v in PRESENCE_BACK_KEYS else "ask"
 
 
-def _nl_put_after(lst, after_key, item, idx=1):
-    """item into a settings list right after the entry with this key (else at the end); an entry with the same key is replaced"""
-    lst[:] = [x for x in lst if x[idx] != item[idx]]
-    for i, x in enumerate(lst):
-        if x[idx] == after_key:
-            lst.insert(i + 1, item)
-            return
-    lst.append(item)
+# ---- the settings lists (web and window): since 2.98.18 directly in the lists - weekrep_sim (570, after weekrep_on),
+# presence_auto (571, where back_ask was), batt_save_pct / mode_fire_min_pct (575), presence_back (TEXTS in 030), SIMPLE_KEYS (130).
+# simweek_on and back_ask are only read by nachlauf_migrate (MIGRATE_ONLY, 020).
 
-
-# ---- the settings lists (web and window) ---------------------------------------------------------------------------------
-_nl_put_after(TOGGLES, "weekrep_on", ("Night report", "weekrep_sim", "Weekly report: with the week in the simulator (visits, animals, recognised persons)"))
-_nl_put_after(TOGGLES, "back_ask", ("Camping / protection", "presence_auto", "Protection on automatically when my phone is gone (choose the phone: Tools → Am I at home?)"))
-TOGGLES[:] = [x for x in TOGGLES if x[1] not in ("simweek_on", "back_ask")]
-for _i, _x in enumerate(SLIDERS):
-    if _x[1] == "batt_save_pct":
-        SLIDERS[_i] = ("Battery", "batt_save_pct", "🐢 Battery saver below (% battery): fewer pictures, the AI less often - normal again at +5 % or when charging", _x[3], _x[4], _x[5])
-_nl_put_after(SLIDERS, "batt_save_pct", ("Battery", "mode_fire_min_pct", "🔥 Campfire games end below (% battery): back to the camping guard (0 = never)", 0, 50, 10))
-_nl_put_after(TEXTS, "", ("Camping / protection", "presence_back", "When my phone comes back", "enum", "presence_back"))
-TEXT_SPECS["presence_back"] = ("enum", "presence_back")
-SIMPLE_KEYS.update({"weekrep_sim", "mode_fire_min_pct", "presence_back", "presence_auto"})
-
-_text_choice_pairs_before_nl = text_choice_pairs
-
-
-def text_choice_pairs(key):                                 # 2.98.15: + the choice at the return of the phone
-    if TEXT_SPECS.get(key, (None, None))[1] == "presence_back":
-        return [(k, tr(l)) for k, l in PRESENCE_BACK]
-    return _text_choice_pairs_before_nl(key)
-
-
-# ---- tools page «Am I at home?» (300) ---------------------------------------------------------------------------------------
-_tools_state_before_nl = tools_state
-_tools_cfg_before_nl = tools_cfg
-
-
-def tools_state():
-    r = _tools_state_before_nl()
-    try:
-        r["cfg"]["presence_back"] = presence_back_mode()
-    except (KeyError, TypeError):
-        pass
-    return r
-
-
-def tools_cfg(key, value, mac=None):
-    if key == "presence_back":
-        if value not in PRESENCE_BACK_KEYS:
-            return False, "invalid value"
-        CFG["presence_back"] = value
-        save_settings()
-        return True, ""
-    return _tools_cfg_before_nl(key, value, mac)
+# text_choice_pairs (030) and the tools page «Am I at home?» (tools_state / tools_cfg, 300) know presence_back.
 
 
 # ---- the auto-tuner: ±20 % around the measured values -----------------------------------------------------------------------
@@ -125,20 +77,12 @@ def autotune_clamp(key, value):
     return v
 
 
-_tunea_autotune_base_before_nl = _tunea_autotune_base
-
-
-def _tunea_autotune_base():                                # 312: after «Erkennung verbessern» (and its «undo») = the new middle
-    _tunea_autotune_base_before_nl()
-    try:
-        autotune_base_set("assistant")
-    except Exception as e:
-        log_event("sys", f"Auto-tune base: {e}"[:120])
+# _tunea_autotune_base (312) calls autotune_base_set("assistant") after «Erkennung verbessern» (and its «undo»).
 
 
 # ---- taking over the settings of 2.98.14 and older ----------------------------------------------------------------------------
 def nachlauf_migrate(cfg_in):
-    """cfg_in = the «cfg» of the loaded / imported file; returns the list of what was taken over"""
+    """cfg_in = the «cfg» of the loaded / imported file (apply_settings in 040 calls it); returns the list of what was taken over"""
     did = []
     if not isinstance(cfg_in, dict):
         return did
@@ -153,20 +97,6 @@ def nachlauf_migrate(cfg_in):
     if not isinstance(CFG.get("auto_tune_base"), dict):
         CFG["auto_tune_base"] = {}
     return did
-
-
-_apply_settings_before_nl = apply_settings
-
-
-def apply_settings(data):                                   # 2.98.15: the same as before, then the migration above
-    r = _apply_settings_before_nl(data)
-    try:
-        did = nachlauf_migrate(data.get("cfg") if isinstance(data, dict) else None)
-        if did:
-            log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
-    except Exception as e:
-        log_event("sys", f"Settings migration (577): {e}"[:150])
-    return r
 
 
 def nachlauf_selftest():

@@ -16,8 +16,8 @@ func now() -> float:
 
 
 func can_vote(p: Dictionary) -> bool:
-	if not game.round_state in ["countdown", "play"]:
-		return false
+	if not game.round_state in ["countdown", "play"] or main.game_mode == "jaeger":
+		return false                                   # («Fehlalarm-Jäger»: nobody «gets through»)
 	if game.round_state == "play" and now() - game.t_start > VOTE_SECS:
 		return false
 	return p["role"] == "watch" or (p["role"] == "runner" and p["state"] in ["out", "found"]) or str(p.get("kind", "")) == "watcher"

@@ -7,7 +7,7 @@ TOGGLES.extend([
     ("Notifications", "push_actions", "Buttons in the push message: False alarm · Siren · Off (needs the address of this page for links)"),
     ("Notifications", "alarm_confirm2", "Double confirmation: a person alarm only when the AI and the thermal camera agree or the AI sees the person twice in a row (otherwise only a pre-alarm)"),
     ("Camping / protection", "arm_announce", "Announcement when arming: the loudspeaker says battery, Wi-Fi and camera - or what is missing"),
-    ("Camping / protection", "back_ask", "«Is it you?»: when my phone comes back, person alarms wait and a push message asks (button Off)"),
+    ("Camping / protection", "presence_auto", "Protection on automatically when my phone is gone (choose the phone: Tools → Am I at home?)"),
     ("Night report", "report_strip", "Morning push short: one sentence and a picture strip of the night"),
 ])
 SLIDERS.extend([

@@ -14,7 +14,7 @@
 #     «Bist du's?» mit dem Knopf «Aus».
 # (5 – Zonen nach Art – steht bei den Zonen in Teil 030.)
 # ----------------------------------------------------------------------------
-_ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_ask": False, "back_hold_s": 60,
+_ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_hold_s": 60,
             "report_strip": True}
 for _k, _v in _ALX_CFG.items():
     CFG.setdefault(_k, _v)
@@ -74,6 +74,9 @@ def alx_ntfy_actions(p):
     out = []
     for lab, url, clear in alx_buttons(p):
         lab = lab.replace(",", " ").replace(";", " ")
+        if url.endswith("/off"):                         # (578): «Off» opens the page with the PIN field - never in the background
+            out.append(f"view, {lab}, {url}" + (", clear=true" if clear else ""))
+            continue
         out.append(f"http, {lab}, {url}, method=POST" + (", clear=true" if clear else ""))
     return "; ".join(out)
 
@@ -154,7 +157,7 @@ def alx_routes(app, watch, reply, body):
         now = time.time()
         rec = [x for x in ALX["fails"].get(ip, []) if now - x < 600]
         if len(rec) >= 20:
-            return Response("too many wrong keys - wait 10 minutes", 429)
+            return sx_err(429, "keys")                   # in the own language (578)
         names = {"fa": "False alarm", "siren": "Siren", "off": "Off"}
         if request.method == "GET":                      # a browser (Telegram link): ask first - a link preview must not switch anything
             with ALX["lock"]:
@@ -162,8 +165,21 @@ def alx_routes(app, watch, reply, body):
             if not e or act not in e["acts"] or now - e["t"] > ALX_TTL:
                 rec.append(now); ALX["fails"][ip] = rec
                 return Response(_ALX_PAGE % ("MoveEye", _html.escape(tr("This button is no longer valid.")), ""), 404, mimetype="text/html")
+            if act == "off":                             # (578): switching off needs the protection PIN (or the web password)
+                L_ = sx_req_lang()
+                return Response(sx_page(tr("Switch the protection off?", L_), sx_off_form(L_), "⏻", L_), mimetype="text/html")
             form = ('<form method="post"><button type="submit">' + _html.escape(tr(names.get(act, act))) + "</button></form>")
             return Response(_ALX_PAGE % ("MoveEye", _html.escape(tr("Tap to confirm.")), form), mimetype="text/html")
+        if act == "off":                                 # (578): first the key (not used up), then the PIN, then switch off
+            with ALX["lock"]:
+                e0 = ALX["tok"].get(tok)
+            if e0 and act in e0["acts"] and act not in e0["used"] and now - e0["t"] <= ALX_TTL:
+                L_ = sx_req_lang()
+                ok_, err_ = sx_off_check(request.form.get("pin", ""), request.form.get("pw", ""), "push button")
+                if not ok_:
+                    if "text/html" in (request.headers.get("Accept") or "") or request.form:
+                        return Response(sx_page(tr("Switch the protection off?", L_), sx_off_form(L_, err_), "⏻", L_), 403, mimetype="text/html")
+                    return Response(tr("Off needs the protection PIN - open the message and tap «Off» there.", L_), 403, mimetype="text/plain")
         ok, err, e = alx_use(tok, act)
         if not ok:
             if err == "unknown":
