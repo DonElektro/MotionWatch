@@ -608,6 +608,15 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-3.97
+3D-3.97: Natürlichere Farben: weniger grelle Farben, Metall (Wohnwagen, Auto), Glas, Stoff, Stein und Holz glänzen unterschiedlich,
+bei Regen werden Flächen nass (dunkler, glänzender). Jahreszeiten nach Datum: Frühlingsgrün, Sommer, Herbstlaub (Nadelbäume bleiben
+grün), Winter. Blaue Stunde nach Sonnenuntergang und blauer Dunst in der Ferne. Kamerafarben wie bei einer echten Kamera: in der
+Dämmerung verblassen die Farben, im Dunkeln Farbrauschen, unter Lampen wärmeres Bild. Stick-Drift neu: der Simulator lernt die
+Ruhelage jedes Sticks selbst (3 s still = neue Mitte) und benutzt eine runde Totzone; «🎮 Controller-Test» zeigt roh (grau) und
+bereinigt (grün). Ohne Controller gibt es keine Geistereingaben mehr. Kopf mit dem Controller bewegen: L1 halten + rechter Stick,
+oder das Steuerkreuz (LT + Steuerkreuz ↑↓ = Mast, LT + → = Einladen).
+
 NEU IN 3D-3.96
 3D-3.96: Neue Szene «Schlafzimmer (Wecker)»: Bett mit einer schlafenden Figur für den Wecker von MoveEye 2.98.9. Klingelt der
 Wecker, reagiert sie von selbst: beim ersten Mal winkt sie (schlummern), beim nächsten Mal sitzt sie auf und steht auf (Wecker aus).

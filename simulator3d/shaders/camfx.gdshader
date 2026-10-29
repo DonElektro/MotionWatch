@@ -15,6 +15,10 @@ uniform float sat = 1.0;
 uniform float con = 1.0;
 uniform vec3 tint = vec3(1.0);
 uniform float noir = 0.0;           // 0..1 pink cast by day (NoIR camera)
+uniform float cnoise = 0.0;         // 3D-3.97: colour grain in the dark (each pixel a little red / green / blue, new every picture)
+uniform float seed = 0.0;
+
+float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 
 void fragment() {
 	vec2 uv = SCREEN_UV;
@@ -45,6 +49,11 @@ void fragment() {
 		vec3 nc = c + vec3(green * 0.9, -green * 0.55, green * 0.75);
 		nc *= vec3(1.08, 0.93, 1.06);
 		c = mix(c, nc, noir);
+	}
+	if (cnoise > 0.0) {
+		vec2 px = floor(uv * res) + seed;
+		vec3 n = vec3(h21(px), h21(px + 17.1), h21(px + 41.7)) - 0.5;
+		c += (n - dot(n, vec3(0.333))) * cnoise;              // only the colour moves, hardly the brightness
 	}
 	ALBEDO = clamp(c, 0.0, 1.0);
 	ALPHA = 1.0;

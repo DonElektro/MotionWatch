@@ -30,6 +30,11 @@ func _ready() -> void:
 			if typeof(d.get(k)) == TYPE_DICTIONARY:
 				for p in DEF:
 					calib[k][p] = float(d[k].get(p, DEF[p]))
+				var c0: Dictionary = calib[k]                       # 3D-3.97: tighter limits (a strange real picture must not colour the world)
+				c0["con"] = clampf(float(c0["con"]), 0.75, 1.35)
+				c0["sat"] = clampf(float(c0["sat"]), 0.5, 1.4)
+				c0["tr"] = clampf(float(c0["tr"]), 0.85, 1.18)
+				c0["tb"] = clampf(float(c0["tb"]), 0.85, 1.18)
 		fx_on = bool(d.get("fx_on", true))
 		real_on = bool(d.get("real_on", true))
 		servo_real = bool(d.get("servo_real", true))
@@ -98,6 +103,17 @@ func before_capture(i: int) -> void:
 	m.set_shader_parameter("tint", Vector3(float(c["tr"]), 1.0, float(c["tb"])) if real_on else Vector3.ONE)
 	var grey: bool = main.is_dark() and main.ir_on()
 	m.set_shader_parameter("noir", 0.6 if (i == 0 and not grey and not main.is_dark()) else 0.0)
+	# 3D-3.97: camera colours - at dusk the sensor loses its colours, in the dark it adds colour grain, under lamps the white
+	# balance stays on daylight (everything warm / orange)
+	var amb: float = clampf(main.light_level(), 0.0, 1.0)
+	var fade := smoothstep(0.02, 0.3, amb)
+	m.set_shader_parameter("sat", (float(c["sat"]) if real_on else 1.0) * lerpf(0.3, 1.0, fade))
+	m.set_shader_parameter("cnoise", (1.0 - fade) * 0.09 if not grey else 0.0)
+	m.set_shader_parameter("seed", float(main.frame_no[i] % 997) * 3.1)
+	var lamps_lit: bool = main.is_dark() and not grey and (main.white_light.light_energy > 0.05 or main.lamps.any(func(l): return l.light_energy > 0.1))
+	if lamps_lit:
+		var tn := Vector3(float(c["tr"]), 1.0, float(c["tb"])) if real_on else Vector3.ONE
+		m.set_shader_parameter("tint", tn * Vector3(1.12, 1.0, 0.8))
 
 
 func after_capture(i: int, img: Image) -> void:
@@ -129,10 +145,10 @@ func after_capture(i: int, img: Image) -> void:
 		return
 	var c: Dictionary = calib[key]
 	c["ae"] = lerpf(float(c["ae"]), clampf(float(t["mean"]), 0.12, 0.6), 0.3)
-	c["con"] = clampf(float(c["con"]) * pow((float(t["std"]) + 0.01) / (float(s["std"]) + 0.01), 0.35), 0.6, 1.6)
-	c["sat"] = clampf(float(c["sat"]) * pow((float(t["sat"]) + 0.01) / (float(s["sat"]) + 0.01), 0.45), 0.2, 1.8)
-	c["tr"] = clampf(float(c["tr"]) * pow(float(t["r"]) / maxf(0.05, float(s["r"])), 0.45), 0.7, 1.4)
-	c["tb"] = clampf(float(c["tb"]) * pow(float(t["b"]) / maxf(0.05, float(s["b"])), 0.45), 0.7, 1.4)
+	c["con"] = clampf(float(c["con"]) * pow((float(t["std"]) + 0.01) / (float(s["std"]) + 0.01), 0.35), 0.75, 1.35)
+	c["sat"] = clampf(float(c["sat"]) * pow((float(t["sat"]) + 0.01) / (float(s["sat"]) + 0.01), 0.45), 0.5, 1.4)
+	c["tr"] = clampf(float(c["tr"]) * pow(float(t["r"]) / maxf(0.05, float(s["r"])), 0.45), 0.85, 1.18)
+	c["tb"] = clampf(float(c["tb"]) * pow(float(t["b"]) / maxf(0.05, float(s["b"])), 0.45), 0.85, 1.18)
 	if float(s["sharp"]) > float(t["sharp"]) * 1.1:
 		c["soft"] = minf(2.0, float(c["soft"]) + 0.12)
 	elif float(s["sharp"]) < float(t["sharp"]) * 0.9:

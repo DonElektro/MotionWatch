@@ -158,13 +158,15 @@ func foliage(k: int) -> ShaderMaterial:
 	"""one of six shared foliage materials (from 3D-2.0: before, every tree had its own - slow in the forest)"""
 	if fol_mats.is_empty():
 		var cols := [Color(0.16, 0.36, 0.14), Color(0.2, 0.4, 0.12), Color(0.13, 0.3, 0.12), Color(0.24, 0.42, 0.16), Color(0.1, 0.26, 0.13), Color(0.3, 0.42, 0.14)]
-		for c in cols:
-			var fm := ShaderMaterial.new()
-			fm.shader = load("res://shaders/foliage.gdshader")
-			fm.set_shader_parameter("noise_tex", m.noise_tex)
-			fm.set_shader_parameter("color", c)
-			m.foliage_mats.append(fm)
-			fol_mats.append(fm)
+		for broad in [false, true]:                              # 3D-3.97: broadleaf trees have their own (autumn leaves)
+			for c in cols:
+				var fm := ShaderMaterial.new()
+				fm.shader = load("res://shaders/foliage.gdshader")
+				fm.set_shader_parameter("noise_tex", m.noise_tex)
+				fm.set_shader_parameter("color", c)
+				fm.set_meta("broad", broad)
+				m.foliage_mats.append(fm)
+				fol_mats.append(fm)
 	return fol_mats[k % fol_mats.size()]
 
 
@@ -186,7 +188,7 @@ func tree(parent: Node3D, p: Vector3, sc: float, conifer := -1) -> void:
 		for b in range(2):
 			var a := rng.randf() * TAU
 			put(tr, cyl(0.04, 0.08, 1.6, 6), Vector3(cos(a) * 0.35, 3.3, sin(a) * 0.35), bark, "tree", Vector3(sin(a) * 0.7, 0, -cos(a) * 0.7))
-		var fm2 := foliage(rng.randi_range(0, 5))
+		var fm2 := foliage(rng.randi_range(0, 5) + 6)
 		for k in range(rng.randi_range(4, 6)):
 			var r := rng.randf_range(0.9, 1.5)
 			put(tr, sph(r, r * 1.7), Vector3(rng.randf_range(-0.9, 0.9), 4.1 + rng.randf_range(-0.4, 0.9), rng.randf_range(-0.9, 0.9)), fm2, "tree")

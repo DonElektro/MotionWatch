@@ -363,9 +363,10 @@ const SIMPAD = {name: "", on: false};
     let g = null; try { g = [...navigator.getGamepads()].find(x => x && x.connected); } catch (e) {}
     SIMPAD.on = !!g; SIMPAD.name = g ? String(g.id).replace(/\(.*?\)/g, "").trim().slice(0, 40) : "";
     if (!g || document.hidden) return;
-    const ax = [0, 1, 2, 3].map(i => { const v = g.axes[i] || 0; return Math.abs(v) < 0.08 ? 0 : Math.round(v * 100) / 100; });
+    // 2.98.10: the sticks go to the simulator unchanged - it takes off the drift itself (rest position + round dead zone)
+    const ax = [0, 1, 2, 3].map(i => Math.round((g.axes[i] || 0) * 1000) / 1000);
     const bt = g.buttons.slice(0, 17).map(b => Math.round((b.value || (b.pressed ? 1 : 0)) * 100) / 100);
-    const sig = JSON.stringify([ax, bt]), neutral = ax.every(v => v === 0) && bt.every(v => v === 0), now = Date.now();
+    const sig = JSON.stringify([ax.map(v => Math.round(v * 50)), bt]), neutral = ax.every(v => Math.abs(v) < 0.25) && bt.every(v => v === 0), now = Date.now();
     if (neutral && idle) return;                     // nothing pressed: nothing to send
     if (sig === last && now - lastT < 300) return;   // unchanged: only now and then (the simulator lets go after 0.6 s)
     last = sig; lastT = now; idle = neutral;

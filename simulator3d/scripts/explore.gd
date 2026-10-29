@@ -2,7 +2,8 @@ extends Control
 ## 3D-3.55: «Erkunden» - drive the rover (the mover) through the world and look around, to try out and develop the
 ## simulation. Works with the keyboard (W A S D or the arrows, Shift = faster), the mouse (green stick, right button
 ## drag = look round, wheel = distance), touch (green stick) and a game controller, also by Bluetooth (left stick = drive,
-## right stick = look round, RT / LT = gas / back, A = faster, Y = view, B = end, Start = explore on / off).
+## right stick = look round, RT / LT = gas / back, A = faster, Y = view, B = end, Start = explore on / off;
+## 3D-3.96: L1 + right stick or the D-pad = the camera head of MoveEye, LT + D-pad up / down = the pole).
 ## A symbol at the top shows what steers right now: mouse, touch, controller or keyboard.
 
 var main
@@ -153,7 +154,8 @@ func _input(ev: InputEvent) -> void:
 			JOY_BUTTON_X:
 				spectator(not main.spectate)
 			JOY_BUTTON_DPAD_RIGHT:
-				set_invite(not invite.visible)
+				if _lt_held():                                # 3D-3.96: LT + → (→ alone turns the head)
+					set_invite(not invite.visible)
 			JOY_BUTTON_B:
 				set_on(false)
 			JOY_BUTTON_Y:
@@ -161,9 +163,11 @@ func _input(ev: InputEvent) -> void:
 			JOY_BUTTON_BACK:
 				main.show_panel(not main.ui_root.visible)
 			JOY_BUTTON_DPAD_UP:
-				main.set_mast(main.mast_h + 0.1)        # 3D-3.57: the pole longer / shorter
+				if _lt_held():
+					main.set_mast(main.mast_h + 0.1)    # 3D-3.57: the pole longer / shorter (3D-3.96: with LT held)
 			JOY_BUTTON_DPAD_DOWN:
-				main.set_mast(main.mast_h - 0.1)
+				if _lt_held():
+					main.set_mast(main.mast_h - 0.1)
 		get_viewport().set_input_as_handled()
 		return
 	if not on:
@@ -256,10 +260,66 @@ func remote_pad(ax: Array, bt: Array, nm: String) -> void:
 		next_view()
 	elif pressed.call(8):
 		main.show_panel(not main.ui_root.visible)
-	if pressed.call(12):
+	if pressed.call(12) and _lt_held():                    # 3D-3.96: LT / L2 + up / down = pole (up / down alone turn the head)
 		main.set_mast(main.mast_h + 0.1)
-	if pressed.call(13):
+	if pressed.call(13) and _lt_held():
 		main.set_mast(main.mast_h - 0.1)
+
+
+func _btn(gb: int, bi: int) -> bool:
+	"""a button of the controller at the PC (Godot number) or at the browser (standard mapping number)"""
+	if _rp_on() and bi < rp_bt.size() and float(rp_bt[bi]) > 0.5:
+		return true
+	for d in Input.get_connected_joypads():
+		if Input.is_joy_button_pressed(d, gb):
+			return true
+	return false
+
+
+func _lt_held() -> bool:
+	return _raw_axis(JOY_AXIS_TRIGGER_LEFT) > 0.5
+
+
+var _head_t := 0.0
+var _head_ax := 0
+
+
+func _head_tick() -> bool:
+	"""3D-3.96 (wish of Daniel): the camera head of MoveEye with the controller - L1 / LB held + right stick, or the D-pad
+	(left / right = turn, up / down = tilt; with LT / L2 held up / down move the pole). Returns true while L1 is held."""
+	var t: float = main.now()
+	var l1 := _btn(JOY_BUTTON_LEFT_SHOULDER, 4)
+	var dx := 0.0
+	var dy := 0.0
+	if l1:
+		dx = _axis(JOY_AXIS_RIGHT_X)
+		dy = _axis(JOY_AXIS_RIGHT_Y)
+	if _btn(JOY_BUTTON_DPAD_LEFT, 14):
+		dx = -1.0
+	elif _btn(JOY_BUTTON_DPAD_RIGHT, 15):
+		dx = 1.0
+	if not _lt_held():
+		if _btn(JOY_BUTTON_DPAD_UP, 12):
+			dy = -1.0
+		elif _btn(JOY_BUTTON_DPAD_DOWN, 13):
+			dy = 1.0
+	if (absf(dx) > 0.0 or absf(dy) > 0.0) and t - _head_t > 0.12:
+		_head_t = t
+		_head_ax = 1 - _head_ax if absf(dx) > 0.0 and absf(dy) > 0.0 else (0 if absf(dx) > 0.0 else 1)   # both: take turns
+		if _head_ax == 0:
+			main.mw_look("right" if dx > 0.0 else "left", 0.6 + 2.0 * absf(dx))
+		else:
+			main.mw_look("down" if dy > 0.0 else "up", 0.6 + 2.0 * absf(dy))
+		_set_device("pad")
+	if not on:                                               # without exploring the D-pad pole buttons work here
+		if _lt_held() and t - _head_t > 0.25:
+			if _btn(JOY_BUTTON_DPAD_UP, 12):
+				_head_t = t
+				main.set_mast(main.mast_h + 0.1)
+			elif _btn(JOY_BUTTON_DPAD_DOWN, 13):
+				_head_t = t
+				main.set_mast(main.mast_h - 0.1)
+	return l1
 
 
 func _rp_on() -> bool:
@@ -286,13 +346,59 @@ func _raw_axis(a: int) -> float:
 
 
 func _axis(a: int) -> float:
-	"""3D-3.96: stick drift (wish of Daniel, PS5 controller): the measured rest position of the stick is taken off
-	(«Controller kalibrieren») and the dead zone is adjustable"""
-	var v := _raw_axis(a)
-	if a < 4 and a < main.pad_center.size():
-		v = clampf(v - float(main.pad_center[a]), -1.0, 1.0)
+	"""3D-3.97: stick drift cleaned properly (wish of Daniel - the per-axis dead zone of 3D-3.96 was not enough):
+	  1. the rest position of each stick is taken off (measured with «Controller kalibrieren», and learnt by itself while a
+	     stick rests: a value that stays the same for 3 s with nothing pressed is drift, not a hand)
+	  2. a ROUND dead zone per stick (x and y together) - no more creeping along one axis when the other drifts
+	  3. outside the dead zone the stick starts smoothly at 0 (no jump) and still reaches 1"""
+	if a == JOY_AXIS_TRIGGER_LEFT or a == JOY_AXIS_TRIGGER_RIGHT:
+		var tv := _raw_axis(a)
+		return 0.0 if tv < 0.12 else (tv - 0.12) / 0.88
+	var st := 0 if a in [JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y] else 1
+	var v := stick(st)
+	return v.x if a in [JOY_AXIS_LEFT_X, JOY_AXIS_RIGHT_X] else v.y
+
+
+func stick_raw(st: int) -> Vector2:
+	return Vector2(_raw_axis(JOY_AXIS_LEFT_X if st == 0 else JOY_AXIS_RIGHT_X), _raw_axis(JOY_AXIS_LEFT_Y if st == 0 else JOY_AXIS_RIGHT_Y))
+
+
+func stick(st: int) -> Vector2:
+	if Input.get_connected_joypads().is_empty() and not _rp_on():
+		return Vector2.ZERO                                  # no controller (any more): no phantom input from the rest position
+	var r := stick_raw(st)
+	var c := Vector2(float(main.pad_center[st * 2]), float(main.pad_center[st * 2 + 1])) if main.pad_center.size() >= 4 else Vector2.ZERO
+	var v := r - c
 	var dead: float = clampf(float(main.pad_dead), 0.02, 0.5)
-	return 0.0 if abs(v) < dead else (v - signf(v) * dead) / (1.0 - dead)
+	var l := v.length()
+	if l <= dead:
+		return Vector2.ZERO
+	var k := clampf((l - dead) / maxf(0.05, 1.0 - dead - c.length() * 0.5), 0.0, 1.0)
+	return v / l * k
+
+
+var _rest := [{"v": Vector2.ZERO, "t": 0.0}, {"v": Vector2.ZERO, "t": 0.0}]
+
+
+func _learn_rest() -> void:
+	"""a stick that stays exactly where it is for 3 s (± 0.02), not far out, with no button pressed: that is drift -
+	it becomes the new rest position (the controller slowly drifts more when it gets warm or old)"""
+	var t: float = main.now()
+	var any_btn := _btn(JOY_BUTTON_A, 0) or _btn(JOY_BUTTON_LEFT_SHOULDER, 4) or _raw_axis(JOY_AXIS_TRIGGER_LEFT) > 0.2 or _raw_axis(JOY_AXIS_TRIGGER_RIGHT) > 0.2
+	for st in range(2):
+		var r := stick_raw(st)
+		var R: Dictionary = _rest[st]
+		if r.distance_to(R["v"]) > 0.02 or any_btn or r.length() > 0.4 or (Input.get_connected_joypads().is_empty() and not _rp_on()):
+			R["v"] = r
+			R["t"] = t
+			continue
+		if t - float(R["t"]) >= 3.0:
+			var c := Vector2(float(main.pad_center[st * 2]), float(main.pad_center[st * 2 + 1]))
+			if c.distance_to(r) > 0.01:
+				main.pad_center[st * 2] = snappedf(r.x, 0.001)
+				main.pad_center[st * 2 + 1] = snappedf(r.y, 0.001)
+				main._settings_dirty = true
+			R["t"] = t
 
 
 var _cal := {}
@@ -307,6 +413,8 @@ func calibrate() -> String:
 
 
 func _cal_tick() -> void:
+	if main.pad_auto:
+		_learn_rest()
 	if _cal.is_empty():
 		return
 	for a in range(4):
@@ -322,7 +430,10 @@ func _cal_tick() -> void:
 			c.append(snappedf(m, 0.001))
 			worst = maxf(worst, absf(m))
 		main.pad_center = c
-		main.pad_dead = clampf(maxf(0.08, worst * 0.5 + 0.08), 0.08, 0.35)      # some room for the wobble round the rest position
+		var wob := 0.0                                                       # how far the stick wobbles round its rest position
+		for a in range(4):
+			wob = maxf(wob, absf(float(_cal["max"][a]) - absf(float(c[a]))))
+		main.pad_dead = clampf(wob * 2.0 + 0.06, 0.06, 0.3)
 		main._settings_dirty = true
 		main.start_info = "Controller kalibriert: Ruhelage %s, Totzone %d %%" % [str(c), int(main.pad_dead * 100)]
 		_cal = {}
@@ -365,12 +476,13 @@ func command() -> Vector2:
 
 func _process(dt: float) -> void:
 	_cal_tick()                                              # 3D-3.96: calibration of the sticks
+	var l1 := _head_tick()                                   # 3D-3.96: the head of MoveEye with the controller
 	if not on:
 		return
 	turbo = Input.is_key_pressed(KEY_SHIFT) or _pad_btn(JOY_BUTTON_A)
 	main.mover_max = speed * (2.2 if turbo else 1.0)
-	var rx := _axis(JOY_AXIS_RIGHT_X)                    # right stick: look round
-	var ry := _axis(JOY_AXIS_RIGHT_Y)
+	var rx := 0.0 if l1 else _axis(JOY_AXIS_RIGHT_X)      # right stick: look round (with L1 held: the head of MoveEye)
+	var ry := 0.0 if l1 else _axis(JOY_AXIS_RIGHT_Y)
 	if abs(rx) > 0.0 or abs(ry) > 0.0:
 		orbit -= rx * dt * 2.2
 		pitch = clampf(pitch + ry * dt * 1.2, 0.05, 1.3)
@@ -462,7 +574,7 @@ func _blocked(a: Vector3, b: Vector3) -> bool:
 func _help() -> String:
 	match device:
 		"pad":
-			return "Linker Stick fahren · rechter Stick umschauen · A schnell · Y Ansicht · X Beobachter · Steuerkreuz ↑↓ Stange, → Mitspieler · B Ende"
+			return "Linker Stick fahren · rechter Stick umschauen · L1 + rechter Stick / Steuerkreuz = Kopf von MoveEye · A schnell · Y Ansicht · X Beobachter · LT + ↑↓ Stange, LT + → Mitspieler · B Ende"
 		"touch":
 			return "Grüner Stick unten rechts fahren · Ansicht und Ende oben im Feld"
 		"mouse":
