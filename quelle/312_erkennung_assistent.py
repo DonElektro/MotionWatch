@@ -7,7 +7,8 @@
 #   2 Wie gründlich? - schnell (Tag) oder gründlich (Tag + Nacht)
 #   3 Verbessern  - Messen, Vorschläge ausprobieren, nur Besseres behalten (die bewährte Optimierung aus 310)
 #   4 Ergebnis    - vorher → nachher, was geändert wurde; «Behalten» oder «Rückgängig»
-#   5 Dranbleiben - Auto-Tuner am echten Ort, Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen (Schalter mit Erklärung)
+#   5 Dranbleiben - Auto-Tuner am echten Ort (Schalter mit Erklärung); Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen ab 2.98.24
+#                   nur noch als Kacheln der Simulator-Zentrale (ein Verweis darauf)
 # Die einzelnen Funktionen bleiben im Simulator-Tab unter «Experte». Es läuft immer nur eine (gemeinsame Sperre
 # simtask_busy, 141); der Auto-Tuner macht Pause, solange eine davon misst (autotune_paused, aufgerufen in 190).
 # ----------------------------------------------------------------------------
@@ -194,6 +195,7 @@ TUNE_JS = r"""
     "Training night": "Trainings-Nacht", "every night test runs in several scenes and the same improving - only when protection is off": "jede Nacht Testläufe in mehreren Szenen und dasselbe Verbessern – nur wenn der Schutz aus ist",
     "Weekly check": "Wochen-Check", "every Sunday night a test run; a push when it got worse": "jeden Sonntag in der Nacht ein Testlauf; ein Push, wenn es schlechter wurde",
     "False alarm learning": "Fehlalarm-Lernen", "mark a recording with 👎 and the simulator re-enacts it and learns from it": "markierst du eine Aufnahme mit 👎, stellt der Simulator sie nach und lernt daraus",
+    "Training night, weekly check, false alarm learning: tiles in the Simulator centre": "Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen: Kacheln in der Simulator-Zentrale",
     "Single tools (Expert)": "Einzelne Werkzeuge (Experte)", "Test run, A/B comparison, thresholds automatic … in the tab Simulator, Simulator centre (view «Expert»).": "Testlauf, A/B-Vergleich, Schwellen automatisch … im Tab Simulator, Simulator-Zentrale (Ansicht «Experte»).",
     "One guided flow: check, measure, improve, see the result. Replaces the single tools (they stay in «Expert»).": "Ein geführter Ablauf: prüfen, messen, verbessern, Ergebnis ansehen. Ersetzt die einzelnen Werkzeuge (die bleiben unter «Experte»).",
     "the simulator is needed for measuring": "zum Messen braucht es den Simulator", "Auto-tune": "Auto-Tuner",
@@ -268,7 +270,8 @@ TUNE_JS = r"""
         l.append(tx, cb); c.appendChild(l); };
       sw("auto_tune", "Auto-tuner at the real place", "adapts the sensitivity to the place all the time (wind, light); starts from the measured values");
       if (S.auto_status && K.auto_tune) c.appendChild(E("div", "mwt-mut", "🎚 " + tt("Auto-tune") + ": " + tt(S.auto_status)));
-      sw("train_night_on", "Training night", "every night test runs in several scenes and the same improving - only when protection is off"); sw("weekcheck_on", "Weekly check", "every Sunday night a test run; a push when it got worse"); sw("fa_learn_auto", "False alarm learning", "mark a recording with 👎 and the simulator re-enacts it and learns from it");
+      // 2.98.24 («Sim-Schalter nur einmal»): Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen are switched in their tiles only
+      { const tl = E("div", "mwt-mut"); const ta = E("a", "", "🎛 " + tt("Training night, weekly check, false alarm learning: tiles in the Simulator centre") + " ›"); ta.href = "/sim#c-hub"; ta.style.color = "var(--acc,#3b8cff)"; tl.appendChild(ta); c.appendChild(tl); }
       const ex = E("div", "mwt-mut"); const a = E("a", "", "🧰 " + tt("Single tools (Expert)") + " ›"); a.href = "/sim#c-hub"; a.style.color = "var(--acc,#3b8cff)"; ex.append(a, E("div", "", tt("Test run, A/B comparison, thresholds automatic … in the tab Simulator, Simulator centre (view «Expert»)."))); c.appendChild(ex);
       nav.append(B("‹ " + tt("Back"), () => { step = S.last ? 4 : 1; render(); }, "sec"), B("✓ " + tt("Close"), () => tuneClose()));
     }

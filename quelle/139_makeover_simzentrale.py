@@ -277,7 +277,9 @@ SIMHUB_JS = r"""
     tests: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
     improve: "learn", autoth: "learn", train: "learn", falearn: "learn", diary: "learn",
     game: "play", points: "play"};
-  const EXPERT_K = ["autoth", "ab", "train", "falearn", "week"];
+  // 2.98.24 («Sim-Schalter nur einmal»): Trainings-Nacht, Fehlalarm-Lernen and Wochen-Check are switched only in their tile
+  // (no longer also in the assistant «Erkennung verbessern» and in «Einstellungen der Simulation») - so always shown
+  const EXPERT_K = ["autoth", "ab"];
   function tiles(box, full) {
     const G = {world: E("div", "shub"), test: E("div", "shub"), learn: E("div", "shub"), play: E("div", "shub")}, g = G.world;
     const T = [["scene", "🗺", tt("Scene"), ((H.scenes || []).find(x => x.id === H.scene) || {}).name || H.scene || "–"],
