@@ -51,6 +51,9 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   Prüfstand 2: Hauptzahl sind die echten **Pushes richtig / falsch** (Test-Postfach, Teil 068 → `det.pushes`), das alte
   «Fehlalarme» heisst «Flackern»; nachts zählt das Wärmebild als Wahrheit und Sensor; Plan `nacht` (ganze Nacht im Zeitraffer),
   `--seeds 3` (Streuung), Schleichwege aus `feedback/` automatisch, echte Nächte in `simulator3d/pruefnaechte/` (pruefstand/LIESMICH.md).
+- **Prüfstand sparsam (Wunsch Daniel, 29.10.2026):** pro Version läuft auf GitHub nur «quick»; die grossen Läufe sonntags
+  oder von Hand (Actions → Prüfstand → Run workflow). Offen: Rückgang ab 2.98.23 (Bilder/s 4.6 → 2.8, Nacht schlechter) –
+  Zwischenstand der Suche in `pruefstand/RUECKGANG_2_98_23.md`, später weitermachen.
 - **Sprachen** (ab 2.28.0): Deutsch, Französisch, Italienisch, Rätoromanisch (Rumantsch Grischun), Englisch. Schlüssel ist immer der
   englische Text. Deutsch: `DE` (Python) bzw. `I18N.de` / `TX` / `ALT` / `WZ` (Web). Französisch / Italienisch / Romanisch: Tabellen
   `TRX["fr"|"it"|"rm"]` und die Anleitung `HELP_X` am Dateiende (das Web lädt sie über `/i18n/<sprache>.js`). Neue Texte in

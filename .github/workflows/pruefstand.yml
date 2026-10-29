@@ -2,7 +2,7 @@
 # Besucher) und schreibt die Zahlen in pruefstand/VERLAUF.md: Pushes richtig / falsch, Personen erkannt, Reaktionszeit,
 # Tiere, Flackern. Ist die Erkennung schlechter als beim letzten Lauf, öffnet er ein GitHub-Issue.
 #  - nach jeder neuen Version (versions.json geändert, ab 2.98.9): kurz, höchstens etwa 45 Minuten –
-#    quick, night, standard, ganze Nacht; «quick» zusätzlich ohne Kamera-Effekte; 1 Zufallsstart
+#    nur quick (ab 29.10.2026, Ressourcen sparen); sonntags alles inkl. hard; von Hand: frei wählbar
 #  - jeden Sonntag in der Nacht: alles, auch «hard» (Nebel, Scheinwerfer, Spinnennetz, Tropfen …), 3 Zufallsstarts (Streuung)
 #  - von Hand (Actions → Prüfstand → Run workflow): alles wählbar
 name: Prüfstand
@@ -82,7 +82,7 @@ jobs:
           IN_ROH: ${{ github.event.inputs.roh_plaene }}
           IN_MAL: ${{ github.event.inputs.mal }}
         run: |
-          PLAENE="quick,night,standard,nacht"; SEEDS=1; WDH=1; REAL="an,aus"; ROH="quick"; MAL=2
+          PLAENE="quick"; SEEDS=1; WDH=1; REAL="an"; ROH=""; MAL=2     # 29.10.2026 (Daniel: Ressourcen sparen): pro Version nur «quick»
           if [ "$EVENT" = "schedule" ]; then                  # weekly: everything, also «hard», 3 random starts
             PLAENE="quick,night,standard,nacht,hard"; SEEDS=3; REAL="an"; ROH=""
           elif [ "$EVENT" = "workflow_dispatch" ]; then
