@@ -290,7 +290,7 @@ def brand_video(src, caption=""):
 #   Only when armed (or always, e.g. to keep animals out of the garden), with a pause between two reactions.
 # ----------------------------------------------------------------------------
 DETER_GROUPS = (("person", {"person"}), ("big", {"bear", "horse", "cow", "sheep", "elephant", "zebra", "giraffe"}),
-                ("small", {"cat", "dog", "bird"}), ("warm", {"warm"}))
+                ("small", {"cat", "dog", "bird", "animal"}), ("warm", {"warm"}))     # "animal": own MoveEye model (part 195), size unknown
 DETER_ACTS = ("off", "sound", "light", "both")
 
 

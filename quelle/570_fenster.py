@@ -1677,6 +1677,17 @@ class App:
                     self.root.after(1500, self._rebuild)
         poll()
 
+    def _own_ai_dl(self):
+        ok, err = own_ai_download()
+        if not ok:
+            self._status("Own AI model", "⚠ " + tr_err(err)); return
+        def poll():
+            if OWN_AI["busy"]:
+                self._status("Own AI model", tr("downloading the own model …") + f" {OWN_AI['pct']} %"); self.root.after(1000, poll)
+            else:
+                self._status("Own AI model", ("✓ " + tr("own model ready") + "\n" + own_ai_text()) if OWN_AI["msg"] == "ready" else "⚠ " + OWN_AI["msg"])
+        poll()
+
     def _set_simple(self, v):
         if bool(CFG["ui_simple"]) != v:
             CFG["ui_simple"] = v; save_settings(); self._simple_seen = v; self.root.after(30, self._rebuild)
@@ -2075,6 +2086,12 @@ class App:
             ttk.Button(sbody, text=tr("Download AI model") + " (≈ 70 MB)", command=self._ai_dl).pack(fill="x", pady=(8, 0))
             self.status_labels["AI model"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["AI model"].pack(anchor="w", pady=(2, 0))
+        if sec == "AI detection":                        # part 195: own MoveEye model (YOLO) next to the standard
+            ttk.Label(sbody, text="🧠 " + tr("Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs."),
+                      style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(8, 0))
+            ttk.Button(sbody, text=tr("Update own model" if own_ai_paths()[0] else "Download own model"), command=self._own_ai_dl).pack(fill="x", pady=(4, 0))
+            self.status_labels["Own AI model"] = ttk.Label(sbody, text=own_ai_text(), style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels["Own AI model"].pack(anchor="w", pady=(2, 0))
         if sec == "Notifications":
             ttk.Button(sbody, text=tr("Test notification"),
                        command=lambda: self.watch.notifier.test(self.watch.frame_out)).pack(fill="x", pady=(8, 0))
@@ -3372,7 +3389,8 @@ class App:
         self._sched_sig = sig
         self._status("Patrol", f"{tr(st['patrol_status'])} · {tr('waypoints')} (↔/↕): {wp_text() or tr('none')}")
         self._status("AI detection", f"{st['ai_status']} · {st['ai_persons']} {tr('AI persons')}"
-                                     + (f" · {tr('objects')}: {st['object_summary']}" if st["object_summary"] else ""))
+                                     + (f" · {tr('objects')}: {st['object_summary']}" if st["object_summary"] else "")
+                                     + "\n" + own_ai_text())
         ts_, rem = st.get("remote_ts") or {}, st.get("remote") or []
         ts_txt = (tr("not installed") if not ts_.get("state") else
                   (tr("connected") + (f" · http://{ts_['ip']}:{CFG['web_port']}/" if ts_.get("ip") else "") if ts_["state"] == "Running" else ts_["state"]))

@@ -358,7 +358,7 @@ def helper_state():
 # night with infrared, rain, fog; near and far) and knows where it is. MoveEye runs its AI (or the PC helper) on each and
 # counts what it found, what it missed and false persons. The pictures can be downloaded as training pictures (ZIP). ----
 DSET = {"busy": False, "msg": "", "pct": 0, "res": [], "sum": None, "imgs": {}, "t": 0.0}
-DSET_ANIMALS = {"bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe"}
+DSET_ANIMALS = {"bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "animal"}
 
 
 def _iou(a, b):
@@ -375,13 +375,18 @@ def _dset_detect(jpg):
         d = _helper_post(u, code, jpg, float(CFG["ai_conf"]), float(CFG["object_conf"]), timeout=6.0)
         if d.get("ok"):
             return d, "PC"
+    ai = getattr(WATCH_REF.get("w"), "ai", None)
+    if ai is not None and ai.kind == "yolo" and ai.net is not None:     # part 195: the own model is checked, not the standard
+        img = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR); t0 = time.time()
+        bx, ob = ai.infer(img, float(CFG["ai_conf"]), float(CFG["object_conf"]))
+        return {"ok": True, "boxes": [list(b) for b in bx], "objects": [list(o) for o in ob], "ms": int((time.time() - t0) * 1000)}, "Pi · " + tr("Own (MoveEye model)")
     return helper_run(jpg, float(CFG["ai_conf"]), float(CFG["object_conf"])), "Pi"
 
 
 def dset_run(n):
     if DSET["busy"]:
         return False, "already running"
-    if not helper_ready() and not ai_model_paths()[0]:
+    if not helper_ready() and not ai_model_paths()[0] and getattr(getattr(WATCH_REF.get("w"), "ai", None), "kind", "") != "yolo":
         return False, "no AI model - load it in the AI settings first (or use the PC helper)"
     DSET.update(busy=True, msg="the simulator makes the pictures …", pct=0, res=[], sum=None, imgs={}, t=time.time())
 
@@ -804,11 +809,24 @@ def helper_server_start():
 class AIDetector:
     PB, PBTXT = "frozen_inference_graph.pb", "ssd_mobilenet_v2_coco.pbtxt"
 
-    def __init__(self):
+    def __init__(self, force_ssd=False):
         self.net = None
+        self.kind = "ssd"        # "ssd" or "yolo" (own MoveEye model, part 195)
+        self.meta = None         # manifest of the own model
         self.boxes = []          # last persons, in processing-frame coordinates
         self.objects = []        # last non-person objects (x, y, w, h, conf, cls)
         self.frame_counter = 0
+        STATE["ai_model_note"] = ""
+        if CFG.get("ai_model") == "own" and not force_ssd:
+            net, meta, why = own_ai_load()
+            if net is not None:
+                self.net, self.kind, self.meta = net, "yolo", meta
+                STATE["ai_status"] = "ready"; STATE["ai_model"] = own_ai_name(meta)
+                log_event("ai", f"AI model {STATE['ai_model']} loaded ({', '.join(meta['classes'])}, {meta['input']} px)")
+                return
+            STATE["ai_model_note"] = why
+            log_event("ai", f"Own AI model not used ({why}) - the standard model (SSD) runs instead")
+        STATE["ai_model"] = "SSD MobileNet V2"
         pb, pbtxt = ai_model_paths()
         if pb:
             try:
@@ -822,6 +840,29 @@ class AIDetector:
             CFG["ai_enabled"] = False
             STATE["ai_status"] = "no model files"
             log_event("ai", "AI off: model files not found - «Download AI model» in the self-check or the AI settings")
+
+    def infer(self, img, conf_p, conf_o):
+        """One run of the network on a picture: (persons [(x, y, w, h, conf)], objects [(x, y, w, h, conf, coco_cls)]) in
+        picture coordinates. SSD and the own YOLO model give the same form (the own classes are mapped to COCO ids)."""
+        h, w = img.shape[:2]
+        if self.kind == "yolo":
+            return own_ai_detect(self.net, self.meta, img, conf_p, conf_o)
+        self.net.setInput(cv2.dnn.blobFromImage(img, size=(300, 300), swapRB=True, crop=False))
+        det = self.net.forward()
+        boxes, objects = [], []
+        for i in range(det.shape[2]):
+            cls, conf = int(det[0, 0, i, 1]), float(det[0, 0, i, 2])
+            need = conf_p if cls == 1 else conf_o
+            if cls < 1 or conf < need:
+                continue
+            x1, y1, x2, y2 = (det[0, 0, i, 3:7] * np.array([w, h, w, h])).astype(int)
+            x1, y1 = max(0, x1), max(0, y1); x2, y2 = min(w - 1, x2), min(h - 1, y2)
+            if x2 > x1 and y2 > y1:
+                if cls == 1:
+                    boxes.append((int(x1), int(y1), int(x2 - x1), int(y2 - y1), conf))
+                else:
+                    objects.append((int(x1), int(y1), int(x2 - x1), int(y2 - y1), conf, cls))
+        return boxes, objects
 
     def detect(self, frame):
         """Run every N frames; returns list of (x, y, w, h, conf) persons."""
@@ -856,22 +897,15 @@ class AIDetector:
         self._last_run = time.time()
         t0 = time.time()
         h, w = frame.shape[:2]
-        blob = cv2.dnn.blobFromImage(frame, size=(300, 300), swapRB=True, crop=False)
-        self.net.setInput(blob)
-        det = self.net.forward()
-        boxes, objects = [], []
-        for i in range(det.shape[2]):
-            cls, conf = int(det[0, 0, i, 1]), float(det[0, 0, i, 2])
-            need = CFG["ai_conf"] if cls == 1 else CFG["object_conf"]
-            if cls < 1 or conf < need:
-                continue
-            x1, y1, x2, y2 = (det[0, 0, i, 3:7] * np.array([w, h, w, h])).astype(int)
-            x1, y1 = max(0, x1), max(0, y1); x2, y2 = min(w - 1, x2), min(h - 1, y2)
-            if x2 > x1 and y2 > y1:
-                if cls == 1:
-                    boxes.append((x1, y1, x2 - x1, y2 - y1, conf))
-                else:
-                    objects.append((int(x1), int(y1), int(x2 - x1), int(y2 - y1), conf, cls))
+        try:
+            boxes, objects = self.infer(frame, CFG["ai_conf"], CFG["object_conf"])
+        except Exception as e:
+            if self.kind != "yolo":
+                raise
+            STATE["ai_model_note"] = f"error while running: {e}"[:120]     # own model fails on this Pi: back to the standard
+            log_event("ai", f"Own AI model failed ({str(e)[:120]}) - the standard model (SSD) runs instead")
+            note = STATE["ai_model_note"]; self.__init__(force_ssd=True); STATE["ai_model_note"] = note
+            return self.boxes
         # 2.98.13: «KI-Lupe» - something small moves (a person far away, 20-30 pixels in the 300 x 300 picture of the AI):
         # look at that part once more, enlarged. Far persons were found by the AI only rarely before.
         if CFG.get("ai_zoom", True):
@@ -884,14 +918,8 @@ class AIDetector:
                 crop = frame[y0:y0 + side, x0:x0 + side]
                 if crop.size == 0:
                     continue
-                self.net.setInput(cv2.dnn.blobFromImage(crop, size=(300, 300), swapRB=True, crop=False))
-                d2 = self.net.forward()
-                for i in range(d2.shape[2]):
-                    cls, conf = int(d2[0, 0, i, 1]), float(d2[0, 0, i, 2])
-                    if cls != 1 or conf < CFG["ai_conf"]:
-                        continue
-                    a1, b1, a2, b2 = (d2[0, 0, i, 3:7] * side).astype(int)
-                    bx = (x0 + max(0, a1), y0 + max(0, b1), max(1, min(side, a2) - max(0, a1)), max(1, min(side, b2) - max(0, b1)), conf)
+                for a1, b1, bw, bh, conf in self.infer(crop, CFG["ai_conf"], 2.0)[0]:      # only persons
+                    bx = (x0 + a1, y0 + b1, max(1, bw), max(1, bh), conf)
                     if bx[3] >= 0.6 * side and side > 0.8 * min(w, h):
                         continue                               # the whole crop as one «person»: not trusted
                     if not any(iou(bx[:4], b[:4]) > 0.3 for b in boxes):

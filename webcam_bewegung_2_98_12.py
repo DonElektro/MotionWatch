@@ -1024,6 +1024,8 @@ CFG = {
     "ai_conf": 0.5,              # confidence threshold
     "ai_every": 3,               # run the network every N frames
     "ai_zoom": True,             # 2.98.13: «KI-Lupe» - small moving things are looked at once more, enlarged (far persons)
+    "ai_model": "ssd",           # «KI-Modell»: "ssd" = standard (SSD MobileNet V2), "own" = own MoveEye model (YOLO, ONNX - part 195)
+    "ai_own_url": "https://github.com/DonElektro/MotionWatch/releases/download/ki-modell/moveeye_model.json",   # its manifest
     "show_objects": True,        # mark ALL objects the network finds (not just persons)
     "object_conf": 0.5,          # confidence threshold for non-person objects
     # recording
@@ -1901,6 +1903,8 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Lights", "light_ir_out", "Infrared light: connected to", "enum", "light_ir_out"),
     ("Lights", "light_ir_auto", "Infrared light: Auto means", "enum", "light_auto"),
     ("Lights", "picture_mode", "Picture", "enum", "picture_mode"),
+    ("AI detection", "ai_model", "AI model", "enum", "ai_models"),
+    ("AI detection", "ai_own_url", "Own model: address of its description (moveeye_model.json)", "str", None),
     ("AI detection", "species_model", "Animal species: model", "enum", "species_model"),
     ("AI detection", "species_norm", "Animal species: picture preparation of the model", "enum", "species_norm"),
     ("Solar panel", "solar_addr", "Current meter: address (I2C)", "enum", "pca_address"),
@@ -1959,6 +1963,8 @@ def text_choice_pairs(key):
         cur = str(CFG.get("species_model") or "")
         ms = species_models() + ([cur] if cur and cur not in species_models() else [])
         return [("", "– " + tr("none") + " –")] + [(m, m) for m in ms]
+    if extra == "ai_models":                         # part 195: own MoveEye model (YOLO, ONNX) next to the standard
+        return [("ssd", tr("Standard (SSD MobileNet V2)")), ("own", tr("Own (MoveEye model)"))]
     if extra == "species_norm":
         return [("imagenet", "ImageNet (mean / std)"), ("01", "0 … 1"), ("-11", "-1 … 1")]
     if extra == "gpsmod_port":
@@ -2070,6 +2076,8 @@ def set_text(key, value):
         if key == "use_case":
             return use_case_set(value, "settings")
         CFG[key] = value
+        if key == "ai_model":
+            own_ai_switched()                           # part 195: load the chosen model (falls back to the standard)
         if key == "net_mode":
             NETAUTO["paused"] = False
             log_event("sys", f"Network mode: {value}")
@@ -2119,6 +2127,8 @@ def set_text(key, value):
                 return False, "text too long or with control characters"
             if key == "sim_url" and not re.fullmatch(r"https?://[A-Za-z0-9.\-\[\]:]{1,120}/?", v):
                 return False, "invalid URL (http:// or https:// expected)"
+            if key == "ai_own_url" and not (v.startswith("https://") and _http_ok(v) and v.lower().endswith(".json")):
+                return False, "https://... address of moveeye_model.json expected"
             if key in ("notify_url", "public_url") and not _http_ok(v):
                 return False, "invalid URL (http:// or https:// expected)"
             if key == "wake_time" and not _HM_RE.match(v):
@@ -7305,7 +7315,8 @@ def health_check(lang=None):
             "Check the cable and the video source under Setup.")
     ai = str(STATE.get("ai_status") or "")
     if ai.startswith(("ready", "running")):
-        add("ai", "🧠", "AI (person detection)", "ok", T("ready") + (f" · {STATE.get('ai_ms')} ms" if STATE.get("ai_ms") else ""))
+        add("ai", "🧠", "AI (person detection)", "ok" if not STATE.get("ai_model_note") or CFG.get("ai_model") != "own" else "warn",
+            T("ready") + (f" · {STATE.get('ai_ms')} ms" if STATE.get("ai_ms") else "") + " · " + own_ai_text(L)[2:])
     elif ai == "demo":
         add("ai", "🧠", "AI (person detection)", "warn", T("demo"), "")
     elif ai in ("off", ""):
@@ -12220,7 +12231,7 @@ def helper_state():
 # night with infrared, rain, fog; near and far) and knows where it is. MoveEye runs its AI (or the PC helper) on each and
 # counts what it found, what it missed and false persons. The pictures can be downloaded as training pictures (ZIP). ----
 DSET = {"busy": False, "msg": "", "pct": 0, "res": [], "sum": None, "imgs": {}, "t": 0.0}
-DSET_ANIMALS = {"bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe"}
+DSET_ANIMALS = {"bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "animal"}
 
 
 def _iou(a, b):
@@ -12237,13 +12248,18 @@ def _dset_detect(jpg):
         d = _helper_post(u, code, jpg, float(CFG["ai_conf"]), float(CFG["object_conf"]), timeout=6.0)
         if d.get("ok"):
             return d, "PC"
+    ai = getattr(WATCH_REF.get("w"), "ai", None)
+    if ai is not None and ai.kind == "yolo" and ai.net is not None:     # part 195: the own model is checked, not the standard
+        img = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR); t0 = time.time()
+        bx, ob = ai.infer(img, float(CFG["ai_conf"]), float(CFG["object_conf"]))
+        return {"ok": True, "boxes": [list(b) for b in bx], "objects": [list(o) for o in ob], "ms": int((time.time() - t0) * 1000)}, "Pi · " + tr("Own (MoveEye model)")
     return helper_run(jpg, float(CFG["ai_conf"]), float(CFG["object_conf"])), "Pi"
 
 
 def dset_run(n):
     if DSET["busy"]:
         return False, "already running"
-    if not helper_ready() and not ai_model_paths()[0]:
+    if not helper_ready() and not ai_model_paths()[0] and getattr(getattr(WATCH_REF.get("w"), "ai", None), "kind", "") != "yolo":
         return False, "no AI model - load it in the AI settings first (or use the PC helper)"
     DSET.update(busy=True, msg="the simulator makes the pictures …", pct=0, res=[], sum=None, imgs={}, t=time.time())
 
@@ -12666,11 +12682,24 @@ def helper_server_start():
 class AIDetector:
     PB, PBTXT = "frozen_inference_graph.pb", "ssd_mobilenet_v2_coco.pbtxt"
 
-    def __init__(self):
+    def __init__(self, force_ssd=False):
         self.net = None
+        self.kind = "ssd"        # "ssd" or "yolo" (own MoveEye model, part 195)
+        self.meta = None         # manifest of the own model
         self.boxes = []          # last persons, in processing-frame coordinates
         self.objects = []        # last non-person objects (x, y, w, h, conf, cls)
         self.frame_counter = 0
+        STATE["ai_model_note"] = ""
+        if CFG.get("ai_model") == "own" and not force_ssd:
+            net, meta, why = own_ai_load()
+            if net is not None:
+                self.net, self.kind, self.meta = net, "yolo", meta
+                STATE["ai_status"] = "ready"; STATE["ai_model"] = own_ai_name(meta)
+                log_event("ai", f"AI model {STATE['ai_model']} loaded ({', '.join(meta['classes'])}, {meta['input']} px)")
+                return
+            STATE["ai_model_note"] = why
+            log_event("ai", f"Own AI model not used ({why}) - the standard model (SSD) runs instead")
+        STATE["ai_model"] = "SSD MobileNet V2"
         pb, pbtxt = ai_model_paths()
         if pb:
             try:
@@ -12684,6 +12713,29 @@ class AIDetector:
             CFG["ai_enabled"] = False
             STATE["ai_status"] = "no model files"
             log_event("ai", "AI off: model files not found - «Download AI model» in the self-check or the AI settings")
+
+    def infer(self, img, conf_p, conf_o):
+        """One run of the network on a picture: (persons [(x, y, w, h, conf)], objects [(x, y, w, h, conf, coco_cls)]) in
+        picture coordinates. SSD and the own YOLO model give the same form (the own classes are mapped to COCO ids)."""
+        h, w = img.shape[:2]
+        if self.kind == "yolo":
+            return own_ai_detect(self.net, self.meta, img, conf_p, conf_o)
+        self.net.setInput(cv2.dnn.blobFromImage(img, size=(300, 300), swapRB=True, crop=False))
+        det = self.net.forward()
+        boxes, objects = [], []
+        for i in range(det.shape[2]):
+            cls, conf = int(det[0, 0, i, 1]), float(det[0, 0, i, 2])
+            need = conf_p if cls == 1 else conf_o
+            if cls < 1 or conf < need:
+                continue
+            x1, y1, x2, y2 = (det[0, 0, i, 3:7] * np.array([w, h, w, h])).astype(int)
+            x1, y1 = max(0, x1), max(0, y1); x2, y2 = min(w - 1, x2), min(h - 1, y2)
+            if x2 > x1 and y2 > y1:
+                if cls == 1:
+                    boxes.append((int(x1), int(y1), int(x2 - x1), int(y2 - y1), conf))
+                else:
+                    objects.append((int(x1), int(y1), int(x2 - x1), int(y2 - y1), conf, cls))
+        return boxes, objects
 
     def detect(self, frame):
         """Run every N frames; returns list of (x, y, w, h, conf) persons."""
@@ -12718,22 +12770,15 @@ class AIDetector:
         self._last_run = time.time()
         t0 = time.time()
         h, w = frame.shape[:2]
-        blob = cv2.dnn.blobFromImage(frame, size=(300, 300), swapRB=True, crop=False)
-        self.net.setInput(blob)
-        det = self.net.forward()
-        boxes, objects = [], []
-        for i in range(det.shape[2]):
-            cls, conf = int(det[0, 0, i, 1]), float(det[0, 0, i, 2])
-            need = CFG["ai_conf"] if cls == 1 else CFG["object_conf"]
-            if cls < 1 or conf < need:
-                continue
-            x1, y1, x2, y2 = (det[0, 0, i, 3:7] * np.array([w, h, w, h])).astype(int)
-            x1, y1 = max(0, x1), max(0, y1); x2, y2 = min(w - 1, x2), min(h - 1, y2)
-            if x2 > x1 and y2 > y1:
-                if cls == 1:
-                    boxes.append((x1, y1, x2 - x1, y2 - y1, conf))
-                else:
-                    objects.append((int(x1), int(y1), int(x2 - x1), int(y2 - y1), conf, cls))
+        try:
+            boxes, objects = self.infer(frame, CFG["ai_conf"], CFG["object_conf"])
+        except Exception as e:
+            if self.kind != "yolo":
+                raise
+            STATE["ai_model_note"] = f"error while running: {e}"[:120]     # own model fails on this Pi: back to the standard
+            log_event("ai", f"Own AI model failed ({str(e)[:120]}) - the standard model (SSD) runs instead")
+            note = STATE["ai_model_note"]; self.__init__(force_ssd=True); STATE["ai_model_note"] = note
+            return self.boxes
         # 2.98.13: «KI-Lupe» - something small moves (a person far away, 20-30 pixels in the 300 x 300 picture of the AI):
         # look at that part once more, enlarged. Far persons were found by the AI only rarely before.
         if CFG.get("ai_zoom", True):
@@ -12746,14 +12791,8 @@ class AIDetector:
                 crop = frame[y0:y0 + side, x0:x0 + side]
                 if crop.size == 0:
                     continue
-                self.net.setInput(cv2.dnn.blobFromImage(crop, size=(300, 300), swapRB=True, crop=False))
-                d2 = self.net.forward()
-                for i in range(d2.shape[2]):
-                    cls, conf = int(d2[0, 0, i, 1]), float(d2[0, 0, i, 2])
-                    if cls != 1 or conf < CFG["ai_conf"]:
-                        continue
-                    a1, b1, a2, b2 = (d2[0, 0, i, 3:7] * side).astype(int)
-                    bx = (x0 + max(0, a1), y0 + max(0, b1), max(1, min(side, a2) - max(0, a1)), max(1, min(side, b2) - max(0, b1)), conf)
+                for a1, b1, bw, bh, conf in self.infer(crop, CFG["ai_conf"], 2.0)[0]:      # only persons
+                    bx = (x0 + a1, y0 + b1, max(1, bw), max(1, bh), conf)
                     if bx[3] >= 0.6 * side and side > 0.8 * min(w, h):
                         continue                               # the whole crop as one «person»: not trusted
                     if not any(iou(bx[:4], b[:4]) > 0.3 for b in boxes):
@@ -13222,6 +13261,326 @@ class Tracker:
         return self.tracks
 
 
+# ----------------------------------------------------------------------------
+# «KI-Modell: Standard (SSD) / Eigenes (MoveEye-Modell)». The own model is a small YOLOv8 / YOLO11 detector, trained by
+#   the GitHub workflow .github/workflows/ki_modell.yml (ki_training/README.md) and published as a release asset:
+#     moveeye_model.onnx   the network (input 1 x 3 x N x N, RGB 0..1, letterbox; output 1 x (4 + nc) x A)
+#     moveeye_model.json   its manifest: {"format": "moveeye-model-1", "version", "classes": ["person", "animal", "vehicle"],
+#                          "input": 320, "file": "moveeye_model.onnx", "sha256", "size", "conf": {"person": 0.3, ...},
+#                          "metrics": {"map50", "map50_95", ...}, "made", "images"}
+#   It runs with cv2.dnn.readNetFromONNX (no extra Python packages on the Pi). The classes are mapped to COCO ids so that
+#   the rest of MoveEye (relays, deterrence, diary, species) keeps working: person -> the person boxes, animal -> id 92
+#   "animal" (new, counts as an animal), vehicle -> 3 "car", any COCO name (dog, cat ...) -> its own id.
+#   If the files are missing or the model fails, the standard model (SSD MobileNet V2) runs instead.
+# ----------------------------------------------------------------------------
+OWN_AI = {"busy": False, "msg": "", "pct": 0}
+OWN_AI_ONNX, OWN_AI_JSON = "moveeye_model.onnx", "moveeye_model.json"
+OWN_AI_ANIMAL_ID = 92
+OWN_AI_WILD = {"animal", "fox", "deer", "boar", "badger", "hare", "hedgehog", "wolf", "marten", "squirrel", "lynx", "chamois", "ibex",
+               "roe deer", "wild boar", "rabbit", "mouse", "rat", "raccoon", "goat", "pig"}
+COCO_LABELS.setdefault(OWN_AI_ANIMAL_ID, "animal")       # after part 190 (TRIGGERS has "animal" already)
+ANIMALS.add("animal")
+
+
+def own_ai_paths():
+    """(onnx, json) of the first folder that has both - next to the program or in <data>/models."""
+    for d in ai_model_dirs():
+        a, b = os.path.join(d, OWN_AI_ONNX), os.path.join(d, OWN_AI_JSON)
+        if os.path.isfile(a) and os.path.isfile(b):
+            return a, b
+    return None, None
+
+
+def own_ai_check_manifest(m):
+    """The manifest as a clean dict - raises ValueError with a short reason if something does not fit."""
+    if not isinstance(m, dict) or m.get("format") != "moveeye-model-1":
+        raise ValueError("not a MoveEye model description")
+    cl = m.get("classes")
+    if not (isinstance(cl, list) and 1 <= len(cl) <= 100 and all(isinstance(c, str) and 0 < len(c) <= 40 for c in cl)):
+        raise ValueError("classes missing in the model description")
+    n = int(m.get("input") or 0)
+    if not (n % 32 == 0 and 160 <= n <= 1280):
+        raise ValueError("input size of the model not valid")
+    sha = str(m.get("sha256") or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", sha):
+        raise ValueError("checksum missing in the model description")
+    fn = str(m.get("file") or OWN_AI_ONNX)
+    if not re.fullmatch(r"[A-Za-z0-9_.\-]{1,80}\.onnx", fn):
+        raise ValueError("file name not valid")
+    conf = m.get("conf") if isinstance(m.get("conf"), dict) else {}
+    out = dict(m, classes=[c.strip().lower() for c in cl], input=n, sha256=sha, file=fn,
+               conf={str(k): min(0.9, max(0.05, float(v))) for k, v in conf.items() if isinstance(v, (int, float))},
+               version=str(m.get("version") or "?")[:40])
+    return out
+
+
+def own_ai_name(meta):
+    return f"MoveEye model {meta.get('version', '?')}" if meta else "SSD MobileNet V2"
+
+
+def own_ai_classmap(names):
+    """[(coco_id or 1 for person, is_person)] per class of the own model; None = class not used."""
+    by_name = {v: k for k, v in COCO_LABELS.items()}
+    out = []
+    for nm in names:
+        if nm == "person":
+            out.append((1, True))
+        elif nm in ("vehicle", "car"):
+            out.append((3, False))
+        elif nm in by_name:
+            out.append((by_name[nm], False))
+        elif nm in OWN_AI_WILD:
+            out.append((OWN_AI_ANIMAL_ID, False))
+        else:
+            out.append(None)
+    return out
+
+
+def own_ai_letterbox(img, n):
+    """the picture into an n x n square (aspect kept, grey borders like at the training): (square, scale, dx, dy)"""
+    h, w = img.shape[:2]; r = min(n / float(w), n / float(h))
+    nw, nh = max(1, int(round(w * r))), max(1, int(round(h * r)))
+    sq = np.full((n, n, 3), 114, np.uint8); dx, dy = (n - nw) // 2, (n - nh) // 2
+    sq[dy:dy + nh, dx:dx + nw] = cv2.resize(img, (nw, nh), interpolation=cv2.INTER_AREA if r < 1 else cv2.INTER_LINEAR)
+    return sq, r, dx, dy
+
+
+def own_ai_decode(out, nc, thr, r, dx, dy, w, h, nms_iou=0.45):
+    """YOLOv8 / YOLO11 output 1 x (4 + nc) x A (or 1 x A x (4 + nc)): cx, cy, bw, bh in pixels of the square input and nc class
+    scores (already 0..1). thr = minimum score per class. Returns [(x, y, w, h, conf, class)] in picture pixels after NMS per class."""
+    a = np.asarray(out, dtype=np.float32)
+    while a.ndim > 2 and a.shape[0] == 1:
+        a = a[0]
+    if a.ndim != 2 or (a.shape[0] != 4 + nc and a.shape[1] != 4 + nc):
+        raise ValueError(f"unexpected model output {tuple(np.asarray(out).shape)} for {nc} classes")
+    if a.shape[0] == 4 + nc and a.shape[1] != 4 + nc:
+        a = a.T                                            # -> A x (4 + nc)
+    sc = a[:, 4:4 + nc]
+    k = sc.argmax(1); conf = sc[np.arange(sc.shape[0]), k]
+    keep = conf >= np.asarray(thr, np.float32)[k]
+    if not keep.any():
+        return []
+    a, k, conf = a[keep], k[keep], conf[keep]
+    x1 = np.clip((a[:, 0] - a[:, 2] / 2 - dx) / r, 0, w - 1); y1 = np.clip((a[:, 1] - a[:, 3] / 2 - dy) / r, 0, h - 1)
+    x2 = np.clip((a[:, 0] + a[:, 2] / 2 - dx) / r, 0, w - 1); y2 = np.clip((a[:, 1] + a[:, 3] / 2 - dy) / r, 0, h - 1)
+    ok = (x2 - x1 >= 1) & (y2 - y1 >= 1)
+    x1, y1, x2, y2, k, conf = x1[ok], y1[ok], x2[ok], y2[ok], k[ok], conf[ok]
+    if not len(conf):
+        return []
+    off = k.astype(np.float32) * float(w + h + 10)          # NMS per class: each class moved to its own place
+    rects = [[float(x1[i] + off[i]), float(y1[i]), float(x2[i] - x1[i]), float(y2[i] - y1[i])] for i in range(len(conf))]
+    idx = cv2.dnn.NMSBoxes(rects, [float(c) for c in conf], 0.0, nms_iou)
+    idx = np.asarray(idx).reshape(-1) if len(idx) else []
+    res = [(int(x1[i]), int(y1[i]), int(round(x2[i] - x1[i])), int(round(y2[i] - y1[i])), float(conf[i]), int(k[i])) for i in idx]
+    return sorted(res, key=lambda b: -b[4])
+
+
+def own_ai_thresholds(meta, conf_p, conf_o):
+    """the sliders keep their meaning: 0.5 = the best threshold found at the training («conf» of the manifest), higher = stricter"""
+    th = []
+    for nm in meta["classes"]:
+        base = float(meta["conf"].get(nm, 0.35))
+        th.append(round(min(0.95, max(0.05, base + (float(conf_p if nm == "person" else conf_o) - 0.5))), 3))
+    return th
+
+
+def own_ai_detect(net, meta, img, conf_p, conf_o):
+    """(persons, objects) like the SSD part of AIDetector.infer"""
+    h, w = img.shape[:2]; n = int(meta["input"])
+    sq, r, dx, dy = own_ai_letterbox(img, n)
+    net.setInput(cv2.dnn.blobFromImage(sq, 1.0 / 255.0, (n, n), swapRB=True, crop=False))
+    out = net.forward()
+    cmap = meta.get("_map") or own_ai_classmap(meta["classes"])
+    th = own_ai_thresholds(meta, conf_p, conf_o)
+    th = [2.0 if cmap[i] is None or (not cmap[i][1] and conf_o > 1.0) else t for i, t in enumerate(th)]    # conf_o > 1: only persons
+    boxes, objects = [], []
+    for x, y, bw, bh, cf, k in own_ai_decode(out, len(meta["classes"]), th, r, dx, dy, w, h):
+        cid, is_p = cmap[k]
+        if is_p:
+            boxes.append((x, y, bw, bh, cf))
+        else:
+            objects.append((x, y, bw, bh, cf, cid))
+    return boxes, objects
+
+
+def own_ai_load():
+    """(net, manifest, "") or (None, None, reason) - the network is tried once on an empty picture (an OpenCV that cannot
+    run the model is found here, not at the first alarm)."""
+    onnx, js = own_ai_paths()
+    if not onnx:
+        return None, None, "own model not downloaded yet"
+    try:
+        with open(js, encoding="utf-8") as f:
+            meta = own_ai_check_manifest(json.load(f))
+        net = cv2.dnn.readNetFromONNX(onnx)
+        n = meta["input"]
+        net.setInput(cv2.dnn.blobFromImage(np.zeros((n, n, 3), np.uint8), 1.0 / 255.0, (n, n), swapRB=True))
+        o = net.forward()
+        own_ai_decode(o, len(meta["classes"]), [2.0] * len(meta["classes"]), 1.0, 0, 0, n, n)    # shape check
+        meta["_map"] = own_ai_classmap(meta["classes"])
+        if not any(m and m[1] for m in meta["_map"]):
+            raise ValueError("the model has no class «person»")
+        return net, meta, ""
+    except (OSError, ValueError, TypeError, cv2.error) as e:
+        return None, None, f"load error: {str(e).splitlines()[0] if str(e) else e.__class__.__name__}"[:140]
+
+
+def own_ai_switched():
+    """«KI-Modell» changed: load it (in the background - the network needs a moment)"""
+    w = WATCH_REF.get("w")
+    if w is None:
+        return
+    def run():
+        try:
+            w.ai = AIDetector()
+            if w.ai.kind == "yolo" and not CFG["ai_enabled"]:
+                CFG["ai_enabled"] = True; save_settings()  # chosen by hand: the AI is wanted (it was switched off without a model)
+        except Exception as e:
+            log_event("ai", f"AI model switch failed: {e}"[:200])
+    threading.Thread(target=run, daemon=True, name="ai-switch").start()
+
+
+def _own_ai_get(url, limit, progress=None):
+    """bytes of an https address (certificates checked, size limited) and their sha256"""
+    req = urllib.request.Request(url, headers={"User-Agent": "MotionWatch/" + APP_VERSION})
+    h = hashlib.sha256(); buf = bytearray()
+    with urllib.request.urlopen(req, timeout=60) as r:
+        total = int(r.headers.get("Content-Length") or 0)
+        if total > limit:
+            raise ValueError("file too big")
+        for chunk in iter(lambda: r.read(256 * 1024), b""):
+            buf += chunk; h.update(chunk)
+            if len(buf) > limit:
+                raise ValueError("file too big")
+            if progress:
+                progress(len(buf), total)
+    return bytes(buf), h.hexdigest()
+
+
+def own_ai_download(url=None):
+    """Fetch the own model: manifest (moveeye_model.json) from the address in the settings, then the .onnx file next to it;
+    the sha256 of the manifest must match. Then switch to it («KI-Modell: Eigenes»)."""
+    if OWN_AI["busy"]:
+        return False, "already running"
+    if DEMO["on"]:
+        return False, "not in the demo"
+    url = str(url or CFG.get("ai_own_url") or DEFAULTS["ai_own_url"]).strip()
+    if not (url.startswith("https://") and _http_ok(url)):
+        return False, "https://... address of moveeye_model.json expected"
+    OWN_AI.update(busy=True, msg="downloading", pct=0)
+
+    def run():
+        dst = os.path.join(DATA_DIR, "models"); tmp_o = os.path.join(dst, OWN_AI_ONNX + ".part"); tmp_j = os.path.join(dst, OWN_AI_JSON + ".part")
+        try:
+            os.makedirs(dst, exist_ok=True)
+            raw, _h = _own_ai_get(url, 256 * 1024)
+            try:
+                meta = own_ai_check_manifest(json.loads(raw.decode("utf-8")))
+            except (UnicodeDecodeError, json.JSONDecodeError, TypeError):
+                raise RuntimeError("the model description is not valid")
+            except ValueError as e:
+                raise RuntimeError(str(e))
+            src = meta.get("url") if str(meta.get("url") or "").startswith("https://") else url.rsplit("/", 1)[0] + "/" + meta["file"]
+            def prog(got, total):
+                OWN_AI["pct"] = int(got * 90 / total) if total else min(89, got // (200 * 1024))
+            data, sha = _own_ai_get(src, 80 * 1024 * 1024, prog)
+            if sha != meta["sha256"]:
+                raise RuntimeError("checksum wrong - the file is damaged or not the right one")
+            OWN_AI["pct"] = 95
+            with open(tmp_o, "wb") as f:
+                f.write(data)
+            with open(tmp_j, "wb") as f:
+                f.write(raw)
+            try:
+                net = cv2.dnn.readNetFromONNX(tmp_o)
+                n = meta["input"]; net.setInput(cv2.dnn.blobFromImage(np.zeros((n, n, 3), np.uint8), 1.0 / 255.0, (n, n), swapRB=True))
+                own_ai_decode(net.forward(), len(meta["classes"]), [2.0] * len(meta["classes"]), 1.0, 0, 0, n, n)
+            except (cv2.error, ValueError) as e:
+                raise RuntimeError(("this OpenCV cannot run the model: " + str(e).splitlines()[0][:80]) if str(e) else "model damaged")
+            os.replace(tmp_o, os.path.join(dst, OWN_AI_ONNX)); os.replace(tmp_j, os.path.join(dst, OWN_AI_JSON))
+            CFG["ai_model"] = "own"; CFG["ai_enabled"] = True; save_settings()
+            w = WATCH_REF.get("w")
+            if w is not None:
+                w.ai = AIDetector()
+            OWN_AI.update(msg="ready", pct=100)
+            log_event("ai", f"Own AI model {meta['version']} downloaded ({len(data) // 1024} kB, sha256 ok) and switched on")
+        except Exception as e:
+            reason = _short_net_err(e) if isinstance(e, (OSError, urllib.error.URLError)) else str(e)
+            OWN_AI.update(msg=f"failed: {tr(reason)}"[:140], pct=0)
+            log_event("ai", f"Own AI model download failed: {reason}"[:200])
+        finally:
+            OWN_AI["busy"] = False
+            for p_ in (tmp_o, tmp_j):
+                try:
+                    os.remove(p_)
+                except OSError:
+                    pass
+    threading.Thread(target=run, daemon=True, name="own-ai").start()
+    return True, ""
+
+
+def own_ai_info(lang=None):
+    """for the web page, the window and the self-check"""
+    onnx, js = own_ai_paths(); meta = None
+    if js:
+        try:
+            key = (js, os.path.getmtime(js))
+            if OWN_AI.get("_mkey") != key:               # read again only when the file changed (the window asks every second)
+                with open(js, encoding="utf-8") as f:
+                    OWN_AI["_meta"] = own_ai_check_manifest(json.load(f))
+                OWN_AI["_mkey"] = key
+            meta = OWN_AI.get("_meta")
+        except (OSError, ValueError, TypeError):
+            meta = None; OWN_AI["_mkey"] = None
+    ai = getattr(WATCH_REF.get("w"), "ai", None)
+    running = "own" if ai is not None and ai.kind == "yolo" else ("ssd" if ai is not None and ai.net is not None else "")
+    m = (meta or {}).get("metrics") or {}
+    return {"choice": CFG.get("ai_model", "ssd"), "running": running, "running_version": ai.meta.get("version") if running == "own" else None, "note": tr(STATE.get("ai_model_note") or "", lang),
+            "present": bool(onnx), "version": (meta or {}).get("version"), "classes": (meta or {}).get("classes"),
+            "input": (meta or {}).get("input"), "map50": m.get("map50"), "made": (meta or {}).get("made"),
+            "busy": OWN_AI["busy"], "pct": OWN_AI["pct"], "msg": OWN_AI["msg"], "url": CFG.get("ai_own_url") or DEFAULTS["ai_own_url"]}
+
+
+def own_ai_text(lang=None):
+    """one line: which model runs (status lines in the window and on the page)"""
+    i = own_ai_info(lang)
+    run = {"own": tr("MoveEye model", lang) + " " + str(i["running_version"]), "ssd": "SSD MobileNet V2"}.get(i["running"]) or tr("none", lang)
+    t = "🧠 " + tr("AI model", lang) + ": " + run
+    if i["choice"] == "own" and i["note"]:
+        t += " · ⚠ " + tr("own model not used", lang) + " (" + i["note"] + ")"
+    if i["present"]:
+        t += f" · {tr('downloaded', lang)}: {i['version']}" + (f" · mAP50 {i['map50']:.2f}" if isinstance(i["map50"], (int, float)) else "")
+    return t
+
+
+def own_ai_selftest():
+    """self-test: a fake YOLO output (2 classes, 6 anchors) - decoding, letterbox back to the picture, NMS, class mapping"""
+    n, nc, A = 320, 3, 6
+    o = np.zeros((1, 4 + nc, A), np.float32)
+    cand = [(160, 120, 40, 100, 0, 0.9), (162, 121, 42, 98, 0, 0.8),      # one person twice (NMS keeps one)
+            (60, 200, 50, 30, 1, 0.7), (61, 200, 50, 30, 0, 0.6),         # an animal and a weaker «person» on the same place (other class: both stay)
+            (250, 100, 20, 20, 2, 0.1), (100, 100, 10, 10, 1, 0.2)]       # below the thresholds
+    for j, (cx, cy, bw, bh, k, cf) in enumerate(cand):
+        o[0, :4, j] = (cx, cy, bw, bh); o[0, 4 + k, j] = cf
+    w, h = 640, 480                                        # picture 640 x 480 -> scale 0.5, 40 px border above and below
+    _sq, r, dx, dy = own_ai_letterbox(np.zeros((h, w, 3), np.uint8), n)
+    assert abs(r - 0.5) < 1e-6 and (dx, dy) == (0, 40), f"letterbox {r} {dx} {dy}"
+    got = own_ai_decode(o, nc, [0.5, 0.5, 0.5], r, dx, dy, w, h)
+    assert len(got) == 3, f"{len(got)} boxes instead of 3: {got}"
+    p = got[0]
+    assert p[5] == 0 and abs(p[4] - 0.9) < 1e-6 and abs(p[0] - 280) <= 1 and abs(p[1] - 60) <= 1 and abs(p[2] - 80) <= 1 and abs(p[3] - 200) <= 1, f"person {p}"
+    assert sorted(b[5] for b in got) == [0, 0, 1], f"classes {got}"
+    got_t = own_ai_decode(o.transpose(0, 2, 1), nc, [0.5, 0.5, 0.5], r, dx, dy, w, h)     # 1 x A x (4 + nc) gives the same
+    assert got_t == got, "transposed output"
+    cm = own_ai_classmap(["person", "animal", "vehicle", "dog", "fox", "toaster-robot"])
+    assert cm[0] == (1, True) and cm[1] == (OWN_AI_ANIMAL_ID, False) and cm[2] == (3, False) and cm[3] == (18, False) and cm[4] == (OWN_AI_ANIMAL_ID, False) and cm[5] is None
+    assert COCO_LABELS[OWN_AI_ANIMAL_ID] in ANIMALS
+    try:
+        own_ai_decode(np.zeros((1, 9, 5), np.float32), nc, [0.5] * 3, 1, 0, 0, w, h); raise AssertionError("wrong shape not found")
+    except ValueError:
+        pass
+    m = own_ai_check_manifest({"format": "moveeye-model-1", "classes": ["person", "animal", "vehicle"], "input": 320, "sha256": "a" * 64, "conf": {"person": 0.3}})
+    assert own_ai_thresholds(m, 0.5, 0.6) == [0.3, 0.45, 0.45], own_ai_thresholds(m, 0.5, 0.6)
 # ----------------------------------------------------------------------------
 # Main detector
 # ----------------------------------------------------------------------------
@@ -23497,7 +23856,7 @@ def brand_video(src, caption=""):
 #   Only when armed (or always, e.g. to keep animals out of the garden), with a pause between two reactions.
 # ----------------------------------------------------------------------------
 DETER_GROUPS = (("person", {"person"}), ("big", {"bear", "horse", "cow", "sheep", "elephant", "zebra", "giraffe"}),
-                ("small", {"cat", "dog", "bird"}), ("warm", {"warm"}))
+                ("small", {"cat", "dog", "bird", "animal"}), ("warm", {"warm"}))     # "animal": own MoveEye model (part 195), size unknown
 DETER_ACTS = ("off", "sound", "light", "both")
 
 
@@ -24863,6 +25222,7 @@ def self_test(folder=""):
         finally:
             TUN["pool"].clear(); TUN["pool"].extend(saved)
     chk("Tunnel to the simulator (lines, GO, pipe, flush)", tun)
+    chk("Own AI model: YOLO decoder + NMS (fake output)", own_ai_selftest)
 
     def wp():
         if not webpush_supported():
@@ -38968,7 +39328,7 @@ async function build() {
         const iv = setInterval(async () => { let j = {}; try { j = await (await fetch("/api/ai_model")).json(); } catch (e) {}
           am.textContent = j.busy ? t("downloading the AI model …") + " " + j.pct + " %" : (j.msg === "ready" ? "✓ " + t("AI ready") : "⚠ " + (j.msg || ""));
           if (!j.busy) { clearInterval(iv); ab.disabled = false; if (j.msg === "ready") ab.hidden = true; } }, 1500); };
-      d.append(ab, am); spExtras(d);
+      d.append(ab, am); ownExtras(d); spExtras(d);
     }
     if (sec.id === "Notifications") {
       const tb = el("button", "sec", t("Test notification")); tb.style.marginTop = "8px";
@@ -39629,6 +39989,23 @@ Object.assign(I18N.de, {"Mover": "Mover", "Mover (tracked vehicle)": "Mover (Ket
 Object.assign(I18N.de, {"GPS module": "GPS-Modul", "Own GPS module (USB or serial; gpsd is used if installed)": "Eigenes GPS-Modul (USB oder seriell; gpsd wird genutzt, falls installiert)", "Theft tracking: alarm when the armed device is carried away, then its position every 5 minutes": "Diebstahl-Ortung: Alarm, wenn das geschützte Gerät weggetragen wird, danach alle 5 Minuten seine Position", "Theft tracking: alarm from a distance of (m)": "Diebstahl-Ortung: Alarm ab einer Entfernung von (m)", "Connection": "Anschluss", "automatic": "automatisch", "the device was carried away": "das Gerät wurde weggetragen", "Position": "Position", "position": "Position", "Position now": "Position jetzt", "THEFT ALARM": "DIEBSTAHL-ALARM", "gpsd not running": "gpsd läuft nicht", "no GPS module found": "kein GPS-Modul gefunden", "searching satellites": "sucht Satelliten", "fix": "Position gefunden", "A USB GPS receiver (e.g. u-blox, VK-162) is found by itself. It needs a view of the sky. With an LTE stick the position arrives also when the device is stolen.": "Ein USB-GPS-Empfänger (z. B. u-blox, VK-162) wird von selbst gefunden. Er braucht freie Sicht zum Himmel. Mit LTE-Stick kommt die Position auch an, wenn das Gerät gestohlen wird.", "satellites": "Satelliten", "Theft tracking on guard": "Diebstahl-Ortung wacht", "Theft tracking starts when armed": "Diebstahl-Ortung startet, wenn der Schutz an ist", "From the GPS module": "Vom GPS-Modul", "from the GPS module": "vom GPS-Modul"});
 Object.assign(I18N.de, {"Solar panel": "Solarpanel", "Solar panel with current meter (INA219 on I2C)": "Solarpanel mit Strommesser (INA219 an I2C)", "Push message in the evening when the battery will probably not last until sunrise": "Push-Nachricht am Abend, wenn der Akku voraussichtlich nicht bis Sonnenaufgang reicht", "Current meter: shunt resistor (Ohm, usually 0.1)": "Strommesser: Shunt-Widerstand (Ohm, meist 0,1)", "Current meter: address (I2C)": "Strommesser: Adresse (I2C)", "The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.": "Der Akku reicht voraussichtlich nicht bis Sonnenaufgang ({sr}): noch etwa {have} h, nötig {need} h. Aufladen oder Stromsparen einschalten.", "Battery": "Akku", "lasts until sunrise ({sr})": "reicht bis Sonnenaufgang ({sr})", "too little until sunrise ({sr})": "zu knapp bis Sonnenaufgang ({sr})", "INA219 current meter between the panel and the charger (address 0x41 or 0x44 - 0x40 is often taken by the servo board).": "INA219-Strommesser zwischen Panel und Laderegler (Adresse 0x41 oder 0x44 – 0x40 ist oft vom Servo-Board belegt).", "no current meter found at this address": "kein Strommesser an dieser Adresse gefunden", "today": "heute", "max.": "max.", "Battery lasts until sunrise": "Akku reicht bis Sonnenaufgang", "Battery probably too low until sunrise": "Akku reicht voraussichtlich nicht bis Sonnenaufgang", "Night forecast: needs a battery value (Settings → Battery)": "Nacht-Prognose: braucht einen Akku-Wert (Einstellungen → Akku)"});
 Object.assign(I18N.de, {"Recognise the animal species (second AI model - see the guide)": "Tierart erkennen (zweites KI-Modell – siehe Anleitung)", "Animal species: minimum certainty": "Tierart: Mindest-Sicherheit", "Animal species: model": "Tierart: Modell", "Animal species: picture preparation of the model": "Tierart: Bildaufbereitung des Modells", "Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.": "Tierart: ein zweites KI-Modell (ONNX) erkennt Fuchs, Dachs, Wildschwein … Es ist nicht dabei – von einer Adresse installieren oder in den Ordner kopieren.", "or .zip": "oder .zip", "Install model": "Modell installieren", "Folder": "Ordner", "Models": "Modelle", "Last": "Zuletzt", "downloading …": "lädt herunter …", "no model chosen": "kein Modell gewählt", "address must start with https://": "die Adresse muss mit https:// beginnen", "the address must end with .onnx or .zip": "die Adresse muss auf .onnx oder .zip enden", "file too big": "Datei zu gross"});
+Object.assign(I18N.de, {"AI model": "KI-Modell", "Standard (SSD MobileNet V2)": "Standard (SSD MobileNet V2)", "Own (MoveEye model)": "Eigenes (MoveEye-Modell)", "Own model: address of its description (moveeye_model.json)": "Eigenes Modell: Adresse seiner Beschreibung (moveeye_model.json)", "Download own model": "Eigenes Modell herunterladen", "Update own model": "Eigenes Modell aktualisieren", "Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.": "Eigenes Modell: auf GitHub trainiert aus Simulator-Bildern und deinen beschrifteten Alarmbildern (Person, Tier, Fahrzeug). Nach dem Herunterladen nimmt MoveEye es (zurück zum Standard: «KI-Modell», Ansicht Experte). Fehlt es oder klappt es nicht, läuft das Standard-Modell.", "Now running": "Läuft jetzt", "own model not used": "eigenes Modell nicht benutzt", "not downloaded yet": "noch nicht heruntergeladen", "downloading the own model …": "lädt das eigene Modell …", "own model ready": "eigenes Modell bereit", "MoveEye model": "MoveEye-Modell", "made": "erstellt"});
+function ownExtras(d) {                             // part 195: own MoveEye model (YOLO) - download + which model runs
+  const box = el("div", "auxbox"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
+  box.appendChild(el("div", "mut", "🧠 " + t("Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.")));
+  const b = el("button", "sec", "⬇ " + t("Download own model")); b.type = "button"; b.style.marginTop = "6px";
+  const show = j => { b.textContent = "⬇ " + t(j.present ? "Update own model" : "Download own model");
+    const L = [t("Now running") + ": " + (j.running === "ssd" ? "SSD MobileNet V2" : j.running === "own" ? t("MoveEye model") + " " + j.running_version : t("none"))];
+    if (j.choice === "own" && j.note) L.push("⚠ " + t("own model not used") + ": " + j.note);
+    L.push(t("Own (MoveEye model)") + ": " + (j.present ? j.version + " · " + (j.classes || []).join(", ") + " · " + j.input + " px" + (j.map50 != null ? " · mAP50 " + Number(j.map50).toFixed(2) : "") + (j.made ? " · " + t("made") + " " + j.made : "") : t("not downloaded yet")));
+    if (j.busy) L.push(t("downloading the own model …") + " " + j.pct + " %"); else if (j.msg && j.msg !== "ready") L.push("⚠ " + j.msg);
+    st.textContent = L.join("\n"); };
+  const load = () => fetch("/api/own_model?lang=" + LANG).then(r => r.json()).then(show).catch(() => {});
+  b.onclick = async () => { b.disabled = true; const r = await post("/api/own_model", {lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || "error")); b.disabled = false; return; }
+    const iv = setInterval(async () => { let j = {}; try { j = await (await fetch("/api/own_model?lang=" + LANG)).json(); } catch (e) {} show(j);
+      if (!j.busy) { clearInterval(iv); b.disabled = false; toast(j.msg === "ready" ? "✓ " + t("own model ready") : "⚠ " + (j.msg || "error")); } }, 1500); };
+  box.append(b, st); d.appendChild(box); load(); setInterval(() => { if (document.body.contains(st)) load(); }, 15000);
+}
 function spExtras(d) {                              // animal species: second model, install from an address
   const box = el("div", "auxbox"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
   box.appendChild(el("div", "mut", "🦊 " + t("Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.")));
@@ -41796,6 +42173,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <section id="detect" data-icon="🎯"><h2>Erkennung</h2>
 <ul><li><b>Empfindlichkeit</b> und <b>Min. Objektgrösse</b> sind die wichtigsten Regler gegen Fehlalarme.</li>
 <li><b>KI-Erkennung</b> erkennt Personen, Tiere und Fahrzeuge. «Bewegungs-Personen brauchen KI-Bestätigung» = weniger Fehlalarme, aber etwas langsamer.</li>
+<li><b>🧠 Eigenes KI-Modell</b> (Einstellungen → KI-Erkennung → «KI-Modell»): <i>Standard (SSD)</i> ist das bekannte Modell (≈ 70 MB, kennt 90 Dinge). <i>Eigenes (MoveEye-Modell)</i> ist ein kleines YOLO-Modell (≈ 12 MB), das auf GitHub nur für MoveEye trainiert wird: aus Trainingspaketen des Simulators und deinen beschrifteten Alarmbildern («Was war das?» – Person / Tier / Nichts). Es kennt drei Klassen: Person, Tier, Fahrzeug. «Eigenes Modell herunterladen» holt die neueste Fassung vom GitHub-Release «ki-modell» und prüft sie mit der Prüfsumme (sha256); danach läuft sie gleich. Darunter steht, welches Modell gerade läuft, die Version und die gemessene Güte (mAP50: 1,0 = perfekt, ab etwa 0,6 brauchbar). Fehlt die Datei oder läuft sie auf dem Pi nicht, nimmt MoveEye von selbst wieder das Standard-Modell (Meldung im Selbstcheck). Die Regler «Sicherheit» behalten ihre Bedeutung: 0,5 = die beste Schwelle aus dem Training. Mit «KI-Prüfung mit Simulator-Bildern» (Reiter Simulator) lassen sich beide Modelle vergleichen. Neu trainieren: auf GitHub Actions → «KI-Modell» → «Run workflow» (Anleitung im Ordner <code>ki_training/</code>).</li>
 <li><b>Zonen</b> (Reiter <i>Zonen</i>): «Ignorieren» für Bäume, Strasse, Zeltwand; «Nur hier» wenn nur ein Bereich zählen soll.</li>
 <li><b>Privatsphäre-Zone</b> (Reiter <i>Zonen</i>): der Bereich wird gleich nach der Kamera schwarz abgedeckt – im Live-Bild, in Aufnahmen, Fotos, Zeitraffer und für Gäste. Für Nachbarzelt, Weg, fremde Fenster. Wichtig für den Datenschutz: fremde Personen und öffentlichen Grund nicht dauernd filmen.</li>
 <li>Regen, Wind, Schatten und Schwachlicht werden automatisch erkannt und ausgeglichen (Feineinstellungen).</li>
@@ -42007,6 +42385,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <section id="detect" data-icon="🎯"><h2>Detection</h2>
 <ul><li><b>Sensitivity</b> and <b>min. object size</b> are the most important settings against false alarms.</li>
 <li><b>AI detection</b> recognises persons, animals and vehicles. «Motion persons need AI confirmation» = fewer false alarms, a little slower.</li>
+<li><b>🧠 Own AI model</b> (Settings → AI detection → «AI model»): <i>Standard (SSD)</i> is the well-known model (≈ 70 MB, 90 things). <i>Own (MoveEye model)</i> is a small YOLO model (≈ 12 MB) trained on GitHub only for MoveEye, from simulator training packs and your labelled alarm pictures («What was that?»): person, animal, vehicle. «Download own model» fetches the newest one from the GitHub release «ki-modell» and checks its sha256. Below it: which model runs, its version and quality (mAP50). If the file is missing or does not run on the Pi, MoveEye goes back to the standard model by itself. The certainty sliders keep their meaning (0.5 = the best threshold of the training). Train again: GitHub Actions → «KI-Modell» → «Run workflow» (see the folder <code>ki_training/</code>).</li>
 <li><b>Zones</b> (tab <i>Zones</i>): «Ignore» for trees, road, tent wall; «Only here» when only one area counts.</li>
 <li><b>Privacy zone</b> (tab <i>Zones</i>): the area is painted black right after the camera – in the live picture, recordings, photos, timelapse and for guests. For a neighbour's tent, a path, other people's windows. Important for data protection: do not film strangers and public ground all the time.</li>
 <li>Rain, wind, shadows and low light are detected and handled automatically (fine-tuning).</li>
@@ -45147,6 +45526,14 @@ class WebStream:
                 return reply({"ok": ok, "error": err or None, **AI_MODEL}, 200 if ok else 409)
             return reply(dict(AI_MODEL, present=bool(ai_model_paths()[0])))
 
+        @app.route("/api/own_model", methods=["GET", "POST"])
+        def api_own_model():                             # part 195: own MoveEye model (YOLO, ONNX) from the GitHub release
+            lg = request.args.get("lang") or body().get("lang") if request.method == "POST" else request.args.get("lang")
+            if request.method == "POST":
+                ok, err = own_ai_download()
+                return reply({"ok": ok, "error": tr_err(err, lg) if err else None, **own_ai_info(lg)}, 200 if ok else 409)
+            return reply(dict(own_ai_info(lg), text=own_ai_text(lg)))
+
         @app.route("/api/storage", methods=["GET", "POST"])
         def api_storage():
             if request.method == "POST":
@@ -47994,6 +48381,17 @@ class App:
                     self.root.after(1500, self._rebuild)
         poll()
 
+    def _own_ai_dl(self):
+        ok, err = own_ai_download()
+        if not ok:
+            self._status("Own AI model", "⚠ " + tr_err(err)); return
+        def poll():
+            if OWN_AI["busy"]:
+                self._status("Own AI model", tr("downloading the own model …") + f" {OWN_AI['pct']} %"); self.root.after(1000, poll)
+            else:
+                self._status("Own AI model", ("✓ " + tr("own model ready") + "\n" + own_ai_text()) if OWN_AI["msg"] == "ready" else "⚠ " + OWN_AI["msg"])
+        poll()
+
     def _set_simple(self, v):
         if bool(CFG["ui_simple"]) != v:
             CFG["ui_simple"] = v; save_settings(); self._simple_seen = v; self.root.after(30, self._rebuild)
@@ -48392,6 +48790,12 @@ class App:
             ttk.Button(sbody, text=tr("Download AI model") + " (≈ 70 MB)", command=self._ai_dl).pack(fill="x", pady=(8, 0))
             self.status_labels["AI model"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["AI model"].pack(anchor="w", pady=(2, 0))
+        if sec == "AI detection":                        # part 195: own MoveEye model (YOLO) next to the standard
+            ttk.Label(sbody, text="🧠 " + tr("Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs."),
+                      style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(8, 0))
+            ttk.Button(sbody, text=tr("Update own model" if own_ai_paths()[0] else "Download own model"), command=self._own_ai_dl).pack(fill="x", pady=(4, 0))
+            self.status_labels["Own AI model"] = ttk.Label(sbody, text=own_ai_text(), style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels["Own AI model"].pack(anchor="w", pady=(2, 0))
         if sec == "Notifications":
             ttk.Button(sbody, text=tr("Test notification"),
                        command=lambda: self.watch.notifier.test(self.watch.frame_out)).pack(fill="x", pady=(8, 0))
@@ -49689,7 +50093,8 @@ class App:
         self._sched_sig = sig
         self._status("Patrol", f"{tr(st['patrol_status'])} · {tr('waypoints')} (↔/↕): {wp_text() or tr('none')}")
         self._status("AI detection", f"{st['ai_status']} · {st['ai_persons']} {tr('AI persons')}"
-                                     + (f" · {tr('objects')}: {st['object_summary']}" if st["object_summary"] else ""))
+                                     + (f" · {tr('objects')}: {st['object_summary']}" if st["object_summary"] else "")
+                                     + "\n" + own_ai_text())
         ts_, rem = st.get("remote_ts") or {}, st.get("remote") or []
         ts_txt = (tr("not installed") if not ts_.get("state") else
                   (tr("connected") + (f" · http://{ts_['ip']}:{CFG['web_port']}/" if ts_.get("ip") else "") if ts_["state"] == "Running" else ts_["state"]))
@@ -55055,6 +55460,42 @@ _HX_GUIDE = {
     'MQTT / Home Assistant': ('MQTT / Home Assistant', 'MQTT / Home Assistant', 'MQTT / Home Assistant', 'MQTT / Home Assistant'),
 }
 for _k, _v in _HX_GUIDE.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_MODELL = {
+    'AI model': ('KI-Modell', 'Modèle d’IA', 'Modello IA', 'Model IA'),
+    'Standard (SSD MobileNet V2)': ('Standard (SSD MobileNet V2)', 'Standard (SSD MobileNet V2)', 'Standard (SSD MobileNet V2)', 'Standard (SSD MobileNet V2)'),
+    'Own (MoveEye model)': ('Eigenes (MoveEye-Modell)', 'Propre (modèle MoveEye)', 'Proprio (modello MoveEye)', 'Agen (model MoveEye)'),
+    'MoveEye model': ('MoveEye-Modell', 'Modèle MoveEye', 'Modello MoveEye', 'Model MoveEye'),
+    'Own model: address of its description (moveeye_model.json)': ('Eigenes Modell: Adresse seiner Beschreibung (moveeye_model.json)', 'Propre modèle : adresse de sa description (moveeye_model.json)', 'Modello proprio: indirizzo della sua descrizione (moveeye_model.json)', 'Agen model: adressa da sia descripziun (moveeye_model.json)'),
+    'Download own model': ('Eigenes Modell herunterladen', 'Télécharger le propre modèle', 'Scaricare il modello proprio', 'Telechargiar l’agen model'),
+    'Update own model': ('Eigenes Modell aktualisieren', 'Mettre à jour le propre modèle', 'Aggiornare il modello proprio', 'Actualisar l’agen model'),
+    'Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.': (
+        'Eigenes Modell: auf GitHub trainiert aus Simulator-Bildern und deinen beschrifteten Alarmbildern (Person, Tier, Fahrzeug). Nach dem Herunterladen nimmt MoveEye es (zurück zum Standard: «KI-Modell», Ansicht Experte). Fehlt es oder klappt es nicht, läuft das Standard-Modell.',
+        'Propre modèle : entraîné sur GitHub avec des images du simulateur et tes images d’alarme annotées (personne, animal, véhicule). Après le téléchargement, MoveEye l’utilise (retour au standard : «Modèle d’IA», vue Expert). S’il manque ou ne marche pas, le modèle standard tourne.',
+        'Modello proprio: addestrato su GitHub con immagini del simulatore e le tue immagini d’allarme etichettate (persona, animale, veicolo). Dopo il download MoveEye lo usa (ritorno allo standard: «Modello IA», vista Esperto). Se manca o non funziona, gira il modello standard.',
+        'Agen model: trenà sin GitHub cun maletgs dal simulatur e tes maletgs d’alarm inscripziunads (persuna, animal, vehichel). Suenter il telechargiar al dovra MoveEye (enavos al standard: «Model IA», vista Expert). Sch’el manca u na funcziuna betg, gira il model standard.'),
+    'Now running': ('Läuft jetzt', 'Tourne maintenant', 'Gira adesso', 'Gira ussa'),
+    'own model not used': ('eigenes Modell nicht benutzt', 'propre modèle pas utilisé', 'modello proprio non usato', 'agen model betg duvrà'),
+    'not downloaded yet': ('noch nicht heruntergeladen', 'pas encore téléchargé', 'non ancora scaricato', 'anc betg telechargià'),
+    'downloaded': ('heruntergeladen', 'téléchargé', 'scaricato', 'telechargià'),
+    'downloading the own model …': ('lädt das eigene Modell …', 'télécharge le propre modèle …', 'scarica il modello proprio …', 'telechargia l’agen model …'),
+    'own model ready': ('eigenes Modell bereit', 'propre modèle prêt', 'modello proprio pronto', 'agen model pront'),
+    'own model not downloaded yet': ('eigenes Modell noch nicht heruntergeladen', 'propre modèle pas encore téléchargé', 'modello proprio non ancora scaricato', 'agen model anc betg telechargià'),
+    'made': ('erstellt', 'créé', 'creato', 'creà'),
+    'animal': ('Tier', 'animal', 'animale', 'animal'),
+    'https://... address of moveeye_model.json expected': ('eine https://…-Adresse von moveeye_model.json erwartet', 'adresse https://… de moveeye_model.json attendue', 'atteso un indirizzo https://… di moveeye_model.json', 'spetgà ina adressa https://… da moveeye_model.json'),
+    'not a MoveEye model description': ('keine Beschreibung eines MoveEye-Modells', 'pas une description de modèle MoveEye', 'non è una descrizione di modello MoveEye', 'nagina descripziun d’in model MoveEye'),
+    'classes missing in the model description': ('Klassen fehlen in der Modell-Beschreibung', 'classes manquantes dans la description du modèle', 'classi mancanti nella descrizione del modello', 'classas mancan en la descripziun dal model'),
+    'input size of the model not valid': ('Eingangsgrösse des Modells ungültig', 'taille d’entrée du modèle invalide', 'dimensione d’ingresso del modello non valida', 'grondezza d’entrada dal model nunvalaivla'),
+    'checksum missing in the model description': ('Prüfsumme fehlt in der Modell-Beschreibung', 'somme de contrôle manquante dans la description du modèle', 'checksum mancante nella descrizione del modello', 'summa da controlla manca en la descripziun dal model'),
+    'file name not valid': ('Dateiname ungültig', 'nom de fichier invalide', 'nome del file non valido', 'num da datoteca nunvalaivel'),
+    'the model description is not valid': ('die Modell-Beschreibung ist ungültig', 'la description du modèle est invalide', 'la descrizione del modello non è valida', 'la descripziun dal model è nunvalaivla'),
+    'checksum wrong - the file is damaged or not the right one': ('Prüfsumme falsch – die Datei ist beschädigt oder nicht die richtige', 'somme de contrôle fausse – le fichier est endommagé ou pas le bon', 'checksum errato – il file è danneggiato o non è quello giusto', 'summa da controlla sbagliada – la datoteca è donnegiada u betg la dretga'),
+    'the model has no class «person»': ('das Modell hat keine Klasse «person»', 'le modèle n’a pas de classe «person»', 'il modello non ha la classe «person»', 'il model n’ha nagina classa «person»'),
+}
+for _k, _v in _HX_MODELL.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

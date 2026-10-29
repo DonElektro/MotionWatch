@@ -442,6 +442,8 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Lights", "light_ir_out", "Infrared light: connected to", "enum", "light_ir_out"),
     ("Lights", "light_ir_auto", "Infrared light: Auto means", "enum", "light_auto"),
     ("Lights", "picture_mode", "Picture", "enum", "picture_mode"),
+    ("AI detection", "ai_model", "AI model", "enum", "ai_models"),
+    ("AI detection", "ai_own_url", "Own model: address of its description (moveeye_model.json)", "str", None),
     ("AI detection", "species_model", "Animal species: model", "enum", "species_model"),
     ("AI detection", "species_norm", "Animal species: picture preparation of the model", "enum", "species_norm"),
     ("Solar panel", "solar_addr", "Current meter: address (I2C)", "enum", "pca_address"),
@@ -500,6 +502,8 @@ def text_choice_pairs(key):
         cur = str(CFG.get("species_model") or "")
         ms = species_models() + ([cur] if cur and cur not in species_models() else [])
         return [("", "– " + tr("none") + " –")] + [(m, m) for m in ms]
+    if extra == "ai_models":                         # part 195: own MoveEye model (YOLO, ONNX) next to the standard
+        return [("ssd", tr("Standard (SSD MobileNet V2)")), ("own", tr("Own (MoveEye model)"))]
     if extra == "species_norm":
         return [("imagenet", "ImageNet (mean / std)"), ("01", "0 … 1"), ("-11", "-1 … 1")]
     if extra == "gpsmod_port":
@@ -611,6 +615,8 @@ def set_text(key, value):
         if key == "use_case":
             return use_case_set(value, "settings")
         CFG[key] = value
+        if key == "ai_model":
+            own_ai_switched()                           # part 195: load the chosen model (falls back to the standard)
         if key == "net_mode":
             NETAUTO["paused"] = False
             log_event("sys", f"Network mode: {value}")
@@ -660,6 +666,8 @@ def set_text(key, value):
                 return False, "text too long or with control characters"
             if key == "sim_url" and not re.fullmatch(r"https?://[A-Za-z0-9.\-\[\]:]{1,120}/?", v):
                 return False, "invalid URL (http:// or https:// expected)"
+            if key == "ai_own_url" and not (v.startswith("https://") and _http_ok(v) and v.lower().endswith(".json")):
+                return False, "https://... address of moveeye_model.json expected"
             if key in ("notify_url", "public_url") and not _http_ok(v):
                 return False, "invalid URL (http:// or https:// expected)"
             if key == "wake_time" and not _HM_RE.match(v):
