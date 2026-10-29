@@ -4002,6 +4002,11 @@ func _control(d: Dictionary) -> Dictionary:
 		elif op_ == "morning":
 			surprise.morning()
 		return {"ok": true, "surprise": surprise.info()}
+	elif a == "feedback":                              # MoveEye 2.98.33: the dialog «Rückmeldung» (tests: {text, kind, stars, shot})
+		_feedback_open()
+		if feedback_dlg != null and str(d.get("text", "")) != "" and feedback_dlg.visible:
+			feedback_dlg.fill_and_send(d)
+		return {"ok": true, "open": feedback_dlg != null and feedback_dlg.visible, "connected": feedback_dlg != null and feedback_dlg.connected()}
 	elif a == "mw_request":                            # 3D-3.71: like the buttons «Referenz-Scan» / «Vergleichen» (tests, remote)
 		mw_request(str(d.get("op", "")))
 		return {"ok": true, "cmd": mw_cmd}
@@ -4633,6 +4638,12 @@ func _build_ui() -> void:
 	pv.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	pv.pressed.connect(_toggle_phone)
 	tl.add_child(pv)
+	var fbb := Button.new()                         # MoveEye 2.98.33: feedback to the developer (feedback.gd)
+	fbb.text = "Rückmeldung an den Entwickler"
+	fbb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	fbb.tooltip_text = "Fehler, Wunsch, Lob oder Frage – geht über das verbundene MoveEye anonym an den Entwickler."
+	fbb.pressed.connect(_feedback_open)
+	tl.add_child(fbb)
 	# the settings of the simulator: one card per group (with a symbol), parts inside (the same list the page of Motion
 	# Watch shows, in the same order - GROUPS / PLACE)
 	var groups := {}
@@ -5362,6 +5373,21 @@ func _toggle_phone() -> void:
 		phone.visible = false
 	else:
 		phone.open()
+
+
+var feedback_dlg = null                # MoveEye 2.98.33: feedback.gd (made at the first use)
+
+
+func _feedback_open() -> void:
+	if feedback_dlg == null:
+		var cl := CanvasLayer.new()
+		cl.layer = 61
+		add_child(cl)
+		feedback_dlg = preload("res://scripts/feedback.gd").new()
+		feedback_dlg.main = self
+		feedback_dlg.theme = UI.theme()
+		cl.add_child(feedback_dlg)
+	feedback_dlg.open()
 
 
 func _open_preview() -> void:

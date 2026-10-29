@@ -27212,6 +27212,10 @@ class SimLink:
                     follow_set(bool(mc_.get("on")), "simulator")
                 elif op_ == "light":                        # 2.95.103: the white light from the simulator (on / off)
                     light_set("white", "on" if mc_.get("on") else "auto")
+                elif op_ == "feedback":                     # 2.98.33: «Rückmeldung an den Entwickler» in the simulator (584)
+                    threading.Thread(target=lambda m=dict(mc_): feedback_send(m.get("kind"), m.get("text"), str(m.get("contact") or "")[:120], True, m.get("stars"),
+                                     "3D-Simulator " + str(m.get("sim") or "")[:12], feedback_shot("sim") if m.get("shot") else None, "simulator"),
+                                     daemon=True, name="simfeedback").start()
         le = int(rep_.get("last_event") or 0)
         if le > SIM["seen_event"]:
             data, _ = _sim_get(f"/events?since={SIM['seen_event']}")
@@ -28230,14 +28234,21 @@ def sms_send(text, force=False):
 #   destination is not shown). Sent by the Pi; without internet it waits and is sent later.
 # ----------------------------------------------------------------------------
 _FB_DEST = "aHR0cHM6Ly9udGZ5LW1lLmNvbS9tdy1mYi0xYzE3ZTFkMWViNWZhMmFhZTQ5Nw=="
-FEEDBACK = {"sent": [], "lock": threading.Lock()}
+_FB_DEST2 = "aHR0cHM6Ly9udGZ5LnNoL213LWZiLTFjMTdlMWQxZWI1ZmEyYWFlNDk3"      # 2.98.33: the same topic on a second server - sent to both, one is enough
+FEEDBACK = {"sent": [], "lock": threading.Lock(), "err": {}, "log_t": {}, "ok_t": 0.0, "test_t": 0.0}
 
 
 def _fb_file():
     return os.path.join(DATA_DIR, "feedback_outbox.json")
 
 
-def feedback_send(kind, text, contact="", diag=False):
+FB_KINDS = {"bug": "Fehler", "idea": "Wunsch", "praise": "Lob", "question": "Frage", "other": "Feedback"}   # 2.98.33: + «Frage»
+FB_SHOT_MAX = 350 * 1024               # 2.98.33: a screenshot as ntfy attachment (the ntfy servers allow several MB; small = quick on mobile)
+
+
+def feedback_send(kind, text, contact="", diag=False, stars=0, page="", shot=None, src="web"):
+    """2.98.33 (584): + satisfaction 1-5 stars, the page / place it was written on, the version (always) and an optional
+    screenshot (JPEG bytes, faces pixelated by feedback_shot). Anonymous as before: no address, no name unless written."""
     text = str(text or "").strip()[:3000]
     if len(text) < 3:
         return False, "please write a few words"
@@ -28245,19 +28256,52 @@ def feedback_send(kind, text, contact="", diag=False):
     FEEDBACK["sent"] = [x for x in FEEDBACK["sent"] if now - x < 3600]
     if len(FEEDBACK["sent"]) >= 5:
         return False, "at most 5 messages per hour"
-    kind = kind if kind in ("idea", "bug", "praise", "other") else "other"
+    kind = kind if kind in FB_KINDS else "other"
+    try:
+        stars = max(0, min(5, int(stars or 0)))
+    except (TypeError, ValueError):
+        stars = 0
+    page = re.sub(r"[^\w ./#:+\-]", "", str(page or ""))[:40]
+    src = src if src in ("web", "window", "simulator") else "web"
     body_ = text + (("\n\nKontakt: " + str(contact)[:120]) if contact else "")
+    if stars:
+        body_ += "\n\nZufriedenheit: " + "★" * stars + "☆" * (5 - stars) + f" ({stars}/5)"
+    where = {"web": "Web", "window": "Fenster", "simulator": "3D-Simulator"}[src]
+    body_ += f"\n\n— MoveEye {APP_VERSION} · {where}" + (f" · Seite: {page}" if page else "")
     if diag:
         imp = [e for e in STATE["events"] if e.get("imp")][:8]
         body_ += (f"\n\n--- Technik ---\nVersion {APP_VERSION} · Python {sys.version.split()[0]} · {platform_model()} · "
                   f"Sprache {CFG['lang']} · Laufzeit {int((now - START) / 3600)} h\n" + "\n".join(f"{e.get('t', '')} {e.get('text', '')[:140]}" for e in imp))
-    msg = {"kind": kind, "body": body_, "t": datetime.now().isoformat(timespec="seconds")}
+    msg = {"kind": kind, "body": body_, "t": datetime.now().isoformat(timespec="seconds"), "stars": stars}
+    if shot and len(shot) <= FB_SHOT_MAX:
+        try:
+            os.makedirs(_fb_shot_dir(), exist_ok=True)
+            msg["img"] = uuid.uuid4().hex[:12]
+            with open(os.path.join(_fb_shot_dir(), msg["img"] + ".jpg"), "wb") as f:
+                f.write(shot)
+        except OSError:
+            msg.pop("img", None)
     FEEDBACK["sent"].append(now)
     with FEEDBACK["lock"]:
-        box = _fb_load(); box.append(msg); _fb_save(box[-20:])
+        box = _fb_load(); box.append(msg); _fb_save(box[-20:]); _fb_shots_tidy(box[-20:])
     threading.Thread(target=feedback_flush, daemon=True).start()
     log_event("web", "Feedback written - it is sent to the developer (also later, when there is internet)")
     return True, ""
+
+
+def _fb_shot_dir():
+    return os.path.join(DATA_DIR, "feedback_shots")
+
+
+def _fb_shots_tidy(box):
+    """screenshots of messages that are no longer waiting are deleted"""
+    keep = {m.get("img") for m in box if m.get("img")}
+    try:
+        for fn in os.listdir(_fb_shot_dir()):
+            if fn[:-4] not in keep:
+                os.remove(os.path.join(_fb_shot_dir(), fn))
+    except OSError:
+        pass
 
 
 def _fb_load():
@@ -28276,28 +28320,87 @@ def _fb_save(box):
         pass
 
 
-def feedback_flush():
-    """Send what is waiting. Called after writing and every 10 minutes."""
+def _fb_urls():
     import base64
+    return [base64.b64decode(x).decode() for x in (_FB_DEST, _FB_DEST2)]
+
+
+def _fb_host(u):
+    return u.split("/")[2] if u.count("/") >= 2 else u
+
+
+def _fb_req(url, data, headers, method):
+    """one request to one server: True / False; the reason of a failure is kept (no topic, no secret) and logged once per hour"""
+    host = _fb_host(url)
+    try:
+        req = urllib.request.Request(url, data=data, method=method, headers=headers)
+        with urllib.request.urlopen(req, timeout=30 if method == "PUT" else 15) as r:
+            if r.status < 300:
+                FEEDBACK["err"].pop(host, None); FEEDBACK["ok_t"] = time.time()
+                return True
+            why = f"HTTP {r.status} {r.reason}"
+    except urllib.error.HTTPError as e:
+        why = f"HTTP {e.code} {e.reason}"
+    except Exception as e:
+        why = (type(e).__name__ + ": " + str(getattr(e, "reason", "") or e))[:120]
+    FEEDBACK["err"][host] = {"why": why, "t": time.time()}
+    if time.time() - FEEDBACK["log_t"].get(host, 0) > 3600:
+        FEEDBACK["log_t"][host] = time.time()
+        log_event("web", f"Feedback: {host} refused ({why}) - tried again later")
+    return False
+
+
+def feedback_flush():
+    """Send what is waiting. Called after writing and every 10 minutes. 2.98.33: to both servers (ntfy-me.com and
+    ntfy.sh, same topic); a message counts as sent when one server took it; the picture goes to the same server(s)."""
     with FEEDBACK["lock"]:
         box = _fb_load()
         if not box:
             return
-        url = base64.b64decode(_FB_DEST).decode()
+        urls = _fb_urls()
         left = []
         for m in box:
-            title = {"idea": "Idee", "bug": "Fehler", "praise": "Lob", "other": "Feedback"}[m.get("kind", "other")]
-            try:
-                req = urllib.request.Request(url, data=m["body"].encode(), method="POST",
-                                             headers={"Title": _hdr("MoveEye – " + title), "Tags": {"bug": "bug", "idea": "bulb", "praise": "star"}.get(m.get("kind"), "speech_balloon")})
-                with urllib.request.urlopen(req, timeout=15) as r:
-                    if r.status >= 300:
-                        left.append(m)
-            except Exception:
-                left.append(m)
-        _fb_save(left)
+            title = "MoveEye – " + FB_KINDS.get(m.get("kind"), "Feedback") + ((" " + "★" * int(m["stars"])) if m.get("stars") else "")
+            tags = {"bug": "bug", "idea": "bulb", "praise": "star", "question": "question"}.get(m.get("kind"), "speech_balloon")
+            if not m.get("text_sent"):
+                oks = [i for i, u in enumerate(urls) if _fb_req(u, m["body"].encode(), {"Title": _hdr(title), "Tags": tags}, "POST")]
+                if not oks:
+                    left.append(m); continue
+                m["text_sent"] = True; m["dests"] = oks
+            if m.get("img"):                             # 2.98.33: the screenshot as a second message with the picture attached
+                try:
+                    with open(os.path.join(_fb_shot_dir(), m["img"] + ".jpg"), "rb") as f:
+                        jpg = f.read()
+                except OSError:
+                    jpg = b""
+                if jpg:
+                    h = {"Title": _hdr(title + " · Bildschirmfoto"), "Tags": "camera", "Filename": "moveeye_rueckmeldung.jpg",
+                         "Message": _hdr("Bildschirmfoto zur Rückmeldung von " + str(m.get("t", ""))[:16].replace("T", " ")), "Content-Type": "image/jpeg"}
+                    if not [i for i in (m.get("dests") or [0, 1]) if i < len(urls) and _fb_req(urls[i], jpg, h, "PUT")]:
+                        left.append(m); continue
+        _fb_save(left); _fb_shots_tidy(left)
         if len(left) < len(box):
             log_event("web", f"Feedback sent ({len(box) - len(left)})")
+
+
+def feedback_status():
+    """for the dialog: how many messages wait, the last refusal per server (host only)"""
+    box = _fb_load()
+    errs = [{"host": h, "why": e["why"], "t": e["t"]} for h, e in FEEDBACK["err"].items()]
+    return {"waiting": len(box), "errors": errs, "ok_t": FEEDBACK["ok_t"]}
+
+
+def feedback_test():
+    """«Send a test feedback» (developer): one short message to each server, the result per server; not kept"""
+    if time.time() - FEEDBACK["test_t"] < 20:
+        return False, "wait a moment", []
+    FEEDBACK["test_t"] = time.time()
+    res = []
+    for u in _fb_urls():
+        ok = _fb_req(u, f"Test-Feedback von MoveEye {APP_VERSION} ({datetime.now().strftime('%d.%m.%Y %H:%M')})".encode(),
+                     {"Title": _hdr("MoveEye – Test-Feedback"), "Tags": "test_tube"}, "POST")
+        res.append({"host": _fb_host(u), "ok": ok, "why": "" if ok else FEEDBACK["err"].get(_fb_host(u), {}).get("why", "")})
+    return any(r["ok"] for r in res), "", res
 
 
 def platform_model():
@@ -43457,7 +43560,6 @@ main{padding:16px;max-width:720px;margin:0 auto}
 #games{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:14px;margin:0 0 12px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
 #games.on{border-color:var(--grn)}#games .gq{width:120px;height:120px;background:#fff;border-radius:10px;padding:6px;box-sizing:border-box}#games .gq svg{width:100%;height:100%}
 #games .gt{flex:1 1 200px}#games .gt b{font-size:16px}#games button{margin:8px 8px 0 0}
-#fb{display:none}#fb.on{display:block}#fb textarea{width:100%;box-sizing:border-box;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -43475,21 +43577,14 @@ main{padding:16px;max-width:720px;margin:0 auto}
   <a class="mi" href="/tools"><i>🧰</i><span><b data-i18n="Tools">Tools</b><small data-i18n="Network test, diagnosis and more">Network test, diagnosis and more</small></span><span class="ar">›</span></a>
   <a class="mi" href="/info" id="m-info"><i>👋</i><span><b data-i18n="Info page for guests">Info page for guests</b><small data-i18n="what MoveEye is - for neighbours and fellow campers">what MoveEye is - for neighbours and fellow campers</small></span><span class="ar">›</span></a>
   <a class="mi" href="/almanach"><i>🌦</i><span><b data-i18n="Almanac">Almanac</b><small data-i18n="Sun, moon, weather">Sun, moon, weather</small></span><span class="ar">›</span></a>
-  <button type="button" class="mi" onclick="document.getElementById('fb').classList.toggle('on')"><i>💬</i><span><b data-i18n="Feedback to the developer">Feedback to the developer</b><small data-i18n="Ideas, errors, praise - anonymous">Ideas, errors, praise - anonymous</small></span><span class="ar">›</span></button>
-  <div class="card" id="fb">
-    <select id="fb-k" style="width:100%;margin-bottom:8px"><option value="idea" data-i18n="💡 Idea">💡 Idea</option><option value="bug" data-i18n="🐞 Error">🐞 Error</option><option value="praise" data-i18n="⭐ Praise">⭐ Praise</option><option value="other" data-i18n="💬 Other">💬 Other</option></select>
-    <textarea id="fb-t" rows="5" maxlength="3000"></textarea>
-    <div class="btns"><button type="button" id="fb-s" data-i18n="Send">Send</button></div><div class="mut" id="fb-r"></div>
-  </div>
+  <button type="button" class="mi" id="m-fb" onclick="window.mwFeedback && mwFeedback()"><i>💬</i><span><b data-i18n="Feedback to the developer">Feedback to the developer</b><small data-i18n="Errors, wishes, praise, questions - anonymous">Errors, wishes, praise, questions - anonymous</small></span><span class="ar">›</span></button>
+  <button type="button" class="mi" id="m-fbtest" onclick="window.mwFeedbackTest && mwFeedbackTest(document.getElementById('m-fbtest-r'))"><i>🧪</i><span><b data-i18n="Send a test feedback">Send a test feedback</b><small id="m-fbtest-r" data-i18n="for the developer: does a message reach the servers?">for the developer: does a message reach the servers?</small></span><span class="ar">›</span></button>
+  <button type="button" class="mi" id="m-about" onclick="window.mwAbout && mwAbout()"><i>ℹ️</i><span><b data-i18n="About MoveEye">About MoveEye</b><small data-i18n="history, developer, numbers">history, developer, numbers</small></span><span class="ar">›</span></button>
 </main>
 <script>
 /*COMMON*/
 /*MOREDE*/
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"games-off-note": "One button: game corner (quiz, werewolf …), game collection and - when the 3D simulator runs - «Team against MoveEye». One QR code, type the name, done."});
-document.getElementById("fb-s").onclick = async () => {
-  const r = await post("/api/feedback", {kind: document.getElementById("fb-k").value, text: document.getElementById("fb-t").value, diag: true, lang: LANG});
-  document.getElementById("fb-r").textContent = r && r.ok ? "✓ " + t("Thank you! The message is on its way.") : "⚠ " + ((r && r.error) || "error");
-};
 (async () => { await initAppearance(); gmLoad(); })();
 // 2.98.7: «Spiele freigeben» - one button for the game corner, the game collection and the game of the 3D simulator
 let GMT = 0;
@@ -43528,8 +43623,9 @@ MORE_DE = {"Everything explained, with search": "Alles erklärt, mit Suche", "Qu
            "Network test, diagnosis and more": "Netztest, Diagnose und mehr", "Info page for guests": "Infoseite für Gäste",
            "what MoveEye is - for neighbours and fellow campers": "was MoveEye ist – für Nachbarn und Mitcamper", "Almanac": "Almanach",
            "Sun, moon, weather": "Sonne, Mond, Wetter", "Feedback to the developer": "Rückmeldung an den Entwickler",
-           "Ideas, errors, praise - anonymous": "Ideen, Fehler, Lob – anonym", "💡 Idea": "💡 Idee", "🐞 Error": "🐞 Fehler", "⭐ Praise": "⭐ Lob",
-           "💬 Other": "💬 Anderes", "Send": "Senden", "Thank you! The message is on its way.": "Danke! Die Nachricht ist unterwegs.",
+           "Errors, wishes, praise, questions - anonymous": "Fehler, Wünsche, Lob, Fragen – anonym",
+           "About MoveEye": "Über MoveEye", "Send a test feedback": "Test-Feedback senden",
+           "for the developer: does a message reach the servers?": "für den Entwickler: kommt eine Nachricht bei den Servern an?", "history, developer, numbers": "Geschichte, Entwickler, Zahlen",
            "Games": "Spiele", "Open all games": "Spiele freigeben", "Open until": "Offen bis", "players": "Spieler", "Game corner": "Spielecke",
            "Game collection": "Spielesammlung", "Simulator game": "Simulator-Spiel", "Scan the QR code with the phone (same Wi-Fi).": "QR-Code mit dem Handy scannen (gleiches WLAN).",
            "Players and QR code": "Spieler und QR-Code", "Close": "Schliessen", "Close all games? The players are logged out.": "Alle Spiele schliessen? Die Spieler werden abgemeldet.",
@@ -45547,25 +45643,8 @@ function chainPaint(c, s) {
   box.appendChild(el("div", "mut", armed ? t("Crossed out = off. Tap a step to change it. «Test protection» plays the chain.") : t("Protection is off - nothing happens. Choose «Wachsam» or «Voll» above.")));
 }
 
-// ---- feedback to the developer (anonymous) ----
-function fbDialog() {
-  let ov = $("#fb-ov"); if (ov) ov.remove();
-  ov = el("div"); ov.id = "fb-ov"; ov.style.cssText = "position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:14px";
-  const c = el("div", "card"); c.style.cssText = "max-width:460px;width:100%;max-height:92vh;overflow:auto"; ov.appendChild(c); document.body.appendChild(ov);
-  c.append(el("h3", "", "💬 " + t("Feedback to the developer")), el("div", "mut", t("Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one.")));
-  const kind = el("select"); [["idea", "💡 Idea"], ["bug", "🐞 Error"], ["praise", "⭐ Praise"], ["other", "💬 Other"]].forEach(([v, l]) => { const o = el("option", "", t(l)); o.value = v; kind.appendChild(o); });
-  kind.style.cssText = "width:100%;margin:10px 0 8px";
-  const tx = el("textarea"); tx.rows = 6; tx.maxLength = 3000; tx.placeholder = t("Your message …");
-  tx.style.cssText = "width:100%;box-sizing:border-box;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit";
-  const ct = el("input"); ct.type = "text"; ct.maxLength = 120; ct.placeholder = t("Contact for an answer (optional)"); ct.style.cssText = "width:100%;margin-top:8px";
-  const dl = el("label", "row"); const dg = el("input"); dg.type = "checkbox"; dg.checked = true; dl.style.cssText = "justify-content:flex-start;gap:8px;margin-top:8px";
-  dl.append(dg, el("span", "mut", t("Add technical details (version, device, last important events - no pictures, no passwords)")));
-  const st = el("div", "err"), bt = el("div", "btns"), send = el("button", "", t("Send")), cancel = el("button", "sec", t("Cancel"));
-  send.type = cancel.type = "button"; cancel.onclick = () => ov.remove();
-  send.onclick = async () => { send.disabled = true; const r = await post("/api/feedback", {kind: kind.value, text: tx.value, contact: ct.value, diag: dg.checked, lang: LANG});
-    send.disabled = false; if (!r.ok) { st.textContent = "⚠ " + (r.error || "error"); return; } ov.remove(); toast("✓ " + t("Thank you! The message is on its way.")); };
-  bt.append(cancel, send); c.append(kind, tx, ct, dl, st, bt); tx.focus();
-}
+// ---- feedback to the developer: the one dialog of all pages (/fbx/ui.js, 584) ----
+function fbDialog() { if (window.mwFeedback) window.mwFeedback(); }
 // ---- quick switches below the joystick: thermal overlay, marks, lights, tracking, patrol, recording, photo ----
 const QS = [
   {id: "therm", ic: "🌡", lb: "Thermal", tip: "Thermal picture over the live picture", on: (c, s) => c.thermal_on, ok: (c, s) => !!c.thermal_source,
@@ -50354,7 +50433,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <section id="tips" data-icon="🧭" class="tips"><h2>Tipps &amp; Tricks</h2>
 <ul>
 <li>🔍 <b>Einstellung suchen:</b> im Einstellungsbereich oben ins Suchfeld tippen (z. B. «Passwort», «Sirene», «WLAN») – alles andere verschwindet, die Treffer sind blau umrandet. ✕ oder Esc zeigt wieder alles.</li>
-<li>💬 <b>Feedback an den Entwickler:</b> System → «Feedback an den Entwickler» (im Fenster: Einrichtung). Ideen, Fehler, Lob – anonym, ohne Absender. Ohne Internet wartet die Nachricht und geht später weg.</li>
+<li>💬 <b>Rückmeldung an den Entwickler:</b> das 💬 oben auf jeder Seite (auch im Fenster und im 3D-Simulator, dort unter «Mehr: Aufstellen …») oder Mehr → «Rückmeldung an den Entwickler». Art wählen (Fehler / Wunsch / Lob / Frage), auf Wunsch 1–5 Sterne «Wie zufrieden?» und «Bildschirmfoto mitschicken» (im Browser das aktuelle Live-Bild, im Fenster das Fenster, im Simulator sein Bild – Gesichter verpixelt). Version und Seite gehen immer mit. Anonym, ohne Absender. Ohne Internet wartet die Nachricht und geht später weg; der Dialog zeigt, wie viele noch warten («Jetzt senden»).</li><li>ℹ️ <b>Über MoveEye:</b> die Versionsnummer neben dem Logo antippen (Web und Fenster) oder Mehr → «Über MoveEye»: die Geschichte des Projekts, der Entwickler, eine Zeitleiste und ein paar Zahlen.</li>
 <li>🎞 <b>Markierungen in Aufnahmen:</b> Aufnahme → «Markierungen in Aufnahmen und Alarmbildern»: dünne Eckmarken (Standard, das Gesicht bleibt frei), keine, oder rote Rahmen wie im Live-Bild.</li>
 <li>⚡ <b>Schnellschalter neben dem Stick</b> (grün = an): 🌡 Wärmebild über das Live-Bild, 🏷 Objekte markieren, 💡 weisses Licht, 🔴 IR-Licht, 🎧 Mithören, ⚡ je Relais (ein / automatisch), 🎯 Person folgen, 🔄 Patrouille, ⏺ jetzt aufnehmen (max. 10 min, rot während der Aufnahme, nochmals tippen = stopp), 📷 Foto in die Aufnahmen. Grau = nicht angeschlossen.</li>
 <li>🕹 <b>Steuer-Stick im Vollbild</b> (Handy, Tablet, PC): das Bild füllt den ganzen Bildschirm, der Stick liegt durchsichtig unten rechts darüber. Nach 3 s ohne Berührung wird er blass, beim Berühren wieder deutlich. Daneben: ◎ Mitte, 🎧 Mithören; ⇆ oben neben ✕ legt den Stick auf die andere Seite.</li>
@@ -50568,7 +50647,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <section id="tips" data-icon="🧭" class="tips"><h2>Tips &amp; tricks</h2>
 <ul>
 <li>🔍 <b>Find a setting:</b> type into the search box at the top of the settings (e.g. «password», «siren», «Wi-Fi») – everything else disappears, matches get a blue frame. ✕ or Esc shows everything again.</li>
-<li>💬 <b>Feedback to the developer:</b> System → «Feedback to the developer» (window: Setup). Ideas, errors, praise – anonymous, no sender. Without internet the message waits and is sent later.</li>
+<li>💬 <b>Feedback to the developer:</b> the 💬 at the top of every page (also in the window and in the 3D simulator, there under «Mehr: Aufstellen …») or More → «Feedback to the developer». Choose the kind (error / wish / praise / question), optionally 1–5 stars «How happy are you?» and «Send a screenshot» (in the browser the current live picture, in the window the window, in the simulator its picture – faces pixelated). Version and page always go along. Anonymous, no sender. Without internet the message waits and is sent later; the dialog shows how many are waiting («Send now»).</li><li>ℹ️ <b>About MoveEye:</b> tap the version number next to the logo (web and window) or More → «About MoveEye»: the story of the project, the developer, a timeline and a few numbers.</li>
 <li>🎞 <b>Markings in recordings:</b> Recording → «Markings in recordings and alarm pictures»: thin corner marks (default, the face stays free), none, or red boxes like the live picture.</li>
 <li>⚡ <b>Quick switches next to the stick</b> (green = on): 🌡 thermal picture over the live picture, 🏷 mark objects, 💡 white light, 🔴 IR light, 🎧 listen, ⚡ per relay (on / automatic), 🎯 follow person, 🔄 patrol, ⏺ record now (max. 10 min, red while recording, tap again = stop), 📷 photo into the recordings. Grey = not connected.</li>
 <li>🕹 <b>Joystick in full screen</b> (phone, tablet, PC): the picture fills the whole screen, the stick floats see-through at the bottom right. After 3 s untouched it becomes pale, on touch clearly visible again. Next to it: ◎ centre, 🎧 listen; ⇆ at the top next to ✕ puts the stick on the other side.</li>
@@ -52654,6 +52733,7 @@ class WebStream:
         timeline_routes(app, reply, body, request, Response)    # 2.98.14: Verlauf → Zeitleiste + weekly report (523)
         alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
         sx_routes(app, watch, reply, body)                 # night view / screen reader script, «holiday over», error pages (578)
+        fbx_routes(app, watch, reply, body)                # 2.98.33: feedback from every page, «About MoveEye» (584)
         appkey_routes(app, reply, body)                    # app keys, security check in Settings → Security (573)
         place_routes(app, watch, reply, body)              # 2.98.30: «Platz einrichten» /place, field of view per camera (537)
 
@@ -53033,7 +53113,8 @@ class WebStream:
         @app.route("/api/feedback", methods=["POST"])
         def api_feedback():
             d = body(); lang = norm_lang(d.get("lang"))
-            ok, err = feedback_send(d.get("kind"), d.get("text"), str(d.get("contact") or "").strip(), bool(d.get("diag")))
+            ok, err = feedback_send(d.get("kind"), d.get("text"), str(d.get("contact") or "").strip(), bool(d.get("diag")), d.get("stars"),
+                                    d.get("page"), fbx_web_shot(False) if d.get("shot") else None, "web")      # 2.98.33: stars, page, picture (584)
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
 
         @app.route("/api/quick", methods=["POST"])
@@ -54581,7 +54662,7 @@ DE = {
     "QR code for the phone": "QR-Code fürs Handy", "Markings in recordings and alarm pictures": "Markierungen in Aufnahmen und Alarmbildern",
     "thin corner marks (face stays free)": "dünne Eckmarken (Gesicht bleibt frei)", "none (clean picture)": "keine (sauberes Bild)",
     "like the live picture (red boxes)": "wie im Live-Bild (rote Rahmen)", "please write a few words": "bitte ein paar Worte schreiben",
-    "at most 5 messages per hour": "höchstens 5 Nachrichten pro Stunde", "Feedback to the developer": "Feedback an den Entwickler",
+    "at most 5 messages per hour": "höchstens 5 Nachrichten pro Stunde", "Feedback to the developer": "Rückmeldung an den Entwickler",
     "Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one.": "Ideen, Fehler, Lob – alles hilft. Die Nachricht geht anonym weg: kein Name, keine Adresse, ausser du schreibst sie dazu.",
     "Idea": "Idee", "Error": "Fehler", "Praise": "Lob", "Other": "Sonstiges", "Send": "Senden", "Cancel": "Abbrechen",
     "Add technical details (version, device, last important events - no pictures, no passwords)": "Technische Angaben mitsenden (Version, Gerät, letzte wichtige Ereignisse – keine Bilder, keine Passwörter)", "Thank you! The message is on its way.": "Danke! Die Nachricht ist unterwegs.", "need 2+ waypoints": "mindestens 2 Wegpunkte nötig", "Person": "Person", "SMS (LTE stick)": "SMS (LTE-Stick)", "Send test SMS": "Test-SMS senden", "SMS sent": "SMS gesendet",
@@ -56141,7 +56222,8 @@ class App:
             small = self._lay[0]
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
-                tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
+                vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
+                vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
             Tip(nm, f"{tr('Build')} 2.98.32 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
@@ -56168,6 +56250,7 @@ class App:
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
             self._ibtn(ctl, "◐", self.toggle_theme, tk_theme_tip(), on=bool(CFG.get("tk_night"))).pack(side="right", padx=(0, 6))   # Hell → Dunkel → Rotlicht (578)
             self._ibtn(ctl, "✉", self._messages_win, tr("Message list")).pack(side="right", padx=(0, 6))     # 2.98.13
+            self._ibtn(ctl, "💬", self._feedback, tr("Feedback to the developer")).pack(side="right", padx=(0, 6))   # 2.98.33 (584)
             self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
             self.b_fs.pack(side="right", padx=(0, 6))
@@ -58599,27 +58682,7 @@ class App:
                 pts += [w - (len(hist) - 1 - i) * (w / 59.0), h - 2 - (h - 4) * v / 100.0]
             c.create_line(*pts, fill=C["grn"] if cpu < 60 else (C["yel"] if cpu < 85 else C["red"]), width=2)
 
-    def _feedback(self):
-        from tkinter import messagebox
-        w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Feedback to the developer")); w.configure(bg=C["bg"])
-        ttk.Label(w, text=tr("Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one."),
-                  style="Mut.TLabel", wraplength=420, justify="left").pack(padx=14, pady=(12, 6), anchor="w")
-        kinds = [("idea", tr("Idea")), ("bug", tr("Error")), ("praise", tr("Praise")), ("other", tr("Other"))]
-        cb = ttk.Combobox(w, state="readonly", values=[k[1] for k in kinds]); cb.current(0); cb.pack(fill="x", padx=14)
-        txt = tk.Text(w, height=8, width=52, bg=C["field"] if "field" in C else C["panel"], fg=C["txt"], insertbackground=C["txt"], relief="flat")
-        txt.pack(fill="both", expand=True, padx=14, pady=8)
-        diag = tk.BooleanVar(value=True)
-        ttk.Checkbutton(w, text=tr("Add technical details (version, device, last important events - no pictures, no passwords)"), variable=diag).pack(anchor="w", padx=14)
-        bf = ttk.Frame(w); bf.pack(fill="x", padx=14, pady=10)
-
-        def send():
-            ok, err = feedback_send(kinds[cb.current()][0], txt.get("1.0", "end"), "", diag.get())
-            if ok:
-                messagebox.showinfo("MoveEye", tr("Thank you! The message is on its way."), parent=w); w.destroy()
-            else:
-                messagebox.showerror("MoveEye", tr_err(err), parent=w)
-        ttk.Button(bf, text=tr("Send"), command=send).pack(side="right")
-        ttk.Button(bf, text=tr("Cancel"), command=w.destroy).pack(side="right", padx=(0, 6))
+    # _feedback (feedback to the developer) and _about_win («About MoveEye»): part 584
 
     def _qr_window(self, first):
         """QR codes on the Pi screen: scan with the phone camera - the setup goes on there (own Wi-Fi of the Pi: first its code)."""
@@ -58699,7 +58762,7 @@ def _tk_history_bar(self, parent):
 def _tk_more_bar(self, parent):
     return self._tk_bar(parent, [("? " + tr("Manual"), self._open_help), ("🎲 " + tr("Game corner"), lambda: self._open_page("/party")),
                                  ("🛠 " + tr("Tools"), lambda: self._open_page("/tools")), ("💬 " + tr("Feedback to the developer"), self._feedback),
-                                 ("🌐 " + tr("Overview"), lambda: self._open_page("/more"))])
+                                 ("🌐 " + tr("Overview"), lambda: self._open_page("/more")), ("ℹ " + tr("About MoveEye"), self._about_win)])
 
 
 def _tk_sim_head(self, inner):
@@ -62734,6 +62797,510 @@ def kopf_selftest():
 
 
 SELFTEST_EXTRA.append(("Automatic head movement (180 / 360° servos, smart round, one mover)", kopf_selftest))
+# ----------------------------------------------------------------------------
+# 2.98.33 (Wunsch Daniel):
+#   A) Rückmeldung an den Entwickler von überall: ein dezentes 💬 im Kopf jeder Webseite (ein Dialog für alle Seiten, hier
+#      im Skript /fbx/ui.js), im Fenster (💬 im Kopf, Reiter Mehr, Einstellungen) und im 3D-Simulator (Knopf → mw_cmd
+#      «feedback», 350). Art Fehler / Wunsch / Lob / Frage, «Wie zufrieden?» 1–5 Sterne, Version und Seite immer dabei,
+#      «Bildschirmfoto mitschicken» (Web: das aktuelle Live-Bild – ein Bild der Seite selbst kann der Browser nicht machen;
+#      Fenster: das Fenster, sonst das Live-Bild; Simulator: sein Bild /view.jpg), Gesichter verpixelt (375), höchstens
+#      FB_SHOT_MAX. Gesendet wird wie bisher von feedback_send / feedback_flush (370): Text als ntfy-Nachricht, das Bild als
+#      zweite Nachricht mit Anhang (PUT, wie die Alarm-Pushes mit Bild).
+#   B) «Über MoveEye»: Antippen der Versionsnummer neben dem Logo (Web und Fenster; ein einzelnes Tippen – 7× schnell
+#      bleibt für die kleine Überraschung) und «Über MoveEye» unten in Mehr. Geschichte, Entwickler «Daniel alias Elektro»,
+#      Zeitleiste, Zahlen (zur Laufzeit gezählt), aufklappbar «Für Technik-Interessierte». Texte: 622.
+# ----------------------------------------------------------------------------
+INFO_PARTS = 145                       # number of parts in quelle/ (written by werkzeuge/bauen.py --neue-version)
+INFO_START = "2026-10-16"              # the first lines (a small webcam program for the Pi 5)
+FBX = {"shot": None, "shot_t": 0.0, "lines": 0}
+
+# the milestones: (date or "", version, text) - dates from the chats and the git history, versions from the change list
+INFO_TIMELINE = [
+    ("16.10.2026", "", "The first lines: a small program reads the USB webcam of the Raspberry Pi 5 and marks movement in red - Motion Watch begins"),
+    ("18.10.2026", "1.2", "AI marks persons and objects; web page with camera control; desktop window"),
+    ("", "1.5", "Thermal camera over the picture"),
+    ("", "1.7", "Camping: own Wi-Fi, armed / disarmed with countdown"),
+    ("23.10.2026", "2.0", "Animal diary, night report, remote access"),
+    ("", "2.28", "Five languages (with Romansh)"),
+    ("", "2.70", "Simulator inside the program"),
+    ("26.10.2026", "2.90", "3D simulator with six scenes"),
+    ("27.10.2026", "2.95.29", "Game corner for the campfire"),
+    ("28.10.2026", "2.95.63", "Program in parts, test bench"),
+    ("28.10.2026", "2.95.99", "Training package for an own AI model"),
+    ("28.10.2026", "2.96.0", "New name: MoveEye"),
+    ("28.10.2026", "2.98.0", "Six tabs"),
+    ("29.10.2026", "2.98.20", "AI training and realism"),
+    ("29.10.2026", "2.98.30", "Set up the place"),
+    ("29.10.2026", "2.98.32", "Controller view for phone and tablet"),
+]
+INFO_STORY = [
+    "MoveEye was born while camping, from a simple question: who keeps an eye on the tent while we sleep or are away? Instead of an expensive alarm system Daniel wanted something of his own - a small camera on a pan / tilt head that recognises wild animals and persons and quietly reports to the phone.",
+    "The developer is Daniel alias Elektro from Switzerland - Elektro is his pseudonym. Daniel is not a programmer: MoveEye was honestly built together with Claude, an AI by Anthropic. Daniel brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.",
+    "Do you like MoveEye, or does something not work? With 💬 your message reaches Daniel directly - anonymously.",
+]
+INFO_TECH = [
+    "One Python program (OpenCV, Flask, Tkinter) for the Raspberry Pi 5 - edited in {parts} parts, put together into one file with {lines} lines.",
+    "Detection: movement (background model), walking pattern, AI model (SSD MobileNet, optionally an own YOLO model trained in the simulator), thermal camera (Waveshare Thermal-90).",
+    "The 3D simulator (Godot 4, version {sim}) rebuilds the place - persons, animals, weather, night - so MoveEye can practise without real nights. The test bench measures every version with it.",
+    "Updates come signed over GitHub; push messages over ntfy; remote access over Tailscale.",
+]
+
+
+def info_numbers():
+    """counted at run time: versions in the change list (head of this file), lines of this file, parts (bauen.py), languages"""
+    if not FBX["lines"]:
+        try:
+            with open(os.path.abspath(__file__), "rb") as f:
+                FBX["lines"] = f.read().count(b"\n")
+        except (OSError, NameError):
+            FBX["lines"] = 0
+    vers = set(re.findall(r"^\s*\*\s*(\d+\.\d+\.\d+):", globals().get("__doc__") or "", re.M))
+    try:
+        days = (datetime.now().date() - datetime.strptime(INFO_START, "%Y-%m-%d").date()).days
+    except ValueError:
+        days = 0
+    sim = ""
+    try:
+        sim = str(SIM3D.get("version") or "")
+    except NameError:
+        pass
+    return {"versions": len(vers), "lines": FBX["lines"], "parts": INFO_PARTS, "languages": len(LANGS), "sim": sim, "days": days,
+            "version": APP_VERSION}
+
+
+def _fbx_n(v):
+    return f"{v:,}".replace(",", "'") if isinstance(v, int) else str(v)
+
+
+def about_info(lang=None):
+    """everything for the window «About MoveEye» in one language (web: /api/about, window: _about_win)"""
+    L = cur_lang(lang); N = info_numbers()
+    fmt = {k: _fbx_n(v) for k, v in N.items()}
+    return {"ok": True, "lang": L, "title": tr("About MoveEye", L), "version": APP_VERSION,
+            "dev": tr("Daniel alias Elektro", L), "dev_where": tr("Switzerland", L),
+            "story": [tr(x, L) for x in INFO_STORY],
+            "tech_title": tr("For the technically interested", L),
+            "tech": [trf(x, L, **fmt) for x in INFO_TECH],
+            "numbers": [(tr("Versions in the change list", L), fmt["versions"]), (tr("Lines of code", L), fmt["lines"]),
+                        (tr("Parts", L), fmt["parts"]), (tr("Languages", L), fmt["languages"] + " (DE · FR · IT · RM · EN)"),
+                        (tr("3D simulator", L), fmt["sim"] or "–"), (tr("Days since the first line", L), fmt["days"])],
+            "timeline_title": tr("Timeline", L),
+            "timeline": [{"d": d, "v": v, "t": tr(t, L)} for d, v, t in INFO_TIMELINE],
+            "egg": tr("Psst … there is a hidden easter egg.", L),
+            "fb": tr("Feedback to the developer", L)}
+
+
+# ---- the screenshot that goes with a message --------------------------------------------------------------------------
+def _fbx_jpg(img, maxw=1024):
+    """small JPEG (faces pixelated, like everything that is shared): at most FB_SHOT_MAX"""
+    if img is None:
+        return None
+    img = img.copy()
+    try:
+        faces_blur_image(img)                            # (in place)
+    except Exception:
+        pass
+    h, w = img.shape[:2]
+    if w > maxw:
+        img = cv2.resize(img, (maxw, max(1, int(h * maxw / w))), interpolation=cv2.INTER_AREA)
+    for q in (75, 60, 45, 35):
+        ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, q])
+        if ok and len(buf) <= FB_SHOT_MAX:
+            return buf.tobytes()
+        if ok and q == 45:
+            img = cv2.resize(img, (img.shape[1] // 2, img.shape[0] // 2), interpolation=cv2.INTER_AREA)
+    return None
+
+
+def feedback_shot(src="live", root=None):
+    """JPEG bytes for «Send a screenshot»: live = the current live picture, sim = the picture of the 3D simulator,
+    window = the window of MoveEye (when the screen can be read, else the live picture)"""
+    img = None
+    if src == "window" and root is not None:
+        try:
+            from PIL import ImageGrab
+            root.update_idletasks()
+            x, y, w, h = root.winfo_rootx(), root.winfo_rooty(), root.winfo_width(), root.winfo_height()
+            im = ImageGrab.grab(bbox=(x, y, x + w, y + h))
+            img = cv2.cvtColor(np.array(im.convert("RGB")), cv2.COLOR_RGB2BGR)
+        except Exception:
+            img = None
+    if src == "sim" and img is None:
+        try:
+            data, _ = _sim_get("/view.jpg", timeout=4.0)
+            img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
+        except Exception:
+            img = None
+    if img is None:
+        w_ = WATCH_REF.get("w")
+        fo = getattr(w_, "frame_out", None) if w_ is not None else None
+        img = fo.copy() if fo is not None else None
+    return _fbx_jpg(img)
+
+
+def fbx_web_shot(fresh=True):
+    """the live picture for the web dialog: the preview and the message use the same picture (2 minutes)"""
+    if fresh or not FBX["shot"] or time.time() - FBX["shot_t"] > 120:
+        FBX["shot"] = feedback_shot("live"); FBX["shot_t"] = time.time()
+    return FBX["shot"]
+
+
+# ---- the web page: one script for every page (dialog, info window, 💬 in the header, version number) -----------------
+_render_page_before_fbx = render_page
+
+
+# wraps: render_page
+def render_page(page, active):
+    """+ the 💬 and «About MoveEye» on every page (not on guest pages)"""
+    out = _render_page_before_fbx(page, active)
+    if active in ("guest", "info"):
+        return out
+    i = out.rfind("</body>")
+    tag = '<script src="/fbx/ui.js?v=' + APP_VERSION + '" data-page="' + _fbx_esc(str(active)) + '" defer></script>'
+    return out[:i] + tag + out[i:] if i >= 0 else out + tag
+
+
+def _fbx_esc(s):
+    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def fbx_tx():
+    """the texts of the script in de / fr / it / rm (English = the key)"""
+    keys = sorted(_HX_INFO.keys())
+    out = {"de": {k: DE.get(k, k) for k in keys}}
+    for L in ("fr", "it", "rm"):
+        out[L] = {k: TRX[L].get(k) or (DE.get(k, k) if L == "rm" else k) for k in keys}
+    return out
+
+
+def fbx_ui_js():
+    return FBX_JS.replace("/*FX*/{}", json.dumps(fbx_tx(), ensure_ascii=False)).replace("__VER__", APP_VERSION).replace("</", "<\\/")
+
+
+FBX_JS = r"""
+// ---- 2.98.33: feedback from every page (one dialog) and «About MoveEye» (584) ----
+(function fbx() {
+  if (window._fbx) return; window._fbx = true;
+  const FX = /*FX*/{};
+  const me = document.currentScript, PAGE = (me && me.dataset.page) || location.pathname;
+  const L = () => { try { return (typeof LANG !== "undefined" && LANG) || localStorage.getItem("mw-lang") || "de"; } catch (e) { return "de"; } };
+  const T = k => ((FX[L()] || {})[k]) || k;
+  const E = (tag, css, txt) => { const e = document.createElement(tag); if (css) e.style.cssText = css; if (txt != null) e.textContent = txt; return e; };
+  const POST = async (u, d) => { try { const r = await fetch(u, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(d)}); return await r.json(); } catch (e) { return {ok: false, error: String(e)}; } };
+  const BOX = "background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-radius:16px;max-width:520px;width:100%;max-height:92vh;overflow:auto;padding:16px;box-sizing:border-box";
+  const FIELD = "width:100%;box-sizing:border-box;background:var(--field,#0c121a);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-radius:10px;padding:10px;font:inherit";
+  const MUT = "color:var(--mut,#8b9bb0);font-size:13px;line-height:1.45";
+  function overlay(id) {
+    let ov = document.getElementById(id); if (ov) ov.remove();
+    ov = E("div", "position:fixed;inset:0;z-index:320;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:12px");
+    ov.id = id; ov.addEventListener("click", e => { if (e.target === ov) ov.remove(); });
+    const b = E("div", BOX); b.setAttribute("role", "dialog"); b.setAttribute("aria-modal", "true"); ov.appendChild(b); document.body.appendChild(ov);
+    const esc = e => { if (e.key === "Escape") { ov.remove(); removeEventListener("keydown", esc); } }; addEventListener("keydown", esc);
+    return [ov, b];
+  }
+  function seg(items, cur, on) {                       // a row of buttons, one is chosen
+    const r = E("div", "display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px"), bs = [];
+    items.forEach(([v, lb]) => { const b = E("button", "flex:1 1 auto;min-width:0;padding:7px 8px;font-size:13px", lb); b.type = "button"; b.className = "sec";
+      b.onclick = () => { cur = v; bs.forEach(x => { const sel = x._v === cur; x.classList.toggle("on", sel); x.style.borderColor = sel ? "var(--acc,#f59a4a)" : ""; x.setAttribute("aria-pressed", sel); }); on(v); };
+      b._v = v; bs.push(b); r.appendChild(b); });
+    bs.forEach(x => { const sel = x._v === cur; x.style.borderColor = sel ? "var(--acc,#f59a4a)" : ""; x.setAttribute("aria-pressed", sel); });
+    return r;
+  }
+  // ---- A) the one feedback dialog ----
+  window.mwFeedback = function (opt) {
+    opt = opt || {};
+    const [ov, c] = overlay("fbx-ov");
+    let kind = opt.kind || "idea", stars = 0;
+    c.append(E("h3", "margin:0 0 4px", "💬 " + T("Feedback to the developer")),
+             E("div", MUT, T("Errors, wishes, praise, questions - everything helps. The message is sent anonymously: no name, no address, unless you write one.")));
+    c.appendChild(seg([["bug", "🐞 " + T("Error")], ["idea", "💡 " + T("Wish")], ["praise", "⭐ " + T("Praise")], ["question", "❓ " + T("Question")]], kind, v => kind = v));
+    const sr = E("div", "display:flex;align-items:center;gap:4px;margin:8px 0;flex-wrap:wrap"); sr.appendChild(E("span", MUT + ";margin-right:6px", T("How happy are you?") + " (" + T("optional") + ")"));
+    const sb = [], sw = E("span", "display:inline-flex;white-space:nowrap"); sr.appendChild(sw);
+    for (let i = 1; i <= 5; i++) { const b = E("button", "background:none;border:0;padding:2px 3px;font-size:24px;line-height:1;cursor:pointer;color:var(--yel,#f5c542);min-height:0", "☆"); b.type = "button";
+      b.setAttribute("aria-label", i + " / 5"); b.onclick = () => { stars = stars === i ? 0 : i; sb.forEach((x, j) => x.textContent = j < stars ? "★" : "☆"); }; sb.push(b); sw.appendChild(b); }
+    c.appendChild(sr);
+    const tx = E("textarea", FIELD); tx.rows = 5; tx.maxLength = 3000; tx.placeholder = T("Your message …");
+    const ct = E("input", FIELD + ";margin-top:8px;padding:8px 10px"); ct.type = "text"; ct.maxLength = 120; ct.placeholder = T("Contact for an answer (optional)");
+    const chk = (label, on) => { const l = E("label", "display:flex;gap:8px;align-items:flex-start;margin-top:10px;cursor:pointer"); const i = E("input", "margin-top:3px"); i.type = "checkbox"; i.checked = on;
+      l.append(i, E("span", MUT, label)); return [l, i]; };
+    const [sl, si] = chk(T("Send a screenshot") + " – " + T("the current live picture (faces pixelated). A picture of the page itself is not possible in the browser."), !!opt.shot);
+    const pv = E("img", "display:none;max-width:100%;max-height:160px;border-radius:8px;margin-top:6px;border:1px solid var(--line,#1f2b3a)"); pv.alt = "";
+    const pvShow = () => { if (si.checked) { pv.src = "/api/fbx/shot.jpg?t=" + Date.now(); pv.style.display = "block"; pv.onerror = () => { pv.style.display = "none"; }; } else pv.style.display = "none"; };
+    si.onchange = pvShow;
+    const [dl, di] = chk(T("Add technical details (version, device, last important events - no pictures, no passwords)"), true);
+    const info = E("div", MUT + ";font-size:12px;margin-top:8px", T("Always included") + ": MoveEye __VER__ · " + T("page") + " «" + PAGE + "»");
+    const st = E("div", "color:var(--red,#ff6b6b);font-size:13px;margin-top:6px"), bt = E("div", "display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap");
+    const cancel = E("button", "", T("Cancel")), send = E("button", "", T("Send")); cancel.type = send.type = "button"; cancel.className = "sec";
+    cancel.onclick = () => ov.remove();
+    send.onclick = async () => { send.disabled = true; st.textContent = "";
+      const r = await POST("/api/feedback", {kind: kind, stars: stars, text: tx.value, contact: ct.value, diag: di.checked, shot: si.checked, page: PAGE, lang: L()});
+      send.disabled = false; if (!r || !r.ok) { st.textContent = "⚠ " + ((r && r.error) || "error"); return; }
+      ov.remove(); const m = "✓ " + T("Thank you! The message is on its way.");
+      if (typeof toast === "function") toast(m); else { const d = E("div", "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:330;background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--grn,#3ecf8e);border-radius:12px;padding:10px 16px", m); document.body.appendChild(d); setTimeout(() => d.remove(), 3500); } };
+    const wq = E("div", MUT + ";font-size:12px;margin-top:8px;display:none");
+    bt.append(cancel, send); c.append(tx, ct, sl, pv, dl, info, wq, st, bt); pvShow(); tx.focus();
+    fbWaiting(wq);
+  };
+  // 2.98.33: messages that could not be sent yet - how many, the last refusal, «Send now»
+  async function fbWaiting(box, j) {
+    if (!j) { try { j = await (await fetch("/api/fbx/status", {cache: "no-store"})).json(); } catch (e) { return; } }
+    box.textContent = ""; if (!j || !j.waiting) { box.style.display = "none"; return; }
+    box.style.display = "block";
+    box.appendChild(E("span", "", "⏳ " + T("{n} feedbacks are still waiting to be sent").replace("{n}", j.waiting) + " "));
+    const now = E("button", "padding:3px 9px;font-size:12px;min-height:0;margin-left:4px", T("Send now")); now.type = "button"; now.className = "sec";
+    now.onclick = async () => { now.disabled = true; now.textContent = "…"; const r = await POST("/api/fbx/flush", {}); fbWaiting(box, r); };
+    box.appendChild(now);
+    (j.errors || []).forEach(e => box.appendChild(E("div", "margin-top:3px", T("Last error") + " · " + e.host + ": " + e.why)));
+  }
+  // 2.98.33: «Send a test feedback» (developer): the result per server
+  window.mwFeedbackTest = async function (out) {
+    if (out) out.textContent = "…";
+    const r = await POST("/api/fbx/test", {lang: L()});
+    const txt = r && r.servers && r.servers.length ? r.servers.map(x => (x.ok ? "✓ " : "✗ ") + x.host + (x.ok ? "" : " – " + x.why)).join(" · ") : "⚠ " + ((r && r.error) || "error");
+    if (out) out.textContent = txt; else alert(txt);
+    return r;
+  };
+  // ---- B) «About MoveEye» ----
+  window.mwAbout = async function () {
+    const [ov, c] = overlay("fbx-about");
+    c.appendChild(E("div", MUT, "…"));
+    let j = null; try { j = await (await fetch("/api/about?lang=" + L(), {cache: "no-store"})).json(); } catch (e) {}
+    c.textContent = ""; if (!j || !j.ok) { c.appendChild(E("div", MUT, "⚠")); return; }
+    const hd = E("div", "display:flex;align-items:center;gap:12px;margin-bottom:8px");
+    const ic = E("img", "width:52px;height:52px;border-radius:12px;flex:none"); ic.src = "/icon-192.png?i=" + (window.MW_ICON || ""); ic.alt = "";
+    const ht = E("div"); ht.append(E("div", "font-size:19px;font-weight:700", j.title), E("div", MUT, "MoveEye " + j.version + " · " + j.dev + " · " + j.dev_where));
+    hd.append(ic, ht); c.appendChild(hd);
+    j.story.forEach(p => c.appendChild(E("p", "margin:8px 0;line-height:1.5;font-size:14.5px", p)));
+    const det = E("details", "margin:12px 0 4px;border:1px solid var(--line,#1f2b3a);border-radius:12px;padding:8px 12px"); det.id = "fbx-tech";
+    const sm = E("summary", "cursor:pointer;font-weight:600", "🔧 " + j.tech_title); det.appendChild(sm);
+    const ul = E("ul", "margin:8px 0;padding-left:18px;line-height:1.5;font-size:13.5px"); j.tech.forEach(x => ul.appendChild(E("li", "", x))); det.appendChild(ul);
+    const g = E("div", "display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;margin:8px 0");
+    j.numbers.forEach(([k, v]) => { const b = E("div", "border:1px solid var(--line,#1f2b3a);border-radius:10px;padding:6px 8px"); b.append(E("div", "font-size:17px;font-weight:700", v), E("div", MUT + ";font-size:12px", k)); g.appendChild(b); });
+    det.appendChild(g);
+    det.appendChild(E("div", "font-weight:600;margin:10px 0 4px", "🗓 " + j.timeline_title));
+    const tl = E("div", "border-left:2px solid var(--acc,#f59a4a);margin-left:6px;padding-left:12px");
+    j.timeline.forEach(e => { const r = E("div", "margin:0 0 8px;font-size:13.5px;line-height:1.4");
+      r.append(E("div", MUT + ";font-size:12px", [e.d, e.v ? "v" + e.v : ""].filter(Boolean).join(" · ")), E("div", "", e.t)); tl.appendChild(r); });
+    det.appendChild(tl); c.appendChild(det);
+    c.appendChild(E("div", MUT + ";font-style:italic;margin:12px 0 4px;text-align:center", "🤫 " + j.egg));
+    const bt = E("div", "display:flex;gap:8px;justify-content:flex-end;margin-top:10px;flex-wrap:wrap");
+    const fb = E("button", "", "💬 " + j.fb), cl = E("button", "", T("Close")); fb.type = cl.type = "button"; fb.className = "sec";
+    fb.onclick = () => { ov.remove(); mwFeedback(); }; cl.onclick = () => ov.remove();
+    bt.append(fb, cl); c.appendChild(bt);
+  };
+  // ---- the discreet 💬 in the header ----
+  function addBtn() {
+    const hc = document.querySelector("header .hdr-ctl"); if (!hc || document.getElementById("fbx-b")) return;
+    const b = E("button", "font-size:15px"); b.type = "button"; b.id = "fbx-b"; b.className = "sec ic"; b.textContent = "💬";
+    b.title = T("Feedback to the developer"); b.setAttribute("aria-label", T("Feedback to the developer"));
+    b.onclick = () => mwFeedback(); hc.insertBefore(b, hc.firstChild);
+  }
+  // ---- the version number next to the logo: one tap = «About MoveEye» (7 quick taps stay the little surprise) ----
+  function verTap() {
+    const h1 = document.querySelector("header h1"); if (!h1) return;
+    const v = h1.querySelector(".ver"); if (!v) return;
+    v.style.cursor = "pointer"; v.title = T("About MoveEye"); v.setAttribute("role", "button"); v.tabIndex = 0;
+    let tm = 0, last = 0;
+    h1.addEventListener("click", e => { const now = Date.now(), quick = now - last < 900; last = now; clearTimeout(tm);
+      if (e.target.closest && e.target.closest(".ver") && !quick) tm = setTimeout(() => { if (Date.now() - last >= 600) mwAbout(); }, 650); });
+    v.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); mwAbout(); } });
+  }
+  const byHash = () => { if (location.hash === "#feedback") mwFeedback(); else if (location.hash === "#about") mwAbout(); };
+  const go = () => { addBtn(); verTap(); byHash(); };
+  addEventListener("hashchange", byHash);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
+})();
+"""
+
+
+def fbx_routes(app, watch, reply, body):
+    """the web addresses (called once by the web server, 550)"""
+    from flask import Response, request
+
+    @app.route("/fbx/ui.js")
+    def fbx_ui():
+        return Response(fbx_ui_js(), mimetype="application/javascript", headers={"Cache-Control": "no-cache"})
+
+    @app.route("/api/about")
+    def api_about():
+        return reply(about_info(norm_lang(request.args.get("lang") or CFG["lang"])))
+
+    @app.route("/api/fbx/status")
+    def api_fbx_status():
+        return reply(dict(feedback_status(), ok=True))
+
+    @app.route("/api/fbx/flush", methods=["POST"])
+    def api_fbx_flush():
+        """«Send now»: the waiting messages (to both servers)"""
+        t_ = threading.Thread(target=feedback_flush, daemon=True); t_.start(); t_.join(40)
+        return reply(dict(feedback_status(), ok=True))
+
+    @app.route("/api/fbx/test", methods=["POST"])
+    def api_fbx_test():
+        """«Send a test feedback» (developer): the result per server"""
+        lang = norm_lang(body().get("lang"))
+        ok, err, res = feedback_test()
+        return reply({"ok": ok, "error": tr(err, lang) if err else None, "servers": res})
+
+    @app.route("/api/fbx/shot.jpg")
+    def api_fbx_shot():
+        j = fbx_web_shot(True)
+        if not j:
+            return Response("no picture", 404)
+        return Response(j, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
+
+
+# ---- the window (Tkinter): the same dialog and the info window --------------------------------------------------------
+def _fbx_tk_feedback(self, kind="idea"):
+    from tkinter import messagebox
+    w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Feedback to the developer")); w.configure(bg=C["bg"])
+    ttk.Label(w, text=tr("Errors, wishes, praise, questions - everything helps. The message is sent anonymously: no name, no address, unless you write one."),
+              style="Mut.TLabel", wraplength=440, justify="left").pack(padx=14, pady=(12, 6), anchor="w")
+    kinds = [("bug", "🐞 " + tr("Error")), ("idea", "💡 " + tr("Wish")), ("praise", "⭐ " + tr("Praise")), ("question", "❓ " + tr("Question"))]
+    kv = tk.StringVar(value=kind)
+    kf = tk.Frame(w, bg=C["bg"]); kf.pack(fill="x", padx=14)
+    for k, lb in kinds:
+        ttk.Radiobutton(kf, text=lb, value=k, variable=kv).pack(side="left", padx=(0, 10))
+    sf = tk.Frame(w, bg=C["bg"]); sf.pack(fill="x", padx=14, pady=(8, 0))
+    ttk.Label(sf, text=tr("How happy are you?") + " (" + tr("optional") + ")", style="Mut.TLabel").pack(side="left", padx=(0, 6))
+    stars = {"n": 0}; sbs = []
+
+    def star(i):
+        stars["n"] = 0 if stars["n"] == i else i
+        for j, b in enumerate(sbs):
+            b.config(text="★" if j < stars["n"] else "☆")
+    for i in range(1, 6):
+        b = tk.Label(sf, text="☆", bg=C["bg"], fg=C.get("yel", "#f5c542"), font=("DejaVu Sans", 16), cursor="hand2")
+        b.bind("<Button-1>", lambda e, i=i: star(i)); b.pack(side="left"); sbs.append(b)
+    txt = tk.Text(w, height=7, width=54, bg=C.get("field", C["panel"]), fg=C["txt"], insertbackground=C["txt"], relief="flat")
+    txt.pack(fill="both", expand=True, padx=14, pady=8)
+    cf = tk.Frame(w, bg=C["bg"]); cf.pack(fill="x", padx=14)
+    ttk.Label(cf, text=tr("Contact for an answer (optional)"), style="Mut.TLabel").pack(side="left")
+    ct = ttk.Entry(cf); ct.pack(side="left", fill="x", expand=True, padx=(8, 0))
+    shot = tk.BooleanVar(value=False); diag = tk.BooleanVar(value=True)
+    ttk.Checkbutton(w, text=tr("Send a screenshot") + " (" + tr("the window, faces pixelated") + ")", variable=shot).pack(anchor="w", padx=14, pady=(8, 0))
+    ttk.Checkbutton(w, text=tr("Add technical details (version, device, last important events - no pictures, no passwords)"), variable=diag).pack(anchor="w", padx=14)
+    ttk.Label(w, text=tr("Always included") + f": MoveEye {APP_VERSION} · " + tr("page") + " «" + tr("Window") + "»", style="Mut.TLabel").pack(anchor="w", padx=14, pady=(6, 0))
+    st_ = feedback_status()
+    if st_["waiting"]:                                   # 2.98.33: messages still waiting, the last refusal, «Send now»
+        wf = tk.Frame(w, bg=C["bg"]); wf.pack(fill="x", padx=14, pady=(6, 0))
+        wl = ttk.Label(wf, text="⏳ " + tr("{n} feedbacks are still waiting to be sent").replace("{n}", str(st_["waiting"])) + "".join(
+            "\n" + tr("Last error") + " · " + e["host"] + ": " + e["why"] for e in st_["errors"]), style="Mut.TLabel", justify="left")
+        wl.pack(side="left")
+
+        def now_():
+            threading.Thread(target=lambda: (feedback_flush(), self.root.after(0, lambda: wl.winfo_exists() and wl.config(
+                text="⏳ " + tr("{n} feedbacks are still waiting to be sent").replace("{n}", str(feedback_status()["waiting"]))))), daemon=True).start()
+        ttk.Button(wf, text=tr("Send now"), command=now_).pack(side="right")
+    bf = ttk.Frame(w); bf.pack(fill="x", padx=14, pady=10)
+
+    def send():
+        img = None
+        if shot.get():
+            w.withdraw(); self.root.update(); time.sleep(0.15)       # the picture without this little window
+            try:
+                img = feedback_shot("window", self.root)
+            finally:
+                w.deiconify()
+        page = "Fenster/" + str(getattr(self, "tab", "") or "")
+        ok, err = feedback_send(kv.get(), txt.get("1.0", "end"), ct.get().strip(), diag.get(), stars["n"], page, img, "window")
+        if ok:
+            messagebox.showinfo("MoveEye", tr("Thank you! The message is on its way."), parent=w); w.destroy()
+        else:
+            messagebox.showerror("MoveEye", tr_err(err), parent=w)
+    ttk.Button(bf, text=tr("Send"), command=send).pack(side="right")
+    ttk.Button(bf, text=tr("Cancel"), command=w.destroy).pack(side="right", padx=(0, 6))
+    txt.focus_set()
+
+
+def _fbx_tk_about(self):
+    j = about_info()
+    w = tk.Toplevel(self.root); w.title("MoveEye – " + j["title"]); w.configure(bg=C["bg"])
+    head = tk.Frame(w, bg=C["bg"]); head.pack(fill="x", padx=16, pady=(14, 4))
+    try:
+        import base64
+        self._about_logo = tk.PhotoImage(data=base64.b64encode(app_icon_png(48)).decode())
+        tk.Label(head, image=self._about_logo, bg=C["bg"]).pack(side="left", padx=(0, 10))
+    except Exception:
+        pass
+    hf = tk.Frame(head, bg=C["bg"]); hf.pack(side="left", fill="x")
+    tk.Label(hf, text=j["title"], bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 14, "bold"), anchor="w").pack(anchor="w")
+    tk.Label(hf, text=f"MoveEye {j['version']} · {j['dev']} · {j['dev_where']}", bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w").pack(anchor="w")
+    for p in j["story"]:
+        tk.Label(w, text=p, bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 10), wraplength=520, justify="left", anchor="w").pack(fill="x", padx=16, pady=4)
+    tech = tk.Frame(w, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=12, pady=8)
+    shown = {"on": False}
+
+    def fold():
+        shown["on"] = not shown["on"]
+        tb.config(text=("▾ " if shown["on"] else "▸ ") + j["tech_title"])
+        if shown["on"]:
+            tech.pack(fill="x", padx=16, pady=(0, 6), after=tb)
+        else:
+            tech.pack_forget()
+    tb = self._fbtn(w, "▸ " + j["tech_title"], fold); tb.pack(anchor="w", padx=16, pady=(8, 4))
+    for x in j["tech"]:
+        tk.Label(tech, text="• " + x, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 9), wraplength=500, justify="left", anchor="w").pack(fill="x", pady=1)
+    nf = tk.Frame(tech, bg=C["panel"]); nf.pack(fill="x", pady=(6, 4))
+    for i, (k, v) in enumerate(j["numbers"]):
+        c_ = tk.Frame(nf, bg=C["panel"]); c_.grid(row=i // 3, column=i % 3, sticky="w", padx=(0, 16), pady=2)
+        tk.Label(c_, text=v, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11, "bold")).pack(anchor="w")
+        tk.Label(c_, text=k, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(anchor="w")
+    tk.Label(tech, text=j["timeline_title"], bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x", pady=(6, 2))
+    tl = tk.Text(tech, height=9, width=64, bg=C["panel"], fg=C["txt"], relief="flat", font=("DejaVu Sans", 9), wrap="word", highlightthickness=0)
+    tl.tag_configure("m", foreground=C["mut"])
+    for e in j["timeline"]:
+        tl.insert("end", " · ".join(x for x in (e["d"], ("v" + e["v"]) if e["v"] else "") if x) + "\n", "m")
+        tl.insert("end", e["t"] + "\n\n")
+    tl.config(state="disabled"); tl.pack(fill="both", expand=True)
+    tk.Label(w, text="🤫 " + j["egg"], bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9, "italic")).pack(pady=(8, 2))
+    bf = tk.Frame(w, bg=C["bg"]); bf.pack(fill="x", padx=16, pady=(4, 12))
+    self._fbtn(bf, tr("Close"), w.destroy, primary=True).pack(side="right")
+    self._fbtn(bf, "💬 " + j["fb"], lambda: (w.destroy(), self._feedback())).pack(side="right", padx=(0, 6))
+
+
+def _fbx_tk_ver_tap(self, _e=None):
+    """a single tap on the version number: «About MoveEye»; quick taps (the little surprise) open nothing"""
+    now = time.time()
+    last = getattr(self, "_ver_last", 0.0); self._ver_last = now
+    try:
+        self.root.after_cancel(self._ver_job)
+    except Exception:
+        pass
+    if now - last < 0.9:
+        return
+    self._ver_job = self.root.after(650, lambda: self._about_win() if time.time() - self._ver_last >= 0.6 else None)
+
+
+App._feedback = _fbx_tk_feedback
+App._about_win = _fbx_tk_about
+App._ver_tap = _fbx_tk_ver_tap
+
+
+def fbx_selftest():
+    j = about_info("de")
+    assert j["numbers"] and j["timeline"] and len(j["story"]) == 3, "about_info incomplete"
+    assert all("{" not in x for x in j["tech"]), "placeholder left in the technical text"
+    assert "ß" not in json.dumps(j, ensure_ascii=False), "German with ß"
+    out = render_page("<html><head></head><body><header><h1>MoveEye</h1></header></body></html>", "live")
+    assert "/fbx/ui.js" in out, "script not on the page"
+    assert "/fbx/ui.js" not in render_page("<html><head></head><body></body></html>", "guest"), "script on a guest page"
+    assert all(x in (HELP_X.get(L) or "") for L, x in (("fr", "À propos de MoveEye"), ("it", "Informazioni su MoveEye"), ("rm", "Davart MoveEye"))), "manual fr / it / rm"
+    assert "Über MoveEye" in HELP_PAGE, "manual de"
+    miss = [k for k in _HX_INFO if not all(_HX_INFO[k])]
+    assert not miss, f"texts without translation: {miss[:3]}"
+    node = shutil.which("node")
+    if node:
+        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as f:
+            f.write(fbx_ui_js()); fn = f.name
+        r = subprocess.run([node, "--check", fn], capture_output=True, text=True)
+        os.remove(fn)
+        assert r.returncode == 0, "fbx/ui.js: " + (r.stderr.strip().splitlines()[-1] if r.stderr else "error")
+    N = info_numbers()
+    return f"{N['versions']} versions, {N['lines']} lines, {N['parts']} parts" + ("" if node else " (JavaScript not checked)")
+
+
+SELFTEST_EXTRA.append(("Feedback from everywhere, «About MoveEye»", fbx_selftest))
 TRX['it'].update({
     '(or the address from the push message).': "(o l'indirizzo della notifica push).",
     '+ Add relay': '+ Aggiungere un relè',
@@ -70820,6 +71387,139 @@ if _hp_en3 > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_sicher3(HELP_X[_L], _L)
+# English: (Deutsch, Français, Italiano, Rumantsch)
+_HX_INFO = {
+    'Feedback to the developer': ('Rückmeldung an den Entwickler', 'Retour au développeur', 'Feedback allo sviluppatore', 'Resposta al svilupader'),
+    'Errors, wishes, praise, questions - everything helps. The message is sent anonymously: no name, no address, unless you write one.': (
+        'Fehler, Wünsche, Lob, Fragen – alles hilft. Die Nachricht geht anonym weg: kein Name, keine Adresse, ausser du schreibst sie hinein.',
+        'Erreurs, souhaits, compliments, questions – tout aide. Le message part de façon anonyme : ni nom ni adresse, sauf si tu les écris.',
+        'Errori, desideri, lodi, domande – tutto aiuta. Il messaggio parte in modo anonimo: nessun nome, nessun indirizzo, a meno che tu non li scriva.',
+        'Sbagls, giavischs, laud, dumondas – tut gida. Il messadi va anonim: nagin num, nagina adressa, nun che ti las scrivias.'),
+    'Error': ('Fehler', 'Erreur', 'Errore', 'Sbagl'),
+    'Wish': ('Wunsch', 'Souhait', 'Desiderio', 'Giavisch'),
+    'Praise': ('Lob', 'Compliment', 'Lode', 'Laud'),
+    'Question': ('Frage', 'Question', 'Domanda', 'Dumonda'),
+    'How happy are you?': ('Wie zufrieden?', 'Satisfait·e ?', 'Quanto sei soddisfatto?', 'Co cuntent?'),
+    'optional': ('freiwillig', 'facultatif', 'facoltativo', 'facultativ'),
+    'Your message …': ('Deine Nachricht …', 'Ton message …', 'Il tuo messaggio …', 'Tes messadi …'),
+    'Contact for an answer (optional)': ('Kontakt für eine Antwort (freiwillig)', 'Contact pour une réponse (facultatif)', 'Contatto per una risposta (facoltativo)', 'Contact per ina resposta (facultativ)'),
+    'Send a screenshot': ('Bildschirmfoto mitschicken', 'Joindre une capture', 'Allegare uno screenshot', 'Agiuntar in maletg dal visur'),
+    'the current live picture (faces pixelated). A picture of the page itself is not possible in the browser.': (
+        'das aktuelle Live-Bild (Gesichter verpixelt). Ein Bild der Seite selbst ist im Browser nicht möglich.',
+        'l’image en direct actuelle (visages floutés). Une image de la page elle-même n’est pas possible dans le navigateur.',
+        'l’immagine live attuale (volti pixelati). Un’immagine della pagina stessa non è possibile nel browser.',
+        'il maletg live actual (fatschas pixeladas). In maletg da la pagina sezza n’è betg pussaivel en il navigatur.'),
+    'the window, faces pixelated': ('das Fenster, Gesichter verpixelt', 'la fenêtre, visages floutés', 'la finestra, volti pixelati', 'la fanestra, fatschas pixeladas'),
+    'Add technical details (version, device, last important events - no pictures, no passwords)': (
+        'Technische Angaben anhängen (Version, Gerät, letzte wichtige Ereignisse – keine Bilder, keine Passwörter)',
+        'Joindre des détails techniques (version, appareil, derniers événements importants – pas d’images, pas de mots de passe)',
+        'Aggiungere dettagli tecnici (versione, dispositivo, ultimi eventi importanti – niente immagini, niente password)',
+        'Agiuntar indicaziuns tecnicas (versiun, apparat, ultims eveniments impurtants – nagins maletgs, nagins pleds-clav)'),
+    'Always included': ('Immer dabei', 'Toujours inclus', 'Sempre incluso', 'Adina cun'),
+    'page': ('Seite', 'page', 'pagina', 'pagina'),
+    'Window': ('Fenster', 'Fenêtre', 'Finestra', 'Fanestra'),
+    'Cancel': ('Abbrechen', 'Annuler', 'Annulla', 'Interrumper'),
+    'Send': ('Senden', 'Envoyer', 'Invia', 'Trametter'),
+    'Close': ('Schliessen', 'Fermer', 'Chiudi', 'Serrar'),
+    'Thank you! The message is on its way.': ('Danke! Die Nachricht ist unterwegs.', 'Merci ! Le message est en route.', 'Grazie! Il messaggio è in viaggio.', 'Grazia! Il messadi è sin via.'),
+    'Errors, wishes, praise, questions - anonymous': ('Fehler, Wünsche, Lob, Fragen – anonym', 'Erreurs, souhaits, compliments, questions – anonyme', 'Errori, desideri, lodi, domande – anonimo', 'Sbagls, giavischs, laud, dumondas – anonim'),
+    '{n} feedbacks are still waiting to be sent': ('{n} Feedbacks warten noch auf das Senden', '{n} retours attendent encore d’être envoyés', '{n} feedback attendono ancora l’invio', '{n} respostas spetgan anc da vegnir tramessas'),
+    'Send now': ('Jetzt senden', 'Envoyer maintenant', 'Invia ora', 'Trametter ussa'),
+    'Last error': ('Letzter Fehler', 'Dernière erreur', 'Ultimo errore', 'Ultim sbagl'),
+    'Send a test feedback': ('Test-Feedback senden', 'Envoyer un retour de test', 'Invia un feedback di prova', 'Trametter ina resposta da test'),
+    'for the developer: does a message reach the servers?': ('für den Entwickler: kommt eine Nachricht bei den Servern an?', 'pour le développeur : un message arrive-t-il aux serveurs ?', 'per lo sviluppatore: un messaggio arriva ai server?', 'per il svilupader: arriva in messadi tar ils servers?'),
+    'wait a moment': ('einen Moment warten', 'attends un instant', 'aspetta un momento', 'spetga in mument'),
+    'About MoveEye': ('Über MoveEye', 'À propos de MoveEye', 'Informazioni su MoveEye', 'Davart MoveEye'),
+    'history, developer, numbers': ('Geschichte, Entwickler, Zahlen', 'histoire, développeur, chiffres', 'storia, sviluppatore, numeri', 'istorgia, svilupader, cifras'),
+    'Daniel alias Elektro': ('Daniel alias Elektro', 'Daniel alias Elektro', 'Daniel alias Elektro', 'Daniel alias Elektro'),
+    'Switzerland': ('Schweiz', 'Suisse', 'Svizzera', 'Svizra'),
+    'MoveEye was born while camping, from a simple question: who keeps an eye on the tent while we sleep or are away? Instead of an expensive alarm system Daniel wanted something of his own - a small camera on a pan / tilt head that recognises wild animals and persons and quietly reports to the phone.': (
+        'MoveEye ist beim Camping entstanden, aus einer einfachen Frage: Wer passt auf das Zelt auf, während wir schlafen oder unterwegs sind? Statt einer teuren Alarmanlage wollte Daniel etwas Eigenes – eine kleine Kamera auf einem Schwenk-Neige-Kopf, die Wildtiere und Personen erkennt und leise aufs Handy meldet.',
+        'MoveEye est né en camping, d’une question simple : qui surveille la tente pendant que nous dormons ou sommes absents ? Plutôt qu’une alarme coûteuse, Daniel voulait quelque chose à lui – une petite caméra sur une tête orientable qui reconnaît les animaux sauvages et les personnes et prévient discrètement le téléphone.',
+        'MoveEye è nato in campeggio, da una semplice domanda: chi tiene d’occhio la tenda mentre dormiamo o siamo via? Invece di un costoso impianto d’allarme Daniel voleva qualcosa di suo – una piccola telecamera su una testa orientabile che riconosce animali selvatici e persone e avvisa in silenzio il telefono.',
+        'MoveEye è naschì durant il campadi, ord ina dumonda simpla: tgi fa adatg da la tenda, durant che nus durmin u essan davent? Empè d’in urden d’alarm char vuleva Daniel insatge agen – ina pitschna camera sin in chau che sa volva, che renconuscha animals selvadis e persunas ed avisa quietamain il telefonin.'),
+    'The developer is Daniel alias Elektro from Switzerland - Elektro is his pseudonym. Daniel is not a programmer: MoveEye was honestly built together with Claude, an AI by Anthropic. Daniel brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.': (
+        'Der Entwickler ist Daniel alias Elektro aus der Schweiz – Elektro ist sein Pseudonym. Daniel ist kein Programmierer: MoveEye ist – ganz ehrlich – zusammen mit Claude entstanden, einer KI von Anthropic. Daniel bringt die Ideen, die Wünsche und die Tests am echten Gerät ein, Claude schreibt und erklärt den Code. Aus Freude am Tüfteln wurde aus einem kleinen Webcam-Skript schnell ein ganzes System – mit Webseite, Fenster, 3D-Simulator und Spielen fürs Lagerfeuer.',
+        'Le développeur est Daniel alias Elektro, de Suisse – Elektro est son pseudonyme. Daniel n’est pas programmeur : MoveEye a honnêtement été créé avec Claude, une IA d’Anthropic. Daniel apporte les idées, les souhaits et les tests sur le vrai appareil, Claude écrit et explique le code. Par plaisir de bricoler, un petit script de webcam est vite devenu tout un système – avec page web, fenêtre, simulateur 3D et jeux pour le feu de camp.',
+        'Lo sviluppatore è Daniel alias Elektro, dalla Svizzera – Elektro è il suo pseudonimo. Daniel non è un programmatore: MoveEye è nato, onestamente, insieme a Claude, un’IA di Anthropic. Daniel porta le idee, i desideri e i test sul vero apparecchio, Claude scrive e spiega il codice. Per il piacere di armeggiare, un piccolo script per webcam è diventato presto un intero sistema – con pagina web, finestra, simulatore 3D e giochi per il falò.',
+        'Il svilupader è Daniel alias Elektro da la Svizra – Elektro è ses pseudonim. Daniel n’è nagin programmatur: MoveEye è sincer naschì ensemen cun Claude, ina IA dad Anthropic. Daniel porta las ideas, ils giavischs ed ils tests vi da l’apparat vair, Claude scriva ed explitga il code. Ord plaschair da pruvar ora è naschì or d’in pitschen script da webcam spert in entir sistem – cun pagina web, fanestra, simulatur 3D e gieus per il fieu da campadi.'),
+    'Do you like MoveEye, or does something not work? With 💬 your message reaches Daniel directly - anonymously.': (
+        'Gefällt dir MoveEye, oder klappt etwas nicht? Mit 💬 erreicht deine Nachricht Daniel direkt – anonym.',
+        'MoveEye te plaît, ou quelque chose ne marche pas ? Avec 💬 ton message arrive directement chez Daniel – anonymement.',
+        'Ti piace MoveEye, o qualcosa non funziona? Con 💬 il tuo messaggio arriva direttamente a Daniel – in modo anonimo.',
+        'Ta plascha MoveEye, u funcziuna insatge betg? Cun 💬 cuntanscha tes messadi directamain Daniel – anonim.'),
+    'For the technically interested': ('Für Technik-Interessierte', 'Pour les curieux de technique', 'Per chi si interessa di tecnica', 'Per persunas interessadas da la tecnica'),
+    'One Python program (OpenCV, Flask, Tkinter) for the Raspberry Pi 5 - edited in {parts} parts, put together into one file with {lines} lines.': (
+        'Ein Python-Programm (OpenCV, Flask, Tkinter) für den Raspberry Pi 5 – bearbeitet in {parts} Teilen, zusammengesetzt zu einer Datei mit {lines} Zeilen.',
+        'Un programme Python (OpenCV, Flask, Tkinter) pour le Raspberry Pi 5 – modifié en {parts} parties, assemblées en un fichier de {lines} lignes.',
+        'Un programma Python (OpenCV, Flask, Tkinter) per il Raspberry Pi 5 – modificato in {parts} parti, unite in un file di {lines} righe.',
+        'In program Python (OpenCV, Flask, Tkinter) per il Raspberry Pi 5 – elavurà en {parts} parts, cumponì ad ina datoteca cun {lines} lingias.'),
+    'Detection: movement (background model), walking pattern, AI model (SSD MobileNet, optionally an own YOLO model trained in the simulator), thermal camera (Waveshare Thermal-90).': (
+        'Erkennung: Bewegung (Hintergrund-Modell), Gehmuster, KI-Modell (SSD MobileNet, auf Wunsch ein eigenes YOLO-Modell, im Simulator trainiert), Wärmebild (Waveshare Thermal-90).',
+        'Détection : mouvement (modèle d’arrière-plan), démarche, modèle d’IA (SSD MobileNet, en option un propre modèle YOLO entraîné dans le simulateur), caméra thermique (Waveshare Thermal-90).',
+        'Rilevamento: movimento (modello dello sfondo), andatura, modello di IA (SSD MobileNet, a scelta un proprio modello YOLO addestrato nel simulatore), termocamera (Waveshare Thermal-90).',
+        'Renconuschientscha: moviment (model dal fund), moda da ir, model IA (SSD MobileNet, sin giavisch in agen model YOLO, trenà en il simulatur), maletg termic (Waveshare Thermal-90).'),
+    'The 3D simulator (Godot 4, version {sim}) rebuilds the place - persons, animals, weather, night - so MoveEye can practise without real nights. The test bench measures every version with it.': (
+        'Der 3D-Simulator (Godot 4, Version {sim}) baut den Platz nach – Personen, Tiere, Wetter, Nacht –, damit MoveEye ohne echte Nächte üben kann. Der Prüfstand misst damit jede Version.',
+        'Le simulateur 3D (Godot 4, version {sim}) reconstruit le lieu – personnes, animaux, météo, nuit – pour que MoveEye puisse s’entraîner sans vraies nuits. Le banc d’essai mesure chaque version avec lui.',
+        'Il simulatore 3D (Godot 4, versione {sim}) ricostruisce il luogo – persone, animali, meteo, notte – così MoveEye può esercitarsi senza notti vere. Il banco di prova misura ogni versione con esso.',
+        'Il simulatur 3D (Godot 4, versiun {sim}) fa suenter il plaz – persunas, animals, aura, notg –, uschia che MoveEye po exercitar senza notgs veras. Il banc da prova mesira cun el mintga versiun.'),
+    'Updates come signed over GitHub; push messages over ntfy; remote access over Tailscale.': (
+        'Updates kommen signiert über GitHub; Push-Nachrichten über ntfy; Fernzugriff über Tailscale.',
+        'Les mises à jour arrivent signées via GitHub ; les notifications via ntfy ; l’accès à distance via Tailscale.',
+        'Gli aggiornamenti arrivano firmati tramite GitHub; le notifiche tramite ntfy; l’accesso remoto tramite Tailscale.',
+        'Actualisaziuns vegnan suttascrittas sur GitHub; avis push sur ntfy; access a distanza sur Tailscale.'),
+    'Versions in the change list': ('Versionen in der Änderungsliste', 'Versions dans la liste des modifications', 'Versioni nell’elenco delle modifiche', 'Versiuns en la glista da midadas'),
+    'Lines of code': ('Zeilen Code', 'Lignes de code', 'Righe di codice', 'Lingias code'),
+    'Parts': ('Teile', 'Parties', 'Parti', 'Parts'),
+    'Languages': ('Sprachen', 'Langues', 'Lingue', 'Linguas'),
+    '3D simulator': ('3D-Simulator', 'Simulateur 3D', 'Simulatore 3D', 'Simulatur 3D'),
+    'Days since the first line': ('Tage seit der ersten Zeile', 'Jours depuis la première ligne', 'Giorni dalla prima riga', 'Dis dapi l’emprima lingia'),
+    'Timeline': ('Zeitleiste', 'Chronologie', 'Cronologia', 'Cronologia'),
+    'Psst … there is a hidden easter egg.': ('Psst … es gibt ein verstecktes Easter Egg.', 'Psst … il y a un easter egg caché.', 'Psst … c’è un easter egg nascosto.', 'Psst … i dat in easter egg zuppà.'),
+    'The first lines: a small program reads the USB webcam of the Raspberry Pi 5 and marks movement in red - Motion Watch begins': (
+        'Die ersten Zeilen: ein kleines Programm liest die USB-Webcam am Raspberry Pi 5 und markiert Bewegung rot – Motion Watch beginnt',
+        'Les premières lignes : un petit programme lit la webcam USB du Raspberry Pi 5 et marque le mouvement en rouge – Motion Watch commence',
+        'Le prime righe: un piccolo programma legge la webcam USB del Raspberry Pi 5 e segna il movimento in rosso – inizia Motion Watch',
+        'Las emprimas lingias: in pitschen program legia la webcam USB dal Raspberry Pi 5 e marca il moviment cotschen – Motion Watch cumenza'),
+    'AI marks persons and objects; web page with camera control; desktop window': (
+        'KI markiert Personen und Objekte; Webseite mit Kamerasteuerung; Desktop-Fenster',
+        'L’IA marque personnes et objets ; page web avec commande de la caméra ; fenêtre de bureau',
+        'L’IA segna persone e oggetti; pagina web con comando della telecamera; finestra desktop',
+        'IA marca persunas ed objects; pagina web cun manischament da la camera; fanestra dal computer'),
+    'Thermal camera over the picture': ('Wärmebildkamera über dem Bild', 'Caméra thermique sur l’image', 'Termocamera sopra l’immagine', 'Camera termica sur il maletg'),
+    'Camping: own Wi-Fi, armed / disarmed with countdown': ('Camping: eigenes WLAN, scharf / unscharf mit Countdown', 'Camping : propre Wi-Fi, armé / désarmé avec compte à rebours', 'Campeggio: Wi-Fi proprio, inserito / disinserito con conto alla rovescia', 'Campadi: agen WLAN, activà / deactivà cun dumbrar enavos'),
+    'Animal diary, night report, remote access': ('Tier-Tagebuch, Nachtbericht, Fernzugriff', 'Journal des animaux, rapport de nuit, accès à distance', 'Diario degli animali, rapporto notturno, accesso remoto', 'Diari dals animals, rapport da la notg, access a distanza'),
+    'Five languages (with Romansh)': ('Fünf Sprachen (mit Rumantsch)', 'Cinq langues (avec le romanche)', 'Cinque lingue (con il romancio)', 'Tschintg linguas (cun rumantsch)'),
+    'Simulator inside the program': ('Simulator im Programm', 'Simulateur dans le programme', 'Simulatore nel programma', 'Simulatur en il program'),
+    '3D simulator with six scenes': ('3D-Simulator mit sechs Szenen', 'Simulateur 3D avec six scènes', 'Simulatore 3D con sei scene', 'Simulatur 3D cun sis scenas'),
+    'Game corner for the campfire': ('Spielecke fürs Lagerfeuer', 'Coin des jeux pour le feu de camp', 'Angolo dei giochi per il falò', 'Chantun da gieus per il fieu da campadi'),
+    'Program in parts, test bench': ('Programm in Teilen, Prüfstand', 'Programme en parties, banc d’essai', 'Programma in parti, banco di prova', 'Program en parts, banc da prova'),
+    'Training package for an own AI model': ('Trainingspaket für ein eigenes KI-Modell', 'Paquet d’entraînement pour un propre modèle d’IA', 'Pacchetto di addestramento per un proprio modello di IA', 'Pachet da trenament per in agen model IA'),
+    'New name: MoveEye': ('Neuer Name: MoveEye', 'Nouveau nom : MoveEye', 'Nuovo nome: MoveEye', 'Num nov: MoveEye'),
+    'Six tabs': ('Sechs Reiter', 'Six onglets', 'Sei schede', 'Sis tabs'),
+    'AI training and realism': ('KI-Training und Realismus', 'Entraînement de l’IA et réalisme', 'Addestramento IA e realismo', 'Trenament IA e realissem'),
+    'Set up the place': ('Platz einrichten', 'Aménager le lieu', 'Allestire il posto', 'Endrizzar il plaz'),
+    'Controller view for phone and tablet': ('Controller-Ansicht für Handy und Tablet', 'Vue manette pour téléphone et tablette', 'Vista controller per telefono e tablet', 'Vista controller per telefonin e tablet'),
+}
+for _k, _v in _HX_INFO.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+
+# ---- manual (fr / it / rm): at the end of the chapter «System» (de / en: 540) ----
+_HELP_INFO = {
+    "fr": '<li>💬 <b>Retour au développeur :</b> le 💬 en haut de chaque page (aussi dans la fenêtre et le simulateur 3D) ou Plus → «Retour au développeur». Type (erreur / souhait / compliment / question), en option 1–5 étoiles et «Joindre une capture» (l’image en direct, visages floutés). Version et page sont toujours jointes. Anonyme.</li><li>ℹ️ <b>À propos de MoveEye :</b> toucher le numéro de version à côté du logo ou Plus → «À propos de MoveEye» : l’histoire, le développeur, une chronologie et quelques chiffres.</li>',
+    "it": '<li>💬 <b>Feedback allo sviluppatore:</b> il 💬 in alto su ogni pagina (anche nella finestra e nel simulatore 3D) o Altro → «Feedback allo sviluppatore». Tipo (errore / desiderio / lode / domanda), a scelta 1–5 stelle e «Allegare uno screenshot» (l’immagine live, volti pixelati). Versione e pagina sono sempre incluse. Anonimo.</li><li>ℹ️ <b>Informazioni su MoveEye:</b> toccare il numero di versione accanto al logo o Altro → «Informazioni su MoveEye»: la storia, lo sviluppatore, una cronologia e qualche numero.</li>',
+    "rm": '<li>💬 <b>Resposta al svilupader:</b> il 💬 sisum mintga pagina (er en la fanestra ed en il simulatur 3D) u Dapli → «Resposta al svilupader». Gener (sbagl / giavisch / laud / dumonda), sin giavisch 1–5 stailas e «Agiuntar in maletg dal visur» (il maletg live, fatschas pixeladas). Versiun e pagina van adina cun. Anonim.</li><li>ℹ️ <b>Davart MoveEye:</b> tutgar il numer da versiun sper il logo u Dapli → «Davart MoveEye»: l’istorgia, il svilupader, ina cronologia e intginas cifras.</li>',
+}
+for _L, _li in _HELP_INFO.items():
+    _d = HELP_X.get(_L) or ""
+    _i = _d.find('<section id="system"')
+    _j = _d.find("</ul>", _i) if _i >= 0 else -1
+    if _j >= 0:
+        HELP_X[_L] = _d[:_j] + _li + _d[_j:]
 _HX_PLATZEIN = {
     'Set up the place': ('Platz einrichten', 'Configurer l’emplacement', 'Configurare il posto', 'Endrizzar il plaz'),
     '1 Look around': ('1 Umschauen', '1 Regarder autour', '1 Guardarsi intorno', '1 Guardar enturn'),

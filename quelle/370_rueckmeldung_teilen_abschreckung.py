@@ -4,14 +4,21 @@
 #   destination is not shown). Sent by the Pi; without internet it waits and is sent later.
 # ----------------------------------------------------------------------------
 _FB_DEST = "aHR0cHM6Ly9udGZ5LW1lLmNvbS9tdy1mYi0xYzE3ZTFkMWViNWZhMmFhZTQ5Nw=="
-FEEDBACK = {"sent": [], "lock": threading.Lock()}
+_FB_DEST2 = "aHR0cHM6Ly9udGZ5LnNoL213LWZiLTFjMTdlMWQxZWI1ZmEyYWFlNDk3"      # 2.98.33: the same topic on a second server - sent to both, one is enough
+FEEDBACK = {"sent": [], "lock": threading.Lock(), "err": {}, "log_t": {}, "ok_t": 0.0, "test_t": 0.0}
 
 
 def _fb_file():
     return os.path.join(DATA_DIR, "feedback_outbox.json")
 
 
-def feedback_send(kind, text, contact="", diag=False):
+FB_KINDS = {"bug": "Fehler", "idea": "Wunsch", "praise": "Lob", "question": "Frage", "other": "Feedback"}   # 2.98.33: + «Frage»
+FB_SHOT_MAX = 350 * 1024               # 2.98.33: a screenshot as ntfy attachment (the ntfy servers allow several MB; small = quick on mobile)
+
+
+def feedback_send(kind, text, contact="", diag=False, stars=0, page="", shot=None, src="web"):
+    """2.98.33 (584): + satisfaction 1-5 stars, the page / place it was written on, the version (always) and an optional
+    screenshot (JPEG bytes, faces pixelated by feedback_shot). Anonymous as before: no address, no name unless written."""
     text = str(text or "").strip()[:3000]
     if len(text) < 3:
         return False, "please write a few words"
@@ -19,19 +26,52 @@ def feedback_send(kind, text, contact="", diag=False):
     FEEDBACK["sent"] = [x for x in FEEDBACK["sent"] if now - x < 3600]
     if len(FEEDBACK["sent"]) >= 5:
         return False, "at most 5 messages per hour"
-    kind = kind if kind in ("idea", "bug", "praise", "other") else "other"
+    kind = kind if kind in FB_KINDS else "other"
+    try:
+        stars = max(0, min(5, int(stars or 0)))
+    except (TypeError, ValueError):
+        stars = 0
+    page = re.sub(r"[^\w ./#:+\-]", "", str(page or ""))[:40]
+    src = src if src in ("web", "window", "simulator") else "web"
     body_ = text + (("\n\nKontakt: " + str(contact)[:120]) if contact else "")
+    if stars:
+        body_ += "\n\nZufriedenheit: " + "★" * stars + "☆" * (5 - stars) + f" ({stars}/5)"
+    where = {"web": "Web", "window": "Fenster", "simulator": "3D-Simulator"}[src]
+    body_ += f"\n\n— MoveEye {APP_VERSION} · {where}" + (f" · Seite: {page}" if page else "")
     if diag:
         imp = [e for e in STATE["events"] if e.get("imp")][:8]
         body_ += (f"\n\n--- Technik ---\nVersion {APP_VERSION} · Python {sys.version.split()[0]} · {platform_model()} · "
                   f"Sprache {CFG['lang']} · Laufzeit {int((now - START) / 3600)} h\n" + "\n".join(f"{e.get('t', '')} {e.get('text', '')[:140]}" for e in imp))
-    msg = {"kind": kind, "body": body_, "t": datetime.now().isoformat(timespec="seconds")}
+    msg = {"kind": kind, "body": body_, "t": datetime.now().isoformat(timespec="seconds"), "stars": stars}
+    if shot and len(shot) <= FB_SHOT_MAX:
+        try:
+            os.makedirs(_fb_shot_dir(), exist_ok=True)
+            msg["img"] = uuid.uuid4().hex[:12]
+            with open(os.path.join(_fb_shot_dir(), msg["img"] + ".jpg"), "wb") as f:
+                f.write(shot)
+        except OSError:
+            msg.pop("img", None)
     FEEDBACK["sent"].append(now)
     with FEEDBACK["lock"]:
-        box = _fb_load(); box.append(msg); _fb_save(box[-20:])
+        box = _fb_load(); box.append(msg); _fb_save(box[-20:]); _fb_shots_tidy(box[-20:])
     threading.Thread(target=feedback_flush, daemon=True).start()
     log_event("web", "Feedback written - it is sent to the developer (also later, when there is internet)")
     return True, ""
+
+
+def _fb_shot_dir():
+    return os.path.join(DATA_DIR, "feedback_shots")
+
+
+def _fb_shots_tidy(box):
+    """screenshots of messages that are no longer waiting are deleted"""
+    keep = {m.get("img") for m in box if m.get("img")}
+    try:
+        for fn in os.listdir(_fb_shot_dir()):
+            if fn[:-4] not in keep:
+                os.remove(os.path.join(_fb_shot_dir(), fn))
+    except OSError:
+        pass
 
 
 def _fb_load():
@@ -50,28 +90,87 @@ def _fb_save(box):
         pass
 
 
-def feedback_flush():
-    """Send what is waiting. Called after writing and every 10 minutes."""
+def _fb_urls():
     import base64
+    return [base64.b64decode(x).decode() for x in (_FB_DEST, _FB_DEST2)]
+
+
+def _fb_host(u):
+    return u.split("/")[2] if u.count("/") >= 2 else u
+
+
+def _fb_req(url, data, headers, method):
+    """one request to one server: True / False; the reason of a failure is kept (no topic, no secret) and logged once per hour"""
+    host = _fb_host(url)
+    try:
+        req = urllib.request.Request(url, data=data, method=method, headers=headers)
+        with urllib.request.urlopen(req, timeout=30 if method == "PUT" else 15) as r:
+            if r.status < 300:
+                FEEDBACK["err"].pop(host, None); FEEDBACK["ok_t"] = time.time()
+                return True
+            why = f"HTTP {r.status} {r.reason}"
+    except urllib.error.HTTPError as e:
+        why = f"HTTP {e.code} {e.reason}"
+    except Exception as e:
+        why = (type(e).__name__ + ": " + str(getattr(e, "reason", "") or e))[:120]
+    FEEDBACK["err"][host] = {"why": why, "t": time.time()}
+    if time.time() - FEEDBACK["log_t"].get(host, 0) > 3600:
+        FEEDBACK["log_t"][host] = time.time()
+        log_event("web", f"Feedback: {host} refused ({why}) - tried again later")
+    return False
+
+
+def feedback_flush():
+    """Send what is waiting. Called after writing and every 10 minutes. 2.98.33: to both servers (ntfy-me.com and
+    ntfy.sh, same topic); a message counts as sent when one server took it; the picture goes to the same server(s)."""
     with FEEDBACK["lock"]:
         box = _fb_load()
         if not box:
             return
-        url = base64.b64decode(_FB_DEST).decode()
+        urls = _fb_urls()
         left = []
         for m in box:
-            title = {"idea": "Idee", "bug": "Fehler", "praise": "Lob", "other": "Feedback"}[m.get("kind", "other")]
-            try:
-                req = urllib.request.Request(url, data=m["body"].encode(), method="POST",
-                                             headers={"Title": _hdr("MoveEye – " + title), "Tags": {"bug": "bug", "idea": "bulb", "praise": "star"}.get(m.get("kind"), "speech_balloon")})
-                with urllib.request.urlopen(req, timeout=15) as r:
-                    if r.status >= 300:
-                        left.append(m)
-            except Exception:
-                left.append(m)
-        _fb_save(left)
+            title = "MoveEye – " + FB_KINDS.get(m.get("kind"), "Feedback") + ((" " + "★" * int(m["stars"])) if m.get("stars") else "")
+            tags = {"bug": "bug", "idea": "bulb", "praise": "star", "question": "question"}.get(m.get("kind"), "speech_balloon")
+            if not m.get("text_sent"):
+                oks = [i for i, u in enumerate(urls) if _fb_req(u, m["body"].encode(), {"Title": _hdr(title), "Tags": tags}, "POST")]
+                if not oks:
+                    left.append(m); continue
+                m["text_sent"] = True; m["dests"] = oks
+            if m.get("img"):                             # 2.98.33: the screenshot as a second message with the picture attached
+                try:
+                    with open(os.path.join(_fb_shot_dir(), m["img"] + ".jpg"), "rb") as f:
+                        jpg = f.read()
+                except OSError:
+                    jpg = b""
+                if jpg:
+                    h = {"Title": _hdr(title + " · Bildschirmfoto"), "Tags": "camera", "Filename": "moveeye_rueckmeldung.jpg",
+                         "Message": _hdr("Bildschirmfoto zur Rückmeldung von " + str(m.get("t", ""))[:16].replace("T", " ")), "Content-Type": "image/jpeg"}
+                    if not [i for i in (m.get("dests") or [0, 1]) if i < len(urls) and _fb_req(urls[i], jpg, h, "PUT")]:
+                        left.append(m); continue
+        _fb_save(left); _fb_shots_tidy(left)
         if len(left) < len(box):
             log_event("web", f"Feedback sent ({len(box) - len(left)})")
+
+
+def feedback_status():
+    """for the dialog: how many messages wait, the last refusal per server (host only)"""
+    box = _fb_load()
+    errs = [{"host": h, "why": e["why"], "t": e["t"]} for h, e in FEEDBACK["err"].items()]
+    return {"waiting": len(box), "errors": errs, "ok_t": FEEDBACK["ok_t"]}
+
+
+def feedback_test():
+    """«Send a test feedback» (developer): one short message to each server, the result per server; not kept"""
+    if time.time() - FEEDBACK["test_t"] < 20:
+        return False, "wait a moment", []
+    FEEDBACK["test_t"] = time.time()
+    res = []
+    for u in _fb_urls():
+        ok = _fb_req(u, f"Test-Feedback von MoveEye {APP_VERSION} ({datetime.now().strftime('%d.%m.%Y %H:%M')})".encode(),
+                     {"Title": _hdr("MoveEye – Test-Feedback"), "Tags": "test_tube"}, "POST")
+        res.append({"host": _fb_host(u), "ok": ok, "why": "" if ok else FEEDBACK["err"].get(_fb_host(u), {}).get("why", "")})
+    return any(r["ok"] for r in res), "", res
 
 
 def platform_model():

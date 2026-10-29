@@ -127,6 +127,8 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `573_app_schluessel.py` | «App-Schlüssel» für andere Programme (nur als Hash gespeichert, auch über http, nie Sicherheits-Funktionen) und «Sicherheit an einem Ort» (Passwort, Benutzer, App-Schlüssel, Sicherheits-Check unter Einstellungen → Sicherheit; Web und Fenster) | 380 |
 | `574_anmelden_verschluesselt.py` | «Anmelden nur verschlüsselt»: das Web-Passwort nur über https, vom Gerät selbst oder Tailscale; Hinweis-Seite, Rückfall ohne https (Web und Fenster) | 235 |
 | `583_kopf_auto_einstellungen.py` | Einstellungen «Automatische Kopfbewegung» (Web und Fenster), Servo-Art, Übersichtskamera, Selbsttest | 92 |
+| `584_info_rueckmeldung.py` | Rückmeldung von überall (💬 auf jeder Seite /fbx/ui.js, Fenster, 3D-Simulator; Art, Sterne, Bildschirmfoto, wartende Nachrichten, Test-Feedback) und «Über MoveEye» (Geschichte, Zeitleiste, Zahlen) | 420 |
+| `622_uebersetzungen_info.py` | Übersetzungen und Anleitung (fr / it / rm) zu 584 | 110 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
 | `581_fenster_ansicht.py` | Fenster: «Ansicht» des Reiters Live wie im Web (Vorlagen, Anordnung, Bildgrösse, Grösse, Lieblingsknöpfe + «mehr», Karten, Joystick; «Für alle Geräte») | 355 |
 | `582_fenster_platz.py` | Fenster: «Platz einrichten» und «Blickwinkel der Kamera» | 300 |

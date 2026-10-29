@@ -1209,6 +1209,7 @@ class WebStream:
         timeline_routes(app, reply, body, request, Response)    # 2.98.14: Verlauf → Zeitleiste + weekly report (523)
         alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
         sx_routes(app, watch, reply, body)                 # night view / screen reader script, «holiday over», error pages (578)
+        fbx_routes(app, watch, reply, body)                # 2.98.33: feedback from every page, «About MoveEye» (584)
         appkey_routes(app, reply, body)                    # app keys, security check in Settings → Security (573)
         place_routes(app, watch, reply, body)              # 2.98.30: «Platz einrichten» /place, field of view per camera (537)
 
@@ -1588,7 +1589,8 @@ class WebStream:
         @app.route("/api/feedback", methods=["POST"])
         def api_feedback():
             d = body(); lang = norm_lang(d.get("lang"))
-            ok, err = feedback_send(d.get("kind"), d.get("text"), str(d.get("contact") or "").strip(), bool(d.get("diag")))
+            ok, err = feedback_send(d.get("kind"), d.get("text"), str(d.get("contact") or "").strip(), bool(d.get("diag")), d.get("stars"),
+                                    d.get("page"), fbx_web_shot(False) if d.get("shot") else None, "web")      # 2.98.33: stars, page, picture (584)
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None}, 200 if ok else 400)
 
         @app.route("/api/quick", methods=["POST"])
