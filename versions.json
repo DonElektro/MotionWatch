@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 03:13",
+ "generated": "2026-10-29 03:37",
  "versions": [
   {
-   "version": "2.98.11",
-   "file": "webcam_bewegung_2_98_11.py",
+   "version": "2.98.12",
+   "file": "webcam_bewegung_2_98_12.py",
    "url": "",
-   "sha256": "9dca3c7273399d474b4fa5fa62fbeb998aecca77fa49ee7e0f5cf28ae57f85f2",
-   "date": "2026-10-29 03:13",
-   "notes": "Livebild nach Simulator-Update: Wiederverbindung nach 6 s ohne Bild, alte Tunnel-Leitungen werden geschlossen; Geräusche aus dem Simulator (Klatschschalter, Gesundheit, Wecker schlummern); Solarpanel und GPS-Modul im Simulator; Simulator 3D-3.98",
-   "sig": "9a117f305a884f41e8d8ce7a6cd644839b9db51ef398f5fc25d642f8127907f1ffec6fd3f1f82ecf0b18223671a5ae2495e87f4d283d103448c85bcb0ab62c00"
+   "sha256": "90c88d5bcd93e198828fe2092c08b939679b1e3f66be780939e7c76e51e70c5e",
+   "date": "2026-10-29 03:37",
+   "notes": "Simulator 3D-3.99 (Start mit Tunnel, Kopfkamera am Tag nicht zu dunkel)",
+   "sig": "1f264477681941de416e9bd66e2280a967d83f5652976212b3aacb07d0a58b764cd734bc96f46456e0ced92807ceed53b8b953b551529086eac445929f87bf05"
   },
   {
    "version": "2.97.1",

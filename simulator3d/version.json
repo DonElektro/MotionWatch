@@ -1,12 +1,12 @@
 {
- "version": "3D-3.98",
+ "version": "3D-3.99",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31269210,
- "sha256": "32a5bae3400064ac6b13ef894c84a10b723b006547613e8c138750dc01f574f3",
- "notes": "Tunnel nach Update, Geräusche, Solar/GPS, zweites Wärmebild, Mondphase, Pfützen, Bodennebel, Schneespuren",
+ "size": 31269413,
+ "sha256": "2b3acb043bd2f63173b009f09209f5f29f185355ba57c08cf130d494e21f53d6",
+ "notes": "Simulator antwortet wieder nach Start mit Tunnel; Kopfkamera am Tag nicht mehr zu dunkel",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24390906,
-  "sha256": "7a8c2112942c836e5fde9a8403433d28ac0a8c9fed48686bb64f3fb0f32b759e"
+  "size": 24391059,
+  "sha256": "33773f295df3f4b84081be4d64cdea7aaa1ddd67ff38043581271889bf5e547e"
  }
 }

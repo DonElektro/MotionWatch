@@ -65,11 +65,12 @@ func exposure_time() -> float:
 
 
 func ae_target() -> float:
-	return clampf(float(cur()["ae"]), 0.12, 0.6) if real_on else 0.35
+	# 3D-3.99: by day never darker than 0.28 - a few dark real pictures (counted as «day») made the head camera almost black
+	return clampf(float(cur()["ae"]), 0.12 if main.is_dark() else 0.28, 0.6) if real_on else 0.35
 
 
 func noise_scale() -> float:
-	return clampf(float(cur()["noise"]), 0.3, 3.0) if (real_on and fx_on) else 1.0
+	return clampf(float(cur()["noise"]), 0.3, 1.8 if not main.is_dark() else 3.0) if (real_on and fx_on) else 1.0
 
 
 func before_capture(i: int) -> void:

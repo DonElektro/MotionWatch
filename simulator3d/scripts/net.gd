@@ -18,6 +18,10 @@ var beacon_t := 0.0
 
 
 func start(p: int) -> void:
+	if listening and p == port and server.is_listening():
+		return                                        # 3D-3.98: already sending on this port (a second start broke it: «already in use»)
+	if server.is_listening():
+		server.stop()
 	port = p
 	beacon.set_broadcast_enabled(true)
 	var err := server.listen(port, "*")
