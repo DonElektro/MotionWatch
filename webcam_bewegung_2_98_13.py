@@ -2898,12 +2898,21 @@ def save_settings_now():
                 pass
 
 
+_SAVE_T = {"last": 0.0}
+
+
 def save_settings():
-    """Debounced: many slider moves -> one write."""
+    """Debounced: many slider moves -> one write. 2.98.13 (memory card): at most one write every 15 s - something that
+    saves again and again (a counter, a slider held down) no longer writes the card every 2 s."""
     global _save_timer
     if _save_timer:
         _save_timer.cancel()
-    _save_timer = threading.Timer(2.0, save_settings_now); _save_timer.daemon = True; _save_timer.start()
+    wait = max(2.0, 15.0 - (time.monotonic() - _SAVE_T["last"]))
+
+    def go():
+        _SAVE_T["last"] = time.monotonic()
+        save_settings_now()
+    _save_timer = threading.Timer(wait, go); _save_timer.daemon = True; _save_timer.start()
 
 
 def reset_settings():
@@ -5326,6 +5335,272 @@ ALX_WHAT_JS = r"""(function () {
   setInterval(function () { if (lng() !== L) load(); }, 2000);    // the language was set / switched
 })();
 """
+# ----------------------------------------------------------------------------
+# Memory card protection (Daniel, 29.10.2026): on camp sites the power goes off without warning and a memory card that is
+# written all day wears out. Here, without root rights and without extra writes worth mentioning:
+#  * how much is written to the card per day (sectors written from /sys/block/<card>/stat, all partitions together;
+#    the day totals go into <data>/sdcard_wear.json at most once an hour),
+#  * file system errors (ext4 error counter in /sys/fs/ext4/<partition>/errors_count, and dmesg if it may be read),
+#  * whether the root file system is protected (overlay = read-only card, changes in RAM) or was made read-only by errors,
+#  * eMMC wear estimate (only eMMC has it: /sys/block/mmcblk*/device/life_time).
+# The self-check (health_check, web and window) shows one traffic light «Memory card health» (145_selbstheilung.py adds it),
+# the manual has the chapter «Memory card: fewer writes, read-only during the season» (607_uebersetzungen_robust.py).
+# ----------------------------------------------------------------------------
+SDCARD = {"t": 0.0, "dev": "", "base": "", "part": "", "last_sec": None, "boot": "", "days": {}, "first_t": 0.0, "today_mb": 0.0,
+          "saved_t": 0.0, "ext4_err": None, "dmesg": None, "dmesg_t": 0.0, "dmesg_ok": None, "dmesg_last": "", "overlay": False,
+          "root_ro": False, "life": None, "logged_err": 0, "busy": False}
+SD_SAMPLE_S = 600                      # one look every 10 minutes (reading /sys costs nothing, nothing is written)
+SD_SAVE_S = 3600                       # the day totals are written at most once an hour
+SD_ERR_RX = re.compile(r"EXT4-fs (?:error|warning)|Buffer I/O error|I/O error, dev|blk_update_request: .*error|FAT-fs .*error"
+                       r"|mmc\d+: .*(?:error|timeout|CRC)|Remounting filesystem read-only|EXT4-fs .*read-only", re.I)
+
+
+def _sd_file():
+    return os.path.join(DATA_DIR, "sdcard_wear.json")
+
+
+def _sd_block_of(path):
+    """(partition, whole device) of the block device a folder lives on, e.g. ('mmcblk0p2', 'mmcblk0'); ('', '') when it is
+    not a block device (overlay, tmpfs, not Linux)"""
+    try:
+        st = os.stat(path)
+        p = os.path.realpath("/sys/dev/block/%d:%d" % (os.major(st.st_dev), os.minor(st.st_dev)))
+    except (OSError, AttributeError, ValueError):
+        return "", ""
+    if not os.path.isdir(p):
+        return "", ""
+    name = os.path.basename(p)
+    if os.path.isfile(os.path.join(p, "partition")):
+        return name, os.path.basename(os.path.dirname(p))
+    return name, name
+
+
+def _sd_find():
+    """the card the program and the settings are on; with an overlay root the real card underneath (mmcblk0)"""
+    part, base = _sd_block_of(DATA_DIR if os.path.isdir(DATA_DIR) else "/")
+    if not base:
+        part, base = _sd_block_of("/")
+    if not base and os.path.isfile("/sys/block/mmcblk0/stat"):
+        part, base = "", "mmcblk0"
+    return part, base
+
+
+def _sd_read_int(p):
+    try:
+        with open(p) as f:
+            return int(f.read().split()[0], 0)
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def _sd_sectors(base):
+    """sectors (512 bytes) written to the whole device since the start of the computer"""
+    try:
+        with open(f"/sys/block/{base}/stat") as f:
+            v = f.read().split()
+        return int(v[6])
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def _sd_mounts():
+    """(root is an overlay, root is read-only although it should not be)"""
+    ov = ro = False
+    try:
+        with open("/proc/mounts") as f:
+            for ln in f:
+                x = ln.split()
+                if len(x) >= 4 and x[1] == "/":
+                    ov = x[2] == "overlay" or ov
+                    ro = (x[2] != "overlay" and "ro" in x[3].split(","))
+    except OSError:
+        pass
+    try:
+        with open("/proc/cmdline") as f:
+            ov = ov or "overlayroot=tmpfs" in f.read()
+    except OSError:
+        pass
+    return ov, ro
+
+
+def _sd_dmesg():
+    """number of storage errors in the kernel messages, the last one; None = dmesg may not be read (no root)"""
+    if not shutil.which("dmesg"):
+        return None, ""
+    try:
+        r = subprocess.run(["dmesg"], capture_output=True, text=True, timeout=4)
+    except (OSError, subprocess.SubprocessError):
+        return None, ""
+    if r.returncode != 0 or not r.stdout:
+        return None, ""
+    hits = [ln.strip() for ln in r.stdout.splitlines() if SD_ERR_RX.search(ln)]
+    return len(hits), (hits[-1][-160:] if hits else "")
+
+
+def _sd_boot_id():
+    try:
+        with open("/proc/sys/kernel/random/boot_id") as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
+def _sd_load():
+    try:
+        with open(_sd_file()) as f:
+            d = json.load(f)
+        if isinstance(d, dict):
+            SDCARD["days"] = {k: float(v) for k, v in (d.get("days") or {}).items() if isinstance(v, (int, float))}
+            if d.get("boot") == SDCARD["boot"] and isinstance(d.get("sec"), int):
+                SDCARD["last_sec"] = d["sec"]           # same start of the computer: go on counting from there
+            SDCARD["first_t"] = float(d.get("first") or 0.0)
+    except (OSError, ValueError, TypeError):
+        pass
+
+
+def _sd_save():
+    days = dict(sorted(SDCARD["days"].items())[-21:])
+    SDCARD["days"] = days
+    try:
+        tmp = _sd_file() + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump({"days": {k: round(v, 1) for k, v in days.items()}, "boot": SDCARD["boot"], "sec": SDCARD["last_sec"],
+                       "first": SDCARD["first_t"]}, f)
+        os.replace(tmp, _sd_file())
+        SDCARD["saved_t"] = time.time()
+    except OSError:
+        pass
+
+
+def sdcard_tick(force=False):
+    """one look (every 10 minutes from the health thread of 145, and when the self-check is opened for the first time)"""
+    now = time.time()
+    if SDCARD["busy"] or (not force and now - SDCARD["t"] < SD_SAMPLE_S):
+        return
+    SDCARD["busy"] = True
+    try:
+        first = not SDCARD["t"]
+        SDCARD["t"] = now
+        if first:
+            SDCARD["part"], SDCARD["base"] = _sd_find()
+            SDCARD["boot"] = _sd_boot_id()
+            _sd_load()
+            if not SDCARD["first_t"]:
+                SDCARD["first_t"] = now
+            b = SDCARD["base"]
+            if b:
+                for nm in ("life_time", "pre_eol_info"):
+                    v = None
+                    try:
+                        with open(f"/sys/block/{b}/device/{nm}") as f:
+                            v = f.read().split()
+                    except OSError:
+                        pass
+                    if v and nm == "life_time":
+                        try:
+                            SDCARD["life"] = max(int(x, 16) for x in v)   # 0x01 = 0-10 % used … 0x0B = worn out
+                        except ValueError:
+                            pass
+        SDCARD["overlay"], SDCARD["root_ro"] = _sd_mounts()
+        b = SDCARD["base"]
+        if b:
+            sec = _sd_sectors(b)
+            if sec is not None:
+                last = SDCARD["last_sec"]
+                add = (sec - last) if (last is not None and sec >= last) else (0 if last is None else sec)
+                SDCARD["last_sec"] = sec
+                day = datetime.now().strftime("%Y-%m-%d")
+                SDCARD["days"][day] = SDCARD["days"].get(day, 0.0) + add * 512 / 1e6
+                SDCARD["today_mb"] = SDCARD["days"][day]
+            part = SDCARD["part"] or b
+            SDCARD["ext4_err"] = _sd_read_int(f"/sys/fs/ext4/{part}/errors_count")
+        if force or now - SDCARD["dmesg_t"] > 1800:
+            SDCARD["dmesg_t"] = now
+            n, last_ = _sd_dmesg()
+            SDCARD["dmesg_ok"] = n is not None
+            SDCARD["dmesg"] = n
+            SDCARD["dmesg_last"] = last_
+        errs = int(SDCARD["ext4_err"] or 0) + int(SDCARD["dmesg"] or 0)
+        if errs > SDCARD["logged_err"]:
+            SDCARD["logged_err"] = errs
+            log_event("sys", f"Memory card: {errs} file system / read error(s) found" + (f" - {SDCARD['dmesg_last']}" if SDCARD["dmesg_last"] else ""))
+        if b and (now - SDCARD["saved_t"] > SD_SAVE_S or len(SDCARD["days"]) and max(SDCARD["days"]) != datetime.now().strftime("%Y-%m-%d")):
+            _sd_save()
+    except Exception as e:
+        print(f"memory card check: {e}")
+    finally:
+        SDCARD["busy"] = False
+
+
+def sdcard_rate():
+    """MB per day: the average of the full days of before (up to 7), else what today brings so far, scaled to a day"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    full = [v for k, v in sorted(SDCARD["days"].items()) if k != today][-7:]
+    if full:
+        return sum(full) / len(full), True
+    t0 = max(SDCARD["first_t"], datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
+    span = time.time() - t0
+    if span < 1200:
+        return None, False
+    return SDCARD.get("today_mb", 0.0) * 86400.0 / span, False
+
+
+def sdcard_state():
+    sdcard_tick()
+    r, full = sdcard_rate()
+    return {"dev": SDCARD["base"], "part": SDCARD["part"], "mb_day": round(r, 1) if r is not None else None, "days_known": full,
+            "today_mb": round(SDCARD.get("today_mb", 0.0), 1), "ext4_errors": SDCARD["ext4_err"], "dmesg_errors": SDCARD["dmesg"],
+            "dmesg_readable": SDCARD["dmesg_ok"], "dmesg_last": SDCARD["dmesg_last"], "overlay": SDCARD["overlay"],
+            "root_ro": SDCARD["root_ro"], "emmc_life": SDCARD["life"], "free_mb": (STATE.get("disk") or {}).get("free_mb")}
+
+
+def sdcard_health_item(L):
+    """one traffic light for the self-check: {id, icon, title, level, text, tip, link}"""
+    T = lambda x: tr(x, L)
+    s = sdcard_state()
+    if not s["dev"] and not s["overlay"]:
+        return {"id": "sdwear", "icon": "🪪", "title": T("Memory card health"), "level": "off", "text": T("not measurable on this computer"), "tip": "",
+                "link": "/help#sdcard"}
+    parts, level, tip = [], "ok", ""
+    if s["mb_day"] is not None:
+        mb = s["mb_day"]
+        parts.append(trf("≈ {n} written per day", L, n=(f"{mb / 1000:.1f} GB" if mb >= 1000 else f"{mb:.0f} MB")))
+    else:
+        parts.append(T("write volume: measuring (20 min)"))
+    if s["free_mb"] is not None:
+        parts.append(f"{s['free_mb'] / 1024:.1f} GB " + T("free"))
+    errs = int(s["ext4_errors"] or 0) + int(s["dmesg_errors"] or 0)
+    if errs:
+        parts.append(trf("{n} file system error(s)", L, n=errs))
+        level = "bad"
+        tip = "The memory card reports errors: copy the recordings, check the card on a PC (or replace it) and use the read-only protection during the season."
+    elif s["dmesg_readable"] is False and s["ext4_errors"] is None:
+        parts.append(T("errors: not readable"))
+    else:
+        parts.append(T("no file system errors"))
+    if s["root_ro"]:
+        level = "bad"
+        parts.append(T("read-only after errors"))
+        tip = "The system switched the card to read-only (errors). Restart; if it happens again, replace the card."
+    if s["overlay"]:
+        parts.append(T("read-only protection on"))
+        try:
+            rd = rec_dir() if os.path.isdir(rec_dir()) else ""
+        except Exception:
+            rd = ""
+        if rd and not _sd_block_of(rd)[1] and level == "ok":
+            level = "warn"
+            tip = ("Read-only protection is on: recordings and changed settings stay only in the memory (RAM) and are gone after a restart. "
+                   "Put the recordings on a USB drive / SSD (Settings → Recording).")
+    elif level == "ok" and s["mb_day"] is not None and s["mb_day"] > 5000:
+        level = "warn"
+        tip = "A lot is written to the card: put the recordings on a USB drive / SSD, switch off continuous recording, or use the read-only protection during the season."
+    if s["emmc_life"] is not None and s["emmc_life"] >= 0x08 and level != "bad":
+        level = "warn"
+        parts.append(trf("worn {p} %", L, p=min(100, s["emmc_life"] * 10)))
+        tip = "The memory chip is quite worn: plan a replacement."
+    return {"id": "sdwear", "icon": "🪪", "title": T("Memory card health"), "level": level, "text": " · ".join(parts), "tip": T(tip) if tip else "",
+            "link": "/help#sdcard"}
 # ----------------------------------------------------------------------------
 # Hardware: servos + relays  (gpiozero -> pigpio -> simulation)
 # ----------------------------------------------------------------------------
@@ -9833,8 +10108,9 @@ SIMHUB_JS = r"""
     const T = [["scene", "🗺", tt("Scene"), ((H.scenes || []).find(x => x.id === H.scene) || {}).name || H.scene || "–"],
       ["hour", H.dark ? "🌙" : "☀", tt("Time of day"), H.clock || "–"],
       ["weather", wxIcon(H.weather), tt("Weather"), tt(H.weather || "–") + (H.ambient != null ? " · " + Math.round(H.ambient) + " °C" : "")],
-      ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")],
-      ["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]];
+      ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")]
+      ];
+    if (full) T.push(["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]);   // 2.98.13: drills / surprise only in the Simulator tab
     if (full && H.twin_ok) T.push(["twin", "🪞", tt("Twin of your place"), tt("Place, zones, patrol")]);   // 2.98.5: zones / detection in 3D = simulator, «Ansicht»
     if (full) { const R = H.rover || {};
       T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
@@ -10485,7 +10761,10 @@ def simtask_busy(except_=""):
         pass
     if except_ != "game" and sim_game_running():
         return "game"
-    return ""
+    try:
+        return sim_busy_remote()                           # 2.98.13: started in the simulator window (147_simsperre.py)
+    except NameError:
+        return ""
 
 
 def simtask_refuse(me):
@@ -11462,6 +11741,308 @@ def wordmark_h1(m):
     tag = tag[:-1] + (' class="wm"' if "class=" not in tag else "") + ">"
     return tag + WORDMARK_W6 + WORDMARK_W1
 # ----------------------------------------------------------------------------
+# Self-healing (Daniel, 29.10.2026). A watchdog thread looks every 15 s:
+#  * camera loop: no sign of life (HEART) for 90 s - the loop hangs inside a camera call. Or the source says «connected»,
+#    the loop runs, but no new frame came for 150 s. The reconnect of the camera loop (410: read_failures / _good_t) acts
+#    after ~6 s; the watchdog only steps in when that did not help for minutes, so the two never fight.
+#  * AI: switched on, model loaded, frames come, but the AI has not run for 5 minutes (status stuck) -> the AI is loaded
+#    again (only that part); 3 times in an hour -> MoveEye restarts.
+#  * web page: http(s)://127.0.0.1:<port>/sw.js does not answer 4 times in a row (2 minutes) -> MoveEye restarts.
+# A restart uses the same path as the update / pause (save settings, finish the recording, os.execv, same PID - the
+# autostart and the systemd watchdog stay happy). Brake: at least 5 minutes running (doubled after each restart, at most
+# 1 hour), at most 2 restarts per hour and 6 per day (kept in <data>/selfheal.json, written only when it restarts). When
+# the brake holds, it is logged and one push says so. After a restart the new run logs it and sends one info push.
+# Never in tool mode, while paused, during an update or another restart. MOTIONWATCH_NO_SELFHEAL=1 switches it off.
+# ----------------------------------------------------------------------------
+SELFHEAL = {"on": os.environ.get("MOTIONWATCH_NO_SELFHEAL", "") != "1", "t0": time.time(), "web_fail": 0, "last": [], "ai_fix": deque(maxlen=10),
+            "held": {}, "file": None, "started": False, "web_t": 0.0}
+SELFHEAL_LOOP_S = 90.0                 # camera loop without a sign of life
+SELFHEAL_FRAME_S = 150.0               # «connected», loop alive, but no new frame
+SELFHEAL_AI_S = 300.0                  # the AI has not run although it should
+SELFHEAL_WEB_FAILS = 4                 # probes in a row without an answer (every 30 s)
+SELFHEAL_GRACE_S = 180.0               # after a start: the camera / simulator may take a while
+SELFHEAL_PER_HOUR, SELFHEAL_PER_DAY = 2, 6
+_SH_TEST = os.environ.get("MOTIONWATCH_SELFHEAL_TEST", "")   # tests only: «web» / «loop» pretend that part hangs
+if _SH_TEST:
+    SELFHEAL_GRACE_S = float(os.environ.get("MOTIONWATCH_SELFHEAL_GRACE", "20"))
+
+
+def _sh_file():
+    return os.path.join(DATA_DIR, "selfheal.json")
+
+
+def _sh_load():
+    if SELFHEAL["file"] is None:
+        try:
+            with open(_sh_file()) as f:
+                d = json.load(f)
+            SELFHEAL["file"] = d if isinstance(d, dict) else {}
+        except (OSError, ValueError):
+            SELFHEAL["file"] = {}
+    return SELFHEAL["file"]
+
+
+def _sh_save(d):
+    SELFHEAL["file"] = d
+    try:
+        tmp = _sh_file() + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(d, f)
+        os.replace(tmp, _sh_file())
+    except OSError:
+        pass
+
+
+def selfheal_allowed(now=None):
+    """(allowed, reason) - the brake: uptime, per hour, per day"""
+    now = now or time.time()
+    d = _sh_load()
+    ts = [float(t) for t in (d.get("restarts") or []) if isinstance(t, (int, float)) and now - float(t) < 86400]
+    hour = [t for t in ts if now - t < 3600]
+    six = [t for t in ts if now - t < 6 * 3600]
+    need = min(3600.0, 300.0 * (2 ** len(six)))          # 5 min, 10, 20, 40, 60 - a hang right after the start waits longer
+    if _SH_TEST:
+        need = SELFHEAL_GRACE_S
+    up = now - SELFHEAL["t0"]
+    if len(hour) >= SELFHEAL_PER_HOUR:
+        return False, "max. %d restarts per hour" % SELFHEAL_PER_HOUR
+    if len(ts) >= SELFHEAL_PER_DAY:
+        return False, "max. %d restarts per day" % SELFHEAL_PER_DAY
+    if up < need:
+        return False, "running only %d s (needs %d s before a restart)" % (up, need)
+    return True, ""
+
+
+def _sh_note(part, what, held=False):
+    SELFHEAL["last"].insert(0, {"t": time.time(), "part": part, "what": what, "held": held})
+    del SELFHEAL["last"][10:]
+
+
+def _sh_push(text):
+    w = WATCH_REF.get("w")
+    if w is None:
+        return
+    try:
+        w.notifier.info(text, title="{name}: " + tr("Self-healing"))
+    except Exception:
+        pass
+
+
+def _sh_hold(part, why, reason):
+    """a restart was needed but the brake holds: log it, one push per part and day"""
+    k = part
+    if time.time() - SELFHEAL["held"].get(k, 0) < 86400 and SELFHEAL["held"].get(k + "_r") == reason:
+        return
+    SELFHEAL["held"][k] = time.time(); SELFHEAL["held"][k + "_r"] = reason
+    log_event("sys", f"Self-healing: {why} - no restart now ({reason})")
+    _sh_note(part, why + " · " + "no restart now (limit)", True)
+    if "per hour" in reason or "per day" in reason:
+        _sh_push(tr(why) + " – " + tr("MoveEye did not restart again (limit reached). Please look at it."))
+
+
+def selfheal_restart(part, why):
+    """restart MoveEye (same process, same options) - only when the brake allows it"""
+    ok, reason = selfheal_allowed()
+    if not ok:
+        _sh_hold(part, why, reason)
+        return False
+    if RESTART.get("pending"):
+        return False
+    RESTART["pending"] = "selfheal"
+    now = time.time()
+    d = dict(_sh_load())
+    d["restarts"] = [t for t in (d.get("restarts") or []) if isinstance(t, (int, float)) and now - t < 86400] + [now]
+    d["pending"] = {"t": now, "part": part, "why": why}
+    _sh_save(d)
+    log_event("sys", f"Self-healing: {why} - restarting MoveEye")
+
+    def work():
+        try:
+            w = WATCH_REF.get("w")
+            end = time.time() + 8.0
+            while w is not None and getattr(w, "writer", None) is not None and time.time() < end and part != "loop":
+                time.sleep(0.2)
+            try:
+                sound_stop(); talk_stop()
+            except Exception:
+                pass
+            save_settings_now()
+            _close_fds_on_exec()
+            os.execv(sys.executable, [sys.executable, os.path.abspath(__file__)] + _base_args())
+        except Exception as e:
+            RESTART["pending"] = ""
+            log_event("sys", f"Self-healing: restart failed: {e}"[:200])
+    threading.Thread(target=work, daemon=True, name="selfheal-restart").start()
+    return True
+
+
+def _sh_after_start():
+    """the run after a restart by the watchdog: log it and send one info push (when the messages work again)"""
+    d = _sh_load()
+    p = d.get("pending")
+    if not isinstance(p, dict):
+        return
+    d = dict(d); d.pop("pending", None); _sh_save(d)
+    why = str(p.get("why") or "")
+    _sh_note(str(p.get("part") or ""), why + " · " + "restarted")
+    log_event("sys", f"Self-healing: started again after «{why}»")
+    time.sleep(45)
+    _sh_push(tr("MoveEye restarted itself") + ": " + tr(why) + ". " + tr("Everything runs again."))
+
+
+def _sh_busy():
+    """moments in which nothing is judged"""
+    try:
+        if toolmode_on() or RESTART.get("pending") or PAUSING.get("on") or UPD_PROG.get("phase") or POWER.get("pending"):
+            return True
+    except NameError:
+        pass
+    return False
+
+
+def _sh_web_probe():
+    """does the own web page answer? any HTTP answer counts (also 401 / 404)"""
+    import http.client
+    web = globals().get("WEB")
+    if web is None or not getattr(web, "serving", False):
+        return None
+    host = WEB_OPTS.get("bind") or "127.0.0.1"
+    if host in ("0.0.0.0", "", "::"):
+        host = "127.0.0.1"
+    port = int(CFG["web_port"])
+    if _SH_TEST == "web":
+        port = 1                                          # tests: nobody answers there
+    try:
+        if WEB_OPTS.get("https"):
+            import ssl
+            con = http.client.HTTPSConnection(host, port, timeout=8, context=ssl._create_unverified_context())
+        else:
+            con = http.client.HTTPConnection(host, port, timeout=8)
+        con.request("GET", "/sw.js", headers={"User-Agent": "MoveEye-selfheal"})
+        con.getresponse().read(64)
+        con.close()
+        return True
+    except Exception:
+        return False
+
+
+def selfheal_check():
+    """one round of the watchdog; returns what it found (for tests)"""
+    w = WATCH_REF.get("w")
+    now = time.time()
+    if w is None or not SELFHEAL["on"] or now - SELFHEAL["t0"] < SELFHEAL_GRACE_S or _sh_busy():
+        SELFHEAL["web_fail"] = 0
+        return ""
+    # --- the camera loop
+    hb = now - HEART["t"] + (1000 if _SH_TEST == "loop" else 0)
+    if hb > SELFHEAL_LOOP_S:
+        selfheal_restart("loop", "The camera loop hung")
+        return "loop"
+    src = str(STATE.get("source_status") or "")
+    good = float(getattr(w, "_good_t", 0.0) or 0.0)
+    if src == "connected" and w.cap is not None and good and now - good > SELFHEAL_FRAME_S:
+        selfheal_restart("frames", "No new pictures although the camera is connected")
+        return "frames"
+    # --- the AI (only the part)
+    ai = getattr(w, "ai", None)
+    if (ai is not None and getattr(ai, "net", None) is not None and CFG.get("ai_enabled") and CFG.get("detection_on", True)
+            and not DEMO.get("on") and not helper_ready() and good and now - good < 10):
+        last = float(getattr(ai, "_last_run", 0.0) or 0.0)
+        since = SELFHEAL.get("ai_since") or now
+        SELFHEAL["ai_since"] = since
+        if now - max(last, since) > SELFHEAL_AI_S:
+            recent = [t for t in SELFHEAL["ai_fix"] if now - t < 3600]
+            if len(recent) >= 3:
+                selfheal_restart("ai", "The AI got stuck again and again")
+                return "ai_restart"
+            SELFHEAL["ai_fix"].append(now); SELFHEAL["ai_since"] = now
+            log_event("ai", "Self-healing: the AI was stuck - loading it again")
+            _sh_note("ai", "The AI was stuck · loaded again")
+            try:
+                w.ai = AIDetector()
+            except Exception as e:
+                log_event("ai", f"Self-healing: AI could not be loaded again: {e}"[:200])
+            if len(recent) == 0:
+                _sh_push(tr("The AI was stuck and was loaded again."))
+            return "ai"
+    else:
+        SELFHEAL["ai_since"] = None
+    # --- the web page (every 30 s)
+    if now - SELFHEAL["web_t"] >= 30:
+        SELFHEAL["web_t"] = now
+        ok = _sh_web_probe()
+        if ok is False:
+            SELFHEAL["web_fail"] += 1
+            if SELFHEAL["web_fail"] >= SELFHEAL_WEB_FAILS:
+                SELFHEAL["web_fail"] = 0
+                selfheal_restart("web", "The web page did not answer")
+                return "web"
+        else:
+            SELFHEAL["web_fail"] = 0
+    return ""
+
+
+def selfheal_loop():
+    threading.Thread(target=_sh_after_start, daemon=True, name="selfheal-note").start()
+    while True:
+        time.sleep(15 if not _SH_TEST else 5)
+        try:
+            sdcard_tick()
+            selfheal_check()
+        except Exception as e:
+            print(f"self-healing: {e}")
+
+
+def selfheal_start():
+    """started once the camera loop object exists (from the health wrapper or the first look)"""
+    if SELFHEAL["started"]:
+        return
+    SELFHEAL["started"] = True
+    threading.Thread(target=selfheal_loop, daemon=True, name="selfheal").start()
+
+
+def _selfheal_waiter():
+    """the program starts its parts in 640; this waits until the camera loop object exists (never in the self-test)"""
+    for _ in range(600):
+        time.sleep(1.0)
+        if WATCH_REF.get("w") is not None:
+            selfheal_start()
+            return
+
+
+threading.Thread(target=_selfheal_waiter, daemon=True, name="selfheal-wait").start()
+
+
+def selfheal_health_item(L):
+    T = lambda x: tr(x, L)
+    if not SELFHEAL["on"]:
+        return {"id": "selfheal", "icon": "🩹", "title": T("Self-healing"), "level": "off", "text": T("off"), "tip": ""}
+    day = [x for x in SELFHEAL["last"] if time.time() - x["t"] < 86400]
+    if not day:
+        return {"id": "selfheal", "icon": "🩹", "title": T("Self-healing"), "level": "ok", "text": T("watching camera, AI and web page"), "tip": ""}
+    x = day[0]
+    held = bool(x.get("held"))
+    return {"id": "selfheal", "icon": "🩹", "title": T("Self-healing"), "level": "bad" if held else "warn",
+            "text": datetime.fromtimestamp(x["t"]).strftime("%H:%M") + " " + " · ".join(T(p) for p in x["what"].split(" · ")) + (f" (+{len(day) - 1})" if len(day) > 1 else ""),
+            "tip": T("If it happens again: send the diagnosis package (Settings → Help).")}
+
+
+# ---- the self-check gets the two traffic lights (web and window use health_check) ----------------------------------------
+_health_check_base = health_check
+
+
+def health_check(lang=None):
+    h = _health_check_base(lang)
+    L = norm_lang(lang) if lang else cur_lang()
+    for fn in (sdcard_health_item, selfheal_health_item):
+        try:
+            h["items"].append(fn(L))
+        except Exception as e:
+            print(f"health item: {e}")
+    h["items"].sort(key=lambda x: HEALTH_ORDER.index(x["level"]))
+    h["count"] = {k: sum(1 for x in h["items"] if x["level"] == k) for k in HEALTH_ORDER}
+    return h
+# ----------------------------------------------------------------------------
 # The simulator (3D-3.94, realism.gd) makes its pictures look like the real ones of THIS MoveEye: brightness, contrast,
 # saturation, colour cast (red / blue to green), sharpness and grain - day and night separately. The real pictures are the
 # diary pictures and the alarm pictures (never taken in the simulation). Measured the same way as realism.gd.stats():
@@ -11528,6 +12109,128 @@ def real_look():
             REAL_LOOK["busy"] = False
         threading.Thread(target=run, daemon=True, name="reallook").start()
     return REAL_LOOK["v"] or None
+# ----------------------------------------------------------------------------
+# 2.98.13 (Daniel, 29.10.2026): MoveEye had simtask_busy (141), the simulator busy_with (main.gd). Now they know each other:
+#  * MoveEye asks the simulator every 3 s ({"action": "busy"} -> busy_with("")). A test run, the test bench, training
+#    pictures, blind spots … started in the simulator window lock MoveEye's own starts with the same message
+#    «The simulator is busy: …» (simtask_busy in 141 asks sim_busy_remote()).
+#  * MoveEye tells the simulator what it does itself (sim_state: "simtask", "simtask_de"); the simulator refuses its own
+#    starts then (busy_with in main.gd: «Störfall-Übung (von MoveEye)»).
+#  * Blind spots started in the simulator («Testen» card): MoveEye follows them like its own (BLIND / _blind_wait in 143),
+#    so the map in MoveEye shows the result, whoever started it. Older simulators without «busy»: blindmap info is asked.
+# ----------------------------------------------------------------------------
+SIMBUSY = {"w": "", "t": 0.0, "ok": None, "seen_blind": 0, "poll_t": 0.0, "started": False}
+SIM_BUSY_NAMES = {"Testlauf": "test run", "Prüfstand": "test bench", "Trainingsbilder": "training pictures", "Blinde Flecken": "blind spots",
+                  "Fehlalarm nachstellen": "false alarm learning", "Wiedergabe": "playback of a recording"}
+
+
+def simtask_local():
+    """what MoveEye itself does with the simulator right now ('' = nothing) - without asking the simulator"""
+    for name, busy in (("test run", TESTOPT.get("busy")), ("training night", TRAIN.get("busy")), ("A/B comparison", ABT.get("busy")),
+                       ("drill", DRILL.get("busy"))):
+        if busy:
+            return name
+    for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN")):
+        d = globals().get(ref)
+        if isinstance(d, dict) and d.get("busy") and not (ref == "BLIND" and d.get("ext")):
+            return name
+    try:
+        if PROTECT["test"]["busy"]:
+            return "protection test"
+    except (NameError, KeyError, TypeError):
+        pass
+    return ""
+
+
+def sim_busy_remote():
+    """'' or the name of what the simulator does that MoveEye did not start (for simtask_busy). While MoveEye runs a task
+    itself, the simulator being busy is that task - not counted."""
+    if not CFG.get("sim_on") or simtask_local():
+        return ""
+    if time.time() - SIMBUSY["t"] > 30:
+        return ""
+    w = str(SIMBUSY["w"] or "")
+    if not w or w == "Spielrunde" or "MoveEye" in w:          # the game round: sim_game_running() in 141
+        return ""
+    if w == "Blinde Flecken" and BLIND.get("busy"):
+        return "blind spots"
+    return tr(SIM_BUSY_NAMES.get(w, w)) + " (" + tr("started in the simulator") + ")"
+
+
+def _simbusy_adopt_blind():
+    """blind spots run in the simulator, MoveEye does not follow them yet -> follow them (result in BLIND['last'])"""
+    if BLIND.get("busy"):
+        SIMBUSY["seen_blind"] = 0
+        return
+    SIMBUSY["seen_blind"] += 1
+    if SIMBUSY["seen_blind"] < 2:                              # twice in a row: not a start of MoveEye that is just coming
+        return
+    SIMBUSY["seen_blind"] = 0
+    BLIND.update(busy=True, kind="map", ext=True)
+    log_event("sys", "Blind spots started in the simulator - MoveEye draws the map")
+
+    def run():
+        try:
+            _blind_wait()
+        finally:
+            BLIND["ext"] = False
+    threading.Thread(target=run, daemon=True, name="blindmap-ext").start()
+
+
+def _sim_reachable():
+    """looser than sim_ready(): a slow simulator PC may miss a few frames - the lock still counts (30 s)"""
+    return bool(CFG.get("sim_on")) and SIM.get("ok") and time.time() - SIM.get("t", 0) < 30
+
+
+def simbusy_poll():
+    if not _sim_reachable():
+        SIMBUSY["seen_blind"] = 0
+        return
+    if SIMBUSY["ok"] is not False:
+        try:
+            r = sim_control({"action": "busy"})
+        except Exception:
+            return
+        if r.get("ok") and "busy" in r:
+            SIMBUSY.update(w=str(r.get("busy") or ""), t=time.time(), ok=True)
+        elif r.get("error") == "unknown action":
+            SIMBUSY.update(ok=False, poll_t=time.time())
+            return
+        blind = SIMBUSY["w"] == "Blinde Flecken"
+    else:                                                      # an older simulator: only the blind spots
+        if time.time() - SIMBUSY["poll_t"] > 600:
+            SIMBUSY["ok"] = None                               # updated meanwhile? ask again
+        try:
+            r = sim_control({"action": "blindmap", "do": "info"})
+        except Exception:
+            return
+        blind = bool(r.get("busy"))
+    if blind:
+        _simbusy_adopt_blind()
+    else:
+        SIMBUSY["seen_blind"] = 0
+
+
+def simbusy_loop():
+    while True:
+        time.sleep(3.0)
+        try:
+            simbusy_poll()
+            simupd_sync()
+        except Exception as e:
+            print(f"simulator lock: {e}")
+
+
+def _simbusy_waiter():
+    for _ in range(600):
+        time.sleep(1.0)
+        if WATCH_REF.get("w") is not None:
+            threading.Thread(target=simbusy_loop, daemon=True, name="simbusy").start()
+            return
+
+
+threading.Thread(target=_simbusy_waiter, daemon=True, name="simbusy-wait").start()
+
 # ----------------------------------------------------------------------------
 # Second Wi-Fi adapter (USB stick): one adapter makes the own Wi-Fi, the other one joins a known network (campsite, phone)
 # -> repeater: the devices in the own Wi-Fi have internet (NetworkManager "shared" does the routing). Also: automatic change
@@ -19192,6 +19895,13 @@ def _sim_refscan_info():
         return None
 
 
+def _simtask_now():
+    try:
+        return simtask_local()
+    except NameError:
+        return ""
+
+
 def sim_state():
     hp, ht = servo_half("pan"), servo_half("tilt")
     pl, tl = min(float(CFG["pan_limit"]), hp), min(float(CFG["tilt_limit"]), ht)
@@ -19211,6 +19921,7 @@ def sim_state():
             "wake": {"state": WAKE["state"], "snoozes": WAKE["snoozes"], "t0": round(WAKE["t0"], 2)},       # 2.98.9: the sleeper in the bedroom scene reacts
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
+            "simtask": (stk_ := _simtask_now()), "simtask_de": tr(stk_, "de") if stk_ else "",   # 2.98.13: one lock (147)
             "eco": STATE.get("eco") or "off",     # power saving of MoveEye: «saving» = quiet - the simulator may calculate slower (3D-3.30)
             # automatic update: the simulator compares these checksums with its own files and fetches /sim/simulator.zip
             "sim_files": sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),
@@ -20197,6 +20908,8 @@ def sim_auto_update_check():
         d = sim_control()
         if not any(c.get("id") == "update_now" for c in (d.get("controls") or [])):
             return
+        if any(c.get("id") == "update_mode" for c in (d.get("controls") or [])):
+            return                                        # 2.98.13: the simulator decides itself («Neue Versionen», 545)
         SIM_AUTOUPD[key] = time.time()
         sim_control({"action": "press", "id": "update_now"})
         log_event("sys", f"Simulator: update {v['current']} -> {v['latest']} started by itself")
@@ -26644,8 +27357,13 @@ def run_guard_start():
                          beat_txt=datetime.now().strftime("%Y-%m-%d %H:%M"))
             if up > 1800 and state.get("streak"):
                 state["streak"] = 0                              # ran long enough: the next short run starts counting again
-            if not state["clean"]:
+            # 2.98.13 (memory card): every 10 s only in the first 15 minutes (a crash right after the start counts for the
+            # safe start), then once a minute - and at once when the power or the heat gets critical
+            crit = (state["uv"], state["throttled"], (state.get("cpu_temp") or 0) >= 75)
+            if not state["clean"] and (up < 900 or time.monotonic() - wrote[0] >= 60 or crit != wrote[1]):
+                wrote[0] = time.monotonic(); wrote[1] = crit
                 _run_write(state)
+    wrote = [0.0, None]
     threading.Thread(target=beat, daemon=True, name="runguard").start()
 
 
@@ -27207,7 +27925,15 @@ class MotionWatch:
         src, sid, label, err = res
         self._good_t = time.time()                         # 2.98.11: a new source gets its 6 s (see the read loop)
         if src is None:
-            log_event("sys", f"Video source '{label}' not available: {err}")
+            # 2.98.13 (memory card): the same failure every 3 s wrote ~30'000 log lines a day - now the first one, then
+            # once every 10 minutes with the number of tries
+            msg_ = f"Video source '{label}' not available: {err}"
+            ls_ = getattr(self, "_fail_log", None)
+            if ls_ is None or ls_[0] != msg_ or time.time() - ls_[1] > 600:
+                log_event("sys", msg_ + (f" ({ls_[2]} tries since {datetime.fromtimestamp(ls_[3]).strftime('%H:%M')})" if ls_ and ls_[0] == msg_ and ls_[2] else ""))
+                self._fail_log = [msg_, time.time(), 0, ls_[3] if ls_ and ls_[0] == msg_ else time.time()]
+            else:
+                ls_[2] += 1
             if self.cap is not None and str(STATE.get("source_id", "")).startswith("sim:") and not CFG["sim_on"]:
                 self.cap.release(); self.cap = None                # simulation switched off: never keep the simulator picture
                 STATE["source_status"] = f"failed: {err}"; self._retry_at = time.time() + 3.0
@@ -32443,7 +33169,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="row2"><input type="text" id="s-url" placeholder="http://192.168.1.50:8765" autocomplete="off"><button type="button" class="sec" onclick="saveUrl()" data-i18n="Save">Save</button></div>
     <label class="opt"><span data-i18n="Find the simulator in the network by itself">Find the simulator in the network by itself</span><input type="checkbox" class="sw" id="k-sim_auto" onchange="setKey('sim_auto', this.checked)"></label>
     <label class="opt"><span><span data-i18n="Switch the simulation on by itself when a simulator is online">Switch the simulation on by itself when a simulator is online</span><br><small class="mut" data-i18n="autostart-note">autostart-note</small></span><input type="checkbox" class="sw" id="k-sim_autostart" onchange="setKey('sim_autostart', this.checked)"></label>
-    <label class="opt"><span data-i18n="Update the simulator by itself when a newer version is there">Update the simulator by itself when a newer version is there</span><input type="checkbox" class="sw" id="k-sim_autoupd" onchange="setKey('sim_autoupd', this.checked)"></label>
+    <label class="opt"><span><span data-i18n="Update the simulator by itself when a newer version is there">Update the simulator by itself when a newer version is there</span><br><small class="mut" data-i18n="upd-owner-note">This is the setting «Neue Versionen» of the simulator – the same here and there.</small></span><input type="checkbox" class="sw" id="k-sim_autoupd" onchange="setKey('sim_autoupd', this.checked)"></label>
     <div><b style="font-weight:600;font-size:14px" data-i18n="Simulators in the network">Simulators in the network</b><div class="mut" id="s-scan"></div></div>
     <div id="s-found"></div>
     <button type="button" class="sec" id="s-search" onclick="search()" style="width:100%" data-i18n="Search now">Search now</button>
@@ -32531,7 +33257,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <summary><h2><svg viewBox="0 0 24 24"><path d="M13 3L4 14h7l-1 7 9-11h-7z"/></svg><span data-i18n="Computing power">Computing power</span></h2></summary>
     <div class="fb">
     <div class="mut" data-i18n="perf-note">perf-note</div>
-    <label class="opt"><span data-i18n="Save CPU during the simulation">Save CPU during the simulation</span><input type="checkbox" class="sw" id="k-sim_eco" onchange="setKey('sim_eco', this.checked)"></label>
+    <label class="opt"><span data-i18n="Simulator: fewer pictures">Simulator: fewer pictures</span><input type="checkbox" class="sw" id="k-sim_eco" onchange="setKey('sim_eco', this.checked)"></label>
     <div><div class="rng"><span data-i18n="Pictures per second">Pictures per second</span><b id="v-sim_fps">–</b></div>
       <input type="range" id="k-sim_fps" min="2" max="15" step="1" oninput="$('#v-sim_fps').textContent=this.value" onchange="setKey('sim_fps', +this.value)"></div>
     </div>
@@ -32625,12 +33351,12 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "Catch fast persons": "Schnelle Personen erwischen", "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.": "{n} schnelle Personen (Jogger) verpasst: weniger Bilder bis das Gehen erkannt ist, die KI prüft jedes Bild.",
  "More sensitive by day": "Am Tag empfindlicher", "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.": "{n} Personen am Tag verpasst: empfindlicher, und die KI nimmt auch weniger sichere Personen an.",
  "React faster": "Schneller reagieren", "MoveEye needed {n} s on average: the AI looks at every picture and walking is recognised sooner.": "MoveEye brauchte im Mittel {n} s: die KI prüft jedes Bild und das Gehen wird früher erkannt."});
-I18N.en = I18N.en || {}; Object.assign(I18N.en, {"simset-note": "What MoveEye does by itself in the simulation. Connection, computing power and the tiles have their switches above.", "conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"upd-owner-note": "This is the setting «Neue Versionen» of the simulator – the same here and there.", "simset-note": "What MoveEye does by itself in the simulation. Connection, computing power and the tiles have their switches above.", "conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
 Object.assign(I18N.de, {"Settings of the simulation": "Einstellungen der Simulation", "simset-note": "Was MoveEye in der Simulation selbst tut. Verbindung, Rechenleistung und die Kacheln haben ihre Schalter oben.", "Simulator centre": "Simulator-Zentrale", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig", "best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by MoveEye": "sichtbar, aber von MoveEye nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
  "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
  "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
  "Load": "Laden", "Delete": "Löschen", "Computing power": "Rechenleistung", "perf-note": "Weniger Bilder pro Sekunde entlasten den Pi und den PC.",
- "Save CPU during the simulation": "Während der Simulation Rechenleistung sparen", "Pictures per second": "Bilder pro Sekunde",
+ "Simulator: fewer pictures": "Simulator: weniger Bilder", "upd-owner-note": "Das ist die Einstellung «Neue Versionen» im Simulator – hier und dort dieselbe.", "Pictures per second": "Bilder pro Sekunde",
  "Programs and downloads": "Programme und Downloads", "3D simulator for Windows (ZIP)": "MW Sim · 3D für Windows (ZIP)", "Simple simulator (ZIP)": "MW Sim · Basis (ZIP)",
  "Python, for a PC or the Pi": "Python, für PC oder Pi", "Phone / tablet view": "Handy- / Tablet-Ansicht", "this page as on a phone": "die Webseite wie auf dem Handy",
  "simple simulator directly on the Pi": "einfacher Simulator direkt auf dem Pi", "Start simulator here": "Simulator hier starten", "on the Pi (uses its CPU)": "auf dem Pi (braucht seine Rechenleistung)",
@@ -44270,6 +44996,7 @@ async function healthLoad() {
         toast("⬇ " + t("Download AI model")); const iv = setInterval(async () => { await healthLoad(); let j = {}; try { j = await (await fetch("/api/ai_model")).json(); } catch (e) {}
           if (!j.busy) { clearInterval(iv); toast(j.msg === "ready" ? "✓ " + t("AI ready") : "⚠ " + (j.msg || "")); healthLoad(); } }, 2000); };
       b.appendChild(k); }
+    if (x.link) { const a = el("a", "", "📖 " + t("Manual")); a.href = x.link; a.target = "_blank"; a.rel = "noopener"; a.style.cssText = "display:inline-block;margin-top:4px;font-size:13px"; b.appendChild(a); }
     r.append(d, b); L.appendChild(r); });
 }
 function healthOpen() { const c = $("#hcard"); if (!c) return; let p = c; while (p) { if (p.tagName === "DETAILS") p.open = true; p = p.parentElement; }
@@ -46305,6 +47032,77 @@ def set_cfg(key, value):
     return True, ""
 
 
+# ---- 2.98.13: simulator updates have one owner - the simulator's own setting «Neue Versionen» (update_mode) -----------------
+# MoveEye's switch «Update the simulator by itself» (sim_autoupd, web and window) shows and sets that setting through
+# /control when the connected simulator has it; MoveEye then no longer presses «update_now» itself (300). For the Python
+# simulator on the Pi (installed from inside MoveEye) the switch keeps working as before.
+SIMUPD = {"t": 0.0, "mode": None, "synced": None}
+
+
+def simupd_mode():
+    """'off' | 'auto' | 'dev' of the connected simulator, None = it has no such setting (or not reachable)"""
+    try:
+        d = sim_control(None)
+    except Exception:
+        return None
+    for c in d.get("controls") or []:
+        if isinstance(c, dict) and c.get("id") == "update_mode":
+            return str(c.get("value") or "off")
+    return None
+
+
+def simupd_push(on):
+    """MoveEye's switch was changed: set the simulator's setting (keeps «dev» when it is already on)"""
+    m = SIMUPD["mode"] if SIMUPD["mode"] is not None else simupd_mode()
+    if m is None:
+        return False
+    want = ("dev" if m == "dev" else "auto") if on else "off"
+    if want != m:
+        try:
+            sim_control({"action": "set", "id": "update_mode", "value": want})
+        except Exception:
+            return False
+        log_event("sys", f"Simulator updates: {want} (set in MoveEye)")
+    SIMUPD.update(mode=want, synced=bool(on), t=time.time())
+    return True
+
+
+def simupd_sync():
+    """every 15 s while connected: whoever changed last wins - MoveEye's switch (web / window) or the simulator window"""
+    if not sim_ready() or time.time() - SIMUPD["t"] < 15:
+        return
+    SIMUPD["t"] = time.time()
+    m = simupd_mode()
+    SIMUPD["mode"] = m
+    if m is None:
+        SIMUPD["synced"] = None
+        return
+    sim_on_ = m != "off"
+    mine = bool(CFG.get("sim_autoupd", True))
+    if SIMUPD["synced"] is None:                               # just connected: the simulator owns the setting
+        SIMUPD["synced"] = sim_on_
+        if mine != sim_on_:
+            CFG["sim_autoupd"] = sim_on_; save_settings()
+        return
+    if mine != SIMUPD["synced"]:                               # changed in MoveEye (window) since the last look
+        simupd_push(mine)
+    elif sim_on_ != SIMUPD["synced"]:                          # changed in the simulator window
+        SIMUPD["synced"] = sim_on_
+        CFG["sim_autoupd"] = sim_on_; save_settings()
+
+
+def sim_owns_updates():
+    return SIMUPD.get("mode") is not None
+
+
+_set_cfg_base = set_cfg
+
+
+def set_cfg(key, value):
+    ok, msg = _set_cfg_base(key, value)
+    if ok and key == "sim_autoupd" and CFG.get("sim_on") and sim_ready():
+        threading.Thread(target=simupd_push, args=(bool(CFG["sim_autoupd"]),), daemon=True, name="simupd").start()
+    return ok, msg
 class WebStream:
     def __init__(self, watch):
         self.watch = watch; self.started = False
@@ -49932,7 +50730,7 @@ TOGGLES = [  # (section, key, label)
     ("Mover", "mover_inv_r", "Right track runs the wrong way (turn round)"),
     ("Mover", "mover_swap", "Left and right tracks swapped"),
     ("Mover", "mover_sim_show", "Simulation: show the stick even without a mover or motor driver (to try it out)"),
-    ("Simulator", "sim_eco", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)"),
+    ("Simulator", "sim_eco", "Simulator: fewer pictures (the simulator draws only what is fetched)"),
     ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
     ("Simulator", "rover_alarm", "Rover: at a person alarm drive there by itself (simulator)"),
@@ -49942,7 +50740,7 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "weekcheck_on", "Recognition check every week (Sunday night) with a warning when it got worse"),
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
-    ("Simulator", "sim_autoupd", "Update the simulator by itself when a newer version is there"),
+    ("Simulator", "sim_autoupd", "Update the simulator by itself (the setting «Neue Versionen» of the simulator)"),
     ("Simulator", "sim_separate", "The simulation has its own settings (when switching back: ask which changes to take over)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when MoveEye starts in the background"),
@@ -59456,6 +60254,147 @@ if _hv_en > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_verlauf(HELP_X[_L], _L)
+_HX_ROBUST = {
+    # ---- 066 memory card
+    'Memory card health': ('Speicherkarte: Zustand', 'Carte mémoire : état', 'Scheda di memoria: stato', 'Carta da memoria: stadi'),
+    'not measurable on this computer': ('auf diesem Computer nicht messbar', 'non mesurable sur cet ordinateur', 'non misurabile su questo computer', 'betg mesurabel sin quest computer'),
+    '≈ {n} written per day': ('≈ {n} pro Tag geschrieben', '≈ {n} écrits par jour', '≈ {n} scritti al giorno', '≈ {n} scrit per di'),
+    'write volume: measuring (20 min)': ('Schreibmenge: wird gemessen (20 Min.)', 'volume écrit : mesure en cours (20 min)', 'quantità scritta: misurazione (20 min)', 'quantitad scritta: vegn mesirada (20 min)'),
+    '{n} file system error(s)': ('{n} Dateisystem-Fehler', '{n} erreur(s) du système de fichiers', '{n} errore/i del file system', '{n} errur(s) dal sistem da datotecas'),
+    'errors: not readable': ('Fehler: nicht lesbar', 'erreurs : illisibles', 'errori: non leggibili', 'errurs: betg legiblas'),
+    'no file system errors': ('keine Dateisystem-Fehler', 'aucune erreur du système de fichiers', 'nessun errore del file system', 'naginas errurs dal sistem da datotecas'),
+    'read-only after errors': ('nach Fehlern schreibgeschützt', 'en lecture seule après des erreurs', 'sola lettura dopo errori', 'protegì cunter scriver suenter errurs'),
+    'read-only protection on': ('Schreibschutz an', 'protection en écriture active', 'protezione scrittura attiva', 'protecziun cunter scriver activa'),
+    'worn {p} %': ('{p} % abgenutzt', 'usée à {p} %', 'usurata al {p} %', '{p} % consumada'),
+    'The memory card reports errors: copy the recordings, check the card on a PC (or replace it) and use the read-only protection during the season.':
+        ('Die Speicherkarte meldet Fehler: Aufnahmen sichern, die Karte am PC prüfen (oder ersetzen) und während der Saison den Schreibschutz nutzen.',
+         'La carte mémoire signale des erreurs : sauvegarder les enregistrements, vérifier la carte sur un PC (ou la remplacer) et utiliser la protection en écriture pendant la saison.',
+         'La scheda di memoria segnala errori: salvare le registrazioni, controllare la scheda su un PC (o sostituirla) e usare la protezione scrittura durante la stagione.',
+         'La carta da memoria annunzia errurs: segirar las registraziuns, controllar la carta sin in PC (u la remplazzar) e duvrar la protecziun cunter scriver durant la stagiun.'),
+    'The system switched the card to read-only (errors). Restart; if it happens again, replace the card.':
+        ('Das System hat die Karte schreibgeschützt (Fehler). Neu starten; passiert es wieder, die Karte ersetzen.',
+         'Le système a mis la carte en lecture seule (erreurs). Redémarrer ; si cela se reproduit, remplacer la carte.',
+         'Il sistema ha messo la scheda in sola lettura (errori). Riavviare; se succede di nuovo, sostituire la scheda.',
+         'Il sistem ha protegì la carta cunter scriver (errurs). Reaviar; sch’i capita danovamain, remplazzar la carta.'),
+    'Read-only protection is on: recordings and changed settings stay only in the memory (RAM) and are gone after a restart. Put the recordings on a USB drive / SSD (Settings → Recording).':
+        ('Der Schreibschutz ist an: Aufnahmen und geänderte Einstellungen bleiben nur im Arbeitsspeicher und sind nach einem Neustart weg. Aufnahmen auf einen USB-Stick / eine SSD legen (Einstellungen → Aufnahme).',
+         'La protection en écriture est active : enregistrements et réglages modifiés restent seulement en mémoire vive et disparaissent au redémarrage. Mettre les enregistrements sur une clé USB / un SSD (Réglages → Enregistrement).',
+         'La protezione scrittura è attiva: registrazioni e impostazioni modificate restano solo nella memoria RAM e spariscono al riavvio. Mettere le registrazioni su una chiavetta USB / un SSD (Impostazioni → Registrazione).',
+         'La protecziun cunter scriver è activa: registraziuns e configuraziuns midadas restan mo en la memoria (RAM) e mancan suenter in reaviament. Metter las registraziuns sin in stick USB / ina SSD (Configuraziuns → Registraziun).'),
+    'A lot is written to the card: put the recordings on a USB drive / SSD, switch off continuous recording, or use the read-only protection during the season.':
+        ('Es wird viel auf die Karte geschrieben: Aufnahmen auf einen USB-Stick / eine SSD legen, Daueraufnahme ausschalten oder während der Saison den Schreibschutz nutzen.',
+         'Beaucoup est écrit sur la carte : mettre les enregistrements sur une clé USB / un SSD, couper l’enregistrement continu ou utiliser la protection en écriture pendant la saison.',
+         'Si scrive molto sulla scheda: mettere le registrazioni su una chiavetta USB / un SSD, spegnere la registrazione continua o usare la protezione scrittura durante la stagione.',
+         'Igl vegn scrit bler sin la carta: metter las registraziuns sin in stick USB / ina SSD, deactivar la registraziun permanenta u duvrar la protecziun cunter scriver durant la stagiun.'),
+    'The memory chip is quite worn: plan a replacement.': ('Der Speicherchip ist ziemlich abgenutzt: einen Ersatz einplanen.', 'La puce mémoire est assez usée : prévoir un remplacement.', 'Il chip di memoria è piuttosto usurato: prevedere una sostituzione.', 'Il chip da memoria è fitg consumà: planisar ina remplazzada.'),
+    # ---- 145 self-healing
+    'Self-healing': ('Selbstheilung', 'Auto-réparation', 'Autoriparazione', 'Autoguariziun'),
+    'The camera loop hung': ('Die Kamera-Schleife hing', 'La boucle caméra était bloquée', 'Il ciclo della telecamera era bloccato', 'La cirquitaziun da la camera pendeva'),
+    'No new pictures although the camera is connected': ('Keine neuen Bilder, obwohl die Kamera verbunden ist', 'Plus de nouvelles images bien que la caméra soit connectée', 'Nessuna nuova immagine anche se la telecamera è collegata', 'Nagins novs maletgs, schebain che la camera è colliada'),
+    'The AI got stuck again and again': ('Die KI blieb immer wieder hängen', 'L’IA se bloquait encore et encore', 'L’IA si bloccava di continuo', 'L’IA è adina puspè restada pendida'),
+    'The web page did not answer': ('Die Webseite antwortete nicht', 'La page web ne répondait pas', 'La pagina web non rispondeva', 'La pagina web na respundeva betg'),
+    'The AI was stuck': ('Die KI hing', 'L’IA était bloquée', 'L’IA era bloccata', 'L’IA pendeva'),
+    'loaded again': ('neu geladen', 'rechargée', 'ricaricata', 'chargià da nov'),
+    'restarted': ('neu gestartet', 'redémarré', 'riavviato', 'reavià'),
+    'no restart now (limit)': ('jetzt kein Neustart (Grenze erreicht)', 'pas de redémarrage maintenant (limite)', 'nessun riavvio ora (limite)', 'ussa nagin reaviament (limita)'),
+    'MoveEye did not restart again (limit reached). Please look at it.': ('MoveEye hat nicht nochmals neu gestartet (Grenze erreicht). Bitte nachsehen.', 'MoveEye n’a pas redémarré une nouvelle fois (limite atteinte). Merci de vérifier.', 'MoveEye non si è riavviato di nuovo (limite raggiunto). Per favore controllare.', 'MoveEye n’è betg reavià anc ina giada (limita cuntanschida). Per plaschair controllar.'),
+    'MoveEye restarted itself': ('MoveEye hat sich selbst neu gestartet', 'MoveEye a redémarré tout seul', 'MoveEye si è riavviato da solo', 'MoveEye è sa reavià sez'),
+    'Everything runs again.': ('Alles läuft wieder.', 'Tout fonctionne à nouveau.', 'Tutto funziona di nuovo.', 'Tut funcziuna puspè.'),
+    'The AI was stuck and was loaded again.': ('Die KI hing und wurde neu geladen.', 'L’IA était bloquée et a été rechargée.', 'L’IA era bloccata ed è stata ricaricata.', 'L’IA pendeva ed è vegnida chargiada da nov.'),
+    'watching camera, AI and web page': ('überwacht Kamera, KI und Webseite', 'surveille caméra, IA et page web', 'sorveglia telecamera, IA e pagina web', 'survegliescha camera, IA e pagina web'),
+    'If it happens again: send the diagnosis package (Settings → Help).': ('Passiert es wieder: das Diagnose-Paket senden (Einstellungen → Hilfe).', 'Si cela se reproduit : envoyer le paquet de diagnostic (Réglages → Aide).', 'Se succede di nuovo: inviare il pacchetto di diagnosi (Impostazioni → Aiuto).', 'Sch’i capita danovamain: trametter il pachet da diagnosa (Configuraziuns → Agid).'),
+    # ---- 147 one lock with the simulator
+    'test bench': ('Prüfstand', 'banc d’essai', 'banco di prova', 'banc da prova'),
+    'training pictures': ('Trainingsbilder', 'images d’entraînement', 'immagini di addestramento', 'maletgs da trenament'),
+    'playback of a recording': ('Wiedergabe einer Aufnahme', 'lecture d’un enregistrement', 'riproduzione di una registrazione', 'reproducziun d’ina registraziun'),
+    'started in the simulator': ('im Simulator gestartet', 'lancé dans le simulateur', 'avviato nel simulatore', 'avià en il simulatur'),
+    # ---- names of the settings (570 / web)
+    'Simulator: fewer pictures (the simulator draws only what is fetched)': ('Simulator: weniger Bilder (der Simulator zeichnet nur, was abgeholt wird)', 'Simulateur : moins d’images (le simulateur ne dessine que ce qui est demandé)', 'Simulatore: meno immagini (il simulatore disegna solo ciò che viene richiesto)', 'Simulatur: pli paucs maletgs (il simulatur dissegna mo quai che vegn pretendì)'),
+    'Simulator: fewer pictures': ('Simulator: weniger Bilder', 'Simulateur : moins d’images', 'Simulatore: meno immagini', 'Simulatur: pli paucs maletgs'),
+    'Update the simulator by itself (the setting «Neue Versionen» of the simulator)': ('Simulator von selbst aktualisieren (die Einstellung «Neue Versionen» im Simulator)', 'Mettre à jour le simulateur tout seul (le réglage «Neue Versionen» du simulateur)', 'Aggiornare il simulatore da solo (l’impostazione «Neue Versionen» del simulatore)', 'Actualisar il simulatur sez (la configuraziun «Neue Versionen» dal simulatur)'),
+    'upd-owner-note': ('Das ist die Einstellung «Neue Versionen» im Simulator – hier und dort dieselbe.', 'C’est le réglage «Neue Versionen» du simulateur – le même ici et là-bas.', 'È l’impostazione «Neue Versionen» del simulatore – la stessa qui e là.', 'Quai è la configuraziun «Neue Versionen» dal simulatur – la medema qua e là.'),
+}
+for _k, _v in _HX_ROBUST.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+
+# ---- the manual: «Memory card» and «Self-healing» (before «Tips») ---------------------------------------------------------
+_HELP_SD = {
+ "de": '<section id="sdcard" data-icon="🪪"><h2>Speicherkarte schonen &amp; Selbstheilung</h2>'
+       '<p>Auf dem Campingplatz geht der Strom oft ohne Vorwarnung weg, und eine Speicherkarte, die den ganzen Tag beschrieben wird, nutzt sich ab. '
+       'Die <b>🩺 Selbstdiagnose</b> zeigt unter «Speicherkarte: Zustand», wie viel pro Tag auf die Karte geschrieben wird, ob Dateisystem-Fehler da sind und wie viel frei ist.</p>'
+       '<h3>Weniger schreiben</h3><ul><li>Aufnahmen auf einen USB-Stick oder eine SSD legen (Einstellungen → Aufnahme) – das schont die Karte am meisten.</li>'
+       '<li>Daueraufnahme und Zeitraffer nur einschalten, wenn sie gebraucht werden.</li>'
+       '<li>MoveEye selbst schreibt sparsam: Einstellungen höchstens alle 15 Sekunden, das Lebenszeichen für den sicheren Start nach 15 Minuten nur noch einmal pro Minute, dieselbe Fehlermeldung (z. B. «Kamera nicht erreichbar») nur alle 10 Minuten ins Protokoll.</li></ul>'
+       '<h3>Während der Saison: Karte schreibgeschützt (Overlay)</h3><ol><li>Zuerst alles fertig einrichten (WLAN, Push-Nachrichten, Zonen, Passwort) und eine Nacht testen.</li>'
+       '<li>Aufnahmen auf einen USB-Stick / eine SSD legen – sonst sind sie nach einem Neustart weg.</li>'
+       '<li>Am Pi im Terminal: <code>sudo raspi-config</code> → <i>Performance Options</i> → <i>Overlay File System</i> → <i>Yes</i> (Frage nach der Boot-Partition ebenfalls <i>Yes</i>) → neu starten. Das Menü installiert, was es braucht.</li>'
+       '<li>Jetzt landet alles, was geschrieben wird, im Arbeitsspeicher: ein Stromausfall kann die Karte nicht mehr beschädigen. Geänderte Einstellungen, das Protokoll und Updates sind nach einem Neustart aber wieder weg.</li>'
+       '<li>Für Änderungen oder ein Update: im selben Menü das Overlay ausschalten, neu starten, ändern, wieder einschalten.</li></ol>'
+       '<div class="tip">💡 Die Selbstdiagnose zeigt «Schreibschutz an», solange das Overlay läuft. Meldet sie Fehler: Aufnahmen sichern, die Karte am PC prüfen oder ersetzen (Marken-Karte, am besten «High Endurance»).</div>'
+       '<h3>Selbstheilung</h3><p>Hängt die Kamera-Schleife, die KI oder die Webseite mehrere Minuten lang, lädt MoveEye die KI neu bzw. startet sich selbst neu (wie bei einem Update: Aufnahme fertig, Einstellungen gespeichert), schreibt es ins Protokoll und schickt eine Info-Nachricht. '
+       'Damit es nie dauernd neu startet: frühestens 5 Minuten nach dem Start, höchstens 2 Neustarts pro Stunde und 6 pro Tag – danach meldet es sich nur noch. Die Selbstdiagnose zeigt das letzte Eingreifen.</p></section>\n\n',
+ "en": '<section id="sdcard" data-icon="🪪"><h2>Protecting the memory card &amp; self-healing</h2>'
+       '<p>On camp sites the power often goes off without warning, and a memory card that is written all day wears out. '
+       'The <b>🩺 self-check</b> shows under «Memory card health» how much is written to the card per day, whether there are file system errors and how much is free.</p>'
+       '<h3>Write less</h3><ul><li>Put the recordings on a USB drive or an SSD (Settings → Recording) – that spares the card the most.</li>'
+       '<li>Switch on continuous recording and time-lapse only when you need them.</li>'
+       '<li>MoveEye itself writes sparingly: settings at most every 15 seconds, the sign of life for the safe start once a minute after the first 15 minutes, the same error (e.g. «camera not reachable») only every 10 minutes into the log.</li></ul>'
+       '<h3>During the season: read-only card (overlay)</h3><ol><li>First finish the setup (Wi-Fi, push messages, zones, password) and test one night.</li>'
+       '<li>Put the recordings on a USB drive / SSD – otherwise they are gone after a restart.</li>'
+       '<li>On the Pi in a terminal: <code>sudo raspi-config</code> → <i>Performance Options</i> → <i>Overlay File System</i> → <i>Yes</i> (boot partition read-only: <i>Yes</i> too) → reboot. The menu installs what it needs.</li>'
+       '<li>Now everything that is written goes to the memory (RAM): a power cut can no longer damage the card. Changed settings, the log and updates are gone after a restart, though.</li>'
+       '<li>For changes or an update: switch the overlay off in the same menu, reboot, change, switch it on again.</li></ol>'
+       '<div class="tip">💡 The self-check shows «read-only protection on» while the overlay runs. If it reports errors: save the recordings, check the card on a PC or replace it (a brand card, ideally «High Endurance»).</div>'
+       '<h3>Self-healing</h3><p>If the camera loop, the AI or the web page hangs for several minutes, MoveEye loads the AI again or restarts itself (like an update: recording finished, settings saved), notes it in the log and sends one info message. '
+       'So that it never restarts again and again: not before 5 minutes after the start, at most 2 restarts per hour and 6 per day – then it only reports. The self-check shows the last intervention.</p></section>\n\n',
+ "fr": '<section id="sdcard" data-icon="🪪"><h2>Ménager la carte mémoire &amp; auto-réparation</h2>'
+       '<p>Au camping, le courant se coupe souvent sans prévenir, et une carte mémoire écrite toute la journée s’use. L’<b>🩺 autodiagnostic</b> montre sous «Carte mémoire : état» combien est écrit par jour, s’il y a des erreurs du système de fichiers et la place libre.</p>'
+       '<h3>Écrire moins</h3><ul><li>Mettre les enregistrements sur une clé USB ou un SSD (Réglages → Enregistrement).</li><li>Enregistrement continu et timelapse seulement si nécessaire.</li>'
+       '<li>MoveEye écrit peu : réglages au plus toutes les 15 secondes, signe de vie une fois par minute après 15 minutes, une même erreur seulement toutes les 10 minutes dans le journal.</li></ul>'
+       '<h3>Pendant la saison : carte en lecture seule (overlay)</h3><ol><li>Tout configurer d’abord et tester une nuit.</li><li>Enregistrements sur clé USB / SSD – sinon ils disparaissent au redémarrage.</li>'
+       '<li>Sur le Pi : <code>sudo raspi-config</code> → <i>Performance Options</i> → <i>Overlay File System</i> → <i>Yes</i> (partition de démarrage aussi) → redémarrer.</li>'
+       '<li>Tout ce qui est écrit va en mémoire vive : une coupure de courant n’abîme plus la carte. Réglages modifiés, journal et mises à jour disparaissent au redémarrage.</li>'
+       '<li>Pour modifier ou mettre à jour : désactiver l’overlay dans le même menu, redémarrer, modifier, réactiver.</li></ol>'
+       '<h3>Auto-réparation</h3><p>Si la boucle caméra, l’IA ou la page web se bloquent plusieurs minutes, MoveEye recharge l’IA ou redémarre (comme une mise à jour), le note dans le journal et envoie un message. Au plus 2 redémarrages par heure et 6 par jour, pas avant 5 minutes après le démarrage.</p></section>\n\n',
+ "it": '<section id="sdcard" data-icon="🪪"><h2>Proteggere la scheda di memoria &amp; autoriparazione</h2>'
+       '<p>In campeggio la corrente va via spesso senza preavviso, e una scheda di memoria scritta tutto il giorno si consuma. L’<b>🩺 autodiagnosi</b> mostra sotto «Scheda di memoria: stato» quanto viene scritto al giorno, se ci sono errori del file system e lo spazio libero.</p>'
+       '<h3>Scrivere meno</h3><ul><li>Registrazioni su una chiavetta USB o un SSD (Impostazioni → Registrazione).</li><li>Registrazione continua e timelapse solo se servono.</li>'
+       '<li>MoveEye scrive poco: impostazioni al massimo ogni 15 secondi, segno di vita una volta al minuto dopo 15 minuti, lo stesso errore solo ogni 10 minuti nel protocollo.</li></ul>'
+       '<h3>Durante la stagione: scheda in sola lettura (overlay)</h3><ol><li>Prima configurare tutto e provare una notte.</li><li>Registrazioni su chiavetta USB / SSD – altrimenti spariscono al riavvio.</li>'
+       '<li>Sul Pi: <code>sudo raspi-config</code> → <i>Performance Options</i> → <i>Overlay File System</i> → <i>Yes</i> (anche la partizione di avvio) → riavviare.</li>'
+       '<li>Tutto ciò che viene scritto va nella RAM: un’interruzione di corrente non danneggia più la scheda. Impostazioni modificate, protocollo e aggiornamenti spariscono al riavvio.</li>'
+       '<li>Per modifiche o aggiornamenti: disattivare l’overlay nello stesso menu, riavviare, modificare, riattivare.</li></ol>'
+       '<h3>Autoriparazione</h3><p>Se il ciclo della telecamera, l’IA o la pagina web restano bloccati per alcuni minuti, MoveEye ricarica l’IA o si riavvia (come un aggiornamento), lo annota nel protocollo e invia un messaggio. Al massimo 2 riavvii all’ora e 6 al giorno, non prima di 5 minuti dall’avvio.</p></section>\n\n',
+ "rm": '<section id="sdcard" data-icon="🪪"><h2>Schanegiar la carta da memoria &amp; autoguariziun</h2>'
+       '<p>Sin il plazza da campar mancan l’electricitad savens senza avertiment, ed ina carta da memoria che vegn scritta tut il di sa consuma. L’<b>🩺 autodiagnosa</b> mussa sut «Carta da memoria: stadi» quant che vegn scrit per di, sch’i dat errurs dal sistem da datotecas e quant che è liber.</p>'
+       '<h3>Scriver main</h3><ul><li>Metter las registraziuns sin in stick USB u ina SSD (Configuraziuns → Registraziun).</li><li>Registraziun permanenta e timelapse mo sch’ins dovra quai.</li>'
+       '<li>MoveEye scriva pauc: configuraziuns maximalmain mintga 15 secundas, il segn da vita suenter 15 minutas mo ina giada per minuta, la medema errur mo mintga 10 minutas en il protocol.</li></ul>'
+       '<h3>Durant la stagiun: carta protegida cunter scriver (overlay)</h3><ol><li>L’emprim configurar tut ed empruvar ina notg.</li><li>Registraziuns sin stick USB / SSD – uschiglio mancan ellas suenter in reaviament.</li>'
+       '<li>Sin il Pi: <code>sudo raspi-config</code> → <i>Performance Options</i> → <i>Overlay File System</i> → <i>Yes</i> (er la partiziun da boot) → reaviar.</li>'
+       '<li>Tut quai che vegn scrit va en la memoria (RAM): ina interrupziun da electricitad na po betg pli donnegiar la carta. Configuraziuns midadas, protocol ed actualisaziuns mancan dentant suenter in reaviament.</li>'
+       '<li>Per midadas u actualisaziuns: deactivar l’overlay en il medem menu, reaviar, midar, activar puspè.</li></ol>'
+       '<h3>Autoguariziun</h3><p>Sche la cirquitaziun da la camera, l’IA u la pagina web pendan pliras minutas, chargia MoveEye da nov l’IA u sa reavia (sco tar ina actualisaziun), nota quai en il protocol e trametta in avis. Maximalmain 2 reaviaments per ura e 6 per di, betg avant 5 minutas suenter l’aviar.</p></section>\n\n',
+}
+
+
+def _help_sd(doc, lang):
+    if '<section id="sdcard"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    if i < 0:
+        i = doc.find('<section id="privacy"')
+    return doc[:i] + _HELP_SD[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en = HELP_PAGE.find('<div lang="en">')
+if _hp_en > 0:
+    HELP_PAGE = _help_sd(HELP_PAGE[:_hp_en], "de") + _help_sd(HELP_PAGE[_hp_en:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_sd(HELP_X[_L], _L)
 # ---- guide: the parts added in 2.53 - 2.65 (inserted into the existing chapters of every language) ----
 _HELP_NEW = {
  "de": {

@@ -159,7 +159,15 @@ class MotionWatch:
         src, sid, label, err = res
         self._good_t = time.time()                         # 2.98.11: a new source gets its 6 s (see the read loop)
         if src is None:
-            log_event("sys", f"Video source '{label}' not available: {err}")
+            # 2.98.13 (memory card): the same failure every 3 s wrote ~30'000 log lines a day - now the first one, then
+            # once every 10 minutes with the number of tries
+            msg_ = f"Video source '{label}' not available: {err}"
+            ls_ = getattr(self, "_fail_log", None)
+            if ls_ is None or ls_[0] != msg_ or time.time() - ls_[1] > 600:
+                log_event("sys", msg_ + (f" ({ls_[2]} tries since {datetime.fromtimestamp(ls_[3]).strftime('%H:%M')})" if ls_ and ls_[0] == msg_ and ls_[2] else ""))
+                self._fail_log = [msg_, time.time(), 0, ls_[3] if ls_ and ls_[0] == msg_ else time.time()]
+            else:
+                ls_[2] += 1
             if self.cap is not None and str(STATE.get("source_id", "")).startswith("sim:") and not CFG["sim_on"]:
                 self.cap.release(); self.cap = None                # simulation switched off: never keep the simulator picture
                 STATE["source_status"] = f"failed: {err}"; self._retry_at = time.time() + 3.0

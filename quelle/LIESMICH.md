@@ -29,6 +29,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `050_meldungen_push.py` | Meldungen (ntfy, Telegram, Webhook), Web-Push | 289 |
 | `060_sicherung_schutz_klima.py` | Sicherung, Diebstahlschutz, Linse, Klima, Wetter, Postausgang, Notifier | 1224 |
 | `066_alarm_extras.py` | Alarm-Extras: Knöpfe in der Push-Nachricht (/na/), Akku-Prognose, Morgen-Bildstreifen, «Was war das?», doppelte Bestätigung, Ansage beim Einschalten, «Bist du's?» | 724 |
+| `067_speicherkarte.py` | Speicherkarte schonen: Schreibmenge pro Tag, Dateisystem-Fehler, Schreibschutz (Overlay) | 267 |
 | `070_hardware_servos_licht.py` | Servos, PCA9685, Mover, Licht, Disco-Licht | 398 |
 | `080_waermebild_modul.py` | Treiber Wärmebild-Modul, Klasse Hardware | 281 |
 | `090_system_fern_sichtungen.py` | System, Fernzugriff, Sichtungen, Nachtbericht, Gast-Zugang | 465 |
@@ -39,6 +40,8 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `130_scharf_profile_modi.py` | Scharf / unscharf, Camping-Profil, einfache Einstellungen, Modi | 368 |
 | `131_konzept_modi.py` | Modi und Profile zusammengeführt: alte Einstellungen beim Laden übernehmen (2.98.14) | 66 |
 | `140_autostart.py` | Autostart | 422 |
+| `145_selbstheilung.py` | Selbstheilung: Wächter für Kamera-Schleife, KI, Webseite (Neustart mit Bremse); Ampeln Speicherkarte / Selbstheilung | 303 |
+| `147_simsperre.py` | Eine Sperre für Simulator-Aufgaben mit dem Simulator; blinde Flecken aus dem Simulator | 118 |
 | `150_zweites_wlan_tv_netzcheck.py` | zweites WLAN, USB-Tethering, TV-Anzeige, Netz-Check, WLAN-Wächter | 1059 |
 | `160_netzautomatik_patrouille.py` | Netz-Automatik, Patrouille | 160 |
 | `170_ki_personen.py` | KI-Modell laden und herunterladen | 110 |
@@ -92,6 +95,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
 | `535_web_erkennung.py` | Web: Gehtest (Live, Schutz), Akku-Sparen auf der Schutz-Seite | 119 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
+| `545_simulator_updates.py` | Simulator-Updates: ein Besitzer («Neue Versionen» im Simulator) | 72 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
@@ -112,6 +116,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
 | `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
 | `605_uebersetzungen_konzept.py` | Übersetzungen der Konzept-Bereinigung (Assistent, Modi, Fenster-Reiter) | 97 |
+| `609_uebersetzungen_robust.py` | Übersetzungen und Anleitung: Speicherkarte, Selbstheilung, Simulator-Sperre | 142 |
 | `610_anleitung_ergaenzungen.py` | Anleitung: Ergänzungen in allen Sprachen | 167 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |

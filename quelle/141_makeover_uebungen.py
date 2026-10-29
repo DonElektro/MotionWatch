@@ -48,7 +48,10 @@ def simtask_busy(except_=""):
         pass
     if except_ != "game" and sim_game_running():
         return "game"
-    return ""
+    try:
+        return sim_busy_remote()                           # 2.98.13: started in the simulator window (147_simsperre.py)
+    except NameError:
+        return ""
 
 
 def simtask_refuse(me):

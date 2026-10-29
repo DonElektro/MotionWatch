@@ -786,8 +786,13 @@ def run_guard_start():
                          beat_txt=datetime.now().strftime("%Y-%m-%d %H:%M"))
             if up > 1800 and state.get("streak"):
                 state["streak"] = 0                              # ran long enough: the next short run starts counting again
-            if not state["clean"]:
+            # 2.98.13 (memory card): every 10 s only in the first 15 minutes (a crash right after the start counts for the
+            # safe start), then once a minute - and at once when the power or the heat gets critical
+            crit = (state["uv"], state["throttled"], (state.get("cpu_temp") or 0) >= 75)
+            if not state["clean"] and (up < 900 or time.monotonic() - wrote[0] >= 60 or crit != wrote[1]):
+                wrote[0] = time.monotonic(); wrote[1] = crit
                 _run_write(state)
+    wrote = [0.0, None]
     threading.Thread(target=beat, daemon=True, name="runguard").start()
 
 
