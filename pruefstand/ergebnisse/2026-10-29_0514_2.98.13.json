@@ -1,0 +1,1771 @@
+{
+ "datum": "2026-10-29 04:37",
+ "mw_version": "2.98.13",
+ "ki": "running · 138 ms",
+ "rechner": "GitHub (ubuntu, 4 Kerne)",
+ "qualitaet": "simple",
+ "szene": "stellplatz",
+ "kameras": "Kopfkamera",
+ "plaene": {
+  "quick": [
+   {
+    "date": "2026-10-29 04:40:54",
+    "device": "MoveEye",
+    "false_alarms": 1,
+    "false_list": [
+     {
+      "cause": "Tier (fox)",
+      "phase": 0,
+      "t": 32.7
+     }
+    ],
+    "latency_s": 1.7,
+    "missed_list": [
+     {
+      "kind": "person",
+      "phase": 1,
+      "t": 146.5,
+      "why": []
+     },
+     {
+      "kind": "person",
+      "phase": 1,
+      "t": 176,
+      "why": [
+       "dark"
+      ]
+     },
+     {
+      "kind": "person",
+      "phase": 1,
+      "t": 186.6,
+      "why": [
+       "dark"
+      ]
+     },
+     {
+      "kind": "person",
+      "phase": 1,
+      "t": 213.8,
+      "why": [
+       "dark"
+      ]
+     }
+    ],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht).",
+    "persons": 10,
+    "persons_detected": 6,
+    "phases": [
+     {
+      "animals": 2,
+      "animals_as_person": 2,
+      "animals_reported": 2,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 1,
+      "hour": 13,
+      "latency_s": 1.7,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag, Wind",
+      "not_visible": 0,
+      "persons": 6,
+      "persons_detected": 6,
+      "weather": "cloudy",
+      "wind": 45
+     },
+     {
+      "animals": 1,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 0,
+      "hour": 22.5,
+      "latency_s": -1,
+      "missed": [
+       "person",
+       "person",
+       "person",
+       "person"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 3,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 0,
+      "weather": "clear",
+      "wind": 10
+     }
+    ],
+    "plan": "quick",
+    "plan_name": "Kurz (Tag und Nacht · etwa 2½ Min., für die automatische Optimierung)",
+    "rate": 60,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "simulator": "3D-4.0",
+    "truth_cams": [
+     0
+    ],
+    "v": 2,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": 1.7,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "px": 159,
+      "reported": false,
+      "vis_s": 2.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 0.85,
+      "person": false,
+      "phase": 0,
+      "px": 50,
+      "reported": true,
+      "vis_s": 4.8
+     },
+     {
+      "crouch": false,
+      "det_s": 3.5,
+      "kind": "jogger",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "px": 75,
+      "reported": false,
+      "vis_s": 12.3
+     },
+     {
+      "crouch": false,
+      "det_s": 1.5,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "px": 125,
+      "reported": false,
+      "vis_s": 4
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "px": 67,
+      "reported": false,
+      "vis_s": 14.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 0.85,
+      "person": false,
+      "phase": 0,
+      "px": 35,
+      "reported": true,
+      "vis_s": 11.3
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "jogger",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "px": 48,
+      "reported": false,
+      "vis_s": 9
+     },
+     {
+      "crouch": false,
+      "det_s": 3.8,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "px": 156,
+      "reported": false,
+      "vis_s": 10.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.61,
+      "person": true,
+      "phase": 1,
+      "px": 284,
+      "reported": false,
+      "vis_s": 3.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cat",
+      "light": 0.38,
+      "person": false,
+      "phase": 1,
+      "px": 44,
+      "reported": false,
+      "vis_s": 7.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.25,
+      "person": true,
+      "phase": 1,
+      "px": 121,
+      "reported": false,
+      "vis_s": 1.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.47,
+      "person": true,
+      "phase": 1,
+      "px": 218,
+      "reported": false,
+      "vis_s": 4.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "person",
+      "light": 0.33,
+      "person": true,
+      "phase": 1,
+      "px": 146,
+      "reported": false,
+      "vis_s": 9.8
+     }
+    ],
+    "dauer_s": 228,
+    "mw_fps": 3.6
+   }
+  ],
+  "night": [
+   {
+    "date": "2026-10-29 04:46:48",
+    "device": "MoveEye",
+    "false_alarms": 2,
+    "false_list": [
+     {
+      "cause": "Tier (boar)",
+      "phase": 1,
+      "t": 159.7
+     },
+     {
+      "cause": "Tier (boar)",
+      "phase": 1,
+      "t": 161.4
+     }
+    ],
+    "latency_s": 3.5,
+    "missed_list": [
+     {
+      "kind": "child",
+      "phase": 1,
+      "t": 175.8,
+      "why": [
+       "dark"
+      ]
+     },
+     {
+      "kind": "child",
+      "phase": 1,
+      "t": 226.4,
+      "why": []
+     }
+    ],
+    "mult": 2,
+    "noise_alarms": [
+     {
+      "cause": "Regen",
+      "phase": 2,
+      "t": 251.5
+     }
+    ],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht).",
+    "persons": 4,
+    "persons_detected": 2,
+    "phases": [
+     {
+      "animals": 1,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 0,
+      "hour": 1,
+      "latency_s": -1,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht, ohne Licht",
+      "not_visible": 4,
+      "persons": 0,
+      "persons_detected": 0,
+      "weather": "clear",
+      "wind": 5
+     },
+     {
+      "animals": 4,
+      "animals_as_person": 1,
+      "animals_reported": 3,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 2,
+      "hour": 2,
+      "latency_s": 3.5,
+      "missed": [
+       "child",
+       "child"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 1,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht, Infrarot an",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 2,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 0,
+      "hour": 3,
+      "latency_s": -1,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht, Regen",
+      "not_visible": 4,
+      "persons": 0,
+      "persons_detected": 0,
+      "weather": "rain",
+      "wind": 25
+     }
+    ],
+    "plan": "night",
+    "plan_name": "Nacht (dunkel, Infrarot, Tiere · etwa 4 Min.)",
+    "rate": 50,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "simulator": "3D-4.0",
+    "truth_cams": [
+     0
+    ],
+    "v": 2,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "hedgehog",
+      "light": 0.37,
+      "person": false,
+      "phase": 0,
+      "px": 33,
+      "reported": false,
+      "vis_s": 0.3
+     },
+     {
+      "crouch": false,
+      "det_s": 1.6,
+      "kind": "person",
+      "light": 0.61,
+      "person": true,
+      "phase": 1,
+      "px": 293,
+      "reported": false,
+      "vis_s": 2.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "boar",
+      "light": 0.35,
+      "person": false,
+      "phase": 1,
+      "px": 102,
+      "reported": true,
+      "vis_s": 8.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "child",
+      "light": 0.25,
+      "person": true,
+      "phase": 1,
+      "px": 95,
+      "reported": false,
+      "vis_s": 10.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "badger",
+      "light": 0.43,
+      "person": false,
+      "phase": 1,
+      "px": 57,
+      "reported": true,
+      "vis_s": 8.5
+     },
+     {
+      "crouch": false,
+      "det_s": 5.3,
+      "kind": "person",
+      "light": 0.25,
+      "person": true,
+      "phase": 1,
+      "px": 133,
+      "reported": false,
+      "vis_s": 5.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "boar",
+      "light": 0.26,
+      "person": false,
+      "phase": 1,
+      "px": 86,
+      "reported": true,
+      "vis_s": 10.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "child",
+      "light": 0.59,
+      "person": true,
+      "phase": 1,
+      "px": 165,
+      "reported": false,
+      "vis_s": 4.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "badger",
+      "light": 0.43,
+      "person": false,
+      "phase": 1,
+      "px": 52,
+      "reported": false,
+      "vis_s": 7.3
+     }
+    ],
+    "dauer_s": 351,
+    "mw_fps": 3.7
+   }
+  ],
+  "standard": [
+   {
+    "date": "2026-10-29 04:55:38",
+    "device": "MoveEye",
+    "false_alarms": 5,
+    "false_list": [
+     {
+      "cause": "Tier (fox)",
+      "phase": 0,
+      "t": 33
+     },
+     {
+      "cause": "Regen",
+      "phase": 3,
+      "t": 440
+     },
+     {
+      "cause": "Regen",
+      "phase": 3,
+      "t": 442.3
+     },
+     {
+      "cause": "Regen",
+      "phase": 3,
+      "t": 443.4
+     },
+     {
+      "cause": "Regen",
+      "phase": 3,
+      "t": 504.6
+     }
+    ],
+    "latency_s": 1.3,
+    "missed_list": [
+     {
+      "kind": "jogger",
+      "phase": 1,
+      "t": 224.8,
+      "why": [
+       "fast"
+      ]
+     },
+     {
+      "kind": "jogger",
+      "phase": 1,
+      "t": 276.3,
+      "why": [
+       "small",
+       "fast"
+      ]
+     }
+    ],
+    "mult": 2,
+    "noise_alarms": [
+     {
+      "cause": "Regen",
+      "phase": 3,
+      "t": 430
+     },
+     {
+      "cause": "Regen",
+      "phase": 3,
+      "t": 445.1
+     }
+    ],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht).",
+    "persons": 14,
+    "persons_detected": 12,
+    "phases": [
+     {
+      "animals": 4,
+      "animals_as_person": 4,
+      "animals_reported": 4,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 1,
+      "hour": 11,
+      "latency_s": 1.3,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag, klar",
+      "not_visible": 0,
+      "persons": 8,
+      "persons_detected": 8,
+      "weather": "clear",
+      "wind": 5
+     },
+     {
+      "animals": 2,
+      "animals_as_person": 0,
+      "animals_reported": 2,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 0,
+      "hour": 14.5,
+      "latency_s": 1.4,
+      "missed": [
+       "jogger",
+       "jogger"
+      ],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 2,
+       "small": 1
+      },
+      "name": "Tag, Wind und Wolken",
+      "not_visible": 0,
+      "persons": 6,
+      "persons_detected": 4,
+      "weather": "cloudy",
+      "wind": 65
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 0,
+      "hour": 22.5,
+      "latency_s": -1,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht, klar (Insekten am Licht)",
+      "not_visible": 4,
+      "persons": 0,
+      "persons_detected": 0,
+      "weather": "clear",
+      "wind": 5
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 4,
+      "hour": 23.5,
+      "latency_s": -1,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht, Regen",
+      "not_visible": 4,
+      "persons": 0,
+      "persons_detected": 0,
+      "weather": "rain",
+      "wind": 20
+     }
+    ],
+    "plan": "standard",
+    "plan_name": "Standard (Tag, Wind, Nacht, Regen · etwa 5 Min.)",
+    "rate": 86,
+    "realism": {
+     "fx": true,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "simulator": "3D-4.0",
+    "truth_cams": [
+     0
+    ],
+    "v": 2,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": 0.9,
+      "kind": "person",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 158,
+      "reported": false,
+      "vis_s": 1.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 1,
+      "person": false,
+      "phase": 0,
+      "px": 44,
+      "reported": true,
+      "vis_s": 4.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0.5,
+      "kind": "person",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 86,
+      "reported": false,
+      "vis_s": 17.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "deer",
+      "light": 1,
+      "person": false,
+      "phase": 0,
+      "px": 112,
+      "reported": true,
+      "vis_s": 5.8
+     },
+     {
+      "crouch": false,
+      "det_s": 0.6,
+      "kind": "child",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 49,
+      "reported": false,
+      "vis_s": 14.5
+     },
+     {
+      "crouch": false,
+      "det_s": 1.2,
+      "kind": "person",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 94,
+      "reported": false,
+      "vis_s": 7.5
+     },
+     {
+      "crouch": false,
+      "det_s": 2.4,
+      "kind": "person",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 47,
+      "reported": false,
+      "vis_s": 6.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 1,
+      "person": false,
+      "phase": 0,
+      "px": 65,
+      "reported": true,
+      "vis_s": 3.3
+     },
+     {
+      "crouch": false,
+      "det_s": 1.9,
+      "kind": "person",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 107,
+      "reported": false,
+      "vis_s": 13.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "deer",
+      "light": 1,
+      "person": false,
+      "phase": 0,
+      "px": 61,
+      "reported": true,
+      "vis_s": 10.5
+     },
+     {
+      "crouch": false,
+      "det_s": 1.5,
+      "kind": "child",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 95,
+      "reported": false,
+      "vis_s": 8
+     },
+     {
+      "crouch": false,
+      "det_s": 1.2,
+      "kind": "person",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 67,
+      "reported": false,
+      "vis_s": 8
+     },
+     {
+      "crouch": false,
+      "det_s": 1.4,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 1,
+      "px": 185,
+      "reported": false,
+      "vis_s": 8.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cat",
+      "light": 0.85,
+      "person": false,
+      "phase": 1,
+      "px": 25,
+      "reported": true,
+      "vis_s": 15.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "jogger",
+      "light": 0.85,
+      "person": true,
+      "phase": 1,
+      "px": 86,
+      "reported": false,
+      "vis_s": 5.5
+     },
+     {
+      "crouch": false,
+      "det_s": 1.8,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 1,
+      "px": 127,
+      "reported": false,
+      "vis_s": 14.8
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 1,
+      "px": 67,
+      "reported": false,
+      "vis_s": 12.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cat",
+      "light": 0.85,
+      "person": false,
+      "phase": 1,
+      "px": 23,
+      "reported": true,
+      "vis_s": 16
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "jogger",
+      "light": 0.85,
+      "person": true,
+      "phase": 1,
+      "px": 56,
+      "reported": false,
+      "vis_s": 9.3
+     },
+     {
+      "crouch": false,
+      "det_s": 2.4,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 1,
+      "px": 174,
+      "reported": false,
+      "vis_s": 4
+     }
+    ],
+    "dauer_s": 533,
+    "mw_fps": 3.6
+   }
+  ],
+  "quick~roh": [
+   {
+    "date": "2026-10-29 04:59:28",
+    "device": "MoveEye",
+    "false_alarms": 5,
+    "false_list": [
+     {
+      "cause": "Tier (fox)",
+      "phase": 0,
+      "t": 34.8
+     },
+     {
+      "cause": "unbekannt",
+      "phase": 1,
+      "t": 155.6
+     },
+     {
+      "cause": "Tier (cat)",
+      "phase": 1,
+      "t": 159.1
+     },
+     {
+      "cause": "Tier (cat)",
+      "phase": 1,
+      "t": 160.6
+     },
+     {
+      "cause": "Tier (cat)",
+      "phase": 1,
+      "t": 165.8
+     }
+    ],
+    "latency_s": 0.5,
+    "missed_list": [],
+    "mult": 2,
+    "noise_alarms": [],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht).",
+    "persons": 10,
+    "persons_detected": 10,
+    "phases": [
+     {
+      "animals": 2,
+      "animals_as_person": 2,
+      "animals_reported": 2,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 1,
+      "hour": 13,
+      "latency_s": 0.4,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag, Wind",
+      "not_visible": 0,
+      "persons": 6,
+      "persons_detected": 6,
+      "weather": "cloudy",
+      "wind": 45
+     },
+     {
+      "animals": 1,
+      "animals_as_person": 1,
+      "animals_reported": 1,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 4,
+      "hour": 22.5,
+      "latency_s": 0.7,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht mit Infrarot",
+      "not_visible": 0,
+      "persons": 4,
+      "persons_detected": 4,
+      "weather": "clear",
+      "wind": 10
+     }
+    ],
+    "plan": "quick",
+    "plan_name": "Kurz (Tag und Nacht · etwa 2½ Min., für die automatische Optimierung)",
+    "rate": 100,
+    "realism": {
+     "fx": false,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "simulator": "3D-4.0",
+    "truth_cams": [
+     0
+    ],
+    "v": 2,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": 0.9,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "px": 171,
+      "reported": false,
+      "vis_s": 8.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 0.85,
+      "person": false,
+      "phase": 0,
+      "px": 37,
+      "reported": true,
+      "vis_s": 10.3
+     },
+     {
+      "crouch": false,
+      "det_s": 0.6,
+      "kind": "jogger",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "px": 80,
+      "reported": false,
+      "vis_s": 9.3
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "px": 125,
+      "reported": false,
+      "vis_s": 42.3
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "px": 65,
+      "reported": false,
+      "vis_s": 16.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 0.85,
+      "person": false,
+      "phase": 0,
+      "px": 39,
+      "reported": true,
+      "vis_s": 6.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "jogger",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "px": 58,
+      "reported": false,
+      "vis_s": 1.3
+     },
+     {
+      "crouch": false,
+      "det_s": 0.9,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 0,
+      "px": 169,
+      "reported": false,
+      "vis_s": 5
+     },
+     {
+      "crouch": false,
+      "det_s": 0.8,
+      "kind": "person",
+      "light": 0.36,
+      "person": true,
+      "phase": 1,
+      "px": 283,
+      "reported": false,
+      "vis_s": 7
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cat",
+      "light": 0.37,
+      "person": false,
+      "phase": 1,
+      "px": 64,
+      "reported": true,
+      "vis_s": 10
+     },
+     {
+      "crouch": false,
+      "det_s": 1.2,
+      "kind": "person",
+      "light": 0.26,
+      "person": true,
+      "phase": 1,
+      "px": 139,
+      "reported": false,
+      "vis_s": 13.3
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "person",
+      "light": 0.31,
+      "person": true,
+      "phase": 1,
+      "px": 211,
+      "reported": false,
+      "vis_s": 14.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0.6,
+      "kind": "person",
+      "light": 0.36,
+      "person": true,
+      "phase": 1,
+      "px": 155,
+      "reported": false,
+      "vis_s": 2
+     }
+    ],
+    "dauer_s": 229,
+    "mw_fps": 3.7
+   }
+  ],
+  "night~roh": [
+   {
+    "date": "2026-10-29 05:05:23",
+    "device": "MoveEye",
+    "false_alarms": 10,
+    "false_list": [
+     {
+      "cause": "Tier (boar)",
+      "phase": 1,
+      "t": 158.9
+     },
+     {
+      "cause": "unbekannt",
+      "phase": 1,
+      "t": 163.1
+     },
+     {
+      "cause": "unbekannt",
+      "phase": 1,
+      "t": 165.4
+     },
+     {
+      "cause": "Tier (boar)",
+      "phase": 1,
+      "t": 214.2
+     },
+     {
+      "cause": "Tier (boar)",
+      "phase": 1,
+      "t": 214.7
+     },
+     {
+      "cause": "Tier (badger)",
+      "phase": 1,
+      "t": 240.8
+     },
+     {
+      "cause": "Tier (badger)",
+      "phase": 1,
+      "t": 244.4
+     },
+     {
+      "cause": "Tier (badger)",
+      "phase": 1,
+      "t": 247.8
+     },
+     {
+      "cause": "Regen",
+      "phase": 2,
+      "t": 325.7
+     },
+     {
+      "cause": "Regen",
+      "phase": 2,
+      "t": 329.8
+     }
+    ],
+    "latency_s": 0.3,
+    "missed_list": [],
+    "mult": 2,
+    "noise_alarms": [
+     {
+      "cause": "Regen",
+      "phase": 2,
+      "t": 253.1
+     }
+    ],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht).",
+    "persons": 3,
+    "persons_detected": 3,
+    "phases": [
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 0,
+      "hour": 1,
+      "latency_s": -1,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht, ohne Licht",
+      "not_visible": 4,
+      "persons": 0,
+      "persons_detected": 0,
+      "weather": "clear",
+      "wind": 5
+     },
+     {
+      "animals": 4,
+      "animals_as_person": 4,
+      "animals_reported": 4,
+      "cond": [
+       "ir"
+      ],
+      "dark": true,
+      "false_alarms": 8,
+      "hour": 2,
+      "latency_s": 0.3,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht, Infrarot an",
+      "not_visible": 1,
+      "persons": 3,
+      "persons_detected": 3,
+      "weather": "clear",
+      "wind": 10
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 2,
+      "hour": 3,
+      "latency_s": -1,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht, Regen",
+      "not_visible": 4,
+      "persons": 0,
+      "persons_detected": 0,
+      "weather": "rain",
+      "wind": 25
+     }
+    ],
+    "plan": "night",
+    "plan_name": "Nacht (dunkel, Infrarot, Tiere · etwa 4 Min.)",
+    "rate": 100,
+    "realism": {
+     "fx": false,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "simulator": "3D-4.0",
+    "truth_cams": [
+     0
+    ],
+    "v": 2,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": 0.8,
+      "kind": "person",
+      "light": 0.6,
+      "person": true,
+      "phase": 1,
+      "px": 268,
+      "reported": false,
+      "vis_s": 1.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "boar",
+      "light": 0.36,
+      "person": false,
+      "phase": 1,
+      "px": 92,
+      "reported": true,
+      "vis_s": 2.3
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "child",
+      "light": 0.25,
+      "person": true,
+      "phase": 1,
+      "px": 88,
+      "reported": false,
+      "vis_s": 7.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "badger",
+      "light": 0.46,
+      "person": false,
+      "phase": 1,
+      "px": 62,
+      "reported": true,
+      "vis_s": 7.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "boar",
+      "light": 0.32,
+      "person": false,
+      "phase": 1,
+      "px": 83,
+      "reported": true,
+      "vis_s": 7.3
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "child",
+      "light": 0.38,
+      "person": true,
+      "phase": 1,
+      "px": 167,
+      "reported": false,
+      "vis_s": 9.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "badger",
+      "light": 0.28,
+      "person": false,
+      "phase": 1,
+      "px": 46,
+      "reported": true,
+      "vis_s": 9.3
+     }
+    ],
+    "dauer_s": 356,
+    "mw_fps": 3.6
+   }
+  ],
+  "standard~roh": [
+   {
+    "date": "2026-10-29 05:14:18",
+    "device": "MoveEye",
+    "false_alarms": 1,
+    "false_list": [
+     {
+      "cause": "Tier (cat)",
+      "phase": 1,
+      "t": 218.7
+     }
+    ],
+    "latency_s": 1.5,
+    "missed_list": [],
+    "mult": 2,
+    "noise_alarms": [
+     {
+      "cause": "Regen",
+      "phase": 3,
+      "t": 430.3
+     }
+    ],
+    "note": "Wahrheit: sichtbar für die Kopfkamera (frei, gross genug, genug Licht).",
+    "persons": 14,
+    "persons_detected": 14,
+    "phases": [
+     {
+      "animals": 4,
+      "animals_as_person": 2,
+      "animals_reported": 4,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 0,
+      "hour": 11,
+      "latency_s": 2.1,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag, klar",
+      "not_visible": 0,
+      "persons": 8,
+      "persons_detected": 8,
+      "weather": "clear",
+      "wind": 5
+     },
+     {
+      "animals": 2,
+      "animals_as_person": 2,
+      "animals_reported": 2,
+      "cond": [],
+      "dark": false,
+      "false_alarms": 1,
+      "hour": 14.5,
+      "latency_s": 0.8,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Tag, Wind und Wolken",
+      "not_visible": 0,
+      "persons": 6,
+      "persons_detected": 6,
+      "weather": "cloudy",
+      "wind": 65
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 0,
+      "hour": 22.5,
+      "latency_s": -1,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht, klar (Insekten am Licht)",
+      "not_visible": 4,
+      "persons": 0,
+      "persons_detected": 0,
+      "weather": "clear",
+      "wind": 5
+     },
+     {
+      "animals": 0,
+      "animals_as_person": 0,
+      "animals_reported": 0,
+      "cond": [],
+      "dark": true,
+      "false_alarms": 0,
+      "hour": 23.5,
+      "latency_s": -1,
+      "missed": [],
+      "missed_why": {
+       "crouch": 0,
+       "dark": 0,
+       "fast": 0,
+       "small": 0
+      },
+      "name": "Nacht, Regen",
+      "not_visible": 4,
+      "persons": 0,
+      "persons_detected": 0,
+      "weather": "rain",
+      "wind": 20
+     }
+    ],
+    "plan": "standard",
+    "plan_name": "Standard (Tag, Wind, Nacht, Regen · etwa 5 Min.)",
+    "rate": 100,
+    "realism": {
+     "fx": false,
+     "look": false
+    },
+    "scene": "stellplatz",
+    "simulator": "3D-4.0",
+    "truth_cams": [
+     0
+    ],
+    "v": 2,
+    "visitors": [
+     {
+      "crouch": false,
+      "det_s": 0.6,
+      "kind": "person",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 166,
+      "reported": false,
+      "vis_s": 1.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 1,
+      "person": false,
+      "phase": 0,
+      "px": 43,
+      "reported": true,
+      "vis_s": 9
+     },
+     {
+      "crouch": false,
+      "det_s": 1.9,
+      "kind": "person",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 92,
+      "reported": false,
+      "vis_s": 30.8
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "deer",
+      "light": 1,
+      "person": false,
+      "phase": 0,
+      "px": 118,
+      "reported": true,
+      "vis_s": 3.8
+     },
+     {
+      "crouch": false,
+      "det_s": 3.2,
+      "kind": "child",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 52,
+      "reported": false,
+      "vis_s": 11
+     },
+     {
+      "crouch": false,
+      "det_s": 1.6,
+      "kind": "person",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 90,
+      "reported": false,
+      "vis_s": 2.8
+     },
+     {
+      "crouch": false,
+      "det_s": 7.3,
+      "kind": "person",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 48,
+      "reported": false,
+      "vis_s": 19.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "fox",
+      "light": 1,
+      "person": false,
+      "phase": 0,
+      "px": 59,
+      "reported": true,
+      "vis_s": 3
+     },
+     {
+      "crouch": false,
+      "det_s": 1.5,
+      "kind": "person",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 114,
+      "reported": false,
+      "vis_s": 9.3
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "deer",
+      "light": 1,
+      "person": false,
+      "phase": 0,
+      "px": 73,
+      "reported": true,
+      "vis_s": 10
+     },
+     {
+      "crouch": false,
+      "det_s": 0.9,
+      "kind": "child",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 84,
+      "reported": false,
+      "vis_s": 11.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "person",
+      "light": 1,
+      "person": true,
+      "phase": 0,
+      "px": 72,
+      "reported": false,
+      "vis_s": 12.3
+     },
+     {
+      "crouch": false,
+      "det_s": 1.1,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 1,
+      "px": 156,
+      "reported": false,
+      "vis_s": 14
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cat",
+      "light": 0.85,
+      "person": false,
+      "phase": 1,
+      "px": 26,
+      "reported": true,
+      "vis_s": 12.5
+     },
+     {
+      "crouch": false,
+      "det_s": 0,
+      "kind": "jogger",
+      "light": 0.85,
+      "person": true,
+      "phase": 1,
+      "px": 77,
+      "reported": false,
+      "vis_s": 7.5
+     },
+     {
+      "crouch": false,
+      "det_s": 1,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 1,
+      "px": 137,
+      "reported": false,
+      "vis_s": 10.8
+     },
+     {
+      "crouch": false,
+      "det_s": 0.6,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 1,
+      "px": 68,
+      "reported": false,
+      "vis_s": 16.5
+     },
+     {
+      "crouch": false,
+      "det_s": -1,
+      "kind": "cat",
+      "light": 0.85,
+      "person": false,
+      "phase": 1,
+      "px": 21,
+      "reported": true,
+      "vis_s": 13
+     },
+     {
+      "crouch": false,
+      "det_s": 0.3,
+      "kind": "jogger",
+      "light": 0.85,
+      "person": true,
+      "phase": 1,
+      "px": 73,
+      "reported": false,
+      "vis_s": 9
+     },
+     {
+      "crouch": false,
+      "det_s": 1.7,
+      "kind": "person",
+      "light": 0.85,
+      "person": true,
+      "phase": 1,
+      "px": 177,
+      "reported": false,
+      "vis_s": 9.3
+     }
+    ],
+    "dauer_s": 533,
+    "mw_fps": 3.6
+   }
+  ]
+ },
+ "sim_version": "3D-4.0",
+ "besucher_mal": 2
+}

@@ -10,8 +10,12 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 | Datum | Motion Watch | Simulator | Testlauf | Personen erkannt | nah / mittel / weit | Reaktion | Tiere gemeldet | Fehlalarme | Bilder/s | KI | Rechner |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 2026-10-29 04:24 | 2.98.12 | 3D-3.99 | Kurz (Tag + Nacht) | 0 / 5 (**0 %**) | 0/4 / 0/1 / – | – | 0 / 2 | 0 | 2.9 | ohne KI | lokal-test |
-| 2026-10-29 04:24 | 2.98.12 | 3D-3.99 | Kurz (Tag + Nacht) · ohne Kamera-Effekte | 3 / 5 (**60 %**) | 3/5 / – / – | 4.7 s | 2 / 2 | 1 | 3.1 | ohne KI | lokal-test |
+| 2026-10-29 04:37 | 2.98.13 | 3D-4.0 | Kurz (Tag + Nacht) | 6 / 10 (**60 %**) | 3/7 / 2/2 / 1/1 | 1.7 s | 2 / 3 | 1 | 3.6 | mit KI | GitHub (ubuntu, 4 Kerne) |
+| 2026-10-29 04:37 | 2.98.13 | 3D-4.0 | Nacht | 2 / 4 (**50 %**) | 2/3 / 0/1 / – | 3.5 s | 3 / 5 | 2 | 3.7 | mit KI | GitHub (ubuntu, 4 Kerne) |
+| 2026-10-29 04:37 | 2.98.13 | 3D-4.0 | Standard (Tag, Wind, Nacht, Regen) | 12 / 14 (**86 %**) | 5/5 / 5/6 / 2/3 | 1.3 s | 6 / 6 | 5 | 3.6 | mit KI | GitHub (ubuntu, 4 Kerne) |
+| 2026-10-29 04:37 | 2.98.13 | 3D-4.0 | Kurz (Tag + Nacht) · ohne Kamera-Effekte | 10 / 10 (**100 %**) | 7/7 / 2/2 / 1/1 | 0.5 s | 3 / 3 | 5 | 3.7 | mit KI | GitHub (ubuntu, 4 Kerne) |
+| 2026-10-29 04:37 | 2.98.13 | 3D-4.0 | Nacht · ohne Kamera-Effekte | 3 / 3 (**100 %**) | 2/2 / 1/1 / – | 0.3 s | 4 / 4 | 10 | 3.6 | mit KI | GitHub (ubuntu, 4 Kerne) |
+| 2026-10-29 04:37 | 2.98.13 | 3D-4.0 | Standard (Tag, Wind, Nacht, Regen) · ohne Kamera-Effekte | 14 / 14 (**100 %**) | 5/5 / 7/7 / 2/2 | 1.5 s | 6 / 6 | 1 | 3.6 | mit KI | GitHub (ubuntu, 4 Kerne) |
 | 2026-10-29 02:39 | 2.98.12 | 3D-3.99 | Kurz (Tag + Nacht) | 0 / 4 (**0 %**) | 0/2 / 0/1 / 0/1 | – | 1 / 1 | 0 | 3.2 | mit KI | GitHub (ubuntu, 4 Kerne) |
 | 2026-10-29 02:39 | 2.98.12 | 3D-3.99 | Nacht | 0 / 0 (**0 %**) | – | – | 0 / 0 | 1 | 3.3 | mit KI | GitHub (ubuntu, 4 Kerne) |
 | 2026-10-29 02:39 | 2.98.12 | 3D-3.99 | Standard (Tag, Wind, Nacht, Regen) | 2 / 6 (**33 %**) | 0/2 / 2/4 / – | 6.7 s | 2 / 3 | 1 | 3.2 | mit KI | GitHub (ubuntu, 4 Kerne) |
@@ -34,17 +38,51 @@ Spalten nah / mittel / weit: Personen nach Grösse im Bild (Höhe ≥ 100 Bildpu
 
 ## Einzelheiten pro Phase (letzter Lauf)
 
-**Kurz (Tag + Nacht)** – 2026-10-29 04:24, Motion Watch 2.98.12
+**Kurz (Tag + Nacht)** – 2026-10-29 04:37, Motion Watch 2.98.13
 
 | Phase | Personen | Reaktion | Tiere | Fehlalarme | verpasst, weil … |
 |---|---|---|---|---|---|
-| Tag, Wind | 0 / 3 | – | 0 / 1 | 0 | 1× zu schnell |
-| Nacht mit Infrarot | 0 / 2 | – | 0 / 1 | 0 | 1× zu dunkel |
+| Tag, Wind | 6 / 6 | 1.7 s | 2 / 2 | 1 | – |
+| Nacht mit Infrarot | 0 / 4 | – | 0 / 1 | 0 | 3× zu dunkel |
 
-**Kurz (Tag + Nacht) · ohne Kamera-Effekte** – 2026-10-29 04:24, Motion Watch 2.98.12
+**Nacht** – 2026-10-29 04:37, Motion Watch 2.98.13
 
 | Phase | Personen | Reaktion | Tiere | Fehlalarme | verpasst, weil … |
 |---|---|---|---|---|---|
-| Tag, Wind | 2 / 3 | 5.9 s | 1 / 1 | 0 | 1× zu schnell |
-| Nacht mit Infrarot | 1 / 2 | 2.3 s | 1 / 1 | 1 | – |
+| Nacht, ohne Licht | 0 / 0 | – | 0 / 1 | 0 | – |
+| Nacht, Infrarot an | 2 / 4 | 3.5 s | 3 / 4 | 2 | 1× zu dunkel |
+| Nacht, Regen | 0 / 0 | – | 0 / 0 | 0 | – |
+
+**Standard (Tag, Wind, Nacht, Regen)** – 2026-10-29 04:37, Motion Watch 2.98.13
+
+| Phase | Personen | Reaktion | Tiere | Fehlalarme | verpasst, weil … |
+|---|---|---|---|---|---|
+| Tag, klar | 8 / 8 | 1.3 s | 4 / 4 | 1 | – |
+| Tag, Wind und Wolken | 4 / 6 | 1.4 s | 2 / 2 | 0 | 2× zu schnell, 1× zu klein / weit weg |
+| Nacht, klar (Insekten am Licht) | 0 / 0 | – | 0 / 0 | 0 | – |
+| Nacht, Regen | 0 / 0 | – | 0 / 0 | 4 | – |
+
+**Kurz (Tag + Nacht) · ohne Kamera-Effekte** – 2026-10-29 04:37, Motion Watch 2.98.13
+
+| Phase | Personen | Reaktion | Tiere | Fehlalarme | verpasst, weil … |
+|---|---|---|---|---|---|
+| Tag, Wind | 6 / 6 | 0.4 s | 2 / 2 | 1 | – |
+| Nacht mit Infrarot | 4 / 4 | 0.7 s | 1 / 1 | 4 | – |
+
+**Nacht · ohne Kamera-Effekte** – 2026-10-29 04:37, Motion Watch 2.98.13
+
+| Phase | Personen | Reaktion | Tiere | Fehlalarme | verpasst, weil … |
+|---|---|---|---|---|---|
+| Nacht, ohne Licht | 0 / 0 | – | 0 / 0 | 0 | – |
+| Nacht, Infrarot an | 3 / 3 | 0.3 s | 4 / 4 | 8 | – |
+| Nacht, Regen | 0 / 0 | – | 0 / 0 | 2 | – |
+
+**Standard (Tag, Wind, Nacht, Regen) · ohne Kamera-Effekte** – 2026-10-29 04:37, Motion Watch 2.98.13
+
+| Phase | Personen | Reaktion | Tiere | Fehlalarme | verpasst, weil … |
+|---|---|---|---|---|---|
+| Tag, klar | 8 / 8 | 2.1 s | 4 / 4 | 0 | – |
+| Tag, Wind und Wolken | 6 / 6 | 0.8 s | 2 / 2 | 1 | – |
+| Nacht, klar (Insekten am Licht) | 0 / 0 | – | 0 / 0 | 0 | – |
+| Nacht, Regen | 0 / 0 | – | 0 / 0 | 0 | – |
 
