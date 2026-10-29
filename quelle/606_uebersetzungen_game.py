@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 603: Übersetzungen der Spiel-Verbesserungen (Schnellstart im Assistenten, Duell, Tipps der Zuschauer, Stufen). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 606: Übersetzungen der Spiel-Verbesserungen (Schnellstart im Assistenten, Duell, Tipps der Zuschauer, Stufen). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 _HX_GAME = {
     'Quick start': ('Schnellstart', 'Démarrage rapide', 'Avvio rapido', 'Start svelt'),
     'runners at most': ('Läufer höchstens', 'coureurs au plus', 'corridori al massimo', 'currids al pli'),

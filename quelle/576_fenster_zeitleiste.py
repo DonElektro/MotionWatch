@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 575: Fenster: Zeitleiste der Nacht als einfache Liste, dazu der Wochenbericht. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 576: Fenster: Zeitleiste der Nacht als einfache Liste, dazu der Wochenbericht. Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # ----------------------------------------------------------------------------
 # 2.98.14: wie Verlauf → Zeitleiste auf der Webseite (523), im Fenster als Liste: Tag wählen (◀ ▶), Nacht / ganzer Tag,
 # die Ereignisse nach Stunden; Doppelklick auf eine Aufnahme oder ein Tagebuch-Bild öffnet die Datei. Unten der

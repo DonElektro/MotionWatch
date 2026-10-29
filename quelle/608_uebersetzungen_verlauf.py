@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 607: Übersetzungen für Zeitleiste der Nacht, Wochenbericht und Gesichter verpixeln (2.98.14). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 608: Übersetzungen für Zeitleiste der Nacht, Wochenbericht und Gesichter verpixeln (2.98.14). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 # 'English': ('Deutsch', 'Français', 'Italiano', 'Rumantsch'). Die deutschen Texte gehen auch in die Seite (523, I18N.de).
 _HX_VERLAUF = {
     # ---- settings ----

@@ -1,4 +1,4 @@
-#@ MoveEye – Teil 602: Übersetzungen für Gehtest, Entfernung, Wärmebild-Personen und Akku-Sparen (2.98.13). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
+#@ MoveEye – Teil 604: Übersetzungen für Gehtest, Entfernung, Wärmebild-Personen und Akku-Sparen (2.98.13). Wird von werkzeuge/bauen.py mit den anderen Teilen zu einer Datei zusammengesetzt.
 _HX_ERKENNUNG = {
     # distance / direction (415)
     'Person': ('Person', 'Personne', 'Persona', 'Persuna'),

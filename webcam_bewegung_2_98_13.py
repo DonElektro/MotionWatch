@@ -8666,14 +8666,15 @@ CAMPING_SET = {"detection_on": True, "record": True, "snapshot_on_person": True,
 
 
 # ---- simple settings: what most people need; Expert shows everything ----
-SIMPLE_SECTIONS = {"Camera / Servos", "Patrol", "AI detection", "Detection", "Recording", "Low light", "Setup", "Notifications",
-                   "Camping / protection", "Thermal camera", "Microphone", "Loudspeaker", "Lights", "Night report", "Battery",
-                   "Power saving", "Messages", "Updates", "Theft protection", "Backup", "Deterrence", "Wake-up alarm"}
+SIMPLE_SECTIONS = {"Camping / protection", "Notifications", "Schedule", "Battery", "Wi-Fi / hotspot", "Recording", "Lights", "Night report",
+                   "Setup"}   # 2.98.14 (Konzept): about 8 topics - Schutz, Push, Zonen, Akku, WLAN, Aufnahme, Licht, Nachtbericht (+ Einrichtung)
 # 2.98.0: extra hardware and gimmicks only in «Simple» when they are in use (otherwise Expert)
 SIMPLE_IN_USE = {"Extra sensors": lambda: bool(CFG.get("sens_on") or CFG.get("sensors")), "Storm warning": lambda: bool(CFG.get("sensors")),
                  "GPS module": lambda: bool(CFG.get("gpsmod_on")), "Solar panel": lambda: bool(CFG.get("solar_on")),
                  "Clap switch": lambda: bool(CFG.get("clap_on")), "Bless you": lambda: bool(CFG.get("sneeze_on")),
-                 "Mover": lambda: bool(MOVER.get("avail") or MOVER.get("hw") or MOVER.get("sim"))}
+                 "Mover": lambda: bool(MOVER.get("avail") or MOVER.get("hw") or MOVER.get("sim")),
+                 "Wake-up alarm": lambda: CFG.get("use_case") == "room" or bool(CFG.get("wake_on")),     # 2.98.14: the alarm clock in the room
+                 "Thermal camera": lambda: bool(CFG.get("thermal_on") and CFG.get("thermal_source"))}
 SIMPLE_KEYS = {"tips_level", "use_case", "wake_on", "wake_time", "wake_days", "wake_sleep", "wake_snooze", "wake_volume", "wake_sound", "wake_light", "wake_gestures", "wake_clap", "wake_away_night", "report_from", "track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
@@ -8689,19 +8690,19 @@ USE_HIDE = {"home": {"GPS module", "Solar panel", "Storm warning", "Wake-up alar
             "wild": {"Deterrence", "Wake-up alarm"},
             "holiday": {"Wake-up alarm"},
             "room": {"GPS module", "Solar panel", "Storm warning", "Deterrence"}}
-USE_SET = {"wild": {"siren_on": "off", "light_white_auto": "alarm_dark", "track_motion": True},
-           "holiday": {"eco_on": True},
-           "room": {"wake_on": True}}
+# 2.98.14 (Konzept): the use case only decides what is SHOWN («Simple» and which modes are offered). What the device DOES
+# is decided in one place: the mode (MODE_SETS below). Before, USE_SET switched settings too and contradicted the modes
+# (wildlife: «light at an alarm» here, «no light» in the mode). Settings switched by an older version simply stay as they are.
+USE_MODES = {"camping": ("camping", "fire", "gamer", "transport"), "home": ("home", "gamer", "transport"),
+             "wild": ("wild", "camping", "transport"), "holiday": ("home", "transport"), "room": ("home",)}
 
 
 def use_case_set(u, who="web"):
-    """2.98.9: the setup assistant («What is MoveEye for?»): remember it, switch on what fits, «Simple» shows only that"""
+    """2.98.9: the setup assistant («What is MoveEye for?»): remember it, «Simple» shows only what fits (2.98.14: it no
+    longer switches settings - that is the job of the mode)"""
     if u not in ("", "camping", "home", "wild", "holiday", "room"):
         return False, "invalid value"
     CFG["use_case"] = u
-    for k, v in USE_SET.get(u, {}).items():
-        if k in CFG and type(CFG[k]) is type(v):
-            CFG[k] = v; sched_user_changed(k)
     CFG["ui_simple"] = True
     save_settings()
     log_event("sys", f"Use case: {u or 'everything'} ({who})")
@@ -8726,7 +8727,7 @@ def simple_hidden(key, sec=None):
 
 NIGHT_SET = {"detection_on": True, "ai_enabled": True, "record": True, "snapshot_on_person": True, "notify_on": True,
              "notify_prealarm": True, "lowlight_auto": True, "nightvision_auto": True, "report_on": True, "diary_on": True,
-             "timelapse_on": False}   # 2.97.0: power saving only on battery (like the mode «Nachtwache» with mains power)
+             "timelapse_on": False}   # 2.97.0: power saving only on battery (2.98.14: replaces the old mode «night»)
 
 
 def night_end_ts(now=None):
@@ -8768,6 +8769,8 @@ def night_guard(lang=None):
         CFG["noise_alarm"] = True; done.append(tr("Noise alarm on", L))
     if STATE.get("thermal") == "connected" and not CFG["thermal_alarm"]:
         CFG["thermal_alarm"] = True; done.append(tr("Thermal alarm on", L))
+    if CFG.get("light_ir_out") and CFG.get("light_ir") == "off":     # 2.98.14: from the old mode «night»: infrared by itself
+        CFG["light_ir"] = "auto"; done.append(tr("Infrared light by itself in the dark", L))
     save_settings()
     done = [tr("Detection, AI and recordings on", L), tr("Push messages on", L), tr("Night vision and low light automatic", L),
             tr("Night report in the morning", L) + f" ({int(CFG['report_hour']):02d}:00)",
@@ -8849,29 +8852,30 @@ def turbo_set(on, who="web"):
     return True, ""
 
 
-# ---- modes (2.95.47): one switch sets up the whole device. Camping guard, campfire games (battery, little power - the
-# guard watches on sparingly), gamer (only with mains power - power mode, all games), home, wildlife, night guard,
-# transport. «Own settings» (no mode) brings back what was set before the first mode. ----
-MODES = [("camping", "⛺", "Camping guard"), ("fire", "🔥", "Campfire games"), ("gamer", "🎮", "Gamer"), ("home", "🏠", "Home / garden"),
-         ("wild", "🦌", "Wildlife watching"), ("night", "🌙", "Night guard"), ("transport", "🔕", "Transport / rest")]
+# ---- modes (2.95.47): one switch sets up the whole device. Camping, campfire games (battery, little power - the
+# guard watches on sparingly), gamer (only with mains power - power mode, all games), home, wildlife, transport.
+# «Own settings» (no mode) brings back what was set before the first mode.
+# 2.98.14 (Konzept): the mode is THE place for behaviour. The mode «night» is gone (= «Heute Nacht bewachen», a one-off for
+# tonight); the camping profile IS the mode «Camping» (camping_set() switches the mode). The names are no states any more:
+# the state is Aus / Wachsam / Voll (Schutz), the mode says what MoveEye is used for. ----
+MODES = [("camping", "⛺", "Camping"), ("fire", "🔥", "Campfire games"), ("gamer", "🎮", "Gamer"), ("home", "🏠", "Home / garden"),
+         ("wild", "🦌", "Wildlife watching"), ("transport", "🔕", "Transport / rest")]
 MODE_INFO = {
     "": "Your own settings, no mode.",
     "camping": "Full guard: alarms, recordings, own Wi-Fi, armed after the countdown. Power saving while all is quiet.",
-    "fire": "The game corner is open for the phones (in the Wi-Fi MoveEye is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to the camping guard at the set time or when the battery gets low.",
+    "fire": "The game corner is open for the phones (in the Wi-Fi MoveEye is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to camping at the set time or when the battery gets low.",
     "gamer": "Only with mains power: power mode, all games and the game collection, the best picture. The guard only if you want it. On battery MoveEye goes back to the campfire games by itself.",
     "home": "Guarding house and garden: alarms and recordings on, no own Wi-Fi, no camping profile.",
     "wild": "Animals: no siren, the light does not go on by itself (it would scare them), many pictures, the camera follows what moves.",
-    "night": "The highest attention: more sensitive, thermal alarm, infrared light by itself, the pre-alarm too.",
     "transport": "Rest while travelling: no detection, no recordings, no alarms - only the battery, GPS theft and tamper protection stay on.",
 }
 MODE_SETS = {
     "fire": {"eco_on": True, "ai_every": 3, "proc_width": 416, "web_quality": 60, "web_width": 960, "patrol": False, "track_person": False,
              "track_motion": False, "timelapse_on": False, "notify_prealarm": False, "detection_on": True, "notify_on": True, "record": True},
     "home": {"detection_on": True, "record": True, "snapshot_on_person": True, "notify_on": True, "notify_prealarm": False, "eco_on": False},
-    "wild": {"detection_on": True, "siren_on": "off", "light_white_auto": False, "record": True, "snapshot_on_person": True, "notify_prealarm": True,
+    # 2.98.14: «no light by itself» = the white light «off» (before: light_white_auto False, not a valid choice)
+    "wild": {"detection_on": True, "siren_on": "off", "light_white": "off", "record": True, "snapshot_on_person": True, "notify_prealarm": True,
              "track_motion": True, "track_person": True, "eco_on": False, "lowlight_auto": True},
-    "night": {"detection_on": True, "sensitivity": 75, "notify_prealarm": True, "light_ir_auto": True, "nightvision_auto": True, "record": True,
-              "snapshot_on_person": True, "notify_on": True, "eco_on": False},
     "transport": {"detection_on": False, "record": False, "timelapse_on": False, "patrol": False, "track_person": False, "track_motion": False,
                   "eco_on": True, "notify_prealarm": False},
 }
@@ -8899,7 +8903,7 @@ def _mode_keys():
 def _mode_leave(m):
     """undo what the mode switched on (camping profile, power mode, game corner, rest, Wi-Fi, governor)"""
     if m == "camping" and CFG["camping"]:
-        camping_set(False)
+        _camping_overlay(False)
     if MODE_RT["turbo"] and CFG["turbo_on"]:
         turbo_set(False, "mode")
     MODE_RT["turbo"] = False
@@ -8920,6 +8924,9 @@ def _mode_leave(m):
 def mode_set(m, who="web"):
     """switch the device to a mode ("" = own settings again)"""
     m = str(m or "")
+    if m == "night":                                        # 2.98.14: the old mode «night» = «Heute Nacht bewachen»
+        r = night_guard()
+        return bool(r.get("ok")), ""
     if m and m not in dict((x[0], x) for x in MODES):
         return False, "unknown mode"
     if m == "gamer":
@@ -8958,7 +8965,7 @@ def mode_set(m, who="web"):
             CFG[k] = v; sched_user_changed(k)
     hs_on = bool((STATE.get("hotspot") or {}).get("on"))
     if m == "camping":
-        camping_set(True)
+        _camping_overlay(True)
     elif m in ("fire", "gamer"):
         # 2.95.49: the Wi-Fi is NOT switched here - the own Wi-Fi would cut the phones off the network they are in (the
         # page froze). The game corner works in the network MoveEye is in; the own Wi-Fi is a switch of its own.
@@ -8975,9 +8982,7 @@ def mode_set(m, who="web"):
                 arm()
             else:
                 toolmode_set(720, "gamer mode"); MODE_RT["rest"] = True
-    elif m in ("home", "wild", "night"):
-        if CFG["thermal_source"] and m == "night":
-            CFG["thermal_alarm"] = True
+    elif m in ("home", "wild"):
         arm()
     elif m == "transport":
         disarm()
@@ -9017,7 +9022,7 @@ def mode_tick():
         low = b.get("on") and b.get("on_battery") and b.get("pct") is not None and float(b["pct"]) < float(CFG["mode_fire_min_pct"])
         if late or low:
             mode_set("camping", "auto")
-            push("Campfire games ended (" + ("battery low" if low else "time") + ") - camping guard on")
+            push("Campfire games ended (" + ("battery low" if low else "time") + ") - back to camping")
     elif m == "gamer":
         ok, why = mode_power()
         if not ok:
@@ -9028,8 +9033,9 @@ def mode_tick():
 def mode_state():
     ok, why = mode_power()
     m = CFG.get("mode") or ""
+    fit = USE_MODES.get(CFG.get("use_case") or "") if CFG.get("ui_simple") else None    # 2.98.14: «Simple» offers what fits the use case
     return {"id": m, "since": CFG.get("mode_since") or 0, "msg": MODE_RT["msg"], "power_ok": ok, "power_why": why,
-            "list": [{"id": i, "icon": ic, "name": n, "info": MODE_INFO[i]} for i, ic, n in MODES], "own_info": MODE_INFO[""],
+            "list": [{"id": i, "icon": ic, "name": n, "info": MODE_INFO[i]} for i, ic, n in MODES if fit is None or i in fit or i == m], "own_info": MODE_INFO[""],
             "fire_until": CFG["mode_fire_until"], "fire_min_pct": CFG["mode_fire_min_pct"], "gamer_watch": bool(CFG["mode_gamer_watch"]), "fire_persons": bool(CFG.get("mode_fire_persons")),
             "camping": bool(CFG["camping"])}
 
@@ -9039,6 +9045,17 @@ def turbo_state():
 
 
 def camping_set(on, hotspot_delay=2.0):
+    """2.98.14 (Konzept): the camping profile IS the mode «Camping» - the switch «Camping-Profil» (web, window, older pages)
+    switches the mode. Off: back to the own settings (or, an older profile switched on without the mode: only the profile)."""
+    if on:
+        return mode_set("camping", "camping profile") if (CFG.get("mode") or "") != "camping" else (True, "")
+    if (CFG.get("mode") or "") == "camping":
+        return mode_set("", "camping profile")
+    return _camping_overlay(False, hotspot_delay)
+
+
+def _camping_overlay(on, hotspot_delay=2.0):
+    """what the mode «Camping» switches: own Wi-Fi, alarms, recordings ... (the previous values are kept to give back)"""
     netauto_pause()
     if on and not CFG["camping"]:
         prev = {k: CFG[k] for k in list(CAMPING_SET) + ["thermal_alarm", "armed", "hotspot_on"]}
@@ -9070,6 +9087,71 @@ def camping_set(on, hotspot_delay=2.0):
     return True, ""
 
 
+# ----------------------------------------------------------------------------
+# 2.98.14 (Konzept, Wunsch Daniel): EIN Ort entscheidet, was das Gerät tut - der Modus (130). Der Einsatzzweck (use_case)
+# entscheidet nur, was angezeigt wird. Der Modus «Nachtwache» ist weg («Heute Nacht bewachen» macht das für eine Nacht),
+# das Camping-Profil ist der Modus «Camping». Hier werden Einstellungen älterer Versionen beim Laden umgestellt, ohne dass
+# sich am Verhalten des Geräts etwas ändert (Schutz bleibt, wie er ist; nichts wird ein- oder ausgeschaltet):
+#  - Modus «night» aktiv -> kein Modus mehr, die jetzigen Werte bleiben die eigenen Einstellungen
+#  - Camping-Profil ohne Modus -> Modus «Camping» (Ausschalten gibt wie bisher die alten Werte zurück)
+#  - ungültige Licht-Werte aus den alten Modi (True / False statt einer Auswahl) -> gültige Auswahl mit gleicher Wirkung
+#  - die Liste der gemerkten eigenen Einstellungen bekommt die neuen Schlüssel der Modi (z. B. das weisse Licht)
+# ----------------------------------------------------------------------------
+_LIGHT_AUTO_OK = ("alarm_dark", "alarm", "dark")
+
+
+def _concept_fix_lights(d, live):
+    """light_white_auto False (old mode wildlife) meant «never by itself»; light_ir_auto True (old mode night) never worked
+    (no valid choice) - both become valid choices with the same effect"""
+    if not isinstance(d, dict):
+        return
+    for n in ("white", "ir"):
+        k = f"light_{n}_auto"
+        if k in d and d[k] not in _LIGHT_AUTO_OK:
+            if d[k] is False and live and d.get("light_" + n) == "auto":
+                d["light_" + n] = "off"                       # same effect: the light does not go on by itself
+            d[k] = "alarm_dark" if n == "white" else "dark"
+
+
+def concept_migrate():
+    """called after loading / importing the settings (see apply_settings below); returns the list of what was changed"""
+    did = []
+    m = str(CFG.get("mode") or "")
+    if m == "night":
+        CFG["mode"] = ""; CFG["mode_prev"] = {}; CFG["mode_since"] = 0.0
+        did.append("mode night -> own settings (values kept)")
+    elif m and m not in dict((x[0], x) for x in MODES):
+        CFG["mode"] = ""; CFG["mode_prev"] = {}
+        did.append(f"unknown mode {m} -> own settings")
+    if CFG.get("camping") and (CFG.get("mode") or "") != "camping" and not CFG.get("mode"):
+        cp = CFG.get("camping_prev") if isinstance(CFG.get("camping_prev"), dict) else {}
+        CFG["mode"] = "camping"; CFG["mode_since"] = float(cp.get("_seq") or time.time())
+        CFG["mode_prev"] = {"armed": bool(cp.get("armed", False)), "hotspot_on": bool(cp.get("hotspot_on", False)),
+                            "_seq": float(cp.get("_seq") or time.time()) - 0.001}
+        did.append("camping profile -> mode camping")
+    _concept_fix_lights(CFG, True)
+    for pk in ("mode_prev", "camping_prev", "turbo_prev"):
+        _concept_fix_lights(CFG.get(pk), False)
+    prev = CFG.get("mode_prev")
+    if CFG.get("mode") and isinstance(prev, dict) and prev and CFG["mode"] != "camping":
+        for k in _mode_keys():                               # keys the modes switch now, but not when this mode was chosen
+            if k not in prev and k in CFG and k not in MODE_SETS.get(CFG["mode"], {}):
+                prev[k] = CFG[k]
+    if did:
+        log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
+    return did
+
+
+_apply_settings_before_concept = apply_settings
+
+
+def apply_settings(data):                                   # 2.98.14: the same as before, then the migration above
+    r = _apply_settings_before_concept(data)
+    try:
+        concept_migrate()
+    except Exception as e:
+        log_event("sys", f"Settings migration: {e}"[:150])
+    return r
 # ----------------------------------------------------------------------------
 # 2.95.105: one place for everything that protects: a level instead of many switches
 #   off   - no alarms
@@ -9516,6 +9598,8 @@ def sim_hub(force=False):
             d["rover"] = None
         d["rover_alarm"] = bool(CFG.get("rover_alarm"))
     d["demo"] = {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"]}
+    d["simple"] = bool(CFG.get("ui_simple"))                # 2.98.14: «Simple» shows the assistant instead of the single tools
+    d["tune"] = {"busy": TUNEA["busy"], "step": TUNEA["step"], "last": bool(TUNEA.get("last"))}
     d["devices"] = len(CFG.get("fleet") or [])
     if d.get("ok"):                                         # the twin, back from the simulator (place, mast)
         try:
@@ -9582,7 +9666,7 @@ SIMHUB_CSS = r"""
 SIMHUB_JS = r"""
 (function () {
   const L = () => { try { return (typeof LANG !== "undefined" && LANG) || "de"; } catch (e) { return "de"; } };
-  const DE = Object.assign({"Try out": "Ausprobieren", "Learn & test": "Lernen & Testen", "MoveEye points": "MoveEye-Punkte", "points": "Punkte", "points-note": "Ein Konto für Spiel und echten Betrieb: blinde Flecken in Spielen gefunden (+5), Fehlalarm im Spiel entlarvt (+30), Übung gemacht (+50), Woche ohne Fehlalarm (+100), «Entdecker»: früher blinde Stellen werden jetzt erkannt (+50 je Stelle).", "Badges of the players": "Abzeichen der Spieler", "Calm week: no false alarm": "Ruhige Woche: kein Fehlalarm", "False alarm unmasked in a game": "Fehlalarm im Spiel entlarvt", "{n} blind spot(s) found in games": "{n} blinde Flecken in Spielen gefunden", "Explorer: {n} blind spot(s) fixed": "Entdecker: {n} blinde Flecken behoben", "Drill done: battery": "Übung gemacht: Akku", "Drill done: net": "Übung gemacht: WLAN", "Drill done: heat": "Übung gemacht: Hitze", "Drill done: cold": "Übung gemacht: Kälte"}, {"Simulation": "Simulation", "Scene": "Szene", "Time of day": "Tageszeit", "Weather": "Wetter", "Send a visitor": "Besuch schicken",
+  const DE = Object.assign({"Improve detection": "Erkennung verbessern", "step by step": "Schritt für Schritt", "World": "Welt", "Testing": "Testen", "Learning": "Lernen", "Playing": "Spielen", "Show all tools («Expert»)": "Alle Werkzeuge zeigen («Experte»)", "Only the assistant («Simple»)": "Nur den Assistenten («Einfach»)", "Day": "Tag", "Night": "Nacht"}, {"Try out": "Ausprobieren", "Learn & test": "Lernen & Testen", "MoveEye points": "MoveEye-Punkte", "points": "Punkte", "points-note": "Ein Konto für Spiel und echten Betrieb: blinde Flecken in Spielen gefunden (+5), Fehlalarm im Spiel entlarvt (+30), Übung gemacht (+50), Woche ohne Fehlalarm (+100), «Entdecker»: früher blinde Stellen werden jetzt erkannt (+50 je Stelle).", "Badges of the players": "Abzeichen der Spieler", "Calm week: no false alarm": "Ruhige Woche: kein Fehlalarm", "False alarm unmasked in a game": "Fehlalarm im Spiel entlarvt", "{n} blind spot(s) found in games": "{n} blinde Flecken in Spielen gefunden", "Explorer: {n} blind spot(s) fixed": "Entdecker: {n} blinde Flecken behoben", "Drill done: battery": "Übung gemacht: Akku", "Drill done: net": "Übung gemacht: WLAN", "Drill done: heat": "Übung gemacht: Hitze", "Drill done: cold": "Übung gemacht: Kälte"}, {"Simulation": "Simulation", "Scene": "Szene", "Time of day": "Tageszeit", "Weather": "Wetter", "Send a visitor": "Besuch schicken",
     "Surprise night": "Überraschungsnacht", "Templates": "Vorlagen", "Game": "Spiel", "Tests": "Tests", "Diary": "Tagebuch", "on": "an", "off": "aus",
     "Morning": "Morgen", "Noon": "Mittag", "Evening": "Abend", "Night": "Nacht", "clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee",
     "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
@@ -9737,9 +9821,15 @@ SIMHUB_JS = r"""
       const l = LB.ab.last; if (l) s.appendChild(E("b", "", tt(l.title) + ": A " + (l.a != null ? l.a : "–") + " · B " + (l.b != null ? l.b : "–") + " → " + (l.winner === "B" ? tt("B is better – kept") : tt("A stays"))));
     }
   }
+  // 2.98.14 (Konzept): the tiles in four groups - Welt (what happens in the simulator), Testen, Lernen, Spielen. «Simple»
+  // shows the assistant «Erkennung verbessern» instead of the single tools for the thresholds (they stay in «Expert»).
+  const GRP = {scene: "world", hour: "world", weather: "world", visit: "world", surprise: "world", twin: "world", devices: "world", rover: "world", templates: "world",
+    tests: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
+    improve: "learn", autoth: "learn", train: "learn", falearn: "learn", diary: "learn",
+    game: "play", points: "play"};
+  const EXPERT_K = ["autoth", "ab", "train", "falearn", "week"];
   function tiles(box, full) {
-    const g = E("div", "shub"), g2 = E("div", "shub");
-    const LEARN_K = ["blind", "rehearsal", "autoth", "falearn", "week", "points", "inbox", "drill", "train", "ab", "tests", "stats"];
+    const G = {world: E("div", "shub"), test: E("div", "shub"), learn: E("div", "shub"), play: E("div", "shub")}, g = G.world;
     const T = [["scene", "🗺", tt("Scene"), ((H.scenes || []).find(x => x.id === H.scene) || {}).name || H.scene || "–"],
       ["hour", H.dark ? "🌙" : "☀", tt("Time of day"), H.clock || "–"],
       ["weather", wxIcon(H.weather), tt("Weather"), tt(H.weather || "–") + (H.ambient != null ? " · " + Math.round(H.ambient) + " °C" : "")],
@@ -9749,9 +9839,12 @@ SIMHUB_JS = r"""
     if (full) { const R = H.rover || {};
       T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
         ["rover", "🚜", tt("Rover"), H.rover ? (R.mission ? "⏳ " + tt("M_" + R.mission) : R.active ? tt("patrols") : R.charging ? "⚡ " + tt("charging") : tt("ready")) + " · 🔋 " + R.batt + " %" : "–"],
-        ["stats", "📈", tt("Statistics & versions"), tt("4 weeks, per version")]); }
+        ["templates", "🧩", tt("Templates"), tt("Opens on the PC")]); }
+    if (full) { const TU = H.tune || {};
+      T.push(["improve", "🎯", tt("Improve detection"), TU.busy ? "⏳ " + (TU.step === "night" ? tt("Night") : tt("Day")) : tt("step by step")]); }
     if (full) { const N = LN || {}; const bl = N.blind || {}, au = N.autoth || {}, re = bl.rehearsal;
-      T.push(["blind", "🗺", tt("Blind spots"), bl.busy && bl.kind === "map" ? "⏳ " + (bl.prog || "") : bl.last ? bl.last.found + "/" + bl.last.inview + " " + tt("recognised") : tt("find them")],
+      T.push(["tests", "🧪", tt("Tests"), tt("Test run, test bench")],
+        ["blind", "🗺", tt("Blind spots"), bl.busy && bl.kind === "map" ? "⏳ " + (bl.prog || "") : bl.last ? bl.last.found + "/" + bl.last.inview + " " + tt("recognised") : tt("find them")],
         ["rehearsal", "🌙", tt("Night rehearsal"), bl.busy && bl.kind === "rehearsal" ? "⏳ " + (bl.prog || "") : re ? (re.max_found ? tt("up to") + " " + re.max_found + " m" : "–") : tt("before arming")],
         ["autoth", "🎚", tt("Thresholds automatic"), au.busy ? "⏳ " + au.step : au.last ? "✓" : tt("day and night")],
         ["falearn", "👎", tt("False alarm learning"), N.fa_learn_auto ? tt("on") : tt("off")],
@@ -9760,20 +9853,27 @@ SIMHUB_JS = r"""
     if (full) T.push(["inbox", "📨", tt("Test inbox"), LB ? (LB.sandbox ? tt("on") : tt("off")) + " · " + (LB.inbox || []).length : ""],
       ["drill", "⚡", tt("Drills"), LB && LB.drill.busy ? "⏳ " + LB.drill.left + " s" : tt("Battery, Wi-Fi, heat, cold")],
       ["train", "🌙", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
-      ["ab", "⚖", tt("A/B comparison"), LB && LB.ab.busy ? "⏳ " + LB.ab.step : tt("Which setting is better?")]);
-    if (full) T.push(["templates", "🧩", tt("Templates"), tt("Opens on the PC")], ["game", "🎮", tt("Game"), tt("Play on the phone")],
-      ["tests", "🧪", tt("Tests"), tt("Test run, test bench")], ["diary", "📔", tt("Diary"), tt("Visits and detection")]);
-    T.forEach(([k, ic, n, sub]) => { const b = E("button", "st" + (open === k || (k === "surprise" && H.surprise) ? " on" : "")); b.type = "button";
+      ["ab", "⚖", tt("A/B comparison"), LB && LB.ab.busy ? "⏳ " + LB.ab.step : tt("Which setting is better?")],
+      ["stats", "📈", tt("Statistics & versions"), tt("4 weeks, per version")]);
+    if (full) T.push(["game", "🎮", tt("Game"), tt("Play on the phone")], ["diary", "📔", tt("Diary"), tt("Visits and detection")]);
+    T.forEach(([k, ic, n, sub]) => { if (full && H.simple && EXPERT_K.includes(k)) return;
+      const b = E("button", "st" + (open === k || (k === "surprise" && H.surprise) ? " on" : "")); b.type = "button";
       b.append(E("i", "", ic), E("b", "", n), E("small", "", sub));
       b.onclick = () => { if (k === "surprise") return act("surprise", !H.surprise); if (k === "templates") return act("templates").then(r => r && r.ok && say("🧩 " + tt("Opens on the PC")));
+        if (k === "improve") return window.mwTune && window.mwTune.open();
         if (k === "twin") return act("twin").then(r => r && r.ok && say("🪞 " + tt("The map opens at your place on the PC – confirm «Load this place»")));
         if (k === "zones3d") return act("overlay", {id: "show_zones3d", on: !H.zones3d}); if (k === "det3d") return act("overlay", {id: "show_det3d", on: !H.det3d});
         if (k === "game") return location.href = "/sim#c-game"; if (k === "tests") return location.href = "/sim#c-test"; if (k === "diary") return location.href = "/diary#simcard";
         open = open === k ? "" : k; paintAll(); };
-      (full && LEARN_K.includes(k) ? g2 : g).appendChild(b); });
-    if (full) { box.append(E("div", "shubh", "🎮 " + tt("Try out")), g, E("div", "shubh", "🎓 " + tt("Learn & test")), g2); }   // 2.98.4: two groups
+      (full ? G[GRP[k] || "world"] : g).appendChild(b); });
+    if (full) { [["world", "🌍 " + tt("World")], ["test", "🧪 " + tt("Testing")], ["learn", "🎓 " + tt("Learning")], ["play", "🎮 " + tt("Playing")]].forEach(([id, h]) => {
+        if (G[id].children.length) box.append(E("div", "shubh", h), G[id]); });
+      const sx = B(H.simple ? "🧰 " + tt("Show all tools («Expert»)") : "🎯 " + tt("Only the assistant («Simple»)"), async () => {
+        try { await fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !H.simple})}); } catch (e) {} H.simple = !H.simple; paintAll(); });
+      sx.style.cssText = "margin-top:10px;font-size:12px"; box.appendChild(sx); }   // 2.98.14: four groups, Simple / Expert
     else box.appendChild(g);
-    if (open) sheet(box, open);
+    if (open && full && G[GRP[open] || "world"].parentNode) { const hold = E("div"); G[GRP[open] || "world"].after(hold); sheet(hold, open); }   // the sheet right under its group
+    else if (open) sheet(box, open);
     if (full && H.handover && H.handover.length) { const w = E("div", "mut", "🔁 " + H.handover.map(x => x.t + " " + x.from + " → " + x.to).join(" · ")); w.style.cssText = "margin-top:6px;font-size:12px"; box.appendChild(w); }
     if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Twin of your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
       + (H.twin.zones != null ? " · " + H.twin.zones + " " + tt("zones") : "") + (H.twin.waypoints != null ? " · " + H.twin.waypoints + " " + tt("patrol points") : "")); w.style.cssText = "margin-top:8px;font-size:12px"; box.appendChild(w); }
@@ -9799,7 +9899,8 @@ SIMHUB_JS = r"""
 
 
 def simhub_head():
-    return "<style>" + SIMHUB_CSS + "</style><script>" + SIMHUB_JS.replace("__VIS__", json.dumps(SIMHUB_VISITS, ensure_ascii=False)) + "</script>"
+    return ("<style>" + SIMHUB_CSS + "</style><script>" + SIMHUB_JS.replace("__VIS__", json.dumps(SIMHUB_VISITS, ensure_ascii=False)) + "</script>"
+            + tune_head())                                  # 2.98.14: the assistant «Erkennung verbessern» (312)
 
 
 # ---- 2.96.4 (Makeover-Punkt 5): Kino-Modus /kino - Vollbild für TV / Beamer: Livebild mit den Rahmen, Uhr, Zustand und
@@ -10372,7 +10473,8 @@ def simtask_busy(except_=""):
                        ("drill", DRILL.get("busy"))):
         if busy and name != except_:
             return name
-    for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN")):
+    for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN"),
+                      ("improve assistant", "TUNEA")):        # 2.98.14: the assistant «Erkennung verbessern» (312)
         d = globals().get(ref)
         if isinstance(d, dict) and d.get("busy") and name != except_:
             return name
@@ -14012,7 +14114,7 @@ class AutoTuner:
     def observe(self, fg, tracks, persons, fps):
         if not CFG["auto_tune"]:
             STATE["auto_status"] = "off"; return
-        if TESTOPT.get("busy") or ABT.get("busy") or TRAIN.get("busy"):
+        if autotune_paused():                                   # 2.98.14: every measurement / training (312), not only three
             STATE["auto_status"] = "paused (test run)"; return   # 2.97.0: a measurement needs fixed values
         now = time.time()
         if fps > 1:
@@ -21024,6 +21126,312 @@ def testopt_state():
             "nightly": {"on": bool(CFG.get("testopt_nightly")), "hour": int(CFG.get("testopt_hour", 3)), "plan": CFG.get("testopt_plan", "quick")}}
 
 
+# ----------------------------------------------------------------------------
+# 2.98.14 (Konzept, Wunsch Daniel): sechs Funktionen drehten an denselben Schwellen (Empfindlichkeit, Mindestgrösse, KI-Schwelle …):
+# Testlauf «Automatisch optimieren» (310), A/B-Vergleich (141), Auto-Tuner (190), «Schwellen automatisch» (143),
+# Trainings-Nacht (141), Wochen-Check / Fehlalarm-Lernen (143). Jetzt gibt es EINEN Assistenten in Schritten:
+#   1 Prüfen      - ist der Simulator verbunden, ist der Schutz aus, läuft nichts anderes?
+#   2 Wie gründlich? - schnell (Tag) oder gründlich (Tag + Nacht)
+#   3 Verbessern  - Messen, Vorschläge ausprobieren, nur Besseres behalten (die bewährte Optimierung aus 310)
+#   4 Ergebnis    - vorher → nachher, was geändert wurde; «Behalten» oder «Rückgängig»
+#   5 Dranbleiben - Auto-Tuner am echten Ort, Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen (Schalter mit Erklärung)
+# Die einzelnen Funktionen bleiben im Simulator-Tab unter «Experte». Es läuft immer nur eine (gemeinsame Sperre
+# simtask_busy, 141); der Auto-Tuner macht Pause, solange eine davon misst (autotune_paused, aufgerufen in 190).
+# ----------------------------------------------------------------------------
+TUNEA = {"busy": False, "step": "", "depth": "", "plans": [], "i": 0, "stop": False, "t0": 0.0, "start_cfg": None, "last": None}
+TUNEA_KEYS = ("auto_tune", "train_night_on", "weekcheck_on", "fa_learn_auto")
+
+
+def autotune_paused():
+    """2.98.14: the auto-tuner holds still while anything measures or trains with the simulator (fixed values needed) -
+    test run, optimization, A/B, training night, thresholds, false alarm learning, blind spots, this assistant"""
+    try:
+        if TESTOPT.get("busy") or ABT.get("busy") or TRAIN.get("busy") or TUNEA.get("busy"):
+            return True
+        for ref in ("AUTOTH", "FALEARN", "BLIND"):
+            d = globals().get(ref)
+            if isinstance(d, dict) and d.get("busy"):
+                return True
+    except Exception:
+        return False
+    return False
+
+
+def _tunea_plans(depth):
+    return [("quick", 3)] if depth == "quick" else [("quick", 4), ("night", 4)]
+
+
+def tune_assist_check(L=None):
+    """step 1: what is missing for the measuring (empty list = ready)"""
+    T = lambda x: tr(x, L)
+    miss = []
+    if not CFG.get("sim_on"):
+        miss.append({"id": "sim", "text": T("The simulation is off - switch it on in the tab Simulator (a 3D simulator on a PC is needed)."), "fix": "/sim"})
+    elif not sim_ready():
+        miss.append({"id": "sim", "text": T("No simulator answers - start the 3D simulator on the PC."), "fix": "/sim"})
+    if is_armed():
+        miss.append({"id": "armed", "text": T("Protection is on - the test needs it off (a test person would give a real alarm)."), "fix": "/protect"})
+    b = simtask_busy("improve assistant")
+    if b:
+        miss.append({"id": "busy", "text": trf("The simulator is busy: {what}", L, what=tr(b, L)), "fix": ""})
+    return miss
+
+
+def tune_assist_start(depth="quick"):
+    if TUNEA["busy"]:
+        return False, "already running"
+    miss = tune_assist_check()
+    if miss:
+        return False, miss[0]["text"]
+    depth = "thorough" if depth == "thorough" else "quick"
+    TUNEA.update(busy=True, step="measure", depth=depth, plans=[], i=0, stop=False, t0=time.time(), start_cfg=opt_snapshot())
+    threading.Thread(target=_tunea_thread, args=(depth,), daemon=True, name="tune-assist").start()
+    log_event("sys", f"Improve detection: started ({depth})")
+    return True, ""
+
+
+def _tunea_thread(depth):
+    res = []
+    try:
+        for i, (plan, tries) in enumerate(_tunea_plans(depth)):
+            if TUNEA["stop"]:
+                break
+            TUNEA.update(i=i, step=plan)
+            _sim_free()
+            _testopt_thread("auto", plan, tries)             # base run, try the proposals, keep only what is clearly better
+            A = TESTOPT.get("auto") or {}
+            res.append({"plan": plan, "base": A.get("base"), "best": A.get("best"),
+                        "kept": [{"id": x["id"], "title": x["title"]} for x in A.get("log", []) if x.get("kept")]})
+            TUNEA["plans"] = list(res)
+    except Exception as e:
+        log_event("sys", f"Improve detection: {type(e).__name__}: {e}"[:160])
+    finally:
+        start = TUNEA.get("start_cfg") or {}
+        changed = [[k, start[k], CFG[k]] for k in start if k in CFG and CFG[k] != start[k]]
+        TUNEA.update(busy=False, step="", last={"t": time.time(), "depth": depth, "plans": res, "changed": changed,
+                                                "stopped": bool(TUNEA["stop"]), "start_cfg": start, "min": round((time.time() - TUNEA["t0"]) / 60.0, 1),
+                                                "msg": str(TESTOPT.get("msg") or "")})
+        _tunea_autotune_base()
+        log_event("sys", "Improve detection: done - " + ("; ".join(f"{r['plan']} {r['base']} -> {r['best']}" for r in res) or "no result")
+                  + (f", {len(changed)} value(s) changed" if changed else ", nothing changed"))
+
+
+def _tunea_autotune_base():
+    """the auto-tuner takes the measured values as its new starting point (no new calibration that would undo them)"""
+    w = WATCH_REF.get("w")
+    tu = getattr(w, "tuner", None) if w is not None else None
+    if tu is not None:
+        try:
+            tu.calibrated = True; tu.base_min_area = float(CFG["min_area"]); tu.last_eval = time.time()
+        except Exception:
+            pass
+
+
+def tune_assist_stop():
+    TUNEA["stop"] = True; TESTOPT["stop"] = True
+    try:
+        _simtest("test_stop")
+    except Exception:
+        pass
+    return True, ""
+
+
+def tune_assist_undo():
+    """«Rückgängig»: the values from before the assistant come back"""
+    if TUNEA["busy"]:
+        return False, "the assistant is still running"
+    last = TUNEA.get("last") or {}
+    snap = last.get("start_cfg")
+    if not snap:
+        return False, "nothing to undo"
+    opt_restore(snap, "improve detection: undo")
+    last["undone"] = True; last["changed"] = []
+    _tunea_autotune_base()
+    return True, ""
+
+
+def tune_assist_set(key, on):
+    if key not in TUNEA_KEYS:
+        return False, "unknown setting"
+    CFG[key] = bool(on)
+    sched_user_changed(key)
+    save_settings()
+    log_event("sys", f"Improve detection: {key} {'on' if on else 'off'}")
+    return True, ""
+
+
+def tune_assist_state(lang=None):
+    L = norm_lang(lang) if lang else cur_lang()
+    A = TESTOPT.get("auto") or {}
+    run = TESTOPT.get("sim") or {}
+    last = TUNEA.get("last")
+    if last:
+        last = {k: v for k, v in last.items() if k != "start_cfg"}
+        last["can_undo"] = bool((TUNEA.get("last") or {}).get("start_cfg")) and not last.get("undone") and bool(last.get("changed"))
+    runs = [r for r in TESTOPT.get("runs", []) if r.get("score") is not None]
+    return {"ok": True, "busy": TUNEA["busy"], "step": TUNEA["step"], "depth": TUNEA["depth"], "i": TUNEA["i"],
+            "n": len(_tunea_plans(TUNEA["depth"] or "quick")), "plans": TUNEA["plans"],
+            "now": {"try": A.get("step", 0), "tries": A.get("tries", 0), "what": A.get("now", ""), "base": A.get("base"), "best": A.get("best"),
+                    "running": bool(isinstance(run, dict) and run.get("running")), "left": run.get("left_s") if isinstance(run, dict) else None,
+                    "total": run.get("total_s") if isinstance(run, dict) else None},
+            "missing": tune_assist_check(L), "last": last, "score": runs[-1]["score"] if runs else None,
+            "keys": {k: bool(CFG.get(k)) for k in TUNEA_KEYS}, "train_hour": int(CFG.get("train_hour", 1)),
+            "auto_status": str(STATE.get("auto_status") or ""), "simple": bool(CFG.get("ui_simple")), "sim_on": bool(CFG.get("sim_on"))}
+
+
+# ---- the page part (main page: Einstellungen → Erkennung; Simulator tab: tile «Erkennung verbessern») ------------------------
+TUNE_CSS = r"""
+.mwt-ov{position:fixed;inset:0;z-index:260;background:rgba(0,0,0,.66);display:flex;align-items:center;justify-content:center;padding:12px}
+.mwt-card{background:var(--panel,#111822);color:var(--txt,#e8eef5);border:1px solid var(--line,#1f2b3a);border-radius:18px;padding:16px 16px 14px;
+  width:min(520px,100%);max-height:92vh;overflow:auto;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;font:15px/1.45 system-ui,sans-serif}
+.mwt-card h3{margin:0;font-size:18px}.mwt-card p{margin:0}.mwt-mut{color:var(--mut,#8a9bb0);font-size:13px}
+.mwt-steps{display:flex;gap:4px}.mwt-steps i{flex:1;height:5px;border-radius:3px;background:var(--line,#1f2b3a)}.mwt-steps i.on{background:var(--acc,#3b8cff)}
+.mwt-steps i.done{background:var(--grn,#3fcf6b)}
+.mwt-opt{display:flex;gap:12px;align-items:center;text-align:left;padding:12px;border-radius:14px;border:1px solid var(--line,#1f2b3a);
+  background:var(--panel2,#151e2b);color:inherit;font:inherit;cursor:pointer;width:100%}
+.mwt-opt.on{outline:2px solid var(--acc,#3b8cff)}.mwt-opt .ic{font-size:26px}.mwt-opt small{display:block;color:var(--mut,#8a9bb0);font-size:12.5px}
+.mwt-item{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04);font-size:14px}
+.mwt-item a{color:var(--acc,#3b8cff);white-space:nowrap}
+.mwt-nav{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px}.mwt-nav button{min-width:96px}
+.mwt-bar{height:8px;border-radius:4px;background:var(--line,#1f2b3a);overflow:hidden}.mwt-bar i{display:block;height:100%;background:var(--acc,#3b8cff);transition:width .5s}
+.mwt-sw{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line,#1f2b3a);cursor:pointer}
+.mwt-sw span{flex:1}.mwt-sw small{display:block;color:var(--mut,#8a9bb0);font-size:12.5px}
+.mwt-res{font-size:15px;padding:10px;border-radius:12px;background:rgba(63,207,107,.08);border-left:4px solid var(--grn,#3fcf6b)}
+.mwt-res.same{background:rgba(255,255,255,.04);border-left-color:var(--mut,#8a9bb0)}
+.mwt-entry{display:flex;flex-direction:column;gap:8px}.mwt-entry button{width:100%}
+"""
+
+TUNE_JS = r"""
+(function () {
+  const DE = {"Improve detection": "Erkennung verbessern", "MoveEye tests itself in the 3D simulator: people and animals walk past, and the simulator knows exactly what MoveEye should have reported. The assistant tries changes and keeps only what is clearly better.": "MoveEye testet sich selbst im 3D-Simulator: dort gehen Personen und Tiere vorbei, und der Simulator weiss genau, was MoveEye hätte melden müssen. Der Assistent probiert Änderungen aus und behält nur, was klar besser ist.",
+    "Check": "Prüfen", "How thorough?": "Wie gründlich?", "Improving": "Verbessern", "Result": "Ergebnis", "Keep it up": "Dranbleiben",
+    "Everything ready.": "Alles bereit.", "Still missing:": "Fehlt noch:", "open": "öffnen", "Next": "Weiter", "Back": "Zurück", "Close": "Schliessen", "Start": "Starten", "Stop": "Stopp",
+    "Without the simulator": "Ohne Simulator", "Quick": "Schnell", "Thorough": "Gründlich",
+    "only the day test, up to 3 tries - about 10 to 20 minutes": "nur der Tag-Test, bis 3 Versuche – etwa 10 bis 20 Minuten", "day and night, up to 4 tries each - about 40 to 60 minutes": "Tag und Nacht, je bis 4 Versuche – etwa 40 bis 60 Minuten",
+    "You can close the page - the assistant keeps running. The auto-tuner pauses meanwhile.": "Du kannst die Seite schliessen – der Assistent läuft weiter. Der Auto-Tuner macht so lange Pause.",
+    "Day": "Tag", "Night": "Nacht", "first a test run as it is now": "zuerst ein Testlauf, so wie es jetzt ist", "Try": "Versuch", "still about": "noch etwa", "min": "Min.",
+    "starting …": "startet …", "Score": "Punkte", "kept": "behalten", "nothing was clearly better - everything stays as it was": "nichts war klar besser – alles bleibt, wie es war",
+    "values changed": "Werte geändert", "Keep": "Behalten", "Undo": "Rückgängig", "Undone - the values from before are back.": "Rückgängig gemacht – die Werte von vorher sind zurück.",
+    "stopped": "abgebrochen", "Last time": "Letztes Mal", "Running": "Läuft",
+    "Auto-tuner at the real place": "Auto-Tuner am echten Ort", "adapts the sensitivity to the place all the time (wind, light); starts from the measured values": "passt die Empfindlichkeit laufend an den Ort an (Wind, Licht); startet von den gemessenen Werten aus",
+    "Training night": "Trainings-Nacht", "every night test runs in several scenes and the same improving - only when protection is off": "jede Nacht Testläufe in mehreren Szenen und dasselbe Verbessern – nur wenn der Schutz aus ist",
+    "Weekly check": "Wochen-Check", "every Sunday night a test run; a push when it got worse": "jeden Sonntag in der Nacht ein Testlauf; ein Push, wenn es schlechter wurde",
+    "False alarm learning": "Fehlalarm-Lernen", "mark a recording with 👎 and the simulator re-enacts it and learns from it": "markierst du eine Aufnahme mit 👎, stellt der Simulator sie nach und lernt daraus",
+    "Single tools (Expert)": "Einzelne Werkzeuge (Experte)", "Test run, A/B comparison, thresholds automatic … in the tab Simulator, Simulator centre (view «Expert»).": "Testlauf, A/B-Vergleich, Schwellen automatisch … im Tab Simulator, Simulator-Zentrale (Ansicht «Experte»).",
+    "One guided flow: check, measure, improve, see the result. Replaces the single tools (they stay in «Expert»).": "Ein geführter Ablauf: prüfen, messen, verbessern, Ergebnis ansehen. Ersetzt die einzelnen Werkzeuge (die bleiben unter «Experte»).",
+    "the simulator is needed for measuring": "zum Messen braucht es den Simulator", "Auto-tune": "Auto-Tuner",
+    "Calm down wind and cloud shadows": "Wind und Wolkenschatten beruhigen", "AI confirms every person": "KI bestätigt jede Person", "Stronger rain and snow filter": "Stärkerer Regen- und Schnee-Filter",
+    "Ignore changes of the light": "Lichtwechsel nicht beachten", "Do not take animals for persons": "Tiere nicht für Personen halten", "Less sensitive": "Weniger empfindlich",
+    "See better in the dark": "Im Dunkeln besser sehen", "Find small and crouching persons": "Kleine und geduckte Personen finden", "Catch fast persons": "Schnelle Personen erwischen",
+    "More sensitive by day": "Am Tag empfindlicher", "React faster": "Schneller reagieren"};
+  const L = () => { try { return (typeof LANG !== "undefined" && LANG) || "de"; } catch (e) { return "de"; } };
+  const tt = k => { try { if (typeof t === "function" && t(k) !== k) return t(k); } catch (e) {} const x = window.LX ? window.LX(k) : ""; return x || (L() === "en" ? k : (DE[k] || k)); };
+  const E = (tag, cls, txt) => { const x = document.createElement(tag); if (cls) x.className = cls; if (txt != null) x.textContent = txt; return x; };
+  const B = (txt, fn, cls) => { const b = E("button", cls == null ? "" : cls, txt); b.type = "button"; b.onclick = fn; return b; };
+  let S = null, ov = null, step = 1, depth = "quick", poll = null, seenLast = 0;
+  const api = async (d) => { try { const r = d ? await (await fetch("/api/tune", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(Object.assign({lang: L()}, d))})).json()
+      : await (await fetch("/api/tune?lang=" + L())).json(); if (r && r.ok !== undefined) S = r; if (r && r.ok === false && r.error && typeof toast === "function") toast("⚠ " + r.error); return r; } catch (e) { return null; } };
+  const planName = p => p === "night" ? "🌙 " + tt("Night") : "☀ " + tt("Day");
+  const dur = s => s == null ? "" : Math.max(1, Math.round(s / 60)) + " " + tt("min");
+  function resultBox(last) {
+    const box = E("div");
+    (last.plans || []).forEach(r => { const up = r.base != null && r.best != null ? r.best - r.base : 0;
+      const d = E("div", "mwt-res" + (r.kept && r.kept.length ? "" : " same")); d.append(E("b", "", planName(r.plan) + ": " + tt("Score") + " " + (r.base != null ? r.base : "–") + " → " + (r.best != null ? r.best : "–") + (up > 0 ? "  (+" + Math.round(up * 10) / 10 + ")" : "")));
+      d.appendChild(E("div", "mwt-mut", r.kept && r.kept.length ? tt("kept") + ": " + r.kept.map(x => tt(x.title)).join(", ") : tt("nothing was clearly better - everything stays as it was")));
+      d.style.marginBottom = "6px"; box.appendChild(d); });
+    if (!(last.plans || []).length) box.appendChild(E("div", "mwt-res same", last.msg ? "⚠ " + tt(last.msg) : tt("nothing was clearly better - everything stays as it was")));
+    if (last.stopped) box.appendChild(E("div", "mwt-mut", "⏹ " + tt("stopped")));
+    if (last.undone) box.appendChild(E("div", "mwt-mut", "↩ " + tt("Undone - the values from before are back.")));
+    else if ((last.changed || []).length) box.appendChild(E("div", "mwt-mut", last.changed.length + " " + tt("values changed") + ": " + last.changed.map(c => c[0] + " " + c[1] + " → " + c[2]).join(" · ")));
+    return box;
+  }
+  function render() {
+    if (!ov || !S) return;
+    const c = ov.firstChild; c.textContent = "";
+    if (S.busy) step = 3;
+    const st = E("div", "mwt-steps"); for (let i = 1; i <= 5; i++) { const x = E("i", i === step ? "on" : i < step ? "done" : ""); st.appendChild(x); } c.appendChild(st);
+    const names = ["Check", "How thorough?", "Improving", "Result", "Keep it up"];
+    c.appendChild(E("h3", "", "🎯 " + tt("Improve detection") + " · " + step + "/5 " + tt(names[step - 1])));
+    const nav = E("div", "mwt-nav");
+    const close = B(tt("Close"), () => tuneClose(), "sec");
+    if (step === 1) {
+      c.appendChild(E("p", "", tt("MoveEye tests itself in the 3D simulator: people and animals walk past, and the simulator knows exactly what MoveEye should have reported. The assistant tries changes and keeps only what is clearly better.")));
+      const miss = S.missing || [];
+      if (!miss.length) c.appendChild(E("div", "mwt-item", "✅ " + tt("Everything ready.")));
+      else { c.appendChild(E("b", "", tt("Still missing:"))); miss.forEach(m => { const it = E("div", "mwt-item"); it.appendChild(E("span", "", "⚠ " + m.text));
+        if (m.fix) { const a = E("a", "", tt("open") + " ›"); a.href = m.fix; it.appendChild(a); } c.appendChild(it); }); }
+      if (S.last) { c.appendChild(E("b", "", tt("Last time") + " (" + new Date(S.last.t * 1000).toLocaleString([], {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"}) + ")")); c.appendChild(resultBox(S.last)); }
+      if (miss.length) nav.appendChild(B(tt("Without the simulator") + " ›", () => { step = 5; render(); }, "sec"));
+      const nx = B(tt("Next") + " ›", () => { step = 2; render(); }); nx.disabled = !!miss.length; nav.append(close, nx);
+    } else if (step === 2) {
+      [["quick", "⚡", "Quick", "only the day test, up to 3 tries - about 10 to 20 minutes"], ["thorough", "🔬", "Thorough", "day and night, up to 4 tries each - about 40 to 60 minutes"]].forEach(([v, ic, n, note]) => {
+        const b = E("button", "mwt-opt" + (depth === v ? " on" : "")); b.type = "button"; const tx = E("span"); tx.append(E("b", "", tt(n)), E("small", "", tt(note)));
+        b.append(E("span", "ic", ic), tx); b.onclick = () => { depth = v; render(); }; c.appendChild(b); });
+      c.appendChild(E("div", "mwt-mut", tt("You can close the page - the assistant keeps running. The auto-tuner pauses meanwhile.")));
+      nav.append(B("‹ " + tt("Back"), () => { step = 1; render(); }, "sec"), B("▶ " + tt("Start"), async () => { const r = await api({do: "start", depth: depth}); if (r && r.ok) { step = 3; seenLast = 0; } render(); }));
+    } else if (step === 3) {
+      const N = S.now || {}, plan = (S.n > 1 ? (S.i + 1) + "/" + S.n + " · " : "") + planName(S.step || "quick");
+      c.appendChild(E("b", "", "⏳ " + tt("Running") + ": " + plan));
+      c.appendChild(E("div", "", N.tries ? "🤖 " + tt("Try") + " " + (N.try || 0) + "/" + N.tries + " · " + (N.what ? tt(N.what) : tt("first a test run as it is now")) : tt("starting …")));
+      if (N.base != null) c.appendChild(E("div", "mwt-mut", tt("Score") + ": " + N.base + " → " + (N.best != null ? N.best : "…")));
+      const bar = E("div", "mwt-bar"), i = E("i"); const pct = N.total ? Math.max(2, Math.min(100, 100 * (1 - (N.left || 0) / N.total))) : 3; i.style.width = pct + "%"; bar.appendChild(i); c.appendChild(bar);
+      if (N.running && N.left != null) c.appendChild(E("div", "mwt-mut", tt("still about") + " " + dur(N.left)));
+      (S.plans || []).forEach(r => c.appendChild(E("div", "mwt-mut", "✓ " + planName(r.plan) + ": " + r.base + " → " + r.best)));
+      c.appendChild(E("div", "mwt-mut", tt("You can close the page - the assistant keeps running. The auto-tuner pauses meanwhile.")));
+      if (!S.busy) { step = 4; return render(); }
+      nav.append(close, B("⏹ " + tt("Stop"), () => api({do: "stop"}).then(render), "sec"));
+    } else if (step === 4) {
+      if (S.last) c.appendChild(resultBox(S.last)); else c.appendChild(E("div", "mwt-mut", "–"));
+      if (S.last && S.last.can_undo) nav.appendChild(B("↩ " + tt("Undo"), () => api({do: "undo"}).then(render), "sec"));
+      nav.appendChild(B((S.last && S.last.can_undo ? "✓ " + tt("Keep") : tt("Next")) + " ›", () => { step = 5; render(); }));
+    } else {
+      const K = S.keys || {};
+      const sw = (key, title, note) => { const l = E("label", "mwt-sw"); const tx = E("span"); tx.append(E("b", "", tt(title)), E("small", "", tt(note)));
+        const cb = E("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!K[key]; cb.onchange = () => api({do: "set", key: key, on: cb.checked}).then(render);
+        l.append(tx, cb); c.appendChild(l); };
+      sw("auto_tune", "Auto-tuner at the real place", "adapts the sensitivity to the place all the time (wind, light); starts from the measured values");
+      if (S.auto_status && K.auto_tune) c.appendChild(E("div", "mwt-mut", "🎚 " + tt("Auto-tune") + ": " + tt(S.auto_status)));
+      sw("train_night_on", "Training night", "every night test runs in several scenes and the same improving - only when protection is off"); sw("weekcheck_on", "Weekly check", "every Sunday night a test run; a push when it got worse"); sw("fa_learn_auto", "False alarm learning", "mark a recording with 👎 and the simulator re-enacts it and learns from it");
+      const ex = E("div", "mwt-mut"); const a = E("a", "", "🧰 " + tt("Single tools (Expert)") + " ›"); a.href = "/sim#c-hub"; a.style.color = "var(--acc,#3b8cff)"; ex.append(a, E("div", "", tt("Test run, A/B comparison, thresholds automatic … in the tab Simulator, Simulator centre (view «Expert»)."))); c.appendChild(ex);
+      nav.append(B("‹ " + tt("Back"), () => { step = S.last ? 4 : 1; render(); }, "sec"), B("✓ " + tt("Close"), () => tuneClose()));
+    }
+    c.appendChild(nav);
+  }
+  function tuneClose() { if (ov) ov.remove(); ov = null; if (poll) clearInterval(poll); poll = null; entryPaint(); }
+  async function tuneOpen() {
+    await api(); if (!S) return;
+    step = S.busy ? 3 : 1;
+    if (ov) ov.remove(); ov = E("div", "mwt-ov"); ov.appendChild(E("div", "mwt-card")); document.body.appendChild(ov);
+    ov.onclick = e => { if (e.target === ov) tuneClose(); };
+    render();
+    if (poll) clearInterval(poll);
+    poll = setInterval(async () => { if (!ov) return; const was = S && S.busy; await api(); if (step === 3 || (was && !S.busy)) render(); }, 2500);
+  }
+  window.mwTune = {open: tuneOpen, state: () => S};
+  function entryPaint() {                                   // the entry under Einstellungen → Erkennung
+    const box = document.getElementById("tune-box"); if (!box) return;
+    if (!box.dataset.built) { box.dataset.built = 1; box.className = "mwt-entry";
+      box.append(E("div", "mut", tt("One guided flow: check, measure, improve, see the result. Replaces the single tools (they stay in «Expert»).")), B("🎯 " + tt("Improve detection") + " ›", () => tuneOpen()), E("div", "mut")); box.lastChild.id = "tune-st"; }
+    const st = document.getElementById("tune-st"); if (!st || !S) return;
+    st.textContent = S.busy ? "⏳ " + tt("Running") + " · " + planName(S.step || "quick") : S.last ? tt("Last time") + ": " + (S.last.plans || []).map(r => planName(r.plan) + " " + r.base + " → " + r.best).join(" · ")
+      : (S.missing || []).some(m => m.id === "sim") ? "🧪 " + tt("the simulator is needed for measuring") : "";
+  }
+  function simPagePaint() {                                 // page Simulator, card «Test run»: «Simple» = the assistant instead of «optimize»
+    const ta = document.getElementById("tr-auto"); if (!ta || !S) return;
+    ta.hidden = !!S.simple;
+    let tb = document.getElementById("tr-tune");
+    if (!tb) { tb = B("🎯 " + tt("Improve detection"), () => tuneOpen(), "sec"); tb.id = "tr-tune"; ta.after(tb); }
+    tb.hidden = !S.simple;
+  }
+  document.addEventListener("DOMContentLoaded", () => { if (document.getElementById("tr-auto")) api().then(simPagePaint); });
+  document.addEventListener("DOMContentLoaded", () => { if (!document.getElementById("tune-box")) return;
+    api().then(entryPaint); setTimeout(entryPaint, 2500); setInterval(() => { if (!document.hidden && document.getElementById("tune-box")) api().then(entryPaint); }, 20000); });
+})();
+"""
+
+
+def tune_head():
+    return "<style>" + TUNE_CSS + "</style><script>" + TUNE_JS + "</script>"
 # The camera head drives a grid of directions and keeps a few photos of each as the reference. Later it drives the same
 # directions again, compares and writes a report: what is missing, what is new, what changed. Started from the web page
 # (assistant), the window, automatically when armed / every N minutes, or from the 3D simulator (button).
@@ -32121,6 +32529,11 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     </div>
   </details>
 
+  <details class="sc fold" id="c-simset" data-k="simset">
+    <summary><h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span data-i18n="Settings of the simulation">Settings of the simulation</span></h2></summary>
+    <div class="fb"><div class="mut" data-i18n="simset-note">simset-note</div><div id="simset-box"></div></div>
+  </details>
+
   <details class="sc fold" id="c-dl" data-k="dl">
     <summary><h2><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg><span data-i18n="Programs and downloads">Programs and downloads</span></h2></summary>
     <div class="fb">
@@ -32204,8 +32617,8 @@ Object.assign(I18N.de, {"No access to the motion sensor": "Kein Zugriff auf den 
  "Catch fast persons": "Schnelle Personen erwischen", "{n} fast persons (joggers) were missed: fewer pictures needed to recognise walking, the AI looks at every picture.": "{n} schnelle Personen (Jogger) verpasst: weniger Bilder bis das Gehen erkannt ist, die KI prüft jedes Bild.",
  "More sensitive by day": "Am Tag empfindlicher", "{n} persons were missed by day: more sensitive and the AI accepts less sure persons.": "{n} Personen am Tag verpasst: empfindlicher, und die KI nimmt auch weniger sichere Personen an.",
  "React faster": "Schneller reagieren", "MoveEye needed {n} s on average: the AI looks at every picture and walking is recognised sooner.": "MoveEye brauchte im Mittel {n} s: die KI prüft jedes Bild und das Gehen wird früher erkannt."});
-I18N.en = I18N.en || {}; Object.assign(I18N.en, {"conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
-Object.assign(I18N.de, {"Simulator centre": "Simulator-Zentrale", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig", "best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by MoveEye": "sichtbar, aber von MoveEye nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"simset-note": "What MoveEye does by itself in the simulation. Connection, computing power and the tiles have their switches above.", "conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
+Object.assign(I18N.de, {"Settings of the simulation": "Einstellungen der Simulation", "simset-note": "Was MoveEye in der Simulation selbst tut. Verbindung, Rechenleistung und die Kacheln haben ihre Schalter oben.", "Simulator centre": "Simulator-Zentrale", "Picture quality": "Bildqualität", "automatic": "automatisch", "very high": "sehr hoch", "high": "hoch", "medium": "mittel", "low": "niedrig", "best sneaker": "bester Schleicher", "unreported": "unerkannt", "Best sneaker of the week": "Bester Schleicher der Woche", "visible, but not reported by MoveEye": "sichtbar, aber von MoveEye nicht gemeldet", "Simulator": "Simulator", "Connection": "Verbindung", "Live picture": "Livebild", "off - the real cameras and sensors are used": "aus – die echten Kameras und Sensoren werden benutzt", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» darunter.", "conn-note": "Adresse des Simulator-Programms. Meist nicht nötig: der Simulator meldet sich im Netz und wird von selbst gefunden.",
  "Save": "Speichern", "Find the simulator in the network by itself": "Simulator im Netz selbst finden", "Simulators in the network": "Simulatoren im Netz", "Search now": "Jetzt suchen",
  "Picture": "Bild", "Simulator control": "Simulator-Steuerung", "ctl-note": "Erscheint, sobald der Simulator verbunden ist: Szenarien, Tageszeit, Wetter, Besucher und mehr.",
  "Load": "Laden", "Delete": "Löschen", "Computing power": "Rechenleistung", "perf-note": "Weniger Bilder pro Sekunde entlasten den Pi und den PC.",
@@ -32533,6 +32946,24 @@ async function simOnOff() { const b = $("#s-on"); b.disabled = true; await mwSim
 async function saveUrl() { URLEDIT = false; const r = await post("/api/sim", {url: $("#s-url").value.trim(), lang: LANG}); toast(r.ok === false ? (r.error || t("not possible")) : t("Saved")); load(); }
 $("#s-url").addEventListener("input", () => URLEDIT = true);
 async function setKey(k, v) { const r = await post("/api/set", {key: k, value: v}); if (!r.ok) toast(r.error || t("not possible")); load(); }
+// 2.98.14 (Konzept): the settings of the section «Simulator» live here (no longer under Einstellungen → System) - all of
+// them that have no own switch on this page yet
+async function simsetLoad() {
+  const box = $("#simset-box"); if (!box || box.contains(document.activeElement)) return;
+  let sch; try { sch = await (await fetch("/api/schema?sec=Simulator&lang=" + LANG)).json(); } catch (e) { return; }
+  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url";
+  box.textContent = "";
+  S.toggles.filter(x => !own(x.key)).forEach(x => { const l = el("label", "opt"), cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!x.value;
+    cb.onchange = () => post("/api/set", {key: x.key, value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); }); l.append(el("span", "", x.label), cb); box.appendChild(l); });
+  S.sliders.filter(x => !own(x.key)).forEach(x => { const w = el("div"), top = el("div", "rng"), v = el("b", "", String(x.value)), r = document.createElement("input");
+    r.type = "range"; r.min = x.min; r.max = x.max; r.step = x.step; r.value = x.value; r.oninput = () => { v.textContent = r.value; };
+    r.onchange = () => post("/api/set", {key: x.key, value: +r.value}); top.append(el("span", "", x.label), v); w.append(top, r); box.appendChild(w); });
+  (S.texts || []).filter(x => !own(x.key) && x.kind !== "secret").forEach(x => { const w = el("div", "row2"), i = document.createElement("input"); i.type = "text"; i.value = x.value == null ? "" : x.value;
+    const b = el("button", "sec", t("Save")); b.type = "button"; b.onclick = () => post("/api/text", {key: x.key, value: i.value, lang: LANG}).then(r => toast(r.ok ? t("Saved") : (r.error || t("not possible"))));
+    box.append(el("div", "mut", x.label)); w.append(i, b); box.appendChild(w); });
+  if (!box.children.length) box.appendChild(el("div", "mut", "–"));
+}
+document.addEventListener("DOMContentLoaded", () => { simsetLoad(); const d = $("#c-simset"); if (d) d.addEventListener("toggle", () => { if (d.open) simsetLoad(); }); });
 async function search() { $("#s-search").disabled = true; await post("/api/sim", {action: "search", lang: LANG}); load(); }
 async function piAct(a) { const r = await post("/api/sim", {action: a, lang: LANG}); toast(r.ok === false ? (r.error || t("not possible")) : t({install: "Simulator installed", start: "Simulator started", stop: "Simulator stopped"}[a])); load(); }
 // ---- simulator control (CONTROL protocol 1): the simulator describes its own controls ----
@@ -40134,7 +40565,7 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
         <button type="button" class="sec" id="pr-armnow" data-i18n="Arm now">Arm now</button>
         <button type="button" class="sec" id="pr-disarm" data-i18n="Disarm">Disarm</button>
       </div>
-      <label class="row pr-sw"><span><b>⛺ <span data-i18n="Camping profile">Camping profile</span></b><br>
+      <label class="row pr-sw" hidden><span><b>⛺ <span data-i18n="Camping profile">Camping profile</span></b><br>
         <span class="mut" data-i18n="cp-desc">Own Wi-Fi on, the camera stays where it is (no patrol / tracking / timelapse), alarms and recordings on, armed after the countdown. Switching it off restores your settings.</span></span>
         <input type="checkbox" class="sw" id="pr-camp"></label>
       <label class="row pr-sw"><span><b>🔋 <span data-i18n="Power saving">Power saving</span></b><br><span class="mut" id="pr-eco-info"></span></span>
@@ -40158,6 +40589,7 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
       <div class="mut" id="pr-env" style="margin-top:4px"></div>
       <div class="err" id="pr-err"></div>
     </details>
+    <details class="card" data-view="tune" data-vgroup="Panels" data-vlabel="Improve detection"><summary data-i18n="Improve detection">Improve detection</summary><div id="tune-box"></div></details>
     <details class="card" id="hcard" data-view="health" data-vgroup="Panels" data-vlabel="Self-check">
       <summary><span data-i18n="🩺 Self-check">🩺 Self-check</span> <span class="mut" id="h-sum" style="text-transform:none;letter-spacing:0;font-weight:500"></span></summary>
       <div id="h-list"></div>
@@ -41414,7 +41846,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
   {id: "theft", tab: "protect", icon: "🔒", name: "Theft protection", items: [{sec: "Theft protection", title: "Device", ic: "🔒"},
    {sec: "Reference scan", title: "Guarded things (reference scan)", ic: "🧭"}, {sec: "Backup", title: "Backup (pictures off the device)", ic: "☁️"}]},
   {id: "sched", tab: "protect", icon: "🗓", name: "Zones, schedule, presence", items: [{card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"}]},
-  {id: "detect", tab: "settings", icon: "🎯", name: "Detection", items: [{sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {sec: "Thermal camera", ic: "🌡"}, {fine: true},
+  {id: "detect", tab: "settings", icon: "🎯", name: "Detection", items: [{card: "tune", title: "Improve detection", ic: "🎯"}, {sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {sec: "Thermal camera", ic: "🌡"}, {fine: true},
    {sec: "Walking recognition", ic: "🚶"}, {sec: "Vehicle filter", ic: "🚗"}, {sec: "Rain", ic: "🌧️"}, {sec: "Wind", ic: "🌬️"}, {sec: "Low light", ic: "🌘"}, {sec: "Auto-tune", ic: "🎚️"}]},
   {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {card: "source", sec: "Video source", ic: "🎥"},
    {sec: "Timelapse", ic: "⏱️"}, {sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}, {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
@@ -41425,8 +41857,9 @@ const GROUPS = [                                            // 2.98.0: by goal -
   {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"},
    {card: "guest", title: "Guest access", ic: "👥"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}]},
   {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", ic: "📍"}, {sec: "Updates", ic: "⬆️"},
-   {sec: "Simulator", ic: "🧪"}, {card: "log", ic: "📜"}]},
+   {card: "log", ic: "📜"}]},
 ];
+Object.assign(I18N.de, {"Improve detection": "Erkennung verbessern"});   // 2.98.14: the assistant (312); the simulator settings are on the page Simulator
 function toBlock(d) {                                        // a settings section -> its controls (without its own title)
   const b = el("div", "blk");
   [...d.children].filter(c => c.tagName !== "SUMMARY").forEach(k => b.appendChild(k));
@@ -43468,18 +43901,17 @@ Object.assign(I18N.en, {"tether-hint": "Connect a phone with the USB cable. Andr
 Object.assign(I18N.de, {"Internet from the phone (USB cable)": "Internet vom Handy (USB-Kabel)", "phone found, connecting …": "Handy gefunden, verbinde …",
   "the own Wi-Fi gets this internet too": "das eigene WLAN bekommt dieses Internet auch",
   "tether-hint": "Handy per USB-Kabel anschliessen. Android: Einstellungen → Hotspot & Tethering → «USB-Tethering». iPhone: «Persönlicher Hotspot» einschalten und «Vertrauen» antippen. MoveEye verbindet von selbst – auch das eigene WLAN (Spiel-Netz) bekommt dann Internet."});
-Object.assign(I18N.de, {"Mode": "Modus", "Camping guard": "Camping-Wache", "Campfire games": "Lagerfeuer-Spiele", "Gamer": "Gamer",
-  "Home / garden": "Zuhause / Garten", "Wildlife watching": "Wildbeobachtung", "Night guard": "Nachtwache", "Transport / rest": "Transport / Ruhe",
+Object.assign(I18N.de, {"Mode": "Modus", "Camping": "Camping", "Campfire games": "Lagerfeuer-Spiele", "Gamer": "Gamer",
+  "Home / garden": "Zuhause / Garten", "Wildlife watching": "Wildbeobachtung", "Transport / rest": "Transport / Ruhe",
   "Own settings": "Eigene Einstellungen", "no mode": "kein Modus", "since": "seit",
   "Your own settings, no mode.": "Deine eigenen Einstellungen, kein Modus.",
   "Full guard: alarms, recordings, own Wi-Fi, armed after the countdown. Power saving while all is quiet.": "Volle Wache: Alarme, Aufnahmen, eigenes WLAN, Schutz an nach dem Countdown. Stromsparen, solange alles ruhig ist.",
-  "The game corner is open for the phones (in the Wi-Fi MoveEye is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to the camping guard at the set time or when the battery gets low.": "Die Spielecke ist offen für die Handys (im WLAN, in dem MoveEye ist). Die Wache schaut sparsam weiter: wenige Bilder, die KI nur bei Bewegung – ein Tier am Zelt wird trotzdem gemeldet. Zur eingestellten Zeit oder wenn der Akku knapp wird, zurück zur Camping-Wache.",
+  "The game corner is open for the phones (in the Wi-Fi MoveEye is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to camping at the set time or when the battery gets low.": "Die Spielecke ist offen für die Handys (im WLAN, in dem MoveEye ist). Die Wache schaut sparsam weiter: wenige Bilder, die KI nur bei Bewegung – ein Tier am Zelt wird trotzdem gemeldet. Zur eingestellten Zeit oder wenn der Akku knapp wird, zurück zum Camping.",
   "Only with mains power: power mode, all games and the game collection, the best picture. The guard only if you want it. On battery MoveEye goes back to the campfire games by itself.": "Nur mit Netzstrom: Powermodus, alle Spiele und die Spielesammlung, bestes Bild. Die Wache nur, wenn du willst. Auf Akku wechselt MoveEye von selbst zurück zu den Lagerfeuer-Spielen.",
   "Guarding house and garden: alarms and recordings on, no own Wi-Fi, no camping profile.": "Haus und Garten bewachen: Alarme und Aufnahmen ein, kein eigenes WLAN, kein Camping-Profil.",
   "Animals: no siren, the light does not go on by itself (it would scare them), many pictures, the camera follows what moves.": "Tiere: keine Sirene, das Licht geht nicht von selbst an (es würde sie verscheuchen), viele Bilder, die Kamera folgt dem, was sich bewegt.",
-  "The highest attention: more sensitive, thermal alarm, infrared light by itself, the pre-alarm too.": "Höchste Aufmerksamkeit: empfindlicher, Wärmealarm, Infrarotlicht von selbst, auch der Voralarm.",
   "Rest while travelling: no detection, no recordings, no alarms - only the battery, GPS theft and tamper protection stay on.": "Ruhe unterwegs: keine Erkennung, keine Aufnahmen, keine Alarme – nur Akku, GPS-Diebstahlschutz und Sabotageschutz bleiben an.",
-  "Back to the camping guard at": "Zurück zur Camping-Wache um", "or below": "oder unter", "or battery below": "oder Akku unter", "battery": "Akku", "never": "nie",
+  "Back to camping at": "Zurück zum Camping um", "or below": "oder unter", "or battery below": "oder Akku unter", "battery": "Akku", "never": "nie",
   "Guard during the games": "Wache während der Spiele", "needs mains power": "braucht Netzstrom", "Mode switched": "Modus gewechselt",
   "runs on the battery": "läuft auf Akku", "under-voltage: the power supply is too weak": "Unterspannung: das Netzteil ist zu schwach"});
 const MD = {built: 0, until: 0, hover: null};
@@ -43513,7 +43945,7 @@ function modePaint(s) {
   const o = $("#mode-opts"); const key = cur + "|" + M.fire_until + "|" + M.fire_min_pct + "|" + M.gamer_watch + "|" + M.fire_persons;
   if (o.dataset.k === key) return; o.dataset.k = key; o.textContent = "";
   if (cur === "fire") {
-    const r = el("div", "row"); r.append(el("span", "", t("Back to the camping guard at")));
+    const r = el("div", "row"); r.append(el("span", "", t("Back to camping at")));
     const ti = document.createElement("input"); ti.type = "time"; ti.value = M.fire_until || ""; ti.style.width = "120px"; ti.style.flex = "none";
     ti.onchange = () => post("/api/mode", {mode_fire_until: ti.value});
     const sp = el("span", "", t("or battery below")); const se = document.createElement("select");
@@ -44730,7 +45162,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 
 <section id="alarm" data-icon="🛡"><h2>Alarm &amp; Camping</h2><p><b>🛡 Schutz (ab 2.95.105):</b> Oben in «Camping / Schutz» eine Stufe statt vieler Schalter: <b>Aus</b> · <b>Wachsam</b> (Personen und Sabotage aufs Handy, keine Sirene) · <b>Voll</b> (dazu bewachte Gegenstände aus dem Referenz-Scan, GPS-Ortung und die Sirene, wenn niemand ausschaltet). Der <b>Schutz-Assistent</b> fragt drei Dinge (was, wann, wie reagieren) und stellt alles ein. Die <b>Ampel</b> zeigt, was noch fehlt, mit «Beheben». <b>PIN zum Ausschalten</b>: ohne PIN kein «Schutz aus»; 3 falsche PINs lösen einen Diebstahl-Alarm aus. <b>Schutz testen</b> prüft Kamera, Push, Lautsprecher, Referenz-Scan – mit dem Simulator auch Abdecken und eine Person. Unter «Mehr»: Sirene nach 10–120 s und «automatisch an, wenn mein Handy weg ist». Die Begriffe «scharf / unscharf» heissen jetzt «Schutz an / aus». Der Bluetooth-Lautsprecher ist unter den Modi schnell erreichbar, das Disco-Licht zugeklappt darunter.</p><p><b>Modus (ab 2.95.47):</b> ein Schalter für das ganze Gerät, oben in «Camping / Schutz» (auch im Fenster): ⛺ Camping-Wache · 🔥 Lagerfeuer-Spiele (Spielecke offen im bestehenden WLAN, die Wache schaut sparsam weiter; zur eingestellten Zeit oder bei knappem Akku zurück zur Camping-Wache) · 🎮 Gamer (nur mit Netzstrom: Powermodus, alle Spiele, Wache nach Wahl; auf Akku zurück zu den Lagerfeuer-Spielen) · 🏠 Zuhause · 🦌 Wildbeobachtung (keine Sirene, kein Licht von selbst) · 🌙 Nachtwache · 🔕 Transport. «Eigene Einstellungen» stellt alles zurück, wie es vor dem ersten Modus war.</p><p><b>📺 TV-Anzeige und Internet vom Handy (ab 2.95.51):</b> Unter dem Modus zeigt «Am HDMI zeigen» eine grosse Spielseite auf dem Fernseher am Pi (Raspberry Pi OS mit Desktop und Chromium nötig): links das Bild des Simulators oder der Kamera, rechts der Spielassistent, der QR-Code zum Mitspielen, die Zeit, die Spieler und die Rangliste. Bei Lagerfeuer und Gamer geht sie von selbst an. Den Link kann auch jeder andere Bildschirm im gleichen Netz öffnen. Ein Handy am USB-Kabel (Android «USB-Tethering», iPhone «Persönlicher Hotspot») gibt MoveEye Internet – das eigene WLAN (Spiel-Netz) bekommt es dann auch.</p><p><b>📶 Netz-Check und 🛈 Infoseite (ab 2.95.52):</b> Werkzeuge → «Netz-Check der Mitspieler» misst bei allen Handys Reaktionszeit, Schwankung, Verluste, Download und Upload bis zu MoveEye; Handys in der Spielecke messen von selbst, alle anderen über den QR-Code. Ist MoveEye selbst das WLAN, kommt das Empfangssignal jedes Handys dazu, mit Tipps für schwache Verbindungen. Werkzeuge → «Infoseite für Gäste» zeigt deine Homepage von MoveEye allen im gleichen WLAN, ohne Login und ohne Internet (QR-Code, auch auf der TV-Anzeige). Fragen aus dem Formular kommen als Push-Nachricht.</p><p><b>🖥 Simulator als Helfer (ab 2.95.53):</b> <b>KI-Rechenhilfe</b> (Werkzeuge): Läuft MoveEye auch auf dem PC (im 3D-Simulator «MoveEye auf diesem PC starten»), rechnet der PC die Erkennung für den Pi – der Pi findet ihn von selbst und rechnet wieder selbst, wenn der PC weg ist. <b>TV-Modus</b>: Taste T im Simulator oder «TV-Modus im 3D-Simulator» unter dem Modus – grosses Bild mit Spiel, QR-Code und Rangliste. Im Tab Simulator: <b>Aufstell-Planer</b> (wo MoveEye hin soll, tote Winkel, Patrouille übernehmen), <b>Alarm-Rückblick in 3D</b> (ein Alarm wird nachgespielt), <b>KI-Prüfung mit Simulator-Bildern</b> (wie gut erkennt die KI bei Nacht, Regen, Nebel? mit Trainingsbildern als ZIP). Im Netz-Check: <b>Empfangs-Rundgang</b> – eine Karte, wo das WLAN gut ist.</p><p><b>📖 Almanach, 🪩 Disco-Licht, 🔒 Tunnel, 🎮 Spiele (ab 2.95.54):</b> Werkzeuge → «Überlebens-Almanach»: Tipps fürs Camping in der Schweiz zum Nachschlagen oder als Abendlektüre, offline, mit Suche, Rotlicht und Vorlesen (Adresse /almanach/, auch für Gäste). Unter dem Modus: «Disco-Licht» – das weisse Licht blitzt im Takt der Musik (Mikrofon) oder in festem Takt, höchstens 3-mal pro Sekunde, ein Alarm geht vor. Tab Simulator → «Simulator hinter einer Firewall»: Läuft der Simulator auf einem PC ohne Adminrechte, verbindet er sich mit Adresse und Code selbst zu MoveEye. Die Spielesammlung ist in Touch-Spiele und Spiele mit Bildschirm-Tasten geteilt (Tetris, Racer, Breakout, Pong, Astray).</p>
 <ul><li><b>Schutz ein / aus:</b> nur bei Schutz an gibt es Alarme, Push-Nachrichten, Sirene und Aufnahmen. Der Countdown (einstellbar) gibt dir Zeit wegzugehen. «Sofort Schutz an» überspringt ihn.</li>
-<li><b>Camping-Profil:</b> ein Schalter für alles Nötige: eigenes WLAN an, Kamera bleibt stehen (keine Patrouille/Verfolgung/Zeitraffer), Alarme, Aufnahmen und Stromsparen an, nach dem Countdown Schutz an. Ausschalten stellt deine vorherigen Einstellungen wieder her.</li>
+<li><b>⛺ Modus «Camping» (früher «Camping-Profil» / «Camping-Wache», ab 2.98.14 dasselbe):</b> ein Schalter für alles Nötige: eigenes WLAN an, Kamera bleibt stehen (keine Patrouille/Verfolgung/Zeitraffer), Alarme, Aufnahmen und Stromsparen an, nach dem Countdown Schutz an. Ausschalten stellt deine vorherigen Einstellungen wieder her.</li>
 <li><b>Eigenes WLAN (Hotspot):</b> der Pi macht sein eigenes WLAN – funktioniert ohne Handynetz. Name und Passwort unter <i>Schutz &amp; Netzwerk</i>.</li>
 <li><b>Netzwerk:</b> «Automatisch» sucht zuerst bekannte Netze (z. B. den Handy-Hotspot, dann gibt es Internet und Push-Nachrichten) und schaltet sonst das eigene WLAN ein.</li>
 <li><b>Autostart:</b> MoveEye startet beim Einschalten von selbst, ohne Bildschirm.</li>
@@ -44752,7 +45184,8 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 </section>
 
 <section id="detect" data-icon="🎯"><h2>Erkennung</h2>
-<ul><li><b>Empfindlichkeit</b> und <b>Min. Objektgrösse</b> sind die wichtigsten Regler gegen Fehlalarme.</li>
+<ul><li><b>🎯 Erkennung verbessern (ab 2.98.14):</b> ein Assistent in 5 Schritten (Einstellungen → Erkennung oder Simulator-Zentrale): prüfen, wie gründlich (schnell / Tag + Nacht), MoveEye misst sich im 3D-Simulator und probiert Änderungen aus, Ergebnis vorher → nachher (mit «Rückgängig»), dann Dranbleiben (Auto-Tuner, Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen). Es läuft immer nur ein Test; der Auto-Tuner macht so lange Pause. Die einzelnen Werkzeuge (A/B-Vergleich, Schwellen automatisch …) gibt es unter «Experte».</li>
+<li><b>Empfindlichkeit</b> und <b>Min. Objektgrösse</b> sind die wichtigsten Regler gegen Fehlalarme.</li>
 <li><b>KI-Erkennung</b> erkennt Personen, Tiere und Fahrzeuge. «Bewegungs-Personen brauchen KI-Bestätigung» = weniger Fehlalarme, aber etwas langsamer.</li>
 <li><b>🧠 Eigenes KI-Modell</b> (Einstellungen → KI-Erkennung → «KI-Modell»): <i>Standard (SSD)</i> ist das bekannte Modell (≈ 70 MB, kennt 90 Dinge). <i>Eigenes (MoveEye-Modell)</i> ist ein kleines YOLO-Modell (≈ 12 MB), das auf GitHub nur für MoveEye trainiert wird: aus Trainingspaketen des Simulators und deinen beschrifteten Alarmbildern («Was war das?» – Person / Tier / Nichts). Es kennt drei Klassen: Person, Tier, Fahrzeug. «Eigenes Modell herunterladen» holt die neueste Fassung vom GitHub-Release «ki-modell» und prüft sie mit der Prüfsumme (sha256); danach läuft sie gleich. Darunter steht, welches Modell gerade läuft, die Version und die gemessene Güte (mAP50: 1,0 = perfekt, ab etwa 0,6 brauchbar). Fehlt die Datei oder läuft sie auf dem Pi nicht, nimmt MoveEye von selbst wieder das Standard-Modell (Meldung im Selbstcheck). Die Regler «Sicherheit» behalten ihre Bedeutung: 0,5 = die beste Schwelle aus dem Training. Mit «KI-Prüfung mit Simulator-Bildern» (Reiter Simulator) lassen sich beide Modelle vergleichen. Neu trainieren: auf GitHub Actions → «KI-Modell» → «Run workflow» (Anleitung im Ordner <code>ki_training/</code>).</li>
 <li><b>Zonen</b> (Reiter <i>Zonen</i>): «Ignorieren» für Bäume, Strasse, Zeltwand; «Nur hier» wenn nur ein Bereich zählen soll.</li>
@@ -44832,7 +45265,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 
 <section id="window" data-icon="🖥"><h2>Desktop-Fenster auf dem Pi</h2>
 <table><tr><td>Doppelklick aufs Video</td><td>nur Video</td></tr><tr><td>⛶ / F11 / Esc</td><td>Video-Vollbild / ganze Seite als Vollbild / zurück</td></tr>
-<tr><td>Strg+B</td><td>Einstellungsbereich ein/aus</td></tr><tr><td>Strg+T / Strg+L</td><td>hell/dunkel, Sprache</td></tr>
+<tr><td>Strg+B</td><td>Reiter Einstellungen / zurück zu Live (das Fenster hat dieselben 6 Reiter wie die Webseite)</td></tr><tr><td>Strg+T / Strg+L</td><td>hell/dunkel, Sprache</td></tr>
 <tr><td>Pfeiltasten / Pos1</td><td>Kamera bewegen / Mitte</td></tr><tr><td>Rechtsklick aufs Video</td><td>Felder ein-/ausblenden</td></tr></table>
 <p>Die Einstellungen sind gleich gegliedert wie auf der Webseite. Der Knopf «Anleitung» öffnet diese Seite.</p>
 </section>
@@ -44942,7 +45375,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 
 <section id="alarm" data-icon="🛡"><h2>Alarm &amp; camping</h2><p><b>🛡 Protection (from 2.95.105):</b> at the top of «Camping / protection» one level instead of many switches: <b>Off</b> · <b>Watchful</b> (persons and sabotage to the phone, no siren) · <b>Full protection</b> (plus guarded things of the reference scan, GPS tracking and the siren when nobody switches off). The <b>protection assistant</b> asks three things (what, when, how to react) and sets everything. The <b>traffic light</b> shows what is missing, with «Fix». <b>PIN for switching off</b>: no «off» without the PIN; 3 wrong PINs raise a theft alarm. <b>Test the protection</b> checks camera, push, loudspeaker, reference scan – with the simulator also covering the camera and a person. Under «More»: siren after 10–120 s and «on automatically when my phone is gone». The Bluetooth loudspeaker is quick to reach below the modes, the disco light folded away below it.</p><p><b>Mode (from 2.95.47):</b> one switch for the whole device, at the top of «Camping / protection» (also in the window): ⛺ camping guard · 🔥 campfire games (game corner open, the guard watches on sparingly; back to the camping guard at the set time or when the battery gets low) · 🎮 gamer (only with mains power: power mode, all games, guard if you want; on battery back to the campfire games) · 🏠 home · 🦌 wildlife watching (no siren, no light by itself) · 🌙 night guard · 🔕 transport. «Own settings» brings everything back as it was before the first mode.</p><p><b>📺 TV view and internet from the phone (from 2.95.51):</b> Below the mode, «Show on the HDMI» puts a big game page on the TV at the Pi (Raspberry Pi OS with desktop and Chromium needed): left the picture of the simulator or the camera, right the game wizard, the QR code to join, the time, the players and the ranking. In the campfire and gamer mode it starts by itself. Any other screen in the same network can open the link too. A phone on the USB cable (Android «USB tethering», iPhone «Personal Hotspot») gives MoveEye internet – the own Wi-Fi (game network) gets it too.</p><p><b>📶 Network check and 🛈 product page (from 2.95.52):</b> Tools → «Network check of the players» measures reaction time, jitter, losses, download and upload from every phone to MoveEye; phones in the game corner measure by themselves, all others with the QR code. When MoveEye is the Wi-Fi itself, the signal of every phone is added, with tips for weak connections. Tools → «Product page for guests» shows your MoveEye homepage to everybody in the same Wi-Fi, without login and without internet (QR code, also on the TV view). Questions from the form arrive as a push message.</p><p><b>🖥 The simulator as helper (from 2.95.53):</b> <b>AI helper</b> (Tools): when MoveEye also runs on the PC (in the 3D simulator «Start MoveEye on this PC»), the PC does the detection for the Pi - the Pi finds it by itself and does it again itself when the PC is gone. <b>TV mode</b>: key T in the simulator or «TV mode in the 3D simulator» below the mode. In the tab Simulator: <b>Aufstell-Planer</b> (where MoveEye should stand, blind spots, take over the patrol), <b>alarm replay in 3D</b>, <b>AI test with simulator pictures</b> (how well does the AI see at night, in rain, fog? with training pictures as ZIP). In the network check: <b>walk round</b> - a map where the Wi-Fi is good.</p><p><b>📖 Almanac, 🪩 disco light, 🔒 tunnel, 🎮 games (from 2.95.54):</b> Tools → «Survival almanac» (German): camping tips to look up or read in the evening, offline, with search, red light and reading aloud (/almanach/, also for guests). Below the mode: «Disco light» - the white light flashes with the music (microphone) or a fixed tempo, at most 3 times a second, an alarm comes first. Tab Simulator → «Simulator behind a firewall»: a simulator on a PC without admin rights connects to MoveEye itself with address and code. The game collection is split into touch games and games with on-screen buttons.</p>
 <ul><li><b>Armed / disarmed:</b> only when armed there are alarms, push messages, siren and recordings. The countdown gives you time to leave; «Arm now» skips it.</li>
-<li><b>Camping profile:</b> one switch for everything: own Wi-Fi on, the camera stays where it is, alarms, recordings and power saving on, armed after the countdown. Switching it off restores your settings.</li>
+<li><b>⛺ Mode «Camping» (before «camping profile» / «camping guard», the same from 2.98.14):</b> one switch for everything: own Wi-Fi on, the camera stays where it is, alarms, recordings and power saving on, armed after the countdown. Switching it off restores your settings.</li>
 <li><b>Own Wi-Fi (hotspot):</b> the Pi makes its own Wi-Fi – works without a mobile network. Name and password under <i>Protection &amp; network</i>.</li>
 <li><b>Network:</b> «Automatic» tries known networks first (e.g. the phone hotspot: internet + push messages), otherwise it switches the own Wi-Fi on.</li>
 <li><b>Autostart:</b> MoveEye starts by itself at power-on, without a screen.</li>
@@ -44964,7 +45397,8 @@ pip install opencv-python numpy pillow flask psutil</pre>
 </section>
 
 <section id="detect" data-icon="🎯"><h2>Detection</h2>
-<ul><li><b>Sensitivity</b> and <b>min. object size</b> are the most important settings against false alarms.</li>
+<ul><li><b>🎯 Improve detection (from 2.98.14):</b> an assistant in 5 steps (Settings → Detection or the simulator centre): check, how thorough (quick / day + night), MoveEye measures itself in the 3D simulator and tries changes, result before → after (with «Undo»), then keep it up (auto-tuner, training night, weekly check, false alarm learning). Only one test runs at a time; the auto-tuner pauses meanwhile. The single tools (A/B comparison, thresholds automatic …) are under «Expert».</li>
+<li><b>Sensitivity</b> and <b>min. object size</b> are the most important settings against false alarms.</li>
 <li><b>AI detection</b> recognises persons, animals and vehicles. «Motion persons need AI confirmation» = fewer false alarms, a little slower.</li>
 <li><b>🧠 Own AI model</b> (Settings → AI detection → «AI model»): <i>Standard (SSD)</i> is the well-known model (≈ 70 MB, 90 things). <i>Own (MoveEye model)</i> is a small YOLO model (≈ 12 MB) trained on GitHub only for MoveEye, from simulator training packs and your labelled alarm pictures («What was that?»): person, animal, vehicle. «Download own model» fetches the newest one from the GitHub release «ki-modell» and checks its sha256. Below it: which model runs, its version and quality (mAP50). If the file is missing or does not run on the Pi, MoveEye goes back to the standard model by itself. The certainty sliders keep their meaning (0.5 = the best threshold of the training). Train again: GitHub Actions → «KI-Modell» → «Run workflow» (see the folder <code>ki_training/</code>).</li>
 <li><b>Zones</b> (tab <i>Zones</i>): «Ignore» for trees, road, tent wall; «Only here» when only one area counts.</li>
@@ -45044,7 +45478,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 
 <section id="window" data-icon="🖥"><h2>Desktop window on the Pi</h2>
 <table><tr><td>Double-click the video</td><td>video only</td></tr><tr><td>⛶ / F11 / Esc</td><td>video full screen / whole page full screen / back</td></tr>
-<tr><td>Ctrl+B</td><td>settings panel on / off</td></tr><tr><td>Ctrl+T / Ctrl+L</td><td>light/dark, language</td></tr>
+<tr><td>Ctrl+B</td><td>tab Settings / back to Live (the window has the same 6 tabs as the web page)</td></tr><tr><td>Ctrl+T / Ctrl+L</td><td>light/dark, language</td></tr>
 <tr><td>Arrow keys / Home</td><td>move the camera / centre</td></tr><tr><td>Right-click the video</td><td>show / hide fields</td></tr></table>
 <p>The settings are grouped like on the web page. The button «Manual» opens this page.</p>
 </section>
@@ -45813,14 +46247,26 @@ def web_specs():
     return specs
 
 
-def web_schema(lang=None):
+SECTIONS_ON_SIM_PAGE = ("Simulator",)       # 2.98.14 (Konzept): these settings are on the page Simulator, not under Einstellungen
+
+
+def web_schema(lang=None, only=None):
+    """the settings sections for the page; only = one section with its values (the page Simulator), «Simple» does not apply"""
     out = []
     for sec in SECTIONS:
-        if simple_hidden(None, sec):
+        if only is not None:
+            if sec != only:
+                continue
+            hid = lambda k, s_=None: False
+        else:
+            if sec in SECTIONS_ON_SIM_PAGE:
+                continue
+            hid = simple_hidden
+        if hid(None, sec):
             continue
-        toggles = [{"key": k, "label": tr(l, lang)} for s, k, l in TOGGLES if s == sec and k != "web_stream" and not simple_hidden(k)]
-        sliders = [{"key": k, "label": tr(l, lang), "min": lo, "max": hi, "step": st} for s, k, l, lo, hi, st in SLIDERS if s == sec and not simple_hidden(k)]
-        texts = [x for x in web_texts(lang) if x["section"] == sec and not simple_hidden(x["key"])]
+        toggles = [{"key": k, "label": tr(l, lang), "value": bool(CFG.get(k))} for s, k, l in TOGGLES if s == sec and k != "web_stream" and not hid(k)]
+        sliders = [{"key": k, "label": tr(l, lang), "min": lo, "max": hi, "step": st, "value": CFG.get(k)} for s, k, l, lo, hi, st in SLIDERS if s == sec and not hid(k)]
+        texts = [x for x in web_texts(lang) if x["section"] == sec and not hid(x["key"])]
         if toggles or sliders or texts:
             out.append({"id": sec, "name": tr(sec, lang), "toggles": toggles, "sliders": sliders, "texts": texts})
     return out
@@ -47266,7 +47712,7 @@ class WebStream:
         @app.route("/api/schema")
         def api_schema():
             lang = request.args.get("lang") or CFG["lang"]
-            return reply(web_schema(norm_lang(lang)))
+            return reply(web_schema(norm_lang(lang), request.args.get("sec") or None))   # 2.98.14: ?sec= one section (page Simulator)
 
         @app.route("/api/appearance")
         def api_appearance():
@@ -47545,6 +47991,18 @@ class WebStream:
             else:
                 ok, err = False, "unknown action"
             return reply(dict(learn_state(), ok=ok, error=tr_err(err, lang) if err else ""))
+
+        @app.route("/api/tune", methods=["GET", "POST"])
+        def api_tune():                                      # 2.98.14: the assistant «Erkennung verbessern» (312)
+            if request.method == "GET":
+                return reply(tune_assist_state(request.args.get("lang")))
+            if getattr(g, "role", "admin") != "admin":
+                return reply({"ok": False, "error": "not allowed"}, 403)
+            d = body(); lang = norm_lang(d.get("lang")); a = str(d.get("do") or "")
+            fn = {"start": lambda: tune_assist_start(str(d.get("depth") or "quick")), "stop": tune_assist_stop, "undo": tune_assist_undo,
+                  "set": lambda: tune_assist_set(str(d.get("key") or ""), bool(d.get("on")))}.get(a)
+            ok, err = fn() if fn else (False, "unknown action")
+            return reply(dict(tune_assist_state(lang), ok=ok, error=tr_err(err, lang) if err else ""))
 
         @app.route("/api/simbar")
         def api_simbar():                                    # 2.96.4: the stripe «SIMULATION» on every page
@@ -49799,7 +50257,7 @@ def tk_main_on(sec):
         return False
 
 
-TK_GROUP_ICONS = {"alarm": "🛡", "notify": "⚠", "sched": "🗓", "detect": "◎", "camera": "▣", "sensors": "◉", "power": "⚡", "net": "📶", "sys": "⚙"}
+TK_GROUP_ICONS = {"alarm": "🛡", "notify": "⚠", "sched": "🗓", "detect": "◎", "camera": "▣", "sensors": "◉", "power": "⚡", "net": "📶", "sys": "⚙", "simset": "⚗"}
 TK_TAB_HEAD = {"alarm": "Protection", "detect": "Settings"}     # 2.98.0: the tabs of the web page as headings
 
 TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery": "▮", "Theft protection": "⚷", "Reference scan": "◎", "Notifications": "✉",
@@ -49814,13 +50272,18 @@ TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - 2.98.0: the sam
     ("alarm", "Protection", ["Camping / protection", "Theft protection", "Reference scan", "Backup"]),
     ("notify", "What happens at an alarm?", ["Notifications", "Deterrence", "Recording", "Messages", "SMS (LTE stick)", "Night report"]),
     ("sched", "Zones, schedule, presence", ["Schedule"]),
-    ("detect", "Detection", ["Detection", "AI detection", "Thermal camera", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
+    ("detect", "Detection", ["Improve detection", "Detection", "AI detection", "Thermal camera", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
     ("camera", "Cameras & head", ["Camera / Servos", "Patrol", "Video source", "Timelapse", "Mover", None, "Servo driver"]),
     ("sensors", "Devices & sensors", ["Lights", "Microphone", "Loudspeaker", "Relays", "Extra sensors", "Clap switch", "Bless you", "Wake-up alarm", "Storm warning", "GPS module"]),
     ("power", "Power supply", ["Battery", "Power saving", "Solar panel"]),
     ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant"]),
-    ("sys", "System", ["Setup", "Updates", "Simulator"]),
+    ("sys", "System", ["Setup", "Updates"]),
 ]
+# 2.98.14 (Konzept): which tab shows a group (like the web page); the simulator settings are in the tab Simulator
+TK_PANEL_TABS = ("protect", "settings", "sim")
+TK_GROUP_TAB = {"alarm": "protect", "notify": "protect", "theft": "protect", "sched": "protect"}
+TK_SIM_GROUPS = [("simset", "Settings of the simulation", ["Simulator"])]
+TK_PSEUDO = {"Improve detection"}
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
 
@@ -50170,7 +50633,8 @@ class App:
         CFG["ui_hidden"] = []; save_settings(); self._schedule_rebuild()
 
     def toggle_sidebar(self):
-        self.set_hidden("sidebar", self.is_shown("sidebar"))
+        """2.98.14: the settings are a tab now (like the web page) - Ctrl+B goes there and back to Live"""
+        self._tab("settings" if self.tab != "settings" else "live")
 
     def toggle_theme(self):
         self._set("theme", "light" if CFG["theme"] == "dark" else "dark"); self._rebuild()
@@ -50217,8 +50681,7 @@ class App:
                     sub.add_checkbutton(label=tr(label), variable=v, command=lambda k=key, vv=v: self.set_hidden(k, not vv.get()))
             m.add_cascade(label=tr(g), menu=sub)
         m.add_separator()
-        sv = tk.BooleanVar(value=self.is_shown("sidebar")); self.view_vars["sidebar"] = sv
-        m.add_checkbutton(label=tr("Settings panel") + "   (Ctrl+B)", variable=sv, command=self.toggle_sidebar)
+        m.add_command(label=tr("Settings") + "   (Ctrl+B)", command=self.toggle_sidebar)
         m.add_command(label=tr("Show all"), command=self.show_all)
         if x is None:
             x, y = self.root.winfo_pointerx(), self.root.winfo_pointery()
@@ -50293,7 +50756,7 @@ class App:
     def _layout(self, w=None):
         """(compact header, sidebar width, quick switches beside the stick) for a window width."""
         w = w or self._win_w()
-        side = (380 if w >= 1200 else max(330, int(w * 0.36))) if self.is_shown("sidebar") else 0
+        side = 0                                         # 2.98.14: no settings beside the picture - they have their tabs
         left = w - side - 60
         return (w < 1100, side, left >= 800)
 
@@ -50324,10 +50787,16 @@ class App:
         self._build_header()
         body = ttk.Frame(r, style="Bg.TFrame"); body.pack(fill="both", expand=True, padx=16, pady=(0, 12))
         body.columnconfigure(0, weight=1); body.rowconfigure(0, weight=1)
+        if self.tab not in [t for t, _ in self._tabs()]:
+            self.tab = "live"
+        if self.tab in TK_PANEL_TABS:                     # 2.98.14: Schutz / Einstellungen / Simulator: the settings over the whole width
+            self.left_f = None
+            self._build_sidebar(body, self.tab)
+            return
         left = ttk.Frame(body, style="Bg.TFrame"); left.grid(row=0, column=0, sticky="nsew")
-        side_open = self.is_shown("sidebar")
+        side_open = False
         strip = tk.Frame(body, bg=C["bg"]); strip.grid(row=0, column=1, sticky="ns", padx=(6 if not self.is_shown("hdr_buttons") else 8, 6))
-        for txt, cmd in [] if self.is_shown("hdr_buttons") else (("▶" if side_open else "◀", self.toggle_sidebar), ("☰", self._view_menu)):
+        for txt, cmd in [] if self.is_shown("hdr_buttons") else (("☰", self._view_menu),):
             l = tk.Label(strip, text=txt, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 11, "bold"), width=2, pady=6,
                          cursor="hand2", highlightthickness=1, highlightbackground=C["line"])
             l.pack(pady=(0, 6)); l.bind("<Button-1>", lambda e, c=cmd: c())
@@ -50405,12 +50874,8 @@ class App:
         t_.config(state="disabled")
 
     def _tabs(self):
-        t = [("live", "Live")]
-        if self.is_shown("weather") or self.is_shown("cpu"):
-            t.append(("info", "Weather & system"))
-        if self.is_shown("log"):
-            t.append(("log", "Event log"))
-        return t
+        """2.98.14: the same 6 tabs as the web page: Live · Schutz · Verlauf · Einstellungen · Simulator · Mehr"""
+        return [(k, lab) for k, _h, lab, _s in NAV_ITEMS]
 
     def _build_header(self):
         """Like the web page: dot + name + version, the tabs, symbol buttons on the right; the badges below."""
@@ -50437,14 +50902,16 @@ class App:
             d_ = datetime.now()
             if (d_.month == 8 and d_.day == 1) or os.environ.get("MW_AUG1") == "1":
                 self._aug1(tl)
-        tabs = tk.Frame(top, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=3, pady=3)
-        tabs.pack(side="left", padx=(10 if self._lay[0] else 18, 0))
+        small_ = self._lay[0]
+        tabs = tk.Frame(head if small_ else top, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=3, pady=3)
+        self._tabs_row = tabs
+        shorts = {k: sh for k, _h, _l, sh in NAV_ITEMS}
         self.tab_btns = {}
         for tid, lab in self._tabs():
-            if self._lay[0] and tid != "live":
-                lab = {"info": "System", "log": "Log"}[tid]
-            b = tk.Label(tabs, text=tr(lab), font=("DejaVu Sans", 9 if self._lay[0] else 10), padx=7 if self._lay[0] else 12, pady=4, cursor="hand2")
-            b.pack(side="left", padx=(0, 2)); b.bind("<Button-1>", lambda e, t=tid: self._tab(t))
+            if small_ and self._win_w() < 760:
+                lab = shorts.get(tid, lab)
+            b = tk.Label(tabs, text=tr(lab), font=("DejaVu Sans", 9 if small_ else 10), padx=5 if small_ else 12, pady=4, cursor="hand2")
+            b.pack(side="left", padx=(0, 2), expand=small_, fill="x" if small_ else None); b.bind("<Button-1>", lambda e, t=tid: self._tab(t))
             self.tab_btns[tid] = b
         self._paint_tabs()
         if show("hdr_buttons"):
@@ -50457,7 +50924,6 @@ class App:
             self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
             self.b_fs.pack(side="right", padx=(0, 6))
-            self._ibtn(ctl, "⇤" if show("sidebar") else "⇥", self.toggle_sidebar, tr("Settings panel") + " (Ctrl+B)").pack(side="right", padx=(0, 6))
             vb = self._ibtn(ctl, "☰", lambda: None, tr("View") + " – " + tr("show / hide fields"))
             vb.bind("<Button-1>", lambda e: self._view_menu(vb.winfo_rootx(), vb.winfo_rooty() + vb.winfo_height()))
             vb.pack(side="right", padx=(0, 6))
@@ -50477,6 +50943,10 @@ class App:
                 self.badges["b_update"].bind("<Button-1>", lambda e: self._upd_new())
             self.badge_f.bind("<Configure>", self._flow)
             self.root.after(50, self._flow)
+        if small_:                                        # 2.98.14: on a small screen the 6 tabs get a row of their own
+            tabs.pack(fill="x", pady=(8, 0), before=self.badge_f if self.badge_f is not None else None)
+        else:
+            tabs.pack(side="left", padx=(18, 0), after=tl if show("title") else None)
         tk.Frame(self.root, bg=C["line"], height=1).pack(fill="x", pady=(10, 12))
 
     def _egg_tap(self, _e=None):
@@ -50633,10 +51103,13 @@ class App:
             b.config(bg=C["acc"] if on else C["panel"], fg="#ffffff" if on else C["txt"])
 
     def _tab(self, tid):
-        """Switch Live / Weather & system / Event log (only the left part is built again)."""
-        if tid == self.tab or self.left_f is None or not self.left_f.winfo_exists():
+        """Switch the tab (2.98.14: the 6 tabs of the web page; another kind of tab = the window is built again)."""
+        if tid == self.tab:
             return
+        panel = tid in TK_PANEL_TABS or self.tab in TK_PANEL_TABS or self.left_f is None or not self.left_f.winfo_exists()
         self.tab = tid; CFG["ui_tab"] = tid
+        if panel:
+            self._schedule_rebuild(); return
         for w in self.left_f.winfo_children():
             w.destroy()
         self.video = self.p_rain = self.p_wind = self.l_rain = self.l_wind = self.l_boost = None
@@ -50652,7 +51125,7 @@ class App:
         if self.tab not in [t for t, _ in self._tabs()]:
             self.tab = "live"
         left.columnconfigure(0, weight=1)
-        for r_ in range(3):
+        for r_ in range(4):
             left.rowconfigure(r_, weight=0)
         if self.tab == "live":
             vc = tk.Frame(left, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=10, pady=10)
@@ -50674,7 +51147,8 @@ class App:
                 if not folded:
                     inner = tk.Frame(c, bg=C["panel"]); inner.pack(fill="x", pady=(6, 2))
                     self._build_controls(inner)
-        elif self.tab == "info":
+        elif self.tab == "more":                          # 2.98.14: «Mehr» = weather, system, self-check + manual, tools …
+            self._tk_more_bar(left).grid(row=3, column=0, sticky="ew", pady=(10, 0))
             mid = tk.Frame(left, bg=C["bg"]); mid.grid(row=0, column=0, sticky="new")
             col = 0
             if show("weather"):
@@ -50708,7 +51182,8 @@ class App:
             self.h_text.tag_configure("t", font=("DejaVu Sans", 10, "bold")); self.h_text.tag_configure("m", foreground=C["mut"])
             self.h_text.tag_configure("tip", foreground=C["txt"], lmargin1=26, lmargin2=26, font=("DejaVu Sans", 9))
             self._h_sig = None; self._update_health()
-        else:
+        else:                                             # 2.98.14: «Verlauf» = the event log + recordings, diary, messages
+            self._tk_history_bar(left).grid(row=1, column=0, sticky="ew", pady=(10, 0))
             logf = self._card(left, tr("EVENT LOG") + " · " + tr("important")); logf.grid(row=0, column=0, sticky="nsew")
             left.rowconfigure(0, weight=1)
             self.log = tk.Text(logf, bg=C["panel"], fg=C["txt"], bd=0, highlightthickness=0, height=10,
@@ -51029,15 +51504,16 @@ class App:
             txt += "\n\n" + tr("Everything ready - good night!")
         messagebox.showinfo(tr("Guard tonight"), txt, parent=self.root)
 
-    def _build_sidebar(self, body):
-        right = tk.Frame(body, bg=C["bg"], width=self._lay[1] or 380); right.grid(row=0, column=2, sticky="ns"); right.grid_propagate(False)
+    def _build_sidebar(self, body, tab="settings"):
+        """2.98.14: the tabs Schutz / Einstellungen / Simulator - their groups over the whole width (before: a panel beside the picture)"""
+        right = tk.Frame(body, bg=C["bg"]); right.grid(row=0, column=0, sticky="nsew")
         self.right_f = right
         canvas = tk.Canvas(right, bg=C["bg"], bd=0, highlightthickness=0); self.side_canvas = canvas
         sb = ttk.Scrollbar(right, orient="vertical", command=canvas.yview); canvas.configure(yscrollcommand=sb.set)
         sb.pack(side="right", fill="y"); canvas.pack(side="left", fill="both", expand=True)
         inner = ttk.Frame(canvas, style="Bg.TFrame"); win = canvas.create_window((0, 0), window=inner, anchor="nw")
         inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-        canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=e.width))
+        canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=min(e.width, 860)))     # readable lines on a wide screen
         bar = tk.Frame(right, bg=C["bg"]); bar.pack(side="top", fill="x", pady=(0, 10), before=sb)   # stays at the top while scrolling
         # like the web page: search field, then two symbols - ⊞ expand all, ⊟ collapse all
         self._ibtn(bar, "⊟", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right")
@@ -51053,8 +51529,12 @@ class App:
         ph.place(in_=se, x=1, rely=0.5, anchor="w"); ph.bind("<Button-1>", lambda e: se.focus_set())
         self.search_ph = ph
         self.search_var.trace_add("write", lambda *a: self._search())
+        if tab == "sim":                                   # 2.98.14: tab Simulator - status, the assistant, the simulator settings
+            self._tk_sim_head(inner)
         # Simple / Expert (like the web page)
-        mrow = tk.Frame(inner, bg=C["line"], padx=1, pady=1); mrow.pack(fill="x", pady=(0, 10))
+        mrow = tk.Frame(inner, bg=C["line"], padx=1, pady=1)
+        if tab != "sim":
+            mrow.pack(fill="x", pady=(0, 10))
         self._simple_seen = bool(CFG["ui_simple"])
         for i, (val, lab) in enumerate(((True, tr("Simple")), (False, tr("Expert")))):
             on = bool(CFG["ui_simple"]) == val
@@ -51062,7 +51542,7 @@ class App:
                          bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"])
             l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
             l.bind("<Button-1>", lambda e, v=val: self._set_simple(v))
-        if CFG["ui_simple"]:
+        if CFG["ui_simple"] and tab != "sim":
             tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
                      font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
         self.grp_meta = {}; self._open_before = None
@@ -51077,18 +51557,17 @@ class App:
             ttk.Label(card, text=tr("Everything may be changed (except Wi-Fi, password, autostart). Unlocking with the PIN puts everything back."),
                       style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(2, 6))
             ttk.Button(card, text=tr("Unlock") + " …", command=self._unlock).pack(fill="x")
-        listed = {x for g in TK_GROUPS for x in g[2] if x}
+        listed = {x for g in TK_GROUPS + TK_SIM_GROUPS for x in g[2] if x}
         groups = [list(g) for g in TK_GROUPS]
         groups[-1][2] = groups[-1][2] + [x for x in SECTIONS if x not in listed]     # sections added later -> System
+        groups = [g for g in groups if TK_GROUP_TAB.get(g[0], "settings") == tab] if tab != "sim" else [list(g) for g in TK_SIM_GROUPS]
         for gid, name, items in groups:
-            items = [x for x in items if x is None or (x in SECTIONS and self.is_shown("sec:" + x) and not simple_hidden(None, x))]
+            items = [x for x in items if x is None or x in TK_PSEUDO or (x in SECTIONS and self.is_shown("sec:" + x) and (tab == "sim" or not simple_hidden(None, x)))]
             real = [x for x in items if x]
             if not real:
                 continue
             key = "grp:" + gid
-            if gid in TK_TAB_HEAD:
-                tk.Label(inner, text=tr(TK_TAB_HEAD[gid]).upper(), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"),
-                         anchor="w").pack(fill="x", pady=(6, 2))
+            # 2.98.14: no headings «Schutz» / «Einstellungen» any more - the tab is the heading
             card = self._panel(inner); card.pack(fill="x", pady=(0, 8))
             hr = tk.Frame(card, bg=C["panel"], cursor="hand2"); hr.pack(fill="x")
             gic = tk.Label(hr, text=TK_GROUP_ICONS.get(gid, ""), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11), width=2, anchor="w", cursor="hand2")
@@ -51119,7 +51598,7 @@ class App:
                     continue
                 self._sub(gbody, sec, default_open=first); first = False
         for sec in self.sections:
-            self._set_section(sec, sec in self.open_secs)
+            self._set_section(sec, sec in self.open_secs or (tab == "sim" and sec == "grp:simset"), save=False)
 
     def _sub(self, parent, sec, default_open=False):
         """One topic of a group: thin line + title that opens / closes it (state kept in the settings)."""
@@ -51201,6 +51680,10 @@ class App:
         """Status line, switches, sliders, text fields and buttons of one section. settings_parent: put the switches /
         sliders / text fields there instead (the buttons stay in sbody)."""
         sp = settings_parent if settings_parent is not None else sbody
+        if sec == "Improve detection":                     # 2.98.14: the assistant (312) - one guided flow
+            ttk.Label(sbody, text=tr("One guided flow: check, measure, improve, see the result. Replaces the single tools (they stay in «Expert»)."), style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w")
+            ttk.Button(sbody, text="🎯 " + tr("Improve detection") + " …", command=self._tune_win).pack(fill="x", pady=(6, 0))
+            return
         if sec in ("Setup", "Camera / Servos", "Video source", "Schedule", "Patrol", "AI detection", "Web stream", "Auto-tune", "Notifications", "Timelapse", "Thermal camera", "Wi-Fi / hotspot", "Camping / protection", "Microphone", "Loudspeaker", "Lights", "Servo driver", "Clap switch", "Bless you"):
             self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels[sec].pack(anchor="w")
@@ -51423,7 +51906,7 @@ class App:
             ttk.Label(sbody, text=tr(protect_status().get("device", "")), foreground="#8a96a6", wraplength=380).pack(anchor="w", pady=(4, 0))
             ttk.Label(sbody, text=tr("Mode") + " (" + tr("one switch for the whole device") + ")").pack(anchor="w", pady=(8, 2))
             mg = ttk.Frame(sbody); mg.pack(fill="x")
-            for i_, (mid, mic, mname) in enumerate(MODES + [("", "⚙", "Own settings")]):
+            for i_, (mid, mic, mname) in enumerate([(x_["id"], x_["icon"], x_["name"]) for x_ in mode_state()["list"]] + [("", "⚙", "Own settings")]):
                 def _pick(m_=mid):
                     ok_, err_ = mode_set(m_, "window")
                     self._status("Mode", ("✓ " if ok_ else "⚠ ") + (tr(err_) if err_ else tr(dict((x[0], x[2]) for x in MODES).get(m_, "Own settings"))))
@@ -51438,9 +51921,6 @@ class App:
             ttk.Button(bf, text=tr("Arm (countdown)"), command=arm).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Arm now"), command=lambda: arm(0)).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Disarm"), command=lambda: self._protect("off")).pack(side="left", expand=True, fill="x")
-            bf2 = ttk.Frame(sbody); bf2.pack(fill="x", pady=(6, 0))
-            ttk.Button(bf2, text=tr("Camping ON"), command=lambda: camping_set(True)).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf2, text=tr("Camping OFF"), command=lambda: camping_set(False)).pack(side="left", expand=True, fill="x")
             bf3 = ttk.Frame(sbody)
             if not CFG["lock_on"]:
                 bf3.pack(fill="x", pady=(6, 0))
@@ -52937,6 +53417,149 @@ TOGGLES.extend([
 SLIDERS.extend([
     ("Camping / protection", "back_hold_s", "«Is it you?»: person alarms wait (s)", 15, 300, 15),
 ])
+# ----------------------------------------------------------------------------
+# 2.98.14 (Konzept): das Fenster hat dieselben 6 Reiter wie die Webseite (Live · Schutz · Verlauf · Einstellungen · Simulator
+# · Mehr). Die Teile hier hängen sich an die Klasse App (570): Knopfleisten für Verlauf und Mehr, der Kopf des Reiters
+# Simulator und das Fenster des Assistenten (dieselben 5 Schritte wie im Web, 312).
+# ----------------------------------------------------------------------------
+def _tk_bar(self, parent, items):
+    f = tk.Frame(parent, bg=C["bg"])
+    for i, (txt, cmd) in enumerate(items):
+        self._fbtn(f, txt, cmd).grid(row=i // 3, column=i % 3, sticky="ew", padx=(0, 6), pady=(0, 6))
+        f.columnconfigure(i % 3, weight=1)
+    return f
+
+
+def _tk_history_bar(self, parent):
+    return self._tk_bar(parent, [("⏺ " + tr("Recordings"), lambda: self._open_page("/recordings")),
+                                 ("📔 " + tr("Diary"), lambda: self._open_page("/diary")),
+                                 ("✉ " + tr("Messages"), self._messages_win)])
+
+
+def _tk_more_bar(self, parent):
+    return self._tk_bar(parent, [("? " + tr("Manual"), self._open_help), ("🎲 " + tr("Game corner"), lambda: self._open_page("/party")),
+                                 ("🛠 " + tr("Tools"), lambda: self._open_page("/tools")), ("💬 " + tr("Feedback to the developer"), self._feedback),
+                                 ("🌐 " + tr("Overview"), lambda: self._open_page("/more"))])
+
+
+def _tk_sim_head(self, inner):
+    card = self._panel(inner); card.pack(fill="x", pady=(0, 8))
+    tk.Label(card, text="🎯 " + tr("Improve detection"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x")
+    ttk.Label(card, text=tr("One guided flow: check, measure, improve, see the result. Replaces the single tools (they stay in «Expert»)."),
+              style="Mut.TLabel", wraplength=520, justify="left").pack(anchor="w", pady=(2, 6))
+    bf = tk.Frame(card, bg=C["panel"]); bf.pack(fill="x")
+    self._fbtn(bf, "🎯 " + tr("Improve detection") + " …", self._tune_win, primary=True).pack(side="left", padx=(0, 6))
+    self._fbtn(bf, "🎛 " + tr("Simulator centre") + " (" + tr("browser") + ")", lambda: self._open_page("/sim#c-hub")).pack(side="left")
+
+
+def _tune_txt(st):
+    """the state of the assistant as plain text lines (window)"""
+    def pl(p):
+        return ("🌙 " + tr("Night")) if p == "night" else ("☀ " + tr("Day"))
+    def res(last):
+        out = []
+        for r in last.get("plans") or []:
+            kept = ", ".join(tr(x["title"]) for x in r.get("kept") or [])
+            out.append(f"{pl(r['plan'])}: {tr('Score')} {r.get('base', '–')} → {r.get('best', '–')} · " + ((tr("kept") + ": " + kept) if kept else tr("nothing was clearly better - everything stays as it was")))
+        if not out:
+            out.append(("⚠ " + tr(last["msg"])) if last.get("msg") else tr("nothing was clearly better - everything stays as it was"))
+        if last.get("undone"):
+            out.append("↩ " + tr("Undone - the values from before are back."))
+        elif last.get("changed"):
+            out.append(f"{len(last['changed'])} {tr('values changed')}: " + " · ".join(f"{k} {a} → {b}" for k, a, b in last["changed"]))
+        return "\n".join(out)
+    if st["busy"]:
+        N = st["now"]
+        t_ = "⏳ " + tr("Running") + ": " + (f"{st['i'] + 1}/{st['n']} · " if st["n"] > 1 else "") + pl(st["step"] or "quick")
+        t_ += "\n" + ((f"🤖 {tr('Try')} {N['try']}/{N['tries']} · " + (tr(N["what"]) if N["what"] else tr("first a test run as it is now"))) if N["tries"] else tr("starting …"))
+        if N.get("running") and N.get("left") is not None:
+            t_ += f"\n{tr('still about')} {max(1, round(float(N['left']) / 60))} {tr('min')}"
+        return t_
+    return res(st["last"]) if st.get("last") else "–"
+
+
+def _tune_win(self):
+    """the assistant «Erkennung verbessern» in the window: the same 5 steps as on the web page, one below the other"""
+    w = getattr(self, "_tune_top", None)
+    if w is not None and w.winfo_exists():
+        w.lift(); return
+    w = self._tune_top = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Improve detection")); w.configure(bg=C["bg"])
+    w.geometry("560x640" if self.root.winfo_screenheight() >= 700 else "520x" + str(max(380, self.root.winfo_screenheight() - 60)))
+    cv = tk.Canvas(w, bg=C["bg"], bd=0, highlightthickness=0); sb = ttk.Scrollbar(w, orient="vertical", command=cv.yview)
+    cv.configure(yscrollcommand=sb.set); sb.pack(side="right", fill="y"); cv.pack(side="left", fill="both", expand=True)
+    f = tk.Frame(cv, bg=C["bg"], padx=14, pady=10); win = cv.create_window((0, 0), window=f, anchor="nw")
+    f.bind("<Configure>", lambda e: cv.configure(scrollregion=cv.bbox("all"))); cv.bind("<Configure>", lambda e: cv.itemconfigure(win, width=e.width))
+    def head(n, txt):
+        tk.Label(f, text=f"{n}  {tr(txt)}".upper(), bg=C["bg"], fg=C["acc"], font=("DejaVu Sans", 8, "bold"), anchor="w").pack(fill="x", pady=(12, 2))
+    def lab(txt="", mut=True):
+        l_ = tk.Label(f, text=txt, bg=C["bg"], fg=C["mut"] if mut else C["txt"], font=("DejaVu Sans", 9 if mut else 10), wraplength=500, justify="left", anchor="w")
+        l_.pack(fill="x"); return l_
+    tk.Label(f, text="🎯 " + tr("Improve detection"), bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 13, "bold"), anchor="w").pack(fill="x")
+    lab(tr("MoveEye tests itself in the 3D simulator: people and animals walk past, and the simulator knows exactly what MoveEye should have reported. The assistant tries changes and keeps only what is clearly better."))
+    head(1, "Check"); l_chk = lab(mut=False)
+    head(2, "How thorough?")
+    dv = tk.StringVar(value="quick")
+    for v, ic, n, note in (("quick", "⚡", "Quick", "only the day test, up to 3 tries - about 10 to 20 minutes"),
+                           ("thorough", "🔬", "Thorough", "day and night, up to 4 tries each - about 40 to 60 minutes")):
+        tk.Radiobutton(f, text=f"{ic} {tr(n)} – {tr(note)}", variable=dv, value=v, bg=C["bg"], fg=C["txt"], selectcolor=C["field"],
+                       activebackground=C["bg"], activeforeground=C["txt"], anchor="w", justify="left", wraplength=480).pack(fill="x")
+    bf = tk.Frame(f, bg=C["bg"]); bf.pack(fill="x", pady=(6, 0))
+    def start():
+        ok, err = tune_assist_start(dv.get())
+        if not ok:
+            messagebox.showinfo(tr("Improve detection"), tr_err(err), parent=w)
+        paint()
+    b_start = self._fbtn(bf, "▶ " + tr("Start"), start, primary=True); b_start.pack(side="left", padx=(0, 6))
+    b_stop = self._fbtn(bf, "⏹ " + tr("Stop"), lambda: (tune_assist_stop(), paint())); b_stop.pack(side="left")
+    lab(tr("You can close the page - the assistant keeps running. The auto-tuner pauses meanwhile."))
+    head(3, "Improving"); l_run = lab(mut=False)
+    head(4, "Result"); l_res = lab(mut=False)
+    bu = tk.Frame(f, bg=C["bg"]); bu.pack(fill="x", pady=(4, 0))
+    def undo():
+        ok, err = tune_assist_undo()
+        if not ok:
+            messagebox.showinfo(tr("Improve detection"), tr_err(err), parent=w)
+        paint()
+    b_undo = self._fbtn(bu, "↩ " + tr("Undo"), undo)
+    head(5, "Keep it up")
+    togs = {}
+    for key, title, note in (("auto_tune", "Auto-tuner at the real place", "adapts the sensitivity to the place all the time (wind, light); starts from the measured values"),
+                             ("train_night_on", "Training night", "every night test runs in several scenes and the same improving - only when protection is off"),
+                             ("weekcheck_on", "Weekly check", "every Sunday night a test run; a push when it got worse"),
+                             ("fa_learn_auto", "False alarm learning", "mark a recording with 👎 and the simulator re-enacts it and learns from it")):
+        row = tk.Frame(f, bg=C["panel"], padx=10, pady=6, highlightthickness=1, highlightbackground=C["line"]); row.pack(fill="x", pady=(0, 4))
+        tg = Toggle(row, tr(title), bool(CFG.get(key)), lambda v, k=key: (tune_assist_set(k, v), paint())); tg.pack(fill="x")
+        tk.Label(row, text=tr(note), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8), wraplength=460, justify="left", anchor="w").pack(fill="x")
+        togs[key] = tg
+    lab("🧰 " + tr("Single tools (Expert)") + ": " + tr("Test run, A/B comparison, thresholds automatic … in the tab Simulator, Simulator centre (view «Expert»)."))
+    def paint():
+        if not w.winfo_exists():
+            return
+        st = tune_assist_state()
+        miss = st["missing"]
+        l_chk.config(text=("✅ " + tr("Everything ready.")) if not miss else tr("Still missing:") + "\n" + "\n".join("⚠ " + m["text"] for m in miss))
+        l_run.config(text=_tune_txt(st) if st["busy"] else "–")
+        l_res.config(text=_tune_txt(dict(st, busy=False)) if st.get("last") else "–")
+        if st.get("last") and st["last"].get("can_undo"):
+            b_undo.pack(side="left")
+        else:
+            b_undo.pack_forget()
+        if st["busy"]:
+            b_start.pack_forget(); b_stop.pack(side="left")
+        else:
+            b_stop.pack_forget(); b_start.pack(side="left", padx=(0, 6))
+        for k, tg in togs.items():
+            if tg.get() != bool(CFG.get(k)):
+                tg.set(bool(CFG.get(k)))
+    def loop():
+        if w.winfo_exists():
+            paint(); w.after(2500, loop)
+    loop()
+
+
+for _n, _f in (("_tk_bar", _tk_bar), ("_tk_history_bar", _tk_history_bar), ("_tk_more_bar", _tk_more_bar), ("_tk_sim_head", _tk_sim_head),
+               ("_tune_win", _tune_win)):
+    setattr(App, _n, _f)
 # ----------------------------------------------------------------------------
 # 2.98.13: the settings of parts 105 / 232 / 415 in the schema (web and window show them by themselves), and the window
 # «Gehtest» of the desktop program (button in «Camping / protection»).
@@ -58562,6 +59185,102 @@ if _hp_en > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_erk(HELP_X[_L], _L)
+_HX_KONZEPT = {
+    'Improve detection': ('Erkennung verbessern', 'Améliorer la détection', 'Migliorare il rilevamento', 'Meglierar la renconuschientscha'),
+    'MoveEye tests itself in the 3D simulator: people and animals walk past, and the simulator knows exactly what MoveEye should have reported. The assistant tries changes and keeps only what is clearly better.': ('MoveEye testet sich selbst im 3D-Simulator: dort gehen Personen und Tiere vorbei, und der Simulator weiss genau, was MoveEye hätte melden müssen. Der Assistent probiert Änderungen aus und behält nur, was klar besser ist.', 'MoveEye se teste lui-même dans le simulateur 3D : des personnes et des animaux passent, et le simulateur sait exactement ce que MoveEye aurait dû signaler. L’assistant essaie des changements et ne garde que ce qui est clairement meilleur.', 'MoveEye si mette alla prova nel simulatore 3D: passano persone e animali e il simulatore sa esattamente cosa MoveEye avrebbe dovuto segnalare. L’assistente prova delle modifiche e tiene solo ciò che è chiaramente meglio.', 'MoveEye sa testa sez en il simulatur 3D: persunas ed animals passan, ed il simulatur sa exactamain tge che MoveEye avess stuì annunziar. L’assistent emprova midadas e tegna mo quai ch’è cleramain meglier.'),
+    'Check': ('Prüfen', 'Vérifier', 'Controllare', 'Controllar'),
+    'How thorough?': ('Wie gründlich?', 'Avec quel soin ?', 'Quanto a fondo?', 'Co fundamental?'),
+    'Improving': ('Verbessern', 'Améliorer', 'Migliorare', 'Meglierar'),
+    'Result': ('Ergebnis', 'Résultat', 'Risultato', 'Resultat'),
+    'Keep it up': ('Dranbleiben', 'Continuer', 'Continuare', 'Cuntinuar'),
+    'Everything ready.': ('Alles bereit.', 'Tout est prêt.', 'Tutto pronto.', 'Tut è pront.'),
+    'Still missing:': ('Fehlt noch:', 'Il manque encore :', 'Manca ancora:', 'I manca anc:'),
+    'open': ('öffnen', 'ouvrir', 'aprire', 'avrir'),
+    'Next': ('Weiter', 'Suivant', 'Avanti', 'Vinavant'),
+    'Back': ('Zurück', 'Retour', 'Indietro', 'Enavos'),
+    'Close': ('Schliessen', 'Fermer', 'Chiudere', 'Serrar'),
+    'Start': ('Starten', 'Démarrer', 'Avviare', 'Cumenzar'),
+    'Stop': ('Stopp', 'Arrêter', 'Fermare', 'Fermar'),
+    'Without the simulator': ('Ohne Simulator', 'Sans simulateur', 'Senza simulatore', 'Senza simulatur'),
+    'Quick': ('Schnell', 'Rapide', 'Veloce', 'Svelt'),
+    'Thorough': ('Gründlich', 'Approfondi', 'Approfondito', 'Fundamental'),
+    'only the day test, up to 3 tries - about 10 to 20 minutes': ('nur der Tag-Test, bis 3 Versuche – etwa 10 bis 20 Minuten', 'seulement le test de jour, jusqu’à 3 essais – environ 10 à 20 minutes', 'solo il test di giorno, fino a 3 tentativi – circa 10–20 minuti', 'mo il test dal di, fin 3 emprovas – var 10 fin 20 minutas'),
+    'day and night, up to 4 tries each - about 40 to 60 minutes': ('Tag und Nacht, je bis 4 Versuche – etwa 40 bis 60 Minuten', 'jour et nuit, jusqu’à 4 essais chacun – environ 40 à 60 minutes', 'giorno e notte, fino a 4 tentativi ciascuno – circa 40–60 minuti', 'di e notg, mintgamai fin 4 emprovas – var 40 fin 60 minutas'),
+    'You can close the page - the assistant keeps running. The auto-tuner pauses meanwhile.': ('Du kannst die Seite schliessen – der Assistent läuft weiter. Der Auto-Tuner macht so lange Pause.', 'Tu peux fermer la page – l’assistant continue. Le réglage automatique fait une pause pendant ce temps.', 'Puoi chiudere la pagina – l’assistente continua. La regolazione automatica intanto fa una pausa.', 'Ti pos serrar la pagina – l’assistent cuntinuescha. L’adattaziun automatica fa entant ina pausa.'),
+    'Day': ('Tag', 'Jour', 'Giorno', 'Di'),
+    'Night': ('Nacht', 'Nuit', 'Notte', 'Notg'),
+    'first a test run as it is now': ('zuerst ein Testlauf, so wie es jetzt ist', 'd’abord un test tel quel', 'prima un test così com’è ora', 'l’emprim in test sco ch’igl è ussa'),
+    'Try': ('Versuch', 'Essai', 'Tentativo', 'Emprova'),
+    'still about': ('noch etwa', 'encore environ', 'ancora circa', 'anc var'),
+    'min': ('Min.', 'min', 'min', 'min'),
+    'starting …': ('startet …', 'démarrage …', 'avvio …', 'cumenza …'),
+    'Score': ('Punkte', 'Points', 'Punti', 'Puncts'),
+    'kept': ('behalten', 'gardé', 'tenuto', 'tegnì'),
+    'nothing was clearly better - everything stays as it was': ('nichts war klar besser – alles bleibt, wie es war', 'rien n’était clairement meilleur – tout reste comme avant', 'niente era chiaramente meglio – tutto resta com’era', 'nagut n’era cleramain meglier – tut resta sco ch’igl era'),
+    'values changed': ('Werte geändert', 'valeurs changées', 'valori cambiati', 'valurs midadas'),
+    'Keep': ('Behalten', 'Garder', 'Tenere', 'Tegnair'),
+    'Undo': ('Rückgängig', 'Annuler', 'Annullare', 'Revocar'),
+    'Undone - the values from before are back.': ('Rückgängig gemacht – die Werte von vorher sind zurück.', 'Annulé – les valeurs d’avant sont de retour.', 'Annullato – i valori di prima sono tornati.', 'Revocà – las valurs d’avant èn enavos.'),
+    'stopped': ('abgebrochen', 'interrompu', 'interrotto', 'interrut'),
+    'Last time': ('Letztes Mal', 'La dernière fois', 'L’ultima volta', 'L’ultima giada'),
+    'Running': ('Läuft', 'En cours', 'In corso', 'En lavur'),
+    'Auto-tuner at the real place': ('Auto-Tuner am echten Ort', 'Réglage automatique sur le vrai lieu', 'Regolazione automatica sul luogo vero', 'Adattaziun automatica al lieu vair'),
+    'adapts the sensitivity to the place all the time (wind, light); starts from the measured values': ('passt die Empfindlichkeit laufend an den Ort an (Wind, Licht); startet von den gemessenen Werten aus', 'adapte la sensibilité au lieu en continu (vent, lumière) ; part des valeurs mesurées', 'adatta continuamente la sensibilità al luogo (vento, luce); parte dai valori misurati', 'adatta adina la sensibilitad al lieu (vent, glisch); cumenza da las valurs mesiradas'),
+    'Training night': ('Trainings-Nacht', 'Nuit d’entraînement', 'Notte di allenamento', 'Notg da trenament'),
+    'every night test runs in several scenes and the same improving - only when protection is off': ('jede Nacht Testläufe in mehreren Szenen und dasselbe Verbessern – nur wenn der Schutz aus ist', 'chaque nuit des tests dans plusieurs scènes et la même amélioration – seulement quand la protection est éteinte', 'ogni notte test in più scene e lo stesso miglioramento – solo con la protezione spenta', 'mintga notg tests en pliras scenas ed il medem meglierament – mo cur che la protecziun è stizzada'),
+    'Weekly check': ('Wochen-Check', 'Contrôle hebdomadaire', 'Controllo settimanale', 'Controlla da l’emna'),
+    'every Sunday night a test run; a push when it got worse': ('jeden Sonntag in der Nacht ein Testlauf; ein Push, wenn es schlechter wurde', 'chaque dimanche dans la nuit un test ; une notification si c’est moins bien', 'ogni domenica di notte un test; una notifica se è peggiorato', 'mintga dumengia la notg in test; in avis, sch’igl è vegnì mender'),
+    'False alarm learning': ('Fehlalarm-Lernen', 'Apprendre des fausses alarmes', 'Imparare dai falsi allarmi', 'Emprender dals alarms fauss'),
+    'mark a recording with 👎 and the simulator re-enacts it and learns from it': ('markierst du eine Aufnahme mit 👎, stellt der Simulator sie nach und lernt daraus', 'marque un enregistrement avec 👎 et le simulateur le rejoue et en apprend', 'segna una registrazione con 👎 e il simulatore la ricostruisce e ne impara', 'marca ina registraziun cun 👎 ed il simulatur la reproducescha ed emprenda da quai'),
+    'Single tools (Expert)': ('Einzelne Werkzeuge (Experte)', 'Outils séparés (Expert)', 'Strumenti singoli (Esperto)', 'Utensils singuls (Expert)'),
+    'Test run, A/B comparison, thresholds automatic … in the tab Simulator, Simulator centre (view «Expert»).': ('Testlauf, A/B-Vergleich, Schwellen automatisch … im Tab Simulator, Simulator-Zentrale (Ansicht «Experte»).', 'Test, comparaison A/B, seuils automatiques … dans l’onglet Simulateur, centrale du simulateur (vue «Expert»).', 'Test, confronto A/B, soglie automatiche … nella scheda Simulatore, centrale del simulatore (vista «Esperto»).', 'Test, cumparegliaziun A/B, sava automatica … en il register Simulatur, central dal simulatur (vista «Expert»).'),
+    'One guided flow: check, measure, improve, see the result. Replaces the single tools (they stay in «Expert»).': ('Ein geführter Ablauf: prüfen, messen, verbessern, Ergebnis ansehen. Ersetzt die einzelnen Werkzeuge (die bleiben unter «Experte»).', 'Un déroulement guidé : vérifier, mesurer, améliorer, voir le résultat. Remplace les outils séparés (ils restent dans «Expert»).', 'Un percorso guidato: controllare, misurare, migliorare, vedere il risultato. Sostituisce gli strumenti singoli (restano in «Esperto»).', 'In decurs guidà: controllar, mesirar, meglierar, vesair il resultat. Remplazza ils utensils singuls (els restan en «Expert»).'),
+    'the simulator is needed for measuring': ('zum Messen braucht es den Simulator', 'pour mesurer, il faut le simulateur', 'per misurare serve il simulatore', 'per mesirar dovri il simulatur'),
+    'Auto-tune': ('Auto-Tuner', 'Réglage automatique', 'Regolazione automatica', 'Adattaziun automatica'),
+    'Calm down wind and cloud shadows': ('Wind und Wolkenschatten beruhigen', 'Calmer le vent et les ombres des nuages', 'Calmare vento e ombre delle nuvole', 'Quietar vent e sumbriva da nivels'),
+    'AI confirms every person': ('KI bestätigt jede Person', 'L’IA confirme chaque personne', 'L’IA conferma ogni persona', 'L’IA conferma mintga persuna'),
+    'Stronger rain and snow filter': ('Stärkerer Regen- und Schnee-Filter', 'Filtre pluie et neige plus fort', 'Filtro pioggia e neve più forte', 'Filter da plievgia e naiv pli ferm'),
+    'Ignore changes of the light': ('Lichtwechsel nicht beachten', 'Ignorer les changements de lumière', 'Ignorare i cambi di luce', 'Ignorar midadas da la glisch'),
+    'Do not take animals for persons': ('Tiere nicht für Personen halten', 'Ne pas prendre les animaux pour des personnes', 'Non scambiare animali per persone', 'Betg tegnair animals per persunas'),
+    'Less sensitive': ('Weniger empfindlich', 'Moins sensible', 'Meno sensibile', 'Main sensibel'),
+    'See better in the dark': ('Im Dunkeln besser sehen', 'Mieux voir dans le noir', 'Vedere meglio al buio', 'Vesair meglier en il stgir'),
+    'Find small and crouching persons': ('Kleine und geduckte Personen finden', 'Trouver les personnes petites et accroupies', 'Trovare persone piccole e accovacciate', 'Chattar persunas pitschnas e quatschadas'),
+    'Catch fast persons': ('Schnelle Personen erwischen', 'Attraper les personnes rapides', 'Prendere le persone veloci', 'Tschiffar persunas sveltas'),
+    'More sensitive by day': ('Am Tag empfindlicher', 'Plus sensible le jour', 'Più sensibile di giorno', 'Pli sensibel dal di'),
+    'React faster': ('Schneller reagieren', 'Réagir plus vite', 'Reagire più in fretta', 'Reagir pli svelt'),
+    'Camping': ('Camping', 'Camping', 'Campeggio', 'Camping'),
+    'The game corner is open for the phones (in the Wi-Fi MoveEye is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to camping at the set time or when the battery gets low.': ('Die Spielecke ist offen für die Handys (im WLAN, in dem MoveEye ist). Die Wache schaut sparsam weiter: wenige Bilder, die KI nur bei Bewegung – ein Tier am Zelt wird trotzdem gemeldet. Zur eingestellten Zeit oder wenn der Akku knapp wird, zurück zum Camping.', 'Le coin jeux est ouvert pour les téléphones (dans le Wi-Fi de MoveEye). La surveillance continue avec économie : peu d’images, l’IA seulement au mouvement – un animal à la tente est quand même signalé. Retour au camping à l’heure choisie ou quand la batterie faiblit.', 'L’angolo giochi è aperto per i telefoni (nella Wi-Fi in cui si trova MoveEye). La sorveglianza continua con parsimonia: poche immagini, l’IA solo al movimento – un animale alla tenda viene comunque segnalato. Ritorno al campeggio all’ora scelta o quando la batteria si scarica.', 'Il chantun da gieus è avert per ils telefonins (en il WLAN da MoveEye). La guardia cuntinuescha spargnusamain: paucs maletgs, l’IA mo tar moviments – in animal tar la tenda vegn tuttina annunzià. Enavos al camping a l’ura tschernida u cur che l’accu va a fin.'),
+    'Back to camping at': ('Zurück zum Camping um', 'Retour au camping à', 'Ritorno al campeggio alle', 'Enavos al camping a las'),
+    'Campfire games ended (time) - back to camping': ('Lagerfeuer-Spiele beendet (Zeit) – zurück zum Camping', 'Jeux au feu de camp terminés (heure) – retour au camping', 'Giochi al fuoco terminati (ora) – ritorno al campeggio', 'Gieus al fieu terminads (ura) – enavos al camping'),
+    'Campfire games ended (battery low) - back to camping': ('Lagerfeuer-Spiele beendet (Akku knapp) – zurück zum Camping', 'Jeux au feu de camp terminés (batterie faible) – retour au camping', 'Giochi al fuoco terminati (batteria scarica) – ritorno al campeggio', 'Gieus al fieu terminads (accu flaivel) – enavos al camping'),
+    'Infrared light by itself in the dark': ('Infrarotlicht von selbst im Dunkeln', 'Lumière infrarouge toute seule dans le noir', 'Luce infrarossa da sola al buio', 'Glisch infracotschna da sasez en il stgir'),
+    'improve assistant': ('Assistent «Erkennung verbessern»', 'assistant «Améliorer la détection»', 'assistente «Migliorare il rilevamento»', 'assistent «Meglierar la renconuschientscha»'),
+    'The simulation is off - switch it on in the tab Simulator (a 3D simulator on a PC is needed).': ('Die Simulation ist aus – im Tab Simulator einschalten (es braucht einen 3D-Simulator auf einem PC).', 'La simulation est éteinte – l’allumer dans l’onglet Simulateur (il faut un simulateur 3D sur un PC).', 'La simulazione è spenta – accenderla nella scheda Simulatore (serve un simulatore 3D su un PC).', 'La simulaziun è stizzada – l’envidar en il register Simulatur (i dovra in simulatur 3D sin in PC).'),
+    'No simulator answers - start the 3D simulator on the PC.': ('Kein Simulator antwortet – den 3D-Simulator auf dem PC starten.', 'Aucun simulateur ne répond – démarrer le simulateur 3D sur le PC.', 'Nessun simulatore risponde – avviare il simulatore 3D sul PC.', 'Nagin simulatur na respunda – avrir il simulatur 3D sin il PC.'),
+    'Protection is on - the test needs it off (a test person would give a real alarm).': ('Der Schutz ist an – für den Test muss er aus sein (eine Testperson gäbe einen echten Alarm).', 'La protection est allumée – le test a besoin qu’elle soit éteinte (une personne test donnerait une vraie alarme).', 'La protezione è accesa – per il test deve essere spenta (una persona di prova darebbe un vero allarme).', 'La protecziun è envidada – per il test sto ella esser stizzada (ina persuna da test dess in alarm vair).'),
+    'nothing to undo': ('nichts rückgängig zu machen', 'rien à annuler', 'niente da annullare', 'nagut da revocar'),
+    'the assistant is still running': ('der Assistent läuft noch', 'l’assistant est encore en cours', 'l’assistente è ancora in corso', 'l’assistent è anc en lavur'),
+    'step by step': ('Schritt für Schritt', 'pas à pas', 'passo dopo passo', 'pass per pass'),
+    'World': ('Welt', 'Monde', 'Mondo', 'Mund'),
+    'Testing': ('Testen', 'Tester', 'Testare', 'Testar'),
+    'Learning': ('Lernen', 'Apprendre', 'Imparare', 'Emprender'),
+    'Playing': ('Spielen', 'Jouer', 'Giocare', 'Giugar'),
+    'Show all tools («Expert»)': ('Alle Werkzeuge zeigen («Experte»)', 'Montrer tous les outils («Expert»)', 'Mostrare tutti gli strumenti («Esperto»)', 'Mussar tut ils utensils («Expert»)'),
+    'Only the assistant («Simple»)': ('Nur den Assistenten («Einfach»)', 'Seulement l’assistant («Simple»)', 'Solo l’assistente («Semplice»)', 'Mo l’assistent («Simpel»)'),
+    'Settings of the simulation': ('Einstellungen der Simulation', 'Réglages de la simulation', 'Impostazioni della simulazione', 'Parameters da la simulaziun'),
+    'simset-note': ('Was MoveEye in der Simulation selbst tut. Verbindung, Rechenleistung und die Kacheln haben ihre Schalter oben.', 'Ce que MoveEye fait tout seul dans la simulation. La connexion, la puissance de calcul et les tuiles ont leurs interrupteurs plus haut.', 'Cosa fa MoveEye da solo nella simulazione. Connessione, potenza di calcolo e le piastrelle hanno i loro interruttori sopra.', 'Tge che MoveEye fa sez en la simulaziun. Colliaziun, prestaziun da calcul e las plattas han lur interruptur survart.'),
+    'Simulator centre': ('Simulator-Zentrale', 'Centrale du simulateur', 'Centrale del simulatore', 'Central dal simulatur'),
+    'browser': ('Browser', 'navigateur', 'browser', 'navigatur'),
+    'Sett.': ('Einst.', 'Régl.', 'Impost.', 'Param.'),
+    'Sim': ('Sim', 'Sim', 'Sim', 'Sim'),
+    'Overview': ('Übersicht', 'Aperçu', 'Panoramica', 'Survista'),
+}
+# 2.98.14: the old names «Camping-Wache» / «Nachtwache» looked like extra states next to Aus / Wachsam / Voll - the new
+# keys above replace them; the old ones stay in the tables for older pages
+for _k, _v in _HX_KONZEPT.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 _HX_GAME = {
     'Quick start': ('Schnellstart', 'Démarrage rapide', 'Avvio rapido', 'Start svelt'),
     'runners at most': ('Läufer höchstens', 'coureurs au plus', 'corridori al massimo', 'currids al pli'),

@@ -1414,7 +1414,7 @@ class WebStream:
         @app.route("/api/schema")
         def api_schema():
             lang = request.args.get("lang") or CFG["lang"]
-            return reply(web_schema(norm_lang(lang)))
+            return reply(web_schema(norm_lang(lang), request.args.get("sec") or None))   # 2.98.14: ?sec= one section (page Simulator)
 
         @app.route("/api/appearance")
         def api_appearance():
@@ -1693,6 +1693,18 @@ class WebStream:
             else:
                 ok, err = False, "unknown action"
             return reply(dict(learn_state(), ok=ok, error=tr_err(err, lang) if err else ""))
+
+        @app.route("/api/tune", methods=["GET", "POST"])
+        def api_tune():                                      # 2.98.14: the assistant «Erkennung verbessern» (312)
+            if request.method == "GET":
+                return reply(tune_assist_state(request.args.get("lang")))
+            if getattr(g, "role", "admin") != "admin":
+                return reply({"ok": False, "error": "not allowed"}, 403)
+            d = body(); lang = norm_lang(d.get("lang")); a = str(d.get("do") or "")
+            fn = {"start": lambda: tune_assist_start(str(d.get("depth") or "quick")), "stop": tune_assist_stop, "undo": tune_assist_undo,
+                  "set": lambda: tune_assist_set(str(d.get("key") or ""), bool(d.get("on")))}.get(a)
+            ok, err = fn() if fn else (False, "unknown action")
+            return reply(dict(tune_assist_state(lang), ok=ok, error=tr_err(err, lang) if err else ""))
 
         @app.route("/api/simbar")
         def api_simbar():                                    # 2.96.4: the stripe «SIMULATION» on every page
