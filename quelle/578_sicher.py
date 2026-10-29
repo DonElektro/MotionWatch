@@ -8,8 +8,9 @@
 #     Wachsam». Nicht nach einem Update / Neustart (die enden sauber, 390 run_state.json «clean»).
 #  3  Fehlermeldungen des Web-Servers in der eigenen Sprache als kleine Seite (Anmeldung, zu viele Versuche, fremde Seite,
 #     Gast-Link, unbekannte Adresse). Basic-Realm «MoveEye» (Gäste sehen ihn); das Vertrauens-Cookie bleibt gleich.
-#  4  «Dunkle Ansicht» (bis 2.98.22 «Nachtblick»): ganze Seite sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt (pro Browser gemerkt);
-#     im Fenster ein Knopf ◑ (Einstellung tk_night).
+#  4  «Rotlicht-Ansicht» (bis 2.98.22 «Nachtblick», 2.98.23 «Dunkle Ansicht»): ganze Seite sehr dunkel und rot, Livebild gedimmt – für
+#     einen kurzen Blick im Zelt (pro Browser gemerkt, mw-night). Ab 573 die 3. Stufe des Knopfs «Hell / dunkel»: Hell → Dunkel → Rotlicht
+#     (Web 510/530 toggleTheme, Fenster ◐ mit tk_night) - kein eigener 🌑-Knopf und kein Schnellschalter mehr.
 #  5  Bildschirmleser: Knöpfe und Symbole bekommen aria-label / title in der eigenen Sprache (Hauptseite, Kopf, Navigation).
 #  6  «Aufnahmen nach … Tagen löschen» (0 = nie) neben der Grössen-Grenze; Knopf «Ferien vorbei: alle Aufnahmen löschen»
 #     (Bestätigung; ⭐ Favoriten bleiben, ausser man hakt es an).
@@ -438,13 +439,12 @@ html.sxnight img,html.sxnight video,html.sxnight canvas{filter:grayscale(1) brig
 html.sxnight::after{content:"";position:fixed;inset:0;background:#b81400;mix-blend-mode:multiply;pointer-events:none;z-index:2147483647}
 html.sxnight button,html.sxnight .btn,html.sxnight input,html.sxnight select,html.sxnight textarea{background-color:#0d0101!important;color:#b8322a!important;border-color:#3a0a08!important}
 html.sxnight .badge{background:#0d0101!important;color:#a52a20!important;border-color:#3a0a08!important}
-#btn-night[aria-pressed=true]{background:#5a0d08!important;color:#ff6a50!important}
+#btn-theme.thred{background:#5a0d08!important;color:#ff6a50!important}
 .sx-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style><script>try{if(localStorage.getItem("mw-night")==="1")document.documentElement.classList.add("sxnight")}catch(e){}</script>"""
 
 # the texts the script needs (English key -> translated by the page language)
-SX_JS_KEYS = ["Dark view", "Dark view: very dark and red, the live picture dimmed - for a short look in the tent", "Dark view on - tap 🌑 again to switch it off",
-              "Dark view off", "View", "Settings panel", "Full screen", "Light / dark", "Language", "Exit full screen", "Close", "Copy", "Standard text",
+SX_JS_KEYS = ["Red light view", "Light", "Dark", "Light / dark / red light", "View", "Settings panel", "Full screen", "Light / dark", "Language", "Exit full screen", "Close", "Copy", "Standard text",
               "Up", "Down", "Remove", "Edit", "Refresh", "Help", "Menu", "Play", "Pause", "Stop", "Delete", "Back", "Next", "Previous", "Settings",
               "Live picture", "Main navigation", "Sub navigation", "Show settings", "Hide settings", "More", "Search", "Expand all", "Collapse all",
               "Listen", "Centre", "Other side", "Take a photo", "Favourite", "Download", "Share", "Zoom in", "Zoom out", "Mute", "Sound on",
@@ -476,29 +476,18 @@ const say = m => { if (typeof toast === "function") { try { toast(m); return; } 
 // German texts of this script also for the page itself (quick switch label)
 try { if (typeof I18N !== "undefined" && I18N.de) Object.keys(TX.de || {}).forEach(k => { if (!I18N.de[k]) I18N.de[k] = TX.de[k]; }); } catch (e) {}
 
-// ---- 4: night view ----
-const isN = () => H.classList.contains("sxnight");
-function paintN() { const b = D.getElementById("btn-night"); if (!b) return; b.setAttribute("aria-pressed", isN() ? "true" : "false");
-  b.title = T("Dark view: very dark and red, the live picture dimmed - for a short look in the tent"); b.setAttribute("aria-label", T("Dark view")); }
-function setN(on) { H.classList.toggle("sxnight", on); try { localStorage.setItem("mw-night", on ? "1" : "0"); } catch (e) {}
-  paintN(); say(on ? "🌑 " + T("Dark view on - tap 🌑 again to switch it off") : T("Dark view off")); }
-window.sxNight = setN;
-function addBtn() {
-  if (D.getElementById("btn-night")) return;
-  const hdr = D.querySelector("header"); if (!hdr) return;
-  const b = D.createElement("button"); b.type = "button"; b.id = "btn-night"; b.className = "sec"; b.textContent = "🌑";
-  b.onclick = () => setN(!isN());
-  const th = D.getElementById("btn-theme"), hc = hdr.querySelector(".hdr-ctl");
-  if (th && th.parentNode) th.parentNode.insertBefore(b, th); else if (hc) hc.insertBefore(b, hc.firstChild); else { b.style.marginLeft = "auto"; hdr.appendChild(b); }
-  paintN();
-}
-try { if (typeof QS !== "undefined" && Array.isArray(QS) && !QS.some(q => q.id === "night"))
-  QS.push({id: "night", ic: "🌑", lb: "Dark view", tip: "Dark view: very dark and red, the live picture dimmed - for a short look in the tent",
-           on: () => isN(), go: () => { setN(!isN()); return {ok: true}; }}); } catch (e) {}
+// ---- 4: «Rotlicht-Ansicht» = the 3rd step of the button «Hell / dunkel» (toggleTheme in 510 / 530: Hell → Dunkel → Rotlicht) ----
+const STEP = {light: "Light", dark: "Dark", red: "Red light view"};
+const stepNow = () => H.classList.contains("sxnight") ? "red" : (typeof THEME !== "undefined" && THEME === "light") ? "light" : "dark";
+function paintN() { const b = D.getElementById("btn-theme"); if (!b) return; const s = stepNow(), n = {light: "dark", dark: "red", red: "light"}[s];
+  const tt = T("Light / dark / red light") + ": " + T(STEP[s]) + " → " + T(STEP[n]);
+  if (b.getAttribute("title") !== tt) { b.setAttribute("title", tt); b.setAttribute("aria-label", tt); b.dataset.sxA = tt; b.dataset.sxT = tt; }
+  b.classList.toggle("thred", s === "red"); }
+window.sxThemeSaid = n => { paintN(); say((n === "red" ? "◉ " : n === "light" ? "☀ " : "☾ ") + T(STEP[n])); };
 
 // ---- 5: names for screen readers ----
-const ID = {"btn-view": "View", "btn-side": "Settings panel", "btn-fs": "Full screen", "btn-theme": "Light / dark", "btn-lang": "Language",
-  "btn-night": "Dark view", "vo-exit": "Exit full screen", "side-close": "Hide settings", "side-open": "Show settings", "all-open": "Expand all",
+const ID = {"btn-view": "View", "btn-side": "Settings panel", "btn-fs": "Full screen", "btn-lang": "Language",
+  "vo-exit": "Exit full screen", "side-close": "Hide settings", "side-open": "Show settings", "all-open": "Expand all",
   "all-close": "Collapse all", "b-sim": "Simulation off", "b-arm": "Protection state", "b-health": "Self-check", "b-lock": "Operator mode", "b-mode": "Mode",
   "btn-listen": "Listen", "stick-listen": "Listen", "lv-vin": "Zoom in", "lv-vout": "Zoom out", "lv-vctl": "Operate with the finger (otherwise the page scrolls)",
   "lv-vrot": "Finger: rotate instead of move", "lv-vbig": "Large picture"};
@@ -531,7 +520,7 @@ function label(e) {
   if (!e.getAttribute("title") || (e.id && ID[e.id] && e.getAttribute("title") !== n && !e.dataset.sxEn)) { e.setAttribute("title", n); e.dataset.sxT = n; }
 }
 function pass() {
-  addBtn(); paintN();
+  paintN();
   D.querySelectorAll("button,[role=button],a.ic,header .badge,.qsw button").forEach(e => { try { label(e); } catch (x) {} });
   D.querySelectorAll("header .badge[onclick],header .badge[style*=pointer]").forEach(e => { if (!e.hasAttribute("role")) { e.setAttribute("role", "button"); e.tabIndex = 0;
     e.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); e.click(); } }); } });
@@ -601,22 +590,24 @@ def apply_theme():
         C.update(SX_TK_NIGHT)
 
 
-def _sx_tk_build_header(self):
-    _sx_tk_build_header_before(self)
-    try:
-        b_fs = getattr(self, "b_fs", None)
-        if b_fs is not None and b_fs.winfo_exists():
-            b = self._ibtn(b_fs.master, "◑", lambda: _sx_tk_night(self), tr("Dark view: very dark and red, the live picture dimmed - for a short look in the tent"),
-                           on=bool(CFG.get("tk_night")))
-            b.pack(side="right", padx=(0, 6))
-    except Exception:
-        pass
+def tk_theme_step():
+    """the window: «light», «dark» or «red» (Rotlicht-Ansicht = tk_night on top of dark)"""
+    return "red" if CFG.get("tk_night") else ("light" if CFG.get("theme") == "light" else "dark")
 
 
-def _sx_tk_night(app):
-    CFG["tk_night"] = not CFG.get("tk_night")
+def tk_theme_tip():
+    s = tk_theme_step(); n = {"light": "dark", "dark": "red", "red": "light"}[s]
+    nm = {"light": "Light", "dark": "Dark", "red": "Red light view"}
+    return tr("Light / dark / red light") + ": " + tr(nm[s]) + " → " + tr(nm[n])
+
+
+def _sx_tk_toggle_theme(self):
+    """the button ◐ (and Ctrl+T): Hell → Dunkel → Rotlicht → Hell"""
+    n = {"light": "dark", "dark": "red", "red": "light"}[tk_theme_step()]
+    CFG["tk_night"] = n == "red"
+    self._set("theme", "light" if n == "light" else "dark")
     save_settings()
-    app._rebuild()
+    self._rebuild()
 
 
 def _sx_tk_update_video(self):
@@ -674,10 +665,9 @@ def _sx_tk_wipe(app):
     ttk.Button(bf, text=tr("Delete"), command=go).pack(side="right", padx=(0, 6))
 
 
-_sx_tk_build_header_before = App._build_header
 _sx_tk_build_section_before = App._build_section
-# wraps: App._build_header
-App._build_header = _sx_tk_build_header
+# wraps: App.toggle_theme
+App.toggle_theme = _sx_tk_toggle_theme
 # wraps: App._build_section
 App._build_section = _sx_tk_build_section
 # wraps: App._update_video
@@ -737,7 +727,7 @@ def sicher_selftest():
         assert "pin" in sx_off_form("de") and "inputmode" in sx_off_form("fr")
         CFG["protect_pin"] = ""; assert "Schutz-PIN" in sx_off_form("de")
         js = sx_ui_js_text()
-        assert "Dunkle Ansicht" in js and "Nachtblick" not in js and "/*TX*/" not in js
+        assert "Rotlicht-Ansicht" in js and "Dunkle Ansicht" not in js and "Nachtblick" not in js and "/*TX*/" not in js
         assert "sxnight" in render_page("<html><head></head><body><header></header></body></html>", "live")
         for k, (_i, h, t_) in SX_ERRS.items():
             assert tr(h, "de") != h and tr(t_, "fr") != t_, "error page text not translated: " + h

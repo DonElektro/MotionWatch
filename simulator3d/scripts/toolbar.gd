@@ -42,7 +42,7 @@ const ROW2 := [["view", "Ansicht", "Hinterher, Fahrersicht, von oben"],
 		["zones3d", "Zonen in 3D", "Die Zonen von MoveEye auf dem Boden (nur für dich sichtbar)"],
 		["det3d", "Erkennung in 3D", "Rahmen von MoveEye über den Figuren: grün erkannt, rot Fehlalarm, orange übersehen"],
 		["templates", "Vorlagen", "Fertige Szenen, echte Orte, 3D-Bausätze, eigene 3D-Datei (.glb) laden"],
-		["inventar", "Dein Platz", "Zelt, Auto, bewachte Sachen (Velo, Kühlbox), Foto deines Platzes und alle Menschen, Tiere und Dinge, die die KI kennt"],
+		["inventar", "Dein Platz", "Zelt, Auto, bewachte Sachen (Velo, Zelt, Tisch, Kühlbox, Grill), Foto deines Platzes und alle Menschen, Tiere und Dinge, die die KI kennt"],
 		["panel", "Menü", "Bedienfeld rechts"]]
 
 

@@ -489,7 +489,7 @@ def tk_main_on(sec):
         return False
 
 
-TK_GROUP_ICONS = {"alarm": "🛡", "notify": "⚠", "sched": "🗓", "detect": "◎", "camera": "▣", "sensors": "◉", "power": "⚡", "net": "📶", "sys": "⚙", "simset": "⚗"}
+TK_GROUP_ICONS = {"alarm": "🛡", "notify": "⚠", "sched": "🗓", "detect": "◎", "camera": "▣", "sensors": "◉", "power": "⚡", "net": "📶", "security": "🔐", "sys": "⚙", "simset": "⚗"}
 TK_TAB_HEAD = {"alarm": "Protection", "detect": "Settings"}     # 2.98.0: the tabs of the web page as headings
 
 TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery": "▮", "Theft protection": "⚷", "Reference scan": "◎", "Notifications": "✉",
@@ -508,7 +508,8 @@ TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - 2.98.0: the sam
     ("camera", "Cameras & head", ["Camera / Servos", "Patrol", "Video source", "Timelapse", "Mover", None, "Servo driver"]),
     ("sensors", "Devices & sensors", ["Lights", "Microphone", "Loudspeaker", "Relays", "Extra sensors", "Clap switch", "Bless you", "Wake-up alarm", "Storm warning", "GPS module"]),
     ("power", "Power supply", ["Battery", "Power saving", "Solar panel"]),
-    ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Security", "Guest access", "MQTT / Home Assistant"]),
+    ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant"]),
+    ("security", "Security", ["Security"]),     # 573: password, users, app keys, encrypted login, security check in one place
     ("sys", "System", ["Setup", "Updates"]),
 ]
 # 2.98.14 (Konzept): which tab shows a group (like the web page); the simulator settings are in the tab Simulator
@@ -775,7 +776,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.24")
+        self.root.title("MoveEye 2.98.25")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1128,7 +1129,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.24 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.25 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1152,7 +1153,7 @@ class App:
             lb = self._ibtn(ctl, cur_lang().upper(), lambda: None, tr("Language") + " (Ctrl+L)")
             lb.bind("<Button-1>", lambda e: self.toggle_lang(lb.winfo_rootx(), lb.winfo_rooty() + lb.winfo_height()))
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
-            self._ibtn(ctl, "◐", self.toggle_theme, tr("Light") if CFG["theme"] == "dark" else tr("Dark")).pack(side="right", padx=(0, 6))
+            self._ibtn(ctl, "◐", self.toggle_theme, tk_theme_tip(), on=bool(CFG.get("tk_night"))).pack(side="right", padx=(0, 6))   # Hell → Dunkel → Rotlicht (578)
             self._ibtn(ctl, "✉", self._messages_win, tr("Message list")).pack(side="right", padx=(0, 6))     # 2.98.13
             self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
@@ -2214,19 +2215,11 @@ class App:
                 pwf.pack(fill="x")
             sbody_ = sbody; sbody = pwf
             tk.Frame(sbody, bg=C["line"], height=1).pack(fill="x", pady=(10, 6))
-            tk.Label(sbody, text=tr("Web password").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x")
-            ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",
-                          highlightthickness=1, highlightbackground=C["line"], highlightcolor=C["acc"])
-            self.pw_var = tk.StringVar()
-            tk.Entry(sbody, textvariable=self.pw_var, show="•", **ent_kw).pack(fill="x", pady=(4, 0))
-            bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(4, 0))
-            ttk.Button(bf, text=tr("Set password"), command=lambda: self._pw(True)).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf, text=tr("Remove password"), command=lambda: self._pw(False)).pack(side="left", expand=True, fill="x")
+            ttk.Label(sbody, text="🔐 " + tr("Password, users and app keys: Settings → Security"), style="Mut.TLabel", wraplength=330,
+                      justify="left").pack(anchor="w")                    # 573: moved there (one place for the security)
             ttk.Button(sbody, text="🔐 " + tr("Operator mode (lock settings)") + " …", command=self._lock).pack(fill="x", pady=(6, 0))  # (hidden while locked)
             ttk.Button(sbody, text="📱 " + tr("QR code for the phone") + " …", command=lambda: self._qr_window(False)).pack(fill="x", pady=(6, 0))
             ttk.Button(sbody, text="💬 " + tr("Feedback to the developer") + " …", command=self._feedback).pack(fill="x", pady=(6, 0))
-            self.status_labels["Web password"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
-            self.status_labels["Web password"].pack(anchor="w", pady=(4, 0))
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(8, 0))
             ttk.Button(bf, text=tr("Save settings …"), command=self._export).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Load settings …"), command=self._import).pack(side="left", expand=True, fill="x")

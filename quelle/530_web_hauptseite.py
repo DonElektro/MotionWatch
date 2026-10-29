@@ -660,20 +660,16 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
       </div>
       <div class="btns pwr"><button type="button" class="sec" onclick="fbDialog()" data-i18n="💬 Feedback to the developer">💬 Feedback to the developer</button></div>
       </details>
-      <details class="adv sblk l-hide" data-view="sysblk:pw"><summary data-i18n="🔒 Password and settings file">🔒 Password and settings file</summary>
+      <details class="adv sblk l-hide" data-view="sysblk:pw"><summary data-i18n="💾 Settings file">💾 Settings file</summary>
+      <a class="btn sec" href="/settings?open=grp:security" onclick="if(typeof tabOpen==='function'&&document.querySelector('#settings [data-view=&quot;grp:security&quot;]')){tabOpen('grp:security');return false;}" data-i18n="🔐 Password, users and app keys: Settings → Security">🔐 Password, users and app keys: Settings → Security</a>
       <div class="btns pwr">
-        <button type="button" class="sec l-hide" onclick="pwDialog(false)" data-i18n="🔒 Web password">🔒 Web password</button>
         <a class="btn sec l-hide" href="/api/settings/export" download="motionwatch_einstellungen.json" data-i18n="⬇ Save settings">⬇ Save settings</a>
         <button type="button" class="sec l-hide" onclick="document.getElementById('imp-file').click()" data-i18n="⬆ Load settings">⬆ Load settings</button>
         <input type="file" id="imp-file" accept=".json,application/json" hidden onchange="importSettings(this.files[0]); this.value=''">
       </div>
-      <div class="mut" id="pw-info"></div>
       <div class="btns pwr">
         <button class="sec l-hide" onclick="if(confirm(t('Reset all settings to defaults?')))act('reset_settings')" data-i18n="Reset settings">Reset settings</button>
       </div>
-      </details>
-      <details class="adv sblk l-hide" data-view="sysblk:users"><summary data-i18n="👥 Users">👥 Users</summary>
-      <div id="users-box"></div>
       </details>
       <details class="adv sblk" data-view="sysblk:info"><summary data-i18n="ℹ Version and status">ℹ Version and status</summary>
       <div class="mut" id="sys-info" style="margin-top:6px"></div>
@@ -1046,11 +1042,16 @@ function applyI18n() {
   $("#sched-note").textContent = t("While a schedule is active, the listed features are forced ON or OFF. Afterwards they return to your own setting. Switching one by hand overrides the schedule until its next change.");
   document.documentElement.lang = LANG;
 }
+function themeStep() { return document.documentElement.classList.contains("sxnight") ? "red" : THEME === "light" ? "light" : "dark"; }   // 573/578: Hell → Dunkel → Rotlicht
 function applyTheme() {
   document.body.classList.toggle("light", THEME === "light");
-  $("#btn-theme").innerHTML = THEME === "light" ? "&#9790;" : "&#9728;";
+  const s = themeStep(); $("#btn-theme").innerHTML = s === "light" ? "&#9790;" : s === "dark" ? "&#9673;" : "&#9728;";
+  $("#btn-theme").classList.toggle("thred", s === "red");
 }
-function toggleTheme() { THEME = THEME === "light" ? "dark" : "light"; try { localStorage.setItem("mw-theme", THEME); } catch (e) {} applyTheme(); }
+function toggleTheme() { const n = {light: "dark", dark: "red", red: "light"}[themeStep()];
+  document.documentElement.classList.toggle("sxnight", n === "red"); THEME = n === "light" ? "light" : "dark";
+  try { localStorage.setItem("mw-theme", THEME); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {} applyTheme();
+  if (window.sxThemeSaid) window.sxThemeSaid(n); }
 function toggleLang() { langMenu(document.querySelector("#btn-lang")); }
 // Full screen: the video fills the whole screen. Real browser full screen where the browser allows it
 // (PC, Android); on iPhone / iPad (also Chrome there) only the page layout changes, which works everywhere.
@@ -1390,7 +1391,7 @@ function buildViewMenu() {
   const m = $("#viewmenu"); m.textContent = ""; const groups = {};
   const q = el("div", "vmq");
   const qb = (txt, fn) => { const b = el("button", "sec", txt); b.type = "button"; b.onclick = e => { e.stopPropagation(); fn(); buildViewMenu(); }; q.appendChild(b); };
-  qb((THEME === "light" ? "☾ " : "☀ ") + t(THEME === "light" ? "Dark theme" : "Light theme"), toggleTheme);
+  qb({light: "☾ " + t("Dark theme"), dark: "◉ " + t("Red light view"), red: "☀ " + t("Light theme")}[themeStep()], toggleTheme);
   qb("🌐 " + (LANGN[LANG] || "English") + " …", () => setTimeout(() => langMenu($("#btn-lang")), 0));
   qb((HIDDEN.has("sidebar") ? "◀ " : "▶ ") + t("Settings panel"), () => toggleHidden("sidebar"));
   qb("▴ " + t("Hide header"), () => { const b = $("#btn-hdr"); if (b) b.click(); $("#viewmenu").hidden = true; });
@@ -1875,8 +1876,9 @@ const GROUPS = [                                            // 2.98.0: by goal -
    {card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"},
    {sec: "Wake-up alarm", ic: "⏰"}, {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}]},
   {id: "power", tab: "settings", icon: "🔋", name: "Power supply", items: [{card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Power saving", ic: "🍃"}, {sec: "Solar panel", ic: "☀️"}]},
-  {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"}, {sec: "Security", ic: "🔐"},
+  {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"},
    {card: "guest", title: "Guest access", ic: "👥"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}]},
+  {id: "security", tab: "settings", icon: "🔐", name: "Security", items: [{sec: "Security", ic: "🔐"}]},   // 573: password, users, app keys, check
   {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", ic: "📍"}, {sec: "Updates", ic: "⬆️"},
    {card: "log", ic: "📜"}]},
 ];
@@ -2310,6 +2312,7 @@ function secExtras(d) {
     if (j.warn) st.appendChild(el("div", "err", "⚠ " + j.warn));
     if (!j.secure && j.url) { const a = el("a", "btn sec", "🔒 " + t("Open the secure page")); a.href = j.url; a.style.cssText = "display:inline-block;margin-top:6px"; st.appendChild(a); } };
   load(); d.addEventListener("toggle", () => { if (d.open) load(); });
+  if (typeof secPanel === "function") secPanel(d);          // 573: password, users, app keys, security check
 }
 
 // ---- audio: microphone level, live listening (WebAudio: works on every phone), loudspeaker of the Pi ----

@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.6"
+const VERSION := "3D-4.7"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -3029,7 +3029,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Dein Plat
 		["Kamerabild", "lens", "👁", ["", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
 		["Sensoren", "bell", "🔔", [""]],
 		["Mover", "track", "🚜", ["", "Patrouille"]],
-		["Spiel", "pad", "🎮", ["Runde", "Experte · Runde", "Experte · Regeln", "Experte · Extras", "Experte · Treffer", "Experte · Anzeige", "Experte · Erkennung lernen"]],
+		["Spiel", "pad", "🎮", ["", "Assistent"]],
 		["Wildbeobachtung", "target", "🎯", [""]],
 		["Testlauf", "check", "✅", [""]],
 		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates", "Kinder-Modus"]]]
@@ -3051,8 +3051,8 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"visit_rate": ["Besuch", "Von selbst"], "daily_life": ["Besuch", "Von selbst"], "real_time": ["Szene", "Zeit"], "max_visitors": ["Besuch", "Von selbst"], "visitor_speed": ["Besuch", "Verhalten"],
 		"lamp_share": ["Besuch", "Verhalten"], "look_at_light": ["Besuch", "Verhalten"], "flee_light": ["Besuch", "Verhalten"],
 		"flee_sound": ["Besuch", "Verhalten"], "avoid_on": ["Besuch", "Verhalten"], "lens_vignette": ["Kamerabild", "Feineinstellungen"],
-		"sound_on": ["Kamerabild", "Feineinstellungen"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", "Runde"],
-		"game_stop": ["Spiel", "Runde"], "game_wizard": ["Spiel", "Runde"], "tv_mode": ["Spiel", "Anzeige"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
+		"sound_on": ["Kamerabild", "Feineinstellungen"], "game_open": ["Spiel", "Runde"], "game_start": ["Spiel", ""],
+		"game_stop": ["Spiel", ""], "game_wizard": ["Spiel", ""], "tv_mode": ["Spiel", "Anzeige"], "game_minutes": ["Spiel", "Runde"], "game_mode": ["Spiel", "Runde"], "game_goal": ["Spiel", "Runde"],
 		"game_level": ["Spiel", "Regeln"], "game_lives": ["Spiel", "Regeln"], "game_items": ["Spiel", "Regeln"], "game_teams": ["Spiel", "Regeln"],
 		"game_rescue": ["Spiel", "Regeln"], "game_teamgoal": ["Spiel", "Regeln"], "game_stones": ["Spiel", "Regeln"], "game_powers": ["Spiel", "Regeln"], "game_spectate": ["Spiel", "Anzeige"], "game_photos": ["Spiel", "Extras"], "game_fx_laser": ["Spiel", "Treffer"], "game_fx_paint": ["Spiel", "Treffer"], "game_fx_flash": ["Spiel", "Treffer"], "game_tap": ["Spiel", "Treffer"],
 		"game_learn_miss": ["Spiel", "Erkennung lernen"], "game_learn_report": ["Spiel", "Erkennung lernen"], "game_learn_paths": ["Spiel", "Erkennung lernen"], "game_blind_bonus": ["Spiel", "Erkennung lernen"], "game_report_send": ["Spiel", "Erkennung lernen"], "game_hides": ["Spiel", "Extras"], "game_decoy": ["Spiel", "Extras"],
@@ -3068,8 +3068,13 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 
 
 const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testlauf", "Spiel"]
-# 3D-4.x: the card «Spiel» = open, start, stop, assistant; everything else is set in the assistant (or under «Experte»)
-const GAME_MAIN := ["game_wizard", "game_open", "game_start", "game_stop"]
+# 3D-4.7 («Spiel-Karte schlank», Daniel): the card «Spiel» = Assistent öffnen, Start, Stopp and the state line; every other
+# setting of the game is only in the assistant (gamewiz.gd). Those controls stay (control API, saved settings) but get
+# extra «wiz»: not in this panel and not in the Simulator control of MoveEye.
+const GAME_MAIN := ["game_wizard", "game_start", "game_stop"]
+# 3D-4.7: a fixed id per group for MoveEye (the visible names may change); sent as «gid» with every control
+const GROUP_IDS := {"Szene": "scene", "Wetter": "weather", "Besuch": "visit", "Kamerabild": "camera", "Sensoren": "sensors", "Mover": "mover",
+		"Spiel": "game", "Wildbeobachtung": "wildlife", "Testlauf": "testrun", "System": "system"}
 const SIMPLE_HIDE_SUBS := ["Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Verhalten", "Mehr Wetter", "Natur und Wind"]
 
 
@@ -3102,8 +3107,13 @@ func _order_controls() -> void:
 		if pl != null:
 			c.group = pl[0]
 			c.extra["sub"] = pl[1]
-		if c.group == "Spiel" and not c.id in GAME_MAIN:      # 3D-4.x: all single settings of the game: «Experte · …»
-			c.extra["sub"] = "Experte · " + (str(c.extra.get("sub", "")) if str(c.extra.get("sub", "")) != "" else "Extras")
+		if c.group == "Spiel":                            # 3D-4.7: only open / start / stop on the card, the rest in the assistant
+			if c.id in GAME_MAIN:
+				c.extra["sub"] = ""                    # straight on the card (no part «Runde» any more)
+			else:
+				c.extra["wiz"] = true
+				c.extra["sub"] = "Assistent"
+		c.extra["gid"] = GROUP_IDS.get(c.group, str(c.group).to_lower())
 		if not _simple_ok(c):
 			c.extra["expert"] = true                      # 3D-3.90: «Einfach» = about 60 settings (the web page shows all)
 		var g: int = gi.get(c.group, GROUPS.size())
@@ -3287,10 +3297,10 @@ func _register_controls() -> void:
 	add_control("button", "rec_stopplay", "Wiedergabe beenden", null, func(): recorder.stop_play(), "Testlauf")
 	add_control("button", "testrun_open", "Letzten Bericht öffnen", null, func(): testrun.open_report(), "Testlauf")
 	add_control("button", "tv_mode", "📺 TV-Modus für den Spielabend (Taste T, ganzer Bildschirm)", null, func(): tv.set_on(not tv.on), "Spiel")
-	add_control("button", "game_wizard", "🎮 Spiel-Assistent: Schritt für Schritt einrichten und starten", null, func(): gamewiz.open_wiz(), "Spiel")
+	add_control("button", "game_wizard", "🎮 Assistent öffnen: Spiel einrichten und starten", null, func(): gamewiz.open_wiz(), "Spiel")
 	add_control("toggle", "game_open", "Spiel öffnen (Handys können mitspielen)", func(): return game.open, func(v): game.set_open(v), "Spiel")
-	add_control("button", "game_start", "Runde starten", null, func(): game.start_round(), "Spiel")
-	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
+	add_control("button", "game_start", "▶ Start", null, func(): _game_card_start(), "Spiel")
+	add_control("button", "game_stop", "⏹ Stopp", null, func(): _game_card_stop(), "Spiel")
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
 			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["jaeger", "Fehlalarm-Jäger – Tiere und Dinge täuschen MoveEye (nur mit MoveEye)"], ["camera", "ältere: Alle gegen die Kamera"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
@@ -3305,7 +3315,7 @@ func _register_controls() -> void:
 	add_control("select", "game_goal", "Spielziel", func(): return game_goal, func(v): game_goal = v, "Spiel",
 			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"], ["sprint", "Sprint: 90 s, fester Parcours"], ["theft", "Diebstahl: Velo oder Kühlbox zum Ausgang tragen"]]})
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
-	add_control("toggle", "game_powers", "Power-ups: Tarnkappe (lila) und Turbo (gelb)", func(): return game_powers, func(v): game_powers = v, "Spiel")
+	add_control("toggle", "game_powers", "Power-ups: Unsichtbar-Trank (lila) und Turbo (gelb)", func(): return game_powers, func(v): game_powers = v, "Spiel")
 	add_control("toggle", "game_photos", "Erwischt-Fotos (Bild der Kamera beim Erwischen, Galerie am Schluss)", func(): return game_photos, func(v): game_photos = v, "Spiel")
 	# 3D-3.52: the hit sequence (each on its own) and what the game teaches MoveEye
 	add_control("toggle", "game_fx_laser", "Treffer: roter Laser vom Kamerakopf (Handy: Fadenkreuz)", func(): return game_fx_laser, func(v): game_fx_laser = v, "Spiel")
@@ -3504,6 +3514,26 @@ func _apply_quality() -> void:
 	env.volumetric_fog_density = 0.008
 	env.volumetric_fog_length = 80.0
 	get_viewport().use_taa = fwd and lvl >= 3
+
+
+func _game_card_start() -> void:
+	"""3D-4.7: the button «Start» of the card «Spiel»: the game closed = open it (QR code for the phones), otherwise start the round"""
+	if not game.open:
+		game.set_open(true)
+		start_info = "Spiel offen – Handys scannen den QR-Code, dann nochmals «Start»"
+		return
+	if game.count() == 0:
+		start_info = "Noch niemand dabei – Handys scannen zuerst den QR-Code"
+		return
+	game.start_round()
+
+
+func _game_card_stop() -> void:
+	"""3D-4.7: «Stopp»: a running round ends; without a round the game is closed"""
+	if game.round_state in ["countdown", "play"]:
+		game.end_round()
+	elif game.open:
+		game.set_open(false)
 
 
 func control_info() -> Dictionary:
@@ -4459,20 +4489,12 @@ func _build_ui() -> void:
 		gps_steal(gps_steal_t <= 0.0)
 		gsb.text = "GPS: zurückstellen" if gps_steal_t > 0.0 else "GPS: MoveEye wird weggetragen")
 	tl.add_child(gsb)
-	tl.add_child(UI.small("Dinge wegnehmen / zurückstellen (nur in der Szene Camping-Platz) – merkt MoveEye, dass etwas fehlt?"))
-	var pg := GridContainer.new()
-	pg.columns = 3
-	pg.add_theme_constant_override("h_separation", 6)
-	pg.add_theme_constant_override("v_separation", 6)
-	tl.add_child(pg)
-	for nm in ["Velo", "Zelt", "Tisch", "Kühlboxen", "Grill"]:
-		var pb := Button.new()
-		pb.text = nm
-		pb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		pb.pressed.connect(func():
-			var n = test_props.get(nm, null)
-			set_prop(nm, n == null or not is_instance_valid(n) or not n.visible))
-		pg.add_child(pb)
+	# 3D-4.7 («Dinge wegnehmen zusammenlegen»): ONE list of the things to take away - «Bewachte Sachen» in «Dein Platz»
+	var pgb := Button.new()
+	pgb.text = "→ Bewachte Sachen: Velo, Zelt, Tisch, Kühlbox, Grill wegnehmen – merkt MoveEye, dass etwas fehlt?"
+	pgb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	pgb.pressed.connect(func(): inventar.open(0))
+	tl.add_child(pgb)
 	tl.add_child(UI.small("Sabotage-Test für den Diebstahlschutz von MoveEye (scharf schalten):"))
 	var sg := HBoxContainer.new()
 	sg.add_theme_constant_override("separation", 6)
@@ -4568,8 +4590,8 @@ func _build_ui() -> void:
 	var groups := {}
 	var subs := {}
 	for c in controls:
-		if c.extra.get("hide", false):
-			continue                                     # 3D-3.90: only for MoveEye (the web page), not in the window
+		if c.extra.get("hide", false) or c.extra.get("wiz", false):
+			continue                                     # 3D-3.90: only for MoveEye (the web page), not in the window; 3D-4.7: «wiz» = only in the game assistant
 		if c.group == "Testlauf" and testen_measure != null:   # 3D-4.x: into the card «Testen» (no own card «Testlauf» any more)
 			if c.id in ["testrun_plan", "testrun_start"]:
 				continue                                 # the card has its own row «plan + Testlauf starten»

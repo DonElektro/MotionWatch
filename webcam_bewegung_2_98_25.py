@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_24.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_25.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,10 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.25: App-Schlüssel für Home Assistant und Kurzbefehle (auch über http, können Passwort und Sicherheit nie ändern,
+    jederzeit sperrbar); alles zur Sicherheit an einem Ort (Einstellungen → Sicherheit); ein Knopf Hell → Dunkel → Rotlicht
+    (früher eigener Knopf «Dunkle Ansicht»); Simulator: Spiel-Karte schlank, Bewachte Sachen, Sim-Schalter nur als Kachel,
+    Unsichtbar-Trank.
   * 2.98.24: Kamera am Pi 5: die inneren Knoten des Pi (rp1-cfe, /dev/video0 … 7) gelten nicht mehr als USB-Kamera;
     «Automatisch» nimmt ohne USB-Kamera die Pi-Kamera, und eine gewählte «USB camera 0», die in Wahrheit ein innerer Knoten ist,
     wird zur Pi-Kamera. Zusatzkameras zeigen die echte Bildrate (vorher z. B. «707 fps»), Aufnahmen haben dadurch das richtige
@@ -904,10 +908,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_24.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_25.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_24.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_24.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_25.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_25.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -924,7 +928,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.24"
+APP_VERSION = "2.98.25"
 
 
 def default_data_dir():
@@ -10200,7 +10204,9 @@ SIMHUB_JS = r"""
     tests: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
     improve: "learn", autoth: "learn", train: "learn", falearn: "learn", diary: "learn",
     game: "play", points: "play"};
-  const EXPERT_K = ["autoth", "ab", "train", "falearn", "week"];
+  // 2.98.24 («Sim-Schalter nur einmal»): Trainings-Nacht, Fehlalarm-Lernen and Wochen-Check are switched only in their tile
+  // (no longer also in the assistant «Erkennung verbessern» and in «Einstellungen der Simulation») - so always shown
+  const EXPERT_K = ["autoth", "ab"];
   function tiles(box, full) {
     const G = {world: E("div", "shub"), test: E("div", "shub"), learn: E("div", "shub"), play: E("div", "shub")}, g = G.world;
     const T = [["scene", "🗺", tt("Scene"), ((H.scenes || []).find(x => x.id === H.scene) || {}).name || H.scene || "–"],
@@ -21275,8 +21281,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.6", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31493167,
-         "sha256": "647c446e72690192260b3d3c11a3217b73463bd8cf2a423d5298514864cffc8a"}
+SIM3D = {"version": "3D-4.7", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31497088,
+         "sha256": "f2fd9b4f57c32147d8f8f285260065bcfdbd8a3d38a4625f408e02666095a45f"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -21417,8 +21423,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-4.6", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24615622,
-           "sha256": "cfe4443bb4e3f5a47d57d5f5cd5c055f77a856b31adc70f8e9eeb6e7fb5f47c4", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-4.7", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24619868,
+           "sha256": "c3426df4b4db2d3f7a653fcb1513ed83e59982a838bdf17c29a2709edce14a44", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -22271,7 +22277,8 @@ def testopt_state():
 #   2 Wie gründlich? - schnell (Tag) oder gründlich (Tag + Nacht)
 #   3 Verbessern  - Messen, Vorschläge ausprobieren, nur Besseres behalten (die bewährte Optimierung aus 310)
 #   4 Ergebnis    - vorher → nachher, was geändert wurde; «Behalten» oder «Rückgängig»
-#   5 Dranbleiben - Auto-Tuner am echten Ort, Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen (Schalter mit Erklärung)
+#   5 Dranbleiben - Auto-Tuner am echten Ort (Schalter mit Erklärung); Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen ab 2.98.24
+#                   nur noch als Kacheln der Simulator-Zentrale (ein Verweis darauf)
 # Die einzelnen Funktionen bleiben im Simulator-Tab unter «Experte». Es läuft immer nur eine (gemeinsame Sperre
 # simtask_busy, 141); der Auto-Tuner macht Pause, solange eine davon misst (autotune_paused, aufgerufen in 190).
 # ----------------------------------------------------------------------------
@@ -22458,6 +22465,7 @@ TUNE_JS = r"""
     "Training night": "Trainings-Nacht", "every night test runs in several scenes and the same improving - only when protection is off": "jede Nacht Testläufe in mehreren Szenen und dasselbe Verbessern – nur wenn der Schutz aus ist",
     "Weekly check": "Wochen-Check", "every Sunday night a test run; a push when it got worse": "jeden Sonntag in der Nacht ein Testlauf; ein Push, wenn es schlechter wurde",
     "False alarm learning": "Fehlalarm-Lernen", "mark a recording with 👎 and the simulator re-enacts it and learns from it": "markierst du eine Aufnahme mit 👎, stellt der Simulator sie nach und lernt daraus",
+    "Training night, weekly check, false alarm learning: tiles in the Simulator centre": "Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen: Kacheln in der Simulator-Zentrale",
     "Single tools (Expert)": "Einzelne Werkzeuge (Experte)", "Test run, A/B comparison, thresholds automatic … in the tab Simulator, Simulator centre (view «Expert»).": "Testlauf, A/B-Vergleich, Schwellen automatisch … im Tab Simulator, Simulator-Zentrale (Ansicht «Experte»).",
     "One guided flow: check, measure, improve, see the result. Replaces the single tools (they stay in «Expert»).": "Ein geführter Ablauf: prüfen, messen, verbessern, Ergebnis ansehen. Ersetzt die einzelnen Werkzeuge (die bleiben unter «Experte»).",
     "the simulator is needed for measuring": "zum Messen braucht es den Simulator", "Auto-tune": "Auto-Tuner",
@@ -22532,7 +22540,8 @@ TUNE_JS = r"""
         l.append(tx, cb); c.appendChild(l); };
       sw("auto_tune", "Auto-tuner at the real place", "adapts the sensitivity to the place all the time (wind, light); starts from the measured values");
       if (S.auto_status && K.auto_tune) c.appendChild(E("div", "mwt-mut", "🎚 " + tt("Auto-tune") + ": " + tt(S.auto_status)));
-      sw("train_night_on", "Training night", "every night test runs in several scenes and the same improving - only when protection is off"); sw("weekcheck_on", "Weekly check", "every Sunday night a test run; a push when it got worse"); sw("fa_learn_auto", "False alarm learning", "mark a recording with 👎 and the simulator re-enacts it and learns from it");
+      // 2.98.24 («Sim-Schalter nur einmal»): Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen are switched in their tiles only
+      { const tl = E("div", "mwt-mut"); const ta = E("a", "", "🎛 " + tt("Training night, weekly check, false alarm learning: tiles in the Simulator centre") + " ›"); ta.href = "/sim#c-hub"; ta.style.color = "var(--acc,#3b8cff)"; tl.appendChild(ta); c.appendChild(tl); }
       const ex = E("div", "mwt-mut"); const a = E("a", "", "🧰 " + tt("Single tools (Expert)") + " ›"); a.href = "/sim#c-hub"; a.style.color = "var(--acc,#3b8cff)"; ex.append(a, E("div", "", tt("Test run, A/B comparison, thresholds automatic … in the tab Simulator, Simulator centre (view «Expert»)."))); c.appendChild(ex);
       nav.append(B("‹ " + tt("Back"), () => { step = S.last ? 4 : 1; render(); }, "sec"), B("✓ " + tt("Close"), () => tuneClose()));
     }
@@ -26786,7 +26795,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_24.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_25.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -32256,7 +32265,7 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
   <button type="button" class="tli" data-k="nettest" onclick="pick('nettest')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0"/><path d="M12 20l3.5-6"/><circle cx="12" cy="20" r="1.3"/></svg><span class="tln"><b data-i18n="Network check of the players">Network check of the players</b><span class="tsum" id="s-nettest"></span></span><i class="tdot" id="d-nettest"></i></button>
   <button type="button" class="tli" data-k="info" onclick="pick('info')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="1"/></svg><span class="tln"><b data-i18n="Product page for guests">Product page for guests</b><span class="tsum" id="s-info"></span></span><i class="tdot" id="d-info"></i></button>
   <button type="button" class="tli" data-k="speed" onclick="pick('speed')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg><span class="tln"><b data-i18n="Internet test">Internet test</b><span class="tsum" id="s-speed"></span></span><i class="tdot" id="d-speed"></i></button>
-  <button type="button" class="tli" data-k="sec" onclick="pick('sec')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="tln"><b data-i18n="Security check">Security check</b><span class="tsum" id="s-sec"></span></span><i class="tdot" id="d-sec"></i></button>
+  <a class="tli" data-k="sec" href="/settings?open=grp:security" style="text-decoration:none;color:inherit"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span class="tln"><b data-i18n="Security check">Security check</b><span class="tsum" data-i18n="now in Settings → Security">now in Settings → Security</span></span><i class="tdot"></i></a>
   <div class="tlg" data-i18n="Wi-Fi">Wi-Fi</div>
   <button type="button" class="tli" data-k="dual" onclick="pick('dual')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9.5a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg><span class="tln"><b data-i18n="Wi-Fi adapters and repeater">Wi-Fi adapters and repeater</b><span class="tsum" id="s-dual"></span></span><i class="tdot" id="d-dual"></i></button>
   <button type="button" class="tli" data-k="guard" onclick="pick('guard')"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="tln"><b data-i18n="Wi-Fi guard">Wi-Fi guard</b><span class="tsum" id="s-guard"></span></span><i class="tdot" id="d-guard"></i></button>
@@ -32398,14 +32407,6 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
     <div class="warnbox" data-i18n="speed-warn">speed-warn</div>
     <div class="kv" id="speed-now"></div>
     <div class="tscroll"><table class="tl" id="speed-tab"></table></div>
-    </div>
-  </section>
-  <section class="tool" id="c-sec" data-k="sec" hidden>
-    <div class="thd"><button class="sec back" type="button" onclick="showList()">‹ <span data-i18n="All tools">All tools</span></button>
-      <div class="tht"><svg class="tico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><h2 data-i18n="Security check">Security check</h2></div><div class="tact"><button id="b-sec" onclick="run('sec')" data-i18n="Check">Check</button></div></div>
-    <div class="tbd">
-    <div class="mut" data-i18n="What can be reached from the network or the internet, and what is risky.">What can be reached from the network or the internet, and what is risky.</div>
-    <div id="sec-list"></div>
     </div>
   </section>
   <section class="tool" id="c-dual" data-k="dual" hidden>
@@ -32571,6 +32572,7 @@ Object.assign(I18N.de, {"Leisure": "Freizeit", "Game corner": "Spielecke",
  "Saved": "Gespeichert", "Only for the administrator": "Nur für den Administrator", "hidden": "versteckt", "ok": "ok",
  "AI detection": "KI-Erkennung", "Thermal camera": "Wärmebild", "Power saving (when quiet)": "Stromsparen (wenn ruhig)", "Infrared light": "Infrarot-Licht", "White light": "Weisslicht",
  "Own Wi-Fi (hotspot)": "Eigenes WLAN (Hotspot)", "Patrol (servos)": "Patrouille (Servos)", "Basic consumption": "Grundverbrauch"});
+Object.assign(I18N.de, {"now in Settings → Security": "jetzt unter Einstellungen → Sicherheit"});   // 573
 Object.assign(I18N.de, {"Web password set": "Web-Passwort gesetzt", "Web password missing": "Web-Passwort fehlt", "Everybody in the network can operate MoveEye": "Jeder im Netz kann MoveEye bedienen", "Secure page (https) on": "Sichere Seite (https) ein", "Secure page (https) off": "Sichere Seite (https) aus", "Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)": "Passwörter gehen unverschlüsselt durchs Netz – wichtig in fremden WLANs (Camping)", "Open in the network: port": "Offen im Netz: Port", "SSH: login with password allowed": "SSH: Anmelden mit Passwort erlaubt", "SSH: login with password off (keys only)": "SSH: Anmelden mit Passwort aus (nur Schlüssel)", "Use a strong password or keys": "Starkes Passwort oder Schlüssel verwenden", "Public IPv6 address present": "Öffentliche IPv6-Adresse vorhanden", "Depending on the router the Pi can be reached directly from the internet - keep the web password on": "Je nach Router ist der Pi direkt aus dem Internet erreichbar – Web-Passwort eingeschaltet lassen", "Router forwards ports to this device:": "Router leitet Ports an dieses Gerät weiter:", "No port forwarding of the router to this device (UPnP)": "Keine Port-Weiterleitung des Routers an dieses Gerät (UPnP)", "Address in the internet:": "Adresse im Internet:", "shared address of the mobile network - not reachable from outside": "geteilte Adresse des Handynetzes – von aussen nicht erreichbar", "Internet not reachable": "Internet nicht erreichbar", "Tailscale: access from outside only for your own devices": "Tailscale: Zugriff von aussen nur für die eigenen Geräte", "no network": "kein Netz", "no Wi-Fi scan possible (NetworkManager / nmcli missing or no Wi-Fi)": "keine WLAN-Suche möglich (NetworkManager / nmcli fehlt oder kein WLAN)", "Bluetooth scanner needs: sudo apt install python3-bleak": "Der Bluetooth-Scanner braucht: sudo apt install python3-bleak", "steps without a change of the picture - blocked, at the end or camera not on the head?": "Schritte ohne Bildänderung – blockiert, am Anschlag oder Kamera nicht auf dem Kopf?", "Apple Find My (AirTag or a lost Apple device)": "Apple «Wo ist?» (AirTag oder verlorenes Apple-Gerät)", "Apple device": "Apple-Gerät", "Samsung device": "Samsung-Gerät", "Microsoft device": "Microsoft-Gerät"});
 Object.assign(I18N.de, {"Wi-Fi adapters and repeater": "WLAN-Adapter und Repeater", "Search again": "Neu suchen", "Use a second adapter (repeater)": "Zweiten Adapter verwenden (Repeater)", "Swap: the USB stick makes the own Wi-Fi": "Tauschen: der USB-Stick macht das eigene WLAN", "Push message when the internet was gone": "Push-Meldung, wenn das Internet weg war", "Wi-Fi guard": "WLAN-Wächter", "guard-note": "Hört mit einem passenden USB-Stick mit, ob jemand das WLAN stört (Trennungs-Angriff, wie ihn Einbrecher gegen WLAN-Kameras benutzen).", "Alarm on Wi-Fi jamming (deauthentication attack)": "Alarm bei WLAN-Störung (Trennungs-Angriff)", "Alarm from": "Alarm ab", "disconnect frames per minute": "Trennungs-Meldungen pro Minute", "Recognise my marked devices by listening (Am I at home?)": "Meine markierten Geräte durch Mithören erkennen (Bin ich zu Hause?)", "Count devices nearby (anonymous, nothing is stored)": "Geräte in der Nähe zählen (anonym, nichts wird gespeichert)", "Repeater on": "Repeater aktiv", "Two adapters in use": "Zwei Adapter in Betrieb", "Second adapter not in use": "Zweiter Adapter nicht in Gebrauch", "Only one Wi-Fi adapter": "Nur ein WLAN-Adapter", "Own Wi-Fi": "Eigenes WLAN", "own Wi-Fi": "eigenes WLAN", "Internet": "Internet", "internet": "Internet", "off": "aus", "not connected": "nicht verbunden", "Plug in a USB Wi-Fi stick: then the Pi makes its own Wi-Fi and gets the internet from another network at the same time.": "Steck einen USB-WLAN-Stick ein: dann macht der Pi sein eigenes WLAN und holt gleichzeitig das Internet aus einem anderen Netz.", "no internet": "kein Internet", "connection unstable": "Verbindung unstabil", "No internet for devices": "Kein Internet für Geräte", "Adapter": "Adapter", "Chip": "Chip", "Listening": "Mithören", "Signal of the internet adapter (4 hours)": "Signal des Internet-Adapters (4 Stunden)", "weak: put the stick higher or nearer, use a USB extension cable": "schwach: Stick höher oder näher hinstellen, USB-Verlängerung benutzen", "listening": "hört mit", "error": "Fehler", "with": "mit", "Disconnect frames last minute": "Trennungs-Meldungen letzte Minute", "against your networks": "gegen deine Netze", "in total": "insgesamt", "devices nearby": "Geräte in der Nähe", "no internet for this device": "kein Internet für dieses Gerät", "only one Wi-Fi adapter": "nur ein WLAN-Adapter", "needs NetworkManager": "braucht NetworkManager", "very good: own Wi-Fi, 5 GHz and listening (monitor) work": "sehr gut: eigenes WLAN, 5 GHz und Mithören gehen", "good: 5 GHz and listening (monitor) work": "gut: 5 GHz und Mithören gehen", "simple stick: only 2.4 GHz": "einfacher Stick: nur 2,4 GHz", "only 2.4 GHz, listening (monitor) works": "nur 2,4 GHz, Mithören geht", "simple driver: no own Wi-Fi, no listening": "einfacher Treiber: kein eigenes WLAN, kein Mithören", "simple driver: no listening": "einfacher Treiber: kein Mithören", "listening (monitor) mostly not possible": "Mithören meist nicht möglich", "only 2.4 GHz": "nur 2,4 GHz", "extra driver needed": "braucht Zusatz-Treiber", "no Wi-Fi adapter here can listen (monitor mode) - e.g. a stick with MediaTek MT7612U / MT7921AU": "kein Adapter hier kann mithören (Monitor-Modus) – z. B. ein Stick mit MediaTek MT7612U / MT7921AU", "Built in": "Eingebaut"});
 Object.assign(I18N.de, {"Full power for the tools": "Volle Leistung für die Werkzeuge", "tm-note": "Pausiert Kamera, Erkennung und KI, damit rechenintensive Werkzeuge die ganze Leistung bekommen. Danach läuft alles von selbst wieder.", "Pause MoveEye": "MoveEye pausieren", "Resume now": "Jetzt fortsetzen", "paused until": "Pausiert bis", "Camera, detection and alarms are paused - they come back by themselves.": "Kamera, Erkennung und Alarme ruhen – sie kommen von selbst zurück.", "tm-confirm": "Der Schutz von MoveEye ist an. Während der Pause gibt es keine Überwachung und keine Alarme. Trotzdem pausieren?"});
@@ -32641,10 +32643,10 @@ function draw() {
   const st = $("#speed-tab"); st.innerHTML = ""; if (Q.hist.length > 1) { st.appendChild(tr_([t("Time"), "↓", "↑", t("Ping")], true));
     Q.hist.slice().reverse().forEach(h => st.appendChild(tr_([fmtT(h.t), h.error ? "⚠" : h.down_mbit, h.error ? "" : h.up_mbit, h.error ? "" : h.ping_ms]))); }
   // security
-  const sl = $("#sec-list"); sl.innerHTML = ""; btn("sec", "Check", S.sec.running);
+  const sl = $("#sec-list"); if (sl) { sl.innerHTML = ""; btn("sec", "Check", S.sec.running);   // 573: the check is in Settings → Security now
   (S.sec.items || []).forEach(it => { const r = el("div", "lv"); r.append(el("i", "lvl " + it.level));
     const tx = el("div", "", t(it.text) + (it.arg ? " " + it.arg : "")); if (it.tip) { tx.appendChild(el("br")); tx.appendChild(el("span", "mut", t(it.tip))); } r.appendChild(tx); sl.appendChild(r); });
-  if (S.sec.t) sl.appendChild(el("div", "mut", fmtT(S.sec.t)));
+  if (S.sec.t) sl.appendChild(el("div", "mut", fmtT(S.sec.t))); }
   // bluetooth
   const B = S.bt; btn("bt", "Scan (10 s)", B.running);
   const mbt = new Set(C.presence_bt || []);
@@ -33387,23 +33389,25 @@ function scOn(G, r) {                               // 2.95.51: the symbol of a 
   const O = (r && r.groups_on) || {}; if (!G) return;
   G.querySelectorAll(".sc-card[data-g]").forEach(c => { const v = O[c.dataset.g] || 0; c.classList.toggle("sc-on1", v === 1); c.classList.toggle("sc-on2", v === 2); });
 }
-// 2.98.15 (Konzept-Check): the group «Spiel» shows only assistant / open / start / stop - everything else is set in the game
-// wizard or under «Experte» (as the simulator window does from 3D-4.x; this also covers older simulators)
-const SC_GAME_MAIN = ["game_wizard", "game_open", "game_start", "game_stop"];
-function scExpert(c) { return !!c.expert || ((c.group === "Spiel" || c.group === "Game") && SC_GAME_MAIN.indexOf(c.id) < 0); }
+// 2.98.15 (Konzept-Check): the group «Spiel» shows only assistant / start / stop - everything else is set in the game wizard
+// (simulator 3D-4.7: «Spiel-Karte schlank», those controls come with «wiz»; for older simulators the list below decides)
+const SC_GAME_MAIN = ["game_wizard", "game_start", "game_stop"];
+// 2.98.24: the groups by their fixed id «gid» (simulator 3D-4.7), the visible name only for older simulators
+const scGid = c => c.gid || ({"Spiel": "game", "Game": "game", "Testlauf": "testrun", "Test run": "testrun"})[c.group] || "";
+function scExpert(c) { return !!c.expert; }
+function scWizOnly(c) { return !!c.wiz || (!("gid" in c) && scGid(c) === "game" && SC_GAME_MAIN.indexOf(c.id) < 0); }
 // 2.98.23 (Konzept): the simulator group «Testlauf» is not shown in the Simulator control (testing has ONE place: group «Testen»,
-// tile «Tests»); there it is built with data-only="Testlauf" (#tr-sim, recordings of the sneak paths, Pi 5 settings)
-const SC_TEST_GROUPS = ["Testlauf", "Test run"];
+// tile «Tests»); there it is built with data-only="testrun" (#tr-sim, recordings of the sneak paths, Pi 5 settings)
 const SC_TEST_DUP = ["testrun_plan", "testrun_start", "testrun_stop"];   // the same as «Testlauf starten» of MoveEye right above (/api/simtest)
 function simCtlBuild(G, r, ctl, fmt) {
   scCss();
   const only = G.dataset.only || "";
-  r = Object.assign({}, r, {controls: (r.controls || []).filter(c => only ? SC_TEST_GROUPS.indexOf(c.group) >= 0 && SC_TEST_DUP.indexOf(c.id) < 0 : SC_TEST_GROUPS.indexOf(c.group) < 0)});
+  r = Object.assign({}, r, {controls: (r.controls || []).filter(c => !scWizOnly(c) && (only ? scGid(c) === only && SC_TEST_DUP.indexOf(c.id) < 0 : scGid(c) !== "testrun"))});
   const ls = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
   const ss = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   const openC = new Set(ls("mw-sc-open", ["Szene", "Besuch"])), openS = new Set(ls("mw-sc-sub2", ["Besuch/Vorlagen", "Besuch/Menschen schicken", "Besuch/Tiere schicken", "Spiel/Runde"]));
   let expert = only ? true : ls("mw-sc-expert", false), q = G.dataset.q || "";
-  if (only) openC.add(only);
+  if (only) (r.controls || []).forEach(c => openC.add(c.group));
   G.textContent = "";
   const top = el("div", "sc-top"); const qi = document.createElement("input"); qi.type = "search"; qi.placeholder = t("Search a setting …"); qi.value = q;
   top.appendChild(qi); G.appendChild(top);
@@ -33910,7 +33914,7 @@ details.fold>.fb>.mut:first-child{margin-top:0}
     <div class="mut" id="tr-autonote"></div>
     <div id="tr-live" hidden><div class="rng"><span id="tr-livet"></span><b id="tr-left"></b></div><div class="tr-prog"><i id="tr-bar" style="width:0"></i></div></div>
     <div id="tr-res"></div>
-    <div id="tr-sim" data-only="Testlauf" style="margin-top:10px"></div>
+    <div id="tr-sim" data-only="testrun" style="margin-top:10px"></div>
     </div>
   </div>
 
@@ -34033,7 +34037,7 @@ Object.assign(I18N.de, {"Settings of the simulation": "Einstellungen der Simulat
  "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in",
  "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.",
  "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An MoveEye senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "Use": "Verwenden", "in use": "in Gebrauch",
- "Version": "Version", "installed": "installiert", "newest": "neueste", "up to date": "aktuell", "newest version not known": "neueste Version unbekannt", "checking for the newest version …": "suche die neueste Version …", "New update for the simulator": "Neues Update für den Simulator", "Update it in the simulator on the PC.": "Im Simulator auf dem PC aktualisieren.", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» oben.", "The finger now controls the simulator (scrolling: press ✋ again)": "Der Finger bedient jetzt den Simulator (Scrollen: ✋ nochmals drücken)", "The finger scrolls the page again (a tap still clicks)": "Der Finger scrollt wieder die Seite (Antippen klickt trotzdem)", "Game wizard": "Spiel-Assistent", "Back": "Zurück", "Next": "Weiter", "Game type": "Spielart", "Goal": "Ziel", "Difficulty": "Schwierigkeit", "Start": "Los", "Which game?": "Welches Spiel?", "gw-intro": "Bis zu 12 Läufer (dazu Zuschauer) machen mit dem Handy mit. Wähle die Spielart – der Assistent erklärt die Regeln und stellt alles ein.", "Like last time": "Wie letztes Mal", "What is the goal?": "Was ist das Ziel?", "How hard?": "Wie schwierig?", "Beginners": "Anfänger", "Normal": "Normal", "Pros": "Profis", "gw-easy": "Wächter leicht, unbegrenzte Leben, 8 Minuten, Sichtfeld der Kameras sichtbar.", "gw-normal": "Wächter normal, 3 Leben, 5 Minuten.", "gw-hard": "Wächter schwer, nur 1 Leben, 4 Minuten, kein Sichtfeld.", "Sneak to the goal": "Zum Ziel schleichen", "Fetch the loot and bring it back": "Beute holen und zurückbringen", "Capture the flag (two teams)": "Fahne erobern (zwei Teams)", "gw-reach": "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg.", "gw-return": "Ziel: die Beute beim grünen Licht holen und zurück zum Start bringen.", "gw-flag": "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie.", "Duration of a round": "Dauer einer Runde", "Lives": "Leben", "unlimited": "unbegrenzt", "3 lives": "3 Leben", "1 life": "1 Leben", "Crystals to collect": "Kristalle zum Sammeln", "Two teams (red against blue)": "Zwei Teams (Rot gegen Blau)", "Free the caught ones (they wait in the cell)": "Befreien (Erwischte warten in der Zelle)", "Throw stones to distract": "Steine werfen zum Ablenken", "Show the field of view of the cameras": "Sichtfeld der Kameras zeigen", "Ready!": "Bereit!", "Teams": "Teams", "red against blue": "Rot gegen Blau", "no": "nein", "gw-tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter Dingen sieht euch die Kamera schlechter. Rennen hört das Mikrofon. Ein geworfener Stein lenkt die Kamera ab.", "gw-rescue": "Befreien: Wer erwischt wird, wartet in der Zelle, bis ihn ein Teamkollege befreit.", "gw-items": "Kristalle: Wer welche einsammelt, bekommt Extrapunkte.", "Power-ups: cloak (purple) and turbo (yellow)": "Power-ups: Tarnkappe (lila) und Turbo (gelb)", "gw-powers": "Power-ups: Die lila Kugel ist eine Tarnkappe (9 s fast unsichtbar), die gelbe ein Turbo (7 s schneller, aber lauter). Sie tauchen später an einem anderen Ort wieder auf.", "gw-lastmin": "Letzte Minute: Die Kamera passt dann besser auf – jetzt wird es spannend!", "Extras": "Extras", "photos, hiding places, decoy, night, events, checkpoints, handicap": "Fotos, Verstecke, Lockvogel, Nacht, Ereignisse, Checkpoints, Handicap", "Caught photos (gallery at the end)": "Erwischt-Fotos (Galerie am Schluss)", "Hiding places (bushes, 8 s invisible)": "Verstecke (Büsche, 8 s unsichtbar)", "Decoy allowed": "Lockvogel erlaubt", "Night round with torches": "Nacht-Runde mit Taschenlampen", "Random events (storm, dog, car)": "Zufallsereignisse (Gewitter, Hund, Auto)", "Checkpoints (+150 points each)": "Checkpoints (je +150 Punkte)", "Handicap for the leader of the ranking": "Handicap für den Ersten der Rangliste", "gw-photos": "📸 Erwischt-Fotos: Wer erwischt wird, sieht auf dem Handy das Bild der Kamera. Am Schluss gibt es eine Galerie.", "gw-hides": "🌳 Verstecke: In einem Busch geduckt oder kriechend sieht dich die Kamera nicht – aber nur 8 Sekunden lang.", "gw-decoy": "🦆 Lockvogel: Wer will, wählt auf dem Handy «Lockvogel». Er lässt sich absichtlich sehen, lockt die Kamera weg und bekommt Punkte für jede beobachtete Sekunde.", "gw-night": "🌙 Nacht-Runde: Es ist dunkel. Mit 🔦 siehst du mehr – aber die Kamera sieht dich auch.", "gw-events": "⛈ Zufallsereignisse: Gewitter (man hört dich kaum), ein bellender Hund, ein Auto mit Scheinwerfern.", "gw-cps": "🚩 Checkpoints: Leuchtende Ringe unterwegs geben je 150 Punkte.", "gw-hc": "🎯 Handicap: Wer in der Rangliste vorne liegt, wird leichter gesehen und ist etwas langsamer.", "Handicap (experienced players are seen more easily, are a bit slower, shorter cloak)": "Handicap (Geübte werden leichter gesehen, sind etwas langsamer, kürzere Tarnkappe)", "none": "keins", "a little": "etwas", "strong": "stark", "Ranking of the evening": "Rangliste des Abends", "rounds": "Runden", "won": "gewonnen", "best time": "Bestzeit", "never caught": "nie erwischt", "fastest": "am schnellsten", "most crystals": "meiste Kristalle", "best guard": "bester Wächter", "Records": "Rekorde", "Reset the ranking": "Rangliste zurücksetzen", "Reset the ranking of the evening?": "Rangliste des Abends zurücksetzen?", "Storm": "Gewitter", "Dog": "Hund", "Car": "Auto", "Caught!": "Erwischt!", "Result": "Ergebnis", "Close": "Schliessen", "Spectator camera: flies over the field by itself": "Zuschauer-Kamera: fliegt selbst übers Spielfeld", "Settings": "Einstellungen", "Opening the game …": "Spiel wird geöffnet …", "the simulator did not open the game": "der Simulator hat das Spiel nicht geöffnet", "Start the round": "Runde starten", "Open the game & show the QR code": "Spiel öffnen & QR-Code zeigen", "The round starts": "Die Runde startet", "Game «Unseen to the goal»": "Spiel «Unentdeckt ans Ziel»", "Show the QR code big": "QR-Code gross zeigen", "Close the game": "Spiel schliessen", "Tap to close": "Antippen zum Schliessen", "Open the game": "Spiel öffnen", "Players scan the QR code with their phone (same WLAN) or open the address:": "Mitspieler scannen den QR-Code mit dem Handy (gleiches WLAN) oder öffnen die Adresse:", "players": "Spieler", "Up to 12 players sneak unseen to the goal with their phones. Open the game, then they scan the QR code.": "Bis zu 12 Spieler schleichen mit dem Handy unentdeckt zum Ziel. Spiel öffnen, dann scannen sie den QR-Code.", "CPU of the PC": "CPU des PCs", "Update the simulator by itself when a newer version is there": "Simulator selbst aktualisieren, wenn eine neuere Version da ist", "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
+ "Version": "Version", "installed": "installiert", "newest": "neueste", "up to date": "aktuell", "newest version not known": "neueste Version unbekannt", "checking for the newest version …": "suche die neueste Version …", "New update for the simulator": "Neues Update für den Simulator", "Update it in the simulator on the PC.": "Im Simulator auf dem PC aktualisieren.", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» oben.", "The finger now controls the simulator (scrolling: press ✋ again)": "Der Finger bedient jetzt den Simulator (Scrollen: ✋ nochmals drücken)", "The finger scrolls the page again (a tap still clicks)": "Der Finger scrollt wieder die Seite (Antippen klickt trotzdem)", "Game wizard": "Spiel-Assistent", "Back": "Zurück", "Next": "Weiter", "Game type": "Spielart", "Goal": "Ziel", "Difficulty": "Schwierigkeit", "Start": "Los", "Which game?": "Welches Spiel?", "gw-intro": "Bis zu 12 Läufer (dazu Zuschauer) machen mit dem Handy mit. Wähle die Spielart – der Assistent erklärt die Regeln und stellt alles ein.", "Like last time": "Wie letztes Mal", "What is the goal?": "Was ist das Ziel?", "How hard?": "Wie schwierig?", "Beginners": "Anfänger", "Normal": "Normal", "Pros": "Profis", "gw-easy": "Wächter leicht, unbegrenzte Leben, 8 Minuten, Sichtfeld der Kameras sichtbar.", "gw-normal": "Wächter normal, 3 Leben, 5 Minuten.", "gw-hard": "Wächter schwer, nur 1 Leben, 4 Minuten, kein Sichtfeld.", "Sneak to the goal": "Zum Ziel schleichen", "Fetch the loot and bring it back": "Beute holen und zurückbringen", "Capture the flag (two teams)": "Fahne erobern (zwei Teams)", "gw-reach": "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg.", "gw-return": "Ziel: die Beute beim grünen Licht holen und zurück zum Start bringen.", "gw-flag": "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie.", "Duration of a round": "Dauer einer Runde", "Lives": "Leben", "unlimited": "unbegrenzt", "3 lives": "3 Leben", "1 life": "1 Leben", "Crystals to collect": "Kristalle zum Sammeln", "Two teams (red against blue)": "Zwei Teams (Rot gegen Blau)", "Free the caught ones (they wait in the cell)": "Befreien (Erwischte warten in der Zelle)", "Throw stones to distract": "Steine werfen zum Ablenken", "Show the field of view of the cameras": "Sichtfeld der Kameras zeigen", "Ready!": "Bereit!", "Teams": "Teams", "red against blue": "Rot gegen Blau", "no": "nein", "gw-tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter Dingen sieht euch die Kamera schlechter. Rennen hört das Mikrofon. Ein geworfener Stein lenkt die Kamera ab.", "gw-rescue": "Befreien: Wer erwischt wird, wartet in der Zelle, bis ihn ein Teamkollege befreit.", "gw-items": "Kristalle: Wer welche einsammelt, bekommt Extrapunkte.", "Power-ups: invisibility potion (purple) and turbo (yellow)": "Power-ups: Unsichtbar-Trank (lila) und Turbo (gelb)", "gw-powers": "Power-ups: Die lila Kugel ist ein Unsichtbar-Trank (9 s fast unsichtbar), die gelbe ein Turbo (7 s schneller, aber lauter). Sie tauchen später an einem anderen Ort wieder auf.", "gw-lastmin": "Letzte Minute: Die Kamera passt dann besser auf – jetzt wird es spannend!", "Extras": "Extras", "photos, hiding places, decoy, night, events, checkpoints, handicap": "Fotos, Verstecke, Lockvogel, Nacht, Ereignisse, Checkpoints, Handicap", "Caught photos (gallery at the end)": "Erwischt-Fotos (Galerie am Schluss)", "Hiding places (bushes, 8 s invisible)": "Verstecke (Büsche, 8 s unsichtbar)", "Decoy allowed": "Lockvogel erlaubt", "Night round with torches": "Nacht-Runde mit Taschenlampen", "Random events (storm, dog, car)": "Zufallsereignisse (Gewitter, Hund, Auto)", "Checkpoints (+150 points each)": "Checkpoints (je +150 Punkte)", "Handicap for the leader of the ranking": "Handicap für den Ersten der Rangliste", "gw-photos": "📸 Erwischt-Fotos: Wer erwischt wird, sieht auf dem Handy das Bild der Kamera. Am Schluss gibt es eine Galerie.", "gw-hides": "🌳 Verstecke: In einem Busch geduckt oder kriechend sieht dich die Kamera nicht – aber nur 8 Sekunden lang.", "gw-decoy": "🦆 Lockvogel: Wer will, wählt auf dem Handy «Lockvogel». Er lässt sich absichtlich sehen, lockt die Kamera weg und bekommt Punkte für jede beobachtete Sekunde.", "gw-night": "🌙 Nacht-Runde: Es ist dunkel. Mit 🔦 siehst du mehr – aber die Kamera sieht dich auch.", "gw-events": "⛈ Zufallsereignisse: Gewitter (man hört dich kaum), ein bellender Hund, ein Auto mit Scheinwerfern.", "gw-cps": "🚩 Checkpoints: Leuchtende Ringe unterwegs geben je 150 Punkte.", "gw-hc": "🎯 Handicap: Wer in der Rangliste vorne liegt, wird leichter gesehen und ist etwas langsamer.", "Handicap (experienced players are seen more easily, are a bit slower, shorter invisibility potion)": "Handicap (Geübte werden leichter gesehen, sind etwas langsamer, kürzerer Unsichtbar-Trank)", "none": "keins", "a little": "etwas", "strong": "stark", "Ranking of the evening": "Rangliste des Abends", "rounds": "Runden", "won": "gewonnen", "best time": "Bestzeit", "never caught": "nie erwischt", "fastest": "am schnellsten", "most crystals": "meiste Kristalle", "best guard": "bester Wächter", "Records": "Rekorde", "Reset the ranking": "Rangliste zurücksetzen", "Reset the ranking of the evening?": "Rangliste des Abends zurücksetzen?", "Storm": "Gewitter", "Dog": "Hund", "Car": "Auto", "Caught!": "Erwischt!", "Result": "Ergebnis", "Close": "Schliessen", "Spectator camera: flies over the field by itself": "Zuschauer-Kamera: fliegt selbst übers Spielfeld", "Settings": "Einstellungen", "Opening the game …": "Spiel wird geöffnet …", "the simulator did not open the game": "der Simulator hat das Spiel nicht geöffnet", "Start the round": "Runde starten", "Open the game & show the QR code": "Spiel öffnen & QR-Code zeigen", "The round starts": "Die Runde startet", "Game «Unseen to the goal»": "Spiel «Unentdeckt ans Ziel»", "Show the QR code big": "QR-Code gross zeigen", "Close the game": "Spiel schliessen", "Tap to close": "Antippen zum Schliessen", "Open the game": "Spiel öffnen", "Players scan the QR code with their phone (same WLAN) or open the address:": "Mitspieler scannen den QR-Code mit dem Handy (gleiches WLAN) oder öffnen die Adresse:", "players": "Spieler", "Up to 12 players sneak unseen to the goal with their phones. Open the game, then they scan the QR code.": "Bis zu 12 Spieler schleichen mit dem Handy unentdeckt zum Ziel. Spiel öffnen, dann scannen sie den QR-Code.", "CPU of the PC": "CPU des PCs", "Update the simulator by itself when a newer version is there": "Simulator selbst aktualisieren, wenn eine neuere Version da ist", "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
  "The picture appears when the simulation is on.": "Das Bild erscheint, wenn die Simulation eingeschaltet ist.",
  "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "running": "läuft", "Controls": "Bedienung",
  "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a file to the simulator": "Datei zum Simulator hochladen",
@@ -34217,6 +34221,8 @@ function gwPaint(M) {
     if (G.open) { const im = el("img"); im.src = "/sim/game_qr.png?r=" + Date.now(); im.onclick = () => gameBig(true);
       const tx = el("div", ""); tx.append(el("div", "mut", t("Players scan the QR code with their phone (same WLAN) or open the address:")), el("div", "gm-url", G.url),
         el("div", "mut", t("players") + ": " + (G.players || 0) + (G.max ? " · " + t("runners at most") + " " + G.max : ""))); q.append(im, tx); } }
+  if ((M.actions || []).length) { const ab = el("div", "btns"); ab.style.marginTop = "10px";   // 2.98.24 (3D-4.7): TV mode, spectator camera, ranking, reports
+    M.actions.forEach(a => { const b = el("button", "sec", a.label); b.type = "button"; b.onclick = () => { if (a.id === "game_board_reset" && !confirm(t("Reset the ranking of the evening?"))) return; gwOp({op: "act", value: a.id}); }; ab.appendChild(b); }); B.appendChild(ab); }
   $("#gw-back").style.visibility = M.back ? "visible" : "hidden";
   $("#gw-next").textContent = M.next;
 }
@@ -34254,7 +34260,7 @@ function gMorePaint() {                            // game card: players with ha
   if (box.dataset.sig === sig) return; box.dataset.sig = sig; box.innerHTML = "";
   if (G.task) { const tk = el("div", "", "🎯 " + t("Task of this round") + ": " + G.task + " (+" + G.task_bonus + ")"); tk.style.cssText = "margin-top:8px;font-weight:600"; box.appendChild(tk); }
   if ((G.players || []).length && (G.players[0].hc !== undefined)) {
-    const h = el("div", "mut", "🎯 " + t("Handicap (experienced players are seen more easily, are a bit slower, shorter cloak)") + ":"); h.style.marginTop = "8px"; box.appendChild(h);
+    const h = el("div", "mut", "🎯 " + t("Handicap (experienced players are seen more easily, are a bit slower, shorter invisibility potion)") + ":"); h.style.marginTop = "8px"; box.appendChild(h);
     const row = el("div", "chips2");
     G.players.forEach(p => { const w = el("label", "hcp"); const d = el("span", "", "● "); d.style.color = p.c; const sel = document.createElement("select");
       [["0", t("none")], ["1", t("a little")], ["2", t("strong")]].forEach(([v, l]) => { const o = el("option", "", l); o.value = v; sel.appendChild(o); });
@@ -34347,10 +34353,13 @@ $("#s-url").addEventListener("input", () => URLEDIT = true);
 async function setKey(k, v) { const r = await post("/api/set", {key: k, value: v}); if (!r.ok) toast(r.error || t("not possible")); load(); }
 // 2.98.14 (Konzept): the settings of the section «Simulator» live here (no longer under Einstellungen → System) - all of
 // them that have no own switch on this page yet
+const SIM_TILE_KEYS = ["notify_sandbox", "train_night_on", "rover_alarm", "fa_learn_auto", "rehearsal_on_arm", "weekcheck_on"];
 async function simsetLoad() {
   const box = $("#simset-box"); if (!box || box.contains(document.activeElement)) return;
   let sch; try { sch = await (await fetch("/api/schema?sec=Simulator&lang=" + LANG)).json(); } catch (e) { return; }
-  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url";
+  // 2.98.24 («Sim-Schalter nur einmal», Daniel): the switches of the tiles of the Simulator centre (Test-Postfach, Trainings-Nacht,
+  // Rover, Fehlalarm-Lernen, Generalprobe, Wochen-Check) are only in their tile sheet (139), not here a second time
+  const S = sch[0] || {toggles: [], sliders: [], texts: []}, own = k => !!document.getElementById("k-" + k) || k === "sim_url" || SIM_TILE_KEYS.indexOf(k) >= 0;
   box.textContent = "";
   S.toggles.filter(x => !own(x.key)).forEach(x => { const l = el("label", "opt"), cb = document.createElement("input"); cb.type = "checkbox"; cb.className = "sw"; cb.checked = !!x.value;
     cb.onchange = () => post("/api/set", {key: x.key, value: cb.checked}).then(r => { if (!r.ok) toast(r.error || t("not possible")); }); l.append(el("span", "", x.label), cb); box.appendChild(l); });
@@ -39762,8 +39771,13 @@ function applyI18n() {
   const b = $("#btn-lang"); if (b) b.textContent = (LANG || "en").toUpperCase();
   document.documentElement.lang = LANG;
 }
-function applyTheme() { document.body.classList.toggle("light", THEME === "light"); const b = $("#btn-theme"); if (b) b.innerHTML = THEME === "light" ? "&#9790;" : "&#9728;"; }
-function toggleTheme() { THEME = THEME === "light" ? "dark" : "light"; try { localStorage.setItem("mw-theme", THEME); } catch (e) {} applyTheme(); }
+function themeStep() { return document.documentElement.classList.contains("sxnight") ? "red" : THEME === "light" ? "light" : "dark"; }   // 573/578: Hell → Dunkel → Rotlicht
+function applyTheme() { document.body.classList.toggle("light", THEME === "light"); const b = $("#btn-theme"), s = themeStep();
+  if (b) { b.innerHTML = s === "light" ? "&#9790;" : s === "dark" ? "&#9673;" : "&#9728;"; b.classList.toggle("thred", s === "red"); } }
+function toggleTheme() { const n = {light: "dark", dark: "red", red: "light"}[themeStep()];
+  document.documentElement.classList.toggle("sxnight", n === "red"); THEME = n === "light" ? "light" : "dark";
+  try { localStorage.setItem("mw-theme", THEME); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {} applyTheme();
+  if (window.sxThemeSaid) window.sxThemeSaid(n); }
 function toggleLang() { langMenu(document.querySelector("#btn-lang")); }
 let toastTimer = null;
 function toast(msg) { let e = $("#toast"); if (!e) { e = el("div"); e.id = "toast"; document.body.appendChild(e); } e.textContent = msg; e.classList.add("on");
@@ -42038,20 +42052,16 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
       </div>
       <div class="btns pwr"><button type="button" class="sec" onclick="fbDialog()" data-i18n="💬 Feedback to the developer">💬 Feedback to the developer</button></div>
       </details>
-      <details class="adv sblk l-hide" data-view="sysblk:pw"><summary data-i18n="🔒 Password and settings file">🔒 Password and settings file</summary>
+      <details class="adv sblk l-hide" data-view="sysblk:pw"><summary data-i18n="💾 Settings file">💾 Settings file</summary>
+      <a class="btn sec" href="/settings?open=grp:security" onclick="if(typeof tabOpen==='function'&&document.querySelector('#settings [data-view=&quot;grp:security&quot;]')){tabOpen('grp:security');return false;}" data-i18n="🔐 Password, users and app keys: Settings → Security">🔐 Password, users and app keys: Settings → Security</a>
       <div class="btns pwr">
-        <button type="button" class="sec l-hide" onclick="pwDialog(false)" data-i18n="🔒 Web password">🔒 Web password</button>
         <a class="btn sec l-hide" href="/api/settings/export" download="motionwatch_einstellungen.json" data-i18n="⬇ Save settings">⬇ Save settings</a>
         <button type="button" class="sec l-hide" onclick="document.getElementById('imp-file').click()" data-i18n="⬆ Load settings">⬆ Load settings</button>
         <input type="file" id="imp-file" accept=".json,application/json" hidden onchange="importSettings(this.files[0]); this.value=''">
       </div>
-      <div class="mut" id="pw-info"></div>
       <div class="btns pwr">
         <button class="sec l-hide" onclick="if(confirm(t('Reset all settings to defaults?')))act('reset_settings')" data-i18n="Reset settings">Reset settings</button>
       </div>
-      </details>
-      <details class="adv sblk l-hide" data-view="sysblk:users"><summary data-i18n="👥 Users">👥 Users</summary>
-      <div id="users-box"></div>
       </details>
       <details class="adv sblk" data-view="sysblk:info"><summary data-i18n="ℹ Version and status">ℹ Version and status</summary>
       <div class="mut" id="sys-info" style="margin-top:6px"></div>
@@ -42424,11 +42434,16 @@ function applyI18n() {
   $("#sched-note").textContent = t("While a schedule is active, the listed features are forced ON or OFF. Afterwards they return to your own setting. Switching one by hand overrides the schedule until its next change.");
   document.documentElement.lang = LANG;
 }
+function themeStep() { return document.documentElement.classList.contains("sxnight") ? "red" : THEME === "light" ? "light" : "dark"; }   // 573/578: Hell → Dunkel → Rotlicht
 function applyTheme() {
   document.body.classList.toggle("light", THEME === "light");
-  $("#btn-theme").innerHTML = THEME === "light" ? "&#9790;" : "&#9728;";
+  const s = themeStep(); $("#btn-theme").innerHTML = s === "light" ? "&#9790;" : s === "dark" ? "&#9673;" : "&#9728;";
+  $("#btn-theme").classList.toggle("thred", s === "red");
 }
-function toggleTheme() { THEME = THEME === "light" ? "dark" : "light"; try { localStorage.setItem("mw-theme", THEME); } catch (e) {} applyTheme(); }
+function toggleTheme() { const n = {light: "dark", dark: "red", red: "light"}[themeStep()];
+  document.documentElement.classList.toggle("sxnight", n === "red"); THEME = n === "light" ? "light" : "dark";
+  try { localStorage.setItem("mw-theme", THEME); localStorage.setItem("mw-night", n === "red" ? "1" : "0"); } catch (e) {} applyTheme();
+  if (window.sxThemeSaid) window.sxThemeSaid(n); }
 function toggleLang() { langMenu(document.querySelector("#btn-lang")); }
 // Full screen: the video fills the whole screen. Real browser full screen where the browser allows it
 // (PC, Android); on iPhone / iPad (also Chrome there) only the page layout changes, which works everywhere.
@@ -42768,7 +42783,7 @@ function buildViewMenu() {
   const m = $("#viewmenu"); m.textContent = ""; const groups = {};
   const q = el("div", "vmq");
   const qb = (txt, fn) => { const b = el("button", "sec", txt); b.type = "button"; b.onclick = e => { e.stopPropagation(); fn(); buildViewMenu(); }; q.appendChild(b); };
-  qb((THEME === "light" ? "☾ " : "☀ ") + t(THEME === "light" ? "Dark theme" : "Light theme"), toggleTheme);
+  qb({light: "☾ " + t("Dark theme"), dark: "◉ " + t("Red light view"), red: "☀ " + t("Light theme")}[themeStep()], toggleTheme);
   qb("🌐 " + (LANGN[LANG] || "English") + " …", () => setTimeout(() => langMenu($("#btn-lang")), 0));
   qb((HIDDEN.has("sidebar") ? "◀ " : "▶ ") + t("Settings panel"), () => toggleHidden("sidebar"));
   qb("▴ " + t("Hide header"), () => { const b = $("#btn-hdr"); if (b) b.click(); $("#viewmenu").hidden = true; });
@@ -43253,8 +43268,9 @@ const GROUPS = [                                            // 2.98.0: by goal -
    {card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"},
    {sec: "Wake-up alarm", ic: "⏰"}, {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}]},
   {id: "power", tab: "settings", icon: "🔋", name: "Power supply", items: [{card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Power saving", ic: "🍃"}, {sec: "Solar panel", ic: "☀️"}]},
-  {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"}, {sec: "Security", ic: "🔐"},
+  {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"},
    {card: "guest", title: "Guest access", ic: "👥"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}]},
+  {id: "security", tab: "settings", icon: "🔐", name: "Security", items: [{sec: "Security", ic: "🔐"}]},   // 573: password, users, app keys, check
   {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", ic: "📍"}, {sec: "Updates", ic: "⬆️"},
    {card: "log", ic: "📜"}]},
 ];
@@ -43688,6 +43704,7 @@ function secExtras(d) {
     if (j.warn) st.appendChild(el("div", "err", "⚠ " + j.warn));
     if (!j.secure && j.url) { const a = el("a", "btn sec", "🔒 " + t("Open the secure page")); a.href = j.url; a.style.cssText = "display:inline-block;margin-top:6px"; st.appendChild(a); } };
   load(); d.addEventListener("toggle", () => { if (d.open) load(); });
+  if (typeof secPanel === "function") secPanel(d);          // 573: password, users, app keys, security check
 }
 
 // ---- audio: microphone level, live listening (WebAudio: works on every phone), loudspeaker of the Pi ----
@@ -46646,7 +46663,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <li><b>🔋 USV-Akku (Waveshare UPS HAT, 2 × 18650):</b> wird selbst erkannt (I2C 0x42). Oben steht 🔌 bei Netzstrom bzw. 🔋 % und Restzeit im Akkubetrieb. Bei Stromausfall und wenn der Strom zurück ist kommt eine Push-Nachricht, bei 20 % eine Warnung, bei 8 % (einstellbar) schaltet sich der Pi sauber aus. Unter Akku die Kapazität einer Zelle eintragen (z. B. 3450 mAh).</li>
 <li><b>🔋 Akku:</b> Kapazität der Powerbank eintragen (mAh, wie aufgedruckt), nach dem Laden «Akku ist jetzt voll» drücken. Oben steht dann z. B. «🔋 62 % · 14 h». Bei 15 % kommt eine Push-Nachricht. Es ist eine Schätzung aus dem Verbrauch des Pi (Powerbanks melden ihren Ladestand nicht).</li>
 <li><b>Uhrzeit vom Handy:</b> ohne Internet holt sich der Pi die Uhrzeit vom Handy, damit Aufnahmen die richtige Zeit haben.</li></ul>
-<p><b>🧭 Referenz-Scan (ab 2.95.97):</b> Werkzeuge → «Referenz-Scan» führt in vier Schritten: Kamera aufstellen und ausrichten, Raster einstellen (Richtungen, Höhen, Fotos pro Richtung), Referenz aufnehmen, vergleichen. MoveEye fährt dabei mit dem Kopf alle Richtungen ab. Der Bericht zeigt pro Richtung Referenz und jetzt nebeneinander: rot = fehlt, blau = neu, orange = verändert. Vergleichen geht von Hand, beim Einschalten des Schutzes oder alle N Minuten (Einstellungen → Alarm &amp; Camping → Referenz-Scan), auf Wunsch mit Push-Meldung. Im 3D-Simulator starten die Knöpfe «MoveEye: Referenz-Scan» und «Mit Referenz vergleichen» dasselbe; «Testhilfe: Velo wegnehmen» zeigt, wie ein fehlender Gegenstand gemeldet wird.</p><p><b>🛡 Gegenstände bewachen, Tag und Nacht (ab 2.95.98):</b> Ein Referenz-Foto antippen und ein Rechteck über einen Gegenstand ziehen (Velo, Grill …), dann einen Namen geben. Fehlt er beim Vergleich, kommt sofort ein Alarm. Bei Dunkelheit speichert der Scan eine eigene Nacht-Referenz (Infrarot-Bild); verglichen wird immer mit der passenden. Im Simulator: «Nacht-Test» (Referenz am Tag, Vergleich in der Nacht), Testhilfen für Velo, Zelt, Tisch, Kühlboxen und Grill, Sabotage-Test (Kamera abdecken, Kopf wegdrehen), und im Aufstell-Planer «Hierhin stellen + Referenz-Scan».</p></section>
+<p><b>🧭 Referenz-Scan (ab 2.95.97):</b> Werkzeuge → «Referenz-Scan» führt in vier Schritten: Kamera aufstellen und ausrichten, Raster einstellen (Richtungen, Höhen, Fotos pro Richtung), Referenz aufnehmen, vergleichen. MoveEye fährt dabei mit dem Kopf alle Richtungen ab. Der Bericht zeigt pro Richtung Referenz und jetzt nebeneinander: rot = fehlt, blau = neu, orange = verändert. Vergleichen geht von Hand, beim Einschalten des Schutzes oder alle N Minuten (Einstellungen → Alarm &amp; Camping → Referenz-Scan), auf Wunsch mit Push-Meldung. Im 3D-Simulator starten die Knöpfe «MoveEye: Referenz-Scan» und «Mit Referenz vergleichen» dasselbe; «Testhilfe: Velo wegnehmen» zeigt, wie ein fehlender Gegenstand gemeldet wird.</p><p><b>🛡 Gegenstände bewachen, Tag und Nacht (ab 2.95.98):</b> Ein Referenz-Foto antippen und ein Rechteck über einen Gegenstand ziehen (Velo, Grill …), dann einen Namen geben. Fehlt er beim Vergleich, kommt sofort ein Alarm. Bei Dunkelheit speichert der Scan eine eigene Nacht-Referenz (Infrarot-Bild); verglichen wird immer mit der passenden. Im Simulator: «Nacht-Test» (Referenz am Tag, Vergleich in der Nacht), «Dein Platz» → «Bewachte Sachen» (Velo, Zelt, Tisch, Kühlbox, Grill wegnehmen), Sabotage-Test (Kamera abdecken, Kopf wegdrehen), und im Aufstell-Planer «Hierhin stellen + Referenz-Scan».</p></section>
 
 <section id="notify" data-icon="🔔"><h2>Benachrichtigungen</h2>
 <ul><li><b>📲 Web-Push (ohne App):</b> Benachrichtigungen → «Auf diesem Gerät einschalten». Braucht https: unter Benachrichtigungen «https über Tailscale einschalten» (in der Tailscale-Verwaltung einmal «HTTPS Certificates» erlauben), dann die Seite über <code>https://NAME.….ts.net/</code> öffnen. iPhone / iPad: diese https-Seite zum Home-Bildschirm hinzufügen und von dort einschalten. Funktioniert neben ntfy / Telegram.</li>
@@ -46859,7 +46876,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <li><b>🔋 UPS HAT (Waveshare, 2 × 18650):</b> found by itself (I2C 0x42). The header shows 🔌 on mains power or 🔋 % and time left on battery. A push message at a power cut and when power is back, a warning at 20 %, a clean shutdown at 8 % (adjustable). Under Battery enter the capacity of one cell (e.g. 3450 mAh).</li>
 <li><b>🔋 Battery:</b> enter the capacity of the powerbank (mAh, as on the label), press «Battery is full now» after charging. The header then shows e.g. «🔋 62 % · 14 h». At 15 % a push message comes. It is an estimate from what the Pi uses (powerbanks do not report their charge).</li>
 <li><b>Clock from the phone:</b> without internet the Pi takes the time from the phone, so recordings have the right time.</li></ul>
-<p><b>🧭 Reference scan (from 2.95.97):</b> Tools → «Reference scan» guides you in four steps: set up and align the camera, set the grid (directions, heights, photos per direction), take the reference, compare. MoveEye drives the head through all directions. The report shows reference and now side by side for every direction: red = missing, blue = new, orange = changed. Compare by hand, when armed or every N minutes (Settings → Alarm &amp; camping → Reference scan), with a push message if you like. In the 3D simulator the buttons «MoveEye: Referenz-Scan» and «Mit Referenz vergleichen» start the same; «Testhilfe: Velo wegnehmen» shows how a missing thing is reported.</p><p><b>🛡 Guard things, day and night (from 2.95.98):</b> Tap a reference photo, drag a box over a thing (bike, grill …) and name it. If it is missing at a comparison, the alarm comes at once. In the dark the scan saves its own night reference (infrared picture); the comparison always uses the fitting one. In the simulator: «Nacht-Test» (reference by day, comparison at night), test aids for bike, tent, table, cool boxes and grill, sabotage test (cover the camera, turn the head away), and in the Aufstell-Planer «Hierhin stellen + Referenz-Scan».</p></section>
+<p><b>🧭 Reference scan (from 2.95.97):</b> Tools → «Reference scan» guides you in four steps: set up and align the camera, set the grid (directions, heights, photos per direction), take the reference, compare. MoveEye drives the head through all directions. The report shows reference and now side by side for every direction: red = missing, blue = new, orange = changed. Compare by hand, when armed or every N minutes (Settings → Alarm &amp; camping → Reference scan), with a push message if you like. In the 3D simulator the buttons «MoveEye: Referenz-Scan» and «Mit Referenz vergleichen» start the same; «Testhilfe: Velo wegnehmen» shows how a missing thing is reported.</p><p><b>🛡 Guard things, day and night (from 2.95.98):</b> Tap a reference photo, drag a box over a thing (bike, grill …) and name it. If it is missing at a comparison, the alarm comes at once. In the dark the scan saves its own night reference (infrared picture); the comparison always uses the fitting one. In the simulator: «Nacht-Test» (reference by day, comparison at night), «Dein Platz» → «Bewachte Sachen» (take away bike, tent, table, cool box, grill), sabotage test (cover the camera, turn the head away), and in the Aufstell-Planer «Hierhin stellen + Referenz-Scan».</p></section>
 
 <section id="notify" data-icon="🔔"><h2>Notifications</h2>
 <ul><li><b>📲 Web push (no app):</b> Notifications → «Switch on on this device». Needs https: under Notifications «Switch on https over Tailscale» (allow «HTTPS Certificates» once in the Tailscale admin page), then open the page via <code>https://NAME.….ts.net/</code>. iPhone / iPad: add this https page to the home screen and switch it on from there. Works besides ntfy / Telegram.</li>
@@ -47985,6 +48002,22 @@ class WebStream:
             if ip in ("127.0.0.1", "::1") and request.headers.get("X-Forwarded-For"):
                 ip = request.headers["X-Forwarded-For"].split(",")[0].strip()[:45] or ip   # behind Tailscale serve / a tunnel
             now = time.time()
+            k_ = appkey_from_request(request)       # «App-Schlüssel» (573): programs, also over plain http (the key is no password)
+            if k_ is not None:
+                recent = [x for x in fails.get(ip, []) if now - x < 300]
+                if len(recent) >= 8:
+                    fails[ip] = recent
+                    return sx_err(429, "toomany", {"Retry-After": "300"})
+                ke = appkey_find(k_)
+                if ke is None:
+                    recent.append(now); fails[ip] = recent
+                    if len(recent) == 8:
+                        log_event("web", f"Login blocked for 5 minutes after 8 wrong app keys from {ip}")
+                    return appkey_refused(request, ip)
+                fails.pop(ip, None)
+                g.user, g.role, g.appkey = "🔑 " + str(ke.get("name") or "?"), "admin", ke["id"]
+                appkey_seen(ke, ip)
+                return appkey_guard(request)        # never the password, users, keys or security settings
             tf = trust_find(request.cookies.get(TRUST_COOKIE, ""))   # a trusted device: no login (also after updates)
             if tf:
                 g.user, g.role = tf[0]
@@ -49012,6 +49045,7 @@ class WebStream:
         timeline_routes(app, reply, body, request, Response)    # 2.98.14: Verlauf → Zeitleiste + weekly report (523)
         alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
         sx_routes(app, watch, reply, body)                 # night view / screen reader script, «holiday over», error pages (578)
+        appkey_routes(app, reply, body)                    # app keys, security check in Settings → Security (573)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -49211,9 +49245,12 @@ class WebStream:
             if len(rec) >= 10:
                 return Response("too many wrong keys - wait 10 minutes", 429)
             tok = CFG.get("shortcut_token") or ""
-            if len(tok) < 20 or not hmac.compare_digest(tok, key):
+            ke = None if len(tok) >= 20 and hmac.compare_digest(tok, key) else appkey_find(key)   # 573: an app key works too
+            if ke is None and (len(tok) < 20 or not hmac.compare_digest(tok, key)):
                 rec.append(now); SC_FAILS[ip] = rec
                 return Response("unknown key", 403)
+            if ke is not None:
+                appkey_seen(ke, ip)
             txt = None
             if action == "arm":
                 arm(); txt = "armed" if is_armed() else "arming (delay " + str(CFG.get("arm_delay", "")) + " s)"
@@ -51821,7 +51858,7 @@ def tk_main_on(sec):
         return False
 
 
-TK_GROUP_ICONS = {"alarm": "🛡", "notify": "⚠", "sched": "🗓", "detect": "◎", "camera": "▣", "sensors": "◉", "power": "⚡", "net": "📶", "sys": "⚙", "simset": "⚗"}
+TK_GROUP_ICONS = {"alarm": "🛡", "notify": "⚠", "sched": "🗓", "detect": "◎", "camera": "▣", "sensors": "◉", "power": "⚡", "net": "📶", "security": "🔐", "sys": "⚙", "simset": "⚗"}
 TK_TAB_HEAD = {"alarm": "Protection", "detect": "Settings"}     # 2.98.0: the tabs of the web page as headings
 
 TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery": "▮", "Theft protection": "⚷", "Reference scan": "◎", "Notifications": "✉",
@@ -51840,7 +51877,8 @@ TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - 2.98.0: the sam
     ("camera", "Cameras & head", ["Camera / Servos", "Patrol", "Video source", "Timelapse", "Mover", None, "Servo driver"]),
     ("sensors", "Devices & sensors", ["Lights", "Microphone", "Loudspeaker", "Relays", "Extra sensors", "Clap switch", "Bless you", "Wake-up alarm", "Storm warning", "GPS module"]),
     ("power", "Power supply", ["Battery", "Power saving", "Solar panel"]),
-    ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Security", "Guest access", "MQTT / Home Assistant"]),
+    ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant"]),
+    ("security", "Security", ["Security"]),     # 573: password, users, app keys, encrypted login, security check in one place
     ("sys", "System", ["Setup", "Updates"]),
 ]
 # 2.98.14 (Konzept): which tab shows a group (like the web page); the simulator settings are in the tab Simulator
@@ -52107,7 +52145,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.24")
+        self.root.title("MoveEye 2.98.25")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -52460,7 +52498,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.24 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.25 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -52484,7 +52522,7 @@ class App:
             lb = self._ibtn(ctl, cur_lang().upper(), lambda: None, tr("Language") + " (Ctrl+L)")
             lb.bind("<Button-1>", lambda e: self.toggle_lang(lb.winfo_rootx(), lb.winfo_rooty() + lb.winfo_height()))
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
-            self._ibtn(ctl, "◐", self.toggle_theme, tr("Light") if CFG["theme"] == "dark" else tr("Dark")).pack(side="right", padx=(0, 6))
+            self._ibtn(ctl, "◐", self.toggle_theme, tk_theme_tip(), on=bool(CFG.get("tk_night"))).pack(side="right", padx=(0, 6))   # Hell → Dunkel → Rotlicht (578)
             self._ibtn(ctl, "✉", self._messages_win, tr("Message list")).pack(side="right", padx=(0, 6))     # 2.98.13
             self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
@@ -53546,19 +53584,11 @@ class App:
                 pwf.pack(fill="x")
             sbody_ = sbody; sbody = pwf
             tk.Frame(sbody, bg=C["line"], height=1).pack(fill="x", pady=(10, 6))
-            tk.Label(sbody, text=tr("Web password").upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x")
-            ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",
-                          highlightthickness=1, highlightbackground=C["line"], highlightcolor=C["acc"])
-            self.pw_var = tk.StringVar()
-            tk.Entry(sbody, textvariable=self.pw_var, show="•", **ent_kw).pack(fill="x", pady=(4, 0))
-            bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(4, 0))
-            ttk.Button(bf, text=tr("Set password"), command=lambda: self._pw(True)).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf, text=tr("Remove password"), command=lambda: self._pw(False)).pack(side="left", expand=True, fill="x")
+            ttk.Label(sbody, text="🔐 " + tr("Password, users and app keys: Settings → Security"), style="Mut.TLabel", wraplength=330,
+                      justify="left").pack(anchor="w")                    # 573: moved there (one place for the security)
             ttk.Button(sbody, text="🔐 " + tr("Operator mode (lock settings)") + " …", command=self._lock).pack(fill="x", pady=(6, 0))  # (hidden while locked)
             ttk.Button(sbody, text="📱 " + tr("QR code for the phone") + " …", command=lambda: self._qr_window(False)).pack(fill="x", pady=(6, 0))
             ttk.Button(sbody, text="💬 " + tr("Feedback to the developer") + " …", command=self._feedback).pack(fill="x", pady=(6, 0))
-            self.status_labels["Web password"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
-            self.status_labels["Web password"].pack(anchor="w", pady=(4, 0))
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(8, 0))
             ttk.Button(bf, text=tr("Save settings …"), command=self._export).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Load settings …"), command=self._import).pack(side="left", expand=True, fill="x")
@@ -55106,15 +55136,15 @@ def _tune_win(self):
     b_undo = self._fbtn(bu, "↩ " + tr("Undo"), undo)
     head(5, "Keep it up")
     togs = {}
-    for key, title, note in (("auto_tune", "Auto-tuner at the real place", "adapts the sensitivity to the place all the time (wind, light); starts from the measured values"),
-                             ("train_night_on", "Training night", "every night test runs in several scenes and the same improving - only when protection is off"),
-                             ("weekcheck_on", "Weekly check", "every Sunday night a test run; a push when it got worse"),
-                             ("fa_learn_auto", "False alarm learning", "mark a recording with 👎 and the simulator re-enacts it and learns from it")):
+    # 2.98.24 («Sim-Schalter nur einmal»): Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen only once - in the window under
+    # «Einstellungen der Simulation» (web: the tiles of the Simulator centre)
+    for key, title, note in (("auto_tune", "Auto-tuner at the real place", "adapts the sensitivity to the place all the time (wind, light); starts from the measured values"),):
         row = tk.Frame(f, bg=C["panel"], padx=10, pady=6, highlightthickness=1, highlightbackground=C["line"]); row.pack(fill="x", pady=(0, 4))
         tg = Toggle(row, tr(title), bool(CFG.get(key)), lambda v, k=key: (tune_assist_set(k, v), paint())); tg.pack(fill="x")
         tk.Label(row, text=tr(note), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8), wraplength=460, justify="left", anchor="w").pack(fill="x")
         togs[key] = tg
     lab("🧰 " + tr("Single tools (Expert)") + ": " + tr("Test run, A/B comparison, thresholds automatic … in the tab Simulator, Simulator centre (view «Expert»)."))
+    lab("🎛 " + tr("Training night, weekly check, false alarm learning: tab Simulator, «Settings of the simulation» (web: tiles of the Simulator centre)."))
     def paint():
         if not w.winfo_exists():
             return
@@ -55144,6 +55174,489 @@ for _n, _f in (("_tk_bar", _tk_bar), ("_tk_history_bar", _tk_history_bar), ("_tk
                ("_tune_win", _tune_win)):
     setattr(App, _n, _f)
 # ----------------------------------------------------------------------------
+# Wunsch Daniel (29.10.2026):
+#  1  «App-Schlüssel» for other programs (Home Assistant, iPhone shortcuts, an older MoveEye in the device overview): since
+#     2.98.23 (574) the password is refused over plain http from other devices. A key is made with a name, shown ONCE in full,
+#     stored only as a hash in the settings folder (like the cookies of the trusted devices, 040 - same idea, for programs).
+#     It works as header «X-MoveEye-Key: <key>», «Authorization: Bearer <key>», as «?key=<key>» (simple shortcuts) and as the
+#     password of a Basic login (any user name: older MoveEye, Home Assistant «rest» with username/password) - also over http.
+#     A key can do what the administrator does EXCEPT the security: password, users, trusted devices, app keys, shortcut key,
+#     guest link, operator mode, settings file, «Log in only encrypted» and the update source (APPKEY_DENY_*). Wrong keys count
+#     like wrong passwords (8 in 5 minutes per address -> 5 minutes blocked, auth() in 550). The shortcut addresses
+#     /k/<key>/<action> (550) take an app key too.
+#  2  «Sicherheit an einem Ort»: Settings → Security (own group, web and window) holds the encrypted login (574), the web
+#     password, the users (+ trusted devices), the app keys and the security check (before: Tools). The old places keep a link.
+# ----------------------------------------------------------------------------
+_AK_CFG = {"app_keys": []}       # [{"id", "name", "h": sha256 of the key, "t0", "seen", "ip"}] - the key itself is never stored
+for _k, _v in _AK_CFG.items():
+    CFG.setdefault(_k, _v)
+    DEFAULTS.setdefault(_k, _v)
+APPKEY_PREFIX = "me_"
+APPKEY_MAX = 20
+APPKEY = {"seen": {}, "logged": {}}            # id -> last use (memory; saved at most once an hour), ip -> time of the last log line
+APPKEY_DENY_PATHS = {"/api/password", "/api/users", "/api/trusted", "/api/appkeys", "/api/shortcut", "/api/setup",
+                     "/api/settings/import", "/api/settings/export", "/api/lock", "/api/dev"}
+APPKEY_DENY_POST = {"/api/guest", "/api/ext"}  # reading is fine (links for Home Assistant), making new secret addresses is not
+APPKEY_DENY_KEYS = {"login_https_only", "https_extra", "web_port", "lock_on", "lock_pin", "update_unsigned", "update_url",
+                    "update_token", "protect_pin", "users", "trusted", "app_keys", "shortcut_token", "web_pw_hash", "guest_token", "ext_token"}
+LOCK_DENY_PATHS.add("/api/appkeys")             # operator mode (390): no new keys either
+# wraps: DEMO_BLOCK
+DEMO_BLOCK = tuple(DEMO_BLOCK) + ("/api/appkeys",)
+SIMPLE_SECTIONS.add("Security")                 # the password lives here now: always shown (also «Simple»)
+
+
+def _appkey_hash(key):
+    import hashlib
+    return hashlib.sha256(("mw-appkey|" + str(key)).encode()).hexdigest()
+
+
+def appkey_entries():
+    """the stored keys (cleaned: a broken settings file never gives a key without hash)"""
+    out = []
+    for e in (CFG.get("app_keys") or [])[:APPKEY_MAX]:
+        if isinstance(e, dict) and re.fullmatch(r"[0-9a-f]{64}", str(e.get("h", ""))) and re.fullmatch(r"[0-9a-f]{6,16}", str(e.get("id", ""))):
+            out.append(e)
+    return out
+
+
+def appkey_find(key):
+    """the entry of this key, or None (compares the hashes in constant time)"""
+    if not isinstance(key, str) or not (10 <= len(key) <= 120):
+        return None
+    h = _appkey_hash(key.strip())
+    hit = None
+    for e in appkey_entries():
+        if hmac.compare_digest(str(e.get("h", "")), h):
+            hit = e
+    return hit
+
+
+def appkey_from_request(req):
+    """the key a program sends, or None (header, Bearer, ?key=, Basic password starting with «me_»)"""
+    k = req.headers.get("X-MoveEye-Key")
+    if k:
+        return k.strip()
+    a = str(req.headers.get("Authorization") or "")
+    if a[:7].lower() == "bearer ":
+        return a[7:].strip()
+    k = req.args.get("key")
+    if k:
+        return k.strip()
+    au = req.authorization
+    if au is not None and str(getattr(au, "type", "basic") or "basic").lower() == "basic" and str(au.password or "").startswith(APPKEY_PREFIX):
+        return str(au.password)
+    return None
+
+
+def appkey_seen(e, ip):
+    now = time.time()
+    APPKEY["seen"][e["id"]] = now
+    if now - float(e.get("seen") or 0) > 3600:
+        e["seen"] = int(now); e["ip"] = str(ip)[:45]
+        save_settings()
+
+
+def appkey_denied(path, method, d):
+    """True = an app key may not do this (the security of MoveEye stays with the owner)"""
+    if path in APPKEY_DENY_PATHS or path.startswith("/api/dev/"):
+        return True
+    if method == "POST" and path in APPKEY_DENY_POST:
+        return True
+    if method == "POST" and path in ("/api/set", "/api/text", "/api/quick") and isinstance(d, dict):
+        k = str(d.get("key") or "")
+        sec = {x[1] for x in list(TOGGLES) + list(SLIDERS) + list(TEXTS) if x and x[0] == "Security"}
+        return k in APPKEY_DENY_KEYS or k in sec
+    return False
+
+
+def appkey_guard(req):
+    """after a good key: None, or the 403 answer for the security functions"""
+    d = req.get_json(force=True, silent=True) if req.method == "POST" else None
+    if not appkey_denied(req.path, req.method, d):
+        return None
+    L = norm_lang((d.get("lang") if isinstance(d, dict) else None) or req.args.get("lang") or CFG["lang"])
+    return _seclogin_json({"ok": False, "error": tr("An app key cannot change the password, the users, the app keys or the security settings", L)}, 403)
+
+
+def appkey_refused(req, ip):
+    """a wrong or blocked key: 401 without «WWW-Authenticate» (no password question in a browser), logged once a minute"""
+    now = time.time()
+    if now - APPKEY["logged"].get(ip, 0) > 60:
+        APPKEY["logged"][ip] = now
+        if len(APPKEY["logged"]) > 200:
+            APPKEY["logged"].clear()
+        log_event("web", f"Wrong or blocked app key from {ip} ({req.path[:40]})")
+    L = norm_lang(req.args.get("lang") or CFG["lang"])
+    return _seclogin_json({"ok": False, "error": tr("unknown or blocked app key", L)}, 401)
+
+
+def appkey_list():
+    out = []
+    for e in appkey_entries():
+        seen = max(float(e.get("seen") or 0), float(APPKEY["seen"].get(e["id"], 0)))
+        out.append({"id": e["id"], "name": e.get("name") or "?", "t0": int(e.get("t0") or 0), "seen": int(seen), "ip": e.get("ip") or ""})
+    return out
+
+
+def appkey_create(name, who="web"):
+    """(ok, error, key): the key is only returned here - once"""
+    name = re.sub(r"[\x00-\x1f<>]", "", str(name or "")).strip()[:40]
+    if not name:
+        return False, "give the key a name (e.g. Home Assistant)", ""
+    lst = appkey_entries()
+    if len(lst) >= APPKEY_MAX:
+        return False, "at most 20 app keys", ""
+    if any(str(e.get("name", "")).lower() == name.lower() for e in lst):
+        return False, "this name exists already", ""
+    key = APPKEY_PREFIX + secrets.token_urlsafe(24)
+    now = int(time.time())
+    lst.append({"id": secrets.token_hex(4), "name": name, "h": _appkey_hash(key), "t0": now, "seen": 0, "ip": ""})
+    CFG["app_keys"] = lst
+    save_settings_now()
+    log_event("web", f"{who}: app key «{name}» made")
+    return True, "", key
+
+
+def appkey_revoke(kid, who="web"):
+    lst = appkey_entries()
+    e = next((x for x in lst if x["id"] == str(kid or "")), None)
+    if e is None:
+        return False, "unknown app key"
+    CFG["app_keys"] = [x for x in lst if x is not e]
+    APPKEY["seen"].pop(e["id"], None)
+    save_settings_now()
+    log_event("web", f"{who}: app key «{e.get('name')}» blocked")
+    return True, ""
+
+
+# ---- the security check (300) translated on the server: the same lines for the web page and the window --------------------
+def seccheck_start():
+    T = TOOLS["sec"]
+    if T.get("running"):
+        return False
+
+    def run():
+        try:
+            security_check()
+        finally:
+            T["running"] = False
+    T["running"] = True
+    threading.Thread(target=run, daemon=True, name="tool-sec").start()
+    return True
+
+
+def seccheck_state(lang=None):
+    T = TOOLS["sec"]
+    items = [{"level": it.get("level", "info"), "text": (tr(it.get("text", ""), lang) + (" " + str(it["arg"]) if it.get("arg") else "")).strip(),
+              "tip": tr(it["tip"], lang) if it.get("tip") else ""} for it in (T.get("items") or [])]
+    nb = sum(1 for x in items if x["level"] == "bad"); nw = sum(1 for x in items if x["level"] == "warn")
+    return {"ok": True, "running": bool(T.get("running")), "t": T.get("t") or 0, "items": items, "bad": nb, "warn": nw}
+
+
+def appkey_routes(app, reply, body):
+    """the addresses (called once by the web server, 550)"""
+    from flask import request, g
+
+    @app.route("/api/appkeys", methods=["GET", "POST"])
+    def api_appkeys():
+        if getattr(g, "role", "admin") != "admin" or getattr(g, "appkey", None):
+            return reply({"ok": False, "error": "not allowed"}, 403)
+        if request.method == "GET":
+            return reply({"ok": True, "keys": appkey_list(), "pw": web_pw_active(), "plain": seclogin_plain(request)})
+        d = body(); lang = norm_lang(d.get("lang")); a = d.get("action")
+        who = getattr(g, "user", "") or "admin"
+        if a == "create":
+            if seclogin_plain(request):                # the key would go unencrypted through the network (574)
+                url = seclogin_url(request).split("/api/")[0] + "/"
+                return reply({"ok": False, "error": tr("For your safety an app key can only be made over the secure page", lang) + ": " + url, "https": url}, 403)
+            ok, err, key = appkey_create(d.get("name"), who)
+            return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "key": key, "keys": appkey_list()}, 200 if ok else 400)
+        if a == "revoke":
+            ok, err = appkey_revoke(d.get("id"), who)
+            return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "keys": appkey_list()}, 200 if ok else 400)
+        return reply({"ok": False, "error": tr_err("unknown action", lang)}, 400)
+
+    @app.route("/api/seccheck", methods=["GET", "POST"])
+    def api_seccheck():
+        if getattr(g, "role", "admin") != "admin":
+            return reply({"ok": False, "error": "not allowed"}, 403)
+        lang = norm_lang(request.args.get("lang") or (body().get("lang") if request.method == "POST" else None))
+        if request.method == "POST":
+            if seccheck_start():
+                log_event("web", f"Security check started ({request.remote_addr or '?'})")
+        return reply(seccheck_state(lang))
+
+
+# ---- web page: the section «Security» (530 calls secExtras; this script fills it) -------------------------------------------
+SECPANEL_JS = r"""
+<script>
+(function () {
+  try { const D = /*AKDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
+  try { if (typeof LANG !== "undefined" && LANG && typeof applyI18n === "function") applyI18n(); } catch (e) {}   // the static texts (530 ran first)
+  const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
+  const T = x => (typeof t === "function" ? t(x) : x);
+  const L = () => (typeof LANG !== "undefined" ? LANG : "en");
+  const d2 = n => { if (!n) return "–"; const d = new Date(n * 1000); return d.toLocaleDateString() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2); };
+  const head = (box, txt) => { const h = E("div", "", txt); h.style.cssText = "font-weight:700;margin:14px 0 4px"; box.appendChild(h); return h; };
+  const copy = (txt, done) => { const ok = () => { if (typeof toast === "function") toast("✓ " + T("Copied")); if (done) done(); };
+    try { navigator.clipboard.writeText(txt).then(ok, () => { prompt(T("Copy"), txt); }); } catch (e) { prompt(T("Copy"), txt); } };
+  // -- web password (the dialog of 530) --
+  function pwBlock(box) {
+    head(box, "🔒 " + T("Web password"));
+    const info = E("div", "mut"); info.id = "pw-info"; box.appendChild(info);
+    const b = E("button", "sec", "🔒 " + T("Set / change the web password")); b.type = "button"; b.style.marginTop = "6px";
+    b.onclick = () => { if (typeof pwDialog === "function") pwDialog(false); }; box.appendChild(b);
+  }
+  // -- app keys --
+  async function akLoad(box) {
+    let j = null; try { j = await (await fetch("/api/appkeys", {cache: "no-store"})).json(); } catch (e) { return; }
+    box.textContent = "";
+    head(box, "🔑 " + T("App keys"));
+    box.appendChild(E("div", "mut", T("ak-note")));
+    if (!j || !j.ok) { box.appendChild(E("div", "err", "⚠ " + ((j && j.error) || "error"))); return; }
+    if (!j.pw) box.appendChild(E("div", "mut", "ℹ " + T("Without a web password every program can use MoveEye anyway - keys are needed only with a password.")));
+    (j.keys || []).forEach(k => {
+      const r = E("div", "sens-card"), r1 = E("div", "row"); r1.style.gap = "8px";
+      const tx = E("div", ""); tx.style.flex = "1";
+      tx.append(E("b", "", "🔑 " + k.name), E("div", "mut", T("made") + " " + d2(k.t0) + " · " + T("last used") + " " + (k.seen ? d2(k.seen) + (k.ip ? " · " + k.ip : "") : T("never"))));
+      const bl = E("button", "red", "⛔ " + T("Block")); bl.type = "button";
+      bl.onclick = async () => { if (!confirm(T("Block this key? Programs that use it get no access any more.") + "\n" + k.name)) return;
+        const r_ = await post("/api/appkeys", {action: "revoke", id: k.id, lang: L()}); if (!r_.ok) toast("⚠ " + (r_.error || "error")); akLoad(box); };
+      r1.append(tx, bl); r.appendChild(r1); box.appendChild(r);
+    });
+    if (!(j.keys || []).length) box.appendChild(E("div", "mut", T("No app keys yet.")));
+    const add = E("div", "row"); add.style.cssText = "gap:8px;margin-top:8px";
+    const nm = E("input"); nm.type = "text"; nm.maxLength = 40; nm.placeholder = T("Name (e.g. Home Assistant)"); nm.style.flex = "1"; nm.id = "ak-name";
+    const ab = E("button", "", "+ " + T("Make an app key")); ab.type = "button"; ab.id = "ak-add";
+    const er = E("div", "err"), out = E("div", "");
+    ab.onclick = async () => { er.textContent = ""; const r_ = await post("/api/appkeys", {action: "create", name: nm.value, lang: L()});
+      if (!r_.ok) { er.textContent = "⚠ " + (r_.error || "error"); if (r_.https) { const a = E("a", "btn sec", "🔒 " + T("To the secure page")); a.href = r_.https; a.style.cssText = "display:inline-block;margin-top:6px"; er.appendChild(E("br")); er.appendChild(a); } return; }
+      akShow(box, r_.key, nm.value); };
+    add.append(nm, ab); box.append(add, er, out);
+    if (j.plain) box.appendChild(E("div", "mut", "🔓 " + T("New keys only over the secure page (https) - the key would go unencrypted through the network.")));
+    const ex = E("details", ""); ex.style.marginTop = "8px"; ex.appendChild(E("summary", "", T("Example: Home Assistant and iPhone shortcuts")));
+    const base = location.protocol + "//" + location.host;
+    const pre = E("pre", ""); pre.style.cssText = "white-space:pre-wrap;font-size:12px;overflow:auto;padding:8px;border:1px solid var(--line);border-radius:8px";
+    pre.textContent = "# Home Assistant (configuration.yaml)\nrest:\n  - resource: " + base + "/api/state\n    headers:\n      X-MoveEye-Key: !secret moveeye_key\n    sensor:\n      - name: MoveEye Personen\n        value_template: \"{{ value_json.persons }}\"\n\n"
+      + "# " + T("iPhone shortcut «Get contents of URL»") + "\n" + base + "/k/me_…/status\n" + base + "/api/state?key=me_…";
+    ex.appendChild(pre); box.appendChild(ex);
+  }
+  function akShow(box, key, name) {
+    const ov = E("div", "sx-ak"); ov.style.cssText = "position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px";
+    const c = E("div", "card"); c.style.cssText = "max-width:440px;width:100%;text-align:left"; ov.appendChild(c);
+    c.appendChild(E("h3", "", "🔑 " + T("App key") + " «" + name + "»"));
+    c.appendChild(E("div", "", T("Copy the key now - it is shown only this one time. MoveEye keeps only a fingerprint of it.")));
+    const k = E("code", ""); k.id = "ak-key"; k.textContent = key; k.style.cssText = "display:block;margin:10px 0;padding:10px;border:1px solid var(--line);border-radius:8px;word-break:break-all;font-size:14px;user-select:all";
+    c.appendChild(k);
+    const bb = E("div", "btns"), cp = E("button", "", "📋 " + T("Copy")), cl = E("button", "sec", T("Done")); cp.type = cl.type = "button";
+    cp.onclick = () => copy(key); cl.onclick = () => { ov.remove(); akLoad(box); }; bb.append(cp, cl); c.appendChild(bb);
+    document.body.appendChild(ov);
+  }
+  // -- security check (before: Tools) --
+  async function scPaint(box, j) {
+    const list = box.querySelector(".sc-list"), btn = box.querySelector(".sc-btn"); list.textContent = "";
+    btn.disabled = !!j.running; btn.textContent = j.running ? T("running…") : "🛡 " + T("Check now");
+    (j.items || []).forEach(it => { const r = E("div", ""); r.style.margin = "4px 0";
+      r.append(E("span", "", it.level === "bad" ? "❌ " : it.level === "warn" ? "⚠️ " : it.level === "ok" ? "✅ " : "ℹ️ "), E("span", "", it.text));
+      if (it.tip) { r.appendChild(E("br")); r.appendChild(E("span", "mut", it.tip)); } list.appendChild(r); });
+    if (j.t && !j.running) list.appendChild(E("div", "mut", d2(j.t)));
+    if (j.running) setTimeout(async () => { try { scPaint(box, await (await fetch("/api/seccheck?lang=" + L(), {cache: "no-store"})).json()); } catch (e) {} }, 1500);
+  }
+  function scBlock(box) {
+    head(box, "🛡 " + T("Security check"));
+    box.appendChild(E("div", "mut", T("What can be reached from the network or the internet, and what is risky.")));
+    const b = E("button", "sec sc-btn", "🛡 " + T("Check now")); b.type = "button"; b.style.marginTop = "6px";
+    b.onclick = async () => { b.disabled = true; try { scPaint(box, await (await fetch("/api/seccheck", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({lang: L()})})).json()); } catch (e) { b.disabled = false; } };
+    box.append(b, E("div", "sc-list"));
+    fetch("/api/seccheck?lang=" + L(), {cache: "no-store"}).then(r => r.json()).then(j => scPaint(box, j)).catch(() => {});
+  }
+  window.secPanel = function (d) {
+    if (d.querySelector("#secpanel")) return;
+    const p = E("div", "auxbox"); p.id = "secpanel";
+    const pw = E("div", "l-hide"), us = E("div", "l-hide"), ak = E("div", "l-hide"), sc = E("div", "");
+    pwBlock(pw);
+    head(us, "👥 " + T("Users")); const ub = E("div", ""); ub.id = "users-box"; us.appendChild(ub);
+    p.append(pw, us, ak, sc); d.appendChild(p);
+    scBlock(sc); akLoad(ak);
+    try { if (typeof MAINSW === "object") MAINSW["grp:security"] = MAINSW["sec:Security"] = (c, s) => !!s.pw_set; } catch (e) {}
+  };
+})();
+</script>
+"""
+WEB_PAGE = WEB_PAGE.replace("</body>", SECPANEL_JS + "</body>", 1)
+
+
+# ---- window (Tkinter): the same in Settings → Security ------------------------------------------------------------------------
+def _ak_tk_build_section(self, sec, sbody, settings_parent=None):
+    _ak_tk_build_section_before(self, sec, sbody, settings_parent)
+    if sec != "Security":
+        return
+    try:
+        _ak_tk_security(self, sbody)
+    except Exception as e:
+        log_event("sys", f"Window: security section: {e}"[:160])
+
+
+def _ak_tk_line(sbody, text):
+    tk.Frame(sbody, bg=C["line"], height=1).pack(fill="x", pady=(10, 6))
+    tk.Label(sbody, text=text.upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 7, "bold"), anchor="w").pack(fill="x")
+
+
+def _ak_tk_security(app, sbody):
+    ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat",
+                  highlightthickness=1, highlightbackground=C["line"], highlightcolor=C["acc"])
+    if CFG["lock_on"]:                               # operator mode: password, users and keys are off limits (like before)
+        ttk.Label(sbody, text="🔐 " + tr("Operator mode is on"), style="Mut.TLabel").pack(anchor="w", pady=(8, 0))
+    else:
+        # web password (moved here from «Setup»)
+        _ak_tk_line(sbody, tr("Web password"))
+        app.pw_var = tk.StringVar()
+        tk.Entry(sbody, textvariable=app.pw_var, show="•", **ent_kw).pack(fill="x", pady=(4, 0))
+        bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(4, 0))
+        ttk.Button(bf, text=tr("Set password"), command=lambda: app._pw(True)).pack(side="left", expand=True, fill="x", padx=(0, 4))
+        ttk.Button(bf, text=tr("Remove password"), command=lambda: app._pw(False)).pack(side="left", expand=True, fill="x")
+        app.status_labels["Web password"] = ttk.Label(sbody, text=tr("Web password") + ": " + (tr("set") if web_pw_active() else "–"),
+                                                     style="Mut.TLabel", wraplength=330, justify="left")
+        app.status_labels["Web password"].pack(anchor="w", pady=(4, 0))
+        # users
+        _ak_tk_line(sbody, tr("Users"))
+        uf = tk.Frame(sbody, bg=C["panel"]); uf.pack(fill="x")
+        _ak_tk_users(app, uf)
+        # app keys
+        _ak_tk_line(sbody, tr("App keys"))
+        ttk.Label(sbody, text=tr("ak-note"), style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(2, 0))
+        kf = tk.Frame(sbody, bg=C["panel"]); kf.pack(fill="x")
+        _ak_tk_keys(app, kf)
+    app.status_labels["App keys"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+    app.status_labels["App keys"].pack(anchor="w", pady=(4, 0))
+    # security check (before: only on the web page Tools)
+    _ak_tk_line(sbody, tr("Security check"))
+    ttk.Label(sbody, text=tr("What can be reached from the network or the internet, and what is risky."), style="Mut.TLabel",
+              wraplength=330, justify="left").pack(anchor="w", pady=(2, 0))
+    res = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+
+    def paint():
+        try:
+            if not res.winfo_exists():
+                return
+        except Exception:
+            return
+        s = seccheck_state()
+        sym = {"bad": "✗ ", "warn": "⚠ ", "ok": "✓ "}
+        lines = [sym.get(x["level"], "· ") + x["text"] + (("\n    " + x["tip"]) if x["tip"] else "") for x in s["items"]]
+        res.config(text=(tr("running…") + "\n" if s["running"] else "") + "\n".join(lines)
+                   + (("\n" + datetime.fromtimestamp(s["t"]).strftime("%d.%m. %H:%M")) if s["t"] and not s["running"] else ""))
+        if s["running"]:
+            app.root.after(1500, paint)
+    ttk.Button(sbody, text="🛡 " + tr("Check now"), command=lambda: (seccheck_start(), app.root.after(300, paint))).pack(fill="x", pady=(6, 0))
+    res.pack(anchor="w", pady=(4, 0))
+    paint()
+
+
+def _ak_tk_users(app, box):
+    for w in box.winfo_children():
+        w.destroy()
+    if not web_pw_active():
+        ttk.Label(box, text="⚠ " + tr("set the web password first (it is the administrator)"), style="Mut.TLabel", wraplength=330).pack(anchor="w", pady=(4, 0))
+        return
+    roles = {"operate": tr("operate"), "view": tr("view only")}
+
+    def act(d):
+        ok, err = users_action(d, "window")
+        if not ok:
+            app._status("App keys", "⚠ " + tr_err(err))
+        _ak_tk_users(app, box)
+    for u in CFG["users"]:
+        r = tk.Frame(box, bg=C["panel"]); r.pack(fill="x", pady=(4, 0))
+        tk.Label(r, text="👤 " + u["name"] + " · " + roles.get(u["role"], u["role"]), bg=C["panel"], fg=C["txt"], anchor="w").pack(side="left", fill="x", expand=True)
+        ttk.Button(r, text="✕", width=3, command=lambda n=u["name"]: act({"action": "remove", "name": n})).pack(side="right")
+    ent_kw = dict(bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat", highlightthickness=1, highlightbackground=C["line"])
+    nv, pv = tk.StringVar(), tk.StringVar()
+    f = tk.Frame(box, bg=C["panel"]); f.pack(fill="x", pady=(6, 0))
+    tk.Entry(f, textvariable=nv, width=12, **ent_kw).pack(side="left", fill="x", expand=True)
+    tk.Entry(f, textvariable=pv, width=12, show="•", **ent_kw).pack(side="left", fill="x", expand=True, padx=(4, 0))
+    rc = ttk.Combobox(box, state="readonly", values=[roles["operate"], roles["view"]]); rc.current(0); rc.pack(fill="x", pady=(4, 0))
+    ttk.Button(box, text="+ " + tr("Add user") + "  (" + tr("Name") + " · " + tr("Password (6–64)") + ")",
+               command=lambda: act({"action": "add", "name": nv.get(), "password": pv.get(), "role": "operate" if rc.current() == 0 else "view"})).pack(fill="x", pady=(4, 0))
+
+
+def _ak_tk_keys(app, box):
+    for w in box.winfo_children():
+        w.destroy()
+    for k in appkey_list():
+        r = tk.Frame(box, bg=C["panel"]); r.pack(fill="x", pady=(4, 0))
+        seen = datetime.fromtimestamp(k["seen"]).strftime("%d.%m. %H:%M") if k["seen"] else tr("never")
+        tk.Label(r, text="🔑 " + k["name"] + "\n" + tr("made") + " " + datetime.fromtimestamp(k["t0"]).strftime("%d.%m.%Y") + " · " + tr("last used") + " " + seen,
+                 bg=C["panel"], fg=C["txt"], anchor="w", justify="left").pack(side="left", fill="x", expand=True)
+
+        def block(kid=k["id"], name=k["name"]):
+            from tkinter import messagebox
+            if messagebox.askyesno("MoveEye", tr("Block this key? Programs that use it get no access any more.") + "\n" + name, parent=app.root):
+                appkey_revoke(kid, "window"); _ak_tk_keys(app, box)
+        ttk.Button(r, text="⛔ " + tr("Block"), command=block).pack(side="right")
+    nv = tk.StringVar()
+    tk.Entry(box, textvariable=nv, bg=C["field"], fg=C["txt"], insertbackground=C["txt"], relief="flat", highlightthickness=1,
+             highlightbackground=C["line"]).pack(fill="x", pady=(6, 0))
+
+    def make():
+        ok, err, key = appkey_create(nv.get(), "window")
+        if not ok:
+            app._status("App keys", "⚠ " + tr_err(err)); return
+        _ak_tk_keys(app, box); _ak_tk_show(app, nv.get().strip(), key)
+    ttk.Button(box, text="+ " + tr("Make an app key") + "  (" + tr("Name (e.g. Home Assistant)") + ")", command=make).pack(fill="x", pady=(4, 0))
+
+
+def _ak_tk_show(app, name, key):
+    win = tk.Toplevel(app.root); win.title("MoveEye"); win.configure(bg=C["panel"]); win.transient(app.root)
+    tk.Label(win, text="🔑 " + tr("App key") + " «" + name + "»", bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11, "bold")).pack(anchor="w", padx=14, pady=(12, 4))
+    tk.Label(win, text=tr("Copy the key now - it is shown only this one time. MoveEye keeps only a fingerprint of it."), bg=C["panel"], fg=C["mut"],
+             wraplength=380, justify="left").pack(anchor="w", padx=14)
+    e = tk.Entry(win, bg=C["field"], fg=C["txt"], relief="flat", width=44); e.insert(0, key); e.config(state="readonly"); e.pack(fill="x", padx=14, pady=8)
+
+    def cp():
+        win.clipboard_clear(); win.clipboard_append(key); app._status("App keys", "✓ " + tr("Copied"))
+    bf = tk.Frame(win, bg=C["panel"]); bf.pack(fill="x", padx=14, pady=(0, 12))
+    ttk.Button(bf, text="📋 " + tr("Copy"), command=cp).pack(side="left", expand=True, fill="x", padx=(0, 4))
+    ttk.Button(bf, text=tr("Done"), command=win.destroy).pack(side="left", expand=True, fill="x")
+
+
+_ak_tk_build_section_before = App._build_section
+# wraps: App._build_section
+App._build_section = _ak_tk_build_section
+
+
+# ---- self-test ----------------------------------------------------------------------------------------------------------------
+def appkey_selftest():
+    keep = (list(CFG.get("app_keys") or []), CFG.get("lang"))
+    try:
+        CFG["app_keys"] = []
+        _save, globals()["save_settings_now"] = globals()["save_settings_now"], lambda: None
+        try:
+            ok, err, key = appkey_create("Home Assistant", "test")
+            assert ok and key.startswith(APPKEY_PREFIX) and len(key) > 30
+            assert key not in json.dumps(CFG["app_keys"]), "the key itself must never be stored"
+            assert appkey_find(key) and appkey_find(key)["name"] == "Home Assistant" and appkey_find(key + "x") is None and appkey_find("") is None
+            assert not appkey_create("home assistant", "test")[0], "the same name twice"
+            for p in ("/api/password", "/api/users", "/api/appkeys", "/api/trusted", "/api/settings/import", "/api/setup"):
+                assert appkey_denied(p, "POST", {}), p
+            assert appkey_denied("/api/set", "POST", {"key": "login_https_only", "value": False})
+            assert appkey_denied("/api/set", "POST", {"key": "update_unsigned", "value": True})
+            assert not appkey_denied("/api/arm", "POST", {}) and not appkey_denied("/api/state", "GET", None)
+            assert not appkey_denied("/api/set", "POST", {"key": "sensitivity", "value": 50})
+            kid = appkey_find(key)["id"]
+            assert appkey_revoke(kid, "test")[0] and appkey_find(key) is None
+        finally:
+            globals()["save_settings_now"] = _save
+        for k_ in ("ak-note", "App keys", "Block", "An app key cannot change the password, the users, the app keys or the security settings"):
+            assert tr(k_, "de") != k_ and tr(k_, "fr") != k_, "not translated: " + k_
+        assert "/*AKDE*/" not in WEB_PAGE and "secPanel" in WEB_PAGE
+    finally:
+        CFG["app_keys"], CFG["lang"] = keep
+    return True
+
+
+SELFTEST_EXTRA.append(("App keys (hash only, no security changes)", appkey_selftest))
+# ----------------------------------------------------------------------------
 # Wunsch Daniel (29.10.2026): the web password must not travel unencrypted over the network.
 #   * A login (the browser's password question, the password of a program, setting a password) over plain http is only
 #     taken from this device itself (127.0.0.1, its own addresses) and from encrypted ways: the secure page (https,
@@ -55170,7 +55683,7 @@ SECLOGIN = {"own": (0.0, frozenset()), "logged": {}, "fallback_logged": False}
 SECLOGIN_NOTE = ("The password is only accepted over the secure page (https://…:port + 1) or from this device itself. Over plain http "
                  "everybody in the same Wi-Fi (camping!) could read it. The browser warns once about the certificate (it is made by MoveEye "
                  "itself) - accept it once. Tailscale and «https over Tailscale» are encrypted and work as before. Links with their own key "
-                 "(buttons in the push message, guests, shares) keep working. Programs (Home Assistant, shortcuts) use the https address too.")
+                 "(buttons in the push message, guests, shares) keep working. Programs (Home Assistant, shortcuts) use an app key (below) or the https address.")
 
 
 def _seclogin_ip(s):
@@ -55716,8 +56229,9 @@ def nachlauf_selftest():
 #     Wachsam». Nicht nach einem Update / Neustart (die enden sauber, 390 run_state.json «clean»).
 #  3  Fehlermeldungen des Web-Servers in der eigenen Sprache als kleine Seite (Anmeldung, zu viele Versuche, fremde Seite,
 #     Gast-Link, unbekannte Adresse). Basic-Realm «MoveEye» (Gäste sehen ihn); das Vertrauens-Cookie bleibt gleich.
-#  4  «Dunkle Ansicht» (bis 2.98.22 «Nachtblick»): ganze Seite sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt (pro Browser gemerkt);
-#     im Fenster ein Knopf ◑ (Einstellung tk_night).
+#  4  «Rotlicht-Ansicht» (bis 2.98.22 «Nachtblick», 2.98.23 «Dunkle Ansicht»): ganze Seite sehr dunkel und rot, Livebild gedimmt – für
+#     einen kurzen Blick im Zelt (pro Browser gemerkt, mw-night). Ab 573 die 3. Stufe des Knopfs «Hell / dunkel»: Hell → Dunkel → Rotlicht
+#     (Web 510/530 toggleTheme, Fenster ◐ mit tk_night) - kein eigener 🌑-Knopf und kein Schnellschalter mehr.
 #  5  Bildschirmleser: Knöpfe und Symbole bekommen aria-label / title in der eigenen Sprache (Hauptseite, Kopf, Navigation).
 #  6  «Aufnahmen nach … Tagen löschen» (0 = nie) neben der Grössen-Grenze; Knopf «Ferien vorbei: alle Aufnahmen löschen»
 #     (Bestätigung; ⭐ Favoriten bleiben, ausser man hakt es an).
@@ -56146,13 +56660,12 @@ html.sxnight img,html.sxnight video,html.sxnight canvas{filter:grayscale(1) brig
 html.sxnight::after{content:"";position:fixed;inset:0;background:#b81400;mix-blend-mode:multiply;pointer-events:none;z-index:2147483647}
 html.sxnight button,html.sxnight .btn,html.sxnight input,html.sxnight select,html.sxnight textarea{background-color:#0d0101!important;color:#b8322a!important;border-color:#3a0a08!important}
 html.sxnight .badge{background:#0d0101!important;color:#a52a20!important;border-color:#3a0a08!important}
-#btn-night[aria-pressed=true]{background:#5a0d08!important;color:#ff6a50!important}
+#btn-theme.thred{background:#5a0d08!important;color:#ff6a50!important}
 .sx-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style><script>try{if(localStorage.getItem("mw-night")==="1")document.documentElement.classList.add("sxnight")}catch(e){}</script>"""
 
 # the texts the script needs (English key -> translated by the page language)
-SX_JS_KEYS = ["Dark view", "Dark view: very dark and red, the live picture dimmed - for a short look in the tent", "Dark view on - tap 🌑 again to switch it off",
-              "Dark view off", "View", "Settings panel", "Full screen", "Light / dark", "Language", "Exit full screen", "Close", "Copy", "Standard text",
+SX_JS_KEYS = ["Red light view", "Light", "Dark", "Light / dark / red light", "View", "Settings panel", "Full screen", "Light / dark", "Language", "Exit full screen", "Close", "Copy", "Standard text",
               "Up", "Down", "Remove", "Edit", "Refresh", "Help", "Menu", "Play", "Pause", "Stop", "Delete", "Back", "Next", "Previous", "Settings",
               "Live picture", "Main navigation", "Sub navigation", "Show settings", "Hide settings", "More", "Search", "Expand all", "Collapse all",
               "Listen", "Centre", "Other side", "Take a photo", "Favourite", "Download", "Share", "Zoom in", "Zoom out", "Mute", "Sound on",
@@ -56184,29 +56697,18 @@ const say = m => { if (typeof toast === "function") { try { toast(m); return; } 
 // German texts of this script also for the page itself (quick switch label)
 try { if (typeof I18N !== "undefined" && I18N.de) Object.keys(TX.de || {}).forEach(k => { if (!I18N.de[k]) I18N.de[k] = TX.de[k]; }); } catch (e) {}
 
-// ---- 4: night view ----
-const isN = () => H.classList.contains("sxnight");
-function paintN() { const b = D.getElementById("btn-night"); if (!b) return; b.setAttribute("aria-pressed", isN() ? "true" : "false");
-  b.title = T("Dark view: very dark and red, the live picture dimmed - for a short look in the tent"); b.setAttribute("aria-label", T("Dark view")); }
-function setN(on) { H.classList.toggle("sxnight", on); try { localStorage.setItem("mw-night", on ? "1" : "0"); } catch (e) {}
-  paintN(); say(on ? "🌑 " + T("Dark view on - tap 🌑 again to switch it off") : T("Dark view off")); }
-window.sxNight = setN;
-function addBtn() {
-  if (D.getElementById("btn-night")) return;
-  const hdr = D.querySelector("header"); if (!hdr) return;
-  const b = D.createElement("button"); b.type = "button"; b.id = "btn-night"; b.className = "sec"; b.textContent = "🌑";
-  b.onclick = () => setN(!isN());
-  const th = D.getElementById("btn-theme"), hc = hdr.querySelector(".hdr-ctl");
-  if (th && th.parentNode) th.parentNode.insertBefore(b, th); else if (hc) hc.insertBefore(b, hc.firstChild); else { b.style.marginLeft = "auto"; hdr.appendChild(b); }
-  paintN();
-}
-try { if (typeof QS !== "undefined" && Array.isArray(QS) && !QS.some(q => q.id === "night"))
-  QS.push({id: "night", ic: "🌑", lb: "Dark view", tip: "Dark view: very dark and red, the live picture dimmed - for a short look in the tent",
-           on: () => isN(), go: () => { setN(!isN()); return {ok: true}; }}); } catch (e) {}
+// ---- 4: «Rotlicht-Ansicht» = the 3rd step of the button «Hell / dunkel» (toggleTheme in 510 / 530: Hell → Dunkel → Rotlicht) ----
+const STEP = {light: "Light", dark: "Dark", red: "Red light view"};
+const stepNow = () => H.classList.contains("sxnight") ? "red" : (typeof THEME !== "undefined" && THEME === "light") ? "light" : "dark";
+function paintN() { const b = D.getElementById("btn-theme"); if (!b) return; const s = stepNow(), n = {light: "dark", dark: "red", red: "light"}[s];
+  const tt = T("Light / dark / red light") + ": " + T(STEP[s]) + " → " + T(STEP[n]);
+  if (b.getAttribute("title") !== tt) { b.setAttribute("title", tt); b.setAttribute("aria-label", tt); b.dataset.sxA = tt; b.dataset.sxT = tt; }
+  b.classList.toggle("thred", s === "red"); }
+window.sxThemeSaid = n => { paintN(); say((n === "red" ? "◉ " : n === "light" ? "☀ " : "☾ ") + T(STEP[n])); };
 
 // ---- 5: names for screen readers ----
-const ID = {"btn-view": "View", "btn-side": "Settings panel", "btn-fs": "Full screen", "btn-theme": "Light / dark", "btn-lang": "Language",
-  "btn-night": "Dark view", "vo-exit": "Exit full screen", "side-close": "Hide settings", "side-open": "Show settings", "all-open": "Expand all",
+const ID = {"btn-view": "View", "btn-side": "Settings panel", "btn-fs": "Full screen", "btn-lang": "Language",
+  "vo-exit": "Exit full screen", "side-close": "Hide settings", "side-open": "Show settings", "all-open": "Expand all",
   "all-close": "Collapse all", "b-sim": "Simulation off", "b-arm": "Protection state", "b-health": "Self-check", "b-lock": "Operator mode", "b-mode": "Mode",
   "btn-listen": "Listen", "stick-listen": "Listen", "lv-vin": "Zoom in", "lv-vout": "Zoom out", "lv-vctl": "Operate with the finger (otherwise the page scrolls)",
   "lv-vrot": "Finger: rotate instead of move", "lv-vbig": "Large picture"};
@@ -56239,7 +56741,7 @@ function label(e) {
   if (!e.getAttribute("title") || (e.id && ID[e.id] && e.getAttribute("title") !== n && !e.dataset.sxEn)) { e.setAttribute("title", n); e.dataset.sxT = n; }
 }
 function pass() {
-  addBtn(); paintN();
+  paintN();
   D.querySelectorAll("button,[role=button],a.ic,header .badge,.qsw button").forEach(e => { try { label(e); } catch (x) {} });
   D.querySelectorAll("header .badge[onclick],header .badge[style*=pointer]").forEach(e => { if (!e.hasAttribute("role")) { e.setAttribute("role", "button"); e.tabIndex = 0;
     e.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); e.click(); } }); } });
@@ -56309,22 +56811,24 @@ def apply_theme():
         C.update(SX_TK_NIGHT)
 
 
-def _sx_tk_build_header(self):
-    _sx_tk_build_header_before(self)
-    try:
-        b_fs = getattr(self, "b_fs", None)
-        if b_fs is not None and b_fs.winfo_exists():
-            b = self._ibtn(b_fs.master, "◑", lambda: _sx_tk_night(self), tr("Dark view: very dark and red, the live picture dimmed - for a short look in the tent"),
-                           on=bool(CFG.get("tk_night")))
-            b.pack(side="right", padx=(0, 6))
-    except Exception:
-        pass
+def tk_theme_step():
+    """the window: «light», «dark» or «red» (Rotlicht-Ansicht = tk_night on top of dark)"""
+    return "red" if CFG.get("tk_night") else ("light" if CFG.get("theme") == "light" else "dark")
 
 
-def _sx_tk_night(app):
-    CFG["tk_night"] = not CFG.get("tk_night")
+def tk_theme_tip():
+    s = tk_theme_step(); n = {"light": "dark", "dark": "red", "red": "light"}[s]
+    nm = {"light": "Light", "dark": "Dark", "red": "Red light view"}
+    return tr("Light / dark / red light") + ": " + tr(nm[s]) + " → " + tr(nm[n])
+
+
+def _sx_tk_toggle_theme(self):
+    """the button ◐ (and Ctrl+T): Hell → Dunkel → Rotlicht → Hell"""
+    n = {"light": "dark", "dark": "red", "red": "light"}[tk_theme_step()]
+    CFG["tk_night"] = n == "red"
+    self._set("theme", "light" if n == "light" else "dark")
     save_settings()
-    app._rebuild()
+    self._rebuild()
 
 
 def _sx_tk_update_video(self):
@@ -56382,10 +56886,9 @@ def _sx_tk_wipe(app):
     ttk.Button(bf, text=tr("Delete"), command=go).pack(side="right", padx=(0, 6))
 
 
-_sx_tk_build_header_before = App._build_header
 _sx_tk_build_section_before = App._build_section
-# wraps: App._build_header
-App._build_header = _sx_tk_build_header
+# wraps: App.toggle_theme
+App.toggle_theme = _sx_tk_toggle_theme
 # wraps: App._build_section
 App._build_section = _sx_tk_build_section
 # wraps: App._update_video
@@ -56445,7 +56948,7 @@ def sicher_selftest():
         assert "pin" in sx_off_form("de") and "inputmode" in sx_off_form("fr")
         CFG["protect_pin"] = ""; assert "Schutz-PIN" in sx_off_form("de")
         js = sx_ui_js_text()
-        assert "Dunkle Ansicht" in js and "Nachtblick" not in js and "/*TX*/" not in js
+        assert "Rotlicht-Ansicht" in js and "Dunkle Ansicht" not in js and "Nachtblick" not in js and "/*TX*/" not in js
         assert "sxnight" in render_page("<html><head></head><body><header></header></body></html>", "live")
         for k, (_i, h, t_) in SX_ERRS.items():
             assert tr(h, "de") != h and tr(t_, "fr") != t_, "error page text not translated: " + h
@@ -62564,10 +63067,6 @@ _HX_SICHER = {
     'MoveEye could not answer this request. Please try again in a moment.': ('MoveEye konnte diese Anfrage nicht beantworten. Bitte gleich nochmals versuchen.', 'MoveEye n’a pas pu répondre à cette requête. Réessaie dans un instant.', 'MoveEye non ha potuto rispondere a questa richiesta. Riprova tra un momento.', 'MoveEye n’ha betg pudì respunder a questa dumonda. Empruvar danovamain en in mument.'),
     'To the start page': ('Zur Startseite', 'Vers la page d’accueil', 'Alla pagina iniziale', 'A la pagina da partenza'),
     # 4: dark view (until 2.98.22 «night view»)
-    'Dark view': ('Dunkle Ansicht', 'Vue sombre', 'Vista scura', 'Vista stgira'),
-    'Dark view: very dark and red, the live picture dimmed - for a short look in the tent': ('Dunkle Ansicht: sehr dunkel und rot, Livebild gedimmt – für einen kurzen Blick im Zelt', 'Vue sombre : très sombre et rouge, image en direct atténuée – pour un bref coup d’œil dans la tente', 'Vista scura: molto scura e rossa, immagine live attenuata – per un breve sguardo nella tenda', 'Vista stgira: fitg stgir e cotschen, maletg live stgirentà – per in curt sguard en la tenda'),
-    'Dark view on - tap 🌑 again to switch it off': ('Dunkle Ansicht an – nochmals 🌑 antippen zum Ausschalten', 'Vue sombre activée – touche encore 🌑 pour la couper', 'Vista scura attiva – tocca di nuovo 🌑 per spegnerla', 'Vista stgira activa – smatgar anc ina giada 🌑 per la stizzar'),
-    'Dark view off': ('Dunkle Ansicht aus', 'Vue sombre désactivée', 'Vista scura spenta', 'Vista stgira stizzada'),
     # 5: names for screen readers
     'Full screen': ('Vollbild', 'Plein écran', 'Schermo intero', 'Visur entir'),
     'Light / dark': ('Hell / dunkel', 'Clair / sombre', 'Chiaro / scuro', 'Cler / stgir'),
@@ -62621,8 +63120,8 @@ _HELP_SICHER = {
           '(ab 3 kommt ein Diebstahl-Alarm). «Fehlalarm» und «Sirene» gehen weiterhin mit einem Tipp.</li>'
           '<li><b>Nach einem Stromausfall oder Absturz</b> kommt eine Push-Nachricht, wie lange MoveEye aus war und ob der Schutz wieder läuft. '
           'Nach einem Update oder Neustart nicht.</li>'
-          '<li><b>🌑 Dunkle Ansicht</b> (oben und als Schnellschalter): die ganze Seite sehr dunkel und rot, das Livebild gedimmt – für einen kurzen Blick '
-          'im Zelt, ohne die Augen zu blenden. Jeder Browser merkt es sich selbst. Im Fenster: ◑.</li>'
+          '<li><b>◉ Rotlicht-Ansicht</b> (die 3. Stufe des Knopfs «Hell / dunkel» oben: Hell → Dunkel → Rotlicht): die ganze Seite sehr dunkel und rot, das Livebild gedimmt – für einen kurzen Blick '
+          'im Zelt, ohne die Augen zu blenden. Jeder Browser merkt es sich selbst. Im Fenster derselbe Knopf ◐.</li>'
           '<li><b>Aufnahmen nach … Tagen löschen</b> (Einstellungen → Aufnahme, 0 = nie) – zusätzlich zur Grössen-Grenze. '
           '«🧹 Ferien vorbei: alle Aufnahmen löschen» fragt nach; ⭐ Favoriten bleiben, ausser man hakt sie an.</li>'
           '<li><b>Bilder in Push-Nachrichten</b> (Benachrichtigungen): «nur Text» schickt kein Bild an ntfy, Telegram oder Pushover – das Bild bleibt in MoveEye.</li>'
@@ -62632,8 +63131,8 @@ _HELP_SICHER = {
           '(without a PIN: the web password). With neither, «Off» works only on the page of MoveEye. Wrong PINs lock as on the web page '
           '(from 3 on a theft alarm). «False alarm» and «Siren» still work with one tap.</li>'
           '<li><b>After a power cut or a crash</b> a push message says how long MoveEye was off and whether the protection runs again. Not after an update or restart.</li>'
-          '<li><b>🌑 Dark view</b> (top and as a quick switch): the whole page very dark and red, the live picture dimmed – for a short look in the tent '
-          'without dazzling your eyes. Every browser remembers it itself. In the window: ◑.</li>'
+          '<li><b>◉ Red light view</b> (the 3rd step of the button «light / dark» at the top: light → dark → red light): the whole page very dark and red, the live picture dimmed – for a short look in the tent '
+          'without dazzling your eyes. Every browser remembers it itself. In the window the same button ◐.</li>'
           '<li><b>Delete recordings after … days</b> (Settings → Recording, 0 = never) – in addition to the size limit. '
           '«🧹 Holiday over: delete all recordings» asks first; ⭐ favourites stay unless you tick them.</li>'
           '<li><b>Pictures in push messages</b> (Notifications): «text only» sends no picture to ntfy, Telegram or Pushover – the picture stays in MoveEye.</li>'
@@ -62643,8 +63142,8 @@ _HELP_SICHER = {
           '(sans PIN : le mot de passe web). Sans les deux, «Arrêt» ne marche que sur la page de MoveEye. Les PIN erronés bloquent comme sur la page web '
           '(dès 3, alarme vol). «Fausse alarme» et «Sirène» marchent toujours d’un toucher.</li>'
           '<li><b>Après une coupure de courant ou un plantage</b>, une notification dit combien de temps MoveEye était éteint et si la protection tourne à nouveau. Pas après une mise à jour ou un redémarrage.</li>'
-          '<li><b>🌑 Vue sombre</b> (en haut et comme interrupteur rapide) : toute la page très sombre et rouge, l’image en direct atténuée – pour un bref coup d’œil dans la tente. '
-          'Chaque navigateur s’en souvient. Dans la fenêtre : ◑.</li>'
+          '<li><b>◉ Vue lumière rouge</b> (3e étape du bouton «clair / sombre» en haut : clair → sombre → lumière rouge) : toute la page très sombre et rouge, l’image en direct atténuée – pour un bref coup d’œil dans la tente. '
+          'Chaque navigateur s’en souvient. Dans la fenêtre le même bouton ◐.</li>'
           '<li><b>Supprimer les enregistrements après … jours</b> (Réglages → Enregistrement, 0 = jamais) – en plus de la limite de taille. '
           '«🧹 Vacances finies : supprimer tous les enregistrements» demande confirmation ; les favoris ⭐ restent, sauf si tu les coches.</li>'
           '<li><b>Images dans les notifications push</b> : «texte seulement» n’envoie aucune image à ntfy, Telegram ou Pushover – l’image reste dans MoveEye.</li>'
@@ -62654,8 +63153,8 @@ _HELP_SICHER = {
           '(senza PIN: la password web). Senza entrambi, «Spento» funziona solo sulla pagina di MoveEye. I PIN errati bloccano come sulla pagina web '
           '(da 3 allarme furto). «Falso allarme» e «Sirena» funzionano sempre con un tocco.</li>'
           '<li><b>Dopo un’interruzione di corrente o un arresto</b> una notifica dice per quanto tempo MoveEye è stato spento e se la protezione è di nuovo attiva. Non dopo un aggiornamento o un riavvio.</li>'
-          '<li><b>🌑 Vista scura</b> (in alto e come interruttore rapido): tutta la pagina molto scura e rossa, l’immagine live attenuata – per un breve sguardo nella tenda. '
-          'Ogni browser se lo ricorda. Nella finestra: ◑.</li>'
+          '<li><b>◉ Vista luce rossa</b> (3° passo del pulsante «chiaro / scuro» in alto: chiaro → scuro → luce rossa): tutta la pagina molto scura e rossa, l’immagine live attenuata – per un breve sguardo nella tenda. '
+          'Ogni browser se lo ricorda. Nella finestra lo stesso pulsante ◐.</li>'
           '<li><b>Eliminare le registrazioni dopo … giorni</b> (Impostazioni → Registrazione, 0 = mai) – oltre al limite di dimensione. '
           '«🧹 Vacanze finite: eliminare tutte le registrazioni» chiede conferma; i preferiti ⭐ restano, a meno di spuntarli.</li>'
           '<li><b>Immagini nelle notifiche push</b>: «solo testo» non invia immagini a ntfy, Telegram o Pushover – l’immagine resta in MoveEye.</li>'
@@ -62665,8 +63164,8 @@ _HELP_SICHER = {
           '(senza PIN: il pled-clav web). Senza omadus funcziuna «Ora» mo sin la pagina da MoveEye. PINs sbagliads bloccan sco en il web '
           '(a partir da 3 in alarm da ladranaria). «Fauss alarm» e «Sirena» funcziunan vinavant cun in tip.</li>'
           '<li><b>Suenter ina interrupziun da current u in collaps</b> di in avis push quant ditg che MoveEye era stizzà e sche la protecziun funcziuna puspè. Betg suenter in update u in restart.</li>'
-          '<li><b>🌑 Vista stgira</b> (sisura e sco cumutader svelt): tut la pagina fitg stgira e cotschna, il maletg live stgirentà – per in curt sguard en la tenda. '
-          'Mintga navigatur sa regorda sez. En la fanestra: ◑.</li>'
+          '<li><b>◉ Vista glisch cotschna</b> (3. stgalim dal buttun «cler / stgir» sisura: cler → stgir → glisch cotschna): tut la pagina fitg stgira e cotschna, il maletg live stgirentà – per in curt sguard en la tenda. '
+          'Mintga navigatur sa regorda sez. En la fanestra il medem buttun ◐.</li>'
           '<li><b>Stizzar las registraziuns suenter … dis</b> (Parameters → Registraziun, 0 = mai) – ultra dal limit da grondezza. '
           '«🧹 Vacanzas finidas: stizzar tut las registraziuns» dumonda l’emprim; ils favurits ⭐ restan, auter che sch’ins als marca.</li>'
           '<li><b>Maletgs en ils avis push</b>: «mo text» na trametta nagin maletg a ntfy, Telegram u Pushover – il maletg resta en MoveEye.</li>'
@@ -62769,11 +63268,11 @@ _HX_KISICHER = {
         'Connexion uniquement chiffrée (https) : depuis d’autres appareils, le mot de passe n’est accepté que par la page sécurisée',
         'Accesso solo cifrato (https): da altri dispositivi la password è accettata solo tramite la pagina sicura',
         'S’annunziar mo criptà (https): dad auters apparats vegn il pled-clav acceptà mo sur la pagina segira'),
-    'The password is only accepted over the secure page (https://…:port + 1) or from this device itself. Over plain http everybody in the same Wi-Fi (camping!) could read it. The browser warns once about the certificate (it is made by MoveEye itself) - accept it once. Tailscale and «https over Tailscale» are encrypted and work as before. Links with their own key (buttons in the push message, guests, shares) keep working. Programs (Home Assistant, shortcuts) use the https address too.': (
-        'Das Passwort wird nur über die sichere Seite (https://…:Port + 1) oder vom Gerät selbst angenommen. Über einfaches http könnte es jeder im gleichen WLAN (Camping!) mitlesen. Der Browser warnt einmal wegen des Zertifikats (MoveEye macht es selbst) – einmal annehmen. Tailscale und «https über Tailscale» sind verschlüsselt und gehen wie bisher. Links mit eigenem Schlüssel (Knöpfe in der Push-Nachricht, Gäste, Teilen) gehen weiter. Programme (Home Assistant, Kurzbefehle) nehmen ebenfalls die https-Adresse.',
-        'Le mot de passe n’est accepté que par la page sécurisée (https://…:port + 1) ou depuis l’appareil lui-même. En http simple, tout le monde dans le même Wi-Fi (camping !) pourrait le lire. Le navigateur avertit une fois à cause du certificat (MoveEye le crée lui-même) – l’accepter une fois. Tailscale et «https via Tailscale» sont chiffrés et fonctionnent comme avant. Les liens avec leur propre clé (boutons de la notification, invités, partages) continuent de fonctionner. Les programmes (Home Assistant, raccourcis) utilisent aussi l’adresse https.',
-        'La password è accettata solo tramite la pagina sicura (https://…:porta + 1) o dal dispositivo stesso. Con http semplice chiunque nella stessa Wi-Fi (campeggio!) potrebbe leggerla. Il browser avvisa una volta per il certificato (lo crea MoveEye stesso) – accettarlo una volta. Tailscale e «https tramite Tailscale» sono cifrati e funzionano come prima. I link con una propria chiave (pulsanti nella notifica, ospiti, condivisioni) continuano a funzionare. I programmi (Home Assistant, comandi rapidi) usano anche l’indirizzo https.',
-        'Il pled-clav vegn acceptà mo sur la pagina segira (https://…:port + 1) u da l’apparat sez. Sur http simpel pudess mintgin en il medem WLAN (camping!) al leger. Il navigatur avertescha ina giada pervi dal certificat (MoveEye al fa sez) – al acceptar ina giada. Tailscale e «https sur Tailscale» èn criptads e funcziunan sco fin ussa. Colliaziuns cun agen clav (buttuns en l’avis push, giasts, parter) funcziunan vinavant. Programs (Home Assistant, cumonds curts) duvran er l’adressa https.'),
+    'The password is only accepted over the secure page (https://…:port + 1) or from this device itself. Over plain http everybody in the same Wi-Fi (camping!) could read it. The browser warns once about the certificate (it is made by MoveEye itself) - accept it once. Tailscale and «https over Tailscale» are encrypted and work as before. Links with their own key (buttons in the push message, guests, shares) keep working. Programs (Home Assistant, shortcuts) use an app key (below) or the https address.': (
+        'Das Passwort wird nur über die sichere Seite (https://…:Port + 1) oder vom Gerät selbst angenommen. Über einfaches http könnte es jeder im gleichen WLAN (Camping!) mitlesen. Der Browser warnt einmal wegen des Zertifikats (MoveEye macht es selbst) – einmal annehmen. Tailscale und «https über Tailscale» sind verschlüsselt und gehen wie bisher. Links mit eigenem Schlüssel (Knöpfe in der Push-Nachricht, Gäste, Teilen) gehen weiter. Programme (Home Assistant, Kurzbefehle) nehmen einen App-Schlüssel (unten) oder die https-Adresse.',
+        'Le mot de passe n’est accepté que par la page sécurisée (https://…:port + 1) ou depuis l’appareil lui-même. En http simple, tout le monde dans le même Wi-Fi (camping !) pourrait le lire. Le navigateur avertit une fois à cause du certificat (MoveEye le crée lui-même) – l’accepter une fois. Tailscale et «https via Tailscale» sont chiffrés et fonctionnent comme avant. Les liens avec leur propre clé (boutons de la notification, invités, partages) continuent de fonctionner. Les programmes (Home Assistant, raccourcis) utilisent une clé d’app (plus bas) ou l’adresse https.',
+        'La password è accettata solo tramite la pagina sicura (https://…:porta + 1) o dal dispositivo stesso. Con http semplice chiunque nella stessa Wi-Fi (campeggio!) potrebbe leggerla. Il browser avvisa una volta per il certificato (lo crea MoveEye stesso) – accettarlo una volta. Tailscale e «https tramite Tailscale» sono cifrati e funzionano come prima. I link con una propria chiave (pulsanti nella notifica, ospiti, condivisioni) continuano a funzionare. I programmi (Home Assistant, comandi rapidi) usano una chiave app (sotto) o l’indirizzo https.',
+        'Il pled-clav vegn acceptà mo sur la pagina segira (https://…:port + 1) u da l’apparat sez. Sur http simpel pudess mintgin en il medem WLAN (camping!) al leger. Il navigatur avertescha ina giada pervi dal certificat (MoveEye al fa sez) – al acceptar ina giada. Tailscale e «https sur Tailscale» èn criptads e funcziunan sco fin ussa. Colliaziuns cun agen clav (buttuns en l’avis push, giasts, parter) funcziunan vinavant. Programs (Home Assistant, cumonds curts) duvran ina clav d’app (sutvart) u l’adressa https.'),
     'For your safety MoveEye takes the password only over the secure page (https). Over plain http everybody in the same Wi-Fi could read it.': (
         'Zu deiner Sicherheit nimmt MoveEye das Passwort nur über die sichere Seite (https). Über einfaches http könnte es jeder im gleichen WLAN mitlesen.',
         'Pour ta sécurité, MoveEye n’accepte le mot de passe que par la page sécurisée (https). En http simple, tout le monde dans le même Wi-Fi pourrait le lire.',
@@ -62842,6 +63341,16 @@ if _hp_en2 > 0:
 for _L in ("fr", "it", "rm"):
     if HELP_X.get(_L):
         HELP_X[_L] = _help_kisicher(HELP_X[_L], _L)
+_HX_SIMDOPP = {
+    'Training night, weekly check, false alarm learning: tiles in the Simulator centre': ('Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen: Kacheln in der Simulator-Zentrale', 'Nuit d’entraînement, contrôle hebdomadaire, apprendre des fausses alarmes : tuiles du centre du simulateur', 'Notte di allenamento, controllo settimanale, imparare dai falsi allarmi: riquadri nel centro del simulatore', 'Notg da trenament, controlla emnila, emprender da fals alarms: plattas en la centrala dal simulatur'),
+    'Training night, weekly check, false alarm learning: tab Simulator, «Settings of the simulation» (web: tiles of the Simulator centre).': ('Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen: Reiter Simulator, «Einstellungen der Simulation» (im Web: Kacheln der Simulator-Zentrale).', 'Nuit d’entraînement, contrôle hebdomadaire, apprendre des fausses alarmes : onglet Simulateur, «Réglages de la simulation» (web : tuiles du centre du simulateur).', 'Notte di allenamento, controllo settimanale, imparare dai falsi allarmi: scheda Simulatore, «Impostazioni della simulazione» (web: riquadri del centro del simulatore).', 'Notg da trenament, controlla emnila, emprender da fals alarms: tab Simulatur, «Parameters da la simulaziun» (web: plattas da la centrala dal simulatur).'),
+    'Power-ups: invisibility potion (purple) and turbo (yellow)': ('Power-ups: Unsichtbar-Trank (lila) und Turbo (gelb)', 'Bonus : potion d’invisibilité (violette) et turbo (jaune)', 'Power-up: pozione dell’invisibilità (viola) e turbo (giallo)', 'Power-ups: bavronda nunvesaivla (violetta) e turbo (mellen)'),
+    'Handicap (experienced players are seen more easily, are a bit slower, shorter invisibility potion)': ('Handicap (Geübte werden leichter gesehen, sind etwas langsamer, kürzerer Unsichtbar-Trank)', 'Handicap (les joueurs expérimentés sont vus plus facilement, sont un peu plus lents, potion d’invisibilité plus courte)', 'Handicap (i giocatori esperti si vedono più facilmente, sono un po’ più lenti, pozione dell’invisibilità più corta)', 'Handicap (giugaders cun experientscha vegnan vesids pli facilmain, èn in zic pli plauns, bavronda nunvesaivla pli curta)'),
+}
+for _k, _v in _HX_SIMDOPP.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 # ---- the product page (2.95.52): the homepage of MoveEye (made as an artifact), packed here (gzip + base64) so the Pi
 # can show it without internet to guests in the same Wi-Fi at /info/. Questions from the form arrive as a push message. ----
 INFO_HTML_GZ = (  # 2.98.9: FAQ, French and Italian, «a night in time-lapse»; 2.98.7: MoveEye name, wake-up alarm, «Spiele freigeben», ticker, join wall, more animation
@@ -65747,6 +66256,186 @@ INFO_INJECT = r"""<script>
 </script>"""
 
 
+_HX_sicher3 = {
+    # ---- app keys (573) ----
+    'App keys': ('App-Schlüssel', 'Clés d’app', 'Chiavi app', 'Clavs d’app'),
+    'App key': ('App-Schlüssel', 'Clé d’app', 'Chiave app', 'Clav d’app'),
+    'ak-note': ('Für andere Programme (Home Assistant, iPhone-Kurzbefehle, ein anderes MoveEye in der Geräte-Übersicht): ein Schlüssel statt des Passworts – geht auch über http. Ein Schlüssel kann nie das Passwort, die Benutzer, die App-Schlüssel oder die Sicherheits-Einstellungen ändern. Geht ein Gerät verloren: «Sperren».',
+                'Pour d’autres programmes (Home Assistant, raccourcis iPhone, un autre MoveEye dans la vue des appareils) : une clé au lieu du mot de passe – marche aussi en http. Une clé ne peut jamais changer le mot de passe, les utilisateurs, les clés d’app ni les réglages de sécurité. Appareil perdu : «Bloquer».',
+                'Per altri programmi (Home Assistant, comandi rapidi iPhone, un altro MoveEye nella panoramica dei dispositivi): una chiave invece della password – funziona anche in http. Una chiave non può mai cambiare la password, gli utenti, le chiavi app o le impostazioni di sicurezza. Dispositivo perso: «Bloccare».',
+                'Per auters programs (Home Assistant, cumonds svelts iPhone, in auter MoveEye en la survista dals apparats): ina clav empè dal pled-clav – funcziuna er sur http. Ina clav na po mai midar il pled-clav, ils utilisaders, las clavs d’app u ils parameters da segirezza. Apparat pers: «Bloccar».'),
+    'Make an app key': ('App-Schlüssel erstellen', 'Créer une clé d’app', 'Creare una chiave app', 'Crear ina clav d’app'),
+    'Name (e.g. Home Assistant)': ('Name (z. B. Home Assistant)', 'Nom (p. ex. Home Assistant)', 'Nome (p. es. Home Assistant)', 'Num (p. ex. Home Assistant)'),
+    'Block': ('Sperren', 'Bloquer', 'Bloccare', 'Bloccar'),
+    'Block this key? Programs that use it get no access any more.': ('Diesen Schlüssel sperren? Programme, die ihn brauchen, kommen nicht mehr hinein.', 'Bloquer cette clé ? Les programmes qui l’utilisent n’auront plus accès.', 'Bloccare questa chiave? I programmi che la usano non avranno più accesso.', 'Bloccar questa clav? Programs che la duvran na han betg pli access.'),
+    'No app keys yet.': ('Noch keine App-Schlüssel.', 'Pas encore de clé d’app.', 'Ancora nessuna chiave app.', 'Anc naginas clavs d’app.'),
+    'made': ('erstellt', 'créée', 'creata', 'creà'),
+    'last used': ('zuletzt gebraucht', 'dernière utilisation', 'ultimo uso', 'duvrà l’ultima giada'),
+    'never': ('nie', 'jamais', 'mai', 'mai'),
+    'Done': ('Fertig', 'Terminé', 'Fatto', 'Finì'),
+    'Copy the key now - it is shown only this one time. MoveEye keeps only a fingerprint of it.': ('Den Schlüssel jetzt kopieren – er wird nur dieses eine Mal gezeigt. MoveEye behält nur einen Fingerabdruck davon.', 'Copie la clé maintenant – elle n’est montrée qu’une seule fois. MoveEye n’en garde qu’une empreinte.', 'Copia la chiave adesso – viene mostrata solo questa volta. MoveEye ne tiene solo un’impronta.', 'Copiar la clav ussa – ella vegn mussada mo questa giada. MoveEye tegna mo in stampun dad ella.'),
+    'An app key cannot change the password, the users, the app keys or the security settings': ('Ein App-Schlüssel kann das Passwort, die Benutzer, die App-Schlüssel und die Sicherheits-Einstellungen nicht ändern', 'Une clé d’app ne peut pas changer le mot de passe, les utilisateurs, les clés d’app ni les réglages de sécurité', 'Una chiave app non può cambiare la password, gli utenti, le chiavi app o le impostazioni di sicurezza', 'Ina clav d’app na po betg midar il pled-clav, ils utilisaders, las clavs d’app u ils parameters da segirezza'),
+    'unknown or blocked app key': ('unbekannter oder gesperrter App-Schlüssel', 'clé d’app inconnue ou bloquée', 'chiave app sconosciuta o bloccata', 'clav d’app nunenconuschenta u bloccada'),
+    'For your safety an app key can only be made over the secure page': ('Zu deiner Sicherheit lässt sich ein App-Schlüssel nur über die sichere Seite erstellen', 'Pour ta sécurité, une clé d’app ne peut être créée que sur la page sécurisée', 'Per la tua sicurezza una chiave app si può creare solo sulla pagina sicura', 'Per tia segirezza po ina clav d’app vegnir creada mo sur la pagina segira'),
+    'New keys only over the secure page (https) - the key would go unencrypted through the network.': ('Neue Schlüssel nur über die sichere Seite (https) – sonst ginge der Schlüssel unverschlüsselt durchs Netz.', 'Nouvelles clés seulement sur la page sécurisée (https) – sinon la clé passerait en clair sur le réseau.', 'Nuove chiavi solo sulla pagina sicura (https) – altrimenti la chiave passerebbe in chiaro nella rete.', 'Novas clavs mo sur la pagina segira (https) – uschiglio giess la clav betg codada tras la rait.'),
+    'Without a web password every program can use MoveEye anyway - keys are needed only with a password.': ('Ohne Web-Passwort kann jedes Programm MoveEye sowieso benutzen – Schlüssel braucht es erst mit Passwort.', 'Sans mot de passe web, chaque programme peut de toute façon utiliser MoveEye – les clés ne servent qu’avec un mot de passe.', 'Senza password web ogni programma può comunque usare MoveEye – le chiavi servono solo con una password.', 'Senza pled-clav web po mintga program tuttina duvrar MoveEye – clavs dovri pir cun in pled-clav.'),
+    'Example: Home Assistant and iPhone shortcuts': ('Beispiel: Home Assistant und iPhone-Kurzbefehle', 'Exemple : Home Assistant et raccourcis iPhone', 'Esempio: Home Assistant e comandi rapidi iPhone', 'Exempel: Home Assistant e cumonds svelts iPhone'),
+    'iPhone shortcut «Get contents of URL»': ('iPhone-Kurzbefehl «Inhalte von URL abrufen»', 'raccourci iPhone «Obtenir le contenu de l’URL»', 'comando rapido iPhone «Ottieni contenuti dell’URL»', 'cumond svelt iPhone «Retschaiver il cuntegn da l’URL»'),
+    'give the key a name (e.g. Home Assistant)': ('dem Schlüssel einen Namen geben (z. B. Home Assistant)', 'donne un nom à la clé (p. ex. Home Assistant)', 'dai un nome alla chiave (p. es. Home Assistant)', 'dar in num a la clav (p. ex. Home Assistant)'),
+    'at most 20 app keys': ('höchstens 20 App-Schlüssel', 'au plus 20 clés d’app', 'al massimo 20 chiavi app', 'maximalmain 20 clavs d’app'),
+    'unknown app key': ('unbekannter App-Schlüssel', 'clé d’app inconnue', 'chiave app sconosciuta', 'clav d’app nunenconuschenta'),
+    'this name exists already': ('diesen Namen gibt es schon', 'ce nom existe déjà', 'questo nome esiste già', 'quest num exista gia'),
+    # ---- security in one place (573) ----
+    'Security': ('Sicherheit', 'Sécurité', 'Sicurezza', 'Segirezza'),
+    'Users': ('Benutzer', 'Utilisateurs', 'Utenti', 'Utilisaders'),
+    'Web password': ('Web-Passwort', 'Mot de passe web', 'Password web', 'Pled-clav web'),
+    'Set / change the web password': ('Web-Passwort setzen / ändern', 'Définir / changer le mot de passe web', 'Impostare / cambiare la password web', 'Fixar / midar il pled-clav web'),
+    'Security check': ('Sicherheits-Check', 'Contrôle de sécurité', 'Controllo di sicurezza', 'Controlla da segirezza'),
+    'Check now': ('Jetzt prüfen', 'Vérifier maintenant', 'Controllare ora', 'Controllar ussa'),
+    'running…': ('läuft…', 'en cours…', 'in corso…', 'en lavur…'),
+    'What can be reached from the network or the internet, and what is risky.': ('Was aus dem Netz oder dem Internet erreichbar ist und was riskant ist.', 'Ce qui est accessible depuis le réseau ou internet, et ce qui est risqué.', 'Cosa è raggiungibile dalla rete o da internet, e cosa è rischioso.', 'Tge ch’è cuntanschibel da la rait u da l’internet e tge ch’è ristgà.'),
+    '💾 Settings file': ('💾 Einstellungsdatei', '💾 Fichier de réglages', '💾 File delle impostazioni', '💾 Datoteca da parameters'),
+    '🔐 Password, users and app keys: Settings → Security': ('🔐 Passwort, Benutzer und App-Schlüssel: Einstellungen → Sicherheit', '🔐 Mot de passe, utilisateurs et clés d’app : Réglages → Sécurité', '🔐 Password, utenti e chiavi app: Impostazioni → Sicurezza', '🔐 Pled-clav, utilisaders e clavs d’app: Parameters → Segirezza'),
+    'Password, users and app keys: Settings → Security': ('Passwort, Benutzer und App-Schlüssel: Einstellungen → Sicherheit', 'Mot de passe, utilisateurs et clés d’app : Réglages → Sécurité', 'Password, utenti e chiavi app: Impostazioni → Sicurezza', 'Pled-clav, utilisaders e clavs d’app: Parameters → Segirezza'),
+    'now in Settings → Security': ('jetzt unter Einstellungen → Sicherheit', 'maintenant dans Réglages → Sécurité', 'ora in Impostazioni → Sicurezza', 'ussa sut Parameters → Segirezza'),
+    # the lines of the security check (300) - before only in the tools page (German)
+    'Web password set': ('Web-Passwort gesetzt', 'Mot de passe web défini', 'Password web impostata', 'Pled-clav web fixà'),
+    'Web password missing': ('Web-Passwort fehlt', 'Mot de passe web manquant', 'Manca la password web', 'Il pled-clav web manca'),
+    'Everybody in the network can operate MoveEye': ('Jeder im Netz kann MoveEye bedienen', 'Tout le monde dans le réseau peut utiliser MoveEye', 'Chiunque nella rete può usare MoveEye', 'Mintgin en la rait po manischar MoveEye'),
+    'Secure page (https) on': ('Sichere Seite (https) ein', 'Page sécurisée (https) activée', 'Pagina sicura (https) attiva', 'Pagina segira (https) activada'),
+    'Secure page (https) off': ('Sichere Seite (https) aus', 'Page sécurisée (https) désactivée', 'Pagina sicura (https) spenta', 'Pagina segira (https) deactivada'),
+    'Passwords go through the network unencrypted - important in foreign Wi-Fi (camping)': ('Passwörter gehen unverschlüsselt durchs Netz – wichtig in fremden WLANs (Camping)', 'Les mots de passe passent en clair sur le réseau – important dans un Wi-Fi étranger (camping)', 'Le password passano in chiaro nella rete – importante nelle Wi-Fi altrui (campeggio)', 'Ils pleds-clav van betg codads tras la rait – impurtant en WLANs esters (camping)'),
+    'Open in the network: port': ('Offen im Netz: Port', 'Ouvert dans le réseau : port', 'Aperto nella rete: porta', 'Avert en la rait: port'),
+    'SSH: login with password allowed': ('SSH: Anmelden mit Passwort erlaubt', 'SSH : connexion par mot de passe autorisée', 'SSH: accesso con password consentito', 'SSH: s’annunziar cun pled-clav permess'),
+    'SSH: login with password off (keys only)': ('SSH: Anmelden mit Passwort aus (nur Schlüssel)', 'SSH : connexion par mot de passe désactivée (clés seulement)', 'SSH: accesso con password spento (solo chiavi)', 'SSH: s’annunziar cun pled-clav deactivà (mo clavs)'),
+    'Use a strong password or keys': ('Starkes Passwort oder Schlüssel verwenden', 'Utilise un mot de passe fort ou des clés', 'Usa una password forte o chiavi', 'Duvrar in pled-clav ferm u clavs'),
+    'Public IPv6 address present': ('Öffentliche IPv6-Adresse vorhanden', 'Adresse IPv6 publique présente', 'Indirizzo IPv6 pubblico presente', 'Adressa IPv6 publica avant maun'),
+    'Depending on the router the Pi can be reached directly from the internet - keep the web password on': ('Je nach Router ist der Pi direkt aus dem Internet erreichbar – Web-Passwort eingeschaltet lassen', 'Selon le routeur, le Pi est joignable directement depuis internet – garde le mot de passe web', 'A seconda del router il Pi è raggiungibile direttamente da internet – tieni attiva la password web', 'Tenor router è il Pi cuntanschibel directamain da l’internet – laschar activà il pled-clav web'),
+    'Router forwards ports to this device:': ('Router leitet Ports an dieses Gerät weiter:', 'Le routeur redirige des ports vers cet appareil :', 'Il router inoltra porte a questo dispositivo:', 'Il router renviescha ports a quest apparat:'),
+    'No port forwarding of the router to this device (UPnP)': ('Keine Port-Weiterleitung des Routers an dieses Gerät (UPnP)', 'Pas de redirection de port du routeur vers cet appareil (UPnP)', 'Nessun inoltro di porte del router a questo dispositivo (UPnP)', 'Nagin renviament da ports dal router a quest apparat (UPnP)'),
+    'Address in the internet:': ('Adresse im Internet:', 'Adresse sur internet :', 'Indirizzo in internet:', 'Adressa en l’internet:'),
+    'shared address of the mobile network - not reachable from outside': ('geteilte Adresse des Handynetzes – von aussen nicht erreichbar', 'adresse partagée du réseau mobile – pas joignable de l’extérieur', 'indirizzo condiviso della rete mobile – non raggiungibile dall’esterno', 'adressa cundividida da la rait mobila – betg cuntanschibla dad ordaifer'),
+    'Internet not reachable': ('Internet nicht erreichbar', 'Internet pas joignable', 'Internet non raggiungibile', 'Internet betg cuntanschibel'),
+    'Tailscale: access from outside only for your own devices': ('Tailscale: Zugriff von aussen nur für die eigenen Geräte', 'Tailscale : accès de l’extérieur seulement pour tes propres appareils', 'Tailscale: accesso dall’esterno solo per i propri dispositivi', 'Tailscale: access dad ordaifer mo per ils agens apparats'),
+    # ---- «Rotlicht-Ansicht» = 3rd step of the theme button (578) ----
+    'Red light view': ('Rotlicht-Ansicht', 'Vue lumière rouge', 'Vista luce rossa', 'Vista glisch cotschna'),
+    'Light / dark / red light': ('Hell / dunkel / Rotlicht', 'Clair / sombre / lumière rouge', 'Chiaro / scuro / luce rossa', 'Cler / stgir / glisch cotschna'),
+    'Light': ('Hell', 'Clair', 'Chiaro', 'Cler'),
+    'Dark': ('Dunkel', 'Sombre', 'Scuro', 'Stgir'),
+}
+for _k, _v in _HX_sicher3.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+# the German of the web script (573) from here - one place for the texts (fr / it / rm come through /i18n/<lang>.js)
+WEB_PAGE = WEB_PAGE.replace("/*AKDE*/{}", json.dumps({_k: DE.get(_k, _v[0]) for _k, _v in _HX_sicher3.items()}, ensure_ascii=False), 1)
+
+
+# ---- the manual: «Sicherheit und App-Schlüssel» (before «Tipps», like 613) ------------------------------------------------------
+_HELP_SICHER3 = {
+    "de": '<section id="appkeys" data-icon="🔑"><h2>Sicherheit und App-Schlüssel</h2>'
+          '<p>Alles zur Sicherheit steht an einem Ort: <b>Einstellungen → Sicherheit</b> – Web-Passwort, Benutzer, vertrauenswürdige Geräte, '
+          '«Anmelden nur verschlüsselt», die App-Schlüssel und der Sicherheits-Check (früher unter Werkzeuge). Im Fenster genauso.</p>'
+          '<p><b>🔑 App-Schlüssel</b> sind für andere Programme: Home Assistant, iPhone-Kurzbefehle oder ein älteres MoveEye in der Geräte-Übersicht. '
+          'Seit «Anmelden nur verschlüsselt» nimmt MoveEye das Passwort über http von anderen Geräten nicht mehr an – ein Schlüssel geht auch über http. '
+          '«App-Schlüssel erstellen» mit einem Namen: der Schlüssel (beginnt mit <code>me_</code>) wird <b>nur einmal</b> ganz gezeigt – gleich kopieren. '
+          'MoveEye speichert nur einen Fingerabdruck davon. Die Liste zeigt Name, erstellt und zuletzt gebraucht; «Sperren», wenn ein Gerät verloren geht. '
+          'Ein Schlüssel kann alles bedienen, aber <b>nie</b> das Passwort, die Benutzer, die App-Schlüssel oder die Sicherheits-Einstellungen ändern. '
+          'Falsche Schlüssel sperren wie falsche Passwörter (8 in 5 Minuten).</p>'
+          '<p>So schickt ein Programm den Schlüssel mit: als Kopfzeile <code>X-MoveEye-Key: me_…</code> oder <code>Authorization: Bearer me_…</code>, '
+          'für einfache Kurzbefehle als <code>?key=me_…</code> am Ende der Adresse, oder als Passwort (beliebiger Benutzername) – so auch beim älteren MoveEye in der Geräte-Übersicht. '
+          'Die Kurzbefehl-Adressen <code>/k/&lt;Schlüssel&gt;/arm</code>, <code>/status</code>, <code>/photo.jpg</code> … nehmen auch einen App-Schlüssel.</p>'
+          '<p><b>Beispiel Home Assistant</b> (configuration.yaml, den Schlüssel in secrets.yaml als <code>moveeye_key</code>):</p>'
+          '<pre>rest:\n  - resource: http://192.168.1.50:5000/api/state\n    headers:\n      X-MoveEye-Key: !secret moveeye_key\n    sensor:\n'
+          '      - name: MoveEye Personen\n        value_template: "{{ value_json.persons }}"</pre>'
+          '<p><b>Beispiel iPhone-Kurzbefehl:</b> Aktion «Inhalte von URL abrufen» mit <code>http://192.168.1.50:5000/k/me_…/status</code> '
+          '(oder <code>/k/me_…/arm</code> zum Einschalten). Die Adresse oben ist ein Beispiel – deine steht in der Adresszeile des Browsers.</p></section>\n\n',
+    "en": '<section id="appkeys" data-icon="🔑"><h2>Security and app keys</h2>'
+          '<p>Everything about security is in one place: <b>Settings → Security</b> – web password, users, trusted devices, '
+          '«Log in only encrypted», the app keys and the security check (before under Tools). The same in the window.</p>'
+          '<p><b>🔑 App keys</b> are for other programs: Home Assistant, iPhone shortcuts or an older MoveEye in the device overview. '
+          'Since «Log in only encrypted» MoveEye no longer takes the password over http from other devices – a key works over http too. '
+          '«Make an app key» with a name: the key (starts with <code>me_</code>) is shown in full <b>only once</b> – copy it right away. '
+          'MoveEye keeps only a fingerprint of it. The list shows name, made and last used; «Block» when a device is lost. '
+          'A key can operate everything but <b>never</b> change the password, the users, the app keys or the security settings. '
+          'Wrong keys lock like wrong passwords (8 in 5 minutes).</p>'
+          '<p>How a program sends the key: as header <code>X-MoveEye-Key: me_…</code> or <code>Authorization: Bearer me_…</code>, '
+          'for simple shortcuts as <code>?key=me_…</code> at the end of the address, or as the password (any user name) – also for an older MoveEye in the device overview. '
+          'The shortcut addresses <code>/k/&lt;key&gt;/arm</code>, <code>/status</code>, <code>/photo.jpg</code> … take an app key too.</p>'
+          '<p><b>Example Home Assistant</b> (configuration.yaml, the key in secrets.yaml as <code>moveeye_key</code>):</p>'
+          '<pre>rest:\n  - resource: http://192.168.1.50:5000/api/state\n    headers:\n      X-MoveEye-Key: !secret moveeye_key\n    sensor:\n'
+          '      - name: MoveEye persons\n        value_template: "{{ value_json.persons }}"</pre>'
+          '<p><b>Example iPhone shortcut:</b> action «Get contents of URL» with <code>http://192.168.1.50:5000/k/me_…/status</code> '
+          '(or <code>/k/me_…/arm</code> to arm). The address is an example – yours is in the address bar of the browser.</p></section>\n\n',
+    "fr": '<section id="appkeys" data-icon="🔑"><h2>Sécurité et clés d’app</h2>'
+          '<p>Tout ce qui touche à la sécurité est à un seul endroit : <b>Réglages → Sécurité</b> – mot de passe web, utilisateurs, appareils de confiance, '
+          '«Connexion seulement chiffrée», les clés d’app et le contrôle de sécurité (avant sous Outils). Pareil dans la fenêtre.</p>'
+          '<p><b>🔑 Les clés d’app</b> sont pour d’autres programmes : Home Assistant, raccourcis iPhone ou un ancien MoveEye dans la vue des appareils. '
+          'Depuis «Connexion seulement chiffrée», MoveEye n’accepte plus le mot de passe en http depuis d’autres appareils – une clé marche aussi en http. '
+          '«Créer une clé d’app» avec un nom : la clé (commence par <code>me_</code>) n’est montrée en entier <b>qu’une fois</b> – copie-la tout de suite. '
+          'MoveEye n’en garde qu’une empreinte. La liste montre le nom, la création et la dernière utilisation ; «Bloquer» si un appareil est perdu. '
+          'Une clé peut tout utiliser mais <b>jamais</b> changer le mot de passe, les utilisateurs, les clés d’app ni les réglages de sécurité. '
+          'Les mauvaises clés bloquent comme les mauvais mots de passe (8 en 5 minutes).</p>'
+          '<p>Un programme envoie la clé : en en-tête <code>X-MoveEye-Key: me_…</code> ou <code>Authorization: Bearer me_…</code>, '
+          'pour des raccourcis simples en <code>?key=me_…</code> à la fin de l’adresse, ou comme mot de passe (nom d’utilisateur quelconque). '
+          'Les adresses de raccourci <code>/k/&lt;clé&gt;/arm</code>, <code>/status</code>, <code>/photo.jpg</code> … acceptent aussi une clé d’app.</p>'
+          '<p><b>Exemple Home Assistant</b> (configuration.yaml, la clé dans secrets.yaml sous <code>moveeye_key</code>) :</p>'
+          '<pre>rest:\n  - resource: http://192.168.1.50:5000/api/state\n    headers:\n      X-MoveEye-Key: !secret moveeye_key\n    sensor:\n'
+          '      - name: MoveEye personnes\n        value_template: "{{ value_json.persons }}"</pre>'
+          '<p><b>Exemple raccourci iPhone :</b> action «Obtenir le contenu de l’URL» avec <code>http://192.168.1.50:5000/k/me_…/status</code>. '
+          'L’adresse est un exemple – la tienne est dans la barre d’adresse du navigateur.</p></section>\n\n',
+    "it": '<section id="appkeys" data-icon="🔑"><h2>Sicurezza e chiavi app</h2>'
+          '<p>Tutto sulla sicurezza è in un solo posto: <b>Impostazioni → Sicurezza</b> – password web, utenti, dispositivi fidati, '
+          '«Accesso solo cifrato», le chiavi app e il controllo di sicurezza (prima sotto Strumenti). Lo stesso nella finestra.</p>'
+          '<p><b>🔑 Le chiavi app</b> sono per altri programmi: Home Assistant, comandi rapidi iPhone o un MoveEye più vecchio nella panoramica dei dispositivi. '
+          'Da «Accesso solo cifrato» MoveEye non accetta più la password in http da altri dispositivi – una chiave funziona anche in http. '
+          '«Creare una chiave app» con un nome: la chiave (inizia con <code>me_</code>) viene mostrata intera <b>una sola volta</b> – copiala subito. '
+          'MoveEye ne tiene solo un’impronta. La lista mostra nome, creazione e ultimo uso; «Bloccare» se un dispositivo va perso. '
+          'Una chiave può usare tutto ma <b>mai</b> cambiare la password, gli utenti, le chiavi app o le impostazioni di sicurezza. '
+          'Le chiavi sbagliate bloccano come le password sbagliate (8 in 5 minuti).</p>'
+          '<p>Un programma invia la chiave: come intestazione <code>X-MoveEye-Key: me_…</code> o <code>Authorization: Bearer me_…</code>, '
+          'per comandi rapidi semplici come <code>?key=me_…</code> alla fine dell’indirizzo, o come password (nome utente qualsiasi). '
+          'Gli indirizzi dei comandi rapidi <code>/k/&lt;chiave&gt;/arm</code>, <code>/status</code>, <code>/photo.jpg</code> … accettano anche una chiave app.</p>'
+          '<p><b>Esempio Home Assistant</b> (configuration.yaml, la chiave in secrets.yaml come <code>moveeye_key</code>):</p>'
+          '<pre>rest:\n  - resource: http://192.168.1.50:5000/api/state\n    headers:\n      X-MoveEye-Key: !secret moveeye_key\n    sensor:\n'
+          '      - name: MoveEye persone\n        value_template: "{{ value_json.persons }}"</pre>'
+          '<p><b>Esempio comando rapido iPhone:</b> azione «Ottieni contenuti dell’URL» con <code>http://192.168.1.50:5000/k/me_…/status</code>. '
+          'L’indirizzo è un esempio – il tuo è nella barra degli indirizzi del browser.</p></section>\n\n',
+    "rm": '<section id="appkeys" data-icon="🔑"><h2>Segirezza e clavs d’app</h2>'
+          '<p>Tut davart la segirezza è en in lieu: <b>Parameters → Segirezza</b> – pled-clav web, utilisaders, apparats da confidenza, '
+          '«S’annunziar mo codà», las clavs d’app e la controlla da segirezza (pli baud sut Utensils). Medemamain en la fanestra.</p>'
+          '<p><b>🔑 Clavs d’app</b> èn per auters programs: Home Assistant, cumonds svelts iPhone u in MoveEye pli vegl en la survista dals apparats. '
+          'Dapi «S’annunziar mo codà» na prenda MoveEye betg pli il pled-clav sur http dad auters apparats – ina clav funcziuna er sur http. '
+          '«Crear ina clav d’app» cun in num: la clav (cumenza cun <code>me_</code>) vegn mussada entira <b>mo ina giada</b> – copiar dalunga. '
+          'MoveEye tegna mo in stampun dad ella. La glista mussa num, creà e duvrà l’ultima giada; «Bloccar», sch’in apparat va a perder. '
+          'Ina clav po manischar tut, ma <b>mai</b> midar il pled-clav, ils utilisaders, las clavs d’app u ils parameters da segirezza. '
+          'Clavs faussas bloccan sco pleds-clav fauss (8 en 5 minutas).</p>'
+          '<p>In program trametta la clav: sco lingia da chau <code>X-MoveEye-Key: me_…</code> u <code>Authorization: Bearer me_…</code>, '
+          'per cumonds svelts simpels sco <code>?key=me_…</code> a la fin da l’adressa, u sco pled-clav (num d’utilisader qualunque). '
+          'Las adressas da cumonds svelts <code>/k/&lt;clav&gt;/arm</code>, <code>/status</code>, <code>/photo.jpg</code> … prendan er ina clav d’app.</p>'
+          '<p><b>Exempel Home Assistant</b> (configuration.yaml, la clav en secrets.yaml sco <code>moveeye_key</code>):</p>'
+          '<pre>rest:\n  - resource: http://192.168.1.50:5000/api/state\n    headers:\n      X-MoveEye-Key: !secret moveeye_key\n    sensor:\n'
+          '      - name: MoveEye persunas\n        value_template: "{{ value_json.persons }}"</pre>'
+          '<p><b>Exempel cumond svelt iPhone:</b> acziun «Retschaiver il cuntegn da l’URL» cun <code>http://192.168.1.50:5000/k/me_…/status</code>. '
+          'L’adressa è in exempel – la tia stat en la lingia d’adressa dal navigatur.</p></section>\n\n',
+}
+
+
+def _help_sicher3(doc, lang):
+    if '<section id="appkeys"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    if i < 0:
+        i = doc.find('<section id="privacy"')
+    return doc[:i] + _HELP_SICHER3[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en3 = HELP_PAGE.find('<div lang="en">')
+if _hp_en3 > 0:
+    HELP_PAGE = _help_sicher3(HELP_PAGE[:_hp_en3], "de") + _help_sicher3(HELP_PAGE[_hp_en3:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_sicher3(HELP_X[_L], _L)
 # ---- Überlebens-Almanach (2.95.54): tips and tricks for camping in Switzerland, to look up or to read in the evening;
 # offline on the device (/almanach/, also for guests in the same Wi-Fi), «Tipp des Abends» on the TV view. ----
 # Überlebens-Almanach für MoveEye: Kapitel -> Artikel. Text: Absätze mit Leerzeile, Listenpunkte mit "- ".

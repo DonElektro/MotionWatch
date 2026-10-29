@@ -376,7 +376,7 @@ func _clear_items() -> void:
 	items.clear()
 
 
-const POWER_KIND := {"cloak": [Color(0.75, 0.45, 1.0), 9.0, "🌫 Tarnkappe! %d s lang sieht dich die Kamera kaum"],
+const POWER_KIND := {"cloak": [Color(0.75, 0.45, 1.0), 9.0, "🌫 Unsichtbar-Trank! %d s lang sieht dich die Kamera kaum"],
 		"turbo": [Color(1.0, 0.85, 0.2), 7.0, "⚡ Turbo! %d s lang schneller – aber lauter"]}
 
 
@@ -1831,7 +1831,7 @@ func _referee(dt: float) -> void:
 				w["back"] = now() + 35.0
 				w["node"].visible = false
 				_say(p, pk[2] % int(pk[1]), 3.0)
-				news(("🌫 %s hat die Tarnkappe" if w["kind"] == "cloak" else "⚡ %s hat den Turbo") % p["name"])
+				news(("🌫 %s hat den Unsichtbar-Trank" if w["kind"] == "cloak" else "⚡ %s hat den Turbo") % p["name"])
 				_event(p, "item")
 		for q in players:                                  # rescue somebody from the jail
 			if q != null and q["state"] == "jail" and (not main.game_teams or int(q["team"]) == int(p["team"])) and a.position.distance_to(q["actor"].position) < 1.6:
@@ -2503,9 +2503,9 @@ func paint() -> void:
 	if open and main.game_mode == "mw" and not mw_decides():
 		lines.append("⚠ «MoveEye entscheidet»: MoveEye ist nicht verbunden (ab Version 2.93.3) – bis dahin entscheidet der Simulator.")
 	if not open:
-		lines.append("Bis zu %d Spieler schleichen mit dem Handy unentdeckt zum Ziel (%s). Zuerst «Spiel öffnen»." % [int(main.game_max), goal_name])
+		lines.append("Bis zu %d Spieler schleichen mit dem Handy unentdeckt zum Ziel (%s). «Start» öffnet das Spiel – oder den Assistenten öffnen." % [int(main.game_max), goal_name])
 	else:
-		lines.append({"lobby": "Bereit – «Runde starten» (hier oder auf einem Handy)", "countdown": "Gleich geht es los …",
+		lines.append({"lobby": "Bereit – «Start» (hier oder auf einem Handy)", "countdown": "Gleich geht es los …",
 				"play": "Runde läuft", "end": "Runde fertig"}.get(round_state, "") + " · Ziel: " + goal_name)
 		for p in players:
 			if p != null:
