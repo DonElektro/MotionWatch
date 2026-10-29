@@ -212,11 +212,28 @@ def qs_arrange(items, key=lambda q: q["id"]):
     return [q for _i, q in out if key(q) not in hidden]
 
 
-def qs_layout_set(order, hidden):
+def qs_layout_clean(d):
+    """2.98.29: the arrangement «for all devices» (Pi default): quick switches order / hidden / favourites (max. 8) and the
+    order / hidden cards of the live page. Devices without an own arrangement use it (web 536, window 581)."""
+    d = d if isinstance(d, dict) else {}
     ok = lambda x: isinstance(x, str) and re.fullmatch(r"[a-z0-9_]{1,20}", x)
-    order = [x for x in (order or []) if ok(x)][:60]; hidden = [x for x in (hidden or []) if ok(x)][:60]
-    CFG["qs_layout"] = {"order": order, "hidden": hidden}; save_settings()
-    log_event("web", f"Quick switches arranged: {len(order) - len([h for h in hidden if h in order])} shown, {len(hidden)} hidden")
+    L = lambda k, n=60: [x for x in (d.get(k) or []) if ok(x)][:n] if isinstance(d.get(k), list) else []
+    out = {"order": L("order"), "hidden": L("hidden")}
+    for k, n in (("favs", 8), ("cards", 30), ("chide", 30)):
+        if isinstance(d.get(k), list):
+            out[k] = L(k, n)
+    return out
+
+
+def qs_layout_set(order, hidden, favs=None, cards=None, chide=None):
+    d = {"order": order, "hidden": hidden}
+    for k, v in (("favs", favs), ("cards", cards), ("chide", chide)):
+        if v is not None:
+            d[k] = v
+    CFG["qs_layout"] = qs_layout_clean(d); save_settings()
+    lay = CFG["qs_layout"]
+    log_event("web", f"Quick switches arranged for all devices: {len(lay['order']) - len([h for h in lay['hidden'] if h in lay['order']])} shown, "
+                     f"{len(lay['hidden'])} hidden" + (f", {len(lay['favs'])} favourites" if "favs" in lay else ""))
     return True
 
 

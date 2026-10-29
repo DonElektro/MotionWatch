@@ -122,6 +122,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `573_app_schluessel.py` | «App-Schlüssel» für andere Programme (nur als Hash gespeichert, auch über http, nie Sicherheits-Funktionen) und «Sicherheit an einem Ort» (Passwort, Benutzer, App-Schlüssel, Sicherheits-Check unter Einstellungen → Sicherheit; Web und Fenster) | 380 |
 | `574_anmelden_verschluesselt.py` | «Anmelden nur verschlüsselt»: das Web-Passwort nur über https, vom Gerät selbst oder Tailscale; Hinweis-Seite, Rückfall ohne https (Web und Fenster) | 235 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
+| `581_fenster_ansicht.py` | Fenster: «Ansicht» des Reiters Live wie im Web (Vorlagen, Anordnung, Bildgrösse, Grösse, Lieblingsknöpfe + «mehr», Karten, Joystick; «Für alle Geräte») | 355 |
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
 | `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
 | `602_uebersetzungen_alarm.py` | Übersetzungen der Alarm-Extras | 130 |
@@ -147,6 +148,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `619_uebersetzungen_simdopp.py` | Übersetzungen der Aufräum-Punkte Spiel-Karte, Bewachte Sachen, Sim-Schalter, Unsichtbar-Trank | 12 |
 | `621_uebersetzungen_sicher3.py` | Übersetzungen und Anleitung zu 573 (App-Schlüssel, Sicherheit an einem Ort) und zur Rotlicht-Ansicht (578) | 150 |
 | `626_uebersetzungen_live.py` | Übersetzungen der neuen Live-Seite (536) und des Fensters (570) | 89 |
+| `627_uebersetzungen_live2.py` | Übersetzungen zu 2.98.29: ein Bearbeiten-Modus, «Für alle Geräte», Grösse, Fenster-Ansicht | 79 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |
 | `640_start.py` | Start: Befehlszeile, Selbsttest, Programmstart | 152 |

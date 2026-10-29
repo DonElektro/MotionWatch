@@ -2066,50 +2066,20 @@ function qsList(j) {                     // the fixed switches + one per relay (
     on: (c, s) => !!((s.relay_states || [])[i]), go: () => relQuick(i)})));
 }
 function qsArrange(L, c, keepHidden) {        // the order and selection the user chose (new switches come at the end)
-  const lay = (c && c.qs_layout) || {}, order = lay.order || [], hid = new Set(lay.hidden || []);
+  const lay = (typeof window.lvQsLay === "function" && window.lvQsLay(c)) || (c && c.qs_layout) || {}, order = lay.order || [], hid = new Set(lay.hidden || []);   // 2.98.29: per device (536)
   const pos = {}; order.forEach((k, i) => pos[k] = i);
   return L.map((q, i) => [q, pos[q.id] !== undefined ? pos[q.id] : order.length + i]).sort((a, b) => a[1] - b[1]).map(x => x[0])
     .filter(q => keepHidden || !hid.has(q.id));
 }
-function qsEdit() {
-  const j = QSJ; if (!j) return;
-  let ov = $("#qse-ov"); if (ov) ov.remove();
-  ov = el("div"); ov.id = "qse-ov"; ov.style.cssText = "position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:14px";
-  const c = el("div", "card"); c.style.cssText = "max-width:420px;width:100%;max-height:92vh;overflow:auto"; ov.appendChild(c); document.body.appendChild(ov);
-  c.append(el("h3", "", "✏️ " + t("Arrange the switches")), el("div", "mut", t("Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.")));
-  const hid = new Set(((j.cfg.qs_layout || {}).hidden) || []);
-  let items = qsArrange(qsList(j), j.cfg, true).map(q => ({q: q, show: !hid.has(q.id)}));
-  const list = el("div"); list.style.cssText = "margin:10px 0;display:flex;flex-direction:column;gap:6px";
-  const draw = () => {
-    list.textContent = "";
-    items.forEach((it, i) => {
-      const row = el("div"); row.style.cssText = "display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:10px" + (it.show ? "" : ";opacity:.55");
-      const cb = el("input"); cb.type = "checkbox"; cb.checked = it.show; cb.onchange = () => { it.show = cb.checked; draw(); };
-      const lb = el("label", "", (it.q.ic || "") + "  " + (it.q.raw ? it.q.lb : t(it.q.lb))); lb.style.flex = "1"; lb.onclick = () => { cb.checked = !cb.checked; cb.onchange(); };
-      const up = el("button", "sec", "▲"), dn = el("button", "sec", "▼"); up.type = dn.type = "button"; up.style.padding = dn.style.padding = "4px 10px";
-      up.disabled = i === 0; dn.disabled = i === items.length - 1;
-      up.onclick = () => { [items[i - 1], items[i]] = [items[i], items[i - 1]]; draw(); };
-      dn.onclick = () => { [items[i + 1], items[i]] = [items[i], items[i + 1]]; draw(); };
-      row.append(cb, lb, up, dn); list.appendChild(row);
-    });
-  };
-  draw();
-  const bt = el("div", "btns"), save = el("button", "", t("Save")), cancel = el("button", "sec", t("Cancel")), reset = el("button", "sec", t("Reset"));
-  save.type = cancel.type = reset.type = "button";
-  cancel.onclick = () => ov.remove();
-  reset.onclick = async () => { await post("/api/qs", {reset: true}); ov.remove(); QSSIG = ""; refresh(); };
-  save.onclick = async () => { const r = await post("/api/qs", {order: items.map(x => x.q.id), hidden: items.filter(x => !x.show).map(x => x.q.id)});
-    if (!r.ok) { toast("⚠ " + (r.error || "error")); return; } ov.remove(); QSSIG = ""; toast("✓ " + t("Saved")); refresh(); };
-  bt.append(reset, cancel, save); c.append(list, bt);
-}
+// 2.98.29: the separate «✏️ Anpassen» is gone - favourites, order and hidden switches are in the one edit mode of «Ansicht» (536),
+// per device, with «Für alle Geräte übernehmen» (= cfg.qs_layout, the default for devices without an own arrangement)
 function qsBuild(j) {
   const box = $("#qsw"); if (!box) return;
-  const L = qsArrange(qsList(j), j && j.cfg).concat([{id: "edit", ic: "✏️", lb: "Arrange", tip: "Choose and arrange the switches", edit: true}]);
+  const L = qsArrange(qsList(j), j && j.cfg);
   const sig = JSON.stringify(L.map(q => q.id + q.lb)) + LANG;
   if (sig === QSSIG) return; QSSIG = sig; box.textContent = "";
   L.forEach(q => { const b = el("button", "sec"); b.type = "button"; b.id = "qs-" + q.id; b.append(el("span", "", q.ic), el("small", "", q.raw ? q.lb : t(q.lb))); b.title = t(q.tip);
     if (q.talk) { talkTile(b); box.appendChild(b); return; }
-    if (q.edit) { b.classList.add("qs-edit"); b.onclick = () => qsEdit(); box.appendChild(b); return; }
     b.onclick = async () => { if (!QSJ) return; b.disabled = true; const r = await q.go(QSJ.cfg, QSJ.state); b.disabled = false;
       if (r && r.ok === false) toast("⚠ " + (r.error || "error"));
       else if (q.flash) { b.classList.add("flash"); setTimeout(() => b.classList.remove("flash"), 400); toast("📷 " + t("Photo saved")); }

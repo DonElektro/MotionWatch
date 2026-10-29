@@ -2865,8 +2865,7 @@ def apply_settings(data):
     WAYPOINTS[:] = wps[:50]
     CFG["ui_hidden"] = [k for k in CFG["ui_hidden"] if isinstance(k, str)][:200]
     CFG["ui_open"] = [k for k in CFG["ui_open"] if isinstance(k, str)][:100]
-    _ql = CFG["qs_layout"] if isinstance(CFG["qs_layout"], dict) else {}
-    CFG["qs_layout"] = {"order": [k for k in (_ql.get("order") or []) if isinstance(k, str)][:60], "hidden": [k for k in (_ql.get("hidden") or []) if isinstance(k, str)][:60]}
+    CFG["qs_layout"] = qs_layout_clean(CFG["qs_layout"])   # 2.98.29: also favourites and cards (290)
     CFG["web_ui"] = clean_web_ui(CFG["web_ui"])
     if not CFG.get("dev_phase_done"):                  # 2.96.2: Daniel is in the development phase - fast updates on (once)
         CFG["dev_phase_done"] = True
@@ -20504,11 +20503,28 @@ def qs_arrange(items, key=lambda q: q["id"]):
     return [q for _i, q in out if key(q) not in hidden]
 
 
-def qs_layout_set(order, hidden):
+def qs_layout_clean(d):
+    """2.98.29: the arrangement «for all devices» (Pi default): quick switches order / hidden / favourites (max. 8) and the
+    order / hidden cards of the live page. Devices without an own arrangement use it (web 536, window 581)."""
+    d = d if isinstance(d, dict) else {}
     ok = lambda x: isinstance(x, str) and re.fullmatch(r"[a-z0-9_]{1,20}", x)
-    order = [x for x in (order or []) if ok(x)][:60]; hidden = [x for x in (hidden or []) if ok(x)][:60]
-    CFG["qs_layout"] = {"order": order, "hidden": hidden}; save_settings()
-    log_event("web", f"Quick switches arranged: {len(order) - len([h for h in hidden if h in order])} shown, {len(hidden)} hidden")
+    L = lambda k, n=60: [x for x in (d.get(k) or []) if ok(x)][:n] if isinstance(d.get(k), list) else []
+    out = {"order": L("order"), "hidden": L("hidden")}
+    for k, n in (("favs", 8), ("cards", 30), ("chide", 30)):
+        if isinstance(d.get(k), list):
+            out[k] = L(k, n)
+    return out
+
+
+def qs_layout_set(order, hidden, favs=None, cards=None, chide=None):
+    d = {"order": order, "hidden": hidden}
+    for k, v in (("favs", favs), ("cards", cards), ("chide", chide)):
+        if v is not None:
+            d[k] = v
+    CFG["qs_layout"] = qs_layout_clean(d); save_settings()
+    lay = CFG["qs_layout"]
+    log_event("web", f"Quick switches arranged for all devices: {len(lay['order']) - len([h for h in lay['hidden'] if h in lay['order']])} shown, "
+                     f"{len(lay['hidden'])} hidden" + (f", {len(lay['favs'])} favourites" if "favs" in lay else ""))
     return True
 
 
@@ -43529,50 +43545,20 @@ function qsList(j) {                     // the fixed switches + one per relay (
     on: (c, s) => !!((s.relay_states || [])[i]), go: () => relQuick(i)})));
 }
 function qsArrange(L, c, keepHidden) {        // the order and selection the user chose (new switches come at the end)
-  const lay = (c && c.qs_layout) || {}, order = lay.order || [], hid = new Set(lay.hidden || []);
+  const lay = (typeof window.lvQsLay === "function" && window.lvQsLay(c)) || (c && c.qs_layout) || {}, order = lay.order || [], hid = new Set(lay.hidden || []);   // 2.98.29: per device (536)
   const pos = {}; order.forEach((k, i) => pos[k] = i);
   return L.map((q, i) => [q, pos[q.id] !== undefined ? pos[q.id] : order.length + i]).sort((a, b) => a[1] - b[1]).map(x => x[0])
     .filter(q => keepHidden || !hid.has(q.id));
 }
-function qsEdit() {
-  const j = QSJ; if (!j) return;
-  let ov = $("#qse-ov"); if (ov) ov.remove();
-  ov = el("div"); ov.id = "qse-ov"; ov.style.cssText = "position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:14px";
-  const c = el("div", "card"); c.style.cssText = "max-width:420px;width:100%;max-height:92vh;overflow:auto"; ov.appendChild(c); document.body.appendChild(ov);
-  c.append(el("h3", "", "✏️ " + t("Arrange the switches")), el("div", "mut", t("Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device.")));
-  const hid = new Set(((j.cfg.qs_layout || {}).hidden) || []);
-  let items = qsArrange(qsList(j), j.cfg, true).map(q => ({q: q, show: !hid.has(q.id)}));
-  const list = el("div"); list.style.cssText = "margin:10px 0;display:flex;flex-direction:column;gap:6px";
-  const draw = () => {
-    list.textContent = "";
-    items.forEach((it, i) => {
-      const row = el("div"); row.style.cssText = "display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:10px" + (it.show ? "" : ";opacity:.55");
-      const cb = el("input"); cb.type = "checkbox"; cb.checked = it.show; cb.onchange = () => { it.show = cb.checked; draw(); };
-      const lb = el("label", "", (it.q.ic || "") + "  " + (it.q.raw ? it.q.lb : t(it.q.lb))); lb.style.flex = "1"; lb.onclick = () => { cb.checked = !cb.checked; cb.onchange(); };
-      const up = el("button", "sec", "▲"), dn = el("button", "sec", "▼"); up.type = dn.type = "button"; up.style.padding = dn.style.padding = "4px 10px";
-      up.disabled = i === 0; dn.disabled = i === items.length - 1;
-      up.onclick = () => { [items[i - 1], items[i]] = [items[i], items[i - 1]]; draw(); };
-      dn.onclick = () => { [items[i + 1], items[i]] = [items[i], items[i + 1]]; draw(); };
-      row.append(cb, lb, up, dn); list.appendChild(row);
-    });
-  };
-  draw();
-  const bt = el("div", "btns"), save = el("button", "", t("Save")), cancel = el("button", "sec", t("Cancel")), reset = el("button", "sec", t("Reset"));
-  save.type = cancel.type = reset.type = "button";
-  cancel.onclick = () => ov.remove();
-  reset.onclick = async () => { await post("/api/qs", {reset: true}); ov.remove(); QSSIG = ""; refresh(); };
-  save.onclick = async () => { const r = await post("/api/qs", {order: items.map(x => x.q.id), hidden: items.filter(x => !x.show).map(x => x.q.id)});
-    if (!r.ok) { toast("⚠ " + (r.error || "error")); return; } ov.remove(); QSSIG = ""; toast("✓ " + t("Saved")); refresh(); };
-  bt.append(reset, cancel, save); c.append(list, bt);
-}
+// 2.98.29: the separate «✏️ Anpassen» is gone - favourites, order and hidden switches are in the one edit mode of «Ansicht» (536),
+// per device, with «Für alle Geräte übernehmen» (= cfg.qs_layout, the default for devices without an own arrangement)
 function qsBuild(j) {
   const box = $("#qsw"); if (!box) return;
-  const L = qsArrange(qsList(j), j && j.cfg).concat([{id: "edit", ic: "✏️", lb: "Arrange", tip: "Choose and arrange the switches", edit: true}]);
+  const L = qsArrange(qsList(j), j && j.cfg);
   const sig = JSON.stringify(L.map(q => q.id + q.lb)) + LANG;
   if (sig === QSSIG) return; QSSIG = sig; box.textContent = "";
   L.forEach(q => { const b = el("button", "sec"); b.type = "button"; b.id = "qs-" + q.id; b.append(el("span", "", q.ic), el("small", "", q.raw ? q.lb : t(q.lb))); b.title = t(q.tip);
     if (q.talk) { talkTile(b); box.appendChild(b); return; }
-    if (q.edit) { b.classList.add("qs-edit"); b.onclick = () => qsEdit(); box.appendChild(b); return; }
     b.onclick = async () => { if (!QSJ) return; b.disabled = true; const r = await q.go(QSJ.cfg, QSJ.state); b.disabled = false;
       if (r && r.ok === false) toast("⚠ " + (r.error || "error"));
       else if (q.flash) { b.classList.add("flash"); setTimeout(() => b.classList.remove("flash"), 400); toast("📷 " + t("Photo saved")); }
@@ -46662,6 +46648,12 @@ WEB_PAGE = WEB_PAGE.replace("</body>", WALKTEST_JS + "</body>", 1)
 # in landscape the joystick floats see-through in a corner of the picture. Everything is stored per browser
 # (localStorage «mw-live-view», the hidden cards in the existing «mw-hidden» of the ☰ view menu) - not on the device.
 # 530 stays as it is except the phone placement (not on the Live tab any more). Translations: part 626.
+# 2.98.29 (Wunsch Daniel): ONE edit mode for the arrangement (the separate «✏️ Anpassen» of the quick switches is gone):
+#   favourites ★, order ▲ ▼ and hidden ✕ of the quick switches and of the cards, per device; «Für alle Geräte übernehmen»
+#   stores it on MoveEye (CFG qs_layout: order, hidden, favs, cards, chide) as the default for devices without an own one -
+#   the earlier «Anpassen» arrangement (order / hidden) is that default. The small simulator tile only when the
+#   «Simulator-Steuerung» is not shown; «Kalibrieren» without a pan / tilt head under «… mehr»; «Grösse» (UI scale 60–160 %,
+#   one CSS variable --lv-ui, CSS zoom on everything except the picture). Window: part 581. Translations: part 627.
 # ----------------------------------------------------------------------------
 
 
@@ -46806,22 +46798,54 @@ body.lv-edit #qsw>button{position:relative}
 body.lv-edit #qsw>button:not(#lv-more):not(.qs-edit)::after{content:"☆";position:absolute;top:1px;right:3px;font-size:11px;color:var(--mut)}
 body.lv-edit #qsw>button.lvfav:not(#lv-more):not(.qs-edit)::after{content:"★";color:var(--yel)}
 body.lv-edit #lv-side{padding-bottom:90px!important}
+body.lv-edit.lv-port main>section{padding-bottom:calc(var(--lv-ui,1) * 210px)!important}
 #lv-setup .btns{margin-top:8px}
+/* 2.98.29: the small simulator tile only when the «Simulator-Steuerung» is not shown (no second copy of the controls) */
+body.lv #lv-side>#simtile.lvdup{display:none!important}
+/* hidden quick switches (per device / for all devices): gone, in the edit mode dimmed */
+body.lv:not(.lv-edit) #qsw>button.lvqh{display:none!important}
+body.lv-edit #qsw>button.lvqh{opacity:.4}
+body.lv-edit #qsw>button.lvqh:not(#lv-more)::after{content:"✕"!important;color:var(--red,#e5484d)!important}
+/* the list of the quick switches (Ansicht panel and edit mode) */
+.lvqs-row{display:flex;align-items:center;gap:6px;padding:3px 0}
+.lvqs-row>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lvqs-row.off>span{opacity:.5;text-decoration:line-through}
+.lvqs-row button{padding:3px 8px;font-size:12px;min-height:0;line-height:1.3}
+.lvqs-row button.st{width:32px;padding:3px 0;font-size:15px}
+.lvqs-row button.st.on{color:var(--yel,#f5c518)}
+#lv-qsed{margin-top:10px;padding:8px 10px;border:1px dashed var(--acc);border-radius:10px;max-height:46vh;overflow-y:auto}
+#lv-qsed h4{margin:0 0 4px;font-size:12px;color:var(--mut)}
+#lv-menu .lvsz{display:flex;align-items:center;gap:8px}#lv-menu .lvsz input{flex:1}#lv-menu .lvsz b{min-width:44px;text-align:right;font-size:13px}
+/* 2.98.29: «Grösse» = one factor for text, buttons, tiles and joystick (not the picture: it always fits) */
+body.lv:not(.videoonly) header,body.lv #lv-side,body.lv #lv-main>:not(#vcard),body.lv #lv-tools,#lv-menu,#lv-editbar{zoom:var(--lv-ui,1)}
+body.lv #lv-joy{zoom:var(--lv-uij,1)}   /* the stick in the picture: not bigger than 115 % (it would cover the picture) */
+body.lv #vcard>:not(.vwrap){zoom:var(--lv-ui,1)}
 </style>
 <script>
 (function () {
   if (document.body.dataset.tab !== "live") return;
   try { const D = /*LVDE*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}
+  try { const D = /*LVDE2*/{}; for (const k in D) if (!(k in I18N.de)) I18N.de[k] = D[k]; } catch (e) {}   // 2.98.29 (627)
   const T = x => (typeof t === "function" ? t(x) : x);
   const E = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
   const KEY = "mw-live-view";                          // per browser (this phone / PC) - never sent to the device
-  const DEF = {layout: "auto", size: 60, joy: "auto", ov: "auto", favs: null, order: null, more: false, preset: "", hide: ["lvsetup"]};
+  // favs / qorder / qhide (quick switches) and order / hide (cards): null = this device has no own arrangement -> the one
+  // «for all devices» on MoveEye (cfg.qs_layout), else the standard. ui = «Grösse» ("auto" or 60 … 160 %)
+  const DEF = {layout: "auto", size: 60, ui: "auto", joy: "auto", ov: "auto", favs: null, qorder: null, qhide: null, order: null, more: false, preset: "", hide: null};
   const DEFFAV = ["rec", "photo", "track", "patrol", "white", "ir", "listen", "therm"];
   const DEFORDER = ["walktest", "controls", "whatwas", "simtile", "lvsetup"];   // Daniel: picture → simulator → walk test → the rest
   let V = Object.assign({}, DEF);
   try { Object.assign(V, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
-  V.hide = Array.isArray(V.hide) ? V.hide.slice() : ["lvsetup"];
+  ["hide", "favs", "qorder", "qhide", "order"].forEach(k => { V[k] = Array.isArray(V[k]) ? V[k].filter(x => typeof x === "string") : null; });
+  if (V.favs && !V.qorder) V.qorder = V.favs.slice();    // 2.98.28 kept the order of the favourites: it becomes the order of the switches
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(V)); } catch (e) {} };
+  // ---- the arrangement «for all devices» (on MoveEye) and the effective one of this device ----
+  const SH = () => { const j = (typeof QSJ !== "undefined" && QSJ) || {}; return (j.cfg && j.cfg.qs_layout) || {}; };
+  const has = a => Array.isArray(a) && a.length > 0;
+  const qhideL = () => V.qhide || (Array.isArray(SH().hidden) ? SH().hidden : []);
+  const hideL = () => V.hide || (Array.isArray(SH().chide) ? SH().chide : ["lvsetup"]);
+  const corder = () => V.order || (has(SH().cards) ? SH().cards : null);
+  const own = () => ["favs", "qorder", "qhide", "order", "hide"].some(k => V[k] !== null);
   const sec = document.querySelector("main>section"), vc = document.getElementById("vcard");
   if (!sec || !vc) return;
   document.body.classList.add("lv");
@@ -46840,7 +46864,7 @@ body.lv-edit #lv-side{padding-bottom:90px!important}
   // first time in this browser: take over the cards hidden earlier with the ☰ view menu (from now on the live cards are per device)
   let firstRun = false;
   try { firstRun = localStorage.getItem(KEY) === null; } catch (e) {}
-  if (firstRun && typeof HIDDEN !== "undefined") ["controls", "walktest", "simctl", "whatwas", "simtile"].forEach(k => { if (HIDDEN.has(k) && !V.hide.includes(k)) V.hide.push(k); });
+  if (firstRun && typeof HIDDEN !== "undefined") ["controls", "walktest", "simctl", "whatwas", "simtile"].forEach(k => { if (HIDDEN.has(k) && !hideL().includes(k)) V.hide = hideL().concat([k]); });
   // ---- tool buttons on the picture ----
   const vw = vc.querySelector(".vwrap");
   const TB = E("div"); TB.id = "lv-tools";
@@ -46857,6 +46881,12 @@ body.lv-edit #lv-side{padding-bottom:90px!important}
   J.addEventListener("pointerdown", jWake); J.addEventListener("pointermove", e => { if (e.buttons) jWake(); });
   J.addEventListener("dblclick", e => e.stopPropagation());
   const jc = E("button", "", "◎"); jc.type = "button"; jc.title = T("Centre"); jc.onclick = e => { e.stopPropagation(); const c = document.getElementById("stick-center"); if (c) c.click(); };
+  // ---- «Kalibrieren» needs no pan / tilt head (it learns the picture again): without a head it is a quick switch behind «… more» ----
+  try {
+    if (typeof QS !== "undefined" && Array.isArray(QS) && !QS.some(q => q.id === "recal"))
+      QS.push({id: "recal", ic: "↻", lb: "Calibrate", tip: "Learn the picture again (after moving the camera)", on: () => false, ok: () => !lvHead(),
+        go: () => { if (typeof act === "function") act("recalibrate"); if (typeof toast === "function") toast("↻ " + T("Recalibrating - keep the picture empty for a few seconds")); return Promise.resolve({ok: true}); }});
+  } catch (e) {}
   // ---- what the page knows ----
   const J_ = () => (typeof QSJ !== "undefined" && QSJ) || {};
   let headT = 0;
@@ -46901,7 +46931,7 @@ body.lv-edit #lv-side{padding-bottom:90px!important}
       if (sw && (sw.parentNode !== M || vc.nextSibling !== sw)) vc.after(sw);       // the simulator directly under the picture
       const items = [...M.children, ...S.children, ...[...sec.children].filter(x => x !== M && x !== S)]
         .filter(x => x !== vc && x !== sw && x.tagName !== "STYLE" && x.tagName !== "SCRIPT");
-      const ord = (V.order && V.order.length ? V.order : []).concat(DEFORDER.filter(k => !(V.order || []).includes(k)));
+      const co = corder() || [], ord = co.concat(DEFORDER.filter(k => !co.includes(k)));
       const dom = new Map(items.map((x, i) => [x, i]));
       const rank = x => { const i = ord.indexOf(keyOf(x)); return i >= 0 ? i : 100 + dom.get(x); };
       const want = items.slice().sort((a, b) => rank(a) - rank(b));
@@ -46914,6 +46944,11 @@ body.lv-edit #lv-side{padding-bottom:90px!important}
   const mo = new MutationObserver(() => { if (!busy) requestAnimationFrame(() => { arrange(); fit(); }); });
   mo.observe(sec, {childList: true}); mo.observe(M, {childList: true});
   // ---- layout ----
+  function uiScale() {                                 // «Grösse»: own choice, or automatic (a big screen a bit bigger)
+    const n = +V.ui; if (V.ui !== "auto" && n >= 60 && n <= 160) return n / 100;
+    const w = innerWidth, h = innerHeight;
+    return w >= 1800 && h >= 1000 ? 1.15 : w >= 1500 && h >= 860 ? 1.05 : 1;
+  }
   function fit() {
     const md = mode(), B = document.body;
     B.classList.toggle("lv-low", md === "land" && innerHeight < 560);   // phone held sideways: the header scrolls away, the picture gets the whole height
@@ -46926,12 +46961,14 @@ body.lv-edit #lv-side{padding-bottom:90px!important}
     const H = Math.max(200, Math.round(vh - top));
     document.documentElement.style.setProperty("--lv-h", H + "px");
     const sw = document.getElementById("lv-simw"), simOn = sw && !sw.hidden && !isHid("simctl");
+    const u = uiScale(); document.documentElement.style.setProperty("--lv-ui", String(u)); document.documentElement.style.setProperty("--lv-uij", String(Math.min(u, 1.15)));
     if (md === "land") {
       const W = main.clientWidth - 24, share = 0.5 + Math.max(0, Math.min(100, +V.size)) / 100 * 0.35;
-      let side = Math.round(Math.max(260, Math.min(Math.max(640, W * 0.45), (1 - share) * W)));
+      let side = Math.round(Math.max(260 * Math.min(u, 1.3), Math.min(Math.max(640, W * 0.45) * Math.max(1, u), (1 - share) * W * u)));
+      side = Math.min(side, Math.round(W * 0.62));       // a big «Grösse» makes the cards column wider, the picture keeps at least 38 %
       const v = document.getElementById("video"), ar = (v && v.naturalWidth && v.naturalHeight) ? v.naturalWidth / v.naturalHeight : 16 / 9;
-      const peek = simOn ? 54 : 0, picH = H - 12 - 18 - peek, picW = picH * ar + 18;
-      if (W - side - 12 > picW) side = Math.round(Math.min(Math.max(side, W - picW - 12), Math.max(side, W * 0.55)));   // picture limited by the height: the spare width goes to the cards
+      const peek = simOn ? Math.round(54 * u) : 0, picH = H - 12 - 18 - peek, picW = picH * ar + 18;
+      if (W - side - 12 > picW) side = Math.round(Math.min(Math.max(side, W - picW - 12), Math.max(side, W * Math.min(0.7, 0.55 * Math.max(1, u)))));   // picture limited by the height: the spare width goes to the cards
       document.documentElement.style.setProperty("--lv-sw", side + "px");
       document.documentElement.style.setProperty("--lv-pich", peek ? "calc(100% - " + peek + "px)" : "100%");
     } else if (md === "port") {
@@ -46955,15 +46992,26 @@ body.lv-edit #lv-side{padding-bottom:90px!important}
     if (!ov && st.parentNode === J) { box.insertBefore(st, box.firstChild); jc.remove(); }
     if (!ov && st.parentNode !== J) jc.remove();
   }
-  // ---- favourites in the quick switches ----
-  function favs() { return (V.favs && V.favs.length ? V.favs : DEFFAV).slice(0, 8); }
+  // ---- quick switches: favourites ★, order, hidden (one list; the favourites show in the order of the list) ----
+  const qsIds = () => [...document.querySelectorAll("#qsw > button")].filter(b => b.id !== "lv-more" && !b.classList.contains("na")).map(b => b.id.replace(/^qs-/, ""));
+  function qorder() {                                   // the order of this device, else the one for all devices, else the favourites first
+    const o = V.qorder || (has(SH().order) ? SH().order : null);
+    return o ? o.slice() : favs();
+  }
+  function favs() {
+    const H = qhideL(), F = V.favs || (has(SH().favs) ? SH().favs : DEFFAV);
+    const all = [...document.querySelectorAll("#qsw > button")].map(b => b.id.replace(/^qs-/, "")).filter(x => x !== "lv-more");
+    return F.filter(id => !H.includes(id) && (!all.length || all.includes(id))).slice(0, 8);    // a switch of the window only (or gone) takes no place
+  }
+  window.lvQsLay = () => ({order: qorder(), hidden: []});     // 530 qsArrange(): the order of this device; hidden ones get the class lvqh
+  function reQs() { try { if (typeof QSJ !== "undefined" && QSJ && typeof qsPaint === "function") qsPaint(QSJ); } catch (e) {} paintFavs(); }
   function paintFavs() {
     const q = document.getElementById("qsw"); if (!q) return;
-    const F = favs();
+    const F = favs(), H = qhideL();
     q.querySelectorAll(":scope > button").forEach(b => {
       if (b.id === "lv-more") return;
-      const id = b.id.replace(/^qs-/, ""), i = F.indexOf(id);
-      b.classList.toggle("lvfav", i >= 0); b.style.setProperty("--o", i >= 0 ? i : 0);
+      const id = b.id.replace(/^qs-/, "");
+      b.classList.toggle("lvfav", F.includes(id)); b.classList.toggle("lvqh", H.includes(id)); b.style.setProperty("--o", 0);
     });
     let m = document.getElementById("lv-more");
     if (!m || m.parentNode !== q) { m = E("button", "sec"); m.type = "button"; m.id = "lv-more"; m.append(E("span", "", "…"), E("small", "", ""));
@@ -46973,31 +47021,70 @@ body.lv-edit #lv-side{padding-bottom:90px!important}
     if (sm.textContent !== tx) sm.textContent = tx;
     m.title = T(q.classList.contains("lvopen") ? "Show only the favourites" : "Show all quick switches");
   }
+  function setFav(id, on) {
+    const F = favs(), i = F.indexOf(id);
+    if (on && i < 0) { if (F.length >= 8) { if (typeof toast === "function") toast("★ " + T("At most 8 favourites")); return false; } F.push(id); if (qhideL().includes(id)) setQHide(id, false); }
+    if (!on && i >= 0) F.splice(i, 1);
+    V.favs = F; V.preset = ""; save(); return true;
+  }
+  function setQHide(id, hide) {
+    const H = new Set(qhideL()); if (hide) H.add(id); else H.delete(id); V.qhide = [...H];
+    if (hide && favs().includes(id)) V.favs = favs().filter(x => x !== id);
+    V.preset = ""; save();
+  }
+  function qMove(id, d) {                               // ▲ ▼ in the list of the available switches (the others keep their place)
+    const vis = qsIds(), L = qorder(); vis.forEach(x => { if (!L.includes(x)) L.push(x); });
+    const order = L.filter(x => vis.includes(x)), i = order.indexOf(id), j = i + d; if (i < 0 || j < 0 || j >= order.length) return;
+    const a = L.indexOf(order[i]), b = L.indexOf(order[j]); [L[a], L[b]] = [L[b], L[a]];
+    V.qorder = L; V.preset = ""; save(); reQs();
+  }
+  function qsRows(box, after) {                         // the list ★ name ▲ ▼ ✕ - the same in the Ansicht panel and in the edit mode
+    box.textContent = "";
+    const F = favs(), H = qhideL(), ids = qsIds();
+    const name = id => { const b = document.getElementById("qs-" + id); return b ? ((b.querySelector("span") || {}).textContent || "") + " " + ((b.querySelector("small") || {}).textContent || "") : id; };
+    ids.forEach((id, i) => {
+      const row = E("div", "lvqs-row" + (H.includes(id) ? " off" : ""));
+      const mk = (txt, tip, fn, cls) => { const b = E("button", "sec" + (cls ? " " + cls : ""), txt); b.type = "button"; b.title = T(tip);
+        b.onclick = e => { e.preventDefault(); e.stopPropagation(); fn(); paintFavs(); qsRows(box, after); if (after) after(); }; row.appendChild(b); return b; };
+      const st = mk(F.includes(id) ? "★" : "☆", "Favourite (shown without «… more»)", () => setFav(id, !F.includes(id)), "st" + (F.includes(id) ? " on" : ""));
+      st.disabled = H.includes(id) || (!F.includes(id) && F.length >= 8);
+      row.appendChild(E("span", "", name(id)));
+      mk("▲", "Up", () => qMove(id, -1)).disabled = i === 0;
+      mk("▼", "Down", () => qMove(id, 1)).disabled = i === ids.length - 1;
+      mk(H.includes(id) ? "👁" : "✕", "Hide / show", () => setQHide(id, !H.includes(id)));
+      box.appendChild(row);
+    });
+  }
   // edit mode: a tap on a quick switch makes it a favourite (★) instead of switching
   document.addEventListener("click", e => {
     if (!document.body.classList.contains("lv-edit")) return;
     const b = e.target.closest && e.target.closest("#qsw > button"); if (!b || b.id === "lv-more" || b.classList.contains("qs-edit")) return;
     e.preventDefault(); e.stopPropagation();
-    const id = b.id.replace(/^qs-/, ""), F = favs();
-    const i = F.indexOf(id); if (i >= 0) F.splice(i, 1); else { if (F.length >= 8) { if (typeof toast === "function") toast("★ " + T("At most 8 favourites")); return; } F.push(id); }
-    V.favs = F; V.preset = ""; save(); paintFavs();
+    const id = b.id.replace(/^qs-/, "");
+    setFav(id, !favs().includes(id)); paintFavs(); const qe = document.getElementById("lv-qsed"); if (qe) qsEdBuild(qe);
   }, true);
   document.addEventListener("pointerdown", e => {          // the talk tile listens to pointerdown: no talking in the edit mode
     if (document.body.classList.contains("lv-edit") && e.target.closest && e.target.closest("#qsw > button[data-talk]")) { e.stopPropagation(); e.preventDefault(); }
   }, true);
-  // ---- cards: hide / show (the same «mw-hidden» as the ☰ view menu), move ----
+  // ---- cards: hide / show, move (per device; «Für alle Geräte übernehmen» = the default on MoveEye) ----
   function cards() { return [...S.children].filter(x => keyOf(x) && x.id !== "mbtns2"); }
   const labelOf = x => T(x.dataset.vlabel || keyOf(x));
-  const isHid = k => (V.hide || []).includes(k);
-  function setHidden(k, hide) {                         // per device («mw-live-view»), not the shared «mw-hidden» of the ☰ menu
-    const H = new Set(V.hide || []); if (hide) H.add(k); else H.delete(k); V.hide = [...H]; save(); paintHidden();
+  const isHid = k => hideL().includes(k);
+  function setHidden(k, hide) {
+    const H = new Set(hideL()); if (hide) H.add(k); else H.delete(k); V.hide = [...H]; save(); paintHidden();
+  }
+  function simDup() {                                   // the «Simulator-Steuerung» is shown: the small tile would be a second copy
+    const sw = document.getElementById("lv-simw");
+    return !!(sw && !sw.hidden && !isHid("simctl"));
   }
   function paintHidden() {
     [...cards(), document.getElementById("lv-sim")].forEach(x => { if (x) x.classList.toggle("lvh", isHid(keyOf(x))); });
+    const st = document.getElementById("simtile"); if (st) st.classList.toggle("lvdup", simDup());
   }
   function move(x, d) {
-    const L = cards(), i = L.indexOf(x), j = i + d; if (i < 0 || j < 0 || j >= L.length) return;
-    [L[i], L[j]] = [L[j], L[i]]; V.order = L.map(keyOf); V.preset = ""; save(); arrange(); editTools(); x.scrollIntoView({block: "nearest"});
+    const L = cards().filter(c => !c.classList.contains("lvdup")), i = L.indexOf(x), j = i + d; if (i < 0 || j < 0 || j >= L.length) return;
+    [L[i], L[j]] = [L[j], L[i]]; const keep = (corder() || []).filter(k => !L.some(c => keyOf(c) === k));
+    V.order = L.map(keyOf).concat(keep); V.preset = ""; save(); arrange(); editTools(); x.scrollIntoView({block: "nearest"});
   }
   function editTools() {
     cards().forEach(x => {
@@ -47011,25 +47098,55 @@ body.lv-edit #lv-side{padding-bottom:90px!important}
       const sm = x.tagName === "DETAILS" ? x.querySelector(":scope > summary") : null;
       if (sm) sm.appendChild(tb); else x.insertBefore(tb, x.firstChild);
     });
+    const qe = document.getElementById("lv-qsed"), q = document.getElementById("qsw");
+    if (q && (!qe || qe.previousElementSibling !== q)) { const n = qe || E("div"); n.id = "lv-qsed"; q.after(n); qsEdBuild(n); }
+  }
+  function qsEdBuild(n) {
+    n.textContent = ""; n.appendChild(E("h4", "", "⚡ " + T("Quick switches") + " – " + T("★ = favourite (max. 8), ▲ ▼ = order, ✕ = hide")));
+    const L = E("div"); n.appendChild(L); qsRows(L);
+  }
+  // ---- «Für alle Geräte übernehmen»: this arrangement becomes the default on MoveEye ----
+  async function shareAll() {
+    if (!confirm(T("Use this arrangement (favourites, order, hidden switches and cards) for all devices that have no own arrangement?"))) return;
+    const vis = qsIds(), qo = qorder(); vis.forEach(x => { if (!qo.includes(x)) qo.push(x); });
+    const co = cards().map(keyOf).concat(["simctl"]);
+    const body = {order: qo, hidden: qhideL(), favs: favs(), cards: co, chide: hideL()};
+    let r; try { r = await post("/api/qs", body); } catch (e) { r = {ok: false, error: String(e)}; }
+    if (!r || !r.ok) { if (typeof toast === "function") toast("⚠ " + ((r && r.error) || "error")); return; }
+    if (typeof QSJ !== "undefined" && QSJ && QSJ.cfg) QSJ.cfg.qs_layout = r.qs_layout;
+    ["favs", "qorder", "qhide", "order", "hide"].forEach(k => { V[k] = null; }); save();    // this device follows the default from now on
+    if (typeof toast === "function") toast("✓ " + T("Saved on MoveEye for all devices"));
+    apply(); reQs();
+  }
+  async function shareReset() {
+    if (!confirm(T("Delete the arrangement for all devices? Devices without an own arrangement get the standard again."))) return;
+    const r = await post("/api/qs", {reset: true});
+    if (r && r.ok && typeof QSJ !== "undefined" && QSJ && QSJ.cfg) QSJ.cfg.qs_layout = r.qs_layout;
+    if (typeof toast === "function") toast(r && r.ok ? "✓ " + T("Standard") : "⚠ " + ((r && r.error) || "error"));
+    apply(); reQs(); if (!MN.hidden) menuBuild();
   }
   function edit(on) {
     document.body.classList.toggle("lv-edit", on);
     document.querySelectorAll(".lv-et").forEach(x => x.remove());
+    const qe = document.getElementById("lv-qsed"); if (qe && !on) qe.remove();
     let bar = document.getElementById("lv-editbar");
     if (on) {
       menuClose();
+      const cc = document.querySelector('#lv-side > [data-view="controls"]'); if (cc && cc.tagName === "DETAILS") cc.open = true;
       if (!bar) {
         bar = E("div"); bar.id = "lv-editbar";
-        bar.appendChild(E("span", "", "✏️ " + T("Edit: move the cards with ▲ ▼, ✕ hides one (👁 shows it again). Tap a quick switch = favourite ★ (max. 8).")));
+        bar.appendChild(E("span", "", "✏️ " + T("Edit: cards ▲ ▼ move, ✕ hides (👁 shows again). Quick switches: tap = favourite ★ (max. 8), the list below them = order and hide. Stored on this device.")));
+        const a = E("button", "sec", "📲 " + T("Use for all devices")); a.type = "button"; a.title = T("Store this arrangement on MoveEye as the default for devices without an own arrangement"); a.onclick = () => shareAll();
         const r = E("button", "sec", T("Reset")); r.type = "button"; r.onclick = () => { if (confirm(T("Back to the standard view of the live page?"))) reset(); };
         const d = E("button", "", T("Finish")); d.type = "button"; d.onclick = () => edit(false);
-        bar.append(r, d); document.body.appendChild(bar);
+        bar.append(a, r, d); document.body.appendChild(bar);
       }
       editTools();
       setTimeout(() => { const c = document.getElementById("lv-side"); if (c && mode() === "port") c.scrollIntoView({behavior: "smooth", block: "start"}); }, 50);
     } else if (bar) bar.remove();
     paintFavs();
   }
+  window.lvEdit = edit;
   // ---- presets ----
   const LIVEKEYS = () => cards().map(keyOf).concat(["simctl"]);
   const PRESETS = {
@@ -47043,10 +47160,9 @@ body.lv-edit #lv-side{padding-bottom:90px!important}
     if (k === "setup") { const w = document.getElementById("wt-card"); if (w) w.open = true; SU.open = true; }
     apply(); if (typeof toast === "function") toast("✓ " + P.ic + " " + T(P.lb));
   }
-  function reset() {
-    V = Object.assign({}, DEF); save();
-    V.hide = ["lvsetup"]; save(); paintHidden();
-    edit(false); apply();
+  function reset() {                                    // this device: back to the arrangement for all devices (or the standard)
+    const keep = {ui: V.ui}; V = Object.assign({}, DEF, keep); save(); paintHidden();
+    edit(false); apply(); reQs();
   }
   // ---- the «Ansicht» panel ----
   const MN = E("div"); MN.id = "lv-menu"; MN.hidden = true; document.body.appendChild(MN);
@@ -47060,6 +47176,7 @@ body.lv-edit #lv-side{padding-bottom:90px!important}
     return s;
   }
   function menuBuild() {
+    const top = MN.scrollTop;
     MN.textContent = "";
     const hd = E("div", "lvhead"); hd.appendChild(E("b", "", "◫ " + T("View of the live page")));
     const x = E("button", "sec", "✕"); x.type = "button"; x.title = T("Close"); x.onclick = e => { e.stopPropagation(); menuClose(); }; hd.appendChild(x); MN.appendChild(hd);
@@ -47078,40 +47195,52 @@ body.lv-edit #lv-side{padding-bottom:90px!important}
     r.oninput = () => { V.size = +r.value; V.preset = ""; save(); fit(); };
     MN.appendChild(r);
     MN.appendChild(E("div", "mut", T(md === "land" ? "Landscape: how wide the picture is next to the cards (it never gets higher than the window)." : "Portrait: how high the picture may be.")));
+    // «Grösse»: text, buttons, tiles and joystick together (like a resolution); the picture always fits
+    MN.appendChild(E("h3", "", T("Size of text and buttons")));
+    const sz = E("div", "lvsz"), sr = E("input"), sv = E("b");
+    const auto = V.ui === "auto";
+    sr.type = "range"; sr.min = 60; sr.max = 160; sr.step = 10; sr.value = auto ? Math.round(uiScale() * 100 / 10) * 10 : +V.ui;
+    sv.textContent = auto ? T("Automatic") : V.ui + " %";
+    sr.oninput = () => { sv.textContent = sr.value + " %"; };
+    sr.onchange = () => { V.ui = +sr.value; save(); fit(); apply(); menuBuild(); };
+    const sa = E("button", "sec" + (auto ? " on" : ""), T("Automatic")); sa.type = "button";
+    sa.onclick = e => { e.stopPropagation(); V.ui = "auto"; save(); fit(); apply(); menuBuild(); };
+    sz.append(sr, sv); MN.appendChild(sz);
+    const s2 = E("div", "lvseg"); [70, 100, 130].forEach(n => { const b = E("button", "sec" + (+V.ui === n ? " on" : ""), n + " %"); b.type = "button";
+      b.onclick = e => { e.stopPropagation(); V.ui = n; save(); fit(); apply(); menuBuild(); }; s2.appendChild(b); });
+    s2.insertBefore(sa, s2.firstChild); MN.appendChild(s2);
+    MN.appendChild(E("div", "mut", T("Like a resolution: everything except the picture gets smaller or bigger (only on this device).")));
     MN.appendChild(E("h3", "", T("Joystick")));
     MN.appendChild(seg([["auto", "Automatic"], ["on", "Always"], ["off", "Never"]], V.joy, v => { V.joy = v; }));
     const j = J_(), hs = j.state ? (lvHead() ? "pan / tilt head found" : "no pan / tilt head found") : "";
     if (hs && V.joy === "auto") MN.appendChild(E("div", "mut", T("Automatic") + ": " + T(hs)));
     MN.appendChild(seg([["auto", "In the picture in landscape"], ["on", "In the picture"], ["off", "In the controls"]], V.ov, v => { V.ov = v; }));
-    MN.appendChild(E("h3", "", T("Favourite buttons (4–8)")));
-    const F = favs(), all = [...document.querySelectorAll("#qsw > button")].filter(b => b.id !== "lv-more" && !b.classList.contains("qs-edit") && !b.classList.contains("na"));
-    const name = id => { const b = document.getElementById("qs-" + id); return b ? (b.querySelector("span") || {}).textContent + " " + (b.querySelector("small") || {}).textContent : id; };
-    const ids = F.filter(id => all.some(b => b.id === "qs-" + id)).concat(all.map(b => b.id.replace(/^qs-/, "")).filter(id => !F.includes(id)));
-    ids.forEach(id => {
-      const row = E("label", "lvrow"), cb = E("input"); cb.type = "checkbox"; cb.checked = F.includes(id);
-      cb.disabled = !cb.checked && F.length >= 8;
-      cb.onchange = () => { const G = favs(); const i = G.indexOf(id); if (cb.checked && i < 0) G.push(id); if (!cb.checked && i >= 0) G.splice(i, 1); V.favs = G; V.preset = ""; save(); paintFavs(); menuBuild(); };
-      row.append(cb, E("span", "", name(id)));
-      if (F.includes(id)) {
-        const up = E("button", "sec", "▲"), dn = E("button", "sec", "▼"); up.type = dn.type = "button";
-        const mv = d => ev => { ev.preventDefault(); ev.stopPropagation(); const G = favs(), i = G.indexOf(id), k = i + d; if (k < 0 || k >= G.length) return; [G[i], G[k]] = [G[k], G[i]]; V.favs = G; save(); paintFavs(); menuBuild(); };
-        up.onclick = mv(-1); dn.onclick = mv(1); row.append(up, dn);
-      }
-      MN.appendChild(row);
-    });
-    MN.appendChild(E("div", "mut", T("The other quick switches stay behind «… more». Hide a switch everywhere: «✏️ Arrange» in the quick switches.")));
+    MN.appendChild(E("h3", "", T("Quick switches") + " · " + T("Favourite buttons (4–8)")));
+    const ql = E("div"); MN.appendChild(ql); qsRows(ql);
+    MN.appendChild(E("div", "mut", T("★ = always visible, the others behind «… more». ✕ hides a switch on this device.")));
     MN.appendChild(E("h3", "", T("Cards")));
     const sw = document.getElementById("lv-sim");
-    const list = cards().concat(sw && !document.getElementById("lv-simw").hidden ? [sw] : []);
+    const list = cards().filter(c => !c.classList.contains("lvdup")).concat(sw && !document.getElementById("lv-simw").hidden ? [sw] : []);
     list.forEach(c => { const k = keyOf(c); const row = E("label", "lvrow"), cb = E("input"); cb.type = "checkbox";
       cb.checked = !isHid(k);
-      cb.onchange = () => { setHidden(k, !cb.checked); V.preset = ""; save(); fit(); };
+      cb.onchange = () => { setHidden(k, !cb.checked); V.preset = ""; save(); fit(); menuBuild(); };
       row.append(cb, E("span", "", labelOf(c))); MN.appendChild(row); });
+    if (simDup()) MN.appendChild(E("div", "mut", T("The small simulator tile only shows when the «Simulator control» is hidden.")));
     const ft = E("div", "lvfoot");
     const eb = E("button", "sec", "✏️ " + T("Edit")); eb.type = "button"; eb.onclick = e => { e.stopPropagation(); edit(true); };
     const rb = E("button", "sec", T("Reset")); rb.type = "button"; rb.onclick = e => { e.stopPropagation(); if (confirm(T("Back to the standard view of the live page?"))) { reset(); menuBuild(); } };
     ft.append(eb, rb); MN.appendChild(ft);
-    MN.appendChild(E("div", "mut", T("Stored only in this browser (this phone / PC).")));
+    const f2 = E("div", "lvfoot");
+    const ab = E("button", "sec", "📲 " + T("Use for all devices")); ab.type = "button"; ab.title = T("Store this arrangement on MoveEye as the default for devices without an own arrangement");
+    ab.onclick = e => { e.stopPropagation(); shareAll().then(() => { if (!MN.hidden) menuBuild(); }); };
+    f2.appendChild(ab);
+    const shd = SH(), shOn = has(shd.order) || has(shd.hidden) || has(shd.favs) || has(shd.cards) || Array.isArray(shd.chide);
+    if (shOn) { const xb = E("button", "sec", "🗑 " + T("Default for all")); xb.type = "button"; xb.title = T("Delete the arrangement for all devices");
+      xb.onclick = e => { e.stopPropagation(); shareReset(); }; f2.appendChild(xb); }
+    MN.appendChild(f2);
+    MN.appendChild(E("div", "mut", T(own() ? "This device has its own arrangement (only in this browser). «Reset» = back to the arrangement for all devices."
+      : shOn ? "This device uses the arrangement for all devices (stored on MoveEye). A change makes it its own." : "Stored only in this browser (this phone / PC).")));
+    MN.scrollTop = top;
   }
   function menu() { MN.hidden = !MN.hidden; if (!MN.hidden) { const vm = document.getElementById("viewmenu"); if (vm) vm.hidden = true; menuBuild(); } }
   window.lvMenu = menu;
@@ -47129,9 +47258,10 @@ body.lv-edit #lv-side{padding-bottom:90px!important}
   let lastSig = "";
   setInterval(() => {
     const sw = document.getElementById("lv-simw");
-    const sig = [lvHead(), sw && sw.hidden, document.getElementById("qsw") && document.getElementById("qsw").childElementCount, typeof LANG !== "undefined" && LANG].join("|");
+    const sh = JSON.stringify(SH());
+    const sig = [lvHead(), sw && sw.hidden, document.getElementById("qsw") && document.getElementById("qsw").childElementCount, typeof LANG !== "undefined" && LANG, sh].join("|");
     paintFavs();
-    if (sig !== lastSig) { lastSig = sig; apply(); }
+    if (sig !== lastSig) { const re = lastSig && lastSig.split("|").pop() !== sh; lastSig = sig; apply(); if (re && !own()) reQs(); }
   }, 1000);
   apply(); setTimeout(apply, 600); setTimeout(apply, 2000);
 })();
@@ -47196,7 +47326,7 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <div class="tip">💡 <b>Tipp:</b> Lege die Seite als Lesezeichen oder als Symbol auf den Startbildschirm des Handys («Zum Home-Bildschirm»). Dann ist sie mit einem Tipp offen.</div>
 </section>
 
-<section id="live" data-icon="📺"><h2>Die Live-Seite</h2><p><b>Die 6 Reiter (ab 2.98.0):</b> <b>Live</b> (Bild, Joystick, Schnellschalter) · <b>Schutz</b> (Aus / Wachsam / Voll, «Heute Nacht bewachen», was bei Alarm passiert, Diebstahlschutz, Zeitplan, darunter «Zonen») · <b>Verlauf</b> (Aufnahmen, Tagebuch, Protokoll) · <b>Einstellungen</b> (Erkennung, Kameras &amp; Kopf, Geräte &amp; Sensoren, Strom, Netz &amp; Zugang, System; darunter «Kameras») · <b>Simulator</b> · <b>Mehr</b> (Anleitung, Spielecke, Werkzeuge, Infoseite, Almanach, Rückmeldung). Oben im Schutz zeigt die Kette «Person → Push → Licht → Aufnahme → Sirene», was eingeschaltet ist; antippen öffnet die Einstellung. «Einfach / Experte» steht oben in den Einstellungen.</p><p><b>🎯 Folgen (ab 2.98.1):</b> ein Schalter für alles: Die Kamera hält, was erkannt wird, in der Bildmitte – Personen zuerst, sonst Tiere und was sich wirklich bewegt. Sie dreht um den Winkel, den das Objekt von der Mitte hat, und wartet kurz auf das neue Bild (kein Hin- und Herpendeln). Im Simulator heisst derselbe Schalter «Verfolgen». Von Hand steuern pausiert das Folgen kurz.</p>
+<section id="live" data-icon="📺"><h2>Die Live-Seite</h2><p><b>Die 6 Reiter (ab 2.98.0):</b> <b>Live</b> (Bild, Joystick, Schnellschalter) · <b>Schutz</b> (Aus / Wachsam / Voll, «Heute Nacht bewachen», was bei Alarm passiert, Diebstahlschutz, Zeitplan, darunter «Zonen») · <b>Verlauf</b> (Aufnahmen, Tagebuch, Protokoll) · <b>Einstellungen</b> (Erkennung, Kameras &amp; Kopf, Geräte &amp; Sensoren, Strom, Netz &amp; Zugang, System; darunter «Kameras») · <b>Simulator</b> · <b>Mehr</b> (Anleitung, Spielecke, Werkzeuge, Infoseite, Almanach, Rückmeldung). Oben im Schutz zeigt die Kette «Person → Push → Licht → Aufnahme → Sirene», was eingeschaltet ist; antippen öffnet die Einstellung. «Einfach / Experte» steht oben in den Einstellungen.</p><p><b>🎯 Folgen (ab 2.98.1):</b> ein Schalter für alles: Die Kamera hält, was erkannt wird, in der Bildmitte – Personen zuerst, sonst Tiere und was sich wirklich bewegt. Sie dreht um den Winkel, den das Objekt von der Mitte hat, und wartet kurz auf das neue Bild (kein Hin- und Herpendeln). Im Simulator heisst derselbe Schalter «Verfolgen». Von Hand steuern pausiert das Folgen kurz.</p><p><b>◫ Ansicht (ab 2.98.29):</b> der Knopf oben rechts im Bild. Fertige Ansichten (Nur schauen / Bedienen / Einrichten), Hoch- oder Querformat, Bildgrösse und «Grösse von Schrift und Knöpfen» (60–160 %, wie eine Auflösung – das Bild bleibt immer ganz sichtbar). «✏️ Bearbeiten» ist der eine Weg zum Ordnen: Karten mit ▲ ▼ verschieben oder mit ✕ ausblenden, Schnellschalter antippen = Liebling ★ (höchstens 8, die anderen hinter «… mehr»), in der Liste darunter Reihenfolge und Ausblenden. Das gilt für dieses Gerät; «Für alle Geräte übernehmen» speichert die Anordnung auf MoveEye als Standard für Geräte ohne eigene. Ohne Schwenk-/Neigekopf gibt es keinen Joystick, «Kalibrieren» steht dann unter «… mehr». Im Fenster: ◫ in der Kamerasteuerung oder Rechtsklick ins Bild.</p>
 <h3>Kopfzeile</h3>
 <p>Oben links stehen Name und <b>Version</b>. Daneben zeigen kleine Anzeigen nur, was gerade wichtig ist. Was im Normalzustand ist (kein Regen, Licht ok …), wird nicht angezeigt.</p>
 <table><tr><td>🛡 Schutz ein / aus</td><td>Alarme an oder aus. Antippen schaltet um.</td></tr>
@@ -47409,7 +47539,7 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <div class="tip">💡 <b>Tip:</b> save the page as a bookmark or as an icon on the home screen of the phone («Add to Home Screen»).</div>
 </section>
 
-<section id="live" data-icon="📺"><h2>The live page</h2><p><b>The 6 tabs (from 2.98.0):</b> <b>Live</b> (picture, joystick, quick switches) · <b>Protection</b> (Off / Watchful / Full, «Guard tonight», what happens at an alarm, theft protection, schedule, below it «Zones») · <b>History</b> (recordings, diary, log) · <b>Settings</b> (detection, cameras &amp; head, devices &amp; sensors, power, network &amp; access, system; below it «Cameras») · <b>Simulator</b> · <b>More</b> (manual, game corner, tools, info page, almanac, feedback). On top of Protection the chain «person → push → light → recording → siren» shows what is switched on; tap a step to change it. «Simple / Expert» is at the top of the settings.</p><p><b>🎯 Follow (from 2.98.1):</b> one switch for everything: the camera keeps what is detected in the middle of the picture – persons first, otherwise animals and things that really go somewhere. It turns by the angle the object has from the middle and waits for the new picture (no swinging). In the simulator the same switch is called «Verfolgen». Steering by hand pauses following for a moment.</p>
+<section id="live" data-icon="📺"><h2>The live page</h2><p><b>The 6 tabs (from 2.98.0):</b> <b>Live</b> (picture, joystick, quick switches) · <b>Protection</b> (Off / Watchful / Full, «Guard tonight», what happens at an alarm, theft protection, schedule, below it «Zones») · <b>History</b> (recordings, diary, log) · <b>Settings</b> (detection, cameras &amp; head, devices &amp; sensors, power, network &amp; access, system; below it «Cameras») · <b>Simulator</b> · <b>More</b> (manual, game corner, tools, info page, almanac, feedback). On top of Protection the chain «person → push → light → recording → siren» shows what is switched on; tap a step to change it. «Simple / Expert» is at the top of the settings.</p><p><b>🎯 Follow (from 2.98.1):</b> one switch for everything: the camera keeps what is detected in the middle of the picture – persons first, otherwise animals and things that really go somewhere. It turns by the angle the object has from the middle and waits for the new picture (no swinging). In the simulator the same switch is called «Verfolgen». Steering by hand pauses following for a moment.</p><p><b>◫ View (from 2.98.29):</b> the button at the top right of the picture. Ready-made views (just watching / operating / setting up), portrait or landscape, picture size and «size of text and buttons» (60–160 %, like a resolution – the picture always stays fully visible). «✏️ Edit» is the one way to arrange: move cards with ▲ ▼ or hide them with ✕, tap a quick switch = favourite ★ (max. 8, the others behind «… more»), order and hide in the list below. This is stored for this device; «Use for all devices» stores the arrangement on MoveEye as the default for devices without their own. Without a pan / tilt head there is no joystick and «Calibrate» is under «… more». In the window: ◫ in the camera control or right click on the picture.</p>
 <h3>Header</h3>
 <p>Top left: name and <b>version</b>. Small badges show only what matters right now; things in their normal state (no rain, light ok …) are not shown.</p>
 <table><tr><td>🛡 Armed / disarmed</td><td>Alarms on or off. Tap to switch.</td></tr>
@@ -48909,7 +49039,7 @@ class WebStream:
             if d.get("reset"):
                 qs_layout_set([], [])
             else:
-                qs_layout_set(d.get("order"), d.get("hidden"))
+                qs_layout_set(d.get("order"), d.get("hidden"), d.get("favs"), d.get("cards"), d.get("chide"))   # 2.98.29: «for all devices»
             return reply({"ok": True, "qs_layout": CFG["qs_layout"]})
 
         @app.route("/api/simtest", methods=["GET", "POST"])
@@ -52847,6 +52977,8 @@ class App:
         m.add_separator()
         m.add_command(label=tr("Settings") + "   (Ctrl+B)", command=self.toggle_sidebar)
         m.add_command(label=tr("Show all"), command=self.show_all)
+        if self.tab == "live":
+            m.add_command(label="◫ " + tr("View of the live page …"), command=self._tkv_dialog)     # 2.98.29 (581)
         if x is None:
             x, y = self.root.winfo_pointerx(), self.root.winfo_pointery()
         try:
@@ -53311,22 +53443,43 @@ class App:
             self.video.bind("<Button-3>", lambda e: self._view_menu(e.x_root, e.y_root))
             land = self._tk_live_land()                   # 2.98.26: wide window = the controls right of the picture (the picture keeps the height)
             self._ctl_side = land
-            if show("controls"):
-                c = tk.Frame(left, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=12, pady=8)
-                if land:
-                    c.grid(row=0, column=1, sticky="nsew", padx=(10, 0)); left.columnconfigure(1, weight=0)
+            show_c = show("controls") and self._tkv_card("controls")      # 2.98.29: «Ansicht» of the window (581)
+            show_s = self._tkv_card("lvsetup")
+            folded = self._ctl_folded()
+            wp = self._tkv_pic_weight()
+            left.rowconfigure(0, weight=wp)
+            colf = None
+            if land and (show_c or show_s):
+                colf = tk.Frame(left, bg=C["bg"]); colf.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
+                left.columnconfigure(1, weight=0, minsize=self._tkv_side_w())
+            if show_c:
+                c = tk.Frame(colf if colf is not None else left, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=12, pady=8)
+                if colf is not None:
+                    c.pack(fill="both", expand=not show_s)
                 else:
-                    c.grid(row=1, column=0, sticky="ew", pady=(10, 0))
-                folded = self._ctl_folded()
+                    c.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
+                    if not folded and wp < 100:
+                        left.rowconfigure(1, weight=100 - wp)     # smaller picture size: the controls get the room
                 hd = tk.Frame(c, bg=C["panel"], cursor="hand2"); hd.pack(fill="x")
                 h1 = tk.Label(hd, text=tr("CAMERA CONTROL"), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), cursor="hand2")
                 h1.pack(side="left")
                 h2 = tk.Label(hd, text="▸" if folded else "▾", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 10), cursor="hand2"); h2.pack(side="right")
+                h3 = tk.Label(hd, text="◫", bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11), cursor="hand2", padx=6); h3.pack(side="right")
+                h3.bind("<Button-1>", lambda e: self._tkv_dialog()); Tip(h3, tr("View: layout, picture size, buttons, cards"))
                 for w_ in (hd, h1, h2):
                     w_.bind("<Button-1>", lambda e: self._fold_ctl())
                 if not folded:
                     inner = tk.Frame(c, bg=C["panel"]); inner.pack(fill="x", pady=(6, 2))
                     self._build_controls(inner)
+            if show_s:
+                su = self._tkv_setup_card(colf if colf is not None else left)
+                if colf is not None:
+                    su.pack(fill="x", pady=(10 if show_c else 0, 0))
+                else:
+                    su.grid(row=3, column=0, sticky="ew", pady=(10, 0))
+            if not show_c:                                # no controls card: the «Ansicht» stays reachable (right click or this button)
+                vb = tk.Label(vc, text="◫", bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11), cursor="hand2")
+                vb.place(relx=1.0, x=-4, y=4, anchor="ne"); vb.bind("<Button-1>", lambda e: self._tkv_dialog())
         elif self.tab == "more":                          # 2.98.14: «Mehr» = weather, system, self-check + manual, tools …
             self._tk_more_bar(left).grid(row=3, column=0, sticky="ew", pady=(10, 0))
             mid = tk.Frame(left, bg=C["bg"]); mid.grid(row=0, column=0, sticky="new")
@@ -53384,7 +53537,8 @@ class App:
         wide = self._lay[2] and not side_col             # wide: stick | small things | quick switches in one row
         left_w = self._win_w() - self._lay[1] - 60
         tiny = side_col or (not wide and left_w < 520)   # very narrow: small things beside the stick, switches below both
-        head = live_has_head()                           # 2.98.26: joystick, centre, calibrate, waypoints only with a pan / tilt head
+        head = self._tk_head()                           # 2.98.26: joystick, centre, calibrate, waypoints only with a pan / tilt head (2.98.29: «Ansicht» → Joystick always / never)
+        u = self._tk_ui()
         bar = tk.Frame(f, bg=C["panel"]); bar.pack(fill="x")
         # 1) joystick with the camera position (orange ring) and the waypoints
         swap = "ctl:swap" in self.open_secs                # ⇆ left- / right-handed: stick and small buttons change places
@@ -53393,7 +53547,7 @@ class App:
         if head or MOVER["avail"]:
             sb.grid(row=0, column=c_st, rowspan=1 if (wide or tiny) else 2, sticky="n")
         if head:
-            self.stick = StickPad(sb, self, 176 if wide else 140); self.stick.pack()
+            self.stick = StickPad(sb, self, int((176 if wide else 140) * u)); self.stick.pack()
             self.l_pt = tk.Label(sb, text="", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8)); self.l_pt.pack(pady=(2, 0))
         # the mover (2.94.0): second stick under the camera stick, only while the mover is there
         self.mstick = MoverPad(sb, self, 140 if wide else 116)
@@ -53459,9 +53613,8 @@ class App:
         for k in range(cols):
             grid.columnconfigure(k, weight=1, uniform="qs")
         self.qs_tiles = {}
-        th = 58 if wide else 50
-        qs = [q for q in qs_arrange(self._qs_list()) if head or q["id"] not in ("track", "patrol")] + [dict(id="edit", ic="✎", lb=tr("Arrange"), tip=tr("Choose and arrange the switches"),
-                                                 on=lambda: False, go=self._qs_edit)]
+        th = int((58 if wide else 50) * u)
+        qs = self._tkv_tiles(head)                       # 2.98.29: favourites + «… mehr» (581); the old «Anpassen» is the «Ansicht» now
         for n, q in enumerate(qs):
             t = tk.Frame(grid, bg=self._btn2(), highlightthickness=1, highlightbackground=C["line"], width=50, height=th, cursor="hand2")
             t.grid(row=n // cols, column=n % cols, padx=(0, 6), pady=(0, 6), sticky="ew"); t.pack_propagate(False)
@@ -53554,42 +53707,6 @@ class App:
                 w.config(bg=C["acc"])
             self.root.after(350, self._qs_paint)
         self._qs_paint()
-
-    def _qs_edit(self):
-        """Window to choose and arrange the quick switches (the same setting as on the web page)."""
-        top = tk.Toplevel(self.root); top.title(tr("Arrange the switches")); top.configure(bg=C["panel"]); top.transient(self.root)
-        tk.Label(top, text=tr("Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device."), bg=C["panel"], fg=C["mut"],
-                 wraplength=360, justify="left").pack(anchor="w", padx=12, pady=(10, 6))
-        hid = set((CFG.get("qs_layout") or {}).get("hidden") or [])
-        items = [[q, tk.BooleanVar(value=q["id"] not in hid)] for q in qs_arrange(self._qs_list(), ) + [q for q in self._qs_list() if q["id"] in hid]]
-        seen = set(); items = [it for it in items if not (it[0]["id"] in seen or seen.add(it[0]["id"]))]
-        box = tk.Frame(top, bg=C["panel"]); box.pack(fill="both", padx=12)
-
-        def draw():
-            for w in box.winfo_children():
-                w.destroy()
-            for i, (q, v) in enumerate(items):
-                row = tk.Frame(box, bg=C["panel"]); row.pack(fill="x", pady=1)
-                tk.Checkbutton(row, text=f"{q['ic']}  {q['lb']}", variable=v, bg=C["panel"], fg=C["txt"], selectcolor=C["field"], activebackground=C["panel"],
-                               anchor="w").pack(side="left", fill="x", expand=True)
-                for txt, d in (("▲", -1), ("▼", 1)):
-                    b = tk.Button(row, text=txt, width=2, command=lambda i=i, d=d: move(i, d), state="normal" if 0 <= i + d < len(items) else "disabled")
-                    b.pack(side="left", padx=1)
-
-        def move(i, d):
-            items[i], items[i + d] = items[i + d], items[i]; draw()
-
-        def save(reset=False):
-            if reset:
-                qs_layout_set([], [])
-            else:
-                qs_layout_set([q["id"] for q, v in items], [q["id"] for q, v in items if not v.get()])
-            top.destroy(); tid, self.tab = self.tab, None; self._tab(tid)
-        draw()
-        bf = tk.Frame(top, bg=C["panel"]); bf.pack(fill="x", padx=12, pady=10)
-        ttk.Button(bf, text=tr("Reset"), command=lambda: save(True)).pack(side="left")
-        ttk.Button(bf, text=tr("Save"), command=save).pack(side="right")
-        ttk.Button(bf, text=tr("Cancel"), command=top.destroy).pack(side="right", padx=6)
 
     def _relay_quick(self, i):
         """On <-> back to the mode from before (mostly automatic) - like the web page."""
@@ -58941,6 +59058,359 @@ TRX['fr'].update({
     '🛡 Arm all': '🛡 Tout armer',
     '🧭 Setup assistant': '🧭 Assistant de configuration',
 })
+# ----------------------------------------------------------------------------
+# 2.98.29 (Wunsch Daniel «Fenster nachziehen»): the window gets the same «Ansicht» as the live page of the web (536):
+#   presets Nur schauen / Bedienen / Einrichten, layout automatic / portrait / landscape, picture size, «Grösse» (UI scale,
+#   Tk scaling: all fonts + joystick + tiles), favourites (max. 8) + «… mehr», order and hidden quick switches, cards
+#   (Bedienung, Einrichten), joystick only with a pan / tilt head (option always / never). Stored in the settings of the
+#   window (CFG tk_live_view = this device). «Für alle Geräte übernehmen» = the same default on MoveEye as the web
+#   (CFG qs_layout, 290). The window had its own «✎ Anpassen» before - it is gone (one way to arrange).
+# ----------------------------------------------------------------------------
+TKV_DEF = {"layout": "auto", "size": 60, "ui": "auto", "joy": "auto", "favs": None, "qorder": None, "qhide": None,
+           "more": False, "preset": "", "hide": None}
+TKV_FAV = ["rec", "photo", "track", "patrol", "white", "ir", "therm", "sim"]       # like the web (listening is only in the browser)
+CFG.setdefault("tk_live_view", dict(TKV_DEF))
+
+
+def tkv():
+    """the «Ansicht» of the window, checked (old or broken values = the standard)"""
+    d = CFG.get("tk_live_view") if isinstance(CFG.get("tk_live_view"), dict) else {}
+    v = dict(TKV_DEF)
+    ids = lambda x: [str(i) for i in x if isinstance(i, str) and re.fullmatch(r"[a-z0-9_]{1,20}", i)][:60] if isinstance(x, list) else None
+    v["layout"] = d.get("layout") if d.get("layout") in ("auto", "port", "land") else "auto"
+    try:
+        v["size"] = max(0, min(100, int(d.get("size", 60))))
+    except (TypeError, ValueError):
+        pass
+    try:
+        v["ui"] = "auto" if d.get("ui", "auto") == "auto" else max(60, min(160, int(d.get("ui"))))
+    except (TypeError, ValueError):
+        v["ui"] = "auto"
+    v["joy"] = d.get("joy") if d.get("joy") in ("auto", "on", "off") else "auto"
+    for k in ("favs", "qorder", "qhide", "hide"):
+        v[k] = ids(d.get(k))
+    v["more"] = bool(d.get("more")); v["preset"] = d.get("preset") if d.get("preset") in ("look", "operate", "setup") else ""
+    return v
+
+
+def tkv_set(**kw):
+    v = tkv(); v.update(kw); CFG["tk_live_view"] = v; save_settings()
+    return v
+
+
+def _tkv_shared():
+    return qs_layout_clean(CFG.get("qs_layout"))
+
+
+def tkv_qs_state(items):
+    """(order of the ids, hidden ids, favourites) - own of the window, else the default for all devices, else the standard"""
+    v, sh = tkv(), _tkv_shared()
+    ids = [q["id"] for q in items]
+    hid = v["qhide"] if v["qhide"] is not None else list(sh.get("hidden") or [])
+    favs = v["favs"] if v["favs"] is not None else (list(sh["favs"]) if sh.get("favs") else list(TKV_FAV))
+    favs = [f for f in favs if f not in hid and f in ids][:8]
+    order = v["qorder"] if v["qorder"] is not None else (list(sh.get("order") or []) or list(favs))
+    pos = {k: i for i, k in enumerate(order)}
+    ids = [x for _i, x in sorted(enumerate(ids), key=lambda p: pos.get(p[1], len(order) + p[0]))]
+    return ids, hid, favs
+
+
+def tkv_hidden_cards():
+    v = tkv()
+    if v["hide"] is not None:
+        return v["hide"]
+    ch = _tkv_shared().get("chide")
+    return [k for k in ch if k in ("controls", "lvsetup")] if isinstance(ch, list) else ["lvsetup"]
+
+
+def _tkv_qs_list(self):
+    """the quick switches of the window + «Kalibrieren» when there is no pan / tilt head (it needs none; with a head it is
+    in the controls beside the joystick)"""
+    q = App._tkv_qs_list_orig(self)
+    if not self._tk_head():
+        q.append(dict(id="recal", ic="↻", lb=tr("Calibrate"), tip=tr("Learn the picture again (after moving the camera)"),
+                      on=lambda: False, go=self._recal, flash=True))
+    return q
+
+
+def _tkv_tiles(self, head):
+    """the tiles in the controls: favourites (in the order of the list), «… mehr» opens the others"""
+    items = {q["id"]: q for q in self._qs_list() if head or q["id"] not in ("track", "patrol")}
+    ids, hid, favs = tkv_qs_state(list(items.values()))
+    more = tkv()["more"]
+    out = [items[i] for i in ids if i in items and i not in hid and (more or i in favs)]
+    rest = [i for i in ids if i in items and i not in hid and i not in favs]
+    if rest or more:
+        out.append(dict(id="more", ic="…", lb=tr("less" if more else "more"), tip=tr("Show only the favourites" if more else "Show all quick switches"),
+                        on=lambda: False, go=self._tkv_more))
+    return out
+
+
+def _tkv_more(self):
+    tkv_set(more=not tkv()["more"]); self._tkv_redraw()
+
+
+def _tk_head(self):
+    j = tkv()["joy"]
+    return True if j == "on" else False if j == "off" else live_has_head()
+
+
+def _tk_ui(self):
+    u = tkv()["ui"]
+    if u != "auto":
+        return u / 100.0
+    try:
+        w, h = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+    except Exception:
+        return 1.0
+    return 1.15 if w >= 2400 and h >= 1300 else 1.0      # a big screen (4K, 1440p) a bit bigger
+
+
+def _tkv_card(self, key):
+    return key not in tkv_hidden_cards()
+
+
+def _tkv_pic_weight(self):
+    """portrait: how much of the spare height the picture gets (Bildgrösse 0 … 100 → 30 … 100 %)"""
+    return int(30 + tkv()["size"] * 0.7)
+
+
+def _tkv_side_w(self):
+    """landscape: width of the controls column (Bildgrösse: larger picture = narrower column; «Grösse» makes it wider)"""
+    W = self._win_w() - 40
+    share = 0.5 + tkv()["size"] / 100 * 0.35
+    return int(max(300, min(W * 0.6, (1 - share) * W * self._tk_ui())))
+
+
+def _tkv_live_land(self, w=None, h=None):
+    lay = tkv()["layout"]
+    if lay == "port":
+        return False
+    if lay == "land":
+        try:
+            ww = w or self.root.winfo_width()
+            ww = ww if ww > 50 else self.root.winfo_screenwidth()
+        except Exception:
+            return True
+        return ww >= 700
+    return App._tkv_land_orig(self, w, h)
+
+
+def _tkv_setup_card(self, parent):
+    """«Einrichten» (preset «Einrichten»): only links, no second copy of a control - like the web card"""
+    c = tk.Frame(parent, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=12, pady=8)
+    tk.Label(c, text="🛠 " + tr("Set up"), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10, "bold"), anchor="w").pack(fill="x")
+    tk.Label(c, text=tr("Draw where MoveEye should watch, then check the range with the walk test."), bg=C["panel"], fg=C["mut"],
+             font=("DejaVu Sans", 8), wraplength=340, justify="left", anchor="w").pack(fill="x", pady=(2, 6))
+    r = tk.Frame(c, bg=C["panel"]); r.pack(fill="x")
+    self._fbtn(r, "✏️ " + tr("Draw the zones"), lambda: self._open_page("/zones")).pack(side="left", fill="x", expand=True)
+    self._fbtn(r, "🚶 " + tr("Walk test"), self._walktest).pack(side="left", fill="x", expand=True, padx=(6, 0))
+    return c
+
+
+def _tkv_redraw(self, full=False):
+    if full:
+        self._schedule_rebuild(); return
+    if self.tab == "live" and self.left_f is not None and self.left_f.winfo_exists():
+        tid, self.tab = self.tab, None
+        self._tab(tid)
+
+
+def _tkv_build(self):
+    """«Grösse»: tk scaling = all fonts (in points) bigger or smaller; the joystick and the tiles follow (570)"""
+    try:
+        if not hasattr(self, "_tk_base_scaling"):
+            self._tk_base_scaling = float(self.root.tk.call("tk", "scaling"))
+        self.root.tk.call("tk", "scaling", self._tk_base_scaling * self._tk_ui())
+    except Exception:
+        pass
+    return App._tkv_build_orig(self)
+
+
+TKV_PRESETS = {"look": ("👁", "Just watching", "big picture"), "operate": ("🕹", "Operating", "everything"), "setup": ("🛠", "Setting up", "walk test, zones")}
+
+
+def _tkv_preset(self, k):
+    if k == "look":
+        v = dict(size=100, more=False, hide=["lvsetup"]); fold = True
+    elif k == "operate":
+        v = dict(size=60, hide=["lvsetup"]); fold = False
+    else:
+        v = dict(size=40, hide=[]); fold = False
+    v["preset"] = k; tkv_set(**v)
+    self.open_secs.discard("ctl:folded"); self.open_secs.discard("ctl:open"); self.open_secs.add("ctl:folded" if fold else "ctl:open")
+    if "controls" in CFG["ui_hidden"]:
+        CFG["ui_hidden"] = [x for x in CFG["ui_hidden"] if x != "controls"]
+    CFG["ui_open"] = sorted(self.open_secs); save_settings()
+    self._status_line(("✓ " + TKV_PRESETS[k][0] + " " + tr(TKV_PRESETS[k][1])))
+    self._tkv_redraw()
+
+
+def _tkv_status_line(self, txt):
+    try:
+        if getattr(self, "_tkv_msg", None) is not None and self._tkv_msg.winfo_exists():
+            self._tkv_msg.config(text=txt)
+    except Exception:
+        pass
+
+
+def _tkv_share(self):
+    if not messagebox.askyesno("MoveEye", tr("Use this arrangement (favourites, order, hidden switches and cards) for all devices that have no own arrangement?")):
+        return
+    items = self._qs_list()
+    ids, hid, favs = tkv_qs_state(items)
+    sh = _tkv_shared()
+    order = ids + [x for x in (sh.get("order") or []) if x not in ids]          # switches only the web has (listen, talk …) keep their place
+    hidden = hid + [x for x in (sh.get("hidden") or []) if x not in ids and x not in hid]
+    chide = [x for x in (sh.get("chide") or ["lvsetup"]) if x not in ("controls", "lvsetup")] + tkv_hidden_cards()
+    qs_layout_set(order, hidden, favs, sh.get("cards"), chide)
+    tkv_set(favs=None, qorder=None, qhide=None, hide=None)              # the window follows the default from now on
+    self._status_line("✓ " + tr("Saved on MoveEye for all devices")); self._tkv_redraw()
+
+
+def _tkv_reset(self):
+    if not messagebox.askyesno("MoveEye", tr("Back to the standard view of the live page?")):
+        return
+    ui = tkv()["ui"]; CFG["tk_live_view"] = dict(TKV_DEF, ui=ui); save_settings()
+    self._tkv_redraw()
+
+
+def _tkv_dialog(self):
+    """the «Ansicht» window: everything at once, each change is shown right away"""
+    old = getattr(self, "_tkv_top", None)
+    try:
+        if old is not None and old.winfo_exists():
+            old.lift(); return
+    except Exception:
+        pass
+    top = tk.Toplevel(self.root); self._tkv_top = top
+    top.title(tr("View of the live page")); top.configure(bg=C["panel"]); top.transient(self.root)
+    P = dict(bg=C["panel"])
+    cv = tk.Canvas(top, bg=C["panel"], highlightthickness=0, bd=0, width=440, height=min(760, max(420, self.root.winfo_screenheight() - 140)))
+    sb = ttk.Scrollbar(top, orient="vertical", command=cv.yview); cv.configure(yscrollcommand=sb.set)
+    sb.pack(side="right", fill="y"); cv.pack(side="left", fill="both", expand=True)
+    body = tk.Frame(cv, **P); cv.create_window((0, 0), window=body, anchor="nw")
+    body.bind("<Configure>", lambda e: cv.configure(scrollregion=cv.bbox("all")))
+
+    def h(txt):
+        tk.Label(body, text=txt.upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), anchor="w").pack(fill="x", padx=12, pady=(10, 3))
+
+    def note(txt):
+        tk.Label(body, text=txt, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=410).pack(fill="x", padx=12)
+
+    def seg(opts, cur, fn):
+        f = tk.Frame(body, **P); f.pack(fill="x", padx=12)
+        for i, (val, lb) in enumerate(opts):
+            on = cur == val
+            b = self._fbtn(f, tr(lb), lambda val=val: (fn(val), redraw()), primary=on)
+            b.grid(row=0, column=i, sticky="ew", padx=(0, 6)); f.columnconfigure(i, weight=1)
+        return f
+
+    def redraw(full=False):
+        try:
+            top.destroy()
+        except Exception:
+            pass
+        self._tkv_redraw(full)
+        self.root.after(300 if full else 60, self._tkv_dialog)
+
+    v = tkv()
+    h(tr("Ready-made views"))
+    pf = tk.Frame(body, **P); pf.pack(fill="x", padx=12)
+    for i, (k, (ic, lb, d)) in enumerate(TKV_PRESETS.items()):
+        b = self._fbtn(pf, f"{ic} {tr(lb)}\n{tr(d)}", lambda k=k: (self._tkv_preset(k), redraw()), primary=v["preset"] == k)
+        b.grid(row=0, column=i, sticky="ew", padx=(0, 6)); pf.columnconfigure(i, weight=1)
+    h(tr("Layout"))
+    seg([("auto", "Automatic"), ("port", "Portrait"), ("land", "Landscape")], v["layout"], lambda x: tkv_set(layout=x, preset=""))
+    note(tr("Now") + ": " + tr("picture left, cards right" if self._tk_live_land() else "picture on top, cards below"))
+    h(tr("Picture size"))
+    sz = tk.Scale(body, from_=0, to=100, resolution=5, orient="horizontal", showvalue=False, bg=C["panel"], fg=C["txt"], troughcolor=C["line"],
+                  highlightthickness=0, bd=0)
+    sz.set(v["size"]); sz.pack(fill="x", padx=12)
+    sz.bind("<ButtonRelease-1>", lambda e: (tkv_set(size=int(sz.get()), preset=""), self._tkv_redraw()))
+    note(tr("Landscape: how wide the picture is next to the cards (it never gets higher than the window)." if self._tk_live_land() else "Portrait: how high the picture may be."))
+    h(tr("Size of text and buttons"))
+    uis = [("auto", "Automatic")] + [(n, f"{n} %") for n in (60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160)]
+    cb = ttk.Combobox(body, values=[tr(lb) if val == "auto" else lb for val, lb in uis], state="readonly", width=14)
+    cb.current(next((i for i, (val, _l) in enumerate(uis) if val == v["ui"]), 0)); cb.pack(anchor="w", padx=12)
+    cb.bind("<<ComboboxSelected>>", lambda e: (tkv_set(ui=uis[cb.current()][0]), redraw(True)))
+    note(tr("Like a resolution: everything except the picture gets smaller or bigger (only on this device)."))
+    h(tr("Joystick"))
+    seg([("auto", "Automatic"), ("on", "Always"), ("off", "Never")], v["joy"], lambda x: tkv_set(joy=x))
+    if v["joy"] == "auto":
+        note(tr("Automatic") + ": " + tr("pan / tilt head found" if live_has_head() else "no pan / tilt head found"))
+    h(tr("Quick switches") + " · " + tr("Favourite buttons (4–8)"))
+    items = [q for q in self._qs_list()]
+    names = {q["id"]: f"{q['ic']}  {q['lb']}" for q in items}
+    ids, hid, favs = tkv_qs_state(items)
+    qf = tk.Frame(body, **P); qf.pack(fill="x", padx=12)
+
+    def fav(i):
+        F = list(favs)
+        if i in F:
+            F.remove(i)
+        elif len(F) >= 8:
+            messagebox.showinfo("MoveEye", "★ " + tr("At most 8 favourites")); return
+        else:
+            F.append(i)
+        tkv_set(favs=F, qhide=[x for x in hid if x != i], preset=""); redraw()
+
+    def hide(i):
+        H = [x for x in hid if x != i] + ([] if i in hid else [i])
+        tkv_set(qhide=H, favs=[x for x in favs if x not in H], preset=""); redraw()
+
+    def mv(i, d):
+        L = list(ids); a = L.index(i); b = a + d
+        if 0 <= b < len(L):
+            L[a], L[b] = L[b], L[a]; tkv_set(qorder=L, preset=""); redraw()
+    for n, i in enumerate(ids):
+        row = tk.Frame(qf, **P); row.pack(fill="x", pady=1)
+        self._fbtn(row, "★" if i in favs else "☆", lambda i=i: fav(i), tr("Favourite (shown without «… more»)"),
+                   font=("DejaVu Sans", 11)).pack(side="left")
+        tk.Label(row, text=names[i], bg=C["panel"], fg=C["mut"] if i in hid else C["txt"], font=("DejaVu Sans", 9, "overstrike" if i in hid else "normal"),
+                 anchor="w").pack(side="left", fill="x", expand=True, padx=6)
+        self._fbtn(row, "✕" if i not in hid else "👁", lambda i=i: hide(i), tr("Hide / show")).pack(side="right")
+        self._fbtn(row, "▼", lambda i=i: mv(i, 1), tr("Down")).pack(side="right", padx=(0, 4))
+        self._fbtn(row, "▲", lambda i=i: mv(i, -1), tr("Up")).pack(side="right", padx=(0, 4))
+    note(tr("★ = always visible, the others behind «… more». ✕ hides a switch on this device."))
+    h(tr("Cards"))
+    ch = tkv_hidden_cards()
+    for key, lb in (("controls", "Controls"), ("lvsetup", "Set up")):
+        bv = tk.BooleanVar(value=key not in ch and (key != "controls" or self.is_shown("controls")))
+
+        def tog(key=key, bv=bv):
+            H = [x for x in tkv_hidden_cards() if x != key] + ([] if bv.get() else [key])
+            if key == "controls" and bv.get() and "controls" in CFG["ui_hidden"]:
+                CFG["ui_hidden"] = [x for x in CFG["ui_hidden"] if x != "controls"]
+            tkv_set(hide=H, preset=""); redraw()
+        tk.Checkbutton(body, text=tr(lb), variable=bv, command=tog, bg=C["panel"], fg=C["txt"], selectcolor=C["field"], activebackground=C["panel"],
+                       anchor="w").pack(fill="x", padx=12)
+    bf = tk.Frame(body, **P); bf.pack(fill="x", padx=12, pady=(14, 4))
+    self._fbtn(bf, "📲 " + tr("Use for all devices"), lambda: (self._tkv_share(), redraw()), tr("Store this arrangement on MoveEye as the default for devices without an own arrangement")).pack(side="left", fill="x", expand=True)
+    self._fbtn(bf, tr("Reset"), lambda: (self._tkv_reset(), redraw())).pack(side="left", padx=(6, 0))
+    self._fbtn(bf, tr("Close"), top.destroy, primary=True).pack(side="left", padx=(6, 0))
+    own = any(v[k] is not None for k in ("favs", "qorder", "qhide", "hide"))
+    sh = _tkv_shared(); shon = bool(sh.get("order") or sh.get("hidden") or sh.get("favs"))
+    note(tr("This window has its own arrangement. «Reset» = back to the arrangement for all devices." if own else
+            "This window uses the arrangement for all devices (stored on MoveEye). A change makes it its own." if shon else
+            "Stored in the settings of this window."))
+    self._tkv_msg = tk.Label(body, text="", bg=C["panel"], fg=C["grn"], font=("DejaVu Sans", 9), anchor="w"); self._tkv_msg.pack(fill="x", padx=12, pady=(4, 10))
+
+
+App._tkv_qs_list_orig = App._qs_list
+# wraps: App._qs_list
+App._qs_list = _tkv_qs_list
+App._tkv_land_orig = App._tk_live_land
+# wraps: App._tk_live_land
+App._tk_live_land = _tkv_live_land
+App._tkv_build_orig = App._build
+# wraps: App._build
+App._build = _tkv_build
+for _n, _f in (("_tkv_tiles", _tkv_tiles), ("_tkv_more", _tkv_more), ("_tk_head", _tk_head), ("_tk_ui", _tk_ui), ("_tkv_card", _tkv_card),
+               ("_tkv_pic_weight", _tkv_pic_weight), ("_tkv_side_w", _tkv_side_w), ("_tkv_setup_card", _tkv_setup_card),
+               ("_tkv_redraw", _tkv_redraw), ("_tkv_preset", _tkv_preset), ("_status_line", _tkv_status_line), ("_tkv_share", _tkv_share),
+               ("_tkv_reset", _tkv_reset), ("_tkv_dialog", _tkv_dialog)):
+    setattr(App, _n, _f)
 TRX['it'].update({
     '(or the address from the push message).': "(o l'indirizzo della notifica push).",
     '+ Add relay': '+ Aggiungere un relè',
@@ -67113,6 +67583,83 @@ for _k, _v in _HX_live.items():
         TRX[_L].setdefault(_k, _v[_i + 1])
 # the German texts into the page (I18N.de of the main page, only where it has no own text yet - see 536)
 WEB_PAGE = WEB_PAGE.replace("/*LVDE*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_live.items()}, ensure_ascii=False), 1)
+_HX_live2 = {
+    'Quick switches': ('Schnellschalter', 'Boutons rapides', 'Interruttori rapidi', 'Interruptur svelts'),
+    'Favourite (shown without «… more»)': ('Liebling (ohne «… mehr» sichtbar)', 'Favori (visible sans « … plus »)', 'Preferito (visibile senza «… altro»)', 'Favurit (visibel senza «… dapli»)'),
+    '★ = favourite (max. 8), ▲ ▼ = order, ✕ = hide': ('★ = Liebling (höchstens 8), ▲ ▼ = Reihenfolge, ✕ = ausblenden', '★ = favori (max. 8), ▲ ▼ = ordre, ✕ = masquer',
+                                                      '★ = preferito (max. 8), ▲ ▼ = ordine, ✕ = nascondi', '★ = favurit (max. 8), ▲ ▼ = urden, ✕ = zuppentar'),
+    'Use this arrangement (favourites, order, hidden switches and cards) for all devices that have no own arrangement?': (
+        'Diese Anordnung (Lieblingsknöpfe, Reihenfolge, ausgeblendete Schalter und Karten) für alle Geräte übernehmen, die keine eigene haben?',
+        'Utiliser cette disposition (favoris, ordre, boutons et cartes masqués) pour tous les appareils sans disposition propre ?',
+        'Usare questa disposizione (preferiti, ordine, interruttori e schede nascosti) per tutti i dispositivi senza una propria?',
+        'Utilisar quest urden (favurits, successiun, interruptur e cartas zuppentads) per tut ils apparats senza agen urden?'),
+    'Saved on MoveEye for all devices': ('Auf MoveEye für alle Geräte gespeichert', 'Enregistré sur MoveEye pour tous les appareils', 'Salvato su MoveEye per tutti i dispositivi', 'Memorisà sin MoveEye per tut ils apparats'),
+    'Delete the arrangement for all devices? Devices without an own arrangement get the standard again.': (
+        'Anordnung für alle Geräte löschen? Geräte ohne eigene Anordnung bekommen wieder den Standard.',
+        'Supprimer la disposition pour tous les appareils ? Les appareils sans disposition propre reprennent le standard.',
+        'Eliminare la disposizione per tutti i dispositivi? I dispositivi senza una propria tornano allo standard.',
+        'Stizzar l’urden per tut ils apparats? Apparats senza agen urden survegnan puspè il standard.'),
+    'Delete the arrangement for all devices': ('Anordnung für alle Geräte löschen', 'Supprimer la disposition pour tous les appareils', 'Eliminare la disposizione per tutti i dispositivi', 'Stizzar l’urden per tut ils apparats'),
+    'Default for all': ('Standard für alle', 'Standard pour tous', 'Standard per tutti', 'Standard per tuts'),
+    'Edit: cards ▲ ▼ move, ✕ hides (👁 shows again). Quick switches: tap = favourite ★ (max. 8), the list below them = order and hide. Stored on this device.': (
+        'Bearbeiten: Karten mit ▲ ▼ verschieben, ✕ blendet aus (👁 wieder ein). Schnellschalter: antippen = Liebling ★ (höchstens 8), die Liste darunter = Reihenfolge und ausblenden. Gilt für dieses Gerät.',
+        'Modifier : cartes ▲ ▼ déplacer, ✕ masquer (👁 réafficher). Boutons rapides : toucher = favori ★ (max. 8), la liste dessous = ordre et masquer. Pour cet appareil.',
+        'Modifica: schede ▲ ▼ spostare, ✕ nascondere (👁 mostrare). Interruttori rapidi: toccare = preferito ★ (max. 8), la lista sotto = ordine e nascondere. Per questo dispositivo.',
+        'Elavurar: cartas ▲ ▼ spustar, ✕ zuppentar (👁 mussar). Interruptur svelts: tutgar = favurit ★ (max. 8), la glista sutvart = successiun e zuppentar. Per quest apparat.'),
+    'Use for all devices': ('Für alle Geräte übernehmen', 'Utiliser pour tous les appareils', 'Usare per tutti i dispositivi', 'Utilisar per tut ils apparats'),
+    'Store this arrangement on MoveEye as the default for devices without an own arrangement': (
+        'Diese Anordnung auf MoveEye als Standard für Geräte ohne eigene Anordnung speichern',
+        'Enregistrer cette disposition sur MoveEye comme standard pour les appareils sans disposition propre',
+        'Salvare questa disposizione su MoveEye come standard per i dispositivi senza una propria',
+        'Memorisar quest urden sin MoveEye sco standard per apparats senza agen urden'),
+    'Size of text and buttons': ('Grösse von Schrift und Knöpfen', 'Taille du texte et des boutons', 'Dimensione di testo e pulsanti', 'Grondezza da scrittira e buttuns'),
+    'Like a resolution: everything except the picture gets smaller or bigger (only on this device).': (
+        'Wie eine Auflösung: alles ausser dem Bild wird kleiner oder grösser (nur auf diesem Gerät).',
+        'Comme une résolution : tout sauf l’image devient plus petit ou plus grand (seulement sur cet appareil).',
+        'Come una risoluzione: tutto tranne l’immagine diventa più piccolo o più grande (solo su questo dispositivo).',
+        'Sco ina resoluziun: tut auter ch’il maletg vegn pli pitschen u pli grond (mo sin quest apparat).'),
+    '★ = always visible, the others behind «… more». ✕ hides a switch on this device.': (
+        '★ = immer sichtbar, die anderen hinter «… mehr». ✕ blendet einen Schalter auf diesem Gerät aus.',
+        '★ = toujours visible, les autres derrière « … plus ». ✕ masque un bouton sur cet appareil.',
+        '★ = sempre visibile, gli altri dietro «… altro». ✕ nasconde un interruttore su questo dispositivo.',
+        '★ = adina visibel, ils auters davos «… dapli». ✕ zuppenta in interruptur sin quest apparat.'),
+    'The small simulator tile only shows when the «Simulator control» is hidden.': (
+        'Die kleine Simulator-Kachel erscheint nur, wenn die «Simulator-Steuerung» ausgeblendet ist.',
+        'La petite tuile du simulateur n’apparaît que si la « commande du simulateur » est masquée.',
+        'La piccola tessera del simulatore appare solo se il «comando del simulatore» è nascosto.',
+        'La pitschna plattina dal simulatur cumpara mo, sch’il «manaschament dal simulatur» è zuppentà.'),
+    'This device has its own arrangement (only in this browser). «Reset» = back to the arrangement for all devices.': (
+        'Dieses Gerät hat eine eigene Anordnung (nur in diesem Browser). «Zurücksetzen» = zurück zur Anordnung für alle Geräte.',
+        'Cet appareil a sa propre disposition (seulement dans ce navigateur). « Réinitialiser » = retour à la disposition pour tous.',
+        'Questo dispositivo ha una propria disposizione (solo in questo browser). «Reimposta» = torna alla disposizione per tutti.',
+        'Quest apparat ha in agen urden (mo en quest navigatur). «Reinizialisar» = enavos a l’urden per tut ils apparats.'),
+    'This device uses the arrangement for all devices (stored on MoveEye). A change makes it its own.': (
+        'Dieses Gerät nutzt die Anordnung für alle Geräte (auf MoveEye gespeichert). Eine Änderung macht daraus eine eigene.',
+        'Cet appareil utilise la disposition pour tous (enregistrée sur MoveEye). Une modification en fait la sienne.',
+        'Questo dispositivo usa la disposizione per tutti (salvata su MoveEye). Una modifica la rende propria.',
+        'Quest apparat dovra l’urden per tuts (memorisà sin MoveEye). Ina midada fa in agen urden.'),
+    'This window has its own arrangement. «Reset» = back to the arrangement for all devices.': (
+        'Dieses Fenster hat eine eigene Anordnung. «Zurücksetzen» = zurück zur Anordnung für alle Geräte.',
+        'Cette fenêtre a sa propre disposition. « Réinitialiser » = retour à la disposition pour tous.',
+        'Questa finestra ha una propria disposizione. «Reimposta» = torna alla disposizione per tutti.',
+        'Questa fanestra ha in agen urden. «Reinizialisar» = enavos a l’urden per tut ils apparats.'),
+    'This window uses the arrangement for all devices (stored on MoveEye). A change makes it its own.': (
+        'Dieses Fenster nutzt die Anordnung für alle Geräte (auf MoveEye gespeichert). Eine Änderung macht daraus eine eigene.',
+        'Cette fenêtre utilise la disposition pour tous (enregistrée sur MoveEye). Une modification en fait la sienne.',
+        'Questa finestra usa la disposizione per tutti (salvata su MoveEye). Una modifica la rende propria.',
+        'Questa fanestra dovra l’urden per tuts (memorisà sin MoveEye). Ina midada fa in agen urden.'),
+    'Stored in the settings of this window.': ('Gespeichert in den Einstellungen dieses Fensters.', 'Enregistré dans les réglages de cette fenêtre.', 'Salvato nelle impostazioni di questa finestra.', 'Memorisà en ils parameters da questa fanestra.'),
+    'Calibrate': ('Kalibrieren', 'Calibrer', 'Calibrare', 'Calibrar'),
+    'Learn the picture again (after moving the camera)': ('Bild neu lernen (nach dem Verschieben der Kamera)', 'Réapprendre l’image (après avoir déplacé la caméra)', 'Imparare di nuovo l’immagine (dopo aver spostato la camera)', 'Emprender danovamain il maletg (suenter avair spustà la camera)'),
+    'Recalibrating - keep the picture empty for a few seconds': ('Kalibriere neu – ein paar Sekunden niemand ins Bild', 'Recalibrage – personne dans l’image pendant quelques secondes', 'Ricalibrazione – nessuno nell’immagine per qualche secondo', 'Calibrar da nov – in pèr secundas nagin en il maletg'),
+    'Standard': ('Standard', 'Standard', 'Standard', 'Standard'),
+}
+for _k, _v in _HX_live2.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+# the German texts into the page (I18N.de of the main page, only where it has no own text yet - see 536)
+WEB_PAGE = WEB_PAGE.replace("/*LVDE2*/{}", json.dumps({_k: _v[0] for _k, _v in _HX_live2.items()}, ensure_ascii=False), 1)
 # ---- Überlebens-Almanach (2.95.54): tips and tricks for camping in Switzerland, to look up or to read in the evening;
 # offline on the device (/almanach/, also for guests in the same Wi-Fi), «Tipp des Abends» on the TV view. ----
 # Überlebens-Almanach für MoveEye: Kapitel -> Artikel. Text: Absätze mit Leerzeile, Listenpunkte mit "- ".
