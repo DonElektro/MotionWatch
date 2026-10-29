@@ -1175,6 +1175,8 @@ CFG = {
     "share_logo": True,
     "ui_simple": True,                       # settings: only the important ones (Expert shows everything)
     "share_gps": False,                      # shared pictures / videos keep their GPS position (off: removed before sharing)
+    "share_blur_faces": True,                # 2.98.14: faces pixelated in shared pictures / videos (375), the originals stay
+    "weekrep_on": True, "weekrep_day": "Sunday", "weekrep_hour": 18, "weekrep_last": "",   # 2.98.14: weekly detection report (426)
     "fleet": [],
     "sms_on": False, "sms_numbers": "", "sms_mode": "auto", "sms_port": "/dev/ttyUSB2", "sms_hilink": "192.168.8.1",
     "sms_only_offline": True, "sms_pause": 5, "sms_day_max": 20,          # SMS over an LTE stick
@@ -1863,6 +1865,7 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("MQTT / Home Assistant", "mqtt_password", "MQTT password", "secret", None),
     ("MQTT / Home Assistant", "mqtt_prefix", "Topic prefix", "str", None),
     ("Recording", "rec_marks", "Markings in recordings and alarm pictures", "enum", "rec_marks"),
+    ("Night report", "weekrep_day", "Weekly detection report: day", "enum", ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),
     ("Backup", "backup_type", "Copy recordings to", "enum", "backup_types"),
     ("Patrol", "patrol_mode", "Patrol route", "enum", "patrol_modes"),
     ("Backup", "backup_url", "WebDAV folder (address, e.g. Nextcloud)", "str", None),
@@ -23401,6 +23404,7 @@ def jpg_without_exif(data):
 def share_jpg(data, caption=""):
     """A picture as it leaves the Pi when shared: logo (if on), location only when wanted."""
     g = exif_gps_bytes(data) if CFG["share_gps"] else None
+    data = faces_blur_jpg(data)                               # 2.98.14: faces pixelated (375), only in the shared copy
     data = brand_jpg(data, caption) if CFG["share_logo"] else data
     data = jpg_without_exif(data)
     if g:
@@ -23427,6 +23431,10 @@ def exif_gps_bytes(data):
 
 def share_video(src, caption=""):
     """A video as it leaves the Pi when shared: logo (if on); the location removed unless wanted. (path, error)"""
+    if CFG.get("share_blur_faces", True) and not src.endswith(".faces.mp4"):
+        src, err = faces_blur_video(src)                      # 2.98.14: a copy with pixelated faces (375)
+        if not src:
+            return None, err
     if CFG["share_logo"]:
         return brand_video(src, caption)
     if CFG["share_gps"] or not shutil.which("ffmpeg"):
@@ -23610,6 +23618,277 @@ def talk_stop():
         AUDIO.mute_until = time.time() + 2.0
 
 
+# ----------------------------------------------------------------------------
+# 2.98.14 (Wunsch Daniel): wenn ein Bild oder Video geteilt wird (Aufnahmen, Tagebuch – alles, was über share_jpg /
+# share_video in 370 geht), werden Gesichter von selbst unkenntlich gemacht (verpixelt). Einstellung «Gesichter verpixeln
+# beim Teilen» (share_blur_faces, Standard ein). Nur die geteilte Kopie wird verändert, das Original bleibt wie es ist.
+# Erkennung, der Reihe nach:
+#   1. Gesichter: Haar-Kaskade von OpenCV (haarcascade_frontalface_default.xml, wird mit opencv-python bzw. python3-opencv
+#      mitgeliefert: cv2.data.haarcascades oder /usr/share/opencv4/haarcascades), dazu die Profil-Kaskade, wenn vorhanden.
+#   2. Kein Gesicht gefunden oder keine Kaskade: Personen suchen (HOG-Personenerkennung von OpenCV, sonst das KI-Modell
+#      SSD MobileNet von MoveEye) und den oberen Teil jeder Person (Kopf) verpixeln.
+# Videos: Bild für Bild (Kopie im Ordner .cache, wird wiederverwendet, solange das Original gleich bleibt).
+# ----------------------------------------------------------------------------
+FACEBLUR = {"lock": threading.Lock(), "casc": None, "prof": None, "hog": None, "net": None, "tried": False,
+            "how": "", "last": {}, "busy": set()}
+FACE_CASCADE_DIRS = ["/usr/share/opencv4/haarcascades", "/usr/share/opencv/haarcascades", "/usr/local/share/opencv4/haarcascades",
+                     "/usr/local/share/opencv/haarcascades"]
+
+
+def _faceblur_init():
+    """load the detectors once (whatever this OpenCV has)"""
+    if FACEBLUR["tried"]:
+        return
+    FACEBLUR["tried"] = True
+    dirs = []
+    try:
+        dirs.append(cv2.data.haarcascades)
+    except AttributeError:
+        pass
+    dirs += FACE_CASCADE_DIRS + [os.path.join(DATA_DIR, "models"), os.path.dirname(os.path.abspath(__file__))]
+    CC = getattr(cv2, "CascadeClassifier", None)
+    if CC is not None:
+        for nm, key in (("haarcascade_frontalface_default.xml", "casc"), ("haarcascade_frontalface_alt.xml", "casc"),
+                        ("haarcascade_profileface.xml", "prof")):
+            if FACEBLUR[key] is not None:
+                continue
+            for d in dirs:
+                p = os.path.join(d or "", nm)
+                if d and os.path.isfile(p):
+                    try:
+                        c = CC(p)
+                        if not c.empty():
+                            FACEBLUR[key] = c
+                            break
+                    except cv2.error:
+                        pass
+    if getattr(cv2, "HOGDescriptor", None) is not None:
+        try:
+            h = cv2.HOGDescriptor()
+            h.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+            FACEBLUR["hog"] = h
+        except (cv2.error, AttributeError):
+            pass
+    try:
+        pb, pbtxt = ai_model_paths()
+        if pb:
+            FACEBLUR["net"] = cv2.dnn.readNetFromTensorflow(pb, pbtxt)    # an own copy: the detection keeps its own net
+    except Exception:
+        pass
+    FACEBLUR["how"] = ("faces" if FACEBLUR["casc"] is not None else "") + \
+                      ("+persons" if (FACEBLUR["hog"] is not None or FACEBLUR["net"] is not None) else "")
+    if not FACEBLUR["how"]:
+        log_event("sys", "Blur faces when sharing: this OpenCV has no face or person detector - pictures are shared without blurring")
+
+
+def faceblur_state():
+    _faceblur_init()
+    return {"on": bool(CFG.get("share_blur_faces", True)), "faces": FACEBLUR["casc"] is not None,
+            "persons": FACEBLUR["hog"] is not None or FACEBLUR["net"] is not None, "last": FACEBLUR["last"]}
+
+
+def _persons_find(img):
+    """person boxes (x, y, w, h) - HOG, else the SSD model"""
+    out = []
+    h, w = img.shape[:2]
+    if FACEBLUR["net"] is not None:
+        try:
+            blob = cv2.dnn.blobFromImage(img, size=(300, 300), swapRB=True, crop=False)
+            FACEBLUR["net"].setInput(blob)
+            det = FACEBLUR["net"].forward()
+            for i in range(det.shape[2]):
+                if int(det[0, 0, i, 1]) == 1 and float(det[0, 0, i, 2]) >= 0.35:
+                    x1, y1, x2, y2 = (det[0, 0, i, 3:7] * np.array([w, h, w, h])).astype(int)
+                    if x2 > x1 and y2 > y1:
+                        out.append((max(0, x1), max(0, y1), x2 - x1, y2 - y1))
+        except cv2.error:
+            pass
+    if not out and FACEBLUR["hog"] is not None:
+        try:
+            s = min(1.0, 800.0 / max(1, w))
+            small = cv2.resize(img, (int(w * s), int(h * s))) if s < 1 else img
+            rects, _ = FACEBLUR["hog"].detectMultiScale(small, winStride=(8, 8), padding=(8, 8), scale=1.05)
+            out = [(int(x / s), int(y / s), int(rw / s), int(rh / s)) for (x, y, rw, rh) in rects]
+        except cv2.error:
+            pass
+    return out
+
+
+def faces_find(img):
+    """[(x, y, w, h)] of the regions to make unrecognisable: faces, otherwise the heads of persons"""
+    _faceblur_init()
+    if img is None or img.size == 0:
+        return []
+    H, W = img.shape[:2]
+    boxes = []
+    with FACEBLUR["lock"]:
+        if FACEBLUR["casc"] is not None:
+            s = min(1.0, 960.0 / max(1, W))
+            g = cv2.cvtColor(img if s >= 1 else cv2.resize(img, (int(W * s), int(H * s))), cv2.COLOR_BGR2GRAY)
+            g = cv2.equalizeHist(g)
+            mn = max(16, int(min(g.shape[:2]) * 0.03))
+            for c, flip in ((FACEBLUR["casc"], False), (FACEBLUR["prof"], False), (FACEBLUR["prof"], True)):
+                if c is None:
+                    continue
+                src = cv2.flip(g, 1) if flip else g
+                try:
+                    r = c.detectMultiScale(src, scaleFactor=1.1, minNeighbors=5, minSize=(mn, mn))
+                except cv2.error:
+                    continue
+                for (x, y, w, h) in (r if len(r) else []):
+                    if flip:
+                        x = g.shape[1] - x - w
+                    boxes.append((int(x / s), int(y / s), int(w / s), int(h / s)))
+        if not boxes:
+            for (x, y, w, h) in _persons_find(img):
+                hh = max(8, int(h * 0.24)); hw = max(8, int(min(w, hh * 1.1)))       # the head: top quarter, middle
+                boxes.append((x + (w - hw) // 2, y, hw, hh))
+    return boxes
+
+
+def faces_pixelate(img, boxes, pad=0.25):
+    """the regions as coarse blocks (plus a soft blur, so no detail is left); returns the number of regions"""
+    H, W = img.shape[:2]
+    n = 0
+    for (x, y, w, h) in boxes:
+        px, py = int(w * pad), int(h * pad)
+        x0, y0, x1, y1 = max(0, x - px), max(0, y - py), min(W, x + w + px), min(H, y + h + py)
+        if x1 - x0 < 2 or y1 - y0 < 2:
+            continue
+        roi = img[y0:y1, x0:x1]
+        bs = max(6, min(x1 - x0, y1 - y0) // 7)                  # about 7 blocks across a face
+        sm = cv2.resize(roi, (max(1, (x1 - x0) // bs), max(1, (y1 - y0) // bs)), interpolation=cv2.INTER_AREA)
+        big = cv2.resize(sm, (x1 - x0, y1 - y0), interpolation=cv2.INTER_NEAREST)
+        k = max(3, (bs // 2) * 2 + 1)
+        img[y0:y1, x0:x1] = cv2.GaussianBlur(big, (k, k), 0)
+        n += 1
+    return n
+
+
+def faces_blur_image(img):
+    """the picture (BGR, changed in place) with the faces pixelated; returns the number of regions"""
+    boxes = faces_find(img)
+    n = faces_pixelate(img, boxes) if boxes else 0
+    FACEBLUR["last"] = {"t": time.time(), "n": n, "kind": "image"}
+    return n
+
+
+def faces_blur_jpg(data, quality=90):
+    """JPEG bytes -> JPEG bytes with pixelated faces (the original data is not changed)"""
+    if not CFG.get("share_blur_faces", True):
+        return data
+    try:
+        img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
+        if img is None:
+            return data
+        if not faces_blur_image(img):
+            return data
+        ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, quality])
+        return buf.tobytes() if ok else data
+    except Exception as e:
+        log_event("sys", f"Blur faces: {e}"[:160])
+        return data
+
+
+def faces_blur_video(src):
+    """a copy of the video with pixelated faces (cache folder). Returns (path, error). The original stays untouched."""
+    if not CFG.get("share_blur_faces", True) or src.endswith(".faces.mp4"):
+        return src, ""
+    _faceblur_init()
+    if not FACEBLUR["how"]:
+        return src, ""                                          # nothing to find faces with (logged once)
+    cache = os.path.join(rec_dir(), ".cache"); os.makedirs(cache, exist_ok=True)
+    dst = os.path.join(cache, os.path.splitext(os.path.basename(src))[0] + ".faces.mp4")
+    try:
+        if os.path.isfile(dst) and os.path.getmtime(dst) >= os.path.getmtime(src):
+            return dst, ""
+    except OSError:
+        pass
+    with FACEBLUR["lock"]:
+        if dst in FACEBLUR["busy"]:
+            return None, "the video is being prepared - try again in a moment"
+        FACEBLUR["busy"].add(dst)
+    part = dst + ".part.mp4"
+    cap = cv2.VideoCapture(src)
+    proc = writer = None
+    try:
+        if not cap.isOpened():
+            return None, "video cannot be read"
+        fps = cap.get(cv2.CAP_PROP_FPS) or 10.0
+        fps = fps if 1 <= fps <= 120 else 10.0
+        recent, i, n_reg = [], 0, 0
+        while True:
+            ok, fr = cap.read()
+            if not ok or fr is None:
+                break
+            if i % 2 == 0:                                       # every 2nd picture: look again; the boxes stay 3 pictures
+                recent = ([faces_find(fr)] + recent)[:2]
+            boxes = [b for bl in recent for b in bl]
+            n_reg += faces_pixelate(fr, boxes) if boxes else 0
+            if proc is None and writer is None:
+                h, w = fr.shape[:2]
+                if shutil.which("ffmpeg"):
+                    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{w}x{h}",
+                           "-framerate", f"{fps:.2f}", "-i", "-", "-an", "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p",
+                           "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-map_metadata", "-1", "-movflags", "+faststart", part]
+                    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                else:
+                    for cc in ("avc1", "mp4v"):
+                        writer = cv2.VideoWriter(part, cv2.VideoWriter_fourcc(*cc), fps, (w, h))
+                        if writer.isOpened():
+                            break
+                        writer.release(); writer = None
+                    if writer is None:
+                        return None, "no video encoder (install ffmpeg)"
+            if proc is not None:
+                proc.stdin.write(fr.tobytes())
+            else:
+                writer.write(fr)
+            i += 1
+        if i == 0:
+            return None, "video cannot be read"
+        if proc is not None:
+            proc.stdin.close()
+            err = proc.stderr.read().decode(errors="replace").strip()
+            if proc.wait(timeout=600) != 0:
+                return None, (err.splitlines() or ["ffmpeg failed"])[-1][:200]
+        else:
+            writer.release(); writer = None
+        os.replace(part, dst)
+        FACEBLUR["last"] = {"t": time.time(), "n": n_reg, "kind": "video", "frames": i}
+        log_event("rec", f"Shared video: faces made unrecognisable ({n_reg} regions in {i} pictures)")
+        return dst, ""
+    except (OSError, subprocess.SubprocessError, cv2.error, ValueError) as e:
+        return None, str(e)[:200]
+    finally:
+        cap.release()
+        if writer is not None:
+            writer.release()
+        if proc is not None and proc.poll() is None:
+            proc.kill()
+        try:
+            os.remove(part)
+        except OSError:
+            pass
+        with FACEBLUR["lock"]:
+            FACEBLUR["busy"].discard(dst)
+
+
+def faceblur_selftest():
+    """pixelating works (a synthetic «face» loses its detail) and the original bytes stay the same"""
+    img = np.zeros((240, 320, 3), np.uint8)
+    for k in range(0, 80, 4):
+        cv2.line(img, (100 + k, 60), (100 + k, 140), (255, 255, 255), 1)       # fine stripes = detail
+    before = img[60:140, 100:180].std()
+    n = faces_pixelate(img, [(100, 60, 80, 80)])
+    after = img[70:130, 110:170].astype(np.float32)
+    assert n == 1 and after.std() < before * 0.6, "pixelating must remove the detail"
+    ok, buf = cv2.imencode(".jpg", np.full((60, 80, 3), 128, np.uint8))
+    data = buf.tobytes(); copy = bytes(data)
+    faces_blur_jpg(data)
+    assert data == copy
+    _faceblur_init()
+    return "detector: " + (FACEBLUR["how"] or "none in this OpenCV")
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
@@ -24894,7 +25173,7 @@ def self_test(folder=""):
 
     def pages():
         node = shutil.which("node")
-        names = ["WEB_PAGE", "CAMS_PAGE", "ZONES_PAGE", "REC_PAGE", "DIARY_PAGE", "HELP_PAGE", "LOG_PAGE", "GUEST_PAGE", "MSG_PAGE"]
+        names = ["WEB_PAGE", "CAMS_PAGE", "ZONES_PAGE", "REC_PAGE", "DIARY_PAGE", "HELP_PAGE", "LOG_PAGE", "GUEST_PAGE", "MSG_PAGE", "TL_PAGE"]
         n = 0
         for nm in names:
             html = render_page(globals()[nm], "live")
@@ -24909,6 +25188,7 @@ def self_test(folder=""):
                 n += 1
         return None if node else "JavaScript not checked (node missing)"
     chk("Web pages (render + JavaScript)", pages)
+    chk("Timeline, weekly report, blur faces when sharing", verlauf_selftest)     # 2.98.14 (425, 426, 375)
 
     if folder:
         def manifest():
@@ -26700,6 +26980,429 @@ def rec_dir():
     return os.path.abspath(CFG["record_dir"])
 
 
+# ----------------------------------------------------------------------------
+# 2.98.14 (Wunsch Daniel): Reiter Verlauf → «Zeitleiste». Eine Nacht (Standard: letzte Nacht 18:00–09:00, Tag wählbar) oder
+# ein ganzer Tag, alles auf einer Zeitachse. Die Daten kommen aus den bestehenden Quellen – nichts wird doppelt gespeichert:
+#   Aufnahmen        list_recordings (430)            Nachrichten   msglog_list (065)
+#   Tierbesuche      SIGHT / Tagebuch (090)           Alarme, Log   Protokoll-Dateien (390, nur die wichtigen Zeilen)
+#   Akku, Temperatur climate_day (060, alle 10 Min.)  Wetter        weather_day (060, Open-Meteo, stündlich)
+# Eine Adresse: /api/timeline?day=JJJJ-MM-TT&mode=night|day. Seite TL_PAGE (523), Fenster: einfache Liste (575).
+# ----------------------------------------------------------------------------
+TL_ALARM_KINDS = ("person", "alarm", "tamper")
+
+
+def timeline_window(day=None, mode="night"):
+    """(start, end) of a night (the evening before the given morning 18:00 until 09:00) or a whole day"""
+    try:
+        d = datetime.strptime(str(day or "")[:10], "%Y-%m-%d")
+    except ValueError:
+        d = datetime.now()
+    d = d.replace(hour=0, minute=0, second=0, microsecond=0)
+    if mode == "day":
+        return d, d + timedelta(days=1)
+    return d - timedelta(hours=6), d + timedelta(hours=9)
+
+
+def _tl_days(a, b):
+    out, d = [], a.replace(hour=0, minute=0, second=0, microsecond=0)
+    while d < b:
+        out.append(d.strftime("%Y-%m-%d")); d += timedelta(days=1)
+    return out
+
+
+def _tl_log(a, b, limit=400):
+    """the important log lines between a and b (archive days + today's file), oldest first"""
+    import gzip
+    files = []
+    for day in _tl_days(a, b):
+        try:
+            files += sorted(os.path.join(log_dir(), f) for f in os.listdir(log_dir())
+                            if LOG_NAME_RE.match(f) and f[12:22] == day)
+        except OSError:
+            pass
+    if os.path.isfile(LOG_FILE):
+        files.append(LOG_FILE)
+    sa, sb = a.strftime("%Y-%m-%d %H:%M:%S"), b.strftime("%Y-%m-%d %H:%M:%S")
+    out, seen, rep_ = [], set(), {}
+    for p in files:
+        try:
+            if p.endswith(".gz"):
+                with gzip.open(p, "rt", encoding="utf-8", errors="replace") as f:
+                    lines = f.read().splitlines()
+            else:
+                with open(p, "rb") as f:
+                    f.seek(0, 2); size = f.tell(); f.seek(max(0, size - 6 * 1024 * 1024))
+                    lines = f.read().decode("utf-8", "replace").splitlines()
+        except OSError:
+            continue
+        for ln in lines:
+            m = LOG_LINE_RE.match(ln)
+            if not m:
+                continue
+            ts = m.group(1) + " " + m.group(2)
+            if not (sa <= ts < sb):
+                continue
+            kind, text = m.group(3), m.group(4)
+            if kind == "status" or text.startswith(("Diary: ", "Recording started")):   # noise / shown as visit or recording
+                continue
+            if not (kind in TL_ALARM_KINDS or log_important(kind, text)):
+                continue
+            key = (ts, kind, text)
+            if key in seen:
+                continue
+            seen.add(key)
+            try:
+                t = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S").timestamp()
+            except ValueError:
+                continue
+            first = rep_.get((kind, text))
+            if first is not None and kind not in TL_ALARM_KINDS:   # the same warning again and again: one entry with a count
+                first["n"] = first.get("n", 1) + 1; first["t_last"] = t
+                continue
+            e = {"t": t, "type": "log", "kind": kind, "text": text[:300], "alarm": kind in TL_ALARM_KINDS}
+            rep_[(kind, text)] = e
+            out.append(e)
+    out.sort(key=lambda x: x["t"])
+    return out[-limit:]
+
+
+def _tl_recordings(a, b):
+    out, off = [], 0
+    args = {"from": a.strftime("%Y-%m-%d"), "to": (b - timedelta(seconds=1)).strftime("%Y-%m-%d"), "sort": "old", "limit": 200}
+    while off < 1000:
+        args["offset"] = off
+        try:
+            r = list_recordings(args, WATCH_REF.get("w"))
+        except Exception as e:
+            log_event("sys", f"Timeline: recordings {e}"[:160])
+            break
+        for it in r.get("items") or []:
+            if it.get("timelapse"):
+                continue
+            try:
+                t = datetime.strptime(it["time"], "%Y-%m-%d %H:%M:%S")
+            except (KeyError, ValueError):
+                continue
+            if a <= t < b:
+                out.append({"t": t.timestamp(), "type": "rec", "name": it["name"], "kind": it["kind"], "snap": it.get("snap"),
+                            "dur": it.get("duration"), "persons": it.get("persons"), "false": it.get("false"), "fav": it.get("fav"),
+                            "src": it.get("source") or "", "live": bool(it.get("recording"))})
+        off += 200
+        if off >= int(r.get("total") or 0):
+            break
+    return out
+
+
+def _tl_sightings(a, b, lang):
+    sight_load()
+    sa, sb = a.isoformat(timespec="seconds"), b.isoformat(timespec="seconds")
+    with SIGHT_LOCK:
+        lst = [dict(e) for e in SIGHT["list"] if sa <= e.get("start", "") < sb]
+    out = []
+    for e in lst:
+        try:
+            t = datetime.fromisoformat(e["start"]).timestamp()
+        except ValueError:
+            continue
+        out.append({"t": t, "type": "sight", "id": e.get("id"), "label": e.get("label"), "name": tr_trigger(e.get("label", ""), lang),
+                    "kind": e.get("kind"), "dur": e.get("dur"), "img": e.get("img") or "", "conf": e.get("conf")})
+    return out
+
+
+def _tl_messages(a, b):
+    ta, tb = a.timestamp(), b.timestamp()
+    out = []
+    for m in msglog_list(MSGLOG_MAX):
+        t = float(m.get("t") or 0)
+        if ta <= t < tb:
+            out.append({"t": t, "type": "msg", "id": m.get("id"), "ev": m.get("ev"), "title": m.get("title"), "text": m.get("text"),
+                        "status": m.get("status"), "img": bool(m.get("img"))})
+    return out
+
+
+def _tl_series(a, b):
+    """climate (every 10 min: temperature, humidity, CPU, battery) and weather (every hour) between a and b"""
+    clim, wx = [], []
+    for day in _tl_days(a, b):
+        for row in climate_day(day):
+            try:
+                t = datetime.strptime(day + " " + str(row[0]), "%Y-%m-%d %H:%M")
+            except (ValueError, TypeError, IndexError):
+                continue
+            if a <= t < b:
+                r = list(row) + [None] * 6
+                clim.append({"t": t.timestamp(), "temp": r[1], "hum": r[2], "cpu": r[4], "bat": r[5]})
+        w = weather_day(day) or {}
+        for hh, v in sorted((w.get("hourly") or {}).items()):
+            try:
+                t = datetime.strptime(day + " " + hh, "%Y-%m-%d %H")
+            except ValueError:
+                continue
+            if a <= t < b and isinstance(v, list):
+                v = list(v) + [None] * 5
+                ic = ""
+                try:
+                    ic = wmo_text(v[3])[0] if v[3] is not None else ""
+                except Exception:
+                    pass
+                wx.append({"t": t.timestamp(), "temp": v[0], "rain": v[1], "hum": v[2], "code": v[3], "gust": v[4], "icon": ic})
+    return clim, wx
+
+
+def timeline_build(day=None, mode="night", lang=None):
+    L = norm_lang(lang) if lang else cur_lang()
+    mode = "day" if mode == "day" else "night"
+    a, b = timeline_window(day, mode)
+    items = []
+    for fn in (lambda: _tl_recordings(a, b), lambda: _tl_messages(a, b), lambda: _tl_sightings(a, b, L), lambda: _tl_log(a, b)):
+        try:
+            items += fn()
+        except Exception as e:
+            log_event("sys", f"Timeline: {type(e).__name__}: {e}"[:160])
+    items.sort(key=lambda x: x["t"])
+    try:
+        clim, wx = _tl_series(a, b)
+    except Exception:
+        clim, wx = [], []
+    cnt = {"rec": 0, "msg": 0, "sight": 0, "log": 0, "alarm": 0, "animal": 0, "false": 0}
+    for it in items:
+        cnt[it["type"]] += 1
+        if it["type"] == "log" and it.get("alarm"):
+            cnt["alarm"] += 1
+        if it["type"] == "sight" and it.get("kind") == "animal":
+            cnt["animal"] += 1
+        if it["type"] == "rec" and it.get("false"):
+            cnt["false"] += 1
+    bats = [c["bat"] for c in clim if c.get("bat") is not None]
+    temps = [c["temp"] for c in clim if c.get("temp") is not None] or [w["temp"] for w in wx if w.get("temp") is not None]
+    return {"ok": True, "mode": mode, "day": a.strftime("%Y-%m-%d") if mode == "day" else (a + timedelta(hours=6)).strftime("%Y-%m-%d"),
+            "start": a.timestamp(), "end": b.timestamp(), "now": time.time(), "items": items[-1500:], "climate": clim, "weather": wx,
+            "count": cnt, "bat": {"first": bats[0], "last": bats[-1], "min": min(bats)} if bats else None,
+            "temp": {"min": min(temps), "max": max(temps)} if temps else None,
+            "env": bool(CFG.get("env_on")), "weather_on": bool(CFG.get("weather_on"))}
+
+
+def timeline_text(tl, lang=None):
+    """the timeline as plain lines (window, tests): [(time 'HH:MM', symbol, text, item)]"""
+    L = norm_lang(lang) if lang else cur_lang()
+    out = []
+    for it in tl["items"]:
+        hm = datetime.fromtimestamp(it["t"]).strftime("%H:%M")
+        ty = it["type"]
+        if ty == "rec":
+            s = ("🎬 " if it["kind"] == "video" else "📷 ") + tr("Recording", L) + (f" · {it['dur']:.0f} s" if it.get("dur") else "")
+            if it.get("false"):
+                s += " · " + tr("false alarm", L)
+            out.append((hm, "rec", s, it))
+        elif ty == "msg":
+            out.append((hm, "msg", "✉ " + (it.get("title") or "MoveEye") + " – " + str(it.get("text") or "")[:120], it))
+        elif ty == "sight":
+            out.append((hm, "sight", ("🦊 " if it.get("kind") == "animal" else "👤 ") + str(it.get("name") or it.get("label")) +
+                        (f" · {it['dur']} s" if it.get("dur") else ""), it))
+        else:
+            out.append((hm, "alarm" if it.get("alarm") else "log", ("🚨 " if it.get("alarm") else "• ") + it["text"] +
+                        (f" (× {it['n']})" if it.get("n", 1) > 1 else ""), it))
+    return out
+# ----------------------------------------------------------------------------
+# 2.98.14 (Wunsch Daniel): einmal pro Woche (Einstellung Tag + Stunde, Standard Sonntag 18:00) eine Push-Nachricht: wie gut
+# erkennt MoveEye – mit dem, was MoveEye selber hat (pruefstand/VERLAUF.md gibt es nur im Repository, nicht auf dem Pi):
+#   · die eigenen Testläufe im Simulator (310, TESTOPT["runs"]): Punkte, gefundene Personen, Fehlalarme – diese / letzte Woche
+#   · die echten Aufnahmen: wie viele, wie viele als «Fehlalarm» markiert (mit Ursache) – diese / letzte Woche
+#   · die Alarm-Nachrichten (065)
+#   · im Simulator-Tagebuch (355) verpasste Personen (im Bild, aber nicht erkannt)
+#   · dazu ein Tipp, der zur Woche passt.
+# Auch zu sehen: Verlauf → Zeitleiste (Karte «Wochenbericht») und im Fenster (Zeitleiste).
+# ----------------------------------------------------------------------------
+WEEKREP = {"last": None}
+WEEKDAYS_EN = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+_WR_ALARM_EV = ("person", "tamper", "warm", "noise")
+WR_CAUSES = {"animal": "Animal", "wind": "Wind / branches", "light": "Light / shadow", "rain": "Rain", "car": "Car", "other": "Other"}  # as in 540
+
+
+def _wr_recs(a, b):
+    """recordings between a and b: (count, false alarms, causes)"""
+    n, nf, causes = 0, 0, {}
+    try:
+        names = os.listdir(rec_dir())
+    except OSError:
+        names = []
+    stems = {}
+    for nm in names:
+        st_, ext = os.path.splitext(nm)
+        if ext.lower() in (".mp4", ".jpg") and REC_NAME_RE.match(nm):
+            stems.setdefault(st_, nm if ext.lower() == ".mp4" else stems.get(st_, nm))
+    for st_, nm in stems.items():
+        dt = parse_stamp(nm)
+        if dt is None or not (a <= dt < b):
+            continue
+        n += 1
+        c = _read_sidecar(nm).get("false")
+        if c:
+            nf += 1; causes[c] = causes.get(c, 0) + 1
+    return n, nf, causes
+
+
+def _wr_tests(a, b):
+    runs = [r for r in (TESTOPT.get("runs") or []) if a.timestamp() <= float(r.get("t") or 0) < b.timestamp() and r.get("score") is not None]
+    if not runs:
+        return {"n": 0}
+    rep = [r.get("report") or {} for r in runs]
+    pers = sum(int(x.get("persons") or 0) for x in rep); found = sum(int(x.get("persons_detected") or 0) for x in rep)
+    return {"n": len(runs), "score": round(sum(float(r["score"]) for r in runs) / len(runs), 1),
+            "found": found, "persons": pers, "rate": round(100.0 * found / pers) if pers else None,
+            "fa": sum(int(x.get("false_alarms") or 0) for x in rep), "last": runs[-1].get("score"), "mw": runs[-1].get("mw")}
+
+
+def _wr_sim(a, b):
+    try:
+        vs = simdiary_read(None, max(1, (datetime.now() - a).days + 2))
+    except Exception:
+        vs = []
+    seen = rec = 0
+    miss_kinds = {}
+    for v in vs:
+        try:
+            t = float(v.get("t_in") or 0)
+        except (TypeError, ValueError):
+            continue
+        if not (a.timestamp() <= t < b.timestamp()) or str(v.get("kind")) not in SIM_PERSON_KINDS or float(v.get("vis_s") or 0) < 2:
+            continue
+        seen += 1
+        if v.get("detected"):
+            rec += 1
+        else:
+            k = str(v.get("kind")); miss_kinds[k] = miss_kinds.get(k, 0) + 1
+    return {"seen": seen, "rec": rec, "missed": seen - rec, "rate": round(100.0 * rec / seen) if seen else None,
+            "miss_kinds": sorted(miss_kinds.items(), key=lambda kv: -kv[1])[:3]}
+
+
+def _wr_msgs(a, b):
+    ta, tb = a.timestamp(), b.timestamp()
+    return sum(1 for m in msglog_list(MSGLOG_MAX) if ta <= float(m.get("t") or 0) < tb and m.get("ev") in _WR_ALARM_EV and m.get("status") != "test")
+
+
+def _wr_trend(cur, prev, better_up=True):
+    """↑ / ↓ = the number went up / down, ✓ = that is good, ⚠ = that is worse"""
+    if cur is None or prev is None:
+        return ""
+    d = cur - prev
+    if abs(d) < 1e-9:
+        return "→"
+    return ("↑" if d > 0 else "↓") + (" ✓" if (d > 0) == better_up else " ⚠")
+
+
+def weekrep_build(lang=None, now=None):
+    """the weekly report: numbers of this week and the week before, a trend per line, one tip, the text for the push"""
+    L = norm_lang(lang) if lang else cur_lang()
+    now = now or datetime.now()
+    a = now - timedelta(days=7); p = a - timedelta(days=7)
+    T, Tp = _wr_tests(a, now), _wr_tests(p, a)
+    R, Rp = _wr_recs(a, now), _wr_recs(p, a)
+    S, Sp = _wr_sim(a, now), _wr_sim(p, a)
+    M, Mp = _wr_msgs(a, now), _wr_msgs(p, a)
+    weeks = []                                                  # test points per week, the last 6 weeks (for a small curve)
+    for i in range(5, -1, -1):
+        e = now - timedelta(days=7 * i); s = e - timedelta(days=7)
+        w = _wr_tests(s, e)
+        weeks.append({"wk": s.strftime("%d.%m."), "score": w.get("score"), "n": w.get("n", 0)})
+    lines = []
+    if T["n"]:
+        lines.append(trf("Test runs: {n}, score {s} {tr} (week before {p}), persons found {f} of {a}, false alarms {fa}", L,
+                         n=T["n"], s=T["score"], tr=_wr_trend(T["score"], Tp.get("score")), p=Tp.get("score", "–"),
+                         f=T["found"], a=T["persons"], fa=T["fa"]))
+    else:
+        lines.append(tr("Test runs: none this week", L))
+    lines.append(trf("Recordings: {n} (week before {p}), marked as false alarm: {f} {tr}", L,
+                     n=R[0], p=Rp[0], f=R[1], tr=_wr_trend(R[1], Rp[1], better_up=False)) +
+                 ((" (" + ", ".join(f"{tr(WR_CAUSES.get(k, k), L)} {v}" for k, v in sorted(R[2].items(), key=lambda kv: -kv[1])) + ")") if R[2] else ""))
+    lines.append(trf("Alarm messages: {n} (week before {p})", L, n=M, p=Mp))
+    if S["seen"]:
+        lines.append(trf("Simulator diary: persons recognised {r} % ({a} of {b}) {tr}, missed {m}", L,
+                         r=S["rate"], a=S["rec"], b=S["seen"], tr=_wr_trend(S["rate"], Sp.get("rate")), m=S["missed"]) +
+                     ((" – " + ", ".join(f"{tr_trigger(k, L)} {v}" for k, v in S["miss_kinds"])) if S["miss_kinds"] else ""))
+    tip, link = weekrep_tip(L, T, Tp, R, S, now)
+    text = "\n".join(lines) + "\n💡 " + tip
+    return {"t": now.isoformat(timespec="seconds"), "from": a.strftime("%d.%m."), "to": now.strftime("%d.%m."),
+            "tests": T, "tests_prev": Tp, "recs": {"n": R[0], "false": R[1], "causes": R[2]}, "recs_prev": {"n": Rp[0], "false": Rp[1]},
+            "msgs": M, "msgs_prev": Mp, "sim": S, "sim_prev": Sp, "weeks": weeks, "lines": lines, "tip": tip, "link": link, "text": text,
+            "on": bool(CFG.get("weekrep_on")), "day": CFG.get("weekrep_day"), "hour": int(CFG.get("weekrep_hour", 18)),
+            "last": WEEKREP["last"]}
+
+
+def weekrep_tip(L, T, Tp, R, S, now):
+    """one tip that fits the week (text, address of the page that helps)"""
+    if R[1] >= 2:
+        try:
+            sg = fa_suggestions(L, 7)["suggestions"]
+        except Exception:
+            sg = []
+        if sg:
+            return trf("{n} false alarms this week. Suggestion: {s} (History → Recordings → false alarms)", L, n=R[1], s=sg[0]["text"]), "/recordings"
+        return trf("{n} false alarms this week. Draw an ignore zone over what moves (trees, road) – tab Protection → Zones.", L, n=R[1]), "/zones"
+    if S["missed"] >= 2:
+        return trf("In the simulator {n} persons were in the picture but not recognised. Run the test «Night» and the automatic optimization (Simulator → Testing).", L, n=S["missed"]), "/sim"
+    if T["n"] and Tp.get("score") is not None and T["score"] <= Tp["score"] - 5:
+        return tr("The test score went down. Look at what changed in the settings (Simulator → Test runs, «undo»).", L), "/sim"
+    if not T["n"]:
+        return tr("No test run this week: switch on the nightly test run (Simulator → Testing) – then you see the trend here.", L), "/sim"
+    if not R[0]:
+        return tr("A quiet week. Check now and then that the camera still looks at the right place (Live).", L), "/"
+    tips = ["Mark wrong alarms with «Was nothing» – MoveEye learns from them and suggests better settings.",
+            "Star (★) important recordings: they are never deleted automatically.",
+            "«Guard tonight» on the tab Protection sets everything for the night in one tap.",
+            "The timeline (History → Timeline) shows a whole night at a glance."]
+    return tr(tips[int(now.strftime("%V")) % len(tips)], L), "/timeline"
+
+
+def weekrep_send(manual=False):
+    r = weekrep_build()
+    w = WATCH_REF.get("w")
+    ok = False
+    if w is not None and Notifier.configured() and CFG["notify_on"]:
+        pub = CFG["public_url"].strip().rstrip("/")
+        ok = bool(w.notifier.info(r["text"], pub + "/timeline" if pub else "", title="{name}: " + tr("Weekly detection report")))
+    WEEKREP["last"] = {"t": datetime.now().isoformat(timespec="seconds"), "sent": ok, "manual": manual}
+    log_event("sys", ("Weekly detection report sent" if ok else "Weekly detection report not sent (no push channel)") + (" (by hand)" if manual else ""))
+    return r, ok
+
+
+def weekrep_due(now):
+    if not CFG.get("weekrep_on"):
+        return False
+    day = CFG.get("weekrep_day") if CFG.get("weekrep_day") in WEEKDAYS_EN else "Sunday"
+    if now.weekday() != WEEKDAYS_EN.index(day) or now.hour < int(CFG.get("weekrep_hour", 18)) or now.hour > int(CFG.get("weekrep_hour", 18)) + 3:
+        return False                                       # also up to 3 h late (the Pi was off at the hour)
+    return CFG.get("weekrep_last") != now.strftime("%G-W%V")
+
+
+def weekrep_loop():
+    while True:
+        time.sleep(60)
+        try:
+            now = datetime.now()
+            if weekrep_due(now):
+                CFG["weekrep_last"] = now.strftime("%G-W%V")
+                save_settings()
+                weekrep_send()
+        except Exception as e:
+            log_event("sys", f"Weekly detection report: {e}"[:150])
+
+
+threading.Thread(target=weekrep_loop, daemon=True, name="weekrep").start()
+
+
+def verlauf_selftest():
+    """--self-test: night window, timeline and weekly report build (with whatever data there is), face pixelation"""
+    a, b = timeline_window("2026-03-05", "night")
+    assert (a.hour, b.hour, (b - a).total_seconds()) == (18, 9, 15 * 3600), "night 18:00-09:00"
+    a, b = timeline_window("2026-03-29", "day")
+    assert a.day == 29 and b.day == 30
+    tl = timeline_build(None, "night", "de")
+    assert tl["ok"] and isinstance(tl["items"], list)
+    timeline_text(tl, "fr")
+    wr = weekrep_build("it")
+    assert wr["tip"] and wr["text"] and len(wr["weeks"]) == 6
+    return faceblur_selftest()
 # ----------------------------------------------------------------------------
 # Event report (PDF) - a small PDF writer of its own (no extra package): A4 pages, text in Helvetica (WinAnsi, so umlauts
 #   work), JPEG pictures embedded as they are.
@@ -30428,10 +31131,10 @@ $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin
 NAV_ITEMS = [("live", "/", "Live", "Live"), ("protect", "/protect", "Protection", "Protection"), ("history", "/recordings", "History", "History"),
              ("settings", "/settings", "Settings", "Sett."), ("sim", "/sim", "Simulator", "Sim"), ("more", "/more", "More", "More")]
 NAV_SUB = {"protect": [("protect", "/protect", "Protection"), ("zones", "/zones", "Zones")],
-           "history": [("rec", "/recordings", "Recordings"), ("diary", "/diary", "Diary"), ("msgs", "/messages", "Messages"), ("log", "/log", "Log")],
+           "history": [("rec", "/recordings", "Recordings"), ("tl", "/timeline", "Night timeline"), ("diary", "/diary", "Diary"), ("msgs", "/messages", "Messages"), ("log", "/log", "Log")],
            "settings": [("settings", "/settings", "Settings"), ("cams", "/cams", "Cameras")],
            "more": [("more", "/more", "Overview"), ("help", "/help", "Manual"), ("party", "/party", "Game corner"), ("tools", "/tools", "Tools")]}
-NAV_OF = {"zones": "protect", "rec": "history", "diary": "history", "msgs": "history", "log": "history", "cams": "settings", "help": "more",
+NAV_OF = {"zones": "protect", "rec": "history", "tl": "history", "diary": "history", "msgs": "history", "log": "history", "cams": "settings", "help": "more",
           "party": "more", "tools": "more"}
 
 
@@ -36622,6 +37325,360 @@ setInterval(function () { if (SRC === "local" && !document.hidden) load(); }, 20
 /*ALERTS*/
 </script></body></html>
 """
+# ----------------------------------------------------------------------------
+# 2.98.14 (Wunsch Daniel): «Zeitleiste der Nacht». Handy zuerst (390 px): oben Tag wählen (◀ ▶, Kalender, Nacht / Tag),
+# Zusammenfassung, ein Streifen mit Akku-, Temperatur- und Regenkurve und allen Ereignissen als Striche (antippen = dorthin
+# springen), darunter die Liste nach Stunden. Ein Eintrag antippen öffnet ihn (Video / Bild / Tagebuch-Bild / Nachricht),
+# mit Knopf zur ausführlichen Seite. Unten die Karte «Wochenbericht» (426). Daten: /api/timeline (425), /api/weekreport.
+# ----------------------------------------------------------------------------
+TL_PAGE = r"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MoveEye - Timeline</title>
+<style>
+/*BASECSS*/
+main{padding:12px 16px 48px;max-width:820px;margin:0 auto}
+.tlbar{display:flex;gap:8px;align-items:center;margin:2px 0 8px}
+.tlbar .day{flex:1;min-width:0;text-align:center;font-weight:700;font-size:15.5px;line-height:1.25;overflow-wrap:anywhere}
+.tlbar button{padding:8px 14px;flex:none}
+.tlopt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;margin-bottom:8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;color:var(--txt);padding:7px 12px;font-weight:600}
+.seg button.on{background:var(--acc);color:#fff}
+#d-pick{width:auto;padding:6px 8px;border-radius:9px;border:1px solid var(--line);background:var(--field);color:var(--txt)}
+.sum{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:4px 0 10px}
+.sum .badge{font-size:12.5px;color:var(--txt)}
+.chartbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 6px 4px;margin-bottom:6px}
+#chart{width:100%;height:132px;display:block;cursor:crosshair;touch-action:manipulation}
+#chart text{font:10.5px system-ui,sans-serif;fill:var(--mut)}
+.leg{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:11.5px;color:var(--mut);padding:2px 0 2px}
+.leg i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:4px}
+.flt{display:flex;gap:6px;overflow-x:auto;margin:10px 0 2px;scrollbar-width:none;padding-bottom:2px}.flt::-webkit-scrollbar{display:none}
+.flt button{flex:none;padding:6px 12px;border-radius:99px;background:var(--btn2);color:var(--txt);border:1px solid var(--line);font-size:13px}
+.flt button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+#list{position:relative;margin-top:4px}
+#list::before{content:"";position:absolute;left:62px;top:4px;bottom:4px;width:2px;background:var(--line);border-radius:2px}
+.hr{position:relative;padding:12px 0 2px 78px;color:var(--mut);font-size:11.5px;font-weight:700;letter-spacing:.06em}
+.hr::before{content:"";position:absolute;left:57px;top:15px;width:12px;height:2px;background:var(--mut)}
+.it{position:relative;display:flex;gap:8px;align-items:center;padding:5px 0;cursor:pointer}
+.it .tm{width:46px;flex:none;text-align:right;color:var(--mut);font-size:12.5px;font-variant-numeric:tabular-nums}
+.it .dot{width:20px;height:20px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:10.5px;background:var(--panel);
+  border:2px solid var(--line);z-index:1;line-height:1}
+.it .bd{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:flex;gap:10px;align-items:center}
+.it:hover .bd{border-color:var(--acc2)}
+.it .tx{flex:1;min-width:0}.it .t1{font-weight:600;overflow-wrap:anywhere}
+.it .t2{color:var(--mut);font-size:12.5px;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.it img{width:78px;height:56px;object-fit:cover;border-radius:8px;flex:none;background:#000}
+.it.rec .dot{border-color:var(--acc)}.it.sight .dot{border-color:var(--grn)}.it.msg .dot{border-color:var(--blu)}
+.it.alarm .dot{border-color:var(--red)}.it.alarm .bd{border-color:var(--red)}
+.it.log .bd{background:transparent;border-style:dashed;padding:5px 10px}.it.log .t1{font-weight:500;font-size:13px}
+.it.hl .bd{outline:2px solid var(--acc);outline-offset:1px}
+.it .fa{color:var(--org);font-weight:700}
+.empty{padding:26px 8px;text-align:center;color:var(--mut)}
+#viewer{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:12px}
+#viewer .vb{width:100%;max-width:900px;max-height:100%;overflow:auto}
+#viewer img,#viewer video{display:block;width:100%;max-height:68vh;object-fit:contain;border-radius:10px;background:#000}
+#viewer .vt{color:#fff;font-weight:700;font-size:16px;margin:10px 0 2px}#viewer .vs{color:#cbd5e1;font-size:13.5px;white-space:pre-wrap;overflow-wrap:anywhere}
+#viewer .vn{color:#cbd5e1;font-size:13px;margin:8px 0}
+#viewer .vbtn{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+#wr{margin-top:18px}
+#wr .ln{padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+#wr .tip{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--field);border:1px solid var(--line)}
+#wr .tip a{color:var(--acc2)}
+#wr svg{width:100%;height:70px;display:block;margin:6px 0}
+#wr svg text{font:10px system-ui,sans-serif;fill:var(--mut)}
+</style></head><body>
+<header>
+  <h1>MoveEye</h1>
+  <!--NAV-->
+  <span class="hdr-ctl">
+    <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
+    <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
+  </span>
+</header>
+<main>
+  <div class="tlbar">
+    <button class="sec" id="prev" aria-label="previous">◀</button>
+    <div class="day" id="day">…</div>
+    <button class="sec" id="next" aria-label="next">▶</button>
+  </div>
+  <div class="tlopt">
+    <span class="seg" id="mode"><button data-v="night" class="on" data-i18n="Night 18–09">Night 18–09</button><button data-v="day" data-i18n="Whole day">Whole day</button></span>
+    <input type="date" id="d-pick">
+    <button class="sec" id="reload" data-i18n="↻ Refresh">↻ Refresh</button>
+  </div>
+  <div class="sum" id="sum"></div>
+  <div class="chartbox"><svg id="chart" role="img" aria-label="timeline chart"></svg><div class="leg" id="leg"></div></div>
+  <div class="flt" id="flt">
+    <button data-v="all" class="on" data-i18n="All">All</button><button data-v="rec" data-i18n="Recordings">Recordings</button>
+    <button data-v="sight" data-i18n="Animals and persons">Animals and persons</button><button data-v="msg" data-i18n="Messages">Messages</button>
+    <button data-v="log" data-i18n="Alarms and log">Alarms and log</button>
+  </div>
+  <div id="list"><div class="empty" data-i18n="loading …">loading …</div></div>
+  <details class="card" id="wr"><summary><span>📈 <span data-i18n="Weekly detection report">Weekly detection report</span> <span id="wr-sub" style="text-transform:none;letter-spacing:0"></span></span></summary>
+    <div id="wr-body" style="margin-top:8px"><div class="mut" data-i18n="loading …">loading …</div></div>
+  </details>
+</main>
+<div id="viewer" hidden><div class="vb" id="vb"></div></div>
+<script>
+/*COMMON*/
+Object.assign(I18N.de, __TLDE__);
+var DAY = "", MODE = "night", FILT = "all", D = null, VTOK = 0;
+try { MODE = localStorage.getItem("mw-tl-mode") === "day" ? "day" : "night"; } catch (e) {}
+var ICON = {person: "🚨", tamper: "🛑", warm: "🔥", noise: "🔊", prealarm: "👀", test: "🧪", info: "ℹ️"};
+var SIC = {animal: "🦊", person: "👤", warm: "🔥", noise: "🔊", object: "▫"};
+function LOC() { return {de: "de-CH", fr: "fr-CH", it: "it-CH", rm: "de-CH"}[LANG] || "en-GB"; }
+function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function hm(ts) { return new Date(ts * 1000).toLocaleTimeString(LOC(), {hour: "2-digit", minute: "2-digit"}); }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+function enc(s) { return encodeURIComponent(s); }
+function dayLabel() {
+  var d = new Date(DAY + "T12:00:00");
+  var w = d.toLocaleDateString(LOC(), {weekday: "long", day: "numeric", month: "numeric"});
+  if (MODE === "day") return w;
+  var p = new Date(d); p.setDate(p.getDate() - 1);
+  return t("Night") + " " + p.toLocaleDateString(LOC(), {weekday: "short"}) + " → " + w;
+}
+function shift(n) {
+  var d = new Date(DAY + "T12:00:00"); d.setDate(d.getDate() + n);
+  if (iso(d) > iso(new Date())) return;
+  DAY = iso(d); load();
+}
+function itemsF() {
+  if (!D) return [];
+  return D.items.filter(function (it) {
+    if (FILT === "all") return true;
+    if (FILT === "log") return it.type === "log";
+    return it.type === FILT;
+  });
+}
+function paintSum() {
+  var c = D.count, h = [];
+  h.push("🎬 " + c.rec + " " + t("recordings"));
+  if (c.false) h.push("✗ " + c.false + " " + t("false alarms"));
+  h.push("🦊 " + c.animal + " " + t("animals"));
+  h.push("✉ " + c.msg + " " + t("messages"));
+  h.push("🚨 " + c.alarm + " " + t("alarms"));
+  if (D.bat) h.push("🔋 " + Math.round(D.bat.first) + " → " + Math.round(D.bat.last) + " %");
+  if (D.temp) h.push("🌡 " + Math.round(D.temp.min) + "…" + Math.round(D.temp.max) + " °C");
+  document.getElementById("sum").innerHTML = h.map(function (x) { return '<span class="badge">' + esc(x) + "</span>"; }).join("");
+}
+var COL = {rec: "var(--acc)", sight: "var(--grn)", msg: "var(--blu)", alarm: "var(--red)", log: "var(--mut)"};
+function paintChart() {
+  var svg = document.getElementById("chart"), W = Math.max(280, svg.clientWidth || 360), H = 132, top = 8, bot = 84;
+  var a = D.start, b = D.end, X = function (ts) { return 4 + (W - 8) * (ts - a) / (b - a); };
+  var s = "";
+  var step = (b - a) > 16 * 3600 ? 3 : (W < 420 ? 3 : 2);
+  for (var ts = a; ts <= b; ts += 3600) {
+    var hh = new Date(ts * 1000).getHours(), x = X(ts);
+    s += '<line x1="' + x + '" x2="' + x + '" y1="' + top + '" y2="' + (H - 18) + '" stroke="var(--line)" stroke-width="1"/>';
+    if (hh % step === 0) s += '<text x="' + x + '" y="' + (H - 4) + '" text-anchor="middle">' + String(hh).padStart(2, "0") + "</text>";
+  }
+  var leg = [];
+  var rain = D.weather.filter(function (w) { return w.rain > 0; });
+  if (rain.length) {
+    leg.push('<span><i style="background:var(--blu);opacity:.5;height:8px"></i>' + esc(t("Rain")) + "</span>");
+    rain.forEach(function (w) { var hgt = Math.min(bot - top, 10 + 14 * w.rain); s += '<rect x="' + X(w.t) + '" y="' + (bot - hgt) + '" width="' + Math.max(2, X(w.t + 3600) - X(w.t) - 1) + '" height="' + hgt + '" fill="var(--blu)" opacity=".28"/>'; });
+  }
+  function line(pts, col, dash) {
+    if (pts.length < 2) return "";
+    return '<polyline fill="none" stroke="' + col + '" stroke-width="2" stroke-linejoin="round"' + (dash ? ' stroke-dasharray="4 3"' : "") + ' points="' + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '"/>';
+  }
+  var bat = D.climate.filter(function (c) { return c.bat != null; });
+  if (bat.length) {
+    s += line(bat.map(function (c) { return [X(c.t), bot - (bot - top) * Math.max(0, Math.min(100, c.bat)) / 100]; }), "var(--grn)");
+    leg.push('<span><i style="background:var(--grn)"></i>' + esc(t("Battery")) + " " + Math.round(bat[bat.length - 1].bat) + " %</span>");
+  }
+  var tmp = D.climate.filter(function (c) { return c.temp != null; }), own = tmp.length > 0;
+  if (!own) tmp = D.weather.filter(function (w) { return w.temp != null; });
+  if (tmp.length) {
+    var lo = Math.min.apply(null, tmp.map(function (c) { return c.temp; })), hi = Math.max.apply(null, tmp.map(function (c) { return c.temp; }));
+    if (hi - lo < 4) { lo -= 2; hi += 2; }
+    s += line(tmp.map(function (c) { return [X(c.t), bot - 6 - (bot - top - 12) * (c.temp - lo) / (hi - lo)]; }), "var(--org)", !own);
+    leg.push('<span><i style="background:var(--org)"></i>' + esc(own ? t("Temperature") : t("Temperature (weather)")) + " " + Math.round(lo) + "…" + Math.round(hi) + " °C</span>");
+  }
+  D.items.forEach(function (it) {
+    var k = it.type === "log" ? (it.alarm ? "alarm" : "log") : it.type, y0 = {rec: 90, sight: 96, msg: 102, alarm: 88, log: 104}[k];
+    var x = X(it.t);
+    s += '<line x1="' + x + '" x2="' + x + '" y1="' + y0 + '" y2="' + (k === "log" ? 110 : 112) + '" stroke="' + COL[k] + '" stroke-width="' + (k === "log" ? 1 : 2.5) + '" stroke-linecap="round"/>';
+  });
+  if (D.now > a && D.now < b) s += '<line x1="' + X(D.now) + '" x2="' + X(D.now) + '" y1="' + top + '" y2="' + (H - 18) + '" stroke="var(--acc2)" stroke-width="1.5" stroke-dasharray="3 3"/>';
+  if (!bat.length && !tmp.length) s += '<text x="' + (W / 2) + '" y="' + ((top + bot) / 2) + '" text-anchor="middle">' + esc(t("No battery or temperature values for this time")) + "</text>";
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  svg.innerHTML = s;
+  leg.push('<span><i style="background:var(--acc)"></i>' + esc(t("Recordings")) + '</span><span><i style="background:var(--grn)"></i>' + esc(t("Animals")) +
+           '</span><span><i style="background:var(--blu)"></i>' + esc(t("Messages")) + '</span><span><i style="background:var(--red)"></i>' + esc(t("Alarms")) + "</span>");
+  document.getElementById("leg").innerHTML = leg.join("");
+}
+function rowHtml(it, i) {
+  var cls = it.type, dot = "•", t1 = "", t2 = "", img = "";
+  if (it.type === "rec") {
+    dot = it.kind === "video" ? "🎬" : "📷";
+    t1 = t(it.kind === "video" ? "Video" : "Picture") + (it.persons ? " · 👤 " + it.persons : "") + (it.fav ? " ★" : "");
+    t2 = [it.dur ? Math.round(it.dur) + " s" : "", it.src || "", it.live ? t("recording now") : ""].filter(Boolean).join(" · ");
+    if (it.false) t2 += (t2 ? " · " : "") + '<span class="fa">✗ ' + esc(t("false alarm")) + "</span>";
+    else t2 = esc(t2);
+    img = "/rec/thumb/" + enc(it.name);
+    return wrap(cls, i, it, dot, esc(t1), t2, img);
+  }
+  if (it.type === "sight") {
+    dot = SIC[it.kind] || "▫";
+    t1 = it.name || it.label;
+    t2 = [it.dur ? it.dur + " s" : "", it.conf ? Math.round(it.conf * 100) + " %" : ""].filter(Boolean).join(" · ");
+    img = it.img ? "/diary/img/" + enc(it.img) + "?thumb=1" : "";
+  } else if (it.type === "msg") {
+    dot = ICON[it.ev] || "✉"; t1 = it.title || "MoveEye"; t2 = it.text || "";
+    img = it.img ? "/api/messages/img/" + enc(it.id) : "";
+    if ({person: 1, tamper: 1, warm: 1, noise: 1}[it.ev]) cls += " alarm";
+  } else {
+    dot = it.alarm ? "🚨" : "•"; t1 = it.text; t2 = it.n > 1 ? "× " + it.n + " · " + t("last") + " " + hm(it.t_last) : "";
+    if (it.alarm) cls += " alarm";
+  }
+  return wrap(cls, i, it, dot, esc(t1), esc(t2), img);
+}
+function wrap(cls, i, it, dot, t1, t2, img) {
+  return '<div class="it ' + cls + '" data-i="' + i + '" id="it' + i + '"><div class="tm">' + hm(it.t) + '</div><div class="dot">' + dot + '</div><div class="bd"><div class="tx"><div class="t1">' +
+    t1 + "</div>" + (t2 ? '<div class="t2">' + t2 + "</div>" : "") + "</div>" + (img ? '<img loading="lazy" alt="" src="' + esc(img) + '">' : "") + "</div></div>";
+}
+function paintList() {
+  var L = itemsF(), h = "", lastH = null;
+  L.forEach(function (it) {
+    var d = new Date(it.t * 1000), k = d.getDate() + "-" + d.getHours();
+    if (k !== lastH) { lastH = k; h += '<div class="hr">' + String(d.getHours()).padStart(2, "0") + ":00</div>"; }
+    h += rowHtml(it, D.items.indexOf(it));
+  });
+  var box = document.getElementById("list");
+  box.innerHTML = h || '<div class="empty">' + esc(t(D.items.length ? "Nothing of this kind in this time." : (MODE === "night" ? "Nothing happened in this night." : "Nothing happened on this day."))) + "</div>";
+  box.querySelectorAll(".it").forEach(function (e) { e.onclick = function () { openIt(D.items[+e.dataset.i]); }; });
+}
+function paint() {
+  document.getElementById("day").textContent = dayLabel();
+  document.getElementById("d-pick").value = DAY;
+  document.getElementById("next").disabled = DAY >= iso(new Date());
+  document.querySelectorAll("#mode button").forEach(function (b) { b.classList.toggle("on", b.dataset.v === MODE); });
+  if (!D) return;
+  paintSum(); paintChart(); paintList();
+}
+async function load() {
+  paint();
+  var r = await fetch("/api/timeline?day=" + DAY + "&mode=" + MODE + "&lang=" + LANG).then(function (x) { return x.json(); }).catch(function () { return null; });
+  if (!r || !r.ok) { document.getElementById("list").innerHTML = '<div class="empty">⚠ ' + esc(t("connection")) + "</div>"; return; }
+  D = r; paint();
+}
+// tap the chart: jump to the nearest entry of the list
+document.getElementById("chart").addEventListener("click", function (ev) {
+  if (!D) return;
+  var svg = this, rc = svg.getBoundingClientRect(), W = Math.max(280, svg.clientWidth || 360);
+  var ts = D.start + (D.end - D.start) * Math.max(0, Math.min(1, ((ev.clientX - rc.left) * W / rc.width - 4) / (W - 8)));
+  var L = itemsF(); if (!L.length) return;
+  var best = L[0]; L.forEach(function (it) { if (Math.abs(it.t - ts) < Math.abs(best.t - ts)) best = it; });
+  var e = document.getElementById("it" + D.items.indexOf(best)); if (!e) return;
+  document.querySelectorAll(".it.hl").forEach(function (x) { x.classList.remove("hl"); });
+  e.classList.add("hl"); e.scrollIntoView({behavior: "smooth", block: "center"});
+});
+// ---- the viewer: a recording / a diary picture / a message ----
+function vClose() { VTOK++; var v = document.getElementById("viewer"); v.hidden = true; document.getElementById("vb").innerHTML = ""; }
+function vBtns(btns) {
+  return '<div class="vbtn">' + btns.map(function (b) { return b[1] ? '<a class="btn' + (b[2] ? "" : " sec") + '" href="' + esc(b[1]) + '"' + (b[3] ? " download" : "") + ">" + esc(b[0]) + "</a>" : '<button class="sec" onclick="vClose()">' + esc(b[0]) + "</button>"; }).join("") + "</div>";
+}
+async function openIt(it) {
+  var vb = document.getElementById("vb"), tok = ++VTOK, day = iso(new Date(it.t * 1000));
+  document.getElementById("viewer").hidden = false;
+  if (it.type === "rec") {
+    var media = it.kind === "image" ? '<img alt="" src="/rec/file/' + enc(it.name) + '">' : '<div id="vmedia"><img alt="" src="/rec/thumb/' + enc(it.name) + '"></div>';
+    vb.innerHTML = media + '<div class="vt">' + esc(hm(it.t) + " · " + t(it.kind === "video" ? "Video" : "Picture")) + "</div>" +
+      '<div class="vs">' + esc([it.dur ? Math.round(it.dur) + " s" : "", it.src, it.false ? "✗ " + t("false alarm") : ""].filter(Boolean).join(" · ")) + '</div><div class="vn" id="vnote"></div>' +
+      vBtns([[t("Open in Recordings"), "/recordings?open=" + enc(it.name) + "&day=" + day, true], ["⬇", "/rec/file/" + enc(it.name) + "?dl=1", false, true], ["✕ " + t("Close")]]);
+    if (it.kind === "video") {
+      var note = document.getElementById("vnote"); note.textContent = t("Preparing video…");
+      for (var n = 0; n < 400; n++) {
+        var r = await post("/api/rec/prepare", {name: it.name});
+        if (tok !== VTOK) return;
+        if (r.state === "ready") { document.getElementById("vmedia").innerHTML = '<video controls autoplay playsinline src="' + esc(r.url) + '"></video>'; note.textContent = ""; return; }
+        if (r.state === "converting") { note.textContent = t("Converting for the browser (one time)…"); await sleep(1500); continue; }
+        note.textContent = r.state === "live" ? t("Still recording - available when it ends.") : (t("Error") + ": " + (r.error || r.state)); return;
+      }
+    }
+  } else if (it.type === "sight") {
+    vb.innerHTML = (it.img ? '<img alt="" src="/diary/img/' + enc(it.img) + '">' : "") + '<div class="vt">' + esc(hm(it.t) + " · " + (it.name || it.label)) + "</div>" +
+      '<div class="vs">' + esc([it.dur ? it.dur + " s" : "", it.conf ? Math.round(it.conf * 100) + " %" : ""].filter(Boolean).join(" · ")) + "</div>" +
+      vBtns([[t("Open the diary"), "/diary", true], ["✕ " + t("Close")]]);
+  } else if (it.type === "msg") {
+    vb.innerHTML = (it.img ? '<img alt="" src="/api/messages/img/' + enc(it.id) + '">' : "") + '<div class="vt">' + esc(hm(it.t) + " · " + (it.title || "MoveEye")) + "</div>" +
+      '<div class="vs">' + esc(it.text || "") + "</div>" + vBtns([[t("All messages"), "/messages", true], ["✕ " + t("Close")]]);
+  } else {
+    vb.innerHTML = '<div class="vt">' + esc(hm(it.t) + " · " + it.kind) + '</div><div class="vs">' + esc(it.text) + "</div>" + vBtns([[t("Open the log"), "/log", true], ["✕ " + t("Close")]]);
+  }
+}
+document.getElementById("viewer").addEventListener("click", function (e) { if (e.target.id === "viewer") vClose(); });
+addEventListener("keydown", function (e) { if (e.key === "Escape") vClose(); });
+// ---- weekly detection report (426) ----
+async function loadWr() {
+  var r = await fetch("/api/weekreport?lang=" + LANG).then(function (x) { return x.json(); }).catch(function () { return null; });
+  var b = document.getElementById("wr-body"); if (!r || !r.lines) { b.innerHTML = '<div class="mut">⚠</div>'; return; }
+  document.getElementById("wr-sub").textContent = "· " + r.from + " – " + r.to;
+  var h = r.lines.map(function (l) { return '<div class="ln">' + esc(l) + "</div>"; }).join("");
+  var pts = r.weeks.filter(function (w) { return w.score != null; });
+  if (pts.length >= 2) {
+    var W = 320, lo = Math.min.apply(null, pts.map(function (w) { return w.score; })), hi = Math.max.apply(null, pts.map(function (w) { return w.score; }));
+    if (hi - lo < 10) { lo -= 5; hi += 5; }
+    var X = function (i) { return 16 + (W - 32) * i / (r.weeks.length - 1); }, Y = function (v) { return 52 - 40 * (v - lo) / (hi - lo); }, s = "", p = [];
+    r.weeks.forEach(function (w, i) { s += '<text x="' + X(i) + '" y="68" text-anchor="middle">' + esc(w.wk) + "</text>";
+      if (w.score != null) { p.push(X(i) + "," + Y(w.score)); s += '<circle cx="' + X(i) + '" cy="' + Y(w.score) + '" r="3" fill="var(--acc)"/><text x="' + X(i) + '" y="' + (Y(w.score) - 6) + '" text-anchor="middle">' + Math.round(w.score) + "</text>"; } });
+    h += '<div class="mut" style="margin-top:8px">' + esc(t("Test score per week")) + '</div><svg viewBox="0 0 ' + W + ' 72"><polyline fill="none" stroke="var(--acc)" stroke-width="2" points="' + p.join(" ") + '"/>' + s + "</svg>";
+  }
+  h += '<div class="tip">💡 ' + esc(r.tip) + (r.link ? ' <a href="' + esc(r.link) + '">→</a>' : "") + "</div>";
+  h += '<div class="mut" style="margin-top:10px">' + esc(r.on ? t("Comes as a push every") + " " + t(r.day) + " " + String(r.hour).padStart(2, "0") + ":00 (" + t("Settings → Night report") + ")" : t("The weekly push is off (Settings → Night report).")) + "</div>";
+  h += '<div class="btns" style="margin-top:10px"><button class="sec" id="wr-send">' + esc(t("Send as push now")) + "</button></div>";
+  b.innerHTML = h;
+  document.getElementById("wr-send").onclick = async function () { var x = await post("/api/weekreport", {action: "send", lang: LANG}); toast(x.ok ? "✓ " + t("sent") : "⚠ " + (x.error || t("not sent"))); };
+}
+(function () { var w = document.getElementById("wr"), o = null; try { o = localStorage.getItem("mw-tl-wr"); } catch (e) {}
+  w.open = o === "1"; if (w.open) loadWr();
+  w.addEventListener("toggle", function () { try { localStorage.setItem("mw-tl-wr", w.open ? "1" : "0"); } catch (e) {} if (w.open) loadWr(); }); })();
+document.getElementById("prev").onclick = function () { shift(-1); };
+document.getElementById("next").onclick = function () { shift(1); };
+document.getElementById("reload").onclick = load;
+document.getElementById("d-pick").onchange = function (e) { if (e.target.value) { DAY = e.target.value > iso(new Date()) ? iso(new Date()) : e.target.value; load(); } };
+document.querySelectorAll("#mode button").forEach(function (b) { b.onclick = function () { MODE = b.dataset.v; try { localStorage.setItem("mw-tl-mode", MODE); } catch (e) {} load(); }; });
+document.querySelectorAll("#flt button").forEach(function (b) { b.onclick = function () { FILT = b.dataset.v; document.querySelectorAll("#flt button").forEach(function (x) { x.classList.toggle("on", x === b); }); if (D) paintList(); }; });
+addEventListener("resize", function () { if (D) paintChart(); });
+(async function () {
+  await initAppearance();
+  var q = new URLSearchParams(location.search);
+  DAY = /^\d{4}-\d{2}-\d{2}$/.test(q.get("day") || "") ? q.get("day") : iso(new Date());
+  load();
+  setInterval(function () { if (!document.hidden && DAY === iso(new Date()) && document.getElementById("viewer").hidden) load(); }, 60000);
+})();
+/*ALERTS*/
+</script></body></html>
+"""
+
+
+def tl_page_html():
+    de = {k: v[0] for k, v in _HX_VERLAUF.items()}
+    return render_page(TL_PAGE, "tl").replace("__TLDE__", json.dumps(de, ensure_ascii=False).replace("</", "<\\/"), 1)
+
+
+def timeline_routes(app, reply, body, request, Response):
+    """the addresses of the timeline and the weekly report (called once by the web server, 550)"""
+    @app.route("/timeline")
+    def timeline_page():
+        return Response(tl_page_html(), mimetype="text/html")
+
+    @app.route("/api/timeline")
+    def api_timeline():
+        return reply(timeline_build(str(request.args.get("day") or "")[:10], request.args.get("mode", "night"), request.args.get("lang")))
+
+    @app.route("/api/weekreport", methods=["GET", "POST"])
+    def api_weekreport():
+        if request.method == "POST":
+            d = body()
+            if d.get("action") == "send":
+                r, ok = weekrep_send(manual=True)
+                return reply({"ok": ok, "text": r["text"], "error": None if ok else tr_err("notification is not configured", norm_lang(d.get("lang")))})
+            return reply({"ok": False, "error": "unknown action"}, 400)
+        return reply(weekrep_build(request.args.get("lang")))
 # ----------------------------------------------------------------------------
 # 2.98.0: the sixth tab. Everything that is not live picture, protection, history, settings or simulator - one tap away.
 # ----------------------------------------------------------------------------
@@ -42832,7 +43889,10 @@ $("#btn-starsel").onclick = async () => { if (selected.size) { await setFav([...
 $("#more").onclick = () => load(false);
 
 (async () => {
-  await initAppearance(); markKind(); updateSelBtn(); load(true); loadStats();
+  await initAppearance(); markKind(); updateSelBtn();
+  const q_ = new URLSearchParams(location.search), d_ = q_.get("day") || "";   // 2.98.14: from the timeline (?open=name&day=…)
+  if (q_.get("open")) { openAfter = q_.get("open"); if (/^\d{4}-\d{2}-\d{2}$/.test(d_)) { tlDay = d_; F.from = F.to = d_; $("#f-from").value = $("#f-to").value = d_; } }
+  load(true); loadStats();
 })();
 /*ALERTS*/
 </script></body></html>
@@ -44043,6 +45103,8 @@ class WebStream:
                 return None
             lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or CFG["lang"])
             return reply({"ok": False, "error": tr_err("locked - settings can only be changed after unlocking (PIN)", lang)}, 423)
+
+        timeline_routes(app, reply, body, request, Response)    # 2.98.14: Verlauf → Zeitleiste + weekly report (523)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -46431,6 +47493,7 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Setup", "log_keep_days", "Event log: keep the archive (days)", 7, 365, 1),
     ("Night report", "report_hour", "Night time until (o'clock) – the night report comes, «Guard tonight» ends", 3, 12, 1),
     ("Night report", "diary_keep_days", "Keep diary entries (days, ★ always)", 7, 365, 1),
+    ("Night report", "weekrep_hour", "Weekly detection report: hour", 0, 23, 1),
     ("Setup", "temp_hot", "Temperature alarm: too hot from (°C)", 20, 45, 1),
     ("Setup", "temp_cold", "Temperature alarm: too cold below (°C)", -20, 10, 1),
     ("Setup", "env_offset", "Temperature sensor: correction (°C)", -5.0, 5.0, 0.1),
@@ -46548,6 +47611,7 @@ TOGGLES = [  # (section, key, label)
     ("MQTT / Home Assistant", "mqtt_discovery", "Home Assistant finds MoveEye by itself (discovery)"),
     ("Recording", "share_logo", "Shared pictures and videos with a small MoveEye logo"),
     ("Recording", "share_gps", "Send the location along when sharing pictures and videos"),
+    ("Recording", "share_blur_faces", "Blur faces when sharing (only the shared copy, the original stays)"),
     ("Recording", "loop_on", "Continuous recording (all the time, few pictures per second) with a timeline"),
     ("Deterrence", "deter_always", "Also when disarmed (e.g. keep animals out of the garden)"),
     ("Theft protection", "tamper_on", "Sabotage alarm: camera covered or turned away (when armed)"),
@@ -46575,6 +47639,7 @@ TOGGLES = [  # (section, key, label)
     ("Battery", "ups_invert", "UPS HAT: charging and discharging are shown the wrong way round"),
     ("Updates", "update_push", "Push message when a new version is there"),
     ("Night report", "report_on", "Night report: push message in the morning with what happened in the night"),
+    ("Night report", "weekrep_on", "Weekly detection report: push once a week with the trend and a tip"),
     ("Night report", "weather_on", "Day overview: weather from the internet (Open-Meteo; the location is sent there)"),
     ("Night report", "diary_on", "Note animals, persons and noises (animal diary + night report)"),
     ("Power saving", "eco_on", "Power saving mode: fewer pictures while all is quiet"),
@@ -47456,6 +48521,7 @@ class App:
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
             self._ibtn(ctl, "◐", self.toggle_theme, tr("Light") if CFG["theme"] == "dark" else tr("Dark")).pack(side="right", padx=(0, 6))
             self._ibtn(ctl, "✉", self._messages_win, tr("Messages")).pack(side="right", padx=(0, 6))     # 2.98.13
+            self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
             self.b_fs.pack(side="right", padx=(0, 6))
             self._ibtn(ctl, "⇤" if show("sidebar") else "⇥", self.toggle_sidebar, tr("Settings panel") + " (Ctrl+B)").pack(side="right", padx=(0, 6))
@@ -49898,6 +50964,119 @@ class App:
 
 
 
+# ----------------------------------------------------------------------------
+# 2.98.14: wie Verlauf → Zeitleiste auf der Webseite (523), im Fenster als Liste: Tag wählen (◀ ▶), Nacht / ganzer Tag,
+# die Ereignisse nach Stunden; Doppelklick auf eine Aufnahme oder ein Tagebuch-Bild öffnet die Datei. Unten der
+# Wochenbericht (426) mit «Jetzt als Push senden». Knopf ◷ oben rechts im Fenster.
+# ----------------------------------------------------------------------------
+def tk_timeline_win(app):
+    w = getattr(app, "_tl_top", None)
+    if w is not None and w.winfo_exists():
+        w.lift(); _tk_tl_fill(app); return
+    w = app._tl_top = tk.Toplevel(app.root); w.title("MoveEye – " + tr("Night timeline")); w.configure(bg=C["bg"]); w.geometry("660x640")
+    app._tl_state = {"day": datetime.now().strftime("%Y-%m-%d"), "mode": "night", "lines": {}}
+    top = tk.Frame(w, bg=C["bg"]); top.pack(fill="x", padx=12, pady=(10, 4))
+
+    def shift(n):
+        d = datetime.strptime(app._tl_state["day"], "%Y-%m-%d") + timedelta(days=n)
+        if d.date() <= datetime.now().date():
+            app._tl_state["day"] = d.strftime("%Y-%m-%d"); _tk_tl_fill(app)
+
+    def mode():
+        app._tl_state["mode"] = "day" if app._tl_state["mode"] == "night" else "night"; _tk_tl_fill(app)
+    tk.Button(top, text="◀", command=lambda: shift(-1)).pack(side="left")
+    app._tl_lab = tk.Label(top, text="", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 11, "bold"))
+    app._tl_lab.pack(side="left", expand=True)
+    tk.Button(top, text="▶", command=lambda: shift(1)).pack(side="left")
+    app._tl_mode = tk.Button(top, text="", command=mode); app._tl_mode.pack(side="left", padx=(8, 0))
+    tk.Button(top, text=tr("↻ Refresh"), command=lambda: _tk_tl_fill(app)).pack(side="left", padx=(6, 0))
+    app._tl_sum = tk.Label(w, text="", bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 9), anchor="w", justify="left", wraplength=620)
+    app._tl_sum.pack(fill="x", padx=12)
+    t_ = app._tl_txt = tk.Text(w, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10), wrap="word", bd=0, padx=10, pady=8, cursor="arrow")
+    t_.pack(fill="both", expand=True, padx=12, pady=(4, 6))
+    t_.tag_configure("hr", foreground=C["mut"], font=("DejaVu Sans", 9, "bold"), spacing1=6)
+    t_.tag_configure("tm", foreground=C["mut"])
+    t_.tag_configure("alarm", foreground=C.get("red", "#ff453a"))
+    t_.tag_configure("rec", foreground=C.get("acc", "#3b8cff"))
+    t_.tag_configure("sight", foreground=C.get("grn", "#3fcf6b"))
+    t_.tag_configure("log", foreground=C["mut"])
+    t_.tag_configure("wrh", font=("DejaVu Sans", 10, "bold"), spacing1=10)
+    t_.tag_configure("tip", foreground=C.get("org", "#f59a4a"))
+    t_.bind("<Double-Button-1>", lambda e: _tk_tl_open(app, t_.index(f"@{e.x},{e.y}")))
+    bot = tk.Frame(w, bg=C["bg"]); bot.pack(fill="x", padx=12, pady=(0, 10))
+    tk.Label(bot, text=tr("Double click: open the recording / the picture"), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left")
+
+    def send():
+        r, ok = weekrep_send(manual=True)
+        try:
+            messagebox.showinfo("MoveEye", (("✓ " + tr("sent")) if ok else ("⚠ " + tr("notification is not configured"))) + "\n\n" + r["text"], parent=w)
+        except Exception:
+            pass
+    tk.Button(bot, text=tr("Weekly report: send as push now"), command=send).pack(side="right")
+    _tk_tl_fill(app)
+
+
+def _tk_tl_fill(app):
+    t_ = getattr(app, "_tl_txt", None)
+    if t_ is None or not t_.winfo_exists():
+        return
+    st = app._tl_state
+    tl = timeline_build(st["day"], st["mode"])
+    d = datetime.strptime(tl["day"], "%Y-%m-%d")
+    lab = (d.strftime("%a %d.%m.%Y") if st["mode"] == "day" else
+           tr("Night") + " " + (d - timedelta(days=1)).strftime("%a") + " → " + d.strftime("%a %d.%m.%Y"))
+    app._tl_lab.config(text=lab)
+    app._tl_mode.config(text=tr("Whole day") if st["mode"] == "night" else tr("Night 18–09"))
+    c = tl["count"]
+    s = f"🎬 {c['rec']} {tr('recordings')} · 🦊 {c['animal']} {tr('animals')} · ✉ {c['msg']} {tr('messages')} · 🚨 {c['alarm']} {tr('alarms')}"
+    if tl.get("bat"):
+        s += f" · 🔋 {tl['bat']['first']:.0f} → {tl['bat']['last']:.0f} %"
+    if tl.get("temp"):
+        s += f" · 🌡 {tl['temp']['min']:.0f}…{tl['temp']['max']:.0f} °C"
+    app._tl_sum.config(text=s)
+    t_.config(state="normal"); t_.delete("1.0", "end")
+    st["lines"] = {}
+    last_h = None
+    rows = timeline_text(tl)
+    if not rows:
+        t_.insert("end", tr("Nothing happened in this night.") if st["mode"] == "night" else tr("Nothing happened on this day."), "tm")
+    for hm, kind, text, it in rows:
+        if hm[:2] != last_h:
+            last_h = hm[:2]; t_.insert("end", f"{last_h}:00\n", "hr")
+        line = int(t_.index("end-1c").split(".")[0])
+        st["lines"][line] = it
+        t_.insert("end", hm + "  ", "tm"); t_.insert("end", text + "\n", kind)
+    try:
+        wr = weekrep_build()
+        t_.insert("end", "\n📈 " + tr("Weekly detection report") + f" ({wr['from']} – {wr['to']})\n", "wrh")
+        for ln in wr["lines"]:
+            t_.insert("end", "• " + ln + "\n")
+        t_.insert("end", "💡 " + wr["tip"] + "\n", "tip")
+    except Exception as e:
+        t_.insert("end", f"\n{tr('Weekly detection report')}: {e}\n", "tm")
+    t_.config(state="disabled")
+
+
+def _tk_tl_open(app, index):
+    it = app._tl_state["lines"].get(int(str(index).split(".")[0]))
+    if not it:
+        return
+    p = None
+    if it["type"] == "rec":
+        p = rec_path(it["name"])
+    elif it["type"] == "sight" and it.get("img"):
+        p = os.path.join(diary_dir(), it["img"])
+    elif it["type"] == "msg" and it.get("img"):
+        p = msglog_img(it.get("id"))
+    if not p or not os.path.isfile(p):
+        return
+    try:
+        if sys.platform.startswith("win"):
+            os.startfile(p)                                     # noqa (Windows only)
+        else:
+            subprocess.Popen(["open" if sys.platform == "darwin" else "xdg-open", p], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except (OSError, AttributeError) as e:
+        app._status("Night report", f"⚠ {e}"[:120])
 # ----------------------------------------------------------------------------
 # Translations: French, Italian, Romansh (Rumantsch Grischun). Key = the English text of the program.
 #   Missing texts: Romansh shows German, French / Italian show English. HELP_X = the manual (help page).
@@ -55058,6 +56237,125 @@ for _k, _v in _HX_GUIDE.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+# 'English': ('Deutsch', 'Français', 'Italiano', 'Rumantsch'). Die deutschen Texte gehen auch in die Seite (523, I18N.de).
+_HX_VERLAUF = {
+    # ---- settings ----
+    'Blur faces when sharing (only the shared copy, the original stays)': ('Gesichter verpixeln beim Teilen (nur die geteilte Kopie, das Original bleibt)', 'Flouter les visages lors du partage (seulement la copie partagée, l’original reste)', 'Pixelare i volti quando si condivide (solo la copia condivisa, l’originale resta)', 'Pixelisar las fatschas cun parter (mo la copia partida, l’original resta)'),
+    'Weekly detection report: push once a week with the trend and a tip': ('Wochenbericht der Erkennung: einmal pro Woche ein Push mit dem Trend und einem Tipp', 'Rapport hebdomadaire de la détection : une notification par semaine avec la tendance et un conseil', 'Rapporto settimanale del rilevamento: una notifica a settimana con la tendenza e un consiglio', 'Rapport d’emna da la renconuschientscha: ina giada l’emna in push cun la tendenza ed in cussegl'),
+    'Weekly detection report: hour': ('Wochenbericht: Uhrzeit (Stunde)', 'Rapport hebdomadaire : heure', 'Rapporto settimanale: ora', 'Rapport d’emna: ura'),
+    'Weekly detection report: day': ('Wochenbericht: Tag', 'Rapport hebdomadaire : jour', 'Rapporto settimanale: giorno', 'Rapport d’emna: di'),
+    'Monday': ('Montag', 'lundi', 'lunedì', 'glindesdi'), 'Tuesday': ('Dienstag', 'mardi', 'martedì', 'mardi'),
+    'Wednesday': ('Mittwoch', 'mercredi', 'mercoledì', 'mesemna'), 'Thursday': ('Donnerstag', 'jeudi', 'giovedì', 'gievgia'),
+    'Friday': ('Freitag', 'vendredi', 'venerdì', 'venderdi'), 'Saturday': ('Samstag', 'samedi', 'sabato', 'sonda'),
+    'Sunday': ('Sonntag', 'dimanche', 'domenica', 'dumengia'),
+    # ---- the timeline page ----
+    'Night timeline': ('Zeitleiste', 'Chronologie de la nuit', 'Cronologia della notte', 'Cronologia da la notg'),
+    'Night 18–09': ('Nacht 18–09', 'Nuit 18–09', 'Notte 18–09', 'Notg 18–09'),
+    'Whole day': ('Ganzer Tag', 'Toute la journée', 'Giorno intero', 'Entir di'),
+    'Night': ('Nacht', 'Nuit', 'Notte', 'Notg'),
+    '↻ Refresh': ('↻ Neu laden', '↻ Actualiser', '↻ Aggiorna', '↻ Actualisar'),
+    'All': ('Alle', 'Tout', 'Tutto', 'Tut'),
+    'Recordings': ('Aufnahmen', 'Enregistrements', 'Registrazioni', 'Registraziuns'),
+    'Animals and persons': ('Tiere und Personen', 'Animaux et personnes', 'Animali e persone', 'Animals e persunas'),
+    'Messages': ('Nachrichten', 'Messages', 'Messaggi', 'Messadis'),
+    'Alarms and log': ('Alarme und Protokoll', 'Alarmes et journal', 'Allarmi e registro', 'Alarms e protocol'),
+    'loading …': ('lade …', 'chargement …', 'caricamento …', 'chargiar …'),
+    'recordings': ('Aufnahmen', 'enregistrements', 'registrazioni', 'registraziuns'),
+    'false alarms': ('Fehlalarme', 'fausses alarmes', 'falsi allarmi', 'fals alarms'),
+    'false alarm': ('Fehlalarm', 'fausse alarme', 'falso allarme', 'fals alarm'),
+    'animals': ('Tiere', 'animaux', 'animali', 'animals'),
+    'messages': ('Nachrichten', 'messages', 'messaggi', 'messadis'),
+    'alarms': ('Alarme', 'alarmes', 'allarmi', 'alarms'),
+    'Animals': ('Tiere', 'Animaux', 'Animali', 'Animals'),
+    'Alarms': ('Alarme', 'Alarmes', 'Allarmi', 'Alarms'),
+    'Rain': ('Regen', 'Pluie', 'Pioggia', 'Plievgia'),
+    'Battery': ('Akku', 'Batterie', 'Batteria', 'Accu'),
+    'Temperature': ('Temperatur', 'Température', 'Temperatura', 'Temperatura'),
+    'Temperature (weather)': ('Temperatur (Wetter)', 'Température (météo)', 'Temperatura (meteo)', 'Temperatura (aura)'),
+    'No battery or temperature values for this time': ('Für diese Zeit keine Akku- oder Temperaturwerte', 'Pas de valeurs de batterie ou de température pour cette période', 'Nessun valore di batteria o temperatura per questo periodo', 'Naginas valurs d’accu u da temperatura per quest temp'),
+    'Video': ('Video', 'Vidéo', 'Video', 'Video'),
+    'Picture': ('Bild', 'Image', 'Immagine', 'Maletg'),
+    'recording now': ('wird gerade aufgenommen', 'enregistrement en cours', 'registrazione in corso', 'vegn registrà ussa'),
+    'Nothing of this kind in this time.': ('Nichts von dieser Art in dieser Zeit.', 'Rien de ce genre pendant cette période.', 'Niente di questo tipo in questo periodo.', 'Nagut da quest gener en quest temp.'),
+    'Nothing happened in this night.': ('In dieser Nacht ist nichts passiert.', 'Rien ne s’est passé cette nuit.', 'Questa notte non è successo niente.', 'En questa notg n’è capità nagut.'),
+    'Nothing happened on this day.': ('An diesem Tag ist nichts passiert.', 'Rien ne s’est passé ce jour-là.', 'In questo giorno non è successo niente.', 'Quel di n’è capità nagut.'),
+    'Animal': ('Tier', 'Animal', 'Animale', 'Animal'), 'Wind / branches': ('Wind / Äste', 'Vent / branches', 'Vento / rami', 'Vent / roms'),
+    'Light / shadow': ('Licht / Schatten', 'Lumière / ombre', 'Luce / ombra', 'Glisch / sumbriva'), 'Car': ('Auto', 'Voiture', 'Auto', 'Auto'),
+    'Other': ('Anderes', 'Autre', 'Altro', 'Auter'),
+    'last': ('zuletzt', 'dernière fois', 'l’ultima volta', 'l’ultima giada'),
+    'connection': ('Verbindung', 'connexion', 'connessione', 'colliaziun'),
+    'Open in Recordings': ('In Aufnahmen öffnen', 'Ouvrir dans Enregistrements', 'Apri in Registrazioni', 'Avrir en Registraziuns'),
+    'Close': ('Schliessen', 'Fermer', 'Chiudi', 'Serrar'),
+    'Preparing video…': ('Video wird vorbereitet…', 'Préparation de la vidéo…', 'Preparazione del video…', 'Il video vegn preparà…'),
+    'Converting for the browser (one time)…': ('Wird für den Browser umgewandelt (einmalig)…', 'Conversion pour le navigateur (une seule fois)…', 'Conversione per il browser (una volta sola)…', 'Vegn convertì per il navigatur (ina giada)…'),
+    'Still recording - available when it ends.': ('Wird noch aufgenommen – verfügbar, sobald fertig.', 'Enregistrement en cours – disponible à la fin.', 'Registrazione in corso – disponibile alla fine.', 'Vegn anc registrà – disponibel cur ch’igl è finì.'),
+    'Error': ('Fehler', 'Erreur', 'Errore', 'Errur'),
+    'Open the diary': ('Tagebuch öffnen', 'Ouvrir le journal', 'Apri il diario', 'Avrir il diari'),
+    'All messages': ('Alle Nachrichten', 'Tous les messages', 'Tutti i messaggi', 'Tut ils messadis'),
+    'Open the log': ('Protokoll öffnen', 'Ouvrir le journal des événements', 'Apri il registro', 'Avrir il protocol'),
+    'sent': ('gesendet', 'envoyé', 'inviato', 'tramess'),
+    'not sent': ('nicht gesendet', 'pas envoyé', 'non inviato', 'betg tramess'),
+    'Double click: open the recording / the picture': ('Doppelklick: Aufnahme / Bild öffnen', 'Double clic : ouvrir l’enregistrement / l’image', 'Doppio clic: apri la registrazione / l’immagine', 'Clic dubel: avrir la registraziun / il maletg'),
+    # ---- weekly detection report ----
+    'Weekly detection report': ('Wochenbericht der Erkennung', 'Rapport hebdomadaire de la détection', 'Rapporto settimanale del rilevamento', 'Rapport d’emna da la renconuschientscha'),
+    'Weekly report: send as push now': ('Wochenbericht jetzt als Push senden', 'Envoyer le rapport hebdomadaire maintenant', 'Invia ora il rapporto settimanale', 'Trametter ussa il rapport d’emna sco push'),
+    'Send as push now': ('Jetzt als Push senden', 'Envoyer maintenant en notification', 'Invia ora come notifica', 'Trametter ussa sco push'),
+    'Test score per week': ('Test-Punkte pro Woche', 'Score des tests par semaine', 'Punteggio dei test per settimana', 'Puncts dals tests per emna'),
+    'Comes as a push every': ('Kommt als Push jeden', 'Arrive en notification chaque', 'Arriva come notifica ogni', 'Vegn sco push mintga'),
+    'Settings → Night report': ('Einstellungen → Nachtbericht', 'Réglages → Rapport de nuit', 'Impostazioni → Rapporto notturno', 'Parameters → Rapport da la notg'),
+    'The weekly push is off (Settings → Night report).': ('Der wöchentliche Push ist aus (Einstellungen → Nachtbericht).', 'La notification hebdomadaire est désactivée (Réglages → Rapport de nuit).', 'La notifica settimanale è spenta (Impostazioni → Rapporto notturno).', 'Il push d’emna è deactivà (Parameters → Rapport da la notg).'),
+    'Test runs: {n}, score {s} {tr} (week before {p}), persons found {f} of {a}, false alarms {fa}': ('Testläufe: {n}, Punkte {s} {tr} (Woche davor {p}), Personen gefunden {f} von {a}, Fehlalarme {fa}', 'Tests : {n}, score {s} {tr} (semaine d’avant {p}), personnes trouvées {f} sur {a}, fausses alarmes {fa}', 'Test: {n}, punteggio {s} {tr} (settimana prima {p}), persone trovate {f} su {a}, falsi allarmi {fa}', 'Tests: {n}, puncts {s} {tr} (emna avant {p}), persunas chattadas {f} da {a}, fals alarms {fa}'),
+    'Test runs: none this week': ('Testläufe: keine in dieser Woche', 'Tests : aucun cette semaine', 'Test: nessuno questa settimana', 'Tests: nagins quest’emna'),
+    'Recordings: {n} (week before {p}), marked as false alarm: {f} {tr}': ('Aufnahmen: {n} (Woche davor {p}), als Fehlalarm markiert: {f} {tr}', 'Enregistrements : {n} (semaine d’avant {p}), marqués fausse alarme : {f} {tr}', 'Registrazioni: {n} (settimana prima {p}), segnate come falso allarme: {f} {tr}', 'Registraziuns: {n} (emna avant {p}), marcadas sco fals alarm: {f} {tr}'),
+    'Alarm messages: {n} (week before {p})': ('Alarm-Nachrichten: {n} (Woche davor {p})', 'Messages d’alarme : {n} (semaine d’avant {p})', 'Messaggi di allarme: {n} (settimana prima {p})', 'Messadis d’alarm: {n} (emna avant {p})'),
+    'Simulator diary: persons recognised {r} % ({a} of {b}) {tr}, missed {m}': ('Simulator-Tagebuch: Personen erkannt {r} % ({a} von {b}) {tr}, verpasst {m}', 'Journal du simulateur : personnes reconnues {r} % ({a} sur {b}) {tr}, manquées {m}', 'Diario del simulatore: persone riconosciute {r} % ({a} su {b}) {tr}, mancate {m}', 'Diari dal simulatur: persunas renconuschidas {r} % ({a} da {b}) {tr}, mancadas {m}'),
+    '{n} false alarms this week. Suggestion: {s} (History → Recordings → false alarms)': ('{n} Fehlalarme in dieser Woche. Vorschlag: {s} (Verlauf → Aufnahmen → Fehlalarme)', '{n} fausses alarmes cette semaine. Suggestion : {s} (Historique → Enregistrements → fausses alarmes)', '{n} falsi allarmi questa settimana. Suggerimento: {s} (Cronologia → Registrazioni → falsi allarmi)', '{n} fals alarms quest’emna. Proposta: {s} (Cronologia → Registraziuns → fals alarms)'),
+    '{n} false alarms this week. Draw an ignore zone over what moves (trees, road) – tab Protection → Zones.': ('{n} Fehlalarme in dieser Woche. Zeichne eine Ignorier-Zone über das, was sich bewegt (Bäume, Strasse) – Reiter Schutz → Zonen.', '{n} fausses alarmes cette semaine. Dessine une zone ignorée sur ce qui bouge (arbres, route) – onglet Protection → Zones.', '{n} falsi allarmi questa settimana. Disegna una zona ignorata su ciò che si muove (alberi, strada) – scheda Protezione → Zone.', '{n} fals alarms quest’emna. Dissegna ina zona ignorada sur quai che sa mova (plantas, via) – register Protecziun → Zonas.'),
+    'In the simulator {n} persons were in the picture but not recognised. Run the test «Night» and the automatic optimization (Simulator → Testing).': ('Im Simulator waren {n} Personen im Bild, wurden aber nicht erkannt. Lass den Test «Nacht» und die automatische Optimierung laufen (Simulator → Testen).', 'Dans le simulateur, {n} personnes étaient dans l’image sans être reconnues. Lance le test «Nuit» et l’optimisation automatique (Simulateur → Tester).', 'Nel simulatore {n} persone erano nell’immagine ma non sono state riconosciute. Avvia il test «Notte» e l’ottimizzazione automatica (Simulatore → Testare).', 'En il simulatur eran {n} persunas en il maletg, ma betg renconuschidas. Lascha ir il test «Notg» e l’optimaziun automatica (Simulatur → Testar).'),
+    'The test score went down. Look at what changed in the settings (Simulator → Test runs, «undo»).': ('Die Test-Punkte sind gesunken. Schau, was sich in den Einstellungen geändert hat (Simulator → Testläufe, «Rückgängig»).', 'Le score des tests a baissé. Regarde ce qui a changé dans les réglages (Simulateur → Tests, «annuler»).', 'Il punteggio dei test è sceso. Guarda cosa è cambiato nelle impostazioni (Simulatore → Test, «annulla»).', 'Ils puncts dals tests èn sbassads. Guarda tge ch’è sa midà en ils parameters (Simulatur → Tests, «revocar»).'),
+    'No test run this week: switch on the nightly test run (Simulator → Testing) – then you see the trend here.': ('Diese Woche kein Testlauf: schalte den nächtlichen Testlauf ein (Simulator → Testen) – dann siehst du hier den Trend.', 'Aucun test cette semaine : active le test de nuit (Simulateur → Tester) – tu verras alors la tendance ici.', 'Nessun test questa settimana: attiva il test notturno (Simulatore → Testare) – poi qui vedi la tendenza.', 'Quest’emna nagin test: activescha il test da notg (Simulatur → Testar) – lura vesas ti qua la tendenza.'),
+    'A quiet week. Check now and then that the camera still looks at the right place (Live).': ('Eine ruhige Woche. Prüfe ab und zu, ob die Kamera noch auf den richtigen Ort schaut (Live).', 'Une semaine calme. Vérifie de temps en temps que la caméra regarde toujours au bon endroit (Direct).', 'Una settimana tranquilla. Controlla ogni tanto che la telecamera guardi ancora nel posto giusto (Live).', 'Ina emna quieta. Controllescha da temp en temp, sche la camera guarda anc al dretg lieu (Live).'),
+    'Mark wrong alarms with «Was nothing» – MoveEye learns from them and suggests better settings.': ('Markiere falsche Alarme mit «War nichts» – MoveEye lernt daraus und schlägt bessere Einstellungen vor.', 'Marque les fausses alarmes avec «Ce n’était rien» – MoveEye en tire des leçons et propose de meilleurs réglages.', 'Segna i falsi allarmi con «Non era niente» – MoveEye impara e propone impostazioni migliori.', 'Marca fals alarms cun «Era nagut» – MoveEye emprenda da quai e propona meglers parameters.'),
+    'Star (★) important recordings: they are never deleted automatically.': ('Markiere wichtige Aufnahmen mit ★: sie werden nie automatisch gelöscht.', 'Mets une étoile (★) aux enregistrements importants : ils ne sont jamais supprimés automatiquement.', 'Metti una stella (★) alle registrazioni importanti: non vengono mai cancellate automaticamente.', 'Marca registraziuns impurtantas cun ★: ellas na vegnan mai stizzadas automaticamain.'),
+    '«Guard tonight» on the tab Protection sets everything for the night in one tap.': ('«Heute Nacht bewachen» im Reiter Schutz stellt mit einem Tipp alles für die Nacht ein.', '«Surveiller cette nuit» dans l’onglet Protection règle tout pour la nuit en une touche.', '«Sorvegliare stanotte» nella scheda Protezione imposta tutto per la notte con un tocco.', '«Survegliar questa notg» en il register Protecziun drizza tut per la notg cun in tip.'),
+    'The timeline (History → Timeline) shows a whole night at a glance.': ('Die Zeitleiste (Verlauf → Zeitleiste) zeigt eine ganze Nacht auf einen Blick.', 'La chronologie (Historique → Chronologie de la nuit) montre toute une nuit d’un coup d’œil.', 'La cronologia (Cronologia → Cronologia della notte) mostra un’intera notte a colpo d’occhio.', 'La cronologia (Cronologia → Cronologia da la notg) mussa ina notg entira cun in sguard.'),
+}
+for _k, _v in _HX_VERLAUF.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+
+# ---- the manual: three points in the chapter «Recordings» of every language ----
+_HELP_VERLAUF = {
+    "de": '<li><b>🕘 Zeitleiste der Nacht</b> (Verlauf → Zeitleiste): alles einer Nacht (18–09 Uhr, oder ein ganzer Tag) auf einer Zeitachse – Aufnahmen, Nachrichten, Tiere, Alarme, dazu Akku-, Temperatur- und Regenkurve. Einen Eintrag antippen öffnet das Video, das Bild oder die Nachricht. Im Fenster: Knopf ◷.</li>'
+          '<li><b>📈 Wochenbericht der Erkennung:</b> einmal pro Woche (Standard Sonntag 18 Uhr, Einstellungen → Nachtbericht) ein Push mit den Testläufen im Simulator, den Fehlalarmen und einem Tipp. Auch unten auf der Zeitleiste.</li>'
+          '<li><b>🙂 Gesichter verpixeln beim Teilen</b> (Einstellungen → Aufnahme, Standard ein): geteilte Bilder und Videos bekommen verpixelte Gesichter (wird kein Gesicht gefunden: der Kopf von erkannten Personen). Nur die geteilte Kopie – das Original bleibt.</li>',
+    "en": '<li><b>🕘 Night timeline</b> (History → Night timeline): everything of a night (18–09, or a whole day) on one time line – recordings, messages, animals, alarms, plus battery, temperature and rain curves. Tap an entry to open the video, the picture or the message. In the window: button ◷.</li>'
+          '<li><b>📈 Weekly detection report:</b> once a week (default Sunday 18:00, Settings → Night report) a push with the test runs in the simulator, the false alarms and a tip. Also at the bottom of the timeline.</li>'
+          '<li><b>🙂 Blur faces when sharing</b> (Settings → Recording, on by default): shared pictures and videos get pixelated faces (if no face is found: the head of detected persons). Only the shared copy – the original stays.</li>',
+    "fr": '<li><b>🕘 Chronologie de la nuit</b> (Historique) : tout ce qui s’est passé dans une nuit (18–09 h, ou une journée) sur un seul axe – enregistrements, messages, animaux, alarmes, avec les courbes de batterie, température et pluie. Toucher une entrée ouvre la vidéo, l’image ou le message.</li>'
+          '<li><b>📈 Rapport hebdomadaire de la détection :</b> une fois par semaine (dimanche 18 h par défaut, Réglages → Rapport de nuit) une notification avec les tests du simulateur, les fausses alarmes et un conseil.</li>'
+          '<li><b>🙂 Flouter les visages lors du partage</b> (Réglages → Enregistrement, activé par défaut) : seulement la copie partagée, l’original reste.</li>',
+    "it": '<li><b>🕘 Cronologia della notte</b> (Cronologia): tutto ciò che è successo in una notte (18–09, o un giorno intero) su un solo asse – registrazioni, messaggi, animali, allarmi, con le curve di batteria, temperatura e pioggia. Toccare una voce apre il video, l’immagine o il messaggio.</li>'
+          '<li><b>📈 Rapporto settimanale del rilevamento:</b> una volta a settimana (domenica alle 18 di default, Impostazioni → Rapporto notturno) una notifica con i test nel simulatore, i falsi allarmi e un consiglio.</li>'
+          '<li><b>🙂 Pixelare i volti quando si condivide</b> (Impostazioni → Registrazione, attivo di default): solo la copia condivisa, l’originale resta.</li>',
+    "rm": '<li><b>🕘 Cronologia da la notg</b> (Cronologia): tut quai ch’è capità en ina notg (18–09, u in entir di) sin ina axa – registraziuns, messadis, animals, alarms, cun las curvas d’accu, temperatura e plievgia.</li>'
+          '<li><b>📈 Rapport d’emna da la renconuschientscha:</b> ina giada l’emna (dumengia 18.00, Parameters → Rapport da la notg) in push cun ils tests en il simulatur, ils fals alarms ed in cussegl.</li>'
+          '<li><b>🙂 Pixelisar las fatschas cun parter</b> (Parameters → Registraziun): mo la copia partida, l’original resta.</li>'}
+
+
+def _help_verlauf(doc, lang):
+    i = doc.find('<section id="rec"')
+    j = doc.find("</ul>", i) if i >= 0 else -1
+    return doc[:j] + _HELP_VERLAUF[lang] + doc[j:] if j > 0 else doc
+
+
+_hv_en = HELP_PAGE.find('<div lang="en">')
+if _hv_en > 0:
+    HELP_PAGE = _help_verlauf(HELP_PAGE[:_hv_en], "de") + _help_verlauf(HELP_PAGE[_hv_en:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_verlauf(HELP_X[_L], _L)
 # ---- guide: the parts added in 2.53 - 2.65 (inserted into the existing chapters of every language) ----
 _HELP_NEW = {
  "de": {

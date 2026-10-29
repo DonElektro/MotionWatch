@@ -114,6 +114,7 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Setup", "log_keep_days", "Event log: keep the archive (days)", 7, 365, 1),
     ("Night report", "report_hour", "Night time until (o'clock) – the night report comes, «Guard tonight» ends", 3, 12, 1),
     ("Night report", "diary_keep_days", "Keep diary entries (days, ★ always)", 7, 365, 1),
+    ("Night report", "weekrep_hour", "Weekly detection report: hour", 0, 23, 1),
     ("Setup", "temp_hot", "Temperature alarm: too hot from (°C)", 20, 45, 1),
     ("Setup", "temp_cold", "Temperature alarm: too cold below (°C)", -20, 10, 1),
     ("Setup", "env_offset", "Temperature sensor: correction (°C)", -5.0, 5.0, 0.1),
@@ -231,6 +232,7 @@ TOGGLES = [  # (section, key, label)
     ("MQTT / Home Assistant", "mqtt_discovery", "Home Assistant finds MoveEye by itself (discovery)"),
     ("Recording", "share_logo", "Shared pictures and videos with a small MoveEye logo"),
     ("Recording", "share_gps", "Send the location along when sharing pictures and videos"),
+    ("Recording", "share_blur_faces", "Blur faces when sharing (only the shared copy, the original stays)"),
     ("Recording", "loop_on", "Continuous recording (all the time, few pictures per second) with a timeline"),
     ("Deterrence", "deter_always", "Also when disarmed (e.g. keep animals out of the garden)"),
     ("Theft protection", "tamper_on", "Sabotage alarm: camera covered or turned away (when armed)"),
@@ -258,6 +260,7 @@ TOGGLES = [  # (section, key, label)
     ("Battery", "ups_invert", "UPS HAT: charging and discharging are shown the wrong way round"),
     ("Updates", "update_push", "Push message when a new version is there"),
     ("Night report", "report_on", "Night report: push message in the morning with what happened in the night"),
+    ("Night report", "weekrep_on", "Weekly detection report: push once a week with the trend and a tip"),
     ("Night report", "weather_on", "Day overview: weather from the internet (Open-Meteo; the location is sent there)"),
     ("Night report", "diary_on", "Note animals, persons and noises (animal diary + night report)"),
     ("Power saving", "eco_on", "Power saving mode: fewer pictures while all is quiet"),
@@ -1139,6 +1142,7 @@ class App:
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
             self._ibtn(ctl, "◐", self.toggle_theme, tr("Light") if CFG["theme"] == "dark" else tr("Dark")).pack(side="right", padx=(0, 6))
             self._ibtn(ctl, "✉", self._messages_win, tr("Messages")).pack(side="right", padx=(0, 6))     # 2.98.13
+            self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
             self.b_fs.pack(side="right", padx=(0, 6))
             self._ibtn(ctl, "⇤" if show("sidebar") else "⇥", self.toggle_sidebar, tr("Settings panel") + " (Ctrl+B)").pack(side="right", padx=(0, 6))
