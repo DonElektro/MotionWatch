@@ -472,6 +472,7 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Setup", "latitude", "Latitude (sunrise / sunset)", "float", (-66.0, 66.0)),
     ("Setup", "longitude", "Longitude (sunrise / sunset)", "float", (-180.0, 180.0)),
     ("Setup", "presence_hosts", "Phones / devices for presence (IP or name, comma separated)", "hosts", None),
+    ("Camping / protection", "presence_back", "When my phone comes back", "enum", "presence_back"),      # 2.98.15 (577)
 ]
 TEXT_SPECS = {k: (kind, extra) for s, k, l, kind, extra in TEXTS}
 
@@ -479,6 +480,8 @@ TEXT_SPECS = {k: (kind, extra) for s, k, l, kind, extra in TEXTS}
 def text_choice_pairs(key):
     """[(value, label)] of an enum setting. The thermal camera list changes with the camera scan, so it is computed."""
     kind, extra = TEXT_SPECS[key]
+    if extra == "presence_back":                              # 2.98.15 (577): the choice at the return of the phone
+        return [(k, tr(l)) for k, l in PRESENCE_BACK]
     if str(extra).startswith("mover_"):
         return mover_choice_pairs(extra)
     if extra == "net_modes":

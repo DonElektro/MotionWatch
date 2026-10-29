@@ -26,7 +26,7 @@ def _concept_fix_lights(d, live):
 
 
 def concept_migrate():
-    """called after loading / importing the settings (see apply_settings below); returns the list of what was changed"""
+    """called after loading / importing the settings (apply_settings in 040 calls it); returns the list of what was changed"""
     did = []
     m = str(CFG.get("mode") or "")
     if m == "night":
@@ -52,15 +52,3 @@ def concept_migrate():
     if did:
         log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
     return did
-
-
-_apply_settings_before_concept = apply_settings
-
-
-def apply_settings(data):                                   # 2.98.14: the same as before, then the migration above
-    r = _apply_settings_before_concept(data)
-    try:
-        concept_migrate()
-    except Exception as e:
-        log_event("sys", f"Settings migration: {e}"[:150])
-    return r

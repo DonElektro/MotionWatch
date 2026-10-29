@@ -8,6 +8,15 @@ Alle Teile zusammen sind **ein** Python-Programm (gemeinsame Namen, keine Import
 der Nummern ist die Reihenfolge in der Datei – ein Name muss weiter oben stehen als dort, wo er beim Start gebraucht wird.
 Die erste Zeile jedes Teils (`#@ …`) ist nur eine Beschreibung und fällt beim Bauen weg.
 
+**Keine Funktion / Klasse zweimal** (ab 2.98.18): definiert ein späterer Teil denselben Namen noch einmal, ersetzt er den
+früheren still (so ging 2.98.16 die Lautsprecher-Suche `bt_scan` verloren). `bauen.py` und `bauen.py --pruefen` (GitHub)
+brechen dann ab. Erlaubt ist nur ein **gewollter Wrapper**, im späteren Teil markiert mit
+`_<name>_base = <name>` über dem neuen `def` oder mit dem Kommentar `# wraps: <name>` auf der Zeile davor. Besser: die
+Logik direkt in die ursprüngliche Funktion schreiben (so wurden 2.98.18 apply_settings, health_check, set_cfg,
+text_choice_pairs, tools_state / tools_cfg und _tunea_autotune_base zusammengeführt; Gleichheit geprüft mit
+`werkzeuge/gleichheit_pruefen.py`). Einstellungs-Listen (TOGGLES, SLIDERS, TEXTS) nicht in späteren Teilen umbauen, sondern
+den Eintrag dort ändern, wo er steht.
+
 ## Ablauf
 
 ```

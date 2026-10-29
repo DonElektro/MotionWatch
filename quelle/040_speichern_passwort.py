@@ -309,8 +309,10 @@ def import_settings(data):
 
 
 def apply_settings(data):
+    """the loaded / imported settings into CFG (values checked), then the migrations of older files (131, 577)"""
     n = 0
     if not isinstance(data, dict):
+        _settings_migrations(None)
         return
     try:
         specs = web_specs()
@@ -394,6 +396,22 @@ def apply_settings(data):
         CFG["source"] = "auto"
     STATE["settings_status"] = f"loaded {n} settings, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules"
     log_event("sys", f"Settings loaded from {SETTINGS_FILE} ({n} values, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules)")
+    _settings_migrations(data.get("cfg"))
+
+
+def _settings_migrations(cfg_in):
+    """settings of older versions: modes / profiles (2.98.14, concept_migrate in 131), weekly report and return of the phone
+    (2.98.15, nachlauf_migrate in 577). A failing migration never stops the loading."""
+    try:
+        concept_migrate()
+    except Exception as e:
+        log_event("sys", f"Settings migration: {e}"[:150])
+    try:
+        did = nachlauf_migrate(cfg_in)
+        if did:
+            log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
+    except Exception as e:
+        log_event("sys", f"Settings migration (577): {e}"[:150])
 
 
 _SAVE_LOCK = threading.Lock()

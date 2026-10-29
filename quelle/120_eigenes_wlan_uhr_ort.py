@@ -514,6 +514,11 @@ def health_check(lang=None):
         add("bg", "⚙", "Background tasks", "ok", trf("{n} running", L, n=len(BEATS)))
     if STATE.get("update_new"):
         add("upd", "⬆", "Updates", "warn", T("new version available") + f": {STATE['update_new']}", "Settings → Updates.")
+    for fn in (sdcard_health_item, selfheal_health_item):     # memory card health and self-healing (145)
+        try:
+            out.append(fn(L))
+        except Exception as e:
+            print(f"health item: {e}")
     out.sort(key=lambda x: HEALTH_ORDER.index(x["level"]))
     cnt = {k: sum(1 for x in out if x["level"] == k) for k in HEALTH_ORDER}
     return {"items": out, "count": cnt}
