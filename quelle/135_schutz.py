@@ -144,7 +144,7 @@ def _protect_status(L):
             "presence": {"on": bool(CFG.get("presence_auto")), "devices": len(CFG.get("presence_macs") or []) + len(CFG.get("presence_bt") or []),
                          "here": (TOOLS.get("presence") or {}).get("here")},
             "escalate": {"on": bool(CFG.get("escalate_on")), "s": int(CFG.get("escalate_siren_s", 30)), "pending": max(0, int(PROTECT["esc_t"] - time.time())) if PROTECT["esc_t"] else 0},
-            "test": PROTECT["test"]}
+            "test": PROTECT["test"], "forecast": arm_forecast_text(L)}      # 2.98.13 (066)
 
 
 # ---- escalation: light at once, push, the siren after a while unless somebody disarms --------------------------------------

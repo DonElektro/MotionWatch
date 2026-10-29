@@ -37,7 +37,7 @@ main{padding:16px;max-width:900px;margin:0 auto}
 </header>
 <main>
   <section class="card" style="margin:0">
-    <h3 style="margin:0 0 4px" data-i18n="Messages">Messages</h3>
+    <h3 style="margin:0 0 4px" data-i18n="Message list">Messages</h3>
     <div class="mut" style="margin-bottom:10px" data-i18n="Everything MoveEye sent to your phone - and the messages on the ntfy server.">Everything MoveEye sent to your phone - and the messages on the ntfy server.</div>
     <div class="mf">
       <span class="seg" id="src"><button data-v="local" class="on" data-i18n="From MoveEye">From MoveEye</button><button data-v="server" data-i18n="ntfy server">ntfy server</button></span>
@@ -46,6 +46,7 @@ main{padding:16px;max-width:900px;margin:0 auto}
       <button class="sec" id="reload" data-i18n="↻ Refresh">↻ Refresh</button>
       <button class="sec" id="clr" data-i18n="Clear list">Clear list</button>
     </div>
+    <div id="alx-what"></div>
     <div class="mut" id="cnt"></div>
     <div id="list"></div>
   </section>
@@ -53,7 +54,7 @@ main{padding:16px;max-width:900px;margin:0 auto}
 <div id="big" onclick="this.style.display='none'"><img alt=""></div>
 <script>
 /*COMMON*/
-Object.assign(I18N.de, {"Messages": "Nachrichten", "Everything MoveEye sent to your phone - and the messages on the ntfy server.": "Alles, was MoveEye ans Handy geschickt hat – und die Nachrichten auf dem ntfy-Server.",
+Object.assign(I18N.de, {"Message list": "Nachrichten", "Everything MoveEye sent to your phone - and the messages on the ntfy server.": "Alles, was MoveEye ans Handy geschickt hat – und die Nachrichten auf dem ntfy-Server.",
   "From MoveEye": "Von MoveEye", "ntfy server": "ntfy-Server", "last 24 h": "letzte 24 h", "last 7 days": "letzte 7 Tage", "all (as long as the server keeps them)": "alle (solange der Server sie behält)",
   "All": "Alle", "Alarms": "Alarme", "Info": "Info", "Tests": "Tests", "↻ Refresh": "↻ Neu laden", "Clear list": "Liste leeren",
   "sent": "gesendet", "failed": "fehlgeschlagen", "test inbox": "Test-Postfach", "no push channel": "kein Push-Kanal", "on the server": "auf dem Server",
@@ -109,5 +110,5 @@ document.getElementById("clr").onclick = async function () {
 load();
 setInterval(function () { if (SRC === "local" && !document.hidden) load(); }, 20000);
 /*ALERTS*/
-</script></body></html>
+</script><script src="/alx/what.js" defer></script></body></html>
 """

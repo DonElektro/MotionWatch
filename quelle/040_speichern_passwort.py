@@ -429,12 +429,21 @@ def save_settings_now():
                 pass
 
 
+_SAVE_T = {"last": 0.0}
+
+
 def save_settings():
-    """Debounced: many slider moves -> one write."""
+    """Debounced: many slider moves -> one write. 2.98.13 (memory card): at most one write every 15 s - something that
+    saves again and again (a counter, a slider held down) no longer writes the card every 2 s."""
     global _save_timer
     if _save_timer:
         _save_timer.cancel()
-    _save_timer = threading.Timer(2.0, save_settings_now); _save_timer.daemon = True; _save_timer.start()
+    wait = max(2.0, 15.0 - (time.monotonic() - _SAVE_T["last"]))
+
+    def go():
+        _SAVE_T["last"] = time.monotonic()
+        save_settings_now()
+    _save_timer = threading.Timer(wait, go); _save_timer.daemon = True; _save_timer.start()
 
 
 def reset_settings():

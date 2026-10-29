@@ -533,7 +533,7 @@ function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.
 let LANG = "", THEME = "";
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
 const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Tools": "Werkzeuge", "Simulator": "Simulator", "Game corner": "Spielecke"}};
-Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Messages": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
+Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message list": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
 const t = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));

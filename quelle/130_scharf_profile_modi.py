@@ -7,6 +7,8 @@ ARM = {"at": 0.0, "announced": True}
 
 
 def is_armed():
+    if WALK["on"]:
+        return False                                   # 2.98.13: walk test - no alarms, no pushes (415)
     return bool(CFG["armed"]) and time.time() >= ARM["at"]
 
 
@@ -79,14 +81,15 @@ CAMPING_SET = {"detection_on": True, "record": True, "snapshot_on_person": True,
 
 
 # ---- simple settings: what most people need; Expert shows everything ----
-SIMPLE_SECTIONS = {"Camera / Servos", "Patrol", "AI detection", "Detection", "Recording", "Low light", "Setup", "Notifications",
-                   "Camping / protection", "Thermal camera", "Microphone", "Loudspeaker", "Lights", "Night report", "Battery",
-                   "Power saving", "Messages", "Updates", "Theft protection", "Backup", "Deterrence", "Wake-up alarm"}
+SIMPLE_SECTIONS = {"Camping / protection", "Notifications", "Schedule", "Battery", "Wi-Fi / hotspot", "Recording", "Lights", "Night report",
+                   "Setup"}   # 2.98.14 (Konzept): about 8 topics - Schutz, Push, Zonen, Akku, WLAN, Aufnahme, Licht, Nachtbericht (+ Einrichtung)
 # 2.98.0: extra hardware and gimmicks only in «Simple» when they are in use (otherwise Expert)
 SIMPLE_IN_USE = {"Extra sensors": lambda: bool(CFG.get("sens_on") or CFG.get("sensors")), "Storm warning": lambda: bool(CFG.get("sensors")),
                  "GPS module": lambda: bool(CFG.get("gpsmod_on")), "Solar panel": lambda: bool(CFG.get("solar_on")),
                  "Clap switch": lambda: bool(CFG.get("clap_on")), "Bless you": lambda: bool(CFG.get("sneeze_on")),
-                 "Mover": lambda: bool(MOVER.get("avail") or MOVER.get("hw") or MOVER.get("sim"))}
+                 "Mover": lambda: bool(MOVER.get("avail") or MOVER.get("hw") or MOVER.get("sim")),
+                 "Wake-up alarm": lambda: CFG.get("use_case") == "room" or bool(CFG.get("wake_on")),     # 2.98.14: the alarm clock in the room
+                 "Thermal camera": lambda: bool(CFG.get("thermal_on") and CFG.get("thermal_source"))}
 SIMPLE_KEYS = {"tips_level", "use_case", "wake_on", "wake_time", "wake_days", "wake_sleep", "wake_snooze", "wake_volume", "wake_sound", "wake_light", "wake_gestures", "wake_clap", "wake_away_night", "report_from", "track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
@@ -102,19 +105,19 @@ USE_HIDE = {"home": {"GPS module", "Solar panel", "Storm warning", "Wake-up alar
             "wild": {"Deterrence", "Wake-up alarm"},
             "holiday": {"Wake-up alarm"},
             "room": {"GPS module", "Solar panel", "Storm warning", "Deterrence"}}
-USE_SET = {"wild": {"siren_on": "off", "light_white_auto": "alarm_dark", "track_motion": True},
-           "holiday": {"eco_on": True},
-           "room": {"wake_on": True}}
+# 2.98.14 (Konzept): the use case only decides what is SHOWN («Simple» and which modes are offered). What the device DOES
+# is decided in one place: the mode (MODE_SETS below). Before, USE_SET switched settings too and contradicted the modes
+# (wildlife: «light at an alarm» here, «no light» in the mode). Settings switched by an older version simply stay as they are.
+USE_MODES = {"camping": ("camping", "fire", "gamer", "transport"), "home": ("home", "gamer", "transport"),
+             "wild": ("wild", "camping", "transport"), "holiday": ("home", "transport"), "room": ("home",)}
 
 
 def use_case_set(u, who="web"):
-    """2.98.9: the setup assistant («What is MoveEye for?»): remember it, switch on what fits, «Simple» shows only that"""
+    """2.98.9: the setup assistant («What is MoveEye for?»): remember it, «Simple» shows only what fits (2.98.14: it no
+    longer switches settings - that is the job of the mode)"""
     if u not in ("", "camping", "home", "wild", "holiday", "room"):
         return False, "invalid value"
     CFG["use_case"] = u
-    for k, v in USE_SET.get(u, {}).items():
-        if k in CFG and type(CFG[k]) is type(v):
-            CFG[k] = v; sched_user_changed(k)
     CFG["ui_simple"] = True
     save_settings()
     log_event("sys", f"Use case: {u or 'everything'} ({who})")
@@ -139,7 +142,7 @@ def simple_hidden(key, sec=None):
 
 NIGHT_SET = {"detection_on": True, "ai_enabled": True, "record": True, "snapshot_on_person": True, "notify_on": True,
              "notify_prealarm": True, "lowlight_auto": True, "nightvision_auto": True, "report_on": True, "diary_on": True,
-             "timelapse_on": False}   # 2.97.0: power saving only on battery (like the mode «Nachtwache» with mains power)
+             "timelapse_on": False}   # 2.97.0: power saving only on battery (2.98.14: replaces the old mode «night»)
 
 
 def night_end_ts(now=None):
@@ -181,6 +184,8 @@ def night_guard(lang=None):
         CFG["noise_alarm"] = True; done.append(tr("Noise alarm on", L))
     if STATE.get("thermal") == "connected" and not CFG["thermal_alarm"]:
         CFG["thermal_alarm"] = True; done.append(tr("Thermal alarm on", L))
+    if CFG.get("light_ir_out") and CFG.get("light_ir") == "off":     # 2.98.14: from the old mode «night»: infrared by itself
+        CFG["light_ir"] = "auto"; done.append(tr("Infrared light by itself in the dark", L))
     save_settings()
     done = [tr("Detection, AI and recordings on", L), tr("Push messages on", L), tr("Night vision and low light automatic", L),
             tr("Night report in the morning", L) + f" ({int(CFG['report_hour']):02d}:00)",
@@ -262,29 +267,30 @@ def turbo_set(on, who="web"):
     return True, ""
 
 
-# ---- modes (2.95.47): one switch sets up the whole device. Camping guard, campfire games (battery, little power - the
-# guard watches on sparingly), gamer (only with mains power - power mode, all games), home, wildlife, night guard,
-# transport. «Own settings» (no mode) brings back what was set before the first mode. ----
-MODES = [("camping", "⛺", "Camping guard"), ("fire", "🔥", "Campfire games"), ("gamer", "🎮", "Gamer"), ("home", "🏠", "Home / garden"),
-         ("wild", "🦌", "Wildlife watching"), ("night", "🌙", "Night guard"), ("transport", "🔕", "Transport / rest")]
+# ---- modes (2.95.47): one switch sets up the whole device. Camping, campfire games (battery, little power - the
+# guard watches on sparingly), gamer (only with mains power - power mode, all games), home, wildlife, transport.
+# «Own settings» (no mode) brings back what was set before the first mode.
+# 2.98.14 (Konzept): the mode is THE place for behaviour. The mode «night» is gone (= «Heute Nacht bewachen», a one-off for
+# tonight); the camping profile IS the mode «Camping» (camping_set() switches the mode). The names are no states any more:
+# the state is Aus / Wachsam / Voll (Schutz), the mode says what MoveEye is used for. ----
+MODES = [("camping", "⛺", "Camping"), ("fire", "🔥", "Campfire games"), ("gamer", "🎮", "Gamer"), ("home", "🏠", "Home / garden"),
+         ("wild", "🦌", "Wildlife watching"), ("transport", "🔕", "Transport / rest")]
 MODE_INFO = {
     "": "Your own settings, no mode.",
     "camping": "Full guard: alarms, recordings, own Wi-Fi, armed after the countdown. Power saving while all is quiet.",
-    "fire": "The game corner is open for the phones (in the Wi-Fi MoveEye is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to the camping guard at the set time or when the battery gets low.",
+    "fire": "The game corner is open for the phones (in the Wi-Fi MoveEye is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to camping at the set time or when the battery gets low.",
     "gamer": "Only with mains power: power mode, all games and the game collection, the best picture. The guard only if you want it. On battery MoveEye goes back to the campfire games by itself.",
     "home": "Guarding house and garden: alarms and recordings on, no own Wi-Fi, no camping profile.",
     "wild": "Animals: no siren, the light does not go on by itself (it would scare them), many pictures, the camera follows what moves.",
-    "night": "The highest attention: more sensitive, thermal alarm, infrared light by itself, the pre-alarm too.",
     "transport": "Rest while travelling: no detection, no recordings, no alarms - only the battery, GPS theft and tamper protection stay on.",
 }
 MODE_SETS = {
     "fire": {"eco_on": True, "ai_every": 3, "proc_width": 416, "web_quality": 60, "web_width": 960, "patrol": False, "track_person": False,
              "track_motion": False, "timelapse_on": False, "notify_prealarm": False, "detection_on": True, "notify_on": True, "record": True},
     "home": {"detection_on": True, "record": True, "snapshot_on_person": True, "notify_on": True, "notify_prealarm": False, "eco_on": False},
-    "wild": {"detection_on": True, "siren_on": "off", "light_white_auto": False, "record": True, "snapshot_on_person": True, "notify_prealarm": True,
+    # 2.98.14: «no light by itself» = the white light «off» (before: light_white_auto False, not a valid choice)
+    "wild": {"detection_on": True, "siren_on": "off", "light_white": "off", "record": True, "snapshot_on_person": True, "notify_prealarm": True,
              "track_motion": True, "track_person": True, "eco_on": False, "lowlight_auto": True},
-    "night": {"detection_on": True, "sensitivity": 75, "notify_prealarm": True, "light_ir_auto": True, "nightvision_auto": True, "record": True,
-              "snapshot_on_person": True, "notify_on": True, "eco_on": False},
     "transport": {"detection_on": False, "record": False, "timelapse_on": False, "patrol": False, "track_person": False, "track_motion": False,
                   "eco_on": True, "notify_prealarm": False},
 }
@@ -312,7 +318,7 @@ def _mode_keys():
 def _mode_leave(m):
     """undo what the mode switched on (camping profile, power mode, game corner, rest, Wi-Fi, governor)"""
     if m == "camping" and CFG["camping"]:
-        camping_set(False)
+        _camping_overlay(False)
     if MODE_RT["turbo"] and CFG["turbo_on"]:
         turbo_set(False, "mode")
     MODE_RT["turbo"] = False
@@ -333,6 +339,9 @@ def _mode_leave(m):
 def mode_set(m, who="web"):
     """switch the device to a mode ("" = own settings again)"""
     m = str(m or "")
+    if m == "night":                                        # 2.98.14: the old mode «night» = «Heute Nacht bewachen»
+        r = night_guard()
+        return bool(r.get("ok")), ""
     if m and m not in dict((x[0], x) for x in MODES):
         return False, "unknown mode"
     if m == "gamer":
@@ -371,7 +380,7 @@ def mode_set(m, who="web"):
             CFG[k] = v; sched_user_changed(k)
     hs_on = bool((STATE.get("hotspot") or {}).get("on"))
     if m == "camping":
-        camping_set(True)
+        _camping_overlay(True)
     elif m in ("fire", "gamer"):
         # 2.95.49: the Wi-Fi is NOT switched here - the own Wi-Fi would cut the phones off the network they are in (the
         # page froze). The game corner works in the network MoveEye is in; the own Wi-Fi is a switch of its own.
@@ -388,9 +397,7 @@ def mode_set(m, who="web"):
                 arm()
             else:
                 toolmode_set(720, "gamer mode"); MODE_RT["rest"] = True
-    elif m in ("home", "wild", "night"):
-        if CFG["thermal_source"] and m == "night":
-            CFG["thermal_alarm"] = True
+    elif m in ("home", "wild"):
         arm()
     elif m == "transport":
         disarm()
@@ -430,7 +437,7 @@ def mode_tick():
         low = b.get("on") and b.get("on_battery") and b.get("pct") is not None and float(b["pct"]) < float(CFG["mode_fire_min_pct"])
         if late or low:
             mode_set("camping", "auto")
-            push("Campfire games ended (" + ("battery low" if low else "time") + ") - camping guard on")
+            push("Campfire games ended (" + ("battery low" if low else "time") + ") - back to camping")
     elif m == "gamer":
         ok, why = mode_power()
         if not ok:
@@ -441,8 +448,9 @@ def mode_tick():
 def mode_state():
     ok, why = mode_power()
     m = CFG.get("mode") or ""
+    fit = USE_MODES.get(CFG.get("use_case") or "") if CFG.get("ui_simple") else None    # 2.98.14: «Simple» offers what fits the use case
     return {"id": m, "since": CFG.get("mode_since") or 0, "msg": MODE_RT["msg"], "power_ok": ok, "power_why": why,
-            "list": [{"id": i, "icon": ic, "name": n, "info": MODE_INFO[i]} for i, ic, n in MODES], "own_info": MODE_INFO[""],
+            "list": [{"id": i, "icon": ic, "name": n, "info": MODE_INFO[i]} for i, ic, n in MODES if fit is None or i in fit or i == m], "own_info": MODE_INFO[""],
             "fire_until": CFG["mode_fire_until"], "fire_min_pct": CFG["mode_fire_min_pct"], "gamer_watch": bool(CFG["mode_gamer_watch"]), "fire_persons": bool(CFG.get("mode_fire_persons")),
             "camping": bool(CFG["camping"])}
 
@@ -452,6 +460,17 @@ def turbo_state():
 
 
 def camping_set(on, hotspot_delay=2.0):
+    """2.98.14 (Konzept): the camping profile IS the mode «Camping» - the switch «Camping-Profil» (web, window, older pages)
+    switches the mode. Off: back to the own settings (or, an older profile switched on without the mode: only the profile)."""
+    if on:
+        return mode_set("camping", "camping profile") if (CFG.get("mode") or "") != "camping" else (True, "")
+    if (CFG.get("mode") or "") == "camping":
+        return mode_set("", "camping profile")
+    return _camping_overlay(False, hotspot_delay)
+
+
+def _camping_overlay(on, hotspot_delay=2.0):
+    """what the mode «Camping» switches: own Wi-Fi, alarms, recordings ... (the previous values are kept to give back)"""
     netauto_pause()
     if on and not CFG["camping"]:
         prev = {k: CFG[k] for k in list(CAMPING_SET) + ["thermal_alarm", "armed", "hotspot_on"]}

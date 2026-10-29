@@ -114,6 +114,7 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Setup", "log_keep_days", "Event log: keep the archive (days)", 7, 365, 1),
     ("Night report", "report_hour", "Night time until (o'clock) – the night report comes, «Guard tonight» ends", 3, 12, 1),
     ("Night report", "diary_keep_days", "Keep diary entries (days, ★ always)", 7, 365, 1),
+    ("Night report", "weekrep_hour", "Weekly detection report: hour", 0, 23, 1),
     ("Setup", "temp_hot", "Temperature alarm: too hot from (°C)", 20, 45, 1),
     ("Setup", "temp_cold", "Temperature alarm: too cold below (°C)", -20, 10, 1),
     ("Setup", "env_offset", "Temperature sensor: correction (°C)", -5.0, 5.0, 0.1),
@@ -153,7 +154,7 @@ TOGGLES = [  # (section, key, label)
     ("Mover", "mover_inv_r", "Right track runs the wrong way (turn round)"),
     ("Mover", "mover_swap", "Left and right tracks swapped"),
     ("Mover", "mover_sim_show", "Simulation: show the stick even without a mover or motor driver (to try it out)"),
-    ("Simulator", "sim_eco", "Save CPU during the simulation (fewer pictures, the simulator draws only what is fetched)"),
+    ("Simulator", "sim_eco", "Simulator: fewer pictures (the simulator draws only what is fetched)"),
     ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
     ("Simulator", "rover_alarm", "Rover: at a person alarm drive there by itself (simulator)"),
@@ -163,7 +164,7 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "weekcheck_on", "Recognition check every week (Sunday night) with a warning when it got worse"),
     ("Simulator", "sim_auto", "Find the simulator in the network by itself (and take over its address)"),
     ("Simulator", "sim_autostart", "Switch the simulation on by itself as soon as a simulator is online (and off again when none is left)"),
-    ("Simulator", "sim_autoupd", "Update the simulator by itself when a newer version is there"),
+    ("Simulator", "sim_autoupd", "Update the simulator by itself (the setting «Neue Versionen» of the simulator)"),
     ("Simulator", "sim_separate", "The simulation has its own settings (when switching back: ask which changes to take over)"),
     ("AI detection", "species_on", "Recognise the animal species (second AI model - see the guide)"),
     ("Setup", "desktop_notice", "Small message on the Pi's desktop when MoveEye starts in the background"),
@@ -231,6 +232,7 @@ TOGGLES = [  # (section, key, label)
     ("MQTT / Home Assistant", "mqtt_discovery", "Home Assistant finds MoveEye by itself (discovery)"),
     ("Recording", "share_logo", "Shared pictures and videos with a small MoveEye logo"),
     ("Recording", "share_gps", "Send the location along when sharing pictures and videos"),
+    ("Recording", "share_blur_faces", "Blur faces when sharing (only the shared copy, the original stays)"),
     ("Recording", "loop_on", "Continuous recording (all the time, few pictures per second) with a timeline"),
     ("Deterrence", "deter_always", "Also when disarmed (e.g. keep animals out of the garden)"),
     ("Theft protection", "tamper_on", "Sabotage alarm: camera covered or turned away (when armed)"),
@@ -258,6 +260,7 @@ TOGGLES = [  # (section, key, label)
     ("Battery", "ups_invert", "UPS HAT: charging and discharging are shown the wrong way round"),
     ("Updates", "update_push", "Push message when a new version is there"),
     ("Night report", "report_on", "Night report: push message in the morning with what happened in the night"),
+    ("Night report", "weekrep_on", "Weekly detection report: push once a week with the trend and a tip"),
     ("Night report", "weather_on", "Day overview: weather from the internet (Open-Meteo; the location is sent there)"),
     ("Night report", "diary_on", "Note animals, persons and noises (animal diary + night report)"),
     ("Power saving", "eco_on", "Power saving mode: fewer pictures while all is quiet"),
@@ -484,7 +487,7 @@ def tk_main_on(sec):
         return False
 
 
-TK_GROUP_ICONS = {"alarm": "🛡", "notify": "⚠", "sched": "🗓", "detect": "◎", "camera": "▣", "sensors": "◉", "power": "⚡", "net": "📶", "sys": "⚙"}
+TK_GROUP_ICONS = {"alarm": "🛡", "notify": "⚠", "sched": "🗓", "detect": "◎", "camera": "▣", "sensors": "◉", "power": "⚡", "net": "📶", "sys": "⚙", "simset": "⚗"}
 TK_TAB_HEAD = {"alarm": "Protection", "detect": "Settings"}     # 2.98.0: the tabs of the web page as headings
 
 TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery": "▮", "Theft protection": "⚷", "Reference scan": "◎", "Notifications": "✉",
@@ -499,13 +502,18 @@ TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - 2.98.0: the sam
     ("alarm", "Protection", ["Camping / protection", "Theft protection", "Reference scan", "Backup"]),
     ("notify", "What happens at an alarm?", ["Notifications", "Deterrence", "Recording", "Messages", "SMS (LTE stick)", "Night report"]),
     ("sched", "Zones, schedule, presence", ["Schedule"]),
-    ("detect", "Detection", ["Detection", "AI detection", "Thermal camera", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
+    ("detect", "Detection", ["Improve detection", "Detection", "AI detection", "Thermal camera", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
     ("camera", "Cameras & head", ["Camera / Servos", "Patrol", "Video source", "Timelapse", "Mover", None, "Servo driver"]),
     ("sensors", "Devices & sensors", ["Lights", "Microphone", "Loudspeaker", "Relays", "Extra sensors", "Clap switch", "Bless you", "Wake-up alarm", "Storm warning", "GPS module"]),
     ("power", "Power supply", ["Battery", "Power saving", "Solar panel"]),
     ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant"]),
-    ("sys", "System", ["Setup", "Updates", "Simulator"]),
+    ("sys", "System", ["Setup", "Updates"]),
 ]
+# 2.98.14 (Konzept): which tab shows a group (like the web page); the simulator settings are in the tab Simulator
+TK_PANEL_TABS = ("protect", "settings", "sim")
+TK_GROUP_TAB = {"alarm": "protect", "notify": "protect", "theft": "protect", "sched": "protect"}
+TK_SIM_GROUPS = [("simset", "Settings of the simulation", ["Simulator"])]
+TK_PSEUDO = {"Improve detection"}
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
 
@@ -764,7 +772,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.13")
+        self.root.title("MoveEye 2.98.14")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -855,7 +863,8 @@ class App:
         CFG["ui_hidden"] = []; save_settings(); self._schedule_rebuild()
 
     def toggle_sidebar(self):
-        self.set_hidden("sidebar", self.is_shown("sidebar"))
+        """2.98.14: the settings are a tab now (like the web page) - Ctrl+B goes there and back to Live"""
+        self._tab("settings" if self.tab != "settings" else "live")
 
     def toggle_theme(self):
         self._set("theme", "light" if CFG["theme"] == "dark" else "dark"); self._rebuild()
@@ -902,8 +911,7 @@ class App:
                     sub.add_checkbutton(label=tr(label), variable=v, command=lambda k=key, vv=v: self.set_hidden(k, not vv.get()))
             m.add_cascade(label=tr(g), menu=sub)
         m.add_separator()
-        sv = tk.BooleanVar(value=self.is_shown("sidebar")); self.view_vars["sidebar"] = sv
-        m.add_checkbutton(label=tr("Settings panel") + "   (Ctrl+B)", variable=sv, command=self.toggle_sidebar)
+        m.add_command(label=tr("Settings") + "   (Ctrl+B)", command=self.toggle_sidebar)
         m.add_command(label=tr("Show all"), command=self.show_all)
         if x is None:
             x, y = self.root.winfo_pointerx(), self.root.winfo_pointery()
@@ -978,7 +986,7 @@ class App:
     def _layout(self, w=None):
         """(compact header, sidebar width, quick switches beside the stick) for a window width."""
         w = w or self._win_w()
-        side = (380 if w >= 1200 else max(330, int(w * 0.36))) if self.is_shown("sidebar") else 0
+        side = 0                                         # 2.98.14: no settings beside the picture - they have their tabs
         left = w - side - 60
         return (w < 1100, side, left >= 800)
 
@@ -1009,10 +1017,16 @@ class App:
         self._build_header()
         body = ttk.Frame(r, style="Bg.TFrame"); body.pack(fill="both", expand=True, padx=16, pady=(0, 12))
         body.columnconfigure(0, weight=1); body.rowconfigure(0, weight=1)
+        if self.tab not in [t for t, _ in self._tabs()]:
+            self.tab = "live"
+        if self.tab in TK_PANEL_TABS:                     # 2.98.14: Schutz / Einstellungen / Simulator: the settings over the whole width
+            self.left_f = None
+            self._build_sidebar(body, self.tab)
+            return
         left = ttk.Frame(body, style="Bg.TFrame"); left.grid(row=0, column=0, sticky="nsew")
-        side_open = self.is_shown("sidebar")
+        side_open = False
         strip = tk.Frame(body, bg=C["bg"]); strip.grid(row=0, column=1, sticky="ns", padx=(6 if not self.is_shown("hdr_buttons") else 8, 6))
-        for txt, cmd in [] if self.is_shown("hdr_buttons") else (("▶" if side_open else "◀", self.toggle_sidebar), ("☰", self._view_menu)):
+        for txt, cmd in [] if self.is_shown("hdr_buttons") else (("☰", self._view_menu),):
             l = tk.Label(strip, text=txt, bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 11, "bold"), width=2, pady=6,
                          cursor="hand2", highlightthickness=1, highlightbackground=C["line"])
             l.pack(pady=(0, 6)); l.bind("<Button-1>", lambda e, c=cmd: c())
@@ -1060,7 +1074,7 @@ class App:
         w = getattr(self, "_msg_top", None)
         if w is not None and w.winfo_exists():
             w.lift(); self._msg_fill(); return
-        w = self._msg_top = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Messages")); w.configure(bg=C["bg"]); w.geometry("620x520")
+        w = self._msg_top = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Message list")); w.configure(bg=C["bg"]); w.geometry("620x520")
         top = tk.Frame(w, bg=C["bg"]); top.pack(fill="x", padx=12, pady=(10, 4))
         tk.Label(top, text=tr("Everything MoveEye sent to your phone - and the messages on the ntfy server."), bg=C["bg"], fg=C["mut"],
                  font=("DejaVu Sans", 9), wraplength=420, justify="left").pack(side="left")
@@ -1090,12 +1104,8 @@ class App:
         t_.config(state="disabled")
 
     def _tabs(self):
-        t = [("live", "Live")]
-        if self.is_shown("weather") or self.is_shown("cpu"):
-            t.append(("info", "Weather & system"))
-        if self.is_shown("log"):
-            t.append(("log", "Event log"))
-        return t
+        """2.98.14: the same 6 tabs as the web page: Live · Schutz · Verlauf · Einstellungen · Simulator · Mehr"""
+        return [(k, lab) for k, _h, lab, _s in NAV_ITEMS]
 
     def _build_header(self):
         """Like the web page: dot + name + version, the tabs, symbol buttons on the right; the badges below."""
@@ -1115,21 +1125,23 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.13 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.14 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
             d_ = datetime.now()
             if (d_.month == 8 and d_.day == 1) or os.environ.get("MW_AUG1") == "1":
                 self._aug1(tl)
-        tabs = tk.Frame(top, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=3, pady=3)
-        tabs.pack(side="left", padx=(10 if self._lay[0] else 18, 0))
+        small_ = self._lay[0]
+        tabs = tk.Frame(head if small_ else top, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=3, pady=3)
+        self._tabs_row = tabs
+        shorts = {k: sh for k, _h, _l, sh in NAV_ITEMS}
         self.tab_btns = {}
         for tid, lab in self._tabs():
-            if self._lay[0] and tid != "live":
-                lab = {"info": "System", "log": "Log"}[tid]
-            b = tk.Label(tabs, text=tr(lab), font=("DejaVu Sans", 9 if self._lay[0] else 10), padx=7 if self._lay[0] else 12, pady=4, cursor="hand2")
-            b.pack(side="left", padx=(0, 2)); b.bind("<Button-1>", lambda e, t=tid: self._tab(t))
+            if small_ and self._win_w() < 760:
+                lab = shorts.get(tid, lab)
+            b = tk.Label(tabs, text=tr(lab), font=("DejaVu Sans", 9 if small_ else 10), padx=5 if small_ else 12, pady=4, cursor="hand2")
+            b.pack(side="left", padx=(0, 2), expand=small_, fill="x" if small_ else None); b.bind("<Button-1>", lambda e, t=tid: self._tab(t))
             self.tab_btns[tid] = b
         self._paint_tabs()
         if show("hdr_buttons"):
@@ -1138,10 +1150,10 @@ class App:
             lb.bind("<Button-1>", lambda e: self.toggle_lang(lb.winfo_rootx(), lb.winfo_rooty() + lb.winfo_height()))
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
             self._ibtn(ctl, "◐", self.toggle_theme, tr("Light") if CFG["theme"] == "dark" else tr("Dark")).pack(side="right", padx=(0, 6))
-            self._ibtn(ctl, "✉", self._messages_win, tr("Messages")).pack(side="right", padx=(0, 6))     # 2.98.13
+            self._ibtn(ctl, "✉", self._messages_win, tr("Message list")).pack(side="right", padx=(0, 6))     # 2.98.13
+            self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
             self.b_fs.pack(side="right", padx=(0, 6))
-            self._ibtn(ctl, "⇤" if show("sidebar") else "⇥", self.toggle_sidebar, tr("Settings panel") + " (Ctrl+B)").pack(side="right", padx=(0, 6))
             vb = self._ibtn(ctl, "☰", lambda: None, tr("View") + " – " + tr("show / hide fields"))
             vb.bind("<Button-1>", lambda e: self._view_menu(vb.winfo_rootx(), vb.winfo_rooty() + vb.winfo_height()))
             vb.pack(side="right", padx=(0, 6))
@@ -1161,6 +1173,10 @@ class App:
                 self.badges["b_update"].bind("<Button-1>", lambda e: self._upd_new())
             self.badge_f.bind("<Configure>", self._flow)
             self.root.after(50, self._flow)
+        if small_:                                        # 2.98.14: on a small screen the 6 tabs get a row of their own
+            tabs.pack(fill="x", pady=(8, 0), before=self.badge_f if self.badge_f is not None else None)
+        else:
+            tabs.pack(side="left", padx=(18, 0), after=tl if show("title") else None)
         tk.Frame(self.root, bg=C["line"], height=1).pack(fill="x", pady=(10, 12))
 
     def _egg_tap(self, _e=None):
@@ -1317,10 +1333,13 @@ class App:
             b.config(bg=C["acc"] if on else C["panel"], fg="#ffffff" if on else C["txt"])
 
     def _tab(self, tid):
-        """Switch Live / Weather & system / Event log (only the left part is built again)."""
-        if tid == self.tab or self.left_f is None or not self.left_f.winfo_exists():
+        """Switch the tab (2.98.14: the 6 tabs of the web page; another kind of tab = the window is built again)."""
+        if tid == self.tab:
             return
+        panel = tid in TK_PANEL_TABS or self.tab in TK_PANEL_TABS or self.left_f is None or not self.left_f.winfo_exists()
         self.tab = tid; CFG["ui_tab"] = tid
+        if panel:
+            self._schedule_rebuild(); return
         for w in self.left_f.winfo_children():
             w.destroy()
         self.video = self.p_rain = self.p_wind = self.l_rain = self.l_wind = self.l_boost = None
@@ -1336,7 +1355,7 @@ class App:
         if self.tab not in [t for t, _ in self._tabs()]:
             self.tab = "live"
         left.columnconfigure(0, weight=1)
-        for r_ in range(3):
+        for r_ in range(4):
             left.rowconfigure(r_, weight=0)
         if self.tab == "live":
             vc = tk.Frame(left, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=10, pady=10)
@@ -1358,7 +1377,8 @@ class App:
                 if not folded:
                     inner = tk.Frame(c, bg=C["panel"]); inner.pack(fill="x", pady=(6, 2))
                     self._build_controls(inner)
-        elif self.tab == "info":
+        elif self.tab == "more":                          # 2.98.14: «Mehr» = weather, system, self-check + manual, tools …
+            self._tk_more_bar(left).grid(row=3, column=0, sticky="ew", pady=(10, 0))
             mid = tk.Frame(left, bg=C["bg"]); mid.grid(row=0, column=0, sticky="new")
             col = 0
             if show("weather"):
@@ -1392,7 +1412,8 @@ class App:
             self.h_text.tag_configure("t", font=("DejaVu Sans", 10, "bold")); self.h_text.tag_configure("m", foreground=C["mut"])
             self.h_text.tag_configure("tip", foreground=C["txt"], lmargin1=26, lmargin2=26, font=("DejaVu Sans", 9))
             self._h_sig = None; self._update_health()
-        else:
+        else:                                             # 2.98.14: «Verlauf» = the event log + recordings, diary, messages
+            self._tk_history_bar(left).grid(row=1, column=0, sticky="ew", pady=(10, 0))
             logf = self._card(left, tr("EVENT LOG") + " · " + tr("important")); logf.grid(row=0, column=0, sticky="nsew")
             left.rowconfigure(0, weight=1)
             self.log = tk.Text(logf, bg=C["panel"], fg=C["txt"], bd=0, highlightthickness=0, height=10,
@@ -1677,6 +1698,17 @@ class App:
                     self.root.after(1500, self._rebuild)
         poll()
 
+    def _own_ai_dl(self):
+        ok, err = own_ai_download()
+        if not ok:
+            self._status("Own AI model", "⚠ " + tr_err(err)); return
+        def poll():
+            if OWN_AI["busy"]:
+                self._status("Own AI model", tr("downloading the own model …") + f" {OWN_AI['pct']} %"); self.root.after(1000, poll)
+            else:
+                self._status("Own AI model", ("✓ " + tr("own model ready") + "\n" + own_ai_text()) if OWN_AI["msg"] == "ready" else "⚠ " + OWN_AI["msg"])
+        poll()
+
     def _set_simple(self, v):
         if bool(CFG["ui_simple"]) != v:
             CFG["ui_simple"] = v; save_settings(); self._simple_seen = v; self.root.after(30, self._rebuild)
@@ -1702,15 +1734,16 @@ class App:
             txt += "\n\n" + tr("Everything ready - good night!")
         messagebox.showinfo(tr("Guard tonight"), txt, parent=self.root)
 
-    def _build_sidebar(self, body):
-        right = tk.Frame(body, bg=C["bg"], width=self._lay[1] or 380); right.grid(row=0, column=2, sticky="ns"); right.grid_propagate(False)
+    def _build_sidebar(self, body, tab="settings"):
+        """2.98.14: the tabs Schutz / Einstellungen / Simulator - their groups over the whole width (before: a panel beside the picture)"""
+        right = tk.Frame(body, bg=C["bg"]); right.grid(row=0, column=0, sticky="nsew")
         self.right_f = right
         canvas = tk.Canvas(right, bg=C["bg"], bd=0, highlightthickness=0); self.side_canvas = canvas
         sb = ttk.Scrollbar(right, orient="vertical", command=canvas.yview); canvas.configure(yscrollcommand=sb.set)
         sb.pack(side="right", fill="y"); canvas.pack(side="left", fill="both", expand=True)
         inner = ttk.Frame(canvas, style="Bg.TFrame"); win = canvas.create_window((0, 0), window=inner, anchor="nw")
         inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-        canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=e.width))
+        canvas.bind("<Configure>", lambda e: canvas.itemconfigure(win, width=min(e.width, 860)))     # readable lines on a wide screen
         bar = tk.Frame(right, bg=C["bg"]); bar.pack(side="top", fill="x", pady=(0, 10), before=sb)   # stays at the top while scrolling
         # like the web page: search field, then two symbols - ⊞ expand all, ⊟ collapse all
         self._ibtn(bar, "⊟", lambda: self._all_sections(False), tr("Collapse all")).pack(side="right")
@@ -1726,8 +1759,12 @@ class App:
         ph.place(in_=se, x=1, rely=0.5, anchor="w"); ph.bind("<Button-1>", lambda e: se.focus_set())
         self.search_ph = ph
         self.search_var.trace_add("write", lambda *a: self._search())
+        if tab == "sim":                                   # 2.98.14: tab Simulator - status, the assistant, the simulator settings
+            self._tk_sim_head(inner)
         # Simple / Expert (like the web page)
-        mrow = tk.Frame(inner, bg=C["line"], padx=1, pady=1); mrow.pack(fill="x", pady=(0, 10))
+        mrow = tk.Frame(inner, bg=C["line"], padx=1, pady=1)
+        if tab != "sim":
+            mrow.pack(fill="x", pady=(0, 10))
         self._simple_seen = bool(CFG["ui_simple"])
         for i, (val, lab) in enumerate(((True, tr("Simple")), (False, tr("Expert")))):
             on = bool(CFG["ui_simple"]) == val
@@ -1735,7 +1772,7 @@ class App:
                          bg=C["acc"] if on else C["field"], fg="#ffffff" if on else C["mut"])
             l.pack(side="left", fill="x", expand=True, padx=(0 if i == 0 else 1, 0))
             l.bind("<Button-1>", lambda e, v=val: self._set_simple(v))
-        if CFG["ui_simple"]:
+        if CFG["ui_simple"] and tab != "sim":
             tk.Label(inner, text=tr("Simple: only the important settings. «Expert» shows all of them."), bg=C["bg"], fg=C["mut"],
                      font=("DejaVu Sans", 8), anchor="w", justify="left", wraplength=330).pack(fill="x", pady=(0, 8))
         self.grp_meta = {}; self._open_before = None
@@ -1750,18 +1787,17 @@ class App:
             ttk.Label(card, text=tr("Everything may be changed (except Wi-Fi, password, autostart). Unlocking with the PIN puts everything back."),
                       style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(2, 6))
             ttk.Button(card, text=tr("Unlock") + " …", command=self._unlock).pack(fill="x")
-        listed = {x for g in TK_GROUPS for x in g[2] if x}
+        listed = {x for g in TK_GROUPS + TK_SIM_GROUPS for x in g[2] if x}
         groups = [list(g) for g in TK_GROUPS]
         groups[-1][2] = groups[-1][2] + [x for x in SECTIONS if x not in listed]     # sections added later -> System
+        groups = [g for g in groups if TK_GROUP_TAB.get(g[0], "settings") == tab] if tab != "sim" else [list(g) for g in TK_SIM_GROUPS]
         for gid, name, items in groups:
-            items = [x for x in items if x is None or (x in SECTIONS and self.is_shown("sec:" + x) and not simple_hidden(None, x))]
+            items = [x for x in items if x is None or x in TK_PSEUDO or (x in SECTIONS and self.is_shown("sec:" + x) and (tab == "sim" or not simple_hidden(None, x)))]
             real = [x for x in items if x]
             if not real:
                 continue
             key = "grp:" + gid
-            if gid in TK_TAB_HEAD:
-                tk.Label(inner, text=tr(TK_TAB_HEAD[gid]).upper(), bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"),
-                         anchor="w").pack(fill="x", pady=(6, 2))
+            # 2.98.14: no headings «Schutz» / «Einstellungen» any more - the tab is the heading
             card = self._panel(inner); card.pack(fill="x", pady=(0, 8))
             hr = tk.Frame(card, bg=C["panel"], cursor="hand2"); hr.pack(fill="x")
             gic = tk.Label(hr, text=TK_GROUP_ICONS.get(gid, ""), bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11), width=2, anchor="w", cursor="hand2")
@@ -1792,7 +1828,7 @@ class App:
                     continue
                 self._sub(gbody, sec, default_open=first); first = False
         for sec in self.sections:
-            self._set_section(sec, sec in self.open_secs)
+            self._set_section(sec, sec in self.open_secs or (tab == "sim" and sec == "grp:simset"), save=False)
 
     def _sub(self, parent, sec, default_open=False):
         """One topic of a group: thin line + title that opens / closes it (state kept in the settings)."""
@@ -1874,6 +1910,10 @@ class App:
         """Status line, switches, sliders, text fields and buttons of one section. settings_parent: put the switches /
         sliders / text fields there instead (the buttons stay in sbody)."""
         sp = settings_parent if settings_parent is not None else sbody
+        if sec == "Improve detection":                     # 2.98.14: the assistant (312) - one guided flow
+            ttk.Label(sbody, text=tr("One guided flow: check, measure, improve, see the result. Replaces the single tools (they stay in «Expert»)."), style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w")
+            ttk.Button(sbody, text="🎯 " + tr("Improve detection") + " …", command=self._tune_win).pack(fill="x", pady=(6, 0))
+            return
         if sec in ("Setup", "Camera / Servos", "Video source", "Schedule", "Patrol", "AI detection", "Web stream", "Auto-tune", "Notifications", "Timelapse", "Thermal camera", "Wi-Fi / hotspot", "Camping / protection", "Microphone", "Loudspeaker", "Lights", "Servo driver", "Clap switch", "Bless you"):
             self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels[sec].pack(anchor="w")
@@ -1978,6 +2018,7 @@ class App:
             self._build_source_box(sbody)
         if sec == "Schedule":
             self._build_schedule_box(sbody)
+            alx_tk_zones(self, sbody)                  # 2.98.13: zones by kind (066)
         if sec == "Messages":
             ttk.Label(sp, text=tr("Empty = standard text. Placeholders:") + " " + MSG_PLACEHOLDERS, style="Mut.TLabel",
                       wraplength=330, justify="left").pack(anchor="w", pady=(2, 0))
@@ -2075,6 +2116,12 @@ class App:
             ttk.Button(sbody, text=tr("Download AI model") + " (≈ 70 MB)", command=self._ai_dl).pack(fill="x", pady=(8, 0))
             self.status_labels["AI model"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["AI model"].pack(anchor="w", pady=(2, 0))
+        if sec == "AI detection":                        # part 195: own MoveEye model (YOLO) next to the standard
+            ttk.Label(sbody, text="🧠 " + tr("Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs."),
+                      style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(8, 0))
+            ttk.Button(sbody, text=tr("Update own model" if own_ai_paths()[0] else "Download own model"), command=self._own_ai_dl).pack(fill="x", pady=(4, 0))
+            self.status_labels["Own AI model"] = ttk.Label(sbody, text=own_ai_text(), style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels["Own AI model"].pack(anchor="w", pady=(2, 0))
         if sec == "Notifications":
             ttk.Button(sbody, text=tr("Test notification"),
                        command=lambda: self.watch.notifier.test(self.watch.frame_out)).pack(fill="x", pady=(8, 0))
@@ -2089,21 +2136,21 @@ class App:
             ttk.Label(sbody, text=tr(protect_status().get("device", "")), foreground="#8a96a6", wraplength=380).pack(anchor="w", pady=(4, 0))
             ttk.Label(sbody, text=tr("Mode") + " (" + tr("one switch for the whole device") + ")").pack(anchor="w", pady=(8, 2))
             mg = ttk.Frame(sbody); mg.pack(fill="x")
-            for i_, (mid, mic, mname) in enumerate(MODES + [("", "⚙", "Own settings")]):
+            for i_, (mid, mic, mname) in enumerate([(x_["id"], x_["icon"], x_["name"]) for x_ in mode_state()["list"]] + [("", "⚙", "Own settings")]):
                 def _pick(m_=mid):
                     ok_, err_ = mode_set(m_, "window")
                     self._status("Mode", ("✓ " if ok_ else "⚠ ") + (tr(err_) if err_ else tr(dict((x[0], x[2]) for x in MODES).get(m_, "Own settings"))))
                 ttk.Button(mg, text=mic + " " + tr(mname), command=_pick).grid(row=i_ // 2, column=i_ % 2, sticky="ew", padx=(0, 4), pady=2)
             mg.columnconfigure(0, weight=1); mg.columnconfigure(1, weight=1)
             ttk.Button(sbody, text="☾ " + tr("Guard tonight"), command=self._night).pack(fill="x", pady=(8, 0))
+            ttk.Button(sbody, text="🚶 " + tr("Walk test"), command=self._walktest).pack(fill="x", pady=(6, 0))     # 2.98.13 (415, 575)
+            self.status_labels["Battery saver"] = ttk.Label(sbody, text=batt_save_text(), style="Mut.TLabel", wraplength=380, justify="left")
+            self.status_labels["Battery saver"].pack(anchor="w", pady=(4, 0))
             ttk.Button(sbody, text=tr("Open quick guide (browser)"), command=lambda: self._open_page("/quick")).pack(fill="x", pady=(6, 0))
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(6, 0))
             ttk.Button(bf, text=tr("Arm (countdown)"), command=arm).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Arm now"), command=lambda: arm(0)).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(bf, text=tr("Disarm"), command=lambda: self._protect("off")).pack(side="left", expand=True, fill="x")
-            bf2 = ttk.Frame(sbody); bf2.pack(fill="x", pady=(6, 0))
-            ttk.Button(bf2, text=tr("Camping ON"), command=lambda: camping_set(True)).pack(side="left", expand=True, fill="x", padx=(0, 4))
-            ttk.Button(bf2, text=tr("Camping OFF"), command=lambda: camping_set(False)).pack(side="left", expand=True, fill="x")
             bf3 = ttk.Frame(sbody)
             if not CFG["lock_on"]:
                 bf3.pack(fill="x", pady=(6, 0))
@@ -2551,6 +2598,9 @@ class App:
           self._status("Battery", tr("Off - enter the capacity of the powerbank.") if not b.get("on") else
                      (f"{press} · {b['watts']} W" if b.get("pct") is None else
                       f"🔋 {b['pct']} % · {b['hours']:.1f} h {tr('left')} · {b['watts']} W" + (f" ({tr('estimated')})" if b.get("src") == "estimate" else "")))
+        if BATT_SAVE["on"] and self.status_labels.get("Battery") is not None:      # 2.98.13: battery saver (105)
+            self._status("Battery", self.status_labels["Battery"].cget("text") + "\n🐢 " + batt_save_text())
+        self._status("Battery saver", ("🐢 " if BATT_SAVE["on"] else "🔋 ") + batt_save_text())
         g = guest_info()
         if g["active"]:
             until = f"{tr('until')} " + datetime.fromtimestamp(g["until"]).strftime("%a %H:%M") if g["until"] else tr("no time limit")
@@ -3309,7 +3359,7 @@ class App:
         bt = st.get("battery") or {}
         ups_mains = bt.get("src") == "ups" and not bt.get("on_battery")
         self._sb("b_batt", ("🔌 " if ups_mains else "🔋 ") + f"{bt.get('pct')} %" + (f" · {bt['hours']:.1f} h" if bt.get("hours") is not None else "")
-                 + (" · " + tr("charging") if bt.get("charging") else ""),
+                 + (" · " + tr("charging") if bt.get("charging") else "") + (" · 🐢 " + tr("saver") if BATT_SAVE["on"] else ""),
                  C["grn"] if ups_mains else (C["red"] if (bt.get("pct") or 0) <= 15 else (C["yel"] if (bt.get("pct") or 0) <= 30 else C["grn"])),
                  show=bool(bt.get("on") and bt.get("pct") is not None))
         un = st.get("update_new") or {}
@@ -3372,7 +3422,8 @@ class App:
         self._sched_sig = sig
         self._status("Patrol", f"{tr(st['patrol_status'])} · {tr('waypoints')} (↔/↕): {wp_text() or tr('none')}")
         self._status("AI detection", f"{st['ai_status']} · {st['ai_persons']} {tr('AI persons')}"
-                                     + (f" · {tr('objects')}: {st['object_summary']}" if st["object_summary"] else ""))
+                                     + (f" · {tr('objects')}: {st['object_summary']}" if st["object_summary"] else "")
+                                     + "\n" + own_ai_text())
         ts_, rem = st.get("remote_ts") or {}, st.get("remote") or []
         ts_txt = (tr("not installed") if not ts_.get("state") else
                   (tr("connected") + (f" · http://{ts_['ip']}:{CFG['web_port']}/" if ts_.get("ip") else "") if ts_["state"] == "Running" else ts_["state"]))
@@ -3386,7 +3437,8 @@ class App:
         self._status("Notifications", f"{tr('status')}: {st['notify_status']}")
         hs = st["hotspot"] or {}
         a_st = st["arm_state"]
-        self._status("Camping / protection", "🛡 " + protect_label(a_st, st.get("arm_left", 0))
+        fc_ = arm_forecast_text()                      # 2.98.13: battery forecast (066)
+        self._status("Camping / protection", "🛡 " + protect_label(a_st, st.get("arm_left", 0)) + (f" · 🔋 {fc_}" if fc_ else "")
                      + (" · ⛺ " + tr("Camping profile") if CFG["camping"] else "")
                      + (f" · 📡 «{hs.get('ssid')}» {hs.get('clients', 0)} {tr('devices')} · {page_address('10.42.0.1')}" if hs.get("on") else
                         f" · 📡 «{CFG['hotspot_ssid']}» / {CFG['hotspot_password'] or '–'}")

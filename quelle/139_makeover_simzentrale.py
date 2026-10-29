@@ -45,6 +45,8 @@ def sim_hub(force=False):
             d["rover"] = None
         d["rover_alarm"] = bool(CFG.get("rover_alarm"))
     d["demo"] = {"busy": DEMO_RUN["busy"], "i": DEMO_RUN["i"], "n": DEMO_RUN["n"]}
+    d["simple"] = bool(CFG.get("ui_simple"))                # 2.98.14: «Simple» shows the assistant instead of the single tools
+    d["tune"] = {"busy": TUNEA["busy"], "step": TUNEA["step"], "last": bool(TUNEA.get("last"))}
     d["devices"] = len(CFG.get("fleet") or [])
     if d.get("ok"):                                         # the twin, back from the simulator (place, mast)
         try:
@@ -111,7 +113,7 @@ SIMHUB_CSS = r"""
 SIMHUB_JS = r"""
 (function () {
   const L = () => { try { return (typeof LANG !== "undefined" && LANG) || "de"; } catch (e) { return "de"; } };
-  const DE = Object.assign({"Try out": "Ausprobieren", "Learn & test": "Lernen & Testen", "MoveEye points": "MoveEye-Punkte", "points": "Punkte", "points-note": "Ein Konto für Spiel und echten Betrieb: blinde Flecken in Spielen gefunden (+5), Fehlalarm im Spiel entlarvt (+30), Übung gemacht (+50), Woche ohne Fehlalarm (+100), «Entdecker»: früher blinde Stellen werden jetzt erkannt (+50 je Stelle).", "Badges of the players": "Abzeichen der Spieler", "Calm week: no false alarm": "Ruhige Woche: kein Fehlalarm", "False alarm unmasked in a game": "Fehlalarm im Spiel entlarvt", "{n} blind spot(s) found in games": "{n} blinde Flecken in Spielen gefunden", "Explorer: {n} blind spot(s) fixed": "Entdecker: {n} blinde Flecken behoben", "Drill done: battery": "Übung gemacht: Akku", "Drill done: net": "Übung gemacht: WLAN", "Drill done: heat": "Übung gemacht: Hitze", "Drill done: cold": "Übung gemacht: Kälte"}, {"Simulation": "Simulation", "Scene": "Szene", "Time of day": "Tageszeit", "Weather": "Wetter", "Send a visitor": "Besuch schicken",
+  const DE = Object.assign({"Improve detection": "Erkennung verbessern", "step by step": "Schritt für Schritt", "World": "Welt", "Testing": "Testen", "Learning": "Lernen", "Playing": "Spielen", "Show all tools («Expert»)": "Alle Werkzeuge zeigen («Experte»)", "Only the assistant («Simple»)": "Nur den Assistenten («Einfach»)", "Day": "Tag", "Night": "Nacht"}, {"Try out": "Ausprobieren", "Learn & test": "Lernen & Testen", "MoveEye points": "MoveEye-Punkte", "points": "Punkte", "points-note": "Ein Konto für Spiel und echten Betrieb: blinde Flecken in Spielen gefunden (+5), Fehlalarm im Spiel entlarvt (+30), Übung gemacht (+50), Woche ohne Fehlalarm (+100), «Entdecker»: früher blinde Stellen werden jetzt erkannt (+50 je Stelle).", "Badges of the players": "Abzeichen der Spieler", "Calm week: no false alarm": "Ruhige Woche: kein Fehlalarm", "False alarm unmasked in a game": "Fehlalarm im Spiel entlarvt", "{n} blind spot(s) found in games": "{n} blinde Flecken in Spielen gefunden", "Explorer: {n} blind spot(s) fixed": "Entdecker: {n} blinde Flecken behoben", "Drill done: battery": "Übung gemacht: Akku", "Drill done: net": "Übung gemacht: WLAN", "Drill done: heat": "Übung gemacht: Hitze", "Drill done: cold": "Übung gemacht: Kälte"}, {"Simulation": "Simulation", "Scene": "Szene", "Time of day": "Tageszeit", "Weather": "Wetter", "Send a visitor": "Besuch schicken",
     "Surprise night": "Überraschungsnacht", "Templates": "Vorlagen", "Game": "Spiel", "Tests": "Tests", "Diary": "Tagebuch", "on": "an", "off": "aus",
     "Morning": "Morgen", "Noon": "Mittag", "Evening": "Abend", "Night": "Nacht", "clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee",
     "visitors": "Besucher", "Opens on the PC": "Öffnet sich am PC", "Simulator not reachable": "Simulator nicht erreichbar", "Simulator centre": "Simulator-Zentrale",
@@ -266,21 +268,31 @@ SIMHUB_JS = r"""
       const l = LB.ab.last; if (l) s.appendChild(E("b", "", tt(l.title) + ": A " + (l.a != null ? l.a : "–") + " · B " + (l.b != null ? l.b : "–") + " → " + (l.winner === "B" ? tt("B is better – kept") : tt("A stays"))));
     }
   }
+  // 2.98.14 (Konzept): the tiles in four groups - Welt (what happens in the simulator), Testen, Lernen, Spielen. «Simple»
+  // shows the assistant «Erkennung verbessern» instead of the single tools for the thresholds (they stay in «Expert»).
+  const GRP = {scene: "world", hour: "world", weather: "world", visit: "world", surprise: "world", twin: "world", devices: "world", rover: "world", templates: "world",
+    tests: "test", blind: "test", rehearsal: "test", inbox: "test", drill: "test", ab: "test", week: "test", stats: "test",
+    improve: "learn", autoth: "learn", train: "learn", falearn: "learn", diary: "learn",
+    game: "play", points: "play"};
+  const EXPERT_K = ["autoth", "ab", "train", "falearn", "week"];
   function tiles(box, full) {
-    const g = E("div", "shub"), g2 = E("div", "shub");
-    const LEARN_K = ["blind", "rehearsal", "autoth", "falearn", "week", "points", "inbox", "drill", "train", "ab", "tests", "stats"];
+    const G = {world: E("div", "shub"), test: E("div", "shub"), learn: E("div", "shub"), play: E("div", "shub")}, g = G.world;
     const T = [["scene", "🗺", tt("Scene"), ((H.scenes || []).find(x => x.id === H.scene) || {}).name || H.scene || "–"],
       ["hour", H.dark ? "🌙" : "☀", tt("Time of day"), H.clock || "–"],
       ["weather", wxIcon(H.weather), tt("Weather"), tt(H.weather || "–") + (H.ambient != null ? " · " + Math.round(H.ambient) + " °C" : "")],
-      ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")],
-      ["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]];
+      ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")]
+      ];
+    if (full) T.push(["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]);   // 2.98.13: drills / surprise only in the Simulator tab
     if (full && H.twin_ok) T.push(["twin", "🪞", tt("Twin of your place"), tt("Place, zones, patrol")]);   // 2.98.5: zones / detection in 3D = simulator, «Ansicht»
     if (full) { const R = H.rover || {};
       T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
         ["rover", "🚜", tt("Rover"), H.rover ? (R.mission ? "⏳ " + tt("M_" + R.mission) : R.active ? tt("patrols") : R.charging ? "⚡ " + tt("charging") : tt("ready")) + " · 🔋 " + R.batt + " %" : "–"],
-        ["stats", "📈", tt("Statistics & versions"), tt("4 weeks, per version")]); }
+        ["templates", "🧩", tt("Templates"), tt("Opens on the PC")]); }
+    if (full) { const TU = H.tune || {};
+      T.push(["improve", "🎯", tt("Improve detection"), TU.busy ? "⏳ " + (TU.step === "night" ? tt("Night") : tt("Day")) : tt("step by step")]); }
     if (full) { const N = LN || {}; const bl = N.blind || {}, au = N.autoth || {}, re = bl.rehearsal;
-      T.push(["blind", "🗺", tt("Blind spots"), bl.busy && bl.kind === "map" ? "⏳ " + (bl.prog || "") : bl.last ? bl.last.found + "/" + bl.last.inview + " " + tt("recognised") : tt("find them")],
+      T.push(["tests", "🧪", tt("Tests"), tt("Test run, test bench")],
+        ["blind", "🗺", tt("Blind spots"), bl.busy && bl.kind === "map" ? "⏳ " + (bl.prog || "") : bl.last ? bl.last.found + "/" + bl.last.inview + " " + tt("recognised") : tt("find them")],
         ["rehearsal", "🌙", tt("Night rehearsal"), bl.busy && bl.kind === "rehearsal" ? "⏳ " + (bl.prog || "") : re ? (re.max_found ? tt("up to") + " " + re.max_found + " m" : "–") : tt("before arming")],
         ["autoth", "🎚", tt("Thresholds automatic"), au.busy ? "⏳ " + au.step : au.last ? "✓" : tt("day and night")],
         ["falearn", "👎", tt("False alarm learning"), N.fa_learn_auto ? tt("on") : tt("off")],
@@ -289,20 +301,27 @@ SIMHUB_JS = r"""
     if (full) T.push(["inbox", "📨", tt("Test inbox"), LB ? (LB.sandbox ? tt("on") : tt("off")) + " · " + (LB.inbox || []).length : ""],
       ["drill", "⚡", tt("Drills"), LB && LB.drill.busy ? "⏳ " + LB.drill.left + " s" : tt("Battery, Wi-Fi, heat, cold")],
       ["train", "🌙", tt("Training night"), LB ? (LB.train.busy ? "⏳ " + (LB.train.step || "") : LB.train.on ? tt("on") + " · " + String(LB.train.hour).padStart(2, "0") + ":00" : tt("off")) : ""],
-      ["ab", "⚖", tt("A/B comparison"), LB && LB.ab.busy ? "⏳ " + LB.ab.step : tt("Which setting is better?")]);
-    if (full) T.push(["templates", "🧩", tt("Templates"), tt("Opens on the PC")], ["game", "🎮", tt("Game"), tt("Play on the phone")],
-      ["tests", "🧪", tt("Tests"), tt("Test run, test bench")], ["diary", "📔", tt("Diary"), tt("Visits and detection")]);
-    T.forEach(([k, ic, n, sub]) => { const b = E("button", "st" + (open === k || (k === "surprise" && H.surprise) ? " on" : "")); b.type = "button";
+      ["ab", "⚖", tt("A/B comparison"), LB && LB.ab.busy ? "⏳ " + LB.ab.step : tt("Which setting is better?")],
+      ["stats", "📈", tt("Statistics & versions"), tt("4 weeks, per version")]);
+    if (full) T.push(["game", "🎮", tt("Game"), tt("Play on the phone")], ["diary", "📔", tt("Diary"), tt("Visits and detection")]);
+    T.forEach(([k, ic, n, sub]) => { if (full && H.simple && EXPERT_K.includes(k)) return;
+      const b = E("button", "st" + (open === k || (k === "surprise" && H.surprise) ? " on" : "")); b.type = "button";
       b.append(E("i", "", ic), E("b", "", n), E("small", "", sub));
       b.onclick = () => { if (k === "surprise") return act("surprise", !H.surprise); if (k === "templates") return act("templates").then(r => r && r.ok && say("🧩 " + tt("Opens on the PC")));
+        if (k === "improve") return window.mwTune && window.mwTune.open();
         if (k === "twin") return act("twin").then(r => r && r.ok && say("🪞 " + tt("The map opens at your place on the PC – confirm «Load this place»")));
         if (k === "zones3d") return act("overlay", {id: "show_zones3d", on: !H.zones3d}); if (k === "det3d") return act("overlay", {id: "show_det3d", on: !H.det3d});
         if (k === "game") return location.href = "/sim#c-game"; if (k === "tests") return location.href = "/sim#c-test"; if (k === "diary") return location.href = "/diary#simcard";
         open = open === k ? "" : k; paintAll(); };
-      (full && LEARN_K.includes(k) ? g2 : g).appendChild(b); });
-    if (full) { box.append(E("div", "shubh", "🎮 " + tt("Try out")), g, E("div", "shubh", "🎓 " + tt("Learn & test")), g2); }   // 2.98.4: two groups
+      (full ? G[GRP[k] || "world"] : g).appendChild(b); });
+    if (full) { [["world", "🌍 " + tt("World")], ["test", "🧪 " + tt("Testing")], ["learn", "🎓 " + tt("Learning")], ["play", "🎮 " + tt("Playing")]].forEach(([id, h]) => {
+        if (G[id].children.length) box.append(E("div", "shubh", h), G[id]); });
+      const sx = B(H.simple ? "🧰 " + tt("Show all tools («Expert»)") : "🎯 " + tt("Only the assistant («Simple»)"), async () => {
+        try { await fetch("/api/ui_simple", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({on: !H.simple})}); } catch (e) {} H.simple = !H.simple; paintAll(); });
+      sx.style.cssText = "margin-top:10px;font-size:12px"; box.appendChild(sx); }   // 2.98.14: four groups, Simple / Expert
     else box.appendChild(g);
-    if (open) sheet(box, open);
+    if (open && full && G[GRP[open] || "world"].parentNode) { const hold = E("div"); G[GRP[open] || "world"].after(hold); sheet(hold, open); }   // the sheet right under its group
+    else if (open) sheet(box, open);
     if (full && H.handover && H.handover.length) { const w = E("div", "mut", "🔁 " + H.handover.map(x => x.t + " " + x.from + " → " + x.to).join(" · ")); w.style.cssText = "margin-top:6px;font-size:12px"; box.appendChild(w); }
     if (full && H.twin && (H.twin.place || H.twin.mast)) { const w = E("div", "mut", "🪞 " + tt("Twin of your place") + ": " + (H.twin.place || "–") + (H.twin.mast ? " · " + tt("mast") + " " + H.twin.mast.toFixed(2) + " m" : "")
       + (H.twin.zones != null ? " · " + H.twin.zones + " " + tt("zones") : "") + (H.twin.waypoints != null ? " · " + H.twin.waypoints + " " + tt("patrol points") : "")); w.style.cssText = "margin-top:8px;font-size:12px"; box.appendChild(w); }
@@ -328,7 +347,8 @@ SIMHUB_JS = r"""
 
 
 def simhub_head():
-    return "<style>" + SIMHUB_CSS + "</style><script>" + SIMHUB_JS.replace("__VIS__", json.dumps(SIMHUB_VISITS, ensure_ascii=False)) + "</script>"
+    return ("<style>" + SIMHUB_CSS + "</style><script>" + SIMHUB_JS.replace("__VIS__", json.dumps(SIMHUB_VISITS, ensure_ascii=False)) + "</script>"
+            + tune_head())                                  # 2.98.14: the assistant «Erkennung verbessern» (312)
 
 
 # ---- 2.96.4 (Makeover-Punkt 5): Kino-Modus /kino - Vollbild für TV / Beamer: Livebild mit den Rahmen, Uhr, Zustand und

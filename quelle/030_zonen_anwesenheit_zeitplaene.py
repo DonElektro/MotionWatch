@@ -4,7 +4,7 @@
 # "only" = when at least one such zone exists, only detections inside it count.
 # ----------------------------------------------------------------------------
 MAX_ZONES = 12
-ZONES = []              # [{"id", "name", "mode": "ignore"|"only"|"privacy", "points": [[x, y], ...]}]
+ZONES = []              # [{"id", "name", "mode": "ignore"|"only"|"privacy", "points": [[x, y], ...], "kinds": "person"|"animal" (optional)}]
 # "privacy" = the area is painted black right after the camera, before anything else sees it: live picture, recordings,
 # snapshots, timelapse, detection and the zone editor never contain it (neighbour's tent, a path, a window).
 # 2.98.7: "sleep" = the sleeping place - a privacy zone that stays on the bed when the head turns: its corners are kept as
@@ -35,6 +35,8 @@ def _clean_zone(z, i):
            "name": str(z.get("name") or "").strip()[:40] or f"Zone {i + 1}", "mode": mode, "points": pts}
     if mode == "line":
         out["dir"] = z.get("dir") if z.get("dir") in ("ab", "ba") else "both"
+    if mode in ("ignore", "only") and z.get("kinds") in ("person", "animal"):
+        out["kinds"] = z["kinds"]                         # 2.98.13: the zone acts only on persons / only on animals (066)
     if mode == "loiter":
         try:
             out["secs"] = int(max(3, min(600, float(z.get("secs") or 20))))
@@ -260,22 +262,25 @@ def point_in_poly(x, y, pts):
     return inside
 
 
-def zone_allows(nx, ny):
+def zone_allows(nx, ny, kind=None):
+    """kind: "person" / "animal" / "other" or None (= every zone counts, as before 2.98.13). An ignore / only-here zone
+    with «applies to» persons or animals (z["kinds"]) acts only on that kind; the other kinds see it as if it did not exist."""
     zs = ZONES
     if not zs:
         return True
+    ap = lambda z: kind is None or z.get("kinds", "all") in ("all", kind)
     for z in zs:
-        if z["mode"] in ("ignore", "privacy", "sleep") and point_in_poly(nx, ny, z["points"]):
+        if z["mode"] in ("ignore", "privacy", "sleep") and (z["mode"] != "ignore" or ap(z)) and point_in_poly(nx, ny, z["points"]):
             return False
-    only = [z for z in zs if z["mode"] == "only"]
+    only = [z for z in zs if z["mode"] == "only" and ap(z)]
     return (not only) or any(point_in_poly(nx, ny, z["points"]) for z in only)
 
 
-def zone_box_ok(b, pw, ph):
+def zone_box_ok(b, pw, ph, kind=None):
     """Box (x, y, w, h, ...) in processing-frame pixels; the point that counts is the middle of the feet region."""
     if not ZONES:
         return True
-    return zone_allows((b[0] + b[2] / 2.0) / pw, (b[1] + b[3] * 0.85) / ph)
+    return zone_allows((b[0] + b[2] / 2.0) / pw, (b[1] + b[3] * 0.85) / ph, kind)
 
 
 def zones_set(lst):
@@ -404,6 +409,7 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("MQTT / Home Assistant", "mqtt_password", "MQTT password", "secret", None),
     ("MQTT / Home Assistant", "mqtt_prefix", "Topic prefix", "str", None),
     ("Recording", "rec_marks", "Markings in recordings and alarm pictures", "enum", "rec_marks"),
+    ("Night report", "weekrep_day", "Weekly detection report: day", "enum", ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),
     ("Backup", "backup_type", "Copy recordings to", "enum", "backup_types"),
     ("Patrol", "patrol_mode", "Patrol route", "enum", "patrol_modes"),
     ("Backup", "backup_url", "WebDAV folder (address, e.g. Nextcloud)", "str", None),
@@ -442,6 +448,8 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Lights", "light_ir_out", "Infrared light: connected to", "enum", "light_ir_out"),
     ("Lights", "light_ir_auto", "Infrared light: Auto means", "enum", "light_auto"),
     ("Lights", "picture_mode", "Picture", "enum", "picture_mode"),
+    ("AI detection", "ai_model", "AI model", "enum", "ai_models"),
+    ("AI detection", "ai_own_url", "Own model: address of its description (moveeye_model.json)", "str", None),
     ("AI detection", "species_model", "Animal species: model", "enum", "species_model"),
     ("AI detection", "species_norm", "Animal species: picture preparation of the model", "enum", "species_norm"),
     ("Solar panel", "solar_addr", "Current meter: address (I2C)", "enum", "pca_address"),
@@ -500,6 +508,8 @@ def text_choice_pairs(key):
         cur = str(CFG.get("species_model") or "")
         ms = species_models() + ([cur] if cur and cur not in species_models() else [])
         return [("", "– " + tr("none") + " –")] + [(m, m) for m in ms]
+    if extra == "ai_models":                         # part 195: own MoveEye model (YOLO, ONNX) next to the standard
+        return [("ssd", tr("Standard (SSD MobileNet V2)")), ("own", tr("Own (MoveEye model)"))]
     if extra == "species_norm":
         return [("imagenet", "ImageNet (mean / std)"), ("01", "0 … 1"), ("-11", "-1 … 1")]
     if extra == "gpsmod_port":
@@ -611,6 +621,8 @@ def set_text(key, value):
         if key == "use_case":
             return use_case_set(value, "settings")
         CFG[key] = value
+        if key == "ai_model":
+            own_ai_switched()                           # part 195: load the chosen model (falls back to the standard)
         if key == "net_mode":
             NETAUTO["paused"] = False
             log_event("sys", f"Network mode: {value}")
@@ -660,6 +672,8 @@ def set_text(key, value):
                 return False, "text too long or with control characters"
             if key == "sim_url" and not re.fullmatch(r"https?://[A-Za-z0-9.\-\[\]:]{1,120}/?", v):
                 return False, "invalid URL (http:// or https:// expected)"
+            if key == "ai_own_url" and not (v.startswith("https://") and _http_ok(v) and v.lower().endswith(".json")):
+                return False, "https://... address of moveeye_model.json expected"
             if key in ("notify_url", "public_url") and not _http_ok(v):
                 return False, "invalid URL (http:// or https:// expected)"
             if key == "wake_time" and not _HM_RE.match(v):

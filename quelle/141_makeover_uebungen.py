@@ -36,7 +36,8 @@ def simtask_busy(except_=""):
                        ("drill", DRILL.get("busy"))):
         if busy and name != except_:
             return name
-    for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN")):
+    for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN"),
+                      ("improve assistant", "TUNEA")):        # 2.98.14: the assistant «Erkennung verbessern» (312)
         d = globals().get(ref)
         if isinstance(d, dict) and d.get("busy") and name != except_:
             return name
@@ -47,7 +48,10 @@ def simtask_busy(except_=""):
         pass
     if except_ != "game" and sim_game_running():
         return "game"
-    return ""
+    try:
+        return sim_busy_remote()                           # 2.98.13: started in the simulator window (147_simsperre.py)
+    except NameError:
+        return ""
 
 
 def simtask_refuse(me):

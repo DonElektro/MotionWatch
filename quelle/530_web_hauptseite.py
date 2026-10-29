@@ -585,7 +585,7 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
         <button type="button" class="sec" id="pr-armnow" data-i18n="Arm now">Arm now</button>
         <button type="button" class="sec" id="pr-disarm" data-i18n="Disarm">Disarm</button>
       </div>
-      <label class="row pr-sw"><span><b>⛺ <span data-i18n="Camping profile">Camping profile</span></b><br>
+      <label class="row pr-sw" hidden><span><b>⛺ <span data-i18n="Camping profile">Camping profile</span></b><br>
         <span class="mut" data-i18n="cp-desc">Own Wi-Fi on, the camera stays where it is (no patrol / tracking / timelapse), alarms and recordings on, armed after the countdown. Switching it off restores your settings.</span></span>
         <input type="checkbox" class="sw" id="pr-camp"></label>
       <label class="row pr-sw"><span><b>🔋 <span data-i18n="Power saving">Power saving</span></b><br><span class="mut" id="pr-eco-info"></span></span>
@@ -609,6 +609,7 @@ body[data-tab] .simplebar .icseg{margin:0;flex:1 1 160px;display:flex}
       <div class="mut" id="pr-env" style="margin-top:4px"></div>
       <div class="err" id="pr-err"></div>
     </details>
+    <details class="card" data-view="tune" data-vgroup="Panels" data-vlabel="Improve detection"><summary data-i18n="Improve detection">Improve detection</summary><div id="tune-box"></div></details>
     <details class="card" id="hcard" data-view="health" data-vgroup="Panels" data-vlabel="Self-check">
       <summary><span data-i18n="🩺 Self-check">🩺 Self-check</span> <span class="mut" id="h-sum" style="text-transform:none;letter-spacing:0;font-weight:500"></span></summary>
       <div id="h-list"></div>
@@ -1020,9 +1021,9 @@ let HIDDEN = new Set();
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || "";
       HIDDEN = new Set(JSON.parse(localStorage.getItem("mw-hidden") || "[]")); } catch (e) {}
 Object.assign(I18N.de, {"Person alarms at the campfire (off: only animals - the people at the fire are not burglars)": "Personen-Alarm am Lagerfeuer (aus: nur Tiere – die Leute am Feuer sind keine Einbrecher)"});  // 2.97.0
-Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Messages": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
+Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message list": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
-Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Messages": "Nachrichten", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Protection level": "Schutzstufe", "Arming and own Wi-Fi": "Einschalten und eigenes WLAN", "What happens at an alarm?": "Was passiert bei Alarm?", "Theft protection": "Diebstahlschutz", "Device": "Gerät", "Guarded things (reference scan)": "Bewachte Dinge (Referenz-Scan)", "Backup (pictures off the device)": "Sicherung (Bilder weg vom Gerät)", "Zones, schedule, presence": "Zonen, Zeitplan, Anwesenheit", "Cameras & head": "Kameras & Kopf", "Devices & sensors": "Geräte & Sensoren", "Power supply": "Strom", "Network & access": "Netz & Zugang", "System": "System", "Draw the zones": "Zonen zeichnen", "Person": "Person", "Push": "Push", "Light": "Licht", "Siren": "Sirene", "Siren after {s} s": "Sirene nach {s} s", "Crossed out = off. Tap a step to change it. «Test protection» plays the chain.": "Durchgestrichen = aus. Ein Glied antippen = einstellen. «Schutz testen» spielt die Kette durch.", "Protection is off - nothing happens. Choose «Wachsam» or «Voll» above.": "Der Schutz ist aus – es passiert nichts. Oben «Wachsam» oder «Voll» wählen.", "Watchful": "Wachsam", "Full protection": "Voll", "in": "in", "Off": "Aus", "Settings": "Einstellungen"});  // 2.98.0: tabs, groups, alarm chain
+Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Message list": "Nachrichten", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Protection level": "Schutzstufe", "Arming and own Wi-Fi": "Einschalten und eigenes WLAN", "What happens at an alarm?": "Was passiert bei Alarm?", "Theft protection": "Diebstahlschutz", "Device": "Gerät", "Guarded things (reference scan)": "Bewachte Dinge (Referenz-Scan)", "Backup (pictures off the device)": "Sicherung (Bilder weg vom Gerät)", "Zones, schedule, presence": "Zonen, Zeitplan, Anwesenheit", "Cameras & head": "Kameras & Kopf", "Devices & sensors": "Geräte & Sensoren", "Power supply": "Strom", "Network & access": "Netz & Zugang", "System": "System", "Draw the zones": "Zonen zeichnen", "Person": "Person", "Push": "Push", "Light": "Licht", "Siren": "Sirene", "Siren after {s} s": "Sirene nach {s} s", "Crossed out = off. Tap a step to change it. «Test protection» plays the chain.": "Durchgestrichen = aus. Ein Glied antippen = einstellen. «Schutz testen» spielt die Kette durch.", "Protection is off - nothing happens. Choose «Wachsam» or «Voll» above.": "Der Schutz ist aus – es passiert nichts. Oben «Wachsam» oder «Voll» wählen.", "Watchful": "Wachsam", "Full protection": "Voll", "in": "in", "Off": "Aus", "Settings": "Einstellungen"});  // 2.98.0: tabs, groups, alarm chain
 Object.assign(I18N.de, {"Keep what is detected in the middle: persons, animals, moving things": "Hält Erkanntes in der Bildmitte: Personen, Tiere, Bewegtes"});  // 2.98.1
 function t(s) { return (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s; }
 let toastTimer = null;
@@ -1357,6 +1358,7 @@ function paintExtras(s) {
   else if (bl) bl.textContent = !b.on ? t("Off – enter the capacity of the powerbank below.")
     : (b.pct == null ? t("Press «Battery is full now» after charging.") + " · " + b.watts + " W"
        : "🔋 " + b.pct + " % · " + t("about") + " " + fmtH(b.hours) + " " + t("left") + " · " + b.watts + " W" + (b.src === "estimate" ? " (" + t("estimated") + ")" : ""));
+  if (bl && s.batt_save && s.batt_save.on) bl.textContent += " · 🐢 " + t("Battery saver active: fewer pictures, the AI less often");   // 2.98.13 (105)
 }
 async function repSend() { const r = await post("/api/report/send", {lang: LANG}); toast(r.ok ? t("Night report sent") : t("Not sent – push messages are not set up")); refresh(); }
 async function guestAct(a) {
@@ -1864,7 +1866,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
   {id: "theft", tab: "protect", icon: "🔒", name: "Theft protection", items: [{sec: "Theft protection", title: "Device", ic: "🔒"},
    {sec: "Reference scan", title: "Guarded things (reference scan)", ic: "🧭"}, {sec: "Backup", title: "Backup (pictures off the device)", ic: "☁️"}]},
   {id: "sched", tab: "protect", icon: "🗓", name: "Zones, schedule, presence", items: [{card: "schedule", sec: "Schedule", title: "Schedule", ic: "🗓️"}]},
-  {id: "detect", tab: "settings", icon: "🎯", name: "Detection", items: [{sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {sec: "Thermal camera", ic: "🌡"}, {fine: true},
+  {id: "detect", tab: "settings", icon: "🎯", name: "Detection", items: [{card: "tune", title: "Improve detection", ic: "🎯"}, {sec: "Detection", ic: "👁️"}, {sec: "AI detection", ic: "🤖"}, {sec: "Thermal camera", ic: "🌡"}, {fine: true},
    {sec: "Walking recognition", ic: "🚶"}, {sec: "Vehicle filter", ic: "🚗"}, {sec: "Rain", ic: "🌧️"}, {sec: "Wind", ic: "🌬️"}, {sec: "Low light", ic: "🌘"}, {sec: "Auto-tune", ic: "🎚️"}]},
   {id: "camera", tab: "settings", icon: "📷", name: "Cameras & head", items: [{sec: "Camera / Servos", ic: "🕹️"}, {sec: "Patrol", ic: "🔄"}, {card: "source", sec: "Video source", ic: "🎥"},
    {sec: "Timelapse", ic: "⏱️"}, {sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}, {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
@@ -1875,8 +1877,9 @@ const GROUPS = [                                            // 2.98.0: by goal -
   {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"},
    {card: "guest", title: "Guest access", ic: "👥"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}]},
   {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", ic: "📍"}, {sec: "Updates", ic: "⬆️"},
-   {sec: "Simulator", ic: "🧪"}, {card: "log", ic: "📜"}]},
+   {card: "log", ic: "📜"}]},
 ];
+Object.assign(I18N.de, {"Improve detection": "Erkennung verbessern"});   // 2.98.14: the assistant (312); the simulator settings are on the page Simulator
 function toBlock(d) {                                        // a settings section -> its controls (without its own title)
   const b = el("div", "blk");
   [...d.children].filter(c => c.tagName !== "SUMMARY").forEach(k => b.appendChild(k));
@@ -2240,7 +2243,7 @@ async function build() {
         const iv = setInterval(async () => { let j = {}; try { j = await (await fetch("/api/ai_model")).json(); } catch (e) {}
           am.textContent = j.busy ? t("downloading the AI model …") + " " + j.pct + " %" : (j.msg === "ready" ? "✓ " + t("AI ready") : "⚠ " + (j.msg || ""));
           if (!j.busy) { clearInterval(iv); ab.disabled = false; if (j.msg === "ready") ab.hidden = true; } }, 1500); };
-      d.append(ab, am); spExtras(d);
+      d.append(ab, am); ownExtras(d); spExtras(d);
     }
     if (sec.id === "Notifications") {
       const tb = el("button", "sec", t("Test notification")); tb.style.marginTop = "8px";
@@ -2651,7 +2654,7 @@ function tidyHeader(s, c) {
   const bt = s.battery || {};
   const ups = bt.src === "ups";
   hb("#b-batt", !!(bt.on && bt.pct != null), (ups && !bt.on_battery ? "🔌 " : "🔋 ") + bt.pct + " %" + (bt.hours != null ? " · " + fmtH(bt.hours) : "")
-     + (ups && bt.charging ? " · " + t("charging") : ""), ups && !bt.on_battery ? "grn" : (bt.pct <= 15 ? "red" : (bt.pct <= 30 ? "yel" : "grn")));
+     + (ups && bt.charging ? " · " + t("charging") : "") + (s.batt_save && s.batt_save.on ? " · 🐢 " + t("saver") : ""), ups && !bt.on_battery ? "grn" : (bt.pct <= 15 ? "red" : (bt.pct <= 30 ? "yel" : "grn")));
   const rem = s.remote || [];
   hb("#b-remote", rem.length > 0, "🌐 " + t("Remote") + ": " + rem.join(", ").slice(0, 30), "org");
   if (typeof s.fps === "number") badge("#b-fps", (s.eco === "saving" ? "💤 " : "") + Math.round(s.fps) + " FPS",   // 2.95.64: real pictures per second; power saving is slow on purpose
@@ -2901,6 +2904,23 @@ Object.assign(I18N.de, {"Mover": "Mover", "Mover (tracked vehicle)": "Mover (Ket
 Object.assign(I18N.de, {"GPS module": "GPS-Modul", "Own GPS module (USB or serial; gpsd is used if installed)": "Eigenes GPS-Modul (USB oder seriell; gpsd wird genutzt, falls installiert)", "Theft tracking: alarm when the armed device is carried away, then its position every 5 minutes": "Diebstahl-Ortung: Alarm, wenn das geschützte Gerät weggetragen wird, danach alle 5 Minuten seine Position", "Theft tracking: alarm from a distance of (m)": "Diebstahl-Ortung: Alarm ab einer Entfernung von (m)", "Connection": "Anschluss", "automatic": "automatisch", "the device was carried away": "das Gerät wurde weggetragen", "Position": "Position", "position": "Position", "Position now": "Position jetzt", "THEFT ALARM": "DIEBSTAHL-ALARM", "gpsd not running": "gpsd läuft nicht", "no GPS module found": "kein GPS-Modul gefunden", "searching satellites": "sucht Satelliten", "fix": "Position gefunden", "A USB GPS receiver (e.g. u-blox, VK-162) is found by itself. It needs a view of the sky. With an LTE stick the position arrives also when the device is stolen.": "Ein USB-GPS-Empfänger (z. B. u-blox, VK-162) wird von selbst gefunden. Er braucht freie Sicht zum Himmel. Mit LTE-Stick kommt die Position auch an, wenn das Gerät gestohlen wird.", "satellites": "Satelliten", "Theft tracking on guard": "Diebstahl-Ortung wacht", "Theft tracking starts when armed": "Diebstahl-Ortung startet, wenn der Schutz an ist", "From the GPS module": "Vom GPS-Modul", "from the GPS module": "vom GPS-Modul"});
 Object.assign(I18N.de, {"Solar panel": "Solarpanel", "Solar panel with current meter (INA219 on I2C)": "Solarpanel mit Strommesser (INA219 an I2C)", "Push message in the evening when the battery will probably not last until sunrise": "Push-Nachricht am Abend, wenn der Akku voraussichtlich nicht bis Sonnenaufgang reicht", "Current meter: shunt resistor (Ohm, usually 0.1)": "Strommesser: Shunt-Widerstand (Ohm, meist 0,1)", "Current meter: address (I2C)": "Strommesser: Adresse (I2C)", "The battery will probably not last until sunrise ({sr}): about {have} h left, {need} h needed. Charge it or switch on power saving.": "Der Akku reicht voraussichtlich nicht bis Sonnenaufgang ({sr}): noch etwa {have} h, nötig {need} h. Aufladen oder Stromsparen einschalten.", "Battery": "Akku", "lasts until sunrise ({sr})": "reicht bis Sonnenaufgang ({sr})", "too little until sunrise ({sr})": "zu knapp bis Sonnenaufgang ({sr})", "INA219 current meter between the panel and the charger (address 0x41 or 0x44 - 0x40 is often taken by the servo board).": "INA219-Strommesser zwischen Panel und Laderegler (Adresse 0x41 oder 0x44 – 0x40 ist oft vom Servo-Board belegt).", "no current meter found at this address": "kein Strommesser an dieser Adresse gefunden", "today": "heute", "max.": "max.", "Battery lasts until sunrise": "Akku reicht bis Sonnenaufgang", "Battery probably too low until sunrise": "Akku reicht voraussichtlich nicht bis Sonnenaufgang", "Night forecast: needs a battery value (Settings → Battery)": "Nacht-Prognose: braucht einen Akku-Wert (Einstellungen → Akku)"});
 Object.assign(I18N.de, {"Recognise the animal species (second AI model - see the guide)": "Tierart erkennen (zweites KI-Modell – siehe Anleitung)", "Animal species: minimum certainty": "Tierart: Mindest-Sicherheit", "Animal species: model": "Tierart: Modell", "Animal species: picture preparation of the model": "Tierart: Bildaufbereitung des Modells", "Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.": "Tierart: ein zweites KI-Modell (ONNX) erkennt Fuchs, Dachs, Wildschwein … Es ist nicht dabei – von einer Adresse installieren oder in den Ordner kopieren.", "or .zip": "oder .zip", "Install model": "Modell installieren", "Folder": "Ordner", "Models": "Modelle", "Last": "Zuletzt", "downloading …": "lädt herunter …", "no model chosen": "kein Modell gewählt", "address must start with https://": "die Adresse muss mit https:// beginnen", "the address must end with .onnx or .zip": "die Adresse muss auf .onnx oder .zip enden", "file too big": "Datei zu gross"});
+Object.assign(I18N.de, {"AI model": "KI-Modell", "Standard (SSD MobileNet V2)": "Standard (SSD MobileNet V2)", "Own (MoveEye model)": "Eigenes (MoveEye-Modell)", "Own model: address of its description (moveeye_model.json)": "Eigenes Modell: Adresse seiner Beschreibung (moveeye_model.json)", "Download own model": "Eigenes Modell herunterladen", "Update own model": "Eigenes Modell aktualisieren", "Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.": "Eigenes Modell: auf GitHub trainiert aus Simulator-Bildern und deinen beschrifteten Alarmbildern (Person, Tier, Fahrzeug). Nach dem Herunterladen nimmt MoveEye es (zurück zum Standard: «KI-Modell», Ansicht Experte). Fehlt es oder klappt es nicht, läuft das Standard-Modell.", "Now running": "Läuft jetzt", "own model not used": "eigenes Modell nicht benutzt", "not downloaded yet": "noch nicht heruntergeladen", "downloading the own model …": "lädt das eigene Modell …", "own model ready": "eigenes Modell bereit", "MoveEye model": "MoveEye-Modell", "made": "erstellt"});
+function ownExtras(d) {                             // part 195: own MoveEye model (YOLO) - download + which model runs
+  const box = el("div", "auxbox"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
+  box.appendChild(el("div", "mut", "🧠 " + t("Own model: trained on GitHub from simulator pictures and your labelled alarm pictures (person, animal, vehicle). After the download MoveEye uses it (back to the standard: «AI model», Expert view). If it is missing or fails, the standard model runs.")));
+  const b = el("button", "sec", "⬇ " + t("Download own model")); b.type = "button"; b.style.marginTop = "6px";
+  const show = j => { b.textContent = "⬇ " + t(j.present ? "Update own model" : "Download own model");
+    const L = [t("Now running") + ": " + (j.running === "ssd" ? "SSD MobileNet V2" : j.running === "own" ? t("MoveEye model") + " " + j.running_version : t("none"))];
+    if (j.choice === "own" && j.note) L.push("⚠ " + t("own model not used") + ": " + j.note);
+    L.push(t("Own (MoveEye model)") + ": " + (j.present ? j.version + " · " + (j.classes || []).join(", ") + " · " + j.input + " px" + (j.map50 != null ? " · mAP50 " + Number(j.map50).toFixed(2) : "") + (j.made ? " · " + t("made") + " " + j.made : "") : t("not downloaded yet")));
+    if (j.busy) L.push(t("downloading the own model …") + " " + j.pct + " %"); else if (j.msg && j.msg !== "ready") L.push("⚠ " + j.msg);
+    st.textContent = L.join("\n"); };
+  const load = () => fetch("/api/own_model?lang=" + LANG).then(r => r.json()).then(show).catch(() => {});
+  b.onclick = async () => { b.disabled = true; const r = await post("/api/own_model", {lang: LANG}); if (!r.ok) { toast("⚠ " + (r.error || "error")); b.disabled = false; return; }
+    const iv = setInterval(async () => { let j = {}; try { j = await (await fetch("/api/own_model?lang=" + LANG)).json(); } catch (e) {} show(j);
+      if (!j.busy) { clearInterval(iv); b.disabled = false; toast(j.msg === "ready" ? "✓ " + t("own model ready") : "⚠ " + (j.msg || "error")); } }, 1500); };
+  box.append(b, st); d.appendChild(box); load(); setInterval(() => { if (document.body.contains(st)) load(); }, 15000);
+}
 function spExtras(d) {                              // animal species: second model, install from an address
   const box = el("div", "auxbox"); const st = el("div", "mut"); st.style.whiteSpace = "pre-wrap";
   box.appendChild(el("div", "mut", "🦊 " + t("Animal species: a second AI model (ONNX) recognises fox, badger, wild boar … It is not included - install it from an address or copy it into the folder.")));
@@ -3692,8 +3712,8 @@ function prText(s) {                                       // 2.98.0: one name f
 }
 async function prArm(action) {
   if (action === "disarm" && ((window.__lastState || {}).protect || {}).pin) { protectOff(); return; }   // 2.95.105: with the PIN
-  const r = await post("/api/arm", {action: action});
-  if (r && r.ok) toast(action === "disarm" ? t("Disarmed") : (r.left ? t("Armed in") + " " + r.left + " s" : t("Armed")));
+  const r = await post("/api/arm", {action: action, lang: LANG});
+  if (r && r.ok) toast((action === "disarm" ? t("Disarmed") : (r.left ? t("Armed in") + " " + r.left + " s" : t("Armed"))) + (r.forecast ? " · 🔋 " + r.forecast : ""));
 }
 function prHotspotMsg(r) {
   return t("The Pi now switches on its own Wi-Fi") + " «" + r.ssid + "» (" + t("password") + ": " + r.password + "). "
@@ -3901,18 +3921,17 @@ Object.assign(I18N.en, {"tether-hint": "Connect a phone with the USB cable. Andr
 Object.assign(I18N.de, {"Internet from the phone (USB cable)": "Internet vom Handy (USB-Kabel)", "phone found, connecting …": "Handy gefunden, verbinde …",
   "the own Wi-Fi gets this internet too": "das eigene WLAN bekommt dieses Internet auch",
   "tether-hint": "Handy per USB-Kabel anschliessen. Android: Einstellungen → Hotspot & Tethering → «USB-Tethering». iPhone: «Persönlicher Hotspot» einschalten und «Vertrauen» antippen. MoveEye verbindet von selbst – auch das eigene WLAN (Spiel-Netz) bekommt dann Internet."});
-Object.assign(I18N.de, {"Mode": "Modus", "Camping guard": "Camping-Wache", "Campfire games": "Lagerfeuer-Spiele", "Gamer": "Gamer",
-  "Home / garden": "Zuhause / Garten", "Wildlife watching": "Wildbeobachtung", "Night guard": "Nachtwache", "Transport / rest": "Transport / Ruhe",
+Object.assign(I18N.de, {"Mode": "Modus", "Camping": "Camping", "Campfire games": "Lagerfeuer-Spiele", "Gamer": "Gamer",
+  "Home / garden": "Zuhause / Garten", "Wildlife watching": "Wildbeobachtung", "Transport / rest": "Transport / Ruhe",
   "Own settings": "Eigene Einstellungen", "no mode": "kein Modus", "since": "seit",
   "Your own settings, no mode.": "Deine eigenen Einstellungen, kein Modus.",
   "Full guard: alarms, recordings, own Wi-Fi, armed after the countdown. Power saving while all is quiet.": "Volle Wache: Alarme, Aufnahmen, eigenes WLAN, Schutz an nach dem Countdown. Stromsparen, solange alles ruhig ist.",
-  "The game corner is open for the phones (in the Wi-Fi MoveEye is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to the camping guard at the set time or when the battery gets low.": "Die Spielecke ist offen für die Handys (im WLAN, in dem MoveEye ist). Die Wache schaut sparsam weiter: wenige Bilder, die KI nur bei Bewegung – ein Tier am Zelt wird trotzdem gemeldet. Zur eingestellten Zeit oder wenn der Akku knapp wird, zurück zur Camping-Wache.",
+  "The game corner is open for the phones (in the Wi-Fi MoveEye is in). The guard watches on sparingly: few pictures, the AI only at movement - an animal at the tent is still reported. Back to camping at the set time or when the battery gets low.": "Die Spielecke ist offen für die Handys (im WLAN, in dem MoveEye ist). Die Wache schaut sparsam weiter: wenige Bilder, die KI nur bei Bewegung – ein Tier am Zelt wird trotzdem gemeldet. Zur eingestellten Zeit oder wenn der Akku knapp wird, zurück zum Camping.",
   "Only with mains power: power mode, all games and the game collection, the best picture. The guard only if you want it. On battery MoveEye goes back to the campfire games by itself.": "Nur mit Netzstrom: Powermodus, alle Spiele und die Spielesammlung, bestes Bild. Die Wache nur, wenn du willst. Auf Akku wechselt MoveEye von selbst zurück zu den Lagerfeuer-Spielen.",
   "Guarding house and garden: alarms and recordings on, no own Wi-Fi, no camping profile.": "Haus und Garten bewachen: Alarme und Aufnahmen ein, kein eigenes WLAN, kein Camping-Profil.",
   "Animals: no siren, the light does not go on by itself (it would scare them), many pictures, the camera follows what moves.": "Tiere: keine Sirene, das Licht geht nicht von selbst an (es würde sie verscheuchen), viele Bilder, die Kamera folgt dem, was sich bewegt.",
-  "The highest attention: more sensitive, thermal alarm, infrared light by itself, the pre-alarm too.": "Höchste Aufmerksamkeit: empfindlicher, Wärmealarm, Infrarotlicht von selbst, auch der Voralarm.",
   "Rest while travelling: no detection, no recordings, no alarms - only the battery, GPS theft and tamper protection stay on.": "Ruhe unterwegs: keine Erkennung, keine Aufnahmen, keine Alarme – nur Akku, GPS-Diebstahlschutz und Sabotageschutz bleiben an.",
-  "Back to the camping guard at": "Zurück zur Camping-Wache um", "or below": "oder unter", "or battery below": "oder Akku unter", "battery": "Akku", "never": "nie",
+  "Back to camping at": "Zurück zum Camping um", "or below": "oder unter", "or battery below": "oder Akku unter", "battery": "Akku", "never": "nie",
   "Guard during the games": "Wache während der Spiele", "needs mains power": "braucht Netzstrom", "Mode switched": "Modus gewechselt",
   "runs on the battery": "läuft auf Akku", "under-voltage: the power supply is too weak": "Unterspannung: das Netzteil ist zu schwach"});
 const MD = {built: 0, until: 0, hover: null};
@@ -3946,7 +3965,7 @@ function modePaint(s) {
   const o = $("#mode-opts"); const key = cur + "|" + M.fire_until + "|" + M.fire_min_pct + "|" + M.gamer_watch + "|" + M.fire_persons;
   if (o.dataset.k === key) return; o.dataset.k = key; o.textContent = "";
   if (cur === "fire") {
-    const r = el("div", "row"); r.append(el("span", "", t("Back to the camping guard at")));
+    const r = el("div", "row"); r.append(el("span", "", t("Back to camping at")));
     const ti = document.createElement("input"); ti.type = "time"; ti.value = M.fire_until || ""; ti.style.width = "120px"; ti.style.flex = "none";
     ti.onchange = () => post("/api/mode", {mode_fire_until: ti.value});
     const sp = el("span", "", t("or battery below")); const se = document.createElement("select");
@@ -3967,7 +3986,7 @@ function modePaint(s) {
 const PRT = {key: "", pinFor: "", until: 0};
 function protectPaint(P) {
   const box = $("#protect-box"); if (!box || !P) return;
-  const key = JSON.stringify([P.level, P.chosen, P.arm, P.colour, P.items, P.device, P.things, P.pin, P.presence, P.escalate.on, P.escalate.s, P.test, PRT.pinFor, LANG]);
+  const key = JSON.stringify([P.level, P.chosen, P.arm, P.colour, P.items, P.device, P.things, P.pin, P.presence, P.escalate.on, P.escalate.s, P.test, PRT.pinFor, LANG, P.forecast]);
   if (key === PRT.key) { const c = $("#prt-left"); if (c) c.textContent = P.arm === "arming" ? t("starts in") + " " + P.left + " s" : (P.escalate.pending ? "🚨 " + t("siren in") + " " + P.escalate.pending + " s" : ""); return; }
   PRT.key = key; box.textContent = "";
   const head = el("div", "row"); head.style.cssText = "justify-content:space-between;align-items:center";
@@ -3978,6 +3997,7 @@ function protectPaint(P) {
     b.onclick = () => k === "off" ? protectOff() : protectLevel(k); seg.appendChild(b); });
   box.appendChild(seg);
   box.appendChild(el("div", "mut prt-what", P.level === "off" ? t("prt-off") : (P.level === "watch" ? t("prt-watch") : t("prt-full"))));
+  if (P.forecast) box.appendChild(el("div", "prt-what", "🔋 " + P.forecast));      // 2.98.13: battery forecast (066)
   if (PRT.pinFor) { const r = el("div", "row"); r.style.cssText = "gap:6px;margin-top:8px"; const i = document.createElement("input"); i.type = "password"; i.inputMode = "numeric";
     i.placeholder = "PIN"; i.style.flex = "1"; const ok = el("button", "", t("Switch off")); ok.type = "button"; const no = el("button", "sec", "✕"); no.type = "button";
     ok.onclick = async () => { const x = await post("/api/protect", {action: "level", level: "off", pin: i.value, lang: LANG}); if (x.ok) { PRT.pinFor = ""; toast("✓ " + t("Protection off")); } else toast("⚠ " + (x.error || t("error"))); PRT.key = ""; protectPaint(x.level ? x : P); };
@@ -4019,7 +4039,7 @@ function protectPaint(P) {
 }
 async function protectLevel(k, answers) {
   const r = await post("/api/protect", {action: "level", level: k, answers: answers || null, lang: LANG});
-  if (r.ok) toast("✓ " + (k === "full" ? t("Full protection") : t("Watchful")) + (r.arm === "arming" ? " – " + t("leave the area now") : "")); else toast("⚠ " + (r.error || t("error")));
+  if (r.ok) toast("✓ " + (k === "full" ? t("Full protection") : t("Watchful")) + (r.arm === "arming" ? " – " + t("leave the area now") : "") + (r.forecast && k !== "off" ? " · 🔋 " + r.forecast : "")); else toast("⚠ " + (r.error || t("error")));
   PRT.key = ""; if (r.level) protectPaint(r);
 }
 function protectOff() {
@@ -4262,6 +4282,7 @@ async function healthLoad() {
         toast("⬇ " + t("Download AI model")); const iv = setInterval(async () => { await healthLoad(); let j = {}; try { j = await (await fetch("/api/ai_model")).json(); } catch (e) {}
           if (!j.busy) { clearInterval(iv); toast(j.msg === "ready" ? "✓ " + t("AI ready") : "⚠ " + (j.msg || "")); healthLoad(); } }, 2000); };
       b.appendChild(k); }
+    if (x.link) { const a = el("a", "", "📖 " + t("Manual")); a.href = x.link; a.target = "_blank"; a.rel = "noopener"; a.style.cssText = "display:inline-block;margin-top:4px;font-size:13px"; b.appendChild(a); }
     r.append(d, b); L.appendChild(r); });
 }
 function healthOpen() { const c = $("#hcard"); if (!c) return; let p = c; while (p) { if (p.tagName === "DETAILS") p.open = true; p = p.parentElement; }

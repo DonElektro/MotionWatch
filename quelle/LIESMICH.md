@@ -28,23 +28,31 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `040_speichern_passwort.py` | Einstellungen speichern, Web-Passwort | 443 |
 | `050_meldungen_push.py` | Meldungen (ntfy, Telegram, Webhook), Web-Push | 289 |
 | `060_sicherung_schutz_klima.py` | Sicherung, Diebstahlschutz, Linse, Klima, Wetter, Postausgang, Notifier | 1224 |
+| `066_alarm_extras.py` | Alarm-Extras: Knöpfe in der Push-Nachricht (/na/), Akku-Prognose, Morgen-Bildstreifen, «Was war das?», doppelte Bestätigung, Ansage beim Einschalten, «Bist du's?» | 724 |
+| `067_speicherkarte.py` | Speicherkarte schonen: Schreibmenge pro Tag, Dateisystem-Fehler, Schreibschutz (Overlay) | 267 |
 | `070_hardware_servos_licht.py` | Servos, PCA9685, Mover, Licht, Disco-Licht | 398 |
 | `080_waermebild_modul.py` | Treiber Wärmebild-Modul, Klasse Hardware | 281 |
 | `090_system_fern_sichtungen.py` | System, Fernzugriff, Sichtungen, Nachtbericht, Gast-Zugang | 465 |
 | `100_akku.py` | Akku / USV, Systemüberwachung | 417 |
+| `105_akku_sparen.py` | Akku-Sparen automatisch (unter einer Schwelle weniger Bilder, die KI seltener) | 116 |
 | `110_netz_wlan.py` | Netz, WLAN suchen und verbinden, QR-Codes | 813 |
 | `120_eigenes_wlan_uhr_ort.py` | eigenes WLAN, Uhr vom Handy, Ort (GPS) vom Handy | 720 |
 | `130_scharf_profile_modi.py` | Scharf / unscharf, Camping-Profil, einfache Einstellungen, Modi | 368 |
+| `131_konzept_modi.py` | Modi und Profile zusammengeführt: alte Einstellungen beim Laden übernehmen (2.98.14) | 66 |
 | `140_autostart.py` | Autostart | 422 |
+| `145_selbstheilung.py` | Selbstheilung: Wächter für Kamera-Schleife, KI, Webseite (Neustart mit Bremse); Ampeln Speicherkarte / Selbstheilung | 303 |
+| `147_simsperre.py` | Eine Sperre für Simulator-Aufgaben mit dem Simulator; blinde Flecken aus dem Simulator | 118 |
 | `150_zweites_wlan_tv_netzcheck.py` | zweites WLAN, USB-Tethering, TV-Anzeige, Netz-Check, WLAN-Wächter | 1059 |
 | `160_netzautomatik_patrouille.py` | Netz-Automatik, Patrouille | 160 |
 | `170_ki_personen.py` | KI-Modell laden und herunterladen | 110 |
 | `180_ki_tierarten_helfer_tunnel.py` | Tierarten, Alarm-Rückblick, KI-Rechenhilfe, KI-Prüfung, Tunnel, AIDetector | 841 |
 | `190_relais_wetter_tracker.py` | Relais, Wetter-Analyse, Auto-Tuner, Tracker | 422 |
+| `195_ki_eigenes_modell.py` | Eigenes KI-Modell (YOLO als ONNX): laden, herunterladen (sha256), Ausgabe entschlüsseln, Selbsttest | 321 |
 | `200_erkennung_videoquellen.py` | Video-Quellen (USB, Pi-Kamera, Netz) | 166 |
 | `210_demo.py` | Demo-Modus | 255 |
 | `220_zeitraffer.py` | Zeitraffer | 195 |
 | `230_waermebild.py` | Wärmebild-Überlagerung, Nachtsicht, Easter Egg (Herz) | 349 |
+| `232_waermebild_person.py` | Personen im Wärmebild (nachts, wenn die Kamera nichts sieht) | 105 |
 | `240_audio.py` | Mikrofon, Geräusch-Alarm | 81 |
 | `250_klatschen_bluetooth_ton.py` | Klatschschalter, Bluetooth, Lautsprecher, Sprachausgabe | 1131 |
 | `255_wecker.py` | Wecker mit Schlafplatz: wegschauen, wecken, Gesten (winken / aufstehen) | 330 |
@@ -55,6 +63,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `290_simulator_verbindung.py` | Verbindung zum Simulator | 333 |
 | `300_werkzeuge_simulator3d.py` | Werkzeuge, 3D-Simulator für Windows und den Pi, Simulator-Suche | 1155 |
 | `310_testlaeufe.py` | Testläufe mit Auswertung und Optimierung | 485 |
+| `312_erkennung_assistent.py` | Assistent «Erkennung verbessern» (ein Ablauf statt sechs Funktionen), Pause des Auto-Tuners | 307 |
 | `315_referenz_scan.py` | Referenz-Scan: Raster abfahren, Referenz-Fotos, Vergleich, Bericht (2.95.97) | 347 |
 | `320_spielecke.py` | Extras: Spielecke und Spieleabend | 743 |
 | `330_usb_geraete.py` | USB-Geräte, Spielesammlung, Seite verlassen (✕ Zurück) | 172 |
@@ -62,11 +71,15 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `350_simulator_link.py` | Verbindung zum Simulator (Schleife) | 87 |
 | `360_daten_simulator_python.py` | Daten: der Python-Simulator als ZIP | 897 |
 | `370_rueckmeldung_teilen_abschreckung.py` | Rückmeldung, Teilen, Abschreckung, Gegensprechen | 405 |
+| `375_gesichter_verpixeln.py` | Gesichter verpixeln beim Teilen (nur die geteilte Kopie) | 250 |
 | `380_updates.py` | Updates | 216 |
 | `390_protokoll_bedienermodus.py` | Protokoll, Bedienermodus, Pause, Update-Wächter | 1065 |
 | `400_ausschalten.py` | Pi ausschalten / neu starten | 53 |
 | `410_motionwatch_kern.py` | KERN: die Erkennungs-Schleife (Bewegung, Personen, Alarm) | 969 |
+| `415_entfernung_gehtest.py` | Entfernung und Richtung einer Person, Gehtest beim Einrichten | 376 |
 | `420_webzugang_aufnahmen.py` | Web-Zugang, Aufnahmen, Speicher, Bild für andere Programme | 630 |
+| `425_zeitleiste.py` | Zeitleiste der Nacht: Daten für /api/timeline | 230 |
+| `426_wochenbericht.py` | Wochenbericht der Erkennung (Push + Karte) | 200 |
 | `430_pdf_bericht.py` | PDF-Bericht | 757 |
 | `440_zusatzkameras.py` | zusätzliche Kameras | 203 |
 | `450_web_gemeinsam.py` | Web: gemeinsames Aussehen (CSS), Bluetooth-Teil | 240 |
@@ -77,15 +90,33 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `500_web_seitenbau.py` | Web: App-Symbol, Seiten zusammensetzen | 80 |
 | `510_web_kopf_alarm.py` | Web: Service Worker, Kopf, Alarm, gemeinsames JavaScript | 494 |
 | `520_web_seiten_kameras_zonen_tagebuch.py` | Web: Kameras, Zonen, Tagebuch, Gast, Protokoll | 730 |
+| `523_web_zeitleiste.py` | Web: Seite «Zeitleiste» (Verlauf), /api/timeline, /api/weekreport | 330 |
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
+| `535_web_erkennung.py` | Web: Gehtest (Live, Schutz), Akku-Sparen auf der Schutz-Seite | 119 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
+| `545_simulator_updates.py` | Simulator-Updates: ein Besitzer («Neue Versionen» im Simulator) | 72 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
+| `576_fenster_zeitleiste.py` | Fenster: Zeitleiste als Liste, Wochenbericht | 130 |
+| `571_alarm_einstellungen.py` | Schalter und Regler der Alarm-Extras (Web und Fenster) | 16 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
 | `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
+| `602_uebersetzungen_alarm.py` | Übersetzungen der Alarm-Extras | 130 |
+| `607_uebersetzungen_modell.py` | Übersetzungen «Eigenes KI-Modell» | 37 |
+| `575_fenster_erkennung.py` | Fenster + Einstellungen: Gehtest, Wärmebild-Personen, Akku-Sparen | 87 |
+| `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
+| `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
+| `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
+| `604_uebersetzungen_erkennung.py` | Übersetzungen: Gehtest, Entfernung, Wärmebild-Personen, Akku-Sparen | 102 |
+| `572_fenster_reiter.py` | Fenster: Reiter Verlauf / Mehr / Simulator, Assistent im Fenster | 144 |
+| `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
+| `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
+| `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
+| `605_uebersetzungen_konzept.py` | Übersetzungen der Konzept-Bereinigung (Assistent, Modi, Fenster-Reiter) | 97 |
+| `609_uebersetzungen_robust.py` | Übersetzungen und Anleitung: Speicherkarte, Selbstheilung, Simulator-Sperre | 142 |
 | `610_anleitung_ergaenzungen.py` | Anleitung: Ergänzungen in allen Sprachen | 167 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |
@@ -94,3 +125,4 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 Grob gruppiert: **Kern** (Erkennung, Alarm: 170–230, 410), **Geräte** (Hardware, Audio, Sensoren: 070–100, 240–280),
 **Netz** (110–160), **Simulator und Prüfungen** (290–360), **Webseiten** (450–550), **Fenster** (570),
 **Extras** (Spiele, Almanach, Produktseite: 320, 340, 620, 630), **Übersetzungen** (560–610), **Daten** (Bilder, ZIPs: 360, 480, 490, 620).
+| `608_uebersetzungen_verlauf.py` | Übersetzungen Zeitleiste / Wochenbericht / Gesichter verpixeln, Anleitung | 110 |

@@ -414,6 +414,13 @@ func _paint_card() -> void:
 	var h := UI.heading("Runde fertig" if rs == "end" else "Bereit?")
 	card_v.add_child(h)
 	if rs == "end":
+		if not g.flag_res.is_empty():                       # 3D-4.x: «Fahne erobern» - decided by the captures
+			var fl := UI.heading("%s – %s" % [g.flag_res["text"], g.flag_res["title"]])
+			card_v.add_child(fl)
+		if not g.duel.is_empty():                           # 3D-4.x: MoveEye against the guard
+			var dl_ := UI.heading(_plain("Duell: MoveEye %d : %d %s" % [int(g.duel["mw"]), int(g.duel["human"]), g.duel["who"]]))
+			card_v.add_child(dl_)
+			card_v.add_child(UI.small(_plain(str(g.duel["text"])), UI.TXT))
 		for r in g.results:
 			var l := Label.new()
 			l.text = _plain("%d  %s – %s" % [int(r["score"]), r["n"], r["info"]])
@@ -426,6 +433,14 @@ func _paint_card() -> void:
 		tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		tip.custom_minimum_size.x = 480
 		card_v.add_child(tip)
+	var me_ = g.local_player()
+	if me_ != null:                                         # 3D-4.x: the level of the player at the PC
+		var xi: Dictionary = g.xp.info(str(me_["name"]))
+		var lvl := UI.small("Stufe %d · %d XP (noch %d bis Stufe %d)%s" % [int(xi["lv"]), int(xi["xp"]), int(xi["to"]) - int(xi["xp"]), int(xi["lv"]) + 1,
+				(" · als Nächstes: " + _plain(str(xi["next"]))) if str(xi["next"]) != "" else ""], UI.TXT)
+		lvl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		lvl.custom_minimum_size.x = 480
+		card_v.add_child(lvl)
 	var dl: Dictionary = _st.get("daily", {})
 	if not dl.is_empty():
 		var dd := UI.small(_plain(str(dl["text"])) + ("" if (dl["best"] as Array).is_empty() else " · Beste: " + ", ".join(PackedStringArray((dl["best"] as Array).map(func(b): return "%s %d" % [b["n"], b["score"]])))), UI.TXT)

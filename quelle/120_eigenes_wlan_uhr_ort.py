@@ -330,7 +330,8 @@ def health_check(lang=None):
             "Check the cable and the video source under Setup.")
     ai = str(STATE.get("ai_status") or "")
     if ai.startswith(("ready", "running")):
-        add("ai", "🧠", "AI (person detection)", "ok", T("ready") + (f" · {STATE.get('ai_ms')} ms" if STATE.get("ai_ms") else ""))
+        add("ai", "🧠", "AI (person detection)", "ok" if not STATE.get("ai_model_note") or CFG.get("ai_model") != "own" else "warn",
+            T("ready") + (f" · {STATE.get('ai_ms')} ms" if STATE.get("ai_ms") else "") + " · " + own_ai_text(L)[2:])
     elif ai == "demo":
         add("ai", "🧠", "AI (person detection)", "warn", T("demo"), "")
     elif ai in ("off", ""):

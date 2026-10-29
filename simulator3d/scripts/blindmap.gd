@@ -24,7 +24,7 @@ func start(d: Dictionary) -> Dictionary:
 		return {"ok": false, "error": "already running"}
 	var _b: String = main.busy_with()
 	if _b != "":
-		return {"ok": false, "error": "busy: " + _b}
+		return {"ok": false, "error": main.busy_msg(_b)}
 	pts = []
 	var azs = d.get("az", [-60, -30, 0, 30, 60])
 	var ds = d.get("dist", [5, 10, 15, 20, 25])

@@ -24,6 +24,8 @@ CFG = {
     "ai_conf": 0.5,              # confidence threshold
     "ai_every": 3,               # run the network every N frames
     "ai_zoom": True,             # 2.98.13: «KI-Lupe» - small moving things are looked at once more, enlarged (far persons)
+    "ai_model": "ssd",           # «KI-Modell»: "ssd" = standard (SSD MobileNet V2), "own" = own MoveEye model (YOLO, ONNX - part 195)
+    "ai_own_url": "https://github.com/DonElektro/MotionWatch/releases/download/ki-modell/moveeye_model.json",   # its manifest
     "show_objects": True,        # mark ALL objects the network finds (not just persons)
     "object_conf": 0.5,          # confidence threshold for non-person objects
     # recording
@@ -175,6 +177,8 @@ CFG = {
     "share_logo": True,
     "ui_simple": True,                       # settings: only the important ones (Expert shows everything)
     "share_gps": False,                      # shared pictures / videos keep their GPS position (off: removed before sharing)
+    "share_blur_faces": True,                # 2.98.14: faces pixelated in shared pictures / videos (375), the originals stay
+    "weekrep_on": True, "weekrep_day": "Sunday", "weekrep_hour": 18, "weekrep_last": "",   # 2.98.14: weekly detection report (426)
     "fleet": [],
     "sms_on": False, "sms_numbers": "", "sms_mode": "auto", "sms_port": "/dev/ttyUSB2", "sms_hilink": "192.168.8.1",
     "sms_only_offline": True, "sms_pause": 5, "sms_day_max": 20,          # SMS over an LTE stick

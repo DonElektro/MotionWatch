@@ -159,7 +159,15 @@ class MotionWatch:
         src, sid, label, err = res
         self._good_t = time.time()                         # 2.98.11: a new source gets its 6 s (see the read loop)
         if src is None:
-            log_event("sys", f"Video source '{label}' not available: {err}")
+            # 2.98.13 (memory card): the same failure every 3 s wrote ~30'000 log lines a day - now the first one, then
+            # once every 10 minutes with the number of tries
+            msg_ = f"Video source '{label}' not available: {err}"
+            ls_ = getattr(self, "_fail_log", None)
+            if ls_ is None or ls_[0] != msg_ or time.time() - ls_[1] > 600:
+                log_event("sys", msg_ + (f" ({ls_[2]} tries since {datetime.fromtimestamp(ls_[3]).strftime('%H:%M')})" if ls_ and ls_[0] == msg_ and ls_[2] else ""))
+                self._fail_log = [msg_, time.time(), 0, ls_[3] if ls_ and ls_[0] == msg_ else time.time()]
+            else:
+                ls_[2] += 1
             if self.cap is not None and str(STATE.get("source_id", "")).startswith("sim:") and not CFG["sim_on"]:
                 self.cap.release(); self.cap = None                # simulation switched off: never keep the simulator picture
                 STATE["source_status"] = f"failed: {err}"; self._retry_at = time.time() + 3.0
@@ -315,8 +323,15 @@ class MotionWatch:
         need_frames = int(CFG["walk_frames"] * wind_boost)
         walking = (len(t.speeds) >= need_frames and CFG["walk_min_speed"] <= sp <= CFG["walk_max_speed"] * k
                    and t.steadiness() >= CFG["speed_consistency"] and aspect < CFG["car_aspect"])
+        # 2.98.14: the AI sees an animal there (fox, cat, boar ...), or the thing is much wider than high while the AI runs and
+        # does not call it a person: no person (test bench: most false alarms were animals walking through the picture)
+        ai_on = self.ai.net is not None and CFG["ai_enabled"]
+        if not t.ai_confirmed and any(iou(t.box, a) > 0.15 for a in getattr(self, "_animal_boxes", [])):
+            t.animal_like = True                            # the AI called it an animal: stays so (until the AI says person)
         if t.ai_confirmed:
             walking = True                                  # AI says person -> person
+        elif getattr(t, "animal_like", False) or (ai_on and aspect > 1.4 and not t.is_person):
+            walking = False                                 # (wide and flat: only as long as it was no person before - crawling)
         elif CFG["ai_require"] and self.ai.net is not None and CFG["ai_enabled"]:
             walking = False                                 # needs AI confirmation
         elif t.is_person and CFG["person_sticky"] and sp <= CFG["walk_max_speed"] * k:
@@ -457,6 +472,7 @@ class MotionWatch:
             persons = []                                  # disarmed: no snapshots, no notifications, no new recordings
         elif persons and CFG.get("mode") == "fire" and not CFG.get("mode_fire_persons"):
             persons = []                                  # 2.97.0: campfire - the people at the fire are no alarm, animals still are
+        persons = alarm_gate(self, frame, persons, now)   # 2.98.13: «Is it you?» / double confirmation (066)
         settle = now - SIM.get("off_t", 0.0) < 30.0       # just back from the simulation: the camera learns its picture
         if settle:
             persons = []; self.last_person_time = 0
@@ -468,6 +484,7 @@ class MotionWatch:
             if CFG["snapshot_on_person"] and not CFG["sim_on"]:
                 snap = os.path.join(CFG["record_dir"], f"person_{stamp}.jpg")
                 cv2.imwrite(snap, frame, [cv2.IMWRITE_JPEG_QUALITY, 85]); gps_tag_jpg(snap)
+            alarm_ctx_note(self, stamp, snap, frame, persons)   # 2.98.13: picture + boxes for «What was it?» and the push buttons (066)
             self.notifier.person(len(persons), snap, frame)
             try:
                 alarm_track_begin("person", stamp, snap)
@@ -796,8 +813,8 @@ class MotionWatch:
             if CFG["detection_on"]:
                 g = self.preprocess(gray, rain_mode)
                 fg = self.foreground(g, small, rain_mode, wind_boost)
-                ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph)]
-                ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph)]
+                ai_boxes = [b for b in self.ai.detect(small) if zone_box_ok(b, pw, ph, "person")]     # 2.98.13: zones by kind (066)
+                ai_objs = [o for o in self.ai.objects if zone_box_ok(o, pw, ph, "animal" if COCO_LABELS.get(o[5]) in ANIMALS else "other")]
                 rec_animals = [o for o in ai_objs if COCO_LABELS.get(o[5]) in ANIMALS]
                 objects = ai_objs if (CFG["show_objects"] and CFG["ai_enabled"]) else []
                 counts = {}
@@ -809,7 +826,7 @@ class MotionWatch:
                 cnts, _ = cv2.findContours(fg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 # following movement also sees smaller things (a cat, a fox far away) - they never count as a person / alarm
                 small_area = min(min_area, float(CFG["track_motion_min"]) / 100.0 * pw * ph) if CFG["track_motion"] else min_area
-                boxes = [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= small_area) if zone_box_ok(b, pw, ph)]
+                boxes = [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= small_area) if zone_box_ok(b, pw, ph, "person")]
                 if any(b[2] * b[3] >= min_area for b in boxes):
                     present.add("prealarm")              # pre-alarm: anything at all moves in the picture (before it is judged to be a person)
                 raw_boxes = list(boxes)
@@ -824,6 +841,7 @@ class MotionWatch:
                 for t in tracks:
                     if t.lost:
                         continue
+                    self._animal_boxes = [o[:4] for o in rec_animals]
                     self.classify(t, pw * ph, wind_boost, ai_boxes)
                     if t.is_person and not t.ai_confirmed and t.box[2] * t.box[3] < min_area * 0.8:
                         t.is_person = False                     # too small for a person (only seen for following movement)
@@ -840,6 +858,10 @@ class MotionWatch:
                                                  round(t.steadiness(), 2), t.lost, t.is_person, t.ai_confirmed, t.is_vehicle] for t in tracks]}) + "\n")
                     except Exception:
                         pass
+                try:
+                    erk_frame(persons, candidates, ai_boxes, pw, ph, t0, small)   # 2.98.13: distance / direction, walk test (415)
+                except Exception as e:
+                    log_event("sys", f"Distance / walk test: {e}"[:160])
                 try:
                     alarm_track_sample(persons, rec_animals, pw, ph)       # 2.95.53: for the Alarm-Rückblick in 3D
                 except Exception:
@@ -935,7 +957,7 @@ class MotionWatch:
                             roi[mroi > 0] = tint[mroi > 0]
                     draw_outline(frame, cnts, t.box, sx, sy, (0, 0, 255), 2)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
-                    cv2.putText(frame, f"PERSON #{t.id}{' AI' if t.ai_confirmed else ''}  {t.speed():.1f}px/f",
+                    cv2.putText(frame, f"PERSON #{t.id}{' AI' if t.ai_confirmed else ''}" + (dist_overlay(t) or f"  {t.speed():.1f}px/f"),
                                 (x, max(20, y - 8)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                     if CFG["show_tracks"] and len(t.hist) > 1:
                         pts = np.array([(int(px * sx), int(py * sy)) for px, py in t.hist], np.int32)
@@ -962,8 +984,13 @@ class MotionWatch:
                     cv2.putText(frame, z["name"][:24].encode("ascii", "replace").decode(), (int(pts[0][0]) + 4, int(pts[0][1]) + 14),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.42, col, 1, cv2.LINE_AA)
             warm_boxes = []
-            if CFG["thermal_alarm"] and CFG["detection_on"] and THERMAL is not None:
+            th_pers = THERMAL is not None and not person_boxes and thermal_person_active()   # 2.98.13: persons in the thermal picture (232)
+            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
                 warm_boxes = THERMAL.detect()                 # (x, y, w, h) 0..1 of the picture, already checked against the zones
+                if th_pers and warm_boxes:
+                    warm_boxes = thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0)
+                if not CFG["thermal_alarm"]:
+                    warm_boxes = []
                 if warm_boxes:
                     present.add("warm"); self.last_warm = t0
                     for bx, by, bw, bh in warm_boxes:
@@ -1016,6 +1043,7 @@ class MotionWatch:
                 if self.pre_alerted and t0 - self.pre_last > 5.0:
                     self.pre_alerted = False
 
+            walktest_draw(frame)                           # 2.98.13: walk test - the marks so far (415)
             if CFG["show_hud"]:
                 hud = (f"{'RAIN MODE' if rain_mode else 'No rain'} | Wind: {STATE['wind_level']} x{STATE['wind_boost']} | "
                        f"Persons: {len(person_boxes)} | Pan {CFG['pan']:.0f}% Tilt {CFG['tilt']:.0f}% | {STATE['patrol_status']}"
@@ -1046,8 +1074,10 @@ class MotionWatch:
                              frames=STATE["frames"] + 1, uptime=int(time.time() - START))
             frame = apply_privacy(frame)
             self.frame_out = frame
-            DETER.check(present, t0)
+            if not walktest_on():                         # 2.98.13: no deterrence during the walk test
+                DETER.check(present, t0)
             self._eco(present, t0)
+            batt_save_pace(self, t0, present)            # 2.98.13: battery low - fewer pictures (105)
             if CFG["web_stream"] and self.web_viewers > 0:
                 out, ww = frame, int(CFG["web_width"])
                 if W > ww:

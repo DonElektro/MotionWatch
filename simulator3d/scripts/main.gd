@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-4.0"
+const VERSION := "3D-4.1"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -57,6 +57,7 @@ var game_tutorial := false            # 3D-3.77: practice round with explanation
 var game_daily := false               # 3D-3.77: the challenge of the day
 var game_ghost := true                # 3D-3.77: the ghost of the own best way
 var game_heart := true                # 3D-3.77: heartbeat when the camera nearly sees you
+var game_botguard := true             # 3D-4.x: «Wächter» without a person as guard: a bot guards (gamebots.gd)
 var localplay                         # 3D-3.77: localplay.gd - play here at the PC
 var headpad                           # 3D-3.77: headpad.gd - steer the head of MoveEye
 var templates                         # 3D-3.82: templates.gd - «Vorlagen»: scenes, places, kits, own 3D files
@@ -299,6 +300,8 @@ var _group_state := {}
 var conn_body: Control                # the card «Verbindung» (symbol and title show the state)
 var cam_body: Control                 # 3D-3.50: the cards «Kameras» and «Werkzeuge» (symbol + arrow green while working)
 var tools_body: Control
+var testen_measure: VBoxContainer     # 3D-4.x: card «Testen» → «Erkennung messen» (also the test run controls)
+var testen_rec: VBoxContainer         # 3D-4.x: card «Testen» → «Aufnahme …» (the recorder)
 var _conn_state := -1
 var stream_on := false                     # sending to MoveEye: off at the start, the user switches it on in the window
 var stream_last := false                   # 3D-3.65: was sending switched on the last time? then on again at the start (also after an update)
@@ -1776,7 +1779,40 @@ func busy_with(except_ := "") -> String:
 		w = "Spielrunde"
 	elif recorder != null and recorder.playing:
 		w = "Wiedergabe"
+	elif _mw_task() != "":                             # 3D-4.x: one lock with MoveEye (a drill, a protection test … there)
+		w = _mw_task()
 	return "" if w == except_ else w
+
+
+var _ctl_frame := -1                  # a request of MoveEye (/control) is being answered in this frame
+
+
+func _mw_task() -> String:
+	"""what MoveEye does with the simulator right now (sim_state «simtask_de»), not while answering MoveEye itself - its
+	own steps (test_start, blindmap …) must not be refused because of its own task"""
+	if _ctl_frame == Engine.get_process_frames() or now() - mw_t > 6.0:
+		return ""
+	var t := str(mw.get("simtask_de", ""))
+	return "" if t == "" else t + " (von MoveEye)"
+
+
+func open_testen() -> void:
+	"""the tile «Testen»: the card «Testen» open, «Erkennung messen» open, scrolled to it"""
+	if tools_body == null:
+		return
+	show_panel(true)
+	UI.set_open(tools_body, true)
+	if testen_measure != null:
+		UI.set_sub_open(testen_measure, true)
+	var card: Control = tools_body.get_meta("card") if tools_body.has_meta("card") else tools_body
+	var sc := ui_box.get_parent() if ui_box != null else null
+	if sc is ScrollContainer:
+		(sc as ScrollContainer).ensure_control_visible.call_deferred(card)
+
+
+func busy_msg(w: String) -> String:
+	"""the same words as MoveEye: «Der Simulator ist belegt: …»"""
+	return "Der Simulator ist belegt: " + w
 
 
 func hour() -> float:
@@ -2218,7 +2254,7 @@ func _capture(i: int) -> void:
 	if i < 2 and expo_mats.size() > i:
 		var ex: float = NIGHT_SCALE * gain[i] if dark else 1.0
 		if i == 0 and dark and ir_on() and not white_light.light_energy > 0.0:
-			ex = max(ex, 0.85)                   # 3D-3.33: an infrared camera exposes for its own light - near things bright
+			ex = ir_ex                           # 3D-4.1: the infrared picture has its own exposure (before: fixed 0.85 - almost white)
 		expo_mats[i].set_shader_parameter("expo", ex)
 		lens_mats[i].set_shader_parameter("expo", ex)
 	if i < 2:
@@ -2315,7 +2351,21 @@ func ir_on() -> bool:
 			or (dataset != null and dataset.servo != null and is_dark())      # Trainingsbilder at night: like MoveEye, with infrared
 
 
+var ir_ex := 0.5                        # 3D-4.1: exposure of the infrared picture (follows its own light, see _auto_exposure)
+
+
 func _auto_exposure(i: int, img: Image) -> void:
+	if i == 0 and is_dark() and ir_on() and not white_light.light_energy > 0.0:
+		var sm: Image = img.duplicate()
+		sm.resize(32, 18, Image.INTERPOLATE_BILINEAR)
+		var sum_ := 0.0
+		for y in range(18):
+			for x in range(32):
+				var c := sm.get_pixel(x, y)
+				sum_ += (c.r + c.g + c.b) / 3.0
+		var m: float = maxf(0.01, sum_ / (18.0 * 32.0))
+		ir_ex = clampf(ir_ex * pow(0.38 / m, 0.6), 0.04, 1.0)   # a near tent bright, the far meadow dark - not all white
+		return
 	var small: Image = img.duplicate()
 	small.resize(32, 18, Image.INTERPOLATE_BILINEAR)
 	var sum := 0.0
@@ -2959,7 +3009,7 @@ const GROUPS := [["Szene", "globe", "🌍", ["", "Ort von der Karte", "Zeit"]],
 		["Kamerabild", "lens", "👁", ["", "Wie echt", "Schwierige Bedingungen", "Feineinstellungen"]],
 		["Sensoren", "bell", "🔔", [""]],
 		["Mover", "track", "🚜", ["", "Patrouille"]],
-		["Spiel", "pad", "🎮", ["Runde", "Regeln", "Anzeige"]],
+		["Spiel", "pad", "🎮", ["Runde", "Experte · Runde", "Experte · Regeln", "Experte · Extras", "Experte · Treffer", "Experte · Anzeige", "Experte · Erkennung lernen"]],
 		["Wildbeobachtung", "target", "🎯", [""]],
 		["Testlauf", "check", "✅", [""]],
 		["System", "gear", "⚙", ["Grafik", "Start mit dem PC", "Updates", "Kinder-Modus"]]]
@@ -2998,6 +3048,8 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 
 
 const SIMPLE_GROUPS := ["Szene", "Wetter", "Besuch", "Testlauf", "Spiel"]
+# 3D-4.x: the card «Spiel» = open, start, stop, assistant; everything else is set in the assistant (or under «Experte»)
+const GAME_MAIN := ["game_wizard", "game_open", "game_start", "game_stop"]
 const SIMPLE_HIDE_SUBS := ["Besucher hinsetzen", "Menschen schicken", "Tiere schicken", "Fahrzeuge", "Verhalten", "Mehr Wetter", "Natur und Wind"]
 
 
@@ -3005,7 +3057,7 @@ func _simple_ok(c: Dictionary) -> bool:
 	"""3D-3.90: what «Einfach» shows - scene, time, weather, visitors (the inventory picks the single ones), the test run and
 	the game assistant; everything else is «Experte»"""
 	if c.group == "Spiel":
-		return c.id in ["game_wizard", "game_stop"]
+		return c.id in GAME_MAIN
 	if c.group == "System":
 		return c.id in ["update_mode", "kids_ask"]
 	if not c.group in SIMPLE_GROUPS:
@@ -3030,6 +3082,8 @@ func _order_controls() -> void:
 		if pl != null:
 			c.group = pl[0]
 			c.extra["sub"] = pl[1]
+		if c.group == "Spiel" and not c.id in GAME_MAIN:      # 3D-4.x: all single settings of the game: «Experte · …»
+			c.extra["sub"] = "Experte · " + (str(c.extra.get("sub", "")) if str(c.extra.get("sub", "")) != "" else "Extras")
 		if not _simple_ok(c):
 			c.extra["expert"] = true                      # 3D-3.90: «Einfach» = about 60 settings (the web page shows all)
 		var g: int = gi.get(c.group, GROUPS.size())
@@ -3217,7 +3271,7 @@ func _register_controls() -> void:
 	add_control("button", "game_stop", "Runde beenden", null, func(): game.end_round(), "Spiel")
 	add_control("slider", "game_minutes", "Dauer einer Runde", func(): return game_minutes, func(v): game_minutes = v, "Spiel", {"min": 1, "max": 15, "step": 1, "unit": "min"})
 	add_control("select", "game_mode", "Spielart", func(): return game_mode, func(v): game_mode = v, "Spiel",
-			{"options": [["camera", "Alle gegen die Kamera"], ["guard", "Ein Spieler ist Wächter"], ["teamguard", "Team gegen Team (Räuber und Wächter)"], ["mw", "MoveEye entscheidet (echte Erkennung)"], ["mwhand", "Team gegen MoveEye (Wächter steuern MoveEye)"], ["free", "Frei bewegen – ohne Regeln (zum Testen der Erkennung)"], ["patrol", "Patrouille: MoveEye fährt mit dem Mover die Route ab"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"]]})
+			{"options": [["mw", "Gegen MoveEye (echte Erkennung)"], ["guard", "Wächter (ein Spieler oder der Bot-Wächter)"], ["seek", "Verstecken mit dem Rover (Fänger sieht nur die Kamera)"], ["free", "Zonen-Check – ohne Erwischen (zum Testen der Erkennung)"], ["camera", "ältere: Alle gegen die Kamera"], ["teamguard", "ältere: Team gegen Team"], ["mwhand", "ältere: Team gegen MoveEye (Wächter steuern MoveEye)"], ["patrol", "ältere: Patrouille mit dem Mover"]]})
 	add_control("select", "game_level", "Schwierigkeit (Wächter und MoveEye)", func(): return game_level, func(v): game_level = v, "Spiel",
 			{"options": [["easy", "leicht – Easy-Mode: MoveEye muss 2.5 s melden, Kriechen ist sicher, 6 s Pause"], ["normal", "normal – 1 s melden, 3 s Pause"], ["hard", "schwer – sofort, 2 s Pause"]]})
 	add_control("select", "game_lives", "Leben", func(): return str(game_lives), func(v): game_lives = int(v), "Spiel",
@@ -3227,7 +3281,7 @@ func _register_controls() -> void:
 	add_control("toggle", "game_rescue", "Befreien: Erwischte kommen in die Zelle, ein Teamkollege befreit sie", func(): return game_rescue, func(v): game_rescue = v, "Spiel")
 	add_control("toggle", "game_teamgoal", "Team-Ziel: das Ziel öffnet erst, wenn alle Kristalle gefunden sind", func(): return game_teamgoal, func(v): game_teamgoal = v, "Spiel", ex)
 	add_control("select", "game_goal", "Spielziel", func(): return game_goal, func(v): game_goal = v, "Spiel",
-			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"]]})
+			{"options": [["reach", "Zum Ziel schleichen"], ["return", "Beute holen und zurückbringen"], ["flag", "Fahne erobern (zwei Teams)"], ["sprint", "Sprint: 90 s, fester Parcours"]]})
 	add_control("toggle", "game_stones", "Steine werfen zum Ablenken", func(): return game_stones, func(v): game_stones = v, "Spiel")
 	add_control("toggle", "game_powers", "Power-ups: Tarnkappe (lila) und Turbo (gelb)", func(): return game_powers, func(v): game_powers = v, "Spiel")
 	add_control("toggle", "game_photos", "Erwischt-Fotos (Bild der Kamera beim Erwischen, Galerie am Schluss)", func(): return game_photos, func(v): game_photos = v, "Spiel")
@@ -3252,6 +3306,7 @@ func _register_controls() -> void:
 	add_control("toggle", "game_daily", "Tagesaufgabe: heute für alle dieselbe Szene, dasselbe Ziel und dieselben Startpunkte", func(): return game_daily, func(v): game_daily = v, "Spiel")
 	add_control("toggle", "game_ghost", "Geisterläufer: der eigene beste Weg läuft als Geist mit (nur die Spieler sehen ihn)", func(): return game_ghost, func(v): game_ghost = v, "Spiel")
 	add_control("toggle", "game_heart", "Herzschlag, wenn die Kamera dich gleich sieht (Handy vibriert)", func(): return game_heart, func(v): game_heart = v, "Spiel")
+	add_control("toggle", "game_botguard", "Bot-Wächter, wenn niemand Wächter sein will (Spielart «Wächter»)", func(): return game_botguard, func(v): game_botguard = v, "Spiel")
 	add_control("button", "game_local", "Hier am PC mitspielen (Tastatur und Maus)", null, func(): localplay.start("runner"), "Spiel")
 	add_control("button", "game_local_guard", "Hier am PC Wächter sein (Kopf drehen, «Erwischt!»)", null, func(): localplay.start("guard"), "Spiel")
 	add_control("toggle", "game_tasks", "Aufgabe für jede Runde (z. B. nur kriechend ins Ziel, Bonus)", func(): return game_tasks, func(v): game_tasks = v, "Spiel")
@@ -3286,7 +3341,7 @@ func _register_controls() -> void:
 	add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(win_fps), func(v): win_fps = int(v); _settings_dirty = true, "Grafik",
 			{"options": [["0", "so viele wie möglich"], ["60", "60"], ["30", "30 (spart Strom)"], ["20", "20 (schwacher PC)"]]})
 	add_control("toggle", "auto_perf", "Automatisch leichter, wenn der PC zu langsam ist", func(): return auto_perf, func(v): auto_perf = v; _slow_n = 0, "Grafik")
-	add_control("toggle", "eco_idle", "Strom sparen: nur rechnen, wenn das Fenster offen ist oder MoveEye verbunden ist", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
+	add_control("toggle", "eco_idle", "Simulator ruht, wenn niemand zuschaut (rechnet nur, wenn das Fenster offen oder MoveEye verbunden ist)", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
 	add_control("toggle", "meadow", "Gras und Blumen auf der Wiese", func(): return meadow_on, func(v): set_meadow(v), "Grafik", ex)
 	add_control("toggle", "map_on", "Übersichtskarte oben links (M)", func(): return map_on, func(v): set_map(v), "Grafik")
 	add_control("toggle", "live_on", "Livebild unter der Karte (L)", func(): return live_on, func(v): set_live(v), "Grafik")
@@ -3445,6 +3500,13 @@ func control_info() -> Dictionary:
 
 
 func control(d: Dictionary) -> Dictionary:
+	_ctl_frame = Engine.get_process_frames()
+	var r := _control(d)
+	_ctl_frame = -1
+	return r
+
+
+func _control(d: Dictionary) -> Dictionary:
 	var a := str(d.get("action", "get"))
 	var cid := str(d.get("id", ""))
 	if a == "scenario":
@@ -3474,6 +3536,10 @@ func control(d: Dictionary) -> Dictionary:
 		for n in get_tree().get_nodes_in_group("smoke"):
 			sm.append([n.emitting, n.global_position, n.visible, n.is_visible_in_tree()])
 		return {"ok": true, "smoke": str(sm), "fireflies": [fireflies.emitting, fireflies.is_visible_in_tree()], "cloth": get_tree().get_nodes_in_group("cloth").size()}
+	elif a == "busy":                                  # one lock with MoveEye: who has the world right now ('' = free)
+		if bool(d.get("with_mw", false)):              # for tests / display: also what MoveEye itself does
+			_ctl_frame = -1
+		return {"ok": true, "busy": busy_with(str(d.get("except", "")))}
 	elif a == "test_report":                           # the test run: progress and the last report
 		return testrun.state()
 	elif a == "test_start":                            # MoveEye starts a test run (3D-3.27): {"plan": "standard" | "quick" | "hard" | "night"}
@@ -3941,6 +4007,8 @@ func control(d: Dictionary) -> Dictionary:
 		return {"ok": true}
 	elif a == "gamewiz":                               # the game wizard, worked from the page of MoveEye (3D-3.41)
 		return gamewiz.op(d)
+	elif a == "game_debug":                            # 3D-4.x: for tests - results, duel, levels, bots, votes
+		return game.debug_info()
 	elif a == "set" or a == "press":
 		var c = null
 		for x in controls:
@@ -3948,6 +4016,7 @@ func control(d: Dictionary) -> Dictionary:
 				c = x
 		if c == null or c["set"] == null:
 			return {"ok": false, "error": "unknown control"}
+		_ctl_frame = -1                                 # a button / switch pressed from the page counts like one in the window (one lock)
 		if a == "press":
 			c["set"].call()
 		else:
@@ -4271,6 +4340,10 @@ func _build_ui() -> void:
 	tl = UI.sub_fold(tl_main, "Erkennung messen (Testlauf, Prüfstand, blinde Flecken)", true)
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)
+	testen_measure = tl                              # 3D-4.x: the group «Testlauf» lives here now (one place for testing)
+	testen_rec = UI.sub_fold(tl_main, "Aufnahme: Besuch aufnehmen und genau gleich abspielen", false)
+	testen_rec.set_meta("always", true)
+	sub_bodies.append(testen_rec)
 	var trh := HBoxContainer.new()
 	trh.add_theme_constant_override("separation", 6)
 	tl.add_child(trh)
@@ -4433,6 +4506,16 @@ func _build_ui() -> void:
 	for c in controls:
 		if c.extra.get("hide", false):
 			continue                                     # 3D-3.90: only for MoveEye (the web page), not in the window
+		if c.group == "Testlauf" and testen_measure != null:   # 3D-4.x: into the card «Testen» (no own card «Testlauf» any more)
+			if c.id in ["testrun_plan", "testrun_start"]:
+				continue                                 # the card has its own row «plan + Testlauf starten»
+			var tgt: VBoxContainer = testen_rec if c.id.begins_with("rec_") else testen_measure
+			var k0 := ui_items.size()
+			_ui_control(tgt, c)
+			for i in range(k0, ui_items.size()):
+				ui_items[i][3] = tools_body
+				ui_items[i].append(tgt)
+			continue
 		if not groups.has(c.group):
 			var ic := ""
 			for g in GROUPS:
@@ -4474,8 +4557,10 @@ func _build_ui() -> void:
 	update_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	update_btn.pressed.connect(check_updates)
 	(subs.get("System/Updates", tl) as Control).add_child(update_btn)
-	if groups.has("Testlauf"):
-		testrun.add_info(groups["Testlauf"], UI)      # progress and result of the test run
+	if testen_measure != null:
+		testrun.add_info(testen_measure, UI)          # progress and result of the test run (card «Testen»)
+	elif groups.has("Testlauf"):
+		testrun.add_info(groups["Testlauf"], UI)
 	if subs.has("Kamerabild/Wie echt"):              # 3D-3.94: what the real look adjustment does
 		real_label = UI.small("")
 		real_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -5021,7 +5106,7 @@ func restart_args() -> PackedStringArray:
 
 
 const KEEP := ["pad_auto", "colors_on", "seasons_on", "pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
-		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
+		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "moon_auto", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
 var _settings_dirty := false
 
 
@@ -5353,7 +5438,7 @@ func _paint_groups() -> void:
 	if cam_body != null:
 		UI.fold_active(cam_body, 1 if connected() else 0)
 	if tools_body != null:
-		UI.fold_active(tools_body, 1 if (mwpc != null and mwpc.state == "running") or (pruef != null and pruef.running) or (dataset != null and dataset.busy) else 0)
+		UI.fold_active(tools_body, 1 if (mwpc != null and mwpc.state == "running") or (pruef != null and pruef.running) or (dataset != null and dataset.busy) or (testrun != null and testrun.running) or (blindmap != null and blindmap.busy) else 0)
 
 
 func _update_status() -> void:

@@ -136,7 +136,7 @@ class WebStream:
                     request.get_data()                      # read the body first, else the connection is reset
                 log_event("web", f"Blocked a request from another web page ({request.headers.get('Origin', '')[:60]}) to {request.path}")
                 return Response("Forbidden: request from another web page", 403)
-            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/spiele", "/tv/", "/nt/", "/info", "/almanach")) or request.path in public:
+            if request.path.startswith(("/g/", "/x/", "/k/", "/p/", "/na/", "/spiele", "/tv/", "/nt/", "/info", "/almanach")) or request.path in public:
                 return None                         # guest links check their own key; app icons are not secret
             pw = CFG["web_password"]
             g.user, g.role = "", "admin"
@@ -1155,6 +1155,9 @@ class WebStream:
             lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or CFG["lang"])
             return reply({"ok": False, "error": tr_err("locked - settings can only be changed after unlocking (PIN)", lang)}, 423)
 
+        timeline_routes(app, reply, body, request, Response)    # 2.98.14: Verlauf → Zeitleiste + weekly report (523)
+        alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
+
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
             return Response(render_page(MSG_PAGE, "msgs"), mimetype="text/html")
@@ -1411,7 +1414,7 @@ class WebStream:
         @app.route("/api/schema")
         def api_schema():
             lang = request.args.get("lang") or CFG["lang"]
-            return reply(web_schema(norm_lang(lang)))
+            return reply(web_schema(norm_lang(lang), request.args.get("sec") or None))   # 2.98.14: ?sec= one section (page Simulator)
 
         @app.route("/api/appearance")
         def api_appearance():
@@ -1592,7 +1595,7 @@ class WebStream:
                     disarm()
             else:
                 return reply({"ok": False, "error": "unknown action"}, 400)
-            return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"]})
+            return reply({"ok": True, "state": STATE["arm_state"], "left": STATE["arm_left"], "forecast": arm_forecast_text(body().get("lang")) if a != "disarm" else ""})
 
         @app.route("/api/simhub", methods=["GET", "POST"])
         def api_simhub():                                    # 2.96.4: the tiles of the simulator (start page, simulator centre)
@@ -1690,6 +1693,18 @@ class WebStream:
             else:
                 ok, err = False, "unknown action"
             return reply(dict(learn_state(), ok=ok, error=tr_err(err, lang) if err else ""))
+
+        @app.route("/api/tune", methods=["GET", "POST"])
+        def api_tune():                                      # 2.98.14: the assistant «Erkennung verbessern» (312)
+            if request.method == "GET":
+                return reply(tune_assist_state(request.args.get("lang")))
+            if getattr(g, "role", "admin") != "admin":
+                return reply({"ok": False, "error": "not allowed"}, 403)
+            d = body(); lang = norm_lang(d.get("lang")); a = str(d.get("do") or "")
+            fn = {"start": lambda: tune_assist_start(str(d.get("depth") or "quick")), "stop": tune_assist_stop, "undo": tune_assist_undo,
+                  "set": lambda: tune_assist_set(str(d.get("key") or ""), bool(d.get("on")))}.get(a)
+            ok, err = fn() if fn else (False, "unknown action")
+            return reply(dict(tune_assist_state(lang), ok=ok, error=tr_err(err, lang) if err else ""))
 
         @app.route("/api/simbar")
         def api_simbar():                                    # 2.96.4: the stripe «SIMULATION» on every page
@@ -2258,6 +2273,14 @@ class WebStream:
                 return reply({"ok": ok, "error": err or None, **AI_MODEL}, 200 if ok else 409)
             return reply(dict(AI_MODEL, present=bool(ai_model_paths()[0])))
 
+        @app.route("/api/own_model", methods=["GET", "POST"])
+        def api_own_model():                             # part 195: own MoveEye model (YOLO, ONNX) from the GitHub release
+            lg = request.args.get("lang") or body().get("lang") if request.method == "POST" else request.args.get("lang")
+            if request.method == "POST":
+                ok, err = own_ai_download()
+                return reply({"ok": ok, "error": tr_err(err, lg) if err else None, **own_ai_info(lg)}, 200 if ok else 409)
+            return reply(dict(own_ai_info(lg), text=own_ai_text(lg)))
+
         @app.route("/api/storage", methods=["GET", "POST"])
         def api_storage():
             if request.method == "POST":
@@ -2624,6 +2647,27 @@ class WebStream:
         def api_battery():
             ok, err = battery_full()
             return reply({"ok": ok})
+
+        @app.route("/api/walktest", methods=["GET", "POST"])
+        def api_walktest():                                  # 2.98.13: walk test and battery saver (415, 105)
+            if request.method == "POST":
+                d = body(); lang = norm_lang(d.get("lang"))
+                act = str(d.get("action") or "")
+                if act == "start":
+                    ok, err = walktest_start("web")
+                elif act == "stop":
+                    ok, err = walktest_stop("button"), ""
+                else:
+                    ok, err = False, "unknown action"
+                return reply(dict(walktest_state(lang), ok=ok, error=tr_err(err, lang) if err else None), 200 if (ok or act == "stop") else 400)
+            return reply(dict(walktest_state(norm_lang(request.args.get("lang") or CFG["lang"])), ok=True))
+
+        @app.route("/api/walktest.jpg")
+        def api_walktest_jpg():
+            p = walktest_img()
+            if not p:
+                return Response("not found", status=404)
+            return send_file(p, mimetype="image/jpeg", max_age=0)
 
         @app.route("/api/zones")
         def api_zones_get():
