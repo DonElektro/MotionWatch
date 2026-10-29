@@ -21,7 +21,7 @@ def _tk_history_bar(self, parent):
 def _tk_more_bar(self, parent):
     return self._tk_bar(parent, [("? " + tr("Manual"), self._open_help), ("🎲 " + tr("Game corner"), lambda: self._open_page("/party")),
                                  ("🛠 " + tr("Tools"), lambda: self._open_page("/tools")), ("💬 " + tr("Feedback to the developer"), self._feedback),
-                                 ("🌐 " + tr("Overview"), lambda: self._open_page("/more"))])
+                                 ("🌐 " + tr("Overview"), lambda: self._open_page("/more")), ("ℹ " + tr("About MoveEye"), self._about_win)])
 
 
 def _tk_sim_head(self, inner):

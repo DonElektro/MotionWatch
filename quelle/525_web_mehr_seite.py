@@ -16,7 +16,6 @@ main{padding:16px;max-width:720px;margin:0 auto}
 #games{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:14px;margin:0 0 12px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
 #games.on{border-color:var(--grn)}#games .gq{width:120px;height:120px;background:#fff;border-radius:10px;padding:6px;box-sizing:border-box}#games .gq svg{width:100%;height:100%}
 #games .gt{flex:1 1 200px}#games .gt b{font-size:16px}#games button{margin:8px 8px 0 0}
-#fb{display:none}#fb.on{display:block}#fb textarea{width:100%;box-sizing:border-box;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
 </style></head><body>
 <header>
   <h1>MoveEye</h1>
@@ -34,21 +33,14 @@ main{padding:16px;max-width:720px;margin:0 auto}
   <a class="mi" href="/tools"><i>🧰</i><span><b data-i18n="Tools">Tools</b><small data-i18n="Network test, diagnosis and more">Network test, diagnosis and more</small></span><span class="ar">›</span></a>
   <a class="mi" href="/info" id="m-info"><i>👋</i><span><b data-i18n="Info page for guests">Info page for guests</b><small data-i18n="what MoveEye is - for neighbours and fellow campers">what MoveEye is - for neighbours and fellow campers</small></span><span class="ar">›</span></a>
   <a class="mi" href="/almanach"><i>🌦</i><span><b data-i18n="Almanac">Almanac</b><small data-i18n="Sun, moon, weather">Sun, moon, weather</small></span><span class="ar">›</span></a>
-  <button type="button" class="mi" onclick="document.getElementById('fb').classList.toggle('on')"><i>💬</i><span><b data-i18n="Feedback to the developer">Feedback to the developer</b><small data-i18n="Ideas, errors, praise - anonymous">Ideas, errors, praise - anonymous</small></span><span class="ar">›</span></button>
-  <div class="card" id="fb">
-    <select id="fb-k" style="width:100%;margin-bottom:8px"><option value="idea" data-i18n="💡 Idea">💡 Idea</option><option value="bug" data-i18n="🐞 Error">🐞 Error</option><option value="praise" data-i18n="⭐ Praise">⭐ Praise</option><option value="other" data-i18n="💬 Other">💬 Other</option></select>
-    <textarea id="fb-t" rows="5" maxlength="3000"></textarea>
-    <div class="btns"><button type="button" id="fb-s" data-i18n="Send">Send</button></div><div class="mut" id="fb-r"></div>
-  </div>
+  <button type="button" class="mi" id="m-fb" onclick="window.mwFeedback && mwFeedback()"><i>💬</i><span><b data-i18n="Feedback to the developer">Feedback to the developer</b><small data-i18n="Errors, wishes, praise, questions - anonymous">Errors, wishes, praise, questions - anonymous</small></span><span class="ar">›</span></button>
+  <button type="button" class="mi" id="m-fbtest" onclick="window.mwFeedbackTest && mwFeedbackTest(document.getElementById('m-fbtest-r'))"><i>🧪</i><span><b data-i18n="Send a test feedback">Send a test feedback</b><small id="m-fbtest-r" data-i18n="for the developer: does a message reach the servers?">for the developer: does a message reach the servers?</small></span><span class="ar">›</span></button>
+  <button type="button" class="mi" id="m-about" onclick="window.mwAbout && mwAbout()"><i>ℹ️</i><span><b data-i18n="About MoveEye">About MoveEye</b><small data-i18n="history, developer, numbers">history, developer, numbers</small></span><span class="ar">›</span></button>
 </main>
 <script>
 /*COMMON*/
 /*MOREDE*/
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"games-off-note": "One button: game corner (quiz, werewolf …), game collection and - when the 3D simulator runs - «Team against MoveEye». One QR code, type the name, done."});
-document.getElementById("fb-s").onclick = async () => {
-  const r = await post("/api/feedback", {kind: document.getElementById("fb-k").value, text: document.getElementById("fb-t").value, diag: true, lang: LANG});
-  document.getElementById("fb-r").textContent = r && r.ok ? "✓ " + t("Thank you! The message is on its way.") : "⚠ " + ((r && r.error) || "error");
-};
 (async () => { await initAppearance(); gmLoad(); })();
 // 2.98.7: «Spiele freigeben» - one button for the game corner, the game collection and the game of the 3D simulator
 let GMT = 0;
@@ -87,8 +79,9 @@ MORE_DE = {"Everything explained, with search": "Alles erklärt, mit Suche", "Qu
            "Network test, diagnosis and more": "Netztest, Diagnose und mehr", "Info page for guests": "Infoseite für Gäste",
            "what MoveEye is - for neighbours and fellow campers": "was MoveEye ist – für Nachbarn und Mitcamper", "Almanac": "Almanach",
            "Sun, moon, weather": "Sonne, Mond, Wetter", "Feedback to the developer": "Rückmeldung an den Entwickler",
-           "Ideas, errors, praise - anonymous": "Ideen, Fehler, Lob – anonym", "💡 Idea": "💡 Idee", "🐞 Error": "🐞 Fehler", "⭐ Praise": "⭐ Lob",
-           "💬 Other": "💬 Anderes", "Send": "Senden", "Thank you! The message is on its way.": "Danke! Die Nachricht ist unterwegs.",
+           "Errors, wishes, praise, questions - anonymous": "Fehler, Wünsche, Lob, Fragen – anonym",
+           "About MoveEye": "Über MoveEye", "Send a test feedback": "Test-Feedback senden",
+           "for the developer: does a message reach the servers?": "für den Entwickler: kommt eine Nachricht bei den Servern an?", "history, developer, numbers": "Geschichte, Entwickler, Zahlen",
            "Games": "Spiele", "Open all games": "Spiele freigeben", "Open until": "Offen bis", "players": "Spieler", "Game corner": "Spielecke",
            "Game collection": "Spielesammlung", "Simulator game": "Simulator-Spiel", "Scan the QR code with the phone (same Wi-Fi).": "QR-Code mit dem Handy scannen (gleiches WLAN).",
            "Players and QR code": "Spieler und QR-Code", "Close": "Schliessen", "Close all games? The players are logged out.": "Alle Spiele schliessen? Die Spieler werden abgemeldet.",

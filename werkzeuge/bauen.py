@@ -174,6 +174,7 @@ def neue_version(text_aenderung, ziel=""):
                     t2 = re.sub(r'SIM3DPI = \{"version": "3D-[0-9.]+".*?"label": "MW Sim · 3D \(Pi\)"\}', lambda m: 'SIM3DPI = {"version": "%s", "file": "%s", "size": %d,\n           "sha256": "%s", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}' % (d["version"], d["pi"]["file"], d["pi"]["size"], d["pi"]["sha256"]), t2, count=1, flags=re.S)
             except (OSError, ValueError, KeyError):
                 pass
+        t2 = re.sub(r"^INFO_PARTS = \d+", "INFO_PARTS = %d" % len(teile()), t2, count=1, flags=re.M)   # «About MoveEye» (584)
         if name.startswith("000_"):                            # the line in the list of changes (above the newest one)
             words, lines, cur = text_aenderung.split(), [], "  * %s:" % neu
             for w in words:

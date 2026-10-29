@@ -1141,7 +1141,8 @@ class App:
             small = self._lay[0]
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
-                tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
+                vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
+                vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
             Tip(nm, f"{tr('Build')} 2.98.32 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
@@ -1168,6 +1169,7 @@ class App:
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
             self._ibtn(ctl, "◐", self.toggle_theme, tk_theme_tip(), on=bool(CFG.get("tk_night"))).pack(side="right", padx=(0, 6))   # Hell → Dunkel → Rotlicht (578)
             self._ibtn(ctl, "✉", self._messages_win, tr("Message list")).pack(side="right", padx=(0, 6))     # 2.98.13
+            self._ibtn(ctl, "💬", self._feedback, tr("Feedback to the developer")).pack(side="right", padx=(0, 6))   # 2.98.33 (584)
             self._ibtn(ctl, "◷", lambda: tk_timeline_win(self), tr("Night timeline")).pack(side="right", padx=(0, 6))   # 2.98.14 (575)
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
             self.b_fs.pack(side="right", padx=(0, 6))
@@ -3599,27 +3601,7 @@ class App:
                 pts += [w - (len(hist) - 1 - i) * (w / 59.0), h - 2 - (h - 4) * v / 100.0]
             c.create_line(*pts, fill=C["grn"] if cpu < 60 else (C["yel"] if cpu < 85 else C["red"]), width=2)
 
-    def _feedback(self):
-        from tkinter import messagebox
-        w = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Feedback to the developer")); w.configure(bg=C["bg"])
-        ttk.Label(w, text=tr("Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one."),
-                  style="Mut.TLabel", wraplength=420, justify="left").pack(padx=14, pady=(12, 6), anchor="w")
-        kinds = [("idea", tr("Idea")), ("bug", tr("Error")), ("praise", tr("Praise")), ("other", tr("Other"))]
-        cb = ttk.Combobox(w, state="readonly", values=[k[1] for k in kinds]); cb.current(0); cb.pack(fill="x", padx=14)
-        txt = tk.Text(w, height=8, width=52, bg=C["field"] if "field" in C else C["panel"], fg=C["txt"], insertbackground=C["txt"], relief="flat")
-        txt.pack(fill="both", expand=True, padx=14, pady=8)
-        diag = tk.BooleanVar(value=True)
-        ttk.Checkbutton(w, text=tr("Add technical details (version, device, last important events - no pictures, no passwords)"), variable=diag).pack(anchor="w", padx=14)
-        bf = ttk.Frame(w); bf.pack(fill="x", padx=14, pady=10)
-
-        def send():
-            ok, err = feedback_send(kinds[cb.current()][0], txt.get("1.0", "end"), "", diag.get())
-            if ok:
-                messagebox.showinfo("MoveEye", tr("Thank you! The message is on its way."), parent=w); w.destroy()
-            else:
-                messagebox.showerror("MoveEye", tr_err(err), parent=w)
-        ttk.Button(bf, text=tr("Send"), command=send).pack(side="right")
-        ttk.Button(bf, text=tr("Cancel"), command=w.destroy).pack(side="right", padx=(0, 6))
+    # _feedback (feedback to the developer) and _about_win («About MoveEye»): part 584
 
     def _qr_window(self, first):
         """QR codes on the Pi screen: scan with the phone camera - the setup goes on there (own Wi-Fi of the Pi: first its code)."""

@@ -2000,25 +2000,8 @@ function chainPaint(c, s) {
   box.appendChild(el("div", "mut", armed ? t("Crossed out = off. Tap a step to change it. «Test protection» plays the chain.") : t("Protection is off - nothing happens. Choose «Wachsam» or «Voll» above.")));
 }
 
-// ---- feedback to the developer (anonymous) ----
-function fbDialog() {
-  let ov = $("#fb-ov"); if (ov) ov.remove();
-  ov = el("div"); ov.id = "fb-ov"; ov.style.cssText = "position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:14px";
-  const c = el("div", "card"); c.style.cssText = "max-width:460px;width:100%;max-height:92vh;overflow:auto"; ov.appendChild(c); document.body.appendChild(ov);
-  c.append(el("h3", "", "💬 " + t("Feedback to the developer")), el("div", "mut", t("Ideas, errors, praise - everything helps. The message is sent anonymously: no name, no address, unless you write one.")));
-  const kind = el("select"); [["idea", "💡 Idea"], ["bug", "🐞 Error"], ["praise", "⭐ Praise"], ["other", "💬 Other"]].forEach(([v, l]) => { const o = el("option", "", t(l)); o.value = v; kind.appendChild(o); });
-  kind.style.cssText = "width:100%;margin:10px 0 8px";
-  const tx = el("textarea"); tx.rows = 6; tx.maxLength = 3000; tx.placeholder = t("Your message …");
-  tx.style.cssText = "width:100%;box-sizing:border-box;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit";
-  const ct = el("input"); ct.type = "text"; ct.maxLength = 120; ct.placeholder = t("Contact for an answer (optional)"); ct.style.cssText = "width:100%;margin-top:8px";
-  const dl = el("label", "row"); const dg = el("input"); dg.type = "checkbox"; dg.checked = true; dl.style.cssText = "justify-content:flex-start;gap:8px;margin-top:8px";
-  dl.append(dg, el("span", "mut", t("Add technical details (version, device, last important events - no pictures, no passwords)")));
-  const st = el("div", "err"), bt = el("div", "btns"), send = el("button", "", t("Send")), cancel = el("button", "sec", t("Cancel"));
-  send.type = cancel.type = "button"; cancel.onclick = () => ov.remove();
-  send.onclick = async () => { send.disabled = true; const r = await post("/api/feedback", {kind: kind.value, text: tx.value, contact: ct.value, diag: dg.checked, lang: LANG});
-    send.disabled = false; if (!r.ok) { st.textContent = "⚠ " + (r.error || "error"); return; } ov.remove(); toast("✓ " + t("Thank you! The message is on its way.")); };
-  bt.append(cancel, send); c.append(kind, tx, ct, dl, st, bt); tx.focus();
-}
+// ---- feedback to the developer: the one dialog of all pages (/fbx/ui.js, 584) ----
+function fbDialog() { if (window.mwFeedback) window.mwFeedback(); }
 // ---- quick switches below the joystick: thermal overlay, marks, lights, tracking, patrol, recording, photo ----
 const QS = [
   {id: "therm", ic: "🌡", lb: "Thermal", tip: "Thermal picture over the live picture", on: (c, s) => c.thermal_on, ok: (c, s) => !!c.thermal_source,
