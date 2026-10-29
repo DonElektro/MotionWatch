@@ -276,6 +276,7 @@ SECPANEL_JS = r"""
     c.appendChild(k);
     const bb = E("div", "btns"), cp = E("button", "", "📋 " + T("Copy")), cl = E("button", "sec", T("Done")); cp.type = cl.type = "button";
     cp.onclick = () => copy(key); cl.onclick = () => { ov.remove(); akLoad(box); }; bb.append(cp, cl); c.appendChild(bb);
+    if (window.qrBtn) { const qb = qrBtn(key, T("App key") + " «" + name + "»", {secret: true}); qb.id = "ak-qr"; bb.insertBefore(qb, cl); }   // 585: once, while it is shown
     document.body.appendChild(ov);
   }
   // -- security check (before: Tools) --
@@ -443,6 +444,7 @@ def _ak_tk_show(app, name, key):
         win.clipboard_clear(); win.clipboard_append(key); app._status("App keys", "✓ " + tr("Copied"))
     bf = tk.Frame(win, bg=C["panel"]); bf.pack(fill="x", padx=14, pady=(0, 12))
     ttk.Button(bf, text="📋 " + tr("Copy"), command=cp).pack(side="left", expand=True, fill="x", padx=(0, 4))
+    ttk.Button(bf, text="▦ QR", command=lambda: qr_tk_dialog(win, key, tr("App key") + " «" + name + "»", True)).pack(side="left", padx=(0, 4))   # 585
     ttk.Button(bf, text=tr("Done"), command=win.destroy).pack(side="left", expand=True, fill="x")
 
 

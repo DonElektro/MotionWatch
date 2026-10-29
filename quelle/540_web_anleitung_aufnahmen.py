@@ -248,6 +248,12 @@ mark{background:#d2992299;color:inherit;border-radius:3px}
 <dt>Sprechen geht nicht</dt><dd>Nur auf der sicheren Seite <code>https://…:5001</code>. Zertifikatswarnung einmal bestätigen und das Mikrofon erlauben.</dd>
 </dl></section>
 
+<section id="qr" data-icon="▦"><h2>QR-Codes</h2><p>Überall, wo MoveEye einen Link fürs Handy zeigt, steht daneben ein kleines <b>▦</b>. Antippen: der QR-Code gross, darunter der Link, «Kopieren» und «Drucken». Mit der Handy-Kamera scannen – fertig.</p>
+<ul><li><b>Wo:</b> Push-Nachrichten (ntfy-Adresse), Gast-Zugang, Adressen von MoveEye (Heimnetz, Tailscale, https – bei der Tailscale-Zeile unter System), Kurzbefehle fürs iPhone (jede Adresse), App-Schlüssel (nur einmal beim Erstellen), Bild für andere Programme, TV-Ansicht, Simulator-Tunnel (Adresse und Code für ein Tablet), Aufnahmen, «Adresse dieser Seite für Links».</li>
+<li><b>ntfy:</b> Android – der Code abonniert das Thema direkt in der ntfy-App (ntfy://…). iPhone – die App kann das nicht; der Code öffnet das Thema im Browser, in der App dann «+» und das Thema eintippen.</li>
+<li><b>Alle auf einer Seite:</b> Mehr → «QR-Codes». Geheime Codes sind verschwommen, bis man sie antippt; jeder lässt sich einzeln drucken. «Alle drucken» macht ein A4-Blatt mit Etiketten – geheime nur, wenn «Geheime Codes mitdrucken» angekreuzt ist.</li>
+<li><b>Sicherheit:</b> QR-Codes gibt es nur für den Administrator (nicht für andere Benutzer und nicht über einen App-Schlüssel). Geheime Codes (Schlüssel, Stream-Adresse, ntfy-Thema, Kurzbefehl-Schlüssel) bleiben nicht im Browser-Speicher und stehen in keinem Protokoll. Wer einen geheimen Code scannt, hat Zugang – nur Vertrauten zeigen, Ausdrucke sicher aufbewahren.</li>
+<li><b>Fenster:</b> Knöpfe «QR-Code …» bei Gast-Zugang, Web-Stream, Benachrichtigungen, Simulator (Tunnel) und beim App-Schlüssel; unter Einrichtung «Alle QR-Codes …». Dort auch «Bild speichern …» und – wenn ein Drucker eingerichtet ist – «Drucken».</li></ul></section>
 <section id="setup" data-icon="🧰"><h2>Einrichtung auf dem Raspberry Pi</h2>
 <pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils
 pip install opencv-python numpy pillow flask psutil</pre>
@@ -464,6 +470,12 @@ pip install opencv-python numpy pillow flask psutil</pre>
 <dt>Talking does not work</dt><dd>Only on the secure page <code>https://…:5001</code>. Confirm the certificate warning once and allow the microphone.</dd>
 </dl></section>
 
+<section id="qr" data-icon="▦"><h2>QR codes</h2><p>Wherever MoveEye shows a link for the phone, a small <b>▦</b> stands next to it. Tap it: the QR code big, the link below, «Copy» and «Print». Scan it with the phone camera – done.</p>
+<ul><li><b>Where:</b> push messages (ntfy address), guest access, addresses of MoveEye (home network, Tailscale, https – next to the Tailscale line under System), iPhone shortcuts (every address), app key (only once, when it is made), picture for other programs, TV view, simulator tunnel (address and code for a tablet), recordings, «Address of this page for links».</li>
+<li><b>ntfy:</b> Android – the code subscribes to the topic straight in the ntfy app (ntfy://…). iPhone – the app cannot do that; the code opens the topic in the browser, then tap «+» in the app and type the topic.</li>
+<li><b>All on one page:</b> More → «QR codes». Secret codes are blurred until tapped; each one can be printed. «Print all» makes an A4 sheet with labels – secret ones only when «Print secret codes too» is ticked.</li>
+<li><b>Security:</b> QR codes only for the administrator (not for other users, not through an app key). Secret codes (keys, stream address, ntfy topic, shortcut key) are not kept in the browser cache and never written to a log. Whoever scans a secret code has access – show it only to people you trust, keep printouts safe.</li>
+<li><b>Window:</b> buttons «QR code …» at guest access, web stream, notifications, simulator (tunnel) and the app key; under Setup «All QR codes …». There also «Save picture …» and – when a printer is set up – «Print».</li></ul></section>
 <section id="setup" data-icon="🧰"><h2>Setup on the Raspberry Pi</h2>
 <pre>sudo apt install python3-pil.imagetk python3-tk python3-gpiozero ffmpeg python3-picamera2 alsa-utils openssl bluez pulseaudio-utils
 pip install opencv-python numpy pillow flask psutil</pre>
@@ -874,6 +886,7 @@ function openAt(i, list) {
   $("#m-title").textContent = it.time; $("#m-meta").textContent = [fmtSize(it.size), it.source || "", it.schedules.join(", ")].filter(Boolean).join(" · ");
   $("#m-dl").href = "/rec/file/" + encodeURIComponent(it.name) + "?dl=1"; $("#m-dl").setAttribute("download", it.name);
   $("#m-share").onclick = () => recShare(it); $("#m-share").title = t("Share");
+  if (!$("#m-qr") && window.qrBtn) { const q = qrBtn(() => location.origin + "/rec/file/" + encodeURIComponent(ML[modalIdx].name), qrT("Recording"), {note: qrT("Opens the recording on the phone (with the password of MoveEye).")}); q.id = "m-qr"; $("#m-share").after(q); }   // 585
   $("#m-pdf").href = "/rec/report/" + encodeURIComponent(it.name) + "?lang=" + LANG; $("#m-pdf").title = t("Event report (PDF) for the police / insurance");
   $("#m-fav").textContent = it.fav ? "★" : "☆"; $("#m-fav").style.color = it.fav ? "var(--yel)" : "";
   faRow(it);

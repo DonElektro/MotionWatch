@@ -134,6 +134,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `583_kopf_auto_einstellungen.py` | Einstellungen «Automatische Kopfbewegung» (Web und Fenster), Servo-Art, Übersichtskamera, Selbsttest | 92 |
 | `584_info_rueckmeldung.py` | Rückmeldung von überall (💬 auf jeder Seite /fbx/ui.js, Fenster, 3D-Simulator; Art, Sterne, Bildschirmfoto, wartende Nachrichten, Test-Feedback) und «Über MoveEye» (Geschichte, Zeitleiste, Zahlen) | 420 |
 | `622_uebersetzungen_info.py` | Übersetzungen und Anleitung (fr / it / rm) zu 584 | 110 |
+| `587_qr_codes.py` | QR-Codes neben Links (qrBtn / qrShow für alle Seiten, POST /api/qr), «QR-Codes» unter Mehr (/qr), Druckseite A4, Fenster-Dialog und -Galerie | 628 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
 | `581_fenster_ansicht.py` | Fenster: «Ansicht» des Reiters Live wie im Web (Vorlagen, Anordnung, Bildgrösse, Grösse, Lieblingsknöpfe + «mehr», Karten, Joystick; «Für alle Geräte») | 355 |
 | `582_fenster_platz.py` | Fenster: «Platz einrichten» und «Blickwinkel der Kamera» | 300 |
@@ -162,6 +163,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `619_uebersetzungen_simdopp.py` | Übersetzungen der Aufräum-Punkte Spiel-Karte, Bewachte Sachen, Sim-Schalter, Unsichtbar-Trank | 12 |
 | `621_uebersetzungen_sicher3.py` | Übersetzungen und Anleitung zu 573 (App-Schlüssel, Sicherheit an einem Ort) und zur Rotlicht-Ansicht (578) | 150 |
 | `624_uebersetzungen_platzein.py` | Übersetzungen und Anleitung «Platz einrichten» / «Blickwinkel der Kamera» | 200 |
+| `625_uebersetzungen_qr.py` | Übersetzungen der QR-Codes (585) | 129 |
 | `626_uebersetzungen_live.py` | Übersetzungen der neuen Live-Seite (536) und des Fensters (570) | 89 |
 | `627_uebersetzungen_live2.py` | Übersetzungen zu 2.98.29: ein Bearbeiten-Modus, «Für alle Geräte», Grösse, Fenster-Ansicht | 79 |
 | `628_uebersetzungen_padview.py` | Übersetzungen der Controller-Ansicht (538) | 76 |

@@ -36,9 +36,9 @@ INFO_TIMELINE = [
     ("29.10.2026", "2.98.32", "Controller view for phone and tablet"),
 ]
 INFO_STORY = [
-    "MoveEye was born while camping, from a simple question: who keeps an eye on the tent while we sleep or are away? Instead of an expensive alarm system Daniel wanted something of his own - a small camera on a pan / tilt head that recognises wild animals and persons and quietly reports to the phone.",
-    "The developer is Daniel alias Elektro from Switzerland - Elektro is his pseudonym. Daniel is not a programmer: MoveEye was honestly built together with Claude, an AI by Anthropic. Daniel brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.",
-    "Do you like MoveEye, or does something not work? With 💬 your message reaches Daniel directly - anonymously.",
+    "MoveEye was born while camping, from a simple question: who keeps an eye on the tent while we sleep or are away? Instead of an expensive alarm system Elektro wanted something of his own - a small camera on a pan / tilt head that recognises wild animals and persons and quietly reports to the phone.",
+    "The developer is Elektro (alias Daniel) from Switzerland. Elektro is not a programmer: MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.",
+    "Do you like MoveEye, or does something not work? With 💬 your message reaches Elektro directly - anonymously.",
 ]
 INFO_TECH = [
     "One Python program (OpenCV, Flask, Tkinter) for the Raspberry Pi 5 - edited in {parts} parts, put together into one file with {lines} lines.",
@@ -79,7 +79,7 @@ def about_info(lang=None):
     L = cur_lang(lang); N = info_numbers()
     fmt = {k: _fbx_n(v) for k, v in N.items()}
     return {"ok": True, "lang": L, "title": tr("About MoveEye", L), "version": APP_VERSION,
-            "dev": tr("Daniel alias Elektro", L), "dev_where": tr("Switzerland", L),
+            "dev": tr("Elektro (alias Daniel)", L), "dev_where": tr("Switzerland", L),
             "story": [tr(x, L) for x in INFO_STORY],
             "tech_title": tr("For the technically interested", L),
             "tech": [trf(x, L, **fmt) for x in INFO_TECH],
