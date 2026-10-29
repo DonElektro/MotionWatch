@@ -1875,7 +1875,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
    {card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"},
    {sec: "Wake-up alarm", ic: "⏰"}, {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}]},
   {id: "power", tab: "settings", icon: "🔋", name: "Power supply", items: [{card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Power saving", ic: "🍃"}, {sec: "Solar panel", ic: "☀️"}]},
-  {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"},
+  {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"}, {sec: "Security", ic: "🔐"},
    {card: "guest", title: "Guest access", ic: "👥"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}]},
   {id: "sys", tab: "settings", icon: "⚙", name: "System", items: [{card: "system", ic: "🖥️"}, {sec: "Setup", ic: "📍"}, {sec: "Updates", ic: "⬆️"},
    {card: "log", ic: "📜"}]},
@@ -2290,8 +2290,26 @@ async function build() {
     if (sec.id === "SMS (LTE stick)") smsExtras(d);
     if (sec.id === "Loudspeaker") spkExtras(d);
     if (sec.id === "Thermal camera") thExtras(d);
+    if (sec.id === "Security") secExtras(d);
     box.appendChild(d);
   });
+}
+
+// ---- «Log in only encrypted» (574): explanation, state, warning when there is no secure page ----
+Object.assign(I18N.de, {"Security": "Sicherheit", "secure page": "sichere Seite", "this connection": "diese Verbindung", "encrypted": "verschlüsselt",
+  "not encrypted": "nicht verschlüsselt", "Open the secure page": "Sichere Seite öffnen", "To the secure page": "Zur sicheren Seite",
+  "For your safety a password can only be set over the secure page (https).": "Zu deiner Sicherheit lässt sich ein Passwort nur über die sichere Seite (https) setzen.",
+  "The browser warns once about the certificate (MoveEye made it itself): «Advanced» → «Continue».": "Der Browser warnt einmal wegen des Zertifikats (MoveEye hat es selbst gemacht): «Erweitert» → «Weiter».",
+  "port": "Port"});
+function secExtras(d) {
+  const bx = el("div", "auxbox"), st = el("div", ""), nt = el("div", "mut"); nt.style.marginTop = "6px"; bx.append(st, nt); d.appendChild(bx);
+  const load = async () => { let j = null; try { j = await (await fetch("/api/seclogin?lang=" + LANG)).json(); } catch (e) { return; }
+    if (!j || !j.ok) return; st.textContent = ""; nt.textContent = j.note || "";
+    st.appendChild(el("div", "", (j.secure ? "🔒 " : "🔓 ") + t("this connection") + ": " + t(j.secure ? "encrypted" : "not encrypted")
+      + (j.port ? " · https " + t("port") + " " + j.port : "")));
+    if (j.warn) st.appendChild(el("div", "err", "⚠ " + j.warn));
+    if (!j.secure && j.url) { const a = el("a", "btn sec", "🔒 " + t("Open the secure page")); a.href = j.url; a.style.cssText = "display:inline-block;margin-top:6px"; st.appendChild(a); } };
+  load(); d.addEventListener("toggle", () => { if (d.open) load(); });
 }
 
 // ---- audio: microphone level, live listening (WebAudio: works on every phone), loudspeaker of the Pi ----
@@ -2542,6 +2560,13 @@ function pwDialog(first) {
   ov.textContent = ""; const c = el("div", "card"); ov.appendChild(c); c.style.textAlign = "left";
   const h = el("div", "", "🔒 " + (st.pw_set ? t("Change web password") : t("Set a web password"))); h.style.fontWeight = "700"; h.style.fontSize = "17px";
   c.appendChild(h);
+  const SL = st.seclogin || {};
+  if (SL.plain && SL.url) {                                  // 574: never a password over plain http from another device
+    c.append(el("div", "mut", t("For your safety a password can only be set over the secure page (https).")), el("div", "mut", t("The browser warns once about the certificate (MoveEye made it itself): «Advanced» → «Continue».")));
+    const bb = el("div", "btns"), go = el("a", "btn", "🔒 " + t("To the secure page")), cl = el("button", "sec", first ? t("Later") : t("Cancel"));
+    go.href = SL.url.replace(/^(https:\/\/[^/]+).*$/, "$1/"); cl.type = "button"; cl.onclick = () => { try { sessionStorage.setItem("mw-pw-later", "1"); } catch (e) {} ov.remove(); };
+    bb.append(go, cl); c.appendChild(bb); return;
+  }
   c.appendChild(el("div", "mut", first ? t("Nobody has set a password yet: anybody in this network can open this page, switch the alarm off or listen in. Set a password now (6 to 64 characters).")
                                       : t("6 to 64 characters. After saving, the browser asks for it once (any user name).")));
   const i1 = el("input"); i1.type = "password"; i1.placeholder = t("New password"); i1.autocomplete = "new-password";
@@ -4930,6 +4955,11 @@ document.addEventListener("webkitfullscreenchange", fsChange);
 
 SIMTOOLS_JS = r"""
 // ---- simulator tools in the tab Simulator (2.95.53): Aufstell-Planer, alarm replay, AI test ----
+Object.assign(I18N.de, {"Training set for an own AI model (YOLO)": "Trainingspaket für ein eigenes KI-Modell (YOLO)", "Make the training pack": "Trainingspaket machen",
+  "The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).": "Der Simulator macht die Bilder und legt ein ZIP auf den Schreibtisch seines PCs (etwa 2 s pro Bild).",
+  "Variety: normal": "Vielfalt: normal", "Variety: high": "Vielfalt: hoch", "Variety: high (recommended)": "Vielfalt: hoch (empfohlen)", "Delete old AI data": "Alte KI-Daten löschen", "days": "Tage",
+  "Delete all training packs on the PC of the simulator except the newest one? The AI model stays.": "Alle Trainingspakete auf dem PC des Simulators ausser dem neuesten löschen? Das KI-Modell bleibt.",
+  "Cleaned up by itself: after every new pack the newest 3 stay, nothing older than 30 days (the newest always stays). The AI model is never deleted.": "Aufräumen von selbst: nach jedem neuen Paket bleiben die neuesten 3, nichts älter als 30 Tage (das neueste bleibt immer). Das KI-Modell wird nie gelöscht."});
 Object.assign(I18N.de, {"pictures": "Bilder", "Tag": "Anhänger", "Aufstell-Planer in the simulator": "Aufstell-Planer im Simulator", "open in the window of the simulator": "im Fenster des Simulators geöffnet", "Take over the patrol of the planner": "Patrouille vom Planer übernehmen", "Patrol set": "Patrouille gesetzt", "of the area in view": "des Bereichs im Blick", "Alarm replay in 3D": "Alarm-Rückblick in 3D", "Play in the simulator": "Im Simulator abspielen", "plays in the window of the simulator": "läuft im Fenster des Simulators", "no alarms yet": "noch keine Alarme", "replay-note": "Zeigt im 3D-Simulator nach, wer woher kam und wohin MoveEye geschaut hat (15 s vor bis 20 s nach dem Alarm). Hilft, Fehlalarme zu verstehen. Die Positionen sind geschätzt (aus Bildposition und Grösse).", "AI test with simulator pictures": "KI-Prüfung mit Simulator-Bildern", "dset-note": "Der Simulator macht Bilder mit Person oder Tier – bei Tag, Abend, Nacht mit Infrarot, Regen und Nebel, nah und fern – und weiss, wo sie sind. MoveEye lässt seine KI (oder die PC-Rechenhilfe) darüber laufen und zählt Treffer, Fehlschläge und falsche Personen. Dauert pro Bild etwa 3 Sekunden.", "Start the test": "Prüfung starten", "found": "erkannt", "false persons": "falsche Personen", "near (under 8 m)": "nah (unter 8 m)", "far (8 m and more)": "fern (ab 8 m)", "AI time per picture": "KI-Zeit pro Bild", "Training pictures (ZIP)": "Trainingsbilder (ZIP)", "Abend": "Abend", "Nacht (Infrarot)": "Nacht (Infrarot)", "Regen": "Regen", "Nebel": "Nebel", "Nacht + Regen": "Nacht + Regen", "person": "Person", "fox": "Fuchs", "deer": "Reh", "dog": "Hund", "cat": "Katze", "boar": "Wildschwein", "the simulator makes the pictures …": "der Simulator macht die Bilder …", "done": "fertig", "Simulator tools": "Simulator-Werkzeuge"});
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D simulator who came from where and where MoveEye looked (15 s before to 20 s after the alarm). Helps to understand false alarms. The positions are estimated (from the spot and size in the picture).", "dset-note": "The simulator makes pictures with a person or an animal - by day, dusk, night with infrared, rain and fog, near and far - and knows where they are. MoveEye runs its AI (or the PC helper) on them and counts hits, misses and false persons. About 3 seconds per picture.", "Tag": "day", "Abend": "dusk", "Nacht (Infrarot)": "night (infrared)", "Regen": "rain", "Nebel": "fog", "Nacht + Regen": "night + rain"});
 (async function () {
@@ -4964,7 +4994,26 @@ I18N.en = I18N.en || {}; Object.assign(I18N.en, {"replay-note": "Shows in the 3D
     const z = document.createElement("a"); z.className = "btn sec"; z.href = "/api/dataset.zip"; z.textContent = "⬇ " + t("Training pictures (ZIP)"); dout.appendChild(z); };
   dgo.onclick = async () => { const r = await P({action: "dataset", start: true, n: dn.value === "game" ? "game" : +dn.value}); if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; } dpaint(r); };
   dr.append(dn, dgo); db.append(dr, dout);
-  box.append(pl, rb, db);
+  // KI-Daten (197): a training pack (YOLO) with «Vielfalt» like in the simulator; the packs on its PC, «Delete old AI data»
+  const xb = el("div", ""); xb.style.marginTop = "14px"; xb.append(el("b", "", "📦 " + t("Training set for an own AI model (YOLO)")));
+  const xr = el("div", "btns"), xn = document.createElement("select"), xvf = document.createElement("select");
+  [200, 500, 1000, 2000].forEach(n => { const o = document.createElement("option"); o.value = n; o.textContent = n + " " + t("pictures"); if (n === 500) o.selected = true; xn.appendChild(o); });
+  [["hoch", "Variety: high (recommended)"], ["normal", "Variety: normal"]].forEach(([v, l]) => { const o = document.createElement("option"); o.value = v; o.textContent = t(l); xvf.appendChild(o); });
+  const xgo = el("button", "", "📦 " + t("Make the training pack")); xgo.type = "button"; const xout = el("div", "mut");
+  const kd = el("div", ""); kd.id = "kidata-box"; kd.style.marginTop = "8px"; const kdl = el("div", ""), kdr = el("div", "mut", t("Cleaned up by itself: after every new pack the newest 3 stay, nothing older than 30 days (the newest always stays). The AI model is never deleted."));
+  const kdb = el("button", "sec", "🧹 " + t("Delete old AI data")); kdb.type = "button"; kdb.style.marginTop = "6px";
+  const kdPaint = r => { kdl.textContent = ""; if (!r || !r.ok) { kdl.appendChild(el("div", "mut", "⚠ " + ((r && r.error) || t("error")))); kdb.hidden = true; return; }
+    kdl.appendChild(el("div", "", r.text || "")); kdb.hidden = (r.packs || []).length < 2;
+    (r.packs || []).forEach(p => kdl.appendChild(el("div", "mut", (p.newest ? "⭐ " : "· ") + p.name + " · " + p.mb + " MB · " + p.age_days + " " + t("days") + (p.vielfalt === "hoch" ? " · " + t("Variety: high") : "")))); };
+  const kdLoad = async () => kdPaint(await P({action: "dataset", packs: true}));
+  xgo.onclick = async () => { xgo.disabled = true; const r = await P({action: "dataset", export: true, n: +xn.value, vielfalt: xvf.value}); xgo.disabled = false;
+    if (!r.ok) { toast("⚠ " + (r.error || t("error"))); return; }
+    xout.textContent = t("The simulator makes the pictures and saves a ZIP on the desktop of its PC (about 2 s per picture).") + " " + ((r.export || {}).msg || ""); };
+  kdb.onclick = async () => { if (!confirm(t("Delete all training packs on the PC of the simulator except the newest one? The AI model stays."))) return;
+    kdb.disabled = true; const r = await P({action: "dataset", clean: true}); kdb.disabled = false; kdPaint(r); };
+  xr.append(xn, xvf, xgo); kd.append(kdl, kdb, kdr); xb.append(xr, xout, kd);
+  document.getElementById("c-tools").addEventListener("toggle", e => { if (e.target.open) kdLoad(); });
+  box.append(pl, rb, db, xb); kdLoad();
   let K = "";
   const poll = async () => { try { const st = (await (await fetch("/api/state", {cache: "no-store"})).json()).state || {};
       const S = st.sim || {}; document.getElementById("c-tools").hidden = !(S.on && S.ok);

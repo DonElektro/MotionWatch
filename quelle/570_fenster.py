@@ -497,7 +497,7 @@ TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery":
                 "Walking recognition": "➜", "Vehicle filter": "⛀", "Rain": "☂", "Wind": "≋", "Low light": "◐", "Auto-tune": "✱",
                 "Camera / Servos": "✥", "Patrol": "↻", "Video source": "▣", "Servo driver": "⚒", "Lights": "☀", "Deterrence": "⚠",
                 "Microphone": "♪", "Loudspeaker": "♫", "Clap switch": "✋", "Bless you": "☺", "Wake-up alarm": "⏰", "Recording": "●", "Timelapse": "◷", "Backup": "☁", "Relays": "⚡",
-                "Schedule": "▦", "Setup": "⊕", "Wi-Fi / hotspot": "⌁", "Web stream": "⇅", "Guest access": "⚇",
+                "Schedule": "▦", "Setup": "⊕", "Wi-Fi / hotspot": "⌁", "Web stream": "⇅", "Security": "⚿", "Guest access": "⚇",
                 "MQTT / Home Assistant": "⇆", "Updates": "⬆", "Extra sensors": "◉", "Simulator": "⚗", "Storm warning": "≈", "GPS module": "✈", "Solar panel": "☼", "Mover": "⇕"}
 
 TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - 2.98.0: the same groups as the web page, «Schutz» first, then «Einstellungen»
@@ -508,7 +508,7 @@ TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - 2.98.0: the sam
     ("camera", "Cameras & head", ["Camera / Servos", "Patrol", "Video source", "Timelapse", "Mover", None, "Servo driver"]),
     ("sensors", "Devices & sensors", ["Lights", "Microphone", "Loudspeaker", "Relays", "Extra sensors", "Clap switch", "Bless you", "Wake-up alarm", "Storm warning", "GPS module"]),
     ("power", "Power supply", ["Battery", "Power saving", "Solar panel"]),
-    ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant"]),
+    ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Security", "Guest access", "MQTT / Home Assistant"]),
     ("sys", "System", ["Setup", "Updates"]),
 ]
 # 2.98.14 (Konzept): which tab shows a group (like the web page); the simulator settings are in the tab Simulator
@@ -518,7 +518,7 @@ TK_SIM_GROUPS = [("simset", "Settings of the simulation", ["Simulator"])]
 TK_PSEUDO = {"Improve detection"}
 TK_AI_MODEL_KEYS = ("ai_model", "ai_own_url", "ai_own_auto")   # 2.98.23 (Konzept): shown together in the group «KI-Modell» (section AI detection)
 SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
-            "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
+            "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup", "Security"]
 
 
 class Toggle(tk.Frame):
@@ -2058,6 +2058,11 @@ class App:
             ttk.Button(sf, text=tr("Install"), command=lambda: sim_do(sim_install, "Simulator installed")).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(sf, text=tr("Start"), command=lambda: sim_do(sim_start, "Simulator started")).pack(side="left", expand=True, fill="x", padx=(0, 4))
             ttk.Button(sf, text=tr("Stop"), command=lambda: sim_do(sim_stop, "Simulator stopped")).pack(side="left", expand=True, fill="x")
+            kidata_tk_build(self, sbody)                  # training pack with «Vielfalt», «Delete old AI data» (197)
+        if sec == "Security":                             # «Log in only encrypted» (574)
+            self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels[sec].pack(anchor="w", pady=(4, 0))
+            ttk.Label(sbody, text=tr(SECLOGIN_NOTE), style="Mut.TLabel", wraplength=330, justify="left").pack(anchor="w", pady=(4, 0))
         if sec == "Mover":
             self.status_labels["Mover"] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels["Mover"].pack(anchor="w", pady=(4, 0))
@@ -3449,6 +3454,7 @@ class App:
                      + f" · {tr('Data')}: {pj_.get('data_mb')} MB · {tr('recordings')} {pj_.get('rec_mb')} MB ({pj_.get('rec_n')})"
                      + (f" · {tr('memory')} {pj_['ram_mb']} MB" if pj_.get("ram_mb") else ""))
         self._status("Auto-tune", f"{st['auto_status']} · {st['auto_changes']} {tr('automatic changes')}")
+        self._status("Security", seclogin_text())
         self._status("Notifications", f"{tr('status')}: {st['notify_status']}")
         hs = st["hotspot"] or {}
         a_st = st["arm_state"]

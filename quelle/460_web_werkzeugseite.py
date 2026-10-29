@@ -630,10 +630,10 @@ function hpPaint(j) {
   const iu = $("#hp-url"); if (iu && iu !== document.activeElement && !iu.value) iu.value = (H.manual_url || "").replace(/^https?:\/\//, "").replace(/:5057$/, "");
   const box = $("#hp-box"); if (!box) return; box.textContent = "";
   const big = el("div", "big", H.ok ? "🟢 " + t("The PC does the AI") : (H.use ? "⚪ " + t("The Pi does the AI itself") : "⚪ " + t("off"))); box.appendChild(big);
-  if (H.ok) box.appendChild(el("div", "mut", (H.name || "PC") + " · " + H.url + " · " + (H.src === "simulator" ? t("found through the simulator") : t("by hand")) + " · " + t("AI") + " " + H.ms + " ms, " + t("way there and back") + " " + H.rtt + " ms · " + H.n + " " + t("pictures") + (H.accel ? " · " + H.accel : "")));
+  if (H.ok) box.appendChild(el("div", "mut", (H.name || "PC") + " · " + H.url + " · " + (H.src === "simulator" ? t("found through the simulator") : t("by hand")) + " · " + t("AI") + " " + H.ms + " ms, " + t("way there and back") + " " + H.rtt + " ms · " + H.n + " " + t("pictures") + (H.accel ? " · " + H.accel : "") + (H.model ? " · 🧠 " + t(H.model) : "")));
   else if (H.url && H.msg) box.appendChild(el("div", "mut", "⚠ " + H.url + ": " + t(H.msg)));
   else if (H.use) box.appendChild(el("div", "mut", t("helper-how")));
-  if (H.serve) box.appendChild(el("div", "", "🖥 " + t("Pairing code for the Pi") + ": " + H.my_code + (H.served ? " · " + H.served + " " + t("pictures") + " · " + H.serve_ms + " ms · " + H.serve_from : "")));
+  if (H.serve) box.appendChild(el("div", "", "🖥 " + t("Pairing code for the Pi") + ": " + H.my_code + (H.served ? " · " + H.served + " " + t("pictures") + " · " + H.serve_ms + " ms · " + H.serve_from : "") + (H.serve_model ? " · 🧠 " + t(H.serve_model) : "")));
 }
 (async () => { for (let i = 0; i < 30 && !LANG; i++) await new Promise(r => setTimeout(r, 100)); hpLoad(); })();
 // ---- product page for guests (2.95.52) ----

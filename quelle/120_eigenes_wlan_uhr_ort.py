@@ -452,7 +452,9 @@ def health_check(lang=None):
     else:
         add("pw", "🔑", "Password", "bad", T("no password"), "Without a password everyone in the same network can watch and control everything.")
     if STATE.get("https_port"):
-        add("https", "🔒", "https page", "ok", f"Port {STATE['https_port']}")
+        add("https", "🔒", "https page", "ok", f"Port {STATE['https_port']}" + (" · " + T("log in only encrypted") if seclogin_mode() == "on" else ""))
+    elif web_pw_active() and seclogin_mode() == "fallback":       # 574: never locked out, but warned
+        add("https", "🔒", "https page", "bad", T("off"), "No secure page (https) - the password still goes unencrypted through the network. Install openssl (sudo apt install openssl) and restart MoveEye.")
     else:
         add("https", "🔒", "https page", "warn", T("off"), "Phone location and talking through the Pi need the https page (start with --https).")
     try:
