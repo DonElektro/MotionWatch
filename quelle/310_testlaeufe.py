@@ -6,7 +6,7 @@
 # other: a change stays only if the next test run is really better.
 OPT_KEYS = ["sensitivity", "min_area", "ai_conf", "ai_every", "ai_require", "wind_auto", "wind_threshold", "wind_boost_max",
             "rain_auto", "rain_threshold", "lowlight_auto", "lowlight_threshold", "walk_frames", "speed_consistency",
-            "shadow_filter", "car_filter", "object_conf", "auto_tune"]
+            "shadow_filter", "car_filter", "object_conf"]      # 2.98.15: no «auto_tune» - the optimizer never switches the tuner on / off
 TESTOPT = {"busy": "", "msg": "", "plan": "standard", "sim": {}, "runs": [], "undo": None, "sugg": [], "auto": None, "stop": False}
 _TESTOPT_LOCK = threading.Lock()
 
@@ -262,6 +262,8 @@ def opt_apply(changes, why="test run"):
 
 def opt_restore(snap, why="undo"):
     for k, v in (snap or {}).items():
+        if k == "auto_tune":                                 # 2.98.15: older snapshots - the tuner switch stays as the user set it
+            continue
         if k in CFG and isinstance(v, type(CFG[k])) or (k in CFG and isinstance(CFG[k], float) and isinstance(v, int)):
             CFG[k] = v; sched_user_changed(k)
     save_settings()

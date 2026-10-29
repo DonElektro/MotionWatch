@@ -90,35 +90,8 @@ def simdiary_stats(days=28):
             "versions": out_v[-10:], "total": len(vs)}
 
 
-def simweek_loop():
-    """Monday, at the hour of the night report: the week in the simulator as a push (when switched on)"""
-    while True:
-        time.sleep(60)                                     # 2.98.1: every minute (it must be ready before the night report)
-        try:
-            if not CFG.get("simweek_on"):
-                continue
-            now = datetime.now()
-            wk = now.strftime("%G-W%V")
-            if now.weekday() != 0 or now.hour < int(CFG.get("report_hour", 7)) or CFG.get("simweek_last") == wk:
-                continue
-            CFG["simweek_last"] = wk
-            save_settings()
-            st = simdiary_stats(7)
-            vis = sum(x["visits"] for x in st["days"])
-            if not vis:
-                continue
-            seen = sum(x["seen"] for x in st["days"]); rec = sum(x["rec"] for x in st["days"])
-            an = ", ".join(f"{k['k']} {k['n']}" for k in st["kinds"] if k["animal"])[:120]
-            txt = trf("Week in the simulator: {v} visits, persons recognised {r} % ({a} of {b}). Animals: {an}",
-                      v=vis, r=round(100 * rec / seen) if seen else "–", a=rec, b=seen, an=an or "–")
-            w = WATCH_REF.get("w")
-            if w is not None and not morning_add("🧪 " + txt):   # 2.98.1: with the night report when it is on
-                w.notifier.info(txt, title="{name}: " + tr("Simulator diary"))
-        except Exception as e:
-            log_event("sys", f"Week report: {e}"[:120])
-
-
-threading.Thread(target=simweek_loop, daemon=True, name="simweek").start()
+# 2.98.15 (Konzept-Check): the Monday push «Woche im Simulator» is now part of the one weekly report (426, weekrep_simweek) -
+# one message per week instead of two. The setting simweek_on became weekrep_sim (migration in 577).
 
 
 # ---- 20: the one-click demo ------------------------------------------------------------------------------------------

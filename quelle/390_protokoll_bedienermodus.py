@@ -1090,6 +1090,7 @@ def self_test(folder=""):
         return None if node else "JavaScript not checked (node missing)"
     chk("Web pages (render + JavaScript)", pages)
     chk("Timeline, weekly report, blur faces when sharing", verlauf_selftest)     # 2.98.14 (425, 426, 375)
+    chk("One weekly report, return of the phone, auto-tuner ±20 % (migrations)", nachlauf_selftest)     # 2.98.15 (577)
 
     if folder:
         def manifest():

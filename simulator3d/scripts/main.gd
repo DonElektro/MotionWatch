@@ -4386,7 +4386,7 @@ func _build_ui() -> void:
 		snb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		snb.pressed.connect(func(): emit_sound(b_[1], b_[2]))
 		sgr.add_child(snb)
-	tl = UI.sub_fold(tl_main, "Schutz testen (Referenz-Scan, Sabotage, Überraschung)", false)
+	tl = UI.sub_fold(tl_main, "Diebstahlschutz prüfen (Referenz-Scan, Sabotage, Überraschung)", false)
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)
 	# 3D-3.71: the reference scan of MoveEye, started from here

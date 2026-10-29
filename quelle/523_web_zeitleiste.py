@@ -321,6 +321,7 @@ addEventListener("resize", function () { if (D) paintChart(); });
   await initAppearance();
   var q = new URLSearchParams(location.search);
   DAY = /^\d{4}-\d{2}-\d{2}$/.test(q.get("day") || "") ? q.get("day") : iso(new Date());
+  if (q.get("mode") === "day" || q.get("mode") === "night") MODE = q.get("mode");      // 2.98.15: from the page Recordings (?mode=day)
   load();
   setInterval(function () { if (!document.hidden && DAY === iso(new Date()) && document.getElementById("viewer").hidden) load(); }, 60000);
 })();

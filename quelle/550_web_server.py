@@ -1750,7 +1750,11 @@ class WebStream:
                     pass
                 save_settings()
             elif a == "presence":
-                CFG["presence_auto"] = bool(d.get("on")); save_settings()
+                if "on" in d:
+                    CFG["presence_auto"] = bool(d.get("on"))
+                if d.get("back") in PRESENCE_BACK_KEYS:           # 2.98.15: when my phone comes back: off / ask / nothing (577)
+                    CFG["presence_back"] = d["back"]
+                save_settings()
             elif a == "fix_push":
                 CFG["notify_on"] = True; sched_user_changed("notify_on"); save_settings()
             else:

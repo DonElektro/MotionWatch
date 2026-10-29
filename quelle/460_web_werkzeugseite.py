@@ -255,7 +255,10 @@ svg.tico{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-w
     <div class="tbd">
     <div class="big" id="pres-st">–</div>
     <div class="mut" id="pres-note" data-i18n="pres-note">pres-note</div>
-    <label class="opt"><span data-i18n="Disarm when my device comes, arm when it is gone">Disarm when my device comes, arm when it is gone</span><input type="checkbox" class="sw" id="cf-presence_auto" onchange="cfg('presence_auto',this.checked)"></label>
+    <label class="opt"><span data-i18n="Automatic: on when my phone is gone">Automatic: on when my phone is gone</span><input type="checkbox" class="sw" id="cf-presence_auto" onchange="cfg('presence_auto',this.checked)"></label>
+    <div class="trow"><span data-i18n="When my phone comes back:">When my phone comes back:</span> <select id="cf-presence_back" onchange="cfg('presence_back',this.value)">
+      <option value="off" data-i18n="switch the protection off">switch the protection off</option><option value="ask" data-i18n="ask «Is it you?» (person alarms wait)">ask «Is it you?» (person alarms wait)</option>
+      <option value="none" data-i18n="nothing (the protection stays on)">nothing (the protection stays on)</option></select></div>
     <div class="trow"><span data-i18n="Gone after">Gone after</span> <input type="number" id="cf-presence_gone_min" min="2" max="120" onchange="cfg('presence_gone_min',+this.value)"> <span data-i18n="minutes">minutes</span></div>
     </div>
   </section>
@@ -414,7 +417,7 @@ Object.assign(I18N.de, {"Leisure": "Freizeit", "Game corner": "Spielecke",
  "Tools": "Werkzeuge", "Network scanner": "Netzwerkscanner", "Scan": "Suchen", "All devices in your own network (only there).": "Alle Geräte im eigenen Netz (nur dort).",
  "Warn me about new devices (push, check every 10 min)": "Bei neuen Geräten warnen (Push, Prüfung alle 10 Min.)", "Am I at home?": "Bin ich zu Hause?",
  "pres-note": "Markiere unten im Netzwerkscanner dein Handy mit «🏠 meins». Handys melden sich im WLAN zuverlässiger als über Bluetooth.",
- "Disarm when my device comes, arm when it is gone": "Entschärfen, wenn mein Gerät kommt – Schutz einschalten, wenn es weg ist", "Gone after": "Weg nach", "minutes": "Minuten",
+ "Disarm when my device comes, arm when it is gone": "Entschärfen, wenn mein Gerät kommt – Schutz einschalten, wenn es weg ist", "Automatic: on when my phone is gone": "Automatisch an, wenn mein Handy weg ist", "When my phone comes back:": "Wenn mein Handy zurückkommt:", "switch the protection off": "Schutz ausschalten", "ask «Is it you?» (person alarms wait)": "fragen «Bist du's?» (Personen-Alarme warten)", "nothing (the protection stays on)": "nichts (der Schutz bleibt an)", "Gone after": "Weg nach", "minutes": "Minuten",
  "Wi-Fi around": "WLAN-Umgebung", "Shows the Wi-Fi networks nearby and the best channel for the own Wi-Fi (hotspot).": "Zeigt die WLANs in der Nähe und den besten Kanal für das eigene WLAN (Hotspot).",
  "Internet test": "Internet-Test", "Start": "Start", "Stop": "Stopp", "speed-warn": "Braucht etwa 6 MB Daten – bei einem Handy-Abo mit wenig Volumen nur selten starten.",
  "Security check": "Sicherheits-Check", "Check": "Prüfen", "What can be reached from the network or the internet, and what is risky.": "Was aus dem Netz oder dem Internet erreichbar ist und was riskant ist.",
@@ -468,6 +471,7 @@ function btn(id, label, running) { const b = $("#b-" + id); if (!b) return; b.di
 function draw() {
   const C = S.cfg || {};
   ["net_watch", "presence_auto", "bt_tracker_warn"].forEach(k => { const e = $("#cf-" + k); if (e) e.checked = !!C[k]; });
+  { const e = $("#cf-presence_back"); if (e && document.activeElement !== e) e.value = C.presence_back || "ask"; }      // 2.98.15
   ["presence_gone_min", "bt_tracker_min"].forEach(k => { const e = $("#cf-" + k); if (e && document.activeElement !== e) e.value = C[k] != null ? C[k] : ""; });
   // network
   const N = S.net; btn("net", "Scan", N.running);
