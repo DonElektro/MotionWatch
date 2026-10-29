@@ -492,7 +492,7 @@ class WebStream:
             if d.get("reset"):
                 qs_layout_set([], [])
             else:
-                qs_layout_set(d.get("order"), d.get("hidden"))
+                qs_layout_set(d.get("order"), d.get("hidden"), d.get("favs"), d.get("cards"), d.get("chide"))   # 2.98.29: «for all devices»
             return reply({"ok": True, "qs_layout": CFG["qs_layout"]})
 
         @app.route("/api/simtest", methods=["GET", "POST"])
