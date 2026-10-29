@@ -841,6 +841,10 @@ class MotionWatch:
                     except Exception:
                         pass
                 try:
+                    erk_frame(persons, candidates, ai_boxes, pw, ph, t0, small)   # 2.98.13: distance / direction, walk test (415)
+                except Exception as e:
+                    log_event("sys", f"Distance / walk test: {e}"[:160])
+                try:
                     alarm_track_sample(persons, rec_animals, pw, ph)       # 2.95.53: for the Alarm-Rückblick in 3D
                 except Exception:
                     pass
@@ -935,7 +939,7 @@ class MotionWatch:
                             roi[mroi > 0] = tint[mroi > 0]
                     draw_outline(frame, cnts, t.box, sx, sy, (0, 0, 255), 2)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
-                    cv2.putText(frame, f"PERSON #{t.id}{' AI' if t.ai_confirmed else ''}  {t.speed():.1f}px/f",
+                    cv2.putText(frame, f"PERSON #{t.id}{' AI' if t.ai_confirmed else ''}" + (dist_overlay(t) or f"  {t.speed():.1f}px/f"),
                                 (x, max(20, y - 8)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                     if CFG["show_tracks"] and len(t.hist) > 1:
                         pts = np.array([(int(px * sx), int(py * sy)) for px, py in t.hist], np.int32)
@@ -962,8 +966,13 @@ class MotionWatch:
                     cv2.putText(frame, z["name"][:24].encode("ascii", "replace").decode(), (int(pts[0][0]) + 4, int(pts[0][1]) + 14),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.42, col, 1, cv2.LINE_AA)
             warm_boxes = []
-            if CFG["thermal_alarm"] and CFG["detection_on"] and THERMAL is not None:
+            th_pers = THERMAL is not None and not person_boxes and thermal_person_active()   # 2.98.13: persons in the thermal picture (232)
+            if (CFG["thermal_alarm"] or th_pers) and CFG["detection_on"] and THERMAL is not None:
                 warm_boxes = THERMAL.detect()                 # (x, y, w, h) 0..1 of the picture, already checked against the zones
+                if th_pers and warm_boxes:
+                    warm_boxes = thermal_person_feed(warm_boxes, person_boxes, present, frame, pw, ph, W, H, t0)
+                if not CFG["thermal_alarm"]:
+                    warm_boxes = []
                 if warm_boxes:
                     present.add("warm"); self.last_warm = t0
                     for bx, by, bw, bh in warm_boxes:
@@ -1016,6 +1025,7 @@ class MotionWatch:
                 if self.pre_alerted and t0 - self.pre_last > 5.0:
                     self.pre_alerted = False
 
+            walktest_draw(frame)                           # 2.98.13: walk test - the marks so far (415)
             if CFG["show_hud"]:
                 hud = (f"{'RAIN MODE' if rain_mode else 'No rain'} | Wind: {STATE['wind_level']} x{STATE['wind_boost']} | "
                        f"Persons: {len(person_boxes)} | Pan {CFG['pan']:.0f}% Tilt {CFG['tilt']:.0f}% | {STATE['patrol_status']}"
@@ -1046,8 +1056,10 @@ class MotionWatch:
                              frames=STATE["frames"] + 1, uptime=int(time.time() - START))
             frame = apply_privacy(frame)
             self.frame_out = frame
-            DETER.check(present, t0)
+            if not walktest_on():                         # 2.98.13: no deterrence during the walk test
+                DETER.check(present, t0)
             self._eco(present, t0)
+            batt_save_pace(self, t0, present)            # 2.98.13: battery low - fewer pictures (105)
             if CFG["web_stream"] and self.web_viewers > 0:
                 out, ww = frame, int(CFG["web_width"])
                 if W > ww:

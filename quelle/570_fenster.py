@@ -2096,6 +2096,9 @@ class App:
                 ttk.Button(mg, text=mic + " " + tr(mname), command=_pick).grid(row=i_ // 2, column=i_ % 2, sticky="ew", padx=(0, 4), pady=2)
             mg.columnconfigure(0, weight=1); mg.columnconfigure(1, weight=1)
             ttk.Button(sbody, text="☾ " + tr("Guard tonight"), command=self._night).pack(fill="x", pady=(8, 0))
+            ttk.Button(sbody, text="🚶 " + tr("Walk test"), command=self._walktest).pack(fill="x", pady=(6, 0))     # 2.98.13 (415, 575)
+            self.status_labels["Battery saver"] = ttk.Label(sbody, text=batt_save_text(), style="Mut.TLabel", wraplength=380, justify="left")
+            self.status_labels["Battery saver"].pack(anchor="w", pady=(4, 0))
             ttk.Button(sbody, text=tr("Open quick guide (browser)"), command=lambda: self._open_page("/quick")).pack(fill="x", pady=(6, 0))
             bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(6, 0))
             ttk.Button(bf, text=tr("Arm (countdown)"), command=arm).pack(side="left", expand=True, fill="x", padx=(0, 4))
@@ -2551,6 +2554,9 @@ class App:
           self._status("Battery", tr("Off - enter the capacity of the powerbank.") if not b.get("on") else
                      (f"{press} · {b['watts']} W" if b.get("pct") is None else
                       f"🔋 {b['pct']} % · {b['hours']:.1f} h {tr('left')} · {b['watts']} W" + (f" ({tr('estimated')})" if b.get("src") == "estimate" else "")))
+        if BATT_SAVE["on"] and self.status_labels.get("Battery") is not None:      # 2.98.13: battery saver (105)
+            self._status("Battery", self.status_labels["Battery"].cget("text") + "\n🐢 " + batt_save_text())
+        self._status("Battery saver", ("🐢 " if BATT_SAVE["on"] else "🔋 ") + batt_save_text())
         g = guest_info()
         if g["active"]:
             until = f"{tr('until')} " + datetime.fromtimestamp(g["until"]).strftime("%a %H:%M") if g["until"] else tr("no time limit")
@@ -3309,7 +3315,7 @@ class App:
         bt = st.get("battery") or {}
         ups_mains = bt.get("src") == "ups" and not bt.get("on_battery")
         self._sb("b_batt", ("🔌 " if ups_mains else "🔋 ") + f"{bt.get('pct')} %" + (f" · {bt['hours']:.1f} h" if bt.get("hours") is not None else "")
-                 + (" · " + tr("charging") if bt.get("charging") else ""),
+                 + (" · " + tr("charging") if bt.get("charging") else "") + (" · 🐢 " + tr("saver") if BATT_SAVE["on"] else ""),
                  C["grn"] if ups_mains else (C["red"] if (bt.get("pct") or 0) <= 15 else (C["yel"] if (bt.get("pct") or 0) <= 30 else C["grn"])),
                  show=bool(bt.get("on") and bt.get("pct") is not None))
         un = st.get("update_new") or {}

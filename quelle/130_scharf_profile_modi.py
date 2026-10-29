@@ -7,6 +7,8 @@ ARM = {"at": 0.0, "announced": True}
 
 
 def is_armed():
+    if WALK["on"]:
+        return False                                   # 2.98.13: walk test - no alarms, no pushes (415)
     return bool(CFG["armed"]) and time.time() >= ARM["at"]
 
 

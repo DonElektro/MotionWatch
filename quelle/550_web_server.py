@@ -2625,6 +2625,27 @@ class WebStream:
             ok, err = battery_full()
             return reply({"ok": ok})
 
+        @app.route("/api/walktest", methods=["GET", "POST"])
+        def api_walktest():                                  # 2.98.13: walk test and battery saver (415, 105)
+            if request.method == "POST":
+                d = body(); lang = norm_lang(d.get("lang"))
+                act = str(d.get("action") or "")
+                if act == "start":
+                    ok, err = walktest_start("web")
+                elif act == "stop":
+                    ok, err = walktest_stop("button"), ""
+                else:
+                    ok, err = False, "unknown action"
+                return reply(dict(walktest_state(lang), ok=ok, error=tr_err(err, lang) if err else None), 200 if (ok or act == "stop") else 400)
+            return reply(dict(walktest_state(norm_lang(request.args.get("lang") or CFG["lang"])), ok=True))
+
+        @app.route("/api/walktest.jpg")
+        def api_walktest_jpg():
+            p = walktest_img()
+            if not p:
+                return Response("not found", status=404)
+            return send_file(p, mimetype="image/jpeg", max_age=0)
+
         @app.route("/api/zones")
         def api_zones_get():
             sleep_update()                                   # 2.98.7: the sleeping places for the direction the camera has now
