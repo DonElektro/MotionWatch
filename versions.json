@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-30 00:41",
+ "generated": "2026-10-30 00:43",
  "versions": [
   {
-   "version": "2.98.33",
-   "file": "webcam_bewegung_2_98_33.py",
+   "version": "2.98.34",
+   "file": "webcam_bewegung_2_98_34.py",
    "url": "",
-   "sha256": "43727dc0685a89d6bc457918fedc802139f977c1b5211fb8c07dde0fe43ef8f2",
-   "date": "2026-10-30 00:41",
-   "notes": "Ein Guide nach der Installation (zuerst «Schnell oder ausgiebig?»), Rundgänge mit Sprechblasen auf allen Reitern («?» startet neu), Einfach/Experte pro Seite, Karten «Tipps & Tricks», «?» an den Einstellungen, Tipp des Tages; geschützte Werkseinstellungen (WLAN, Fernzugang, ntfy, Updates, KI-Modell bleiben). Rückmeldung 💬 von jeder Seite (Art, Sterne, Bild, geht an beide ntfy-Server), «Über MoveEye» (Versionsnummer antippen). QR-Codes neben den Links und eine QR-Galerie unter Mehr.",
-   "sig": "caca62caf5c22030cadb9d766bbf9f1c2c65fa628738ce4a748a5ef5197322e6db7f6ddc7901e0ba7c37fd28e2a8edec5300726572eb68bfc6d1c09a402ad10a"
+   "sha256": "8f2b8f7bc197a640e50dc87b0601b0bf7b30667d2fcda8ae779e0237fffebcba",
+   "date": "2026-10-30 00:43",
+   "notes": "«Über MoveEye»: Elektro ist Robotik-Entwickler.",
+   "sig": "c9e2e241c9efe3bc6c5abdad8e6ec6d7dd4a1c23cf21eec41f568571bf744dc8e351b450ac24e8520c82e4aef1987b418021d61f13e1d57cddc78d2bb0969304"
   },
   {
    "version": "2.97.1",

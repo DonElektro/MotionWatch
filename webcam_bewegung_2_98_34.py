@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_33.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_34.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,7 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.34: «Über MoveEye»: Elektro ist Robotik-Entwickler.
   * 2.98.33: Ein Guide nach der Installation (zuerst «Schnell oder ausgiebig?»), Rundgänge mit Sprechblasen auf allen Reitern
     («?» startet neu), Einfach/Experte pro Seite, Karten «Tipps & Tricks», «?» an den Einstellungen, Tipp des Tages; geschützte
     Werkseinstellungen (WLAN, Fernzugang, ntfy, Updates, KI-Modell bleiben). Rückmeldung 💬 von jeder Seite (Art, Sterne, Bild,
@@ -941,10 +942,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_33.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_34.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_33.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_33.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_34.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_34.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -961,7 +962,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.33"
+APP_VERSION = "2.98.34"
 
 
 def default_data_dir():
@@ -29005,7 +29006,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_33.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_34.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -56490,7 +56491,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.33")
+        self.root.title("MoveEye 2.98.34")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -56857,7 +56858,7 @@ class App:
             if not small:
                 vl = tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8), cursor="hand2"); vl.pack(side="left", padx=(8, 0), pady=(5, 0))
                 vl.bind("<Button-1>", self._ver_tap, add="+"); Tip(vl, tr("About MoveEye"))       # 2.98.33: one tap = «About MoveEye» (584)
-            Tip(nm, f"{tr('Build')} 2.98.33 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.34 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -63482,7 +63483,7 @@ INFO_TIMELINE = [
 ]
 INFO_STORY = [
     "MoveEye was born while camping, from a simple question: who keeps an eye on the tent while we sleep or are away? Instead of an expensive alarm system Elektro wanted something of his own - a small camera on a pan / tilt head that recognises wild animals and persons and quietly reports to the phone.",
-    "The developer is Elektro (alias Daniel) from Switzerland. Elektro develops robots for a living - but MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.",
+    "The developer is Elektro (alias Daniel) from Switzerland. Elektro is a robotics developer by profession - but MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.",
     "Do you like MoveEye, or does something not work? With 💬 your message reaches Elektro directly - anonymously.",
 ]
 INFO_TECH = [
@@ -73760,11 +73761,11 @@ _HX_INFO = {
         'MoveEye est né en camping, d’une question simple : qui surveille la tente pendant que nous dormons ou sommes absents ? Plutôt qu’une alarme coûteuse, Elektro voulait quelque chose à lui – une petite caméra sur une tête orientable qui reconnaît les animaux sauvages et les personnes et prévient discrètement le téléphone.',
         'MoveEye è nato in campeggio, da una semplice domanda: chi tiene d’occhio la tenda mentre dormiamo o siamo via? Invece di un costoso impianto d’allarme Elektro voleva qualcosa di suo – una piccola telecamera su una testa orientabile che riconosce animali selvatici e persone e avvisa in silenzio il telefono.',
         'MoveEye è naschì durant il campadi, ord ina dumonda simpla: tgi fa adatg da la tenda, durant che nus durmin u essan davent? Empè d’in urden d’alarm char vuleva Elektro insatge agen – ina pitschna camera sin in chau che sa volva, che renconuscha animals selvadis e persunas ed avisa quietamain il telefonin.'),
-    'The developer is Elektro (alias Daniel) from Switzerland. Elektro develops robots for a living - but MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.': (
-        'Der Entwickler ist Elektro (alias Daniel) aus der Schweiz. Elektro ist von Beruf Roboterentwickler – MoveEye ist aber, ganz ehrlich, zusammen mit Claude entstanden, einer KI von Anthropic. Elektro bringt die Ideen, die Wünsche und die Tests am echten Gerät ein, Claude schreibt und erklärt den Code. Aus Freude am Tüfteln wurde aus einem kleinen Webcam-Skript schnell ein ganzes System – mit Webseite, Fenster, 3D-Simulator und Spielen fürs Lagerfeuer.',
-        'Le développeur est Elektro (alias Daniel), de Suisse. Elektro est développeur de robots de métier – mais MoveEye a honnêtement été créé avec Claude, une IA d’Anthropic. Elektro apporte les idées, les souhaits et les tests sur le vrai appareil, Claude écrit et explique le code. Par plaisir de bricoler, un petit script de webcam est vite devenu tout un système – avec page web, fenêtre, simulateur 3D et jeux pour le feu de camp.',
-        'Lo sviluppatore è Elektro (alias Daniel), dalla Svizzera. Elektro è sviluppatore di robot di professione – ma MoveEye è nato, onestamente, insieme a Claude, un’IA di Anthropic. Elektro porta le idee, i desideri e i test sul vero apparecchio, Claude scrive e spiega il codice. Per il piacere di armeggiare, un piccolo script per webcam è diventato presto un intero sistema – con pagina web, finestra, simulatore 3D e giochi per il falò.',
-        'Il svilupader è Elektro (alias Daniel) da la Svizra. Elektro è svilupader da robots da professiun – ma MoveEye è sincer naschì ensemen cun Claude, ina IA dad Anthropic. Elektro porta las ideas, ils giavischs ed ils tests vi da l’apparat vair, Claude scriva ed explitga il code. Ord plaschair da pruvar ora è naschì or d’in pitschen script da webcam spert in entir sistem – cun pagina web, fanestra, simulatur 3D e gieus per il fieu da campadi.'),
+    'The developer is Elektro (alias Daniel) from Switzerland. Elektro is a robotics developer by profession - but MoveEye was honestly built together with Claude, an AI by Anthropic. Elektro brings the ideas, the wishes and the tests on the real device, Claude writes and explains the code. Out of the joy of tinkering a small webcam script quickly became a whole system - with web page, window, 3D simulator and games for the campfire.': (
+        'Der Entwickler ist Elektro (alias Daniel) aus der Schweiz. Elektro ist von Beruf Robotik-Entwickler – MoveEye ist aber, ganz ehrlich, zusammen mit Claude entstanden, einer KI von Anthropic. Elektro bringt die Ideen, die Wünsche und die Tests am echten Gerät ein, Claude schreibt und erklärt den Code. Aus Freude am Tüfteln wurde aus einem kleinen Webcam-Skript schnell ein ganzes System – mit Webseite, Fenster, 3D-Simulator und Spielen fürs Lagerfeuer.',
+        'Le développeur est Elektro (alias Daniel), de Suisse. Elektro est développeur en robotique de métier – mais MoveEye a honnêtement été créé avec Claude, une IA d’Anthropic. Elektro apporte les idées, les souhaits et les tests sur le vrai appareil, Claude écrit et explique le code. Par plaisir de bricoler, un petit script de webcam est vite devenu tout un système – avec page web, fenêtre, simulateur 3D et jeux pour le feu de camp.',
+        'Lo sviluppatore è Elektro (alias Daniel), dalla Svizzera. Elektro è sviluppatore di robotica di professione – ma MoveEye è nato, onestamente, insieme a Claude, un’IA di Anthropic. Elektro porta le idee, i desideri e i test sul vero apparecchio, Claude scrive e spiega il codice. Per il piacere di armeggiare, un piccolo script per webcam è diventato presto un intero sistema – con pagina web, finestra, simulatore 3D e giochi per il falò.',
+        'Il svilupader è Elektro (alias Daniel) da la Svizra. Elektro è svilupader da robotica da professiun – ma MoveEye è sincer naschì ensemen cun Claude, ina IA dad Anthropic. Elektro porta las ideas, ils giavischs ed ils tests vi da l’apparat vair, Claude scriva ed explitga il code. Ord plaschair da pruvar ora è naschì or d’in pitschen script da webcam spert in entir sistem – cun pagina web, fanestra, simulatur 3D e gieus per il fieu da campadi.'),
     'Do you like MoveEye, or does something not work? With 💬 your message reaches Elektro directly - anonymously.': (
         'Gefällt dir MoveEye, oder klappt etwas nicht? Mit 💬 erreicht deine Nachricht Elektro direkt – anonym.',
         'MoveEye te plaît, ou quelque chose ne marche pas ? Avec 💬 ton message arrive directement chez Elektro – anonymement.',
