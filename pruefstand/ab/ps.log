@@ -1,0 +1,385 @@
+17:22:48
+%CPU     TIME ELAPSED COMMAND
+ 3.5 00:00:01      51 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 2.6 00:00:01      71 /sbin/init
+ 1.5 00:00:00      53 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Listener run
+ 1.1 00:00:00      59 /tmp/provjobd2225457978
+ 0.7 00:00:00      71 [pr/ttyS0]
+17:23:08
+%CPU     TIME ELAPSED COMMAND
+79.4 00:00:11      14 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+12.4 00:00:01      14 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 2.7 00:00:02      71 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 2.0 00:00:01      91 /sbin/init
+ 1.1 00:00:00      73 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Listener run
+17:23:29
+%CPU     TIME ELAPSED COMMAND
+ 190 00:01:06      34 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+17.5 00:00:06      34 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 3.5 00:00:03      99 /tmp/provjobd2225457978
+ 2.2 00:00:02      91 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 1.7 00:00:01     111 /sbin/init
+17:23:49
+%CPU     TIME ELAPSED COMMAND
+ 213 00:01:56      54 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+20.4 00:00:11      54 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 3.0 00:00:03     119 /tmp/provjobd2225457978
+ 1.8 00:00:02     111 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 1.4 00:00:01     131 /sbin/init
+17:24:09
+%CPU     TIME ELAPSED COMMAND
+ 227 00:02:50      74 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+22.2 00:00:16      74 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 2.6 00:00:03     139 /tmp/provjobd2225457978
+ 1.6 00:00:02     131 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 1.2 00:00:01     151 /sbin/init
+17:24:29
+%CPU     TIME ELAPSED COMMAND
+ 235 00:03:43      94 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+23.7 00:00:22      94 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 2.2 00:00:03     159 /tmp/provjobd2225457978
+ 1.4 00:00:02     152 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 1.1 00:00:01     171 /sbin/init
+17:24:49
+%CPU     TIME ELAPSED COMMAND
+ 239 00:04:35     114 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+24.1 00:00:27     114 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 2.0 00:00:03     179 /tmp/provjobd2225457978
+ 1.3 00:00:02     172 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.9 00:00:01     191 /sbin/init
+17:25:09
+%CPU     TIME ELAPSED COMMAND
+ 243 00:05:27     134 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+24.5 00:00:33     134 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 1.8 00:00:03     199 /tmp/provjobd2225457978
+ 1.2 00:00:02     192 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.8 00:00:01     211 /sbin/init
+17:25:29
+%CPU     TIME ELAPSED COMMAND
+ 245 00:06:20     154 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.3 00:00:39     154 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 1.7 00:00:03     219 /tmp/provjobd2225457978
+ 1.1 00:00:02     212 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.8 00:00:01     231 /sbin/init
+17:25:49
+%CPU     TIME ELAPSED COMMAND
+ 247 00:07:13     174 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.3 00:00:44     174 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 1.5 00:00:03     239 /tmp/provjobd2225457978
+ 1.0 00:00:02     232 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.7 00:00:01     251 /sbin/init
+17:26:09
+%CPU     TIME ELAPSED COMMAND
+ 250 00:08:08     194 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.7 00:00:50     194 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 1.4 00:00:03     259 /tmp/provjobd2225457978
+ 0.9 00:00:02     252 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.6 00:00:01     271 /sbin/init
+17:26:29
+%CPU     TIME ELAPSED COMMAND
+ 252 00:09:03     214 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.9 00:00:55     214 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 1.3 00:00:03     279 /tmp/provjobd2225457978
+ 0.9 00:00:02     272 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.6 00:00:01     291 /sbin/init
+17:26:49
+%CPU     TIME ELAPSED COMMAND
+ 254 00:09:57     234 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.7 00:01:00     234 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 4.4 00:00:00       1 /usr/bin/python3 -u bin/WALinuxAgent-2.16.0.2-py3.12.egg -collect-logs
+ 1.2 00:00:03     299 /tmp/provjobd2225457978
+ 0.8 00:00:02     292 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+17:27:09
+%CPU     TIME ELAPSED COMMAND
+ 255 00:10:52     254 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+26.0 00:01:06     254 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw1/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 1.2 00:00:03     319 /tmp/provjobd2225457978
+ 0.8 00:00:02     312 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.5 00:00:01     331 /sbin/init
+17:27:29
+%CPU     TIME ELAPSED COMMAND
+93.7 00:00:00       0 ./Godot_v4.3-stable_linux.x86_64 --headless --editor --path /tmp/ab_sim/simulator3d --quit
+ 1.1 00:00:03     339 /tmp/provjobd2225457978
+ 0.8 00:00:02     332 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.5 00:00:01     351 /sbin/init
+ 0.3 00:00:01     333 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Listener run
+17:27:49
+%CPU     TIME ELAPSED COMMAND
+ 185 00:00:27      15 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+19.9 00:00:03      15 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 1.0 00:00:03     359 /tmp/provjobd2225457978
+ 0.8 00:00:02     352 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.5 00:00:01     371 /sbin/init
+17:28:09
+%CPU     TIME ELAPSED COMMAND
+ 227 00:01:19      35 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+19.4 00:00:06      35 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 1.0 00:00:03     380 /tmp/provjobd2225457978
+ 0.8 00:00:02     372 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:01     391 /sbin/init
+17:28:29
+%CPU     TIME ELAPSED COMMAND
+ 244 00:02:14      55 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+21.8 00:00:12      55 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 1.0 00:00:04     400 /tmp/provjobd2225457978
+ 0.7 00:00:03     392 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:01     411 /sbin/init
+17:28:49
+%CPU     TIME ELAPSED COMMAND
+ 247 00:03:06      75 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+22.4 00:00:16      75 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.9 00:00:04     420 /tmp/provjobd2225457978
+ 0.7 00:00:03     412 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:01     431 /sbin/init
+17:29:09
+%CPU     TIME ELAPSED COMMAND
+ 253 00:04:00      95 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+23.0 00:00:21      95 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.9 00:00:04     440 /tmp/provjobd2225457978
+ 0.7 00:00:03     432 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:01     451 /sbin/init
+17:29:29
+%CPU     TIME ELAPSED COMMAND
+ 254 00:04:52     115 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+23.7 00:00:27     115 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.8 00:00:04     460 /tmp/provjobd2225457978
+ 0.7 00:00:03     452 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00     117 Xvfb :93 -screen 0 1280x720x24
+17:29:49
+%CPU     TIME ELAPSED COMMAND
+ 255 00:05:45     135 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+24.1 00:00:32     135 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.8 00:00:04     480 /tmp/provjobd2225457978
+ 0.6 00:00:03     472 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00     137 Xvfb :93 -screen 0 1280x720x24
+17:30:09
+%CPU     TIME ELAPSED COMMAND
+ 258 00:06:40     155 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+24.1 00:00:37     155 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.8 00:00:04     500 /tmp/provjobd2225457978
+ 0.6 00:00:03     492 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00     157 Xvfb :93 -screen 0 1280x720x24
+17:30:29
+%CPU     TIME ELAPSED COMMAND
+ 260 00:07:35     175 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+24.1 00:00:42     175 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.8 00:00:04     520 /tmp/provjobd2225457978
+ 0.6 00:00:03     512 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00     177 Xvfb :93 -screen 0 1280x720x24
+17:30:49
+%CPU     TIME ELAPSED COMMAND
+ 261 00:08:31     195 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+24.3 00:00:47     195 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.7 00:00:04     540 /tmp/provjobd2225457978
+ 0.6 00:00:03     532 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00     197 Xvfb :93 -screen 0 1280x720x24
+17:31:09
+%CPU     TIME ELAPSED COMMAND
+ 262 00:09:25     215 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.0 00:00:54     215 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.7 00:00:04     560 /tmp/provjobd2225457978
+ 0.6 00:00:03     552 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:01     217 Xvfb :93 -screen 0 1280x720x24
+17:31:29
+%CPU     TIME ELAPSED COMMAND
+ 263 00:10:20     235 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.5 00:01:00     235 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.7 00:00:04     580 /tmp/provjobd2225457978
+ 0.6 00:00:03     572 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:01     237 Xvfb :93 -screen 0 1280x720x24
+17:31:49
+%CPU     TIME ELAPSED COMMAND
+ 264 00:11:15     255 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.8 00:01:05     255 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw2/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.7 00:00:04     600 /tmp/provjobd2225457978
+ 0.5 00:00:03     592 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:01     257 Xvfb :93 -screen 0 1280x720x24
+17:32:09
+%CPU     TIME ELAPSED COMMAND
+ 100 00:00:06       6 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+20.8 00:00:01       6 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.7 00:00:04     620 /tmp/provjobd2225457978
+ 0.6 00:00:00       8 python3 /tmp/ab_sim/pruefstand/pruefstand.py --godot ./Godot_v4.3-stable_linux.x86_64 --ki-ordner ki --mw /tmp/ab_mw3/webcam_bewegung_2_98
+ 0.5 00:00:03     612 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+17:32:29
+%CPU     TIME ELAPSED COMMAND
+ 233 00:01:00      26 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+20.4 00:00:05      26 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.6 00:00:04     640 /tmp/provjobd2225457978
+ 0.5 00:00:03     632 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.3 00:00:00      28 Xvfb :97 -screen 0 1280x720x24
+17:32:49
+%CPU     TIME ELAPSED COMMAND
+ 236 00:01:48      46 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+20.6 00:00:09      46 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.6 00:00:04     660 /tmp/provjobd2225457978
+ 0.5 00:00:03     652 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.3 00:00:00      48 Xvfb :97 -screen 0 1280x720x24
+17:33:09
+%CPU     TIME ELAPSED COMMAND
+ 247 00:02:43      66 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+22.4 00:00:14      66 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.6 00:00:04     680 /tmp/provjobd2225457978
+ 0.5 00:00:03     672 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00      68 Xvfb :97 -screen 0 1280x720x24
+17:33:29
+%CPU     TIME ELAPSED COMMAND
+ 251 00:03:36      86 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+23.3 00:00:20      86 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.6 00:00:04     700 /tmp/provjobd2225457978
+ 0.5 00:00:03     692 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00      88 Xvfb :97 -screen 0 1280x720x24
+17:33:49
+%CPU     TIME ELAPSED COMMAND
+ 256 00:04:31     106 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+23.8 00:00:25     106 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.6 00:00:04     720 /tmp/provjobd2225457978
+ 0.5 00:00:03     712 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00     108 Xvfb :97 -screen 0 1280x720x24
+17:34:09
+%CPU     TIME ELAPSED COMMAND
+ 259 00:05:27     126 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+24.3 00:00:30     126 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.6 00:00:04     740 /tmp/provjobd2225457978
+ 0.5 00:00:03     732 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00     128 Xvfb :97 -screen 0 1280x720x24
+17:34:29
+%CPU     TIME ELAPSED COMMAND
+ 260 00:06:20     146 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.4 00:00:37     146 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.6 00:00:04     760 /tmp/provjobd2225457978
+ 0.5 00:00:03     752 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00     148 Xvfb :97 -screen 0 1280x720x24
+17:34:49
+%CPU     TIME ELAPSED COMMAND
+ 261 00:07:15     166 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.3 00:00:42     166 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.5 00:00:04     780 /tmp/provjobd2225457978
+ 0.5 00:00:04     772 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00     168 Xvfb :97 -screen 0 1280x720x24
+17:35:09
+%CPU     TIME ELAPSED COMMAND
+ 263 00:08:10     186 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.3 00:00:47     186 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.5 00:00:04     800 /tmp/provjobd2225457978
+ 0.5 00:00:04     792 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00     188 Xvfb :97 -screen 0 1280x720x24
+17:35:29
+%CPU     TIME ELAPSED COMMAND
+ 264 00:09:05     206 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.8 00:00:53     206 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.5 00:00:04     820 /tmp/provjobd2225457978
+ 0.5 00:00:04     812 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:01     208 Xvfb :97 -screen 0 1280x720x24
+17:35:49
+%CPU     TIME ELAPSED COMMAND
+ 265 00:10:00     226 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+26.1 00:00:59     226 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.5 00:00:04     840 /tmp/provjobd2225457978
+ 0.5 00:00:01     228 Xvfb :97 -screen 0 1280x720x24
+ 0.5 00:00:04     832 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+17:36:09
+%CPU     TIME ELAPSED COMMAND
+ 265 00:10:54     246 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+26.3 00:01:05     246 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw3/webcam_bewegung_2_98_25.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.5 00:00:04     860 /tmp/provjobd2225457978
+ 0.5 00:00:01     248 Xvfb :97 -screen 0 1280x720x24
+ 0.4 00:00:04     852 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+17:36:29
+%CPU     TIME ELAPSED COMMAND
+ 110 00:00:02       1 ./Godot_v4.3-stable_linux.x86_64 --headless --editor --path /tmp/ab_sim/simulator3d --quit
+ 0.5 00:00:04     880 /tmp/provjobd2225457978
+ 0.5 00:00:04     872 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.2 00:00:01     892 /sbin/init
+ 0.1 00:00:01     874 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Listener run
+17:36:49
+%CPU     TIME ELAPSED COMMAND
+ 201 00:00:34      16 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+20.0 00:00:03      16 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.5 00:00:04     900 /tmp/provjobd2225457978
+ 0.4 00:00:04     892 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.3 00:00:00      18 python3 /tmp/ab_sim/pruefstand/pruefstand.py --godot ./Godot_v4.3-stable_linux.x86_64 --ki-ordner ki --mw /tmp/ab_mw4/webcam_bewegung_2_98
+17:37:09
+%CPU     TIME ELAPSED COMMAND
+ 230 00:01:24      36 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+19.5 00:00:07      36 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.5 00:00:04     920 /tmp/provjobd2225457978
+ 0.4 00:00:04     912 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.3 00:00:00      38 Xvfb :91 -screen 0 1280x720x24
+17:37:29
+%CPU     TIME ELAPSED COMMAND
+ 246 00:02:20      56 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+21.2 00:00:12      56 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.5 00:00:04     940 /tmp/provjobd2225457978
+ 0.4 00:00:04     932 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00      58 Xvfb :91 -screen 0 1280x720x24
+17:37:49
+%CPU     TIME ELAPSED COMMAND
+ 251 00:03:13      76 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+23.0 00:00:17      76 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.5 00:00:04     960 /tmp/provjobd2225457978
+ 0.4 00:00:04     952 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00      78 Xvfb :91 -screen 0 1280x720x24
+17:38:09
+%CPU     TIME ELAPSED COMMAND
+ 255 00:04:07      96 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+23.9 00:00:23      96 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.5 00:00:04     980 /tmp/provjobd2225457978
+ 0.4 00:00:04     972 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00      98 Xvfb :91 -screen 0 1280x720x24
+17:38:29
+%CPU     TIME ELAPSED COMMAND
+ 258 00:05:02     116 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+24.3 00:00:28     116 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.4 00:00:04    1000 /tmp/provjobd2225457978
+ 0.4 00:00:04     992 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+ 0.4 00:00:00     118 Xvfb :91 -screen 0 1280x720x24
+17:38:49
+%CPU     TIME ELAPSED COMMAND
+ 260 00:05:56     136 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.1 00:00:34     136 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.4 00:00:05    1020 /tmp/provjobd2225457978
+ 0.4 00:00:00     138 Xvfb :91 -screen 0 1280x720x24
+ 0.4 00:00:04    1012 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+17:39:09
+%CPU     TIME ELAPSED COMMAND
+ 262 00:06:51     156 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.4 00:00:39     156 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.4 00:00:00     158 Xvfb :91 -screen 0 1280x720x24
+ 0.4 00:00:05    1040 /tmp/provjobd2225457978
+ 0.4 00:00:04    1032 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+17:39:29
+%CPU     TIME ELAPSED COMMAND
+ 261 00:07:43     176 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.7 00:00:45     176 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.4 00:00:00     178 Xvfb :91 -screen 0 1280x720x24
+ 0.4 00:00:05    1060 /tmp/provjobd2225457978
+ 0.4 00:00:04    1052 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+17:39:49
+%CPU     TIME ELAPSED COMMAND
+ 263 00:08:38     197 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+25.8 00:00:50     196 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.4 00:00:00     199 Xvfb :91 -screen 0 1280x720x24
+ 0.4 00:00:05    1080 /tmp/provjobd2225457978
+ 0.4 00:00:04    1072 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+17:40:09
+%CPU     TIME ELAPSED COMMAND
+ 263 00:09:32     217 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+26.7 00:00:57     217 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.4 00:00:01     219 Xvfb :91 -screen 0 1280x720x24
+ 0.4 00:00:05    1100 /tmp/provjobd2225457978
+ 0.4 00:00:04    1092 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+17:40:29
+%CPU     TIME ELAPSED COMMAND
+ 265 00:10:28     237 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+26.9 00:01:03     237 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.4 00:00:01     239 Xvfb :91 -screen 0 1280x720x24
+ 0.4 00:00:05    1120 /tmp/provjobd2225457978
+ 0.4 00:00:04    1112 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145
+17:40:49
+%CPU     TIME ELAPSED COMMAND
+ 266 00:11:24     257 ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d -- --no-update --stream --scene stellplatz --hour 12 --port 8795 --quality
+26.8 00:01:09     257 /opt/hostedtoolcache/Python/3.11.17/x64/bin/python3 /tmp/ab_mw4/webcam_bewegung_2_98_22.py --headless --port 5095 --bind 127.0.0.1 --confi
+ 0.5 00:00:01     259 Xvfb :91 -screen 0 1280x720x24
+ 0.4 00:00:05    1140 /tmp/provjobd2225457978
+ 0.4 00:00:05    1132 /home/runner/actions-runner/cached/2.338.0/bin/Runner.Worker spawnclient 142 145

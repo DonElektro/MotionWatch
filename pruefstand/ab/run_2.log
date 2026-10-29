@@ -1,0 +1,15 @@
+[pruefstand] Simulator: ./Godot_v4.3-stable_linux.x86_64 --path /tmp/ab_sim/simulator3d …
+[pruefstand] Motion Watch: webcam_bewegung_2_98_25.py
+[pruefstand] verbunden - 25 s eingewöhnen
+[pruefstand] Testlauf «Kurz (Tag + Nacht)» (Zufall 1, 1/1) …
+[pruefstand]   dauert etwa 4 Min.
+[pruefstand]   nach Grösse: nah 7/7, mittel 2/2, weit 1/1
+[pruefstand] Kurz (Tag + Nacht): Pushes richtig 3 / falsch 0, Personen 10/10 (100 %, davon nur Wärmebild 0/0), Reaktion 2.3 s, Tiere 3/3, Flackern 5, 4.5 Bilder/s
+::notice title=Prüfstand::Kurz (Tag + Nacht): Pushes richtig 3 / falsch 0, Personen 10/10 (100 %25, davon nur Wärmebild 0/0), Reaktion 2.3 s, Tiere 3/3, Flackern 5, 4.5 Bilder/s
+[pruefstand]     Push    22 s  person   richtig: person
+[pruefstand]     Push    84 s  person   richtig: person
+[pruefstand]     Push   147 s  person   richtig: person
+[pruefstand] gespeichert: pruefstand/ergebnisse/2026-10-29_1731_2.98.25.json
+[pruefstand] Protokolle und Einstellungen: /tmp/mw_pruefstand_v50wzmbh
+[pruefstand] Kurz (Tag + Nacht): erster Lauf auf diesem Rechner – noch kein Vergleich.
+::notice title=Prüfstand::Kurz (Tag + Nacht): erster Lauf auf diesem Rechner – noch kein Vergleich.
