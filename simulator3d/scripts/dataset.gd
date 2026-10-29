@@ -179,47 +179,108 @@ var export_dir := ""
 var export_zip := ""
 
 
-func export_pack(n: int, scenes_too := true) -> Dictionary:
+var vielfalt := "normal"        # 3D-4.x: «Vielfalt: normal / hoch» (domain randomisation, vielfalt.gd)
+var last_pack := {}             # the last finished pack: {"dir", "zip", "made", "vielfalt", "classes"} (kitrain.gd uploads it)
+
+
+func export_pack(n: int, scenes_too := true, vf := "") -> Dictionary:
 	if busy:
 		return state()
-	_export(clampi(n, 10, 5000), scenes_too)
+	if vf in ["normal", "hoch"]:
+		vielfalt = vf
+	_export(clampi(n, 10, 5000), scenes_too, vielfalt == "hoch")
 	return state()
 
 
-func _export(n: int, scenes_too: bool) -> void:
+func _wait_steady() -> void:
+	"""the normal picture loop takes the pictures; wait until the exposure has settled (3D-4.1)"""
+	var f0: int = int(main.frame_no[0])
+	var t1 := Time.get_ticks_msec()
+	var g_prev := -1.0
+	var steady := 0
+	var f_seen := f0
+	while (int(main.frame_no[0]) < f0 + 3 or steady < 3) and Time.get_ticks_msec() - t1 < 12000:
+		main.snap_want[0] = main.now()
+		await main.get_tree().process_frame
+		if int(main.frame_no[0]) == f_seen:
+			continue
+		f_seen = int(main.frame_no[0])
+		var g: float = float(main.gain[0])
+		steady = steady + 1 if absf(g - g_prev) < 0.03 * maxf(g, 0.1) else 0
+		g_prev = g
+	while main.capturing:
+		await main.get_tree().process_frame
+
+
+func _write(path: String, data) -> void:
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return
+	if data is PackedByteArray:
+		f.store_buffer(data)
+	else:
+		f.store_string(str(data))
+	f.close()
+
+
+func _export(n: int, scenes_too: bool, hi: bool) -> void:
 	busy = true
 	_stop = false
 	total = n
 	items = []
+	var V = preload("res://scripts/vielfalt.gd").new()
+	V.main = main
+	V.hi = hi
 	var stamp := Time.get_datetime_string_from_system().replace(":", "").replace("-", "").replace("T", "_")
-	export_dir = OS.get_user_data_dir().path_join("trainingsbilder").path_join(stamp)
-	for sub in ["images/train", "images/val", "labels/train", "labels/val"]:
+	export_dir = OS.get_user_data_dir().path_join("trainingsbilder").path_join(stamp + ("_hoch" if hi else ""))
+	for sub in ["images/train", "images/val", "labels/train", "labels/val", "labels_meta/train", "labels_meta/val"]:
 		DirAccess.make_dir_recursive_absolute(export_dir.path_join(sub))
-	var keep := {"hour": main.hour(), "weather": main.weather, "auto": main.auto_visitors, "scene": main.scene}
+	var keep := {"hour": main.hour(), "weather": main.weather, "auto": main.auto_visitors, "scene": main.scene, "season": main.season, "wind": main.wind}
 	main.auto_visitors = false
+	var scene_ids: Array = V.scene_list() if hi else EXPORT_SCENES
+	var per_scene: int = clampi(int(ceil(float(n) / scene_ids.size())), 8, 60) if hi else 60
 	var counts := {}
 	var k := 0
 	var made := 0
+	var sc_i := -1
 	while made < n and not _stop:
-		if scenes_too and made % 60 == 0:
-			var sc: String = EXPORT_SCENES[(made / 60) % EXPORT_SCENES.size()]
+		if scenes_too and made / per_scene != sc_i:
+			sc_i = made / per_scene
+			var sc: String = scene_ids[sc_i % scene_ids.size()]
 			if sc != main.scene:
 				main.set_scene(sc)
 				for _w in 30:
 					await main.get_tree().process_frame
 		for v0 in main.visitors.get_children():
 			v0.queue_free()
+		V.begin()
 		var cond: Array = EXPORT_CONDS[randi() % EXPORT_CONDS.size()]
-		main.set_hour(float(cond[1]) + randf_range(-0.6, 0.6))
-		main.weather = str(cond[2])
-		var empty := randf() < 0.08                       # some pictures without anybody: the AI must learn «nothing» too
+		var meta := {"scene": main.scene, "cond": cond[0], "vielfalt": "hoch" if hi else "normal", "objects": [], "dropped": [], "negatives": []}
+		if hi:
+			main.season = str(randi_range(1, 12))       # another sun path (sun angle)
+			main._sun_cache = [-1.0, Vector2.ZERO]
+			main.set_hour(float(cond[1]) + randf_range(-1.5, 1.5))
+			main.weather = str(cond[2]) if randf() < 0.7 else ["clear", "cloudy", "rain", "fog", "snow"][randi() % 5]
+			main.wind = randf_range(0.0, 60.0)
+			meta["season"] = int(main.season)
+			meta["wind"] = snappedf(main.wind, 1.0)
+		else:
+			main.set_hour(float(cond[1]) + randf_range(-0.6, 0.6))
+			main.weather = str(cond[2])
+		meta["hour"] = snappedf(main.hour(), 0.01)
+		meta["weather"] = main.weather
+		var empty := randf() < (0.15 if hi else 0.08)       # some pictures without anybody: the AI must learn «nothing» too
 		var vs := []
 		var n_vis := 0 if empty else (1 if randf() < 0.65 else (2 if randf() < 0.7 else 3))
 		var aim := randf_range(-60.0, 60.0)
 		var yaw0: float = main.rig.rotation.y
+		var cam_p: Vector3 = main.rig.global_position + Vector3(0, 1.0, 0)
 		for q in range(n_vis):
 			var kind: String = EXPORT_PEOPLE[randi() % EXPORT_PEOPLE.size()] if randf() < 0.5 else EXPORT_ANIMALS[randi() % EXPORT_ANIMALS.size()]
 			var dist := randf_range(3.0, 26.0) if kind in EXPORT_PEOPLE else randf_range(2.5, 14.0)
+			if hi:
+				var r := randf()
+				dist = (randf_range(2.5, 20.0) if r < 0.6 else (randf_range(20.0, 35.0) if r < 0.85 else randf_range(35.0, 50.0))) if kind in EXPORT_PEOPLE else randf_range(2.0, 22.0)
 			var side := aim + randf_range(-26.0, 26.0)
 			var a := yaw0 + deg_to_rad(side)
 			var p: Vector3 = main.rig.global_position + Vector3(-sin(a) * dist, 0, -cos(a) * dist)
@@ -230,46 +291,103 @@ func _export(n: int, scenes_too: bool) -> void:
 			if v == null:
 				continue
 			v.speed = 0.02
-			if kind in ["person", "drunk", "police"] and randf() < 0.3:
-				v.ctl_posture = 1 if randf() < 0.6 else 2      # crouching / crawling, like a sneaking person
-			vs.append([v, kind])
-		servo = Vector2(-aim, randf_range(-8.0, 4.0))
-		msg = "Paket: Bild %d von %d · %s · %s" % [made + 1, n, cond[0], main.scene]
+			var info := {"post": 0, "carry": "", "clothes": "", "occluder": "", "animal": {}}
+			if v.kind == "person" and v.variant not in ["cyclist", "stroller"] and randf() < (0.4 if hi else 0.3):
+				info["post"] = 1 if randf() < 0.6 else 2      # crouching / crawling, like a sneaking person
+				V.set_posture(v, int(info["post"]))
+			if hi and v.kind == "person":
+				if randf() < 0.7:
+					info["clothes"] = V.dress(v)
+				if v.variant not in ["cyclist", "stroller", "courier"] and randf() < 0.25:
+					info["carry"] = V.carry(v)
+			elif hi and v.kind != "car":
+				info["animal"] = V.vary_animal(v)
+			if hi and randf() < 0.25:
+				info["occluder"] = V.add_occluder(cam_p, v.global_position)
+			vs.append([v, kind, info])
+		if hi and main.is_dark() and randf() < 0.5:
+			meta["lamps"] = V.add_lamps(yaw0 + deg_to_rad(aim))
+		if empty or (hi and randf() < 0.2):                # hard negatives: look like something, nobody there
+			for i in range((randi_range(1, 3) if hi else 1) if (hi or randf() < 0.5) else 0):
+				var nk: String = V.NEG_KINDS[randi() % V.NEG_KINDS.size()]
+				if nk == "licht" and not main.is_dark() and randf() < 0.7:
+					nk = "ast"
+				meta["negatives"].append(V.add_negative(nk, yaw0 + deg_to_rad(aim)))
+		servo = Vector2(-aim, randf_range(-14.0, 8.0) if hi else randf_range(-8.0, 4.0))
+		meta["head"] = {"pan": snappedf(servo.x, 0.1), "tilt": snappedf(servo.y, 0.1)}
+		msg = "Paket: Bild %d von %d · %s · %s%s" % [made + 1, n, cond[0], main.scene, " · Vielfalt hoch" if hi else ""]
 		var t0 := Time.get_ticks_msec()
 		while Time.get_ticks_msec() - t0 < 1400:
 			await main.get_tree().process_frame
-		var f0: int = int(main.frame_no[0])
-		var t1 := Time.get_ticks_msec()
-		while int(main.frame_no[0]) < f0 + 3 and Time.get_ticks_msec() - t1 < 8000:
-			main.snap_want[0] = main.now()
-			await main.get_tree().process_frame
-		while main.capturing:
-			await main.get_tree().process_frame
+		await _wait_steady()
 		var j: PackedByteArray = main.jpgs[0]
-		var lines := []
+		var light: float = snappedf(clampf(main.light_level(), 0.0, 1.0), 0.001)
+		meta["light"] = light
+		meta["ir"] = main.is_dark() and main.ir_on()
+		var cam_pos: Vector3 = main.cams[0].global_position
+		var others := vs.map(func(e): return e[0])
+		var objs := []
+		var unclear := false
 		for e in vs:
 			var v2 = e[0]
 			if not is_instance_valid(v2):
 				continue
+			var cl: String = "person" if v2.kind == "person" else str(EXPORT_KIND_CLASS.get(v2.kind, ""))
 			var box := _box(v2)
-			if box.is_empty() or not main.line_free(main.cams[0].global_position, v2.global_position + Vector3(0, 0.5, 0)):
+			var d_now := snappedf(cam_pos.distance_to(v2.global_position), 0.1)
+			var why := ""
+			var occ := 0.0
+			var cut := 0.0
+			if cl == "":
+				why = "keine Klasse (%s)" % v2.kind
+			elif box.is_empty():
+				why = "nicht im Bild"
+			else:
+				occ = snappedf(V.occlusion(v2, cam_pos, others), 0.01)
+				cut = _cut(v2, box)
+				if occ >= 0.97:
+					why = "verdeckt"
+				elif occ >= 0.8:
+					unclear = true                         # mostly hidden but a bit visible: no clear answer - picture not used
+					why = "fast ganz verdeckt"
+				elif box[2] * box[3] < 0.0004:
+					why = "zu klein"
+			if why != "":
+				meta["dropped"].append({"kind": str(e[1]), "class": cl, "dist": d_now, "why": why, "occlusion": occ})
 				continue
-			if box[2] * box[3] < 0.0004:                    # smaller than a few pixels: no use
-				continue
-			var cl: String = EXPORT_KIND_CLASS.get(e[1], "person")
-			counts[cl] = int(counts.get(cl, 0)) + 1
-			lines.append("%d %.5f %.5f %.5f %.5f" % [EXPORT_CLASSES.find(cl), box[0] + box[2] / 2.0, box[1] + box[3] / 2.0, box[2], box[3]])
-		if j.size() > 0 and (empty or not lines.is_empty()):
+			objs.append({"v": v2, "kind": str(e[1]), "class": cl, "box": box, "dist": d_now, "occlusion": occ, "cut": cut, "info": e[2]})
+		var fx := {}
+		var img: Image = null
+		if hi and j.size() > 0 and not unclear:
+			var pf: Dictionary = V.postfx(j, bool(meta["ir"]))
+			j = pf["jpg"]
+			img = pf["img"]
+			fx = pf["fx"]
+		meta["camera"] = fx
+		if img == null and j.size() > 0:
+			img = Image.new()
+			if img.load_jpg_from_buffer(j) != OK:
+				img = null
+		var lines := []
+		for o in objs:
+			var b: Array = o["box"]
+			var post := int(o["info"]["post"]) if o["class"] == "person" else -1
+			meta["objects"].append({"line": lines.size(), "class": o["class"], "kind": o["kind"], "dist": o["dist"],
+					"posture": POSTURES_DE[post] if post >= 0 else "", "occlusion": o["occlusion"], "cut": o["cut"],
+					"light": light, "box_lum": V.box_lum(img, b), "blur_px": int(fx.get("blur_px", 0)), "soft": float(fx.get("soft", 0.0)),
+					"carry": o["info"]["carry"], "clothes": o["info"]["clothes"], "occluder": o["info"]["occluder"], "animal": o["info"]["animal"],
+					"box": b})
+			lines.append("%d %.5f %.5f %.5f %.5f" % [EXPORT_CLASSES.find(o["class"]), b[0] + b[2] / 2.0, b[1] + b[3] / 2.0, b[2], b[3]])
+		if j.size() > 0 and not unclear and (empty or not lines.is_empty() or (hi and not meta["negatives"].is_empty() and n_vis == 0)):
+			for o in objs:
+				counts[o["class"]] = int(counts.get(o["class"], 0)) + 1
 			var part := "val" if (made % 7) == 6 else "train"
 			var nm := "%05d_%s_%s" % [made, main.scene, cond[0]]
-			var f := FileAccess.open(export_dir.path_join("images/%s/%s.jpg" % [part, nm]), FileAccess.WRITE)
-			if f != null:
-				f.store_buffer(j)
-				f.close()
-			var fl := FileAccess.open(export_dir.path_join("labels/%s/%s.txt" % [part, nm]), FileAccess.WRITE)
-			if fl != null:
-				fl.store_string("\n".join(PackedStringArray(lines)) + ("\n" if not lines.is_empty() else ""))
-				fl.close()
+			meta["image"] = nm + ".jpg"
+			meta["empty"] = lines.is_empty()
+			_write(export_dir.path_join("images/%s/%s.jpg" % [part, nm]), j)
+			_write(export_dir.path_join("labels/%s/%s.txt" % [part, nm]), "\n".join(PackedStringArray(lines)) + ("\n" if not lines.is_empty() else ""))
+			_write(export_dir.path_join("labels_meta/%s/%s.json" % [part, nm]), JSON.stringify(meta))
 			made += 1
 		k += 1
 		if k > n * 4:
@@ -277,8 +395,10 @@ func _export(n: int, scenes_too: bool) -> void:
 		for e2 in vs:
 			if is_instance_valid(e2[0]):
 				e2[0].queue_free()
+		V.end()
 		await main.get_tree().process_frame
 	servo = null
+	V.end()
 	var gm := _add_game_misses()                         # 3D-3.90: the hard cases from the games (players MoveEye missed)
 	if gm > 0:
 		counts["person (Spiel)"] = gm
@@ -286,27 +406,52 @@ func _export(n: int, scenes_too: bool) -> void:
 	var yaml := "# Trainingsbilder aus dem MW Sim · 3D (%s) - YOLO-Format\npath: .\ntrain: images/train\nval: images/val\nnames:\n" % main.VERSION
 	for i in range(EXPORT_CLASSES.size()):
 		yaml += "  %d: %s\n" % [i, EXPORT_CLASSES[i]]
-	var fy := FileAccess.open(export_dir.path_join("data.yaml"), FileAccess.WRITE)
-	if fy != null:
-		fy.store_string(yaml)
-		fy.close()
-	var info := {"made": made, "classes": counts, "scenes": EXPORT_SCENES if scenes_too else [keep["scene"]], "simulator": main.VERSION,
+	_write(export_dir.path_join("data.yaml"), yaml)
+	var info := {"made": made, "classes": counts, "scenes": scene_ids if scenes_too else [keep["scene"]], "simulator": main.VERSION,
+			"vielfalt": "hoch" if hi else "normal", "meta": "labels_meta/<train|val>/<bild>.json: pro Bild Szene, Licht, Wetter, Kopf, Kamera-Fehler; pro Objekt (Zeile im YOLO-Text) Art, Abstand (m), Haltung, Verdeckung (0..1), Anschnitt, Helligkeit im Rahmen, Unschärfe",
 			"note": "Nur Bilddaten mit Rahmen, keine Kartendaten. Trainieren z. B. mit: yolo detect train data=data.yaml model=yolov8n.pt"}
-	var fi := FileAccess.open(export_dir.path_join("info.json"), FileAccess.WRITE)
-	if fi != null:
-		fi.store_string(JSON.stringify(info, " "))
-		fi.close()
+	_write(export_dir.path_join("info.json"), JSON.stringify(info, " "))
 	msg = "Paket wird gepackt …"
 	await main.get_tree().process_frame
 	export_zip = _zip_dir(export_dir)
+	last_pack = {"dir": export_dir, "zip": export_zip, "made": made, "vielfalt": info["vielfalt"], "classes": counts}
 	if main.scene != keep["scene"]:
 		main.set_scene(str(keep["scene"]))
+	main.season = str(keep["season"])
+	main._sun_cache = [-1.0, Vector2.ZERO]
+	main.wind = float(keep["wind"])
 	main.set_hour(float(keep["hour"]))
 	main.weather = str(keep["weather"])
 	main.auto_visitors = bool(keep["auto"])
 	msg = "fertig: %d Bilder · %s" % [made, export_zip if export_zip != "" else export_dir]
 	busy = false
 
+
+const POSTURES_DE := ["stehend", "geduckt", "kriechend"]
+
+
+func _cut(v: Node3D, box: Array) -> float:
+	"""how much of the visitor is outside the picture (0 = all inside): unclamped box against the clamped one"""
+	var cam: Camera3D = main.cams[0]
+	var sz: Vector2 = Vector2(main.vps[0].size)
+	var lo := Vector2(INF, INF)
+	var hi := Vector2(-INF, -INF)
+	for m in v.find_children("*", "MeshInstance3D", true, false):
+		var mi := m as MeshInstance3D
+		if not mi.visible or mi.mesh == null or not (mi.layers & 1):
+			continue
+		var ab: AABB = mi.get_aabb()
+		for c in 8:
+			var w: Vector3 = mi.global_transform * ab.get_endpoint(c)
+			if cam.is_position_behind(w):
+				continue
+			var q := cam.unproject_position(w)
+			lo = lo.min(q)
+			hi = hi.max(q)
+	var full := (hi.x - lo.x) * (hi.y - lo.y) / (sz.x * sz.y)
+	if full <= 0.0:
+		return 0.0
+	return snappedf(clampf(1.0 - float(box[2]) * float(box[3]) / full, 0.0, 1.0), 0.01)
 
 func _add_game_misses() -> int:
 	"""3D-3.90: every «verpasst» picture of the game rounds (with the box of the player) goes into the pack as a person -
@@ -339,6 +484,11 @@ func _add_game_misses() -> int:
 			if fl != null:
 				fl.store_string("%d %.5f %.5f %.5f %.5f\n" % [EXPORT_CLASSES.find("person"), float(b[0]) + float(b[2]) / 2.0, float(b[1]) + float(b[3]) / 2.0, float(b[2]), float(b[3])])
 				fl.close()
+			var post := clampi(int(m.get("post", 0)), 0, 2)
+			_write(export_dir.path_join("labels_meta/train/%s.json" % nm), JSON.stringify({"image": nm + ".jpg", "scene": "spiel", "cond": "spiel",
+					"light": 0.05 if bool(m.get("dark", false)) else 0.8, "ir": bool(m.get("dark", false)), "empty": false, "vielfalt": "spiel",
+					"objects": [{"line": 0, "class": "person", "kind": "spieler", "dist": float(m.get("dist", -1.0)), "posture": POSTURES_DE[post],
+					"occlusion": -1.0, "cut": 0.0, "light": 0.05 if bool(m.get("dark", false)) else 0.8, "box_lum": -1.0, "blur_px": 0, "box": b}]}))
 			n += 1
 	return n
 
@@ -351,7 +501,7 @@ func _zip_dir(dir: String) -> String:
 	if z.open(out) != OK:
 		return ""
 	var files := []
-	for sub in ["images/train", "images/val", "labels/train", "labels/val"]:
+	for sub in ["images/train", "images/val", "labels/train", "labels/val", "labels_meta/train", "labels_meta/val"]:
 		var da := DirAccess.open(dir.path_join(sub))
 		if da == null:
 			continue

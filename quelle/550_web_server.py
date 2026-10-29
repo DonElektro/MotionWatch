@@ -2281,8 +2281,8 @@ class WebStream:
         @app.route("/api/own_model", methods=["GET", "POST"])
         def api_own_model():                             # part 195: own MoveEye model (YOLO, ONNX) from the GitHub release
             lg = request.args.get("lang") or body().get("lang") if request.method == "POST" else request.args.get("lang")
-            if request.method == "POST":
-                ok, err = own_ai_download()
+            if request.method == "POST":                 # part 196: with a model already there only a new one that is not worse
+                ok, err = own_ai_download(only_better=bool(own_ai_paths()[0]) and not body().get("force"))
                 return reply({"ok": ok, "error": tr_err(err, lg) if err else None, **own_ai_info(lg)}, 200 if ok else 409)
             return reply(dict(own_ai_info(lg), text=own_ai_text(lg)))
 
