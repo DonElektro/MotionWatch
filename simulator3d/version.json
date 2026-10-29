@@ -1,12 +1,12 @@
 {
- "version": "3D-4.6",
+ "version": "3D-4.7",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31493167,
- "sha256": "647c446e72690192260b3d3c11a3217b73463bd8cf2a423d5298514864cffc8a",
- "notes": "«Dein Platz» ein Fenster (Zelt, bewachte Sachen), Tarn-Look nur als Tarn-Sache, Teams nur bei Fahne erobern, KI-Daten aufräumen",
+ "size": 31497088,
+ "sha256": "f2fd9b4f57c32147d8f8f285260065bcfdbd8a3d38a4625f408e02666095a45f",
+ "notes": "Spiel-Karte schlank, Bewachte Sachen in Dein Platz, Unsichtbar-Trank",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24615622,
-  "sha256": "cfe4443bb4e3f5a47d57d5f5cd5c055f77a856b31adc70f8e9eeb6e7fb5f47c4"
+  "size": 24619868,
+  "sha256": "c3426df4b4db2d3f7a653fcb1513ed83e59982a838bdf17c29a2709edce14a44"
  }
 }

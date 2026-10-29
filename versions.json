@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 17:43",
+ "generated": "2026-10-29 18:04",
  "versions": [
   {
-   "version": "2.98.24",
-   "file": "webcam_bewegung_2_98_24.py",
+   "version": "2.98.25",
+   "file": "webcam_bewegung_2_98_25.py",
    "url": "",
-   "sha256": "28e00c33761a29ea5fd35d09d024cc7c962e368870634f1de9868299a165f2d3",
-   "date": "2026-10-29 17:43",
-   "notes": "Kamera am Pi 5: die inneren Knoten des Pi (rp1-cfe, /dev/video0 … 7) gelten nicht mehr als USB-Kamera; «Automatisch» nimmt ohne USB-Kamera die Pi-Kamera, und eine gewählte «USB camera 0», die in Wahrheit ein innerer Knoten ist, wird zur Pi-Kamera. Zusatzkameras zeigen die echte Bildrate (vorher z. B. «707 fps»), Aufnahmen haben dadurch das richtige Tempo.",
-   "sig": "30617a835a7d8dbfb4671c58695025cb78522ad7377be915554a266d60fe2e91d17e52c6f522802c786328d304dabb0f62236992eb32c14f11b007b2199a4e0f"
+   "sha256": "b30aace31218adab4fdfb96998e353de56ff4ec9b8e312853d9c99b4741188bd",
+   "date": "2026-10-29 18:03",
+   "notes": "App-Schlüssel für Home Assistant und Kurzbefehle (auch über http, können Passwort und Sicherheit nie ändern, jederzeit sperrbar); alles zur Sicherheit an einem Ort (Einstellungen → Sicherheit); ein Knopf Hell → Dunkel → Rotlicht (früher eigener Knopf «Dunkle Ansicht»); Simulator: Spiel-Karte schlank, Bewachte Sachen, Sim-Schalter nur als Kachel, Unsichtbar-Trank.",
+   "sig": "4c6fa7f40f5db1764ac8024d58b9522c9e0f495ac4349850f6ebcab7337512ddf2b0bff7a8b5fb2692e29b13bb11d3b6cf65bb3f031d113d413cd3d0eb9a560a"
   },
   {
    "version": "2.97.1",
