@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_13.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_14.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,11 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.14: Gesamtrunde: ntfy-Knöpfe (Fehlalarm/Sirene/Aus), Akku-Prognose, Morgen-Push mit Bildstreifen, «Was war das?», Zonen
+    nach Art, doppelte Bestätigung, Ansage beim Scharfschalten, «Bist du's?»; Gehtest, Entfernung im Alarm, Personen im
+    Wärmebild, Akku-Sparautomatik; Zeitleiste der Nacht, Gesichter verpixeln beim Teilen, Wochenbericht; eigenes KI-Modell
+    (ONNX); Assistent «Erkennung verbessern», Modi vereint, Einfach-Modus 9 Bereiche, Fenster mit 6 Reitern, Sim-Zentrale in
+    Gruppen; Speicherkarten-Schutz, Selbstheilung, eine Sperre mit dem Simulator; Tiere seltener als Person; Simulator 3D-4.1
   * 2.98.13: Erkennung: Schattenfilter schnitt blasse Personen weg (NoIR) – behoben; Lichtwechsel im ganzen Bild = sofort neuer
     Hintergrund; Auto-Tuner zählt Gehende nicht mehr als Rauschen; KI-Lupe für Personen weit weg; Menü Verlauf → Nachrichten
     (gesendete Push-Nachrichten, ntfy-Server); Tunnel-Selbsttest; Simulator 3D-4.0
@@ -872,10 +877,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_13.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_14.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_13.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_13.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_14.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_14.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -892,7 +897,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.13"
+APP_VERSION = "2.98.14"
 
 
 def default_data_dir():
@@ -20853,8 +20858,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.0", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31271508,
-         "sha256": "95f0a429e0a55c8303d91370785edbd106bc653db06b237df4a05f4e88cd961e"}
+SIM3D = {"version": "3D-4.1", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31308402,
+         "sha256": "7c6aa18c517a3971a643c18c75f3d410b98e0111307156a1ff70e4e62bb9958b"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -20995,8 +21000,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-4.0", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24393160,
-           "sha256": "87001e65344e3ba156f72a0b9eb6cd6c94d52c027cbf7358020ba0f19a23dfff", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-4.1", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24430071,
+           "sha256": "2888ec2b85dc72f49cf562d72ac1640a8a2526af83fb33410f9a86cc31b0804f", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -26358,7 +26363,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_13.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_14.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -51348,7 +51353,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.13")
+        self.root.title("MoveEye 2.98.14")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -51701,7 +51706,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.13 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.14 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

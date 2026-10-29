@@ -608,6 +608,17 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.1
+3D-4.1: Spiel: faire Wertung («Fahne erobern» zählt die Eroberungen, z. B. «Rot 2 : 1 Blau»; Wächter-Punkte pro Läufer),
+Spieler-Stufen mit Freischaltungen für die Figur (Stirnband, Schal, Jacke, Zylinder, Umhang, Krone), drei Schnellstarts im
+Assistenten («Kinder · 5 Min.», «Familie», «Profis»), Übungsrunde für neue Namen von selbst, schlauere Bots (Büsche, Steine,
+Kristalle) und ein Bot-Wächter (Wächter-Spiel schon zu zweit), Duell «MoveEye gegen Mensch» am Schluss, Sprint (90 s, feste
+Tore), Zuschauer tippen «Wer kommt durch?» und werfen Köder-Steine. Das Spiel wird nur noch im Assistenten eingerichtet (Karte
+«Spiel»: Assistent / Öffnen / Start / Stopp, der Rest unter «Experte»). Testen an einer Stelle: die Karte «Testlauf» ist in
+«Testen» aufgegangen, die Kachel «Testen» öffnet sie. Eine Sperre mit MoveEye (MoveEye und Simulator wissen, wer die Welt gerade
+hat). Infrarotbild in der Nacht mit eigener Belichtung (vorher oft fast weiss), Bodennebel schwächer, Trainingsbilder warten,
+bis die Belichtung stimmt.
+
 NEU IN 3D-4.0
 3D-4.0: Testlauf und Prüfstand verlässlicher: die Testbesucher gehen gezielt durch das Bild der Kopfkamera (nah, mittel, weit;
 nachts nur so weit, wie das Licht reicht), «sichtbar» heisst jetzt Kopf und Körper frei, 15 s Eingewöhnen pro Phase, die

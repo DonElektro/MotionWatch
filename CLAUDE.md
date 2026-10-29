@@ -39,6 +39,10 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   die ältere Datei derselben Hauptversion. `--version X.Y.Z` für eine bestimmte Nummer.
 - **Prüfstand** (`pruefstand/`): misst die Erkennung mit dem 3D-Simulator (feste Testläufe) und schreibt `pruefstand/VERLAUF.md`.
   Vor Änderungen an der Erkennung und danach laufen lassen und vergleichen; auf GitHub: Actions → «Prüfstand».
+  Ab 2.98.13: Szene «stellplatz», Besucher gehen durchs Bild der Kopfkamera, `--mal 2`, `--realismus an,aus` (Zeilen
+  «· ohne Kamera-Effekte» zeigen, ob ein Rückgang am Simulator-Bild oder an MoveEye liegt). Lokal nur aussagekräftig, wenn der
+  Rechner frei ist (unter ~3 Bilder/s erkennt MoveEye kaum etwas). Fehlersuche: Umgebungsvariable `MW_DEBUG_TRACKS=<datei>`
+  schreibt pro Bild Bewegungsflächen und Spuren (410).
 - **Sprachen** (ab 2.28.0): Deutsch, Französisch, Italienisch, Rätoromanisch (Rumantsch Grischun), Englisch. Schlüssel ist immer der
   englische Text. Deutsch: `DE` (Python) bzw. `I18N.de` / `TX` / `ALT` / `WZ` (Web). Französisch / Italienisch / Romanisch: Tabellen
   `TRX["fr"|"it"|"rm"]` und die Anleitung `HELP_X` am Dateiende (das Web lädt sie über `/i18n/<sprache>.js`). Neue Texte in

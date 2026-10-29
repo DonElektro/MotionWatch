@@ -1,12 +1,12 @@
 {
- "version": "3D-4.0",
+ "version": "3D-4.1",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31271508,
- "sha256": "95f0a429e0a55c8303d91370785edbd106bc653db06b237df4a05f4e88cd961e",
- "notes": "Prüfstand verlässlicher, Aufräumen (Rover-Route, Folgen)",
+ "size": 31308402,
+ "sha256": "7c6aa18c517a3971a643c18c75f3d410b98e0111307156a1ff70e4e62bb9958b",
+ "notes": "Spiel (Wertung, Stufen, Schnellstarts, Bots, Duell, Sprint, Zuschauer), Testen an einer Stelle, eine Sperre, Infrarotbild",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24393160,
-  "sha256": "87001e65344e3ba156f72a0b9eb6cd6c94d52c027cbf7358020ba0f19a23dfff"
+  "size": 24430071,
+  "sha256": "2888ec2b85dc72f49cf562d72ac1640a8a2526af83fb33410f9a86cc31b0804f"
  }
 }

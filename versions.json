@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 05:30",
+ "generated": "2026-10-29 10:53",
  "versions": [
   {
-   "version": "2.98.13",
-   "file": "webcam_bewegung_2_98_13.py",
+   "version": "2.98.14",
+   "file": "webcam_bewegung_2_98_14.py",
    "url": "",
-   "sha256": "c60736a950b598578fb208c9c0012132a71256d444f66c9782c83650e224e2cc",
-   "date": "2026-10-29 05:29",
-   "notes": "Erkennung: Schattenfilter schnitt blasse Personen weg (NoIR) – behoben; Lichtwechsel im ganzen Bild = sofort neuer Hintergrund; Auto-Tuner zählt Gehende nicht mehr als Rauschen; KI-Lupe für Personen weit weg; Menü Verlauf → Nachrichten (gesendete Push-Nachrichten, ntfy-Server); Tunnel-Selbsttest; Simulator 3D-4.0",
-   "sig": "08f8a2adb81f63aae6db938e38478bb76eb8aa185932c3037bf1e20029ee4246a91ea86c8c00e0c9cfb415253bd0e944f2a3fe5105c509a59ec90267ae90650e"
+   "sha256": "b6b8573f6cda7906fbf6b1b4651e0f65249fb1e0306c7709d10e3df435feeba6",
+   "date": "2026-10-29 10:53",
+   "notes": "Gesamtrunde: ntfy-Knöpfe (Fehlalarm/Sirene/Aus), Akku-Prognose, Morgen-Push mit Bildstreifen, «Was war das?», Zonen nach Art, doppelte Bestätigung, Ansage beim Scharfschalten, «Bist du's?»; Gehtest, Entfernung im Alarm, Personen im Wärmebild, Akku-Sparautomatik; Zeitleiste der Nacht, Gesichter verpixeln beim Teilen, Wochenbericht; eigenes KI-Modell (ONNX); Assistent «Erkennung verbessern», Modi vereint, Einfach-Modus 9 Bereiche, Fenster mit 6 Reitern, Sim-Zentrale in Gruppen; Speicherkarten-Schutz, Selbstheilung, eine Sperre mit dem Simulator; Tiere seltener als Person; Simulator 3D-4.1",
+   "sig": "f2eea1a9db317a8dd272fe8d105eca34a52112a173674032aa0189526892e7e926cc475fc3980b294fea86dca48ee631894d49df74fc8e0817edf0145405a50b"
   },
   {
    "version": "2.97.1",
