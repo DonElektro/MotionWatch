@@ -31,9 +31,6 @@ on:
       mal:
         description: "Besucherlisten so oft, 1–5 (mehr Personen = verlässlicher, dauert länger)"
         default: "2"
-      ab:
-        description: "TEMP (wt-pruefrueck): A/B old/new MoveEye and simulator on one runner, comma list of MW:SIM commits"
-        default: ""
   schedule:
     - cron: "17 2 * * 0"
   push:
@@ -44,7 +41,7 @@ permissions:
   contents: write
   issues: write
 concurrency:
-  group: pruefstand-${{ github.ref }}
+  group: pruefstand
   cancel-in-progress: false
 jobs:
   pruefstand:
@@ -52,8 +49,6 @@ jobs:
     timeout-minutes: 300
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -76,36 +71,7 @@ jobs:
           tar xzf m.tgz && mv ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb . && rm -rf m.tgz ssd_mobilenet_v2_coco_2018_03_29
           curl -sSL -o ssd_mobilenet_v2_coco.pbtxt https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt
           ls -la
-      - name: A/B (temporär)
-        if: github.event.inputs.ab != ''
-        env:
-          AB: ${{ github.event.inputs.ab }}
-          IN_PLAENE: ${{ github.event.inputs.plaene }}
-          IN_MAL: ${{ github.event.inputs.mal }}
-        run: |
-          mkdir -p pruefstand/ab
-          lscpu | grep -E "Model name|^CPU\(s\)" > pruefstand/ab/cpu.txt
-          (while true; do date +%T; ps -eo pcpu,cputime,etimes,args --sort=-pcpu | head -6 | cut -c1-160; sleep 20; done) > pruefstand/ab/ps.log 2>&1 &
-          i=0
-          for pair in $(echo "$AB" | tr ',' ' '); do
-            i=$((i+1)); mwc=${pair%%:*}; simc=${pair##*:}; [ "$simc" = "work" ] && simc=HEAD
-            rm -rf /tmp/ab_sim && git worktree add -f --detach /tmp/ab_sim "$simc" >/dev/null 2>&1
-            timeout 600 ./Godot_v4.3-stable_linux.x86_64 --headless --editor --path /tmp/ab_sim/simulator3d --quit >/dev/null 2>&1 || true
-            mkdir -p /tmp/ab_mw$i
-            if [ "$mwc" = "work" ]; then f=$(ls webcam_bewegung_*.py | sort -V | tail -1); cp "$f" /tmp/ab_mw$i/; else
-              f=$(git ls-tree --name-only "$mwc" | grep '^webcam_bewegung_.*\.py$' | sort -V | tail -1); git show "$mwc:$f" > /tmp/ab_mw$i/$f; fi
-            echo "== $i MW $mwc ($f) SIM $simc" | tee -a pruefstand/ab/runs.txt
-            python3 /tmp/ab_sim/pruefstand/pruefstand.py --godot ./Godot_v4.3-stable_linux.x86_64 --ki-ordner ki --mw /tmp/ab_mw$i/$f \
-              --plaene "${IN_PLAENE:-quick}" --mal "${IN_MAL:-2}" --realismus an --ohne-extras --rechner "AB $i $(nproc) Kerne" --behalten 2>&1 | tee pruefstand/ab/run_$i.log | tail -25
-            n=$(ls -t /tmp/ab_sim/pruefstand/ergebnisse/*.json | head -1); cp "$n" pruefstand/ab/ab_${i}_$(basename "$n")
-            for d in /tmp/mw_pruefstand_*; do [ -f "$d/motionwatch.log" ] && tail -60 "$d/motionwatch.log" > pruefstand/ab/mw_$i.log; rm -rf "$d"; done
-            git worktree remove --force /tmp/ab_sim || true
-          done
-          kill %1 || true
-          git config user.name "Prüfstand"; git config user.email "pruefstand@users.noreply.github.com"
-          git add pruefstand/ab; git commit -q -m "Prüfstand A/B (temporär)"; for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 5; done
       - name: Prüfstand
-        if: github.event.inputs.ab == ''
         env:
           EVENT: ${{ github.event_name }}
           IN_PLAENE: ${{ github.event.inputs.plaene }}
@@ -146,7 +112,7 @@ jobs:
           path: ki
           retention-days: 3
       - name: Ergebnis ins Repository
-        if: always() && github.event.inputs.ab == ''
+        if: always()
         run: |
           git config user.name "Prüfstand"
           git config user.email "pruefstand@users.noreply.github.com"
@@ -155,7 +121,7 @@ jobs:
           git commit -q -m "Prüfstand: Ergebnis $(ls webcam_bewegung_*.py | sort -V | tail -1 | sed 's/webcam_bewegung_//; s/\.py//; s/_/./g')"
           for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 5; done
       - name: Verschlechterung melden
-        if: always() && github.event.inputs.ab == ''
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
