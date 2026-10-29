@@ -128,6 +128,7 @@ var xp                                   # gamexp.gd (3D-4.x): the level of ever
 var bots                                 # gamebots.gd (3D-4.x): smarter bots and the «Bot-Wächter»
 var watch                                # gamewatch.gd (3D-4.x): watchers guess and throw decoy stones
 var jaeger                               # gamejaeger.gd (3D-4.x): «Fehlalarm-Jäger» - animals and things fool MoveEye
+var plus                                 # gameplus.gd (3D-4.x): weather change, camouflage things, theft, learning points
 var duel := {}                           # 3D-4.x: after a round with a guard: MoveEye against the guard
 var flag_res := {}                       # 3D-4.x: «Fahne erobern» is decided by the captures: {"caps", "win", "text"}
 var round_runners := 1                   # how many ran in this round (the score of the guard is per runner)
@@ -160,6 +161,10 @@ func _ready() -> void:
 	jaeger.game = self
 	jaeger.main = main
 	add_child(jaeger)
+	plus = preload("res://scripts/gameplus.gd").new()
+	plus.game = self
+	plus.main = main
+	add_child(plus)
 
 
 func now() -> float:
@@ -274,6 +279,10 @@ func _pick_goal(random: bool) -> void:
 	if goal == Vector3.ZERO:
 		goal = o.get("door", Vector3(0, 0, -4))
 	goal_name = {"bike": "das Velo", "door": "die Tür", "pir": "der Platz beim Bewegungsmelder"}.get(key, "das Ziel")
+	var tg: Array = plus.theft_goal() if plus != null else []     # 3D-4.x: «Diebstahl» - the goal is the thing to steal
+	if not tg.is_empty():
+		goal = tg[0]
+		goal_name = tg[1]
 	goal = _g(goal)
 	if goal_node != null:
 		goal_node.queue_free()
@@ -716,6 +725,9 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 		"lure":                                        # «Fehlalarm-Jäger»: the player picks his lure (before the round)
 			jaeger.choose(p2, str(m.get("v", "")))
 			paint()
+		"gear":                                        # 3D-4.x: a camouflage thing (before the round)
+			plus.choose(p2, str(m.get("v", "")))
+			paint()
 		"act":                                         # «Fehlalarm-Jäger»: the button of the thing (gust, sweep, rise, drop, swarm)
 			jaeger.act(p2)
 		"decoy":                                       # the decoy (3D-3.25): attracts the camera, team points
@@ -826,8 +838,9 @@ func _rebuild(p: Dictionary) -> void:
 	p["actor"] = a
 	p["cone"] = parts[1]
 	p["loot"] = parts[2]
-	p["loot"].visible = p["carry"]
+	p["loot"].visible = p["carry"] and plus.goal_mode() != "theft"
 	_paint_cone(p)
+	plus.dress(p)                                          # 3D-4.x: the camouflage thing on the new figure
 
 
 func _make_actor(slot: int, lk: Dictionary, pos: Vector3) -> Array:
@@ -1160,6 +1173,7 @@ func start_round() -> void:
 	_build_jail()
 	_paint_goal()
 	learn.round_start()
+	plus.round_start()                                     # 3D-4.x: weather change, camouflage things, theft
 	if jaeger.on():                                        # «Fehlalarm-Jäger»: every runner becomes his lure
 		jaeger.round_start()
 	if main.game_mode == "patrol" and main.patrol != null:  # 3D-3.61: the patrol drives during the round
@@ -1355,6 +1369,7 @@ func end_round() -> void:
 		return
 	round_state = "end"
 	learn.round_end()                                      # 3D-3.52: before the players go back to the lobby
+	plus.round_end()                                       # 3D-4.x: the weather back, MoveEye is asked about the theft
 	_duel_make()                                           # 3D-4.x: MoveEye against the guard (after the last episodes are closed)
 	if main.game_mode == "patrol" and main.patrol != null:
 		main.patrol.set_active(_patrol_was)
@@ -1445,6 +1460,10 @@ func end_round() -> void:
 			parts.append(["Tagesaufgabe", 100])
 		if voted.has(p["slot"]):
 			parts.append(["Tipp richtig", 40 if voted[p["slot"]] else 0])
+		var tp: Array = plus.teach_award(p)                # 3D-4.x: what this round taught MoveEye (also XP)
+		parts.append_array(tp)
+		if not tp.is_empty():
+			info += " · 🧠 %d gelernt" % int(plus.teach[str(p["name"])]["n"])
 		var xr: Dictionary = xp.award(str(p["name"]), parts)
 		p["xpi"] = xr
 		var r := {"n": p["name"], "c": "#" + COLORS[p["slot"]].to_html(false), "info": info, "score": sc, "badges": bd}
@@ -1645,7 +1664,7 @@ func cam_sees(p: Dictionary, i: int) -> float:
 	var px: float = h / (2.0 * d * tan(deg_to_rad(VFOV[i]) / 2.0)) * rows    # height of the person in the picture
 	if i == 2:                                             # thermal: a warm spot, also at night, not through fog well
 		var contrast: float = clamp(abs(34.0 - float(main.ambient)) / 18.0, 0.2, 1.0) * {"fog": 0.7, "rain": 0.8}.get(main.weather, 1.0)
-		return smoothstep(2.5, 9.0, px) * contrast * (0.65 + 0.35 * clamp(spd, 0.0, 1.0))   # a warm spot of a few pixels
+		return smoothstep(2.5, 9.0, px) * contrast * (0.65 + 0.35 * clamp(spd, 0.0, 1.0)) * plus.th_mul(p)   # a warm spot of a few pixels (3D-4.x: a thermal blanket)
 	var light := light_at(pos, i)
 	if a.player_lamp:
 		light = max(light, 0.75)                           # the torch: the player sees more, but the cameras see the player
@@ -1657,9 +1676,11 @@ func cam_sees(p: Dictionary, i: int) -> float:
 	var ai: float = smoothstep(18.0, 70.0, px) * SHAPE[post] * smoothstep(0.08, 0.5, see)
 	if bool(a.look.get("camo", false)) and not main.is_dark() and main.scene != "parkplatz":
 		ai *= 0.8                                          # camouflage in the green: the person is a bit harder to recognise
+	ai = minf(1.0, ai * plus.ai_mul(p))                    # 3D-4.x: camouflage things (box, umbrella, camouflage clothes …)
 	# motion detection: something moves across the picture (pixels per second), big enough, visible
 	var move_px: float = spd / (2.0 * d * tan(hfov / 2.0)) * cols
 	var motion: float = smoothstep(6.0, 45.0, move_px) * smoothstep(20.0, 60.0, px) * smoothstep(0.03, 0.3, see)
+	motion = minf(1.0, motion * plus.mo_mul(p))
 	return max(ai * 0.9, motion)
 
 
@@ -1682,7 +1703,7 @@ func hearing(p: Dictionary) -> float:
 	var spd: float = a.cur_speed
 	if spd < 0.2:
 		return 0.0
-	var loud: float = LOUD[a.ctl_posture] * (3.3 if spd > 2.2 else 1.0)
+	var loud: float = LOUD[a.ctl_posture] * (3.3 if spd > 2.2 else 1.0) * plus.loud_mul(p)   # 3D-4.x: the thermal blanket rustles
 	loud *= (0.5 if main.weather == "rain" else 1.0) * (0.6 if main.wind > 30.0 else 1.0)
 	var d: float = a.position.distance_to(Vector3.ZERO)
 	var reach: float = 3.0 + 12.0 * loud
@@ -1750,7 +1771,7 @@ func _mw_referee() -> void:
 		_mw_catch_t = t + float(MW_PAUSE.get(lvl, 3.0))
 		_mw_hold.clear()
 		_caught(best, null)
-		_say(best, "MoveEye hat dich erkannt!", 3.0)
+		_say(best, plus.caught_text(best), 3.0)            # 3D-4.x: «… trotz Karton erkannt!»
 
 
 func _check_distract() -> void:
@@ -1831,14 +1852,20 @@ func _referee(dt: float) -> void:
 		if near_goal and sprint() and p["cps"].size() < checkpoints.size():
 			_say(p, "🚩 Zuerst durch alle Tore (%d/%d)" % [p["cps"].size(), checkpoints.size()], 1.0)
 			near_goal = false
-		if main.game_goal == "return" and not p["carry"] and near_goal:
+		var gm: String = plus.goal_mode()                  # 3D-4.x: «Diebstahl» like «Beute», but the real bike / cool box to the exit
+		if gm in ["return", "theft"] and not p["carry"] and near_goal:
+			if gm == "theft":
+				if plus.take(p):
+					_event(p, "item")
+				continue
 			p["carry"] = true                              # the loot: now back to the start
 			p["loot"].visible = true
 			_say(p, "💰 Beute geholt – zurück zum Start!", 3.0)
 			_event(p, "item")
 			continue
-		var home := start_point(p["slot"])
-		if (main.game_goal != "return" and near_goal) or (p["carry"] and a.position.distance_to(home) < 3.0):
+		var home: Vector3 = plus.home_of(p)
+		if (not gm in ["return", "theft"] and near_goal) or (p["carry"] and a.position.distance_to(home) < 3.0):
+			plus.on_goal(p)
 			p["state"] = "goal"
 			p["t_goal"] = now()
 			a.frozen = true
@@ -1954,7 +1981,9 @@ func _caught(p: Dictionary, by) -> void:
 	main.spectate_cut("caught", int(p["slot"]), "🚨 %s erwischt!" % p["name"])
 	if int(p.get("flag", -1)) >= 0 and flags.size() == 2:   # the flag goes back to its base
 		_flag_home(int(p["flag"]))
+	plus.on_caught(p)                                      # 3D-4.x: per weather phase and camouflage thing
 	if p["carry"]:                                         # the loot goes back to its place
+		plus.drop(p)
 		p["carry"] = false
 		p["loot"].visible = false
 	flash_until = now() + 3.0                             # the light goes on, like at a real alarm
@@ -2361,7 +2390,7 @@ func _send_state(i: int) -> void:
 func state_for(p: Dictionary) -> Dictionary:
 	"""what a player sees on his screen (phone, or the PC player of 3D-3.77)"""
 	var a = p["actor"]
-	var target: Vector3 = start_point(p["slot"]) if p["carry"] else goal
+	var target: Vector3 = plus.home_of(p) if p["carry"] else goal
 	if flag_mode() and flags.size() == 2 and p["role"] == "runner":
 		var my := int(p["team"])
 		if int(p.get("flag", -1)) >= 0:
@@ -2397,7 +2426,7 @@ func state_for(p: Dictionary) -> Dictionary:
 			"ga": int(ga), "goal": goal_name, "list": lst, "items": p["items"], "items_left": left_items, "items_all": items.size(),
 			"lives": int(main.game_lives), "stone": int(max(0.0, float(p["stone_t"]) - now())) if main.game_stones else -1,
 			"msg": p["msg"] if now() < float(p["msg_until"]) else "", "has_guard": guard_player() != null, "mwd": mw_decides(),
-			"goal_mode": "flag" if flag_mode() else main.game_goal, "carry": p["carry"], "gopen": goal_open(), "flag": int(p.get("flag", -1)),
+			"goal_mode": "flag" if flag_mode() else plus.goal_mode(), "carry": p["carry"], "gopen": goal_open(), "flag": int(p.get("flag", -1)),
 			"caps": captures, "gcam": guard_cam(p) if p["role"] == "guard" else -1,
 			"tg": guard_team, "mround": match_round, "teams": main.game_teams, "team": int(p["team"]), "look": p["look"],
 			"tres": team_results if round_state == "end" else [],
@@ -2429,6 +2458,7 @@ func state_for(p: Dictionary) -> Dictionary:
 	d["sprint"] = sprint()
 	d["w"] = watch.state_for(p)
 	d["tut"] = str(p.get("tut_msg", "")) if bool(p.get("tut_on", false)) else ""
+	d["px"] = plus.state_for(p)                            # 3D-4.x: camouflage things, weather change, theft, learning points
 	if jaeger.on():
 		d["jg"] = jaeger.state_for(p)
 		if round_state == "end":
@@ -2635,6 +2665,19 @@ function lvLook(c) {                     // 3D-4.x: what the level unlocks (only
   if (g) h += '<div class="chips">' + (un.includes("gold") ? c("gold", false, "Jacke normal") + c("gold", true, g[2]) : '<button type="button" disabled>🔒 ' + esc(g[2]) + ' · Stufe ' + g[0] + '</button>') + '</div>';
   return h;
 }
+function pxTop(m) {                       // 3D-4.x: what this round taught MoveEye, weather change, theft (gameplus.gd)
+  const P = m.px || {}; if (m.rs !== "end") return "";
+  return (P.teach ? '<div class="big2">' + esc(P.teach) + '</div>' : '') + ((P.lines || []).length ? '<p>' + P.lines.map(esc).join("<br>") + '</p>' : '') + (P.gear_res ? '<p>' + esc(P.gear_res) + '</p>' : '');
+}
+function pxHtml(m) {                      // 3D-4.x: the camouflage things, the rules of the extras, «Beste Lehrer»
+  const P = m.px || {}; let h = "";
+  if (P.theft_rule) h += '<p>' + esc(P.theft_rule) + '</p>';
+  if (P.wx_rule) h += '<p>' + esc(P.wx_rule) + '</p>';
+  if (P.gear_on && (P.gears || []).length) { const g = P.gears.find(x => x[0] === P.gear) || P.gears[0];
+    h += '<div class="lab">🎒 Deine Tarnung</div><div class="chips">' + P.gears.map(x => '<button type="button" data-gear="' + x[0] + '" class="' + (x[0] === P.gear ? "on" : "") + '">' + x[1] + ' ' + esc(x[2]) + '</button>').join("") + '</div><p><small>' + esc(g[3]) + '</small></p>'; }
+  if ((P.teachers || []).length) h += '<h1>🧠 Beste Lehrer</h1><table class="brd">' + P.teachers.map((b, i) => '<tr><td>' + (["🥇", "🥈", "🥉"][i] || (i + 1) + ".") + '</td><td class="n">' + esc(b.n) + (b.lv ? ' ⭐' + b.lv : '') + '</td><td><b>' + b.t + '</b></td><td class="rec">' + (b.t === 1 ? 'Ding' : 'Dinge') + ' beigebracht</td></tr>').join("") + '</table>';
+  return h;
+}
 function lvlHtml(x) {
   if (!x || !x.lv) return ""; const f = Math.max(0, Math.min(1, (x.xp - x.from) / Math.max(1, x.to - x.from)));
   return '<div class="lvl"><b>⭐ Stufe ' + x.lv + '</b> · ' + x.xp + ' XP <span style="float:right;color:var(--mut)">noch ' + (x.to - x.xp) + ' bis Stufe ' + (x.lv + 1) + '</span><div class="bar"><i style="width:' + Math.round(f * 100) + '%"></i></div>' +
@@ -2729,7 +2772,7 @@ function paint(m) {
   $("#lv").textContent = role === "watch" ? "· 👀 schaut zu" : role === "guard" ? "· Wächter · " + (m.catches || 0) + "× erwischt" : (m.lives ? "· " + "❤️".repeat(Math.max(0, m.lives - m.caught)) + "🤍".repeat(Math.min(m.lives, m.caught)) : "· " + m.caught + "× erwischt");
   $("#list").hidden = (m.list || []).length < 2;                // alone: the name stands at the top already
   $("#list").innerHTML = (m.list || []).map(p => '<span style="color:' + p.c + '">●</span> ' + esc(p.n) + (p.lv ? " ⭐" + p.lv : "") + (p.r === "watch" ? " 👀" : "") + (p.r === "guard" ? " 👁" : "") + (p.s === "goal" ? " 🏁" : p.s === "out" ? " ✖" : "") + (p.r !== "guard" && p.k ? " · " + p.k + "×" : "") + (p.on ? "" : " (weg)")).join("<br>");
-  $("#extra").textContent = (m.goal_mode === "flag" && role === "runner" ? "🚩 Rot " + m.caps[0] + " : " + m.caps[1] + " Blau · " + (m.flag >= 0 ? "Fahne dabei – zur eigenen Basis! · " : "") : "") + (m.gopen === false && role === "runner" ? "🔒 Ziel noch zu – zuerst alle Kristalle finden · " : "") + (m.carry ? "💰 Beute dabei – zurück zum Start! " : (m.goal_mode === "return" && role === "runner" ? "Ziel: Beute holen und zurückbringen · " : "")) + (m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "");
+  $("#extra").textContent = (m.goal_mode === "flag" && role === "runner" ? "🚩 Rot " + m.caps[0] + " : " + m.caps[1] + " Blau · " + (m.flag >= 0 ? "Fahne dabei – zur eigenen Basis! · " : "") : "") + (m.gopen === false && role === "runner" ? "🔒 Ziel noch zu – zuerst alle Kristalle finden · " : "") + (m.carry ? ((m.px && m.px.carry_txt) || "💰 Beute dabei – zurück zum Start! ") : (m.goal_mode === "return" && role === "runner" ? "Ziel: Beute holen und zurückbringen · " : "")) + (m.items_all && role === "runner" ? "💎 " + m.items + " · noch " + m.items_left + " zu finden" : "");
   if (m.cps_all && role === "runner") $("#extra").textContent = "🚩 " + m.cps + "/" + m.cps_all + " · " + $("#extra").textContent;
   if (m.decoy && role === "runner") $("#extra").textContent = "🦆 Lockvogel – lass dich sehen! · " + $("#extra").textContent;
   const J = m.mode === "jaeger" ? (m.jg || {}) : null;           // 3D-4.x: «Fehlalarm-Jäger» - the player is an animal or a thing
@@ -2752,14 +2795,15 @@ function paint(m) {
   else if (m.rs === "lobby" || m.rs === "end") {
     const FR = m.fres || {}, XR = m.xpr || {};
     const JR = m.jres || {};
-    let h = m.rs === "end" ? (JR.text ? '<div class="big2">' + (JR.n ? '🎉 ' + JR.n : '🛡 0') + '</div><h1>' + esc(JR.text) + '</h1>' + ((JR.cases || []).length ? '<p>' + JR.cases.map(c => c[0] + ' ' + esc(c[1]) + ' <small>(' + esc(c[2]) + ', ' + Math.round(c[3]) + ' m)</small>').join(" · ") + '</p>' : '') : '') +
+    let h = pxTop(m) + (m.rs === "end" ? (JR.text ? '<div class="big2">' + (JR.n ? '🎉 ' + JR.n : '🛡 0') + '</div><h1>' + esc(JR.text) + '</h1>' + ((JR.cases || []).length ? '<p>' + JR.cases.map(c => c[0] + ' ' + esc(c[1]) + ' <small>(' + esc(c[2]) + ', ' + Math.round(c[3]) + ' m)</small>').join(" · ") + '</p>' : '') : '') +
       (FR.text ? '<div class="big2">🚩 ' + esc(FR.text) + '</div><h1>' + esc(FR.title) + '</h1>' : '') + (m.duel && m.duel.text ? duelHtml(m.duel) : '') +
       (m.tres && m.tres.length && !FR.text ? '<h1>' + (m.tres[0].lead ? 'Runde 1 von 2: ' + esc(m.tres[0].n) + ' führt' : esc(m.tres[0].n) + ' gewinnt!') + '</h1>' : '') +
       (m.tres && m.tres.length ? '<p>' + m.tres.map(t => '<span style="color:' + t.c + '">●</span> ' + esc(t.n) + (t.caps !== undefined ? ' 🚩' + t.caps : '') + ' <b>' + t.score + '</b>' + (t.round !== undefined ? ' <small>(diese Runde ' + t.round + ')</small>' : '')).join(" · ") + '</p>' : '') +
       (XR.gain ? '<p>⭐ <b>+' + XR.gain + ' XP</b>' + (XR.up ? ' · ⬆ <b>Stufe ' + XR.lv + '!</b>' : '') + ((XR.new || []).length ? '<br>Neu für deine Figur: <b>' + XR.new.map(esc).join(", ") + '</b> (👕 Aussehen ändern)' : '') + '</p>' : '') +
       ((W.votes_res || []).length ? '<p>🔮 Tipps «Wer kommt durch?»: ' + W.votes_res.map(v => '<span style="color:' + v.c + '">' + esc(v.n) + '</span> → ' + esc(v.pick) + (v.ok ? ' ✅' : ' ❌')).join(" · ") + '</p>' : '') +
       '<h1>Rangliste</h1><table>' + (m.res || []).map((r, i) => '<tr><td>' + (i + 1) + '.</td><td><span style="color:' + r.c + '">●</span> ' + esc(r.n) + (r.lv ? ' ⭐' + r.lv : '') + '</td><td>' + esc(r.info) + '</td><td><b>' + r.score + '</b></td></tr>').join("") + '</table>'
-      : (J ? '<h1>🦊 Fehlalarm-Jäger</h1>' : '<h1>Bereit?</h1><p>Ziel: <b>' + esc(m.goal) + '</b> – folge dem Pfeil oben rechts zum grünen Licht.</p><p>Links ziehen = gehen · rechts wischen = umschauen</p>');
+      : (J ? '<h1>🦊 Fehlalarm-Jäger</h1>' : '<h1>Bereit?</h1><p>Ziel: <b>' + esc(m.goal) + '</b> – folge dem Pfeil oben rechts zum grünen Licht.</p><p>Links ziehen = gehen · rechts wischen = umschauen</p>'));
+    h += pxHtml(m);
     h += lvlHtml(m.xp);
     if (m.sprint) h += '<p>⏱ <b>Sprint:</b> 90 Sekunden, immer derselbe Parcours. Durch Tor 1, 2 und 3 (der Pfeil zeigt das nächste), dann ins Ziel. Je schneller, desto mehr Punkte.</p>';
     if (m.goal_mode === "flag") h += '<p>🚩 <b>Fahne erobern</b>: hol die Fahne der anderen bei ihrer Basis und bring sie zu deiner Basis (+500). Berührst du jemanden, der eure Fahne trägt, geht sie zurück (+100). Die Kamera passt auf alle auf.</p>';
@@ -2785,6 +2829,7 @@ function paint(m) {
     ov(h);
     document.querySelectorAll("[data-team]").forEach(b => b.onclick = () => ws.send(JSON.stringify({t: "team", k: +b.dataset.team})));
     document.querySelectorAll("[data-lure]").forEach(b => b.onclick = () => send({t: "lure", v: b.dataset.lure}));
+    document.querySelectorAll("[data-gear]").forEach(b => b.onclick = () => send({t: "gear", v: b.dataset.gear}));
     const lkb = $("#lk"); if (lkb) lkb.onclick = () => { editing = true; ov('<h1>Aussehen</h1>' + lookHtml() + '<button class="pr" id="lkok">Fertig</button>'); bindLook();
       $("#lkok").onclick = () => { ws.send(JSON.stringify(Object.assign({t: "look"}, outfit))); editing = false; lastOv = null; paint(st); }; };
     const rpb = $("#rpb"); if (rpb) rpb.onclick = () => send({t: "replay"});
@@ -2935,6 +2980,7 @@ func spectator_info() -> Dictionary:
 	if not bots.guard.is_empty():
 		d["botg"] = {"catches": int(bots.guard["catches"]), "false": int(bots.guard["false"])}
 	d["sprint"] = sprint()
+	d["px"] = plus.spec_info()                             # 3D-4.x: weather change, theft, learning points
 	if jaeger.on():                                        # «Fehlalarm-Jäger»: false alarms per player, the result
 		for i in range(ps.size()):
 			for p in players:
@@ -2957,7 +3003,7 @@ func debug_info() -> Dictionary:
 	for p in players:
 		if p != null and p.has("bot"):
 			bs[str(p["name"])] = [snappedf(float(p["bot"]["skill"]), 0.01), int(p["items"]), int(p.get("stones", 0)), snappedf(float(p.get("hide_s", 0.0)), 0.1), int(p["caught"])]
-	return {"ok": true, "round": round_state, "res": results, "tres": team_results, "duel": duel, "fres": flag_res, "levels": lv, "bots": bs,
+	return {"ok": true, "px": plus.debug(), "round": round_state, "res": results, "tres": team_results, "duel": duel, "fres": flag_res, "levels": lv, "bots": bs,
 			"botg": bots.guard.duplicate(), "votes": watch.votes_res, "sprint": sprint(), "cps": checkpoints.map(func(c): return [snappedf(c["pos"].x, 0.1), snappedf(c["pos"].z, 0.1)]),
 			"left": int(max(0.0, t_end - now())) if round_state == "play" else 0, "feed": feed.map(func(e): return e[1]),
 			"tut": players.filter(func(q): return q != null).map(func(q): return [q["name"], bool(q.get("tut_on", false)), int(q.get("tut", 0))]),
@@ -3117,7 +3163,7 @@ func _events_tick(t: float) -> void:
 		return
 	if t < ev_next:
 		return
-	var kinds := ["storm", "dog", "car"]
+	var kinds := ["dog", "car"] if plus.wx_active() else ["storm", "dog", "car"]   # 3D-4.x: the weather change brings its own weather
 	ev_kind = kinds[randi() % kinds.size()]
 	ev_until = t + 15.0
 	ev_warned.clear()
@@ -3415,7 +3461,7 @@ func set_bots(n: int) -> void:
 
 
 func _target_of(p: Dictionary) -> Vector3:
-	var target: Vector3 = start_point(p["slot"]) if p["carry"] else goal
+	var target: Vector3 = plus.home_of(p) if p["carry"] else goal
 	if flag_mode() and flags.size() == 2:
 		var my := int(p["team"])
 		if int(p.get("flag", -1)) >= 0:

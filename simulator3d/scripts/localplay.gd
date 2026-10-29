@@ -407,7 +407,7 @@ func _paint_card() -> void:
 	card.visible = show
 	if not show:
 		return
-	var sig := "%s|%d|%d|%d|%s" % [rs, g.results.size(), g.count(), main.game_bots, str(_st.get("daily", {}))]
+	var sig := "%s|%d|%d|%d|%s|%d" % [rs, g.results.size(), g.count(), main.game_bots, str(_st.get("daily", {})), int(g.plus.seq)]
 	if sig == _card_sig:
 		_center(card)
 		return
@@ -424,6 +424,15 @@ func _paint_card() -> void:
 			var dl_ := UI.heading(_plain("Duell: MoveEye %d : %d %s" % [int(g.duel["mw"]), int(g.duel["human"]), g.duel["who"]]))
 			card_v.add_child(dl_)
 			card_v.add_child(UI.small(_plain(str(g.duel["text"])), UI.TXT))
+		var me0 = g.local_player()                          # 3D-4.x: what the round taught MoveEye, weather change, theft
+		var pl_: Array = ([g.plus.teach_text(str(me0["name"]))] if me0 != null else []) + g.plus.lines()
+		for ln in pl_:
+			if str(ln) == "":
+				continue
+			var pll := UI.small(_plain(str(ln)), UI.TXT)
+			pll.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			pll.custom_minimum_size.x = 480
+			card_v.add_child(pll)
 		for r in g.results:
 			var l := Label.new()
 			l.text = _plain("%d  %s – %s" % [int(r["score"]), r["n"], r["info"]])
@@ -479,6 +488,18 @@ func _paint_card() -> void:
 	bm.text = "− Bot"
 	bm.pressed.connect(func(): main.game_bots = maxi(0, main.game_bots - 1); g.set_bots(main.game_bots); _card_sig = "")
 	row.add_child(bm)
+	var me1 = g.local_player()
+	if me1 != null and me1["role"] == "runner" and g.plus.gear_active():   # 3D-4.x: the camouflage thing (cycles through)
+		var gb := Button.new()
+		var cur: Array = g.plus._gear(str(me1.get("gear", "")))
+		gb.text = _plain("Tarnung: " + str(cur[2]))
+		gb.tooltip_text = _plain(str(cur[3]))
+		gb.pressed.connect(func():
+			var ids: Array = g.plus.GEAR.map(func(x): return x[0])
+			var i: int = (ids.find(str(me1.get("gear", ""))) + 1) % ids.size()
+			g.plus.choose(me1, ids[i])
+			_card_sig = "")
+		row.add_child(gb)
 	var lv := Button.new()
 	lv.text = "Verlassen"
 	lv.pressed.connect(stop)

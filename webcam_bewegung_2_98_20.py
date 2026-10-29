@@ -33864,7 +33864,7 @@ function gamePaint(r) {
 }
 Object.assign(I18N.de, {"the game wizard runs in the 3D simulator from 3D-3.41 - please update the simulator": "der Spiel-Assistent läuft ab 3D-3.41 im 3D-Simulator – bitte den Simulator aktualisieren",
   "Quick start": "Schnellstart", "runners at most": "Läufer höchstens", "Duel": "Duell", "MoveEye against the guard": "MoveEye gegen den Wächter",
-  "Guesses «Who gets through?»": "Tipps «Wer kommt durch?»", "Level": "Stufe"});
+  "Guesses «Who gets through?»": "Tipps «Wer kommt durch?»", "Level": "Stufe", "Best teachers": "Beste Lehrer"});
 // ---- game wizard: from 2.95.48 it lives in the 3D simulator (3D-3.41) - this page shows its steps and works them from afar ----
 let GW = null, GWS = 0, GWR = null, GWM = null, gwT = null;
 async function gwOp(o) {
@@ -34034,13 +34034,15 @@ function specPaint() {
   $("#s-specf").textContent = f;
   const R = $("#s-specres");
   if (G.round === "end" && G.res && G.res.length) {
-    const sig = JSON.stringify(G.res);
+    const sig = JSON.stringify(G.res) + JSON.stringify((G.px || {}).lines || []);   // 3D-4.x: the theft answer of MoveEye comes later
     if (SPECRES !== sig && SPECRES !== "closed:" + sig) { SPECRES = sig; R.innerHTML = ""; const bx = el("div", "bx"); bx.appendChild(el("h3", "", "🏆 " + t("Result")));
       if (G.jres && G.jres.text) { const jr = el("div", "", (G.jres.n ? "🎉 " : "🛡 ") + G.jres.text); jr.style.cssText = "font-size:22px;font-weight:800;margin:4px 0 8px"; bx.appendChild(jr);   // 2.98.18: «Fehlalarm-Jäger»
         if ((G.jres.cases || []).length) bx.appendChild(el("div", "mut", G.jres.cases.map(c => c[0] + " " + c[1] + " (" + c[2] + ", " + Math.round(c[3]) + " m)").join(" · "))); }
       if (G.fres && G.fres.text) { const fr = el("div", "", "🚩 " + G.fres.text + " – " + G.fres.title); fr.style.cssText = "font-size:26px;font-weight:800;margin:4px 0 8px"; bx.appendChild(fr); }   // 3D-4.x
       if (G.duel && G.duel.text) { const du = el("div", "", "🛡 " + t("Duel") + ": 🤖 MoveEye " + G.duel.mw + " : " + G.duel.human + " " + G.duel.who); du.style.cssText = "font-size:22px;font-weight:800;margin:4px 0 2px";
         bx.append(du, el("div", "", G.duel.text)); }
+      if (G.px && (G.px.lines || []).length) { const px = el("div", "", G.px.lines.join("\n")); px.style.cssText = "white-space:pre-line;font-weight:600;margin:4px 0 8px"; bx.appendChild(px); }   // 3D-4.x: weather change, theft, learning points
+      if (G.px && (G.px.teachers || []).length) bx.appendChild(el("div", "mut", "🧠 " + t("Best teachers") + ": " + G.px.teachers.slice(0, 3).map((b, i) => ["🥇", "🥈", "🥉"][i] + " " + b.n + " " + b.t).join("  ")));
       if ((G.votes || []).length) bx.appendChild(el("div", "mut", "🔮 " + t("Guesses «Who gets through?»") + ": " + G.votes.map(v => v.n + " → " + v.pick + (v.ok ? " ✅" : " ❌")).join(" · ")));
       [...G.res].sort((a, b) => (b.score || 0) - (a.score || 0)).forEach((x, i) => { const r = el("div", "r"); const d = el("span", ""); d.textContent = ["🥇", "🥈", "🥉", "4."][i] || (i + 1) + ".";
         const nm = el("b", "", x.n); nm.style.color = x.c; r.append(d, nm, el("span", "mut", x.info || ""), el("span", "sc", String(x.score ?? ""))); bx.appendChild(r); });
@@ -62103,6 +62105,13 @@ _HX_TRAINING = {
     'busy': ('beschäftigt', 'occupé', 'occupato', 'occupà'),
 }
 for _k, _v in _HX_TRAINING.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_SPIEL2 = {
+    'Best teachers': ('Beste Lehrer', 'Meilleurs professeurs', 'Migliori insegnanti', 'Meglders magisters'),
+}
+for _k, _v in _HX_SPIEL2.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
