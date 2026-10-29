@@ -123,7 +123,8 @@ def sim_state():
             "real_look": real_look(),               # 2.98.6: the look of the real pictures (146_echt_abgleich.py, realism.gd 3D-3.94)
             "det": {"persons": int(STATE.get("persons") or 0), "present": list(STATE.get("present") or []), "armed": is_armed(),
                     "boxes": list(STATE.get("person_boxes") or []) if STATE.get("persons") else [],   # 2.95.75: 0..1 of the head camera
-                    "noise": bool(AUDIO is not None and AUDIO.noisy())},
+                    "noise": bool(AUDIO is not None and AUDIO.noisy()),
+                    "pushes": msglog_recent(4)},             # after 2.98.17: the test bench counts real pushes (068)
             # the tracks of the mover: -1 … 1 each (from 2.94.0)
             "drive": {"l": MOVER["l"], "r": MOVER["r"]},
             # 2.96.5 (makeover 9 / 10): the twin - zones (0..1 of the picture), patrol points (degrees), the place

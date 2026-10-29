@@ -3543,7 +3543,7 @@ func _control(d: Dictionary) -> Dictionary:
 	elif a == "test_report":                           # the test run: progress and the last report
 		return testrun.state()
 	elif a == "test_start":                            # MoveEye starts a test run (3D-3.27): {"plan": "standard" | "quick" | "hard" | "night"}
-		var err: String = testrun.start(str(d.get("plan", testrun.plan)), d.get("cams", []) if typeof(d.get("cams", [])) == TYPE_ARRAY else [], int(d.get("mult", 1)))
+		var err: String = testrun.start(str(d.get("plan", testrun.plan)), d.get("cams", []) if typeof(d.get("cams", [])) == TYPE_ARRAY else [], int(d.get("mult", 1)), int(d.get("seed", 1)))
 		var st: Dictionary = testrun.state()
 		st["ok"] = err == ""
 		if err != "":

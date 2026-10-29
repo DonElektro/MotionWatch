@@ -5614,6 +5614,22 @@ def sdcard_health_item(L):
     return {"id": "sdwear", "icon": "🪪", "title": T("Memory card health"), "level": level, "text": " · ".join(parts), "tip": T(tip) if tip else "",
             "link": "/help#sdcard"}
 # ----------------------------------------------------------------------------
+# nach 2.98.17 (Wunsch Daniel, Prüfstand 2): der Prüfstand zählt nicht mehr jedes Aufflackern der Personen-Erkennung als Fehlalarm,
+# sondern die Push-Nachrichten, die MoveEye wirklich verschickt (im Test-Postfach der Simulation). Der Simulator bekommt dafür
+# mit jedem Zustand (290, «det») die letzten paar Nachrichten der Liste «Nachrichten» (065): Kennung, Zeit, Art – ohne Text,
+# ohne Bild, ohne Adresse. Er ordnet jede neue Nachricht dem Besucher zu, der in dem Moment sichtbar war (testrun.gd).
+# ----------------------------------------------------------------------------
+
+
+def msglog_recent(n=4):
+    """the newest n messages as [id, time, kind, status] (for the simulator / test bench) - cheap, from the cached list"""
+    try:
+        with MSGLOG["lock"]:
+            items = list(_msglog_load()[-n:])
+        return [[str(x.get("id", "")), round(float(x.get("t", 0.0)), 2), str(x.get("ev", "")), str(x.get("status", ""))] for x in items]
+    except Exception:
+        return []
+# ----------------------------------------------------------------------------
 # Hardware: servos + relays  (gpiozero -> pigpio -> simulation)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -19922,7 +19938,8 @@ def sim_state():
             "real_look": real_look(),               # 2.98.6: the look of the real pictures (146_echt_abgleich.py, realism.gd 3D-3.94)
             "det": {"persons": int(STATE.get("persons") or 0), "present": list(STATE.get("present") or []), "armed": is_armed(),
                     "boxes": list(STATE.get("person_boxes") or []) if STATE.get("persons") else [],   # 2.95.75: 0..1 of the head camera
-                    "noise": bool(AUDIO is not None and AUDIO.noisy())},
+                    "noise": bool(AUDIO is not None and AUDIO.noisy()),
+                    "pushes": msglog_recent(4)},             # after 2.98.17: the test bench counts real pushes (068)
             # the tracks of the mover: -1 … 1 each (from 2.94.0)
             "drive": {"l": MOVER["l"], "r": MOVER["r"]},
             # 2.96.5 (makeover 9 / 10): the twin - zones (0..1 of the picture), patrol points (degrees), the place
