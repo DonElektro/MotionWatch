@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 16:22",
+ "generated": "2026-10-29 16:35",
  "versions": [
   {
-   "version": "2.98.20",
-   "file": "webcam_bewegung_2_98_20.py",
+   "version": "2.98.21",
+   "file": "webcam_bewegung_2_98_21.py",
    "url": "",
-   "sha256": "b266ec6ddfdf2c0e297172660f0f5c3a934bab30a60154d1febd6a33b7581363",
-   "date": "2026-10-29 16:22",
-   "notes": "KI-Modell: Auswertung «wo versagt die KI» im Modellfeld, neues Modell nur wenn nicht schlechter (täglich); Simulator 3D-4.4 (realistischer: Pi-5-Modus, Objektiv, Infrarot, Wärmebild, Fehlalarm-Quellen, schwierige Personen, Tiere, Dein Platz; KI-Training mit Vielfalt)",
-   "sig": "9e19bbbef0251f41a0acf37c3f486632d4ba69874d6ac24b7604764d62cedee2d5889540c2e6a3b3da100882f3d81b32043f370188cbd702a1d4db7b70ec8404"
+   "sha256": "b36f9eb7e254677819793bac2d4a13225bed805511b5aa21d142a6ac890b3648",
+   "date": "2026-10-29 16:35",
+   "notes": "Simulator 3D-4.5: Spiel mit Wetterwechsel, Tarn-Sachen, Diebstahl-Missionen (MoveEye prüft mit dem Referenz-Scan) und Lern-Punkten",
+   "sig": "47a48b245fdc9f55c1ac439e4dd2928fa2d3ab94928b9d47184c8b3137ce4f80a17f8792ce1329606d121efc3764df7edd2c2d07f0b4a9d3ee5aa3f5367b3604"
   },
   {
    "version": "2.97.1",

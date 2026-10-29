@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_20.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_21.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,8 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.21: Simulator 3D-4.5: Spiel mit Wetterwechsel, Tarn-Sachen, Diebstahl-Missionen (MoveEye prüft mit dem Referenz-Scan)
+    und Lern-Punkten
   * 2.98.20: KI-Modell: Auswertung «wo versagt die KI» im Modellfeld, neues Modell nur wenn nicht schlechter (täglich);
     Simulator 3D-4.4 (realistischer: Pi-5-Modus, Objektiv, Infrarot, Wärmebild, Fehlalarm-Quellen, schwierige Personen, Tiere,
     Dein Platz; KI-Training mit Vielfalt)
@@ -892,10 +894,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_20.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_21.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_20.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_20.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_21.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_21.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -912,7 +914,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.20"
+APP_VERSION = "2.98.21"
 
 
 def default_data_dir():
@@ -21038,8 +21040,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-4.4", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31442814,
-         "sha256": "594db727441bb35cbcb8818fbe476c3b4deebc157366a14cb0620d50b5c1bd05"}
+SIM3D = {"version": "3D-4.5", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31484593,
+         "sha256": "d9b63fb3172033423391211ec74e0f50d3a38915ab05b74cb1e3054eeb7cf632"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -21180,8 +21182,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-4.4", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24564519,
-           "sha256": "d1ab66de5ee56b548bb39f6384a29b626fd7968b9e49798daf6a480fcf3b9009", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-4.5", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24605718,
+           "sha256": "d56736892b90ff5889edbee68ab019d4a5eaf5e6aee2cb5aaa449b26f13f9432", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -26549,7 +26551,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_20.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_21.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -33864,7 +33866,7 @@ function gamePaint(r) {
 }
 Object.assign(I18N.de, {"the game wizard runs in the 3D simulator from 3D-3.41 - please update the simulator": "der Spiel-Assistent läuft ab 3D-3.41 im 3D-Simulator – bitte den Simulator aktualisieren",
   "Quick start": "Schnellstart", "runners at most": "Läufer höchstens", "Duel": "Duell", "MoveEye against the guard": "MoveEye gegen den Wächter",
-  "Guesses «Who gets through?»": "Tipps «Wer kommt durch?»", "Level": "Stufe"});
+  "Guesses «Who gets through?»": "Tipps «Wer kommt durch?»", "Level": "Stufe", "Best teachers": "Beste Lehrer"});
 // ---- game wizard: from 2.95.48 it lives in the 3D simulator (3D-3.41) - this page shows its steps and works them from afar ----
 let GW = null, GWS = 0, GWR = null, GWM = null, gwT = null;
 async function gwOp(o) {
@@ -34034,13 +34036,15 @@ function specPaint() {
   $("#s-specf").textContent = f;
   const R = $("#s-specres");
   if (G.round === "end" && G.res && G.res.length) {
-    const sig = JSON.stringify(G.res);
+    const sig = JSON.stringify(G.res) + JSON.stringify((G.px || {}).lines || []);   // 3D-4.x: the theft answer of MoveEye comes later
     if (SPECRES !== sig && SPECRES !== "closed:" + sig) { SPECRES = sig; R.innerHTML = ""; const bx = el("div", "bx"); bx.appendChild(el("h3", "", "🏆 " + t("Result")));
       if (G.jres && G.jres.text) { const jr = el("div", "", (G.jres.n ? "🎉 " : "🛡 ") + G.jres.text); jr.style.cssText = "font-size:22px;font-weight:800;margin:4px 0 8px"; bx.appendChild(jr);   // 2.98.18: «Fehlalarm-Jäger»
         if ((G.jres.cases || []).length) bx.appendChild(el("div", "mut", G.jres.cases.map(c => c[0] + " " + c[1] + " (" + c[2] + ", " + Math.round(c[3]) + " m)").join(" · "))); }
       if (G.fres && G.fres.text) { const fr = el("div", "", "🚩 " + G.fres.text + " – " + G.fres.title); fr.style.cssText = "font-size:26px;font-weight:800;margin:4px 0 8px"; bx.appendChild(fr); }   // 3D-4.x
       if (G.duel && G.duel.text) { const du = el("div", "", "🛡 " + t("Duel") + ": 🤖 MoveEye " + G.duel.mw + " : " + G.duel.human + " " + G.duel.who); du.style.cssText = "font-size:22px;font-weight:800;margin:4px 0 2px";
         bx.append(du, el("div", "", G.duel.text)); }
+      if (G.px && (G.px.lines || []).length) { const px = el("div", "", G.px.lines.join("\n")); px.style.cssText = "white-space:pre-line;font-weight:600;margin:4px 0 8px"; bx.appendChild(px); }   // 3D-4.x: weather change, theft, learning points
+      if (G.px && (G.px.teachers || []).length) bx.appendChild(el("div", "mut", "🧠 " + t("Best teachers") + ": " + G.px.teachers.slice(0, 3).map((b, i) => ["🥇", "🥈", "🥉"][i] + " " + b.n + " " + b.t).join("  ")));
       if ((G.votes || []).length) bx.appendChild(el("div", "mut", "🔮 " + t("Guesses «Who gets through?»") + ": " + G.votes.map(v => v.n + " → " + v.pick + (v.ok ? " ✅" : " ❌")).join(" · ")));
       [...G.res].sort((a, b) => (b.score || 0) - (a.score || 0)).forEach((x, i) => { const r = el("div", "r"); const d = el("span", ""); d.textContent = ["🥇", "🥈", "🥉", "4."][i] || (i + 1) + ".";
         const nm = el("b", "", x.n); nm.style.color = x.c; r.append(d, nm, el("span", "mut", x.info || ""), el("span", "sc", String(x.score ?? ""))); bx.appendChild(r); });
@@ -51754,7 +51758,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.20")
+        self.root.title("MoveEye 2.98.21")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -52107,7 +52111,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.20 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.21 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -62103,6 +62107,13 @@ _HX_TRAINING = {
     'busy': ('beschäftigt', 'occupé', 'occupato', 'occupà'),
 }
 for _k, _v in _HX_TRAINING.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
+_HX_SPIEL2 = {
+    'Best teachers': ('Beste Lehrer', 'Meilleurs professeurs', 'Migliori insegnanti', 'Meglders magisters'),
+}
+for _k, _v in _HX_SPIEL2.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])

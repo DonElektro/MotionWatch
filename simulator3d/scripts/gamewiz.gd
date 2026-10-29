@@ -37,7 +37,10 @@ const JG_TIME := [["3", "⏱", "3 Minuten", "Kurz – gut für Kinder und zum Au
 const JG_FIXED := {"game_goal": "reach", "game_lives": "0", "game_items": 0, "game_teams": false, "game_rescue": false, "game_stones": false,
 		"game_cones": false, "game_powers": false, "game_photos": false, "game_hides": 0, "game_decoy": false, "game_events": false,
 		"game_checkpoints": 0, "game_autohandicap": false, "game_tasks": false, "game_tutorial": false, "game_daily": false, "game_ghost": false,
-		"game_heart": false, "game_botguard": false}
+		"game_heart": false, "game_botguard": false, "game_wx": false, "game_gear": false}
+# 3D-4.x: the extras of gameplus.gd - not controls of the card «Spiel», only here in the wizard (kept by gameplus.gd)
+const PX_KEYS := ["game_wx", "game_gear", "game_theft"]
+const THEFT_OPTS := [["auto", "zufällig"], ["Velo", "🚲 das Velo"], ["Kühlboxen", "🧊 die Kühlbox (nur Camping-Platz)"]]
 # 3D-3.77: on the last step - who plays along
 const PLAYER_OPTS := [["game_bots", "Computer-Spieler (Bots)", "select", 0, 0, "", false, [["0", "keine"], ["1", "1 Bot"], ["2", "2 Bots"], ["3", "3 Bots"]]],
 		["game_botguard", "🤖 Bot-Wächter, wenn niemand Wächter sein will (Spielart «Wächter»)", "toggle", 0, 0, "", false],
@@ -58,7 +61,8 @@ const MODES := [["mw", "🛡", "Gegen MoveEye", "Die echte Erkennung von MoveEye
 const GOALS := [["reach", "🟢", "Zum Ziel schleichen", "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg."],
 		["return", "💰", "Beute holen und zurückbringen", "Ziel: die Beute beim grünen Licht holen und zurück zum Start bringen."],
 		["flag", "🚩", "Fahne erobern (zwei Teams)", "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie. Es gewinnt das Team mit mehr eroberten Fahnen (z. B. Rot 2 : 1 Blau)."],
-		["sprint", "⏱", "Sprint (90 Sekunden)", "Für Kinder und kurze Runden: immer derselbe Parcours mit 3 Toren. Durch die Tore, dann ins Ziel – je schneller, desto mehr Punkte."]]
+		["sprint", "⏱", "Sprint (90 Sekunden)", "Für Kinder und kurze Runden: immer derselbe Parcours mit 3 Toren. Durch die Tore, dann ins Ziel – je schneller, desto mehr Punkte."],
+		["theft", "🚲", "Diebstahl (Velo oder Kühlbox)", "Ziel: das Velo oder die Kühlbox unbemerkt zum orangen Ausgang tragen. Wer sie trägt, ist langsamer. Am Schluss schaut MoveEye nach, ob es merkt, dass etwas fehlt."]]
 const LEVELS := [["easy", "🌱", "Anfänger", "Wächter leicht, unbegrenzte Leben, 8 Minuten, Sichtfeld der Kameras sichtbar."],
 		["normal", "🎯", "Normal", "Wächter normal, 3 Leben, 5 Minuten."],
 		["hard", "🔥", "Profis", "Wächter schwer, nur 1 Leben, 4 Minuten, kein Sichtfeld."]]
@@ -74,7 +78,10 @@ const OPTIONS := [["game_minutes", "Dauer einer Runde", "range", 1, 15, " min", 
 		["game_photos", "📸 Erwischt-Fotos (Galerie am Schluss)", "toggle", 0, 0, "", true], ["game_hides", "🌳 Verstecke (Büsche, 8 s unsichtbar)", "range", 0, 6, "", true],
 		["game_decoy", "🦆 Lockvogel erlaubt", "toggle", 0, 0, "", true], ["game_night", "🌙 Nacht-Runde mit Taschenlampen", "toggle", 0, 0, "", true],
 		["game_events", "⛈ Zufallsereignisse (Gewitter, Hund, Auto)", "toggle", 0, 0, "", true], ["game_checkpoints", "🚩 Checkpoints (+150 Punkte je)", "range", 0, 3, "", true],
-		["game_autohandicap", "🎯 Handicap für den Ersten der Rangliste", "toggle", 0, 0, "", true], ["game_tasks", "✅ Eine Aufgabe für jede Runde (Bonus)", "toggle", 0, 0, "", true]]
+		["game_autohandicap", "🎯 Handicap für den Ersten der Rangliste", "toggle", 0, 0, "", true], ["game_tasks", "✅ Eine Aufgabe für jede Runde (Bonus)", "toggle", 0, 0, "", true],
+		["game_theft", "🚲 Diebstahl: was wird geklaut?", "select", 0, 0, "", false, THEFT_OPTS],
+		["game_wx", "⛅ Wetterwechsel mitten in der Runde (Gewitter, Nebel oder Dämmerung – 10 s vorher warnt das Handy)", "toggle", 0, 0, "", true],
+		["game_gear", "🎒 Tarn-Sachen zum Auswählen: Tarnkleidung, Wärmedecke, Karton, Regenschirm", "toggle", 0, 0, "", true]]
 const LIVES := [["0", "unbegrenzt"], ["3", "3 Leben"], ["1", "1 Leben"]]
 const EXTRAS_LABEL := ["Extras – Übungsrunde, Tagesaufgabe, Geist, Herzschlag", "Extras – Dauer, Leben, Kristalle, Teams, Steine, Fotos, Verstecke, Nacht, Ereignisse …"]
 const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter Dingen sieht euch die Kamera schlechter. Rennen hört das Mikrofon.",
@@ -93,6 +100,10 @@ const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter
 		"botguard": "🤖 Bot-Wächter: Will niemand Wächter sein, dreht ein Bot den Kopf und ruft «Erwischt!» – auch er kann sich täuschen lassen.",
 		"level": "⭐ Stufen: Jede Runde gibt Erfahrungspunkte (Punkte, Abzeichen, Aufgabe, Tagesaufgabe). Höhere Stufen schalten Dinge für die eigene Figur frei.",
 		"watch": "👀 Zuschauer machen mit: Sie tippen, wer durchkommt, und dürfen zwei Locksteine werfen.",
+		"wx": "⛅ Wetterwechsel: Mitten in der Runde kommt ein Gewitter, eine Nebelbank oder die Dämmerung. 10 Sekunden vorher warnt das Handy. Am Schluss steht da, wie gut MoveEye vorher und nachher aufgepasst hat.",
+		"gear": "🎒 Tarn-Sachen: Vor der Runde wählt jeder auf dem Handy Tarnkleidung, Wärmedecke, Karton oder Regenschirm. Jedes Ding hilft – hat aber einen Haken (langsamer, laut …). Am Schluss steht da, ob MoveEye dich trotzdem erkannt hat.",
+		"theft": "🚲 Diebstahl: Vor der Runde merkt sich MoveEye, wie der Platz aussieht (Referenz-Scan). Wer das Ding zum Ausgang bringt, bekommt +500. Am Schluss: «MoveEye hat bemerkt: Velo fehlt ✓» – oder eben nicht.",
+		"teach": "🧠 Lern-Punkte: Alles, was MoveEye in deiner Runde verpasst, wird ein Lernbild. Am Schluss steht da, wie viel du MoveEye beigebracht hast – das gibt Erfahrungspunkte und einen Platz bei den «Besten Lehrern».",
 		"new": "🎓 Wer zum ersten Mal spielt, bekommt von selbst die Übungsschritte (gehen, ducken, kriechen, Stein, Busch).",
 		"jg_how": "🦊 So geht's: Jeder wählt auf dem Handy einen Lockvogel und bewegt ihn vor der Kamera. Der Pfeil zeigt zur Kamera 📷. Die Dinge haben einen eigenen Knopf (Windstoss, Schwenken, Steigen, Fallen, Schwärmen).",
 		"jg_score": "🎉 Punkte: Meldet MoveEye eine Person, obwohl nur dein Lockvogel im Bild ist, gibt es 100 Punkte (+50 für jeden neuen Lockvogel). Ist ein echter Mensch im Bild, zählt es nicht.",
@@ -103,19 +114,21 @@ const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter
 const BASE := {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 5, "game_items": 3, "game_teams": false,
 		"game_rescue": false, "game_stones": true, "game_cones": false, "game_powers": true, "game_spectate": true, "game_photos": true, "game_hides": 3,
 		"game_decoy": true, "game_night": false, "game_events": true, "game_checkpoints": 0, "game_autohandicap": false, "game_tasks": true, "game_bots": "0",
-		"game_tutorial": false, "game_daily": false, "game_ghost": true, "game_heart": true, "game_botguard": true}
+		"game_tutorial": false, "game_daily": false, "game_ghost": true, "game_heart": true, "game_botguard": true,
+		"game_wx": false, "game_gear": true, "game_theft": "auto"}
 const PRESETS := {"kids": {"game_mode": "mw", "game_level": "easy", "game_lives": "0", "game_minutes": 5, "game_cones": true, "game_events": false,
-			"game_tasks": false, "game_decoy": false, "game_heart": false, "game_bots": "1", "game_items": 3, "game_hides": 4},
+			"game_tasks": false, "game_decoy": false, "game_heart": false, "game_bots": "1", "game_items": 3, "game_hides": 4, "game_wx": false},
 		"family": {"game_mode": "guard", "game_level": "normal", "game_lives": "3", "game_minutes": 5, "game_botguard": true, "game_autohandicap": true},
 		"pro": {"game_mode": "mw", "game_level": "hard", "game_lives": "1", "game_minutes": 4, "game_powers": false, "game_items": 2, "game_hides": 2,
-			"game_checkpoints": 2, "game_autohandicap": true},
+			"game_checkpoints": 2, "game_autohandicap": true, "game_wx": true},
 		"kids_pc": {"game_mode": "camera", "game_level": "easy", "game_lives": "0", "game_minutes": 5, "game_cones": true, "game_events": false,
-			"game_tasks": false, "game_decoy": false, "game_heart": false, "game_bots": "2", "game_tutorial": true, "game_hides": 4},
+			"game_tasks": false, "game_decoy": false, "game_heart": false, "game_bots": "2", "game_tutorial": true, "game_hides": 4, "game_wx": false},
 		"free": {"game_mode": "free", "game_lives": "0", "game_items": 0, "game_hides": 0, "game_powers": false, "game_events": false, "game_tasks": false,
-			"game_decoy": false, "game_checkpoints": 0, "game_bots": "0", "game_botguard": false, "game_spectate": false, "game_photos": false}}
+			"game_decoy": false, "game_checkpoints": 0, "game_bots": "0", "game_botguard": false, "game_spectate": false, "game_photos": false,
+			"game_wx": false, "game_gear": false}}
 const QUICK := [["kids", "🧒", "Kinder · 5 Min.", "Leicht: unbegrenzte Leben, Sichtfeld sichtbar, Verstecke, 1 Bot läuft mit. Ohne Aufgaben und Zufallsereignisse."],
 		["family", "👪", "Familie", "Einer ist Wächter (sonst der Bot-Wächter), 3 Leben, 5 Minuten, Aufgaben und Zufallsereignisse. Am Schluss das Duell gegen MoveEye."],
-		["pro", "🔥", "Profis", "Gegen MoveEye, schwer: nur 1 Leben, 4 Minuten, Checkpoints, Handicap für den Ersten, keine Power-ups."]]
+		["pro", "🔥", "Profis", "Gegen MoveEye, schwer: nur 1 Leben, 4 Minuten, Checkpoints, Handicap für den Ersten, keine Power-ups, mit Wetterwechsel."]]
 const LEVEL_OF := {"kids": "easy", "family": "normal", "pro": "hard", "kids_pc": "easy", "free": "normal"}
 
 
@@ -126,6 +139,7 @@ func _cur() -> Dictionary:
 		if c.id in KEYS and c["get"] != null:
 			o[c.id] = c["get"].call()
 	o["game_lures"] = main.game.jaeger.allowed_str()        # «Fehlalarm-Jäger»: which lures (not a control of the card)
+	o.merge(main.game.plus.cfg_get(), true)                 # 3D-4.x: weather change, camouflage things, theft (only here)
 	return o
 
 
@@ -194,7 +208,8 @@ func _rules() -> Array:
 			out.append(g[3])
 	out.append(RULES["tips"])
 	for pair in [["game_rescue", "rescue"], ["game_items", "items"], ["game_powers", "powers"], ["game_powers", "lastmin"], ["game_photos", "photos"],
-			["game_hides", "hides"], ["game_night", "night"], ["game_events", "events"], ["game_checkpoints", "cps"], ["game_tasks", "tasks"], ["game_autohandicap", "hc"]]:
+			["game_hides", "hides"], ["game_night", "night"], ["game_events", "events"], ["game_checkpoints", "cps"], ["game_tasks", "tasks"], ["game_autohandicap", "hc"],
+			["game_wx", "wx"], ["game_gear", "gear"]]:
 		var v = W.get(pair[0], false)
 		if (typeof(v) == TYPE_BOOL and v) or (typeof(v) != TYPE_BOOL and float(v) > 0.0):
 			out.append(RULES[pair[1]])
@@ -202,6 +217,9 @@ func _rules() -> Array:
 		out.append(RULES["decoy"])
 	if str(W.get("game_mode")) == "guard" and W.get("game_botguard", false):
 		out.append(RULES["botguard"])
+	if str(W.get("game_goal")) == "theft":
+		out.append(RULES["theft"])
+	out.append(RULES["teach"])
 	out.append(RULES["new"])
 	out.append(RULES["watch"])
 	out.append(RULES["level"])
@@ -224,6 +242,7 @@ func apply_preset(id: String, open_game := true) -> Array:
 			var r: Dictionary = main.control_set(k, d[k])
 			if not r.get("ok", false):
 				errs.append(k)
+	main.game.plus.cfg_set(d)
 	if open_game:
 		main.game.set_open(true)
 	return errs
@@ -305,6 +324,8 @@ func model() -> Dictionary:
 				continue
 			if o[0] == "game_botguard" and str(W.get("game_mode")) != "guard":
 				continue
+			if o[0] == "game_theft" and str(W.get("game_goal")) != "theft":
+				continue                                       # 3D-4.x: which thing - only with the goal «Diebstahl»
 			var d := {"id": o[0], "label": o[1], "type": o[2], "value": W[o[0]], "extra": o[6]}
 			if o[2] == "range":
 				d["min"] = o[3]
@@ -325,7 +346,13 @@ func model() -> Dictionary:
 				gl = x[1] + " " + x[2]
 		summary = [["Spielart", md], ["Ziel", gl], ["Dauer einer Runde", "%d min" % int(W.get("game_minutes", 5))],
 				["Leben", "unbegrenzt" if str(W.get("game_lives")) == "0" else str(W.get("game_lives"))], ["Kristalle", str(int(W.get("game_items", 0)))],
-				["Teams", "Rot gegen Blau" if W.get("game_teams", false) else "nein"]]
+				["Teams", "Rot gegen Blau" if W.get("game_teams", false) else "nein"],
+				["Wetterwechsel", "ja – Gewitter, Nebel oder Dämmerung" if W.get("game_wx", false) else "nein"],
+				["Tarn-Sachen", "ja – jeder wählt auf dem Handy" if W.get("game_gear", false) else "nein"]]
+		if str(W.get("game_goal")) == "theft":
+			for th in THEFT_OPTS:
+				if th[0] == str(W.get("game_theft", "auto")):
+					summary.append(["Wird geklaut", th[1]])
 		if jg():
 			var ll := PackedStringArray()
 			for l in main.game.jaeger.LURES:
@@ -450,6 +477,7 @@ func _apply() -> void:
 	if jg():                                               # «Fehlalarm-Jäger»: the extras of the other games off, the lures
 		W.merge(JG_FIXED, true)
 		g.jaeger.set_allowed(str(W.get("game_lures", "")))
+	g.plus.cfg_set(W)                                      # 3D-4.x: weather change, camouflage things, theft
 	for k in KEYS:
 		if W.has(k):
 			var r: Dictionary = main.control_set(k, W[k])

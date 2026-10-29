@@ -206,3 +206,29 @@ static func decorate(a, lk: Dictionary, col: Color) -> void:
 				sm.height = 0.04
 				var an := TAU * k / 5.0
 				_add(hd, sm, Vector3(cos(an) * 0.09, 0.34, sin(an) * 0.09), Color(0.95, 0.2, 0.25) if k % 2 == 0 else Color(0.2, 0.6, 1.0), 0.5)
+
+
+func add_teach(name_: String, n: int) -> int:
+	"""3D-4.x: learning points for MoveEye (gameplus.gd) - kept per name for the ranking «Beste Lehrer»; returns the total"""
+	if is_bot(name_) or key(name_) == "" or n <= 0:
+		return 0
+	_load()
+	var k := key(name_)
+	var e: Dictionary = db.get(k, {"n": name_, "xp": 0, "rounds": 0})
+	e["n"] = name_
+	e["teach"] = int(e.get("teach", 0)) + n
+	db[k] = e
+	_save()
+	return int(e["teach"])
+
+
+func teachers(top := 5) -> Array:
+	"""«Beste Lehrer»: who taught MoveEye the most (all evenings) - [{"n", "t", "lv"}]"""
+	_load()
+	var out := []
+	for k in db:
+		var e: Dictionary = db[k]
+		if int(e.get("teach", 0)) > 0:
+			out.append({"n": str(e.get("n", k)), "t": int(e["teach"]), "lv": level_of(int(e.get("xp", 0)))})
+	out.sort_custom(func(a, b): return int(a["t"]) > int(b["t"]))
+	return out.slice(0, top)

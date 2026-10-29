@@ -34,6 +34,7 @@ var mw_false: Array = []                  # boxes MoveEye reported where no play
 var _false_t := 0.0
 var info := ""
 var http: HTTPRequest
+var saved_by: Array = []                  # 3D-4.x: names whose sneaking way was saved in this round (learning points, gameplus.gd)
 
 
 func _ready() -> void:
@@ -65,6 +66,7 @@ func round_start() -> void:
 	_rep_by.clear()
 	mw_false.clear()
 	blind.clear()
+	saved_by.clear()
 	hunter = {"shots": 0, "hits": 0, "miss_mw": 0}
 	_path_t = 0.0
 
@@ -128,6 +130,7 @@ func tick(dt: float) -> void:
 			if not open_ep.has(s):
 				open_ep[s] = {"n": p["name"], "t": t, "lat": -1.0, "dist": snappedf(_dist(a), 0.1), "post": int(a.ctl_posture),
 						"dark": main.is_dark(), "px": int(_px(p)), "weather": str(main.weather), "shot": false}
+				open_ep[s].merge(_tags(p))                # 3D-4.x: weather phase and camouflage thing (gameplus.gd)
 			var e: Dictionary = open_ep[s]
 			if reported and float(e["lat"]) < 0.0:
 				e["lat"] = snappedf(t - float(e["t"]), 0.1)
@@ -252,6 +255,18 @@ func _visitor_at(b: Array) -> bool:
 
 
 
+func _tags(p: Dictionary) -> Dictionary:
+	"""3D-4.x: under which conditions (weather change before / after, the conditions now) and with which camouflage thing"""
+	if game.plus == null:
+		return {}
+	var d := {"cond": game.plus.cond_now()}
+	if game.plus.phase() != "":
+		d["wx"] = game.plus.phase()
+	if game.plus.gear_of(p) != "":
+		d["gear"] = game.plus.gear_of(p)
+	return d
+
+
 func _miss_pic(p: Dictionary, why: String) -> void:
 	if misses.size() >= MAX_MISS:
 		return
@@ -261,6 +276,7 @@ func _miss_pic(p: Dictionary, why: String) -> void:
 	var a = p["actor"]
 	var rec := {"n": p["name"], "box": b, "why": why, "dist": snappedf(_dist(a), 0.1), "post": int(a.ctl_posture),
 			"dark": main.is_dark(), "weather": str(main.weather), "t": snappedf(now() - game.t_start, 0.1)}
+	rec.merge(_tags(p))
 	main.want_snapshot(0)
 	get_tree().create_timer(0.35).timeout.connect(func():
 		var b2 := box(p)                                  # where the player is when the picture is taken
@@ -332,6 +348,7 @@ func round_end() -> void:
 					fw.store_string(JSON.stringify(w))
 					fw.close()
 					saved_paths += 1
+					saved_by.append(str(p["name"]))
 	var rep := report_dict()
 	rep["schleichwege"] = saved_paths
 	if main.game_learn_report or not misses.is_empty():
@@ -372,7 +389,7 @@ func report_dict() -> Dictionary:
 			"sichtbar": n, "gemeldet": found, "rate": (round(100.0 * found / n) if n > 0 else -1),
 			"reaktion_median_s": (lats[lats.size() / 2] if not lats.is_empty() else -1), "baender": bands,
 			"jaeger": hunter, "verpasst": misses, "episoden": eps, "zuordnung": "rahmen" if has_boxes() else "anzahl",
-			"fehlalarme_mw": mw_false}
+			"fehlalarme_mw": mw_false, "extras": game.plus.report() if game.plus != null else {}}
 
 
 # ---- sending (same way as the test bench: GitHub key, otherwise the desktop) -----------------------------------------
