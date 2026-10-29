@@ -272,8 +272,9 @@ SIMHUB_JS = r"""
     const T = [["scene", "🗺", tt("Scene"), ((H.scenes || []).find(x => x.id === H.scene) || {}).name || H.scene || "–"],
       ["hour", H.dark ? "🌙" : "☀", tt("Time of day"), H.clock || "–"],
       ["weather", wxIcon(H.weather), tt("Weather"), tt(H.weather || "–") + (H.ambient != null ? " · " + Math.round(H.ambient) + " °C" : "")],
-      ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")],
-      ["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]];
+      ["visit", (window.EVI || {}).person || "🚶", tt("Send a visitor"), (H.visitors != null ? H.visitors + " " + tt("visitors") + " " + tt("now") : "")]
+      ];
+    if (full) T.push(["surprise", "🎲", tt("Surprise night"), H.surprise ? tt("on") : tt("off")]);   // 2.98.13: drills / surprise only in the Simulator tab
     if (full && H.twin_ok) T.push(["twin", "🪞", tt("Twin of your place"), tt("Place, zones, patrol")]);   // 2.98.5: zones / detection in 3D = simulator, «Ansicht»
     if (full) { const R = H.rover || {};
       T.push(["devices", "📡", tt("Several devices"), H.dev2 ? tt("2nd device") + ": " + tt("P_" + (H.dev2_place || "opposite")) : tt("off")],
