@@ -1155,6 +1155,29 @@ class WebStream:
             lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or CFG["lang"])
             return reply({"ok": False, "error": tr_err("locked - settings can only be changed after unlocking (PIN)", lang)}, 423)
 
+        @app.route("/messages")
+        def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
+            return Response(render_page(MSG_PAGE, "msgs"), mimetype="text/html")
+
+        @app.route("/api/messages", methods=["GET", "POST"])
+        def api_messages():
+            if request.method == "POST":
+                if (body().get("action") or "") == "clear":
+                    msglog_clear()
+                    return reply({"ok": True})
+                return reply({"ok": False, "error": "unknown action"}, 400)
+            if request.args.get("src") == "server":
+                items, err = ntfy_server_messages(str(request.args.get("since", "24h")))
+                return reply({"ok": not err, "items": items, "error": err or None})
+            return reply({"ok": True, "items": msglog_list()})
+
+        @app.route("/api/messages/img/<mid>")
+        def api_messages_img(mid):
+            p = msglog_img(mid)
+            if not p:
+                return Response("not found", status=404)
+            return send_file(p, mimetype="image/jpeg", max_age=86400)
+
         @app.route("/log")
         def log_page():
             return Response(render_page(LOG_PAGE, "log"), mimetype="text/html")

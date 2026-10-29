@@ -290,8 +290,9 @@ class AutoTuner:
         self.t_start = time.time(); self.calibrated = False
         self.noise_areas, self.noise_frac = [], []
         self.last_eval = time.time()
-        self.new_candidates = self.became_person = self.near_miss = 0
+        self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
         self.seen_ids = set()
+        self.base_min_area = None
         STATE["auto_status"] = "calibrating…"
         log_event("auto", "Auto-tune: calibrating - keep the scene empty for a few seconds")
 
@@ -322,6 +323,7 @@ class AutoTuner:
                 self.calibrated = True
                 if self.noise_areas:
                     self._set("min_area", max(600, min(4000, float(np.percentile(self.noise_areas, 95)) * 2.5)), "scene noise")
+                self.base_min_area = float(CFG["min_area"])
                 frac = float(np.mean(self.noise_frac)) if self.noise_frac else 0.0
                 if frac > 0.02:
                     self._set("sensitivity", max(10, CFG["sensitivity"] - 20), "noisy scene")
@@ -331,8 +333,13 @@ class AutoTuner:
                 log_event("auto", "Auto-tune: calibration done, now adjusting live")
             return
         for t in tracks:
-            if not getattr(t, "_seen", False):
+            # 2.98.13: something that walks steadily somewhere is no «false blob» even when it is not a person (yet) - before,
+            # every person that was not recognised made the minimum size bigger, until no person was recognised at all
+            walker = len(t.speeds) >= 4 and t.steadiness() >= 0.3 and t.speed() >= CFG["walk_min_speed"]
+            if not getattr(t, "_seen", False) and not walker and t.age >= 2:
                 t._seen = True; self.new_candidates += 1
+            elif walker and not getattr(t, "_walker", False):
+                t._walker = True; self.walkers += 1
             if t.is_person and not getattr(t, "_counted", False):
                 t._counted = True; self.became_person += 1
             if (not t.is_person and not t.is_vehicle and t.age >= CFG["walk_frames"]
@@ -345,8 +352,9 @@ class AutoTuner:
         self.last_eval = now
         false_rate = (self.new_candidates - self.became_person) / minutes
         if not persons:
-            if false_rate > 25:
-                self._set("min_area", min(8000, CFG["min_area"] * 1.2), f"{false_rate:.0f} false blobs/min")
+            if false_rate > 25 and self.walkers == 0:              # 2.98.13: not while somebody walks; at most 2.5 × the calibrated size
+                cap = min(8000, 2.5 * (self.base_min_area or CFG["min_area"]))
+                self._set("min_area", min(cap, CFG["min_area"] * 1.2), f"{false_rate:.0f} false blobs/min")
             elif false_rate > 12:
                 self._set("sensitivity", max(10, CFG["sensitivity"] - 5), "many false blobs")
             elif false_rate < 2 and self.became_person == 0:
@@ -356,7 +364,7 @@ class AutoTuner:
         elif self.became_person > 0 and false_rate < 5:
             self._set("speed_consistency", min(0.7, CFG["speed_consistency"] + 0.02), "persons detected, tightening")
         STATE["auto_status"] = f"tuned · {false_rate:.0f} false/min"
-        self.new_candidates = self.became_person = self.near_miss = 0
+        self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
 
 
 # ----------------------------------------------------------------------------

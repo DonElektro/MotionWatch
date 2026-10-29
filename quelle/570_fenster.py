@@ -1054,6 +1054,40 @@ class App:
             tk.Label(f, text=title.upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), anchor="w").pack(fill="x", pady=(0, 6))
         return f
 
+    def _messages_win(self):
+        """2.98.13: the push messages (like Verlauf → Nachrichten on the web page): what MoveEye sent, newest first"""
+        w = getattr(self, "_msg_top", None)
+        if w is not None and w.winfo_exists():
+            w.lift(); self._msg_fill(); return
+        w = self._msg_top = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Messages")); w.configure(bg=C["bg"]); w.geometry("620x520")
+        top = tk.Frame(w, bg=C["bg"]); top.pack(fill="x", padx=12, pady=(10, 4))
+        tk.Label(top, text=tr("Everything MoveEye sent to your phone - and the messages on the ntfy server."), bg=C["bg"], fg=C["mut"],
+                 font=("DejaVu Sans", 9), wraplength=420, justify="left").pack(side="left")
+        tk.Button(top, text=tr("↻ Refresh"), command=self._msg_fill).pack(side="right")
+        self._msg_txt = tk.Text(w, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10), wrap="word", bd=0, padx=10, pady=8)
+        self._msg_txt.pack(fill="both", expand=True, padx=12, pady=(0, 12))
+        self._msg_txt.tag_configure("tt", font=("DejaVu Sans", 10, "bold")); self._msg_txt.tag_configure("mt", foreground=C["mut"], font=("DejaVu Sans", 8))
+        self._msg_txt.tag_configure("bad", foreground=C.get("red", "#ff453a"))
+        self._msg_fill()
+
+    def _msg_fill(self):
+        t_ = getattr(self, "_msg_txt", None)
+        if t_ is None or not t_.winfo_exists():
+            return
+        ICON = {"person": "🚨", "tamper": "🛑", "warm": "🔥", "noise": "🔊", "prealarm": "👀", "test": "🧪"}
+        ST = {"sent": tr("sent"), "failed": tr("failed"), "test": tr("test inbox"), "none": tr("no push channel")}
+        t_.config(state="normal"); t_.delete("1.0", "end")
+        items = msglog_list()
+        if not items:
+            t_.insert("end", tr("No messages yet."), "mt")
+        for m in items:
+            t_.insert("end", ICON.get(m.get("ev"), "📩") + " " + (m.get("title") or "MoveEye") + "\n", "tt")
+            if m.get("text"):
+                t_.insert("end", m["text"] + "\n")
+            t_.insert("end", datetime.fromtimestamp(float(m.get("t") or 0)).strftime("%a %d.%m. %H:%M:%S") + " · " + ST.get(m.get("status"), m.get("status", "")) +
+                      ((" · " + m["where"]) if m.get("where") and m.get("status") == "sent" else "") + "\n\n", "bad" if m.get("status") == "failed" else "mt")
+        t_.config(state="disabled")
+
     def _tabs(self):
         t = [("live", "Live")]
         if self.is_shown("weather") or self.is_shown("cpu"):
@@ -1103,6 +1137,7 @@ class App:
             lb.bind("<Button-1>", lambda e: self.toggle_lang(lb.winfo_rootx(), lb.winfo_rooty() + lb.winfo_height()))
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
             self._ibtn(ctl, "◐", self.toggle_theme, tr("Light") if CFG["theme"] == "dark" else tr("Dark")).pack(side="right", padx=(0, 6))
+            self._ibtn(ctl, "✉", self._messages_win, tr("Messages")).pack(side="right", padx=(0, 6))     # 2.98.13
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
             self.b_fs.pack(side="right", padx=(0, 6))
             self._ibtn(ctl, "⇤" if show("sidebar") else "⇥", self.toggle_sidebar, tr("Settings panel") + " (Ctrl+B)").pack(side="right", padx=(0, 6))

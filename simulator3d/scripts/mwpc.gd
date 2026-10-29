@@ -343,7 +343,7 @@ func _packages(py: String) -> bool:
 
 func _motion_watch() -> String:
 	"""3. the newest MoveEye (from versions.json on GitHub); without internet the one fetched before"""
-	_say("Suche die neuste Motion-Watch-Version …")
+	_say("Suche die neuste MoveEye-Version …")
 	var have := ""
 	for f in DirAccess.get_files_at(dir.path_join("mw")):
 		if f.begins_with("webcam_bewegung_") and f.ends_with(".py"):
@@ -372,7 +372,7 @@ func _motion_watch() -> String:
 		return ""
 	if _sha256_file(target + ".part") != str(e.get("sha256", "")):
 		DirAccess.remove_absolute(target + ".part")
-		_say("Motion-Watch-Download beschädigt (Prüfsumme falsch).", "error")
+		_say("MoveEye-Download beschädigt (Prüfsumme falsch).", "error")
 		return ""
 	if FileAccess.file_exists(target):
 		DirAccess.remove_absolute(target)

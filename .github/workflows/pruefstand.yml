@@ -12,6 +12,12 @@ on:
       wiederholungen:
         description: "Jeden Testlauf so oft"
         default: "1"
+      realismus:
+        description: "Kamera-Effekte des Simulators: an, aus oder an,aus"
+        default: "an,aus"
+      mal:
+        description: "Besucherlisten so oft (mehr Personen = verlässlicher)"
+        default: "2"
   schedule:
     - cron: "17 2 * * 0"
   push:
@@ -27,7 +33,7 @@ concurrency:
 jobs:
   pruefstand:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -56,6 +62,7 @@ jobs:
         run: |
           python3 pruefstand/pruefstand.py --godot ./Godot_v4.3-stable_linux.x86_64 --ki-ordner ki \
             --plaene "${{ github.event.inputs.plaene || 'quick,night,standard' }}" --wiederholungen "${{ github.event.inputs.wiederholungen || '1' }}" \
+            --realismus "${{ github.event.inputs.realismus || 'an,aus' }}" --mal "${{ github.event.inputs.mal || '2' }}" \
             --rechner "GitHub (ubuntu, $(nproc) Kerne)" --behalten
       - name: Ergebnis aufbewahren
         if: always()
@@ -66,6 +73,15 @@ jobs:
             pruefstand/ergebnisse
             pruefstand/VERLAUF.md
             /tmp/mw_pruefstand_*/*.log
+            /tmp/mw_pruefstand_*/mw/testruns
+            /tmp/mw_pruefstand_*/home/.local/share/godot/app_userdata/*/testlauf
+      - name: KI-Modell aufbewahren (zum Nachstellen auf einem anderen Rechner, 3 Tage)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ki-modell
+          path: ki
+          retention-days: 3
       - name: Ergebnis ins Repository
         if: always()
         run: |

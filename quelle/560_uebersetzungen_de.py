@@ -105,7 +105,7 @@ DE = {
     "password wrong": "Passwort falsch", "not reachable": "nicht erreichbar",
     "announces itself but does not answer - its firewall or security software blocks MoveEye: use the tunnel":
         "meldet sich im Netz, antwortet aber nicht – die Firewall oder Sicherheitssoftware des PCs sperrt MoveEye: den Tunnel verwenden (unten)", "invalid address (e.g. http://192.168.1.20:5000)": "ungültige Adresse (z. B. http://192.168.1.20:5000)",
-    "this device is in the list already": "dieses Gerät ist schon in der Liste", "this is this device itself": "das ist dieses Gerät selbst", "at most 12 devices": "höchstens 12 Geräte", "Shared pictures and videos with a small MoveEye logo": "Geteilte Bilder und Videos mit kleinem Motion-Watch-Logo", "Backup": "Sicherung", "Theft protection": "Diebstahlschutz", "Deterrence": "Abschreckung",
+    "this device is in the list already": "dieses Gerät ist schon in der Liste", "this is this device itself": "das ist dieses Gerät selbst", "at most 12 devices": "höchstens 12 Geräte", "Shared pictures and videos with a small MoveEye logo": "Geteilte Bilder und Videos mit kleinem MoveEye-Logo", "Backup": "Sicherung", "Theft protection": "Diebstahlschutz", "Deterrence": "Abschreckung",
     "Person: sound": "Person: Ton", "Big animal (bear, cow, horse, ...)": "Grosses Tier (Bär, Kuh, Pferd, …)", "Big animal: sound": "Grosses Tier: Ton",
     "Small animal (cat, dog, bird)": "Kleines Tier (Katze, Hund, Vogel)", "Small animal: sound": "Kleines Tier: Ton",
     "Warm body (thermal camera, e.g. fox, boar)": "Warmer Körper (Wärmebild, z. B. Fuchs, Wildschwein)", "Warm body: sound": "Warmer Körper: Ton",
@@ -352,7 +352,7 @@ DE.update({
     "Push message when less free space than (MB)": "Push-Nachricht, wenn weniger frei ist als (MB)",
     "the password was given on the command line (--web-password) - change it there": "das Passwort wurde beim Start angegeben (--web-password) - dort ändern",
     "the password must have 6 to 64 characters (letters, digits, signs, no umlauts)": "das Passwort braucht 6 bis 64 Zeichen (Buchstaben, Ziffern, Zeichen, keine Umlaute)",
-    "not a MoveEye settings file": "keine Motion-Watch-Einstellungsdatei", "Web password": "Web-Passwort", "set": "gesetzt",
+    "not a MoveEye settings file": "keine MoveEye-Einstellungsdatei", "Web password": "Web-Passwort", "set": "gesetzt",
     "Set password": "Passwort setzen", "Remove password": "Passwort entfernen", "Save settings …": "Einstellungen sichern …",
     "Load settings …": "Einstellungen laden …", "under-voltage": "Unterspannung", "free": "frei", "Supply": "Strom",
     "awake": "wach", "Power saving": "Stromsparen", "Pictures per second while quiet": "Bilder pro Sekunde, wenn ruhig",

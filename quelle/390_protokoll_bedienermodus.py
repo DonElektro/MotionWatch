@@ -1013,6 +1013,31 @@ def self_test(folder=""):
             assert got == t, f"QR decoded {got!r}"
     chk("QR codes (encode + decode)", qr)
 
+    def tun():
+        """2.98.13: the tunnel to the simulator without network - a closed line is skipped, an open one carries a request
+        both ways (GO line + pipe), tunnel_flush empties the pool (the live picture after a simulator update)"""
+        saved = list(TUN["pool"]); TUN["pool"].clear()
+        try:
+            dead_a, dead_b = _socket.socketpair(); dead_b.close()                # the simulator closed this line
+            mw_side, sim_side = _socket.socketpair()
+            TUN["pool"].append((dead_a, time.time() - 5)); TUN["pool"].append((mw_side, time.time()))
+            c = _tun_take()
+            assert c is mw_side, "the open line must be taken"
+            cl, cl_far = _socket.socketpair()                                 # a local program asks (like the door 18765)
+            c.sendall(b"GO 8765\n"); _tun_pipe(cl, c)
+            sim_side.settimeout(3); cl_far.settimeout(3)
+            assert sim_side.recv(100).startswith(b"GO 8765"), "GO line"
+            cl_far.sendall(b"ping"); assert sim_side.recv(100) == b"ping", "request through the tunnel"
+            sim_side.sendall(b"pong"); assert cl_far.recv(100) == b"pong", "answer through the tunnel"
+            sim_side.close(); cl_far.close()
+            x_a, x_b = _socket.socketpair()
+            TUN["pool"].append((x_a, time.time())); tunnel_flush()
+            assert not TUN["pool"], "flush must empty the pool"
+            x_b.settimeout(2); assert x_b.recv(10) == b"", "a flushed line is closed"
+        finally:
+            TUN["pool"].clear(); TUN["pool"].extend(saved)
+    chk("Tunnel to the simulator (lines, GO, pipe, flush)", tun)
+
     def wp():
         if not webpush_supported():
             return "skipped (python3-cryptography missing)"
@@ -1043,7 +1068,7 @@ def self_test(folder=""):
 
     def pages():
         node = shutil.which("node")
-        names = ["WEB_PAGE", "CAMS_PAGE", "ZONES_PAGE", "REC_PAGE", "DIARY_PAGE", "HELP_PAGE", "LOG_PAGE", "GUEST_PAGE"]
+        names = ["WEB_PAGE", "CAMS_PAGE", "ZONES_PAGE", "REC_PAGE", "DIARY_PAGE", "HELP_PAGE", "LOG_PAGE", "GUEST_PAGE", "MSG_PAGE"]
         n = 0
         for nm in names:
             html = render_page(globals()[nm], "live")

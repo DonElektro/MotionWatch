@@ -12,8 +12,9 @@ const UI = preload("res://scripts/ui_style.gd")
 
 # [id, symbol, name]
 const TILES := [["scene", "globe", "Szene"], ["time", "clock", "Tageszeit"], ["weather", "cloud", "Wetter"], ["visit", "person", "Besuch"],
-		["inventar", "box", "Inventar"], ["test", "check", "Testlauf"], ["game", "pad", "Spiel"], ["patrol", "route", "Patrouille"],
-		["head", "head", "Kopf steuern"], ["map", "map", "Echter Ort"], ["planner", "plan", "Aufstellen"], ["pruef", "meter", "Prüfstand"]]
+		["inventar", "box", "Inventar"], ["test", "check", "Testlauf"], ["game", "pad", "Spiel"],
+		["map", "map", "Echter Ort"], ["planner", "plan", "Aufstellen"], ["pruef", "meter", "Prüfstand"]]
+# 3D-4.0 (Gesamtrunde): «Patrouille» (= Rover-Route) and «Kopf steuern» only in the bar below - the bar moves, the tiles hold content
 const TIMES := [["Morgen 07:00", 7.0], ["Mittag 13:00", 13.0], ["Abend 19:30", 19.5], ["Dämmerung 21:00", 21.0], ["Nacht 23:00", 23.0], ["Tiefe Nacht 03:00", 3.0]]
 const WEATHER := [["Klar", "clear"], ["Bewölkt", "cloudy"], ["Regen", "rain"], ["Nebel", "fog"], ["Schnee", "snow"]]
 const VISITS := [["Person", "person"], ["Dieb (Velo, Tür)", "thief"], ["Kind", "child"], ["Spaziergang mit Hund", "dogwalk"], ["Velofahrer", "cyclist"],
@@ -142,8 +143,10 @@ func _paint() -> void:
 	_subs["inventar"].text = "80 KI-Dinge"
 	_subs["test"].text = "läuft" if main.testrun.running else "Kurz, 2½ Min."
 	_subs["game"].text = (main.game.status() if main.game != null and main.game.status() != "" else "Assistent")
-	_subs["patrol"].text = "fährt" if main.patrol.active else "aus"
-	_subs["head"].text = "Pfeile, Licht"
+	if _subs.has("patrol"):
+		_subs["patrol"].text = "fährt" if main.patrol.active else "aus"
+	if _subs.has("head"):
+		_subs["head"].text = "Pfeile, Licht"
 	_subs["map"].text = "Karte der Welt"
 	_subs["planner"].text = "wohin?"
 	_subs["pruef"].text = "Erkennung"

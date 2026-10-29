@@ -223,7 +223,7 @@ class MotionWatch:
         if self.color_bg is None:
             self.color_bg = small.astype(np.float32)
             return fg
-        cv2.accumulateWeighted(small, self.color_bg, 0.002)
+        cv2.accumulateWeighted(small, self.color_bg, min(0.05, 0.002 * fps_k()))
         if not CFG["shadow_filter"] or not np.any(fg):
             return fg
         bg = self.color_bg.astype(np.uint8)
@@ -237,8 +237,13 @@ class MotionWatch:
         # so the hue test is skipped there and only brightness ratio + saturation decide
         low_sat = (hsv_b[:, :, 1] < 50) & (hsv_c[:, :, 1] < 70)
         hue_ok = (dh < 12) | low_sat
+        # 2.98.13: a shadow darkens the ground evenly (the ratio is nearly the same in a small window); a person in grey
+        # clothes on grey ground, or a NoIR camera without colours, also gives «darker, same hue» - but not evenly.
+        # Before, up to 90 % of a person was punched out as «shadow» (test bench: persons not recognised at all).
+        rm = cv2.blur(ratio, (7, 7)); rs = cv2.blur(ratio * ratio, (7, 7))
+        even = np.sqrt(np.maximum(0.0, rs - rm * rm)) < 0.06
         shadow = ((ratio > CFG["shadow_ratio_min"]) & (ratio < CFG["shadow_ratio_max"])
-                  & hue_ok & (ds < 45) & (fg > 0)).astype(np.uint8) * 255
+                  & hue_ok & (ds < 45) & even & (fg > 0)).astype(np.uint8) * 255
         # smooth the shadow mask so single person pixels are not punched out
         shadow = cv2.morphologyEx(shadow, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
         shadow = cv2.morphologyEx(shadow, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)))
@@ -249,7 +254,7 @@ class MotionWatch:
     def foreground(self, gray, small, rain_mode, wind_boost):
         sens = CFG["sensitivity"] / 100.0
         self.bg.setVarThreshold(16 + (1 - sens) * 40 + (12 if rain_mode else 0))
-        lr = 0.004 if rain_mode else 0.002
+        lr = (0.004 if rain_mode else 0.002) * fps_k()          # 2.98.13: fewer pictures per second - learn as fast per second
         now_ = time.time()
         pt_ = (round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1))
         if pt_ != self.mt.get("pt"):                             # 2.95.96: also a turn by hand (stick, buttons, patrol)
@@ -274,6 +279,16 @@ class MotionWatch:
         if now_ - max(mv, float(SERVO_MOVE.get("t") or 0.0)) < 5.0 and np.count_nonzero(fg) > fg.size * 0.18:
             self.bg.apply(gray, learningRate=1.0)
             self.mt["bg_reset"] = now_
+            return np.zeros_like(gray)
+        # 2.98.13: the light of the whole picture changed (a cloud, a lamp, the camera adjusts its exposure, a new hour in the
+        # simulator): half the picture «moves». Before, the background needed minutes to follow and the one huge box
+        # swallowed every person - also the ones the AI found. Now: take the picture as the new background at once.
+        if np.count_nonzero(fg) > fg.size * 0.35:
+            self.bg.apply(gray, learningRate=1.0)
+            self.color_bg = None                                  # the colour background (shadows) too
+            self.mt["bg_reset"] = now_
+            if now_ - self.mt.get("light_log", 0.0) > 60:
+                self.mt["light_log"] = now_; log_event("motion", "Light of the whole picture changed - new background")
             return np.zeros_like(gray)
         fg = self.remove_shadows(fg, small)                      # colour based shadow removal
         k = 5 if rain_mode or wind_boost > 1.5 else 3
@@ -797,6 +812,10 @@ class MotionWatch:
                 boxes = [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= small_area) if zone_box_ok(b, pw, ph)]
                 if any(b[2] * b[3] >= min_area for b in boxes):
                     present.add("prealarm")              # pre-alarm: anything at all moves in the picture (before it is judged to be a person)
+                raw_boxes = list(boxes)
+                # 2.98.13: a motion box over a quarter of the picture is no person (light change, turn) - it must not
+                # swallow the persons of the AI when merging
+                boxes = [b for b in boxes if b[2] * b[3] <= 0.25 * pw * ph] if ai_boxes else boxes
                 boxes = merge_boxes(boxes + [b[:4] for b in ai_boxes])   # AI persons become tracks too
                 tracks = self.tracker.update(boxes)
                 for t in tracks:
@@ -809,6 +828,15 @@ class MotionWatch:
                         persons.append(t); person_boxes.append(t.box)
                     else:
                         candidates.append(t)            # anything else that moves -> white
+                if os.environ.get("MW_DEBUG_TRACKS"):          # 2.98.13: for the test bench - why a person is not one
+                    try:
+                        with open(os.environ["MW_DEBUG_TRACKS"], "a") as f_:
+                            f_.write(json.dumps({"t": round(t0, 2), "fps": STATE["fps"], "min_area": round(min_area), "small_area": round(small_area), "fg": round(float(np.count_nonzero(fg)) / fg.size, 3),
+                                                 "raw": [list(map(int, b)) for b in raw_boxes][:12], "ai": [list(map(int, b[:4])) for b in ai_boxes],
+                                                 "boxes": [list(map(int, b)) for b in boxes], "tr": [[t.id, list(map(int, t.box)), len(t.speeds), round(t.speed(), 1),
+                                                 round(t.steadiness(), 2), t.lost, t.is_person, t.ai_confirmed, t.is_vehicle] for t in tracks]}) + "\n")
+                    except Exception:
+                        pass
                 try:
                     alarm_track_sample(persons, rec_animals, pw, ph)       # 2.95.53: for the Alarm-Rückblick in 3D
                 except Exception:

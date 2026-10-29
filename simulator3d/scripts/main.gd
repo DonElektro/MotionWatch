@@ -3156,7 +3156,7 @@ func _register_controls() -> void:
 			["shake", "Kamera wackelt im Wind (Mast, Stange)"], ["net", "Schlechtes WLAN: das Bild ruckelt und bleibt hängen"]]:
 		var key: String = cd[0]
 		add_control("toggle", "cond_" + key, cd[1], func(): return cond[key], func(v): cond[key] = bool(v), "Kamerabild")
-	add_control("toggle", "dev2_on", "Zweites Motion-Watch-Gerät in der Welt (eigene Adresse: Port des Simulators + 20, meist 8785)", func(): return dev2.on, func(v): dev2.set_on(v), "Mover")
+	add_control("toggle", "dev2_on", "Zweites MoveEye-Gerät in der Welt (eigene Adresse: Port des Simulators + 20, meist 8785)", func(): return dev2.on, func(v): dev2.set_on(v), "Mover")
 	add_control("select", "dev2_place", "Platz des zweiten Geräts", func(): return dev2.place, func(v): dev2.set_place(str(v)), "Mover",
 			{"options": [["opposite", "gegenüber (30 m)"], ["left", "links"], ["right", "rechts"], ["door", "bewacht Zelt / Tür"], ["bike", "bewacht das Velo"], ["car", "bewacht das Auto (Strasse)"]]})
 	add_control("toggle", "mover_on", "Mover (Kettenfahrzeug) simulieren – fahren mit dem grünen Stick unten rechts, den Pfeiltasten oder dem zweiten Stick in MoveEye", func(): return mover_on, func(v): set_mover(v), "Mover")
@@ -3477,7 +3477,7 @@ func control(d: Dictionary) -> Dictionary:
 	elif a == "test_report":                           # the test run: progress and the last report
 		return testrun.state()
 	elif a == "test_start":                            # MoveEye starts a test run (3D-3.27): {"plan": "standard" | "quick" | "hard" | "night"}
-		var err: String = testrun.start(str(d.get("plan", testrun.plan)), d.get("cams", []) if typeof(d.get("cams", [])) == TYPE_ARRAY else [])
+		var err: String = testrun.start(str(d.get("plan", testrun.plan)), d.get("cams", []) if typeof(d.get("cams", [])) == TYPE_ARRAY else [], int(d.get("mult", 1)))
 		var st: Dictionary = testrun.state()
 		st["ok"] = err == ""
 		if err != "":

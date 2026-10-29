@@ -242,7 +242,7 @@ static func cpu_text(c: Dictionary) -> String:
 	var sim = c.get("sim", null)
 	if sim != null:
 		return "CPU PC %d %%  ·  MoveEye %s  ·  Simulator %d %%" % [roundi(float(pc)), "–" if mw == null else "%d %%" % roundi(float(mw)), roundi(float(sim))]
-	return "CPU Motion-Watch-Gerät %d %%  ·  davon MoveEye %s" % [roundi(float(pc)), "–" if mw == null else "%d %%" % roundi(float(mw))]
+	return "CPU MoveEye-Gerät %d %%  ·  davon MoveEye %s" % [roundi(float(pc)), "–" if mw == null else "%d %%" % roundi(float(mw))]
 
 
 func enter() -> void:

@@ -4238,6 +4238,7 @@ class Notifier:
     def _dispatch(self, p, jpg, fname):
         if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
             sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
+            msglog_add(self._title(p), self._text(p), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
             return
         if CFG["webpush_on"] and webpush_subs():
             threading.Thread(target=self._webpush, args=(p,), daemon=True).start()
@@ -4254,6 +4255,7 @@ class Notifier:
             if not CFG["sms_only_offline"] or offline or not self.main_configured() or ev == "test":
                 threading.Thread(target=lambda: sms_send(self._title(p) + ": " + self._text(p), force=ev == "test"), daemon=True).start()
         if not self.main_configured():
+            msglog_add(self._title(p), self._text(p), ev, jpg, "none", "")
             return
         kind, secret = CFG["notify_type"], CFG["telegram_token"]
         alarm = ev in ("person", "tamper", "warm", "noise")
@@ -4263,6 +4265,7 @@ class Notifier:
                 code, where = self._send_main(p, jpg, fname)
                 STATE["notify_status"] = f"sent {datetime.now().strftime('%H:%M:%S')} (HTTP {code})"
                 log_event("web", f"Notification sent to {where} (HTTP {code})" + (f" - attempt {k_ + 1}" if k_ else ""))
+                msglog_add(self._title(p), self._text(p), ev, jpg, "sent", where.split(" ")[0])
                 return
             except Exception as e:
                 msg = str(e).replace(secret, "***") if secret else str(e)
@@ -4275,6 +4278,7 @@ class Notifier:
                     pass
                 if k_ + 1 < tries:
                     time.sleep(5 if k_ == 0 else 10)
+        msglog_add(self._title(p), self._text(p), ev, jpg, "failed", kind)
         # all attempts failed: the SMS (if it was held back for "only when offline") goes out now
         if alarm and CFG["sms_on"] and CFG["sms_only_offline"] and sms_numbers() and STATE.get("net", {}).get("online") is not False:
             log_event("web", "Push message could not be sent - SMS instead")
@@ -4421,6 +4425,140 @@ class Notifier:
             return r.status
 
 
+# ----------------------------------------------------------------------------
+# 2.98.13 (Wunsch Daniel): ein eigenes Menü «Nachrichten» (Reiter Verlauf): was MoveEye an das Handy geschickt hat – mit Bild,
+# Zeit, Art und ob es angekommen ist (gesendet / fehlgeschlagen / Test-Postfach). Zusätzlich: die Nachrichten des ntfy-Themas
+# direkt vom ntfy-Server holen (auch die von anderen Geräten im selben Thema). Die Adresse des Themas bleibt auf dem Pi –
+# die Webseite bekommt nur die Nachrichten, nie die Adresse.
+# ----------------------------------------------------------------------------
+MSGLOG = {"lock": threading.Lock(), "items": None}
+MSGLOG_MAX = 300
+MSGLOG_IMG_MAX = 80
+
+
+def _msglog_dir():
+    return os.path.join(DATA_DIR, "nachrichten")
+
+
+def _msglog_load():
+    if MSGLOG["items"] is not None:
+        return MSGLOG["items"]
+    items = []
+    try:
+        with open(os.path.join(_msglog_dir(), "index.jsonl"), encoding="utf-8") as f:
+            for ln in f:
+                try:
+                    items.append(json.loads(ln))
+                except ValueError:
+                    pass
+    except OSError:
+        pass
+    MSGLOG["items"] = items[-MSGLOG_MAX:]
+    return MSGLOG["items"]
+
+
+def msglog_add(title, text, ev, jpg=None, status="sent", where=""):
+    """one message that was sent (or tried, or went to the test inbox) - kept with a small picture"""
+    try:
+        d = _msglog_dir(); os.makedirs(d, exist_ok=True)
+        it = {"id": "%d" % int(time.time() * 1000), "t": time.time(), "title": str(title)[:200], "text": str(text)[:600],
+              "ev": str(ev or "info"), "status": status, "where": str(where)[:60]}
+        if jpg:
+            try:
+                img = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR)
+                if img is not None:
+                    h, w = img.shape[:2]
+                    if w > 480:
+                        img = cv2.resize(img, (480, int(h * 480 / w)), interpolation=cv2.INTER_AREA)
+                    ok_, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 72])
+                    if ok_:
+                        with open(os.path.join(d, it["id"] + ".jpg"), "wb") as f:
+                            f.write(buf.tobytes())
+                        it["img"] = True
+            except Exception:
+                pass
+        with MSGLOG["lock"]:
+            items = _msglog_load()
+            items.append(it)
+            del items[:-MSGLOG_MAX]
+            with open(os.path.join(d, "index.jsonl.tmp"), "w", encoding="utf-8") as f:
+                for x in items:
+                    f.write(json.dumps(x, ensure_ascii=False) + "\n")
+            os.replace(os.path.join(d, "index.jsonl.tmp"), os.path.join(d, "index.jsonl"))
+            pics = sorted(f for f in os.listdir(d) if f.endswith(".jpg"))
+            for x in pics[:-MSGLOG_IMG_MAX]:
+                try:
+                    os.remove(os.path.join(d, x))
+                except OSError:
+                    pass
+    except Exception as e:
+        log_event("sys", f"Message list: {e}"[:160])
+
+
+def msglog_list(limit=200):
+    with MSGLOG["lock"]:
+        items = list(_msglog_load())[-limit:]
+    d = _msglog_dir()
+    out = []
+    for x in reversed(items):
+        y = dict(x)
+        y["img"] = bool(x.get("img")) and os.path.exists(os.path.join(d, x["id"] + ".jpg"))
+        out.append(y)
+    return out
+
+
+def msglog_img(mid):
+    if not re.fullmatch(r"\d{10,16}", str(mid)):
+        return None
+    p = os.path.join(_msglog_dir(), mid + ".jpg")
+    return p if os.path.exists(p) else None
+
+
+def msglog_clear():
+    with MSGLOG["lock"]:
+        MSGLOG["items"] = []
+        d = _msglog_dir()
+        try:
+            for f in os.listdir(d):
+                os.remove(os.path.join(d, f))
+        except OSError:
+            pass
+    log_event("web", "Message list cleared")
+
+
+def ntfy_server_messages(since="24h"):
+    """the messages of the ntfy topic, straight from the ntfy server (also the ones of other devices in the same topic).
+    Returns (list, error). The address of the topic never leaves the Pi."""
+    if CFG.get("notify_type") != "ntfy" or not str(CFG.get("notify_url") or "").strip():
+        return [], "ntfy is not set up (Settings → Push)"
+    if not re.fullmatch(r"\d{1,3}[mhd]|all", since):
+        since = "24h"
+    url = CFG["notify_url"].strip().rstrip("/") + "/json?poll=1&since=" + since
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "MoveEye"})
+        with urllib.request.urlopen(req, timeout=12) as r:
+            raw = r.read(4_000_000).decode("utf-8", "replace")
+    except Exception as e:
+        return [], (str(e).replace(CFG["notify_url"].strip(), _url_host(CFG["notify_url"])))[:160]
+    out = []
+    for ln in raw.splitlines():
+        try:
+            m = json.loads(ln)
+        except ValueError:
+            continue
+        if m.get("event") != "message":
+            continue
+        att = m.get("attachment") or {}
+        tags = m.get("tags") or []
+        ev = "person" if "warning" in tags else ("tamper" if "rotating_light" in tags else ("warm" if "fire" in tags else
+             ("noise" if "loud_sound" in tags else ("prealarm" if "eyes" in tags else "info"))))
+        aurl = str(att.get("url") or "")
+        out.append({"id": str(m.get("id", "")), "t": float(m.get("time") or 0), "title": str(m.get("title") or "")[:200],
+                    "text": str(m.get("message") or "")[:600], "ev": ev, "status": "server", "where": "ntfy",
+                    "img_url": aurl if aurl.startswith("https://") and str(att.get("type", "")).startswith("image/") else "",
+                    "prio": int(m.get("priority") or 3)})
+    out.sort(key=lambda x: -x["t"])
+    return out[:300], ""
 # ----------------------------------------------------------------------------
 # Hardware: servos + relays  (gpiozero -> pigpio -> simulation)
 # ----------------------------------------------------------------------------
@@ -12910,8 +13048,9 @@ class AutoTuner:
         self.t_start = time.time(); self.calibrated = False
         self.noise_areas, self.noise_frac = [], []
         self.last_eval = time.time()
-        self.new_candidates = self.became_person = self.near_miss = 0
+        self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
         self.seen_ids = set()
+        self.base_min_area = None
         STATE["auto_status"] = "calibrating…"
         log_event("auto", "Auto-tune: calibrating - keep the scene empty for a few seconds")
 
@@ -12942,6 +13081,7 @@ class AutoTuner:
                 self.calibrated = True
                 if self.noise_areas:
                     self._set("min_area", max(600, min(4000, float(np.percentile(self.noise_areas, 95)) * 2.5)), "scene noise")
+                self.base_min_area = float(CFG["min_area"])
                 frac = float(np.mean(self.noise_frac)) if self.noise_frac else 0.0
                 if frac > 0.02:
                     self._set("sensitivity", max(10, CFG["sensitivity"] - 20), "noisy scene")
@@ -12951,8 +13091,13 @@ class AutoTuner:
                 log_event("auto", "Auto-tune: calibration done, now adjusting live")
             return
         for t in tracks:
-            if not getattr(t, "_seen", False):
+            # 2.98.13: something that walks steadily somewhere is no «false blob» even when it is not a person (yet) - before,
+            # every person that was not recognised made the minimum size bigger, until no person was recognised at all
+            walker = len(t.speeds) >= 4 and t.steadiness() >= 0.3 and t.speed() >= CFG["walk_min_speed"]
+            if not getattr(t, "_seen", False) and not walker and t.age >= 2:
                 t._seen = True; self.new_candidates += 1
+            elif walker and not getattr(t, "_walker", False):
+                t._walker = True; self.walkers += 1
             if t.is_person and not getattr(t, "_counted", False):
                 t._counted = True; self.became_person += 1
             if (not t.is_person and not t.is_vehicle and t.age >= CFG["walk_frames"]
@@ -12965,8 +13110,9 @@ class AutoTuner:
         self.last_eval = now
         false_rate = (self.new_candidates - self.became_person) / minutes
         if not persons:
-            if false_rate > 25:
-                self._set("min_area", min(8000, CFG["min_area"] * 1.2), f"{false_rate:.0f} false blobs/min")
+            if false_rate > 25 and self.walkers == 0:              # 2.98.13: not while somebody walks; at most 2.5 × the calibrated size
+                cap = min(8000, 2.5 * (self.base_min_area or CFG["min_area"]))
+                self._set("min_area", min(cap, CFG["min_area"] * 1.2), f"{false_rate:.0f} false blobs/min")
             elif false_rate > 12:
                 self._set("sensitivity", max(10, CFG["sensitivity"] - 5), "many false blobs")
             elif false_rate < 2 and self.became_person == 0:
@@ -12976,7 +13122,7 @@ class AutoTuner:
         elif self.became_person > 0 and false_rate < 5:
             self._set("speed_consistency", min(0.7, CFG["speed_consistency"] + 0.02), "persons detected, tightening")
         STATE["auto_status"] = f"tuned · {false_rate:.0f} false/min"
-        self.new_candidates = self.became_person = self.near_miss = 0
+        self.new_candidates = self.became_person = self.near_miss = self.walkers = 0
 
 
 # ----------------------------------------------------------------------------
@@ -24668,6 +24814,31 @@ def self_test(folder=""):
             assert got == t, f"QR decoded {got!r}"
     chk("QR codes (encode + decode)", qr)
 
+    def tun():
+        """2.98.13: the tunnel to the simulator without network - a closed line is skipped, an open one carries a request
+        both ways (GO line + pipe), tunnel_flush empties the pool (the live picture after a simulator update)"""
+        saved = list(TUN["pool"]); TUN["pool"].clear()
+        try:
+            dead_a, dead_b = _socket.socketpair(); dead_b.close()                # the simulator closed this line
+            mw_side, sim_side = _socket.socketpair()
+            TUN["pool"].append((dead_a, time.time() - 5)); TUN["pool"].append((mw_side, time.time()))
+            c = _tun_take()
+            assert c is mw_side, "the open line must be taken"
+            cl, cl_far = _socket.socketpair()                                 # a local program asks (like the door 18765)
+            c.sendall(b"GO 8765\n"); _tun_pipe(cl, c)
+            sim_side.settimeout(3); cl_far.settimeout(3)
+            assert sim_side.recv(100).startswith(b"GO 8765"), "GO line"
+            cl_far.sendall(b"ping"); assert sim_side.recv(100) == b"ping", "request through the tunnel"
+            sim_side.sendall(b"pong"); assert cl_far.recv(100) == b"pong", "answer through the tunnel"
+            sim_side.close(); cl_far.close()
+            x_a, x_b = _socket.socketpair()
+            TUN["pool"].append((x_a, time.time())); tunnel_flush()
+            assert not TUN["pool"], "flush must empty the pool"
+            x_b.settimeout(2); assert x_b.recv(10) == b"", "a flushed line is closed"
+        finally:
+            TUN["pool"].clear(); TUN["pool"].extend(saved)
+    chk("Tunnel to the simulator (lines, GO, pipe, flush)", tun)
+
     def wp():
         if not webpush_supported():
             return "skipped (python3-cryptography missing)"
@@ -24698,7 +24869,7 @@ def self_test(folder=""):
 
     def pages():
         node = shutil.which("node")
-        names = ["WEB_PAGE", "CAMS_PAGE", "ZONES_PAGE", "REC_PAGE", "DIARY_PAGE", "HELP_PAGE", "LOG_PAGE", "GUEST_PAGE"]
+        names = ["WEB_PAGE", "CAMS_PAGE", "ZONES_PAGE", "REC_PAGE", "DIARY_PAGE", "HELP_PAGE", "LOG_PAGE", "GUEST_PAGE", "MSG_PAGE"]
         n = 0
         for nm in names:
             html = render_page(globals()[nm], "live")
@@ -25041,7 +25212,7 @@ class MotionWatch:
         if self.color_bg is None:
             self.color_bg = small.astype(np.float32)
             return fg
-        cv2.accumulateWeighted(small, self.color_bg, 0.002)
+        cv2.accumulateWeighted(small, self.color_bg, min(0.05, 0.002 * fps_k()))
         if not CFG["shadow_filter"] or not np.any(fg):
             return fg
         bg = self.color_bg.astype(np.uint8)
@@ -25055,8 +25226,13 @@ class MotionWatch:
         # so the hue test is skipped there and only brightness ratio + saturation decide
         low_sat = (hsv_b[:, :, 1] < 50) & (hsv_c[:, :, 1] < 70)
         hue_ok = (dh < 12) | low_sat
+        # 2.98.13: a shadow darkens the ground evenly (the ratio is nearly the same in a small window); a person in grey
+        # clothes on grey ground, or a NoIR camera without colours, also gives «darker, same hue» - but not evenly.
+        # Before, up to 90 % of a person was punched out as «shadow» (test bench: persons not recognised at all).
+        rm = cv2.blur(ratio, (7, 7)); rs = cv2.blur(ratio * ratio, (7, 7))
+        even = np.sqrt(np.maximum(0.0, rs - rm * rm)) < 0.06
         shadow = ((ratio > CFG["shadow_ratio_min"]) & (ratio < CFG["shadow_ratio_max"])
-                  & hue_ok & (ds < 45) & (fg > 0)).astype(np.uint8) * 255
+                  & hue_ok & (ds < 45) & even & (fg > 0)).astype(np.uint8) * 255
         # smooth the shadow mask so single person pixels are not punched out
         shadow = cv2.morphologyEx(shadow, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
         shadow = cv2.morphologyEx(shadow, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)))
@@ -25067,7 +25243,7 @@ class MotionWatch:
     def foreground(self, gray, small, rain_mode, wind_boost):
         sens = CFG["sensitivity"] / 100.0
         self.bg.setVarThreshold(16 + (1 - sens) * 40 + (12 if rain_mode else 0))
-        lr = 0.004 if rain_mode else 0.002
+        lr = (0.004 if rain_mode else 0.002) * fps_k()          # 2.98.13: fewer pictures per second - learn as fast per second
         now_ = time.time()
         pt_ = (round(float(CFG["pan"]), 1), round(float(CFG["tilt"]), 1))
         if pt_ != self.mt.get("pt"):                             # 2.95.96: also a turn by hand (stick, buttons, patrol)
@@ -25092,6 +25268,16 @@ class MotionWatch:
         if now_ - max(mv, float(SERVO_MOVE.get("t") or 0.0)) < 5.0 and np.count_nonzero(fg) > fg.size * 0.18:
             self.bg.apply(gray, learningRate=1.0)
             self.mt["bg_reset"] = now_
+            return np.zeros_like(gray)
+        # 2.98.13: the light of the whole picture changed (a cloud, a lamp, the camera adjusts its exposure, a new hour in the
+        # simulator): half the picture «moves». Before, the background needed minutes to follow and the one huge box
+        # swallowed every person - also the ones the AI found. Now: take the picture as the new background at once.
+        if np.count_nonzero(fg) > fg.size * 0.35:
+            self.bg.apply(gray, learningRate=1.0)
+            self.color_bg = None                                  # the colour background (shadows) too
+            self.mt["bg_reset"] = now_
+            if now_ - self.mt.get("light_log", 0.0) > 60:
+                self.mt["light_log"] = now_; log_event("motion", "Light of the whole picture changed - new background")
             return np.zeros_like(gray)
         fg = self.remove_shadows(fg, small)                      # colour based shadow removal
         k = 5 if rain_mode or wind_boost > 1.5 else 3
@@ -25615,6 +25801,10 @@ class MotionWatch:
                 boxes = [b for b in (cv2.boundingRect(c) for c in cnts if cv2.contourArea(c) >= small_area) if zone_box_ok(b, pw, ph)]
                 if any(b[2] * b[3] >= min_area for b in boxes):
                     present.add("prealarm")              # pre-alarm: anything at all moves in the picture (before it is judged to be a person)
+                raw_boxes = list(boxes)
+                # 2.98.13: a motion box over a quarter of the picture is no person (light change, turn) - it must not
+                # swallow the persons of the AI when merging
+                boxes = [b for b in boxes if b[2] * b[3] <= 0.25 * pw * ph] if ai_boxes else boxes
                 boxes = merge_boxes(boxes + [b[:4] for b in ai_boxes])   # AI persons become tracks too
                 tracks = self.tracker.update(boxes)
                 for t in tracks:
@@ -25627,6 +25817,15 @@ class MotionWatch:
                         persons.append(t); person_boxes.append(t.box)
                     else:
                         candidates.append(t)            # anything else that moves -> white
+                if os.environ.get("MW_DEBUG_TRACKS"):          # 2.98.13: for the test bench - why a person is not one
+                    try:
+                        with open(os.environ["MW_DEBUG_TRACKS"], "a") as f_:
+                            f_.write(json.dumps({"t": round(t0, 2), "fps": STATE["fps"], "min_area": round(min_area), "small_area": round(small_area), "fg": round(float(np.count_nonzero(fg)) / fg.size, 3),
+                                                 "raw": [list(map(int, b)) for b in raw_boxes][:12], "ai": [list(map(int, b[:4])) for b in ai_boxes],
+                                                 "boxes": [list(map(int, b)) for b in boxes], "tr": [[t.id, list(map(int, t.box)), len(t.speeds), round(t.speed(), 1),
+                                                 round(t.steadiness(), 2), t.lost, t.is_person, t.ai_confirmed, t.is_vehicle] for t in tracks]}) + "\n")
+                    except Exception:
+                        pass
                 try:
                     alarm_track_sample(persons, rec_animals, pw, ph)       # 2.95.53: for the Alarm-Rückblick in 3D
                 except Exception:
@@ -30201,10 +30400,10 @@ $("#d-link").textContent = t("Link for the PC browser") + ": " + location.origin
 NAV_ITEMS = [("live", "/", "Live", "Live"), ("protect", "/protect", "Protection", "Protection"), ("history", "/recordings", "History", "History"),
              ("settings", "/settings", "Settings", "Sett."), ("sim", "/sim", "Simulator", "Sim"), ("more", "/more", "More", "More")]
 NAV_SUB = {"protect": [("protect", "/protect", "Protection"), ("zones", "/zones", "Zones")],
-           "history": [("rec", "/recordings", "Recordings"), ("diary", "/diary", "Diary"), ("log", "/log", "Log")],
+           "history": [("rec", "/recordings", "Recordings"), ("diary", "/diary", "Diary"), ("msgs", "/messages", "Messages"), ("log", "/log", "Log")],
            "settings": [("settings", "/settings", "Settings"), ("cams", "/cams", "Cameras")],
            "more": [("more", "/more", "Overview"), ("help", "/help", "Manual"), ("party", "/party", "Game corner"), ("tools", "/tools", "Tools")]}
-NAV_OF = {"zones": "protect", "rec": "history", "diary": "history", "log": "history", "cams": "settings", "help": "more",
+NAV_OF = {"zones": "protect", "rec": "history", "diary": "history", "msgs": "history", "log": "history", "cams": "settings", "help": "more",
           "party": "more", "tools": "more"}
 
 
@@ -35242,7 +35441,7 @@ function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.
 let LANG = "", THEME = "";
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || ""; } catch (e) {}
 const I18N = {de: {"Live": "Live", "Cameras": "Kameras", "Recordings": "Aufzeichnungen", "Zones": "Zonen", "Manual": "Anleitung", "Diary": "Tagebuch", "Tools": "Werkzeuge", "Simulator": "Simulator", "Game corner": "Spielecke"}};
-Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
+Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Messages": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
 const t = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 function applyI18n() {
   document.querySelectorAll("[data-i18n]").forEach(e => e.textContent = t(e.dataset.i18n));
@@ -36283,6 +36482,118 @@ async function load() {
 """
 
 
+# ----------------------------------------------------------------------------
+# 2.98.13 (Wunsch Daniel): eigenes Menü für die ntfy-Nachrichten. Zwei Quellen: «Von MoveEye» (was dieses Gerät geschickt hat,
+# mit Bild und ob es ankam, 065_nachrichten.py) und «ntfy-Server» (alle Nachrichten des Themas der letzten 24 h / 7 Tage).
+# ----------------------------------------------------------------------------
+MSG_PAGE = r"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MoveEye - Messages</title>
+<style>
+/*BASECSS*/
+main{padding:16px;max-width:900px;margin:0 auto}
+.mf{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;color:var(--txt);padding:7px 12px}
+.seg button.on{background:var(--acc);color:#fff}
+.msg{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.msg .ic{font-size:22px;width:30px;text-align:center;flex:none}
+.msg .bd{flex:1;min-width:0}
+.msg .tt{font-weight:700}.msg .tx{white-space:pre-wrap;word-break:break-word;margin-top:2px}
+.msg .mt{color:var(--mut);font-size:12.5px;margin-top:4px}
+.msg img{width:150px;max-width:38vw;border-radius:8px;flex:none;cursor:zoom-in;background:#000}
+.st{display:inline-block;padding:1px 7px;border-radius:9px;font-size:11.5px;font-weight:700;margin-left:6px}
+.st-sent{background:rgba(52,199,89,.18);color:var(--grn)}.st-failed{background:rgba(255,69,58,.18);color:var(--red)}
+.st-test{background:rgba(255,159,10,.18);color:var(--org)}.st-none{background:rgba(142,142,147,.2);color:var(--mut)}
+.st-server{background:rgba(10,132,255,.18);color:var(--blu)}
+#big{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:50}
+#big img{max-width:96vw;max-height:92vh;border-radius:8px}
+</style></head><body>
+<header>
+  <h1>MoveEye</h1>
+  <!--NAV-->
+  <span class="hdr-ctl">
+    <button class="sec" id="btn-theme" onclick="toggleTheme()">&#9728;</button>
+    <button class="sec" id="btn-lang" onclick="toggleLang()">DE</button>
+  </span>
+</header>
+<main>
+  <section class="card" style="margin:0">
+    <h3 style="margin:0 0 4px" data-i18n="Messages">Messages</h3>
+    <div class="mut" style="margin-bottom:10px" data-i18n="Everything MoveEye sent to your phone - and the messages on the ntfy server.">Everything MoveEye sent to your phone - and the messages on the ntfy server.</div>
+    <div class="mf">
+      <span class="seg" id="src"><button data-v="local" class="on" data-i18n="From MoveEye">From MoveEye</button><button data-v="server" data-i18n="ntfy server">ntfy server</button></span>
+      <select id="since" style="display:none"><option value="24h" data-i18n="last 24 h">last 24 h</option><option value="7d" data-i18n="last 7 days">last 7 days</option><option value="all" data-i18n="all (as long as the server keeps them)">all (as long as the server keeps them)</option></select>
+      <span class="seg" id="kind"><button data-v="all" class="on" data-i18n="All">All</button><button data-v="alarm" data-i18n="Alarms">Alarms</button><button data-v="info" data-i18n="Info">Info</button><button data-v="test" data-i18n="Tests">Tests</button></span>
+      <button class="sec" id="reload" data-i18n="↻ Refresh">↻ Refresh</button>
+      <button class="sec" id="clr" data-i18n="Clear list">Clear list</button>
+    </div>
+    <div class="mut" id="cnt"></div>
+    <div id="list"></div>
+  </section>
+</main>
+<div id="big" onclick="this.style.display='none'"><img alt=""></div>
+<script>
+/*COMMON*/
+Object.assign(I18N.de, {"Messages": "Nachrichten", "Everything MoveEye sent to your phone - and the messages on the ntfy server.": "Alles, was MoveEye ans Handy geschickt hat – und die Nachrichten auf dem ntfy-Server.",
+  "From MoveEye": "Von MoveEye", "ntfy server": "ntfy-Server", "last 24 h": "letzte 24 h", "last 7 days": "letzte 7 Tage", "all (as long as the server keeps them)": "alle (solange der Server sie behält)",
+  "All": "Alle", "Alarms": "Alarme", "Info": "Info", "Tests": "Tests", "↻ Refresh": "↻ Neu laden", "Clear list": "Liste leeren",
+  "sent": "gesendet", "failed": "fehlgeschlagen", "test inbox": "Test-Postfach", "no push channel": "kein Push-Kanal", "on the server": "auf dem Server",
+  "messages": "Nachrichten", "No messages yet.": "Noch keine Nachrichten.", "Clear the list on MoveEye? (The messages on your phone stay.)": "Liste auf MoveEye leeren? (Die Nachrichten auf dem Handy bleiben.)",
+  "loading …": "lade …", "Not sent - it is kept and sent again as soon as there is internet.": "Nicht gesendet – sie wird aufbewahrt und nochmals geschickt, sobald es Internet gibt."});
+var SRC = "local", KIND = "all", DATA = [];
+var ICON = {person: "🚨", tamper: "🛑", warm: "🔥", noise: "🔊", prealarm: "👀", test: "🧪", info: "ℹ️"};
+var ALARM = {person: 1, tamper: 1, warm: 1, noise: 1, prealarm: 1};
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+function fmtT(t) { var d = new Date(t * 1000); return d.toLocaleDateString(LANG === "de" ? "de-CH" : undefined, {weekday: "short", day: "2-digit", month: "2-digit"}) + " " + d.toLocaleTimeString(LANG === "de" ? "de-CH" : undefined, {hour: "2-digit", minute: "2-digit", second: "2-digit"}); }
+function stTxt(s) { return {sent: t("sent"), failed: t("failed"), test: t("test inbox"), none: t("no push channel"), server: t("on the server")}[s] || s; }
+function paint() {
+  var L = DATA.filter(function (m) {
+    if (KIND === "alarm") return !!ALARM[m.ev];
+    if (KIND === "info") return !ALARM[m.ev] && m.status !== "test";
+    if (KIND === "test") return m.status === "test" || m.ev === "test";
+    return true;
+  });
+  document.getElementById("cnt").textContent = L.length + " " + t("messages");
+  var h = "";
+  L.forEach(function (m) {
+    var img = m.img ? "/api/messages/img/" + m.id : (m.img_url || "");
+    h += '<div class="msg"><div class="ic">' + (ICON[m.ev] || "📩") + '</div><div class="bd"><div class="tt">' + esc(m.title || "MoveEye") +
+      '<span class="st st-' + esc(m.status) + '">' + esc(stTxt(m.status)) + (m.where && m.status === "sent" ? " · " + esc(m.where) : "") + '</span></div>' +
+      '<div class="tx">' + esc(m.text) + '</div><div class="mt">' + fmtT(m.t) + (m.status === "failed" ? " · " + t("Not sent - it is kept and sent again as soon as there is internet.") : "") +
+      '</div></div>' + (img ? '<img loading="lazy" src="' + esc(img) + '" alt="" onclick="big(this.src)">' : "") + '</div>';
+  });
+  document.getElementById("list").innerHTML = h || '<p class="mut">' + t("No messages yet.") + '</p>';
+}
+function big(src) { var b = document.getElementById("big"); b.querySelector("img").src = src; b.style.display = "flex"; }
+async function load() {
+  document.getElementById("cnt").textContent = t("loading …");
+  var u = "/api/messages?src=" + SRC + (SRC === "server" ? "&since=" + document.getElementById("since").value : "");
+  var r = await fetch(u).then(function (x) { return x.json(); }).catch(function () { return {ok: false, error: "⚠"}; });
+  DATA = (r && r.items) || [];
+  paint();
+  if (r && r.error) document.getElementById("cnt").textContent = "⚠ " + t(r.error);
+}
+function seg(id, cb) {
+  document.querySelectorAll("#" + id + " button").forEach(function (b) {
+    b.onclick = function () { document.querySelectorAll("#" + id + " button").forEach(function (x) { x.classList.toggle("on", x === b); }); cb(b.dataset.v); };
+  });
+}
+seg("src", function (v) { SRC = v; document.getElementById("since").style.display = v === "server" ? "" : "none"; document.getElementById("clr").style.display = v === "server" ? "none" : ""; load(); });
+seg("kind", function (v) { KIND = v; paint(); });
+document.getElementById("since").onchange = load;
+document.getElementById("reload").onclick = load;
+document.getElementById("clr").onclick = async function () {
+  if (!confirm(t("Clear the list on MoveEye? (The messages on your phone stay.)"))) return;
+  await fetch("/api/messages", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({action: "clear"})});
+  load();
+};
+load();
+setInterval(function () { if (SRC === "local" && !document.hidden) load(); }, 20000);
+/*ALERTS*/
+</script></body></html>
+"""
 # ----------------------------------------------------------------------------
 # 2.98.0: the sixth tab. Everything that is not live picture, protection, history, settings or simulator - one tap away.
 # ----------------------------------------------------------------------------
@@ -37409,9 +37720,9 @@ let HIDDEN = new Set();
 try { LANG = localStorage.getItem("mw-lang") || ""; THEME = localStorage.getItem("mw-theme") || "";
       HIDDEN = new Set(JSON.parse(localStorage.getItem("mw-hidden") || "[]")); } catch (e) {}
 Object.assign(I18N.de, {"Person alarms at the campfire (off: only animals - the people at the fire are not burglars)": "Personen-Alarm am Lagerfeuer (aus: nur Tiere – die Leute am Feuer sind keine Einbrecher)"});  // 2.97.0
-Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
+Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Messages": "Nachrichten", "Settings": "Einstellungen", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Recordings": "Aufnahmen", "Diary": "Tagebuch", "Zones": "Zonen", "Cameras": "Kameras", "Manual": "Anleitung", "Game corner": "Spielecke", "Tools": "Werkzeuge"});  // 2.98.0: the six tabs
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"conn-note": "Address of the simulator program. Usually not needed: the simulator announces itself in the network and is found by itself.", "autostart-note": "And off again (back to the real cameras and sensors) when none is there for a minute. Switched off by hand: stays off until a new simulator appears.", "sim-missing": "A simulator is missing? Switch on «Send to MoveEye» in the simulator. On a PC the Windows firewall must allow its port (8765; a second simulator e.g. 8767).", "sim-view-help": "The window of the simulator: drag with the left mouse button = move, right = turn, wheel = zoom (after a click into the picture), double click = fly there. Finger: tap = click, otherwise the page scrolls; with ✋ the finger controls the simulator (drag = move, ⟲ = turn, two fingers = zoom). The buttons below change the view."});  // 2.97.0: no raw keys in English
-Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Protection level": "Schutzstufe", "Arming and own Wi-Fi": "Einschalten und eigenes WLAN", "What happens at an alarm?": "Was passiert bei Alarm?", "Theft protection": "Diebstahlschutz", "Device": "Gerät", "Guarded things (reference scan)": "Bewachte Dinge (Referenz-Scan)", "Backup (pictures off the device)": "Sicherung (Bilder weg vom Gerät)", "Zones, schedule, presence": "Zonen, Zeitplan, Anwesenheit", "Cameras & head": "Kameras & Kopf", "Devices & sensors": "Geräte & Sensoren", "Power supply": "Strom", "Network & access": "Netz & Zugang", "System": "System", "Draw the zones": "Zonen zeichnen", "Person": "Person", "Push": "Push", "Light": "Licht", "Siren": "Sirene", "Siren after {s} s": "Sirene nach {s} s", "Crossed out = off. Tap a step to change it. «Test protection» plays the chain.": "Durchgestrichen = aus. Ein Glied antippen = einstellen. «Schutz testen» spielt die Kette durch.", "Protection is off - nothing happens. Choose «Wachsam» or «Voll» above.": "Der Schutz ist aus – es passiert nichts. Oben «Wachsam» oder «Voll» wählen.", "Watchful": "Wachsam", "Full protection": "Voll", "in": "in", "Off": "Aus", "Settings": "Einstellungen"});  // 2.98.0: tabs, groups, alarm chain
+Object.assign(I18N.de, {"Protection": "Schutz", "History": "Verlauf", "Messages": "Nachrichten", "Sett.": "Einst.", "More": "Mehr", "Overview": "Übersicht", "Log": "Protokoll", "Sim": "Sim", "Protection level": "Schutzstufe", "Arming and own Wi-Fi": "Einschalten und eigenes WLAN", "What happens at an alarm?": "Was passiert bei Alarm?", "Theft protection": "Diebstahlschutz", "Device": "Gerät", "Guarded things (reference scan)": "Bewachte Dinge (Referenz-Scan)", "Backup (pictures off the device)": "Sicherung (Bilder weg vom Gerät)", "Zones, schedule, presence": "Zonen, Zeitplan, Anwesenheit", "Cameras & head": "Kameras & Kopf", "Devices & sensors": "Geräte & Sensoren", "Power supply": "Strom", "Network & access": "Netz & Zugang", "System": "System", "Draw the zones": "Zonen zeichnen", "Person": "Person", "Push": "Push", "Light": "Licht", "Siren": "Sirene", "Siren after {s} s": "Sirene nach {s} s", "Crossed out = off. Tap a step to change it. «Test protection» plays the chain.": "Durchgestrichen = aus. Ein Glied antippen = einstellen. «Schutz testen» spielt die Kette durch.", "Protection is off - nothing happens. Choose «Wachsam» or «Voll» above.": "Der Schutz ist aus – es passiert nichts. Oben «Wachsam» oder «Voll» wählen.", "Watchful": "Wachsam", "Full protection": "Voll", "in": "in", "Off": "Aus", "Settings": "Einstellungen"});  // 2.98.0: tabs, groups, alarm chain
 Object.assign(I18N.de, {"Keep what is detected in the middle: persons, animals, moving things": "Hält Erkanntes in der Bildmitte: Personen, Tiere, Bewegtes"});  // 2.98.1
 function t(s) { return (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s; }
 let toastTimer = null;
@@ -43705,6 +44016,29 @@ class WebStream:
             lang = norm_lang(((d or {}).get("lang") if isinstance(d, dict) else None) or CFG["lang"])
             return reply({"ok": False, "error": tr_err("locked - settings can only be changed after unlocking (PIN)", lang)}, 423)
 
+        @app.route("/messages")
+        def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
+            return Response(render_page(MSG_PAGE, "msgs"), mimetype="text/html")
+
+        @app.route("/api/messages", methods=["GET", "POST"])
+        def api_messages():
+            if request.method == "POST":
+                if (body().get("action") or "") == "clear":
+                    msglog_clear()
+                    return reply({"ok": True})
+                return reply({"ok": False, "error": "unknown action"}, 400)
+            if request.args.get("src") == "server":
+                items, err = ntfy_server_messages(str(request.args.get("since", "24h")))
+                return reply({"ok": not err, "items": items, "error": err or None})
+            return reply({"ok": True, "items": msglog_list()})
+
+        @app.route("/api/messages/img/<mid>")
+        def api_messages_img(mid):
+            p = msglog_img(mid)
+            if not p:
+                return Response("not found", status=404)
+            return send_file(p, mimetype="image/jpeg", max_age=86400)
+
         @app.route("/log")
         def log_page():
             return Response(render_page(LOG_PAGE, "log"), mimetype="text/html")
@@ -47009,6 +47343,40 @@ class App:
             tk.Label(f, text=title.upper(), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), anchor="w").pack(fill="x", pady=(0, 6))
         return f
 
+    def _messages_win(self):
+        """2.98.13: the push messages (like Verlauf → Nachrichten on the web page): what MoveEye sent, newest first"""
+        w = getattr(self, "_msg_top", None)
+        if w is not None and w.winfo_exists():
+            w.lift(); self._msg_fill(); return
+        w = self._msg_top = tk.Toplevel(self.root); w.title("MoveEye – " + tr("Messages")); w.configure(bg=C["bg"]); w.geometry("620x520")
+        top = tk.Frame(w, bg=C["bg"]); top.pack(fill="x", padx=12, pady=(10, 4))
+        tk.Label(top, text=tr("Everything MoveEye sent to your phone - and the messages on the ntfy server."), bg=C["bg"], fg=C["mut"],
+                 font=("DejaVu Sans", 9), wraplength=420, justify="left").pack(side="left")
+        tk.Button(top, text=tr("↻ Refresh"), command=self._msg_fill).pack(side="right")
+        self._msg_txt = tk.Text(w, bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 10), wrap="word", bd=0, padx=10, pady=8)
+        self._msg_txt.pack(fill="both", expand=True, padx=12, pady=(0, 12))
+        self._msg_txt.tag_configure("tt", font=("DejaVu Sans", 10, "bold")); self._msg_txt.tag_configure("mt", foreground=C["mut"], font=("DejaVu Sans", 8))
+        self._msg_txt.tag_configure("bad", foreground=C.get("red", "#ff453a"))
+        self._msg_fill()
+
+    def _msg_fill(self):
+        t_ = getattr(self, "_msg_txt", None)
+        if t_ is None or not t_.winfo_exists():
+            return
+        ICON = {"person": "🚨", "tamper": "🛑", "warm": "🔥", "noise": "🔊", "prealarm": "👀", "test": "🧪"}
+        ST = {"sent": tr("sent"), "failed": tr("failed"), "test": tr("test inbox"), "none": tr("no push channel")}
+        t_.config(state="normal"); t_.delete("1.0", "end")
+        items = msglog_list()
+        if not items:
+            t_.insert("end", tr("No messages yet."), "mt")
+        for m in items:
+            t_.insert("end", ICON.get(m.get("ev"), "📩") + " " + (m.get("title") or "MoveEye") + "\n", "tt")
+            if m.get("text"):
+                t_.insert("end", m["text"] + "\n")
+            t_.insert("end", datetime.fromtimestamp(float(m.get("t") or 0)).strftime("%a %d.%m. %H:%M:%S") + " · " + ST.get(m.get("status"), m.get("status", "")) +
+                      ((" · " + m["where"]) if m.get("where") and m.get("status") == "sent" else "") + "\n\n", "bad" if m.get("status") == "failed" else "mt")
+        t_.config(state="disabled")
+
     def _tabs(self):
         t = [("live", "Live")]
         if self.is_shown("weather") or self.is_shown("cpu"):
@@ -47058,6 +47426,7 @@ class App:
             lb.bind("<Button-1>", lambda e: self.toggle_lang(lb.winfo_rootx(), lb.winfo_rooty() + lb.winfo_height()))
             lb.config(width=3, font=("DejaVu Sans", 9, "bold")); lb.pack(side="right")
             self._ibtn(ctl, "◐", self.toggle_theme, tr("Light") if CFG["theme"] == "dark" else tr("Dark")).pack(side="right", padx=(0, 6))
+            self._ibtn(ctl, "✉", self._messages_win, tr("Messages")).pack(side="right", padx=(0, 6))     # 2.98.13
             self.b_fs = self._ibtn(ctl, "⇱", self.toggle_fullscreen, tr("Fullscreen (F11)"), on=self.is_fullscreen)
             self.b_fs.pack(side="right", padx=(0, 6))
             self._ibtn(ctl, "⇤" if show("sidebar") else "⇥", self.toggle_sidebar, tr("Settings panel") + " (Ctrl+B)").pack(side="right", padx=(0, 6))
@@ -54457,6 +54826,28 @@ for _k, _v in _HX124.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX125 = {  # 2.98.7: «Spiele freigeben», wake-up alarm, sleeping place
+    'Messages': ('Nachrichten', 'Messages', 'Messaggi', 'Messadis'),
+    'Everything MoveEye sent to your phone - and the messages on the ntfy server.': ('Alles, was MoveEye ans Handy geschickt hat – und die Nachrichten auf dem ntfy-Server.', 'Tout ce que MoveEye a envoyé à ton téléphone – et les messages sur le serveur ntfy.', 'Tutto ciò che MoveEye ha inviato al telefono – e i messaggi sul server ntfy.', 'Tut quai che MoveEye ha tramess al telefonin – ed ils messadis sin il server ntfy.'),
+    'From MoveEye': ('Von MoveEye', 'De MoveEye', 'Da MoveEye', 'Da MoveEye'),
+    'ntfy server': ('ntfy-Server', 'Serveur ntfy', 'Server ntfy', 'Server ntfy'),
+    'last 24 h': ('letzte 24 h', 'dernières 24 h', 'ultime 24 h', 'ultimas 24 h'),
+    'last 7 days': ('letzte 7 Tage', '7 derniers jours', 'ultimi 7 giorni', 'ultims 7 dis'),
+    'all (as long as the server keeps them)': ('alle (solange der Server sie behält)', 'tous (tant que le serveur les garde)', 'tutti (finché il server li conserva)', 'tuts (uschè ditg ch\'il server als salva)'),
+    'Alarms': ('Alarme', 'Alarmes', 'Allarmi', 'Alarms'),
+    'Tests': ('Tests', 'Tests', 'Test', 'Tests'),
+    '↻ Refresh': ('↻ Neu laden', '↻ Actualiser', '↻ Aggiorna', '↻ Actualisar'),
+    'Clear list': ('Liste leeren', 'Vider la liste', 'Svuota elenco', 'Svidar la glista'),
+    'sent': ('gesendet', 'envoyé', 'inviato', 'tramess'),
+    'failed': ('fehlgeschlagen', 'échec', 'non riuscito', 'betg reussì'),
+    'test inbox': ('Test-Postfach', 'boîte de test', 'casella di prova', 'chascha da test'),
+    'no push channel': ('kein Push-Kanal', 'pas de canal push', 'nessun canale push', 'nagin chanal push'),
+    'on the server': ('auf dem Server', 'sur le serveur', 'sul server', 'sin il server'),
+    'messages': ('Nachrichten', 'messages', 'messaggi', 'messadis'),
+    'No messages yet.': ('Noch keine Nachrichten.', 'Pas encore de messages.', 'Ancora nessun messaggio.', 'Anc nagins messadis.'),
+    'Clear the list on MoveEye? (The messages on your phone stay.)': ('Liste auf MoveEye leeren? (Die Nachrichten auf dem Handy bleiben.)', 'Vider la liste sur MoveEye ? (Les messages sur ton téléphone restent.)', 'Svuotare l\'elenco su MoveEye? (I messaggi sul telefono restano.)', 'Svidar la glista sin MoveEye? (Ils messadis sin il telefonin restan.)'),
+    'loading …': ('lade …', 'chargement …', 'caricamento …', 'chargiar …'),
+    'Not sent - it is kept and sent again as soon as there is internet.': ('Nicht gesendet – sie wird aufbewahrt und nochmals geschickt, sobald es Internet gibt.', 'Pas envoyé – il est gardé et renvoyé dès qu\'il y a internet.', 'Non inviato – viene conservato e reinviato appena c\'è internet.', 'Betg tramess – vegn salvà e tramess anc ina giada, uschespert ch\'igl ha internet.'),
+    'ntfy is not set up (Settings → Push)': ('ntfy ist nicht eingerichtet (Einstellungen → Push)', 'ntfy n\'est pas configuré (Réglages → Push)', 'ntfy non è configurato (Impostazioni → Push)', 'ntfy n\'è betg endrizzà (Parameters → Push)'),
     'too quiet': ('zu leise', 'trop faible', 'troppo debole', 'memia quiet'),
     'too many claps': ('zu viele Klatscher', 'trop de claquements', 'troppi battiti di mani', 'memia bleras batter las mauns'),
     'Games': ('Spiele', 'Jeux', 'Giochi', 'Gieus'),

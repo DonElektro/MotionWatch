@@ -33,6 +33,12 @@ ERGEBNISSE = os.path.join(HIER, "ergebnisse")
 VERLAUF = os.path.join(HIER, "VERLAUF.md")
 PLAN_DAUER = {"quick": 150, "standard": 300, "night": 230, "hard": 520}     # Sekunden, ungefähr (Simulator in Echtzeit)
 PLAN_NAME = {"quick": "Kurz (Tag + Nacht)", "standard": "Standard (Tag, Wind, Nacht, Regen)", "night": "Nacht", "hard": "Schwierige Bedingungen"}
+ROH = "~roh"                  # 2.98.13: the same plan without the camera effects of the simulator (blur, colours, grain)
+
+
+def plan_name(key):
+    base = key[:-len(ROH)] if key.endswith(ROH) else key
+    return PLAN_NAME.get(base, base) + (" · ohne Kamera-Effekte" if key.endswith(ROH) else "")
 
 
 def log(*a, wichtig=False):
@@ -171,6 +177,10 @@ def run(a):
             log_tail(os.path.join(tmp, "simulator.log"), "Simulator-Protokoll")
             log_tail(os.path.join(tmp, "motionwatch.log"), "Motion-Watch-Protokoll")
             return 2, None
+        try:                                                     # 2.98.13: the simulator must not start its own quick test now
+            http_json(sim + "/control", {"action": "pruefstand", "do": "auto", "on": False}, timeout=6)
+        except Exception:
+            pass
         log("verbunden - %d s eingewöhnen" % a.eingewoehnen)
         time.sleep(a.eingewoehnen)
         s = http_json(web + "/api/state", timeout=4)["state"]
@@ -182,10 +192,25 @@ def run(a):
         except Exception:
             info["sim_version"] = "?"
         rc = 0
-        for plan in a.plaene:
-            for rep in range(a.wiederholungen):
-                log("Testlauf «%s» (%d/%d) …" % (PLAN_NAME.get(plan, plan), rep + 1, a.wiederholungen))
-                r = http_json(sim + "/control", {"action": "test_start", "plan": plan, "cams": a.kameras}, timeout=10)
+        info["besucher_mal"] = a.mal
+        laeufe = [(p, m) for m in a.realismus for p in a.plaene if not (m == "aus" and p == "spielwege")]
+        for plan0, modus in laeufe:
+          try:                                                   # 2.98.13: camera effects of the simulator on / off
+              http_json(sim + "/control", {"action": "set", "id": "real_fx", "value": modus == "an"}, timeout=6)
+              http_json(sim + "/control", {"action": "set", "id": "real_look", "value": False}, timeout=6)
+          except Exception:
+              pass
+          plan = plan0 + ("" if modus == "an" else ROH)
+          for rep in range(a.wiederholungen):
+                log("Testlauf «%s» (%d/%d) …" % (plan_name(plan), rep + 1, a.wiederholungen))
+                try:
+                    st_ = http_json(sim + "/control", {"action": "test_report"}, timeout=6)
+                    if st_.get("running"):
+                        log("  (es lief schon ein Testlauf: %s – gestoppt)" % st_.get("info"))
+                        http_json(sim + "/control", {"action": "test_stop"}, timeout=6)
+                except Exception:
+                    pass
+                r = http_json(sim + "/control", {"action": "test_start", "plan": plan0, "cams": a.kameras, "mult": a.mal}, timeout=10)
                 if not r.get("ok"):
                     log("  startet nicht:", r.get("error") or r.get("info"))
                     rc = 2
@@ -193,7 +218,7 @@ def run(a):
                 t0 = time.time()
                 fps = []
                 rep_ = None
-                while time.time() - t0 < PLAN_DAUER.get(plan, 400) * 3 + 120:
+                while time.time() - t0 < PLAN_DAUER.get(plan0, 400) * a.mal * 3 + 120:
                     time.sleep(5)
                     try:
                         fps.append(float(http_json(web + "/api/state", timeout=4)["state"].get("fps") or 0))
@@ -203,8 +228,8 @@ def run(a):
                     if not r.get("running"):
                         rep_ = r.get("report") or None
                         break
-                if not rep_ or not rep_.get("phases") or rep_.get("plan") != plan:      # (0 visible persons is a valid result)
-                    log("%s: kein Bericht – %s" % (PLAN_NAME.get(plan, plan), (r.get("info") if isinstance(r, dict) else "") or "Zeit abgelaufen"), wichtig=True)
+                if not rep_ or not rep_.get("phases") or rep_.get("plan") != plan0:      # (0 visible persons is a valid result)
+                    log("%s: kein Bericht – %s" % (plan_name(plan), (r.get("info") if isinstance(r, dict) else "") or "Zeit abgelaufen"), wichtig=True)
                     rep_ = None
                     rc = 2
                     try:
@@ -218,7 +243,7 @@ def run(a):
                 gb = kennzahlen([rep_])["groessen"]
                 if gb:
                     log("  nach Grösse: " + ", ".join("%s %d/%d" % (b, gb[b][1], gb[b][0]) for b in ("nah", "mittel", "weit") if b in gb))
-                log("%s: Personen %d/%d (%.0f %%), Reaktion %s s, Tiere %d/%d, Fehlalarme %d, %.1f Bilder/s" % (PLAN_NAME.get(plan, plan),
+                log("%s: Personen %d/%d (%.0f %%), Reaktion %s s, Tiere %d/%d, Fehlalarme %d, %.1f Bilder/s" % (plan_name(plan),
                     rep_["persons_detected"], rep_["persons"], rep_["rate"], rep_.get("latency_s", "–"),
                     sum(p.get("animals_reported", 0) for p in rep_.get("phases", [])), sum(p.get("animals", 0) for p in rep_.get("phases", [])),
                     rep_["false_alarms"], rep_["mw_fps"]), wichtig=True)
@@ -287,18 +312,21 @@ def vergleich(info):
         k = kennzahlen(reps)
         vor = [d for d in alte if plan in d.get("plaene", {}) and d.get("rechner") == info.get("rechner") and ki_art(d) == ki_art(info)]
         if not vor:
-            zeilen.append("%s: erster Lauf auf diesem Rechner – noch kein Vergleich." % PLAN_NAME.get(plan, plan))
+            zeilen.append("%s: erster Lauf auf diesem Rechner – noch kein Vergleich." % plan_name(plan))
             continue
         v = vor[-1]
         kv = kennzahlen(v["plaene"][plan])
         dq, df = k["quote"] - kv["quote"], k["fehlalarme_pro_lauf"] - kv["fehlalarme_pro_lauf"]
         urteil = "gleich"
-        if dq <= -10 or df >= 1:
+        if min(k["personen"], kv["personen"]) < 8:              # 2.98.13: too few persons - one miss would be 20 %+
+            zeilen.append("%s: zu wenige Personen für einen Vergleich (%d / %d) – Personen %.0f %%." % (plan_name(plan), k["personen"], kv["personen"], k["quote"]))
+            continue
+        if dq <= -15 or df >= 1:
             urteil, schlechter = "SCHLECHTER", True
-        elif dq >= 10 or df <= -1:
+        elif dq >= 15 or df <= -1:
             urteil = "besser"
         zeilen.append("%s gegen %s: Personen %.0f %% (%+.0f), Fehlalarme pro Lauf %.1f (%+.1f) → %s" % (
-            PLAN_NAME.get(plan, plan), v.get("mw_version"), k["quote"], dq, k["fehlalarme_pro_lauf"], df, urteil))
+            plan_name(plan), v.get("mw_version"), k["quote"], dq, k["fehlalarme_pro_lauf"], df, urteil))
     return zeilen, schlechter
 
 
@@ -318,7 +346,7 @@ def verlauf_schreiben():
             gb = k["groessen"]
             gt = " / ".join(("%d/%d" % (gb[b][1], gb[b][0])) if b in gb else "–" for b in ("nah", "mittel", "weit")) if gb else "–"
             L.append("| %s | %s | %s | %s%s | %d / %d (**%.0f %%**) | %s | %s | %d / %d | %d | %s | %s | %s |" % (
-                d.get("datum", "?"), d.get("mw_version", "?"), d.get("sim_version", "?"), PLAN_NAME.get(plan, plan),
+                d.get("datum", "?"), d.get("mw_version", "?"), d.get("sim_version", "?"), plan_name(plan),
                 (" ×%d" % k["laeufe"] if k["laeufe"] > 1 else "") + (" – *%s*" % d["bemerkung"] if d.get("bemerkung") else ""),
                 k["erkannt"], k["personen"], k["quote"], gt,
                 ("%.1f s" % k["reaktion"]) if k["reaktion"] is not None else "–", k["tiere_gemeldet"], k["tiere"], k["fehlalarme"],
@@ -329,7 +357,7 @@ def verlauf_schreiben():
     if rows:
         d = rows[-1]
         for plan, reps in d.get("plaene", {}).items():
-            L += ["**%s** – %s, Motion Watch %s" % (PLAN_NAME.get(plan, plan), d.get("datum"), d.get("mw_version")), "",
+            L += ["**%s** – %s, Motion Watch %s" % (plan_name(plan), d.get("datum"), d.get("mw_version")), "",
                   "| Phase | Personen | Reaktion | Tiere | Fehlalarme | verpasst, weil … |", "|---|---|---|---|---|---|"]
             for p in reps[-1].get("phases", []):
                 why = p.get("missed_why") or {}
@@ -351,7 +379,9 @@ def main():
     ap.add_argument("--godot", default="", help="Godot 4.3 (startet das Projekt simulator3d/ direkt)")
     ap.add_argument("--plaene", default="quick,night", help="quick, standard, night, hard (mit Komma)")
     ap.add_argument("--wiederholungen", type=int, default=1, help="jeden Testlauf so oft (mehr = verlässlichere Zahlen)")
-    ap.add_argument("--szene", default="camping")
+    ap.add_argument("--mal", type=int, default=2, help="jede Besucherliste so oft (mehr Personen pro Lauf = verlässlichere Zahlen)")
+    ap.add_argument("--realismus", default="an", help="Kamera-Effekte des Simulators: an, aus oder an,aus (beides messen)")
+    ap.add_argument("--szene", default="stellplatz", help="Szene (2.98.13: Stellplatz - freie Sicht wie auf einem Camping-Platz; camping verdeckt viel)")
     ap.add_argument("--qualitaet", default="simple", help="Grafik des Simulators: simple, medium, nice")
     ap.add_argument("--sim-port", type=int, default=8795)
     ap.add_argument("--mw-port", type=int, default=5095)
@@ -366,6 +396,7 @@ def main():
     ap.add_argument("--nur-verlauf", action="store_true", help="nur VERLAUF.md aus den gespeicherten Ergebnissen schreiben")
     a = ap.parse_args()
     a.plaene = [p.strip() for p in a.plaene.split(",") if p.strip()]
+    a.realismus = [m.strip() for m in a.realismus.split(",") if m.strip() in ("an", "aus")] or ["an"]
     # the sneaking ways of the game (simulator3d/spielwege/schleichweg_*.json, from 3D-3.53) always run along: did a change
     # close a known blind spot?
     if glob.glob(os.path.join(REPO, "simulator3d", "spielwege", "schleichweg_*.json")) and "spielwege" not in a.plaene and not a.nur_verlauf:

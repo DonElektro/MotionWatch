@@ -17,17 +17,17 @@ var _menus := {}                       # 3D-3.86: title -> [MenuButton, ids]
 # 3D-3.86: the one row - a string is a button, an array a menu [title, tooltip, ids]
 # 3D-3.91: the bar is for moving and the view (concept); Inventar / Vorlagen are tiles of «Schnellzugriff» - not twice here.
 # «Verfolgen» on its own (it is not only for the patrol).
-const MAIN_ROW := ["explore", ["Patrouille", "Route für den Mover", ["patrol", "points", "area", "random", "clear", "route"]],
+const MAIN_ROW := ["explore", ["Rover-Route", "Route für den Mover (in MoveEye heisst «Patrouille» das Abfahren der Wegpunkte mit dem Kopf)", ["patrol", "points", "area", "random", "clear", "route"]],
 		"follow", "head", "place", ["Stange", "Höhe des Kamerakopfs", ["mast_up", "mast_dn"]], "invite",
 		["Ansicht", "Was angezeigt wird", ["view", "spectate", "map", "cams", "info", "laser", "zones3d", "det3d"]], "panel"]
 
 const ROW1 := [["explore", "Erkunden", "Mit dem Rover herumfahren (Tastatur, Maus, Touch, Controller)"],
-		["patrol", "Patrouille", "Der Mover fährt MoveEye die Route ab, MoveEye passt die ganze Zeit auf"],
+		["patrol", "Rover-Route", "Der Mover fährt MoveEye die Route ab, MoveEye passt die ganze Zeit auf"],
 		["points", "Punkte", "Route setzen: in die Welt klicken = Punkt, Rechtsklick auf einen Punkt = weg"],
 		["area", "Bereich", "Bereich aufziehen: der Mover fährt zufällige Punkte darin ab"],
 		["random", "Zufall", "Zufällige Route rund um MoveEye"],
 		["clear", "Löschen", "Route und Bereich löschen"],
-		["follow", "Verfolgen", "Der Kopf hält Personen, Tiere und Bewegtes in der Bildmitte (= «Folgen» in MoveEye); auf Patrouille fährt der Mover dann langsamer"],
+		["follow", "Folgen", "Der Kopf hält Personen, Tiere und Bewegtes in der Bildmitte (= «Folgen» in MoveEye); auf Patrouille fährt der Mover dann langsamer"],
 		["place", "Versetzen", "Rover versetzen: danach in die Welt klicken"],
 		["head", "Kopf steuern", "Den Kopf von MoveEye mit Pfeilen drehen, Licht ein / aus"],
 		["mast_dn", "Stange −", "Kamerakopf tiefer"], ["mast_up", "Stange +", "Kamerakopf höher"]]
@@ -159,7 +159,7 @@ func _press(id: String) -> void:
 			if main.now() - main.mw_t < 3.0:
 				main.mw_track(on_)
 			else:
-				main.start_info = "Verfolgen braucht MoveEye – zuerst verbinden (bis dahin dreht nur die Patrouille zu Verdächtigem)"
+				main.start_info = "Folgen braucht MoveEye – zuerst verbinden (bis dahin dreht nur die Patrouille zu Verdächtigem)"
 		"place":
 			main.place_kind = "" if main.place_kind == "rover" else "rover"
 		"head":
@@ -232,7 +232,7 @@ func _paint() -> void:
 	if _btn.has("view"):
 		(_btn["view"] as Button).text = "Ansicht: " + str(ex.VIEW_NAMES.get(ex.view, ex.view)) if ex.on else "Ansicht"
 	if _btn.has("patrol"):
-		(_btn["patrol"] as Button).text = ("Patrouille: " + {"drive": "fährt", "look": "schaut"}.get(pt.state, "")) if pt.active else "Patrouille"
+		(_btn["patrol"] as Button).text = ("Rover-Route: " + {"drive": "fährt", "look": "schaut"}.get(pt.state, "")) if pt.active else "Rover-Route"
 
 
 func _process(dt: float) -> void:
@@ -261,4 +261,4 @@ func _paint_menu(pm: PopupMenu, ids: Array) -> void:
 	for i in range(ids.size()):
 		pm.set_item_checked(i, bool(_st.get(ids[i], false)))
 		if ids[i] == "patrol":
-			pm.set_item_text(i, "Patrouille stoppen" if main.patrol.active else "Patrouille starten")
+			pm.set_item_text(i, "Rover-Route stoppen" if main.patrol.active else "Rover-Route starten")

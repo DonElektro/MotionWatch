@@ -133,7 +133,7 @@ async function addIp() {
   const r2 = await post("/api/cams", {action: "add", id: r.id, lang: LANG}); showErr(r2.ok ? "" : r2.error); SIG = ""; poll();
 }
 // ---- other MoveEye devices ----
-Object.assign(I18N.de, {"Other MoveEye devices": "Weitere Motion-Watch-Geräte",
+Object.assign(I18N.de, {"Other MoveEye devices": "Weitere MoveEye-Geräte",
   "Several devices around the tent or camper: see them all here and arm / disarm them together.": "Mehrere Geräte rund ums Zelt oder Wohnmobil: hier alle sehen und gemeinsam den Schutz ein- und ausschalten.",
   "🛡 Arm all": "🛡 Schutz bei allen an", "Disarm all": "Schutz bei allen aus", "Add a device": "Gerät hinzufügen", "Password": "Passwort",
   "🔍 Search in the network": "🔍 Im Netzwerk suchen", "This device": "Dieses Gerät", "armed": "Schutz an", "disarmed": "Schutz aus", "arming": "Schutz startet",

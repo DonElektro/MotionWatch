@@ -1050,6 +1050,7 @@ class Notifier:
     def _dispatch(self, p, jpg, fname):
         if sandbox_active() or p.get("_test"):           # 2.96.6: simulator test inbox - nobody is disturbed (141); 2.97.0: per message
             sandbox_add(self._title(p), self._text(p), jpg, self._event(p) if self._event(p) != "tamper" else "tamper")
+            msglog_add(self._title(p), self._text(p), self._event(p), jpg, "test", "Test-Postfach")    # 2.98.13: list «Nachrichten»
             return
         if CFG["webpush_on"] and webpush_subs():
             threading.Thread(target=self._webpush, args=(p,), daemon=True).start()
@@ -1066,6 +1067,7 @@ class Notifier:
             if not CFG["sms_only_offline"] or offline or not self.main_configured() or ev == "test":
                 threading.Thread(target=lambda: sms_send(self._title(p) + ": " + self._text(p), force=ev == "test"), daemon=True).start()
         if not self.main_configured():
+            msglog_add(self._title(p), self._text(p), ev, jpg, "none", "")
             return
         kind, secret = CFG["notify_type"], CFG["telegram_token"]
         alarm = ev in ("person", "tamper", "warm", "noise")
@@ -1075,6 +1077,7 @@ class Notifier:
                 code, where = self._send_main(p, jpg, fname)
                 STATE["notify_status"] = f"sent {datetime.now().strftime('%H:%M:%S')} (HTTP {code})"
                 log_event("web", f"Notification sent to {where} (HTTP {code})" + (f" - attempt {k_ + 1}" if k_ else ""))
+                msglog_add(self._title(p), self._text(p), ev, jpg, "sent", where.split(" ")[0])
                 return
             except Exception as e:
                 msg = str(e).replace(secret, "***") if secret else str(e)
@@ -1087,6 +1090,7 @@ class Notifier:
                     pass
                 if k_ + 1 < tries:
                     time.sleep(5 if k_ == 0 else 10)
+        msglog_add(self._title(p), self._text(p), ev, jpg, "failed", kind)
         # all attempts failed: the SMS (if it was held back for "only when offline") goes out now
         if alarm and CFG["sms_on"] and CFG["sms_only_offline"] and sms_numbers() and STATE.get("net", {}).get("online") is not False:
             log_event("web", "Push message could not be sent - SMS instead")

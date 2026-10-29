@@ -36,11 +36,12 @@ const PLANS := {
 const COND_NAMES := {"glare": "Gegenlicht", "drops": "Tropfen auf der Linse", "web": "Spinnennetz", "headlights": "Scheinwerfer",
 		"shadows": "Wolkenschatten", "ir": "Infrarot"}
 var plan := "standard"
+var mult := 1                           # 3D-4.0: every visitor list of a phase so many times (the test bench: more visitors = surer numbers)
 var truth_cams := [0, 1]                # 3D-3.48: which cameras count for the truth (the test bench: only the head camera, 0)
 var PHASES: Array = STANDARD
 var _cond_saved := {}
 const EVERY := 13.0                     # a new visitor every ... seconds
-const SETTLE := 8.0                     # quiet time at the start of a phase (MoveEye adapts to the new light)
+const SETTLE := 15.0                    # quiet time at the start of a phase (MoveEye and the exposure of the camera adapt - 3D-4.0: 8 → 15 s)
 const GRACE := 2.5                      # a report counts for a visitor up to ... s after it was last visible
 
 var running := false
@@ -114,8 +115,35 @@ func state() -> Dictionary:
 func duration() -> float:
 	var s := 0.0
 	for ph in PHASES:
-		s += SETTLE + max(EVERY * ph["visits"].size(), float(ph.get("way_s", 0.0)) + 2.0) + 6.0
+		s += SETTLE + max(EVERY * ph["visits"].size() * mult, float(ph.get("way_s", 0.0)) + 2.0) + 6.0
 	return s
+
+
+func _visit_kind(ph: Dictionary, i: int) -> String:
+	var v: Array = ph["visits"]
+	return str(v[i % v.size()])
+
+
+func _route(i: int, ph: Dictionary) -> Array:
+	"""3D-4.0: the way of a test visitor - straight through the picture of the head camera (before: across the whole place,
+	many visitors never came into the picture or only far away, and at night never into the infrared light). Distances
+	cycle (near / middle / far) so every run has the same mix; at night with light only as far as the light reaches."""
+	var cam: Camera3D = main.cams[0]
+	var o: Vector3 = cam.global_position
+	var f := -cam.global_transform.basis.z
+	f.y = 0.0
+	f = f.normalized() if f.length() > 0.01 else Vector3(0, 0, -1)
+	var r := Vector3(-f.z, 0, f.x)
+	var lit: bool = "ir" in ph.get("cond", []) or bool(main.mw.get("lights", {}).get("white", false))
+	var ds: Array = [7.0, 11.0, 15.0, 9.0, 19.0, 13.0, 24.0] if float(ph["hour"]) > 6.5 and float(ph["hour"]) < 19.5 else \
+			([4.0, 6.5, 9.0, 5.5, 11.0, 7.5] if lit else [5.0, 8.0, 12.0])
+	var d: float = ds[i % ds.size()] * randf_range(0.92, 1.08)
+	var half: float = d * 0.68 + 5.0
+	var side := 1.0 if i % 2 == 0 else -1.0
+	var skew: float = randf_range(-0.25, 0.25) * d
+	var a: Vector3 = o + f * (d + skew) - r * side * half
+	var b: Vector3 = o + f * (d - skew) + r * side * half
+	return [Vector3(a.x, 0, a.z), Vector3(b.x, 0, b.z)]
 
 
 func _spawn_way(i: int):
@@ -140,9 +168,10 @@ func _spawn_way(i: int):
 	return v
 
 
-func start(which := "", cams: Array = []) -> String:
+func start(which := "", cams: Array = [], times: int = 1) -> String:
 	if running:
 		return "Es läuft schon ein Testlauf."
+	mult = clampi(times, 1, 5)
 	truth_cams = [0, 1]
 	if not cams.is_empty():
 		truth_cams = []
@@ -228,16 +257,22 @@ func _process(dt: float) -> void:
 		stop(false)
 		return
 	var ph: Dictionary = PHASES[phase]
-	if visit_i < ph["visits"].size() and t >= next_visit:
-		var k: String = ph["visits"][visit_i]
-		var v = _spawn_way(int(k.substr(4))) if k.begins_with("way:") else main.spawn(k)
+	var n_vis: int = ph["visits"].size() * (1 if plan == "spielwege" else mult)
+	if visit_i < n_vis and t >= next_visit:
+		var k: String = _visit_kind(ph, visit_i)
+		var v
+		if k.begins_with("way:"):
+			v = _spawn_way(int(k.substr(4)))
+		else:
+			var rt: Array = _route(visit_i, ph)
+			v = main.spawn(k, rt[0], rt[1])
 		if k.begins_with("way:"):
 			k = "person"
 		truth[v.get_instance_id()] = {"kind": k, "person": v.kind == "person", "phase": phase, "first": -1.0, "last": -100.0,
 				"vis": 0.0, "det": -1.0, "rep": false, "as_person": false, "seen_ever": false, "px": 0.0, "light": 1.0, "crouch": false}
 		visit_i += 1
 		next_visit = t + max(EVERY, float(ph.get("way_s", 0.0)) + 2.0)
-	elif visit_i >= ph["visits"].size() and t >= next_visit + 6.0:
+	elif visit_i >= n_vis and t >= next_visit + 6.0:
 		if phase + 1 < PHASES.size():
 			_start_phase(phase + 1)
 		else:
@@ -276,6 +311,9 @@ func visible(v) -> bool:
 		if not cam.is_position_in_frustum(pos + Vector3(0, h * 0.6, 0)):
 			continue
 		if not main.line_free(cp, pos + Vector3(0, h * 0.95, 0)):
+			continue
+		# 3D-4.0: also the body must be free (before: the head over a tent counted as «well visible»)
+		if not main.line_free(cp, pos + Vector3(0, h * 0.6, 0)) and not main.line_free(cp, pos + Vector3(0, h * 0.35, 0)):
 			continue
 		var px: float = h / (2.0 * d * tan(deg_to_rad([41.0, 62.0][i]) / 2.0)) * [540.0, 360.0][i]
 		if px < (30.0 if v.kind == "person" else 18.0):
@@ -454,7 +492,8 @@ func _make_report() -> void:
 	report = {"v": 2, "plan": plan, "plan_name": PLANS[plan]["name"], "date": Time.get_datetime_string_from_system(false, true), "simulator": main.version(), "scene": main.scene,
 			"device": dev, "persons": tp, "persons_detected": td, "rate": snappedf(100.0 * td / max(1, tp), 1),
 			"latency_s": snappedf(lat_avg, 0.1), "false_alarms": falses.size(), "false_list": falses, "missed_list": all_missed, "noise_alarms": noises,
-			"phases": phs, "truth_cams": truth_cams, "visitors": each,
+			"phases": phs, "truth_cams": truth_cams, "visitors": each, "mult": mult,
+			"realism": {"fx": bool(main.realism.fx_on), "look": bool(main.realism.real_on)} if main.realism != null else {},
 			"note": ("Wahrheit: sichtbar für Kopf- oder feste Kamera" if truth_cams.size() > 1 else "Wahrheit: sichtbar für die Kopfkamera") + " (frei, gross genug, genug Licht)."}
 	info = "Testlauf fertig: Personen erkannt %d von %d (%d %%), Reaktionszeit %s, Fehlalarme %d, Geräuschalarme %d." % [
 			td, tp, int(report["rate"]), ("%.1f s" % lat_avg) if lat_avg >= 0.0 else "–", falses.size(), noises.size()]
