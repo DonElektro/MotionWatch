@@ -1,12 +1,12 @@
 {
- "version": "3D-3.95",
+ "version": "3D-3.96",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31225872,
- "sha256": "e3a0d553e0ca12a686be5834e23aa3b4463f7a39b00b300fa2f4cd46afdc8298",
- "notes": "Spiel mit bis 12 Laeufern, Zuschauer ruecken nach, Spiele freigeben aus MoveEye",
+ "size": 31240633,
+ "sha256": "d559539f28fb616027dc23eec1ec15451072f63b13e46784a06bd397fd5aea1b",
+ "notes": "Schlafzimmer fuer den Wecker, Blickrichtung (Laser), Controller kalibrieren gegen Stick-Drift",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24348316,
-  "sha256": "7bcae03ef706214ab073c791692ec772a560d0abfd794e20d6c05f55c4c0f133"
+  "size": 24362174,
+  "sha256": "2a61ed037aa8e223bab28038347f8672e1b63c5b3b83961b65803910e3509a5a"
  }
 }

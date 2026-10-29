@@ -40,7 +40,7 @@ def _clean_zone(z, i):
             out["secs"] = int(max(3, min(600, float(z.get("secs") or 20))))
         except (TypeError, ValueError):
             out["secs"] = 20
-    if mode == "sleep":
+    if mode in FIXED_MODES:
         ang = z.get("ang")
         if isinstance(ang, list) and len(ang) == len(pts) and all(isinstance(a, (list, tuple)) and len(a) == 2 and _num(a[0]) and _num(a[1]) for a in ang):
             out["ang"] = [[round(float(a[0]), 3), round(float(a[1]), 3)] for a in ang]
@@ -87,8 +87,29 @@ def sleep_project(ang, pan=None, tilt=None, margin=0.0):
     return out
 
 
+FIXED_MODES = ("privacy", "sleep")    # 2.98.9: privacy zones stay on their place too (before: fixed to the picture - a turning
+                                      # head showed the neighbour's tent for a moment)
+
+
+def fixed_zones():
+    return [z for z in ZONES if z["mode"] in FIXED_MODES and z.get("ang")]
+
+
 def sleep_zones():
     return [z for z in ZONES if z["mode"] == "sleep" and z.get("ang")]
+
+
+def fixed_migrate():
+    """2.98.9: privacy zones of older versions have no directions yet - they were drawn at the position the camera has now
+    (the start position is saved), so they get their directions from there once"""
+    n = 0
+    for z in ZONES:
+        if z["mode"] in FIXED_MODES and not z.get("ang"):
+            try:
+                z["ang"] = sleep_to_ang(z["points"]); n += 1
+            except Exception:
+                pass
+    return n
 
 
 def sleep_update(now=None):
@@ -97,7 +118,7 @@ def sleep_update(now=None):
     pos = (round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2))
     if not SLEEP_POS or SLEEP_POS[-1][1:] != pos:
         SLEEP_POS.append((now,) + pos)
-    for z in sleep_zones():
+    for z in fixed_zones():
         if z.get("_at") != pos:
             z["_at"] = pos
             pp = sleep_project(z["ang"], *pos)
@@ -109,7 +130,7 @@ def sleep_update(now=None):
 def sleep_polys(w, h, now=None):
     """pixel polygons of the sleeping places for every direction of the last 2 s"""
     now = time.time() if now is None else now
-    zs = sleep_zones()
+    zs = fixed_zones()
     if not zs:
         return []
     L = list(SLEEP_POS)
@@ -205,9 +226,16 @@ def zone_event(kind, z, frame):
 
 
 def apply_privacy(frame):
-    """Paint the privacy zones and the sleeping places black (in place). Returns the frame."""
-    zs = [z for z in ZONES if z["mode"] == "privacy"]
-    sl = any(z["mode"] == "sleep" for z in ZONES)
+    """Paint the privacy zones and the sleeping places black (in place). Returns the frame. Both stay where they are when
+    the head turns (directions in degrees); a privacy zone without directions (should not happen) is painted as drawn."""
+    zs = [z for z in ZONES if z["mode"] == "privacy" and not z.get("ang")]
+    if zs and fixed_migrate():                          # older zones: directions once, from where the camera looks now
+        zs = [z for z in ZONES if z["mode"] == "privacy" and not z.get("ang")]
+        try:
+            save_settings(); log_event("sys", "Privacy zones: they now stay on their place when the head turns")
+        except Exception:
+            pass
+    sl = any(z["mode"] in FIXED_MODES and z.get("ang") for z in ZONES)
     if (not zs and not sl) or frame is None:
         return frame
     h, w = frame.shape[:2]
@@ -254,11 +282,11 @@ def zones_set(lst):
     if not isinstance(lst, list):
         return False, "invalid zones"
     out = []
-    old = {z["id"]: z for z in ZONES if z["mode"] == "sleep"}
+    old = {z["id"]: z for z in ZONES if z["mode"] in FIXED_MODES}
     for z in lst[:MAX_ZONES]:
         c = _clean_zone(z, len(out))
         if c:
-            if c["mode"] == "sleep":                    # 2.98.7: corners as directions from where the camera looks now
+            if c["mode"] in FIXED_MODES:                # 2.98.7 / 2.98.9: corners as directions from where the camera looks now
                 o = old.get(c["id"])
                 same = o and o.get("ang") and len(o.get("points") or []) == len(c["points"]) and all(
                     abs(a[0] - b[0]) < 0.003 and abs(a[1] - b[1]) < 0.003 for a, b in zip(o["points"], c["points"]))
@@ -402,9 +430,10 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Clap switch", "clap_3", "Clap 3×", "enum", "clap_acts"),
     ("Clap switch", "clap_4", "Clap 4×", "enum", "clap_acts"),
     ("Bless you", "sneeze_reply", "Answer", "enum", "sneeze_replies"),
+    ("Setup", "tips_level", "Explanations the first time something is opened (dots = never opened, NEW = new)", "enum", "tips_levels"),
+    ("Setup", "use_case", "What is MoveEye for? («Simple» shows only what fits)", "enum", "use_cases"),
     ("Wake-up alarm", "wake_time", "Wake-up time (HH:MM)", "str", None),
     ("Wake-up alarm", "wake_days", "Days", "enum", "wake_days"),
-    ("Wake-up alarm", "wake_sleep", "Camera looks away from (HH:MM, empty = not)", "str", None),
     ("Wake-up alarm", "wake_sound", "Sound", "enum", "wake_sounds"),
     ("Bless you", "sneeze_texts", "Words (several: separate with |)", "str", None),
     ("Loudspeaker", "siren_sound", "Sound", "enum", "sounds"),
@@ -500,6 +529,11 @@ def text_choice_pairs(key):
         return clap_act_pairs()
     if extra == "sneeze_replies":
         return sneeze_reply_pairs()
+    if extra == "tips_levels":
+        return [("off", tr("off")), ("basic", tr("only the most important")), ("normal", tr("normal")), ("all", tr("nearly every detail"))]
+    if extra == "use_cases":
+        return [("", tr("everything (not chosen)")), ("camping", tr("Camping: tent, caravan")), ("home", tr("House and garden")),
+                ("wild", tr("Watching animals")), ("holiday", tr("Holiday house, alpine hut")), ("room", tr("In the room: wake-up alarm"))]
     if extra == "wake_days":
         return [("mon-fri", tr("Monday to Friday")), ("all", tr("every day")), ("sat-sun", tr("Saturday and Sunday")),
                 ("sun-thu", tr("Sunday to Thursday")), ("once", tr("only once (next time)"))]
@@ -574,6 +608,8 @@ def set_text(key, value):
             if cf:
                 a_, b_, ad = cf[0]
                 return False, trf("I2C address {a} is already used by the {x} - choose another address", a=ad, x=tr(I2C_KEYS[a_ if a_ != key else b_]))
+        if key == "use_case":
+            return use_case_set(value, "settings")
         CFG[key] = value
         if key == "net_mode":
             NETAUTO["paused"] = False
@@ -626,7 +662,7 @@ def set_text(key, value):
                 return False, "invalid URL (http:// or https:// expected)"
             if key in ("notify_url", "public_url") and not _http_ok(v):
                 return False, "invalid URL (http:// or https:// expected)"
-            if key in ("wake_time", "wake_sleep") and not _HM_RE.match(v):
+            if key == "wake_time" and not _HM_RE.match(v):
                 return False, "a time like 07:00"
             if key == "msg_keyword_prefix" and not re.fullmatch(r"[A-Za-z0-9]{1,12}", v):
                 return False, "1 to 12 letters or digits"
@@ -946,6 +982,7 @@ class Scheduler:
             try:
                 schedule_tick(); arm_tick()
                 wake_tick()                             # 2.98.7: wake-up alarm
+                night_guard_tick()                      # 2.98.9: «Heute Nacht bewachen» ends with the night time
             except Exception as e:                      # never let the scheduler thread die
                 log_event("sys", f"Scheduler error: {e}")
             time.sleep(1.0)

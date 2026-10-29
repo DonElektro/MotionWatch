@@ -274,10 +274,10 @@ ol{padding-left:18px;margin:6px 0}
 <script>
 /*COMMON*/
 Object.assign(I18N.de, {"+ Sleeping place": "+ Schlafplatz", "Sleeping place": "Schlafplatz",
-  "z-sleep": "Wie eine Privatsphäre-Zone, bleibt aber auf dem Bett, auch wenn sich die Kamera dreht. Der Wecker dreht die Kamera beim Wecken dorthin (Gesten). Einzeichnen, während die Kamera auf das Bett schaut."});
+  "z-sleep": "Wie eine Privatsphäre-Zone (schwarz, bleibt auf dem Bett, auch wenn sich die Kamera dreht). Der Wecker dreht die Kamera beim Wecken dorthin (Gesten). Einzeichnen, während die Kamera auf das Bett schaut."});
 Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": "+ Nur-hier-Zone", "+ Privacy zone": "+ Privatsphäre-Zone",
   "Privacy zone": "Privatsphäre-Zone",
-  "z-priv": "Der Bereich wird schwarz abgedeckt – im Live-Bild, in Aufnahmen, Fotos und Zeitraffer. Er wird nie gespeichert oder übertragen (Nachbarzelt, Weg, fremdes Fenster). Wichtig für den Datenschutz.", "Finish shape": "Form abschliessen", "New picture": "Neues Bild",
+  "z-priv": "Der Bereich wird schwarz abgedeckt – im Live-Bild, in Aufnahmen, Fotos und Zeitraffer – und bleibt an seinem Ort, auch wenn sich der Kopf dreht. Er wird nie gespeichert oder übertragen (Nachbarzelt, Weg, fremdes Fenster). Wichtig für den Datenschutz.", "Finish shape": "Form abschliessen", "New picture": "Neues Bild",
   "Save zones": "Zonen speichern", "Ignore zone": "Ignorier-Zone", "Only-here zone": "Nur-hier-Zone", "Delete": "Löschen", "Saved": "Gespeichert",
   "Click the corners of the area in the picture. Click the first point or press 'Finish shape' to close it.": "Klicke die Ecken des Bereichs im Bild an. Klicke den ersten Punkt oder 'Form abschliessen', um die Form zu schliessen.",
   "Drag a corner to move it. Select a zone in the list to edit it.": "Eine Ecke lässt sich verschieben. Wähle eine Zone in der Liste zum Bearbeiten.",
@@ -289,11 +289,11 @@ Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": 
   "z-ign": "Personen und Objekte, deren Füsse darin stehen, werden ignoriert (Strasse, Baum, Nachbars Garten).",
   "z-only": "Wenn mindestens eine solche Zone existiert, zählt nur, was darin passiert (Eingang, Einfahrt).",
   "z-how": "Eine Zone wirkt auf die Erkennung, die Aufnahme, die Alarme und die Relais. Gezählt wird der Punkt unten in der Mitte des erkannten Objekts (die Füsse)."});
-Object.assign(I18N, {en: {"z-sleep": "Like a privacy zone, but it stays on the bed when the camera turns. The wake-up alarm turns the camera there (gestures). Draw it while the camera looks at the bed.", "z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
+Object.assign(I18N, {en: {"z-sleep": "Like a privacy zone (black, stays on the bed when the camera turns). The wake-up alarm turns the camera there (gestures). Draw it while the camera looks at the bed.", "z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
   "z-loit": "Reports when a person stays inside longer than the time set (e.g. at the car).", "z-ign": "Persons and objects whose feet are inside are ignored (street, tree, neighbour's garden).",
   "z-only": "If at least one such zone exists, only what happens inside it counts (entrance, driveway).",
   "z-how": "A zone affects detection, recording, alarms and relays. The point that counts is the bottom middle of the detected object (the feet).",
-  "z-priv": "The area is covered in black – in the live picture, recordings, photos and timelapse. It is never stored or sent (neighbour's tent, a path, somebody's window). Important for data protection."}});
+  "z-priv": "The area is covered in black – in the live picture, recordings, photos and timelapse – and stays on its place when the head turns. It is never stored or sent (neighbour's tent, a path, somebody's window). Important for data protection."}});
 const tt = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 const cv = $("#cv"), g = cv.getContext("2d"), img = new Image();
 let zones = [], sel = -1, drawing = null, drawMode = "ignore", drag = null;

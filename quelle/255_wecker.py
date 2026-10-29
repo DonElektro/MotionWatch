@@ -38,12 +38,13 @@ def wake_next(now=None):
 
 
 def wake_sleep_from(due):
-    """when the night before the alarm `due` starts (the camera looks away from then on) - 0 = not set"""
-    hm = _hm(CFG.get("wake_sleep"))
-    if hm is None or not due:
+    """when the night before the alarm `due` starts (the camera looks away from then on) - 0 = not wanted.
+    2.98.9: the ONE night time of MoveEye (report_from, Einstellungen → Nachtbericht) - also for the night report and
+    «Heute Nacht bewachen»."""
+    if not CFG.get("wake_away_night", True) or not due:
         return 0.0
     d = datetime.fromtimestamp(due)
-    s = d.replace(hour=hm[0], minute=hm[1], second=0, microsecond=0)
+    s = d.replace(hour=int(CFG.get("report_from", 22)) % 24, minute=0, second=0, microsecond=0)
     if s >= d:
         s -= timedelta(days=1)
     return s.timestamp()
@@ -70,6 +71,11 @@ def bed_view():
 def away_view():
     p, t = float(CFG.get("wake_away_pan", -1)), float(CFG.get("wake_away_tilt", -1))
     return (p, t) if 0 <= p <= 100 and 0 <= t <= 100 else None
+
+
+def wake_clap_listens():
+    """2.98.9: while the alarm rings, clapping 2 times = snooze (the melody pauses 8 s of every 20 s so the microphone hears it)"""
+    return WAKE["state"] == "ring" and bool(CFG.get("wake_clap", True)) and bool(CFG.get("audio_in"))
 
 
 def wake_hold():
@@ -108,7 +114,7 @@ def _ring_sound(now):
     full = float(CFG.get("wake_volume", 60))
     WAKE["level"] = min(full, max(full * 0.4, WAKE["level"] + full * 0.1)) if WAKE["level"] else full * 0.4
     kind = CFG.get("wake_sound") or "chime"
-    ok, err = sound_play(kind, 19.0, WAKE["level"], reason="wake-up alarm")
+    ok, err = sound_play(kind, 12.0 if wake_clap_listens() else 19.0, WAKE["level"], reason="wake-up alarm")
     if not ok:
         WAKE["msg"] = err
 
@@ -223,13 +229,14 @@ class WakeGestures:
                 the time over 2 s with a clear sideways range)
       getting up = a big part of the bed and of the area above it moves for more than ~1.5 s
     The first 2 s after the head turned or the light went on are ignored (everything changes then)."""
-    W = 192
+    W = 320
 
     def __init__(self):
         self.reset()
 
     def reset(self):
         self.prev = None; self.hist = deque(); self.t0 = time.time(); self.roi = None
+        self.base = None; self.changed_t = 0.0                  # the picture of the bed when it started to ring (sitting up = differs)
 
     def _roi(self, w, h):
         z = bed_zone()
@@ -261,50 +268,84 @@ class WakeGestures:
             return ""
         x0, y0, x1, y1 = roi
         r = cv2.GaussianBlur(g[y0:y1, x0:x1], (5, 5), 0).astype(np.float32)
+        if self.prev is not None and self.prev.shape == r.shape and float(cv2.absdiff(r, self.prev).max()) < 1.5:
+            return ""                                          # the same picture again (the camera is slower than the loop)
         prev, self.prev = self.prev, r
         quiet = max(WAKE.get("pos_t", 0.0), WAKE.get("light_t", 0.0), float(SERVO_MOVE.get("t", 0.0)), self.t0)
         if prev is None or prev.shape != r.shape or now - quiet < 2.0:
-            self.hist.clear()
+            self.hist.clear(); self.base = None; self.changed_t = 0.0
             return ""
-        thr = max(16.0, 0.18 * float(prev.mean()))            # dark (infrared) pictures: a lower threshold
+        if self.base is None or self.base.shape != r.shape:
+            self.base = r.copy()
+        thr = max(6.0, 0.035 * float(prev.mean()))            # little contrast (infrared, a washed-out bright room): a low threshold
         m = (cv2.absdiff(r, prev) > thr).astype(np.uint8)
-        m = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+        m = cv2.dilate(cv2.erode(m, np.ones((2, 2), np.uint8)), np.ones((3, 3), np.uint8))   # no single grains, thin arms stay
         frac = float(m.mean())
         if frac > 0.85:                                        # everything changed (light, a jolt): not a gesture
             self.hist.clear()
             return ""
         cx = None
-        if frac > 0.002:
-            ys_, xs_ = np.nonzero(m)
-            cx = float(xs_.mean()) / max(1, m.shape[1])
+        if frac > 0.0012:                                      # the biggest moving thing (not the moths at the lamp, not the grain)
+            nl, lab, st, cen = cv2.connectedComponentsWithStats(m, connectivity=8)
+            if nl > 1:
+                j = 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))
+                frac = float(st[j, cv2.CC_STAT_AREA]) / float(m.size)
+                cx = float(cen[j][0]) / max(1, m.shape[1])
+            if frac <= 0.0012:
+                cx = None
         self.hist.append((now, cx, frac))
-        while self.hist and now - self.hist[0][0] > 3.0:
+        while self.hist and now - self.hist[0][0] > 4.0:
             self.hist.popleft()
+        # sitting up / out of bed: the picture stays different from the one when it began to ring (and nothing moves now)
+        bd = (cv2.absdiff(r - float(r.mean()), self.base - float(self.base.mean())) > thr * 1.5).astype(np.uint8)   # brightness drift (exposure) does not count
+        bfrac = float(cv2.morphologyEx(bd, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)).mean())
+        self.bfrac = bfrac
+        if bfrac > 0.03 and frac < 0.01:
+            if not self.changed_t:
+                self.changed_t = now
+            elif now - self.changed_t >= 2.5:
+                return "up"
+        elif bfrac <= 0.03:
+            self.changed_t = 0.0
         return self._judge(now)
 
+    @staticmethod
+    def _turns(cs, step=0.03):
+        turns, d, ref = 0, 0, cs[0]
+        for c in cs[1:]:
+            if abs(c - ref) >= step:
+                s = 1 if c > ref else -1
+                if d and s != d:
+                    turns += 1
+                d, ref = s, c
+        return turns
+
     def _judge(self, now):
+        """2.98.9: measured in the 3D simulator (bedroom scene, 2-3 pictures per second, 4 m away): the arm is small in the
+        picture, getting up is a path across the picture rather than a big area"""
         H_ = list(self.hist)
-        # getting up: a big moving area for 1.5 s (of the last 2.5 s)
-        big = [(t, f) for t, _c, f in H_ if now - t <= 2.5 and f > 0.16]
+        n_all = max(1, len(H_))
+        pts = [(t, c, f) for t, c, f in H_ if c is not None]
+        if not pts:
+            return ""
+        cs = [c for _t, c, _f in pts]
+        span = pts[-1][0] - pts[0][0]
+        rng = max(cs) - min(cs)
+        moving = len(pts) / n_all
+        meanf = sum(f for _t, _c, f in pts) / len(pts)
+        turns = self._turns(cs)
+        # getting up: a big moving area for 1.2 s, or something big enough travels across (out of the bed)
+        big = [(t, f) for t, _c, f in pts if now - t <= 2.5 and f > 0.12]
         if len(big) >= 3 and big[-1][0] - big[0][0] >= 1.2:
             return "up"
-        # waving: a small area going to and fro
-        pts = [(t, c) for t, c, f in H_ if c is not None and 0.002 < f < 0.16]
-        if len(pts) >= 4:
-            turns, d, ref = 0, 0, pts[0][1]
-            for _t, c in pts[1:]:
-                if abs(c - ref) >= 0.04:
-                    s = 1 if c > ref else -1
-                    if d and s != d:
-                        turns += 1
-                    d, ref = s, c
+        if span >= 2.0 and moving >= 0.6 and meanf >= 0.008 and abs(cs[-1] - cs[0]) >= 0.3 and turns <= 1:
+            return "up"
+        # waving: a small area going to and fro in one place - and the bed looks as before (sitting up changes it a lot)
+        if len(pts) >= 4 and meanf < 0.025 and rng < 0.5 and getattr(self, "bfrac", 0.0) < 0.03:
             if turns >= 3:
                 return "wave"
-            span = pts[-1][0] - pts[0][0]
-            moving = len(pts) / max(1, len([1 for t, _c, _f in H_ if now - t <= 3.0]))
-            rng = max(c for _t, c in pts) - min(c for _t, c in pts)
-            if turns >= 1 and span >= 1.8 and moving >= 0.7 and rng >= 0.12 and len(pts) <= 12:
-                return "wave"                                   # few pictures per second: the turns fall between pictures
+            if span >= 2.0 and moving >= 0.6 and meanf < 0.025 and rng < 0.35 and abs(cs[-1] - cs[0]) < 0.2 and len(pts) <= 14:
+                return "wave"                                   # few pictures per second: the hand moves on and on in one place
         return ""
 
 
@@ -341,11 +382,11 @@ def wake_text(lang=None):
         return tr("off", lang)
     due = WAKE["due"] or wake_next()
     days = {"de": "Mo Di Mi Do Fr Sa So", "rm": "Gli Ma Me Gie Ve So Du", "fr": "lu ma me je ve sa di", "it": "lu ma me gi ve sa do"}.get(lang, "Mon Tue Wed Thu Fri Sat Sun").split()
-    txt = (tr("next", lang) + ": " + days[datetime.fromtimestamp(due).weekday()] + " " + hm(due)) if due else tr("no time set", lang)
+    txt = (tr("next alarm", lang) + ": " + days[datetime.fromtimestamp(due).weekday()] + " " + hm(due)) if due else tr("no time set", lang)
     warn = []
     if not bed_zone():
         warn.append(tr("no sleeping place yet (Zones → + Sleeping place)", lang))
-    if away_view() is None and _hm(CFG.get("wake_sleep")):
+    if away_view() is None and CFG.get("wake_away_night", True):
         warn.append(tr("no direction for the night yet (button «Look here at night»)", lang))
     if not out_selected():
         warn.append(tr("no loudspeaker selected", lang))

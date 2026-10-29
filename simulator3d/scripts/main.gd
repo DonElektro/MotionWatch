@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.95"
+const VERSION := "3D-3.96"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -125,6 +125,8 @@ var mwpc_label: Label
 var in_vm := false                    # virtual machine / no graphics card: lighter graphics, fewer preview pictures
 var update_url := ""                  # --update-url (tests); empty = GitHub
 var update_btn: Button
+var show_laser := false                 # 3D-3.96: red beam in the direction MoveEye looks (laser.gd, for beginners)
+var laser
 var show_zones3d := true               # 3D-3.83: makeover 10 - the zones of MoveEye on the ground (overlay3d.gd)
 var show_det3d := true                 # 3D-3.83: makeover 11 - the detections of MoveEye over the figures
 var overlay                            # overlay3d.gd
@@ -267,6 +269,7 @@ var lens_mats: Array = []
 var camfx_mats: Array = []            # 3D-3.94: camfx.gdshader per camera (realism.gd sets it)
 var realism                           # realism.gd
 var fauna                             # fauna.gd (3D-3.95)
+var sleeper                           # sleeper.gd (3D-3.96): the person in the bed of the bedroom scene
 var fauna_on := true
 var pan_vel := 0.0                    # rad/s of the head (for the blur while turning)
 var tilt_vel := 0.0
@@ -345,6 +348,14 @@ func _ready() -> void:
 	fauna.main = self
 	add_child(fauna)
 	fauna.on = fauna_on
+	laser = preload("res://scripts/laser.gd").new()          # 3D-3.96: «Blickrichtung» (only for the operator)
+	laser.main = self
+	add_child(laser)
+	sleeper = preload("res://scripts/sleeper.gd").new()      # 3D-3.96: the bedroom (wake-up alarm of MoveEye)
+	sleeper.main = self
+	add_child(sleeper)
+	if scene == "schlafzimmer" and scenes != null and scenes.data.has("bed") and is_instance_valid(scenes.data["bed"]):
+		sleeper.place(scenes.data["bed"])
 	tunnel = preload("res://scripts/tunnel.gd").new()        # 3D-3.45: out through the firewall to MoveEye
 	tunnel.main = self
 	add_child(tunnel)
@@ -1538,7 +1549,7 @@ func _update_lens() -> void:
 		m.set_shader_parameter("dirt", 1.0 if cond["dirt"] and i == 0 else 0.0)
 	var L: Dictionary = mw.get("lights", {})
 	var lit: bool = L.get("white", false) or L.get("ir", false) or (game != null and game.guard_auto)
-	insects.emitting = insects_on and dark and lit and weather != "rain" and weather != "snow" and ambient > 6.0
+	insects.emitting = insects_on and dark and lit and weather != "rain" and weather != "snow" and ambient > 6.0 and scene != "schlafzimmer"   # 3D-3.96: no moths in the bedroom
 
 
 func _build_view_camera() -> void:
@@ -2921,6 +2932,7 @@ func _register_controls() -> void:
 	add_control("toggle", "real_look", "Echt-Abgleich: Helligkeit, Farbe, Schärfe und Rauschen an die echten Bilder von MoveEye angleichen", func(): return realism.real_on, func(v): realism.real_on = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
 	add_control("toggle", "real_servo", "Servos wie echt: kleines Spiel, Nachschwingen nach dem Drehen", func(): return realism.servo_real, func(v): realism.servo_real = bool(v); realism.save(), "Kamerabild", {"sub": "Wie echt"})
 	add_control("button", "real_reset", "Echt-Abgleich zurücksetzen", null, func(): realism.reset(), "Kamerabild", {"sub": "Wie echt", "expert": true})
+	add_control("toggle", "show_laser", "Blickrichtung: roter Strahl aus dem Kopf und Bildränder am Boden (nur für dich sichtbar)", func(): return show_laser, func(v): show_laser = v; _settings_dirty = true, "Kamerabild")
 	add_control("toggle", "show_zones3d", "Zonen von MoveEye in der 3D-Ansicht (nur für dich sichtbar)", func(): return show_zones3d, func(v): show_zones3d = v; _settings_dirty = true, "Kamerabild")
 	add_control("toggle", "show_det3d", "Erkennung live in 3D: Rahmen von MoveEye über den Figuren (grün erkannt, rot Fehlalarm, orange übersehen)", func(): return show_det3d, func(v): show_det3d = v; _settings_dirty = true, "Kamerabild")
 	add_control("toggle", "lens_drops", "Regentropfen auf der Linse", func(): return lens_drops, func(v): lens_drops = v, "Kamerabild")
@@ -2953,6 +2965,8 @@ func _register_controls() -> void:
 			{"options": [["mw", "die echte Erkennung von MoveEye"], ["sim", "der Wächter des Simulators (geht ohne Pi)"]]})
 	add_control("button", "rover_place", "📍 Rover versetzen – danach in die Welt klicken (beim Erkunden: Strg + Klick)", null, func(): place_kind = "rover", "Mover")
 	add_control("slider", "mast_h", "Stangenlänge (Höhe des Kamerakopfs; beim Erkunden Bild auf / ab oder Steuerkreuz)", func(): return mast_h, func(v): set_mast(float(v)), "Mover", {"min": 0.4, "max": 4.0, "step": 0.1, "unit": "m"})
+	add_control("button", "pad_cal", "🎮 Controller kalibrieren (gegen Stick-Drift: Sticks 2 s nicht berühren)", null, func(): start_info = explore.calibrate() if explore != null else "", "Mover")
+	add_control("slider", "pad_dead", "Totzone der Sticks (höher = weniger Drift, aber träger)", func(): return pad_dead, func(v): pad_dead = v; _settings_dirty = true, "Mover", {"min": 0.02, "max": 0.5, "step": 0.01})
 	add_control("slider", "explore_speed", "Tempo beim Erkunden (Shift / A = schneller)", func(): return explore.speed if explore != null else 1.6, func(v): if explore != null: explore.speed = v, "Mover", {"min": 0.5, "max": 6.0, "step": 0.1, "unit": "m/s"})
 	add_control("slider", "mover_max", "Höchstgeschwindigkeit des Movers", func(): return mover_max, func(v): mover_max = v, "Mover", {"min": 0.2, "max": 2.0, "step": 0.1, "unit": "m/s"})
 	add_control("button", "mover_home", "Mover zurück an den Startplatz", null, func(): mover_home(), "Mover")
@@ -3624,6 +3638,10 @@ func control(d: Dictionary) -> Dictionary:
 		if game == null:
 			return {"ok": false, "error": "no game"}
 		return game.mw_catch(str(d.get("who", "")).left(30), float(d.get("x", -1.0)), float(d.get("y", -1.0)))
+	elif a == "sleeper":                               # 3D-3.96: the person in the bed (bedroom scene)
+		if sleeper == null:
+			return {"ok": false, "error": "no sleeper"}
+		return sleeper.command(d)
 	elif a == "game_info":                             # the spectators in MoveEye: the game in numbers (3D-3.22)
 		if game == null:
 			return {"ok": false, "error": "no game"}
@@ -4755,7 +4773,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["pad_dead", "pad_center", "show_laser", "game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
 var _settings_dirty := false
 
@@ -5166,6 +5184,8 @@ var rover_pad                         # rover_pad.gd: drive the mover here (from
 var patrol                            # patrol.gd: «Patrouille» (3D-3.61)
 var toolbar                           # toolbar.gd: the tool bar at the bottom (3D-3.61)
 var patrol_judge := "mw"              # game «Patrouille»: mw = the real detection of MoveEye decides, sim = the simulator guard
+var pad_dead := 0.18                  # 3D-3.96: dead zone of the controller sticks (stick drift)
+var pad_center := [0.0, 0.0, 0.0, 0.0] # 3D-3.96: rest position of the sticks (measured with «Controller kalibrieren»)
 var explore                           # explore.gd: «Erkunden» with the rover - keyboard, mouse, touch, game controller (3D-3.55)
 var pad_drive := Vector2.ZERO         # (forward, turn right) from rover_pad, -1 … 1
 var pad_t := -10.0

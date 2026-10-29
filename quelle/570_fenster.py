@@ -108,11 +108,11 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Power saving", "eco_fps", "Pictures per second while quiet", 1, 10, 1),
     ("Simulator", "sim_fps", "Pictures per second in the simulation (CPU saving)", 2, 15, 1),
     ("Power saving", "eco_wake", "Full speed after an event for (s)", 5, 300, 5),
-    ("Night report", "report_from", "The night starts at (o'clock)", 12, 23, 1),
+    ("Night report", "report_from", "Night time from (o'clock) – for the night report, the wake-up alarm and «Guard tonight»", 12, 23, 1),
     ("Updates", "update_hour", "Automatic update at (o'clock)", 0, 23, 1),
     ("Setup", "log_status_min", "Event log: status line every N minutes (0 = off)", 0, 120, 5),
     ("Setup", "log_keep_days", "Event log: keep the archive (days)", 7, 365, 1),
-    ("Night report", "report_hour", "Send the report at (o'clock)", 3, 12, 1),
+    ("Night report", "report_hour", "Night time until (o'clock) – the night report comes, «Guard tonight» ends", 3, 12, 1),
     ("Night report", "diary_keep_days", "Keep diary entries (days, ★ always)", 7, 365, 1),
     ("Setup", "temp_hot", "Temperature alarm: too hot from (°C)", 20, 45, 1),
     ("Setup", "temp_cold", "Temperature alarm: too cold below (°C)", -20, 10, 1),
@@ -278,6 +278,8 @@ TOGGLES = [  # (section, key, label)
     ("Wake-up alarm", "wake_on", "Wake-up alarm on"),
     ("Wake-up alarm", "wake_light", "Switch the white light on"),
     ("Wake-up alarm", "wake_gestures", "Gestures: wave = snooze, sit up / get up = off"),
+    ("Wake-up alarm", "wake_clap", "Clap twice = snooze (microphone)"),
+    ("Wake-up alarm", "wake_away_night", "Look away during the night time (Night report → night time)"),
     ("Bless you", "sneeze_night", "Quiet at night (22 to 7 o'clock)"),
     ("Microphone", "audio_record", "Sound in the recordings"),
 ]
@@ -761,7 +763,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.8")
+        self.root.title("MoveEye 2.98.9")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1078,7 +1080,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.8 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.9 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1813,6 +1815,11 @@ class App:
         if save and sorted(self.open_secs) != sorted(CFG["ui_open"]):
             CFG["ui_open"] = sorted(self.open_secs); save_settings()
         self._sub_arrow(k, open_)
+        if open_ and save:                                   # 2.98.9: guide - the topic is explained the first time
+            tip_ = guide_tip_for("sec:" + k[4:])
+            if tip_:
+                guide_mark_seen("sec:" + k[4:])
+                self.root.after(200, lambda t_=tip_: messagebox.showinfo("💡 " + t_[0], t_[1], parent=self.root))
         if open_:
             body.pack(fill="x", pady=(2, 0), after=h)
         else:

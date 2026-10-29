@@ -20,6 +20,13 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
 - **Zwischenberichte (Wunsch Daniel, bis 2.11.2026 24:00):** bei jeder Aufgabe, die länger als 3–4 Minuten dauert, jede Minute
   eine kurze Checkliste senden (✅ erledigt / ⏳ offen).
 
+## Offene Erinnerungen an Daniel
+
+- **Hardware-Test (Wunsch Daniel, 29.10.2026):** sobald die Hardware zusammengebaut ist, daran erinnern und testen: Wärmebild
+  (Thermal-90), Servos (Schwenken / Neigen, Richtung, Nachschwingen), Lautsprecher (Wecker-Melodie, Sirene), Licht, Mikrofon,
+  Gesten des Weckers mit echter Kamera (Tag und Infrarot), Klatschschalter, Akku-Anzeige. Danach echte Testnächte als Bericht
+  in `feedback/` hochladen lassen. Bei jeder grösseren Antwort kurz nachfragen, ob die Hardware inzwischen bereit ist.
+
 ## Software
 
 - **Bearbeitet wird in `quelle/`** (ab 2.95.63): das Programm in rund 65 Teilen nach Thema (Übersicht in `quelle/LIESMICH.md`).

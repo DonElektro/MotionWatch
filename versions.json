@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 01:29",
+ "generated": "2026-10-29 02:30",
  "versions": [
   {
-   "version": "2.98.8",
-   "file": "webcam_bewegung_2_98_8.py",
+   "version": "2.98.9",
+   "file": "webcam_bewegung_2_98_9.py",
    "url": "",
-   "sha256": "a10624a70ea69f4d962d0d5b3e511a03b108bc25bb132e5fddc965125eecdfc8",
-   "date": "2026-10-29 01:29",
-   "notes": "Entwickler-Bereich (nur eigenes Gerät, nur lesen: eigene Verbindungen, erreichte Namen, Datenmenge der Netzwerkkarten), ausblendbar, mit eigener PIN; jede Nutzung im Protokoll",
-   "sig": "cc67bdd23aec4463c1b8ffa9b912216746afdebe3eb93bf5c1d83e5c0d1fa82559bee01a0a1936d2a51fa36d5b9cbae559d83e33832526764d84ba58b820a10d"
+   "sha256": "31d6b1ce29ab17f26c307b0d3c83089f73da9d22e6c1c1733272c55045929390",
+   "date": "2026-10-29 02:30",
+   "notes": "Privatsphäre-Zonen bleiben am Ort, wenn der Kopf sich dreht; eine Nachtzeit für Nachtbericht, Wecker und «Heute Nacht bewachen»; 2× klatschen = schlummern; Assistent «Wofür brauchst du MoveEye?»; Guide mit Erklärungen beim ersten Öffnen (Stufen); Logo mit roter, laufender Figur; Prüfstand nach jeder Version; Gesten im Simulator geprüft",
+   "sig": "951d9d32c5e5d7977346cc4d7f6f09ff7ad9c830cfd4193f0de688e4f94fc06537335ab541c89fe6aee9355705f950e9f51049a38ed2e30617d89460bad22605"
   },
   {
    "version": "2.97.1",

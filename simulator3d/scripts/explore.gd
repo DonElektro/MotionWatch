@@ -276,13 +276,56 @@ func _rp_axis(a: int) -> float:
 	return float(rp_ax[a]) if a < rp_ax.size() else 0.0
 
 
-func _axis(a: int) -> float:
+func _raw_axis(a: int) -> float:
 	var v := _rp_axis(a)
 	for d in Input.get_connected_joypads():
 		var x := Input.get_joy_axis(d, a)
 		if abs(x) > abs(v):
 			v = x
-	return 0.0 if abs(v) < DEAD else (v - signf(v) * DEAD) / (1.0 - DEAD)
+	return v
+
+
+func _axis(a: int) -> float:
+	"""3D-3.96: stick drift (wish of Daniel, PS5 controller): the measured rest position of the stick is taken off
+	(«Controller kalibrieren») and the dead zone is adjustable"""
+	var v := _raw_axis(a)
+	if a < 4 and a < main.pad_center.size():
+		v = clampf(v - float(main.pad_center[a]), -1.0, 1.0)
+	var dead: float = clampf(float(main.pad_dead), 0.02, 0.5)
+	return 0.0 if abs(v) < dead else (v - signf(v) * dead) / (1.0 - dead)
+
+
+var _cal := {}
+
+
+func calibrate() -> String:
+	"""measure the rest position of both sticks for 2 s (do not touch them)"""
+	if Input.get_connected_joypads().is_empty() and not _rp_on():
+		return "Kein Controller gefunden"
+	_cal = {"t": main.now(), "sum": [0.0, 0.0, 0.0, 0.0], "max": [0.0, 0.0, 0.0, 0.0], "n": 0}
+	return "Sticks nicht berühren – messe 2 s …"
+
+
+func _cal_tick() -> void:
+	if _cal.is_empty():
+		return
+	for a in range(4):
+		var v := _raw_axis(a)
+		_cal["sum"][a] += v
+		_cal["max"][a] = maxf(float(_cal["max"][a]), absf(v))
+	_cal["n"] += 1
+	if main.now() - float(_cal["t"]) >= 2.0 and int(_cal["n"]) > 0:
+		var c := []
+		var worst := 0.0
+		for a in range(4):
+			var m: float = float(_cal["sum"][a]) / float(_cal["n"])
+			c.append(snappedf(m, 0.001))
+			worst = maxf(worst, absf(m))
+		main.pad_center = c
+		main.pad_dead = clampf(maxf(0.08, worst * 0.5 + 0.08), 0.08, 0.35)      # some room for the wobble round the rest position
+		main._settings_dirty = true
+		main.start_info = "Controller kalibriert: Ruhelage %s, Totzone %d %%" % [str(c), int(main.pad_dead * 100)]
+		_cal = {}
 
 
 func _pad_btn(b: int) -> bool:
@@ -321,6 +364,7 @@ func command() -> Vector2:
 
 
 func _process(dt: float) -> void:
+	_cal_tick()                                              # 3D-3.96: calibration of the sticks
 	if not on:
 		return
 	turbo = Input.is_key_pressed(KEY_SHIFT) or _pad_btn(JOY_BUTTON_A)

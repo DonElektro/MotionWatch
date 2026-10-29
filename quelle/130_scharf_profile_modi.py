@@ -87,7 +87,7 @@ SIMPLE_IN_USE = {"Extra sensors": lambda: bool(CFG.get("sens_on") or CFG.get("se
                  "GPS module": lambda: bool(CFG.get("gpsmod_on")), "Solar panel": lambda: bool(CFG.get("solar_on")),
                  "Clap switch": lambda: bool(CFG.get("clap_on")), "Bless you": lambda: bool(CFG.get("sneeze_on")),
                  "Mover": lambda: bool(MOVER.get("avail") or MOVER.get("hw") or MOVER.get("sim"))}
-SIMPLE_KEYS = {"wake_on", "wake_time", "wake_days", "wake_sleep", "wake_snooze", "wake_volume", "wake_sound", "wake_light", "wake_gestures", "track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
+SIMPLE_KEYS = {"tips_level", "use_case", "wake_on", "wake_time", "wake_days", "wake_sleep", "wake_snooze", "wake_volume", "wake_sound", "wake_light", "wake_gestures", "wake_clap", "wake_away_night", "report_from", "track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
                "pushover_on", "pushover_user", "pushover_token", "pushover_emergency", "msg_keyword_on", "email_on", "email_to",
@@ -98,10 +98,35 @@ SIMPLE_KEYS = {"wake_on", "wake_time", "wake_days", "wake_sleep", "wake_snooze",
                "tamper_on", "tamper_motion", "tamper_power", "backup_type", "deter_person_act", "deter_person_sound", "clap_on", "sneeze_on"}
 
 
+USE_HIDE = {"home": {"GPS module", "Solar panel", "Storm warning", "Wake-up alarm"},       # 2.98.9: «Simple» per use case
+            "wild": {"Deterrence", "Wake-up alarm"},
+            "holiday": {"Wake-up alarm"},
+            "room": {"GPS module", "Solar panel", "Storm warning", "Deterrence"}}
+USE_SET = {"wild": {"siren_on": "off", "light_white_auto": "alarm_dark", "track_motion": True},
+           "holiday": {"eco_on": True},
+           "room": {"wake_on": True}}
+
+
+def use_case_set(u, who="web"):
+    """2.98.9: the setup assistant («What is MoveEye for?»): remember it, switch on what fits, «Simple» shows only that"""
+    if u not in ("", "camping", "home", "wild", "holiday", "room"):
+        return False, "invalid value"
+    CFG["use_case"] = u
+    for k, v in USE_SET.get(u, {}).items():
+        if k in CFG and type(CFG[k]) is type(v):
+            CFG[k] = v; sched_user_changed(k)
+    CFG["ui_simple"] = True
+    save_settings()
+    log_event("sys", f"Use case: {u or 'everything'} ({who})")
+    return True, ""
+
+
 def simple_hidden(key, sec=None):
     """True when Simple is on and this setting (or section) belongs to Expert only."""
     if not CFG.get("ui_simple"):
         return False
+    if sec is not None and sec in USE_HIDE.get(CFG.get("use_case") or "", ()):
+        return True
     if sec is not None and sec not in SIMPLE_SECTIONS:
         f = SIMPLE_IN_USE.get(sec)
         try:
@@ -115,6 +140,28 @@ def simple_hidden(key, sec=None):
 NIGHT_SET = {"detection_on": True, "ai_enabled": True, "record": True, "snapshot_on_person": True, "notify_on": True,
              "notify_prealarm": True, "lowlight_auto": True, "nightvision_auto": True, "report_on": True, "diary_on": True,
              "timelapse_on": False}   # 2.97.0: power saving only on battery (like the mode «Nachtwache» with mains power)
+
+
+def night_end_ts(now=None):
+    """2.98.9: the end of the current / coming night time (report_hour) as a timestamp"""
+    now = now or datetime.now()
+    end = now.replace(hour=int(CFG["report_hour"]) % 24, minute=0, second=0, microsecond=0)
+    return (end if end > now else end + timedelta(days=1)).timestamp()
+
+
+def night_guard_tick():
+    """2.98.9: «Heute Nacht bewachen» ends with the night time - disarmed in the morning (only if it is still armed and was
+    armed by it)"""
+    u = float(CFG.get("night_guard_until") or 0)
+    if not u:
+        return
+    if not CFG["armed"]:
+        CFG["night_guard_until"] = 0.0; save_settings(); return
+    if time.time() >= u:
+        CFG["night_guard_until"] = 0.0
+        disarm()
+        save_settings()
+        log_event("sys", "Guard tonight: the night time is over - disarmed")
 
 
 def night_guard(lang=None):
@@ -139,8 +186,10 @@ def night_guard(lang=None):
             tr("Night report in the morning", L) + f" ({int(CFG['report_hour']):02d}:00)",
             tr("Power saving on", L) if CFG["eco_on"] else tr("Power saving off (mains power): full attention", L)] + done
     arm()
+    CFG["night_guard_until"] = night_end_ts(); save_settings()      # 2.98.9: ends with the night time
     d = int(float(CFG["arm_delay"]))
     done.append(trf("Armed in {s} s - leave the area now", L, s=d) if d else tr("Armed", L))
+    done.append(tr("Until the end of the night time", L) + f" ({int(CFG['report_hour']) % 24:02d}:00)")
     h = health_check(L)
     miss = [{"icon": x["icon"], "title": x["title"], "text": x["text"], "tip": x["tip"], "level": x["level"]}
             for x in h["items"] if x["level"] == "bad" or (x["level"] == "warn" and x["id"] in ("servo", "net", "power", "temp", "disk", "batt"))]

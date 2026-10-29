@@ -384,7 +384,9 @@ button.on{box-shadow:inset 0 0 0 2px var(--grn)}
 #wiz h2{margin:4px 0 6px;font-size:20px}#wiz p{margin:6px 0}#wiz label{display:block;margin:12px 0 4px;font-weight:600}
 #wiz input[type=text],#wiz input[type=password]{width:100%;padding:10px 12px;border-radius:10px}
 #wiz .dots{display:flex;gap:6px;justify-content:center;margin-bottom:6px}#wiz .dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
-#wiz .dots i.on{background:var(--acc)}#wiz .later{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--mut);font-size:13px;padding:4px}
+#wiz .dots i.on{background:var(--acc)}#wiz .usegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+#wiz .useopt{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;font-size:14px;text-align:center}#wiz .useopt .ic{font-size:26px}
+#wiz .useopt.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}#wiz .later{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--mut);font-size:13px;padding:4px}
 #wiz .qr{display:block;width:180px;height:180px;margin:8px auto;border-radius:10px;overflow:hidden;background:#fff}#wiz .qr svg{width:100%;height:100%;display:block}
 #wiz .qrs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;text-align:center}#wiz .qrs .mut{word-break:break-all}
 #wiz .wnav{display:flex;gap:8px;margin-top:16px}#wiz .wnav button{flex:1;padding:11px}
@@ -4712,7 +4714,9 @@ function initSections() {
   });
 }
 // ---- setup assistant: first start (and System -> "Setup assistant"): language, name, push (ntfy with QR code), password, QR codes ----
-const WZ = {"Welcome to MoveEye": "Willkommen bei MoveEye", "Set up in three short steps - takes about 3 minutes.": "In drei kurzen Schritten eingerichtet – dauert etwa 3 Minuten.",
+const WZ = {"What is MoveEye for?": "Wofür brauchst du MoveEye?", "Choose what fits - «Simple» then shows only the settings you need. You can change it later (Settings → Setup).": "Wähle, was passt – «Einfach» zeigt dann nur die Einstellungen, die du brauchst. Später änderbar (Einstellungen → Setup).",
+  "Camping: tent, caravan": "Camping: Zelt, Wohnwagen", "House and garden": "Haus und Garten", "Watching animals": "Tiere beobachten", "Holiday house, alpine hut": "Ferienhaus, Maiensäss",
+  "In the room: wake-up alarm": "Im Zimmer: Wecker", "everything (not chosen)": "alles (nichts gewählt)", "Welcome to MoveEye": "Willkommen bei MoveEye", "Set up in three short steps - takes about 3 minutes.": "In drei kurzen Schritten eingerichtet – dauert etwa 3 Minuten.",
   "Language": "Sprache", "Name of this device (optional)": "Name dieses Geräts (freiwillig)", "e.g. camper, garden": "z. B. Wohnmobil, Garten",
   "Push messages to the phone": "Push-Nachrichten aufs Handy", "1. Install the free app «ntfy» (App Store / Play Store).": "1. Die kostenlose App «ntfy» installieren (App Store / Play Store).",
   "2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera.":
@@ -4750,7 +4754,7 @@ async function setupWizard(force) {
     card.textContent = "";
     const later = el("button", "later", wt("Later")); later.type = "button";
     later.onclick = async () => { await post("/api/setup", {step: "skip", lang: LANG}); close(); };
-    const dots = el("div", "dots"); for (let i = 0; i < 4; i++) { const d = el("i"); if (i <= step) d.classList.add("on"); dots.appendChild(d); }
+    const dots = el("div", "dots"); for (let i = 0; i < 5; i++) { const d = el("i"); if (i <= step) d.classList.add("on"); dots.appendChild(d); }
     card.append(later, dots);
     const nav = el("div", "wnav"), back = el("button", "sec", wt("Back")), next = el("button", "", wt("Next"));
     back.type = next.type = "button"; back.onclick = () => { step--; render(); };
@@ -4770,7 +4774,19 @@ async function setupWizard(force) {
       next.onclick = async () => { const r = await post("/api/setup", {step: "basics", ui_lang: LANG, device_name: name.trim(), lang: LANG});
         if (!r.ok) { err.textContent = r.error || "error"; return; } step = 1; render(); };
       nav.append(next);
-    } else if (step === 1) {
+    } else if (step === 1) {                      // 2.98.9: what is MoveEye for? - «Simple» shows only what fits
+      card.append(el("h2", "", "🧭 " + wt("What is MoveEye for?")), el("p", "mut", wt("Choose what fits - «Simple» then shows only the settings you need. You can change it later (Settings → Setup).")));
+      const L = [["camping", "⛺", "Camping: tent, caravan"], ["home", "🏡", "House and garden"], ["wild", "🦌", "Watching animals"],
+                 ["holiday", "🏔", "Holiday house, alpine hut"], ["room", "⏰", "In the room: wake-up alarm"], ["", "🧰", "everything (not chosen)"]];
+      const g = el("div", "usegrid");
+      L.forEach(([v, ic, n]) => { const b = el("button", "sec useopt" + ((S.use_case || "") === v ? " on" : ""), ""); b.type = "button";
+        b.append(el("span", "ic", ic), el("span", "", wt(n)));
+        b.onclick = async () => { const r = await post("/api/setup", {step: "usecase", use: v, lang: LANG}); if (!r.ok) { err.textContent = r.error || "error"; return; }
+          S.use_case = v; step = 2; render(); }; g.appendChild(b); });
+      card.appendChild(g);
+      const skip = el("button", "sec", wt("Skip")); skip.type = "button"; skip.onclick = () => { step = 2; render(); };
+      nav.append(back, skip);
+    } else if (step === 2) {
       card.append(el("h2", "", "🔔 " + wt("Push messages to the phone")), el("p", "", wt("1. Install the free app «ntfy» (App Store / Play Store).")),
                   el("p", "", wt("2. In the app: + → enter the topic below (and the server, if it is not the default one) - or open this code with the phone camera.")));
       const box = el("div", "qr");
@@ -4787,10 +4803,10 @@ async function setupWizard(force) {
       tb.onclick = async () => { if (!(await save())) return; const r = await post("/api/notify_test", {lang: LANG});
         st.textContent = r.ok ? "✓ " + wt("Sent - did it arrive on the phone?") : "⚠ " + (r.error || "error"); };
       const bt = el("div", "btns"); bt.appendChild(tb); card.append(bt, st);
-      const skip = el("button", "sec", wt("Skip")); skip.type = "button"; skip.onclick = () => { step = 2; render(); };
-      next.onclick = async () => { if (topic.length < 3) { step = 2; render(); return; } if (await save()) { step = 2; render(); } };
+      const skip = el("button", "sec", wt("Skip")); skip.type = "button"; skip.onclick = () => { step = 3; render(); };
+      next.onclick = async () => { if (topic.length < 3) { step = 3; render(); return; } if (await save()) { step = 3; render(); } };
       nav.append(back, skip, next);
-    } else if (step === 2) {
+    } else if (step === 3) {
       card.append(el("h2", "", "🔒 " + wt("Password for this page")), el("p", "mut", wt("Without a password everybody in the same network (and with the link) can watch and switch everything.")));
       if (S.pw_cmdline) { card.appendChild(el("p", "", "✓ " + wt("The password was given on the command line (--web-password)."))); }
       else {
@@ -4809,10 +4825,10 @@ async function setupWizard(force) {
           if (!pw && !S.has_pw && !(without && without.checked)) { err.textContent = wt("Password (6-64 characters)"); p1.focus(); return; }
           const r = await post("/api/setup", {step: "finish", password: pw, lang: LANG});
           if (!r.ok) { err.textContent = r.error || "error"; return; }
-          pwNew = !!pw; step = 3; render();
+          pwNew = !!pw; step = 4; render();
         };
       }
-      if (S.pw_cmdline) next.onclick = async () => { await post("/api/setup", {step: "finish", lang: LANG}); step = 3; render(); };
+      if (S.pw_cmdline) next.onclick = async () => { await post("/api/setup", {step: "finish", lang: LANG}); step = 4; render(); };
       nav.append(back, next);
     } else {
       card.append(el("h2", "", "✅ " + wt("Done!")), el("p", "mut", wt("Open MoveEye on other devices with these codes. On the phone: Share → «Add to Home Screen» - then it starts like an app.")));

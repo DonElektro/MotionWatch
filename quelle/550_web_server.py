@@ -2749,7 +2749,7 @@ class WebStream:
                 return reply({"done": CFG["setup_done"], "lang": CFG["lang"], "device_name": CFG["device_name"], "has_pw": web_pw_active(),
                               "pw_cmdline": bool(CFG["web_password"]), "notify_type": CFG["notify_type"], "notify_url": CFG["notify_url"],
                               "addresses": setup_addresses(), "hotspot": {"on": CFG["hotspot_on"], "ssid": CFG["hotspot_ssid"], "has_pw": bool(hs_pw)},
-                              "locked": CFG["lock_on"]})
+                              "locked": CFG["lock_on"], "use_case": CFG.get("use_case") or ""})
             d = body(); lang = norm_lang(d.get("lang")); step = d.get("step")
             ok, err = True, ""
             if step == "basics":
@@ -2770,6 +2770,8 @@ class WebStream:
                 if ok:
                     CFG["setup_done"] = True; save_settings_now()
                     log_event("sys", "Setup assistant finished" + (" (with web password)" if web_pw_active() else " (without web password)"))
+            elif step == "usecase":                      # 2.98.9: «What is MoveEye for?»
+                ok, err = use_case_set(str(d.get("use") or ""), "setup assistant")
             elif step == "skip":
                 CFG["setup_done"] = True; save_settings_now()
             elif step == "again":

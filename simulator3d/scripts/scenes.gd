@@ -6,7 +6,7 @@ extends RefCounted
 const LIST := [["camping", "Camping-Platz"], ["wald", "Wald"], ["parkplatz", "Parkplatz"], ["garten", "Garten / Haus"],
 		["lustig", "Lustiger Platz"], ["wild", "Wildbeobachtung"], ["verstecken", "Versteckspiel (viele Verstecke)"], ["ort", "Ort von der Karte (Schweiz)"],
 		["zuhause", "Mein Zuhause (selbst gebaut)"], ["bauernhof", "Bauernhof"], ["seeufer", "Seeufer mit Steg"], ["baustelle", "Baustelle"],
-		["stellplatz", "Wohnmobil-Stellplatz"], ["vorlage", "Meine Vorlage (3D-Datei)"]]
+		["stellplatz", "Wohnmobil-Stellplatz"], ["vorlage", "Meine Vorlage (3D-Datei)"], ["schlafzimmer", "Schlafzimmer (Wecker)"]]
 
 # visitors that come by themselves, and how often (seconds from .. to)
 const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox", "boar", "deer", "herd", "cat", "badger", "hare", "hedgehog", "marten", "squirrel", "cyclist", "couple", "stroller", "courier", "police", "drunk", "bats", "owl", "burglar", "bbq", "homecoming", "fox_trash", "kids_tag", "boar_group"], 35.0, 110.0],
@@ -22,6 +22,7 @@ const AUTO := {"camping": [["person", "child", "jogger", "dogwalk", "fox", "fox"
 		"baustelle": [["person", "burglar", "burglar", "police", "fox", "cat", "marten", "courier", "van", "drunk", "hare"], 40.0, 120.0],
 		"stellplatz": [["person", "couple", "child", "dogwalk", "cat", "fox", "hedgehog", "cyclist", "van", "moto", "courier", "burglar", "homecoming", "drunk", "bbq"], 30.0, 90.0],
 		"vorlage": [["person", "child", "dogwalk", "cat", "fox", "deer", "hare", "hedgehog", "courier", "burglar", "cyclist"], 35.0, 100.0],
+		"schlafzimmer": [["cat"], 300.0, 900.0],
 		"zuhause": [["cat", "cat", "fox", "badger", "hedgehog", "hare", "garden_person", "garden_person", "dog", "marten", "squirrel", "courier", "bats", "owl", "parcel", "burglar", "kids_tag", "person", "dogwalk"], 35.0, 100.0],
 		"wild": [["feed_deer", "feed_deer", "feed_boar", "feed_fox", "feed_badger", "feed_hare", "herd", "deer", "chamois", "ibex", "lynx", "owl"], 15.0, 40.0]}
 
@@ -72,6 +73,8 @@ func build(id: String, parent: Node3D) -> void:
 			_stellplatz()
 		"vorlage":
 			_vorlage()
+		"schlafzimmer":
+			_schlafzimmer()
 		_:
 			_camping()
 	if EXTRA_HIDE.has(id):                                        # more places to hide (3D-3.13)
@@ -1500,3 +1503,54 @@ func _vorlage() -> void:
 	meadow(300, 30.0, 60.0)
 	if m.templates != null:
 		m.templates.place_into(root)
+
+
+# ---- 3D-3.96: the bedroom - for the wake-up alarm of MoveEye 2.98.9 (sleeping place, gestures) -------------------------------
+func _schlafzimmer() -> void:
+	"""a room 6.5 × 6.5 m round the head: bed on the right front (the sleeper of sleeper.gd), door in front on the left (where
+	the camera looks at night), window on the left, wardrobe, night table with a lamp"""
+	var wall := Color(0.82, 0.8, 0.74)
+	var x0 := -3.0
+	var x1 := 3.5
+	var z0 := -5.0
+	var z1 := 1.5
+	var H := 2.6
+	put(root, m.box(x1 - x0, 0.04, z1 - z0), Vector3((x0 + x1) / 2, 0.02, (z0 + z1) / 2), Color(0.55, 0.4, 0.25), "stone")        # wooden floor
+	put(root, m.box(x1 - x0, 0.06, z1 - z0), Vector3((x0 + x1) / 2, H, (z0 + z1) / 2), Color(0.9, 0.9, 0.88), "stone")          # ceiling
+	put(root, m.box(x1 - x0, H, 0.1), Vector3((x0 + x1) / 2, H / 2, z1), wall, "stone")                                       # back
+	put(root, m.box(0.1, H, z1 - z0), Vector3(x1, H / 2, (z0 + z1) / 2), wall, "stone")                                       # right
+	# front wall with the door (x -2.0 .. -1.0)
+	put(root, m.box(-2.0 - x0, H, 0.1), Vector3((x0 - 2.0) / 2, H / 2, z0), wall, "stone")
+	put(root, m.box(x1 + 1.0, H, 0.1), Vector3((x1 - 1.0) / 2, H / 2, z0), wall, "stone")
+	put(root, m.box(1.0, H - 2.1, 0.1), Vector3(-1.5, 2.1 + (H - 2.1) / 2, z0), wall, "stone")
+	m.door_node = node(root, Vector3(-2.0, 0, z0 + 0.05))
+	put(m.door_node, m.box(1.0, 2.1, 0.05), Vector3(0.5, 1.05, 0), Color(0.6, 0.45, 0.3), "caravan")
+	put(m.door_node, sph(0.04), Vector3(0.88, 1.0, 0.05), Color(0.8, 0.75, 0.5), "stone")
+	door_light_at(root, Vector3(-1.5, 2.3, z0 + 0.4))
+	m.obj["door"] = Vector3(-1.5, 0, z0 + 0.6)
+	# left wall with a window
+	put(root, m.box(0.1, H, 2.0), Vector3(x0, H / 2, z0 + 1.0), wall, "stone")
+	put(root, m.box(0.1, H, 3.0), Vector3(x0, H / 2, z1 - 1.5), wall, "stone")
+	put(root, m.box(0.1, 0.9, 1.5), Vector3(x0, 0.45, -2.25), wall, "stone")
+	put(root, m.box(0.1, 0.6, 1.5), Vector3(x0, H - 0.3, -2.25), wall, "stone")
+	put(root, m.box(0.04, 1.1, 1.5), Vector3(x0, 1.45, -2.25), window_mat(), "glass")
+	# bed (head end at the right wall), night table, lamp, wardrobe, rug
+	var bed := node(root, Vector3(2.35, 0, -3.2))
+	m.test_props["Bett"] = bed
+	put(bed, m.box(2.1, 0.35, 1.5), Vector3(0, 0.25, 0), Color(0.45, 0.32, 0.2), "stone")                                    # frame
+	put(bed, m.box(2.0, 0.18, 1.4), Vector3(0, 0.5, 0), Color(0.92, 0.92, 0.9), "tent")                                      # mattress
+	put(bed, m.box(0.1, 0.9, 1.5), Vector3(1.05, 0.45, 0), Color(0.4, 0.28, 0.18), "stone")                                  # head board
+	put(bed, m.box(0.45, 0.12, 0.6), Vector3(0.72, 0.66, 0.3), Color(0.95, 0.95, 0.97), "tent")                              # pillows
+	put(bed, m.box(0.45, 0.12, 0.6), Vector3(0.72, 0.66, -0.35), Color(0.95, 0.95, 0.97), "tent")
+	m.add_obstacle(Vector3(2.35, 0, -3.2), 1.2)
+	put(root, m.box(0.45, 0.5, 0.4), Vector3(3.1, 0.25, -1.9), Color(0.5, 0.36, 0.22), "stone")                             # night table
+	put(root, cyl(0.12, 0.08, 0.25), Vector3(3.1, 0.65, -1.9), Color(0.95, 0.85, 0.6), 30.0)
+	put(root, m.box(0.6, 2.1, 1.8), Vector3(x0 + 0.35, 1.05, z1 - 1.3), Color(0.62, 0.5, 0.36), "stone")                    # wardrobe
+	m.add_obstacle(Vector3(x0 + 0.35, 0, z1 - 1.3), 1.0)
+	put(root, m.box(1.8, 0.01, 1.2), Vector3(0.6, 0.045, -2.6), Color(0.35, 0.18, 0.2), "stone")                             # rug
+	m.obj["pir"] = Vector3(-1.5, 0, -4.0)
+	m.obj["bike"] = Vector3(-2.4, 0, 0.6)
+	data["bed"] = bed
+	data["indoor"] = true
+	if m.get("sleeper") != null:
+		m.sleeper.place(bed)

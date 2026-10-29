@@ -19,7 +19,7 @@ var _menus := {}                       # 3D-3.86: title -> [MenuButton, ids]
 # «Verfolgen» on its own (it is not only for the patrol).
 const MAIN_ROW := ["explore", ["Patrouille", "Route für den Mover", ["patrol", "points", "area", "random", "clear", "route"]],
 		"follow", "head", "place", ["Stange", "Höhe des Kamerakopfs", ["mast_up", "mast_dn"]], "invite",
-		["Ansicht", "Was angezeigt wird", ["view", "spectate", "map", "cams", "info", "zones3d", "det3d"]], "panel"]
+		["Ansicht", "Was angezeigt wird", ["view", "spectate", "map", "cams", "info", "laser", "zones3d", "det3d"]], "panel"]
 
 const ROW1 := [["explore", "Erkunden", "Mit dem Rover herumfahren (Tastatur, Maus, Touch, Controller)"],
 		["patrol", "Patrouille", "Der Mover fährt MoveEye die Route ab, MoveEye passt die ganze Zeit auf"],
@@ -38,6 +38,7 @@ const ROW2 := [["view", "Ansicht", "Hinterher, Fahrersicht, von oben"],
 		["map", "Minikarte", "Kleine Karte oben links"],
 		["cams", "Kameras", "Kamerabilder (was MoveEye sieht)"],
 		["info", "Info", "Anzeige oben (Steuerung, Tempo, Stange)"],
+		["laser", "Blickrichtung", "Roter Strahl: wohin die Kamera von MoveEye schaut, mit den Bildrändern am Boden (nur für dich sichtbar)"],
 		["zones3d", "Zonen in 3D", "Die Zonen von MoveEye auf dem Boden (nur für dich sichtbar)"],
 		["det3d", "Erkennung in 3D", "Rahmen von MoveEye über den Figuren: grün erkannt, rot Fehlalarm, orange übersehen"],
 		["templates", "Vorlagen", "Fertige Szenen, echte Orte, 3D-Bausätze, eigene 3D-Datei (.glb) laden"],
@@ -184,6 +185,9 @@ func _press(id: String) -> void:
 				main.cam_card.visible = not main.cam_card.visible
 		"info":
 			ex.info_hidden = not ex.info_hidden
+		"laser":                                     # 3D-3.96: the direction MoveEye looks (beginners)
+			main.show_laser = not main.show_laser
+			main._settings_dirty = true
 		"zones3d":                                   # 3D-3.93: from the centre of MoveEye to the view menu (display only)
 			main.show_zones3d = not main.show_zones3d
 			main._settings_dirty = true
@@ -205,7 +209,7 @@ func _paint() -> void:
 	var pt = main.patrol
 	var st := {"explore": ex.on, "patrol": pt.active, "points": pt.edit == "points", "area": pt.edit == "area" or (pt.mode == "area" and pt.area.size.x > 0.5),
 			"follow": main.mw_follow_on() if main.now() - main.mw_t < 3.0 else pt.follow, "place": main.place_kind == "rover", "spectate": main.spectate, "invite": ex.invite != null and ex.invite.visible,
-			"route": pt.show_route, "map": main.map_on, "cams": main.cam_card != null and main.cam_card.visible, "info": not ex.info_hidden, "zones3d": main.show_zones3d, "det3d": main.show_det3d,
+			"route": pt.show_route, "map": main.map_on, "cams": main.cam_card != null and main.cam_card.visible, "info": not ex.info_hidden, "laser": main.show_laser, "zones3d": main.show_zones3d, "det3d": main.show_det3d,
 			"panel": main.ui_root.visible, "view": ex.on, "head": main.headpad != null and main.headpad.visible,
 			"templates": main.templates != null and main.templates.visible, "inventar": main.inventar != null and main.inventar.visible}
 	_st = st

@@ -1,6 +1,7 @@
 # Prüfstand: lässt die neuste Version von Motion Watch gegen den 3D-Simulator laufen (feste Testläufe, immer dieselben
 # Besucher) und schreibt die Zahlen in pruefstand/VERLAUF.md: Personen erkannt, Reaktionszeit, Tiere, Fehlalarme.
-# Startet von Hand (Actions → Prüfstand → Run workflow) und jeden Sonntag in der Nacht.
+# Startet von Hand (Actions → Prüfstand → Run workflow), jeden Sonntag in der Nacht und (ab 2.98.9) nach jeder neuen
+# Version (versions.json geändert). Ist die Erkennung schlechter als beim letzten Lauf, öffnet er ein GitHub-Issue.
 name: Prüfstand
 on:
   workflow_dispatch:
@@ -13,8 +14,13 @@ on:
         default: "1"
   schedule:
     - cron: "17 2 * * 0"
+  push:
+    branches: [main]
+    paths:
+      - "versions.json"
 permissions:
   contents: write
+  issues: write
 concurrency:
   group: pruefstand
   cancel-in-progress: false
@@ -69,3 +75,11 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -q -m "Prüfstand: Ergebnis $(ls webcam_bewegung_*.py | sort -V | tail -1 | sed 's/webcam_bewegung_//; s/\.py//; s/_/./g')"
           for i in 1 2 3; do git pull -q --rebase && git push -q && break; sleep 5; done
+      - name: Verschlechterung melden
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -f pruefstand/WARNUNG.md ] || exit 0
+          V=$(ls webcam_bewegung_*.py | sort -V | tail -1 | sed 's/webcam_bewegung_//; s/\.py//; s/_/./g')
+          gh issue create --title "Prüfstand: Erkennung schlechter mit MoveEye $V" --body-file pruefstand/WARNUNG.md || true

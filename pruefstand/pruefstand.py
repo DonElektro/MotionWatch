@@ -381,6 +381,14 @@ def main():
         for z in zeilen:
             log(z, wichtig=True)
         tab = verlauf_schreiben()
+        warn = os.path.join(REPO, "pruefstand", "WARNUNG.md")          # 2.98.9: a worse detection is reported (GitHub issue)
+        if schlechter:
+            with open(warn, "w", encoding="utf-8") as f:
+                f.write("Die Erkennung ist mit MoveEye %s schlechter geworden (Prüfstand %s, %s):\n\n" % (
+                    info["mw_version"], info.get("datum", "?"), info.get("rechner", "?")) + "\n".join("- " + z for z in zeilen)
+                        + "\n\nEinzelheiten: pruefstand/VERLAUF.md\n")
+        elif os.path.exists(warn):
+            os.remove(warn)
         summ = os.environ.get("GITHUB_STEP_SUMMARY")
         if summ:                                                  # the page of the run on GitHub
             with open(summ, "a", encoding="utf-8") as f:

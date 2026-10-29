@@ -39,6 +39,8 @@ def clap_action(n):
     """n claps in a row: what was chosen for it."""
     act = str(CFG.get(f"clap_{n}") or "none")
     SOUNDEV.update(last_n=n, last_n_t=time.time())
+    if wake_clap_listens():                              # 2.98.9: the wake-up alarm rings - clapping = snooze
+        SOUNDEV.update(last_act=tr("Snooze"), last_act_t=time.time()); wake_snooze(f"{n}× clapped"); return
     if act == "none":
         SOUNDEV["last_act"] = ""; return
     label = dict(clap_act_pairs()).get(act, act)
@@ -98,7 +100,7 @@ class SoundEvents:
         threading.Thread(target=self._model_loop, daemon=True, name="sneeze").start()
 
     def feed(self, a, now):
-        if not (CFG.get("clap_on") or CFG.get("sneeze_on")):
+        if not (CFG.get("clap_on") or CFG.get("sneeze_on") or wake_clap_listens()):
             self.pending.clear(); SOUNDEV["claps"] = []; return
         muted = (AUDIO is not None and now < AUDIO.mute_until) or SOUND["playing"] or now - SERVO_MOVE["t"] < 1.0
         x = a / 32768.0
@@ -127,7 +129,7 @@ class SoundEvents:
         if CFG.get("sneeze_on") and db > max(self.bg + 14.0, -45.0) and t - self.loud_t > 0.7 and not muted:
             self.loud_t = t                                              # something loud: look at it with the model in 0.6 s
             threading.Timer(0.6, self._ask_model, args=(t,)).start()
-        if CFG.get("clap_on") and not muted and loud and before < db - 12.0 and not any(abs(t - p[0]) < 0.12 for p in self.pending):
+        if (CFG.get("clap_on") or wake_clap_listens()) and not muted and loud and before < db - 12.0 and not any(abs(t - p[0]) < 0.12 for p in self.pending):
             self.pending.append((t, db))
         for p in list(self.pending):
             if t - p[0] >= 0.16:                                          # 160 ms later: was it short (a clap)?
