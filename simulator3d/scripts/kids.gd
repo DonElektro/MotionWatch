@@ -185,10 +185,7 @@ func say(t: String) -> void:
 
 func _kids_game() -> void:
 	"""3D-3.90: a simple practice round at the PC with two bots - not the full assistant of the adults"""
-	main.game_mode = "camera"
-	main.game_level = "easy"
-	main.game_tutorial = true
-	main.game.set_open(true)
+	main.gamewiz.apply_preset("kids_pc")               # 3D-4.x: the same presets as the wizard (all settings, not only three)
 	main.game.set_bots(2)
 	main.localplay.start("runner")
 
