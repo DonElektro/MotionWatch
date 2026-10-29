@@ -412,6 +412,12 @@ def _settings_migrations(cfg_in):
             log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
     except Exception as e:
         log_event("sys", f"Settings migration (577): {e}"[:150])
+    try:
+        did = thermal_migrate(cfg_in)                        # 2.98.22: thermal camera runs along (232)
+        if did:
+            log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
+    except Exception as e:
+        log_event("sys", f"Settings migration (232): {e}"[:150])
 
 
 _SAVE_LOCK = threading.Lock()

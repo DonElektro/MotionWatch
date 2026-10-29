@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_21.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_22.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.22: Wärmebild läuft mit: sobald eine Wärmebild-Kamera gewählt ist, sucht MoveEye darin Tag und Nacht nach Personen –
+    auch wenn Überlagerung und Wärme-Alarm aus sind. Ältere Einstellungen werden einmal umgestellt (Ausschalten bleibt möglich:
+    «… auch am Tag»).
   * 2.98.21: Simulator 3D-4.5: Spiel mit Wetterwechsel, Tarn-Sachen, Diebstahl-Missionen (MoveEye prüft mit dem Referenz-Scan)
     und Lern-Punkten
   * 2.98.20: KI-Modell: Auswertung «wo versagt die KI» im Modellfeld, neues Modell nur wenn nicht schlechter (täglich);
@@ -894,10 +897,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_21.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_22.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_21.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_21.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_22.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_22.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -914,7 +917,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.21"
+APP_VERSION = "2.98.22"
 
 
 def default_data_dir():
@@ -2911,6 +2914,12 @@ def _settings_migrations(cfg_in):
             log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
     except Exception as e:
         log_event("sys", f"Settings migration (577): {e}"[:150])
+    try:
+        did = thermal_migrate(cfg_in)                        # 2.98.22: thermal camera runs along (232)
+        if did:
+            log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
+    except Exception as e:
+        log_event("sys", f"Settings migration (232): {e}"[:150])
 
 
 _SAVE_LOCK = threading.Lock()
@@ -9034,7 +9043,7 @@ SIMPLE_IN_USE = {"Extra sensors": lambda: bool(CFG.get("sens_on") or CFG.get("se
                  "Clap switch": lambda: bool(CFG.get("clap_on")), "Bless you": lambda: bool(CFG.get("sneeze_on")),
                  "Mover": lambda: bool(MOVER.get("avail") or MOVER.get("hw") or MOVER.get("sim")),
                  "Wake-up alarm": lambda: CFG.get("use_case") == "room" or bool(CFG.get("wake_on")),     # 2.98.14: the alarm clock in the room
-                 "Thermal camera": lambda: bool(CFG.get("thermal_on") and CFG.get("thermal_source"))}
+                 "Thermal camera": lambda: bool(CFG.get("thermal_source"))}     # 2.98.22: runs along as soon as one is chosen
 SIMPLE_KEYS = {"tips_level", "use_case", "wake_on", "wake_time", "wake_days", "wake_sleep", "wake_snooze", "wake_volume", "wake_sound", "wake_light", "wake_gestures", "wake_clap", "wake_away_night", "report_from", "track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
@@ -16456,11 +16465,25 @@ NIGHTVISION = NightVision()
 #   - is warmer than the background but not hot like a fire or an engine (only with a camera that gives °C).
 # It then goes into the same person / alarm logic (push, recording, siren, zones of the recording) as «Person (Wärmebild)».
 # Option thermal_person (default on) - only at night (or by day too: thermal_person_day). Needs a thermal camera.
+# 2.98.22 (Wunsch Daniel: «das Wärmebild soll mitlaufen»): by day too is now the default, so the thermal camera always
+# runs along as soon as one is chosen - also with the overlay and the warm alarm off. Older settings are switched once
+# (thermal_migrate, called by 040); who switches «… by day too» off again keeps it off.
 # ----------------------------------------------------------------------------
-for _k, _v in {"thermal_person": True, "thermal_person_day": False}.items():
+for _k, _v in {"thermal_person": True, "thermal_person_day": True, "thermal_mig22": False}.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
 TPERS = {"t": 0.0, "seen": 0.0, "n": 0}
+
+
+def thermal_migrate(cfg_in):
+    """once per settings file: the thermal camera runs along by day too (2.98.22)"""
+    if not isinstance(cfg_in, dict) or cfg_in.get("thermal_mig22"):
+        return []
+    CFG["thermal_mig22"] = True
+    if cfg_in.get("thermal_person_day") is False:
+        CFG["thermal_person_day"] = True
+        return ["thermal camera runs along by day too"]
+    return []
 
 
 def thermal_person_active():
@@ -20950,7 +20973,7 @@ def power_calc():
     except Exception:
         p, src = 4.0, "estimate"
     parts = [("AI detection", 1.2 if CFG.get("ai_enabled") else 0.0, "ai_enabled"),
-             ("Thermal camera", 0.4 if CFG.get("thermal_on") else 0.0, "thermal_on"),
+             ("Thermal camera", 0.4 if (CFG.get("thermal_on") or thermal_person_active()) and CFG.get("thermal_source") else 0.0, "thermal_on"),
              ("Power saving (when quiet)", -0.9 if CFG.get("eco_on") else 0.0, "eco_on"),
              ("Infrared light", 0.6 if (STATE.get("lights") or {}).get("ir") else 0.0, None),
              ("White light", 0.6 if (STATE.get("lights") or {}).get("white") else 0.0, None),
@@ -26551,7 +26574,7 @@ def faceblur_selftest():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_21.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_22.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -51758,7 +51781,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.21")
+        self.root.title("MoveEye 2.98.22")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -52111,7 +52134,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.21 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.22 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")

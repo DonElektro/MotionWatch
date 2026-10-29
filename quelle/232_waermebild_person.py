@@ -8,11 +8,25 @@
 #   - is warmer than the background but not hot like a fire or an engine (only with a camera that gives °C).
 # It then goes into the same person / alarm logic (push, recording, siren, zones of the recording) as «Person (Wärmebild)».
 # Option thermal_person (default on) - only at night (or by day too: thermal_person_day). Needs a thermal camera.
+# 2.98.22 (Wunsch Daniel: «das Wärmebild soll mitlaufen»): by day too is now the default, so the thermal camera always
+# runs along as soon as one is chosen - also with the overlay and the warm alarm off. Older settings are switched once
+# (thermal_migrate, called by 040); who switches «… by day too» off again keeps it off.
 # ----------------------------------------------------------------------------
-for _k, _v in {"thermal_person": True, "thermal_person_day": False}.items():
+for _k, _v in {"thermal_person": True, "thermal_person_day": True, "thermal_mig22": False}.items():
     CFG.setdefault(_k, _v)
     DEFAULTS.setdefault(_k, _v)
 TPERS = {"t": 0.0, "seen": 0.0, "n": 0}
+
+
+def thermal_migrate(cfg_in):
+    """once per settings file: the thermal camera runs along by day too (2.98.22)"""
+    if not isinstance(cfg_in, dict) or cfg_in.get("thermal_mig22"):
+        return []
+    CFG["thermal_mig22"] = True
+    if cfg_in.get("thermal_person_day") is False:
+        CFG["thermal_person_day"] = True
+        return ["thermal camera runs along by day too"]
+    return []
 
 
 def thermal_person_active():

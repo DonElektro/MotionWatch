@@ -20,6 +20,8 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   oder gibt es eine Doppelung, das Daniel im Schlussbericht ausdrücklich melden (Abschnitt «Konzept-Check»), mit Vorschlag.
 - **Zwischenberichte (Wunsch Daniel, bis 2.11.2026 24:00):** bei jeder Aufgabe, die länger als 3–4 Minuten dauert, jede Minute
   eine kurze Checkliste senden (✅ erledigt / ⏳ offen).
+- **Fragen immer als Fragekatalog (Wunsch Daniel, 29.10.2026):** wenn Daniel nichts anderes wünscht, jede Rückfrage als
+  Auswahl-Katalog stellen (AskUserQuestion: bis 4 Fragen à 4 Antworten, Mehrfachauswahl wo sinnvoll), nicht als Fliesstext.
 
 ## Offene Erinnerungen an Daniel
 

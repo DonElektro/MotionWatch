@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 16:35",
+ "generated": "2026-10-29 16:42",
  "versions": [
   {
-   "version": "2.98.21",
-   "file": "webcam_bewegung_2_98_21.py",
+   "version": "2.98.22",
+   "file": "webcam_bewegung_2_98_22.py",
    "url": "",
-   "sha256": "b36f9eb7e254677819793bac2d4a13225bed805511b5aa21d142a6ac890b3648",
-   "date": "2026-10-29 16:35",
-   "notes": "Simulator 3D-4.5: Spiel mit Wetterwechsel, Tarn-Sachen, Diebstahl-Missionen (MoveEye prüft mit dem Referenz-Scan) und Lern-Punkten",
-   "sig": "47a48b245fdc9f55c1ac439e4dd2928fa2d3ab94928b9d47184c8b3137ce4f80a17f8792ce1329606d121efc3764df7edd2c2d07f0b4a9d3ee5aa3f5367b3604"
+   "sha256": "4487e3c1c1016b45d49f13a64ca86f8f5e1dec37769143512ac4dcfde187621d",
+   "date": "2026-10-29 16:42",
+   "notes": "Wärmebild läuft mit: sobald eine Wärmebild-Kamera gewählt ist, sucht MoveEye darin Tag und Nacht nach Personen – auch wenn Überlagerung und Wärme-Alarm aus sind. Ältere Einstellungen werden einmal umgestellt (Ausschalten bleibt möglich: «… auch am Tag»).",
+   "sig": "ba08763112c733ba3c853f18c67d5107c6009b0e59bf590165e5cd4ff5b4cc865869f398e52f9cd73d53d433718450c2772c1feb6d0cec5d33aa9f9ca5496b01"
   },
   {
    "version": "2.97.1",

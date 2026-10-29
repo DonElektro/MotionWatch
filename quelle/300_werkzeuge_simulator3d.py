@@ -581,7 +581,7 @@ def power_calc():
     except Exception:
         p, src = 4.0, "estimate"
     parts = [("AI detection", 1.2 if CFG.get("ai_enabled") else 0.0, "ai_enabled"),
-             ("Thermal camera", 0.4 if CFG.get("thermal_on") else 0.0, "thermal_on"),
+             ("Thermal camera", 0.4 if (CFG.get("thermal_on") or thermal_person_active()) and CFG.get("thermal_source") else 0.0, "thermal_on"),
              ("Power saving (when quiet)", -0.9 if CFG.get("eco_on") else 0.0, "eco_on"),
              ("Infrared light", 0.6 if (STATE.get("lights") or {}).get("ir") else 0.0, None),
              ("White light", 0.6 if (STATE.get("lights") or {}).get("white") else 0.0, None),

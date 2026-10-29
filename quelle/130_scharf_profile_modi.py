@@ -89,7 +89,7 @@ SIMPLE_IN_USE = {"Extra sensors": lambda: bool(CFG.get("sens_on") or CFG.get("se
                  "Clap switch": lambda: bool(CFG.get("clap_on")), "Bless you": lambda: bool(CFG.get("sneeze_on")),
                  "Mover": lambda: bool(MOVER.get("avail") or MOVER.get("hw") or MOVER.get("sim")),
                  "Wake-up alarm": lambda: CFG.get("use_case") == "room" or bool(CFG.get("wake_on")),     # 2.98.14: the alarm clock in the room
-                 "Thermal camera": lambda: bool(CFG.get("thermal_on") and CFG.get("thermal_source"))}
+                 "Thermal camera": lambda: bool(CFG.get("thermal_source"))}     # 2.98.22: runs along as soon as one is chosen
 SIMPLE_KEYS = {"tips_level", "use_case", "wake_on", "wake_time", "wake_days", "wake_sleep", "wake_snooze", "wake_volume", "wake_sound", "wake_light", "wake_gestures", "wake_clap", "wake_away_night", "report_from", "track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
