@@ -1190,6 +1190,7 @@ class WebStream:
         alx_routes(app, watch, reply, body)                # 2.98.13: push buttons /na/, «What was it?» (066)
         sx_routes(app, watch, reply, body)                 # night view / screen reader script, «holiday over», error pages (578)
         appkey_routes(app, reply, body)                    # app keys, security check in Settings → Security (573)
+        place_routes(app, watch, reply, body)              # 2.98.30: «Platz einrichten» /place, field of view per camera (537)
 
         @app.route("/messages")
         def messages_page():                               # 2.98.13: the push messages (Verlauf → Nachrichten)
@@ -2702,6 +2703,27 @@ class WebStream:
                     ok, err = False, "unknown action"
                 return reply(dict(walktest_state(lang), ok=ok, error=tr_err(err, lang) if err else None), 200 if (ok or act == "stop") else 400)
             return reply(dict(walktest_state(norm_lang(request.args.get("lang") or CFG["lang"])), ok=True))
+
+        @app.route("/api/kopf", methods=["GET", "POST"])
+        def api_kopf():                                      # 2.98.30: automatic head movement (162)
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
+            if request.method == "POST":
+                d = body(); lang = norm_lang(d.get("lang") or lang)
+                act = str(d.get("do") or "")
+                if act == "glance":
+                    ok, err = kopf_glance_now()
+                elif act == "ov_calib":
+                    try:
+                        x = None if d.get("x") is None else max(0.0, min(1.0, float(d.get("x"))))
+                    except (TypeError, ValueError):
+                        x = None
+                    ok, err = kopf_ov_calibrate(x, "web")
+                elif act == "cont_mid":
+                    CFG["cont_set_mid"] = True; ok, err = True, ""
+                else:
+                    ok, err = False, "unknown action"
+                return reply(dict(kopf_state(lang), ok=ok, error=tr_err(err, lang) if err else None), 200 if ok else 400)
+            return reply(dict(kopf_state(lang), text=kopf_text(lang), ok=True))
 
         @app.route("/api/walktest.jpg")
         def api_walktest_jpg():

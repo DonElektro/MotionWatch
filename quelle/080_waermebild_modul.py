@@ -232,6 +232,30 @@ class Hardware:
                 if g not in wanted:
                     wanted[g] = (on, False)
 
+    def _cont_pan(self, pan):
+        """2.98.30: a continuous rotation («360° endless») pan servo knows no position: the pulse is a speed (50 % = stop).
+        The position is ESTIMATED from speed x time (cont_dps = degrees per second at full speed) - «set the middle» when
+        the head looks straight ahead. Positional servos: unchanged."""
+        if CFG.get("servo_kind") != "continuous" or CFG.get("sim_on"):
+            self._ct = None
+            return pan
+        now = time.monotonic()
+        dt = 0.0 if getattr(self, "_ct", None) is None else max(0.0, min(0.1, now - self._ct))
+        self._ct = now
+        if CFG.get("cont_set_mid"):
+            CFG["cont_set_mid"] = False; CFG["cont_est"] = 50.0; CFG["pan"] = 50.0; pan = 50.0
+            log_event("servo", "Continuous servo: the middle is set here (the head looks straight ahead)")
+            save_settings()
+        est = float(CFG.get("cont_est", 50.0))
+        pct_s = max(5.0, float(CFG.get("cont_dps") or 120.0)) * 100.0 / (2.0 * servo_half("pan"))
+        diff = pan - est
+        sp = 0.0 if abs(diff) < 0.4 else max(-1.0, min(1.0, diff / (pct_s * 0.25)))    # slower in the last quarter second
+        if sp == 0.0 and getattr(self, "_csp", 0.0) != 0.0:
+            save_settings()                                    # stands again: remember the estimate
+        self._csp = sp
+        CFG["cont_est"] = round(est + sp * pct_s * dt, 2)
+        return 50.0 + sp * 50.0
+
     def loop(self):
         """50 Hz: push pan/tilt, all relay states and the lights to the hardware when they change."""
         while True:
@@ -248,6 +272,7 @@ class Hardware:
                 CFG["pan"] = round(pan, 2)                # the page / window shows where the camera really is
             if abs(tilt - CFG["tilt"]) > 0.05:
                 CFG["tilt"] = round(tilt, 2)
+            pan = self._cont_pan(pan)                      # 2.98.30: continuous rotation servo: speed instead of position (162)
             cur = (round(pan, 1), round(tilt, 1))
             if cur != self._last_servo:
                 try:

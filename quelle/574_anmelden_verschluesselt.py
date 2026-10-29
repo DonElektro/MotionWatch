@@ -108,7 +108,9 @@ def seclogin_mode():
     if not seclogin_https_port():
         if not SECLOGIN["fallback_logged"] and time.time() - START > 60:
             SECLOGIN["fallback_logged"] = True
-            log_event("web", "Warning: no secure page (https) - the web password still goes unencrypted through the network (install openssl)")
+            # 2.98.30: in its own thread - /api/state calls this while it holds LOCK, log_event takes LOCK too (dead lock)
+            threading.Thread(target=log_event, args=("web", "Warning: no secure page (https) - the web password still goes unencrypted through the network (install openssl)"),
+                             daemon=True).start()
         return "fallback"
     return "on"
 

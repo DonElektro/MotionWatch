@@ -42,7 +42,11 @@ def _clean_zone(z, i):
             out["secs"] = int(max(3, min(600, float(z.get("secs") or 20))))
         except (TypeError, ValueError):
             out["secs"] = 20
-    if mode in FIXED_MODES:
+    if z.get("anchor") and mode not in FIXED_MODES:
+        out["anchor"] = True                              # 2.98.30: «Platz einrichten» (317): stays on its place when the head turns
+    if z.get("src") == "place":
+        out["src"] = "place"
+    if mode in FIXED_MODES or out.get("anchor"):
         ang = z.get("ang")
         if isinstance(ang, list) and len(ang) == len(pts) and all(isinstance(a, (list, tuple)) and len(a) == 2 and _num(a[0]) and _num(a[1]) for a in ang):
             out["ang"] = [[round(float(a[0]), 3), round(float(a[1]), 3)] for a in ang]
@@ -84,7 +88,10 @@ def sleep_project(ang, pan=None, tilt=None, margin=0.0):
         (a1, e1), (a2, e2) = pts[i], pts[(i + 1) % len(pts)]
         for k in range(8):
             a = a1 + (a2 - a1) * k / 8.0; e = e1 + (e2 - e1) * k / 8.0
-            da = max(-80.0, min(80.0, a - a0)); de = max(-80.0, min(80.0, e - e0))
+            da = a - a0
+            if servo_half("pan") >= 179.0:                     # 2.98.30: a 360° head - the shorter way round
+                da = (da + 180.0) % 360.0 - 180.0
+            da = max(-80.0, min(80.0, da)); de = max(-80.0, min(80.0, e - e0))
             out.append([0.5 + math.tan(math.radians(da)) / (2.0 * th), 0.5 - math.tan(math.radians(de)) / (2.0 * tv)])
     return out
 
@@ -95,6 +102,17 @@ FIXED_MODES = ("privacy", "sleep")    # 2.98.9: privacy zones stay on their plac
 
 def fixed_zones():
     return [z for z in ZONES if z["mode"] in FIXED_MODES and z.get("ang")]
+
+
+def anchored_zones():
+    """2.98.30: every zone whose corners are kept as directions - the black ones (FIXED_MODES) and the zones of
+    «Platz einrichten» (ignore / line / loiter with "anchor": they follow the place, not the picture)"""
+    return [z for z in ZONES if z.get("ang") and (z["mode"] in FIXED_MODES or z.get("anchor"))]
+
+
+def zone_here(z):
+    """False for an anchored zone that lies outside the picture now (the head looks elsewhere)"""
+    return not z.get("anchor") or z.get("vis", True)
 
 
 def sleep_zones():
@@ -120,11 +138,13 @@ def sleep_update(now=None):
     pos = (round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2))
     if not SLEEP_POS or SLEEP_POS[-1][1:] != pos:
         SLEEP_POS.append((now,) + pos)
-    for z in fixed_zones():
+    for z in anchored_zones():
         if z.get("_at") != pos:
             z["_at"] = pos
             pp = sleep_project(z["ang"], *pos)
             corners = pp[::8]                                # the corners (every 8th point)
+            if z["mode"] == "line" and len(pp) >= 9:
+                corners = [pp[0], pp[8]]                     # a line: its two ends
             z["points"] = [[round(min(1.0, max(0.0, x)), 4), round(min(1.0, max(0.0, y)), 4)] for x, y in corners]
             z["vis"] = any(0.0 <= x <= 1.0 and 0.0 <= y <= 1.0 for x, y in pp)
 
@@ -167,7 +187,7 @@ class ZoneWatch:
         self.st = {}
 
     def update(self, persons, pw, ph, frame, now):
-        zs = [z for z in ZONES if z["mode"] in ("line", "loiter")]
+        zs = [z for z in ZONES if z["mode"] in ("line", "loiter") and zone_here(z)]
         if not zs:
             self.st.clear(); return []
         if STATE.get("tracking") or manual_active() or str(STATE.get("patrol_status", "")).startswith("moving"):
@@ -238,6 +258,8 @@ def apply_privacy(frame):
         except Exception:
             pass
     sl = any(z["mode"] in FIXED_MODES and z.get("ang") for z in ZONES)
+    if not sl and frame is not None and any(z.get("anchor") for z in ZONES):
+        sleep_update()                                   # 2.98.30: the zones of the place follow the head (317)
     if (not zs and not sl) or frame is None:
         return frame
     h, w = frame.shape[:2]
@@ -270,9 +292,9 @@ def zone_allows(nx, ny, kind=None):
         return True
     ap = lambda z: kind is None or z.get("kinds", "all") in ("all", kind)
     for z in zs:
-        if z["mode"] in ("ignore", "privacy", "sleep") and (z["mode"] != "ignore" or ap(z)) and point_in_poly(nx, ny, z["points"]):
+        if z["mode"] in ("ignore", "privacy", "sleep") and (z["mode"] != "ignore" or ap(z)) and zone_here(z) and point_in_poly(nx, ny, z["points"]):
             return False
-    only = [z for z in zs if z["mode"] == "only" and ap(z)]
+    only = [z for z in zs if z["mode"] == "only" and ap(z) and zone_here(z)]
     return (not only) or any(point_in_poly(nx, ny, z["points"]) for z in only)
 
 
@@ -287,15 +309,15 @@ def zones_set(lst):
     if not isinstance(lst, list):
         return False, "invalid zones"
     out = []
-    old = {z["id"]: z for z in ZONES if z["mode"] in FIXED_MODES}
+    old = {z["id"]: z for z in ZONES if z["mode"] in FIXED_MODES or z.get("anchor")}
     for z in lst[:MAX_ZONES]:
         c = _clean_zone(z, len(out))
         if c:
-            if c["mode"] in FIXED_MODES:                # 2.98.7 / 2.98.9: corners as directions from where the camera looks now
+            if c["mode"] in FIXED_MODES or c.get("anchor"):     # 2.98.7 / 2.98.9: corners as directions from where the camera looks now
                 o = old.get(c["id"])
                 same = o and o.get("ang") and len(o.get("points") or []) == len(c["points"]) and all(
                     abs(a[0] - b[0]) < 0.003 and abs(a[1] - b[1]) < 0.003 for a, b in zip(o["points"], c["points"]))
-                c["ang"] = o["ang"] if same else sleep_to_ang(c["points"])
+                c["ang"] = o["ang"] if same else (c["ang"] if c.get("ang") and not o else sleep_to_ang(c["points"]))   # new with directions (317): kept
                 c.pop("_at", None)
             out.append(c)
     with LOCK:

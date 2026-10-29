@@ -37,7 +37,7 @@ def simtask_busy(except_=""):
         if busy and name != except_:
             return name
     for name, ref in (("blind spots", "BLIND"), ("false alarm learning", "FALEARN"), ("automatic thresholds", "AUTOTH"), ("demo", "DEMO_RUN"),
-                      ("improve assistant", "TUNEA")):        # 2.98.14: the assistant «Erkennung verbessern» (312)
+                      ("improve assistant", "TUNEA"), ("place setup", "PLACE")):   # 2.98.14: «Erkennung verbessern» (312); 2.98.30: «Platz einrichten» (317)
         d = globals().get(ref)
         if isinstance(d, dict) and d.get("busy") and name != except_:
             return name

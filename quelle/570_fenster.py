@@ -776,7 +776,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.29")
+        self.root.title("MoveEye 2.98.30")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1142,7 +1142,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.29 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.30 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -2175,7 +2175,10 @@ class App:
                 ttk.Button(mg, text=mic + " " + tr(mname), command=_pick).grid(row=i_ // 2, column=i_ % 2, sticky="ew", padx=(0, 4), pady=2)
             mg.columnconfigure(0, weight=1); mg.columnconfigure(1, weight=1)
             ttk.Button(sbody, text="☾ " + tr("Guard tonight"), command=self._night).pack(fill="x", pady=(8, 0))
+            ttk.Button(sbody, text="📍 " + tr("Set up the place"), command=self._place).pack(fill="x", pady=(6, 0))     # 2.98.30 (317, 582)
             ttk.Button(sbody, text="🚶 " + tr("Walk test"), command=self._walktest).pack(fill="x", pady=(6, 0))     # 2.98.13 (415, 575)
+        if sec == "Camera / Servos":
+            self._fov_box(sbody)                                                    # 2.98.30: field of view per camera (318, 582)
             self.status_labels["Battery saver"] = ttk.Label(sbody, text=batt_save_text(), style="Mut.TLabel", wraplength=380, justify="left")
             self.status_labels["Battery saver"].pack(anchor="w", pady=(4, 0))
             ttk.Button(sbody, text=tr("Open quick guide (browser)"), command=lambda: self._open_page("/quick")).pack(fill="x", pady=(6, 0))
@@ -3362,8 +3365,9 @@ class App:
         self._sb("b_relays", f"{tr('Relays')}: {on}/{len(RELAYS)} {tr('on')}", C["grn"], show=on > 0)
         self._sb("b_light", "🌙 " + tr("LOW LIGHT"), C["yel"], show=st["lowlight"])
         self._sb("b_auto", f"{tr('Auto')}: {st['auto_status']}", C["org"], show=str(st["auto_status"]).startswith("calibrat"))
-        self._sb("b_patrol", tr("MANUAL") if manual else (tr("TRACKING") if st["tracking"] else f"{tr('Patrol')}: {tr(st['patrol_status'])}"),
-                 C["yel"] if manual else C["acc"], show=bool(manual or st["tracking"] or CFG["patrol"]))
+        kt = kopf_text()                           # 2.98.30: automatic head movement (162): parked, quick look, saving, estimated position
+        self._sb("b_patrol", tr("MANUAL") if manual else (tr("TRACKING") if st["tracking"] else (f"{tr('Patrol')}: {patrol_status_text(st['patrol_status'])}" if CFG["patrol"] or KOPF["round_on"] else "⟲ " + kt)),
+                 C["yel"] if manual else C["acc"], show=bool(manual or st["tracking"] or CFG["patrol"] or KOPF["round_on"] or kt))
         self._sb("b_camp", "⛺ " + tr("Camping profile"), C["grn"], show=bool(CFG["camping"]))
         try:                                       # this window counts as a viewer while it is on the screen (not minimised)
             if self.root.state() != "iconic" and self.root.winfo_viewable():
