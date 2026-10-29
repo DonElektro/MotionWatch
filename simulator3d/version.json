@@ -1,12 +1,12 @@
 {
- "version": "3D-3.94",
+ "version": "3D-3.95",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31223840,
- "sha256": "d1caea566831bb78219c356496240b64db9085d5b83d2bcde025808d7aea5812",
- "notes": "Kamera wie echt, Echt-Abgleich, Menschen und Tiere realistischer, Voegel und Fledermaeuse, Kinder-Rechenaufgabe abschaltbar, kleinere Modus-Schalter",
+ "size": 31225872,
+ "sha256": "e3a0d553e0ca12a686be5834e23aa3b4463f7a39b00b300fa2f4cd46afdc8298",
+ "notes": "Spiel mit bis 12 Laeufern, Zuschauer ruecken nach, Spiele freigeben aus MoveEye",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24346663,
-  "sha256": "8215bf4e047813836c730972ff31dbeb8037648b8b04dbfa78db7cce583fdf67"
+  "size": 24348316,
+  "sha256": "7bcae03ef706214ab073c791692ec772a560d0abfd794e20d6c05f55c4c0f133"
  }
 }

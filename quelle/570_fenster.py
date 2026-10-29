@@ -139,6 +139,9 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Clap switch", "clap_sens", "Sensitivity (higher = also softer claps)", 1, 10, 1),
     ("Clap switch", "clap_volume", "Volume of the beep", 0, 100, 5),
     ("Bless you", "sneeze_sens", "Sensitivity (higher = answers more readily)", 1, 10, 1),
+    ("Wake-up alarm", "wake_snooze", "Snooze (minutes)", 3, 30, 1),
+    ("Wake-up alarm", "wake_ring_max", "Rings at most (minutes)", 3, 60, 1),
+    ("Wake-up alarm", "wake_volume", "Volume of the alarm", 10, 100, 5),
     ("Bless you", "sneeze_volume", "Volume of the answer", 0, 100, 5),
     ("Loudspeaker", "siren_volume", "Volume (%)", 5, 100, 5),
     ("Loudspeaker", "siren_seconds", "Duration of the siren (s)", 1, 60, 1),
@@ -271,6 +274,9 @@ TOGGLES = [  # (section, key, label)
     ("Clap switch", "clap_disarmed", "Only when not armed (claps of strangers switch nothing)"),
     ("Clap switch", "clap_practice", "Practice: only count and beep, switch nothing"),
     ("Bless you", "sneeze_on", "Say «Bless you!» after a sneeze"),
+    ("Wake-up alarm", "wake_on", "Wake-up alarm on"),
+    ("Wake-up alarm", "wake_light", "Switch the white light on"),
+    ("Wake-up alarm", "wake_gestures", "Gestures: wave = snooze, sit up / get up = off"),
     ("Bless you", "sneeze_night", "Quiet at night (22 to 7 o'clock)"),
     ("Microphone", "audio_record", "Sound in the recordings"),
 ]
@@ -481,7 +487,7 @@ TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery":
                 "Night report": "☾", "Messages": "✎", "SMS (LTE stick)": "☏", "Detection": "◎", "AI detection": "⌬",
                 "Walking recognition": "➜", "Vehicle filter": "⛀", "Rain": "☂", "Wind": "≋", "Low light": "◐", "Auto-tune": "✱",
                 "Camera / Servos": "✥", "Patrol": "↻", "Video source": "▣", "Servo driver": "⚒", "Lights": "☀", "Deterrence": "⚠",
-                "Microphone": "♪", "Loudspeaker": "♫", "Clap switch": "✋", "Bless you": "☺", "Recording": "●", "Timelapse": "◷", "Backup": "☁", "Relays": "⚡",
+                "Microphone": "♪", "Loudspeaker": "♫", "Clap switch": "✋", "Bless you": "☺", "Wake-up alarm": "⏰", "Recording": "●", "Timelapse": "◷", "Backup": "☁", "Relays": "⚡",
                 "Schedule": "▦", "Setup": "⊕", "Wi-Fi / hotspot": "⌁", "Web stream": "⇅", "Guest access": "⚇",
                 "MQTT / Home Assistant": "⇆", "Updates": "⬆", "Extra sensors": "◉", "Simulator": "⚗", "Storm warning": "≈", "GPS module": "✈", "Solar panel": "☼", "Mover": "⇕"}
 
@@ -491,12 +497,12 @@ TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - 2.98.0: the sam
     ("sched", "Zones, schedule, presence", ["Schedule"]),
     ("detect", "Detection", ["Detection", "AI detection", "Thermal camera", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
     ("camera", "Cameras & head", ["Camera / Servos", "Patrol", "Video source", "Timelapse", "Mover", None, "Servo driver"]),
-    ("sensors", "Devices & sensors", ["Lights", "Microphone", "Loudspeaker", "Relays", "Extra sensors", "Clap switch", "Bless you", "Storm warning", "GPS module"]),
+    ("sensors", "Devices & sensors", ["Lights", "Microphone", "Loudspeaker", "Relays", "Extra sensors", "Clap switch", "Bless you", "Wake-up alarm", "Storm warning", "GPS module"]),
     ("power", "Power supply", ["Battery", "Power saving", "Solar panel"]),
     ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant"]),
     ("sys", "System", ["Setup", "Updates", "Simulator"]),
 ]
-SECTIONS = ["Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
+SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
 
 
@@ -754,7 +760,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.6")
+        self.root.title("MoveEye 2.98.7")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -1071,7 +1077,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.6 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.7 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1496,13 +1502,25 @@ class App:
             dict(id="rec", ic="●", lb=tr("Record"), tip=tr("Record now (max. 10 min) / stop"), on=lambda: time.time() < QUICK["rec_until"],
                  go=quick_rec, red=True),
             dict(id="photo", ic="⊡", lb=tr("Photo"), tip=tr("Photo into the recordings"), on=lambda: False,
-                 go=lambda: quick_photo(self.watch.frame_out), flash=True)]
+                 go=lambda: quick_photo(self.watch.frame_out), flash=True),
+            dict(id="games", ic="♣", lb=tr("Games"), tip=tr("All games for the phones: game corner, game collection and the simulator game - one QR code"),
+                 on=party_on, go=self._games_toggle)]                # 2.98.7
         for i, r in enumerate(RELAYS):
             q.append(dict(id=f"rel{i}", ic="⚡", lb=r["name"][:12], tip=tr("Relay: on / automatic"),
                           on=lambda i=i: bool(i < len(STATE.get("relay_states", [])) and STATE["relay_states"][i]),
                           go=lambda i=i: self._relay_quick(i)))
         del st, L
         return q
+
+    def _games_toggle(self):
+        """2.98.7: «Spiele freigeben» in the window - opens all games and shows the address of the game corner"""
+        if party_on():
+            if messagebox.askyesno("MoveEye", tr("Close all games? The players are logged out.")):
+                games_all_close("window")
+            return
+        games_all_open(6.0, "window")
+        url = page_address().rstrip("/") + "/p/" + PARTY["key"] + "/"
+        messagebox.showinfo("MoveEye", tr("All games are open for 6 hours. The players open this address with the phone (same Wi-Fi):") + "\n\n" + url)
 
     def _qs_click(self, q):
         if q.get("ok") and not q["ok"]():
@@ -1817,6 +1835,19 @@ class App:
             self.status_labels[sec].pack(anchor="w")
         if sec == "Web stream":
             ttk.Button(sbody, text=tr("Tools: network, Wi-Fi, tests (browser)"), command=lambda: self._open_page("/tools")).pack(fill="x", pady=(4, 0))
+        if sec == "Wake-up alarm":                     # 2.98.7: the wake-up alarm with the sleeping place
+            self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels[sec].pack(anchor="w")
+            def _wk(a):
+                ok_, err_ = wake_action(a, "window")
+                if not ok_:
+                    messagebox.showinfo("MoveEye", tr(err_))
+            bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(4, 0))
+            ttk.Button(bf, text=tr("Draw the sleeping place (browser)"), command=lambda: self._open_page("/zones")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            ttk.Button(bf, text=tr("Look here at night"), command=lambda: _wk("away_here")).pack(side="left", expand=True, fill="x")
+            bf2 = ttk.Frame(sbody); bf2.pack(fill="x", pady=(4, 0))
+            for a_, l_ in (("test", "Test now"), ("snooze", "Snooze"), ("stop", "Alarm off")):
+                ttk.Button(bf2, text=tr(l_), command=lambda a_=a_: _wk(a_)).pack(side="left", expand=True, fill="x", padx=(0, 4))
         if sec in ("Night report", "Battery", "Guest access"):
             self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels[sec].pack(anchor="w")
@@ -3064,6 +3095,7 @@ class App:
         self._status("Microphone", txt)
         self._status("Clap switch", soundev_text("clap"))
         self._status("Bless you", soundev_text("sneeze"))
+        self._status("Wake-up alarm", wake_text())
         self._status("Loudspeaker", (tr("no loudspeaker selected") if not a.get("spk") else (tr("playing …") if a.get("playing") else ""))
                      + (" ⚠ " + a["sound_msg"] if a.get("sound_msg") else ""))
         cb = getattr(self, "bt_cb", None)

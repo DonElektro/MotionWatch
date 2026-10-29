@@ -554,8 +554,8 @@ function partyPaint() {
   box.innerHTML = "";
   if (!P.on) {
     const row = el("div", "trow"); const sel = document.createElement("select"); [[2, "2 h"], [4, "4 h"], [6, "6 h"], [12, "12 h"]].forEach(([v, n]) => { const o = el("option", "", n); o.value = v; sel.appendChild(o); }); sel.value = 6;
-    const b = el("button", "", "🎲 " + t("Open the game corner")); b.type = "button"; b.onclick = () => partyDo({action: "open", hours: +sel.value});
-    row.append(b, sel); box.appendChild(row);
+    const b = el("button", "", "🎮 " + t("Open all games")); b.type = "button"; b.onclick = () => partyDo({action: "all", hours: +sel.value});
+    row.append(b, sel); box.appendChild(row); box.appendChild(el("div", "mut", t("all-games-note")));
   } else {
     const q = el("div"); q.style.cssText = "display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:10px 0";
     const qr = el("div"); qr.innerHTML = P.qr; qr.style.cssText = "width:190px;height:190px;background:#fff;padding:8px;border-radius:12px"; const sv = qr.querySelector("svg"); if (sv) { sv.style.width = "100%"; sv.style.height = "100%"; }
@@ -563,6 +563,9 @@ function partyPaint() {
     info.append(el("div", "", t("Scan with the phone (same Wi-Fi as MoveEye):")));
     const a = el("a", "", P.url); a.href = P.url; a.target = "_blank"; a.style.wordBreak = "break-all"; info.appendChild(a);
     info.appendChild(el("div", "mut", t("open for") + " " + Math.round(P.left / 60) + " min · " + t("game") + ": " + t(P.game)));
+    const A = P.all || {};                                   // 2.98.7: what «all games» opened
+    info.appendChild(el("div", "mut", "✓ " + t("Game corner") + " · " + (A.coll ? "✓ " + t("Game collection") + " (" + A.coll + ")" : ((P.dl && P.dl.running) ? "⏳ " : "– ") + t("Game collection"))
+      + " · " + (A.sim ? "✓ " + t("Simulator game") + " (" + A.sim_n + " " + t("runners") + ")" : "– " + t("Simulator game") + " (" + t("simulator not running") + ")")));
     const r2 = el("div", "trow"); const pl = el("a", "btn", "▶ " + t("Play myself")); pl.href = P.url; pl.target = "_blank";
     const cl = el("button", "sec", "⛔ " + t("Close")); cl.type = "button"; cl.onclick = () => partyDo({action: "close"}); r2.append(pl, cl); info.appendChild(r2);
     q.append(qr, info); box.appendChild(q);
@@ -601,6 +604,9 @@ Object.assign(I18N.de, {"AI helper (PC)": "KI-Rechenhilfe (PC)", "helper-note": 
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"helper-note": "A PC in the same network does the detection (people, animals, vehicles) for the Pi: much faster, the Pi stays cool and needs less power. If the PC stops answering, the Pi does it itself again at once. Only small pictures go to the PC, nothing is stored there.", "helper-manual": "Start MoveEye on the PC with «--helper» (or switch on «works as AI helper for others» there). Then enter its address and the 6-digit code here.", "helper-how": "Easiest: in the 3D simulator on the PC press «Start MoveEye on this PC» - the Pi then finds the helper by itself."});
 Object.assign(I18N.de, {"Survival almanac": "Überlebens-Almanach", "tips for camping, to look up or read in the evening": "Tipps fürs Camping – zum Nachschlagen oder als Abendlektüre"});
 Object.assign(I18N.de, {"Touch (phone, tablet)": "Touch (Handy, Tablet)", "With on-screen buttons": "Mit Bildschirm-Tasten"});
+Object.assign(I18N.de, {"Open all games": "Spiele freigeben", "all-games-note": "Eine Taste für alles: Spielecke (Quiz, Werwolf …), Spielesammlung und – wenn der 3D-Simulator läuft – «Team gegen MoveEye». Die Mitspieler scannen einen QR-Code, geben ihren Namen ein und sind dabei.",
+  "Simulator game": "Simulator-Spiel", "runners": "Läufer", "simulator not running": "Simulator läuft nicht"});
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"all-games-note": "One button for everything: game corner (quiz, werewolf …), game collection and - when the 3D simulator runs - «Team against MoveEye». The players scan one QR code, type their name and are in."});
 // ---- AI helper (2.95.53) ----
 let hpT = 0;
 async function hpLoad() {

@@ -165,3 +165,49 @@ TRX['fr'].update({"Internet from the phone (USB cable)": "Internet du portable (
 TRX['it'].update({"Internet from the phone (USB cable)": "Internet dal telefono (cavo USB)", "phone found, connecting …": "telefono trovato, connessione …", "the own Wi-Fi gets this internet too": "anche il Wi-Fi proprio riceve questo Internet", "tether-hint": "Collegare il telefono con il cavo USB. Android: Impostazioni → Hotspot e tethering → «Tethering USB». iPhone: attivare «Hotspot personale» e toccare «Autorizza». MoveEye si collega da solo – anche il Wi-Fi proprio (rete di gioco) riceve Internet."})   # USB tethering (2.95.51)
 TRX['rm'].update({"Internet from the phone (USB cable)": "Internet dal telefonin (cabel USB)", "phone found, connecting …": "telefonin chattà, collia …", "the own Wi-Fi gets this internet too": "er l'agen WLAN survegn quest internet", "tether-hint": "Colliar il telefonin cun il cabel USB. Android: Parameters → Hotspot & Tethering → «USB-Tethering». iPhone: activar «Hotspot persunal» e tutgar «Fidar». MoveEye collia sez – er l'agen WLAN (rait da gieus) survegn internet."})   # USB tethering (2.95.51)
 
+
+# ---- 2.98.7: wake-up alarm with the sleeping place, «Spiele freigeben» ----
+_HELP_298 = {
+  "de": '<section id="wake" data-icon="⏰"><h2>Wecker mit Schlafplatz</h2><ul>'
+        '<li><b>Schlafplatz:</b> Kamera auf das Bett richten, unter Schutz → Zonen «+ Schlafplatz» einzeichnen. Er ist ab dann in <b>jedem</b> Bild schwarz – im Live-Bild, in Aufnahmen, Fotos, Push-Bildern, für Gäste und am TV –, auch wenn sich die Kamera dreht.</li>'
+        '<li><b>Nachts wegschauen:</b> Kamera z. B. zur Tür drehen, Einstellungen → Geräte &amp; Sensoren → Wecker → «Nachts hierhin schauen». Ab der eingestellten Zeit schaut MoveEye dorthin («Gute Nacht» = sofort).</li>'
+        '<li><b>Wecken:</b> zur Weckzeit dreht sich die Kamera zum Bett, eine sanfte Melodie wird langsam lauter, das weisse Licht geht an.</li>'
+        '<li><b>Gesten:</b> <b>winken</b> (Hand hin und her) = schlummern, <b>aufsitzen oder aufstehen</b> = Wecker aus. Auch auf dem Handy: Banner mit «Schlummern» und «Wecker aus». Das Bild vom Bett sieht nur die Gestenerkennung – klein, nur im Speicher, nie gespeichert.</li>'
+        '<li>Ohne Reaktion hört der Wecker nach der eingestellten Zeit auf und schickt eine Nachricht.</li></ul></section>\n\n'
+        '<section id="games" data-icon="🎮"><h2>Spiele freigeben</h2><ul>'
+        '<li><b>Eine Taste für alles:</b> Mehr → «Spiele freigeben» (oder Schnellschalter 🎮). Damit öffnen sich die Spielecke (Quiz, Werwolf, Vier gewinnt …), die Spielesammlung und – wenn der 3D-Simulator läuft – «Team gegen MoveEye».</li>'
+        '<li>Die Mitspieler scannen <b>einen</b> QR-Code (gleiches WLAN), geben ihren Namen ein und sind dabei.</li>'
+        '<li><b>Simulator-Spiel:</b> bis 12 Läufer (einstellbar im Simulator, Standard 6). Jeder Läufer ist ein eigenes 3D-Bild auf dem PC – Laptop etwa 4, PC mit Grafikkarte 6–8. Weitere Spieler schauen durch die Kamera zu und rücken nach, sobald ein Platz frei wird.</li></ul></section>\n\n',
+  "en": '<section id="wake" data-icon="⏰"><h2>Wake-up alarm with the sleeping place</h2><ul>'
+        '<li><b>Sleeping place:</b> point the camera at the bed and draw «+ Sleeping place» under Protection → Zones. From then on it is black in <b>every</b> picture – live, recordings, photos, push pictures, guests, TV – also when the camera turns.</li>'
+        '<li><b>Look away at night:</b> turn the camera e.g. to the door, Settings → Devices &amp; sensors → Wake-up alarm → «Look here at night». From the set time on MoveEye looks there («Good night» = now).</li>'
+        '<li><b>Waking up:</b> at the time the camera turns to the bed, a soft melody gets louder, the white light goes on.</li>'
+        '<li><b>Gestures:</b> <b>wave</b> = snooze, <b>sit up or get up</b> = off. On the phone too: a banner with «Snooze» and «Alarm off». Only the gesture detection sees the bed – small, in memory, never stored.</li>'
+        '<li>Without a reaction the alarm stops after the set time and sends a message.</li></ul></section>\n\n'
+        '<section id="games" data-icon="🎮"><h2>Open all games</h2><ul>'
+        '<li><b>One button:</b> More → «Open all games» (or the quick switch 🎮): the game corner, the game collection and – when the 3D simulator runs – «Team against MoveEye».</li>'
+        '<li>The players scan <b>one</b> QR code (same Wi-Fi), type their name and are in.</li>'
+        '<li><b>Simulator game:</b> up to 12 runners (set in the simulator, default 6). Every runner is an own 3D view on the PC – laptop about 4, PC with a graphics card 6–8. More players watch through the camera and join as soon as a place is free.</li></ul></section>\n\n',
+  "fr": '<section id="wake" data-icon="⏰"><h2>Réveil avec le lit</h2><ul><li>Dessiner le lit sous Zones (« + Lit ») : il est noir dans chaque image, même quand la caméra tourne. La nuit, la caméra regarde ailleurs ; au réveil elle se tourne vers le lit. Faire signe = répétition, s’asseoir ou se lever = arrêt.</li></ul></section>\n\n'
+        '<section id="games" data-icon="🎮"><h2>Ouvrir tous les jeux</h2><ul><li>Plus → « Ouvrir tous les jeux » : coin jeux, collection et jeu du simulateur (jusqu’à 12 coureurs). Un seul code QR.</li></ul></section>\n\n',
+  "it": '<section id="wake" data-icon="⏰"><h2>Sveglia con il letto</h2><ul><li>Disegnare il letto sotto Zone («+ Letto»): è nero in ogni immagine, anche quando la telecamera gira. Di notte la telecamera guarda altrove; alla sveglia si gira verso il letto. Salutare = posticipa, sedersi o alzarsi = spegni.</li></ul></section>\n\n'
+        '<section id="games" data-icon="🎮"><h2>Aprire tutti i giochi</h2><ul><li>Altro → «Aprire tutti i giochi»: angolo giochi, raccolta e gioco del simulatore (fino a 12 corridori). Un solo codice QR.</li></ul></section>\n\n',
+  "rm": '<section id="wake" data-icon="⏰"><h2>Svegliarin cun il letg</h2><ul><li>Dissegnar il letg sut Zonas («+ Letg»): el è nair en mintga maletg, er sch’la camera sa volva. La notg guarda la camera davent; tar la sveglia sa volva ella vers il letg. Far segn = durmigliar, seser si u levar si = ora.</li></ul></section>\n\n'
+        '<section id="games" data-icon="🎮"><h2>Avrir tut ils gieus</h2><ul><li>Dapli → «Avrir tut ils gieus»: chantun da gieus, collecziun e gieu dal simulatur (fin 12 curriders). In code QR.</li></ul></section>\n\n'}
+
+
+def _help_298(doc, lang):
+    if '<section id="wake"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    if i < 0:
+        i = doc.find('<section id="privacy"')
+    return doc[:i] + _HELP_298[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en = HELP_PAGE.find('<div lang="en">')
+if _hp_en > 0:
+    HELP_PAGE = _help_298(HELP_PAGE[:_hp_en], "de") + _help_298(HELP_PAGE[_hp_en:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_298(HELP_X[_L], _L)

@@ -69,6 +69,44 @@ def party_open(hours=6.0):
     party_bump()
 
 
+GAMES_ALL = {"sim": False}       # 2.98.7: «Spiele freigeben» opened the game of the 3D simulator too (closed with it)
+
+
+def games_all_open(hours=6.0, who="web"):
+    """2.98.7: ONE switch for all games - the game corner (quiz, werewolf ...), the game collection (installed if it is
+    missing) and the game of the 3D simulator «Team gegen MoveEye» (when the simulation runs). The players scan one QR code,
+    type their name and are in; the page of the game corner shows the collection and the simulator game too."""
+    party_open(hours)
+    if not games_list() and not GAMES_DL.get("running"):
+        threading.Thread(target=games_install, daemon=True, name="games-dl").start()
+    if CFG.get("sim_on") and SIM.get("ok"):
+        def _sim():
+            try:
+                r = sim_control({"action": "set", "id": "game_open", "value": True})
+                GAMES_ALL["sim"] = bool(isinstance(r, dict) and r.get("ok", True))
+                SIMGAME["t"] = 0.0
+            except Exception:
+                GAMES_ALL["sim"] = False
+        threading.Thread(target=_sim, daemon=True, name="games-sim").start()
+    log_event("sys", f"All games open for {hours:g} h ({who})")
+
+
+def games_all_close(who="web"):
+    party_close()
+    if GAMES_ALL["sim"] and CFG.get("sim_on"):
+        try:
+            threading.Thread(target=lambda: sim_control({"action": "set", "id": "game_open", "value": False}), daemon=True).start()
+        except Exception:
+            pass
+    GAMES_ALL["sim"] = False
+
+
+def games_all_state():
+    g = sim_game() if CFG.get("sim_on") else None
+    return {"on": party_on(), "left": int(max(0, PARTY["until"] - time.time())) if party_on() else 0, "players": len(PARTY["players"]),
+            "sim": bool(g and g.get("url")), "sim_n": int((g or {}).get("runners") or 0), "coll": len(games_list())}
+
+
 def party_close():
     if toolmode_on() and TOOLMODE.get("by") == "game corner":
         toolmode_set(0, "game corner")              # the rest mode ends with the game corner
@@ -128,6 +166,9 @@ def _party_view(pid):
     v = {"seq": PARTY["seq"], "now": now, "game": PARTY["game"], "players": pls, "me": pid if me else "", "host": PARTY["host"] == pid,
          "hostname": _pname(PARTY["host"]) if PARTY["host"] else "", "until": int(PARTY["until"] - now), "tools": PARTY["tools"],
          "games": games_list(), "nt": NETTEST["round"] if nettest_open() else 0}
+    sg = sim_game() if CFG.get("sim_on") else None
+    if sg and sg.get("url"):                               # 2.98.7: the game of the 3D simulator, open for the phones
+        v["sim"] = {"url": sg["url"], "max": sg.get("max") or 4, "runners": sg.get("runners") or 0, "round": sg.get("round") or ""}
     G = PARTY["g"]; gm = PARTY["game"]
     if gm == "quiz":
         q = QUIZ[G.get("qi", 0) % len(QUIZ)]

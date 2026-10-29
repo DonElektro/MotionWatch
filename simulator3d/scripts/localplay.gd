@@ -149,7 +149,7 @@ func start(r := "runner") -> void:
 		r = "runner"
 	p = g.add_local(r)
 	if p == null or (p as Dictionary).is_empty():
-		main.start_info = "Das Spiel ist voll (4 Spieler)"
+		main.start_info = "Das Spiel ist voll"
 		p = null
 		return
 	role = str(p["role"])

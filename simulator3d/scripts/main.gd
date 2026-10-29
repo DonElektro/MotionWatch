@@ -3,7 +3,7 @@ extends Node3D
 ## The world, the cameras for MoveEye (head camera on the pan / tilt head, fixed camera, thermal camera),
 ## day and night, weather, lights, visitors, sensors, the window on the PC and the connection (net.gd).
 
-const VERSION := "3D-3.94"
+const VERSION := "3D-3.95"
 const TestrunS := preload("res://scripts/testrun.gd")    # 3D-3.90: plan names and times for the card «Testen»
 const CAM_W := [960, 640]
 const CAM_H := [540, 360]
@@ -70,10 +70,11 @@ var visitlog                          # 3D-3.80: visitlog.gd
 var night_weather := false            # 3D-3.74: the weather runs through the night (dusk, showers, dew, morning fog)
 var _nw := {"day": -1, "plan": [], "last": "", "fog_lens": false}
 var real_time := false                # the clock of the PC
-var game                              # game.gd: «Unentdeckt ans Ziel» with up to 4 phones (from 3D-2.4)
+var game                              # game.gd: «Unentdeckt ans Ziel» with up to 12 phones (3D-3.95, before 4)
 var game_minutes := 5.0
 var game_level := "normal"            # easy | normal | hard
 var game_quality := "mid"             # picture on the phone: small | mid | big
+var game_max := 6                     # 3D-3.95: runners at most (2..12); more players watch through the head camera
 var game_guard := true                # without MoveEye the head guards by itself
 var game_mode := "camera"             # camera: all against the camera · guard: one player is the guard
 var game_lives := 0                   # 0 = unlimited
@@ -2770,7 +2771,7 @@ const PLACE := {"patrol_on": ["Mover", "Patrouille"], "patrol_mode": ["Mover", "
 		"game_learn_miss": ["Spiel", "Erkennung lernen"], "game_learn_report": ["Spiel", "Erkennung lernen"], "game_learn_paths": ["Spiel", "Erkennung lernen"], "game_blind_bonus": ["Spiel", "Erkennung lernen"], "game_report_send": ["Spiel", "Erkennung lernen"], "game_hides": ["Spiel", "Extras"], "game_decoy": ["Spiel", "Extras"],
 		"game_night": ["Spiel", "Extras"], "game_events": ["Spiel", "Extras"], "game_checkpoints": ["Spiel", "Extras"], "game_tasks": ["Spiel", "Extras"], "game_autohandicap": ["Spiel", "Extras"],
 		"game_board_reset": ["Spiel", "Extras"], "spectate_now": ["Spiel", "Anzeige"], "game_noise": ["Spiel", "Regeln"],
-		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"],
+		"game_random": ["Spiel", "Regeln"], "game_guard": ["Spiel", "Regeln"], "game_cones": ["Spiel", "Anzeige"], "game_quality": ["Spiel", "Anzeige"], "game_max": ["Spiel", "Runde"],
 		"quality": ["System", "Grafik"], "view_scale": ["System", "Grafik"], "win_fps": ["System", "Grafik"], "auto_perf": ["System", "Grafik"], "map_on": ["System", "Ansicht"], "live_on": ["System", "Ansicht"], "live_cam": ["System", "Ansicht"], "live_size": ["System", "Ansicht"], "eco_idle": ["System", "Grafik"], "autostart": ["System", "Start mit dem PC"],
 		"autostart_min": ["System", "Start mit dem PC"], "autostart_mwpc": ["System", "Start mit dem PC"], "autostart_lock": ["System", "Start mit dem PC"],
 		"cond_glare": ["Kamerabild", "Schwierige Bedingungen"], "cond_drops": ["Kamerabild", "Schwierige Bedingungen"],
@@ -3036,6 +3037,8 @@ func _register_controls() -> void:
 	add_control("toggle", "game_random", "Start und Ziel zufällig", func(): return game_random, func(v): game_random = v, "Spiel", ex)
 	add_control("select", "game_quality", "Bild auf dem Handy", func(): return game_quality, func(v): game_quality = v, "Spiel",
 			{"options": [["small", "klein (schnell)"], ["mid", "mittel"], ["big", "gross (braucht mehr Leistung)"]], "expert": true})
+	add_control("slider", "game_max", "Läufer höchstens (mehr Spieler schauen zu)", func(): return game_max, func(v): game_max = int(v), "Spiel",
+			{"min": 2, "max": 12, "step": 1, "tip": "Jeder Läufer ist ein eigenes 3D-Bild auf dem PC und ein eigenes Video übers Netz. Laptop: etwa 4, PC mit Grafikkarte: 6–8. Ab 5 Läufern werden die Bilder automatisch kleiner."})
 	add_control("toggle", "game_guard", "Ohne MoveEye bewacht der Kopf selbst", func(): return game_guard, func(v): game_guard = v, "Spiel", ex)
 	add_control("toggle", "autostart", "Mit dem PC starten (sendet gleich an MoveEye)", func(): return autostart_on, func(v): set_autostart(v), "Start mit dem PC")
 	add_control("toggle", "autostart_min", "Dabei klein (nur das Kästchen in der Ecke)", func(): return autostart_min, func(v): autostart_min = v, "Start mit dem PC")
@@ -4752,7 +4755,7 @@ func restart_args() -> PackedStringArray:
 	return out
 
 
-const KEEP := ["tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
+const KEEP := ["game_max", "tunnel_host", "tunnel_code", "tunnel_on", "cam_fx", "cam_fy", "calendar_on", "ort_env", "ort_hide", "ort_cars", "ort_forest", "ort_camp", "game_rescue", "game_teamgoal", "game_teams", "world_cloth", "world_smoke", "world_fireflies", "lamp_share", "cloud_shadows", "gusts", "look_at_light", "game_goal", "sound_on", "night_gain", "ir_range", "game_mode", "game_lives", "game_items", "game_cones", "game_noise", "game_stones", "game_powers", "game_spectate", "game_photos", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap", "game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints", "game_tasks", "game_autohandicap", "game_random", "lens_noise", "lens_vignette", "lens_drops", "insects_on", "game_minutes", "game_level", "game_quality", "game_guard", "eco_idle", "autostart_min", "autostart_mwpc", "autostart_lock", "last_scene", "auto_update", "dev_updates", "news_seen", "news_popup", "show_zones3d", "show_det3d", "fauna_on", "twin", "ui_simple", "auto_visitors", "daily_life", "real_weather", "real_time", "night_weather", "surprise_on", "mix", "visit_rate", "max_visitors", "visitor_speed", "flee_light", "flee_sound",
 		"avoid_on", "quality", "view_scale", "win_fps", "auto_perf", "meadow_on", "season", "mover_on", "mover_max", "mast_h", "patrol_judge", "map_on", "map_size", "map_span", "live_on", "live_cam", "live_size", "ort_lat", "ort_lon", "ort_name", "weather", "wind", "ambient", "moon", "cam1_yaw", "stream_last", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "kids_on", "kids_ask", "kids_thief", "kids_scary", "kids_laser", "kids_sound", "kids_stars"]
 var _settings_dirty := false
 
@@ -4993,6 +4996,9 @@ func _ui_control(parent: Control, c: Dictionary) -> void:
 				if not _syncing:
 					c["set"].call(v))
 			vb.add_child(hs)
+			if c.extra.has("tip"):                       # 3D-3.95: explanation when the mouse is over it
+				vb.tooltip_text = str(c.extra["tip"])
+				hs.tooltip_text = str(c.extra["tip"])
 			parent.add_child(vb)
 			ui_rows[c.id] = hs
 			ui_items.append([vb, c.label, c.extra.get("expert", false), parent])

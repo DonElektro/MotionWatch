@@ -7,6 +7,9 @@ MAX_ZONES = 12
 ZONES = []              # [{"id", "name", "mode": "ignore"|"only"|"privacy", "points": [[x, y], ...]}]
 # "privacy" = the area is painted black right after the camera, before anything else sees it: live picture, recordings,
 # snapshots, timelapse, detection and the zone editor never contain it (neighbour's tent, a path, a window).
+# 2.98.7: "sleep" = the sleeping place - a privacy zone that stays on the bed when the head turns: its corners are kept as
+# directions (degrees, "ang") and drawn into every picture for the direction the camera has (and had in the last 2 s, the
+# picture comes a little later than the servo moves). The wake-up alarm turns the camera to it.
 
 
 def _num(v):
@@ -20,7 +23,7 @@ def _clean_zone(z, i):
     for p in (z.get("points") or [])[:40] if isinstance(z.get("points"), list) else []:
         if isinstance(p, (list, tuple)) and len(p) == 2 and _num(p[0]) and _num(p[1]):
             pts.append([round(min(1.0, max(0.0, float(p[0]))), 4), round(min(1.0, max(0.0, float(p[1]))), 4)])
-    mode = z.get("mode") if z.get("mode") in ("only", "privacy", "line", "loiter") else "ignore"
+    mode = z.get("mode") if z.get("mode") in ("only", "privacy", "line", "loiter", "sleep") else "ignore"
     if mode == "line":
         if len(pts) < 2:
             return None
@@ -37,6 +40,90 @@ def _clean_zone(z, i):
             out["secs"] = int(max(3, min(600, float(z.get("secs") or 20))))
         except (TypeError, ValueError):
             out["secs"] = 20
+    if mode == "sleep":
+        ang = z.get("ang")
+        if isinstance(ang, list) and len(ang) == len(pts) and all(isinstance(a, (list, tuple)) and len(a) == 2 and _num(a[0]) and _num(a[1]) for a in ang):
+            out["ang"] = [[round(float(a[0]), 3), round(float(a[1]), 3)] for a in ang]
+    return out
+
+
+# ---- 2.98.7: the sleeping place stays where the bed is, wherever the camera looks ----
+SLEEP_POS = deque(maxlen=60)          # (time, pan %, tilt %) - the picture comes later than the servo: mask every recent direction
+SLEEP_MARGIN = 3.0                    # degrees around the bed (the servo and the field of view are not exact)
+
+
+def _cam_deg(pan, tilt):
+    return (float(pan) - 50.0) / 50.0 * servo_half("pan"), (float(tilt) - 50.0) / 50.0 * servo_half("tilt")
+
+
+def sleep_to_ang(points, pan=None, tilt=None):
+    """picture points 0..1 (camera at pan / tilt) -> directions in degrees (right +, up +)"""
+    hf, vf = cam_fov()
+    a0, e0 = _cam_deg(CFG["pan"] if pan is None else pan, CFG["tilt"] if tilt is None else tilt)
+    th, tv = math.tan(math.radians(hf / 2.0)), math.tan(math.radians(vf / 2.0))
+    return [[round(a0 + math.degrees(math.atan((x - 0.5) * 2.0 * th)), 3), round(e0 + math.degrees(math.atan((0.5 - y) * 2.0 * tv)), 3)] for x, y in points]
+
+
+def sleep_project(ang, pan=None, tilt=None, margin=0.0):
+    """directions in degrees -> picture points 0..1 for the camera at pan / tilt (may lie outside the picture). The edges are
+    cut into small steps, so the straight lines of the bed stay right also near the border of the picture."""
+    if not ang:
+        return []
+    hf, vf = cam_fov()
+    a0, e0 = _cam_deg(CFG["pan"] if pan is None else pan, CFG["tilt"] if tilt is None else tilt)
+    th, tv = math.tan(math.radians(hf / 2.0)), math.tan(math.radians(vf / 2.0))
+    ca = sum(a[0] for a in ang) / len(ang); ce = sum(a[1] for a in ang) / len(ang)
+    pts = []
+    for a, e in ang:                                     # a little bigger: margin degrees away from the middle
+        d = math.hypot(a - ca, e - ce) or 1.0
+        pts.append((a + (a - ca) / d * margin, e + (e - ce) / d * margin))
+    out = []
+    for i in range(len(pts)):
+        (a1, e1), (a2, e2) = pts[i], pts[(i + 1) % len(pts)]
+        for k in range(8):
+            a = a1 + (a2 - a1) * k / 8.0; e = e1 + (e2 - e1) * k / 8.0
+            da = max(-80.0, min(80.0, a - a0)); de = max(-80.0, min(80.0, e - e0))
+            out.append([0.5 + math.tan(math.radians(da)) / (2.0 * th), 0.5 - math.tan(math.radians(de)) / (2.0 * tv)])
+    return out
+
+
+def sleep_zones():
+    return [z for z in ZONES if z["mode"] == "sleep" and z.get("ang")]
+
+
+def sleep_update(now=None):
+    """remember where the camera looks and move the corners of the sleeping places (for the zone editor and zone_allows)"""
+    now = time.time() if now is None else now
+    pos = (round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2))
+    if not SLEEP_POS or SLEEP_POS[-1][1:] != pos:
+        SLEEP_POS.append((now,) + pos)
+    for z in sleep_zones():
+        if z.get("_at") != pos:
+            z["_at"] = pos
+            pp = sleep_project(z["ang"], *pos)
+            corners = pp[::8]                                # the corners (every 8th point)
+            z["points"] = [[round(min(1.0, max(0.0, x)), 4), round(min(1.0, max(0.0, y)), 4)] for x, y in corners]
+            z["vis"] = any(0.0 <= x <= 1.0 and 0.0 <= y <= 1.0 for x, y in pp)
+
+
+def sleep_polys(w, h, now=None):
+    """pixel polygons of the sleeping places for every direction of the last 2 s"""
+    now = time.time() if now is None else now
+    zs = sleep_zones()
+    if not zs:
+        return []
+    L = list(SLEEP_POS)
+    poss = {(round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2))}
+    for i, p in enumerate(L):                            # every direction the camera had during the last 2 s
+        end = L[i + 1][0] if i + 1 < len(L) else now
+        if now - end < 2.0:
+            poss.add(p[1:])
+    out = []
+    for z in zs:
+        for pos in poss:
+            pp = sleep_project(z["ang"], pos[0], pos[1], SLEEP_MARGIN)
+            if pp:
+                out.append(np.array([(int(round(x * w)), int(round(y * h))) for x, y in pp], np.int32))
     return out
 
 
@@ -118,14 +205,20 @@ def zone_event(kind, z, frame):
 
 
 def apply_privacy(frame):
-    """Paint the privacy zones black (in place). Returns the frame."""
+    """Paint the privacy zones and the sleeping places black (in place). Returns the frame."""
     zs = [z for z in ZONES if z["mode"] == "privacy"]
-    if not zs or frame is None:
+    sl = any(z["mode"] == "sleep" for z in ZONES)
+    if (not zs and not sl) or frame is None:
         return frame
     h, w = frame.shape[:2]
     if not frame.flags.writeable:
         frame = frame.copy()
-    cv2.fillPoly(frame, [np.array([(int(round(x * w)), int(round(y * h))) for x, y in z["points"]], np.int32) for z in zs], (0, 0, 0))
+    polys = [np.array([(int(round(x * w)), int(round(y * h))) for x, y in z["points"]], np.int32) for z in zs]
+    if sl:
+        sleep_update()
+        polys += sleep_polys(w, h)
+    if polys:
+        cv2.fillPoly(frame, polys, (0, 0, 0))
     return frame
 
 
@@ -144,7 +237,7 @@ def zone_allows(nx, ny):
     if not zs:
         return True
     for z in zs:
-        if z["mode"] in ("ignore", "privacy") and point_in_poly(nx, ny, z["points"]):
+        if z["mode"] in ("ignore", "privacy", "sleep") and point_in_poly(nx, ny, z["points"]):
             return False
     only = [z for z in zs if z["mode"] == "only"]
     return (not only) or any(point_in_poly(nx, ny, z["points"]) for z in only)
@@ -161,9 +254,16 @@ def zones_set(lst):
     if not isinstance(lst, list):
         return False, "invalid zones"
     out = []
+    old = {z["id"]: z for z in ZONES if z["mode"] == "sleep"}
     for z in lst[:MAX_ZONES]:
         c = _clean_zone(z, len(out))
         if c:
+            if c["mode"] == "sleep":                    # 2.98.7: corners as directions from where the camera looks now
+                o = old.get(c["id"])
+                same = o and o.get("ang") and len(o.get("points") or []) == len(c["points"]) and all(
+                    abs(a[0] - b[0]) < 0.003 and abs(a[1] - b[1]) < 0.003 for a, b in zip(o["points"], c["points"]))
+                c["ang"] = o["ang"] if same else sleep_to_ang(c["points"])
+                c.pop("_at", None)
             out.append(c)
     with LOCK:
         ZONES[:] = out
@@ -302,6 +402,10 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Clap switch", "clap_3", "Clap 3×", "enum", "clap_acts"),
     ("Clap switch", "clap_4", "Clap 4×", "enum", "clap_acts"),
     ("Bless you", "sneeze_reply", "Answer", "enum", "sneeze_replies"),
+    ("Wake-up alarm", "wake_time", "Wake-up time (HH:MM)", "str", None),
+    ("Wake-up alarm", "wake_days", "Days", "enum", "wake_days"),
+    ("Wake-up alarm", "wake_sleep", "Camera looks away from (HH:MM, empty = not)", "str", None),
+    ("Wake-up alarm", "wake_sound", "Sound", "enum", "wake_sounds"),
     ("Bless you", "sneeze_texts", "Words (several: separate with |)", "str", None),
     ("Loudspeaker", "siren_sound", "Sound", "enum", "sounds"),
     ("Lights", "light_white_out", "White light: connected to", "enum", "light_white_out"),
@@ -396,6 +500,12 @@ def text_choice_pairs(key):
         return clap_act_pairs()
     if extra == "sneeze_replies":
         return sneeze_reply_pairs()
+    if extra == "wake_days":
+        return [("mon-fri", tr("Monday to Friday")), ("all", tr("every day")), ("sat-sun", tr("Saturday and Sunday")),
+                ("sun-thu", tr("Sunday to Thursday")), ("once", tr("only once (next time)"))]
+    if extra == "wake_sounds":
+        return [("chime", tr("Soft melody")), ("birds", tr("Birdsong")), ("beeps", tr("Fast beeps")), ("marmot", tr("Marmot whistle"))] + \
+               [("file:" + f, "♪ " + f) for f in own_sounds()]
     if extra == "siren_on":
         return [("off", tr("off")), ("person", tr("person alarm")), ("alarm", tr("person, thermal and noise alarm")),
                 ("all", tr("every alarm, also the pre-alarm (movement)"))]
@@ -516,6 +626,8 @@ def set_text(key, value):
                 return False, "invalid URL (http:// or https:// expected)"
             if key in ("notify_url", "public_url") and not _http_ok(v):
                 return False, "invalid URL (http:// or https:// expected)"
+            if key in ("wake_time", "wake_sleep") and not _HM_RE.match(v):
+                return False, "a time like 07:00"
             if key == "msg_keyword_prefix" and not re.fullmatch(r"[A-Za-z0-9]{1,12}", v):
                 return False, "1 to 12 letters or digits"
             if key == "email_to" and not _EMAIL_RE.fullmatch(v):
@@ -833,6 +945,7 @@ class Scheduler:
         while True:
             try:
                 schedule_tick(); arm_tick()
+                wake_tick()                             # 2.98.7: wake-up alarm
             except Exception as e:                      # never let the scheduler thread die
                 log_event("sys", f"Scheduler error: {e}")
             time.sleep(1.0)

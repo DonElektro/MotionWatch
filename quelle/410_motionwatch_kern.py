@@ -412,6 +412,8 @@ class MotionWatch:
         """2.98.1: aim at the object - turn by the angle it has from the middle of the picture (field of view of the camera),
         a part of the way (no overshoot), then wait until the picture shows the new direction. Before, it moved a fixed
         bit per picture: slow at a low frame rate and swinging past the object when the picture came late."""
+        if wake_hold():                        # 2.98.7: the wake-up alarm holds the head (sleeping place)
+            return
         x, y, w, h = target_box[:4]
         ex = (x + w / 2.0) / pw - 0.5          # -0.5 .. 0.5  (right = positive)
         ey = (y + h / 2.0) / ph - 0.5          # down  = positive
@@ -566,7 +568,7 @@ class MotionWatch:
             STATE["eco"] = "off"; return
         busy = (bool(present & {"prealarm", "motion", "person", "warm", "noise"}) or self.writer is not None or STATE["tracking"] or manual_active() or TL_HOLD["on"]
                 or (CFG["eco_view_full"] and self.web_viewers > 0) or (AUDIO is not None and AUDIO.noisy())
-                or TALK["proc"] is not None or POWER["pending"] or time.time() - SENS["pir_t"] < 3)
+                or TALK["proc"] is not None or POWER["pending"] or time.time() - SENS["pir_t"] < 3 or WAKE["state"] == "ring")
         if busy:
             self.eco_wake_t = t0
         slow = t0 - self.eco_wake_t > float(CFG["eco_wake"])
@@ -709,6 +711,7 @@ class MotionWatch:
                 log_event("sys", f"Camera picture: turned {ok_[0]}°" + (", mirrored" if ok_[1] else ""))
             self._orient = ok_
             frame = cam_orient(frame)                     # turned / mirrored as set, before zones and detection
+            wake_feed(frame)                              # 2.98.7: gestures at the sleeping place (only while the alarm rings)
             frame = apply_privacy(frame)                  # privacy zones: black before anything else sees the picture
             rec_clean = frame.copy() if (CFG["record"] or QUICK["rec_until"] > 0 or self.writer is not None) and CFG["rec_marks"] != "full" else None
             rec_animals = []

@@ -81,13 +81,13 @@ CAMPING_SET = {"detection_on": True, "record": True, "snapshot_on_person": True,
 # ---- simple settings: what most people need; Expert shows everything ----
 SIMPLE_SECTIONS = {"Camera / Servos", "Patrol", "AI detection", "Detection", "Recording", "Low light", "Setup", "Notifications",
                    "Camping / protection", "Thermal camera", "Microphone", "Loudspeaker", "Lights", "Night report", "Battery",
-                   "Power saving", "Messages", "Updates", "Theft protection", "Backup", "Deterrence"}
+                   "Power saving", "Messages", "Updates", "Theft protection", "Backup", "Deterrence", "Wake-up alarm"}
 # 2.98.0: extra hardware and gimmicks only in «Simple» when they are in use (otherwise Expert)
 SIMPLE_IN_USE = {"Extra sensors": lambda: bool(CFG.get("sens_on") or CFG.get("sensors")), "Storm warning": lambda: bool(CFG.get("sensors")),
                  "GPS module": lambda: bool(CFG.get("gpsmod_on")), "Solar panel": lambda: bool(CFG.get("solar_on")),
                  "Clap switch": lambda: bool(CFG.get("clap_on")), "Bless you": lambda: bool(CFG.get("sneeze_on")),
                  "Mover": lambda: bool(MOVER.get("avail") or MOVER.get("hw") or MOVER.get("sim"))}
-SIMPLE_KEYS = {"track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
+SIMPLE_KEYS = {"wake_on", "wake_time", "wake_days", "wake_sleep", "wake_snooze", "wake_volume", "wake_sound", "wake_light", "wake_gestures", "track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
                "pushover_on", "pushover_user", "pushover_token", "pushover_emergency", "msg_keyword_on", "email_on", "email_to",
@@ -271,7 +271,7 @@ def _mode_leave(m):
         toolmode_set(0, "gamer mode")
     MODE_RT["rest"] = False
     if MODE_RT["party"] and party_on():
-        party_close()
+        games_all_close("mode")
     MODE_RT["party"] = False
     if MODE_RT["gov"]:
         _governor(MODE_RT["gov"])
@@ -327,7 +327,7 @@ def mode_set(m, who="web"):
         # 2.95.49: the Wi-Fi is NOT switched here - the own Wi-Fi would cut the phones off the network they are in (the
         # page froze). The game corner works in the network MoveEye is in; the own Wi-Fi is a switch of its own.
         if not party_on():
-            party_open(float(CFG["mode_fire_hours"]) if m == "fire" else 8.0); MODE_RT["party"] = True
+            games_all_open(float(CFG["mode_fire_hours"]) if m == "fire" else 8.0, "mode"); MODE_RT["party"] = True   # 2.98.7: all games
         if m == "fire":
             g = _governor("powersave")
             if g:

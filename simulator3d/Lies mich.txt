@@ -32,7 +32,7 @@ UPDATES (ab 3D-1.7)
   (Senden, Szene und "MoveEye auf diesem PC" laufen danach weiter). Der Knopf "Jetzt nach Updates suchen und
   installieren" in derselben Gruppe löst das sofort aus - auch vom Handy aus über MoveEye.
 
-SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 4 Spieler mit dem Handy)
+SPIEL "UNENTDECKT ANS ZIEL" (ab 3D-2.4, bis 12 Läufer mit dem Handy ab 3D-3.95)
 - Gruppe "Spiel": "Spiel öffnen" einschalten. Im Fenster erscheinen ein QR-Code und eine Adresse.
   Die Handys (im gleichen WLAN wie der PC) scannen den QR-Code, Namen eingeben, "Mitspielen". Keine App nötig.
   Fragt die Windows-Firewall: "Private Netzwerke" erlauben.
@@ -607,6 +607,12 @@ kriechen), niemand wird erwischt – neue Spielart «Frei bewegen» zum Testen d
 wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, rundherum, Kran, alle im Bild, Sicht von
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
+
+NEU IN 3D-3.95
+3D-3.95: Spiel «Team gegen MoveEye» mit mehr Mitspielern: bis 12 Läufer (Spiel → Runde → «Läufer höchstens», Standard 6;
+Laptop etwa 4, PC mit Grafikkarte 6–8). Ab 5 Läufern werden die Bilder auf den Handys automatisch kleiner. Wer keinen Platz
+zum Laufen mehr bekommt, schaut durch die Kopfkamera zu (was MoveEye sieht) und läuft mit, sobald ein Platz frei wird.
+MoveEye 2.98.7 öffnet das Spiel mit der Taste «Spiele freigeben» zusammen mit der Spielecke – ein QR-Code für alles.
 
 NEU IN 3D-3.94
 3D-3.94: Realistischer. Kamera wie echt: Bewegungsunschärfe (nachts stärker, weil die Kamera länger belichtet), Unschärfe

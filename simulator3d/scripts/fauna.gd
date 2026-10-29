@@ -1,5 +1,5 @@
 extends Node3D
-## 3D-3.95: small things that fly - birds by day (a flock crosses, now and then one flies low past the camera) and bats
+## 3D-3.94: small things that fly - birds by day (a flock crosses, now and then one flies low past the camera) and bats
 ## at dusk and at night (fast, zig-zag, close to the light). Both are warm on the thermal picture. Classic causes of false
 ## alarms («Bewegung, aber keine Person»). They rest while a test or a measurement runs (comparable results).
 ## (The moths at the light of the head were already there: main.insects.)

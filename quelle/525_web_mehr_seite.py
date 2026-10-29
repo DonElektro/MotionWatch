@@ -13,6 +13,9 @@ main{padding:16px;max-width:720px;margin:0 auto}
   color:var(--txt);text-decoration:none;cursor:pointer;font:inherit;width:100%;text-align:left}
 .mi:hover{border-color:var(--acc)}.mi i{font-style:normal;font-size:22px;width:30px;text-align:center}.mi b{display:block;font-size:15px}
 .mi small{color:var(--mut);font-size:12px}.mi .ar{margin-left:auto;color:var(--mut);font-size:18px}
+#games{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:14px;margin:0 0 12px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+#games.on{border-color:var(--grn)}#games .gq{width:120px;height:120px;background:#fff;border-radius:10px;padding:6px;box-sizing:border-box}#games .gq svg{width:100%;height:100%}
+#games .gt{flex:1 1 200px}#games .gt b{font-size:16px}#games button{margin:8px 8px 0 0}
 #fb{display:none}#fb.on{display:block}#fb textarea{width:100%;box-sizing:border-box;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
 </style></head><body>
 <header>
@@ -24,6 +27,7 @@ main{padding:16px;max-width:720px;margin:0 auto}
   </span>
 </header>
 <main>
+  <div id="games"><div class="gt"><b>🎮 <span data-i18n="Games">Games</span></b><div class="mut" id="g-txt"></div><div id="g-btn"></div></div></div>
   <a class="mi" href="/help"><i>📖</i><span><b data-i18n="Manual">Manual</b><small data-i18n="Everything explained, with search">Everything explained, with search</small></span><span class="ar">›</span></a>
   <a class="mi" href="/quick"><i>📄</i><span><b data-i18n="Quick guide (1 page)">Quick guide (1 page)</b><small data-i18n="to print, with the QR codes">to print, with the QR codes</small></span><span class="ar">›</span></a>
   <a class="mi" href="/party"><i>🎲</i><span><b data-i18n="Game corner">Game corner</b><small data-i18n="Quiz, werewolf, connect four … for the campfire">Quiz, werewolf, connect four … for the campfire</small></span><span class="ar">›</span></a>
@@ -40,11 +44,38 @@ main{padding:16px;max-width:720px;margin:0 auto}
 <script>
 /*COMMON*/
 /*MOREDE*/
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"games-off-note": "One button: game corner (quiz, werewolf …), game collection and - when the 3D simulator runs - «Team against MoveEye». One QR code, type the name, done."});
 document.getElementById("fb-s").onclick = async () => {
   const r = await post("/api/feedback", {kind: document.getElementById("fb-k").value, text: document.getElementById("fb-t").value, diag: true, lang: LANG});
   document.getElementById("fb-r").textContent = r && r.ok ? "✓ " + t("Thank you! The message is on its way.") : "⚠ " + ((r && r.error) || "error");
 };
-(async () => { await initAppearance(); })();
+(async () => { await initAppearance(); gmLoad(); })();
+// 2.98.7: «Spiele freigeben» - one button for the game corner, the game collection and the game of the 3D simulator
+let GMT = 0;
+async function gmLoad() {
+  clearTimeout(GMT); let j = null;
+  try { j = await (await fetch("/api/party", {cache: "no-store"})).json(); } catch (e) {}
+  if (j && j.ok) gmPaint(j);
+  GMT = setTimeout(gmLoad, j && j.on ? 4000 : 15000);
+}
+function gmPaint(j) {
+  const box = document.getElementById("games"), tx = document.getElementById("g-txt"), bb = document.getElementById("g-btn"), A = j.all || {};
+  box.classList.toggle("on", !!j.on); bb.textContent = ""; const old = box.querySelector(".gq"); if (old) old.remove();
+  if (!j.on) {
+    tx.textContent = t("games-off-note");
+    const b = document.createElement("button"); b.type = "button"; b.textContent = "🎮 " + t("Open all games");
+    b.onclick = async () => { b.disabled = true; const r = await post("/api/party", {action: "all", hours: 6}); if (r && r.ok) gmPaint(r); b.disabled = false; };
+    bb.appendChild(b); return;
+  }
+  const q = document.createElement("div"); q.className = "gq"; q.innerHTML = j.qr || ""; box.insertBefore(q, box.firstChild);
+  const until = new Date(Date.now() + (j.left || 0) * 1000).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+  tx.textContent = t("Open until") + " " + until + " · " + (j.players || []).length + " " + t("players") + " · "
+    + [t("Game corner"), A.coll ? t("Game collection") : "", A.sim ? t("Simulator game") : ""].filter(Boolean).join(" + ") + ". " + t("Scan the QR code with the phone (same Wi-Fi).");
+  const a = document.createElement("a"); a.className = "btn"; a.href = "/party"; a.textContent = t("Players and QR code") + " ›";
+  const c = document.createElement("button"); c.type = "button"; c.className = "sec"; c.textContent = "⛔ " + t("Close");
+  c.onclick = async () => { if (!confirm(t("Close all games? The players are logged out."))) return; const r = await post("/api/party", {action: "close"}); if (r && r.ok) gmPaint(r); };
+  bb.append(a, c);
+}
 fetch("/info", {method: "HEAD"}).then(r => { if (!r.ok) document.getElementById("m-info").hidden = true; }).catch(() => {});
 /*ALERTS*/
 </script>
@@ -57,7 +88,11 @@ MORE_DE = {"Everything explained, with search": "Alles erklärt, mit Suche", "Qu
            "what MoveEye is - for neighbours and fellow campers": "was MoveEye ist – für Nachbarn und Mitcamper", "Almanac": "Almanach",
            "Sun, moon, weather": "Sonne, Mond, Wetter", "Feedback to the developer": "Rückmeldung an den Entwickler",
            "Ideas, errors, praise - anonymous": "Ideen, Fehler, Lob – anonym", "💡 Idea": "💡 Idee", "🐞 Error": "🐞 Fehler", "⭐ Praise": "⭐ Lob",
-           "💬 Other": "💬 Anderes", "Send": "Senden", "Thank you! The message is on its way.": "Danke! Die Nachricht ist unterwegs."}
+           "💬 Other": "💬 Anderes", "Send": "Senden", "Thank you! The message is on its way.": "Danke! Die Nachricht ist unterwegs.",
+           "Games": "Spiele", "Open all games": "Spiele freigeben", "Open until": "Offen bis", "players": "Spieler", "Game corner": "Spielecke",
+           "Game collection": "Spielesammlung", "Simulator game": "Simulator-Spiel", "Scan the QR code with the phone (same Wi-Fi).": "QR-Code mit dem Handy scannen (gleiches WLAN).",
+           "Players and QR code": "Spieler und QR-Code", "Close": "Schliessen", "Close all games? The players are logged out.": "Alle Spiele schliessen? Die Spieler werden abgemeldet.",
+           "games-off-note": "Eine Taste: Spielecke (Quiz, Werwolf …), Spielesammlung und – wenn der 3D-Simulator läuft – «Team gegen MoveEye». Ein QR-Code, Name eingeben, fertig."}
 
 
 def more_page():

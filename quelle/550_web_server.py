@@ -925,10 +925,10 @@ class WebStream:
                 if getattr(g, "role", "admin") != "admin":
                     return reply({"ok": False, "error": "not allowed"}, 403)
                 d = body(); a_ = d.get("action")
-                if a_ == "open":
-                    party_open(float(d.get("hours") or 6))
+                if a_ in ("open", "all"):                     # 2.98.7: «Spiele freigeben» = all games at once
+                    games_all_open(float(d.get("hours") or 6), "web " + (request.remote_addr or "?"))
                 elif a_ == "close":
-                    party_close()
+                    games_all_close("web " + (request.remote_addr or "?"))
                 elif a_ == "rest":                     # MoveEye rests, only the game server runs (2.95.31)
                     if d.get("on"):
                         mins = (PARTY["until"] - time.time()) / 60 if party_on() else float(d.get("hours") or 6) * 60
@@ -953,7 +953,7 @@ class WebStream:
                           "players": [{"id": k, "name": v["name"], "score": v["score"], "host": k == PARTY["host"], "on": time.time() - v["t"] < 25}
                                       for k, v in PARTY["players"].items()], "game": PARTY["game"],
                           "games": games_list(), "games_ver": games_installed_version(), "rest": toolmode_state(), "games_pkg": GAMES_PKG, "dl": dict(GAMES_DL),
-                          "remote": base})
+                          "remote": base, "all": games_all_state()})
 
         @app.route("/api/simtest/pic/<int:rid>/<name>")
         def api_simtest_pic(rid, name):
@@ -1429,6 +1429,7 @@ class WebStream:
                 st["me"] = {"name": getattr(g, "user", ""), "role": getattr(g, "role", "admin"), "users": len(CFG["users"])}
                 st["pending"] = RESTART["pending"]
                 st["quick_rec"] = time.time() < QUICK["rec_until"]
+                st["games"] = {"on": party_on(), "n": len(PARTY["players"])}           # 2.98.7: quick switch «Spiele»
                 st["settings_status_txt"] = settings_status_text(norm_lang(request.args.get("lang") or CFG["lang"]))
                 st["autostart_msg"] = tr_err(AUTOSTART["msg"], norm_lang(request.args.get("lang") or CFG["lang"])) if AUTOSTART["msg"] else ""
                 lang_ = norm_lang(request.args.get("lang") or CFG["lang"])
@@ -1449,6 +1450,7 @@ class WebStream:
                                "msg": tr(MOVER["msg"], lang_), "mode": CFG["mover_mode"],
                                "pose": SIM.get("mover_pose") if MOVER["sim"] else None}
                 st["soundev"] = soundev_state()
+                st["wake"] = dict(wake_state(), text=wake_text(norm_lang(request.args.get("lang") or CFG["lang"])))   # 2.98.7
                 st["light_cfg"].update({n + "_auto_label": dict(text_choice_pairs("light_white_auto")).get(CFG[f"light_{n}_auto"], "")
                                         for n in ("white", "ir")})
                 st["tether"] = STATE.get("tether") or {"on": False}
@@ -1848,6 +1850,19 @@ class WebStream:
                 return reply({"ok": False, "error": tr_err("the file is too large (max. 8 MB)", lang)}, 413)
             ok, err, name = sneeze_upload(request.get_data(cache=False))
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "name": name}, 200 if ok else 400)
+
+        @app.route("/api/wake", methods=["GET", "POST"])
+        def api_wake():
+            """2.98.7: wake-up alarm - state, test, snooze, off, direction for the night, good night"""
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
+            if request.method == "POST":
+                d = body(); lang = norm_lang(d.get("lang") or lang)
+                if getattr(g, "role", "admin") != "admin" and d.get("action") not in ("snooze", "stop"):
+                    return reply({"ok": False, "error": "not allowed"}, 403)
+                ok, err = wake_action(str(d.get("action") or ""), "web " + (request.remote_addr or "?"))
+                if not ok:
+                    return reply({"ok": False, "error": tr(err, lang)}, 400)
+            return reply({"ok": True, "wake": dict(wake_state(), text=wake_text(lang))})
 
         @app.route("/api/soundev", methods=["POST"])
         def api_soundev():
@@ -2546,7 +2561,8 @@ class WebStream:
 
         @app.route("/api/zones")
         def api_zones_get():
-            return reply({"zones": [dict(z) for z in ZONES]})
+            sleep_update()                                   # 2.98.7: the sleeping places for the direction the camera has now
+            return reply({"zones": [{k: v for k, v in z.items() if k != "_at"} for z in ZONES]})
 
         @app.route("/api/zones", methods=["POST"])
         def api_zones_post():

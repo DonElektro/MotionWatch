@@ -273,6 +273,8 @@ a.gl img{width:44px;height:44px;border-radius:10px;object-fit:cover;background:#
     <div class="row"><button class="sec" data-s="30">30 s</button><button class="sec" data-s="60">1 min</button><button class="sec" data-s="120">2 min</button><button class="sec" data-s="300">5 min</button><button class="sec" data-s="0">Stopp</button></div>
   </div>
   <div class="card"><h2>🏆 Punkte</h2><div id="players"></div><div id="hostbox" class="hidden" style="margin-top:8px"><button class="sec" id="resetsc">Punkte auf 0</button></div></div>
+  <div class="card hidden" id="simcard"><h2>🎯 Team gegen MoveEye (3D-Simulator)</h2><p class="mut" id="simtxt"></p>
+    <a id="simgo" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;background:var(--amber);color:#0e1621;font-weight:700;padding:13px;border-radius:12px">🏃 Mitspielen</a></div>
   <div class="card" id="collcard"><h2>🕹 Spielesammlung (für dich allein)</h2><div id="coll" class="grid"></div></div>
 </div>
 <script>
@@ -334,6 +336,11 @@ function render() {
   const D = V.tools.dice; $("#dice").innerHTML = D ? D.vals.map(x => `<div>${x}</div>`).join("") : "";
   $("#dicewho").textContent = D ? D.by + " hat gewürfelt (W" + D.sides + ")" + (D.vals.length > 1 ? " · Summe " + D.vals.reduce((a, b) => a + b, 0) : "") : "";
   if (D && D.t !== render.lastDice) { render.lastDice = D.t; beep(660, .08); }
+  // 2.98.7: the game of the 3D simulator (opened together with the game corner)
+  const SG = V.sim; $("#simcard").classList.toggle("hidden", !SG);
+  if (SG) { $("#simgo").href = SG.url; $("#simtxt").textContent = "Schleich mit dem Handy unentdeckt an der Kamera vorbei zum Ziel. "
+    + (SG.runners >= SG.max ? "Alle " + SG.max + " Läuferplätze sind besetzt – du schaust zuerst durch die Kamera zu." : (SG.max - SG.runners) + " von " + SG.max + " Läuferplätzen frei.")
+    + (SG.round === "play" ? " Eine Runde läuft gerade." : ""); }
   // collection
   const GG = {touch: "👆 Für Handy und Tablet (Touch)", buttons: "🎮 Mit Bildschirm-Tasten"};        // 2.95.54: touch games first
   const gsorted = (V.games || []).slice().sort((a, b) => (a.input === "buttons") - (b.input === "buttons"));
@@ -584,7 +591,8 @@ def _simgame_fetch():
         r = sim_control({"action": "game_info"})
         if isinstance(r, dict) and r.get("ok") and r.get("open"):
             SIMGAME["g"] = {"round": r.get("round"), "mode": r.get("mode"), "left": r.get("left"), "cd": r.get("cd"),
-                            "mwg": r.get("mwg"), "task": r.get("task") or ""}
+                            "mwg": r.get("mwg"), "task": r.get("task") or "", "url": r.get("url") or "", "max": r.get("max"),
+                            "runners": r.get("runners")}
         else:
             SIMGAME["g"] = None
     except Exception:

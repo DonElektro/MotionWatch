@@ -194,7 +194,11 @@ CFG = {
     "sim_autoupd": True, "sim_separate": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
-    "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True, "wifi_swap": False, "wifi_guard": False,
+    "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True,
+    # 2.98.7: wake-up alarm with the sleeping place (255_wecker.py)
+    "wake_on": False, "wake_time": "07:00", "wake_days": "mon-fri", "wake_sleep": "22:30", "wake_snooze": 9, "wake_ring_max": 15,
+    "wake_volume": 60, "wake_sound": "chime", "wake_light": True, "wake_gestures": True, "wake_away_pan": -1.0, "wake_away_tilt": -1.0,
+    "wifi_swap": False, "wifi_guard": False,
     "wifi_guard_thr": 20, "wifi_count": False, "wifi_presence": False, "net_noinet": [], "net_inet_notify": True, "sim_prev_source": "", "sim_prev_thermal": "",
     "lens_check": True, "temp_alarm_on": False, "temp_hot": 30, "temp_cold": 3,
     "sens_on": False, "sensors": [], "rf433_on": False, "zigbee_on": False, "ble_on": False, "tag_missing": 5, "eco_pir": True,

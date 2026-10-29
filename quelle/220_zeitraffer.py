@@ -12,7 +12,7 @@ _TL_RENDER_LOCK = threading.Lock()
 
 def servo_hold():
     """Something other than tracking is holding the servos (hand control, timelapse position)."""
-    return manual_active() or TL_HOLD["on"]
+    return manual_active() or TL_HOLD["on"] or wake_hold()
 
 
 def tl_dir():
@@ -97,7 +97,7 @@ class Timelapse:
                 self._back(); TL_HOLD["on"] = False; self.state = "idle"
             STATE["timelapse"] = "off"
             return
-        busy = alarm or manual_active()
+        busy = alarm or manual_active() or wake_hold()
         if self.state == "idle":
             due = self.pending_now or now - self.last_shot >= CFG["timelapse_interval"] * 60.0
             if not due:

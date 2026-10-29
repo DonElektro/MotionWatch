@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 00:39",
+ "generated": "2026-10-29 01:13",
  "versions": [
   {
-   "version": "2.98.6",
-   "file": "webcam_bewegung_2_98_6.py",
+   "version": "2.98.7",
+   "file": "webcam_bewegung_2_98_7.py",
    "url": "",
-   "sha256": "d9685c45e405d8d05835d68ebb0a13b68fdaf8c3b6bcf17f1f1cee9f2ace15fd",
-   "date": "2026-10-29 00:39",
-   "notes": "Echt-Abgleich: MoveEye misst das Aussehen seiner echten Bilder (Tag/Nacht) und schickt es dem 3D-Simulator; Schnellschalter kompakt, nicht verfügbare ausgeblendet",
-   "sig": "528eecb32a2c80cf812709e0372909b1c12e141a837c1a2e40f02fee83042e6701a00e42d5aa9f27d4c81c7cb58f7ce449faafe2240e96c6ba731e989969b900"
+   "sha256": "a7e55a1527bb168e54721eb0f9178af0adae6091650d6e53f1f44d6faad05dc5",
+   "date": "2026-10-29 01:13",
+   "notes": "Spiele freigeben: eine Taste für Spielecke, Spielesammlung und Simulator-Spiel (ein QR-Code); Wecker mit Schlafplatz: nachts wegschauen, beim Wecken zum Bett drehen, Gesten (winken = schlummern, aufstehen = aus); Schlafplatz in jedem Bild abgedeckt",
+   "sig": "7b221a97f88abe13db2542ce963e75336d1f198035898a57b01ff81c9fd996cb501bac125f41d4796e749d6443e1f45a422a1c2c6dc6efae3d377367354b930e"
   },
   {
    "version": "2.97.1",

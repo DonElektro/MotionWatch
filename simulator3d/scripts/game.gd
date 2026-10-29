@@ -1,5 +1,5 @@
 extends Node
-## Game «Unentdeckt ans Ziel» (from 3D-2.4, much extended in 3D-2.5): up to 4 players with their phones (only a browser,
+## Game «Unentdeckt ans Ziel» (from 3D-2.4, much extended in 3D-2.5): up to main.game_max runners (3D-3.95: 2-12, before 4) with their phones (only a browser,
 ## same Wi-Fi). Every player has an own view (a camera behind the own figure, JPEG over a WebSocket).
 ## Modes: «Alle gegen die Kamera» (the simulator guards) or «Ein Spieler ist Wächter» (one phone sees through the head
 ## camera, turns the head, switches the light on and calls «Erwischt!»).
@@ -13,9 +13,13 @@ var main
 var Actor = preload("res://scripts/actor.gd")
 var Qr = preload("res://scripts/qr.gd")
 
-const MAX_P := 4
-const COLORS := [Color(0.85, 0.12, 0.12), Color(0.12, 0.38, 0.92), Color(0.12, 0.68, 0.22), Color(0.95, 0.78, 0.08)]
-const CNAMES := ["Rot", "Blau", "Grün", "Gelb"]
+const MAX_P := 16                                 # 3D-3.95: places (runners up to main.game_max = 2..12, the others watch)
+const COLORS := [Color(0.85, 0.12, 0.12), Color(0.12, 0.38, 0.92), Color(0.12, 0.68, 0.22), Color(0.95, 0.78, 0.08),
+		Color(0.62, 0.22, 0.85), Color(0.98, 0.5, 0.1), Color(0.1, 0.75, 0.8), Color(0.95, 0.4, 0.7),
+		Color(0.55, 0.35, 0.2), Color(0.9, 0.9, 0.9), Color(0.45, 0.85, 0.3), Color(0.2, 0.2, 0.55),
+		Color(0.7, 0.7, 0.2), Color(0.5, 0.1, 0.2), Color(0.3, 0.6, 1.0), Color(0.4, 0.4, 0.4)]
+const CNAMES := ["Rot", "Blau", "Grün", "Gelb", "Lila", "Orange", "Türkis", "Rosa", "Braun", "Weiss", "Hellgrün", "Dunkelblau",
+		"Oliv", "Weinrot", "Himmelblau", "Grau"]
 const TEAM_COLORS := [Color(0.92, 0.18, 0.12), Color(0.12, 0.42, 0.98)]
 const TEAM_NAMES := ["Team Rot", "Team Blau"]
 const SIGNALS := {"wait": "✋ Warte", "go": "▶ Los", "cam": "👁 Kamera!", "here": "📍 Hier"}
@@ -198,7 +202,7 @@ func guard_player() -> Variant:
 
 func guard_cam(g: Dictionary) -> int:
 	"""which camera a guard looks through: the first one the head camera, a second one the fixed camera"""
-	return 0 if guard_player() == g else 1
+	return 0 if guard_player() == g or g["role"] == "watch" else 1
 
 
 func guard2_watching() -> bool:
@@ -464,6 +468,20 @@ func _update_cones() -> void:
 
 
 # ---- every frame -----------------------------------------------------------------------------------------------------
+func _promote_watchers() -> void:
+	"""3D-3.95: a place to run is free again (somebody left, the number was raised): the first watcher runs along"""
+	if round_state in ["countdown", "play"]:
+		return
+	for p in players:
+		if runners_n() >= int(main.game_max):
+			return
+		if p != null and p["role"] == "watch":
+			_assign(p, "runner")
+			_to_start(p)
+			_say(p, "🏃 Ein Platz ist frei – du läufst jetzt mit!", 4.0)
+			paint()
+
+
 func _process(dt: float) -> void:
 	if not open:
 		guard_auto = false
@@ -472,6 +490,8 @@ func _process(dt: float) -> void:
 		return
 	_net()
 	var t := now()
+	if int(t * 2.0) != int((t - dt) * 2.0):
+		_promote_watchers()
 	if main.game_mode == "free" and round_state not in ["countdown", "play"] and count() > 0:
 		start_round()                                      # 3D-3.60: free moving starts as soon as somebody is there
 	_bots_tick(dt)                                         # 3D-3.77: computer players
@@ -592,7 +612,7 @@ func _net() -> void:
 
 
 func _hello(p: Dictionary) -> void:
-	var q: Array = QUAL.get(main.game_quality, QUAL["mid"])
+	var q: Array = qual()
 	p["sock"]["ws"].send_text(JSON.stringify({"t": "hello", "slot": p["slot"], "color": "#" + COLORS[p["slot"]].to_html(false),
 			"cname": CNAMES[p["slot"]], "name": p["name"], "w": q[0], "h": q[1], "goal": goal_name, "role": p["role"]}))
 
@@ -619,6 +639,9 @@ func _message(s: Dictionary, m: Dictionary) -> void:
 			players[slot] = _new_player(slot, token, name, _clean_look(lk))
 			players[slot]["team"] = _smaller_team(slot)
 			_paint_cone(players[slot])
+			if runners_n() > int(main.game_max):
+				_assign(players[slot], "watch")              # 3D-3.95: all places to run are taken - watch through the camera
+				_say(players[slot], "👀 Alle %d Plätze zum Laufen sind besetzt – du schaust durch die Kamera zu. Sobald einer frei wird, läufst du mit." % int(main.game_max), 6.0)
 		var p: Dictionary = players[slot]
 		if name != "":
 			p["name"] = name
@@ -692,7 +715,7 @@ func _assign(p: Dictionary, r: String) -> void:
 	p["role"] = r
 	var a = p["actor"]
 	a.visible = r == "runner"
-	if r == "guard":
+	if r in ["guard", "watch"]:
 		a.position = Vector3(0, 0, 4.0)
 	if p["sock"] != null:
 		_hello(p)
@@ -710,10 +733,13 @@ func _set_role(p: Dictionary, r: String) -> void:
 			return
 		p["role"] = "guard"
 	else:
+		if p["role"] != "runner" and runners_n() >= int(main.game_max):
+			_say(p, "Alle %d Plätze zum Laufen sind besetzt" % int(main.game_max), 3.0)
+			return
 		p["role"] = "runner"
 	var a = p["actor"]
 	a.visible = p["role"] == "runner"
-	if p["role"] == "guard":
+	if p["role"] != "runner":
 		a.position = Vector3(0, 0, 4.0)                    # the guard has no figure in the world
 	else:
 		_to_start(p)
@@ -847,7 +873,7 @@ func _remove(i: int) -> void:
 # ---- moving and the own view -------------------------------------------------------------------------------------------
 func _steer(p: Dictionary, dt: float) -> void:
 	var a = p["actor"]
-	if p["role"] == "guard":
+	if p["role"] in ["guard", "watch"]:
 		a.ctl_move = Vector2.ZERO
 		return
 	var yaw: float = p["yaw"]
@@ -886,13 +912,27 @@ func _steer(p: Dictionary, dt: float) -> void:
 	cam.rotation = Vector3(float(p["pitch"]), yaw, 0)
 
 
+func runners_n() -> int:
+	var n := 0
+	for p in players:
+		if p != null and p["role"] == "runner":
+			n += 1
+	return n
+
+
+func qual() -> Array:
+	"""3D-3.95: the picture for the phones - from 5 runners on automatically «small» (every runner is an own 3D view on the PC
+	and an own video over the network)"""
+	return QUAL["small"] if runners_n() > 4 else QUAL.get(main.game_quality, QUAL["mid"])
+
+
 func _capture_next() -> void:
 	var t := now()
 	var best: Dictionary = {}
 	var late := 0.0
-	var q: Array = QUAL.get(main.game_quality, QUAL["mid"])
+	var q: Array = qual()
 	for p in players:
-		if p == null or not p["want"] or p["sock"] == null or p["role"] == "guard":
+		if p == null or not p["want"] or p["sock"] == null or p["role"] != "runner":
 			continue
 		var over: float = (t - float(p["last_cap"])) * float(q[2])
 		if over >= 1.0 and over > late:
@@ -926,7 +966,7 @@ func _capture(p: Dictionary, q: Array) -> void:
 func _send_guard_view() -> void:
 	"""the guard sees what MoveEye sees: the picture of the head camera (with grain, light, raindrops)"""
 	for g in players:                                      # first guard: head camera, others: fixed camera
-		if g == null or g["role"] != "guard" or g["sock"] == null or not g["want"]:
+		if g == null or not g["role"] in ["guard", "watch"] or g["sock"] == null or not g["want"]:
 			continue
 		var ci := guard_cam(g)
 		if int(main.frame_no[ci]) == int(g["sent_no"]):
@@ -976,7 +1016,7 @@ func start_round() -> void:
 			on_teams()
 		var n := [0, 0]
 		for p in players:
-			if p != null:
+			if p != null and p["role"] != "watch":
 				n[int(p["team"])] += 1
 		if n[0] == 0 or n[1] == 0:
 			for p in players:
@@ -984,7 +1024,7 @@ func start_round() -> void:
 					_say(p, "Für «Team gegen Team» braucht jedes Team mindestens einen Spieler", 4.0)
 			return
 		for p in players:
-			if p != null:
+			if p != null and p["role"] != "watch":
 				_assign(p, "guard" if int(p["team"]) == guard_team else "runner")
 	elif not main.game_mode in ["guard", "seek"]:          # no player as guard in this mode
 		for p in players:
@@ -1047,6 +1087,10 @@ func start_round() -> void:
 		p["actor"].handicap = int(p.get("hc", 0))
 		if p["role"] == "guard":
 			p["state"] = "play"
+			continue
+		if p["role"] == "watch":                           # 3D-3.95: watches through the head camera, not in the world
+			p["state"] = "lobby"
+			p["actor"].visible = false
 			continue
 		_to_start(p)
 		p["state"] = "play"
@@ -1257,7 +1301,7 @@ func end_round() -> void:
 		if p != null and p["role"] == "runner" and p["state"] != "goal":
 			missed += 1
 	for p in players:
-		if p == null:
+		if p == null or p["role"] == "watch":
 			continue
 		var sc: int
 		var info := ""
@@ -2206,7 +2250,7 @@ func paint() -> void:
 	if open and main.game_mode == "mw" and not mw_decides():
 		lines.append("⚠ «MoveEye entscheidet»: MoveEye ist nicht verbunden (ab Version 2.93.3) – bis dahin entscheidet der Simulator.")
 	if not open:
-		lines.append("Bis zu 4 Spieler schleichen mit dem Handy unentdeckt zum Ziel (%s). Zuerst «Spiel öffnen»." % goal_name)
+		lines.append("Bis zu %d Spieler schleichen mit dem Handy unentdeckt zum Ziel (%s). Zuerst «Spiel öffnen»." % [int(main.game_max), goal_name])
 	else:
 		lines.append({"lobby": "Bereit – «Runde starten» (hier oder auf einem Handy)", "countdown": "Gleich geht es los …",
 				"play": "Runde läuft", "end": "Runde fertig"}.get(round_state, "") + " · Ziel: " + goal_name)
@@ -2402,7 +2446,7 @@ function connect() {
     if (typeof e.data !== "string") { const u = URL.createObjectURL(e.data); $("#v").onload = () => { if (oldUrl) URL.revokeObjectURL(oldUrl); oldUrl = u; askFrame(); }; $("#v").src = u; lastFrame = Date.now(); return; }
     const m = JSON.parse(e.data);
     if (m.t === "hello") { me = m; role = m.role; $("#nm").textContent = m.name; $("#me .dot").style.background = m.color; setRole(); ov(""); askFrame(); }
-    else if (m.t === "full") { ov('<h1>Schon 4 Spieler</h1><p>Das Spiel ist voll. Warte, bis jemand aufhört.</p>'); }
+    else if (m.t === "full") { ov('<h1>Das Spiel ist voll</h1><p>Alle Plätze sind besetzt (auch die zum Zuschauen). Warte, bis jemand aufhört.</p>'); }
     else if (m.t === "st") paint(m);
     else if (m.t === "pic") { $("#picimg").src = "data:image/jpeg;base64," + m.b64; $("#pictxt").textContent = m.txt || ""; $("#pic").hidden = false;
       clearTimeout(window.__picT); window.__picT = setTimeout(() => $("#pic").hidden = true, 3500); }
@@ -2415,8 +2459,9 @@ function connect() {
   };
   ws.onclose = () => { if (left) return; me = null; ov('<h1>Verbindung weg</h1><p>Neuer Versuch …</p>'); setTimeout(connect, 1500); };
 }
-function setRole() { const g = role === "guard"; document.body.classList.toggle("guard", g); $("#rb").style.display = g ? "none" : "flex"; $("#gb").style.display = g ? "flex" : "none";
-  $("#meter").style.visibility = g ? "hidden" : "visible"; $("#goal").style.visibility = g ? "hidden" : "visible"; $("#hint").textContent = g ? "links: Kopf drehen · rechts wischen: fein drehen" : "links: gehen · rechts wischen: umschauen"; }
+function setRole() { const g = role === "guard", w = role === "watch"; document.body.classList.toggle("guard", g || w); $("#rb").style.display = g || w ? "none" : "flex"; $("#gb").style.display = g ? "flex" : "none";
+  $("#meter").style.visibility = g || w ? "hidden" : "visible"; $("#goal").style.visibility = g || w ? "hidden" : "visible";
+  $("#hint").textContent = w ? "👀 Zuschauer: du siehst, was MoveEye sieht – sobald ein Platz frei ist, läufst du mit" : (g ? "links: Kopf drehen · rechts wischen: fein drehen" : "links: gehen · rechts wischen: umschauen"); }
 function askFrame() { if (ws && ws.readyState === 1) ws.send('{"t":"frame"}'); }
 setInterval(() => { if (me && Date.now() - lastFrame > 1500) { lastFrame = Date.now(); askFrame(); } }, 500);
 function fmtT(s) { return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
@@ -2590,7 +2635,8 @@ func spectator_info() -> Dictionary:
 			"lives": int(main.game_lives), "ev": ev_kind, "cps_all": checkpoints.size(), "board": board_list(), "records": records,
 			"week": week_list(), "sneak": sneak_list(), "week_id": week_id, "task": task.get("text", ""), "task_bonus": int(task.get("bonus", 0)),
 			"mwg": {"catches": mwg["catches"], "false": mwg["false"], "wait": int(max(0.0, float(mwg["t"]) - now()))},
-			"pics": gallery.map(func(g): return {"n": g["n"], "c": g["c"]}), "night": night_saved >= 0.0}
+			"pics": gallery.map(func(g): return {"n": g["n"], "c": g["c"]}), "night": night_saved >= 0.0,
+			"url": address() if open else "", "max": int(main.game_max), "runners": runners_n()}   # 3D-3.95: for «Spiele freigeben» in MoveEye
 	if round_state == "countdown":
 		d["cd"] = int(ceil(t_start - t))
 	if round_state == "play":

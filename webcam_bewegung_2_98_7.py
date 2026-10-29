@@ -73,7 +73,7 @@ Features
     The layout (open / closed cards, hidden fields, theme, language, stick / buttons) is saved too - web page and desktop window
   * 1.6.0: WI-FI / HOTSPOT - search networks, connect (falls back to the previous network if it fails), save for automatic
     connection (preferred), forget. NetworkManager (nmcli) or wpa_supplicant. Push message with the new address of the page
-    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_6.py --allow-wifi
+    when the Pi joins a network. Without root once:  sudo python3 webcam_bewegung_2_98_7.py --allow-wifi
   * 1.6.1: Wi-Fi signal history (5 min) with average, weakest value and drop-outs - web page and desktop window;
     "Expand all / Collapse all" now works for every card of the web page
   * 1.6.2: FPS in the header; the whole header can be hidden with one button (per device); phone layout: the stick sits
@@ -649,6 +649,9 @@ Features
     share buttons). 3D simulator 3D-3.32: the mover stick sits next to the control panel instead of under it.
   * 2.95.37: 3D simulator 3D-3.33 (new sky with clouds, stars and moon, four graphics levels, lightning, realistic
     infrared night picture - persons near the camera are now seen at night).
+  * 2.98.7: Spiele freigeben: eine Taste für Spielecke, Spielesammlung und Simulator-Spiel (ein QR-Code); Wecker mit
+    Schlafplatz: nachts wegschauen, beim Wecken zum Bett drehen, Gesten (winken = schlummern, aufstehen = aus); Schlafplatz in
+    jedem Bild abgedeckt
   * 2.98.6: Echt-Abgleich: MoveEye misst das Aussehen seiner echten Bilder (Tag/Nacht) und schickt es dem 3D-Simulator;
     Schnellschalter kompakt, nicht verfügbare ausgeblendet
   * 2.98.5: Simulator-Zentrale: «Zonen in 3D» und «Erkennung in 3D» sind jetzt im Simulator unter «Ansicht»
@@ -855,10 +858,10 @@ AI model (optional, put next to the script):
           tar xzf ssd_mobilenet_v2_coco_2018_03_29.tar.gz
           cp ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb .
           wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt -O ssd_mobilenet_v2_coco.pbtxt
-Run:      python3 webcam_bewegung_2_98_6.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
+Run:      python3 webcam_bewegung_2_98_7.py  [--source auto|usb:0|pi:0|rtsp://...] [--cam 0] [--no-web] [--headless] [--port 5000]
                                             [--web-password SECRET] [--bind 127.0.0.1] [--https [--cert F --key F]]
-Autostart: python3 webcam_bewegung_2_98_6.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
-           sudo python3 webcam_bewegung_2_98_6.py --headless --web-password SECRET --https --install-service
+Autostart: python3 webcam_bewegung_2_98_7.py --headless --web-password SECRET --https --print-service   (shows the systemd unit)
+           sudo python3 webcam_bewegung_2_98_7.py --headless --web-password SECRET --https --install-service
 Web pages: /  live + settings   /cams  all cameras   /recordings  preview   /zones  zone editor
             --web        start the web page right away      --headless   no desktop window (web only)
             --web-password  protect the web page (user name: anything)
@@ -875,7 +878,7 @@ import cv2
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-APP_VERSION = "2.98.6"
+APP_VERSION = "2.98.7"
 
 
 def default_data_dir():
@@ -1180,7 +1183,11 @@ CFG = {
     "sim_autoupd": True, "sim_separate": True, "net_watch": False, "net_known": {}, "presence_macs": [], "presence_auto": False, "presence_gone_min": 10.0,
     "bt_tracker_warn": False, "bt_tracker_min": 30.0, "presence_bt": [], "wifi_repeater": False, "clap_on": False, "clap_sens": 5, "clap_beep": True, "clap_volume": 60, "clap_2": "relay:0",
     "clap_3": "light_white", "clap_4": "none", "clap_disarmed": True, "clap_practice": False, "sneeze_on": False, "sneeze_sens": 5,
-    "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True, "wifi_swap": False, "wifi_guard": False,
+    "sneeze_volume": 70, "sneeze_reply": "tts", "sneeze_texts": "Gesundheit!|Gsundheit!|Zum Wohl!", "sneeze_night": True,
+    # 2.98.7: wake-up alarm with the sleeping place (255_wecker.py)
+    "wake_on": False, "wake_time": "07:00", "wake_days": "mon-fri", "wake_sleep": "22:30", "wake_snooze": 9, "wake_ring_max": 15,
+    "wake_volume": 60, "wake_sound": "chime", "wake_light": True, "wake_gestures": True, "wake_away_pan": -1.0, "wake_away_tilt": -1.0,
+    "wifi_swap": False, "wifi_guard": False,
     "wifi_guard_thr": 20, "wifi_count": False, "wifi_presence": False, "net_noinet": [], "net_inet_notify": True, "sim_prev_source": "", "sim_prev_thermal": "",
     "lens_check": True, "temp_alarm_on": False, "temp_hot": 30, "temp_cold": 3,
     "sens_on": False, "sensors": [], "rf433_on": False, "zigbee_on": False, "ble_on": False, "tag_missing": 5, "eco_pir": True,
@@ -1444,6 +1451,9 @@ MAX_ZONES = 12
 ZONES = []              # [{"id", "name", "mode": "ignore"|"only"|"privacy", "points": [[x, y], ...]}]
 # "privacy" = the area is painted black right after the camera, before anything else sees it: live picture, recordings,
 # snapshots, timelapse, detection and the zone editor never contain it (neighbour's tent, a path, a window).
+# 2.98.7: "sleep" = the sleeping place - a privacy zone that stays on the bed when the head turns: its corners are kept as
+# directions (degrees, "ang") and drawn into every picture for the direction the camera has (and had in the last 2 s, the
+# picture comes a little later than the servo moves). The wake-up alarm turns the camera to it.
 
 
 def _num(v):
@@ -1457,7 +1467,7 @@ def _clean_zone(z, i):
     for p in (z.get("points") or [])[:40] if isinstance(z.get("points"), list) else []:
         if isinstance(p, (list, tuple)) and len(p) == 2 and _num(p[0]) and _num(p[1]):
             pts.append([round(min(1.0, max(0.0, float(p[0]))), 4), round(min(1.0, max(0.0, float(p[1]))), 4)])
-    mode = z.get("mode") if z.get("mode") in ("only", "privacy", "line", "loiter") else "ignore"
+    mode = z.get("mode") if z.get("mode") in ("only", "privacy", "line", "loiter", "sleep") else "ignore"
     if mode == "line":
         if len(pts) < 2:
             return None
@@ -1474,6 +1484,90 @@ def _clean_zone(z, i):
             out["secs"] = int(max(3, min(600, float(z.get("secs") or 20))))
         except (TypeError, ValueError):
             out["secs"] = 20
+    if mode == "sleep":
+        ang = z.get("ang")
+        if isinstance(ang, list) and len(ang) == len(pts) and all(isinstance(a, (list, tuple)) and len(a) == 2 and _num(a[0]) and _num(a[1]) for a in ang):
+            out["ang"] = [[round(float(a[0]), 3), round(float(a[1]), 3)] for a in ang]
+    return out
+
+
+# ---- 2.98.7: the sleeping place stays where the bed is, wherever the camera looks ----
+SLEEP_POS = deque(maxlen=60)          # (time, pan %, tilt %) - the picture comes later than the servo: mask every recent direction
+SLEEP_MARGIN = 3.0                    # degrees around the bed (the servo and the field of view are not exact)
+
+
+def _cam_deg(pan, tilt):
+    return (float(pan) - 50.0) / 50.0 * servo_half("pan"), (float(tilt) - 50.0) / 50.0 * servo_half("tilt")
+
+
+def sleep_to_ang(points, pan=None, tilt=None):
+    """picture points 0..1 (camera at pan / tilt) -> directions in degrees (right +, up +)"""
+    hf, vf = cam_fov()
+    a0, e0 = _cam_deg(CFG["pan"] if pan is None else pan, CFG["tilt"] if tilt is None else tilt)
+    th, tv = math.tan(math.radians(hf / 2.0)), math.tan(math.radians(vf / 2.0))
+    return [[round(a0 + math.degrees(math.atan((x - 0.5) * 2.0 * th)), 3), round(e0 + math.degrees(math.atan((0.5 - y) * 2.0 * tv)), 3)] for x, y in points]
+
+
+def sleep_project(ang, pan=None, tilt=None, margin=0.0):
+    """directions in degrees -> picture points 0..1 for the camera at pan / tilt (may lie outside the picture). The edges are
+    cut into small steps, so the straight lines of the bed stay right also near the border of the picture."""
+    if not ang:
+        return []
+    hf, vf = cam_fov()
+    a0, e0 = _cam_deg(CFG["pan"] if pan is None else pan, CFG["tilt"] if tilt is None else tilt)
+    th, tv = math.tan(math.radians(hf / 2.0)), math.tan(math.radians(vf / 2.0))
+    ca = sum(a[0] for a in ang) / len(ang); ce = sum(a[1] for a in ang) / len(ang)
+    pts = []
+    for a, e in ang:                                     # a little bigger: margin degrees away from the middle
+        d = math.hypot(a - ca, e - ce) or 1.0
+        pts.append((a + (a - ca) / d * margin, e + (e - ce) / d * margin))
+    out = []
+    for i in range(len(pts)):
+        (a1, e1), (a2, e2) = pts[i], pts[(i + 1) % len(pts)]
+        for k in range(8):
+            a = a1 + (a2 - a1) * k / 8.0; e = e1 + (e2 - e1) * k / 8.0
+            da = max(-80.0, min(80.0, a - a0)); de = max(-80.0, min(80.0, e - e0))
+            out.append([0.5 + math.tan(math.radians(da)) / (2.0 * th), 0.5 - math.tan(math.radians(de)) / (2.0 * tv)])
+    return out
+
+
+def sleep_zones():
+    return [z for z in ZONES if z["mode"] == "sleep" and z.get("ang")]
+
+
+def sleep_update(now=None):
+    """remember where the camera looks and move the corners of the sleeping places (for the zone editor and zone_allows)"""
+    now = time.time() if now is None else now
+    pos = (round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2))
+    if not SLEEP_POS or SLEEP_POS[-1][1:] != pos:
+        SLEEP_POS.append((now,) + pos)
+    for z in sleep_zones():
+        if z.get("_at") != pos:
+            z["_at"] = pos
+            pp = sleep_project(z["ang"], *pos)
+            corners = pp[::8]                                # the corners (every 8th point)
+            z["points"] = [[round(min(1.0, max(0.0, x)), 4), round(min(1.0, max(0.0, y)), 4)] for x, y in corners]
+            z["vis"] = any(0.0 <= x <= 1.0 and 0.0 <= y <= 1.0 for x, y in pp)
+
+
+def sleep_polys(w, h, now=None):
+    """pixel polygons of the sleeping places for every direction of the last 2 s"""
+    now = time.time() if now is None else now
+    zs = sleep_zones()
+    if not zs:
+        return []
+    L = list(SLEEP_POS)
+    poss = {(round(float(CFG["pan"]), 2), round(float(CFG["tilt"]), 2))}
+    for i, p in enumerate(L):                            # every direction the camera had during the last 2 s
+        end = L[i + 1][0] if i + 1 < len(L) else now
+        if now - end < 2.0:
+            poss.add(p[1:])
+    out = []
+    for z in zs:
+        for pos in poss:
+            pp = sleep_project(z["ang"], pos[0], pos[1], SLEEP_MARGIN)
+            if pp:
+                out.append(np.array([(int(round(x * w)), int(round(y * h))) for x, y in pp], np.int32))
     return out
 
 
@@ -1555,14 +1649,20 @@ def zone_event(kind, z, frame):
 
 
 def apply_privacy(frame):
-    """Paint the privacy zones black (in place). Returns the frame."""
+    """Paint the privacy zones and the sleeping places black (in place). Returns the frame."""
     zs = [z for z in ZONES if z["mode"] == "privacy"]
-    if not zs or frame is None:
+    sl = any(z["mode"] == "sleep" for z in ZONES)
+    if (not zs and not sl) or frame is None:
         return frame
     h, w = frame.shape[:2]
     if not frame.flags.writeable:
         frame = frame.copy()
-    cv2.fillPoly(frame, [np.array([(int(round(x * w)), int(round(y * h))) for x, y in z["points"]], np.int32) for z in zs], (0, 0, 0))
+    polys = [np.array([(int(round(x * w)), int(round(y * h))) for x, y in z["points"]], np.int32) for z in zs]
+    if sl:
+        sleep_update()
+        polys += sleep_polys(w, h)
+    if polys:
+        cv2.fillPoly(frame, polys, (0, 0, 0))
     return frame
 
 
@@ -1581,7 +1681,7 @@ def zone_allows(nx, ny):
     if not zs:
         return True
     for z in zs:
-        if z["mode"] in ("ignore", "privacy") and point_in_poly(nx, ny, z["points"]):
+        if z["mode"] in ("ignore", "privacy", "sleep") and point_in_poly(nx, ny, z["points"]):
             return False
     only = [z for z in zs if z["mode"] == "only"]
     return (not only) or any(point_in_poly(nx, ny, z["points"]) for z in only)
@@ -1598,9 +1698,16 @@ def zones_set(lst):
     if not isinstance(lst, list):
         return False, "invalid zones"
     out = []
+    old = {z["id"]: z for z in ZONES if z["mode"] == "sleep"}
     for z in lst[:MAX_ZONES]:
         c = _clean_zone(z, len(out))
         if c:
+            if c["mode"] == "sleep":                    # 2.98.7: corners as directions from where the camera looks now
+                o = old.get(c["id"])
+                same = o and o.get("ang") and len(o.get("points") or []) == len(c["points"]) and all(
+                    abs(a[0] - b[0]) < 0.003 and abs(a[1] - b[1]) < 0.003 for a, b in zip(o["points"], c["points"]))
+                c["ang"] = o["ang"] if same else sleep_to_ang(c["points"])
+                c.pop("_at", None)
             out.append(c)
     with LOCK:
         ZONES[:] = out
@@ -1739,6 +1846,10 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Clap switch", "clap_3", "Clap 3×", "enum", "clap_acts"),
     ("Clap switch", "clap_4", "Clap 4×", "enum", "clap_acts"),
     ("Bless you", "sneeze_reply", "Answer", "enum", "sneeze_replies"),
+    ("Wake-up alarm", "wake_time", "Wake-up time (HH:MM)", "str", None),
+    ("Wake-up alarm", "wake_days", "Days", "enum", "wake_days"),
+    ("Wake-up alarm", "wake_sleep", "Camera looks away from (HH:MM, empty = not)", "str", None),
+    ("Wake-up alarm", "wake_sound", "Sound", "enum", "wake_sounds"),
     ("Bless you", "sneeze_texts", "Words (several: separate with |)", "str", None),
     ("Loudspeaker", "siren_sound", "Sound", "enum", "sounds"),
     ("Lights", "light_white_out", "White light: connected to", "enum", "light_white_out"),
@@ -1833,6 +1944,12 @@ def text_choice_pairs(key):
         return clap_act_pairs()
     if extra == "sneeze_replies":
         return sneeze_reply_pairs()
+    if extra == "wake_days":
+        return [("mon-fri", tr("Monday to Friday")), ("all", tr("every day")), ("sat-sun", tr("Saturday and Sunday")),
+                ("sun-thu", tr("Sunday to Thursday")), ("once", tr("only once (next time)"))]
+    if extra == "wake_sounds":
+        return [("chime", tr("Soft melody")), ("birds", tr("Birdsong")), ("beeps", tr("Fast beeps")), ("marmot", tr("Marmot whistle"))] + \
+               [("file:" + f, "♪ " + f) for f in own_sounds()]
     if extra == "siren_on":
         return [("off", tr("off")), ("person", tr("person alarm")), ("alarm", tr("person, thermal and noise alarm")),
                 ("all", tr("every alarm, also the pre-alarm (movement)"))]
@@ -1953,6 +2070,8 @@ def set_text(key, value):
                 return False, "invalid URL (http:// or https:// expected)"
             if key in ("notify_url", "public_url") and not _http_ok(v):
                 return False, "invalid URL (http:// or https:// expected)"
+            if key in ("wake_time", "wake_sleep") and not _HM_RE.match(v):
+                return False, "a time like 07:00"
             if key == "msg_keyword_prefix" and not re.fullmatch(r"[A-Za-z0-9]{1,12}", v):
                 return False, "1 to 12 letters or digits"
             if key == "email_to" and not _EMAIL_RE.fullmatch(v):
@@ -2270,6 +2389,7 @@ class Scheduler:
         while True:
             try:
                 schedule_tick(); arm_tick()
+                wake_tick()                             # 2.98.7: wake-up alarm
             except Exception as e:                      # never let the scheduler thread die
                 log_event("sys", f"Scheduler error: {e}")
             time.sleep(1.0)
@@ -7465,13 +7585,13 @@ CAMPING_SET = {"detection_on": True, "record": True, "snapshot_on_person": True,
 # ---- simple settings: what most people need; Expert shows everything ----
 SIMPLE_SECTIONS = {"Camera / Servos", "Patrol", "AI detection", "Detection", "Recording", "Low light", "Setup", "Notifications",
                    "Camping / protection", "Thermal camera", "Microphone", "Loudspeaker", "Lights", "Night report", "Battery",
-                   "Power saving", "Messages", "Updates", "Theft protection", "Backup", "Deterrence"}
+                   "Power saving", "Messages", "Updates", "Theft protection", "Backup", "Deterrence", "Wake-up alarm"}
 # 2.98.0: extra hardware and gimmicks only in «Simple» when they are in use (otherwise Expert)
 SIMPLE_IN_USE = {"Extra sensors": lambda: bool(CFG.get("sens_on") or CFG.get("sensors")), "Storm warning": lambda: bool(CFG.get("sensors")),
                  "GPS module": lambda: bool(CFG.get("gpsmod_on")), "Solar panel": lambda: bool(CFG.get("solar_on")),
                  "Clap switch": lambda: bool(CFG.get("clap_on")), "Bless you": lambda: bool(CFG.get("sneeze_on")),
                  "Mover": lambda: bool(MOVER.get("avail") or MOVER.get("hw") or MOVER.get("sim"))}
-SIMPLE_KEYS = {"track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
+SIMPLE_KEYS = {"wake_on", "wake_time", "wake_days", "wake_sleep", "wake_snooze", "wake_volume", "wake_sound", "wake_light", "wake_gestures", "track_person", "track_motion", "patrol", "ai_enabled", "detection_on", "sensitivity", "record", "snapshot_on_person", "record_max_gb",
                "share_gps", "lowlight_auto", "nightvision", "nightvision_auto", "gps_tag", "env_on", "latitude", "longitude",
                "notify_on", "notify_prealarm", "webpush_on", "notify_type", "notify_url", "telegram_token", "telegram_chat",
                "pushover_on", "pushover_user", "pushover_token", "pushover_emergency", "msg_keyword_on", "email_on", "email_to",
@@ -7655,7 +7775,7 @@ def _mode_leave(m):
         toolmode_set(0, "gamer mode")
     MODE_RT["rest"] = False
     if MODE_RT["party"] and party_on():
-        party_close()
+        games_all_close("mode")
     MODE_RT["party"] = False
     if MODE_RT["gov"]:
         _governor(MODE_RT["gov"])
@@ -7711,7 +7831,7 @@ def mode_set(m, who="web"):
         # 2.95.49: the Wi-Fi is NOT switched here - the own Wi-Fi would cut the phones off the network they are in (the
         # page froze). The game corner works in the network MoveEye is in; the own Wi-Fi is a switch of its own.
         if not party_on():
-            party_open(float(CFG["mode_fire_hours"]) if m == "fire" else 8.0); MODE_RT["party"] = True
+            games_all_open(float(CFG["mode_fire_hours"]) if m == "fire" else 8.0, "mode"); MODE_RT["party"] = True   # 2.98.7: all games
         if m == "fire":
             g = _governor("powersave")
             if g:
@@ -13211,7 +13331,7 @@ _TL_RENDER_LOCK = threading.Lock()
 
 def servo_hold():
     """Something other than tracking is holding the servos (hand control, timelapse position)."""
-    return manual_active() or TL_HOLD["on"]
+    return manual_active() or TL_HOLD["on"] or wake_hold()
 
 
 def tl_dir():
@@ -13296,7 +13416,7 @@ class Timelapse:
                 self._back(); TL_HOLD["on"] = False; self.state = "idle"
             STATE["timelapse"] = "off"
             return
-        busy = alarm or manual_active()
+        busy = alarm or manual_active() or wake_hold()
         if self.state == "idle":
             due = self.pending_now or now - self.last_shot >= CFG["timelapse_interval"] * 60.0
             if not due:
@@ -14782,6 +14902,37 @@ def sound_samples(kind, seconds, rate=OUT_RATE):
             if i1 > i0:
                 y[i0:i1] = (np.sin(2 * np.pi * f * (t[i0:i1] - st_)) * _smooth(np.ones(i1 - i0), rate) * 0.8).astype(np.float32)
         return y
+    if kind in ("chime", "birds"):                       # 2.98.7: wake-up sounds - a soft bell melody / bird song
+        y = np.zeros(n, np.float32)
+        rng_ = np.random.default_rng(3)
+        if kind == "chime":
+            notes = [523.25, 659.25, 783.99, 1046.5, 783.99, 659.25]
+            pos = 0.0
+            while pos < seconds:
+                for k, f in enumerate(notes):
+                    st_ = pos + k * 0.32
+                    i0 = int(st_ * rate)
+                    if i0 >= n:
+                        break
+                    L = min(n - i0, int(1.6 * rate)); tt = np.arange(L) / rate
+                    env = np.exp(-tt * 2.6) * np.minimum(1.0, tt / 0.004)
+                    y[i0:i0 + L] += (np.sin(2 * np.pi * f * tt) + 0.3 * np.sin(2 * np.pi * 2.0 * f * tt) + 0.12 * np.sin(2 * np.pi * 3.01 * f * tt)) * env * 0.5
+                pos += 3.2
+        else:
+            pos = 0.2
+            while pos < seconds:
+                i0 = int(pos * rate)
+                if i0 >= n:
+                    break
+                for k in range(int(rng_.integers(2, 6))):          # a short phrase of chirps
+                    L = int(rng_.uniform(0.06, 0.14) * rate); j0 = i0 + k * int(0.16 * rate)
+                    if j0 + L >= n:
+                        break
+                    tt = np.arange(L) / rate; f0 = rng_.uniform(2800, 4200); f1 = f0 * rng_.uniform(0.7, 1.35)
+                    ph = 2 * np.pi * np.cumsum(f0 + (f1 - f0) * tt / tt[-1]) / rate
+                    y[j0:j0 + L] += np.sin(ph) * np.sin(np.pi * tt / tt[-1]) * 0.7
+                pos += float(rng_.uniform(0.8, 2.2))
+        return (y / max(1e-6, float(np.max(np.abs(y))))).astype(np.float32)
     if kind == "marmot":                                 # two short whistles
         y = np.zeros(n, np.float32)
         for st in (0.05, 0.55):
@@ -14848,7 +14999,7 @@ def sound_play(kind=None, seconds=None, volume=None, reason="test"):
     if not dev.startswith("bt:") and not shutil.which("aplay"):
         return False, "aplay is missing (sudo apt install alsa-utils)"
     kind = kind or CFG["siren_sound"]
-    if kind not in SOUND_KINDS + ("marmot", "tts", "beep1", "beep2", "beep3", "beep4", "beeplow") and not (kind.startswith("file:") and kind[5:] in own_sounds()):
+    if kind not in SOUND_KINDS + ("marmot", "chime", "birds", "tts", "beep1", "beep2", "beep3", "beep4", "beeplow") and not (kind.startswith("file:") and kind[5:] in own_sounds()):
         kind = "siren"
     seconds = max(0.5, min(120.0, float(seconds if seconds is not None else CFG["siren_seconds"])))
     vol = max(0.0, min(100.0, float(volume if volume is not None else CFG["siren_volume"]))) / 100.0
@@ -15002,6 +15153,381 @@ def siren_alarm(kind):
                                          "prealarm": "pre-alarm", "tamper": "sabotage alarm", "sensor": "sensor alarm"}.get(kind, kind))
 
 
+# ----------------------------------------------------------------------------
+# Idea of Daniel's daughter: MoveEye stands somewhere in the room. While you sleep the camera looks away (a set direction,
+# e.g. the door). When the alarm rings it turns to the sleeping place and understands two gestures:
+#   wave (hand to and fro)  -> snooze (again after N minutes)
+#   sit up / get up         -> alarm off
+# The sleeping place is a zone of the kind "sleep" (zone editor): it is covered in black in every picture, in every direction
+# of the camera (030: sleep_polys). Only the gesture detection here gets the picture of the bed - small, grey, in memory,
+# only while the alarm rings, never stored or sent.
+# ----------------------------------------------------------------------------
+WAKE = {"state": "off", "due": 0.0, "until": 0.0, "t0": 0.0, "snoozes": 0, "done": 0.0, "msg": "", "gest": "", "gest_t": 0.0,
+        "test": False, "light_prev": None, "light_t": 0.0, "snd_t": 0.0, "level": 0.0, "last": "", "pos_t": 0.0}
+WAKE_LOCK = threading.Lock()
+WAKE_DAYS = {"all": (0, 1, 2, 3, 4, 5, 6), "mon-fri": (0, 1, 2, 3, 4), "sat-sun": (5, 6), "sun-thu": (6, 0, 1, 2, 3), "once": (0, 1, 2, 3, 4, 5, 6)}
+_HM_RE = re.compile(r"^([01]?\d|2[0-3]):([0-5]\d)$")
+
+
+def _hm(s):
+    m = _HM_RE.match(str(s or "").strip())
+    return (int(m.group(1)), int(m.group(2))) if m else None
+
+
+def wake_next(now=None):
+    """the next moment the alarm rings (timestamp) or 0"""
+    if not CFG.get("wake_on"):
+        return 0.0
+    hm = _hm(CFG.get("wake_time"))
+    if hm is None:
+        return 0.0
+    now = time.time() if now is None else now
+    days = WAKE_DAYS.get(CFG.get("wake_days"), WAKE_DAYS["all"])
+    d0 = datetime.fromtimestamp(now)
+    for k in range(0, 9):
+        d = (d0 + timedelta(days=k)).replace(hour=hm[0], minute=hm[1], second=0, microsecond=0)
+        if d.weekday() in days and d.timestamp() > now:
+            return d.timestamp()
+    return 0.0
+
+
+def wake_sleep_from(due):
+    """when the night before the alarm `due` starts (the camera looks away from then on) - 0 = not set"""
+    hm = _hm(CFG.get("wake_sleep"))
+    if hm is None or not due:
+        return 0.0
+    d = datetime.fromtimestamp(due)
+    s = d.replace(hour=hm[0], minute=hm[1], second=0, microsecond=0)
+    if s >= d:
+        s -= timedelta(days=1)
+    return s.timestamp()
+
+
+def bed_zone():
+    zs = sleep_zones()
+    return zs[0] if zs else None
+
+
+def _pct(deg, axis):
+    return max(0.0, min(100.0, 50.0 + deg / servo_half(axis) * 50.0))
+
+
+def bed_view():
+    """(pan %, tilt %) that looks at the middle of the sleeping place, or None"""
+    z = bed_zone()
+    if not z:
+        return None
+    a = sum(p[0] for p in z["ang"]) / len(z["ang"]); e = sum(p[1] for p in z["ang"]) / len(z["ang"])
+    return round(_pct(a, "pan"), 2), round(_pct(e, "tilt"), 2)
+
+
+def away_view():
+    p, t = float(CFG.get("wake_away_pan", -1)), float(CFG.get("wake_away_tilt", -1))
+    return (p, t) if 0 <= p <= 100 and 0 <= t <= 100 else None
+
+
+def wake_hold():
+    """the wake-up alarm holds the head (sleeping: looks away, ringing: looks at the bed) - tracking, patrol and the
+    timelapse leave it alone"""
+    return WAKE["state"] in ("sleep", "ring", "snooze")
+
+
+def _look(pos):
+    if pos and not manual_active() and (abs(CFG["pan"] - pos[0]) > 0.3 or abs(CFG["tilt"] - pos[1]) > 0.3):
+        CFG["pan"], CFG["tilt"] = float(pos[0]), float(pos[1])
+        WAKE["pos_t"] = time.time()
+
+
+def _light(on):
+    if not CFG.get("wake_light"):
+        return
+    try:
+        if on:
+            if WAKE["light_prev"] is None:
+                WAKE["light_prev"] = CFG.get("light_white") or "auto"
+            light_set("white", "on")
+        elif WAKE["light_prev"] is not None:
+            light_set("white", WAKE["light_prev"])
+            WAKE["light_prev"] = None
+        WAKE["light_t"] = time.time()
+    except Exception as e:
+        log_event("sys", f"Wake-up light: {e}")
+
+
+def _ring_sound(now):
+    """the melody again every 20 s, a little louder each time (from 40 % up to the set volume in about 2 minutes)"""
+    if now - WAKE["snd_t"] < 20.0:
+        return
+    WAKE["snd_t"] = now
+    full = float(CFG.get("wake_volume", 60))
+    WAKE["level"] = min(full, max(full * 0.4, WAKE["level"] + full * 0.1)) if WAKE["level"] else full * 0.4
+    kind = CFG.get("wake_sound") or "chime"
+    ok, err = sound_play(kind, 19.0, WAKE["level"], reason="wake-up alarm")
+    if not ok:
+        WAKE["msg"] = err
+
+
+def wake_ring(test=False, who="time"):
+    with WAKE_LOCK:
+        WAKE.update(state="ring", t0=time.time(), test=bool(test), snd_t=0.0, level=0.0, gest="", until=0.0)
+    WAKEG.reset()
+    MANUAL["until"] = 0.0                                  # the alarm wins over a hand-moved camera
+    _look(bed_view())
+    _light(True)
+    log_event("sys", "Wake-up alarm rings" + (" (test)" if test else "") + f" ({who})")
+
+
+def wake_snooze(who="web"):
+    if WAKE["state"] != "ring":
+        return False, "the alarm does not ring"
+    sound_stop()
+    _light(False)
+    mins = float(CFG.get("wake_snooze", 9))
+    with WAKE_LOCK:
+        WAKE.update(state="snooze", until=time.time() + mins * 60.0, snoozes=WAKE["snoozes"] + 1, last=f"snooze ({who})")
+    MANUAL["until"] = 0.0
+    _look(away_view())
+    log_event("sys", f"Wake-up alarm: snooze {mins:g} min ({who})")
+    return True, ""
+
+
+def wake_stop(who="web"):
+    if WAKE["state"] not in ("ring", "snooze", "sleep"):
+        return False, "the alarm is not on"
+    was = WAKE["state"]
+    sound_stop()
+    _light(False)
+    with WAKE_LOCK:
+        if was in ("ring", "snooze"):
+            WAKE["done"] = WAKE["due"] or time.time()
+        WAKE.update(state="off", until=0.0, test=False, last=f"off ({who})", snoozes=0)
+    if was in ("ring", "snooze") and CFG.get("wake_days") == "once" and not WAKE.get("test"):
+        CFG["wake_on"] = False; save_settings()
+    log_event("sys", f"Wake-up alarm off ({who})")
+    return True, ""
+
+
+def wake_sleep_now(who="web"):
+    """«Gute Nacht»: look away now (until the alarm)"""
+    if not WAKE["due"]:
+        return False, "no alarm set"
+    WAKE["state"] = "sleep"; WAKE["sleep_now"] = WAKE["due"]
+    _look(away_view())
+    log_event("sys", f"Wake-up alarm: good night - the camera looks away ({who})")
+    return True, ""
+
+
+def wake_tick():
+    """once a second (Scheduler thread)"""
+    now = time.time()
+    st = WAKE["state"]
+    if st in ("off", "sleep"):
+        due = wake_next(now - 90.0)                          # an alarm of the last 90 s still rings (a busy second is not lost)
+        if due and due <= WAKE["done"] + 1.0:
+            due = wake_next(max(now, WAKE["done"] + 1.0))
+        WAKE["due"] = due
+        if due and now >= due and due > WAKE["done"]:
+            wake_ring(False, "time")
+            return
+        sf = wake_sleep_from(due)
+        night = bool(due) and ((sf and sf <= now < due) or WAKE.get("sleep_now") == due)
+        if night and away_view() is not None:
+            if st != "sleep":
+                log_event("sys", "Wake-up alarm: night - the camera looks away from the sleeping place")
+            WAKE["state"] = "sleep"
+            _look(away_view())
+        elif st == "sleep":
+            WAKE["state"] = "off"
+        return
+    if st == "snooze":
+        _look(away_view())
+        if now >= WAKE["until"]:
+            wake_ring(WAKE["test"], "snooze over")
+        return
+    if st == "ring":
+        _look(bed_view())
+        _ring_sound(now)
+        g = WAKE.get("gest") if now - WAKE.get("gest_t", 0.0) < 3.0 else ""
+        if g == "wave":
+            WAKE["gest"] = ""; wake_snooze("gesture: waving")
+        elif g == "up":
+            WAKE["gest"] = ""; wake_stop("gesture: got up")
+        elif now - WAKE["t0"] > float(CFG.get("wake_ring_max", 15)) * 60.0:
+            wake_stop("nobody reacted")
+            try:
+                w_ = WATCH_REF.get("w")
+                if w_ is not None:
+                    w_.notifier.alert("{name}: " + tr("Wake-up alarm"), tr("The alarm rang without a reaction and stopped by itself."), None)
+            except Exception:
+                pass
+
+
+def wake_state(lang=None):
+    z = bed_zone()
+    return {"on": bool(CFG.get("wake_on")), "state": WAKE["state"], "due": int(WAKE["due"] or wake_next()), "until": int(WAKE["until"]),
+            "snoozes": WAKE["snoozes"], "bed": bool(z), "bed_name": (z or {}).get("name", ""), "away": away_view() is not None,
+            "gest": WAKE.get("gest_show", ""), "last": WAKE["last"], "msg": WAKE["msg"], "spk": bool(out_selected()),
+            "sleep_from": int(wake_sleep_from(WAKE["due"] or wake_next())), "gestures": bool(CFG.get("wake_gestures", True))}
+
+
+class WakeGestures:
+    """2.98.7: two gestures in the picture of the sleeping place while the alarm rings - without any AI model, also in the
+    dark (infrared): the difference between two pictures shows what moves.
+      waving  = a small moving area whose middle goes to and fro (3 turns in 3 s; at a low frame rate: moving most of
+                the time over 2 s with a clear sideways range)
+      getting up = a big part of the bed and of the area above it moves for more than ~1.5 s
+    The first 2 s after the head turned or the light went on are ignored (everything changes then)."""
+    W = 192
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.prev = None; self.hist = deque(); self.t0 = time.time(); self.roi = None
+
+    def _roi(self, w, h):
+        z = bed_zone()
+        if not z:
+            return None
+        pp = sleep_project(z["ang"], CFG["pan"], CFG["tilt"])
+        if not pp:
+            return None
+        xs = [p[0] for p in pp]; ys = [p[1] for p in pp]
+        x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
+        bw, bh = x1 - x0, y1 - y0
+        x0 -= bw * 0.15; x1 += bw * 0.15; y0 -= bh * 0.8          # above the bed: sitting up, a raised hand
+        x0, x1 = max(0.0, x0), min(1.0, x1); y0, y1 = max(0.0, y0), min(1.0, y1)
+        if x1 - x0 < 0.05 or y1 - y0 < 0.05:
+            return None
+        return int(x0 * w), int(y0 * h), int(x1 * w), int(y1 * h)
+
+    def feed(self, frame, now=None):
+        """frame: BGR picture before the privacy mask. Returns "wave", "up" or ""."""
+        if not CFG.get("wake_gestures", True) or frame is None:
+            return ""
+        now = time.time() if now is None else now
+        H, W = frame.shape[:2]
+        h = int(H * self.W / W)
+        g = cv2.cvtColor(cv2.resize(frame, (self.W, h), interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2GRAY)
+        roi = self._roi(self.W, h)
+        if roi is None:
+            self.prev = None
+            return ""
+        x0, y0, x1, y1 = roi
+        r = cv2.GaussianBlur(g[y0:y1, x0:x1], (5, 5), 0).astype(np.float32)
+        prev, self.prev = self.prev, r
+        quiet = max(WAKE.get("pos_t", 0.0), WAKE.get("light_t", 0.0), float(SERVO_MOVE.get("t", 0.0)), self.t0)
+        if prev is None or prev.shape != r.shape or now - quiet < 2.0:
+            self.hist.clear()
+            return ""
+        thr = max(16.0, 0.18 * float(prev.mean()))            # dark (infrared) pictures: a lower threshold
+        m = (cv2.absdiff(r, prev) > thr).astype(np.uint8)
+        m = cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+        frac = float(m.mean())
+        if frac > 0.85:                                        # everything changed (light, a jolt): not a gesture
+            self.hist.clear()
+            return ""
+        cx = None
+        if frac > 0.002:
+            ys_, xs_ = np.nonzero(m)
+            cx = float(xs_.mean()) / max(1, m.shape[1])
+        self.hist.append((now, cx, frac))
+        while self.hist and now - self.hist[0][0] > 3.0:
+            self.hist.popleft()
+        return self._judge(now)
+
+    def _judge(self, now):
+        H_ = list(self.hist)
+        # getting up: a big moving area for 1.5 s (of the last 2.5 s)
+        big = [(t, f) for t, _c, f in H_ if now - t <= 2.5 and f > 0.16]
+        if len(big) >= 3 and big[-1][0] - big[0][0] >= 1.2:
+            return "up"
+        # waving: a small area going to and fro
+        pts = [(t, c) for t, c, f in H_ if c is not None and 0.002 < f < 0.16]
+        if len(pts) >= 4:
+            turns, d, ref = 0, 0, pts[0][1]
+            for _t, c in pts[1:]:
+                if abs(c - ref) >= 0.04:
+                    s = 1 if c > ref else -1
+                    if d and s != d:
+                        turns += 1
+                    d, ref = s, c
+            if turns >= 3:
+                return "wave"
+            span = pts[-1][0] - pts[0][0]
+            moving = len(pts) / max(1, len([1 for t, _c, _f in H_ if now - t <= 3.0]))
+            rng = max(c for _t, c in pts) - min(c for _t, c in pts)
+            if turns >= 1 and span >= 1.8 and moving >= 0.7 and rng >= 0.12 and len(pts) <= 12:
+                return "wave"                                   # few pictures per second: the turns fall between pictures
+        return ""
+
+
+WAKEG = WakeGestures()
+
+
+def wake_feed(frame):
+    """from the main loop, before the privacy mask - only while the alarm rings"""
+    if WAKE["state"] != "ring":
+        return
+    try:
+        g = WAKEG.feed(frame)
+    except Exception as e:
+        log_event("sys", f"Wake-up gestures: {e}")
+        return
+    if g:
+        WAKE["gest"] = g; WAKE["gest_t"] = time.time()
+        WAKE["gest_show"] = g
+        WAKEG.hist.clear()
+
+
+def wake_text(lang=None):
+    """one status line (window and web page)"""
+    lang = norm_lang(lang or CFG["lang"])
+    st = WAKE["state"]
+    hm = lambda ts: datetime.fromtimestamp(ts).strftime("%H:%M")
+    if st == "ring":
+        return "🔔 " + tr("rings", lang) + (" – " + tr("wave = snooze, sit up = off", lang) if CFG.get("wake_gestures", True) else "")
+    if st == "snooze":
+        return "😴 " + tr("snoozing until", lang) + " " + hm(WAKE["until"])
+    if st == "sleep":
+        return "🌙 " + tr("night: the camera looks away until", lang) + " " + hm(WAKE["due"])
+    if not CFG.get("wake_on"):
+        return tr("off", lang)
+    due = WAKE["due"] or wake_next()
+    days = {"de": "Mo Di Mi Do Fr Sa So", "rm": "Gli Ma Me Gie Ve So Du", "fr": "lu ma me je ve sa di", "it": "lu ma me gi ve sa do"}.get(lang, "Mon Tue Wed Thu Fri Sat Sun").split()
+    txt = (tr("next", lang) + ": " + days[datetime.fromtimestamp(due).weekday()] + " " + hm(due)) if due else tr("no time set", lang)
+    warn = []
+    if not bed_zone():
+        warn.append(tr("no sleeping place yet (Zones → + Sleeping place)", lang))
+    if away_view() is None and _hm(CFG.get("wake_sleep")):
+        warn.append(tr("no direction for the night yet (button «Look here at night»)", lang))
+    if not out_selected():
+        warn.append(tr("no loudspeaker selected", lang))
+    return txt + ("".join(" · ⚠ " + w for w in warn))
+
+
+def wake_away_here(who="web"):
+    CFG["wake_away_pan"] = round(float(CFG["pan"]), 2); CFG["wake_away_tilt"] = round(float(CFG["tilt"]), 2)
+    save_settings()
+    log_event("sys", f"Wake-up alarm: direction for the night = pan {CFG['pan']:.0f} %, tilt {CFG['tilt']:.0f} % ({who})")
+    return True, ""
+
+
+def wake_action(a, who="web"):
+    """web / window / MQTT: test | snooze | stop | away_here | sleep_now"""
+    if a == "test":
+        if not bed_zone():
+            return False, "no sleeping place yet (Zones → + Sleeping place)"
+        wake_ring(True, who); return True, ""
+    if a == "snooze":
+        return wake_snooze(who)
+    if a == "stop":
+        return wake_stop(who)
+    if a == "away_here":
+        return wake_away_here(who)
+    if a == "sleep_now":
+        return wake_sleep_now(who)
+    return False, "unknown action"
 # ----------------------------------------------------------------------------
 # Several devices: one MoveEye shows the others (Cameras page): picture, armed / alarm, battery, last event; arm or
 #   disarm one or all. The other devices are reached over the network (home network or Tailscale) with their own password.
@@ -17359,8 +17885,8 @@ def tools_cfg(key, value, mac=None):
 # ---- 3D simulator for Windows: the Pi offers it at /sim/simulator3d.zip. It is too big to be part of this program file, so the
 # Pi fetches it once from the project storage (next to the updates) and checks it with the checksum below (this program file is
 # signed, so the checksum can be trusted). ----
-SIM3D = {"version": "3D-3.94", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31223840,
-         "sha256": "d1caea566831bb78219c356496240b64db9085d5b83d2bcde025808d7aea5812"}
+SIM3D = {"version": "3D-3.95", "file": "simulator3d/MotionWatch3D_Simulator.zip", "size": 31225872,
+         "sha256": "e3a0d553e0ca12a686be5834e23aa3b4463f7a39b00b300fa2f4cd46afdc8298"}
 SIM3D_DL = {"running": False, "got": 0, "msg": ""}
 # The Python world simulator (second simulator, own folder simulator_python/ in the project): fetched and checked the same way.
 SIMPY = {"version": "PY-1.2", "file": "simulator_python/MotionWatchSimulator_PY-1.2.zip", "size": 138432,
@@ -17499,8 +18025,8 @@ def sim3d_fetch(pkg=None, dl=None):
 
 # ---- the 3D simulator right on the Pi (2.95.51): the build for ARM64, shown on the HDMI (television). Fetched and checked like
 # the Windows package, unpacked into the data folder and started on the desktop of the Pi; MoveEye connects to it. ----
-SIM3DPI = {"version": "3D-3.94", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24346663,
-           "sha256": "8215bf4e047813836c730972ff31dbeb8037648b8b04dbfa78db7cce583fdf67", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
+SIM3DPI = {"version": "3D-3.95", "file": "simulator3d/MotionWatch3D_Pi.zip", "size": 24348316,
+           "sha256": "7bcae03ef706214ab073c791692ec772a560d0abfd794e20d6c05f55c4c0f133", "stem": "MotionWatch3D_Pi", "label": "MW Sim · 3D (Pi)"}
 SIM3DPI_DL = {"running": False, "got": 0, "msg": ""}
 SIMPI = {"proc": None, "msg": "", "want": False}
 
@@ -19064,6 +19590,44 @@ def party_open(hours=6.0):
     party_bump()
 
 
+GAMES_ALL = {"sim": False}       # 2.98.7: «Spiele freigeben» opened the game of the 3D simulator too (closed with it)
+
+
+def games_all_open(hours=6.0, who="web"):
+    """2.98.7: ONE switch for all games - the game corner (quiz, werewolf ...), the game collection (installed if it is
+    missing) and the game of the 3D simulator «Team gegen MoveEye» (when the simulation runs). The players scan one QR code,
+    type their name and are in; the page of the game corner shows the collection and the simulator game too."""
+    party_open(hours)
+    if not games_list() and not GAMES_DL.get("running"):
+        threading.Thread(target=games_install, daemon=True, name="games-dl").start()
+    if CFG.get("sim_on") and SIM.get("ok"):
+        def _sim():
+            try:
+                r = sim_control({"action": "set", "id": "game_open", "value": True})
+                GAMES_ALL["sim"] = bool(isinstance(r, dict) and r.get("ok", True))
+                SIMGAME["t"] = 0.0
+            except Exception:
+                GAMES_ALL["sim"] = False
+        threading.Thread(target=_sim, daemon=True, name="games-sim").start()
+    log_event("sys", f"All games open for {hours:g} h ({who})")
+
+
+def games_all_close(who="web"):
+    party_close()
+    if GAMES_ALL["sim"] and CFG.get("sim_on"):
+        try:
+            threading.Thread(target=lambda: sim_control({"action": "set", "id": "game_open", "value": False}), daemon=True).start()
+        except Exception:
+            pass
+    GAMES_ALL["sim"] = False
+
+
+def games_all_state():
+    g = sim_game() if CFG.get("sim_on") else None
+    return {"on": party_on(), "left": int(max(0, PARTY["until"] - time.time())) if party_on() else 0, "players": len(PARTY["players"]),
+            "sim": bool(g and g.get("url")), "sim_n": int((g or {}).get("runners") or 0), "coll": len(games_list())}
+
+
 def party_close():
     if toolmode_on() and TOOLMODE.get("by") == "game corner":
         toolmode_set(0, "game corner")              # the rest mode ends with the game corner
@@ -19123,6 +19687,9 @@ def _party_view(pid):
     v = {"seq": PARTY["seq"], "now": now, "game": PARTY["game"], "players": pls, "me": pid if me else "", "host": PARTY["host"] == pid,
          "hostname": _pname(PARTY["host"]) if PARTY["host"] else "", "until": int(PARTY["until"] - now), "tools": PARTY["tools"],
          "games": games_list(), "nt": NETTEST["round"] if nettest_open() else 0}
+    sg = sim_game() if CFG.get("sim_on") else None
+    if sg and sg.get("url"):                               # 2.98.7: the game of the 3D simulator, open for the phones
+        v["sim"] = {"url": sg["url"], "max": sg.get("max") or 4, "runners": sg.get("runners") or 0, "round": sg.get("round") or ""}
     G = PARTY["g"]; gm = PARTY["game"]
     if gm == "quiz":
         q = QUIZ[G.get("qi", 0) % len(QUIZ)]
@@ -20181,6 +20748,8 @@ a.gl img{width:44px;height:44px;border-radius:10px;object-fit:cover;background:#
     <div class="row"><button class="sec" data-s="30">30 s</button><button class="sec" data-s="60">1 min</button><button class="sec" data-s="120">2 min</button><button class="sec" data-s="300">5 min</button><button class="sec" data-s="0">Stopp</button></div>
   </div>
   <div class="card"><h2>🏆 Punkte</h2><div id="players"></div><div id="hostbox" class="hidden" style="margin-top:8px"><button class="sec" id="resetsc">Punkte auf 0</button></div></div>
+  <div class="card hidden" id="simcard"><h2>🎯 Team gegen MoveEye (3D-Simulator)</h2><p class="mut" id="simtxt"></p>
+    <a id="simgo" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;background:var(--amber);color:#0e1621;font-weight:700;padding:13px;border-radius:12px">🏃 Mitspielen</a></div>
   <div class="card" id="collcard"><h2>🕹 Spielesammlung (für dich allein)</h2><div id="coll" class="grid"></div></div>
 </div>
 <script>
@@ -20242,6 +20811,11 @@ function render() {
   const D = V.tools.dice; $("#dice").innerHTML = D ? D.vals.map(x => `<div>${x}</div>`).join("") : "";
   $("#dicewho").textContent = D ? D.by + " hat gewürfelt (W" + D.sides + ")" + (D.vals.length > 1 ? " · Summe " + D.vals.reduce((a, b) => a + b, 0) : "") : "";
   if (D && D.t !== render.lastDice) { render.lastDice = D.t; beep(660, .08); }
+  // 2.98.7: the game of the 3D simulator (opened together with the game corner)
+  const SG = V.sim; $("#simcard").classList.toggle("hidden", !SG);
+  if (SG) { $("#simgo").href = SG.url; $("#simtxt").textContent = "Schleich mit dem Handy unentdeckt an der Kamera vorbei zum Ziel. "
+    + (SG.runners >= SG.max ? "Alle " + SG.max + " Läuferplätze sind besetzt – du schaust zuerst durch die Kamera zu." : (SG.max - SG.runners) + " von " + SG.max + " Läuferplätzen frei.")
+    + (SG.round === "play" ? " Eine Runde läuft gerade." : ""); }
   // collection
   const GG = {touch: "👆 Für Handy und Tablet (Touch)", buttons: "🎮 Mit Bildschirm-Tasten"};        // 2.95.54: touch games first
   const gsorted = (V.games || []).slice().sort((a, b) => (a.input === "buttons") - (b.input === "buttons"));
@@ -20492,7 +21066,8 @@ def _simgame_fetch():
         r = sim_control({"action": "game_info"})
         if isinstance(r, dict) and r.get("ok") and r.get("open"):
             SIMGAME["g"] = {"round": r.get("round"), "mode": r.get("mode"), "left": r.get("left"), "cd": r.get("cd"),
-                            "mwg": r.get("mwg"), "task": r.get("task") or ""}
+                            "mwg": r.get("mwg"), "task": r.get("task") or "", "url": r.get("url") or "", "max": r.get("max"),
+                            "runners": r.get("runners")}
         else:
             SIMGAME["g"] = None
     except Exception:
@@ -22222,7 +22797,7 @@ def talk_stop():
 # ----------------------------------------------------------------------------
 # Updates: choose a version and switch to it. Source = the URL of a versions.json (e.g. in a GitHub repository) or a folder
 #   (e.g. a USB stick). Downloaded versions are kept next to this file, so you can always go back (also without internet).
-#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_6.py", "url": "https://...", "sha256": "...",
+#   versions.json: {"versions": [{"version": "1.8.7", "file": "webcam_bewegung_2_98_7.py", "url": "https://...", "sha256": "...",
 #   "date": "2026-10-22", "notes": "..."}]}  - made with:  python3 webcam_bewegung_X.py --make-manifest <folder> --base-url <url>
 # ----------------------------------------------------------------------------
 UPD = {"items": [], "msg": "", "busy": False, "time": 0.0, "list_time": ""}
@@ -24010,6 +24585,8 @@ class MotionWatch:
         """2.98.1: aim at the object - turn by the angle it has from the middle of the picture (field of view of the camera),
         a part of the way (no overshoot), then wait until the picture shows the new direction. Before, it moved a fixed
         bit per picture: slow at a low frame rate and swinging past the object when the picture came late."""
+        if wake_hold():                        # 2.98.7: the wake-up alarm holds the head (sleeping place)
+            return
         x, y, w, h = target_box[:4]
         ex = (x + w / 2.0) / pw - 0.5          # -0.5 .. 0.5  (right = positive)
         ey = (y + h / 2.0) / ph - 0.5          # down  = positive
@@ -24164,7 +24741,7 @@ class MotionWatch:
             STATE["eco"] = "off"; return
         busy = (bool(present & {"prealarm", "motion", "person", "warm", "noise"}) or self.writer is not None or STATE["tracking"] or manual_active() or TL_HOLD["on"]
                 or (CFG["eco_view_full"] and self.web_viewers > 0) or (AUDIO is not None and AUDIO.noisy())
-                or TALK["proc"] is not None or POWER["pending"] or time.time() - SENS["pir_t"] < 3)
+                or TALK["proc"] is not None or POWER["pending"] or time.time() - SENS["pir_t"] < 3 or WAKE["state"] == "ring")
         if busy:
             self.eco_wake_t = t0
         slow = t0 - self.eco_wake_t > float(CFG["eco_wake"])
@@ -24307,6 +24884,7 @@ class MotionWatch:
                 log_event("sys", f"Camera picture: turned {ok_[0]}°" + (", mirrored" if ok_[1] else ""))
             self._orient = ok_
             frame = cam_orient(frame)                     # turned / mirrored as set, before zones and detection
+            wake_feed(frame)                              # 2.98.7: gestures at the sleeping place (only while the alarm rings)
             frame = apply_privacy(frame)                  # privacy zones: black before anything else sees the picture
             rec_clean = frame.copy() if (CFG["record"] or QUICK["rec_until"] > 0 or self.writer is not None) and CFG["rec_marks"] != "full" else None
             rec_animals = []
@@ -27005,8 +27583,8 @@ function partyPaint() {
   box.innerHTML = "";
   if (!P.on) {
     const row = el("div", "trow"); const sel = document.createElement("select"); [[2, "2 h"], [4, "4 h"], [6, "6 h"], [12, "12 h"]].forEach(([v, n]) => { const o = el("option", "", n); o.value = v; sel.appendChild(o); }); sel.value = 6;
-    const b = el("button", "", "🎲 " + t("Open the game corner")); b.type = "button"; b.onclick = () => partyDo({action: "open", hours: +sel.value});
-    row.append(b, sel); box.appendChild(row);
+    const b = el("button", "", "🎮 " + t("Open all games")); b.type = "button"; b.onclick = () => partyDo({action: "all", hours: +sel.value});
+    row.append(b, sel); box.appendChild(row); box.appendChild(el("div", "mut", t("all-games-note")));
   } else {
     const q = el("div"); q.style.cssText = "display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:10px 0";
     const qr = el("div"); qr.innerHTML = P.qr; qr.style.cssText = "width:190px;height:190px;background:#fff;padding:8px;border-radius:12px"; const sv = qr.querySelector("svg"); if (sv) { sv.style.width = "100%"; sv.style.height = "100%"; }
@@ -27014,6 +27592,9 @@ function partyPaint() {
     info.append(el("div", "", t("Scan with the phone (same Wi-Fi as MoveEye):")));
     const a = el("a", "", P.url); a.href = P.url; a.target = "_blank"; a.style.wordBreak = "break-all"; info.appendChild(a);
     info.appendChild(el("div", "mut", t("open for") + " " + Math.round(P.left / 60) + " min · " + t("game") + ": " + t(P.game)));
+    const A = P.all || {};                                   // 2.98.7: what «all games» opened
+    info.appendChild(el("div", "mut", "✓ " + t("Game corner") + " · " + (A.coll ? "✓ " + t("Game collection") + " (" + A.coll + ")" : ((P.dl && P.dl.running) ? "⏳ " : "– ") + t("Game collection"))
+      + " · " + (A.sim ? "✓ " + t("Simulator game") + " (" + A.sim_n + " " + t("runners") + ")" : "– " + t("Simulator game") + " (" + t("simulator not running") + ")")));
     const r2 = el("div", "trow"); const pl = el("a", "btn", "▶ " + t("Play myself")); pl.href = P.url; pl.target = "_blank";
     const cl = el("button", "sec", "⛔ " + t("Close")); cl.type = "button"; cl.onclick = () => partyDo({action: "close"}); r2.append(pl, cl); info.appendChild(r2);
     q.append(qr, info); box.appendChild(q);
@@ -27052,6 +27633,9 @@ Object.assign(I18N.de, {"AI helper (PC)": "KI-Rechenhilfe (PC)", "helper-note": 
 I18N.en = I18N.en || {}; Object.assign(I18N.en, {"helper-note": "A PC in the same network does the detection (people, animals, vehicles) for the Pi: much faster, the Pi stays cool and needs less power. If the PC stops answering, the Pi does it itself again at once. Only small pictures go to the PC, nothing is stored there.", "helper-manual": "Start MoveEye on the PC with «--helper» (or switch on «works as AI helper for others» there). Then enter its address and the 6-digit code here.", "helper-how": "Easiest: in the 3D simulator on the PC press «Start MoveEye on this PC» - the Pi then finds the helper by itself."});
 Object.assign(I18N.de, {"Survival almanac": "Überlebens-Almanach", "tips for camping, to look up or read in the evening": "Tipps fürs Camping – zum Nachschlagen oder als Abendlektüre"});
 Object.assign(I18N.de, {"Touch (phone, tablet)": "Touch (Handy, Tablet)", "With on-screen buttons": "Mit Bildschirm-Tasten"});
+Object.assign(I18N.de, {"Open all games": "Spiele freigeben", "all-games-note": "Eine Taste für alles: Spielecke (Quiz, Werwolf …), Spielesammlung und – wenn der 3D-Simulator läuft – «Team gegen MoveEye». Die Mitspieler scannen einen QR-Code, geben ihren Namen ein und sind dabei.",
+  "Simulator game": "Simulator-Spiel", "runners": "Läufer", "simulator not running": "Simulator läuft nicht"});
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"all-games-note": "One button for everything: game corner (quiz, werewolf …), game collection and - when the 3D simulator runs - «Team against MoveEye». The players scan one QR code, type their name and are in."});
 // ---- AI helper (2.95.53) ----
 let hpT = 0;
 async function hpLoad() {
@@ -28320,7 +28904,7 @@ Object.assign(I18N.de, {"Simulator centre": "Simulator-Zentrale", "Picture quali
  "Sensor events": "Sensor-Ereignisse", "Errors": "Fehler", "Searching": "Suche", "found": "gefunden", "Last search": "Letzte Suche", "addresses in": "Adressen in",
  "Simulators announce themselves every 2 s. «Search now» also asks every address of the network.": "Simulatoren melden sich alle 2 s. «Jetzt suchen» fragt zusätzlich jede Adresse im Netz ab.",
  "No simulator announces itself in the network right now.": "Im Moment meldet sich kein Simulator im Netz.", "sim-missing": "Ein Simulator fehlt? Im Simulator den Schalter «An MoveEye senden» einschalten. Läuft er auf einem PC, muss die Windows-Firewall seinen Port erlauben (8765; ein zweiter Simulator z. B. 8767).", "Use": "Verwenden", "in use": "in Gebrauch",
- "Version": "Version", "installed": "installiert", "newest": "neueste", "up to date": "aktuell", "newest version not known": "neueste Version unbekannt", "checking for the newest version …": "suche die neueste Version …", "New update for the simulator": "Neues Update für den Simulator", "Update it in the simulator on the PC.": "Im Simulator auf dem PC aktualisieren.", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» oben.", "The finger now controls the simulator (scrolling: press ✋ again)": "Der Finger bedient jetzt den Simulator (Scrollen: ✋ nochmals drücken)", "The finger scrolls the page again (a tap still clicks)": "Der Finger scrollt wieder die Seite (Antippen klickt trotzdem)", "Game wizard": "Spiel-Assistent", "Back": "Zurück", "Next": "Weiter", "Game type": "Spielart", "Goal": "Ziel", "Difficulty": "Schwierigkeit", "Start": "Los", "Which game?": "Welches Spiel?", "gw-intro": "Bis zu 4 Spieler machen mit dem Handy mit. Wähle die Spielart – der Assistent erklärt die Regeln und stellt alles ein.", "Like last time": "Wie letztes Mal", "What is the goal?": "Was ist das Ziel?", "How hard?": "Wie schwierig?", "Beginners": "Anfänger", "Normal": "Normal", "Pros": "Profis", "gw-easy": "Wächter leicht, unbegrenzte Leben, 8 Minuten, Sichtfeld der Kameras sichtbar.", "gw-normal": "Wächter normal, 3 Leben, 5 Minuten.", "gw-hard": "Wächter schwer, nur 1 Leben, 4 Minuten, kein Sichtfeld.", "Everybody against the camera": "Alle gegen die Kamera", "One player is the guard": "Ein Spieler ist Wächter", "Team against team": "Team gegen Team", "MoveEye decides": "MoveEye entscheidet", "gw-camera": "Alle schleichen zum Ziel. Der Kopf von MoveEye dreht sich und sucht euch. Wer zu lange gesehen wird, ist erwischt und muss zurück zum Start.", "gw-guard": "Ein Spieler ist Wächter: Er dreht mit dem Handy den Kopf, schaltet das Licht ein und ruft «Erwischt!», wenn er jemanden im Bild sieht. Ein falscher Ruf zählt als Fehlalarm.", "gw-teamguard": "Räuber und Wächter: Rot gegen Blau. Ein Team schleicht, das andere bewacht mit dem Kopf und ruft «Erwischt!».", "gw-mw": "Die echte Erkennung von MoveEye passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht. Ein guter Test für MoveEye.", "Sneak to the goal": "Zum Ziel schleichen", "Fetch the loot and bring it back": "Beute holen und zurückbringen", "Capture the flag (two teams)": "Fahne erobern (zwei Teams)", "gw-reach": "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg.", "gw-return": "Ziel: die Beute beim grünen Licht holen und zurück zum Start bringen.", "gw-flag": "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie.", "Duration of a round": "Dauer einer Runde", "Lives": "Leben", "unlimited": "unbegrenzt", "3 lives": "3 Leben", "1 life": "1 Leben", "Crystals to collect": "Kristalle zum Sammeln", "Two teams (red against blue)": "Zwei Teams (Rot gegen Blau)", "Free the caught ones (they wait in the cell)": "Befreien (Erwischte warten in der Zelle)", "Throw stones to distract": "Steine werfen zum Ablenken", "Show the field of view of the cameras": "Sichtfeld der Kameras zeigen", "Ready!": "Bereit!", "Teams": "Teams", "red against blue": "Rot gegen Blau", "no": "nein", "gw-tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter Dingen sieht euch die Kamera schlechter. Rennen hört das Mikrofon. Ein geworfener Stein lenkt die Kamera ab.", "gw-rescue": "Befreien: Wer erwischt wird, wartet in der Zelle, bis ihn ein Teamkollege befreit.", "gw-items": "Kristalle: Wer welche einsammelt, bekommt Extrapunkte.", "Power-ups: cloak (purple) and turbo (yellow)": "Power-ups: Tarnkappe (lila) und Turbo (gelb)", "gw-powers": "Power-ups: Die lila Kugel ist eine Tarnkappe (9 s fast unsichtbar), die gelbe ein Turbo (7 s schneller, aber lauter). Sie tauchen später an einem anderen Ort wieder auf.", "gw-lastmin": "Letzte Minute: Die Kamera passt dann besser auf – jetzt wird es spannend!", "Extras": "Extras", "photos, hiding places, decoy, night, events, checkpoints, handicap": "Fotos, Verstecke, Lockvogel, Nacht, Ereignisse, Checkpoints, Handicap", "Caught photos (gallery at the end)": "Erwischt-Fotos (Galerie am Schluss)", "Hiding places (bushes, 8 s invisible)": "Verstecke (Büsche, 8 s unsichtbar)", "Decoy allowed": "Lockvogel erlaubt", "Night round with torches": "Nacht-Runde mit Taschenlampen", "Random events (storm, dog, car)": "Zufallsereignisse (Gewitter, Hund, Auto)", "Checkpoints (+150 points each)": "Checkpoints (je +150 Punkte)", "Handicap for the leader of the ranking": "Handicap für den Ersten der Rangliste", "gw-photos": "📸 Erwischt-Fotos: Wer erwischt wird, sieht auf dem Handy das Bild der Kamera. Am Schluss gibt es eine Galerie.", "gw-hides": "🌳 Verstecke: In einem Busch geduckt oder kriechend sieht dich die Kamera nicht – aber nur 8 Sekunden lang.", "gw-decoy": "🦆 Lockvogel: Wer will, wählt auf dem Handy «Lockvogel». Er lässt sich absichtlich sehen, lockt die Kamera weg und bekommt Punkte für jede beobachtete Sekunde.", "gw-night": "🌙 Nacht-Runde: Es ist dunkel. Mit 🔦 siehst du mehr – aber die Kamera sieht dich auch.", "gw-events": "⛈ Zufallsereignisse: Gewitter (man hört dich kaum), ein bellender Hund, ein Auto mit Scheinwerfern.", "gw-cps": "🚩 Checkpoints: Leuchtende Ringe unterwegs geben je 150 Punkte.", "gw-hc": "🎯 Handicap: Wer in der Rangliste vorne liegt, wird leichter gesehen und ist etwas langsamer.", "Handicap (experienced players are seen more easily, are a bit slower, shorter cloak)": "Handicap (Geübte werden leichter gesehen, sind etwas langsamer, kürzere Tarnkappe)", "none": "keins", "a little": "etwas", "strong": "stark", "Ranking of the evening": "Rangliste des Abends", "rounds": "Runden", "won": "gewonnen", "best time": "Bestzeit", "never caught": "nie erwischt", "fastest": "am schnellsten", "most crystals": "meiste Kristalle", "best guard": "bester Wächter", "Records": "Rekorde", "Reset the ranking": "Rangliste zurücksetzen", "Reset the ranking of the evening?": "Rangliste des Abends zurücksetzen?", "Storm": "Gewitter", "Dog": "Hund", "Car": "Auto", "Caught!": "Erwischt!", "Result": "Ergebnis", "Close": "Schliessen", "Spectator camera: flies over the field by itself": "Zuschauer-Kamera: fliegt selbst übers Spielfeld", "Settings": "Einstellungen", "Opening the game …": "Spiel wird geöffnet …", "the simulator did not open the game": "der Simulator hat das Spiel nicht geöffnet", "Start the round": "Runde starten", "Open the game & show the QR code": "Spiel öffnen & QR-Code zeigen", "The round starts": "Die Runde startet", "Game «Unseen to the goal»": "Spiel «Unentdeckt ans Ziel»", "Show the QR code big": "QR-Code gross zeigen", "Close the game": "Spiel schliessen", "Tap to close": "Antippen zum Schliessen", "Open the game": "Spiel öffnen", "Players scan the QR code with their phone (same WLAN) or open the address:": "Mitspieler scannen den QR-Code mit dem Handy (gleiches WLAN) oder öffnen die Adresse:", "players": "Spieler", "Up to 4 players sneak unseen to the goal with their phones. Open the game, then they scan the QR code.": "Bis zu 4 Spieler schleichen mit dem Handy unentdeckt zum Ziel. Spiel öffnen, dann scannen sie den QR-Code.", "CPU of the PC": "CPU des PCs", "Update the simulator by itself when a newer version is there": "Simulator selbst aktualisieren, wenn eine neuere Version da ist", "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
+ "Version": "Version", "installed": "installiert", "newest": "neueste", "up to date": "aktuell", "newest version not known": "neueste Version unbekannt", "checking for the newest version …": "suche die neueste Version …", "New update for the simulator": "Neues Update für den Simulator", "Update it in the simulator on the PC.": "Im Simulator auf dem PC aktualisieren.", "Button «Update the simulator» above.": "Knopf «Simulator aktualisieren» oben.", "The finger now controls the simulator (scrolling: press ✋ again)": "Der Finger bedient jetzt den Simulator (Scrollen: ✋ nochmals drücken)", "The finger scrolls the page again (a tap still clicks)": "Der Finger scrollt wieder die Seite (Antippen klickt trotzdem)", "Game wizard": "Spiel-Assistent", "Back": "Zurück", "Next": "Weiter", "Game type": "Spielart", "Goal": "Ziel", "Difficulty": "Schwierigkeit", "Start": "Los", "Which game?": "Welches Spiel?", "gw-intro": "Bis zu 4 Spieler machen mit dem Handy mit. Wähle die Spielart – der Assistent erklärt die Regeln und stellt alles ein.", "Like last time": "Wie letztes Mal", "What is the goal?": "Was ist das Ziel?", "How hard?": "Wie schwierig?", "Beginners": "Anfänger", "Normal": "Normal", "Pros": "Profis", "gw-easy": "Wächter leicht, unbegrenzte Leben, 8 Minuten, Sichtfeld der Kameras sichtbar.", "gw-normal": "Wächter normal, 3 Leben, 5 Minuten.", "gw-hard": "Wächter schwer, nur 1 Leben, 4 Minuten, kein Sichtfeld.", "Everybody against the camera": "Alle gegen die Kamera", "One player is the guard": "Ein Spieler ist Wächter", "Team against team": "Team gegen Team", "MoveEye decides": "MoveEye entscheidet", "gw-camera": "Alle schleichen zum Ziel. Der Kopf von MoveEye dreht sich und sucht euch. Wer zu lange gesehen wird, ist erwischt und muss zurück zum Start.", "gw-guard": "Ein Spieler ist Wächter: Er dreht mit dem Handy den Kopf, schaltet das Licht ein und ruft «Erwischt!», wenn er jemanden im Bild sieht. Ein falscher Ruf zählt als Fehlalarm.", "gw-teamguard": "Räuber und Wächter: Rot gegen Blau. Ein Team schleicht, das andere bewacht mit dem Kopf und ruft «Erwischt!».", "gw-mw": "Die echte Erkennung von MoveEye passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht. Ein guter Test für MoveEye.", "Sneak to the goal": "Zum Ziel schleichen", "Fetch the loot and bring it back": "Beute holen und zurückbringen", "Capture the flag (two teams)": "Fahne erobern (zwei Teams)", "gw-reach": "Ziel: zum grünen Licht schleichen, ohne erwischt zu werden. Der Pfeil auf dem Handy zeigt den Weg.", "gw-return": "Ziel: die Beute beim grünen Licht holen und zurück zum Start bringen.", "gw-flag": "Ziel: zwei Teams. Holt die Fahne der anderen und bringt sie zur eigenen Basis. Wer mit der Fahne erwischt wird, verliert sie.", "Duration of a round": "Dauer einer Runde", "Lives": "Leben", "unlimited": "unbegrenzt", "3 lives": "3 Leben", "1 life": "1 Leben", "Crystals to collect": "Kristalle zum Sammeln", "Two teams (red against blue)": "Zwei Teams (Rot gegen Blau)", "Free the caught ones (they wait in the cell)": "Befreien (Erwischte warten in der Zelle)", "Throw stones to distract": "Steine werfen zum Ablenken", "Show the field of view of the cameras": "Sichtfeld der Kameras zeigen", "Ready!": "Bereit!", "Teams": "Teams", "red against blue": "Rot gegen Blau", "no": "nein", "gw-tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter Dingen sieht euch die Kamera schlechter. Rennen hört das Mikrofon. Ein geworfener Stein lenkt die Kamera ab.", "gw-rescue": "Befreien: Wer erwischt wird, wartet in der Zelle, bis ihn ein Teamkollege befreit.", "gw-items": "Kristalle: Wer welche einsammelt, bekommt Extrapunkte.", "Power-ups: cloak (purple) and turbo (yellow)": "Power-ups: Tarnkappe (lila) und Turbo (gelb)", "gw-powers": "Power-ups: Die lila Kugel ist eine Tarnkappe (9 s fast unsichtbar), die gelbe ein Turbo (7 s schneller, aber lauter). Sie tauchen später an einem anderen Ort wieder auf.", "gw-lastmin": "Letzte Minute: Die Kamera passt dann besser auf – jetzt wird es spannend!", "Extras": "Extras", "photos, hiding places, decoy, night, events, checkpoints, handicap": "Fotos, Verstecke, Lockvogel, Nacht, Ereignisse, Checkpoints, Handicap", "Caught photos (gallery at the end)": "Erwischt-Fotos (Galerie am Schluss)", "Hiding places (bushes, 8 s invisible)": "Verstecke (Büsche, 8 s unsichtbar)", "Decoy allowed": "Lockvogel erlaubt", "Night round with torches": "Nacht-Runde mit Taschenlampen", "Random events (storm, dog, car)": "Zufallsereignisse (Gewitter, Hund, Auto)", "Checkpoints (+150 points each)": "Checkpoints (je +150 Punkte)", "Handicap for the leader of the ranking": "Handicap für den Ersten der Rangliste", "gw-photos": "📸 Erwischt-Fotos: Wer erwischt wird, sieht auf dem Handy das Bild der Kamera. Am Schluss gibt es eine Galerie.", "gw-hides": "🌳 Verstecke: In einem Busch geduckt oder kriechend sieht dich die Kamera nicht – aber nur 8 Sekunden lang.", "gw-decoy": "🦆 Lockvogel: Wer will, wählt auf dem Handy «Lockvogel». Er lässt sich absichtlich sehen, lockt die Kamera weg und bekommt Punkte für jede beobachtete Sekunde.", "gw-night": "🌙 Nacht-Runde: Es ist dunkel. Mit 🔦 siehst du mehr – aber die Kamera sieht dich auch.", "gw-events": "⛈ Zufallsereignisse: Gewitter (man hört dich kaum), ein bellender Hund, ein Auto mit Scheinwerfern.", "gw-cps": "🚩 Checkpoints: Leuchtende Ringe unterwegs geben je 150 Punkte.", "gw-hc": "🎯 Handicap: Wer in der Rangliste vorne liegt, wird leichter gesehen und ist etwas langsamer.", "Handicap (experienced players are seen more easily, are a bit slower, shorter cloak)": "Handicap (Geübte werden leichter gesehen, sind etwas langsamer, kürzere Tarnkappe)", "none": "keins", "a little": "etwas", "strong": "stark", "Ranking of the evening": "Rangliste des Abends", "rounds": "Runden", "won": "gewonnen", "best time": "Bestzeit", "never caught": "nie erwischt", "fastest": "am schnellsten", "most crystals": "meiste Kristalle", "best guard": "bester Wächter", "Records": "Rekorde", "Reset the ranking": "Rangliste zurücksetzen", "Reset the ranking of the evening?": "Rangliste des Abends zurücksetzen?", "Storm": "Gewitter", "Dog": "Hund", "Car": "Auto", "Caught!": "Erwischt!", "Result": "Ergebnis", "Close": "Schliessen", "Spectator camera: flies over the field by itself": "Zuschauer-Kamera: fliegt selbst übers Spielfeld", "Settings": "Einstellungen", "Opening the game …": "Spiel wird geöffnet …", "the simulator did not open the game": "der Simulator hat das Spiel nicht geöffnet", "Start the round": "Runde starten", "Open the game & show the QR code": "Spiel öffnen & QR-Code zeigen", "The round starts": "Die Runde startet", "Game «Unseen to the goal»": "Spiel «Unentdeckt ans Ziel»", "Show the QR code big": "QR-Code gross zeigen", "Close the game": "Spiel schliessen", "Tap to close": "Antippen zum Schliessen", "Open the game": "Spiel öffnen", "Players scan the QR code with their phone (same WLAN) or open the address:": "Mitspieler scannen den QR-Code mit dem Handy (gleiches WLAN) oder öffnen die Adresse:", "players": "Spieler", "Up to 12 players sneak unseen to the goal with their phones. Open the game, then they scan the QR code.": "Bis zu 12 Spieler schleichen mit dem Handy unentdeckt zum Ziel. Spiel öffnen, dann scannen sie den QR-Code.", "CPU of the PC": "CPU des PCs", "Update the simulator by itself when a newer version is there": "Simulator selbst aktualisieren, wenn eine neuere Version da ist", "Simulator window": "Simulator-Fenster", "Camera picture": "Kamerabild", "Update the simulator": "Simulator aktualisieren", "New version available": "Neue Version verfügbar", "The simulator looks for a new version and installs it": "Der Simulator sucht eine neue Version und installiert sie", "The simulator looks for a new version and installs it (about a minute, it starts again by itself).": "Der Simulator sucht eine neue Version und installiert sie (etwa eine Minute, er startet danach von selbst wieder).", "this device": "dieses Gerät", "found by the search": "durch die Suche gefunden", "last": "zuletzt vor", "messages": "Meldungen",
  "The picture appears when the simulation is on.": "Das Bild erscheint, wenn die Simulation eingeschaltet ist.",
  "Delete this scenario in the simulator?": "Dieses Szenario im Simulator löschen?", "running": "läuft", "Controls": "Bedienung",
  "uploaded": "hochgeladen", "upload interrupted": "Hochladen abgebrochen", "Upload a file to the simulator": "Datei zum Simulator hochladen",
@@ -28423,7 +29007,7 @@ function gamePaint(r) {
   $("#g-open").hidden = !!G.open; $("#g-close").hidden = !G.open; $("#g-big").hidden = !G.open; $("#g-qrbox").hidden = !G.open;
   $("#g-open").textContent = "▶ " + t("Open the game");
   $("#g-txt").textContent = G.open ? t("Players scan the QR code with their phone (same WLAN) or open the address:") + " · " + t("players") + ": " + (G.players || 0) + " / 4"
-    : t("Up to 4 players sneak unseen to the goal with their phones. Open the game, then they scan the QR code.");
+    : t("Up to 12 players sneak unseen to the goal with their phones. Open the game, then they scan the QR code.");
   $("#g-url").textContent = G.open ? G.url : "";
   if (G.open && GQR !== G.url) { GQR = G.url; const u = "/sim/game_qr.png?r=" + Date.now(); $("#g-qr").src = u; $("#g-qrbig").src = u; $("#g-urlbig").textContent = G.url; }
   if (!G.open) { GQR = ""; gameBig(false); }
@@ -34281,6 +34865,7 @@ ol{padding-left:18px;margin:6px 0}
         <button onclick="startZone('ignore')" data-i18n="+ Ignore zone">+ Ignore zone</button>
         <button onclick="startZone('only')" data-i18n="+ Only-here zone">+ Only-here zone</button>
         <button onclick="startZone('privacy')" data-i18n="+ Privacy zone">+ Privacy zone</button>
+        <button onclick="startZone('sleep')" data-i18n="+ Sleeping place">+ Sleeping place</button>
         <button onclick="startZone('line')" data-i18n="+ Line">+ Line</button>
         <button onclick="startZone('loiter')" data-i18n="+ Dwell area">+ Dwell area</button>
       </div>
@@ -34294,6 +34879,7 @@ ol{padding-left:18px;margin:6px 0}
       <div class="legend mut"><div><i style="background:#f59a4a"></i><span data-i18n="Ignore zone">Ignore zone</span>: <span data-i18n="z-ign">z-ign</span></div>
       <div style="margin-top:4px"><i style="background:#3fcf6b"></i><span data-i18n="Only-here zone">Only-here zone</span>: <span data-i18n="z-only">z-only</span></div>
       <div style="margin-top:4px"><i style="background:#a98bff"></i><span data-i18n="Privacy zone">Privacy zone</span>: <span data-i18n="z-priv">z-priv</span></div>
+      <div style="margin-top:4px"><i style="background:#ff7ab6"></i><span data-i18n="Sleeping place">Sleeping place</span>: <span data-i18n="z-sleep">z-sleep</span></div>
       <div style="margin-top:4px"><i style="background:#3cd2ff"></i><span data-i18n="Line">Line</span>: <span data-i18n="z-line">z-line</span></div>
       <div style="margin-top:4px"><i style="background:#ffdc3c"></i><span data-i18n="Dwell area">Dwell area</span>: <span data-i18n="z-loit">z-loit</span></div></div>
       <div class="mut" style="margin-top:8px" data-i18n="z-how">z-how</div>
@@ -34302,6 +34888,8 @@ ol{padding-left:18px;margin:6px 0}
 </main>
 <script>
 /*COMMON*/
+Object.assign(I18N.de, {"+ Sleeping place": "+ Schlafplatz", "Sleeping place": "Schlafplatz",
+  "z-sleep": "Wie eine Privatsphäre-Zone, bleibt aber auf dem Bett, auch wenn sich die Kamera dreht. Der Wecker dreht die Kamera beim Wecken dorthin (Gesten). Einzeichnen, während die Kamera auf das Bett schaut."});
 Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": "+ Nur-hier-Zone", "+ Privacy zone": "+ Privatsphäre-Zone",
   "Privacy zone": "Privatsphäre-Zone",
   "z-priv": "Der Bereich wird schwarz abgedeckt – im Live-Bild, in Aufnahmen, Fotos und Zeitraffer. Er wird nie gespeichert oder übertragen (Nachbarzelt, Weg, fremdes Fenster). Wichtig für den Datenschutz.", "Finish shape": "Form abschliessen", "New picture": "Neues Bild",
@@ -34316,7 +34904,7 @@ Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": 
   "z-ign": "Personen und Objekte, deren Füsse darin stehen, werden ignoriert (Strasse, Baum, Nachbars Garten).",
   "z-only": "Wenn mindestens eine solche Zone existiert, zählt nur, was darin passiert (Eingang, Einfahrt).",
   "z-how": "Eine Zone wirkt auf die Erkennung, die Aufnahme, die Alarme und die Relais. Gezählt wird der Punkt unten in der Mitte des erkannten Objekts (die Füsse)."});
-Object.assign(I18N, {en: {"z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
+Object.assign(I18N, {en: {"z-sleep": "Like a privacy zone, but it stays on the bed when the camera turns. The wake-up alarm turns the camera there (gestures). Draw it while the camera looks at the bed.", "z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
   "z-loit": "Reports when a person stays inside longer than the time set (e.g. at the car).", "z-ign": "Persons and objects whose feet are inside are ignored (street, tree, neighbour's garden).",
   "z-only": "If at least one such zone exists, only what happens inside it counts (entrance, driveway).",
   "z-how": "A zone affects detection, recording, alarms and relays. The point that counts is the bottom middle of the detected object (the feet).",
@@ -34324,8 +34912,8 @@ Object.assign(I18N, {en: {"z-line": "Reports when a person crosses the line – 
 const tt = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 const cv = $("#cv"), g = cv.getContext("2d"), img = new Image();
 let zones = [], sel = -1, drawing = null, drawMode = "ignore", drag = null;
-const COL = {ignore: "245,154,74", only: "63,207,107", privacy: "169,139,255", line: "60,210,255", loiter: "255,220,60"};
-const ZNAME = {only: "Only-here zone", privacy: "Privacy zone", ignore: "Ignore zone", line: "Line", loiter: "Dwell area"};
+const COL = {ignore: "245,154,74", only: "63,207,107", privacy: "169,139,255", line: "60,210,255", loiter: "255,220,60", sleep: "255,122,182"};
+const ZNAME = {only: "Only-here zone", privacy: "Privacy zone", ignore: "Ignore zone", line: "Line", loiter: "Dwell area", sleep: "Sleeping place"};
 function arrow(z, on) {                 // line: the arrow shows in which direction crossing it counts
   const [a, b] = z.points.map(px), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
   let nx = -(b[1] - a[1]), ny = b[0] - a[0]; const l = Math.hypot(nx, ny) || 1; nx /= l; ny /= l;
@@ -34343,7 +34931,7 @@ function draw() {
   else { g.fillStyle = "#0b0f14"; g.fillRect(0, 0, cv.width, cv.height); g.fillStyle = "#8a9bb0"; g.font = "28px sans-serif"; g.textAlign = "center"; g.fillText(t("no picture - is the camera running?"), cv.width / 2, cv.height / 2); g.textAlign = "left"; }
   const poly = (pts, mode, on, close) => {
     g.beginPath(); pts.forEach((p, i) => { const [x, y] = px(p); i ? g.lineTo(x, y) : g.moveTo(x, y); }); if (close) g.closePath();
-    if (close) { g.fillStyle = mode === "privacy" ? "rgba(0,0,0,.82)" : "rgba(" + COL[mode] + "," + (on ? .34 : .22) + ")"; g.fill(); }
+    if (close) { g.fillStyle = mode === "privacy" || mode === "sleep" ? "rgba(0,0,0,.82)" : "rgba(" + COL[mode] + "," + (on ? .34 : .22) + ")"; g.fill(); }
     g.strokeStyle = "rgb(" + COL[mode] + ")"; g.lineWidth = on ? 4 : 2.5; g.stroke();
     pts.forEach(p => { const [x, y] = px(p); g.beginPath(); g.arc(x, y, on || !close ? 8 : 5, 0, 7); g.fillStyle = "#fff"; g.fill(); g.strokeStyle = "rgb(" + COL[mode] + ")"; g.lineWidth = 2; g.stroke(); });
   };
@@ -34389,7 +34977,7 @@ function renderList() {
     const nm = el("input"); nm.type = "text"; nm.value = z.name; nm.maxLength = 40; nm.oninput = () => { z.name = nm.value; draw(); }; nm.onclick = e => e.stopPropagation();
     const del = el("button", "sec", "✕"); del.title = t("Delete"); del.onclick = e => { e.stopPropagation(); zones.splice(i, 1); sel = -1; renderList(); draw(); };
     const md = el("select");
-    (z.mode === "line" ? [["line", t("Line")]] : [["ignore", t("Ignore zone")], ["only", t("Only-here zone")], ["privacy", t("Privacy zone")], ["loiter", t("Dwell area")]])
+    (z.mode === "line" ? [["line", t("Line")]] : [["ignore", t("Ignore zone")], ["only", t("Only-here zone")], ["privacy", t("Privacy zone")], ["sleep", t("Sleeping place")], ["loiter", t("Dwell area")]])
       .forEach(([v, l]) => { const o = el("option", "", l); o.value = v; md.appendChild(o); });
     md.value = z.mode; md.onchange = () => { z.mode = md.value; if (z.mode === "loiter" && !z.secs) z.secs = 20; renderList(); draw(); }; md.onclick = e => e.stopPropagation();
     r.append(nm, del, md);
@@ -34836,6 +35424,9 @@ main{padding:16px;max-width:720px;margin:0 auto}
   color:var(--txt);text-decoration:none;cursor:pointer;font:inherit;width:100%;text-align:left}
 .mi:hover{border-color:var(--acc)}.mi i{font-style:normal;font-size:22px;width:30px;text-align:center}.mi b{display:block;font-size:15px}
 .mi small{color:var(--mut);font-size:12px}.mi .ar{margin-left:auto;color:var(--mut);font-size:18px}
+#games{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:14px;margin:0 0 12px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+#games.on{border-color:var(--grn)}#games .gq{width:120px;height:120px;background:#fff;border-radius:10px;padding:6px;box-sizing:border-box}#games .gq svg{width:100%;height:100%}
+#games .gt{flex:1 1 200px}#games .gt b{font-size:16px}#games button{margin:8px 8px 0 0}
 #fb{display:none}#fb.on{display:block}#fb textarea{width:100%;box-sizing:border-box;background:var(--field);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
 </style></head><body>
 <header>
@@ -34847,6 +35438,7 @@ main{padding:16px;max-width:720px;margin:0 auto}
   </span>
 </header>
 <main>
+  <div id="games"><div class="gt"><b>🎮 <span data-i18n="Games">Games</span></b><div class="mut" id="g-txt"></div><div id="g-btn"></div></div></div>
   <a class="mi" href="/help"><i>📖</i><span><b data-i18n="Manual">Manual</b><small data-i18n="Everything explained, with search">Everything explained, with search</small></span><span class="ar">›</span></a>
   <a class="mi" href="/quick"><i>📄</i><span><b data-i18n="Quick guide (1 page)">Quick guide (1 page)</b><small data-i18n="to print, with the QR codes">to print, with the QR codes</small></span><span class="ar">›</span></a>
   <a class="mi" href="/party"><i>🎲</i><span><b data-i18n="Game corner">Game corner</b><small data-i18n="Quiz, werewolf, connect four … for the campfire">Quiz, werewolf, connect four … for the campfire</small></span><span class="ar">›</span></a>
@@ -34863,11 +35455,38 @@ main{padding:16px;max-width:720px;margin:0 auto}
 <script>
 /*COMMON*/
 /*MOREDE*/
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"games-off-note": "One button: game corner (quiz, werewolf …), game collection and - when the 3D simulator runs - «Team against MoveEye». One QR code, type the name, done."});
 document.getElementById("fb-s").onclick = async () => {
   const r = await post("/api/feedback", {kind: document.getElementById("fb-k").value, text: document.getElementById("fb-t").value, diag: true, lang: LANG});
   document.getElementById("fb-r").textContent = r && r.ok ? "✓ " + t("Thank you! The message is on its way.") : "⚠ " + ((r && r.error) || "error");
 };
-(async () => { await initAppearance(); })();
+(async () => { await initAppearance(); gmLoad(); })();
+// 2.98.7: «Spiele freigeben» - one button for the game corner, the game collection and the game of the 3D simulator
+let GMT = 0;
+async function gmLoad() {
+  clearTimeout(GMT); let j = null;
+  try { j = await (await fetch("/api/party", {cache: "no-store"})).json(); } catch (e) {}
+  if (j && j.ok) gmPaint(j);
+  GMT = setTimeout(gmLoad, j && j.on ? 4000 : 15000);
+}
+function gmPaint(j) {
+  const box = document.getElementById("games"), tx = document.getElementById("g-txt"), bb = document.getElementById("g-btn"), A = j.all || {};
+  box.classList.toggle("on", !!j.on); bb.textContent = ""; const old = box.querySelector(".gq"); if (old) old.remove();
+  if (!j.on) {
+    tx.textContent = t("games-off-note");
+    const b = document.createElement("button"); b.type = "button"; b.textContent = "🎮 " + t("Open all games");
+    b.onclick = async () => { b.disabled = true; const r = await post("/api/party", {action: "all", hours: 6}); if (r && r.ok) gmPaint(r); b.disabled = false; };
+    bb.appendChild(b); return;
+  }
+  const q = document.createElement("div"); q.className = "gq"; q.innerHTML = j.qr || ""; box.insertBefore(q, box.firstChild);
+  const until = new Date(Date.now() + (j.left || 0) * 1000).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+  tx.textContent = t("Open until") + " " + until + " · " + (j.players || []).length + " " + t("players") + " · "
+    + [t("Game corner"), A.coll ? t("Game collection") : "", A.sim ? t("Simulator game") : ""].filter(Boolean).join(" + ") + ". " + t("Scan the QR code with the phone (same Wi-Fi).");
+  const a = document.createElement("a"); a.className = "btn"; a.href = "/party"; a.textContent = t("Players and QR code") + " ›";
+  const c = document.createElement("button"); c.type = "button"; c.className = "sec"; c.textContent = "⛔ " + t("Close");
+  c.onclick = async () => { if (!confirm(t("Close all games? The players are logged out."))) return; const r = await post("/api/party", {action: "close"}); if (r && r.ok) gmPaint(r); };
+  bb.append(a, c);
+}
 fetch("/info", {method: "HEAD"}).then(r => { if (!r.ok) document.getElementById("m-info").hidden = true; }).catch(() => {});
 /*ALERTS*/
 </script>
@@ -34880,7 +35499,11 @@ MORE_DE = {"Everything explained, with search": "Alles erklärt, mit Suche", "Qu
            "what MoveEye is - for neighbours and fellow campers": "was MoveEye ist – für Nachbarn und Mitcamper", "Almanac": "Almanach",
            "Sun, moon, weather": "Sonne, Mond, Wetter", "Feedback to the developer": "Rückmeldung an den Entwickler",
            "Ideas, errors, praise - anonymous": "Ideen, Fehler, Lob – anonym", "💡 Idea": "💡 Idee", "🐞 Error": "🐞 Fehler", "⭐ Praise": "⭐ Lob",
-           "💬 Other": "💬 Anderes", "Send": "Senden", "Thank you! The message is on its way.": "Danke! Die Nachricht ist unterwegs."}
+           "💬 Other": "💬 Anderes", "Send": "Senden", "Thank you! The message is on its way.": "Danke! Die Nachricht ist unterwegs.",
+           "Games": "Spiele", "Open all games": "Spiele freigeben", "Open until": "Offen bis", "players": "Spieler", "Game corner": "Spielecke",
+           "Game collection": "Spielesammlung", "Simulator game": "Simulator-Spiel", "Scan the QR code with the phone (same Wi-Fi).": "QR-Code mit dem Handy scannen (gleiches WLAN).",
+           "Players and QR code": "Spieler und QR-Code", "Close": "Schliessen", "Close all games? The players are logged out.": "Alle Spiele schliessen? Die Spieler werden abgemeldet.",
+           "games-off-note": "Eine Taste: Spielecke (Quiz, Werwolf …), Spielesammlung und – wenn der 3D-Simulator läuft – «Team gegen MoveEye». Ein QR-Code, Name eingeben, fertig."}
 
 
 def more_page():
@@ -36761,7 +37384,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
    {sec: "Timelapse", ic: "⏱️"}, {sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}, {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
   {id: "lightsound", tab: "settings", icon: "🔌", name: "Devices & sensors", items: [{sec: "Lights", ic: "💡"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"},
    {card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"},
-   {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}]},
+   {sec: "Wake-up alarm", ic: "⏰"}, {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}]},
   {id: "power", tab: "settings", icon: "🔋", name: "Power supply", items: [{card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Power saving", ic: "🍃"}, {sec: "Solar panel", ic: "☀️"}]},
   {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"},
    {card: "guest", title: "Guest access", ic: "👥"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}]},
@@ -36928,6 +37551,10 @@ const QS = [
   {id: "photo", ic: "📷", lb: "Photo", tip: "Photo into the recordings", on: () => false, go: () => post("/api/quick", {action: "photo"}), flash: true},
   {id: "kino", ic: "🎬", lb: "Cinema", tip: "Full screen for TV / projector: live picture, clock and the last events", on: () => false,     // 2.96.12: from the tool row
    go: () => { location.href = "/kino"; return Promise.resolve({ok: true}); }},
+  {id: "games", ic: "🎮", lb: "Games", tip: "All games for the phones: game corner, game collection and the simulator game - one QR code", on: (c, s) => !!(s.games && s.games.on),   // 2.98.7
+   lbf: (c, s) => s.games && s.games.on ? "🟢 " + s.games.n : "Games",
+   go: async (c, s) => { if (s.games && s.games.on) { if (!confirm(t("Close all games? The players are logged out."))) return {ok: true}; return post("/api/party", {action: "close"}); }
+     const r = await post("/api/party", {action: "all", hours: 6}); if (r && r.ok) location.href = "/party"; return r; }},
   {id: "demo", ic: "▶", lb: "Demo", tip: "3 minutes demonstration with the simulator (in the cinema mode)", on: () => false, ok: (c, s) => !!(s.sim && s.sim.on),
    go: () => { demoGo(); return Promise.resolve({ok: true}); }}];
 let QSJ = null, QSSIG = "";
@@ -36996,6 +37623,8 @@ function qsBuild(j) {
     box.appendChild(b); });
 }
 Object.assign(I18N.de, {"Talk": "Sprechen", "Hold now": "Jetzt halten", "Talking …": "Spricht …", "Talk through the loudspeaker: tap once to unlock, then hold the button while you talk": "Durch den Lautsprecher sprechen: einmal antippen zum Freischalten, dann den Knopf gedrückt halten, solange du sprichst", "Unlocked - now hold the button while you talk": "Freigeschaltet – jetzt den Knopf gedrückt halten, solange du sprichst"});
+Object.assign(I18N.de, {"Games": "Spiele", "All games for the phones: game corner, game collection and the simulator game - one QR code": "Alle Spiele fürs Handy: Spielecke, Spielesammlung und Simulator-Spiel – ein QR-Code",
+  "Close all games? The players are logged out.": "Alle Spiele schliessen? Die Spieler werden abgemeldet."});
 Object.assign(I18N.de, {"Mask": "Maske", "Motion mask over the picture: red = what the detection sees as movement": "Bewegungsmaske über dem Bild: rot = was die Erkennung als Bewegung sieht"});
 // talk tile: two steps against an accidental press - a tap unlocks it for 6 s, then hold it while talking
 const QTALK = {until: 0, timer: null, down: false};
@@ -37043,7 +37672,7 @@ const MAINSW = {
     const spk = !!(s.audio && s.audio.spk), lamp = !!(s.light_cfg && s.light_cfg.white_out);
     return ["person", "big", "small", "warm"].some(g => { const a = c["deter_" + g + "_act"];
       return (a === "sound" && spk) || (a === "light" && lamp) || (a === "both" && (spk || lamp)); }); },
-  "sec:Microphone": c => !!c.audio_in, "sec:Loudspeaker": c => !!c.siren_on && c.siren_on !== "off",
+  "sec:Wake-up alarm": c => !!c.wake_on, "sec:Microphone": c => !!c.audio_in, "sec:Loudspeaker": c => !!c.siren_on && c.siren_on !== "off",
   "sec:Recording": c => c.record, "sec:Timelapse": c => c.timelapse_on, "sec:Backup": c => !!c.backup_type && c.backup_type !== "off",
   "relayset": c => c.relays_on, "schedule": (c, s, j) => (j.schedules || []).some(x => x.enabled),
   "wifi": (c, s) => !!(s.hotspot && s.hotspot.on), "sec:Web stream": c => c.web_stream, "guest": (c, s) => !!(s.guest && s.guest.active),
@@ -38034,6 +38663,36 @@ function simExtras(d) {
   })();
 Object.assign(I18N.de, {"Clap switch": "Klatschschalter", "Bless you": "Gesundheit", "«Bless you!»": "«Gesundheit!»", "Clap 2×": "2× klatschen", "Clap 3×": "3× klatschen", "Clap 4×": "4× klatschen", "Answer": "Antwort", "Words (several: separate with |)": "Worte (mehrere mit | trennen)", "Sensitivity (higher = also softer claps)": "Empfindlichkeit (höher = auch leisere Klatscher)", "Volume of the beep": "Lautstärke des Pieptons", "Sensitivity (higher = answers more readily)": "Empfindlichkeit (höher = antwortet eher)", "Volume of the answer": "Lautstärke der Antwort", "Clap switch on": "Klatschschalter ein", "Beep when recognised": "Piepton, wenn erkannt", "Only when not armed (claps of strangers switch nothing)": "Nur wenn der Schutz aus ist (Klatscher von Fremden schalten nichts)", "Practice: only count and beep, switch nothing": "Üben: nur zählen und piepen, nichts schalten", "Say «Bless you!» after a sneeze": "Nach einem Niesen «Gesundheit!» sagen", "Quiet at night (22 to 7 o'clock)": "Nachts still (22 bis 7 Uhr)", "Test beep": "Piepton testen", "switch on and clap 2× to try it": "einschalten und zum Ausprobieren 2× klatschen", "clap 2, 3 or 4 times": "2, 3 oder 4 Mal klatschen", "counting": "zähle", "last": "zuletzt", "Hear the answer": "Antwort anhören", "Install": "Installieren", "sn-note": "Die Niesen-Erkennung nutzt ein kleines Erkennungsmodell (YAMNet von Google, etwa 4 MB). Es wird beim ersten lauten Geräusch einmal geladen. Tipp: «Gesundheit!» mit dem Handy als Sprachmemo aufnehmen und mit «Eigene Antwort» hochladen – sie wird sofort als Antwort gewählt.",
  "Own answer (sound file)": "Eigene Antwort (Tondatei)", "saved and chosen as answer": "gespeichert und als Antwort gewählt", "loading the sound recognition …": "lade die Geräusch-Erkennung …", "waiting for the first loud sound": "wartet auf das erste laute Geräusch", "needs the sound recognition program - button «Install»": "braucht das Erkennungsprogramm – Knopf «Installieren»", "model could not be loaded": "Modell konnte nicht geladen werden", "installing … (a few minutes)": "installiere … (ein paar Minuten)", "last check": "letzte Prüfung", "today": "heute", "no speech program (sudo apt install libttspico-utils)": "kein Sprachprogramm (sudo apt install libttspico-utils)", "no microphone selected (Microphone)": "kein Mikrofon gewählt (Mikrofon)", "not while armed": "nicht, solange der Schutz an ist", "too many claps": "zu viele Klatscher", "not possible": "nicht möglich"});
+// ---- 2.98.7: wake-up alarm (Einstellungen → Geräte & Sensoren) and the banner while it rings ----
+async function wakeDo(a) { const r = await post("/api/wake", {action: a, lang: LANG}); if (!r.ok) toast("⚠ " + (r.error || "error")); else { if (a === "away_here") toast("✓ " + t("Saved")); refresh(); } }
+function wakePaint(s) {
+  const W = s.wake; if (!W) return;
+  const d = document.querySelector('details[data-view="sec:Wake-up alarm"]');
+  if (d) { let b = document.getElementById("wk-box");
+    if (!b) { b = el("div", "sevbox"); b.id = "wk-box"; b.style.cssText = "margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:13px";
+      const tx = el("div", "", ""); tx.id = "wk-t"; const row = el("div", "btns"), row2 = el("div", "btns");
+      const mk = (lb, a, cls) => { const x = el("button", cls || "sec", lb); x.type = "button"; x.onclick = () => wakeDo(a); return x; };
+      const zl = el("a", "btn sec", "🛏 " + t("Draw the sleeping place")); zl.href = "/zones";
+      row.append(zl, mk("🧭 " + t("Look here at night"), "away_here"), mk("🌙 " + t("Good night"), "sleep_now"));
+      row2.append(mk("🔔 " + t("Test now"), "test"), mk("😴 " + t("Snooze"), "snooze"), mk("⏹ " + t("Alarm off"), "stop"));
+      b.append(tx, row, row2, el("div", "mut", t("wake-note"))); d.appendChild(b); }
+    $("#wk-t").textContent = W.text || ""; }
+  // banner while it rings / snoozes (every page of the live view)
+  let bn = document.getElementById("wk-ban");
+  const show = W.state === "ring" || W.state === "snooze";
+  if (!show) { if (bn) bn.remove(); return; }
+  if (!bn) { bn = el("div"); bn.id = "wk-ban"; bn.style.cssText = "position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:120;background:var(--panel);border:2px solid var(--org);border-radius:16px;padding:10px 12px;display:flex;gap:8px;align-items:center;box-shadow:0 8px 30px rgba(0,0,0,.45);max-width:94vw;flex-wrap:wrap;justify-content:center";
+    const tx = el("b", "", ""); tx.id = "wk-bt"; const a = el("button", "", "😴 " + t("Snooze")), o = el("button", "sec", "⏹ " + t("Alarm off"));
+    a.type = o.type = "button"; a.onclick = () => wakeDo("snooze"); o.onclick = () => wakeDo("stop"); bn.append(tx, a, o); document.body.appendChild(bn); }
+  $("#wk-bt").textContent = (W.state === "ring" ? "⏰ " : "😴 ") + (W.text || "");
+  bn.querySelector("button").hidden = W.state !== "ring";
+}
+Object.assign(I18N.de, {"Wake-up alarm": "Wecker", "Draw the sleeping place": "Schlafplatz einzeichnen", "Look here at night": "Nachts hierhin schauen", "Good night": "Gute Nacht",
+  "Test now": "Jetzt testen", "Snooze": "Schlummern", "Alarm off": "Wecker aus", "Wake-up time (HH:MM)": "Weckzeit (HH:MM)", "Days": "Tage",
+  "Camera looks away from (HH:MM, empty = not)": "Kamera schaut weg ab (HH:MM, leer = nie)", "Snooze (minutes)": "Schlummern (Minuten)", "Rings at most (minutes)": "Klingelt höchstens (Minuten)",
+  "Wake-up alarm on": "Wecker ein", "Switch the white light on": "Weisses Licht einschalten", "Gestures: wave = snooze, sit up / get up = off": "Gesten: winken = schlummern, aufsitzen / aufstehen = aus",
+  "wake-note": "So geht's: 1. Kamera auf das Bett richten, unter «Zonen» einen «Schlafplatz» einzeichnen – er ist ab dann in jedem Bild schwarz, egal wohin die Kamera schaut. 2. Kamera dorthin drehen, wohin sie nachts schauen soll (z. B. Tür), «Nachts hierhin schauen». 3. Weckzeit einstellen. Beim Wecken dreht sich MoveEye zum Bett: winken = schlummern, aufsitzen oder aufstehen = aus. Das Bild vom Bett sieht nur die Gestenerkennung, es wird nie gespeichert."});
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"wake-note": "How it works: 1. Point the camera at the bed and draw a «Sleeping place» under «Zones» - from then on it is black in every picture, wherever the camera looks. 2. Turn the camera where it should look at night (e.g. the door), «Look here at night». 3. Set the time. When the alarm rings MoveEye turns to the bed: wave = snooze, sit up or get up = off. Only the gesture detection sees the bed; it is never stored."});
 function sevPaint(s) {
   const V = s.soundev; if (!V) return;
   const box = (view, id) => { const d = document.querySelector('details[data-view="sec:' + view + '"]'); if (!d) return null;
@@ -39302,7 +39961,7 @@ async function refresh() {
   renderSchedules(j.schedules || [], s);
   $("#v-rec").hidden = !s.recording; $("#v-src").hidden = !s.source_label; $("#v-src").textContent = s.source_label || "";
   $("#b-sec").hidden = !s.web_open;
-  updateExtras(s); updateProtect(s); tpPaint(s); sensPaint(c, s); stormPaint(c, s); gpsPaint(c, s); simPaint(s); moverPaint(s); sevPaint(s); solarPaint(c, s); dtPaint(s); mqPaint(s); updateAutostart(s); updateAudio(s.audio); renderLights(s.light_cfg, s); updateSecurity(s); tidyHeader(s, c);
+  updateExtras(s); updateProtect(s); tpPaint(s); sensPaint(c, s); stormPaint(c, s); gpsPaint(c, s); simPaint(s); moverPaint(s); sevPaint(s); wakePaint(s); solarPaint(c, s); dtPaint(s); mqPaint(s); updateAutostart(s); updateAudio(s.audio); renderLights(s.light_cfg, s); updateSecurity(s); tidyHeader(s, c);
   badge("#b-pres", t("Presence") + ": " + t(s.presence || "unknown"), s.presence === "home" ? "grn" : (s.presence === "away" ? "org" : ""));
   $("#b-pres").hidden = !(s.presence === "home" || s.presence === "away") || HIDDEN.has("b-pres");
 
@@ -41927,10 +42586,10 @@ class WebStream:
                 if getattr(g, "role", "admin") != "admin":
                     return reply({"ok": False, "error": "not allowed"}, 403)
                 d = body(); a_ = d.get("action")
-                if a_ == "open":
-                    party_open(float(d.get("hours") or 6))
+                if a_ in ("open", "all"):                     # 2.98.7: «Spiele freigeben» = all games at once
+                    games_all_open(float(d.get("hours") or 6), "web " + (request.remote_addr or "?"))
                 elif a_ == "close":
-                    party_close()
+                    games_all_close("web " + (request.remote_addr or "?"))
                 elif a_ == "rest":                     # MoveEye rests, only the game server runs (2.95.31)
                     if d.get("on"):
                         mins = (PARTY["until"] - time.time()) / 60 if party_on() else float(d.get("hours") or 6) * 60
@@ -41955,7 +42614,7 @@ class WebStream:
                           "players": [{"id": k, "name": v["name"], "score": v["score"], "host": k == PARTY["host"], "on": time.time() - v["t"] < 25}
                                       for k, v in PARTY["players"].items()], "game": PARTY["game"],
                           "games": games_list(), "games_ver": games_installed_version(), "rest": toolmode_state(), "games_pkg": GAMES_PKG, "dl": dict(GAMES_DL),
-                          "remote": base})
+                          "remote": base, "all": games_all_state()})
 
         @app.route("/api/simtest/pic/<int:rid>/<name>")
         def api_simtest_pic(rid, name):
@@ -42431,6 +43090,7 @@ class WebStream:
                 st["me"] = {"name": getattr(g, "user", ""), "role": getattr(g, "role", "admin"), "users": len(CFG["users"])}
                 st["pending"] = RESTART["pending"]
                 st["quick_rec"] = time.time() < QUICK["rec_until"]
+                st["games"] = {"on": party_on(), "n": len(PARTY["players"])}           # 2.98.7: quick switch «Spiele»
                 st["settings_status_txt"] = settings_status_text(norm_lang(request.args.get("lang") or CFG["lang"]))
                 st["autostart_msg"] = tr_err(AUTOSTART["msg"], norm_lang(request.args.get("lang") or CFG["lang"])) if AUTOSTART["msg"] else ""
                 lang_ = norm_lang(request.args.get("lang") or CFG["lang"])
@@ -42451,6 +43111,7 @@ class WebStream:
                                "msg": tr(MOVER["msg"], lang_), "mode": CFG["mover_mode"],
                                "pose": SIM.get("mover_pose") if MOVER["sim"] else None}
                 st["soundev"] = soundev_state()
+                st["wake"] = dict(wake_state(), text=wake_text(norm_lang(request.args.get("lang") or CFG["lang"])))   # 2.98.7
                 st["light_cfg"].update({n + "_auto_label": dict(text_choice_pairs("light_white_auto")).get(CFG[f"light_{n}_auto"], "")
                                         for n in ("white", "ir")})
                 st["tether"] = STATE.get("tether") or {"on": False}
@@ -42850,6 +43511,19 @@ class WebStream:
                 return reply({"ok": False, "error": tr_err("the file is too large (max. 8 MB)", lang)}, 413)
             ok, err, name = sneeze_upload(request.get_data(cache=False))
             return reply({"ok": ok, "error": tr_err(err, lang) if err else None, "name": name}, 200 if ok else 400)
+
+        @app.route("/api/wake", methods=["GET", "POST"])
+        def api_wake():
+            """2.98.7: wake-up alarm - state, test, snooze, off, direction for the night, good night"""
+            lang = norm_lang(request.args.get("lang") or CFG["lang"])
+            if request.method == "POST":
+                d = body(); lang = norm_lang(d.get("lang") or lang)
+                if getattr(g, "role", "admin") != "admin" and d.get("action") not in ("snooze", "stop"):
+                    return reply({"ok": False, "error": "not allowed"}, 403)
+                ok, err = wake_action(str(d.get("action") or ""), "web " + (request.remote_addr or "?"))
+                if not ok:
+                    return reply({"ok": False, "error": tr(err, lang)}, 400)
+            return reply({"ok": True, "wake": dict(wake_state(), text=wake_text(lang))})
 
         @app.route("/api/soundev", methods=["POST"])
         def api_soundev():
@@ -43548,7 +44222,8 @@ class WebStream:
 
         @app.route("/api/zones")
         def api_zones_get():
-            return reply({"zones": [dict(z) for z in ZONES]})
+            sleep_update()                                   # 2.98.7: the sleeping places for the direction the camera has now
+            return reply({"zones": [{k: v for k, v in z.items() if k != "_at"} for z in ZONES]})
 
         @app.route("/api/zones", methods=["POST"])
         def api_zones_post():
@@ -44485,6 +45160,9 @@ SLIDERS = [  # (section, key, label, min, max, step)
     ("Clap switch", "clap_sens", "Sensitivity (higher = also softer claps)", 1, 10, 1),
     ("Clap switch", "clap_volume", "Volume of the beep", 0, 100, 5),
     ("Bless you", "sneeze_sens", "Sensitivity (higher = answers more readily)", 1, 10, 1),
+    ("Wake-up alarm", "wake_snooze", "Snooze (minutes)", 3, 30, 1),
+    ("Wake-up alarm", "wake_ring_max", "Rings at most (minutes)", 3, 60, 1),
+    ("Wake-up alarm", "wake_volume", "Volume of the alarm", 10, 100, 5),
     ("Bless you", "sneeze_volume", "Volume of the answer", 0, 100, 5),
     ("Loudspeaker", "siren_volume", "Volume (%)", 5, 100, 5),
     ("Loudspeaker", "siren_seconds", "Duration of the siren (s)", 1, 60, 1),
@@ -44617,6 +45295,9 @@ TOGGLES = [  # (section, key, label)
     ("Clap switch", "clap_disarmed", "Only when not armed (claps of strangers switch nothing)"),
     ("Clap switch", "clap_practice", "Practice: only count and beep, switch nothing"),
     ("Bless you", "sneeze_on", "Say «Bless you!» after a sneeze"),
+    ("Wake-up alarm", "wake_on", "Wake-up alarm on"),
+    ("Wake-up alarm", "wake_light", "Switch the white light on"),
+    ("Wake-up alarm", "wake_gestures", "Gestures: wave = snooze, sit up / get up = off"),
     ("Bless you", "sneeze_night", "Quiet at night (22 to 7 o'clock)"),
     ("Microphone", "audio_record", "Sound in the recordings"),
 ]
@@ -44827,7 +45508,7 @@ TK_SUB_ICONS = {"Camping / protection": "⌂", "Power saving": "◔", "Battery":
                 "Night report": "☾", "Messages": "✎", "SMS (LTE stick)": "☏", "Detection": "◎", "AI detection": "⌬",
                 "Walking recognition": "➜", "Vehicle filter": "⛀", "Rain": "☂", "Wind": "≋", "Low light": "◐", "Auto-tune": "✱",
                 "Camera / Servos": "✥", "Patrol": "↻", "Video source": "▣", "Servo driver": "⚒", "Lights": "☀", "Deterrence": "⚠",
-                "Microphone": "♪", "Loudspeaker": "♫", "Clap switch": "✋", "Bless you": "☺", "Recording": "●", "Timelapse": "◷", "Backup": "☁", "Relays": "⚡",
+                "Microphone": "♪", "Loudspeaker": "♫", "Clap switch": "✋", "Bless you": "☺", "Wake-up alarm": "⏰", "Recording": "●", "Timelapse": "◷", "Backup": "☁", "Relays": "⚡",
                 "Schedule": "▦", "Setup": "⊕", "Wi-Fi / hotspot": "⌁", "Web stream": "⇅", "Guest access": "⚇",
                 "MQTT / Home Assistant": "⇆", "Updates": "⬆", "Extra sensors": "◉", "Simulator": "⚗", "Storm warning": "≈", "GPS module": "✈", "Solar panel": "☼", "Mover": "⇕"}
 
@@ -44837,12 +45518,12 @@ TK_GROUPS = [  # (id, name, topics; None = "fine-tuning" line) - 2.98.0: the sam
     ("sched", "Zones, schedule, presence", ["Schedule"]),
     ("detect", "Detection", ["Detection", "AI detection", "Thermal camera", None, "Walking recognition", "Vehicle filter", "Rain", "Wind", "Low light", "Auto-tune"]),
     ("camera", "Cameras & head", ["Camera / Servos", "Patrol", "Video source", "Timelapse", "Mover", None, "Servo driver"]),
-    ("sensors", "Devices & sensors", ["Lights", "Microphone", "Loudspeaker", "Relays", "Extra sensors", "Clap switch", "Bless you", "Storm warning", "GPS module"]),
+    ("sensors", "Devices & sensors", ["Lights", "Microphone", "Loudspeaker", "Relays", "Extra sensors", "Clap switch", "Bless you", "Wake-up alarm", "Storm warning", "GPS module"]),
     ("power", "Power supply", ["Battery", "Power saving", "Solar panel"]),
     ("net", "Network & access", ["Wi-Fi / hotspot", "Web stream", "Guest access", "MQTT / Home Assistant"]),
     ("sys", "System", ["Setup", "Updates", "Simulator"]),
 ]
-SECTIONS = ["Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
+SECTIONS = ["Wake-up alarm", "Reference scan", "Mover", "Simulator", "Extra sensors", "Storm warning", "GPS module", "Solar panel", "Night report", "Battery", "Guest access", "Messages", "Microphone", "Loudspeaker", "Clap switch", "Bless you", "Lights", "Servo driver", "Power saving", "Updates", "Camping / protection", "Camera / Servos", "Video source", "Wi-Fi / hotspot", "Schedule", "Relays", "Timelapse", "Thermal camera", "Patrol", "AI detection", "Notifications", "Web stream", "Auto-tune",
             "Detection", "Low light", "Walking recognition", "Vehicle filter", "Rain", "Wind", "Recording", "Backup", "Theft protection", "Deterrence", "MQTT / Home Assistant", "SMS (LTE stick)", "Setup"]
 
 
@@ -45100,7 +45781,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.6")
+        self.root.title("MoveEye 2.98.7")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -45417,7 +46098,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.6 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.7 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -45842,13 +46523,25 @@ class App:
             dict(id="rec", ic="●", lb=tr("Record"), tip=tr("Record now (max. 10 min) / stop"), on=lambda: time.time() < QUICK["rec_until"],
                  go=quick_rec, red=True),
             dict(id="photo", ic="⊡", lb=tr("Photo"), tip=tr("Photo into the recordings"), on=lambda: False,
-                 go=lambda: quick_photo(self.watch.frame_out), flash=True)]
+                 go=lambda: quick_photo(self.watch.frame_out), flash=True),
+            dict(id="games", ic="♣", lb=tr("Games"), tip=tr("All games for the phones: game corner, game collection and the simulator game - one QR code"),
+                 on=party_on, go=self._games_toggle)]                # 2.98.7
         for i, r in enumerate(RELAYS):
             q.append(dict(id=f"rel{i}", ic="⚡", lb=r["name"][:12], tip=tr("Relay: on / automatic"),
                           on=lambda i=i: bool(i < len(STATE.get("relay_states", [])) and STATE["relay_states"][i]),
                           go=lambda i=i: self._relay_quick(i)))
         del st, L
         return q
+
+    def _games_toggle(self):
+        """2.98.7: «Spiele freigeben» in the window - opens all games and shows the address of the game corner"""
+        if party_on():
+            if messagebox.askyesno("MoveEye", tr("Close all games? The players are logged out.")):
+                games_all_close("window")
+            return
+        games_all_open(6.0, "window")
+        url = page_address().rstrip("/") + "/p/" + PARTY["key"] + "/"
+        messagebox.showinfo("MoveEye", tr("All games are open for 6 hours. The players open this address with the phone (same Wi-Fi):") + "\n\n" + url)
 
     def _qs_click(self, q):
         if q.get("ok") and not q["ok"]():
@@ -46163,6 +46856,19 @@ class App:
             self.status_labels[sec].pack(anchor="w")
         if sec == "Web stream":
             ttk.Button(sbody, text=tr("Tools: network, Wi-Fi, tests (browser)"), command=lambda: self._open_page("/tools")).pack(fill="x", pady=(4, 0))
+        if sec == "Wake-up alarm":                     # 2.98.7: the wake-up alarm with the sleeping place
+            self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
+            self.status_labels[sec].pack(anchor="w")
+            def _wk(a):
+                ok_, err_ = wake_action(a, "window")
+                if not ok_:
+                    messagebox.showinfo("MoveEye", tr(err_))
+            bf = ttk.Frame(sbody); bf.pack(fill="x", pady=(4, 0))
+            ttk.Button(bf, text=tr("Draw the sleeping place (browser)"), command=lambda: self._open_page("/zones")).pack(side="left", expand=True, fill="x", padx=(0, 4))
+            ttk.Button(bf, text=tr("Look here at night"), command=lambda: _wk("away_here")).pack(side="left", expand=True, fill="x")
+            bf2 = ttk.Frame(sbody); bf2.pack(fill="x", pady=(4, 0))
+            for a_, l_ in (("test", "Test now"), ("snooze", "Snooze"), ("stop", "Alarm off")):
+                ttk.Button(bf2, text=tr(l_), command=lambda a_=a_: _wk(a_)).pack(side="left", expand=True, fill="x", padx=(0, 4))
         if sec in ("Night report", "Battery", "Guest access"):
             self.status_labels[sec] = ttk.Label(sbody, text="", style="Mut.TLabel", wraplength=330, justify="left")
             self.status_labels[sec].pack(anchor="w")
@@ -47410,6 +48116,7 @@ class App:
         self._status("Microphone", txt)
         self._status("Clap switch", soundev_text("clap"))
         self._status("Bless you", soundev_text("sneeze"))
+        self._status("Wake-up alarm", wake_text())
         self._status("Loudspeaker", (tr("no loudspeaker selected") if not a.get("spk") else (tr("playing …") if a.get("playing") else ""))
                      + (" ⚠ " + a["sound_msg"] if a.get("sound_msg") else ""))
         cb = getattr(self, "bt_cb", None)
@@ -52807,6 +53514,62 @@ for _k, _v in _HX124.items():
     DE.setdefault(_k, _v[0])
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
+_HX125 = {  # 2.98.7: «Spiele freigeben», wake-up alarm, sleeping place
+    'Games': ('Spiele', 'Jeux', 'Giochi', 'Gieus'),
+    'Open all games': ('Spiele freigeben', 'Ouvrir tous les jeux', 'Aprire tutti i giochi', 'Avrir tut ils gieus'),
+    'All games for the phones: game corner, game collection and the simulator game - one QR code': ('Alle Spiele fürs Handy: Spielecke, Spielesammlung und Simulator-Spiel – ein QR-Code', 'Tous les jeux pour les téléphones : coin jeux, collection de jeux et jeu du simulateur – un seul code QR', 'Tutti i giochi per i telefoni: angolo giochi, raccolta di giochi e gioco del simulatore – un solo codice QR', 'Tut ils gieus per il telefonin: chantun da gieus, collecziun da gieus e gieu dal simulatur – in code QR'),
+    'Close all games? The players are logged out.': ('Alle Spiele schliessen? Die Spieler werden abgemeldet.', 'Fermer tous les jeux ? Les joueurs sont déconnectés.', 'Chiudere tutti i giochi? I giocatori vengono disconnessi.', 'Serrar tut ils gieus? Ils giugaders vegnan annunziads giu.'),
+    'All games are open for 6 hours. The players open this address with the phone (same Wi-Fi):': ('Alle Spiele sind 6 Stunden offen. Die Mitspieler öffnen diese Adresse mit dem Handy (gleiches WLAN):', 'Tous les jeux sont ouverts pendant 6 heures. Les joueurs ouvrent cette adresse avec le téléphone (même Wi-Fi) :', 'Tutti i giochi sono aperti per 6 ore. I giocatori aprono questo indirizzo con il telefono (stessa Wi-Fi):', 'Tut ils gieus èn averts per 6 uras. Ils giugaders avran questa adressa cun il telefonin (medem WLAN):'),
+    'Simulator game': ('Simulator-Spiel', 'Jeu du simulateur', 'Gioco del simulatore', 'Gieu dal simulatur'),
+    'runners': ('Läufer', 'coureurs', 'corridori', 'curriders'),
+    'simulator not running': ('Simulator läuft nicht', 'le simulateur ne tourne pas', 'il simulatore non è attivo', 'il simulatur na funcziuna betg'),
+    'Open until': ('Offen bis', 'Ouvert jusqu’à', 'Aperto fino alle', 'Avert fin las'),
+    'Players and QR code': ('Spieler und QR-Code', 'Joueurs et code QR', 'Giocatori e codice QR', 'Giugaders e code QR'),
+    'Scan the QR code with the phone (same Wi-Fi).': ('QR-Code mit dem Handy scannen (gleiches WLAN).', 'Scanner le code QR avec le téléphone (même Wi-Fi).', 'Scansionare il codice QR con il telefono (stessa Wi-Fi).', 'Scannar il code QR cun il telefonin (medem WLAN).'),
+    'Wake-up alarm': ('Wecker', 'Réveil', 'Sveglia', 'Svegliarin'),
+    'Wake-up alarm on': ('Wecker ein', 'Réveil activé', 'Sveglia attiva', 'Svegliarin en'),
+    'Wake-up time (HH:MM)': ('Weckzeit (HH:MM)', 'Heure de réveil (HH:MM)', 'Ora della sveglia (HH:MM)', 'Ura da sveglia (HH:MM)'),
+    'Camera looks away from (HH:MM, empty = not)': ('Kamera schaut weg ab (HH:MM, leer = nie)', 'La caméra regarde ailleurs dès (HH:MM, vide = jamais)', 'La telecamera guarda altrove dalle (HH:MM, vuoto = mai)', 'La camera guarda davent a partir da (HH:MM, vid = mai)'),
+    'Snooze (minutes)': ('Schlummern (Minuten)', 'Répétition (minutes)', 'Posticipa (minuti)', 'Durmigliar (minutas)'),
+    'Rings at most (minutes)': ('Klingelt höchstens (Minuten)', 'Sonne au maximum (minutes)', 'Suona al massimo (minuti)', 'Sona al pli (minutas)'),
+    'Switch the white light on': ('Weisses Licht einschalten', 'Allumer la lumière blanche', 'Accendere la luce bianca', 'Envidar la glisch alva'),
+    'Gestures: wave = snooze, sit up / get up = off': ('Gesten: winken = schlummern, aufsitzen / aufstehen = aus', 'Gestes : faire signe = répétition, s’asseoir / se lever = arrêt', 'Gesti: salutare = posticipa, sedersi / alzarsi = spegni', 'Gests: far segn = durmigliar, seser si / levar si = ora'),
+    'Draw the sleeping place (browser)': ('Schlafplatz einzeichnen (Browser)', 'Dessiner le lit (navigateur)', 'Disegnare il letto (browser)', 'Dissegnar il letg (navigatur)'),
+    'Draw the sleeping place': ('Schlafplatz einzeichnen', 'Dessiner le lit', 'Disegnare il letto', 'Dissegnar il letg'),
+    'Look here at night': ('Nachts hierhin schauen', 'Regarder ici la nuit', 'Guardare qui di notte', 'La notg guardar qua'),
+    'Good night': ('Gute Nacht', 'Bonne nuit', 'Buona notte', 'Buna notg'),
+    'Test now': ('Jetzt testen', 'Tester maintenant', 'Provare ora', 'Testar ussa'),
+    'Snooze': ('Schlummern', 'Répéter', 'Posticipa', 'Durmigliar'),
+    'Alarm off': ('Wecker aus', 'Arrêter le réveil', 'Spegnere la sveglia', 'Svegliarin ora'),
+    'The alarm rang without a reaction and stopped by itself.': ('Der Wecker hat ohne Reaktion geklingelt und sich selbst ausgeschaltet.', 'Le réveil a sonné sans réaction et s’est arrêté tout seul.', 'La sveglia ha suonato senza reazione e si è spenta da sola.', 'Il svegliarin ha sunà senza reacziun ed è sa stizzà sez.'),
+    'rings': ('klingelt', 'sonne', 'suona', 'sona'),
+    'wave = snooze, sit up = off': ('winken = schlummern, aufsitzen = aus', 'faire signe = répétition, s’asseoir = arrêt', 'salutare = posticipa, sedersi = spegni', 'far segn = durmigliar, seser si = ora'),
+    'snoozing until': ('schlummert bis', 'en répétition jusqu’à', 'posticipata fino alle', 'durmiglia fin las'),
+    'night: the camera looks away until': ('Nacht: die Kamera schaut weg bis', 'nuit : la caméra regarde ailleurs jusqu’à', 'notte: la telecamera guarda altrove fino alle', 'notg: la camera guarda davent fin las'),
+    'no time set': ('keine Zeit eingestellt', 'aucune heure réglée', 'nessuna ora impostata', 'nagina ura fixada'),
+    'no sleeping place yet (Zones → + Sleeping place)': ('noch kein Schlafplatz (Zonen → + Schlafplatz)', 'pas encore de lit (Zones → + Lit)', 'nessun letto ancora (Zone → + Letto)', 'anc nagin letg (Zonas → + Letg)'),
+    'no direction for the night yet (button «Look here at night»)': ('noch keine Richtung für die Nacht (Knopf «Nachts hierhin schauen»)', 'pas encore de direction pour la nuit (bouton «Regarder ici la nuit»)', 'nessuna direzione per la notte (pulsante «Guardare qui di notte»)', 'anc nagina direcziun per la notg (buttun «La notg guardar qua»)'),
+    'the alarm does not ring': ('der Wecker klingelt nicht', 'le réveil ne sonne pas', 'la sveglia non suona', 'il svegliarin na sona betg'),
+    'the alarm is not on': ('der Wecker ist nicht aktiv', 'le réveil n’est pas actif', 'la sveglia non è attiva', 'il svegliarin n’è betg activ'),
+    'no alarm set': ('kein Wecker gestellt', 'aucun réveil réglé', 'nessuna sveglia impostata', 'nagin svegliarin fixà'),
+    'a time like 07:00': ('eine Zeit wie 07:00', 'une heure comme 07:00', 'un’ora come 07:00', 'in’ura sco 07:00'),
+    'Monday to Friday': ('Montag bis Freitag', 'Lundi à vendredi', 'Da lunedì a venerdì', 'Glindesdi fin venderdi'),
+    'every day': ('jeden Tag', 'tous les jours', 'ogni giorno', 'mintga di'),
+    'Saturday and Sunday': ('Samstag und Sonntag', 'Samedi et dimanche', 'Sabato e domenica', 'Sonda e dumengia'),
+    'Sunday to Thursday': ('Sonntag bis Donnerstag', 'Dimanche à jeudi', 'Da domenica a giovedì', 'Dumengia fin gievgia'),
+    'only once (next time)': ('nur einmal (nächstes Mal)', 'une seule fois (la prochaine)', 'solo una volta (la prossima)', 'mo ina giada (la proxima)'),
+    'Soft melody': ('Sanfte Melodie', 'Mélodie douce', 'Melodia dolce', 'Melodia lomma'),
+    'Birdsong': ('Vogelgezwitscher', 'Chant d’oiseaux', 'Canto degli uccelli', 'Chant dals utschels'),
+    'Marmot whistle': ('Murmeltier-Pfiff', 'Sifflement de marmotte', 'Fischio di marmotta', 'Tschivlada da muntanella'),
+    'Sleeping place': ('Schlafplatz', 'Lit', 'Letto', 'Letg'),
+    '+ Sleeping place': ('+ Schlafplatz', '+ Lit', '+ Letto', '+ Letg'),
+    'Volume of the alarm': ('Lautstärke', 'Volume du réveil', 'Volume della sveglia', 'Volumen dal svegliarin'),
+    'unknown action': ('unbekannte Aktion', 'action inconnue', 'azione sconosciuta', 'acziun nunenconuschenta'),
+}
+for _k, _v in _HX125.items():
+    DE.setdefault(_k, _v[0])
+    for _i, _L in enumerate(('fr', 'it', 'rm')):
+        TRX[_L].setdefault(_k, _v[_i + 1])
 # ---- guide: the parts added in 2.53 - 2.65 (inserted into the existing chapters of every language) ----
 _HELP_NEW = {
  "de": {
@@ -52973,6 +53736,52 @@ TRX['fr'].update({"Internet from the phone (USB cable)": "Internet du portable (
 TRX['it'].update({"Internet from the phone (USB cable)": "Internet dal telefono (cavo USB)", "phone found, connecting …": "telefono trovato, connessione …", "the own Wi-Fi gets this internet too": "anche il Wi-Fi proprio riceve questo Internet", "tether-hint": "Collegare il telefono con il cavo USB. Android: Impostazioni → Hotspot e tethering → «Tethering USB». iPhone: attivare «Hotspot personale» e toccare «Autorizza». MoveEye si collega da solo – anche il Wi-Fi proprio (rete di gioco) riceve Internet."})   # USB tethering (2.95.51)
 TRX['rm'].update({"Internet from the phone (USB cable)": "Internet dal telefonin (cabel USB)", "phone found, connecting …": "telefonin chattà, collia …", "the own Wi-Fi gets this internet too": "er l'agen WLAN survegn quest internet", "tether-hint": "Colliar il telefonin cun il cabel USB. Android: Parameters → Hotspot & Tethering → «USB-Tethering». iPhone: activar «Hotspot persunal» e tutgar «Fidar». MoveEye collia sez – er l'agen WLAN (rait da gieus) survegn internet."})   # USB tethering (2.95.51)
 
+
+# ---- 2.98.7: wake-up alarm with the sleeping place, «Spiele freigeben» ----
+_HELP_298 = {
+  "de": '<section id="wake" data-icon="⏰"><h2>Wecker mit Schlafplatz</h2><ul>'
+        '<li><b>Schlafplatz:</b> Kamera auf das Bett richten, unter Schutz → Zonen «+ Schlafplatz» einzeichnen. Er ist ab dann in <b>jedem</b> Bild schwarz – im Live-Bild, in Aufnahmen, Fotos, Push-Bildern, für Gäste und am TV –, auch wenn sich die Kamera dreht.</li>'
+        '<li><b>Nachts wegschauen:</b> Kamera z. B. zur Tür drehen, Einstellungen → Geräte &amp; Sensoren → Wecker → «Nachts hierhin schauen». Ab der eingestellten Zeit schaut MoveEye dorthin («Gute Nacht» = sofort).</li>'
+        '<li><b>Wecken:</b> zur Weckzeit dreht sich die Kamera zum Bett, eine sanfte Melodie wird langsam lauter, das weisse Licht geht an.</li>'
+        '<li><b>Gesten:</b> <b>winken</b> (Hand hin und her) = schlummern, <b>aufsitzen oder aufstehen</b> = Wecker aus. Auch auf dem Handy: Banner mit «Schlummern» und «Wecker aus». Das Bild vom Bett sieht nur die Gestenerkennung – klein, nur im Speicher, nie gespeichert.</li>'
+        '<li>Ohne Reaktion hört der Wecker nach der eingestellten Zeit auf und schickt eine Nachricht.</li></ul></section>\n\n'
+        '<section id="games" data-icon="🎮"><h2>Spiele freigeben</h2><ul>'
+        '<li><b>Eine Taste für alles:</b> Mehr → «Spiele freigeben» (oder Schnellschalter 🎮). Damit öffnen sich die Spielecke (Quiz, Werwolf, Vier gewinnt …), die Spielesammlung und – wenn der 3D-Simulator läuft – «Team gegen MoveEye».</li>'
+        '<li>Die Mitspieler scannen <b>einen</b> QR-Code (gleiches WLAN), geben ihren Namen ein und sind dabei.</li>'
+        '<li><b>Simulator-Spiel:</b> bis 12 Läufer (einstellbar im Simulator, Standard 6). Jeder Läufer ist ein eigenes 3D-Bild auf dem PC – Laptop etwa 4, PC mit Grafikkarte 6–8. Weitere Spieler schauen durch die Kamera zu und rücken nach, sobald ein Platz frei wird.</li></ul></section>\n\n',
+  "en": '<section id="wake" data-icon="⏰"><h2>Wake-up alarm with the sleeping place</h2><ul>'
+        '<li><b>Sleeping place:</b> point the camera at the bed and draw «+ Sleeping place» under Protection → Zones. From then on it is black in <b>every</b> picture – live, recordings, photos, push pictures, guests, TV – also when the camera turns.</li>'
+        '<li><b>Look away at night:</b> turn the camera e.g. to the door, Settings → Devices &amp; sensors → Wake-up alarm → «Look here at night». From the set time on MoveEye looks there («Good night» = now).</li>'
+        '<li><b>Waking up:</b> at the time the camera turns to the bed, a soft melody gets louder, the white light goes on.</li>'
+        '<li><b>Gestures:</b> <b>wave</b> = snooze, <b>sit up or get up</b> = off. On the phone too: a banner with «Snooze» and «Alarm off». Only the gesture detection sees the bed – small, in memory, never stored.</li>'
+        '<li>Without a reaction the alarm stops after the set time and sends a message.</li></ul></section>\n\n'
+        '<section id="games" data-icon="🎮"><h2>Open all games</h2><ul>'
+        '<li><b>One button:</b> More → «Open all games» (or the quick switch 🎮): the game corner, the game collection and – when the 3D simulator runs – «Team against MoveEye».</li>'
+        '<li>The players scan <b>one</b> QR code (same Wi-Fi), type their name and are in.</li>'
+        '<li><b>Simulator game:</b> up to 12 runners (set in the simulator, default 6). Every runner is an own 3D view on the PC – laptop about 4, PC with a graphics card 6–8. More players watch through the camera and join as soon as a place is free.</li></ul></section>\n\n',
+  "fr": '<section id="wake" data-icon="⏰"><h2>Réveil avec le lit</h2><ul><li>Dessiner le lit sous Zones (« + Lit ») : il est noir dans chaque image, même quand la caméra tourne. La nuit, la caméra regarde ailleurs ; au réveil elle se tourne vers le lit. Faire signe = répétition, s’asseoir ou se lever = arrêt.</li></ul></section>\n\n'
+        '<section id="games" data-icon="🎮"><h2>Ouvrir tous les jeux</h2><ul><li>Plus → « Ouvrir tous les jeux » : coin jeux, collection et jeu du simulateur (jusqu’à 12 coureurs). Un seul code QR.</li></ul></section>\n\n',
+  "it": '<section id="wake" data-icon="⏰"><h2>Sveglia con il letto</h2><ul><li>Disegnare il letto sotto Zone («+ Letto»): è nero in ogni immagine, anche quando la telecamera gira. Di notte la telecamera guarda altrove; alla sveglia si gira verso il letto. Salutare = posticipa, sedersi o alzarsi = spegni.</li></ul></section>\n\n'
+        '<section id="games" data-icon="🎮"><h2>Aprire tutti i giochi</h2><ul><li>Altro → «Aprire tutti i giochi»: angolo giochi, raccolta e gioco del simulatore (fino a 12 corridori). Un solo codice QR.</li></ul></section>\n\n',
+  "rm": '<section id="wake" data-icon="⏰"><h2>Svegliarin cun il letg</h2><ul><li>Dissegnar il letg sut Zonas («+ Letg»): el è nair en mintga maletg, er sch’la camera sa volva. La notg guarda la camera davent; tar la sveglia sa volva ella vers il letg. Far segn = durmigliar, seser si u levar si = ora.</li></ul></section>\n\n'
+        '<section id="games" data-icon="🎮"><h2>Avrir tut ils gieus</h2><ul><li>Dapli → «Avrir tut ils gieus»: chantun da gieus, collecziun e gieu dal simulatur (fin 12 curriders). In code QR.</li></ul></section>\n\n'}
+
+
+def _help_298(doc, lang):
+    if '<section id="wake"' in doc:
+        return doc
+    i = doc.find('<section id="tips"')
+    if i < 0:
+        i = doc.find('<section id="privacy"')
+    return doc[:i] + _HELP_298[lang] + doc[i:] if i >= 0 else doc
+
+
+_hp_en = HELP_PAGE.find('<div lang="en">')
+if _hp_en > 0:
+    HELP_PAGE = _help_298(HELP_PAGE[:_hp_en], "de") + _help_298(HELP_PAGE[_hp_en:], "en")
+for _L in ("fr", "it", "rm"):
+    if HELP_X.get(_L):
+        HELP_X[_L] = _help_298(HELP_X[_L], _L)
 # ---- the product page (2.95.52): the homepage of MoveEye (made as an artifact), packed here (gzip + base64) so the Pi
 # can show it without internet to guests in the same Wi-Fi at /info/. Questions from the form arrive as a push message. ----
 INFO_HTML_GZ = (

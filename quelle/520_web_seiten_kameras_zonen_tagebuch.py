@@ -250,6 +250,7 @@ ol{padding-left:18px;margin:6px 0}
         <button onclick="startZone('ignore')" data-i18n="+ Ignore zone">+ Ignore zone</button>
         <button onclick="startZone('only')" data-i18n="+ Only-here zone">+ Only-here zone</button>
         <button onclick="startZone('privacy')" data-i18n="+ Privacy zone">+ Privacy zone</button>
+        <button onclick="startZone('sleep')" data-i18n="+ Sleeping place">+ Sleeping place</button>
         <button onclick="startZone('line')" data-i18n="+ Line">+ Line</button>
         <button onclick="startZone('loiter')" data-i18n="+ Dwell area">+ Dwell area</button>
       </div>
@@ -263,6 +264,7 @@ ol{padding-left:18px;margin:6px 0}
       <div class="legend mut"><div><i style="background:#f59a4a"></i><span data-i18n="Ignore zone">Ignore zone</span>: <span data-i18n="z-ign">z-ign</span></div>
       <div style="margin-top:4px"><i style="background:#3fcf6b"></i><span data-i18n="Only-here zone">Only-here zone</span>: <span data-i18n="z-only">z-only</span></div>
       <div style="margin-top:4px"><i style="background:#a98bff"></i><span data-i18n="Privacy zone">Privacy zone</span>: <span data-i18n="z-priv">z-priv</span></div>
+      <div style="margin-top:4px"><i style="background:#ff7ab6"></i><span data-i18n="Sleeping place">Sleeping place</span>: <span data-i18n="z-sleep">z-sleep</span></div>
       <div style="margin-top:4px"><i style="background:#3cd2ff"></i><span data-i18n="Line">Line</span>: <span data-i18n="z-line">z-line</span></div>
       <div style="margin-top:4px"><i style="background:#ffdc3c"></i><span data-i18n="Dwell area">Dwell area</span>: <span data-i18n="z-loit">z-loit</span></div></div>
       <div class="mut" style="margin-top:8px" data-i18n="z-how">z-how</div>
@@ -271,6 +273,8 @@ ol{padding-left:18px;margin:6px 0}
 </main>
 <script>
 /*COMMON*/
+Object.assign(I18N.de, {"+ Sleeping place": "+ Schlafplatz", "Sleeping place": "Schlafplatz",
+  "z-sleep": "Wie eine Privatsphäre-Zone, bleibt aber auf dem Bett, auch wenn sich die Kamera dreht. Der Wecker dreht die Kamera beim Wecken dorthin (Gesten). Einzeichnen, während die Kamera auf das Bett schaut."});
 Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": "+ Nur-hier-Zone", "+ Privacy zone": "+ Privatsphäre-Zone",
   "Privacy zone": "Privatsphäre-Zone",
   "z-priv": "Der Bereich wird schwarz abgedeckt – im Live-Bild, in Aufnahmen, Fotos und Zeitraffer. Er wird nie gespeichert oder übertragen (Nachbarzelt, Weg, fremdes Fenster). Wichtig für den Datenschutz.", "Finish shape": "Form abschliessen", "New picture": "Neues Bild",
@@ -285,7 +289,7 @@ Object.assign(I18N.de, {"+ Ignore zone": "+ Ignorier-Zone", "+ Only-here zone": 
   "z-ign": "Personen und Objekte, deren Füsse darin stehen, werden ignoriert (Strasse, Baum, Nachbars Garten).",
   "z-only": "Wenn mindestens eine solche Zone existiert, zählt nur, was darin passiert (Eingang, Einfahrt).",
   "z-how": "Eine Zone wirkt auf die Erkennung, die Aufnahme, die Alarme und die Relais. Gezählt wird der Punkt unten in der Mitte des erkannten Objekts (die Füsse)."});
-Object.assign(I18N, {en: {"z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
+Object.assign(I18N, {en: {"z-sleep": "Like a privacy zone, but it stays on the bed when the camera turns. The wake-up alarm turns the camera there (gestures). Draw it while the camera looks at the bed.", "z-line": "Reports when a person crosses the line – both ways or only in the arrow direction (e.g. «comes to the tent»).",
   "z-loit": "Reports when a person stays inside longer than the time set (e.g. at the car).", "z-ign": "Persons and objects whose feet are inside are ignored (street, tree, neighbour's garden).",
   "z-only": "If at least one such zone exists, only what happens inside it counts (entrance, driveway).",
   "z-how": "A zone affects detection, recording, alarms and relays. The point that counts is the bottom middle of the detected object (the feet).",
@@ -293,8 +297,8 @@ Object.assign(I18N, {en: {"z-line": "Reports when a person crosses the line – 
 const tt = s => (LANG === "de" && I18N.de[s]) || (window.LX ? LX(s) : "") || (LANG === "rm" && I18N.de[s]) || (I18N.en && I18N.en[s]) || s;
 const cv = $("#cv"), g = cv.getContext("2d"), img = new Image();
 let zones = [], sel = -1, drawing = null, drawMode = "ignore", drag = null;
-const COL = {ignore: "245,154,74", only: "63,207,107", privacy: "169,139,255", line: "60,210,255", loiter: "255,220,60"};
-const ZNAME = {only: "Only-here zone", privacy: "Privacy zone", ignore: "Ignore zone", line: "Line", loiter: "Dwell area"};
+const COL = {ignore: "245,154,74", only: "63,207,107", privacy: "169,139,255", line: "60,210,255", loiter: "255,220,60", sleep: "255,122,182"};
+const ZNAME = {only: "Only-here zone", privacy: "Privacy zone", ignore: "Ignore zone", line: "Line", loiter: "Dwell area", sleep: "Sleeping place"};
 function arrow(z, on) {                 // line: the arrow shows in which direction crossing it counts
   const [a, b] = z.points.map(px), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
   let nx = -(b[1] - a[1]), ny = b[0] - a[0]; const l = Math.hypot(nx, ny) || 1; nx /= l; ny /= l;
@@ -312,7 +316,7 @@ function draw() {
   else { g.fillStyle = "#0b0f14"; g.fillRect(0, 0, cv.width, cv.height); g.fillStyle = "#8a9bb0"; g.font = "28px sans-serif"; g.textAlign = "center"; g.fillText(t("no picture - is the camera running?"), cv.width / 2, cv.height / 2); g.textAlign = "left"; }
   const poly = (pts, mode, on, close) => {
     g.beginPath(); pts.forEach((p, i) => { const [x, y] = px(p); i ? g.lineTo(x, y) : g.moveTo(x, y); }); if (close) g.closePath();
-    if (close) { g.fillStyle = mode === "privacy" ? "rgba(0,0,0,.82)" : "rgba(" + COL[mode] + "," + (on ? .34 : .22) + ")"; g.fill(); }
+    if (close) { g.fillStyle = mode === "privacy" || mode === "sleep" ? "rgba(0,0,0,.82)" : "rgba(" + COL[mode] + "," + (on ? .34 : .22) + ")"; g.fill(); }
     g.strokeStyle = "rgb(" + COL[mode] + ")"; g.lineWidth = on ? 4 : 2.5; g.stroke();
     pts.forEach(p => { const [x, y] = px(p); g.beginPath(); g.arc(x, y, on || !close ? 8 : 5, 0, 7); g.fillStyle = "#fff"; g.fill(); g.strokeStyle = "rgb(" + COL[mode] + ")"; g.lineWidth = 2; g.stroke(); });
   };
@@ -358,7 +362,7 @@ function renderList() {
     const nm = el("input"); nm.type = "text"; nm.value = z.name; nm.maxLength = 40; nm.oninput = () => { z.name = nm.value; draw(); }; nm.onclick = e => e.stopPropagation();
     const del = el("button", "sec", "✕"); del.title = t("Delete"); del.onclick = e => { e.stopPropagation(); zones.splice(i, 1); sel = -1; renderList(); draw(); };
     const md = el("select");
-    (z.mode === "line" ? [["line", t("Line")]] : [["ignore", t("Ignore zone")], ["only", t("Only-here zone")], ["privacy", t("Privacy zone")], ["loiter", t("Dwell area")]])
+    (z.mode === "line" ? [["line", t("Line")]] : [["ignore", t("Ignore zone")], ["only", t("Only-here zone")], ["privacy", t("Privacy zone")], ["sleep", t("Sleeping place")], ["loiter", t("Dwell area")]])
       .forEach(([v, l]) => { const o = el("option", "", l); o.value = v; md.appendChild(o); });
     md.value = z.mode; md.onchange = () => { z.mode = md.value; if (z.mode === "loiter" && !z.secs) z.secs = 20; renderList(); draw(); }; md.onclick = e => e.stopPropagation();
     r.append(nm, del, md);

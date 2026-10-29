@@ -1868,7 +1868,7 @@ const GROUPS = [                                            // 2.98.0: by goal -
    {sec: "Timelapse", ic: "⏱️"}, {sec: "Mover", title: "Mover (tracked vehicle)", ic: "🚜"}, {fine: true}, {sec: "Servo driver", ic: "🔌"}]},
   {id: "lightsound", tab: "settings", icon: "🔌", name: "Devices & sensors", items: [{sec: "Lights", ic: "💡"}, {sec: "Microphone", ic: "🎤"}, {sec: "Loudspeaker", ic: "🔊"},
    {card: "relayset", sec: "Relays", title: "Relays", ic: "⚡"}, {sec: "Extra sensors", ic: "📡"}, {sec: "Clap switch", ic: "👏"}, {sec: "Bless you", title: "«Bless you!»", ic: "🤧"},
-   {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}]},
+   {sec: "Wake-up alarm", ic: "⏰"}, {sec: "Storm warning", ic: "⛈️"}, {sec: "GPS module", ic: "🛰️"}]},
   {id: "power", tab: "settings", icon: "🔋", name: "Power supply", items: [{card: "batt", sec: "Battery", title: "Battery", ic: "🔋"}, {sec: "Power saving", ic: "🍃"}, {sec: "Solar panel", ic: "☀️"}]},
   {id: "net", tab: "settings", icon: "📶", name: "Network & access", items: [{card: "wifi", sec: "Wi-Fi / hotspot", ic: "📶"}, {sec: "Web stream", ic: "📡"},
    {card: "guest", title: "Guest access", ic: "👥"}, {sec: "MQTT / Home Assistant", title: "MQTT / Home Assistant", ic: "🏠"}]},
@@ -2035,6 +2035,10 @@ const QS = [
   {id: "photo", ic: "📷", lb: "Photo", tip: "Photo into the recordings", on: () => false, go: () => post("/api/quick", {action: "photo"}), flash: true},
   {id: "kino", ic: "🎬", lb: "Cinema", tip: "Full screen for TV / projector: live picture, clock and the last events", on: () => false,     // 2.96.12: from the tool row
    go: () => { location.href = "/kino"; return Promise.resolve({ok: true}); }},
+  {id: "games", ic: "🎮", lb: "Games", tip: "All games for the phones: game corner, game collection and the simulator game - one QR code", on: (c, s) => !!(s.games && s.games.on),   // 2.98.7
+   lbf: (c, s) => s.games && s.games.on ? "🟢 " + s.games.n : "Games",
+   go: async (c, s) => { if (s.games && s.games.on) { if (!confirm(t("Close all games? The players are logged out."))) return {ok: true}; return post("/api/party", {action: "close"}); }
+     const r = await post("/api/party", {action: "all", hours: 6}); if (r && r.ok) location.href = "/party"; return r; }},
   {id: "demo", ic: "▶", lb: "Demo", tip: "3 minutes demonstration with the simulator (in the cinema mode)", on: () => false, ok: (c, s) => !!(s.sim && s.sim.on),
    go: () => { demoGo(); return Promise.resolve({ok: true}); }}];
 let QSJ = null, QSSIG = "";
@@ -2103,6 +2107,8 @@ function qsBuild(j) {
     box.appendChild(b); });
 }
 Object.assign(I18N.de, {"Talk": "Sprechen", "Hold now": "Jetzt halten", "Talking …": "Spricht …", "Talk through the loudspeaker: tap once to unlock, then hold the button while you talk": "Durch den Lautsprecher sprechen: einmal antippen zum Freischalten, dann den Knopf gedrückt halten, solange du sprichst", "Unlocked - now hold the button while you talk": "Freigeschaltet – jetzt den Knopf gedrückt halten, solange du sprichst"});
+Object.assign(I18N.de, {"Games": "Spiele", "All games for the phones: game corner, game collection and the simulator game - one QR code": "Alle Spiele fürs Handy: Spielecke, Spielesammlung und Simulator-Spiel – ein QR-Code",
+  "Close all games? The players are logged out.": "Alle Spiele schliessen? Die Spieler werden abgemeldet."});
 Object.assign(I18N.de, {"Mask": "Maske", "Motion mask over the picture: red = what the detection sees as movement": "Bewegungsmaske über dem Bild: rot = was die Erkennung als Bewegung sieht"});
 // talk tile: two steps against an accidental press - a tap unlocks it for 6 s, then hold it while talking
 const QTALK = {until: 0, timer: null, down: false};
@@ -2150,7 +2156,7 @@ const MAINSW = {
     const spk = !!(s.audio && s.audio.spk), lamp = !!(s.light_cfg && s.light_cfg.white_out);
     return ["person", "big", "small", "warm"].some(g => { const a = c["deter_" + g + "_act"];
       return (a === "sound" && spk) || (a === "light" && lamp) || (a === "both" && (spk || lamp)); }); },
-  "sec:Microphone": c => !!c.audio_in, "sec:Loudspeaker": c => !!c.siren_on && c.siren_on !== "off",
+  "sec:Wake-up alarm": c => !!c.wake_on, "sec:Microphone": c => !!c.audio_in, "sec:Loudspeaker": c => !!c.siren_on && c.siren_on !== "off",
   "sec:Recording": c => c.record, "sec:Timelapse": c => c.timelapse_on, "sec:Backup": c => !!c.backup_type && c.backup_type !== "off",
   "relayset": c => c.relays_on, "schedule": (c, s, j) => (j.schedules || []).some(x => x.enabled),
   "wifi": (c, s) => !!(s.hotspot && s.hotspot.on), "sec:Web stream": c => c.web_stream, "guest": (c, s) => !!(s.guest && s.guest.active),
@@ -3141,6 +3147,36 @@ function simExtras(d) {
   })();
 Object.assign(I18N.de, {"Clap switch": "Klatschschalter", "Bless you": "Gesundheit", "«Bless you!»": "«Gesundheit!»", "Clap 2×": "2× klatschen", "Clap 3×": "3× klatschen", "Clap 4×": "4× klatschen", "Answer": "Antwort", "Words (several: separate with |)": "Worte (mehrere mit | trennen)", "Sensitivity (higher = also softer claps)": "Empfindlichkeit (höher = auch leisere Klatscher)", "Volume of the beep": "Lautstärke des Pieptons", "Sensitivity (higher = answers more readily)": "Empfindlichkeit (höher = antwortet eher)", "Volume of the answer": "Lautstärke der Antwort", "Clap switch on": "Klatschschalter ein", "Beep when recognised": "Piepton, wenn erkannt", "Only when not armed (claps of strangers switch nothing)": "Nur wenn der Schutz aus ist (Klatscher von Fremden schalten nichts)", "Practice: only count and beep, switch nothing": "Üben: nur zählen und piepen, nichts schalten", "Say «Bless you!» after a sneeze": "Nach einem Niesen «Gesundheit!» sagen", "Quiet at night (22 to 7 o'clock)": "Nachts still (22 bis 7 Uhr)", "Test beep": "Piepton testen", "switch on and clap 2× to try it": "einschalten und zum Ausprobieren 2× klatschen", "clap 2, 3 or 4 times": "2, 3 oder 4 Mal klatschen", "counting": "zähle", "last": "zuletzt", "Hear the answer": "Antwort anhören", "Install": "Installieren", "sn-note": "Die Niesen-Erkennung nutzt ein kleines Erkennungsmodell (YAMNet von Google, etwa 4 MB). Es wird beim ersten lauten Geräusch einmal geladen. Tipp: «Gesundheit!» mit dem Handy als Sprachmemo aufnehmen und mit «Eigene Antwort» hochladen – sie wird sofort als Antwort gewählt.",
  "Own answer (sound file)": "Eigene Antwort (Tondatei)", "saved and chosen as answer": "gespeichert und als Antwort gewählt", "loading the sound recognition …": "lade die Geräusch-Erkennung …", "waiting for the first loud sound": "wartet auf das erste laute Geräusch", "needs the sound recognition program - button «Install»": "braucht das Erkennungsprogramm – Knopf «Installieren»", "model could not be loaded": "Modell konnte nicht geladen werden", "installing … (a few minutes)": "installiere … (ein paar Minuten)", "last check": "letzte Prüfung", "today": "heute", "no speech program (sudo apt install libttspico-utils)": "kein Sprachprogramm (sudo apt install libttspico-utils)", "no microphone selected (Microphone)": "kein Mikrofon gewählt (Mikrofon)", "not while armed": "nicht, solange der Schutz an ist", "too many claps": "zu viele Klatscher", "not possible": "nicht möglich"});
+// ---- 2.98.7: wake-up alarm (Einstellungen → Geräte & Sensoren) and the banner while it rings ----
+async function wakeDo(a) { const r = await post("/api/wake", {action: a, lang: LANG}); if (!r.ok) toast("⚠ " + (r.error || "error")); else { if (a === "away_here") toast("✓ " + t("Saved")); refresh(); } }
+function wakePaint(s) {
+  const W = s.wake; if (!W) return;
+  const d = document.querySelector('details[data-view="sec:Wake-up alarm"]');
+  if (d) { let b = document.getElementById("wk-box");
+    if (!b) { b = el("div", "sevbox"); b.id = "wk-box"; b.style.cssText = "margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:13px";
+      const tx = el("div", "", ""); tx.id = "wk-t"; const row = el("div", "btns"), row2 = el("div", "btns");
+      const mk = (lb, a, cls) => { const x = el("button", cls || "sec", lb); x.type = "button"; x.onclick = () => wakeDo(a); return x; };
+      const zl = el("a", "btn sec", "🛏 " + t("Draw the sleeping place")); zl.href = "/zones";
+      row.append(zl, mk("🧭 " + t("Look here at night"), "away_here"), mk("🌙 " + t("Good night"), "sleep_now"));
+      row2.append(mk("🔔 " + t("Test now"), "test"), mk("😴 " + t("Snooze"), "snooze"), mk("⏹ " + t("Alarm off"), "stop"));
+      b.append(tx, row, row2, el("div", "mut", t("wake-note"))); d.appendChild(b); }
+    $("#wk-t").textContent = W.text || ""; }
+  // banner while it rings / snoozes (every page of the live view)
+  let bn = document.getElementById("wk-ban");
+  const show = W.state === "ring" || W.state === "snooze";
+  if (!show) { if (bn) bn.remove(); return; }
+  if (!bn) { bn = el("div"); bn.id = "wk-ban"; bn.style.cssText = "position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:120;background:var(--panel);border:2px solid var(--org);border-radius:16px;padding:10px 12px;display:flex;gap:8px;align-items:center;box-shadow:0 8px 30px rgba(0,0,0,.45);max-width:94vw;flex-wrap:wrap;justify-content:center";
+    const tx = el("b", "", ""); tx.id = "wk-bt"; const a = el("button", "", "😴 " + t("Snooze")), o = el("button", "sec", "⏹ " + t("Alarm off"));
+    a.type = o.type = "button"; a.onclick = () => wakeDo("snooze"); o.onclick = () => wakeDo("stop"); bn.append(tx, a, o); document.body.appendChild(bn); }
+  $("#wk-bt").textContent = (W.state === "ring" ? "⏰ " : "😴 ") + (W.text || "");
+  bn.querySelector("button").hidden = W.state !== "ring";
+}
+Object.assign(I18N.de, {"Wake-up alarm": "Wecker", "Draw the sleeping place": "Schlafplatz einzeichnen", "Look here at night": "Nachts hierhin schauen", "Good night": "Gute Nacht",
+  "Test now": "Jetzt testen", "Snooze": "Schlummern", "Alarm off": "Wecker aus", "Wake-up time (HH:MM)": "Weckzeit (HH:MM)", "Days": "Tage",
+  "Camera looks away from (HH:MM, empty = not)": "Kamera schaut weg ab (HH:MM, leer = nie)", "Snooze (minutes)": "Schlummern (Minuten)", "Rings at most (minutes)": "Klingelt höchstens (Minuten)",
+  "Wake-up alarm on": "Wecker ein", "Switch the white light on": "Weisses Licht einschalten", "Gestures: wave = snooze, sit up / get up = off": "Gesten: winken = schlummern, aufsitzen / aufstehen = aus",
+  "wake-note": "So geht's: 1. Kamera auf das Bett richten, unter «Zonen» einen «Schlafplatz» einzeichnen – er ist ab dann in jedem Bild schwarz, egal wohin die Kamera schaut. 2. Kamera dorthin drehen, wohin sie nachts schauen soll (z. B. Tür), «Nachts hierhin schauen». 3. Weckzeit einstellen. Beim Wecken dreht sich MoveEye zum Bett: winken = schlummern, aufsitzen oder aufstehen = aus. Das Bild vom Bett sieht nur die Gestenerkennung, es wird nie gespeichert."});
+I18N.en = I18N.en || {}; Object.assign(I18N.en, {"wake-note": "How it works: 1. Point the camera at the bed and draw a «Sleeping place» under «Zones» - from then on it is black in every picture, wherever the camera looks. 2. Turn the camera where it should look at night (e.g. the door), «Look here at night». 3. Set the time. When the alarm rings MoveEye turns to the bed: wave = snooze, sit up or get up = off. Only the gesture detection sees the bed; it is never stored."});
 function sevPaint(s) {
   const V = s.soundev; if (!V) return;
   const box = (view, id) => { const d = document.querySelector('details[data-view="sec:' + view + '"]'); if (!d) return null;
@@ -4409,7 +4445,7 @@ async function refresh() {
   renderSchedules(j.schedules || [], s);
   $("#v-rec").hidden = !s.recording; $("#v-src").hidden = !s.source_label; $("#v-src").textContent = s.source_label || "";
   $("#b-sec").hidden = !s.web_open;
-  updateExtras(s); updateProtect(s); tpPaint(s); sensPaint(c, s); stormPaint(c, s); gpsPaint(c, s); simPaint(s); moverPaint(s); sevPaint(s); solarPaint(c, s); dtPaint(s); mqPaint(s); updateAutostart(s); updateAudio(s.audio); renderLights(s.light_cfg, s); updateSecurity(s); tidyHeader(s, c);
+  updateExtras(s); updateProtect(s); tpPaint(s); sensPaint(c, s); stormPaint(c, s); gpsPaint(c, s); simPaint(s); moverPaint(s); sevPaint(s); wakePaint(s); solarPaint(c, s); dtPaint(s); mqPaint(s); updateAutostart(s); updateAudio(s.audio); renderLights(s.light_cfg, s); updateSecurity(s); tidyHeader(s, c);
   badge("#b-pres", t("Presence") + ": " + t(s.presence || "unknown"), s.presence === "home" ? "grn" : (s.presence === "away" ? "org" : ""));
   $("#b-pres").hidden = !(s.presence === "home" || s.presence === "away") || HIDDEN.has("b-pres");
 

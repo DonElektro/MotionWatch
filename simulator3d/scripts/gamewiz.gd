@@ -157,7 +157,7 @@ func model() -> Dictionary:
 	match step:
 		0:
 			title = "Welches Spiel?"
-			lead = "Bis zu 4 Spieler machen mit dem Handy mit. Wähle die Spielart – der Assistent erklärt die Regeln und stellt alles ein."
+			lead = "Bis zu 12 Spieler laufen mit dem Handy mit (einstellbar, Standard 6), weitere schauen zu. Wähle die Spielart – der Assistent erklärt die Regeln und stellt alles ein."
 			key = "game_mode"
 			src = MODES
 		1:

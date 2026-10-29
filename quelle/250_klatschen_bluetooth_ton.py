@@ -925,6 +925,37 @@ def sound_samples(kind, seconds, rate=OUT_RATE):
             if i1 > i0:
                 y[i0:i1] = (np.sin(2 * np.pi * f * (t[i0:i1] - st_)) * _smooth(np.ones(i1 - i0), rate) * 0.8).astype(np.float32)
         return y
+    if kind in ("chime", "birds"):                       # 2.98.7: wake-up sounds - a soft bell melody / bird song
+        y = np.zeros(n, np.float32)
+        rng_ = np.random.default_rng(3)
+        if kind == "chime":
+            notes = [523.25, 659.25, 783.99, 1046.5, 783.99, 659.25]
+            pos = 0.0
+            while pos < seconds:
+                for k, f in enumerate(notes):
+                    st_ = pos + k * 0.32
+                    i0 = int(st_ * rate)
+                    if i0 >= n:
+                        break
+                    L = min(n - i0, int(1.6 * rate)); tt = np.arange(L) / rate
+                    env = np.exp(-tt * 2.6) * np.minimum(1.0, tt / 0.004)
+                    y[i0:i0 + L] += (np.sin(2 * np.pi * f * tt) + 0.3 * np.sin(2 * np.pi * 2.0 * f * tt) + 0.12 * np.sin(2 * np.pi * 3.01 * f * tt)) * env * 0.5
+                pos += 3.2
+        else:
+            pos = 0.2
+            while pos < seconds:
+                i0 = int(pos * rate)
+                if i0 >= n:
+                    break
+                for k in range(int(rng_.integers(2, 6))):          # a short phrase of chirps
+                    L = int(rng_.uniform(0.06, 0.14) * rate); j0 = i0 + k * int(0.16 * rate)
+                    if j0 + L >= n:
+                        break
+                    tt = np.arange(L) / rate; f0 = rng_.uniform(2800, 4200); f1 = f0 * rng_.uniform(0.7, 1.35)
+                    ph = 2 * np.pi * np.cumsum(f0 + (f1 - f0) * tt / tt[-1]) / rate
+                    y[j0:j0 + L] += np.sin(ph) * np.sin(np.pi * tt / tt[-1]) * 0.7
+                pos += float(rng_.uniform(0.8, 2.2))
+        return (y / max(1e-6, float(np.max(np.abs(y))))).astype(np.float32)
     if kind == "marmot":                                 # two short whistles
         y = np.zeros(n, np.float32)
         for st in (0.05, 0.55):
@@ -991,7 +1022,7 @@ def sound_play(kind=None, seconds=None, volume=None, reason="test"):
     if not dev.startswith("bt:") and not shutil.which("aplay"):
         return False, "aplay is missing (sudo apt install alsa-utils)"
     kind = kind or CFG["siren_sound"]
-    if kind not in SOUND_KINDS + ("marmot", "tts", "beep1", "beep2", "beep3", "beep4", "beeplow") and not (kind.startswith("file:") and kind[5:] in own_sounds()):
+    if kind not in SOUND_KINDS + ("marmot", "chime", "birds", "tts", "beep1", "beep2", "beep3", "beep4", "beeplow") and not (kind.startswith("file:") and kind[5:] in own_sounds()):
         kind = "siren"
     seconds = max(0.5, min(120.0, float(seconds if seconds is not None else CFG["siren_seconds"])))
     vol = max(0.0, min(100.0, float(volume if volume is not None else CFG["siren_volume"]))) / 100.0
