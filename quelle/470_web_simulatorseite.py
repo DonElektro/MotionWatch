@@ -981,7 +981,7 @@ async function gwGo(d) {
 let SPEC = null, SPECON = true, SPECRES = "", specT = null;
 try { SPECON = localStorage.getItem("mw-sim-spec") !== "0"; } catch (e) {}
 const MODE_TXT = {camera: "Alle gegen die Kamera", guard: "Wächter", teamguard: "Team gegen Team", mw: "Gegen MoveEye", mwhand: "Team gegen MoveEye",
-  patrol: "Patrouille", seek: "Verstecken mit dem Rover", free: "Zonen-Check"};     // 2.98.0: all game types
+  patrol: "Patrouille", seek: "Verstecken mit dem Rover", free: "Zonen-Check", jaeger: "Fehlalarm-Jäger"};     // 2.98.0: all game types (2.98.18: Fehlalarm-Jäger)
 const ST_IC = {play: "🏃", goal: "🎉", jail: "🔒", out: "👀", lobby: "⏳"};
 async function specPoll() {
   clearTimeout(specT);
@@ -1040,7 +1040,7 @@ function specPaint() {
   if (!run) { $("#s-specres").hidden = true; SPECRES = ""; return; }
   const h = $("#s-spech"); h.innerHTML = "";
   const tm = el("span", "tm" + (G.round === "play" && G.left <= 60 ? " hot" : ""), G.round === "countdown" ? "⏳ " + (G.cd || 0) : G.round === "play" ? "⏱ " + mmss(G.left || 0) : "🏁");
-  h.append(tm, el("span", "", (MODE_TXT[G.mode] || G.mode) + " · " + (G.goal_mode === "flag" ? "🚩 " + (G.caps || [0, 0]).join(" : ") : "🎯 " + (G.goal || ""))));
+  h.append(tm, el("span", "", (MODE_TXT[G.mode] || G.mode) + " · " + (G.goal_mode === "flag" ? "🚩 " + (G.caps || [0, 0]).join(" : ") : G.mode === "jaeger" ? "🎉 " + ((G.jaeger || {}).n || 0) + ((G.jaeger || {}).mw === false ? " · ⚠ MoveEye" : "") : "🎯 " + (G.goal || ""))));
   if (G.items_all) h.appendChild(el("span", "", "💎 " + (G.items_all - G.items_left) + "/" + G.items_all));
   if (G.last_minute && G.round === "play") h.appendChild(el("span", "", "⏰"));
   if (G.night) h.appendChild(el("span", "", "🌙"));
@@ -1050,7 +1050,7 @@ function specPaint() {
   (G.players || []).forEach(p => { const c = el("span", "pl"); const d = el("span", "dot"); d.style.background = p.c;
     c.append(d, el("span", "", (ST_IC[p.s] || "") + " " + p.n + (p.r === "guard" ? " 👮" : "")));
     if (p.r !== "guard" && p.s === "play") { const mb = el("span", "mb"), i = el("i", p.susp > 70 ? "d" : p.susp > 35 ? "w" : ""); i.style.width = Math.max(4, p.susp) + "%"; mb.appendChild(i); c.appendChild(mb); }
-    const extra = (p.k ? " 🚨" + p.k : "") + (p.i ? " 💎" + p.i : "") + (p.pw === "cloak" ? " 🌫" : p.pw === "turbo" ? " ⚡" : "") + (p.carry ? " 💰" : "")
+    const extra = (p.lure ? " " + p.lure : "") + (p.fa ? " 🎉" + p.fa : "") + (p.k ? " 🚨" + p.k : "") + (p.i ? " 💎" + p.i : "") + (p.pw === "cloak" ? " 🌫" : p.pw === "turbo" ? " ⚡" : "") + (p.carry ? " 💰" : "")
       + (p.dc ? " 🦆" : "") + (p.hid ? " 🌳" : "") + (G.cps_all && p.cp ? " 🚩" + p.cp + "/" + G.cps_all : "") + (p.hc ? " 🎯" : "");
     if (extra) c.appendChild(el("span", "", extra.trim()));
     P.appendChild(c); });
@@ -1060,6 +1060,8 @@ function specPaint() {
   if (G.round === "end" && G.res && G.res.length) {
     const sig = JSON.stringify(G.res);
     if (SPECRES !== sig && SPECRES !== "closed:" + sig) { SPECRES = sig; R.innerHTML = ""; const bx = el("div", "bx"); bx.appendChild(el("h3", "", "🏆 " + t("Result")));
+      if (G.jres && G.jres.text) { const jr = el("div", "", (G.jres.n ? "🎉 " : "🛡 ") + G.jres.text); jr.style.cssText = "font-size:22px;font-weight:800;margin:4px 0 8px"; bx.appendChild(jr);   // 2.98.18: «Fehlalarm-Jäger»
+        if ((G.jres.cases || []).length) bx.appendChild(el("div", "mut", G.jres.cases.map(c => c[0] + " " + c[1] + " (" + c[2] + ", " + Math.round(c[3]) + " m)").join(" · "))); }
       if (G.fres && G.fres.text) { const fr = el("div", "", "🚩 " + G.fres.text + " – " + G.fres.title); fr.style.cssText = "font-size:26px;font-weight:800;margin:4px 0 8px"; bx.appendChild(fr); }   // 3D-4.x
       if (G.duel && G.duel.text) { const du = el("div", "", "🛡 " + t("Duel") + ": 🤖 MoveEye " + G.duel.mw + " : " + G.duel.human + " " + G.duel.who); du.style.cssText = "font-size:22px;font-weight:800;margin:4px 0 2px";
         bx.append(du, el("div", "", G.duel.text)); }

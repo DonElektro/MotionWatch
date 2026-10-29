@@ -30,6 +30,14 @@ const KEYS := ["game_mode", "game_goal", "game_level", "game_lives", "game_minut
 		"game_cones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints",
 		"game_autohandicap", "game_tasks", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard"]
 const STEPS := ["Spielart", "Ziel", "Schwierigkeit", "Mitspieler & Start"]
+const STEPS_JG := ["Spielart", "Lockvögel", "Dauer", "Mitspieler & Start"]    # 3D-4.x: «Fehlalarm-Jäger» has its own simple setup
+const JG_TIME := [["3", "⏱", "3 Minuten", "Kurz – gut für Kinder und zum Ausprobieren."], ["5", "⏱", "5 Minuten", "Eine normale Runde."],
+		["8", "⏱", "8 Minuten", "Lang – Zeit, viele Lockvögel zu testen."]]
+# everything that has no use when the players are animals and things (set on «Fehlalarm-Jäger»)
+const JG_FIXED := {"game_goal": "reach", "game_lives": "0", "game_items": 0, "game_teams": false, "game_rescue": false, "game_stones": false,
+		"game_cones": false, "game_powers": false, "game_photos": false, "game_hides": 0, "game_decoy": false, "game_events": false,
+		"game_checkpoints": 0, "game_autohandicap": false, "game_tasks": false, "game_tutorial": false, "game_daily": false, "game_ghost": false,
+		"game_heart": false, "game_botguard": false}
 # 3D-3.77: on the last step - who plays along
 const PLAYER_OPTS := [["game_bots", "Computer-Spieler (Bots)", "select", 0, 0, "", false, [["0", "keine"], ["1", "1 Bot"], ["2", "2 Bots"], ["3", "3 Bots"]]],
 		["game_botguard", "🤖 Bot-Wächter, wenn niemand Wächter sein will (Spielart «Wächter»)", "toggle", 0, 0, "", false],
@@ -42,6 +50,7 @@ const MODES := [["mw", "🛡", "Gegen MoveEye", "Die echte Erkennung von MoveEye
 		["guard", "👮", "Wächter", "Ein Spieler ist Wächter – am Handy oder am PC: Er dreht den Kopf, schaltet das Licht ein und ruft «Erwischt!». Will niemand, passt der Bot-Wächter auf (zu zweit spielbar). Am Schluss das Duell: wer hat mehr erwischt, der Wächter oder MoveEye?"],
 		["seek", "🙈", "Verstecken mit dem Rover", "Alle starten bei der Basis und verstecken sich 30 s lang. Der Fänger sieht nur die Kamera, fährt den Rover und drückt «Gefunden!». Wer die Basis berührt, rettet alle. Danach steht MoveEye wieder am alten Ort."],
 		["free", "🧪", "Zonen-Check", "Ohne Erwischen: geh die Grenzen deiner Zonen und die Wege ums Zelt ab. Das Handy sagt laufend, ob MoveEye dich sieht – jede Stelle, wo es dich nicht meldet, kommt auf die Karte der blinden Flecken."],
+		["jaeger", "🦊", "Fehlalarm-Jäger", "Ihr seid keine Menschen, sondern Fuchs, Katze, Ast im Wind, Lampe, Ballon … Schafft ihr es, dass MoveEye trotzdem «Person!» meldet? Jeder Fehlalarm gibt Punkte – und MoveEye lernt daraus. Nur mit MoveEye."],
 		["camera", "🎥", "Alle gegen die Kamera (ältere Spielart)", "Wie «Gegen MoveEye», aber immer schätzt der Simulator, wer gesehen wird – auch wenn MoveEye verbunden ist.", true],
 		["teamguard", "🔴🔵", "Team gegen Team (ältere Spielart)", "Wie «Wächter», aber ein ganzes Team bewacht und die Teams tauschen nach einer Runde.", true],
 		["mwhand", "🕹", "Team gegen MoveEye", "Die Spieler schleichen mit dem Handy. Die Wächter sitzen an MoveEye: Sie drehen die echte Kamera mit dem Joystick auf der Live-Seite und drücken «Erwischt!».", true],
@@ -84,7 +93,12 @@ const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter
 		"botguard": "🤖 Bot-Wächter: Will niemand Wächter sein, dreht ein Bot den Kopf und ruft «Erwischt!» – auch er kann sich täuschen lassen.",
 		"level": "⭐ Stufen: Jede Runde gibt Erfahrungspunkte (Punkte, Abzeichen, Aufgabe, Tagesaufgabe). Höhere Stufen schalten Dinge für die eigene Figur frei.",
 		"watch": "👀 Zuschauer machen mit: Sie tippen, wer durchkommt, und dürfen zwei Locksteine werfen.",
-		"new": "🎓 Wer zum ersten Mal spielt, bekommt von selbst die Übungsschritte (gehen, ducken, kriechen, Stein, Busch)."}
+		"new": "🎓 Wer zum ersten Mal spielt, bekommt von selbst die Übungsschritte (gehen, ducken, kriechen, Stein, Busch).",
+		"jg_how": "🦊 So geht's: Jeder wählt auf dem Handy einen Lockvogel und bewegt ihn vor der Kamera. Der Pfeil zeigt zur Kamera 📷. Die Dinge haben einen eigenen Knopf (Windstoss, Schwenken, Steigen, Fallen, Schwärmen).",
+		"jg_score": "🎉 Punkte: Meldet MoveEye eine Person, obwohl nur dein Lockvogel im Bild ist, gibt es 100 Punkte (+50 für jeden neuen Lockvogel). Ist ein echter Mensch im Bild, zählt es nicht.",
+		"jg_learn": "🧠 Jeder Fehlalarm wird ein Lernfall: MoveEye bekommt das Bild und die Lage (was, wie weit, Licht, Wetter) und lässt sich beim nächsten Mal weniger täuschen.",
+		"jg_night": "🌙 Nacht-Runde: Lampen-Strahl und Insekten am Licht wirken im Dunkeln am besten.",
+		"jg_nomw": "⚠ MoveEye ist gerade nicht verbunden. Ohne MoveEye zählt kein Fehlalarm – zuerst in MoveEye den Simulator verbinden."}
 # 3D-4.x: the quick starts and the presets for the kids mode and «Mitspieler einladen» - every key of KEYS is set
 const BASE := {"game_mode": "mw", "game_goal": "reach", "game_level": "normal", "game_lives": "3", "game_minutes": 5, "game_items": 3, "game_teams": false,
 		"game_rescue": false, "game_stones": true, "game_cones": false, "game_powers": true, "game_spectate": true, "game_photos": true, "game_hides": 3,
@@ -111,6 +125,7 @@ func _cur() -> Dictionary:
 	for c in main.controls:
 		if c.id in KEYS and c["get"] != null:
 			o[c.id] = c["get"].call()
+	o["game_lures"] = main.game.jaeger.allowed_str()        # «Fehlalarm-Jäger»: which lures (not a control of the card)
 	return o
 
 
@@ -158,6 +173,19 @@ func _summary(c: Dictionary) -> String:
 
 func _rules() -> Array:
 	var out := []
+	if jg():                                               # «Fehlalarm-Jäger»: its own short rules
+		for m in MODES:
+			if m[0] == "jaeger":
+				out.append(m[3])
+		out.append(RULES["jg_how"])
+		out.append(RULES["jg_score"])
+		out.append(RULES["jg_learn"])
+		if W.get("game_night", false):
+			out.append(RULES["jg_night"])
+		if not main.game.jaeger.mw_on():
+			out.append(RULES["jg_nomw"])
+		out.append(RULES["level"])
+		return out
 	for m in MODES:
 		if m[0] == str(W.get("game_mode")):
 			out.append(m[3])
@@ -201,6 +229,18 @@ func apply_preset(id: String, open_game := true) -> Array:
 	return errs
 
 
+func jg() -> bool:
+	return str(W.get("game_mode", "")) == "jaeger"
+
+
+func steps() -> Array:
+	return STEPS_JG if jg() else STEPS
+
+
+func _jg_list() -> Array:
+	return Array(str(W.get("game_lures", "")).split(",", false))
+
+
 func model() -> Dictionary:
 	var g = main.game
 	var cards := []
@@ -225,11 +265,30 @@ func model() -> Dictionary:
 			src = LEVELS
 		3:
 			title = "Bereit!"
+	if jg() and step in [1, 2]:                            # «Fehlalarm-Jäger»: which lures, how long
+		title = "Welche Lockvögel sind erlaubt?" if step == 1 else "Wie lange?"
+		lead = "Tippe an, was mitmachen darf (mehrere möglich). Jeder Spieler wählt dann auf dem Handy seinen Lockvogel." if step == 1 else "Wie lange dauert eine Runde?"
+		key = "game_lures" if step == 1 else "game_minutes"
+		src = []
+		if step == 1:
+			for l in main.game.jaeger.LURES:
+				src.append([l[0], l[1], l[2], l[4]])
+		else:
+			src = JG_TIME
+	if jg() and not main.game.jaeger.mw_on():
+		lead = (lead + "\n" if lead != "" else "") + RULES["jg_nomw"]
 	for c in src:
 		var on: bool = (lvl == c[0]) if key == "_lvl" else str(W.get(key, "")) == c[0]
+		if key == "game_lures":
+			on = c[0] in _jg_list()
+		elif key == "game_minutes":
+			on = int(W.get("game_minutes", 5)) == int(c[0])
 		if key == "game_mode" and c.size() > 4 and bool(c[4]) and main.ui_simple and not on:
 			continue                                       # 3D-3.90: the old game types only with «Experte»
-		cards.append({"v": c[0], "icon": c[1], "title": c[2], "text": c[3], "on": on, "pic": Pics.PICS.get(c[0], "")})
+		var tx: String = c[3]
+		if key == "game_mode" and c[0] == "jaeger" and not main.game.jaeger.mw_on():
+			tx += " ⚠ MoveEye ist gerade nicht verbunden."
+		cards.append({"v": c[0], "icon": c[1], "title": c[2], "text": tx, "on": on, "pic": Pics.PICS.get(c[0], "")})
 	var quick := []
 	if step == 0:                                          # 3D-4.x: one tap - everything set
 		for q in QUICK:
@@ -238,6 +297,11 @@ func model() -> Dictionary:
 	if step == 2 or step == 3:
 		for o in (OPTIONS if step == 2 else PLAYER_OPTS):
 			if not W.has(o[0]):
+				continue
+			if jg() and not (o[0] in ["game_night", "game_bots"]):
+				continue                                       # «Fehlalarm-Jäger»: only the night round and the bots
+			if jg() and o[0] == "game_night":
+				opts.append({"id": o[0], "label": "🌙 Nacht-Runde (Lampe und Insekten wirken besser)", "type": "toggle", "value": W[o[0]], "extra": false})
 				continue
 			if o[0] == "game_botguard" and str(W.get("game_mode")) != "guard":
 				continue
@@ -262,15 +326,23 @@ func model() -> Dictionary:
 		summary = [["Spielart", md], ["Ziel", gl], ["Dauer einer Runde", "%d min" % int(W.get("game_minutes", 5))],
 				["Leben", "unbegrenzt" if str(W.get("game_lives")) == "0" else str(W.get("game_lives"))], ["Kristalle", str(int(W.get("game_items", 0)))],
 				["Teams", "Rot gegen Blau" if W.get("game_teams", false) else "nein"]]
+		if jg():
+			var ll := PackedStringArray()
+			for l in main.game.jaeger.LURES:
+				if l[0] in _jg_list():
+					ll.append(l[1] + " " + l[2])
+			summary = [["Spielart", md], ["Lockvögel", ", ".join(ll)], ["Dauer einer Runde", "%d min" % int(W.get("game_minutes", 5))],
+					["Nacht-Runde", "ja" if W.get("game_night", false) else "nein"],
+					["MoveEye", "✓ verbunden – entscheidet" if main.game.jaeger.mw_on() else "⚠ nicht verbunden – ohne MoveEye zählt nichts"]]
 	var last = _last()
 	var nl := "Weiter ›"
 	if step == 3:
 		nl = "▶ Runde starten" if g.open else "✓ Spiel öffnen & QR-Code zeigen"
-	return {"ok": true, "shown": shown, "seq": seq, "step": step, "steps": STEPS, "title": title, "lead": lead, "key": key, "cards": cards,
+	return {"ok": true, "shown": shown, "seq": seq, "step": step, "steps": steps(), "title": title, "lead": lead, "key": key, "cards": cards,
 			"options": opts, "extras_open": extras_open, "summary": summary, "quick": quick, "quick_title": "Schnellstart – ein Tipp, alles eingestellt" if step == 0 else "",
 			"own_title": "Oder selbst zusammenstellen:" if step == 0 else "",
 			"extras_label": EXTRAS_LABEL[1] if step == 2 else (EXTRAS_LABEL[0] if step == 3 else ""),
-			"pics": [Pics.PICS.get(str(W.get("game_mode")), ""), Pics.PICS.get(str(W.get("game_goal")), "")] if step == 3 else [], "rules": _rules() if step == 3 else [],
+			"pics": ([Pics.PICS.get(str(W.get("game_mode")), ""), "" if jg() else Pics.PICS.get(str(W.get("game_goal")), "")]) if step == 3 else [], "rules": _rules() if step == 3 else [],
 			"last": _summary(last) if last != null and step == 0 else "", "error": error, "next": nl, "back": step > 0,
 			"game": {"open": g.open, "url": g.address() if g.open else "", "players": g.count(), "round": g.round_state, "max": int(main.game_max)}}
 
@@ -332,6 +404,16 @@ func _pick(key: String, v: String) -> void:
 		for k in LEVEL_SET.get(v, {}):
 			if W.has(k):
 				W[k] = LEVEL_SET[v][k]
+	elif key == "game_lures":                              # «Fehlalarm-Jäger»: on / off, at least one stays
+		var l := _jg_list()
+		if v in l:
+			if l.size() > 1:
+				l.erase(v)
+		elif v in main.game.jaeger.ALL:
+			l.append(v)
+		W["game_lures"] = ",".join(PackedStringArray(l))
+	elif key == "game_minutes":
+		W["game_minutes"] = clampi(int(v), 1, 15)
 	elif W.has(key):
 		W[key] = v
 		if key == "game_mode" and v == "teamguard":
@@ -365,6 +447,9 @@ func _apply() -> void:
 	if f != null:
 		f.store_string(JSON.stringify(save))
 	var errs := []
+	if jg():                                               # «Fehlalarm-Jäger»: the extras of the other games off, the lures
+		W.merge(JG_FIXED, true)
+		g.jaeger.set_allowed(str(W.get("game_lures", "")))
 	for k in KEYS:
 		if W.has(k):
 			var r: Dictionary = main.control_set(k, W[k])
@@ -495,7 +580,8 @@ func _process(dt: float) -> void:
 func _draw_prog() -> void:
 	"""the steps as dots on a line: done = green tick, now = blue and pulsing, later = grey"""
 	var w := prog.size.x
-	var n := STEPS.size()
+	var ST := steps()
+	var n := ST.size()
 	var x0 := 40.0
 	var x1 := w - 40.0
 	var y := 16.0
@@ -512,7 +598,7 @@ func _draw_prog() -> void:
 		prog.draw_circle(Vector2(x, y), 11.0, c)
 		var mark := "✓" if i < step else str(i + 1)
 		prog.draw_string(font, Vector2(x - 12, y + 5), mark, HORIZONTAL_ALIGNMENT_CENTER, 24, 13, Color.WHITE)
-		prog.draw_string(font, Vector2(x - 70, y + 32), STEPS[i], HORIZONTAL_ALIGNMENT_CENTER, 140, 12, Color.WHITE if i == step else Color(0.62, 0.68, 0.76))
+		prog.draw_string(font, Vector2(x - 70, y + 32), ST[i], HORIZONTAL_ALIGNMENT_CENTER, 140, 12, Color.WHITE if i == step else Color(0.62, 0.68, 0.76))
 
 
 func _prog_input(ev: InputEvent) -> void:
