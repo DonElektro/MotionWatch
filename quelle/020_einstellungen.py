@@ -23,6 +23,7 @@ CFG = {
     "ai_require": False,         # motion persons must be confirmed by the AI
     "ai_conf": 0.5,              # confidence threshold
     "ai_every": 3,               # run the network every N frames
+    "ai_zoom": True,             # 2.98.13: «KI-Lupe» - small moving things are looked at once more, enlarged (far persons)
     "show_objects": True,        # mark ALL objects the network finds (not just persons)
     "object_conf": 0.5,          # confidence threshold for non-person objects
     # recording

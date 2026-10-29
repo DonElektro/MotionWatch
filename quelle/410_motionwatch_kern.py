@@ -818,6 +818,9 @@ class MotionWatch:
                 boxes = [b for b in boxes if b[2] * b[3] <= 0.25 * pw * ph] if ai_boxes else boxes
                 boxes = merge_boxes(boxes + [b[:4] for b in ai_boxes])   # AI persons become tracks too
                 tracks = self.tracker.update(boxes)
+                # 2.98.13: small moving things the AI has not confirmed - the «KI-Lupe» looks at the biggest of them next time
+                self.ai.hints = [t.box for t in tracks if not t.lost and len(t.speeds) >= 2 and t.box[3] < 0.4 * ph
+                                 and t.box[2] * t.box[3] < 0.08 * pw * ph and not any(iou(t.box, b) > 0.2 for b in ai_boxes)]
                 for t in tracks:
                     if t.lost:
                         continue

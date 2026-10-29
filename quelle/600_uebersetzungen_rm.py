@@ -2168,6 +2168,7 @@ for _k, _v in _HX124.items():
     for _i, _L in enumerate(('fr', 'it', 'rm')):
         TRX[_L].setdefault(_k, _v[_i + 1])
 _HX125 = {  # 2.98.7: «Spiele freigeben», wake-up alarm, sleeping place
+    'AI magnifier: look again, enlarged, at small moving things (persons far away)': ('KI-Lupe: kleine bewegte Dinge nochmals vergrössert anschauen (Personen weit weg)', 'Loupe IA : regarder encore une fois, agrandi, les petits objets en mouvement (personnes au loin)', 'Lente IA: guardare di nuovo, ingrandito, le piccole cose in movimento (persone lontane)', 'Lupa IA: guardar anc ina giada, engrondì, chaussas pitschnas en moviment (persunas lontanas)'),
     'Messages': ('Nachrichten', 'Messages', 'Messaggi', 'Messadis'),
     'Everything MoveEye sent to your phone - and the messages on the ntfy server.': ('Alles, was MoveEye ans Handy geschickt hat – und die Nachrichten auf dem ntfy-Server.', 'Tout ce que MoveEye a envoyé à ton téléphone – et les messages sur le serveur ntfy.', 'Tutto ciò che MoveEye ha inviato al telefono – e i messaggi sul server ntfy.', 'Tut quai che MoveEye ha tramess al telefonin – ed ils messadis sin il server ntfy.'),
     'From MoveEye': ('Von MoveEye', 'De MoveEye', 'Da MoveEye', 'Da MoveEye'),

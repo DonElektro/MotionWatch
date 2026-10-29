@@ -872,6 +872,30 @@ class AIDetector:
                     boxes.append((x1, y1, x2 - x1, y2 - y1, conf))
                 else:
                     objects.append((int(x1), int(y1), int(x2 - x1), int(y2 - y1), conf, cls))
+        # 2.98.13: «KI-Lupe» - something small moves (a person far away, 20-30 pixels in the 300 x 300 picture of the AI):
+        # look at that part once more, enlarged. Far persons were found by the AI only rarely before.
+        if CFG.get("ai_zoom", True):
+            for hb in sorted(getattr(self, "hints", []), key=lambda b: -b[2] * b[3])[:1]:
+                if any(iou(hb, b[:4]) > 0.1 for b in boxes):
+                    continue
+                side = int(min(min(w, h), max(110, 3.2 * hb[3])))
+                cx, cy = hb[0] + hb[2] // 2, hb[1] + hb[3] // 2
+                x0 = max(0, min(w - side, cx - side // 2)); y0 = max(0, min(h - side, cy - side // 2))
+                crop = frame[y0:y0 + side, x0:x0 + side]
+                if crop.size == 0:
+                    continue
+                self.net.setInput(cv2.dnn.blobFromImage(crop, size=(300, 300), swapRB=True, crop=False))
+                d2 = self.net.forward()
+                for i in range(d2.shape[2]):
+                    cls, conf = int(d2[0, 0, i, 1]), float(d2[0, 0, i, 2])
+                    if cls != 1 or conf < CFG["ai_conf"]:
+                        continue
+                    a1, b1, a2, b2 = (d2[0, 0, i, 3:7] * side).astype(int)
+                    bx = (x0 + max(0, a1), y0 + max(0, b1), max(1, min(side, a2) - max(0, a1)), max(1, min(side, b2) - max(0, b1)), conf)
+                    if bx[3] >= 0.6 * side and side > 0.8 * min(w, h):
+                        continue                               # the whole crop as one «person»: not trusted
+                    if not any(iou(bx[:4], b[:4]) > 0.3 for b in boxes):
+                        boxes.append(bx); STATE["ai_zoom_hits"] = STATE.get("ai_zoom_hits", 0) + 1
         self.boxes = boxes; self.objects = objects
         STATE["ai_ms"] = int((time.time() - t0) * 1000)
         STATE["ai_status"] = f"running · {STATE['ai_ms']} ms"

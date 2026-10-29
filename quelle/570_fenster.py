@@ -190,6 +190,7 @@ TOGGLES = [  # (section, key, label)
     ("AI detection", "ai_enabled", "AI person detection (SSD MobileNet V2)"),
     ("AI detection", "show_objects", "Mark all detected objects (cars, animals, ...)"),
     ("AI detection", "ai_require", "Motion persons need AI confirmation"),
+    ("AI detection", "ai_zoom", "AI magnifier: look again, enlarged, at small moving things (persons far away)"),
     ("Web stream", "web_stream", "Web stream + remote control (port 5000)"),
     ("Web stream", "ext_on", "Picture for other programs (Home Assistant, recorder, VLC) with a secret address"),
     ("Web stream", "rtsp_on", "RTSP video for recorders (needs mediamtx; uses CPU)"),
