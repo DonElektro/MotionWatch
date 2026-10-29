@@ -1,15 +1,15 @@
 {
  "app": "Motion Watch",
- "generated": "2026-10-29 18:53",
+ "generated": "2026-10-29 19:26",
  "versions": [
   {
-   "version": "2.98.28",
-   "file": "webcam_bewegung_2_98_28.py",
+   "version": "2.98.29",
+   "file": "webcam_bewegung_2_98_29.py",
    "url": "",
-   "sha256": "f558226a96d05301151623ff9b01f4ae2cb8dfb8f7e8a2d0b6b5edd233b644a3",
-   "date": "2026-10-29 18:53",
-   "notes": "Neue Live-Seite: ordnet sich nach dem Fensterformat (hoch: Bild oben; quer: Bild links, Steuerung rechts; klein: nur Bild mit schwebenden Knöpfen), Bild immer ganz sichtbar, Bildgrösse-Regler, Joystick nur mit Schwenkkopf (quer im Bild), Lieblingsknöpfe, Simulator direkt unter dem Bild und darunter der Gehtest, Knopf «Ansicht» mit Vorlagen (Nur schauen, Bedienen, Einrichten) und Bearbeiten-Modus, pro Gerät gespeichert. Überlappungen in «Bedienung» behoben.",
-   "sig": "700f75029d23410a46b2c3ccfe6abcc5621206a2ff4b02656924bdb11e923a3bb8c5b0945d63d488d28ad4c1c60c3fed1d0f775889d5b7eff329658c90d37e0b"
+   "sha256": "da18aaba7cd7d1c8369f96315db66d2a181e3ec4929a79d1514256803670d44e",
+   "date": "2026-10-29 19:26",
+   "notes": "Zwei MoveEye am selben Simulator (Pi und KI-Hilfe auf dem PC): nur eines steuert den Kopf, das andere schaut zu (vorher wackelte der Kopf und die Kamerabilder flackerten); Live-Seite: Regler «Grösse» 60–160 %, iPad-Grössen, ein Weg zum Ordnen (Bearbeiten in «Ansicht», «Für alle Geräte übernehmen»), Kalibrieren ohne Kopf unter «… mehr», Simulator nur einmal, Fenster mit Ansicht-Menü; Wärmebild: Personen auch bei klarer, kalter Nacht; Controller im Spiel (Simulator 3D-4.9).",
+   "sig": "96dff9c8a2488576189fba8459cf0cc875032f4610269bd932f3ec07d4f9929ac2b57d81d838b8ba706f54e3c3a3623d52eb65bec972d75ba2cde2d948d8ea0b"
   },
   {
    "version": "2.97.1",
