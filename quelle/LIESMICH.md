@@ -113,6 +113,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `535_web_erkennung.py` | Web: Gehtest (Live, Schutz), Akku-Sparen auf der Schutz-Seite | 119 |
 | `536_web_live_ansicht.py` | Web: Live-Seite nach Format (Hoch / Quer / nur Bild), «Ansicht» (Vorlagen, Bildgrösse, Lieblingsknöpfe, Karten, Bearbeiten), Joystick nur mit Kopf (`live_has_head`) | 488 |
 | `537_web_platz.py` | Web: Seite «Platz einrichten» (/place), Karte auf der Schutz-Seite, Angebot nach dem Hinstellen, Blickwinkel in Kamera / Servos | 420 |
+| `538_web_controller_ansicht.py` | Web: «Controller-Ansicht» der Live-Seite für Handy / Tablet (Live- + Simulator-Bild, Game-Controller, Gesten, schmale Leiste) | 383 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
 | `545_simulator_updates.py` | Simulator-Updates: ein Besitzer («Neue Versionen» im Simulator) | 72 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
@@ -156,6 +157,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `624_uebersetzungen_platzein.py` | Übersetzungen und Anleitung «Platz einrichten» / «Blickwinkel der Kamera» | 200 |
 | `626_uebersetzungen_live.py` | Übersetzungen der neuen Live-Seite (536) und des Fensters (570) | 89 |
 | `627_uebersetzungen_live2.py` | Übersetzungen zu 2.98.29: ein Bearbeiten-Modus, «Für alle Geräte», Grösse, Fenster-Ansicht | 79 |
+| `628_uebersetzungen_padview.py` | Übersetzungen der Controller-Ansicht (538) | 76 |
 | `629_uebersetzungen_kopfauto.py` | Übersetzungen «Automatische Kopfbewegung» (2.98.30) | 63 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |
