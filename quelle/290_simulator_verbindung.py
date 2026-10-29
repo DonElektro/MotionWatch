@@ -87,6 +87,13 @@ def _sim_refscan_info():
         return None
 
 
+def _simtask_now():
+    try:
+        return simtask_local()
+    except NameError:
+        return ""
+
+
 def sim_state():
     hp, ht = servo_half("pan"), servo_half("tilt")
     pl, tl = min(float(CFG["pan_limit"]), hp), min(float(CFG["tilt_limit"]), ht)
@@ -106,6 +113,7 @@ def sim_state():
             "wake": {"state": WAKE["state"], "snoozes": WAKE["snoozes"], "t0": round(WAKE["t0"], 2)},       # 2.98.9: the sleeper in the bedroom scene reacts
             "relays": [{"name": r["name"], "on": bool(rs[i]) if i < len(rs) else False} for i, r in enumerate(RELAYS)],
             "sound": (CFG["siren_sound"] or "siren") if SOUND["playing"] else ("talk" if TALK["proc"] is not None else ""),
+            "simtask": (stk_ := _simtask_now()), "simtask_de": tr(stk_, "de") if stk_ else "",   # 2.98.13: one lock (147)
             "eco": STATE.get("eco") or "off",     # power saving of MoveEye: «saving» = quiet - the simulator may calculate slower (3D-3.30)
             # automatic update: the simulator compares these checksums with its own files and fetches /sim/simulator.zip
             "sim_files": sim_files(), "mw_scheme": "https" if WEB_OPTS.get("https") else "http", "mw_port": int(CFG["web_port"]),

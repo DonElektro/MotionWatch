@@ -720,6 +720,8 @@ def sim_auto_update_check():
         d = sim_control()
         if not any(c.get("id") == "update_now" for c in (d.get("controls") or [])):
             return
+        if any(c.get("id") == "update_mode" for c in (d.get("controls") or [])):
+            return                                        # 2.98.13: the simulator decides itself («Neue Versionen», 545)
         SIM_AUTOUPD[key] = time.time()
         sim_control({"action": "press", "id": "update_now"})
         log_event("sys", f"Simulator: update {v['current']} -> {v['latest']} started by itself")

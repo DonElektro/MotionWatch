@@ -4262,6 +4262,7 @@ async function healthLoad() {
         toast("⬇ " + t("Download AI model")); const iv = setInterval(async () => { await healthLoad(); let j = {}; try { j = await (await fetch("/api/ai_model")).json(); } catch (e) {}
           if (!j.busy) { clearInterval(iv); toast(j.msg === "ready" ? "✓ " + t("AI ready") : "⚠ " + (j.msg || "")); healthLoad(); } }, 2000); };
       b.appendChild(k); }
+    if (x.link) { const a = el("a", "", "📖 " + t("Manual")); a.href = x.link; a.target = "_blank"; a.rel = "noopener"; a.style.cssText = "display:inline-block;margin-top:4px;font-size:13px"; b.appendChild(a); }
     r.append(d, b); L.appendChild(r); });
 }
 function healthOpen() { const c = $("#hcard"); if (!c) return; let p = c; while (p) { if (p.tagName === "DETAILS") p.open = true; p = p.parentElement; }

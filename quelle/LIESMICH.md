@@ -28,6 +28,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `040_speichern_passwort.py` | Einstellungen speichern, Web-Passwort | 443 |
 | `050_meldungen_push.py` | Meldungen (ntfy, Telegram, Webhook), Web-Push | 289 |
 | `060_sicherung_schutz_klima.py` | Sicherung, Diebstahlschutz, Linse, Klima, Wetter, Postausgang, Notifier | 1224 |
+| `066_speicherkarte.py` | Speicherkarte schonen: Schreibmenge pro Tag, Dateisystem-Fehler, Schreibschutz (Overlay) | 267 |
 | `070_hardware_servos_licht.py` | Servos, PCA9685, Mover, Licht, Disco-Licht | 398 |
 | `080_waermebild_modul.py` | Treiber Wärmebild-Modul, Klasse Hardware | 281 |
 | `090_system_fern_sichtungen.py` | System, Fernzugriff, Sichtungen, Nachtbericht, Gast-Zugang | 465 |
@@ -36,6 +37,8 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `120_eigenes_wlan_uhr_ort.py` | eigenes WLAN, Uhr vom Handy, Ort (GPS) vom Handy | 720 |
 | `130_scharf_profile_modi.py` | Scharf / unscharf, Camping-Profil, einfache Einstellungen, Modi | 368 |
 | `140_autostart.py` | Autostart | 422 |
+| `145_selbstheilung.py` | Selbstheilung: Wächter für Kamera-Schleife, KI, Webseite (Neustart mit Bremse); Ampeln Speicherkarte / Selbstheilung | 303 |
+| `147_simsperre.py` | Eine Sperre für Simulator-Aufgaben mit dem Simulator; blinde Flecken aus dem Simulator | 118 |
 | `150_zweites_wlan_tv_netzcheck.py` | zweites WLAN, USB-Tethering, TV-Anzeige, Netz-Check, WLAN-Wächter | 1059 |
 | `160_netzautomatik_patrouille.py` | Netz-Automatik, Patrouille | 160 |
 | `170_ki_personen.py` | KI-Modell laden und herunterladen | 110 |
@@ -80,12 +83,14 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
+| `545_simulator_updates.py` | Simulator-Updates: ein Besitzer («Neue Versionen» im Simulator) | 72 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
 | `560_uebersetzungen_de.py` | Übersetzungen Deutsch | 498 |
 | `570_fenster.py` | Fenster auf dem Pi / PC (Tkinter) | 3322 |
 | `580_uebersetzungen_fr.py` | Übersetzungen Französisch | 1396 |
 | `590_uebersetzungen_it.py` | Übersetzungen Italienisch | 1392 |
 | `600_uebersetzungen_rm.py` | Übersetzungen Rätoromanisch, Anleitungen | 1763 |
+| `607_uebersetzungen_robust.py` | Übersetzungen und Anleitung: Speicherkarte, Selbstheilung, Simulator-Sperre | 142 |
 | `610_anleitung_ergaenzungen.py` | Anleitung: Ergänzungen in allen Sprachen | 167 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |

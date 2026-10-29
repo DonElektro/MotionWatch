@@ -299,6 +299,8 @@ var _group_state := {}
 var conn_body: Control                # the card «Verbindung» (symbol and title show the state)
 var cam_body: Control                 # 3D-3.50: the cards «Kameras» and «Werkzeuge» (symbol + arrow green while working)
 var tools_body: Control
+var testen_measure: VBoxContainer     # 3D-4.x: card «Testen» → «Erkennung messen» (also the test run controls)
+var testen_rec: VBoxContainer         # 3D-4.x: card «Testen» → «Aufnahme …» (the recorder)
 var _conn_state := -1
 var stream_on := false                     # sending to MoveEye: off at the start, the user switches it on in the window
 var stream_last := false                   # 3D-3.65: was sending switched on the last time? then on again at the start (also after an update)
@@ -1776,7 +1778,40 @@ func busy_with(except_ := "") -> String:
 		w = "Spielrunde"
 	elif recorder != null and recorder.playing:
 		w = "Wiedergabe"
+	elif _mw_task() != "":                             # 3D-4.x: one lock with MoveEye (a drill, a protection test … there)
+		w = _mw_task()
 	return "" if w == except_ else w
+
+
+var _ctl_frame := -1                  # a request of MoveEye (/control) is being answered in this frame
+
+
+func _mw_task() -> String:
+	"""what MoveEye does with the simulator right now (sim_state «simtask_de»), not while answering MoveEye itself - its
+	own steps (test_start, blindmap …) must not be refused because of its own task"""
+	if _ctl_frame == Engine.get_process_frames() or now() - mw_t > 6.0:
+		return ""
+	var t := str(mw.get("simtask_de", ""))
+	return "" if t == "" else t + " (von MoveEye)"
+
+
+func open_testen() -> void:
+	"""the tile «Testen»: the card «Testen» open, «Erkennung messen» open, scrolled to it"""
+	if tools_body == null:
+		return
+	show_panel(true)
+	UI.set_open(tools_body, true)
+	if testen_measure != null:
+		UI.set_sub_open(testen_measure, true)
+	var card: Control = tools_body.get_meta("card") if tools_body.has_meta("card") else tools_body
+	var sc := ui_box.get_parent() if ui_box != null else null
+	if sc is ScrollContainer:
+		(sc as ScrollContainer).ensure_control_visible.call_deferred(card)
+
+
+func busy_msg(w: String) -> String:
+	"""the same words as MoveEye: «Der Simulator ist belegt: …»"""
+	return "Der Simulator ist belegt: " + w
 
 
 func hour() -> float:
@@ -3286,7 +3321,7 @@ func _register_controls() -> void:
 	add_control("select", "win_fps", "Bilder pro Sekunde im Fenster", func(): return str(win_fps), func(v): win_fps = int(v); _settings_dirty = true, "Grafik",
 			{"options": [["0", "so viele wie möglich"], ["60", "60"], ["30", "30 (spart Strom)"], ["20", "20 (schwacher PC)"]]})
 	add_control("toggle", "auto_perf", "Automatisch leichter, wenn der PC zu langsam ist", func(): return auto_perf, func(v): auto_perf = v; _slow_n = 0, "Grafik")
-	add_control("toggle", "eco_idle", "Strom sparen: nur rechnen, wenn das Fenster offen ist oder MoveEye verbunden ist", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
+	add_control("toggle", "eco_idle", "Simulator ruht, wenn niemand zuschaut (rechnet nur, wenn das Fenster offen oder MoveEye verbunden ist)", func(): return eco_idle, func(v): eco_idle = v, "Grafik", ex)
 	add_control("toggle", "meadow", "Gras und Blumen auf der Wiese", func(): return meadow_on, func(v): set_meadow(v), "Grafik", ex)
 	add_control("toggle", "map_on", "Übersichtskarte oben links (M)", func(): return map_on, func(v): set_map(v), "Grafik")
 	add_control("toggle", "live_on", "Livebild unter der Karte (L)", func(): return live_on, func(v): set_live(v), "Grafik")
@@ -3445,6 +3480,13 @@ func control_info() -> Dictionary:
 
 
 func control(d: Dictionary) -> Dictionary:
+	_ctl_frame = Engine.get_process_frames()
+	var r := _control(d)
+	_ctl_frame = -1
+	return r
+
+
+func _control(d: Dictionary) -> Dictionary:
 	var a := str(d.get("action", "get"))
 	var cid := str(d.get("id", ""))
 	if a == "scenario":
@@ -3474,6 +3516,10 @@ func control(d: Dictionary) -> Dictionary:
 		for n in get_tree().get_nodes_in_group("smoke"):
 			sm.append([n.emitting, n.global_position, n.visible, n.is_visible_in_tree()])
 		return {"ok": true, "smoke": str(sm), "fireflies": [fireflies.emitting, fireflies.is_visible_in_tree()], "cloth": get_tree().get_nodes_in_group("cloth").size()}
+	elif a == "busy":                                  # one lock with MoveEye: who has the world right now ('' = free)
+		if bool(d.get("with_mw", false)):              # for tests / display: also what MoveEye itself does
+			_ctl_frame = -1
+		return {"ok": true, "busy": busy_with(str(d.get("except", "")))}
 	elif a == "test_report":                           # the test run: progress and the last report
 		return testrun.state()
 	elif a == "test_start":                            # MoveEye starts a test run (3D-3.27): {"plan": "standard" | "quick" | "hard" | "night"}
@@ -3948,6 +3994,7 @@ func control(d: Dictionary) -> Dictionary:
 				c = x
 		if c == null or c["set"] == null:
 			return {"ok": false, "error": "unknown control"}
+		_ctl_frame = -1                                 # a button / switch pressed from the page counts like one in the window (one lock)
 		if a == "press":
 			c["set"].call()
 		else:
@@ -4271,6 +4318,10 @@ func _build_ui() -> void:
 	tl = UI.sub_fold(tl_main, "Erkennung messen (Testlauf, Prüfstand, blinde Flecken)", true)
 	tl.set_meta("always", true)
 	sub_bodies.append(tl)
+	testen_measure = tl                              # 3D-4.x: the group «Testlauf» lives here now (one place for testing)
+	testen_rec = UI.sub_fold(tl_main, "Aufnahme: Besuch aufnehmen und genau gleich abspielen", false)
+	testen_rec.set_meta("always", true)
+	sub_bodies.append(testen_rec)
 	var trh := HBoxContainer.new()
 	trh.add_theme_constant_override("separation", 6)
 	tl.add_child(trh)
@@ -4433,6 +4484,16 @@ func _build_ui() -> void:
 	for c in controls:
 		if c.extra.get("hide", false):
 			continue                                     # 3D-3.90: only for MoveEye (the web page), not in the window
+		if c.group == "Testlauf" and testen_measure != null:   # 3D-4.x: into the card «Testen» (no own card «Testlauf» any more)
+			if c.id in ["testrun_plan", "testrun_start"]:
+				continue                                 # the card has its own row «plan + Testlauf starten»
+			var tgt: VBoxContainer = testen_rec if c.id.begins_with("rec_") else testen_measure
+			var k0 := ui_items.size()
+			_ui_control(tgt, c)
+			for i in range(k0, ui_items.size()):
+				ui_items[i][3] = tools_body
+				ui_items[i].append(tgt)
+			continue
 		if not groups.has(c.group):
 			var ic := ""
 			for g in GROUPS:
@@ -4474,8 +4535,10 @@ func _build_ui() -> void:
 	update_btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	update_btn.pressed.connect(check_updates)
 	(subs.get("System/Updates", tl) as Control).add_child(update_btn)
-	if groups.has("Testlauf"):
-		testrun.add_info(groups["Testlauf"], UI)      # progress and result of the test run
+	if testen_measure != null:
+		testrun.add_info(testen_measure, UI)          # progress and result of the test run (card «Testen»)
+	elif groups.has("Testlauf"):
+		testrun.add_info(groups["Testlauf"], UI)
 	if subs.has("Kamerabild/Wie echt"):              # 3D-3.94: what the real look adjustment does
 		real_label = UI.small("")
 		real_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -5353,7 +5416,7 @@ func _paint_groups() -> void:
 	if cam_body != null:
 		UI.fold_active(cam_body, 1 if connected() else 0)
 	if tools_body != null:
-		UI.fold_active(tools_body, 1 if (mwpc != null and mwpc.state == "running") or (pruef != null and pruef.running) or (dataset != null and dataset.busy) else 0)
+		UI.fold_active(tools_body, 1 if (mwpc != null and mwpc.state == "running") or (pruef != null and pruef.running) or (dataset != null and dataset.busy) or (testrun != null and testrun.running) or (blindmap != null and blindmap.busy) else 0)
 
 
 func _update_status() -> void:
