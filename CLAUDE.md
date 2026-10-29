@@ -29,6 +29,8 @@ Ausführlicher Stand: `docs/Projekt_MotionWatch_Uebersicht.md`, Einrichtung: `do
   (Thermal-90), Servos (Schwenken / Neigen, Richtung, Nachschwingen), Lautsprecher (Wecker-Melodie, Sirene), Licht, Mikrofon,
   Gesten des Weckers mit echter Kamera (Tag und Infrarot), Klatschschalter, Akku-Anzeige. Danach echte Testnächte als Bericht
   in `feedback/` hochladen lassen. Bei jeder grösseren Antwort kurz nachfragen, ob die Hardware inzwischen bereit ist.
+  Stand 29.10.2026 17:40: **Camera Module 3 NoIR ist da und läuft** am Pi 5 (192.168.1.56, Videoquelle «Raspberry Pi camera»,
+  ab 2.98.24). Noch fehlend: Wärmebild, Servos, Licht, Ton, Akku.
 
 ## Software
 
