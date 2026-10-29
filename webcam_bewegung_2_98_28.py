@@ -20400,7 +20400,8 @@ def sim_state():
     pl, tl = min(float(CFG["pan_limit"]), hp), min(float(CFG["tilt_limit"]), ht)
     L = STATE.get("lights") or {}
     rs = STATE.get("relay_states") or []
-    return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "MoveEye", "armed": is_armed(), "picture_mode": CFG["picture_mode"],
+    return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "MoveEye", "armed": is_armed(),
+            "uid": f"{device_uid()}:{CFG.get('web_port')}", "helper": bool(STATE.get("helper_arg")), "picture_mode": CFG["picture_mode"],   # 2.98.29: uid/helper - one MoveEye leads the simulator (3D-4.9)
             "mw_version": APP_VERSION, "ai_status": str(STATE.get("ai_status") or ""),     # 2.95.67: for the test bench in the simulator
             "refscan": _sim_refscan_info(),                                                  # 2.95.97: the reference scan, for the button there
             "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * hp, 2),
@@ -25135,13 +25136,16 @@ class SimLink:
                 pass
         if first or int(rep_.get("pid") or 0) != SIM.get("pid_seen"):
             SIM["pid"] = SIM["pid_seen"] = int(rep_.get("pid") or 0)  # its process number: CPU share if it runs on this computer
-        SIM.update(t=time.time(), ok=True, msg="connected", dark=bool(rep_.get("dark")), ambient=float(rep_.get("ambient_c", 15.0)),
+        SIM.update(t=time.time(), ok=True, dark=bool(rep_.get("dark")), ambient=float(rep_.get("ambient_c", 15.0)),
                    pressure=float(rep_.get("pressure_hpa", 1013.0)), wind=float(rep_.get("wind_kmh", 0.0)), sent=SIM["sent"] + 1,
                    mover=bool(rep_.get("mover")),                # the simulator has a mover (3D-3.11): second stick
                    mover_pose=_mover_pose(rep_.get("mover_pose")) if rep_.get("mover") else None,   # where it is (2.95.43, optional)
                    pc_cpu=rep_.get("pc_cpu"), cores=rep_.get("cores"),   # CPU of the PC the simulator runs on (3D-3.24)
                    solar=rep_.get("solar") if isinstance(rep_.get("solar"), dict) else None,   # 2.98.11: solar panel and
                    gps=rep_.get("gps") if isinstance(rep_.get("gps"), dict) else None)         # GPS module of the simulator   # CPU of the PC the simulator runs on (3D-3.24)
+        # 2.98.29: another MoveEye (e.g. the AI helper on the PC, or the Pi) steers the simulator - this one only watches
+        SIM["follower"] = bool(rep_.get("follower"))
+        SIM["msg"] = "connected - only watching (another MoveEye steers the simulator)" if SIM["follower"] else "connected"
         if time.time() - SIMDIARY["t"] >= 30:                # 2.96.1: the diary of the simulator (visits)
             threading.Thread(target=simdiary_poll, daemon=True, name="simdiary").start()
             SIMDIARY["t"] = time.time() - 25                # (the thread sets it again)
@@ -51694,7 +51698,7 @@ DE.update({
     "Time must look like 07:30": "Die Zeit muss so aussehen: 07:30",
     SCHED_NOTE: "Solange ein Zeitplan aktiv ist, werden die gewählten Funktionen fest EIN oder AUS geschaltet. Danach gilt wieder "
                 "deine eigene Einstellung. Wer von Hand schaltet, überstimmt den Zeitplan bis zu dessen nächster Änderung.",
-    "unknown source": "unbekannte Quelle", "unknown network camera": "unbekannte Netzwerk-Kamera", "this is the main camera already": "das ist schon die Hauptkamera",
+    "unknown source": "unbekannte Quelle", "unknown network camera": "unbekannte Netzwerk-Kamera", "connected - only watching (another MoveEye steers the simulator)": "verbunden – schaut nur zu (ein anderes MoveEye steuert den Simulator)", "this is the main camera already": "das ist schon die Hauptkamera",
     "invalid URL (rtsp:// or http:// expected)": "ungültige URL (rtsp:// oder http:// erwartet)",
     "too many network cameras": "zu viele Netzwerk-Kameras", "invalid schedule": "ungültiger Zeitplan",
     "unknown schedule": "unbekannter Zeitplan",
@@ -58883,6 +58887,7 @@ TRX['fr'].update({
     'unknown field': 'champ inconnu',
     'unknown network': 'réseau inconnu',
     'this is the main camera already': "c'est déjà la caméra principale",
+    'connected - only watching (another MoveEye steers the simulator)': "connecté – observe seulement (un autre MoveEye pilote le simulateur)",
     'unknown network camera': 'caméra réseau inconnue',
     'unknown relay': 'relais inconnu',
     'unknown schedule': 'programme horaire inconnu',
@@ -60276,6 +60281,7 @@ TRX['it'].update({
     'unknown field': 'campo sconosciuto',
     'unknown network': 'rete sconosciuta',
     'this is the main camera already': "è già la telecamera principale",
+    'connected - only watching (another MoveEye steers the simulator)': "connesso – guarda soltanto (un altro MoveEye guida il simulatore)",
     'unknown network camera': 'telecamera di rete sconosciuta',
     'unknown relay': 'relè sconosciuto',
     'unknown schedule': 'pianificazione sconosciuta',
@@ -61669,6 +61675,7 @@ TRX['rm'].update({
     'unknown field': 'champ nunenconuschent',
     'unknown network': 'rait nunenconuschenta',
     'this is the main camera already': "quai è gia la camera principala",
+    'connected - only watching (another MoveEye steers the simulator)': "collià – guarda mo (in auter MoveEye maina il simulatur)",
     'unknown network camera': 'camera da rait nunenconuschenta',
     'unknown relay': 'relais nunenconuschent',
     'unknown schedule': 'plan da temp nunenconuschent',
@@ -67448,6 +67455,7 @@ if __name__ == "__main__":
     threading.Thread(target=testopt_nightly_loop, daemon=True, name="testnight").start()
     if not a.demo and not a.helper:
         threading.Thread(target=tunnel_start, daemon=True).start()   # 2.95.54: simulators behind a firewall connect out to here
+    STATE["helper_arg"] = bool(a.helper)                 # 2.98.29: started as AI helper (by the simulator on the PC)
     if (a.helper or CFG.get("helper_serve")) and not a.demo:
         if a.helper and not CFG.get("helper_serve"):
             CFG["helper_serve"] = True; save_settings()

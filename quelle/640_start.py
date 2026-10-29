@@ -56,6 +56,7 @@ if __name__ == "__main__":
     threading.Thread(target=testopt_nightly_loop, daemon=True, name="testnight").start()
     if not a.demo and not a.helper:
         threading.Thread(target=tunnel_start, daemon=True).start()   # 2.95.54: simulators behind a firewall connect out to here
+    STATE["helper_arg"] = bool(a.helper)                 # 2.98.29: started as AI helper (by the simulator on the PC)
     if (a.helper or CFG.get("helper_serve")) and not a.demo:
         if a.helper and not CFG.get("helper_serve"):
             CFG["helper_serve"] = True; save_settings()

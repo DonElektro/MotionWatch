@@ -184,8 +184,13 @@ func _handle(c: Dictionary, method: String, path: String, query: Dictionary, bod
 		if typeof(d) != TYPE_DICTIONARY:
 			_json(c, {"ok": false, "error": "bad state"}, 400)
 			return
-		main.on_state(d, host)
-		_json(c, main.world_reply())
+		var lead: bool = main.on_state(d, host)
+		var rep: Dictionary = main.world_reply()
+		if not lead:                                   # 3D-4.9: another MoveEye steers the simulator - this one only watches
+			rep["follower"] = true
+			rep["leader"] = main.mw_owner_name
+			rep["mw_cmd"] = null
+		_json(c, rep)
 		return
 	if method == "POST" and path == "/control":
 		var d2 = JSON.parse_string(body.get_string_from_utf8())

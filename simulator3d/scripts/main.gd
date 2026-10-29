@@ -2462,7 +2462,47 @@ func thermal_values() -> PackedFloat32Array:
 
 
 # ---- protocol with MoveEye -------------------------------------------------------------------------------------
-func on_state(d: Dictionary, host: String) -> void:
+var mw_owner := ""                     # 3D-4.9: the MoveEye that steers the simulator (uid); others only watch
+var mw_owner_t := -100.0
+var mw_owner_helper := false
+var mw_owner_name := ""
+var mw_others := {}                    # uid -> {"name", "t"} of MoveEye that only watch
+
+
+func _mw_lead(d: Dictionary, host: String) -> bool:
+	"""Two MoveEye on one simulator (e.g. the Pi and the AI helper on this PC) both sent the head position: the head went
+	back and forth and the camera pictures flickered. Now one leads: the one that was there first, until it is silent
+	4 s; a helper on this PC («--helper») gives way to a real device."""
+	var uid := str(d.get("uid", ""))
+	if uid == "":
+		uid = str(d.get("device", "")) + "@" + host
+	var helper := bool(d.get("helper", false))
+	var t := now()
+	if mw_owner == "" or uid == mw_owner or t - mw_owner_t > 4.0 or (mw_owner_helper and not helper):
+		if uid != mw_owner and mw_owner != "" and t - mw_owner_t <= 4.0:
+			mw_others[mw_owner] = {"name": mw_owner_name, "t": mw_owner_t}
+		mw_owner = uid
+		mw_owner_t = t
+		mw_owner_helper = helper
+		mw_owner_name = str(d.get("device", "MoveEye"))
+		mw_others.erase(uid)
+		return true
+	mw_others[uid] = {"name": str(d.get("device", "MoveEye")), "t": t}
+	return false
+
+
+func mw_watchers() -> Array:
+	"""names of the MoveEye that only watch (seen in the last 6 s) - for the card «Verbindung»"""
+	var out := []
+	for k in mw_others.keys():
+		if now() - float(mw_others[k]["t"]) < 6.0:
+			out.append(str(mw_others[k]["name"]))
+	return out
+
+
+func on_state(d: Dictionary, host: String) -> bool:
+	if not _mw_lead(d, host):
+		return false
 	var old_sound: String = str(mw.get("sound", ""))
 	mw = d
 	mw_t = now()
@@ -2476,6 +2516,7 @@ func on_state(d: Dictionary, host: String) -> void:
 	if str(d.get("sound", "")) != "" and old_sound == "":
 		if flee_sound:
 			_scare_all(true)
+	return true
 
 
 func world_reply() -> Dictionary:
@@ -4110,6 +4151,9 @@ func _control(d: Dictionary) -> Dictionary:
 func status_text() -> String:
 	var h := hour()
 	var mwc := "verbunden mit %s" % str(mw.get("device", "MoveEye")) if now() - mw_t < 3.0 else ("MoveEye nicht verbunden" if stream_on else "Senden aus")
+	var mww := mw_watchers()
+	if not mww.is_empty():                     # 3D-4.9: a second MoveEye only watches (does not steer the head)
+		mwc += " · schaut nur zu: " + ", ".join(mww)
 	var score := " · Treffer %d von %d Schüssen, %d Punkte" % [hits, shots, points] if rifle_on else ""
 	return "%s · %02d:%02d · %s · %s · %.1f °C · Besucher %d%s · %s" % [Scenes.name_of(scene), int(h), int(fmod(h, 1.0) * 60), "Nacht" if is_dark() else "Tag", {"clear": "klar", "cloudy": "bewölkt", "rain": "Regen", "fog": "Nebel", "snow": "Schnee"}.get(weather, weather), ambient, visitors.get_child_count(), score, mwc] + (" · Update: " + update_info if update_info != "" else "") + (" · " + start_info if start_info != "" else "") + (" · " + game.status() if game != null and game.status() != "" else "") + (" · " + testrun.status() if testrun != null and testrun.status() != "" else "") + (" · " + dev2.status() if dev2 != null and dev2.on else "") + (" · " + recorder.info if recorder != null and recorder.info != "" and (recorder.recording or recorder.playing) else "") + (" · " + life.info if life != null and life.info != "" and (real_weather or daily_life) else "") + (" · " + geo.info if geo != null and geo.busy else "") + (" · " + geo_note if geo_note != "" else "")
 

@@ -99,7 +99,8 @@ def sim_state():
     pl, tl = min(float(CFG["pan_limit"]), hp), min(float(CFG["tilt_limit"]), ht)
     L = STATE.get("lights") or {}
     rs = STATE.get("relay_states") or []
-    return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "MoveEye", "armed": is_armed(), "picture_mode": CFG["picture_mode"],
+    return {"v": 1, "t": time.time(), "device": CFG["device_name"] or "MoveEye", "armed": is_armed(),
+            "uid": f"{device_uid()}:{CFG.get('web_port')}", "helper": bool(STATE.get("helper_arg")), "picture_mode": CFG["picture_mode"],   # 2.98.29: uid/helper - one MoveEye leads the simulator (3D-4.9)
             "mw_version": APP_VERSION, "ai_status": str(STATE.get("ai_status") or ""),     # 2.95.67: for the test bench in the simulator
             "refscan": _sim_refscan_info(),                                                  # 2.95.97: the reference scan, for the button there
             "servo": {"pan": round(CFG["pan"], 2), "tilt": round(CFG["tilt"], 2), "pan_deg": round((CFG["pan"] - 50) / 50 * hp, 2),
