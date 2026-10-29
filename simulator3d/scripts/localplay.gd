@@ -296,7 +296,10 @@ func _input(ev: InputEvent) -> void:
 		KEY_X:
 			a.ctl_posture = 0 if a.ctl_posture == 2 else 2
 		KEY_F:
-			g._throw(p)
+			if g.jaeger.on():
+				g.jaeger.act(p)                            # «Fehlalarm-Jäger»: the button of the thing
+			else:
+				g._throw(p)
 		KEY_L:
 			p["lamp"] = not bool(p.get("lamp", false))
 			if a.torch == null:

@@ -135,9 +135,10 @@ threading.Thread(target=points_week_loop, daemon=True, name="points").start()
 FA_GAME = {"day": "", "n": 0}
 
 
-def fa_game_box(box):
+def fa_game_box(box, info=None):
     """the simulator says: MoveEye reported a person here, but no player and no visitor was there -> this part of the
-    picture (with some margin) goes to fa_learn/ as a «no person» example, like the false alarm learning (21). At most 40 a day."""
+    picture (with some margin) goes to fa_learn/ as a «no person» example, like the false alarm learning (21). At most 40 a day.
+    2.98.18: «info» = the situation from the game «Fehlalarm-Jäger» (lure, distance, light, weather) - kept next to the picture."""
     try:
         x, y, w_, h_ = [float(v) for v in (box or [])[:4]]
     except (TypeError, ValueError):
@@ -161,9 +162,17 @@ def fa_game_box(box):
     os.makedirs(d, exist_ok=True)
     FA_GAME["n"] += 1
     cv2.imwrite(os.path.join(d, "%02d.jpg" % FA_GAME["n"]), f[y0:y1, x0:x1], [cv2.IMWRITE_JPEG_QUALITY, 88])
+    sit = {}
+    if isinstance(info, dict):                          # only short, plain values (it comes over the network)
+        for k, v in list(info.items())[:16]:
+            if isinstance(k, str) and isinstance(v, (str, int, float, bool)) and len(k) <= 20:
+                sit[re.sub(r"[^a-z_]", "", k.lower())[:20]] = v[:40] if isinstance(v, str) else v
     try:
         with open(os.path.join(d, "info.json"), "w") as fo:
             json.dump({"label": "no_person", "cause": "game", "from": "simulator game", "crop": True, "n": FA_GAME["n"]}, fo)
+        if sit:                                         # 2.98.18: one file per case with its situation
+            with open(os.path.join(d, "%02d.json" % FA_GAME["n"]), "w") as fo:
+                json.dump({"label": "no_person", "box": [round(x, 3), round(y, 3), round(w_, 3), round(h_, 3)], "situation": sit}, fo)
     except OSError:
         pass
     log_event("sys", f"False alarm in a game: picture part kept as «no person» ({FA_GAME['n']} today)")
