@@ -1,5 +1,6 @@
 # Checks every new version automatically: compiles, runs the built-in self-test
-# (update signatures in versions.json, QR codes, web push encryption, settings, JavaScript of all pages).
+# (update signatures in versions.json, QR codes, web push encryption, settings, JavaScript of all pages),
+# no function defined twice (bauen.py --pruefen) and the web smoke test (every address without / with login).
 name: Selbsttest
 on:
   push:
@@ -26,3 +27,5 @@ jobs:
           echo "Teste $f"
           python3 -m py_compile "$f"
           python3 "$f" --self-test .
+      - name: Web-Rauchtest (alle Adressen ohne / mit Anmeldung)
+        run: python3 werkzeuge/web_rauchtest.py

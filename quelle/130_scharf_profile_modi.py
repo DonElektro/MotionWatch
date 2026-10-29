@@ -98,7 +98,8 @@ SIMPLE_KEYS = {"tips_level", "use_case", "wake_on", "wake_time", "wake_days", "w
                "audio_out", "siren_on", "siren_volume", "siren_sound", "light_white_auto", "light_ir_auto", "report_on", "report_hour",
                "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_auto", "loop_on", "loop_hours",
                "cam_rotate", "cam_mirror", "sens_on", "rf433_on", "zigbee_on", "ble_on", "tag_missing", "eco_pir", "storm_on", "storm_drop", "storm_wind", "mover_mode", "mover_speed", "gpsmod_on", "gps_theft", "lens_check", "temp_alarm_on", "temp_hot", "temp_cold", "solar_on", "night_warn",
-               "tamper_on", "tamper_motion", "tamper_power", "backup_type", "deter_person_act", "deter_person_sound", "clap_on", "sneeze_on"}
+               "tamper_on", "tamper_motion", "tamper_power", "backup_type", "deter_person_act", "deter_person_sound", "clap_on", "sneeze_on",
+               "weekrep_sim", "mode_fire_min_pct", "presence_back", "presence_auto"}
 
 
 USE_HIDE = {"home": {"GPS module", "Solar panel", "Storm warning", "Wake-up alarm"},       # 2.98.9: «Simple» per use case

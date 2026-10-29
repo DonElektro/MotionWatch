@@ -1092,6 +1092,8 @@ def self_test(folder=""):
     chk("Timeline, weekly report, blur faces when sharing", verlauf_selftest)     # 2.98.14 (425, 426, 375)
     chk("One weekly report, return of the phone, auto-tuner ±20 % (migrations)", nachlauf_selftest)     # 2.98.15 (577)
     chk("Off in the push only with the PIN, push after a power cut, recordings by age, push without picture", sicher_selftest)   # (578)
+    for _name, _fn in SELFTEST_EXTRA:                       # 2.98.18: further checks of other parts (395 …)
+        chk(_name, _fn)
 
     if folder:
         def manifest():

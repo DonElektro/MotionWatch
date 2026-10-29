@@ -1243,7 +1243,7 @@ CFG = {
     "update_url": "",            # where new versions come from: https://.../versions.json or a folder (USB stick)
     "update_auto": True,         # look for a new version every 3 hours (and 2 minutes after the start)
     "update_install": False,     # install a new version by itself ...
-    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "simweek_on": True, "simweek_last": "", "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
+    "update_fast": False, "dev_phase_done": False, "news_popup": True, "msg_icons": True, "notify_sandbox": False, "train_night_on": False, "train_hour": 1, "train_optimize": True, "train_pics": True, "train_day": "", "rover_alarm": False, "fa_learn_auto": True, "rehearsal_on_arm": False, "weekcheck_on": True, "weekcheck_last": "", "simprof_ignore": [], "simprof_opt": {}, "me_points": {"total": 0, "log": [], "week": ""}, "header_wordmark": True, "news_seen_web": "", "news_seen_tk": "",   # 2.96.3: «Neu in dieser Version»
            # 2.95.71: test mode - look on GitHub every minute, install a new version at once
     "update_hour": 12,           # ... in this hour of the day
     "update_install_armed": False,   # ... also while armed (otherwise only when disarmed)
@@ -1285,6 +1285,9 @@ STATE = {
     "disk": {"free_mb": None, "total_mb": None},
 }
 DEFAULTS = dict(CFG)
+# 2.98.18: old keys that are only READ from settings files of older versions (the migration takes them over) - never in CFG,
+# so they are not shown, saved or exported anywhere. key -> what took its place.
+MIGRATE_ONLY = {"simweek_on": "weekrep_sim (577, 2.98.15)", "back_ask": "presence_back (577, 2.98.15)"}
 WAYPOINTS = []          # [pan, tilt] positions in percent
 
 
@@ -1953,6 +1956,7 @@ TEXTS = [  # (section, key, label, kind, extra)
     ("Setup", "latitude", "Latitude (sunrise / sunset)", "float", (-66.0, 66.0)),
     ("Setup", "longitude", "Longitude (sunrise / sunset)", "float", (-180.0, 180.0)),
     ("Setup", "presence_hosts", "Phones / devices for presence (IP or name, comma separated)", "hosts", None),
+    ("Camping / protection", "presence_back", "When my phone comes back", "enum", "presence_back"),      # 2.98.15 (577)
 ]
 TEXT_SPECS = {k: (kind, extra) for s, k, l, kind, extra in TEXTS}
 
@@ -1960,6 +1964,8 @@ TEXT_SPECS = {k: (kind, extra) for s, k, l, kind, extra in TEXTS}
 def text_choice_pairs(key):
     """[(value, label)] of an enum setting. The thermal camera list changes with the camera scan, so it is computed."""
     kind, extra = TEXT_SPECS[key]
+    if extra == "presence_back":                              # 2.98.15 (577): the choice at the return of the phone
+        return [(k, tr(l)) for k, l in PRESENCE_BACK]
     if str(extra).startswith("mover_"):
         return mover_choice_pairs(extra)
     if extra == "net_modes":
@@ -2793,8 +2799,10 @@ def import_settings(data):
 
 
 def apply_settings(data):
+    """the loaded / imported settings into CFG (values checked), then the migrations of older files (131, 577)"""
     n = 0
     if not isinstance(data, dict):
+        _settings_migrations(None)
         return
     try:
         specs = web_specs()
@@ -2878,6 +2886,22 @@ def apply_settings(data):
         CFG["source"] = "auto"
     STATE["settings_status"] = f"loaded {n} settings, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules"
     log_event("sys", f"Settings loaded from {SETTINGS_FILE} ({n} values, {len(WAYPOINTS)} waypoints, {len(RELAYS)} relays, {len(SCHEDULES)} schedules)")
+    _settings_migrations(data.get("cfg"))
+
+
+def _settings_migrations(cfg_in):
+    """settings of older versions: modes / profiles (2.98.14, concept_migrate in 131), weekly report and return of the phone
+    (2.98.15, nachlauf_migrate in 577). A failing migration never stops the loading."""
+    try:
+        concept_migrate()
+    except Exception as e:
+        log_event("sys", f"Settings migration: {e}"[:150])
+    try:
+        did = nachlauf_migrate(cfg_in)
+        if did:
+            log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
+    except Exception as e:
+        log_event("sys", f"Settings migration (577): {e}"[:150])
 
 
 _SAVE_LOCK = threading.Lock()
@@ -4644,7 +4668,7 @@ def ntfy_server_messages(since="24h"):
 #     «Bist du's?» mit dem Knopf «Aus».
 # (5 – Zonen nach Art – steht bei den Zonen in Teil 030.)
 # ----------------------------------------------------------------------------
-_ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_ask": False, "back_hold_s": 60,
+_ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_hold_s": 60,
             "report_strip": True}
 for _k, _v in _ALX_CFG.items():
     CFG.setdefault(_k, _v)
@@ -8685,6 +8709,11 @@ def health_check(lang=None):
         add("bg", "⚙", "Background tasks", "ok", trf("{n} running", L, n=len(BEATS)))
     if STATE.get("update_new"):
         add("upd", "⬆", "Updates", "warn", T("new version available") + f": {STATE['update_new']}", "Settings → Updates.")
+    for fn in (sdcard_health_item, selfheal_health_item):     # memory card health and self-healing (145)
+        try:
+            out.append(fn(L))
+        except Exception as e:
+            print(f"health item: {e}")
     out.sort(key=lambda x: HEALTH_ORDER.index(x["level"]))
     cnt = {k: sum(1 for x in out if x["level"] == k) for k in HEALTH_ORDER}
     return {"items": out, "count": cnt}
@@ -8989,7 +9018,8 @@ SIMPLE_KEYS = {"tips_level", "use_case", "wake_on", "wake_time", "wake_days", "w
                "audio_out", "siren_on", "siren_volume", "siren_sound", "light_white_auto", "light_ir_auto", "report_on", "report_hour",
                "diary_on", "weather_on", "batt_mah", "eco_on", "device_name", "update_auto", "loop_on", "loop_hours",
                "cam_rotate", "cam_mirror", "sens_on", "rf433_on", "zigbee_on", "ble_on", "tag_missing", "eco_pir", "storm_on", "storm_drop", "storm_wind", "mover_mode", "mover_speed", "gpsmod_on", "gps_theft", "lens_check", "temp_alarm_on", "temp_hot", "temp_cold", "solar_on", "night_warn",
-               "tamper_on", "tamper_motion", "tamper_power", "backup_type", "deter_person_act", "deter_person_sound", "clap_on", "sneeze_on"}
+               "tamper_on", "tamper_motion", "tamper_power", "backup_type", "deter_person_act", "deter_person_sound", "clap_on", "sneeze_on",
+               "weekrep_sim", "mode_fire_min_pct", "presence_back", "presence_auto"}
 
 
 USE_HIDE = {"home": {"GPS module", "Solar panel", "Storm warning", "Wake-up alarm"},       # 2.98.9: «Simple» per use case
@@ -9420,7 +9450,7 @@ def _concept_fix_lights(d, live):
 
 
 def concept_migrate():
-    """called after loading / importing the settings (see apply_settings below); returns the list of what was changed"""
+    """called after loading / importing the settings (apply_settings in 040 calls it); returns the list of what was changed"""
     did = []
     m = str(CFG.get("mode") or "")
     if m == "night":
@@ -9446,18 +9476,6 @@ def concept_migrate():
     if did:
         log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
     return did
-
-
-_apply_settings_before_concept = apply_settings
-
-
-def apply_settings(data):                                   # 2.98.14: the same as before, then the migration above
-    r = _apply_settings_before_concept(data)
-    try:
-        concept_migrate()
-    except Exception as e:
-        log_event("sys", f"Settings migration: {e}"[:150])
-    return r
 # ----------------------------------------------------------------------------
 # 2.95.105: one place for everything that protects: a level instead of many switches
 #   off   - no alarms
@@ -12034,21 +12052,7 @@ def selfheal_health_item(L):
             "tip": T("If it happens again: send the diagnosis package (Settings → Help).")}
 
 
-# ---- the self-check gets the two traffic lights (web and window use health_check) ----------------------------------------
-_health_check_base = health_check
-
-
-def health_check(lang=None):
-    h = _health_check_base(lang)
-    L = norm_lang(lang) if lang else cur_lang()
-    for fn in (sdcard_health_item, selfheal_health_item):
-        try:
-            h["items"].append(fn(L))
-        except Exception as e:
-            print(f"health item: {e}")
-    h["items"].sort(key=lambda x: HEALTH_ORDER.index(x["level"]))
-    h["count"] = {k: sum(1 for x in h["items"] if x["level"] == k) for k in HEALTH_ORDER}
-    return h
+# ---- the self-check shows the two traffic lights above: health_check (120) calls sdcard_health_item and selfheal_health_item
 # ----------------------------------------------------------------------------
 # The simulator (3D-3.94, realism.gd) makes its pictures look like the real ones of THIS MoveEye: brightness, contrast,
 # saturation, colour cast (red / blue to green), sharpness and grain - day and night separately. The real pictures are the
@@ -20803,8 +20807,8 @@ def tools_state():
             "bt": {"running": T["bt"]["running"], "t": T["bt"]["t"], "devices": T["bt"]["devices"], "msg": T["bt"]["msg"],
                    "trackers": [{"addr": a, "kind": x["kind"], "min": round((x["last"] - x["first"]) / 60.0)} for a, x in T["bt"]["trackers"].items()]},
             "servo": T["servo"], "sd": T["sd"], "presence": {"here": T["presence"]["here"], "since": T["presence"]["since"], "who": T["presence"]["who"]},
-            "cfg": {k: CFG.get(k) for k in ("net_watch", "net_known", "presence_macs", "presence_auto", "presence_gone_min", "bt_tracker_warn",
-                                            "bt_tracker_min", "presence_bt")},
+            "cfg": dict({k: CFG.get(k) for k in ("net_watch", "net_known", "presence_macs", "presence_auto", "presence_gone_min", "bt_tracker_warn",
+                                                 "bt_tracker_min", "presence_bt")}, presence_back=presence_back_mode()),
             "dual": dual_state(), "toolmode": toolmode_state(), "power": power_calc(), "has": {"nmcli": bool(shutil.which("nmcli")), "ping": bool(shutil.which("ping")), "bleak": _has_bleak()}}
 
 
@@ -20838,6 +20842,12 @@ class ToolsWatch:
 
 
 def tools_cfg(key, value, mac=None):
+    if key == "presence_back":                                # 2.98.15 (577): off / ask / none
+        if value not in PRESENCE_BACK_KEYS:
+            return False, "invalid value"
+        CFG["presence_back"] = value
+        save_settings()
+        return True, ""
     try:
         if key in ("net_watch", "presence_auto", "bt_tracker_warn"):
             CFG[key] = bool(value)
@@ -21952,6 +21962,10 @@ def _tunea_autotune_base():
             tu.calibrated = True; tu.base_min_area = float(CFG["min_area"]); tu.last_eval = time.time()
         except Exception:
             pass
+    try:                                                     # 2.98.15 (577): the measured values = the middle of the ±20 %
+        autotune_base_set("assistant")
+    except Exception as e:
+        log_event("sys", f"Auto-tune base: {e}"[:120])
 
 
 def tune_assist_stop():
@@ -27677,6 +27691,8 @@ def self_test(folder=""):
     chk("Timeline, weekly report, blur faces when sharing", verlauf_selftest)     # 2.98.14 (425, 426, 375)
     chk("One weekly report, return of the phone, auto-tuner ±20 % (migrations)", nachlauf_selftest)     # 2.98.15 (577)
     chk("Off in the push only with the PIN, push after a power cut, recordings by age, push without picture", sicher_selftest)   # (578)
+    for _name, _fn in SELFTEST_EXTRA:                       # 2.98.18: further checks of other parts (395 …)
+        chk(_name, _fn)
 
     if folder:
         def manifest():
@@ -27729,6 +27745,81 @@ def make_manifest(folder, base_url, sign_key=""):
     return 0
 
 
+# ----------------------------------------------------------------------------
+# 2.98.18 (Wunsch Daniel, Code-Pflege):
+#   - Übersetzungen: welche sichtbaren Texte (tr() / trf() im Programm, t() und data-i18n in den Webseiten, die Beschriftungen
+#     der Einstellungen) haben auf Französisch / Italienisch / Romanisch noch keine Übersetzung? Nur eine Warnung im Selbsttest
+#     (Anzahl + die ersten 20), kein Fehler: es erscheint dann Englisch (fr / it) bzw. Deutsch (rm).
+#   - MIGRATE_ONLY (020): alte Schlüssel, die nur noch aus Dateien älterer Versionen gelesen werden, stehen nirgends sonst
+#     (nicht in CFG, nicht in den Einstellungs-Listen, nicht in der Sicherung / dem Diagnose-Paket).
+# Zusätzliche Prüfungen des Selbsttests stehen in SELFTEST_EXTRA (self_test in 390 ruft sie nach den eigenen auf).
+# ----------------------------------------------------------------------------
+SELFTEST_EXTRA = []                                         # [(name, function)] - like chk() in self_test (390)
+
+_I18N_PY = re.compile(r"""(?<![\w.])(?:tr|trf)\(\s*((?:"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'))\s*[,)]""")
+_I18N_JS = re.compile(r"""(?<![\w.$])t\(\s*((?:"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'))\s*[,)]""")
+_I18N_ATTR = re.compile(r"""data-i18n(?:-ph)?=\\?"([^"\\]+)\\?\"""")
+
+
+def i18n_used_keys(src=None):
+    """the English texts the program shows: tr() / trf() (Python), t() and data-i18n (web pages), the settings labels"""
+    import ast as _ast
+    import html as _html
+    if src is None:
+        with open(os.path.abspath(__file__), encoding="utf-8") as f:
+            src = f.read()
+    keys = set()
+    for rx in (_I18N_PY, _I18N_JS):
+        for m in rx.finditer(src):
+            try:
+                s = _ast.literal_eval(m.group(1))
+            except (ValueError, SyntaxError):
+                continue
+            if isinstance(s, str):
+                keys.add(s)
+    for m in _I18N_ATTR.finditer(src):
+        keys.add(_html.unescape(m.group(1)))
+    for lst in (TOGGLES, SLIDERS, TEXTS):
+        keys.update(x[2] for x in lst)
+    keys.update(SECTIONS)
+    return {k for k in keys if re.search(r"[A-Za-z]{2}", k) and "{" not in k[:1]}
+
+
+def i18n_missing(langs=("fr", "it", "rm"), src=None):
+    """{lang: sorted list of the used texts without a translation in TRX[lang]}"""
+    keys = i18n_used_keys(src)
+    return {L: sorted(k for k in keys if not TRX.get(L, {}).get(k)) for L in langs}
+
+
+def i18n_selftest():
+    miss = i18n_missing()
+    n = len(i18n_used_keys())
+    if not any(miss.values()):
+        return f"{n} texts, all translated"
+    out = [f"{n} texts; warning only - without translation:"]
+    for L, ks in miss.items():
+        out.append(f"   {L}: {len(ks)} – " + " · ".join(repr(k[:50]) for k in ks[:20]))
+    return "\n".join(out)
+
+
+def migrate_only_selftest():
+    """the keys only taken over from old files are nowhere else; and an old file is still taken over"""
+    lists = {x[1] for x in TOGGLES + SLIDERS + TEXTS}
+    bad = [k for k in MIGRATE_ONLY if k in CFG or k in DEFAULTS or k in lists or k in SIMPLE_KEYS]
+    assert not bad, f"MIGRATE_ONLY keys still in CFG / the settings lists: {bad}"
+    assert not any(k in settings_data()["cfg"] for k in MIGRATE_ONLY), "MIGRATE_ONLY key in the saved settings"
+    keep = {k: CFG.get(k) for k in ("weekrep_sim", "presence_back")}
+    try:
+        CFG["weekrep_sim"] = True; CFG["presence_back"] = "ask"
+        nachlauf_migrate({"simweek_on": False, "back_ask": False, "presence_auto": False})
+        assert CFG["weekrep_sim"] is False and CFG["presence_back"] == "none", "old file not taken over"
+    finally:
+        CFG.update(keep)
+    return f"{len(MIGRATE_ONLY)} old keys only for taking over: " + ", ".join(sorted(MIGRATE_ONLY))
+
+
+SELFTEST_EXTRA.append(("Old settings only for taking over (MIGRATE_ONLY)", migrate_only_selftest))
+SELFTEST_EXTRA.append(("Translations fr / it / rm (texts in use)", i18n_selftest))
 # ----------------------------------------------------------------------------
 # Power: shut down / restart the Raspberry Pi (web page + desktop window). The recording is finished and the settings are
 #   saved first. Works as root, with the polkit rule of --allow-wifi or (Raspberry Pi OS) with sudo without a password.
@@ -47158,6 +47249,7 @@ def set_cfg(key, value):
         save_settings()
         if key == "patrol":
             log_event("patrol", "Patrol switched ON (web)" if CFG[key] else "Patrol switched OFF (web)")
+        _set_cfg_sim(key)
         return True, ""
     try:
         v = float(value)
@@ -47169,7 +47261,14 @@ def set_cfg(key, value):
     v = round(round(v / spec["step"]) * spec["step"], 2)
     CFG[key] = int(round(v)) if isinstance(CFG[key], int) else float(v)
     save_settings()
+    _set_cfg_sim(key)
     return True, ""
+
+
+def _set_cfg_sim(key):
+    """«Automatic updates» changed here: the connected simulator gets the same setting (545)"""
+    if key == "sim_autoupd" and CFG.get("sim_on") and sim_ready():
+        threading.Thread(target=simupd_push, args=(bool(CFG["sim_autoupd"]),), daemon=True, name="simupd").start()
 
 
 # ---- 2.98.13: simulator updates have one owner - the simulator's own setting «Neue Versionen» (update_mode) -----------------
@@ -47234,15 +47333,7 @@ def simupd_sync():
 def sim_owns_updates():
     return SIMUPD.get("mode") is not None
 
-
-_set_cfg_base = set_cfg
-
-
-def set_cfg(key, value):
-    ok, msg = _set_cfg_base(key, value)
-    if ok and key == "sim_autoupd" and CFG.get("sim_on") and sim_ready():
-        threading.Thread(target=simupd_push, args=(bool(CFG["sim_autoupd"]),), daemon=True, name="simupd").start()
-    return ok, msg
+# set_cfg (540) passes «sim_autoupd» changed on the web page to the simulator (_set_cfg_sim -> simupd_push)
 class WebStream:
     def __init__(self, watch):
         self.watch = watch; self.started = False
@@ -50879,7 +50970,6 @@ TOGGLES = [  # (section, key, label)
     ("Simulator", "notify_sandbox", "Simulation: messages into the test inbox instead of to the phone (nobody is disturbed)"),
     ("Simulator", "train_night_on", "Training night: every night test runs in several scenes, optimization, training pictures"),
     ("Simulator", "rover_alarm", "Rover: at a person alarm drive there by itself (simulator)"),
-    ("Simulator", "simweek_on", "Week report of the simulator diary as a push (Monday morning)"),
     ("Simulator", "fa_learn_auto", "False alarm marked: re-enact it in the simulator and learn from it"),
     ("Simulator", "rehearsal_on_arm", "Night rehearsal by itself when arming in the simulation"),
     ("Simulator", "weekcheck_on", "Recognition check every week (Sunday night) with a warning when it got worse"),
@@ -50984,6 +51074,7 @@ TOGGLES = [  # (section, key, label)
     ("Updates", "update_push", "Push message when a new version is there"),
     ("Night report", "report_on", "Night report: push message in the morning with what happened in the night"),
     ("Night report", "weekrep_on", "Weekly detection report: push once a week with the trend and a tip"),
+    ("Night report", "weekrep_sim", "Weekly report: with the week in the simulator (visits, animals, recognised persons)"),
     ("Night report", "weather_on", "Day overview: weather from the internet (Open-Meteo; the location is sent there)"),
     ("Night report", "diary_on", "Note animals, persons and noises (animal diary + night report)"),
     ("Power saving", "eco_on", "Power saving mode: fewer pictures while all is quiet"),
@@ -54364,7 +54455,7 @@ TOGGLES.extend([
     ("Notifications", "push_actions", "Buttons in the push message: False alarm · Siren · Off (needs the address of this page for links)"),
     ("Notifications", "alarm_confirm2", "Double confirmation: a person alarm only when the AI and the thermal camera agree or the AI sees the person twice in a row (otherwise only a pre-alarm)"),
     ("Camping / protection", "arm_announce", "Announcement when arming: the loudspeaker says battery, Wi-Fi and camera - or what is missing"),
-    ("Camping / protection", "back_ask", "«Is it you?»: when my phone comes back, person alarms wait and a push message asks (button Off)"),
+    ("Camping / protection", "presence_auto", "Protection on automatically when my phone is gone (choose the phone: Tools → Am I at home?)"),
     ("Night report", "report_strip", "Morning push short: one sentence and a picture strip of the night"),
 ])
 SLIDERS.extend([
@@ -54523,7 +54614,8 @@ TOGGLES += [
     ("Battery", "batt_save_on", "Battery saver: below the threshold fewer pictures and the AI less often (by itself)"),
 ]
 SLIDERS += [
-    ("Battery", "batt_save_pct", "Battery saver from (% battery; back to normal at +5 % or when charging)", 5, 60, 1),
+    ("Battery", "batt_save_pct", "🐢 Battery saver below (% battery): fewer pictures, the AI less often - normal again at +5 % or when charging", 5, 60, 1),
+    ("Battery", "mode_fire_min_pct", "🔥 Campfire games end below (% battery): back to the camping guard (0 = never)", 0, 50, 10),
     ("Battery", "batt_save_fps", "Battery saver: at most pictures per second", 1, 10, 1),
     ("Camera / Servos", "cam_vfov", "Camera: vertical field of view (°) - for the distance of a person (Camera Module 3: 41)", 20, 120, 1),
 ]
@@ -54723,7 +54815,7 @@ def _tk_tl_open(app, index):
 #     «automatisch an, wenn mein Handy weg ist». Übernahme der alten Werte: presence_auto → off, sonst back_ask → ask, sonst none.
 #   6 Auto-Tuner (190): min_area / sensitivity / speed_consistency höchstens ±20 % um die gemessenen Werte (Kalibrierung oder
 #     Assistent «Erkennung verbessern», 312). Der Optimierer schaltet den Tuner nicht mehr (OPT_KEYS, 310).
-# Hier statt in den grossen Listen von 570, damit dort nichts verschoben wird.
+# Die Listen-Einträge stehen seit 2.98.18 direkt in 030 / 130 / 570 / 571 / 575 (keine Nachträge mehr hier).
 # ----------------------------------------------------------------------------
 for _k, _v in {"weekrep_sim": True, "presence_back": "ask", "auto_tune_base": {}}.items():
     CFG.setdefault(_k, _v)
@@ -54741,59 +54833,11 @@ def presence_back_mode():
     return v if v in PRESENCE_BACK_KEYS else "ask"
 
 
-def _nl_put_after(lst, after_key, item, idx=1):
-    """item into a settings list right after the entry with this key (else at the end); an entry with the same key is replaced"""
-    lst[:] = [x for x in lst if x[idx] != item[idx]]
-    for i, x in enumerate(lst):
-        if x[idx] == after_key:
-            lst.insert(i + 1, item)
-            return
-    lst.append(item)
+# ---- the settings lists (web and window): since 2.98.18 directly in the lists - weekrep_sim (570, after weekrep_on),
+# presence_auto (571, where back_ask was), batt_save_pct / mode_fire_min_pct (575), presence_back (TEXTS in 030), SIMPLE_KEYS (130).
+# simweek_on and back_ask are only read by nachlauf_migrate (MIGRATE_ONLY, 020).
 
-
-# ---- the settings lists (web and window) ---------------------------------------------------------------------------------
-_nl_put_after(TOGGLES, "weekrep_on", ("Night report", "weekrep_sim", "Weekly report: with the week in the simulator (visits, animals, recognised persons)"))
-_nl_put_after(TOGGLES, "back_ask", ("Camping / protection", "presence_auto", "Protection on automatically when my phone is gone (choose the phone: Tools → Am I at home?)"))
-TOGGLES[:] = [x for x in TOGGLES if x[1] not in ("simweek_on", "back_ask")]
-for _i, _x in enumerate(SLIDERS):
-    if _x[1] == "batt_save_pct":
-        SLIDERS[_i] = ("Battery", "batt_save_pct", "🐢 Battery saver below (% battery): fewer pictures, the AI less often - normal again at +5 % or when charging", _x[3], _x[4], _x[5])
-_nl_put_after(SLIDERS, "batt_save_pct", ("Battery", "mode_fire_min_pct", "🔥 Campfire games end below (% battery): back to the camping guard (0 = never)", 0, 50, 10))
-_nl_put_after(TEXTS, "", ("Camping / protection", "presence_back", "When my phone comes back", "enum", "presence_back"))
-TEXT_SPECS["presence_back"] = ("enum", "presence_back")
-SIMPLE_KEYS.update({"weekrep_sim", "mode_fire_min_pct", "presence_back", "presence_auto"})
-
-_text_choice_pairs_before_nl = text_choice_pairs
-
-
-def text_choice_pairs(key):                                 # 2.98.15: + the choice at the return of the phone
-    if TEXT_SPECS.get(key, (None, None))[1] == "presence_back":
-        return [(k, tr(l)) for k, l in PRESENCE_BACK]
-    return _text_choice_pairs_before_nl(key)
-
-
-# ---- tools page «Am I at home?» (300) ---------------------------------------------------------------------------------------
-_tools_state_before_nl = tools_state
-_tools_cfg_before_nl = tools_cfg
-
-
-def tools_state():
-    r = _tools_state_before_nl()
-    try:
-        r["cfg"]["presence_back"] = presence_back_mode()
-    except (KeyError, TypeError):
-        pass
-    return r
-
-
-def tools_cfg(key, value, mac=None):
-    if key == "presence_back":
-        if value not in PRESENCE_BACK_KEYS:
-            return False, "invalid value"
-        CFG["presence_back"] = value
-        save_settings()
-        return True, ""
-    return _tools_cfg_before_nl(key, value, mac)
+# text_choice_pairs (030) and the tools page «Am I at home?» (tools_state / tools_cfg, 300) know presence_back.
 
 
 # ---- the auto-tuner: ±20 % around the measured values -----------------------------------------------------------------------
@@ -54838,20 +54882,12 @@ def autotune_clamp(key, value):
     return v
 
 
-_tunea_autotune_base_before_nl = _tunea_autotune_base
-
-
-def _tunea_autotune_base():                                # 312: after «Erkennung verbessern» (and its «undo») = the new middle
-    _tunea_autotune_base_before_nl()
-    try:
-        autotune_base_set("assistant")
-    except Exception as e:
-        log_event("sys", f"Auto-tune base: {e}"[:120])
+# _tunea_autotune_base (312) calls autotune_base_set("assistant") after «Erkennung verbessern» (and its «undo»).
 
 
 # ---- taking over the settings of 2.98.14 and older ----------------------------------------------------------------------------
 def nachlauf_migrate(cfg_in):
-    """cfg_in = the «cfg» of the loaded / imported file; returns the list of what was taken over"""
+    """cfg_in = the «cfg» of the loaded / imported file (apply_settings in 040 calls it); returns the list of what was taken over"""
     did = []
     if not isinstance(cfg_in, dict):
         return did
@@ -54866,20 +54902,6 @@ def nachlauf_migrate(cfg_in):
     if not isinstance(CFG.get("auto_tune_base"), dict):
         CFG["auto_tune_base"] = {}
     return did
-
-
-_apply_settings_before_nl = apply_settings
-
-
-def apply_settings(data):                                   # 2.98.15: the same as before, then the migration above
-    r = _apply_settings_before_nl(data)
-    try:
-        did = nachlauf_migrate(data.get("cfg") if isinstance(data, dict) else None)
-        if did:
-            log_event("sys", "Settings of an older version taken over: " + "; ".join(did))
-    except Exception as e:
-        log_event("sys", f"Settings migration (577): {e}"[:150])
-    return r
 
 
 def nachlauf_selftest():
@@ -55589,8 +55611,11 @@ def _sx_tk_wipe(app):
 
 _sx_tk_build_header_before = App._build_header
 _sx_tk_build_section_before = App._build_section
+# wraps: App._build_header
 App._build_header = _sx_tk_build_header
+# wraps: App._build_section
 App._build_section = _sx_tk_build_section
+# wraps: App._update_video
 App._update_video = _sx_tk_update_video
 
 

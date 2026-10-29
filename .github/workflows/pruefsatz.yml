@@ -1,0 +1,79 @@
+# Echtbild-Prüfsatz: MoveEyes KI (Standard-Modell SSD und, falls veröffentlicht, das eigene Modell aus dem Release
+# «ki-modell») gegen feste Bilder mit der richtigen Antwort - ohne Simulator, ohne Godot. Ergebnis: Personen gefunden /
+# verpasst / Fehlalarme je Modell, in der Zusammenfassung des Laufs. Siehe ki_training/pruefsatz/LIESMICH.md.
+# Bilder: ki_training/pruefsatz/ (nur Simulator-Bilder, Tiere, leere Fehlalarme) und privat über das Secret PRUEFSATZ_URL
+# (Link auf eine ZIP mit labels.json, mehrere mit Komma) - echte Bilder mit fremden Personen nie ins Repository.
+name: Prüfsatz
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "versions.json"
+      - "ki_training/pruefsatz/**"
+permissions:
+  contents: read
+jobs:
+  pruefsatz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Pakete
+        run: pip install -q opencv-python-headless numpy flask pillow cryptography
+      - name: KI-Modell (SSD MobileNet V2, wie im Prüfstand)
+        run: |
+          mkdir -p ki && cd ki
+          curl -sSL -o m.tgz https://storage.googleapis.com/download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz
+          echo "sha256 (für werkzeuge/einrichten.sh, SSD_TGZ_SHA256):"; sha256sum m.tgz
+          tar xzf m.tgz && mv ssd_mobilenet_v2_coco_2018_03_29/frozen_inference_graph.pb . && rm -rf m.tgz ssd_mobilenet_v2_coco_2018_03_29
+          curl -sSL -o ssd_mobilenet_v2_coco.pbtxt https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/ssd_mobilenet_v2_coco_2018_03_29.pbtxt
+          sha256sum frozen_inference_graph.pb ssd_mobilenet_v2_coco.pbtxt
+      - name: Eigenes Modell (Release «ki-modell», falls vorhanden)
+        run: |
+          if gh release view ki-modell -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release download ki-modell -R "$GITHUB_REPOSITORY" -D ki -p "moveeye_model.*" --clobber || true
+            python3 - <<'EOF'
+          import hashlib, json, os, sys
+          try:
+              m = json.load(open("ki/moveeye_model.json"))
+              ok = hashlib.sha256(open("ki/moveeye_model.onnx", "rb").read()).hexdigest() == m["sha256"]
+          except (OSError, ValueError, KeyError):
+              sys.exit(0)
+          print("eigenes Modell %s, sha256 %s" % (m.get("version"), "ok" if ok else "FALSCH - wird nicht benutzt"))
+          if not ok:
+              os.remove("ki/moveeye_model.onnx"); os.remove("ki/moveeye_model.json")
+          EOF
+          else
+            echo "noch kein Release ki-modell - nur SSD"
+          fi
+          ls -la ki
+      - name: Private Bilder (Secret PRUEFSATZ_URL, falls gesetzt)
+        env:
+          PRUEFSATZ_URL: ${{ secrets.PRUEFSATZ_URL }}
+        run: |
+          mkdir -p privat
+          if [ -n "$PRUEFSATZ_URL" ]; then
+            i=0
+            for u in $(echo "$PRUEFSATZ_URL" | tr ',' ' '); do
+              i=$((i+1)); curl -fsSL --max-filesize 500000000 -o "privat/satz_$i.zip" "$u" || echo "konnte Quelle $i nicht laden"
+            done
+          else
+            echo "kein Secret PRUEFSATZ_URL - nur die Bilder aus ki_training/pruefsatz"
+          fi
+      - name: Messen
+        run: |
+          satz=ki_training/pruefsatz
+          for z in privat/*.zip; do [ -e "$z" ] && satz="$satz,$z"; done
+          python3 ki_training/pruefsatz.py messen --satz "$satz" --ki ki --json pruefsatz_ergebnis.json
+      - name: Ergebnis aufbewahren (ohne Bilder)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pruefsatz
+          path: pruefsatz_ergebnis.json

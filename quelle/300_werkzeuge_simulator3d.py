@@ -603,8 +603,8 @@ def tools_state():
             "bt": {"running": T["bt"]["running"], "t": T["bt"]["t"], "devices": T["bt"]["devices"], "msg": T["bt"]["msg"],
                    "trackers": [{"addr": a, "kind": x["kind"], "min": round((x["last"] - x["first"]) / 60.0)} for a, x in T["bt"]["trackers"].items()]},
             "servo": T["servo"], "sd": T["sd"], "presence": {"here": T["presence"]["here"], "since": T["presence"]["since"], "who": T["presence"]["who"]},
-            "cfg": {k: CFG.get(k) for k in ("net_watch", "net_known", "presence_macs", "presence_auto", "presence_gone_min", "bt_tracker_warn",
-                                            "bt_tracker_min", "presence_bt")},
+            "cfg": dict({k: CFG.get(k) for k in ("net_watch", "net_known", "presence_macs", "presence_auto", "presence_gone_min", "bt_tracker_warn",
+                                                 "bt_tracker_min", "presence_bt")}, presence_back=presence_back_mode()),
             "dual": dual_state(), "toolmode": toolmode_state(), "power": power_calc(), "has": {"nmcli": bool(shutil.which("nmcli")), "ping": bool(shutil.which("ping")), "bleak": _has_bleak()}}
 
 
@@ -638,6 +638,12 @@ class ToolsWatch:
 
 
 def tools_cfg(key, value, mac=None):
+    if key == "presence_back":                                # 2.98.15 (577): off / ask / none
+        if value not in PRESENCE_BACK_KEYS:
+            return False, "invalid value"
+        CFG["presence_back"] = value
+        save_settings()
+        return True, ""
     try:
         if key in ("net_watch", "presence_auto", "bt_tracker_warn"):
             CFG[key] = bool(value)

@@ -1,0 +1,278 @@
+{
+ "format": "moveeye-labels-1",
+ "items": [
+  {
+   "file": "sim_20261029_145739_00.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: cat, Tag, 7 m"
+  },
+  {
+   "file": "sim_20261029_145739_01.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: deer, Abend, 8 m"
+  },
+  {
+   "file": "sim_20261029_145739_02.jpg",
+   "label": "person",
+   "boxes": [
+    [
+     0.518,
+     0.134,
+     0.133,
+     0.493
+    ]
+   ],
+   "sim": true,
+   "src": "3D-Simulator: person, Nacht (Infrarot), 6 m"
+  },
+  {
+   "file": "sim_20261029_145739_03.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: fox, Regen, 4 m"
+  },
+  {
+   "file": "sim_20261029_145739_04.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: dog, Nebel, 5 m"
+  },
+  {
+   "file": "sim_20261029_145739_05.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: cat, Nacht + Regen, 8 m"
+  },
+  {
+   "file": "sim_20261029_145739_06.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: boar, Tag, 7 m"
+  },
+  {
+   "file": "sim_20261029_145739_07.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: dog, Abend, 7 m"
+  },
+  {
+   "file": "sim_20261029_145739_08.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: fox, Nacht (Infrarot), 4 m"
+  },
+  {
+   "file": "sim_20261029_145739_09.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: dog, Regen, 7 m"
+  },
+  {
+   "file": "sim_20261029_145739_10.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: boar, Nebel, 4 m"
+  },
+  {
+   "file": "sim_20261029_145739_11.jpg",
+   "label": "person",
+   "boxes": [
+    [
+     0.509,
+     0.186,
+     0.111,
+     0.317
+    ]
+   ],
+   "sim": true,
+   "src": "3D-Simulator: person, Nacht + Regen, 10 m"
+  },
+  {
+   "file": "sim_20261029_145739_12.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: boar, Tag, 8 m"
+  },
+  {
+   "file": "sim_20261029_145739_13.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: deer, Abend, 4 m"
+  },
+  {
+   "file": "sim_20261029_145739_14.jpg",
+   "label": "person",
+   "boxes": [
+    [
+     0.543,
+     0.247,
+     0.051,
+     0.362
+    ]
+   ],
+   "sim": true,
+   "src": "3D-Simulator: person, Nacht (Infrarot), 7 m"
+  },
+  {
+   "file": "sim_20261029_145739_15.jpg",
+   "label": "person",
+   "boxes": [
+    [
+     0.293,
+     0,
+     0.25,
+     0.698
+    ]
+   ],
+   "sim": true,
+   "src": "3D-Simulator: person, Regen, 6 m"
+  },
+  {
+   "file": "sim_20261029_150320_00.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: cat, Tag, 10 m"
+  },
+  {
+   "file": "sim_20261029_150320_01.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: boar, Abend, 5 m"
+  },
+  {
+   "file": "sim_20261029_150320_02.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: deer, Nacht (Infrarot), 5 m"
+  },
+  {
+   "file": "sim_20261029_150320_03.jpg",
+   "label": "person",
+   "boxes": [
+    [
+     0.619,
+     0.132,
+     0.07,
+     0.401
+    ]
+   ],
+   "sim": true,
+   "src": "3D-Simulator: person, Regen, 7 m"
+  },
+  {
+   "file": "sim_20261029_150320_04.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: boar, Nebel, 4 m"
+  },
+  {
+   "file": "sim_20261029_150320_05.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: dog, Nacht + Regen, 7 m"
+  },
+  {
+   "file": "sim_20261029_150320_06.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: dog, Tag, 7 m"
+  },
+  {
+   "file": "sim_20261029_150320_07.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: boar, Abend, 3 m"
+  },
+  {
+   "file": "sim_20261029_150320_08.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: dog, Nacht (Infrarot), 7 m"
+  },
+  {
+   "file": "sim_20261029_150320_09.jpg",
+   "label": "animal",
+   "boxes": [],
+   "sim": true,
+   "src": "3D-Simulator: deer, Regen, 4 m"
+  },
+  {
+   "file": "sim_20261029_151843_03.jpg",
+   "label": "person",
+   "boxes": [
+    [
+     0.447,
+     0,
+     0.263,
+     0.797
+    ]
+   ],
+   "sim": true,
+   "src": "3D-Simulator: person, Regen, 4 m"
+  },
+  {
+   "file": "sim_20261029_151843_06.jpg",
+   "label": "person",
+   "boxes": [
+    [
+     0.457,
+     0.214,
+     0.041,
+     0.252
+    ]
+   ],
+   "sim": true,
+   "src": "3D-Simulator: person, Tag, 11 m"
+  },
+  {
+   "file": "sim_20261029_151843_07.jpg",
+   "label": "person",
+   "boxes": [
+    [
+     0.268,
+     0.292,
+     0.121,
+     0.424
+    ]
+   ],
+   "sim": true,
+   "src": "3D-Simulator: person, Abend, 6 m"
+  },
+  {
+   "file": "sim_20261029_151843_16.jpg",
+   "label": "person",
+   "boxes": [
+    [
+     0.317,
+     0.349,
+     0.091,
+     0.475
+    ]
+   ],
+   "sim": true,
+   "src": "3D-Simulator: person, Nebel, 6 m"
+  }
+ ]
+}

@@ -14,7 +14,7 @@
 #     «Bist du's?» mit dem Knopf «Aus».
 # (5 – Zonen nach Art – steht bei den Zonen in Teil 030.)
 # ----------------------------------------------------------------------------
-_ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_ask": False, "back_hold_s": 60,
+_ALX_CFG = {"push_actions": True, "alarm_confirm2": False, "arm_announce": True, "back_hold_s": 60,
             "report_strip": True}
 for _k, _v in _ALX_CFG.items():
     CFG.setdefault(_k, _v)

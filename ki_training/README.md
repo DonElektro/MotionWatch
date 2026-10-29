@@ -77,6 +77,13 @@ Wohin damit:
 * Bilder ohne Personen (Tiere, leere Fehlalarme) dürfen auch nach `ki_training/echt/` (klein halten, höchstens 20 MB)
   oder als ZIP mit einem Namen, der mit `echt` beginnt, ins Release «ki-daten».
 
+### 3. Echtbild-Prüfsatz (messen statt trainieren)
+
+Ein fester Satz beantworteter Bilder, gegen den GitHub MoveEyes KI misst (Actions → «Prüfsatz»: Personen gefunden /
+verpasst / Fehlalarme je Modell, ohne Simulator). Export auf dem Pi: `python3 ki_training/pruefsatz.py exportieren`.
+Gleicher Datenschutz wie oben (echte Personen nur privat über das Secret `PRUEFSATZ_URL`). Siehe
+[`pruefsatz/LIESMICH.md`](pruefsatz/LIESMICH.md). Bilder, mit denen gemessen wird, nicht auch zum Trainieren verwenden.
+
 ## Was dabei herauskommt
 
 * `moveeye_model.onnx` – das Netz (Eingang 1 × 3 × 320 × 320, RGB 0…1, mit grauem Rand auf ein Quadrat gebracht;

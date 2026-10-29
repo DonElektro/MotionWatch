@@ -676,8 +676,11 @@ def _sx_tk_wipe(app):
 
 _sx_tk_build_header_before = App._build_header
 _sx_tk_build_section_before = App._build_section
+# wraps: App._build_header
 App._build_header = _sx_tk_build_header
+# wraps: App._build_section
 App._build_section = _sx_tk_build_section
+# wraps: App._update_video
 App._update_video = _sx_tk_update_video
 
 

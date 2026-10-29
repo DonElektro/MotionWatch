@@ -61,12 +61,4 @@ def simupd_sync():
 def sim_owns_updates():
     return SIMUPD.get("mode") is not None
 
-
-_set_cfg_base = set_cfg
-
-
-def set_cfg(key, value):
-    ok, msg = _set_cfg_base(key, value)
-    if ok and key == "sim_autoupd" and CFG.get("sim_on") and sim_ready():
-        threading.Thread(target=simupd_push, args=(bool(CFG["sim_autoupd"]),), daemon=True, name="simupd").start()
-    return ok, msg
+# set_cfg (540) passes «sim_autoupd» changed on the web page to the simulator (_set_cfg_sim -> simupd_push)

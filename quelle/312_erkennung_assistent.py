@@ -98,6 +98,10 @@ def _tunea_autotune_base():
             tu.calibrated = True; tu.base_min_area = float(CFG["min_area"]); tu.last_eval = time.time()
         except Exception:
             pass
+    try:                                                     # 2.98.15 (577): the measured values = the middle of the ±20 %
+        autotune_base_set("assistant")
+    except Exception as e:
+        log_event("sys", f"Auto-tune base: {e}"[:120])
 
 
 def tune_assist_stop():
