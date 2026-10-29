@@ -99,12 +99,29 @@ func _tab_platz() -> void:
 	g.add_theme_constant_override("h_separation", 6)
 	v.add_child(g)
 	_grids["platz"] = g
-	v.add_child(UI.small("Bewachte Sachen – MoveEye passt darauf auf (Referenz-Scan, Spielziel «Diebstahl»):", UI.MUT))
+	v.add_child(UI.small("Bewachte Sachen – wegnehmen und schauen, ob MoveEye es merkt (Referenz-Scan; Velo und Kühlbox auch Spielziel «Diebstahl»):", UI.MUT))
 	_guard_box = VBoxContainer.new()
 	v.add_child(_guard_box)
 	v.add_child(UI.small("Foto / Panorama deines echten Platzes als Hintergrund – am besten mit dem Handy von dort, wo MoveEye steht (Panorama: ganz herum drehen). Auch: Bild einfach ins Fenster ziehen. Richtung und Winkel unter «Szene · Dein Platz».", UI.MUT))
 	if main.zwilling != null:
 		main.zwilling.build_tab(v)
+
+
+static func guard_names(props: Dictionary) -> Array:
+	"""3D-4.7 («Dinge wegnehmen zusammenlegen»): ALL things of the scene that can be taken away (main.test_props: Velo, Zelt,
+	Tisch, Kühlboxen, Grill … - the same as the theft game and the reference scan use); the theft things first"""
+	var out := []
+	for nm in Plus.THEFT_OBJ:
+		if props.has(nm):
+			out.append(nm)
+	for nm in props:
+		if not nm in out:
+			out.append(nm)
+	return out
+
+
+static func guard_label(nm: String) -> String:
+	return str(Plus.THEFT_OBJ[nm][2]) if Plus.THEFT_OBJ.has(nm) else nm
 
 
 func _paint_guard() -> void:
@@ -114,8 +131,7 @@ func _paint_guard() -> void:
 	for c in _guard_box.get_children():
 		c.queue_free()
 	var n := 0
-	for nm in Plus.THEFT_OBJ:
-		var info: Array = Plus.THEFT_OBJ[nm]
+	for nm in guard_names(main.test_props):
 		var nd = main.test_props.get(nm, null)
 		if nd == null or not is_instance_valid(nd):
 			continue
@@ -124,7 +140,7 @@ func _paint_guard() -> void:
 		r.add_theme_constant_override("separation", 8)
 		_guard_box.add_child(r)
 		var l := Label.new()
-		l.text = "%s – %s" % [info[2], "steht da" if nd.visible else "weggenommen"]
+		l.text = "%s – %s" % [guard_label(nm), "steht da" if nd.visible else "weggenommen"]
 		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		r.add_child(l)
 		var b := Button.new()
@@ -136,7 +152,7 @@ func _paint_guard() -> void:
 			_paint_guard())
 		r.add_child(b)
 	if n == 0:
-		_guard_box.add_child(UI.small("In «%s» gibt es kein Velo und keine Kühlbox (Szene «Camping-Platz» hat beides)." % main.Scenes.name_of(main.scene)))
+		_guard_box.add_child(UI.small("In «%s» gibt es nichts zum Wegnehmen (Szene «Camping-Platz»: Velo, Zelt, Tisch, Kühlbox, Grill)." % main.Scenes.name_of(main.scene)))
 
 
 func open(tab := -1) -> void:
@@ -466,7 +482,7 @@ func _load() -> void:
 
 func info() -> Dictionary:
 	var guard := {}
-	for nm in Plus.THEFT_OBJ:
+	for nm in guard_names(main.test_props):
 		var nd = main.test_props.get(nm, null)
 		if nd != null and is_instance_valid(nd):
 			guard[nm] = nd.visible

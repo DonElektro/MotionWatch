@@ -105,15 +105,15 @@ def _tune_win(self):
     b_undo = self._fbtn(bu, "↩ " + tr("Undo"), undo)
     head(5, "Keep it up")
     togs = {}
-    for key, title, note in (("auto_tune", "Auto-tuner at the real place", "adapts the sensitivity to the place all the time (wind, light); starts from the measured values"),
-                             ("train_night_on", "Training night", "every night test runs in several scenes and the same improving - only when protection is off"),
-                             ("weekcheck_on", "Weekly check", "every Sunday night a test run; a push when it got worse"),
-                             ("fa_learn_auto", "False alarm learning", "mark a recording with 👎 and the simulator re-enacts it and learns from it")):
+    # 2.98.24 («Sim-Schalter nur einmal»): Trainings-Nacht, Wochen-Check, Fehlalarm-Lernen only once - in the window under
+    # «Einstellungen der Simulation» (web: the tiles of the Simulator centre)
+    for key, title, note in (("auto_tune", "Auto-tuner at the real place", "adapts the sensitivity to the place all the time (wind, light); starts from the measured values"),):
         row = tk.Frame(f, bg=C["panel"], padx=10, pady=6, highlightthickness=1, highlightbackground=C["line"]); row.pack(fill="x", pady=(0, 4))
         tg = Toggle(row, tr(title), bool(CFG.get(key)), lambda v, k=key: (tune_assist_set(k, v), paint())); tg.pack(fill="x")
         tk.Label(row, text=tr(note), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8), wraplength=460, justify="left", anchor="w").pack(fill="x")
         togs[key] = tg
     lab("🧰 " + tr("Single tools (Expert)") + ": " + tr("Test run, A/B comparison, thresholds automatic … in the tab Simulator, Simulator centre (view «Expert»)."))
+    lab("🎛 " + tr("Training night, weekly check, false alarm learning: tab Simulator, «Settings of the simulation» (web: tiles of the Simulator centre)."))
     def paint():
         if not w.winfo_exists():
             return

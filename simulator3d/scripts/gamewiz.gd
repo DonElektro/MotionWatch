@@ -5,7 +5,8 @@ extends PanelContainer
 ## controls of the game; «Like last time» is kept in user://gamewiz_last.json.
 ## 3D-4.x: the wizard is THE place to set up a game. Three quick starts («Kinder · 5 Min.», «Familie», «Profis») set
 ## everything in one tap; all single options are under «Extras». The kids mode and «Mitspieler einladen» use the same
-## presets (apply_preset). The panel card «Spiel» only has Öffnen / Start / Stopp / Assistent (the rest under «Experte»).
+## presets (apply_preset). 3D-4.7: the panel card «Spiel» only has Assistent öffnen / Start / Stopp - EVERY other setting of
+## the game is here (also the former «Experte» ones: MORE_OPTS, MORE_PLAYER, the buttons of ACTIONS).
 
 var main
 var shown := false               # open (in this window and / or on the page of MoveEye)
@@ -28,7 +29,10 @@ const Pics = preload("res://scripts/wizpics.gd")
 var _tex := {}
 const KEYS := ["game_mode", "game_goal", "game_level", "game_lives", "game_minutes", "game_items", "game_rescue", "game_stones",
 		"game_cones", "game_powers", "game_spectate", "game_photos", "game_hides", "game_decoy", "game_night", "game_events", "game_checkpoints",
-		"game_autohandicap", "game_tasks", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard"]
+		"game_autohandicap", "game_tasks", "game_bots", "game_tutorial", "game_daily", "game_ghost", "game_heart", "game_botguard",
+		# 3D-4.7: the former «Experte» settings of the card «Spiel» (now only here)
+		"game_teamgoal", "game_noise", "game_random", "game_guard", "game_fx_laser", "game_fx_paint", "game_fx_flash", "game_tap",
+		"game_learn_miss", "game_learn_report", "game_learn_paths", "game_blind_bonus", "game_max", "game_quality"]
 const STEPS := ["Spielart", "Ziel", "Schwierigkeit", "Mitspieler & Start"]
 const STEPS_JG := ["Spielart", "Lockvögel", "Dauer", "Mitspieler & Start"]    # 3D-4.x: «Fehlalarm-Jäger» has its own simple setup
 const JG_TIME := [["3", "⏱", "3 Minuten", "Kurz – gut für Kinder und zum Ausprobieren."], ["5", "⏱", "5 Minuten", "Eine normale Runde."],
@@ -47,7 +51,13 @@ const PLAYER_OPTS := [["game_bots", "Computer-Spieler (Bots)", "select", 0, 0, "
 		["game_tutorial", "Übungsrunde für alle: Schritt für Schritt erklärt, niemand wird erwischt (wer zum ersten Mal spielt, bekommt sie von selbst)", "toggle", 0, 0, "", true],
 		["game_daily", "Tagesaufgabe: heute für alle dieselbe Szene, dasselbe Ziel, dieselben Startpunkte", "toggle", 0, 0, "", true],
 		["game_ghost", "Geisterläufer: der eigene beste Weg läuft als Geist mit", "toggle", 0, 0, "", true],
-		["game_heart", "Herzschlag, wenn die Kamera dich gleich sieht", "toggle", 0, 0, "", true]]
+		["game_heart", "Herzschlag, wenn die Kamera dich gleich sieht", "toggle", 0, 0, "", true],
+		# 3D-4.7: from the card «Spiel» (former «Experte»)
+		["game_max", "Läufer höchstens (mehr Spieler schauen zu; Laptop etwa 4, PC mit Grafikkarte 6–8)", "range", 2, 12, "", true],
+		["game_quality", "Bild auf dem Handy", "select", 0, 0, "", true, [["small", "klein (schnell)"], ["mid", "mittel"], ["big", "gross (braucht mehr Leistung)"]]]]
+# 3D-4.7: buttons of the last step (before: card «Spiel» under «Experte»); [id, label] - op «act»
+const ACTIONS := [["tv_mode", "📺 TV-Modus für den Spielabend (Taste T)"], ["spectate_now", "🎥 Zuschauer-Kamera jetzt ein / aus"],
+		["game_board_reset", "🏆 Rangliste des Abends zurücksetzen"], ["game_report_send", "📊 Spielberichte senden"]]
 # 3D-3.90: four game types with a use for MoveEye first; the others (true = old) only with «Experte»
 const MODES := [["mw", "🛡", "Gegen MoveEye", "Die echte Erkennung von MoveEye passt auf: Meldet sie eine Person, ist der erwischt, den die Kamera am besten sieht. Was MoveEye verpasst, kommt ins Training und auf die Karte der blinden Flecken."],
 		["guard", "👮", "Wächter", "Ein Spieler ist Wächter – am Handy oder am PC: Er dreht den Kopf, schaltet das Licht ein und ruft «Erwischt!». Will niemand, passt der Bot-Wächter auf (zu zweit spielbar). Am Schluss das Duell: wer hat mehr erwischt, der Wächter oder MoveEye?"],
@@ -73,7 +83,7 @@ const LEVEL_SET := {"easy": {"game_level": "easy", "game_lives": "0", "game_minu
 const OPTIONS := [["game_minutes", "Dauer einer Runde", "range", 1, 15, " min", true], ["game_lives", "Leben", "select", 0, 0, "", true],
 		["game_items", "Kristalle zum Sammeln", "range", 0, 6, "", true],
 		["game_rescue", "Befreien (Erwischte warten in der Zelle)", "toggle", 0, 0, "", true], ["game_stones", "Steine werfen zum Ablenken", "toggle", 0, 0, "", true],
-		["game_cones", "Sichtfeld der Kameras zeigen", "toggle", 0, 0, "", true], ["game_powers", "Power-ups: Tarnkappe (lila) und Turbo (gelb)", "toggle", 0, 0, "", true],
+		["game_cones", "Sichtfeld der Kameras zeigen", "toggle", 0, 0, "", true], ["game_powers", "Power-ups: Unsichtbar-Trank (lila) und Turbo (gelb)", "toggle", 0, 0, "", true],
 		["game_spectate", "Zuschauer-Kamera: fliegt selbst übers Spielfeld", "toggle", 0, 0, "", true],
 		["game_photos", "📸 Erwischt-Fotos (Galerie am Schluss)", "toggle", 0, 0, "", true], ["game_hides", "🌳 Verstecke (Büsche, 8 s unsichtbar)", "range", 0, 6, "", true],
 		["game_decoy", "🦆 Lockvogel erlaubt", "toggle", 0, 0, "", true], ["game_night", "🌙 Nacht-Runde mit Taschenlampen", "toggle", 0, 0, "", true],
@@ -81,13 +91,25 @@ const OPTIONS := [["game_minutes", "Dauer einer Runde", "range", 1, 15, " min", 
 		["game_autohandicap", "🎯 Handicap für den Ersten der Rangliste", "toggle", 0, 0, "", true], ["game_tasks", "✅ Eine Aufgabe für jede Runde (Bonus)", "toggle", 0, 0, "", true],
 		["game_theft", "🚲 Diebstahl: was wird geklaut?", "select", 0, 0, "", false, THEFT_OPTS],
 		["game_wx", "⛅ Wetterwechsel mitten in der Runde (Gewitter, Nebel oder Dämmerung – 10 s vorher warnt das Handy)", "toggle", 0, 0, "", true],
-		["game_gear", "🎒 Tarn-Sachen zum Auswählen: Tarnkleidung, Wärmedecke, Karton, Regenschirm", "toggle", 0, 0, "", true]]
+		["game_gear", "🎒 Tarn-Sachen zum Auswählen: Tarnkleidung, Wärmedecke, Karton, Regenschirm", "toggle", 0, 0, "", true],
+		# 3D-4.7: from the card «Spiel» (former «Experte»): rules, hit effects, what the game teaches MoveEye
+		["game_teamgoal", "Team-Ziel: das Ziel öffnet erst, wenn alle Kristalle gefunden sind", "toggle", 0, 0, "", true],
+		["game_noise", "Mikrofon hört laute Schritte", "toggle", 0, 0, "", true], ["game_random", "Start und Ziel zufällig", "toggle", 0, 0, "", true],
+		["game_guard", "Ohne MoveEye bewacht der Kopf selbst", "toggle", 0, 0, "", true],
+		["game_fx_laser", "Treffer: roter Laser vom Kamerakopf (Handy: Fadenkreuz)", "toggle", 0, 0, "", true],
+		["game_fx_paint", "Treffer: Farbklecks (Handy: Klecks auf dem Bildschirm)", "toggle", 0, 0, "", true],
+		["game_fx_flash", "Treffer: Blitz wie ein Radarfoto (Handy: weisser Blitz)", "toggle", 0, 0, "", true],
+		["game_tap", "Jäger an MoveEye zielt durch Antippen im Livebild", "toggle", 0, 0, "", true],
+		["game_learn_miss", "Erkennung lernen: Bilder von Spielern, die MoveEye nicht gemeldet hat", "toggle", 0, 0, "", true],
+		["game_learn_report", "Erkennung lernen: Spielbericht (wie schnell gemeldet, Abstand, Haltung, Licht)", "toggle", 0, 0, "", true],
+		["game_learn_paths", "Erkennung lernen: unerkannte Schleichwege als Testlauf speichern", "toggle", 0, 0, "", true],
+		["game_blind_bonus", "Bonus für blinde Flecken (+20 Punkte pro Sekunde sichtbar, aber nicht gemeldet)", "toggle", 0, 0, "", true]]
 const LIVES := [["0", "unbegrenzt"], ["3", "3 Leben"], ["1", "1 Leben"]]
-const EXTRAS_LABEL := ["Extras – Übungsrunde, Tagesaufgabe, Geist, Herzschlag", "Extras – Dauer, Leben, Kristalle, Steine, Fotos, Verstecke, Nacht, Ereignisse …"]
+const EXTRAS_LABEL := ["Extras – Übungsrunde, Tagesaufgabe, Geist, Herzschlag, Läufer höchstens, Bild auf dem Handy", "Extras – Dauer, Leben, Kristalle, Steine, Fotos, Verstecke, Nacht, Ereignisse, Treffer, Erkennung lernen …"]
 const RULES := {"tips": "Tipps: Ducken und Kriechen hilft. Im Dunkeln und hinter Dingen sieht euch die Kamera schlechter. Rennen hört das Mikrofon.",
 		"rescue": "Befreien: Wer erwischt wird, wartet in der Zelle, bis ihn ein Teamkollege befreit.",
 		"items": "Kristalle: Wer welche einsammelt, bekommt Extrapunkte.",
-		"powers": "Power-ups: Die lila Kugel ist eine Tarnkappe (9 s fast unsichtbar), die gelbe ein Turbo (7 s schneller, aber lauter).",
+		"powers": "Power-ups: Die lila Kugel ist ein Unsichtbar-Trank (9 s fast unsichtbar), die gelbe ein Turbo (7 s schneller, aber lauter).",
 		"lastmin": "Letzte Minute: Die Kamera passt dann besser auf – jetzt wird es spannend!",
 		"photos": "📸 Erwischt-Fotos: Wer erwischt wird, sieht auf dem Handy das Bild der Kamera. Am Schluss gibt es eine Galerie.",
 		"hides": "🌳 Verstecke: In einem Busch geduckt oder kriechend sieht dich die Kamera nicht – aber nur 8 Sekunden lang.",
@@ -371,7 +393,32 @@ func model() -> Dictionary:
 			"extras_label": EXTRAS_LABEL[1] if step == 2 else (EXTRAS_LABEL[0] if step == 3 else ""),
 			"pics": ([Pics.PICS.get(str(W.get("game_mode")), ""), "" if jg() else Pics.PICS.get(str(W.get("game_goal")), "")]) if step == 3 else [], "rules": _rules() if step == 3 else [],
 			"last": _summary(last) if last != null and step == 0 else "", "error": error, "next": nl, "back": step > 0,
-			"game": {"open": g.open, "url": g.address() if g.open else "", "players": g.count(), "round": g.round_state, "max": int(main.game_max)}}
+			"game": {"open": g.open, "url": g.address() if g.open else "", "players": g.count(), "round": g.round_state, "max": int(main.game_max)},
+			"actions": _actions() if step == 3 else []}
+
+
+func _actions() -> Array:
+	"""3D-4.7: the buttons of the last step (TV mode, spectator camera, ranking, reports) - also on the page of MoveEye"""
+	var out := []
+	for a in ACTIONS:
+		var lb: String = a[1]
+		if a[0] == "tv_mode" and main.tv != null and main.tv.on:
+			lb = "📺 TV-Modus beenden"
+		elif a[0] == "spectate_now" and main.spectate:
+			lb = "🎥 Zuschauer-Kamera aus"
+		out.append({"id": a[0], "label": lb})
+	return out
+
+
+func act(id: String) -> void:
+	"""3D-4.7: one of ACTIONS (the same as the former buttons of the card «Spiel»)"""
+	for c in main.controls:
+		if c.id == id and c["set"] != null:
+			if c.type == "button":
+				c["set"].call()
+			elif c.type == "toggle" and c["get"] != null:
+				c["set"].call(not bool(c["get"].call()))
+	_changed()
 
 
 func op(d: Dictionary) -> Dictionary:
@@ -399,6 +446,11 @@ func op(d: Dictionary) -> Dictionary:
 		"extras":
 			extras_open = bool(d.get("value", not extras_open))
 			_changed()
+		"act":                                          # 3D-4.7: a button of the last step (TV mode, ranking …)
+			var aid := str(d.get("value", ""))
+			for a in ACTIONS:
+				if a[0] == aid:
+					act(aid)
 		"next":
 			_next()
 		"back":
@@ -407,7 +459,8 @@ func op(d: Dictionary) -> Dictionary:
 		"quick":                                        # 3D-4.x: a quick start - set, open the game, show the QR code
 			var qv := str(d.get("value", ""))
 			if PRESETS.has(qv):
-				W = preset(qv)
+				W = _cur()                                 # 3D-4.7: the settings a preset does not touch stay (Läufer höchstens …)
+				W.merge(preset(qv), true)
 				lvl = LEVEL_OF.get(qv, "normal")
 				extras_open = false
 				step = 3
@@ -863,6 +916,18 @@ func _paint() -> void:
 			lb2.text = "Fänger am PC" if str(W.get("game_mode")) == "seek" else "Wächter am PC"
 			lb2.pressed.connect(func(): _apply_and_open(); main.localplay.start("guard"))
 			lr.add_child(lb2)
+		if not (M.get("actions", []) as Array).is_empty():   # 3D-4.7: TV mode, spectator camera, ranking, reports
+			var ag := _group("Mehr")
+			var af := HFlowContainer.new()
+			af.add_theme_constant_override("h_separation", 8)
+			af.add_theme_constant_override("v_separation", 8)
+			ag.add_child(af)
+			for a in M["actions"]:
+				var ab := Button.new()
+				ab.text = plain(str(a["label"]))
+				var aid: String = a["id"]
+				ab.pressed.connect(func(): op({"op": "act", "value": aid}))
+				af.add_child(ab)
 		var sg := _group("Zusammenfassung")
 		var gs := GridContainer.new()
 		gs.columns = 2
