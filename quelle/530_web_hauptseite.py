@@ -1395,8 +1395,10 @@ function buildViewMenu() {
   qb("🌐 " + (LANGN[LANG] || "English") + " …", () => setTimeout(() => langMenu($("#btn-lang")), 0));
   qb((HIDDEN.has("sidebar") ? "◀ " : "▶ ") + t("Settings panel"), () => toggleHidden("sidebar"));
   qb("▴ " + t("Hide header"), () => { const b = $("#btn-hdr"); if (b) b.click(); $("#viewmenu").hidden = true; });
+  if (window.lvMenu) qb("◫ " + t("View of the live page …"), () => { $("#viewmenu").hidden = true; setTimeout(window.lvMenu, 0); });   // 2.98.26: live cards per device (536)
   m.append(el("h3", "", t("Quick")), q);
-  document.querySelectorAll("[data-view]").forEach(e => (groups[e.dataset.vgroup] = groups[e.dataset.vgroup] || []).push(e));
+  document.querySelectorAll("[data-view]").forEach(e => { if (window.lvMenu && e.closest("#lv-side,#lv-main")) return;
+    (groups[e.dataset.vgroup] = groups[e.dataset.vgroup] || []).push(e); });
   ["Header", "Panels", "Settings"].forEach(g => {
     if (!groups[g]) return;
     m.appendChild(el("h3", "", t(g)));
@@ -4747,7 +4749,8 @@ function moverExtras(d) {
   const mqLand = matchMedia("(orientation: landscape) and (max-height: 520px)");
   let was = null;
   function place() {
-    const phone = mqPhone.matches, land = phone && mqLand.matches;
+    const live = document.body.dataset.tab === "live";                              // 2.98.26: the Live tab arranges itself (part 536)
+    const phone = mqPhone.matches && !live, land = phone && mqLand.matches;
     if (phone && left.parentNode !== slot) slot.appendChild(left);
     if (!phone && left.parentNode !== home) home.insertBefore(left, home.firstChild);
     const sr = $("#srch");                                                          // phone, tablet, computer: two symbols next to the search

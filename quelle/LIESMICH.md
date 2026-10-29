@@ -108,6 +108,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `525_web_mehr_seite.py` | Web: Seite «Mehr» (6. Reiter) und `main_tab_page()` für Live / Schutz / Einstellungen | 70 |
 | `530_web_hauptseite.py` | Web: Hauptseite | 4459 |
 | `535_web_erkennung.py` | Web: Gehtest (Live, Schutz), Akku-Sparen auf der Schutz-Seite | 119 |
+| `536_web_live_ansicht.py` | Web: Live-Seite nach Format (Hoch / Quer / nur Bild), «Ansicht» (Vorlagen, Bildgrösse, Lieblingsknöpfe, Karten, Bearbeiten), Joystick nur mit Kopf (`live_has_head`) | 488 |
 | `540_web_anleitung_aufnahmen.py` | Web: Anleitung, Aufnahmen | 1187 |
 | `545_simulator_updates.py` | Simulator-Updates: ein Besitzer («Neue Versionen» im Simulator) | 72 |
 | `550_web_server.py` | Web: der Server (alle Adressen) | 2562 |
@@ -145,6 +146,7 @@ python3 pruefstand/pruefstand.py --godot GODOT                      # Erkennung 
 | `618_uebersetzungen_kisicher.py` | Übersetzungen zu 197 (KI-Daten aufräumen) und 574 (Anmelden nur verschlüsselt) | 95 |
 | `619_uebersetzungen_simdopp.py` | Übersetzungen der Aufräum-Punkte Spiel-Karte, Bewachte Sachen, Sim-Schalter, Unsichtbar-Trank | 12 |
 | `621_uebersetzungen_sicher3.py` | Übersetzungen und Anleitung zu 573 (App-Schlüssel, Sicherheit an einem Ort) und zur Rotlicht-Ansicht (578) | 150 |
+| `626_uebersetzungen_live.py` | Übersetzungen der neuen Live-Seite (536) und des Fensters (570) | 89 |
 | `620_daten_produktseite.py` | Daten: Produktseite für Gäste (/info/) | 2651 |
 | `630_almanach.py` | Extras: Überlebens-Almanach | 270 |
 | `640_start.py` | Start: Befehlszeile, Selbsttest, Programmstart | 152 |
