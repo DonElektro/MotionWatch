@@ -1,12 +1,12 @@
 {
- "version": "3D-4.8",
+ "version": "3D-4.9",
  "file": "simulator3d/MotionWatch3D_Simulator.zip",
- "size": 31497236,
- "sha256": "6279de5eada7c8f1c53a4b7219771b136080e0bc0722f220621e23d40be84f84",
- "notes": "Tunnel: nur das neueste Simulator-Fenster zählt (kein Springen zwischen zwei Ansichten)",
+ "size": 31504916,
+ "sha256": "69242ffaf847049c44c51b3de0dc813075a42154b5c8421565dbfa45b083914c",
+ "notes": "Controller im Spiel, nur ein MoveEye steuert den Simulator",
  "pi": {
   "file": "simulator3d/MotionWatch3D_Pi.zip",
-  "size": 24620135,
-  "sha256": "8d208a055de1cb835d9b8f8e53528e541c0fd98327b81e0fe1cf9d86eab4db28"
+  "size": 24626571,
+  "sha256": "d965a28503f7f7d4c54cfc1424d057b30f0e346ec8e6f2bb464ed85a8d0cb012"
  }
 }

@@ -1329,6 +1329,7 @@ TRX['fr'].update({
     'unknown field': 'champ inconnu',
     'unknown network': 'réseau inconnu',
     'this is the main camera already': "c'est déjà la caméra principale",
+    'connected - only watching (another MoveEye steers the simulator)': "connecté – observe seulement (un autre MoveEye pilote le simulateur)",
     'unknown network camera': 'caméra réseau inconnue',
     'unknown relay': 'relais inconnu',
     'unknown schedule': 'programme horaire inconnu',

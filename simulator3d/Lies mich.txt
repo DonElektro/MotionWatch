@@ -608,6 +608,12 @@ wechselnde Kamera-Einstellungen von Rover und Spielern (folgen, seitlich, tief, 
 MoveEye); verdeckt ein Wohnwagen oder Zelt die Sicht, sucht die Kamera einen freien Blick. Auch im Spiel neu: «Alle
 Spieler im Bild». Beim Erkunden lässt sich das Bedienfeld rechts wieder scrollen.
 
+NEU IN 3D-4.9
+3D-4.9: Game-Controller im Spiel: am Simulator-PC (Schleicher: Sticks gehen/umschauen, A Stein, B ducken, X kriechen, Y Lampe,
+RT rennen, Start = Runde / Pause; Wächter: Sticks drehen den Kopf, A «Erwischt!») und auf der Handy-/Tablet-Spielseite
+(Bluetooth-Controller, Hinweis «🎮 Controller verbunden»). Zwei MoveEye am selben Simulator (z. B. Pi und KI-Hilfe auf dem PC):
+nur eines steuert den Kopf, das andere schaut zu – der Kopf wackelt nicht mehr hin und her und die Kamerabilder flackern nicht.
+
 NEU IN 3D-4.8
 3D-4.8: Der Simulator meldet sich beim Tunnel mit einer eigenen Kennung. Sind zwei Simulator-Fenster offen (z. B. ein altes
 nach einem Update), nimmt MoveEye nur noch das neuere – das Bild springt nicht mehr zwischen zwei Ansichten hin und her.

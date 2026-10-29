@@ -776,7 +776,7 @@ class App:
         self.watch = watch
         self.web = web or WebStream(watch)
         self.root = tk.Tk()
-        self.root.title("MoveEye 2.98.28")
+        self.root.title("MoveEye 2.98.29")
         try:                                             # window / taskbar icon = the app icon
             import base64
             self._icon = tk.PhotoImage(data=base64.b64encode(app_icon_png(64)).decode())
@@ -917,6 +917,8 @@ class App:
         m.add_separator()
         m.add_command(label=tr("Settings") + "   (Ctrl+B)", command=self.toggle_sidebar)
         m.add_command(label=tr("Show all"), command=self.show_all)
+        if self.tab == "live":
+            m.add_command(label="◫ " + tr("View of the live page …"), command=self._tkv_dialog)     # 2.98.29 (581)
         if x is None:
             x, y = self.root.winfo_pointerx(), self.root.winfo_pointery()
         try:
@@ -1140,7 +1142,7 @@ class App:
             nm = tk.Label(tl, text="MoveEye", bg=C["bg"], fg=C["txt"], font=("DejaVu Sans", 12 if small else 15, "bold")); nm.pack(side="left", padx=(6, 0))
             if not small:
                 tk.Label(tl, text=APP_VERSION, bg=C["bg"], fg=C["mut"], font=("DejaVu Sans", 8)).pack(side="left", padx=(8, 0), pady=(5, 0))
-            Tip(nm, f"{tr('Build')} 2.98.28 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
+            Tip(nm, f"{tr('Build')} 2.98.29 · {tr('Pan/Tilt surveillance with AI, patrol & relay')}")
             self._egg_taps = []
             for w_ in tl.winfo_children():                # little extra
                 w_.bind("<Button-1>", self._egg_tap, add="+")
@@ -1381,22 +1383,43 @@ class App:
             self.video.bind("<Button-3>", lambda e: self._view_menu(e.x_root, e.y_root))
             land = self._tk_live_land()                   # 2.98.26: wide window = the controls right of the picture (the picture keeps the height)
             self._ctl_side = land
-            if show("controls"):
-                c = tk.Frame(left, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=12, pady=8)
-                if land:
-                    c.grid(row=0, column=1, sticky="nsew", padx=(10, 0)); left.columnconfigure(1, weight=0)
+            show_c = show("controls") and self._tkv_card("controls")      # 2.98.29: «Ansicht» of the window (581)
+            show_s = self._tkv_card("lvsetup")
+            folded = self._ctl_folded()
+            wp = self._tkv_pic_weight()
+            left.rowconfigure(0, weight=wp)
+            colf = None
+            if land and (show_c or show_s):
+                colf = tk.Frame(left, bg=C["bg"]); colf.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
+                left.columnconfigure(1, weight=0, minsize=self._tkv_side_w())
+            if show_c:
+                c = tk.Frame(colf if colf is not None else left, bg=C["panel"], highlightthickness=1, highlightbackground=C["line"], padx=12, pady=8)
+                if colf is not None:
+                    c.pack(fill="both", expand=not show_s)
                 else:
-                    c.grid(row=1, column=0, sticky="ew", pady=(10, 0))
-                folded = self._ctl_folded()
+                    c.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
+                    if not folded and wp < 100:
+                        left.rowconfigure(1, weight=100 - wp)     # smaller picture size: the controls get the room
                 hd = tk.Frame(c, bg=C["panel"], cursor="hand2"); hd.pack(fill="x")
                 h1 = tk.Label(hd, text=tr("CAMERA CONTROL"), bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8, "bold"), cursor="hand2")
                 h1.pack(side="left")
                 h2 = tk.Label(hd, text="▸" if folded else "▾", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 10), cursor="hand2"); h2.pack(side="right")
+                h3 = tk.Label(hd, text="◫", bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11), cursor="hand2", padx=6); h3.pack(side="right")
+                h3.bind("<Button-1>", lambda e: self._tkv_dialog()); Tip(h3, tr("View: layout, picture size, buttons, cards"))
                 for w_ in (hd, h1, h2):
                     w_.bind("<Button-1>", lambda e: self._fold_ctl())
                 if not folded:
                     inner = tk.Frame(c, bg=C["panel"]); inner.pack(fill="x", pady=(6, 2))
                     self._build_controls(inner)
+            if show_s:
+                su = self._tkv_setup_card(colf if colf is not None else left)
+                if colf is not None:
+                    su.pack(fill="x", pady=(10 if show_c else 0, 0))
+                else:
+                    su.grid(row=3, column=0, sticky="ew", pady=(10, 0))
+            if not show_c:                                # no controls card: the «Ansicht» stays reachable (right click or this button)
+                vb = tk.Label(vc, text="◫", bg=C["panel"], fg=C["txt"], font=("DejaVu Sans", 11), cursor="hand2")
+                vb.place(relx=1.0, x=-4, y=4, anchor="ne"); vb.bind("<Button-1>", lambda e: self._tkv_dialog())
         elif self.tab == "more":                          # 2.98.14: «Mehr» = weather, system, self-check + manual, tools …
             self._tk_more_bar(left).grid(row=3, column=0, sticky="ew", pady=(10, 0))
             mid = tk.Frame(left, bg=C["bg"]); mid.grid(row=0, column=0, sticky="new")
@@ -1454,7 +1477,8 @@ class App:
         wide = self._lay[2] and not side_col             # wide: stick | small things | quick switches in one row
         left_w = self._win_w() - self._lay[1] - 60
         tiny = side_col or (not wide and left_w < 520)   # very narrow: small things beside the stick, switches below both
-        head = live_has_head()                           # 2.98.26: joystick, centre, calibrate, waypoints only with a pan / tilt head
+        head = self._tk_head()                           # 2.98.26: joystick, centre, calibrate, waypoints only with a pan / tilt head (2.98.29: «Ansicht» → Joystick always / never)
+        u = self._tk_ui()
         bar = tk.Frame(f, bg=C["panel"]); bar.pack(fill="x")
         # 1) joystick with the camera position (orange ring) and the waypoints
         swap = "ctl:swap" in self.open_secs                # ⇆ left- / right-handed: stick and small buttons change places
@@ -1463,7 +1487,7 @@ class App:
         if head or MOVER["avail"]:
             sb.grid(row=0, column=c_st, rowspan=1 if (wide or tiny) else 2, sticky="n")
         if head:
-            self.stick = StickPad(sb, self, 176 if wide else 140); self.stick.pack()
+            self.stick = StickPad(sb, self, int((176 if wide else 140) * u)); self.stick.pack()
             self.l_pt = tk.Label(sb, text="", bg=C["panel"], fg=C["mut"], font=("DejaVu Sans", 8)); self.l_pt.pack(pady=(2, 0))
         # the mover (2.94.0): second stick under the camera stick, only while the mover is there
         self.mstick = MoverPad(sb, self, 140 if wide else 116)
@@ -1529,9 +1553,8 @@ class App:
         for k in range(cols):
             grid.columnconfigure(k, weight=1, uniform="qs")
         self.qs_tiles = {}
-        th = 58 if wide else 50
-        qs = [q for q in qs_arrange(self._qs_list()) if head or q["id"] not in ("track", "patrol")] + [dict(id="edit", ic="✎", lb=tr("Arrange"), tip=tr("Choose and arrange the switches"),
-                                                 on=lambda: False, go=self._qs_edit)]
+        th = int((58 if wide else 50) * u)
+        qs = self._tkv_tiles(head)                       # 2.98.29: favourites + «… mehr» (581); the old «Anpassen» is the «Ansicht» now
         for n, q in enumerate(qs):
             t = tk.Frame(grid, bg=self._btn2(), highlightthickness=1, highlightbackground=C["line"], width=50, height=th, cursor="hand2")
             t.grid(row=n // cols, column=n % cols, padx=(0, 6), pady=(0, 6), sticky="ew"); t.pack_propagate(False)
@@ -1624,42 +1647,6 @@ class App:
                 w.config(bg=C["acc"])
             self.root.after(350, self._qs_paint)
         self._qs_paint()
-
-    def _qs_edit(self):
-        """Window to choose and arrange the quick switches (the same setting as on the web page)."""
-        top = tk.Toplevel(self.root); top.title(tr("Arrange the switches")); top.configure(bg=C["panel"]); top.transient(self.root)
-        tk.Label(top, text=tr("Tick what you want to see, move it with ▲ ▼. Saved for everybody on this device."), bg=C["panel"], fg=C["mut"],
-                 wraplength=360, justify="left").pack(anchor="w", padx=12, pady=(10, 6))
-        hid = set((CFG.get("qs_layout") or {}).get("hidden") or [])
-        items = [[q, tk.BooleanVar(value=q["id"] not in hid)] for q in qs_arrange(self._qs_list(), ) + [q for q in self._qs_list() if q["id"] in hid]]
-        seen = set(); items = [it for it in items if not (it[0]["id"] in seen or seen.add(it[0]["id"]))]
-        box = tk.Frame(top, bg=C["panel"]); box.pack(fill="both", padx=12)
-
-        def draw():
-            for w in box.winfo_children():
-                w.destroy()
-            for i, (q, v) in enumerate(items):
-                row = tk.Frame(box, bg=C["panel"]); row.pack(fill="x", pady=1)
-                tk.Checkbutton(row, text=f"{q['ic']}  {q['lb']}", variable=v, bg=C["panel"], fg=C["txt"], selectcolor=C["field"], activebackground=C["panel"],
-                               anchor="w").pack(side="left", fill="x", expand=True)
-                for txt, d in (("▲", -1), ("▼", 1)):
-                    b = tk.Button(row, text=txt, width=2, command=lambda i=i, d=d: move(i, d), state="normal" if 0 <= i + d < len(items) else "disabled")
-                    b.pack(side="left", padx=1)
-
-        def move(i, d):
-            items[i], items[i + d] = items[i + d], items[i]; draw()
-
-        def save(reset=False):
-            if reset:
-                qs_layout_set([], [])
-            else:
-                qs_layout_set([q["id"] for q, v in items], [q["id"] for q, v in items if not v.get()])
-            top.destroy(); tid, self.tab = self.tab, None; self._tab(tid)
-        draw()
-        bf = tk.Frame(top, bg=C["panel"]); bf.pack(fill="x", padx=12, pady=10)
-        ttk.Button(bf, text=tr("Reset"), command=lambda: save(True)).pack(side="left")
-        ttk.Button(bf, text=tr("Save"), command=save).pack(side="right")
-        ttk.Button(bf, text=tr("Cancel"), command=top.destroy).pack(side="right", padx=6)
 
     def _relay_quick(self, i):
         """On <-> back to the mode from before (mostly automatic) - like the web page."""

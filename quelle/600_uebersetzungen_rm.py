@@ -1325,6 +1325,7 @@ TRX['rm'].update({
     'unknown field': 'champ nunenconuschent',
     'unknown network': 'rait nunenconuschenta',
     'this is the main camera already': "quai è gia la camera principala",
+    'connected - only watching (another MoveEye steers the simulator)': "collià – guarda mo (in auter MoveEye maina il simulatur)",
     'unknown network camera': 'camera da rait nunenconuschenta',
     'unknown relay': 'relais nunenconuschent',
     'unknown schedule': 'plan da temp nunenconuschent',

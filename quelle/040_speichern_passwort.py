@@ -342,8 +342,7 @@ def apply_settings(data):
     WAYPOINTS[:] = wps[:50]
     CFG["ui_hidden"] = [k for k in CFG["ui_hidden"] if isinstance(k, str)][:200]
     CFG["ui_open"] = [k for k in CFG["ui_open"] if isinstance(k, str)][:100]
-    _ql = CFG["qs_layout"] if isinstance(CFG["qs_layout"], dict) else {}
-    CFG["qs_layout"] = {"order": [k for k in (_ql.get("order") or []) if isinstance(k, str)][:60], "hidden": [k for k in (_ql.get("hidden") or []) if isinstance(k, str)][:60]}
+    CFG["qs_layout"] = qs_layout_clean(CFG["qs_layout"])   # 2.98.29: also favourites and cards (290)
     CFG["web_ui"] = clean_web_ui(CFG["web_ui"])
     if not CFG.get("dev_phase_done"):                  # 2.96.2: Daniel is in the development phase - fast updates on (once)
         CFG["dev_phase_done"] = True

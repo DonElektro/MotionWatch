@@ -141,6 +141,8 @@ func _set_device(d: String) -> void:
 
 func _input(ev: InputEvent) -> void:
 	# which device steers - also when exploring is off (the controller's Start switches it on)
+	if _game_pad():
+		return                                           # 3D-4.x: the controller belongs to the player at the PC (localplay.gd)
 	if ev is InputEventJoypadButton and ev.pressed:
 		if ev.button_index == JOY_BUTTON_START:
 			set_on(not on)
@@ -248,6 +250,8 @@ func remote_pad(ax: Array, bt: Array, nm: String) -> void:
 	rp_t = main.now()
 	rp_name = nm
 	var pressed := func(i: int) -> bool: return i < bt.size() and int(bt[i]) == 1 and not (i < old.size() and int(old[i]) == 1)
+	if _game_pad():
+		return                                           # 3D-4.x: in a game at the PC the pad steers that player (localplay.gd reads rp_ax / rp_bt)
 	if pressed.call(9):
 		set_on(not on)
 	if not on:
@@ -263,6 +267,11 @@ func remote_pad(ax: Array, bt: Array, nm: String) -> void:
 		main.set_mast(main.mast_h + 0.1)
 	if pressed.call(13) and _lt_held():
 		main.set_mast(main.mast_h - 0.1)
+
+
+func _game_pad() -> bool:
+	"""3D-4.x: somebody plays here at the PC (localplay.gd): the controller is his - no exploring, no MoveEye head"""
+	return main.localplay != null and main.localplay.active
 
 
 func _btn(gb: int, bi: int) -> bool:
@@ -475,7 +484,7 @@ func command() -> Vector2:
 
 func _process(dt: float) -> void:
 	_cal_tick()                                              # 3D-3.96: calibration of the sticks
-	var l1 := _head_tick()                                   # 3D-3.96: the head of MoveEye with the controller
+	var l1 := false if _game_pad() else _head_tick()         # 3D-3.96: the head of MoveEye with the controller
 	if not on:
 		return
 	turbo = Input.is_key_pressed(KEY_SHIFT) or _pad_btn(JOY_BUTTON_A)

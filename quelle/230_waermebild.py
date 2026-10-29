@@ -180,7 +180,16 @@ class ThermalCam:
             self.lo += 0.05 * (lo - self.lo); self.hi += 0.05 * (max(hi, self.lo + 1e-3) - self.hi)
         g = np.clip((f - self.lo) * 255.0 / max(1e-3, self.hi - self.lo), 0, 255).astype(np.uint8)
         med = float(np.median(g))
-        warm = ((g.astype(np.int16) > med + CFG["thermal_delta"] * 2.55).astype(np.uint8)) * 255
+        # 2.98.x (Prüfstand: clear nights 0 thermal persons): the clear night sky is very cold (-20 °C and colder) and sets
+        # the bottom of the scale - the ground then sits at ~210 of 255 and «median + 30 %» was above 255: nothing could
+        # ever be warm. The step is now measured on the warm side only (twice the room above the median, at most the old
+        # full scale), with a camera in °C at least 10 °C, else at least a quarter of the scale.
+        span = min(255.0, 2.0 * (255.0 - med))
+        if fr.dtype != np.uint8:
+            span = max(span, min(255.0, 10.0 * 255.0 / max(1e-3, self.hi - self.lo)))
+        else:
+            span = max(span, 64.0)
+        warm = ((g.astype(np.float32) > med + CFG["thermal_delta"] / 100.0 * span).astype(np.uint8)) * 255
         if CFG["thermal_need_motion"]:
             if self.bgsub is None or self.bg_shape != g.shape:
                 self.bgsub = cv2.createBackgroundSubtractorMOG2(history=300, varThreshold=12, detectShadows=False); self.bg_shape = g.shape
